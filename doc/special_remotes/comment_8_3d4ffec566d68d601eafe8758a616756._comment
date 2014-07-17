@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlRThEwuPnr8_bcuuCTQ0rQd3w6AfeMiLY"
+ nickname="Alex"
+ subject="'webhook' special remote?"
+ date="2013-02-24T15:05:27Z"
+ content="""
+Is there any chance a special remote that functions like a hybrid of 'web' and 'hook'? At least in theory, it should be relatively simple, since it would only support 'get' and the only meaningful parameters to pass would be the URL and the output file name.
+
+Maybe make it something like git config annex.myprogram-webhook 'myprogram $ANNEX_URL $ANNEX_FILE', and fetching could work by adding a --handler or --type parameter to addurl.
+
+The use case here is anywhere that simple 'fetch the file over HTTP/FTP/etc' isn't workable - maybe it's on rapidshare and you need to use plowshare to download it; maybe it's a youtube video and you want to use youtube-dl, maybe it's a chapter of a manga and you want to turn it into a CBZ file when you fetch it.
+
+"""]]

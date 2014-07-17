@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 2"
+ date="2013-06-10T23:50:27Z"
+ content="""
+David, along those lines, if a value derived from the D-H key were committed to the git repo, then the MITM would need to maintain two distinct git trees, and translate between them on an ongoing basis. Which is harder. And then if both clients at any point communicated via another channel (ie, local pairing), the forgery would be very noticeable.
+
+Which is not to say that this is necessarily good enough..
+"""]]

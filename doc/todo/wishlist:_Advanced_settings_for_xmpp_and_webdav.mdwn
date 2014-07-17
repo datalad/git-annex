@@ -1,0 +1,7 @@
+It would be very nice with an "advanced settings" for jabber and webdav support.
+
+Currently XMPP fails if you use a google apps account. Since the domain provided in the email is not the same as the XMPP server.
+
+Same goes for webdav support. If i have my own webdav server somewhere on the internet there is no way to set it up in the assistant.
+
+[[!tag /design/assistant]]

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 2"
+ date="2013-08-23T18:35:01Z"
+ content="""
+Having just set up <http://annex.debconf.org> which uses a git hook to run `git annex merge`, I can say that the main problems you are likely to run into are:
+
+1. The hook might be run with the cwd not set to the top of the git repository. cd to the git repository in the hook to fix.
+2. The hook might be run with `GIT_DIR` set to a strange value (in my case, it was set to \".\"), which is not the actual .git directory location. Unsetting it fixes that.
+
+I don't know about how to get git hooks to work on FAT filesystems though. Hooks have to be executable, and most systems probably don't mount such filesystems with executability allowed.
+"""]]

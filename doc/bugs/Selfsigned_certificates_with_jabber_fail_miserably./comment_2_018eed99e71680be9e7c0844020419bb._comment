@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.90"
+ subject="comment 2"
+ date="2013-07-16T17:42:42Z"
+ content="""
+Actually, sessionIsSecure only tells me if it's using SSL at all; still waiting on the XMPP library to add cert checking..
+"""]]

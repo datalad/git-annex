@@ -1,0 +1,34 @@
+Yesterday, added per-remote, per-key state storage. This is exported via
+the external special remote protocol, and I expect to use it at least for
+Tahoe Lafs.
+
+Also, made the assistant write ssh config files with better permissions,
+so ssh won't refuse to use them. (The only case I know of where that
+happened was on Windows.)
+
+Today, made `addurl` and `importfeed` honor annex.diskreserve. Found out about
+this the hard way, when an importfeed cron job filled up my server with
+youtube videos. I should probably also make `import` honor
+annex.diskreserve.
+
+---
+
+I've been working, so far inconclusively, on making the assistant
+deal with remotes that might open a long duration network connection.
+Problem being that if the connection is lost, and the remote is not smart
+enough to reconnect, all further use of it could fail.
+
+In a `restarttransferrer` branch, I have made the assistant start separate
+`transferkeys` processes for each remote. So if a remote starts to
+fail, the assistant can stop its `transferkeys` process, and restart it,
+solving the problem.
+
+But, if a resource needed for a remote is not available, this degrades to
+every transfer attempt to that remote restarting it. So I don't know if this is the
+right approach.
+
+Other approaches being considered include asking that implementors of
+external special remotes deal with reconnection themselves (Tobias, do you
+deal with this in your remotes?), or making the
+assistant only restart failing remotes after it detects there's been 
+a network connection change.

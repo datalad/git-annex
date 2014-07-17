@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://nico.kaiser.me/"
+ nickname="Nico Kaiser"
+ subject="Directory location"
+ date="2012-08-01T07:51:36Z"
+ content="""
+I don't think the Annex directory (or whatever it will be called – \"Annex\" seems like a good choice in my opinion) should be inside the \"Desktop\" folder by default. All other xdg-user-dirs (Documents, Downloads, etc.) are in $HOME, and i think Desktop should not be cluttered with folders.
+"""]]

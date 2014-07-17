@@ -1,0 +1,25 @@
+What steps will reproduce the problem?
+
+Run the git-annex assitant, and then "sudo kill" it.
+
+What is the expected output? What do you see instead?
+
+I expect it to die, instead I end up with:
+
+    14604   ??  S      0:00.64 ga assistant
+    14623   ??  Z      0:00.00 (git)
+    14624   ??  Z      0:00.00 (git)
+    14936   ??  Z      0:00.00 (git-annex)
+
+The only way to clear these zombies is to reboot.  Perhaps there is some resource not being correctly terminated under exceptional conditions?
+
+Note that on OpenIndiana the problem is even more severe: Aborting git-annex at the wrong time leaves behind both zombie processes and lock files which cause the machine to suddenly halt if I try to access them in any way (via mv, rsync, etc)!
+
+What version of git-annex are you using? On what operating system?
+
+4d1e0c9 on OS X 10.8.2.
+
+Please provide any additional information below.
+
+[[!meta title="strange OSX behavior when killed"]]
+[[!tag /design/assistant/OSX moreinfo]]

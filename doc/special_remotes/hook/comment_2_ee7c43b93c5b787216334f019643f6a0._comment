@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnWvnTWY6LrcPB4BzYEBn5mRTpNhg5EtEg"
+ nickname="Bence"
+ subject="More environment variables"
+ date="2013-07-09T10:28:58Z"
+ content="""
+Could you please include the original filename+path in the environment variables (_next to ANNEX_KEY & ANNEX_FILE_)? Like ANNEX_FILENAME and ANNEX_PATH.
+
+Having these infos in a hook would help eg. a flickr backend to be more usefull. [Tags](http://www.flickr.com/help/tags/) would contain the ANNEX_KEY and the image title could be the original filename (ANNEX_FILENAME). Also, having directory path (ANNEX_PATH) for the given file, the uploading process could put images into the proper sets/collections. Voila, you have a \"filesystem based\" flickr image gallery (almost like flickrfs).
+
+Other backends, like AmazonS3 having [meta data](http://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html) also could benefit from this. 
+
+To build the Death Star further, an _annex.$hooktype-**sync**-hook_ would instruct the backend to sync data, eg. place or move images/files in the proper image-sets/directories after they are moved/repositioned in git-annex, but that would be the backend's job, not git-annex's. Maybe the sync-hook would be called when _git annex sync_ is called. This is just an idea.
+
+While writing this, a new hook for sharing came into my mind: _annex.$hooktype-**share**-hook_.
+Calling this on a file/directory (_git annex share my_image_to_share.jpg_) would return a publicly shareable (short)url pointing to the file/directory. This would work for web-backends like AmazonS3, flickr, DropBox, Google Drive, ...
+"""]]

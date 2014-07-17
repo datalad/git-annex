@@ -1,0 +1,11 @@
+Hi,
+
+I am trying to use Git Annex Assistant on my Fedora Linux computer. I currently have a local repository that assistant monitors, but now I want to use my personal server as a git remote for the repository. I click on Configuration > Remote server and it prompts me for my server login credentials and then click the "Check this server" button. After this I am shown a screen that assistant is "Ready to add remote server" and then states:
+> The server <MY IP ADDRESS HERE> can be used as is, but installing git-annex on it would make it work better, and provide more options below.
+>
+> If you're able to install software on the server, do so and click Retry
+
+The information shown below this message is regarding encrypting the data (if I have git-annex installed on the server, which I don't). So my question is, what do I do now? There is no button to just add the remote from within git annex assistant? I created a bare repository on my server and added a remote manually inside the repository on my local machine, but git annex assistant doesn't notice it. I'm clueless on what git annex assistant is expecting from me at this point. I would think what I'm trying to do is one of the most common use cases for git annex, but I can't find any documentation or materials on the correct procedure for this. Any help is appreciated.
+
+Regards,
+Blake

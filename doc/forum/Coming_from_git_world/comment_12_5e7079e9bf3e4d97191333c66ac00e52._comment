@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.235"
+ subject="comment 12"
+ date="2013-07-10T21:10:03Z"
+ content="""
+Yes, a separate repository is one way to go, although I do not think it would be very hard to get gerrit's internal ssh to run git-annex-shell.
+
+[[git-annex-shell]] is a low-level restricted shell like git-shell, not a login manager, so it has nothing at all to do with ssh keys. Things like gitosis and gitolite can be built on top of git-shell and git-annex-shell and handle ssh key management.
+"""]]

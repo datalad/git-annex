@@ -1,0 +1,11 @@
+This blog was updated on a semi-daily basis by Joey during the year of work
+concentrating on the git-annex assistant that was funded by his kickstarter
+campaign.
+
+Post-kickstarter work will instead appear on the [[devblog]]. However,
+this page's RSS feed will continue to work, so you don't have to migrate
+your RSS reader.
+
+[[!inline pages="page(devblog/*)" show=-1 feedshow=7]]
+
+[[!inline pages="page(design/assistant/blog/*)" show=0 feeds=no]]

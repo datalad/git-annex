@@ -1,0 +1,24 @@
+Got renaming fully optimised in the assistent in direct mode. I even got it
+to work for whole directory renames. I can drag files around all day in the
+file manager and the assistant often finishes committing the rename before
+the file manager updates. So much better than checksumming every single
+renamed file! Also, this means the assistant makes just 1 commit when a
+whole directory is renamed.
+
+Last night I added a feature to `git annex status`. It can now be asked to
+only show the status of a single directory, rather than the whole annex.
+All the regular file filtering switches work, so some neat commands
+are possible. I like `git annex status . --in foo --not --in bar` to see
+how much data is in one remote but not another.
+
+This morning, an important thought about [[bugs/smarter_flood_filling]],
+that will avoid unnecessary uploads to transfer remotes when all that's
+needed to get the file to its destination is a transfer over the LAN.
+I found an easy way to make that work, at least in simple cases.
+Hoping to implement it soon.
+
+Less fun, direct mode turns out to be somewhat buggy when files with
+duplicate content are in the repository. Nothing fails, but `git annex
+sync` will re-checksum files each time it's run in this situation, and the
+assistant will re-checksum files in certian cases. Need to work on this
+soon too.

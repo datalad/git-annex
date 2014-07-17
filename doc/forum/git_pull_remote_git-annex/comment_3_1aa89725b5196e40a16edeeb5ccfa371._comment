@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnXybLxkPMYpP3yw4b_I6IdC3cKTD-xEdU"
+ nickname="Matt"
+ subject="comment 3"
+ date="2011-12-21T16:06:25Z"
+ content="""
+hmmmm - I'm still not sure I get this.
+
+If I'm using a whole bunch of distributed annexs with no central repo, then I can not do a `git pull remote` without either specifying the branch to use or changing default tracked remote via `git branch --set-upstream`.  The former like you note doesn't pull the git-annex branch down the latter only works one-at-a-time.
+
+The docs read to me as though I ought to be able to do a `git pull remote ; git annex get .` using anyone of my distributed annexs.
+
+Am I doing something wrong?  Or is the above correct?
+"""]]

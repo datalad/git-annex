@@ -1,0 +1,39 @@
+This special remote type stores file contents in a 
+[bup](http://github.com/bup/bup) repository. By using git-annex
+in the front-end, and bup as a remote, you get an easy git-style
+interface to large files, and easy backups of the file contents using git.
+
+This is particularly well suited to collaboration on projects involving
+large files, since both the git-annex and bup repositories can be
+accessed like any other git repository.
+
+See [[walkthrough/using_bup]] for usage examples.
+
+Each individual key is stored in a bup remote using `bup split`, with
+a git branch named the same as the key name. Content is retrieved from
+bup using `bup join`. All other bup operations are up to you -- consider
+running `bup fsck --generate` in a cron job to generate recovery blocks,
+for example; or clone bup's git repository to further back it up.
+
+## configuration
+
+These parameters can be passed to `git annex initremote` to configure bup:
+
+* `encryption` - One of "none", "hybrid", "shared", or "pubkey".
+  See [[encryption]].
+
+* `keyid` - Specifies the gpg key to use for [[encryption]].
+
+* `buprepo` - Required. This is passed to `bup` as the `--remote`
+  to use to store data. To create the repository,`bup init` will be run.
+  Example: "buprepo=example.com:/big/mybup" or "buprepo=/big/mybup"
+  (To use the default `~/.bup` repository on the local host, specify "buprepo=")
+
+Options to pass to `bup split` when sending content to bup can also
+be specified, by using `git config annex.bup-split-options`. This
+can be used to, for example, limit its bandwidth.
+
+## notes
+
+[[git-annex-shell]] does not support bup, due to the wacky way that bup
+starts its server. So, to use bup, you need full shell access to the server.

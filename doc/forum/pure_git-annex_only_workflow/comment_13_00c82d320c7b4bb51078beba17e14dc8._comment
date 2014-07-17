@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 13"
+ date="2011-12-31T18:34:31Z"
+ content="""
+I have merged my autosync branch, the improved sync command will be in this year's last git-annex release!
+"""]]

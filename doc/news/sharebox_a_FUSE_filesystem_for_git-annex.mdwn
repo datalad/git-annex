@@ -1,0 +1,19 @@
+[[!meta title="sharebox: a FUSE filesystem for git-annex"]]
+
+Christophe-Marie Duquesne has just announced 
+[Sharebox](https://github.com/chmduquesne/sharebox-fs), a FUSE filesystem
+relying on git-annex:
+
+<blockquote>
+<pre>
+What are your goals?  
+Seamless synchronization "à la dropbox".  
+Ability to use with big binary files such as mp3/movies.  
+Entirely decentralized.  
+Don't use unnecessary space  
+Keep it simple: avoid special VCS commands and keep a filesystem  
+interface as much as possible.
+</pre>
+</blockquote>
+
+While still alpha, this is promising. --[[Joey]]

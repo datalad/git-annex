@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-05-29T16:11:46Z"
+ content="""
+It would be possible to make the assistant use the inotify CREATE event (which it currently ignores) to add a file to the repository when a hard link is created. However, when a hard linked file is modified, inotify only sends an event for the file that was changed, not for other hard links to it. So, without keeping track of all hard links that exist on my own, there's no way for the assistant to automatically handle that case. And even if it tried to, hard links to files in the repository from outside the repository would still allow modifying them without the assistant being able to detect it.
+
+Since hard links cannot be propigated over git anyway, I don't want to get into this mess. It's best to wontfix this I think.
+"""]]

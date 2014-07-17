@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 4"
+ date="2011-03-23T15:28:00Z"
+ content="""
+I would not mind if the walkthrough documented the central git repo case. But I don't want to complicate it unduely (it's long enough), and it's important that the fully distributed case be shown to work, and I assume that people already have basic git knowledge, so documenting the details of set up of a bare git repo is sorta out of scope. (There are also a lot of way to do it, using github, or gitosis, or raw git, etc.)
+"""]]

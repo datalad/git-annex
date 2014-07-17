@@ -1,0 +1,8 @@
+Got the Windows autobuilder building the webapp. Have not tried that build
+yet myself, but I have high hopes it will work.
+
+Made other Windows improvements, including making the installer
+write a start menu entry file, and adding free disk space checking.
+
+Spent rest of the day improving git repair code on a real-world corrupted
+repository.

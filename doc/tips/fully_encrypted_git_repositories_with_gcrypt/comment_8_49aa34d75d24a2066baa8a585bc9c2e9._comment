@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkbpbjP5j8MqWt_K4NASwv0WvB8T4rQ-pM"
+ nickname="Fabrice"
+ subject="comment 8"
+ date="2013-11-04T10:31:56Z"
+ content="""
+I think you are (at least partially) right. Of course, the only way to sync completely computers that are not on together is to use either a usb drive or a third always on computer. (I've to confess I did not understand first when I read git annex docs, shame on me ;-) If you don't want to trust completely this computer (I don't, for instance), you must :
+
+* use an encrypted git repository on this computer;
+
+* and use either hybrid or pubkey encryption. 
+
+But contrarily to what you seem to imply (I hope I understand you correctly), if you do that, the third computer can still figure out a few things (usage patterns, such as where connections come from), but that's all. You've got full sync and everything is encrypted, both the git part and the files handled by the annex. This applied only to encrypted git special remotes as other remotes do not store the git part.
+"""]]

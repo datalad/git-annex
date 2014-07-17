@@ -1,0 +1,34 @@
+Now installing git-annex automatically generates a freedesktop.org .desktop
+file, and installs it, either system-wide (root) or locally (user). So
+`Menu -> Internet -> Git Annex` will start up the web app.
+
+(I don't entirely like putting it on the Internet menu, but the
+Accessories menu is not any better (and much more crowded here), 
+and there's really no menu where it entirely fits.)
+
+I generated that file by writing a generic library to deal with
+freedesktop.org desktop files and locations. Which seemed like overkill at
+the time, but then I found myself continuing to use that library. Funny how
+that happens.
+
+So, there's also another .desktop file that's used to autostart the
+`git-annex assistant` daemon when the user logs into the desktop.
+
+This even works when git-annex is installed to the ugly non-PATH location
+`.cabal/bin/git-annex` by Cabal! To make that work, it records the path
+the binary is at to a freedesktop.org data file, at install time.
+
+---
+
+That should all work in Gnome, KDE, XFCE, etc. Not Mac OSX I'm guessing...
+
+---
+
+Also today, I added a sidebar notification when the assistant notices new
+files. To make that work well, I implemented merging of related sidebar
+action notifications, so the effect is that there's one notification that
+collectes a list of recently added files, and transient notifications that
+show up if a really big file is taking a while to checksum.
+
+I'm pleased that the notification interface is at a point where I was able
+to  implement all that, entirely in pure functional code.

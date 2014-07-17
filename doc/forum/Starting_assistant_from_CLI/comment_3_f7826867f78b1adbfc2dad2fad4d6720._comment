@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.191"
+ subject="comment 3"
+ date="2014-04-17T20:48:56Z"
+ content="""
+Yes, the webapp is supposed to be able to be started from anywhere. 
+
+1. If you make a git annex repository and run `git annex webapp` from inside it, it'll start up the webapp on that repository. 
+2. If `~/.config/git-annex/autostart` lists some git repositories, the webapp will start up in the first listed one.
+3. Otherwise, the webapp will walk you through making a new repository.
+
+Most likely problem then is #2. If you used the webapp once, say in ~/annex and then deleted ~/annex/.git directory, it would try to start up in ~/annex, but it's no longer a git repository so it cannot start. This was a bug, so I've fixed it. 
+You could work around that problem by deleting `~/.config/git-annex/autostart` too.
+
+If it's some other problem, you can work around it by going the #1 route and making a git repository by hand (\"git init annex; cd annex; git annex init\") and running the webapp in there.
+"""]]

@@ -1,0 +1,39 @@
+Scenario
+========
+
+You have a server where you want to welcome other people to push files, say for a family photo album. People have their own user account, so by default they will not be able to read/write from each other's repositories, due to git-annex strict restrictions.
+
+Solution
+========
+
+Setup a shared git repository:
+
+    git init shared ; cd shared # you can also do this on an existing git annex repo
+    git config core.sharedrepository group
+    chmod g+rwX -R .
+    chown -R :media .
+
+The idea here is to use the new (since [[news/version 4.20130909]]) support for git's `sharedRepository` configuration and restrict access to a specific group (instead of the default, a single user). You can also this to make the files accessible to all users on the system:
+
+    git config core.sharedrepository world
+    chmod a+rwX -R .
+
+This will make sure that you anyone can operate that git annex repository remotely.
+
+Third party applications
+------------------------
+
+Now if another application that is not aware of git's `sharedRepository` configuration (say a [[bittorrent]] daemon) writes files there, you may want to make sure that the files created are also writable by everyone. This is more tricky, but one way of doing this is with the [[!wikipedia setgid]] bit:
+
+    find -type d -exec chmod g+s {} \;
+
+You will also need to start the process with a proper [[!wikipedia umask]] (`002` instead of `022`).
+
+(!) I haven't actually tested this part. --[[anarcat]]
+
+See also
+========
+
+ * [[tips/setup a public repository on a web site]]
+ * [[news/version 4.20130909]]
+ * [[bugs/acl not honoured in rsync remote]]: why this does not work on encrypted remotes

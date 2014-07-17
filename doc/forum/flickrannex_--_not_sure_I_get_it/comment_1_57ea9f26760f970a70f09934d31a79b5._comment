@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-05-27T01:48:43Z"
+ content="""
+Little bit of both I think. Pictures uploaded by it are visible on flickr. You can configure a [[preferred_content]] expression so the flickr remote only wants *.jpg etc. Any other file is wrapped inside an image so flickr will accept it. It would probably be a good idea to configure git-annex to `untrust` your repository if using it this way.
+"""]]

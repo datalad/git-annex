@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ subject="comment 18"
+ date="2013-01-17T12:04:34Z"
+ content="""
+the \"I haven't always well understood the differences between commandline operation & the assistant, so the differences would confuse me, and I found the command line more understandable & less scary. Now trying to learn to like & trust the assistant.\" fits pretty well for me -- i'd like to use the webapp at least for viewing, but i'm worried that some auto-magic would kick in, and i regularly have uncommitted stuff in at least one git-annex repo.
+
+a --dry-run flag or similar on the `git annex webapp` would be nice, or a description of what would happen or how to turn that off / make it create other branches / even commit or push something.
+"""]]

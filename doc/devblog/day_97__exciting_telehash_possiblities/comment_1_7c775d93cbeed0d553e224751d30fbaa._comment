@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkGCmVc5qIJaQQgG82Hc5zzBdAVdhe2JEM"
+ nickname="Bruno"
+ subject="is telehash udp only?"
+ date="2014-01-14T14:21:36Z"
+ content="""
+Is telehash UDP only?
+
+I like that XMPP works with HTTPS so it also works at work with proxies that only allows http traffic.
+"""]]

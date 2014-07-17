@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="64.134.31.139"
+ subject="comment 32"
+ date="2013-10-21T22:47:14Z"
+ content="""
+You probably need to install libdbus dev stuff, and then the haskell dbus library. But it's certainly going to need code changes to make git-annex use dbus in any way on OSX, assuming there are even useful dbus events generated for network connections and drives being mounted on OSX.
+
+It was saying \"gcrypt\" when it meant \"git-remote-gcrypt\".
+"""]]

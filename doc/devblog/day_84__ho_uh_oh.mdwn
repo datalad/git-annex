@@ -1,0 +1,11 @@
+Resurfaced today to fix some problems with the Linux standalone builds
+in the Solstice release. The worst of these prevented the amd64 build from
+running on some systems, and that build has been updated. The other
+problems all involved the binary shimming, and were less serious.
+
+As part of that work, replaced the hacky shell script that handled the
+linux library copying and binary shimming with a haskell program.
+
+Also worked on some Windows bugs, and fixed a typo in the test suite.
+Got my own little present: haskell-tasty finally got out of Incoming, so
+the next Debian package build will once again include the test suite.

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2012-04-24T21:14:15Z"
+ content="""
+To get to a specific version of a file, you need to have a tag or a branch that includes that version of the file. Check out the branch and `git annex get $file`. 
+
+(Of course, even without a tag or branch, old file versions are retained, unless dropped with `unused`/`dropunused`.
+So you could even `git checkout $COMMITID`.)
+"""]]

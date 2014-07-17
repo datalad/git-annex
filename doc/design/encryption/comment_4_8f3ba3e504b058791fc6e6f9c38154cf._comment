@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 4"
+ date="2011-04-07T19:59:30Z"
+ content="""
+@Richard the easy way to deal with that scenario is to set up a remote that work can access, and only put in it files work should be able to see. Needing to specify which key a file should be encrypted to when putting it in a remote that supported multiple keys would add another level of complexity which that avoids.
+
+Of course, the right approach is probably to have a separate repository for work. If you don't trust it with seeing file contents, you probably also don't trust it with the contents of your git repository.
+"""]]

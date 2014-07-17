@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkipQLNyt8RHREHpg2k5wdYeRSCCvSNSBg"
+ nickname="Tim"
+ subject="Sorry for the bad formatting on that last post"
+ date="2014-01-04T17:16:51Z"
+ content="""
+I have some additional information that may be helpful.  I had git-annex syncing my Mac with a Debian system.  It appears that at some point in time the Debian system's NFS connection disconnected and then may have reconnected with sshfs.  I don't know if this happened when the syncing issue occurred or not and I can't validate that since the machine was rebooted but it is possible that that caused git-annex on the Mac to choke while syncing and create the phantom symlink.  I am experiencing NFS issues at the moment so it may have contributed to this hiccup.
+"""]]

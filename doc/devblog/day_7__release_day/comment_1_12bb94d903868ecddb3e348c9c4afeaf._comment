@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/2grhJvAC049fJnvALDXek.6MRZMTlg--#eec89"
+ nickname="John"
+ subject="comment 1"
+ date="2013-09-09T21:51:47Z"
+ content="""
+Joey, I'd be happy to host 64-bit builds on both Mac and Linux using my personal Jenkins server (both machines are local and have 16+ GB of RAM).  I might even be able to get you SSH jail access to the build tree for the 64-bit Linux build.  Just let me know at johnw@fpcomplete.com.
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.172"
+ subject="good"
+ date="2014-02-21T15:20:39Z"
+ content="""
+If you mean the creds are not remembered, that's controlled by the embedcreds= option to initremote, and it only defaults to embedding them for gacier when using strong encryption (not encryption=shared).
+"""]]

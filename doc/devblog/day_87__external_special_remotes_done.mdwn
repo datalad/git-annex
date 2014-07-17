@@ -1,0 +1,16 @@
+The [[external_special_remote|special_remotes/external]] interface is now
+done, and tested working great! Now we just need all the old hook special
+remotes to be converted to use it..
+
+I punted on per-special-remote, per-key state storage in the git-annex
+branch for now. If I find an example of a remote that needs it (Tahoe-LAFS
+may, but still TBD), I'll add it. Added suppport for using the same
+credential storage that git-annex uses for S3 and WebDAV credentials.
+
+The main improvement I'd like to make is to add an interface for transferring
+files where the file is streamed to/from the external special remote,
+rather than using temp files as it does now. This would be more efficient
+(sometimes) and make the progress bars better. But it needs to either use a
+named pipe, which is complicated and non-portable, or serialize the file's
+contents over a currently line-based protocol, which would be a pain.
+Anyway, this can be added later, the protocol is extensible.

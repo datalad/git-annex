@@ -1,0 +1,9 @@
+Hi Joey,
+
+it would be nice when views could take numeric comparisons as filters.
+
+    git annex metadata -s length=273.0 john_cage_4_33.mp3
+
+    git annex view length<=300
+
+... here is the catch, < and > don't work well in shell, this needs some other Syntax. I think the underlying machinery (using numeric comparisons instead globs) should be quite trivial. Any Ideas about a Syntax?

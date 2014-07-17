@@ -1,0 +1,8 @@
+Worked on [[pairing]] all day. It's complicated and I was close to being in
+the weeds at times. I think it probably works now, but I have not tested it
+at all. Tomorrow, testing, and cleaning up known problems.
+
+----
+
+Also ordered 1.5 terabytes of USB keys and a thousand git-annex stickers
+today.

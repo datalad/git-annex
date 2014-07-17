@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.193"
+ subject="comment 1"
+ date="2013-06-25T17:10:17Z"
+ content="""
+Anyone with access to a git repository can access all the files stored in it. git-annex does not try to change this, so you need to find a way to have one repository for each group.
+"""]]

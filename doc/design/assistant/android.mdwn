@@ -1,0 +1,42 @@
+The Android port is just about usable. Still, we have some fun todo items
+to improve it.
+
+## high-priority TODO
+
+* [[bugs/Android_app_permission_denial_on_startup]]
+* S3 doesn't work (at least to Internet Archive: 
+  "connect: does not exist (connection refused)")
+* Get app into Google Play and/or FDroid
+
+## TODO
+
+* Don't make app initially open terminal + webapp, but go to a page that
+  allows opening the webapp or terminal.  
+  Possibly, switch from running inside terminal app to real standalone app.
+  See <https://github.com/neurocyte/android-haskell-activity>
+  and <https://github.com/neurocyte/foreign-jni>.
+
+* I have seen an assistant thread crash with an interrupted system call
+  when the device went to sleep while it was running. Auto-detect and deal with
+  that somehow.
+* Make git stop complaining that "warning: no threads uspport, ignoring --threads"
+* git does not support http remotes. To fix, need to port libcurl and
+  allow git to link to it.
+* getEnvironment is broken on Android <https://github.com/neurocyte/ghc-android/issues/7>
+  and a few places use it. I have some horrible workarounds in place.
+* Get local pairing to work. network-multicast and network-info don't
+  currently install.
+* Get test suite to pass. `git clone` of a local repo fails on android
+  for some reason.
+* Make app autostart on boot, optionally. <http://stackoverflow.com/questions/1056570/how-to-autostart-an-android-application>
+* The app should be aware of power status, and avoid expensive background
+  jobs when low on battery or run flat out when plugged in.
+* The app should be aware of network status, and avoid expensive data
+  transfers when not on wifi. This may need to be configurable.
+* glacier and local pairing are not yet enabled for Android.
+* The "Files" link doesn't start a file browser. Should be possible to do
+  on Android via intents, I suppose?
+* Adding removable drives would work, but the android app is not in the 
+  appropriate group to write to them. `WRITE_MEDIA_STORAGE` permission
+  needed. Added to AndroidManifest, but did not seem to be used.
+  Googleing for it will find a workaround that needs a rooted device.

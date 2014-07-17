@@ -1,0 +1,12 @@
+[[!img logo_small.png link=no]]
+
+* [[install]]
+* [[assistant]]
+* [[walkthrough]]
+* [[tips]]
+* [[bugs]]
+* [[todo]]
+* [[forum]]
+* [[comments]]
+* [[contact]]
+* [Flattr this](http://flattr.com/thing/84843/git-annex)

@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawllHWUwOT-UVe5bGkk8G87bpeRAzy-5T7w"
+ nickname="Rick"
+ subject="Folder location"
+ date="2012-08-01T14:18:21Z"
+ content="""
+I'm of two minds about where the Annex folder should be.
+
+For beginners, the desktop is ideal. No doubt about it. And more experienced users can override the default path during the install.
+
+On the other hand, many of the other 'synced folder' services place their folder in the user's home. Both Dropbox and Skydrive do this. It's where I'd put it for consistency, and to keep my desktop free of clutter.
+
+It's a close call, but if push came to shove, I'd probably go with the user home folder.
+"""]]

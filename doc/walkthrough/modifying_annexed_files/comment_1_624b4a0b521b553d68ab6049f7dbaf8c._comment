@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://lj.rossia.org/users/imz/"
+ ip="79.165.56.162"
+ subject="sorta why git-annex exists in the first place -- not only the slow index "
+ date="2012-09-25T22:04:01Z"
+ content="""
+> Git wants to first stage the entire contents of the file in its index. That can be slow for big files (sorta why git-annex exists in the first place)
+
+I think that git-annex's usefulness is not only because of the Git's index overhead: I like its idea because it will help track the copies in the \"[[special remotes]]\", which are not Git because 
+
+* they are either not under my control (e.g., web URLs), 
+* or because it's not convenient to hold a Git repo there (an external disk/DVD with files can be viewed easily by a human, but imposing a Git repo structure on it would either at least double the consume space: for the history of the commits and for the working dir, or make it \"unreadable\" for a human, if it is a bare repo);
+* or because it's nearly impossible to put a Git repo on a storage like peer networks without special tools.
+"""]]

@@ -1,0 +1,19 @@
+Is there a way to move a large file without "git annex unlock"ing it (Which takes very long for copying and then rehashing the file)?
+Using a simple "mv" or "git mv" results in broken symlinks, if the target directory is on a different hierarchy level:
+
+Example:
+
+Initial State:
+
+    $ ls -Hl Pictures:
+    Pictures/showImages.jpg -> ../.git/annex/objects/90/32/SHA1-s8737--a8bfb285d0ae394cb75c86f1eb9f703fb678a51e/SHA1-s8737--a8bfb285d0ae394cb
+
+Move: 
+
+    $ mv Pictures/showImages.jpg .
+
+Result: 
+
+    $ ls -H showImages.jpg
+    ls: cannot access showImages.jpg: No such file or directory
+    

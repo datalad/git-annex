@@ -1,0 +1,25 @@
+On Friday, worked on several bugs in direct mode mapping code. Fixed it
+to not crash on invalid unicode in filenames. Dealt with some bugs when
+mappings were updated in subdirectories of the repository.
+
+Those bugs could result in inconsistent mapping files, so today I
+made `fsck` check mapping files for consistency.
+
+Leaving for Australia tomorrow, but I also hope to get another bugfix
+release out before my flight leaves. Then will be on vacation for several
+days, more or less. Then at Linux Conf Australia, where there will
+be a git-annex presentation on February 1st.
+
+----
+
+BTW, I've lined up my Android development hardware for next month. I will
+be using an [Asus Transformer](http://en.wikipedia.org/wiki/ASUS_Eee_Pad_Transformer),
+kindly lent to me by Mark H. This has the advantage
+of having a real keyboard, and running the (currently) second most widely used
+version of Android, 4.0.x. I have already experienced frustration getting photos
+off the thing and into my photo annex; the file manager is the worst I've
+seen since the 80's. I understand why so many want an Android port!
+
+Interestingly, its main user filesystem is a FUSE mount point on `/sdcard`
+backed by an ext4 filesystem on `/data` that a regular user is not allowed
+to access. Whatever craziness this entails does not support symlinks.

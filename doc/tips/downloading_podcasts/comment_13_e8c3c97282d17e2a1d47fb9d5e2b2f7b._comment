@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://a-or-b.myopenid.com/"
+ ip="220.244.41.108"
+ subject="comment 13"
+ date="2013-08-06T05:42:45Z"
+ content="""
+So I ran `cabal install -v3` and looked at the output, 
+
+    Flags chosen: feed=True, tdfa=True, testsuite=True, android=False,
+    production=True, dns=True, xmpp=True, pairing=True, webapp=True,
+    assistant=True, dbus=True, inotify=True, webdav=True, s3=True
+
+This looks like feed should be on.
+
+There doesn't appear to be any errors in the compile either.
+
+Is it as simple as a bug where this flag just doesn't show in the `git annex version` command?
+"""]]

@@ -1,0 +1,36 @@
+Earlier this week, I somehow lost a ton of files from my annex -- by switching on the command line from indirect to direct mode while the assistant was running, I think. I'm not sure.
+
+Anyway, by "lost" I mean "lost the symlinks to," because git-annex defaults to keeping content around till you tell it otherwise.  So I still had the content in the repos on my two backup drives.  All I needed was the symlinks back.
+
+But how to figure out exactly what I lost and get it back?
+
+I found that out here:
+
+http://stackoverflow.com/questions/953481/restore-a-deleted-file-in-a-git-repo
+
+Here's a magical formula you can use to find every single file deletion in the history of your repo:
+
+    git log --diff-filter=D --summary 
+
+That will give you every commit that deleted things, and what was deleted.
+
+To bring back all the files deleted in a given commit, where COMMITHASH is the commit hash, use this command:
+
+    git checkout COMMITHASH^1 -- .
+
+to bring back only a specific file:
+
+    git checkout COMMITHASH^1 -- path/to/file.txt
+
+to bring back only a subdirectory:
+
+    git checkout COMMITHASH^1 -- sub/directory
+
+that will bring them back into the staging area.  You can see which ones just reappeared by typing:
+
+    git status
+
+then you can actually make the restore permanent by typing: 
+
+    git commit -m "I just resurrected some files"
+

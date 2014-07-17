@@ -1,0 +1,3 @@
+I use git annex in direct mode and I have renamed a file. What should I do to make git annex understand that the file has just been renamed and not deleted/added?
+
+The file I renamed is quite big and I would like to avoid having to copy it again to the remotes and I would also like to avoid having to redownload it again in all the repositories.

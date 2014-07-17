@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm9IQStaE1el95_9s77CgmJhxZwCwUeN9A"
+ nickname="Sam"
+ subject="You can also use it for LIVE display now"
+ date="2013-12-19T14:29:18Z"
+ content="""
+hi, check out http://puffingdev.com/live-gource-visually-display-your-svngit-activity-live/
+
+You can use it to display LIVE updates of a git repo, nice to have on a screen in your company's common area for example.
+"""]]

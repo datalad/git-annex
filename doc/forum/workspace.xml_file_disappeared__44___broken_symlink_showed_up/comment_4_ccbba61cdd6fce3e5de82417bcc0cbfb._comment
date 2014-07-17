@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkipQLNyt8RHREHpg2k5wdYeRSCCvSNSBg"
+ nickname="Tim"
+ subject="Just happened again"
+ date="2014-01-16T16:23:00Z"
+ content="""
+This happened again and now I have this:
+
+lrwxr-xr-x  1 timmattison  staff  197 Jan 16 11:18 distribute-client-applications.sh -> ../../../.git/annex/objects/JV/91/SHA256E-s921--51fc6a6e2924ff6e2673971b5786fe0f204a5984a700a2241cc77383f04f544e.sh/SHA256E-s921--51fc6a6e2924ff6e2673971b5786fe0f204a5984a700a2241cc77383f04f544e.sh
+
+This was on the machine that had the file, not a remote machine it was syncing to.  I was editing the script, I ran it, the bash script segfaulted (expected), and then git-annex essentially deleted the file.  Can you help me understand why this happens?  It's obvious when it is a file I'm working on but I'm afraid it could be happening to other files and I don't know about it.
+"""]]

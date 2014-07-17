@@ -1,0 +1,26 @@
+As winter clouds set in, I have to ration my solar power and have been less
+active than usual.
+
+It seems that the OSX 10.8.2 `git init` hanging issue has indeed been
+resolved, by building the app on 10.8.2. Very good news!  Autobuilder setup is
+in progress.
+
+----
+
+Finally getting stuck in to direct mode git-merge handling. It's
+not possible to run `git merge` in a direct mode tree, because it'll
+see typechanged files and refuse to do anything.
+
+So the only way to use `git merge`, rather than writing my own merge engine,
+is to use `--work-tree` to make it operate in a temporary work tree directory
+rather than the real one.
+
+When it's run this way, any new, modified, or renamed files will be added
+to the temp dir, and will need to be moved to the real work tree.
+To detect deleted files, need to use `git ls-files --others`, and
+look at the old tree to see if the listed files were in it.
+
+When a merge conflict occurs, the new version of the file will be in the temp
+directory, and the old one in the work tree. The normal automatic merge
+conflict resolution machinery should work, with just some tweaks to handle
+direct mode.

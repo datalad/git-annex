@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://marco.paga.myopenid.com/"
+ ip="2001:4dd0:ff00:917b:d575:780:2c27:d982"
+ subject="Yes, it is possible"
+ date="2013-08-19T17:59:56Z"
+ content="""
+You can sync both repos. The simplest way is to have both clients signed on to jabber. This way the clients exchange information when the two are online.
+
+Additionally you need to have a cloud special remote available on both ends. The cloud repository is needed to push and retrieve data for the clients. You need to configure the cloud as a transfer reposity. The clients as - what else - client. The USB Drive can be used as a backup repository on one or both ends and perhaps even for syncing very large files around.
+"""]]

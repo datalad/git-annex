@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 11"
+ date="2013-05-13T17:33:26Z"
+ content="""
+When the assistant (or git annex sync) pushes to a repository, it creates a `synced/master` branch. So your bare repository has no regular `master` branch. So when you clone it, you get a repository with no branch checked out, which is what git-annex sync complains about.
+
+There are several solutions. The easiest is to run `git merge origin/synced/master`; then your checkout will have a master branch and you can use `git annex sync` from then on.
+"""]]

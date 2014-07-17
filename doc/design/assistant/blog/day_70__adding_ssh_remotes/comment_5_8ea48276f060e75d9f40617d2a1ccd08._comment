@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.236"
+ subject="comment 5"
+ date="2012-09-04T20:06:17Z"
+ content="""
+Can you try running the transfer command by hand? The command line is:
+
+`/home/alansmithee/bin/git-annex transferkey SHA256-s806100--ad2c33a88a665c56d97393fad99b37529afc5947694eab7d9c27f4d178d182f4 --to host1free --file 787kbyte.txt`
+
+Paste me the full output until it seems to hang (if it hangs this way), and if it does hang you may also need to strace it and send me that..
+"""]]

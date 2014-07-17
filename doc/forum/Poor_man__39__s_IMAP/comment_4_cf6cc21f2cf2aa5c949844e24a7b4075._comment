@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/FHnTlSBo1eCGJRwueeKeB6.RCaPbGMPr5jxx8A--#ce0d8"
+ nickname="Hamza"
+ subject="comment 4"
+ date="2013-08-14T11:11:59Z"
+ content="""
+IMHO It is not the wrong tool for the job, after all the whole point of assistant is to sync folder across machines. I have a similar setup. I have two folders on two machines plus an encrypted repo on an ssh server. On both folders (local/server) i keep webapp running they sync using the encrypted repo/xmpp. The only downside to this approach is that VPS has two copies of every file one in the folder on in the encrypted git repo.
+"""]]

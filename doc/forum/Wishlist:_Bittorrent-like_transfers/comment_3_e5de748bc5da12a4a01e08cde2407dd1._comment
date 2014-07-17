@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmLB39PC89rfGaA8SwrsnB6tbumezj-aC0"
+ nickname="Tobias"
+ subject="comment 3"
+ date="2013-07-19T07:50:09Z"
+ content="""
+Personally i think the easiest implementation to make would be smart transfers.
+
+You have a repo on your laptop, and a repo at work. And you have(say) 5 special remotes in between them that they need to use to transfer data.
+
+The laptop could upload 5 different files to those repositories. Wouldn't quite be bittorent transfer(not even close). But it would probably be much simpler to implement. And when syncing a lot of files(instead of just one really big one) the speed gain should really be about the same as if all the special remotes used some kind of bittorent thing.
+
+Just a thought.
+"""]]

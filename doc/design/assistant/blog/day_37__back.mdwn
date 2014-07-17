@@ -1,0 +1,64 @@
+Back home and laptop is fixed.. back to work.
+
+Warmup exercises:
+
+* Went in to make it queue transfers when a broken symlink is received,
+  only to find I'd already written code to do that, and forgotten about it.
+  Heh. Did check that the git-annex branch is always sent first,
+  which will ensure that code always knows where to transfer a key from.
+  I had probably not considered this wrinkle when first writing the code;
+  it worked by accident.
+
+* Made the assistant check that a remote is known to have a key before
+  queueing a download from it.
+
+* Fixed a bad interaction between the `git annex map` command and the
+  assistant.
+
+----
+
+Tried using a modified version of `MissingH` that doesn't use `HSLogger`
+to make git-annex work with the threaded GHC runtime. Unfortunatly,
+I am still seeing hangs in at least 3 separate code paths when
+running the test suite. I may have managed to fix one of the hangs,
+but have not grokked what's causing the others.
+
+----
+
+I now have access to a Mac OSX system, thanks to Kevin M. I've fixed
+some portability problems in git-annex with it before, but today I tested
+the assistant on it:
+
+* Found a problem with the kqueue code that prevents incoming pushes from
+  being noticed.
+
+  The problem was that the newly added git ref file does not trigger an add
+  event. The kqueue code saw a generic change event for the refs directory,
+  but since the old file was being deleted and replaced by the new file,
+  the kqueue code, which already had the old file in its cache, did not notice
+  the file had been replaced.
+
+  I fixed that by making the kqueue code also track the inode of each file.
+  Currently that adds the overhead of a stat of each file, which could be
+  avoided if haskell exposed the inode returned by `readdir`. Room to
+  optimise this later...
+
+* Also noticed that the kqueue code was not separating out file deletions
+  from directory deletions. IIRC Jimmy had once mentioned a problem with file
+  deletions not being noticed by the assistant, and this could be responsible
+  for that, although the directory deletion code seems to handle them ok
+  normally. It was making the transfer watching thread not notice when
+  any transfers finished, for sure. I fixed this oversight, looking in the
+  cache to see if there used to be a file or a directory, and running the
+  appropriate hook.
+
+Even with these fixes, the assistant does not yet reliably transfer file
+contents on OSX. I think the problem is that with kqueue we're not
+guaranteed to get an add event, and a deletion event for a transfer
+info file -- if it's created and quickly deleted, the code that
+synthensizes those events doesn't run in time to know it existed.
+Since the transfer code relies on deletion events to tell when transfers
+are complete, it stops sending files after the first transfer, if the
+transfer ran so quickly it doesn't get the expected events. 
+
+So, will need to work on OSX support some more...

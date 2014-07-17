@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmKKg3Vmzk7KwRGRKjHVdtyoj1JfxLX6NM"
+ nickname="Tom"
+ subject="comment 4"
+ date="2013-10-02T21:27:36Z"
+ content="""
+Update to my comment above - it seems my problem is related to ejabberd as discussed here: <http://git-annex.branchable.com/forum/XMPP_authentication_failure/>
+
+Think I might change my server to [Prosody](https://prosody.im/) and see what happens then.
+
+
+"""]]

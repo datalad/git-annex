@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnX1msQxnLoSeu7q-i-c9BWghonsN7Qmns"
+ nickname="Jan Ulrich"
+ subject="comment 2"
+ date="2014-01-14T10:23:21Z"
+ content="""
+All repositories are located in my home folders:
+~/Pictures
+~/Movies
+~/Music
+~/Documents
+
+On my Ubuntu desktop machine and my macbook. They are connected in my local network via WLAN. 
+
+I use different git annex versions on these two machines. Maybe this causes problems.
+
+On Ubuntu I have 
+Version: 4.20130815
+Build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP 
+
+On my macbook:
+Version: 5-20140106-gcb3351b
+
+juh
+"""]]

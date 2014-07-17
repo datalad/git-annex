@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-05-19T18:50:06Z"
+ content="""
+You're quite right. that info is stored in `.git/annex/fsckstate`. The timestamp of the file is when the last incremental fsck was started. The contents of the file is the same date, represented as seconds from epoch.
+
+That is only written to when doing an incremental fsck though. A non-incremental fsck does not touch the file.
+"""]]

@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://pradermecker.myopenid.com/"
+ ip="81.244.179.73"
+ subject="Local rsync ssh remote (I am confused)"
+ date="2013-04-13T17:54:06Z"
+ content="""
+If I understand this right, it is not possible to use git-annex as a simple wrapper around rsync.
+
+My use case is this: I have a music folder on a plug computer running debian squeeze. The plug computer acts as a streaming music server. My wish is to create a local ssh remote to have my laptop git-annex music repo in sync with the plug computer. So ideally I don't want to install git-annex on the plug computer (but git is there so a git bare repo can be used).
+
+According to the UI, if I use \"Pairing with a local computer\", both computers needs to have git-annex installed. If I try \"Remote server\" either I need both machines git-annex aware or I need the content of the plug computer to be encrypted (which is obviously not what I want in this case).
+
+Is the use case supported by the UI ? Should I try with the CLI ?
+
+Thanks for your help
+
+
+"""]]

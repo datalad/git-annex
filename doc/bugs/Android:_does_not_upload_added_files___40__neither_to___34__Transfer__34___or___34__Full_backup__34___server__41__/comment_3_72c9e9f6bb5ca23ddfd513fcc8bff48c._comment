@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnx8kHW66N3BqmkVpgtXDlYMvr8TJ5VvfY"
+ nickname="Yaroslav"
+ subject="comment 3"
+ date="2013-12-18T02:21:17Z"
+ content="""
+ah -- may be that was debug log, but nothing exciting was happening?  .git/config does have annex.debug true
+
+ok -- went to \"switch repositories\", showed the list of my only repository, clicking on it didn't go anywhere... ok - restarted the beast in the terminal, added a new file to the pics/ directory, again -- registered, added to git, synced, did not 'push' the load, and no informative debug messages:
+
+    add pics/earth-daynight.jpg [2013-12-17 21:17:26 EST] Committer: Committing changes to git
+    [2013-12-17 21:17:26 EST] Pusher: Syncing with vagus.cns.dartmouth.edu_annex 
+    Invalid pid specified
+    Already up-to-date.
+    warning: no threads support, ignoring --threads
+    To ssh://annex@git-annex-vagus.cns.dartmouth.edu-annex_annex/~/annex/
+       0c3e966..6d94fd4  git-annex -> synced/git-annex
+       29b6694..bbd3fa3  annex/direct/master -> synced/master
+    [2013-12-17 21:17:28 EST] Committer: Adding earth-daynight.jpg
+    Already up-to-date.
+    ok
+    (Recording state in git...)
+    (Recording state in git...)
+    
+
+so again that pid msg but no debug logging seems to be done.  Is there some other way to enable debug logging? ;)
+"""]]

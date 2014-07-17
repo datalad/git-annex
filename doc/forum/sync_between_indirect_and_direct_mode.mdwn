@@ -1,0 +1,6 @@
+I have a music repository(direct mode) in my Nexus 5 which I want to sync with remote repository(indirect mode).
+
+When I run 'git annex sync --content', it did not sync the content but when I changed remote repository to direct mode, content got synced.
+
+Do I need to set some configuration ?
+Is it possible to sync content between direct and indirect mode repositories ?

@@ -1,0 +1,66 @@
+Today I built the UI in the webapp to set up a ssh or rsync remote.
+
+This is the most generic type of remote, and so it's surely got the most
+complex description. I've tried to word it as clearly as I can; suggestions
+most appreciated. Perhaps I should put in a diagram?
+
+[[!img /assistant/addsshserver.png]]
+
+The idea is that this will probe the server, using ssh. If `git-annex-shell`
+is available there, it'll go on to set up a full git remote. If not, it'll
+fall back to setting up a rsync special remote. It'll even fall all the way
+back to using `rsync://` protocol if it can't connect by ssh. So the user
+can just point it at a server and let it take care of the details,
+generally.
+
+The trickiest part of this will be authentication, of course. I'm relying
+on ssh using `ssh-askpass` to prompt for any passwords, etc, when there's
+no controlling terminal. But beyond passwords, this has to deal with ssh
+keys.
+
+I'm planning to make it check if you have a ssh key configured already. If
+you do, it doesn't touch your ssh configuration. I don't want to get in the
+way of people who have a manual configuration or are using MonkeySphere.
+
+But for a user who has never set up a ssh key, it will prompt asking if
+they'd like a key to be set up. If so, it'll generate a key and configure
+ssh to only use it with the server.. and as part of its ssh probe, that key
+will be added to `authorized_keys`.
+
+(Obviously, advanced users can skip this entirely; `git remote add
+ssh://...` still works..)
+
+----
+
+Also today, fixed more UI glitches in the transfer display. I think
+I have them all fixed now, except for the one that needs lots of javascript
+to be written to fix it.
+
+Amusingly, while I was working on UI glitches, it turned out that all the
+fixes involved 100% pure code that has nothing to do with UI. The UI was
+actually just exposing bugs.
+
+For example, closing a running transfer
+had a bug that weirdly reordered the queue. This turned out to be
+due to the transfer queue actually maintaining two versions of the queue,
+one in a TChan and one a list. Some unknown bugs caused these to get out of
+sync. That was fixed very handily by deleting the TChan, so there's only
+one copy of the data.
+
+I had only been using that TChan because I wanted a way to block while the
+queue was empty. But now that I'm more comfortable with STM, I know how
+to do that easily using a list:
+
+[[!format haskell """
+	getQueuedTransfer q = atomically $ do
+		sz <- readTVar (queuesize q)
+		if sz < 1
+			then retry -- blocks until size changes
+			else ...
+"""]]
+
+Ah, the times before [STM](http://en.wikipedia.org/wiki/Software_transactional_memory)
+were dark times indeed. I'm writing more and more STM code lately, building
+up more and more complicated and useful transactions. If you use threads and
+don't know about STM, it's a great thing to learn, to get out of the dark ages
+of dealing with priority inversions, deadlocks, and races.

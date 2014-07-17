@@ -1,0 +1,3 @@
+I tried about 2 weeks ago using the assistant to create on my netbook and my home laptop 3 repositores, for music, pictures and documents.  Since I was also going to be away from home, I set up jabber pairing and box.com for a transfer repository, and then watched everything crash as I didn't know yet about jabber only really working for 1 repository at a time.
+
+So my new idea is this: one repository at ~/annex, and changing documents, music and pictures to be symlinks to actual documents, music and pictures folders inside ~/annex, allowing me to have just 1 annex to manage.  Is this the best way to put everything together if I want to just jabber pairing (and just 1 jabber account)?

@@ -1,0 +1,9 @@
+Built the core data types, and log for metadata storage. Making metadata
+union merge well is tricky, but I have a design I'm happy with, that will
+allow distributed changes to metadata.
+
+Finished up the day with a `git annex metadata` command to get/set metadata
+for a file.
+
+This is all the goundwork needed to begin experimenting with generating
+git branches that display different metadata-driven views of annexed files.

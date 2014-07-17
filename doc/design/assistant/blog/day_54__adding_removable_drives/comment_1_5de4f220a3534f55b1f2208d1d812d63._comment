@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 1"
+ date="2012-08-05T23:50:57Z"
+ content="""
+Using `annex` as default is fine, but even non-technical users will need a way to create different annexes for different usage. Or if two users share one thumb drive and each has their own annex. Long story short, I don't think this is an expert option, but something every user should be able to change immediately.
+
+A pre-populated text area makes most sense, imo.
+"""]]

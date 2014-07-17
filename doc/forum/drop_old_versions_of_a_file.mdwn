@@ -1,0 +1,3 @@
+I have a music repository which has multiple versions of a music file(modified id3 tags etc,.) and in my music player same file is showing two times with two different id3 tags, one is from music directory and another is from .git-annex directory which is a older version(which I don't want to see).
+
+I was just wondering if there is a way I can drop old version of a file in android(direct mode).

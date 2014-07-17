@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.238"
+ subject="comment 1"
+ date="2013-01-14T16:22:33Z"
+ content="""
+git-annex does not currently prevent multiple uploads of the same file to a rsync special remote. It is able to guard against this when uploading to a git remote, since then the remote runs git-annex-shell, which can detect when an upload is already running. You might want to convert your rsync remote to a git remote.
+
+I hope that rsyncing the same file twice at the same time is safe, but it's certainly excessively expensive.
+"""]]

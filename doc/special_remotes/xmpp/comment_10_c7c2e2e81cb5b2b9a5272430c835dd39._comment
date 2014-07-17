@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmZilYULa6CDEGfuagoDlesyakBgnf-dF8"
+ nickname="Maarten"
+ subject="Google Apps & SRV"
+ date="2013-11-27T18:13:18Z"
+ content="""
+To make XMPP via a Google Apps account work out of the box, all you need to do is add the correct SRV records to your domain's DNS zone.  If you do, you don't need to manually create creds/xmpp, you can just use the web interface, enter your full apps email address and password (remember, if 2-factor, this needs to be an application-specific password).
+
+To create the correct SRV records (and check whether they're correct), see http://www.olark.com/gtalk/check_srv
+"""]]

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="gernot"
+ ip="85.197.15.125"
+ subject="Paperkey"
+ date="2013-12-05T11:37:02Z"
+ content="""
+Regarding backups, have you considered using [paperkey](http://www.jabberwocky.com/software/paperkey/) (also [in Debian](http://packages.debian.org/search?keywords=paperkey))?
+It only stores a minimal amount of key data and formats it in a human-readable way.
+
+The result is mainly meant to be printed but `paperkey` would probably also be a good way to keep the size of QR codes down.
+
+I've actually recovered a key from a such a printed backup (using OCR) and it worked great thanks to line-wise checksums.
+Maybe you could create paperkey PDF files with a proper OCR font through the web app?
+
+"""]]

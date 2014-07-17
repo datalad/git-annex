@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.64"
+ subject="comment 3"
+ date="2013-11-26T20:51:59Z"
+ content="""
+The problem you reported *is* solved. You were not talking about syncing before.
+
+If your setup is such that `git commit` takes a long time to run, then `git annex sync` is also necessarily going to take a long time to run.
+"""]]

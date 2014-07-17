@@ -1,0 +1,254 @@
+I've been playing with a mixed setup, and I frequentely end up with conflicts which can be ascribed to mixing direct windows repos with indirect linux one(s), and making renames on the indirect ones.
+Possibly someone can address what I miss of the git-annex/git interaction.  
+
+#### versions involved ####
+
+linux: git-annex version: 4.20131024
+win: git-annex version: 4.20131024-gca7b71e
+
+### Steps to reproduce behaviour ###
+
+###### 1. On linux, i setup bare origin "casa" and client repo "local":
+    
+    [michele@home ~]$ git init --bare casa
+    Initialized empty Git repository in /home/sambahome/michele/casa/
+    [michele@home ~]$ cd casa
+    [michele@home casa]$ git annex init casa
+    init casa ok
+    (Recording state in git...)
+    [michele@home ~]$ cd ..; git clone casa local
+    Cloning into 'local'...
+    done.
+    warning: remote HEAD refers to nonexistent ref, unable to checkout.
+    [michele@home ~]$ cd local; git annex init local
+    init local ok
+    (Recording state in git...)
+    [michele@home local]$ echo lintest > lintest
+    [michele@home local]$ git annex add lintest
+    add lintest (checksum...) ok
+    (Recording state in git...)
+    [michele@home local]$ git annex sync
+    (merging origin/git-annex into git-annex...)
+    (Recording state in git...)
+    commit  
+    ok
+    pull origin 
+    ok
+    push origin 
+    Counting objects: 18, done.
+    Delta compression using up to 4 threads.
+    Compressing objects: 100% (12/12), done.
+    Writing objects: 100% (16/16), 1.48 KiB | 0 bytes/s, done.
+    Total 16 (delta 1), reused 0 (delta 0)
+    To /home/sambahome/michele/casa
+     * [new branch]      git-annex -> synced/git-annex
+     * [new branch]      master -> synced/master
+    ok
+    ```
+    
+###### 2. On windows I clone origin, and I sync empty
+
+    ```cmd
+    M:\>git clone ssh://michele@home/home/michele/casa win
+    Cloning into 'win'...
+    remote: Counting objects: 20, done.
+    remote: Compressing objects: 100% (15/15), done.
+    remote: Total 20 (delta 3), reused 0 (delta 0)
+    Receiving objects: 100% (20/20), done.
+    Resolving deltas: 100% (3/3), done.
+    M:\>cd win
+    M:\win>git annex status
+      Detected a crippled filesystem.
+      Enabling direct mode.
+      Detected a filesystem without fifo support.
+      Disabling ssh connection caching.
+    repository mode: direct
+    trusted repositories: (merging origin/git-annex origin/synced/git-annex into git-annex...)
+    (Recording state in git...)
+    0
+    semitrusted repositories: 4
+            00000000-0000-0000-0000-000000000001 -- web
+            598ecfac-087d-49a3-b48d-beafd0d71805 -- origin (casa)
+            b2699c17-d0bc-40a0-b447-a64ad109b2a2 -- here (ALICUDI:M:\win)
+            bd4166eb-296b-4f0f-a3be-6c25e4c7cbb0 -- local
+    untrusted repositories: 0
+    transfers in progress: none
+    available local disk space: unknown
+    local annex keys: 0
+    local annex size: 0 bytes
+    known annex keys: 1
+    known annex size: 8 bytes
+    bloom filter size: 16 mebibytes (0% full)
+    backend usage:
+            SHA256E: 1
+    ```
+    
+###### 3. I copy content from local to win
+
+    ```bash
+    [michele@home local]$ git annex copy --to origin lintest
+    copy lintest (to origin...) ok
+    (Recording state in git...)
+    [michele@home local]$ git annex sync
+    ...runs ok...
+    ```
+
+###### 4. and
+
+    ```cmd
+    M:\win>git annex sync
+    ...works
+    M:\win>git annex get .
+    ...works
+    M:\win>cat lintest
+    lintest
+    ```
+
+so far so good.
+###### 5. Now the renaming part (performed on linux indirect repo)
+
+    ```bash
+    [michele@home local]$ git mv lintest renamed
+    [michele@home local]$ git annex list
+    here
+    |origin
+    ||web
+    |||
+    XX_ renamed
+    [michele@home local]$ git annex sync
+    ...works
+    ```
+
+###### 6.  now, by issuing sync on windows I start getting a "push issue":
+
+    ```
+    M:\win>git annex sync
+    commit
+    ok
+    pull origin
+    remote: Counting objects: 3, done.
+    remote: Total 2 (delta 0), reused 0 (delta 0)
+    Unpacking objects: 100% (2/2), done.
+    From ssh://home/home/michele/casa
+       c3b7a63..a0854bf  master     -> origin/master
+       c3b7a63..a0854bf  synced/master -> origin/synced/master
+    ok
+    push origin
+    Counting objects: 9, done.
+    Delta compression using up to 2 threads.
+    Compressing objects: 100% (4/4), done.
+    Writing objects: 100% (5/5), 484 bytes, done.
+    Total 5 (delta 1), reused 0 (delta 0)
+    To ssh://michele@home/home/michele/casa
+       6c18669..8cc74a0  git-annex -> synced/git-annex
+     ! [rejected]        master -> synced/master (non-fast-forward)
+    error: failed to push some refs to 'ssh://michele@home/home/michele/casa'
+    hint: Updates were rejected because a pushed branch tip is behind its remote
+    hint: counterpart. Check out this branch and merge the remote changes
+    hint: (e.g. 'git pull') before pushing again.
+    hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+    failed
+    git-annex: sync: 1 failed
+    
+    M:\win>
+    ```
+
+at this stage I tried to issue a git annex merge, git annex sync, leading to same result.
+
+somewhere in the forum I read i could try issuing a git pull origin master (this could be the problem).
+and the result is as such:
+
+    ```
+    M:\win>git pull master
+    fatal: 'master' does not appear to be a git repository
+    fatal: The remote end hung up unexpectedly
+    
+    M:\win>git pull origin master
+    From ssh://home/home/michele/casa
+     * branch            master     -> FETCH_HEAD
+    Updating c3b7a63..a0854bf
+    error: Your local changes to the following files would be overwritten by merge:
+            lintest
+    Please, commit your changes or stash them before you can merge.
+    Aborting
+    
+    M:\win>git status
+    # On branch master
+    # Your branch is behind 'origin/master' by 1 commit, and can be fast-forwarded.
+    #
+    # Changes not staged for commit:
+    #   (use "git add <file>..." to update what will be committed)
+    #   (use "git checkout -- <file>..." to discard changes in working directory)
+    #
+    #       modified:   lintest
+    #
+    no changes added to commit (use "git add" and/or "git commit -a")
+    
+    M:\win>cat lintest
+    lintest
+    ```
+    
+well, ok it appears modified for some weirdness (crlf?), we can live with it.
+
+    ```
+    M:\win>git checkout -->> this replaces files contents with simlink (due to git pull above?)
+    ```
+
+at this stage content is lost, and annex has no knowledge about it.
+
+    ```
+    M:\win>git annex fsck
+    fsck lintest ok
+    
+    M:\win>cat lintest
+    .git/annex/objects/9Z/82/SHA256E-s8--2b721dbe9afe6031cce3004e909dd62e0b4b2f3944438b6a000dffc7ad657715/SHA256E-s8--2b721dbe9afe6031cce3004e90
+    M:\win>git annex list
+    here
+    |origin
+    ||web
+    |||
+    XX_ lintest
+    ```
+
+still I cannot sync, but now i can pull origin master:
+
+    ```cmd
+    M:\win>git pull origin master                          From ssh://home/home/michele/casa                       * branch            master     -> FETCH_HEAD          Updating c3b7a63..a0854bf                              Fast-forward                                            lintest => renamed | 0                                 1 file changed, 0 insertions(+), 0 deletions(-)        rename lintest => renamed (100%)                      
+    ```
+
+this doesnt restore content (annex thinks its already there:
+
+    ```
+    M:\win>cat renamed
+    .git/annex/objects/9Z/82/SHA256E-s8--2b721dbe9afe6031cce3004e909dd62e0b4b2f3944438b6a000dffc7ad657715/SHA256E-s8--2b721dbe9afe6031cce3004e909dd62e0b4b2f3944438b6a000dffc7ad657715
+    ```
+
+I think my mistake is the use of the ```git checkout``` in direct mode. But why is the file detected as modified in the first place ?
+
+note: as long as i didn't drop on origin, i still can recover contents by 'forcing' a content refresh:
+
+    ```
+    M:\win>git annex get renamed --from origin
+    get renamed (from origin...)
+    SHA256E-s8--2b721dbe9afe6031cce3004e909dd62e0b4b2f3944438b6a000dffc7ad657715
+               8 100%    7.81kB/s    0:00:00 (xfer#1, to-check=0/1)
+    
+    sent 30 bytes  received 153 bytes  8.13 bytes/sec
+    total size is 8  speedup is 0.04
+    ok
+    (Recording state in git...)
+    
+    M:\win>cat renamed
+    .git/annex/objects/9Z/82/SHA256E-s8--2b721dbe9afe6031cce3004e909dd62e0b4b2f3944438b6a000dffc7ad657715/SHA256E-s8--2b721dbe9afe6031cce3004e909d
+    M:\win>git annex fsck
+    fsck renamed (fixing direct mode) (checksum...) ok
+    
+    M:\win>cat renamed
+    lintest
+```
+
+
+
+
+
+

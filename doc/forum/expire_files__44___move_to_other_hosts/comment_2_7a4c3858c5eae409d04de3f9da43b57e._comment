@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="cehteh"
+ ip="217.8.62.137"
+ subject="comment 2"
+ date="2013-07-30T20:29:11Z"
+ content="""
+I agree here are even more than 2 features involved.
+
+I'd appreciate a 'git annex copy --auto --to any' like feature. The point is that this should not only copy data until diskreserve is hit but distribute data in some (configureable) way around all remotes. Preferred content is one part of that, available disksize another. The user might also choose destinations depending on location and bandwidth and balance load over multiple servers until enough replicas are distributed. Details have to be worked out.
+
+Expiring content is another thing, i also thinking its most likely improper to add some atime watching thing to git-annex. Instead of that I am thinking to write a dedicated daemon which handles atime updates in userspace, this then could add some more rules to ignore accesses by other system tools (file indexers, users, etc). This makes such a expire facility completely independent from git annex and a user can choose if/what he likes.
+
+Filtering out files which are not accessed recently can then be done by 'find' or something similar and piped into 'git annex move/copy/drop'.
+
+And for your final note: fanotify can block accesses to files, it might be a bit ugly and certainly this is not for everyone, perhaps this could be externalized into some watching daemon too or if integrated to git-annex be treated very carefully and only be used if explicitly configured.
+
+"""]]

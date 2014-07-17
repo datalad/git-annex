@@ -1,0 +1,17 @@
+Required content settings can be configured to do more complicated
+things than just setting the required number of [[copies]] of your data.
+For example, you could require that data be archived in at least two
+archival repositories, and also require that one copy be stored offsite.
+
+The format of required content expressions is the same as
+[[preferred_content]] expressions.
+
+Required content settings can be edited using `git annex vicfg`.
+Each repository can have its own settings, and other repositories will
+try to honor those settings when interacting with it.
+
+While [[preferred_content]] expresses a preference, it can be overridden
+by simply using `git annex drop`. On the other hand, required content
+settings are enforced; `git annex drop` will refuse to drop a file if
+doing so would violate its required content settings.
+(Although even this can be overridden using `--force`).

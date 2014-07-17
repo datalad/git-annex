@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.194"
+ subject="comment 1"
+ date="2012-11-05T16:40:39Z"
+ content="""
+I've added a `GIT_ANNEX_SHELL_DIRECTORY` environment variable, that, if set, prevents git-annex-shell from operating on any other directory.
+
+I've made the assistant include that setting in `authorized_keys` that it sets up. For example:
+
+    command=\"GIT_ANNEX_SHELL_DIRECTORY=/home/me/annex ~/.ssh/git-annex-shell\" ...
+"""]]

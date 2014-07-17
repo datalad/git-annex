@@ -1,0 +1,6 @@
+git-annex allows managing files with git, without checking the file
+contents into git. While that may seem paradoxical, it is useful when
+dealing with files larger than git can currently easily handle, whether due
+to limitations in memory, checksumming time, or disk space.
+
+For documentation, see doc/ or <http://git-annex.branchable.com/>

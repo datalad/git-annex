@@ -1,0 +1,1 @@
+The `annex.largefiles` feature is very nice to mix annexed files with normal git managed files. I'd like to be able to configure this setting on the webapp and that the configuration directive would be synchronized accross all remotes.

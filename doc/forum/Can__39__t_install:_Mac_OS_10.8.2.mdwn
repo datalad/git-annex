@@ -1,0 +1,36 @@
+###Tried to install git-annex.app
+
+- App hangs up
+- Cpu "git" load is 100
+- Had to force quite git-annex
+
+###Install thru command line: using Brew
+
+- Installed haskell
+- updated cabal
+- But when I do:
+
+`
+cabal install git-annex --bindir=$HOME/bin
+`
+
+**I get this**
+
+    Resolving dependencies...
+    Configuring gnuidn-0.2...
+    cabal: The program c2hs is required but it could not be found.
+    Configuring libxml-sax-0.7.3...
+    cabal: The pkg-config package libxml-2.0 is required but it could not be found.
+    cabal: Error: some packages failed to install:
+    git-annex-3.20121127.1 depends on libxml-sax-0.7.3 which failed to install.
+    gnuidn-0.2 failed during the configure step. The exception was:
+    ExitFailure 1
+    libxml-sax-0.7.3 failed during the configure step. The exception was:
+    ExitFailure 1
+    network-protocol-xmpp-0.4.4 depends on libxml-sax-0.7.3 which failed to install.
+
+Any help would be greatly appreciated. 
+
+Thanks,
+
+Carlito

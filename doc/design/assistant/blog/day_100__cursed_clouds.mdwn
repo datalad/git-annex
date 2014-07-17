@@ -1,0 +1,19 @@
+Preferred content control is wired up to `--auto` and working for `get`,
+`copy`, and `drop`. Note that `drop --from remote --auto` drops files that
+the remote's preferred content settings indicate it doesn't want;
+likewise `copy --to remote --auto` sends content that the remote does want.
+
+Also implemented `smallerthan`, `largerthan`, and `ingroup` limits,
+which should be everything needed for the scenarios described in
+[[transfer_control]].
+
+Dying to hook this up to the assistant, but a cloudy day is forcing me to
+curtail further computer use.
+
+----
+
+Also, last night I developed a patch for the hS3 library, that should let
+git-annex upload large files to S3 without buffering their whole content in
+memory. I have a `s3-memory-leak` in git-annex that uses the new API I
+developed. Hopefully hS3's maintainer will release a new version with that
+soon.

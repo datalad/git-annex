@@ -1,0 +1,34 @@
+Well, sometimes you just have to go for the hack. Trying to find a way
+to add additional options to git-annex-shell without breaking backwards
+compatibility, I noticed that it ignores all options after `--`, because
+those tend to be random rsync options due to the way rsync runs it.
+
+So, I've added a new class of options, that come in between, like
+`-- opt=val opt=val ... --`
+
+The parser for these will not choke on unknown options, unlike normal
+getopt. So this let me add the additional info I needed to
+pass to git-annex-shell to make it record transfer information. And
+if I need to pass more info in the future, that's covered too.
+
+It's ugly, but since only git-annex runs git-annex-shell, this is an
+ugliness only I (and now you, dear reader) have to put up with.
+
+Note to self: Command-line programs are sometimes an API, particularly
+if designed to be called remotely, and so it makes sense consider
+whether they are, and design expandability into them from day 1.
+
+---
+
+Anyway, we now have full transfer tracking in git-annex! Both sides of
+a transfer know what's being transferred, and from where, and have
+the info necessary to interrupt the transfer.
+
+---
+
+Also did some basic groundwork, adding a queue of transfers to perform,
+and adding to the daemon's status information a map of currently running
+transfers. 
+
+Next up: The daemon will use inotify to notice new and deleted transfer
+info files, and update its status info.

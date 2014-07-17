@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://meep.pl/"
+ ip="193.23.174.18"
+ subject="comment 8"
+ date="2013-02-27T06:55:24Z"
+ content="""
+Also, this was after a reinstall. The next time I start the app the terminal opens but prompt does not appear (at least not for a very long time). Then after uninstall and reinstall I get to the prompt again.
+
+"""]]

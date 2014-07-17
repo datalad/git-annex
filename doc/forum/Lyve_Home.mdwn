@@ -1,0 +1,6 @@
+Lyve Home is an interesting device to store personal photos and videos. It is a 2TB hard drive that stores all your photos. It tries to replicate the files on every device you connect (computer, phone, etc.) and keeps at least two copies of each photo. The photos are not stored in the cloud, Lyve only stores metadata in the cloud.
+
+http://www.youtube.com/watch?v=sOE5uWqS6YQ
+
+This is something that could be easily made with git-annex and a small computer, like a Raspberry Pi, and a hard drive. 
+

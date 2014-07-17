@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmNu4V5fvpLlBhaCUfXXOB0MI5NXwh8SkU"
+ nickname="Adam"
+ subject="Confused"
+ date="2014-03-31T03:18:41Z"
+ content="""
+>What kind of encrypted remote are you using? An encrypted rsync special remote does not include the git repository, but only the content of the files, so cannot be used in this way.
+
+Forgive me, Joey, I've been following your work on the assistant for almost as long as you've been working on it, and I use git a little bit, but I have yet to wrap my head around the complexities of git and how git-annex and the assistant...morph them.  I've read all the design docs you've written, but I still don't understand this.  From reading the OP it sounds like this is exactly what the encrypted rsync special remote is for: using a transfer repo to sync two devices that don't connect directly to each other.  Why would he need to use a gcrypt repo instead?
+
+Thanks for your patience.  I know you get asked these basic questions over and over again.
+"""]]

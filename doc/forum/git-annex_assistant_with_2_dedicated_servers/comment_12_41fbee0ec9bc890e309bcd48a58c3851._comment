@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="David"
+ ip="178.21.48.117"
+ subject="comment 12"
+ date="2013-11-18T11:25:06Z"
+ content="""
+Hello,
+
+Thanks for your help and explanation. Now I had some time to test git-annex and I had a sad experience. I tried to sync the files from server1 to server2 (as described before). We are talking about 87000 small files (these are maildir folders and each file is an e-mail) with the total size of 19 Gbytes. After a few hours git-annex assistant consumed all memory on both servers ... and then all swap ... and then kernel killed git-annex. The servers have 512 MB RAM and 1 GB swap.
+
+According to the Scalability page (http://git-annex.branchable.com/scalability/) the \"memory usage should be constant\" and I am sure I didn't run \"git-annex unused\".
+
+Is this memory consumption normal or it might be a bug? What shall we do?
+
+Thanks,
+
+David
+"""]]

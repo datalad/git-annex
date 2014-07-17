@@ -1,0 +1,20 @@
+Thanks to hhm, who pointed me at [KBOX](http://kevinboone.net/kbox.html),
+I have verified that I can build haskell programs that work on Android.
+
+After hacking on it all day, I've succeeded in making an initial build of
+git-annex for Android. It links! It runs!
+
+Which is not to say it's usable yet; for one thing I need to get a port
+of git before it can do anything useful. (Some of the other things git-annex
+needs, like ssh and sha256sum, are helpfully provided by KBOX.)
+
+Next step will be to find or built a git port for Android. I know there's
+one in the "Terminal IDE" app. Once I can use git-annex at the command line
+on Android, I'll be able to test it out some (I can also port the test
+suite program and run it on Android), and get a feeling for what is needed
+to get the port to a usable command-line state.
+
+And then on to the webapp, and an Android app, I suppose. So far, the port
+doesn't include the webapp, but does include the assistant. The webapp
+needs ghci/template haskell for arm. A few people have been reporting they
+have that working, but I don't yet.

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://wiggy.net/"
+ nickname="Wichert"
+ subject="os compatibility"
+ date="2012-06-15T07:19:23Z"
+ content="""
+A downside of relying on lsof is that you might be painting yourself into a linux corner: other operating systems might not have a lsof or alternative you can rely on. Especially for Windows this might be a worry. 
+"""]]

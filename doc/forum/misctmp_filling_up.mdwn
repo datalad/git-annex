@@ -1,0 +1,11 @@
+My directory .git/annex/misctmp is quite filled up with files like P39923, P33083, and also with 7 characters P310000 up to P331998. The beginning of these filenames may come from the annexed files, which all start with 'P3'.
+
+There is a total of 12198 of them (4.0TB... yes this repo is quite big ;)).
+
+Each of those has the content of individual annexed files (about 300-400MB targzipped files). Sometimes they are hard liked to each other, up to 8 copies.
+
+Since I have copied+dropped the whole repo content to other repos, there should be nothing left locally. I have verified several of those files (the annexed files which are identical to the misctmp/* files), are they indeed are located elsewhere, and not "here".
+
+So I was wondering if it is safe to remove them, and why are they not listed by git annex unused?
+
+Thanks for your help!!

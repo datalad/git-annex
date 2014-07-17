@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 2"
+ date="2011-03-15T13:52:16Z"
+ content="""
+Can't you just use an underscore instead of a colon?
+
+Would it be feasible to split directories dynamically? I.e. start with SHA1_123456789abcdef0123456789abcdef012345678/SHA1_123456789abcdef0123456789abcdef012345678 and, at a certain cut-off point, switch to shorter directory names? This could even be done per subdirectory and based purely on a locally-configured number. Different annexes on different file systems or with different file subsets might even have different thresholds. This would ensure scale while not forcing you to segment from the start. Also, while segmenting with longer directory names means a flatter tree, segments longer than four characters might not make too much sense. Segmenting too often could lead to some directories becoming too populated, bringing us back to the dynamic segmentation.
+
+All of the above would make merging annexes by hand a _lot_ harder, but I don't know if this is a valid use case. And if all else fails, one could merge everything with the unsegemented directory names and start again from there.
+
+-- RichiH
+"""]]

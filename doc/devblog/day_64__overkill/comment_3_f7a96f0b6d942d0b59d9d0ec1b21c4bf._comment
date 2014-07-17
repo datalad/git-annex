@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmuh_0-Mjz7QkVz7gT_7PRpCgmMcBFkj14"
+ nickname="Wichert"
+ subject="Running from DMG is not a sane use-case"
+ date="2013-11-25T08:23:38Z"
+ content="""
+I don't think you should bother trying to support upgrades when people are running from a dmg. A DMG is just a disk image, and a format commonly used to distribute software. Running software from a DMG is not something anyone does beyond a quick first test of an application. A more reasonable thing to do, which many applications do now, is to offer to move the application from the DMG to /Applications if you detect someone is running it from a DMG.
+"""]]

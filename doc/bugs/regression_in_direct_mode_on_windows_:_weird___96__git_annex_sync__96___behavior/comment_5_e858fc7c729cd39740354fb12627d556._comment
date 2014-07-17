@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.21"
+ subject="comment 5"
+ date="2013-07-30T21:12:54Z"
+ content="""
+All Windows and Android builds have been updated with the bug fixed.
+
+Test suite fixed to test `git annex sync` on Windows.. although the test suite is still failing for unknown reasons in the autobuilder environment and so does not stop the build. I have added a recommendation to the Windows install page that users run `git annex test` themselves to make sure they have a good build that works on their Windows system.
+"""]]

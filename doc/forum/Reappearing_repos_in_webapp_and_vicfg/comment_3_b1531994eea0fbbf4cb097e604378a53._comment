@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.193"
+ subject="comment 3"
+ date="2013-07-02T19:58:30Z"
+ content="""
+It seems that the uuid is present in the group.log and preferred-content.log files in the git-annex branch, but not in the uuid.log file. I missed that in your description before. That's weird, don't know how that could happen.
+
+However, when I manually configure things this way, I do not see the repository in the webapp. Which makes sense; uuid.log is the canonical list of repositories.
+
+I guess if I were you I'd manually edit the uuid into uuid.log and then mark it dead.
+"""]]

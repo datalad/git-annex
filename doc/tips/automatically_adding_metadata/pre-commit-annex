@@ -1,0 +1,71 @@
+#!/bin/sh
+#
+# This script can be used to add git-annex metadata to files when they're
+# committed. It is typically installed as .git/hooks/pre-commit-annex
+#
+# You can also run this script by hand, passing it the names of files
+# already checked into git-annex, and it will extract/refresh the git-annex
+# metadata from the files.
+#
+# Copyright 2014 Joey Hess <id@joeyh.name>
+# License: GPL-3+
+
+extract="$(git config metadata.extract || true)" 
+want="$(perl -e 'print (join("|", map {s/_/ /g; "^$_ - "} (split " ", shift())))' "$extract")"
+
+if [ -z "$want" ]; then
+	exit 0
+fi
+
+case "$(git config --bool metadata.overwrite || true)" in
+	true)
+		overwrite=1
+	;;
+	*)
+		overwrite=""
+	;;
+esac
+
+addmeta () {
+	file="$1"
+	field="$2"
+	value="$3"
+	afield="$(echo "$field" | tr ' ' _)"
+	if [ "$overwrite" ]; then
+		p="$afield=$value"
+
+	else
+		p="$afield?=$value"
+	fi
+	git -c annex.alwayscommit=false annex metadata "$file" -s "$p" --quiet
+}
+
+if git rev-parse --verify HEAD >/dev/null 2>&1; then
+	against=HEAD
+else
+	# Initial commit: diff against an empty tree object
+	against=4b825dc642cb6eb9a060e54bf8d69288fbee4904
+fi
+
+IFS="
+"
+
+process () {
+	if [ -e "$f" ]; then
+		for l in $(extract "$f" | egrep "$want"); do
+			field="${l%% - *}"
+			value="${l#* - }"
+			addmeta "$f" "$field" "$value"
+		done
+	fi
+}
+
+if [ -n "$*" ]; then
+	for f in $@; do
+		process "$f"
+	done
+else
+	for f in $(git diff-index --name-only --cached $against); do
+		process "$f"
+	done
+fi

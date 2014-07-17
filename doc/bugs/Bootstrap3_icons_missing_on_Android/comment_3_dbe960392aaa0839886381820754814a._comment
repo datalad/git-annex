@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmqz6wCn-Q1vzrsHGvEJHOt_T5ZESilxhc"
+ nickname="Sören"
+ subject="comment 3"
+ date="2014-05-21T18:47:42Z"
+ content="""
+I don't think it's an issue with the Android browser. It happens with Chrome and Firefox on Android as well. Moreover, the icons still don't show up if open the Webapp running on Android over network from a desktop browser. Firebug doesn't even show the request that should load the font file (compare to the desktop version where it loads the woff file in Firefox). So I suspect the Web server behaves different somehow. Some weird blocking issue maybe?
+
+Not sure if this is related but I noticed a strange behavior: If I try to download the font file in a new tab, it blocks until I refresh the tab running the webapp. Only seen on desktop Firefox. Doesn't happen in Chromium.
+"""]]

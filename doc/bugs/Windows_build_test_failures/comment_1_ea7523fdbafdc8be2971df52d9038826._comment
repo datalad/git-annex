@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.2.134"
+ subject="comment 1"
+ date="2013-09-13T19:18:26Z"
+ content="""
+The Windows port has improved quite a lot since this bug was filed. Can you still reproduce it?
+
+If you install the pre-built git-annex for Windows, you can run `git annex test` to run the test suite.  Does that work? It works for some others on Windows.
+"""]]

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="stp"
+ ip="188.193.207.34"
+ subject="Update one forgetting keys no longer present"
+ date="2014-02-17T23:21:49Z"
+ content="""
+I have some repos where due to some hiccups file versions (not in the working tree anymore) were lost and now they come up again and again when fsck is running.
+So I would be happy if I could make my repos forget these not available files via \"git annex forget $key\" and perhaps even have a better solution to show all objects with numcopies=0.
+"""]]

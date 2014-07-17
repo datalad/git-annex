@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnSenxKyE_2Z6Wb-EBMO8FciyRywjx1ZiQ"
+ nickname="Walter"
+ subject="comment 8"
+ date="2013-09-20T20:30:52Z"
+ content="""
+Hmm, that could be it; the same content is both inside and outside the archive directory.
+
+What I really want to do (because maybe I'm not going about this the best way) is to use the assistant not in manual mode, but allow for some repos not having some files.
+I thought by placing them in an archive directory, then they would be dropped, and to get them again, I can just delete from the archive dir, and they will be got (as the file is also outside the archive dir.
+
+But, if that is not going to work, is there a better way to manage that?
+
+By the way, I really appreciate all the work you put into this awesome project.
+"""]]

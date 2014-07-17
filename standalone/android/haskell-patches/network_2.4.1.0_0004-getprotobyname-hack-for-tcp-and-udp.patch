@@ -1,0 +1,28 @@
+From b1a581007759e2d9e53ef776e4f10d1de87b8377 Mon Sep 17 00:00:00 2001
+From: Joey Hess <joey@kitenet.net>
+Date: Tue, 7 May 2013 14:51:09 -0400
+Subject: [PATCH] getprotobyname hack for tcp and udp
+
+Otherwise, core network stuff fails to get the numbers for these protocols.
+---
+ Network/BSD.hsc | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/Network/BSD.hsc b/Network/BSD.hsc
+index f0c9f5b..a289143 100644
+--- a/Network/BSD.hsc
++++ b/Network/BSD.hsc
+@@ -259,6 +259,10 @@ instance Storable ProtocolEntry where
+    poke _p = error "Storable.poke(BSD.ProtocolEntry) not implemented"
+ 
+ getProtocolByName :: ProtocolName -> IO ProtocolEntry
++getProtocolByName "tcp" = return $
++	ProtocolEntry {protoName = "tcp", protoAliases = ["TCP"], protoNumber = 6}
++getProtocolByName "udp" = return $
++	ProtocolEntry {protoName = "udp", protoAliases = ["UDP"], protoNumber = 17}
+ getProtocolByName name = withLock $ do
+  withCString name $ \ name_cstr -> do
+  throwNoSuchThingIfNull "getProtocolByName" ("no such protocol name: " ++ name)
+-- 
+1.8.2.rc3
+

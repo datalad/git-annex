@@ -1,0 +1,9 @@
+after upgrading to git-annex 3, i'm stuck with diverging git-annex branches -- i didn't manage to follow this line in the directions:
+
+> After this upgrade, you should make sure you include the git-annex branch when git pushing and pulling.
+
+could you explain how to do that in a littel more detail? git pull seems to only merge master, although i have these ``.git/config`` settings:
+
+    [branch "git-annex"]
+    	remote = origin
+    	merge = git-annex

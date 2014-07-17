@@ -1,0 +1,20 @@
+### Please describe the problem.
+
+On Andorid adding a respository on a remote server (ssh) to an exisiting repository does not work. After selecting "Make unencrypted repository" in the webapp the following error message is displayed:
+
+Internal Server Error
+/sdcard/git-annex.home/.ssh/config: setFileMode: permission denied (Operation not permitted)
+
+The file "/sdcard/git-annex.home/.ssh/config" is created and its content seems to be fine. I could not find anything related to file mode in logcat / daemon.log.
+
+### What steps will reproduce the problem?
+
+Add a repository on a remote server to an existing repository. After selecting "Make unencrypted repository" the error messages is displayed.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version 5.20140116-g2d9ec29
+Android version 4.4 (running on a Nexus 5)
+
+> I have made this failure to set the file mode not be a fatal error.
+> [[fixed|done]] --[[Joey]]

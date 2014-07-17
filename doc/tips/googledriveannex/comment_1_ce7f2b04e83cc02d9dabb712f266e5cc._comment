@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmlnEK_po7A0xMC9Xdp0FdcBgYllsCORXM"
+ nickname="Johnny"
+ subject="Shared google drive on multiple hosts"
+ date="2014-03-14T16:40:11Z"
+ content="""
+I have now configured my Googledrive on Laptop1 according to the guide above, how do I add the same remote on Laptop2? It would be nice if this was described in the guide, include where the encryption keys are stored.
+
+"""]]

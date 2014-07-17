@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 2"
+ date="2011-04-03T16:59:47Z"
+ content="""
+Remote as in \"another physical machine\". I assumed that
+
+    git annex copy --force --to REMOTE .
+
+would have not trusted the contents in the current directory (or the remote that is being copied to) and then just go off and re-download/upload all the files and overwrite what is already there. I expected the combination of *--force* and copy *--to* that it would not bother to check if the files are there or not and just copy it regardless of the outcome.
+"""]]

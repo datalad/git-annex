@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 2"
+ date="2011-04-05T18:41:49Z"
+ content="""
+I see no use case for verifying encrypted object files w/o access to the encryption key. And possible use cases for not allowing anyone to verify your data.
+
+If there are to be multiple encryption keys usable within a single encrypted remote, than they would need to be given some kind of name (a since symmetric key is used, there is no pubkey to provide a name), and the name encoded in the files stored in the remote. While certainly doable I'm not sold that adding a layer of indirection is worthwhile. It only seems it would be worthwhile if setting up a new encrypted remote was expensive to do. Perhaps that could be the case for some type of remote other than S3 buckets.
+"""]]

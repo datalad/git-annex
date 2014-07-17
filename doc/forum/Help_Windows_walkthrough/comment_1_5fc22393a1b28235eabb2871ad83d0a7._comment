@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.8.7"
+ subject="comment 1"
+ date="2013-09-03T17:59:03Z"
+ content="""
+The walkthrough assumes a system that uses indirect mode by default, so it won't work quite right on Windows, which is forced to use direct mode.
+
+Running `git annex fsck` in the server repository will fix up this situation, but the right thing on Windows is to use `git annex sync` rather than the manual `git fetch + git merge` the walkthrough shows.
+
+Guess I'll make the walkthrough use sync, although it may make it harder for people to understand what's going on internally.
+"""]]

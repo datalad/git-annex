@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlY4LE-xEyztjJeXSot7JIGGFWgBfabgwc"
+ nickname="Peter"
+ subject="GPG Key specification"
+ date="2013-12-09T13:32:51Z"
+ content="""
+Hi there,
+
+I try to follow the instructions provided here but I don't manage it to get my repo encrypted. Here are the steps:
+
+1) git init --bare Encrypted
+2) git-annex init
+3) git annex initremote encryptedbackup type=gcrypt gitrepo=~/tmp/Encrypted encryption=pubkey keyid=DXXXX
+
+The last step takes a lof of time to run. Basically my key doesn't get used at all:
+
+    # ps -ax | grep gpg
+    4743 pts/4    SL+    0:00 gpg --quiet --trust-model always --gen-random --armor 2 256
+    4753 pts/0    S+     0:00 grep gpg
+
+
+... instead a new pgp key is generated. How comes??!
+
+Any help would be appreciated.
+
+Thx and cheers,
+
+cyneox
+
+"""]]

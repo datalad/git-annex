@@ -1,0 +1,28 @@
+Was unsure yesterday if my transferrer pools code would just work, or
+would be horribly broken and need a lot of work to get going. It was a
+complex change involving both high-level STM code and low-level pipes and
+fds. Well, it almost worked 100% first time, I just had a minor issue in
+my fd setup to fix. Everything else seems to work perfectly.
+Very happy how that went!
+
+----
+
+Improved support and documentation for using the OSX app and Linux
+standalone tarball at the command line. Now it's sufficient to just put
+their directory into `PATH`, rather than using `runshell`.
+
+----
+
+The webapp's form for adding a removable drive now allows specifying the
+directory to use within the drive (default "annex").
+
+When the drive's repository already exists, and it's not a repository
+that git-annex knows about, it confirms that the user wants
+to combine its contents into their repository.
+
+
+(Should probably implement this same check when adding a ssh remote.)
+
+----
+
+Off to Boston!

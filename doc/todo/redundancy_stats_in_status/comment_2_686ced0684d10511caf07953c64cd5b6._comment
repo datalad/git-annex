@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.220"
+ subject="comment 2"
+ date="2013-09-25T18:03:55Z"
+ content="""
+`git annex status .` or otherwise running it with a directory has recently started walking all the location logs for all files in the directory in order to display variance from configured numcopies. It would be easy to add a redundancy counter to that.
+
+It would slow down the global status when not passed a directory to add redundancy info there. Maybe local is enough?
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-04-20T23:38:47Z"
+ content="""
+@Richard, including all of /sdcard seems a reasonable thing to do if you want to back it all up. I don't know how likely anyone would be to want to sync the whole contents though.
+
+@Leonardo direct mode is the default for all respositories created by the webapp, as well as all repositories on crippled filesystems that cannot support indirect mode. Android webapp thus defaults to direct mode twice over!
+"""]]

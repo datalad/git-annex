@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="http://meep.pl/"
+ ip="193.23.174.18"
+ subject="Ah, the barber paradox"
+ date="2012-10-05T06:51:11Z"
+ content="""
+Nice. Would (not in=here) be the simplest paradoxical expression?
+
+Is just disregarding the target repo completely during checks a possibility? This would interpret (not copies=trusted:X) as \"not in X *other* trusted repositories, no matter whether we are trusted or not\", and (not in=here) just as \"true\". I think this should generally arrive at the same results as the option 2., but by definition of the expression meaing, not by rewriting.
+
+Alternative 3 (or is my wording different enough to be 3a?) - check that the invariant \"we have all the known files matching our PCE and only these files\" would hold after an operation before actually performing it - could be bistable if done both for gets and drops:
+
+* (not in=here) and we do not have the file -> get thinks \"if we get it, we have a file not matching the PCE\" -> get does not get it;
+* (not in=here) and we do have the file -> drop thinks \"if we drop it, there exists a file matching the PCE which we miss\" -> drop does not drop it.
+
+This is not necessarily bad. Checking just for drops should be monostable, I guess, but doesn't it look a bit arbitrary? (Though it would be again equivalent to option 2, wouldn't it? So maybe not that arbitrary.)
+"""]]

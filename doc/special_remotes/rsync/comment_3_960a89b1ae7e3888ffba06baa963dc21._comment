@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="diepes"
+ ip="105.227.34.36"
+ subject="sshfs ?  and no sync from special remote to 2nd git-annex ?"
+ date="2013-03-29T22:09:49Z"
+ content="""
+* It sound to me it would be 1st prize if the cloud provider supported the git-annex functionality over ssh. 
+* Then it could be a full git-annex repo, and used for recovery if my laptop with the git info gets lost. 
+* From special remotes \"These can be used just like any normal remote by git-annex\" 
+* Your comment \"No, special remotes do not contain a copy of the git repository\" 
+
+ * so a special remote is
+
+1. \"A. just a remote filesystem, that contains the objects with sha1 names ? \"
+2. \"B. there is no git info and thus no file name & directory details or am i missing something ?\" 
+3. \"C. you can't use the remote as a cloud drive to sync changes e.g. file moves, renames between two other git-annex repositories ? (no meta data)\" 
+4. \"D. the data on the cloud/rsync storage can not be used directly it has to moved into a git-annex capable storage location. \"
+
+* Would it not be better to mount the remote storage over ssh(sshfs) and then use full git-annex on mounted directory ?
+"""]]

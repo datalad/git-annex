@@ -1,0 +1,6 @@
+Hello.
+How can I use git-annex get a list of files in directory that have content? For each such file the result of command
+
+     git-annex get [file] 
+   
+will be empty.

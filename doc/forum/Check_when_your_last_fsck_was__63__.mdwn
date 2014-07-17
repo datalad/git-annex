@@ -1,0 +1,4 @@
+Hey Joey,
+    Is there a way to see when the last fsck was?  I know about --incremental and the related options, but sometimes I'd like to know when the last time I fsck'd a file (or even the whole repo) was.  There doesn't seem to be a command line option for it, but I know that info is saved somewhere...maybe this could be part of 'git annex status'?
+
+$(words of gratitude and encouragement)

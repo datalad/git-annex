@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 4"
+ date="2012-09-23T16:00:35Z"
+ content="""
+Thinking this out a little, I reckon the script _MacOS/git-annex_ could be a bit more clever and get the basedir/basename of where it app is and execute git-annex from the .app bundle, then you wouldn't need to install it as root at all. It would require a bit of work to collect the executables needed.
+
+Also, I just quickly checked my Lion install, it seems to come with git and uuidgen once xcode and the command line tools are installed. 
+"""]]

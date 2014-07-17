@@ -1,0 +1,65 @@
+I have just done a sync in a direct mode repo:
+
+    git-annex sync sshremote
+
+It has quite a few conflicts (both sides adding the same file with same content). But somehow the merge won't conclude. Here's some log:
+
+    $ git-annex sync sshremote
+    commit  ok
+    pull sshremote 
+    warning: no common commits
+    remote: Counting objects: 32162, done.
+    remote: Compressing objects: 100% (31192/31192), done.
+    remote: Total 32162 (delta 3), reused 32162 (delta 3)
+    Receiving objects: 100% (32162/32162), 3.39 MiB | 1.61 MiB/s, done.
+    Resolving deltas: 100% (3/3), done.
+    From sshremote:/repo
+     * [new branch]      annex/direct/master -> sshremote/annex/direct/master
+     * [new branch]      git-annex  -> sshremote/git-annex
+     * [new branch]      master     -> sshremote/master
+     * [new branch]      synced/master -> sshremote/synced/master
+
+    Auto-merging file1
+    CONFLICT (add/add): Merge conflict in file1
+    Auto-merging file2
+    CONFLICT (add/add): Merge conflict in file2
+    Auto-merging file3
+    CONFLICT (add/add): Merge conflict in file3
+    Auto-merging file4
+    CONFLICT (add/add): Merge conflict in file4
+    Automatic merge failed; fix conflicts and then commit the result.
+    file1: needs merge
+    file2: needs merge
+    file3: needs merge
+    file4: needs merge
+    ^C
+
+I waited for a few minutes, and checked that both cpu and disk activity is near zero on both server. So I interrupted it, thinking it might be some locking issue. 
+
+But now I cannot sync with the remote anymore because the merge is still in process. How should I resolve the conflicts? I could do it manually if I cannot use annex's auto merge.
+
+    $ git-annex sync sshremote
+    commit  ok
+    pull sshremote 
+
+    fatal: You have not concluded your merge (MERGE_HEAD exists).
+    Please, commit your changes before you can merge.
+
+    fatal: You have not concluded your merge (MERGE_HEAD exists).
+    Please, commit your changes before you can merge.
+    failed
+
+    $ git merge --abort
+    fatal: This operation must be run in a work tree
+
+Update: this is running on OSX with:
+
+    git-annex version: 5.20131221-g00d1673
+    build flags: Assistant Webapp Pairing Testsuite S3 WebDAV FsEvents XMPP DNS Feeds Quvi TDFA CryptoHash
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web webdav glacier hook
+    local repository version: 3
+    default repository version: 3
+    supported repository versions: 3 5
+    upgrade supported from repository versions: 0 1 2 4
+

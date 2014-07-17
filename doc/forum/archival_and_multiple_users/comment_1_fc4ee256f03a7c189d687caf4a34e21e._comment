@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="173.162.44.162"
+ subject="comment 1"
+ date="2013-07-24T15:30:51Z"
+ content="""
+A feature I would love to see is a file manager integrated with the webapp, so that you could browse your files and retrieve or drop them manually as if you were using the command line.  Then you could have your repo set on \"manual\" and not worry about those archive directories.  Just manually drop content if you got low on space.
+
+"""]]

@@ -1,0 +1,68 @@
+Hi everyone,
+
+everyday I understand more and more how git and git-annex work but I need help with this one.
+I guess I have two questions but let me describe the scenario first:
+
+I have one local repository of mp3s (assume just one file: file1.mp3).
+I clone that repository into a remote git-annex repository over ssh and "git annex get" the file contents for file1.mp3.
+
+I unlock some mp3's locally and modify some mp3 tags. 
+Then I notify git-annex of these changes
+with "git annex add *"
+and commit them with "git commit -m 'mp3 tags changed'". 
+[git annex locks them again and changes the symlinks to point to the changed file in the annex, git commits the changed symlink]
+
+At this point in time there are two objects in my git annex repository:
+hash(file1.mp3) 
+hash(file1.mp3|with modified tags)
+The symlink points now to hash(file1.mp3|with modified tags)
+
+At this point the remote still does not now of this commit and of the new file contents.
+Thus I do "git push" to send the changes to the remote.
+The remote now has a BROKEN symlink because it already points to hash(file1.mp3|with modified tags)
+but the remote annex's object directory only contains hash(file1.mp3).
+
+Then I want my remote repository to also have the updated mp3 tags.
+The only way I see (without scripting) to have the updated mp3 tags in the remote repository is to do an "git annex get file1.mp3" on the remote repository or an "git annex copy --to remote file1.mp3" at my local repository. However, although the binary differences between both files
+file1.mp3 and file1.mp3|with modified tags are small the latter is transferred completely from the local repository to the remote repository.
+
+This is not a problem when just changing one file, but a problem when I have 10GB's of files and when it takes 2days to upload them to the remote because of a low bandwidth. 
+
+First question: Did I miss something? Does git-annex already provide means to only transmit the diff between the two objects? 
+
+Second question regarding disk space.
+I now have a complete history of all changes to file1.mp3 in my git-annex repository. I have the objects that represent every state of file1.mp3 and I can go back to these states when I checkout the respective commits and thereby the symlinks that link to these "old" objects. This history can take up a lot of space. What is the clean way to forget the past? AFAIK "git drop unused" only drops file contents that are not referenced in any commit? 
+
+If one wanted to preserve the entire history but save disk space one could also only store the current content and the patches that allow to reconstruct older versions from the current one. I understand that applying several patches consecutively takes more cpu time but for me going back to an older commit with my binary files only happens rarely. 
+
+This is the algorithm I have in mind for an optimized "git annex get file1":
+
+On that repository where the file is missing:
+
+1. Find the newest object that represented the contents of file1 in file1's commit history.
+
+2. Transmit this object identification hash(object) to the remote that has the current version (the one I am getting from).
+
+At that remote: 
+
+If the history contains full versions of file contents:
+
+Create a binary diff between the object identified by hash(object) and the current content of file1.
+
+If the history contains only the current version and patches to older versions:
+Collect all patches that represent the change from hash(object) to the current content of file1.
+
+If the list of patches is bigger than the current content of file 1 transmit the current content of file1. Otherwise transmit the patch(es) 
+
+On that repository where the file is missing:
+
+Apply the patch(es) to the latest object to obtain the current object.
+
+What's your opinion on this?
+
+Marek
+
+
+
+
+

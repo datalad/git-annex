@@ -1,0 +1,19 @@
+I am in the process of organising all of my documents (pdf/ps/etc.) and putting them into an annex.  It seems like the easiest (and smartest?) way for me to manage my 15,000+ document library...  (Yeah, I've not read them all!)
+
+However, one of the issues I have run into is when I want to include something like a software manual...
+
+I'm not even sure if git-annex is the correct way to handle these sort of document, but...
+
+What would you do if the URL stays the same, but the file content changes over time?
+
+For example, the administration manual for R gets updated and re-released for each release of R, but the URL stays the same.
+
+    http://cran.r-project.org/doc/manuals/R-admin.pdf
+
+I'm not particularly worried about whether my annex version is the most recent, just that if I want to 'annex get' it, it will pull *a* version from somewhere.
+
+Any thoughts?
+
+I'd bet that the SHA-hash would change between releases(!) so would a WORM backend be the best approach?  It would mess up my one-file-in-multiple-directories (i.e. multiple simlinks to the one SHA-...-.....) approach.
+
+ 

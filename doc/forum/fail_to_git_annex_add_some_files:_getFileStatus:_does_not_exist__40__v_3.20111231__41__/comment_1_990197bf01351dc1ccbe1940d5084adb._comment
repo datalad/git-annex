@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="http://mildred.pip.verisignlabs.com/"
+ subject="Manually fixing links doesn't even work"
+ date="2012-04-12T15:46:54Z"
+ content="""
+I'm just answering myself: manually fixing symlinks doesn't always works. Sometimes the pre-commit hook will just rewrite the link to some wrong path.
+"""]]

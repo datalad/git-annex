@@ -1,0 +1,7 @@
+This falls into the category of "noob questions" I think.
+
+The one piece of the git-annex assistant puzzle I've never messed with is XMPP pairing.  I'm wondering how well a pair of repos can keep in sync with each other if their only connection is via XMPP.  Will things go badly if changes are made to one while the other is offline?  Do messages get queued up to deliver when they're both online?  (Or do they get queued on the server side so they can be delivered even if one of them is online, makes changes, then goes offline, and the other one comes online later?)
+
+If some xmpp messages don't go through for whatever reason, will the remotes be able to "catch up" with each other later on and make up for lost time?
+
+Just hoping for a general sense of the limitations of XMPP pairing.   TIA.

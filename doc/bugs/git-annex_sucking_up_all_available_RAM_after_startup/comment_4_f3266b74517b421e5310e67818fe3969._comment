@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkVnM7Ol2kr_jfLg6h_oXpmNdxWHIiL9mk"
+ nickname="Hanno"
+ subject="comment 4"
+ date="2014-01-31T23:17:49Z"
+ content="""
+I have no idea if it is related to this problem, but allow me to add that the \"Consistency check\" (that the web app specifically recommended me to activate) makes my computers unreasonably slow immediately after each bootup. This is both at the fairly fast computer at the office and the ok-ish old laptop at home.
+
+Also, the check will kick in and suck up the systems responsiveness right after connecting the external USB sneaker disk, making any regular file transfer to the disk extremely slow (more than once I was stung because I just wanted to quickly move a bigger file to the disk and walk home at the end of an office day but git-annex would go into its check after mounting).
+
+Thanks!
+"""]]

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="divB"
+ ip="128.12.90.218"
+ subject="comment 7"
+ date="2014-07-15T20:33:07Z"
+ content="""
+Thanks Joey,
+
+The problem is more that git-annex assistant takes the wrong (which is in \"bin\" rather than \"cmd\"). I think this is a bug. Because this way the connection does not work in git-annex assistant the same way it does not work with the version in \"bin\" ...
+
+I think when git-annex assistant just calls the git.exe from path (which should be cmd/git.exe) then it should work.
+
+Regards
+Niki
+
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-04-08T17:23:24Z"
+ content="""
+1. I don't understand how corruption could spread between git repositories. git is supposed to use checksums to prevent bad data propigating. I would be running a lot of `git fsck` if I were you. Yes, `git annex fsck` will update location log information for files it finds in the local repository.
+
+2. Again this looks like something is corrupting your repository when git writes it. Perhaps bad memory? I think you need to get to the root of the problem with the corrupting git repositories.
+"""]]

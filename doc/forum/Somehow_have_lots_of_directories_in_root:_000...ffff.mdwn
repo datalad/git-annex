@@ -1,0 +1,22 @@
+I'm using git-annex to manage my photos on my laptop, and have my NAS (which is just a debian linux system with lots of disks) as one of my remotes. I use my NAS as a backup, and to free up space on my laptop.
+
+But somehow I now have lots of directories in my main root directory of the photos directory. it looks like [0-9a-f][0-9a-f][0-9a-f], so I have 000, ... a00, ... ddd, ..., all the way to fff. Thousands of them. Each one has a few directories that also match [0-9a-f][0-9a-f][0-9a-f], and each one has a file with names of the git annex object filename.
+
+e.g.:
+
+    $ cat e1d/760/SHA256-s4061375--7909e266f340ff8bc692e073e776ceda267042adf790275a2d851f2c7eb1ca83.log 
+    1338931894.759394s 1 1adfa84c-af51-11e1-b075-0b1206d553bc
+    1338992164.202818s 1 721d82ae-afbb-11e1-b78f-f396ebf52c05
+    1339862991.346546s 1 721d82ae-afbb-11e1-b78f-f396ebf52c05
+    1339946933.224915s 1 224d85b4-b86f-11e1-b11e-3333ce526126
+    1339964057.205993s 1 224d85b4-b86f-11e1-b11e-3333ce526126
+    1343495865.083951s 1 721d82ae-afbb-11e1-b78f-f396ebf52c05
+    1344788941.403528s 1 721d82ae-afbb-11e1-b78f-f396ebf52c05
+    1351802706.679542s 1 721d82ae-afbb-11e1-b78f-f396ebf52c05
+    1362423729.820711s 1 721d82ae-afbb-11e1-b78f-f396ebf52c05
+
+My remote (NAS) has these files & directories as well as my laptop. The regular photo directory hierarchy is there as well, the files work, can be copied etc. "git status" say nothing has changed. Those files are tracked by git (they have lot messages). Everything just works, it's just that there's loads of these directories? Can I remove them? How can I clear it up? I can't remember when these directories/files were added, I only noticed it today.
+
+I don't know if I had my remote (NAS) as a bare git repo and used it as that, then somehow used it as a non-bare one, would that cause this?
+
+Can I remove them? Where did they come from? What's going on?

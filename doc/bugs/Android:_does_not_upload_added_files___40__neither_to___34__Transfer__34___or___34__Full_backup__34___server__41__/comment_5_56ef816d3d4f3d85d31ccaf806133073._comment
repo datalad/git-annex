@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="reproduced bug"
+ date="2013-12-29T21:06:30Z"
+ content="""
+Debug logs shows that the problem is it tries to run ionice. So fix should be trivial.
+"""]]

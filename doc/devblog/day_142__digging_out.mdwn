@@ -1,0 +1,13 @@
+Catching up on conference backlog. 36 messages backlog remains.
+
+Fixed `git-annex-shell configlist` to automatically initialize a
+git remote when a git-annex branch had been pushed to it. This is necessary
+for gitolite to be easy to use, and I'm sure it used to work.
+
+Updated the Debian backport and made a Debian package of the
+fdo-notify haskell library used for notifications.
+
+Applied a patch from Alberto Berti to fix support for tahoe-lafs
+1.10.
+
+And various other bug fixes and small improvements.

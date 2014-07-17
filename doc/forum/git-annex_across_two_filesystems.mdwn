@@ -1,0 +1,30 @@
+Hi everyone,
+
+I need some suggestions on how to operate git-annex best in my setup.
+
+I need git-annex mainly for its ability to have directories of all my data on all my nodes but not for the data redundancy it can provide.
+I have one node that contains 2 filesystems that I want to merge in one git-annex repository. One filesystem (lets call it SAFE) is on top of a RAID1 between two 1TB hds. The other (BIG) is on top of a 3TB hd. SAFE holds data I do not want to loose (like digital pictures). BIG holds data that I can loose.
+
+I do not have enough disk space on other nodes to get rid of the RAID1.
+
+This is how I mount my filesystems:
+
+SAFE at ~/AllData/
+
+BIG at ~/AllData/bigfiles/
+
+The root of the git repository is at ~/AllData/ however when I do:
+
+git-annex add ~/AllData/bigfiles/file1
+It says:
+add bigfiles/file1 failed
+
+I assume that is because of file1 being on a different filesystem.
+
+Do I have to create two repositories: one for each filesystem or do you have any ideas on how to use git-annex best in this scenario?
+Having two repositories also has the disadvantage that I need two repositories on all other nodes am I right?
+
+Thanks for you suggestions
+
+
+

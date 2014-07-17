@@ -1,0 +1,92 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk_W9oOMDiBaU_xLIbeaTF8wW2wJzJ7bfw"
+ nickname="Christopher"
+ subject="comment 4"
+ date="2014-01-01T15:23:17Z"
+ content="""
+I know that checking of files is a git message, I was just providing it for context.
+
+I know that my other repos do not have these things checked in, because one of them is offline and not involved in this, and the other repo literally can't contain that much data, which is the biggest reason this is an issue.
+
+Here are the commits I don't like:
+
+    commit 1ae2410a4bc3e35edbfd9d48a577bcfc7e3a8836
+    Author: Christopher Vollick <0@psycoti.ca>
+    Date:   Mon Dec 30 23:22:47 2013 -0500
+    
+        git-annex automatic sync
+    
+    :120000 100644 185b311... fd03ae5... T	subdir1/other_file0309
+    :120000 100644 515e6df... 44f8383... T	subdir1/other_file0309
+    
+    commit 7403e3116eb34e2b192dfa3ea4c16e35f82210ba
+    Author: Christopher Vollick <0@psycoti.ca>
+    Date:   Sat Dec 21 19:12:56 2013 -0500
+    
+        git-annex automatic sync
+    
+    :120000 100644 185b311... fd03ae5... T	subdir1/other_file0309
+    :120000 100644 515e6df... 357d9a7... T	subdir1/other_file0309
+    :120000 100644 079f69f... 97c785a... T	subdir1/file01
+    :120000 100644 c69574a... 1589721... T	subdir1/file02
+    :120000 100644 01d98a4... 154a059... T	subdir1/file03
+    :120000 100644 6ee02d5... 6857f73... T	subdir1/file04
+    :120000 100644 aab78e7... 19bae04... T	subdir1/file05
+    :120000 100644 9f8d11b... bd5b501... T	subdir1/file06
+    :120000 100644 ca824c1... a9e0b9e... T	subdir1/file07
+    :120000 100644 c85f526... a6383fc... T	subdir1/file08
+    :120000 100644 a6d957d... 9b99c99... T	subdir1/file09
+    :120000 100644 d3de258... d51da9a... T	subdir1/file10
+    :120000 100644 3cc803e... 8f7945f... T	subdir1/other_file0005
+    :120000 100644 cd94cca... 1c06cf8... T	subdir1/other_file0006
+    :120000 100644 1442c98... fee3c1d... T	subdir1/other_file0201
+    :120000 100644 4131025... f732332... T	subdir1/other_file0202
+    :120000 100644 865214f... 1178931... T	subdir1/other_file0203
+    :120000 100644 a0f84e2... 6c39a4a... T	subdir1/other_file0204
+    :120000 100644 21bf0c1... bbb3c93... T	subdir1/other_file0205
+    :120000 100644 5f6a5f3... d298a97... T	subdir1/other_file0206
+    :120000 100644 3d7f034... 4cac0d1... T	subdir1/other_file0207
+    :120000 100644 ee75d44... d769e8e... T	subdir1/other_file0208
+    :120000 100644 f381401... 5f1a7f3... T	subdir1/other_file0209
+    :120000 100644 8b6a409... 1db8c37... T	subdir1/other_file0210
+    :120000 100644 c6a23f1... 5a9bbf5... T	subdir1/other_file0211
+    :120000 100644 17a34c7... 068c619... T	subdir1/other_file0212
+    :120000 100644 3c7fe0a... 356315b... T	subdir1/other_file0213
+    :120000 100644 4b61d45... e9747e5... T	subdir1/other_file0214
+    :120000 100644 1c0d845... f7a11d3... T	subdir1/other_file0301
+    :120000 100644 cdd57b2... fb5512f... T	subdir1/other_file0302
+    :120000 100644 9bb8ffc... 9b3897d... T	subdir1/other_file0303
+    :120000 100644 007cfa6... 93e36d7... T	subdir1/other_file0304
+    :120000 100644 24cf5d3... 9eecff4... T	subdir1/other_file0305
+    :120000 100644 d9be965... 6c612f4... T	subdir1/other_file0306
+    :120000 100644 20cd474... 9d1c714... T	subdir1/other_file0307
+    :120000 100644 3f24532... 9ff7770... T	subdir1/other_file0308
+    :120000 100644 3939cbe... de9fefd... T	subdir1/other_file0308
+    :120000 100644 9de87f9... 2242892... T	subdir1/other_file0309
+    :120000 100644 7250b17... a544af6... T	subdir1/other_file0310
+    :120000 100644 9de87f9... 2242892... T	subdir1/other_file0312
+    :120000 100644 14fbe43... f643564... T	subdir1/other_file0401
+    :120000 100644 0f28f22... e4b5e2c... T	subdir1/other_file0402
+    :120000 100644 6704647... 4529fb0... T	subdir1/other_file0403
+    :120000 100644 65b3742... dacc2ce... T	subdir1/other_file0404
+    :120000 100644 14ad1d6... a4f7dab... T	subdir1/other_file0405
+    :120000 100644 87bda81... a3b2a0a... T	subdir1/other_file0406
+    :120000 100644 23fd37b... 7ea3182... T	subdir1/other_file0407
+    :120000 100644 a82d025... aa0e1f6... T	subdir1/other_file0408
+    :120000 100644 cd350d3... c225b3d... T	subdir1/other_file0409
+    :120000 100644 2ce6c3b... 1efffa6... T	subdir1/other_file0410
+    :120000 100644 3f780d5... 207f8af... T	subdir1/other_file0411
+    :120000 100644 27ecf10... 4a34b2d... T	subdir1/other_file0412
+    :120000 100644 5cf1ba0... ab0b15d... T	subdir1/other_file0413
+    :120000 100644 a1cccd7... 274dbd1... T	subdir1/other_file0004
+
+Now, the most interesting part here is that commit 7403e3116eb is dated Sat Dec 21.
+That is not when I was attempting this. The 30th, shown in 1ae24 is.
+
+That makes me think that I have failed to reset properly, and so when I'm telling it to sync it's not recomputing the thing, it's just grabbing the thing it did last time.
+
+Now, I still don't know why it chose to do that, but perhaps it wouldn't choose to do that again if I could figure out how to get it to forget that path.
+
+Thoughts?
+
+"""]]

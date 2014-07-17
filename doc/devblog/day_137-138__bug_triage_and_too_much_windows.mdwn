@@ -1,0 +1,15 @@
+Yesterday, worked on cleaning up the todo list. Fixed Windows slash problem
+with rsync remotes. Today, more Windows work; it turns out to have been
+quite buggy in its handling of non-ASCII characters in filenames. Encoding
+stuff is never easy for me, but I eventually managed to find a way to fix
+that, although I think there are other filename encoding problems lurking
+in git-annex on Windows still to be dealt with.
+
+Implemented an interesting metadata feature yesterday. It turns out that
+metadata can have metadata. Particularly, it can be useful to know when a
+field was last set. That was already beeing tracked, internally (to make
+union merging work), so I was able to quite cheaply expose it as
+"$field-lastchanged" metadata that can be used like any other metadata.
+
+I've been thinking about how to implement [[todo/required_content]]
+expressions, and think I have a reasonably good handle on it.

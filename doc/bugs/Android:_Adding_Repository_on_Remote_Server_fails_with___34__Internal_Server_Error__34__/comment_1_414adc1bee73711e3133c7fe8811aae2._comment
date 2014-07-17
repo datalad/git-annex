@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkViAynw-AW5kjf3w_QDwCVwhPc3k7gY5E"
+ nickname="Thomas"
+ subject="I see the same fail"
+ date="2014-01-29T21:52:18Z"
+ content="""
+I se the same failure at both my android devices:
+Nexus 7, Android 4.4.2, git-annex 5.20140128 and
+Xperia phone, Android 4.1.2, git-annex 5.20140108
+"""]]

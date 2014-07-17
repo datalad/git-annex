@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.1.10"
+ subject="comment 1"
+ date="2013-07-22T22:04:53Z"
+ content="""
+Sure you can.. That's how <http://downloads.kitenet.net/> works, which is where people download git-annex builds from!
+
+[[tips/setup_a_public_repository_on_a_web_site]]
+"""]]

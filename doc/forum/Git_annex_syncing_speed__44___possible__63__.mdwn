@@ -1,0 +1,21 @@
+Hello
+
+I'm trying Git annex latest builds available in Linux & Android
+Here is the scenario :-
+
+Syncing 2 peer devices running Linux & Android
+Devices can access each other directly over Cisco VPN encrypted link
+
+Currently, syncing files via rsync over webdav (over Cisco VPN)
+Everything is working, manual file tracking is an issue.
+
+Here's where Git annex steps in,
+I've configures external jabber account so they can talk to each other.
+
+But the transfers are super-slow over internet,
+I'm guessing Cisco VPN adding 15-20% overhead + SSH adding another 20-30% overhead.
+
+Since the network link is trusted, is there any way to speed things up assuming Cisco solution
+remains in place?
+
+looking to solve this issue

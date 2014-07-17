@@ -1,0 +1,9 @@
+Document: git-annex
+Title: git-annex documentation
+Author: Joey Hess
+Abstract: All the documentation from git-annex's website.
+Section: File Management
+
+Format: HTML
+Index: /usr/share/doc/git-annex/html/index.html
+Files: /usr/share/doc/git-annex/html/*.html

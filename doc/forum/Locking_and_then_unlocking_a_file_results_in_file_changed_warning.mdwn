@@ -1,0 +1,20 @@
+I have a git annex repository which I use to store versioned binaries in a regular git repository. We also use submodules in the repository (the sources of the versioned binaries) but the binaries are not in the submodules. This has worked great for us.
+
+Recently, there have been a number of changes (I got a new laptop, moved to fedora 20, renamed the repository, etc...) that happened at once. Now when I checkout a clean working version of the repository and then run git annex get . and then do an unlock and a lock on the file I get the "Locking this file would discard any changes you have made to it. Use 'git annex add' to stage your changes. (Or, use --force to override)" warning.
+
+I have tried to isolate this as much as possible but can't find what caused this. On a co-worker's laptop it seems to work fine so far. A clean repository didn't fix it. An old repository didn't fix it (though I recall it working there previously on this laptop). It did work and just stopped recently.
+
+    $ git annex version
+    git-annex version: 5.20140107
+    build flags: Assistant Inotify DBus Quvi TDFA
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SHA256 SHA1 SHA512 SHA224 SHA384 WORM URL
+    remote types: git gcrypt bup directory rsync web glacier hook external
+    local repository version: 5
+    supported repository version: 5
+    upgrade supported from repository versions: 0 1 2 4
+
+    $ git annex lock --debug --verbose vendors/unittest-xml-reporting-1.5.0.tar.gz  # (some names changed to protect the innocent)
+    [2014-02-05 12:54:45 IST] read: git ["--git-dir=/home/user/loppa_deuce/loppa/.git","--work-tree=/home/user/loppa_deuce/loppa","diff","--name-only","--diff-filter=T","-z","--","vendors/unittest-xml-reporting-1.5.0.tar.gz"]
+    [2014-02-05 12:54:45 IST] chat: git ["--git-dir=/home/user/loppa_deuce/loppa/.git","--work-tree=/home/user/loppa_deuce/loppa","cat-file","--batch"]
+    [2014-02-05 12:54:45 IST] read: git ["--git-dir=/home/user/loppa_deuce/loppa/.git","--work-tree=/home/user/loppa_deuce/loppa","diff","--name-only","--diff-filter=T","-z","--cached","--","vendors/unittest-xml-reporting-1.5.0.tar.gz"]
+    lock vendors/unittest-xml-reporting-1.5.0.tar.gz git-annex: Locking this file would discard any changes you have made to it. Use 'git annex add' to stage your changes. (Or, use --force to override)

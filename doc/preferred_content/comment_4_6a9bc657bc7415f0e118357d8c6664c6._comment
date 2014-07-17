@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="173.162.44.162"
+ subject="comment 4"
+ date="2012-12-07T20:24:18Z"
+ content="""
+Built a new copy of git-annex yesterday.  I have a \"client\" on my macbook, and two \"backup\"s, one on an external HD, one on an ssh git remote.
+
+git annex get --auto works beautifully!
+
+It doesn't seem to work for copying content *to* a place where it's needed, though.
+
+If I drop a file from my \"backup\" USB drive, and then go back to my macbook and do a \"git annex sync\" and \"git annex copy --to=usbdrive --auto\" it does not send the file out to the USB drive, even though by preferred content settings, the USB drive should \"want\" the file because it's a backup drive and it wants all content.
+
+Similarly, if I add a new file on my macbook and then do a \"git annex copy --to=usbdrive auto\" it does not get copied to the USB drive.
+
+Is this missing functionality, or should the preferred content setting for remotes only affect the assistant?
+"""]]

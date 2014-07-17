@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.43"
+ subject="comment 11"
+ date="2014-01-13T18:45:34Z"
+ content="""
+I've handled the cloud repo check by making external special remotes be assumed by default to be globally available via the cloud. So no need to do anything in most cases. For remotes that are only available locally, the remote can reply with \"AVAILABILITY LOCAL\" when git-annex sends an AVAILABILITY request.
+"""]]

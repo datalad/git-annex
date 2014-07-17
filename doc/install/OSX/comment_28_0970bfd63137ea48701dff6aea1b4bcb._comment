@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://alan.petitepomme.net/"
+ nickname="Alan Schmitt"
+ subject="dbus support?"
+ date="2013-10-18T08:24:11Z"
+ content="""
+Hello,
+
+I just compiled git-annex using cabal on OS X, and I see there is no dbus support:
+
+    Assistant/Threads/NetWatcher.hs:26:0:
+         warning: #warning Building without dbus support; will poll for network connection changes
+    
+    Assistant/Threads/MountWatcher.hs:33:0:
+         warning: #warning Building without dbus support; will use mtab polling
+
+Is this problematic? I see I can install dbus using homebrew. If I do so, will I have dbus support (after recompiling git-annex)?
+"""]]

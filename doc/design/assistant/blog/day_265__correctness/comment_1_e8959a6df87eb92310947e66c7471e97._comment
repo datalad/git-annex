@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkF8_uQjLYm5Mf5F_JuVW-BxlvzpWjvR_o"
+ nickname="Andrew"
+ subject="Android success"
+ date="2013-05-16T04:14:09Z"
+ content="""
+I now have my android phone and laptop talking with GTalk and used a remote ssh server to synchronise files.
+
+Photos are flowing from my phone to my laptop quite happily. Magic.
+
+Would help to exclude .thumbnails from the DCIM directory on the phone though...
+"""]]

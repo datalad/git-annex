@@ -1,0 +1,13 @@
+The current behaviour of 'fsck' is a bit verbose. I have an annex'd directory of tarballs for my own build system for "science" applications, there's about ~600 or so blobs in my repo, I do occassionally like to run fsck across all my data to see what files don't meet the min num copies requirement that I have set.
+
+Would it be better for the default behaviour of fsck when it has not been given a path to only output errors and not bother to show that a file is ok for every single file in a repo. i.e.
+
+    git annex fsck
+
+should show only 'errors' and maybe a simple indicator showing the status (show a spinner or dots?) and when 
+
+    git annex fsck PATH/FILE 
+
+it should have the current behaviour? 
+
+Right now the current fsck behaviour might get annoying for anyone who would want to run fsck with repos with lots of big files.

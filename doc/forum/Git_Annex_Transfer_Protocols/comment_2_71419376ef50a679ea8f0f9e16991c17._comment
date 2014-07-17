@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlYu7QmD7wrbHWkoxuriaA9XcijM-g5vrQ"
+ nickname="Royal"
+ subject="Protocols to transfer file content"
+ date="2012-05-10T18:48:40Z"
+ content="""
+Thanks, Is git annex is using same protocols as normal git to transfer content between normal git repositories?
+"""]]

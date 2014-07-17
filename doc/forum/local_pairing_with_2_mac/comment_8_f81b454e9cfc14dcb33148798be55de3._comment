@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnfC02DTOZygFDDvvg0maRciYYMhEIFgkw"
+ nickname="Utku"
+ subject="comment 8"
+ date="2013-12-12T22:03:54Z"
+ content="""
+you mean /Applications/git-annex.app/Contents/MacOS/bundle/cp ?
+
+on both computers it prints : 
+usage: cp [-R [-H | -L | -P]] [-fi | -n] [-apvX] source_file target_file
+       cp [-R [-H | -L | -P]] [-fi | -n] [-apvX] source_file ... target_directory
+
+
+/Volumes/git-annex/git-annex.app/Contents/MacOS/bundle/cp doesn't work
+
+"""]]

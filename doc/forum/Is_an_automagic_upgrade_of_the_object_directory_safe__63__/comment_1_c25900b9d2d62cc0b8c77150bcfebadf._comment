@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2011-03-18T00:38:51Z"
+ content="""
+These are good examples; I think you've convinced me at least for upgrades going forward after v2. I'm not sure we have enough users and outdated git-annex installations to worry about it for v1.
+
+(Hoping such upgrades are rare anyway.. Part of the point of changes made in v2 was to allow lots of changes to be made later w/o needing a v3.)
+
+Update: Upgrades from v1 to v2 will no longer be handled automatically
+now.
+"""]]

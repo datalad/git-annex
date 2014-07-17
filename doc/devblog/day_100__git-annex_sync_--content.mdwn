@@ -1,0 +1,4 @@
+Spent the day building this new feature, which makes `git annex sync --content`
+do the same synchronization of file contents (to satisfy preferred content
+settings) that the assistant does. The result has not been tested a lot
+yet, but seems to work well.

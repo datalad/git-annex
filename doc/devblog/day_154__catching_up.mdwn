@@ -1,0 +1,13 @@
+Worked through message backlog today. Got it down from around 70 to just
+37. Was able to fix some bugs, including making the webapp start up more
+robustly in some misconfigurations.
+
+Added a new `findref` command which may be useful in a git `update` hook to
+deny pushes of refs if the annexed content has not been sent first.
+
+----
+
+BTW, I also added a new `reinit` command a few days ago, which can be
+useful if you're cloning back a deleted repository.
+
+Also a few days ago, I made `uninit` a *lot* faster.

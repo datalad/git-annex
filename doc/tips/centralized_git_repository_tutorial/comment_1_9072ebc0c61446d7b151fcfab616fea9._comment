@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkC0W3ZQERUaTkHoks6k68Tsp1tz510nGo"
+ nickname="Georg"
+ subject="sync, push, pull with/to/from centralized bare repository"
+ date="2013-10-07T06:45:19Z"
+ content="""
+Hi Joey,
+
+thanks for tutorial with the centralized repo. I am currently trying to set up a central bare repo for two clients (they cannot communicate directly with each other). I am not sure if I am pushing/pulling the right way.
+
+On the server I did:
+
+    git init --bare
+    git annex init origin
+
+On Cĺient Alice (I want to give Bob a chance get call \"git annex get\" from \"origin\"):
+
+    git clone ssh://tktest@192.168.56.104/~/annex .
+    git annex init Alice
+    git annex merge
+    git annex add .
+    git commit -a -m \"Added tutorial\"
+    git push origin master git-annex
+    git annex copy . --to origin
+
+On Client Bob I have called \"clone, init, merge, add, push, copy\" also.
+
+Now the tricky part - do I have to call \"git annex sync\" at Alice's side to get the updates from Bob over origin?
+I ran into troubles if I called \"copy --to origin\" before \"git push origin master git-annex\". How can I resolve a non-fast-forware on the git-annex branch?
+Some notes about how to sync over a central bare repo would be nice here =)
+
+Thanks a lot, Georg
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.41"
+ subject="comment 5"
+ date="2014-03-26T18:56:30Z"
+ content="""
+@Matthias you need to install git-annex 4.20130709 or newer. Then `git-annex merge` will do what you want. As I said before. 
+
+As for committing the merge, you can always adjust the result after the fact and use `git commit --amend`.
+"""]]

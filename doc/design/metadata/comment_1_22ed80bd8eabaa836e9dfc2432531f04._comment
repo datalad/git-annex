@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm3vKzS4eOWYpKMoYXqMIjNsIg_nYF-loU"
+ nickname="Konubinix"
+ subject="Already existing metadata implementation "
+ date="2014-02-22T21:45:25Z"
+ content="""
+Hi,
+
+I love the idea behing storing metadata.
+
+I suggest to exchange ideas (and maybe code) with projects already implementing metadata systems.
+
+I have tried several implementations and particularly noticed tmsu (http://tmsu.org/). This tool stores tags into a sqlite database and uses also a SHA-256 fingerprint of the file to be aware of file moves. It provides a fuse view of the tags with the ability to change tags by moving files (like in the git annex metadata view).
+
+Paul Ruane is particularly responsive on the mailing list and he already supports git annexed files (with SHAE-256 fingerprint) (see the end of the thread https://groups.google.com/forum/#!topic/tmsu/A5EGpnCcJ2w).
+
+Even if you cannot reuse the project, they are interresting ideas that might be worth looking at like the implications of tags: a file tagged \"film\" being automatically tagged \"video\".
+
+Tagsistant (http://www.tagsistant.net/) may also be a good source of inspirations. I just don't like the fact that it uses a backstore of tagged files.
+
+Thanks for reading.
+"""]]

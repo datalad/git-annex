@@ -1,0 +1,101 @@
+[[!toc]]
+
+git-annex mostly does not use encryption. Anyone with access to a git
+repository can see all the filenames in it, its history, and can access
+any annexed file contents.
+
+Encryption is needed when using [[special_remotes]] like Amazon S3, where
+file content is sent to an untrusted party who does not have access to the
+git repository.
+
+Such an encrypted remote uses strong ([[symmetric|design/encryption]] or
+asymmetric) encryption on the contents of files, as well as HMAC hashing
+of the filenames. The size of the encrypted files, and access patterns
+of the data, should be the only clues to what is stored in such a
+remote.
+
+You should decide whether to use encryption with a special remote before
+any data is stored in it. So, `git annex initremote` requires you
+to specify "encryption=none" when first setting up a remote in order
+to disable encryption. To use encryption, you run 
+run `git-annex initremote` in one of these ways:
+
+* `git annex initremote newremote type=... encryption=hybrid keyid=KEYID ...`
+* `git annex initremote newremote type=... encryption=shared`
+* `git annex initremote newremote type=... encryption=pubkey keyid=KEYID ...`
+
+## hybrid encryption keys
+
+The [[hybrid_key_design|design/encryption]] allows additional
+encryption keys to be added on to a special remote later. Due to this
+flexibility, it is the default and recommended encryption scheme.
+ 
+	git annex initremote newremote type=... [encryption=hybrid] keyid=KEYID ...
+
+Here the KEYID(s) are passed to `gpg` to find encryption keys. 
+Typically, you will say "keyid=2512E3C7" to use a specific gpg key.
+Or, you might say "keyid=joey@kitenet.net" to search for matching keys.
+
+To add a new key and allow it to access all the content that is stored
+in the encrypted special remote, just run `git annex
+enableremote` specifying the new encryption key:
+
+	git annex enableremote myremote keyid+=788A3F4C
+
+While a key can later be removed from the list, note that
+that will **not** necessarily prevent the owner of the key
+from accessing data on the remote (which is by design impossible to prevent,
+short of deleting the remote). In fact the only sound use of `keyid-=` is
+probably to replace a revoked key:
+
+	git annex enableremote myremote keyid-=2512E3C7 keyid+=788A3F4C
+
+See also [[encryption_design|design/encryption]] for other security
+risks associated with encryption.
+
+## shared encryption key
+
+Alternatively, you can configure git-annex to use a shared cipher to
+encrypt data stored in a remote. This shared cipher is stored,
+**unencrypted** in the git repository. So it's shared among every
+clone of the git repository. 
+	
+	git annex initremote newremote type=... encryption=shared
+
+The advantage is you don't need to set up gpg keys. The disadvantage is
+that this is **insecure** unless you trust every clone of the git
+repository with access to the encrypted data stored in the special remote.
+
+## regular public key encryption
+
+This alternative simply encrypts the files in the special remotes to one or
+more public keys. It might be considered more secure due to its simplicity
+and since it's exactly the way everyone else uses gpg.
+
+	git annex initremote newremote type=.... encryption=pubkey keyid=KEYID ...
+
+A disavantage is that is not easy to later add additional public keys
+to the special remote. While the `enableremote` parameters `keyid+=` and
+`keyid-=` can be used, they have **no effect** on files that are already
+present on the remote. Probably the only use for these parameters is 
+to replace a revoked key:
+
+	git annex enableremote myremote keyid-=2512E3C7 keyid+=788A3F4C
+
+But even in this case, since the files are not re-encrypted, the revoked
+key has to be kept around to be able to decrypt those files.
+(Of course, if the reason for revocation is
+that the key has been compromised, it is **insecure** to leave files
+encrypted using that old key, and the user should re-encrypt everything.)
+
+(Because filenames are MAC'ed, a cipher still needs to be
+generated (and encrypted to the given key IDs).)
+
+## MAC algorithm
+
+The default MAC algorithm to be applied on the filenames is HMACSHA1. A
+stronger one, for instance HMACSHA512, one can be chosen upon creation
+of the special remote with the option `mac=HMACSHA512`. The available
+MAC algorithms are HMACSHA1, HMACSHA224, HMACSHA256, HMACSHA384, and
+HMACSHA512. Note that it is not possible to change algorithm for a
+non-empty remote.

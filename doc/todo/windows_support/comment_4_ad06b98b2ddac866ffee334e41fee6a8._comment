@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlc1og3PqIGudOMkFNrCCNg66vB7s-jLpc"
+ nickname="Paul"
+ subject="Re: What about NTFS support?"
+ date="2012-08-16T19:30:38Z"
+ content="""
+I successfully use git-annex on an NTFS formatted external USB drive, so yes, it is possible and works well.
+"""]]

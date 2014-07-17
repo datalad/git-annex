@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.154"
+ subject="comment 2"
+ date="2014-03-12T17:16:59Z"
+ content="""
+BTW expressing this in the preferred content as above also has the benefit that you can use the new `git annex sync --content` on the desktop and it will automatically get files, copy the right ones to the phone, and drop any then-unwanted files.
+"""]]

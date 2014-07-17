@@ -1,0 +1,23 @@
+... I'm getting tired of kqueue.
+
+But the end of the tunnel is in sight. Today I made git-annex handle files
+that are still open for write after a kqueue creation event is received.
+Unlike with inotify, which has a new event each time a file is closed,
+kqueue only gets one event when a file is first created, and so git-annex
+needs to retry adding files until there are no writers left.
+
+Eventually I found an elegant way to do that. The committer thread already
+wakes up every second as long as there's a pending change to commit. So for
+adds that need to be retried, it can just push them back onto the change
+queue, and the committer thread will wait one second and retry the add. One
+second might be too frequent to check, but it will do for now.
+
+This means that `git annex watch` should now be usable on OSX, FreeBSD, and
+NetBSD! (It'll also work on Debian kFreeBSD once [lsof is ported to it](http://bugs.debian.org/589103).)
+I've meged kqueue support to `master`.
+
+I also think I've squashed the empty commits that were sometimes made.
+
+Incidentally, I'm 50% through my first month, and finishing [[inotify]]
+was the first half of my roadmap for this month. Seem to be right on
+schedule.. Now I need to start thinking about [[syncing]].

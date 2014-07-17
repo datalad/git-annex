@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 8"
+ date="2013-04-16T20:46:09Z"
+ content="""
+@edheil, you used to be right about the middleman. But I'm continually improving things. :)
+
+So, consider this situation:
+
+> A (client) --- B (client) ---- C (archive)
+
+If a file is created on A, inside an `archive` directory, B wants a copy, since it's not archived yet. Once B gets the copy, it sends it on the C. At that point, B notices that hey, this file was archived and is in an archive directory, and so it no longer wants its copy and drops it.
+
+(At this point A will also want to drop the file. However, it cannot! This is because git-annex requires positive, direct verification that some other repository has a file before dropping it, and A cannot talk to C to check.
+However, if you set C to be trusted, this verification is bypassed, and then A will be able to drop the file as well.)
+
+This support for middlemen is a new feature, which will be in the next release. You can get it in any recent nightly build.
+
+Amusingly this feature was built without writing any haskell code.. just fine-tuning the preferred content expressions!
+
+We can also consider what happens if B is set to manual. In this case, it won't automatically get the file from A. But if you manually get it, then B will send it on to C. And A will drop the file once it hears that C has it. Due to the manual mode, you'll have to manually drop it from B of course.
+"""]]

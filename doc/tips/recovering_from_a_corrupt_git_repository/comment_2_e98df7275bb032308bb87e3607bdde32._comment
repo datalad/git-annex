@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://id.clacke.se/"
+ nickname="clacke"
+ subject="comment 2"
+ date="2013-11-12T16:14:50Z"
+ content="""
+I am using git-annex 20131106 and I tried `git annex repair` first. It seems git is making assumptions that if I have object A then I must have object B that A depends on. Or maybe it freaks out because the object is not missing, just full of zeroes. I haven't done any analysis on exactly what situation causes this. When I have time, I will.
+"""]]

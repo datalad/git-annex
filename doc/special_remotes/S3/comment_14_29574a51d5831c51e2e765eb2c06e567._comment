@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 14"
+ date="2013-05-24T16:45:25Z"
+ content="""
+I apologise for incorrect information. I was thinking about defaults when using the webapp.
+
+I have verified that embedcreds=yes stores the AWS creds, always.
+
+
+"""]]

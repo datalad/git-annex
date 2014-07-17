@@ -1,0 +1,6 @@
+Hi, I have installed latest version from https://launchpad.net/~rubiojr/+archive/git-annex, that is git-annex version: 3.20121017-ubuntu1ppa1~precise
+When running git annex webapp I get 
+
+git-annex: unknown command webapp
+
+I only installed git-annex. Are there more packages to be installed to make it work?

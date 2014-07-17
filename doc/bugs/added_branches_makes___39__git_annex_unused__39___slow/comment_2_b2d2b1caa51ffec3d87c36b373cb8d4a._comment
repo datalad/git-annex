@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~arand"
+ nickname="arand"
+ subject="comment 2"
+ date="2013-02-27T15:53:37Z"
+ content="""
+Hmm, indeed, after further testing it seems like the increased time due to the duplicate branch seems to have been a random quirk, bleh :(
+
+But shouldn't it theoretically be possible to optimize out much of the overhead of multiple very-similar (though not identical) branches though?
+
+I've experimented around with ls-tree and cat-file in a bash script[1], and in this primitive implementation the running time seems to be considerably lower (~0.3s vs ~4s), with much less overhead for extra very-similar branches (~0.7s vs ~37s)
+
+Am I missing some key element that's the reason for the time taken by git annex unused?
+
+
+[1] primitive annex unused script: [https://gitorious.org/arand-scripts/arand-scripts/blobs/master/annex-funused](https://gitorious.org/arand-scripts/arand-scripts/blobs/master/annex-funused)
+
+timing script: [https://gitorious.org/arand-scripts/arand-scripts/blobs/master/annex-testunused](https://gitorious.org/arand-scripts/arand-scripts/blobs/master/annex-testunused)
+
+"""]]

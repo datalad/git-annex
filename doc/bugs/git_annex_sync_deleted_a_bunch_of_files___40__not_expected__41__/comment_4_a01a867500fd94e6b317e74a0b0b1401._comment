@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.154"
+ subject="comment 4"
+ date="2014-03-13T15:54:28Z"
+ content="""
+Did you run `git log --stat` and look for a commit that deleted a lot of files?
+"""]]

@@ -1,0 +1,36 @@
+I don't know if this is an "unusual setup" or something that should be supported, but it seems like a reasonable use case to me, so here goes:
+
+I have three systems: a desktop, a laptop, and a little netbook.  I have one main annex that is currently synced between the desktop and the laptop at ~/annex on both, and to a secondary, Full Backup repo on the desktop, under /mnt.
+
+I have some music on my laptop, and I like to sync ~/Music between the laptop and the netbook.  So I thought I'd make a new git-annex repo at ~/Music on both and sync them.  I want this to be kept separate from ~/annex.
+
+I also thought it would be good to backup the music, so I thought I'd connect laptop:~/Music to the Full Backup repo at desktop:/mnt.  So I paired the repo at laptop:~/Music to the repo at desktop:/mnt.
+
+So I had set up these repos:
+
+* desktop:
+  * /mnt  (Full Backup)
+  * ~/annex  (Client)
+* laptop:
+  * ~/annex  (Client)
+  * ~/Music  (Client)
+* netbook:
+  * ~/Music  (Client)
+
+As I feared--but I wasn't sure, since I'm new to git-annex--since the desktop:/mnt repo was connected to laptop:~/Music, and desktop:~/mnt was also connected to desktop:~/annex,  this caused everything in laptop:~/Music to be synced to desktop:~/annex, because they were part of the same "set" of repos; they were all in the same .git/config files.
+
+So now I have a few problems:
+
+1.  How do I get all these music files out of my ~/annex repos?  I tried removing the remote repos from ~/annex/.git/config and then running 'git-annex unused', but that didn't result in it thinking all the music files were unused.  Do I have to delete them all manually?  (There are a *lot* of directories from ~/Music now in ~/annex).
+
+2.  It seems that desktop:~/annex/.git is...now over 600 MB, even though few of the actual music files have synced over.  Is it possible to clean out ~/annex/.git and restore it to the pre-mess state without starting from scratch?
+
+3.  Is it possible--or reasonable--to use a single Full Backup repo for multiple independent client repos?  That is, is it possible to do that without the independent client repos "cross-pollinating"?  Or do I need to use separate Full Backup repos for each "set" of client repos?
+
+4.  I'm not sure if this is a separate problem, but I just want to make sure I understand the best way to handle things like this.  I wanted to disconnect desktop:~/annex from laptop:~/Music, but I thought that if I used the webapp to "Delete" the laptop:~/Music repo, it would actually start deleting the music files in laptop:~/Music, after moving them to desktop:~/annex.  Am I correct that that would have happened?  If so, "Deleting" a repo seems like a dangerous operation that should warn and prompt the user.  Maybe an "unlink repo" option needs to be available to simply disconnect two repos and leave their respective contents intact.
+
+I apologize if these are newbie problems.  Despite reading every dev blog entry--both before and after the switchover--I'm still new to actually using git-annex.  I'm not sure if it's supposed to work this way or if I'm using it wrong.
+
+If I am using it wrong...well, I can imagine other git-annex newbies doing similar things and ending up with similar messes, so maybe this needs to...be considered or something.  :)  Since I'm still experimenting with git-annex, I haven't put any "live" data in it, so I can blow away all the annexes and start over, but I would like to learn how to properly fix a situation like this in case I goof up in the future.
+
+Thanks for your help.

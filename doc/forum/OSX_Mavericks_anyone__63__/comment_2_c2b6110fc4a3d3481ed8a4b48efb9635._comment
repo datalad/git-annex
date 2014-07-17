@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="Alex"
+ ip="217.8.62.35"
+ subject="not at all"
+ date="2013-10-24T19:50:11Z"
+ content="""
+I'd love to see an updated OS X build for Mavericks.
+
+Currently I'm getting this error:
+
+    dyld: Symbol not found: _objc_debug_taggedpointer_mask
+      Referenced from: /System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation
+      Expected in: /Applications/git-annex.app/Contents/MacOS/bundle/I
+     in /System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation
+    Trace/BPT trap: 5
+
+"""]]

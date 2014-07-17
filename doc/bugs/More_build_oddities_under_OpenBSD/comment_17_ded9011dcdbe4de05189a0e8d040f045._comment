@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.163"
+ subject="comment 17"
+ date="2014-02-08T21:23:02Z"
+ content="""
+Blow away ~/.ghc and ~/.cabal; cabal update; put `library-profiling: True` in ~/.cabal/config; and reinstall everything.
+
+Note that you may need to first build ghc's own bundled libraries with profiling support, if your ghc installation does not already include them. I don't know how to do that since on debian I can just `apt-get install ghc-prof`. If that's needed, ghc will tell you and refuse to build stuff with profiling.
+"""]]

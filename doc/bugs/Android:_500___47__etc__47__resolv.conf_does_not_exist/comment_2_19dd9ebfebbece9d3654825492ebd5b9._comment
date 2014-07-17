@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawknsDuoV1R2hz6QoCJmMFWLmWgdZfULjMI"
+ nickname="Jakob"
+ subject="Moto G"
+ date="2013-12-02T13:53:55Z"
+ content="""
+Same proplem on a Moto G - Android 4.3 - not rooted / Stock
+
+running git-annex version 5.20131202-g5b9eb74
+
+Error Message: 
+
+    /etc/resolv.conf: openFile: does not exist (No such file or directory)
+
+command-line output:
+
+    Falling back to hardcoded app location; cannot find expected files in /data/app-lib
+    git annex webapp
+    ex webapp                                    
+"""]]

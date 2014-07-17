@@ -1,0 +1,24 @@
+Finally wrapped up progress bars; upload progress is now reported in all
+situations. 
+
+After all that, I was pleased to find a use for the progress info, beyond
+displaying it to the user. Now the assistant uses it to decide whether it
+makes sense to immediately retry a failed transfer. This should make it
+work nicely, or at least better, with flaky network or drives.
+
+The webapp crashed on startup when there was no `~/.gitconfig`.
+Guess all of us who have tried it so far are actual git users,
+but I'm glad I caught this before releasing the beta.
+
+Jimmy Tang kindly took on making a OS X .app directory for git-annex.
+So it now has an icon that will launch the webapp. 
+[[!img /assistant/osx-app.png]]
+
+I'm getting lots of contributors to git-annex all of a sudden. I've had 3
+patches this weekend, and 2 of them have been to Haskell code.
+Justin Azoff is working on [[todo/incremental_fsck]], and Robie Basak
+has [gotten Amazon Glacier working](https://github.com/basak/glacier-cli)
+using the hook special remote.
+
+Started doing some design for [[transfer_control]]. I will start
+work on this after releasing the first beta.

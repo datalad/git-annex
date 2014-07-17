@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.3"
+ subject="comment 2"
+ date="2014-05-21T18:06:09Z"
+ content="""
+I've verified that the assistant is serving up the files, such as http://127.0.0.1:$port/static/fonts/glyphicons-halflings-regular.svg
+
+I've verified that the files it's serving have the right content.
+
+This seems to only leave the likely explanation that the android web browser doesn't support the technology bootstrap 3 is using for its icons. This is svg, plus ttf, plus Embedded OpenType and Web Open Font Format. (I suppose it uses different ones on different browsers.)
+
+I'm surprised that bootstrap would be using web fonts technology if it's not supported on Android, or wouldn't have a fallback to the plain old image method old versions of bootstrap used.
+
+I have found some bootstrap bugs about icons not showing up on Android, like this one <https://github.com/twbs/bootstrap/issues/10106> ... but those are about specific icons not showing up due to unicode issues. Not about all icons failing to show up.
+"""]]

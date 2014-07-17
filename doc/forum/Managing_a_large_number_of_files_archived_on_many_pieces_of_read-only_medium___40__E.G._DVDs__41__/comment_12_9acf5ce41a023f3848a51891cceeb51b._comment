@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~arand"
+ nickname="arand"
+ subject="comment 12"
+ date="2013-03-11T10:34:42Z"
+ content="""
+Without having read this, I've reported a very similar wishlist item at:
+[http://git-annex.branchable.com/todo/wishlist:_recursive_directory_remote_setup__47__addurl](http://git-annex.branchable.com/todo/wishlist:_recursive_directory_remote_setup__47__addurl)
+
+combining a recursive addurl (in my case using --fast) script with the suggestions regarding symlinks here, it's somewhat workable:
+
+    ln -s /media/cdrom /var/tmp/mycdrom123
+    ~/utv/scripts/annex-importdir /var/tmp/mycdrom123
+
+Ideally though, for optical media it would have a couple of more features (some already noted above):
+
+* Ability to form a (reasonably) unique identifier from a disc, using the label and the date of creation
+  * Ability for Annex to identify discs using this and ask for the correct disc if the file does not match (accomodating RW discs where label and date might change, or simply disc copies)
+    * Example: `not the original disc... trying anyway... file hash mismatch... please enable the remote disc with \"MYLABEL\" and creation date \"2001-01-01\"`
+* Option to checksum without importing the actual objects into the annex
+"""]]

@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm0sGxsiJ7yj5iQsF-A5tEl6XKOGQieqEo"
+ nickname="Matthew"
+ subject="Writing papers"
+ date="2013-07-04T15:32:24Z"
+ content="""
+I'm a graduate student, so I write a lot.  I started using git to manage my latex sources a while ago, but I didn't like gumming up my repository with a bunch of figures (large binaries). I was constantly forgetting to scp the latest versions of my figures from here to there (as I do my work on a number of different computers.)  Git annex gives me a good way to version the figures and manage them with the same tool I'm using for the text.  
+
+My use case seems pretty far from typical, judging from the other comments here, so I thought I should add my two cents!  I'm constantly trying to sell this approach to my fellow students.
+
+Also, I'm going to slip in a plug for another great Haskell project here -- Pandoc. I work with people who suggest changes to my drafts, but only using Word's \"Track Changes\".  So now I'm generating Word docs from Pandoc markdown for my collaborators to edit.  When it comes time to publish, I can convert my markdown to latex and clean up the formatting.  
+
+Why are all the really cool projects written in Haskell? :)  
+"""]]

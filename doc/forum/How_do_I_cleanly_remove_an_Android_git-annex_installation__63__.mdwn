@@ -1,0 +1,1 @@
+I had accidentally chosen the wrong directory for the repository. What should I do to clean all of git-annex?

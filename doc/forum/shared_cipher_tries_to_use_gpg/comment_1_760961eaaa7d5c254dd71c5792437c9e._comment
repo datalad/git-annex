@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.23"
+ subject="comment 1"
+ date="2012-10-23T19:51:03Z"
+ content="""
+That's the right syntax, and it works when I try it, even if I move my `~/.gnupg` directory away.
+
+You sure you have a new enough git-annex for the shared cipher feature? It appeared in version 3.20120430
+
+You could try passing the `--debug` option to see what it's trying to do with gpg when it fails.
+"""]]

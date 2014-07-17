@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnaH44G3QbxBAYyDwy0PbvL0ls60XoaR3Y"
+ nickname="Nigel"
+ subject="Watcher crashed in Android on /storage/sdcard1 - bug?"
+ date="2013-07-29T11:50:46Z"
+ content="""
+In webapp UI, added on first install, the location for repository: /storage/sdcard1
+
+!warning
+
+Watcher crashed: addWatch:
+
+permission denied (Permission denied)
+
+[Restart Thread]
+
+:Performing startup scan
+
+
+In terminal Window 1:
+
+nex webapp                                         <
+
+  Detected a crippled filesystem.
+
+  Enabling direct mode.
+
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+
+Android 4.1.1 Huawei Y300 Annex.apk v1.0.52 version 4.20130723
+"""]]

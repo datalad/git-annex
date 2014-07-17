@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.255.110"
+ subject="comment 1"
+ date="2013-09-09T06:01:18Z"
+ content="""
+From the small bit of log posted, it seems to be failing to sync over XMPP. Perhaps the XMPP server is down or it cannot connect? You can turn on debugging to get a lot more debugging about XMPP sync attempts.
+"""]]

@@ -1,0 +1,47 @@
+**&lt;out-of-date-warning&gt;**The main problems this is supposed to solve are addressed in a different way with [[todo/hidden files]] and the `--fast` option introduced in [[batch check on remote when using copy]], so while this is not technically obsolete, the main reasons for it are gone. --[[chrysn]]**&lt;/out-of-date-warning&gt;**
+
+This is a rough sketch of a modification of git-annex to rely more on git commit semantics. It might be flawed due to my lack of understanding of git-annex internals. --[[chrysn]]
+
+Summary
+=========
+
+Currently, [[location tracking]] is only used for informational purposes unless a repository is [[trust]]ed, in which case there is no checking at all. It is proposed to use the location tracking information as a commitment to keep track of a file until another repository takes over responsibility.
+
+git's semantics for atomic commits are proposed to be used, which makes sure that before files are actually deleted, another repository has accepted the deletion.
+
+Modified git-annex-drop behavior
+==========================
+
+The most important (if not only) git-annex command that is affected by this is `git annex drop`. Currently, for dropping a large number of files, every file is checked with another (or multiple, if so configured) host if it's safe to delete.
+
+The new behavior would be to
+
+* decrement the location tracking counter for all files to be dropped,
+* commit that change,
+* try to push it to at least as many repositories that the numcopies constraints are met,
+* revert if that fails,
+* otherwise really drop the files from the backend.
+
+Unlike explicit checking, this never looks at the remote backend if the file is really present -- otoh, git-annex already relies on the files in the backend to not be touched by anyone but git-annex itself, and git-annex would only drop them if they were derefed and committed, in which case git would not accept the push. (git by itself would accept a merged push, but even if the reverting step failed due to a power outage or similar, git-annex would, before really deleting files from the backend, check again if the numcopies restraint is still met, and revert its own delete commit as the files are still present anyway.)
+
+Implications for trust
+==============
+
+The proposed change also changes the semantics of trust. Trust can now be controlled in a finer-grained way between untrusted and semi-trusted, as best illustrated by a use case:
+
+> Alice takes her netbook with her on a trip through Spain, and will fill most of its disk up with pictures she takes. As she expects to meet some old friends during the first days, she wants to take older pictures with her, which are safely backed up at home, so they can be deleted on demand.
+>
+> She tells her netbook's repository to dereference the old images (but not other parts of the repository she has not copied anywhere yet) and pushes to the server before leaving. When she adds pictures from her camera to the repository, git-annex can now free up space as needed.
+
+Dereferencing could be implemented as `git annex drop --no-rm` (or `move --no-rm`), freeing space is similar to `dropunused`.
+
+A trusted repository with the new semantics would mean that the repository would not accept dropping anything, just as before.
+
+Advantages / Disadvantages
+=====================
+
+The advantage of this proposal is that the round trips required for dropping something could be greatly reduced.
+
+There should also be simplifications in the `git annex drop` command as it doesn't need to take care of locking any more (git should already do that between checking if HEAD is a parent of the pushed commit and replacing HEAD).
+
+Besides being a major change in git-annex (with the requirement to track hosts' git-annex versions for migration, as the new trust system is incompatible with the old one), no disadvantages of that stragegy are known to the author (hoping for discussion below).

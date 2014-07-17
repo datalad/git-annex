@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.146"
+ subject="comment 5"
+ date="2014-03-05T20:49:20Z"
+ content="""
+Yes, the key is in the git repository.
+
+While XMPP is an unreliable transport, it either manages to git pull over it, or it fails, git does not allow partial or corrupt pulls.
+"""]]

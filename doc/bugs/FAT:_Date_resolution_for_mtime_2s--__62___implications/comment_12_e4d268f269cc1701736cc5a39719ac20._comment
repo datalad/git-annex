@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 12"
+ date="2014-06-11T18:05:48Z"
+ content="""
+The resolution problem does not seems to affect Windows, at least not on NTFS. In my tests, the mtime is fully preserved across reboots there.
+
+However, any change to the timezone on Windows does manage to mess up all the timestamps. Presumably this same flawed approach is used for DST adjustments.
+
+Example from inode cache after a 1 hour time zone change, which forced git-annex add to re-checksum:
+
+<pre>
+--1 2221 1395843799
++-1 2221 1395847399
+</pre>
+
+Of course, not all time zones are 1 hour offset, so as a heuristic, treating timestamps +- 60*60*Int as the same, would be pretty bad. Instead, it would probably make sense, on windows, to normalize the timestamp, using the current time zone, to get to the UTC timestamp. (Of course on unix, a file's timestamp is always given in UTC.)
+
+Unfortunately, Data.Time.LocalTime.getCurrentTimeZone doesn't seem to really work on windows. It always returns UTC+1 in my tests.
+
+Anyway, I'm now looking at this as two separate problems, the Windows Time Zone Sucks problem and the FAT Metadata Sucks problem. They will probably have different solutions..
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmWBvsZvSsAL8P2ye3F0OBStjFCVnOImzM"
+ nickname="Jarno"
+ subject="Non-E backend drawbacks?"
+ date="2013-10-30T21:25:00Z"
+ content="""
+The page states \"[non-E backends] can confuse some programs\". I like the ideal simplicity and recoverability of pure checksum backends but \"confusion\" sounds a bit worrying. Any practical examples of these problems to help me choose?
+"""]]

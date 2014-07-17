@@ -1,0 +1,27 @@
+From 8e78a25ce0cc19e52d063f66bd4cd316462393d4 Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Thu, 6 Mar 2014 23:27:06 +0000
+Subject: [PATCH] disable th
+
+---
+ monad-logger.cabal | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/monad-logger.cabal b/monad-logger.cabal
+index b0aa271..cd56c0f 100644
+--- a/monad-logger.cabal
++++ b/monad-logger.cabal
+@@ -14,8 +14,8 @@ cabal-version:       >=1.8
+ 
+ flag template_haskell {
+       Description: Enable Template Haskell support
+-      Default:     True
+-      Manual:      True
++      Default:     False
++      Manual:      False
+ }
+ 
+ library
+-- 
+1.9.0
+

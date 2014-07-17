@@ -1,0 +1,17 @@
+After a while, you'll have several annexes, with different file contents.
+You don't have to try to keep all that straight; git-annex does 
+[[location_tracking]] for you. If you ask it to get a file and the drive
+or file server is not accessible, it will let you know what it needs to get
+it:
+
+	# git annex get video/hackity_hack_and_kaxxt.mov
+	get video/_why_hackity_hack_and_kaxxt.mov (not available)
+	  Unable to access these remotes: usbdrive, server
+	  Try making some of these repositories available:
+	  	5863d8c0-d9a9-11df-adb2-af51e6559a49  -- my home file server
+	   	58d84e8a-d9ae-11df-a1aa-ab9aa8c00826  -- portable USB drive
+	   	ca20064c-dbb5-11df-b2fe-002170d25c55  -- backup SATA drive
+	failed
+	# sudo mount /media/usb
+	# git annex get video/hackity_hack_and_kaxxt.mov
+	get video/hackity_hack_and_kaxxt.mov (from usbdrive...) ok

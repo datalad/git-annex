@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkzwmw_zyMpZC9_J7ey--woeYPoZkAOgGw"
+ nickname="dxtrish"
+ subject="comment 14"
+ date="2014-02-08T20:29:46Z"
+ content="""
+Sigh.. Ofcourse it was an old version. It never occurred to me to check that. I was just Googling around and stumbled over that page.
+Do you have any pointers on how I would debug this further?
+
+Regarding the linking; I haven't checked it any further actually. I'm planning on investigating that further once I can get this error sorted out. But my hypothesis is that it's all statically linked all the way through, like I said. That would also explain those error messages I got during linking before.
+"""]]

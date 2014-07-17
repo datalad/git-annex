@@ -1,0 +1,27 @@
+Preparing for a release (probably tomorrow or Friday).
+
+Part of that was updating the autobuilders. Had to deal with the gnutls
+security hole fix, and upgrading that on the OSX autobuilder turned out to
+be quite complicated due to library version skew. Also, I switched the
+linux autobuilders over to building from Debian unstable, rather than
+stable. That should be ok to do now that the standalone build bundles all
+the libraries it needs... And the arm build has always used unstable, and
+has been reported working on a lot of systems. So I think this will be
+safe, but have backed up the old autobuilder chroots just in case.
+
+Also been catching up on bug reports and traffic and 
+and dealt with quite a lot of things today. Smarter log file
+rotation for the assistant, better webapp behavior when git is not
+installed, and a fix for the webdav 5 second timeout problem.
+
+Perhaps the most interesting change is a new `annex.startupscan` setting,
+which can be disabled to prevent the assistant from doing the expensive
+startup scan. This means it misses noticing any files that changed since it
+last run, but this should be useful for those really big repositories.
+
+(Last night, did more work on the test suite, including even more checking
+of merge conflict resolution.)
+
+----
+
+Today's work was sponsored by Michael Alan Dorman.

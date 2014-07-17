@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://yarikoptic.myopenid.com/"
+ nickname="site-myopenid"
+ subject="asking for ssh password in the terminal (not in web ui)"
+ date="2013-05-24T23:49:40Z"
+ content="""
+not sure if that is a known issue:  whenever \"remote server\" is added, password needs to be typed back in the original terminal... is a bit challenging to do on android and not straightforward user-wise  
+"""]]

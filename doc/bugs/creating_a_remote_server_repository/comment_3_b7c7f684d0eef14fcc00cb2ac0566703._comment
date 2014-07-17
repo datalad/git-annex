@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.64"
+ subject="comment 3"
+ date="2013-12-01T20:10:02Z"
+ content="""
+The bug your are commenting on is over a year old, and is closed, and does not involve Android. If you're having trouble with android, file a new bug report.
+
+On android, git-annex runs from a terminal app. The ssh password prompting is currently done inside that app.
+"""]]

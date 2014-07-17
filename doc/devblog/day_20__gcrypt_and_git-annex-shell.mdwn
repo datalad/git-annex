@@ -1,0 +1,14 @@
+Added support for gcrypt remotes to git-annex-shell. Now gcrypt special
+remotes probe when they are set up to see if the remote system has a
+suitable git-annex-shell, and if so all commands are sent to it. Kept the
+direct rsync mode working as a fallback.
+
+It turns out I made a bad decision when first adding gcrypt support to
+git-annex. To make implementation marginally easier, I decided to not
+put objects inside the usual `annex/objects` directory in a gcrypt remote.
+But that lack of consistency would have made adding support to
+git-annex-shell a lot harder. So, I decided to change this. Which 
+means that anyone already using gcrypt with git-annex will need to
+[[manually_move_files_around|upgrades/gcrypt]].
+
+Today's work was sponsored by Tobias Nix.

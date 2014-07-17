@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 1"
+ date="2013-08-15T09:02:38Z"
+ content="""
+Sounds like you want to switch to [[direct mode]].
+
+(Or possibly to run `git annex unannex`, if you don't want to use git-annex for these files.)
+"""]]

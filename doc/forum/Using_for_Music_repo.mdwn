@@ -1,0 +1,13 @@
+Hi, 
+
+I am looking into using git-annex to sync my Music between 3 sources: desktop, laptop, backup, but I'm not sure if this will work ok.
+
+I notice on the wiki that:  "Normally, the content of files in the annex is prevented from being modified. That's a good thing, because it might be the only copy, you wouldn't want to lose it in a fumblefingered mistake."
+
+But most music players will download artwork, and some of course will dynamically modify/rename files according to meta data.  And I may be downloading and/or playing music on both the desktop and laptop.  So obviously I wouldn't want to be manually unlocking individual files here.  It would kinda interrupt the music listening experience.  So how would this work?
+
+I am assuming that I would always have to do a git annex add *.mp3 *.flac *.jpg before doing a git annex sync.  But can I just keep everything unlocked?  Any side effects here?  Will this work or should I just use rsync?
+
+Regards,
+
+bk

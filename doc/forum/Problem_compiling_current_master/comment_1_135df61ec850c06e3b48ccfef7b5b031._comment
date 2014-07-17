@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.246.16"
+ subject="comment 1"
+ date="2012-08-29T15:51:15Z"
+ content="""
+I think you're building with the Makefile, not with cabal, and have the recent yesod 1.1.0 release installed. The Makefile contains a -DWITH_OLD_YESOD that you need to remove in that situation.
+"""]]

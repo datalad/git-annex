@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnpdM9F8VbtQ_H5PaPMpGSxPe_d5L1eJ6w"
+ nickname="Rafael"
+ subject="comment 1"
+ date="2012-05-15T07:59:57Z"
+ content="""
+I had a similiar question in forum/new_microfeatures/. I would like to fetch/copy all the annexed content from a repo, be it on the current branch, another branch, or corresponds to an old version of a file. A command like \"git annex copy --all --from=source [path]\" would then ensure I have access to all the content I need even if I have later no longer access to source. Sure I could use rsync.
+"""]]

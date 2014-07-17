@@ -1,0 +1,21 @@
+I have set up an annex on a remote machine and I am connecting via ssh.  But, since it is a managed machine, I installed the git-annex binary in my own ~/bin.  Well, when I try 
+$git annex sync
+
+I get:
+  $git annex sync
+(merging origin/git-annex into git-annex...)
+(Recording state in git...)
+bash: git-annex-shell: command not found
+
+  Remote origin does not have git-annex installed; setting annex-ignore
+commit  ok
+pull origin 
+
+merge: refs/remotes/origin/master - not something we can merge
+
+merge: refs/remotes/origin/synced/master - not something we can merge
+failed
+git-annex: sync: 1 failed
+
+
+The git remote -v looks correct.  So, how do I tell git annex on my local machine where to use $HOME/bin in PATH on the remote machine when syncing  with remotes?

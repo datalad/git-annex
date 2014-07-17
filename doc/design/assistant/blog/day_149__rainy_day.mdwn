@@ -1,0 +1,15 @@
+Made `git annex sync` update the file mappings in direct mode.
+To do this efficiently, it uses `git diff-tree` to find files that are
+changed by the sync, and only updates those mappings. I'm rather happy
+with this, as a first step to fully supporting sync in direct mode.
+
+Finished the overhaul of the OSX app's library handling. It seems to work
+well, and will fix a whole class of ways the OSX app could break.
+
+Fixed a bug in the preferred content settings for backup repositories,
+introduced by some changes I made to preferred content handling 4 days ago.
+
+Fixed the Debian package to build with WebDAV support, which I forgot to
+turn on before.
+
+Planning a release tomorrow.

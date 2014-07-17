@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.8.30"
+ subject="comment 1"
+ date="2012-09-09T17:22:58Z"
+ content="""
+It is unfortunate that certain badly-coded programs fall over on symlinks. In theory, any program that doesn't try to be too smart for its own good will see a symlink as just like the file it links to, and should behave the same. This is the theory that led me to use symlinks in git-annex. But some programs say \"oh, a symlink! Let's see what file that's pointing at, and behave differently!\" I don't understand the mindset that leads to this kind of program being written, unless it's a program like `cp`, that has very good reasons for (at your command) following symlinks or not.
+
+I know absolutely nothing about Mac OSX, having never used it (except for in a ssh session while porting git-annex to it). But I have seen a similar problem with the FBReader ebook viewer. [Bug report](http://bugs.debian.org/685433)
+
+I was able to work around that bug by migrating my files to the SHA256E backend. This ensures that the keys stored in git-annex have extensions like .pdf etc, similar to the symlinks that point to them. You might try migrating some of your files too, and see if it makes OSX behave better. Although I thought OSX didn't rely on file extensions to determine file type.. 
+
+Anyway, the command is:
+
+    git annex migrate --backend=SHA256E
+
+I have been considering switching the default backend to SHA256E to avoid this type of problem. Your testing will be important grist for that decision.
+"""]]

@@ -1,0 +1,25 @@
+Added a configurator for Glacier repositories to the webapp. That was the last
+cloud repository configurator that was listed in the webapp and wasn't
+done. Indeed, just two more repository configurators remain to be filled in:
+phone and NAS.
+
+By default, Glacier repositories are put in a new "small archive" group.
+This makes only files placed in "archive" directories be sent to Glacier
+(as well as being dropped from clients), unlike the full archive group
+which archives all files. Of course you can change this setting, but
+avoiding syncing all data to Glacier seemed like a good default, especially
+since some are still worried about Glacier's pricing model.
+
+Fixed several bugs in the handling of archive directories, and 
+the webapp makes a toplevel archive directory when an archive remote is
+created, so the user can get on with using it.
+
+Made the assistant able to drop local files immediately after transferring
+them to glacier, despite not being able to trust glacier's inventory.
+This was accomplished by making the transferrer, after a successful upload,
+indicate that it trusts the remote it just uploaded to has the file,
+when it checks if the file should be dropped.
+
+Only thing left to do for glacier is to make the assistant retry failed
+downloads from it after 4 hours, or better, as soon as they become
+available.

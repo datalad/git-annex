@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-06-16T17:58:22Z"
+ content="""
+All your files are still there..
+
+You can either use `git annex indirect` to switch to indirect mode and then `git revert`, or you could git clone the repo to someplace else, do the revert there, and then run `git annex sync` in first the clone and then in the direct mode repo to sync the reversion back.
+"""]]

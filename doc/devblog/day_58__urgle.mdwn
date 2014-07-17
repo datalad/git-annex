@@ -1,0 +1,16 @@
+Fixed two difficult bugs with direct mode. One happened (sometimes) when a
+file was deleted and replaced with a directory by the same name and then
+those changes were merged into a direct mode repository.
+
+The other problem was that direct mode did not prevent writes to
+.git/annex/objects the way that indirect mode does, so when a file in the
+repository was not currently present, writing to the dangling symlink would
+follow it and write into the object directory.
+
+Hmm, I was going to say that it's a pity that direct mode still has so many
+bugs being found and fixed, but the last real bug fix to direct mode was
+made last May! Instead, I probably have to thank Tim for being a very
+thorough tester.
+
+Finished switching the test suite to use the tasty framework, and prepared
+tasty packages for Debian.

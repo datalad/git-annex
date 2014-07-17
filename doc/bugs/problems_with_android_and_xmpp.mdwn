@@ -1,0 +1,82 @@
+### Please describe the problem.
+When trying to sync my android phone with my linux laptop using the git annex assistant and XMPP no files are transferred.
+
+### What steps will reproduce the problem?
+1) setup git annex via webapp on laptop:
+
+* local annex
+
+* remote annex via ssh with shared encryption (tried two different servers, one with and one without git-annex installed)
+
+* share with my devices using jabber.me account
+
+2) setup git annex via webapp on android:
+
+* local annex in /sdcard/annex (fuse filesystem without symlink support)
+
+* share with my devices using jabber.me account
+
+* ssh remote is automatically added via XMPP
+
+3) add files to annex on linux, they get uploaded to the ssh remote
+
+4) wait forever for any files from linux to download to phone
+
+5) add files to annex on phone, they get uploaded to the ssh remote
+
+4) wait forever for any files from phone to download to linux
+
+### What version of git-annex are you using? On what operating system?
+Ubunut Linux 12.04 with git-annex version:
+
+* 5.20140127.1 (from PPA)
+
+Android 4.2 (rooted) tried with git-annex versions:
+
+* 5.20140209 (from http://downloads.kitenet.net/git-annex/android/current/4.0/)
+
+* 5.20140211-g556cfeb (from autobuilds)
+
+### Please provide any additional information below.
+full logs:
+
+(these do not show the uploads to the ssh remote, because I restarted to get clean and short logs, but the files are on the server and can be dropped and restored on the linux side manually) 
+
+* linux: <http://pastebin.ca/2639948>
+
+* android: <http://pastebin.ca/2639952>
+
+most interesting parts:
+[[!format sh """
+#
+# linux:
+#
+
+[2014-02-13 13:11:27 CET] XMPPClient: Pairing with dorian in progress
+[2014-02-13 13:11:28 CET] XMPPSendPack: Syncing with dorian 
+To xmpp::dorian@jabber.me
+ * [new branch]      git-annex -> refs/synced/4ce7576f-6f02-4657-bab5-2f4c4a564ee7/ZG9yaWFuQGphYmJlci5tZQ==/git-annex
+ * [new branch]      annex/direct/master -> refs/synced/4ce7576f-6f02-4657-bab5-2f4c4a564ee7/ZG9yaWFuQGphYmJlci5tZQ==/annex/direct/master
+[2014-02-13 13:11:29 CET] XMPPSendPack: Syncing with dorian 
+Everything up-to-date
+[2014-02-13 13:12:21 CET] XMPPSendPack: Syncing with dorian 
+Everything up-to-date
+[2014-02-13 13:12:21 CET] XMPPSendPack: Syncing with dorian 
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+#
+# android:
+#
+[2014-02-13 13:16:25 CET] XMPPClient: sending: Pushing "d29" (ReceivePackOutput 2 "<elided>")
+[2014-02-13 13:16:25 CET] XMPPClient: to client: d6/tigase-14134
+[2014-02-13 13:18:22 CET] XMPPClient: received: ["Unknown message"]
+[2014-02-13 13:18:25 CET] XMPPReceivePack: timeout waiting for git send-pack output via XMPP
+fatal: The remote end hung up unexpectedly
+[2014-02-13 13:18:25 CET] XMPPReceivePack: finished running push Pushing "d29" (StartingPush (UUID "4ce7576f-6f02-4657-bab5-2f4c4a564ee7")) True
+[2014-02-13 13:18:25 CET] XMPPClient: sending: Pushing "d29" (ReceivePackDone (ExitFailure 128))
+[2014-02-13 13:18:25 CET] XMPPClient: to client: d6/tigase-14134
+
+"""]]

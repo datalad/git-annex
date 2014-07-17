@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Rasmus"
+ ip="213.120.148.111"
+ subject="comment 2"
+ date="2013-04-01T23:23:55Z"
+ content="""
+Joey,
+
+Thanks for your useful tips and for providing this software.  It seems incredibly powerful and useful.  I made a copy of the folder which I messed up.  I will try the tips and report back (I'm on the road right now).
+
+The other day all the Haskell deps worked out and I managed to build git annex.  Hopefully, this will give more reliable results as it seemed that some of my bugs were caused by the 32bit prebuild on 64bit.  If I succeed in recreating my files I will try to recreate the error :)
+"""]]

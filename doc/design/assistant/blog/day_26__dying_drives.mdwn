@@ -1,0 +1,28 @@
+My laptop's SSD died this morning. I had some work from yesterday
+committed to the git repo on it, but not pushed as it didn't build.
+Luckily I was able to get that off the SSD, which is now a read-only
+drive -- even mounting it fails with fsck write errors.
+
+Wish I'd realized the SSD was dying before the day before my trip to
+Nicaragua..
+Getting back to a useful laptop used most of my time and energy today.
+
+I did manage to fix transfers to not block the rest of the assistant's
+threads. Problem was that, without Haskell's threaded runtime, waiting
+on something like a rsync command blocks all threads. To fix this,
+transfers now are run in separate processes.
+
+Also added code to allow multiple transfers to run at once. Each transfer
+takes up a slot, with the number of free slots tracked by a `QSemN`.
+This allows the transfer starting thread to block until a slot frees up,
+and then run the transfer.
+
+This needs to be extended to be aware of transfers initiated by remotes.
+The transfer watcher thread should detect those starting and stopping 
+and update the `QSemN` accordingly. It would also be nice if transfers
+initiated by remotes would be delayed when there are no free slots for them
+... but I have not thought of a good way to do that.
+
+There's a bug somewhere in the new transfer code, when two transfers are
+queued close together, the second one is lost and doesn't happen.
+Would debug this, but I'm spent for the day.

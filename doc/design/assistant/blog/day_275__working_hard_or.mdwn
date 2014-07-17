@@ -1,0 +1,12 @@
+Fuzz tester has found several interesting bugs that I've now fixed. It's
+even found a bug in my fixes. Most of the problems the fuzz testing has
+found have had to do with direct mode merges, and automatic merge conflict
+resoltion. Turns out the second level of automatic merge conflict
+resolution (where the changes made to resolve a merge conflict themselves
+turn out conflict in a later merge) was buggy, for example.
+
+So, didn't really work a lot today -- was not intending to work at all
+actually -- but have still accomplished a lot.
+
+(Also, Tobias contributed [[tips/dropboxannex]] .. I'll be curious to see
+what the use case for that is, if any!)

@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmhufs6QGCQXnUEc6qrCcQIZTomUDKNeAQ"
+ nickname="Jeff"
+ subject="Git annex in a strange direct with .git/annex/objects mode"
+ date="2014-04-21T21:03:24Z"
+ content="""
+I'm doing something perhaps unreasonable and weird, and I'm wondering if there's a better way.
+
+I'm running a wget -mbc of a particular web site.  It replicates down to a tree.
+Then I'm ingesting the content into git annex via the normal 'git annex add' sequence.
+
+Later, when I'm going to update my replica of the website, I am running a 'git annex unlock' on the whole tree (90 gig in this case), and then running the 'wget -mbc ; git annex add' command sequence again.
+
+Is there any mechanism to convince git-annex to scan the file, and ingest (copy) it into objects if it is new content, while leaving the original files unlocked?   This would give me the ability to avoid the 'git annex unlock' copy operation, which is lengthy.
+
+I'm aware this is inherently space inefficient.
+
+I'm sure there's some other problem with this idea that I'm missing.
+
+Thanks.
+
+
+"""]]

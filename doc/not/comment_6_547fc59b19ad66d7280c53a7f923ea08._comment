@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlatTbI0K-qydpeYHl37iseqPNvERcdIMk"
+ nickname="Tiago"
+ subject="comment 6"
+ date="2012-09-27T10:17:18Z"
+ content="""
+Stefan: \"annex is for managing big binary files that not get modified most of the time and only added/synced or deleted.\"
+
+While this is true,  the kickstarter title for assistant was \"Like dropbox\", and dropbox makes it transparent to edit files and they work with the filesystem.
+So with assistant, lock/unlock should be automated and transparent to the user. Otherwise it's confusing and not simple at all to use, and at least OSX keeps giving errors because of the way it handles aliases.
+So something like sharebox is essential to be included in assistant in my opinion.
+
+"""]]

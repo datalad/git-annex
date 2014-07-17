@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 1"
+ date="2013-11-06T22:21:33Z"
+ content="""
+git-annex uses cat-file --batch, yes. You can verify this with --debug. Or you can read Annex/CatFile.hs and Git/CatFile.hs
+
+git-annex has to ensure that the git-annex branch is up-to-date and that any info synced into the repository is merged into it. This can require several calls to git log. Your command does not do that. git-annex find also runs `git ls-files --cached`, which has to examine the state of the index and of files on disk, in order to only show files that are in the working tree. Your command also omits that.
+"""]]

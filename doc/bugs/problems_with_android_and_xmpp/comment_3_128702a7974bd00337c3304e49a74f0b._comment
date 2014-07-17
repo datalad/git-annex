@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm78jq1Uo-ZbyOPG3diJUWVvEiM0kyAcvk"
+ nickname="Dorian"
+ subject="comment 3"
+ date="2014-03-03T14:01:10Z"
+ content="""
+You're right, with an unencrypted git repo in between it works.
+I was hoping to be able to avoid that, though.
+
+My very first try was actually to switch XMPP servers, because I thought they might be the problem. But after trying both servers you mentioned in the assistant and on the instruction pages (Google and jabber.me) I figured it should at least work with one of them...
+
+So if XMPP can actually only be used as a simple signaling mechanism, this should be mentioned explicitly in the \"remote sharing\" and \"share with a friend\" walkthroughs. 
+After reading/watching them I was under the impression, that after setting up XMPP, you can use any cloud storage to exchange files.
+But if I now understand correctly this cloud storage needs to have a full git repo, not only the encrypted files.
+And for Android you cannot use a gcrypt remote, so only unencrypted git repos are possible, making any public cloud service unfeasible.
+
+Is my conclusion correct, that this leaves only one option when sharing with Android?
+1) unencrypted git repo on trusted/private special remote
+
+Or am I missing something?
+
+Thanks again for this!
+"""]]

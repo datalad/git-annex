@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.140"
+ subject="comment 26"
+ date="2013-07-18T17:07:27Z"
+ content="""
+@Frew, you should file bug reports when you have a bug.
+
+One problem you mentioned had already had a bug report filed by someone
+else:
+<http://git-annex.branchable.com/bugs/Watcher_crashed:_addWatch:_does_not_exist/> So you can post your details there.
+"""]]

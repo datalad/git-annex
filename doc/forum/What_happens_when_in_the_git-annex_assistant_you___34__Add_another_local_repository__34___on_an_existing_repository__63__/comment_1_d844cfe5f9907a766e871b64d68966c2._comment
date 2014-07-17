@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="71.80.94.56"
+ subject="comment 1"
+ date="2014-02-07T19:03:30Z"
+ content="""
+Sure, you can use that menu item. If you try it out and enter in the path of a repository, you'll see that it offers to either let you combine the two repositories together, or leave them as two unconnected repositories with different files managed by the assistant.
+"""]]

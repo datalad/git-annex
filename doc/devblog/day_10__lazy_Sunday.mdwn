@@ -1,0 +1,23 @@
+Fixed a typo that broke automatic youtube video support in `addurl`.
+
+----
+
+Now there's an easy way to get an overview of how close your repository
+is to meeting the configured numcopies settings (or when it exceeds them).
+
+<pre>
+# time git annex status . 
+[...]
+numcopies stats: 
+	numcopies +0: 6686
+	numcopies +1: 3793
+	numcopies +3: 3156
+	numcopies +2: 2743
+	numcopies -1: 1242
+	numcopies -4: 1098
+	numcopies -3: 1009
+	numcopies +4: 372
+</pre>
+
+This does make `git annex status` slow when run on a large directory tree,
+so --fast disables that.

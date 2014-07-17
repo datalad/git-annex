@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 3"
+ date="2014-01-02T02:05:05Z"
+ content="""
+AFAICS, git-merge was still running when you ctrl-c'd it. So this is coming before git-annex processes the merge to update the work tree.
+
+I don't know why it would take so long to run, especially if it was not using CPU or disk. You might try to reproduce the problem, passing --debug to git-annex, and perhaps strace the git-merge process to see what it's doing.
+"""]]

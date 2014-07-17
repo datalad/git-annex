@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnAvbXOnK57sqgvZvxkbG74NUKBDwKDcuk"
+ nickname="Tim"
+ subject="bup location data not synced through annex assistant"
+ date="2013-05-15T15:08:54Z"
+ content="""
+I set up 2 servers running git annex assistant, both with a ~/annex dir and an additional ~/annex-bup bup repo. There is no additional cloud repository.
+For test, I added my /etc dir which uploaded correctly from server1, but which never arrived on server2
+
+    bup@bup1:~/annex/etc$ git annex whereis updatedb.conf
+    whereis updatedb.conf (3 copies) 
+  	    687d3a7f-4798-4dbe-8774-1785b8ab6b7d -- here (bup@bup1:~/annex)
+   	    adfc1307-771f-40e9-b794-bae2e1f21b8b -- bup2-annex-bup
+   	    e4e0ac0b-992a-4312-a4ac-fc8d3d9f7c0f -- bup1-annex-bup
+    ok
+
+    bup@bup2:~/annex/etc$ git annex whereis updatedb.conf
+    whereis updatedb.conf (1 copy) 
+  	    687d3a7f-4798-4dbe-8774-1785b8ab6b7d -- bup1 (bup@bup1:~/annex)
+    ok
+
+As you can see, server 2 just doesn't know the data is already on it's own disk in it's local bup repo.
+Is there a reason this data does not get synced? Should I set up a transfer repo?
+"""]]

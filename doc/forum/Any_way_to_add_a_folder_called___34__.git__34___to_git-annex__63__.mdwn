@@ -1,0 +1,9 @@
+I'm trying to use git-annex as a way to sync fairly large folders between machines. These folders contain documents, projects, ...
+
+There are several issues with files that just won't get added to my git-annex repository:
+
+- files mentioned in .gitignore are not added -- this is good.
+- files starting with a dot are not added unless I explicitly mention them to git add -- this is strange, but I can work around it.
+- folders called .git/ are not added no matter what I try. git annex add --force doesn't help, either.
+
+Any idea how I could solve the third issue? It might not even be specific to git-annex... maybe git just works that way... but I'd be grateful for hints.

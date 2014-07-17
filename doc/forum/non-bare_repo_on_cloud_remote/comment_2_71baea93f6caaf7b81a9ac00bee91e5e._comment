@@ -1,0 +1,67 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawniayrgSdVLUc3c6bf93VbO-_HT4hzxmyo"
+ nickname="Tobias"
+ subject="comment 2"
+ date="2013-08-08T19:05:07Z"
+ content="""
+Seems that I don't get it... Here is what I did:
+
+First, I create a new repo with the assistant on `user@laptop ~/temp/annex-test`, then:
+
+    user@laptop ~/temp/annex-test % echo test1 > test1
+    user@laptop ~/temp/annex-test % echo test2 > test2
+    
+    user@server ~/tmp % mkdir annex-test
+    user@server ~/tmp % cd annex-test
+    user@server ~/tmp/annex-test % git init
+    Initialized empty Git repository in /home/tobru/tmp/annex-test/.git/
+    user@server ~/tmp/annex-test % git annex init
+    init  ok
+    (Recording state in git...)
+    user@server ~/tmp/annex-test % mv .git/hooks/post-update.sample .git/hooks/post-update       
+    user@server ~/tmp/annex-test % cat .git/hooks/post-update
+    #!/bin/sh
+    #
+    # An example hook script to prepare a packed repository for use over
+    # dumb transports.
+    #
+    # To enable this hook, rename this file to \"post-update\".
+    
+    exec git update-server-info
+    user@server ~/tmp/annex-test % chmod +x .git/hooks/post-update
+    user@server ~/tmp/annex-test % echo '#!/bin/sh\ngit annex merge' > .git/hooks/post-receive
+    user@server ~/tmp/annex-test % chmod +x .git/hooks/post-receive
+    
+    user@laptop ~/temp/annex-test % git remote add server ssh://user@server/home/tobru/tmp/annex-test
+    user@laptop ~/temp/annex-test % git annex assistant --stop
+    user@laptop ~/temp/annex-test % git annex sync
+    commit  
+    ok
+    pull server 
+    warning: no common commits
+    remote: Counting objects: 5, done.
+    remote: Compressing objects: 100% (3/3), done.
+    remote: Total 5 (delta 1), reused 0 (delta 0)
+    Unpacking objects: 100% (5/5), done.
+    From ssh://server.tobru.local/home/tobru/tmp/annex-test
+     * [new branch]      git-annex  -> server/git-annex
+    ok
+    (merging server/git-annex into git-annex...)
+    (Recording state in git...)
+    push server 
+    Counting objects: 27, done.
+    Delta compression using up to 4 threads.
+    Compressing objects: 100% (20/20), done.
+    Writing objects: 100% (25/25), 2.36 KiB, done.
+    Total 25 (delta 2), reused 0 (delta 0)
+    remote: merge git-annex (merging synced/git-annex into git-annex...)
+    remote: ok
+    To ssh://tobru@server.tobru.local/home/tobru/tmp/annex-test
+     * [new branch]      git-annex -> synced/git-annex
+     * [new branch]      master -> synced/master
+    ok
+    user@laptop ~/temp/annex-test % git annex assistant
+
+Now I expect the files `test1` and `test2` to be at `user@server ~/tmp/annex-test`. But they are not displayed.
+What am I doing wrong? The main thing I wan't to achieve: Push the files from `laptop` to `server` without adding `laptop` as remote on the server.
+"""]]

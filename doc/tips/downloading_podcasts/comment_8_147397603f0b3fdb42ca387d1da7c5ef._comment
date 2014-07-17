@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.145"
+ subject="comment 8"
+ date="2013-08-01T16:05:10Z"
+ content="""
+I've now made importfeed --force a bit smarter about reusing existing files.
+"""]]

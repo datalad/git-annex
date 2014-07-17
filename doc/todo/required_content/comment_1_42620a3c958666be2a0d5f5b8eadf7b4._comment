@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 1"
+ date="2014-03-10T17:15:54Z"
+ content="""
+To give a specific example of what I want to do:
+
+I have a bunch of repos
+
+* A, Machine1 -- anchor repository and sometimes used to add new content
+* B, Machine2 -- anchor repository, offsite
+* C, External1 -- anchor repository, stored off-site
+* D, Laptop -- transient repo to carry data around and to add new content
+* E, USB1 -- transient, travel backups
+* F, USB2 -- transient, travel backups
+
+A-C should get _all_ data. A-F trust A-C to always retain all data, online checks for availability are not needed because A-C run frequent fsck. Ideally, `git annex drop` should be no-op in A-C.
+
+D-F should retain data as long as it's not been saved in _all_ of A-C. As soon as A-C have copies, `git annex drop` in D-F should drop that content; before that, they _must not_ drop said content.
+
+Richard
+"""]]

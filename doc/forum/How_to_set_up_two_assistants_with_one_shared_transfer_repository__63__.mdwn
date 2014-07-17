@@ -1,0 +1,15 @@
+This seems like something that should be completely obvious, but I've been trying to get it working for a while without success.
+
+I have a few machines (at least 3) at different locations. I want them all to be synced with a remote server that I have. I've installed git-annex on the server, and setting up the assistant on one of the machines, I can create the remote repository, and all seems to work (it spits out info about syncing... though I don't have any easy way of checking if it's working, as all I have is the one client). 
+
+It says in the webapp that setting up a remote git repository in transfer mode will make it easy to have other clients. But I'm wondering how to set that up. I tried just adding the same server with the same path on another machine, but it doesn't seem to be syncing, and I imagine that it is trying to create a fresh repo there instead of syncing with an existing one.
+
+So, how do I set this up? I don't mind adding git remotes, ssh keys, etc, manually, but I haven't been able to figure out what I should be doing! My end goal is to have one annex that is synced between the many computers (ala Dropbox, as the assistant is supposed to be).
+
+Note that the configuration of the test machines:
+client 1 - debian, git-annex built from current cabal
+server - debian, git-annex from apt
+client2 - mac osx, git-annex built from current cabal
+
+Thanks,
+Daniel

@@ -1,0 +1,8 @@
+A screencast demoing the git-annex assistant syncing between Nicaragua
+and the United Kingdom for the first time.
+
+<video controls src="http://joeyh.name/screencasts/git-annex-assistant.ogg"></video>
+
+[video](http://joeyh.name/screencasts/git-annex-assistant.ogg)
+
+[[!meta date="Thu Jul 5 16:36:06 2012 -0600"]]

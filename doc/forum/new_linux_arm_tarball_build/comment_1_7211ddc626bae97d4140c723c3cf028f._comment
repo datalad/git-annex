@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="works on raspbian"
+ date="2013-12-16T23:26:51Z"
+ content="""
+This build has been verified to work on raspbian.
+"""]]

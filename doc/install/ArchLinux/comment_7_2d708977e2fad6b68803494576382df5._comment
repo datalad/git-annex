@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://alerque.com/"
+ nickname="Caleb"
+ subject="dep problems"
+ date="2014-03-28T22:50:37Z"
+ content="""
+@rado The Haskel dependencies can be a nightmare to sort out for the un-initiated. You can side-step the whole issue by uninstalling the pre-built version that that has all the dependencies built in out of the box.
+
+Just grab the git-annex-bin package from the AUR and be done with it. (The -bin and -standalone packages recently merged so there is just -bin now).
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 1"
+ date="2013-08-24T16:20:29Z"
+ content="""
+In the assistant, putting a repository in manual mode prevents the assistant from automatically downloading every file that is added to other clones of the repository. As you've noticed, it does not prevent the assistant from automatically adding new files that are put into the local repository, or from uploading those files to other clients that want them (ie, clients not themselves set to use manual mode).
+
+You can prevent the assistant from noticing when you add new files to a repository by clicking on \"syncing enabled\" in the first repository in the list. (The repository labeled as \"here\".) You can then `git annex add` the files you want to add by hand, and manually `copy annex copy` them to other repositories, and manually `git annex sync`.
+"""]]

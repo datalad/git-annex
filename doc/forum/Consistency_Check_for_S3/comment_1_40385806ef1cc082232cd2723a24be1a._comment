@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 1"
+ date="2013-12-31T19:30:00Z"
+ content="""
+The webapp does not let you set up a consistency check for data in a S3 remote because the only way to check it would be to download the data, which is expensive in bandwidth and potentially, Amazon S3 fees.
+"""]]

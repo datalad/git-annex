@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.146"
+ subject="comment 2"
+ date="2014-02-26T18:52:17Z"
+ content="""
+I don't see any indications that this problem is specific to Android.
+
+Relying on git push over XMPP is known to be somewhat fragile, and some XMPP servers are known to do things with the XMPP protcol that make it impossible to reliably do git push over it. [[design/assistant/xmpp]] discusses these problems. Since this seems a basically intractable problem to solve, git-annex will be moving away from XMPP as soon as something better is available. (eg [[design/assistant/telehash]])
+
+The best way to use XMPP currently is as a simple signaling mechanism to tell when a push has been made to a git repository. Your ssh server seems to have an encrypted rsync repository on it, so no git repository. If you can put up a git repository someplace both the android and linux machine can access, I think that you'll find it greatly improves the reliability of the syncing.
+"""]]

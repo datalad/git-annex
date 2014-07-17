@@ -1,0 +1,85 @@
+[The Internet Archive](http://www.archive.org/) allows members to upload
+collections using an Amazon S3 
+[compatible API](http://www.archive.org/help/abouts3.txt), and this can
+be used with git-annex's [[special_remotes/S3]] support. 
+
+So, you can locally archive things with git-annex, define remotes that
+correspond to "items" at the Internet Archive, and use git-annex to upload
+your files to there. Of course, your use of the Internet Archive must
+comply with their [terms of service](http://www.archive.org/about/terms.php).
+
+A nice added feature is that whenever git-annex sends a file to the
+Internet Archive, it records its url, the same as if you'd run `git annex
+addurl`. So any users who can clone your repository can download the files
+from archive.org, without needing any login or password info. This makes
+the Internet Archive a nice way to publish the large files associated with
+a public git repository.
+
+## webapp setup
+
+Just go to "Add Another Repository", pick "Internet Archive",
+and you're on your way.
+
+## basic setup
+
+Sign up for an account, and get your access keys here:
+<http://www.archive.org/account/s3.php>
+	
+	# export AWS_ACCESS_KEY_ID=blahblah
+	# export AWS_SECRET_ACCESS_KEY=xxxxxxx
+
+Specify `host=s3.us.archive.org` when doing `initremote` to set up
+a remote at the Archive. This will enable a special Internet Archive mode:
+Encryption is not allowed; you are required to specify a bucket name
+rather than having git-annex pick a random one; and you can optionally
+specify `x-archive-meta*` headers to add metadata as explained in their
+[documentation](http://www.archive.org/help/abouts3.txt).
+
+	# git annex initremote archive-panama type=S3 \
+		host=s3.us.archive.org bucket=panama-canal-lock-blueprints \
+		x-archive-meta-mediatype=texts x-archive-meta-language=eng \
+		x-archive-meta-title="original Panama Canal lock design blueprints"
+	initremote archive-panama (Internet Archive mode) ok
+	# git annex describe archive-panama "a man, a plan, a canal: panama"
+	describe archive-panama ok
+
+Then you can annex files and copy them to the remote as usual:
+
+	# git annex add photo1.jpeg --backend=SHA256E
+	add photo1.jpeg (checksum...) ok
+	# git annex copy photo1.jpeg --fast --to archive-panama
+	copy (to archive-panama...) ok
+
+Once a file has been stored on archive.org, it cannot be (easily) removed
+from it. Also, git-annex whereis will tell you a public url for the file
+on archive.org. (It may take a while for archive.org to make the file
+publically visibile.)
+
+Note the use of the SHA256E [[backend|backends]] when adding files. That is
+the default backend used by git-annex, but even if you don't normally use
+it, it makes most sense to use the WORM or SHA256E backend for files that
+will be stored in the Internet Archive, since the key name will be exposed
+as the filename there, and since the Archive does special processing of
+files based on their extension.
+
+## publishing only one subdirectory
+
+Perhaps you have a repository with lots of files in it, and only want
+to publish some of them to a particular Internet Archive item. Of course
+you can specify which files to send manually, but it's useful to
+configure [[preferred_content]] settings so git-annex knows what content
+you want to store in the Internet Archive.
+
+One way to do this is using the "public" repository type.
+
+	git annex enableremote archive-panama preferreddir=panama
+	git annex wanted archive-panama standard
+	git annex group archive-panama public
+
+Now anything in a "panama" directory will be sent to that remote,
+and anything else won't. You can use `git annex copy --auto` or the
+assistant and it'll do the right thing.
+
+When setting up an Internet Archive item using the webapp, this
+configuration is automatically done, using an item name that the user
+enters as the name of the subdirectory.

@@ -1,0 +1,14 @@
+Changed how the directory and webdav special remotes store content.
+The new method uses less system calls, is more robust, and leaves any
+partially transferred key content in a single tmp directory, which
+will make it easier to clean that out later.
+
+Also found & fixed a cute bug in the directory special remote when the
+chunksize is set to a smaller value than the ByteString chunk size, that
+caused it to loop forever creating empty files.
+
+----
+
+Added an embedcreds=yes option when setting up special remotes. 
+Will put UI for it into the webapp later, but rather than work on that
+tomorrow, I plan to work on glacier.

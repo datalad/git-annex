@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnNqLKszWk9EoD4CDCqNXJRIklKFBCN1Ao"
+ nickname="maurizio"
+ subject="clean up"
+ date="2014-01-31T19:55:30Z"
+ content="""
+ok, now that git-annex has been updated to 5.20140117~bpo70+2 things start flowing again, so it was actually caused by [[http://git-annex.branchable.com/bugs/Jabber__47__xmpp_not_supported_on_Debian_Wheezy_backport/]]. Now there is a certain number of files called 'filename.variant.06b8' for instance. That is a bit messy.
+
+I do not know wheter/how it would be possible to inform the user that something is going wrong, but certainely it would be better to avoid failing completely silently.
+
+It would be useful if the webapp could give more precise information about the files the assistant is manipulating. For instance: \"now uploading file 'bla', updating version last uploaded from 'remote' on 'date'\".
+"""]]

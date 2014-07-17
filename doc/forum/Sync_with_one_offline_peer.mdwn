@@ -1,0 +1,11 @@
+Hello,
+
+I use the assistant to set up two repositories A and B synced using jabber. A third repository C on my server is used as rsync transfer. Syncing works fine between both repos when both are online.
+
+But when either A or B is offline the sync does not happen when it comes online again, though the file was synced to C.
+
+Is this because C is only a rsync repository and can't hold metadata? How can I achieve that the sync happens also when one of the repositories is offline?
+
+I also tried using the static build of git annex on my server. It seemed to run fine but during the setup the assistant got an error about too many command line arguments. On A und B I use the ArchLinux AUR build (https://aur.archlinux.org/packages/git-annex-standalone/), on C I use the static build. Could it be a version mismatch?
+
+Thanks!

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.193"
+ subject="comment 11"
+ date="2013-06-27T18:11:03Z"
+ content="""
+Excerpt from a [longer comment](http://git-annex.branchable.com/bugs/Problems_with_syncing_gnucash/#comment-7d70d822a0fdf672ba09535f943af7c9) by Florian:
+
+I know that my expectations in this project are a little bit high and I see how much work it was to get where we are now. Once again thank you for the excellent work done so far. I don't fear to synchronize important data with git-annex. I even use git-annex to backup and synchronize the member database for our club (wannabe hackerspace).
+"""]]

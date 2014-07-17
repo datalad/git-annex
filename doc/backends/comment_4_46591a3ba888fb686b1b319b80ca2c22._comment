@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmTho3mActvetF1iQdmui6gH1t6WE6c284"
+ nickname="Michael"
+ subject="SHA256e"
+ date="2013-10-30T02:00:45Z"
+ content="""
+I'd really like to have a SHA256e backend -- same as SHA256E but making sure that extensions of the files in .git/annex are converted to lower case.  I normally try to convert filenames from cameras etc to lower case, but not all people that I share annex with do so consistently.
+In my use case, I need to be able to find duplicates among files and .jpg vs .JPG throws git annex dedup off.  Otherwise E backends are superior to non-E for me.  Thanks, Michael.
+"""]]

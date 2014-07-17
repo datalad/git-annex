@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn3rK4VDzxyhmrIc18z7F5OuXvEbUsgUac"
+ nickname="Srinath"
+ subject="build issue with brew technique on Darwin Kernel Version 13.0.0"
+ date="2014-02-15T02:17:16Z"
+ content="""
+Following the Mac OS X brew instructions from the top of the board, I got the following error:
+
+[5 of 5] Compiling Yesod            ( Yesod.hs, dist/build/Yesod.o )
+In-place registering yesod-1.2.5...
+Installing library in /Users/srinathv/.cabal/lib/yesod-1.2.5/ghc-7.6.3
+Registering yesod-1.2.5...
+Installed yesod-1.2.5
+cabal: Error: some packages failed to install:
+git-annex-5.20140210 depends on libxml-sax-0.7.4 which failed to install.
+libxml-sax-0.7.4 failed during the configure step. The exception was:
+ExitFailure 1
+network-protocol-xmpp-0.4.5 depends on libxml-sax-0.7.4 which failed to
+install.
+
+
+Then I perused the comments and did:
+$brew link libmxl2 --force
+$cabal install git-annex --bindir=$HOME/bin
+
+with success.  
+"""]]

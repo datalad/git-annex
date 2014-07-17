@@ -1,0 +1,13 @@
+	# cd ~/annex
+	# git mv big_file my_cool_big_file
+	# mkdir iso
+	# git mv debian.iso iso/
+	# git commit -m moved
+
+You can use any normal git operations to move files around, or even
+make copies or delete them.
+
+Notice that, since annexed files are represented by symlinks,
+the symlink will break when the file is moved into a subdirectory.
+But, git-annex will fix this up for you when you commit --
+it has a pre-commit hook that watches for and corrects broken symlinks.

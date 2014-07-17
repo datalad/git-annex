@@ -1,0 +1,21 @@
+Woke up this morning with most of the design for a smarter approach to
+[[syncing]] in my head. (This is why I sometimes slip up and tell people I
+work on this project 12 hours a day..)
+
+To keep the current `assistant` branch working while I make changes
+that break use cases that are working, I've started 
+developing in a new branch, `assistant-wip`.
+
+In it, I've started getting rid of unnecessary expensive transfer scans.
+
+First optimisation I've done is to detect when a remote that was
+disconnected has diverged its `git-annex` branch from the local branch.
+Only when that's the case does a new transfer scan need to be done, to find
+out what new stuff might be available on that remote, to have caused the
+change to its branch, while it was disconnected.
+
+That broke a lot of stuff. I have a plan to fix it written down in
+[[syncing]]. It'll involve keeping track of whether a transfer scan has
+ever been done (if not, one should be run), and recording logs when
+transfers failed, so those failed transfers can be retried when the
+remote gets reconnected.

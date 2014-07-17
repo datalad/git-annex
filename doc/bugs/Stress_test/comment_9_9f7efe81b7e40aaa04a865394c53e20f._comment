@@ -1,0 +1,52 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5iosFbL2By7UFeViqkc6v-hoAtqILeDA"
+ nickname="Laszlo"
+ subject="Maybe it is not leaking after all"
+ date="2013-05-03T18:37:48Z"
+ content="""
+I have been working the whole day zipping up (tar.gz) all the unused directories.
+Now my real data dir looks like this:
+
+    ./annex_real/work_done$ du -hs .
+    1,1G	.
+    Has 9088 files and 1608 directories in total:
+    ./annex_real/work_done$ ls -R1l |grep \\-r |wc -l
+    9088
+    ./annex_real/work_done$ ls -R1l |grep ^d |wc -l
+    1608
+
+When I first started git annex, it added 5492 files, then next time it added the missing 3596 files. Then it stopped adding files.
+From the gui everything looked fine even at the first start (performed startup scan), even in the log files (daemon.log.x) was nothing suspicious.
+
+    ./annex_real/work_done$ for i in ../.git/annex/daemon.log.*; do echo $i; cat $i |grep files; done
+     ../.git/annex/daemon.log.1
+     ../.git/annex/daemon.log.2
+     ../.git/annex/daemon.log.3
+     ../.git/annex/daemon.log.4
+     [2013-05-03 20:03:34 CEST] Committer: Adding 3596 files
+     ../.git/annex/daemon.log.5
+     [2013-05-03 19:15:22 CEST] Committer: Adding 5492 files
+
+As you can see, this case is not a stress test at all, 
+it is really the minimal test case, 1.1GB diskspace, 9088 files and a thousand dirs. 
+The real question is, why git-annex miss at the first startup 3492 files (ie. adding all the files).
+
+It would help tremendously, if it would display at startup how many files he found, 
+and when it adds, then how many left to be added.
+Something like this:
+
+    (scanning...) [2013-05-03 20:03:14 CEST] Watcher: Performing startup scan
+    (started...)
+    [2013-05-03 20:03:34 CEST] Committer: Found 9088 files
+    [2013-05-03 20:03:34 CEST] Committer: Adding 3596 files of 9088 remaining files (9088 in total)
+    ....
+    [2013-05-03 20:05:04 CEST] Committer: Adding 1492 files of 5492 remaining files (9088 in total)
+    ....
+    [2013-05-03 20:06:02 CEST] Committer: Adding 4000 files of 4000 remaining files (9088 in total)
+
+So it is definietly a bug, and I stuck how to debug it further. Everything looks just fine.
+
+Best, 
+ Laszlo
+
+"""]]

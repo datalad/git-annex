@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://caust1c.myopenid.com/"
+ nickname="asbraithwaite"
+ subject="comment 2"
+ date="2013-07-17T23:42:25Z"
+ content="""
+What would happen if we wanted to copy a file to the server 
+with that set? or even when running `git annex add`
+You understood me exactly though.
+We'd like to be able to get the files without a commit, but copy them 
+with a commit of the changes.
+The way we operate, if somebody makes a change with regards to 
+largefiles, they should also add a test for it.
+Ideally, the test suite would catch it.  That or people would 
+realize that theres a new big file and send around an email to 
+see who was trying to a largefile when they couldn't reach it.
+
+"""]]

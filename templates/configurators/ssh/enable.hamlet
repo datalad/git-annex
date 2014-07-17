@@ -1,0 +1,28 @@
+<div .col-sm-9>
+  <div .content-box>
+    <h2>
+      Enabling #{description}
+    <p>
+      <form method="post" .form-horizontal enctype=#{enctype}>
+        <fieldset>
+          $case status
+            $of UnusableServer msg
+              <div .alert .alert-danger>
+                <span .glyphicon .glyphicon-warning-sign>
+                \ #{msg}
+            $of _
+          ^{form}
+          ^{webAppFormAuthToken}
+          <div .form-group>
+            <div .col-sm-10 .col-sm-offset-2>
+              <button .btn .btn-primary type=submit onclick="$('#testmodal').modal('show');">
+                Check this server
+<div .modal .fade #testmodal>
+  <div .modal-dialog>
+    <div .modal-content>
+      <div .modal-header>
+        <h3>
+          Testing server ...
+      <div .modal-body>
+        <p>
+          Checking ssh connection to the server. This could take a minute.

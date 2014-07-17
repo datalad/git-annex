@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 4"
+ date="2013-10-17T21:49:10Z"
+ content="""
+So this is a problem with msysgit 1.8.4. I have been able to reproduce it with that version. 1.8.3 did not have the problem.
+
+Seems to perhaps be due to the cygwin xargs flipping git into cygwin path mode somehow. (How all this works is massively complex and confusing to me.)
+All the other calls to git with identical parameters work fine. I can also reproduce the problem using some old git 1.7.x in the cygwin terminal.
+
+BTW, I noticed in your example that you ran \"git commit -a\". You should **never** do that in a [[direct mode]] repository. Read the direct mode documentation to understand why.
+"""]]

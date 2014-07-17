@@ -1,0 +1,109 @@
+This special remote type lets you store content in a remote of your own
+devising, configured via some simple hooks.
+
+It's not recommended to use this remote type when another like [[rsync]]
+or [[directory]] will do. If your hooks are not carefully written, data
+could be lost. 
+
+If you're building a special remote for others to use,
+instead consider building an [[external_special_remote|external]].
+
+## example
+
+Here's a simple example that stores content on clay tablets. If you
+implement this example in the real world, I'd appreciate a tour
+next Apert! :) --[[Joey]]
+
+	# git config annex.cuneiform-store-hook 'tocuneiform < "$ANNEX_FILE" | tablet-writer --implement=stylus --title="$ANNEX_KEY" | tablet-proofreader | librarian --shelve --floor=$ANNEX_HASH_1 --shelf=$ANNEX_HASH_2'
+	# git config annex.cuneiform-retrieve-hook 'librarian --get --floor=$ANNEX_HASH_1 --shelf=$ANNEX_HASH_2 --title="$ANNEX_KEY" | tablet-reader --implement=coffee --implement=glasses --force-monastic-dedication | fromcuneiform > "$ANNEX_FILE"'
+	# git config annex.cuneiform-remove-hook 'librarian --get --floor=$ANNEX_HASH_1 --shelf=$ANNEX_HASH_2 --title="$ANNEX_KEY" | goon --hit-with-hammer'
+	# git config annex.cuneiform-checkpresent-hook 'librarian --find --force-distrust-catalog --floor=$ANNEX_HASH_1 --shelf=$ANNEX_HASH_2 --title="$ANNEX_KEY" --shout-title'
+	# git annex initremote library type=hook hooktype=cuneiform encryption=none
+	# git annex describe library "the reborn Library of Alexandria (upgrade to bronze plates pending)"
+
+Can you spot the potential data loss bugs in the above simple example?
+(Hint: What happens when the `tablet-proofreader` exits nonzero?)
+
+## configuration
+
+These parameters can be passed to `git annex initremote`:
+
+* `hooktype` - Required. This specifies a collection of hooks to use for
+  this remote.
+
+* `encryption` - One of "none", "hybrid", "shared", or "pubkey".
+  See [[encryption]].
+
+* `keyid` - Specifies the gpg key to use for [[encryption]].
+
+## hooks
+
+Each type of hook remote is specified by a collection of hook commands.
+Each hook command is run as a shell command line, and should return nonzero
+on failure, and zero on success.
+
+These environment variables are used to communicate with the hook commands:
+
+* `ANNEX_KEY` - name of a key to store, retrieve, remove, or check.
+* `ANNEX_FILE` - a file containing the key's content
+* `ANNEX_HASH_1` - short stable value, based on the key, can be used for hashing
+  into 1024 buckets.
+* `ANNEX_HASH_2` - another hash value, can be used for a second level of hashing
+
+The settings to use in git config for the hook commands are as follows:
+
+* `annex.$hooktype-store-hook` - Command run to store a key in the special remote.
+  `ANNEX_FILE` contains the content to be stored.
+
+* `annex.$hooktype-retrieve-hook` - Command run to retrieve a key from the special remote.
+  `ANNEX_FILE` is a file that the retrieved content should be written to.
+  The file may already exist with a partial
+  copy of the content (or possibly just garbage), to allow for resuming
+  of partial transfers.
+
+* `annex.$hooktype-remove-hook` - Command to remove a key from the special remote.
+
+* `annex.$hooktype-checkpresent-hook` - Command to check if a key is present
+  in the special remote. Should output the key name to stdout, on its own line,
+  if and only if the key has been actively verified to be present in the
+  special remote (caching presence information is a very bad idea);
+  all other output to stdout will be ignored.
+
+## combined hook program
+
+This interface is deprecated -- it's better, and not much harder,
+to write an [[external_special_remote|external]]!
+
+Rather than setting all of the above hooks, you can write a single
+program that handles everything, and set a single hook to make it be used.
+
+	# git config annex.demo-hook /usr/local/bin/annexdemo
+	# git annex initremote mydemorepo type=hook hooktype=demo encryption=none
+
+The program just needs to look at the `ANNEX_ACTION` environment variable
+to see what it's being asked to do. For example:
+
+[[!format sh """
+#!/bin/sh
+set -e
+case "$ANNEX_ACTION" in
+	store)
+		demo-upload "$ANNEX_HASH_1/$ANNEX_HASH_2/$ANNEX_KEY" < "$ANNEX_FILE"
+	;;
+	retrieve)
+		demo-download "$ANNEX_HASH_1/$ANNEX_HASH_2/$ANNEX_KEY" > "$ANNEX_FILE"
+	;;
+	remove)
+		demo-nuke "$ANNEX_HASH_1/$ANNEX_HASH_2/$ANNEX_KEY"
+	;;
+	checkpresent)
+		if demo-exists "$ANNEX_HASH_1/$ANNEX_HASH_2/$ANNEX_KEY"; then
+			echo "$ANNEX_KEY"
+		fi
+	;;
+	*)
+		echo "unknown ANNEX_ACTION: $ANNEX_ACTION" >&2
+		exit 1
+	;;
+esac
+"""]]

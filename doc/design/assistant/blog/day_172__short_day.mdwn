@@ -1,0 +1,22 @@
+Only one bug fix today, but it was a doozie. It seems that gpg2 has an
+incompatability with the gpg 1.x that git-annex was written for, that
+causes large numbers of excess passphrase prompts, when it's supposed to be
+using a remote's symmetric encryption key. Adding the --batch parameter
+fixed this.
+
+I also put together a page listing [[related_software]] to git-annex.
+
+I've also updated [[direct_mode]]'s documentation, about when it's safe to
+use direct mode. The intuition I've developed about direct mode is that if
+you don't need full versioning of files (with the ability to get back old
+versions), direct mode is fine and safe to use. If you want full
+versioning, it's best to not use direct mode. Or a reasonable compromise is
+to `git annex untrust` the direct mode repository and set up a backup remote.
+With this compromise, only if you edit a file twice in a row might the old
+version get lost before it can be backed up.
+
+Of course, it would be possible to make direct mode fully version
+preserving, but it'd have to back up every file in the repository locally
+to do so. Going back to two local copies of every file, which is part of
+git that git-annex happily avoids. Hmm, it might be possible to only back
+up a file locally until it reaches the backup remote..

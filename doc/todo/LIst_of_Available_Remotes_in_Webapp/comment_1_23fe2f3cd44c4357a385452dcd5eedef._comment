@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.191"
+ subject="comment 1"
+ date="2014-04-17T20:54:18Z"
+ content="""
+I chose to make the webapp only show available remotes when it knows how to enable them. So it will show S3 special remotes, Box.com special remotes, etc. This avoids cluttering up the display of a shared repository with a list of all of your friend's removable drives, for example.
+
+I would like to make the webapp smarter about handling repositories on remote ssh servers. As long as the server name is in the global DNS, the webapp could easily walk the user through setting up such a remote. The missing piece is that nothing is logged in remotes.log for these remotes, and so the assistant doesn't know the server name.
+"""]]

@@ -1,0 +1,46 @@
+## Use case
+
+A laptop with a relatively small hard drive has copies of a subset of
+all annexed files.  When annexed files are changed externally and `git
+annex sync` is run on the laptop, the stale local copies are
+invalidated and their symlinks break.  How can I automatically fetch
+the updated versions of these previously locally-cached files?
+
+Because I only want a subset of files, I can't do
+
+    git annex add --not --in here --and --in superset.
+
+Because files may be renamed, the
+[[tips/automatically_getting_files_on_checkout/]] solution, by making
+`dir` specify the subset, will require manually and redundantly
+tracking renames.
+
+## Simple ( (?) ) feature addition to git-annex to support this
+
+When locally-cached files are invalidated by `git-annex sync`,
+git-annex could notify the user, and give them the option to
+`git-annex get` the invalidated files.  Bonus points if the mechanism
+allows this to be done at any point in the future, not just when
+running `git-annex sync`.  The idea is that git-annex could track
+which files, previously cached locally, have been invalidated
+*unintentionally* by syncs, and treat them differently from files,
+previously cached locally, that have been *intentionally* dropped
+using `git-annex drop` or `git-annex move`.
+
+## More generally
+
+The ability to specify a collection of files to always cache locally
+(something like a numcopies.here=1), which is robust to renames, would
+work.  The "robust to renames" part seems tricky in git: whereas svn
+attaches properties to files, and so properties are propagated by `svn
+mv`, I believe git attributes are only specified by patterns in
+.gitattributes files.
+
+## Related questions / possible approaches
+
+Other forum posts mention [[`git
+subtree`|forum/git-subtree_support__63__/]] and [[sparse git
+checkouts|forum/sparse_git_checkouts_with_annex/]], but I'm not
+familiar with these features and from reading those questions it's
+unclear if those approaches will work for me.  Does anyone more
+familiar see how to adapt one of those features to my use case?

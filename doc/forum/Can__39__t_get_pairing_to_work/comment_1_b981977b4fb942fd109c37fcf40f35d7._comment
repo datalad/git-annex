@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.246.8"
+ subject="comment 1"
+ date="2012-10-11T23:48:37Z"
+ content="""
+It's not clear from your description whether you
+
+a) Started the pairing process independently on both machines... which probably doesn't work.
+
+b) Started pairing on one machine, and the other one noticed and popped up a pair request alert where
+you re-entered the password.
+
+If b) didn't happen, then the the pairing broadcast is not being seen by the second machine.
+You can try using tcpdump or wireshark to see the traffic. The traffic will look like this:
+
+<pre>
+19:45:11.125893 IP 10.1.1.2.43376 > 224.0.0.1.55556: UDP, length 692
+</pre>
+
+If all is going well, you should be able to see that on both the machine that's initiating the pairing and the other machine. And every other machine on the network for that matter.
+"""]]

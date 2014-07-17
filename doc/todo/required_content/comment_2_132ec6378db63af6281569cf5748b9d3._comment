@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.154"
+ subject="partial implementation plan"
+ date="2014-03-19T16:37:05Z"
+ content="""
+* When there is a required content expression, OR it with the preferred content expression. This will make the assistant, --auto etc want to get required content.
+* When checking if something can be dropped, check the required content expression. Only Command.Drop does this so nicely centralized in one place.
+* When checking required content expression for drop, must do active verification of terminals that relate to other copies, for the same reason the numcopies check when dropping does active validation. This includes `copies=`, `lackingcopies=`, `approxlackingcopies=`, `inallgroup=`.
+
+The last is where the complication comes in. Seems to need a cache of places the key was just now verified to be present, which can be used to avoid unnecessary redundant active verification (for example \"not (copies=2 and inallgroup=bar)\" would otherwise redundantly check some remotes). The numcopies checking code should use the same cache too.
+
+* Finally, if the required content cannot be satisfied, it would be nice to know which terminal failed in order to show the user a useful error message. The current Matcher does not provide a way to do that though. Or could just say, \"unable to satisfy required content: $expression\"
+"""]]

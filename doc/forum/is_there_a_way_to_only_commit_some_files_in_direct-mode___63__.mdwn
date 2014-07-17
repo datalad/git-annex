@@ -1,0 +1,5 @@
+I would like to be able to use git-annex to not only sync binary files for a project but also to be able to use it more like git, that is adding manually files to index and only commiting that.
+I think it is still possible in indirect-mode to manage files like I want, but as I am stuck in windows, I would like to be able to do that in direct-mode...
+Due to the safety measures taken to avoid doing bad things in direct-mode, it doesn't seem possible to commit (and push) files without syncing the whole repository.
+
+Is it currently possible to do what I would like to do, or will it be possible in the future ?

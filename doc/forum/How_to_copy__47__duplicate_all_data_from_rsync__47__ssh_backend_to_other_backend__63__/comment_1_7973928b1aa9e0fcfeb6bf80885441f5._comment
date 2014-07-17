@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.251.174"
+ subject="comment 1"
+ date="2013-09-07T17:11:03Z"
+ content="""
+Just run `git annex copy --all --to remote` 
+
+(Needs git-annex 4.20130709 or newer.)
+"""]]

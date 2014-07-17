@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.2.134"
+ subject="comment 2"
+ date="2013-09-13T18:38:11Z"
+ content="""
+Can you run this so I can get a better idea of the size of this repository:
+
+git ls-tree -r git-annex | wc -l
+"""]]

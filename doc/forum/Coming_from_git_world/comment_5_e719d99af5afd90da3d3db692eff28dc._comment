@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn5RcmefXjrl1vmbHIiOWQyXGXVKxlm3rg"
+ nickname="Kavin"
+ subject="comment 5"
+ date="2013-07-09T20:32:51Z"
+ content="""
+Thank you very much!!!!! Yes, Planning to use Centralized repo. Basically what i understood was there will be a git server and separate server for hosting the large files. Its great to know i can use the same server and do not need to explicitly point to the server.
+
+As we are using Gerrit, What is the general best practice for it. (After i am done with it, I will write a blog post, As i am sure many people with centralized repo's might need this)  
+Thanks! 
+"""]]

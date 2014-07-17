@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkCw26IdxXXPBoLcZsQFslM67OJSJynb1w"
+ nickname="Alexander"
+ subject="can't install git-annex on OS X Mountain Lion without disabling WebDAV support"
+ date="2013-04-29T17:57:03Z"
+ content="""
+possibly related to this Debian issue:
+
+trying to install git-annex with cabal on OS X 10.8.3, the build fails with
+
+
+    Loading package DAV-0.4 ... linking ... ghc: 
+    lookupSymbol failed in relocateSection (relocate external)
+    ~/.cabal/lib/DAV-0.4/ghc-7.4.2/HSDAV-0.4.o: unknown symbol `_DAVzm0zi4_PathszuDAV_version1_closure'
+    ghc: unable to load package `DAV-0.4'
+    Failed to install git-annex-4.20130417
+    cabal: Error: some packages failed to install:
+    git-annex-4.20130417 failed during the building phase. The exception was:
+    ExitFailure 1
+
+
+This was after following all of the instructions for the Homebrew install at [http://git-annex.branchable.com/install/OSX/](http://git-annex.branchable.com/install/OSX/)
+I was able to work around this issue by installing with the WebDAV flag disabled (ie, added the option --flags=\"-WebDAV\" to last command in the OS X install instructions):
+
+    cabal install git-annex --bindir=$HOME/bin --flags=\"-WebDAV\"
+
+"""]]

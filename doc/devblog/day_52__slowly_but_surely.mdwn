@@ -1,0 +1,5 @@
+Been chipping away at my backlog of messages, and it's down to 23 items.
+
+Finally managed to get ghc to build with a newer version of the NDK.
+This *might* mean a solution to git-annex on Android 4.2. I 
+[need help with testing](http://git-annex.branchable.com/bugs/git-annex_broken_on_Android_4.3/#comment-90b82735cd6090a7765f423b743fffd3).

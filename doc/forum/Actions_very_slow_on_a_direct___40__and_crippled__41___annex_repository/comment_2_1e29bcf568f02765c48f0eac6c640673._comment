@@ -1,0 +1,45 @@
+[[!comment format=mdwn
+ username="TroisSinges"
+ ip="82.227.207.5"
+ subject="comment 2"
+ date="2013-11-26T20:42:03Z"
+ content="""
+My problem isn't solved. I cloned the repository from my netbook to the SMD drive, and added a file in this new direct annex repository :
+
+    [3singes:/Volumes/Video/Videos/Films] $ git annex add MyFamily.mkv --debug
+    [2013-11-26 19:52:59 CET] read: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"ls-files\",\"--others\",\"--exclude-standard\",\"-z\",\"--\",\"MyFamily.mkv\"]
+    [2013-11-26 19:52:59 CET] read: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"ls-files\",\"--modified\",\"-z\",\"--\",\"MyFamily.mkv\"]
+    [2013-11-26 19:52:59 CET] chat: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"cat-file\",\"--batch\"]
+    add MyFamily.mkv [2013-11-26 19:52:59 CET] chat: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"check-attr\",\"-z\",\"--stdin\",\"annex.backend\",\"annex.numcopies\",\"--\"]
+    (checksum...) [2013-11-26 19:52:59 CET] read: gsha256sum [\"MyFamily.mkv\"]
+    [2013-11-26 20:55:35 CET] chat: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"cat-file\",\"--batch\"]
+    [2013-11-26 20:55:35 CET] chat: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"hash-object\",\"-t\",\"blob\",\"-w\",\"--stdin\",\"--no-filters\"]
+    ok
+    (Recording state in git...)
+    [2013-11-26 20:55:35 CET] feed: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"update-index\",\"-z\",\"--index-info\"]
+    [2013-11-26 20:55:35 CET] chat: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"hash-object\",\"-w\",\"--stdin-paths\",\"--no-filters\"]
+    [2013-11-26 20:55:35 CET] feed: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"update-index\",\"-z\",\"--index-info\"]
+    [2013-11-26 20:55:35 CET] read: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2013-11-26 20:55:36 CET] read: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"write-tree\"]
+    [2013-11-26 20:55:36 CET] chat: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"commit-tree\",\"9bdb7b18b44020441ec8dc179e676120e769ff32\",\"-p\",\"refs/heads/git-annex\"]
+    [2013-11-26 20:55:37 CET] call: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"update-ref\",\"refs/heads/git-annex\",\"293332232ca4e7428090171b52dcc5b3b80d1df6\"]
+
+Let's try to sync to my macbookpro annex repository:
+
+    [3singes:/Volumes/Video/Videos/Films] $ git annex sync macbookpro --debug
+    [2013-11-26 20:57:48 CET] read: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"show-ref\",\"git-annex\"]
+    [2013-11-26 20:57:48 CET] read: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2013-11-26 20:57:49 CET] read: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"log\",\"refs/heads/git-annex..293332232ca4e7428090171b52dcc5b3b80d1df6\",\"--oneline\",\"-n1\"]
+    [2013-11-26 20:57:49 CET] read: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"log\",\"refs/heads/git-annex..b2146cf0abc7d6a7e5c79d3b133181b56cd77461\",\"--oneline\",\"-n1\"]
+    [2013-11-26 20:57:49 CET] read: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"log\",\"refs/heads/git-annex..c2cf7488b4745d4168491d8e62f5bdc354869133\",\"--oneline\",\"-n1\"]
+    [2013-11-26 20:57:49 CET] chat: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"cat-file\",\"--batch\"]
+    [2013-11-26 20:57:49 CET] read: git [\"config\",\"--null\",\"--list\"]
+    [2013-11-26 20:57:49 CET] read: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"ls-files\",\"--stage\",\"-z\",\"--others\",\"--exclude-standard\",\"--\",\"/Volumes/Video/Videos\"]
+    [2013-11-26 20:57:50 CET] chat: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"cat-file\",\"--batch\"]
+    (Recording state in git...)
+    [2013-11-26 20:57:55 CET] feed: xargs [\"-0\",\"git\",\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"add\",\"-f\"]
+    commit
+    [2013-11-26 20:57:55 CET] read: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"commit\",\"-m\",\"git-annex automatic sync\"]
+
+Now it's 21:41 CET, and it's been stuck for circa 1 hour.
+"""]]

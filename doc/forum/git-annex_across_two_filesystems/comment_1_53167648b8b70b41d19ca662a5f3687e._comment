@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-04-22T19:48:55Z"
+ content="""
+git-annex stores the contents of files inside `.git/annex/objects`. The `git annex add` is failing because it cannot `rename()` the file into that directory, because it is on a different filesystem. Even if it did a more expensive move of the file, it would not do what you want, because all the files would be moved to the `.git/annex/objects` directory, which is stored on your smaller drive.
+
+The way git-annex is intended to be used with multiple drives is this: 
+
+* Make a separate git repository on each drive.
+* Set up git remotes connecting these repositories together. You don't have to connect them all up, but at least make
+  the git repository on your main filesystem have a remote for each git repository on other drives.
+* Use `git annex sync` to keep the git repositories in sync. (Or do it manually with `git pull`)
+* When you want a file to be available in the local repository, use `git annex get $file` to get it.
+* When your local repository is getting too full, use `git annex drop` or `git annex move` to flush files
+  out to the other drive(s).
+
+The [[walkthrough]] goes through an example of adding a removable USB drive this way, but you can do the same thing for
+non-removable drives.
+
+> Having two repositories also has the disadvantage that I need two repositories on all other nodes am I right?
+
+No -- you combine the two repositories, so any clone of either one contains all the files in both. Other notes then only need one
+repository. However, for another node to be able to get files from both repositories on this node, it will need to have two git remotes configured, one for each repository.
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 15"
+ date="2013-08-24T15:56:47Z"
+ content="""
+No, you can sync before you copy, get, or whatever. git-annex will replace the symlinks with the actual files when they arrive at the repository.
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ ip="2001:1928:1:9::1"
+ subject="comment 2"
+ date="2013-12-30T17:44:33Z"
+ content="""
+I guess this is related to [[confused about external drives]] - I would have liked the assistant to propose using the full drive for storing stuff, as opposed to encrypting data with GPG, including prompting me for the crypto password.
+"""]]

@@ -1,0 +1,17 @@
+Some neat stuff is coming up, but today was a pretty blah day for me.
+I did get the Cronner tested and working (only had a few little bugs). But
+I got stuck for quite a while making the Cronner stop `git-annex fsck`
+processes it was running when their jobs get removed. I had some code to do
+this that worked when run standalone, but not when run from git-annex.
+
+After considerable head-scratching, I found out this was due to
+`forkProcess` masking aync exceptions, which seems to be probably
+[a bug](http://ghc.haskell.org/trac/ghc/ticket/8433). Luckily was able to
+work around it. Async exceptions continue to strike me as the worst part of
+the worst part of Haskell (the worst part being exceptions in general).
+
+Was more productive after that.. Got the assistant to automatically queue
+re-downloads of any files that fsck throws out due to having bad contents,
+and made the webapp display an alert while fscking is running, which will
+go to the page to configure fsck schedules. Now all I need to do is
+build the UI of that page.

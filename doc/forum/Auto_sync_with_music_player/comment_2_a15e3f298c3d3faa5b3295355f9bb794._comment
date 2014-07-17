@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="EvanDeaubl"
+ ip="67.128.198.190"
+ subject="Workaround using external app"
+ date="2014-03-07T14:57:39Z"
+ content="""
+A workaround for this is using an external app that pings the media scanner to rescan. It's an extra step to remember, but I haven't found it too much of a burden.
+
+I use this one: <https://play.google.com/store/apps/details?id=com.addz.mediascanner>, but there are at least a dozen to choose from.
+
+"""]]

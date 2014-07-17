@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnkBYpLu_NOj7Uq0-acvLgWhxF8AUEIJbo"
+ nickname="Chris"
+ subject="Find files by key"
+ date="2013-05-03T04:14:55Z"
+ content="""
+Is there any simple way to search for files with a given key?
+
+At the moment, the best I've come up with is this:
+
+````
+git annex find --include '*' --format='${key} ${file}' | grep <KEY>
+````
+
+where `<KEY>` is the key. This seems like an awfully longwinded approach, but I don't see anything in the docs indicating a simpler way to do it. Am I missing something?
+"""]]

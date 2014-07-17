@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="John"
+ ip="109.242.130.160"
+ subject="comment 2"
+ date="2013-09-22T22:20:22Z"
+ content="""
+Thank you Hamza!
+
+I 'm new on git, so please excuse my trivial questions:
+
+a) I am using the git-annex assistant, is it something I can do from there or is it command line only?
+I googled a bit and from what I can tell, I should make a directory on the usb drive, go there and do 
+> $ git clone /path/to/fullArchiveRepo
+
+Would that be correct?
+
+b) Assuming I 've done it correctly, then I put the USB on a drawer and leave it there for a month. In the meantime, I 've been using the repo on my pc and more files have been archived encrypted on Box.com. Then my local pc dies. When I plug the usb on the new pc, will I be able to recover all the encrypted files, or only those up to 1 month ago?
+
+c) What is the proper process to use the cloned repo on a new pc? Plug the usb drive, open the git-annex assistant and go through the \"create new repo\" but use the path for the existing repo on the usb? Then add another repo from Box (with the same account and the same directory there? Would that work?
+
+Thank you for your time & knowledge! :)
+"""]]

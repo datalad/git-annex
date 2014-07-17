@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 4"
+ date="2013-07-23T17:38:50Z"
+ content="""
+I have made the assistant enable the fsync option when it creates a repository on a removable drive. That is, at least in my experience, the thing that most likely needs it. I don't know if it would have saved you in your situation or not.
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 10"
+ date="2013-03-01T04:23:48Z"
+ content="""
+@Brian, I follow your logic, it does seem that start.c is not finding itself. But, you checked the pid of the terminal, while start.c is the program it (usually) starts.
+
+Anyway, I have tried making start.c fall back to a hard coded path if it cannot find busybox. It'll also say what path it detected, which may help debug the underlying problem. You can pick up an app with this change from the autobuilder.
+"""]]

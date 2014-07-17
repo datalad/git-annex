@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnaH44G3QbxBAYyDwy0PbvL0ls60XoaR3Y"
+ nickname="Nigel"
+ subject="missing configuration for flickr-checkpresent-hook"
+ date="2013-06-05T22:00:48Z"
+ content="""
+Many thanks.
+
+I used gitannex-install and was left with a slight anomaly:
+
+    Installing...........done
+    git-annex version 4.20130601 has been installed
+    $ git-annex version
+    git-annex version: 4.20130531-g5df09b5
+
+But I guess this includes the new hook format.  I get a bit further:
+
+    $ git annex copy . --to flickr
+    copy walkthrough.sh (checking flickr...) (user error (sh [\"-c\",\"/usr/bin/python2 /home/nrb/repos/gits/flickrannex/flickrannex.py\"] exited 1)) failed
+    copy walkthrough.sh~ (checking flickr...) (user error (sh [\"-c\",\"/usr/bin/python2 /home/nrb/repos/gits/flickrannex/flickrannex.py\"] exited 1)) failed
+    git-annex: copy: 2 failed
+
+
+"""]]

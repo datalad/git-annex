@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmp1ThsNNAbSn46ju-gwFELfStlhl8usJo"
+ nickname="donkeyicydragon"
+ subject="Possible quick solution with rsync"
+ date="2013-05-28T10:52:30Z"
+ content="""
+One could achieve the effect of only transmitting the changes of file contents using rsync.
+
+On the repository that lacks the current version:
+
+cp latestversionavailable currentversion
+rsync remoterepository/currentversion ./currentversion
+
+
+
+
+
+"""]]

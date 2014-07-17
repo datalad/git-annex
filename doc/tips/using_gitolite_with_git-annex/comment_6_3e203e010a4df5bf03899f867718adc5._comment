@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="bremner"
+ ip="156.34.79.193"
+ subject="ssh://gitolite-host/repo-name is supposed to work"
+ date="2011-12-31T03:34:17Z"
+ content="""
+I confirmed with Sitaram that this is intentional, if probably under-documented.
+Since the ADC strips the leading /~/ in assigning $start anyway, I guess something like the following will  work 
+<pre>
+
+diff --git a/contrib/adc/git-annex-shell b/contrib/adc/git-annex-shell
+index 7f9f5b8..523dfed 100755
+--- a/contrib/adc/git-annex-shell
++++ b/contrib/adc/git-annex-shell
+@@ -28,7 +28,7 @@ my $cmd=$ENV{SSH_ORIGINAL_COMMAND};
+ # the second parameter.
+ # Further parameters are not validated here (see below).
+ die \"bad git-annex-shell command: $cmd\"
+-    unless $cmd =~ m#^(git-annex-shell '\w+' ')/\~/([0-9a-zA-Z][0-9a-zA-Z._\@/+-
++    unless $cmd =~ m#^(git-annex-shell '\w+' ')/(?:\~\/)?([0-9a-zA-Z][0-9a-zA-Z.
+ my $start = $1;
+ my $repo = $2;
+ my $end = $3;
+</pre>
+"""]]

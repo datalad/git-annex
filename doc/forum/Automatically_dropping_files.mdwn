@@ -1,0 +1,7 @@
+I can make `git-annex` automatically fetch files with the [[/preferred content]] setting and the `--auto` flag, and it works almost exactly like I expect it to work.
+
+What I am missing is a way to make `git annex drop --auto` drop all files that are not wanted.
+
+I would like to work with metadata and tags in such a way that I can have clones (with views) that have only exactly those files available which carry a tag (done), and all other files automatically removed from the annex (unless that would be unsafe).
+
+Does anyone know how to achieve this?

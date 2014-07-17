@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn7gQ1zZDdWhXy9H51W2krZYShNmKL3qfM"
+ nickname="Karsten"
+ subject="comment 1"
+ date="2012-11-13T14:38:28Z"
+ content="""
+Just an idea: Do you have two-factor-authorisation set up for your google account, you need to generate an application specific password, as the 'normal' password will not work.
+"""]]

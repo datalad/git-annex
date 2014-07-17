@@ -1,0 +1,196 @@
+[[!toc]]
+
+# metadata
+
+Attach an arbitrary set of metadata to a key. This consists of any number
+of fields. Each field has an unordered set of values. The special field
+"tag" has as its values any tags that are set for the key.
+
+Store in git-annex branch, next to location log files.
+
+Storage needs to support union merging, including removing an old value
+of a field, and adding a new value of a field.
+
+# filtered branches
+
+See [[tips/metadata_driven_views]]
+
+The reason to use specially named filtered branches is because it makes
+self-documenting how the repository is currently filtered.
+
+## unmatched files in filtered branches
+
+TODO Files not matching the view should be able to be included in
+the filtered branch, in a special location, an "other" directory.
+
+For example, it could make a "other" directory containing files
+without a tag when viewing by tag.
+
+It might be nice, if in a two level view, for the other directories
+to nest. For example, `other/2014/file`. However, that leads to a
+performance problem: When adding a level to a view, it has to look at each
+file in the "other" directory and generate a view for it too. With a lot
+of files, that'd be slow.
+
+Instead, why not replicate the parent branch's directory structure inside
+the "other" directory? Then the directory tree only has to be constructed
+once, and can be left alone when refining a view.
+
+## operations while on filtered branch
+
+* If files are removed and git commit called, git-annex should remove the
+  relevant metadata from the files. **done**  
+  (Currently, only metadata used for visible subdirs is added and removed
+  this way.)
+  (Also, this is not usable in direct mode because deleting the
+  file.. actually deletes it...)
+* If a file is moved into a new subdirectory while in a view branch,
+  a tag is added with the subdir name. This allows on the fly tagging.
+  **done**
+* `git annex sync` should avoid pushing out the view branch, but
+  it should check if there are changes to the metadata pulled in, and update
+  the branch to reflect them.
+
+## automatically added metadata
+
+When annex.genmetadata is set, git annex add automatically attaches
+some metadata to a file. Currently year and month fields, from its mtime.
+
+There's also a post-commit-annex hook script.
+
+## directory hierarchy metadata
+
+From the original filename used in the master branch, when
+constructing a view, generate fields. For example foo/bar/baz.mp3
+would get /=foo, foo/=bar, foo/bar/=baz, and .=mp3.
+
+Note that dir/=subdir allows a view to use `dir/=*` and only
+match one level of subdirs with the glob. So is better than dir=foo/bar
+as the metadata. (Alternatively, could do special glob matching.)
+
+This allows using whatever directory hierarchy exists to inform the view,
+without locking the view into using it. 
+
+Complication: When refining a view, it only looks at the filenames in
+the view, so it has to map from
+those filenames to derive the same metadata, unless there is persistent
+storage. Luckily, the filenames used in the views currently include the
+subdirs.
+
+# other uses for metadata
+
+Uses are not limited to view branches.
+
+`git annex checkoutmeta year=2014 talk` in a subdir of master could create the
+same tree of files filter would. The user can then commit that if desired.
+Or, they could run additional commands like `git annex fadd` to refine the
+tree of files in the subdir.
+
+Metadata can be used for configuring numcopies. One way would be a
+numcopies=n value attached to a file. But perhaps better would be to make
+the numcopies.log allow configuring numcopies based on which files have
+other metadata.
+
+Other programs could query git-annex for the metadata of files in the work
+tree, and do whatever it wants with it.
+
+# filenames
+
+The hard part of this is actually getting a useful filename to put in the
+view branch, since git-annex only has a key which the user will not
+want to see.
+
+* Could use filename metadata for the key, recorded by git-annex add (which
+  may not correspond to filenames being used in regular git branches like
+  master for the key).
+* Could use the .map files to get a filename, but this is somewhat
+  arbitrary (.map can contain multiple filenames), and is only
+  currently supported in direct mode.
+* Current approach: Have a reference branch (eg master) and walk it to
+  find filenames and
+  keys. Fine as long as it can be done efficiently. Also allows including
+  the subdirectory a file is in, potentially. cwebber points out that this
+  is essentially a form of tracking branch. Which implies it will need to
+  be updatable when the reference branch changes. Should be doable via
+  diff-tree.
+
+Note that we have to take care to avoid generating conflicting filenames.
+The current approach is to embed the full directory structure inside the
+filename in the view branch.
+
+## union merge properties
+
+While the storage could just list all the current values of a field on a
+line with a timestamp, that's not good enough. Two disconnected
+repositories can make changes to the values of a field (setting and
+unsetting tags for example) and when this is union merged back together,
+the changes need to be able to be replayed in order to determine which
+values we end up with. 
+
+To make that work, we log not only when a field is set to a value, 
+but when a value is unset as well.
+
+For example, here two different remotes added tags, and then later
+a tag was removed:
+
+	1287290776.765152s tag +foo +bar
+	1287290991.152124s tag +baz
+	1291237510.141453s tag -bar
+
+# efficient metadata lookup
+
+Looking up metadata for view generation so far requires traversing all keys
+in the git-annex branch. This is slow. A fast cache is needed.
+
+TODO
+
+# direct mode issues
+
+TODO (direct mode is currently not supported with view branches)
+
+Checking out a view branch can result in any number of copies of a file
+appearing in different directories. No problem in indirect mode, but
+in direct mode these are real, expensive copies.
+
+But, it's worth supporting direct mode!
+
+So, possible approaches:
+
+* Before checking out a view branch, calculate how much space will
+  be used by duplicates and refuse if not enough is free.
+* Only check out one file, and omit the copies. Keep track of which
+  files were omitted, and make sure that when committing on the branch,
+  that metadata is not removed. Has the downside that files can seem
+  to randomly move around in the tree as their metadata changes.
+* Disallow view branch checkouts that have duplicate files.
+  This would cripple it some, but perhaps not too badly?
+
+# gotchas
+
+* Checking out a view branch can remove the current subdir. May be worth
+  detecting when this happens and help the user.
+  **done**
+
+* Git has a complex set of rules for what is legal in a ref name.
+  View branch names will need to filter out any illegal stuff. **done**
+
+* Metadata should be copied to the new key when adding a modified version
+  of a file. **done**
+
+* Filesystems that are not case sensative (including case preserving OSX)
+  will cause problems if view branches try to use different cases for 
+  2 directories representing a metadata field.
+  
+  Solution might be to compare fields names case-insensitively, and
+  pick one representation consistently. **done**
+
+* Assistant needs to know about views, so it can update metadata when
+  files are moved around inside them. TODO
+
+* What happens if git annex add or the assistant add a new file while on a
+  view? If the file is not also added to the master branch, it will be lost
+  when exiting the view. TODO
+
+* The filename mangling can result in a filename in a view
+  that is too long for its containing filesystem. Should detect and do
+  something reasonable to avoid. TODO

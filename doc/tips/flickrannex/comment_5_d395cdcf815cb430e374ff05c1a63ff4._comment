@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnaH44G3QbxBAYyDwy0PbvL0ls60XoaR3Y"
+ nickname="Nigel"
+ subject="comment 5"
+ date="2013-06-05T22:11:14Z"
+ content="""
+Thanks, but on my machine I get:
+
+    $ which python2
+    /usr/bin/python2
+
+I have scripted all my walkthrough commands, blowing away the test repositories and flickr settings first each time.  This re-runs the flickr scripts and git config annex.flickr-hook etc.
+
+I can't spot anything here.
+
+
+"""]]

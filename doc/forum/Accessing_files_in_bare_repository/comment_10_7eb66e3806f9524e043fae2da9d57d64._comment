@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="173.162.44.162"
+ subject="comment 10"
+ date="2013-05-13T04:08:14Z"
+ content="""
+I'm not sure what's up.  I hope Joey can weigh in.
+
+\"git annex sync\" ought to go get the symlinks from your remote, and merge them into your master branch, which is currently checked out, so you should see them.  :(
+"""]]

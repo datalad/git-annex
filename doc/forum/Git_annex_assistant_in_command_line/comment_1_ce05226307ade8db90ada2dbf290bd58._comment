@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.254.222"
+ subject="comment 1"
+ date="2013-07-07T17:16:27Z"
+ content="""
+There is no difference between a repository created using the assistant and one created by hand. So you can just `git clone ssh://server/path` or `git remote add foo  ssh://server/path` and use it at the command line like any other repository.
+
+The assistant interoperates perfectly with the command line; you can switch between them at will at any time.
+"""]]

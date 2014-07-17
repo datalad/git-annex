@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnYD2ZzaOz-0anQDrN-Hg8Tvh5_C7wtStk"
+ nickname="roucaries"
+ subject="Portability"
+ date="2012-07-21T20:31:32Z"
+ content="""
+For portability why not using gnulib ? It will ease porting to windows BTW.
+
+Bastien
+"""]]

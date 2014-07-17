@@ -1,0 +1,11 @@
+I just briefly tried git-annex. It's an interesting concept.
+
+My main frustration so far: I find it difficult to visualise and use the annex. Shell script contortions can obviously show you anything, but I don't have the ready knowledge to compose them. It would be nice to have some more user-friendly commands or even a GUI.
+
+'annex whereis' is fine for one file, but unweildly for many (e.g. a directory whose contents are always together, never divided between repositories). Is it possible to treat a given directory and all its contents as a single object?
+
+It is not clear what files are immediately available. Sometimes you don't care about annexed files that aren't stored in the current repository. Might it be nice to temporarily remove or hide symlinks for files that are not here right now? Then you could treat the repository more like a normal file heirarchy. Or how about something like 'git annex ls' to show only currently available files?
+
+assistant and sharebox fs sound like great basic synch options, but it would be really cool to have a fuse fs somewhere between raw git-annex and assistant. Putting a file in the directory would trigger git-annex to add it and sync. rm <file> on that new file would not work by default because it's the only copy. rm --annex to get rid of the file from all repos. mv/cp <file> <remote> to transfer between repos. ls to show only the files that are here now, ls --annex to display complete information in a clear way (well-formatted, colorized). Something like that.
+
+This has just been a random brain dump from a new user, hopefully it made some sense.

@@ -1,0 +1,228 @@
+What steps will reproduce the problem?
+
+    $ git init a.git
+    Initialized empty Git repository in /var/tmp/git-annex-bug/a.git/.git/
+    $ cd a.git
+    $ git annex init a
+    init a ok
+    (Recording state in git...)
+    $ touch Ren$'\351'
+    $ git annex add Ren$'\351'
+    add René (checksum...) ok
+    (Recording state in git...)
+    $ git ci -m "Added Rene'."
+    [master (root-commit) a61b796] Added Rene'.
+     1 files changed, 1 insertions(+), 0 deletions(-)
+     create mode 120000 "Ren\351"
+    $ cd ..
+    $ git clone -o a a.git b.git
+    Cloning into b.git...
+    remote: Counting objects: 13, done.
+    remote: Compressing objects: 100% (9/9), done.
+    remote: Total 13 (delta 1), reused 0 (delta 0)
+    Receiving objects: 100% (13/13), done.
+    Resolving deltas: 100% (1/1), done.
+    $ cd b.git
+    $ git annex copy --from=a --fast -v
+    (merging a/git-annex into git-annex...)
+    copy René 
+    git-annex: /var/tmp/git-annex-bug/b.git/.git/annex/transfer/download/7c5ee764-e8c6-11e1-b0c5-67c6ec1236d6/SHA256-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855: commitBuffer: invalid argument (invalid character)
+    failed
+    (Recording state in git...)
+    git-annex: copy: 1 failed
+
+What is the expected output? What do you see instead?
+
+Expect that files will be copied, but they are not.
+
+What version of git-annex are you using? On what operating system?
+
+    $ echo $LANG
+    en_US.UTF-8
+    $ lsb_release -a
+    No LSB modules are available.
+    Distributor ID:	Ubuntu
+    Description:	Ubuntu 11.10
+    Release:	11.10
+    Codename:	oneiric
+    $ uname -a
+    Linux pdx-desktop 3.0.0-23-generic #39-Ubuntu SMP Thu Jul 19 19:18:53 UTC 2012 i686 i686 i386 GNU/Linux
+    $ bash --version
+    GNU bash, version 4.2.10(1)-release (i686-pc-linux-gnu)
+    Copyright (C) 2011 Free Software Foundation, Inc.
+    License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+
+    This is free software; you are free to change and redistribute it.
+    There is NO WARRANTY, to the extent permitted by law.
+    $ ghc --version
+    The Glorious Glasgow Haskell Compilation System, version 7.4.2
+    $ git annex version
+    git-annex version: 3.20120807
+    local repository version: 3
+    default repository version: 3
+    supported repository versions: 3
+    upgrade supported from repository versions: 0 1 2
+
+Please provide any additional information below.
+
+The problem is related to weird characters in file names.  In the
+above example, the "weird character" is an accented 'e' (entered with
+$'\351' in bash and zsh).  I am able to add the files with weird
+characters in their name to one annex, but I cannot copy them to other
+annexes using `git annex copy`.
+
+The above example is a simplification of a real problem I am
+experiencing.  In my real scenario, the file is not empty.  See the
+attachment for some variations, including with non-empty
+files. UPDATE: I'm not allowed to add attachments. See below.
+
+May be related to these (long-ago fixed) bugs:
+http://git-annex.branchable.com/todo/support-non-utf8-locales/
+
+
+"Attachment": Here are my notes, including more examples:
+
+    Programs I'm using:
+
+    $ echo $LANG
+    en_US.UTF-8
+    $ lsb_release -a
+    No LSB modules are available.
+    Distributor ID:	Ubuntu
+    Description:	Ubuntu 11.10
+    Release:	11.10
+    Codename:	oneiric
+    $ uname -a
+    Linux pdx-desktop 3.0.0-23-generic #39-Ubuntu SMP Thu Jul 19 19:18:53 UTC 2012 i686 i686 i386 GNU/Linux
+    $ bash --version
+    GNU bash, version 4.2.10(1)-release (i686-pc-linux-gnu)
+    Copyright (C) 2011 Free Software Foundation, Inc.
+    License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+
+    This is free software; you are free to change and redistribute it.
+    There is NO WARRANTY, to the extent permitted by law.
+    $ ghc --version
+    The Glorious Glasgow Haskell Compilation System, version 7.4.2
+    $ git annex version
+    git-annex version: 3.20120807
+    local repository version: 3
+    default repository version: 3
+    supported repository versions: 3
+    upgrade supported from repository versions: 0 1 2
+
+
+    Simplest way to see problem: one empty file with weird character
+    (accented e: $'\351') in name:
+
+    $ git init a.git
+    Initialized empty Git repository in /var/tmp/git-annex-bug/a.git/.git/
+    $ cd a.git
+    $ git annex init a
+    init a ok
+    (Recording state in git...)
+    $ touch Ren$'\351'
+    $ git annex add Ren$'\351'
+    add René (checksum...) ok
+    (Recording state in git...)
+    $ git ci -m "Added Rene'."
+    [master (root-commit) a61b796] Added Rene'.
+     1 files changed, 1 insertions(+), 0 deletions(-)
+     create mode 120000 "Ren\351"
+    $ cd ..
+    $ git clone -o a a.git b.git
+    Cloning into b.git...
+    remote: Counting objects: 13, done.
+    remote: Compressing objects: 100% (9/9), done.
+    remote: Total 13 (delta 1), reused 0 (delta 0)
+    Receiving objects: 100% (13/13), done.
+    Resolving deltas: 100% (1/1), done.
+    $ cd b.git
+    $ git annex copy --from=a --fast -v
+    (merging a/git-annex into git-annex...)
+    copy René 
+    git-annex: /var/tmp/git-annex-bug/b.git/.git/annex/transfer/download/7c5ee764-e8c6-11e1-b0c5-67c6ec1236d6/SHA256-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855: commitBuffer: invalid argument (invalid character)
+    failed
+    (Recording state in git...)
+    git-annex: copy: 1 failed
+
+
+    Problem disappears with two empty files:
+
+    $ cd ..
+    $ git init a2.git
+    Initialized empty Git repository in /var/tmp/git-annex-bug/a2.git/.git/
+    $ cd a2.git
+    $ git annex init a2
+    init a2 ok
+    (Recording state in git...)
+    $ touch Ren$'\351'
+    $ git annex add Ren$'\351'
+    add René (checksum...) ok
+    (Recording state in git...)
+    $ git ci -m "Add Ren$'\351'."
+    [master (root-commit) 62ac1c8] Add Ren$'\351'.
+     1 files changed, 1 insertions(+), 0 deletions(-)
+     create mode 120000 "Ren\351"
+    $ touch Rene
+    $ git annex add Rene
+    add Rene (checksum...) ok
+    (Recording state in git...)
+    $ git ci -m "Add Rene."
+    [master c455523] Add Rene.
+     1 files changed, 1 insertions(+), 0 deletions(-)
+     create mode 120000 Rene
+    $ cd ..
+    $ git clone -o a2 a2.git b2.git
+    Cloning into b2.git...
+    done.
+    $ cd b2.git
+    $ git annex copy --from=a2 --fast -v
+    (merging a2/git-annex into git-annex...)
+    copy Rene (from a2...) ok
+    (Recording state in git...)
+
+
+    Problem returns with two non-empty files:
+
+    $ cd ..
+    $ git init a4.git
+    Initialized empty Git repository in /var/tmp/git-annex-bug/a4.git/.git/
+    $ cd a4.git
+    $ git annex init a4
+    init a4 ok
+    (Recording state in git...)
+    $ touch Ren$'\351'
+    $ rm Ren$'\351'
+    $ ls
+    $ echo "some content" > Ren$'\351'
+    $ git annex add Ren$'\351'
+    add René (checksum...) ok
+    (Recording state in git...)
+    $ git ci -m "Add Ren$'\351'."
+    [master (root-commit) f090d90] Add Ren$'\351'.
+     1 files changed, 1 insertions(+), 0 deletions(-)
+     create mode 120000 "Ren\351"
+    $ echo "some other content" > Rene
+    $ git annex add Rene
+    add Rene (checksum...) ok
+    (Recording state in git...)
+    $ git ci -m "Add Rene."
+    [master 97c20cd] Add Rene.
+     1 files changed, 1 insertions(+), 0 deletions(-)
+     create mode 120000 Rene
+    $ cd ..
+    $ git clone -o a4 a4.git b4.git
+    Cloning into b4.git...
+    done.
+    $ cd b4.git
+    $ git annex copy --from=a4 --fast -v
+    (merging a4/git-annex into git-annex...)
+    copy Rene (from a4...) ok
+    copy René 
+    git-annex: /var/tmp/git-annex-bug/b4.git/.git/annex/transfer/download/a5fcd0d4-e8c8-11e1-bb41-43ce1cb9a9f1/SHA256-s13--1c87b6727f523662df714f06a94ea27fa4d9050c38f4f7712bd4663ffbfdfa01: commitBuffer: invalid argument (invalid character)
+    failed
+    (Recording state in git...)
+    git-annex: copy: 1 failed
+
+> [[Fixed|done]]. Sorry this took so long, I was at a very busy point when
+> you filed this and am only just getting caught up. --[[Joey]]

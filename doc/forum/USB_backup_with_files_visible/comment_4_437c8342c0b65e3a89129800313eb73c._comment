@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.193"
+ subject="comment 4"
+ date="2013-07-03T19:54:21Z"
+ content="""
+Seems to me that any such problems would be caused by the environment variables git sets in the hook, or possibly the current working directory in use when the hook runs. So it might take some finessing to get right.
+
+Meanwhile, I've committed a change that makes `git annex merge` merge in changes synced to the repo from other repositories. So that can be used the same way `git annex sync` can, but without the added overhead of committing, pushing, and pulling.
+"""]]

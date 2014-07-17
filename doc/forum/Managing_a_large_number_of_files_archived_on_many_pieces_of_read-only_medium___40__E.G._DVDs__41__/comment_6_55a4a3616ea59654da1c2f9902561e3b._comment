@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://www.openid.albertlash.com/openid/"
+ ip="74.96.185.87"
+ subject="It works!"
+ date="2012-10-24T22:00:31Z"
+ content="""
+This works great! I first tried it with WORM, no-go. I can see why the SHA backends are so powerful, they appear to circumvent the commits which git usually uses for merging. When I first do the merge, it reports this:
+
+warning: no common commits
+
+Compared to how I've managed CD/DVD backups in the past, this is a quantum leap forward, and I don't find it convoluted in comparison. Yes, there is dar, but I prefer this method. In my case, its the perfect solution for original files, which in generally are treated as immutable, and not accessed very often. They are usually large, too! I'm using them for digital pictures.
+
+"""]]

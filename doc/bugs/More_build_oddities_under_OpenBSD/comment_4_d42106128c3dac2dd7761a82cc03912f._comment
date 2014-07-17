@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkzwmw_zyMpZC9_J7ey--woeYPoZkAOgGw"
+ nickname="dxtrish"
+ subject="comment 4"
+ date="2014-02-07T22:12:43Z"
+ content="""
+Couldn't it be possible that something is passed twice on the command line, like that message says could be the reason? Because I have inspected my systems and the only thing I can find that even contains such a string (stringprep_utf8_to_unichar) is libidn so there shouldn't be any conflicts.
+
+"""]]

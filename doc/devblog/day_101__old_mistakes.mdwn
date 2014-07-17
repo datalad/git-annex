@@ -1,0 +1,23 @@
+In order to remove some hackishness in `git annex sync --content`, I
+finally fixed a bad design decision I made back at the very beginning
+(before I really knew haskell) when I built the command seek code, which
+had led to a kind of inversion of control. This took most of a night, but
+it made a lot of code in git-annex clearer, and it makes the command
+seeking code much more flexible in what it can do. Some of the oldest, and
+worst code in git-annex was removed in the process.
+
+Also, I've been reworking the numcopies configuration, to allow for a 
+[[todo/preferred_content_numcopies_check]]. That will let the assistant,
+as well as `git annex sync --content` proactively make copies when
+needed in order to satisfy numcopies. 
+
+As part of this, `git config annex.numcopies` is deprecated, and there's a
+new `git annex numcopies N` command that sets the numcopies value that will
+be used by any clone of a repository.
+
+I got the preferred content checking of numcopies working too. However,
+I am unsure if checking for per-file .gitattributes annex.numcopies
+settings will make preferred content expressions be, so I have left
+that out for now.
+
+Today's work was sponsored by Josh Taylor.

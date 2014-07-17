@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 1"
+ date="2014-01-02T02:16:10Z"
+ content="""
+git-annex vicfg shows everything (except location tracking info and some remote.log stuff that it would be hard to present in any useful way). 
+
+It would be good to make `git annex info` segment its list of repos by group. The only other information is location tracking info and scheduling, which I think vicfg gives a good overview of.
+"""]]

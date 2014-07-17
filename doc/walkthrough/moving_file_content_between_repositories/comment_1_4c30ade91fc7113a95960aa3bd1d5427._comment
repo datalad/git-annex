@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 1"
+ date="2011-03-22T23:41:51Z"
+ content="""
+I may be missing something obvious, but when I copy to a remote repository, the object files are created, but no softlinks are created. When I pull everything from the remote, it pulls only files the local repo knows about already.
+
+        A
+       / \
+      B   C
+
+Moving from B to A creates no symlinks in A but the object files are moved to A. Copying back from A to B restores the object files in B and keeps them in A.
+
+Copying from A to an empty C does not create any object files nor symlinks. Copying from C to A creates no symlinks in A but the object files are copied to A.
+
+-- RichiH
+
+"""]]

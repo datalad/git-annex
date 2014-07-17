@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="173.162.44.162"
+ subject="comment 3"
+ date="2013-02-27T01:12:29Z"
+ content="""
+Xyem, if you use git to clone a repo, instead of letting the assistant do it for you, you can get a non-bare repo.  See the walkthrough for some examples.  You can keep its working tree up to date with \"git annex sync\" run in that directory.
+
+Only helpful if you don't mind using git annex at the command line, I know.
+
+"""]]

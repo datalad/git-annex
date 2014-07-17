@@ -1,0 +1,25 @@
+My Use Case:
+
+I try basicly to use annex as a raid-like tool (at least thats the first step)
+
+so I added some big files to it, and then I synced it to a usb-remote. So far all did go well...
+
+No I startet annex watch daemon... because I thought it would then watch the files and checkin and out at least for the "origin" copy of the files.
+
+Then I thought lets delete some files I dont need anymore... so... rm.... ^^
+
+Maybe I just wanted to see what happens or if that would magicly do what I wanted him to do... ok I knew that it would not delete the file on the usb-drive (backup...) ok... but maybe at least localy...
+
+
+Now what did happen instead of that... the links are gone yes... the files it self are in the .git objects tree, so they did not get deleted, so ok not the way I wanted... have to unlock it first, would make maybe sense...
+
+So I tried first to get the links back... tried fix, tried unused, tried get... but the links doesnt show up again...
+
+is there a way to first bring back the links?
+is it save or the right way to just git rebase HEAD~3 to bring the links back?
+
+and then when I want to delete files from all places whats the way to do that... annex unlock -> then delete? or git drop filex --copies=0 or something?
+
+like I said I try to use is like a more flexible raid thing, this files are to big to really back em up with history... I watch them... and then soon I will often delete them (from everywhere). but other parts stay... I dont delete them then... ^^
+
+So maybe I missuse annex for that usecase... try to find that out ;)

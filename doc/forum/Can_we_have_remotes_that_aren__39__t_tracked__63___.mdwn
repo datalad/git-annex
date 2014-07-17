@@ -1,0 +1,13 @@
+I'm wondering if it is possible to have remotes that don't have the *content* of git-annex tracked.
+
+# My use case:
+
+I have a number of projects that I am working on at any one time.  They all are tracking independently by `git` and more recently I am using `git annex` to manage the large files.
+
+However because I have so many projects I work on one (called `AAA`), move to another, delete `AAA` to save disk space, ...time passes... return to `AAA`.
+
+Now, prior to `git-annex` I could just clone `AAA` from my central repository folder do work, commit, push, repeat and then delete and there is no indication that I had one, or many copies of `AAA` floating around.  Now with `git-annex` there is some trail of me cloning, running `git annex get`, etc.
+
+Is there some way to set a remote as `untracked`?  By that I mean it is classed as `untrusted` - so I can move files around, add them, copy to trusted remotes and delete the whole repository without worrying about losing data - but it also doesn't push any of the git-annex tracking info of where a copy of a file actually is.  I don't want to know if any or all of my other `untracked` repositories have a copy of a file or not. 
+
+I don't want my `git annex whereis` polluted with many references to repositories that just don't exist any more.  I guess I could set them to dead but that still keeps all of the tracking info around in all the repos, which seems unnecessary...

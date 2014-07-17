@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="bremner"
+ ip="156.34.79.193"
+ subject="repo name conventions?"
+ date="2011-12-30T21:41:13Z"
+ content="""
+I'm confused by the fact that the git-annex-shell adc rejects any repo names that don't start with /~/ since none of my repos start that way. It seems work ok if I just delete /\~ from the front of the regex, but I feel like I must be missing something. 
+"""]]

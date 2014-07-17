@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="68.119.96.78"
+ subject="comment 3"
+ date="2013-12-21T16:27:16Z"
+ content="""
+There is now a remoteFsck action in the Remote data structure. So far it is only implemented for git remotes, and `git annex fsck` does not use it; only the assistant does.
+"""]]

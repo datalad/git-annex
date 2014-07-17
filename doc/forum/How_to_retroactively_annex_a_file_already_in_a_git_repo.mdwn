@@ -1,0 +1,5 @@
+I worked out how to retroactively annex a large file that had been checked into a git repo some time ago.  I thought this might be useful for others, so I am posting it here.
+
+> This is a great tip, so I've moved it to
+> [[tips|tips/How_to_retroactively_annex_a_file_already_in_a_git_repo]].
+> --[[Joey]] 

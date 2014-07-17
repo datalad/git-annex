@@ -1,0 +1,54 @@
+Working on building [[design/metadata]] filtered branches.
+
+Spent most of the day on types and pure code. Finally at the end 
+I wrote down two actions that I still need to implement to make
+it all work:
+
+[[!format haskell """
+applyView' :: MkFileView -> View -> Annex Git.Branch
+updateView :: View -> Git.Ref -> Git.Ref -> Annex Git.Branch
+"""]]
+
+I know how to implement these, more or less. And in most cases
+they will be pretty fast.
+
+The more interesting part is already done. That was the issue of how to
+generate filenames in the filter branches. That depends on the `View` being
+used to filter and organize the branch, but also on the original filename used
+in the reference branch. Each filter branch has a reference branch (such as
+"master"), and displays a filtered and metadata-driven reorganized tree
+of files from its reference branch.
+
+[[!format haskell """
+fileViews :: View -> (FilePath -> FileView) -> FilePath -> MetaData -> Maybe [FileView]
+"""]]
+
+So, a view that matches files tagged "haskell" or "git-annex"
+and with an author of "J\*" will generate filenames like 
+"haskell/Joachim/interesting_theoretical_talk.ogg" and
+"git-annex/Joey/mytalk.ogg".
+
+It can also work backwards from these 
+filenames to derive the MetaData that is encoded in them.
+
+[[!format haskell """
+fromView :: View -> FileView -> MetaData
+"""]]
+
+So, copying a file to "haskell/Joey/mytalk.ogg" lets it know that
+it's gained a "haskell" tag. I knew I was on the right track when
+`fromView` turned out to be only 6 lines of code!
+
+The trickiest part of all this, which I spent most of yesterday thinking
+about, is what to do if the master branch has files in subdirectories. It
+probably does not makes sense to retain that hierarchical directory
+structure in the filtered branch, because we instead have a
+non-hierarchical metadata structure to express. (And there would probably
+be a lot of deep directory structures containing only one file.) But
+throwing away the subdirectory information entirely means that two files
+with the same basename and same metadata would have colliding names.
+
+I eventually decided to embed the subdirectory information into the filenames
+used on the filter branch. Currently that is done by converting
+`dir/subdir/file.foo` to `file(dir)(subdir).foo`. We'll see how this works
+out in practice..

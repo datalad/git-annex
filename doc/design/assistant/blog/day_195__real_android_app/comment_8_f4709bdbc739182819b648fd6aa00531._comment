@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="nexus 4, android 4.2.2"
+ date="2013-02-22T11:59:13Z"
+ content="""
+Installs but can not detect email even when set:
+
+    --global user.name \"Your Name\"                               <
+    --global user.email \"you@example.com\"                         <
+    u0_a135@android:/sdcard/git-annex.home $ git annex init
+    init
+      Detected a crippled filesystem.
+
+    *** Please tell me who you are.
+    
+    Run
+    
+      git config --global user.email \"you@example.com\"
+      git config --global user.name \"Your Name\"
+    
+    to set your account's default identity.
+    Omit --global to set the identity only in this repository.
+    
+    fatal: unable to auto-detect email address (got 'u0_a135@localhost.(none)')
+    
+    git-annex: user error (git [\"--git-  dir=/storage/emulated/legacy/git-annex.home/.git\",\"--work-tree=/storage/emulated/legacy/git-annex.home\",\"commit-tree\",\"4b825dc642cb6eb9a060e54bf8d69288fbee4904\"] exited 128)
+failed
+    git-annex: init: 1 failed
+    1|u0_a135@android:/sdcard/git-annex.home $
+
+
+Sorry for bad copy paste... On tour bus in Stockholm and only have phone, no laptop...
+
+RichiH
+"""]]

@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="EvanDeaubl"
+ ip="68.230.56.163"
+ subject="comment 1"
+ date="2013-07-28T02:40:24Z"
+ content="""
+I'll give this warning upfront: this works for me, but it requires manual intervention, and I wouldn't be surprised if this spectacularly broke with the assistant running in full auto mode.
+
+I'm currently storing git repos inside of my annex by using a separated git dir, so that git doesn't detect the nested repository and balk at adding it. Doing a git clone or git init with a --separate-git-dir=<git dir> argument puts what would normally be in .git in that directory, and creates a simple .git file in its place which references the separated git dir.
+
+When I'm not using the repo, I move the .git file out of the directory, and everything looks like regular files to git-annex. When I want to use it, I move it back in place, and any git operations inside the repo directory use the inner git repo itself.
+
+Another option I used for a while was to store bare repos in the annex, and doing checkouts from those repos.
+"""]]

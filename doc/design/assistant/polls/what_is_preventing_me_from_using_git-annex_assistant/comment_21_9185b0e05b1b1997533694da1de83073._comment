@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmH-n1yD04qmSeXKKzYaXFTN1ciFWVb5As"
+ nickname="Martyn"
+ subject="Can't seem to get the configuration I am looking for from the webapp"
+ date="2014-01-02T23:41:44Z"
+ content="""
+Currently, I have a local server, desktop and laptop (all on the same network). My laptop leaves the house occasionally where I work on it...
+Quite simply, I want make the local server the centralised repository and have the desktop + laptop sync up and down to and from the server. The server would act as a backup and file change history between all local repositories on desktop and laptop. So I would sync between trips away.
+
+Sadly every combination with git-annex webapp fails for a number of reasons, it could be just me but here is what I've experienced:
+
+a) I want to use direct mode ALL the time or at least be able to configure it without the command line. Currently server side set ups are indirect depending on the repository group. So no symlinks basically. I think \"full backup\" and \"client\" are the only two that do what I was hoping for here.
+b) The list of repository group types miss something I'm looking for, I want the \"full backup\" with \"transfer\" for the remote server - I guess? 
+c) For remote cloud solutions, I would like the files to exist, not just the raw .git/ directory to exist on the server. When I tested it, I couldn't see a way to test on the server itself the integrity of the files (could be my lack of git-annex knowledge :)
+d) I would like it if the assistant made it simpler to configure remotes, i.e. right now if I have 2 directories I believe I would need 4 configurations to push/pull locally and remotely to the 1 server with each machine. I've had this working and it's the closest I've got so far, but tedious if I want to do it for 5 directories on 2 machines (that's 20 configurations to add in all unless there is an easier way?)
+e) The \"share with other devices\" option seems one of the best right now, but it suffers with the issues of c) AFAICT. Why not have the server just be a remote when unencrypted?
+
+From some reading up on the command line tools, it seems like it would be easier to set up using those for what I want than using the webapp.
+I currently love the webapp, it's just missing some polish and options to do what I need.
+
+Thanks for the great work so far! :)
+"""]]

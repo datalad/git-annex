@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlQ7ZdQxAps4v0cl5J3wKGWD8243Gy8-m0"
+ nickname="Phil"
+ subject="PPA Package Pinning"
+ date="2013-05-23T21:18:14Z"
+ content="""
+@Pedro, see <http://askubuntu.com/a/170265> for blocking all packages except git-annex from François's repo.
+"""]]

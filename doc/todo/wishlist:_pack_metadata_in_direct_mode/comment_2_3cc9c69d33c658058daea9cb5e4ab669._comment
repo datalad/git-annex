@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="namelessjon"
+ ip="193.132.159.169"
+ subject="inode starvation"
+ date="2014-01-09T15:30:16Z"
+ content="""
+This happened to me a few times when creating new annex folders.
+
+I use lvm to create virtual partitions and have/had several 'bulk media' logical volumes which used ext4 with -T largefile4 (i.e. one inode per 4mb) because they're storing files with 20mb+ sizes (RAW images, downloaded screencasts, FLAC soundfiles, etc). Between the extra directories git annex creates, the extra files, and the .git/object directory, I ran out of inodes on a few occasions from the profusion of small files.  In some cases, I worked around this by shunting data around, or adding incrementally and then 'git gc'ing a lot to at least have a small .git/objects dir.  A packed metadata would help to deal with this.
+"""]]

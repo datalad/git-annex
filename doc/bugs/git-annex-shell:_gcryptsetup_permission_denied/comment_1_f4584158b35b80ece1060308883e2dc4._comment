@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 1"
+ date="2013-11-02T19:46:28Z"
+ content="""
+It seems to me that the `git-annex-shell` on the remote system must be too old a version to support the gcryptsetup command. You can check this by running `git-annex-shell` there and seeing if it lists gcryptsetup in its usage message.
+"""]]

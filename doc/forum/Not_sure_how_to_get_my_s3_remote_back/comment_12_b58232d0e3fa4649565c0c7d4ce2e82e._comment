@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 12"
+ date="2013-04-26T20:52:36Z"
+ content="""
+It's easy to recreate. As I understand it, the entire process went something like this:
+
+git annex initremote annex type=S3 encryption=blahblah # possibly this was done in the webapp?
+
+git remote rename annex s3 # also possibly done in the webapp
+
+# clone to different computer, and on the new clone:
+
+git annex initremote s3
+
+git-annex: Specify the type of remote with type=
+
+git annex initremote s3 type=S3 encryption=blahblah
+
+The last line creates a *new* remote.
+
+I'm inclined to think the main confusing thing here is that initremote is used to both create a new special remote, and to configure the repository to use an already existing special remote that was created elsewhere. If you had to use `enableremote` for the latter,
+things could be less confusing:
+
+# clone to different computer, and on the new clone:
+
+git annex enableremote s3
+
+git-annex: No existing special remote named s3. Choose from one of these existing special remotes: annex
+"""]]

@@ -1,0 +1,77 @@
+Scenario
+--------
+
+You are a new git-annex user. You have already files spread around many computers and wish to migrate those into git-annex, without having to recopy all files all over the place.
+
+Let's say, for example, you have a server, named `marcos` and a workstation named `angela`. You have your audio collection stored in `/srv/mp3` in `marcos` and `~/mp3` on `angela`, but only `marcos` has all the files, and `angela` only has a subset.
+
+We also assume that `marcos` has an SSH server.
+
+How do you add all this stuff to git-annex?
+
+Create the biggest git-annex repository
+---------------------------------------
+
+Start with `marcos`, with the complete directory:
+
+    cd /srv/mp3
+    git init
+    git annex init
+    git annex add .
+    git commit -m "git annex yay"
+
+This will checksum all files and add them to the `git-annex` branch of the git repository. Wait for this process to complete.
+
+Create the smaller repo and synchronise
+---------------------------------------
+
+On `angela`, we want to synchronise the git annex metadata with `marcos`. We need to initialize a git repo with `marcos` as a remote:
+
+    cd ~/mp3
+    git init
+    git remote add marcos marcos.example.com:/srv/mp3
+    git fetch marcos
+    git annex info # this should display the two repos
+    git annex add .
+
+This will, again, checksum all files and add them to git annex. Once that is done, you can verify that the files are really the same as marcos with `whereis`:
+
+    git annex whereis
+
+This should display something like:
+
+    whereis Orange Seeds/I remember.wav (2 copies)
+            b7802161-c984-4c9f-8d05-787a29c41cfe -- marcos (anarcat@marcos:/srv/mp3)
+            c2ca4a13-9a5f-461b-a44b-53255ed3e2f9 -- here (anarcat@angela)
+    ok
+
+Once you are sure things went on okay, you can synchronise this with `marcos`:
+
+    git annex sync
+
+This will push the metadata information to marcos, so it knows which files are available on `angela`. From there on, you can freely get and move files between the two repos!
+
+Importing files from a third directory
+--------------------------------------
+
+Say that some files on `angela` are actually spread out outside of the `~/mp3` directory. You can use the `git annex import` command to add those extra directories:
+
+    cd ~/mp3
+    git annex import ~/music/
+
+(!) Be careful that `~/music` is not a git-annex repository, or this will [[destroy it!|bugs/git annex import destroys a fellow git annex repository]].
+
+Deleting deleted files
+----------------------
+
+It is quite possible some files were removed (or renamed!) on `marcos` but not on `angela`, since it was synchronised only some time ago. A good way to find out about those files is to use the `--not --in` argument, for example, on `angela`:
+
+    git annex whereis --in here --not --in marcos
+
+This will show files that are on `angela` and not on `marcos`. They could be new files that were only added on `angela`, so be careful! A manual analysis is necessary, but let's say you are certain those files are not relevant anymore, you can delete them from `angela`:
+
+    git annex drop <file>
+
+If the file is a renamed or modified version from the original, you may need to use `--force`, but be careful! If you delete the wrong file, it will be lost forever!
+
+> (!) Maybe this wouldn't happen with [[direct mode]] and an fsck? --[[anarcat]]

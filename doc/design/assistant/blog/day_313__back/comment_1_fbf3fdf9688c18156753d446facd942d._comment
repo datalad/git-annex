@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="GLITTAH"
+ ip="77.247.181.162"
+ subject="comment 1"
+ date="2013-08-20T22:42:46Z"
+ content="""
+I wouldn't worry about the commands being too long.  If they're used often enough, they'll get aliased.
+
+alias GASDA='git annex sync --data --auto'
+"""]]

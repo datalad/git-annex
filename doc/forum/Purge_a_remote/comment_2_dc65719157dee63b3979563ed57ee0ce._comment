@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkzwmw_zyMpZC9_J7ey--woeYPoZkAOgGw"
+ nickname="dxtrish"
+ subject="comment 2"
+ date="2013-11-05T17:46:02Z"
+ content="""
+When I use that Delete button it seems to still have records of it
+because when I delete the repo on the other end and create a new bare
+one it complains about some UUID mismatch.
+"""]]

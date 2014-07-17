@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnvVfFLW4CTKs7UjdiLIsOn_cxj1Jnh64I"
+ nickname="Charl"
+ subject="use case: changing workstations mid-way through development session"
+ date="2014-03-23T21:22:15Z"
+ content="""
+An important use case for me with automatic synchronization, is being able to change computers mid-way through a development session. I used to do this with dropbox for years: I'd work in a git checkout, then take another laptop to go work elsewhere, and just continue in the \"same\" synchronized git repo. Having to remember to commit and push a long list of repos before changing workstations is error-prone. Also, I prefer to commit when a discrete atom of work has been completed, and to push when a topic branch is good and ready to be merged (for example), not every time that I feel like changing workstations. :) Dropbox never dropped a stitch in all this time. As long as all laptops are in a 1) connected and 2) synced up state, switching is possible.
+
+The limitation of not being able to sync the .git directories in git checkouts means that this use case can't currently be supported by git-annex (assistant). Is a work-around possible, or is this something that can't ever be supported due to the limitations of git itself?
+
+"""]]

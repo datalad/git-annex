@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.51"
+ subject="comment 1"
+ date="2013-09-12T17:11:41Z"
+ content="""
+I do not recommend manually messing with the contents of .git/annex/objects. It is a good way to lose data.
+
+If you look at the documentation for fsck in git-annex's man page, you will find the answer to your question.
+"""]]

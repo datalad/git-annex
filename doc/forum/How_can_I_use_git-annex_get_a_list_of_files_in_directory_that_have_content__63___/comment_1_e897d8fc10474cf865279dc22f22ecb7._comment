@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="arand"
+ ip="130.243.226.21"
+ subject="comment 1"
+ date="2013-12-30T13:15:20Z"
+ content="""
+    git annex find <path>
+
+that's what you meant?
+"""]]

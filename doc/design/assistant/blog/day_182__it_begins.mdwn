@@ -1,0 +1,50 @@
+I need an Android development environment. I briefly looked into rooting
+the Asus Transformer so I could put a Debian chroot on it and build
+git-annex in there, but this quickly devolved to the typical maze of
+forum posts all containing poor instructions and dead links. Not worth it.
+
+Instead, I'm doing builds on my Sheevaplug, and once I have a static armel
+binary, will see what I need to do to get it running on Android.
+
+Fixed building with the webapp disabled, was broken by recent improvements.
+I'll be building without the webapp on arm initially, because ghci/template
+haskell on arm is still getting sorted out. (I tried ghc 7.6.2 and ghci is
+available, but doesn't quite work.)
+
+From there, I got a binary built pretty quickly (well, it's arm, so not *too*
+quickly). Then tried to make it static by appending 
+`-optl-static -optl-pthread` to the ghc command line.
+This failed with a bunch of errors:
+
+<pre>
+/usr/lib/gcc/arm-linux-gnueabi/4.6/../../../arm-linux-gnueabi/libxml2.a(nanohttp.o): In function `xmlNanoHTTPMethodRedir': (.text+0x2128): undefined reference to `inflateInit2_'
+/usr/lib/gcc/arm-linux-gnueabi/4.6/../../../arm-linux-gnueabi/libxml2.a(xzlib.o): In function `xz_decomp': (.text+0x36c): undefined reference to `lzma_code'
+...
+</pre>
+
+Disabling DBUS and (temporarily) XMPP got around that.
+
+Result!
+
+<pre>
+joey@leech:~/git-annex>ldd tmp/git-annex 
+        not a dynamic executable
+joey@leech:~/git-annex>ls -lha tmp/git-annex 
+-rwxr-xr-x 1 joey joey 18M Feb  6 16:23 tmp/git-annex*
+</pre>
+
+Next: Copy binary to Android device, and watch it fail in some interesting way.  
+Repeat.
+
+---
+
+Also more bug triage this morning...
+
+Got the pre-commit hook to update direct mode mappings.
+Uses `git diff-index HEAD` to find out what's changed. The only
+tricky part was detecting when `HEAD` doesn't exist yet. Git's
+plumbing is deficient in this area. Anyway, the mappings get updated
+much better now.
+
+Fixed a wacky bug where `git annex uninit` behaved badly on a filesystem
+that does not support hardlinks.

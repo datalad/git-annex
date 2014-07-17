@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.252.11.120"
+ subject="comment 2"
+ date="2012-11-13T17:21:35Z"
+ content="""
+@Karsten that seems likely.
+
+I've made a change so it shows the error message from the XMPP library I'm using. Which may or may not be useful..
+"""]]

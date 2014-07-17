@@ -1,0 +1,35 @@
+I decided to keep gpg key generation very simple for now. So it generates a
+special-purpose key that is only intended to be used by git-annex. It
+hardcodes some key parameters, like RSA and 4096 bits (maximum recommended
+by gpg at this time). And there is no password on the key, although you can
+of course edit it and set one. This is because anyone who can access the
+computer to get the key can also look at the files in your git-annex
+repository. Also because I can't rely on gpg-agent being installed
+everywhere. All these simplifying assumptions may be revisited later, but
+are enough for now for someone who doesn't know about gpg (so doesn't 
+have a key already) and just wants an encrypted repo on a
+removable drive.
+
+Put together a simple UI to deal with gpg taking quite a while to
+generate a key ...
+
+[[assistant/genkey.png]]
+
+[[assistant/repoinfo.png]]
+
+Then I had to patch git-remote-gcrypt again, to have a per-remote
+signingkey setting, so that these special-purpose keys get used for signing
+their repo.
+
+Next, need to add support for adding an existing gcrypt repo as a remote
+(assuming it's encrypted to an available key). Then, gcrypt repos on ssh
+servers..
+
+----
+
+Also dealt with build breakage caused by a new version of the Haskell DNS
+library.
+
+----
+
+Today's work was sponsored by Joseph Liu.

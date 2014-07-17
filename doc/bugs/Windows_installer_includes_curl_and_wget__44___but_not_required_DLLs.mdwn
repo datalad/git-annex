@@ -1,0 +1,17 @@
+### Please describe the problem.
+On a default, clean install on Windows, annex get over HTTP fails, as neither wget nor curl have all necessary DLLs.
+
+### What steps will reproduce the problem?
+1. Install git from git-scm.org, and git-annex from git-annex.branchable.com.
+2. Don't install, or remove if installed, Cygwin.
+3. clone an annex over HTTP
+4. attempt to 'annex get' a file
+5. get dialog box, explaining missing DLLs.
+
+### What version of git-annex are you using? On what operating system?
+Windows 7.
+
+### Please provide any additional information below.
+Installing Cygwin and adding to path seems to fix issue.
+
+[[!tag moreinfo]]

@@ -1,0 +1,7 @@
+Just a question about other peoples' annex usage.  I've got one uber-annex (in ~/annex of course) where I keep ALL THE THINGS, movies, music, pictures, whatever.
+
+It's very big, of course.  And I worry about doing anything unusual with it (like trying out direct mode) because, hey, that's all my stuff.
+
+Like, just now, I tried flipping it into direct mode, and a handful of files stayed symlinks, which weirded me out.  (Maybe because I had the assistant running while I switched it, and that caused chaos?)  Then I flipped it back to indirect, and a bunch of files were left un-tracked, as real files rather than links!  I kind of freaked out, and did a big "git annex add" to add them all back. I haven't left a bug report because it's not something I want to try again experimentally to reproduce, I just want my repo back, you know?
+
+Anyways, this kind of thing might not happen if I kept multiple small repos.  I was wondering if anybody else worked that way, and what advantages/disadvantages you've found compared to having one super-repo.

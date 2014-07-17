@@ -1,0 +1,7 @@
+I would like to use git-annex to synchronize 2 directories in the same manner as unison.
+
+I'm starting with 2 directories. There is an overlap of the same set of files in each directory, but each directory also has additional files as well.
+
+I create a git annex in each directory but when I do a git pull it merges and produces conflicts on those files that are the same.
+
+What is the correct workflow for this type of scenario?

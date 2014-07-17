@@ -1,0 +1,12 @@
+Is there a way to pull from an encrypted remote?
+
+Use case:
+
+1. Have annex in an encrypted public rsync remote
+2. Have USB stick with PGP keys (but not the annex repository)
+3. Get to a new computer
+4. Set up a new annex using the PGP keys I have.
+
+1-3 work fine :) However, 4'th is the issue:
+
+How would I do `git pull <remote>` for an encrypted remote? Is it possible?

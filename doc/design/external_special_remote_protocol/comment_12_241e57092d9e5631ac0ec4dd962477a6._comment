@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmkBwMWvNKZZCge_YqobCSILPMeK6xbFw8"
+ nickname="TobiasTheViking"
+ subject="Feature request"
+ date="2014-01-11T15:41:48Z"
+ content="""
+The ability to mark a remote as being a \"cloud\" remote. To silence the \"Unable to download files from your other devices. Add a cloud repository\" message in the webapp. 
+
+Maybe as simple as \"SETCONFIG cloud true\", if that is a viable implementation.
+
+
+"""]]

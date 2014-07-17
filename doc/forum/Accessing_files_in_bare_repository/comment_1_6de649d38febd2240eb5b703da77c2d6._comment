@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="173.162.44.162"
+ subject="comment 1"
+ date="2013-05-08T13:40:16Z"
+ content="""
+Do you have git-annex available on the server from the command line?
+
+If so, the easiest way would probably be to clone the repo in git, and do a \"git annex init\" in it.  This would give you a copy of the repo with none of the files in it.  It would be tiny, just full of symlinks, no content.  Then pull down copies of *only* the individual files you need using \"git annex get.\"
+
+Maybe set that repo to \"untrusted\" to make sure other repos don't start depending on it to store copies of files to fulfill numcopies.
+
+When you're done with a copy of a file, just \"git annex drop\" it again so it disappears from this skeletal repo.
+
+"""]]

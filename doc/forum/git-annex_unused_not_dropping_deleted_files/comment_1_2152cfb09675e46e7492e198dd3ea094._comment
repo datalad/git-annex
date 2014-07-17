@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.2.134"
+ subject="comment 1"
+ date="2013-09-13T15:34:03Z"
+ content="""
+The most likely explanation is that you have a branch in git that still contains the deleted file, which will prevent unused from removing it. Try `git branch -a` to see all branches (a tag could also do it).
+"""]]

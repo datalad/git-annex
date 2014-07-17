@@ -1,0 +1,14 @@
+Did not know of this when I wrote S3 support. Ability to resume large
+uploads would be good.
+
+<http://aws.typepad.com/aws/2010/11/amazon-s3-multipart-upload.html>
+
+Also allows supporting files > 5 gb, a S3 limit I was not aware of.
+
+NB: It would work just as well to split the object and upload the N parts
+to S3, but not bother with S3's paperwork to rejoin them into one object. 
+Only reasons not to do that are a) backwards compatability with 
+the existing S3 remote and b) this would not allow accessing the content
+in S3 w/o using git-annex, which could be useful in some scenarios.
+
+--[[Joey]]

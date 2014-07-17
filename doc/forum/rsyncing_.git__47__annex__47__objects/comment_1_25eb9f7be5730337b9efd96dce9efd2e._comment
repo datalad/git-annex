@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.246"
+ subject="comment 1"
+ date="2013-11-16T17:36:48Z"
+ content="""
+As long as you fsck afterwards, this is fine.
+
+You might want to `git annex fsck --all` in case you have objects for old versions of files.
+"""]]

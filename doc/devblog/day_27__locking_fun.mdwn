@@ -1,0 +1,49 @@
+Started the day by getting the builds updated for yesterday's release. This
+included making it possible to build git-annex with Debian stable's version
+of cryptohash. Also updated the Debian stable backport to the previous
+release.
+
+----
+
+The [[design/roadmap]] has this month devoted to improving git-annex's
+support for recovering from disasters, broken repos, and so on. Today I've
+been working on the first thing on [[the_list|design/assistant/disaster_recovery]],
+stale git index lock files.
+
+It's unfortunate that git uses simple files for locking, and does not use
+fcntl or flock to prevent the stale lock file problem. Perhaps they want
+it to work on broken NFS systems? The problem with that line of thinking is
+is means all non-broken systems end up broken by stale lock files. Not a
+good tradeoff IMHO.
+
+There are actually two lock files that can end up stale when using
+git-annex; both `.git/index.lock` and `.git/annex/index.lock`. Today I
+concentrated on the latter, because I saw a way to prevent it from ever
+being a problem. All updates to that index file are done by git-annex when
+committing to the git-annex branch. git-annex already uses fcntl locking
+when manipulating its journal. So, that can be extended to also cover
+committing to the git-annex branch, and then the git `index.lock` file
+is irrelevant, and can just be removed if it exists when a commit is
+started.
+
+To ensure this makes sense, I used the type system to prove that the journal
+locking was in effect everywhere I need it to be. Very happy I was able to
+do that, although I am very much a novice at using the type system for
+interesting proofs. But doing so made it very easily to build up to a point
+where I could unlink the `.git/annex/index.lock` and be sure it was safe to do
+that.
+
+----
+
+What about stale `.git/index.lock` files? I don't think it's appropriate
+for git-annex to generally recover from those, because it would change
+regular git command line behavior, and risks breaking something. However, I
+do want the assistant to be able to recover if such a file exists when it
+is starting up, since that would prevent it from running. Implemented that
+also today, although I am less happy with the way the assistant detects
+when this lock file is stale, which is somewhat heuristic (but should work
+even on networked filesystems with multiple writing machines).
+
+----
+
+Today's work was sponsored by Torbjørn Thorsen.

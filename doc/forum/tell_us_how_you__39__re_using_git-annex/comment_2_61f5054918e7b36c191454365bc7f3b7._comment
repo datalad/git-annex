@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://cgray.myopenid.com/"
+ nickname="cgray"
+ subject="comment 2"
+ date="2012-04-14T01:18:53Z"
+ content="""
+Git-annex has really helped me with my media files.  I have a big NAS drive where I keep all my music, tv, and movies files, each in their own git annex.  I tend to keep the media that I want to watch or listen to on my laptop and then drop it when it is done.  This way I don't have too much on my laptop at any one time, but I have a nice selection for when I'm traveling and don't have access to my NAS.
+
+Additionally, I have a mp3 player that will format itself randomly every few months or so.  I keep my podcasts on it in a git annex and in a git annex on my laptop.  When I am done with a podcast, I can delete it from the mp3 player and then sync that information with my laptop.  With this method, I have a backup of what should be on my mp3 player, so I don't need to worry about losing it all when the mp3 player decides it's had enough.
+"""]]

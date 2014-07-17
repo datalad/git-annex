@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmWg4VvDTer9f49Y3z-R0AH16P4d1ygotA"
+ nickname="Tobias"
+ subject="comment 3"
+ date="2013-07-09T10:54:58Z"
+ content="""
+I have requested this before. But it doesn't seem to be entirely doable because some items may have multiple equally correct filenames/paths. And some items may have zero filenames/paths.
+
+That said I hope a solution can be found because I really want this feature too. And would implement it in all my hooks.
+
+And for some of the cases i don't really see it as an issue. If you have a public flickr repo with clean(unencrypted) files. It is because you want to access existing files. If an object has no filename/path the hook could/would/should just ignore the file, sure this means no backup of old versions of files, but you can have other backends for those versions.
+
+The bigger issue is with the same file existing multiple places in the annex, which filename/path should be used? And the filename/path can change between sync(if it is deleted from one of the positions). I personally still see this as being entirely doable. The key for downloading would always be the same, so worst case scenario is the image may be duplicated on flickr. Or that the picture only one of the multiple folders it should be in on flickr. Still, i see these issues as being minor, and that usability would increase if this was implemented, even with these caveats.
+
+And there probably is some issues I haven't realized/know about.
+
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawneJXwhacIb0YvvdYFxhlNVpz6Wpg6V7AA"
+ nickname="Shayne"
+ subject="comment 11"
+ date="2012-08-13T00:37:35Z"
+ content="""
+Yeah definately go with homebrew rather than macports if possible. macports and fink, whilst great systems, have a tendency to sort of create their own alternative-dimension of files within the system that just dont always feel particularly well integrated. As a result \"brew\" has become increasingly more popular to the point its almost ubuquitous now.
+
+Plus its brew-doctor thing is awesome. 
+
+The best approach though thats agnostic to distro systems is to simply go for a generic installer.
+"""]]

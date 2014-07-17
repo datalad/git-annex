@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="99.54.57.201"
+ subject="comment 1"
+ date="2013-01-20T20:20:06Z"
+ content="""
+This is off the top of my head, so I may be wrong on details:
+
+An ssh remote, or a USB remote, when you create it with the assistant, is a bare repo.  The files in it are not visible or accessible except through a clone of it (such as your client repo).
+
+You *could* make an SSH remote or USB remote as a *non-bare repo*, in which case the files within it would be visible and accessible just like on a client repo.  You could set that up using the command line; the assistant doesn't do it, but once you got it set up on the command line the assistant would use it just like normal.
+
+There is a catch though.  Though potentially available, the files in that repo don't actually show up until you run \"git annex sync\" in that repo.  Because git annex does not update the checked out branch of a remote.  So you'd have to cd into that repo manually and run \"git annex sync\" to make the latest-and-greatest files available.
+
+Here's how I'd do this...
+
+If the git annex assistant is running, turn it off.
+
+follow the instructions here: http://git-annex.branchable.com/walkthrough/  under \"adding a remote\" on your usb drive.  You now have a non-bare remote.
+
+Fire up the assistant and you'll see that that is now one of your remotes.  Configure it to \"backup\" or whatever you want.  Let the assistant fill it up with content.
+
+When you want to take it someplace, get on the command line and \"cd /wherever/my/usb/drive/is/annex\" and then do: \"git annex sync\" -- that will update the links to the content so you can actually see it.
+
+You now have all your content available on your USB drive.
+
+You can do a similar process to manually create a non-bare SSH remote, and you can ssh in and run \"git annex sync\" to update its links and make the content available, which you can then retrieve va scp or sftp, or for that matter, you could configure a web server or WebDAV to serve it up if you like.
+
+The only complication is running git-annex sync to update your links.
+
+Again, this is all off the top of my head, I haven't looked up or tested anything here so I welcome correction.  But I think what you want to do can be pretty straightforward if you're willing to go behind Assistant's back to do the setup work, and run \"git annex sync\" when you need to.
+"""]]

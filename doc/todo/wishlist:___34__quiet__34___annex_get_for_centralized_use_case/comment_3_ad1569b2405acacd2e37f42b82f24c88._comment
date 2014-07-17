@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.6.48"
+ subject="comment 3"
+ date="2013-07-18T00:12:39Z"
+ content="""
+Actually, when a file is sent to a git repository on the server, it will update the location log on that side. So even if the client has alwayscommit=false, other clients will learn the file has reached the server.
+
+So that might just work for you.
+"""]]

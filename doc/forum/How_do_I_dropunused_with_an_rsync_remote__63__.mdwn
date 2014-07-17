@@ -1,0 +1,3 @@
+`git annex dropunused` is simple enough.
+
+But how do I perform the equivalent procedure on an rsync remote?  I'd presume that `git annex copy --to remote` is not sufficient.

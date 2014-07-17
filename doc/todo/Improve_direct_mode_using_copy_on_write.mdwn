@@ -1,0 +1,42 @@
+Direct mode is great because it removes symlinks. A must-have for directories like `~/Documents`. Unfortunately, it removes the possibility to use `git` commands other than `git-annex`. Also, it doen't preserve history of files.
+
+I would be great to have a mode where:
+
+- files are available in plain, not as sylinks
+- the repository could still be trusted to hold version of some files from other repositories
+- from a user point of view, the history of a file before the checkout would be preserved.
+
+In feature rich file systems that have copy on write feature, it could be implemented by having the files in both places at the same time:
+
+- the current version of a file would be in the working copy
+- the file in the working copy would be a copy-on-write of the file in the annex repository
+- when the file in the working copy changes, `git-annex` notices it and copy the file in the annex repository using copy-on-write semantic
+
+If the file system do not support copy-on-write, it could be an option (do you want secure direct mode that takes twice the disk space or light direct mode that don't preserve the history of your files?)
+
+This would make direct more much more robust.
+
+copy on write is available using `cp --reflink=always`. It correspond to the following code ([coreutils src/copy.c line 224](http://git.savannah.gnu.org/cgit/coreutils.git/tree/src/copy.c#n224)):
+
+    /* Perform the O(1) btrfs clone operation, if possible.
+       Upon success, return 0.  Otherwise, return -1 and set errno.  */
+    static inline int
+    clone_file (int dest_fd, int src_fd)
+    {
+    #ifdef __linux__
+    # undef BTRFS_IOCTL_MAGIC
+    # define BTRFS_IOCTL_MAGIC 0x94
+    # undef BTRFS_IOC_CLONE
+    # define BTRFS_IOC_CLONE _IOW (BTRFS_IOCTL_MAGIC, 9, int)
+      return ioctl (dest_fd, BTRFS_IOC_CLONE, src_fd);
+    #else
+      (void) dest_fd;
+      (void) src_fd;
+      errno = ENOTSUP;
+      return -1;
+    #endif
+    }
+
+Looking at the code it would be preferable to exec directly to `cp`, see [copy_range() on LWN](http://lwn.net/Articles/550621/) and this [more recent article about splice() on LWN](http://lwn.net/Articles/567086/)
+
+Also, `cp --reflink` fall back to copy when copy-on-write is not available while `cp --reflink=always` do not.

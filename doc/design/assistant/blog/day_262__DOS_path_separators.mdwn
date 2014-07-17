@@ -1,0 +1,14 @@
+It's remarkable that a bad decision made in 1982 can cause me to waste an
+entire day in 2013. Yes, `/` vs `\` fun time. Even though I long ago
+converted git-annex to use the haskell `</>` operator wherever it builds
+up paths (which transparently handles either type of separator), I still
+spent most of today dealing with it. Including some libraries I use that
+get it wrong. Adding to the fun is that git uses `/` internally, even on
+Windows, so Windows separated paths have to be converted when being fed
+into git.
+
+Anyway, `git annex add` now works on Windows. So does `git annex find`,
+and `git annex whereis`, and probably most query stuff.
+
+Today was very un-fun and left me with a splitting headache, so I will
+certainly *not* be working on the Windows port tomorrow.

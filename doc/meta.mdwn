@@ -1,0 +1,5 @@
+This wiki contains [[!pagecount pages="*"]] pages.
+
+Broken links:
+
+[[!brokenlinks ]]

@@ -1,0 +1,43 @@
+[[!comment format=mdwn
+ username="http://olivier.mehani.name/"
+ nickname="olivier-mehani"
+ subject="Manual solution"
+ date="2014-06-14T13:59:38Z"
+ content="""
+My problem stems from the fact that I manually git clone the git-annex repo, which prevents the assistant from creating the setup to use passwordless keys. I just reverse-engineered a working setup to work up what I was missing. I jot it down here for reference, but I guess the bottomline is that if you want to use the assistant with a repo, do it from the start.
+
+I assume that the client has a clone of the git(-annex) repo of the server.
+
+    client$ git clone server:annex
+
+Our goal is to let git-annex on the client know that there is a specific key to use when connecting to server that will let it access the git-annex-shell (without a password). We first create the key.
+
+    client:~$ ssh-keygen -t rsa -f ~/.ssh/git-annex/key.git-annex-server-user_annex
+    [enter an empty passphrase]
+
+We can then create a virtual SSH host on the client that will use this key to connect to the server, in client:~/.ssh/config:
+
+    # Added manually for git-annex
+    Host git-annex-server-user_annex
+    	Hostname server
+    	Port 22
+    	IdentityFile ~/.ssh/git-annex/key.git-annex-server-user_annex
+    	IdentitiesOnly yes
+    	StrictHostKeyChecking yes
+
+(git-annex seems to use .2F (%2F) to encode path separators in the filenames.)
+
+The server then needs to know to let the key in, but only for git-annex in the specific folder. This is done in server:.ssh/authorized_keys:
+
+    command=\"GIT_ANNEX_SHELL_DIRECTORY='annex' ~/.ssh/git-annex-shell\",no-agent-forwarding,no-port-forwarding,no-X11-forwarding,no-pty ssh-rsa AAAA... user@client
+
+The bit starting with ssh-rsa is the public key created in client:.ssh/git-annex/key.git-annex-server-user_annex.pub at the same time as the private key.
+
+Finally, all that remains is to change the remote in the client clone to use the virtual SSH host.
+
+    client:~/annex $ git remote set-url origin ssh://user@git-annex-server-user_annex/~/annex
+    client:~/annex $ git remote set-url origin --push ssh://user@git-annex-server-user_annex/~/annex
+
+If everything worked, a sync from the client should now work without asking for a password, and starting the assistant will not either.
+
+"""]]

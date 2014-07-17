@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 5"
+ date="2013-05-29T16:56:37Z"
+ content="""
+I can't say what options rsync will choose to pass to the server, when the rsync special remote uses rsync. It's up to that command.
+
+`GIT_ANNEX_SHELL_DIRECTORY` currently only supports specifying one directory. 
+"""]]

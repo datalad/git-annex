@@ -1,0 +1,31 @@
+I checked in my music collection into git annex (about 25000 files) and i'm really impressed by the performance of git annex (after i've done an git-repack). Now i'm also moving my movies into the same git-annex, but i have the following layout of my disk drives:
+
+* small raid-1 for important stuff (music, documents), which is also backupped (aka: raid)
+* big bulk data store (aka: media)
+
+In the git-annex the following layout of files is used:
+
+* documents/ <- on raid
+* music/ <- on raid
+* videos/ <- on media
+
+Now i didn't simply clone the raid-annex to media, but did an sparse-checkout (possible since version 1.7.0)
+
+* raid: .git-annex/, documents/ and music
+* media: .git-annex/, videos/
+
+As you can see i have to checkout the .git-annex directory with the file-logs twice which slows down git operations. Everything else works fine until now. git-annex doesn't have any problem, that only a part of the symlinks are present, which is really great. Is there a possibility to sparse checkout the .git-annex directory also? Perhaps splitting the log files in .git-annex/ into N subfolders, corresponding to the toplevel subfolders, like this?
+
+Before:
+
+     $ ls .git-annex
+     00 01 02....
+
+After:
+
+     $ ls .git-annex
+     documents/ music/ videos/
+     $ ls .git-annex/documents
+     00 01 02....
+
+This would make it possible to checkout only the part of the log files which i'm interested in.

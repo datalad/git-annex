@@ -1,0 +1,25 @@
+Unfortunately the initial gcrypt repository layout had to be changed
+after git-annex version 4.20130920. If you have an encrypted git repository
+created using version 4.20130920 or 4.20130909, you need to manually
+upgrade it.
+
+If you look at the contents of your gcrypt repository, you will
+see a bare git repository, with a few three-letter subdirectories,
+which are where git-annex stores its encrypted file contents:
+
+<pre>
+27f/  branches/  description  hooks/  objects/
+HEAD  config     f37/         info/   refs/
+</pre>
+
+In the example above, the subdirectories are `27f` and `f37`.
+
+All you need to do to transition is move those subdirectories
+into an `annex/objects` directory.
+
+	mkdir annex ; mkdir annex/objects ; mv 27f f37 annex/objects
+
+Probably those are the only 3 letter things inside your git repository,
+so this will probably work:
+
+	mkdir annex ; mkdir annex/objects ; mv ??? annex/objects

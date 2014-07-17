@@ -1,0 +1,22 @@
+Today is a planning day. I have only a few days left before I'm off to
+Nicaragua for [DebConf](http://debconf12.debconf.org/), where I'll only
+have smaller chunks of time without interruptions. So it's important to get
+some well-defined smallish chunks designed that I can work on later. See
+bulleted action items below (now moved to [[syncing]]. Each
+should be around 1-2 hours unless it turns out to be 8 hours... :)
+
+First, worked on writing down a design, and some data types, for data transfer
+tracking (see [[syncing]] page). Found that writing down these simple data
+types before I started slinging code has clarified things a lot for me.
+
+Most importantly, I realized that I will need to modify `git-annex-shell`
+to record on disk what transfers it's doing, so the assistant can get that
+information and use it to both avoid redundant transfers (potentially a big
+problem!), and later to allow the user to control them using the web app.
+
+While eventually the user will be able to use the web app to prioritize
+transfers, stop and start, throttle, etc, it's important to get the default
+behavior right. So I'm thinking about things like how to prioritize uploads
+vs downloads, when it's appropriate to have multiple downloads running at
+once, etc.
+

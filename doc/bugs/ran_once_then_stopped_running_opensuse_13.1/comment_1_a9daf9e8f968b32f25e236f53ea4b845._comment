@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="71.80.94.56"
+ subject="comment 1"
+ date="2014-02-07T19:14:47Z"
+ content="""
+There's a bit of a dearth of information here. I think I need to know:
+
+* What the version is (output of `git annex version`)
+
+* What happens when you run `git annex webapp` (\"does nothing\" is very vague. Does it sit there forever without returning to the prompt? Print an error message? Open a web browser that's not usable somehow?)
+
+You might take a look at the file `~/.config/git-annex/autostart` and remove any repository you deleted from there, although normally git-annex will ignore entries that no longer exist.
+"""]]

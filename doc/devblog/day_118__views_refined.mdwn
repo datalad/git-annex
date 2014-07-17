@@ -1,0 +1,7 @@
+Still working on views. The most important addition today is that
+`git annex precommit` notices when files have been moved/copied/deleted
+in a view, and updates the metadata to reflect the changes.
+
+Also wrote some walkthrough documentation: [[tips/metadata_driven_views]].  
+And, recorded a screencast demoing views, which I will upload next time
+I have bandwidth.

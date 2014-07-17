@@ -1,0 +1,60 @@
+### Please describe the problem.
+
+Running `git annex direct` in a repository may results with the following error message:
+
+    git-annex: /home/mildred/Music/.git/annex/objects/2K/49/SHA256-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/SHA256-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.map898.tmp: rename: permission denied (Permission denied)
+failed
+    git-annex: direct: 1 failed
+
+
+The major problem is that git-annex doesn't roll back the changes it did for the files it could successfully put in direct mode. Running git status show many files with typechange. The solution was to run `git add` on those files (although the hashing backend changed, so a commit must be created)
+
+### What steps will reproduce the problem?
+
+Don't know yet why the rename failed, but the direct mode should be rolled back if there is a problem. Restarting `git-annex direct` didn't result in an error.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex 5.20140405-g8729abc
+arch-linux Linux moiraine 3.15.3-1-ARCH #1 SMP PREEMPT Tue Jul 1 07:32:45 CEST 2014 x86_64 GNU/Linux
+
+### Please provide any additional information below.
+
+[[!format sh """
+
+$ git annex direct
+commit  
+(Recording state in git...)
+On branch master
+nothing to commit, working directory clean
+ok
+direct .gitrefs/heads/annex/direct/master ok
+direct .gitrefs/heads/git-annex ok
+direct .gitrefs/heads/master ok
+direct .gitrefs/heads/synced/master ok
+direct .gitrefs/remotes/ashley/git-annex ok
+direct .gitrefs/remotes/ashley/master ok
+direct .gitrefs/remotes/ashley/synced/git-annex ok
+direct .gitrefs/remotes/ashley/synced/master ok
+direct .gitrefs/remotes/kylae/git-annex ok
+direct .gitrefs/remotes/kylae/master ok
+direct .gitrefs/remotes/kylae/synced/git-annex ok
+direct ... ok
+direct ... ok
+direct ... ok
+  /home/mildred/Music/.git/annex/objects/2K/49/SHA256-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/SHA256-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.map897.tmp: rename: permission denied (Permission denied)
+
+  leaving this file as-is; correct this problem and run git annex fsck on it
+direct ... ok
+direct ... ok
+direct ... ok
+direct ... ok
+direct ... ok
+
+git-annex: /home/mildred/Music/.git/annex/objects/2K/49/SHA256-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/SHA256-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.map898.tmp: rename: permission denied (Permission denied)
+failed
+git-annex: direct: 1 failed
+
+"""]]
+
+[[!tag moreinfo]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn7gQ1zZDdWhXy9H51W2krZYShNmKL3qfM"
+ nickname="Karsten"
+ subject="comment 1"
+ date="2012-11-02T07:21:15Z"
+ content="""
+I might be thinking too simple, but can't you just put another annex repository on an usbdrive and use it to carry the metadata around? Add it as a remote to both compuers annex repositories and sync when you come/leave. As it does not have to carry the actual data some 100M will usually suffice. Just don't use any special remotes, but simply a cloned git repository.
+"""]]

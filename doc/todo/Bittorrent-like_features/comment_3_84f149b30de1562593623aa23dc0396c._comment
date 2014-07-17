@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 3"
+ date="2014-01-02T01:31:05Z"
+ content="""
+> git annex addurl http://cdimage.debian.org/debian-cd/current-live/amd64/bt-hybrid/debian-live-7.0.0-amd64-standard.iso.torrent
+
+This is bad idea; it means you will be reliant on torrent files and trackers when magnet links are the way to go.
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 7"
+ date="2013-07-25T20:02:18Z"
+ content="""
+What settings does `.git/config` have for the git remote created by the local pairing process?
+
+Since I can't reproduce any problems with local pairing -- it works great on this network -- you will need to enable debugging, reproduce the bug, and send a debug log for me to debug this any further.
+"""]]

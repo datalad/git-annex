@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkRtPz8CAz_1sBR0Rf-b8OlQQ49v9JxOIE"
+ nickname="John"
+ subject="re: Not an backup"
+ date="2014-02-05T10:45:45Z"
+ content="""
+@joeyh.name But if I set numcopies=2 it won't let me drop the file right? I don't think we are mean to directly modify the archive; but if we do would git-annex detect the corruption and discourage us from dropping the other file?
+"""]]

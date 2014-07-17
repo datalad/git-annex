@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 1"
+ date="2013-12-17T16:07:00Z"
+ content="""
+The file you need is .config/git-annex/autostart in your home directory.
+
+Once deleted, re-running the assistant should let you re-create the git repository and it'll re-add your files.
+"""]]

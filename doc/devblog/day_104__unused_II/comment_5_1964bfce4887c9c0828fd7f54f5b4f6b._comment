@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.199"
+ subject="comment 5"
+ date="2014-01-29T17:58:26Z"
+ content="""
+Some things (not git-annex) default to /home/$USER when appropriate env vars are not set. There is a bug open about that, [[bugs/assistant_using_the_incorrect_path_on_windows?]], although I don't know what it makes sense for git-annex to do to deal with it.
+
+box.com *is* a webdav repository. It is the only webdav repository the webapp currently supports setting up, although you can configure any webdav remote you like at the command line and the assistant will then be able to use it.
+
+Will be curious to hear if the http-conduit library used for webdav supports proxies. If not, that would certianly seem a good place to file a bug. Unofrtunately, git-annex uses 2 or 3 other http stacks in other places too.
+"""]]

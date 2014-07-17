@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.64"
+ subject="comment 1"
+ date="2013-11-26T17:26:12Z"
+ content="""
+If you run git-annex with --debug, it will print out every command it is running. This is useful because A) I can see the commands in context and B) it includes timestamps, which is a little bit more informative than \"it took ages\". (Which can mean anything.)
+
+Anyway, I figured out the problem. Upgrade from v4 to v5 does what should be a one-time git checkout, but it seems that the auto upgrade code neglected to update annex.version, so it started doing it on every command run in a v4 repo. Fixed in git. You can work around the bug by running \"git config annex.version 5\".
+"""]]

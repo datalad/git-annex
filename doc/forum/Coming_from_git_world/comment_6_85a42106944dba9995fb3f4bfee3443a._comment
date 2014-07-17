@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.235"
+ subject="comment 6"
+ date="2013-07-09T20:39:25Z"
+ content="""
+Yes, the default for a repository accessed using ssh is to also store the large files in that repository. Of course you can set up a second remote to hold the large files if that works better.
+
+I don't have any personal experience with Gerrit. All I can say is that files managed by git-annex will appear as symlinks.
+"""]]

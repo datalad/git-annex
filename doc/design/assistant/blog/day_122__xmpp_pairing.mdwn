@@ -1,0 +1,29 @@
+Reworked my XMPP code, which was still specific to push notification, into
+a more generic XMPP client, that's based on a very generic NetMessager
+class, that the rest of the assistant can access without knowing anything
+about XMPP.
+
+Got pair requests flowing via XMPP ping, over Google Talk! And when the
+webapp receives a pair request, it'll pop up an alert to respond. The rest
+of XMPP pairing should be easy to fill in from here.
+
+To finish XMPP pairing, I'll need git pull over XMPP, which is nontrivial,
+but I think I know basically how to do. And I'll need some way to represent
+an XMPP buddy as a git remote, which is all that XMPP pairing will really
+set up.
+
+It could be a git remote using an `xmpp:user@host` URI for the git url, but
+that would confuse regular git to no end (it'd think it was a ssh host),
+and probably need lots of special casing in the parts of git-annex that
+handle git urls too. Or it could be a git remote without an url set, and
+use another config field to represent the XMPP data. But then git wouldn't
+think it was a remote at all, which would prevent using "git pull
+xmppremote" at all, which I'd like to be able to use when implementing git
+pull over XMPP.
+
+Aha! The trick seems to be to leave the url unset in git config,
+but temporarily set it when pulling:
+
+	GIT_SSH=git-annex git git -c remote.xmppremote.url=xmpp:client pull xmppremote
+
+Runs git-annex with "xmpp git-upload-pack 'client'".. Just what I need.

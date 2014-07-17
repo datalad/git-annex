@@ -1,0 +1,1 @@
+Back in January Joey [mentioned](http://git-annex.branchable.com/design/assistant/blog/day_179__brief_updates/) the [git-remote-gcrypt](https://github.com/blake2-ppc/git-remote-gcrypt) and possibly adding support for it in the Assistant. I think this would be a great addition. Now that the first big Android push is complete, is there a schedule for this feature?

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.176"
+ subject="comment 9"
+ date="2014-05-28T00:37:30Z"
+ content="""
+[[!commit 37da3d7b5dcfd328aee6a7a91508b02edf720bca]] should fix this problem. I've verified the truncation is not present in the spliced source; lack bandwidh to test the binary right now.
+"""]]

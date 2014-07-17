@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.193"
+ subject="comment 8"
+ date="2013-06-30T17:58:08Z"
+ content="""
+It should be easy to fix whatever's wrong the the rsync special remote. Just a matter of debugging that.
+
+Adding encryption support on Windows is stuck at a roadblock I don't know the way around. To drive gpg, git-annex uses the `--passphrase-fd` option, and sends the \"passphrase\" (really a big block of binary foo!) over a file descriptor of a pipe that it set up.
+
+Windows, AFAIK, doesn't have file descriptors, or at least there is no equivilant to them that I have access to in the Haskell POSIX compatability layer for Windows. I am reluctant to fall back to using `--passphrase-file` on Windows, since that would be a massive security hole (as would passing the passphrase as a parameter via `--passphrase=`).
+"""]]

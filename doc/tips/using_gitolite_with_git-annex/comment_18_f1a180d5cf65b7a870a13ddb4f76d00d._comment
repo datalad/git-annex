@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawll4Kgp7nMuOKdB0FfbcYZ3KRq7HCS0Slc"
+ nickname="Laura"
+ subject="Using Gitolite 3.2"
+ date="2014-01-17T20:14:16Z"
+ content="""
+Adding:
+
+ 'git-annex-shell' =>1, 
+
+To the .gitolite.rc file resulted in the \"FATAL: suspicous characters loitering about 'git-annex-shell 'configlist' '/~/testing''...
+
+
+Gitolite source code (https://github.com/sitaramc/gitolite/commit/b1d3c0571409b7c6279fc6a77253c3bc262ab425#diff-79a3701e9e2cee0ea1316451c21a3fec) requires this entry:
+
+'git-annex-shell ua'
+
+
+
+
+"""]]

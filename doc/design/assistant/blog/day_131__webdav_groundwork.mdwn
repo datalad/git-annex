@@ -1,0 +1,28 @@
+Read up on WebDAV, and got the haskell library working. Several hours
+were wasted by stumbling over a bug in the library, that requires a
+carefully crafted XML document to prevent. Such a pity about things
+like DAV (and XMPP) being designed back when people were gung-ho about
+XML.. but we're stuck with them now.
+
+Now I'm able to send and receive files to box.com using the library. Trying to
+use an OwnCloud server, though, I get a most strange error message, which
+looks to be coming from deep in the HTTPS library stack: "invalid IV length"
+
+The haskell DAV library didn't have a way to delete files. I've added one
+and sent off a patch.
+
+Roughed in a skeleton of a webdav special remote. Doesn't do anything yet.
+Will soon.
+
+Factored out a Creds module from parts of the S3 special remote and XMPP
+support, that all has to do with credentials storage. Using this for webdav
+creds storage too.
+
+Will also need to factor out the code that's currently in the directory
+special remote, for chunking of files.
+
+----
+
+PS: WebDAV, for all its monstrously complicated feature set, lacks one obvious
+feature: The ability to check how much free space is available to store
+files. Eyeroll.

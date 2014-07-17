@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="http://a-or-b.myopenid.com/"
+ ip="220.244.41.108"
+ subject="How do I switch on the 'feeds' feature?"
+ date="2013-08-05T04:52:41Z"
+ content="""
+Joey - your initial post said:
+
+    git-annex must be built with the Feeds feature (run git annex version to check).
+
+...but how do I actually switch on the feeds feature?
+
+I install git-annex from cabal, so I do
+
+    cabal update
+    cabal install git-annex
+
+which I did this morning and now `git annex version` gives me:
+
+    git-annex version: 4.20130802
+    build flags: Assistant Webapp Pairing Testsuite S3 WebDAV FsEvents XMPP DNS
+
+So it is the latest version, but without Feeds.  :-(
+"""]]

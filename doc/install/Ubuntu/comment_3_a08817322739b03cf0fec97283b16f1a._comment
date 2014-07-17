@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://openid.fmarier.org/"
+ nickname="fmarier"
+ subject="New PPA only contains git-annex"
+ date="2013-06-15T07:45:13Z"
+ content="""
+As Pedro suggested, I've moved my git-annex backport to a separate PPA with only git-annex and the 220 Haskell packages it depends on.
+"""]]

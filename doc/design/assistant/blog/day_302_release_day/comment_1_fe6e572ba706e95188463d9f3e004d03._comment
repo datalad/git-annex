@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmnG4EuvZWse5hvgrl0XAK-U61e-0iGaao"
+ nickname="David"
+ subject="Broken dependencies on Debian wheezy "
+ date="2013-07-24T07:21:18Z"
+ content="""
+Hi Joey,
+Having installed this release (x86_64) on Debian wheezy I get the following error when I try to run git-annex:
+    
+    git-annex: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.14' not found (required by git-annex)
+    git-annex: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.14' not found (required by $HOME/.local/share/git-annex//usr/lib/x86_64-linux-gnu/libidn.so.11)
+    
+etc. for at least a dozen libraries. Different libs try to find different glibc version (2.14, 2.15, 2.16, 2.17). Previous releases were linked with GLIBC_2.13.
+
+
+
+"""]]

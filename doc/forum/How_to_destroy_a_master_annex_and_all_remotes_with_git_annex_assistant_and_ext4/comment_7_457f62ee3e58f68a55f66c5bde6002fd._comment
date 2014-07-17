@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://emk.myopenid.com/"
+ ip="24.2.150.84"
+ subject="Thank you!"
+ date="2013-07-23T18:36:22Z"
+ content="""
+What good idea! I've turned on `core.fsyncobjectfiles`. This should definitely help avoid the worst damage when ext4 filesystems get unmounted while dirty. Thank you very much for addressing this issue so quickly, even if though has more to do with ext4 than git annex.
+
+develop: Thank you for the suggestion to use LUKS; that's good to know.
+"""]]

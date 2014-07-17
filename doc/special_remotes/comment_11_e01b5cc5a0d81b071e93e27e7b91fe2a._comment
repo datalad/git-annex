@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="andy"
+ ip="99.48.75.171"
+ subject="Re: Webhook special remote"
+ date="2013-04-12T08:54:47Z"
+ content="""
+@Alex: You might see if the newly-added [[todo/wishlist: allow configuration of downloader for addurl]] could be made to do what you need... I've not played around with it yet, but perhaps you could set the downloader to be something that can sort out the various URLs and send them to the correct downloading tool?
+"""]]

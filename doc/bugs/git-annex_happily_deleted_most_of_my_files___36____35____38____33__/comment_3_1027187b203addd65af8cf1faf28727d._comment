@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="64.134.31.139"
+ subject="comment 3"
+ date="2013-10-16T20:45:25Z"
+ content="""
+At least part of this sounds like [[direct_mode_assistant_in_subdir_confusion]]. The report is too confused for me to tell if that's the whole of the problem.
+
+Note that git-annex stores files in git, so if it did something wrong, you can switch to indirect mode, and use regular git commands to check out a tree from before the problem occurred.
+"""]]

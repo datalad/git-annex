@@ -1,0 +1,1 @@
+I am using the webapp to watch 3 repositories. When I run git annex webapp it starts watching one of the repos but unless I switch to other repos it does not start noticing changes after switching to each repo once it works as intended.

@@ -1,0 +1,28 @@
+Suppose you have a USB thumb drive and are using it as a git annex
+repository. You don't trust the drive, because you could lose it, or
+accidentally run it through the laundry. Or, maybe you have a drive that
+you know is dying, and you'd like to be warned if there are any files
+on it not backed up somewhere else. Maybe the drive has already died
+or been lost.
+
+You can let git-annex know that you don't trust a repository, and it will
+adjust its behavior to avoid relying on that repositories's continued
+availability.
+	
+	# git annex untrust usbdrive
+	untrust usbdrive ok
+
+Now when you do a fsck, you'll be warned appropriately:
+
+	# git annex fsck .
+	fsck my_big_file
+	  Only these untrusted locations may have copies of this file!
+	  	05e296c4-2989-11e0-bf40-bad1535567fe  -- portable USB drive
+	  Back it up to trusted locations with git-annex copy.
+	failed
+
+Also, git-annex will refuse to drop a file from elsewhere just because
+it can see a copy on the untrusted repository.
+
+It's also possible to tell git-annex that you have an unusually high
+level of trust for a repository. See [[trust]] for details.

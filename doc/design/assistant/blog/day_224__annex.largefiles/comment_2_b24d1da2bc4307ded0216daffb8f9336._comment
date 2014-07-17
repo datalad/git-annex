@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmWBvsZvSsAL8P2ye3F0OBStjFCVnOImzM"
+ nickname="Jarno"
+ subject="Making &quot;git-annex add&quot; commit largefiles, too?"
+ date="2013-10-31T00:26:21Z"
+ content="""
+Is it possible to make `git annex add` also *not* skip largefiles but do an automatic `git add` instead? I'd like to keep .txt, .sh and the like in git directly (for easier diffing) but having to add them separately sounds like trouble.
+"""]]

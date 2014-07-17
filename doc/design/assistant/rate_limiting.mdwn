@@ -1,0 +1,57 @@
+Webapp needs a simple speed control knob, especially to avoid saturating 
+bandwidth on uploads.
+
+We have basic throttling support in git-annex for rsync,
+but none for any special remotes. A good first step would be to expose
+this in the webapp, and ensure that `git-annex-shell` also honors it when
+sending/receiving data.
+
+We actually need two speed controls, one for upload and one for download.
+
+It is probably not necessary to throttle git push/pull operations, as the
+data transfers tend to be small. Only throttling file transfers is
+essential.
+
+## possibility: trickle
+
+Since `git-annex transferkeys` is a separate process, one easy option would
+be to run it inside `trickle`. If the user changes the bandwidth limits,
+it could kill the transfer and restart it with different trickle options.
+
+Problem: Not all special remotes support resuming transfers, so this is
+suboptimal. (So too are the pause/resume buttons, when using those
+remotes!)
+
+`trickle` is available for OSX as well as Linux and BSDs.
+<http://hints.macworld.com/comment.php?mode=view&cid=65362>
+<http://mac.softpedia.com/get/Network-Admin/Trickle.shtml>
+It is probably not easily available for Android, as it uses `LD_PRELOAD`.
+
+## possibility: built in IO limiting
+
+A cleaner method would be to do the limiting inside git-annex. We already
+have metered file IO. It should be possible to make the meter not only report
+on the transfer speed, but detect when it's going too fast, and delay. This
+will delay the file streaming through the special remote's transfer code,
+so should work for a variety of special remotes. (Not for rsync or bup
+or git-annex-shell though, so those need to be handled separately.)
+
+Should work well for uploads at least. I don't know how well it would work
+for throttling downloads; the sender may just keep sending data and the
+data buffer before it gets to the IO meter. Maybe once the buffers fill the
+OS would have the TCP throttled down. Needs investigation; trickle claims
+to throttle downloads.
+
+## communications channels
+
+There would need to be a communication channel for the assistant to tell
+`git annex transferkeys` when the rate limit has changed. It could for
+example send it a SIGUSR1, and then leave it up to the process to reload
+the git config. Inside the IO meter, we could have an MVar that contains
+the current throttle value, so the IO meter could check it each time it's
+called and adjust its throttling appropriately.
+
+Ideally, the assistant could also communicate in the same way with
+`git-annex-shell` to tell it when the limit has changed. Since
+`git-annex-shell` uses rsync, it would need to abort the transfer, and rely
+on the other side retrying to start it up with the new limit.

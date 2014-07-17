@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 1"
+ date="2012-09-13T08:39:59Z"
+ content="""
+I've been looking at ceph for various reasons in work, it supports a swift interface as well as it's own restful api. so +1 for swift (and any s3 compatible api).
+"""]]

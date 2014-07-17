@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://sameer.sbuddhe.net/blog/"
+ nickname="sameerds"
+ subject="never mind ..."
+ date="2013-12-31T04:06:43Z"
+ content="""
+... I discovered the [[`--all` option|http://git-annex.branchable.com/forum/Moving_older_version__39__s_file_content_without_doing_checkout/]] which does just what I was looking for!
+
+
+"""]]

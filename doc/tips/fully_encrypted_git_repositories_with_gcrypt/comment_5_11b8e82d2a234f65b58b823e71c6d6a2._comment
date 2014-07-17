@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmNu4V5fvpLlBhaCUfXXOB0MI5NXwh8SkU"
+ nickname="Adam"
+ subject="comment 5"
+ date="2013-11-04T04:40:53Z"
+ content="""
+> How would you feel about adding a new mode of operation where encryption is simply based on a passphrase? We could symetrically encrypt the repository with a keyfile that's stored in the repository itself, protecting the keyfile with a passphrase which - if stored at all - would be stored on the individual computers, outside of the repository.
+
+Isn't that what the regular shared-encryption remote already does?  Except it doesn't put a passphrase on the key, because anyone who has access to the local repo wouldn't need access to the remote one anyway.
+"""]]

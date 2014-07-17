@@ -1,0 +1,20 @@
+Is it possible to use git-annex without having [[location tracking]] commits in the style of "got a video I want to rewatch on the plane" or "freed up space" in the main tree?
+
+I consider these changes to be volatile, and irrelevant to the archive history. While they are unproblematic when it comes to merging, they make the commit tree rather complicated, especially with multiple users (as opposed to a single user managing his files on an external disk, a server and his laptop). Some users might even want to contribute to a shared repository without reporting on what they checked out.
+
+As a minimal solution, I configured a repository to ``.gitignore`` ``.git-annex/*:*.log``, but even when using modes that do not require that information (``git annex copy --from`` instead of ``git annex get``), that failes when git-annex tried to git-add ignored files.
+
+A more elaborate solution might be to keep location tracking information in a branch on its own (as suggested in [[todo/branching]]), keeping the main tree clean of such commits. A stealth user could then configure that branch to never be pushed. (Alternatively, if git-annex respects .gitignore and doesn't try to check in changes on ignored files, he could locally ``.gitignore`` ``.git-annex/*:*.log``.)
+
+> A stealth user can simply avoid pushing, and so keep their repository 
+> in a forked state, that can still pull changes from origin.
+> 
+> Beyond that, [[todo/branching]] is the best solution.
+> 
+> I don't think that gitignoring the log files is a good plan, because
+> if the files are left modified and uncommitted, git will not be able to 
+> merge other changes it pulls. The automerging of log files only works
+> if any local changes to them have been committed.
+> 
+> It would be possible to add a knob that
+> simply blocks all local modifications to the log files. --[[Joey]]

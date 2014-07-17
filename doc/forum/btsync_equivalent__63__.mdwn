@@ -1,0 +1,8 @@
+I am using bit torrent sync to sync folders and files between my server, my laptop and my smartphone.
+How similar, or different, is git-annex?
+
+Btsync allows me to sync files with no centralized server, encrypted, with some revision history (but I believe it is basic).
+
+
+
+/glattering

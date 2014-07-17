@@ -1,0 +1,10 @@
+I was wondering how does one recover from...
+
+<pre>
+(Recording state in git...)
+error: invalid object 100644 8f154c946adc039af5240cc650a0a95c840e6fa6 for '041/5a4/SHA256-s6148--7ddcf853e4b16e77ab8c3c855c46867e6ed61c7089c334edf98bbdd3fb3a89ba.log'
+fatal: git-write-tree: error building trees
+git-annex: failed to read sha from git write-tree
+</pre>
+
+The above was caught when i ran a "git annex fsck --fast" to check stash of files"

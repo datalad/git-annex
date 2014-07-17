@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.176"
+ subject="comment 8"
+ date="2014-05-27T16:08:14Z"
+ content="""
+@Michele, you seem to have an old version of the haskell DAV library installed. The simple solutions is probably `cabal install DAV` to upgrade to the new one.
+
+(The complex solution is to edit the file and copy the line 2 lines above the error, or fix the ifdefs somehow to work with whatever combination of versions of DAV and http-client or http-conduit you have installed.)
+"""]]

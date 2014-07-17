@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://meep.pl/"
+ ip="193.219.28.34"
+ subject="git-remote-helpers"
+ date="2012-11-09T08:54:11Z"
+ content="""
+It seems that xmpp::user@host (with double colon) would cause git to try to use a remote-xmpp helper.
+Wouldn't it be a way to have the remote address (if not really URL) set and not be treated as ssh?
+
+"""]]

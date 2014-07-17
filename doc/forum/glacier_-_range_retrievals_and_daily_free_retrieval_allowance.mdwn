@@ -1,0 +1,6 @@
+I propose to add some functionality to git-annex, to automatically "throttle" the data retrieval from amazon glacier to stay within the daily free retrieval allowance. If someone would need to get his/her files faster, there should be an option to disable this throttling (or even better, specify the retrieval rate).
+
+As far as I understand glacier, this could be implemented using range retrievals. In short range retrievals enable you, to only retrieve a part of an archive in glacier. This can be used to only retrieve / request so much data, that you stay within the free retrieval allowance. ( please see [Q: Why would I retrieve only a range of an archive?](http://aws.amazon.com/glacier/faqs/#Why_would_I_retrieve_only_a_range_of_an_archive) ).
+
+
+This would be somewhat similar to the [smart retrieval feature in cloudberry](http://blog.cloudberrylab.com/2012/12/introducing-smart-restore-for-amazon.html) .

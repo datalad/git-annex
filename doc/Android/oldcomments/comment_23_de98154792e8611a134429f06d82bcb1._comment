@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://afoolishmanifesto.com/"
+ nickname="frioux"
+ subject="comment 23"
+ date="2013-07-18T02:01:28Z"
+ content="""
+@joey: ok, I got it to connect and it indeed sent over a key etc.  For some reason now though git-annex (on android) \"crashes\" shortly after starting.  To be clear, the web app says that the program crashed, the console is still there.  I suspect that it may have something to do with my largish remote repo and the time required to sync just the metadata, but I can't tell.  Any ideas what I should do next?  (Note that I *did* change it to manual mode because my phone doesn't have 30G of storage :)
+"""]]

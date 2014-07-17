@@ -1,0 +1,13 @@
+I have been playing around with annex assistent today (way late as I am one of the Kickstarter backers) and found the following puzzling.
+
+I am running a fairly new version, my package manager calls it 4.20130323 (git-annex does not seem to have a --version switch). 
+
+I have been playing around with the annex assistent webapp today and have the following questions/observations: 
+
+1) The "remote" server creates a bare git repository as far as I can tell, the "local computer" probably does the right thing (but I cannot run it as the "other box" has no X or browser). Is there any way to remotely create a "local" copy (i.e. non-bare git repository, which can later be managed by the cli?)
+2) It seems like git-annex-assistent (webapp) binds to localhost, is it possible to let it bind to either a specific ip-address (or all)? (Yes, I understand the security implications, but the use-case is the box from question 2 - i.e. on local network but no X and no browser). 
+3) what is being launched when I hit "files", on the video it starts a file-manager on my box nothing happens (and no errors as far as I can tell). 
+
+Thank you in advance
+
+Svenne

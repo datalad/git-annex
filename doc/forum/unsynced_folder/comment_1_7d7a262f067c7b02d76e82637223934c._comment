@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 1"
+ date="2013-12-12T20:09:48Z"
+ content="""
+Sorry I took so long to answer. I think that it took me a few tries to understand your question.
+
+You want to have a special folder on a single clone of a repository, and be able to move files to that folder from the archive folder, and have it get the file content from the archive repository. But you don't want that file content to spread to any of the other repositories.
+
+This is possible to do by writing a custom [[preferred_content]] expression, and configuring the repository to use it. For simplicity, let's make the folder be called `archive/local`. This way, all the clients that do not use this preferred content expression will see that the file is still under the archive folder, and not want its content.
+
+Now we can take the preferred content expression used by client repositories normally:
+
+  ((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1))) or (not copies=semitrusted+:1)
+
+And modify it:
+
+  ((exclude=*/archive/* and exclude=archive/* and (not */archive/local/*) and (not archive/local/*)) or (not (copies=archive:1 or copies=smallarchive:1))) or (not copies=semitrusted+:1)
+
+You can use `git annex vifg` to edit the preferred content expressions, and paste that in. Should work. Untested.
+"""]]

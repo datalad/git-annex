@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlRThEwuPnr8_bcuuCTQ0rQd3w6AfeMiLY"
+ nickname="Alex"
+ subject="comment 9"
+ date="2013-02-24T15:13:16Z"
+ content="""
+A *ridiculously* cool possibility would be to allow them to match against URLs and then handle those (youtube-dl for youtube video URLs, for instance), but that would be additional work on your end and isn't really necessary.
+"""]]

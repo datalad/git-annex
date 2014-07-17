@@ -1,0 +1,34 @@
+Started by tracking down a strange bug that was apparently
+ubuntu-specific and caused git-annex branch changes to get committed to
+master. Root cause turned out to failing to recover from an
+exception. I'm kicking myself about that, because I remember looking at the
+code where the bug was at least twice before and thinking "hmm, should add
+exception handling here? nah..". Exceptions are horrible.
+
+Made a release with a fix for that and a few minor other accumulated
+changes since last Friday's release. The pain point of this release is to
+fix building without the webapp (so it will propigate to Debian testing,
+etc). This release does not include the direct mode guard, so I'll have a
+few weeks until the next release to get that tested.
+
+Fixed the test suite in `directguard`. This branch is now nearly ready to
+merge to master, but one command that is badly needed in guarded direct
+mode is "git status". So I am planning to rename "git annex status" to
+"git annex info", and make "git annex status" display something similar
+to "git status".
+
+Also took half an hour and added optional [[EKG]] support to git-annex.
+This is a Haskell library that can add a terrific monitoring console web
+UI to any program in 2 lines of code. Here we can see the git-annex
+webapp using resources at startup, followed in a few seconds by the
+assistant's startup scan of the repository.
+
+[[!img ekg/ekg.png]]
+
+BTW, Kevin tells me that the machine used to build git-annex for OSX is
+going to be upgraded to 10.9 soon. So, hopefully I'll be making autobuilds
+of that. I may have to stop the 10.8.2 autobuilds though.
+
+----
+
+Today's work was sponsored by [Protonet](http://protonet.info/).

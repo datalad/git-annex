@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="http://bigasterisk.com/"
+ nickname="Drew Perttula"
+ subject="~/annex/.git/config files (after running the steps above)"
+ date="2013-07-26T13:20:29Z"
+ content="""
+    dash(pts/32):~/annex% cat .git/config 
+    [core]
+        repositoryformatversion = 0
+        filemode = true
+        bare = false
+        logallrefupdates = true
+    [annex]
+        uuid = ddbb5112-3cff-46d3-b42a-f3a6826827a5
+        version = 3
+    [remote \"bang.local_annex\"]
+        url = ssh://drewp@git-annex-bang.local-drewp_annex/~/annex/
+        fetch = +refs/heads/*:refs/remotes/bang.local_annex/*
+        annex-ignore = true
+        annex-cost = 175.0
+
+
+    bang(pts/16):~/annex% cat .git/config
+    [core]
+        repositoryformatversion = 0
+        filemode = true
+        bare = false
+        logallrefupdates = true
+    [annex]
+        uuid = c8a6c420-0567-4f33-8abb-e44b2012ad55
+        version = 3
+    [remote \"dash.local_annex\"]
+        url = ssh://drewp@git-annex-dash.local-drewp_annex/~/annex/
+        fetch = +refs/heads/*:refs/remotes/dash.local_annex/*
+        annex-ignore = true
+        annex-cost = 175.0
+        
+"""]]

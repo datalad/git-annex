@@ -1,0 +1,22 @@
+I am using git-annex assistant for a few months now and still don't think I have it all setup correctly. My setup is:
+
+* Laptop Computer with low storage. Content creator, assistant: file source
+* Desktop Computer with medium storage capacity. Consumer, assistant: manual Mode
+* 2TB USB HD (EXT4) Backup, assistant: full backup
+* 2.5" portable 500GB drive NTFS formatted. transfer to backup: assistant: tried transfer and partial backup
+* Root Server on the web, not yet in the mix. Planned: Index only / content creator
+
+My primary goal is getting the stuff from the Laptop to the 2TB USB drive, syncing the annex with the desktop so I can get files on the desktop from the backup.
+What works:
+
+* Checking stuff into the annex on the Laptop
+* When the 2TB drive is connected to the Laptop, stuff is automatically moved there too
+* Bare Repo on the 2.5" configured as partial backup automatically backups the data
+
+What doesn't work:
+
+* Connecting the 2.5" bare repo to the Desktop to move stuff to the backup drive automatically
+* Having a human readable folder Structure on the 2.5" NTFS drive. I'd be ok to have a bare repo plus a special remote on the drive, but I don't know how to configure it
+* How do I drop stuff from the bare repo on the 2.5" drive? I think a partial backup should drop content that is in a full backup, but it doesn't
+
+Thanks for reading this long post. If anyone has any tips on how to configure the assistant, thats much appreciated.

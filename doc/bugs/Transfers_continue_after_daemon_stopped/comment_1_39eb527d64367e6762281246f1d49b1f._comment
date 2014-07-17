@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 1"
+ date="2013-11-05T16:01:14Z"
+ content="""
+I've checked, and shutting down the daemon does cause it to stop any transfers it is running.
+
+However, this does not stop other transfers initiated by the other paired computer.
+
+I'm ambivilant about whether local pairing should only allow transfers when both daemons are running.
+"""]]

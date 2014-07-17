@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="Xyem"
+ ip="87.194.19.134"
+ subject="comment 4"
+ date="2013-10-22T11:28:52Z"
+ content="""
+I've had this a few times (or situations very similar).
+
+    git init
+is now always followed by
+
+    git commit -m \"CREATE GIT REPOSITORY\" --allow-empty
+
+.. which I should really set as an alias :)
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="andy"
+ ip="99.65.214.16"
+ subject="Just wondering what I'm missing..."
+ date="2013-04-02T21:43:33Z"
+ content="""
+I haven't played around with the preferred content expressions, but what is is that keeps \"or (not copies=semitrusted:1)\" from grabbing all the content from trusted repositories, as well as untrusted or dead ones?
+"""]]

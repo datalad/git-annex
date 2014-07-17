@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmkBwMWvNKZZCge_YqobCSILPMeK6xbFw8"
+ nickname="develop"
+ subject="comment 4"
+ date="2013-06-05T22:02:29Z"
+ content="""
+The path for the binary \"/usr/bin/python2\" is wrong.
+
+It could be any of /usr/bin/python /usr/bin/python2.6 /usr/bin/python2.7
+
+Or maybe in /usr/local/bin
+
+you can try running \"which python\" or \"which python2\" to get the real path.
+"""]]

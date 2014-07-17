@@ -1,0 +1,31 @@
+Back to bug squashing. Fixed several, including a long-standing problem on
+OSX that made the app icon seem to "bounce" or not work. Followed up on a
+bunch more.
+
+The 4.20130723 git-annex release turns out to have broken support for
+running on crippled filesystems (Android, Windows). `git annex sync` will
+add dummy symlinks to the annex as if they were regular files, which is
+not good!
+[Recovery instructions](http://git-annex.branchable.com/bugs/regression_in_direct_mode_on_windows_:_weird___96__git_annex_sync__96___behavior/#comment-5d80649f9da85ac2fb505445a41207f5)
+I've updated the Android and Windows builds and recommend an immediate upgrade.
+Will make a formal release on Friday. 
+
+Spent some time improving the test suite on Windows, to catch this bug,
+and fix a bug that was preventing it from testing `git annex sync` on
+Windows.
+
+----
+
+I am getting very frustrated with this "unknown UUID" problem that a dozen
+people have reported. So far nobody has given me enough information to
+reproduce the problem. It seems to have something to do with
+`git-annex-shell` not being found on the remote system that has been either
+local paired with or is being used as a ssh server, but I don't yet
+understand what. I have spent hours today trying various scenarios to break
+git-annex and get this problem to happen.
+
+I certainly can improve the webapp's behavior when a repository's UUID is
+not known. The easiest fix would be to simply not display such
+repositories. Or there could be a UI to try to get the UUID.
+But I'm more interested in fixing the core problem than putting
+in a UI bandaid.

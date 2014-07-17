@@ -1,0 +1,29 @@
+Currently [[xmpp]] relies on the SSL connection to the server for security.
+The server can see git repository data pushed through it. (Also, the SSL
+connection is not pinned or really checked well at all.)
+
+Add an encryption layer that does not rely on trusting the XMPP server's
+security. There are a few options for how to generate the key for eg,
+AES encryption:
+
+  * Do a simple Diffie-Hellman shared key generation when starting each XMPP
+    push session. Would not protect the users from active MITM by the
+    XMPP server, but would prevent passive data gathering attacks from
+    getting useful data. Since the key is ephemeral, would provide
+    Forward Security.
+  * Do D-H key generation, but at pairing, not push time. Allows for an
+    optional confirmation step, using eg, BubbleBabble to compare the
+    keys out of band. ("I see xebeb-dibyb-gycub-kacyb-modib-pudub-sefab-vifuc-bygoc-daguc-gohec-kuxax .. do you too?")
+  * Prompt both users for a passphrase when XMPP pairing, and 
+    use SPEKE (or similar methods like J-PAKE) to generate a shared key.
+    Avoids active MITM attacks. Makes pairing harder, especially pairing
+    between one's own devices, since the passphrase has to be entered on
+    all devices. Also problimatic when pairing more than 2 devices,
+    especially when adding a device to the set later, since there
+    would then be multiple different keys in use.
+  * Rely on the user's gpg key, and do gpg key verification during XMPP
+    pairing. Problimatic because who wants to put their gpg key on their
+    phone? Also, require the users be in the WOT and be gpg literate.
+
+Update: This seems unlikely to be worth doing. [[Telehash]] is better.
+--[[Joey]]

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://olivier.mehani.name/"
+ nickname="olivier-mehani"
+ subject="comment 1"
+ date="2014-01-22T13:08:21Z"
+ content="""
+Hum, fair enough. The webapp might not be the best target. However, there might already be some logic to deploy the key, only not exposed in any UI (web or CLI).
+
+However, I was under the impression that the key thath git-annex installs remotely is also limited to running git-annex-related tasks (using the command option; I cannot find any example in my configurations at the moment), rather than providing a generic login shell which happens to be used for git-annex.
+
+The command to run on the remote server did not seem to be trivial (this is what I'm currently bumping against), and I guess there already are a few functions which create and install the authorized_files entry. Maybe providing, e.g., a
+
+    git-annex installkey REMOTE
+
+command, automating only this key-setup step for the user, would be good?
+"""]]

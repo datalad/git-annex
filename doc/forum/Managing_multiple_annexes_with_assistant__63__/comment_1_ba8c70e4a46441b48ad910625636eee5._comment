@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.23"
+ subject="comment 1"
+ date="2012-10-19T17:08:39Z"
+ content="""
+If you go to the upper-right menu in the webapp, and select \"New repository\", you can add a separate independant repository. The assistant's autostart will run it on both of them when you log in.
+"""]]

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkC0W3ZQERUaTkHoks6k68Tsp1tz510nGo"
+ nickname="Georg"
+ subject="git annex copy not working"
+ date="2013-10-06T10:18:10Z"
+ content="""
+Is the feature \"git-annex copy --auto --to usb\" working?
+I have created a backup repo on my usb drive but when I call \"git-annex copy --auto --to usb\" nothing happens.
+
+I have called \"git annex group usb backup\" and \"git annex sync usb\" to set up the repo.
+
+What is the correct way to get the data out to the backup repo?
+
+Best regards, Georg
+"""]]

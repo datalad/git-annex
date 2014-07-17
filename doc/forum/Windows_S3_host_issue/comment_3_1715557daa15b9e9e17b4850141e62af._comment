@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 3"
+ date="2013-12-16T17:07:17Z"
+ content="""
+Looking at this again, you forgot to tell it the name of the remote, so it took the first parameter (host=\"objects.dreamhost.com\" ) as the name. The rest probably follows from that mistake.
+
+use `git annex initremote mys3 host=...`
+"""]]

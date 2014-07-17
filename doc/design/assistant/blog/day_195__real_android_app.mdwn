@@ -1,0 +1,32 @@
+Well, it's built. [Real Android app for git-annex](http://downloads.kitenet.net/git-annex/android/current/).
+
+[[!img /android/appinstalled.png]]
+
+When installed, this will open a terminal in which you have access to
+git-annex and all the git commands and busybox commands as well. No webapp
+yet, but command line users should feel right at home.
+
+[[!img /android/terminal.png]]
+
+Please test it out, at least as far as installing it, opening the terminal,
+and checking that you can run `git annex`; I've only been able to test on
+one Android device so far. I'm especially keen to know if it works with
+newer versions of Android than 4.0.3. (I know it only supports arm based
+Android, no x86 etc.) Please comment if you tried it.
+
+----
+
+Building this went mostly as planned, although I had about 12 builds of
+the app in the middle which crashed on startup with no error message ora
+logs. Still, it took only one day to put it all together,
+ and I even had time to gimp up a quick icon. (Better icons welcome.)
+
+Kevin thinks that my space-saving hack won't work on all Androiden, and he
+may be right. If the `lib` directory is on a different filesystem on some
+devices, it will fail. But I used it for now anyhow. Thanks to the hack,
+the 7.8 mb compressed .apk file installs to use around 23 mb of disk space.
+
+----
+
+Tomorrow: Why does `git-annex assistant` on Android re-add all existing
+files on startup?

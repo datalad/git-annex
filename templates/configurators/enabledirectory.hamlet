@@ -1,0 +1,11 @@
+<div .col-sm-9>
+  <div .content-box>
+    <h2>
+      Enabling #{description}
+    <p>
+      Where is this repository located?
+    <p>
+      <a .btn .btn-default href="@{AddDriveR}">
+        On a removable drive
+      <a .btn href="@{DashboardR}">
+        Cancel

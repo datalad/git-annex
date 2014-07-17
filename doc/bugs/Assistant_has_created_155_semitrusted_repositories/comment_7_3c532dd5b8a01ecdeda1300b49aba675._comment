@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnNqLKszWk9EoD4CDCqNXJRIklKFBCN1Ao"
+ nickname="maurizio"
+ subject="comment 7"
+ date="2013-11-23T13:16:10Z"
+ content="""
+OK, sorry but it will be difficult to provide you with a copy of this repository. I hope I can still help in spite of being only a very novice git user. I checked that the git-annex:uuid.log file at the first commit was identical to the one above.  The only difference is that in this first commit file there is a mention at the bottom of who created the file (me@somedomain.com) with the mention \"created repository\". 
+
+So it is very possible that these nonexisting remotes are present since day 1. It is possible that I did not notice it earlier (I am not sure I had ever run git annex status in this repository since I am looking for a dropbox-like experience). What triggered my curiosity was the difficulty I had to get some data. At that point it might be that there are two independent problems. One with these nonexisting repositories, and another one with the fact that I cannot get some data in this client.
+
+Would it be useful to you to have the full history (52 revisions) of the git-annex:uuid.log file?
+"""]]

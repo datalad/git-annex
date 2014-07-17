@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.193"
+ subject="comment 2"
+ date="2013-06-26T17:40:21Z"
+ content="""
+If you're asking if you can run two git-annex assistant programs inside the same repository at the same time, the answer is no. Assuming locking works (grin), the second program will detect the first is running and refuse to start.
+
+If your question is, can two or more git-annex assistant or other programs, running in separate repositories, access files in the same remote safely at the same time, the answer is yes! You can, for that matter, run multiple git-annex commands at the same time in the same repository, and they're also entirely safe, thanks to some locking it does.
+
+You should post your story to [[design/assistant/blog/day_288__success_stories]]!
+"""]]

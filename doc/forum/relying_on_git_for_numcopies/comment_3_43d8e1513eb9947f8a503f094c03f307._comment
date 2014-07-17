@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ subject="relation to [[todo/branching]]"
+ date="2011-02-23T21:48:14Z"
+ content="""
+the non-bare repository issue would go away if this was combined with the \"alternate\" approach to [[todo/branching]]. (with the \"fleshed out proposal\" of branching, this would not work at all for lack of shared commits.)
+"""]]

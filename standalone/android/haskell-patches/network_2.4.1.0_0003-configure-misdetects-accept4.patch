@@ -1,0 +1,34 @@
+From 63a7a97511266c1a9d2414d3314ee17fc88bb8f2 Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Fri, 18 Oct 2013 15:58:35 +0000
+Subject: [PATCH] configure misdetects accept4
+
+---
+ Network/Socket.hsc |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Network/Socket.hsc b/Network/Socket.hsc
+index 9af31f8..6c21209 100644
+--- a/Network/Socket.hsc
++++ b/Network/Socket.hsc
+@@ -503,7 +503,7 @@ accept sock@(MkSocket s family stype protocol status) = do
+                 return new_sock
+ #else
+      with (fromIntegral sz) $ \ ptr_len -> do
+-# ifdef HAVE_ACCEPT4
++#if 0
+      new_sock <- throwSocketErrorIfMinus1RetryMayBlock "accept"
+                         (threadWaitRead (fromIntegral s))
+                         (c_accept4 s sockaddr ptr_len (#const SOCK_NONBLOCK))
+@@ -1615,7 +1615,7 @@ foreign import CALLCONV SAFE_ON_WIN "connect"
+   c_connect :: CInt -> Ptr SockAddr -> CInt{-CSockLen???-} -> IO CInt
+ foreign import CALLCONV unsafe "accept"
+   c_accept :: CInt -> Ptr SockAddr -> Ptr CInt{-CSockLen???-} -> IO CInt
+-#ifdef HAVE_ACCEPT4
++#if 0
+ foreign import CALLCONV unsafe "accept4"
+   c_accept4 :: CInt -> Ptr SockAddr -> Ptr CInt{-CSockLen???-} -> CInt -> IO CInt
+ #endif
+-- 
+1.7.10.4
+

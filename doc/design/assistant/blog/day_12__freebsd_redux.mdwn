@@ -1,0 +1,23 @@
+Followed my plan from yesterday, and wrote a simple C library to interface
+to `kqueue`, and Haskell code to use that library. By now I think I
+understand kqueue fairly well -- there are some very tricky parts to the
+interface.
+
+But... it still didn't work. After building all this, my code was
+failing the same way that the
+[haskell kqueue library failed](https://github.com/hesselink/kqueue/issues/1)
+yesterday. I filed a [bug report with a testcase]().
+
+Then I thought to ask on #haskell. Got sorted out in quick order! The
+problem turns out to be that haskell's runtime has a periodic SIGALARM,
+that is interrupting my kevent call. It can be worked around with `+RTS -V0`,
+but I put in a fix to retry to kevent when it's interrupted.
+
+And now `git-annex watch` can detect changes to directories on BSD and OSX!
+
+Note: I said "detect", not "do something useful in response to". Getting
+from the limited kqueue events to actually staging changes in the git repo
+is going to be another day's work. Still, brave FreeBSD or OSX users
+might want to check out the `watch` branch from git and see if 
+`git annex watch` will at least *say* it sees changes you make to your
+repository.

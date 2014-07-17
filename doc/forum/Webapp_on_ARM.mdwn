@@ -1,0 +1,6 @@
+Webapp on ARM?
+==============
+
+Since the webapp is apparently now available on Android (not tested yet, but I plan to do it soon ;)), I was wondering what was the status of the webapp on ARM. Does it build, does it work, and if it does would it be possible to enable it in the Debian package for the next release?
+
+For the record, I'm using git-annex on my NAS (Synology DS413j). I'm using the Debian armel package and running it in an Arch Linux chroot (a very simple setup). It works really well, and I'm extremely satisfied with git-annex. Thanks a lot for all your work, Joey *et al.*!

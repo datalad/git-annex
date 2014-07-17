@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.246.110"
+ subject="comment 6"
+ date="2013-07-26T20:59:42Z"
+ content="""
+I think that the whole `git show $sha` for each commit will provide useful context.
+
+I want to understand what happened here, because there are multiple weird things going on, and it's important to root cause this sort of bug.
+
+What version of git-annex is on the rPi and how was it installed? Is there a simple operation you can do that segfaults every time?
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 14"
+ date="2014-07-16T17:51:28Z"
+ content="""
+I kinda wish people would post questions to the forum, and not clutter up this page..
+
+Anyway, there have been past bugs in the direct mode code that caused some files to not be checked out in direct mode, but stay as symlinks pointing at the content. That can be fixed by running `git annex fsck`. But, I am not aware of any problem that can leave a git-annex symlink that is not checked into git at all. Perhaps you copied the symlink from another location?
+"""]]

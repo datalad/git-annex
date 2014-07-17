@@ -1,0 +1,35 @@
+Hi,
+
+I apologize, but I can't retrace my steps, so my problem is not replicable. The current situation is: 1 main repo and 1 directory/encrypted special remote. From the main repo, I see 0 available copy of the files I need. But when I do a fsck I do see the file. The problem is that the location log does not seem to get fixed after fsck, as I cannot use git-annex get to obtain the file, even after the fsck command. 
+
+Do you have any suggestions for next diagnostic/repair steps?
+
+Thanks a lot for your time and answer!
+
+Vincent
+
+macbook% git annex fsck foo.zip --from needle
+fsck foo.zip (gpg) 
+You need a passphrase to unlock the secret key for
+user: “me <email@email.edu>”
+2048-bit RSA key, ID ???????, created 2013-01-11 (main key ID ????????)
+
+(checking needle...) 
+GPGHMACSHA1--d7036fd17214c06c83d53479dcec9554a7dc2109
+    13815014 100%   14.16MB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 13816832 bytes  received 42 bytes  9211249.33 bytes/sec
+total size is 13815014  speedup is 1.00
+(fixing location log) (checksum...) 
+  ** No known copies exist of foo.zip
+failed
+(Recording state in git...)
+git-annex: fsck: 1 failed
+
+
+macbook% git annex get foo.zip
+get foo.zip (not available) 
+  No other repository is known to contain the file.
+failed
+git-annex: get: 1 failed
+macbook% 

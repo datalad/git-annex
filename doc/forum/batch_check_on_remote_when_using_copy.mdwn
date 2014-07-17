@@ -1,0 +1,34 @@
+When I copy my local repository with SHA* to a remote repo with SHA*, every single file is checked by itself which seems rather inefficient. When my remote is accessed via ssh, git-annex opens a new connections for every check. If you are not using a ssh key or key agent, this gets tedious...
+
+For all locked files, either git's built-in mechanisms should be used or, if that's not possible, a few hundred checksums (assuming SHA* backend) should be transfered at once and then checked locally before deciding that to transfer.
+
+Once all checks are done, one single transfer session should be started. Creating new sessions and waiting for TCP's slowstart to get going is a lot less than efficient.
+
+
+-- RichiH
+
+> (Use of SHA is irrelevant here, copy does not checksum anything.)
+> 
+> I think what you're seeing is
+> that `git annex copy --to remote` is slow, going to the remote repository
+> every time to see if it has the file, while `git annex copy --from remote`
+> is fast, since it looks at what files are locally present.
+> 
+> That is something I mean to improve. At least `git annex copy --fast --to remote`
+> could easily do a fast copy of all files that are known to be missing from
+> the remote repository. When local and remote git repos are not 100% in sync,
+> relying on that data could miss some files that the remote doesn't have anymore,
+> but local doesn't know it dropped. That's why it's a candidate for `--fast`.
+> 
+> I've just implemented that.
+> 
+> While I do hope to improve ssh usage so that it sshs once, and feeds
+> `git-annex-shell` a series of commands to run, that is a much longer-term
+> thing. --[[Joey]]
+
+>> FYI, in a repo with 1228 files, all small, repos _completely in sync_.
+
+    % git annex copy . --to foo # 1200 seconds
+    % git annex copy . --to foo --fast # 20 seconds
+
+>> RichiH

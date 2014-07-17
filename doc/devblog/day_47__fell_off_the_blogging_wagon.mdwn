@@ -1,0 +1,3 @@
+Low activity the past couple of days. Released a new version of git-annex
+yesterday. Today fixed three bugs (including a local pairing one that was
+pretty compicated) and worked on getting caught up with traffic.

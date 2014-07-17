@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk9nck8WX8-ADF3Fdh5vFo4Qrw1I_bJcR8"
+ nickname="Jon Ander"
+ subject="comment 2"
+ date="2014-04-01T08:01:00Z"
+ content="""
+I thought I had already checked all does possibilities, the repositories where in the correct group and no new repositories had been added. *git annex info* didn't show anything weird and nor did *git annex whereis*. I finally found out *git annex vicfg* and I found two new repositories with no name in the repository groups. It looked something like this:
+
+    # (for )
+    group repository-hash = client
+    # (for )
+    group repository-hash = client
+
+
+No idea of how they got there, but setting both of them to unwanted solved the issue.
+"""]]

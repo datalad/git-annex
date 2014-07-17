@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 1"
+ date="2013-12-29T20:29:26Z"
+ content="""
+If you set up an identically configured special remote in the same location for each of your separate mp3 and docs repositories, then yes, you can store files for both of them in it. In the unlikely case where you have the same file in both mp3 and docs, only one copy will be stored in the remote. (Unless it's using encryption, which will tend to defeat that.)
+
+It should work ok, but unless you're trying to get deduplication like that, I don't see any reason to do it rather than having a separate special remote for each of the separate git repositories.
+
+(Also, I'm talking about special remotes here, not git remotes. If you add the same git remote to 2 separate repositories, then `git annex sync` will connect them all together.)
+"""]]

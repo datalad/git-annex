@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="bremner"
+ ip="156.34.79.193"
+ subject="gitolite gets different paths for different urls"
+ date="2011-12-31T01:50:49Z"
+ content="""
+I guess there is some path rewriting going in in gitolite proper because if try a url of the form 
+ssh://git@localhost/testing, then it still works with gitolite, but fails with the ADC because 
+the repo is passed as /testing:
+<pre>
+Running: ssh [\"git@host\",\"git-annex-shell 'configlist' '/recommend'\"]
+Running: ssh [\"git@host\",\"git-annex-shell 'configlist' '/recommend'\"]
+</pre>
+
+What I have to ask Sitaram and or find in the docs is if this is a bug or a feature in gitolite.  I can see how the leading slash would get swallowed up by this line 
+<pre>
+$repo = \"'$REPO_BASE/$repo.git'\"
+</pre>
+in gl-auth-command, but I guess that isn't the whole story.
+"""]]

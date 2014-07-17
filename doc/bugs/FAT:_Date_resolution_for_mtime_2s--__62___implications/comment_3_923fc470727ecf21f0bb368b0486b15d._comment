@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 3"
+ date="2014-06-05T17:06:40Z"
+ content="""
+> if we have an exact time difference of 1s (probably \"inode problem\") or 1h (\"utc problem\") we treat this file as likely unmodified and check this via the normal checksum algorithm.
+
+That sort of makes sense, but when is git-annex supposed to do that?
+
+If `git annex add`, it already checksums the file, and already stages no change if the file's checksum is the same. And if the user has told git-annex to add the file and it's changed, the presumption is they know it's changed and want to add the new version.
+
+> To do an git annex sync or git annex add is in my opinion not a good option, because one could add so Bad file content by accident...
+
+If not in add or sync, then when?
+
+----
+
+I am actually having a hard time coming up with a scenario where this problem results in any more than extra checksumming work by git-annex.
+
+The only scenario I see is: The drive is unmounted, gets corrupted, is remounted, and this timestamp nonsense causes git-annex to think a file (that has already gotten corrupted) has in fact changed, so it commits the corrupted version.
+"""]]

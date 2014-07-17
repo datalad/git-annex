@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/FHnTlSBo1eCGJRwueeKeB6.RCaPbGMPr5jxx8A--#ce0d8"
+ nickname="Hamza"
+ subject="comment 2"
+ date="2014-04-28T09:14:12Z"
+ content="""
+I would love to use gcrypt and I tried it but the problem is at every sync it will ask for my pass phrase even though the key used to encrypt the repo is pass phrase less it goes through the keys in my keychain and asks me to unlock all my keys one by one.
+"""]]

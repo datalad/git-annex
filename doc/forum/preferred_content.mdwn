@@ -1,0 +1,11 @@
+Hello all,
+
+I'm trying to use "preferred content" with git-annex but I suspect that my version doesn't provide it.
+
+I'm using Debian "wheezy" that packs git-annex 3.20120629.
+
+I appreciate any help you can give.
+
+Thanks.
+
+Zaka.

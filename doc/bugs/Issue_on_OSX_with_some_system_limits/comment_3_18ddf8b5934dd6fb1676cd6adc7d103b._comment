@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 3"
+ date="2012-07-04T12:32:44Z"
+ content="""
+Jimmy, sounds like I could use something like this to get the current limit:
+
+    sysctl kern.maxfilesperproc
+
+Probably prints \"sysctl kern.maxfilesperproc = 256\" or such.. can you verify?
+Once I have the limit, I can make the kqueue code use subset of it, and print out a message when it needs to be increased, like the inotify code does.
+
+(Also, the kqueue code only opens directories, not files, so unless you have 400000 directories, that's
+a little high.)
+
+---
+
+On file removal not propigating, does this still happen? When you remove a file does a git commit automatically happen, or is that broken with kqueue?
+"""]]

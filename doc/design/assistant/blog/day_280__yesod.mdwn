@@ -1,0 +1,7 @@
+Today marks 1 year since I started working on the git-annex assistant. 280
+solid days of work!
+
+As a background task here at the beach I've been porting git-annex to yesod
+1.2. Finished it today, earlier than expected, and also managed to keep it
+building with older versions. Some tricks kept the number of
+ifdefs reasonably low.

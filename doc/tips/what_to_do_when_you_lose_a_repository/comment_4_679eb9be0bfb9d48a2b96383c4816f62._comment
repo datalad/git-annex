@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 4"
+ date="2013-12-16T17:04:44Z"
+ content="""
+I wouldn't recommend running `git annex forget --drop-dead` right after losing a drive. You might find the drive again, or get the dead drive to work again. Even if you know you'll never find it, you may want to query git-annex to find files that were only located on that drive, and deal with them, etc.
+
+But if you're worried about that information in the git-annex branch cluttering up the git repository, you keep in mind that `git annex forget` will let you remove it at some point in the future.
+"""]]

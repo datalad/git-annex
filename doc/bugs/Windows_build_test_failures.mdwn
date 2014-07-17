@@ -1,0 +1,1232 @@
+Given that others can build+run OK I wonder if this is a build environment setup problem rather than a code issue. 
+This might be two bugs, but I rather suspect the fix to one is the fix to the other.
+
+### Please describe the problem.
+Some tests fail with:
+ssh: Could not resolve hostname C: no address associated with name
+
+then if you try and do a copy to/from an ssh remote then it fails with simply 'copy: 1 failed'
+
+### What steps will reproduce the problem?
+
+For the tests, simply sh standalone/windows/build.sh
+
+For the other, I'm using a modified version of the other windows user's script, the set -x'd output is:
+
+<pre>
++ git-annex version
+git-annex version: 4.20130621-g36258de^M
+build flags: Pairing Testsuite S3 WebDAV DNS^M
++ ssh gitremote sh testrepo.sh
+git-annex version: 4.20130621-g36258de
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP DNS
+Initialized empty Git repository in /media/backup/git/repo.git/
+init origin ok
+(Recording state in git...)
+commit
+ok
+git-annex: no branch is checked out
++ rm -rf repo
++ git init repo
+Initialized empty Git repository in c:/Users/Oliver/repo/.git/
++ cd repo
++ git-annex init
+init  ^M
+  Detected a crippled filesystem.^M
+^M
+  Enabling direct mode.^M
+^M
+  Detected a filesystem without fifo support.^M
+^M
+  Disabling ssh connection caching.^M
+ok^M
+(Recording state in git...)^M
++ git remote add origin ssh://git@remote/~/repo.git
++ echo hello
++ git-annex add .
+add foo.txt (checksum...) ok^M
+(Recording state in git...)^M
++ git commit -m .
+[master (root-commit) f34a076] .
+ 1 file changed, 1 insertion(+)
+ create mode 120000 foo.txt
++ git-annex sync
+commit  ^M
+ok^M
+pull origin warning: no common commits
+From ssh://remote/~/repo
+ * [new branch]      git-annex  -> origin/git-annex
+^M
+ok^M
+(merging origin/git-annex into git-annex...)^M
+(Recording state in git...)^M
+push origin To ssh://git@remote/~/repo.git
+ * [new branch]      git-annex -> synced/git-annex
+ * [new branch]      master -> synced/master
+^M
+ok^M
++ git-annex copy --to origin
+copy foo.txt (checking origin...) (to origin...) ^M
+failed^M
+git-annex.exe: copy: 1 failed
+</pre>
+
+
+
+
+
+### What version of git-annex are you using? On what operating system?
+Windows (8 x64):
+git-annex version: 4.20130621-g36258de
+build flags: Pairing Testsuite S3 WebDAV DNS
+Linux (debian wheezy i386):
+git-annex version: 4.20130621-g36258de
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP DNS
+
+other versions
+git-bash: git(1.8.0.msysgit.0),ssh(ssh 4.6p1, ssl 0.9.8e 23 feb 2007)
+msys: git(none) ssh(ssh 5.4p1, ssl 1.0.0 29 Mar 2010)
+cygwin: git(1.7.9) ssh(none)
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+build.log:
++ set -e
++ HP='/c/Program Files (x86)/Haskell Platform/2012.4.0.0'
++ FLAGS='-Webapp -Assistant -XMPP'
++ PATH='/c/Program Files (x86)/Haskell Platform/2012.4.0.0/bin:/c/Program Files (x86)/Haskell Platform/2012.4.0.0/lib/extralibs/bin:/c/Program Files (x86)/NSIS:/home/Oliver/bin:.:/usr/local/bin:/mingw/bin:/bin:/c/Program Files (x86)/Haskell/bin:/c/Program Files (x86)/Haskell Platform/2013.2.0.0/lib/extralibs/bin:/c/Program Files (x86)/Haskell Platform/2013.2.0.0/bin:/c/Program Files (x86)/AMD APP/bin/x86_64:/c/Program Files (x86)/AMD APP/bin/x86:/c/Windows/system32:/c/Windows:/c/Windows/System32/Wbem:/c/Windows/System32/WindowsPowerShell/v1.0/:/c/Program Files (x86)/ATI Technologies/ATI.ACE/Core-Static:/c/Program Files (x86)/Windows Kits/8.0/Windows Performance Toolkit/:/c/Program Files/Microsoft/Web Platform Installer/:/c/Program Files (x86)/Haskell Platform/2013.2.0.0/mingw/bin:/c/Users/Oliver/AppData/Roaming/cabal/bin'
++ rm -f git-annex-installer.exe
++ cabal update
+Downloading the latest package list from hackage.haskell.org
++ rm -rf MissingH-1.2.0.0
++ cabal unpack MissingH
+Unpacking to MissingH-1.2.0.0\
++ cd MissingH-1.2.0.0
++ withcyg patch -p1
++ PATH='/c/Program Files (x86)/Haskell Platform/2012.4.0.0/bin:/c/Program Files (x86)/Haskell Platform/2012.4.0.0/lib/extralibs/bin:/c/Program Files (x86)/NSIS:/home/Oliver/bin:.:/usr/local/bin:/mingw/bin:/bin:/c/Program Files (x86)/Haskell/bin:/c/Program Files (x86)/Haskell Platform/2013.2.0.0/lib/extralibs/bin:/c/Program Files (x86)/Haskell Platform/2013.2.0.0/bin:/c/Program Files (x86)/AMD APP/bin/x86_64:/c/Program Files (x86)/AMD APP/bin/x86:/c/Windows/system32:/c/Windows:/c/Windows/System32/Wbem:/c/Windows/System32/WindowsPowerShell/v1.0/:/c/Program Files (x86)/ATI Technologies/ATI.ACE/Core-Static:/c/Program Files (x86)/Windows Kits/8.0/Windows Performance Toolkit/:/c/Program Files/Microsoft/Web Platform Installer/:/c/Program Files (x86)/Haskell Platform/2013.2.0.0/mingw/bin:/c/Users/Oliver/AppData/Roaming/cabal/bin:/c/cygwin/bin'
++ patch -p1
+patching file src/System/IO/WindowsCompat.hs
+Hunk #1 succeeded at 119 (offset -1 lines).
+Hunk #2 succeeded at 132 (offset -1 lines).
++ cabal install
+Resolving dependencies...
+In order, the following would be installed:
+MissingH-1.2.0.0 (reinstall)
+cabal.exe: The following packages are likely to be broken by the reinstalls:
+hS3-0.5.7
+Use --force-reinstalls if you want to install anyway.
++ true
++ cd ..
++ cabal install --only-dependencies '-f-Webapp -Assistant -XMPP'
+Resolving dependencies...
+All the requested packages are already installed:
+Use --reinstall if you want to reinstall anyway.
++ '[' -e last-incremental-failed ']'
++ touch last-incremental-failed
++ withcyg cabal configure '-f-Webapp -Assistant -XMPP'
++ PATH='/c/Program Files (x86)/Haskell Platform/2012.4.0.0/bin:/c/Program Files (x86)/Haskell Platform/2012.4.0.0/lib/extralibs/bin:/c/Program Files (x86)/NSIS:/home/Oliver/bin:.:/usr/local/bin:/mingw/bin:/bin:/c/Program Files (x86)/Haskell/bin:/c/Program Files (x86)/Haskell Platform/2013.2.0.0/lib/extralibs/bin:/c/Program Files (x86)/Haskell Platform/2013.2.0.0/bin:/c/Program Files (x86)/AMD APP/bin/x86_64:/c/Program Files (x86)/AMD APP/bin/x86:/c/Windows/system32:/c/Windows:/c/Windows/System32/Wbem:/c/Windows/System32/WindowsPowerShell/v1.0/:/c/Program Files (x86)/ATI Technologies/ATI.ACE/Core-Static:/c/Program Files (x86)/Windows Kits/8.0/Windows Performance Toolkit/:/c/Program Files/Microsoft/Web Platform Installer/:/c/Program Files (x86)/Haskell Platform/2013.2.0.0/mingw/bin:/c/Users/Oliver/AppData/Roaming/cabal/bin:/c/cygwin/bin'
++ cabal configure '-f-Webapp -Assistant -XMPP'
+Resolving dependencies...
+[ 1 of 24] Compiling Utility.Applicative ( Utility\Applicative.hs, dist\setup\Utility\Applicative.o )
+[ 2 of 24] Compiling Utility.PartialPrelude ( Utility\PartialPrelude.hs, dist\setup\Utility\PartialPrelude.o )
+[ 3 of 24] Compiling Utility.FileSystemEncoding ( Utility\FileSystemEncoding.hs, dist\setup\Utility\FileSystemEncoding.o )
+[ 4 of 24] Compiling Utility.Exception ( Utility\Exception.hs, dist\setup\Utility\Exception.o )
+[ 5 of 24] Compiling Utility.Misc     ( Utility\Misc.hs, dist\setup\Utility\Misc.o )
+[ 6 of 24] Compiling Utility.Process  ( Utility\Process.hs, dist\setup\Utility\Process.o )
+[ 7 of 24] Compiling Utility.Env      ( Utility\Env.hs, dist\setup\Utility\Env.o )
+[ 8 of 24] Compiling Utility.UserInfo ( Utility\UserInfo.hs, dist\setup\Utility\UserInfo.o )
+[ 9 of 24] Compiling Utility.OSX      ( Utility\OSX.hs, dist\setup\Utility\OSX.o )
+[10 of 24] Compiling Utility.Tmp      ( Utility\Tmp.hs, dist\setup\Utility\Tmp.o )
+[11 of 24] Compiling Utility.Monad    ( Utility\Monad.hs, dist\setup\Utility\Monad.o )
+[12 of 24] Compiling Utility.Path     ( Utility\Path.hs, dist\setup\Utility\Path.o )
+[13 of 24] Compiling Utility.FreeDesktop ( Utility\FreeDesktop.hs, dist\setup\Utility\FreeDesktop.o )
+[16 of 24] Compiling Utility.SafeCommand ( Utility\SafeCommand.hs, dist\setup\Utility\SafeCommand.o )
+[17 of 24] Compiling Utility.ExternalSHA ( Utility\ExternalSHA.hs, dist\setup\Utility\ExternalSHA.o )
+[18 of 24] Compiling Utility.Directory ( Utility\Directory.hs, dist\setup\Utility\Directory.o )
+Linking .\dist\setup\setup.exe ...
+  checking version... 4.20130621-g36258de
+  checking git... yes
+  checking git version... 1.7.9
+  checking cp -a... yes
+  checking cp -p... yes
+  checking cp --reflink=auto... no
+  checking xargs -0... yes
+  checking rsync... yes
+  checking curl... no
+  checking wget... yes
+  checking bup... no
+  checking gpg... not available
+  checking lsof... not available
+  checking ssh connection caching... no
+  checking sha1... sha1sum
+  checking sha256... sha256sum
+  checking sha512... sha512sum
+  checking sha224... sha224sum
+  checking sha384... sha384sum
+Configuring git-annex-4.20130601...
++ withcyg cabal build
++ PATH='/c/Program Files (x86)/Haskell Platform/2012.4.0.0/bin:/c/Program Files (x86)/Haskell Platform/2012.4.0.0/lib/extralibs/bin:/c/Program Files (x86)/NSIS:/home/Oliver/bin:.:/usr/local/bin:/mingw/bin:/bin:/c/Program Files (x86)/Haskell/bin:/c/Program Files (x86)/Haskell Platform/2013.2.0.0/lib/extralibs/bin:/c/Program Files (x86)/Haskell Platform/2013.2.0.0/bin:/c/Program Files (x86)/AMD APP/bin/x86_64:/c/Program Files (x86)/AMD APP/bin/x86:/c/Windows/system32:/c/Windows:/c/Windows/System32/Wbem:/c/Windows/System32/WindowsPowerShell/v1.0/:/c/Program Files (x86)/ATI Technologies/ATI.ACE/Core-Static:/c/Program Files (x86)/Windows Kits/8.0/Windows Performance Toolkit/:/c/Program Files/Microsoft/Web Platform Installer/:/c/Program Files (x86)/Haskell Platform/2013.2.0.0/mingw/bin:/c/Users/Oliver/AppData/Roaming/cabal/bin:/c/cygwin/bin'
++ cabal build
+Building git-annex-4.20130601...
+Preprocessing executable 'git-annex' for git-annex-4.20130601...
+Touch.hsc:117:2: warning: #warning "utimensat and lutimes not available; building without symlink timestamp preservation support"
+Touch.hsc: In function 'main':
+Touch.hsc:117:2: warning: #warning "utimensat and lutimes not available; building without symlink timestamp preservation support"
+Touch.hsc:117:2: warning: #warning "utimensat and lutimes not available; building without symlink timestamp preservation support"
+In file included from Mounts.hsc:23:0:
+Utility/libmounts.h:17:3: warning: #warning mounts listing code not available for this OS
+
+Utility\libdiskfree.c:36:3:
+     warning: #warning free space checking code not available for this OS
+
+In file included from Utility\libmounts.c:35:0: 
+
+Utility\libmounts.h:17:3:
+     warning: #warning mounts listing code not available for this OS
+[  1 of 217] Compiling Utility.Dot      ( Utility\Dot.hs, dist\build\git-annex\git-annex-tmp\Utility\Dot.o )
+[  2 of 217] Compiling BuildFlags       ( BuildFlags.hs, dist\build\git-annex\git-annex-tmp\BuildFlags.o )
+[  3 of 217] Compiling Utility.Percentage ( Utility\Percentage.hs, dist\build\git-annex\git-annex-tmp\Utility\Percentage.o )
+[  4 of 217] Compiling Utility.Base64   ( Utility\Base64.hs, dist\build\git-annex\git-annex-tmp\Utility\Base64.o )
+[  5 of 217] Compiling Utility.JSONStream ( Utility\JSONStream.hs, dist\build\git-annex\git-annex-tmp\Utility\JSONStream.o )
+[  6 of 217] Compiling Git.Types        ( Git\Types.hs, dist\build\git-annex\git-annex-tmp\Git\Types.o )
+[  7 of 217] Compiling Utility.DataUnits ( Utility\DataUnits.hs, dist\build\git-annex\git-annex-tmp\Utility\DataUnits.o )
+[  8 of 217] Compiling Types.FileMatcher ( Types\FileMatcher.hs, dist\build\git-annex\git-annex-tmp\Types\FileMatcher.o )
+[  9 of 217] Compiling Types.BranchState ( Types\BranchState.hs, dist\build\git-annex\git-annex-tmp\Types\BranchState.o )
+[ 10 of 217] Compiling Messages.JSON    ( Messages\JSON.hs, dist\build\git-annex\git-annex-tmp\Messages\JSON.o )
+[ 11 of 217] Compiling Types.UUID       ( Types\UUID.hs, dist\build\git-annex\git-annex-tmp\Types\UUID.o )
+[ 12 of 217] Compiling Types.Group      ( Types\Group.hs, dist\build\git-annex\git-annex-tmp\Types\Group.o )
+[ 13 of 217] Compiling Utility.Shell    ( Utility\Shell.hs, dist\build\git-annex\git-annex-tmp\Utility\Shell.o )
+[ 14 of 217] Compiling Utility.QuickCheck ( Utility\QuickCheck.hs, dist\build\git-annex\git-annex-tmp\Utility\QuickCheck.o )
+[ 15 of 217] Compiling Utility.PartialPrelude ( Utility\PartialPrelude.hs, dist\build\git-annex\git-annex-tmp\Utility\PartialPrelude.o )
+[ 16 of 217] Compiling Utility.HumanTime ( Utility\HumanTime.hs, dist\build\git-annex\git-annex-tmp\Utility\HumanTime.o )
+[ 17 of 217] Compiling Utility.FileSystemEncoding ( Utility\FileSystemEncoding.hs, dist\build\git-annex\git-annex-tmp\Utility\FileSystemEncoding.o )
+[ 18 of 217] Compiling Utility.Touch    ( dist\build\git-annex\git-annex-tmp\Utility\Touch.hs, dist\build\git-annex\git-annex-tmp\Utility\Touch.o )
+
+UtilityTouch.hsc:17:1: Warning:
+    The import of `Utility.FileSystemEncoding' is redundant
+      except perhaps to import instances from `Utility.FileSystemEncoding'
+    To import instances alone, use: import Utility.FileSystemEncoding()
+
+UtilityTouch.hsc:19:1: Warning:
+    The import of `Foreign' is redundant
+      except perhaps to import instances from `Foreign'
+    To import instances alone, use: import Foreign()
+
+UtilityTouch.hsc:21:1: Warning:
+    The import of `Control.Monad' is redundant
+      except perhaps to import instances from `Control.Monad'
+    To import instances alone, use: import Control.Monad()
+[ 19 of 217] Compiling Utility.Applicative ( Utility\Applicative.hs, dist\build\git-annex\git-annex-tmp\Utility\Applicative.o )
+[ 20 of 217] Compiling Utility.Monad    ( Utility\Monad.hs, dist\build\git-annex\git-annex-tmp\Utility\Monad.o )
+[ 21 of 217] Compiling Utility.Exception ( Utility\Exception.hs, dist\build\git-annex\git-annex-tmp\Utility\Exception.o )
+[ 22 of 217] Compiling Utility.Tmp      ( Utility\Tmp.hs, dist\build\git-annex\git-annex-tmp\Utility\Tmp.o )
+[ 23 of 217] Compiling Utility.Env      ( Utility\Env.hs, dist\build\git-annex\git-annex-tmp\Utility\Env.o )
+[ 24 of 217] Compiling Utility.UserInfo ( Utility\UserInfo.hs, dist\build\git-annex\git-annex-tmp\Utility\UserInfo.o )
+[ 25 of 217] Compiling Utility.Misc     ( Utility\Misc.hs, dist\build\git-annex\git-annex-tmp\Utility\Misc.o )
+
+Utility\Misc.hs:22:1: Warning:
+    The import of `Utility.Exception' is redundant
+      except perhaps to import instances from `Utility.Exception'
+    To import instances alone, use: import Utility.Exception()
+[ 26 of 217] Compiling Utility.Process  ( Utility\Process.hs, dist\build\git-annex\git-annex-tmp\Utility\Process.o )
+
+Utility\Process.hs:44:1: Warning:
+    The import of `Data.Maybe' is redundant
+      except perhaps to import instances from `Data.Maybe'
+    To import instances alone, use: import Data.Maybe()
+[ 27 of 217] Compiling Utility.Network  ( Utility\Network.hs, dist\build\git-annex\git-annex-tmp\Utility\Network.o )
+[ 28 of 217] Compiling Utility.Verifiable ( Utility\Verifiable.hs, dist\build\git-annex\git-annex-tmp\Utility\Verifiable.o )
+[ 29 of 217] Compiling Utility.Format   ( Utility\Format.hs, dist\build\git-annex\git-annex-tmp\Utility\Format.o )
+[ 30 of 217] Compiling Build.SysConfig  ( Build\SysConfig.hs, dist\build\git-annex\git-annex-tmp\Build\SysConfig.o )
+[ 31 of 217] Compiling Utility.Path     ( Utility\Path.hs, dist\build\git-annex\git-annex-tmp\Utility\Path.o )
+[ 32 of 217] Compiling Config.Cost      ( Config\Cost.hs, dist\build\git-annex\git-annex-tmp\Config\Cost.o )
+[ 33 of 217] Compiling Types.Messages   ( Types\Messages.hs, dist\build\git-annex\git-annex-tmp\Types\Messages.o )
+[ 34 of 217] Compiling Types.TrustLevel ( Types\TrustLevel.hs, dist\build\git-annex\git-annex-tmp\Types\TrustLevel.o )
+[ 35 of 217] Compiling Utility.SafeCommand ( Utility\SafeCommand.hs, dist\build\git-annex\git-annex-tmp\Utility\SafeCommand.o )
+[ 36 of 217] Compiling Utility.Directory ( Utility\Directory.hs, dist\build\git-annex\git-annex-tmp\Utility\Directory.o )
+[ 37 of 217] Compiling Utility.ExternalSHA ( Utility\ExternalSHA.hs, dist\build\git-annex\git-annex-tmp\Utility\ExternalSHA.o )
+[ 38 of 217] Compiling Common           ( Common.hs, dist\build\git-annex\git-annex-tmp\Common.o )
+[ 39 of 217] Compiling Git.Filename     ( Git\Filename.hs, dist\build\git-annex\git-annex-tmp\Git\Filename.o )
+[ 40 of 217] Compiling Logs.UUIDBased   ( Logs\UUIDBased.hs, dist\build\git-annex\git-annex-tmp\Logs\UUIDBased.o )
+[ 41 of 217] Compiling Types.Key        ( Types\Key.hs, dist\build\git-annex\git-annex-tmp\Types\Key.o )
+[ 42 of 217] Compiling Utility.FileMode ( Utility\FileMode.hs, dist\build\git-annex\git-annex-tmp\Utility\FileMode.o )
+[ 43 of 217] Compiling Git              ( Git.hs, dist\build\git-annex\git-annex-tmp\Git.o )
+
+Git.hs:41:1: Warning:
+    The import of `Utility.FileMode' is redundant
+      except perhaps to import instances from `Utility.FileMode'
+    To import instances alone, use: import Utility.FileMode()
+[ 44 of 217] Compiling Utility.InodeCache ( Utility\InodeCache.hs, dist\build\git-annex\git-annex-tmp\Utility\InodeCache.o )
+[ 45 of 217] Compiling Types.KeySource  ( Types\KeySource.hs, dist\build\git-annex\git-annex-tmp\Types\KeySource.o )
+[ 46 of 217] Compiling Types.Backend    ( Types\Backend.hs, dist\build\git-annex\git-annex-tmp\Types\Backend.o )
+[ 47 of 217] Compiling Utility.Gpg      ( Utility\Gpg.hs, dist\build\git-annex\git-annex-tmp\Utility\Gpg.o )
+
+Utility\Gpg.hs:12:1: Warning:
+    The import of `System.Posix.Types' is redundant
+      except perhaps to import instances from `System.Posix.Types'
+    To import instances alone, use: import System.Posix.Types()
+
+Utility\Gpg.hs:14:1: Warning:
+    The import of `Control.Concurrent' is redundant
+      except perhaps to import instances from `Control.Concurrent'
+    To import instances alone, use: import Control.Concurrent()
+
+Utility\Gpg.hs:15:1: Warning:
+    The import of `Control.Exception' is redundant
+      except perhaps to import instances from `Control.Exception'
+    To import instances alone, use: import Control.Exception()
+
+Utility\Gpg.hs:16:1: Warning:
+    The import of `System.Path' is redundant
+      except perhaps to import instances from `System.Path'
+    To import instances alone, use: import System.Path()
+
+Utility\Gpg.hs:19:1: Warning:
+    The import of `Utility.Env' is redundant
+      except perhaps to import instances from `Utility.Env'
+    To import instances alone, use: import Utility.Env()
+[ 48 of 217] Compiling Types.Crypto     ( Types\Crypto.hs, dist\build\git-annex\git-annex-tmp\Types\Crypto.o )
+[ 49 of 217] Compiling Utility.Matcher  ( Utility\Matcher.hs, dist\build\git-annex\git-annex-tmp\Utility\Matcher.o )
+[ 50 of 217] Compiling Utility.Metered  ( Utility\Metered.hs, dist\build\git-annex\git-annex-tmp\Utility\Metered.o )
+[ 51 of 217] Compiling Git.FilePath     ( Git\FilePath.hs, dist\build\git-annex\git-annex-tmp\Git\FilePath.o )
+[ 52 of 217] Compiling Git.Url          ( Git\Url.hs, dist\build\git-annex\git-annex-tmp\Git\Url.o )
+[ 53 of 217] Compiling Git.Construct    ( Git\Construct.hs, dist\build\git-annex\git-annex-tmp\Git\Construct.o )
+[ 54 of 217] Compiling Git.Config       ( Git\Config.hs, dist\build\git-annex\git-annex-tmp\Git\Config.o )
+[ 55 of 217] Compiling Git.CurrentRepo  ( Git\CurrentRepo.hs, dist\build\git-annex\git-annex-tmp\Git\CurrentRepo.o )
+
+Git\CurrentRepo.hs:16:1: Warning:
+    The import of `Utility.Env' is redundant
+      except perhaps to import instances from `Utility.Env'
+    To import instances alone, use: import Utility.Env()
+
+Git\CurrentRepo.hs:43:17: Warning: Defined but not used: `s'
+[ 56 of 217] Compiling Git.SharedRepository ( Git\SharedRepository.hs, dist\build\git-annex\git-annex-tmp\Git\SharedRepository.o )
+[ 57 of 217] Compiling Types.GitConfig  ( Types\GitConfig.hs, dist\build\git-annex\git-annex-tmp\Types\GitConfig.o )
+[ 58 of 217] Compiling Types.Remote     ( Types\Remote.hs, dist\build\git-annex\git-annex-tmp\Types\Remote.o )
+[ 59 of 217] Compiling Types.StandardGroups ( Types\StandardGroups.hs, dist\build\git-annex\git-annex-tmp\Types\StandardGroups.o )
+[ 60 of 217] Compiling Utility.Gpg.Types ( Utility\Gpg\Types.hs, dist\build\git-annex\git-annex-tmp\Utility\Gpg\Types.o )
+[ 61 of 217] Compiling Git.Sha          ( Git\Sha.hs, dist\build\git-annex\git-annex-tmp\Git\Sha.o )
+[ 62 of 217] Compiling Utility.CoProcess ( Utility\CoProcess.hs, dist\build\git-annex\git-annex-tmp\Utility\CoProcess.o )
+[ 63 of 217] Compiling Git.Command      ( Git\Command.hs, dist\build\git-annex\git-annex-tmp\Git\Command.o )
+[ 64 of 217] Compiling Git.LsFiles      ( Git\LsFiles.hs, dist\build\git-annex\git-annex-tmp\Git\LsFiles.o )
+[ 65 of 217] Compiling Git.CatFile      ( Git\CatFile.hs, dist\build\git-annex\git-annex-tmp\Git\CatFile.o )
+[ 66 of 217] Compiling Git.UpdateIndex  ( Git\UpdateIndex.hs, dist\build\git-annex\git-annex-tmp\Git\UpdateIndex.o )
+[ 67 of 217] Compiling Git.Queue        ( Git\Queue.hs, dist\build\git-annex\git-annex-tmp\Git\Queue.o )
+[ 68 of 217] Compiling Git.Version      ( Git\Version.hs, dist\build\git-annex\git-annex-tmp\Git\Version.o )
+[ 69 of 217] Compiling Git.CheckAttr    ( Git\CheckAttr.hs, dist\build\git-annex\git-annex-tmp\Git\CheckAttr.o )
+[ 70 of 217] Compiling Annex            ( Annex.hs, dist\build\git-annex\git-annex-tmp\Annex.o )
+[ 71 of 217] Compiling Types.Option     ( Types\Option.hs, dist\build\git-annex\git-annex-tmp\Types\Option.o )
+[ 72 of 217] Compiling Types            ( Types.hs, dist\build\git-annex\git-annex-tmp\Types.o )
+[ 73 of 217] Compiling Locations        ( Locations.hs, dist\build\git-annex\git-annex-tmp\Locations.o )
+[ 74 of 217] Compiling Messages         ( Messages.hs, dist\build\git-annex\git-annex-tmp\Messages.o )
+[ 75 of 217] Compiling Common.Annex     ( Common\Annex.hs, dist\build\git-annex\git-annex-tmp\Common\Annex.o )
+[ 76 of 217] Compiling Crypto           ( Crypto.hs, dist\build\git-annex\git-annex-tmp\Crypto.o )
+[ 77 of 217] Compiling Annex.CatFile    ( Annex\CatFile.hs, dist\build\git-annex\git-annex-tmp\Annex\CatFile.o )
+[ 78 of 217] Compiling Backend.SHA      ( Backend\SHA.hs, dist\build\git-annex\git-annex-tmp\Backend\SHA.o )
+[ 79 of 217] Compiling Backend.WORM     ( Backend\WORM.hs, dist\build\git-annex\git-annex-tmp\Backend\WORM.o )
+[ 80 of 217] Compiling Backend.URL      ( Backend\URL.hs, dist\build\git-annex\git-annex-tmp\Backend\URL.o )
+[ 81 of 217] Compiling Annex.Exception  ( Annex\Exception.hs, dist\build\git-annex\git-annex-tmp\Annex\Exception.o )
+[ 82 of 217] Compiling Remote.Helper.Special ( Remote\Helper\Special.hs, dist\build\git-annex\git-annex-tmp\Remote\Helper\Special.o )
+[ 83 of 217] Compiling Remote.Helper.Chunked ( Remote\Helper\Chunked.hs, dist\build\git-annex\git-annex-tmp\Remote\Helper\Chunked.o )
+[ 84 of 217] Compiling Annex.Environment ( Annex\Environment.hs, dist\build\git-annex\git-annex-tmp\Annex\Environment.o )
+
+Annex\Environment.hs:13:1: Warning:
+    The import of `Utility.Env' is redundant
+      except perhaps to import instances from `Utility.Env'
+    To import instances alone, use: import Utility.Env()
+
+Annex\Environment.hs:14:1: Warning:
+    The import of `Utility.UserInfo' is redundant
+      except perhaps to import instances from `Utility.UserInfo'
+    To import instances alone, use: import Utility.UserInfo()
+[ 85 of 217] Compiling Types.Command    ( Types\Command.hs, dist\build\git-annex\git-annex-tmp\Types\Command.o )
+[ 86 of 217] Compiling Usage            ( Usage.hs, dist\build\git-annex\git-annex-tmp\Usage.o )
+[ 87 of 217] Compiling Annex.Queue      ( Annex\Queue.hs, dist\build\git-annex\git-annex-tmp\Annex\Queue.o )
+[ 88 of 217] Compiling Annex.BranchState ( Annex\BranchState.hs, dist\build\git-annex\git-annex-tmp\Annex\BranchState.o )
+[ 89 of 217] Compiling Remote.Helper.Encryptable ( Remote\Helper\Encryptable.hs, dist\build\git-annex\git-annex-tmp\Remote\Helper\Encryptable.o )
+[ 90 of 217] Compiling Fields           ( Fields.hs, dist\build\git-annex\git-annex-tmp\Fields.o )
+[ 91 of 217] Compiling Annex.CheckAttr  ( Annex\CheckAttr.hs, dist\build\git-annex\git-annex-tmp\Annex\CheckAttr.o )
+[ 92 of 217] Compiling Git.HashObject   ( Git\HashObject.hs, dist\build\git-annex\git-annex-tmp\Git\HashObject.o )
+[ 93 of 217] Compiling Annex.Link       ( Annex\Link.hs, dist\build\git-annex\git-annex-tmp\Annex\Link.o )
+[ 94 of 217] Compiling Utility.CopyFile ( Utility\CopyFile.hs, dist\build\git-annex\git-annex-tmp\Utility\CopyFile.o )
+[ 95 of 217] Compiling Git.Ref          ( Git\Ref.hs, dist\build\git-annex\git-annex-tmp\Git\Ref.o )
+[ 96 of 217] Compiling Git.Branch       ( Git\Branch.hs, dist\build\git-annex\git-annex-tmp\Git\Branch.o )
+[ 97 of 217] Compiling Git.UnionMerge   ( Git\UnionMerge.hs, dist\build\git-annex\git-annex-tmp\Git\UnionMerge.o )
+[ 98 of 217] Compiling Git.Merge        ( Git\Merge.hs, dist\build\git-annex\git-annex-tmp\Git\Merge.o )
+[ 99 of 217] Compiling Git.DiffTree     ( Git\DiffTree.hs, dist\build\git-annex\git-annex-tmp\Git\DiffTree.o )
+[100 of 217] Compiling Utility.DiskFree ( Utility\DiskFree.hs, dist\build\git-annex\git-annex-tmp\Utility\DiskFree.o )
+[101 of 217] Compiling Utility.Url      ( Utility\Url.hs, dist\build\git-annex\git-annex-tmp\Utility\Url.o )
+[102 of 217] Compiling Utility.Rsync    ( Utility\Rsync.hs, dist\build\git-annex\git-annex-tmp\Utility\Rsync.o )
+[103 of 217] Compiling Utility.LogFile  ( Utility\LogFile.hs, dist\build\git-annex\git-annex-tmp\Utility\LogFile.o )
+
+Utility\LogFile.hs:67:1: Warning:
+    Top-level binding with no type signature:
+      redir :: forall t t1 t2. t -> t1 -> t2
+[104 of 217] Compiling Utility.Daemon   ( Utility\Daemon.hs, dist\build\git-annex\git-annex-tmp\Utility\Daemon.o )
+
+Utility\Daemon.hs:13:1: Warning:
+    The import of `Utility.LogFile' is redundant
+      except perhaps to import instances from `Utility.LogFile'
+    To import instances alone, use: import Utility.LogFile()
+
+Utility\Daemon.hs:19:1: Warning:
+    The import of `System.Posix.Types' is redundant
+      except perhaps to import instances from `System.Posix.Types'
+    To import instances alone, use: import System.Posix.Types()
+[105 of 217] Compiling Git.AutoCorrect  ( Git\AutoCorrect.hs, dist\build\git-annex\git-annex-tmp\Git\AutoCorrect.o )
+[106 of 217] Compiling Utility.ThreadScheduler ( Utility\ThreadScheduler.hs, dist\build\git-annex\git-annex-tmp\Utility\ThreadScheduler.o )
+[107 of 217] Compiling Git.LsTree       ( Git\LsTree.hs, dist\build\git-annex\git-annex-tmp\Git\LsTree.o )
+[108 of 217] Compiling Config           ( Config.hs, dist\build\git-annex\git-annex-tmp\Config.o )
+[109 of 217] Compiling Annex.UUID       ( Annex\UUID.hs, dist\build\git-annex\git-annex-tmp\Annex\UUID.o )
+[110 of 217] Compiling Backend          ( Backend.hs, dist\build\git-annex\git-annex-tmp\Backend.o )
+[111 of 217] Compiling Annex.Version    ( Annex\Version.hs, dist\build\git-annex\git-annex-tmp\Annex\Version.o )
+[112 of 217] Compiling Annex.Perms      ( Annex\Perms.hs, dist\build\git-annex\git-annex-tmp\Annex\Perms.o )
+[113 of 217] Compiling Logs.Transfer    ( Logs\Transfer.hs, dist\build\git-annex\git-annex-tmp\Logs\Transfer.o )
+
+Logs\Transfer.hs:126:20: Warning: Defined but not used: `mode'
+
+Logs\Transfer.hs:146:29: Warning: Defined but not used: `fd'
+[114 of 217] Compiling Annex.ReplaceFile ( Annex\ReplaceFile.hs, dist\build\git-annex\git-annex-tmp\Annex\ReplaceFile.o )
+[115 of 217] Compiling Annex.Journal    ( Annex\Journal.hs, dist\build\git-annex\git-annex-tmp\Annex\Journal.o )
+
+Annex\Journal.hs:89:23: Warning: Defined but not used: `mode'
+[116 of 217] Compiling Annex.Branch     ( Annex\Branch.hs, dist\build\git-annex\git-annex-tmp\Annex\Branch.o )
+[117 of 217] Compiling Logs.Remote      ( Logs\Remote.hs, dist\build\git-annex\git-annex-tmp\Logs\Remote.o )
+[118 of 217] Compiling Logs.Presence    ( Logs\Presence.hs, dist\build\git-annex\git-annex-tmp\Logs\Presence.o )
+[119 of 217] Compiling Logs.UUID        ( Logs\UUID.hs, dist\build\git-annex\git-annex-tmp\Logs\UUID.o )
+[120 of 217] Compiling Logs.Location    ( Logs\Location.hs, dist\build\git-annex\git-annex-tmp\Logs\Location.o )
+[121 of 217] Compiling Annex.Content.Direct ( Annex\Content\Direct.hs, dist\build\git-annex\git-annex-tmp\Annex\Content\Direct.o )
+[122 of 217] Compiling Annex.Content    ( Annex\Content.hs, dist\build\git-annex\git-annex-tmp\Annex\Content.o )
+
+Annex\Content.hs:50:1: Warning:
+    The import of `Annex.Exception' is redundant
+      except perhaps to import instances from `Annex.Exception'
+    To import instances alone, use: import Annex.Exception()
+
+Annex\Content.hs:89:21: Warning: Defined but not used: `f'
+
+Annex\Content.hs:96:21: Warning: Defined but not used: `h'
+
+Annex\Content.hs:106:9: Warning: Defined but not used: `is_locked'
+
+Annex\Content.hs:113:13: Warning: Defined but not used: `key'
+[123 of 217] Compiling Annex.Direct     ( Annex\Direct.hs, dist\build\git-annex\git-annex-tmp\Annex\Direct.o )
+[124 of 217] Compiling Init             ( Init.hs, dist\build\git-annex\git-annex-tmp\Init.o )
+
+Init.hs:29:1: Warning:
+    The import of `Utility.UserInfo' is redundant
+      except perhaps to import instances from `Utility.UserInfo'
+    To import instances alone, use: import Utility.UserInfo()
+
+Init.hs:31:1: Warning:
+    The import of `Utility.FileMode' is redundant
+      except perhaps to import instances from `Utility.FileMode'
+    To import instances alone, use: import Utility.FileMode()
+[125 of 217] Compiling Logs.Web         ( Logs\Web.hs, dist\build\git-annex\git-annex-tmp\Logs\Web.o )
+[126 of 217] Compiling Logs.Group       ( Logs\Group.hs, dist\build\git-annex\git-annex-tmp\Logs\Group.o )
+[127 of 217] Compiling Upgrade.V2       ( Upgrade\V2.hs, dist\build\git-annex\git-annex-tmp\Upgrade\V2.o )
+[128 of 217] Compiling Upgrade          ( Upgrade.hs, dist\build\git-annex\git-annex-tmp\Upgrade.o )
+[129 of 217] Compiling Creds            ( Creds.hs, dist\build\git-annex\git-annex-tmp\Creds.o )
+
+Creds.hs:18:1: Warning:
+    The import of `Utility.Env' is redundant
+      except perhaps to import instances from `Utility.Env'
+    To import instances alone, use: import Utility.Env()
+[130 of 217] Compiling Remote.Helper.AWS ( Remote\Helper\AWS.hs, dist\build\git-annex\git-annex-tmp\Remote\Helper\AWS.o )
+[131 of 217] Compiling Annex.LockPool   ( Annex\LockPool.hs, dist\build\git-annex\git-annex-tmp\Annex\LockPool.o )
+
+Annex\LockPool.hs:17:1: Warning:
+    The import of `Annex.Perms' is redundant
+      except perhaps to import instances from `Annex.Perms'
+    To import instances alone, use: import Annex.Perms()
+
+Annex\LockPool.hs:39:12: Warning: Defined but not used: `fd'
+[132 of 217] Compiling Remote.Helper.Hooks ( Remote\Helper\Hooks.hs, dist\build\git-annex\git-annex-tmp\Remote\Helper\Hooks.o )
+
+Remote\Helper\Hooks.hs:18:1: Warning:
+    The import of `Annex.Perms' is redundant
+      except perhaps to import instances from `Annex.Perms'
+    To import instances alone, use: import Annex.Perms()
+
+Remote\Helper\Hooks.hs:74:17: Warning: Defined but not used: `lck'
+[133 of 217] Compiling Remote.S3        ( Remote\S3.hs, dist\build\git-annex\git-annex-tmp\Remote\S3.o )
+[134 of 217] Compiling Remote.Directory ( Remote\Directory.hs, dist\build\git-annex\git-annex-tmp\Remote\Directory.o )
+[135 of 217] Compiling Remote.Web       ( Remote\Web.hs, dist\build\git-annex\git-annex-tmp\Remote\Web.o )
+[136 of 217] Compiling Remote.WebDAV    ( Remote\WebDAV.hs, dist\build\git-annex\git-annex-tmp\Remote\WebDAV.o )
+[137 of 217] Compiling Remote.Glacier   ( Remote\Glacier.hs, dist\build\git-annex\git-annex-tmp\Remote\Glacier.o )
+[138 of 217] Compiling Remote.Hook      ( Remote\Hook.hs, dist\build\git-annex\git-annex-tmp\Remote\Hook.o )
+[139 of 217] Compiling Annex.Ssh        ( Annex\Ssh.hs, dist\build\git-annex\git-annex-tmp\Annex\Ssh.o )
+
+Annex\Ssh.hs:21:1: Warning:
+    The import of `Annex.Perms' is redundant
+      except perhaps to import instances from `Annex.Perms'
+    To import instances alone, use: import Annex.Perms()
+[140 of 217] Compiling Remote.Rsync     ( Remote\Rsync.hs, dist\build\git-annex\git-annex-tmp\Remote\Rsync.o )
+[141 of 217] Compiling Remote.Helper.Ssh ( Remote\Helper\Ssh.hs, dist\build\git-annex\git-annex-tmp\Remote\Helper\Ssh.o )
+[142 of 217] Compiling Remote.Git       ( Remote\Git.hs, dist\build\git-annex\git-annex-tmp\Remote\Git.o )
+
+Remote\Git.hs:20:1: Warning:
+    The import of `Utility.CopyFile' is redundant
+      except perhaps to import instances from `Utility.CopyFile'
+    To import instances alone, use: import Utility.CopyFile()
+
+Remote\Git.hs:360:21: Warning: Defined but not used: `r'
+
+Remote\Git.hs:360:23: Warning: Defined but not used: `key'
+
+Remote\Git.hs:360:27: Warning: Defined but not used: `file'
+[143 of 217] Compiling Remote.Bup       ( Remote\Bup.hs, dist\build\git-annex\git-annex-tmp\Remote\Bup.o )
+[144 of 217] Compiling Remote.List      ( Remote\List.hs, dist\build\git-annex\git-annex-tmp\Remote\List.o )
+[145 of 217] Compiling Logs.Trust       ( Logs\Trust.hs, dist\build\git-annex\git-annex-tmp\Logs\Trust.o )
+[146 of 217] Compiling Remote           ( Remote.hs, dist\build\git-annex\git-annex-tmp\Remote.o )
+[147 of 217] Compiling Limit            ( Limit.hs, dist\build\git-annex\git-annex-tmp\Limit.o )
+[148 of 217] Compiling Option           ( Option.hs, dist\build\git-annex\git-annex-tmp\Option.o )
+[149 of 217] Compiling Annex.FileMatcher ( Annex\FileMatcher.hs, dist\build\git-annex\git-annex-tmp\Annex\FileMatcher.o )
+[150 of 217] Compiling Logs.PreferredContent ( Logs\PreferredContent.hs, dist\build\git-annex\git-annex-tmp\Logs\PreferredContent.o )
+[151 of 217] Compiling Annex.Wanted     ( Annex\Wanted.hs, dist\build\git-annex\git-annex-tmp\Annex\Wanted.o )
+[152 of 217] Compiling Seek             ( Seek.hs, dist\build\git-annex\git-annex-tmp\Seek.o )
+[153 of 217] Compiling Checks           ( Checks.hs, dist\build\git-annex\git-annex-tmp\Checks.o )
+[154 of 217] Compiling Command          ( Command.hs, dist\build\git-annex\git-annex-tmp\Command.o )
+[155 of 217] Compiling Logs.Unused      ( Logs\Unused.hs, dist\build\git-annex\git-annex-tmp\Logs\Unused.o )
+[156 of 217] Compiling CmdLine          ( CmdLine.hs, dist\build\git-annex\git-annex-tmp\CmdLine.o )
+[157 of 217] Compiling Command.ConfigList ( Command\ConfigList.hs, dist\build\git-annex\git-annex-tmp\Command\ConfigList.o )
+[158 of 217] Compiling Command.InAnnex  ( Command\InAnnex.hs, dist\build\git-annex\git-annex-tmp\Command\InAnnex.o )
+[159 of 217] Compiling Command.DropKey  ( Command\DropKey.hs, dist\build\git-annex\git-annex-tmp\Command\DropKey.o )
+[160 of 217] Compiling Command.SendKey  ( Command\SendKey.hs, dist\build\git-annex\git-annex-tmp\Command\SendKey.o )
+[161 of 217] Compiling Command.RecvKey  ( Command\RecvKey.hs, dist\build\git-annex\git-annex-tmp\Command\RecvKey.o )
+[162 of 217] Compiling Command.TransferInfo ( Command\TransferInfo.hs, dist\build\git-annex\git-annex-tmp\Command\TransferInfo.o )
+[163 of 217] Compiling Command.Commit   ( Command\Commit.hs, dist\build\git-annex\git-annex-tmp\Command\Commit.o )
+[164 of 217] Compiling GitAnnex.Options ( GitAnnex\Options.hs, dist\build\git-annex\git-annex-tmp\GitAnnex\Options.o )
+[165 of 217] Compiling Command.Unannex  ( Command\Unannex.hs, dist\build\git-annex\git-annex-tmp\Command\Unannex.o )
+[166 of 217] Compiling Command.FromKey  ( Command\FromKey.hs, dist\build\git-annex\git-annex-tmp\Command\FromKey.o )
+[167 of 217] Compiling Command.Fix      ( Command\Fix.hs, dist\build\git-annex\git-annex-tmp\Command\Fix.o )
+[168 of 217] Compiling Command.Init     ( Command\Init.hs, dist\build\git-annex\git-annex-tmp\Command\Init.o )
+[169 of 217] Compiling Command.Describe ( Command\Describe.hs, dist\build\git-annex\git-annex-tmp\Command\Describe.o )
+[170 of 217] Compiling Command.InitRemote ( Command\InitRemote.hs, dist\build\git-annex\git-annex-tmp\Command\InitRemote.o )
+[171 of 217] Compiling Command.EnableRemote ( Command\EnableRemote.hs, dist\build\git-annex\git-annex-tmp\Command\EnableRemote.o )
+[172 of 217] Compiling Command.Unused   ( Command\Unused.hs, dist\build\git-annex\git-annex-tmp\Command\Unused.o )
+[173 of 217] Compiling Command.Unlock   ( Command\Unlock.hs, dist\build\git-annex\git-annex-tmp\Command\Unlock.o )
+[174 of 217] Compiling Command.Lock     ( Command\Lock.hs, dist\build\git-annex\git-annex-tmp\Command\Lock.o )
+[175 of 217] Compiling Command.Find     ( Command\Find.hs, dist\build\git-annex\git-annex-tmp\Command\Find.o )
+[176 of 217] Compiling Command.Whereis  ( Command\Whereis.hs, dist\build\git-annex\git-annex-tmp\Command\Whereis.o )
+[177 of 217] Compiling Command.Log      ( Command\Log.hs, dist\build\git-annex\git-annex-tmp\Command\Log.o )
+[178 of 217] Compiling Command.Merge    ( Command\Merge.hs, dist\build\git-annex\git-annex-tmp\Command\Merge.o )
+[179 of 217] Compiling Command.Uninit   ( Command\Uninit.hs, dist\build\git-annex\git-annex-tmp\Command\Uninit.o )
+[180 of 217] Compiling Command.Trust    ( Command\Trust.hs, dist\build\git-annex\git-annex-tmp\Command\Trust.o )
+[181 of 217] Compiling Command.Untrust  ( Command\Untrust.hs, dist\build\git-annex\git-annex-tmp\Command\Untrust.o )
+[182 of 217] Compiling Command.Semitrust ( Command\Semitrust.hs, dist\build\git-annex\git-annex-tmp\Command\Semitrust.o )
+[183 of 217] Compiling Command.Dead     ( Command\Dead.hs, dist\build\git-annex\git-annex-tmp\Command\Dead.o )
+[184 of 217] Compiling Command.Group    ( Command\Group.hs, dist\build\git-annex\git-annex-tmp\Command\Group.o )
+[185 of 217] Compiling Command.Content  ( Command\Content.hs, dist\build\git-annex\git-annex-tmp\Command\Content.o )
+[186 of 217] Compiling Command.Ungroup  ( Command\Ungroup.hs, dist\build\git-annex\git-annex-tmp\Command\Ungroup.o )
+[187 of 217] Compiling Command.Vicfg    ( Command\Vicfg.hs, dist\build\git-annex\git-annex-tmp\Command\Vicfg.o )
+[188 of 217] Compiling Command.RmUrl    ( Command\RmUrl.hs, dist\build\git-annex\git-annex-tmp\Command\RmUrl.o )
+[189 of 217] Compiling Command.Map      ( Command\Map.hs, dist\build\git-annex\git-annex-tmp\Command\Map.o )
+[190 of 217] Compiling Command.Upgrade  ( Command\Upgrade.hs, dist\build\git-annex\git-annex-tmp\Command\Upgrade.o )
+[191 of 217] Compiling Command.Version  ( Command\Version.hs, dist\build\git-annex\git-annex-tmp\Command\Version.o )
+[192 of 217] Compiling Command.Test     ( Command\Test.hs, dist\build\git-annex\git-annex-tmp\Command\Test.o )
+[193 of 217] Compiling Command.Add      ( Command\Add.hs, dist\build\git-annex\git-annex-tmp\Command\Add.o )
+[194 of 217] Compiling Command.ReKey    ( Command\ReKey.hs, dist\build\git-annex\git-annex-tmp\Command\ReKey.o )
+[195 of 217] Compiling Command.AddUnused ( Command\AddUnused.hs, dist\build\git-annex\git-annex-tmp\Command\AddUnused.o )
+[196 of 217] Compiling Command.PreCommit ( Command\PreCommit.hs, dist\build\git-annex\git-annex-tmp\Command\PreCommit.o )
+[197 of 217] Compiling Command.Import   ( Command\Import.hs, dist\build\git-annex\git-annex-tmp\Command\Import.o )
+[198 of 217] Compiling Command.Drop     ( Command\Drop.hs, dist\build\git-annex\git-annex-tmp\Command\Drop.o )
+[199 of 217] Compiling Command.Move     ( Command\Move.hs, dist\build\git-annex\git-annex-tmp\Command\Move.o )
+[200 of 217] Compiling Command.Copy     ( Command\Copy.hs, dist\build\git-annex\git-annex-tmp\Command\Copy.o )
+[201 of 217] Compiling Command.Get      ( Command\Get.hs, dist\build\git-annex\git-annex-tmp\Command\Get.o )
+[202 of 217] Compiling Command.TransferKey ( Command\TransferKey.hs, dist\build\git-annex\git-annex-tmp\Command\TransferKey.o )
+[203 of 217] Compiling Command.DropUnused ( Command\DropUnused.hs, dist\build\git-annex\git-annex-tmp\Command\DropUnused.o )
+[204 of 217] Compiling Command.Fsck     ( Command\Fsck.hs, dist\build\git-annex\git-annex-tmp\Command\Fsck.o )
+[205 of 217] Compiling Command.Reinject ( Command\Reinject.hs, dist\build\git-annex\git-annex-tmp\Command\Reinject.o )
+[206 of 217] Compiling Command.Migrate  ( Command\Migrate.hs, dist\build\git-annex\git-annex-tmp\Command\Migrate.o )
+[207 of 217] Compiling Command.Status   ( Command\Status.hs, dist\build\git-annex\git-annex-tmp\Command\Status.o )
+[208 of 217] Compiling Command.Sync     ( Command\Sync.hs, dist\build\git-annex\git-annex-tmp\Command\Sync.o )
+[209 of 217] Compiling Command.Help     ( Command\Help.hs, dist\build\git-annex\git-annex-tmp\Command\Help.o )
+[210 of 217] Compiling Command.AddUrl   ( Command\AddUrl.hs, dist\build\git-annex\git-annex-tmp\Command\AddUrl.o )
+[211 of 217] Compiling Command.Direct   ( Command\Direct.hs, dist\build\git-annex\git-annex-tmp\Command\Direct.o )
+[212 of 217] Compiling Command.Indirect ( Command\Indirect.hs, dist\build\git-annex\git-annex-tmp\Command\Indirect.o )
+[213 of 217] Compiling Command.FuzzTest ( Command\FuzzTest.hs, dist\build\git-annex\git-annex-tmp\Command\FuzzTest.o )
+[214 of 217] Compiling Test             ( Test.hs, dist\build\git-annex\git-annex-tmp\Test.o )
+[215 of 217] Compiling GitAnnexShell    ( GitAnnexShell.hs, dist\build\git-annex\git-annex-tmp\GitAnnexShell.o )
+[216 of 217] Compiling GitAnnex         ( GitAnnex.hs, dist\build\git-annex\git-annex-tmp\GitAnnex.o )
+[217 of 217] Compiling Main             ( git-annex.hs, dist\build\git-annex\git-annex-tmp\Main.o )
+Linking dist\build\git-annex\git-annex.exe ...
++ cabal install nsis
+Resolving dependencies...
+All the requested packages are already installed:
+nsis-0.2.2
+Use --reinstall if you want to reinstall anyway.
++ ghc --make Build/NullSoftInstaller.hs
+[15 of 18] Compiling Build.SysConfig  ( Build\SysConfig.hs, Build\SysConfig.o )
+Linking Build\NullSoftInstaller.exe ...
++ withcyg Build/NullSoftInstaller.exe
++ PATH='/c/Program Files (x86)/Haskell Platform/2012.4.0.0/bin:/c/Program Files (x86)/Haskell Platform/2012.4.0.0/lib/extralibs/bin:/c/Program Files (x86)/NSIS:/home/Oliver/bin:.:/usr/local/bin:/mingw/bin:/bin:/c/Program Files (x86)/Haskell/bin:/c/Program Files (x86)/Haskell Platform/2013.2.0.0/lib/extralibs/bin:/c/Program Files (x86)/Haskell Platform/2013.2.0.0/bin:/c/Program Files (x86)/AMD APP/bin/x86_64:/c/Program Files (x86)/AMD APP/bin/x86:/c/Windows/system32:/c/Windows:/c/Windows/System32/Wbem:/c/Windows/System32/WindowsPowerShell/v1.0/:/c/Program Files (x86)/ATI Technologies/ATI.ACE/Core-Static:/c/Program Files (x86)/Windows Kits/8.0/Windows Performance Toolkit/:/c/Program Files/Microsoft/Web Platform Installer/:/c/Program Files (x86)/Haskell Platform/2013.2.0.0/mingw/bin:/c/Users/Oliver/AppData/Roaming/cabal/bin:/c/cygwin/bin'
++ Build/NullSoftInstaller.exe
+MakeNSIS v2.46 - Copyright 1995-2009 Contributors
+See the file COPYING for license details.
+Credits can be found in the Users Manual.
+
+Processing config: 
+Processing plugin dlls: "c:\Program Files (x86)\NSIS\Plugins\*.dll"
+ - AdvSplash::show
+ - Banner::destroy
+ - Banner::getWindow
+ - Banner::show
+ - BgImage::AddImage
+ - BgImage::AddText
+ - BgImage::Clear
+ - BgImage::Destroy
+ - BgImage::Redraw
+ - BgImage::SetBg
+ - BgImage::SetReturn
+ - BgImage::Sound
+ - Dialer::AttemptConnect
+ - Dialer::AutodialHangup
+ - Dialer::AutodialOnline
+ - Dialer::AutodialUnattended
+ - Dialer::GetConnectedState
+ - InstallOptions::dialog
+ - InstallOptions::initDialog
+ - InstallOptions::show
+ - LangDLL::LangDialog
+ - Math::Script
+ - NSISdl::download
+ - NSISdl::download_quiet
+ - Splash::show
+ - StartMenu::Init
+ - StartMenu::Select
+ - StartMenu::Show
+ - System::Alloc
+ - System::Call
+ - System::Copy
+ - System::Free
+ - System::Get
+ - System::Int64Op
+ - System::Store
+ - TypeLib::GetLibVersion
+ - TypeLib::Register
+ - TypeLib::UnRegister
+ - UserInfo::GetAccountType
+ - UserInfo::GetName
+ - UserInfo::GetOriginalAccountType
+ - VPatch::GetFileCRC32
+ - VPatch::GetFileMD5
+ - VPatch::vpatchfile
+ - nsDialogs::Create
+ - nsDialogs::CreateControl
+ - nsDialogs::CreateItem
+ - nsDialogs::CreateTimer
+ - nsDialogs::GetUserData
+ - nsDialogs::KillTimer
+ - nsDialogs::OnBack
+ - nsDialogs::OnChange
+ - nsDialogs::OnClick
+ - nsDialogs::OnNotify
+ - nsDialogs::SelectFileDialog
+ - nsDialogs::SelectFolderDialog
+ - nsDialogs::SetRTL
+ - nsDialogs::SetUserData
+ - nsDialogs::Show
+ - nsExec::Exec
+ - nsExec::ExecToLog
+ - nsExec::ExecToStack
+
+!define: "MUI_INSERT_NSISCONF"=""
+
+Changing directory to: "C:\MinGW\msys\1.0\home\Oliver\src\git-annex"
+
+Processing script file: "git-annex.nsi"
+!include: "c:\Program Files (x86)\NSIS\Include\MUI2.nsh"
+!include: "c:\Program Files (x86)\NSIS\Contrib\Modern UI 2\MUI2.nsh"
+NSIS Modern User Interface version 2.0 - Copyright 2002-2009 Joost Verburg (c:\Program Files (x86)\NSIS\Contrib\Modern UI 2\MUI2.nsh:8)
+!define: "MUI_INCLUDED"=""
+!define: "MUI_SYSVERSION"="2.0"
+!define: "MUI_VERBOSE"="3"
+!include: closed: "c:\Program Files (x86)\NSIS\Contrib\Modern UI 2\MUI2.nsh"
+!include: closed: "c:\Program Files (x86)\NSIS\Include\MUI2.nsh"
+Name: "git-annex"
+OutFile: "git-annex-installer.exe"
+InstallDir: "$PROGRAMFILES\Git\cmd"
+!insertmacro: MUI_PAGE_DIRECTORY
+!insertmacro: end of MUI_PAGE_DIRECTORY
+!insertmacro: MUI_PAGE_LICENSE
+!insertmacro: end of MUI_PAGEDECLARATION_LICENSE
+!insertmacro: end of MUI_PAGE_LICENSE
+!insertmacro: MUI_PAGE_INSTFILES
+!insertmacro: end of MUI_PAGE_INSTFILES
+!insertmacro: MUI_LANGUAGE
+!insertmacro: end of MUI_LANGUAGE
+Section: "main" ->(_sec10)
+SetOutPath: "$INSTDIR"
+File: "git-annex.exe" [compress] 7664822/31704766 bytes
+File: "git-annex-licenses.txt" [compress] 60509/237415 bytes
+File: "cp.exe" [compress] 62591/116736 bytes
+File: "xargs.exe" [compress] 17002/33280 bytes
+File: "rsync.exe" [compress] 188346/359424 bytes
+File: "ssh.exe" [compress] 157190/320000 bytes
+File: "wget.exe" [compress] 155666/349184 bytes
+File: "sha1sum.exe" [compress] 20337/39424 bytes
+File: "sha256sum.exe" [compress] 18279/37390 bytes
+File: "sha512sum.exe" [compress] 30393/92174 bytes
+File: "sha224sum.exe" [compress] 18279/37390 bytes
+File: "sha384sum.exe" [compress] 30392/92174 bytes
+File: "cygwin1.dll" [compress] 1036075/2874639 bytes
+File: "cygasn1-8.dll" [compress] 154881/459293 bytes
+File: "cygattr-1.dll" [compress] 5460/13838 bytes
+File: "cygheimbase-1.dll" [compress] 4441/10781 bytes
+File: "cygroken-18.dll" [compress] 26103/52253 bytes
+File: "cygcom_err-2.dll" [compress] 3984/9757 bytes
+File: "cygheimntlm-0.dll" [compress] 9018/20509 bytes
+File: "cygsqlite3-0.dll" [compress] 334366/601629 bytes
+File: "cygcrypt-0.dll" [compress] 3352/7182 bytes
+File: "cyghx509-5.dll" [compress] 95839/216093 bytes
+File: "cygssp-0.dll" [compress] 3377/8206 bytes
+File: "cygcrypto-1.0.0.dll" [compress] 652766/1553920 bytes
+File: "cygiconv-2.dll" [compress] 738899/1008654 bytes
+File: "cyggcc_s-1.dll" [compress] 40241/80910 bytes
+File: "cygintl-8.dll" [compress] 17737/35342 bytes
+File: "cygwind-0.dll" [compress] 73172/160797 bytes
+File: "cyggssapi-3.dll" [compress] 81662/183837 bytes
+File: "cygkrb5-26.dll" [compress] 170204/381469 bytes
+File: "cygz.dll" [compress] 42634/74269 bytes
+WriteUninstaller: "git-annex-uninstall.exe"
+SectionEnd
+Section: "Uninstall" ->(_sec11)
+Delete: /REBOOTOK "$INSTDIR\git-annex.exe"
+Delete: /REBOOTOK "$INSTDIR\git-annex-licenses.txt"
+Delete: /REBOOTOK "$INSTDIR\git-annex-uninstall.exe"
+Delete: /REBOOTOK "$INSTDIR\cp.exe"
+Delete: /REBOOTOK "$INSTDIR\xargs.exe"
+Delete: /REBOOTOK "$INSTDIR\rsync.exe"
+Delete: /REBOOTOK "$INSTDIR\ssh.exe"
+Delete: /REBOOTOK "$INSTDIR\wget.exe"
+Delete: /REBOOTOK "$INSTDIR\sha1sum.exe"
+Delete: /REBOOTOK "$INSTDIR\sha256sum.exe"
+Delete: /REBOOTOK "$INSTDIR\sha512sum.exe"
+Delete: /REBOOTOK "$INSTDIR\sha224sum.exe"
+Delete: /REBOOTOK "$INSTDIR\sha384sum.exe"
+Delete: /REBOOTOK "$INSTDIR\cygwin1.dll"
+Delete: /REBOOTOK "$INSTDIR\cygasn1-8.dll"
+Delete: /REBOOTOK "$INSTDIR\cygattr-1.dll"
+Delete: /REBOOTOK "$INSTDIR\cygheimbase-1.dll"
+Delete: /REBOOTOK "$INSTDIR\cygroken-18.dll"
+Delete: /REBOOTOK "$INSTDIR\cygcom_err-2.dll"
+Delete: /REBOOTOK "$INSTDIR\cygheimntlm-0.dll"
+Delete: /REBOOTOK "$INSTDIR\cygsqlite3-0.dll"
+Delete: /REBOOTOK "$INSTDIR\cygcrypt-0.dll"
+Delete: /REBOOTOK "$INSTDIR\cyghx509-5.dll"
+Delete: /REBOOTOK "$INSTDIR\cygssp-0.dll"
+Delete: /REBOOTOK "$INSTDIR\cygcrypto-1.0.0.dll"
+Delete: /REBOOTOK "$INSTDIR\cygiconv-2.dll"
+Delete: /REBOOTOK "$INSTDIR\cyggcc_s-1.dll"
+Delete: /REBOOTOK "$INSTDIR\cygintl-8.dll"
+Delete: /REBOOTOK "$INSTDIR\cygwind-0.dll"
+Delete: /REBOOTOK "$INSTDIR\cyggssapi-3.dll"
+Delete: /REBOOTOK "$INSTDIR\cygkrb5-26.dll"
+Delete: /REBOOTOK "$INSTDIR\cygz.dll"
+SectionEnd
+Function: ".onInit"
+IfFileExists: "$PROGRAMFILES\Git\cmd" ? _lbl3 : 0
+MessageBox: 48: "You need git installed to use git-annex. Looking at $PROGRAMFILES\Git\cmd , it seems to not be installed, or may be installed in another location. You can install git from http://git-scm.com/" (on IDOK goto 0)
+FunctionEnd
+
+Processed 1 file, writing output:
+Processing pages... Done!
+Removing unused resources... Done!
+Generating language tables... Done!
+Generating uninstaller... Done!
+
+Output: "C:\MinGW\msys\1.0\home\Oliver\src\git-annex\git-annex-installer.exe"
+Install: 4 pages (256 bytes), 1 section (1048 bytes), 98 instructions (2744 bytes), 133 strings (239643 bytes), 1 language table (278 bytes).
+Uninstall: 2 pages (128 bytes), 
+1 section (1048 bytes), 33 instructions (924 bytes), 72 strings (1154 bytes), 1 language table (194 bytes).
+
+Using zlib compression.
+
+EXE header size:               48640 / 35840 bytes
+Install code:                  63270 / 244345 bytes
+Install data:               11918141 / 41172867 bytes
+Uninstall code+data:           10537 / 14897 bytes
+CRC (0x090A4FD3):                  4 / 4 bytes
+
+Total size:                 12040592 / 41467953 bytes (29.0%)
++ rm -f last-incremental-failed
++ rm -rf .t
++ withcyg dist/build/git-annex/git-annex.exe test
++ PATH='/c/Program Files (x86)/Haskell Platform/2012.4.0.0/bin:/c/Program Files (x86)/Haskell Platform/2012.4.0.0/lib/extralibs/bin:/c/Program Files (x86)/NSIS:/home/Oliver/bin:.:/usr/local/bin:/mingw/bin:/bin:/c/Program Files (x86)/Haskell/bin:/c/Program Files (x86)/Haskell Platform/2013.2.0.0/lib/extralibs/bin:/c/Program Files (x86)/Haskell Platform/2013.2.0.0/bin:/c/Program Files (x86)/AMD APP/bin/x86_64:/c/Program Files (x86)/AMD APP/bin/x86:/c/Windows/system32:/c/Windows:/c/Windows/System32/Wbem:/c/Windows/System32/WindowsPowerShell/v1.0/:/c/Program Files (x86)/ATI Technologies/ATI.ACE/Core-Static:/c/Program Files (x86)/Windows Kits/8.0/Windows Performance Toolkit/:/c/Program Files/Microsoft/Web Platform Installer/:/c/Program Files (x86)/Haskell Platform/2013.2.0.0/mingw/bin:/c/Users/Oliver/AppData/Roaming/cabal/bin:/c/cygwin/bin'
++ dist/build/git-annex/git-annex.exe test
+(0 tests)         (1 test)        (2 tests)         (3 tests)         (4 tests)         (5 tests)         (6 tests)         (7 tests)         (8 tests)         (9 tests)         (10 tests)          (11 tests)          (12 tests)          (13 tests)          (14 tests)          (15 tests)          (16 tests)          (17 tests)          (18 tests)          (19 tests)          (20 tests)          (21 tests)          (22 tests)          (23 tests)          (24 tests)          (25 tests)          (26 tests)          (27 tests)          (28 tests)          (29 tests)          (30 tests)          (31 tests)          (32 tests)          (33 tests)          (34 tests)          (35 tests)          (36 tests)          (37 tests)          (38 tests)          (39 tests)          (40 tests)          (41 tests)          (42 tests)          (43 tests)          (44 tests)          (45 tests)          (46 tests)          (47 tests)          (48 tests)          (49 tests)          (50 tests)          (51 tests)          (52 tests)          (53 tests)          (54 tests)          (55 tests)          (56 tests)          (57 tests)          (58 tests)          (59 tests)          (60 tests)          (61 tests)          (62 tests)          (63 tests)          (64 tests)          (65 tests)          (66 tests)          (67 tests)          (68 tests)          (69 tests)          (70 tests)          (71 tests)          (72 tests)          (73 tests)          (74 tests)          (75 tests)          (76 tests)          (77 tests)          (78 tests)          (79 tests)          (80 tests)          (81 tests)          (82 tests)          (83 tests)          (84 tests)          (85 tests)          (86 tests)          (87 tests)          (88 tests)          (89 tests)          (90 tests)          (91 tests)          (92 tests)          (93 tests)          (94 tests)          (95 tests)          (96 tests)          (97 tests)          (98 tests)          (99 tests)          ----------------------------------------------------------------------
+First, some automated quick checks of properties ...
+----------------------------------------------------------------------
+prop_idempotent_deencode_git
++++ OK, passed 100 tests.
+(0 tests)         (1 test)        (2 tests)         (3 tests)         (4 tests)         (5 tests)         (6 tests)         (7 tests)         (8 tests)         (9 tests)         (10 tests)          (11 tests)          (12 tests)          (13 tests)          (14 tests)          (15 tests)          (16 tests)          (17 tests)          (18 tests)          (19 tests)          (20 tests)          (21 tests)          (22 tests)          (23 tests)          (24 tests)          (25 tests)          (26 tests)          (27 tests)          (28 tests)          (29 tests)          (30 tests)          (31 tests)          (32 tests)          (33 tests)          (34 tests)          (35 tests)          (36 tests)          (37 tests)          (38 tests)          (39 tests)          (40 tests)          (41 tests)          (42 tests)          (43 tests)          (44 tests)          (45 tests)          (46 tests)          (47 tests)          (48 tests)          (49 tests)          (50 tests)          (51 tests)          (52 tests)          (53 tests)          (54 tests)          (55 tests)          (56 tests)          (57 tests)          (58 tests)          (59 tests)          (60 tests)          (61 tests)          (62 tests)          (63 tests)          (64 tests)          (65 tests)          (66 tests)          (67 tests)          (68 tests)          (69 tests)          (70 tests)          (71 tests)          (72 tests)          (73 tests)          (74 tests)          (75 tests)          (76 tests)          (77 tests)          (78 tests)          (79 tests)          (80 tests)          (81 tests)          (82 tests)          (83 tests)          (84 tests)          (85 tests)          (86 tests)          (87 tests)          (88 tests)          (89 tests)          (90 tests)          (91 tests)          (92 tests)          (93 tests)          (94 tests)          (95 tests)          (96 tests)          (97 tests)          (98 tests)          (99 tests)          prop_idempotent_deencode
++++ OK, passed 100 tests.
+(0 tests)         (1 test)        (2 tests)         (3 tests)         (4 tests)         (5 tests)         (6 tests)         (7 tests)         (8 tests)         (9 tests)         (10 tests)          (11 tests)          (12 tests)          (13 tests)          (14 tests)          (15 tests)          (16 tests)          (17 tests)          (18 tests)          (19 tests)          (20 tests)          (21 tests)          (22 tests)          (23 tests)          (24 tests)          (25 tests)          (26 tests)          (27 tests)          (28 tests)          (29 tests)          (30 tests)          (31 tests)          (32 tests)          (33 tests)          (34 tests)          (35 tests)          (36 tests)          (37 tests)          (38 tests)          (39 tests)          (40 tests)          (41 tests)          (42 tests)          (43 tests)          (44 tests)          (45 tests)          (46 tests)          (47 tests)          (48 tests)          (49 tests)          (50 tests)          (51 tests)          (52 tests)          (53 tests)          (54 tests)          (55 tests)          (56 tests)          (57 tests)          (58 tests)          (59 tests)          (60 tests)          (61 tests)          (62 tests)          (63 tests)          (64 tests)          (65 tests)          (66 tests)          (67 tests)          (68 tests)          (69 tests)          (70 tests)          (71 tests)          (72 tests)          (73 tests)          (74 tests)          (75 tests)          (76 tests)          (77 tests)          (78 tests)          (79 tests)          (80 tests)          (81 tests)          (82 tests)          (83 tests)          (84 tests)          (85 tests)          (86 tests)          (87 tests)          (88 tests)          (89 tests)          (90 tests)          (91 tests)          (92 tests)          (93 tests)          (94 tests)          (95 tests)          (96 tests)          (97 tests)          (98 tests)          (99 tests)          prop_idempotent_fileKey
++++ OK, passed 100 tests.
+(0 tests)         (1 test)        (2 tests)         (3 tests)         (4 tests)         (5 tests)         (6 tests)         (7 tests)         (8 tests)         (9 tests)         (10 tests)          (11 tests)          (12 tests)          (13 tests)          (14 tests)          (15 tests)          (16 tests)          (17 tests)          (18 tests)          (19 tests)          (20 tests)          (21 tests)          (22 tests)          (23 tests)          (24 tests)          (25 tests)          (26 tests)          (27 tests)          (28 tests)          (29 tests)          (30 tests)          (31 tests)          (32 tests)          (33 tests)          (34 tests)          (35 tests)          (36 tests)          (37 tests)          (38 tests)          (39 tests)          (40 tests)          (41 tests)          (42 tests)          (43 tests)          (44 tests)          (45 tests)          (46 tests)          (47 tests)          (48 tests)          (49 tests)          (50 tests)          (51 tests)          (52 tests)          (53 tests)          (54 tests)          (55 tests)          (56 tests)          (57 tests)          (58 tests)          (59 tests)          (60 tests)          (61 tests)          (62 tests)          (63 tests)          (64 tests)          (65 tests)          (66 tests)          (67 tests)          (68 tests)          (69 tests)          (70 tests)          (71 tests)          (72 tests)          (73 tests)          (74 tests)          (75 tests)          (76 tests)          (77 tests)          (78 tests)          (79 tests)          (80 tests)          (81 tests)          (82 tests)          (83 tests)          (84 tests)          (85 tests)          (86 tests)          (87 tests)          (88 tests)          (89 tests)          (90 tests)          (91 tests)          (92 tests)          (93 tests)          (94 tests)          (95 tests)          (96 tests)          (97 tests)          (98 tests)          (99 tests)          prop_idempotent_key_encode
++++ OK, passed 100 tests.
+(0 tests)         (1 test)        (2 tests)         (3 tests)         (4 tests)         (5 tests)         (6 tests)         (7 tests)         (8 tests)         (9 tests)         (10 tests)          (11 tests)          (12 tests)          (13 tests)          (14 tests)          (15 tests)          (16 tests)          (17 tests)          (18 tests)          (19 tests)          (20 tests)          (21 tests)          (22 tests)          (23 tests)          (24 tests)          (25 tests)          (26 tests)          (27 tests)          (28 tests)          (29 tests)          (30 tests)          (31 tests)          (32 tests)          (33 tests)          (34 tests)          (35 tests)          (36 tests)          (37 tests)          (38 tests)          (39 tests)          (40 tests)          (41 tests)          (42 tests)          (43 tests)          (44 tests)          (45 tests)          (46 tests)          (47 tests)          (48 tests)          (49 tests)          (50 tests)          (51 tests)          (52 tests)          (53 tests)          (54 tests)          (55 tests)          (56 tests)          (57 tests)          (58 tests)          (59 tests)          (60 tests)          (61 tests)          (62 tests)          (63 tests)          (64 tests)          (65 tests)          (66 tests)          (67 tests)          (68 tests)          (69 tests)          (70 tests)          (71 tests)          (72 tests)          (73 tests)          (74 tests)          (75 tests)          (76 tests)          (77 tests)          (78 tests)          (79 tests)          (80 tests)          (81 tests)          (82 tests)          (83 tests)          (84 tests)          (85 tests)          (86 tests)          (87 tests)          (88 tests)          (89 tests)          (90 tests)          (91 tests)          (92 tests)          (93 tests)          (94 tests)          (95 tests)          (96 tests)          (97 tests)          (98 tests)          (99 tests)          prop_idempotent_shellEscape
++++ OK, passed 100 tests.
+(0 tests)         (1 test)        (2 tests)         (3 tests)         (4 tests)         (5 tests)         (6 tests)         (7 tests)         (8 tests)         (9 tests)         (10 tests)          (11 tests)          (12 tests)          (13 tests)          (14 tests)          (15 tests)          (16 tests)          (17 tests)          (18 tests)          (19 tests)          (20 tests)          (21 tests)          (22 tests)          (23 tests)          (24 tests)          (25 tests)          (26 tests)          (27 tests)          (28 tests)          (29 tests)          (30 tests)          (31 tests)          (32 tests)          (33 tests)          (34 tests)          (35 tests)          (36 tests)          (37 tests)          (38 tests)          (39 tests)          (40 tests)          (41 tests)          (42 tests)          (43 tests)          (44 tests)          (45 tests)          (46 tests)          (47 tests)          (48 tests)          (49 tests)          (50 tests)          (51 tests)          (52 tests)          (53 tests)          (54 tests)          (55 tests)          (56 tests)          (57 tests)          (58 tests)          (59 tests)          (60 tests)          (61 tests)          (62 tests)          (63 tests)          (64 tests)          (65 tests)          (66 tests)          (67 tests)          (68 tests)          (69 tests)          (70 tests)          (71 tests)          (72 tests)          (73 tests)          (74 tests)          (75 tests)          (76 tests)          (77 tests)          (78 tests)          (79 tests)          (80 tests)          (81 tests)          (82 tests)          (83 tests)          (84 tests)          (85 tests)          (86 tests)          (87 tests)          (88 tests)          (89 tests)          (90 tests)          (91 tests)          (92 tests)          (93 tests)          (94 tests)          (95 tests)          (96 tests)          (97 tests)          (98 tests)          (99 tests)          prop_idempotent_shellEscape_multiword
++++ OK, passed 100 tests.
+(0 tests)         (1 test)        (2 tests)         (3 tests)         (4 tests)         (5 tests)         (6 tests)         (7 tests)         (8 tests)         (9 tests)         (10 tests)          (11 tests)          (12 tests)          (13 tests)          (14 tests)          (15 tests)          (16 tests)          (17 tests)          (18 tests)          (19 tests)          (20 tests)          (21 tests)          (22 tests)          (23 tests)          (24 tests)          (25 tests)          (26 tests)          (27 tests)          (28 tests)          (29 tests)          (30 tests)          (31 tests)          (32 tests)          (33 tests)          (34 tests)          (35 tests)          (36 tests)          (37 tests)          (38 tests)          (39 tests)          (40 tests)          (41 tests)          (42 tests)          (43 tests)          (44 tests)          (45 tests)          (46 tests)          (47 tests)          (48 tests)          (49 tests)          (50 tests)          (51 tests)          (52 tests)          (53 tests)          (54 tests)          (55 tests)          (56 tests)          (57 tests)          (58 tests)          (59 tests)          (60 tests)          (61 tests)          (62 tests)          (63 tests)          (64 tests)          (65 tests)          (66 tests)          (67 tests)          (68 tests)          (69 tests)          (70 tests)          (71 tests)          (72 tests)          (73 tests)          (74 tests)          (75 tests)          (76 tests)          (77 tests)          (78 tests)          (79 tests)          (80 tests)          (81 tests)          (82 tests)          (83 tests)          (84 tests)          (85 tests)          (86 tests)          (87 tests)          (88 tests)          (89 tests)          (90 tests)          (91 tests)          (92 tests)          (93 tests)          (94 tests)          (95 tests)          (96 tests)          (97 tests)          (98 tests)          (99 tests)          prop_idempotent_configEscape
++++ OK, passed 100 tests.
+(0 tests)         (1 test)        (2 tests)         (3 tests)         (4 tests)         (5 tests)         (6 tests)         (7 tests)         (8 tests)         (9 tests)         (10 tests)          (11 tests)          (12 tests)          (13 tests)          (14 tests)          (15 tests)          (16 tests)          (17 tests)          (18 tests)          (19 tests)          (20 tests)          (21 tests)          (22 tests)          (23 tests)          (24 tests)          (25 tests)          (26 tests)          (27 tests)          (28 tests)          (29 tests)          (30 tests)          (31 tests)          (32 tests)          (33 tests)          (34 tests)          (35 tests)          (36 tests)          (37 tests)          (38 tests)          (39 tests)          (40 tests)          (41 tests)          (42 tests)          (43 tests)          (44 tests)          (45 tests)          (46 tests)          (47 tests)          (48 tests)          (49 tests)          (50 tests)          (51 tests)          (52 tests)          (53 tests)          (54 tests)          (55 tests)          (56 tests)          (57 tests)          (58 tests)          (59 tests)          (60 tests)          (61 tests)          (62 tests)          (63 tests)          (64 tests)          (65 tests)          (66 tests)          (67 tests)          (68 tests)          (69 tests)          (70 tests)          (71 tests)          (72 tests)          (73 tests)          (74 tests)          (75 tests)          (76 tests)          (77 tests)          (78 tests)          (79 tests)          (80 tests)          (81 tests)          (82 tests)          (83 tests)          (84 tests)          (85 tests)          (86 tests)          (87 tests)          (88 tests)          (89 tests)          (90 tests)          (91 tests)          (92 tests)          (93 tests)          (94 tests)          (95 tests)          (96 tests)          (97 tests)          (98 tests)          (99 tests)          prop_parse_show_Config
++++ OK, passed 100 tests.
+(0 tests)         (1 test)        (2 tests)         (3 tests)         (4 tests)         (5 tests)         (6 tests)         (7 tests)         (8 tests)         (9 tests)         (10 tests)          (11 tests)          (12 tests)          (13 tests)          (14 tests)          (15 tests)          (16 tests)          (17 tests)          (18 tests)          (19 tests)          (20 tests)          (21 tests)          (22 tests)          (23 tests)          (24 tests)          (25 tests)          (26 tests)          (27 tests)          (28 tests)          (29 tests)          (30 tests)          (31 tests)          (32 tests)          (33 tests)          (34 tests)          (35 tests)          (36 tests)          (37 tests)          (38 tests)          (39 tests)          (40 tests)          (41 tests)          (42 tests)          (43 tests)          (44 tests)          (45 tests)          (46 tests)          (47 tests)          (48 tests)          (49 tests)          (50 tests)          (51 tests)          (52 tests)          (53 tests)          (54 tests)          (55 tests)          (56 tests)          (57 tests)          (58 tests)          (59 tests)          (60 tests)          (61 tests)          (62 tests)          (63 tests)          (64 tests)          (65 tests)          (66 tests)          (67 tests)          (68 tests)          (69 tests)          (70 tests)          (71 tests)          (72 tests)          (73 tests)          (74 tests)          (75 tests)          (76 tests)          (77 tests)          (78 tests)          (79 tests)          (80 tests)          (81 tests)          (82 tests)          (83 tests)          (84 tests)          (85 tests)          (86 tests)          (87 tests)          (88 tests)          (89 tests)          (90 tests)          (91 tests)          (92 tests)          (93 tests)          (94 tests)          (95 tests)          (96 tests)          (97 tests)          (98 tests)          (99 tests)          prop_parentDir_basics
++++ OK, passed 100 tests.
+(0 tests)         (1 test)        (2 tests)         (3 tests)         (4 tests)         (5 tests)         (6 tests)         (7 tests)         (8 tests)         (9 tests)         (10 tests)          (11 tests)          (12 tests)          (13 tests)          (14 tests)          (15 tests)          (16 tests)          (17 tests)          (18 tests)          (19 tests)          (20 tests)          (21 tests)          (22 tests)          (23 tests)          (24 tests)          (25 tests)          (26 tests)          (27 tests)          (28 tests)          (29 tests)          (30 tests)          (31 tests)          (32 tests)          (33 tests)          (34 tests)          (35 tests)          (36 tests)          (37 tests)          (38 tests)          (39 tests)          (40 tests)          (41 tests)          (42 tests)          (43 tests)          (44 tests)          (45 tests)          (46 tests)          (47 tests)          (48 tests)          (49 tests)          (50 tests)          (51 tests)          (52 tests)          (53 tests)          (54 tests)          (55 tests)          (56 tests)          (57 tests)          (58 tests)          (59 tests)          (60 tests)          (61 tests)          (62 tests)          (63 tests)          (64 tests)          (65 tests)          (66 tests)          (67 tests)          (68 tests)          (69 tests)          (70 tests)          (71 tests)          (72 tests)          (73 tests)          (74 tests)          (75 tests)          (76 tests)          (77 tests)          (78 tests)          (79 tests)          (80 tests)          (81 tests)          (82 tests)          (83 tests)          (84 tests)          (85 tests)          (86 tests)          (87 tests)          (88 tests)          (89 tests)          (90 tests)          (91 tests)          (92 tests)          (93 tests)          (94 tests)          (95 tests)          (96 tests)          (97 tests)          (98 tests)          (99 tests)          prop_relPathDirToFile_basics
++++ OK, passed 100 tests.
+(0 tests)         prop_relPathDirToFile_regressionTest
++++ OK, passed 1 tests.
+(0 tests)         prop_cost_sane
++++ OK, passed 1 tests.
+(0 tests)         prop_matcher_sane
++++ OK, passed 1 tests.
+(0 tests)         prop_HmacSha1WithCipher_sane
++++ OK, passed 1 tests.
+(0 tests)         prop_TimeStamp_sane
++++ OK, passed 1 tests.
+(0 tests)         prop_addLog_sane
++++ OK, passed 1 tests.
+(0 tests)         (1 test)        (2 tests)         (3 tests)         (4 tests)         (5 tests)         (6 tests)         (7 tests)         (8 tests)         (9 tests)         (10 tests)          (11 tests)          (12 tests)          (13 tests)          (14 tests)          (15 tests)          (16 tests)          (17 tests)          (18 tests)          (19 tests)          (20 tests)          (21 tests)          (22 tests)          (23 tests)          (24 tests)          (25 tests)          (26 tests)          (27 tests)          (28 tests)          (29 tests)          (30 tests)          (31 tests)          (32 tests)          (33 tests)          (34 tests)          (35 tests)          (36 tests)          (37 tests)          (38 tests)          (39 tests)          (40 tests)          (41 tests)          (42 tests)          (43 tests)          (44 tests)          (45 tests)          (46 tests)          (47 tests)          (48 tests)          (49 tests)          (50 tests)          (51 tests)          (52 tests)          (53 tests)          (54 tests)          (55 tests)          (56 tests)          (57 tests)          (58 tests)          (59 tests)          (60 tests)          (61 tests)          (62 tests)          (63 tests)          (64 tests)          (65 tests)          (66 tests)          (67 tests)          (68 tests)          (69 tests)          (70 tests)          (71 tests)          (72 tests)          (73 tests)          (74 tests)          (75 tests)          (76 tests)          (77 tests)          (78 tests)          (79 tests)          (80 tests)          (81 tests)          (82 tests)          (83 tests)          (84 tests)          (85 tests)          (86 tests)          (87 tests)          (88 tests)          (89 tests)          (90 tests)          (91 tests)          (92 tests)          (93 tests)          (94 tests)          (95 tests)          (96 tests)          (97 tests)          (98 tests)          (99 tests)          prop_verifiable_sane
++++ OK, passed 100 tests.
+(0 tests)         prop_segment_regressionTest
++++ OK, passed 1 tests.
+(0 tests)         (1 test)        (2 tests)         (3 tests)         (4 tests)         (5 tests)         (6 tests)         (7 tests)         (8 tests)         (9 tests)         (10 tests)          (11 tests)          (12 tests)          (13 tests)          (14 tests)          (15 tests)          (16 tests)          (17 tests)          (18 tests)          (19 tests)          (20 tests)          (21 tests)          (22 tests)          (23 tests)          (24 tests)          (25 tests)          (26 tests)          (27 tests)          (28 tests)          (29 tests)          (30 tests)          (31 tests)          (32 tests)          (33 tests)          (34 tests)          (35 tests)          (36 tests)          (37 tests)          (38 tests)          (39 tests)          (40 tests)          (41 tests)          (42 tests)          (43 tests)          (44 tests)          (45 tests)          (46 tests)          (47 tests)          (48 tests)          (49 tests)          (50 tests)          (51 tests)          (52 tests)          (53 tests)          (54 tests)          (55 tests)          (56 tests)          (57 tests)          (58 tests)          (59 tests)          (60 tests)          (61 tests)          (62 tests)          (63 tests)          (64 tests)          (65 tests)          (66 tests)          (67 tests)          (68 tests)          (69 tests)          (70 tests)          (71 tests)          (72 tests)          (73 tests)          (74 tests)          (75 tests)          (76 tests)          (77 tests)          (78 tests)          (79 tests)          (80 tests)          (81 tests)          (82 tests)          (83 tests)          (84 tests)          (85 tests)          (86 tests)          (87 tests)          (88 tests)          (89 tests)          (90 tests)          (91 tests)          (92 tests)          (93 tests)          (94 tests)          (95 tests)          (96 tests)          (97 tests)          (98 tests)          (99 tests)          prop_read_write_transferinfo
++++ OK, passed 100 tests.
+(0 tests)         (1 test)        (2 tests)         (3 tests)         (4 tests)         (5 tests)         (6 tests)         (7 tests)         (8 tests)         (9 tests)         (10 tests)          (11 tests)          (12 tests)          (13 tests)          (14 tests)          (15 tests)          (16 tests)          (17 tests)          (18 tests)          (19 tests)          (20 tests)          (21 tests)          (22 tests)          (23 tests)          (24 tests)          (25 tests)          (26 tests)          (27 tests)          (28 tests)          (29 tests)          (30 tests)          (31 tests)          (32 tests)          (33 tests)          (34 tests)          (35 tests)          (36 tests)          (37 tests)          (38 tests)          (39 tests)          (40 tests)          (41 tests)          (42 tests)          (43 tests)          (44 tests)          (45 tests)          (46 tests)          (47 tests)          (48 tests)          (49 tests)          (50 tests)          (51 tests)          (52 tests)          (53 tests)          (54 tests)          (55 tests)          (56 tests)          (57 tests)          (58 tests)          (59 tests)          (60 tests)          (61 tests)          (62 tests)          (63 tests)          (64 tests)          (65 tests)          (66 tests)          (67 tests)          (68 tests)          (69 tests)          (70 tests)          (71 tests)          (72 tests)          (73 tests)          (74 tests)          (75 tests)          (76 tests)          (77 tests)          (78 tests)          (79 tests)          (80 tests)          (81 tests)          (82 tests)          (83 tests)          (84 tests)          (85 tests)          (86 tests)          (87 tests)          (88 tests)          (89 tests)          (90 tests)          (91 tests)          (92 tests)          (93 tests)          (94 tests)          (95 tests)          (96 tests)          (97 tests)          (98 tests)          (99 tests)          prop_read_show_inodecache
++++ OK, passed 100 tests.
+(0 tests)         (1 test)        (2 tests)         (3 tests)         (4 tests)         (5 tests)         (6 tests)         (7 tests)         (8 tests)         (9 tests)         (10 tests)          (11 tests)          (12 tests)          (13 tests)          (14 tests)          (15 tests)          (16 tests)          (17 tests)          (18 tests)          (19 tests)          (20 tests)          (21 tests)          (22 tests)          (23 tests)          (24 tests)          (25 tests)          (26 tests)          (27 tests)          (28 tests)          (29 tests)          (30 tests)          (31 tests)          (32 tests)          (33 tests)          (34 tests)          (35 tests)          (36 tests)          (37 tests)          (38 tests)          (39 tests)          (40 tests)          (41 tests)          (42 tests)          (43 tests)          (44 tests)          (45 tests)          (46 tests)          (47 tests)          (48 tests)          (49 tests)          (50 tests)          (51 tests)          (52 tests)          (53 tests)          (54 tests)          (55 tests)          (56 tests)          (57 tests)          (58 tests)          (59 tests)          (60 tests)          (61 tests)          (62 tests)          (63 tests)          (64 tests)          (65 tests)          (66 tests)          (67 tests)          (68 tests)          (69 tests)          (70 tests)          (71 tests)          (72 tests)          (73 tests)          (74 tests)          (75 tests)          (76 tests)          (77 tests)          (78 tests)          (79 tests)          (80 tests)          (81 tests)          (82 tests)          (83 tests)          (84 tests)          (85 tests)          (86 tests)          (87 tests)          (88 tests)          (89 tests)          (90 tests)          (91 tests)          (92 tests)          (93 tests)          (94 tests)          (95 tests)          (96 tests)          (97 tests)          (98 tests)          (99 tests)          prop_parse_show_log
++++ OK, passed 100 tests.
+(0 tests)         prop_read_show_TrustLevel
++++ OK, passed 1 tests.
+(0 tests)         prop_parse_show_TrustLog
++++ OK, passed 1 tests.
+
+Cases: 1  Tried: 0  Errors: 0  Failures: 0init test repo 
+  Detected a crippled filesystem.
+
+  Disabling core.symlinks.
+
+  Enabling direct mode.
+
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+ok
+(Recording state in git...)
+
+                                          
+Cases: 1  Tried: 1  Errors: 0  Failures: 0
+
+Cases: 3  Tried: 0  Errors: 0  Failures: 0add foo (checksum...) ok
+(Recording state in git...)
+add sha1foo (checksum...) ok
+(Recording state in git...)
+add apple ok
+(Recording state in git...)
+
+Cases: 3  Tried: 1  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex add:1
+git clone failed
+
+Cases: 3  Tried: 2  Errors: 0  Failures: 1ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex add:2
+git clone failed
+Cases: 3  Tried: 3  Errors: 0  Failures: 2
+
+Cases: 1  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex reinject/fromkey
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+
+Cases: 2  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex unannex:0:no content
+git clone failed
+
+Cases: 2  Tried: 1  Errors: 0  Failures: 1ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex unannex:1:with content
+git clone failed
+Cases: 2  Tried: 2  Errors: 0  Failures: 2
+
+Cases: 3  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex drop:0:no remotes
+git clone failed
+
+Cases: 3  Tried: 1  Errors: 0  Failures: 1ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex drop:1:with remote
+git clone failed
+
+Cases: 3  Tried: 2  Errors: 0  Failures: 2ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex drop:2:untrusted remote
+git clone failed
+Cases: 3  Tried: 3  Errors: 0  Failures: 3
+
+Cases: 1  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex get
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+
+Cases: 1  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex move
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+
+Cases: 1  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex copy
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+
+Cases: 1  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex unlock/lock
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+
+Cases: 2  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex edit/commit:0
+git clone failed
+
+Cases: 2  Tried: 1  Errors: 0  Failures: 1ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex edit/commit:1
+git clone failed
+Cases: 2  Tried: 2  Errors: 0  Failures: 2
+
+Cases: 1  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex fix
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+
+Cases: 1  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex trust/untrust/semitrust/dead
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+
+Cases: 4  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex fsck:0
+git clone failed
+
+Cases: 4  Tried: 1  Errors: 0  Failures: 1ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex fsck:1
+git clone failed
+
+Cases: 4  Tried: 2  Errors: 0  Failures: 2ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex fsck:2
+git clone failed
+
+Cases: 4  Tried: 3  Errors: 0  Failures: 3ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex fsck:3
+git clone failed
+Cases: 4  Tried: 4  Errors: 0  Failures: 4
+
+Cases: 2  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex migrate:0
+git clone failed
+
+Cases: 2  Tried: 1  Errors: 0  Failures: 1ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex migrate:1
+git clone failed
+Cases: 2  Tried: 2  Errors: 0  Failures: 2
+
+Cases: 1  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex unused/dropunused
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+
+Cases: 1  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex describe
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+
+Cases: 1  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex find
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+
+Cases: 1  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex merge
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+
+Cases: 1  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex status
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+
+Cases: 1  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex version
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+
+Cases: 1  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex sync
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+
+Cases: 1  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: union merge regression
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+
+Cases: 1  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: automatic conflict resolution
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+
+Cases: 1  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex map
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+
+Cases: 1  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex uninit
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+
+Cases: 1  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex upgrade
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+
+Cases: 1  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex whereis
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+
+Cases: 1  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex hook remote
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+
+Cases: 1  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex directory remote
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+
+Cases: 1  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex rsync remote
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+
+Cases: 1  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex bup remote
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+
+Cases: 1  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex crypto
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+
+Cases: 1  Tried: 0  Errors: 0  Failures: 0ssh: Could not resolve hostname C: no address associated with name
+fatal: The remote end hung up unexpectedly
+
+                                          
+### Failure in: git-annex preferred-content
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+----------------------------------------------------------------------
+Now, some broader checks ...
+  (Do not be alarmed by odd output here; it's normal.
+   wait for the last line to see how it went.)
+----------------------------------------------------------------------
+init
+----------------------------------------------------------------------
+add
+----------------------------------------------------------------------
+reinject
+----------------------------------------------------------------------
+unannex
+----------------------------------------------------------------------
+drop
+----------------------------------------------------------------------
+get
+----------------------------------------------------------------------
+move
+----------------------------------------------------------------------
+copy
+----------------------------------------------------------------------
+lock
+----------------------------------------------------------------------
+edit
+----------------------------------------------------------------------
+fix
+----------------------------------------------------------------------
+trust
+----------------------------------------------------------------------
+fsck
+----------------------------------------------------------------------
+migrate
+----------------------------------------------------------------------
+ unused
+----------------------------------------------------------------------
+describe
+----------------------------------------------------------------------
+find
+----------------------------------------------------------------------
+merge
+----------------------------------------------------------------------
+status
+----------------------------------------------------------------------
+version
+----------------------------------------------------------------------
+sync
+----------------------------------------------------------------------
+union merge regression
+----------------------------------------------------------------------
+conflict resolution
+----------------------------------------------------------------------
+map
+----------------------------------------------------------------------
+uninit
+----------------------------------------------------------------------
+upgrade
+----------------------------------------------------------------------
+whereis
+----------------------------------------------------------------------
+hook remote
+----------------------------------------------------------------------
+directory remote
+----------------------------------------------------------------------
+rsync remote
+----------------------------------------------------------------------
+bup remote
+----------------------------------------------------------------------
+crypto
+----------------------------------------------------------------------
+preferred content
+----------------------------------------------------------------------
+Some tests failed!
+  (This could be due to a bug in git-annex, or an incompatability
+   with utilities, such as git, installed on this system.)
+
+
+# End of transcript or log.
+"""]]
+
+[[!tag moreinfo]]

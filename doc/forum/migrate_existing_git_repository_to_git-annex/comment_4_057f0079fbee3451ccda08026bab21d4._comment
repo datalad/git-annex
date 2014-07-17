@@ -1,0 +1,20 @@
+[[!comment format=sh
+ username="https://www.google.com/accounts/o8/id?id=AItOawll4Kgp7nMuOKdB0FfbcYZ3KRq7HCS0Slc"
+ nickname="Laura"
+ subject="Rebase all branches"
+ date="2014-01-16T17:47:45Z"
+ content="""
+
+For the portion: git rebase master mybranch # how to automate this for all branches?
+
+Try this:
+
+branch_to_ignore='git-annex|master|newroot'
+for branch in $(git for-each-ref --sort=-committerdate refs/heads --format='%(refname:short)' | egrep -v $branch_to_ignore )
+    do git rebase --onto master \"$branch~\" \"$branch\"
+    echo \"Rebasing branch $branch onto master....\" 
+done
+
+Feel free to add/correct as necessary
+
+"""]]

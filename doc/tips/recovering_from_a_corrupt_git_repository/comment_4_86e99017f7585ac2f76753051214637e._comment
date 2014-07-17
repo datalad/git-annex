@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://id.clacke.se/"
+ nickname="clacke"
+ subject="comment 4"
+ date="2013-11-12T17:10:06Z"
+ content="""
+Hm. This is bad. My hunch that btrfs was the culprit seems to have been wrong. After having switched things around, along with lots of `git annex sync` in various places, I now have a corrupt repo on ext4. It must be git or git-annex that does something wrong.
+"""]]

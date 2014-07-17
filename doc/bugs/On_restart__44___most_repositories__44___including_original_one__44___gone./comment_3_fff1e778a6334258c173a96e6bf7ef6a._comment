@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.51"
+ subject="comment 3"
+ date="2013-09-12T21:33:18Z"
+ content="""
+See my explanation above. By manually starting the webapp inside your ~/annex repository you forced it to view that repository.
+
+It's not unusual for the webapp to display it syncing some files that have been synced before. This repository may not be up-to-date on which files have been sent where, and it will quickly notice the file has already been transferred and skip doing anything for that file.
+"""]]

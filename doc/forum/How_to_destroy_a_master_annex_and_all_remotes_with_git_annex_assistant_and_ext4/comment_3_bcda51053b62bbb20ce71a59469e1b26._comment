@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 3"
+ date="2013-07-23T17:17:43Z"
+ content="""
+`git config core.fsyncobjectfiles true`
+
+This will make git fsync all the data it writes. Whether it's a good default, I don't know.
+"""]]

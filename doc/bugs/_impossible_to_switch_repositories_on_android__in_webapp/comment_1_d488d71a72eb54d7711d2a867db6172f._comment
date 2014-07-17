@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnRai_qFYPVvEgC6i1nlM1bh-C__jbhqS0"
+ nickname="Matthew"
+ subject="comment 1"
+ date="2013-07-28T11:21:42Z"
+ content="""
+I can confirm it's virtually impossible to change repository on Android (Stock Galaxy Nexus GSM). you click on the files link (which is hard to see on phone as it is in the notification blocks) and then click click \"Switch repository\", on the next page, select a different one. I think it does actually change, occasionally, you have to kill and restart the daemon at least and I think you also have to restart the phone.
+"""]]

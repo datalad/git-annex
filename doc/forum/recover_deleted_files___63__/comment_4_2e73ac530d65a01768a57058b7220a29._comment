@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnXlmnJKsPulm2S_hwwRm3Ky27Zyf-wKMw"
+ nickname="Chad"
+ subject="After the fact..."
+ date="2013-12-22T03:51:36Z"
+ content="""
+I've run into a situation where I've inadvertently deleted a file from my Andriod-driven annex repo rather than dropping the file. (A set of very large *.flac files, to be exact.) These are now gone from the repo on my laptop and the repo on my workstation. When looking at the `git --log stat' call, I see the addition of these files, but I do not see their deletion. When running `git annex unused', I found references to the *.flac files, their SHA key, and indeed found the commit they were associated with. I have not dropped these unused files. How to I recover them?
+"""]]

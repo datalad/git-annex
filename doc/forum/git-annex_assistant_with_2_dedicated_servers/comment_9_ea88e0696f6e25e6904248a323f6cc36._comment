@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.64"
+ subject="comment 9"
+ date="2013-11-16T23:11:58Z"
+ content="""
+Since you created these repositories with the webapp, they default to using [[direct_mode]]. git-annex handles putting the files in place when they are transferred to the repository. Only 1 copy is made, there is no separate copy in the repository.
+"""]]

@@ -1,0 +1,12 @@
+A repository does not always have all annexed file contents available.
+When you need the content of a file, you can use "git annex get" to
+make it available.
+
+We can use this to copy everything in the laptop's annex to the
+USB drive.
+
+	# cd /media/usb/annex
+	# git annex sync laptop
+	# git annex get .
+	get my_cool_big_file (from laptop...) ok
+	get iso/debian.iso (from laptop...) ok

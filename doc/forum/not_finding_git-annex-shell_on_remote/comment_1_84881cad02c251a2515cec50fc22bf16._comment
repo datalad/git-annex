@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk3HGoDpnOPob5jOjvIootmkve1-nCpRiI"
+ nickname="Kalle"
+ subject="Declare path on first line of bashrc?"
+ date="2014-02-15T18:36:35Z"
+ content="""
+If i don't misremember some systems including Debian require you to set the path on the very first line of .bashrc for it to work. Can't remember why just now.
+
+in other words paste the following into the very first line of `$HOME/.bashrc`
+
+`PATH=$PATH:$HOME/bin:$HOME/bin/git-annex.linux`
+
+Modify the line above if you haven't installed to `~/bin/git-annex.linux`
+
+
+"""]]

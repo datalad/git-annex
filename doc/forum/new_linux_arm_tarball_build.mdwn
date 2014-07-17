@@ -1,0 +1,12 @@
+I've added an arm build to the autobuilds in [[install/Linux_standalone]].
+
+I'm curious to see how this works out. I tried to make it as self-contained
+as possible. It should work even on systems that do not use glibc, as long
+as the kernel is new enough for the glibc included in it, and supports the
+arm EABI.
+
+If it seems sufficiently useful, I might try to add the webapp to the
+build, which would be somewhat complicated, but doable (since I'm building
+using qemu, it can run a build on amd64 first to get the TH splices).
+
+--[[Joey]]

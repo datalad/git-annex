@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.220"
+ subject="comment 1"
+ date="2013-09-25T17:14:28Z"
+ content="""
+git-annex uses cp --reflink=auto. So on a filesystem supporting COW file copies, like btrfs, `git annex get` will not use any disk space when getting from the same filesystem.
+
+I do not like the idea of using hardlinks, because changing the file in one repository would change it in the other, which may not be desired.
+
+[[union_mounting]] seems to cover this item pretty well, so I will close this as a duplicate.
+"""]]

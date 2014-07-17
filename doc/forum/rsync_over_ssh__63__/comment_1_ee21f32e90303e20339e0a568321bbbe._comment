@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2011-03-06T15:59:37Z"
+ content="""
+Everything is done over ssh unless both repos are on the same system (or unless you NFS mount a repo)
+"""]]

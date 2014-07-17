@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnZEanlyzay_QlEAL0CWpyZcRTyN7vay8U"
+ nickname="Carlo"
+ subject="comment 6"
+ date="2013-11-15T13:43:06Z"
+ content="""
+Since git web--browse defaults to firefox on my system (Ubuntu/XMonad), I did this on Ubuntu to get the system default browser.
+
+  git config --global web.browser xdg-open
+
+"""]]

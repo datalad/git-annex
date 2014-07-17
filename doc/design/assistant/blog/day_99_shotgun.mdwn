@@ -1,0 +1,70 @@
+Fixed the assistant to wait on all the zombie processes that would sometimes
+pile up. I didn't realize this was as bad as it was.
+
+Zombies and git-annex have been a problem since I started developing it,
+because back then I made some rather poor choices, due to barely knowing
+how to write Haskell. So parts of the code that stream input from git commands
+don't clean up after them properly. Not normally a problem, because
+git-annex reaps the zombies after each file it processes. But this reaping
+is not thread-safe; it cannot be used in the assistant.
+
+If I were starting git-annex today, I'd use one of the new Haskell things like
+Conduits, that allow for very clean control over finalization of resources.
+But switching it to Conduits now would probably take weeks of work; I've not
+yet felt it was worthwhile. (Also it's not clear Conduits are the last,
+best thing.)
+
+For now, it keeps track of the pids it needs to wait on, and all the code
+run by the assistant is zombie-free. However, some code for fsck and unused
+that I anticipate the assistant using eventually still has some lurking
+zombies.
+
+----
+
+Solved the issue with preferred content expressions and dropping that
+I mentioned yesterday. My solution was to add a parameter to specify a set
+of repositories where content should be assumed not to be present. When
+deciding whether to drop, it can put the current repository in, and then
+if the expression fails to match, the content can be dropped.
+
+Using yesterday's example "(not copies=trusted:2) and (not in=usbdrive)",
+when the local repo is one of the 2 trusted copies, the drop check will
+see only 1 trusted copy, so the expression matches, and so the content will
+not be dropped.
+
+I've not tested my solution, but it type checks. :P I'll wire it up to
+`get/drop/move --auto` tomorrow and see how it performs.
+
+----
+
+Would preferred content expressions be more readble if they were inverted
+(becoming content filtering expressions)?
+
+1. "(not copies=trusted:2) and (not in=usbdrive)" becomes
+   "copies=trusted:2 or in=usbdrive"
+2. "smallerthan=10mb and include=*.mp3 and exclude=junk/*" becomes
+   "largerthan=10mb or exclude=*.mp3" or include=junk/*"
+3. "(not group=archival) and (not copies=archival:1)" becomes
+   "group=archival or copies=archival:1"
+
+1 and 3 are improved, but 2, less so. It's a trifle weird for "include"
+to mean "include in excluded content".
+
+The other reason not to do this is that currently the expressions
+can be fed into `git annex find` on the command line, and it'll come
+back with the files that would be kept.
+
+Perhaps a middle groud is to make "dontwant" be an alias for "not".
+Then we can write "dontwant (copies=trusted:2 or in=usbdrive)"
+
+----
+
+A user told me this:
+
+> I can confirm that the assistant does what it is supposed to do really well. I
+> just hooked up my notebook to the network and it starts syncing from notebook to
+> fileserver and the assistant on the fileserver also immediately starts syncing
+> to the [..] backup
+
+That makes me happy, it's the first quite so real-world success report I've
+heard.

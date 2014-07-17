@@ -1,0 +1,22 @@
+Annoyingly, the Android 4.3 fix breaks git-annex on Android 4.0 (probably
+through 4.2), so I now have two separate builds of the Android app.
+
+---
+
+Worked on Windows porting today. I've managed to get the assistant
+and watcher (but not yet webapp) to build on Windows.
+The `git annex transferrer` interface needs POSIX stuff, and seems to be
+the main thing that will need porting for Windows for the assistant to
+work, besides of course file change detection. For that, I've hooked up
+[Win32-notify](http://hackage.haskell.org/package/Win32-notify).
+
+So the watcher might work on Windows. 
+At least in theory. Problem is, while all the code builds ok, 
+it fails to link:
+
+	ghc.exe: could not execute: C:\Program Files (x86)\Haskell Platform\2012.4.0.0\lib/../mingw/bin/gcc.exe
+
+I wonder if this is case of too many parameters being passed?
+
+This happens both on the autobuilder and on my laptop, so I'm stuck here.
+Oh well, I was not planning to work on this anyway until February...

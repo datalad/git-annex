@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Hanno"
+ ip="85.183.3.94"
+ subject="comment 3"
+ date="2014-01-31T10:39:47Z"
+ content="""
+The folder contains a bit more than 15000 files (counted with find -type f)
+"""]]

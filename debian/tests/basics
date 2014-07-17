@@ -1,0 +1,4 @@
+#!/bin/sh
+testdir="$(mktemp -d)"
+cd "$testdir"
+exec git-annex test

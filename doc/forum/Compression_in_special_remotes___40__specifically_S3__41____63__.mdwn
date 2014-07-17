@@ -1,0 +1,1 @@
+I use git-annex mostly to archive my photos.  They're generally large raw files and I am encrypting them going to the S3 special remote.  Are there any plans to compress objects before encrypting them?  It would save on S3 costs, only add some overhead on get and copy, and I don't think there would be any problems looking up data later.

@@ -1,0 +1,7 @@
+hi
+
+i have a repository that is 30 gb large. i would like to sync some content onto my android phone. take mp3's for example. i would like to see whole content on android but my phone does not have that much flash space. i would like to manualy select what folders, files will be copied onto phone.
+
+this use case may not even refer strictly to android devices but even pc's. for exaple i have small ssd drive on laptop. whole contentis kept on some hudge  raid array. i will see whole directory structure but whenever i want a file i will just shedule it for download.
+
+is it possible ? or maybe i just can not find the answer on project page ?

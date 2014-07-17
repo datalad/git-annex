@@ -1,0 +1,23 @@
+Yay, I fixed the
+[[bugs/Handling_of_files_inside_and_outside_archive_directory_at_the_same_time]]
+bug!
+At least in direct mode, which thanks to its associated files tracking
+knows when a given file has another file in the repository with the same
+content. Had not realized the behavior in direct mode was so bad, or the
+fix so relatively easy. Pity I can't do the same for indirect mode, but
+the problem is much less serious there.
+
+That was this weekend. Today, I nearly put out a new release (been 2 weeks
+since the last one..), but ran out of time in the end, and need to get the
+OSX autobuilder fixed first, so have deferred it until Friday.
+
+However, I did make some improvements today.
+Added an `annex.debug` git config setting, so debugging can
+be turned on persistently. People seem to expect that to happen when
+checking the checkbox in the webapp, so now it does.
+
+Fixed 3 or 4 bugs in the Windows port. Which actually, has users now, or
+at least one user. It's very handy to actually get real world testing of
+that port.
+
+[[!meta date="Mon, 17 Jun 2013 17:14:04 -0400"]]

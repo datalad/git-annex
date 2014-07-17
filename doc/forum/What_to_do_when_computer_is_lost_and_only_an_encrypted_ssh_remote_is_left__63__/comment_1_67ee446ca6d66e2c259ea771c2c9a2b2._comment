@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 1"
+ date="2013-07-26T03:57:06Z"
+ content="""
+I'm glad you had another backup. That is wise.
+
+When you have a special remote, that does not store your git repository, but only the contents of files. So if you lose all copies of your git repositories, you have lost all record of the file name associated with a file. It's the same as if `fsck` rescued inodes to `lost+found`; you'd have to manually rename the files to new names.
+
+Then there's the added complication of the encryption. This depends on how it was set up. If you set up the remote using a GPG key (and didn't lose the key too), you can manually use that key to decrypt the files. On the other hand, if it generated its own key and stored it in the git repo (default with the assistant), then when you lose all copies of the git repo, the key is gone, and your encrypted files are useless.
+"""]]

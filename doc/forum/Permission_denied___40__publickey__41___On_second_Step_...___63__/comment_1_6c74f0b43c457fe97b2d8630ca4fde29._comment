@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2013-11-08T18:24:27Z"
+ content="""
+The webapp sets up a dedicated ssh public key when you add a ssh repository in there.
+
+You might see some useful debugging info your your problem in ~/annex/.git/annex/daemon.log
+"""]]

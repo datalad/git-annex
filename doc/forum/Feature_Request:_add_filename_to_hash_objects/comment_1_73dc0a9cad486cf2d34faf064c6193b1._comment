@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="64.134.31.139"
+ subject="comment 1"
+ date="2013-10-16T15:19:25Z"
+ content="""
+Adding a filename would defeat deduplication. You suggest adding the \"first seen\" filename, but then git-annex would need to maintain a lookup between hashes and hashes with the first seen filename to use when adding new files.
+
+There is already [[todo/wishlist: option to print more info with 'unused']].
+"""]]

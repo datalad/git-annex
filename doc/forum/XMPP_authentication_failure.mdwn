@@ -1,0 +1,15 @@
+Hi,
+
+Not sure if this is a bug or not, so posting it here rather than in the bug tracker.
+
+Basically, I am unable to add an XMPP identity via the webapp, I continually  get the error message: "Unable to connect to the Jabber server. Maybe you entered the wrong password? (Error message: AuthenticationFailure)"
+
+I didn't enter the wrong password, I copy/pasted it from my password manager and the same account/password work fine with Pidgin. The log doesn't show anything of interest that I can see.
+
+Using git annex version 4.20130405 from Debain Unstable. The server is ejabberd running on my VPS with a self signed certificate.
+
+Anyone got any idea what might be going on?
+
+Cheers,
+
+Rob

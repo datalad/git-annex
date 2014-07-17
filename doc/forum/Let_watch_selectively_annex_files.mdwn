@@ -1,0 +1,27 @@
+Hello,
+
+First of all, thanks to Joey for developing git-annex, good job!
+
+I have a small feature request: when running git annex watch, new files are automatically added to the annex. It would be nice to let this depend on an attribute: add a file to annex if an attribute is set, otherwise do a regular git add.
+
+My use-case is the following: I have a repository containing documents I'm working on (mostly LaTeX), which I'd like to be regular files in git (no annex), and a bunch of extra documentation (pdfs) and images, which I'd like to go to the annex. I currently set a git-attribute (addtoannex), and use a shell script to selectively add files to annex as follows:
+
+Content of .gitattributes:
+
+    *.png addtoannex
+    *.jpg addtoannex
+
+Snippet of add script:
+
+    git check-attr addtoannex "$FILE" | grep -q ": set$"
+    if [ $? -eq 0 ]; then
+        git annex add "$FILE"
+    else
+        git add "$FILE"
+    fi
+
+It would be great if the watcher could honour an attribute.
+
+best regards,
+
+Tom

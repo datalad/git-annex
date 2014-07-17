@@ -1,0 +1,59 @@
+Dear All,
+
+thank you for this wonderful tool!
+
+I am having an issue when I try to commit a normal link
+
+diokletian*194-> mkdir test
+
+diokletian*195-> cd test
+
+diokletian*196-> git init
+
+Initialized empty Git repository in /home/henrus/test/.git/
+
+diokletian*197-> git annex init new
+
+init new [master (root-commit) 49f5f91] git-annex setup
+
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+ create mode 100644 .gitattributes
+
+[master 76496ff] git annex init
+
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+ create mode 100644 .git-annex/uuid.log
+
+ok
+
+diokletian*198-> mkdir subdir
+
+diokletian*199-> ln -s subdir link
+
+diokletian*200-> git add link
+
+diokletian*201-> git commit -m "ok"
+
+[master f12f62d] ok
+
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+ create mode 120000 link
+
+diokletian*202-> ln -s subdir/ link2
+
+diokletian*203-> git add link2
+
+diokletian*204-> git commit -m "not ok"
+
+git-annex: Prelude.head: empty list
+
+The trailing slash seems to make a difference!
+
+Best Regards,
+
+Henrik
+
+> Thanks for the bug report. This is fixed in 0.17. --[[Joey]]  [[!tag done]]

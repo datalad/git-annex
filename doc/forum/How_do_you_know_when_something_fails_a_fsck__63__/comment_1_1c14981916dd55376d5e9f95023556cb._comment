@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmBUR4O9mofxVbpb8JV9mEbVfIYv670uJo"
+ nickname="Justin"
+ subject="comment 1"
+ date="2013-06-10T14:23:25Z"
+ content="""
+    justin@box:/tmp/f$ git init
+    Initialized empty Git repository in /tmp/f/.git/
+    justin@box:/tmp/f$ git-annex init 
+    init  ok
+    (Recording state in git...)
+    justin@box:/tmp/f$ cp /etc/motd .
+    justin@box:/tmp/f$ git-annex add .
+    add motd (checksum...) ok
+    (Recording state in git...)
+    justin@box:/tmp/f$ git-annex fsck
+    fsck motd (checksum...) ok
+    justin@box:/tmp/f$ chmod +w motd 
+    justin@box:/tmp/f$ echo hi >> motd 
+    justin@box:/tmp/f$ git-annex fsck
+    fsck motd 
+      Bad file size (3 B larger); moved to /tmp/f/.git/annex/bad/SHA256-s354--2e724dde1a5dc33bc15580b2aef1ee541ca8047d746fff9bb7917062b871c0bf
+
+      ** No known copies exist of motd
+    failed
+    (Recording state in git...)
+    git-annex: fsck: 1 failed
+
+
+You can also use fsck -q which will only show errors.
+
+"""]]

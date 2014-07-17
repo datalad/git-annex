@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.193"
+ subject="comment 1"
+ date="2013-07-02T16:57:43Z"
+ content="""
+This seems a pretty unusual use case. Can't you just unpack the apk (it's a regular zip file) and get out the parts you want?
+"""]]

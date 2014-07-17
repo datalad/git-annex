@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://23.gs/"
+ ip="46.165.197.5"
+ subject="No file extension?"
+ date="2013-08-12T13:21:50Z"
+ content="""
+It seems git-annex is a bit overzealous when sanitizing the file extension, currently I get: \"Nerdkunde/Let_s_go_to_the_D_M_C_A_m4a\" from http://www.nerdkunde.de/episodes.m4a.rss with the default template and only \"Nerdkunde/Let_s_go_to_the_D_M_C_A._m4a\" if I add the \".\" in the template myself...
+"""]]

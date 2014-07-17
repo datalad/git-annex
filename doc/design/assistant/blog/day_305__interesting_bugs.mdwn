@@ -1,0 +1,21 @@
+Worked on 3 interesting bugs today. One I noticed myself while doing tests
+with adding many thousands of files yesterday. Assistant was delaying
+making a last commit of the batch of files, and would only wake up and
+commit them after a further change was made. Turns out this bug was
+introduced in April while improving commit batching when making very large
+commits. I seem to remember someone mentioning this problem at some point,
+but I have not been able to find a bug report to close.
+
+Also tried to reproduce [[this_bug|bugs/utf8]]. Frustrating, because I'm
+quite sure I have made changes that will avoid it happening again,
+but since I still don't know what the root cause was, I can't let it go.
+
+The last bug is
+[[non-repos_in_repositories_list___40__+_other_weird_output__41___from_git_annex_status]]
+and is a most strange thing. Still trying to get a handle on multiple
+aspects of it.
+
+Also various other bug triage. Down to only 10 messages in my git-annex
+folder.  That included merging about a dozen bugs about
+local pairing, that all seem to involve git-annex-shell not being found in
+path. Something is up with that..

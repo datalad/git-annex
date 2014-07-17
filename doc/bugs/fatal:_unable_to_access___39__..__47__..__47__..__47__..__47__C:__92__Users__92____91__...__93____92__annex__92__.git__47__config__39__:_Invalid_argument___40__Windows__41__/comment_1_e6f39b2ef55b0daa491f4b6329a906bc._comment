@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="64.134.31.139"
+ subject="comment 1"
+ date="2013-10-16T20:42:07Z"
+ content="""
+I don't know what to make of this bug report. You say that \"C:\Users\Bruno\annex.git\config\" exists, but you show the creation of a \"C:\Users\Bruno\annex\", and not the other repository. I cannot reproduce it, even if I first \"git init --bare annex.git\". 
+"""]]

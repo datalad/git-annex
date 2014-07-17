@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk_GWOEjK4Sn4hUB6ofFlE3CNeC7tO56J8"
+ nickname="John"
+ subject="Re:  installed git-annex on debian but cannot find it "
+ date="2013-08-20T00:50:28Z"
+ content="""
+@Miles - The command is git annex webapp to bring up the web interface.
+"""]]

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/FHnTlSBo1eCGJRwueeKeB6.RCaPbGMPr5jxx8A--#ce0d8"
+ nickname="Hamza"
+ subject="comment 3"
+ date="2013-09-23T00:34:24Z"
+ content="""
+I do not use the assistant I prefer command line but try adding an USB drive (last I used it it had the option) It should do the clone and init it check the resulting folder if it contains a .git/ folder you have a clone of your git repo.
+
+a) For manual cloning follow http://git-annex.branchable.com/walkthrough/adding_a_remote/
+
+b) you need to keep syncing to the clone too. asistant should automatically sync to that repo. AFAIK asisstant detects when the usb repo is plugged and automatically syncs to it (again I do not use it but I seem to remember one of joey's talks showing that. YMMV)
+
+If you lose all your repos then you lose the keys to un encrypt files they are gone!, if you have a outdated repo you can get the files back using the key stored in it but without the directory structure.
+
+Correct workflow depends on how you use annex. I sync 3 computers with annex so if one dies I can clone the repo from another one. But if you are only using it on a single computer I would use a clone on an external usb drive that is always connected, so you have two clones one on the internal disk and one on the external disk so you can survive one of the drives crashing.
+"""]]

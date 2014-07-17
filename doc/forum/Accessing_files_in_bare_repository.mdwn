@@ -1,0 +1,5 @@
+I have set up a remote server repository using the git-annex web assistant, accessed via ssh. The repository is a bare one according to the config file in the annex directory on the server.
+
+I am wondering how I could access any of the files in the repository while logged in to the server - they don't have their usual file names to look for clearly. Is there a way to get a list of the files for starters? I tried using git annex find, but it never returns any files. git annex get followed by a filename of a document in the repository also doesn't work.
+
+Thanks to help me understand better how to approach this.

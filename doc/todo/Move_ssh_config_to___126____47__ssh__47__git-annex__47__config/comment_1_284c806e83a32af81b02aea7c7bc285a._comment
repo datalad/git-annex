@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-06-11T14:44:47Z"
+ content="""
+The only interface git provides to do this is `GIT_SSH`, which would have to be set to a wrapper script that runs ssh with the desirned options.
+
+And if that were used, `git pull` by itself would not work on the repositories set up by the assistant. I don't consider that very nice.
+"""]]

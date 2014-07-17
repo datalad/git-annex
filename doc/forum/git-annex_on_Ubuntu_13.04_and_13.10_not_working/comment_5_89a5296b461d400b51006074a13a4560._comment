@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 5"
+ date="2013-10-26T15:53:28Z"
+ content="""
+Can you confirm that the files in the directory it was adding were so large that it would normally take hours to checksum them all?
+"""]]

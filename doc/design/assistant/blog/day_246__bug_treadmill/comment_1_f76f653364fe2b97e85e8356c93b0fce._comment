@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkQafKy7hNSEolLs6TvbgUnkklTctUY9LI"
+ nickname="Zellyn"
+ subject="Bugs..."
+ date="2013-04-23T23:30:47Z"
+ content="""
+Perhaps if you made a bug report form that asked for the version number (with helpful command to get it printed below), and had a checkbox for \"full log attached\", etc. you might be able to weed out low-value bugs...  Not that adding UI to force good bugs really works, but there might be a couple of low-hanging fruit before the diminishing returns kick in.
+"""]]

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.14.105"
+ subject="comment 3"
+ date="2013-09-19T18:49:05Z"
+ content="""
+git-annex sync is a wrapper around git commit. But not -a! git commit -a will stage every one of your large files directly into the git repository, wasting much memory and worse, disk space. It is ok to use `git commit` or `git commit --staged` in direct mode after eg `git annex add`. But not `git commit -a` or `git commit even-only-one-of-the-files`. It's best to just use `git annex sync` rather than `git commit`, as it avoids finger memory causing you to run the wrong type of commit command. Please see [[direct_mode]] for the details.
+
+I was able to make pre-commit take a lot of memory by committing a 1 gb file directly to git. git-annex was buffering the whole file content in memory
+due to not thinking to check first if it was a symlink. I have fixed that bug.
+
+So I think you must have run that command you showed, and you now have a lot of data stored in your git repository that you had meant git-annex to handle. You might need to use git-filter-branch to remove it..
+
+This kind of thing is why I need to write the [[todo/direct_mode_guard]].
+"""]]

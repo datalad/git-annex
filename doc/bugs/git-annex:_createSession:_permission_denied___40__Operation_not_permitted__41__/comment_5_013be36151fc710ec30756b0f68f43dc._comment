@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnNqLKszWk9EoD4CDCqNXJRIklKFBCN1Ao"
+ nickname="maurizio"
+ subject="package in debian backports shows the same error mesage"
+ date="2014-07-08T19:25:19Z"
+ content="""
+I upgraded recently (on wheezy) to package 5.20140529~bpo70+2 and when I to access the webapp I get:
+
+    mezzo:~$ git-annex webapp
+    git-annex: createSession: permission denied (Operation not permitted)
+
+"""]]

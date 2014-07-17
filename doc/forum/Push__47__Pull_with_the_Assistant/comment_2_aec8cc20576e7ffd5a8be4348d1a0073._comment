@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="annexuser"
+ ip="85.159.236.214"
+ subject="comment 2"
+ date="2012-11-17T20:44:53Z"
+ content="""
+When I make a change in the repository and run a plain old `git annex sync`, it pushes out to any other available annex, but not to my bare hub. If I run `git annex sync` a second time it tells me that I'm ahead of the hub:
+
+    commit
+    # On branch master
+    # Your branch is ahead of 'hub/master' by 1 commit.
+    #
+    nothing to commit, working directory clean
+    ok
+
+In order to push the changes out to the hub I have to do `git push --all`.
+
+The same thing with pulling. If I make a change on the annex, push it to the hub, and then go to a second annex that knows about the hub but not the first annex, a `git annex sync` does not pull the changes in from the hub. I have to do `git pull` to get them.
+
+Do I have something setup incorrectly?
+"""]]

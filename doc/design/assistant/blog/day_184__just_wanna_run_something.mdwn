@@ -1,0 +1,46 @@
+Have been working on getting all the haskell libraries git-annex uses
+built with the android cross compiler. Difficulties so far are
+libraries that need tweaks to work with the new version of ghc, and some
+that use cabal in ways that break cross compilation. Haskell's network
+library was the last and most challenging of those.
+
+At this point, I'm able to start trying to build git-annex for android.
+Here's the first try!
+
+<pre>
+joey@gnu:~/src/git-annex>cabal install -w $HOME/.ghc-android-14-arm-linux-androideabi-4.7/bin/arm-unknown-linux-androideabi-ghc --with-ghc-pkg=$HOME/.ghc-android-14-arm-linux-androideabi-4.7/bin/arm-unknown-linux-androideabi-ghc-pkg --with-ld=$HOME/.ghc-android-14-arm-linux-androideabi-4.7/bin/arm-linux-androideabi-ld --flags="-Webapp -WebDAV -XMPP -S3 -Dbus"
+Resolving dependencies...
+Configuring git-annex-3.20130207...
+Building git-annex-3.20130207...
+Preprocessing executable 'git-annex' for git-annex-3.20130207...
+on the commandline: Warning:
+    -package-conf is deprecated: Use -package-db instead
+
+Utility/libdiskfree.c:28:26:
+     fatal error: sys/statvfs.h: No such file or directory
+compilation terminated.
+</pre>
+
+Should not be far from a first android build now..
+
+----
+
+While I already have Android "hello world" executables to try, I have not yet
+been able to run them. Can't seem to find a directory I can write to on the
+Asus Transformer, with a filesystem that supports the +x bit. Do you really
+have to root Android just to run simple binaries? I'm crying inside.
+
+It seems that the blessed Android NDK way would involve making a Java app,
+that pulls in a shared library that contains the native code. For haskell,
+the library will need to contain a C shim that, probably, calls an entry
+point to the Haskell runtime system. Once running, it can use the FFI to
+communicate back to the Java side, probably. The good news is that CJ van
+den Berg, who already saved my bacon once by developing ghc-android, tells
+me he's hard at work on that very thing.
+
+----
+
+In the meantime, downloaded the Android SDK. Have gotten it to build a
+`.apk` package from just javascript code, and managed to do it without
+using eclipse (thank god). Will need this later, but for now want to wash
+my brain out with soap after using it.

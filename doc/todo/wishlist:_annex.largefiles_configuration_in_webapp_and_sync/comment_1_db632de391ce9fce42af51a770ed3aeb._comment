@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 1"
+ date="2013-11-05T16:46:28Z"
+ content="""
+It might make sense to sync this across remotes and have it edited with `git annex vicfg`
+
+Putting it in the webapp would need some nice interface for constructing the underlying expression. Might be doable for at least simple filtering (ie, files larger than XX or with extensions .A, .B, .C). I tend to think of this as a setting for people comfortable with the command line though.
+"""]]

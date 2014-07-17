@@ -1,0 +1,29 @@
+Fixed a bug where the locked down ssh key that the assistant sets up to
+access the annex on a remote server was being used by ssh *by default* for
+all logins to that server.
+
+That should not have happened. The locked down key is written to a filename
+that ssh won't use at all, by default. But, I found code in gnome-keyring
+that watches for `~/.ssh/*.pub` to appear, and automatically adds all such
+keys to the keyring. In at least some cases, probably when it has no other
+key, it then tells ssh to go ahead and use that key. Astounding.
+
+To avoid this, the assistant will store its keys in <s>`~/.ssh/annex/`</s>
+`~/.ssh/git-annex/` instead. gnome-keyring does not look there (verified in
+the source). If you use gnome-keyring and have set up a repository on a
+remote server with the assistant, I'd recommend moving the keys it set up
+and editing `~/.ssh/config` to point to their new location.
+
+gnome-keyring is not the only piece of software that has a bad
+interaction with git-annex. I've been working on a bug that makes git-annex
+fail to authenticate to ejabberd. ejabberd 2.1.10 got support for
+SCRAM-SHA-1, but its code violates the RFC, and chokes on an address
+attribute that the haskell XMPP library provides. I hope to get this fixed
+in ejabberd.
+
+
+Also did some more work on the Evil Splicer today, integrating it into the
+build of the Android app, and making it support incremental building.
+Improved its code generation, and am at the milestone where it creates
+valid haskell code for the entire `Assistant/WebApp/Types.hs` file,
+where Template Haskell expands 2 lines into 2300 lines of code!

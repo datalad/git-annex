@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://adamspiers.myopenid.com/"
+ nickname="Adam"
+ subject="comment 6"
+ date="2011-12-23T17:14:03Z"
+ content="""
+Extending `git annex sync` would be nice, although auto-commit does not suit every use case, so it would be better not to couple one to the other.
+"""]]

@@ -1,0 +1,29 @@
+### Please describe the problem.
+
+Some logs fail to be displayed, and instead of displaying parts of the log, no logs at all are displayed in the webapp.
+
+The problem character is, I believe, a latin-1 encoded filename (as opposed to UTF-8). --[[anarcat]]
+
+### What steps will reproduce the problem?
+
+1. download [this logfile](http://paste.anarc.at/daemon.log.1)
+2. install it in .git/annex/daemon.log
+3. load the webapp
+4. visit the logs page
+
+### What version of git-annex are you using? On what operating system?
+
+4.20131105-g8efdc1a
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+Internal Server Error
+/srv/video/.git/annex/daemon.log.1: hGetContents: invalid argument (invalid byte sequence)
+git-annex version 4.20131105-g8efdc1a
+# End of transcript or log.
+"""]]
+
+> [[fixed|done]] --[[Joey]]

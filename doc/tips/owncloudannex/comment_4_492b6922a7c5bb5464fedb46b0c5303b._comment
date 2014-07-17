@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmLB39PC89rfGaA8SwrsnB6tbumezj-aC0"
+ nickname="Tobias"
+ subject="comment 4"
+ date="2013-07-10T08:54:13Z"
+ content="""
+Hm, an error like that it really should print without the need of debug information. I'll look into it.
+
+And if you want the real file content, not encrypted, just change \"shared\" to \"none\" in the line:
+
+git annex initremote owncloud type=hook hooktype=owncloud encryption=shared
+
+I'm not sure if you can change this after you initialized the remote though. And also, the folder structure and filenames will be as you see them now on the owncloud. I'd need some more data from gitannex to make it show the real directory structure. But that doesn't seem feasible.
+
+Why would you even want the data unencrypted on owncloud anyways? i mean on flickr, or googledocs, i kinda get it. but for owncloud?
+
+"""]]

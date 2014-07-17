@@ -1,0 +1,16 @@
+Came up with a fix for the gnucash hard linked file problem that makes the
+assistant notice the files gnucash writes. This is not full hard link support;
+hard linked files still don't cleanly sync around. But new hard links to
+files are noticed and added, which is enough to support gnucash.
+
+Spent around 4 hours on reproducing and trying to debug
+[[bugs/Hanging_on_install_on_Mountain_lion]]. It seems that recent upgrades
+of the OSX build machine led to this problem. And indeed, building with an
+older version of Yesod and Warp seems to have worked around the problem. So
+I updated the OSX build for the last release. I will have to re-install the
+new Yesod on my laptop and investigate further -- is this an OSX specific
+problem, or does it affect Linux? Urgh, this is the second hang I've
+encountered involving Warp..
+
+Got several nice [[success stories|day_288__success_stories]], but I don't
+think I've seen *yours* yet. ;) Please post!

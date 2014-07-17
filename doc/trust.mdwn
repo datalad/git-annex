@@ -1,0 +1,59 @@
+Git-annex supports several levels of trust of a repository:
+
+* semitrusted (default)
+* untrusted
+* trusted
+* dead
+
+## semitrusted
+
+Normally, git-annex does not fully trust its stored [[location_tracking]]
+information. When removing content, it will directly check
+that other repositories have enough [[copies]].
+
+Generally that explicit checking is a good idea. Consider that the current
+[[location_tracking]] information for a remote may not yet have propagated
+out. Or, a remote may have suffered a catastrophic loss of data, or itself
+been lost.
+
+There is still some trust involved here. A semitrusted repository is
+depended on to retain a copy of the file content; possibly the only
+[[copy|copies]].
+
+(Being semitrusted is the default. The `git annex semitrust` command
+restores a repository to this default, when it has been overridden.
+The `--semitrust` option can temporarily restore a repository to this
+default.)
+
+## untrusted
+
+An untrusted repository is not trusted to retain data at all. Git-annex
+will retain sufficient [[copies]] of data elsewhere.
+
+This is a good choice for eg, portable drives that could get lost. Or,
+if a disk is known to be dying, you can set it to untrusted and let
+`git annex fsck` warn about data that needs to be copied off it.
+
+To configure a repository as untrusted, use the `git annex untrust`
+command.
+
+## trusted
+
+Sometimes, you may have reasons to fully trust the location tracking
+information for a repository. For example, it may be an offline
+archival drive, from which you rarely or never remove content. Deciding
+when it makes sense to trust the tracking info is up to you.
+
+One way to handle this is just to use `--force` when a command cannot
+access a remote you trust. Or to use `--trust` to specify a repisitory to
+trust temporarily.
+
+To configure a repository as fully and permanently trusted,
+use the `git annex trust` command.
+
+## dead
+
+This is used to indicate that you have no trust that the repository
+exists at all. It's appropriate to use when a drive has been lost,
+or a directory irretrevably deleted. It will make git-annex avoid
+even showing the repository as a place where data might still reside.

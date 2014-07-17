@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 10"
+ date="2013-05-23T20:04:03Z"
+ content="""
+You can enable a special remote on a clone by running `git annex enableremote $name`, where $name is the name you used to originally create the special remote. (Older versions of git-annex used `git annex initremote` to enable the special remote on the clone.)
+
+(Just in case, I have verified that embedcreds does cause the cipher= to be stored in the remote.log. It does.)
+"""]]

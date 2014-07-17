@@ -1,0 +1,11 @@
+More bugfixes today. The assistant now seems to have enough users that
+they're turning up interesting bugs, which is good. But does keep me too
+busy to add many more bugs\^Wcode.
+
+The fun one today made it bloat to eat all memory when logging out of a
+Linux desktop. I tracked that back to a bug in the Haskell DBUS library
+when a session connection is open and the session goes away. Developed a
+test case, and even profiled it, and sent it all of to the library's
+author. Hopefully there will be a quick fix, in the meantime today's
+release has DBUS turned off. Which is ok, it just makes it a little bit
+slower to notice some events.

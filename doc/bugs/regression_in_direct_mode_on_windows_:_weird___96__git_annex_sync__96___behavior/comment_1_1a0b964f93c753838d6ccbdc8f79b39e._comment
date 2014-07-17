@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.21"
+ subject="re: workaround"
+ date="2013-07-30T19:17:11Z"
+ content="""
+The problem with manually merging the branches and not using sync is that the file mappings get out of date. You should be able to correct them by running `git annex fsck`
+"""]]

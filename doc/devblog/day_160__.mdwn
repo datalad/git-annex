@@ -1,0 +1,20 @@
+Reviewed Sören's updated bootstrap3 patch, which appeared while I was
+[traveling](http://joeyh.name/blog/entry/the_real_Brazil/). Sören
+kindly fixed it to work with Debian stable's old version of Yesod,
+which was quite a lot of work. The new new bootstrap3 UI looks nice,
+found a few minor issues, but expect to be able to merge it soon.
+
+Started on [[design/assistant/sshpassword]] groundwork. Added a simple
+password cache to the assistant, with automatic expiration, and made
+git-annex be able to be run by ssh as the `SSH_ASKPASS` program.
+
+The main difficulty will be changing the webapp's UI to prompt for the ssh
+password when one is needed. There are several code paths in ssh remote
+setup where a password might be needed. Since the cached password expires,
+it may need to be prompted for at any of those points. Since a new page is
+loading, it can't pop up a prompt on the current page; it needs to redirect
+to a password prompt page and then redirect back to the action that needed
+the password. ...At least, that's one way to do it.
+I'm going to sleep on it and hope I dream up a better way.
+
+[[!meta date="Tue, 29 Apr 2014 18:33:53 -0400"]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.254.222"
+ subject="comment 1"
+ date="2013-07-07T17:14:18Z"
+ content="""
+You don't have to do anything special, git-annex automatically detects when a file has been renamed.
+
+Just `git annex` add the new file, and commit and sync like usual.
+"""]]

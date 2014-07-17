@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 3"
+ date="2013-12-12T20:37:55Z"
+ content="""
+It's not a firewall or network problem, what you pasted earlier shows that the ssh-keygen command bundled in the git annex dmg is trying to use a symbol that is not present in your libSystem library.
+
+I am puzzled why ssh-keygen apparently works on one of your macs and not on the other, if they indeed both have the same build of git-annex installed.
+
+Please paste output of `otool -L /Applications/git-annex.app/Contents/MacOS/bundle/ssh-keygen` on the mac with the problem.
+"""]]

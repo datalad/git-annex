@@ -1,0 +1,1 @@
+I wrote more than 2 years ago a bash completion file for git-annex (did I miss an official version?) I just updated it today to match current version of git-annex, it is far from perfect, still incomplete, and probably buggy, but works for me. I tried to attach the file in case it could be useful to someone, but it seems that I can't; is it ok to paste the code directly?

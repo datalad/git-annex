@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmkBwMWvNKZZCge_YqobCSILPMeK6xbFw8"
+ nickname="develop"
+ subject="comment 2"
+ date="2013-09-11T07:46:07Z"
+ content="""
+Only played a tiny bit with this since the initial post.
+
+I've decided that sql backend should be dropped entirely. Mostly the SQL backend was there because the code does something else entirely, and this was just a test.
+
+But since there has been no interest it will probably take ages before i actually get this finished :)
+
+"""]]

@@ -1,0 +1,1 @@
+It was fast to git annex a bunch of files. But git unannex seems a lot slower. Is there a faster way to get files out of git annex? Or to replace the symlinks with real files and then I could just remove the .git directory? I shouldn't have put so many in as a test but they are there now.

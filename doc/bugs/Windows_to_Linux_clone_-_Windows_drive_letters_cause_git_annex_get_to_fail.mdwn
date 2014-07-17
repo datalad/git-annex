@@ -1,0 +1,131 @@
+[[!tag moreinfo]]
+
+### Please describe the problem.
+git annex get on a clone of a repository created on Windows fails.
+
+### What steps will reproduce the problem?
+On Windows:
+1. Create an annex using git annex init
+
+2. git add files
+
+3. git annex sync (because I forgot about commit)
+
+On Linux:
+
+1. Mount the Windows annex via SMB (mine was read only, but probably won't matter)
+
+2. git clone the folder (works fine)
+
+3. git annex get (fails, due to Windows drive letter)
+
+### What version of git-annex are you using? On what operating system?
+
+*Windows:* 
+
+git-annex version: 4.20130802-g0a52f02
+
+build flags: Pairing Testsuite S3 WebDAV DNS
+
+*Linux: (Debian wheezy on ARMel)*
+
+git-annex version: 3.20120629
+
+local repository version: 3
+
+default repository version: 3
+
+supported repository versions: 3
+
+upgrade supported from repository versions: 0 1 2
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+#output of git annex get on the Linux side.
+
+get Purchased/Caravan Palace/Panic/01 Queens.mp3 (not available) 
+  Try making some of these repositories available:
+  	d6c78593-79d2-455a-8202-7be2133e2d48 -- ICARUS:E:\music
+failed
+get Purchased/Caravan Palace/Panic/02 Maniac.mp3 (not available) 
+  Try making some of these repositories available:
+  	d6c78593-79d2-455a-8202-7be2133e2d48 -- ICARUS:E:\music
+failed
+get Purchased/Caravan Palace/Panic/03 The Dirty Side of the Street.mp3 (not available) 
+  Try making some of these repositories available:
+  	d6c78593-79d2-455a-8202-7be2133e2d48 -- ICARUS:E:\music
+failed
+get Purchased/Caravan Palace/Panic/04 12 juin 3049.mp3 (not available) 
+  Try making some of these repositories available:
+  	d6c78593-79d2-455a-8202-7be2133e2d48 -- ICARUS:E:\music
+failed
+get Purchased/Caravan Palace/Panic/05 Rock It for Me.mp3 (not available) 
+  Try making some of these repositories available:
+  	d6c78593-79d2-455a-8202-7be2133e2d48 -- ICARUS:E:\music
+failed
+get Purchased/Caravan Palace/Panic/06 Clash.mp3 (not available) 
+  Try making some of these repositories available:
+  	d6c78593-79d2-455a-8202-7be2133e2d48 -- ICARUS:E:\music
+failed
+get Purchased/Caravan Palace/Panic/07 Newbop.mp3 (not available) 
+  Try making some of these repositories available:
+  	d6c78593-79d2-455a-8202-7be2133e2d48 -- ICARUS:E:\music
+failed
+get Purchased/Caravan Palace/Panic/08 Glory of Nelly.mp3 (not available) 
+  Try making some of these repositories available:
+  	d6c78593-79d2-455a-8202-7be2133e2d48 -- ICARUS:E:\music
+failed
+get Purchased/Caravan Palace/Panic/09 Dramophone.mp3 (not available) 
+  Try making some of these repositories available:
+  	d6c78593-79d2-455a-8202-7be2133e2d48 -- ICARUS:E:\music
+failed
+get Purchased/Caravan Palace/Panic/10 Cotton Heads.mp3 (not available) 
+  Try making some of these repositories available:
+  	d6c78593-79d2-455a-8202-7be2133e2d48 -- ICARUS:E:\music
+failed
+get Purchased/Caravan Palace/Panic/11 Panic.mp3 (not available) 
+  Try making some of these repositories available:
+  	d6c78593-79d2-455a-8202-7be2133e2d48 -- ICARUS:E:\music
+failed
+get Purchased/Caravan Palace/Panic/12 Pirates.mp3 (not available) 
+  Try making some of these repositories available:
+  	d6c78593-79d2-455a-8202-7be2133e2d48 -- ICARUS:E:\music
+failed
+get Purchased/Caravan Palace/Panic/13 Beatophone.mp3 (not available) 
+  Try making some of these repositories available:
+  	d6c78593-79d2-455a-8202-7be2133e2d48 -- ICARUS:E:\music
+failed
+get Purchased/Caravan Palace/Panic/14 Sydney.mp3 (not available) 
+  Try making some of these repositories available:
+  	d6c78593-79d2-455a-8202-7be2133e2d48 -- ICARUS:E:\music
+failed
+get Purchased/Caravan Palace/Panic/Thumbs.db (not available) 
+  Try making some of these repositories available:
+  	d6c78593-79d2-455a-8202-7be2133e2d48 -- ICARUS:E:\music
+
+
+And the (broken) symlinks:
+
+lrwxrwxrwx 1 voltagex voltagex 198 Aug 11 23:05 01 Queens.mp3 -> .git/annex/objects/5P/vq/SHA256E-s9886015--dfb8f452d47f997a9141de3f152de375fad1d5ccb4a20d5c022064a630eaba88.mp3/SHA256E-s9886015--dfb8f452d47f997a9141de3f152de375fad1d5ccb4a20d5c022064a630eaba88.mp3
+lrwxrwxrwx 1 voltagex voltagex 200 Aug 11 23:05 02 Maniac.mp3 -> .git/annex/objects/J0/WV/SHA256E-s10116938--7ce35f4a54c4f74bd2e3813445cb3a07fae76b2854df06ab00876cd0067f34a5.mp3/SHA256E-s10116938--7ce35f4a54c4f74bd2e3813445cb3a07fae76b2854df06ab00876cd0067f34a5.mp3
+lrwxrwxrwx 1 voltagex voltagex 198 Aug 11 23:05 03 The Dirty Side of the Street.mp3 -> .git/annex/objects/xz/4F/SHA256E-s8812949--9e15761ae8c6231d11d1f5a67de8a89142e2e4017b43b8ffac1088fd71842ca7.mp3/SHA256E-s8812949--9e15761ae8c6231d11d1f5a67de8a89142e2e4017b43b8ffac1088fd71842ca7.mp3
+lrwxrwxrwx 1 voltagex voltagex 198 Aug 11 23:05 04 12 juin 3049.mp3 -> .git/annex/objects/Kp/k6/SHA256E-s8236133--3a6465bea3272ae7a22b77b67e96a91ae389390cc95642fb1456ce80e3313033.mp3/SHA256E-s8236133--3a6465bea3272ae7a22b77b67e96a91ae389390cc95642fb1456ce80e3313033.mp3
+lrwxrwxrwx 1 voltagex voltagex 198 Aug 11 23:05 05 Rock It for Me.mp3 -> .git/annex/objects/Wk/Qv/SHA256E-s7701150--8197e499408e64601157df95927ac6b09bd37834a41eceecc5d12667bd7c66a4.mp3/SHA256E-s7701150--8197e499408e64601157df95927ac6b09bd37834a41eceecc5d12667bd7c66a4.mp3
+lrwxrwxrwx 1 voltagex voltagex 200 Aug 11 23:05 06 Clash.mp3 -> .git/annex/objects/ZQ/P4/SHA256E-s10201572--c2a1a8892fcaaab1ed59ca7f5ab9d45f0c3bb3c6d6450b95228039b9e8d7a0b4.mp3/SHA256E-s10201572--c2a1a8892fcaaab1ed59ca7f5ab9d45f0c3bb3c6d6450b95228039b9e8d7a0b4.mp3
+lrwxrwxrwx 1 voltagex voltagex 198 Aug 11 23:05 07 Newbop.mp3 -> .git/annex/objects/Fk/wV/SHA256E-s6850587--b5ba0347f6a09a7ff8bec2dd1fbe8076fdff645d4bc1909ddeadfc035bf19fda.mp3/SHA256E-s6850587--b5ba0347f6a09a7ff8bec2dd1fbe8076fdff645d4bc1909ddeadfc035bf19fda.mp3
+lrwxrwxrwx 1 voltagex voltagex 198 Aug 11 23:05 08 Glory of Nelly.mp3 -> .git/annex/objects/Pm/K3/SHA256E-s9002048--18149581cbfc3b4e3e72b784777fe34c53f1580e78e97f66058be0b1eb40e809.mp3/SHA256E-s9002048--18149581cbfc3b4e3e72b784777fe34c53f1580e78e97f66058be0b1eb40e809.mp3
+lrwxrwxrwx 1 voltagex voltagex 198 Aug 11 23:05 09 Dramophone.mp3 -> .git/annex/objects/k3/Jf/SHA256E-s8199558--925117d9fc47a65e8e5324f3d0638a3c24bf51fd6c0b5d8ac2f63951c893cc48.mp3/SHA256E-s8199558--925117d9fc47a65e8e5324f3d0638a3c24bf51fd6c0b5d8ac2f63951c893cc48.mp3
+lrwxrwxrwx 1 voltagex voltagex 198 Aug 11 23:05 10 Cotton Heads.mp3 -> .git/annex/objects/9f/32/SHA256E-s8801425--c6926238c0b1a3bbea1a5d17841ceac591e53e223e4c4c45a2077cabffc85d81.mp3/SHA256E-s8801425--c6926238c0b1a3bbea1a5d17841ceac591e53e223e4c4c45a2077cabffc85d81.mp3
+lrwxrwxrwx 1 voltagex voltagex 198 Aug 11 23:05 11 Panic.mp3 -> .git/annex/objects/XF/WF/SHA256E-s9833770--5e837c7fa3ec096f7c0507efbcf398067029749f8a0fc77a2badf864b9ffbb7c.mp3/SHA256E-s9833770--5e837c7fa3ec096f7c0507efbcf398067029749f8a0fc77a2badf864b9ffbb7c.mp3
+lrwxrwxrwx 1 voltagex voltagex 198 Aug 11 23:05 12 Pirates.mp3 -> .git/annex/objects/7Z/jz/SHA256E-s8017742--5fd49b2d89577266d2fb740e7e7def9338475af90c2ca99f9d6d513465b2bfac.mp3/SHA256E-s8017742--5fd49b2d89577266d2fb740e7e7def9338475af90c2ca99f9d6d513465b2bfac.mp3
+lrwxrwxrwx 1 voltagex voltagex 198 Aug 11 23:05 13 Beatophone.mp3 -> .git/annex/objects/81/xv/SHA256E-s9339544--a1eb8404ecf0503b9f635378fec4e2c95ec08bb1428c2cd4c0cedf492811577d.mp3/SHA256E-s9339544--a1eb8404ecf0503b9f635378fec4e2c95ec08bb1428c2cd4c0cedf492811577d.mp3
+lrwxrwxrwx 1 voltagex voltagex 198 Aug 11 23:05 14 Sydney.mp3 -> .git/annex/objects/3K/99/SHA256E-s8459731--4ff44b25c912e914c79124ff9074c576c0024152442fc96c9bad65f5a50a40d9.mp3/SHA256E-s8459731--4ff44b25c912e914c79124ff9074c576c0024152442fc96c9bad65f5a50a40d9.mp3
+lrwxrwxrwx 1 voltagex voltagex 192 Aug 11 23:05 Thumbs.db -> .git/annex/objects/28/Zv/SHA256E-s85504--3604669cd3a55234516191eb4f19434829c1634d6dd69a9981185f095d2bbaba.db/SHA256E-s85504--3604669cd3a55234516191eb4f19434829c1634d6dd69a9981185f095d2bbaba.db
+
+# End of transcript or log.
+"""]]

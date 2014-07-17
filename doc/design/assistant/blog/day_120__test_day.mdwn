@@ -1,0 +1,2 @@
+Did a lot of testing, found and fixed 4 bugs with repository setup
+configurators. None of them were caused by the recent code reworking.

@@ -1,0 +1,1 @@
+An interesting feature, when an archived file cannot be removed from all clients because of the minimum number of copies required, would be to remove it from the repositories with the smallest amount of free space available.

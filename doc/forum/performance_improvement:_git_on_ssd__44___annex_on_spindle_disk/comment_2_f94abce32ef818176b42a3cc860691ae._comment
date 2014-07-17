@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 2"
+ date="2011-04-02T21:34:24Z"
+ content="""
+I'll give it a try as soon as I get rid of this:
+
+    % git annex fsck
+fatal: index file smaller than expected
+fatal: index file smaller than expected
+    % git status
+fatal: index file smaller than expected
+    %    
+
+And no, I am not sure where that is coming from all of a sudden... (it might have to do with a hard lockup of the whole system due to a faulty hdd I tested, but I didn't do anything to it for ages before that lock-up. So meh. Also, this is prolly off topic in here)
+
+
+Richard
+"""]]

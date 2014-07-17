@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.244"
+ subject="comment 1"
+ date="2014-04-02T20:02:19Z"
+ content="""
+I don't see any need to scrap the repository. Since you have an indirect mode repsitory, you can use `git log` in there to find commits you don't like, and run `git revert` to revert them. So if a bad commit comes down from windows, you can just undo it. That's why we use git, yes?
+
+I'm much more curious about the circumstances that cause empty files to end up in the direct mode repository. 
+"""]]

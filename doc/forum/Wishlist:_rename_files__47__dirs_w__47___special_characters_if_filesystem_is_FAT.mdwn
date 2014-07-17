@@ -1,0 +1,5 @@
+Hi Joey,
+    I recently tried cloning a music annex to a microSD card to play on rockbox (FAT only) with my Sansa Clip, but 'git clone' stops the first time it runs into something with a special character in a file or directory, like a colon in an album title.  After this happens, there doesn't seem to be a way to get a full annex file/directory listing for the annex; it only has up to where git failed since FAT can't handle the name.  Is it possible for git-annex to replace special characters in directory/filenames with a space or underscore if it's on a crippled filesystem?  Also, would it be possible to then clone from that annex to a non-crippled FS, preserving the original filenames with special characters?  I've been meaning to ask about this for a while, so I'm a teeny bit fuzzy on the specifics...if you want, I'll reproduce the problem and cough up some more details.
+
+
+PS: I love git-annex!

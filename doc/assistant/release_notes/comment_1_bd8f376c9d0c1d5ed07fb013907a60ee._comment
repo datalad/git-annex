@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://wiggy.net/"
+ nickname="Wichert"
+ subject="OSX 10.8's gatekeeper does not like git-annex"
+ date="2012-11-13T14:47:52Z"
+ content="""
+Trying to run this release on OSX results in an error message from Gatekeeper:
+
+> \"git-annex\" can't be opened because it is from an unidentified developer.
+> 
+> Your security preferences allow installation of only apps from the Mac App Store and identified developers.
+
+It would be nice if the binary could be signed to make Gatekeeper happy. Until then a note in the installation instructions might be useful.
+"""]]

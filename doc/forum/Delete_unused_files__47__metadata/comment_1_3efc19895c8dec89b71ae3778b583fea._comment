@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 1"
+ date="2012-08-07T20:06:26Z"
+ content="""
+You must have quite a number of files and/or location tracking churn to get the branch that large. 
+
+Removing location tracking files for vanished files from the git-annex branch would not save much space.. Only a very little bit of tree object size going forward. The way the git-annex branch is merged does not really allow deleting files from it. And of course git uses space for even deleted files.
+
+It'd be possible to delete the git-annex branch entirely, first backing up git-annex:uuid.log  git-annex:remote.log and git-annex:trust.log and then making a new, clean branch that those files are added back to. Then run git annex fsck on every clone to repopulate the location tracking info for files that still exit. (Note that this would also lose urls stored by `git-annex addurl`.)
+"""]]

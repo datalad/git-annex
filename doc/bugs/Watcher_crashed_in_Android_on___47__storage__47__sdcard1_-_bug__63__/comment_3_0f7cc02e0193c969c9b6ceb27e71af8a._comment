@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnaH44G3QbxBAYyDwy0PbvL0ls60XoaR3Y"
+ nickname="Nigel"
+ subject="/storage/sdcard1/.git/annex/daemon.log"
+ date="2013-07-30T23:11:29Z"
+ content="""
+    [2013-07-30 23:17:43 BST] main: starting assistant version 4.20130723-ged05a63
+    (scanning...) [2013-07-30 23:17:44 BST] Watcher: Performing startup scan
+    Watcher crashed: addWatch: permission denied (Permission denied)
+    [2013-07-30 23:17:45 BST] Watcher: warning Watcher crashed: addWatch: permission denied (Permission denied)
+    [2013-07-30 23:17:45 BST] Committer: Adding 229286 229381
+    add LOST.DIR/229286 (checksum...) ok
+    add LOST.DIR/229381 (checksum...) [2013-07-30 23:17:47 BST] Committer: Committing changes to git
+    [2013-07-30 23:20:22 BST] Committer: Adding git-annex..stall.log
+    ok
+    (Recording state in git...)
+    (Recording state in git...)
+    add git-annex-install.log (checksum...) ok
+    add git-annex-install.log (checksum...) [2013-07-30 23:20:22 BST] Committer: Committing changes to git
+"""]]

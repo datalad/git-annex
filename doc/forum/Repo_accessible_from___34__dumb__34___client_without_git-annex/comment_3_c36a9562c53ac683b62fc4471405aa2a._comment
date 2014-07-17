@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk3HGoDpnOPob5jOjvIootmkve1-nCpRiI"
+ nickname="Kalle"
+ subject="Thanks for the help"
+ date="2013-01-21T20:40:39Z"
+ content="""
+I take it all the above requires mounting an sshfs filsystem of the remote client to run the git-annex or the assistant \"locally\" on the desktop or laptop. Or am I missing something.
+
+For the usb usecase a normal mount would suffice of course.
+
+The lack of automation means running a rsync script from (or to) the phone is easier. Not as clever though :( and means running a separate \"system\" for distributing files to the phone.
+
+Thanks again!
+
+"""]]

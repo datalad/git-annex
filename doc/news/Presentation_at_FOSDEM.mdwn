@@ -1,0 +1,4 @@
+git-annex will be briefly presented at FOSDEM, on Sunday February 4th at 15:40.
+[Details](http://fosdem.org/2012/schedule/event/gitannex).
+
+Thanks to Richard Hartmann for making this presentation.

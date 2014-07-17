@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.64"
+ subject="comment 21"
+ date="2013-11-24T15:58:30Z"
+ content="""
+@Bence the closest I have is some tests of particular special remotes inside Test.hs. The shell equivilant of that code is:
+
+[[!format sh \"\"\"
+set -e
+git annex copy file --to remote # tests store
+git annex drop file # tests checkpresent when remote has file
+git annex move file --from remote # tests retrieve and remove
+\"\"\"]]
+"""]]

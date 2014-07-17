@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmBUR4O9mofxVbpb8JV9mEbVfIYv670uJo"
+ nickname="Justin"
+ subject="comment 1"
+ date="2013-09-06T22:57:05Z"
+ content="""
+If you are using ec2 and s3 why don't you just serve the attachments directly from s3?  Not sure how git-annex adds anything here.
+"""]]

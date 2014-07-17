@@ -1,0 +1,5 @@
+I'm trying to use git-annex for keeping my company invoices data. It seems a good idea because it's encrypted and whatnot, I'd never upload them to Dropbox. However, Libre Office refuses to work with files copied to annex-tracked folder. It's likely a flaw in LO/OOo, but maybe someone here knows a way to make the two work together.
+
+When opening a spreadsheet, I'm getting a "Document in use - document locked by: Unknown User - Open read-only or open a copy" dialog. I tried opening a copy and saving under a different filename , but I can only save once - any subsequent saves to the same filename result in an error.
+
+A graphic version of my story: http://f.gdr.name/annex-ooo-1.png http://f.gdr.name/annex-ooo-2.png

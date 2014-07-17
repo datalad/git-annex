@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnJTqmRu1YCKS2Hsm4vtOflLhP4fU-k98w"
+ nickname="Ahmed"
+ subject="Customise conflict resolution behaviour"
+ date="2014-02-25T11:42:08Z"
+ content="""
+How to customise git-annex conflict resolution behaviour, such that for example: change naming convention of conflicted files with suffix or prefix, move conflicted files to another directory structure, overwrite conflicted files from preferred content ...
+
+ 
+"""]]

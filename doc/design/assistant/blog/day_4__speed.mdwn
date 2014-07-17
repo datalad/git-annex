@@ -1,0 +1,47 @@
+Only had a few hours to work today, but my current focus is speed, and I
+have indeed sped up parts of `git annex watch`.
+
+One thing folks don't realize about git is that despite a rep for being
+fast, it can be rather slow in one area: Writing the index. You don't
+notice it until you have a lot of files, and the index gets big. So I've
+put a lot of effort into git-annex in the past to avoid writing the index
+repeatedly, and queue up big index changes that can happen all at once. The
+new `git annex watch` was not able to use that queue. Today I reworked the
+queue machinery to support the types of direct index writes it needs, and
+now repeated index writes are eliminated.
+
+... Eliminated too far, it turns out, since it doesn't yet *ever* flush
+that queue until shutdown! So the next step here will be to have a worker
+thread that wakes up periodically, flushes the queue, and autocommits.
+(This will, in fact, be the start of the [[syncing]] phase of my roadmap!)
+There's lots of room here for smart behavior. Like, if a lot of changes are
+being made close together, wait for them to die down before committing. Or,
+if it's been idle and a single file appears, commit it immediately, since
+this is probably something the user wants synced out right away. I'll start
+with something stupid and then add the smarts.
+
+(BTW, in all my years of programming, I have avoided threads like the nasty
+bug-prone plague they are. Here I already have three threads, and am going to
+add probably 4 or 5 more before I'm done with the git annex assistant. So
+far, it's working well -- I give credit to Haskell for making it easy to
+manage state in ways that make it possible to reason about how the threads
+will interact.)
+
+What about the races I've been stressing over? Well, I have an ulterior
+motive in speeding up `git annex watch`, and that's to also be able to
+**slow it down**. Running in slow-mo makes it easy to try things that might
+cause a race and watch how it reacts. I'll be using this technique when
+I circle back around to dealing with the races.
+
+Another tricky speed problem came up today that I also need to fix. On
+startup, `git annex watch` scans the whole tree to find files that have
+been added or moved etc while it was not running, and take care of them.
+Currently, this scan involves re-staging every symlink in the tree. That's
+slow! I need to find a way to avoid re-staging symlinks; I may use `git
+cat-file` to check if the currently staged symlink is correct, or I may
+come up with some better and faster solution. Sleeping on this problem.
+
+----
+
+Oh yeah, I also found one more race bug today. It only happens at startup
+and could only make it miss staging file deletions.

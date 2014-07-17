@@ -1,0 +1,30 @@
+## first run
+
+To get started with the git-annex assistant, just pick it from
+your system's list of applications.
+
+[[!img assistant/menu.png]]
+[[!img assistant/osx-app.png]]
+
+It'll prompt you to set up a folder:
+
+[[!img assistant/makerepo.png]]
+
+Then any changes you make to its folder will automatically be committed to
+git, and synced to repositories on other computers. You can use the
+interface to add repositories and control the git-annex assistant.
+
+[[!img assistant/running.png]]
+
+## starting on boot
+
+The git-annex assistant will automatically be started when you log in to
+desktop environments like Mac OS X, Gnome, XFCE, and KDE, and the menu item
+shown above can be used to open the webapp. On other systems, you may need
+to start it by hand.
+
+To start the webapp, run `git annex webapp` at the command line.
+
+To start the assistant without opening the webapp, 
+you can run the command "git annex assistant --autostart". This is a
+good thing to configure your system to run automatically when you log in.

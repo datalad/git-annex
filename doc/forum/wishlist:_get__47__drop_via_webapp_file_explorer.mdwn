@@ -1,0 +1,1 @@
+Know what'd be a sweet feature?  A file explorer in the webapp that lets you get and drop files (for a Manual local repository).  Especially when the webapp becomes available on Android.  I'd love to be able to select what is and isn't present on a small device by some means other than moving files around.

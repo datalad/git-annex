@@ -1,0 +1,16 @@
+**What steps will reproduce the problem?**<br>
+Delete the last repository in the current repository (where it says: warning type in "yes please do as i say").
+Then try running git annex webapp
+<br><br>
+**What is the expected output? What do you see instead?**<br>
+Webapp starts. git-annex: Not in a git repository.
+<br><br>
+**What version of git-annex are you using? On what operating system?**<br>
+4.20130417. Debian wheezy/testing
+<br><br>
+**Please provide any additional information below.**<br>
+See also
+[[bugs/git-annex:_Not_in_a_git_repository._/]]
+where the same error message occurs
+
+[[!tag /design/assistant moreinfo]]

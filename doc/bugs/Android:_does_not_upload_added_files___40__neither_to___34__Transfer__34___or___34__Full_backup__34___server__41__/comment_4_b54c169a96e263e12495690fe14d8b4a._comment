@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="etset"
+ ip="188.83.111.161"
+ subject="comment 4"
+ date="2013-12-29T15:12:43Z"
+ content="""
+I also can't transfer from and to an Android tablet with the git-annex assistant. The `daemon.log` shows the same error, `Invalid pid specified`, repeated several times.
+
+Enabling the debug log mode always shows lines similar to this one before each \"Invalid pid\" line: `[2013-12-29 14:50:49 WET] chat: nice [\"ionice\", \"-c3\", \"git-annex\", \"transferkeys\"]`.
+
+However, using the `git annex get` and `git annex copy` commands to fetch and send the files from the same tablet work as expected.
+
+I can post the full log later, if needed.
+"""]]

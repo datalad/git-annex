@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 14"
+ date="2013-12-31T19:26:55Z"
+ content="""
+@flabbergast, you seem to be confused about how git-remote-gcrypt stores its data. The data is stored as git commits inside a bare repository. That is why the instructions say to create a bare repository first. (I think it's also possible to use git-remote-gcrypt in a rsync mode where it just uploads encrypted files to an empty directory and does not use a bare git repository, but git-annex does not use it like that.)
+
+Your mkdir and touch commands effecetively create a bare git repository too.
+
+If you're having a problem, I suggest filing a bug report (not a comment on this page) with the full details. The examples show on this page have been tested, and work.
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 2"
+ date="2013-12-27T19:12:17Z"
+ content="""
+That's on the TODO list and the protocol should be easily flexible enough to let it be added. The existing code to handle chunks is a bit of a mess though.
+"""]]

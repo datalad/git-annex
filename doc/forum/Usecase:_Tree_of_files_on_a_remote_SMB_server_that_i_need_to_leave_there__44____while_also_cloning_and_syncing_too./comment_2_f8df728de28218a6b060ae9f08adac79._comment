@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~timo-linux"
+ nickname="Tim O'Callaghan"
+ subject="Would GIT_DIR or GIT_WORK_TREE be valid for this?"
+ date="2014-01-14T07:29:31Z"
+ content="""
+For example if i mounted this filesystem and used annex and GIT_ env variables to watch it? Presumably in direct mode, because i don't want to remove the source files, but i do want to manage my source files. 
+"""]]

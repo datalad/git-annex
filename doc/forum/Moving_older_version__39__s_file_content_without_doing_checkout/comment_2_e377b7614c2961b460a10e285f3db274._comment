@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.2.51"
+ subject="comment 2"
+ date="2012-05-15T17:00:10Z"
+ content="""
+Yes, I think that [[todo/add_-all_option]] is the right approach for this. Seems unlikely you'd have some files' hashes handy without having them checked out, but operating on all content makes sense.
+
+That page discusses some problems implementing it for some commands, but should not pose a problem for `move`. It would also be possible to support `get` and `copy`, except `--auto` couldn't be used with `--all`. Even `fsck` could support it.
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 17"
+ date="2013-04-16T20:31:10Z"
+ content="""
+@Bret, the assistant relies on FSEvents pretty heavily. It seems to me your best bet is to upgrade OSX to a version that supports FSEvents.
+
+You can certainly use the rest of git-annex on Snow Leopard without FSEvents.
+"""]]

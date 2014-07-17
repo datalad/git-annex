@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.154"
+ subject="comment 1"
+ date="2014-03-12T17:15:23Z"
+ content="""
+Well, I suppose this is doable, but the way this scenario is generally handled is to make a transfer repository (which your desktop is serving as here) have a preferred content expression that makes it want files that the client repositories (phones) want, until the files have reached the clients:
+
+In your case you could have:
+
+    (not inallgroup=phones and ($phone_preferred_content)) or ($desktop_preferred_content)
+
+Where `$desktop_preferred_content` is whatever files the desktop actually wants on its own, and `$phone_preferred_content` is a copy of the preferred content setting for the phone.
+
+To make this work, you also need to put your phone in the phones group.
+"""]]

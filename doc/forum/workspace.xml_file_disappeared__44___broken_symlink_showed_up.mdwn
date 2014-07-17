@@ -1,0 +1,27 @@
+I am running git-annex on Mac OS 10.9 and syncing to a Linux device that was attached to a Synology NAS.  Both were running December versions of git-annex.
+
+While working on an application in IntelliJ my workspace.xml file disappeared.  It went from being a real file to being a symlink to a location that didn't exist.
+
+The symlink looks like this: workspace.xml -> ../../../.git/annex/objects/M2/8W/SHA256E-s68106--90e9cc4f617c9034db1bf462d058b82c59ade0be58de1d3a3e2f8c02606631c2.xml/SHA256E-s68106--90e9cc4f617c9034db1bf462d058b82c59ade0be58de1d3a3e2f8c02606631c2.xml
+
+I tried git-annex fsck and I get this message: ** No known copies exist of XXXXXXX/workspace.xml
+
+"XXXXXXX" is a path I needed to obscure I can see it in the git-annex repo but it is a reference to a symlink that doesn't exist
+
+It was mentioned in another thread ( http://git-annex.branchable.com/forum/git_annex_on_osx_only_creating_symlinks__63____63__/ ) that this could happen if I did a forced drop but I do not use git-annex on the command line.  I'm using the assistant and having it manage all of my files for me.
+
+I tried looking at the log for it and it shows this:
+
+<pre>
+timmattison$ /Applications/git-annex.app/Contents/MacOS/git-annex log XXXXXXX/.idea/workspace.xml 
+- 2014-01-03 19:49:58 XXXXXXX/.idea/workspace.xml | d6747880-b355-4d41-b4e5-d1ad3afcb4a5 -- timmattison@MacBook-Pro.local:~/Desktop/annex
++ 2014-01-03 17:08:32 XXXXXXX/.idea/workspace.xml | d6747880-b355-4d41-b4e5-d1ad3afcb4a5 -- timmattison@MacBook-Pro.local:~/Desktop/annex
+(Recording state in git...)
+</pre>
+
+So I can see that the git-annex thinks the file was deleted but what really happened is that IntelliJ just modified it.  workspace.xml files are modified very often when working in IntelliJ.
+
+Is this a known bug that has been fixed in the new version (2013-12-30 or later)?
+
+Thanks,
+Tim

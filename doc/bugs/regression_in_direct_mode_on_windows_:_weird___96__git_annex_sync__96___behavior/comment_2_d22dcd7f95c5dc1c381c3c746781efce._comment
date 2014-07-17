@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.21"
+ subject="comment 2"
+ date="2013-07-30T19:55:04Z"
+ content="""
+This reversion affects direct mode on FAT, not just on Windows! It was probably caused by commit ecdfa40cbea1ae213ab84913d8f011027967a610 or commit ae341c1a37eecc1724517e3e025d144badb5abfe. Investigating.
+"""]]

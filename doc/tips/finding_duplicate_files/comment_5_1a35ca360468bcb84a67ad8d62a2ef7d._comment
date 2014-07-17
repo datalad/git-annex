@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkaBh9VNJ-RZ26wJZ4BEhMN1IlPT-DK6JA"
+ nickname="Alex"
+ subject="printing keys first is the easiest workaround"
+ date="2013-04-01T23:32:23Z"
+ content="""
+Since the keys are sure to have nos paces in them, putting them first makes working with the output with tools like sort, uniq, and awk simpler.
+"""]]

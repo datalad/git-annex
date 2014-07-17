@@ -1,0 +1,5 @@
+The web app used to be unresponsive without manual refreshes.  Now it's all snappy and responsive and quickly reflects what the assistant is doing.
+
+It used to be a complete crapshoot whether the assistant actually shut down when you told it to (either on the command line or through the webapp).  I used to have to manually kill leftover assistants and child processes routinely.  Now... you want it gone, and it's gone instantly, every time.
+
+Something really good happened with this last version, thank you joey!

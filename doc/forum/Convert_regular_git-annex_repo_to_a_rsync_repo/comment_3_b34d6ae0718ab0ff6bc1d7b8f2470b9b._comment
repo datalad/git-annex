@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/FHnTlSBo1eCGJRwueeKeB6.RCaPbGMPr5jxx8A--#ce0d8"
+ nickname="Hamza"
+ subject="comment 3"
+ date="2014-02-23T19:39:28Z"
+ content="""
+Thanks for the reply, just to make sure I got you right,
+
+It is indeed a non bare git repo. So I will move the folder repo/.git/annex/objects/ to repo/
+
+then run,
+
+git annex initremote myrsync type=rsync rsyncurl=ssh.example.com:~/repo
+
+and enable the remote on other annexes (disks are connected to an ssh server there is no encryption setup right now so I do not mind not having it.). And everything should be setup correctly.
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 5"
+ date="2012-06-08T07:22:34Z"
+ content="""
+In relation to macports, I often found that haskell in macports are often behind other distros, and I'm not willing to put much effort into maintaining or updating those ports. I found that to build git-annex, installing macports manually and then installing haskell-platform from the upstream to be the best way to get the most up to date dependancies for git-annex.
+
+fyi in macports ghc is at version 6.10.4 and haskell platform is at version 2009.2, so there are a significant number of ports to update.
+
+I was thinking about this a bit more and I reckon it might be easier to try and build a self contained .pkg package and have all the needed binaries in a .app styled package, that would work well when the webapp comes along. I will take a look at it in a week or two (currently moving house so I dont have much time)
+"""]]

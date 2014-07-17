@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawldKnauegZulM7X6JoHJs7Gd5PnDjcgx-E"
+ nickname="Matt"
+ subject="Homebrew instead of MacPorts"
+ date="2012-06-22T04:26:02Z"
+ content="""
+[Homebrew] is a much better package manager than MacPorts IMO.
+
+[Homebrew]: http://mxcl.github.com/homebrew/
+"""]]

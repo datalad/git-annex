@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm01ida6POv7vqyUYtOlymEbJTbrImAIzM"
+ nickname="Reinis"
+ subject="comment 2"
+ date="2013-07-08T18:09:50Z"
+ content="""
+That is Gentoo box and git-annex is installed using the following ebuild:
+
+[[https://github.com/gentoo-haskell/gentoo-haskell/blob/master/dev-vcs/git-annex/git-annex-4.20130627.ebuild]]
+
+which uses cabal to install it. It uses also the following eclass:
+
+[[http://sources.gentoo.org/cgi-bin/viewvc.cgi/gentoo-x86/eclass/haskell-cabal.eclass?revision=1.40&view=markup]]
+
+The main functions of interest there are cabal-bootstrap(), cabal-copy() and cabal_src_install(). I'm not familiar enough with haskell nor with cabal to follow trough in detail how the setup program is constructed and how it works, but the end result is that this is all that is installed. I don't know if normal cabal installs work as intended, maybe something there needs to be adjusted?
+
+[[!format sh \"\"\"
+ * Contents of dev-vcs/git-annex-4.20130627:
+/usr
+/usr/bin
+/usr/bin/git-annex
+/usr/lib64
+/usr/lib64/ghc-7.6.3
+/usr/lib64/ghc-7.6.3/gentoo
+/usr/lib64/ghc-7.6.3/gentoo/git-annex-4.20130627.conf
+/usr/share
+/usr/share/doc
+/usr/share/doc/git-annex-4.20130627
+/usr/share/doc/git-annex-4.20130627/COPYRIGHT.bz2
+\"\"\" ]]
+"""]]

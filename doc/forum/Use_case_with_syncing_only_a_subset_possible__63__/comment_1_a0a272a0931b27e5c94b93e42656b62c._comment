@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.51"
+ subject="comment 1"
+ date="2013-09-12T20:39:51Z"
+ content="""
+I guess you might be using the git-annex assistant. If you were just using git-annex at the command line, you could simply only run `git annex get` on the files or directories you wanted to get.
+
+You can control which directories the git-annex assistant downloads/uploads files for using [[preferred_content]] expressions. Or the easy solution is to use the webapp to put the repository into \"manual mode\" and then manually run `git annex get` as described above to get just the files you want. (And `git annex copy --to remote` to share new files you make.)
+"""]]

@@ -1,0 +1,18 @@
+Over the last few weeks i've been working on a seperate python nntp project. But decided that it would be fun to make it usable with git-annex.
+
+The code is almost complete. One major feature left(make it usable without a mysql/sqlite database, and without fetching headers). And of course a lot of bugfixes.
+
+I'm wondering if there is any interest in this special remote hook.
+
+The thought is, buy unlimited usenet account, and you can have a git-annex repository without any upper size limit. You want 100GB, well that'll be 10$ a month, want 100000GB, well that'll be 10$ a month.
+
+Of course there are plenty of caveats(retention on server, it is doubtfull the data will stay up for more than 4 years.). Because the code is in python3 i had to use a lot of external tools (uudeview, par2, ydecode/yydecode) and parse their output. Which is a horrid horrid solution. Since the code is nearing "beta" stage i might see if i can improve on that(possibly with ctypes), if there is any interest.
+
+Currently working on freebsd, ubuntu, debian, mac os x(10.7, not tested in 10.8)
+
+The last feature to be done (and this is UUUUUGLY) is to make it get nzb files from a source like this: http://nzbindex.nl/search/?q=GPGHMACSHA (yes, that is my git-annex repo) instead of from a mysql database.
+
+So, this is a call to see if anyone is interested, and if anyone proficient in *NIX want to test it out.
+
+Sincerely
+Tobias

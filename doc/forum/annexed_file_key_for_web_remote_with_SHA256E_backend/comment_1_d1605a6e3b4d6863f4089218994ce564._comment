@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-05-06T15:43:06Z"
+ content="""
+You don't say what version of git-annex you're using. I tested with the current version, 4.20130405:
+
+[[!format sh \"\"\"
+joey@gnu:~/tmp/rr>git annex addurl http://localhost/~joey/header_background.png
+addurl localhost_~joey_header_background.png (downloading http://localhost/~joey/header_background.png ...) --2013-05-06 11:36:41--  http://localhost/~joey/header_background.png
+Resolving localhost (localhost)... ::1, 127.0.0.1, 127.0.1.1
+Connecting to localhost (localhost)|::1|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 53693 (52K) [image/png]
+Saving to: ‘/home/joey/tmp/rr/.git/annex/tmp/URL--http&c%%localhost%~joey%header_background.png’
+
+100%[======================================>] 53,693      --.-K/s   in 0.001s  
+
+2013-05-06 11:36:41 (58.9 MB/s) - '/home/joey/tmp/rr/.git/annex/tmp/URL--http&c%%localhost%~joey%header_background.png' saved [53693/53693]
+
+(checksum...) ok
+(Recording state in git...)
+joey@gnu:~/tmp/rr>dir
+lrwxrwxrwx   1 joey joey  194 Sep 11  2010 localhost_~joey_header_background.png -> .git/annex/objects/M1/p0/SHA256E-s53693--3f065e8e2db1248765d0753cf483e40ae0eaf9bffe34b0cf738158815d0884e3.png/SHA256E-s53693--3f065e8e2db1248765d0753cf483e40ae0eaf9bffe34b0cf738158815d0884e3.png
+\"\"\"]]
+
+Looks like it's doing the right thing with the extension!
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="spwhitton"
+ ip="163.1.167.50"
+ subject="comment 4"
+ date="2013-04-17T17:02:11Z"
+ content="""
+I didn't think that git would let corruption spread either, but it did: the repository m3 which I showed a push to in my original post showed a broken refs/heads/git-annex too.  You can see it happening when git tries to repack m3 after pushing to it in my original post.
+
+I am pretty sure that my HDD on the machine where this first occurred needs replacing; I've marked the remote as untrusted.
+"""]]

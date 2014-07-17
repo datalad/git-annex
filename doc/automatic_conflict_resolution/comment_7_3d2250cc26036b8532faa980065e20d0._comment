@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.191"
+ subject="comment 7"
+ date="2014-04-17T20:00:22Z"
+ content="""
+@Matthias, here is an example of git-annex merge updating the master branch from the synced/master branch that was pushed to it earlier:
+
+<pre>
+joey@darkstar:~/tmp/test/2>git annex merge
+merge git-annex (merging synced/git-annex into git-annex...)
+ok
+merge synced/master 
+Updating 7942eee..1f3422e
+Fast-forward
+ new_file | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 120000 new_file
+ok
+</pre>
+
+If you are having trouble with it somehow, I'd suggest filing a bug report.
+"""]]

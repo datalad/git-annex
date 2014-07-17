@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm7eqCMh_B7mxE0tnchbr0JoYu11FUAFRY"
+ nickname="Stéphane"
+ subject="Can't reproduce"
+ date="2014-06-30T20:06:30Z"
+ content="""
+I tried to reproduce the bug on another account on the same machine, same LXDE environment.
+The bug did not occur again.
+
+> What happens if you run `git-annex assistant --autostart` ?
+
+To answer that, I went back to the first account. Just logging in.
+The following git-related processes are automatically launched without running `git-annex assistant --autostart`.
+
+     git-annex assistant --startdelay=5s
+     git --git-dir=/home/somelogin/Documents/.git --work-tree=/home/somelogin/Documents -c core.bare=false cat-file --batch
+     git --git-dir=/home/somelogin/Documents/.git --work-tree=/home/somelogin/Documents -c core.bare=false cat-file --batch
+     git --git-dir=/home/somelogin/Documents/.git --work-tree=/home/somelogin/Documents -c core.bare=false check-ignore -z --stdin --verbose --non-matching
+     git --git-dir=/home/somelogin/Documents/.git --work-tree=/home/somelogin/Documents -c core.bare=false check-attr -z --stdin annex.backend annex.numcopies --
+
+So, somehow things went back in order by themselves ?
+
+There were quite a bunch of software upgrades from Ubuntu, including `lxsession`.  Perhaps something was wrong in handling autostart desktop files ?
+
+Since things appear to work now, should we close the bug ?
+
+"""]]

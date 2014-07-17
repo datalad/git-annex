@@ -1,0 +1,23 @@
+### Please describe the problem.
+When syncing from server A (real server) to server B (a synology NAS) it fails on git-upload-pack and -receive-pack
+
+### What steps will reproduce the problem?
+git-annex sync
+
+
+### What version of git-annex are you using? On what operating system?
+on server A: 3.20121017 (yeah, I should update)
+on server B: 5.20131220-g73492b2
+
+### Please provide any additional information below.
+
+On server B, after running ./runshell
+[[!format sh """
+$ git-upload-pack
+/volume1/downloads/git-annex.linux/shimmed/sh/sh: 19: git-upload-pack: not found
+$ git-receive-pack
+/volume1/downloads/git-annex.linux/shimmed/sh/sh: 20: git-receive-pack: not found
+"""]]
+
+> [[fixed|done]]; added git, git-upload-pack, and git-receive-pack wrappers
+> to git-annex.linux/. Also to equivilant place in OSX app. --[[Joey]]

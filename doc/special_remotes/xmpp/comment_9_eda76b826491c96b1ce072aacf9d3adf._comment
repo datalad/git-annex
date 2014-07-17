@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlu-fdXIt_RF9ggvg4zP0yBbtjWQwHAMS4"
+ nickname="Jörn"
+ subject="Same problem, no XMPP showing up in daemon.log"
+ date="2013-11-21T21:13:16Z"
+ content="""
+I have the same setup like @RaspberryPie, except that my server is not running on the Pi but on Debian7-amd64. On my client (OSX, self-compiled using cabal) I can see XMPP log entries like @RaspberryPi, however, on the Debian7 machine (also self-compiled) I do not see any XMPP entry in the daemon.log. Setup regarding .git/annex/creds/xmpp and the special xmpp remote is correct (checked a thousand times).
+
+Do you have any idea what could be wrong, Joey? Thanks a lot.
+
+Output of git annex version:
+
+    git-annex version: 5.20131120
+    build flags: Assistant Pairing Testsuite S3 WebDAV Inotify DBus XMPP DNS Feeds Quvi CryptoHash 
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web webdav glacier hook
+    local repository version: 4
+    default repository version: 3
+    supported repository versions: 3 5
+    upgrade supported from repository versions: 0 1 2 4
+
+Jörn
+"""]]

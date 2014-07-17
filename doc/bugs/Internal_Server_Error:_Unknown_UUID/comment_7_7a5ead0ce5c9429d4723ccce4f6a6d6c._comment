@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.21"
+ subject="workaround"
+ date="2013-07-31T17:19:01Z"
+ content="""
+Looks like the fix is to edit ~/.ssh/config and in each stanza added by git-annex, add this line:
+
+        IdentitiesOnly yes
+
+This prevents the ssh-agent from using the normal key, and allows the git-annex key to be used instead.
+
+People experiencing this bug can manually make that change. Then if you edit your git-annex repository's `.git/config` and delete the `annex-ignore` line, the assistant should finally learn the UUID and start syncing.
+"""]]

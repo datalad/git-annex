@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="zardoz"
+ ip="134.147.14.84"
+ subject="comment 3"
+ date="2014-07-15T07:29:37Z"
+ content="""
+The ext-community seems to
+[corroborate](http://www.redhat.com/archives/ext3-users/2013-March/msg00007.html)
+the observation that having many sparse directories scales extremely
+poorly, though this still leaves me curious as to how btrfs deals
+with.
+
+One thing I read is that btrfs stores a secondary index on directories
+and uses this index in the readdir() syscall; this secondary index
+works in such a way that inodes are likely to be traversed in
+sequential on-disk order, while for ext, the readdir() results will be
+ordered by inode number, yielding a random access pattern.
+
+I must confess I’ve always liked to think of the file-system as a
+cheap data-base, but apparently that is not such a good idea (i. e.,
+it’s not cheap at all, in the long run). On the other hand (supposing
+that operations like «git annex unused» do indeed work by traversing
+the object tree), it probably wouldn’t be easy coming up with a scheme
+that scales better. For traversal-bound operations, one might maintain
+a database, but it would be a hassle to ensure that this in always in
+sync with the file-system.
+
+"""]]

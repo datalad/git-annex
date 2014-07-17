@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 1"
+ date="2013-11-05T16:14:34Z"
+ content="""
+1. Turn off the assistant, switch to indirect mode (`git annex indirect`), use `git log --stat` to find the commit(s) that added the music files, and `git revert` the commits, in reverse chronological order. Or delete the files manually.
+2. You have merged two git repositories. Without some serious git repository surgery (ie, resetting to an old version and deleting the reflog), the full history of both is going to remain stored in git going forward. However, a simple `git gc` might pack that down to a much smaller amount of disk space.
+3. Combining two repositories merges their git histories. You then have two clones of one repository containing the full contents and git history of both. Don't do that if that's not what you want. The webapp is always careful to tell you when an action will combine two repositories.
+4. Once you have combined two repositories, you have two synced repositories that contain the same data. Deleting one of them will just delete one copy of the data. It won't result in data loss, but neither will it untangle the two git trees that were previously combined.
+"""]]

@@ -1,0 +1,16 @@
+About half way done with implementing [[pairing]]. The webapp's interface
+to prompt for a secret and start pairing is done; the protocol is
+implemented; broadcasting of pairing requests is working; added Yet Another
+Thread to listen for incoming pairing traffic.
+
+Very happy with how this came together; starting with defining the protocol
+with data types let me rapidly iterate until I had designed a simple, clean,
+robust protocol. The implementation works well too; it's even possible to
+start pairing, and only then bring up the network interface to the machine
+you intended to pair with, and it'll detect the new interface and start
+sending requests to it.
+
+Next, I need to make alerts have a button that performs a stored
+IO action. So that the incoming pair request alert can have a button to
+respond to the pair request. And then I need to write the code to actually
+perform the pairing, including ssh key setup.

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnBJ6Dv1glxzzi4qIzGFNa6F-mfHIvv9Ck"
+ nickname="Jim"
+ subject="Metadata?"
+ date="2014-02-21T18:44:10Z"
+ content="""
+I suspect the new [metadata](http://git-annex.branchable.com/design/metadata/) support could be used to help implement this.
+"""]]

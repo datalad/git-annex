@@ -1,0 +1,20 @@
+These themed days are inaverdent, but it happened again: Nearly everything
+done today had to do with encoding issues.
+
+The big news is that it turned out everything written to files in the
+git-annex branch had unicode characters truncated to 8 bits. Now fixed so
+you should always get out the same thing you put in, no matter what
+encoding you use (but please use utf8). This affected things like storing
+repository descriptions, but worse, it affected metadata. (Also preferred
+content expressions, I suppose.)
+
+With that fixed, there are still 7 source files left that use Char8 libraries.
+There used to be more; nearly every use of those is a bug. I looked over
+the remaining uses of it, and there might be a problem with Creds using it.
+I should probably make a push to stamp out all remaining uses of Char8.
+
+Other encoding bugs were less reproducible.
+
+And just now, Sören made some progress on
+[[bugs/Bootstrap3_icons_missing_on_Android]] ... and my current theory
+is this is actually caused by an encoding issue too.

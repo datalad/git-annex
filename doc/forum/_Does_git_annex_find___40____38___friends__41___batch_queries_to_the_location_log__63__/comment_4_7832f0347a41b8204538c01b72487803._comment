@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkkyBDsfOB7JZvPZ4a8F3rwv0wk6Nb9n48"
+ nickname="Abdó"
+ subject="comment 4"
+ date="2013-11-07T18:40:27Z"
+ content="""
+Ok, thanks.
+
+I understand that annex is more sophisticated than what I'm proposing. I'm also
+not comparing apples to oranges, what I'm saying is this: All the
+logic and checking and git calls that I thought annex needs to do, take
+much much less time than those 55 seconds. So either I'm missing something big (about 98% of it in execution time), or
+annex is doing something very inefficient. That's all I'm saying, and I was
+hoping that you could clarify that, since you already know the code.
+
+Also I'm sorry for being so annoying. If annex were writen in C, I would either have understood those 55 seconds or sent you a patch making annex faster. Being in
+haskell means that it will take me considerably more time and effort. But if I manage to
+improve things and if it is ok with you I'll send you patches... eventually.
+"""]]

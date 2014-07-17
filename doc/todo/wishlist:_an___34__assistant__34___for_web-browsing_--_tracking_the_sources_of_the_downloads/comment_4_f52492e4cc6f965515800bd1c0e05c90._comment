@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="andy"
+ ip="99.48.75.171"
+ subject="I've just written a script that does this (with a Firefox download manager)"
+ date="2013-04-09T02:51:26Z"
+ content="""
+So I've just written a two-line shell script that makes [FlashGot](http://flashgot.net/) able to do this. It's available on GitHub at <https://gist.github.com/andyg0808/5342434>.
+
+This could be even neater if Git-annex had the ability to set the download manager... Wishlist created: [[wishlist:_allow_configuration_of_downloader_for_addurl]]
+"""]]

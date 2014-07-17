@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="basak"
+ ip="2001:8b0:1c8::2"
+ subject="comment 4"
+ date="2013-05-22T18:10:32Z"
+ content="""
+Let's discuss this in a bug. I've created http://git-annex.branchable.com/bugs/Glacier_remote_uploads_duplicates/
+"""]]

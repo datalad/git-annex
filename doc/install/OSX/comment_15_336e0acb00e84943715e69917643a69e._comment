@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~wincus"
+ nickname="Juan Moyano"
+ subject="git annex on Snow Leopard"
+ date="2013-03-26T16:02:54Z"
+ content="""
+I'm having the same issue as @Pere, with a newer version of DAV :(
+
+cabal: Error: some packages failed to install:
+DAV-0.3.1 failed during the building phase. The exception was:
+ExitFailure 11
+git-annex-4.20130323 depends on shakespeare-css-1.0.3 which failed to install.
+persistent-1.1.5.1 failed during the building phase. The exception was:
+ExitFailure 11
+persistent-template-1.1.3.1 depends on persistent-1.1.5.1 which failed to
+install.
+shakespeare-css-1.0.3 failed during the building phase. The exception was:
+ExitFailure 11
+yesod-1.1.9.2 depends on shakespeare-css-1.0.3 which failed to install.
+yesod-auth-1.1.5.3 depends on shakespeare-css-1.0.3 which failed to install.
+yesod-core-1.1.8.2 depends on shakespeare-css-1.0.3 which failed to install.
+yesod-default-1.1.3.2 depends on shakespeare-css-1.0.3 which failed to
+install.
+yesod-form-1.2.1.3 depends on shakespeare-css-1.0.3 which failed to install.
+yesod-json-1.1.2.2 depends on shakespeare-css-1.0.3 which failed to install.
+yesod-persistent-1.1.0.1 depends on shakespeare-css-1.0.3 which failed to
+install.
+yesod-static-1.1.2.2 depends on shakespeare-css-1.0.3 which failed to install.
+
+
+
+*Any ideas?*
+
+
+"""]]

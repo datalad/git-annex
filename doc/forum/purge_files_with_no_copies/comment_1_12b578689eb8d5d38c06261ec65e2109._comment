@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.14.105"
+ subject="comment 1"
+ date="2013-09-19T20:59:32Z"
+ content="""
+This will output all files in your repository that git-annex thinks have no copies left:
+
+`git annex find --not --copies=1`
+
+Piping it to git rm is left as an excercise for the reader..
+"""]]

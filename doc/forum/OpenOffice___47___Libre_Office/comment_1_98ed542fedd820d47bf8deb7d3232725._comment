@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 1"
+ date="2013-01-02T19:10:28Z"
+ content="""
+Files in git-annex are locked normally. You can use `git annex unlock` to unlock a file for editing. Or you can use the new [[direct_mode]].
+"""]]

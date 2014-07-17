@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="gjost"
+ ip="108.205.152.179"
+ subject="distributed digital repository"
+ date="2013-11-14T00:39:49Z"
+ content="""
+I am in the process of building a distributed digital repository using Git and git-annex as a foundation. Our project is to collect and preserve archival-quality audio and video from multiple bandwidth-challenged remote sites. We're using git-annex to help us sneakernet the metadata and binaries around and to maintain multiple copies in geographically separate locations. Git very neatly addresses the problem of tracking changes, while git-annex makes it possible to track the flow of information through a network of distributed repositories. 
+"""]]

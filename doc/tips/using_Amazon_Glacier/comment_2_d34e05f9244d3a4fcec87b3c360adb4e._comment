@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.172"
+ subject="comment 2"
+ date="2014-02-20T19:24:09Z"
+ content="""
+@greg, the only thing you might have missed is the need to use `glacier vault sync` to build a cache if enabling the glacier remote in another place. And that whole issue with it needing a local cache may mean few people are using glacier with more than one repository accessing the remote.
+
+However, this sounds like a bug. There is a comment in the source code that \"glacier vault create will succeed even if the vault already exists.\" .. perhaps it has changed since that was written. Or perhaps the command failed for some other reason, I don't know.
+"""]]

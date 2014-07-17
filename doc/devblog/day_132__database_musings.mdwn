@@ -1,0 +1,17 @@
+Updated the Debian stable backport to the last release. Also it seems that
+the last release unexpectedly fixed XMPP SIGILL on some OSX machines.
+Apparently when I rebuilt all the libraries recently, it somehow fixed that
+[[old_unsolved_bug|bugs/Share_with_friends_crash_in_osx]].
+
+[RichiH](http://richardhartmann.de/) suggested "wrt ballooning memory on
+repair: can you read in broken
+stuff and simply stop reading once you reach a certain threshold, then
+start repairing, re-run fsck, etc?" .. I had considered that but was
+not sure it would work. I think I've gotten it to work.
+
+Now working on a design for using a [[design/caching_database]]
+for some parts of git-annex. My initial benchmarks using SQLite
+indicate it would slow down associated file lookups by nearly an order of
+magnitude compared with the current ".map files" implementation.
+(But would scale better in edge cases). OTOH, using a SQLite
+database to index metadata for use in views looks very promising.

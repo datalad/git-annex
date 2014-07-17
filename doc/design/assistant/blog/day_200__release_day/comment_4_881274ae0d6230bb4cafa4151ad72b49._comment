@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5iosFbL2By7UFeViqkc6v-hoAtqILeDA"
+ nickname="Laszlo"
+ subject="lot of stuck git processes"
+ date="2013-02-28T09:01:25Z"
+ content="""
+Oh, and here is how it looks 
+ps -e |grep git 
+command after git-annex has been stopped (from the gui):
+(54 process, from which 50 process <defunct>)
+http://pastebin.com/5u74qTNU
+"""]]

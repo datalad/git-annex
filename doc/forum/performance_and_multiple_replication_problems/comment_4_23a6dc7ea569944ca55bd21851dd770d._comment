@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.146"
+ subject="comment 4"
+ date="2014-03-05T22:06:00Z"
+ content="""
+@maurizio, that's a good motivating example.
+
+So, I have made `git config annex.startupscan false` disable the startup scan (except for a minor tree walk that needs to be done to get inotify working).
+
+Of course, if you set that, the assistant won't notice any changes that are made when it's not running. It would work well to set it if the assistant is started at boot and left running until shutdown.
+
+My goal for git-annex is for it to scale to how ever many files git scales to. So I try to always make git be the limiting factor. I feel that git scales fairly well into the 100k file range.
+"""]]

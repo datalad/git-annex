@@ -1,0 +1,10 @@
+Hi, 
+
+i'm thinking to use git-annex to synchronize my virtual machine directory (Virtualbox) between 3 pc. It's quite big: more than 200GB and some of the images are 40Gb in size.
+
+The synchronization will be over a lan (obviously). It is already in place with 2pc and unison but the configuration of the 3rd pc is cumbersome. 
+Does anybody have experiences with git-annex and such amount of data?
+
+Thanks in advance
+
+Gabriele

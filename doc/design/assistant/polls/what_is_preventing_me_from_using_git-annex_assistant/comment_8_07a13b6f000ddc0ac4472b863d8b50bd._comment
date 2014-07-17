@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.238"
+ subject="comment 8"
+ date="2013-01-11T20:02:39Z"
+ content="""
+@Alexandre, what you want can be achieved by setting up XMPP pairing, and also [[local pairing|assistant/local_pairing_walkthrough]]. Then when computers are on the same network, transfers are done via the LAN.
+
+@Laszlo, this can be set up without using the webapp. Just make the two repositories, using the webapp. Then go into each and run \"git remote add myotherrepo $path_to_other_repo\". Then assistant will automatically sync them. I *have* thought about adding a configurator for this to the webapp. It would help to know what use cases you're getting at with this.
+
+@marvin The generated ssh keys are configured to only allow running `git-annex-shell`, which limits it to only acting on the repository. The keys are also configured, in `.ssh/config` to only be used when a particular host alias is used. They should not be used when you just ssh normally to the host. If this is happening to you, please file a bug report with details.
+
+@dzsino you can get file creation dates out of git using git log :)
+"""]]

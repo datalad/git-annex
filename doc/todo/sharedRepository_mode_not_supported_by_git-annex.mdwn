@@ -1,0 +1,7 @@
+git's core.SharedRepository is supported by git-annex, but only
+with the group/all/world/everybody settings. core.SharedRepository=0644
+etc is not supported.
+
+There's no insormountable reason why not, Joey just hates umask mode math
+stuff and nobody has sent a patch. Note that Annex.Content.freezeContent
+should remove the write bit from files, no matter what.

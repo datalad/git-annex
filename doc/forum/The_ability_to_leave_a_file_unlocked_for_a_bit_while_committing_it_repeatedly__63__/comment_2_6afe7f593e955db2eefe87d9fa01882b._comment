@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.6.49"
+ subject="comment 2"
+ date="2012-11-27T21:27:33Z"
+ content="""
+The only thing I would do differently is \"git annex add\" the file before \"git commit\". This is more efficient for large files since it avoids git looking at the whole file content.
+"""]]

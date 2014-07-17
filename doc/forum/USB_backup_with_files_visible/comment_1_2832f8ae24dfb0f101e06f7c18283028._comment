@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.193"
+ subject="comment 1"
+ date="2013-07-02T17:00:41Z"
+ content="""
+This is not something the assistant really handles yet. The issue is that if you have a non-bare repository on the USB drive, something has to run `git annex sync` in it when changes are pushed to it, to update it to display the files that are in the repository.
+
+One way to do this is to set up a non-bare repository by hand and add a git post-receive hook that runs `git annex sync`
+"""]]

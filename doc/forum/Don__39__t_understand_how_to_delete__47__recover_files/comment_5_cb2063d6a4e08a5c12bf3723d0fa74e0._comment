@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmBUR4O9mofxVbpb8JV9mEbVfIYv670uJo"
+ nickname="Justin"
+ subject="comment 5"
+ date="2012-09-17T14:12:13Z"
+ content="""
+That looks right except you shouldn't have to `git pull from the other repository(s)`.  The first thing `git annex sync` does is a `git pull`.
+"""]]

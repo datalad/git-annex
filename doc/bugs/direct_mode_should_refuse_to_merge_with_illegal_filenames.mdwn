@@ -1,0 +1,38 @@
+Some filesystems have stupid rules about characters not allowed in filenames. For example, FAT doesn't allow '?' '*' ':' etc.
+
+The direct mode merge code lets `git merge` update a temp directory with the new files from the merge, before doing its work tree update and committing. This can fail:
+
+<pre>
+error: unable to create file non-rus/Dance/Dream_Dance_Vol15/CD1/09-??.mp3 (Invalid argument)
+</pre>
+
+This leaves the work tree without the file, and the index knows about the file. Result is that the next time a commit is done, this file appears to have been deleted, and that is committed and propigates out. Which can be surprising.
+
+----
+
+It would probably be better if, when the working tree cannot be updated, it left the repository in some state that would not make the next commit remove anything.
+
+Ie, direct mode should replicate this behavior:
+
+<pre>
+root@darkstar:/home/joey/mnt>git init
+root@darkstar:/home/joey/mnt>git merge FETCH_HEAD 
+error: unable to create file foo? (Invalid argument)
+fatal: read-tree failed
+root@darkstar:/home/joey/mnt>git status
+On branch master
+
+Initial commit
+
+nothing to commit (create/copy files and use "git add" to track)
+</pre>
+
+Problem is, the call to `git merge` can also fail due to a conflict. In that case, git-annex wants to continue with automatic conflict resolution.
+So, how to detect when `git merge` has skipped creating illegal filenames?
+
+----
+
+Alternatively, git-annex could learn/probe the full set of characters not allowed in filenames, and examine merges before performing them, and refuse to do anything if the merge added an illegal filename.a
+
+[[!tag confirmed]]
+

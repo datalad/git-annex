@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.2.245"
+ subject="comment 1"
+ date="2012-05-08T18:22:12Z"
+ content="""
+git's code base makes lots of assumptions hardcoding the size of the hash, etc. (grep its source for magic numbers 40 and 42...) I'd like to see git get parameratised hashes. SHA1 insecurity may evenutally push it in that direction. However, when I asked the git developers about this at the Gittogether last year, there were several ideas floated that would avoid parameterisation, and a lot of good thoughts about problems parameterised hashes would cause.
+
+Moving data into git proper would still leave the problems unique to large data of not being able to store it all on every clone. Which means a git-annex like thing is needed to track where the data resides and move it around.
+
+(BTW, in markdown, you separate paragraphs with blank lines. Like in email.)
+"""]]

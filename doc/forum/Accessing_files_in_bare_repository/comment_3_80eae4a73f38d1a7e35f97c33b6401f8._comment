@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="99.54.57.201"
+ subject="comment 3"
+ date="2013-05-10T04:11:22Z"
+ content="""
+OK, I'm not sure what is up, but perhaps try \"git annex sync\" and see if that gives you the treeful of symlinks that you want.
+"""]]

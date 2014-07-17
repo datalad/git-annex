@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.210"
+ subject="comment 3"
+ date="2013-02-25T15:53:30Z"
+ content="""
+@meep try running it with --debug for some more hint of where it's crashing
+
+@Laszlo see [[install/Linux_standalone]]
+"""]]

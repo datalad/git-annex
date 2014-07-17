@@ -1,0 +1,13 @@
+# Problem
+I noticed that after installing git-annex assistant, my start up times greatly increased because the assistant does a startup scan while everything else is loading.
+# Solution (for people using Gnome)
+The solution I came up with is to delay the assistant's startup, as well as setting its IO priority as idle. To do this in Gnome 3, run:
+
+    gnome-session-properties
+Find the "Git Annex Assistant" entry in the Startup Programs tab, then click edit. Change this:
+
+    /usr/local/bin/git-annex assistant --autostart (your location of git-annex may be different)
+to this:
+
+    bash -c "sleep 30; ionice -c3 /usr/local/bin/git-annex assistant --autostart" (replace /usr/local/bin to wherever git-annex is installed)
+The "sleep 30" command delays the startup of the assistant by 30 seconds, and "ionice -c3" sets git-annex's IO priority to "idle," the lowest level.

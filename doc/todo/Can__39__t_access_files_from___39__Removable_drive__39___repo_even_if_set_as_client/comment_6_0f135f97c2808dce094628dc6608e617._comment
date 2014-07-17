@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="173.162.44.162"
+ subject="comment 6"
+ date="2013-02-27T17:06:45Z"
+ content="""
+also... I've never used the feature where you have two local machines running git-annex and you tell one to share a repo with the other through the web interface, but maybe it would be helpful for this scenario?  Apologies if you've already tried that.
+"""]]

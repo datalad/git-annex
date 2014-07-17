@@ -1,0 +1,3 @@
+I have 2 clients (laptops) that  would (usually) not be online at the same time. Is it possible to use git-annex for syncing these 2 clients through an encrypted server?
+
+I have tried to set this up with the assistant by using an USB-disk for copying the repository from one client to the other. The server is configured through the assistant as repository group 'transfer'. Now both clients see the encrypted ssh-server, each client copy stuff to the encrypted server, but no files are copied between the 2 clients. (In my case, running git-annex on the server is not an option. I have read through this forum, but it doesn't seem anyone has been able to get it to work.)

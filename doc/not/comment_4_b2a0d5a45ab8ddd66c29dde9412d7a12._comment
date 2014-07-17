@@ -1,0 +1,51 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn4bbuawnh-nSo9pAh8irYAcV4MQCcfdHo"
+ nickname="Stefan"
+ subject="Sparkleshare"
+ date="2012-09-15T01:28:05Z"
+ content="""
+Hi,
+
+I used sparkleshare lately in a project involving 3 computers and 2 people. and for ascii texts and even a few smaller binary things it works ok.
+
+But it does \"to much\" for media. at least at the moment, it just uses git for saving the data. That has a possitive and a negative aspect.
+
+possitive:
+
+1. you have a full history, if you delete a file its not gone for ever, so if you change it, the older version is still recoverable.
+2. if you would as example use it from a laptop in a train without internet and you use a git server in the internet for the central server, and would change some files, then you or somebody else would write on the same txt file as example (html or something... latex...) you would be able to merge this files.
+3. its not totaly bad for backup, because you can restore old files even if you delete it localy, because it will hold all history
+
+
+negative:
+
+1. for bigger data its cracy. if you use it for movies as example, you would in git annex delete some stuff you want not to see anytime again, so you would delete it everywhere. and its really away, not beeing still there in the history
+2. git as it is has issues with saving/transfairing very big files, and its slow on even mid-sized files lets say 100 5mb big files it would be slow. because at the moment sparkleshare uses git all this disatvantages are there.
+3. as many clients you use lets say a projekt with 10 people, each of them have all files and all the history of this projekt/directory on their pc.
+4. you need a central data-store git folder you can use a seperate pc for that or save it on a client, if you use a client for that you have to save the data double on this pc.
+
+(so you see for big files even if git would handle them faster you would waste massivly hard disk space) but again for pdfs a few pictures text files even some office files and stuff <100mb its great and easy to do.
+
+
+I try it in a few words, sparkleshare is like dropbox but with file history ( I think dropbox dont have that???) but because git is not designed (yet) for big files it works somewhat ok for < 100mb stuff if you go very much higher > 1GB it will not be optimal.
+
+git annex dont saves the data itself in git but only the locations and the checksums. so its more like a adress book of your data. its a abstraction layer to your data, you can see on as many devises as you want even without no netzwerk internet connection active and only a very small hd see all your 5 Terrabyte of Data you might have, and move around directories sort around them... delete stuff you dont want if you can deside that by the name... and then  when you come back to the connection you sync your actions and it does it to the files.
+
+And one big feature like joey said is that you cannot partialy load files from the repos to your device if it has as example only enough space for 1/10 of it.
+
+There is another thing, but because it is \"only\" a abstraction layer, it is theoreticaly easy to implement extentions to save your data on anything not only git repositories...
+
+Sparkleshare will switch to something else than git, maybe but then it will switch to this single protocol and stick to that. because it does not abstract stuff so hard.
+
+btw there is a alternative out there it forces you not to use git as vcs but you have to use a vcs (like git) and you dont have to use the client written in mono but only a smaller python script:
+
+http://www.mayrhofer.eu.org/dvcs-autosync
+
+but the idea behind it is the same except this 2 points ;)
+
+
+but many free software developers dont like mono, so the change that it gets more love from more people is not totaly unlikely.
+
+
+So way to long post but hope that helps somebody ;)
+"""]]

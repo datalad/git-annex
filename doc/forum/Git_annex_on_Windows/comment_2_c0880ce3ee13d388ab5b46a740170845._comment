@@ -1,0 +1,50 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkQrsXK-icnYXg6kJNd-jDjMgOixnhwE34"
+ nickname="x"
+ subject="reply to Comment 1"
+ date="2013-09-10T13:46:45Z"
+ content="""
+Thanks for your helpful comment.I add the path to windows, and the
+problem disappears now.
+But I meet another problem when I download the data using git annex.
+I use the command \"git annex get foo.nc\" to download data. The foo.nc
+is actually symlink. For example:
+foo.nc -> ../../.git/annex/objects/jK/v7/WORM-s16009120-m1337754158--
+foo.nc/WORM-s16009120-m1337754158--foo.nc
+Could you help me to figure it out?
+Thank you.
+
+The erro information when using git annex in Windows, is as below:
+
+$ git annex get tau.nc
+ 
+   Detected a crippled filesystem.
+
+   Enabling direct mode.
+
+   Detected a filesystem without fifo support.
+
+   Disabling ssh connection caching.
+
+*** Please tell me who you are.
+ 
+ 
+
+Run 
+
+    git config --global user.email \"you@example.com\"
+
+    git config --user.name \"Your Name\"
+ 
+to set your account's default identity.
+
+Omit --global to set the identity only in this repository.
+
+ 
+
+fatal: unable to auto-detect email address (got 'xshao@DELL-PC.(none')
+ 
+git-annex :tau.nc not found
+
+(Recording state in git ...)
+"""]]

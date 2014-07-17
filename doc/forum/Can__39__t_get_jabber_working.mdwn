@@ -1,0 +1,7 @@
+I've been running circles around the "jabber account setup" in assistant. I tried using jabber.org (isode) and jabber.de (openfire), but whatever I do I get thrown back to an Error page
+
+"Firefox can't establish a connection to the server at 127.0.0.1:61967." 
+
+Assistant definetly tries to connect to the server (LittleSnitch is giving me a hint) and the connections are unblocked. Even after turning LittleSnitch off completely it won't work. On the other hand, I can connect to the servers using Jitsi without any problems. I'd be really thankful for any help.
+
+David 

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawln3ckqKx0x_xDZMYwa9Q1bn4I06oWjkog"
+ nickname="Michael"
+ subject="comment 10"
+ date="2013-08-26T18:33:40Z"
+ content="""
+@Joey: it was a \"pretty large\" transfer, several hundred gigabytes in perhaps ~100000 files.  The copying was going to a GPG-encrypted directory remote.
+The error only happened once or twice so far.  Point taken about find in /proc; I'll do that if it happens next time.
+
+"""]]

@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="robohack"
+ ip="24.67.98.78"
+ subject="cabal install failing due to problems building pcre-light-0.4"
+ date="2013-11-21T20:17:10Z"
+ content="""
+After a fresh install of Haskell, and following the instructions above, I end up with the following rather bizarre and unexpected problem:
+
+	$ cabal install git-annex --bindir=$HOME/bin -f\"-assistant -webapp -webdav -pairing -xmpp -dns\"
+	Resolving dependencies...
+	Configuring pcre-light-0.4...
+	Building pcre-light-0.4...
+	Preprocessing library pcre-light-0.4...
+	Base.hsc:103:18: error: pcre.h: No such file or directory
+	Base.hsc: In function ‘main’:
+	Base.hsc:402: error: ‘PCRE_ANCHORED’ undeclared (first use in this function)
+	Base.hsc:402: error: (Each undeclared identifier is reported only once
+	Base.hsc:402: error: for each function it appears in.)
+	Base.hsc:405: error: ‘PCRE_AUTO_CALLOUT’ undeclared (first use in this function)
+
+(followed by an error for every other macro that was expected to be defined in the header...)
+
+	compiling dist/build/Text/Regex/PCRE/Light/Base_hsc_make.c failed (exit code 1)
+	command was: /usr/bin/gcc -c dist/build/Text/Regex/PCRE/Light/Base_hsc_make.c -o dist/build/Text/Regex/PCRE/Light/Base_hsc_make.o -m64 -fno-stack-protector -m64 -fno-stack-protector -m64 -D__GLASGOW_HASKELL__=700 -Ddarwin_BUILD_OS -Ddarwin_HOST_OS -Dx86_64_BUILD_ARCH -Dx86_64_HOST_ARCH -I/sw/lib/ghc-7.0.4/bytestring-0.9.1.10/include -Idist/build/autogen -include dist/build/autogen/cabal_macros.h -I/sw/lib/ghc-7.0.4/base-4.3.1.0/include -Idist/build/autogen -include dist/build/autogen/cabal_macros.h -Idist/build/autogen -include dist/build/autogen/cabal_macros.h -Idist/build/autogen -include dist/build/autogen/cabal_macros.h -I/sw/lib/ghc-7.0.4/include -Idist/build/autogen -include dist/build/autogen/cabal_macros.h -I/sw/lib/ghc-7.0.4/include -Idist/build/autogen -include dist/build/autogen/cabal_macros.h -I/sw/lib/ghc-7.0.4/include/
+	Failed to install pcre-light-0.4
+	cabal: Error: some packages failed to install:
+	git-annex-3.20120230 depends on pcre-light-0.4 which failed to install.
+	pcre-light-0.4 failed during the building phase. The exception was:
+	ExitFailure 1
+
+This is a somewhat older Mac OS X 10.6.8 system.
+
+I do have PCRE already installed via Fink, and pcre.h is in /sw/include.  I see other -I/sw/... things in the compile command above, but obviously /sw/include is not one of them.
+
+Any clues for me?
+
+(Why the heck does git-annex need pcre in particular anyway???  I saw another regex library get installed earlier somewhere in this (massive) process.)
+
+"""]]

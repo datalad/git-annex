@@ -1,0 +1,76 @@
+Today I built `git annex view`, and `git annex vadd` and a few related
+commands. A quick demo:
+
+<pre>
+joey@darkstar:~/lib/talks>ls
+Chaos_Communication_Congress/  FOSDEM/       Linux_Conference_Australia/
+Debian/                        LibrePlanet/  README.md
+joey@darkstar:~/lib/talks>git annex view tag=*
+view  (searching...)
+Switched to branch 'views/_'
+ok
+joey@darkstar:~/lib/talks#_>tree -d
+.
+|-- Debian
+|-- android
+|-- bigpicture
+|-- debhelper
+|-- git
+|-- git-annex
+`-- seen
+
+7 directories
+joey@darkstar:~/lib/talks#_>git annex vadd author=*
+vadd  
+Switched to branch 'views/author=_;_'
+ok
+joey@darkstar:~/lib/talks#author=_;_>tree -d
+.
+|-- Benjamin Mako Hill
+|   `-- bigpicture
+|-- Denis Carikli
+|   `-- android
+|-- Joey Hess
+|   |-- Debian
+|   |-- bigpicture
+|   |-- debhelper
+|   |-- git
+|   `-- git-annex
+|-- Richard Hartmann
+|   |-- git
+|   `-- git-annex
+`-- Stefano Zacchiroli
+    `-- Debian
+
+15 directories
+joey@darkstar:~/lib/talks#author=_;_>git annex vpop
+vpop 1
+Switched to branch 'views/_'
+ok
+joey@darkstar:~/lib/talks#_>git annex vadd tag=git-annex
+vadd  
+Switched to branch 'views/(git-annex)'
+ok
+joey@darkstar:~/lib/talks#(git-annex)>ls
+1025_gitify_your_life_{Debian;2013;DebConf13;high}.ogv@
+git_annex___manage_files_with_git__without_checking_their_contents_into_git_{FOSDEM;2012;lightningtalks}.webm@
+mirror.linux.org.au_linux.conf.au_2013_mp4_gitannex_{Linux_Conference_Australia;2013}.mp4@
+joey@darkstar:~/lib/talks#_>git annex vpop 2
+vpop 2
+Switched to branch 'master'
+ok
+</pre>
+
+Not 100% happy with the speed -- the generation of the view branch is close
+to optimal, and fast enough (unless the branch has very many matching
+files). And `vadd` can be quite fast if the view has already limited the
+total number of files to a smallish amount. But `view` has to look at every
+file's metadata, and this can take a while in a large repository. Needs indexes.
+
+It also needs integration with `git annex sync`, so the view branches
+update when files are added to the master branch, and moving files around
+inside a view and committing them does not yet update their metadata.
+
+---
+
+Today's work was sponsored by Daniel Atlas.

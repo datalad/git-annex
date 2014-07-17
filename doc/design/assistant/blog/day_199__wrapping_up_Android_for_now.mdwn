@@ -1,0 +1,26 @@
+An Android autobuilder is now set up to run nightly. At this point
+I don't see an immediate way to getting the webapp working on Android, so
+it's best to wait a month or two and see how things develop in Haskell land.
+So I'm moving on to other things.
+
+Today:
+
+* Fixed a nasty regression that made `*` not match files in subdirectories.
+  That broke the preferred content handling, among other things. I will
+  be pushing out a new release soon.
+* As a last Android thing (for now), made the Android app automatically
+  run `git annex assistant --autostart` , so you can manually set up
+  an assistant-driven repository on Android, listing the repository in
+  `.config/git-annex/autostart`
+* Made the webapp display any error message from `git init` if it fails.
+  This was the one remaining gap in the logging.
+  One reason it could fail is if the system has a newer git in use, and
+  `~/.gitconfig` is configured with some options the older git bundled
+  with git-annex doesn't like.
+* Bumped the major version to 4, and annex.version will be set to 4 in
+  new direct mode repositories. (But version 3 is otherwise still used, to
+  avoid any upgrade pain.) This is to prevent old versions that don't
+  understand direct mode from getting confused. I hope direct mode is
+  finally complete, too, after the work to make it work on crippled
+  filesystems this month.
+* Misc other bugfixes etc. Backlog down to 43.

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.163"
+ subject="comment 13"
+ date="2014-02-08T20:12:12Z"
+ content="""
+Does your binary end up dynamically linked to libxml2 etc? If not, it certianly seems plausible that the haskell libs statically linked with the C libs, and then at binary link time it tried to redundantly link with the libs again and failed. If this is the case, it seems it would probably be a bug in ghc. You can use `cabal build --ghc-options=-v` to get a look at how the linker is run.
+"""]]

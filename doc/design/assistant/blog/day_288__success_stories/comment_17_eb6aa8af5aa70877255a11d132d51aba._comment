@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="GLITTAH"
+ ip="50.23.191.90"
+ subject="Several annexes managing >3TB. No problems!"
+ date="2013-07-02T00:12:27Z"
+ content="""
+I've got an annex with all my DVD ISOs that's nearly 3TB alone, uses the SHA512 hash and gets split over three computers, 6 external SATA drives and 3 USB drives.  No errors so far, and the issues with git-annex I've had have all been addressed very quickly (thanks Joey!) and in a non-destructive manner so I don't have to re-init a repo.  I also use it to manage my music library, which allows to me to sleep at night without worrying about a corrupted file spreading through all my backups over time since git-annex has a fsck and hashing utility.  I can't imagine using anything else for managing collections of files: it offloads the task of keeping track of, getting, verifying, and general management of files so I don't even need to worry about the boring stuff, I just get around to watching/listening to my media collection.
+
+Thanks for all the work, it's changed my workflow and file management (I get more sleep too)!
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-04-11T16:32:43Z"
+ content="""
+This is a known problem.
+
+It seems possible to fix it for direct mode. After all, direct mode tracks all files associated with a key, so it could expose this to preferred content expressions, and the expression check if any of the associated files was in an archive directory.
+
+Unsure how to deal with it in indirect mode. Short of making indirect mode do all the same tracking direct mode does, or otherwise build a key to file lookup table.
+"""]]

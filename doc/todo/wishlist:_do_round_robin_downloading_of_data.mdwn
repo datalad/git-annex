@@ -1,0 +1,5 @@
+Given that git/config will have information on remotes and maybe costs, it might be a good idea to do a simple round robin selection of remotes to download files where the costs are the same.
+
+This of course assumes that we like the idea of "parallel" launching and running of curl/rsync processes...
+
+This wish item is probably only useful for the paranoid people who store more than 1 copy of their data.

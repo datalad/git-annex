@@ -1,0 +1,87 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkQvRLq7nMMEGoEKuYx9oaf67IC0nZfmVI"
+ nickname="chung yan"
+ subject="comment 3"
+ date="2013-07-10T08:46:27Z"
+ content="""
+hi Tobias 
+
+Thanks your suggestion for list of my error log, here it is: 
+
+[2013-07-10 16:27:58 HKT] main: starting assistant version 4.20130627
+(scanning...) [2013-07-10 16:27:58 HKT] Watcher: Performing startup scan
+(started...) [2013-07-10 16:28:14 HKT] Committer: Adding 2 files
+
+add syncByRsync/sync2Servers.sh (checksum...) ok
+add syncByRsync/sync2Servers.sh (checksum...) [2013-07-10 16:28:14 HKT] Committer: Committing changes to git
+[2013-07-10 16:31:12 HKT] Watcher: add direct DSCN1810.JPG
+[2013-07-10 16:31:12 HKT] read: lsof [\"-F0can\",\"+d\",\"/home/yan/annex_testing/.git/annex/tmp/\"]
+[2013-07-10 16:31:12 HKT] Committer: Adding DSCN1810.JPG
+ok
+(Recording state in git...)
+(Recording state in git...)
+add DSCN1810.JPG [2013-07-10 16:31:12 HKT](checksum...)  Watcher: add direct DSCN1810.JPG
+[2013-07-10 16:31:12 HKT] read: sha256sum [\"/home/yan/annex_testing/.git/annex/tmp/DSCN181012023.JPG\"]
+
+  DSCN1810.JPG changed while it was being added
+[2013-07-10 16:31:12 HKT] Committer: delaying commit of 1 changes
+[2013-07-10 16:31:13 HKT] read: lsof [\"-F0can\",\"+d\",\"/home/yan/annex_testing/.git/annex/tmp/\"]
+[2013-07-10 16:31:13 HKT] Committer: Adding 2 files
+failed
+add DSCN1810.JPG (checksum...) [2013-07-10 16:31:13 HKT] read: sha256sum [\"/home/yan/annex_testing/.git/annex/tmp/DSCN181012023.JPG\"]
+[2013-07-10 16:31:13 HKT] chat: git [\"--git-dir=/home/yan/annex_testing/.git\",\"--work-tree=/home/yan/annex_testing\",\"hash-object\",\"-t\",\"blob\",\"-w\",\"--stdin\",\"--no-filters\"]
+ok
+add DSCN1810.JPG (checksum...) [2013-07-10 16:31:13 HKT] read: sha256sum [\"/home/yan/annex_testing/.git/annex/tmp/DSCN181012024.JPG\"]
+[2013-07-10 16:31:13 HKT] chat: git [\"--git-dir=/home/yan/annex_testing/.git\",\"--work-tree=/home/yan/annex_testing\",\"hash-object\",\"-t\",\"blob\",\"-w\",\"--stdin\",\"--no-filters\"]
+[2013-07-10 16:31:13 HKT] Committer: committing 2 changes
+[2013-07-10 16:31:13 HKT] Committer: Committing changes to git
+[2013-07-10 16:31:13 HKT] feed: git [\"--git-dir=/home/yan/annex_testing/.git\",\"--work-tree=/home/yan/annex_testing\",\"update-index\",\"-z\",\"--index-info\"]
+[2013-07-10 16:31:13 HKT] read: git [\"--git-dir=/home/yan/annex_testing/.git\",\"--work-tree=/home/yan/annex_testing\",\"commit\",\"--allow-empty-message\",\"--no-edit\",\"-m\",\"\",\"--quiet\",\"--no-verify\"]
+[2013-07-10 16:31:13 HKT] Committer: queued Upload UUID \"df02d32a-7e3a-4e12-a417-7f1d1a1cf1a6\" DSCN1810.JPG Nothing : new file created
+[2013-07-10 16:31:13 HKT] chat: git [\"--git-dir=/home/yan/annex_testing/.git\",\"--work-tree=/home/yan/annex_testing\",\"hash-object\",\"-w\",\"--stdin-paths\",\"--no-filters\"]
+[2013-07-10 16:31:13 HKT] feed: git [\"--git-dir=/home/yan/annex_testing/.git\",\"--work-tree=/home/yan/annex_testing\",\"update-index\",\"-z\",\"--index-info\"]
+[2013-07-10 16:31:13 HKT] read: git [\"--git-dir=/home/yan/annex_testing/.git\",\"--work-tree=/home/yan/annex_testing\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2013-07-10 16:31:13 HKT] read: git [\"--git-dir=/home/yan/annex_testing/.git\",\"--work-tree=/home/yan/annex_testing\",\"write-tree\"]
+[2013-07-10 16:31:13 HKT] chat: git [\"--git-dir=/home/yan/annex_testing/.git\",\"--work-tree=/home/yan/annex_testing\",\"commit-tree\",\"a8337a989b58b29eee5fd2fa7a4c0b8ec45d5e59\",\"-p\",\"refs/heads/git-annex\"]
+[2013-07-10 16:31:13 HKT] call: git [\"--git-dir=/home/yan/annex_testing/.git\",\"--work-tree=/home/yan/annex_testing\",\"update-ref\",\"refs/heads/git-annex\",\"267bf35da4d9abe5ed7fe82ea5df8a8df2ddf940\"]
+[2013-07-10 16:31:13 HKT] read: git [\"--git-dir=/home/yan/annex_testing/.git\",\"--work-tree=/home/yan/annex_testing\",\"symbolic-ref\",\"HEAD\"]
+[2013-07-10 16:31:13 HKT] read: git [\"--git-dir=/home/yan/annex_testing/.git\",\"--work-tree=/home/yan/annex_testing\",\"show-ref\",\"refs/heads/master\"]
+[2013-07-10 16:31:13 HKT] Transferrer: Transferring: Upload UUID \"df02d32a-7e3a-4e12-a417-7f1d1a1cf1a6\" DSCN1810.JPG Nothing
+[2013-07-10 16:31:13 HKT] read: git [\"--git-dir=/home/yan/annex_testing/.git\",\"--work-tree=/home/yan/annex_testing\",\"show-ref\",\"git-annex\"]
+[2013-07-10 16:31:13 HKT] call: git-annex [\"transferkeys\",\"--readfd\",\"46\",\"--writefd\",\"36\"]
+[2013-07-10 16:31:13 HKT] read: git [\"--git-dir=/home/yan/annex_testing/.git\",\"--work-tree=/home/yan/annex_testing\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2013-07-10 16:31:13 HKT] read: git [\"--git-dir=/home/yan/annex_testing/.git\",\"--work-tree=/home/yan/annex_testing\",\"log\",\"refs/heads/git-annex..267bf35da4d9abe5ed7fe82ea5df8a8df2ddf940\",\"--oneline\",\"-n1\"]
+[2013-07-10 16:31:13 HKT] read: git [\"--git-dir=/home/yan/annex_testing/.git\",\"--work-tree=/home/yan/annex_testing\",\"show-ref\",\"git-annex\"]
+[2013-07-10 16:31:13 HKT] read:[2013-07-10 16:31:13 HKT] read: git [\"--git-dir=/home/yan/annex_testing/.git\",\"--work-tree=/home/yan/annex_testing\",\"ls-tree\",\"-z\",\"--\",\"refs/heads/git-annex\",\"uuid.log\",\"remote.log\",\"trust.log\",\"group.log\",\"preferred-content.log\"]
+ git [\"--git-dir=/home/yan/annex_testing/.git\",\"--work-tree=/home/yan/annex_testing\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2013-07-10 16:31:13 HKT] read: git [\"--git-dir=/home/yan/annex_testing/.git\",\"--work-tree=/home/yan/annex_testing\",\"log\",\"refs/heads/git-annex..267bf35da4d9abe5ed7fe82ea5df8a8df2ddf940\",\"--oneline\",\"-n1\"]
+[2013-07-10 16:31:13 HKT] chat: git [\"--git-dir=/home/yan/annex_testing/.git\",\"--work-tree=/home/yan/annex_testing\",\"cat-file\",\"--batch\"]
+(gpg) [2013-07-10 16:31:13 HKT] TransferWatcher: transfer starting: Upload UUID \"df02d32a-7e3a-4e12-a417-7f1d1a1cf1a6\" DSCN1810.JPG Nothing
+[2013-07-10 16:31:13 HKT] chat: gpg [\"--batch\",\"--no-tty\",\"--use-agent\",\"--quiet\",\"--trust-model\",\"always\",\"--batch\",\"--passphrase-fd\",\"48\",\"--symmetric\",\"--force-mdc\"]
+[2013-07-10 16:31:14 HKT] call: sh [\"-c\",\"/usr/bin/python2 /home/yan/annex/SocialBusiness/Resources/Infrastructure/Computer_Tools/Records/AsusU24/owncloudannex/owncloudannex.py --dbglevel 1 --stderr\"]
+
+ 16:31:16 [owncloudannex-0.1.1] <module> : 'START'
+ 16:31:16 [owncloudannex-0.1.1] main : 'ARGS: 'ANNEX_ACTION=store ANNEX_KEY=GPGHMACSHA1--0179fbbf559d5c25cf69b4e92025ff1f007d4f1f ANNEX_HASH_1=fp ANNEX_HASH_2=23 ANNEX_FILE=/home/yan/annex_testing/.git/annex/tmp/GPGHMACSHA1--0179fbbf559d5c25cf69b4e92025ff1f007d4f1f /home/yan/annex/SocialBusiness/Resources/Infrastructure/Computer_Tools/Records/AsusU24/owncloudannex/owncloudannex.py --dbglevel 1 --stderr''
+ 16:31:16 [owncloudannex-0.1.1] readFile : ''/home/yan/annex/SocialBusiness/Resources/Infrastructure/Computer_Tools/Records/AsusU24/owncloudannex/owncloudannex.conf' - 'r''
+ 16:31:16 [owncloudannex-0.1.1] readFile : 'Done'
+ 16:31:16 [owncloudannex-0.1.1] login : ''
+ 16:31:16 [owncloudannex-0.1.1] login : 'Using base: wingyan.no-ip.org - {'Authorization': 'Basic Y2h1bmd5YW41QGdtYWlsLmNvbTp5YW5fd2lraQ=='}'
+ 16:31:16 [owncloudannex-0.1.1] login : 'res: <davlib.DAV instance at 0x12915f0>'
+ 16:31:16 [owncloudannex-0.1.1] findInFolder : 'u'gitannex'(<type 'unicode'>) - '/'(<type 'str'>)'
+ 16:31:17 [owncloudannex-0.1.1] findInFolder : 'propfind: /owncloud/remote.php/webdav - '<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<d:error xmlns:d=\"DAV:\" xmlns:s=\"http://sabredav.org/ns\">\n  <s:exception>Sabre_DAV_Exception_NotAuthenticated</s:exception>\n  <s:message>Username or password does not match</s:message>\n  <s:sabredav-version>1.7.6</s:sabredav-version>\n</d:error>\n''
+ 16:31:17 [owncloudannex-0.1.1] findInFolder : 'Failure'
+ 16:31:17 [owncloudannex-0.1.1] createFolder : '/gitannex'
+ 16:31:18 [owncloudannex-0.1.1] createFolder : 'Failure: 401 - '<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<d:error xmlns:d=\"DAV:\" xmlns:s=\"http://sabredav.org/ns\">\n  <s:exception>Sabre_DAV_Exception_NotAuthenticated</s:exception>\n  <s:message>Username or password does not match</s:message>\n  <s:sabredav-version>1.7.6</s:sabredav-version>\n</d:error>\n''
+
+
+  owncloud hook exited nonzero!
+[2013-07-10 16:31:18 HKT] TransferWatcher: transfer finishing: Transfer {transferDirection = Upload, transferUUID = UUID \"df02d32a-7e3a-4e12-a417-7f1d1a1cf1a6\", transferKey = Key {keyName = \"911ba6148fbcbe4afe53772f1216b8204f403ed4ee06cb90c3c3ac25e56d9402.JPG\", keyBackendName = \"SHA256E\", keySize = Just 1893431, keyMtime = Nothing}}
+
+I figured out it is a *Username or password does not match*, and i saw the content of owncloudannex.conf as \"uname\": \"myGmail@gmail.com\", but i quickly saw my WebDAV login to owncloud as my user name, not gmail address, so i changed this \"uname\": \"my_normal_user_name_not_gmail_acc\" inside owncloudannex.conf. Finally, i got it work. So, i think, user name should not be a gmail address, should be owncloud login user name. 
+
+Another issue, i had a look into /WebDAV.../gitannex/, it is git repos. file, for my user opinion, it is better that it is a real file content that we can see the file(such as photos) by owncloud web client directly, rather that owncloud is a file server to keep git repos only. 
+
+Thanks
+
+yan
+"""]]

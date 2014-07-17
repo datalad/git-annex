@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawln3ckqKx0x_xDZMYwa9Q1bn4I06oWjkog"
+ nickname="Michael"
+ subject="propagating squashed history to other remotes"
+ date="2013-08-12T01:44:59Z"
+ content="""
+The easiest method seems to be to force-push git-annex and master to other remotes, e.g.
+
+    git push -f myremote git-annex:refs/heads/git-annex
+
+Before doing this, make sure location logs etc had a chance to propagate across all remotes.
+
+It's a good idea to remove synched/ branches before doing git-annex sync on the repos with rewritten history, too:
+    git branch -D synced/master
+    git branch -D synced/annex
+
+
+"""]]

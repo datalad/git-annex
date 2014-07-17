@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkAUMhKOSkh9JaBA6xst3XxQIIsDEq5Zd4"
+ nickname="Ovidiu"
+ subject="comment 2"
+ date="2014-05-16T17:15:59Z"
+ content="""
+I don't recall doing anything besides using the git annex assistant...
+
+That link is just a screen shot...
+
+anyway here is more info:
+
+du -h -s git-annex/*
+ 38M	git-annex/Finance
+8.0K	git-annex/archive
+
+BUT if I check the folder git-annex's properties it says: 
+
+45 980 806 bytes (80,4 MB on disk) for 8 420 items
+
+Is that normal?
+"""]]

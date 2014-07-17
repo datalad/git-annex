@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnjrMQEhzd8xI81V9BL2jsKlNgVJLD7PKs"
+ nickname="Pankaj"
+ subject="Google Music as remote?"
+ date="2012-10-31T06:07:32Z"
+ content="""
+A dropbox like folder which syncs with Google Music. Google Music allows uploading upto 20K songs. Also using git-annex , I can ensure that I dont need to store all the duplicate mp3 on my local drive. Only one copy of \"older music\" is \"arvhived\" on GMusic, whereas more recent songs are on my local drive.
+"""]]

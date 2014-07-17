@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="cehteh"
+ ip="217.8.62.137"
+ subject="rsync daemon mode"
+ date="2013-07-27T01:35:37Z"
+ content="""
+rsync has a --daemon mode with a simple challenge-response authentication but no encryption. This offers a nice lightweight alternative to ssh, especially when we
+store/transfer encrypted content anyways. Is this already supported in git-annex, if yes how to set it up?
+"""]]

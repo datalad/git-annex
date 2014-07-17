@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmRFKwny4rArBaz-36xTcsJYqKIgdDaw5Q"
+ nickname="Andrew"
+ subject="JABOF special remote"
+ date="2013-01-19T08:34:32Z"
+ content="""
+Similar to a JABOD, this would be Just A Bunch Of Files. I already have a NAS with a file structure conducive to serving media to my TV. However, it's not capable (currently) of running git-annex locally. It would be great to be able to tell annex the path to a file there as a remote much like a web remote from \"git annex addurl\". That way I can safely drop all the files I took with me on my trip, while annex still verifies and counts the file on the NAS as a location.
+
+There are some interesting things to figure out for this to be efficient. For example, SHAs of the files. Maybe store that in a metadata file in the directory of the files? Or perhaps use the WORM backend by default?
+"""]]

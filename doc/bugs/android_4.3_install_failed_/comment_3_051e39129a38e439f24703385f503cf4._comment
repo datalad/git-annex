@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 3"
+ date="2014-06-04T18:08:39Z"
+ content="""
+I asked if your Android device has an eqivilant directory to /sdcard that you can write to. If so, I can fix git-annex to use that directory. But you need to tell me what it is first!
+"""]]

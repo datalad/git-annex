@@ -1,0 +1,21 @@
+### Please describe the problem.
+
+`git annex reinject` refuses to work while in direct mode.
+
+When in direct mode git annex reinject could simply perform `rm $symlink; mv $file_copy .; git annex add $file`. I prefer having git annex doing that so I am sure I am not messing up (mistakenly adding new files for instance) and everything is properly managed.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex 4.20130516.1
+
+~~~~
+$ lsb_release -a
+No LSB modules are available.
+Distributor ID:	Ubuntu
+Description:	Ubuntu 12.04.2 LTS
+Release:	12.04
+Codename:	precise
+~~~~
+
+> [[fixed|done]]. Why did I take so long to do this, it was a trivial 1
+> word change! --[[Joey]]

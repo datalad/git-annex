@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmicVKRM8vJX4wPuAwlLEoS2cjmFXQkjkE"
+ nickname="Thomas"
+ subject="not useful for &quot;plain directory&quot; special remote?"
+ date="2013-12-16T20:10:16Z"
+ content="""
+It says: \"Note that the File should not influence the filename used on the remote. The filename used should be derived from the Key.\"
+
+Thus this interface might not be useful to implement [[todo/New special remote suggeston - clean directory]]? The clean directory special remote would just do that: save $key content on the remote under the filename $file.
+"""]]

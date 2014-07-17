@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9J51AO9t75xN5k0sJgg8taUo4y0a4hpQ"
+ nickname="Daniel"
+ subject="comment 4"
+ date="2013-06-07T23:02:29Z"
+ content="""
+I'm trying to find a way to prevent developers from adding certain file types to the main repo. Is there something like a pre-add hook that could be used?
+
+I found this in another forum but I'm not sure how it was intended to be implemented.
+
+```
+git check-attr addtoannex \"$FILE\" | grep -q \": set$\"  
+if [ $? -eq 0 ]; then  
+    git annex add \"$FILE\"  
+else  
+    git add \"$FILE\"  
+fi  
+```
+
+[http://git-annex.branchable.com/forum/Let_watch_selectively_annex_files/](http://git-annex.branchable.com/forum/Let_watch_selectively_annex_files/)
+"""]]

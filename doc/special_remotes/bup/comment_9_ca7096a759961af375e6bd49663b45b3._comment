@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlsXhOlsW6RaGR83VNSMxPh159l5dFau70"
+ nickname="Yung-Chin"
+ subject="comment 9"
+ date="2013-05-03T16:34:05Z"
+ content="""
+Thinking about this some more, a very elegant way to make a bup remote could actually be to just pass the whole .git/annex tree into bup-index/save (you could avoid sending some files by only bup-indexing select subtrees, or by using --exclude-*'s, but you'd run bup-save over the whole .git/annex tree). You could then use bup-restore to retrieve files or whole subtrees, and you'd refer to the files you're retrieving by their actual pathname under which they live in .git/annex (if that doesn't make sense it's because I've misunderstood how git-annex is organised!), so something like \"bup restore branch_name/latest/.git/annex/aa/bb/sha-of-some-sort\" would work - that's cute, right? And you'd only have 1 branch.
+
+However... somebody who is good with lazy-evaluation would need to rework bup.vfs: currently, if you'd call bup-restore on a path like that, it would instantiate a _lot_ of vfs-nodes you don't need - to begin with, it would make a node for every commit you ever made (on any branch!) - on a big repository you'd wait ages for it to just find the commit objects...
+"""]]

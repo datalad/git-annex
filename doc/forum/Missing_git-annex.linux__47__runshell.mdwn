@@ -1,0 +1,44 @@
+Hi,
+
+I've said up two clients to sync locally as well as over ssh-rsync.
+
+However, locally one client is complaining about missing `runshell` at a location where `git annex` is not installed.  The log is below.  On the assistent overview it just says "unfinished repository".  Note that I am able to ssh into the other machine and from the other machine I'm also able to ssh into this machine.
+
+
+I'm using the latest prebuild binary package (git-annex-bin at Archlinux AUR).  So my `git annex` setup contains 
+
+    $> pacman -Ql git-annex-bin 
+    git-annex-bin /usr/
+    git-annex-bin /usr/bin/
+    git-annex-bin /usr/bin/git-annex
+    git-annex-bin /usr/bin/git-annex-shell
+
+    $> pacman -Qi git-annex-bin # with chops
+    Name           : git-annex-bin
+    Version        : 4.20130909-1
+    Description    : Precompiled version of git-annex, webapp and assistant
+    included.
+    Architecture   : x86_64
+
+Here is a log of one event where it fails to transfer.  
+
+    [2013-09-28 18:06:38 CEST] TransferScanner: queued Upload NoUUID config/emacs.d/ac-l-dict/amsmath-c-a-* Nothing : expensive scan found missing object
+    [2013-09-28 18:06:38 CEST] Transferrer: Transferring: Upload NoUUID config/dotfiles/stardict/dic/stardict-oxford-2.4.2/oxford.ifo Nothing
+    [2013-09-28 18:06:38 CEST] call: git-annex ["transferkeys","--readfd","96","--writefd","94"]
+    [2013-09-28 18:06:38 CEST] read: git ["--git-dir=/home/rasmus/annex/.git","--work-tree=/home/rasmus/annex","show-ref","git-annex"]
+    [2013-09-28 18:06:38 CEST] read: git ["--git-dir=/home/rasmus/annex/.git","--work-tree=/home/rasmus/annex","show-ref","--hash","refs/heads/git-annex"]
+    [2013-09-28 18:06:38 CEST] read: git ["--git-dir=/home/rasmus/annex/.git","--work-tree=/home/rasmus/annex[","log2","0r1e3f-s/0h9e-ad2s8/ g1i8t-annex..90df78a0910a6f2998655e6:06:38 CEST] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (X11; Linux x86_64; rv:26.0) Gecko/20100101 Firefox/26.0 Aurora/26.0a2
+    ea47d478ea0589b54","--oneline","-n1"]
+    [2013-09-28 18:06:38 CEST] read: git ["--git-dir=/home/rasmus/annex/.git","--work-tree=/home/rasmus/annex","log","refs/heads/git-annex..5f6870ed24e5ded1764765bbfef2b85aff046569","--oneline","-n1"]
+    [2013-09-28 18:06:38 CEST] chat: git ["--git-dir=/home/rasmus/annex/.git","--work-tree=/home/rasmus/annex","cat-file","--batch"]
+    [2013-09-28 18:06:38 CEST] read: ssh ["-S","/home/rasmus/annex/.git/annex/ssh/00b8ef4cb08290718ba625d9bd86ca0b","-o","ControlMaster=auto","-o","ControlPersist=yes","-T","rasmus@git-annex-192.168.1.107-rasmus_annex","git-annex-shell 'configlist' '/~/annex/'"]
+    /home/rasmus/.ssh/git-annex-shell: line 4: /opt/git-annex.linux/runshell: No such file or directory
+    [2013-09-28 18:06:38 CEST] call: git ["--git-dir=/home/rasmus/annex/.git","--work-tree=/home/rasmus/annex","fetch","--quiet","192.168.1.107_annex"]
+    [2013-09-28 18:06:38 CEST] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (X11; Linux x86_64; rv:26.0) Gecko/20100101 Firefox/26.0 Aurora/26.0a2
+    [2013-09-28 18:06:38 CEST] 127.0.0.1 GET /log Mozilla/5.0 (X11; Linux x86_64; rv:26.0) Gecko/20100101 Firefox/26.0 Aurora/26.0a2
+    /home/rasmus/.ssh/git-annex-shell: line 4: /opt/git-annex.linux/runshell: No such file or directory
+    fatal: Could not read from remote repository.
+
+    Please make sure you have the correct access rights
+    and the repository exists.
+    git-annex: Unknown UUID

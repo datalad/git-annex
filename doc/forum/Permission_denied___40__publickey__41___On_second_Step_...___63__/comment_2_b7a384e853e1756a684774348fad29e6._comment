@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="Auroch"
+ ip="87.65.174.80"
+ subject="OK,thanx for this"
+ date="2013-11-09T09:10:42Z"
+ content="""
+The problem is not solve, but with your informations, I think i've found somehting.
+
+Is it possible that the problem is linked to my situation of port-forwarding ?
+The remoteserver is a host (proxmox) with iptable port forwarding 62322 to the real port 22 of the VM hosting the git where I try to connect.
+
+So could the problem seems to be that some actions are taken on the host and not the VM ... correct ?
+
+    [2013-11-09 09:51:33 CET] read: ssh-keygen [\"-F\",\"bla.remote.tld\"]
+    [2013-11-09 09:51:33 CET] read: ssh [\"-oNumberOfPasswordPrompts=0\",\"-n\",\"-p\",\"62322\",\"user@bla.remote.tld\",\"sh -c 'echo git-annex-probe loggedin;if which git-annex-shell; then echo git-annex-probe git-annex-shell; fi;if which rsync; then echo git-annex-probe rsync; fi;if which ~/.ssh/git-annex-shell; then echo git-annex-probe ~/.ssh/git-annex-shell; fi'\"]
+    [2013-11-09 09:51:35 CET] chat: ssh [\"user@bla.remote.tld\",\"sh -c 'mkdir -p '\\"'\\"'annex'\\"'\\"'&&cd '\\"'\\"'annex'\\"'\\"'&&if [ ! -d .git ]; then git init --bare --shared; fi&&git annex init'\"]
+
+If it's correct, have you an idea for solving this ?
+
+best regards
+
+"""]]

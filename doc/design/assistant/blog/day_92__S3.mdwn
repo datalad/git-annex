@@ -1,0 +1,23 @@
+Amazon S3 was the second most popular choice in the
+[[polls/prioritizing_special_remotes]] poll, and since I'm not sure how
+I want to support phone/mp3 players, I did it first.
+
+So I added a configurator today to easily set up an Amazon S3 repository.
+That was straightforward and didn't take long since git-annex already
+supported S3.
+
+The hard part, of course, is key distribution. Since the webapp so far
+can only configure the shared encryption method, and not fullblown gpg keys,
+I didn't feel it would be secure to store the S3 keys in the git repository.
+Anyone with access to that git repo would have full access to S3 ... just not
+acceptable. Instead, the webapp stores the keys in a 600 mode file locally,
+and they're not distributed at all.
+
+When the same S3 repository is enabled on another computer, it prompts for
+keys then too. I did add a hint about using the IAM Management Console in
+this case -- it should be possible to set up users in IAM who can only
+access a single bucket, although I have not tried to set that up.
+
+---
+
+Also, more work on the standalone OSX app.

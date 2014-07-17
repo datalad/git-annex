@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-06-04T18:14:19Z"
+ content="""
+If your repository is not using direct mode, it's completely safe to edit .git/config and set the version back to 3. There is no change between 3 and 5 for indirect mode repositories.
+
+Unfortunately, using git-annex version 5 will automatically upgrade the repository to 5 again. In general, I only want git-annex to support one version at a time, to avoid complicating the code. I did try leaving the indirect mode repositories at v3, but that didn't work out (some details in [[!commit b1d7474c1d713a5b422948178abb4e5f39e85096]]).
+
+I kind of think that part of the problem is that you're using git-annex repositories accessed via a file server. If your server had git-annex installed on it and the clients talked to it only by sshing in and running git-annex-shell, it would not matter if the clients had a newer version, because they'd never access the central repository directly.
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.64"
+ subject="comment 3"
+ date="2013-11-26T19:59:42Z"
+ content="""
+Hmm, that looks fine.
+
+Perhaps the user you're running git-annex as cannot write to `/media/SoderUSB` ? The webapp avoids listing places you can't write, since it would fail to make a repository there. (Also because this is an easy way for it to avoid listing `/`, `/usr`, or whatever other OS-level mounts a system might have..)
+"""]]

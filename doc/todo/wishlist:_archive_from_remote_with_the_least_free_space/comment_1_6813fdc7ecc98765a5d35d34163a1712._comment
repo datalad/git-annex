@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.14.105"
+ subject="comment 1"
+ date="2013-09-19T21:01:30Z"
+ content="""
+That might be useful in some cases. git-annex can only tell how much free space is available on remotes that are mounted to the local filesystem. Did you use case involve removable drives?
+"""]]

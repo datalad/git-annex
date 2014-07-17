@@ -1,0 +1,1 @@
+I'm having trouble installing the latest git-annex. It depends on 'base >= 4.5 && base < 5', but ghc 7.0 only ships base 3.0. I've tried upgrading ghc to 7.4 but that breaks a whole bunch of other things; for example, the Crypto module fails to compile, preventing me from installing ghc. Please fix compatibility with ghc 7.0.

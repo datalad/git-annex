@@ -1,0 +1,57 @@
+After a few days otherwise engaged, back to work today.
+
+My focus was on adding the committing thread mentioned in [[day_4__speed]].
+I got rather further than expected!
+
+First, I implemented a really dumb thread, that woke up once per second,
+checked if any changes had been made, and committed them. Of course, this
+rather sucked. In the middle of a large operation like untarring a tarball,
+or `rm -r` of a large directory tree, it made lots of commits and made
+things slow and ugly. This was not unexpected.
+
+So next, I added some smarts to it. First, I wanted to stop it waking up
+every second when there was nothing to do, and instead blocking wait on a
+change occurring. Secondly, I wanted it to know when past changes happened,
+so it could detect batch mode scenarios, and avoid committing too
+frequently. 
+
+I played around with combinations of various Haskell thread communications
+tools to get that information to the committer thread: `MVar`, `Chan`,
+`QSem`, `QSemN`. Eventually, I realized all I needed was a simple channel
+through which the timestamps of changes could be sent. However, `Chan`
+wasn't quite suitable, and I had to add a dependency on 
+[Software Transactional Memory](http://en.wikipedia.org/wiki/Software_Transactional_Memory),
+and use a `TChan`. Now I'm cooking with gas!
+
+With that data channel available to the committer thread, it quickly got
+some very nice smart behavior. Playing around with it, I find it commits
+*instantly* when I'm making some random change that I'd want the
+git-annex assistant to sync out instantly; and that its batch job detection
+works pretty well too.
+
+There's surely room for improvement, and I made this part of the code
+be an entirely pure function, so it's really easy to change the strategy.
+This part of the committer thread is so nice and clean, that here's the
+current code, for your viewing pleasure:
+
+[[!format haskell """
+{- Decide if now is a good time to make a commit.
+ - Note that the list of change times has an undefined order.
+ -
+ - Current strategy: If there have been 10 commits within the past second,
+ - a batch activity is taking place, so wait for later.
+ -}
+shouldCommit :: UTCTime -> [UTCTime] -> Bool
+shouldCommit now changetimes
+       | len == 0 = False
+       | len > 4096 = True -- avoid bloating queue too much
+       | length (filter thisSecond changetimes) < 10 = True
+       | otherwise = False -- batch activity
+       where
+               len = length changetimes
+               thisSecond t = now `diffUTCTime` t <= 1
+"""]]
+
+Still some polishing to do to eliminate minor inefficiencies and deal
+with more races, but this part of the git-annex assistant is now very usable,
+and will be going out to my beta testers soon!

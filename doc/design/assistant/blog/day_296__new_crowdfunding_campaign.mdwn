@@ -1,0 +1,41 @@
+Surprise! I'm running a new crowdfunding campaign, which I hope will fund
+several more months of git-annex development.
+
+<https://campaign.joeyh.name/>
+
+Please don't feel you have to give, but if you do decide to, give
+generously. ;) I'm accepting both Paypal and Bitcoin (via CoinBase.com),
+and have some rewards that you might enjoy.
+
+----
+
+I came up with two lists of things I hope this campaign will fund.
+These are by no means complete lists. First, some general features and
+development things:
+
+* Integrate better with Android.
+* Get the assistant and webapp ported to Windows.
+* Refine the automated stress testing tools to find and fix more problems
+  before users ever see them.
+* Automatic recovery. Cosmic ray flipped a bit in a file? 
+  USB drive corrupted itself? The assistant should notice these problems,
+  and fix them.
+* Encourage more contributions from others. For example, improve the
+  special remote plugin interface so it can do everything the native Haskell
+  interface can do. Eight new cloud storage services were added this year
+  as plugins, but we can do better!
+* Use deltas to reduce bandwidth needed to transfer modified versions of files.
+
+Secondly, some things to improve security:
+
+* Add easy support for encrypted git repositories
+  using [git-remote-gcrypt](https://github.com/blake2-ppc/git-remote-gcrypt),
+  so you can safely push to a repository on a server you don't control.
+* Add support for setting up and using GPG keys in the webapp.
+* Add protection to the XMPP protocol to guard against man in the middle
+  attacks if the XMPP server is compromised. Ie, Google should not be able to
+  learn about your git-annex repository even if you're using their servers.
+* To avoid leaking even the size of your encrypted files to
+  cloud storage providers, add a mode that stores fixed size chunks.
+
+It will also, of course, fund ongoing bugfixing, support, etc.

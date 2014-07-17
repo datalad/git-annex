@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4830:1600:187::2"
+ subject="comment 2"
+ date="2013-09-04T06:43:26Z"
+ content="""
+Recently git-annex has gotten the ability to do this: `git annex forget --drop-dead`
+
+That prunes all history relating to all dead remotes. You need to be running a git-annex that supports this on all computers you use the repos on, or the pruned history will get merged back in.
+
+I don't recommend doing this just because you want to \"clean history\". Think of it as something you can do at some point in the future if the .git/objects somehow gets too large or too slow. Put off deleting data until tomorrow if you don't absolutely need to do it today.
+"""]]

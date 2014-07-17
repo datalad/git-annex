@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.246.110"
+ subject="comment 2"
+ date="2013-07-28T00:27:23Z"
+ content="""
+Remote mythbuntuserver.local_annex does not have git-annex installed; setting remote.mythbuntuserver.local_annex.annex-ignore
+
+So, how did you install git-annex on mythbuntuserver? What does the `.ssh/authorized_keys` on mythbuntuserver look like? (In particular the key that git-annex adds to it, which should be set to run git-annex-shell.)
+"""]]

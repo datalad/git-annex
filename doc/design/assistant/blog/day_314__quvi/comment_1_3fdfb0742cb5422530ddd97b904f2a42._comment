@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmNu4V5fvpLlBhaCUfXXOB0MI5NXwh8SkU"
+ nickname="Adam"
+ subject="New YouTube problems"
+ date="2013-09-05T03:45:16Z"
+ content="""
+Joey, you may notice eventually that YouTube is moving some videos, especially long ones, to a new format called DASH, which splits them up into smaller parts; unfortunately, it also delivers the audio as a separate file, requiring something like ffmpeg to merge it with the video.  I don't know anything about quvi, but youtube-dl recently added support for DASH.  It's a Python program that's packaged in Debian, but it can also update itself if you install it locally, which is helpful if Debian is frozen...  Anyway, if you need it in the future, youtube-dl might be helpful.
+"""]]

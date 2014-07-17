@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-05-13T18:49:25Z"
+ content="""
+Well, it would be possible to add a configuration setting in the repository that tells the assistant what address:port to listen on.
+
+But maybe it would be better to not use `assistant --autostart` in your situation? That command is basically the same as this shell script:
+
+[[!format sh "
+#!/bin/sh
+for dir in $(cat $HOME/.config/git-annex/autostart); do
+    cd $dir
+    git annex webapp &
+done
+"]]
+
+So you can write similar shell scripts that start the webapp with whatever options you like.
+"""]]

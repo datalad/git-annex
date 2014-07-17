@@ -1,0 +1,16 @@
+My goal for this month is to get more people using the git-annex assistant,
+and fix issues that might be blocking you from using it. To do this,
+I'd like to get an idea about whether you're already using it,
+or what's keeping you from using it.
+
+If you use `git-annex` at the command line and have no reason to use the
+assistant, please instead fill in this poll on behalf of less technically
+adept friends or family -- what's preventing you from introducing them to
+the assistant?
+
+[[!poll open=no expandable=yes 8 "I'm using the assistant!" 28 "I need a Windows port" 30 "I need an Android port" 3 "I need an IPhone port (not holding my breath)" 2 "Well, it's still in beta..." 11 "I want to, but have not had the time to try it" 5 "Just inertia. I've got this dropbox/whatever that already works.." 3 "It's too hard to install (please say why in comments)" 2 "Perceived recent increase of bug reports and thus sitting it out." 25 "Initially the lack of direct-mode. Now concerns about the safety of direct mode. Perhaps after the next release." 10 "I haven't always well understood the differences between commandline operation & the assistant, so the differences would confuse me, and I found the command line more understandable & less scary.  Now trying to learn to like & trust the assistant. :)" 21 "An Ubuntu PPA would be supercool! Thanks for your great work!!" 18 "Not yet in Debian sid amd64" 6 "Waiting for Fedora/CentOS rpm repository." 2 "throttling transfers, it upsets people when I saturate the connection" 2 "partial content" 1 "Not yet available in macports" 4 "No build yet for Nokia N9" 3 "Using only git-annex webapp to config does not seem to work: Create walkthough?" 5 "No build for OSX 10.6" 5 "Needs more focus on the UI." 1 "Just inertia. I don't have a Dropbox/whatever." 4 "Replaces files with a symlink mess." 2 "configurable option to only annex files meeting certian size or filename criteria" 4 "I'm really confused about how to make it sync with a remote NON-bare repository. I'm even afraid to try `git remote add`, since there is no clear method to completely forget a git-annex remote..." 5 "A build for te raspberry pi would be supercol!" 1 "Would be nice to exclude subfolders from the gui or through a config file" 1 "I wish I had transparently encrypted git repos in the cloud available, like jgit." 1 "too many inodes used in direct mode. maybe it's possible to keep more info as git objects instead?" 2 "I need to be able to restrict in which repo dirs changes get auto-committed" 1 "Provide .deb package" 1 "Better documentation/walkthroughs on using git-annex within an existing git repo. AKA mixed use" 1 "Union mounts to have a single view of file collection on the network" 1 "Ubuntu PPA does not build with webapp" 1 "I set it up, but am confused about what I set up! It would be great to be able to start from scratch." 1 "I need to be able to restrict in which repo dirs changes get auto-committed using a syntax similar to gitignore"]]
+
+Feel free to write in your own reasons, or add a comment to give me more info.
+
+Note: Poll is now closed. Nearly all these issues have been dealt with.
+Please file bug reports if any of these issues still affect you.

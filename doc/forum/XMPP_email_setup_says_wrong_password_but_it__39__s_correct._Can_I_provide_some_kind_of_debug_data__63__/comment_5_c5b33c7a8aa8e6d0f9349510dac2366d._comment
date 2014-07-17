@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.6.49"
+ subject="comment 5"
+ date="2012-11-27T20:32:47Z"
+ content="""
+Hmm, I can't think of anything I've changed that would make it work where it didn't before.
+
+I suspect the google apps problem is because it looks for a SRV record in DNS to find the jabber server, and something is wrong there. Without knowing what \"something@somedomain.com\" is standing for, it's hard to tell. :)
+
+If you'd like to set me up something to test with, my email address is id@joeyh.name
+"""]]

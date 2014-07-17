@@ -1,0 +1,19 @@
+[[!meta title="Android is only autobuilt for arm, not x86 or mips"]]
+
+### Please describe the problem.
+
+git-annex doesn't start on [Android-x86](http://www.android-x86.org) in VirtualBox (version 4.1.18-dfsg-2+deb7u1).
+
+On Android 4.2.2 (android-x86-4.2-20130228.iso) it starts the terminal which prints nothing but `[Terminal session finished]`.
+On Android 4.3 (android-x86-4.3-20130725.iso) it starts the terminal and prints:
+
+    In mgmain JNI_OnLoad
+    
+    [Terminal session finished]
+
+The browser/webapp is never started.
+
+### What version of git-annex are you using? On what operating system?
+
+Version 1.0.52 for Android. I made sure to install the correct APK files for each version of Android.
+

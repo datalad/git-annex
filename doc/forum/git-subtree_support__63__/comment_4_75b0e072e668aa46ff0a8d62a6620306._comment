@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://peter-simons.myopenid.com/"
+ ip="77.188.44.113"
+ subject="comment 4"
+ date="2012-01-03T19:17:36Z"
+ content="""
+Okay, I see, but is `git annex get --auto .` going to import all those files from the work remote into my home if the `master` branch of that remote isn't merged?
+"""]]

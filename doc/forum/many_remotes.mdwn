@@ -1,0 +1,24 @@
+Thanks Joey for the great work.
+
+I'm using git annex for my tv-shows and movies Folder.
+
+I have 3 USB HDD (ext.150Gb,ext.200Gb, ext.2Tb) and a USB Stick (ATV), which are traveling between 3 Devices
+
+2 Notebooks (Lappi,Kiste) and a Nas.
+
+First of all, I'm made a mistake and mixed the remote Locations from the tvshows folder with the movies folder and did a git annex sync, ( this happened about two weeks ago) 
+I think i can't undo this, only unannex will help.
+
+I've now watched the annex status output and noticed that there are many Remotes, some of them have a timestamp as name.
+
+see log file at http://pastebin.com/79bRVkK6
+
+Running git annex on ubuntu 12.04
+
+    christian@Lappi:~/Serien$ git annex version
+    git-annex version: 4.20130417
+    local repository version: 3
+    default repository version: 3
+    supported repository versions: 3 4
+    upgrade supported from repository versions: 0 1 2
+    build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP DNS

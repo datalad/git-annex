@@ -1,0 +1,18 @@
+Spent today reviewing my [[plans_for_the_month|assistant/disaster_recovery]]
+and filling in a couple of missing peices.
+
+Noticed that I had forgotten to make repository repair clean up any stale
+git locks, despite writing that code at the beginning of the month, and
+added that in.
+
+Made the webapp notice when a repository that is being used does not have
+any consistency checks configured, and encourage the user to set up checks.
+This happens when the assistant is started (for the local repository),
+and when removable drives containing repositories are plugged in. If the
+reminders are annoying, they can be disabled with a couple clicks.
+
+And I think that just about wraps up the month. (If I get a chance, I would
+still like to add recovery of git-remote-gcrypt encrypted git repositories.)
+
+My [[design/roadmap]] has next month dedicated to user-driven features
+and polishing and bugfixing.

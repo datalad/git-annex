@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.220"
+ subject="comment 3"
+ date="2013-09-25T17:03:29Z"
+ content="""
+Interesting experiment.
+
+I don't know why you don't want to let git-annex sync its data to $gitdir.
+
+The symlinks could be occuring because of a bug in direct mode. (I have fixed many past bugs that caused that.) But just as likely it's because ikiwiki will run `git pull` in the srcdir.
+
+I think it would make more sense to use the underlay plugin and keep your annexed repository in a separate underlay. This would guarantee ikiwiki doesn't run git commands in there, and would ensure that nothing done with the web interface could mess with the annex.
+"""]]

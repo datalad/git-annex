@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="64.134.31.139"
+ subject="comment 1"
+ date="2013-10-22T17:52:10Z"
+ content="""
+That version of the haskell uuid library installs ok on my Debian sid system. Seems to me you have a too old version of the haskell bytestring library, which added `fromStrict` in version 0.10.0.0. Probably `cabal install bytestring` will fix it up for you, but building git-annex from source using cabal is a complicated thing that can go wrong in many ways. Have you considered one of the prebuilt binaries?
+"""]]

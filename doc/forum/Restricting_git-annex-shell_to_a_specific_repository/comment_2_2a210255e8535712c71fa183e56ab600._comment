@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://olg.myid.net/"
+ ip="93.218.131.119"
+ subject="comment 2"
+ date="2012-11-05T23:34:20Z"
+ content="""
+Wow, thank you for implementing this so quickly!
+
+
+Just one question: As far as I understood git-annex-shell relays all unknown commands to git-shell. In this case are there the same restrictions active, too?
+
+Thanks again...
+"""]]

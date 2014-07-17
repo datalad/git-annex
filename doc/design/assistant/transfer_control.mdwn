@@ -1,0 +1,123 @@
+Some remotes are too small to sync everything to them.
+
+The case of a small remote on a gadget that the user interacts with,
+such as a phone, where they may want to request it get content
+it doesn't currently have, is covered by the [[partial_content]] page.
+
+But often the remote is just a removable drive or a cloud remote,
+that has a limited size. This page is about making the assistant do
+something smart with such remotes.
+
+## TODO
+
+* The expensive scan currently makes one pass, dropping content at the same
+  time more uploads and downloads are queued. It would be better to drop as
+  much content as possible upfront, to keep the total annex size as small
+  as possible. How to do that without making two expensive scans?
+* The TransferWatcher's finishedTransfer function relies on the location
+  log having been updated after a transfer. But there's a race; if the
+  log is not updated in time, it will fail to drop unwanted content.
+  (There's a 10 second sleep there now to avoid the race, but that's hardly
+  a fix.)
+
+### dropping no longer preferred content
+
+When a file is renamed, it might stop being preferred, so
+could be checked and dropped. (If there's multiple links to
+the same content, this gets tricky. Let's assume there are not.)
+
+### analysis of changes that can result in content no longer being preferred
+
+1. The preferred content expression can change, or a new repo is added, or
+   groups change. Generally, some change to global annex state. Only way to deal
+   with this is an expensive scan. (The rest of the items below come from
+   analizing the terminals used in preferred content expressions.) **done**
+2. renaming of a file (ie, moved to `archive/`) **done**
+   (note also that renaming a file can also make it become preferred content
+   again, and should cause it to be transferred in that case) **done**
+3. we get a file (`in`, `copies`) **done**
+4. we sent a file (`in`, `copies`) **done**
+5. some other repository drops the file (`in`, `copies` .. However, it's
+   unlikely that an expression would prefer content when *more* copies
+   exisited, and want to drop it when less do. That's nearly a pathological
+   case.)
+6. `migrate` is used to change a backend (`inbackend`; unlikely)
+
+That's all! Of these, 1-4 are by far the most important.
+
+## specifying what data a remote prefers to contain (**done**)
+
+Imagine a per-remote preferred content setting, that matches things that
+should be stored on the remote.
+
+For example, a MP3 player might use:
+`smallerthan(10mb) and filename(*.mp3) and (not filename(junk/*))`
+
+Adding that as a filter to files sent to a remote should be
+straightforward.
+
+A USB drive that is carried between three laptops and used to sync data
+between them might use: `not (in=laptop1 and in=laptop2 and in=laptop3)`
+
+In this case, transferring data from the usb repo should
+check if preferred content settings rejects the data, and if so, drop it
+from the repo. So once all three laptops have the data, it is
+pruned from the transfer drive.
+
+## repo groups (**done**)
+
+Seems like git-annex needs a way to know the groups of repos. Some
+groups:
+
+* enduser: The user interacts with this repo directly.
+* archival: This repo accumulates stuff, and once it's in enough archives,
+  it tends to get removed from other places.
+* transfer: This repo is used to transfer data between enduser repos,
+  it does not hold data for long periods of time, and tends to have a
+  limited size.
+
+Add a group.log that can assign repos to these or other groups. (**done**)
+
+Some examples of using groups:
+
+* Want to remove content from a repo, if it's not an archival repo,
+  and the content has reached at least one archival repo:
+
+  `(not group=archival) and (not copies=archival:1)`
+
+  That would make send to configure on all repos, or even set
+  a global `annex.accept` to it. **done**
+
+* Make a cloud repo only hold data until all known clients have a copy:
+
+  `not ingroup(enduser)`
+
+## configuration
+
+The above is all well and good for those who enjoy boolean algebra, but
+how to configure these sorts of expressions in the webapp?
+
+Currently, we have a simple drop down list to select between a few
+predefined groups with pre-defined preferred content recipes. Is this good
+enough?
+
+I think so; useful recipes can be developed on the wiki and included in
+git-annex.
+
+## the state change problem (**done**)
+
+Imagine that a trusted repo has setting like `not copies=trusted:2`
+This means that `git annex get --auto` should get files not in 2 trusted
+repos. But once it has, the file is in 3 trusted repos, and so `git annex
+drop --auto` should drop it again!
+
+How to fix? Can it even be fixed? Maybe care has to be taken when
+writing expressions, to avoid this problem. One that avoids it:
+`not (copies=trusted:2 or (in=here and trusted=here and copies=trusted:3))`
+
+Or, expressions could be automatically rewritten to avoid the problem.
+
+Or, perhaps simulation could be used to detect the problem. Before
+dropping, check the expression. Then simulate that the drop has happened.
+Does the expression now make it want to add it? Then don't drop it!
+**done**.. effectively using this approach.

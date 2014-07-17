@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnPgn611P6ym5yyL0BS8rUzO0_ZKRldMt0"
+ nickname="Samuel"
+ subject="What are those ?"
+ date="2014-01-31T07:37:49Z"
+ content="""
+Hi,
+
+Could you please indicate what other means of file encryption systems you have in mind?
+
+The others I know are at a partition level (cryptsetup, LUKS) and are less pratical to setup than a simple encfs.
+"""]]

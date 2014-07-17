@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnoUOqs_lbuWyZBqyU6unHgUduJwDDgiKY"
+ nickname="Matt"
+ subject="ANNEX_S3 vs AWS for keys"
+ date="2012-05-29T12:24:25Z"
+ content="""
+The instructions state ANNEX_S3_ACCESS_KEY_ID and ANNEX_SECRET_ACCESS_KEY but git-annex cannot connect with those constants. git-annex tells me to set both \"AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY\" instead, which works. This is with Xubuntu 12.04.
+"""]]

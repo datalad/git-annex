@@ -1,0 +1,1 @@
+As suggested during the first Gitify BoF during DebConf13: Adding a way to have on-demand dropping of content in a given remote would allow a user to quickly free up disk space on demand while still heeding numcopies etc.

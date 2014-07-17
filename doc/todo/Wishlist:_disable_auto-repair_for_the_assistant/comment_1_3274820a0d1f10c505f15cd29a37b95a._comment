@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.3"
+ subject="comment 1"
+ date="2014-05-21T18:29:16Z"
+ content="""
+What auto-repair are you referring to?
+
+If you schedule a fsck of the repository in the webapp, then when that finds a problem with the git repository, it will be repaired. So if you don't want this, remove any scheduled fsck jobs.
+
+The assistant also detects a few common problems at startup that prevent it from working, such as a corrupt index file, and automatically repairs those. These repairs only happen at startup. If the index file is corrupt, it has to delete it and re-add every file to the repository, which is expensive, but otherwise it would be completely non-functional.
+"""]]

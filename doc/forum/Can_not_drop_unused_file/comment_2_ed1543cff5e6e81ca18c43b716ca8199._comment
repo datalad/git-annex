@@ -1,0 +1,42 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/FHnTlSBo1eCGJRwueeKeB6.RCaPbGMPr5jxx8A--#ce0d8"
+ nickname="Hamza"
+ subject="comment 2"
+ date="2014-01-19T23:56:17Z"
+ content="""
+I've tried,
+
+    git annex fsck --from external
+
+and
+
+    git annex fsck --all --from external
+
+did not solve the problem. Running,
+
+    strace git annex dropunused 1 --from external --force
+
+tail of strace produces,
+
+    clone(child_stack=0, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidp
+    tr=0x7f3a8d6d8a10) = 5746                                                            
+    rt_sigaction(SIGINT, {0x4e1fb0, [INT], SA_RESTORER|SA_RESTART, 0x7f3a8c8b60b0}, {SIG_D
+    FL, [], 0}, 8) = 0                                                                   
+    rt_sigaction(SIGHUP, {0x4e1fb0, [HUP], SA_RESTORER|SA_RESTART, 0x7f3a8c8b60b0}, {SIG_D
+    FL, [], 0}, 8) = 0                                                                   
+    rt_sigaction(SIGTERM, {0x4e1fb0, [TERM], SA_RESTORER|SA_RESTART, 0x7f3a8c8b60b0}, {SIG
+    _DFL, [], 0}, 8) = 0                                                                 
+    rt_sigaction(SIGQUIT, {0x4e1fb0, [QUIT], SA_RESTORER|SA_RESTART, 0x7f3a8c8b60b0}, {SIG
+    _DFL, [], 0}, 8) = 0                                                                 
+    rt_sigaction(SIGPIPE, {0x4e1fb0, [PIPE], SA_RESTORER|SA_RESTART, 0x7f3a8c8b60b0}, {SIG
+    _DFL, [], 0}, 8) = 0                                                                 
+    close(5)                                = 0
+    read(4, \"\", 1)                          = 0
+    close(4)                                = 0
+    wait4(5746, dropunused 1 (from external...) (gpg) failed
+    git-annex: dropunused: 1 failed
+    [{WIFEXITED(s) && WEXITSTATUS(s) == 1}], 0, NULL) = 5746
+    --- SIGCHLD (Child exited) @ 0 (0) ---
+    exit_group(1)                           = ?
+
+"""]]

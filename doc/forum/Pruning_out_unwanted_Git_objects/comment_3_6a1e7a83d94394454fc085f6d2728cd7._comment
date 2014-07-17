@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4830:1600:187::2"
+ subject="comment 3"
+ date="2013-09-04T06:36:15Z"
+ content="""
+`git annex forget` automates this now. Needs a version of git-annex supporting it installed on *all* the computers you use the repo on.
+"""]]

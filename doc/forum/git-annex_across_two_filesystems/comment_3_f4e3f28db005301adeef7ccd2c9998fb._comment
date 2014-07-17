@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmp1ThsNNAbSn46ju-gwFELfStlhl8usJo"
+ nickname="Marek"
+ subject="I should have thought of this"
+ date="2013-04-30T19:55:19Z"
+ content="""
+Thanks joey, I thought of the object storage just yesterday and that the drive where it resides needs to be the big one. 
+
+I think that I will do it as you described with one addition:
+
+I set up the git-annex repository on my big drive. Lets call that BIG.
+Then I set up another on the smaller drive (or raid) and set both to sync. Lets call that RAID.
+
+BUT: Can I use num copies to tell BIG to only sync files in certain directories to RAID. Or will syncing sync everything regardless?
+
+Thanks for your help
+
+"""]]

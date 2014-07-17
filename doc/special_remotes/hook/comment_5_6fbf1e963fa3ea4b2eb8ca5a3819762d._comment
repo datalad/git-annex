@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.21"
+ subject="comment 5"
+ date="2013-07-31T16:25:55Z"
+ content="""
+The checkpresent hook should always exit 0 unless there was an exceptional condition (eg, perhaps it cannot check if the file exists one way or the other). Like the documentation for it says, the important thing is what it outputs to stdout, which should contain the key name if it's present, and should not contain the key name if it's not present.
+
+I hope you post to this website about your special remote when you get it fully working!
+"""]]

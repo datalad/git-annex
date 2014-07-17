@@ -1,0 +1,63 @@
+### What steps will reproduce the problem?
+[[!format sh """
+C:\Users\Bruno>mkdir annex
+
+C:\Users\Bruno>cd annex
+
+C:\Users\Bruno\annex>git init
+Initialized empty Git repository in C:/Users/Bruno/annex/.git/
+
+C:\Users\Bruno\annex>git annex init
+init
+  Detected a crippled filesystem.
+
+  Enabling direct mode.
+
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+ok
+(Recording state in git...)
+
+C:\Users\Bruno\annex>echo test > test
+
+C:\Users\Bruno\annex>git annex add .
+add test (checksum...) ok
+(Recording state in git...)
+
+C:\Users\Bruno\annex>git commit -a -m added
+[master (root-commit) 2eea610] added
+ 1 file changed, 1 insertion(+)
+ create mode 120000 test
+
+C:\Users\Bruno\annex>git annex sync
+(Recording state in git...)
+fatal: unable to access '../../../../C:\Users\Bruno\annex\.git/config': Invalid argument
+
+git-annex: user error (xargs ["-0","git","--git-dir=C:\\Users\\Bruno\\annex\\.git","--work-tree=C:\\Users\\Bruno\\annex","add","-f"] exited 123)
+failed
+git-annex: sync: 1 failed
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+Windows 8 (64 bits)
+
+git version 1.8.4.msysgit.0
+
+[[!format sh """
+git-annex version: 4.20131008-ge115441
+build flags: Pairing Testsuite S3 WebDAV DNS Feeds Quvi TDFA CryptoHash
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+remote types: git gcrypt S3 bup directory rsync web webdav glacier hook
+local repository version: 4
+default repository version: 3
+supported repository versions: 3 4
+upgrade supported from repository versions: 2
+"""]]
+
+### Please provide any additional information below.
+C:\Users\Bruno\annex\.git\config exists
+
+> xargs was one problem; also msysgit seems to just not
+> accept DOS style paths anymore in --git-dir or --git-work-tree.
+> megaweird. [[fixed|done]] --[[Joey]]

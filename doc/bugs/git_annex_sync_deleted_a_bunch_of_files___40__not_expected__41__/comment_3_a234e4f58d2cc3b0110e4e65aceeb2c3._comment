@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawno-jcsScu4CK6k2QLZqxMros1PQHf1NQY"
+ nickname="Hugo"
+ subject="comment 3"
+ date="2014-03-13T14:36:20Z"
+ content="""
+> My conclusion is that some repository, perhaps the usb drive, made a commit that deleted those files. You should be able to find this commit with git log --stat, and can just git revert it if you want to.
+
+It would be surprising if I did that.
+
+Anyway, I was not able to find which commit deleted the ~600 files. I just decided to re-start completely with git annex :-/
+
+The good thing is that I did not lose any file, so in that regard git annex is great ;^)
+
+However, one thing that is quite confusing to me is the way git annex [sync] works.  Am I supposed to run git annex sync in every repository? Because if I just run it once in 1 repo, then I usually don't get all the syncing done. Maybe I just don't understand something.
+
+Thanks for replying,
+
+[sync]: http://git-annex.branchable.com/sync/
+"""]]

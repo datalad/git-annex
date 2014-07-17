@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.90"
+ subject="comment 1"
+ date="2013-07-16T17:33:23Z"
+ content="""
+Hmm, actually the XMPP library it's using does not fail on an invalid or self-signed cert. This is something that SSL using libraries sadly often get wrong, and yeah, I see I contacted the library author a while ago, and a \"sessionIsSecure\" has been added to it, which can be used to check if the cert was valid.
+
+This leaves open the question of what's happening with you on the CCC server. Did you get an error message?
+
+
+"""]]

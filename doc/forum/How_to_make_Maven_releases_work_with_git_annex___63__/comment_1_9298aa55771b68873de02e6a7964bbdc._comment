@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.21"
+ subject="comment 1"
+ date="2013-07-30T18:20:53Z"
+ content="""
+If you can find a way to run `git annex get` in the cloned repo, it will copy over the files. Perhaps there is some way to make Maven do that via a hook script or similar?
+"""]]

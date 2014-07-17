@@ -1,0 +1,133 @@
+# NAME
+
+git-annex-shell - Restricted login shell for git-annex only SSH access
+
+# SYNOPSIS
+
+git-annex-shell [-c] command [params ...]
+
+# DESCRIPTION
+
+git-annex-shell is a restricted shell, similar to git-shell, which
+can be used as a login shell for SSH accounts.
+
+Since its syntax is identical to git-shell's, it can be used as a drop-in
+replacement anywhere git-shell is used. For example it can be used as a 
+user's restricted login shell.
+
+# COMMANDS
+
+Any command not listed below is passed through to git-shell.
+
+Note that the directory parameter should be an absolute path, otherwise
+it is assumed to be relative to the user's home directory. Also the
+first "/~/" or "/~user/" is expanded to the specified home directory.
+
+* configlist directory
+
+  This outputs a subset of the git configuration, in the same form as
+  `git config --list`. This is used to get the annex.uuid of the remote
+  repository.
+
+  When run in a repository that does not yet have an annex.uuid, one
+  will be created, as long as a git-annex branch has already been pushed to
+  the repository.
+
+* inannex directory [key ...]
+
+  This checks if all specified keys are present in the annex, 
+  and exits zero if so.
+
+* dropkey directory [key ...]
+
+  This drops the annexed data for the specified keys.
+
+* recvkey directory key
+
+  This runs rsync in server mode to receive the content of a key,
+  and stores the content in the annex.
+
+* sendkey directory key
+
+  This runs rsync in server mode to transfer out the content of a key.
+
+* transferinfo directory key
+
+  This is typically run at the same time as sendkey is sending a key
+  to the remote. Using it is optional, but is used to update
+  progress information for the transfer of the key.
+
+  It reads lines from standard input, each giving the number of bytes
+  that have been received so far. 
+
+* commit directory
+
+  This commits any staged changes to the git-annex branch.
+  It also runs the annex-content hook.
+
+* notifychanges
+
+  This is used by `git-annex remotedaemon` to be notified when
+  refs in the remote repository are changed.
+
+* gcryptsetup gcryptid
+
+  Sets up a repository as a gcrypt repository.
+
+# OPTIONS
+
+Most options are the same as in git-annex. The ones specific
+to git-annex-shell are:
+
+* --uuid=UUID
+
+  git-annex uses this to specify the UUID of the repository it was expecting
+  git-annex-shell to access, as a sanity check.
+
+* -- fields=val fields=val.. --
+
+  Additional fields may be specified this way, to retain compatability with
+  past versions of git-annex-shell (that ignore these, but would choke
+  on new dashed options).
+
+  Currently used fields include remoteuuid=, associatedfile=,
+  and direct=
+
+# HOOK
+
+After content is received or dropped from the repository by git-annex-shell,
+it runs a hook, `.git/hooks/annex-content` (or `hooks/annex-content` on a bare
+repository). The hook is not currently passed any information about what
+changed.
+
+# ENVIRONMENT
+
+* GIT_ANNEX_SHELL_READONLY
+
+  If set, disallows any command that could modify the repository.
+
+  Note that this does not prevent passing commands on to git-shell.
+  For that, you also need ...
+
+* GIT_ANNEX_SHELL_LIMITED
+
+  If set, disallows running git-shell to handle unknown commands.
+
+* GIT_ANNEX_SHELL_DIRECTORY
+
+  If set, git-annex-shell will refuse to run commands that do not operate
+  on the specified directory.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+git-shell(1)
+
+# AUTHOR
+
+Joey Hess <joey@kitenet.net>
+
+<http://git-annex.branchable.com/>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care

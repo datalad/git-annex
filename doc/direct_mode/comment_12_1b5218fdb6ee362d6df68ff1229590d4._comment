@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 12"
+ date="2013-08-23T17:48:54Z"
+ content="""
+There should be no obstacles to using direct mode on one clone of a git repository, and indirect mode on another clone. The data stored in git for either mode is identical, and I do this myself for some repositories.
+
+@valhalla, you probably need to run `git annex fsck`, and if that does not solve your problem, you need to file a bug report.
+"""]]

@@ -1,0 +1,3 @@
+Is there a way to easily access, say, a FDE (Full Disk Encrypted) external drive using git-annex?
+
+My use case is that I do not wish to encrypt each file individually - and find it more reliable to use a real filesystem encryption on this external hard drive. --[[anarcat]]

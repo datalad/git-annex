@@ -1,0 +1,28 @@
+Worked today on two action items from my last blog post:
+
+* on-disk transfers in progress information files (read/write/enumerate)
+* locking for the files, so redundant transfer races can be detected,
+  and failed transfers noticed
+
+That's all done, and used by the `get`, `copy`, and `move` subcommands.
+
+Also, I made `git-annex status` use that information to display any
+file transfers that are currently in progress:
+
+	joey@gnu:~/lib/sound/misc>git annex status
+	[...]
+	transfers in progress: 
+		downloading Vic-303.mp3 from leech
+
+(Webapp, here we come!)
+
+However... Files being sent or received by `git-annex-shell` don't yet
+have this transfer info recorded. The problem is that to do so,
+`git-annex-shell` will need to be run with a `--remote=` parameter. But
+old versions will of course fail when run with such an unknown parameter.
+
+This is a problem I last faced in December 2011 when adding the `--uuid=`
+parameter. That time I punted and required the remote `git-annex-shell` be
+updated to a new enough version to accept it. But as git-annex gets more widely
+used and packaged, that's becoming less an option. I need to find a real
+solution to this problem.

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm72W-CH7bzZ8uHvaw1KJGrToPSQDNBnIA"
+ nickname="Beni"
+ subject="bup splitting"
+ date="2013-08-05T17:13:14Z"
+ content="""
+bup splits files into chunks based on rolling sums.
+https://github.com/apenwarr/bup/blob/master/DESIGN
+For small changes to big files, this would improve not only transfer speed but also repository size.
+And git-annex already supports bup remotes.  What's missing?
+"""]]

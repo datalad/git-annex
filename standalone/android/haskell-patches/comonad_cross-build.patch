@@ -1,0 +1,25 @@
+From 589c6a87ec62e35942c9a86ea8d91b443c80da99 Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Fri, 18 Oct 2013 23:07:02 +0000
+Subject: [PATCH] cross build
+
+---
+ comonad.cabal |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/comonad.cabal b/comonad.cabal
+index 5d34b13..756ed92 100644
+--- a/comonad.cabal
++++ b/comonad.cabal
+@@ -13,7 +13,7 @@ copyright:     Copyright (C) 2008-2013 Edward A. Kmett,
+                Copyright (C) 2004-2008 Dave Menendez
+ synopsis:      Comonads
+ description:   Comonads
+-build-type:    Custom
++build-type:    Simple
+ extra-source-files:
+   .ghci
+   .gitignore
+-- 
+1.7.10.4
+

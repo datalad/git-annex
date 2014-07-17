@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://peter-simons.myopenid.com/"
+ ip="192.100.130.7"
+ subject="WebDAV without locking"
+ date="2013-01-16T12:44:16Z"
+ content="""
+Hi Joey,
+
+you are right, the 1-und-1.de implementation of WebDAV does not support locking.
+
+Do you think there is a way to make that service work with git-annex anyhow -- say, by allowing the user to disable file-locking? I've worked around the problem with 1-und-1.de by using fuse+davfs2 to mount the storage in my file system and access it through the directory backend, but FUSE is dead slow, unfortunately, and this solution really sucks.
+"""]]

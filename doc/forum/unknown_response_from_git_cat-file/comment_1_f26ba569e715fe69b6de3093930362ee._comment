@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 1"
+ date="2013-08-07T16:34:18Z"
+ content="""
+This is a bug in the 1.8.4 pre-release version of git. It will be fixed in the 1.8.4 release or another pre-release. git-annex version 4.20130802 has a workaround for this problem.
+"""]]

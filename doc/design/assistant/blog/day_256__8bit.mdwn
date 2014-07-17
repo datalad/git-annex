@@ -1,0 +1,27 @@
+This seems a very auspicious day to have finally gotten the Android app
+doing something useful! I've fixed the last bugs with using it to set up a
+remote ssh server, which is all I need to make my Android tablet
+sync photos I take with a repository on my laptop.
+
+[[!img /android/DCIM.png alt="git-annex webapp running on Android"]]
+
+I set this up entirely in the GUI, except for needing to switch to the
+terminal twice to enter my laptop's password.
+
+How fast is it? Even several minute long videos transfer before I can
+switch from the camera app to the webapp. To get this screenshot with it in
+the process of syncing, I had to take a dozen pictures in a minute. Nice
+problem to have. ;)
+
+Have fun trying this out for yourself after tonight's autobuilds. But a
+warning: One of the bugs I fixed today had to be fixed in `git-annex-shell`,
+as run on the ssh server that the Android connects to. So the Android app
+will only work with ssh servers running a new enough version of git-annex.
+
+----
+
+Worked on geting git-annex into Debian testing, which is needed before
+the wheezy backport can go in. Think I've worked around most of the issues
+that were keeping it from building on various architectures.
+
+Caught up on some bug reports and fixed some of them.

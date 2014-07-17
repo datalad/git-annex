@@ -1,0 +1,28 @@
+Hi!
+
+One of my annex repository has a very strange behavior. Every `git annex` command is very slow.
+
+I'm using MacOSX Mavericks, and this repository is a network drive, mounted with Samba. It's using direct mode, and the filesystem is crippled. I use *annex* for storing huge files, for example movies. I moved some files in this directory, and used `git annex add`. It was long (as checksum was performed) and I thought that everything was OK. I tried `git log -p`, it was OK too:
+
+    new file mode 120000
+    index 0000000..e58c65a
+    --- /dev/null
+    +++ b/Movies/movie.mp4
+    @@ -0,0 +1 @@
+    +../.git/annex/objects/FK/60/SHA256E-s346858581--053dca6a842376ab8022722df306ad5
+    \ No newline at end of file
+
+However it was not. I tried to launch `git annex sync another_repo` (with *another_repo* indirect and on a local disk) and it took ages. Even `git annex list` takes ages, **on every repository linked to this one**. With `ps -A`, I found out that the issue was created by `git --git-dir=/Volumes/SAMBA_REMOTE/.git --work-tree=/Volumes/SAMBA_REMOTE -c core.bare=false checkout -q -B annex/direct/master`.
+
+**Have you ever noticed this behavior? Have I done something wrong?**
+
+Here is the output of `git annex version`:
+
+    git-annex version: 5.20131117-gbd514dc
+    build flags: Assistant Webapp Pairing Testsuite S3 WebDAV FsEvents XMPP DNS Feeds Quvi TDFA CryptoHash
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web webdav glacier hook
+    local repository version: 4
+    default repository version: 3
+    supported repository versions: 3 5
+    upgrade supported from repository versions: 0 1 2 4

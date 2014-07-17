@@ -1,0 +1,30 @@
+`git annex whereis` claims that I have zero copies of two particular files. However, it is wrong; both files are present:
+
+[[!format txt """
+[jkt@vorvan fotky]$ git annex whereis '2011-08-13 Svatba Anička Fellnerová a výlet s Julií/IMG_4301'*
+(merging synced/git-annex into git-annex...)
+whereis 2011-08-13 Svatba Anička Fellnerová a výlet s Julií/IMG_4301.CR2 (0 copies) failed
+whereis 2011-08-13 Svatba Anička Fellnerová a výlet s Julií/IMG_4301.JPG (0 copies) failed
+git-annex: whereis: 2 failed
+[jkt@vorvan fotky]$ ll 2011-08-13\ Svatba\ Anička\ Fellnerová\ a\ výlet\ s\ Julií/IMG_4301*
+lrwxrwxrwx. 1 jkt jkt 331 Aug 13  2011 2011-08-13 Svatba Anička Fellnerová a výlet s Julií/IMG_4301.CR2 -> ../.git/annex/objects/mg/qq/SHA512E-s19424303--9bdd6917fe85a450b50233a444c1814d407d41b550b66661272728aaf139576cc7c09de158f47a33ff263d7d25253cec193d0e44ed5fb4a1581c28a9a05e75e1.CR2/SHA512E-s19424303--9bdd6917fe85a450b50233a444c1814d407d41b550b66661272728aaf139576cc7c09de158f47a33ff263d7d25253cec193d0e44ed5fb4a1581c28a9a05e75e1.CR2
+lrwxrwxrwx. 1 jkt jkt 329 Aug 13  2011 2011-08-13 Svatba Anička Fellnerová a výlet s Julií/IMG_4301.JPG -> ../.git/annex/objects/zG/xq/SHA512E-s4744850--da9b1e19f0ecdf08d2f5564232a9c7d4b5ec9fbc9c67033121e5c90468e09e5573ddac42469cfd51fb0d8328dff925830e2d753022365df6d92b115b77831228.JPG/SHA512E-s4744850--da9b1e19f0ecdf08d2f5564232a9c7d4b5ec9fbc9c67033121e5c90468e09e5573ddac42469cfd51fb0d8328dff925830e2d753022365df6d92b115b77831228.JPG
+"""]]
+
+Looking at another repo, the situation is the same:
+
+[[!format txt """
+jkt@svist /mnt/storage5/fotky[master] $ git annex whereis '2011-08-13 Svatba Anička Fellnerová a výlet s Julií/IMG_4301'*
+whereis 2011-08-13 Svatba Anička Fellnerová a výlet s Julií/IMG_4301.CR2 (0 copies) failed
+whereis 2011-08-13 Svatba Anička Fellnerová a výlet s Julií/IMG_4301.JPG (0 copies) failed
+git-annex: whereis: 2 failed
+jkt@svist /mnt/storage5/fotky[master] $ ll '2011-08-13 Svatba Anička Fellnerová a výlet s Julií/IMG_4301'*
+lrwxrwxrwx 1 jkt jkt 331 Mar  3 02:08 2011-08-13 Svatba Anička Fellnerová a výlet s Julií/IMG_4301.CR2 -> ../.git/annex/objects/mg/qq/SHA512E-s19424303--9bdd6917fe85a450b50233a444c1814d407d41b550b66661272728aaf139576cc7c09de158f47a33ff263d7d25253cec193d0e44ed5fb4a1581c28a9a05e75e1.CR2/SHA512E-s19424303--9bdd6917fe85a450b50233a444c1814d407d41b550b66661272728aaf139576cc7c09de158f47a33ff263d7d25253cec193d0e44ed5fb4a1581c28a9a05e75e1.CR2
+lrwxrwxrwx 1 jkt jkt 329 Mar  3 02:08 2011-08-13 Svatba Anička Fellnerová a výlet s Julií/IMG_4301.JPG -> ../.git/annex/objects/zG/xq/SHA512E-s4744850--da9b1e19f0ecdf08d2f5564232a9c7d4b5ec9fbc9c67033121e5c90468e09e5573ddac42469cfd51fb0d8328dff925830e2d753022365df6d92b115b77831228.JPG/SHA512E-s4744850--da9b1e19f0ecdf08d2f5564232a9c7d4b5ec9fbc9c67033121e5c90468e09e5573ddac42469cfd51fb0d8328dff925830e2d753022365df6d92b115b77831228.JPG
+"""]]
+
+The directory names are valid UTF-8. These are very common on my machine and there is a ton of directories with these funny names here -- all working without any real trouble.
+
+As far as I know, the file which the links point to is absolutely correct and not corrupted. Looking at the files in the directory chronologically, it also appears that the symlinks point to a correct file.
+
+[[!tag moreinfo]]

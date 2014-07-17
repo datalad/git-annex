@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmBUR4O9mofxVbpb8JV9mEbVfIYv670uJo"
+ nickname="Justin"
+ subject="comment 1"
+ date="2012-07-19T14:41:39Z"
+ content="""
+What I do for this is maintain a `todo` directory and `cp -a` + `git annex add` files I want to download into this directory.
+the `cp -a` maintains the symlinks and `git annex add` fixes them if needed.
+
+Also this works the same way if the situation is reversed and the machine you want to download the files onto is not online.  You can add files to the `todo` directory on the server, then once the client machine is online do a `git annex sync` + `git annex get todo`.
+"""]]

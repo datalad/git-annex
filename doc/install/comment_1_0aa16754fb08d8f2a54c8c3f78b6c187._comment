@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm7eqCMh_B7mxE0tnchbr0JoYu11FUAFRY"
+ nickname="Stéphane"
+ subject="Old versions from distributions (e.g. Debian stable) fail with online instructions."
+ date="2014-06-28T15:36:12Z"
+ content="""
+Hello everyone.
+
+Be aware that your distribution's package may be very old.
+For example, at the time I write this, latest Debian stable is Debian 7.5 which is 2 months old.
+But git-annex package there is two *years* old (tomorrow, it will be exactly two yezrs old).
+
+So, beware.  If following [online walkthrough](https://git-annex.branchable.com/walkthrough/), either install a more recent git-annex (e.g. from [Debain backports](http://backports.debian.org/Instructions/)) or follow instructions from your local `/usr/share/doc/git-annex/html/walkthrough.html` instead.
+"""]]

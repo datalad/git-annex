@@ -1,0 +1,6 @@
+Pushed out the new release. This is the first one where I consider the
+git-annex command line beta quality on Windows.
+
+Did some testing of the webapp on Windows, trying out every part of the UI.
+I now have eleven todo items involving the webapp listed in
+[[todo/windows_support]]. Most of them don't look too bad to fix.

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-04-19T18:05:49Z"
+ content="""
+Fedora has an old version of git-annex. You can use the [[install/Linux_standalone]] tarball.
+"""]]

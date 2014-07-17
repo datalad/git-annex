@@ -1,0 +1,27 @@
+To install git-annex from scratch, you need a lot of stuff. Really
+quite a lot.
+
+* Haskell stuff
+  * [The Haskell Platform](http://haskell.org/platform/) (GHC 7.4 or newer)
+  * A ton of haskell libraries. Rather than try to list them all here,
+    see git-annex.cabal. Probably the easiest way to install them:
+    `cabal update; cabal install git-annex --only-dependencies`
+* Shell commands
+  * [git](http://git-scm.com/) (1.7.2 or newer; 1.8.5 or newer recommended)
+  * [xargs](http://savannah.gnu.org/projects/findutils/)
+  * [rsync](http://rsync.samba.org/)
+  * [curl](http://http://curl.haxx.se/) (optional, but recommended)
+  * [wget](http://www.gnu.org/software/wget/) (optional)
+  * [sha*sum](ftp://ftp.gnu.org/gnu/coreutils/) (optional)
+  * [gpg](http://gnupg.org/) (optional; needed for encryption)
+  * [lsof](ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/)
+    (optional; recommended for watch mode)
+  * [gcrypt](https://github.com/joeyh/git-remote-gcrypt)
+    (optional)
+  * [nocache](https://github.com/Feh/nocache)
+    (optional)
+  * multicast DNS support, provided on linux by [nss-mdns](http://www.0pointer.de/lennart/projects/nss-mdns/)
+    (optional; recommended for the assistant to support pairing well)
+  * [ikiwiki](http://ikiwiki.info) (optional; used to build the docs)
+
+Then just [[download]] git-annex and run: `make; make install`

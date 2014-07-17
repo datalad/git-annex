@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 5"
+ date="2013-04-11T15:00:10Z"
+ content="""
+Setting your repository to manual doesn't prevent it syncing changes out to other repositories, it just prevents it from downloading the contents of files it doesn't already have.
+
+
+"""]]

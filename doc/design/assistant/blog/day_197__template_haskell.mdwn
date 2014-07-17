@@ -1,0 +1,36 @@
+Set up an autobuilder for the linux standalone binaries.
+Did not get an Android autobuilder set up yet, but I did update
+the Android app with recent improvements, so [[upgrade|install/Android]].
+
+----
+
+Investigated further down paths to getting the webapp built for Android.
+
+* Since recent ghc versions support ghci and thus template haskell on arm,
+  at least some of the time, I wonder what's keeping the ghc-android build
+  from doing so? It might be due to it being a cross compiler. I tried
+  recompiling it with the stage 2, native compiler enabled. While I was
+  able to use that ghc binary on Android, it refused to run --interactive,
+  claiming it was not built with that enabled. Don't really understand
+  the ghc build system, so might have missed something.
+
+  Maybe I need to recompile ghc using the native ghc running on Android.
+  But that would involve porting gcc and a lot of libraries and toolchain
+  stuff to Android.
+
+* [yesod-pure](http://hackage.haskell.org/package/yesod-pure) is an option,
+  and I would not mind making all the code changes to use it, getting
+  rid of template haskell entirely. (Probably around 1 thousand lines of
+  code would need to be written, but most of it would be trivial
+  conversion of hamlet templates.)
+  
+  Question is, will yesod install at all without template haskell? Not
+  easily. `vector`, `monad-logger`, `aeson`, `shakespeare`,
+  `shakespeare-css`, `shakespeare-js`, `shakespeare-i18n`, `hamlet`
+  all use TH at build time. Hacked them all to just remove the TH parts.
+
+  The hack job on `yesod-core` was especially rough, involving things like
+  404 handlers. Did get it to build tho!
+
+  Still a dozen packages before I can build yesod, and then will try 
+  building [this yesod-pure demo](https://gist.github.com/snoyberg/3870834/raw/212f0164de36524291df3ab35788e2b72d8d1e75/fib.hs).

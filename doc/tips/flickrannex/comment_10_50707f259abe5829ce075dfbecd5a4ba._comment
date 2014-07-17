@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmkBwMWvNKZZCge_YqobCSILPMeK6xbFw8"
+ nickname="develop"
+ subject="comment 10"
+ date="2013-06-07T09:39:59Z"
+ content="""
+I'm not even sure if chunksize is exposed to the hooks at all.
+
+As it is, the hook will check the filesize, and if the filesize is more than 30mbyte it will exit 1.
+
+Chunking may be implemented down the road. I do believe joeyh might have some plans that will touch this issue, so I'd rather wait. Than re-invent the wheel yet again.
+
+"""]]

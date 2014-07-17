@@ -1,0 +1,14 @@
+Like git, git-annex hangs on to every old version of a file (by default),
+so you can make tags and branches, and can check them out later to look at
+the old files.
+
+	# git tag 1.0
+	# rm -f my_cool_big_file
+	# git commit -m deleted
+	# git checkout 1.0
+	# cat my_cool_big_file
+	yay! old version still here
+
+Of course, when you `git checkout` an old branch, some old versions of
+files may not be locally available, and may be stored in some other
+repository. You can use `git annex get` to get them as usual.

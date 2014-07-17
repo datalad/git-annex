@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 1"
+ date="2013-11-02T19:32:50Z"
+ content="""
+I have fixed `git annex sync` to work even when run in a repository with no master branch. 
+"""]]

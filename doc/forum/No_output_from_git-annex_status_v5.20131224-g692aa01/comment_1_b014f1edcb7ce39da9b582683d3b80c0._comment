@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 1"
+ date="2013-12-26T23:06:34Z"
+ content="""
+Run `git annex info` instead. That is what older versions of git-annex called `git annex status`
+
+Meanwhile, `git annex status` is now like `git status` -- it shows an overview of uncommitted changes in your work tree.
+"""]]

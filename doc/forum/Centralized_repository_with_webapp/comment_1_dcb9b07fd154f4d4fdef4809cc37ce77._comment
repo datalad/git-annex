@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-03-11T15:13:32Z"
+ content="""
+Your setup is fine as far as it goes. The problem is that a client has no way to know when another client has pushed a change to the centralized repository. It might take quite a while before it decides on its own to go pull changes from there (most often because *it* has now changed a file, and realizes it needs to sync), and so it won't see files the other client has added right away.
+
+The solution to this is to go to Configuration -> Jabber account, and set both clients up using the same Jabber account. (Or, if these two machines belong to different people, you can pick \"pair with a friend\" to link one with the other over Jabber.)
+
+Now when one client pushes to the centralized repository, it will immediately send the other a message letting it know something has changed.
+
+The webapp actually pops up an alert when you add that centralized ssh repository, to nudge you to do this:
+
+[[/assistant/xmppnudge.png]]
+
+I'm trying to find ways to make the need to do this more clear...
+"""]]

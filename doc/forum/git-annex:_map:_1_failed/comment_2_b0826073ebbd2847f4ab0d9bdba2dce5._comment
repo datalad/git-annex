@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkAUMhKOSkh9JaBA6xst3XxQIIsDEq5Zd4"
+ nickname="Ovidiu"
+ subject="comment 2"
+ date="2014-05-16T17:21:09Z"
+ content="""
+indeed I didn't have it... was it stated somewhere that I need it?
+
+Busy installing it now... going to kill my 3g Connection :-/
+
+sudo port install graphviz
+--->  Computing dependencies for graphviz
+--->  Dependencies to be installed: autoconf m4 automake fontconfig freetype gd2 jpeg libvpx tiff xpm xorg-libXext xorg-libX11 xorg-kbproto xorg-libXau xorg-xproto xorg-libXdmcp xorg-libxcb xorg-libpthread-stubs xorg-xcb-proto xorg-xextproto xorg-libXt xorg-libsm xorg-libice gts netpbm jasper jbigkit libLASi pango Xft2 xrender xorg-renderproto cairo libpixman xorg-xcb-util gobject-introspection libtool harfbuzz graphite2 poppler curl lcms2 openjpeg15 poppler-data urw-fonts webp xorg-libXaw xorg-libXmu
+"""]]

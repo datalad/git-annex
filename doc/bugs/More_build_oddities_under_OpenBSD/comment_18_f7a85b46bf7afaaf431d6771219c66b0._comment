@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkzwmw_zyMpZC9_J7ey--woeYPoZkAOgGw"
+ nickname="dxtrish"
+ subject="comment 18"
+ date="2014-02-08T23:25:29Z"
+ content="""
+I applied your patch and rebuilt. I even tried doing it from scratch just to get it right.
+
+I have three news:
+
+1) I got it completely working in a virtual machine
+
+2) On my actual (physical) openbsd machine it still isn't working, even though they're almost identical. The only difference is that the physical one also has IPv6 connectivity, while the virtual machine doesn't. Could that be it? I don't know yet, although I'm about to try it.
+
+3) Your patch did not help. It still didn't print out anything more useful, suggesting that it in fact isn't that function that is throwing the error. [This](http://i.imgur.com/tmBiseE.png) is what the actual error looks like and shows up after I enter the jabber account details.
+"""]]

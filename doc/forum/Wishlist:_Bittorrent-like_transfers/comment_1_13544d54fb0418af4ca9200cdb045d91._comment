@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://a-or-b.myopenid.com/"
+ ip="203.45.2.230"
+ subject="comment 1"
+ date="2013-07-19T02:33:36Z"
+ content="""
+I agree.  I mentioned it briefly here:
+
+[[http://git-annex.branchable.com/design/assistant/polls/what_is_preventing_me_from_using_git-annex_assistant/#comment-5a5d46967b826f602c423d7f72ac6f5e]]
+
+
+I did *briefly* look into torrents and the like, but couldn't work out a way to lock it down so only authorized users could use either the tracker or connect to pull the data down...
+
+The security aspect is the kicker in my mind.
+"""]]

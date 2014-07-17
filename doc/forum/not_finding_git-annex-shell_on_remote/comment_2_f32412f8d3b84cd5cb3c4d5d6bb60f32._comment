@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn3rK4VDzxyhmrIc18z7F5OuXvEbUsgUac"
+ nickname="Srinath"
+ subject="Progress, but still issues"
+ date="2014-02-17T04:09:23Z"
+ content="""
+\"I now realize that the git annex system still requires the standard \"add\" and \"commit\" process. But I'm still getting:
+
+$git annex sync
+commit  ok
+pull origin 
+remote: Counting objects: 37, done.
+remote: Compressing objects: 100% (35/35), done.
+remote: Total 36 (delta 0), reused 0 (delta 0)
+Unpacking objects: 100% (36/36), done.
+From ssh://stampede.tacc.utexas.edu/work/02463/srinathv/cesm1_3_beta07/scripts
+ * [new branch]      master     -> origin/master
+
+
+merge: refs/remotes/origin/synced/master - not something we can merge
+failed
+push origin 
+Counting objects: 11, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (6/6), done.
+Writing objects: 100% (8/8), 736 bytes | 0 bytes/s, done.
+Total 8 (delta 3), reused 1 (delta 0)
+To ssh://srinathv@stampede.tacc.utexas.edu/work/02463/srinathv/cesm1_3_beta07/scripts
+ * [new branch]      git-annex -> synced/git-annex
+ * [new branch]      master -> synced/master
+ok
+git-annex: sync: 1 failed
+
+
+So the fails appear, and the suggestion of \"export PATH\" placement did not help, though appreciated.
+"""]]

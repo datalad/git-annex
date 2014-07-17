@@ -1,0 +1,17 @@
+Did I say it would be easy to make the webapp detect when a gcrypt repository 
+already existed and enable it? Well, it wasn't exactly hard, but it took
+over 300 lines of code and 3 hours..
+
+So, gcrypt support is done for now. The glaring omission is gpg key
+management for sharing gcrypt repositories between machines and/or people.
+But despite that, I think it's solid, and easy to use, and covers some
+great use cases.
+
+Pushed out a release.
+
+Now I really need to start thinking about
+[[design/assistant/disaster_recovery]].
+
+----
+
+Today's work was sponsored by Dominik Wagenknecht.

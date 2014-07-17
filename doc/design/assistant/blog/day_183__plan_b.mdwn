@@ -1,0 +1,19 @@
+Have not tried to run my static binary on Android yet, but I'm already
+working on a plan B in case that doesn't work. Yesterday I stumbled upon
+<https://github.com/neurocyte/ghc-android>, a ghc cross-compiler for
+Android that uses the Android native development kit. 
+It first appeared on February 4th. Good timing!
+
+I've gotten it to build and it emits arm executables, that seem to use the
+Android linker. So that's very promising indeed. 
+
+I've also gotten cabal working with it, and have it chewing through
+installing git-annex's build dependencies.
+
+----
+
+Also made a release today, this is another release that's mostly bugfixes,
+and a few minor features. Including one bug fixed at 6 am this morning, urk.
+
+I think I will probably split my days between working on Android porting
+and other git-annex development.

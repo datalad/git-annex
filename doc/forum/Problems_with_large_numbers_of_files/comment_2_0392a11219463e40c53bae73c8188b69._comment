@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 2"
+ date="2011-04-05T17:46:03Z"
+ content="""
+This message comes from ghc's runtime memory manager. Apparently your ghc defaults to limiting the stack to 80 mb.
+Mine seems to limit it slightly higher -- I have seen haskell programs successfully grow as large as 350 mb, although generally not intentionally. :)
+
+Here's how to adjust the limit at runtime, obviously you'd want a larger number:
+
+<pre>
+# git-annex +RTS -K100 -RTS find
+Stack space overflow: current size 100 bytes.
+Use `+RTS -Ksize -RTS' to increase it.
+</pre>
+
+I've tried to avoid git-annex using quantities of memory that scale with the number of files in the repo, and I think in general successfully -- I run it on 32 mb and 128 mb machines, FWIW. There are some tricky cases, and haskell makes it easy to accidentally write code that uses much more memory than would be expected.
+
+One well known case is `git annex unused`, which *has* to build a structure of every annexed file. I have been considering using a bloom filter or something to avoid that.
+
+Another possible case is when running a command like `git annex add`, and passing it a lot of files/directories. Some code tries to preserve the order of your input after passing it through `git ls-files` (which destroys ordering), and to do so it needs to buffer both the input and the result in ram.
+
+It's possible to build git-annex with memory profiling and generate some quite helpful profiling data. Edit the Makefile and add this to GHCFLAGS: `-prof -auto-all -caf-all -fforce-recomp` then when running git-annex, add the parameters: `+RTS -p -RTS` , and look for the git-annex.prof file.
+"""]]

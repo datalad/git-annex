@@ -1,0 +1,38 @@
+Hi,
+
+I have a question about encryption keys. 
+Basically I do not know how to use the data which was copied in case my local
+machine dies?
+
+
+## I have done the following:
+---
+1. copied my ssh public key to a remote server
+1. created a directory and started git annex assistant
+ 
+   mkdir ~/test_annex
+
+   cd ~/test_annex
+
+   git annex webapp
+
+1. clicked Repository->Add another local repository
+1. Assistant: Where do you want to put this new repository? Me: ~/test_annex "Make Repository"
+1. Assistant "Combine repositories?" Me: "Keep repositories separate"
+1. clicked "Add another repository" clicked "remote server"
+1. filled out "Adding a remote server using ssh" form and clicked "Check this server"
+1. choose "Use an encrypted rsync repository on the server"
+1. Assistant "Repository created" I select "Full backup" as repository group.
+
+So far so good. If I now add a file on my local machine into ~/test_annex something not human readable is created on the remote machine.
+
+What I do not understand is how I use this backup later. I am expecting something along the "hybrid encryption keys" scheme
+explained in this wiki. However I was not able to determine which of my gpg keys was used or how the data was encrypted.
+
+So my question is: "How do I use the encrypted backup remote on a second machine?"
+
+
+
+
+
+

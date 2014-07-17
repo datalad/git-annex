@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl7ciFZWmffuw6sLRww3CcL_F5ItsttL9w"
+ nickname="Aaron"
+ subject="Feature request: Events triggered on wifi SSID or connection state"
+ date="2013-01-08T13:04:05Z"
+ content="""
+I'd like to have my phone sync a bunch of files when I'm at home and when I get to work, have them synced to my work machine, deleted off my phone and when I get home, also deleted off my home machine.
+
+This will allow incremental backups to a local folder at home and I can then \"mule\" my files, sneaker-net style, to work with zero user intervention. It only works if events can be triggered or I can combine a triggering app with a special android intent for both ends of my trip.
+"""]]

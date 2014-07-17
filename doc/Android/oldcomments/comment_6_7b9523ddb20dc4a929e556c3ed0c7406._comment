@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 6"
+ date="2013-05-19T20:06:56Z"
+ content="""
+@yarikoptic, there is a process you can perform that will help me determine what's going on.
+
+You should be able to get the git-annex app to let you into a shell. You can do this by starting the app, and then going into its configuration menu, to Preferences, selecting \"Command Line\", and changing it to run \"/system/bin/sh\"
+
+Then when you open a new window in the git-annex app, you'll be at a shell prompt. From there, you can run:
+
+ls -ld /data/data/ga.androidterm
+
+I'm interested to know a) whether the directory exists and b) what permissions and owner it has. On my tablet, I get back \"drwxr-x--x app_39 app_39\" .. and if I run `id` in the shell, it tells me it's running as `app_39`.
+
+My guess is the directory probably does exist, but cannot be written to by the app. If you're able to verify that, the next step will be to investigate if there is some other directory that the app can write to. It needs to be able to write to someplace that is not on the `/sdcard` to install itself.
+"""]]

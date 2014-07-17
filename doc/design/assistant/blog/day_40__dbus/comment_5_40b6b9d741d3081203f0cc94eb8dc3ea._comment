@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://smcv.pseudorandom.co.uk/"
+ nickname="smcv"
+ subject="comment 5"
+ date="2012-07-31T09:58:13Z"
+ content="""
+It's `org.gtk` because gvfs, GLib and Gtk are all products of gtk.org (there is no separate glib.org).
+
+It's `Private` because the gvfs developers don't consider its D-Bus interface to be stable API, I believe. The official API for it is the C API in GIO, part of GLib.
+
+To poll for changes to /proc/mounts on Linux, you open it for reading and poll() for POLLERR (not sure why it gets to be different, but it is). See gio/gunixmounts.c in recent GLib.
+"""]]

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.194"
+ subject="you should install a gpg agent"
+ date="2012-10-31T17:39:53Z"
+ content="""
+A gpg agent will cache your passphrase. It is beyond the scope of the git-annex package to provide one (though it does bundle gpg), but it should be easy to install gpg-agent on your distribution.
+
+That's all that's needed for normal git-annex use, but the assistant does seem to have a larger problem in this area, since it can need to unlock a remote's key at any time to sync files from it. Since a separate
+process is spawned for each transfer, this defeats git-annex's normal in-process caching of encryption keys of remotes. So I think it needs to unlock any encrypted special remotes at startup, or when first accessing them, and pass the cached keys to the transfer processes it spawns. This is now on my todo list.
+
+However, none of the special remotes set up by the assistant will use
+password protected gpg keys, even when it's using encryption it's using a
+non-password protected shared key. So only encrypted special remotes set up
+at the command line cause this problem.
+"""]]

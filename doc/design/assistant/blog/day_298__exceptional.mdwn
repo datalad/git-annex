@@ -1,0 +1,21 @@
+Theme today seems to be fun with exceptions. 
+
+Fixed an uncaught exception that could crash the assistant's Watcher thread
+if just the right race occurred.
+
+Also fixed it to not throw an exception if another process is
+already transferring a file. What this means is that if you run multiple 
+`git annex get` processes on the same files, they'll cooperate in each
+picking their own files to get and download in parallel. (Also works for
+copy, etc.) Especially useful when downloading from an encrypted remote,
+since often one process will be decrypting a file while the other is
+downloading the next file. There is still room for improvement here; 
+a -jN option could better handle ensuring N downloads ran concurrently, and
+decouple decryption from downloading. But it would need the output layer to
+be redone to avoid scrambled output. (All the other stuff to make parallel
+git-annex transfers etc work was already in place for a long time.)
+
+----
+
+Campaign update: Now funded for nearly 10 months, and aiming for a year.
+<https://campaign.joeyh.name/>

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5Z8wzidsumLYQnHdrVxpCx8vsd9llSlg"
+ nickname="Emanuele"
+ subject="comment 4"
+ date="2013-11-22T15:52:42Z"
+ content="""
+OVH is offering free accounts with 25GB of storage on their hubiC service: https://hubic.com/en/
+
+The API documentation (based on OAuth2 and OpenStack Swift) is available at https://api.hubic.com/
+"""]]

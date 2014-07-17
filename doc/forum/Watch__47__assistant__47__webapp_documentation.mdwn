@@ -1,0 +1,12 @@
+Hello,
+
+I'm not sure about the differences and interactions between watch / assistant / webapp / direct mode. I think I figured the following out, can someone confirm this, and perhaps a few words to the documentation / man page?
+
+- git annex watch uses inotify to find new files, and runs git annex add on them (it does not do regular git add)
+- git annex assistant does the same as watch, but also runs git annex sync for each new file (does it also enable direct mode?)
+- git annex webapp does the same as assistant, and also starts a webapp (in my case it immediately started sending files to origin, without asking for confirmation, which was surprising, I guess this is because I have * annex.numcopies=2 set, and there was only one copy. Still I interpreted the documentation as if it would only show me an interface, not start doing things right away.)
+
+Do these commands do anything else than what I described above?
+
+best regards,
+Tom

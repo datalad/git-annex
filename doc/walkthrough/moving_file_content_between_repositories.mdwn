@@ -1,0 +1,13 @@
+Often you will want to move some file contents from a repository to some
+other one. For example, your laptop's disk is getting full; time to move
+some files to an external disk before moving another file from a file
+server to your laptop. Doing that by hand (by using `git annex get` and
+`git annex drop`) is possible, but a bit of a pain. `git annex move`
+makes it very easy.
+
+	# git annex move my_cool_big_file --to usbdrive
+	move my_cool_big_file (to usbdrive...) ok
+	# git annex move video/hackity_hack_and_kaxxt.mov --from fileserver
+	move video/hackity_hack_and_kaxxt.mov (from fileserver...)
+	SHA256-s86050597--6ae2688bc533437766a48aa19f2c06be14d1bab9c70b468af445d4f07b65f41e   100%   82MB 199.1KB/s   07:02
+	ok

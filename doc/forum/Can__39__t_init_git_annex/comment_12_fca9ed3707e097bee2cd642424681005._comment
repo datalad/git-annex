@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnZ0g2UAijV7RGrKtWPljCCAYHBJ3pwPvM"
+ nickname="Meng"
+ subject="comment 12"
+ date="2012-10-16T06:01:44Z"
+ content="""
+OK;   The purpose of putting files on the remote `smb://` partition is to publish these big data files, so other (potentially non-technical) people can download and use them.  They'll not be willing to learn how to use git, let alone git-annex.  And i have multiple development machines that can generate revisions/updates to these big files.  I previously just rsync from/to various development machines to/from this smb partition, but i find sometimes I don't always srync in correct direction.  The hope is i can have annex on these development machines, and set the smb:// partition as the remote for these git annex.    But it sounds like none of the special remote will have the original form, and a normal remote is not possible on smb:// partition.  
+"""]]

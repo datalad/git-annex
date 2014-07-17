@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 2"
+ date="2012-06-25T22:36:39Z"
+ content="""
+On the system limits side, I think if you want to make it more approachable by more users then adjusting system limits might scare users away. On the note of the ssh-agents spawning like no tomorrow on my machine, it turned out that i had a symlink from my .bashrc to .bash_profile, I guess I should not be too lazy and have two seperate files.
+"""]]

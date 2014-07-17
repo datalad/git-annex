@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 2"
+ date="2013-12-16T20:42:23Z"
+ content="""
+That's not how special remotes work -- they have nothing to do with the symlinks in the work tree, which are managed by git (or git-annex in direct mode). They only store values for keys.
+"""]]

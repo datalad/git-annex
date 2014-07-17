@@ -1,0 +1,22 @@
+Developed a way to run the webapp on a remote or headless computer.
+
+The webapp can now be started on a remote or headless computer, just
+specify `--listen=address` to make it listen on an address other than
+localhost. It'll print out the URL to open to access it.
+
+This doesn't use HTTPS yet, because it'd need to generate a
+certificate, and even if it generated a self-signed SSL certificate,
+there'd be no easy way for the browser to verify it and avoid a MITM.
+
+So `--listen` is a less secure but easier option; using ssh to forward
+the webapp's port to the remote computer is more secure.
+
+(I do have an idea for a way to do this entirely securely, making
+the webapp set up the ssh port forwarding, which I have written down
+in [[webapp]].. but it would be rather complicated to implement.)
+
+----
+
+Made the webapp rescan for transfers after it's been used to change a
+repository's group. Would have been easy, but I had to chase down a
+cache invalidation bug.

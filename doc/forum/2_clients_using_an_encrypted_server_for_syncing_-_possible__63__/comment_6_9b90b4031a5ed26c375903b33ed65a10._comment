@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.244"
+ subject="comment 6"
+ date="2014-04-02T20:11:35Z"
+ content="""
+@Adam, an encrypted special remote does not contain the git repository (the gcrypt special remote is an exception to this rule). So you need to use another method to sync the git repository between machines.
+
+@Stein Roald once you have a clone of the git repository, you have the information that git-annex needs in able to get files from encrypted special remotes.
+
+Question 1: While gcrypt supports multi-key setups, when you use the git-annex assistant to set up a gcrypt remote it only sets it up to use one key. It's left to you to arrange for this key to be on every computer that needs it. Or use command-line stuff to add additional keys later.
+
+Question 2: You can certianly use the assistant to set up syncing between computers, but the only setup that currently provides 100% end-to-end enctyption of the git repository is using gcrypt. (Special remotes are 100% end-to-end encrypted, but as I've stated several times, do not contain the git repository data.)
+Since you seemed to want 100% end to end encryption I suggested using gcrypt. There are simpler setups, like using XMPP, that encrypt everything but not end-to-end, so the XMPP server could snoop on it.
+
+If you loose your computer, you can get your files back from any other device where you've set up a clone of that repository. A backup drive, another computer , etc. 
+"""]]

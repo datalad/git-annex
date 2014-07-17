@@ -1,0 +1,59 @@
+If you're anything like me¹, you have a copy of your annex on a computer running at home², set up so you can access it from anywhere like this:
+
+    ssh myhome.no-ip.org
+
+This is totally great! Except, there is no way for your home computer to pull your changes, because there is no *on-the-go.no-ip.org*. You can get clunky and use a *bare git repository and git push*, but there is a better way.
+
+First, install *openssh-server* on your *on-the-go* computer
+
+    sudo apt-get install openssh-server # Adjust to your flavor of unix
+
+Then, log into your *home* computer, with *port forwarding*:
+
+    ssh me@myhome.no-ip.org -R 2201:localhost:22
+
+Your *home* computer can now ssh into your *on-the-go* computer, as long as you keep the above shell running.
+
+You can now add your *on-the-go* computer as a remote on your *home* computer. Use the port forwarding shell you just connected with the command above, if you like. 
+
+    ssh-keygen -t rsa
+    ssh-copy-id "me@localhost -p 2201"
+    cd ~/annex
+    git remote add on-the-go ssh://me@localhost:2201/home/myuser/annex
+
+Now you can run normal annex operations, as long as the port forwarding shell is running³.
+
+    git annex sync
+    git annex get on-the-go some/big/file
+    git annex info
+
+You can add more computers by repeating with a different port, e.g. 2202 or 2203 (or any other).
+
+If you're security paranoid (like me), read on. If you're not, that's it! Thanks for reading!
+
+---
+Paranoid Area
+
+Note you're granting passwordless access to your on-the-go computer to your home computer. I believe that's all right, as long as:
+
+* Your home computer is really in your home, and not at a friend's house or some datacenter
+* Your home computer can be accessed only by ssh, and not HTTP or Samba or NTP or (shoot me now!) FTP
+* Only you (and perhaps trustworthy family) have access to your home computer
+* You have reasonably strong passwords or key-only logins on both your home and on-the-go computers.
+* You regularly install security updates on both computers (sudo apt-get update && sudo apt-get upgrade)
+
+In any case, the setup is much, much, much more secure than Dropbox. With Dropbox, you have exactly the same setup, but:
+
+* Your data is stored in some datacenter. It's supposed to be encrypted. It might not be.
+* Lot's of people have routine access to your files, and plausible reason to. Bored employees might regularly be doing some 'maintenance work' involving your pictures.
+* The dropbox software can do anything it likes on your computer, and it's closed source so you don't know if it does. A disgruntled employee could put a trojan into it.
+* Dropbox might have a backdoor for employee access to any file on your computer. This might be done with the best of intentions, but a mal-intentioned or careless employee might still erase things or send sensitive files from your computer by email.
+* A truly huge amount of eyes connected to incredibly smart brains have looked at openssh and found it secure. Everybody trusts openssh. With dropbox, there is, well, dropbox. Whoever that is.
+
+-----
+
+¹ Me=Carlo, not Joey. I'm pretty sure doing what I wrote here is a good idea, but in case it turns out to be catastrophically dumb, it's my fault, not his.
+
+² My always-on computer at home is a raspberry pi with a 32GB USB stick. Best self-hosted dropbox you could imagine.
+
+³ You can just forward the port, but not open a shell, by adding the -N command. This could be useful for connecting on startup, e.g. in /etc/rc.local. I prefer to open the shell to forward the ports, maybe use it, and close it to stop it.

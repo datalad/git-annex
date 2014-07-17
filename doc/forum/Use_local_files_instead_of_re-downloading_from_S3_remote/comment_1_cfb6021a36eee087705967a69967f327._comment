@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn7gQ1zZDdWhXy9H51W2krZYShNmKL3qfM"
+ nickname="Karsten"
+ subject="comment 1"
+ date="2013-05-27T18:13:43Z"
+ content="""
+Hi,
+
+just copy the local File into the annex again, replacing the symlinks. If you have the assistant running, it should re-add the files automatically, otherwise you can 'git annex add' them manually. 
+"""]]

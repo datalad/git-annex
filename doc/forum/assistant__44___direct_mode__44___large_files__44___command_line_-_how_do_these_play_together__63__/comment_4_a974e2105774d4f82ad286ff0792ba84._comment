@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.246"
+ subject="comment 4"
+ date="2013-11-15T20:33:47Z"
+ content="""
+Drop in direct mode does the same thing as in indirect mode.
+
+If you are using git-annex on a crippled filesystem without symlinks, git-annex cannot represent a file whose content has been dropped using a broken symlink, so it instead represents it with a nearly empty file.
+"""]]

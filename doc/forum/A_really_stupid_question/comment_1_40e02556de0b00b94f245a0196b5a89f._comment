@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="Good question!"
+ date="2011-12-20T23:07:25Z"
+ content="""
+You get a regular git merge conflict, which can be resolved in any of the regular ways, except that conflicting files are just symlinks.
+
+Example:
+
+<pre>
+$ git pull
+...
+Auto-merging myfile
+CONFLICT (add/add): Merge conflict in myfile
+Automatic merge failed; fix conflicts and then commit the result.
+$ git status
+# On branch master
+# Your branch and 'origin/master' have diverged,
+# and have 1 and 1 different commit(s) each, respectively.
+#
+# Unmerged paths:
+#   (use \"git add/rm <file>...\" as appropriate to mark resolution)
+#
+#	both added:         myfile
+#
+no changes added to commit (use \"git add\" and/or \"git commit -a\")
+$ git add myfile
+$ git commit -m \"took local version of the conflicting file\"
+</pre>
+"""]]

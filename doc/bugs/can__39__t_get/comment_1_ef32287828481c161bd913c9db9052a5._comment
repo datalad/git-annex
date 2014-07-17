@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnx8kHW66N3BqmkVpgtXDlYMvr8TJ5VvfY"
+ nickname="Yaroslav"
+ subject="git annex fix starts fixing but then spits bulk of errors"
+ date="2014-01-18T05:42:15Z"
+ content="""
+probably related:
+
+```
+fix books/Мои первые книжки/PDF/Благинина Е.А. - Лодочки (Мои первые книжки) - 1962.pdf ok
+fix books/Мои первые книжки/PDF/Благинина Е.А. - Не мешайте мне трудиться (Мои первые книжки) - 1975.pdf fatal: This operation must be run in a work tree
+ok
+(Recording state in git...)
+
+git-annex: user error (xargs [\"-0\",\"git\",\"--git-dir=/home/yoh/annex/.git\",\"add\",\"--force\",\"--\"] exited 123)
+fatal: This operation must be run in a work tree
+failed
+(Recording state in git...)
+
+git-annex: user error (xargs [\"-0\",\"git\",\"--git-dir=/home/yoh/annex/.git\",\"add\",\"--force\",\"--\"] exited 123)
+fatal: This operation must be run in a work tree
+failed
+(Recording state in git...)
+
+....
+```
+"""]]

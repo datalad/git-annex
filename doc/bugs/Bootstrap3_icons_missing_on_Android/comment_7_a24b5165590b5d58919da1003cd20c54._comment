@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.176"
+ subject="comment 7"
+ date="2014-05-28T00:02:42Z"
+ content="""
+The string is indeed truncated; it seems that something, probably the EvilSplicer is doing effectively a s/\w+:// on the string.
+"""]]

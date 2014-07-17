@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.238"
+ subject="comment 17"
+ date="2013-01-16T19:38:36Z"
+ content="""
+@rubiojr I recommend configuring direct mode repos as untrusted if you care about accessing old versions of your files as stored in git. If that is not a concern, direct mode is safe, it's just that it allows editing/deleting any file at any time, even if that's the only copy of the file.
+"""]]

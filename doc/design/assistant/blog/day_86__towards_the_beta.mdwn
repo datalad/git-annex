@@ -1,0 +1,33 @@
+Putting together a shortlist of things I want to sort out before the beta.
+
+* [[Progress bars|progressbars]] for file uploads.
+* No mocked up parts in the webapp's UI. Think I implemented the last of
+  those yesterday, although there are some unlinked repository configuration
+  options.
+* The basic watching functionality, should work reliably.
+  There are some known scalability issues with eg,
+  [[kqueue on OSX|bugs/Issue_on_OSX_with_some_system_limits]] that
+  need to be dealt with, but needn't block a beta.
+* Should keep any configuration of repositories that can be set up using
+  the webapp in sync whenever it's possible to do so. I think that'll work
+  after the past few days work.
+* Should be easy to install and get running. Of course part of the point
+  of the beta release is to get it out there, on Hackage, in Debian
+  unstable, and in the other places that git-annex packagers put it.
+  As to getting it running, the autostart files and menu items look good
+  on Linux. The OSX equivilants still need work and testing.
+* No howlingly bad bugs. [[This bug|bugs/pasting_into_annex_on_OSX]] is
+  the one I'm most concerned with currently. OTOH, 
+  [[bugs/watcher_commits_unlocked_files]] can be listed in the errata.
+
+----
+
+So I worked on progress bars for uploads today. Wrote a nice little
+parser for rsync's progress output, that parses arbitrary size chunks,
+returning any unparsable part. Added a ProgressCallback parameter to
+all the backends' upload methods. Wrote a nasty thing that intercepts
+rsync's output, currently a character at a time (horrible, but rsync
+doesn't output that much, so surprisingly acceptable), and outputs it and
+parses it. Hooked all this up, and got it working for uploads to
+git remotes. That's 1/10th of the total ways uploads can happen that
+have working progress bars. It'll take a while to fill in the rest..

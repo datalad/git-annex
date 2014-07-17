@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnNqLKszWk9EoD4CDCqNXJRIklKFBCN1Ao"
+ nickname="maurizio"
+ subject="downgrading is not an easy option"
+ date="2014-01-30T05:44:48Z"
+ content="""
+In order to check whether this is related to  [[https://git-annex.branchable.com/bugs/Jabber__47__xmpp_not_supported_on_Debian_Wheezy_backport/]] I tried to downgrade git-annex to the previous version that was available on wheezy-backports (git-annex_4.20131106~bpo70+1_i386.deb) but then I get:
+
+    git-annex: Repository version 5 is not supported. Upgrade git-annex.
+    failed
+
+
+"""]]

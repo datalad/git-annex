@@ -1,0 +1,41 @@
+Back in [[day_85__more_foundation_work]], I wrote:
+
+> I suspect, but have not proven,
+> that the assistant is able to keep repos arranged in any shape of graph in
+> sync, as long as it's connected (of course) and each connection is
+> bi-directional. [And each node is running the assistant.]
+
+After today's work, many more graph topologies can be kept in sync -- the
+assistant now can keep repos in sync that are not directly connected, but
+must go through a central transfer point, which does not run the assistant
+at all. Major milestone!
+
+To get that working, as well as using XMPP push notifications, it turned
+out to need to be more agressive about pushing out changed location log
+information. And, it seems, that was the last piece that was missing.
+Although I narrowly avoided going down a blind alley involving sending
+transfer notifications over XMPP. Luckily, I came to my senses.
+
+----
+
+This month's focus was the cloud, and the month is almost done. And now
+the assistant can, indeed be used to sync over the cloud! I would have
+liked to have gotten on to implementing Amazon Glacier or Google Drive
+support, but at least the cloud fundamentals are there.
+
+Now that I have XMPP support, I'm tending toward going ahead and adding
+XMPP pairing, and git push over XMPP. This will open up lots of excellent
+use cases.
+
+So, how to tunnel git pushes over XMPP? Well, `GIT_SHELL` can be set to
+something that intercepts the output of `git-send-pack` and
+`git-receive-pack`, and that data can be tunneled through XMPP to connect
+them. Probably using XMPP ping.
+(XEP-0047: In-Band Bytestreams would be the right way ...
+but of course Google Talk doesn't support that extension.)
+
+XMPP requires ugly encoding that will bloat the data, but the data
+quantities are fairly small to sync up a few added or moved files
+(of course, we'll not be sending file contents over XMPP). Pairing with
+an large git repository over XMPP will need rather more bandwidth,
+of course.

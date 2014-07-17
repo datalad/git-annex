@@ -1,0 +1,36 @@
+Hello,
+
+I've a strange (for me ;-)) problem.
+<br>I'm trying to use git-annex with 2 debian wheezy (packages from backports)
+<br>I've put my ssh pub key on the server in the autorized_keys for my username account (and for the root account to be sure)
+my username account is member of the sudo group (not sure it's required)
+
+I can create an ssh session directly to the server with :
+
+    ssh username@remoteserver.lan -p 62322
+
+and work inside this session.
+
+    Sep 14 03:42:35 file sshd[8849]: Accepted publickey for username from 80.201.25.4 port 32969 ssh2
+    Sep 14 03:42:35 file sshd[8849]: pam_unix(sshd:session): session opened for user username by (uid=0)
+    ...
+    Sep 14 05:13:14 file sshd[8851]: Received disconnect from 80.201.25.4: 11: disconnected by user
+    Sep 14 05:13:14 file sshd[8849]: pam_unix(sshd:session): session closed for user username
+
+But when I use the git-annex assistant on the same workstation with the same remote server and port,
+<br>the 1st step is OK,
+<br>but when I've to choose between git or rsync encrypted, I'm choosing git and receive :
+
+    "Permission denied (publickey)."
+
+On the server I can only see that the ssh session is immediately closed after opened and before the choice git or rsync is made.
+
+    Sep 14 05:13:42 file sshd[8882]: Accepted publickey for username from 80.201.25.4 port 32984 ssh2
+    Sep 14 05:13:42 file sshd[8882]: pam_unix(sshd:session): session opened for user username by (uid=0)
+    Sep 14 05:13:42 file sshd[8886]: Received disconnect from 80.201.25.4: 11: disconnected by user
+    Sep 14 05:13:42 file sshd[8882]: pam_unix(sshd:session): session closed for user username
+
+Do you think it's the problem ? or whatelse ...
+<br>and could you guide me to a possible solution ?
+
+Best regards

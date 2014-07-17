@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="Two reasons"
+ date="2013-01-10T18:00:05Z"
+ content="""
+As of right now, the assistant has only secondary benefit over plain git-annex inasmuch there's a lot more code activity.
+
+As soon as the assistant supports Android, I will use for syncing photos off of my phone and may start to use the assistant on my usual repos as a natural consequence.
+
+Additionally, there's a subjective feeling of more bugs being reported. That may or may not be true, but as long as there's no Android port, I don't have an actual reason to \"risk\" it.
+
+-- Richard
+
+PS: This seems to be the first poll where you can place only one vote while it's the first where I really wanted to vote on two separate items.
+"""]]

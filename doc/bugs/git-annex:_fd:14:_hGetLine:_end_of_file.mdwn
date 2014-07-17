@@ -1,0 +1,51 @@
+[[!tag moreinfo]]
+
+### Please describe the problem.
+
+git-annex webapp won't run 
+
+### What steps will reproduce the problem?
+
+[[!format sh """
+arthur@machine:~/annex$ git-annex --debug webapp
+[2013-07-29 15:02:15 CEST] read: git ["--git-dir=/home/arthur/annex/.git","--work-tree=/home/arthur/annex","show-ref","git-annex"]
+[2013-07-29 15:02:15 CEST] read: git ["--git-dir=/home/arthur/annex/.git","--work-tree=/home/arthur/annex","show-ref","--hash","refs/heads/git-annex"]
+[2013-07-29 15:02:15 CEST] read: git ["--git-dir=/home/arthur/annex/.git","--work-tree=/home/arthur/annex","log","refs/heads/git-annex..a2b8f10ef258dff1a91e0354b2e2a58241631c9a","--oneline","-n1"]
+error: object file /home/arthur/annex/.git/objects/a2/b8f10ef258dff1a91e0354b2e2a58241631c9a is empty
+fatal: loose object a2b8f10ef258dff1a91e0354b2e2a58241631c9a (stored in /home/arthur/annex/.git/objects/a2/b8f10ef258dff1a91e0354b2e2a58241631c9a) is corrupt
+[2013-07-29 15:02:15 CEST] read: git ["--git-dir=/home/arthur/annex/.git","--work-tree=/home/arthur/annex","log","refs/heads/git-annex..8d4b8e04ccf0092d625f680b42e73d7bf15c6517","--oneline","-n1"]
+error: object file /home/arthur/annex/.git/objects/a2/b8f10ef258dff1a91e0354b2e2a58241631c9a is empty
+fatal: loose object a2b8f10ef258dff1a91e0354b2e2a58241631c9a (stored in /home/arthur/annex/.git/objects/a2/b8f10ef258dff1a91e0354b2e2a58241631c9a) is corrupt
+[2013-07-29 15:02:15 CEST] read: git ["--git-dir=/home/arthur/annex/.git","--work-tree=/home/arthur/annex","log","refs/heads/git-annex..6b2665208c11c9ecf969294bf45baac31894d8a7","--oneline","-n1"]
+error: object file /home/arthur/annex/.git/objects/a2/b8f10ef258dff1a91e0354b2e2a58241631c9a is empty
+fatal: loose object a2b8f10ef258dff1a91e0354b2e2a58241631c9a (stored in /home/arthur/annex/.git/objects/a2/b8f10ef258dff1a91e0354b2e2a58241631c9a) is corrupt
+[2013-07-29 15:02:15 CEST] read: git ["--git-dir=/home/arthur/annex/.git","--work-tree=/home/arthur/annex","log","refs/heads/git-annex..9d8429668f2148ea43760fb430e5950fbf42751e","--oneline","-n1"]
+error: object file /home/arthur/annex/.git/objects/a2/b8f10ef258dff1a91e0354b2e2a58241631c9a is empty
+fatal: loose object a2b8f10ef258dff1a91e0354b2e2a58241631c9a (stored in /home/arthur/annex/.git/objects/a2/b8f10ef258dff1a91e0354b2e2a58241631c9a) is corrupt
+[2013-07-29 15:02:15 CEST] chat: git ["--git-dir=/home/arthur/annex/.git","--work-tree=/home/arthur/annex","cat-file","--batch"]
+
+git-annex: fd:14: hGetLine: end of file
+failed
+[2013-07-29 15:02:15 CEST] read: ssh ["-O","stop","-S","/home/arthur/annex/.git/annex/ssh/arthur@git-annex-hostname-arthur_annex","-o","ControlMaster=auto","-o","ControlPersist=yes","arthur@git-annex-hostname-arthur_annex"]
+git-annex: webapp: 1 failed
+"""]]
+
+
+### What version of git-annex are you using? On what operating system?
+
+
+$ git-annex version
+git-annex version: 4.20130516.1
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP
+local repository version: 3
+default repository version: 3
+supported repository versions: 3 4
+upgrade supported from repository versions: 0 1 2
+
+$ git --version
+git version 1.7.9.5
+
+
+### Please provide any additional information below.
+
+

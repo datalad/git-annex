@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlB7-aXsqwzOi2BIR_Q4sUF8sjj24H6F3c"
+ nickname="Claudius"
+ subject="comment 2"
+ date="2012-01-23T19:39:17Z"
+ content="""
+Thank you for your comment! Indeed, setting the umask to, for example, 022 has the desired effect that annex/objects etc. are executable (and in this special case also writable), my previous umask setting was 077; the \"strange\" permissions on the git directories was probably due to --shared=all, and the mode of \"440\" on the files within the git-annex tree is correct (the original file was 640 and stripped of its write permission).
+
+Using this umask setting and newgrp to switch the default group, I was successfully able to set up the repositories.
+
+However, I would like to suggest adding the execute bit to the directories below .git/annex/objects/ per default, even if the umask of the current shell differs. As the correct rights are already preserved in the actual files (minus their write permission) together with correct owner and group, the files are still protected the same way as previously, and because +x does not allow directory listings, no additional information can leak out either. Not having to set the umask to something \"sensible\" before operating git-annex would be a huge plus, too :)
+
+The reason why I am not running MPD as my user is that I am a bit wary of running an application even exposed to the local network as my main user, and I see nothing wrong with running it as its own user.
+
+Thank you again for your help and the time you put into this project!
+"""]]

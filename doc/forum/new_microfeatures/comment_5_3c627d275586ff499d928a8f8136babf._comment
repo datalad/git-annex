@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnpdM9F8VbtQ_H5PaPMpGSxPe_d5L1eJ6w"
+ nickname="Rafaël"
+ subject="git annex unused"
+ date="2011-06-02T19:51:49Z"
+ content="""
+ps: concerning the command 'find .git/annex/objects -type f -name 'SHA1-s1678--70....' from my previous comment, it is \"significantly\" faster to search for the containing directory which have the same name: 'find .git/annex/objects -maxdepth 2 -mindepth 2 -type d -name 'SHA1-s1678--70....'. I am just curious: what is the need to have each file object in its own directory, itself nested under two more sub-directories?
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2011-02-14T22:08:54Z"
+ content="""
+Yes, there is value in layering something over git-annex to use a policy to choose what goes where.
+
+I use [mr](http://kitenet.net/~joey/code/mr/) to update and manage all my repositories, and since mr can be made to run arbitrary commands when doing eg, an update, I use its config file as such a policy layer. For example, my podcasts are pulled into my sound repository in a subdirectory; boxes that consume podcasts run \"git pull; git annex get podcasts --exclude=\"*/out/*\"; git annex drop podcasts/*/out\". I move podcasts to \"out\" directories once done with them (I have yet to teach mpd to do that for me..), and the next time I run \"mr update\" to update everything, it pulls down new ones and removes old ones.
+
+I don't see any obstacle to doing what you want. May be that you'd need better querying facilities in git-annex (so the policy layer can know what is available where), or finer control (--exclude is a good enough hammer for me, but maybe not for you).
+"""]]

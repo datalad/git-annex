@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.220"
+ subject="comment 6"
+ date="2013-09-25T18:13:24Z"
+ content="""
+If you're not getting an \"XMPPClient: connected\", then my guess would be that your git-annex build's XMPP is screwed up somehow. For example, if it hung forever when connecting to the XMPP server, it would never get as far as printing that message. (If it tried and failed to connect, you'd get a message about the connection having failed.)
+"""]]

@@ -1,0 +1,45 @@
+Kickstarter is over. Yay!
+
+Today I worked on the bug where `git annex watch` turned regular files
+that were already checked into git into symlinks. So I made it check
+if a file is already in git before trying to add it to the annex.
+
+The tricky part was doing this check quickly. Unless I want to write my
+own git index parser (or use one from Hackage), this check requires running
+`git ls-files`, once per file to be added. That won't fly if a huge
+tree of files is being moved or unpacked into the watched directory.
+
+Instead, I made it only do the check during `git annex watch`'s initial
+scan of the tree. This should be OK, because once it's running, you
+won't be adding new  files to git anyway, since it'll automatically annex
+new files. This is good enough for now, but there are at least two problems
+with it:
+
+* Someone might `git merge` in a branch that has some regular files,
+  and it would add the merged in files to the annex.
+* Once `git annex watch` is running, if you modify a file that was
+  checked into git as a regular file, the new version will be added
+  to the annex.
+
+I'll probably come back to this issue, and may well find myself directly
+querying git's index.
+
+---
+
+I've started work to fix the memory leak I see when running `git annex
+watch` in a large repository (40 thousand files). As always with a Haskell
+memory leak, I crack open [Real World Haskell's chapter on profiling](http://book.realworldhaskell.org/read/profiling-and-optimization.html).
+
+Eventually this yields a nice graph of the problem:
+
+[[!img profile.png alt="memory profile"]]
+
+So, looks like a few minor memory leaks, and one huge leak. Stared
+at this for a while and trying a few things, and got a much better result:
+
+[[!img profile2.png alt="memory profile"]]
+
+I may come back later and try to improve this further, but it's not bad memory
+usage. But, it's still rather slow to start up in such a large repository,
+and its initial scan is still doing too much work. I need to optimize
+more..

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmj3kEGlCiy_Y-wb6AIBBnJ0B_SiPHV5Bo"
+ nickname="Thomas"
+ subject="small omission"
+ date="2013-09-25T04:59:03Z"
+ content="""
+In your second example, `mv ??? annex` has to be `mv ??? annex/objects`, I think.
+"""]]

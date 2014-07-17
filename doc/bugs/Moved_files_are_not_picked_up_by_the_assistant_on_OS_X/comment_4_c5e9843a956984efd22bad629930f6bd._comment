@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 4"
+ date="2014-07-14T20:15:07Z"
+ content="""
+Well, I don't see the \"??\" that you were talking about before in your transcript. I do not understand why the file's status shows as \"D\" which means it's deleted. What does `git ls-files` say? Does this stange behavior persist if you stop the assistant from running and re-run the same git-annex commands?
+"""]]

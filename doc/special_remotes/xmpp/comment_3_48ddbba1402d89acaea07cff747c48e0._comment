@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="RaspberryPie"
+ ip="46.19.143.203"
+ subject="Missing prerequisites for XMPP syncing?"
+ date="2013-09-17T06:53:59Z"
+ content="""
+I set up two fresh annexes that can talk via XMPP and no other way. After I fire up the assistants I expect them to sync their metadata, but nothing happens. One log gives me an 'XMPPClient: received: [\"Unknown message\"]' message every two minutes. The other one doesn't contain the string XMPP at all, not once. So my suspicion is that this particular version of git-annex doesn't support XMPP, which is weird because:
+
+    $ git annex version
+    git-annex version: 4.20130909
+    build flags: Assistant Pairing Testsuite S3 Inotify XMPP DNS Feeds
+    local repository version: 3
+    default repository version: 3
+    supported repository versions: 3 4
+    upgrade supported from repository versions: 0 1 2
+
+This is the version output from the other machine: 
+
+    $ git annex version
+    git-annex version: 4.20130827
+    build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP
+    local repository version: 3
+    default repository version: 3
+    supported repository versions: 3 4
+    upgrade supported from repository versions: 0 1 2
+
+What am I missing? Are there more build flags for XMPP than the one called XMPP? (Also, no, I can't just copy versions between machines b/c the architectures are different. And yep, the one giving me trouble is ARM.)
+"""]]

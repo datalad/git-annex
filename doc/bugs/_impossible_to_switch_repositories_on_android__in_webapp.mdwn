@@ -1,0 +1,21 @@
+### Please describe the problem.
+I didn't spot this  bugs  page before so here is my report I  have  commented on android page
+
+In addition to two existing repositories (1 local /sdcard/annex, which is also avail at/storage/sdcard0/annex + 1 remote) I have added one more local (and said to keep it in sync with original local). But it didn't work -- it "Synced with onerussian.com_annex but not with Annex" and claimed that the /external/extSdCard/Annex doesn't exist, although it is there (and with .git generated etc). When I restarted the deamon I got into a "new" Repository: /storage/extSdCard/Annex which also listed the 1st local but with "Failed to sync with localhost" message -- no remote one listed. Whenever I try to "Switch repository" to /sdcard/annex (the original local) -- it starts loading a new page but gets stuck right there. The only way to revive webui is to go back to Dashboard. Log there says (retyping from the screen so typos might be there):
+
+error: cannot run git-receive-pack '/storage/sdcard0/annex': No such file or directory fatal: unable to fork
+### What steps will reproduce the problem?
+
+
+### What version of git-annex are you using? On what operating system?
+android
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]

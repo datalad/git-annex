@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk9XEh8pxrJxZxIkyK7lWaA7QG1UWt9lgU"
+ nickname="Gugelplus"
+ subject="OwnCloud"
+ date="2012-08-27T20:43:19Z"
+ content="""
+“Google drive (attractive because it's free, only 5 gb tho)”
+
+Just in case somebody also wants their 5GB of disk space in the cloud, consider using some of the [owncloud providers](http://owncloud.org/providers/). They also offer that amount, but they use free software for everything, using standard protocols (WebDav mostly, because is well supported in all OS).
+
+Git Annex works with them through davfs2, but it would be great if it could support this other program/protocol (OwnCloud/WebDAV) in a more integrated way.
+"""]]

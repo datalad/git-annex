@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.27"
+ subject="comment 4"
+ date="2012-11-10T19:48:01Z"
+ content="""
+I hadn't tried it, but it looks like a very good idea. I will have to change my protocol a little bit as I currently sometimes send chat messages not directed to a specific client, in order to reach any clients using an account. To reach clients with a negative priority, chat messages have to be directed at the client.
+
+Ok, done; priority is set to -1 and all the XMPP messaging in git-annex still seems to work!
+
+I don't know though, that this entirely solves the problem. In particular, a regular xmpp client may decide to direct a chat message at a git-annex client, due to that being the only client connected. If this does become a problem, I suppose git-annex could buffer and re-send such messages when it sees a regular client connect. Or it could show them in the webapp, but that seems feature creep.
+"""]]

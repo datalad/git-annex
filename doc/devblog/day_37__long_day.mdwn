@@ -1,0 +1,6 @@
+A long day of bugfixing. Split into two major parts. First I got back to a
+bug I filed in August to do with the assistant misbehaving when run in a
+subdirectory of a git repository, and did a nice type-driven fix of the
+underlying problem (that also found and fixed some other related bugs that
+would not normally occur). Then, spent 4 hours in Windows purgatory working
+around crazy path separator issues.

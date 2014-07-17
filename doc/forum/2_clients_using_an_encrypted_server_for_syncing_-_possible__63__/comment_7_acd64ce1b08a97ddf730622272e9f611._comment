@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkvN0eFnwvgw2JyTSSHw0QouytcxtPLln8"
+ nickname="Stein Roald"
+ subject="comment 7"
+ date="2014-04-03T21:55:14Z"
+ content="""
+Thanks again, Joey, for your time and for your kind answers.
+
+I have tried to set up git-annex with 2 laptops, each with their own gpg-key in order to use a remote server with gcrypt (and those laptops have shared the keys with each other). I regularly use git, but so far I haven't been able to get this setup to work. But before I bother the world with these problems, I would be interested in learning how to do the following:
+
+*Question 3*: How can I use the git-annex assistant to set up a gcrypt remote (with one key)? It doesn't show up as an option as far as I can see (git-annex version: 4.20130815).
+
+*Promise*: When I get git-annex to work with gcrypt, I'll make a summary on how I did it (and maybe which mistakes I made so others can avoid them).
+"""]]

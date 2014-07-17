@@ -1,0 +1,145 @@
+While dropbox allows modifying files in the folder, git-annex freezes
+them upon creation, using symlinks.
+
+This is a core design simplification of git-annex.
+But it is problematic too:
+
+* To allow directly editing files in its folder, something like [[todo/smudge]] is
+  needed, to get rid of the symlinks that stand in for the files.
+* OSX seems to have a [[lot_of_problems|bugs/OSX_alias_permissions_and_versions_problem]]
+  with stupid programs that follow symlinks and present the git-annex
+  hash filename to the user.
+* FAT sucks and doesn't support symlinks at all, so [[Android]] can't
+  have regular repos on it.
+
+One approach for this would be to hide the git repo away somewhere,
+and have the git-annex assistant watch a regular directory, with
+regular files.
+
+There would have to be a mapping from files to git-annex objects.
+And some intelligent way to determine when a file has been changed
+and no longer corresponds to its object. (Not expensive hashing every time,
+plz.)
+
+Since this leaves every file open to modification, any such repository
+probably needs to be considered untrusted by git-annex. So it doesn't
+leave its only copy of a file in such a repository, but instead
+syncs it to a proper git-annex repository.
+
+The assistant would make git commits still, of symlinks. It can already do
+that with without actual symlinks existing on disk. More difficult is
+handling merging; git merge wants a real repository with files it can
+really operate on. The assistant would need to calculate merges on its own,
+and update the regular directory to reflect changes made in the merge.
+
+Another massive problem with this idea is that it doesn't allow for
+[[partial_content]]. The symlinks that everyone loves to hate on are what
+make it possible for the contents of some files to not be present on
+disk, while the files are still in git and can be retreived as desired.
+With real files, some other standin for a missing file would be needed.
+Perhaps a 0 length, unreadable, unwritable file? On systems that
+support symlinks it could be a broken symlink like is used now, that
+is converted to a real file when it becomes present.
+
+## concrete design
+
+* Enable with annex.direct
+* Use .git/ for the git repo, but `.git/annex/objects` won't be used
+  for object storage.
+* `git status` and similar will show all files as type changed, and
+  `git commit` would be a very bad idea. Just don't support users running
+  git commands that affect the repository in this mode. Probably.
+* However, `git status` and similar also will show deleted and new files,
+  which will be helpful for the assistant to use when starting up.
+* Cache the mtime, size etc of files, and use this to detect when they've been
+  modified when the assistant was not running. This would only need to be
+  checked at startup, probably.
+* Use dangling symlinks for standins for missing content, as now.
+  This allows just cloning one of these repositories normally, and then
+  as the files are synced in, they become real files.
+* Maintain a local mapping from keys to files in the tree. This is needed
+  when sending/receiving/dropping keys to know what file to access.
+  Note that a key can map to multiple files. And that when a file is
+  deleted or moved, the mapping needs to be updated.
+* May need a reverse mapping, from files in the tree to keys? TBD
+  (Currently, getting by looking up symlinks using `git cat-file`)
+  (Needed to make things like `git annex drop` that want to map from the
+  file back to the key work.)
+* The existing watch code detects when a file gets closed, and in this
+  mode, it could be a new file, or a modified file, or an unchanged file.
+  For a modified file, can compare mtime, size, etc, to see if it needs
+  to be re-added.
+* The inotify/kqueue interface does not tell us when a file is renamed.
+  So a rename has to be treated as a delete and an add, so can have a lot
+  of overhead, to re-hash the file.
+* Note that this could be used without the assistant, as a git remote
+  that content is transferred to and from. Without the assistant, changes
+  to files in this remote would not be noticed and committed, unless
+  a git-annex command were added to do so.
+  Getting it basically working as a remote would be a good 1st step.
+* It could also be used without the assistant as a repository that
+  the user uses directly. Would need some git-annex commands
+  to merge changes into the repo, update caches, and commit changes.
+  This could all be done by "git annex sync".
+
+## TODO
+
+* kqueue does not deliver an event when an existing file is modified.
+  This doesn't affect OSX, which uses FSEvents now, but it makes direct
+  mode assistant not 100% on other BSD's.
+
+## done
+
+* `git annex sync` updates the key to files mappings for files changed,
+  but needs much other work to handle direct mode:
+  * Generate git commit, without running `git commit`, because it will
+    want to stage the full files. **done**
+  * Update location logs for any files deleted by a commit. **done**
+  * Generate a git merge, without running `git merge` (or possibly running
+    it in a scratch repo?), because it will stumble over the direct files.
+    **done**
+  * Drop contents of files deleted by a merge (including updating the
+    location log), or if we cannot drop,
+    move their contents to `.git/annex/objects/`.  **no**  .. instead, 
+    avoid ever losing file contents in a direct mode merge. If the file is
+    deleted, its content is moved back to .git/annex/objects, if necessary.
+  * When a merge adds a symlink pointing at a key that is present in the
+    repo, replace the symlink with the direct file (either moving out
+    of `.git/annex/objects/` or hard-linking if the same key is present
+    elsewhere in the tree. **done**
+  * handle merge conflicts on direct mode files **done**
+* support direct mode in the assistant (many little fixes)
+
+* Deal with files changing as they're being transferred from a direct mode
+  repository to another git repository. The remote repo currently will 
+  accept the bad data and update the location log to say it has the key.
+
+  This affects both special remotes and git remotes. 
+
+  For special remotes,
+  it seems the best that could be done is to have an error unwind action
+  passed to `sendAnnex` that is called if the file is modified as it's
+  transferred. That would then remove the probably corrupted file from the
+  remote. (The full transfer would still run, unless there was also a way
+  to cancel an in progress transfer.) **done**
+
+  (With the above, there is some potential for the bad content being
+  downloaded from the special remote into another repo. This would only
+  happen if the other repo for some reason thinks the special remote 
+  has the content. Since the location log would not be updated until the
+  transfer is successful, this should not happen.)
+
+  For local git remotes, need to check the direct mode file after it's
+  copied and before it's put into place as a key's content. **done**
+  (untested)
+
+  `git-annex-shell sendkey` needs to do something if it sent bad
+  data. This seems to not need protocol changes; it can just detect 
+  the problem and exit nonzero. Would need to do something to clean up
+  the temp file, which is probably corrupt. (Could in future use it as a
+  basis for transferring the new key..) **done**
+
+  For git remotes, added a flag to `git-annex-shell recvkey` (using a field
+  after the "--" to remain back-compat). With this flag, after receiving
+  the data, the remote fscks the data. This is not optimal, but avoids
+  needing another round-trip, or a protocol change.

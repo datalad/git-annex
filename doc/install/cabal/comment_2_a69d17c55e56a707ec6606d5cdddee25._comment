@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnaH44G3QbxBAYyDwy0PbvL0ls60XoaR3Y"
+ nickname="Nigel"
+ subject="E: Unable to locate package libghc-libxml-sax-dev"
+ date="2013-05-30T15:05:47Z"
+ content="""
+I get an error from the command as above:
+$ sudo apt-get install cabal-install libgnutls28-dev libgsasl7-dev c2hs libghc libxml-sax-dev zlib1g-dev libghc-zlib-dev
+
+$ lsb_release -a
+No LSB modules are available.
+Distributor ID:	Ubuntu
+Description:	Ubuntu 12.04.2 LTS
+Release:	12.04
+Codename:	precise
+
+"""]]

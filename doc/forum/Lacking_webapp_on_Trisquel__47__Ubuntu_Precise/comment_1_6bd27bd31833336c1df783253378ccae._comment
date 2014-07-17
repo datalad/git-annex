@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.90"
+ subject="comment 1"
+ date="2013-07-17T19:36:27Z"
+ content="""
+There is a PPA for Ubuntu Precise, which includes the webapp.
+
+Or you can use the standalone tarball, which works nearly everywhere.
+"""]]

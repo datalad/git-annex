@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnY9ObrNrQuRp8Xs0XvdtJJssm5cp4NMZA"
+ nickname="alan"
+ subject="Rackspace Cloud Files support?"
+ date="2012-08-23T21:00:11Z"
+ content="""
+Any chance I could bribe you to setup Rackspace Cloud Files support?  We are using them and would hate to have a S3 bucket only for this.
+
+https://github.com/rackspace/python-cloudfiles
+"""]]

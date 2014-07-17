@@ -1,0 +1,7 @@
+I'd like to have git-annex assistant running so I can use it to sync files, but when I downloaded and ran it the webapp was missing.  
+
+I've recently begun using Trisquel, or rather the KDE version Triskel.  The current Trisquel is built from Ubuntu Precise, 12.04, the current LTS version.  Thus it seems that I'm a bit behind the current Ubuntu software, and my impression is that this relates to my problem.
+
+In [a post](http://git-annex.branchable.com/forum/Cannot_launch_webapp_on_ubuntu_12.04_using_ppa/) on this forum I read that a version of git-annex was built without the webapp, and that this had since been corrected.  It appears from my git-annex version data that I have an older version, though I downloaded it only two days ago, and it's older than the corrected version.  Is this because my Ubuntu stuff is out of date? 
+
+More importantly, is there any way I can get webapp running on my current OS, or must I wait until Trisquel gets to 13.04?

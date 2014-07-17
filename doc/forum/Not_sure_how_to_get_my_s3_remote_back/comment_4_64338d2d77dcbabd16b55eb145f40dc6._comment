@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkZktNHFhxC1kYA9KKdKpYJO4clq9WDsjE"
+ nickname="Jason"
+ subject="comment 4"
+ date="2013-04-25T01:18:00Z"
+ content="""
+Oh! That might be it!  During the whole \"I have two remotes with the name s3\" situation, it seems that both of them in my .git/config ended up with the same uuid, even though the original one had a different uuid.  If I change it back, I end up getting an access denied when I try to `git annex get ...`.  Progress!
+
+I thought that you were supposed to do a `git annex initremote s3` from a clone to enable a remote with the credentials stored in the repo.  It seems that internally something still thinks that the \"s3\" remote has the new uuid.  When I run that command it changes the uuid back to the new (invalid) one.
+
+Is there a way I can totally remove the bad s3 (which I've partially renamed to s3thefirst) remote from my history/repo (I'm pretty sure it's been synced back up to origin at this point) or properly rename it so it doesn't keep getting confused?  Hopefully that will address my problem.
+"""]]

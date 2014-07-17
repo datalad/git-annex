@@ -1,0 +1,22 @@
+1. Set up two computers with a client repository.
+2. Add a removable drive repository and set it to transfer group.
+3. Start adding files to computer #1 repository. See how the files get synced to the usb drive.
+4. Connect the usb drive to computer #2 and see the files getting transferred to computer #2. Everything is looking good.
+
+
+5. Connect the usb drive to computer #1 again. 
+6. Add a file that is larger than the remaining size of the usb drive, BUT smaller than the original size of the usb drive.
+7. The file does not get transferred to the usb drive due to lack of disk space.
+
+I would expect the assistant to make some space on the usb drive. Removing the files it knows has been transferred to computer #2, and then transfer the new file to the usb drive. But this does not seem to happen. 
+
+Have I missed something about how the transfer group is supposed to work?
+
+ 
+Using version:
+git-annex version: 4.20130802-g0a52f02
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP
+
+Pre built tar file.
+
+

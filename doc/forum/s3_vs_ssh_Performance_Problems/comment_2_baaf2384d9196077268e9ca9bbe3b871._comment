@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/FHnTlSBo1eCGJRwueeKeB6.RCaPbGMPr5jxx8A--#ce0d8"
+ nickname="Hamza"
+ subject="comment 2"
+ date="2013-11-21T17:47:57Z"
+ content="""
+No difference. Both take roughly the same time but I did time a couple of runs with both commands they usually take 3 to 5 minutes to complete. Maybe git did something behind the scenes like gc? But still slower than it used to be. My other repo (one with 42k files) still takes a 2 hours.
+"""]]

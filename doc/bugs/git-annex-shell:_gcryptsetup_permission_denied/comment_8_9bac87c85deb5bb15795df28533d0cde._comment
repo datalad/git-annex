@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 8"
+ date="2013-11-04T19:14:04Z"
+ content="""
+Right -- Normally a special remote doesn't include a git repository. And when using a regular git remote, `git-annex-shell` is used to receive files into the repository and it records immediately that the repo has the file so there's no need to sync in that case. So gcrypt is special in this way.
+
+For now, I have fixed the tip to show syncing after sending files to gcrypt. It might be the case that it would make sense to do a push of the git-annex branch automatically in that case, will have to think about that and see if people get tripped up on this.
+"""]]

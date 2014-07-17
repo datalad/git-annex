@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.1.10"
+ subject="comment 1"
+ date="2013-07-22T19:13:38Z"
+ content="""
+To build the WebApp on arm, you need a ghc that supports template haskell on arm. While I have heard persistent rumors of such a thing existing, I have yet to see it.
+
+It's possible to build the WebApp on arm without that, but it's a complicated process, involving first building on x86 with the same versions of the haskell libraries that you have on the arm system, and then using the EvilSplicer to generate a source tree with the template haskell expanded, which can then be built on arm. This build process is not really suitable for a Debian package.
+"""]]

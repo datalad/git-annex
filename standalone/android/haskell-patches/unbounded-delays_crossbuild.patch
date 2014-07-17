@@ -1,0 +1,25 @@
+From 0ad071f80ee72e7b8ca5b0b70dfae5bbf8677969 Mon Sep 17 00:00:00 2001
+From: Joey Hess <joey@kitenet.net>
+Date: Wed, 12 Mar 2014 12:18:17 -0400
+Subject: [PATCH] cross build
+
+---
+ unbounded-delays.cabal |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/unbounded-delays.cabal b/unbounded-delays.cabal
+index 76d0a50..0f27569 100644
+--- a/unbounded-delays.cabal
++++ b/unbounded-delays.cabal
+@@ -1,7 +1,7 @@
+ name:          unbounded-delays
+ version:       0.1.0.6
+ cabal-version: >= 1.6
+-build-type:    Custom
++build-type:    Simple
+ author:        Bas van Dijk <v.dijk.bas@gmail.com>
+                Roel van Dijk <vandijk.roel@gmail.com>
+ maintainer:    Bas van Dijk <v.dijk.bas@gmail.com>
+-- 
+1.7.10.4
+

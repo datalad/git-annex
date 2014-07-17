@@ -1,0 +1,5 @@
+While I've not been blogging over what amounted to a long weekend, looking
+over the changelog, there were quite a few things done. Mostly various
+improvements and fixes to `git annex sync --content`.
+
+Today, got the test suite to pass on Windows 100% again.

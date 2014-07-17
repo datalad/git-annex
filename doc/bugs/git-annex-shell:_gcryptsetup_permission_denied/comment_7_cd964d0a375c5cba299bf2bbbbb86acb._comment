@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkbpbjP5j8MqWt_K4NASwv0WvB8T4rQ-pM"
+ nickname="Fabrice"
+ subject="comment 7"
+ date="2013-11-04T18:54:54Z"
+ content="""
+`git annex whereis` says the files are not on the remote git, while they are because of the copy. If I do _exactly_ what's on the tip, that is if I clone the encrypted git just after having done `git annex copy --to encryptedbackup`, the remotes seems to ignore that it has the data. To have it working, I had to call `git annex sync` (push will do, I guess) in the original remote after doing the `git annex copy`. Then I can `git pull` and `git annex whereis` knows where the files are (or I can clone the encrypted remote after doing the sync/pull). 
+
+It seems a bit strange that the copy command does not record the propagation of the file to the encrypted git. I guess this is because gcrypt is the only special remote that stores also the git part, right? Would that be a good idea (and possible) to handle it in a special way? 
+
+Thanks Joey for everything, by the way, both the software and the amazing support via email and the website.
+"""]]

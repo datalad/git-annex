@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmraN_ldJplGunVGmnjjLN6jL9s9TrVMGE"
+ nickname="Ævar Arnfjörð"
+ subject="How to convert bare repositories to non-bare"
+ date="2012-11-11T20:14:44Z"
+ content="""
+I made a repository bare and later wanted to convert it, this would have worked with just plain git:
+
+    cd bare-repo.git
+    mkdir .git
+    mv .??* * .git/
+    git config --unset core.bare
+    git reset --hard
+
+But because git-annex uses different hashing directories under bare repositories all the files in the repo will point to files you don't have. Here's how you can fix that up assuming you're using a backend that assigns unique hashes based on file content (e.g. the SHA256 backend):
+
+    mv .git/annex/objects from-bare-repo
+    git annex add from-bare-repo
+    git rm -f from-bare-repo
+
+
+"""]]

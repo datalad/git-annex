@@ -1,0 +1,34 @@
+### Please describe the problem.
+
+Starting the webapp on a repository that was hastily created by copying an existing one with an older version yields an undecipherable error.
+
+Rather minor.
+
+### What steps will reproduce the problem?
+
+1. Install git-annex from git
+2. make a repo
+3. copy it over to an external hard drive
+4. connect that drive to a wheezy box running git-annex from backports
+5. add the external hard drive to the webapp as a new repo
+6. boom
+
+I expected git-annex to tell me:
+
+    git-annex: Repository version 5 is not supported. Upgrade git-annex.
+
+Instead, it popped a red box saying a scary "Internal server error". I couldn't read the daemon logs either.
+
+### What version of git-annex are you using? On what operating system?
+
+original version is:
+
+    git-annex version: 5.20131109-gf2cb5b9
+
+the failing version is running the one from wheezy backports.
+
+### Please provide any additional information below.
+
+screenshot coming up.
+
+> [[fixed|done]] --[[Joey]]

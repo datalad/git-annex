@@ -1,0 +1,37 @@
+Finished moving the Android autobuilder over to the new clean build
+environment. Tested the Android app, and it still works. Whew!
+
+There's a small chance that the issue with the Android app not working on
+Android 4.3 has been fixed by this rebuild. I doubt it, but perhaps someone
+can download the daily build and give it another try..
+
+----
+
+I have 7 days left in which I'd like to get remote gcrypt repositories
+working in the assistant. I think that should be fairly easy, but a
+prerequisite for it is making git-annex-shell support being run on a gcrypt
+repository. That's needed so that the assistant's normal locked down ssh
+key setup can also be used for gcrypt repositories.
+
+At the same time, not all gcrypt endpoints will have git-annex-shell
+installed, and it *seems* to make sense to leave in the existing support
+for running raw rsync and git push commands against such a repository. So
+that's going to add some complication.
+
+It will also complicate git-annex-shell to support gcrypt repos. Basically,
+everything it does in git-annex repos will need to be reimplemented in
+gcrypt repositories. Generally in a more simple form; for example it
+doesn't need to (and can't) update location logs in a gcrypt repo.
+
+----
+
+I also need to find a good UI to present the three available choices
+(unencrypted git, encrypted git, encrypted rsync) when setting up a repo
+on a ssh server. I don't want to just remove the encrypted rsync option,
+because it's useful when using xmpp to sync the git repo, and is simpler to
+set up since it uses shared encryption rather than gpg public keys.
+
+My current thought is to offer just 2 choices, encrypted and non-encrypted.
+If they choose encrypted, offer a choice of shared encryption or encrypting
+to a specific key. I think I can word this so it's pretty clear what the
+tradeoffs are.

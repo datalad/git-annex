@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlRThEwuPnr8_bcuuCTQ0rQd3w6AfeMiLY"
+ nickname="Alex"
+ subject="Having issues here"
+ date="2013-02-23T14:44:15Z"
+ content="""
+I'm trying to use git-annex with vcsh, and it doesn't seem to be respecting the GIT_WORK_TREE and GIT_DIR variables vcsh sets. If I try it manually, the same happens.
+
+Any time I try to invoke a git-annex subcommand (init, add) via vcsh (vcsh $repo annex init/add/etc) it spits out an error that \"git-annex: Not in a git repository.\"
+
+I'd really like this to work, so that I can manage the bigger files in my home with topic-based annexes alongside plain-git repos for dotfiles.
+
+"""]]

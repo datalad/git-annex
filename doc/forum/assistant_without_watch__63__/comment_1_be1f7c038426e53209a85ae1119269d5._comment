@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.253.75"
+ subject="comment 1"
+ date="2013-02-22T22:31:29Z"
+ content="""
+Not quite. 
+
+Recent versions allow you to disable the automatic committing while the assistant is running by setting annex.autocommit=false .. or just by going into the webapp repository list and pausing syncing for the \"here\" repository.
+
+But, with automatic committing disabled, the assistant doesn't know when new files are added, so will not transfer them.  The rest of it still works, so for example if another clone of the repository makes changes
+the assistant will merge them in and download the new files.
+
+To transfer new files you created, you could use `git annex copy --auto --to someremote`, which will only copy them if needed to satisfy numcopies.
+"""]]

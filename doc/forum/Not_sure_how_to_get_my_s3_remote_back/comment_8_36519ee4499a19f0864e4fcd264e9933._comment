@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 8"
+ date="2013-04-26T20:06:34Z"
+ content="""
+Most of this is perfectly normal. The duplication of lines are normal; when two git-annex branches are union merged, it's as if it runs `cat branch1:file branch2:file | uniq > file`. When there are conflicting lines for the same uuid, the one with the newest timestamp is used.
+
+The description of the remote in uuid.log is also not relevant to this bug.
+
+This is the key part:
+
+> The box remote was duplicated (with different davcreds and one having highRandomQuality=false)
+
+As you note, 2013-04-24 15:15 was a merge. So there must have been two branches before, which had different box remotes with different davcreds. 
+
+It would probably help if you can paste those lines as they looked after that merge (omitting most of the davcreds).
+
+Also, I'd like to see the box line from the 11:05 commit.
+"""]]

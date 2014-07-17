@@ -1,0 +1,46 @@
+I’m using git annex to manage my movie collection on various devices – my laptop, a NSLU tucked away somewhere with lots of space, some external hard drives. For this use case, I do not need the full power of git as a version control system, so having to run "git commit" and coming up with commit messages is annoying. Also, this makes sense for a version control system, but not for my media collection:
+
+	$ git annex add Hot\ Fuzz\ -\ English.mkv 
+	add Hot Fuzz - English.mkv (checksum...) ok
+	(Recording state in git...)
+	$ git commit -m 'another movie added'
+	[master 851dc8a] another movie added
+	 1 files changed, 1 insertions(+), 0 deletions(-)
+	 create mode 120000 00 Noch nicht gesehen/Hot Fuzz - English.mkv
+	$ git push jeff
+	Counting objects: 38, done.
+	Delta compression using up to 2 threads.
+	Compressing objects: 100% (20/20), done.
+	Writing objects: 100% (26/26), 2.00 KiB, done.
+	Total 26 (delta 11), reused 0 (delta 0)
+	remote: error: refusing to update checked out branch: refs/heads/master
+	remote: error: By default, updating the current branch in a non-bare repository
+	remote: error: is denied, because it will make the index and work tree inconsistent
+	remote: error: with what you pushed, and will require 'git reset --hard' to match
+	remote: error: the work tree to HEAD.
+	remote: error: 
+	remote: error: You can set 'receive.denyCurrentBranch' configuration variable to
+	remote: error: 'ignore' or 'warn' in the remote repository to allow pushing into
+	remote: error: its current branch; however, this is not recommended unless you
+	remote: error: arranged to update its work tree to match what you pushed in some
+	remote: error: other way.
+	remote: error: 
+	remote: error: To squelch this message and still keep the default behaviour, set
+	remote: error: 'receive.denyCurrentBranch' configuration variable to 'refuse'.
+	To jeff:/mnt/media/Movies
+	 ! [rejected]        git-annex -> git-annex (non-fast-forward)
+	 ! [remote rejected] master -> master (branch is currently checked out)
+	error: failed to push some refs to 'jeff:/mnt/media/Movies'
+	To prevent you from losing history, non-fast-forward updates were rejected
+	Merge the remote changes (e.g. 'git pull') before pushing again.  See the
+	'Note about fast-forwards' section of 'git push --help' for details.
+
+It seems that to successfully make the new files known to the other side, I have to log into jeff and pull _from_ my current machine.	
+
+What I would like to have is that
+
+* git annex add does not require a commit afterwards.
+* Changes to the files are automatically picked up with the next git-annex call (similar to how etckeeper works).
+* Commands "git annex push" and "git annex pull" that will sync the metadata (i.e. the list of files) in both directions without further manual intervention, at least not until the two repositories have diverged in a way that is not possible to merge sensible.
+
+Summay: git-annex is great. git is not always. Please make it possible to use git annex without having to use git.

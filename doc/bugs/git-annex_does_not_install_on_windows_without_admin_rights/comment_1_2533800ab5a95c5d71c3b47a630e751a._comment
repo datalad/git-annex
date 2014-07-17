@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.64"
+ subject="comment 1"
+ date="2013-11-26T16:19:41Z"
+ content="""
+Thanks, this had been reported in the forum before, but they did not point at the directory permissions as the problem.
+
+It would be possible to modify the installer to install git-annex somewhere else and add it to the PATH, but it seems this is a utter nightmare on windows and I'd have to pull in enormous NSIS scripts from their wiki, of unknown provenance. Which is why I am piggybacking on the git installation's PATH.
+"""]]

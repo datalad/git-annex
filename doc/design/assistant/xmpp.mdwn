@@ -1,0 +1,136 @@
+The git-annex assistant uses XMPP to communicate between peers that
+cannot directly talk to one-another. A typical scenario is two users
+who share a repository, that is stored in the [[cloud]].
+
+### TODO
+
+* Do git-annex clients sharing an account with regular clients cause confusing
+  things to happen? 
+  See <http://git-annex.branchable.com/design/assistant/blog/day_114__xmpp/#comment-aaba579f92cb452caf26ac53071a6788>
+* Support registering with XMPP provider from within the webapp, 
+  as clients like pidgin are able to do.
+* At least some XMPP servers are lossy (does XMPP guarantee delivery)?
+  I have seen a log where a push's packet 1 and 3 arrived, but 2 did not.
+  To deal with this, need at least a 1 packet buffer and ACK or resend
+  request implemented over top of XMPP. Essentially, TCP over XMPP. :(
+
+## design goals
+
+1. Avoid user-visible messages. dvcs-autosync uses XMPP similarly, but
+   sends user-visible messages. Avoiding user-visible messages lets
+   the user configure git-annex to use his existing XMPP account
+   (eg, Google Talk).
+
+2. Send notifications to buddies. dvcs-autosync sends only self-messages,
+   but that requires every node have the same XMPP account configured.
+   git-annex should support that mode, but it should also send notifications
+   to a user's buddies. (This will also allow for using XMPP for pairing
+   in the future.)
+
+3. Don't make account appear active. Just because git-annex is being an XMPP
+   client, it doesn't mean that it wants to get chat messages, or make the
+   user appear active when he's not using his chat program.
+
+## protocol
+
+To avoid relying on XMPP extensions, git-annex communicates
+using presence messages, and chat messages (with empty body tags,
+so clients don't display them).
+
+git-annex sets a negative presence priority, to avoid any regular messages
+getting eaten by its clients. It also sets itself extended away.
+Note that this means that chat messages always have to be directed at
+specific git-annex clients.
+
+To the presence and chat messages, it adds its own tag as
+[extended content](http://xmpp.org/rfcs/rfc6121.html#presence-extended).
+The xml namespace is "git-annex" (not an URL because I hate wasting bandwidth).
+
+To indicate it's pushed changes to a git repo with a given UUID, a message
+that is sent to all buddies and other clients using the account (no
+explicit pairing needed), it uses a broadcast presence message containing:
+
+	<git-annex xmlns='git-annex' push="uuid[,uuid...]" />
+
+Multiple UUIDs can be listed when multiple clients were pushed. If the
+git repo does not have a git-annex UUID, an empty string is used.
+
+To query if other git-annex clients are around, a presence message is used,
+containing:
+
+	<git-annex xmlns='git-annex' query="" />
+
+For pairing, a chat message is sent to every known git-annex client,
+containing:
+
+	<git-annex xmlns='git-annex' pairing="PairReq|PairAck|PairDone myuuid" />
+
+### git push over XMPP
+
+To indicate that we could push over XMPP, a chat message is sent,
+to each known client of each XMPP remote.
+
+	<git-annex xmlns='git-annex' canpush="myuuid" shas="sha1 sha1" />
+
+The shas are omitted by old clients. If present, they are the git shas of
+the head and git-annex branches that are available to be pushed. This lets
+the receiver check if it's already got them.
+
+To request that a remote push to us, a chat message can be sent.
+
+	<git-annex xmlns='git-annex' pushrequest="myuuid" />
+
+When replying to an canpush message, this is directed at the specific
+client that indicated it could push. To solicit pushes from all clients,
+the message has to be sent directed individually to each client.
+
+When a peer is ready to send a git push, it sends:
+
+	<git-annex xmlns='git-annex' startingpush="myuuid" />
+
+The receiver runs `git receive-pack`, and sends back its output in
+one or more chat messages, directed to the client that is pushing:
+
+	<git-annex xmlns='git-annex' rp="N">
+	007b27ca394d26a05d9b6beefa1b07da456caa2157d7 refs/heads/git-annex report-status delete-refs side-band-64k quiet ofs-delta
+	</git-annex>
+
+The sender replies with the data from `git push`, in 
+one or more chat messages, directed to the receiver:
+
+	<git-annex xmlns='git-annex' sp="N">
+	data
+	</git-annex>
+
+The value of rp and sp used to be empty, but now it's a sequence number.
+This indicates the sequence of this packet, counting from 1. The receiver
+and sender each have their own sequence numbers.
+
+When `git receive-pack` exits, the receiver indicates its exit
+status with a chat message, directed at the sender:
+
+	<git-annex xmlns='git-annex' rpdone="0" />
+
+### security
+
+Data git-annex sends over XMPP will be visible to the XMPP account's
+buddies, and to the XMPP server (and any attacker who has access to the
+XMPP server). So it's important to consider the security exposure of using
+it.
+
+Even if git-annex sends only a single bit notification, this lets attackers
+know when the user is active and changing files. Although the assistant's other
+syncing activities can somewhat mask this.
+
+As soon as git-annex does anything unlike any other client, an attacker can
+see how many clients are connected for a user, and fingerprint the ones
+running git-annex, and determine how many clients are running git-annex.
+
+An attacker can observe the UUIDs used for pushes and pairing, and determine
+how many different remotes are being used.
+
+An attacker could replay push notification messages, reusing UUIDs it's
+observed. This would make clients pull repeatedly, perhaps as a DOS.
+
+The XMPP server, or an attacker with access to it can reconstruct the git 
+repository from data sent in pushes, in part or in whole.

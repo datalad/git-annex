@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.64"
+ subject="comment 3"
+ date="2013-12-02T19:53:11Z"
+ content="""
+Hmm, it seems I was wrong about copy --from not checking the location log. It does.. Probably to avoid large copies trying to copy a lot of files that are not present in a remote.
+
+I have now made `git annex copy --force --from remote` do what I said it would do, and that should work in your situation, I think.
+"""]]

@@ -1,0 +1,15 @@
+I've finished building the XMMP side of git push over XMPP. Now I only
+have to add code to trigger these pushes. And of course, fix all the bugs,
+since none of this has been tested at all.
+
+Had to deal with some complications, like handling multiple clients that
+all want to push at the same time. Only one push is handled at a time;
+messages for others are queued. Another complication I don't deal with yet
+is what to do if a client stops responding in the middle of a push. It
+currently will wait forever for a message from the client; instead it
+should time out.
+
+----
+
+Jimmy got the OSX builder working again, despite my best attempts to add
+dependencies and break it.

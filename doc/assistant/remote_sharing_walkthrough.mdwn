@@ -1,0 +1,12 @@
+So you have two computers that are not in the same place, and you want them
+to share the same synchronised folder, communicating directly with each other.
+
+[[!inline feeds=no template=bare pages=videos/git-annex_assistant_remote_sharing]]
+
+You can add even more computers using the same method shown here.
+
+----
+
+If you have a laptop that is sometimes near another computer, you can
+speed up file transfers when it is by also connecting it using the
+[[local_pairing_walkthrough]].

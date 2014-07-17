@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-05-19T20:29:14Z"
+ content="""
+I don't seem to be seeing the problem you describe in direct mode:
+
+[[!format sh \"\"\"
+
+joey@gnu:~/tmp/r2>git init
+joey@gnu:~/tmp/r2>git annex init
+joey@gnu:~/tmp/r2>git config annex.largefiles \"largerthan=100kb and not (include=*.c or include=*.h)\"
+joey@gnu:~/tmp/r2>git annex direct
+joey@gnu:~/tmp/r2>git annex assistant 
+joey@gnu:~/tmp/r2>dd if=/dev/urandom of=bigfile bs=1M count=1
+1+0 records in
+1+0 records out
+joey@gnu:~/tmp/r2>echo \"main() { printf(\"hello, world!\n\") }\" > hello.c
+\"\"\"]]
+
+At that point, the bigfile was annexed, and the hello.c file was checked into git as a regular file.
+
+Are you sure you have annex.largefiles correctly configured to exclude the files you don't want to be annexed?
+"""]]

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 1"
+ date="2012-09-23T21:58:08Z"
+ content="""
+You could try to do it similar to [RT](http://bestpractical.com/rt/):
+
+* Implement saved statements, i.e. offer common use cases
+* Allow those statements (or aliases? stanzas?) to be loaded in a relatively simple editor with a basic wizard to support the building of new rules
+* Offer a free-text input for advanced users. It should be able to parse that and load it into the simple editor.
+* Users should be able to save, export, and import those statements.
+* Optionally, allow users to dry run the rules by showing them what git-annex needs to do to fulfill the requirements set by the statements.
+
+"""]]

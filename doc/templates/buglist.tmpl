@@ -1,0 +1,25 @@
+<div class="archivepage">
+<TMPL_IF PERMALINK>
+<a href="<TMPL_VAR PERMALINK>"><TMPL_VAR TITLE></a>
+<TMPL_ELSE>
+<a href="<TMPL_VAR PAGEURL>"><TMPL_VAR TITLE></a>
+</TMPL_IF>
+<TMPL_IF TAGS>
+<TMPL_LOOP TAGS>
+ [<TMPL_VAR LINK>]
+</TMPL_LOOP>
+</TMPL_IF>
+<br />
+<span class="archivepagedate">
+Posted <TMPL_VAR CTIME>
+<TMPL_IF AUTHOR>
+by <span class="author">
+<TMPL_IF AUTHORURL>
+<a href="<TMPL_VAR AUTHORURL>"><TMPL_VAR AUTHOR></a>
+<TMPL_ELSE>
+<TMPL_VAR AUTHOR>
+</TMPL_IF>
+</span>
+</TMPL_IF>
+</span>
+</div>

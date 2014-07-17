@@ -1,0 +1,62 @@
+For SL6/CentOS6 install the EPEL repo and yum install git-annex. 
+
+I was waiting for my backups to be done hence this article, as I was using
+_git-annex_ to manage my files and I decided I needed to have
+git-annex on a SL5 based machine. SL5 is just an opensource
+clone/recompile of RHEL5.
+
+I haven't tried to install the newer versions of Haskell Platform and
+GHC in a while on SL5 to install git-annex. But the last time I checked
+when GHC7 was out, it was a pain to install GHC on SL5.
+
+However I have discovered that someone has gone through the trouble of
+packaging up GHC and Haskell Platform for RHEL based distros.
+
+* <http://justhub.org/download> - Packaged GHC and Haskell Platform
+  RPM's for RHEL based systems.
+
+I'm primarily interested in installing _git-annex_ on SL5 based
+systems. The installation process goes as such...
+
+First install GHC and Haskell Platform (you need root for these
+following steps)
+
+    $ wget http://sherkin.justhub.org/el5/RPMS/x86_64/justhub-release-2.0-4.0.el5.x86_64.rpm
+    $ rpm -ivh justhub-release-2.0-4.0.el5.x86_64.rpm
+    $ yum install haskell
+
+The RPM's don't place the files in /usr/bin, so you must add the
+following to your .bashrc (from here on you don't need root if you
+don't want things to be system wide)
+
+    $ export PATH=/usr/hs/bin:$PATH
+
+Once the packages are installed and are in your execution path, using
+cabal to configure and build git-annex just makes life easier, it
+should install all the needed dependancies.
+
+    $ cabal update
+    $ git clone git://git.kitenet.net/git-annex
+    $ cd git-annex
+    $ make git-annex.1
+    $ cabal configure
+    $ cabal build
+    $ cabal install
+
+Or if you want to install it globallly for everyone (otherwise it will
+get installed into $HOME/.cabal/bin)
+
+    $ cabal install --global
+
+The above will take a while to compile and install the needed
+dependancies. I would suggest any user who does should run the tests
+that comes with git-annex to make sure everything is functioning as
+expected.
+
+I haven't had a chance or need to install git-annex on a SL6 based
+system yet, but I would assume something similar to the above steps
+would be required to do so.
+
+The above is almost a cut and paste of <http://jcftang.github.com/2012/06/15/installing-git-annex-on-sl5/>, the above could probably be refined, it was what worked for me on SL5. Please feel free to re-edit and chop out or add useless bits of text in the above!
+
+Note: from the minor testing, it appears the compiled binaries from SL5 will work on SL6.

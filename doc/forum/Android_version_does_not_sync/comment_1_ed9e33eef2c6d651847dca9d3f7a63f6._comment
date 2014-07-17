@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="sts"
+ ip="134.147.119.104"
+ subject="comment 1"
+ date="2014-07-14T09:12:13Z"
+ content="""
+Ok, I checked and the index file was missing and not sure why, but I had to manually sync one time. So I had to go in the annex folder with the command line and make a \"git annex sync\". It works pretty well now, it seems not to automatically sync my data (have to force it with \"Sync Now\"), but at least I can sync data to my tablet and thats awesome :).
+"""]]

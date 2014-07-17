@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm7AuSfii_tCkLyspL6Mr0ATlO6OxLNYOo"
+ nickname="Georg"
+ subject="state of windows"
+ date="2014-01-28T10:29:41Z"
+ content="""
+Any idea when this stuff will end in the windows build? I am currently fiddling around with git-annex on windows (btw: great work on that so far!) and the unused files config would be highly valueable to me, since I want to mostly use it to push files out to my server from my work machine or my windows tablet, while preventing to clog up too much space. And since I am lazy, I would love to leave the house keeping to git-annex ;)
+
+An additional question on the windows build: which of the backends can actually make use of windows proxy settings? I guess if webdav was in the list of supported backends, it would work fine, since it is only http, but since it is missing, which of the others would work through just a standard configured squid proxy? For my work machine this is the only way to reach the outside world, doing https to my web server.
+"""]]

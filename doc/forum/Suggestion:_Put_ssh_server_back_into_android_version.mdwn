@@ -1,0 +1,9 @@
+Hi!
+
+Just tried various android ssh servers which do work, but have no access to the command line tools shipped with git annex.
+
+From what I gather from the planning docs, sshd was stripped from the android tools to save space. If this were the case, it (naively) seems to me it would have to be simple to re-enable.
+
+Rationale: It would make it super convenient to use command line git annex on my phone alongside the assistant, through letting me type on my desktop. Not to mention that the command line tools shipped with git annex are by far the best around for android work.
+
+Carlo

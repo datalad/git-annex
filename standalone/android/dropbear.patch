@@ -1,0 +1,55 @@
+From 014dadb02fd984828a6232534c47dba8e2f7818a Mon Sep 17 00:00:00 2001
+From: Joey Hess <joey@kitenet.net>
+Date: Wed, 13 Feb 2013 15:29:52 -0400
+Subject: [PATCH] android patch for dropbear
+
+* Disable HOME override
+* Use urandom to avoid blocking on every ssh connection.
+* Enable use of netbsd_getpass.c
+---
+ cli-auth.c |    1 +
+ cli-main.c |    2 --
+ options.h  |    2 +-
+ 3 files changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/cli-auth.c b/cli-auth.c
+index 4c17a21..91dfdf8 100644
+--- a/cli-auth.c
++++ b/cli-auth.c
+@@ -31,6 +31,7 @@
+ #include "ssh.h"
+ #include "packet.h"
+ #include "runopts.h"
++#include "netbsd_getpass.c"
+ 
+ void cli_authinitialise() {
+ 
+diff --git a/cli-main.c b/cli-main.c
+index 106006b..68cf023 100644
+--- a/cli-main.c
++++ b/cli-main.c
+@@ -47,8 +47,6 @@ int main(int argc, char ** argv) {
+ 	_dropbear_exit = cli_dropbear_exit;
+ 	_dropbear_log = cli_dropbear_log;
+ 
+-	putenv("HOME=/data/local");
+-
+ 	disallow_core();
+ 
+ 	cli_getopts(argc, argv);
+diff --git a/options.h b/options.h
+index 7625151..48e404d 100644
+--- a/options.h
++++ b/options.h
+@@ -159,7 +159,7 @@ etc) slower (perhaps by 50%). Recommended for most small systems. */
+  * however significantly reduce the security of your ssh connections
+  * if the PRNG state becomes guessable - make sure you know what you are
+  * doing if you change this. */
+-#define DROPBEAR_RANDOM_DEV "/dev/random"
++#define DROPBEAR_RANDOM_DEV "/dev/urandom"
+ 
+ /* prngd must be manually set up to produce output */
+ /*#define DROPBEAR_PRNGD_SOCKET "/var/run/dropbear-rng"*/
+-- 
+1.7.10.4
+

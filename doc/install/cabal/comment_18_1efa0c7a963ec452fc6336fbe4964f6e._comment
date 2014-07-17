@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="RaspberryPie"
+ ip="96.47.226.20"
+ subject="git-annex assistant for the Raspberry Pi"
+ date="2013-09-04T03:58:37Z"
+ content="""
+It took a while and a few tries, but I finally built the git-annex binary including the assistant on a Raspberry Pi. The build comes without the flags webapp, webdav, and dbus as these rely on a Template Haskell compiler that hasn't been ported to Arm architecture yet. 
+
+I put the binary up on Github in case anyone's interested: <https://github.com/tradloff/git-annex-RPi>
+"""]]

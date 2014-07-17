@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnE6kFAbud1LWrQuyX76yMYnUjHt9tR-A8"
+ nickname="Leonardo"
+ subject="Chroots"
+ date="2014-01-21T13:52:29Z"
+ content="""
+How about simply having sshd inside the chroot?
+"""]]

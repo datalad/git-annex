@@ -1,0 +1,20 @@
+The _views_ functionality has made the file structure dynamic. 
+
+With this in mind would it be possible/suitable to make drag and drop targets for `git-annex get` and `git-annex drop` commands?
+This would make available git annex most interesting feature to assistant users.
+
+I'm not entirely sure it's a good idea but it avoids file manager scripts and should be discoverable and easy to use.
+
+I see two possibilities:
+
+1. A folder in the annex root that contains a mirror of the tree but with only the unavailable files. Unavaliable files would then not be displayed in the live tree. Perhaps the folder can be called `remote`? Files can then be dragged from this tree to the live tree to trigger transfer of files. Any error/info gets displayed in the assistant
+2. Flat droptargets in the annex root for `drop` and `get` commands.
+
+
+Number one above makes discovering available files a bit cumbersome as you have to navigate down a parallell tree. It does make the available/remote distinction clearer which may be good for assistant users.
+
+The mechanism could be extended to include a folder or droptarget for each remote.
+
+The creation of droptargets/action folders could be triggered by a big visible button in the assistant interface **Manage Files**
+
+Is it messy?

@@ -1,0 +1,17 @@
+I think that git-recover-repository is ready now. Made it deal with the
+index file referencing corrupt objects. The best approach I could think of
+for that is to just remove those objects from the index, so the user can
+re-add files from their work tree after recovery.
+
+Now to integrate this git repository repair capability into the git-annex 
+assistant. I decided to run `git fsck` as part of a scheduled
+repository consistency check. It may also make sense for the assistant to
+notice when things are going wrong, and suggest an immediate check. I've
+started on the webapp UI to run a repository repair when fsck detects
+problems.
+
+[[!img /assistant/brokenrepositoryalert.png]]
+
+[[!img /assistant/repairrepository.png]]
+
+[[!meta title="the user interface I hope noone ever sees"]]

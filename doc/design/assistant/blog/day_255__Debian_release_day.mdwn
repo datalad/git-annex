@@ -1,0 +1,26 @@
+Created a backport of the latest git-annex release for Debian 7.0 wheezy.
+Needed to backport a dozen haskell dependencies, but not too bad.
+This will be available in the backports repository once Debian
+starts accepting new packages again. I plan to keep the backport up-to-date
+as I make new releases.
+
+The cheap Android tablet I bought to do this last Android push with came
+pre-rooted from the factory. This may be why I have not seen this bug:
+[[bugs/Android_app_permission_denial_on_startup]]. If you have Android
+4.2.2 or a similar version, your testing would be helpful for me to know if
+this is a widespread problem. I have an idea about a way to work around the
+problem, but it involves writing Java code, and probably polling a file,
+ugh.
+
+Got S3 support to build for Android. Probably fails to work 
+due to the same network stack problems affecting WebDAV and Jabber.
+
+Got removable media mount detection working on Android. Bionic has an
+amusing stub for `getmntent` that prints out "FIX ME! implement
+getmntent()". But, `/proc/mounts` is there, so I just parse it.
+Also enabled the app's `WRITE_MEDIA_STORAGE` permission to allow
+access to removable media. However, this didn't seem to do anything. :(
+
+Several fixes to make the Android webapp be able to set up repositories on
+remote ssh servers. However, it fails at the last hurdle with what
+looks like a `git-annex-shell` communication problem. Almost there..

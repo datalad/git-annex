@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.90"
+ subject="comment 3"
+ date="2013-07-16T18:03:40Z"
+ content="""
+It's normal for git diff and gitk to look like that in a repository that's using direct mode.
+
+In your log, I see you added a file \"test-2013-07-15e\". And I don't see any indication that it tried to transfer it.
+
+There are a few reasons that could happen. If you've \"paused\" syncing with a remote in the webapp, it could do that.
+
+I think more likely would be if you've put the remote repository in a repository group that doesn't want the file. If it's configured to be in the Manual group or the Source group (or the Transfer, Public, or Small Archive group for that matter), the assistant won't try to send files to it. You can check this by editing the repository in the webapp. It should probably be set to be in the Client group.
+"""]]

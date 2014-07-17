@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmkXtBdMgE1d9nCz2iBc4f85xh4izZ_auU"
+ nickname="Ulrich"
+ subject="So what does &quot;git annex drop&quot; do in direct mode?"
+ date="2013-11-15T15:07:57Z"
+ content="""
+I just tried a git annex drop on a file in a direct mode repository, and that just did not change anything at all, as far as I can see. Actually I don't know what to expect, but doesn't that mean that I should have to switch to indirect mode in order to be able to drop large files to save space? 
+
+Funny is that git annex drop did not complain at all but just reported \"ok\" after quite a while. And when I tried to drop a file that was not available in any other repository, it failed (which is expected behavior). So what is it what was \"ok\"?
+
+"""]]

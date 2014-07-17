@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-04-06T21:13:44Z"
+ content="""
+I think this is a general git question, not specific to git-annex. At the point in time that you run `git clone` on the FAT filesystem, git-annex is not running at all.
+
+You could ask the git community about this. I know that git already has a core.precomposeunicode setting that is used to work around a somewhat similar problem on Mac OS.
+
+What git-annex *does* let you do is set up a [[directory_special_remote|special_remote/directory]] on the FAT filesystem. This way,
+there is no git repository there, and the filenames stored in git are not used at all on FAT. If your media player looks at mp3 metadata to get song titles, etc and doesn't care about the filenames at all, this would be a good option.
+"""]]

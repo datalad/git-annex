@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 3"
+ date="2013-11-08T17:06:02Z"
+ content="""
+The webapp can use remotes that you have configured at the command line just as well as it can use remotes you configure using the webapp.
+
+Each file only gets backed up to one incremental backup repository. If you have a full backup repository it will (try to) get another copy of every single file.
+"""]]

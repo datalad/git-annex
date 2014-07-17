@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.172"
+ subject="comment 1"
+ date="2014-02-21T17:36:03Z"
+ content="""
+Marking a repository as dead does not mean it is deleted. The way this is supposed to work, using the webapp is you tell it to start deleting the repository, which causes it to mark it as dead, and also, crucially, puts it into the \"unwanted\" group. This does not remove it from the list yet, but it causes all files located in the repository to be moved off it (assuming the repository can still be accessed).
+
+Then once the webapp detects that the repository is empty it will prompt you to continue the deletion process and truely remove it. It can take quite a while for the webapp to get around to this last step, since it's done during the expensive transfer scan, which it tries to avoid running unnecessarily.
+
+In any case, you can always edit .git/config and delete the remote, which should make the webapp no longer show it, as long as it's marked as dead.
+"""]]

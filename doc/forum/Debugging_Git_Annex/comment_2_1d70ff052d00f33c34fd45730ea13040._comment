@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlYu7QmD7wrbHWkoxuriaA9XcijM-g5vrQ"
+ nickname="Royal"
+ subject="comment 2"
+ date="2012-06-05T17:19:16Z"
+ content="""
+Hi,
+
+I want to replace rsync with aspera-rsync. Whenever there is file transfer between 2 repositories which are in two different hosts, git-annex will use rsync protocol. I am trying to replace that rsync call with aspera-rsync so that transfer can be more faster. Since I am new to Haskell I am finding difficulties to understand the flow of execution. Is there any way I can debug so that I can get the flow?
+
+Thanks
+"""]]

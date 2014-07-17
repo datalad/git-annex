@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~alphapapa"
+ nickname="alphapapa"
+ subject="ionice not supported by deadline scheduler"
+ date="2013-06-28T17:43:47Z"
+ content="""
+Linux's deadline I/O scheduler does not support ionice.  It is now the default on some distros, including Ubuntu.  CFQ does support ionice.
+"""]]

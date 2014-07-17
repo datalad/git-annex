@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 4"
+ date="2013-11-06T15:09:19Z"
+ content="""
+Intriguing -- I was able to reproduce this bug after installing the Ubuntu server ISO in a VM.
+
+Which is really strange, the only difference between this and my debootstrapped chroot should be the kernel..
+"""]]

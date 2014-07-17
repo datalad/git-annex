@@ -1,0 +1,92 @@
+If you do nothing else, avoid use of partial functions from the Prelude!
+`import Utility.PartialPrelude` helps avoid this by defining conflicting
+functions for all the common ones. Also avoid `!!`, it's partial too.
+
+Use tabs for indentation. The one exception to this rule are
+the Hamlet format files in `templates/*`. Hamlet, infuriatingly, refuses
+to allow tabs to be used for indentation.
+
+Code should make sense with any tab stop setting, but 8 space tabs are
+the default. With 8 space tabs, code should not exceed 80 characters
+per line. (With larger tabs, it may of course.)
+
+Use spaces for layout. For example, here spaces (indicated with `.`)
+are used after the initial tab to make the third test line up with
+the others.
+
+		when (foo_test || bar_test ||
+		......some_other_long_test)
+			print "hi"
+
+As a special Haskell-specific rule, "where" clauses are indented with two
+spaces, rather than a tab. This makes them stand out from the main body
+of the function, and avoids excessive indentation of the where cause content.
+The definitions within the where clause should be put on separate lines,
+each indented with a tab.
+
+	main = do
+		foo
+		bar
+		foo
+	  where
+		foo = ...
+		bar = ...
+
+Where clauses for instance definitions and modules tend to appear at the end
+of a line, rather than on a separate line.
+
+	module Foo (Foo, mkFoo, unFoo) where
+	instance MonadBaseControl IO Annex where
+
+When a function's type signature needs to be wrapped to another line,
+it's typical to switch to displaying one parameter per line.
+
+	foo :: Bar -> Baz -> (Bar -> Baz) -> IO Baz
+
+	foo'
+		:: Bar
+		-> Baz
+		-> (Bar -> Baz)
+		-> IO Baz
+ 
+Note that the "::" then starts its own line. It is not put on the same
+line as the function name because then it would not be guaranteed to line
+up with the "->" at all tab width settings. Similarly, guards are put
+on their own lines:
+
+	splat i
+		| odd i = error "splat!"
+		| otherwise = i
+
+Multiline lists and record syntax are written with leading commas,
+that line up with the open and close punctuation.
+
+	list =
+		[ item1
+		, item2
+		, item3
+		]
+
+	foo = DataStructure
+		{ name = "bar"
+		, address = "baz"
+		}
+
+Module imports are separated into two blocks, one for third-party modules,
+and one for modules that are part of git-annex. (Additional blocks can be used
+if it makes sense.)
+
+Using tabs for indentation makes use of `let .. in` particularly tricky.
+There's no really good way to bind multiple names in a let clause with
+tab indentation. Instead, a where clause is typically used. To bind a single
+name in a let clause, this is sometimes used:
+
+	foo = let x = 42
+		in x + (x-1) + x
+
+-----
+
+If you feel that this coding style leads to excessive amounts of horizontal
+or vertical whitespace around your code, making it hard to fit enough of it
+on the screen, consider finding a better abstraction, so the code that
+does fit on the screen is easily understandable. ;)

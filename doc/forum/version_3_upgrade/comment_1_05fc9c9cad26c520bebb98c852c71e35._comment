@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2011-08-17T01:33:08Z"
+ content="""
+It's ok that `git pull` does not merge the git-annex branch. You can merge it with `git annex merge`, or it will be done
+automatically when you use other git-annex commands.
+
+If you use `git pull` and `git push` without any options, the defaults will make git pull and push the git-annex branch automatically.
+
+But if you're in the habit of doing `git push origin master`, that won't cause the git-annex branch to be pushed (use `git push origin git-annex` to manually push it then). Similarly, `git pull origin master` won't pull it. And also, the `remote.origin.fetch` setting in `.git/config` can be modified in ways that make `git pull` not automatically pull the git-annex branch. So those are the things to avoid after upgrade to v3, basically.
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmubB1Sj2rwFoVdZYvGV0ACaQUJQyiJXJI"
+ nickname="Paul"
+ subject="GTalk/XMPP"
+ date="2013-05-19T09:58:51Z"
+ content="""
+Google seems to be deprecating XMPP and GTalk. Can git-annex assistant use other XMPP services? And does it handle federation correctly?
+"""]]

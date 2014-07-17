@@ -1,0 +1,45 @@
+Over Christmas, I'm working on making the assistant support direct
+mode. I like to have a fairly detailed plan before starting this kind of
+job, but in this case, I don't. (Also I have a cold so planning? Meh.)
+This is a process of seeing what's broken in direct mode and fixing it.
+I don't know if it'll be easy or hard. Let's find out..
+
+* First, got direct mode adding of new files working. This was not hard, all the
+  pieces I needed were there. For now, it uses the same method as in
+  indirect mode to make sure nothing can modify the file while it's being
+  added.
+
+* An unexpected problem is that in its startup scan, the assistant runs
+  `git add --update` to detect and stage any deletions that happened
+  while it was not running. But in direct mode that also stages the full file
+  contents, so can't be used. Had to switch to using git plumbing to only
+  stage deleted files. Happily this also led to fixing a bug; deletions
+  were not always committed at startup when using the old method; with the
+  new method it can tell when there are deletions and trigger a commit.
+
+* Next, got it to commit when direct mode files are modified. The Watcher
+  thread gets a inotify event when this happens, so that was easy. (Although
+  in doing that I had to disable a guard in direct mode that made annexed
+  files co-exist with regular in-git files, so such mixed repositories
+  probably won't work in direct mode yet.)
+
+  However, naughty kqueue is another story, there are no kqueue events for
+  file modifications. So this won't work on OSX or the BSDs yet. I tried
+  setting some more kqueue flags in hope that one would make such events
+  appear, but no luck. Seems I will need to find some other method to detect
+  file modifications, possibly an OSX-specific API.
+
+* Another unexpected problem: When an assistant receives new files from one
+  of its remotes, in direct mode it still sets up symlinks to the content.
+  This was because the Merger thread didn't use the `sync` command's direct
+  mode aware merge code.. so fixed that.
+
+* Finally there was some direct mode bookeeping the assistant has
+  to get right. For example, when a file is modified, the old object has
+  to be looked up, and be marked as not locally present any longer. That
+  lookup relies on the already running `git cat-file --batch`, so it's
+  not as fast as it could be, if I kept a local cache of the mapping
+  between files and objects. But it seems fast enough for now.
+
+At this point the assistant seems to work in direct mode on Linux!
+Needs more testing..

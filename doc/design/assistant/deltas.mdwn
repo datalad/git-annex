@@ -1,0 +1,9 @@
+Speed up syncing of modified versions of existing files. 
+
+One simple way is to find the key of the old version of a file that's
+being transferred, so it can be used as the basis for rsync, or any
+other similar transfer protocol.
+
+For remotes that don't use rsync, a poor man's version could be had by
+chunking each object into multiple parts. Only modified parts need be
+transferred. Sort of sub-keys to the main key being stored.

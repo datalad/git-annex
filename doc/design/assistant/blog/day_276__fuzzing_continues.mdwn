@@ -1,0 +1,12 @@
+The fuzz testing found a file descriptor leak in the XMPP git push code.
+The assistant seems to hold up under fuzzing for quite a while now.
+
+Have started trying to work around some versions of Android not letting 
+the `am` command be used by regular users to open a web browser on an URL.
+Here is my current crazy plan: Hack the terminal emulator's title setting
+code, to get a new escape sequence that requests an URL be opened. This
+assumes I can just use `startActivity()` from inside the app and it will
+work. This may sound a little weird, but it avoids me needing to set up a
+new communications channel from the assistant to the Java app. Best of all,
+I have to write very little Java code. I last wrote Java code in 1995, so
+writing much more is probably a good thing to avoid.

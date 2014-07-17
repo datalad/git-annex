@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawln3ckqKx0x_xDZMYwa9Q1bn4I06oWjkog"
+ nickname="Michael"
+ subject="comment 7"
+ date="2013-07-18T21:48:06Z"
+ content="""
+If you wanted to auto-get files on git pull, you could trying putting git annex get into .git/hooks/post-merge (needs to be marked as executable).
+"""]]

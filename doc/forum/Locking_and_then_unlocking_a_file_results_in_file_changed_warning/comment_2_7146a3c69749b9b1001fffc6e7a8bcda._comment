@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmfVOIl06X7NKio-NBYZ-cfw5LFVqHMX8o"
+ nickname="Daniel"
+ subject="New git-annex package to blame"
+ date="2014-02-05T14:23:40Z"
+ content="""
+I downgraded my git-annex version, rechecked out the repository and now everything works.
+    $ git annex version
+    git-annex version: 4.20130827
+    build flags: Assistant Inotify
+
+"""]]

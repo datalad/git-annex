@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="http://kevwalke.myopenid.com/"
+ ip="94.175.38.180"
+ subject="thanks"
+ date="2012-09-01T14:44:58Z"
+ content="""
+That got rid of that error. However now I get the following at the last step:
+
+Linking dist/build/git-annex/git-annex ...
+Installing executable(s) in /home/kev/bin
+setup: git-annex.1: does not exist
+cabal: Error: some packages failed to install:
+git-annex-3.20120826 failed during the final install step. The exception was:
+ExitFailure 1
+
+There doesn't seem to be any failures further up the output just some warnings. All the other steps complete fine
+Thanks for any advice/pointers here
+-Kevin
+"""]]

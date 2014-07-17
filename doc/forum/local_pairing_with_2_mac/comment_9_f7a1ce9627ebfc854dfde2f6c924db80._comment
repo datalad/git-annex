@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 9"
+ date="2013-12-13T18:52:40Z"
+ content="""
+As a workaround, I have removed ssh-keygen and ssh from the OSX DMG. AIUI, OSX ships ssh by default anyway.
+"""]]

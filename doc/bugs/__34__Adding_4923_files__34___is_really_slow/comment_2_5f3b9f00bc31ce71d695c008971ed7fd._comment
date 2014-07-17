@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://emk.myopenid.com/"
+ ip="24.2.150.84"
+ subject="Interesting speedup"
+ date="2013-07-22T19:45:58Z"
+ content="""
+I noticed that there were a lot of junk files with names of the form \"._*\" in the \"music\" directory I had added. These are created by older MacOS X systems storing Mac-related files on Unix file systems. (I think they're supposed to contain the old resource fork or something weird like that.)
+
+So while the endless import was running, I decided to live dangerous and delete the offending files:
+
+    find music/ -name ._\* -print0 | xargs -0 rm
+
+A few seconds later, the 4,923 file import finished.
+
+If I discover anything else interesting, I'll mention it. Once again, many thanks!
+"""]]

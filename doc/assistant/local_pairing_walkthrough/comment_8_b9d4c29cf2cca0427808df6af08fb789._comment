@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 8"
+ date="2013-05-13T17:22:17Z"
+ content="""
+I don't understand how IPv6 could affect local pairing. The assistant does not currently do pairing over ipv6 due to a limitation in the multicast library it's using. 
+"""]]

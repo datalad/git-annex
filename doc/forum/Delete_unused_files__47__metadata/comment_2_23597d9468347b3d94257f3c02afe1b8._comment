@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 2"
+ date="2012-08-08T14:54:42Z"
+ content="""
+I'm sort of getting into the same issue as I run 'git-annex get .' and 'git annex sync' with one of the annexes that I have on a nightly basis to collect data for back up reasons. But it's good to know there is a work around for it.
+"""]]

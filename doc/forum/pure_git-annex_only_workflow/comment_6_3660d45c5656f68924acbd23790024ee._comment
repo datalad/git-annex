@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 6"
+ date="2011-12-13T20:53:23Z"
+ content="""
+It would be clearer to call \"git-annex-master\" \"synced/master\" (or really \"synced/$current_branch\"). That does highlight that this method of syncing is not particularly specific to git-annex.
+
+I think this would be annoying to those who do use a central bare repository, because of the unnecessary pushing and pulling to other repos, which could be expensive to do, especially if you have a lot of interconnected repos. So having a way to enable/disable it seems best.
+
+Maybe you should work up a patch to Command/Sync.hs, since I know you know haskell :)
+"""]]

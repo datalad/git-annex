@@ -1,0 +1,99 @@
+Spent yesterday and today making the WebApp handle adding removable drives.
+
+While it needs more testing, I think that it's now possible to use the WebApp
+for a complete sneakernet usage scenario.
+
+* Start up the webapp, let it make a local repo.
+* Add some files, by clicking to open the file manager, and dragging them in.
+* Plug in a drive, and tell the webapp to add it.
+* Wait while files sync..
+* Take the drive to another computer, and repeat the process there.
+
+No command-line needed, and files will automatically be synced between
+two or more computers using the drive.
+
+Sneakernet is only one usage scenario for the git-annex assistant, but I'm
+really happy to have one scenario 100% working!
+
+Indeed, since the assistant and webapp can now actually do something
+useful, I'll probably be merging them into `master` soon.
+
+Details follow..
+
+---
+
+So, yesterday's part of this was building the configuration page to add
+a removable drive. That needs to be as simple as possible, and it currently
+consists of a list of things git-annex thinks might be mount points of
+removable drives, along with how much free space they have. Pick a drive,
+click the pretty button, and away it goes..
+
+(I decided to make the page so simple it doesn't even ask where you want
+to put the directory on the removable drive. It always puts it in
+a "annex" directory. I might add an expert screen later, but experts can
+always set this up themselves at the command line too.)
+
+I also fought with Yesod and Bootstrap rather a lot to make the form look good.
+Didn't entirely succeed, and had to file a bug on Yesod about its handling of
+check boxes. (Bootstrap also has a bug, IMHO; its drop down lists are not
+always sized wide enough for their contents.)
+
+Ideally this configuration page would listen for mount events, and refresh
+its list. I may add that eventually; I didn't have a handy channel it
+could use to do that, so defferred it. Another idea is to have the mount
+event listener detect removable drives that don't have an annex on them yet,
+and pop up an alert with a link to this configuration page.
+
+----
+
+Making the form led to a somewhat interesting problem: How to tell if a mounted
+filesystem is a removable drive, or some random thing like `/proc` or
+a fuse filesystem. My answer, besides checking that the user can
+write to it, was various heuristics, which seem to work ok, at least here..
+
+[[!format haskell """
+               sane Mntent { mnt_dir = dir, mnt_fsname = dev }
+                        {- We want real disks like /dev/foo, not
+                         - dummy mount points like proc or tmpfs or
+                         - gvfs-fuse-daemon. -}
+                        | not ('/' `elem` dev) = False
+                        {- Just in case: These mount points are surely not
+                         - removable disks. -}
+                        | dir == "/" = False
+                        | dir == "/tmp" = False
+                        | dir == "/run/shm" = False
+                        | dir == "/run/lock" = False
+"""]]
+
+----
+
+Today I did all the gritty coding to make it create a git repository on the
+removable drive, and tell the Annex monad about it, and ensure it gets synced.
+
+As part of that, it detects when the removable drive's filesystem doesn't
+support symlinks, and makes a bare repository in that case. Another expert
+level config option that's left out for now is to always make a bare
+repository, or even to make a directory special remote rather than a git
+repository at all. (But directory special remotes cannot support the
+sneakernet use case by themselves...)
+
+----
+
+Another somewhat interesting problem was what to call the git remotes
+that it sets up on the removable drive and the local repository.
+Again this could have an expert-level configuration, but the defaults
+I chose are to use the hostname as the remote name on the removable drive,
+and to use the basename of the mount point of the removable drive as the 
+remote name in the local annex.
+
+----
+
+Originally, I had thought of this as cloning the repository to the drive.
+But, partly due to luck, I started out just doing a `git init` to make
+the repository (I had a function lying around to do that..).
+
+And as I worked on it some more, I realized this is not as simple as a
+clone. It's a bi-directional sync/merge, and indeed the removable drive may
+have all the data already in it, and the local repository have just been
+created. Handling all the edge cases of that (like, the local repository
+may not have a "master" branch yet..) was fun!

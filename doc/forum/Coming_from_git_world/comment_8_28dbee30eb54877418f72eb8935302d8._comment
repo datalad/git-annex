@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.235"
+ subject="comment 8"
+ date="2013-07-10T16:42:18Z"
+ content="""
+If gerrit is handling incoming ssh connections, it's probable running its own restricted shell. That shell would need to be configured to spawn git-annex-shell when asked to do so in order for git-annex to transfer files to that repository.
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 1"
+ date="2013-11-02T19:42:13Z"
+ content="""
+sshd was removed from the bundle because it's not needed for git-annex to be used on Android, and it would be very complicated to get it to work. (And would require rooting the device at least for port 22 and probably also since sshd needs to run as root generally.)
+
+If there are android ssh servers that let you choose which user to log in as, you could log in as the app_NN user corresponding to the git-annex android app, and have all the tools available, once you ran runshell. I belive there's also an equivilant to su on android that lets you change to an app_NN user, although you probably already need root.
+
+I think it's more usual to use adb in these situations.
+"""]]

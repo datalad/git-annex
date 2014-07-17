@@ -1,0 +1,19 @@
+Activity has been a bit low again this week. It seems to make sense to do
+weekly releases currently (rather than bi-monthly), and Thursday's
+release had only one new feature (Tahoe LAFS) and a bunch of bug fixes.
+
+Looks like git-annex will get back into Debian testing soon, after various
+fixes to make it build on all architectures again, and then the
+backport can be updated again too.
+
+I have been struggling with a problem with the OSX builds, which fail with
+a SIGKILL on some machines. It seems that homebrew likes to agressively
+optimise things it builds, and while I have had some success with its
+`--build-bottle` option, something in the gnutls stack used for XMPP is
+still over-optimised. Waiting to hear back from Kevin on cleaning up some
+optimised system libraries on the OSX host I use. (Is there some way to make
+a clean chrooot on OSX that can be accessed by a non-root user?)
+
+Today I did some minor work involving the --json switch, and also 
+a small change (well, under 300 line diff) allowing
+--all to be mixed with options like --copies and --in.

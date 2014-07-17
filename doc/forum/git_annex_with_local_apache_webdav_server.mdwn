@@ -1,0 +1,23 @@
+Hi, 
+
+trying to make git annex work locally with an apache webdav server.
+
+I have the webdav server working without issue on computers. When we try to init the repository there we get the following error:
+
+WEBDAV_USERNAME=user WEBDAV_PASSWORD=xxxxxx git annex initremote webdavtest type=webdav url=http://webdavserver/webdavsgare/annextest4 encryption=none 
+initremote webdavtest (testing WebDAV server...)
+
+git-annex: WebDAV failed to delete file: "Locked": user error
+failed
+git-annex: initremote: 1 failed
+
+
+Does anyone have any thoughts? I can post config of webdav if it helps, though the error I receive in the error_log of apache is as follows:
+
+This resource is locked and an "If:" header was not supplied to allow access to the resource.  [423, #0]
+
+but I can manage the files through command line, web interface and mounted drive with no issue.
+
+thank you in advance.
+
+Damien

@@ -1,0 +1,15 @@
+Pushed out a minor release of git-annex today, mostly to fix build problems
+on Debian. No strong reason to upgrade to it otherwise.
+
+Continued where I left off with the Git.Destroyer. Fixed quite a lot of
+edge cases where git repair failed due to things like a corrupted .git/HEAD
+file (this makes git think it's not in a git repository), corrupt
+git objects that have an unknown object type and so crash git hard, and
+an interesting failure mode where git fsck wants to allocate 116 GB of
+memory due to a corrupted object size header. Reported that last to the git
+list, as well as working around it.
+
+At the end of the day, I ran a test creating 10000 corrupt git
+repositories, and **all** of them were recovered! Any improvements will
+probably involve finding new ways to corrupt git repositories that my code
+can't think of. ;)

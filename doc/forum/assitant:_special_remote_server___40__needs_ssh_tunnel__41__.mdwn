@@ -1,0 +1,10 @@
+To connect to a remote server I have to tunnel it through a server I have access to. My .ssh/config for this connection looks like this:
+
+
+    Host server-at-home
+        HostName foo.bar.de
+        User foo
+        Port 222
+        ProxyCommand /usr/bin/ssh me@server-i-have-access-to /bin/nc -w 3700 %h %p
+
+Is it possible to create a connection using a similar configuration via the git-annex assistant?

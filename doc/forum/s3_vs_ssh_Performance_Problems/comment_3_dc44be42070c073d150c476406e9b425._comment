@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmBUR4O9mofxVbpb8JV9mEbVfIYv670uJo"
+ nickname="Justin"
+ subject="comment 3"
+ date="2013-11-22T20:21:11Z"
+ content="""
+Well it's not related to s3... that copy command won't even do any network traffic if there is nothing to copy.  I have a similarly configured annex with 4500 files and that command takes 10 seconds to run.
+
+I do remember there being a recent fix that reduced the algorithmic complexity of an operation, but I forget which.
+"""]]

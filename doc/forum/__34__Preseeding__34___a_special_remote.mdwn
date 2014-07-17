@@ -1,0 +1,5 @@
+I have a remote repository that I have yet to add as a remote into git-annex, but which already contains data that I want git-annex to manage. I already know what the SHA256 hashes and sizes of all the files are, and I can arrange them to match what git-annex will expect.
+
+Is there a way that I can tell git-annex about the presence of the data, to save me having to download and re-upload everything, in a way that is safe? What I want seems to be similar to "git annex reinject" but for special remotes (and I'll take care of the renaming), but I don't see anything in the manpage that looks likely.
+
+I can quite easily create and commit the symlinks with correctly predicted names in my master branch. Will git-annex will treat these correctly?

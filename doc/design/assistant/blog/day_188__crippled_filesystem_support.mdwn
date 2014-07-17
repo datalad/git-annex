@@ -1,0 +1,37 @@
+There are at least three problems with using git-annex
+on `/sdcard` on Android, or on a FAT filesystem, or on (to a first
+approximation) Windows:
+
+1. symlinks
+2. hard links
+3. unix permissions
+
+So, I've added an `annex.crippledfilesystem` setting. `git annex init` now
+probes to see if all three are supported, and if not, enables that, as well
+as direct mode.
+
+In crippled filesystem mode, all the permissions settings are skipped.
+Most of them are only used to lock down content in the annex in indirect
+mode anyway, so no great loss.
+
+There are several uses of hard links, most of which can be dealt with by
+making copies. The one use of permissions and hard links I absolutely
+needed to deal with was that they're used to lock down a file as it's being
+ingested into the annex. That can't be done on crippled filesystems, so I
+made it instead check the metadata of the file before and after to detect
+if it changed, the same way direct mode detects when files are modified.
+This is likely better than the old method anyway.
+
+The other reason files are hardlinked while they're being ingested is that
+this allows running lsof on a single directory of files that are in the
+process of being added, to detect if anything has them open for write.
+I still need to adjust the lsof check to work in crippled filesystem mode.
+It seems this won't make it much slower to run lsof on the whole repository.
+
+At this point, I can use git-annex with a repository on `/sdcard` or a FAT
+filesystem, and at least `git annex add` works. 
+
+Still several things on the TODO list before crippled filesystem mode is
+complete. The only one I'm scared about is making `git merge` do something
+sane when it wants to merge two trees full of symlinks, and the filesystem
+doesn't let it create a symlink..

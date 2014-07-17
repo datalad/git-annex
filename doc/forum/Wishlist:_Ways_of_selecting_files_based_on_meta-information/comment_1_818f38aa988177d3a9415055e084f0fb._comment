@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ subject="filtering based on git-commits"
+ date="2011-06-23T13:56:35Z"
+ content="""
+additional filter criteria could come from the git history:
+
+* `git annex get --touched-in HEAD~5..` to fetch what has recently been worked on
+* `git annex get --touched-by chrysn --touched-in version-1.0..HEAD` to fetch what i've been workin on recently (based on regexp or substring match in author; git experts could probably craft much more meaningful expressions)
+
+these options could also apply to `git annex find` -- actually, looking at the normal file system tools for such tasks, that might even be sufficient (think `git annex find --numcopies-gt 3 --present-on lanserver1 --drop` like `find -iname '*foo*' -delete`
+
+(i was about to open a new forum discussion for commit-based getting, but this is close enough to be usefully joint in a discussion)
+"""]]

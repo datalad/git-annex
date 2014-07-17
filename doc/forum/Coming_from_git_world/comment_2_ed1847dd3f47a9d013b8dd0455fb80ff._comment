@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.235"
+ subject="comment 2"
+ date="2013-07-08T20:18:27Z"
+ content="""
+And yes, you can use the same git repository for files added to git `git add file` and added to git annex `git annex add file`
+"""]]

@@ -1,0 +1,11 @@
+git-annex allows managing files with git, without checking the file
+contents into git. While that may seem paradoxical, it is useful when
+dealing with files larger than git can currently easily handle, whether due
+to limitations in memory, time, or disk space.
+
+[[!img assistant/thumbnail.png link=assistant align=right]]
+git-annex is designed for git users who love the command line.
+For everyone else, the [[git-annex assistant|assistant]] turns
+git-annex into an easy to use folder synchroniser.
+
+To get a feel for git-annex, see the [[walkthrough]].

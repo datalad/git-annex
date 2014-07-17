@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://cstork.org/"
+ nickname="Chris Stork"
+ subject="Using different git branches"
+ date="2014-01-14T09:12:19Z"
+ content="""
+This might not be practical (especially for a non-technical user) but wouldn't it be possible to share a (bare) git-annex repo for backup if the other non-bare repos use different branches of the same git repo? (These non-bare repos could also share their .git directory.) Hmm, I don't see this discussed much...
+"""]]

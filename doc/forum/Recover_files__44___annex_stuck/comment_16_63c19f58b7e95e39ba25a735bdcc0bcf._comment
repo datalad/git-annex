@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.203"
+ subject="comment 16"
+ date="2014-06-19T22:16:21Z"
+ content="""
+git-annex could be made to always use cp for local transfers, see Remote/Git.hs rsyncOrCopyFile and change `ifM (sameDeviceIds src dest) (docopy, dorsync)` to just `docopy`
+
+However, I doubt that will be a significant speedup. It's more likely that the overhead around copying a file and updating the location tracking etc adds up with millions of small files.
+"""]]

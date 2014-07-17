@@ -1,0 +1,23 @@
+Worked on making the assistant able to merge in existing encrypted
+git repositories from rsync.net.
+
+This had two parts. First, making the webapp UI where you click to enable a
+known special remote work with these encrypted repos. Secondly, handling
+the case where a user knows they have an encrypted repository on rsync.net,
+so enters in its hostname and path, but git-annex doesn't know about that
+special remote. The second case is important, for example, when the
+encrypted repository is a backup and you're restoring from it. It wouldn't
+do for the assistant, in that case, to make a *new* encrypted repo and
+push it over top of your backup!
+
+Handling that was a neat trick. It has to do quite a lot of probing, including
+downloading the whole encrypted git repo so it can decrypt it and merge it,
+to find out about the special remote configuration used for it. This all
+works with just 2 ssh connections, and only 1 ssh password prompt max.
+
+Next, on to generalizing this rsync.net specific code to work with
+arbitrary ssh servers!
+
+----
+
+Today's work was made possible by [RMS's vision 30 years ago](http://article.olduse.net/771@mit-eddie.UUCP).

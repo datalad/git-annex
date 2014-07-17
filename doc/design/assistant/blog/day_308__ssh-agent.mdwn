@@ -1,0 +1,16 @@
+Turns out ssh-agent is the cause of the unknown UUID bug! I got a tip
+about this from a user, and was quickly able to reproduce the bug that had
+eluded me so long. Anyone who has run `ssh-add` and is using ssh-agent
+would see the bug.
+
+It was easy enough to fix as it turns out. Just need to set IdentitiesOnly
+in .ssh/config where git-annex has set up its own IdentityFile to ensure
+that its special purpose ssh key is used rather than whatever key the
+ssh-agent has loaded into it. I do wonder why ssh behaves this way -- why
+would I set an IdentityFile for a host if I didn't want ssh to use it?
+
+Spent the rest of the day cleaning up after the bug. Since this affects so
+many people, I automated the clean up process. The webapp will
+detect repositories with this problem, and the user just has to click to
+clean up. It'll then correct their .ssh/config and re-enable the
+repository.

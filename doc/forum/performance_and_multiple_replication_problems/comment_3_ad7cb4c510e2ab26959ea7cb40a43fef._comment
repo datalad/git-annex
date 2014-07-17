@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnNqLKszWk9EoD4CDCqNXJRIklKFBCN1Ao"
+ nickname="maurizio"
+ subject="the startup check is not a small issue"
+ date="2014-02-25T11:37:15Z"
+ content="""
+I would like to add that this startup check has probably been a blocker for my use case for a long long time. I tried to use git-annex to synchronize a huge number of files, most of them never changing. My plan was to have a few tens of GB of data which more or less never change in an archive directory and then add from time to time new data (by batches of a few hundreds of files, each of them not necessarily very large) to the annex. Once this new data has been processed or otherwise become less immediately useful, it would be shifted to the archive. It would have been very useful to have such a setup, because the amount of data is too large to be replicated everywhere, especially on a laptop. After finding this post I finally understand that the seemingly never ending \"performing startup scan\" that I observed are probably not due to the assistant somehow hanging, contrary to what I thought. It seems it is just normal operation. The problem is that this normal operation makes it unusable for the use case I was considering, since it does not make much sense to have git-annex scanning about 10^6 files or links on every boot of a laptop. On my workstation this \"startup scan\" has now been running for close to one hour now and is not finished yet, this is not thinkable on laptop boot. 
+
+Maybe an analysis of how well git-annex operation scales with number of files should be part of the documentation, since \"large files\" is not the only issue when trying to sync different computers. One finds references to \"very large number of files\" about annex.queuesize, but \"very large\" has no clear meaning. One also finds a reference to \"1 million files\" being a bit of a git limitation on comments of a bug report <https://git-annex.branchable.com/bugs/Stress_test/>. 
+
+Orders of magnitude of the number of files that git-annex is supposed to be able to handle would be very useful. 
+
+
+"""]]

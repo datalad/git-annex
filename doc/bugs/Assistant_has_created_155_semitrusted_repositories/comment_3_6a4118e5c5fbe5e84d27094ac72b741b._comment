@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.64"
+ subject="comment 3"
+ date="2013-11-22T17:47:30Z"
+ content="""
+Any chance I could get a copy of this git repository? (Excluding the .git/annex part)
+
+Feel free to email me id@joeyh.name to arrange a secure transfer.
+
+Otherwise, I need to see what the git-annex:uuid.log file looked like before this happened to it. The corruption may have occurred progressively in several commits, or all at once.
+
+You might also still have some logs in `.git/annex/daemon.log*`, and sending those might help, assuming the strange messages you mentioned are logged in there.
+
+> 1384785215.389096s 1 0ab193eb-0c76-4559-a93c-2e30ed8630a8
+
+This is pretty weird thing to be in the uuid.log. The \"1\" makes me think this might be a scrambled version of what's normally stored in the trust.log:
+
+> 511f4722-63d5-11e1-8b26-1bb951ea9f7b 1 timestamp=1330630786.417597s
+
+This seems to be the same bug as [[bugs/non-repos in repositories list (+ other weird output) from git annex status]]
+"""]]

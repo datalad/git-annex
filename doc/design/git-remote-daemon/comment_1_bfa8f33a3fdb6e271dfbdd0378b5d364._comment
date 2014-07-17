@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://johan.kiviniemi.name/"
+ nickname="Johan"
+ subject="Rolling hash chunking"
+ date="2014-04-04T14:16:25Z"
+ content="""
+I am not sure which page is the best for this comment, but this one seems somewhat relevant.
+
+Given that a future telehash implementation may download files from multiple peers, it might be a good idea to download files in chunks, possibly in parallel. In this case, it might be a good idea to use a rolling hash for chunking (like rsync et al). [There is a package for that on Hackage](http://hackage.haskell.org/package/hash-0.2.0.1/docs/Data-Hash-Rolling.html).
+
+git-annex could store a list of chunk checksums in `.git/annex/objects/…/SHA….chunks` whenever the repository holds a copy of the file. The checksum list would be a small fraction of the file in size, but all the checksum lists for all the files in a repository might take up too much space to store in the `git-annex` branch.
+
+When getting an object, git-annex could first download the `.chunks` file from a remote/peer and then proceed to download missing chunks in a BitTorrent-like fashion.
+
+If git-annex has an idea about what locally present object might be an earlier version of the file, it could compare the checksum lists and only download the parts that have changed (à la rsync).
+"""]]

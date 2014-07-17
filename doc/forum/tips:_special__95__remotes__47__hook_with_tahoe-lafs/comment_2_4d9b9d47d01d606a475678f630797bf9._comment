@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 2"
+ date="2011-04-29T15:24:56Z"
+ content="""
+If `tahoe ls` outputs only the key, on its own line, and exits nonzero if it's not present, then I think you did the right thing.
+
+To remove a file, use `git annex move file --from tahoe` and then you can drop it locally.
+"""]]

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnfC02DTOZygFDDvvg0maRciYYMhEIFgkw"
+ nickname="Utku"
+ subject="comment 10"
+ date="2013-12-15T09:51:28Z"
+ content="""
+unfortunately, it is not working on the computer where ssh was not working
+I click an got annex and nothing seems to open
+I try to go on the system logs but I see nothing really obvious. The only log that may be related would be : 
+15/12/13 10:46:23,230 Dock[166]: find_shared_window: WID 21425
+15/12/13 10:46:23,230 Dock[166]: CGSGetWindowTags: Invalid window 0x53b1
+
+if you tell me where to look at I can give you something more useful. 
+
+"""]]

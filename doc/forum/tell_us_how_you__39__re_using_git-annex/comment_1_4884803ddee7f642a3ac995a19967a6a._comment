@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="http://mildred.fr/"
+ subject="just amazing"
+ date="2012-04-12T17:12:41Z"
+ content="""
+git-annex is just amazing. I just started using it and for once, I have hope to be able to organize my files a little better than now.
+
+Currently, I have a huge homedir. From time to time, I move file away in external hard drives, then forget about them. When I want to look at them back, I just can't because I have forgotten where they are. I have also a ton of files on those drives that I can't access because they are not indexed. With git-annex I have hope to put all of these files on a git repository. I will be able to see them everywhere, and find them when I need to.
+
+I might stop loosing files for once.
+
+I might avoid having multiple copies of the same things over and over again, without knowing so. and regain some more disk space.
+
+For the moment, I'm archiving my photographs. But there is one thing that might not go very well: directory hierarchies where everything is important (file owner, specific permissions, symlinks). I won't just be able to blindly annex all of these files. But for the moment I'll stick at archiving ocuments and it should be amazing.
+
+[Mildred](http://mildred.fr)
+"""]]

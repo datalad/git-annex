@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2011-04-03T16:39:35Z"
+ content="""
+I dunno about parrallel downloads -- eek! -- but there is at least room for improvement of what \"git annex get\" does when there are multiple remotes that have a file, and the one it decides to use is not available, or very slow, or whatever.
+"""]]

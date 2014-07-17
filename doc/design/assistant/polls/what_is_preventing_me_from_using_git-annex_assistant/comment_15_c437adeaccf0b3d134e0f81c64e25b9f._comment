@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~rubiojr"
+ nickname="rubiojr"
+ subject="direct mode still 'untrusted'?"
+ date="2013-01-15T14:23:22Z"
+ content="""
+BTW,
+
+Does this still apply?
+
+\"I'd like git annex direct to set the repository to untrusted, but I didn't do it. Partly because having git annex indirect set it back to semitrusted seems possibly wrong -- the user might not trust a repo even in indirect mode. Or might fully trust it. The docs will encourage users to set direct mode repos to untrusted -- in direct mode you're operating without large swathes of git-annex's carefully constructed safety net. (When the assistant later uses direct mode, it'll untrust the repository automatically.)\"
+
+http://git-annex.branchable.com/design/assistant/blog/day_151__direct_mode_toggle/
+"""]]

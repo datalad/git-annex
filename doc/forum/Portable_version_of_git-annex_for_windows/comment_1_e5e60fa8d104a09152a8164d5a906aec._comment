@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="rtwolf"
+ ip="69.165.155.234"
+ subject="comment 1"
+ date="2014-01-07T17:38:19Z"
+ content="""
+Seems windows version of git-annex only runs in direct mode so I got the dreaded \"fatal: this operation must be run in a work tree\" error. Ran \"git config core.bare false\" which fixed it.
+
+More info on direct mode: <http://git-annex.branchable.com/direct_mode/>
+"""]]

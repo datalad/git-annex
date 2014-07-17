@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmkBwMWvNKZZCge_YqobCSILPMeK6xbFw8"
+ nickname="develop"
+ subject="comment 6"
+ date="2013-09-12T21:49:05Z"
+ content="""
+That would probably do it. With other implementations(fuse mount) i've seen stalls and other bad behaviour with that DAV server.
+
+The owncloud hook doesn't have a timeout set. It probably should have one to prevent a total stall.
+"""]]

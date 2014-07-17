@@ -1,0 +1,34 @@
+After a `git annex copy --auto -t m3` I got this error:
+
+    (Recording state in git...)
+    error: unable to resolve reference refs/heads/git-annex: No such file or directory
+    fatal: Cannot lock the ref 'refs/heads/git-annex'.
+    git-annex: git [Param "update-ref",Param "refs/heads/git-annex",Param "d768b20f76ce40157214a713fb0ccb9cfc9134c2"] failed
+
+I did a `git annex sync m3` and got
+
+    [...]
+    push m3
+    Counting objects: 2976, done.
+    Delta compression using up to 2 threads.
+    Compressing objects: 100% (2052/2052), done.
+    Writing objects: 100% (2379/2379), 392.33 KiB, done.
+    Total 2379 (delta 1652), reused 460 (delta 316)
+    Auto packing the repository for optimum performance.
+    error: bad ref for refs/heads/git-annex
+    error: bad ref for refs/heads/git-annex
+    error: bad ref for refs/heads/git-annex
+    To /media/m3/annex
+    87c82c5..06219eb  git-annex -> synced/git-annex
+    be7ff5e..6625634  master -> synced/master
+    ok
+
+And then I ran the command git-annex was trying to run:
+
+    $ git update-ref refs/heads/git-annex d768b20f76ce40157214a713fb0ccb9cfc9134c2
+    error: Trying to write ref refs/heads/git-annex with nonexistent object d768b20f76ce40157214a713fb0ccb9cfc9134c2
+    fatal: Cannot update the ref 'refs/heads/git-annex'.
+
+`git fsck --full` gives no errors.
+
+What does this error mean?  Should I be worried?  Thanks.

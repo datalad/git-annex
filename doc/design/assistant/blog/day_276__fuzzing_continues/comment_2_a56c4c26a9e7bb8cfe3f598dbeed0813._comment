@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 2"
+ date="2013-05-29T16:30:20Z"
+ content="""
+The terminal has options to take the wake lock, and also the wifi lock, in its menu.
+
+Currently this has to be managed manually. The assistant does not try to deal with this.
+"""]]

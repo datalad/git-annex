@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://thkoch2001.myopenid.com/"
+ nickname="thkoch"
+ subject="pseudocode"
+ date="2013-08-14T04:58:22Z"
+ content="""
+lets say my local annex is in direct mode, then the following might already do what I want:
+
+cd $LOCAL_ANNEX
+rsync --recursive --delete $REMOTE .
+git annex add && git commit
+
+It would however be nice if I could do the same with an annex in indirect mode or even a bare annex.
+"""]]

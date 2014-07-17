@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.146"
+ subject="comment 5"
+ date="2014-03-06T18:14:37Z"
+ content="""
+auto-repair is only done if git fsck detects a problem. You can run git fsck yourself to see.
+"""]]

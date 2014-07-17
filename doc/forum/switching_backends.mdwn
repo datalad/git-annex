@@ -1,0 +1,12 @@
+so git annex migrate can switch a file from using one backend to the other.
+
+I've done that with a bunch of files.
+
+The old files should become "unused" right?  But they don't seem to be.  "git annex unused" still shows me only 2 unused files, and I've just migrated dozens of files from SHA256 to SHA256E.  
+
+Is it possible they're still "used" by other repos?  I have two other repos, one reached by SSH and one on a USB drive.  Neither one of them is "bare."  So maybe those files are still used by the "master" branches there, I thought... I went over and did "git annex sync" on each.  Still my newly migrated files are not showing up as "unused."  
+
+I'm worried that my repo is going to bloat with unused files with the SHA256 backend, which mysteriously do not show up as "unused" in git annex unused, if I migrate any more.
+
+any ideas what piece of the puzzle I could be missing here?
+

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="zardoz"
+ ip="78.49.247.112"
+ subject="comment 2"
+ date="2014-07-14T19:34:31Z"
+ content="""
+I suppose you misread something. Note that the 60s traversal was on the (slower) /external/ drive, and the 24minute traversal on the (faster) internal one, so if anything, the results become more pronounced because of the comparison.
+
+In the meantime I converted the internal drive to btrfs, and the traversal time on SATA is now 30s, as opposed to the >20min on ext.
+"""]]

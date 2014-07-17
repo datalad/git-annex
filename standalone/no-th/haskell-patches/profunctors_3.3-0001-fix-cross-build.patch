@@ -1,0 +1,26 @@
+From 392602f5ff14c0b5a801397d075ddcbcd890aa83 Mon Sep 17 00:00:00 2001
+From: Joey Hess <joey@kitenet.net>
+Date: Thu, 18 Apr 2013 17:50:59 -0400
+Subject: [PATCH] fix cross build
+
+---
+ src/Data/Profunctor/Unsafe.hs | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/src/Data/Profunctor/Unsafe.hs b/src/Data/Profunctor/Unsafe.hs
+index 025c7c4..0249274 100644
+--- a/src/Data/Profunctor/Unsafe.hs
++++ b/src/Data/Profunctor/Unsafe.hs
+@@ -40,9 +40,6 @@ import Data.Tagged
+ import Prelude hiding (id,(.),sequence)
+ import Unsafe.Coerce
+ 
+-{-# ANN module "Hlint: ignore Redundant lambda" #-}
+-{-# ANN module "Hlint: ignore Collapse lambdas" #-}
+-
+ infixr 9 #.
+ infixl 8 .#
+ 
+-- 
+1.8.2.rc3
+

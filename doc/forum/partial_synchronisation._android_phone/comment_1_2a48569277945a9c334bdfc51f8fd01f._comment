@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 1"
+ date="2013-12-29T21:57:05Z"
+ content="""
+You can either put a repository in manual mode, which requires you run `git annex get` etc to get just the files you want, or you can find or write a [[preferred_content]] expression that matches only the files you want in a repository, and then the assistant will make it contain only those.
+"""]]

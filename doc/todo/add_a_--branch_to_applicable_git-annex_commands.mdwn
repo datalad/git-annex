@@ -1,0 +1,2 @@
+My original use case was for using git-annex find from scripts, where I didn't want to depend on the branch 
+checked out at the time, but rather write something like "git annex find --branch=master $searchterms"

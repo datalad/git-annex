@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmbo-yMzW_lkBrS4ICNn5XMr8saYtI1_WY"
+ nickname="Douglas"
+ subject="Any further info regarding gitolite support?"
+ date="2013-11-14T03:20:31Z"
+ content="""
+We have reached the same point as the previous poster from 25 days ago. 
+$ git annex copy --to origin
+FATAL: suspicious characters loitering about 'git-annex-shell 'configlist' '/~/testing''
+
+  Remote origin does not have git-annex installed; setting remote.origin.annex-ignore
+git-annex: cannot determine uuid for origin
+
+Anyone actually have this working?
+"""]]

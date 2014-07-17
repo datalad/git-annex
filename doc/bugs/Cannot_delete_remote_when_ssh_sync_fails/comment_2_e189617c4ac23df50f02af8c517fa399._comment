@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmXtqLEfN6cGcF9gW_09QUDoRpsexSdRcM"
+ nickname="Thomas"
+ subject="comment 2"
+ date="2014-01-26T18:12:08Z"
+ content="""
+Unfortunately, upgrading did not fix it. I suppose, a restart of the remote server (ssh was just installed) would have been necessary. Instead, I just deleted the repository on the remote.
+
+Now my local repository was caught in a situation, where I couldn't upgrade the broken remote and I couldn't delete it either.
+
+By recreating the repository on the remote, I finally was able to get rid of the broken link, but I think the proper solution would be to have the ability to remove unsynced repositories.
+
+Thanks for the quick response!
+"""]]

@@ -1,0 +1,15 @@
+Solid day of working on repository recovery. Got `git recover-repository
+--force` working, which involves fixing up branches that refer to missing
+objects. Mostly straightforward traversal of git commits, trees, blobs, to
+find when a branch has a problem, and identify an old version of it that
+predates the missing object. (Can also find them in the reflog.) 
+
+The main complication turned out to be that `git branch -D` and `git
+show-ref` don't behave very well when the commit objects pointed to by refs
+are themselves missing. And git has no low-level plumbing that avoids
+falling over these problems, so I had to write it myself.
+
+Testing has turned up one unexpected problem: Git's index can itself refer
+to missing objects, and that will break future commits, etc. So I need to
+find a way to validate the index, and when it's got problems,
+either throw it out, or possibly recover some of the staged data from it.

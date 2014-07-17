@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.64"
+ subject="comment 10"
+ date="2013-12-03T18:05:11Z"
+ content="""
+It's normal for the git-annex assistant to keep a couple of long-running git cat-file and git check-attr processes running at all times. So I'd not worry about that.
+
+I received the emailed tarball of uuid.log versions. (message-id CAL5AKQq9i4QwReWHZkKOm1Ggon66FqFkjbM832PP1drgiR3x5g@mail.gmail.com)
+
+Can you show the command you used to dump those files? Because the contents of them is really quite weird. 
+
+Take file 0, which I'm guessing might be the first version of the uuid.log. It starts off with what I'd expect to see in a uuid.log, but then has a section of what looks like trust.log data, followed by what is certianly supposed to be remote.log data, followed by what looks like `git show 966ec7aaf408dffe0d6e6ce04aebc15dc5b26f5b`, a commit which apparently was made by \"Firstname.Lastname@somedomain.com\" (unless you anonymized that) and added a file `test` to the git repository.
+
+It gets worse, some of the versions of the uuid.log file appear to be megabytes in size, which is just insane, and these contain more such apparent `git show` of git commits adding files to the repository.
+
+The general pattern of uuid.log data +trust.log data + remote.log data + git show of a commit seems to repeat in each version of the uuid.log file.
+"""]]

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://dieter-be.myopenid.com/"
+ nickname="dieter"
+ subject="comment 3"
+ date="2011-04-02T20:24:33Z"
+ content="""
+ * why the `git remote add laptop ~/annex` ? this remote already exists under the name origin.
+ * doesn't the last command need to be `git remote add usbdrive /media/usb/annex`? because the actual repo would be in /media/usb/annex, not /media/usb?
+"""]]

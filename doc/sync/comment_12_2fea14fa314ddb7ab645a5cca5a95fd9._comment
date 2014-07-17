@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://mshri.livejournal.com/"
+ ip="129.170.212.202"
+ subject="Sync specific branch or ignore a branch during sync"
+ date="2014-04-25T15:37:53Z"
+ content="""
+
+I too feel that syncing all remotes by default is the right thing to do, but I think it should be limited to the 'master' and 'git-annex' branch. I often create branches that I want to keep local and do not want them to be synced. But I want 'master' and 'git-annex' branches to be synced with all remotes.
+
+So it would be nice to able to set an option to sync all branches or just the 'master' and 'git-annex' or to able to ignore some branches during git annex sync
+
+Shri
+
+"""]]

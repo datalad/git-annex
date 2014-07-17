@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.35"
+ subject="comment 1"
+ date="2014-01-06T18:38:51Z"
+ content="""
+If the file was modified, git-annex should notice and add the new version. So the mere act of modifying the file does not explain how you ended up with a symlink to the old version of the file. Although it does explain why git-annex log would show that the old version of the file had been deleted.
+
+What does `git log` say when run on the workspace.xml file?
+
+"""]]

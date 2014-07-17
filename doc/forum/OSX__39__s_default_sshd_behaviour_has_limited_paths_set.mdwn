@@ -1,0 +1,12 @@
+This is a tip for users who wish to use remotes which are based on OSX systems and have used macports to install some of the required utilities for git-annex to work.
+
+The default behaviour of OSX's sshd is to have a "highly restricted" restricted environment. The defaults that it allows is
+
+    jtang@x00:~ $ ssh x00 echo \$PATH
+    /usr/bin:/bin:/usr/sbin:/sbin
+
+One solution is to enable *PermitUserEnvironment yes* in `/etc/sshd_config` and then in your own `~/.ssh/environment` file you could add something like (the below is an example)
+
+    PATH=/Users/jtang/bin:/opt/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/X11/bin:/usr/X11/bin:/Users/jtang/.cabal/bin:/opt/local/libexec/gnubin
+
+If the above is not done, cloning from the OSX host will fail if git is not installed in /usr/bin (which it probably won't be).

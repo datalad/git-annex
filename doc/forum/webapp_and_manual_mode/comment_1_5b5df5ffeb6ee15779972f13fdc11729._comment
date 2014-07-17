@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.140"
+ subject="comment 1"
+ date="2013-07-21T17:17:58Z"
+ content="""
+Setting a repository to manual mode prevents the assistant from transferring new files into that repository. You have to manually run `git annex get`.
+
+To prevent the assistant from automatically adding files, you can click the pause button next to the current repository in the webapp.
+"""]]

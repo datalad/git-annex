@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnkBYpLu_NOj7Uq0-acvLgWhxF8AUEIJbo"
+ nickname="Chris"
+ subject="comment 2"
+ date="2013-05-10T04:01:38Z"
+ content="""
+After reading [this](http://git-annex.branchable.com/internals/):
+
+> Also in direct mode, some additional data is stored in these directories. .cache files contain cached file stats used in detecting when a file has changed, and .map files contain a list of file(s) in the work directory that contain the key.
+
+I decided that indeed, deleting the `.map` and `.cache` files should do the trick, so I deleted them and direct mode works again.
+
+Still not sure what went wrong with the original sync, but at least I got things back on track.
+"""]]

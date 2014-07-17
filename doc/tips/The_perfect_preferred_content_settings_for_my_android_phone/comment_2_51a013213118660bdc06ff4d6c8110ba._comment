@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnXlmnJKsPulm2S_hwwRm3Ky27Zyf-wKMw"
+ nickname="Chad"
+ subject="Pulling *.flac files as well... too much data"
+ date="2013-12-31T19:26:36Z"
+ content="""
+I've tried setting up my own phone in a similar manner. Unfortunately for me, I store my `*.flac` files in the same location as my `*.mp3` files. For obvious reasons, I do not want to copy these up to my phone. This, however, is not working for me.
+
+    content PHONEUID = ((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1))) and (include=keepass/* or include=Books/* or present) and (include=Music/* and exclude=Music/*.flac and exclude=Music/*/*.flac)
+
+I still get `*.flac` files in the repo.
+"""]]

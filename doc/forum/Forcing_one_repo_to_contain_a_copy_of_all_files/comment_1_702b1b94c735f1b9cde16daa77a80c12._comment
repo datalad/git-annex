@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="99.54.57.201"
+ subject="comment 1"
+ date="2013-09-14T20:36:53Z"
+ content="""
+That is what the \"backup\" preferred content group is for.  Depending on how your repos connect to each other it might take some more trickery to make all content migrate to it, but that will make it \"want\" all the files if it can get them.
+"""]]

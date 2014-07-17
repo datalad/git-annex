@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.249"
+ subject="comment 2"
+ date="2014-01-21T02:23:00Z"
+ content="""
+I don't plan to remove .git/config annex.numcopies support. It is 5 lines of code. 
+
+A fundamental problem with the .git/config annex.numcopies setting is that it can be inconsistently set between repositories. Therefore, there is no worse potential with interoperability if you use differing versions of git-annex that support and do not support the new global numcopies setting. If this was a concern though, you can use .gitattributes to set annex.numcopies for *, which all recent versions of git-annex support.
+
+The old git/config annex.numcopies setting is overridden as soon as you use `git annex numcopies`. In turn `git annex numcopies` is overridden by any relevant .gitattributes annex.numcopies setting. This is documented on the man page.
+"""]]

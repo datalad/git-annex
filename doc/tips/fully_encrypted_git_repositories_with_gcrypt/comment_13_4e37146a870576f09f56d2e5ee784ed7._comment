@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="http://jspk.clavid.com/"
+ nickname="flabbergast"
+ subject="gcrypted repository structure"
+ date="2013-12-30T12:07:44Z"
+ content="""
+I'm a bit confused about how do the gcrypted repositories actually work with git-annex. As far as I can tell, using git-remote-gcrypt with pure git produces a directory containing a couple of files with names looking like hashes. These files contain the whole repository - I checked by cloning the encrypted repo.
+
+With git-annex: The instructions on this page suggest first creating a bare repo (creating a normal git repo layout). When I do this and then do the next step (`git annex initremote ...`) git-remote-gcrypt complains that the repository doesn't exist (which is correct from its point of view, as there is no encrypted repo yet) and creates a new one (so now there are both structures of a bare git repo _and_ an encrypted repo alongside in the same directory). The setup sort of works, but the bare git repo is never touched after that (or at least it shouldn't be, as it has nothing to do with the encrypted repo).
+
+I've tried also following the instructions, only skipping the first step entirely (ie. no bare repo created). As far as I can tell, git-remote-gcrypt will run \"fine\" (will create a new encrypted repo), but git-annex itself complains that \"could not lock config file \<dir\>/.git/config\" and quits. Interestingly enough, the following gets around this \"problem\" and also results in a working setup (`~/annex` is a git-annex repo).
+
+         cd ~/annex
+         mkdir -p /tmp/test/.git
+         touch /tmp/test/.git/config
+         git annex initremote encr type=gcrypt gitrepo=/tmp/test keyid=\"XXX\"
+         git annex sync encr
+
+Then `git clone gcrypt::/tmp/test restored` will successfully recover the whole git-annex repo into `restored`.
+
+So finally the question: is creating a bare git repo really necessary; and if not, is writing into `.git/config` necessary?
+
+"""]]

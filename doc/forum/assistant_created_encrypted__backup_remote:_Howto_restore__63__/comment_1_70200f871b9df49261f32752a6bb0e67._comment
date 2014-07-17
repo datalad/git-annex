@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 1"
+ date="2013-10-27T21:19:45Z"
+ content="""
+When you create an encrypted rsync repository using the webapp like that, its encryption key is stored in your git repository, using the [[shared encryption scheme|encryption#index2h2]]. No gpg key needs to be used to decrypt files from the rsync repository; anyone with a clone of your git repository can do so.  This has its plusses and its minuses; the webapp picks that type of encryption because it's easy to use.
+
+So, the answer is to just make a clone of your repository on the other machine, and then you can use it. There are lots of ways to do that; if you stay in the webapp, go to Add Another Repisitory and any of the \"Share with your other devices\", \"Share with a friend\", or \"Local computer\" options are easy ways to do it.
+
+----
+
+Now, if you had, manually, set up a rsync repository encrypted with the [[hybrid encryption key scheme|encryption#index1h2]], to access it from another computer with clone of the repository you would need to have a gpg key that has been given access to the repository. So you would either copy your gpg secret key to the other computer, or if you don't want to trust that other computer with the your main gpg key, you could make another gpg secret key for that computer, and add that key as one of the keys that can access the encrypted repository. (Or, if the computer belonged to a friend, you could just get their gpg key, and add it.)
+"""]]

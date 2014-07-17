@@ -1,0 +1,26 @@
+### Please describe the problem.
+
+`git annex merge` goes out of memory on a large repo.
+
+
+### What steps will reproduce the problem?
+
+    $ git annex merge
+    merge git-annex git-annex: out of memory (requested 1048576 bytes)
+
+### What version of git-annex are you using? On what operating system?
+
+    git-annex version: 4.20130827
+    build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP DNS
+
+On debian wheezy i386
+
+### Please provide any additional information below.
+
+The repository contains a lot of files:
+
+    $ cd .git/objects
+    $ find . -type f | wc -l 
+    1091548
+
+[[!tag moreinfo]]

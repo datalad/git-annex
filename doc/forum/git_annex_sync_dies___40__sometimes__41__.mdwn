@@ -1,0 +1,22 @@
+I've set up git annex on my laptop and on a remote server using the gitolite v3 git-annex branch.
+When I 'git annex sync' from my laptop (mac OSX) to the server, and 'git annex copy . --to server' all works fine.
+
+Later, I tried to clone the repository on another machine (linux 2.6.32). again all is well. I 'git annex init' in the new clone and then try to 'git annex sync' -- now I run into problems.
+
+Specifically, the first request for the configlist (when I do 'git annex --debug sync' all is fine until the configlist request) somehow breaks and my ssh session shows:
+
+muxserver_listen bind(): Input/output error
+
+This seems to confuse the client, who now believes that git annex is not installed on the server (it is).
+
+If I issue the same command as git annex via ssh, all seems to work ok with the caveats below:
+
+I have a feeling it's related to the -o 'ControlPersist=yes' argument that git-annex appears to be giving ssh.  If I include this option when I run via ssh, ssh dies:
+
+>ssh git@server -o "ControlMaster=auto" -o "ControlPersist=yes" "git-annex-shell 'configlist' '/~/PRJ'"
+command-line: line 0: Bad configuration option: ControlPersist
+
+
+(note that it appears to be ok to leave "ControlMaster=auto" in).
+
+any thoughts?

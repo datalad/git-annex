@@ -1,0 +1,39 @@
+Currently, when `fsck`'ing a remote, files are first downloaded to a temporary 
+file locally, decrypted if needed, and finally digested; the temporary file is
+then either thrown away, or quarantined, depending on the value of that digest.
+
+Whereas this approach works with any kind of remote, in the particular case 
+where the user is granted execution rights on the digest command, one could
+avoid cluttering the network and digest the file remotely. I propose the
+addition of a per-remote git option `annex-remote-fsck` to switch between the
+two behaviors.
+
+
+There is an issue with encrypted specialremotes, though. As hinted at 
+[[here|tips/beware_of_SSD_wear_when_doing_fsck_on_large_special_remotes/#comment-70055f166f7eeca976021d24a736b471]],
+since the digest of a ciphertext can't be deduced from that of a plaintext in 
+general one would needs, before sending an encrypted file to such a remote, to
+digest it and store that digest somewhere (together with the cipher's size and
+perhaps other meta-information).
+
+The usual directory structure (`.../.../{backend}-s{size}--{digest}.log`) seems
+perfectly suitable to store these informations. Lines there would look like
+`{timestamp}s {numcopy} {UUID} {remote digest}`. Of course, it implies that
+remote digest commands are trustworthy (are doing the right thing), and that
+the digest output are not tampered by others who have access to the git repo.
+But that's outside the current threat model, I guess.
+
+Actually, since git-annex always includes a MDC in the ciphertexts, we could do
+something clever and even avoid running a digest algorithm. According to the
+[[OpenPGP standard|https://tools.ietf.org/html/rfc4880#section-5.14]] the MDC
+is essentially a SHA-1 hash of the plaintext. I'm still investigating if it's
+even possible, but in theory it would be enough (with non-chained ciphers at
+least) to download a few bytes from the encrypted remote, decrypt those bytes
+to retrieve the hash, and compare that hash with the known value. Of course
+there is a downside here, namely that files tampered anywhere but on the MDC
+packets would not be detected by `fsck` (but gpg will warn when decrypting the
+file).
+
+
+My 2 cents :-) Is there something I missed? I suppose there was a reason to 
+perform `fsck` locally at the first place...

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 6"
+ date="2013-11-06T16:40:57Z"
+ content="""
+Ubuntu bug report about this: <https://bugs.launchpad.net/ubuntu/+source/git-annex/+bug/1248623>
+
+It should be pretty easy to backport the fix to the version in Ubuntu. The relevant git commits are ee23be55fd3e7e202bc721c124f78b79d1aba6df and 81117e8a9d19d4739d3773d0515006e1ea41c266
+"""]]

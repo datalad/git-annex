@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 3"
+ date="2011-03-16T03:01:17Z"
+ content="""
+Whups, the comment above got stuck in moderation queue for 27 days. I will try to check that more frequently.
+
+In the meantime, I've implemented \"git annex whereis\" -- enjoy!
+
+I find keeping my podcasts in the annex useful because it allows me to download individual episodes or poscasts easily when low bandwidth is available (ie, dialup), or over sneakernet. And generally keeps everything organised.
+"""]]

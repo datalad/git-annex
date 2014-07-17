@@ -1,0 +1,9 @@
+I've been using git-annex locally for a couple months. So far I've only used it to keep track of files on my laptop and local usb hard drives. Now I would like to add a network into the picture, and hopefully start to move away from Dropbox.
+
+I have Dropbox on two computers: my home machine and my work machine. The home machine is only on when I'm at home and the work machine is only on when I'm at work, so the computers are never on at the same time and thus can never communicate directly. What are my options for keeping annexes on these two machines in sync?
+
+Initially I was hoping that I could use an S3 special remote for this, but I see that special remotes only hold the actual file data, not any of the git stuff. So I can't push my changes to S3 at work and then pull those changes in at home.
+
+From what I can tell from the documentation, the only way I can handle this problem is to have an annex sitting on a VPS or someplace that both my home and work machines can talk to. Is that correct? That would be ok, but if I'm going to put my annex out there in the cloud somewhere, I want the files to be encrypted. It looks like git-annex only supports encryption of file data with special remotes, not a full annex. Is there no way to have some sort of encrypted git-annex hub?
+
+I backed the assistant and have been following the development blog, but I haven't tried it out yet. Am I correct in thinking that nothing in the assistant will address this particular issue?

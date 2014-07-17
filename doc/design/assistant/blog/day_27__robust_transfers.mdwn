@@ -1,0 +1,31 @@
+Spent most of the day making file content transfers robust. There were lots
+of bugs, hopefully I've fixed most of them. It seems to work well now,
+even when I throw a lot of files at it.
+
+One of the changes also sped up transfers; it no longer roundtrips to the
+remote to verify it has a file. The idea here is that when the assistant is
+running, repos should typically be fairly tightly synced to their remotes
+by it, so some of the extra checks that the `move` command does are
+unnecessary.
+
+Also spent some time trying to use ghc's threaded runtime, but continue to
+be baffled by the random hangs when using it. This needs fixing eventually;
+all the assistant's threads can potentially be blocked when it's waiting on
+an external command it has run.
+
+Also changed how transfer info files are locked. The lock file is now
+separate from the info file, which allows the TransferWatcher thread to
+notice when an info file is created, and thus actually track transfers
+initiated by remotes.
+
+---
+
+I'm fairly close now to merging the `assistant` branch into `master`.
+The data syncing code is very brute-force, but it will work well enough
+for a first cut.
+
+Next I can either add some repository network mapping, and use graph
+analysis to reduce the number of data transfers, or I can move on to the
+[[webapp]]. Not sure yet which I'll do. It's likely that since DebConf
+begins tomorrow I'll put off either of those big things until after the
+conference.

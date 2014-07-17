@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.21"
+ subject="use the force"
+ date="2013-07-31T16:20:39Z"
+ content="""
+The only way it can skip downloading a file is if its url has already been seen before. Perhaps you deleted them?
+
+I've made `importfeed --force` re-download files it's seen before.
+"""]]

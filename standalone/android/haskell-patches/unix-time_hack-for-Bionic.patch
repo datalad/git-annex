@@ -1,0 +1,69 @@
+From add5feeb9ee9b4ffa1b43e4ba04b63e5ac2bfaf7 Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Mon, 14 Jul 2014 20:45:24 +0000
+Subject: [PATCH] hack for bionic
+
+---
+ Data/UnixTime/Types.hsc |   12 ------------
+ cbits/conv.c            |    2 +-
+ unix-time.cabal         |    1 -
+ 3 files changed, 1 insertion(+), 14 deletions(-)
+
+diff --git a/Data/UnixTime/Types.hsc b/Data/UnixTime/Types.hsc
+index 2ad0623..04fd766 100644
+--- a/Data/UnixTime/Types.hsc
++++ b/Data/UnixTime/Types.hsc
+@@ -12,8 +12,6 @@ import Data.Binary
+ 
+ #include <sys/time.h>
+ 
+-#let alignment t = "%lu", (unsigned long)offsetof(struct {char x__; t (y__); }, y__)
+-
+ -- |
+ -- Data structure for Unix time.
+ data UnixTime = UnixTime {
+@@ -23,16 +21,6 @@ data UnixTime = UnixTime {
+   , utMicroSeconds :: {-# UNPACK #-} !Int32
+   } deriving (Eq,Ord,Show)
+ 
+-instance Storable UnixTime where
+-    sizeOf _    = (#size struct timeval)
+-    alignment _ = (#alignment struct timeval)
+-    peek ptr    = UnixTime
+-            <$> (#peek struct timeval, tv_sec)  ptr
+-            <*> (#peek struct timeval, tv_usec) ptr
+-    poke ptr ut = do
+-            (#poke struct timeval, tv_sec)  ptr (utSeconds ut)
+-            (#poke struct timeval, tv_usec) ptr (utMicroSeconds ut)
+-
+ #if __GLASGOW_HASKELL__ >= 704
+ instance Binary UnixTime where
+         put (UnixTime (CTime sec) msec) = do
+diff --git a/cbits/conv.c b/cbits/conv.c
+index ec31fef..b7bc0f9 100644
+--- a/cbits/conv.c
++++ b/cbits/conv.c
+@@ -96,7 +96,7 @@ time_t c_parse_unix_time_gmt(char *fmt, char *src) {
+ #else
+     strptime(src, fmt, &dst);
+ #endif
+-    return timegm(&dst);
++    return NULL; /* timegm(&dst); (not in Bionic) */
+ }
+ 
+ size_t c_format_unix_time(char *fmt, time_t src, char* dst, int siz) {
+diff --git a/unix-time.cabal b/unix-time.cabal
+index 5de3f7c..7a0c244 100644
+--- a/unix-time.cabal
++++ b/unix-time.cabal
+@@ -15,7 +15,6 @@ Extra-Tmp-Files:        config.log config.status autom4te.cache cbits/config.h
+ Library
+   Default-Language:     Haskell2010
+   GHC-Options:          -Wall
+-  CC-Options:           -fPIC
+   Exposed-Modules:      Data.UnixTime
+   Other-Modules:        Data.UnixTime.Conv
+                         Data.UnixTime.Diff
+-- 
+1.7.10.4
+

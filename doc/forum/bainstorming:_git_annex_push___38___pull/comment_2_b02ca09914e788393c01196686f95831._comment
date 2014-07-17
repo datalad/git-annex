@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 2"
+ date="2011-04-05T20:52:52Z"
+ content="""
+No-so-subtle sarcasm taken and acknowledged :)
+
+Arguably, git-annex should know about any local limits and not have them implemented via mr from the outside. I guess my concern boils down to having git-annex do the right thing all by itself with minimal user interaction. And while I really do appreciate the flexibility of chaining commands, I am a firm believer in exposing the common use cases as easily as possible.
+
+And yes, I am fully aware that not all annexes are created equal. Point in case, I would never use git annex pull on my laptop, but I would git annex push extensively.
+
+
+"""]]

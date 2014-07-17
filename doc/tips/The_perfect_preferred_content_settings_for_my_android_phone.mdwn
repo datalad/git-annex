@@ -1,0 +1,36 @@
+I have an annex that syncs my personal files on all my computers. It works great. Phones are different.
+
+For one, everything's a bit slower to sync, there's battery considerations, and I just don't need every last old file on my phone. Then there's some files I explicitly don't want on my phone in case it gets lost, like family pictures, passport scans, or private keys.
+
+But I still want photos, videos and voice recordings I make on my phone to be synced to my server. A transfer repo would work, but I want to keep them. Then there's my PDF book collection; that would certainly be nice to always have around in case I have half on hour on a bus. And my music collection ought to be around as well.
+
+So I came up with this solution, and I'm very happy with it.
+
+    include=Music/* or include=Books/* or present
+
+This will sync my music and book collections to my phone whenever I add something new on my computers, and it will sync and keep anything I add to the annex on my phone. Best of all worlds! Impressed how flexible preferred content is. More full-sync folders can be added like this: 
+
+    include=Music/* or include=Books/* or include = Notes/* or present
+
+To add them, I first had to figure out the uuid of my phone repo. So I added a new tab on android, and did
+
+    cd /sdcard/annex
+    git config annex.uuid
+
+Then I went to one of my computers, and did
+
+    git annex vicfg
+
+And changed the line
+
+    content [phone-uuid] = standard
+
+to
+
+    content [phone-uuid] = include=Music/* or include=Books/* or Notes/* or present
+
+and commented out
+
+    #group [phone-uuid] = client
+
+And waited for it to sync.

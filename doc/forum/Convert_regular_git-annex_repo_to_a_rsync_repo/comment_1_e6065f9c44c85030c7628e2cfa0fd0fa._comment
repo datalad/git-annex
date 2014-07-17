@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.172"
+ subject="comment 1"
+ date="2014-02-23T18:57:42Z"
+ content="""
+This is doable. It works best if the remote repo is a bare git repository, because then the filenames line up 100% with the filenames used in a rsync special remote. If the git repo is not bare, the rsync special remote will first try the paths it expects, and only then fall back to the right paths, so a little extra work done. (If this became a big problem, it would not be infesable to move the files around with a script.)
+
+Anyway, if it's a bare repo, then repo.git/annex/objects is where you want to point the rsync special remote at. With a non-bare repo, repo/.git/annex/objects/ is the location. I'd recommend moving the objects directory out to a new location, and pointing the rsyncurl at that. This way, there's no possibility of git-annex thinking one files accessed 2 ways is 2 copies.
+
+Of course, you can't use encryption for the rsync special remote.
+"""]]

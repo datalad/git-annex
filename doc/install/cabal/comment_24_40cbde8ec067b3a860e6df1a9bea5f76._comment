@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="RaspberryPie"
+ ip="37.130.227.133"
+ subject="comment 24"
+ date="2013-10-22T17:55:32Z"
+ content="""
+I fixed the error by installing a newer version of cryptohash. Thanks for pointing out the culprit. 
+"""]]

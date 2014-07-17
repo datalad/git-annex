@@ -1,0 +1,34 @@
+#What steps will reproduce the problem?
+
+Running assistant in foreground on one repository that is paired to another repository, than killing it using CTRL-C and restarting it
+
+
+#What is the expected output? What do you see instead?
+
+I get messages like:
+
+    (Recording state in git...)
+    # Auf Zweig master
+    # Änderungen, die nicht zum Eintragen bereitgestellt sind:
+    #   (benutze "git add/rm <Datei>..." zum Bereitstellen)
+    #   (benutze "git checkout -- <Datei>..." um die Änderungen im Arbeitsverzeichnis zu verwerfen)
+    #
+    #       gelöscht:    "path/to/file"
+    #
+    keine Änderungen zum Eintragen hinzugefügt (benutze "git add" und/oder "git commit -a")
+    Total 0 (delta 0), reused 0 (delta 0)
+    To ssh://stormking@git-annex-volyova-stormking/data/repository/
+       4e2c631..911b80c  git-annex -> synced/git-annex
+    
+    Already up-to-date.
+
+Sorry for the german language, I'll try to reproduce it in english, later.
+After that, the symlinks for the file in the repository are gone. I can get
+them back by reverting the commit but things like that make me very nervous.
+
+
+#What version of git-annex are you using? On what operating system?
+
+3.20130102 on Arch Linux x64
+
+[[!tag /design/assistant moreinfo]]

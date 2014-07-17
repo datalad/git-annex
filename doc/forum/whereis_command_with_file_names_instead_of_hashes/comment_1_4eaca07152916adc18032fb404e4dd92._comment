@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://ypid.wordpress.com/"
+ ip="213.153.84.215"
+ subject="-A  --all      operate on all versions of all files"
+ date="2014-07-07T07:42:03Z"
+ content="""
+Hi
+
+`-A` operates on all the files even on files which are not accessible from your current working directory. If you omit the `-A` then filenames will be printed.
+"""]]

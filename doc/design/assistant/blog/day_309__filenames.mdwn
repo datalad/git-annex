@@ -1,0 +1,17 @@
+Today was a nice reminder that there are no end of bugs lurking in filename
+handling code. 
+
+First, fixed a bug that prevented git-annex from adding
+filenames starting with ":", because that is a special character to git.
+
+Second, discovered that git 1.8.4 rc0 has changed `git-cat-file --batch` in
+a way that makes it impossible to operate on filenames containing spaces.
+This is, IMHO, a reversion, so hopefully my
+[bug report](http://bugs.debian.org/718517) will get it fixed.
+
+Put in a workaround for that, although using the broken version of git
+with a direct mode repository with lots of spaces in file or directory
+names is going to really slow down git-annex, since it often has to fork a
+new git cat-file process for each file.
+
+Release day tomorrow..

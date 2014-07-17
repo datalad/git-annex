@@ -1,0 +1,8 @@
+Released the first git-annex with direct mode today. Notably, the assistant
+enables direct mode in repositories it creates. All builds are updated to
+3.20130102 now.
+
+My plan for this month is to fix whatever things currently might be
+preventing you from using the git-annex assistant. So bugfixes and
+whatever other important gaps need to be filled, but no major new
+feature developments.

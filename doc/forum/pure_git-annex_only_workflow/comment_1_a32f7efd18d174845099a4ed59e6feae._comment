@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2011-12-09T22:56:11Z"
+ content="""
+First, you need a bare git repository that you can push to, and pull from. This simplifies most git workflow.
+
+Secondly, I use [mr](http://kitenet.net/~joey/code/mr/), with this in `.mrconfig`:
+
+<pre>
+[DEFAULT]
+lib =
+        annexupdate() {
+                git commit -a -m update || true
+                git pull \"$@\"
+                git annex merge
+                git push || true
+        }
+
+[lib/sound]
+update = annexupdate
+[lib/big]
+update = annexupdate
+</pre>
+
+Which makes \"mr update\" in repositories where I rarely care about git details take care of syncing my changes.
+
+I also make \"mr update\" do a \"git annex get\" of some files in some repositories that I want to always populate. git-annex and mr go well together. :)
+
+Perhaps my annexupdate above should be available as \"git annex sync\"?
+"""]]

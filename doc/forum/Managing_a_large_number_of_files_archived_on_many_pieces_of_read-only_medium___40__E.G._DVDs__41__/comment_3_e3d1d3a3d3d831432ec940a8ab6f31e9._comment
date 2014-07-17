@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://lj.rossia.org/users/imz/"
+ ip="79.165.57.104"
+ subject="Yes, I agree, such a special remote for free-form read-only media would be convnient."
+ date="2012-10-20T23:58:45Z"
+ content="""
+I have already stored a lot of large files on DVDs. I did that for arhiving, so I cared that there are several copies. But I want this to be more automated.
+
+I take my disc (or one created by someone else, without any knowledge of Git), checksum its contents in git-annex, and in the projects where I'm using this content, I can check that the file is archived on at least N discs.
+
+Also, I might enhance the content -- this would be refected in a Git commit, so then I want also to be able to check that the new version has also ben archived on severeal discs.
+
+A special remote for such free-form read-only media would be very convenient.
+"""]]

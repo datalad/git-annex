@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="basak"
+ ip="2001:8b0:1c8::2"
+ subject="Recovering from a clone"
+ date="2013-05-22T18:32:05Z"
+ content="""
+How do I recover a special remote from a clone, please? I see that `remote.log` has most of the details, but my remote is not configured on my clone and I see no obvious way to do it. And I used `embedcreds`, but the only credentials I can see are stored in .git/annex/creds/ so did not survive a clone. I'm confused because the documentation here for `embedcreds` says that clones should have access.
+
+As a workaround, it looks like copying the remote over from `.git/config` as well as the credentials from `.git/annex/creds/` seems to work. Is there some other way I'm supposed to do this, or is this the intended way?
+"""]]

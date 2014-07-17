@@ -1,0 +1,8 @@
+All repos contain some level of information about all other tracked repositories.
+It would be nice if I could see that info, preferably with a timestamp telling me when the last sync happened.
+
+`git annex info UUID/name` would be suggestion.
+
+
+Thanks,
+Richard

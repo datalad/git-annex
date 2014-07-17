@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.246.110"
+ subject="comment 1"
+ date="2013-07-28T00:09:45Z"
+ content="""
+Run:
+
+`git annex get $file`
+`git annex unannex $file`
+
+$file will now be back how it was before you used git-annex. Can also run above on whole directories.
+"""]]

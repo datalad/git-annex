@@ -1,0 +1,6 @@
+Finished the direct mode guard, including the new `git annex status`
+command.
+
+Spent the rest of the day working on various bug fixes. One of them turned
+into rather a lot of work to make the webapp's UI better for git
+remotes that do not have an annex.uuid.

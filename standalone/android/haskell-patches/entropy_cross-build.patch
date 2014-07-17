@@ -1,0 +1,25 @@
+From a3cc880bd06a8d7efda79339afa81e02decbd04b Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Mon, 14 Jul 2014 21:01:25 +0000
+Subject: [PATCH] fix cross build
+
+---
+ entropy.cabal |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/entropy.cabal b/entropy.cabal
+index 914d33a..9ab80f7 100644
+--- a/entropy.cabal
++++ b/entropy.cabal
+@@ -16,7 +16,7 @@ bug-reports:    https://github.com/TomMD/entropy/issues
+ stability:      stable
+ -- build-type:  Simple
+ -- ^^ Used for HaLVM
+-build-type:        Custom
++build-type:        Simple
+ -- ^^ Test for RDRAND support using 'ghc'
+ cabal-version:  >=1.10
+ tested-with:    GHC == 7.8.2
+-- 
+1.7.10.4
+

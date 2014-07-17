@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://www.joachim-breitner.de/"
+ nickname="nomeata"
+ subject="comment 2"
+ date="2011-12-10T16:28:29Z"
+ content="""
+Thanks for the tips so far. I guess a bare-only repo helps, but as well is something that I don’t _need_ (for my use case), any only have to do because git works like this.
+
+Also, if I have a mobile device that I want to push to, then I’d have to have two repositories on the device, as I might not be able to reach my main bare repository when traveling, but I cannot push to the „real“ repo on the mobile device from my computer. I guess I am spoiled by darcs, which will happily push to a checked out 
+remote repository, updating the checkout if possible without conflict.
+
+If I introduce a central bare repository to push to and from; I’d still have to have the other non-bare repos as remotes, so that git-annex will know about them and their files, right?
+
+I’d appreciate a \"git annex sync\" that does what you described (commit all, pull, merge, push). Especially if it comes in a \"git annex sync --all\" variant that syncs all reachable repositories.
+"""]]

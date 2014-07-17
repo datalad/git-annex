@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 1"
+ date="2012-12-30T23:01:39Z"
+ content="""
+You may want to use hop count, not ping times, for a rough guesstimate of distance.
+
+Generally speaking, this is a highly non-trivial problem that's subject to university research projects so unless you find a well-maintained third party tool to solve this problem, it's unlikely that you will find a truly general solution.
+
+Anyway, look into mtr for your distance measurements.
+
+
+Richard
+"""]]

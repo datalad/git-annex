@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmkBwMWvNKZZCge_YqobCSILPMeK6xbFw8"
+ nickname="TobiasTheViking"
+ subject="comment 7"
+ date="2013-12-31T18:20:32Z"
+ content="""
+I think the hook running anything in shell, to interact with git annex, is a mistake.
+
+I see a lot more potential pitfalls and mistakes(especially crossplatform). 
+
+It should be the existing git annex plumbing (preferred content) as you say. I just really think it should be configurable in the protocol, instead of a having to run a shell command. 
+
+Since you have made this advanced protocol i really see it as a mistake to do anything between the hook and git-annex outside of the protocol, it makes much more sense to have all their interactions happen within the protocol.
+
+IMO anyways.
+"""]]

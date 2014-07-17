@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnZEanlyzay_QlEAL0CWpyZcRTyN7vay8U"
+ nickname="Carlo"
+ subject="comment 6"
+ date="2013-11-19T09:48:26Z"
+ content="""
+Sorry, missed the comment.
+
+My work repo is the repository on my work laptop, where deletions got synced to.
+
+Git annex had then run repository repair automatically, so the odd symlinks where no longer there for me to check out.
+
+It is possible that I ran some git commands in direct mode I shouldn't have; I put the files back in and it's working nicely now. So this might have been a \"no direct mode guard\" issue.
+
+"""]]

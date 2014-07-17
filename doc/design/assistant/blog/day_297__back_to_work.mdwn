@@ -1,0 +1,16 @@
+It looks like I'm funded for at least the next 9 months! It would still be
+nice to get to a year. ;) <https://campaign.joeyh.name/>
+
+Working to get caught up on recent bug reports..
+
+Made `git annex uninit` not nuke anything that's left over in
+`.git/annex/objects` after unannexing all the files. After all, that could
+be important old versions of files or deleted file, and just because the
+user wants to stop using git-annex, doesn't mean git-annex shouldn't try to
+protect that data with its dying breath. So it prints out some suggestions
+in this case, and leaves it up to the user to decide what to do with the
+data.
+
+Fixed the Android autobuilder, which had stopped including the webapp.
+
+Looks like another autobuilder will be needed for OSX 10.9.

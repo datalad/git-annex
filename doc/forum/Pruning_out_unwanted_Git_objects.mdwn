@@ -1,0 +1,3 @@
+I have a backups repository with a few files in it, that at one point had some huge filesets erroneously added to it.  As a result, even though there are only 23,334 annexed files, the number of non-dangling Git objects in the repository comes to 593,584.
+
+Normally I would use `git filter-branch` to clear out the deadwood in situations like this, since it is a completely private repository.  What I'm wondering is, is any such thing possible with git-annex, or is the best option just to start over, copy all the files into the new repository, and then `git-add` them all?

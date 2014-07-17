@@ -1,0 +1,24 @@
+I have two repositories: A(direct) and B(indirect). At some point, I performed the following steps:
+
+1. Add a file in A.
+2. Sync A.
+3. Sync B, but not get all files.
+4. In B, remove a file F that was newly added in A, using `git rm` and `git commit`.
+5. Now get all files from A.
+
+This results in all "current" files being copied from A to B, but not file F.
+
+If I checkout a branch in B for an older commit which still had file F, I can see the symlink created in the branch. But now if I try to get the file in B from A, annex says that the remote is not available: 
+
+    sameerds@gajanan:/mnt/mandos/test$ git annex get
+    get IMG_0570.JPG 
+      Unable to access these remotes: A
+    
+      Try making some of these repositories available:
+      	530e4f81-474d-4b0b-9f13-4beb7361302c -- A
+    failed
+    git-annex: get: 1 failed
+
+The remote for A exists in the listing for `git remote`, and `git annex sync` does not make this error message go away. If I checkout `master` again, then everything works fine.
+
+But of course, this a different problem from my original one. It would a way to bring all files from the remote, that are ever used by any commit reachable in the local git history, irrespective of the currently checkout out commit. Perhaps an option `--deep-copy` to the standard `git annex get`.

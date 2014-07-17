@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/bBy7WkgQicYHIiiyj.Vm0TcMbxi2quzbPFef#6f9f7"
+ nickname="Frederik Vanrenterghem"
+ subject="comment 12"
+ date="2013-05-14T04:07:37Z"
+ content="""
+Thanks Joey, this worked. The symlinks are in the directory and I can get the actual file contents (except for one attempt that failed - I'll need to check why that didn't seem to have propagated to the bare repository.)
+"""]]

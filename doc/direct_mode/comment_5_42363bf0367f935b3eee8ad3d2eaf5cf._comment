@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="mildred"
+ ip="2a01:e35:2f7b:8350:225:22ff:fe40:fdfc"
+ subject="What happens to object database in direct mode?"
+ date="2013-07-08T13:27:21Z"
+ content="""
+What happens to the object database (`.git/annex/objects`) when going to direct mode? Are the objects deleted, moved to another location, kept?
+
+If the objects are kept, does it means that the file on the repository in direct mode is duplicated in the object database? If so, would it be relevant to use `cp --reflink=auto` to populate the working directory to enable copy on write on filesystems that supports it?
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://www.joachim-breitner.de/"
+ nickname="nomeata"
+ subject="comment 2"
+ date="2012-02-24T23:09:03Z"
+ content="""
+Yes, it is really a minor point. And indeed, \"git log --summary\" is pretty good already. But I’d still think that at least the title could deserves some love. Including the Hostname or the name of the repository there is a good idea as well.
+"""]]

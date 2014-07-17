@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmp1ThsNNAbSn46ju-gwFELfStlhl8usJo"
+ nickname="donkeyicydragon"
+ subject="Googledrive annex on second repository"
+ date="2014-04-19T20:45:23Z"
+ content="""
+Hi Johnny,
+
+I wrote a patch for googledriveannex that fixed this problem for me. First you add the google drive special remote in repo1 then you clone repo1 into repo2. In repo2 you do \"git annex enableremote googldrivespecialremotename\" and it should work.
+The problem was that the init method, that is called by git annex when a special remote is first created but also when it is enabled somewhere else, did not factor in the possibility that it had already been created.
+I will simultaneously submit the patch to the author of the special remote plugin but here it is for you to quickly get going:
+
+    diff --git a/git-annex-remote-googledrive b/git-annex-remote-googledrive
+    index 49cd917..c8e70f3 100755
+    --- a/git-annex-remote-googledrive
+    +++ b/git-annex-remote-googledrive
+    @@ -330,13 +330,16 @@ def initremote(line):
+         oauth = os.getenv(\"OAUTH\") or \"\"
+         encryption = common.getConfig(\"encryption\")
+         myfolder = common.getConfig(\"folder\")
+    -    stored_creds = sys.modules[\"__main__\"].login({\"oauth\": oauth})
+    -    if len(myfolder) and stored_creds:
+    -        common.sprint('SETCONFIG myfolder ' + myfolder + '')
+    -        common.sprint('SETCONFIG stored_creds ' + json.dumps(stored_creds) + '')
+    -        common.sprint('INITREMOTE-SUCCESS')
+    +    if not common.getConfig(\"stored_creds\"):
+    +	    stored_creds = sys.modules[\"__main__\"].login({\"oauth\": oauth})
+    +	    if len(myfolder) and stored_creds:
+    +	        common.sprint('SETCONFIG myfolder ' + myfolder + '')
+    +	        common.sprint('SETCONFIG stored_creds ' + json.dumps(stored_creds) + '')
+    +	        common.sprint('INITREMOTE-SUCCESS')
+    +	    else:
+    +	        common.sprint('INITREMOTE-FAILURE You need to set OAUTH environment variables and folder and encryption parameters when running initremote.')
+         else:
+    -        common.sprint('INITREMOTE-FAILURE You need to set OAUTH environment variables and folder and encryption parameters when running initremote.')
+    +	        common.sprint('INITREMOTE-SUCCESS')
+         common.log(\"Done\")
+     
+     def prepare(line):
+    -- 
+"""]]

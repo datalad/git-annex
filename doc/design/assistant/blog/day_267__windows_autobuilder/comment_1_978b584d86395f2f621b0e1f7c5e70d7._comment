@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkDb5BRI8VzliQuKRVM7NwMdudvxiUNPHI"
+ nickname="Richard"
+ subject="git annex add on Win7 NTFS"
+ date="2013-06-14T09:26:24Z"
+ content="""
+Hello I took latest build from download #243.
+
+running in CMD or in GIT bash as admin user.
+
+git annex add, fails on all files.
+
+Example:
+add IS Breast/Changing IP Address of The Server/flowplayer-3.2.4.min.js (checksum...)
+git-annex: C:\development storage\.git\annex\objects\e4b\168\SHA256E-s15723--f6950
+bd995674741c600d0465a333f5491d5713e8ac2e3fc57d61cccadba522d.min.js\SHA256E-s15723--f6950bd995674741c600d0465a333f5491d57
+13e8ac2e3fc57d61cccadba522d.min.js.cache: openFile: does not exist (No such file or directory)
+
+Am I doing something wrong? I somehow understood that this should be ok now.
+Thanks for your kind answer
+"""]]

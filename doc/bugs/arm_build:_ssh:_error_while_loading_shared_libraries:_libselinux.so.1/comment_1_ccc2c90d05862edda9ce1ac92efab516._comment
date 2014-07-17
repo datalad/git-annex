@@ -1,0 +1,44 @@
+[[!comment format=mdwn
+ username="http://grossmeier.net/"
+ nickname="greg"
+ subject="comment 1"
+ date="2013-12-19T19:05:04Z"
+ content="""
+Just tried again (redownloaded the build at ~11:50am Pacific on Dec 19th), same behavior:
+
+[[!format sh \"\"\"
+$ git-annex version
+git-annex version: 5.20131218-gc5767e2
+build flags: Assistant Pairing S3 Inotify DBus XMPP Feeds Quvi TDFA CryptoHash
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+remote types: git gcrypt S3 bup directory rsync web glacier hook
+$ git clone greg@host:/path/to/Photos Photos
+Cloning into 'Photos'...
+ssh: error while loading shared libraries: libselinux.so.1: cannot open shared object file: No such file or directory
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+$ which ssh
+/volume1/downloads/git-annex.linux/bin/ssh
+$ ldd /volume1/downloads/git-annex.linux/bin/ssh
+/volume1/downloads/git-annex.linux/bin/ssh: /lib/libc.so.6: version `GLIBC_2.15' not found (required by /volume1/downloads/git-annex.linux/bin/ssh)
+/volume1/downloads/git-annex.linux/bin/ssh: /lib/libc.so.6: version `GLIBC_2.8' not found (required by /volume1/downloads/git-annex.linux/bin/ssh)
+/volume1/downloads/git-annex.linux/bin/ssh: /lib/libc.so.6: version `GLIBC_2.17' not found (required by /volume1/downloads/git-annex.linux/bin/ssh)
+/volume1/downloads/git-annex.linux/bin/ssh: /lib/libcrypto.so.1.0.0: no version information available (required by /volume1/downloads/git-annex.linux/bin/ssh)
+/volume1/downloads/git-annex.linux/bin/ssh: /lib/libcrypto.so.1.0.0: no version information available (required by /volume1/downloads/git-annex.linux/bin/ssh)
+	libselinux.so.1 => not found
+	libcrypto.so.1.0.0 => /lib/libcrypto.so.1.0.0 (0x40026000)
+	libdl.so.2 => /lib/libdl.so.2 (0x401ba000)
+	libz.so.1 => /lib/libz.so.1 (0x401c5000)
+	libresolv.so.2 => /lib/libresolv.so.2 (0x401e2000)
+	libgssapi_krb5.so.2 => /lib/libgssapi_krb5.so.2 (0x401fc000)
+	libc.so.6 => /lib/libc.so.6 (0x40235000)
+	/lib/ld-linux.so.3 (0x40000000)
+	libgcc_s.so.1 => /lib/libgcc_s.so.1 (0x40364000)
+	libkrb5.so.3 => /lib/libkrb5.so.3 (0x40378000)
+	libk5crypto.so.3 => /lib/libk5crypto.so.3 (0x40426000)
+	libcom_err.so.3 => /lib/libcom_err.so.3 (0x40458000)
+	libkrb5support.so.0 => /lib/libkrb5support.so.0 (0x40462000)
+\"\"\"]]
+"""]]

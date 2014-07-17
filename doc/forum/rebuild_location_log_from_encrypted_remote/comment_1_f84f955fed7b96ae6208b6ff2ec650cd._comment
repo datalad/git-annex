@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.64"
+ subject="comment 1"
+ date="2013-12-01T19:59:16Z"
+ content="""
+I think you should try to run `git annex copy --from needle`, which will be able to get the files if needle has them, even if the location log is busted. 
+
+(Sometimes people complain that `git annex copy` goes and checks a remote, which can be unncessarily slow, rather than just trusting the location log  ... but this is why it does it!)
+
+From what I can tell, the fsck downloads some file from the remote, but the download is not entirely successful. One possibility is that it downloads a file, but the file fails to be decrypted, either because you don't have the right encyption key, or because the encrypted file has actually gotten corrupted on the remote. It might be that the same problem will affect `git annex copy --from needle`, but if so it should be more clear what's happening.
+"""]]

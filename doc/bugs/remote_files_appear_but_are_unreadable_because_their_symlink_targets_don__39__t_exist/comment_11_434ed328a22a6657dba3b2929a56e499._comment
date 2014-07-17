@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.246.110"
+ subject="comment 11"
+ date="2013-07-28T00:06:53Z"
+ content="""
+From the log on bang:
+
+<pre>
+[2013-07-27 00:33:15 PDT] read: ssh [\"-S\",\"/home/drewp/annex2/.git/annex/ssh/drewp@git-annex-dash.local-drewp_annex2\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-T\",\"drewp@git-annex-dash.local-drewp_annex2\",\"git-annex-shell 'configlist' '/~/annex2/'\"]
+zsh:1: command not found: git-annex-shell
+Remote dash.local_annex2 does not have git-annex installed; setting remote.dash.local_annex2.annex-ignore
+</pre>
+
+You said you're running from the standalone tarball. I think that's the problem, probably if you get git-annex-shell into your path it'll just work.
+
+Can you paste the line git-annex added to \"dash\"'s .ssh/authorized_keys?
+"""]]

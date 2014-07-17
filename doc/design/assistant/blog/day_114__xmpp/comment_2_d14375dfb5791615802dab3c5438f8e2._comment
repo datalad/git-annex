@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.27"
+ subject="comment 2"
+ date="2012-11-09T21:55:42Z"
+ content="""
+It does try to mark itself as extended away, but yes, I think this is a potential concern. If you find the assistant interacts badly with your other clients, you can certainly give it its own XMPP account.
+"""]]

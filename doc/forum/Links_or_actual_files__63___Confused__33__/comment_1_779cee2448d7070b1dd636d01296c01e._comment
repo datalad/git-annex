@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.51"
+ subject="comment 1"
+ date="2013-09-12T17:58:24Z"
+ content="""
+When you create a git-annex repository using the webapp, it uses [[direct_mode]]. That is not the default if you create a repository by hand at the command line, although you can enable it if you prefer it.
+"""]]

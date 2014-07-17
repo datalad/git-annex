@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="71.80.94.56"
+ subject="comment 1"
+ date="2014-02-07T19:28:00Z"
+ content="""
+Sorry for the delay getting to this post.
+
+The lack of jabber support on Windows makes this a bit hard to set up. You instead need to make a git repository some place that both the Windows and Linux machines can both connect to. Once git-annex on both systems is syncing with that common git repository, the Windows system will learn about the encrypted remotes you have set up, and then `git annex enableremote` will be able to use them with no problem.
+
+Of course, if you don't trust your ssh server where you already made an encrypted remote, you may not want to store a un-encrypted git repository on it, and since Windows also doesn't support encrypted git repositories yet, you'd be sort of out of luck. (For now; Windows support is being improved.) 
+
+OTOH, if you just set up that encrypted rsync remote on the ssh server because the ssh server didn't have git-annex installed on it, you can easily also put a git repository on the ssh server, and the combination will be enough to let you sync between the 2 machines.
+"""]]

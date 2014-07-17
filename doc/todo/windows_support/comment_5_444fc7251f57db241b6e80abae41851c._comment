@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/dASECLNzvckz4VwqUGYsvthiplY.#d2c27"
+ nickname="A. D. Sicks"
+ subject="comment 5"
+ date="2012-09-09T23:48:21Z"
+ content="""
+Haskell has C++ binding, so it should be possible to port it to .net/Mono with a VB GUI for Windows users.  Windows has a primitive form of symlinks called shortcuts.  Perhaps shortcut support in Windows could replace the use of symlinks.  I've used shortcuts since XP to put my home Windows directory on another partition and never had a hitch...
+
+If anyone is interested in working on this, hit me up.  I would like to use this in my XP vbox to have access to files on my host OS...I have a student edition of Visual Studio 2005 to do an open source port...
+"""]]

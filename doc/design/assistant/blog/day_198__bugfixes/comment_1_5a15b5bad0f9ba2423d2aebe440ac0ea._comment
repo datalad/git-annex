@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="http://meep.pl/"
+ ip="193.23.174.18"
+ subject="Android 2.3 again"
+ date="2013-02-24T23:07:28Z"
+ content="""
+I got _a lot_ further with the latest upgrade.
+
+* installation worked
+* `git init` worked
+* first `git annex init` asked to set user.{email,name}
+* `git config --global ...` worked
+* second `git annex init` segfaulted, but not immediately:
+
+      init
+        Detected a crippled filesystem.
+      error: git-annex died of signal 11
+
+"""]]

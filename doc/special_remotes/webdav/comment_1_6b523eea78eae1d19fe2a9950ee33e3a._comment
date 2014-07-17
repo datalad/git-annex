@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="http://rfhbuk.myopenid.com/"
+ ip="109.145.123.81"
+ subject="git-annex initremote failing for webdav servers"
+ date="2012-12-01T10:18:04Z"
+ content="""
+Unfortunately, trying to set up the following webdav servers fail. Some of the terminal output of git-annex --debug initremote ... is below, but it may not really helpful. Can I help any further, can a webdav remote be set up in a different way? (The box.com webdav initremote worked fine.) Cheers 
+
+
+With livedrive.com:
+
+    [2012-12-01 10:15:12 GMT] chat: gpg [\"--batch\",\"--no-tty\",\"--use-agent\",\"--quiet\",\"--trust-model\",\"always\",\"--encrypt\",\"--no-encrypt-to\",\"--no-default-recipient\",\"--recipient\",\"xxxxxxxxxxxxxx\"]
+    (encryption setup with gpg key xxxxxxxxxxxxxx) (testing WebDAV server...)
+    git-annex: \"Bad Request\": user error
+    failed
+    git-annex: initremote: 1 failed
+
+
+With sd2dav.1und1.de: 
+
+    [2012-12-01 10:13:10 GMT] chat: gpg [\"--batch\",\"--no-tty\",\"--use-agent\",\"--quiet\",\"--trust-model\",\"always\",\"--encrypt\",\"--no-encrypt-to\",\"--no-default-recipient\",\"--recipient\",\"xxxxxxxxxxxxxx\"]
+    (encryption setup with gpg key xxxxxxxxxxxxxx) (testing WebDAV server...)
+    git-annex: \"Locked\": user error
+    failed
+    git-annex: initremote: 1 failed
+"""]]

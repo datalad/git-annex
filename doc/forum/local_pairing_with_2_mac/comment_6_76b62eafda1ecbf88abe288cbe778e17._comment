@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnfC02DTOZygFDDvvg0maRciYYMhEIFgkw"
+ nickname="Utku"
+ subject="comment 6"
+ date="2013-12-12T21:50:15Z"
+ content="""
+ok so it is ok on my computer, but here is what I got on the other one : 
+dyld: lazy symbol binding failed: Symbol not found: ___strlcpy_chk
+ Referenced from: /Applications/git-annex.app/Contents/MacOS/bundle/ssh-keygen
+ Expected in: /usr/lib/libSystem.B.dylib
+
+dyld: Symbol not found: ___strlcpy_chk
+ Referenced from: /Applications/git-annex.app/Contents/MacOS/bundle/ssh-keygen
+ Expected in: /usr/lib/libSystem.B.dylib
+
+Trace/BPT trap: 5
+"""]]

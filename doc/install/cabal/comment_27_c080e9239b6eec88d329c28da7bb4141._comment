@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="RaspberryPie"
+ ip="37.221.160.203"
+ subject="comment 27"
+ date="2013-11-02T12:52:18Z"
+ content="""
+Okay, the error doesn't show up anymore. I didn't even get to Cronner though, because this time I got a different error:
+
+    Assistant/Alert.hs:195:20:
+        Couldn't match expected type `Assistant ()' with actual type `()'
+        Expected type: Maybe Remote -> Assistant ()
+          Actual type: Maybe Remote -> ()
+        In the expression: noop
+        In an equation for `notFsckedNudge': notFsckedNudge _ = noop
+
+This is from trying to compile 4.20131101 with `-f\"-webapp -webdav\"`
+"""]]

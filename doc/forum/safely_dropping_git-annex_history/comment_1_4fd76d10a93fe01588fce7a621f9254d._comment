@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.194"
+ subject="comment 1"
+ date="2012-10-31T16:03:55Z"
+ content="""
+Yes, you can use fsck like that. I outlined a similar approach [here](http://git-annex.branchable.com/forum/Delete_unused_files__47__metadata/#comment-e2bd822214df96606a60e8aee2c8637a), and I think you don't even need to make new git repositories, just delete the old branch and git gc it -- but I've not heard of anyone doing this yet.
+
+So, since 2010, your repo must have gone through at least one and probably two repository format changes, which bloated the git branch. Hopefully we'll have no more of those. My largest repo that also went through that is under 150 mb however. 
+
+There was a recent bug fix where `git annex copy` unnecessarily updated location log even when the file was already copied. That kind of thing can bloat the repository, especially if you had that in a cron job... You might find `git annex log` useful to look through history of files and see if there have been a lot of location changes logged for whatever reason.
+"""]]

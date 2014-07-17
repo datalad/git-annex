@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-05-16T18:10:28Z"
+ content="""
+The assistant ignores drives that it cannot write to. This is a very good heuristic to avoid listing every special device in linux, OSX, etc as possible removable drives. I don't think it makes sense for the assistant to try to handle this use case.
+
+Is there some problem using git-annex at the command line with a remote that is read-only? I don't see any problem in my tests.
+
+<pre>
+joey@darkstar:~/tmp/r>git annex drop
+drop foo ok
+(Recording state in git...)
+joey@darkstar:~/tmp/r>ls -ld ../readonly
+drwxr-xr-x 3 root root 4096 May 16 14:08 ../readonly/
+joey@darkstar:~/tmp/r>git annex get --from readonly
+get foo (from readonly...) ok
+(Recording state in git...)
+</pre>
+"""]]

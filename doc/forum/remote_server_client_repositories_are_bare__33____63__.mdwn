@@ -1,0 +1,17 @@
+I've gone through most of the screen casts and lots of documentation,
+but my first attempt produced an unexpected result.
+
+I wanted to use git-annex is a Dropbox-simplistic setting - syncing
+a directory between my notebook (OSX) and my desktop (OpenSUSE 12.3).
+Running the assistant on OSX and adding a "Remote server" repository,
+changing the repository group to client produced a bare repository
+on the desktop.
+
+Am I missing something obvious?
+
+I've tried a few different version of git-annex, most recently
+
+   git-annex version: 4.20130727-g9399845
+   build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP
+
+but it remains the same.

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://yarikoptic.myopenid.com/"
+ nickname="site-myopenid"
+ subject="comment 10"
+ date="2013-05-24T03:11:50Z"
+ content="""
+>you said before the error was \"Read-only file system\". Now you're saying it's \"Cross-device link\". I'm slightly confused.
+
+;-)  Sorry for confusion, here are the details:
+
+\"Read-only file system\" -- that error appeared when I started \"stock git annex\", i.e. from running /data/data/ga.androidterm/lib/lib.start.so .
+Since you have suggested that it might be coming from hard linking command, I have ran that one manually, and that is when I got \"Cross-device link\" error, which suggests that hard linking is not the one at fault here.
+
+I will try fresh build now
+Cheers,
+"""]]

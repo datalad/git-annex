@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 3"
+ date="2013-12-29T17:59:53Z"
+ content="""
+In this case, I would probably put `git annex assistant --autostart` in `.xinitrc`, or even make a @reboot cron job that starts it. The webapp can then be opened with `git annex webapp` at any time. (The webapp is not a separate process and does not need to be started at login.)
+"""]]

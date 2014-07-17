@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnx8kHW66N3BqmkVpgtXDlYMvr8TJ5VvfY"
+ nickname="Yaroslav"
+ subject="repair seems to be also confused"
+ date="2014-01-18T05:47:02Z"
+ content="""
+[[[
+$> git annex repair                               
+Running git fsck ...
+No problems found.
+fatal: '/home/yoh/annex/.git' is outside repository
+Had to delete the .git/annex/index file as it was corrupt.
+No data was lost.
+ok
+
+$> ls
+2enjoy/   2read/    2watch/  books/  hardware/  videos/
+2listen/  2review/  abooks/  docs/   pics/
+
+$> git annex repair
+Running git fsck ...
+No problems found.
+fatal: '/home/yoh/annex/.git' is outside repository
+Had to delete the .git/annex/index file as it was corrupt.
+No data was lost.
+ok
+
+$> git annex get 2read/ISNN2010__Tang.pdf
+git-annex: Cannot mix --all or --unused with file names.
+
+]]]
+"""]]

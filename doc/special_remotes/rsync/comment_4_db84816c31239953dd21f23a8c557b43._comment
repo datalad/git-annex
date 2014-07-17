@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="diepes"
+ ip="41.160.8.49"
+ subject="rsync.net support git and rsync, not git-annex"
+ date="2013-05-13T14:44:53Z"
+ content="""
+how would i use rsync.net as a full repository ?  (annex files and git repo)
+
+It support's rsync, and I discovered now git as well.
+
+I had a look at the webapp and can't figure out how to set it up, so I can have multiple remote's sync to rsync.net for annex files and git sync.
+
+Link: http://www.rsync.net/resources/howto/github_integration.html
+
+"""]]

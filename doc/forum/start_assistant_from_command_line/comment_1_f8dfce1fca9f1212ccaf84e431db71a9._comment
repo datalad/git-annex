@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmBhQgaA5QrFwT67-Bo0qPIx0HD9roDrso"
+ nickname="Paul"
+ subject="comment 1"
+ date="2013-10-21T19:20:28Z"
+ content="""
+    git annex assitant
+
+starts the assitant itself, you propably want the gui which you start by
+
+   git annex webapp
+"""]]

@@ -1,0 +1,22 @@
+Yesterday, I woke up and realized I didn't know what I needed to work on in
+git-annex. Added a poll, [[polls/Android]] to help me decide what major
+thing to work on next.
+
+----
+
+More flailing at the OSX monster. (A species of gelatinous cube?)
+Current fun seems to involve git processes spinning if git-annex
+was started without a controlling TTY. I'm befuddled by this.
+
+----
+
+Made the S3 and Glacier configurators have a list of regions, rather than
+requiring a the region's code be entered correctly. I could not find a list of
+regions, or better, an API to get a list, so I'll have to keep updating as
+Amazon adds services in new regions.
+
+----
+
+Spent some time trying to get WebDAV to work with livedrive.com.
+It doesn't like empty PROPPATCH. I've developed a change to the haskell DAV
+library that will let me avoid this problem.

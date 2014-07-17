@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmLB39PC89rfGaA8SwrsnB6tbumezj-aC0"
+ nickname="Tobias"
+ subject="comment 1"
+ date="2012-11-22T22:44:11Z"
+ content="""
+Add the host to your .ssh/config like this
+
+Host myotherpc
+     HostName 10.0.0.10
+     Port 2222
+
+"""]]

@@ -1,0 +1,11 @@
+I am trying to connect to dreamhost's objects (S3) platform.  I am using the windows version.  
+Am I specifying the host correctly? Any help is appreciated.
+
+$ git-annex initremote host="objects.dreamhost.com" cloud keyid=XXXXX type=S3
+
+initremote host=objects.dreamhost.com (encryption setup) (hybrid cipher with gpg
+ key 70827ADCDE25DA0F) (checking bucket...)
+git-annex: user error (openTCPConnection: host lookup failure for "host=objects.
+dreamhost.com-f5573b49-3668-4f94-a1da-aa55085c45e8.s3.amazonaws.com")
+failed
+git-annex.exe: initremote: 1 failed

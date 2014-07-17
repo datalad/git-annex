@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.238"
+ subject="comment 6"
+ date="2013-01-17T18:23:27Z"
+ content="""
+It seems it must advertise it supports the LOCK and UNLOCK http actions, but fails when they're used.
+
+The DAV library I am using always locks if it seems the server supports it. So this will need changes to that library. I've filed a bug requesting the changes. <http://bugs.debian.org/698379>
+"""]]

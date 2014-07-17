@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmqz6wCn-Q1vzrsHGvEJHOt_T5ZESilxhc"
+ nickname="Sören"
+ subject="comment 5"
+ date="2014-05-27T19:58:37Z"
+ content="""
+On Android, the webserver returns a broken bootstrap.css. It seems like some binary garbage is appended to the end of the css file that looks suspiciously like the content or some fragment of the font file \"glyphicons-halflings-regular.eot\". Reason unknown.
+"""]]

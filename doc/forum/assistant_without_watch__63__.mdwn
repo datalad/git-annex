@@ -1,0 +1,13 @@
+"watch" is described as
+
+> With this running as a daemon in the background, you no longer need to manually run git commands  when  manipulating your files.
+
+and "assistant" is described as
+
+> Like watch, but also automatically syncs changes to other remotes.
+
+I would like the behaviour of assistant, without the watch part:
+
+I have an archive of large files, which I think would be useful to manage manually using git.  But I don't want to manually enforce the "numcopies=" requirement, playing with the assistant and webapp it seems really nice to have it take care of that.
+
+Is there currently an "assistant-without-watch" option?   If not, is it planned?

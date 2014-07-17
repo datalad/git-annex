@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmL8pteP2jbYJUn1M3CbeLDvz2SWAA1wtg"
+ nickname="Kristian"
+ subject="Solution"
+ date="2011-07-31T15:24:25Z"
+ content="""
+Yes, it can read id3-tags and guess titles from movie filenames but it sometimes gets confused by the filename metadata provided by the WORM-backend.
+
+I think I have a good enough solution to this problem. It's not efficient when it comes to renames but handles adding and deletion just fine
+
+    rsync -vaL --delete source dest
+
+The -L flag looks at symbolic links and copies the actual data they are pointing to. Of course \"source\" must have all data locally for this to work.
+
+"""]]

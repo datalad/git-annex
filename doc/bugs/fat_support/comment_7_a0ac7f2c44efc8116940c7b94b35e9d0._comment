@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 7"
+ date="2012-07-24T14:51:50Z"
+ content="""
+You can get the extensions by migrating to the SHA1E (or SHA256E) backend. 
+"""]]

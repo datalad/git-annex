@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 1"
+ date="2013-12-12T17:11:59Z"
+ content="""
+It sounds like the contents of the files are being successfully transferred.
+
+It may be that you're using an old and buggy version of git-annex, in which the direct mode code lost track of things and so failed to update the tree correctly when receiving the content of a file. If so, you could fix it by upgrading git-annex and running `git annex fsck`.
+"""]]

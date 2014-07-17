@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.43"
+ subject="comment 3"
+ date="2014-01-15T20:40:35Z"
+ content="""
+A bug in the git repository repair code caused packed-refs files to be exploded to .gitrefs instead of .git/refs. I have fixed that bug.
+
+To fix up a repository that this happened to, I'd recommend checking if there are any tags and branches in the .gitrefs directory that have gone missing from .git/refs.. If so, you could move the files back into place (unannexing them first if necessary). Otherwise, deleting .gitrefs would seem to be the thing to do.
+"""]]

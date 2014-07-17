@@ -1,0 +1,11 @@
+Winding down work for now, as I prepare for a week at the beach starting in
+2 days. That will be followed by a talk about git-annex at
+[SELF2013](http://www.southeastlinuxfest.org/) in Charlotte NC on June 9th.
+
+Bits & pieces today.
+
+Want to get a release out RSN, but I'm waiting for the previous release
+to finally reach Debian testing, which should happen on Saturday. Luckily I
+hear the beach house has wifi, so I will probably end up cutting the
+release from there. Only other thing I might work on next week is updating
+to yesod 1.2.

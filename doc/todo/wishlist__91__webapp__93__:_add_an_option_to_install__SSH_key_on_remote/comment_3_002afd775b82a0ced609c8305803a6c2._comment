@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="http://olivier.mehani.name/"
+ nickname="olivier-mehani"
+ subject="comment 3"
+ date="2014-06-14T14:15:55Z"
+ content="""
+After having done that on my first test repo, git-annex could sync, but failed to get the files.
+
+    client:~/annex$ git annex get file
+    get file (not available) 
+      Try making some of these repositories available:
+      	12345678-90ab-cdef-1234567890abcdef1 -- user@server:~/annex [origin]
+    
+      (Note that these git remotes have annex-ignore set: origin)
+    failed
+    git-annex: get: 1 failed
+ 
+The note helps: the problem is with the origin remote having annex-ignore set. git-annex therefore ignores it. This is easily fixed by just setting the flag to false.
+
+    client:~/annex$ git config remote.origin.annex-ignore false
+
+"""]]

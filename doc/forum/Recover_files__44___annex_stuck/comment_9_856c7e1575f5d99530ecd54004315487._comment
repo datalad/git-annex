@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.203"
+ subject="comment 9"
+ date="2014-06-18T17:36:44Z"
+ content="""
+Both of those du's look extremely large. How many files are listed by `git ls-files --cached | wc -l` ?
+
+I don't think that there's any point in running `git annex add` while you're still having some problem. I am curious though how much memory the git-annex add you have running has used.
+
+If I were you, I'd look in .git/objects for large files (> 100kb, say).
+"""]]

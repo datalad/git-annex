@@ -1,0 +1,20 @@
+Based on the results of yesterday's poll, the WebApp defaults to
+`~/Desktop/annex` when run in the home directory. If there's no `Desktop`
+directory, it uses just `~/annex`. And if run from some other place than
+the home directory, it assumes you want to use cwd. Of course, you can
+change this default, but I think it's a good one for most use cases.
+
+----
+
+My work today has all been on making **one second** of the total lifetime
+of the WebApp work. It's the very tricky second in between clicking on
+"Make repository" and being redirected to a WebApp running in your new
+repository. The trickiness involves threads, and MVars, and
+multiple web servers, and I don't want to go into details here.
+I'd rather forget. ;-)
+
+Anyway, it works; you can run "git annex webapp" and be walked right
+through to having a usable repository! Now I need to see about adding
+that to the desktop menus, and making "git annex webapp", when run a second
+time, remembering where your repository is. I'll use
+`~/.config/git-annex/repository` for storing that.

@@ -1,0 +1,9 @@
+So i am coming from git world, All documentation and posts seemed to be for media etc. I have a simple question.
+
+Can i use git annex to manage large files , Which i think i can. But will it work with branching/tagging etc.
+
+e.g. We currently use git have some large files in git repo.... I am planning to move the large files to use annex. But would like to maintain branches, i.e. each branch might have different version of files and maybe tagged, So i can get back some old version from a branch.
+
+Is this possible ? I did not get any explicit  answer or examples on how this works or even if its supported.
+
+Also can i use same folder for git and git-annex ? 

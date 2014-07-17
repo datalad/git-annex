@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn5RcmefXjrl1vmbHIiOWQyXGXVKxlm3rg"
+ nickname="Kavin"
+ subject="comment 11"
+ date="2013-07-10T20:14:52Z"
+ content="""
+:( Ahh... So i guess this might not be possible in near future.
+
+Ill go to plan B, Setup another server which users will connect to for large files which will have git-annex installed. (So a central Repository for git annex). They will need to add another remote in git config.
+
+Does git annex have a way to manage ssh keys ?  (Please can you point me to the location where i can read how git-annex-shell ? )
+"""]]

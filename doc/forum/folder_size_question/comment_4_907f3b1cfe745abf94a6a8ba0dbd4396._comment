@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkAUMhKOSkh9JaBA6xst3XxQIIsDEq5Zd4"
+ nickname="Ovidiu"
+ subject="comment 4"
+ date="2014-05-17T10:56:22Z"
+ content="""
+I thinks its all the small files. 
+
+    du -hs /Users/ovi/Sharing/git-annex/
+     77M	/Users/ovi/Sharing/git-annex/
+
+    du -hs /Users/ovi/Sharing/git-annex/Finance/
+     38M	/Users/ovi/Sharing/git-annex/Finance/
+
+    du -hs /Users/ovi/Sharing/git-annex/.git/
+     39M	/Users/ovi/Sharing/git-annex/.git/
+
+The GUI shows: 
+    46 136 859 bytes (80,6 MB on disk) for 8 002 items
+
+And the hidden .git folder shows:
+    7 373 616 bytes (41 MB on disk) for 7 625 items
+
+So apparently there are a lot of very small files, smaller than the blocksize hence the info is skewed? Anyway, I think its alright?
+"""]]

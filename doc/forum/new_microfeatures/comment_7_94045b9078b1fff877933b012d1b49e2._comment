@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnpdM9F8VbtQ_H5PaPMpGSxPe_d5L1eJ6w"
+ nickname="Rafaël"
+ subject="git annex fetch"
+ date="2011-07-03T17:57:00Z"
+ content="""
+My last comment is a bit confused. The \"git fetch\" command allows to get all the information from a remote, and it is then possible to merge while being offline (without access to the remote). I would like a \"git annex fetch remote\" command to be able to get all annexed files from remote, so that if I later merge with remote, all annexed files are already here. And \"git annex fetch\" could (optionally) call \"git fetch\" before getting the files.
+
+It seems also that in my last post, I should have written \"git annex get --from=remote\" instead of \"git annex copy --from=remote\", because \"annex copy --from\" copies all files, even if the local repo already have them (is this the case? if yes, when is it useful?)
+"""]]

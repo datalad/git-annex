@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="ghc 7.0"
+ date="2012-03-28T19:18:58Z"
+ content="""
+You did the right thing, although just checking out the ghc-7.0 branch will avoid merge conflicts. I am trying to keep it fairly close to up-to-date.
+"""]]

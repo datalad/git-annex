@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="abg"
+ ip="184.75.210.234"
+ subject="Upgrade installation in OSX"
+ date="2013-11-24T00:28:03Z"
+ content="""
+Hey,
+
+You don't have to implement any whacky DMG replacement logic for OSX upgrades. No sane user will be using the application from the DMG. They will drag the .app directory to /Applications or some non-standard location and unmount the DMG.  So your upgrade logic for OSX should end up looking very similar to the upgrade logic for Linux.
+"""]]

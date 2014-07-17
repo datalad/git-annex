@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmkBwMWvNKZZCge_YqobCSILPMeK6xbFw8"
+ nickname="TobiasTheViking"
+ subject="Feature requests"
+ date="2013-12-28T13:57:35Z"
+ content="""
+PREPARE-Failure ErrorMsg (matching INITREMOTE-FAILURE ErrorMsg)
+
+Also, i'd like for the following to overwrite existing credentials/configs 
+MYFOLDER=\"testfolder\" MYLOGIN=\"login\" MYPASSWORD=\"pword\" MYURL=\"http://webdav/\"    git annex enableremote owncloud type=external externaltype=owncloud --debug
+
+This would also be needed for refreshing oauth.
+
+
+"""]]

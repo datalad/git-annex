@@ -1,0 +1,37 @@
+### Please describe the problem.
+
+One of my repositories has no name:
+http://screencast.com/t/3OjxFzpz
+
+And when I try to disable it I get this error:
+
+    Internal Server Error
+    Unknown UUID
+
+When I try to delete it I get this error:
+
+    Internal Server Error
+    unknown UUID; cannot modify
+
+I think this was the result of adding a Local Computer Repo, and then that computer signed off.  Maybe.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version 4.20130601-g2b6c3f2
+Mac OS 10.7.5
+
+### Please provide any additional information below.
+
+Maybe it's a glitch that only will happen this once, the problem is I can't get rid of it!  Are there anyways of manually getting rid of a repo with uid?
+
+> Also reported here:
+> [[Missing_repo_uuid_after_local_pairing_with_older_annex]] and
+> [[Internal_Server_Error_unknown_UUID;_cannot_modify]]
+> and [[Local_network___40__ssh__41___fails_to_pair__47__sync]]
+> and [[Internal_Server_Error:_Unknown_UUID]]
+> --[[Joey]] 
+
+[[!meta title="local pairing leads to unknown UUID"]]
+
+> This bug is [[fixed|done]]. The webapp will detect the problem and
+> provides an interface to correct it. --[[Joey]]

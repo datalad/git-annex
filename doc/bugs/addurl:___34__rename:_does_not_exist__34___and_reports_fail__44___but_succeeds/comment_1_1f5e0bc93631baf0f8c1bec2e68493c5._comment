@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="http://sunny256.sunbase.org/"
+ nickname="sunny256"
+ subject="comment 1"
+ date="2013-07-08T19:56:58Z"
+ content="""
+Aha, in other words, some kind of PEBCAC put in a polite way. :) I thought this should be correct, as the man page says
+
+> For example, --pathdepth=1 will use \"dir/subdir/bigfile\", while --pathdepth=3 will use \"bigfile\".
+
+This is how I thought it worked:
+
+* 0 = hostname, path, filename
+* 1 = path, filename
+* 2 = filename
+
+After reading your answer I first thought it was a typo in the documentation, but of course the number specify the level of subdirectories to use in the file name. D'oh!
+
+Thanks for the fix and information.
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="bvaa"
+ ip="86.82.68.238"
+ subject="comment 2"
+ date="2014-04-03T19:20:31Z"
+ content="""
+Ok it makes indeed sense.
+Regarding the empty files I am going to try to find out where that happens and if I can reproduce.
+Thanks.
+"""]]

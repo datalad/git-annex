@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.252.11.120"
+ subject="comment 1"
+ date="2012-11-18T17:49:57Z"
+ content="""
+What platform are you building on? 
+
+What version of ghc is installed?
+
+What version of the haskell mtl library is installed? (`cabal list --installed --simple-output mtl`)
+"""]]

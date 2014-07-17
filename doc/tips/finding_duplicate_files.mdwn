@@ -1,0 +1,21 @@
+Maybe you had a lot of files scattered around on different drives, and you
+added them all into a single git-annex repository. Some of the files are
+surely duplicates of others.
+
+While git-annex stores the file contents efficiently, it would still
+help in cleaning up this mess if you could find, and perhaps remove
+the duplicate files.
+
+Here's a command line that will show duplicate sets of files grouped together:
+
+	git annex find --include '*' --format='${file} ${escaped_key}\n' | \
+		sort -k2 | uniq --all-repeated=separate -f1 | \
+		sed 's/ [^ ]*$//'
+
+Here's a command line that will remove one of each duplicate set of files:
+
+	git annex find --include '*' --format='${file} ${escaped_key}\n' | \
+		sort -k2 | uniq --repeated -f1 | sed 's/ [^ ]*$//' | \
+		xargs -d '\n' git rm
+
+--[[Joey]] 

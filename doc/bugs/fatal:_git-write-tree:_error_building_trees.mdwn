@@ -1,0 +1,103 @@
+### Please describe the problem.
+Not able to successfully git-annex sync with a remote due to a git fatal. Caused by masters diverging?
+
+### What steps will reproduce the problem?
+git-annex sync, or, letting the assistant try.
+
+### What version of git-annex are you using? On what operating system?
+git-annex version: 5.20131221+b1 on my laptop
+git-annex version: 5.20131224-g6ca5271 on the remote server
+
+### Please provide any additional information below.
+
+Output of a manual git-annex sync in the directory:
+
+[[!format sh """
+greg@x200s:~/Documents$ git-annex sync
+commit  (Recording state in git...)
+Copyright Office/Orphan Works/ARROW/170409_ARROW_Leaflet.pdf: unmerged (783afced6bc43138373fda43edfda0c33be36525)
+Copyright Office/Orphan Works/ARROW/ARROWproject_results1.pdf: unmerged (b536e5f3d93e7905e05510f26db1f743e9eae16e)
+Copyright Office/Orphan Works/ARROW/ARROWproject_results1.ppt: unmerged (5543049b8940cc5702d37aff18b03c67d9c8374d)
+Copyright Office/Orphan Works/ARROW/ARROWstandardPresent2010.pdf: unmerged (54d751bc98cb5da29d3d568856b74675e842072e)
+Copyright Office/Orphan Works/ARROW/ARROWstandardPresent2010.ppt: unmerged (efe0e94b51eccb9a6a0c352f4a210bd5a6105050)
+Copyright Office/Orphan Works/ARROW/ARROWtrifoldMAR2011.pdf: unmerged (b52ff16178e29261fe00a518c23610a3b0826482)
+Copyright Office/Orphan Works/Documentation/20110531/Documentation.doc.odt: unmerged (1348d5f42f7e34706407f7936f4fb0438e4b8ffa)
+Copyright Office/Orphan Works/Documentation/AAPpublishers.pdf: unmerged (3f448a03d31a38adb095e3031e4ee13771d22d70)
+Copyright Office/Orphan Works/Documentation/Documentation.doc: unmerged (265fdff7787f560e3ba20789a12e15ffb165ec7f)
+Copyright Office/Orphan Works/Documentation/Documentation.pdf: unmerged (7a9ff92663ed42b42b9baaefaf4721499d18d82d)
+...
+fatal: git-write-tree: error building trees
+git-annex: failed to read sha from git write-tree
+"""]]
+
+See also:
+
+1. the [partial daemon log](http://paste.debian.net/73176/) from the assistant running in that directory on the laptop and 
+2. the output of [git fsck](http://paste.debian.net/73175/) on the remote.
+
+git-annex repair on the laptop and the server:
+[[!format sh """
+greg@x200s:~/Documents$ git-annex repair
+Running git fsck ...
+No problems found.
+ok
+"""]]
+
+
+### How I ended up fixing it:
+[[!format sh """
+greg@x200s:~/Documents$ killall git-annex
+greg@x200s:~/Documents$ git-annex indirect
+blah...............
+indirect  ok
+ok
+greg@x200s:~/Documents$ git status
+On branch master
+Your branch and 'rose/master' have diverged,
+and have 294 and 1 different commit each, respectively.
+  (use "git pull" to merge the remote branch into yours)
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	.gitrefs/
+
+nothing added to commit but untracked files present (use "git add" to track)
+greg@x200s:~/Documents$ git pull
+Merge made by the 'recursive' strategy.
+ Copyright Office/Orphan Works/staging/reporting/process_report.txt.2 | 1 +
+ Copyright Office/Orphan Works/staging/reporting/with-title.xls       | 1 +
+ Copyright Office/Orphan Works/staging/with-title.xls                 | 1 +
+ Copyright Office/Orphan Works/worker_emails.txt                      | 1 +
+ git.fsck.log                                                         | 1 +
+ 5 files changed, 5 insertions(+)
+ create mode 120000 Copyright Office/Orphan Works/staging/reporting/process_report.txt.2
+ create mode 120000 Copyright Office/Orphan Works/staging/reporting/with-title.xls
+ create mode 120000 Copyright Office/Orphan Works/staging/with-title.xls
+ create mode 120000 Copyright Office/Orphan Works/worker_emails.txt
+ create mode 120000 git.fsck.log
+greg@x200s:~/Documents$ git-annex sync
+commit  ok
+pull rose 
+
+Already up-to-date.
+ok
+push rose 
+Counting objects: 1658, done.
+Delta compression using up to 2 threads.
+Compressing objects: 100% (904/904), done.
+Writing objects: 100% (1604/1604), 138.97 KiB | 0 bytes/s, done.
+Total 1604 (delta 892), reused 1298 (delta 688)
+To greg@rose.makesad.us:/home/greg/Documents/
+   f1d206e..e836b9b  master -> synced/master
+ok
+greg@x200s:~/Documents$
+"""]]
+
+I restarted the assistant and the daemon.log looks good.
+
+After sync'ing on the server, it appears that this has been the case for quite some time (based off of what symlinks were created).
+
+Lastly: Joey, this is probably what caused that weird behavior in the webapp where it showed the bad transfer each day after the fsck at noon. I never diagnosed that more but I bet I won't see it tomorrow.
+
+[[!tag moreinfo]]

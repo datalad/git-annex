@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkgy5Qf4bivpTfYPw_yh92OcDlesrVTREg"
+ nickname="François"
+ subject="comment 2"
+ date="2014-01-12T20:31:44Z"
+ content="""
+I understand your concerns about keeping the UI straightforward.
+
+It makes sense however to allow users to add a custom backend without using the CLI. What about a new \"Custom backend (expert only)\" option which directly asks for a string with the arguments to 'git annex initremote'?
+"""]]

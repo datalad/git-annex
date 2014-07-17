@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.194"
+ subject="comment 3"
+ date="2012-11-04T20:08:02Z"
+ content="""
+Yes, that's right, `git annex sync` handles the current branch, and you can use it on different branches if desired.
+
+(It is actually possible to merge non-checked out branches, but I have not implemented that for sync.)
+"""]]

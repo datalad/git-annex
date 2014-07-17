@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.2.25"
+ subject="comment 1"
+ date="2012-06-27T12:36:08Z"
+ content="""
+Use `du -L` for the disk space used locally. The other number is not currently available, but it would be nice to have. I also sometimes would like to have data on which backends are used how much, so making this `git annex status --subdir` is tempting. Unfortunatly, it's current implementation scans `.git/annex/objects`
+and not the disk tree (better for accurate numbers due to copies), so it would not be a very easy thing to add. Not massively hard, but not something I can pound out before I start work today..
+"""]]

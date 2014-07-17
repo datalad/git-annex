@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.172"
+ subject="comment 19"
+ date="2014-02-09T02:13:20Z"
+ content="""
+I'll bet you didn't rebuild all the libraries that depend on network. (Which all that static linking makes necessary...)
+
+IPv6 was my first guess; see http://git-annex.branchable.com/bugs/More_build_oddities_under_OpenBSD/#comment-84ee81cd162d22283fcccc1a41c8f8b3
+"""]]

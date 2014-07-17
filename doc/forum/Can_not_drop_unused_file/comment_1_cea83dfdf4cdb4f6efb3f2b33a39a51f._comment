@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.68"
+ subject="comment 1"
+ date="2014-01-18T22:39:37Z"
+ content="""
+One reason it might fail (especially if it's not printing any useful message beyond \"(failed)\") is if it thought the file was present in the repositort, but something has happened to it.
+
+So, I suggest you try:
+
+git annex fsck --from external
+
+Followed by dropping again.
+
+If that doesn't help, I'd recommend stracing the dropping of one of the unused files, and see what's going wrong toward the end.
+"""]]

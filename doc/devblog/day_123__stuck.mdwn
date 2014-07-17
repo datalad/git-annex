@@ -1,0 +1,13 @@
+Not a lot accomplished today. Some release prep, followed up to a few bug
+reports.
+
+Split git-annex's .git/annex/tmp into two directories. .git/annex/tmp will
+now be used only for partially transferred objects, while
+.git/annex/misctmp will be used for everything else. In particular this
+allows symlinking .git/annex/tmp to a ram disk, if you want to do that.
+(It's not possible for .git/annex/misctmp to be on a different filesystem
+from the rest of the repository for various reasons.)
+
+Beat on Windows XMPP for several more painful hours. Got all the haskell
+bindings installed, except for gnuidn. And patched network-client-xmpp to
+build without gnuidn. Have not managed to get it to link.

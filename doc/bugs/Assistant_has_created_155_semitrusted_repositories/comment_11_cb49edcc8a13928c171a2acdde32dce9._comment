@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnNqLKszWk9EoD4CDCqNXJRIklKFBCN1Ao"
+ nickname="maurizio"
+ subject="comment 11"
+ date="2013-12-03T18:32:59Z"
+ content="""
+The files I sent you were collected with:
+
+```for i in $(seq 0 52); do git show git-annex:uuid.log @{$i} > ~/tmp/uuid.logs/$i; done```
+
+
+"""]]

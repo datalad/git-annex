@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 1"
+ date="2013-11-03T16:48:25Z"
+ content="""
+I can't reproduce this at all. What version of git do you have installed? Did you install git-annex from ubuntu's repository? Does the same thing happen if you install the standalone linux tarball and use it to make a new repository?
+
+git-annex never creates a file named uuid.log on disk, so it's quite strange that it shows up in the initial commit to the master branch. It sort of looks like somehow git-annex's normal use of a separate index file to stage the uuid.log to the git-annex branch is failing. Since I have never seen any problem with that, I have to suspect that the ubuntu build is somehow badly broken. Or that the git in Ubuntu is for some reason ignoring `GIT_INDEX_FILE`.
+"""]]

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmBUR4O9mofxVbpb8JV9mEbVfIYv670uJo"
+ nickname="Justin"
+ subject="comment 4"
+ date="2012-09-12T20:32:52Z"
+ content="""
+I see a migration to SHA256E currently outputs:
+
+migrate issue.txt (checksum...) (Recording state in git...)
+ok
+
+Is that verifying the existing checksum or re-computing it to re-name the file?  If the latter, couldn't the SHA256 to SHA256E migration just rename the file?
+
+I would be worried about this process hiding data corruption.. If it isn't using the old checksum but instead re-computing a new one then it would be easy to miss the fact that a files checksum changed during this process.
+"""]]

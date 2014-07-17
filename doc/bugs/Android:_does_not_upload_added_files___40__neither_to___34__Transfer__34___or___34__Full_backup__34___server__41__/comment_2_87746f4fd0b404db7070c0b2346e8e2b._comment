@@ -1,0 +1,66 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnx8kHW66N3BqmkVpgtXDlYMvr8TJ5VvfY"
+ nickname="Yaroslav"
+ subject="comment 2"
+ date="2013-12-18T02:07:46Z"
+ content="""
+enabled debug logging in the preferences of webapp, clicked on 'restart daemon',  fetched log:
+
+    $> grep -B 1 pid daemon.log                           
+    [2013-12-17 20:51:49 EST] chat: nice [\"ionice\",\"-c3\",\"git-annex\",\"transferkeys\"]
+    Invalid pid specified
+
+entire log http://www.onerussian.com/tmp/daemon.log.gz
+
+in the webbrowser page got stuck white without updating, refreshed it and got
+
+    \"Internal Server Error\"
+    git-annex: createProcess: runInteractive
+    Process: pipe: resource exhausted (Too many open files)
+
+went to terminal, ctrl-c, started again -- seems have managed to start:
+
+    $> grep -B 3 pid daemon.log 
+    (scanning...) [2013-12-17 20:57:36 EST] Watcher: Performing startup scan
+    Already up-to-date.
+    Everything up-to-date
+    Invalid pid specified
+
+disabled, and then reenabled syncing with vagus, refetched daemon.log to see similar to above message.
+
+New experiment -- added locally yet another file pics/test.jpg which according to whereis was quickly pushed out from my laptop.
+
+Then realized that daemon.log is no longer verbose! (i.e. changes in preferences within webapp didn't persist)  By now on phone it synced git, but didn't download the load (rightfully since I have instructed not to).
+
+ok -- went to enable debug logging  again in webapp -- it was already selected.
+
+in the log now found following 
+
+```
+    (started...) [2013-12-17 20:59:10 EST] main: Syncing with vagus.cns.dartmouth.edu_annex 
+    Everything up-to-date
+    Invalid pid specified
+    [2013-12-17 21:02:37 EST] main: Syncing with vagus.cns.dartmouth.edu_annex 
+    From ssh://git-annex-vagus.cns.dartmouth.edu-annex_annex/~/annex
+       c3a5fd6..29b6694  master     -> vagus.cns.dartmouth.edu_annex/master
+       d9a09e2..0c3e966  synced/git-annex -> vagus.cns.dartmouth.edu_annex/synced/git-annex
+       c3a5fd6..29b6694  synced/master -> vagus.cns.dartmouth.edu_annex/synced/master
+    error: Ref refs/heads/annex/direct/master is at 29b6694ee483c4563955bc5ae1ee1664daed7f19 but expected c3a5fd6b7cee1cbd43fbeb5aa4a445a5407067bd
+    fatal: Cannot lock the ref 'HEAD'.
+    Updating c3a5fd6..29b6694
+    Fast-forward
+    
+    (merging vagus.cns.dartmouth.edu_annex/synced/git-annex into git-annex...)
+    
+    git-annex: /storage/extSdCard/annex/.git/annex/merge/: getDirectoryContents: does not exist (No such file or directory)
+    Already up-to-date.
+    Already up-to-date.
+    [2013-12-17 21:02:41 EST] Committer: Committing changes to git
+    [2013-12-17 21:02:42 EST] Pusher: Syncing with vagus.cns.dartmouth.edu_annex 
+    Everything up-to-date
+    [2013-12-17 21:02:43 EST] Committer: Committing changes to git
+    [2013-12-17 21:02:45 EST] Pusher: Syncing with vagus.cns.dartmouth.edu_annex 
+    Everything up-to-date
+```
+I guess I will just try now to enable debug logging in .git/config while in the terminal on the phone
+"""]]

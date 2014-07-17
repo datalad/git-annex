@@ -1,0 +1,7 @@
+Mostly took a break from working on the assistant today. Instead worked
+on adding incremental fsck to git-annex. Well, that will be something
+that assistant will use, eventually, probably.
+
+Jimmy and I have been working on a self-contained OSX app for using the
+assistant, that doesn't depend on installing git, etc. More on that
+once we have something that works.

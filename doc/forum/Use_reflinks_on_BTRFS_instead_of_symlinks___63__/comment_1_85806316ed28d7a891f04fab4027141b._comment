@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://thkoch2001.myopenid.com/"
+ nickname="thkoch"
+ subject="It would also be nice, if git-annex would use btrfs reflinks on unlock"
+ date="2013-08-24T12:46:40Z"
+ content="""
+I don't know whether git-annex already does use btrfs reflinks, but I suspect, that I double the size of my git-annex repo folder on disk when I unlink all files.
+"""]]

@@ -1,0 +1,11 @@
+I thought I'd followed the walk through when initially setting up my repos.
+
+However I find that I have to do the following to sync my annex's.
+
+    git pull remote master
+    git checkout git-annex
+    git pull remote git-annex
+    git checkout master
+    git annex get .
+
+Has something gone wrong? I see no mention of syncing git-annex repos in the walk-through...

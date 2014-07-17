@@ -1,0 +1,22 @@
+$(function() {
+	$.get("@{NotifierGlobalRedirR}", function(url){
+		var f = function() {
+			longpoll_data(url,
+				function(ok, redirurl) {
+					if (ok) {
+						if (redirurl) {
+							window.location = redirurl;
+						}
+						else {
+							setTimeout(f, 10);
+						}
+					}
+					else {
+						setTimeout(f, 5000);
+					}
+				}
+			);
+		};
+		setTimeout(f, 500);
+	});
+});

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.172"
+ subject="comment 1"
+ date="2014-02-21T21:36:14Z"
+ content="""
+This really depends on the remote, some can resume where they were interrupted, such as rsync, and some cannot, such as glacier (and, er, encrypted rsync).
+"""]]

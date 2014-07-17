@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 10"
+ date="2013-04-26T20:33:03Z"
+ content="""
+Oh.. I got confused by you talking about the box remote. Lines you pasted look ok anyway.
+
+Ok, looking at the S3 remote then...
+
+> I did notice that initially the s3 remote was named \"annex\". That was probably the web interface's doing, way back when I added it.
+
+So, you can never change the names used to refer to remotes in remote.log. These names can be different from the names used to refer to the same remotes in .git/config. (Which can vary from repository to repository anyway..) So, if you originally added a s3 remote and called it \"annex\", you still need to use that name when running initremote elsewhere to add that remote to your repository.
+
+The remote with name \"s3\" added in the 11:26 is a separate s3 remote, and I think one you don't want. (And have marked dead?)
+
+I think all you need to do is \"git annex initremote annex\" to add the s3 remote you want to your new repository.
+"""]]

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 3"
+ date="2011-07-05T17:31:22Z"
+ content="""
+I've seen this kind of piping stall that is unblocked by strace before. It can vary with versions of GHC, so it would be good to know what version built git-annex (and on what OS version). I filed a bug report upstream before at <http://bugs.debian.org/624389>.
+
+I really need a full strace -f from the top, or at least a complete `strace -o log` of git-annex from one hang through to another hang. The strace you pastebinned does not seem complete. If I can work out which specific git command is being written to when it hangs I can lift the writing out into a separate thread or process to fix it.
+
+@pavel, you mentioned three defunct git processes, and then showed ps output for 3 git processes. Were there 6 git processes in total? And then when you ran it again you said there were no defunct gits -- where the other 3 git processes running once again?
+
+As best I can make out from the (apparently) running git processes, it seems like the journal files for the upgrade had all been written, and the hang occurred when staging them all into the index in preparation for a commit. I have committed a change that lifts the code that does that write out into a new process, which, if I am guessing right on the limited info I have, will avoid the hang.
+
+However, since I can't reproduce it, even when I put 200 thousand files in the journal and have git-annex process them, I can't be sure.
+"""]]

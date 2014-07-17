@@ -1,0 +1,4 @@
+Hello,
+
+I have added a few repositories for testing purpose and would like to remove them.
+Is it possible to remove a repository through assistant? 

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.51"
+ subject="comment 5"
+ date="2013-09-12T21:44:32Z"
+ content="""
+It may be that there is a timeout in the http library that I am using for webdav that is too low. See <https://github.com/snoyberg/http-conduit/issues/137>
+"""]]

@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnBEsNDl_6O4rHb2en3I0-fg-6fUxglaRQ"
+ nickname="chee"
+ subject="Recent install for OS X"
+ date="2012-11-13T04:40:05Z"
+ content="""
+if you are having trouble installing with `cabal install git-annex` at the moment, trouble of the XML kind, you'll need to do a couple things:
+
+`brew update`
+`brew install libxml2`
+`cabal update`
+`cabal install libxml --extra-include-dirs=/usr/local/Cellar/libxml2/2.8.0/include/libxml2 --extra-lib-dirs=/usr/local/Cellar/libxml2/2.8.0/lib`
+
+well, then i hit a brick wall.
+
+well.
+
+I got it to work by manually symlinking from `../Cellar/libxml2/2.8.0/lib/`* into `/usr/local` and from `../../Cellar/libxml2/2.8.0/lib/` to `/usr/local/pkgconfig`, but i can't recommend it or claim to be too proud about it all.
+
+OS X already has an old libxml knocking around so this might ruin everything for me.
+
+let's find out !
+"""]]

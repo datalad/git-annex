@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk7iPiqWr3BVPLWEDvJhSSvcOqheLEbLNo"
+ nickname="Dirk"
+ subject="comment 4"
+ date="2014-06-11T19:47:35Z"
+ content="""
+For me the autobuilt tarball works. Go to this page: http://git-annex.branchable.com/install/Linux_standalone/. Right before the comments start is a list of the different autobuilt tar balls.
+
+I assume that this fix will appear in the regular tarballs with the next release.
+
+Dirk
+
+
+"""]]

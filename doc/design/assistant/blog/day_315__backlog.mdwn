@@ -1,0 +1,12 @@
+After a couple days plowing through it, my backlog is down to 30 messages
+from 150. And most of what's left is legitimate bugs and todo items.
+
+Spent a while today on an ugly file descriptor leak in the assistant's
+local pairing listener. This was an upstream bug in the network-multicast
+library, so while I've written a patch to fix it, the fix isn't quite 
+deployed yet. The file descriptor leak happens when the assistant is
+running and there is no network interface that supports multicast.
+I was able to reproduce it by just disconnecting from wifi.
+
+Meanwhile, guilhem has been working on patches that promise to massively
+speed up `git annex unused`! I will be reviewing them tonight.

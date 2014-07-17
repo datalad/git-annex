@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm3vKzS4eOWYpKMoYXqMIjNsIg_nYF-loU"
+ nickname="Konubinix"
+ subject="Precision of the use case"
+ date="2014-03-13T11:47:59Z"
+ content="""
+I realized that the directory restriction described earlier is not clear. Let me explain it.
+
+Say I have a big repository of files with the following structure.
+
+A/...
+B/...
+C/...
+D/D1/...
+D/D2/...
+D/D3/...
+
+Imagine that each of A, B, C and D contains a lot of files.
+
+Now imagine that I have often put in the preferred content of my phone files in one of D1, D2 or D3. (for instance, include=D/D1/*)
+
+I implicitly know that I can restrict the command to D, and I can rely on preferred content to know what file from D I have to put into my phone.
+
+Then, I can run
+      $ git annex get --auto D
+      $ git annex copy --auto --to phone D
+      $ git annex drop --auto D
+
+This in my use case takes 3 minutes.
+
+When I run
+     $ git annex sync --content phone
+
+git annex goes recursively through A, B and C and that takes a long time (much more than 3 minutes). This time is really wasted since I know I only want to sync files from D.
+
+I cannot test the behavior of \"git annex sync --content\", but if I restrict the sync to phone, will it take the files from the NAS to put them on the phone?
+If I don't precise phone in the command line, it will try to sync with other repositories not in sync that I don't want to be in sync for the time being.
+"""]]

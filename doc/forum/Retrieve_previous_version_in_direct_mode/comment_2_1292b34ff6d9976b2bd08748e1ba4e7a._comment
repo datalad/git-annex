@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmNu4V5fvpLlBhaCUfXXOB0MI5NXwh8SkU"
+ nickname="Adam"
+ subject="Disk space?"
+ date="2013-11-02T01:33:10Z"
+ content="""
+Sorry, I'm confused: does using regular client repositories in direct mode still store old versions of files?  If so, for how long?  I don't have unlimited disk space, and if it stored in git every copy of every file forever, especially large ones, I'd run out of space...and then what?
+"""]]

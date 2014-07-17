@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 1"
+ date="2013-12-31T19:35:20Z"
+ content="""
+When git-annex is deleting an object's content, it opens the object, locks it, unlinks it, and closes it. This is necessary in order to avoid various race conditions that could cause data loss (ie, another repository might be in the process of verifying that the object that is being deleted is present).
+
+I suspect that is what causes the problem with encfs. Since it is entirely a valid POSIX operation to do this, and since not doing it could cause data loss in some situations, I am very reluctant to change anything in git-annex in this area.
+
+It's unfortunate that encfs seems to cause so many problems for POSIX filesystem semantics. Luckily, there are other ways to encrypt filesystems that do not suffer from such problems.
+"""]]

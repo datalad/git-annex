@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 3"
+ date="2014-02-25T09:57:09Z"
+ content="""
+actually in your mp3 example you could have ....
+
+ATTRIBUTE=sample_rate, VALUE=22100, UNIT=Hertz
+
+another example use case is to always be consistent with the AVU order then you could stick in ntriples from RDF to do other cool things by looking up various linked data sources -- see http://www.w3.org/2001/sw/RDFCore/ntriples/ and http://www.freebase.com/, actually this would be quite cool if git-annex examined the mp3's id3 tag, the created an ntriple styled entry can be automatically parsed with the web-based annex gui and automatically pull in additional meta-data from the likes of freebase. I guess the list of ideas can just only get bigger with this potential metadata capability.
+"""]]

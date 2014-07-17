@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="divB"
+ ip="171.67.174.99"
+ subject="comment 2"
+ date="2014-05-09T01:02:22Z"
+ content="""
+Thanks.
+
+As you can see everything except attic and games is missing.
+
+As far as I understand, yes, they are committed. How can I check?
+On the server I issued
+    git annex add .
+
+\"git annex status\" does not output anything. Remember: I use direct mode.
+"""]]

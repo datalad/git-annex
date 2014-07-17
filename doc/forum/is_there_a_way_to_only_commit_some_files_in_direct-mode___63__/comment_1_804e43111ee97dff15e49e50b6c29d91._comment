@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 1"
+ date="2013-12-12T17:01:50Z"
+ content="""
+You can `git annex add` some files and leave others not added, and `git annex sync` will commit only the added ones. 
+
+What is missing is a way to have changed some files that were added, and avoid `git annex sync` committing them. 
+
+There is no technical reason this cannot be supported in direct mode, there is just no user interface built to do it. 
+
+One way is to temporarily bypass the direct mode guard, by using the appropriate git command line option to set core.bare=false temporarily while committing files. Note that it's then up to you to avoid staging the entire content of the file into the index (so no `git commit -a` etc).
+"""]]

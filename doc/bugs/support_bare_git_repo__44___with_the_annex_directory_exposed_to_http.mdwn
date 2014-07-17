@@ -1,0 +1,20 @@
+Let's say that http://people.collabora.com/~alsuren/git/fate-suite.git/ is a bare git repo. It has been 'git update-server-info'd so that it can be served on a dumb http server.
+
+The repo is also a git annex remote, created using the following commands:
+
+* git remote add alsuren git+ssh://people.collabora.co.uk/user/alsuren/public_html/fate-suite.git
+* git push alsuren --all
+* git annex copy --to=alsuren
+
+so http://people.collabora.com/~alsuren/git/fate-suite.git/annex is a valid git annex (though listing dirs is forbidden, so you need to know the filenames ahead of time).
+
+I would like to be able to use the following commands to get a clone of the repo:
+
+* git clone http://people.collabora.com/~alsuren/git/fate-suite.git/
+* cd fate-suite
+* git annex get
+
+This would allow contributors to quickly get a copy of our upstream repo and start contributing with minimal bandwidth/effort.
+
+> This is now supported.. I look forward to seeing your project using it!
+> --[[Joey]] [[!tag done]]

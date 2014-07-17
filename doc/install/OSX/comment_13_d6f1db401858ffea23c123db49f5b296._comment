@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.3.125"
+ subject="comment 13"
+ date="2013-02-05T19:46:29Z"
+ content="""
+@eric `cabal update && cabal upgrade git-annex`
+"""]]

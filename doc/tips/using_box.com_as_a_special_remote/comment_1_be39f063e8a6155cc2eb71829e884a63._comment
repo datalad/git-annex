@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlmvi8Z-rUen8xIety5uiJitI5rnMrz8Jk"
+ nickname="Timothy"
+ subject="updated url for drive mount"
+ date="2013-12-18T20:20:12Z"
+ content="""
+I had to change the url in fstab to https://**dav**.box.com/dav
+"""]]

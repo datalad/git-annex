@@ -1,0 +1,6 @@
+I have an e-mail server configured to save my mail in ~/Maildir on an account that is available over ssh. I'd like to keep emailserver:~/Maildir in a two-way sync with laptop:~/Mail/private essentially creating a poor man's IMAP — without setting up and maintaining an actual IMAP server. **Is it an appropriate use of git-annex or would another tool be more fitting? And how do I go about doing it?** I'd like to sync the files, the content, not just information about the files or other meta-data. 
+
+I tried setting it up with the webUI to the assistant but it only offers encrypted storage[1] on the remote server. I looked into setting it up manually but "git-annex does not notice when files are added to remote rsync repositories."[2]
+
+[1] http://git-annex.branchable.com/bugs/Remote_repositories_have_to_be_setup_encrypted/  
+[2] from comments on http://git-annex.branchable.com/special_remotes/rsync/

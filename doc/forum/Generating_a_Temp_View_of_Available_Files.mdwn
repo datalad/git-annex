@@ -1,0 +1,1 @@
+Is it possible to generate a view of files currently available on the annex? My use case is that I have pretty large repo (couple of TBs) and I have partial checkouts on multiple machines instead of seeing 100s of broken symlinks I would like to just filter filter files that are present on the machine?

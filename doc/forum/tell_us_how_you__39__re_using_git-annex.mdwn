@@ -1,0 +1,6 @@
+Tell your git-annex stories here. Feel free to give as little or as much detail
+as appropriate about how you're using it. How's it working out for you?
+
+See [[testimonials]] for some other stories.
+
+[[!meta author=Joey]]

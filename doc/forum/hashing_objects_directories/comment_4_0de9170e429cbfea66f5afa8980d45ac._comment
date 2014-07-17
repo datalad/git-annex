@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 4"
+ date="2011-03-16T04:06:19Z"
+ content="""
+The .git-annex/ directory is what really needs hashing.
+
+Consider that when git looks for changes in there, it has to scan every file in the directory. With hashing, it should be able to more quickly identify just the subdirectories that contained changed files, by the directory mtimes.
+
+And the real kicker is that when committing there, git has to create a tree object containing every single file, even if only 1 file changed. That will be a lot of extra work; with hashed subdirs it will instead create just 2 or 3 small tree objects leading down to the changed file. (Probably these trees both pack down to similar size pack files, not sure.)
+"""]]

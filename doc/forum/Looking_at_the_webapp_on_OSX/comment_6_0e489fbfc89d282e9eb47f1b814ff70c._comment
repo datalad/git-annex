@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="jtang"
+ ip="79.97.135.214"
+ subject="comment 6"
+ date="2012-07-27T18:21:17Z"
+ content="""
+FYI, the webapp starts up and sends me to a web browser with the correct page ;) this is after the other issue of [[Watch command as of commit 6cecc26206c4a539999b04664136c6f785211a41 segfaults]] got fixed.
+"""]]

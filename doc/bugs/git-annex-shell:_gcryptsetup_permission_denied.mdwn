@@ -1,0 +1,48 @@
+### Please describe the problem.
+I followed the tip on [fully encrypted git repositories with gcrypt](http://git-annex.branchable.com/tips/fully_encrypted_git_repositories_with_gcrypt/) to create encrypted git-annex repository on a ssh server. When I try to checkout the repository, things break as follows:
+
+`git clone gcrypt::ssh://my.server/home/me/encryptedrepo myrepo` 
+
+works as expected but when in the myrepo directory, 
+
+`git annex enableremote encryptedrepo gitrepo=ssh://my.server/home/me/encryptedrepo`
+
+issues the following text (among normal messages):
+
+`git-annex-shell: gcryptsetup permission denied`
+
+Then while the links are there, 
+
+`git annex get --from encryptedrepo`
+
+does nothing (in the sense that the content is not retrieved). 
+
+This seems to have everything to do with git-annex-shell as the exact same manipulations but with a local repository work perfectly. Unfortunately, I don't know haskell so [this code](https://github.com/joeyh/git-annex/blob/master/Command/GCryptSetup.hs) is cryptic to me. I can guess there is a problem getting the uuid of the repository, but as far as I can tell the bare distant repo looks fine. 
+
+### What steps will reproduce the problem?
+
+Create a standard git annex local repository and then follow the [fully encrypted git repositories with gcrypt tip](http://git-annex.branchable.com/tips/fully_encrypted_git_repositories_with_gcrypt/) to create an encrypted git-annex repository on a ssh server. Then follow the instructions in the same tip to clone the remote repository. 
+
+### What version of git-annex are you using? On what operating system?
+Both computers run ubuntu 12.04 with all updates and the latest git annex from the ppa, that is:
+
+git-annex version: 4.20131024
+
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP Feeds Quvi TDFA
+
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SHA256 SHA1 SHA512 SHA224 SHA384 WORM URL
+
+remote types: git gcrypt S3 bup directory rsync web webdav glacier hook
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+> [[fixed|done]] --[[Joey]]

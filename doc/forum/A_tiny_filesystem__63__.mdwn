@@ -1,0 +1,7 @@
+First of all, thanks for the amazing work! I've already tried Owncloud, SparkleShare, Unison, rsync and lsycnd. Finally I may have found the real deal.
+
+My main problem with git-annex right now is that it is not fast/reliable enough. The main issues being: broken links now and then (I've probably done something wrong) and the slow: "startup scans", "consistency checks", "attempting to fix here" and "syncing with server". (50 Giga, Work-Server-Home, setup via webapp assistant)
+
+Please, tell me if I'm wrong, but I have the impression that git-annex would get much more robust if it was 100% sure that nobody could mess with its file tree. One possibility would be to add the option (when creating a repo) to make a protected filesystem controlled by git-annex only via FUSE (not something like ShareBox). This could be a tiny filesystem (such as loggedfs) that does nothing but make sure that only git-annex can mount/change files. This would definitely add to speed (reducing checks) and stability.
+
+I'm I being too naive? Most likely there is something I'm overlooking, like the amount of work this would involve.

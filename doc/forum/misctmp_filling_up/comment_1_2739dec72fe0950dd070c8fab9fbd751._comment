@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.114"
+ subject="comment 1"
+ date="2014-04-27T00:16:49Z"
+ content="""
+You can delete them.
+
+AFAIK this should only happen if the assistant is interrupted while it's adding files. I plan to make the assistant clean up old tmp files on startup.
+"""]]

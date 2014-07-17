@@ -1,0 +1,38 @@
+In both the .git/annex directory and the git-annex branch, two levels of
+hash directories are used, to avoid issues with too many files in one
+directory.
+
+Two separate hash methods are used. 
+
+* hashdirmixed is only used for non-bare git repositories.
+  (We'd like to stop using this, but it'd be too annoying to change
+  all the git-annex symlinks!)
+
+* hashdirlower is used for bare git repositories, the 
+  git-annex branch, and on special remotes as well.
+
+Note that `git annex find` and `git annex examinekey` can be used with
+the `--format` option to find the hash directories. The explanation
+below is only for completeness.
+
+## new hash format
+
+This uses two directories, each with a three-letter name, such as "f87/4d5"
+
+The directory names come from the md5sum of the [[key|key_format]].
+
+For example:
+
+	echo -n	"SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" | md5sum
+
+## old hash format
+
+This uses two directories, each with a two-letter name, such as "pX/1J"
+
+It takes the md5sum of the key, but rather than a string, represents it as 4
+32bit words. Only the first word is used. It is converted into a string by the
+same mechanism that would be used to encode a normal md5sum value into a
+string, but where that would normally encode the bits using the 16 characters
+0-9a-f, this instead uses the 32 characters "0123456789zqjxkmvwgpfZQJXKMVWGPF".
+The first 2 letters of the resulting string are the first directory, and the
+second 2 are the second directory.

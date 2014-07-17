@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="https://a-or-b.myopenid.com/"
+ ip="203.45.2.230"
+ subject="Compiling git-annex on OSX (with 32 bit Haskell)"
+ date="2012-07-24T03:26:45Z"
+ content="""
+I came across an issue when following the instructions here:
+     <http://git-annex.branchable.com/install/OSX/>
+
+I'm compiling the 'assistant' branch (522f568450a005ae81b24f63bb37e75320b51219).
+
+
+The pre-compiled version of Haskell for OSX recommends the 32 bit installer, however git-annex compiles
+
+>  Utility/libdiskfree.o Utility/libkqueue.o Utility/libmounts.o
+
+as 64 bit. The 'make' command fails on linking 32- and 64-bit code.
+
+So... I made a small change to the Makefile
+
+>  CFLAGS=-Wall
+
+becomes
+
+>  CFLAGS=-Wall -m32
+
+I don't know if there is an easy way to programmatically check for this, or even if you'd want to spend time doing it, but it might help someone else out.
+
+<https://gist.github.com/3167798>
+"""]]

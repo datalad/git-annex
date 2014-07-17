@@ -1,0 +1,52 @@
+### Please describe the problem.
+
+When git annex is used on a encfs mount, ``.fuse_hiddenXXXX`` files are left behind in ``.git/annex/objects/*/*/`` when I ``git annex move`` files off the encfs
+
+### What steps will reproduce the problem?
+
+    mkdir normal plain enc
+    encfs -o kernel_cache "$(realpath enc)" "$(realpath plain)"
+
+    cd normal
+    git init
+    git annex init normal
+
+    cd ../plain
+    git init
+    git annex init enc
+    dd if=/dev/urandom bs=1M count=11 of=11m
+    git annex add 11m
+    git remote add normal "$(realpath ../normal)"
+    du -hscL *
+        << 11MB-ish >>
+    du -hsc .git/annex/objects
+        << 11MB-ish >>
+    git annex move --to=normal 11m
+    du -hscL *
+        << 0 >>
+    du -hsc .git/annex/objects
+        << 11MB-ish but should be 0-ish >>
+    tree -a .git/annex/objects
+        << ??/??/SHA1-*/.fuse_hidden??????? >>
+    lsof .git/annex/objects/??/??/SHA*/.fuse_hidden*
+        << shows no programs have this file open >>
+
+
+### What version of git-annex are you using? On what operating system?
+
+5.20131221 on debian unstable (installed by aptitude from debian/main)
+
+### Please provide any additional information below.
+
+I did a couple quick internet searches on these .fuse_hidden files, and (if a random person on the internet is correct) they are created by enfs (or maybe fuse itself) when a file is unlinked while open. It is supposed to be deleted when the file is closed.
+
+Possibilities come to mind:
+
+*    There's a bug in encfs/fuse
+*    git annex fails to close the file, and whatever cleanup happens when the linux kernel closes git annex fails to trigger encfs/fuse's real unlinking/cleanup thing
+
+
+
+I'm happy to help with further testing, experimenting, etc. I'm good at git, the commandline, programming, etc but I don't know Haskell.
+
+- Jason <jason@jasonwoof.com>

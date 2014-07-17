@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnX1msQxnLoSeu7q-i-c9BWghonsN7Qmns"
+ nickname="Jan Ulrich"
+ subject="comment 3"
+ date="2014-03-05T11:47:06Z"
+ content="""
+I observe something similar. Today git-annex started to repair a repository. CPU is at 100%, I can still work because I have a multikernel system, so I'll wait and see if it comes to an end.
+
+"""]]

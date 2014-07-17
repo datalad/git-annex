@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="99.54.57.201"
+ subject="comment 1"
+ date="2013-06-25T22:26:27Z"
+ content="""
+I've been real quiet cause everything's been working great. :)
+
+One thing I have not messed with yet is the whole XMPP thing.  I mostly don't share between two machines that are online at the same time, I just use git annex for backups and to have content \"optionally\" available.  I should give XMPP a try sometime.
+
+"""]]

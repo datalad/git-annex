@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="git tweak-fetch"
+ date="2011-12-26T18:50:35Z"
+ content="""
+The git tweak-fetch hook that I have been developing, and hope will be accepted into git soon, provides some abilities that could be used to make \"git pull remote\" always merge remote/master. Normall, git can only be configured to do that merge automatically for one remote (ie, origin). But the tweak-fetch hook can flag arbitrary branches as needing merge. 
+
+So, it could always flag tracking branches of the currently checked out branch for merge. This would be enabled by some setting, probably, since it's not necessarily the case that everyone wants to auto-merge when they pull like this. (Which is why git doesn't do it by default after all.)
+
+(The tweak-fetch hook will also entirely eliminate the need to run git annex merge manually, since it can always take care of merging the git-annex branch.)
+"""]]

@@ -1,0 +1,6 @@
+As discussed on debconf, I have the following use case:
+
+* I have a dump remote, a folder on my webserver where files are uploaded through the web app. I don't have git on the webserver, just a plain folder.
+* I have git-annex repo on a development server. The development server polls the webserver (ssh/ftp) once in an hour and synchronizes the state of the local git-annex repo with the state found on the webserver and commits that.
+* This is not meant to be backup facility. I just want to be able to have a state on my development machine that is very likely to the state on the webserver.
+

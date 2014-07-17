@@ -1,0 +1,9 @@
+SpiderOak is a great backup service and many of us have unlimited accounts with them since World Backup Day.  That makes SpiderOak a very interesting candidate for use as an archive or backup node.  I can think of only two ways to go about this:
+
+1. Designate one of your computers as an archive/backup and use spideroak independantly to sync that archive.  This is very unattractive, since it makes the spideroak backup completely unknown to git-annex.
+
+2. Integrate the SpiderOak CLI tool somehow as a remote.  I don't know to what extent this would be possible, but if it were, that'd be awesome.  And a lot of work, presumably.
+
+Bonus option:
+
+3. Can the SpiderOak API be useful? https://spideroak.com/faq/questions/37/how_do_i_use_the_spideroak_web_api/

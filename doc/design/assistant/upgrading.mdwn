@@ -1,0 +1,52 @@
+The assistant should support upgrading itself.
+
+## non-distro upgrades
+
+When git-annex was installed from this website, the assistant should poll
+periodically (once a day or so) to see if there is a new version.
+It downloads, over https, a .info file, which contains a serialized data
+type containing upgrade information. The url it's downloaded from is
+configured by setting `UPGRADE_LOCATION` when building git-annex on the
+autobuilders.
+
+When a new version is found, the webapp prompts the user to start the
+upgrade. (annex.autoupgrade can be set to true to upgrade w/o prompting.)
+
+The upgrade process is automatic, and rather tricky. The file is downloaded
+using git-annex (as a regular key!), and is then unpacked into a new
+directory, and the programfile updated to point to it. Then git-annex
+restarts itself.
+
+### manifest files
+
+To clean up the old installation, a git-annex.MANIFEST file is looked for
+in it, and the files listed, as well as empty directories, are deleted.
+I don't want to accidentially delete something I didn't ship!
+
+## restart on upgrade
+
+When git-annex is installed from a proper distribution package, there is no
+need for the above. But, the assistant still needs to notice when git-annex
+get upgraded, and offer to restart (or automatically restart when
+annex.autoupgrade is set).
+
+This is done using the DirWatcher, watching the directory containing the
+git-annex binary. Or, in the case of a non-distro install, watching the
+directory where eg git-annex.linux/ was unpacked.
+
+When an change is detected, restart.
+
+## multi-daemon upgrades
+
+A single system may have multiple assistant daemons running in different
+repositories.
+
+In this case, one daemon should do the non-distro upgrade, and the rest
+should notice the upgrade and restart.
+
+I don't want every daemon trying to download the file at once..
+
+Approach: The first new version is installed into a stable directory, based
+on its version. So, start the upgrade by making this directory. If upgrade
+is already in progress, the directory will already exist. (Remove directory
+if upgrade fails.)

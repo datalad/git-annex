@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.27"
+ subject="comment 1"
+ date="2012-11-07T19:02:45Z"
+ content="""
+Notice where it says:
+
+> (checking master...) (checking rose/master...) (checking x200s/master...)
+
+AFAICS, every one of those branches still refers to the migrated keys. For one thing, `git annex migrate` makes changes, but it doesn't commit them to master. And then you need to wait until the other remote are updated to.
+
+Also, there's not really any point in worrying about getting rid of migrated keys, since `git-annex migrate` hard links the new key to the old key, so the old ones don't take up any additional disk space.
+
+In other words: This should take care of itself as you continue to use the repository.
+"""]]

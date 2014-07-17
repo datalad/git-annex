@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 1"
+ date="2013-08-26T18:11:07Z"
+ content="""
+I have purposefully kept a list of feeds out of git-annex. I handle this by having a `feeds` file, which I check into git. Then a cron job runs: `xargs git-annex importfeed < feeds`
+"""]]

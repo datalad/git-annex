@@ -1,0 +1,7 @@
+Out of simple curiosity, how does 'git annex migrate' work?  I'm mostly wondering how file integrity is ensured.
+
+Let's say you want to migrate foo.txt from (say) md5 to sha256.  Does git annex simply sha256sum foo.txt and rename it in the .git/objects folder to the new sum?  Or does it md5sum foo.txt, verify that it's the not corrupt, then sha256sum it and rename to the new sum?
+
+You could run into problems if you migrate without first verifying; if the file is corrupt and you simply sha256sum and rename it, then the file wouldn't seem corrupt at your next fsck.
+
+I'm sure you've considered this during the basic design phase of git-annex, but I'd just like to be sure.  I'm kind of paranoid when it comes to data integrity. =P

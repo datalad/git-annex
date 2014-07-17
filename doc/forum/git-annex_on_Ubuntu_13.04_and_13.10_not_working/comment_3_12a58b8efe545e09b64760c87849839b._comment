@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlEeLtIxQCU0qe4q5lbrZp8AcUSUUcRrkg"
+ nickname="Zach"
+ subject="comment 3"
+ date="2013-10-23T02:01:09Z"
+ content="""
+The problem is not with a remote annex. The issue I am having is git-annex never finishes syncing.
+
+Maybe a screenshot will help. http://i.imgur.com/9HSr8bl.png
+
+It never gets passed the Startup scan.
+"""]]

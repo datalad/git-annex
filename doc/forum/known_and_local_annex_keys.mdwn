@@ -1,0 +1,14 @@
+I have a direct repository with the assistant running (v4.20131002). The repo is in the backup group and should be grabbing every known annex file. Yet `git annex status` says:
+
+    local annex keys: 1386
+    local annex size: 94.53 gigabytes
+    known annex keys: 1387
+    known annex size: 94.53 gigabytes
+
+As you can seem there is one more known annex key than there are local ones. Neither `git annex get` nor `git annex sync` changes the numbers. According to `tree` the repo dir contains exactly 1387 files, which means that the missing file must exist on disk. 
+
+1) How do I find out which is the file in question? How do I get it synchronized? 
+
+Yesterday there were 1376 known annex keys. Today there are 1387. For some reason the number of keys went up by 11, and I would like to know how and why. The log suggests that a couple of files have been added from inside the repo directory, but I am positive that these files already existed in the annex directory yesterday, and that I ran `git annex sync` manually without the number of local and/or known keys going up.
+
+2) Why weren't the files synced before? Is there a way to find out whether they were or were not part of the annex yesterday - maybe list all files sorted by the date they were added? 

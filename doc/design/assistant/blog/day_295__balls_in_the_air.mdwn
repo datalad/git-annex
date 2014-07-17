@@ -1,0 +1,13 @@
+Been keeping several non-coding balls in the air recently, two of which
+landed today.
+
+First, Rsync.net is [offering a discount to all git-annex users](http://www.rsync.net/products/git-annex-pricing.html),
+at one third their normal price.
+"People using git-annex are clueful and won't be a big support burden for us,
+so it's a win-win."
+The web app will be updated offer the discount when setting up a rsync.net
+repository.
+
+Secondly, I've recorded an interview today for the Git Minutes podcast,
+about git-annex. Went well, looking forward to it going up, probably on
+Monday.

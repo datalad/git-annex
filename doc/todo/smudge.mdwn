@@ -1,0 +1,162 @@
+git-annex should use smudge/clean filters.
+
+----
+
+Update: Currently, this does not look likely to work. In particular,
+the clean filter needs to consume all stdin from git, which consists of the
+entire content of the file. It cannot optimise by directly accessing
+the file in the repository, because git may be cleaning a different
+version of the file during a merge. 
+
+So every `git status` would need to read the entire content of all
+available files, and checksum them, which is too expensive.
+
+> Update from GitTogether: Peff thinks a new interface could be added to
+> git to handle this sort of case in an efficient way.. just needs someone
+> to do the work. --[[Joey]] 
+
+----
+
+The clean filter is run when files are staged for commit. So a user could copy
+any file into the annex, git add it, and git-annex's clean filter causes
+the file's key to be staged, while its value is added to the annex.
+
+The smudge filter is run when files are checked out. Since git annex
+repos have partial content, this would not git annex get the file content.
+Instead, if the content is not currently available, it would need to do
+something like return empty file content. (Sadly, it cannot create a
+symlink, as git still wants to write the file afterwards.)
+
+So the nice current behavior of unavailable files being clearly missing due
+to dangling symlinks, would be lost when using smudge/clean filters.
+(Contact git developers to get an interface to do this?)
+
+Instead, we get the nice behavior of not having to remeber to `git annex
+add` files, and just being able to use `git add` or `git commit -a`,
+and have it use git-annex when .gitattributes says to. Also, annexed
+files can be directly modified without having to `git annex unlock`.
+
+### design
+
+In .gitattributes, the user would put something like "* filter=git-annex".
+This way they could control which files are annexed vs added normally.
+
+(git-annex could have further controls to allow eg, passing small files
+through to regular processing. At least .gitattributes is a special case,
+it should never be annexed...)
+
+For files not configured this way, git-annex could continue to use
+its symlink method -- this would preserve backwards compatability,
+and even allow mixing the two methods in a repo as desired.
+
+To find files in the repository that are annexed, git-annex would do
+`ls-files` as now, but would check if found files have the appropriate
+filter, rather than the current symlink checks. To determine the key
+of a file, rather than reading its symlink, git-annex would need to
+look up the git blob associated with the file -- this can be done
+efficiently using the existing code in `Branch.catFile`.
+
+The clean filter would inject the file's content into the annex, and hard
+link from the annex to the file. Avoiding duplication of data.
+
+The smudge filter can't do that, so to avoid duplication of data, it
+might always create an empty file. To get the content, `git annex get`
+could be used (which would hard link it). A `post-checkout` hook might
+be used to set up hard links for all currently available content.
+
+#### clean
+
+The trick is doing it efficiently. Since git a2b665d, v1.7.4.1,
+something like this works to provide a filename to the clean script:
+
+	git config --global filter.huge.clean huge-clean %f
+
+This could avoid it needing to read all the current file content from stdin
+when doing eg, a git status or git commit. Instead it is passed the
+filename that git is operating on, in the working directory.
+(Update: No, doesn't work; git may be cleaning a different file content
+than is currently on disk, and git requires all stdin be consumed too.)
+
+So, WORM could just look at that file and easily tell if it is one
+it already knows (same mtime and size). If so, it can short-circuit and
+do nothing, file content is already cached.
+
+SHA1 has a harder job. Would not want to re-sha1 the file every time,
+probably. So it'd need a local cache of file stat info, mapped to known
+objects.
+
+But: Even with %f, git actually passes the full file content to the clean
+filter, and if it fails to consume it all, it will crash (may only happen
+if the file is larger than some chunk size; tried with 500 mb file and 
+saw a SIGPIPE.) This means unnecessary works needs to be done, 
+and it slows down *everything*, from `git status` to `git commit`.
+**showstopper** I have sent a patch to the git mailing list to address
+this. <http://marc.info/?l=git&m=131465033512157&w=2> (Update: apparently
+can't be fixed.)
+
+#### smudge
+
+The smudge script can also be provided a filename with %f, but it
+cannot directly write to the file or git gets unhappy.
+
+### dealing with partial content availability
+
+The smudge filter cannot be allowed to fail, that leaves the tree and
+index in a weird state. So if a file's content is requested by calling
+the smudge filter, the trick is to instead provide dummy content,
+indicating it is not available (and perhaps saying to run "git-annex get").
+
+Then, in the clean filter, it has to detect that it's cleaning a file
+with that dummy content, and make sure to provide the same identifier as
+it would if the file content was there. 
+
+I've a demo implementation of this technique in the scripts below.
+
+----
+
+### test files
+
+huge-smudge:
+
+<pre>
+#!/bin/sh
+read f
+file="$1"
+echo "smudging $f" >&2
+if [ -e ~/$f ]; then
+	cat ~/$f # possibly expensive copy here
+else
+	echo "$f not available"
+fi
+</pre>
+
+huge-clean:
+
+<pre>
+#!/bin/sh
+file="$1"
+cat >/tmp/file
+# in real life, this should be done more efficiently, not trying to read
+# the whole file content!
+if grep -q 'not available' /tmp/file; then
+	awk '{print $1}' /tmp/file # provide what we would if the content were avail!
+	exit 0
+fi
+echo "cleaning $file" >&2
+# XXX store file content here
+echo $file
+</pre>
+
+.gitattributes:
+
+<pre>
+*.huge filter=huge
+</pre>
+
+in .git/config:
+
+<pre>
+[filter "huge"]
+        clean = huge-clean %f
+        smudge = huge-smudge %f
+<pre>

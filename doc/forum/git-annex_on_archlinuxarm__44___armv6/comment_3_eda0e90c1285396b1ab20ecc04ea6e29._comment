@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.46"
+ subject="comment 3"
+ date="2014-01-26T17:59:52Z"
+ content="""
+Well, yes, the first step will be getting a ghc for the architecture, and then it's just a matter of following [[install/cabal]]
+"""]]

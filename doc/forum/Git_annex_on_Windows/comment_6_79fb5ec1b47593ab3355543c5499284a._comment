@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://alerque.com/"
+ nickname="Caleb"
+ subject="path issue"
+ date="2014-03-20T13:05:34Z"
+ content="""
+It seems the use of the cmd folder in the Windows git-annex installer no longer meshes with the git install from msysgit. Changing \"cmd\" to \"bin\" during the install process made it work for me.
+"""]]

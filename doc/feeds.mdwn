@@ -1,0 +1,4 @@
+Aggregating git-annex mentions from elsewhere on the net..
+
+* [[!aggregate expirecount=25 name="twitter" feedurl="http://tmp.kitenet.net/git-annex-twitter.rss" url="http://search.twitter.com/search.atom?q=git-annex"]]
+

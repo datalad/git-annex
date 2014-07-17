@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="http://julien.lefrique.name/"
+ nickname="jlefrique"
+ subject="QNAP"
+ date="2013-12-17T07:57:37Z"
+ content="""
+Hi Joey,
+
+Thank you for taking the time to setup an ARM build. I am trying to run the last standalone build on a QNAP TS-219PII. I get the following error. Do you have any ideas?
+
+    $ uname -a
+    Linux willow 2.6.33.2 #1 Fri Mar 1 04:41:48 CST 2013 armv5tel unknown
+    $ ./runshell
+    $ cd ../annex
+    $ git annex version
+    git-annex version: 5.20131216-g07252d6
+    build flags: Assistant Pairing S3 Inotify DBus XMPP Feeds Quvi TDFA CryptoHash
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web glacier hook
+    local repository version: 3
+    default repository version: 3
+    supported repository versions: 3 5
+    upgrade supported from repository versions: 0 1 2 4
+    $ git annex info        
+    repository mode: indirect
+    trusted repositories: fatal: cannot get RLIMIT_NOFILE: Bad address
+    fatal: cannot get RLIMIT_NOFILE: Bad address
+    fatal: cannot get RLIMIT_NOFILE: Bad address
+    fatal: cannot get RLIMIT_NOFILE: Bad address
+    fatal: cannot get RLIMIT_NOFILE: Bad address
+    fatal: cannot get RLIMIT_NOFILE: Bad address
+
+I am still using the version 3.8.3 of the QNAP distribution. I will try to update to the last version (4.0.5) to see if it helps.
+"""]]

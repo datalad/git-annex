@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 2"
+ date="2013-05-15T22:30:05Z"
+ content="""
+I was thinking maybe migrating away from gitbuilder to using something like buildbot as it seems to be a better fit for this project than gitbuilder.
+"""]]

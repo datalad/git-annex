@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.252.11.120"
+ subject="comment 2"
+ date="2012-11-13T17:09:31Z"
+ content="""
+It's not there yet. I don't think it will be hard to add, most of the same things need to be done to support upload progress bars with S3.
+"""]]

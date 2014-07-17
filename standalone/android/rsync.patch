@@ -1,0 +1,40 @@
+From f91df535053958600d57f9df78d9ce84c8718655 Mon Sep 17 00:00:00 2001
+From: Joey Hess <joey@kitenet.net>
+Date: Wed, 13 Feb 2013 15:51:40 -0400
+Subject: [PATCH] android portability
+
+---
+ authenticate.c |    3 ++-
+ batch.c        |    2 +-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/authenticate.c b/authenticate.c
+index 7650377..626dec6 100644
+--- a/authenticate.c
++++ b/authenticate.c
+@@ -296,7 +296,8 @@ void auth_client(int fd, const char *user, const char *challenge)
+                  *
+                  * OpenBSD has a readpassphrase() that might be more suitable.
+                  */
+-		pass = getpass("Password: ");
++		/*pass = getpass("Password: "); */
++		exit(1);
+ 	}
+ 
+ 	if (!pass)
+diff --git a/batch.c b/batch.c
+index a3e9dca..ee31532 100644
+--- a/batch.c
++++ b/batch.c
+@@ -221,7 +221,7 @@ void write_batch_shell_file(int argc, char *argv[], int file_arg_cnt)
+ 	stringjoin(filename, sizeof filename,
+ 		   batch_name, ".sh", NULL);
+ 	fd = do_open(filename, O_WRONLY | O_CREAT | O_TRUNC,
+-		     S_IRUSR | S_IWUSR | S_IEXEC);
++		     S_IRUSR | S_IWUSR);
+ 	if (fd < 0) {
+ 		rsyserr(FERROR, errno, "Batch file %s open error",
+ 			filename);
+-- 
+1.7.10.4
+

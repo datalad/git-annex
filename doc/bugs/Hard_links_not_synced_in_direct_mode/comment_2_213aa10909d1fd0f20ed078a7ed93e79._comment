@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 2"
+ date="2013-05-29T15:39:48Z"
+ content="""
+git does not support hard linked files, so neither can git-annex.
+"""]]

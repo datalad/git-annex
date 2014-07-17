@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="bad bug report title 101"
+ date="2013-08-24T19:17:29Z"
+ content="""
+I don't understand why you think the problem has something to do with Windows drive letters. There are no Windows drive letters in the symlinks you show. The only place I see any Windows drive letter is in the descripton of the remote that `git annex get` displays when it fails to get the file. That description is purely informative, it's not a path that git-annex is trying to use.
+
+I'd suggest that you run `git annex get --debug` to see if it is doing anything obviously wrong. The mostly likely culprit is your SMB setup, which I am not going to be able to replicate.
+"""]]

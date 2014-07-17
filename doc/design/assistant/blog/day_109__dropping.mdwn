@@ -1,0 +1,16 @@
+Got unwanted content to be dropped from the local repo, as well as remotes
+when doing the expensive scan. I kept the scan a single pass for now,
+need to revisit that later to drop content before transferring more.
+Also, when content is downloaded or uploaded, this can result in it
+needing to be dropped from somewhere, and the assistant handles that too.
+
+There are some edge cases with hypothetical, very weird preferred
+content expressions, where the assistant won't drop content right away.
+(But will later in the expensive scan.) Other than those, I think I have
+nearly all content dropping sorted out. The only common case I know of where
+unwanted content is not dropped by the assistant right away is when a file
+is renamed (eg, put in a "Trash" directory).
+
+In other words, repositories put into the transfer group will now work as
+described, only retaining content as long as is needed to distribute it to
+clients. Big milestone!

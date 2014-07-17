@@ -1,0 +1,36 @@
+git-annex has a new nicer versions of its [[logo]], thanks to John Lawrence.
+
+Finally tracked down a week-old bug about the watcher crashing. It turned
+out to crash when it encountered a directory containing a character that's
+invalid in the current locale. I've noticed that 'ü' is often the character I
+get bug reports about. After reproducing the bug I quickly tracked it down
+to code in the haskell hinotify library, and sent in a patch.
+
+Also uploaded a fixed hinotify to Debian, and deployed it to all 3 of the
+autobuilder chroots. That took much more time than actually fixing the bug.
+Quite a lot of yak shaving went on actually. Oh well. The Linux
+autobuilders are updated to use Debian unstable again, which is nice.
+
+Fixed a bug that prevented annex.diskreserve to be honored when storing
+files encrypted in a directory special remote.
+
+Taught the webapp the difference between initializing a new special remote
+and enabling an existing special remote, which fixed some bad behavior when
+it got confused.
+
+----
+
+And then for the really fun bug of the day! A user sent me a large file
+which badly breaks git annex add. Adding the file causes a symlink to be
+set up, but the file's content is not stored in the annex. Indeed, it's
+deleted. This is the first data loss bug since January 2012.
+
+Turns out it was caused by the code that handles the dummy files git uses
+in place of symlinks on FAT etc filesystems. Code that had no business
+running when `core.symlinks=true`. Code that was prone to false positives
+when looking at a tarball of a git-annex repository. So I put in multiple
+fixes for this bug. I'll be making a release on Monday.
+
+----
+
+Today's work was sponsored by Mikhail Barabanov. Thanks, Mikhail!

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 2"
+ date="2013-05-13T18:03:23Z"
+ content="""
+Well, in your defense it's documented there because I can't think of a better place to put it. Maybe you looked in some other places first before finding it there, and I should add a pointer to those places?
+
+(For the curious, the magic run is just: git annex unused --from remote)
+"""]]

@@ -1,0 +1,37 @@
+Unexpectedly today, I got progress displays working for uploads via WebDAV.
+
+The roadblock had been that the interface of for uploading to S3 and WebDAV
+is something like `ByteString -> IO a`. Which doesn't provide any hook to
+update a progress display as the ByteString is consumed.
+
+My solution to this was to create a `hGetContentsObserved`, that's similar
+to `hGetContents`, but after reading each 64kb chunk of data from the
+Handle to populate the ByteString, it runs some observing action. So when
+the ByteString is streamed, as each chunk is consumed, the observer
+runs. I was able to get this to run in constant space, despite not having
+access to some of the ByteString internals that `hGetContents` is built
+with.
+
+So, a little scary, but nice. I am curious if there's not a better way
+to solve this problem hidden in a library somewhere. Perhaps it's another
+thing that conduit solves somehow? Because if there's not, my solution
+probably deserves to be put into a library. Any Haskell folk know?
+
+----
+
+Used above to do progress displays for uploads to S3. Also did progress
+display to console on download from S3. Now very close to being done
+with [[progressbars]]. Finally. Only bup and hook remotes need progress
+work.
+
+----
+
+Reworked the core crypto interface, to better support streaming data through
+gpg. This allowed fixing both the directory and webdav special remotes to
+not buffer whole files in memory when retrieving them as chunks from the
+remote.
+
+-----
+
+Spent some time dealing with API changes in Yesod and Conduit. Some of them
+annoyingly gratuitous.

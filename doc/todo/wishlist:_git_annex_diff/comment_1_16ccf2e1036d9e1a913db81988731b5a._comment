@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.154"
+ subject="comment 1"
+ date="2014-03-18T20:00:16Z"
+ content="""
+`git diff` is quite flexible; it can use external diff drivers to perform the diff. Someone could write a diff driver that knows about git-annex symlinks, and shows some kind of diff of the file contents (since the files are probably binary, this gets into how to display a diff of different file types..)
+"""]]

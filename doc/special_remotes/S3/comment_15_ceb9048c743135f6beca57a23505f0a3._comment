@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawne_amN4fko4p5cRY_9EYwaYuJKNn7LRio"
+ nickname="Tobias"
+ subject="different s3 storage URLs"
+ date="2013-08-23T08:59:32Z"
+ content="""
+Is it possible to change the S3 endpoint hosts? I'm running a radosgw with S3 support which I'd like to define as S3 remote for git-annex
+"""]]

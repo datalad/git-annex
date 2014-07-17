@@ -1,0 +1,14 @@
+Worked on several important bug fixes today. One affects automatic merge
+confict resolution, and can case data loss in direct mode, so I will be
+making a release with the fix tomorrow.
+
+Practiced TDD today, and good thing too. The new improved test suite
+turned up a really subtle bug involving the git-annex branch vector
+clocks-ish code, which I also fixed.
+
+Also, fixes to the OSX autobuilds. One of them had a broken gpg, which is
+now fixed. The other one is successfully building again. And, I'm switching
+the Linux autobuilds to build against Debian stable, since testing has a
+new version of libc now, which would make the autobuilds not work on older
+systems. Getting an amd64 chroot into shape is needing rather a lot
+of backporting of build dependencies, which I already did for i386.

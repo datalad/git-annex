@@ -1,0 +1,7 @@
+Back from Australia. Either later today or tomorrow I'll dig into the
+messages I was not able to get to while traveling, and then the plan is to
+get into the Android port.
+
+Video of my LCA2013 [git-annex talk](http://mirror.linux.org.au/linux.conf.au/2013/mp4/gitannex.mp4)
+is now available. I have not watched it yet, hope it turned out ok despite
+some technical difficulties!

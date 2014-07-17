@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://adamspiers.myopenid.com/"
+ nickname="Adam"
+ subject="very nice"
+ date="2012-02-25T15:02:18Z"
+ content="""
+Here's a way to get from a starting point of two or more peer directory trees *not* tracked by git or git-annex, to the point where they can be synced in the manner described above: [[forum/syncing_non-git_trees_with_git-annex/]]
+"""]]

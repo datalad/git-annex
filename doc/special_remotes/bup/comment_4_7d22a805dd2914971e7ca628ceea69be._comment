@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 4"
+ date="2013-03-13T16:05:50Z"
+ content="""
+I don't plan to support creating bup spefial remotes in the assistant, currently. Of course the assistant can use bup special remotes you set up.
+
+Your two bup repos would be synced using bup-split.
+"""]]

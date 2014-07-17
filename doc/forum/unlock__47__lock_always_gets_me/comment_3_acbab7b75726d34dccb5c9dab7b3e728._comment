@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://olivier.berger.myopenid.com/"
+ nickname="obergix"
+ subject="It seems we've been heard"
+ date="2013-12-07T15:13:10Z"
+ content="""
+https://github.com/joeyh/git-annex/commit/cde099fe80cd2bc6345496c9266c41baf46c1976 : lock: Require --force. 
+"""]]

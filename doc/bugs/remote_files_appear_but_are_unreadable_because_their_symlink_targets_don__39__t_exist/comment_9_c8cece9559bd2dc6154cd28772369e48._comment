@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 9"
+ date="2013-07-26T16:55:08Z"
+ content="""
+Like I sort of expected, this is missing a remote.$foo.annex-uuid setting. But I don't know why yet. I need a debug log to figure this out.
+
+Can you enable debugging (run git-annex webapp --debug), reproduce the problem again, and send me the log?
+"""]]

@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.6.49"
+ subject="comment 6"
+ date="2012-11-29T20:53:34Z"
+ content="""
+Ah, I think I know what this is. When the assistant notices a new file appear, it makes a hard link in the temp directory to the new file, and waits for it to stop being written to. 
+
+If the hard link is broken before the assistant is done adding the file to the annex, it looks like it could leave the temp file behind. I've committed a change that should avoid that.
+
+Since some of these are OSX DS_Store files, and the rest have a strange number added (which git-annex did not do), I suspect you moved them into the annexed directory using the OSX Finder or something like that, and whatever was putting them into the directory first wrote them with the names we see here. Then, while git-annex was still processing them, they got renamed.
+
+I'd say you can safely delete them.
+"""]]

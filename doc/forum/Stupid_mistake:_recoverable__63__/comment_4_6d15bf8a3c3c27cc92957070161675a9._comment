@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 4"
+ date="2013-04-02T23:39:48Z"
+ content="""
+If you `git add` a file and `git commit` says \"no changes added to commit\", what would you think would be the reason?
+
+I'd think it was because the file was already committed to git. So that must be the case with your symlink.
+
+You seem to have told git-annex to do something to the content of that file. You could use `git annex whereis` to find where it is, or `git annex get` to get it. (Assuming you have not used `git annex drop --force` on the file to nuke its content earlier.)
+"""]]

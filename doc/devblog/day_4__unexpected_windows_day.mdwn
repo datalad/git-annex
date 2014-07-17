@@ -1,0 +1,10 @@
+Woke up with a pretty solid plan for gcrypt. It will be structured as a
+separate special remote, so `initremote` will be needed, with a gitrepo=
+parameter (unless the remote already exists). git-annex will then set up
+the git remote, including pushing to it (needed to get a gcrypt-id).
+
+Didn't feel up to implementing that today. Instead I expectedly spent
+the day doing mostly Windows work, including setting up a VM on my new
+laptop for development. Including a ssh server in Windows, so I can
+script local builds and tests on Windows without ever having to
+touch the desktop. Much better!

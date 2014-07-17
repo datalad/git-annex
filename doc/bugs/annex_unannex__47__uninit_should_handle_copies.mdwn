@@ -1,0 +1,20 @@
+Just starting using v3, even more awesome, thanks!
+
+With git-annex, I take the habit to do copies of files without restriction, as they end up into (cheap) symlink copies.
+However, if 2 copies are unannexed, only one is restored, the other becomes a broken symlink, so I kind of loose some information 
+(my use case: I have a repo on which I recently started using annex, but most of the files, which i would want to be annexed, are only in git,
+so my plan is to unninit this repo, delete the .git dir, and then annex everything, as I don't mind the history).
+
+Rafaël
+
+> The only way for git-annex to support this in its current state would be
+> for the unannex command to copy the file content from the annex, rather
+> than moving it out. Then multiple links to the same content could be
+> unannexed.
+> 
+> But, this would be slower, and would depend on a later `unused` and
+> `dropunused` to actually remove the content. While doable, by use case
+> for unannex is more to quickly undo a mistaken add, and it's unlikely there
+> are multiple symlinks to the same content in this situation. --[[Joey]] 
+
+[[!tag done]]

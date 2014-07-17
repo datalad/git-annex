@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.140"
+ subject="comment 1"
+ date="2013-07-18T19:49:43Z"
+ content="""
+Hmm, it might make sense to stop if there is no more space at all. However, just because the first file doesn't fit doesn't mean several following, smaller files can't be copied into the remaining space.
+
+Since it checks the free space before actually copying anything, it's not like there's much overhead in running through the list of files it was asked to copy and trying to copy them all, either.
+
+So, I'm unconvinced on this one.
+"""]]

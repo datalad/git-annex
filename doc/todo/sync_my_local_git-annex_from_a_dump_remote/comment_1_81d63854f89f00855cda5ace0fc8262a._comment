@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 1"
+ date="2013-08-13T21:44:17Z"
+ content="""
+We had a conversation about this IRL. At the time, I thought I understood what you wanted. Reading the above, I am not so sure.
+
+What I thought you wanted was something like `git annex mirror --from remote`, which would, for each object known to git-annex that the location log said was present on the remote, make sure that the local repo had the object too, and for each object that the location log said was not present on the remote, drop it from the local repo (if numcopies etc allowed).
+
+`git annex mirror --to remote` could also be used as the complement of the above.
+
+If that's not the sort of thing you meant, let me know.
+"""]]

@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkaT0B6s9jQuMzQUYRVBgWqtO7BhT_ZSaE"
+ nickname="Fernando Seabra"
+ subject="comment 2"
+ date="2012-04-22T14:09:33Z"
+ content="""
+Thanks for the fast response!
+
+Unfortunately, I had another problem:
+
+==================================
+Building git-annex-3.20120419...
+Utility/libdiskfree.c: In function ‘diskfree’:
+
+Utility/libdiskfree.c:61:0:
+     warning: ‘statfs64’ is deprecated (declared at /usr/include/sys/mount.h:379)
+[  6 of 157] Compiling Build.SysConfig  ( Build/SysConfig.hs, dist/build/git-annex/git-annex-tmp/Build/SysConfig.o )
+[ 15 of 157] Compiling Utility.Touch    ( dist/build/git-annex/git-annex-tmp/Utility/Touch.hs, dist/build/git-annex/git-annex-tmp/Utility/Touch.o )
+
+Utility/Touch.hsc:118:21: Not in scope: `noop'
+cabal: Error: some packages failed to install:
+git-annex-3.20120419 failed during the building phase. The exception was:
+ExitFailure 1
+==================================
+
+I also tried to look for information on the internet, and I did not find anything useful.
+Any idea of what happened?
+
+Thanks again!
+
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://cstork.org/"
+ nickname="Chris Stork"
+ subject="comment 10"
+ date="2013-08-25T20:59:41Z"
+ content="""
+@joey I don't understand you last comment where you state that special remotes can act as transfer repositories \"to transfer the files between computers that do not communicate directly\".  If there's no communication, ie git pushes or pulls, between the computers then they don't know what file names the files on the special remote map to. They need to somehow communicate the git repo too, don't they?
+"""]]

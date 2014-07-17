@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmUcCZeEK9HKV40JrcHMXAXpPKQPERt7iM"
+ nickname="Włodek"
+ subject="comment 2"
+ date="2013-07-10T22:00:47Z"
+ content="""
+Thanks for the answer. I found out that the public key auth is not working at all and ssh falls back to password auth, this is the reason for password prompts. What I don't know yet is why popups appear despite giving correct password. I'm looking for a solution. This can take some time though because my disk died few days ago = I cannot check versions. Once I've got it solved I'll post back.
+"""]]

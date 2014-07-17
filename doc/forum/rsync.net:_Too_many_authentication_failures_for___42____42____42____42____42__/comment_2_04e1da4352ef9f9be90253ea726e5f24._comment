@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.244"
+ subject="comment 2"
+ date="2014-04-02T19:41:29Z"
+ content="""
+What version of git-annex?
+
+Do you have ssh-askpass installed?
+
+You might try running git webapp from a terminal, in case ssh is unable to prompt for the password in a window using ssh-askpass.
+"""]]

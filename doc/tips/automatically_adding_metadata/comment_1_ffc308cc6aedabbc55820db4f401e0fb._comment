@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 1"
+ date="2014-03-03T07:44:29Z"
+ content="""
+http://projects.iq.harvard.edu/fits might be an even better choice than libextractor. We use it in work and its not too bad, but it can be slow to startup due to the JVM.
+"""]]

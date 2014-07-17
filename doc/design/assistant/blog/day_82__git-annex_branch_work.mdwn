@@ -1,0 +1,26 @@
+Started today doing testing of [[syncing]], and found some bugs and things
+it needs to do better. But was quickly sidetracked when I noticed that
+`transferkey` was making a commit to the git-annex branch for every file it
+transferred, which is too slow and bloats history too much.
+
+To fix that actually involved fixing a long-standing annoyance; that
+read-only git-annex commands like `whereis` sometimes start off with
+"(Recording state in git)", when the journal contains some not yet
+committed changes to the git-annex branch. I had to carefully think
+through the cases to avoid those commits.
+
+As I was working on that, I found a real nasty lurking bug in the git-annex
+branch handling. It's unlikely to happen unless `annex.autocommit=false` is
+set, but it could occur when two git-annex processes race one another just
+right too. The root of the bug is that `git cat-file --batch` does not
+always show changes made to the index after it started. I think it does
+in enough cases to have tricked me before, but in general it can't be
+trusted to report the current state of the index, but only some past state.
+
+I was able to fix the bug, by ensuring that changes being made to the
+branch are always visible in either the journal or the branch -- never in
+the index alone.
+
+----
+
+Hopefully something less low-level tomorrow..!

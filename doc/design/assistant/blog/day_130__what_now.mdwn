@@ -1,0 +1,36 @@
+Dealt with post-release feedback deluge. There are a couple weird bugs that
+I don't understand yet. OSX app is still not working everywhere.
+
+----
+
+Got the list of repositories in the webapp to update automatically when
+repositories are added, including when syncing with a remote causes
+repositories to be discovered.
+
+----
+
+I need a plan for the rest of the month. It feels right to focus on more
+cloud storage support. Particularly because all the cloud providers
+supported so far are ones that, while often being best of breed, also cost
+money. To finish up the cloud story, need support for some free ones.
+
+Looking at the results of the [[polls/prioritizing_special_remotes]]
+poll, I suspect that free storage is a large part of why Google Drive got
+so many votes. Soo, since there is not yet a Haskell library for Google
+Drive, rather than spending a large chunk of time writing one, I hope to
+use a [Haskell WebDAV library](http://hackage.haskell.org/package/DAV)
+that my friend Clint recently wrote. A generic
+WebDAV special remote in git-annex will provide much better support for
+box.com (which has 5 to 50 gb free storage), as well as all the 
+[OwnCloud providers](http://owncloud.org/providers/), at least one of which
+provides 5 gb free storage.
+
+If I have time left this month after doing that, I'd be inclined to do
+Amazon Glacier. People have already gotten that working with git-annex, but
+a proper special remote should be better/easier, and will allow integrating
+support for it into the assistant, which should help deal with its long
+retrieval delays. And since, if you have a lot of data
+archived in Glacier, you will only want to pull out a few files at a time,
+this is another place besides mobile phones where a [[partial_content]]
+retrieval UI is needed. Which is on the roadmap to be worked on next
+month-ish. Synergy, here I come. I hope.

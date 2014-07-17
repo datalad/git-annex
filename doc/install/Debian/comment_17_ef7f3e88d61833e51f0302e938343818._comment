@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="216.145.95.162"
+ subject="comment 17"
+ date="2014-05-17T17:03:31Z"
+ content="""
+Debian squeeze has an extremely ancient ghc compiler, and it would be a mammoth undertaking to build current git-annex using that. 
+
+Use the linux standalone build instead.
+"""]]

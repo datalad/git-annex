@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.14.105"
+ subject="Ed's right"
+ date="2013-09-19T18:56:39Z"
+ content="""
+What we don't have is something to enforce a particular preferred content setting. Ie, refuse to allow dropping a file from a repo if it's preferred content there. Currently you have to remember to use `git annex drop --auto` to cause the preferred content to be honored.
+"""]]

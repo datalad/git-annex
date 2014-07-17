@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.21"
+ subject="comment 2"
+ date="2013-07-30T18:56:00Z"
+ content="""
+Make a non-bare git repository on your server. Run `git annex init` in it. Run `git annex assistant` in it.
+
+Now on your notebook, you can tell the assistant to use a remote ssh server, and point it at that directory. It will see the repository already exists, and use it, rather than making a new bare repository. The assistant daemon you've run on the server will notice when changes are pushed to the directory, and update it. 
+
+You can further set up XMPP, so that the server can tell the notebook if you make any modifications to the server. You can do this by running `git annex webapp --listen=IPADDRESS` on the server, and opening the url it prints out. But this is optional, only needed if you're going to be editing files on the server.
+"""]]

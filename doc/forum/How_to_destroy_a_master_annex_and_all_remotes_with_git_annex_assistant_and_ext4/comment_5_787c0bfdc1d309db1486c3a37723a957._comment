@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmkBwMWvNKZZCge_YqobCSILPMeK6xbFw8"
+ nickname="develop"
+ subject="comment 5"
+ date="2013-07-23T17:39:42Z"
+ content="""
+Oh i've had that type of crash from ecryptfs many times over many different versions of Ubuntu, also before i even encountered git-annex.
+
+Git-annex might provoke this issue, but it is by no means the only thing that can crash your system when running ecryptfs.
+
+I highly suggest you try LUKS for a stable experience.
+
+"""]]

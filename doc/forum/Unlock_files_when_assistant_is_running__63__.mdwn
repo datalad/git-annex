@@ -1,0 +1,13 @@
+I just started using the assistant on an existing annex. I fire up the assistant like so:
+
+    $ git annex webapp
+
+Everything syncs and looks to be working fine. In another terminal, I then create a new file:
+
+    $ touch testfile.txt
+
+The assistant sees that file, immediately adds it and syncs. Ok. So now I want to edit that file.
+
+    $ git annex unlock testfile.txt
+
+As soon as I unlock the file, the assistant re-adds it to the annex and syncs, preventing me from editing the file. How can I edit files with the assistant running?

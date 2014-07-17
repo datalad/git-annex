@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.193"
+ subject="comment 5"
+ date="2013-06-26T16:34:23Z"
+ content="""
+To fix [[Problems_with_syncing_gnucash]], I have made some changes to how hard links are dealt with.
+
+Assistant will now notice when a hard link is created, and add the same thing to git it would add for any other file. The hard link is not propigated to other repositories.
+
+Files remain hard linked locally. This means that a change to one will affect the contents of the other. The assistant, lacking a hard link cache, will not notice this, and so will commit the change to the file that was written to, but not commit its hard link. Running `git annex add` manually (or restarting the assistant) will make it finally notice the other file has changed. 
+
+So, the assistant still does not keep hard links in sync on an ongoing basis. This bug is still unsolved.
+"""]]

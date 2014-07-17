@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 3"
+ date="2011-04-05T23:24:17Z"
+ content="""
+Assuming you're storing your encrypted annex with me and I with you, our regular cron jobs to verify all data will catch corruption in each other's annexes.
+
+Checksums of the encrypted objects could be optional, mitigating any potential attack scenarios.
+
+It's not only about the cost of setting up new remotes. It would also be a way to keep data in one annex while making it accessible only in a subset of them. For example, I might need some private letters at work, but I don't want my work machine to be able to access them all.
+"""]]

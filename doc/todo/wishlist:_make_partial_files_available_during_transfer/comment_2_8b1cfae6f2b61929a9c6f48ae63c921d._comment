@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.154"
+ subject="comment 2"
+ date="2014-03-18T20:08:13Z"
+ content="""
+There's now an easy way to do this:
+
+        git annex find --include=* --format='.git/annex/tmp/${hashdirmixed}${key}/${key}\n' 
+
+Pass it the file or files you're interested in to get their partially transferred contents.
+"""]]

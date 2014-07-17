@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 1"
+ date="2013-12-17T23:51:32Z"
+ content="""
+The \"Invalid pid specified\" seems to point at the problem. (Or it's a nice red herring.) I cannot find this error message in either git-annex or in git. 
+
+Enabling debug logging and restarting the assistant should produce a nice log that will both tell us what command it was running when that message showed up, and show some details about its preferred content decisions.
+"""]]

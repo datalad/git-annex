@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://dzsino.myopenid.com/"
+ nickname="dzsino"
+ subject="dropping a directory remote?"
+ date="2013-01-15T22:29:15Z"
+ content="""
+How do I drop a directory remote after initremote? Say I want to start over and enable chunking (not supposed to be enabled on an existing directory), can I simply git remote rm it?
+"""]]

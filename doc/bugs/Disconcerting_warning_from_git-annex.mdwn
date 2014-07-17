@@ -1,0 +1,8 @@
+I did a "git annex add" of a bunch of files on a storage server with low IOPS, and saw this:
+
+    git-annex: /tank/Media/Pictures/.git/annex/tmp/430_32b_SHA256E-s4464838--c1785a76ee1451f602e93c99c147e214705004e541de8256d74a3be3717d15e5.jpg.log: openBinaryFile: resource busy (file is locked)
+failed
+
+How is that even possible, when the server is doing nothing else?
+
+[[!tag moreinfo]]

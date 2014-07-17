@@ -1,0 +1,55 @@
+Got preferred content checked when files are moved around.
+So, in repositories in the default client group, if you make a
+"archive" directory and move files to it, the assistant will drop
+their content (when possible, ie when it's reached an archive or backup).
+Move a file out of an archive directory, and the assistant will get its
+content again. Magic.
+
+Found an intractable bug, obvious in retrospect, with the git-annex branch
+read cache, and had to remove that cache. I have not fully determined
+if this will slow down git-annex in some use cases; might need to add more
+higher-level caching. It was a very minimal cache anyway, just of one file.
+
+Removed support for "in=" from preferred content expressions. That was
+problimatic in two ways. First, it referred to a remote by name, but
+preferred content expressions can be evaluated elsewhere, where that remote
+doesn't exist, or a different remote has the same name. This name lookup
+code could error out at runtime. Secondly, "in=" seemed pretty useless, and
+indeed counterintuitive in preferred content expressions. "in=here" did not
+cause content to be gotten, but it did let present content be dropped.
+Other uses of "in=" are better handled by using groups.
+
+In place of "in=here", preferred content expressions can now use "present",
+which is useful if you want to disable automatic getting or dropping of
+content in some part of a repository. Had to document that "not present"
+is not a good thing to use -- it's unstable. Still, I find "present" handy
+enough to put up with that wart.
+
+Realized last night that the code I added to the TransferWatcher
+to check preferred content once a transfer is done is subject to a race;
+it will often run before the location log gets updated. Haven't found a good
+solution yet, but this is something I want working now, so I did put in a
+quick delay hack to avoid the race. Delays to avoid races are never a real
+solution, but sometimes you have to TODO it for later.
+
+----
+
+Been thinking about how to make the assistant notice changes to configuration
+in the git-annex branch that are merged in from elsewhere while it's running.
+I'd like to avoid re-reading unchanged configuration files after each merge
+of the branch.
+
+The most efficient way would be to reorganise the git-annex branch, moving
+config files into a configs directory, and logs into a logs directory. Then it
+could `git ls-tree git-annex configs` and check if the sha of the configs
+directory had changed, with git doing minimal work 
+(benchmarked at 0.011 seconds).
+
+Less efficiently, keep the current git-annex branch layout, and 
+use: `git ls-tree git-annex uuid.log remote.log preferred-content.log group.log trust.log`
+(benchmarked at 0.015 seconds)
+
+Leaning toward the less efficient option, with a rate limiter so it
+doesn't try more often than once every minute. Seems reasonable for it to
+take a minute for config changes take effect on remote repos, even
+if the assistant syncs file changes to them more quickly.

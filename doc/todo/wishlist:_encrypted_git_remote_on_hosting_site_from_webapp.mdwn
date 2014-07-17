@@ -1,0 +1,1 @@
+It would be great to be able to do **private encrypted git remote on hosting site** and **multiuser encrypted git remote on hosting site** as explained in [[tips/fully encrypted git repositories with gcrypt]] through the webapp. I think it's a pretty common usecase that can be very useful for people not owning a proper server.

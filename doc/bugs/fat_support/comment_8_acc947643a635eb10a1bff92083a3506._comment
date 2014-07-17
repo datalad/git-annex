@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmcYryijvlF8bJvM_eZNSrUPEkMlxMDGTQ"
+ nickname="Thiago"
+ subject="POSIX layer on top of VFAT using FUSE"
+ date="2012-11-24T00:21:23Z"
+ content="""
+I just found out about this project and didn't try it, but it looks like it would allow using git-annex on an usb stick with a normal repository:
+
+<http://sourceforge.net/projects/posixovl/>
+"""]]

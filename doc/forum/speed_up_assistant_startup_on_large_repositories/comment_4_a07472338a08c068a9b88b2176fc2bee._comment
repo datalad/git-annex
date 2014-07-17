@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawniayrgSdVLUc3c6bf93VbO-_HT4hzxmyo"
+ nickname="Tobias"
+ subject="comment 4"
+ date="2013-11-17T17:28:06Z"
+ content="""
+The mentioned repository is stored on spinning disk.
+Maybe it would help to store the .git directory on an SSD, but I'm not sure how to do it.
+"""]]

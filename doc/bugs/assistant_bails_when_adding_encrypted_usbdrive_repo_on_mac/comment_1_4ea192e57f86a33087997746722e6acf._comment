@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2013-10-02T20:37:03Z"
+ content="""
+Can you take a look at ~/annex/.git/config and if there is an entry for this git remote, post it? (Or post the whole thing if unsure..)
+
+Also, can you get gpg to list your secret keys, and see if key 71BFBC31 is in the list? You can do so by running `gpg --list-secret-keys` ; if you don't have gpg in your path at the terminal, you can use the version from the git-annex DMG by first running `/Volumes/git-annex/git-annex.app/Contents/MacOS/runshell`
+"""]]

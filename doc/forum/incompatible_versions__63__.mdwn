@@ -1,0 +1,1 @@
+Are versions 0.14 and 0.20110522 incompatible? I can't seem to copy files from a system running 0.14 to one running 20110522.

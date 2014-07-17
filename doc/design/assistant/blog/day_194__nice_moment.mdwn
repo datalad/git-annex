@@ -1,0 +1,37 @@
+<video controls src="http://downloads.kitenet.net/videos/git-annex-android.ogv" width="100%"></video>
+<a href="http://downloads.kitenet.net/videos/git-annex-android.ogv">video</a>
+
+Today's work:
+
+* Fixed `git annex add` of a modified file in direct mode.
+* Fixed bugs in the inode sentinal file code added yesterday.
+* With some help from Kevin Boone, I now understand how KBOX works and
+  how to use similar techniques to build my own standalone Android app
+  that includes git-annex.
+
+  Kevin is using a cute hack; he ships a tarball and some other stuff
+  as (pseudo-)library files (`libfoo.so`), which are the only files
+  the Android package manager deigns to install. Then the app runs one
+  of these, which installs the programs.
+
+  This avoids needing to write Java code that extracts the programs from
+  one of its assets and writes it to an executable file, which is the
+  canonical way to do this sort of thing. But I noticed it has a benefit too
+  (which KBOX does not yet exploit). Since the pseudo-library file is installed
+  with the X bit set, if it's really a program, such as busybox or git-annex,
+  that program can be run without needing to copy it to an executable file.
+  This can save a lot of disk space. So, I'm planning to include all
+  the binaries needed by git-annex as these pseudo-libraries.
+* Got the Android Terminal Emulator to build. I will be basing my first
+  git-annex Android app on this, since a terminal is needed until there's 
+  a webapp.
+* Wasted several hours fighting with `Android.mk` files to include
+  my pseudo shared library. This abuse of Makefiles by the NDK is what CDBS
+  wants to grow up to be.. or is it the other way around? Anyway, it
+  sucks horribly, and I finally found a way to do it without
+  modifying the file at all. Ugh.
+* At this point, I can build a `git-annex.apk` file containing a
+  `libgit-annex.so`, and a `libbusybox.so`, that can both be directly
+  run. The plan from here is to give git-annex the ability to
+  auto-install itself, and the other pseudo-libraries, when it's run as
+  `libgit-annex.so`.

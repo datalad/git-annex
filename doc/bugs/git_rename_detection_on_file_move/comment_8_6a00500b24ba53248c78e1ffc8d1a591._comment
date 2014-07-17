@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="http://adamspiers.myopenid.com/"
+ nickname="Adam"
+ subject="comment 8"
+ date="2011-12-20T12:00:11Z"
+ content="""
+Personally I'd rather have working rename detection but I agree it's not 100% ideal to be littering multiple directories like this, so perhaps you could make it optional, e.g. based on a git config setting?
+
+Here are a few more considerations, some in defence of the approach, some against it:
+
+* `.git-annex` is hidden; `CVS/` is not.
+* Unlike `CVS/` and `.svn/`, it's only a symlink, not a directory containing other files.
+* It doesn't contain any data specific to that directory and could easily be regenerated if deleted accidentally or otherwise.
+* If a whole directory containing `.git-annex` was moved within the repository:
+    * git-annex would need to fix up these symlinks if and only if it's moved to a different depth within the tree.
+    * However, if the multi-level indirection approach is used, `.git-annex` in any subdirectory is *always* a symlink to `../.git-annex` so instead you would need to check that all of the new ancestors contain this symlink too, and optionally remove any no longer needed symlinks.
+    * In either case, git-annex already goes to the trouble of fixing symlinks, and if anything, I *think* this approach would reduce the number of symlinks which need checking (right?)
+* find `$git_root/foo -follow`, `diff -r` etc. would traverse into `$git_root/.git/annex`
+
+This last point is the only downside to this approach I can think of which gives me any noticeable cause for concern.  However, people are already use to working around this from CVS and svn days, e.g. `diff -r -x .svn` so I don't think it's anywhere near bad enough to rule it out.
+"""]]

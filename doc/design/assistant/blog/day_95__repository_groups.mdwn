@@ -1,0 +1,21 @@
+Spent a lot of time this weekend thinking about/stuck on the [[cloud]]
+notification problem. Currently IRC is looking like the best way for
+repositories to notify one-another when changes are made, but I'm not sure
+about using that, and not ready to start on it.
+
+Instead, laid some groundwork for [[transfer_control]] today. Added 
+some simple commands to manage groups of repositories, and find files
+that are present in repositories in a group. I'm not completely happy
+with the syntax for that, and need to think up some good syntax to specify
+files that are present in *all* repositories in a group.
+
+The plan is to have the assistant automatically guess at groups to put new
+repositories it makes in (it should be able to make good guesses),
+as well as have an interface to change them, and an interface to configure
+transfer control using these groups (and other ways of matching files).
+And, probably, some canned transfer control recipes for common setups.
+
+---
+
+Collected up the past week's work and made a release today. I'm probably
+back to making regular releases every week or two.
