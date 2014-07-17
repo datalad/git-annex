@@ -16,6 +16,7 @@ import qualified Annex
 import Annex.Content
 import Annex.Content.Direct
 import qualified Git.Command
+import qualified Git.Branch
 import qualified Git.Ref
 import qualified Git.DiffTree as DiffTree
 import Utility.CopyFile
@@ -45,9 +46,8 @@ wrapUnannex a = ifM isDirect
 		)
 	)
   where
-	commit = inRepo $ Git.Command.run
-		[ Param "commit"
-		, Param "-q"
+	commit = inRepo $ Git.Branch.commitCommand Git.Branch.ManualCommit
+		[ Param "-q"
 		, Param "--allow-empty"
 		, Param "--no-verify"
 		, Param "-m", Param "content removed from git annex"

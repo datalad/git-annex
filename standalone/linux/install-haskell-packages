@@ -13,7 +13,7 @@
 
 set -e
 
-if [ ! -d ../haskell-patches ]; then
+if [ ! -d haskell-patches ]; then
 	cd standalone/linux
 fi
 
@@ -94,4 +94,9 @@ install_pkgs () {
 }
 
 cabal update
+
+# Some packages fail to install in a non unicode locale.
+LANG=C.UTF-8
+export LANG
+
 install_pkgs

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="that is an ancient version of git-annex, Shane"
+ date="2014-07-02T17:11:24Z"
+ content="""
+The first git-annex release to support glacier without using hooks was 3.20121126.
+"""]]

@@ -1,0 +1,23 @@
+Posting this in case anyone might find it interesting.
+
+I had noticed impractical and abysmally slow performance when tracking a huge number of files (150k) in a git-annex. In direct mode, the repo was outright unusable, but even in indirect mode, many operations where painfully slow; even operations beyond the well-known offender, «git annex findunused», e.g., the seemingly harmless «git annex info».
+
+I also noticed that the performance was hugely improved on my (otherwise comparable) machine running btrfs, and I wondered how this might be. From previous benchmarks, I had gained the impression that ext4 and btrfs are on par, performance-wise, and you choose btrfs for the features rather than performance. Now, after trying to update my back-ups via rsync, I have had an idea how the contrast between the two machines might might be accounted for. Specifically, I noted that, after converting my 150k folder into a git-annex repo, ascertaining that the back-up is current via rsync would take ~15 minutes, where it used to take mere seconds before. This could then only be due to the demands on directory traversal introduced by the annex-layout.
+
+Accordingly, I wanted to see whether the traversal would be something that explains the difference in performance between btrfs and ext4, so I ran a tiny benchmark, traversing the .git folder on my home drive (ext4, SATA) and the backup drive (btrfs, USB3), and I was astounded by the difference:
+
+zardoz [ /mnt/bak/m-annex ]$ time tree .git >/dev/null
+
+tree .git >/dev/null  14,23s user 2,78s system 24% cpu 1:09,69 total
+
+zardoz [ ~/m-annex ]$ time tree .git >/dev/null
+
+tree .git >/dev/null  26,40s user 0,96s system 1% cpu 23:37,94 total
+
+While running, I peeked into the io using iotop, and observed around 500K/s during traversal on ext4 vs. 5M/s on btrfs.
+
+While I was aquainted with the dogma that file-systems hate to have a single folder with a bazillion files, sources on the net seem to indicate that having lots and lots of sparse folders is even worse, and given the one-file-per-folder structure of the annex objects store, this would then potentially explain the heavy thrashing on ext4.
+
+Something I am wondering now: Which operations in git-annex (or plain git) incite that sort of directory traversal? One candidate which occurred to me is «git annex unused», and the differences in performance between ext4 and btrfs are on the same order as in the above benchmark. Originally, Joey related somewhere that the search in «unused» is expensive; but if traversal is involved, it could actually be that this has even more impact than searching git history.
+
+In any case, if anyone wants to track a very large number of files via git-annex, ext4 seems to be not the ideal file-system for this.

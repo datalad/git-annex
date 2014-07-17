@@ -154,9 +154,11 @@ data RemovableDrive = RemovableDrive
 data RepoKey = RepoKey KeyId | NoRepoKey
 	deriving (Read, Show, Eq, Ord)
 
+#if ! MIN_VERSION_path_pieces(0,1,4)
 instance PathPiece Bool where
 	toPathPiece = pack . show
 	fromPathPiece = readish . unpack
+#endif
 
 instance PathPiece RemovableDrive where
 	toPathPiece = pack . show

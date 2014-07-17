@@ -78,12 +78,13 @@ onChange file
 	changedbranch = fileToBranch file
 
 	mergecurrent (Just current)
-		| equivBranches changedbranch current = do
-			debug
-				[ "merging", Git.fromRef changedbranch
-				, "into", Git.fromRef current
-				]
-			void $ liftAnnex  $ autoMergeFrom changedbranch (Just current)
+		| equivBranches changedbranch current =
+			whenM (liftAnnex $ inRepo $ Git.Branch.changed current changedbranch) $ do
+				debug
+					[ "merging", Git.fromRef changedbranch
+					, "into", Git.fromRef current
+					]
+				void $ liftAnnex $ autoMergeFrom changedbranch (Just current) Git.Branch.AutomaticCommit
 	mergecurrent _ = noop
 
 	handleDesynced = case fromTaggedBranch changedbranch of

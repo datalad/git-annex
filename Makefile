@@ -59,7 +59,7 @@ retest: git-annex
 
 # hothasktags chokes on some template haskell etc, so ignore errors
 tags:
-	find . | grep -v /.git/ | grep -v /tmp/ | grep -v /dist/ | grep -v /doc/ | egrep '\.hs$$' | xargs hothasktags > tags 2>/dev/null
+	(for f in $$(find . | grep -v /.git/ | grep -v /tmp/ | grep -v /dist/ | grep -v /doc/ | egrep '\.hs$$'); do hothasktags -c --cpp -c -traditional -c --include=dist/build/autogen/cabal_macros.h $$f; done) 2>/dev/null | sort > tags
 
 # If ikiwiki is available, build static html docs suitable for being
 # shipped in the software package.
@@ -83,7 +83,8 @@ clean:
 	rm -rf tmp dist git-annex $(mans) configure  *.tix .hpc \
 		doc/.ikiwiki html dist tags Build/SysConfig.hs build-stamp \
 		Setup Build/InstallDesktopFile Build/EvilSplicer \
-		Build/Standalone Build/OSXMkLibs Build/LinuxMkLibs Build/DistributionUpdate \
+		Build/Standalone Build/OSXMkLibs Build/LinuxMkLibs \
+		Build/DistributionUpdate Build/BuildVersion \
 		git-union-merge .tasty-rerun-log
 	find . -name \*.o -exec rm {} \;
 	find . -name \*.hi -exec rm {} \;
@@ -255,7 +256,7 @@ hdevtools:
 distributionupdate:
 	git pull
 	cabal configure
-	ghc --make Build/DistributionUpdate -XPackageImports -optP-include -optPdist/build/autogen/cabal_macros.h
+	ghc -Wall --make Build/DistributionUpdate -XPackageImports -optP-include -optPdist/build/autogen/cabal_macros.h
 	./Build/DistributionUpdate
 
 .PHONY: git-annex git-union-merge git-recover-repository tags build-stamp

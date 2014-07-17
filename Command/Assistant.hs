@@ -14,6 +14,7 @@ import Annex.Init
 import Config.Files
 import qualified Build.SysConfig
 import Utility.HumanTime
+import Assistant.Install
 
 import System.Environment
 
@@ -50,6 +51,7 @@ start foreground stopdaemon autostart startdelay
 		liftIO $ autoStart startdelay
 		stop
 	| otherwise = do
+		liftIO ensureInstalled
 		ensureInitialized
 		Command.Watch.start True foreground stopdaemon startdelay
 

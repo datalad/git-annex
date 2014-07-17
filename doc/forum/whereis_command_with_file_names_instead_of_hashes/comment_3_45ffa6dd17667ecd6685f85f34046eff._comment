@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://ypid.wordpress.com/"
+ ip="213.153.84.215"
+ subject="git annex whereis --in origin"
+ date="2014-07-07T09:45:48Z"
+ content="""
+So you only want to see whereis for files which are present on certain annexes? You can use `git annex whereis --in e64553d0-779a-4c79-939a-d5b7f3e56a57` or `git annex whereis --in origin` (modify the repo names).
+
+Have a look on [QUERY COMMANDS](/git-annex/).
+"""]]

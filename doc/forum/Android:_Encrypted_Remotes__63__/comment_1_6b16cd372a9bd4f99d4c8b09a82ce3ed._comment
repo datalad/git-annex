@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.55"
+ subject="comment 1"
+ date="2014-07-03T19:14:37Z"
+ content="""
+Encrypted [[special_remotes]] are supported just fine on Android.
+
+As for storing the [[encrypted git repository itself on a remote|special_remotes/gcrypt]], which is what git-remote-gcrypt is used for, it would need porting that to Android. I don't think that should be very hard (it's just a rather complicated shell script and all the tools it uses are already included in the git-annex bundle). I may eventully end up reimplementing git-remote-gcrypt as part of git-annex in Haskell, since porting it to eg, Windows is likely to be a lot harder..
+"""]]

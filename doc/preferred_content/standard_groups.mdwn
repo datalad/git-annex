@@ -1,13 +1,21 @@
 git-annex comes with some built-in [[preferred_content]] settings, that can
 be used with repositories that are in special groups. To make a
 repository use one of these, just set its preferred content expression
-to "standard", and put it in one of these groups. Or in the webapp, just
-edit the repository and select the group.
+to "standard", and put it in one of these groups. For example, to put the current
+repository in the manual group and use this group to control the preferred
+content, run
+
+    git annex wanted . standard
+    git annex group . manual
+
+In the webapp, just edit the repository and select the group.
 
 (Note that most of these standard expressions also make the repository
 want to get any content that is only currently available on untrusted and
 dead repositories. So if an untrusted repository gets connected,
 any repository that can will back it up.)
+
+The following standard groups are available:
 
 ### client
 

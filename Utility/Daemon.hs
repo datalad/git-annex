@@ -21,6 +21,8 @@ import Utility.WinLock
 #ifndef mingw32_HOST_OS
 import System.Posix
 import Control.Concurrent.Async
+#else
+import System.Exit
 #endif
 
 #ifndef mingw32_HOST_OS
@@ -54,15 +56,26 @@ daemonize logfd pidfile changedirectory a = do
 		wait =<< asyncWithUnmask (\unmask -> unmask a)
 		out
 	out = exitImmediately ExitSuccess
+#endif
 
 {- To run an action that is normally daemonized in the forground. -}
+#ifndef mingw32_HOST_OS
 foreground :: Fd -> Maybe FilePath -> IO () -> IO ()
 foreground logfd pidfile a = do
+#else
+foreground :: Maybe FilePath -> IO () -> IO ()
+foreground pidfile a = do
+#endif
 	maybe noop lockPidFile pidfile
+#ifndef mingw32_HOST_OS
 	_ <- tryIO createSession
 	redirLog logfd
+#endif
 	a
+#ifndef mingw32_HOST_OS
 	exitImmediately ExitSuccess
+#else
+	exitWith ExitSuccess
 #endif
 
 {- Locks the pid file, with an exclusive, non-blocking lock,

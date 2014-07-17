@@ -1,0 +1,11 @@
+I've been using annex for some weeks now and while I more and more love how it behaves on my Linux machines, I just can't get it working on Windows...
+
+The setup consists of two Ubuntu machines (one being an always-on server) and a Windows laptop I keep for the occasional moment of gaming. My wife's Windows machine is a candidate to join the annex setup, as well as some other computers I still use every now and then.
+
+The first thing I started annexing was my pictures folder. It consists of about 40k files and occupies about 350GB. The Ubuntu server is running a hidden service as a substitute for a DynDNS with ssh basically the only thing going out/in. First, I couldn't get annex to properly sync its data via TOR, but when I instead set up a directory special remote on the server (with the annex repository there being "bare", i.e. not containing any actual data) I got them to sync as they should.
+
+Not the Windows machine though. It's just too slow. It seems that on every sync, every add, every anything it scans... well, everything. I added some files and after an hour I checked the resource monitor which files were being accessed and it seemed to be every last one of the files present in the pictures folder. I'm not sure what's going on there, but it's really getting to the point of being a dealbreaker... I think it's something with annex only supporting direct mode repositories on Windows and all files just lying around (as that's really the only large difference between those setups), although I'm of course not entirely sure.
+
+I'd really like to run annex in indirect mode on Windows. I can't really find any information on that (except those few "official" pages that just state that annex is running in direct mode on Windows). I know that creating symlinks needs elevated priviledges on Windows, but accepting a prompt seems to be much more realistic than waiting hours for a sync.
+
+So... Is there any way to get indirect running on Windows? And if there isn't, is there any other way to speed up direct mode / Windows performance?

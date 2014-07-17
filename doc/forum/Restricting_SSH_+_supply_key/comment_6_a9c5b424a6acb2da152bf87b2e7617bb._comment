@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 6"
+ date="2014-07-15T19:20:13Z"
+ content="""
+msgit seems to install it in both places, I am not sure why. Either one works ok when I try to use them. The msgit installer puts \"c:\program files (x86)\git\cmd\\" into PATH so I assume that's the one you're supposed to use.
+"""]]

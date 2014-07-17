@@ -218,7 +218,7 @@ getViaTmpUnchecked = finishGetViaTmp (return True)
 
 getViaTmpChecked :: Annex Bool -> Key -> (FilePath -> Annex Bool) -> Annex Bool
 getViaTmpChecked check key action = 
-	prepGetViaTmpChecked key $
+	prepGetViaTmpChecked key False $
 		finishGetViaTmp check key action
 
 {- Prepares to download a key via a tmp file, and checks that there is
@@ -229,8 +229,8 @@ getViaTmpChecked check key action =
  -
  - Wen there's enough free space, runs the download action.
  -}
-prepGetViaTmpChecked :: Key -> Annex Bool -> Annex Bool
-prepGetViaTmpChecked key getkey = do
+prepGetViaTmpChecked :: Key -> a -> Annex a -> Annex a
+prepGetViaTmpChecked key unabletoget getkey = do
 	tmp <- fromRepo $ gitAnnexTmpObjectLocation key
 
 	e <- liftIO $ doesFileExist tmp
@@ -242,7 +242,7 @@ prepGetViaTmpChecked key getkey = do
 			-- The tmp file may not have been left writable
 			when e $ thawContent tmp
 			getkey
-		, return False
+		, return unabletoget
 		)
 
 finishGetViaTmp :: Annex Bool -> Key -> (FilePath -> Annex Bool) -> Annex Bool

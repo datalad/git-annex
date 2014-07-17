@@ -1,3 +1,74 @@
+git-annex (5.20140717) unstable; urgency=high
+
+  * Fix minor FD leak in journal code. Closes: #754608
+  * direct: Fix handling of case where a work tree subdirectory cannot
+    be written to due to permissions.
+  * migrate: Avoid re-checksumming when migrating from hashE to hash backend.
+  * uninit: Avoid failing final removal in some direct mode repositories
+    due to file modes.
+  * S3: Deal with AWS ACL configurations that do not allow creating or
+    checking the location of a bucket, but only reading and writing content to
+    it.
+  * resolvemerge: New plumbing command that runs the automatic merge conflict
+    resolver.
+  * Deal with change in git 2.0 that made indirect mode merge conflict
+    resolution leave behind old files.
+  * sync: Fix git sync with local git remotes even when they don't have an
+    annex.uuid set. (The assistant already did so.)
+  * Set gcrypt-publish-participants when setting up a gcrypt repository,
+    to avoid unncessary passphrase prompts.
+    This is a security/usability tradeoff. To avoid exposing the gpg key
+    ids who can decrypt the repository, users can unset
+    gcrypt-publish-participants.
+  * Install nautilus hooks even when ~/.local/share/nautilus/ does not yet
+    exist, since it is not automatically created for Gnome 3 users.
+  * Windows: Move .vbs files out of git\bin, to avoid that being in the
+    PATH, which caused some weird breakage. (Thanks, divB)
+  * Windows: Fix locking issue that prevented the webapp starting
+    (since 5.20140707).
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 17 Jul 2014 11:27:25 -0400
+
+git-annex (5.20140709) unstable; urgency=medium
+
+  * Fix race in direct mode merge code that could cause all files in the
+    repository to be removed. It should be able to recover repositories
+    experiencing this bug without data loss. See:
+    http://git-annex.branchable.com/bugs/bad_merge_commit_deleting_all_files/
+  * Fix git version that supported --no-gpg-sign.
+  * Fix bug in automatic merge conflict resolution, when one side is an
+    annexed symlink, and the other side is a non-annexed symlink.
+  * Really fix bug that caused the assistant to make many unncessary
+    empty merge commits.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 09 Jul 2014 15:28:03 -0400
+
+git-annex (5.20140707) unstable; urgency=medium
+
+  * assistant: Fix bug, introduced in last release, that caused the assistant
+    to make many unncessary empty merge commits.
+  * assistant: Fix one-way assistant->assistant sync in direct mode.
+  * Fix bug in annex.queuesize calculation that caused much more
+    queue flushing than necessary.
+  * importfeed: When annex.genmetadata is set, metadata from the feed
+    is added to files that are imported from it.
+  * Support users who have set commit.gpgsign, by disabling gpg signatures
+    for git-annex branch commits and commits made by the assistant.
+  * Fix memory leak when committing millions of changes to the git-annex
+    branch, eg after git-annex add has run on 2 million files in one go.
+  * Support building with bloomfilter 2.0.0.
+  * Run standalone install process when the assistant is started
+    (was only being run when the webapp was opened).
+  * Android: patch git to avoid fchmod, which fails on /sdcard.
+  * Windows: Got rid of that pesky DOS box when starting the webapp.
+  * Windows: Added Startup menu item so assistant starts automatically
+    on login.
+  * Windows: Fix opening file browser from webapp when repo is in a
+    directory with spaces.
+  * Windows: Assistant now logs to daemon.log.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 07 Jul 2014 12:24:13 -0400
+
 git-annex (5.20140613) unstable; urgency=medium
 
   * Ignore setsid failures.

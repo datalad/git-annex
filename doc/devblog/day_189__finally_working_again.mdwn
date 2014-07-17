@@ -1,0 +1,18 @@
+Finally back to work with a new laptop!
+
+Did one fairly major feature today: When using git-annex to pull down
+podcasts, metadata from the feed is copied into git-annex's metadata store,
+if annex.genmetadata is set. Should be great for views etc!
+
+Worked through a lot of the backlog, which is down to 47 messages now.
+
+Only other bug fix of note is a fix on Android. A recent change to git made
+it try to chmod files, which tends to fail on the horrible /sdcard
+filesystem. Patched git to avoid that.
+
+For some reason the autobuilder box rebooted while I was away, and 
+somehow the docker containers didn't come back up -- so they got
+automatically rebuilt. But I have to manually finish up building the
+android and armel ones. Will be babysitting that build this evening.
+
+Today's work was sponsored by Ævar Arnfjörð Bjarmason.

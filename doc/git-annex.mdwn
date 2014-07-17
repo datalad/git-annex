@@ -139,9 +139,10 @@ subdirectories).
 * `sync [remote ...]`
 
   Use this command when you want to synchronize the local repository with
-  one or more of its remotes. You can specify the remotes to sync with;
-  the default is to sync with all remotes. Or specify `--fast` to sync with
-  the remotes with the lowest annex-cost value.
+  one or more of its remotes. You can specify the remotes to sync with by
+  name; the default is to sync with all remotes.
+  Or specify `--fast` to sync with the remotes with the
+  lowest annex-cost value.
 
   The sync process involves first committing all local changes,
   then fetching and merging the `synced/master` and the `git-annex` branch
@@ -169,8 +170,8 @@ subdirectories).
 
 * `merge`
 
-  This performs the same merging that is done by the sync command, but
-  without pushing or pulling any data.
+  This performs the same merging (and merge conflict resolution)
+  that is done by the sync command, but without pushing or pulling any data.
 
   One way to use this is to put `git annex merge` into a repository's
   post-receive hook. Then any syncs to the repository will update its working
@@ -268,7 +269,7 @@ subdirectories).
 
   Use `--template` to control where the files are stored.
   The default template is '${feedtitle}/${itemtitle}${extension}'
-  (Other available variables: feedauthor, itemauthor, itemsummary, itemdescription, itemrights, itemid, itempubdate)
+  (Other available variables: feedauthor, itemauthor, itemsummary, itemdescription, itemrights, itemid, itempubdate, title, author)
 
   The `--relaxed` and `--fast` options behave the same as they do in addurl.
   
@@ -644,7 +645,8 @@ subdirectories).
   `--format`. The default output format is the same as `--format='${file}\\n'`
 
   These variables are available for use in formats: file, key, backend,
-  bytesize, humansize, keyname, hashdirlower, hashdirmixed, mtime.
+  bytesize, humansize, keyname, hashdirlower, hashdirmixed, mtime (for 
+  the mtime field of a WORM key).
 
 * `whereis [path ...]`
 
@@ -936,6 +938,16 @@ subdirectories).
 
   Most MATCHING OPTIONS can be used with findref, to limit the files it
   finds. However, the --include and --exclude options will not work.
+
+* `resolvemerge`
+
+  Resolves a conflicted merge, by adding both conflicting versions of the
+  file to the tree, using variants of their filename. This is done
+  automatically when using `git annex sync` or `git annex merge`.
+
+  Note that only merge conflicts that involve an annexed file are resolved.
+  Merge conflicts between two files that are not annexed will not be
+  automatically resolved.
 
 * `test`
 
@@ -1345,8 +1357,12 @@ Here are all the supported configuration settings.
 * `annex.genmetadata`
 
   Set this to `true` to make git-annex automatically generate some metadata
-  when adding files to the repository. In particular, it stores
-  year and month metadata, from the file's modification date.
+  when adding files to the repository. 
+  
+  In particular, it stores year and month metadata, from the file's
+  modification date.
+
+  When importfeed is used, it stores additional metadata from the feed.
 
 * `annex.queuesize`
 
@@ -1382,9 +1398,11 @@ Here are all the supported configuration settings.
 * `annex.alwayscommit`
 
   By default, git-annex automatically commits data to the git-annex branch
-  after each command is run. To disable these commits,
-  set to `false`. Then data will only be committed when
-  running `git annex merge` (or by automatic merges) or `git annex sync`.
+  after each command is run. If you have a series
+  of commands that you want to make a single commit, you can 
+  run the commands with `-c annex.alwayscommit=false`. You can later
+  commit the data by running `git annex merge` (or by automatic merges)
+  or `git annex sync`.
 
 * `annex.delayadd`
 

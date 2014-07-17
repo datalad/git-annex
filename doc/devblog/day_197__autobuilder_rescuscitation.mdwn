@@ -1,0 +1,14 @@
+Yay, the Linux autobuilder is back! Also fixed the Windows build.
+
+Fixed a reversion that prevented the webapp from starting
+properly on Windows, which was introduced by some bad locking when I put in
+the hack that makes it log to the log file on that platform.
+
+Various other minor fixes here and there. There are almost enough
+to do a release again soon.
+
+I've also been trying to bootstrap ghc 7.8 on arm, for Debian. There's a script
+that's supposed to allow building 7.8 using 7.6.3, dealing with a linker
+problem by using the gold linker. Hopefully that will work since otherwise
+Debian could remain stuck with an old ghc or worse lose the arm ports.
+Neither would be great for git-annex..

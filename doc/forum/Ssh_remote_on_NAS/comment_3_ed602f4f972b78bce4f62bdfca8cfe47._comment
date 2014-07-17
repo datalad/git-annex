@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 3"
+ date="2014-07-15T18:55:58Z"
+ content="""
+I don't think it was a good idea to remove git from the NAS. To set up a git remote, you necessarily need to have git installed on the remote.
+
+`git annex` should work as long as git-annex is somewhere in PATH -- unless your build of git is very strange and does not check PATH for git-foo commands.
+Even if this was the case, you could run `git-annex` instead.
+"""]]

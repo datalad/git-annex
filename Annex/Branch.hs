@@ -92,7 +92,7 @@ getBranch = maybe (hasOrigin >>= go >>= use) return =<< branchsha
 		fromMaybe (error $ "failed to create " ++ fromRef name)
 			<$> branchsha
 	go False = withIndex' True $
-		inRepo $ Git.Branch.commitAlways "branch created" fullname []
+		inRepo $ Git.Branch.commitAlways Git.Branch.AutomaticCommit "branch created" fullname []
 	use sha = do
 		setIndexSha sha
 		return sha
@@ -252,7 +252,7 @@ commitIndex jl branchref message parents = do
 commitIndex' :: JournalLocked -> Git.Ref -> String -> [Git.Ref] -> Annex ()
 commitIndex' jl branchref message parents = do
 	updateIndex jl branchref
-	committedref <- inRepo $ Git.Branch.commitAlways message fullname parents
+	committedref <- inRepo $ Git.Branch.commitAlways Git.Branch.AutomaticCommit message fullname parents
 	setIndexSha committedref
 	parentrefs <- commitparents <$> catObject committedref
 	when (racedetected branchref parentrefs) $
@@ -389,19 +389,40 @@ stageJournal jl = withIndex $ do
 	prepareModifyIndex jl
 	g <- gitRepo
 	let dir = gitAnnexJournalDir g
-	fs <- getJournalFiles jl
-	liftIO $ do
+	(jlogf, jlogh) <- openjlog
+	withJournalHandle $ \jh -> do
 		h <- hashObjectStart g
 		Git.UpdateIndex.streamUpdateIndex g
-			[genstream dir h fs]
+			[genstream dir h jh jlogh]
 		hashObjectStop h
-	return $ liftIO $ mapM_ (removeFile . (dir </>)) fs
+	return $ cleanup dir jlogh jlogf
   where
-	genstream dir h fs streamer = forM_ fs $ \file -> do
-		let path = dir </> file
-		sha <- hashFile h path
-		streamer $ Git.UpdateIndex.updateIndexLine
-			sha FileBlob (asTopFilePath $ fileJournal file)
+	genstream dir h jh jlogh streamer = do
+		v <- readDirectory jh
+		case v of
+			Nothing -> return ()
+			Just file -> do
+				unless (dirCruft file) $ do
+					let path = dir </> file
+					sha <- hashFile h path
+					hPutStrLn jlogh file
+					streamer $ Git.UpdateIndex.updateIndexLine
+						sha FileBlob (asTopFilePath $ fileJournal file)
+				genstream dir h jh jlogh streamer
+	-- Clean up the staged files, as listed in the temp log file.
+	-- The temp file is used to avoid needing to buffer all the
+	-- filenames in memory.
+	cleanup dir jlogh jlogf = do
+		hFlush jlogh
+		hSeek jlogh AbsoluteSeek 0
+		stagedfs <- lines <$> hGetContents jlogh
+		mapM_ (removeFile . (dir </>)) stagedfs
+		hClose jlogh
+		nukeFile jlogf
+	openjlog = do
+		tmpdir <- fromRepo gitAnnexTmpMiscDir
+		createAnnexDirectory tmpdir
+		liftIO $ openTempFile tmpdir "jlog"
 
 {- This is run after the refs have been merged into the index,
  - but before the result is committed to the branch.
@@ -471,7 +492,7 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 		Annex.Queue.flush
 		if neednewlocalbranch
 			then do
-				committedref <- inRepo $ Git.Branch.commitAlways message fullname transitionedrefs
+				committedref <- inRepo $ Git.Branch.commitAlways Git.Branch.AutomaticCommit message fullname transitionedrefs
 				setIndexSha committedref
 			else do
 				ref <- getBranch

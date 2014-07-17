@@ -23,11 +23,16 @@ import Annex.Exception
  - Throws an IO exception when it was unable to replace the file.
  -}
 replaceFile :: FilePath -> (FilePath -> Annex ()) -> Annex ()
-replaceFile file a = do
+replaceFile file action = replaceFileOr file action (liftIO . nukeFile)
+
+{- If unable to replace the file with the temp file, runs the
+ - rollback action, which is responsible for cleaning up the temp file. -}
+replaceFileOr :: FilePath -> (FilePath -> Annex ()) -> (FilePath -> Annex ()) -> Annex ()
+replaceFileOr file action rollback = do
 	tmpdir <- fromRepo gitAnnexTmpMiscDir
 	void $ createAnnexDirectory tmpdir
-	bracketIO (setup tmpdir) nukeFile $ \tmpfile -> do
-		a tmpfile
+	bracketAnnex (liftIO $ setup tmpdir) rollback $ \tmpfile -> do
+		action tmpfile
 		liftIO $ catchIO (rename tmpfile file) (fallback tmpfile)
   where
   	setup tmpdir = do

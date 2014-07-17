@@ -36,6 +36,7 @@ import Annex.Exception
 import Annex.VariantFile
 import Git.Index
 import Annex.Index
+import Annex.LockFile
 
 {- Uses git ls-files to find files that need to be committed, and stages
  - them into the index. Returns True if some changes were staged. -}
@@ -150,13 +151,16 @@ addDirect file cache = do
  - directory, and the merge is staged into a copy of the index.
  - Then the work tree is updated to reflect the merge, and
  - finally, the merge is committed and the real index updated.
+ -
+ - A lock file is used to avoid races with any other caller of mergeDirect.
+ - 
+ - To avoid other git processes from making change to the index while our
+ - merge is in progress, the index lock file is used as the temp index
+ - file. This is the same as what git does when updating the index
+ - normally.
  -}
-mergeDirect :: Maybe Git.Ref -> Maybe Git.Ref -> Git.Branch -> Annex Bool -> Annex Bool
-mergeDirect startbranch oldref branch resolvemerge = do
-	-- Use the index lock file as the temp index file.
-	-- This is actually what git does when updating the index,
-	-- and so it will prevent other git processes from making
-	-- any changes to the index while our merge is in progress.
+mergeDirect :: Maybe Git.Ref -> Maybe Git.Ref -> Git.Branch -> Annex Bool -> Git.Branch.CommitMode -> Annex Bool
+mergeDirect startbranch oldref branch resolvemerge commitmode = exclusively $ do
 	reali <- fromRepo indexFile
 	tmpi <- fromRepo indexFileLock
 	liftIO $ copyFile reali tmpi
@@ -168,19 +172,23 @@ mergeDirect startbranch oldref branch resolvemerge = do
 		createDirectoryIfMissing True d
 
 	withIndexFile tmpi $ do
-		merged <- stageMerge d branch
+		merged <- stageMerge d branch commitmode
 		r <- if merged
 			then return True
 			else resolvemerge
 		mergeDirectCleanup d (fromMaybe Git.Sha.emptyTree oldref)
-		mergeDirectCommit merged startbranch branch
+		mergeDirectCommit merged startbranch branch commitmode
+
 		liftIO $ rename tmpi reali
+
 		return r
+  where
+	exclusively = withExclusiveLock gitAnnexMergeLock
 
 {- Stage a merge into the index, avoiding changing HEAD or the current
  - branch. -}
-stageMerge :: FilePath -> Git.Branch -> Annex Bool
-stageMerge d branch = do
+stageMerge :: FilePath -> Git.Branch -> Git.Branch.CommitMode -> Annex Bool
+stageMerge d branch commitmode = do
 	-- XXX A bug in git makes stageMerge unsafe to use if the git repo
 	-- is configured with core.symlinks=false
 	-- Using mergeNonInteractive is not ideal though, since it will
@@ -190,7 +198,7 @@ stageMerge d branch = do
 	-- <http://marc.info/?l=git&m=140262402204212&w=2>
 	merger <- ifM (coreSymlinks <$> Annex.getGitConfig)
 		( return Git.Merge.stageMerge
-		, return Git.Merge.mergeNonInteractive
+		, return $ \ref -> Git.Merge.mergeNonInteractive ref commitmode
 		) 
 	inRepo $ \g -> merger branch $ 
 		g { location = Local { gitdir = Git.localGitDir g, worktree = Just d } }
@@ -198,8 +206,8 @@ stageMerge d branch = do
 {- Commits after a direct mode merge is complete, and after the work
  - tree has been updated by mergeDirectCleanup.
  -}
-mergeDirectCommit :: Bool -> Maybe Git.Ref -> Git.Branch -> Annex ()
-mergeDirectCommit allowff old branch = do
+mergeDirectCommit :: Bool -> Maybe Git.Ref -> Git.Branch -> Git.Branch.CommitMode -> Annex ()
+mergeDirectCommit allowff old branch commitmode = do
 	void preCommitDirect
 	d <- fromRepo Git.localGitDir
 	let merge_head = d </> "MERGE_HEAD"
@@ -211,7 +219,7 @@ mergeDirectCommit allowff old branch = do
 			msg <- liftIO $
 				catchDefaultIO ("merge " ++ fromRef branch) $
 					readFile merge_msg
-			void $ inRepo $ Git.Branch.commit False msg
+			void $ inRepo $ Git.Branch.commit commitmode False msg
 				Git.Ref.headRef [Git.Ref.headRef, branch]
 		)
 	liftIO $ mapM_ nukeFile [merge_head, merge_msg, merge_mode]
@@ -346,7 +354,11 @@ toDirectGen k f = do
 		void $ addAssociatedFile k f
 		modifyContent loc $ do
 			thawContent loc
-			replaceFile f $ liftIO . moveFile loc
+			replaceFileOr f
+				(liftIO . moveFile loc)
+				$ \tmp -> do -- rollback
+					liftIO (moveFile tmp loc)
+					freezeContent loc
 	fromdirect loc = do
 		replaceFile f $
 			liftIO . void . copyFileExternal loc

@@ -17,6 +17,7 @@ data BackendA a = Backend
 	, getKey :: KeySource -> a (Maybe Key) 
 	, fsckKey :: Maybe (Key -> FilePath -> a Bool)
 	, canUpgradeKey :: Maybe (Key -> Bool)
+	, fastMigrate :: Maybe (Key -> BackendA a -> Maybe Key)
 	}
 
 instance Show (BackendA a) where

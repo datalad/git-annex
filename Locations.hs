@@ -42,6 +42,7 @@ module Locations (
 	gitAnnexJournalDir,
 	gitAnnexJournalLock,
 	gitAnnexPreCommitLock,
+	gitAnnexMergeLock,
 	gitAnnexIndex,
 	gitAnnexIndexStatus,
 	gitAnnexViewIndex,
@@ -261,6 +262,10 @@ gitAnnexJournalLock r = gitAnnexDir r </> "journal.lck"
 {- Lock file for the pre-commit hook. -}
 gitAnnexPreCommitLock :: Git.Repo -> FilePath
 gitAnnexPreCommitLock r = gitAnnexDir r </> "precommit.lck"
+
+{- Lock file for direct mode merge. -}
+gitAnnexMergeLock :: Git.Repo -> FilePath
+gitAnnexMergeLock r = gitAnnexDir r </> "merge.lck"
 
 {- .git/annex/index is used to stage changes to the git-annex branch -}
 gitAnnexIndex :: Git.Repo -> FilePath

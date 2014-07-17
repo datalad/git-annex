@@ -6,7 +6,7 @@ installed.
 The unusual thing about Amazon Glacier is the multiple-hour delay it takes
 to retrieve information out of Glacier. To deal with this, commands like
 "git-annex get" request Glacier start the retrieval process, and will fail
-due to the data not yet being available. You can then wait appriximately 
+due to the data not yet being available. You can then wait approximately 
 four hours, re-run the same command, and this time, it will actually
 download the data.
 

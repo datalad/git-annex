@@ -20,7 +20,8 @@ several more. Handy if you don't otherwise have git installed.
 
 ## autobuilds
 
-[[Joey]] autobuilds the app for Mavericks.
+[[Joey]] autobuilds the app for Mavericks, thanks to Kevin McKenzie
+for hosting the autobuilder.
 
 * [autobuild of git-annex.dmg](https://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-mavericks/git-annex.dmg) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-mavericks/))
 

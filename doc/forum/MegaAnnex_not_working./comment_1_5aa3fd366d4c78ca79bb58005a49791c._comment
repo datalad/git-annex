@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 1"
+ date="2014-07-11T19:42:24Z"
+ content="""
+This looks to me like the connection to Mega fails, so either they have a server down, or a network problem, or perhaps the API that the megaannex remote was relying on might have been removed..
+"""]]

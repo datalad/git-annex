@@ -1,0 +1,59 @@
+[[!comment format=mdwn
+ username="http://olivier.mehani.name/"
+ nickname="olivier-mehani"
+ subject="comment 4"
+ date="2014-07-09T01:09:33Z"
+ content="""
+And the ultimate, copy/pastable one, using shell variables:
+
+    export GASERVER=server
+    export GAUSER=user
+    export GAPATH=/path
+
+For the new client (using bash):
+
+    export GASANEPATH=${GAPATH//\//.2F}
+    export GASSHHOSTNAME=${GASERVER}-${GAUSER}_${GASANEPATH}
+    ssh-keygen -t rsa -f  ~/.ssh/git-annex/key.git-annex-$GASSHHOSTNAME
+    cat << EOF >> ~/.ssh/config
+    # Added manually for git-annex
+    Host git-annex-$GASSHHOSTNAME
+      Hostname $GASERVER
+      IdentityFile ~/.ssh/git-annex/key.git-annex-$GASSHHOSTNAME
+      IdentitiesOnly yes
+      StrictHostKeyChecking yes
+    EOF
+    ssh-copy-id -i ~/.ssh/git-annex/key.git-annex-$GASSHHOSTNAME $GAUSER@$GASERVER
+    git remote add ${GASERVER/.*/} ssh://${GAUSER}@git-annex-${GASSHHOSTNAME}${GAPATH}
+    git config remote.${GASERVER/.*/}.annex-ignore false
+
+After the `ssh-copy-id` stage, the key can be used to get a full session. This
+needs to be limited on the server, by prepending the following to the newly
+added key in `.ssh/authorized_keys`, replacing `GAPATH` by the value of `$GAPATH`:
+
+    command=\"GIT_ANNEX_SHELL_DIRECTORY='GAPATH' ~/.ssh/git-annex-shell\",no-agent-forwarding,no-port-forwarding,no-X11-forwarding,no-pty 
+
+From the client, one can make sure this has been limite properly by trying to log in with the key:
+
+     ssh -i ~/.ssh/git-annex/key.git-annex-$GASSHHOSTNAME $GAUSER@$GASERVER -o IdentitiesOnly=yes
+
+It should reply with the `git-annex-shell` helper complaing:
+
+    git-annex-shell: bad parameters
+    
+    Usage: git-annex-shell [-c] command [parameters ...] [option ...]
+    
+    Plumbing commands:
+    
+    commit        DIRECTORY          commits any staged changes to the git-annex branch
+    configlist    DIRECTORY          outputs relevant git configuration
+    dropkey       DIRECTORY KEY ...  drops annexed content for specified keys
+    gcryptsetup   DIRECTORY VALUE    sets up gcrypt repository
+    inannex       DIRECTORY KEY ...  checks if keys are present in the annex
+    notifychanges DIRECTORY          sends notification when git refs are changed
+    recvkey       DIRECTORY KEY      runs rsync in server mode to receive content
+    sendkey       DIRECTORY KEY      runs rsync in server mode to send content
+    transferinfo  DIRECTORY KEY      updates sender on number of bytes of content received
+    
+... and this should be all set.
+"""]]

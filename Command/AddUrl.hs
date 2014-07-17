@@ -97,15 +97,17 @@ performQuvi relaxed pageurl videourl file = ifAnnexed file addurl geturl
   where
   	quviurl = setDownloader pageurl QuviDownloader
   	addurl key = next $ cleanup quviurl file key Nothing
-	geturl = next $ addUrlFileQuvi relaxed quviurl videourl file
+	geturl = next $ isJust <$> addUrlFileQuvi relaxed quviurl videourl file
 #endif
 
 #ifdef WITH_QUVI
-addUrlFileQuvi :: Bool -> URLString -> URLString -> FilePath -> Annex Bool
+addUrlFileQuvi :: Bool -> URLString -> URLString -> FilePath -> Annex (Maybe Key)
 addUrlFileQuvi relaxed quviurl videourl file = do
 	key <- Backend.URL.fromUrl quviurl Nothing
 	ifM (pure relaxed <||> Annex.getState Annex.fast)
-		( cleanup quviurl file key Nothing
+		( do
+			cleanup' quviurl file key Nothing
+			return (Just key)
 		, do
 			{- Get the size, and use that to check
 			 - disk space. However, the size info is not
@@ -113,7 +115,7 @@ addUrlFileQuvi relaxed quviurl videourl file = do
 			 - might change and we want to be able to download
 			 - it later. -}
 			sizedkey <- addSizeUrlKey videourl key
-			prepGetViaTmpChecked sizedkey $ do
+			prepGetViaTmpChecked sizedkey Nothing $ do
 				tmp <- fromRepo $ gitAnnexTmpObjectLocation key
 				showOutput
 				ok <- Transfer.notifyTransfer Transfer.Download (Just file) $
@@ -121,15 +123,17 @@ addUrlFileQuvi relaxed quviurl videourl file = do
 						liftIO $ createDirectoryIfMissing True (parentDir tmp)
 						downloadUrl [videourl] tmp
 				if ok
-					then cleanup quviurl file key (Just tmp)
-					else return False
+					then do
+						cleanup' quviurl file key (Just tmp)
+						return (Just key)
+					else return Nothing
 		)
 #endif
 
 perform :: Bool -> URLString -> FilePath -> CommandPerform
 perform relaxed url file = ifAnnexed file addurl geturl
   where
-	geturl = next $ addUrlFile relaxed url file
+	geturl = next $ isJust <$> addUrlFile relaxed url file
 	addurl key
 		| relaxed = do
 			setUrlPresent key url
@@ -149,7 +153,7 @@ perform relaxed url file = ifAnnexed file addurl geturl
 						stop
 			)
 
-addUrlFile :: Bool -> URLString -> FilePath -> Annex Bool
+addUrlFile :: Bool -> URLString -> FilePath -> Annex (Maybe Key)
 addUrlFile relaxed url file = do
 	liftIO $ createDirectoryIfMissing True (parentDir file)
 	ifM (Annex.getState Annex.fast <||> pure relaxed)
@@ -159,13 +163,13 @@ addUrlFile relaxed url file = do
 			download url file
 		)
 
-download :: URLString -> FilePath -> Annex Bool
+download :: URLString -> FilePath -> Annex (Maybe Key)
 download url file = do
 	{- Generate a dummy key to use for this download, before we can
 	 - examine the file and find its real key. This allows resuming
 	 - downloads, as the dummy key for a given url is stable. -}
 	dummykey <- addSizeUrlKey url =<< Backend.URL.fromUrl url Nothing
-	prepGetViaTmpChecked dummykey $ do
+	prepGetViaTmpChecked dummykey Nothing $ do
 		tmp <- fromRepo $ gitAnnexTmpObjectLocation dummykey
 		showOutput
 		ifM (runtransfer dummykey tmp)
@@ -178,9 +182,11 @@ download url file = do
 					}
 				k <- genKey source backend
 				case k of
-					Nothing -> return False
-					Just (key, _) -> cleanup url file key (Just tmp)
-			, return False
+					Nothing -> return Nothing
+					Just (key, _) -> do
+						cleanup' url file key (Just tmp)
+						return (Just key)
+			, return Nothing
 			)
   where
   	runtransfer dummykey tmp =  Transfer.notifyTransfer Transfer.Download (Just file) $
@@ -200,6 +206,11 @@ addSizeUrlKey url key = do
 
 cleanup :: URLString -> FilePath -> Key -> Maybe FilePath -> Annex Bool
 cleanup url file key mtmp = do
+	cleanup' url file key mtmp
+	return True
+
+cleanup' :: URLString -> FilePath -> Key -> Maybe FilePath -> Annex ()
+cleanup' url file key mtmp = do
 	when (isJust mtmp) $
 		logStatus key InfoPresent
 	setUrlPresent key url
@@ -210,9 +221,8 @@ cleanup url file key mtmp = do
 		 - must already exist, so flush the queue. -}
 		Annex.Queue.flush
 	maybe noop (moveAnnex key) mtmp
-	return True
 
-nodownload :: Bool -> URLString -> FilePath -> Annex Bool
+nodownload :: Bool -> URLString -> FilePath -> Annex (Maybe Key)
 nodownload relaxed url file = do
 	(exists, size) <- if relaxed
 		then pure (True, Nothing)
@@ -220,10 +230,11 @@ nodownload relaxed url file = do
 	if exists
 		then do
 			key <- Backend.URL.fromUrl url size
-			cleanup url file key Nothing
+			cleanup' url file key Nothing
+			return (Just key)
 		else do
 			warning $ "unable to access url: " ++ url
-			return False
+			return Nothing
 
 url2file :: URI -> Maybe Int -> Int -> FilePath
 url2file url pathdepth pathmax = case pathdepth of

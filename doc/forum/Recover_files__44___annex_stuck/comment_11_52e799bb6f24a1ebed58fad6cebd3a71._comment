@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.203"
+ subject="comment 11"
+ date="2014-06-18T20:54:31Z"
+ content="""
+Ok, my suspicion is that the root problem is having a large number of file in a single directory. That would cause the git tree objects to get big, and it may 
+be that git-annex somewhere buffers a whole tree object in memory, although I cannot think of where off the top of my head.
+
+git-annex scales to any size of files (limited only by checksumming time unless you use the WORM backend to avoid checksumming). git-annex tries to scale at least as good as git does to a large quantity of files in a repository. git doesn't handle a million files in a repository very fast, due to a number of issues including how the index works. I have never tested git-annex with more than 1 million files, and not all in the same directory.
+
+Other than the number of files, your use case seems reasonable. `git annex drop` will drop files that you have already copied to enough of the remotes (using eg, `git-annex copy`).
+
+Above you show a git-annex add failing after 5 files. I suspect you truncated that output, and it processed rather more files. git-annex only says \"(Recording state in git...)\" once it's added all the files, or after it's added around 10 thousand files and still has more to do). It seems to have failed at the point where the files are staged into the index.
+
+I'm building a 2 million file in one directory repo on a fast server now to see if I can reproduce this.
+"""]]

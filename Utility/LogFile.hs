@@ -15,13 +15,10 @@ import Common
 import System.Posix.Types
 #endif
 
-#ifndef mingw32_HOST_OS
-openLog :: FilePath -> IO Fd
+openLog :: FilePath -> IO Handle
 openLog logfile = do
 	rotateLog logfile
-	openFd logfile WriteOnly (Just stdFileMode)
-		defaultFileFlags { append = True }
-#endif
+	openFile logfile AppendMode
 
 rotateLog :: FilePath -> IO ()
 rotateLog logfile = go 0

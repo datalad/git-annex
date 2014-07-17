@@ -23,7 +23,7 @@ import Assistant.TransferQueue
 import Assistant.Types.UrlRenderer
 import qualified Annex.Branch
 import qualified Git.LsFiles
-import qualified Git.Command
+import qualified Git.Command.Batch
 import qualified Git.Config
 import Utility.ThreadScheduler
 import qualified Assistant.Threads.Watcher as Watcher
@@ -167,7 +167,7 @@ dailyCheck urlrenderer = do
 	 - to have a lot of small objects and they should not be a
 	 - significant size. -}
 	when (Git.Config.getMaybe "gc.auto" g == Just "0") $
-		liftIO $ void $ Git.Command.runBatch batchmaker
+		liftIO $ void $ Git.Command.Batch.run batchmaker
 			[ Param "-c", Param "gc.auto=670000"
 			, Param "gc"
 			, Param "--auto"
@@ -224,7 +224,7 @@ checkLogSize n = do
 	totalsize <- liftIO $ sum <$> mapM filesize logs
 	when (totalsize > 2 * oneMegabyte) $ do
 		notice ["Rotated logs due to size:", show totalsize]
-		liftIO $ openLog f >>= redirLog
+		liftIO $ openLog f >>= handleToFd >>= redirLog
 		when (n < maxLogs + 1) $ do
 			df <- liftIO $ getDiskFree $ takeDirectory f
 			case df of

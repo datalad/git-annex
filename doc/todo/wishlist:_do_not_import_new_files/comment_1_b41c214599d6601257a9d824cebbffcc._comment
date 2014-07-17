@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://ypid.wordpress.com/"
+ ip="213.153.84.215"
+ subject="gitignore"
+ date="2014-07-12T17:59:42Z"
+ content="""
+Hi
+
+The gitignore file is probably what you are looking for which is also honored by git-annex. Some documentation:
+
+* [On git-scm](http://git-scm.com/docs/gitignore)
+* [On gitready](http://de.gitready.com/beginner/2009/01/19/ignoring-files.html)
+* [On github](https://help.github.com/articles/ignoring-files)
+"""]]
