@@ -2,7 +2,7 @@
 
 I've had this problem before 5.20140709-gc75193e and when the [ugly bug](http://git-annex.branchable.com/devblog/day_193-194__ugly_bug/) was discovered and fixed, I updated and thought it was gone.
 Yet, I'm still experiencing a content removal bug, so it might be something different altogether.
-I should also add that I'm not really knowledgeable with the git log history tools and git-annex inner workings. I might need some help with finding the necessary information for debugging.
+I should also add that I don't know much about git log history and git-annex inner workings. I might need some help with finding the necessary information for debugging.
 
 **Bug description:**
 
@@ -30,7 +30,7 @@ Looking at 'git log --stat' in *B*:
 
 A change is apparently deleting and rewriting the whole file (maybe that's normal because it's a binary (encrypted) file?). The third most recent deletion is probably the one that shouldn't happen.
 
-Reverting "d9eb9e94a39" will only recover a placeholder, not really the original file. I can get the content back by going through *git annex unused* with *git log -S'key'*, then going to indirect mode, and then using *addunused*.
+Reverting "d9eb9e94a39" will only recover a placeholder, not really the original file. I can get the content back by going through *git annex unused* with *git log -S'key'*, then going to indirect mode, and then using *addunused*. This can only be done in the repository that changed the file in the first place (repo A), as the other repository only has the older version of the file in its unused list. This probably means that the change did not propagate before the file was deleted.
 
 **daemon.log transcript**
 
