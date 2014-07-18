@@ -1,4 +1,3 @@
-### Please describe the problem.
 **Premise:**
 
 I've had this problem before 5.20140709-gc75193e and when the [ugly bug](http://git-annex.branchable.com/devblog/day_193-194__ugly_bug/) was discovered and fixed, I updated and thought it was gone.
