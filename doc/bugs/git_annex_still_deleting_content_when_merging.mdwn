@@ -1,0 +1,89 @@
+### Please describe the problem.
+**Premise:**
+
+I've had this problem before 5.20140709-gc75193e and when the [ugly bug](http://git-annex.branchable.com/devblog/day_193-194__ugly_bug/) was discovered and fixed, I updated and thought it was gone.
+Yet, I'm still experiencing a content removal bug, so it might be something different altogether.
+I should also add that I'm not really knowledgeable with the git log history tools and git-annex inner workings. I might need some help with finding the necessary information for debugging.
+
+**Bug description:**
+
+Two local computers, running Ubuntu-14.04 and Fedora-20 respectively, are paired through the assistant and functional with git annex 5.20140709. In direct mode. Most of the time, everything seems to work fine. Sometimes, *Computer A* will modify one file in its repository while the *B* is offline. When *B* comes back online both repositories will lose their copy of the modified file (I'm not sure whether this also happens when they're both online when the change happens; it doesn't look like it anyway). The rest of the data in the repository is intact. This does not happen every time and I haven't been able to reproduce it consistently. Since 5.20140709 came out, it happened 2 or 3 times.
+
+Looking at 'git log --stat' in *B*:
+
+    commit d9eb9e94a39
+    Author: COMPUTER B
+    Date:   Thu Jul 17 18:17:16 2014 +0200
+      shared.skg | 1 -
+      1 file changed, 1 deletion(-)
+
+    commit 6fa27f08492
+    Author: COMPUTER A
+    Date:   Thu Jul 17 18:17:14 2014 +0200
+      shared.skg | 1 +
+      1 file changed, 1 insertion(+)
+
+    commit d25cc793739
+    Author: COMPUTER A
+    Date:   Thu Jul 17 18:17:12 2014 +0200
+      shared.skg | 1 -
+      1 file changed, 1 deletion(-)
+
+When things go well, it only does 1 deletion and 1 insertion (a change is apparently deleting and rewriting the file, maybe because it's a binary (encrypted) file?). The third most recent deletion is probably the one that shouldn't happen.
+
+Reverting "d9eb9e94a39" will only recover a placeholder, not really the original file. I can get the content back by going through *git annex unused* with *git log -S'key'*, then going to indirect mode, and then using *addunused*.
+
+**daemon.log transcript**
+
+[[!format sh """
+
+[2014-07-17 18:13:17 CEST] main: starting assistant version 5.20140709-gc75193e
+[2014-07-17 18:13:17 CEST] Cronner: You should enable consistency checking to protect your data. 
+[2014-07-17 18:13:55 CEST] TransferScanner: Syncing with asus.local_sincro 
+(scanning...) [2014-07-17 18:13:55 CEST] Watcher: Performing startup scan
+p11-kit: couldn't load module: /usr/lib/x86_64-linux-gnu/pkcs11/p11-kit-trust.so: /usr/lib/x86_64-linux-gnu/pkcs11/p11-kit-trust.so: cannot open shared object file: No such file or directory
+p11-kit: couldn't load module: /usr/lib/x86_64-linux-gnu/pkcs11/gnome-keyring-pkcs11.so: /usr/lib/x86_64-linux-gnu/pkcs11/gnome-keyring-pkcs11.so: cannot open shared object file: No such file or directory
+(started...) p11-kit: couldn't load module: /usr/lib/x86_64-linux-gnu/pkcs11/p11-kit-trust.so: /usr/lib/x86_64-linux-gnu/pkcs11/p11-kit-trust.so: cannot open shared object file: No such file or directory
+p11-kit: couldn't load module: /usr/lib/x86_64-linux-gnu/pkcs11/gnome-keyring-pkcs11.so: /usr/lib/x86_64-linux-gnu/pkcs11/gnome-keyring-pkcs11.so: cannot open shared object file: No such file or directory
+gpg: Signature made gio 17 lug 2014 18:02:09 CEST using DSA key ID 89C809CB
+gpg: /tmp/git-annex-gpg.tmp.0/trustdb.gpg: trustdb created
+gpg: Good signature from "git-annex distribution signing key (for Joey Hess) <id@joeyh.name>"
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 4005 5C6A FD2D 526B 2961  E78F 5EE1 DBA7 89C8 09CB
+[2014-07-17 18:13:58 CEST] Upgrader: An upgrade of git-annex is available.  (version 5.20140716)
+Everything up-to-date
+git-annex-shell: key is already present in annex
+rsync: connection unexpectedly closed (0 bytes received so far) [sender]
+rsync error: error in rsync protocol data stream (code 12) at io.c(226) [sender=3.1.0]
+
+########## SYNCING STARTS HERE ###########
+
+[2014-07-17 18:17:12 CEST] RemoteControl: Syncing with asus.local_sincro 
+From ssh://git-annex-asus.local-USER-A_22_sincro/~/sincro
+   51815ea..d25cc79  annex/direct/master -> asus.local_sincro/annex/direct/master
+   0391880..49efa5f  git-annex  -> asus.local_sincro/git-annex
+   51815ea..d25cc79  master     -> asus.local_sincro/master
+   51815ea..d25cc79  synced/master -> asus.local_sincro/synced/master
+[2014-07-17 18:17:15 CEST] RemoteControl: Syncing with asus.local_sincro 
+Automatic merge went well; stopped before committing as requested
+Removing shared.skg
+From ssh://git-annex-asus.local-USER-A_22_sincro/~/sincro
+   d25cc79..6fa27f0  annex/direct/master -> asus.local_sincro/annex/direct/master
+   d25cc79..6fa27f0  master     -> asus.local_sincro/master
+   d25cc79..6fa27f0  synced/master -> asus.local_sincro/synced/master
+[2014-07-17 18:17:16 CEST] Committer: Committing changes to git
+[2014-07-17 18:17:16 CEST] Pusher: Syncing with asus.local_sincro 
+To ssh://USER-A@git-annex-asus.local-USER-A_22_sincro/~/sincro/
+   0391880..8d1c927  git-annex -> synced/git-annex
+   6fa27f0..d9eb9e9  annex/direct/master -> synced/master
+[2014-07-17 18:17:17 CEST] RemoteControl: Syncing with asus.local_sincro 
+From ssh://git-annex-asus.local-USER-A_22_sincro/~/sincro
+   49efa5f..e328661  git-annex  -> asus.local_sincro/git-annex
+[2014-07-17 18:17:20 CEST] RemoteControl: Syncing with asus.local_sincro 
+From ssh://git-annex-asus.local-USER-A_22_sincro/~/sincro
+   6fa27f0..d9eb9e9  annex/direct/master -> asus.local_sincro/annex/direct/master
+   e328661..32e44ce  git-annex  -> asus.local_sincro/git-annex
+
+# End of transcript or log.
+"""]]
