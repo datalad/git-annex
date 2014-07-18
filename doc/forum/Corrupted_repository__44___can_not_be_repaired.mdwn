@@ -1,0 +1,40 @@
+Hey, I hope somebody can help me:
+
+I recently moved a bunch of files to another location shortly after I renamed them. The assistant was running (repo: indirect mode) and I guess the assistant was confused about whether to commit the rename changes or to fix the symlinks because of the location move (and to commit these changes). I don't know much about the internal design, but after that my repository was kinda broken. Every git command failed and also "git fsck" gave me some error messages. However, I mounted my external drive (backup repo) and tried a "git annex repair". It took quite a while, but it could fix the repo....somehow. This is the current status:
+
+    ~/private [master●] » git annex info
+    repository mode: indirect
+    trusted repositories: error: refs/remotes/extern/git-annex does not point to a valid object!
+    error: refs/remotes/extern/git-annex does not point to a valid object!
+    error: unable to resolve reference refs/heads/git-annex: Datei oder Verzeichnis nicht gefunden // (english: No such file or directory)
+    fatal: Cannot lock the ref 'refs/heads/git-annex'.
+    git-annex: git [Param "update-ref",Param "refs/heads/git-annex",Param "ea4d4b5e09bfd10c714c24ca76ab5af0625bb6a7"] failed
+
+    ~/private [master●] » git fsck
+    Checking object directories: 100% (256/256), done.
+    Checking objects: 100% (654755/654755), done.
+    error: refs/remotes/extern/git-annex does not point to a valid object!
+    error: bad ref for refs/heads/git-annex
+    Checking connectivity: 654760, done.
+    dangling blob cb2a012e65b15baf0bc51cb8ac6ab05c4ac4e543
+    dangling blob 6a48216d54be6fbf0539c86501ce9e4567ebf678
+    dangling blob 3f8f21304c6dcfc6ace92093425d7f057138b5e8
+    dangling blob 4943840264ad7c06071f510261151c28b4fb5168
+    dangling blob d67e845b06b17c3ba5b44a454d3128dea6ebe8cc
+    dangling blob 38b7e4ce06a84c03b9a0f7f3a84872b2ed202421
+    dangling blob ca0a65e010c69e02953d63f33c5f2030f793c8ff
+    dangling blob aeba65035f566ec9f18ad2ba71b155b0efd2193a
+    dangling blob d3cea542db4c2904f5c8c6dd98ca3868074e6d36
+    dangling commit fe1026edee5dcc6306f04ebe1a7762b86678db8a
+    [... some more dangling objects ...]
+
+However, git annex repair does not want to repair my repo a second time:
+
+    ~/private [master●] » git annex repair
+    Running git fsck ...
+    No problems found.
+    ok
+My directory seems to be fine, also the data (symlinks) I renamed & moved are also fine. Just the "git-annex" branch seems to be broken now and I don't know how to fix that.
+
+Cheers,
+Stephan
