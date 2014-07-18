@@ -6,7 +6,7 @@ I should also add that I don't know much about git log history and git-annex inn
 
 **Bug description:**
 
-Two local computers, running Ubuntu-14.04 and Fedora-20 respectively, are paired through the assistant and functional with git annex 5.20140709. In direct mode. Most of the time, everything seems to work fine. Sometimes, *Computer A* will modify one file in its repository while the *B* is offline. When *B* comes back online both repositories will lose their copy of the modified file (I'm not sure whether this also happens when they're both online when the change happens; it doesn't look like it anyway). The rest of the data in the repository is intact. This does not happen every time and I haven't been able to reproduce it consistently. Since 5.20140709 came out, it happened 2 or 3 times.
+Two local computers, running Ubuntu-14.04 and Fedora-20 respectively, are paired through the assistant and functional with git annex 5.20140709. In direct mode. Most of the time, everything seems to work fine. Sometimes, *Computer A* will modify one file in its repository while *B* is offline. When *B* comes back online both repositories will lose their copy of the modified file (I'm not sure whether this also happens when they're both online when the change happens; it doesn't look like it anyway). The rest of the data in the repository is intact. This does not happen every time and I haven't been able to reproduce it consistently. Since 5.20140709 came out, it happened 2 or 3 times.
 
 Looking at 'git log --stat' in *B*:
 
