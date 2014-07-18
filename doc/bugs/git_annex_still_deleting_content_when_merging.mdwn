@@ -28,7 +28,7 @@ Looking at 'git log --stat' in *B*:
       shared.skg | 1 -
       1 file changed, 1 deletion(-)
 
-When things go well, it only does 1 deletion and 1 insertion (a change is apparently deleting and rewriting the file, maybe because it's a binary (encrypted) file?). The third most recent deletion is probably the one that shouldn't happen.
+A change is apparently deleting and rewriting the whole file (maybe that's normal because it's a binary (encrypted) file?). The third most recent deletion is probably the one that shouldn't happen.
 
 Reverting "d9eb9e94a39" will only recover a placeholder, not really the original file. I can get the content back by going through *git annex unused* with *git log -S'key'*, then going to indirect mode, and then using *addunused*.
 
