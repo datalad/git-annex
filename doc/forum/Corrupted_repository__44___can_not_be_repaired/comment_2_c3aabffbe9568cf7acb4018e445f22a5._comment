@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="sts"
+ ip="134.147.73.126"
+ subject="comment 2"
+ date="2014-07-18T11:17:49Z"
+ content="""
+Ok, I could fix this issue by doing a fresh clone of one of my remotes:
+
+    git clone path/to/remote
+    [move objects folder from broken repo .git/annex/objects to new clone]
+    git annex info (look for UUID or DESC)
+    git annex reinit \"DESC\"
+"""]]
