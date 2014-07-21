@@ -1,3 +1,0 @@
-git-annex 5.20140517~bpo70+2 released with [[!toggle text="these changes"]]
-[[!toggleable text="""
-   * Rebuild in correct backport build environment."""]]

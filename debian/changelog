@@ -105,12 +105,6 @@ git-annex (5.20140606) unstable; urgency=medium
 
  -- Joey Hess <joeyh@debian.org>  Fri, 06 Jun 2014 12:54:06 -0400
 
-git-annex (5.20140529~bpo70+2) wheezy-backports; urgency=low
-
-  * Updating backport to newest release.
-
- -- Joey Hess <joeyh@debian.org>  Fri, 06 Jun 2014 13:49:55 -0400
-
 git-annex (5.20140529) unstable; urgency=medium
 
   * Fix encoding of data written to git-annex branch. Avoid truncating
@@ -138,12 +132,6 @@ git-annex (5.20140529) unstable; urgency=medium
     preventing icons from displaying, and also slightly broke the js files.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 29 May 2014 14:41:56 -0400
-
-git-annex (5.20140517~bpo70+2) wheezy-backports; urgency=low
-
-  * Rebuild in correct backport build environment.
-
- -- Joey Hess <joeyh@debian.org>  Wed, 28 May 2014 11:16:19 -0400
 
 git-annex (5.20140517) unstable; urgency=medium
 
