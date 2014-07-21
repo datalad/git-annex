@@ -10,6 +10,7 @@ these desktop environments. These let you pick git-annex get and git-annex
 drop actions from the context menus when right-clicking on a file.
 
 [[!img assistant/nautilusmenu.png]]
+[[!img assistant/konquerormenu.png]]
 
 [[!img assistant/downloadnotification.png]]
 
