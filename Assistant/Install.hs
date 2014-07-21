@@ -140,7 +140,12 @@ installFileManagerHooks program = do
 		, "[Desktop Action " ++ kdeDesktopSection command ++ "]"
 		, "Name=" ++ command
 		, "Icon=git-annex"
-		, "Exec=sh -c 'cd \"$(dirname '%U')\" && git-annex " ++ command ++ " --notify-start --notify-finish -- %U'"
+		, unwords
+			[ "Exec=sh -c 'cd \"$(dirname '%U')\" &&"
+			, program
+			, command
+			, "--notify-start --notify-finish -- %U'"
+			]
 		]
 #else
 installFileManagerHooks _ = noop
