@@ -61,6 +61,10 @@ data RepoConfig = RepoConfig
 
 getRepoConfig :: UUID -> Maybe Remote -> Annex RepoConfig
 getRepoConfig uuid mremote = do
+	-- Ensure we're editing current data by discarding caches.
+	void groupMapLoad
+	void uuidMapLoad
+
 	groups <- lookupGroups uuid
 	remoteconfig <- M.lookup uuid <$> readRemoteLog
 	let (repogroup, associateddirectory) = case getStandardGroup groups of
@@ -285,7 +289,7 @@ connectionNeeded = whenM noconnection $ do
 	void $ liftAssistant $ do
 		close <- asIO1 removeAlert
 		addAlert $ connectionNeededAlert $ AlertButton
-			{ buttonLabel = "Connnect"
+			{ buttonLabel = "Connect"
 			, buttonUrl = urlrender ConnectionNeededR
 			, buttonAction = Just close
 			, buttonPrimary = True

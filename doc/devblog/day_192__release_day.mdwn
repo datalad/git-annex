@@ -1,0 +1,4 @@
+Got the release out. Had to fix various autobuilder issues. The arm autobuilder
+is unfortunatly not working currently.
+
+Updated git-annex to build with a new version of the bloomfilter library.

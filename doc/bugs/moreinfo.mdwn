@@ -1,6 +1,2 @@
-If your bug report is listed here, it has been flagged as needing more
-information. Please respond to the bug and provide the requested
-information.
-
-[[!inline pages="./* and link(./moreinfo) and !link(./done) and !*/Discussion" sort=mtime show=0
-archive=yes]]
+This tags is for bugs needing more information from their submitter.
+Please respond to the bug and provide the requested information.

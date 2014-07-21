@@ -1,0 +1,12 @@
+Yesterday I recorded a new screencast, demoing using the assistant on a
+local network with a small server. [[videos/git-annex_assistant_lan]].
+That's the best screencast yet; having a real framing story was nice;
+recent improvements to git-annex are taken advantage of without being made
+a big deal; and audio and video are improved. (But there are some minor
+encoding glitches which I'd have to re-edit it to fix.)
+
+The [[design/roadmap]] has this month dedicated to improving Android.
+But I think what I'd more like to do is whatever makes the assistant usable
+by the most people. This might mean doing more on Windows, since I hear
+from many who would benefit from that. Or maybe something not related to
+porting?

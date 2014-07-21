@@ -37,8 +37,8 @@ get = do
 	case wt of
 		Nothing -> return r
 		Just d -> do
-			cwd <- getCurrentDirectory
-			unless (d `dirContains` cwd) $
+			curr <- getCurrentDirectory
+			unless (d `dirContains` curr) $
 				setCurrentDirectory d
 			return $ addworktree wt r
   where
@@ -57,8 +57,8 @@ get = do
 	configure Nothing (Just r) = Git.Config.read r
 	configure (Just d) _ = do
 		absd <- absPath d
-		cwd <- getCurrentDirectory
-		r <- newFrom $ Local { gitdir = absd, worktree = Just cwd }
+		curr <- getCurrentDirectory
+		r <- newFrom $ Local { gitdir = absd, worktree = Just curr }
 		Git.Config.read r
 	configure Nothing Nothing = error "Not in a git repository."
 

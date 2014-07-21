@@ -79,15 +79,15 @@ hookEnv :: Action -> Key -> Maybe FilePath -> IO (Maybe [(String, String)])
 hookEnv action k f = Just <$> mergeenv (fileenv f ++ keyenv)
   where
 	mergeenv l = addEntries l <$> getEnvironment
-	env s v = ("ANNEX_" ++ s, v)
+	envvar s v = ("ANNEX_" ++ s, v)
 	keyenv = catMaybes
-		[ Just $ env "KEY" (key2file k)
-		, Just $ env "ACTION" action
-		, env "HASH_1" <$> headMaybe hashbits
-		, env "HASH_2" <$> headMaybe (drop 1 hashbits)
+		[ Just $ envvar "KEY" (key2file k)
+		, Just $ envvar "ACTION" action
+		, envvar "HASH_1" <$> headMaybe hashbits
+		, envvar "HASH_2" <$> headMaybe (drop 1 hashbits)
 		]
 	fileenv Nothing = []
-	fileenv (Just file) =  [env "FILE" file]
+	fileenv (Just file) =  [envvar "FILE" file]
 	hashbits = map takeDirectory $ splitPath $ hashDirMixed k
 
 lookupHook :: HookName -> Action -> Annex (Maybe String)
@@ -155,5 +155,5 @@ checkPresent r h k = do
 	findkey s = key2file k `elem` lines s
 	check Nothing = error $ action ++ " hook misconfigured"
 	check (Just hook) = do
-		env <- hookEnv action k Nothing
-		findkey <$> readProcessEnv "sh" ["-c", hook] env
+		environ <- hookEnv action k Nothing
+		findkey <$> readProcessEnv "sh" ["-c", hook] environ

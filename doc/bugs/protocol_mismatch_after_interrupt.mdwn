@@ -30,4 +30,4 @@ workaround: `cd .git/annex/; mv transfer transfer.old` on the other side.
 
 -- [[anarcat]]
 
-[[moreinfo]]
+[[!taglink moreinfo]]

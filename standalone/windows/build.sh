@@ -68,3 +68,7 @@ rm -f last-incremental-failed
 # (doesn't currently work well on autobuilder, reason unknown)
 rm -rf .t
 withcyg dist/build/git-annex/git-annex.exe test || true
+
+rm -f dist/build-version
+ghc --make Build/BuildVersion.hs
+Build/BuildVersion > dist/build-version

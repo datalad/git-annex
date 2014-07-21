@@ -1,0 +1,66 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.176"
+ subject="comment 7"
+ date="2014-05-30T20:47:02Z"
+ content="""
+I wrote a test program to try to connect to this server, using a test account, and dump some events. This works on linux. Then I tried it on mac, and I think I have reproduced the same failure!
+
+<pre>
+oberon:~ joeyh$ ./xmpp
+xmpp: <socket: 3>: hGetBuf: resource vanished (Connection reset by peer)
+</pre>
+
+Note that this exception is unable to be caught, it seems. Which would explain why the whole git-annex assistant crashes.
+
+Also, the same program, when modified to use some other xmpp server, does not crash.
+
+At this point, I think I need to forward this bug to network-protocol-xmpp author John Millikin. Which I've now done.
+
+My advice for the bug submitter: git-annex is going to be deprecating XMPP in the not too distant future anyway. If you have your own server, a much nicer way to use git-annex is to install it on the server and use ssh remotes. Recent versions do not need xmpp to sync between clients in such a configuration.
+
+Test program:
+
+[[!format haskell \"\"\"
+{-# LANGUAGE OverloadedStrings #-}
+
+import Network.Protocol.XMPP
+import Data.Maybe
+import Data.Either
+import Network
+import Control.Monad
+import Control.Monad.IO.Class
+import Control.Exception
+
+main = do
+        catch test
+                (\e -> do
+                        let err = show (e :: IOException)
+                        print (\"caught: \", err)
+                        return (Right ())
+                )
+        print \"clean exit\"
+
+test :: IO (Either Error ())
+test = runClient server (getjid jid) username password $ do
+        liftIO $ print \"connected to server\"
+        jid <- bindJID (getjid jid)
+        liftIO $ print (\"bound to jid\", jid)
+        forever $ do
+                s <- getStanza
+                liftIO $ print (\"got\", s)
+  where
+        getjid t = fromMaybe (error \"jid parse error\") (parseJID t)
+        server = Server
+                (getjid serverjid)
+                servername
+                (PortNumber port)
+
+        servername = \"jabber.de\"
+        serverjid = \"jabber.de\"
+        port = 5222
+        jid = \"haskellxmpptest@jabber.de\"
+        username = \"haskellxmpptest\"
+        password = \"stupidpassword\"
+\"\"\"]]
+"""]]

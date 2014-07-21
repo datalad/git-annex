@@ -1,0 +1,76 @@
+Hi, I tried with several git annex versions, on 3 different clients, and using 2 different remotes (an home server and box.com) and trying out different remotes setups but I've been unable to get git annex working as I expected.
+
+
+I used the assistant for setup, I can sync files between clients just fine if they're connected at the same time, but if I sync a file from client A to the remotes when client B is off, and then later I turn off client A and power on client B, I've never been able to successfully sync files.
+
+on client B, inside .git/annex/daemon.log there's nothing interesting: just messages like:
+
+```(scanning...) [2014-06-03 14:53:26 CEST] Watcher: Performing startup scan
+
+Already up-to-date.```
+
+`git annex sync` just outputs
+
+`"commit  ok"`
+
+and `git annex list`:
+
+```
+here
+
+|berdario
+
+||soloud
+
+|||web
+
+||||box.com
+
+|||||
+
+XX__X IMG_20130202_100444.jpg
+
+XXX_X cookies.png
+
+XXX_X dancingllama.png
+
+XXX_X dario_bertini_cv.pdf
+
+XX__X steam_latest.deb
+```
+
+while this is what I get on client A:
+
+```
+here
+
+|berdario
+
+||web 
+
+|||box.com 
+
+||||
+
+XX_X IMG_20130202_100444.jpg
+
+X__X Russian Lesson 5 - Wikibooks, open books for an open world.html
+
+XX_X cookies.png
+
+XX_X dancingllama.png
+
+XX_X dario_bertini_cv.pdf
+
+XX_X steam_latest.deb
+```
+
+(they're just a bunch of random files I'm using to test it, both clients are called berdario, soloud is the home server (currently down) and the other working remote is box.com)
+
+As you can see the russian wikibooks html file is successfully synced with the remotes, but client B is unable to see it...
+
+I tried to set the remotes as incremental backup, full backup, transfer, client (!?) but none of these settings work.
+
+Is git annex not what I'm looking for? Is it supposed to work only on contemporarily connected clients?
+
+Thanks

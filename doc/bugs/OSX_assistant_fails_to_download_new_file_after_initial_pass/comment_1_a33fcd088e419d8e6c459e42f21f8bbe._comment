@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnu1NjsjNS3m0OxiYLKO-5SKNpSERxpi6k"
+ nickname="Matthew"
+ subject="comment 1"
+ date="2014-07-09T13:56:31Z"
+ content="""
+\"workaround\" is just a cron job that runs 'git annex sync --content' every N minutes... 
+
+Is there any possible configuration error I've made that would cause the OSX clients to behave differently than the linux clients despite ostensibly being set up identically??
+"""]]

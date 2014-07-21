@@ -28,7 +28,6 @@ import Annex.Exception
 import Creds
 
 import Control.Concurrent.STM
-import System.Process (std_in, std_out, std_err)
 import System.Log.Logger (debugM)
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L

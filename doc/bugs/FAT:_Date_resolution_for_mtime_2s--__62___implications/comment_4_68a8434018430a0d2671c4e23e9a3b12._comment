@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="martin"
+ ip="193.174.111.250"
+ subject="It confuses users"
+ date="2014-06-05T19:05:12Z"
+ content="""
+Other scenario: User thinks, that his usb drive has a problem, because approx. 50% of the files are gone/changed without obvious reason. I spent several hours to find the reason for this... I think we should at least give kind of explanation/warning message to the user
+"""]]

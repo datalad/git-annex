@@ -48,29 +48,38 @@ main = do
 	isshell n = takeFileName n == "git-annex-shell"
 
 #ifdef mingw32_HOST_OS
-{- On Windows, if HOME is not set, probe it and set it, re-execing
- - git-annex with the new environment.
- - 
+{- On Windows, if HOME is not set, probe it and set it.
  - This is a workaround for some Cygwin commands needing HOME to be set,
  - and for there being no known way to set environment variables on
  - Windows, except by passing an environment in each call to a program.
  - While ugly, this workaround is easier than trying to ensure HOME is set
  - in all calls to the affected programs.
+ -
+ - If TZ is set, unset it.
+ - TZ being set can interfere with workarounds for Windows timezone
+ - horribleness, and prevents getCurrentTimeZone from seeing the system
+ - time zone.
+ -
+ - Due to Windows limitations, have to re-exec git-annex with the new
+ - environment.
  -}
 winEnv :: ([String] -> IO ()) -> [String] -> IO ()
-winEnv a ps = go =<< getEnv "HOME"
+winEnv a ps = do
+	e <- getEnvironment
+	home <- myHomeDir
+	let e' = wantedenv e home
+	if (e' /= e)
+		then do
+			cmd <- readProgramFile
+			(_, _, _, pid) <- createProcess (proc cmd ps)
+				{ env = Just e' }
+			exitWith =<< waitForProcess pid		
+		else a ps
   where
-	go (Just _) = a ps
-	go Nothing = do
-		home <- myHomeDir
-		putStrLn $ "** Windows hack; overrideing HOME to " ++ home
-		e <- getEnvironment
-		let eoverride =
+	wantedenv e home = delEntry "TZ" $ case lookup "HOME" e of
+		Nothing -> e 
+		Just _ -> addEntries
 			[ ("HOME", home)
 			, ("CYGWIN", "nodosfilewarning")
-			]
-		cmd <- readProgramFile
-		(_, _, _, pid) <- createProcess (proc cmd ps)
-			{ env = Just $ e ++ eoverride }
-		exitWith =<< waitForProcess pid
+			] e
 #endif

@@ -1,0 +1,7 @@
+I would like to use a public, read only annex to publish photos. I have a server, running gitolite, with git-annex setup, which I use successfully to sync content between my own devices.
+
+But, with a public annex, I would like the view of the repository available from the server to be that only the server has the content, and not to have, or give out any of the location tracking information about any other annexes?
+
+A more concrete example would be, how do I get a photo in to git annex locally, and then push this to the server for public access, without publishing information about my local repository?
+
+From the public annexes I have looked at, this does not appear to be done. So I am unsure if this is even possible, however it seems a desirable thing to do?

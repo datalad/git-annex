@@ -44,5 +44,3 @@ function longpoll_data(url, cont) {
 		}
 	});
 }
-
-//EOF

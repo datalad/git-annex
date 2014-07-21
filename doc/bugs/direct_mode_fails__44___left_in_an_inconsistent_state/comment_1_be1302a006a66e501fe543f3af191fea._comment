@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 1"
+ date="2014-07-10T18:11:22Z"
+ content="""
+The most likely problem would be if your repository contained annexed objects owned by different user than the one running `git annex direct`.
+
+However, I cannot reproduce this problem:
+
+<pre>
+direct foo 
+  /home/joey/tmp/r/.git/annex/objects/pV/7j/SHA256E-s30--2754b7f82f6994005b97256273756f14d4abc17165c8819c06c07340d03351fa: setFileMode: permission denied (Operation not permitted)
+
+  leaving this file as-is; correct this problem and run git annex fsck on it
+direct  ok
+</pre>
+
+Since version 4.20130921, any exception when moving a file to direct mode should be caught like that.
+
+I will need more information to reproduce your bug. Or are you sure you wrote down the right version of git-annex?
+"""]]

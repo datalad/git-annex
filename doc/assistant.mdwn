@@ -13,7 +13,7 @@ instructions.
 
 ## intro screencast
 
-[[!inline feeds=no template=bare pages=videos/git-annex_assistant_introduction]]
+[[!inline feeds=no template=bare pages=videos/git-annex_assistant_lan]]
 
 ## documentation
 

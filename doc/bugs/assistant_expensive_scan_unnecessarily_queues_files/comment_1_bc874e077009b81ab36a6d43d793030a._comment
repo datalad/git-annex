@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-06-12T20:07:30Z"
+ content="""
+This seems to me to be likely to be some kind of configuration problem. In particular, what is the \"wanted\" setting for the repo running the assistant? If it's not \"standard\" then the fact that it's in the \"manual\" group won't affect the assistant's behavior.
+
+If that's not it, it would probably help to paste the entire vicfg display, so I can replicate the config (or share the repo).
+"""]]

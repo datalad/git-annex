@@ -27,8 +27,6 @@ import Annex.Content
 import Annex.UUID
 import Utility.Env
 
-import System.Process
-
 type Vault = String
 type Archive = FilePath
 

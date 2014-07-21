@@ -1,0 +1,7 @@
+Hi
+
+I have a laptop, server and a regular PC. Laptop and PC are using same "backup" repo on server. Thay all get notified via ssh. My goal is to have synchronization and backup in one remote repo. When I wan to list all files on all repos i do:
+
+    git-annex whereis -A (some files do fail. Don't know why)
+
+But that displays hashes. Not file names. How can to list file names on all repos instead of hashes ?

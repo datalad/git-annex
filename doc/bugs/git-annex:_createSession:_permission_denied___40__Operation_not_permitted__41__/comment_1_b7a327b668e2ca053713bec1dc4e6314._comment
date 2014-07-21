@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-06-09T18:46:01Z"
+ content="""
+createSession just calls the unix `setsid` system call.
+
+I have not been able to reproduce this problem using git-annex here. I suspect setsid is probably failing because git-annex is already a process group leader due to the way it was run. In this case, it should just ignore the setsid failure, which I've made it do.
+
+This change will be available in the standalone tarball within an hour if you want to test it.
+
+
+"""]]

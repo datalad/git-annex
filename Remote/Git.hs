@@ -55,7 +55,6 @@ import Creds
 
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
-import System.Process (std_in, std_err)
 import qualified Data.Map as M
 import Control.Exception.Extensible
 
@@ -192,19 +191,10 @@ tryGitConfigRead r
 	| Git.repoIsHttp r = store geturlconfig
 	| Git.GCrypt.isEncrypted r = handlegcrypt =<< getConfigMaybe (remoteConfig r "uuid")
 	| Git.repoIsUrl r = return r
-	| otherwise = store $ safely $ do
-		s <- Annex.new r
-		Annex.eval s $ do
-			Annex.BranchState.disableUpdate
-			ensureInitialized
-			Annex.getState Annex.repo
+	| otherwise = store $ liftIO $ 
+		readlocalannexconfig `catchNonAsync` (const $ return r)
   where
 	haveconfig = not . M.null . Git.config
-
-	-- Reading config can fail due to IO error or
-	-- for other reasons; catch all possible exceptions.
-	safely a = either (const $ return r) return
-			=<< liftIO (try a :: IO (Either SomeException Git.Repo))
 
 	pipedconfig cmd params = do
 		v <- Git.Config.fromPipe r cmd params
@@ -283,6 +273,16 @@ tryGitConfigRead r
 			Nothing -> return r
 			Just v -> store $ liftIO $ setUUID r $
 				genUUIDInNameSpace gCryptNameSpace v
+
+	{- The local repo may not yet be initialized, so try to initialize
+	 - it if allowed. However, if that fails, still return the read
+	 - git config. -}
+	readlocalannexconfig = do
+		s <- Annex.new r
+		Annex.eval s $ do
+			Annex.BranchState.disableUpdate
+			void $ tryAnnex $ ensureInitialized
+			Annex.getState Annex.repo
 
 {- Checks if a given remote has the content for a key inAnnex.
  - If the remote cannot be accessed, or if it cannot determine
@@ -467,12 +467,12 @@ fsckOnRemote r params
 	| otherwise = return $ do
 		program <- readProgramFile
 		r' <- Git.Config.read r
-		env <- getEnvironment
-		let env' = addEntries 
+		environ <- getEnvironment
+		let environ' = addEntries 
 			[ ("GIT_WORK_TREE", Git.repoPath r')
 			, ("GIT_DIR", Git.localGitDir r')
-			] env
-		batchCommandEnv program (Param "fsck" : params) $ Just env'
+			] environ
+		batchCommandEnv program (Param "fsck" : params) $ Just environ'
 
 {- The passed repair action is run in the Annex monad of the remote. -}
 repairRemote :: Git.Repo -> Annex Bool -> Annex (IO Bool)

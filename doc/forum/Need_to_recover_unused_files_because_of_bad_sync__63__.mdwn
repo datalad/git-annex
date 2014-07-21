@@ -1,0 +1,23 @@
+I've two huge annex repos (about 100G) with all my photos.
+One is on my laptop and it uses indirect mode; the other one is on my NAS and I mount it into a CIFS folder, then it uses direct mode because of the crippled fs.
+Each repo is remote of the other one. The NAS repo belongs to backup group with the standard preferred content.
+I changed about 1000 photos in my PC repo (mainly renamed them) and I wanted to sync changes to the NAS repo, so I went through this sequence:
+
+* "git annex add" and "git annex sync" on my PC => OK;
+
+* "git annex sync" on the NAS repo => it started copying all the content BUT I stopped it because I had not enough time to wait at that very moment;
+
+* again "git anne sync" on the NAS repo => I had more time to wait BUT it didn't resume the copy from the PC repo, it just said something like "all done, nothing to do"
+
+* I checked that several files were missing on the NAS that I had modified/renamed on the PC repo so I did "git annex add" again on the PC => nothing new to add, nothing to do;
+
+* I did again "git annex sync" on the PC repo => it deleted also from my PC repo all the photos that were also missing on the NAS repo;
+
+* I've also checked for unused files on the PC repo and it now gives about 1000 files.
+
+So here are my questions:
+
+1. where was I wrong?
+
+2. can I restore my photos on my PC repo (which uses indirect mode) ?
+

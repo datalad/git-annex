@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="martin"
+ ip="89.183.78.73"
+ subject="`git-annex add` (called by sync) should do the job and bring the files back home (IMHO)"
+ date="2014-06-10T15:58:25Z"
+ content="""
+If one does an `git annex sync` these crippled-pseudo-modified-files are *automatically* `git annex add`ed
+
+   git annex status
+   M datei1
+   M datei5
+   M datei6
+   git annex sync
+   commit  add datei1 ok
+   add datei5 ok
+   add datei6 ok
+
+To avoid the risk of adding and propagating potentially corrupted content `git-annex add` should 
+\"simply\" correct the timestamps (adjust to the new even inode values) for files with correct checksum but timestamp 
+difference of 1s or 1h
+
+With this procedure i would have better sleep with this personal second use case:
+
+repo1: on the computer (direct mode - client)
+repo2: on usb stick -  (direct mode - client - vfat - music for car)
+
+From time to time mp3 files are transferred to the stick. Then stick 
+goes to the car and after some days back to the computer to be 
+synchronized again. Everytime approx. 50% of the recently new added files are 
+added again (via sync) because of these nonsens timestamps.
+
+So i think, the clean solution is to correct only the timestamps instead 
+of adding again possibly corrupted files. If we dont do this users adapt to 
+add files again and again (they need not to be added) and one day they 
+add corrupted content. Like on windows (tm) you klick OK and OK again and 
+here you add again and again and one day one add once too much ;-)
+
+Excuse me for this long comment...
+
+P.S. git annex is an ingenious piece of software - thanks a lot for this joey!
+"""]]

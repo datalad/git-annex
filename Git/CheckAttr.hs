@@ -23,9 +23,9 @@ type Attr = String
  - values and returns a handle.  -}
 checkAttrStart :: [Attr] -> Repo -> IO CheckAttrHandle
 checkAttrStart attrs repo = do
-	cwd <- getCurrentDirectory
+	currdir <- getCurrentDirectory
 	h <- CoProcess.rawMode =<< gitCoProcessStart True params repo
-	return (h, attrs, cwd)
+	return (h, attrs, currdir)
   where
 	params =
 		[ Param "check-attr" 
@@ -38,7 +38,7 @@ checkAttrStop (h, _, _) = CoProcess.stop h
 
 {- Gets an attribute of a file. -}
 checkAttr :: CheckAttrHandle -> Attr -> FilePath -> IO String
-checkAttr (h, attrs, cwd) want file = do
+checkAttr (h, attrs, currdir) want file = do
 	pairs <- CoProcess.query h send (receive "")
 	let vals = map snd $ filter (\(attr, _) -> attr == want) pairs
 	case vals of
@@ -83,8 +83,8 @@ checkAttr (h, attrs, cwd) want file = do
 	 - so use relative filenames. -}
 	oldgit = Git.BuildVersion.older "1.7.7"
 	file'
-		| oldgit = absPathFrom cwd file
-		| otherwise = relPathDirToFile cwd $ absPathFrom cwd file
+		| oldgit = absPathFrom currdir file
+		| otherwise = relPathDirToFile currdir $ absPathFrom currdir file
 	oldattrvalue attr l = end bits !! 0
 	  where
 		bits = split sep l

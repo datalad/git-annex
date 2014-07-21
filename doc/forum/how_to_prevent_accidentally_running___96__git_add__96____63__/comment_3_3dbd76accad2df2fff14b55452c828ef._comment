@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Xyem"
+ ip="178.79.137.64"
+ subject="comment 3"
+ date="2014-06-27T12:02:08Z"
+ content="""
+That is intentional. In my use case, there should never be any regular files in this particular annex at all. If there are, it means I have missed something! :)
+"""]]

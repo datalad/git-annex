@@ -17,7 +17,7 @@ import qualified Git.Version
 
 tests :: [TestCase]
 tests =
-	[ TestCase "version" getVersion
+	[ TestCase "version" (Config "packageversion" . StringConfig <$> getVersion)
 	, TestCase "UPGRADE_LOCATION" getUpgradeLocation
 	, TestCase "git" $ requireCmd "git" "git --version >/dev/null"
 	, TestCase "git version" getGitVersion
@@ -60,7 +60,7 @@ shaTestCases l = map make l
 		Config key . MaybeStringConfig <$> search (shacmds n)
 	  where
 		key = "sha" ++ show n
-	  	search [] = return Nothing
+		search [] = return Nothing
 		search (c:cmds) = do
 			sha <- externalSHA c n "/dev/null"
 			if sha == Right knowngood

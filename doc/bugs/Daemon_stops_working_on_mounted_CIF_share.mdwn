@@ -8,3 +8,5 @@ If i then kill daemon process and start daemon again everything repeats.
 
 ### What version of git-annex are you using? On what operating system?
 Standalone git-annex 5.20140421-g515d251 on CentOS 6.5
+
+> [[done]] --[[Joey]]

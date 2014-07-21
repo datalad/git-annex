@@ -124,7 +124,16 @@ inAnnexSafe key = inAnnex' (fromMaybe False) (Just False) go key
 			Nothing -> is_unlocked
 	check def Nothing = return def
 #else
-	checkindirect _ = return is_missing
+	checkindirect f = liftIO $ ifM (doesFileExist f)
+		( do
+			v <- lockShared f
+			case v of
+				Nothing -> return is_locked
+				Just lockhandle -> do
+					dropLock lockhandle
+					return is_unlocked
+		, return is_missing
+		)
 	{- In Windows, see if we can take a shared lock. If so, 
 	 - remove the lock file to clean up after ourselves. -}
 	checkdirect contentfile lockfile =
@@ -209,7 +218,7 @@ getViaTmpUnchecked = finishGetViaTmp (return True)
 
 getViaTmpChecked :: Annex Bool -> Key -> (FilePath -> Annex Bool) -> Annex Bool
 getViaTmpChecked check key action = 
-	prepGetViaTmpChecked key $
+	prepGetViaTmpChecked key False $
 		finishGetViaTmp check key action
 
 {- Prepares to download a key via a tmp file, and checks that there is
@@ -220,8 +229,8 @@ getViaTmpChecked check key action =
  -
  - Wen there's enough free space, runs the download action.
  -}
-prepGetViaTmpChecked :: Key -> Annex Bool -> Annex Bool
-prepGetViaTmpChecked key getkey = do
+prepGetViaTmpChecked :: Key -> a -> Annex a -> Annex a
+prepGetViaTmpChecked key unabletoget getkey = do
 	tmp <- fromRepo $ gitAnnexTmpObjectLocation key
 
 	e <- liftIO $ doesFileExist tmp
@@ -233,7 +242,7 @@ prepGetViaTmpChecked key getkey = do
 			-- The tmp file may not have been left writable
 			when e $ thawContent tmp
 			getkey
-		, return False
+		, return unabletoget
 		)
 
 finishGetViaTmp :: Annex Bool -> Key -> (FilePath -> Annex Bool) -> Annex Bool

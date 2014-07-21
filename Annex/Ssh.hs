@@ -22,11 +22,10 @@ module Annex.Ssh (
 
 import qualified Data.Map as M
 import Data.Hash.MD5
-import System.Process (cwd)
 import System.Exit
 
 import Common.Annex
-import Annex.LockPool
+import Annex.LockFile
 import qualified Build.SysConfig as SysConfig
 import qualified Annex
 import qualified Git
@@ -120,13 +119,13 @@ prepSocket socketfile = do
 	-- If the lock pool is empty, this is the first ssh of this
 	-- run. There could be stale ssh connections hanging around
 	-- from a previous git-annex run that was interrupted.
-	whenM (not . any isLock . M.keys <$> getPool)
+	whenM (not . any isLock . M.keys <$> getLockPool)
 		sshCleanup
 	-- Cleanup at end of this run.
 	Annex.addCleanup SshCachingCleanup sshCleanup
 
 	liftIO $ createDirectoryIfMissing True $ parentDir socketfile
-	lockFile $ socket2lock socketfile
+	lockFileShared $ socket2lock socketfile
 
 enumSocketFiles :: Annex [FilePath]
 enumSocketFiles = go =<< sshCacheDir

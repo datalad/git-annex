@@ -33,6 +33,9 @@ import Annex.Quvi
 import qualified Utility.Quvi as Quvi
 import Command.AddUrl (addUrlFileQuvi)
 #endif
+import Types.MetaData
+import Logs.MetaData
+import Annex.MetaData
 
 def :: [Command]
 def = [notBareRepo $ withOptions [templateOption, relaxedOption] $
@@ -165,12 +168,14 @@ performDownload relaxed cache todownload = case location todownload of
 			Nothing -> return True
 			Just f -> do
 				showStart "addurl" f
-				ok <- getter f
-				if ok
-					then do
+				mk <- getter f
+				case mk of
+					Just key -> do
+						whenM (annexGenMetaData <$> Annex.getGitConfig) $
+							addMetaData key $ extractMetaData todownload
 						showEndOk
 						return True
-					else do
+					Nothing -> do
 						showEndFail
 						checkFeedBroken (feedurl todownload)
 
@@ -198,32 +203,19 @@ performDownload relaxed cache todownload = case location todownload of
 			( return Nothing
 			, tryanother
 			)
-	
+
 defaultTemplate :: String
 defaultTemplate = "${feedtitle}/${itemtitle}${extension}"
 
 {- Generates a filename to use for a feed item by filling out the template.
  - The filename may not be unique. -}
 feedFile :: Utility.Format.Format -> ToDownload -> String -> FilePath
-feedFile tmpl i extension = Utility.Format.format tmpl $ M.fromList
-	[ field "feedtitle" $ getFeedTitle $ feed i
-	, fieldMaybe "itemtitle" $ getItemTitle $ item i
-	, fieldMaybe "feedauthor" $ getFeedAuthor $ feed i
-	, fieldMaybe "itemauthor" $ getItemAuthor $ item i
-	, fieldMaybe "itemsummary" $ getItemSummary $ item i
-	, fieldMaybe "itemdescription" $ getItemDescription $ item i
-	, fieldMaybe "itemrights" $ getItemRights $ item i
-	, fieldMaybe "itemid" $ snd <$> getItemId (item i)
-	, fieldMaybe "itempubdate" $ pubdate $ item i
-	, ("extension", sanitizeFilePath extension)
-	]
+feedFile tmpl i extension = Utility.Format.format tmpl $
+	M.map sanitizeFilePath $ M.fromList $ extractFields i ++
+		[ ("extension", extension)
+		, extractField "itempubdate" [pubdate $ item i]
+		]
   where
-	field k v = 
-		let s = sanitizeFilePath v in
-		if null s then (k, "none") else (k, s)
-	fieldMaybe k Nothing = (k, "none")
-	fieldMaybe k (Just v) = field k v
-
 #if MIN_VERSION_feed(0,3,9)
 	pubdate itm = case getItemPublishDate itm :: Maybe (Maybe UTCTime) of
 		Just (Just d) -> Just $
@@ -234,11 +226,46 @@ feedFile tmpl i extension = Utility.Format.format tmpl $ M.fromList
 	pubdate _ = Nothing
 #endif
 
+extractMetaData :: ToDownload -> MetaData
+extractMetaData i = case getItemPublishDate (item i) :: Maybe (Maybe UTCTime) of
+	Just (Just d) -> unionMetaData meta (dateMetaData d meta)
+	_ -> meta
+  where
+	tometa (k, v) = (mkMetaFieldUnchecked k, S.singleton (toMetaValue v))
+	meta = MetaData $ M.fromList $ map tometa $ extractFields i
+
+{- Extract fields from the feed and item, that are both used as metadata,
+ - and to generate the filename. -}
+extractFields :: ToDownload -> [(String, String)]
+extractFields i = map (uncurry extractField)
+	[ ("feedtitle", [feedtitle])
+	, ("itemtitle", [itemtitle])
+	, ("feedauthor", [feedauthor])
+	, ("itemauthor", [itemauthor])
+	, ("itemsummary", [getItemSummary $ item i])
+	, ("itemdescription", [getItemDescription $ item i])
+	, ("itemrights", [getItemRights $ item i])
+	, ("itemid", [snd <$> getItemId (item i)])
+	, ("title", [itemtitle, feedtitle])
+	, ("author", [itemauthor, feedauthor])
+	]
+  where
+	feedtitle = Just $ getFeedTitle $ feed i
+	itemtitle = getItemTitle $ item i
+	feedauthor = getFeedAuthor $ feed i
+	itemauthor = getItemAuthor $ item i
+
+extractField :: String -> [Maybe String] -> (String, String)
+extractField k [] = (k, "none")
+extractField k (Just v:_)
+	| not (null v) = (k, v)
+extractField k (_:rest) = extractField k rest
+
 {- Called when there is a problem with a feed.
  - Throws an error if the feed is broken, otherwise shows a warning. -}
 feedProblem :: URLString -> String -> Annex ()
 feedProblem url message = ifM (checkFeedBroken url)
-	( error $ message ++ " (having repeated problems with this feed!)"
+	( error $ message ++ " (having repeated problems with feed: " ++ url ++ ")"
 	, warning $ "warning: " ++ message
 	)
 

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 9"
+ date="2014-06-10T19:27:55Z"
+ content="""
+> To avoid the risk of adding and propagating potentially corrupted content git-annex add should \"simply\" correct the timestamps (adjust to the new even inode values) for files with correct checksum but timestamp difference of 1s or 1h
+
+Since git-annex add already does that in this case, I think what you're actually suggesting is that, if the timestamp has a 1s or 1h diff, but the checksum has changed, git-annex add should refuse to add the files, on the grounds that it appears to be corrupt. Which obviously fails badly in at least the 1h case, because someone could add a file, then wait 1 hour and git-annex add a modified version.
+"""]]

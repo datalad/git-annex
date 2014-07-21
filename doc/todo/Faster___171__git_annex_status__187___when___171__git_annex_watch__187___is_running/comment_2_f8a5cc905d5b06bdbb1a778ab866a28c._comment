@@ -1,0 +1,44 @@
+[[!comment format=mdwn
+ username="zardoz"
+ ip="134.147.14.84"
+ subject="comment 2"
+ date="2014-07-11T11:46:08Z"
+ content="""
+Yes, you’re probably right that the benefit of this is slim when the
+watching daemon auto-adds new files. So the «status» output would
+never change and show the status that upheld before starting the
+daemon.
+
+The reason I brought this up that I recall reading a comment of yours
+somewhere on the site, to the effect that the assistant can sometimes
+speed up certain operations, because it can make certain valid
+assumptions on the state of the repo due to the fact that the
+assistant has been monitoring it. I don’t recall what those operations
+were, though. That’s why it occurred to me whether there might be a
+daemon that just monitors via inotify, and neither adds nor syncs, and
+only provides information to certain commands to speed things up under
+some circumstances.
+
+In general, is it accurate to say that git-annex mostly takes the
+«space» option when making a space/time-trade-offs? I noticed that the
+memory consumption is really slim most of the time, and wondered
+whether there might be options of speeding operations up by relying on
+more memory instead (perhaps also doing persistent caching). On the
+other hand, in some regards you are probably committed to the
+time/memory trade-offs taken by vanilla git, so maybe there’s not much
+room for improvement, git-annex wise…
+
+Maybe direct-mode repos on the order of 100k’s of files are just not
+practical. I’m using indirect mode for my really big repos now, and
+it’s now responsive enough to use (except for «annex unused», which is
+inherently expensive, as you once explained). At least commiting won’t
+take tens of minutes that way. I’ll just have to make the software
+play nicely with the symlinks.
+
+BTW, the file-system seems to have a huge impact on this. My large
+direct mode annex is practically unusable on ext (tens of minutes per
+commit), but still usable on btrfs (a few minutes). I’m migrating one
+disk to btrfs at home and will do some controlled benchmarks then. The
+added bonus is that directories don’t always take up a full block.
+
+"""]]

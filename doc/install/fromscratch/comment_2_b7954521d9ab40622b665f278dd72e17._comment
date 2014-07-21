@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="azul"
+ ip="91.36.173.120"
+ subject="conflict solved"
+ date="2014-06-20T06:13:09Z"
+ content="""
+`apt-get install happy alex libghc-hjsmin-dev`
+solved the problem for me. The hjsmin lib was probably crucial. It seems a bunch of dependencies can also be installed as debs rather than through cabal.
+`standalone/android/buildchroot-inchroot` gave me a clue.
+"""]]

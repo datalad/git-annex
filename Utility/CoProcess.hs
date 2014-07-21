@@ -37,8 +37,8 @@ data CoProcessSpec = CoProcessSpec
 	}
 
 start :: Int -> FilePath -> [String] -> Maybe [(String, String)] -> IO CoProcessHandle
-start numrestarts cmd params env = do
-	s <- start' $ CoProcessSpec numrestarts cmd params env
+start numrestarts cmd params environ = do
+	s <- start' $ CoProcessSpec numrestarts cmd params environ
 	newMVar s
 
 start' :: CoProcessSpec -> IO CoProcessState

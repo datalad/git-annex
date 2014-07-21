@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="FAT MetaData Sucks: an approach"
+ date="2014-06-11T18:15:59Z"
+ content="""
+git-annex already deals with FAT metadata sucking by using the inode sentinal file, to detect when a FAT filesystem has been remounted with new random inodes, and so ignore apparent inode changes.
+
+So, when a InodeCache is compared in weak mode due to that, it could just treat all mtimes within 2 seconds as the same. This would limit the brain-damange to FAT.
+
+One problem with this idea is that it's specific to linux's handling of FAT, with its random inodes. A FAT mounted on windows will have -1 for the inodes across remounts. So this method can't detect if a filesystem on windows is FAT, and has the problem, or NTFS and not. 
+
+But, I think the FAT side of this problem is also linux-specific. Linux dummies up good metadata for FAT, and then has to throw it away/degrade on unmount. Windows presumably uses real timestamps, with low resolution on FAT from the beginning.
+
+I don't know how eg OSX handles this. If it used constant inodes but cached higher resolution mtimes for FAT, this approach would not work there.
+"""]]

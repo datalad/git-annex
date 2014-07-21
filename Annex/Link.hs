@@ -68,6 +68,9 @@ getAnnexLinkTarget file = ifM (coreSymlinks <$> Annex.getGitConfig)
 					then ""
 					else s
 
+makeAnnexLink :: LinkTarget -> FilePath -> Annex ()
+makeAnnexLink = makeGitLink
+
 {- Creates a link on disk.
  -
  - On a filesystem that does not support symlinks, writes the link target
@@ -75,8 +78,8 @@ getAnnexLinkTarget file = ifM (coreSymlinks <$> Annex.getGitConfig)
  - it's staged as such, so use addAnnexLink when adding a new file or
  - modified link to git.
  -}
-makeAnnexLink :: LinkTarget -> FilePath -> Annex ()
-makeAnnexLink linktarget file = ifM (coreSymlinks <$> Annex.getGitConfig)
+makeGitLink :: LinkTarget -> FilePath -> Annex ()
+makeGitLink linktarget file = ifM (coreSymlinks <$> Annex.getGitConfig)
 	( liftIO $ do
 		void $ tryIO $ removeFile file
 		createSymbolicLink linktarget file

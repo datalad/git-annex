@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawncukUQl56TwiBJb7dIyAqP1YirNg_wjR4"
+ nickname="Matthew"
+ subject="comment 3"
+ date="2014-07-11T17:06:43Z"
+ content="""
+I created an local repository on each of 2 OS X (10.8.5) systems running git-annex version 5.20140421, and each of 2 Ubuntu 12.04 systems running version 5.20140517.4
+
+I then created a remote SSH repository by selecting \"Make an unencrypted git repository on the server\" - this repo is in \"transfer\" mode.
+
+On the 2nd OSX client, I added a remote SSH repository, providing the same host and path information and elected to \"combine\" my local repo with the remote repo so that files would stay in sync.
+
+I did the same on each of the linux clients.
+
+git-annex indicates that local repos on each machine are in direct mode and show all expected semi trusted repos: web, SSH remote, other clients that have combined with the SSH remote.
+
+git-annex indicates that the SSH remote repo is in indirect mode
+
+git indicates that all repos are in bare mode
+
+git-annex version 5.20140412ubuntu1 is installed on the VPS, and 'git-annex shell notify changes' processes are running.
+
+Agreed on the behavior of git-annex whereis… just pointing out that the location info is accurate.
+
+The 2nd, encrypted repo may have no bearing at all because even when I remove it, the client behavior on OSX doesn't change.
+
+Thanks for taking the time to consider this!
+"""]]

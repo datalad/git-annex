@@ -17,3 +17,5 @@ This is on an up-to-date Arch Linux. It also happened on Fedora 20.
 The daemon.log is fairly long, but not particulary interesting: [[https://ssl.zerodogg.org/~zerodogg/private/tmp/daemon.log-2014-02-25.1]]
 
 The «resource vanished (Broken pipe)» at the end is the result of me killing the prune-packed in order to be able to use the machine again.
+
+[[!tag moreinfo]]

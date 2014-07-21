@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnOSgFb3l7nL3Fs7Y9gPGJJjFiV7aJ1tek"
+ nickname="Phil"
+ subject="comment 9"
+ date="2014-07-05T22:29:01Z"
+ content="""
+Copying the `git-annex.exe` does work but you can also create a symlink and tell Windows to execute symlinks by doing the following.
+
+On the remote machine (the one you are connecting to)
+
+## Create a symlink:
+
+    mklink \"C:\Program Files (x86)\Git\bin\git-annex-shell\" \"C:\Program Files (x86)\Git\bin\git-annex.exe\"
+
+## Tell Windows to run files with no extension:
+
+* Open Environment Variables
+* At the end of `PATHEXT` add `;.`
+
+## A problem with rsync
+
+Unfortunately I now get `Access is denied` and `rsync: connection unexpectedly closed`. I think this is due to path issues on Windows. Trying rsync manually I need to use the `/cygdrive/c/rest/of/path` syntax otherwise I get `No such file or directory.`
+
+
+"""]]

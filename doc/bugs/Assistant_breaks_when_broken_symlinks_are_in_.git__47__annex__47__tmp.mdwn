@@ -3,3 +3,7 @@ The assistant web UI says: `SanityCheckerStartup crashed: /home/zerodogg/Delt/.g
 I'm not sure what causes said symlink to appear (which has the name of a file that does exist in the annex), but it has done so on several systems accross different distributions here (Fedora 20, Ubuntu 14.04, Archlinux). Perhaps an rsync copies over a symlink instead of a file?
 
 git-annex version: 5.20140517-gee56d21
+
+[[!tag confirmed]]
+
+> [[fixed|done]] --[[Joey]]

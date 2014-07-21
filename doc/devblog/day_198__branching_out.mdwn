@@ -1,0 +1,23 @@
+I have mostly been thinking about gcrypt today.
+[This issue](https://github.com/blake2-ppc/git-remote-gcrypt/issues/9)
+needs to be dealt with. The question is, does it really make sense to
+try to hide the people a git repository is encrypted for? I have 
+[posted some thoughts](http://git-annex.branchable.com/bugs/using_gpg_encryption_with_multiple_keys_fails/?updated#comment-0c4f679d972c63b0b25b6aa5e851af62)
+and am coming to the viewpoint that obscuring the identities of users
+of a repository is not a problem git-annex should try to solve itself,
+although it also shouldn't get in the way of someone who is able and
+wants to do that (by using tor, etc).
+
+Finally, I decided to go ahead and add a gcrypt.publish-participants
+setting to git-remote-gcrypt, and make git-annex set that by default when
+setting up a gcrypt repository.
+
+Some promising news from the ghc build on arm. I got a working ghc, and
+even ghci works. Which would make the template haskell in the webapp etc
+avaialble on arm without the current horrible hacks. Have not managed to
+build the debian ghc package successfully yet though.
+
+Also, fixed a bug that made `git annex sync` not pull/push with a local
+repository that had not yet been initialized for use with git-annex.
+
+Today's work was sponsored by Stanley Yamane.

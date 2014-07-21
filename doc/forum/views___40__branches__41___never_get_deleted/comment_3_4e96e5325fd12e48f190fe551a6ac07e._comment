@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmYMS6tQ8q9k1fylGyA9Q6fdFzRBotME2Q"
+ nickname="tom"
+ subject="added comment"
+ date="2014-06-04T22:41:40Z"
+ content="""
+Specifically I'm looking for a workaround that would make this behavior possible in this use case:
+
+The user decides some file in the local repository are not needed anymore, they are not needed to be in any repository at all and wants to reclaim the space as soon as possible (or at least make the files available to 'unused' for later removal). Removing the content the from local repository (git-rm ?) the space can be immediately reclaimed in the local hard drive, without the need to connect and sync unavailable/far remotes. As the other remotes and old backups become available and sync, they delete the unused content as well (or at least make it available to 'unused').
+
+Is there a way to achieve this? 
+"""]]

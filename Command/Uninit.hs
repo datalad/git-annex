@@ -16,6 +16,10 @@ import qualified Command.Unannex
 import qualified Annex.Branch
 import Annex.Content
 import Annex.Init
+import Utility.FileMode
+
+import System.IO.HVFS
+import System.IO.HVFS.Utils
 
 def :: [Command]
 def = [addCheck check $ command "uninit" paramPaths seek 
@@ -27,8 +31,8 @@ check = do
 	when (b == Annex.Branch.name) $ error $
 		"cannot uninit when the " ++ Git.fromRef b ++ " branch is checked out"
 	top <- fromRepo Git.repoPath
-	cwd <- liftIO getCurrentDirectory
-	whenM ((/=) <$> liftIO (absPath top) <*> liftIO (absPath cwd)) $
+	currdir <- liftIO getCurrentDirectory
+	whenM ((/=) <$> liftIO (absPath top) <*> liftIO (absPath currdir)) $
 		error "can only run uninit from the top of the git repository"
   where
 	current_branch = Git.Ref . Prelude.head . lines <$> revhead
@@ -56,6 +60,7 @@ finish = do
 	annexdir <- fromRepo gitAnnexDir
 	annexobjectdir <- fromRepo gitAnnexObjectDir
 	leftovers <- removeUnannexed =<< getKeysPresent InAnnex
+	liftIO $ prepareRemoveAnnexDir annexdir
 	if null leftovers
 		then liftIO $ removeDirectoryRecursive annexdir
 		else error $ unlines
@@ -81,6 +86,12 @@ finish = do
 	inRepo $ Git.Command.run
 		[Param "branch", Param "-D", Param $ Git.fromRef Annex.Branch.name]
 	liftIO exitSuccess
+
+{- Turn on write bits in all remaining files in the annex directory, in
+ - preparation for removal. -}
+prepareRemoveAnnexDir :: FilePath -> IO ()
+prepareRemoveAnnexDir annexdir =
+	recurseDir SystemFS annexdir >>= mapM_ (void . tryIO . allowWrite)
 
 {- Keys that were moved out of the annex have a hard link still in the
  - annex, with > 1 link count, and those can be removed.

@@ -1,0 +1,37 @@
+**Important** A bug [[caused the assistant to sometimes remove all files|bugs/bad_merge_commit_deleting_all_files]] from the git repository.
+You should check if your repository is ok. If the bug hit you, it should be
+possible to revert the bad commit and recover your files with no data loss.
+See the bug report for details. 
+
+This affected git-annex versions since 5.20140613, and only when using the
+assistant in direct mode. It should be fixed in today's release,
+5.20140709.
+
+I'm available <urgent2014@joeyh.name> to help anyone hit by this
+unfortunate bug.
+
+This is another bug in the direct mode merge code. I'm not happy about it.
+It's particularly annoying that I can't fix up after it automatically
+(because there's no way to know if any given commit in the git history that
+deletes all the files is the result of this bug, or a legitimate deletion
+of all files).
+
+The only good thing is that the design of git-annex is pretty robust, and
+in this case, despite stupidly committing the deletion of all the files in
+the repository, git-annex did take care to preserve all their contents and
+so the problem should be able to be resolved without data loss.
+
+Unfortunately, the main autobuilder is down and I've had to spin up
+autobuilders on a different machine (thank goodness that's very automated
+now!), and so I have not been able to build the fixed git-annex for android
+yet. I hope to get that done later this evening.
+
+---
+
+Yesterday, I fixed a few (much less bad) bugs, and did some thinking about
+plans for this month. The [[design/roadmap]] suggests working on some of
+[[!traillink design/assistant/chunks]], [[!traillink design/assistant/deltas]] or [[!traillink design/assistant/gpgkeys]].
+I don't know how to do deltas yet really. Chunks is pretty easily done.
+The gpg keys stuff is pretty open ended and needs some more work to define
+some use cases. But, after today, I am more inclined to want to spend
+time on better testing and other means of avoiding this kind of situation.

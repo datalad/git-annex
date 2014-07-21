@@ -49,7 +49,7 @@ diffIndex :: Ref -> Repo -> IO ([DiffTreeItem], IO Bool)
 diffIndex ref = diffIndex' ref [Param "--cached"]
 
 {- Diffs between a tree and the working tree. Does nothing if there is not
- - yet a commit in the repository, of if the repository is bare. -}
+ - yet a commit in the repository, or if the repository is bare. -}
 diffWorkTree :: Ref -> Repo -> IO ([DiffTreeItem], IO Bool)
 diffWorkTree ref repo =
 	ifM (Git.Ref.headExists repo)

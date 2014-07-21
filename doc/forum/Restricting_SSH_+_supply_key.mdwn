@@ -1,0 +1,7 @@
+Just two very simple questions:
+
+1.) Is there a way to restrict the SSH key for git annex by supplying a command= ? Even better, is it also possible to supply a directory in which the repository is? (I do not want chroot - too complicated but a soft check would be sufficient for me).
+
+2.) Can I tell git and git-ssh which pubkey to use WITHOUT changing system-/user wide config (e.g.., .ssh/*)? If it is indeed not possible, what's the best way to do it in Windows?
+
+Thanks!

@@ -52,9 +52,12 @@ import qualified Utility.Daemon
 import Utility.ThreadScheduler
 import Utility.HumanTime
 import qualified Build.SysConfig as SysConfig
-#ifndef mingw32_HOST_OS
-import Utility.LogFile
 import Annex.Perms
+import Utility.LogFile
+#ifdef mingw32_HOST_OS
+import Utility.Env
+import Config.Files
+import System.Environment (getArgs)
 #endif
 
 import System.Log.Logger
@@ -72,19 +75,18 @@ startDaemon :: Bool -> Bool -> Maybe Duration -> Maybe String -> Maybe HostName 
 startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = do
 	Annex.changeState $ \s -> s { Annex.daemon = True }
 	pidfile <- fromRepo gitAnnexPidFile
-#ifndef mingw32_HOST_OS
 	logfile <- fromRepo gitAnnexLogFile
+	liftIO $ debugM desc $ "logging to " ++ logfile
+#ifndef mingw32_HOST_OS
 	createAnnexDirectory (parentDir logfile)
-	logfd <- liftIO $ openLog logfile
+	logfd <- liftIO $ handleToFd =<< openLog logfile
 	if foreground
 		then do
 			origout <- liftIO $ catchMaybeIO $ 
 				fdToHandle =<< dup stdOutput
 			origerr <- liftIO $ catchMaybeIO $ 
 				fdToHandle =<< dup stdError
-			let undaemonize a = do
-				debugM desc $ "logging to " ++ logfile
-				Utility.Daemon.foreground logfd (Just pidfile) a
+			let undaemonize = Utility.Daemon.foreground logfd (Just pidfile)
 			start undaemonize $ 
 				case startbrowser of
 					Nothing -> Nothing
@@ -92,13 +94,29 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 		else
 			start (Utility.Daemon.daemonize logfd (Just pidfile) False) Nothing
 #else
-	-- Windows is always foreground, and has no log file.
+	-- Windows doesn't daemonize, but does redirect output to the
+	-- log file. The only way to do so is to restart the program.
 	when (foreground || not foreground) $ do
-		liftIO $ Utility.Daemon.lockPidFile pidfile
-		start id $ do
-			case startbrowser of
-				Nothing -> Nothing
-				Just a -> Just $ a Nothing Nothing
+		let flag = "GIT_ANNEX_OUTPUT_REDIR"
+		createAnnexDirectory (parentDir logfile)
+		ifM (liftIO $ isNothing <$> getEnv flag)
+			( liftIO $ withFile devNull WriteMode $ \nullh -> do
+				loghandle <- openLog logfile
+				e <- getEnvironment
+				cmd <- readProgramFile
+				ps <- getArgs
+				(_, _, _, pid) <- createProcess (proc cmd ps)
+					{ env = Just (addEntry flag "1" e)
+					, std_in = UseHandle nullh
+					, std_out = UseHandle loghandle
+					, std_err = UseHandle loghandle
+					}
+				exitWith =<< waitForProcess pid
+			, start (Utility.Daemon.foreground (Just pidfile)) $
+				case startbrowser of
+					Nothing -> Nothing
+					Just a -> Just $ a Nothing Nothing
+			)
 #endif
   where
   	desc

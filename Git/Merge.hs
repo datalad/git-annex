@@ -1,6 +1,6 @@
 {- git merging
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012, 2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,11 +11,28 @@ import Common
 import Git
 import Git.Command
 import Git.BuildVersion
+import Git.Branch (CommitMode(..))
 
 {- Avoids recent git's interactive merge. -}
-mergeNonInteractive :: Ref -> Repo -> IO Bool
-mergeNonInteractive branch
+mergeNonInteractive :: Ref -> CommitMode -> Repo -> IO Bool
+mergeNonInteractive branch commitmode
 	| older "1.7.7.6" = merge [Param $ fromRef branch]
-	| otherwise = merge [Param "--no-edit", Param $ fromRef branch]
+	| otherwise = merge $ [Param "--no-edit", Param $ fromRef branch]
   where
-	merge ps = runBool $ Param "merge" : ps
+	merge ps = runBool $ cp ++ [Param "merge"] ++ ps
+	cp
+		| commitmode == AutomaticCommit =
+			[Param "-c", Param "commit.gpgsign=false"]
+		| otherwise = []
+
+{- Stage the merge into the index, but do not commit it.-}
+stageMerge :: Ref -> Repo -> IO Bool
+stageMerge branch = runBool
+	[ Param "merge"
+	, Param "--quiet"
+	, Param "--no-commit"
+	-- Without this, a fast-forward merge is done, since it involves no
+	-- commit.
+	, Param "--no-ff"
+	, Param $ fromRef branch
+	]

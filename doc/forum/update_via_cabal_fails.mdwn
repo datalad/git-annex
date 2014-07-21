@@ -1,0 +1,35 @@
+I tried to update git-annex via cabal. It fails due to lens not installing:
+
+    juh@sokrates:~$ cabal update
+    Downloading the latest package list from hackage.haskell.org
+    juh@sokrates:~$ cabal install git-annex
+    Resolving dependencies...
+    In order, the following will be installed:
+    lens-4.2 (new version)
+    DAV-0.6.2 (reinstall) changes: http-client-0.3.1.1 -> 0.3.3.1,
+    http-client-tls-0.2.1.1 added, http-types-0.8.4 -> 0.8.5, lens-4.1.2 ->     4.2,
+    network-2.4.1.2 added, optparse-applicative-0.7.0.2 added, xml-    conduit-1.2.0.1
+    -> 1.2.0.2, xml-hamlet-0.4.0.8 added
+    git-annex-5.20140707 (new package)
+    Warning: Note that reinstalls are always dangerous. Continuing anyway...
+    [1 of 1] Compiling Main             ( /tmp/lens-4.2-3107/lens-4.2/Setup.    lhs, /tmp/lens-4.2-3107/lens-4.2/dist/setup/Main.o )
+    Linking /tmp/lens-4.2-3107/lens-4.2/dist/setup/setup ...
+    Configuring lens-4.2...
+    Building lens-4.2...
+    Preprocessing library lens-4.2...
+    
+    src/Control/Lens/Internal/Zoom.hs:47:8:
+        Could not find module `Control.Monad.Trans.Except'
+        Perhaps you meant
+          Control.Monad.Trans.Cont (from transformers-0.3.0.0)
+          Control.Monad.Trans.Error (from transformers-0.3.0.0)
+          Control.Monad.Trans.List (from transformers-0.3.0.0)
+        Use -v to see a list of the files searched for.
+    Failed to install lens-4.2
+    cabal: Error: some packages failed to install:
+    DAV-0.6.2 depends on lens-4.2 which failed to install.
+    git-annex-5.20140707 depends on lens-4.2 which failed to install.
+    lens-4.2 failed during the building phase. The exception was:
+    ExitFailure 1
+
+I am not an experienced user of cabal. So any hints to solve the conflicts are appreciated.

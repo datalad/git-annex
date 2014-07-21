@@ -89,7 +89,6 @@ install_pkgs () {
 	patched lifted-base
 	patched zlib
 	patched MissingH
-	patched bloomfilter
 	patched distributive
 	patched comonad
 	patched iproute

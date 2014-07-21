@@ -114,7 +114,8 @@ $(GIT_ANNEX_ANDROID_SOURCETREE)/busybox/build-stamp: busybox_config
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/busybox && $(MAKE)
 	touch $@
 	
-$(GIT_ANNEX_ANDROID_SOURCETREE)/git/build-stamp:
+$(GIT_ANNEX_ANDROID_SOURCETREE)/git/build-stamp: git.patch
+	cat git.patch | (cd $(GIT_ANNEX_ANDROID_SOURCETREE)/git && git am)
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/git && $(MAKE) install NO_OPENSSL=1 NO_GETTEXT=1 NO_GECOS_IN_PWENT=1 NO_GETPASS=1 NO_NSEC=1 NO_MKDTEMP=1 NO_PTHREADS=1 NO_PERL=1 NO_CURL=1 NO_EXPAT=1 NO_TCLTK=1 NO_ICONV=1 prefix= DESTDIR=installed-tree
 	touch $@
 

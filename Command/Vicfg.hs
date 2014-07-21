@@ -139,9 +139,11 @@ genCfg cfg descs = unlines $ intercalate [""]
 	  	grouplist = unwords $ map fromStandardGroup [minBound..]
 
 	preferredcontent = settings cfg descs cfgPreferredContentMap
-		[ com "Repository preferred contents" ]
+		[ com "Repository preferred contents"
+		, com "(Set to \"standard\" to use a repository's group's preferred contents)"
+		]
 		(\(s, u) -> line "wanted" u s)
-		(\u -> line "wanted" u "standard")
+		(\u -> line "wanted" u "")
 	
 	requiredcontent = settings cfg descs cfgRequiredContentMap
 		[ com "Repository required contents" ]
@@ -153,7 +155,7 @@ genCfg cfg descs = unlines $ intercalate [""]
 		, com "(Used by repositories with \"groupwanted\" in their preferred contents)"
 		]
 		(\(s, g) -> gline g s)
-		(\g -> gline g "standard")
+		(\g -> gline g "")
 	  where
 	  	gline g value = [ unwords ["groupwanted", g, "=", value] ]
 		allgroups = S.unions $ stdgroups : M.elems (cfgGroupMap cfg)

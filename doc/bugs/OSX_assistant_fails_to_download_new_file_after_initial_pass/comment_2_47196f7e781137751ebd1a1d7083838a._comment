@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 2"
+ date="2014-07-10T19:19:36Z"
+ content="""
+Could you please go into some more detail about these two things:
+
+> --create repo (transfer mode) on VPS
+> 
+> --create shared encryption repo (backup mode) on same VPS
+
+It's not clear to me what kind of repositories these are. Are they bare git repositories? What version of git-annex, if any, is installed on that VPS?
+
+> git-annex whereis $file does not indicate that the files represented as symlinks are located on the Mac OSX clients in question until after files are manually retrieved
+
+Well, I'd not expect whereis to say that the file is in a repository until it's retrieved into that repository. However, does whereis, on the OSX clients, ever say that the file has reached one of the repos on the VPS?
+"""]]

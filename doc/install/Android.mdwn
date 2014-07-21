@@ -27,7 +27,7 @@ of Bath CS department.
 git-annex can be built from source for Android.
 
 1. Run `standalone/android/buildchroot` as root (requires debootstrap).
-   This builds a chroot with an `builder` user.
+   This builds a chroot with a `builder` user.
    The rest of the build will run in this chroot as that user.
 2. In the chroot, run `standalone/android/install-haskell-packages`
    Note that this will break from time to time as new versions of packages

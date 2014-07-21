@@ -102,7 +102,7 @@ lockDown = either (\e -> showErr e >> return Nothing) (return . Just) <=< lockDo
 
 lockDown' :: FilePath -> Annex (Either IOException KeySource)
 lockDown' file = ifM crippledFileSystem
-	( liftIO $ tryIO nohardlink
+	( withTSDelta $ liftIO . tryIO . nohardlink
 	, tryAnnexIO $ do
 		tmp <- fromRepo gitAnnexTmpMiscDir
 		createAnnexDirectory tmp
@@ -122,22 +122,22 @@ lockDown' file = ifM crippledFileSystem
   	go tmp = do
 		unlessM isDirect $
 			freezeContent file
-		liftIO $ do
+		withTSDelta $ \delta -> liftIO $ do
 			(tmpfile, h) <- openTempFile tmp $
 				relatedTemplate $ takeFileName file
 			hClose h
 			nukeFile tmpfile
-			withhardlink tmpfile `catchIO` const nohardlink
-  	nohardlink = do
-		cache <- genInodeCache file
+			withhardlink delta tmpfile `catchIO` const (nohardlink delta)
+  	nohardlink delta = do
+		cache <- genInodeCache file delta
 		return KeySource
 			{ keyFilename = file
 			, contentLocation = file
 			, inodeCache = cache
 			}
-	withhardlink tmpfile = do
+	withhardlink delta tmpfile = do
 		createLink file tmpfile
-		cache <- genInodeCache tmpfile
+		cache <- genInodeCache tmpfile delta
 		return KeySource
 			{ keyFilename = file
 			, contentLocation = tmpfile
@@ -151,11 +151,11 @@ lockDown' file = ifM crippledFileSystem
  -}
 ingest :: Maybe KeySource -> Annex (Maybe Key, Maybe InodeCache)
 ingest Nothing = return (Nothing, Nothing)
-ingest (Just source) = do
+ingest (Just source) = withTSDelta $ \delta -> do
 	backend <- chooseBackend $ keyFilename source
 	k <- genKey source backend
 	ms <- liftIO $ catchMaybeIO $ getFileStatus $ contentLocation source
-	let mcache = toInodeCache =<< ms
+	mcache <- maybe (pure Nothing) (liftIO . toInodeCache delta) ms
 	case (mcache, inodeCache source) of
 		(_, Nothing) -> go k mcache ms
 		(Just newc, Just c) | compareStrong c newc -> go k mcache ms

@@ -96,7 +96,7 @@ reconnectRemotes notifypushes rs = void $ do
 		=<< fromMaybe [] . M.lookup (Remote.uuid r) . connectRemoteNotifiers
 			<$> getDaemonStatus
 
-{- Updates the local sync branch, then pushes it to all remotes, in
+{- Pushes the local sync branch to all remotes, in
  - parallel, along with the git-annex branch. This is the same
  - as "git annex sync", except in parallel, and will co-exist with use of
  - "git annex sync".
@@ -148,7 +148,6 @@ pushToRemotes' now notifypushes remotes = do
 	go _ _ _ _ [] = return [] -- no remotes, so nothing to do
 	go shouldretry (Just branch) g u rs =  do
 		debug ["pushing to", show rs]
-		liftIO $ Command.Sync.updateBranch (Command.Sync.syncBranch branch) g
 		(succeeded, failed) <- liftIO $ inParallel (push g branch) rs
 		updatemap succeeded []
 		if null failed

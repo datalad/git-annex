@@ -132,8 +132,8 @@ typeChanged' ps l repo = do
 	-- git diff returns filenames relative to the top of the git repo;
 	-- convert to filenames relative to the cwd, like git ls-files.
 	let top = repoPath repo
-	cwd <- getCurrentDirectory
-	return (map (\f -> relPathDirToFile cwd $ top </> f) fs, cleanup)
+	currdir <- getCurrentDirectory
+	return (map (\f -> relPathDirToFile currdir $ top </> f) fs, cleanup)
   where
 	prefix = [Params "diff --name-only --diff-filter=T -z"]
 	suffix = Param "--" : (if null l then [File "."] else map File l)

@@ -15,7 +15,6 @@ import Utility.Batch
 import qualified Command.TransferKeys as T
 
 import Control.Concurrent.STM hiding (check)
-import System.Process (create_group, std_in, std_out)
 import Control.Exception (throw)
 import Control.Concurrent
 

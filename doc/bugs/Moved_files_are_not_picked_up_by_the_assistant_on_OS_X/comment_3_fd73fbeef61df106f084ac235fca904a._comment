@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/FHnTlSBo1eCGJRwueeKeB6.RCaPbGMPr5jxx8A--#ce0d8"
+ nickname="Hamza"
+ subject="comment 3"
+ date="2014-07-12T10:03:07Z"
+ content="""
+BTW the mv operation is picked up by the assistant it start syncing immediately after mv but the symlink link is left dangling. I've also waited for the assistant to sync before readding the file.
+"""]]

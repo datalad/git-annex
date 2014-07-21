@@ -35,6 +35,7 @@ import qualified Annex
 import Utility.InodeCache
 import Annex.Content.Direct
 import qualified Command.Sync
+import qualified Git.Branch
 
 import Data.Time.Clock
 import Data.Tuple.Utils
@@ -219,7 +220,11 @@ commitStaged = do
 	v <- tryAnnex Annex.Queue.flush
 	case v of
 		Left _ -> return False
-		Right _ -> Command.Sync.commitStaged ""
+		Right _ -> do
+			ok <- Command.Sync.commitStaged Git.Branch.AutomaticCommit ""
+			when ok $
+				Command.Sync.updateSyncBranch =<< inRepo Git.Branch.current
+			return ok
 
 {- OSX needs a short delay after a file is added before locking it down,
  - when using a non-direct mode repository, as pasting a file seems to
@@ -313,10 +318,11 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 	adddirect toadd = do
 		ct <- liftAnnex compareInodeCachesWith
 		m <- liftAnnex $ removedKeysMap ct cs
+		delta <- liftAnnex getTSDelta
 		if M.null m
 			then forM toadd add
 			else forM toadd $ \c -> do
-				mcache <- liftIO $ genInodeCache $ changeFile c
+				mcache <- liftIO $ genInodeCache (changeFile c) delta
 				case mcache of
 					Nothing -> add c
 					Just cache ->

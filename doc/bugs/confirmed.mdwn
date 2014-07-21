@@ -1,8 +1,5 @@
-These bug reports have been confirmed to be real bugs, and so are likely
+This tag is for bugs that have been confirmed to be real bugs, and so are likely
 to be the next bugs fixed.
 
-If your bug report is not listed here, you probably need to provide more
-information so that the bug can be reproduced. See also: [[unconfirmed]]
-
-[[!inline pages="./* and link(./confirmed) and !link(./done) and !./unconfirmed" show=0
-archive=yes]]
+If your bug report is not tagged as confirmed, you probably need to provide more
+information so that the bug can be reproduced.

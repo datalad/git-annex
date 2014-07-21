@@ -70,3 +70,5 @@ Already up-to-date.
 the last line repeats about 4000 times.
 
 i would love to paste the daemon.log.1 file, but it seems like it containts encryption credentials... which i have no idea how to get rid of or change.
+
+[[!tag moreinfo]]

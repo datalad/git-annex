@@ -1,0 +1,34 @@
+Hello,
+
+I finally have git annex working on my NAS (QNAP TS-119P II) thanks to the stand-alone arm pre-build package.
+
+I've just extracted all the files on my NAS and I've linked all the exec files from the git-annex.linux folder to links placed in a path folder, so that I can run git annex everywhere on the NAS.
+
+    [~] # git annex version
+    git-annex version: 5.20140528-g92a0591
+    build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA CryptoHash
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier ddar hook external
+
+Now I'm trying to set it up as an SSH remote of my laptop repository, but I get this error:
+
+    git clone ssh://admin@nas:/share/HDA_DATA/myDir ./
+    Cloning into '.'...
+    admin@nas's password: 
+    sh: git-upload-pack: command not found
+    fatal: Could not read from remote repository.
+    
+    Please make sure you have the correct access rights
+    and the repository exists.
+
+I've checked that git-upload-pack is available both on my laptop and on the NAS and the "myDir" folder is supposed to be readable for the admin user on the NAS, even if the user I use on the laptop and on the NAS for git annex is different from the one I use to login. In fact, if I try to scp files from the annex folder then I don't get any permissions error.
+
+    scp admin@192.168.132.66:/share/HDA_DATA/myDir/* ./
+    admin@192.168.132.66's password: 
+    doctest                                                100%    5     0.0KB/s   0.0KB/s   00:00    
+    doctest2                                               100%   51     0.1KB/s   0.1KB/s   00:01
+
+Is there something else I should look at, in order to fix it and make it work?
+
+Thanks,
+Fabio

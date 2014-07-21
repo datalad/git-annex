@@ -14,8 +14,8 @@ import Utility.SafeCommand
 import Utility.Process
 import Utility.FileSystemEncoding
 import Utility.Misc
+import Utility.Exception
 
-import System.Process
 import Data.List
 import Data.Char
 import Control.Applicative
@@ -23,7 +23,7 @@ import System.IO
 
 externalSHA :: String -> Int -> FilePath -> IO (Either String String)
 externalSHA command shasize file = do
-	ls <- lines <$> readsha (toCommand [File file])
+	ls <- lines <$> catchDefaultIO "" (readsha (toCommand [File file]))
 	return $ sanitycheck =<< parse ls
   where
 	{- sha commands output the filename, so need to set fileEncoding -}

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="azul"
+ ip="91.36.153.149"
+ subject="cabal fails to resolve dependencies"
+ date="2014-06-19T08:49:05Z"
+ content="""
+I tried this on ubuntu 14.04 without any previous haskell installs and cabal failed to resolve the dependencies:
+
+rejecting: optparse-applicative-0.9.0 (conflict: hjsmin =>
+optparse-applicative>=0.7 && <0.9)
+
+[full log](paste.debian.net/105771/)
+"""]]

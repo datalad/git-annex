@@ -15,6 +15,7 @@ module Logs.View (
 	removeView,
 	recentViews,
 	branchView,
+	is_branchView,
 	prop_branchView_legal,
 ) where
 
@@ -86,6 +87,11 @@ branchView view
 	forcelegal s
 		| Git.Ref.legal True s = s
 		| otherwise = map (\c -> if isAlphaNum c then c else '_') s
+
+is_branchView :: Git.Branch -> Bool
+is_branchView (Ref b)
+	| b == branchViewPrefix = True
+	| otherwise = (branchViewPrefix ++ "/") `isPrefixOf` b
 
 prop_branchView_legal :: View -> Bool
 prop_branchView_legal = Git.Ref.legal False . fromRef . branchView

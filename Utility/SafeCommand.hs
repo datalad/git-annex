@@ -9,7 +9,6 @@ module Utility.SafeCommand where
 
 import System.Exit
 import Utility.Process
-import System.Process (env)
 import Data.String.Utils
 import Control.Applicative
 import System.FilePath

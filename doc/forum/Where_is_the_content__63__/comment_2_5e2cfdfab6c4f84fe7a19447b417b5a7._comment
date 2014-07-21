@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 2"
+ date="2014-07-15T18:37:34Z"
+ content="""
+It'll be in `/sdcard/annex` by defualt, unless you told the webapp to put it somewhere else when it asked where to put the repository. `/sdcard/annex` is a git repository which should contain all the files from the remote (not in any separate subdirectory, that's not how git works). If it does not, you can run commands like `git log --stat` in that repository to see what files have been added/removed, or `git annex status` to check the status of the files.
+"""]]

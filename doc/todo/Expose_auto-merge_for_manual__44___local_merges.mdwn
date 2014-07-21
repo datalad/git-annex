@@ -5,3 +5,5 @@ between local branches.
 
 E.g., one might invoke «git annex merge» or «git annex autoresolve»
 after «git merge» when conflicts are found.
+
+> [[done]] as resolvemerge. --[[Joey]]

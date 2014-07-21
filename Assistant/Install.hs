@@ -92,9 +92,9 @@ installNautilus :: FilePath -> IO ()
 #ifdef linux_HOST_OS
 installNautilus program = do
 	scriptdir <- (\d -> d </> "nautilus" </> "scripts") <$> userDataDir
-	whenM (doesDirectoryExist scriptdir) $ do
-		genscript scriptdir "get"
-		genscript scriptdir "drop"
+	createDirectoryIfMissing True scriptdir
+	genscript scriptdir "get"
+	genscript scriptdir "drop"
   where
 	genscript scriptdir action =
 		installscript (scriptdir </> scriptname action) $ unlines
@@ -122,15 +122,15 @@ installNautilus _ = noop
 cleanEnvironment :: IO (Maybe [(String, String)])
 cleanEnvironment = clean <$> getEnvironment
   where
-	clean env
+	clean environ
 		| null vars = Nothing
-		| otherwise = Just $ catMaybes $ map (restoreorig env) env
+		| otherwise = Just $ catMaybes $ map (restoreorig environ) environ
 		| otherwise = Nothing
 	  where
 		vars = words $ fromMaybe "" $
-			lookup "GIT_ANNEX_STANDLONE_ENV" env
-		restoreorig oldenv p@(k, _v)
-			| k `elem` vars = case lookup ("ORIG_" ++ k) oldenv of
+			lookup "GIT_ANNEX_STANDLONE_ENV" environ
+		restoreorig oldenviron p@(k, _v)
+			| k `elem` vars = case lookup ("ORIG_" ++ k) oldenviron of
 				(Just v')
 					| not (null v') -> Just (k, v')
 				_ -> Nothing

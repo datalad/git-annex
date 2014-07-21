@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 8"
+ date="2014-07-11T19:57:35Z"
+ content="""
+Unfortunately, this seems to be somewhat intermittent, so while I had a test case that worked once, John never saw it fail and has not been able to debug it. The test case has successfully connected every time I've tried it recently too. Perhaps jabber.de has changed whatever was causing the problem..
+"""]]

@@ -55,3 +55,5 @@ the git annex version used is 3.20121017 as in debian, the receiving site uses r
 this is probably not a bug of git-annex alone, but affects its operation and might be solvable by invoking rsync differently.
 
 (this is kind of a follow-up on [[forum/__34__permission_denied__34___in_fsck_on_shared_repo]])
+
+[[!tag forwarded]]

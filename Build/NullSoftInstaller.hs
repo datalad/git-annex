@@ -37,13 +37,16 @@ main = do
 		mustSucceed "ln" [File "dist/build/git-annex/git-annex.exe", File gitannex]
 		let license = tmpdir </> licensefile
 		mustSucceed "sh" [Param "-c", Param $ "zcat standalone/licences.gz > '" ++ license ++ "'"]
-		extrafiles <- forM (cygwinPrograms ++ cygwinDlls) $ \f -> do
+		extrabins <- forM (cygwinPrograms ++ cygwinDlls) $ \f -> do
 			p <- searchPath f
 			when (isNothing p) $
 				print ("unable to find in PATH", f)
 			return p
-		writeFile nsifile $ makeInstaller gitannex license $
-			catMaybes extrafiles
+		webappscript <- vbsLauncher tmpdir "git-annex-webapp" "git-annex webapp"
+		autostartscript <- vbsLauncher tmpdir "git-annex-autostart" "git annex assistant --autostart"
+		writeFile nsifile $ makeInstaller gitannex license
+			(catMaybes extrabins)
+			[ webappscript, autostartscript ]
 		mustSucceed "makensis" [File nsifile]
 	removeFile nsifile -- left behind if makensis fails
   where
@@ -53,6 +56,17 @@ main = do
 		case r of
 			True -> return ()
 			False -> error $ cmd ++ " failed"
+
+{- Generates a .vbs launcher which runs a command without any visible DOS
+ - box. -}
+vbsLauncher :: FilePath -> String -> String -> IO String
+vbsLauncher tmpdir basename cmd = do
+	let f = tmpdir </> basename ++ ".vbs"
+	writeFile f $ unlines
+		[ "Set objshell=CreateObject(\"Wscript.Shell\")"
+		, "objShell.Run(\"" ++ cmd ++ "\"), 0, False"
+		]
+	return f
 
 gitannexprogram :: FilePath
 gitannexprogram = "git-annex.exe"
@@ -67,10 +81,13 @@ uninstaller :: FilePath
 uninstaller = "git-annex-uninstall.exe"
 
 gitInstallDir :: Exp FilePath
-gitInstallDir = fromString "$PROGRAMFILES\\Git\\bin"
+gitInstallDir = fromString "$PROGRAMFILES\\Git"
 
 startMenuItem :: Exp FilePath
 startMenuItem = "$SMPROGRAMS/git-annex.lnk"
+
+autoStartItem :: Exp FilePath
+autoStartItem = "$SMSTARTUP/git-annex-autostart.lnk"
 
 needGit :: Exp String
 needGit = strConcat
@@ -81,8 +98,8 @@ needGit = strConcat
 	, fromString "You can install git from http:////git-scm.com//"
 	]
 
-makeInstaller :: FilePath -> FilePath -> [FilePath] -> String
-makeInstaller gitannex license extrafiles = nsis $ do
+makeInstaller :: FilePath -> FilePath -> [FilePath] -> [FilePath] -> String
+makeInstaller gitannex license extrabins launchers = nsis $ do
 	name "git-annex"
 	outFile $ str installer
 	{- Installing into the same directory as git avoids needing to modify
@@ -101,30 +118,46 @@ makeInstaller gitannex license extrafiles = nsis $ do
 	-- Start menu shortcut
 	Development.NSIS.createDirectory "$SMPROGRAMS"
 	createShortcut startMenuItem
-		[ Target "$INSTDIR/git-annex.exe"
-		, Parameters "webapp"
-		, IconFile "$INSTDIR/git-annex.exe"
+		[ Target "wscript.exe"
+		, Parameters "\"$INSTDIR/git-annex-webapp.vbs\""
+		, StartOptions "SW_SHOWNORMAL"
+		, IconFile "$INSTDIR/cmd/git-annex.exe"
 		, IconIndex 2
-		, StartOptions "SW_SHOWMINIMIZED"
 		, KeyboardShortcut "ALT|CONTROL|a"
 		, Description "git-annex webapp"
 		]
-	-- Groups of files to install
-	section "main" [] $ do
-		setOutPath "$INSTDIR"
+	createShortcut autoStartItem
+		[ Target "wscript.exe"
+		, Parameters "\"$INSTDIR/git-annex-autostart.vbs\""
+		, StartOptions "SW_SHOWNORMAL"
+		, IconFile "$INSTDIR/cmd/git-annex.exe"
+		, IconIndex 2
+		, Description "git-annex autostart"
+		]
+	section "bins" [] $ do
+		setOutPath "$INSTDIR\\bin"
+		mapM_ addfile extrabins
+	section "cmd" [] $ do
+		setOutPath "$INSTDIR\\cmd"
 		addfile gitannex
+	section "meta" [] $ do
+		setOutPath "$INSTDIR"
 		addfile license
-		mapM_ addfile extrafiles
+		mapM_ addfile launchers
 		writeUninstaller $ str uninstaller
 	uninstall $ do
 		delete [RebootOK] $ startMenuItem
-		mapM_ (\f -> delete [RebootOK] $ fromString $ "$INSTDIR/" ++ f) $
-			[ gitannexprogram
-			, licensefile
+		delete [RebootOK] $ autoStartItem
+		removefilesFrom "$INSTDIR/bin" extrabins
+		removefilesFrom "$INSTDIR/cmd" [gitannex]
+		removefilesFrom "$INSTDIR" $
+			launchers ++
+			[ license
 			, uninstaller
-			] ++ cygwinPrograms ++ cygwinDlls
+			]
   where
 	addfile f = file [] (str f)
+	removefilesFrom d = mapM_ (\f -> delete [RebootOK] $ fromString $ d ++ "/" ++ takeFileName f)
 
 cygwinPrograms :: [FilePath]
 cygwinPrograms = map (\p -> p ++ ".exe") bundledPrograms

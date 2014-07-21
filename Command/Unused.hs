@@ -10,9 +10,6 @@
 module Command.Unused where
 
 import qualified Data.Set as S
-import Data.BloomFilter
-import Data.BloomFilter.Easy
-import Data.BloomFilter.Hash
 import Control.Monad.ST
 import qualified Data.Map as M
 
@@ -35,6 +32,8 @@ import qualified Annex.Branch
 import Annex.CatFile
 import Types.Key
 import Git.FilePath
+import Logs.View (is_branchView)
+import Utility.Bloom
 
 def :: [Command]
 def = [withOptions [unusedFromOption] $ command "unused" paramNothing seek
@@ -270,6 +269,7 @@ withKeysReferencedInGit a = do
 	ourbranchend = '/' : Git.fromRef Annex.Branch.name
 	ourbranches (_, b) = not (ourbranchend `isSuffixOf` b)
 		&& not ("refs/synced/" `isPrefixOf` b)
+		&& not (is_branchView (Git.Ref b))
 	addHead headRef refs = case headRef of
 		-- if HEAD diverges from all branches (except the branch it
 		-- points to), run the actions on staged keys (and keys

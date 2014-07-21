@@ -24,6 +24,7 @@ backend = Backend
 	, getKey = const $ return Nothing
 	, fsckKey = Nothing
 	, canUpgradeKey = Nothing
+	, fastMigrate = Nothing
 	}
 
 {- Every unique url has a corresponding key. -}

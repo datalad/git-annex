@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/FHnTlSBo1eCGJRwueeKeB6.RCaPbGMPr5jxx8A--#ce0d8"
+ nickname="Hamza"
+ subject="comment 2"
+ date="2014-07-12T10:00:59Z"
+ content="""
+[[!format sh \"\"\"
+host annex/(master) $ ls -a Staging/Rise*
+Staging/Rise and Fall of the Berlin Wall - History Channel.mkv
+host annex/(master) $ mv Staging/Rise\ and\ Fall\ of\ the\ Berlin\ Wall\ -\ History\ Channel.mkv Documentary/
+host annex/(master) $ git status
+On branch master
+Untracked files:
+  (use \"git add <file>...\" to include in what will be committed)
+
+        Documentary/Rise and Fall of the Berlin Wall - History Channel.mkv
+
+nothing added to commit but untracked files present (use \"git add\" to track)
+host annex/(master) $ ga status
+D Documentary/Rise and Fall of the Berlin Wall - History Channel.mkv
+host annex/(master) $ git annex add .
+add Documentary/Rise and Fall of the Berlin Wall - History Channel.mkv ok
+(Recording state in git...)
+host annex/(master) $ ga status
+D Documentary/Rise and Fall of the Berlin Wall - History Channel.mkv
+host annex/(master) $ git annex sync
+commit  ok
+pull server 
+ok
+host annex/(master) $ ga status
+D Documentary/Rise and Fall of the Berlin Wall - History Channel.mkv
+host annex/(master) $ 
+\"\"\"]]
+
+"""]]

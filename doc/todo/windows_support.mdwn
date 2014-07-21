@@ -1,19 +1,9 @@
-The git-annex Windows port is not ready for prime time. But it does exist
-now! --[[Joey]] 
+The git-annex Windows port is beta, but rapidly becoming polished and
+usable!
 
 ## status
 
-* Doesn't daemonize. Maybe use
-  <http://hackage.haskell.org/package/Win32-services>
-  or perhaps easier,
-  <http://hackage.haskell.org/package/Win32-services-wrapper>
-
 * XMPP library not yet built. (See below.)
-
-* View debug log is empty in windows -- all logs go to console.
-  This messes up a few parts of UI that direct user to the debug log.
-  Should try to get rid of the console, but only once ssh passwords
-  (and possibly gpg) are not prompted there anymore.
 
 * Local pairing seems to fail, after acking on Linux box, it stalls.
   (Also, of course, the Windows box is unlikely to have a ssh server,

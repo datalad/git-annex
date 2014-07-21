@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-06-04T19:03:05Z"
+ content="""
+I wish that I had a good answer for you, but since you're using direct mode, I really do not!
+
+You can run this to see the status:
+
+    git -c core.bare=false status
+
+That's safe. Everything below has a good chance of losing data if not used carefully.
+
+You can run a command like this to *delete* an unwanted file (that is shown as a new file in the above).
+
+    git -c core.bare=false rm -f unwanted_file
+
+If the status shows a file as being modified, you can run this to throw away the modified version. This does not put back the old version! It will leave you with a broken symlink.
+
+    git -c core.bare=false reset modified_file
+    git -c core.bare=false checkout modified_file
+    git annex fsck
+
+If you're lucky, you can then `git annex get` to get the old version from some other repository that still has it.
+"""]]
