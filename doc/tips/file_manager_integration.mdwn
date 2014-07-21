@@ -3,20 +3,26 @@ annexed files to get or drop.
 
 [[!toc]]
 
-## GNOME (nautilus) and KDE (Dolphin/Konqueror)
+## GNOME (nautilus)
 
-Recent git-annex comes with built-in integration for the file managers of
-these desktop environments. These let you pick git-annex get and git-annex
-drop actions from the context menus when right-clicking on a file.
+Recent git-annex comes with built-in integration for Nautilus.
 
 [[!img assistant/nautilusmenu.png]]
+
+[[!img assistant/downloadnotification.png]]
+
+This is set up by git-annex creating simple scripts in
+`~/.local/share/nautilus/scripts`, with names like "git-annex get"
+
+## KDE (Dolphin/Konqueror)
+
+Even more recent git-annex comes with built-in integration with Konqueror.
+
 [[!img assistant/konquerormenu.png]]
 
 [[!img assistant/downloadnotification.png]]
 
-This is set up by making simple scripts in
-`~/.local/share/nautilus/scripts`, with names like "git-annex get"
-and by making a 
+This is set up by git-annex creating a 
 `~/.kde/share/kde4/services/ServiceMenus/git-annex.desktop file.
 
 ## XFCE (Thunar)
