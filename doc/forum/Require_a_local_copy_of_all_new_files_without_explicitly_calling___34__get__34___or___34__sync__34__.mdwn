@@ -1,0 +1,9 @@
+Greetings.  Here is my desired usage scenario:
+
+I have setup a server and three laptops which I am syncing over ssh. Each laptop may access the server, but because different people are using each of the laptops, they may not sync between laptops for security/privacy.
+
+Each of the laptops will be adding content to the repository, and each of the laptops will be using the new content that the others have added.
+
+Currently, in order to make all content available to all users, I'm having to ssh into the server and use `git annex get .` every time new content is added from one of the laptops, which is a pain. Is there a way to require a local copy of all content in a given repository so that is pulled/pushed automatically? I would like for each laptop to be able to add new content to their copies of the repository and sync with the server, after which each other laptop can access the content through the server.
+
+Thanks!
