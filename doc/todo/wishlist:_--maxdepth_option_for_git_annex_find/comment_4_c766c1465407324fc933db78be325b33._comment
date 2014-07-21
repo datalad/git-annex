@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlScsufvQF7s8TVTwPd-h_QiP5Hn_i-hrs"
+ nickname="Jason"
+ subject="good point"
+ date="2014-07-21T19:22:30Z"
+ content="""
+You make another good point `--maxdepth` is vague in this context...
+I guess if we were to decide to come up with a summary option, it will have be named something else, like `--summary-depth`, where the default would be to represent all files of whatever depth, and specifying the option would take the output that would otherwise get from `git annex find <opts>`, truncate the paths to a certain depth, and then make a set thereof (to remove the many dups), that way any directory that had any files that would have been output by `git annex find <opts>`, that would also be at or above a certain depth, would be listed.
+
+I think if I get a chance I'll try to implement something like this.
+
+"""]]
