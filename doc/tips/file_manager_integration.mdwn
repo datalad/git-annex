@@ -20,8 +20,6 @@ Even more recent git-annex comes with built-in integration with Konqueror.
 
 [[!img assistant/konquerormenu.png]]
 
-[[!img assistant/downloadnotification.png]]
-
 This is set up by git-annex creating a 
 `~/.kde/share/kde4/services/ServiceMenus/git-annex.desktop file.
 
