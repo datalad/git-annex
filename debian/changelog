@@ -2,6 +2,10 @@ git-annex (5.20140718) UNRELEASED; urgency=medium
 
   * webapp: Automatically install Konqueror integration scripts
     to get and drop files.
+  * repair: Removing bad objects could leave fsck finding no more
+    unreachable objects, but some branches no longer accessible.
+    Fix this, including support for fixing up repositories that
+    were incompletely repaired before.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 21 Jul 2014 14:41:26 -0400
 
