@@ -1,3 +1,10 @@
+git-annex (5.20140718) UNRELEASED; urgency=medium
+
+  * webapp: Automatically install Konqueror integration scripts
+    to get and drop files.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 21 Jul 2014 14:41:26 -0400
+
 git-annex (5.20140717) unstable; urgency=high
 
   * Fix minor FD leak in journal code. Closes: #754608
