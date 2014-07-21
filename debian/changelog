@@ -105,6 +105,12 @@ git-annex (5.20140606) unstable; urgency=medium
 
  -- Joey Hess <joeyh@debian.org>  Fri, 06 Jun 2014 12:54:06 -0400
 
+git-annex (5.20140529~bpo70+2) wheezy-backports; urgency=low
+
+  * Updating backport to newest release.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 06 Jun 2014 13:49:55 -0400
+
 git-annex (5.20140529) unstable; urgency=medium
 
   * Fix encoding of data written to git-annex branch. Avoid truncating
@@ -133,6 +139,18 @@ git-annex (5.20140529) unstable; urgency=medium
 
  -- Joey Hess <joeyh@debian.org>  Thu, 29 May 2014 14:41:56 -0400
 
+git-annex (5.20140517~bpo70+2) wheezy-backports; urgency=low
+
+  * Rebuild in correct backport build environment.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 28 May 2014 11:16:19 -0400
+
+git-annex (5.20140517~bpo70+1) wheezy-backports; urgency=low
+
+  * Updating backport to newest release.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 23 May 2014 16:47:59 +0000
+
 git-annex (5.20140517) unstable; urgency=medium
 
   * webapp: Switched to bootstrap 3.
@@ -156,6 +174,23 @@ git-annex (5.20140517) unstable; urgency=medium
     Thanks, jlebar.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 17 May 2014 13:30:39 -0400
+
+git-annex (5.20140421~bpo70+1) wheezy-backports; urgency=medium
+
+  * Updating backport to newest release.
+  * Remaining differences in this backport:
+    - No webdav special remote support.
+    - Test suite is not built into git-annex as it now uses haskell-tasty,
+      which is not yet backported.
+    - No skein hash support.
+    - Webapp does not support https.
+    - Webapp is not safe for use on multiuser systems, since it does not
+      do constant time auth token comparisons, since haskell-securemem is
+      not yet backported.
+    - importfeed filename template cannot contain itempubdate variable.
+    - FDO desktop notifications are not suported.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 16 May 2014 16:53:03 -0400
 
 git-annex (5.20140421) unstable; urgency=medium
 
@@ -268,6 +303,17 @@ git-annex (5.20140402) unstable; urgency=medium
 
  -- Joey Hess <joeyh@debian.org>  Wed, 02 Apr 2014 16:42:53 -0400
 
+git-annex (5.20140320~bpo70+1) wheezy-backports; urgency=medium
+
+  * Updating backport to newest release.
+  * Note that this backport does not feature constant time webapp auth token
+    comparisons. It's not recommended to use the webapp on multiuser systems,
+    since another use may be able to use a timing attack to guess its auth 
+    token. If you need that, it should not be hard to backport
+    haskell-securemem.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 26 Mar 2014 15:16:09 -0400
+
 git-annex (5.20140320) unstable; urgency=medium
 
   * Fix zombie leak and general inneficiency when copying files to a
@@ -307,6 +353,13 @@ git-annex (5.20140320) unstable; urgency=medium
   * rsync special remote: Fix slashes when used on Windows.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 20 Mar 2014 13:21:12 -0400
+
+git-annex (5.20140306~bpo70+1) wheezy-backports; urgency=high
+
+  * Updating backport to newest release.
+  * Note that the new https webapp feature is disabled in this backport.
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 20 Feb 2014 22:56:45 +0000
 
 git-annex (5.20140306) unstable; urgency=high
 
@@ -411,6 +464,17 @@ git-annex (5.20140221) unstable; urgency=medium
 
  -- Joey Hess <joeyh@debian.org>  Fri, 21 Feb 2014 11:23:59 -0400
 
+git-annex (5.20140210~bpo70+2) wheezy-backports; urgency=medium
+
+  * Updating backport to newest release.
+  * Remaining differences in this backport:
+    - No webdav special remote support.
+    - Test suite is not built into git-annex as it now uses haskell-tasty,
+      which is not yet backported.
+    - No skein hash support.
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 20 Feb 2014 22:56:45 +0000
+
 git-annex (5.20140210) unstable; urgency=medium
 
   * --in can now refer to files that were located in a repository at
@@ -501,7 +565,14 @@ git-annex (5.20140127) unstable; urgency=medium
 
  -- Joey Hess <joeyh@debian.org>  Mon, 27 Jan 2014 13:43:28 -0400
 
-git-annex (5.20140117) unstable; urgency=medium
+git-annex (5.20140117~bpo70+2) wheezy-backports; urgency=medium
+
+  * Version build-dep on haskell-gnutls, so that backport will build with
+    XMPP support enabled.
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 30 Jan 2014 13:51:34 -0400
+
+git-annex (5.20140117~bpo70+1) wheezy-backports; urgency=medium
 
   * Really fix FTBFS on mipsel and sparc due to test suite not being available
     on those architectures.
@@ -742,8 +813,9 @@ git-annex (5.20131118) unstable; urgency=low
 
  -- Joey Hess <joeyh@debian.org>  Mon, 18 Nov 2013 10:45:43 -0400
 
-git-annex (4.20131106) unstable; urgency=low
+git-annex (4.20131106~bpo70+1) wheezy-backports; urgency=low
 
+  * Backport is now built against git 1.8.4, also now available in backports.
   * Improve local pairing behavior when two computers both try to start
     the pairing process separately.
   * sync: Work even when the local git repository is new and empty,
@@ -841,7 +913,14 @@ git-annex (4.20131024) unstable; urgency=low
 
  -- Joey Hess <joeyh@debian.org>  Thu, 24 Oct 2013 12:59:55 -0400
 
-git-annex (4.20131002) unstable; urgency=low
+git-annex (4.20131002~bpo70+2) wheezy-backports; urgency=low
+
+  * Wheezy backport: Relax cabal version constraint on gnutls
+    (allow the version in wheezy to be used, despite it being a bit buggy).
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 15 Oct 2013 19:45:19 -0400
+
+git-annex (4.20131002~bpo70+1) wheezy-backports; urgency=low
 
   * Note that the layout of gcrypt repositories has changed, and
     if you created one you must manually upgrade it.
@@ -855,7 +934,7 @@ git-annex (4.20131002) unstable; urgency=low
   * Use cryptohash rather than SHA for hashing when no external hash program
     is available. This is a significant speedup for SHA256 on OSX, for
     example.
-  * Added SKEIN256 and SKEIN512 backends.
+  * Added SKEIN256 and SKEIN512 backends. (Not available in this backport.)
   * Android build redone from scratch, many dependencies updated,
     and entire build can now be done using provided scripts.
   * assistant: Clear the list of failed transfers when doing a full transfer
@@ -880,7 +959,7 @@ git-annex (4.20131002) unstable; urgency=low
 
  -- Joey Hess <joeyh@debian.org>  Wed, 02 Oct 2013 16:00:39 -0400
 
-git-annex (4.20130920) unstable; urgency=low
+git-annex (4.20130920~bpo70+1) wheezy-backports; urgency=low
 
   * webapp: Initial support for setting up encrypted removable drives.
   * Recommend using my patched gcrypt, which fixes some bugs:
@@ -950,7 +1029,7 @@ git-annex (4.20130909) unstable; urgency=low
 
  -- Joey Hess <joeyh@debian.org>  Mon, 09 Sep 2013 09:47:02 -0400
 
-git-annex (4.20130827) unstable; urgency=low
+git-annex (4.20130827~bpo70+1) wheezy-backports; urgency=low
 
   * Youtube support! (And 53 other video hosts). When quvi is installed,
     git-annex addurl automatically uses it to detect when an page is
@@ -978,9 +1057,9 @@ git-annex (4.20130827) unstable; urgency=low
   * Debian: Recommend ssh-askpass, which ssh will use when the assistant
     is run w/o a tty. Closes: #719832
 
- -- Joey Hess <joeyh@debian.org>  Tue, 27 Aug 2013 11:03:00 -0400
+ -- Joey Hess <joeyh@debian.org>  Mon, 09 Sep 2013 16:34:08 -0400
 
-git-annex (4.20130815) unstable; urgency=low
+git-annex (4.20130815~bpo70+1) wheezy-backports; urgency=low
 
   * assistant, watcher: .gitignore files and other git ignores are now
     honored, when git 1.8.4 or newer is installed.
@@ -992,10 +1071,18 @@ git-annex (4.20130815) unstable; urgency=low
   * Windows: Fixed permissions problem that prevented removing files
     from directory special remote. Directory special remotes now fully usable.
 
- -- Joey Hess <joeyh@debian.org>  Thu, 15 Aug 2013 10:14:33 +0200
+ -- Joey Hess <joeyh@debian.org>  Tue, 27 Aug 2013 13:28:32 -0400
 
-git-annex (4.20130802) unstable; urgency=low
+git-annex (4.20130802~bpo70+2) wheezy-backports; urgency=low
 
+  * Fix dependency on libghc-gnutls-dev.
+
+ -- Joey Hess <joeyh@debian.org>  Sat, 17 Aug 2013 04:33:20 -0400
+
+git-annex (4.20130802~bpo70+1) wheezy-backports; urgency=low
+
+  * Wheezy backport: Fix build dependency on libghc-network-protocol-xmpp-dev
+    (allow the version in wheezy to be used, despite it being a bit buggy).
   * dropunused behavior change: Now refuses to drop the last copy of a
     file, unless you use the --force.
     This was the last place in git-annex that could remove data referred
@@ -1209,8 +1296,10 @@ git-annex (4.20130601) unstable; urgency=medium
 
  -- Joey Hess <joeyh@debian.org>  Sat, 01 Jun 2013 19:16:04 -0400
 
-git-annex (4.20130521) unstable; urgency=low
+git-annex (4.20130521~bpo70+1) wheezy-backports; urgency=low
 
+  * Wheezy backport. Note that WebDAV is disabled in this backport.
+    Closes: #718339
   * Sanitize debian changelog version before putting it into cabal file.
     Closes: #708619
   * Switch to MonadCatchIO-transformers for better handling of state while
@@ -1234,7 +1323,7 @@ git-annex (4.20130521) unstable; urgency=low
   * Linux standalone: Back to being built with glibc 2.13 for maximum
     portability.
 
- -- Joey Hess <joeyh@debian.org>  Tue, 21 May 2013 13:10:26 -0400
+ -- Joey Hess <joeyh@debian.org>  Fri, 02 Aug 2013 13:18:44 -0400
 
 git-annex (4.20130516) unstable; urgency=low
 
