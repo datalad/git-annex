@@ -29,7 +29,7 @@ Every special remote should support chunking. (It does not make sense
 to support it for git remotes, but gcrypt remotes should support it.)
 
 S3 remotes should chunk by default, because the current S3 backend fails
-for files past a certian size. See [[bugs/]]
+for files past a certian size. See [[bugs/Truncated_file_transferred_via_S3]].
 
 The size of chunks, as well as whether any chunking is done, should be
 configurable on the fly without invalidating data already stored in the
