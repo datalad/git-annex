@@ -74,3 +74,5 @@ upgrade supported from repository versions: 2 3 4
 
 # End of transcript or log.
 """]]
+
+> [[done]]; does not appear to be a git-annex bug. --[[Joey]]
