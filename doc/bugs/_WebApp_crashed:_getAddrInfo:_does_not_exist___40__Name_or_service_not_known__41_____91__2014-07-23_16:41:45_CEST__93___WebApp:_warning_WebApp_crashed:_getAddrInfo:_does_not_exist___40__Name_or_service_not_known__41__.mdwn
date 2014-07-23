@@ -7,7 +7,8 @@ some time ago i was using the webapp bound to a dedicated port number to get aro
 
 it never starts but just keeps waiting forever(?) 
 
-
+Update:(to clarify - the following works fine but results in the "random" port "problem")
+    git-annex webapp --listen=192.168.21.12
 
 
 
