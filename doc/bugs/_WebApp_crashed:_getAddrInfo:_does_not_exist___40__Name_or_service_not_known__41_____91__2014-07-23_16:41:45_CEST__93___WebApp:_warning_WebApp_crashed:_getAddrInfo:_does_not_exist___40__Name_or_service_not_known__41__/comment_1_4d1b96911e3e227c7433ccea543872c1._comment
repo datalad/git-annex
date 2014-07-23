@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="24.159.78.125"
+ subject="comment 1"
+ date="2014-07-23T22:10:37Z"
+ content="""
+Support for --listen with a port was removed in version 5.20140306, since it was buggy. In particular, when the webapp creates a new repository, it needs to switch to a new port to serve that repository, so specifying a single port won't work.
+
+Instead, when annex.listen or --listen specifies the address to listen on, `git annex webapp` will print out the url to use to open it, including the port it picked. This could be used in a script, or clicked on in the terminal to open a local browser when running the webapp on a remote host.
+"""]]
