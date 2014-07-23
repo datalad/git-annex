@@ -1,0 +1,1 @@
+There are some settings (rsync bandwidth settings are my use case) I'd like to reload after assistant starts, possibly mid-sync. Does assistant support SIGHUP, etc? What's the correct way to change bandwidth settings?
