@@ -31,7 +31,7 @@ remote:
   The value can use specified using any commonly used units.
   Example: `chunksize=100 megabytes`  
   Note that enabling chunking on an existing remote with non-chunked
-  files is not recommended.
+  files is not recommended; nor is changing the chunksize.
 
 Setup example:
 
