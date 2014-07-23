@@ -21,10 +21,7 @@ could lead to data loss. For example, suppose A is 10 mb, and B is 20 mb,
 and the upload speed is the same. If B starts first, when A will overwrite
 the file it is uploading for the 1st chunk. Then A uploads the second
 chunk, and once A is done, B finishes the 1st chunk and uploads its second.
-We now have 1(from A), 2(from B).
-
-This needs to be supported for back-compat, so keep the chunksize= setting
-to enable that mode, and add a new setting for the new mode.
+We now have [chunk 1(from A), chunk 2(from B)].
 
 # new requirements
 
@@ -41,6 +38,10 @@ on in the webapp when configuring an existing remote).
 
 Two concurrent uploaders of the same object to a remote should be safe,
 even if they're using different chunk sizes.
+
+The old chunk method needs to be supported for back-compat, so
+keep the chunksize= setting to enable that mode, and add a new setting
+for the new mode.
 
 # obscuring file sizes
 
@@ -72,7 +73,7 @@ And, obviously, if someone stores 10 tb of data in a remote, they probably
 have around 10 tb of files, so it's probably not a collection of recipes..
 
 Given its inneficiencies and lack of fully obscuring file sizes,
-padding may not be worth adding.
+padding may not be worth adding, but is considered in the designs below.
 
 # design 1
 
@@ -153,15 +154,15 @@ could lead to data loss. (Same as in design 2.)
 
 # design 4
 
+Use key SHA256-s10000-c1--xxxxxxx for the first chunk of 1 megabyte.
+
 Instead of storing the chunk count in the special remote, store it in 
 the git-annex branch. 
 
-So, use key SHA256-s10000-c1--xxxxxxx for the first chunk of 1 megabyte.
-
-And look at git-annex:aaa/bbb/SHA256-s12345--xxxxxxx.log.cnk to get the 
+Look at git-annex:aaa/bbb/SHA256-s12345--xxxxxxx.log.cnk to get the 
 chunk count and size. File format would be:
 
-	ts uuid  chunksize chunkcount
+	ts uuid chunksize chunkcount
 
 Note that a given remote uuid might have multiple lines, if a key was
 stored on it twice using different chunk sizes. Also note that even when
@@ -173,10 +174,11 @@ the files on the remote. It would also check if the non-chunked key is
 present.
 
 When dropping a key from the remote, drop all logged chunk sizes.
+(Also drop any non-chunked key.)
+
 As long as the location log and the new log are committed atomically,
 this guarantees that no orphaned chunks end up on a remote
 (except any that might be left by interrupted uploads).
-(Also drop any non-chunked key.)
 
 This has the best security of the designs so far, because the special 
 remote doesn't know anything about chunk sizes. It uses a little more
