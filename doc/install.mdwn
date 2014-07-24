@@ -19,6 +19,12 @@ detailed instructions             | quick install
 [[Windows]]                       | [download installer](http://downloads.kitenet.net/git-annex/windows/current/) **alpha**
 """]]
 
+The downloaded package's integrity can be verified by the public PGP key.  On Linux,
+
+	$ wget https://downloads.kitenet.net/git-annex/gpg-pubkey.asc
+	$ gpg --import gpg-pubey.asc
+	$ gpg --verify git-annex-standalone-*.tar.gz.sig
+
 ## Using cabal
 
 As a haskell package, git-annex can be installed from source pretty easily
