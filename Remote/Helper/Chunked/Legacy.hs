@@ -9,12 +9,10 @@ module Remote.Helper.Chunked.Legacy where
 
 import Common.Annex
 import Utility.Metered
+import Remote.Helper.Chunked (ChunkSize)
 
 import qualified Data.ByteString.Lazy as L
-import Data.Int
 import qualified Control.Exception as E
-
-type ChunkSize = Int64
 
 {- This is an extension that's added to the usual file (or whatever)
  - where the remote stores a key. -}

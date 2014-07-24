@@ -13,18 +13,20 @@ import Types.Remote
 import qualified Data.Map as M
 import Data.Int
 
+type ChunkSize = Int64
+
 data ChunkConfig
 	= NoChunks
-	| ChunkSize Int64
-	| LegacyChunkSize Int64
+	| UnpaddedChunks ChunkSize
+	| LegacyChunks ChunkSize
 
 chunkConfig :: RemoteConfig -> ChunkConfig
 chunkConfig m =
 	case M.lookup "chunksize" m of
 		Nothing -> case M.lookup "chunk" m of
 			Nothing -> NoChunks
-			Just v -> ChunkSize $ readsz v "chunk"
-		Just v -> LegacyChunkSize $ readsz v "chunksize"
+			Just v -> UnpaddedChunks $ readsz v "chunk"
+		Just v -> LegacyChunks $ readsz v "chunksize"
   where
 	readsz v f = case readSize dataUnits v of
 		Just size | size > 0 -> fromInteger size

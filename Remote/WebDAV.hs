@@ -117,8 +117,8 @@ storeHelper r k baseurl user pass b = catchBoolIO $ do
 			storehttp tmpurl b
 			finalizer tmpurl keyurl
 			return True
-		ChunkSize _ -> error "TODO: storeHelper with ChunkSize"
-		LegacyChunkSize chunksize -> do
+		UnpaddedChunks _ -> error "TODO: storeHelper with UnpaddedChunks"
+		LegacyChunks chunksize -> do
 			let storer urls = Legacy.storeChunked chunksize urls storehttp b
 			let recorder url s = storehttp url (L8.fromString s)
 			Legacy.storeChunks k tmpurl keyurl storer recorder finalizer
@@ -211,8 +211,8 @@ withStoredFiles
 	-> IO a
 withStoredFiles r k baseurl user pass onerr a = case chunkconfig of
 	NoChunks -> a [keyurl]
-	ChunkSize _ -> error "TODO: withStoredFiles with ChunkSize"
-	LegacyChunkSize _ -> do
+	UnpaddedChunks _ -> error "TODO: withStoredFiles with UnpaddedChunks"
+	LegacyChunks _ -> do
 		let chunkcount = keyurl ++ Legacy.chunkCount
 		v <- getDAV chunkcount user pass
 		case v of

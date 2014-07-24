@@ -99,7 +99,7 @@ tmpDir d k = addTrailingPathSeparator $ d </> "tmp" </> keyFile k
 
 withCheckedFiles :: (FilePath -> IO Bool) -> ChunkConfig -> FilePath -> Key -> ([FilePath] -> IO Bool) -> IO Bool
 withCheckedFiles _ _ [] _ _ = return False
-withCheckedFiles check (LegacyChunkSize _) d k a = go $ locations d k
+withCheckedFiles check (LegacyChunks _) d k a = go $ locations d k
   where
 	go [] = return False
 	go (f:fs) = do
@@ -128,7 +128,7 @@ store d chunkconfig k _f p = sendAnnex k (void $ remove d k) $ \src ->
 	metered (Just p) k $ \meterupdate -> 
 		storeHelper d chunkconfig k k $ \dests ->
 			case chunkconfig of
-				LegacyChunkSize chunksize ->
+				LegacyChunks chunksize ->
 					storeLegacyChunked meterupdate chunksize dests
 						=<< L.readFile src
 				_ -> do
@@ -143,7 +143,7 @@ storeEncrypted d gpgOpts chunkconfig (cipher, enck) k p = sendAnnex k (void $ re
 		storeHelper d chunkconfig enck k $ \dests ->
 			encrypt gpgOpts cipher (feedFile src) $ readBytes $ \b ->
 				case chunkconfig of
-					LegacyChunkSize chunksize ->
+					LegacyChunks chunksize ->
 						storeLegacyChunked meterupdate chunksize dests b
 					_ -> do
 						let dest = Prelude.head dests
@@ -153,7 +153,7 @@ storeEncrypted d gpgOpts chunkconfig (cipher, enck) k p = sendAnnex k (void $ re
 {- Splits a ByteString into chunks and writes to dests, obeying configured
  - chunk size (not to be confused with the L.ByteString chunk size).
  - Note: Must always write at least one file, even for empty ByteString. -}
-storeLegacyChunked :: MeterUpdate -> Legacy.ChunkSize -> [FilePath] -> L.ByteString -> IO [FilePath]
+storeLegacyChunked :: MeterUpdate -> ChunkSize -> [FilePath] -> L.ByteString -> IO [FilePath]
 storeLegacyChunked _ _ [] _ = error "bad storeLegacyChunked call"
 storeLegacyChunked meterupdate chunksize alldests@(firstdest:_) b
 	| L.null b = do
@@ -161,7 +161,7 @@ storeLegacyChunked meterupdate chunksize alldests@(firstdest:_) b
 		L.writeFile firstdest b
 		return [firstdest]
 	| otherwise = storeLegacyChunked' meterupdate chunksize alldests (L.toChunks b) []
-storeLegacyChunked' :: MeterUpdate -> Legacy.ChunkSize -> [FilePath] -> [S.ByteString] -> [FilePath] -> IO [FilePath]
+storeLegacyChunked' :: MeterUpdate -> ChunkSize -> [FilePath] -> [S.ByteString] -> [FilePath] -> IO [FilePath]
 storeLegacyChunked' _ _ [] _ _ = error "ran out of dests"
 storeLegacyChunked' _ _  _ [] c = return $ reverse c
 storeLegacyChunked' meterupdate chunksize (d:dests) bs c = do
@@ -200,8 +200,8 @@ storeHelper d chunkconfig key origkey storer = check <&&> liftIO go
 			void $ storer [tmpf]
 			finalizer tmpdir destdir
 			return True
-		ChunkSize _ -> error "TODO: storeHelper with ChunkSize"
-		LegacyChunkSize _ -> Legacy.storeChunks key tmpdir destdir storer recorder finalizer
+		UnpaddedChunks _ -> error "TODO: storeHelper with UnpaddedChunks"
+		LegacyChunks _ -> Legacy.storeChunks key tmpdir destdir storer recorder finalizer
 
 	finalizer tmp dest = do
 		void $ tryIO $ allowWrite dest -- may already exist
@@ -237,8 +237,8 @@ retrieveEncrypted d chunkconfig (cipher, enck) k f p = metered (Just p) k $ \met
 
 retrieveCheap :: FilePath -> ChunkConfig -> Key -> FilePath -> Annex Bool
 -- no cheap retrieval for chunks
-retrieveCheap _ (ChunkSize _) _ _ = return False
-retrieveCheap _ (LegacyChunkSize _) _ _ = return False
+retrieveCheap _ (UnpaddedChunks _) _ _ = return False
+retrieveCheap _ (LegacyChunks _) _ _ = return False
 #ifndef mingw32_HOST_OS
 retrieveCheap d ck k f = liftIO $ withStoredFiles ck d k go
   where
