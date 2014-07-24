@@ -55,13 +55,6 @@ another goal of chunking. At least two things are needed for this:
    so that a remote sees only encrypted files with uniform sizes
    and cannot make guesses about the kinds of data being stored.
 
-Note that encrypting the whole file and then chunking and padding it is not
-good because the remote can probably examine files and tell when a gpg
-stream has been cut into peices, even without the key (have not verified
-this, but it seems likely; certianly gpg magic numbers can identify gpg
-encrypted files so a file that's encrypted but lacks the magic is not the
-first chunk..).
-
 Note that padding cannot completely hide all information from an attacker
 who is logging puts or gets. An attacker could, for example, look at the
 times of puts, and guess at when git-annex has moved on to
@@ -184,3 +177,26 @@ This has the best security of the designs so far, because the special
 remote doesn't know anything about chunk sizes. It uses a little more
 data in the git-annex branch, although with care (using the same timestamp
 as the location log), it can compress pretty well.
+
+## chunk then encrypt
+
+Rather than encrypting the whole object 1st and then chunking, chunk and
+then encrypt.
+
+Reasons:
+
+1. If 2 repos are uploading the same key to a remote concurrently,
+   this allows some chunks to come from one and some from another,
+   and be reassembled without problems.
+
+2. Prevents an attacker from re-assembling the chunked file using details
+   of the gpg output. Which would expose file size if padding is being used
+   to obscure it.
+
+Note that this means that the chunks won't exactly match the configured
+chunk size. gpg does compression, which might make them a
+lot smaller. Or gpg overhead could make them slightly larger. So `hasKey`
+cannot check exact file sizes.
+
+If padding is enabled, gpg compression should be disabled, to not leak
+clues about how well the files compress and so what kind of file it is.
