@@ -1,0 +1,6 @@
+The design for new style chunks seems done, and I laid the groundwork for it
+today. Added chunk metadata to keys, reorganized the legacy chunking code
+for directory and webdav so it won't get (too badly) in the way, and
+implemented the chunk logs in the git-annex branch.
+
+Today's work was sponsored by LeastAuthority.com.
