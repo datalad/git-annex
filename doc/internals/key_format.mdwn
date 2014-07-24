@@ -17,7 +17,10 @@ For example:
   added to git-annex, expressed as seconds from the epoch.
   This is currently only used by the WORM backend.
 * Other fields could be added in the future, if needed.
-* Fields may appear, in any order (though always before the name field).
+
+git-annex always puts the fields in the order shown above when serializing
+a key. It can parse keys with the fields in other orders (although the name
+field must always come last).
 
 The `git annex examinekey` command can be used to extract information from
 a key.
