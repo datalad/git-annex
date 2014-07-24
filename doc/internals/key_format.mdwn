@@ -1,6 +1,6 @@
 A git-annex key has this format:
 
-	BACKEND-sNNNN-mNNNN--NAME
+	BACKEND[-sNNNN][-mNNNN][-SNNNN-CNNNN]--NAME
 
 For example:
 
@@ -10,12 +10,15 @@ For example:
   are always upper-cased.
 * The name field at the end has a format dependent on the backend. It is
   always the last field, and is prefixed with "--". Unlike other fields,
-  it may contain "-" in its content. It should not contain newline characters;
-  otherwise nearly anything goes.
+  it may contain "-" in its content. It should not contain newline
+  characters or "/"; otherwise nearly anything goes. 
 * The "-s" field is optional, and is the size of the content in bytes.
 * The "-m" field is optional, and is the mtime of the file when it was
   added to git-annex, expressed as seconds from the epoch.
   This is currently only used by the WORM backend.
+* The "-S" and "-C" fields are only used for keys that are chunks
+  of some other key. "-S" is the size of the chunk, and "-c" is the chunk
+  number (starting at 1).
 * Other fields could be added in the future, if needed.
 
 git-annex always puts the fields in the order shown above when serializing

@@ -104,7 +104,7 @@ Problem: Does not solve concurrent uploads with different chunk sizes.
 
 When chunking is enabled, always put a chunk number in the Key,
 along with the chunk size.
-So, SHA256-s10000-c1--xxxxxxx for the first chunk of 1 megabyte.
+So, SHA256-1048576-c1--xxxxxxx for the first chunk of 1 megabyte.
 
 Before any chunks are stored, write a chunkcount file, eg
 SHA256-s12345-c0--xxxxxxx. Note that this key is the same as the original
@@ -148,20 +148,24 @@ could lead to data loss. (Same as in design 2.)
 
 # design 4
 
-Use key SHA256-s10000-c1--xxxxxxx for the first chunk of 1 megabyte.
+Use key SHA256-s12345-S1048576-C1--xxxxxxx for the first chunk of 1 megabyte.
+
+Note that keeping the 's'ize field unchanged is necessary because it 
+disambiguates eg, WORM keys. So a 'S'ize field is used to hold the chunk
+size.
 
 Instead of storing the chunk count in the special remote, store it in 
 the git-annex branch. 
 
-Look at git-annex:aaa/bbb/SHA256-s12345--xxxxxxx.log.cnk to get the 
-chunk count and size. File format would be:
+The location log does not record locations of individual chunk keys
+(too space-inneficient).
+Instead, look at git-annex:aaa/bbb/SHA256-s12345--xxxxxxx.log.cnk to get
+the chunk count and size for a key. File format would be:
 
-	ts uuid chunksize chunkcount 0|1
+	ts uuid chunksize chunkcount
 
-Where a trailing 0 means that chunk size is no longer present on the
-remote, and a trailing 1 means it is. For future expansion, any other
-value /= "0" is also accepted, meaning the chunk is present. For example,
-this could be used for [[deltas]], storing the checksums of the chunks.
+Where a chunkcount of 0 means that the object is not longer present in the
+remote using the specified chunk size.
 
 Note that a given remote uuid might have multiple lines, if a key was
 stored on it twice using different chunk sizes. Also note that even when

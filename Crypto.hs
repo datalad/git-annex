@@ -142,11 +142,9 @@ decryptCipher (EncryptedCipher t variant _) =
  - reversable, nor does it need to be the same type of encryption used
  - on content. It does need to be repeatable. -}
 encryptKey :: Mac -> Cipher -> Key -> Key
-encryptKey mac c k = Key
+encryptKey mac c k = stubKey
 	{ keyName = macWithCipher mac c (key2file k)
 	, keyBackendName = "GPG" ++ showMac mac
-	, keySize = Nothing -- size and mtime omitted
-	, keyMtime = Nothing -- to avoid leaking data
 	}
 
 type Feeder = Handle -> IO ()
