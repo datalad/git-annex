@@ -12,7 +12,6 @@ module Remote.Directory (remote) where
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as S
 import qualified Data.Map as M
-import Data.Int
 
 import Common.Annex
 import Types.Remote
@@ -24,6 +23,7 @@ import Utility.FileMode
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Remote.Helper.Chunked
+import qualified Remote.Helper.Chunked.Legacy as Legacy
 import Crypto
 import Annex.Content
 import Annex.UUID
@@ -40,19 +40,19 @@ remote = RemoteType {
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
 	cst <- remoteCost gc cheapRemoteCost
-	let chunksize = chunkSize c
+	let chunkconfig = chunkConfig c
 	return $ Just $ encryptableRemote c
-		(storeEncrypted dir (getGpgEncParams (c,gc)) chunksize)
-		(retrieveEncrypted dir chunksize)
+		(storeEncrypted dir (getGpgEncParams (c,gc)) chunkconfig)
+		(retrieveEncrypted dir chunkconfig)
 		Remote {
 			uuid = u,
 			cost = cst,
 			name = Git.repoDescribe r,
-			storeKey = store dir chunksize,
-			retrieveKeyFile = retrieve dir chunksize,
-			retrieveKeyFileCheap = retrieveCheap dir chunksize,
+			storeKey = store dir chunkconfig,
+			retrieveKeyFile = retrieve dir chunkconfig,
+			retrieveKeyFileCheap = retrieveCheap dir chunkconfig,
 			removeKey = remove dir,
-			hasKey = checkPresent dir chunksize,
+			hasKey = checkPresent dir chunkconfig,
 			hasKeyCheap = True,
 			whereisKey = Nothing,
 			remoteFsck = Nothing,
@@ -97,77 +97,77 @@ storeDir d k = addTrailingPathSeparator $ d </> hashDirLower k </> keyFile k
 tmpDir :: FilePath -> Key -> FilePath
 tmpDir d k = addTrailingPathSeparator $ d </> "tmp" </> keyFile k
 
-withCheckedFiles :: (FilePath -> IO Bool) -> ChunkSize -> FilePath -> Key -> ([FilePath] -> IO Bool) -> IO Bool
+withCheckedFiles :: (FilePath -> IO Bool) -> ChunkConfig -> FilePath -> Key -> ([FilePath] -> IO Bool) -> IO Bool
 withCheckedFiles _ _ [] _ _ = return False
-withCheckedFiles check Nothing d k a = go $ locations d k
-  where
-	go [] = return False
-	go (f:fs) = ifM (check f) ( a [f] , go fs )
-withCheckedFiles check (Just _) d k a = go $ locations d k
+withCheckedFiles check (LegacyChunkSize _) d k a = go $ locations d k
   where
 	go [] = return False
 	go (f:fs) = do
-		let chunkcount = f ++ chunkCount
+		let chunkcount = f ++ Legacy.chunkCount
 		ifM (check chunkcount)
 			( do
-				chunks <- listChunks f <$> readFile chunkcount
+				chunks <- Legacy.listChunks f <$> readFile chunkcount
 				ifM (allM check chunks)
 					( a chunks , return False )
 			, do
-				chunks <- probeChunks f check
+				chunks <- Legacy.probeChunks f check
 				if null chunks
 					then go fs
 					else a chunks
 			)
+withCheckedFiles check _ d k a = go $ locations d k
+  where
+	go [] = return False
+	go (f:fs) = ifM (check f) ( a [f] , go fs )
 
-withStoredFiles :: ChunkSize -> FilePath -> Key -> ([FilePath] -> IO Bool) -> IO Bool
+withStoredFiles :: ChunkConfig -> FilePath -> Key -> ([FilePath] -> IO Bool) -> IO Bool
 withStoredFiles = withCheckedFiles doesFileExist
 
-store :: FilePath -> ChunkSize -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store d chunksize k _f p = sendAnnex k (void $ remove d k) $ \src ->
+store :: FilePath -> ChunkConfig -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
+store d chunkconfig k _f p = sendAnnex k (void $ remove d k) $ \src ->
 	metered (Just p) k $ \meterupdate -> 
-		storeHelper d chunksize k k $ \dests ->
-			case chunksize of
-				Nothing -> do
+		storeHelper d chunkconfig k k $ \dests ->
+			case chunkconfig of
+				LegacyChunkSize chunksize ->
+					storeLegacyChunked meterupdate chunksize dests
+						=<< L.readFile src
+				_ -> do
 					let dest = Prelude.head dests
 					meteredWriteFile meterupdate dest
 						=<< L.readFile src
 					return [dest]
-				Just _ ->
-					storeSplit meterupdate chunksize dests
-						=<< L.readFile src
 
-storeEncrypted :: FilePath -> [CommandParam] -> ChunkSize -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
-storeEncrypted d gpgOpts chunksize (cipher, enck) k p = sendAnnex k (void $ remove d enck) $ \src ->
+storeEncrypted :: FilePath -> [CommandParam] -> ChunkConfig -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
+storeEncrypted d gpgOpts chunkconfig (cipher, enck) k p = sendAnnex k (void $ remove d enck) $ \src ->
 	metered (Just p) k $ \meterupdate ->
-		storeHelper d chunksize enck k $ \dests ->
+		storeHelper d chunkconfig enck k $ \dests ->
 			encrypt gpgOpts cipher (feedFile src) $ readBytes $ \b ->
-				case chunksize of
-					Nothing -> do
+				case chunkconfig of
+					LegacyChunkSize chunksize ->
+						storeLegacyChunked meterupdate chunksize dests b
+					_ -> do
 						let dest = Prelude.head dests
 						meteredWriteFile meterupdate dest b
 						return [dest]
-					Just _ -> storeSplit meterupdate chunksize dests b
 
 {- Splits a ByteString into chunks and writes to dests, obeying configured
  - chunk size (not to be confused with the L.ByteString chunk size).
  - Note: Must always write at least one file, even for empty ByteString. -}
-storeSplit :: MeterUpdate -> ChunkSize -> [FilePath] -> L.ByteString -> IO [FilePath]
-storeSplit _ Nothing _ _ = error "bad storeSplit call"
-storeSplit _ _ [] _ = error "bad storeSplit call"
-storeSplit meterupdate (Just chunksize) alldests@(firstdest:_) b
+storeLegacyChunked :: MeterUpdate -> Legacy.ChunkSize -> [FilePath] -> L.ByteString -> IO [FilePath]
+storeLegacyChunked _ _ [] _ = error "bad storeLegacyChunked call"
+storeLegacyChunked meterupdate chunksize alldests@(firstdest:_) b
 	| L.null b = do
 		-- must always write at least one file, even for empty
 		L.writeFile firstdest b
 		return [firstdest]
-	| otherwise = storeSplit' meterupdate chunksize alldests (L.toChunks b) []
-storeSplit' :: MeterUpdate -> Int64 -> [FilePath] -> [S.ByteString] -> [FilePath] -> IO [FilePath]
-storeSplit' _ _ [] _ _ = error "ran out of dests"
-storeSplit' _ _  _ [] c = return $ reverse c
-storeSplit' meterupdate chunksize (d:dests) bs c = do
+	| otherwise = storeLegacyChunked' meterupdate chunksize alldests (L.toChunks b) []
+storeLegacyChunked' :: MeterUpdate -> Legacy.ChunkSize -> [FilePath] -> [S.ByteString] -> [FilePath] -> IO [FilePath]
+storeLegacyChunked' _ _ [] _ _ = error "ran out of dests"
+storeLegacyChunked' _ _  _ [] c = return $ reverse c
+storeLegacyChunked' meterupdate chunksize (d:dests) bs c = do
 	bs' <- withFile d WriteMode $
 		feed zeroBytesProcessed chunksize bs
-	storeSplit' meterupdate chunksize dests bs' (d:c)
+	storeLegacyChunked' meterupdate chunksize dests bs' (d:c)
   where
 	feed _ _ [] _ = return []
 	feed bytes sz (l:ls) h = do
@@ -181,19 +181,28 @@ storeSplit' meterupdate chunksize (d:dests) bs c = do
 				feed bytes' (sz - s) ls h
 			else return (l:ls)
 
-storeHelper :: FilePath -> ChunkSize -> Key -> Key -> ([FilePath] -> IO [FilePath]) -> Annex Bool
-storeHelper d chunksize key origkey storer = check <&&> go
+storeHelper :: FilePath -> ChunkConfig -> Key -> Key -> ([FilePath] -> IO [FilePath]) -> Annex Bool
+storeHelper d chunkconfig key origkey storer = check <&&> liftIO go
   where
 	tmpdir = tmpDir d key
 	destdir = storeDir d key
+
 	{- An encrypted key does not have a known size,
 	 - so check that the size of the original key is available as free
 	 - space. -}
 	check = do
 		liftIO $ createDirectoryIfMissing True tmpdir
 		checkDiskSpace (Just tmpdir) origkey 0
-	go = liftIO $ catchBoolIO $
-		storeChunks key tmpdir destdir chunksize storer recorder finalizer
+	
+	go = case chunkconfig of
+		NoChunks -> flip catchNonAsync (\e -> print e >> return False) $ do
+			let tmpf = tmpdir </> keyFile key
+			void $ storer [tmpf]
+			finalizer tmpdir destdir
+			return True
+		ChunkSize _ -> error "TODO: storeHelper with ChunkSize"
+		LegacyChunkSize _ -> Legacy.storeChunks key tmpdir destdir storer recorder finalizer
+
 	finalizer tmp dest = do
 		void $ tryIO $ allowWrite dest -- may already exist
 		void $ tryIO $ removeDirectoryRecursive dest -- or not exist
@@ -203,21 +212,22 @@ storeHelper d chunksize key origkey storer = check <&&> go
 		void $ tryIO $ do
 			mapM_ preventWrite =<< dirContents dest
 			preventWrite dest
+	
 	recorder f s = do
 		void $ tryIO $ allowWrite f
 		writeFile f s
 		void $ tryIO $ preventWrite f
 
-retrieve :: FilePath -> ChunkSize -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
-retrieve d chunksize k _ f p = metered (Just p) k $ \meterupdate ->
-	liftIO $ withStoredFiles chunksize d k $ \files ->
+retrieve :: FilePath -> ChunkConfig -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
+retrieve d chunkconfig k _ f p = metered (Just p) k $ \meterupdate ->
+	liftIO $ withStoredFiles chunkconfig d k $ \files ->
 		catchBoolIO $ do
-			meteredWriteFileChunks meterupdate f files L.readFile
+			Legacy.meteredWriteFileChunks meterupdate f files L.readFile
 			return True
 
-retrieveEncrypted :: FilePath -> ChunkSize -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
-retrieveEncrypted d chunksize (cipher, enck) k f p = metered (Just p) k $ \meterupdate ->
-	liftIO $ withStoredFiles chunksize d enck $ \files ->
+retrieveEncrypted :: FilePath -> ChunkConfig -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
+retrieveEncrypted d chunkconfig (cipher, enck) k f p = metered (Just p) k $ \meterupdate ->
+	liftIO $ withStoredFiles chunkconfig d enck $ \files ->
 		catchBoolIO $ do
 			decrypt cipher (feeder files) $
 				readBytes $ meteredWriteFile meterupdate f
@@ -225,10 +235,12 @@ retrieveEncrypted d chunksize (cipher, enck) k f p = metered (Just p) k $ \meter
   where
 	feeder files h = forM_ files $ L.hPut h <=< L.readFile
 
-retrieveCheap :: FilePath -> ChunkSize -> Key -> FilePath -> Annex Bool
-retrieveCheap _ (Just _) _ _ = return False -- no cheap retrieval for chunks
+retrieveCheap :: FilePath -> ChunkConfig -> Key -> FilePath -> Annex Bool
+-- no cheap retrieval for chunks
+retrieveCheap _ (ChunkSize _) _ _ = return False
+retrieveCheap _ (LegacyChunkSize _) _ _ = return False
 #ifndef mingw32_HOST_OS
-retrieveCheap d _ k f = liftIO $ withStoredFiles Nothing d k go
+retrieveCheap d ck k f = liftIO $ withStoredFiles ck d k go
   where
 	go [file] = catchBoolIO $ createSymbolicLink file f >> return True
 	go _files = return False
@@ -250,6 +262,6 @@ remove d k = liftIO $ do
   where
 	dir = storeDir d k
 
-checkPresent :: FilePath -> ChunkSize -> Key -> Annex (Either String Bool)
-checkPresent d chunksize k = liftIO $ catchMsgIO $ withStoredFiles chunksize d k $
+checkPresent :: FilePath -> ChunkConfig -> Key -> Annex (Either String Bool)
+checkPresent d chunkconfig k = liftIO $ catchMsgIO $ withStoredFiles chunkconfig d k $
 	const $ return True -- withStoredFiles checked that it exists

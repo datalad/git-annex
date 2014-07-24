@@ -33,6 +33,7 @@ import Config.Cost
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Remote.Helper.Chunked
+import qualified Remote.Helper.Chunked.Legacy as Legacy
 import Crypto
 import Creds
 import Utility.Metered
@@ -111,13 +112,21 @@ storeEncrypted r (cipher, enck) k p = metered (Just p) k $ \meterupdate ->
 storeHelper :: Remote -> Key -> DavUrl -> DavUser -> DavPass -> L.ByteString -> IO Bool
 storeHelper r k baseurl user pass b = catchBoolIO $ do
 	mkdirRecursiveDAV tmpurl user pass
-	storeChunks k tmpurl keyurl chunksize storer recorder finalizer
+	case chunkconfig of
+		NoChunks -> flip catchNonAsync (\e -> print e >> return False) $ do
+			storehttp tmpurl b
+			finalizer tmpurl keyurl
+			return True
+		ChunkSize _ -> error "TODO: storeHelper with ChunkSize"
+		LegacyChunkSize chunksize -> do
+			let storer urls = Legacy.storeChunked chunksize urls storehttp b
+			let recorder url s = storehttp url (L8.fromString s)
+			Legacy.storeChunks k tmpurl keyurl storer recorder finalizer
+
   where
 	tmpurl = tmpLocation baseurl k
 	keyurl = davLocation baseurl k
-	chunksize = chunkSize $ config r
-	storer urls = storeChunked chunksize urls storehttp b
-	recorder url s = storehttp url (L8.fromString s)
+	chunkconfig = chunkConfig $ config r
 	finalizer srcurl desturl = do
 		void $ tryNonAsync (deleteDAV desturl user pass)
 		mkdirRecursiveDAV (urlParent desturl) user pass
@@ -131,7 +140,7 @@ retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex 
 retrieve r k _f d p = metered (Just p) k $ \meterupdate ->
 	davAction r False $ \(baseurl, user, pass) -> liftIO $ catchBoolIO $
 		withStoredFiles r k baseurl user pass onerr $ \urls -> do
-			meteredWriteFileChunks meterupdate d urls $ \url -> do
+			Legacy.meteredWriteFileChunks meterupdate d urls $ \url -> do
 				mb <- getDAV url user pass
 				case mb of
 					Nothing -> throwIO "download failed"
@@ -200,20 +209,22 @@ withStoredFiles
 	-> (DavUrl -> IO a)
 	-> ([DavUrl] -> IO a)
 	-> IO a
-withStoredFiles r k baseurl user pass onerr a
-	| isJust $ chunkSize $ config r = do
-		let chunkcount = keyurl ++ chunkCount
+withStoredFiles r k baseurl user pass onerr a = case chunkconfig of
+	NoChunks -> a [keyurl]
+	ChunkSize _ -> error "TODO: withStoredFiles with ChunkSize"
+	LegacyChunkSize _ -> do
+		let chunkcount = keyurl ++ Legacy.chunkCount
 		v <- getDAV chunkcount user pass
 		case v of
-			Just s -> a $ listChunks keyurl $ L8.toString s
+			Just s -> a $ Legacy.listChunks keyurl $ L8.toString s
 			Nothing -> do
-				chunks <- probeChunks keyurl $ \u -> (== Right True) <$> existsDAV u user pass
+				chunks <- Legacy.probeChunks keyurl $ \u -> (== Right True) <$> existsDAV u user pass
 				if null chunks
 					then onerr chunkcount
 					else a chunks
-	| otherwise = a [keyurl]
   where
 	keyurl = davLocation baseurl k ++ keyFile k
+	chunkconfig = chunkConfig $ config r
 
 davAction :: Remote -> a -> ((DavUrl, DavUser, DavPass) -> Annex a) -> Annex a
 davAction r unconfigured action = do
