@@ -9,11 +9,10 @@ module Remote.Helper.Chunked where
 
 import Utility.DataUnits
 import Types.Remote
+import Logs.Chunk.Pure (ChunkSize)
 
 import qualified Data.Map as M
 import Data.Int
-
-type ChunkSize = Int64
 
 data ChunkConfig
 	= NoChunks

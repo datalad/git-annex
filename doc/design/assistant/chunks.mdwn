@@ -160,17 +160,12 @@ the git-annex branch.
 The location log does not record locations of individual chunk keys
 (too space-inneficient).
 Instead, look at git-annex:aaa/bbb/SHA256-s12345--xxxxxxx.log.cnk to get
-the chunk count and size for a key. File format would be:
+the chunk count and size for a key.
 
-	ts uuid chunksize chunkcount
-
-Where a chunkcount of 0 means that the object is not longer present in the
-remote using the specified chunk size.
-
-Note that a given remote uuid might have multiple lines, if a key was
-stored on it twice using different chunk sizes. Also note that even when
-this file exists for a key, the object may be stored non-chunked on the
-remote too.
+Note that a given remote uuid might have multiple chunk sizes logged, if a
+key was stored on it twice using different chunk sizes. Also note that even
+when this file exists for a key, the object may be stored non-chunked on
+the remote too.
 
 `hasKey` would check if any one (chunksize, chunkcount) is satisfied by
 the files on the remote. It would also check if the non-chunked key is

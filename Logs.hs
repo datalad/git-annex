@@ -14,6 +14,7 @@ import Types.Key
 data LogVariety
 	= UUIDBasedLog
 	| NewUUIDBasedLog
+	| ChunkLog Key
 	| PresenceLog Key
 	| OtherLog
 	deriving (Show)
@@ -24,6 +25,7 @@ getLogVariety :: FilePath -> Maybe LogVariety
 getLogVariety f
 	| f `elem` topLevelUUIDBasedLogs = Just UUIDBasedLog
 	| isRemoteStateLog f = Just NewUUIDBasedLog
+	| isChunkLog f = ChunkLog <$> chunkLogFileKey f
 	| isMetaDataLog f || f `elem` otherLogs = Just OtherLog
 	| otherwise = PresenceLog <$> firstJust (presenceLogs f)
 
@@ -133,6 +135,25 @@ remoteStateLogExt = ".log.rmt"
 isRemoteStateLog :: FilePath -> Bool
 isRemoteStateLog path = remoteStateLogExt `isSuffixOf` path
 
+{- The filename of the chunk log for a given key. -}
+chunkLogFile :: Key -> FilePath
+chunkLogFile key = hashDirLower key </> keyFile key ++ chunkLogExt
+
+chunkLogFileKey :: FilePath -> Maybe Key
+chunkLogFileKey path
+	| ext == chunkLogExt = fileKey base
+	| otherwise = Nothing
+  where
+  	file = takeFileName path
+	(base, ext) = splitAt (length file - extlen) file
+	extlen = length chunkLogExt
+
+chunkLogExt :: String
+chunkLogExt = ".log.cnk"
+
+isChunkLog :: FilePath -> Bool
+isChunkLog path = chunkLogExt `isSuffixOf` path
+
 {- The filename of the metadata log for a given key. -}
 metaDataLogFile :: Key -> FilePath
 metaDataLogFile key = hashDirLower key </> keyFile key ++ metaDataLogExt
@@ -146,20 +167,23 @@ isMetaDataLog path = metaDataLogExt `isSuffixOf` path
 prop_logs_sane :: Key -> Bool
 prop_logs_sane dummykey = and
 	[ isNothing (getLogVariety "unknown")
-	, expect isUUIDBasedLog (getLogVariety uuidLog)
-	, expect isPresenceLog (getLogVariety $ locationLogFile dummykey)
-	, expect isPresenceLog (getLogVariety $ urlLogFile dummykey)
-	, expect isNewUUIDBasedLog (getLogVariety $ remoteStateLogFile dummykey)
-	, expect isOtherLog (getLogVariety $ metaDataLogFile dummykey)
-	, expect isOtherLog (getLogVariety $ numcopiesLog)
+	, expect gotUUIDBasedLog (getLogVariety uuidLog)
+	, expect gotPresenceLog (getLogVariety $ locationLogFile dummykey)
+	, expect gotPresenceLog (getLogVariety $ urlLogFile dummykey)
+	, expect gotNewUUIDBasedLog (getLogVariety $ remoteStateLogFile dummykey)
+	, expect gotChunkLog (getLogVariety $ chunkLogFile dummykey)
+	, expect gotOtherLog (getLogVariety $ metaDataLogFile dummykey)
+	, expect gotOtherLog (getLogVariety $ numcopiesLog)
 	]
   where
   	expect = maybe False
-  	isUUIDBasedLog UUIDBasedLog = True
-	isUUIDBasedLog _ = False
-  	isNewUUIDBasedLog NewUUIDBasedLog = True
-	isNewUUIDBasedLog _ = False
-	isPresenceLog (PresenceLog k) = k == dummykey
-	isPresenceLog _ = False
-	isOtherLog OtherLog = True
-	isOtherLog _ = False
+	gotUUIDBasedLog UUIDBasedLog = True
+	gotUUIDBasedLog _ = False
+  	gotNewUUIDBasedLog NewUUIDBasedLog = True
+	gotNewUUIDBasedLog _ = False
+	gotChunkLog (ChunkLog k) = k == dummykey
+	gotChunkLog _ = False
+	gotPresenceLog (PresenceLog k) = k == dummykey
+	gotPresenceLog _ = False
+	gotOtherLog OtherLog = True
+	gotOtherLog _ = False

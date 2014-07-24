@@ -224,15 +224,13 @@ are indicated by prefixing them with "!"
 These log files are used when objects are stored in chunked form on
 remotes. They record the size(s) of the chunks, and the number of chunks.
 
-For example, this logs that a remote has an object stored using 9 chunks
-of 1 mb size:
+For example, this logs that a remote has an object stored using both
+9 chunks of 1 mb size, and 1 chunk of 10 mb size.
 
-	1287290776.765152s e605dca6-446a-11e0-8b2a-002170d25c55 10240 9
+	1287290776.765152s e605dca6-446a-11e0-8b2a-002170d25c55:10240 9
+	1287290776.765153s e605dca6-446a-11e0-8b2a-002170d25c55:102400 1
 
 (When those chunks are removed from the remote, the 9 is changed to 0.)
-
-For future expansion, additional fields may be present following the
-number of chunks.
 
 ## `schedule.log`
 
