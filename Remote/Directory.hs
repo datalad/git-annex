@@ -222,7 +222,7 @@ retrieve :: FilePath -> ChunkConfig -> Key -> AssociatedFile -> FilePath -> Mete
 retrieve d chunkconfig k _ f p = metered (Just p) k $ \meterupdate ->
 	liftIO $ withStoredFiles chunkconfig d k $ \files ->
 		catchBoolIO $ do
-			Legacy.meteredWriteFileChunks meterupdate f files L.readFile
+			meteredWriteFileChunks meterupdate f files L.readFile
 			return True
 
 retrieveEncrypted :: FilePath -> ChunkConfig -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool

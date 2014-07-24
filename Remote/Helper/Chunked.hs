@@ -5,14 +5,21 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Remote.Helper.Chunked where
+module Remote.Helper.Chunked
+	( ChunkSize
+	, ChunkConfig(..)
+	, chunkConfig
+	, meteredWriteFileChunks
+	) where
 
+import Common.Annex
 import Utility.DataUnits
 import Types.Remote
 import Logs.Chunk.Pure (ChunkSize)
+import Utility.Metered
 
+import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
-import Data.Int
 
 data ChunkConfig
 	= NoChunks
@@ -30,3 +37,11 @@ chunkConfig m =
 	readsz v f = case readSize dataUnits v of
 		Just size | size > 0 -> fromInteger size
 		_ -> error ("bad " ++ f)
+
+{- Writes a series of chunks to a file. The feeder is called to get
+ - each chunk. -}
+meteredWriteFileChunks :: MeterUpdate -> FilePath -> [v] -> (v -> IO L.ByteString) -> IO ()
+meteredWriteFileChunks meterupdate dest chunks feeder =
+	withBinaryFile dest WriteMode $ \h ->
+		forM_ chunks $
+			meteredWrite meterupdate h <=< feeder

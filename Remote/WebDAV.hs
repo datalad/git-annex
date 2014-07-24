@@ -140,7 +140,7 @@ retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex 
 retrieve r k _f d p = metered (Just p) k $ \meterupdate ->
 	davAction r False $ \(baseurl, user, pass) -> liftIO $ catchBoolIO $
 		withStoredFiles r k baseurl user pass onerr $ \urls -> do
-			Legacy.meteredWriteFileChunks meterupdate d urls $ \url -> do
+			meteredWriteFileChunks meterupdate d urls $ \url -> do
 				mb <- getDAV url user pass
 				case mb of
 					Nothing -> throwIO "download failed"
