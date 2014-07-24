@@ -17,11 +17,11 @@ file, that similarly leaks information.
 It is not currently possible to enable chunking on a non-chunked remote.
 
 Problem: Two uploads of the same key from repos with different chunk sizes
-could lead to data loss. For example, suppose A is 10 mb, and B is 20 mb,
-and the upload speed is the same. If B starts first, when A will overwrite
-the file it is uploading for the 1st chunk. Then A uploads the second
-chunk, and once A is done, B finishes the 1st chunk and uploads its second.
-We now have [chunk 1(from A), chunk 2(from B)].
+could lead to data loss. For example, suppose A is 10 mb chunksize, and B
+is 20 mb, and the upload speed is the same. If B starts first, when A will
+overwrite the file it is uploading for the 1st chunk. Then A uploads the
+second chunk, and once A is done, B finishes the 1st chunk and uploads its
+second. We now have [chunk 1(from A), chunk 2(from B)].
 
 # new requirements
 
@@ -95,7 +95,8 @@ all the chunks are present, if the key size is not known?
 Problem: Also, this makes it difficult to download encrypted keys, because
 we only know the decrypted size, not the encrypted size, so we can't
 be sure how many chunks to get, and all chunks need to be downloaded before
-we can decrypt any of them.
+we can decrypt any of them. (Assuming we encrypt first; chunking first
+avoids this problem.)
 
 Problem: Does not solve concurrent uploads with different chunk sizes.
 
@@ -155,7 +156,12 @@ the git-annex branch.
 Look at git-annex:aaa/bbb/SHA256-s12345--xxxxxxx.log.cnk to get the 
 chunk count and size. File format would be:
 
-	ts uuid chunksize chunkcount
+	ts uuid chunksize chunkcount 0|1
+
+Where a trailing 0 means that chunk size is no longer present on the
+remote, and a trailing 1 means it is. For future expansion, any other
+value /= "0" is also accepted, meaning the chunk is present. For example,
+this could be used for [[deltas]], storing the checksums of the chunks.
 
 Note that a given remote uuid might have multiple lines, if a key was
 stored on it twice using different chunk sizes. Also note that even when
@@ -164,12 +170,12 @@ remote too.
 
 `hasKey` would check if any one (chunksize, chunkcount) is satisfied by
 the files on the remote. It would also check if the non-chunked key is
-present.
+present, as a fallback.
 
 When dropping a key from the remote, drop all logged chunk sizes.
 (Also drop any non-chunked key.)
 
-As long as the location log and the new log are committed atomically,
+As long as the location log and the chunk log are committed atomically,
 this guarantees that no orphaned chunks end up on a remote
 (except any that might be left by interrupted uploads).
 
@@ -189,9 +195,13 @@ Reasons:
    this allows some chunks to come from one and some from another,
    and be reassembled without problems.
 
-2. Prevents an attacker from re-assembling the chunked file using details
-   of the gpg output. Which would expose file size if padding is being used
-   to obscure it.
+2. Also allows chunks of the same object to be downloaded from different
+   remotes, perhaps concurrently, and again be reassembled without
+   problems.
+
+3. Prevents an attacker from re-assembling the chunked file using details
+   of the gpg output. Which would expose approximate
+   file size even if padding is being used to obscure it.
 
 Note that this means that the chunks won't exactly match the configured
 chunk size. gpg does compression, which might make them a
