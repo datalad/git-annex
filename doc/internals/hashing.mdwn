@@ -36,3 +36,8 @@ string, but where that would normally encode the bits using the 16 characters
 0-9a-f, this instead uses the 32 characters "0123456789zqjxkmvwgpfZQJXKMVWGPF".
 The first 2 letters of the resulting string are the first directory, and the
 second 2 are the second directory.
+
+## chunk keys
+
+The same hash directory is used for a chunk key as would be used for the
+key that it's a chunk of.

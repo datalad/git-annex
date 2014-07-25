@@ -13,6 +13,8 @@ module Types.Key (
 	stubKey,
 	key2file,
 	file2key,
+	isChunkKey,
+	nonChunkKey,
 
 	prop_idempotent_key_encode,
 	prop_idempotent_key_decode
@@ -44,6 +46,16 @@ stubKey = Key
 	, keySize = Nothing
 	, keyMtime = Nothing
 	, keyChunkSize = Nothing
+	, keyChunkNum = Nothing
+	}
+
+isChunkKey :: Key -> Bool 
+isChunkKey k = isJust (keyChunkSize k) && isJust (keyChunkNum k) 
+
+-- Gets the parent of a chunk key.
+nonChunkKey :: Key -> Key
+nonChunkKey k = k
+	{ keyChunkSize = Nothing
 	, keyChunkNum = Nothing
 	}
 
