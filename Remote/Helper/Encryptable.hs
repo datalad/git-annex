@@ -87,7 +87,10 @@ encryptableRemote c storeKeyEncrypted retrieveKeyFileEncrypted r =
 		retrieveKeyFileCheap = retrieveCheap,
 		removeKey = withkey $ removeKey r,
 		hasKey = withkey $ hasKey r,
-		cost = cost r + encryptedRemoteCostAdj
+		cost = maybe
+			(cost r)
+			(const $ cost r + encryptedRemoteCostAdj)
+			(extractCipher c)
 	}
   where
 	store k f p = cip k >>= maybe

@@ -11,3 +11,9 @@ Notice that, since annexed files are represented by symlinks,
 the symlink will break when the file is moved into a subdirectory.
 But, git-annex will fix this up for you when you commit --
 it has a pre-commit hook that watches for and corrects broken symlinks.
+
+## Direct mode
+
+Note that these git commands only work when git-annex is using indirect mode. Repositories created by the [[assistant]] are in [[direct_mode]]. Running 'git mv' in direct mode will give you an error:
+
+    fatal: This operation must be run in a work tree
