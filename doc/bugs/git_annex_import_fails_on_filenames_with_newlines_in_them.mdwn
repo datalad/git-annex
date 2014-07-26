@@ -18,6 +18,9 @@ drwxr-xr-x 3 bram bram 4096 Jul 26 18:20 annex/
 bram@durian% git annex import ../foo$'\n'bar
 import foo
 bar git-annex: unknown response from git cat-file ("HEAD:./foo missing","HEAD:./foo\nbar")
+bram@durian% ls -lb
+total 4
+-r--r--r-- 2 bram bram 4 Jul 26 18:20 foo\nbar
 bram@durian% git status
 On branch master
 
