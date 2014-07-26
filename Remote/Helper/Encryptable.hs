@@ -80,28 +80,24 @@ encryptableRemote
 	-> ((Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool)
 	-> Remote
 	-> Remote
-encryptableRemote c storeKeyEncrypted retrieveKeyFileEncrypted r = 
-	r {
-		storeKey = store,
-		retrieveKeyFile = retrieve,
-		retrieveKeyFileCheap = retrieveCheap,
-		removeKey = withkey $ removeKey r,
-		hasKey = withkey $ hasKey r,
-		cost = maybe
-			(cost r)
-			(const $ cost r + encryptedRemoteCostAdj)
-			(extractCipher c)
-	}
-  where
-	store k f p = cip k >>= maybe
+encryptableRemote c storeKeyEncrypted retrieveKeyFileEncrypted r = r
+	{ storeKey = \k f p -> cip k >>= maybe
 		(storeKey r k f p)
 		(\enck -> storeKeyEncrypted enck k p)
-	retrieve k f d p = cip k >>= maybe
+	, retrieveKeyFile = \k f d p -> cip k >>= maybe
 		(retrieveKeyFile r k f d p)
 		(\enck -> retrieveKeyFileEncrypted enck k d p)
-	retrieveCheap k d = cip k >>= maybe
+	, retrieveKeyFileCheap = \k d -> cip k >>= maybe
 		(retrieveKeyFileCheap r k d)
 		(\_ -> return False)
+	, removeKey = withkey $ removeKey r
+	, hasKey = withkey $ hasKey r
+	, cost = maybe
+		(cost r)
+		(const $ cost r + encryptedRemoteCostAdj)
+		(extractCipher c)
+	}
+  where
 	withkey a k = cip k >>= maybe (a k) (a . snd)
 	cip = cipherKey c
 

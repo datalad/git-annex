@@ -63,16 +63,12 @@ takeChunkKeyStream n (ChunkKeyStream l) = genericTake n l
 numChunks :: ChunkKeyStream -> Integer
 numChunks = pred . fromJust . keyChunkNum . fst . nextChunkKeyStream
 
-{- Slits up the key's content into chunks, passing each chunk to
- - the storer action, along with a unique chunk key.
+{- Splits up the key's content into chunks, passing each chunk to
+ - the storer action, along with a corresponding chunk key and a
+ - progress meter update callback.
  -
  - Note that the storer action is responsible for catching any
  - exceptions it may encounter.
- -
- - A progress meter display is set up, and the storer action
- - is passed a callback to update it.
- -
- - Once all chunks are successfully stored, updates the chunk log.
  -}
 storeChunks :: UUID -> ChunkConfig -> Key -> FilePath -> MeterUpdate -> (Key -> L.ByteString -> MeterUpdate -> Annex Bool) -> Annex Bool
 storeChunks u chunkconfig k f p storer = metered (Just p) k $ \meterupdate ->
@@ -93,6 +89,8 @@ storeChunks u chunkconfig k f p storer = metered (Just p) k $ \meterupdate ->
 			-- even for empty content.
 			| not (null c) || numchunks == 0 = 
 				storechunk bytesprocessed sz [] c chunkkeys
+ 			-- Once all chunks are successfully stored,
+			-- update the chunk log.
 			| otherwise = do
 				chunksStored u k chunksize numchunks
 				return True
