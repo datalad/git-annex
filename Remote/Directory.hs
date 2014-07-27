@@ -117,7 +117,7 @@ store d chunkconfig k b p = do
 	void $ tryIO $ createDirectoryIfMissing True tmpdir
 	case chunkconfig of
 		LegacyChunks chunksize -> Legacy.store chunksize finalizer k b p tmpdir destdir
-		_ -> flip catchNonAsync (\e -> warningIO (show e) >> return False) $ do
+		_ -> do
 			let tmpf = tmpdir </> keyFile k
 			meteredWriteFile p tmpf b
 			finalizer tmpdir destdir

@@ -29,12 +29,15 @@ import Annex.Content
 import Annex.Exception
 
 -- Prepares to store a Key, and returns a Storer action if possible.
+-- May throw exceptions.
 type PrepareStorer = Key -> Annex (Maybe Storer)
 
 -- Stores a Key, which may be encrypted and/or a chunk key.
+-- May throw exceptions.
 type Storer = Key -> L.ByteString -> MeterUpdate -> IO Bool
 
 -- Prepares to retrieve a Key, and returns a Retriever action if possible.
+-- May throw exceptions.
 type PrepareRetriever = Key -> Annex (Maybe Retriever)
 
 -- Retrieves a Key, which may be encrypted and/or a chunk key.
@@ -68,8 +71,11 @@ chunkedEncryptableRemote c preparestorer prepareretriever r = encr
 	chunkconfig = chunkConfig c
 	gpgopts = getGpgEncParams encr
 
+	safely a = catchNonAsyncAnnex a (\e -> warning (show e) >> return False)
+
 	-- chunk, then encrypt, then feed to the storer
-	storeKeyGen k p enc = maybe (return False) go =<< preparestorer k
+	storeKeyGen k p enc = safely $
+		maybe (return False) go =<< preparestorer k
 	  where
 		go storer = sendAnnex k rollback $ \src ->
 			metered (Just p) k $ \p' ->
@@ -84,7 +90,7 @@ chunkedEncryptableRemote c preparestorer prepareretriever r = encr
 						storer (enck k') encb p'
 
 	-- call retriever to get chunks; decrypt them; stream to dest file
-	retrieveKeyFileGen k dest p enc =
+	retrieveKeyFileGen k dest p enc = safely $
 		maybe (return False) go =<< prepareretriever k
 	  where
 	  	go retriever = metered (Just p) k $ \p' ->

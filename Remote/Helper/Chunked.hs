@@ -70,12 +70,16 @@ numChunks = pred . fromJust . keyChunkNum . fst . nextChunkKeyStream
  - the storer action, along with a corresponding chunk key and a
  - progress meter update callback.
  -
- - Note that the storer action is responsible for catching any
- - exceptions it may encounter.
- -
  - This action may be called on a chunked key. It will simply store it.
  -}
-storeChunks :: UUID -> ChunkConfig -> Key -> FilePath -> MeterUpdate -> (Key -> L.ByteString -> MeterUpdate -> IO Bool) -> Annex Bool
+storeChunks
+	:: UUID
+	-> ChunkConfig
+	-> Key
+	-> FilePath
+	-> MeterUpdate
+	-> (Key -> L.ByteString -> MeterUpdate -> IO Bool)
+	-> Annex Bool
 storeChunks u chunkconfig k f p storer = metered (Just p) k $ \meterupdate ->
 	either (\e -> warning (show e) >> return False) (go meterupdate)
 		=<< (liftIO $ tryIO $ L.readFile f)
@@ -188,7 +192,7 @@ retrieveChunks
 	-> Annex Bool
 retrieveChunks retriever u chunkconfig encryptor basek basep sink = do
 	ls <- chunkKeys u chunkconfig basek
-	liftIO $ flip catchNonAsync giveup (firstavail ls)
+	liftIO $ firstavail ls `catchNonAsync` giveup
   where
 	giveup e = do
 		warningIO (show e)
