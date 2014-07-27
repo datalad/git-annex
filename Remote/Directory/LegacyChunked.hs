@@ -7,6 +7,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE Rank2Types #-}
+
 module Remote.Directory.LegacyChunked where
 
 import qualified Data.ByteString.Lazy as L
@@ -88,13 +90,13 @@ store chunksize finalizer k b p = storeHelper finalizer k $ \dests ->
  - Done very innefficiently, by writing to a temp file.
  - :/ This is legacy code..
  -}
-retrieve :: (FilePath -> Key -> [FilePath]) -> FilePath -> PrepareRetriever
-retrieve locations d basek = do
+retrieve :: (FilePath -> Key -> [FilePath]) -> FilePath -> Preparer Retriever
+retrieve locations d basek a = do
 	showLongNote "This remote uses the deprecated chunksize setting. So this will be quite slow."
 	tmpdir <- fromRepo $ gitAnnexTmpMiscDir
 	createAnnexDirectory tmpdir
 	let tmp = tmpdir </> keyFile basek ++ ".directorylegacy.tmp"
-	return $ Just $ \k -> do
+	a $ Just $ \k -> do
 		void $ withStoredFiles d locations k $ \fs -> do
 			forM_ fs $
 				S.appendFile tmp <=< S.readFile

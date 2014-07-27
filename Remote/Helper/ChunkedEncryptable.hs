@@ -5,12 +5,15 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE Rank2Types #-}
+
 module Remote.Helper.ChunkedEncryptable (
-	chunkedEncryptableRemote,
-	PrepareStorer,
+	Preparer,
+	simplyPrepare,
+	checkPrepare,
 	Storer,
-	PrepareRetriever,
 	Retriever,
+	chunkedEncryptableRemote,
 	storeKeyDummy,
 	retreiveKeyFileDummy,
 	module X
@@ -28,17 +31,22 @@ import Remote.Helper.Encryptable as X
 import Annex.Content
 import Annex.Exception
 
--- Prepares to store a Key, and returns a Storer action if possible.
--- May throw exceptions.
-type PrepareStorer = Key -> Annex (Maybe Storer)
+-- Prepares for and then runs an action that will act on a Key,
+-- passing it a helper when the preparation is successful.
+type Preparer helper = forall a. Key -> (Maybe helper -> Annex a) -> Annex a
+
+simplyPrepare :: helper -> Preparer helper
+simplyPrepare helper _ a = a $ Just helper
+
+checkPrepare :: (Key -> Annex Bool) -> helper -> Preparer helper
+checkPrepare checker helper k a = ifM (checker k)
+	( a (Just helper)
+	, a Nothing
+	)
 
 -- Stores a Key, which may be encrypted and/or a chunk key.
 -- May throw exceptions.
 type Storer = Key -> L.ByteString -> MeterUpdate -> IO Bool
-
--- Prepares to retrieve a Key, and returns a Retriever action if possible.
--- May throw exceptions.
-type PrepareRetriever = Key -> Annex (Maybe Retriever)
 
 -- Retrieves a Key, which may be encrypted and/or a chunk key.
 -- Throws exception if key is not present, or remote is not accessible.
@@ -48,8 +56,8 @@ type Retriever = Key -> IO L.ByteString
  -}
 chunkedEncryptableRemote
 	:: RemoteConfig
-	-> PrepareStorer
-	-> PrepareRetriever
+	-> Preparer Storer
+	-> Preparer Retriever
 	-> Remote
 	-> Remote
 chunkedEncryptableRemote c preparestorer prepareretriever r = encr
@@ -74,13 +82,14 @@ chunkedEncryptableRemote c preparestorer prepareretriever r = encr
 	safely a = catchNonAsyncAnnex a (\e -> warning (show e) >> return False)
 
 	-- chunk, then encrypt, then feed to the storer
-	storeKeyGen k p enc = safely $
-		maybe (return False) go =<< preparestorer k
+	storeKeyGen k p enc =
+		safely $ preparestorer k $ safely . go
 	  where
-		go storer = sendAnnex k rollback $ \src ->
+		go (Just storer) = sendAnnex k rollback $ \src ->
 			metered (Just p) k $ \p' ->
 				storeChunks (uuid r) chunkconfig k src p' $
 					storechunk storer
+		go Nothing = return False
 		rollback = void $ removeKey encr k
 		storechunk storer k' b p' = case enc of
 			Nothing -> storer k' b p'
@@ -90,13 +99,14 @@ chunkedEncryptableRemote c preparestorer prepareretriever r = encr
 						storer (enck k') encb p'
 
 	-- call retriever to get chunks; decrypt them; stream to dest file
-	retrieveKeyFileGen k dest p enc = safely $
-		maybe (return False) go =<< prepareretriever k
+	retrieveKeyFileGen k dest p enc =
+		safely $ prepareretriever k $ safely . go
 	  where
-	  	go retriever = metered (Just p) k $ \p' ->
+	  	go (Just retriever) = metered (Just p) k $ \p' ->
 			bracketIO (openBinaryFile dest WriteMode) hClose $ \h ->
 				retrieveChunks retriever (uuid r) chunkconfig enck k p' $
 					sink h
+		go Nothing = return False
 		sink h p' b = do
 			let write = meteredWrite p' h
 			case enc of

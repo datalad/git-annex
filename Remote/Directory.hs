@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE Rank2Types #-}
 
 module Remote.Directory (remote) where
 
@@ -106,11 +107,10 @@ tmpDir d k = addTrailingPathSeparator $ d </> "tmp" </> keyFile k
 
 {- Check if there is enough free disk space in the remote's directory to
  - store the key. Note that the unencrypted key size is checked. -}
-prepareStore :: FilePath -> ChunkConfig -> PrepareStorer
-prepareStore d chunkconfig k = ifM (checkDiskSpace (Just d) k 0)
-	( return $ Just (store d chunkconfig)
-	, return Nothing
-	)
+prepareStore :: FilePath -> ChunkConfig -> Preparer Storer
+prepareStore d chunkconfig = checkPrepare
+	(\k -> checkDiskSpace (Just d) k 0)
+	(store d chunkconfig)
 
 store :: FilePath -> ChunkConfig -> Storer
 store d chunkconfig k b p = do
@@ -135,9 +135,9 @@ store d chunkconfig k b p = do
 			mapM_ preventWrite =<< dirContents dest
 			preventWrite dest
 
-retrieve :: FilePath -> ChunkConfig -> PrepareRetriever
-retrieve d (LegacyChunks _) basek = Legacy.retrieve locations d basek
-retrieve d _ _ = return $ Just $ \k -> L.readFile =<< getLocation d k
+retrieve :: FilePath -> ChunkConfig -> Preparer Retriever
+retrieve d (LegacyChunks _) = Legacy.retrieve locations d
+retrieve d _ = simplyPrepare $ \k -> L.readFile =<< getLocation d k
 
 retrieveCheap :: FilePath -> ChunkConfig -> Key -> FilePath -> Annex Bool
 -- no cheap retrieval possible for chunks
