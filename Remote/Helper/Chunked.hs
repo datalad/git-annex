@@ -146,7 +146,9 @@ toChunkList k (chunksize, chunkcount) = takeChunkKeyStream chunkcount $
 	chunkKeyStream k chunksize
 
 {- Removes all chunks of a key from a remote, by calling a remover
- - action on each. The remover action should succeed even if asked to
+ - action on each.
+ -
+ - The remover action should succeed even if asked to
  - remove a key that is not present on the remote.
  -
  - This action may be called on a chunked key. It will simply remove it.
@@ -231,7 +233,9 @@ hasKeyChunks checker u chunkconfig encryptor basek = do
 			case v of
 				Left e -> checklists e ls
 				Right True -> return (Right True)
-				Right False -> checklists impossible ls
+				Right False
+					| null ls -> return (Right False)
+					| otherwise -> checklists impossible ls
 		| otherwise = checklists impossible ls
 	
 	checkchunks :: [Key] -> Annex (Either String Bool)
