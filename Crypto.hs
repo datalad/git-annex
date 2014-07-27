@@ -13,6 +13,7 @@
 module Crypto (
 	Cipher,
 	KeyIds(..),
+	EncKey,
 	StorableCipher(..),
 	genEncryptedCipher,
 	genSharedCipher,
@@ -138,10 +139,12 @@ decryptCipher (EncryptedCipher t variant _) =
 		Hybrid -> Cipher
 		PubKey -> MacOnlyCipher
 
+type EncKey = Key -> Key
+
 {- Generates an encrypted form of a Key. The encryption does not need to be
  - reversable, nor does it need to be the same type of encryption used
  - on content. It does need to be repeatable. -}
-encryptKey :: Mac -> Cipher -> Key -> Key
+encryptKey :: Mac -> Cipher -> EncKey
 encryptKey mac c k = stubKey
 	{ keyName = macWithCipher mac c (key2file k)
 	, keyBackendName = "GPG" ++ showMac mac
