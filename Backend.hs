@@ -32,6 +32,8 @@ import qualified Backend.Hash
 import qualified Backend.WORM
 import qualified Backend.URL
 
+import qualified Data.Map as M
+
 list :: [Backend]
 list = Backend.Hash.backends ++ Backend.WORM.backends ++ Backend.URL.backends
 
@@ -116,7 +118,9 @@ lookupBackendName :: String -> Backend
 lookupBackendName s = fromMaybe unknown $ maybeLookupBackendName s
   where
 	unknown = error $ "unknown backend " ++ s
+
 maybeLookupBackendName :: String -> Maybe Backend
-maybeLookupBackendName s = headMaybe matches
-  where
-	matches = filter (\b -> s == B.name b) list
+maybeLookupBackendName s = M.lookup s nameMap
+
+nameMap :: M.Map String Backend
+nameMap = M.fromList $ zip (map B.name list) list
