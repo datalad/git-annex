@@ -10,7 +10,6 @@ module Remote.Helper.Chunked (
 	ChunkConfig(..),
 	chunkConfig,
 	storeChunks,
-	chunkKeys,
 	removeChunks,
 	retrieveChunks,
 	hasKeyChunks,
@@ -123,26 +122,6 @@ storeChunks u chunkconfig k f p storer = metered (Just p) k $ \meterupdate ->
 			 - in previous chunks. -}
 			meterupdate' = offsetMeterUpdate meterupdate bytesprocessed
 
--- retrieveChunks :: UUID -> ChunkConfig -> Key -> Annex 
-
-{- A key can be stored in a remote unchunked, or as a list of chunked keys.
- - It's even possible  for a remote to have the same key stored multiple
- - times with different chunk sizes. This finds all possible lists of keys
- - that might be on the remote that can be combined to get back the
- - requested key.
- -}
-chunkKeys :: UUID -> ChunkConfig -> Key -> Annex [[Key]]
-chunkKeys u (UnpaddedChunks _) k | not (isChunkKey k) = do
-	chunklists <- map (toChunkList k) <$> getCurrentChunks u k
-	-- Probably using the chunklists, but the unchunked
-	-- key could be present.
-	return (chunklists ++ [[k]])
-chunkKeys _ _ k = pure [[k]]
-
-toChunkList :: Key -> (ChunkSize, ChunkCount) -> [Key]
-toChunkList k (chunksize, chunkcount) = takeChunkKeyStream chunkcount $
-	chunkKeyStream k chunksize
-
 {- Removes all chunks of a key from a remote, by calling a remover
  - action on each.
  -
@@ -247,3 +226,21 @@ hasKeyChunks checker u chunkconfig encryptor basek = do
 			else return v
 
 	impossible = "no recorded chunks"
+
+{- A key can be stored in a remote unchunked, or as a list of chunked keys.
+ - It's even possible  for a remote to have the same key stored multiple
+ - times with different chunk sizes. This finds all possible lists of keys
+ - that might be on the remote that can be combined to get back the
+ - requested key.
+ -}
+chunkKeys :: UUID -> ChunkConfig -> Key -> Annex [[Key]]
+chunkKeys u (UnpaddedChunks _) k | not (isChunkKey k) = do
+	chunklists <- map (toChunkList k) <$> getCurrentChunks u k
+	-- Probably using the chunklists, but the unchunked
+	-- key could be present.
+	return (chunklists ++ [[k]])
+chunkKeys _ _ k = pure [[k]]
+
+toChunkList :: Key -> (ChunkSize, ChunkCount) -> [Key]
+toChunkList k (chunksize, chunkcount) = takeChunkKeyStream chunkcount $
+	chunkKeyStream k chunksize
