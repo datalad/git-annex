@@ -103,9 +103,7 @@ chunkedEncryptableRemote c preparestorer prepareretriever r = encr
 		safely $ prepareretriever k $ safely . go
 	  where
 	  	go (Just retriever) = metered (Just p) k $ \p' ->
-			bracketIO (openBinaryFile dest WriteMode) hClose $ \h ->
-				retrieveChunks retriever (uuid r) chunkconfig enck k p' $
-					sink h
+			retrieveChunks retriever (uuid r) chunkconfig enck k dest p' sink
 		go Nothing = return False
 		sink h p' b = do
 			let write = meteredWrite p' h

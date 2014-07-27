@@ -88,7 +88,7 @@ meteredWriteFile meterupdate f b = withBinaryFile f WriteMode $ \h ->
 
 {- Applies an offset to a MeterUpdate. This can be useful when
  - performing a sequence of actions, such as multiple meteredWriteFiles,
- - that all update a common meter progressively.
+ - that all update a common meter progressively. Or when resuming.
  -}
 offsetMeterUpdate :: MeterUpdate -> BytesProcessed -> MeterUpdate
 offsetMeterUpdate base offset = \n -> base (offset `addBytesProcessed` n)

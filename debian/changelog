@@ -1,7 +1,9 @@
 git-annex (5.20140718) UNRELEASED; urgency=medium
 
   * New chunk= option to chunk files stored in directory remotes.
-  * The old chunksize= option is deprecated. Do not use for new remotes!
+  * Partially transferred files are automatically resumed when using
+    chunked remotes!
+  * The old chunksize= option is deprecated. Do not use for new remotes.
   * Legacy code for directory remotes using the old chunksize= option
     will keep them working, but more slowly than before.
   * webapp: Automatically install Konqueror integration scripts
