@@ -154,7 +154,7 @@ toChunkList k (chunksize, chunkcount) = takeChunkKeyStream chunkcount $
 removeChunks :: (Key -> Annex Bool) -> UUID -> ChunkConfig -> EncKey -> Key -> Annex Bool
 removeChunks remover u chunkconfig encryptor k = do
 	ls <- chunkKeys u chunkconfig k
-	ok <- and <$> mapM (remover . encryptor) (concat ls)
+	ok <- allM (remover . encryptor) (concat ls)
 	when ok $
 		case chunkconfig of
 			(UnpaddedChunks _) | not (isChunkKey k) -> do
