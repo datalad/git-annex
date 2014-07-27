@@ -23,6 +23,7 @@ backend = Backend
 	, fsckKey = Nothing
 	, canUpgradeKey = Nothing
 	, fastMigrate = Nothing
+	, isStableKey = const True
 	}
 
 {- The key includes the file size, modification time, and the

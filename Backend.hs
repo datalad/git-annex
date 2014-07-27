@@ -14,7 +14,8 @@ module Backend (
 	isAnnexLink,
 	chooseBackend,
 	lookupBackendName,
-	maybeLookupBackendName
+	maybeLookupBackendName,
+	checkStableKey,
 ) where
 
 import Common.Annex
@@ -124,3 +125,7 @@ maybeLookupBackendName s = M.lookup s nameMap
 
 nameMap :: M.Map String Backend
 nameMap = M.fromList $ zip (map B.name list) list
+
+checkStableKey :: Key -> Bool
+checkStableKey k = maybe False (`B.isStableKey` k) 
+	(maybeLookupBackendName (keyBackendName k))

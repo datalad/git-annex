@@ -45,6 +45,7 @@ genBackend hash = Just Backend
 	, fsckKey = Just $ checkKeyChecksum hash
 	, canUpgradeKey = Just needsUpgrade
 	, fastMigrate = Just trivialMigrate
+	, isStableKey = const True
 	}
 
 genBackendE :: Hash -> Maybe Backend
