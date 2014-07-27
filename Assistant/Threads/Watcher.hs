@@ -184,7 +184,7 @@ runHandler :: Handler -> FilePath -> Maybe FileStatus -> Assistant ()
 runHandler handler file filestatus = void $ do
 	r <- tryIO <~> handler (normalize file) filestatus
 	case r of
-		Left e -> liftIO $ print e
+		Left e -> liftIO $ warningIO $ show e
 		Right Nothing -> noop
 		Right (Just change) -> do
 			-- Just in case the commit thread is not

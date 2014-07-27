@@ -74,7 +74,7 @@ storeChunks key tmp dest storer recorder finalizer = either onerr return
 		finalizer tmp dest
 		return (not $ null stored)
 	onerr e = do
-		print e
+		warningIO (show e)
 		return False
 
 	basef = tmp ++ keyFile key
@@ -105,7 +105,7 @@ storeChunked chunksize dests storer content = either onerr return
 		| otherwise = storechunks sz [] dests content
 		
 	onerr e = do
-		print e
+		warningIO (show e)
 		return []
 	
 	storechunks _ _ [] _ = return [] -- ran out of dests

@@ -77,7 +77,7 @@ numChunks = pred . fromJust . keyChunkNum . fst . nextChunkKeyStream
  -}
 storeChunks :: UUID -> ChunkConfig -> Key -> FilePath -> MeterUpdate -> (Key -> L.ByteString -> MeterUpdate -> IO Bool) -> Annex Bool
 storeChunks u chunkconfig k f p storer = metered (Just p) k $ \meterupdate ->
-	either (\e -> liftIO (print e) >> return False) (go meterupdate)
+	either (\e -> warning (show e) >> return False) (go meterupdate)
 		=<< (liftIO $ tryIO $ L.readFile f)
   where
 	go meterupdate b = case chunkconfig of
@@ -190,7 +190,9 @@ retrieveChunks retriever u chunkconfig encryptor basek basep sink = do
 	ls <- chunkKeys u chunkconfig basek
 	liftIO $ flip catchNonAsync giveup (firstavail ls)
   where
-	giveup e = print e >> return False
+	giveup e = do
+		warningIO (show e)
+		return False
 
 	firstavail [] = return False
 	firstavail ([]:ls) = firstavail ls

@@ -114,10 +114,10 @@ prepareStore d chunkconfig k = ifM (checkDiskSpace (Just d) k 0)
 
 store :: FilePath -> ChunkConfig -> Storer
 store d chunkconfig k b p = do
-	void $ liftIO $ tryIO $ createDirectoryIfMissing True tmpdir
+	void $ tryIO $ createDirectoryIfMissing True tmpdir
 	case chunkconfig of
 		LegacyChunks chunksize -> Legacy.store chunksize finalizer k b p tmpdir destdir
-		_ -> flip catchNonAsync (\e -> print e >> return False) $ do
+		_ -> flip catchNonAsync (\e -> warningIO (show e) >> return False) $ do
 			let tmpf = tmpdir </> keyFile k
 			meteredWriteFile p tmpf b
 			finalizer tmpdir destdir

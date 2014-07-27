@@ -113,7 +113,7 @@ storeHelper :: Remote -> Key -> DavUrl -> DavUser -> DavPass -> L.ByteString -> 
 storeHelper r k baseurl user pass b = catchBoolIO $ do
 	mkdirRecursiveDAV tmpurl user pass
 	case chunkconfig of
-		NoChunks -> flip catchNonAsync (\e -> print e >> return False) $ do
+		NoChunks -> flip catchNonAsync (\e -> warningIO (show e) >> return False) $ do
 			storehttp tmpurl b
 			finalizer tmpurl keyurl
 			return True
