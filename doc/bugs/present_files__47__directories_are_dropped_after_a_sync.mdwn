@@ -1,6 +1,6 @@
 ### Please describe the problem.
 
-This is a followup from the discussion on https://git-annex.branchable.com/forum/Standard_groups__47__preferred_contents/ where I unfortunately got complete answer.
+This is a followup from the discussion on https://git-annex.branchable.com/forum/Standard_groups__47__preferred_contents/ where I unfortunately did not get a complete answer.
 I don't know if it is really a bug but at least it does not work as I would expect and the documentation provides no clear discussion on that.
 
 Now to the problem:
