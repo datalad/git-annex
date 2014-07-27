@@ -66,7 +66,7 @@ encryptionSetup c = maybe genCipher updateCipher $ extractCipher c
 	c' = foldr M.delete c
                 -- git-annex used to remove 'encryption' as well, since
                 -- it was redundant; we now need to keep it for
-                -- public-key incryption, hence we leave it on newer
+                -- public-key encryption, hence we leave it on newer
                 -- remotes (while being backward-compatible).
 		[ "keyid", "keyid+", "keyid-", "highRandomQuality" ]
 
