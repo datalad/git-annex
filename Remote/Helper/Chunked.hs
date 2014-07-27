@@ -221,14 +221,17 @@ hasKeyChunks
 	-> EncKey
 	-> Key
 	-> Annex (Either String Bool)
-hasKeyChunks checker u chunkconfig encryptor basek =
+hasKeyChunks checker u chunkconfig encryptor basek = do
 	checklists impossible =<< chunkKeys u chunkconfig basek
   where
 	checklists lastfailmsg [] = return $ Left lastfailmsg
 	checklists _ (l:ls)
-		| not (null l) =
-			either (`checklists` ls) (return . Right)
-				=<< checkchunks l
+		| not (null l) = do
+			v <- checkchunks l
+			case v of
+				Left e -> checklists e ls
+				Right True -> return (Right True)
+				Right False -> checklists impossible ls
 		| otherwise = checklists impossible ls
 	
 	checkchunks :: [Key] -> Annex (Either String Bool)
