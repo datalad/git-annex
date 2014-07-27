@@ -25,13 +25,7 @@ remote:
 
 * `keyid` - Specifies the gpg key to use for [[encryption]].
 
-* `chunk` - Avoid storing files larger than the specified size in the
-  directory. For use on directories on mount points that have file size
-  limitations. The default is to never chunk files.  
-  The value can use specified using any commonly used units.
-  Example: `chunk=100 megabytes`  
-  Note that chunking can be disabled later by setting chunk=0,
-  and can also safely be changed to a different size as needed.
+* `chunk` - Enables [[chunking]] when storing large files.
 
 * `chunksize` - Deprecated version of chunk parameter above.  
   Do not use for new remotes. It is not safe to change the chunksize

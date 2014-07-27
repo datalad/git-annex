@@ -29,13 +29,11 @@ the webdav remote.
   be created as needed. Use of a https URL is strongly
   encouraged, since HTTP basic authentication is used.
 
-* `chunksize` - Avoid storing files larger than the specified size in
-  WebDAV. For use when the WebDAV server has file size
-  limitations. The default is to never chunk files.  
-  The value can use specified using any commonly used units.
-  Example: `chunksize=75 megabytes`  
-  Note that enabling chunking on an existing remote with non-chunked
-  files is not recommended, nor is changing the chunksize.
+* `chunk` - Enables [[chunking]] when storing large files.
+
+* `chunksize` - Deprecated version of chunk parameter above.  
+  Do not use for new remotes. It is not safe to change the chunksize
+  setting of an existing remote.
 
 Setup example:
 
