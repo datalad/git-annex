@@ -26,7 +26,6 @@ import Utility.Metered
 import Crypto (EncKey)
 
 import qualified Data.ByteString.Lazy as L
-import qualified Data.ByteString as S
 import qualified Data.Map as M
 
 data ChunkConfig
@@ -70,6 +69,14 @@ numChunks = pred . fromJust . keyChunkNum . fst . nextChunkKeyStream
  - the storer action, along with a corresponding chunk key and a
  - progress meter update callback.
  -
+ - This buffers each chunk in memory, so can use a lot of memory
+ - with a large ChunkSize.
+ - More optimal versions of this can be written, that rely
+ - on L.toChunks to split the lazy bytestring into chunks (typically
+ - smaller than the ChunkSize), and eg, write those chunks to a Handle.
+ - But this is the best that can be done with the storer interface that
+ - writes a whole L.ByteString at a time.
+ -
  - This action may be called on a chunked key. It will simply store it.
  -}
 storeChunks
@@ -90,39 +97,26 @@ storeChunks u chunkconfig k f p storer = metered (Just p) k $ \meterupdate ->
 		_ -> liftIO $ storer k b meterupdate
 
 	gochunks :: MeterUpdate -> ChunkSize -> L.ByteString -> ChunkKeyStream -> Annex Bool
-	gochunks meterupdate chunksize lb =
-		loop zeroBytesProcessed chunksize (L.toChunks lb) []
+	gochunks meterupdate chunksize = loop zeroBytesProcessed . splitchunk
 	  where
-		loop bytesprocessed sz [] c chunkkeys
-			-- Always store at least one chunk,
-			-- even for empty content.
-			| not (null c) || numchunks == 0 = 
-				storechunk bytesprocessed sz [] c chunkkeys
- 			-- Once all chunks are successfully stored,
-			-- update the chunk log.
-			| otherwise = do
+		splitchunk = L.splitAt chunksize
+	
+		loop bytesprocessed (chunk, bs) chunkkeys
+			| L.null chunk && numchunks > 0 = do
+ 				-- Once all chunks are successfully
+				-- stored, update the chunk log.
 				chunksStored u k chunksize numchunks
 				return True
+			| otherwise = do
+				let (chunkkey, chunkkeys') = nextChunkKeyStream chunkkeys
+				ifM (liftIO $ storer chunkkey chunk meterupdate')
+					( do
+						let bytesprocessed' = addBytesProcessed bytesprocessed (L.length chunk)
+						loop bytesprocessed' (splitchunk bs) chunkkeys'
+					, return False
+					)
 		  where
-		  	numchunks = numChunks chunkkeys
-		loop bytesprocessed sz (b:bs) c chunkkeys
-			| s <= sz || sz == chunksize =
-				loop bytesprocessed sz' bs (b:c) chunkkeys
-			| otherwise =
-				storechunk bytesprocessed sz' bs (b:c) chunkkeys
-		  where
-			s = fromIntegral (S.length b)
-			sz' = sz - s
-
-		storechunk bytesprocessed sz bs c chunkkeys = do
-			let (chunkkey, chunkkeys') = nextChunkKeyStream chunkkeys
-			ifM (liftIO $ storer chunkkey (L.fromChunks $ reverse c) meterupdate')
-				( do
-					let bytesprocessed' = addBytesProcessed bytesprocessed (chunksize - sz)
-					loop bytesprocessed' chunksize bs [] chunkkeys'
-				, return False
-				)
-		  where
+			numchunks = numChunks chunkkeys
  			{- The MeterUpdate that is passed to the action
 			 - storing a chunk is offset, so that it reflects
 			 - the total bytes that have already been stored
