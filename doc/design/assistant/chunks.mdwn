@@ -6,15 +6,17 @@ May be a useful starting point for [[deltas]].
 May also allow for downloading different chunks of a file concurrently from
 multiple remotes.
 
-# currently
+Also, can allow resuming of interrupted uploads and downloads.
 
-Currently, only the webdav and directory special remotes support chunking.
+# legacy chunking
+
+Supported by only the webdav and directory special remotes.
 
 Filenames are used for the chunks that make it easy to see which chunks
 belong together, even when encryption is used. There is also a chunkcount
 file, that similarly leaks information.
 
-It is not currently possible to enable chunking on a non-chunked remote.
+It is not possible to enable chunking on a non-chunked remote.
 
 Problem: Two uploads of the same key from repos with different chunk sizes
 could lead to data loss. For example, suppose A is 10 mb chunksize, and B
@@ -39,9 +41,9 @@ on in the webapp when configuring an existing remote).
 Two concurrent uploaders of the same object to a remote should be safe,
 even if they're using different chunk sizes.
 
-The old chunk method needs to be supported for back-compat, so
-keep the chunksize= setting to enable that mode, and add a new setting
-for the new mode.
+The legacy chunk method needs to be supported for back-compat, so
+keep the chunksize= setting to enable that mode, and add a new chunk=
+setting for the new mode.
 
 # obscuring file sizes
 
@@ -218,3 +220,22 @@ with non-encrypted keys.
 
 Won't happen when the key is encrypted, but that is good; hashing to the
 same bucket then would allow statistical correlation.
+
+## resuming interupted transfers
+
+Resuming interrupted downloads, and uploads are both possible.
+
+Downloads: If the tmp file for a key exists, round it to the chunk size,
+and skip forward to the next needed chunk. Easy.
+
+Uploads: Check if the 1st chunk is present. If so, check the second chunk,
+etc. Once the first missing chunk is found, start uploading from there.
+
+That adds one extra hasKey call per upload. Probably a win in most cases.
+Can be improved by making special remotes open a persistent
+connection that is used for transferring all chunks, as well as for
+checking hasKey.
+
+Note that this is safe to do only as long as the Key being transferred
+cannot possibly have 2 different contents in different repos. Notably not
+necessarily the case for the URL keys generated for quvi.
