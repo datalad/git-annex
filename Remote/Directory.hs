@@ -168,5 +168,11 @@ remove d k = liftIO $ do
 
 checkPresent :: FilePath -> ChunkConfig -> Key -> Annex (Either String Bool)
 checkPresent d (LegacyChunks _) k = Legacy.checkPresent d locations k
-checkPresent d _ k = liftIO $ catchMsgIO $
-	anyM doesFileExist (locations d k)
+checkPresent d _ k = liftIO $ do
+	v <- catchMsgIO $ anyM doesFileExist (locations d k)
+	case v of
+		Right False -> ifM (doesDirectoryExist d)
+			( return v
+			, return $ Left $ "directory " ++ d ++ " is not accessible"
+			)
+		_ -> return v
