@@ -23,6 +23,7 @@ import Logs.Chunk.Pure (ChunkSize, ChunkCount)
 import Logs.Chunk
 import Utility.Metered
 import Crypto (EncKey)
+import Annex.Exception
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
@@ -31,6 +32,10 @@ data ChunkConfig
 	= NoChunks
 	| UnpaddedChunks ChunkSize
 	| LegacyChunks ChunkSize
+
+noChunks :: ChunkConfig -> Bool
+noChunks NoChunks = True
+noChunks _ = False
 
 chunkConfig :: RemoteConfig -> ChunkConfig
 chunkConfig m =
@@ -75,8 +80,6 @@ numChunks = pred . fromJust . keyChunkNum . fst . nextChunkKeyStream
  - smaller than the ChunkSize), and eg, write those chunks to a Handle.
  - But this is the best that can be done with the storer interface that
  - writes a whole L.ByteString at a time.
- -
- - This action may be called on a chunked key. It will simply store it.
  -}
 storeChunks
 	:: UUID
@@ -91,7 +94,7 @@ storeChunks u chunkconfig k f p storer = metered (Just p) k $ \meterupdate ->
 		=<< (liftIO $ tryIO $ L.readFile f)
   where
 	go meterupdate b = case chunkconfig of
-		(UnpaddedChunks chunksize) | not (isChunkKey k) ->
+		(UnpaddedChunks chunksize) ->
 			gochunks meterupdate chunksize b (chunkKeyStream k chunksize)
 		_ -> liftIO $ storer k b meterupdate
 
@@ -134,12 +137,9 @@ removeChunks :: (Key -> Annex Bool) -> UUID -> ChunkConfig -> EncKey -> Key -> A
 removeChunks remover u chunkconfig encryptor k = do
 	ls <- chunkKeys u chunkconfig k
 	ok <- allM (remover . encryptor) (concat ls)
-	when ok $
-		case chunkconfig of
-			(UnpaddedChunks _) | not (isChunkKey k) -> do
-				let chunksizes = catMaybes $ map (keyChunkSize <=< headMaybe) ls
-				forM_ chunksizes $ chunksRemoved u k . fromIntegral
-			_ -> noop
+	when ok $ do
+		let chunksizes = catMaybes $ map (keyChunkSize <=< headMaybe) ls
+		forM_ chunksizes $ chunksRemoved u k . fromIntegral
 	return ok
 
 {- Retrieves a key from a remote, using a retriever action that
@@ -163,10 +163,17 @@ retrieveChunks
 	-> MeterUpdate
 	-> (MeterUpdate -> L.ByteString -> IO ())
 	-> Annex Bool
-retrieveChunks retriever u chunkconfig encryptor basek basep sink = do
-	ls <- chunkKeys u chunkconfig basek
-	liftIO $ firstavail ls `catchNonAsync` giveup
+retrieveChunks retriever u chunkconfig encryptor basek basep sink
+	| noChunks chunkconfig =
+		-- Optimisation: Try the unchunked key first, to avoid
+		-- looking in the git-annex branch for chunk counts.
+		liftIO (retriever (encryptor basek) >>= sink basep >> return True)
+			`catchNonAsyncAnnex`
+		const (go =<< chunkKeysOnly u basek)
+	| otherwise = go =<< chunkKeys u chunkconfig basek
   where
+	go ls = liftIO $ firstavail ls `catchNonAsync` giveup
+
 	giveup e = do
 		warningIO (show e)
 		return False
@@ -202,8 +209,15 @@ hasKeyChunks
 	-> EncKey
 	-> Key
 	-> Annex (Either String Bool)
-hasKeyChunks checker u chunkconfig encryptor basek = do
-	checklists impossible =<< chunkKeys u chunkconfig basek
+hasKeyChunks checker u chunkconfig encryptor basek
+	| noChunks chunkconfig =
+		-- Optimisation: Try the unchunked key first, to avoid
+		-- looking in the git-annex branch for chunk counts.
+		ifM ((Right True ==) <$> checker (encryptor basek))
+			( return (Right True)
+			, checklists impossible =<< chunkKeysOnly u basek
+			)
+	| otherwise = checklists impossible =<< chunkKeys u chunkconfig basek
   where
 	checklists lastfailmsg [] = return $ Left lastfailmsg
 	checklists _ (l:ls)
@@ -228,18 +242,25 @@ hasKeyChunks checker u chunkconfig encryptor basek = do
 	impossible = "no recorded chunks"
 
 {- A key can be stored in a remote unchunked, or as a list of chunked keys.
- - It's even possible  for a remote to have the same key stored multiple
- - times with different chunk sizes. This finds all possible lists of keys
- - that might be on the remote that can be combined to get back the
- - requested key.
+ - This can be the case whether or not the remote is currently configured
+ - to use chunking.
+ -
+ - It's even possible for a remote to have the same key stored multiple
+ - times with different chunk sizes!
+ -
+ - This finds all possible lists of keys that might be on the remote that
+ - can be combined to get back the requested key, in order from most to
+ - least likely to exist.
  -}
 chunkKeys :: UUID -> ChunkConfig -> Key -> Annex [[Key]]
-chunkKeys u (UnpaddedChunks _) k | not (isChunkKey k) = do
-	chunklists <- map (toChunkList k) <$> getCurrentChunks u k
-	-- Probably using the chunklists, but the unchunked
-	-- key could be present.
-	return (chunklists ++ [[k]])
-chunkKeys _ _ k = pure [[k]]
+chunkKeys u chunkconfig k = do
+	l <- chunkKeysOnly u k
+	return $ if noChunks chunkconfig
+		then [k] : l
+		else l ++ [[k]]
+
+chunkKeysOnly :: UUID -> Key -> Annex [[Key]]
+chunkKeysOnly u k = map (toChunkList k) <$> getCurrentChunks u k
 
 toChunkList :: Key -> (ChunkSize, ChunkCount) -> [Key]
 toChunkList k (chunksize, chunkcount) = takeChunkKeyStream chunkcount $
