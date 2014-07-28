@@ -160,17 +160,11 @@ Instead of storing the chunk count in the special remote, store it in
 the git-annex branch. 
 
 The location log does not record locations of individual chunk keys
-(too space-inneficient).
-Instead, look at git-annex:aaa/bbb/SHA256-s12345--xxxxxxx.log.cnk to get
-the chunk count and size for a key.
+(too space-inneficient). Instead, look at a chunk log in the
+git-annex branch to get the chunk count and size for a key.
 
-Note that a given remote uuid might have multiple chunk sizes logged, if a
-key was stored on it twice using different chunk sizes. Also note that even
-when this file exists for a key, the object may be stored non-chunked on
-the remote too.
-
-`hasKey` would check if any one (chunksize, chunkcount) is satisfied by
-the files on the remote. It would also check if the non-chunked key is
+`hasKey` would check if any of the logged sets of chunks is 
+present on the remote. It would also check if the non-chunked key is
 present, as a fallback.
 
 When dropping a key from the remote, drop all logged chunk sizes.
@@ -184,6 +178,31 @@ This has the best security of the designs so far, because the special
 remote doesn't know anything about chunk sizes. It uses a little more
 data in the git-annex branch, although with care (using the same timestamp
 as the location log), it can compress pretty well.
+
+## chunk log
+
+Stored in the git-annex branch, this provides a mapping `Key -> [[Key]]`.
+
+Note that a given remote uuid might have multiple sets of chunks (with
+different sizes) logged, if a key was stored on it twice using different
+chunk sizes. Also note that even when the log indicates a key is chunked,
+the object may be stored non-chunked on the remote too.
+
+For fixed size chunks, there's no need to store the list of chunk keys,
+instead the log only records the number of chunks (needed because the size
+of the parent Key may not be known), and the chunk size.
+
+Example:
+
+	1287290776.765152s e605dca6-446a-11e0-8b2a-002170d25c55:10240 9
+
+Later, might want to support other kinds of chunks, for example ones made
+using a rsync-style rolling checksum. It would probably not make sense to
+store the full [Key] list for such chunks in the log. Instead, it might be
+stored in a file on the remote.
+
+To support such future developments, when updating the chunk log, 
+git-annex should preserve unparsable values (the part after the colon).
 
 ## chunk then encrypt
 
