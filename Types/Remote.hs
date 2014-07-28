@@ -64,7 +64,7 @@ data RemoteA a = Remote {
 	retrieveKeyFile :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> a Bool,
 	-- retrieves a key's contents to a tmp file, if it can be done cheaply
 	retrieveKeyFileCheap :: Key -> FilePath -> a Bool,
-	-- removes a key's contents
+	-- removes a key's contents (succeeds if the contents are not present)
 	removeKey :: Key -> a Bool,
 	-- Checks if a key is present in the remote; if the remote
 	-- cannot be accessed returns a Left error message.

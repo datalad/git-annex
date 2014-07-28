@@ -160,9 +160,15 @@ remove d k = liftIO $ do
 	 - before it can delete them. -}
 	void $ tryIO $ mapM_ allowWrite =<< dirContents dir
 #endif
-	catchBoolIO $ do
+	ok <- catchBoolIO $ do
 		removeDirectoryRecursive dir
 		return True
+	{- Removing the subdirectory will fail if it doesn't exist.
+	 - But, we want to succeed in that case, as long as the directory
+	 - remote's top-level directory does exist. -}
+	if ok
+		then return ok
+		else doesDirectoryExist d <&&> (not <$> doesDirectoryExist dir)
   where
 	dir = storeDir d k
 
