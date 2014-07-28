@@ -57,6 +57,8 @@ data RemoteA a = Remote {
 	-- Remotes have a use cost; higher is more expensive
 	cost :: Cost,
 	-- Transfers a key's contents from disk to the remote.
+	-- The key should not appear to be present on the remote until
+	-- all of its contents have been transferred.
 	storeKey :: Key -> AssociatedFile -> MeterUpdate -> a Bool,
 	-- Retrieves a key's contents to a file.
 	-- (The MeterUpdate does not need to be used if it retrieves

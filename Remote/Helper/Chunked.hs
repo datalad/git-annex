@@ -73,6 +73,9 @@ numChunks = pred . fromJust . keyChunkNum . fst . nextChunkKeyStream
  - the storer action, along with a corresponding chunk key and a
  - progress meter update callback.
  -
+ - To support resuming, the checker is used to find the first missing
+ - chunk key. Storing starts from that chunk.
+ -
  - This buffers each chunk in memory, so can use a lot of memory
  - with a large ChunkSize.
  - More optimal versions of this can be written, that rely
@@ -88,18 +91,31 @@ storeChunks
 	-> FilePath
 	-> MeterUpdate
 	-> (Key -> L.ByteString -> MeterUpdate -> IO Bool)
+	-> (Key -> Annex (Either String Bool))
 	-> Annex Bool
-storeChunks u chunkconfig k f p storer = metered (Just p) k $ \meterupdate ->
-	either (\e -> warning (show e) >> return False) (go meterupdate)
-		=<< (liftIO $ tryIO $ L.readFile f)
+storeChunks u chunkconfig k f p storer checker = bracketIO open close go
   where
-	go meterupdate b = case chunkconfig of
-		(UnpaddedChunks chunksize) ->
-			gochunks meterupdate chunksize b (chunkKeyStream k chunksize)
-		_ -> liftIO $ storer k b meterupdate
+	open = tryIO $ openBinaryFile f ReadMode
 
-	gochunks :: MeterUpdate -> ChunkSize -> L.ByteString -> ChunkKeyStream -> Annex Bool
-	gochunks meterupdate chunksize = loop zeroBytesProcessed . splitchunk
+	close (Right h) = hClose h
+	close (Left _) = noop
+
+	go (Left e) = do
+		warning (show e)
+		return False
+	go (Right h) = metered (Just p) k $ \meterupdate ->
+		case chunkconfig of
+			(UnpaddedChunks chunksize) -> do
+				let chunkkeys = chunkKeyStream k chunksize
+				(chunkkeys', startpos) <- seekResume h chunkkeys checker
+				b <- liftIO $ L.hGetContents h
+				gochunks meterupdate startpos chunksize b chunkkeys'
+			_ -> liftIO $ do
+				b <- L.hGetContents h
+				storer k b meterupdate
+
+	gochunks :: MeterUpdate -> BytesProcessed -> ChunkSize -> L.ByteString -> ChunkKeyStream -> Annex Bool
+	gochunks meterupdate startpos chunksize = loop startpos . splitchunk
 	  where
 		splitchunk = L.splitAt chunksize
 	
@@ -124,6 +140,45 @@ storeChunks u chunkconfig k f p storer = metered (Just p) k $ \meterupdate ->
 			 - the total bytes that have already been stored
 			 - in previous chunks. -}
 			meterupdate' = offsetMeterUpdate meterupdate bytesprocessed
+
+{- Check if any of the chunk keys are present. If found, seek forward
+ - in the Handle, so it will be read starting at the first missing chunk.
+ - Returns the ChunkKeyStream truncated to start at the first missing
+ - chunk, and the number of bytes skipped due to resuming.
+ -
+ - As an optimisation, if the file fits into a single chunk, there's no need
+ - to check if that chunk is present -- we know it's not, because otherwise
+ - the whole file would be present and there would be no reason to try to
+ - store it.
+ -}
+seekResume
+	:: Handle
+	-> ChunkKeyStream
+	-> (Key -> Annex (Either String Bool))
+	-> Annex (ChunkKeyStream, BytesProcessed)
+seekResume h chunkkeys checker = do
+	sz <- liftIO (hFileSize h)
+	if sz <= fromMaybe 0 (keyChunkSize $ fst $ nextChunkKeyStream chunkkeys)
+		then return (chunkkeys, zeroBytesProcessed)
+		else check 0 chunkkeys sz
+  where
+	check pos cks sz
+		| pos >= sz = do
+			-- All chunks are already stored!
+			liftIO $ hSeek h AbsoluteSeek sz
+			return (cks', toBytesProcessed sz)
+		| otherwise = do
+			v <- checker k
+			case v of
+				Right True ->
+					check pos' cks' sz
+				_ -> do
+					when (pos > 0) $
+						liftIO $ hSeek h AbsoluteSeek pos
+					return (cks, toBytesProcessed pos)
+	  where
+		(k, cks') = nextChunkKeyStream cks
+		pos' = pos + fromMaybe 0 (keyChunkSize k)
 
 {- Removes all chunks of a key from a remote, by calling a remover
  - action on each.

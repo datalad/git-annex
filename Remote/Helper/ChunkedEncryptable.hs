@@ -60,19 +60,19 @@ chunkedEncryptableRemote
 	-> Preparer Retriever
 	-> Remote
 	-> Remote
-chunkedEncryptableRemote c preparestorer prepareretriever r = encr
+chunkedEncryptableRemote c preparestorer prepareretriever baser = encr
   where
-	encr = r
+	encr = baser
 		{ storeKey = \k _f p -> cip >>= storeKeyGen k p
 		, retrieveKeyFile = \k _f d p -> cip >>= retrieveKeyFileGen k d p
 		, retrieveKeyFileCheap = \k d -> cip >>= maybe
-			(retrieveKeyFileCheap r k d)
+			(retrieveKeyFileCheap baser k d)
 			(\_ -> return False)
 		, removeKey = \k -> cip >>= removeKeyGen k
 		, hasKey = \k -> cip >>= hasKeyGen k
 		, cost = maybe
-			(cost r)
-			(const $ cost r + encryptedRemoteCostAdj)
+			(cost baser)
+			(const $ cost baser + encryptedRemoteCostAdj)
 			(extractCipher c)
 		}
 	cip = cipherKey c
@@ -87,8 +87,9 @@ chunkedEncryptableRemote c preparestorer prepareretriever r = encr
 	  where
 		go (Just storer) = sendAnnex k rollback $ \src ->
 			metered (Just p) k $ \p' ->
-				storeChunks (uuid r) chunkconfig k src p' $
-					storechunk storer
+				storeChunks (uuid baser) chunkconfig k src p'
+					(storechunk storer)
+					(hasKey baser)
 		go Nothing = return False
 		rollback = void $ removeKey encr k
 		storechunk storer k' b p' = case enc of
@@ -103,7 +104,8 @@ chunkedEncryptableRemote c preparestorer prepareretriever r = encr
 		safely $ prepareretriever k $ safely . go
 	  where
 	  	go (Just retriever) = metered (Just p) k $ \p' ->
-			retrieveChunks retriever (uuid r) chunkconfig enck k dest p' sink
+			retrieveChunks retriever (uuid baser) chunkconfig
+				enck k dest p' sink
 		go Nothing = return False
 		sink h p' b = do
 			let write = meteredWrite p' h
@@ -114,15 +116,15 @@ chunkedEncryptableRemote c preparestorer prepareretriever r = encr
 						readBytes write
 		enck = maybe id snd enc
 
-	removeKeyGen k enc = removeChunks remover (uuid r) chunkconfig enck k
+	removeKeyGen k enc = removeChunks remover (uuid baser) chunkconfig enck k
 	  where
 		enck = maybe id snd enc
-		remover = removeKey r
+		remover = removeKey baser
 
-	hasKeyGen k enc = hasKeyChunks checker (uuid r) chunkconfig enck k
+	hasKeyGen k enc = hasKeyChunks checker (uuid baser) chunkconfig enck k
 	  where
 		enck = maybe id snd enc
-		checker = hasKey r
+		checker = hasKey baser
 
 {- The base Remote that is provided to chunkedEncryptableRemote
  - needs to have storeKey and retreiveKeyFile methods, but they are
