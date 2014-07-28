@@ -21,3 +21,16 @@ Observe how a lot of files are now considered to be in the famous [[typechange s
 I wish i could resume the `git annex direct` command, but this will do a `git commit -a` and therefore commit all those files to git directly. It still seems to me that `git annex` should never run `git commit -a` for exactly that kind of situations.
 
 I think that's it for now. -- [[anarcat]]
+
+Update: i was able to get rid of the `typechange` situation by running `git annex lock` on the repository, but then all files are found to be missing by `git annex fsck`:
+
+[[!format txt """
+fsck films/God Hates Cartoons/VIDEO_TS/VTS_15_0.BUP (fixing location log)
+  ** Based on the location log, films/God Hates Cartoons/VIDEO_TS/VTS_15_0.BUP
+  ** was expected to be present, but its content is missing.
+
+  Only 1 of 2 trustworthy copies exist of films/God Hates Cartoons/VIDEO_TS/VTS_15_0.BUP
+  Back it up with git-annex copy.
+"""]]
+
+Yet the files are present in .git/annex/objects...
