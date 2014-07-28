@@ -15,7 +15,14 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Logs.Chunk where
+module Logs.Chunk (
+	ChunkMethod(..),
+	ChunkSize,
+	ChunkCount,
+	chunksStored,
+	chunksRemoved,
+	getCurrentChunks,
+) where
 
 import Common.Annex
 import Logs
@@ -26,19 +33,19 @@ import Logs.Chunk.Pure
 import qualified Data.Map as M
 import Data.Time.Clock.POSIX
 
-chunksStored :: UUID -> Key -> ChunkSize -> ChunkCount -> Annex ()
-chunksStored u k chunksize chunkcount = do
+chunksStored :: UUID -> Key -> ChunkMethod -> ChunkCount -> Annex ()
+chunksStored u k chunkmethod chunkcount = do
 	ts <- liftIO getPOSIXTime
 	Annex.Branch.change (chunkLogFile k) $
-		showLog . changeMapLog ts (u, chunksize) chunkcount . parseLog
+		showLog . changeMapLog ts (u, chunkmethod) chunkcount . parseLog
 
-chunksRemoved :: UUID -> Key -> ChunkSize -> Annex ()
-chunksRemoved u k chunksize = chunksStored u k chunksize 0
+chunksRemoved :: UUID -> Key -> ChunkMethod -> Annex ()
+chunksRemoved u k chunkmethod = chunksStored u k chunkmethod 0
 
-getCurrentChunks :: UUID -> Key -> Annex [(ChunkSize, ChunkCount)]
+getCurrentChunks :: UUID -> Key -> Annex [(ChunkMethod, ChunkCount)]
 getCurrentChunks u k = select . parseLog <$> Annex.Branch.get (chunkLogFile k)
   where
-	select = filter (\(_sz, ct) -> ct > 0)
-		. map (\((_ku, sz), l) -> (sz, value l))
+	select = filter (\(_m, ct) -> ct > 0)
+		. map (\((_ku, m), l) -> (m, value l))
 		. M.toList
-		. M.filterWithKey (\(ku, _sz) _ -> ku == u)
+		. M.filterWithKey (\(ku, _m) _ -> ku == u)

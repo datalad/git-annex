@@ -19,7 +19,6 @@ import Common.Annex
 import Utility.DataUnits
 import Types.Remote
 import Types.Key
-import Logs.Chunk.Pure (ChunkSize, ChunkCount)
 import Logs.Chunk
 import Utility.Metered
 import Crypto (EncKey)
@@ -108,7 +107,7 @@ storeChunks u chunkconfig k f p storer = metered (Just p) k $ \meterupdate ->
 			| L.null chunk && numchunks > 0 = do
  				-- Once all chunks are successfully
 				-- stored, update the chunk log.
-				chunksStored u k chunksize numchunks
+				chunksStored u k (FixedSizeChunks chunksize) numchunks
 				return True
 			| otherwise = do
 				let (chunkkey, chunkkeys') = nextChunkKeyStream chunkkeys
@@ -140,7 +139,7 @@ removeChunks remover u chunkconfig encryptor k = do
 	ok <- allM (remover . encryptor) (concat ls)
 	when ok $ do
 		let chunksizes = catMaybes $ map (keyChunkSize <=< headMaybe) ls
-		forM_ chunksizes $ chunksRemoved u k . fromIntegral
+		forM_ chunksizes $ chunksRemoved u k . FixedSizeChunks . fromIntegral
 	return ok
 
 {- Retrieves a key from a remote, using a retriever action that
@@ -313,6 +312,7 @@ chunkKeys u chunkconfig k = do
 chunkKeysOnly :: UUID -> Key -> Annex [[Key]]
 chunkKeysOnly u k = map (toChunkList k) <$> getCurrentChunks u k
 
-toChunkList :: Key -> (ChunkSize, ChunkCount) -> [Key]
-toChunkList k (chunksize, chunkcount) = takeChunkKeyStream chunkcount $
-	chunkKeyStream k chunksize
+toChunkList :: Key -> (ChunkMethod, ChunkCount) -> [Key]
+toChunkList k (FixedSizeChunks chunksize, chunkcount) =
+	takeChunkKeyStream chunkcount $ chunkKeyStream k chunksize
+toChunkList _ (UnknownChunks _, _) = []
