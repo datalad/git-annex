@@ -33,7 +33,7 @@ fsck films/God Hates Cartoons/VIDEO_TS/VTS_15_0.BUP (fixing location log)
   Back it up with git-annex copy.
 """]]
 
-Yet the files are present in .git/annex/objects...
+Oddly enough, the repo still uses hundreds of gigs, because all the files ended up in `.git/annex/misctmp`. Not sure I remember what happened there.
 
 Similar issues and discussions:
 
