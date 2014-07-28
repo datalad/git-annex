@@ -4,7 +4,7 @@ When `git annex direct` is interrupted (either through a power outage or deliber
 
 A typical situation is `git-annex` believing that the repo is in `indirect` mode while the files are not symlinks anymore.
 
-I believe I have described this problem here before, but the bug report was deleted as part of the may 29th purge (222f78e9eadd3d2cc40ec94ab22241823a7d50d9), file `doc/bugs/git_annex_indirect_can_fail_catastrophically.mdwn`.
+I believe I have described this problem here before, but the bug report was deleted as part of the may 29th purge (222f78e9eadd3d2cc40ec94ab22241823a7d50d9,  [[bugs/git_annex_indirect_can_fail_catastrophically]]).
 
 ### What steps will reproduce the problem?
 
@@ -14,7 +14,7 @@ Observe how a lot of files are now considered to be in the famous [[typechange s
 
 ### What version of git-annex are you using? On what operating system?
 
-5.20140717 on Debian Jessie.
+5.20140717 on Debian Jessie, ext4 filesystem.
 
 ### Please provide any additional information below.
 
@@ -34,3 +34,10 @@ fsck films/God Hates Cartoons/VIDEO_TS/VTS_15_0.BUP (fixing location log)
 """]]
 
 Yet the files are present in .git/annex/objects...
+
+Similar issues and discussions:
+
+* [[bugs/direct_mode_merge_interrupt/]]
+* [[forum/Cleaning_up_after_aborted_sync_in_direct_mode/]]
+* [[bugs/failure_to_return_to_indirect_mode_on_usb/]]
+* [[forum/git-status_typechange_in_direct_mode/]]
