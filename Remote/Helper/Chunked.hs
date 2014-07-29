@@ -295,7 +295,7 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 		return True
 	tosink h _ (FileContent f) = liftIO $ do
 		sink h Nothing =<< L.readFile f
-		nukeFile h
+		nukeFile f
 		return True
 
 {- Can resume when the chunk's offset is at or before the end of
