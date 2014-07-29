@@ -16,6 +16,7 @@ module Annex.Content (
 	getViaTmpChecked,
 	getViaTmpUnchecked,
 	prepGetViaTmpChecked,
+	prepTmp,
 	withTmp,
 	checkDiskSpace,
 	moveAnnex,

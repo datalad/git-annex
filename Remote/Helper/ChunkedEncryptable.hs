@@ -6,8 +6,6 @@
  -}
 
 {-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE ImpredicativeTypes #-}
-{-# LANGUAGE FlexibleContexts #-}
 
 module Remote.Helper.ChunkedEncryptable (
 	Preparer,
@@ -39,17 +37,48 @@ import Annex.Exception
 
 import qualified Data.ByteString.Lazy as L
 
+-- Use when nothing needs to be done to prepare a helper.
 simplyPrepare :: helper -> Preparer helper
 simplyPrepare helper _ a = a $ Just helper
 
+-- Use to run a check when preparing a helper.
 checkPrepare :: (Key -> Annex Bool) -> helper -> Preparer helper
 checkPrepare checker helper k a = ifM (checker k)
 	( a (Just helper)
 	, a Nothing
 	)
 
-{- Modifies a base Remote to support both chunking and encryption.
- -}
+-- A Storer that expects to be provided with a file containing
+-- the content of the key to store.
+fileStorer :: (Key -> FilePath -> MeterUpdate -> Annex Bool) -> Storer
+fileStorer a k (FileContent f) m = a k f m
+fileStorer a k (ByteContent b) m = withTmp k $ \f -> do
+	liftIO $ L.writeFile f b
+	a k f m
+
+-- A Storer that expects to be provided with a L.ByteString of
+-- the content to store.
+byteStorer :: (Key -> L.ByteString -> MeterUpdate -> Annex Bool) -> Storer
+byteStorer a k c m = withBytes c $ \b -> a k b m
+
+-- A Retriever that writes the content of a Key to a provided file.
+-- It is responsible for updating the progress meter as it retrieves data.
+fileRetriever :: (FilePath -> Key -> MeterUpdate -> Annex ()) -> Retriever
+fileRetriever a k m callback = bracketAnnex (prepTmp k) (liftIO . nukeFile) go
+  where
+	go f = do
+		a f k m
+		callback (FileContent f)
+
+-- A Retriever that generates a L.ByteString containing the Key's content.
+byteRetriever :: (Key -> Annex L.ByteString) -> Retriever
+byteRetriever a k _m callback = callback =<< (ByteContent <$> a k)
+
+withBytes :: ContentSource -> (L.ByteString -> Annex a) -> Annex a
+withBytes (ByteContent b) a = a b
+withBytes (FileContent f) a = a =<< liftIO (L.readFile f)
+
+-- Modifies a base Remote to support both chunking and encryption.
 chunkedEncryptableRemote
 	:: RemoteConfig
 	-> Preparer Storer
