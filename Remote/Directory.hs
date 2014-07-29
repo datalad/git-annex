@@ -112,8 +112,8 @@ prepareStore d chunkconfig = checkPrepare
 	(\k -> checkDiskSpace (Just d) k 0)
 	(byteStorer $ store d chunkconfig)
 
-store :: FilePath -> ChunkConfig -> Key -> L.ByteString -> MeterUpdate -> IO Bool
-store d chunkconfig k b p = do
+store :: FilePath -> ChunkConfig -> Key -> L.ByteString -> MeterUpdate -> Annex Bool
+store d chunkconfig k b p = liftIO $ do
 	void $ tryIO $ createDirectoryIfMissing True tmpdir
 	case chunkconfig of
 		LegacyChunks chunksize -> Legacy.store chunksize finalizer k b p tmpdir destdir
@@ -138,7 +138,7 @@ store d chunkconfig k b p = do
 retrieve :: FilePath -> ChunkConfig -> Preparer Retriever
 retrieve d (LegacyChunks _) = Legacy.retrieve locations d
 retrieve d _ = simplyPrepare $ byteRetriever $ 
-	\k -> L.readFile =<< getLocation d k
+	\k -> liftIO $ L.readFile =<< getLocation d k
 
 retrieveCheap :: FilePath -> ChunkConfig -> Key -> FilePath -> Annex Bool
 -- no cheap retrieval possible for chunks

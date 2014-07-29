@@ -26,29 +26,29 @@ data ContentSource
 
 -- Action that stores a Key's content on a remote.
 -- Can throw exceptions.
-type Storer = Key -> ContentSource -> MeterUpdate -> IO Bool
+type Storer = Key -> ContentSource -> MeterUpdate -> Annex Bool
 
 -- Action that retrieves a Key's content from a remote.
 -- Throws exception if key is not present, or remote is not accessible.
-type Retriever = Key -> IO ContentSource
+type Retriever = Key -> Annex ContentSource
 
-fileStorer :: (Key -> FilePath -> MeterUpdate -> IO Bool) -> Storer
+fileStorer :: (Key -> FilePath -> MeterUpdate -> Annex Bool) -> Storer
 fileStorer a k (FileContent f) m = a k f m
-fileStorer a k (ByteContent b) m = do
-	 withTmpFile "tmpXXXXXX" $ \f h -> do
+fileStorer a k (ByteContent b) m = withTmpFile "tmpXXXXXX" $ \f h -> do
+	liftIO $ do
 		L.hPut h b
 		hClose h
-		a k f m
+	a k f m
 
-byteStorer :: (Key -> L.ByteString -> MeterUpdate -> IO Bool) -> Storer
+byteStorer :: (Key -> L.ByteString -> MeterUpdate -> Annex Bool) -> Storer
 byteStorer a k c m = withBytes c $ \b -> a k b m
 
-withBytes :: ContentSource -> (L.ByteString -> IO a) -> IO a
+withBytes :: ContentSource -> (L.ByteString -> Annex a) -> Annex a
 withBytes (ByteContent b) a = a b
-withBytes (FileContent f) a = a =<< L.readFile f
+withBytes (FileContent f) a = a =<< liftIO (L.readFile f)
 
-fileRetriever :: (Key -> IO FilePath) -> Retriever
+fileRetriever :: (Key -> Annex FilePath) -> Retriever
 fileRetriever a k = FileContent <$> a k
 
-byteRetriever :: (Key -> IO L.ByteString) -> Retriever
+byteRetriever :: (Key -> Annex L.ByteString) -> Retriever
 byteRetriever a k = ByteContent <$> a k

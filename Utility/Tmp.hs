@@ -9,11 +9,12 @@
 
 module Utility.Tmp where
 
-import Control.Exception (bracket)
 import System.IO
 import System.Directory
 import Control.Monad.IfElse
 import System.FilePath
+import Control.Monad.IO.Class
+import Control.Monad.Catch (bracket, MonadMask)
 
 import Utility.Exception
 import Utility.FileSystemEncoding
@@ -42,18 +43,18 @@ viaTmp a file content = bracket setup cleanup use
 
 {- Runs an action with a tmp file located in the system's tmp directory
  - (or in "." if there is none) then removes the file. -}
-withTmpFile :: Template -> (FilePath -> Handle -> IO a) -> IO a
+withTmpFile :: (MonadIO m, MonadMask m) => Template -> (FilePath -> Handle -> m a) -> m a
 withTmpFile template a = do
-	tmpdir <- catchDefaultIO "." getTemporaryDirectory
+	tmpdir <- liftIO $ catchDefaultIO "." getTemporaryDirectory
 	withTmpFileIn tmpdir template a
 
 {- Runs an action with a tmp file located in the specified directory,
  - then removes the file. -}
-withTmpFileIn :: FilePath -> Template -> (FilePath -> Handle -> IO a) -> IO a
+withTmpFileIn :: (MonadIO m, MonadMask m) => FilePath -> Template -> (FilePath -> Handle -> m a) -> m a
 withTmpFileIn tmpdir template a = bracket create remove use
   where
-	create = openTempFile tmpdir template
-	remove (name, handle) = do
+	create = liftIO $ openTempFile tmpdir template
+	remove (name, handle) = liftIO $ do
 		hClose handle
 		catchBoolIO (removeFile name >> return True)
 	use (name, handle) = a name handle

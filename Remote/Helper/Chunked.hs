@@ -27,7 +27,6 @@ import Annex.Exception
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
-import Control.Exception
 
 data ChunkConfig
 	= NoChunks
@@ -91,15 +90,14 @@ storeChunks
 	-> Key
 	-> FilePath
 	-> MeterUpdate
-	-> (Key -> ContentSource -> MeterUpdate -> IO Bool)
+	-> (Key -> ContentSource -> MeterUpdate -> Annex Bool)
 	-> (Key -> Annex (Either String Bool))
 	-> Annex Bool
 storeChunks u chunkconfig k f p storer checker = 
 	case chunkconfig of
 		(UnpaddedChunks chunksize) -> 
 			bracketIO open close (go chunksize)
-		_ -> showprogress $
-			liftIO . storer k (FileContent f)
+		_ -> showprogress $ storer k (FileContent f)
   where
 	showprogress = metered (Just p) k
 
@@ -130,7 +128,7 @@ storeChunks u chunkconfig k f p storer checker =
 				return True
 			| otherwise = do
 				let (chunkkey, chunkkeys') = nextChunkKeyStream chunkkeys
-				ifM (liftIO $ storer chunkkey (ByteContent chunk) meterupdate')
+				ifM (storer chunkkey (ByteContent chunk) meterupdate')
 					( do
 						let bytesprocessed' = addBytesProcessed bytesprocessed (L.length chunk)
 						loop bytesprocessed' (splitchunk bs) chunkkeys'
@@ -234,20 +232,20 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 			const (go =<< chunkKeysOnly u basek)
 	| otherwise = go =<< chunkKeys u chunkconfig basek
   where
-	go ls = liftIO $ do
-		currsize <- catchMaybeIO $
+	go ls = do
+		currsize <- liftIO $ catchMaybeIO $
 			toInteger . fileSize <$> getFileStatus dest
 		let ls' = maybe ls (setupResume ls) currsize
-		firstavail currsize ls' `catchNonAsync` giveup
+		firstavail currsize ls' `catchNonAsyncAnnex` giveup
 
 	giveup e = do
-		warningIO (show e)
+		warning (show e)
 		return False
 
 	firstavail _ [] = return False
 	firstavail currsize ([]:ls) = firstavail currsize ls
 	firstavail currsize ((k:ks):ls) = do
-		v <- tryNonAsync $ retriever (encryptor k)
+		v <- tryNonAsyncAnnex $ retriever (encryptor k)
 		case v of
 			Left e
 				| null ls -> giveup e
@@ -257,8 +255,8 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 				let p = maybe basep
 					(offsetMeterUpdate basep . toBytesProcessed)
 					offset
-				bracket (maybe opennew openresume offset) hClose $ \h -> do
-					withBytes content $ sink h p
+				bracketIO (maybe opennew openresume offset) hClose $ \h -> do
+					withBytes content $ liftIO . sink h p
 					let sz = toBytesProcessed $
 						fromMaybe 0 $ keyChunkSize k
 					getrest p h sz sz ks
@@ -267,12 +265,12 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 	getrest p h sz bytesprocessed (k:ks) = do
 		let p' = offsetMeterUpdate p bytesprocessed
 		content <- retriever (encryptor k)
-		withBytes content $ sink h p'
+		withBytes content $ liftIO . sink h p'
 		getrest p h sz (addBytesProcessed bytesprocessed sz) ks
 
-	getunchunked = liftIO $ bracket opennew hClose $ \h -> do
+	getunchunked = bracketIO opennew hClose $ \h -> do
 		content <- retriever (encryptor basek)
-		withBytes content $ sink h basep
+		withBytes content $ liftIO . sink h basep
 		return True
 
 	opennew = openBinaryFile dest WriteMode

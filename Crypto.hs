@@ -3,12 +3,13 @@
  - Currently using gpg; could later be modified to support different
  - crypto backends if neccessary.
  -
- - Copyright 2011-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE Rank2Types #-}
 
 module Crypto (
 	Cipher,
@@ -35,6 +36,8 @@ import qualified Data.ByteString.Lazy as L
 import Data.ByteString.Lazy.UTF8 (fromString)
 import Control.Applicative
 import qualified Data.Map as M
+import Control.Monad.IO.Class
+import Control.Monad.Catch (MonadMask)
 
 import Common.Annex
 import qualified Utility.Gpg as Gpg
@@ -151,7 +154,7 @@ encryptKey mac c k = stubKey
 	}
 
 type Feeder = Handle -> IO ()
-type Reader a = Handle -> IO a
+type Reader m a = Handle -> m a
 
 feedFile :: FilePath -> Feeder
 feedFile f h = L.hPut h =<< L.readFile f
@@ -159,8 +162,8 @@ feedFile f h = L.hPut h =<< L.readFile f
 feedBytes :: L.ByteString -> Feeder
 feedBytes = flip L.hPut
 
-readBytes :: (L.ByteString -> IO a) -> Reader a
-readBytes a h = L.hGetContents h >>= a
+readBytes :: (MonadIO m) => (L.ByteString -> m a) -> Reader m a
+readBytes a h = liftIO (L.hGetContents h) >>= a
 
 {- Runs a Feeder action, that generates content that is symmetrically
  - encrypted with the Cipher (unless it is empty, in which case
@@ -168,7 +171,7 @@ readBytes a h = L.hGetContents h >>= a
  - read by the Reader action.  Note: For public-key encryption,
  - recipients MUST be included in 'params' (for instance using
  - 'getGpgEncParams'). -}
-encrypt :: [CommandParam] -> Cipher -> Feeder -> Reader a -> IO a
+encrypt :: (MonadIO m, MonadMask m) => [CommandParam] -> Cipher -> Feeder -> Reader m a -> m a
 encrypt params cipher = case cipher of
 	Cipher{} -> Gpg.feedRead (params ++ Gpg.stdEncryptionParams True) $
 			cipherPassphrase cipher
@@ -177,7 +180,7 @@ encrypt params cipher = case cipher of
 {- Runs a Feeder action, that generates content that is decrypted with the
  - Cipher (or using a private key if the Cipher is empty), and read by the
  - Reader action. -}
-decrypt :: Cipher -> Feeder -> Reader a -> IO a
+decrypt :: (MonadIO m, MonadMask m) => Cipher -> Feeder -> Reader m a -> m a
 decrypt cipher = case cipher of
 	Cipher{} -> Gpg.feedRead [Param "--decrypt"] $ cipherPassphrase cipher
 	MacOnlyCipher{} -> Gpg.pipeLazy [Param "--decrypt"]
