@@ -5,23 +5,28 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE Rank2Types #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ImpredicativeTypes #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module Remote.Helper.ChunkedEncryptable (
 	Preparer,
-	simplyPrepare,
-	checkPrepare,
 	Storer,
 	Retriever,
+	simplyPrepare,
+	checkPrepare,
+	fileStorer,
+	byteStorer,
+	fileRetriever,
+	byteRetriever,
 	chunkedEncryptableRemote,
 	storeKeyDummy,
 	retreiveKeyFileDummy,
 	module X
 ) where
 
-import qualified Data.ByteString.Lazy as L
-
 import Common.Annex
+import Types.StoreRetrieve
 import Types.Remote
 import Crypto
 import Config.Cost
@@ -31,10 +36,6 @@ import Remote.Helper.Encryptable as X
 import Annex.Content
 import Annex.Exception
 
--- Prepares for and then runs an action that will act on a Key,
--- passing it a helper when the preparation is successful.
-type Preparer helper = forall a. Key -> (Maybe helper -> Annex a) -> Annex a
-
 simplyPrepare :: helper -> Preparer helper
 simplyPrepare helper _ a = a $ Just helper
 
@@ -43,14 +44,6 @@ checkPrepare checker helper k a = ifM (checker k)
 	( a (Just helper)
 	, a Nothing
 	)
-
--- Stores a Key, which may be encrypted and/or a chunk key.
--- May throw exceptions.
-type Storer = Key -> L.ByteString -> MeterUpdate -> IO Bool
-
--- Retrieves a Key, which may be encrypted and/or a chunk key.
--- Throws exception if key is not present, or remote is not accessible.
-type Retriever = Key -> IO L.ByteString
 
 {- Modifies a base Remote to support both chunking and encryption.
  -}
@@ -88,16 +81,17 @@ chunkedEncryptableRemote c preparestorer prepareretriever baser = encr
 		go (Just storer) = sendAnnex k rollback $ \src ->
 			metered (Just p) k $ \p' ->
 				storeChunks (uuid baser) chunkconfig k src p'
-					(storechunk storer)
+					(storechunk enc storer)
 					(hasKey baser)
 		go Nothing = return False
 		rollback = void $ removeKey encr k
-		storechunk storer k' b p' = case enc of
-			Nothing -> storer k' b p'
-			Just (cipher, enck) -> 
-				encrypt gpgopts cipher (feedBytes b) $
-					readBytes $ \encb ->
-						storer (enck k') encb p'
+
+	storechunk Nothing storer k content p = storer k content p
+	storechunk (Just (cipher, enck)) storer k content p =
+		withBytes content $ \b ->
+			encrypt gpgopts cipher (feedBytes b) $
+				readBytes $ \encb ->
+					storer (enck k) (ByteContent encb) p
 
 	-- call retriever to get chunks; decrypt them; stream to dest file
 	retrieveKeyFileGen k dest p enc =

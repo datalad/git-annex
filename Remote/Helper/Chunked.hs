@@ -17,6 +17,7 @@ module Remote.Helper.Chunked (
 
 import Common.Annex
 import Utility.DataUnits
+import Types.StoreRetrieve
 import Types.Remote
 import Types.Key
 import Logs.Chunk
@@ -90,29 +91,31 @@ storeChunks
 	-> Key
 	-> FilePath
 	-> MeterUpdate
-	-> (Key -> L.ByteString -> MeterUpdate -> IO Bool)
+	-> (Key -> ContentSource -> MeterUpdate -> IO Bool)
 	-> (Key -> Annex (Either String Bool))
 	-> Annex Bool
-storeChunks u chunkconfig k f p storer checker = bracketIO open close go
+storeChunks u chunkconfig k f p storer checker = 
+	case chunkconfig of
+		(UnpaddedChunks chunksize) -> 
+			bracketIO open close (go chunksize)
+		_ -> showprogress $
+			liftIO . storer k (FileContent f)
   where
+	showprogress = metered (Just p) k
+
 	open = tryIO $ openBinaryFile f ReadMode
 
 	close (Right h) = hClose h
 	close (Left _) = noop
 
-	go (Left e) = do
+	go _ (Left e) = do
 		warning (show e)
 		return False
-	go (Right h) = metered (Just p) k $ \meterupdate ->
-		case chunkconfig of
-			(UnpaddedChunks chunksize) -> do
-				let chunkkeys = chunkKeyStream k chunksize
-				(chunkkeys', startpos) <- seekResume h chunkkeys checker
-				b <- liftIO $ L.hGetContents h
-				gochunks meterupdate startpos chunksize b chunkkeys'
-			_ -> liftIO $ do
-				b <- L.hGetContents h
-				storer k b meterupdate
+	go chunksize (Right h) = showprogress $ \meterupdate -> do
+		let chunkkeys = chunkKeyStream k chunksize
+		(chunkkeys', startpos) <- seekResume h chunkkeys checker
+		b <- liftIO $ L.hGetContents h
+		gochunks meterupdate startpos chunksize b chunkkeys'
 
 	gochunks :: MeterUpdate -> BytesProcessed -> ChunkSize -> L.ByteString -> ChunkKeyStream -> Annex Bool
 	gochunks meterupdate startpos chunksize = loop startpos . splitchunk
@@ -127,7 +130,7 @@ storeChunks u chunkconfig k f p storer checker = bracketIO open close go
 				return True
 			| otherwise = do
 				let (chunkkey, chunkkeys') = nextChunkKeyStream chunkkeys
-				ifM (liftIO $ storer chunkkey chunk meterupdate')
+				ifM (liftIO $ storer chunkkey (ByteContent chunk) meterupdate')
 					( do
 						let bytesprocessed' = addBytesProcessed bytesprocessed (L.length chunk)
 						loop bytesprocessed' (splitchunk bs) chunkkeys'
@@ -197,8 +200,7 @@ removeChunks remover u chunkconfig encryptor k = do
 		forM_ chunksizes $ chunksRemoved u k . FixedSizeChunks . fromIntegral
 	return ok
 
-{- Retrieves a key from a remote, using a retriever action that
- - streams it to a ByteString.
+{- Retrieves a key from a remote, using a retriever action.
  -
  - When the remote is chunked, tries each of the options returned by
  - chunkKeys until it finds one where the retriever successfully
@@ -214,7 +216,7 @@ removeChunks remover u chunkconfig encryptor k = do
  - to resume.
  -}
 retrieveChunks 
-	:: (Key -> IO L.ByteString)
+	:: Retriever
 	-> UUID
 	-> ChunkConfig
 	-> EncKey
@@ -250,13 +252,13 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 			Left e
 				| null ls -> giveup e
 				| otherwise -> firstavail currsize ls
-			Right b -> do
+			Right content -> do
 				let offset = resumeOffset currsize k
 				let p = maybe basep
 					(offsetMeterUpdate basep . toBytesProcessed)
 					offset
 				bracket (maybe opennew openresume offset) hClose $ \h -> do
-					sink h p b
+					withBytes content $ sink h p
 					let sz = toBytesProcessed $
 						fromMaybe 0 $ keyChunkSize k
 					getrest p h sz sz ks
@@ -264,11 +266,13 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 	getrest _ _ _ _ [] = return True
 	getrest p h sz bytesprocessed (k:ks) = do
 		let p' = offsetMeterUpdate p bytesprocessed
-		sink h p' =<< retriever (encryptor k)
+		content <- retriever (encryptor k)
+		withBytes content $ sink h p'
 		getrest p h sz (addBytesProcessed bytesprocessed sz) ks
 
 	getunchunked = liftIO $ bracket opennew hClose $ \h -> do
-		retriever (encryptor basek) >>= sink h basep
+		content <- retriever (encryptor basek)
+		withBytes content $ sink h basep
 		return True
 
 	opennew = openBinaryFile dest WriteMode

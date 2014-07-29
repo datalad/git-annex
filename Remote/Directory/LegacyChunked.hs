@@ -96,7 +96,7 @@ retrieve locations d basek a = do
 	tmpdir <- fromRepo $ gitAnnexTmpMiscDir
 	createAnnexDirectory tmpdir
 	let tmp = tmpdir </> keyFile basek ++ ".directorylegacy.tmp"
-	a $ Just $ \k -> do
+	a $ Just $ byteRetriever $ \k -> do
 		void $ withStoredFiles d locations k $ \fs -> do
 			forM_ fs $
 				S.appendFile tmp <=< S.readFile

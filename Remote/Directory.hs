@@ -110,9 +110,9 @@ tmpDir d k = addTrailingPathSeparator $ d </> "tmp" </> keyFile k
 prepareStore :: FilePath -> ChunkConfig -> Preparer Storer
 prepareStore d chunkconfig = checkPrepare
 	(\k -> checkDiskSpace (Just d) k 0)
-	(store d chunkconfig)
+	(byteStorer $ store d chunkconfig)
 
-store :: FilePath -> ChunkConfig -> Storer
+store :: FilePath -> ChunkConfig -> Key -> L.ByteString -> MeterUpdate -> IO Bool
 store d chunkconfig k b p = do
 	void $ tryIO $ createDirectoryIfMissing True tmpdir
 	case chunkconfig of
@@ -137,7 +137,8 @@ store d chunkconfig k b p = do
 
 retrieve :: FilePath -> ChunkConfig -> Preparer Retriever
 retrieve d (LegacyChunks _) = Legacy.retrieve locations d
-retrieve d _ = simplyPrepare $ \k -> L.readFile =<< getLocation d k
+retrieve d _ = simplyPrepare $ byteRetriever $ 
+	\k -> L.readFile =<< getLocation d k
 
 retrieveCheap :: FilePath -> ChunkConfig -> Key -> FilePath -> Annex Bool
 -- no cheap retrieval possible for chunks
