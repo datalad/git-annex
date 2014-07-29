@@ -320,21 +320,20 @@ hasKeyChunks checker u chunkconfig encryptor basek
 		-- that are likely not there.
 		ifM ((Right True ==) <$> checker (encryptor basek))
 			( return (Right True)
-			, checklists impossible =<< chunkKeysOnly u basek
+			, checklists Nothing =<< chunkKeysOnly u basek
 			)
-	| otherwise = checklists impossible =<< chunkKeys u chunkconfig basek
+	| otherwise = checklists Nothing =<< chunkKeys u chunkconfig basek
   where
-	checklists lastfailmsg [] = return $ Left lastfailmsg
-	checklists _ (l:ls)
+	checklists Nothing [] = return (Right False)
+	checklists (Just deferrederror) [] = return (Left deferrederror)
+	checklists d (l:ls)
 		| not (null l) = do
 			v <- checkchunks l
 			case v of
-				Left e -> checklists e ls
+				Left e -> checklists (Just e) ls
 				Right True -> return (Right True)
-				Right False
-					| null ls -> return (Right False)
-					| otherwise -> checklists impossible ls
-		| otherwise = checklists impossible ls
+				Right False -> checklists Nothing ls
+		| otherwise = checklists d ls
 	
 	checkchunks :: [Key] -> Annex (Either String Bool)
 	checkchunks [] = return (Right True)
@@ -343,8 +342,6 @@ hasKeyChunks checker u chunkconfig encryptor basek
 		if v == Right True
 			then checkchunks ks
 			else return v
-
-	impossible = "no recorded chunks"
 
 {- A key can be stored in a remote unchunked, or as a list of chunked keys.
  - This can be the case whether or not the remote is currently configured
