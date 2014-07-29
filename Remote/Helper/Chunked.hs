@@ -221,7 +221,7 @@ retrieveChunks
 	-> Key
 	-> FilePath
 	-> MeterUpdate
-	-> (Handle -> MeterUpdate -> L.ByteString -> IO ())
+	-> (Handle -> Maybe MeterUpdate -> L.ByteString -> IO ())
 	-> Annex Bool
 retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 	| noChunks chunkconfig =
@@ -245,18 +245,18 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 	firstavail _ [] = return False
 	firstavail currsize ([]:ls) = firstavail currsize ls
 	firstavail currsize ((k:ks):ls) = do
-		v <- tryNonAsyncAnnex $ retriever (encryptor k)
+		let offset = resumeOffset currsize k
+		let p = maybe basep
+			(offsetMeterUpdate basep . toBytesProcessed)
+			offset
+		v <- tryNonAsyncAnnex $ retriever (encryptor k) p
 		case v of
 			Left e
 				| null ls -> giveup e
 				| otherwise -> firstavail currsize ls
 			Right content -> do
-				let offset = resumeOffset currsize k
-				let p = maybe basep
-					(offsetMeterUpdate basep . toBytesProcessed)
-					offset
 				bracketIO (maybe opennew openresume offset) hClose $ \h -> do
-					withBytes content $ liftIO . sink h p
+					tosink h p content
 					let sz = toBytesProcessed $
 						fromMaybe 0 $ keyChunkSize k
 					getrest p h sz sz ks
@@ -264,13 +264,11 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 	getrest _ _ _ _ [] = return True
 	getrest p h sz bytesprocessed (k:ks) = do
 		let p' = offsetMeterUpdate p bytesprocessed
-		content <- retriever (encryptor k)
-		withBytes content $ liftIO . sink h p'
+		tosink h p' =<< retriever (encryptor k) p'
 		getrest p h sz (addBytesProcessed bytesprocessed sz) ks
 
 	getunchunked = bracketIO opennew hClose $ \h -> do
-		content <- retriever (encryptor basek)
-		withBytes content $ liftIO . sink h basep
+		tosink h basep =<< retriever (encryptor basek) basep
 		return True
 
 	opennew = openBinaryFile dest WriteMode
@@ -281,6 +279,19 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 		h <- openBinaryFile dest ReadWriteMode
 		hSeek h AbsoluteSeek startpoint
 		return h
+
+ 	{- Progress meter updating is a bit tricky: If the Retriever
+	 - populates a file, it is responsible for updating progress
+	 - as the file is being retrieved. 
+	 -
+	 - However, if the Retriever generates a lazy ByteString,
+	 - it is not responsible for updating progress (often it cannot).
+	 - Instead, the sink is passed a meter to update  as it consumes
+	 - the ByteString. -}
+	tosink h p (ByteContent b) = liftIO $
+		sink h (Just p) b
+	tosink h _ (FileContent f) = liftIO $
+		sink h Nothing =<< L.readFile f
 
 {- Can resume when the chunk's offset is at or before the end of
  - the dest file. -}

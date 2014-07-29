@@ -264,7 +264,10 @@ prepTmp key = do
 	createAnnexDirectory (parentDir tmp)
 	return tmp
 
-{- Creates a temp file, runs an action on it, and cleans up the temp file. -}
+{- Creates a temp file for a key, runs an action on it, and cleans up
+ - the temp file. If the action throws an exception, the temp file is
+ - left behind, which allows for resuming.
+ -}
 withTmp :: Key -> (FilePath -> Annex a) -> Annex a
 withTmp key action = do
 	tmp <- prepTmp key

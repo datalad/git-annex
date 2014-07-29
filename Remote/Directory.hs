@@ -137,8 +137,8 @@ store d chunkconfig k b p = liftIO $ do
 
 retrieve :: FilePath -> ChunkConfig -> Preparer Retriever
 retrieve d (LegacyChunks _) = Legacy.retrieve locations d
-retrieve d _ = simplyPrepare $ byteRetriever $ 
-	\k -> liftIO $ L.readFile =<< getLocation d k
+retrieve d _ = simplyPrepare $ byteRetriever $ \k ->
+	liftIO $ L.readFile =<< getLocation d k
 
 retrieveCheap :: FilePath -> ChunkConfig -> Key -> FilePath -> Annex Bool
 -- no cheap retrieval possible for chunks

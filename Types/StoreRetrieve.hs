@@ -10,8 +10,8 @@
 module Types.StoreRetrieve where
 
 import Common.Annex
+import Annex.Content
 import Utility.Metered
-import Utility.Tmp
 
 import qualified Data.ByteString.Lazy as L
 
@@ -30,25 +30,23 @@ type Storer = Key -> ContentSource -> MeterUpdate -> Annex Bool
 
 -- Action that retrieves a Key's content from a remote.
 -- Throws exception if key is not present, or remote is not accessible.
-type Retriever = Key -> Annex ContentSource
+type Retriever = Key -> MeterUpdate -> Annex ContentSource
 
 fileStorer :: (Key -> FilePath -> MeterUpdate -> Annex Bool) -> Storer
 fileStorer a k (FileContent f) m = a k f m
-fileStorer a k (ByteContent b) m = withTmpFile "tmpXXXXXX" $ \f h -> do
-	liftIO $ do
-		L.hPut h b
-		hClose h
-	a k f m
+fileStorer a k (ByteContent b) m = withTmp k $ \tmp -> do
+	liftIO $ L.writeFile tmp b
+	a k tmp m
 
 byteStorer :: (Key -> L.ByteString -> MeterUpdate -> Annex Bool) -> Storer
 byteStorer a k c m = withBytes c $ \b -> a k b m
 
+fileRetriever :: (Key -> MeterUpdate -> Annex FilePath) -> Retriever
+fileRetriever a k m = FileContent <$> a k m
+
+byteRetriever :: (Key -> Annex L.ByteString) -> Retriever
+byteRetriever a k _m = ByteContent <$> a k
+
 withBytes :: ContentSource -> (L.ByteString -> Annex a) -> Annex a
 withBytes (ByteContent b) a = a b
 withBytes (FileContent f) a = a =<< liftIO (L.readFile f)
-
-fileRetriever :: (Key -> Annex FilePath) -> Retriever
-fileRetriever a k = FileContent <$> a k
-
-byteRetriever :: (Key -> Annex L.ByteString) -> Retriever
-byteRetriever a k = ByteContent <$> a k

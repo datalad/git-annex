@@ -14,6 +14,7 @@ module Remote.Helper.ChunkedEncryptable (
 	Storer,
 	Retriever,
 	simplyPrepare,
+	ContentSource,
 	checkPrepare,
 	fileStorer,
 	byteStorer,
@@ -35,6 +36,8 @@ import Remote.Helper.Chunked as X
 import Remote.Helper.Encryptable as X
 import Annex.Content
 import Annex.Exception
+
+import qualified Data.ByteString.Lazy as L
 
 simplyPrepare :: helper -> Preparer helper
 simplyPrepare helper _ a = a $ Just helper
@@ -101,8 +104,10 @@ chunkedEncryptableRemote c preparestorer prepareretriever baser = encr
 			retrieveChunks retriever (uuid baser) chunkconfig
 				enck k dest p' sink
 		go Nothing = return False
-		sink h p' b = do
-			let write = meteredWrite p' h
+		sink h mp b = do
+			let write = case mp of
+				Just p' -> meteredWrite p' h
+				Nothing -> L.hPut h
 			case enc of
 				Nothing -> write b
 				Just (cipher, _) ->
