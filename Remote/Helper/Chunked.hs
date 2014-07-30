@@ -127,6 +127,7 @@ storeChunks u chunkconfig k f p storer checker =
 				chunksStored u k (FixedSizeChunks chunksize) numchunks
 				return True
 			| otherwise = do
+				liftIO $ meterupdate' zeroBytesProcessed
 				let (chunkkey, chunkkeys') = nextChunkKeyStream chunkkeys
 				ifM (storer chunkkey (ByteContent chunk) meterupdate')
 					( do
@@ -269,6 +270,7 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 	getrest _ _ _ _ [] = return True
 	getrest p h sz bytesprocessed (k:ks) = do
 		let p' = offsetMeterUpdate p bytesprocessed
+		liftIO $ p' zeroBytesProcessed
 		ifM (retriever (encryptor k) p' $ tosink (Just h) p')
 			( getrest p h sz (addBytesProcessed bytesprocessed sz) ks
 			, giveup "chunk retrieval failed"
@@ -292,7 +294,8 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 	 - However, if the Retriever generates a lazy ByteString,
 	 - it is not responsible for updating progress (often it cannot).
 	 - Instead, the sink is passed a meter to update  as it consumes
-	 - the ByteString. -}
+	 - the ByteString.
+	 -}
 	tosink h p content = sink h p' content
 	  where
 		p'
