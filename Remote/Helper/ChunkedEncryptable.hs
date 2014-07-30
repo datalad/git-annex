@@ -65,19 +65,14 @@ byteStorer a k c m = withBytes c $ \b -> a k b m
 -- A Retriever that writes the content of a Key to a provided file.
 -- It is responsible for updating the progress meter as it retrieves data.
 fileRetriever :: (FilePath -> Key -> MeterUpdate -> Annex ()) -> Retriever
-fileRetriever a k m callback = bracketAnnex (prepTmp k) (liftIO . nukeFile) go
-  where
-	go f = do
-		a f k m
-		callback (FileContent f)
+fileRetriever a k m callback = do
+	f <- prepTmp k
+	a f k m
+	callback (FileContent f)
 
 -- A Retriever that generates a L.ByteString containing the Key's content.
 byteRetriever :: (Key -> Annex L.ByteString) -> Retriever
 byteRetriever a k _m callback = callback =<< (ByteContent <$> a k)
-
-withBytes :: ContentSource -> (L.ByteString -> Annex a) -> Annex a
-withBytes (ByteContent b) a = a b
-withBytes (FileContent f) a = a =<< liftIO (L.readFile f)
 
 {- The base Remote that is provided to chunkedEncryptableRemote
  - needs to have storeKey and retreiveKeyFile methods, but they are
@@ -178,11 +173,18 @@ sink dest enc mh mp content = do
 		(Nothing, Nothing, FileContent f)
 			| f == dest -> noop
 			| otherwise -> liftIO $ moveFile f dest
-		(Just (cipher, _), _, _) ->
+		(Just (cipher, _), _, ByteContent b) ->
+			decrypt cipher (feedBytes b) $
+				readBytes write
+		(Just (cipher, _), _, FileContent f) -> do
 			withBytes content $ \b ->
 				decrypt cipher (feedBytes b) $
 					readBytes write
-		(Nothing, _, _) -> withBytes content write
+			liftIO $ nukeFile f
+		(Nothing, _, FileContent f) -> do
+			withBytes content write
+			liftIO $ nukeFile f
+		(Nothing, _, ByteContent b) -> write b
 	return True
   where
 	write b = case mh of
@@ -192,3 +194,7 @@ sink dest enc mh mp content = do
 		Just p -> meteredWrite p h b
 		Nothing -> L.hPut h b
 	opendest = openBinaryFile dest WriteMode
+
+withBytes :: ContentSource -> (L.ByteString -> Annex a) -> Annex a
+withBytes (ByteContent b) a = a b
+withBytes (FileContent f) a = a =<< liftIO (L.readFile f)
