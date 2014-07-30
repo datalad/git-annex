@@ -249,3 +249,14 @@ checking hasKey.
 Note that this is safe to do only as long as the Key being transferred
 cannot possibly have 2 different contents in different repos. Notably not
 necessarily the case for the URL keys generated for quvi.
+
+Both **done**.
+
+## parallel
+
+If 2 remotes both support chunking, uploading could upload different chunks
+to them in parallel. However, the chunk log does not currently allow
+representing the state where some chunks are on one remote and others on
+another remote.
+
+Parallel downloading of chunks from different remotes is a bit more doable.
