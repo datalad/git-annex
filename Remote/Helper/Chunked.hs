@@ -23,6 +23,7 @@ import Types.Key
 import Logs.Chunk
 import Utility.Metered
 import Crypto (EncKey)
+import Backend (isStableKey)
 import Annex.Exception
 
 import qualified Data.ByteString.Lazy as L
@@ -95,7 +96,7 @@ storeChunks
 	-> Annex Bool
 storeChunks u chunkconfig k f p storer checker = 
 	case chunkconfig of
-		(UnpaddedChunks chunksize) -> 
+		(UnpaddedChunks chunksize) | isStableKey k -> 
 			bracketIO open close (go chunksize)
 		_ -> showprogress $ storer k (FileContent f)
   where
