@@ -106,7 +106,8 @@ runTransfer t file shouldretry a = do
 		v <- tryAnnex run
 		case v of
 			Right b -> return b
-			Left _ -> do
+			Left e -> do
+				warning (show e)
 				b <- getbytescomplete metervar
 				let newinfo = oldinfo { bytesComplete = Just b }
 				if shouldretry oldinfo newinfo
