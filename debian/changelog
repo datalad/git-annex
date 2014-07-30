@@ -14,6 +14,7 @@ git-annex (5.20140718) UNRELEASED; urgency=medium
     Fix this, including support for fixing up repositories that
     were incompletely repaired before.
   * Fix cost calculation for non-encrypted remotes.
+  * WebDAV: Dropped support for DAV before 0.6.1.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 21 Jul 2014 14:41:26 -0400
 
