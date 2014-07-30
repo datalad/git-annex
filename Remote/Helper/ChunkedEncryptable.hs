@@ -18,9 +18,9 @@ module Remote.Helper.ChunkedEncryptable (
 	byteStorer,
 	fileRetriever,
 	byteRetriever,
-	chunkedEncryptableRemote,
 	storeKeyDummy,
 	retreiveKeyFileDummy,
+	chunkedEncryptableRemote,
 	module X
 ) where
 
@@ -36,6 +36,7 @@ import Annex.Content
 import Annex.Exception
 
 import qualified Data.ByteString.Lazy as L
+import Control.Exception (bracket)
 
 -- Use when nothing needs to be done to prepare a helper.
 simplyPrepare :: helper -> Preparer helper
@@ -77,6 +78,16 @@ byteRetriever a k _m callback = callback =<< (ByteContent <$> a k)
 withBytes :: ContentSource -> (L.ByteString -> Annex a) -> Annex a
 withBytes (ByteContent b) a = a b
 withBytes (FileContent f) a = a =<< liftIO (L.readFile f)
+
+{- The base Remote that is provided to chunkedEncryptableRemote
+ - needs to have storeKey and retreiveKeyFile methods, but they are
+ - never actually used (since chunkedEncryptableRemote replaces
+ - them). Here are some dummy ones.
+ -}
+storeKeyDummy :: Key -> AssociatedFile -> MeterUpdate -> Annex Bool
+storeKeyDummy _ _ _ = return False
+retreiveKeyFileDummy :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
+retreiveKeyFileDummy _ _ _ _ = return False
 
 -- Modifies a base Remote to support both chunking and encryption.
 chunkedEncryptableRemote
@@ -131,17 +142,8 @@ chunkedEncryptableRemote c preparestorer prepareretriever baser = encr
 	  where
 	  	go (Just retriever) = metered (Just p) k $ \p' ->
 			retrieveChunks retriever (uuid baser) chunkconfig
-				enck k dest p' sink
+				enck k dest p' (sink dest enc)
 		go Nothing = return False
-		sink h mp b = do
-			let write = case mp of
-				Just p' -> meteredWrite p' h
-				Nothing -> L.hPut h
-			case enc of
-				Nothing -> write b
-				Just (cipher, _) ->
-					decrypt cipher (feedBytes b) $
-						readBytes write
 		enck = maybe id snd enc
 
 	removeKeyGen k enc = removeChunks remover (uuid baser) chunkconfig enck k
@@ -154,12 +156,39 @@ chunkedEncryptableRemote c preparestorer prepareretriever baser = encr
 		enck = maybe id snd enc
 		checker = hasKey baser
 
-{- The base Remote that is provided to chunkedEncryptableRemote
- - needs to have storeKey and retreiveKeyFile methods, but they are
- - never actually used (since chunkedEncryptableRemote replaces
- - them). Here are some dummy ones.
+{- Sink callback for retrieveChunks. Stores the file content into the
+ - provided Handle, decrypting it first if necessary.
+ - 
+ - If the remote did not store the content using chunks, no Handle
+ - will be provided, and it's up to us to open the destination file.
+ -
+ - Note that when neither chunking nor encryption is used, and the remote
+ - provides FileContent, that file only needs to be renamed
+ - into place. (And it may even already be in the right place..)
  -}
-storeKeyDummy :: Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-storeKeyDummy _ _ _ = return False
-retreiveKeyFileDummy :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
-retreiveKeyFileDummy _ _ _ _ = return False
+sink
+	:: FilePath
+	-> Maybe (Cipher, EncKey)
+	-> Maybe Handle
+	-> Maybe MeterUpdate
+	-> ContentSource
+	-> Annex Bool
+sink dest enc mh mp content = do
+	case (enc, mh, content) of
+		(Nothing, Nothing, FileContent f)
+			| f == dest -> noop
+			| otherwise -> liftIO $ moveFile f dest
+		(Just (cipher, _), _, _) ->
+			withBytes content $ \b ->
+				decrypt cipher (feedBytes b) $
+					readBytes write
+		(Nothing, _, _) -> withBytes content write
+	return True
+  where
+	write b = case mh of
+		Just h -> liftIO $ b `streamto` h
+		Nothing -> liftIO $ bracket opendest hClose (b `streamto`)
+	streamto b h = case mp of
+		Just p -> meteredWrite p h b
+		Nothing -> L.hPut h b
+	opendest = openBinaryFile dest WriteMode

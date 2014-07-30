@@ -221,7 +221,7 @@ retrieveChunks
 	-> Key
 	-> FilePath
 	-> MeterUpdate
-	-> (Handle -> Maybe MeterUpdate -> L.ByteString -> IO ())
+	-> (Maybe Handle -> Maybe MeterUpdate -> ContentSource -> Annex Bool)
 	-> Annex Bool
 retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 	| noChunks chunkconfig =
@@ -244,34 +244,37 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 
 	firstavail _ [] = return False
 	firstavail currsize ([]:ls) = firstavail currsize ls
-	firstavail currsize ((k:ks):ls) = do
-		let offset = resumeOffset currsize k
-		let p = maybe basep
-			(offsetMeterUpdate basep . toBytesProcessed)
-			offset
-		v <- tryNonAsyncAnnex $
-			retriever (encryptor k) p $ \content ->
-				bracketIO (maybe opennew openresume offset) hClose $ \h -> do
-					tosink h p content
-					let sz = toBytesProcessed $
-						fromMaybe 0 $ keyChunkSize k
-					getrest p h sz sz ks
-						`catchNonAsyncAnnex` giveup
-		case v of
-			Left e
-				| null ls -> giveup e
-				| otherwise -> firstavail currsize ls
-			Right r -> return r
+	firstavail currsize ((k:ks):ls)
+		| k == basek = getunchunked
+			`catchNonAsyncAnnex` (const $ firstavail currsize ls)
+		| otherwise = do
+			let offset = resumeOffset currsize k
+			let p = maybe basep
+				(offsetMeterUpdate basep . toBytesProcessed)
+				offset
+			v <- tryNonAsyncAnnex $
+				retriever (encryptor k) p $ \content ->
+					bracketIO (maybe opennew openresume offset) hClose $ \h -> do
+						void $ tosink (Just h) p content
+						let sz = toBytesProcessed $
+							fromMaybe 0 $ keyChunkSize k
+						getrest p h sz sz ks
+							`catchNonAsyncAnnex` giveup
+			case v of
+				Left e
+					| null ls -> giveup e
+					| otherwise -> firstavail currsize ls
+				Right r -> return r
 
 	getrest _ _ _ _ [] = return True
 	getrest p h sz bytesprocessed (k:ks) = do
 		let p' = offsetMeterUpdate p bytesprocessed
-		retriever (encryptor k) p' $ tosink h p'
-		getrest p h sz (addBytesProcessed bytesprocessed sz) ks
+		ifM (retriever (encryptor k) p' $ tosink (Just h) p')
+			( getrest p h sz (addBytesProcessed bytesprocessed sz) ks
+			, giveup "chunk retrieval failed"
+			)
 
-	getunchunked = bracketIO opennew hClose $ \h -> do
-		retriever (encryptor basek) basep $ tosink h basep
-		return True
+	getunchunked = retriever (encryptor basek) basep $ tosink Nothing basep
 
 	opennew = openBinaryFile dest WriteMode
 
@@ -290,13 +293,11 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 	 - it is not responsible for updating progress (often it cannot).
 	 - Instead, the sink is passed a meter to update  as it consumes
 	 - the ByteString. -}
-	tosink h p (ByteContent b) = liftIO $ do
-		sink h (Just p) b
-		return True
-	tosink h _ (FileContent f) = liftIO $ do
-		sink h Nothing =<< L.readFile f
-		nukeFile f
-		return True
+	tosink h p content = sink h p' content
+	  where
+		p'
+			| isByteContent content = Just p
+			| otherwise = Nothing
 
 {- Can resume when the chunk's offset is at or before the end of
  - the dest file. -}

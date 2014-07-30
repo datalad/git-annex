@@ -23,6 +23,10 @@ data ContentSource
 	= FileContent FilePath
 	| ByteContent L.ByteString
 
+isByteContent :: ContentSource -> Bool
+isByteContent (ByteContent _) = True
+isByteContent (FileContent _) = False
+
 -- Action that stores a Key's content on a remote.
 -- Can throw exceptions.
 type Storer = Key -> ContentSource -> MeterUpdate -> Annex Bool
