@@ -21,7 +21,7 @@ import Data.Int
 -- Currently chunks are all fixed size, but other chunking methods
 -- may be added.
 data ChunkMethod = FixedSizeChunks ChunkSize | UnknownChunks String
-	deriving (Ord, Eq)
+	deriving (Ord, Eq, Show)
 
 type ChunkSize = Int64
 
