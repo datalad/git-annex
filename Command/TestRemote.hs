@@ -22,15 +22,19 @@ import qualified Backend.Hash
 import Utility.Tmp
 import Utility.Metered
 import Utility.DataUnits
+import Utility.CopyFile
 import Messages
 import Types.Messages
 import Remote.Helper.Chunked
+import Locations
 
 import Test.Tasty
 import Test.Tasty.Runners
 import Test.Tasty.HUnit
+import Control.Exception
 import "crypto-api" Crypto.Random
 import qualified Data.ByteString as B
+import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
 
 def :: [Command]
@@ -87,27 +91,40 @@ adjustChunkSize r chunksize = Remote.generate (Remote.remotetype r)
 
 test :: Annex.AnnexState -> Remote -> Key -> [TestTree]
 test st r k =
-	[ check "removeKey when not present" $
-		Remote.removeKey r k
+	[ check "removeKey when not present" remove
 	, present False
-	, check "storeKey" $
-		Remote.storeKey r k Nothing nullMeterUpdate
+	, check "storeKey" store
 	, present True
-	, check "storeKey when already present" $
-		Remote.storeKey r k Nothing nullMeterUpdate
+	, check "storeKey when already present" store
 	, present True
 	, check "retrieveKeyFile" $ do
 		removeAnnex k
-		getViaTmp k $ \dest ->
-			Remote.retrieveKeyFile r k Nothing dest nullMeterUpdate
-	, check "fsck downloaded object" $ do
-		case maybeLookupBackendName (keyBackendName k) of
-			Nothing -> return True
-			Just b -> case fsckKey b of
-				Nothing -> return True
-				Just fscker -> fscker k (key2file k)
-	, check "removeKey when present" $
-		Remote.removeKey r k
+		get
+	, check "fsck downloaded object" fsck
+	, check "retrieveKeyFile resume from 33%" $ do
+		loc <- Annex.calcRepo (gitAnnexLocation k)
+		tmp <- prepTmp k
+		partial <- liftIO $ bracket (openBinaryFile loc ReadMode) hClose $ \h -> do
+			sz <- hFileSize h
+			L.hGet h $ fromInteger $ sz `div` 3
+		liftIO $ L.writeFile tmp partial
+		removeAnnex k
+		get
+	, check "fsck downloaded object" fsck
+	, check "retrieveKeyFile resume from 0" $ do
+		tmp <- prepTmp k
+		liftIO $ writeFile tmp ""
+		removeAnnex k
+		get
+	, check "fsck downloaded object" fsck
+	, check "retrieveKeyFile resume from end" $ do
+		loc <- Annex.calcRepo (gitAnnexLocation k)
+		tmp <- prepTmp k
+		void $ liftIO $ copyFileExternal loc tmp
+		removeAnnex k
+		get
+	, check "fsck downloaded object" fsck
+	, check "removeKey when present" remove
 	, present False
 	]
   where
@@ -115,6 +132,15 @@ test st r k =
 		Annex.eval st (Annex.setOutput QuietOutput >> a) @? "failed"
 	present b = check ("present " ++ show b) $
 		(== Right b) <$> Remote.hasKey r k
+	fsck = case maybeLookupBackendName (keyBackendName k) of
+		Nothing -> return True
+		Just b -> case fsckKey b of
+			Nothing -> return True
+			Just fscker -> fscker k (key2file k)
+	get = getViaTmp k $ \dest ->
+		Remote.retrieveKeyFile r k Nothing dest nullMeterUpdate
+	store = Remote.storeKey r k Nothing nullMeterUpdate
+	remove = Remote.removeKey r k
 
 cleanup :: [Remote] -> [Key] -> Bool -> CommandCleanup
 cleanup rs ks ok = do
