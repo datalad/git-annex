@@ -976,6 +976,10 @@ subdirectories).
 
   The --size option can be used to tune the size of the generated objects.
 
+  Testing a single remote will use the remote's configuration,
+  automatically varying the chunk sizes, and with simple shared encryption
+  enabled and disabled.
+
 * `fuzztest`
 
   Generates random changes to files in the current repository,

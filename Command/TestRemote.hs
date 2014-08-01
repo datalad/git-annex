@@ -61,7 +61,8 @@ start basesz ws = do
 	showSideAction "generating test keys"
 	ks <- mapM randKey (keySizes basesz)
 	rs <- catMaybes <$> mapM (adjustChunkSize r) (chunkSizes basesz)
-	next $ perform rs ks
+	rs' <- concat <$> mapM encryptionVariants rs
+	next $ perform rs' ks
 
 perform :: [Remote] -> [Key] -> CommandPerform
 perform rs ks = do
@@ -73,20 +74,32 @@ perform rs ks = do
 		Just act -> liftIO act
 	next $ cleanup rs ks ok
   where
-	desc r' k = unwords
-		[ "key size"
-		, show (keySize k)
-		, "chunk size"
-		, show (chunkConfig (Remote.config r'))
+	desc r' k = intercalate "; " $ map unwords
+		[ [ "key size", show (keySize k) ]
+		, [ show (chunkConfig (Remote.config r')) ]
+		, ["encryption", fromMaybe "none" (M.lookup "encryption" (Remote.config r'))]
 		]
 
--- To adjust a Remote to use a new chunk size, have to re-generate it with
--- a modified config.
 adjustChunkSize :: Remote -> Int -> Annex (Maybe Remote)
-adjustChunkSize r chunksize = Remote.generate (Remote.remotetype r)
+adjustChunkSize r chunksize = adjustRemoteConfig r
+	(M.insert "chunk" (show chunksize))
+
+-- Variants of a remote with no encryption, and with simple shared
+-- encryption. Gpg key based encryption is not tested.
+encryptionVariants :: Remote -> Annex [Remote]
+encryptionVariants r = do
+	noenc <- adjustRemoteConfig r (M.insert "encryption" "none")
+	sharedenc <- adjustRemoteConfig r $
+		M.insert "encryption" "shared" .
+		M.insert "highRandomQuality" "false"
+	return $ catMaybes [noenc, sharedenc]
+
+-- Regenerate a remote with a modified config.
+adjustRemoteConfig :: Remote -> (Remote.RemoteConfig -> Remote.RemoteConfig) -> Annex (Maybe Remote)
+adjustRemoteConfig r adjustconfig = Remote.generate (Remote.remotetype r)
 	(Remote.repo r)
 	(Remote.uuid r)
-	(M.insert "chunk" (show chunksize) (Remote.config r))
+	(adjustconfig (Remote.config r))
 	(Remote.gitconfig r)
 
 test :: Annex.AnnexState -> Remote -> Key -> [TestTree]
