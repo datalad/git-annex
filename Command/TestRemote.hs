@@ -11,6 +11,7 @@ import Common
 import Command
 import qualified Annex
 import qualified Remote
+import qualified Types.Remote as Remote
 import Types
 import Types.Key (key2file, keyBackendName, keySize)
 import Types.Backend (getKey, fsckKey)
@@ -20,45 +21,72 @@ import Backend
 import qualified Backend.Hash
 import Utility.Tmp
 import Utility.Metered
+import Utility.DataUnits
 import Messages
 import Types.Messages
+import Remote.Helper.Chunked
 
 import Test.Tasty
 import Test.Tasty.Runners
 import Test.Tasty.HUnit
 import "crypto-api" Crypto.Random
 import qualified Data.ByteString as B
+import qualified Data.Map as M
 
 def :: [Command]
-def = [ command "testremote" paramRemote seek SectionTesting
-		"test transfers to/from a remote"]
+def = [ withOptions [sizeOption] $
+		command "testremote" paramRemote seek SectionTesting
+			"test transfers to/from a remote"]
+
+sizeOption :: Option
+sizeOption = fieldOption [] "size" paramSize "base key size (default 1MiB)"
 
 seek :: CommandSeek
-seek = withWords start
+seek ps = do
+	basesz <- fromInteger . fromMaybe (1024 * 1024)
+		<$> getOptionField sizeOption (pure . getsize)
+	withWords (start basesz) ps
+  where
+	getsize v = v >>= readSize dataUnits
 
-start :: [String] -> CommandStart
-start ws = do
+start :: Int -> [String] -> CommandStart
+start basesz ws = do
 	let name = unwords ws
 	showStart "testremote" name
 	r <- either error id <$> Remote.byName' name
 	showSideAction "generating test keys"
-	ks <- testKeys
-	next $ perform r ks
+	ks <- mapM randKey (keySizes basesz)
+	rs <- catMaybes <$> mapM (adjustChunkSize r) (chunkSizes basesz)
+	next $ perform rs ks
 
-perform :: Remote -> [Key] -> CommandPerform
-perform r ks = do
+perform :: [Remote] -> [Key] -> CommandPerform
+perform rs ks = do
 	st <- Annex.getState id
 	let tests = testGroup "Remote Tests" $
-		map (\k -> testGroup (descSize k) (testList st r k)) ks
+		[ testGroup (desc r k) (test st r k) | k <- ks, r <- rs ]
 	ok <- case tryIngredients [consoleTestReporter] mempty tests of
 		Nothing -> error "No tests found!?"
 		Just act -> liftIO act
-	next $ cleanup r ks ok
+	next $ cleanup rs ks ok
   where
-	descSize k = "key size " ++ show (keySize k)
+	desc r' k = unwords
+		[ "key size"
+		, show (keySize k)
+		, "chunk size"
+		, show (chunkConfig (Remote.config r'))
+		]
 
-testList :: Annex.AnnexState -> Remote -> Key -> [TestTree]
-testList st r k =
+-- To adjust a Remote to use a new chunk size, have to re-generate it with
+-- a modified config.
+adjustChunkSize :: Remote -> Int -> Annex (Maybe Remote)
+adjustChunkSize r chunksize = Remote.generate (Remote.remotetype r)
+	(Remote.repo r)
+	(Remote.uuid r)
+	(M.insert "chunk" (show chunksize) (Remote.config r))
+	(Remote.gitconfig r)
+
+test :: Annex.AnnexState -> Remote -> Key -> [TestTree]
+test st r k =
 	[ check "removeKey when not present" $
 		Remote.removeKey r k
 	, present False
@@ -88,24 +116,28 @@ testList st r k =
 	present b = check ("present " ++ show b) $
 		(== Right b) <$> Remote.hasKey r k
 
-cleanup :: Remote -> [Key] -> Bool -> CommandCleanup
-cleanup r ks ok = do
-	forM_ ks (Remote.removeKey r)
+cleanup :: [Remote] -> [Key] -> Bool -> CommandCleanup
+cleanup rs ks ok = do
+	forM_ rs $ \r -> forM_ ks (Remote.removeKey r)
 	forM_ ks removeAnnex
 	return ok
 
--- Generate random keys of several interesting sizes, assuming a chunk
--- size that is a uniform divisor of 1 MB.
-testKeys :: Annex [Key]
-testKeys = mapM randKey
-	[ 0 -- empty key is a special case when chunking
-	, mb
-	, mb + 1
-	, mb - 1
-	, mb + mb
+chunkSizes :: Int -> [Int]
+chunkSizes base = 
+	[ 0 -- no chunking
+	, base `div` 100
+	, base `div` 1000
+	, base
 	]
-  where
-	mb = 1024 * 2014
+
+keySizes :: Int -> [Int]
+keySizes base = filter (>= 0)
+	[ 0 -- empty key is a special case when chunking
+	, base
+	, base + 1
+	, base - 1
+	, base * 2
+	]
 
 randKey :: Int -> Annex Key
 randKey sz = withTmpFile "randkey" $ \f h -> do

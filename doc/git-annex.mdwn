@@ -974,6 +974,8 @@ subdirectories).
   It's safe to run in an existing repository (the repository contents are
   not altered), although it may perform expensive data transfers.
 
+  The --size option can be used to tune the size of the generated objects.
+
 * `fuzztest`
 
   Generates random changes to files in the current repository,
