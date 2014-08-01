@@ -128,14 +128,25 @@ while read line; do
 				STORE)
 					# Store the file to a location
 					# based on the key.
-					# XXX when possible, send PROGRESS
+					# XXX when at all possible, send PROGRESS
 					calclocation "$key"
 					mkdir -p "$(dirname "$LOC")"
-					if runcmd cp "$file" "$LOC"; then
+					# Store in temp file first, so that
+					# CHECKPRESENT does not see it
+					# until it is all stored.
+					mkdir -p "$mydirectory/tmp"
+					tmp="$mydirectory/tmp/$key"
+					if runcmd cp "$file" "$tmp" \
+					   && runcmd mv -f "$tmp" "$LOC"; then
 						echo TRANSFER-SUCCESS STORE "$key"
 					else
 						echo TRANSFER-FAILURE STORE "$key"
 					fi
+
+					mkdir -p "$(dirname "$LOC")"
+					# The file may already exist, so
+					# make sure we can overwrite it.
+					chmod 644 "$LOC" 2>/dev/null || true
 				;;
 				RETRIEVE)
 					# Retrieve from a location based on
