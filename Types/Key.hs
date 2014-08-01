@@ -13,6 +13,8 @@ module Types.Key (
 	stubKey,
 	key2file,
 	file2key,
+	nonChunkKey,
+	chunkKeyOffset,
 
 	prop_idempotent_key_encode,
 	prop_idempotent_key_decode
@@ -46,6 +48,19 @@ stubKey = Key
 	, keyChunkSize = Nothing
 	, keyChunkNum = Nothing
 	}
+
+-- Gets the parent of a chunk key.
+nonChunkKey :: Key -> Key
+nonChunkKey k = k
+	{ keyChunkSize = Nothing
+	, keyChunkNum = Nothing
+	}
+
+-- Where a chunk key is offset within its parent.
+chunkKeyOffset :: Key -> Maybe Integer
+chunkKeyOffset k = (*)
+	<$> keyChunkSize k
+	<*> (pred <$> keyChunkNum k)
 
 fieldSep :: Char
 fieldSep = '-'

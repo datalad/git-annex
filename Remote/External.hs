@@ -15,14 +15,12 @@ import Types.CleanupActions
 import qualified Git
 import Config
 import Remote.Helper.Special
-import Remote.Helper.Encryptable
-import Crypto
+import Remote.Helper.ChunkedEncryptable
 import Utility.Metered
 import Logs.Transfer
 import Logs.PreferredContent.Raw
 import Logs.RemoteState
 import Config.Cost
-import Annex.Content
 import Annex.UUID
 import Annex.Exception
 import Creds
@@ -30,7 +28,6 @@ import Creds
 import Control.Concurrent.STM
 import System.Log.Logger (debugM)
 import qualified Data.Map as M
-import qualified Data.ByteString.Lazy as L
 
 remote :: RemoteType
 remote = RemoteType {
@@ -46,15 +43,15 @@ gen r u c gc = do
 	Annex.addCleanup (RemoteCleanup u) $ stopExternal external
 	cst <- getCost external r gc
 	avail <- getAvailability external r gc
-	return $ Just $ encryptableRemote c
-		(storeEncrypted external $ getGpgEncParams (c,gc))
-		(retrieveEncrypted external)
+	return $ Just $ chunkedEncryptableRemote c
+		(simplyPrepare $ store external)
+		(simplyPrepare $ retrieve external)
 		Remote {
 			uuid = u,
 			cost = cst,
 			name = Git.repoDescribe r,
-			storeKey = store external,
-			retrieveKeyFile = retrieve external,
+			storeKey = storeKeyDummy,
+			retrieveKeyFile = retreiveKeyFileDummy,
 			retrieveKeyFileCheap = \_ _ -> return False,
 			removeKey = remove external,
 			hasKey = checkPresent external,
@@ -90,25 +87,8 @@ externalSetup mu _ c = do
 	gitConfigSpecialRemote u c'' "externaltype" externaltype
 	return (c'', u)
 
-store :: External -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store external k _f p = sendAnnex k rollback $ \f ->
-	metered (Just p) k $
-		storeHelper external k f
-  where
-	rollback = void $ remove external k
-
-storeEncrypted :: External -> [CommandParam] -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
-storeEncrypted external gpgOpts (cipher, enck) k p = withTmp enck $ \tmp ->
-	sendAnnex k rollback $ \src -> do
-		metered (Just p) k $ \meterupdate -> do
-			liftIO $ encrypt gpgOpts cipher (feedFile src) $
-				readBytes $ L.writeFile tmp
-			storeHelper external enck tmp meterupdate
-  where
-	rollback = void $ remove external enck
-
-storeHelper :: External -> Key -> FilePath -> MeterUpdate -> Annex Bool
-storeHelper external k f p = safely $
+store :: External -> Storer
+store external = fileStorer $ \k f p ->
 	handleRequest external (TRANSFER Upload k f) (Just p) $ \resp ->
 		case resp of
 			TRANSFER_SUCCESS Upload k' | k == k' ->
@@ -119,31 +99,15 @@ storeHelper external k f p = safely $
 					return False
 			_ -> Nothing
 
-retrieve :: External -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
-retrieve external k _f d p = metered (Just p) k $
-	retrieveHelper external k d
-
-retrieveEncrypted :: External -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
-retrieveEncrypted external (cipher, enck) k f p = withTmp enck $ \tmp ->
-	metered (Just p) k $ \meterupdate -> 
-		ifM (retrieveHelper external enck tmp meterupdate)
-			( liftIO $ catchBoolIO $ do
-				decrypt cipher (feedFile tmp) $
-					readBytes $ L.writeFile f
-				return True
-			, return False
-			)
-
-retrieveHelper :: External -> Key -> FilePath -> MeterUpdate -> Annex Bool
-retrieveHelper external k d p = safely $
+retrieve :: External -> Retriever
+retrieve external = fileRetriever $ \d k p -> 
 	handleRequest external (TRANSFER Download k d) (Just p) $ \resp ->
 		case resp of
 			TRANSFER_SUCCESS Download k'
-				| k == k' -> Just $ return True
+				| k == k' -> Just $ return ()
 			TRANSFER_FAILURE Download k' errmsg
 				| k == k' -> Just $ do
-					warning errmsg
-					return False
+					error errmsg
 			_ -> Nothing
 
 remove :: External -> Key -> Annex Bool

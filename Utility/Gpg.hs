@@ -11,14 +11,15 @@ module Utility.Gpg where
 
 import Control.Applicative
 import Control.Concurrent
+import Control.Monad.IO.Class
 import qualified Data.Map as M
+import Control.Monad.Catch (bracket, MonadMask)
 
 import Common
 import qualified Build.SysConfig as SysConfig
 
 #ifndef mingw32_HOST_OS
 import System.Posix.Types
-import Control.Exception (bracket)
 import System.Path
 import Utility.Env
 #else
@@ -104,18 +105,18 @@ pipeStrict params input = do
  -
  - Note that to avoid deadlock with the cleanup stage,
  - the reader must fully consume gpg's input before returning. -}
-feedRead :: [CommandParam] -> String -> (Handle -> IO ()) -> (Handle -> IO a) -> IO a
+feedRead :: (MonadIO m, MonadMask m) => [CommandParam] -> String -> (Handle -> IO ()) -> (Handle -> m a) -> m a
 feedRead params passphrase feeder reader = do
 #ifndef mingw32_HOST_OS
 	-- pipe the passphrase into gpg on a fd
-	(frompipe, topipe) <- createPipe
-	void $ forkIO $ do
+	(frompipe, topipe) <- liftIO createPipe
+	liftIO $ void $ forkIO $ do
 		toh <- fdToHandle topipe
 		hPutStrLn toh passphrase
 		hClose toh
 	let Fd pfd = frompipe
 	let passphrasefd = [Param "--passphrase-fd", Param $ show pfd]
-	closeFd frompipe `after` go (passphrasefd ++ params)
+	liftIO (closeFd frompipe) `after` go (passphrasefd ++ params)
 #else
 	-- store the passphrase in a temp file for gpg
 	withTmpFile "gpg" $ \tmpfile h -> do
@@ -128,15 +129,24 @@ feedRead params passphrase feeder reader = do
 	go params' = pipeLazy params' feeder reader
 
 {- Like feedRead, but without passphrase. -}
-pipeLazy :: [CommandParam] -> (Handle -> IO ()) -> (Handle -> IO a) -> IO a
+pipeLazy :: (MonadIO m, MonadMask m) => [CommandParam] -> (Handle -> IO ()) -> (Handle -> m a) -> m a
 pipeLazy params feeder reader = do
-	params' <- stdParams $ Param "--batch" : params
-	withBothHandles createProcessSuccess (proc gpgcmd params')
-		$ \(to, from) -> do
-			void $ forkIO $ do
-				feeder to
-				hClose to
-			reader from
+	params' <- liftIO $ stdParams $ Param "--batch" : params
+	let p = (proc gpgcmd params')
+		{ std_in = CreatePipe
+		, std_out = CreatePipe
+		, std_err = Inherit
+		}
+	bracket (setup p) (cleanup p) go
+  where
+	setup = liftIO . createProcess
+	cleanup p (_, _, _, pid) = liftIO $ forceSuccessProcess p pid
+	go p = do
+		let (to, from) = bothHandles p
+		liftIO $ void $ forkIO $ do
+			feeder to
+			hClose to
+		reader from
 
 {- Finds gpg public keys matching some string. (Could be an email address,
  - a key id, or a name; See the section 'HOW TO SPECIFY A USER ID' of

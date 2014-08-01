@@ -66,44 +66,45 @@ encryptionSetup c = maybe genCipher updateCipher $ extractCipher c
 	c' = foldr M.delete c
                 -- git-annex used to remove 'encryption' as well, since
                 -- it was redundant; we now need to keep it for
-                -- public-key incryption, hence we leave it on newer
+                -- public-key encryption, hence we leave it on newer
                 -- remotes (while being backward-compatible).
 		[ "keyid", "keyid+", "keyid-", "highRandomQuality" ]
 
-{- Modifies a Remote to support encryption.
- -
- - Two additional functions must be provided by the remote,
- - to support storing and retrieving encrypted content. -}
+{- Modifies a Remote to support encryption. -}
+-- TODO: deprecated
 encryptableRemote
 	:: RemoteConfig
 	-> ((Cipher, Key) -> Key -> MeterUpdate -> Annex Bool)
 	-> ((Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool)
 	-> Remote
 	-> Remote
-encryptableRemote c storeKeyEncrypted retrieveKeyFileEncrypted r = 
-	r {
-		storeKey = store,
-		retrieveKeyFile = retrieve,
-		retrieveKeyFileCheap = retrieveCheap,
-		removeKey = withkey $ removeKey r,
-		hasKey = withkey $ hasKey r,
-		cost = maybe
-			(cost r)
-			(const $ cost r + encryptedRemoteCostAdj)
-			(extractCipher c)
-	}
-  where
-	store k f p = cip k >>= maybe
+encryptableRemote c storeKeyEncrypted retrieveKeyFileEncrypted r = r
+	{ storeKey = \k f p -> cip k >>= maybe
 		(storeKey r k f p)
-		(\enck -> storeKeyEncrypted enck k p)
-	retrieve k f d p = cip k >>= maybe
+		(\v -> storeKeyEncrypted v k p)
+	, retrieveKeyFile = \k f d p -> cip k >>= maybe
 		(retrieveKeyFile r k f d p)
-		(\enck -> retrieveKeyFileEncrypted enck k d p)
-	retrieveCheap k d = cip k >>= maybe
+		(\v -> retrieveKeyFileEncrypted v k d p)
+	, retrieveKeyFileCheap = \k d -> cip k >>= maybe
 		(retrieveKeyFileCheap r k d)
 		(\_ -> return False)
-	withkey a k = cip k >>= maybe (a k) (a . snd)
-	cip = cipherKey c
+	, removeKey = \k -> cip k >>= maybe
+		(removeKey r k)
+		(\(_, enckey) -> removeKey r enckey)
+	, hasKey = \k -> cip k >>= maybe
+		(hasKey r k)
+		(\(_, enckey) -> hasKey r enckey)
+	, cost = maybe
+		(cost r)
+		(const $ cost r + encryptedRemoteCostAdj)
+		(extractCipher c)
+	}
+  where
+	cip k = do
+		v <- cipherKey c
+		return $ case v of
+			Nothing -> Nothing
+			Just (cipher, enck) -> Just (cipher, enck k)
 
 {- Gets encryption Cipher. The decrypted Ciphers are cached in the Annex
  - state. -}
@@ -136,11 +137,11 @@ embedCreds c
 	| isJust (M.lookup "cipherkeys" c) && isJust (M.lookup "cipher" c) = True
 	| otherwise = False
 
-{- Gets encryption Cipher, and encrypted version of Key. -}
-cipherKey :: RemoteConfig -> Key -> Annex (Maybe (Cipher, Key))
-cipherKey c k = fmap make <$> remoteCipher c
+{- Gets encryption Cipher, and key encryptor. -}
+cipherKey :: RemoteConfig -> Annex (Maybe (Cipher, EncKey))
+cipherKey c = fmap make <$> remoteCipher c
   where
-	make ciphertext = (ciphertext, encryptKey mac ciphertext k)
+	make ciphertext = (ciphertext, encryptKey mac ciphertext)
 	mac = fromMaybe defaultMac $ M.lookup "mac" c >>= readMac
 
 {- Stores an StorableCipher in a remote's configuration. -}

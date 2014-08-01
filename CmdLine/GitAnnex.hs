@@ -96,9 +96,10 @@ import qualified Command.XMPPGit
 #endif
 import qualified Command.RemoteDaemon
 #endif
-import qualified Command.Test
 #ifdef WITH_TESTSUITE
+import qualified Command.Test
 import qualified Command.FuzzTest
+import qualified Command.TestRemote
 #endif
 #ifdef WITH_EKG
 import System.Remote.Monitoring
@@ -187,9 +188,10 @@ cmds = concat
 #endif
 	, Command.RemoteDaemon.def
 #endif
-	, Command.Test.def
 #ifdef WITH_TESTSUITE
+	, Command.Test.def
 	, Command.FuzzTest.def
+	, Command.TestRemote.def
 #endif
 	]
 

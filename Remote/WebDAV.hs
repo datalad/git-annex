@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE ScopedTypeVariables, CPP #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Remote.WebDAV (remote, davCreds, configUrl) where
 
@@ -16,11 +16,7 @@ import qualified Data.ByteString.Lazy.UTF8 as L8
 import qualified Data.ByteString.Lazy as L
 import qualified Control.Exception as E
 import qualified Control.Exception.Lifted as EL
-#if MIN_VERSION_DAV(0,6,0)
 import Network.HTTP.Client (HttpException(..))
-#else
-import Network.HTTP.Conduit (HttpException(..))
-#endif
 import Network.HTTP.Types
 import System.Log.Logger (debugM)
 import System.IO.Error
@@ -113,7 +109,7 @@ storeHelper :: Remote -> Key -> DavUrl -> DavUser -> DavPass -> L.ByteString -> 
 storeHelper r k baseurl user pass b = catchBoolIO $ do
 	mkdirRecursiveDAV tmpurl user pass
 	case chunkconfig of
-		NoChunks -> flip catchNonAsync (\e -> print e >> return False) $ do
+		NoChunks -> flip catchNonAsync (\e -> warningIO (show e) >> return False) $ do
 			storehttp tmpurl b
 			finalizer tmpurl keyurl
 			return True
@@ -140,7 +136,7 @@ retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex 
 retrieve r k _f d p = metered (Just p) k $ \meterupdate ->
 	davAction r False $ \(baseurl, user, pass) -> liftIO $ catchBoolIO $
 		withStoredFiles r k baseurl user pass onerr $ \urls -> do
-			meteredWriteFileChunks meterupdate d urls $ \url -> do
+			Legacy.meteredWriteFileChunks meterupdate d urls $ \url -> do
 				mb <- getDAV url user pass
 				case mb of
 					Nothing -> throwIO "download failed"
@@ -308,57 +304,37 @@ debugDAV :: DavUrl -> String -> IO ()
 debugDAV msg url = debugM "DAV" $ msg ++ " " ++ url
 
 {---------------------------------------------------------------------
- - Low-level DAV operations, using the new DAV monad when available.
+ - Low-level DAV operations.
  ---------------------------------------------------------------------}
 
 putDAV :: DavUrl -> DavUser -> DavPass -> L.ByteString -> IO ()
 putDAV url user pass b = do
 	debugDAV "PUT" url
-#if MIN_VERSION_DAV(0,6,0)
 	goDAV url user pass $ putContentM (contentType, b)
-#else
-	putContent url user pass (contentType, b)
-#endif
 
 getDAV :: DavUrl -> DavUser -> DavPass -> IO (Maybe L.ByteString)
 getDAV url user pass = do
 	debugDAV "GET" url
 	eitherToMaybe <$> tryNonAsync go
   where
-#if MIN_VERSION_DAV(0,6,0)
 	go = goDAV url user pass $ snd <$> getContentM
-#else
-	go = snd . snd <$> getPropsAndContent url user pass
-#endif
 
 deleteDAV :: DavUrl -> DavUser -> DavPass -> IO ()
 deleteDAV url user pass = do
 	debugDAV "DELETE" url
-#if MIN_VERSION_DAV(0,6,0)
 	goDAV url user pass delContentM
-#else
-	deleteContent url user pass
-#endif
 
 moveDAV :: DavUrl -> DavUrl -> DavUser -> DavPass -> IO ()
 moveDAV url newurl user pass = do
 	debugDAV ("MOVE to " ++ newurl ++ " from ") url
-#if MIN_VERSION_DAV(0,6,0)
 	goDAV url user pass $ moveContentM newurl'
-#else
-	moveContent url newurl' user pass
-#endif
   where
 	newurl' = B8.fromString newurl
 
 mkdirDAV :: DavUrl -> DavUser -> DavPass -> IO Bool
 mkdirDAV url user pass = do
 	debugDAV "MKDIR" url
-#if MIN_VERSION_DAV(0,6,0)
 	goDAV url user pass mkCol
-#else
-	makeCollection url user pass
-#endif
 
 existsDAV :: DavUrl -> DavUser -> DavPass -> IO (Either String Bool)
 existsDAV url user pass = do
@@ -366,35 +342,19 @@ existsDAV url user pass = do
 	either (Left . show) id <$> tryNonAsync check
   where
 	ispresent = return . Right
-#if MIN_VERSION_DAV(0,6,0)
 	check = goDAV url user pass $ do
 		setDepth Nothing
 		EL.catchJust
 			(matchStatusCodeException notFound404)
 			(getPropsM >> ispresent True)
 			(const $ ispresent False)
-#else
-	check = E.catchJust
-		(matchStatusCodeException notFound404)
-#if ! MIN_VERSION_DAV(0,4,0)
-		(getProps url user pass >> ispresent True)
-#else
-		(getProps url user pass Nothing >> ispresent True)
-#endif
-		(const $ ispresent False)
-#endif
 
 matchStatusCodeException :: Status -> HttpException -> Maybe ()
-#if MIN_VERSION_DAV(0,6,0)
 matchStatusCodeException want (StatusCodeException s _ _)
-#else
-matchStatusCodeException want (StatusCodeException s _)
-#endif
 	| s == want = Just ()
 	| otherwise = Nothing
 matchStatusCodeException _ _ = Nothing
 
-#if MIN_VERSION_DAV(0,6,0)
 goDAV :: DavUrl -> DavUser -> DavPass -> DAVT IO a -> IO a
 goDAV url user pass a = choke $ evalDAVT url $ do
 	setResponseTimeout Nothing -- disable default (5 second!) timeout
@@ -407,4 +367,3 @@ goDAV url user pass a = choke $ evalDAVT url $ do
 		case x of
 			Left e -> error e
 			Right r -> return r
-#endif

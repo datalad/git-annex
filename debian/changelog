@@ -1,5 +1,12 @@
 git-annex (5.20140718) UNRELEASED; urgency=medium
 
+  * New chunk= option to chunk files stored in special remotes.
+    Currently supported by: directory, and all external special remotes.
+  * Partially transferred files are automatically resumed when using
+    chunked remotes!
+  * The old chunksize= option is deprecated. Do not use for new remotes.
+  * Legacy code for directory remotes using the old chunksize= option
+    will keep them working, but more slowly than before.
   * webapp: Automatically install Konqueror integration scripts
     to get and drop files.
   * repair: Removing bad objects could leave fsck finding no more
@@ -8,6 +15,8 @@ git-annex (5.20140718) UNRELEASED; urgency=medium
     were incompletely repaired before.
   * Fix cost calculation for non-encrypted remotes.
   * Display exception message when a transfer fails due to an exception.
+  * WebDAV: Dropped support for DAV before 0.6.1.
+  * testremote: New command to test uploads/downloads to a remote.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 21 Jul 2014 14:41:26 -0400
 

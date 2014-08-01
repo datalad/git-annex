@@ -124,7 +124,7 @@ Executable git-annex
 
   if flag(TestSuite)
     Build-Depends: tasty (>= 0.7), tasty-hunit, tasty-quickcheck, tasty-rerun,
-     optparse-applicative
+     optparse-applicative, crypto-api
     CPP-Options: -DWITH_TESTSUITE
 
   if flag(TDFA)
@@ -142,7 +142,7 @@ Executable git-annex
     CPP-Options: -DWITH_S3
 
   if flag(WebDAV)
-    Build-Depends: DAV ((>= 0.3 && < 0.6) || > 0.6),
+    Build-Depends: DAV (> 0.6),
      http-client, http-conduit, http-types, lifted-base
     CPP-Options: -DWITH_WEBDAV
 

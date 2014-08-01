@@ -7,7 +7,10 @@
 
 {-# LANGUAGE CPP #-}
 
-module Backend.Hash (backends) where
+module Backend.Hash (
+	backends,
+	testKeyBackend,
+) where
 
 import Common.Annex
 import qualified Annex
@@ -36,24 +39,23 @@ hashes = concat
 
 {- The SHA256E backend is the default, so genBackendE comes first. -}
 backends :: [Backend]
-backends = catMaybes $ map genBackendE hashes ++ map genBackend hashes
+backends = map genBackendE hashes ++ map genBackend hashes
 
-genBackend :: Hash -> Maybe Backend
-genBackend hash = Just Backend
+genBackend :: Hash -> Backend
+genBackend hash = Backend
 	{ name = hashName hash
 	, getKey = keyValue hash
 	, fsckKey = Just $ checkKeyChecksum hash
 	, canUpgradeKey = Just needsUpgrade
 	, fastMigrate = Just trivialMigrate
+	, isStableKey = const True
 	}
 
-genBackendE :: Hash -> Maybe Backend
-genBackendE hash = do
-	b <- genBackend hash
-	return $ b 
-		{ name = hashNameE hash
-		, getKey = keyValueE hash
-		}
+genBackendE :: Hash -> Backend
+genBackendE hash = (genBackend hash)
+	{ name = hashNameE hash
+	, getKey = keyValueE hash
+	}
 
 hashName :: Hash -> String
 hashName (SHAHash size) = "SHA" ++ show size
@@ -175,3 +177,18 @@ skeinHasher hashsize
 	| hashsize == 512 = show . skein512
 #endif
 	| otherwise = error $ "unsupported skein size " ++ show hashsize
+
+{- A varient of the SHA256E backend, for testing that needs special keys
+ - that cannot collide with legitimate keys in the repository.
+ -
+ - This is accomplished by appending a special extension to the key,
+ - that is not one that selectExtension would select (due to being too
+ - long).
+ -}
+testKeyBackend :: Backend
+testKeyBackend = 
+	let b = genBackendE (SHAHash 256)
+	in b { getKey = (fmap addE) <$$> getKey b } 
+  where
+	addE k = k { keyName = keyName k ++ longext }
+	longext = ".this-is-a-test-key"

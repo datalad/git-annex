@@ -69,6 +69,7 @@ data CommandSection
 	| SectionMetaData
 	| SectionUtility
 	| SectionPlumbing
+	| SectionTesting
 	deriving (Eq, Ord, Enum, Bounded)
 
 descSection :: CommandSection -> String
@@ -79,3 +80,4 @@ descSection SectionQuery = "Query commands"
 descSection SectionMetaData = "Metadata commands"
 descSection SectionUtility = "Utility commands"
 descSection SectionPlumbing = "Plumbing commands"
+descSection SectionTesting = "Testing commands"

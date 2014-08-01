@@ -231,6 +231,15 @@ cannot check exact file sizes.
 If padding is enabled, gpg compression should be disabled, to not leak
 clues about how well the files compress and so what kind of file it is.
 
+## chunk key hashing
+
+A chunk key should hash into the same directory structure as its parent
+key. This will avoid lots of extra hash directories when using chunking
+with non-encrypted keys.
+
+Won't happen when the key is encrypted, but that is good; hashing to the
+same bucket then would allow statistical correlation.
+
 ## resuming interupted transfers
 
 Resuming interrupted downloads, and uploads are both possible.

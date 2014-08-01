@@ -9,6 +9,7 @@ module Remote.Helper.Chunked.Legacy where
 
 import Common.Annex
 import Remote.Helper.Chunked
+import Utility.Metered
 
 import qualified Data.ByteString.Lazy as L
 import qualified Control.Exception as E
@@ -73,7 +74,7 @@ storeChunks key tmp dest storer recorder finalizer = either onerr return
 		finalizer tmp dest
 		return (not $ null stored)
 	onerr e = do
-		print e
+		warningIO (show e)
 		return False
 
 	basef = tmp ++ keyFile key
@@ -104,7 +105,7 @@ storeChunked chunksize dests storer content = either onerr return
 		| otherwise = storechunks sz [] dests content
 		
 	onerr e = do
-		print e
+		warningIO (show e)
 		return []
 	
 	storechunks _ _ [] _ = return [] -- ran out of dests
@@ -114,3 +115,12 @@ storeChunked chunksize dests storer content = either onerr return
 			let (chunk, b') = L.splitAt sz b
 			storer d chunk
 			storechunks sz (d:useddests) ds b'
+
+{- Writes a series of chunks to a file. The feeder is called to get
+ - each chunk.
+ -}
+meteredWriteFileChunks :: MeterUpdate -> FilePath -> [v] -> (v -> IO L.ByteString) -> IO ()
+meteredWriteFileChunks meterupdate dest chunks feeder =
+	withBinaryFile dest WriteMode $ \h ->
+		forM_ chunks $
+			meteredWrite meterupdate h <=< feeder

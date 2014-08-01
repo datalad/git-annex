@@ -282,7 +282,8 @@ jobList r keys = go =<< glacierEnv (config r) (uuid r)
 			then return nada
 			else do
 				enckeys <- forM keys $ \k ->
-					maybe k snd <$> cipherKey (config r) k
+					maybe k (\(_, enck) -> enck k)
+						<$> cipherKey (config r)
 				let keymap = M.fromList $ zip enckeys keys
 				let convert = mapMaybe (`M.lookup` keymap)
 				return (convert succeeded, convert failed)

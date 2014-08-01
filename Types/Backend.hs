@@ -15,9 +15,16 @@ import Types.KeySource
 data BackendA a = Backend
 	{ name :: String
 	, getKey :: KeySource -> a (Maybe Key) 
+	-- Checks the content of a key.
 	, fsckKey :: Maybe (Key -> FilePath -> a Bool)
+	-- Checks if a key can be upgraded to a better form.
 	, canUpgradeKey :: Maybe (Key -> Bool)
+	-- Checks if there is a fast way to migrate a key to a different
+	-- backend (ie, without re-hashing).
 	, fastMigrate :: Maybe (Key -> BackendA a -> Maybe Key)
+	-- Checks if a key is known (or assumed) to always refer to the
+	-- same data.
+	, isStableKey :: Key -> Bool
 	}
 
 instance Show (BackendA a) where

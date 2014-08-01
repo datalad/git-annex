@@ -22,7 +22,7 @@ import Test.QuickCheck
 import Control.Concurrent
 
 def :: [Command]
-def = [ notBareRepo $ command "fuzztest" paramNothing seek SectionPlumbing
+def = [ notBareRepo $ command "fuzztest" paramNothing seek SectionTesting
 	"generates fuzz test files"]
 
 seek :: CommandSeek

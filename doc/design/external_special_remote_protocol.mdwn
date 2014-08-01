@@ -101,12 +101,14 @@ The following requests *must* all be supported by the special remote.
   Tells the special remote it's time to prepare itself to be used.  
   Only INITREMOTE can come before this.
 * `TRANSFER STORE|RETRIEVE Key File`  
-  Requests the transfer of a key. For Send, the File is the file to upload;
-  for Receive the File is where to store the download.  
+  Requests the transfer of a key. For STORE, the File is the file to upload;
+  for RETRIEVE the File is where to store the download.  
   Note that the File should not influence the filename used on the remote.
   The filename will not contain any whitespace.  
+  Note that it's important that, while a Key is being stored, CHECKPRESENT
+  not indicate it's present until all the data has been transferred.  
   Multiple transfers might be requested by git-annex, but it's fine for the 
-  program to serialize them and only do one at a time.
+  program to serialize them and only do one at a time.  
 * `CHECKPRESENT Key`  
   Requests the remote check if a key is present in it.
 * `REMOVE Key`  
@@ -286,7 +288,6 @@ start a new process the next time it needs to use a remote.
   the remote. However, \n and probably \0 need to be escaped somehow in the
   file data, which adds complication.
 * uuid discovery during INITREMOTE.
-* Support for splitting files into chunks.
 * Support for getting and setting the list of urls that can be associated
   with a key.
 * Hook into webapp. Needs a way to provide some kind of prompt to the user

@@ -1,0 +1,31 @@
+Some [[special_remotes]] have support for breaking large files up into
+chunks that are stored on the remote.
+
+This can be useful to work around limitations on the size of files
+on the remote.
+
+Chunking also allows for resuming interrupted downloads and uploads.
+
+Note that git-annex has to buffer chunks in memory before they are sent to
+a remote. So, using a large chunk size will make it use more memory.
+
+To enable chunking, pass a `chunk=nnMiB` parameter to `git annex
+initremote, specifying the chunk size. 
+
+Good chunk sizes will depend on the remote, but a good starting place
+is probably `1MiB`. Very large chunks are problimatic, both because
+git-annex needs to buffer one chunk in memory when uploading, and because
+a larger chunk will make resuming interrupted transfers less efficient.
+On the other hand, when a file is split into a great many chunks,
+there can be increased overhead of making many requests to the remote.
+
+To disable chunking of a remote that was using chunking,
+pass `chunk=0` to `git annex enableremote`. Any content already stored on
+the remote using chunks will continue to be accessed via chunks, this
+just prevents using chunks when storing new content.
+
+To change the chunk size, pass a `chunk=nnMiB` parameter to
+`git annex enableremote`. This only affects the chunk sized used when
+storing new content.
+
+See also: [[design document|design/assistant/chunks]]

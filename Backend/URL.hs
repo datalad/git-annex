@@ -25,6 +25,9 @@ backend = Backend
 	, fsckKey = Nothing
 	, canUpgradeKey = Nothing
 	, fastMigrate = Nothing
+	-- The content of an url can change at any time, so URL keys are
+	-- not stable.
+	, isStableKey = const False
 	}
 
 {- Every unique url has a corresponding key. -}
