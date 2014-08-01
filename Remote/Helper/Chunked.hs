@@ -33,6 +33,7 @@ data ChunkConfig
 	= NoChunks
 	| UnpaddedChunks ChunkSize
 	| LegacyChunks ChunkSize
+	deriving (Show)
 
 noChunks :: ChunkConfig -> Bool
 noChunks NoChunks = True
@@ -43,12 +44,14 @@ chunkConfig m =
 	case M.lookup "chunksize" m of
 		Nothing -> case M.lookup "chunk" m of
 			Nothing -> NoChunks
-			Just v -> UnpaddedChunks $ readsz v "chunk"
-		Just v -> LegacyChunks $ readsz v "chunksize"
+			Just v -> readsz UnpaddedChunks v "chunk"
+		Just v -> readsz LegacyChunks v "chunksize"
   where
-	readsz v f = case readSize dataUnits v of
-		Just size | size > 0 -> fromInteger size
-		_ -> error ("bad " ++ f)
+	readsz c v f = case readSize dataUnits v of
+		Just size
+			| size == 0 -> NoChunks
+			| size > 0 -> c (fromInteger size)
+		_ -> error $ "bad configuration " ++ f ++ "=" ++ v
 
 -- An infinite stream of chunk keys, starting from chunk 1.
 newtype ChunkKeyStream = ChunkKeyStream [Key]
