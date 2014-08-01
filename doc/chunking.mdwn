@@ -10,7 +10,7 @@ Note that git-annex has to buffer chunks in memory before they are sent to
 a remote. So, using a large chunk size will make it use more memory.
 
 To enable chunking, pass a `chunk=nnMiB` parameter to `git annex
-initremote, specifying the chunk size. 
+initremote`, specifying the chunk size. 
 
 Good chunk sizes will depend on the remote, but a good starting place
 is probably `1MiB`. Very large chunks are problimatic, both because
