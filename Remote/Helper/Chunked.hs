@@ -172,7 +172,7 @@ seekResume h chunkkeys checker = do
 		| pos >= sz = do
 			-- All chunks are already stored!
 			liftIO $ hSeek h AbsoluteSeek sz
-			return (cks', toBytesProcessed sz)
+			return (cks, toBytesProcessed sz)
 		| otherwise = do
 			v <- checker k
 			case v of
