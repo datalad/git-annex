@@ -24,6 +24,9 @@ import Data.Int
  - far, *not* an incremental amount since the last call. -}
 type MeterUpdate = (BytesProcessed -> IO ())
 
+nullMeterUpdate :: MeterUpdate
+nullMeterUpdate _ = return ()
+
 {- Total number of bytes processed so far. -}
 newtype BytesProcessed = BytesProcessed Integer
 	deriving (Eq, Ord, Show)

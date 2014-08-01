@@ -966,6 +966,14 @@ subdirectories).
   There are several parameters, provided by Haskell's tasty test framework.
   Pass --help for details.
 
+* `testremote remote`
+
+  This tests a remote by generating some random objects and sending them to
+  the remote, then redownloading them, removing them from the remote, etc.
+
+  It's safe to run in an existing repository (the repository contents are
+  not altered), although it may perform expensive data transfers.
+
 * `fuzztest`
 
   Generates random changes to files in the current repository,
