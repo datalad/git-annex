@@ -241,7 +241,7 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 		currsize <- liftIO $ catchMaybeIO $
 			toInteger . fileSize <$> getFileStatus dest
 		let ls' = maybe ls (setupResume ls) currsize
-		if any (== 0) (map length ls')
+		if any null ls'
 			then return True -- dest is already complete
 			else firstavail currsize ls' `catchNonAsyncAnnex` giveup
 
