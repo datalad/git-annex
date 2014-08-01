@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn-TDneVW-8kwb1fyTRAJfH3l1xs2VSEmk"
+ nickname="James"
+ subject="comment 1"
+ date="2014-07-30T20:37:27Z"
+ content="""
+It might not suit all your needs but you could try using gitolite and set permissions on the git-annex branch of your repository
+http://gitolite.com/gitolite/conf.html#write-types
+
+"""]]
