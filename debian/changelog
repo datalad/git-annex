@@ -1,7 +1,8 @@
 git-annex (5.20140718) UNRELEASED; urgency=medium
 
   * New chunk= option to chunk files stored in special remotes.
-    Currently supported by: directory, S3, and all external special remotes.
+    Currently supported by: directory, S3, and all external and hook
+    special remotes.
   * Partially transferred files are automatically resumed when using
     chunked remotes!
   * The old chunksize= option is deprecated. Do not use for new remotes.

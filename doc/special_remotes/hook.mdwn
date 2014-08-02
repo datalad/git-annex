@@ -36,6 +36,8 @@ These parameters can be passed to `git annex initremote`:
 
 * `keyid` - Specifies the gpg key to use for [[encryption]].
 
+* `chunk` - Enables [[chunking]] when storing large files.
+
 ## hooks
 
 Each type of hook remote is specified by a collection of hook commands.
