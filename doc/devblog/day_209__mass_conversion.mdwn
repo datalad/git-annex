@@ -11,7 +11,11 @@ problems with S3 remotes, including file size limits, and a memory leak in
 the underlying S3 library.
 
 The S3 conversion included caching of the S3 connection when
-storing/retrieving chunks. But the API doesn't yet support caching
+storing/retrieving chunks. [Update: Actually, it turns out it didn't;
+the hS3 library doesn't support persistent connections. Another reason I
+need to switch to a better S3 library!] 
+
+But the API doesn't yet support caching
 when removing or checking if chunks are present. I should probably expand
 the API, but got into some type checker messes when using generic enough
 data types to support everything. Should probably switch to `ResourceT`.
