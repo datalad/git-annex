@@ -1,0 +1,28 @@
+Have started converting lots of special remotes to the new API. Today, S3
+and hook got chunking support. I also converted several remotes to the new
+API without supporting chunking: bup, ddar, and glacier (which should
+support chunking, but there were complications). 
+
+This removed 110 lines of code while adding features! And,
+I seem to be able to convert them faster than `testremote` can test them. :)
+
+Now that S3 supports chunks, they can be used to work around several
+problems with S3 remotes, including file size limits, and a memory leak in
+the underlying S3 library.
+
+The S3 conversion included caching of the S3 connection when
+storing/retrieving chunks. But the API doesn't yet support caching
+when removing or checking if chunks are present. I should probably expand
+the API, but got into some type checker messes when using generic enough
+data types to support everything. Should probably switch to `ResourceT`.
+
+Also, I tried, but failed to make `testremote` check that storing a key
+is done atomically. The best I could come up with was a test that stored a
+key and had another thread repeatedly check if the object was present on
+the remote, logging the results and timestamps. It then becomes a
+statistical problem -- somewhere toward the end of the log it's ok if the key
+has become present -- but too early might indicate that it wasn't stored
+atomically. Perhaps it's my poor knowledge of statistics, but I could not
+find a way to analize the log that reliably detected non-atomic storage.
+If someone would like to try to work on this, see the `atomic-store-test`
+branch.
