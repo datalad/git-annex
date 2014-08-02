@@ -19,15 +19,16 @@ for example; or clone bup's git repository to further back it up.
 
 These parameters can be passed to `git annex initremote` to configure bup:
 
-* `encryption` - One of "none", "hybrid", "shared", or "pubkey".
-  See [[encryption]].
-
-* `keyid` - Specifies the gpg key to use for [[encryption]].
-
 * `buprepo` - Required. This is passed to `bup` as the `--remote`
   to use to store data. To create the repository,`bup init` will be run.
   Example: "buprepo=example.com:/big/mybup" or "buprepo=/big/mybup"
   (To use the default `~/.bup` repository on the local host, specify "buprepo=")
+
+* `encryption` - One of "none", "hybrid", "shared", or "pubkey".
+  See [[encryption]]. Note that using encryption will prevent
+  de-duplication of content stored in the buprepo.
+
+* `keyid` - Specifies the gpg key to use for [[encryption]].
 
 Options to pass to `bup split` when sending content to bup can also
 be specified, by using `git config annex.bup-split-options`. This
