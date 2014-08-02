@@ -14,6 +14,7 @@ module Remote.Helper.ChunkedEncryptable (
 	simplyPrepare,
 	ContentSource,
 	checkPrepare,
+	resourcePrepare,
 	fileStorer,
 	byteStorer,
 	fileRetriever,
@@ -48,6 +49,11 @@ checkPrepare checker helper k a = ifM (checker k)
 	( a (Just helper)
 	, a Nothing
 	)
+
+-- Use to acquire a resource when preparing a helper.
+resourcePrepare :: (Key -> (r -> Annex Bool) -> Annex Bool) -> (r -> helper) -> Preparer helper
+resourcePrepare withr helper k a = withr k $ \r ->
+        a (Just (helper r))
 
 -- A Storer that expects to be provided with a file containing
 -- the content of the key to store.

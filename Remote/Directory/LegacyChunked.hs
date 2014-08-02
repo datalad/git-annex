@@ -7,8 +7,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE Rank2Types #-}
-
 module Remote.Directory.LegacyChunked where
 
 import qualified Data.ByteString.Lazy as L

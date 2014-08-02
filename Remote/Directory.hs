@@ -6,7 +6,6 @@
  -}
 
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE Rank2Types #-}
 
 module Remote.Directory (remote) where
 

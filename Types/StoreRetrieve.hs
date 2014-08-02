@@ -5,8 +5,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE Rank2Types #-}
-
 module Types.StoreRetrieve where
 
 import Common.Annex
@@ -16,7 +14,7 @@ import qualified Data.ByteString.Lazy as L
 
 -- Prepares for and then runs an action that will act on a Key's
 -- content, passing it a helper when the preparation is successful.
-type Preparer helper = forall a. Key -> (Maybe helper -> Annex a) -> Annex a
+type Preparer helper = Key -> (Maybe helper -> Annex Bool) -> Annex Bool
 
 -- A source of a Key's content.
 data ContentSource
