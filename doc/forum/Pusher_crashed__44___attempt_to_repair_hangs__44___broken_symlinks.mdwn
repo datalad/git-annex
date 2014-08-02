@@ -55,13 +55,17 @@ Here the same:
 
 9.) Ok I don't know what happened I did nothing special but it seems that the repository is broken :( :(
 
-    git annex repair
+    $ git annex --verbose --debug repair
+    [...]
+    [2014-08-02 13:27:38 Pacific Daylight Time] read: git ["--git-dir=C:\\Data\\annex\\.git","--work-tree=C:\\Data\\annex","-c","core.bare=false","show","ef3fe549f457783dbbd877b467b4e54b0ebc813c"]
     Running git fsck ...
+    
     git-annex: DeleteFile "C:\\Data\\annex\\.git\\objects\\2a\\54bb281c80c91ea7a732c0d48db0c5acc0ca2c": permission denied (Access is denied.)
     failed
     git-annex: repair: 1 failed
 
-But that's not true, I can read and delete that file manually
+But this file exists, I can read, write and delete to this file manually, there is definitely no permission denied ...
+
 
 
 
