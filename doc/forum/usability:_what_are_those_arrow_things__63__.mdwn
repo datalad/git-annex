@@ -1,6 +1,8 @@
+# Introduction
+
 i want to relate a usability story that happens fairly regularly when I show git-annex to people. the story goes like this.
 
-----
+# The story
 
 Antoine sat down at his computer saying, "i have this great movie collection I want to share with you, my friend, because the fair use provisions allow for that, and I use this great git-annex tool that allows me to sync my movie collection between different places". His friend Charlie, a Linux user only vaguely familiar with the internals of how his operating system or legal system actually works, reads this as "yay free movies" and wholeheartedly agrees to lend himself to the experiment.
 
@@ -10,7 +12,7 @@ Charlie logs into Antoine's computer, named `marcos`. Antoine shows Charlie wher
 
 Antoine then has no solution but to convert the git-annex repository into direct mode, something which takes a significant amount of time and is actually [[designated as "untrusted"|direct_mode]] in the documentation. In fact, so much so that he actually did [[screw up his repository magnificently|bugs/direct_command_leaves_repository_inconsistent_if_interrupted]] because he freaked out when `git-annex direct` started and interrupted it because he tought it would take too long.
 
-----
+# Technical analysis
 
 Now I understand it is not necessarily `git-annex`'s responsability if Thunar (or Nautilus, for that matter), doesn't know how to properly deal with symlinks (hint: just dereference the damn thing already). Maybe I should file a bug about this against thunar? I also understand that symlinks are useful to ensure the security of the data hosted in `git-annex`, and that I could have used direct mode in the first place. But I like to track changes in git to those files, and direct mode makes that really difficult.
 
@@ -19,3 +21,9 @@ I didn't file this as a bug because I want to start the conversation, but maybe 
 (The other being "how do i actually use git annex to sync those files instead of just copying them by hand", but that's for another story!)
 
 -- [[anarcat]]
+
+# Followup
+
+Here is a bug report filed against Thunar, with a patch to fix this behavior: https://bugzilla.xfce.org/show_bug.cgi?id=11065
+
+Similar bugs would need to be filed against Nautilus, at the very least, but probably other file managers, which makes this task a little daunting, to say the least. -- [[anarcat]]
