@@ -1,0 +1,41 @@
+Sorry that I put all this in the same thread but I don't know what happened and how it is related.
+
+I have just a simple setup: git-annex client with assistant (Windows 7) and on a server (Debian).
+
+Suddenly weird things started to happen
+
+1.) On Windows, when I start the assistant, it writes "Attempting to repair THINKTANK:c:\data\annex [here]" but it runs forever and never stops
+
+2.) On Windows, when I get "Pusher crashed: failed to read sha from git write-tree [Restart Thread]". When I click "Restart Thread" nothing happens but the message from (1) persists.
+
+3.) When I run "git annex fsck" on the client I get thousands of messages like
+    fsck Fotos/2014/DSC_0303.JPG
+      ** No known copies exist of Fotos/2014/DSC_0303.JPG
+    failed
+
+Here the same:
+
+    $ git annex whereis "Fotos/2014/DSC_0303.JPG"
+    whereis Fotos/2014/DSC_0303.JPG (0 copies) failed
+    git-annex: whereis: 1 failed
+
+4.) On the server, files that should ALWAYS be on the server (configured as "full backup") suddenly wiped data that was also made available on the client. The symlinks are dangling symlinks and contain just binary data:
+
+    ls -l
+    lrwxrwxrwx  1 4 Aug  2 08:55 DSC_0011.JPG -> ????
+    lrwxrwxrwx  1 4 Aug  2 08:55 DSC_0012.JPG -> ????
+    lrwxrwxrwx  1 4 Aug  2 08:55 DSC_0013.JPG -> ????
+    lrwxrwxrwx  1 4 Aug  2 08:55 DSC_0014.JPG -> ????
+    lrwxrwxrwx  1 4 Aug  2 08:55 DSC_0015.JPG -> ????
+    lrwxrwxrwx  1 4 Aug  2 08:55 DSC_0018.JPG -> ????
+    lrwxrwxrwx  1 4 Aug  2 08:55 DSC_0019.JPG -> ????
+    lrwxrwxrwx  1 4 Aug  2 08:55 DSC_0020.JPG -> ????
+
+5.) "git annex fsck" on the server is still successful, returning no errors!
+
+6.) Manually executing "git annex sync --content" on both sides does not change anything and does not output any error messages.
+
+Oh no, so desparate :-( Any ideas?
+
+(I am happy to share all log files privately but I do not want to publish them here because they contain sensitive data)
+
