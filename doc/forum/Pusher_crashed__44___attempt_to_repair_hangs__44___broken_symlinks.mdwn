@@ -52,6 +52,17 @@ Here the same:
     exclude="*" and present
     git-annex: failed to read sha from git write-tree
 
+9.) Ok I don't know what happened I did nothing special but it seems that the repository is broken :( :(
+
+    git annex repair
+    Running git fsck ...
+    git-annex: DeleteFile "C:\\Data\\annex\\.git\\objects\\2a\\54bb281c80c91ea7a732c0d48db0c5acc0ca2c": permission denied (Access is denied.)
+    failed
+    git-annex: repair: 1 failed
+
+But that's not true, I can read and delete that file manually
+
+
 
 
 Oh no, so desparate :-( Any ideas?
