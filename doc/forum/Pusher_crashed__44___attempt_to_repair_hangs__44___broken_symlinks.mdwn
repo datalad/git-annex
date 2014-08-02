@@ -9,6 +9,7 @@ Suddenly weird things started to happen
 2.) On Windows, when I get "Pusher crashed: failed to read sha from git write-tree [Restart Thread]". When I click "Restart Thread" nothing happens but the message from (1) persists.
 
 3.) When I run "git annex fsck" on the client I get thousands of messages like
+
     fsck Fotos/2014/DSC_0303.JPG
       ** No known copies exist of Fotos/2014/DSC_0303.JPG
     failed
