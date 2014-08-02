@@ -18,6 +18,9 @@ git-annex (5.20140718) UNRELEASED; urgency=medium
   * Display exception message when a transfer fails due to an exception.
   * WebDAV: Dropped support for DAV before 0.6.1.
   * testremote: New command to test uploads/downloads to a remote.
+  * Dropping an object from a bup special remote now deletes the git branch
+    for the object, although of course the object's content cannot be deleted
+    due to the nature of bup.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 21 Jul 2014 14:41:26 -0400
 
