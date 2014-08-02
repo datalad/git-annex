@@ -19,7 +19,9 @@ Here the same:
     whereis Fotos/2014/DSC_0303.JPG (0 copies) failed
     git-annex: whereis: 1 failed
 
-4.) On the server, files that should ALWAYS be on the server (configured as "full backup") suddenly wiped data that was also made available on the client. The symlinks are dangling symlinks and contain just binary data:
+4.) When I do "git annex status" a whole bunch of files are displayed with "M" (modified) although they are not, they are not even checked out and should be only at the server ...
+
+5.) On the server, files that should ALWAYS be on the server (configured as "full backup") suddenly wiped data that was also made available on the client. The symlinks are dangling symlinks and contain just binary data:
 
     ls -l
     lrwxrwxrwx  1 4 Aug  2 08:55 DSC_0011.JPG -> ????
@@ -31,9 +33,9 @@ Here the same:
     lrwxrwxrwx  1 4 Aug  2 08:55 DSC_0019.JPG -> ????
     lrwxrwxrwx  1 4 Aug  2 08:55 DSC_0020.JPG -> ????
 
-5.) "git annex fsck" on the server is still successful, returning no errors!
+6.) "git annex fsck" on the server is still successful, returning no errors!
 
-6.) Manually executing "git annex sync --content" on both sides does not change anything and does not output any error messages.
+7.) Manually executing "git annex sync --content" on both sides does not change anything and does not output any error messages.
 
 Oh no, so desparate :-( Any ideas?
 
