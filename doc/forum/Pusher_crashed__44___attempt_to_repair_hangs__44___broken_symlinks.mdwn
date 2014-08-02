@@ -1,6 +1,6 @@
 Sorry that I put all this in the same thread but I don't know what happened and how it is related.
 
-I have just a simple setup: git-annex client with assistant (Windows 7) and on a server (Debian).
+I have just a simple setup: git-annex client with assistant (Windows 7) and on a server (Debian, no assistant).
 
 Suddenly weird things started to happen
 
@@ -68,9 +68,10 @@ But this file exists, I can read, write and delete to this file manually, there 
 
 
 
-
-
 Oh no, so desparate :-( Any ideas?
+
+As it seems the client repository is broken but how can it be then that also files on the server repository get deleted which shouldn't be deleted?
+And how can it be that there are not only broken symlinks but symlinks that have just binary garbage as target and "fsck" returns success?
 
 (I am happy to share all log files privately but I do not want to publish them here because they contain sensitive data)
 
