@@ -37,6 +37,23 @@ Here the same:
 
 7.) Manually executing "git annex sync --content" on both sides does not change anything and does not output any error messages.
 
+8.) On the client:
+
+    $ git annex group here
+    error: invalid object 100644 3b3767ae65e5c6d2e3835af3d55fbf2f9e145c8b for '000/0e6/SHA256Es193806--b6d4689fba8e15acd6497f9a7e584c93ea0c8c2199ad32eadac79d59b9f49814.JPG.log'
+    fatal: git-write-tree: error building trees
+    manual
+    (Recording state in git...)
+    git-annex: failed to read sha from git write-tree
+
+    $ git annex wanted here
+    error: invalid object 100644 3b3767ae65e5c6d2e3835af3d55fbf2f9e145c8b for '000/0e6/SHA256Es193806--b6d4689fba8e15acd6497f9a7e584c93ea0c8c2199ad32eadac79d59b9f49814.JPG.log'
+    fatal: git-write-tree: error building trees
+    exclude="*" and present
+    git-annex: failed to read sha from git write-tree
+
+
+
 Oh no, so desparate :-( Any ideas?
 
 (I am happy to share all log files privately but I do not want to publish them here because they contain sensitive data)
