@@ -22,6 +22,7 @@ module Remote.Helper.ChunkedEncryptable (
 	storeKeyDummy,
 	retreiveKeyFileDummy,
 	chunkedEncryptableRemote,
+	encryptableRemote,
 	module X
 ) where
 
@@ -32,7 +33,7 @@ import Crypto
 import Config.Cost
 import Utility.Metered
 import Remote.Helper.Chunked as X
-import Remote.Helper.Encryptable as X
+import Remote.Helper.Encryptable as X hiding (encryptableRemote)
 import Annex.Content
 import Annex.Exception
 
@@ -90,14 +91,18 @@ storeKeyDummy _ _ _ = return False
 retreiveKeyFileDummy :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
 retreiveKeyFileDummy _ _ _ _ = return False
 
+type RemoteModifier = RemoteConfig -> Preparer Storer -> Preparer Retriever -> Remote -> Remote
+
 -- Modifies a base Remote to support both chunking and encryption.
-chunkedEncryptableRemote
-	:: RemoteConfig
-	-> Preparer Storer
-	-> Preparer Retriever
-	-> Remote
-	-> Remote
-chunkedEncryptableRemote c preparestorer prepareretriever baser = encr
+chunkedEncryptableRemote :: RemoteModifier
+chunkedEncryptableRemote c = chunkedEncryptableRemote' (chunkConfig c) c
+
+-- Modifies a base Remote to support encryption, but not chunking.
+encryptableRemote :: RemoteModifier
+encryptableRemote = chunkedEncryptableRemote' NoChunks
+
+chunkedEncryptableRemote' :: ChunkConfig -> RemoteModifier
+chunkedEncryptableRemote' chunkconfig c preparestorer prepareretriever baser = encr
   where
 	encr = baser
 		{ storeKey = \k _f p -> cip >>= storeKeyGen k p
@@ -113,7 +118,6 @@ chunkedEncryptableRemote c preparestorer prepareretriever baser = encr
 			(extractCipher c)
 		}
 	cip = cipherKey c
-	chunkconfig = chunkConfig c
 	gpgopts = getGpgEncParams encr
 
 	safely a = catchNonAsyncAnnex a (\e -> warning (show e) >> return False)
