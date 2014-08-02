@@ -14,5 +14,10 @@ Now in the
 * Month 8 [[!traillink git-remote-daemon]]
 * Month 9 Brazil!, [[!traillink assistant/sshpassword]]
 * Month 10 polish [[assistant/Windows]] port
-* **Month 11 [[!traillink assistant/chunks]], [[!traillink assistant/deltas]], [[!traillink assistant/gpgkeys]] (pick 2?)**
-* Month 12 [[!traillink assistant/telehash]]
+* Month 11 [[!traillink assistant/chunks]]
+* **Month 12** user-driven features and polishing
+
+Deferred until later:
+
+* Month XX [[!traillink assistant/deltas]], [[!traillink assistant/gpgkeys]]
+* Month XX [[!traillink assistant/telehash]]

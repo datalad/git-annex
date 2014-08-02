@@ -15,6 +15,7 @@ git-annex (5.20140718) UNRELEASED; urgency=medium
     Fix this, including support for fixing up repositories that
     were incompletely repaired before.
   * Fix cost calculation for non-encrypted remotes.
+  * Display exception message when a transfer fails due to an exception.
   * WebDAV: Dropped support for DAV before 0.6.1.
   * testremote: New command to test uploads/downloads to a remote.
 

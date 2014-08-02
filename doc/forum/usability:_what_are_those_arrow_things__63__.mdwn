@@ -1,0 +1,21 @@
+i want to relate a usability story that happens fairly regularly when I show git-annex to people. the story goes like this.
+
+----
+
+Antoine sat down at his computer saying, "i have this great movie collection I want to share with you, my friend, because the fair use provisions allow for that, and I use this great git-annex tool that allows me to sync my movie collection between different places". His friend Charlie, a Linux user only vaguely familiar with the internals of how his operating system or legal system actually works, reads this as "yay free movies" and wholeheartedly agrees to lend himself to the experiment.
+
+Antoine creates a user account for Charlie on his home computer, because he doesn't want to have to do everything himself. "That way you can choose which movies you want, because you probably don't want my complete movie collection!" Charlie emphatically responds: "right, I only have my laptop and this USB key here, so I don't think I can get it all".
+
+Charlie logs into Antoine's computer, named `marcos`. Antoine shows Charlie where the movies are located (`/srv/video`) through the file browser (Thunar, for the record). Charlie inserts his USB key into `marcos` and a new icon for the USB key shows up. Then Charlie finds a video he likes, copies and pastes it into the USB key. But instead of a familiar progress bar, Charlie is prompted with a dialog that says "Le système de fichiers ne gère pas les liens symboliques." (Antoine is french, so excuse him, this weird message says that the filesystem doesn't support symbolic links.) Puzzled, Charlie tries to copy the file to his home directory instead. This works better, but the file has a little arrow on it, which seems odd to Charlie. He then asks Antoine for advice.
+
+Antoine then has no solution but to convert the git-annex repository into direct mode, something which takes a significant amount of time and is actually [[designated as "untrusted"|direct_mode]] in the documentation. In fact, so much so that he actually did [[screw up his repository magnificently|bugs/direct_command_leaves_repository_inconsistent_if_interrupted]] because he freaked out when `git-annex direct` started and interrupted it because he tought it would take too long.
+
+----
+
+Now I understand it is not necessarily `git-annex`'s responsability if Thunar (or Nautilus, for that matter), doesn't know how to properly deal with symlinks (hint: just dereference the damn thing already). Maybe I should file a bug about this against thunar? I also understand that symlinks are useful to ensure the security of the data hosted in `git-annex`, and that I could have used direct mode in the first place. But I like to track changes in git to those files, and direct mode makes that really difficult.
+
+I didn't file this as a bug because I want to start the conversation, but maybe it should qualify as a usability bug. As things stand, this is one of the biggest hurdle in teaching people about git annex.
+
+(The other being "how do i actually use git annex to sync those files instead of just copying them by hand", but that's for another story!)
+
+-- [[anarcat]]

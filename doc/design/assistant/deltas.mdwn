@@ -4,6 +4,24 @@ One simple way is to find the key of the old version of a file that's
 being transferred, so it can be used as the basis for rsync, or any
 other similar transfer protocol.
 
-For remotes that don't use rsync, a poor man's version could be had by
-chunking each object into multiple parts. Only modified parts need be
-transferred. Sort of sub-keys to the main key being stored.
+For remotes that don't use rsync, use a rolling checksum based chunker,
+such as BuzHash. This will produce [[chunks]], which can be stored on the
+remote as regular Keys -- where unlike the fixed size chunk keys, the
+SHA256 part of these keys is the checksum of the chunk they contain.
+
+Once that's done, it's easy to avoid uploading chunks that have been sent
+to the remote before.
+
+When retriving a new version of a file, there would need to be a way to get
+the list of chunk keys that constitute the new version. Probably best to
+store this list on the remote. Then there needs to be a way to find which
+of those chunks are available in locally present files, so that the locally
+available chunks can be extracted, and combined with the chunks that need
+to be downloaded, to reconstitute the file.
+
+To find which chucks are locally available, here are 2 ideas:
+
+1. Use a single basis file, eg an old version of the file. Re-chunk it, and
+   use its chunks.  Slow, but simple.
+2. Some kind of database of locally available chunks. Would need to be kept
+   up-to-date as files are added, and as files are downloaded.

@@ -1,0 +1,43 @@
+### Please describe the problem.
+
+When `git annex direct` is interrupted (either through a power outage or deliberate `control-c`) it may leave the repository in an inconsistent state.
+
+A typical situation is `git-annex` believing that the repo is in `indirect` mode while the files are not symlinks anymore.
+
+I believe I have described this problem here before, but the bug report was deleted as part of the may 29th purge (222f78e9eadd3d2cc40ec94ab22241823a7d50d9,  [[bugs/git_annex_indirect_can_fail_catastrophically]]).
+
+### What steps will reproduce the problem?
+
+`git annex direct` on a large repository, `control-c` before it finishes.
+
+Observe how a lot of files are now considered to be in the famous [[typechange status|forum/git-status_typechange_in_direct_mode/]] in git.
+
+### What version of git-annex are you using? On what operating system?
+
+5.20140717 on Debian Jessie, ext4 filesystem.
+
+### Please provide any additional information below.
+
+I wish i could resume the `git annex direct` command, but this will do a `git commit -a` and therefore commit all those files to git directly. It still seems to me that `git annex` should never run `git commit -a` for exactly that kind of situations.
+
+I think that's it for now. -- [[anarcat]]
+
+Update: i was able to get rid of the `typechange` situation by running `git annex lock` on the repository, but then all files are found to be missing by `git annex fsck`:
+
+[[!format txt """
+fsck films/God Hates Cartoons/VIDEO_TS/VTS_15_0.BUP (fixing location log)
+  ** Based on the location log, films/God Hates Cartoons/VIDEO_TS/VTS_15_0.BUP
+  ** was expected to be present, but its content is missing.
+
+  Only 1 of 2 trustworthy copies exist of films/God Hates Cartoons/VIDEO_TS/VTS_15_0.BUP
+  Back it up with git-annex copy.
+"""]]
+
+Oddly enough, the repo still uses hundreds of gigs, because all the files ended up in `.git/annex/misctmp`. Not sure I remember what happened there.
+
+Similar issues and discussions:
+
+* [[bugs/direct_mode_merge_interrupt/]]
+* [[forum/Cleaning_up_after_aborted_sync_in_direct_mode/]]
+* [[bugs/failure_to_return_to_indirect_mode_on_usb/]]
+* [[forum/git-status_typechange_in_direct_mode/]]

@@ -81,3 +81,21 @@ on special remotes, instead use `git annex unused --from`. Example:
 	  (To remove unwanted data: git-annex dropunused --from mys3 NUMBER)
 	$ git annex dropunused --from mys3 1
 	dropunused 12948 (from mys3...) ok
+
+## Testing special remotes
+
+To make sure that a special remote is working correctly, you can use the
+`git annex testremote` command. This expects you to have set up the remote
+as usual, and it then runs a lot of tests, using random data. It's
+particularly useful to test new implementations of special remotes.
+
+By default it will upload and download files of around 1MiB to the remote
+it tests; the `--size` parameter can adjust it test using smaller files.
+
+It's safe to use this command even when you're already storing data in a
+remote; it won't touch your existing files stored on the remote.
+
+For most remotes, it also won't bloat the remote with any data, since
+it cleans up the stuff it uploads. However, the bup, ddar, and tahoe
+special remotes don't support removal of uploaded files, so be careful
+with those.

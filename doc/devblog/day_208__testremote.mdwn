@@ -1,0 +1,10 @@
+Built `git annex testremote` today. 
+
+That took a little bit longer than expected, because it actually found
+several fence post bugs in the chunking code.
+
+It also found a bug in the sample external special remote script.
+
+I am very pleased with this command. Being able to run 640 tests against
+any remote, without any possibility of damaging data already stored in the
+remote, is awesome. Should have written it a looong time ago!
