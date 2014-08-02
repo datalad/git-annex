@@ -15,6 +15,7 @@ module Types.Key (
 	file2key,
 	nonChunkKey,
 	chunkKeyOffset,
+	isChunkKey,
 
 	prop_idempotent_key_encode,
 	prop_idempotent_key_decode
@@ -61,6 +62,9 @@ chunkKeyOffset :: Key -> Maybe Integer
 chunkKeyOffset k = (*)
 	<$> keyChunkSize k
 	<*> (pred <$> keyChunkNum k)
+
+isChunkKey :: Key -> Bool
+isChunkKey k = isJust (keyChunkSize k) && isJust (keyChunkNum k)
 
 fieldSep :: Char
 fieldSep = '-'
