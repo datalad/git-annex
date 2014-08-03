@@ -1,0 +1,21 @@
+I’ve noticed something odd when inspecting the history of the
+git-annex branch today. Apparently, the branch had some merge
+conflicts during sync that involved two alternative location tracking
+entries that both were for one and the same remote. Both entries only
+differed in their timestamps, and the union merge kept both, so that I
+now have .log files in the annex branch that contain duplicate parts
+like this.
+
+1404838274.151066s 1 a2401cfd-1f58-4441-a2b3-d9bef06220ad
+1406978406.24838s 1 a2401cfd-1f58-4441-a2b3-d9bef06220ad
+
+The UUID here is my local repository.
+
+The duplication also occurred in the uuid.log:
+
+4316c3dc-5b6d-46eb-b780-948c717b7be5 server timestamp=1404839228.113473s
+4316c3dc-5b6d-46eb-b780-948c717b7be5 server timestamp=1404847241.863051s
+
+Is this something to be concerned about? The situation somehow arose
+in relation to unannexing a bunch of files and rebasing the master
+branch.
