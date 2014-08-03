@@ -299,7 +299,7 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 	 -
 	 - However, if the Retriever generates a lazy ByteString,
 	 - it is not responsible for updating progress (often it cannot).
-	 - Instead, the sink is passed a meter to update  as it consumes
+	 - Instead, the sink is passed a meter to update as it consumes
 	 - the ByteString.
 	 -}
 	tosink h p content = sink h p' content
