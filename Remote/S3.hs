@@ -147,9 +147,9 @@ store (conn, bucket) r k p file = do
 
 prepareRetrieve :: Remote -> Preparer Retriever
 prepareRetrieve r = resourcePrepare (const $ s3Action r False) $ \(conn, bucket) ->
-	byteRetriever $ \k ->
+	byteRetriever $ \k sink ->
 		liftIO (getObject conn $ bucketKey r bucket k)
-			>>= either s3Error (return . obj_data)
+			>>= either s3Error (sink . obj_data)
 
 retrieveCheap :: Remote -> Key -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False

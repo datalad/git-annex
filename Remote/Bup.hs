@@ -8,6 +8,7 @@
 module Remote.Bup (remote) where
 
 import qualified Data.Map as M
+import qualified Data.ByteString.Lazy as L
 import Data.ByteString.Lazy.UTF8 (fromString)
 
 import Common.Annex
@@ -127,12 +128,12 @@ store r buprepo = byteStorer $ \k b p -> do
 		return True
 
 retrieve :: BupRepo -> Retriever
-retrieve buprepo = fileRetriever $ \d k _p ->
-	liftIO $ withFile d WriteMode $ \h -> do
-		let params = bupParams "join" buprepo [Param $ bupRef k]
-		let p = proc "bup" (toCommand params)
-		(_, _, _, pid) <- createProcess $ p { std_out = UseHandle h }
-		forceSuccessProcess p pid
+retrieve buprepo = byteRetriever $ \k sink -> do
+	let params = bupParams "join" buprepo [Param $ bupRef k]
+	let p = proc "bup" (toCommand params)
+	(_, Just h, _, pid) <- liftIO $ createProcess $ p { std_out = CreatePipe }
+	liftIO (hClose h >> forceSuccessProcess p pid)
+		`after` (sink =<< liftIO (L.hGetContents h))
 
 retrieveCheap :: BupRepo -> Key -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False

@@ -20,7 +20,6 @@ import Config.Cost
 import Remote.Helper.Special
 import Remote.Helper.ChunkedEncryptable
 import qualified Remote.Helper.AWS as AWS
-import Crypto
 import Creds
 import Utility.Metered
 import qualified Annex
@@ -120,11 +119,10 @@ store r k b p = go =<< glacierEnv c u
 				return True
 
 prepareRetrieve :: Remote -> Preparer Retriever
-prepareRetrieve r = simplyPrepare $ fileRetriever $ \d k p ->
-	retrieve r k (readBytes (meteredWriteFile p d))
+prepareRetrieve = simplyPrepare . byteRetriever . retrieve
 
-retrieve :: Remote -> Key -> (Handle -> IO ()) -> Annex ()
-retrieve r k reader = go =<< glacierEnv c u
+retrieve :: Remote -> Key -> (L.ByteString -> Annex Bool) -> Annex Bool
+retrieve r k sink = go =<< glacierEnv c u
   where
 	c = config r
 	u = uuid r
@@ -138,17 +136,21 @@ retrieve r k reader = go =<< glacierEnv c u
 	go Nothing = error "cannot retrieve from glacier"
 	go (Just e) = do
 		let cmd = (proc "glacier" (toCommand params)) { env = Just e }
-		ok <- liftIO $ catchBoolIO $
-			withHandle StdoutHandle createProcessSuccess cmd $ \h ->
-				ifM (hIsEOF h)
-					( return False
-					, do
-						reader h
-						return True
-					)
+		(_, Just h, _, pid) <- liftIO $ createProcess cmd
+		-- Glacier cannot store empty files, so if the output is
+		-- empty, the content is not available yet.
+		ok <- ifM (liftIO $ hIsEOF h)
+			( return False
+			, sink =<< liftIO (L.hGetContents h)
+			)
+		liftIO $ hClose h
+		liftIO $ forceSuccessProcess cmd pid
 		unless ok $ do
 			showLongNote "Recommend you wait up to 4 hours, and then run this command again."
-			error "not yet available"
+		return ok
+
+retrieveCheap :: Remote -> Key -> FilePath -> Annex Bool
+retrieveCheap _ _ _ = return False
 
 remove :: Remote -> Key -> Annex Bool
 remove r k = glacierAction r
@@ -158,9 +160,6 @@ remove r k = glacierAction r
 	, Param $ getVault $ config r
 	, Param $ archive r k
 	]
-
-retrieveCheap :: Remote -> Key -> FilePath -> Annex Bool
-retrieveCheap _ _ _ = return False
 
 checkPresent :: Remote -> Key -> Annex (Either String Bool)
 checkPresent r k = do

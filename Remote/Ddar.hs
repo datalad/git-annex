@@ -10,8 +10,8 @@ module Remote.Ddar (remote) where
 
 import Control.Exception
 import qualified Data.Map as M
+import qualified Data.ByteString.Lazy as L
 import System.IO.Error
-import System.Process
 
 import Data.String.Utils
 import Common.Annex
@@ -127,12 +127,12 @@ ddarExtractRemoteCall ddarrepo k =
 	ddarRemoteCall ddarrepo 'x' [Param "--force-stdout", Param $ key2file k]
 
 retrieve :: DdarRepo -> Retriever
-retrieve ddarrepo = fileRetriever $ \d k _p -> do
+retrieve ddarrepo = byteRetriever $ \k sink -> do
 	(cmd, params) <- ddarExtractRemoteCall ddarrepo k
-	liftIO $ withFile d WriteMode $ \h -> do
-		let p = (proc cmd $ toCommand params){ std_out = UseHandle h }
-		(_, _, _, pid) <- Common.Annex.createProcess p
-		forceSuccessProcess p pid
+	let p = (proc cmd $ toCommand params) { std_out = CreatePipe }
+	(_, Just h, _, pid) <- liftIO $ createProcess p
+	liftIO (hClose h >> forceSuccessProcess p pid)
+		`after` (sink =<< liftIO (L.hGetContents h))
 
 retrieveCheap :: Key -> FilePath -> Annex Bool
 retrieveCheap _ _ = return False

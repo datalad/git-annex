@@ -77,9 +77,11 @@ fileRetriever a k m callback = do
 	a f k m
 	callback (FileContent f)
 
--- A Retriever that generates a L.ByteString containing the Key's content.
-byteRetriever :: (Key -> Annex L.ByteString) -> Retriever
-byteRetriever a k _m callback = callback =<< (ByteContent <$> a k)
+-- A Retriever that generates a lazy ByteString containing the Key's
+-- content, and passes it to a callback action which will fully consume it
+-- before returning.
+byteRetriever :: (Key -> (L.ByteString -> Annex Bool) -> Annex Bool) -> Retriever
+byteRetriever a k _m callback = a k (callback . ByteContent)
 
 {- The base Remote that is provided to chunkedEncryptableRemote
  - needs to have storeKey and retreiveKeyFile methods, but they are
