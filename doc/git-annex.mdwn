@@ -974,6 +974,8 @@ subdirectories).
   It's safe to run in an existing repository (the repository contents are
   not altered), although it may perform expensive data transfers.
 
+  To perform a smaller set of tests, use --fast.
+
   The --size option can be used to tune the size of the generated objects.
 
   Testing a single remote will use the remote's configuration,
