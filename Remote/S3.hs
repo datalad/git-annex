@@ -25,7 +25,6 @@ import qualified Git
 import Config
 import Config.Cost
 import Remote.Helper.Special
-import Remote.Helper.ChunkedEncryptable
 import qualified Remote.Helper.AWS as AWS
 import Creds
 import Utility.Metered
@@ -45,7 +44,7 @@ remote = RemoteType {
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
   where
-	new cst = Just $ chunkedEncryptableRemote c
+	new cst = Just $ specialRemote c
 		(prepareStore this)
 		(prepareRetrieve this)
 		this

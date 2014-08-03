@@ -20,7 +20,6 @@ import Config.Cost
 import Config
 import Utility.FileMode
 import Remote.Helper.Special
-import Remote.Helper.ChunkedEncryptable
 import qualified Remote.Directory.LegacyChunked as Legacy
 import Annex.Content
 import Annex.UUID
@@ -37,8 +36,8 @@ remote = RemoteType {
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
 	cst <- remoteCost gc cheapRemoteCost
-	let chunkconfig = chunkConfig c
-	return $ Just $ chunkedEncryptableRemote c
+	let chunkconfig = getChunkConfig c
+	return $ Just $ specialRemote c
 		(prepareStore dir chunkconfig)
 		(retrieve dir chunkconfig)
 		Remote {

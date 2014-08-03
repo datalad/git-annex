@@ -76,7 +76,7 @@ perform rs ks = do
   where
 	desc r' k = intercalate "; " $ map unwords
 		[ [ "key size", show (keySize k) ]
-		, [ show (chunkConfig (Remote.config r')) ]
+		, [ show (getChunkConfig (Remote.config r')) ]
 		, ["encryption", fromMaybe "none" (M.lookup "encryption" (Remote.config r'))]
 		]
 

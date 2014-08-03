@@ -28,7 +28,6 @@ import Config
 import Config.Cost
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
-import Remote.Helper.Chunked
 import qualified Remote.Helper.Chunked.Legacy as Legacy
 import Crypto
 import Creds
@@ -122,7 +121,7 @@ storeHelper r k baseurl user pass b = catchBoolIO $ do
   where
 	tmpurl = tmpLocation baseurl k
 	keyurl = davLocation baseurl k
-	chunkconfig = chunkConfig $ config r
+	chunkconfig = getChunkConfig $ config r
 	finalizer srcurl desturl = do
 		void $ tryNonAsync (deleteDAV desturl user pass)
 		mkdirRecursiveDAV (urlParent desturl) user pass
@@ -220,7 +219,7 @@ withStoredFiles r k baseurl user pass onerr a = case chunkconfig of
 					else a chunks
   where
 	keyurl = davLocation baseurl k ++ keyFile k
-	chunkconfig = chunkConfig $ config r
+	chunkconfig = getChunkConfig $ config r
 
 davAction :: Remote -> a -> ((DavUrl, DavUser, DavPass) -> Annex a) -> Annex a
 davAction r unconfigured action = do

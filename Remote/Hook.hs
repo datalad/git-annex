@@ -18,7 +18,6 @@ import Config
 import Config.Cost
 import Annex.UUID
 import Remote.Helper.Special
-import Remote.Helper.ChunkedEncryptable
 import Utility.Env
 
 type Action = String
@@ -35,7 +34,7 @@ remote = RemoteType {
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
 	cst <- remoteCost gc expensiveRemoteCost
-	return $ Just $ chunkedEncryptableRemote c
+	return $ Just $ specialRemote c
 		(simplyPrepare $ store hooktype)
 		(simplyPrepare $ retrieve hooktype)
 		Remote {

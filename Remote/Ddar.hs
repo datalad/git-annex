@@ -22,7 +22,6 @@ import qualified Git
 import Config
 import Config.Cost
 import Remote.Helper.Special
-import Remote.Helper.ChunkedEncryptable
 import Annex.Ssh
 import Annex.UUID
 
@@ -42,7 +41,7 @@ gen r u c gc = do
 		if ddarLocal ddarrepo
 			then nearlyCheapRemoteCost
 			else expensiveRemoteCost
-	return $ Just $ encryptableRemote c
+	return $ Just $ specialRemote' specialcfg c
 		(simplyPrepare $ store ddarrepo)
 		(simplyPrepare $ retrieve ddarrepo)
 		(this cst)
@@ -71,6 +70,10 @@ gen r u c gc = do
 		, readonly = False
 		}
 	ddarrepo = fromMaybe (error "missing ddarrepo") $ remoteAnnexDdarRepo gc
+	specialcfg = (specialRemoteCfg c)
+		-- chunking would not improve ddar
+		{ chunkConfig = NoChunks
+		}
 
 ddarSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
 ddarSetup mu _ c = do

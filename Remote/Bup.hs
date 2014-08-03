@@ -25,7 +25,6 @@ import Config
 import Config.Cost
 import qualified Remote.Helper.Ssh as Ssh
 import Remote.Helper.Special
-import Remote.Helper.ChunkedEncryptable
 import Remote.Helper.Messages
 import Utility.Hash
 import Utility.UserInfo
@@ -74,12 +73,16 @@ gen r u c gc = do
 		, availability = if bupLocal buprepo then LocallyAvailable else GloballyAvailable
 		, readonly = False
 		}
-	return $ Just $ encryptableRemote c
+	return $ Just $ specialRemote' specialcfg c
 		(simplyPrepare $ store this buprepo)
 		(simplyPrepare $ retrieve buprepo)
 		this
   where
 	buprepo = fromMaybe (error "missing buprepo") $ remoteAnnexBupRepo gc
+	specialcfg = (specialRemoteCfg c)
+		-- chunking would not improve bup
+		{ chunkConfig = NoChunks
+		}
 
 bupSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
 bupSetup mu _ c = do

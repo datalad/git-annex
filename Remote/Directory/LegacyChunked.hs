@@ -14,7 +14,7 @@ import qualified Data.ByteString as S
 
 import Common.Annex
 import Utility.FileMode
-import Remote.Helper.ChunkedEncryptable
+import Remote.Helper.Special
 import qualified Remote.Helper.Chunked.Legacy as Legacy
 import Annex.Perms
 import Utility.Metered

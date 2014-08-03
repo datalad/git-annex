@@ -15,7 +15,6 @@ import Types.CleanupActions
 import qualified Git
 import Config
 import Remote.Helper.Special
-import Remote.Helper.ChunkedEncryptable
 import Utility.Metered
 import Logs.Transfer
 import Logs.PreferredContent.Raw
@@ -43,7 +42,7 @@ gen r u c gc = do
 	Annex.addCleanup (RemoteCleanup u) $ stopExternal external
 	cst <- getCost external r gc
 	avail <- getAvailability external r gc
-	return $ Just $ chunkedEncryptableRemote c
+	return $ Just $ specialRemote c
 		(simplyPrepare $ store external)
 		(simplyPrepare $ retrieve external)
 		Remote {

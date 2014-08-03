@@ -18,7 +18,6 @@ import qualified Git
 import Config
 import Config.Cost
 import Remote.Helper.Special
-import Remote.Helper.ChunkedEncryptable
 import qualified Remote.Helper.AWS as AWS
 import Creds
 import Utility.Metered
@@ -40,7 +39,7 @@ remote = RemoteType {
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
   where
-	new cst = Just $ encryptableRemote c
+	new cst = Just $ specialRemote' specialcfg c
 		(prepareStore this)
 		(prepareRetrieve this)
 		this
@@ -65,6 +64,10 @@ gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
 			readonly = False,
 			availability = GloballyAvailable,
 			remotetype = remote
+		}
+	specialcfg = (specialRemoteCfg c)
+		-- Disabled until jobList gets support for chunks.
+		{ chunkConfig = NoChunks
 		}
 
 glacierSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)

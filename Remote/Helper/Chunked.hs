@@ -8,7 +8,7 @@
 module Remote.Helper.Chunked (
 	ChunkSize,
 	ChunkConfig(..),
-	chunkConfig,
+	getChunkConfig,
 	storeChunks,
 	removeChunks,
 	retrieveChunks,
@@ -39,8 +39,8 @@ noChunks :: ChunkConfig -> Bool
 noChunks NoChunks = True
 noChunks _ = False
 
-chunkConfig :: RemoteConfig -> ChunkConfig
-chunkConfig m =
+getChunkConfig :: RemoteConfig -> ChunkConfig
+getChunkConfig m =
 	case M.lookup "chunksize" m of
 		Nothing -> case M.lookup "chunk" m of
 			Nothing -> NoChunks
