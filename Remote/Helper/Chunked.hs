@@ -101,10 +101,8 @@ storeChunks u chunkconfig k f p storer checker =
 	case chunkconfig of
 		(UnpaddedChunks chunksize) | isStableKey k -> 
 			bracketIO open close (go chunksize)
-		_ -> showprogress $ storer k (FileContent f)
+		_ -> storer k (FileContent f) p
   where
-	showprogress = metered (Just p) k
-
 	open = tryIO $ openBinaryFile f ReadMode
 
 	close (Right h) = hClose h
@@ -113,11 +111,11 @@ storeChunks u chunkconfig k f p storer checker =
 	go _ (Left e) = do
 		warning (show e)
 		return False
-	go chunksize (Right h) = showprogress $ \meterupdate -> do
+	go chunksize (Right h) = do
 		let chunkkeys = chunkKeyStream k chunksize
 		(chunkkeys', startpos) <- seekResume h chunkkeys checker
 		b <- liftIO $ L.hGetContents h
-		gochunks meterupdate startpos chunksize b chunkkeys'
+		gochunks p startpos chunksize b chunkkeys'
 
 	gochunks :: MeterUpdate -> BytesProcessed -> ChunkSize -> L.ByteString -> ChunkKeyStream -> Annex Bool
 	gochunks meterupdate startpos chunksize = loop startpos . splitchunk
