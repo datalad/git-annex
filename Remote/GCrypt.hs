@@ -299,7 +299,7 @@ store r rsyncopts (cipher, enck) k p
 	| otherwise = unsupportedUrl
   where
   	gpgopts = getGpgEncParams r
-	storersync = Remote.Rsync.storeEncrypted rsyncopts gpgopts (cipher, enck) k p
+	storersync = undefined -- Remote.Rsync.storeEncrypted rsyncopts gpgopts (cipher, enck) k p
 	storeshell = withTmp enck $ \tmp ->
 		ifM (spoolencrypted $ readBytes $ \b -> catchBoolIO $ L.writeFile tmp b >> return True)
 			( Ssh.rsyncHelper (Just p)
@@ -323,7 +323,7 @@ retrieve r rsyncopts (cipher, enck) k d p
 		a >>= \b -> 
 			decrypt cipher (feedBytes b)
 				(readBytes $ meteredWriteFile meterupdate d)
-	retrieversync = Remote.Rsync.retrieveEncrypted rsyncopts (cipher, enck) k d p
+	retrieversync = undefined -- Remote.Rsync.retrieveEncrypted rsyncopts (cipher, enck) k d p
 	retrieveshell = withTmp enck $ \tmp ->
 		ifM (Ssh.rsyncHelper (Just p) =<< Ssh.rsyncParamsRemote False r Download enck tmp Nothing)
 			( liftIO $ catchBoolIO $ do

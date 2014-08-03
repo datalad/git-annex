@@ -22,6 +22,7 @@ module Crypto (
 	describeCipher,
 	decryptCipher,		
 	encryptKey,
+	isEncKey,
 	feedFile,
 	feedBytes,
 	readBytes,
@@ -150,8 +151,14 @@ type EncKey = Key -> Key
 encryptKey :: Mac -> Cipher -> EncKey
 encryptKey mac c k = stubKey
 	{ keyName = macWithCipher mac c (key2file k)
-	, keyBackendName = "GPG" ++ showMac mac
+	, keyBackendName = encryptedBackendNamePrefix ++ showMac mac
 	}
+
+encryptedBackendNamePrefix :: String
+encryptedBackendNamePrefix = "GPG"
+
+isEncKey :: Key -> Bool
+isEncKey k = encryptedBackendNamePrefix `isPrefixOf` keyBackendName k
 
 type Feeder = Handle -> IO ()
 type Reader m a = Handle -> m a
