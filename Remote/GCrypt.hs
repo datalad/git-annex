@@ -29,7 +29,6 @@ import qualified Git.GCrypt
 import qualified Git.Construct
 import qualified Git.Types as Git ()
 import qualified Annex.Branch
-import qualified Annex.Content
 import Config
 import Config.Cost
 import Remote.Helper.Git
@@ -38,7 +37,6 @@ import Remote.Helper.Special
 import Remote.Helper.Messages
 import qualified Remote.Helper.Ssh as Ssh
 import Utility.Metered
-import Crypto
 import Annex.UUID
 import Annex.Ssh
 import qualified Remote.Rsync
@@ -47,7 +45,6 @@ import Utility.Tmp
 import Logs.Remote
 import Logs.Transfer
 import Utility.Gpg
-import Annex.Content
 
 remote :: RemoteType
 remote = RemoteType {
@@ -101,8 +98,8 @@ gen' r u c gc = do
 		{ uuid = u
 		, cost = cst
 		, name = Git.repoDescribe r
-		, storeKey = \_ _ _ -> noCrypto
-		, retrieveKeyFile = \_ _ _ _ -> noCrypto
+		, storeKey = storeKeyDummy
+		, retrieveKeyFile = retreiveKeyFileDummy
 		, retrieveKeyFileCheap = \_ _ -> return False
 		, removeKey = remove this rsyncopts
 		, hasKey = checkPresent this rsyncopts
@@ -118,10 +115,14 @@ gen' r u c gc = do
 		, availability = availabilityCalc r
 		, remotetype = remote
 	}
-	return $ Just $ encryptableRemote c
-		(store this rsyncopts)
-		(retrieve this rsyncopts)
+	return $ Just $ specialRemote' specialcfg c
+		(simplyPrepare $ store this rsyncopts)
+		(simplyPrepare $ retrieve this rsyncopts)
 		this
+  where
+	specialcfg = (specialRemoteCfg c)
+		-- Rsync displays its own progress.
+		{ displayProgress = False }
 
 rsyncTransportToObjects :: Git.Repo -> Annex ([CommandParam], String)
 rsyncTransportToObjects r = do
@@ -147,7 +148,7 @@ rsyncTransport r
 noCrypto :: Annex a
 noCrypto = error "cannot use gcrypt remote without encryption enabled"
 
-unsupportedUrl :: Annex a
+unsupportedUrl :: a
 unsupportedUrl = error "using non-ssh remote repo url with gcrypt is not supported"
 
 gCryptSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
@@ -249,13 +250,18 @@ setupRepo gcryptid r
 
 	denyNonFastForwards = "receive.denyNonFastForwards"
 
-shellOrRsync :: Remote -> Annex a -> Annex a -> Annex a
-shellOrRsync r ashell arsync = case method of
-	AccessShell -> ashell
-	_ -> arsync
+isShell :: Remote -> Bool
+isShell r = case method of
+	AccessShell -> True
+	_ -> False
   where
   	method = toAccessMethod $ fromMaybe "" $
 		remoteAnnexGCrypt $ gitconfig r
+
+shellOrRsync :: Remote -> Annex a -> Annex a -> Annex a
+shellOrRsync r ashell arsync
+	| isShell r = ashell
+	| otherwise = arsync
 
 {- Configure gcrypt to use the same list of keyids that
  - were passed to initremote as its participants.
@@ -287,51 +293,32 @@ setGcryptEncryption c remotename = do
   where
 	remoteconfig n = ConfigKey $ n remotename
 
-store :: Remote -> Remote.Rsync.RsyncOpts -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
-store r rsyncopts (cipher, enck) k p
-	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) False $
-		metered (Just p) k $ \meterupdate -> spoolencrypted $ \h -> do
-			let dest = gCryptLocation r enck
+store :: Remote -> Remote.Rsync.RsyncOpts -> Storer
+store r rsyncopts
+	| not $ Git.repoIsUrl (repo r) = 
+		byteStorer $ \k b p -> guardUsable (repo r) False $ liftIO $ do
+			let dest = gCryptLocation r k
 			createDirectoryIfMissing True $ parentDir dest
-			readBytes (meteredWriteFile meterupdate dest) h
+			meteredWriteFile p dest b
 			return True
-	| Git.repoIsSsh (repo r) = shellOrRsync r storeshell storersync
+	| Git.repoIsSsh (repo r) = if isShell r
+		then fileStorer $ \k f p -> Ssh.rsyncHelper (Just p)
+			=<< Ssh.rsyncParamsRemote False r Upload k f Nothing
+		else fileStorer $ Remote.Rsync.store rsyncopts
 	| otherwise = unsupportedUrl
-  where
-  	gpgopts = getGpgEncParams r
-	storersync = undefined -- Remote.Rsync.storeEncrypted rsyncopts gpgopts (cipher, enck) k p
-	storeshell = withTmp enck $ \tmp ->
-		ifM (spoolencrypted $ readBytes $ \b -> catchBoolIO $ L.writeFile tmp b >> return True)
-			( Ssh.rsyncHelper (Just p)
-				=<< Ssh.rsyncParamsRemote False r Upload enck tmp Nothing
-			, return False
-			)
-	spoolencrypted a = Annex.Content.sendAnnex k noop $ \src ->
-		liftIO $ catchBoolIO $
-			encrypt gpgopts cipher (feedFile src) a
 
-retrieve :: Remote -> Remote.Rsync.RsyncOpts -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
-retrieve r rsyncopts (cipher, enck) k d p
-	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) False $ do
-		retrievewith $ L.readFile src
-		return True
-	| Git.repoIsSsh (repo r) = shellOrRsync r retrieveshell retrieversync
+retrieve :: Remote -> Remote.Rsync.RsyncOpts -> Retriever
+retrieve r rsyncopts
+	| not $ Git.repoIsUrl (repo r) = byteRetriever $ \k sink ->
+		guardUsable (repo r) False $
+			sink =<< liftIO (L.readFile $ gCryptLocation r k)
+	| Git.repoIsSsh (repo r) = if isShell r
+		then fileRetriever $ \f k p ->
+			unlessM (Ssh.rsyncHelper (Just p) =<< Ssh.rsyncParamsRemote False r Download k f Nothing) $
+				error "rsync failed"
+		else fileRetriever $ Remote.Rsync.retrieve rsyncopts
 	| otherwise = unsupportedUrl
   where
-	src = gCryptLocation r enck
-	retrievewith a = metered (Just p) k $ \meterupdate -> liftIO $
-		a >>= \b -> 
-			decrypt cipher (feedBytes b)
-				(readBytes $ meteredWriteFile meterupdate d)
-	retrieversync = undefined -- Remote.Rsync.retrieveEncrypted rsyncopts (cipher, enck) k d p
-	retrieveshell = withTmp enck $ \tmp ->
-		ifM (Ssh.rsyncHelper (Just p) =<< Ssh.rsyncParamsRemote False r Download enck tmp Nothing)
-			( liftIO $ catchBoolIO $ do
-				decrypt cipher (feedFile tmp) $
-					readBytes $ L.writeFile d
-				return True
-			, return False
-			)
 
 remove :: Remote -> Remote.Rsync.RsyncOpts -> Key -> Annex Bool
 remove r rsyncopts k

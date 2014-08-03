@@ -9,6 +9,8 @@
 
 module Remote.Rsync (
 	remote,
+	store,
+	retrieve,
 	remove,
 	checkPresent,
 	withRsyncScratchDir,
@@ -54,8 +56,8 @@ gen r u c gc = do
 	let o = genRsyncOpts c gc transport url
 	let islocal = rsyncUrlIsPath $ rsyncUrl o
 	return $ Just $ specialRemote' specialcfg c
-		(simplyPrepare $ store o)
-		(simplyPrepare $ retrieve o)
+		(simplyPrepare $ fileStorer $ store o)
+		(simplyPrepare $ fileRetriever $ retrieve o)
 		Remote
 			{ uuid = u
 			, cost = cst
@@ -140,11 +142,44 @@ rsyncSetup mu _ c = do
 	gitConfigSpecialRemote u c' "rsyncurl" url
 	return (c', u)
 
-store :: RsyncOpts -> Storer
-store = fileStorer . rsyncSend
+{- To send a single key is slightly tricky; need to build up a temporary
+ - directory structure to pass to rsync so it can create the hash
+ - directories.
+ -
+ - This would not be necessary if the hash directory structure used locally
+ - was always the same as that used on the rsync remote. So if that's ever
+ - unified, this gets nicer.
+ - (When we have the right hash directory structure, we can just
+ - pass --include=X --include=X/Y --include=X/Y/file --exclude=*)
+ -}
+store :: RsyncOpts -> Key -> FilePath -> MeterUpdate -> Annex Bool
+store o k src meterupdate = withRsyncScratchDir $ \tmp -> do
+	let dest = tmp </> Prelude.head (keyPaths k)
+	liftIO $ createDirectoryIfMissing True $ parentDir dest
+	ok <- liftIO $ if canrename
+		then do
+			rename src dest
+			return True
+		else createLinkOrCopy src dest
+	ps <- sendParams
+	if ok
+		then showResumable $ rsyncRemote Upload o (Just meterupdate) $ ps ++
+			[ Param "--recursive"
+			, partialParams
+			-- tmp/ to send contents of tmp dir
+			, File $ addTrailingPathSeparator tmp
+			, Param $ rsyncUrl o
+			]
+		else return False
+  where
+ 	{- If the key being sent is encrypted or chunked, the file
+	 - containing its content is a temp file, and so can be
+	 - renamed into place. Otherwise, the file is the annexed
+	 - object file, and has to be copied or hard linked into place. -}
+	canrename = isEncKey k || isChunkKey k
 
-retrieve :: RsyncOpts -> Retriever
-retrieve o = fileRetriever $ \f k p ->
+retrieve :: RsyncOpts -> FilePath -> Key -> MeterUpdate -> Annex ()
+retrieve o f k p = 
 	unlessM (rsyncRetrieve o k f (Just p)) $
 		error "rsync failed"
 
@@ -249,39 +284,3 @@ rsyncRemote direction o callback params = do
 	opts
 		| direction == Download = rsyncDownloadOptions o
 		| otherwise = rsyncUploadOptions o
-
-{- To send a single key is slightly tricky; need to build up a temporary
- - directory structure to pass to rsync so it can create the hash
- - directories.
- -
- - This would not be necessary if the hash directory structure used locally
- - was always the same as that used on the rsync remote. So if that's ever
- - unified, this gets nicer.
- - (When we have the right hash directory structure, we can just
- - pass --include=X --include=X/Y --include=X/Y/file --exclude=*)
- -}
-rsyncSend :: RsyncOpts -> Key -> FilePath -> MeterUpdate -> Annex Bool
-rsyncSend o k src meterupdate = withRsyncScratchDir $ \tmp -> do
-	let dest = tmp </> Prelude.head (keyPaths k)
-	liftIO $ createDirectoryIfMissing True $ parentDir dest
-	ok <- liftIO $ if canrename
-		then do
-			rename src dest
-			return True
-		else createLinkOrCopy src dest
-	ps <- sendParams
-	if ok
-		then showResumable $ rsyncRemote Upload o (Just meterupdate) $ ps ++
-			[ Param "--recursive"
-			, partialParams
-			-- tmp/ to send contents of tmp dir
-			, File $ addTrailingPathSeparator tmp
-			, Param $ rsyncUrl o
-			]
-		else return False
-  where
- 	{- If the key being sent is encrypted or chunked, the file
-	 - containing its content is a temp file, and so can be
-	 - renamed into place. Otherwise, the file is the annexed
-	 - object file, and has to be copied or hard linked into place. -}
-	canrename = isEncKey k || isChunkKey k
