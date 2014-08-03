@@ -66,14 +66,8 @@ rsyncParamsFixup = map fixup
  - The params must enable rsync's --progress mode for this to work.
  -}
 rsyncProgress :: MeterUpdate -> [CommandParam] -> IO Bool
-rsyncProgress meterupdate params = do
-	r <- catchBoolIO $ 
-		withHandle StdoutHandle createProcessSuccess p (feedprogress 0 [])
-	{- For an unknown reason, piping rsync's output like this does
-	 - causes it to run a second ssh process, which it neglects to wait
-	 - on. Reap the resulting zombie. -}
-	reapZombies
-	return r
+rsyncProgress meterupdate params = catchBoolIO $ 
+	withHandle StdoutHandle createProcessSuccess p (feedprogress 0 [])
   where
 	p = proc "rsync" (toCommand $ rsyncParamsFixup params)
 	feedprogress prev buf h = do

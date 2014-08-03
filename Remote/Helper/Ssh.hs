@@ -102,12 +102,19 @@ dropKey r key = onRemote r (boolSystem, False) "dropkey"
 rsyncHelper :: Maybe MeterUpdate -> [CommandParam] -> Annex Bool
 rsyncHelper callback params = do
 	showOutput -- make way for progress bar
-	ifM (liftIO $ (maybe rsync rsyncProgress callback) params)
+	ok <- ifM (liftIO $ (maybe rsync rsyncProgress callback) params)
 		( return True
 		, do
 			showLongNote "rsync failed -- run git annex again to resume file transfer"
 			return False
 		)
+
+	{- For an unknown reason, this causes rsync to run a second
+	 - ssh process, which it neglects to wait on.
+	 - Reap the resulting zombie. -}
+	liftIO reapZombies
+
+	return ok
 
 {- Generates rsync parameters that ssh to the remote and asks it
  - to either receive or send the key's content. -}
