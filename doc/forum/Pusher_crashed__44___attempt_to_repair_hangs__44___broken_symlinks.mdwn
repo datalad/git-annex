@@ -1,0 +1,77 @@
+Sorry that I put all this in the same thread but I don't know what happened and how it is related.
+
+I have just a simple setup: git-annex client with assistant (Windows 7) and on a server (Debian, no assistant).
+
+Suddenly weird things started to happen
+
+1.) On Windows, when I start the assistant, it writes "Attempting to repair THINKTANK:c:\data\annex [here]" but it runs forever and never stops
+
+2.) On Windows, when I get "Pusher crashed: failed to read sha from git write-tree [Restart Thread]". When I click "Restart Thread" nothing happens but the message from (1) persists.
+
+3.) When I run "git annex fsck" on the client I get thousands of messages like
+
+    fsck Fotos/2014/DSC_0303.JPG
+      ** No known copies exist of Fotos/2014/DSC_0303.JPG
+    failed
+
+Here the same:
+
+    $ git annex whereis "Fotos/2014/DSC_0303.JPG"
+    whereis Fotos/2014/DSC_0303.JPG (0 copies) failed
+    git-annex: whereis: 1 failed
+
+4.) When I do "git annex status" a whole bunch of files are displayed with "M" (modified) although they are not, they are not even checked out and should be only at the server ...
+
+5.) On the server, files that should ALWAYS be on the server (configured as "full backup") suddenly wiped data that was also made available on the client. The symlinks are dangling symlinks and contain just binary data:
+
+    ls -l
+    lrwxrwxrwx  1 4 Aug  2 08:55 DSC_0011.JPG -> ????
+    lrwxrwxrwx  1 4 Aug  2 08:55 DSC_0012.JPG -> ????
+    lrwxrwxrwx  1 4 Aug  2 08:55 DSC_0013.JPG -> ????
+    lrwxrwxrwx  1 4 Aug  2 08:55 DSC_0014.JPG -> ????
+    lrwxrwxrwx  1 4 Aug  2 08:55 DSC_0015.JPG -> ????
+    lrwxrwxrwx  1 4 Aug  2 08:55 DSC_0018.JPG -> ????
+    lrwxrwxrwx  1 4 Aug  2 08:55 DSC_0019.JPG -> ????
+    lrwxrwxrwx  1 4 Aug  2 08:55 DSC_0020.JPG -> ????
+
+6.) "git annex fsck" on the server is still successful, returning no errors!
+
+7.) Manually executing "git annex sync --content" on both sides does not change anything and does not output any error messages.
+
+8.) On the client:
+
+    $ git annex group here
+    error: invalid object 100644 3b3767ae65e5c6d2e3835af3d55fbf2f9e145c8b for '000/0e6/SHA256Es193806--b6d4689fba8e15acd6497f9a7e584c93ea0c8c2199ad32eadac79d59b9f49814.JPG.log'
+    fatal: git-write-tree: error building trees
+    manual
+    (Recording state in git...)
+    git-annex: failed to read sha from git write-tree
+
+    $ git annex wanted here
+    error: invalid object 100644 3b3767ae65e5c6d2e3835af3d55fbf2f9e145c8b for '000/0e6/SHA256Es193806--b6d4689fba8e15acd6497f9a7e584c93ea0c8c2199ad32eadac79d59b9f49814.JPG.log'
+    fatal: git-write-tree: error building trees
+    exclude="*" and present
+    git-annex: failed to read sha from git write-tree
+
+9.) Ok I don't know what happened I did nothing special but it seems that the repository is broken :( :(
+
+    $ git annex --verbose --debug repair
+    [...]
+    [2014-08-02 13:27:38 Pacific Daylight Time] read: git ["--git-dir=C:\\Data\\annex\\.git","--work-tree=C:\\Data\\annex","-c","core.bare=false","show","ef3fe549f457783dbbd877b467b4e54b0ebc813c"]
+    Running git fsck ...
+    
+    git-annex: DeleteFile "C:\\Data\\annex\\.git\\objects\\2a\\54bb281c80c91ea7a732c0d48db0c5acc0ca2c": permission denied (Access is denied.)
+    failed
+    git-annex: repair: 1 failed
+
+But this file exists, I can read, write and delete to this file manually, there is definitely no permission denied ...
+
+
+
+Oh no, so desparate :-( Any ideas?
+
+As it seems the client repository is broken but how can it be then that also files on the server repository get deleted which shouldn't be deleted?
+And how can it be that there are not only broken symlinks but symlinks that have just binary garbage as target and "fsck" returns success?
+
+(I am happy to share all log files privately but I do not want to publish them here because they contain sensitive data)
+

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="zardoz"
+ ip="78.48.163.229"
+ subject="comment 2"
+ date="2014-08-02T14:29:26Z"
+ content="""
+This could be achieved in a generic way by allowing filter binaries in expressions, which are run on the filename and return 0 or 1.
+"""]]
