@@ -45,6 +45,7 @@ import Utility.Tmp
 import Logs.Remote
 import Logs.Transfer
 import Utility.Gpg
+import Utility.FileMode
 
 remote :: RemoteType
 remote = RemoteType {
@@ -325,7 +326,12 @@ retrieve r rsyncopts
 remove :: Remote -> Remote.Rsync.RsyncOpts -> Key -> Annex Bool
 remove r rsyncopts k
 	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) False $ do
-		liftIO $ removeDirectoryRecursive $ parentDir $ gCryptLocation r k
+		let f = gCryptLocation r k
+		let d = parentDir f
+		liftIO $ do
+			allowWrite d
+			allowWrite f
+			removeDirectoryRecursive d
 		return True
 	| Git.repoIsSsh (repo r) = shellOrRsync r removeshell removersync
 	| otherwise = unsupportedUrl
