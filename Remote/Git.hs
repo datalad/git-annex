@@ -390,6 +390,7 @@ copyFromRemote' r key file dest
 		Just (cmd, params) <- Ssh.git_annex_shell (repo r) "transferinfo" 
 			[Param $ key2file key] fields
 		v <- liftIO (newEmptySV :: IO (MSampleVar Integer))
+		pidv <- liftIO $ newEmptyMVar
 		tid <- liftIO $ forkIO $ void $ tryIO $ do
 			bytes <- readSV v
 			p <- createProcess $
@@ -397,6 +398,7 @@ copyFromRemote' r key file dest
 					{ std_in = CreatePipe
 					, std_err = CreatePipe
 					}
+			putMVar pidv (processHandle p)
 			hClose $ stderrHandle p
 			let h = stdinHandle p
 			let send b = do
@@ -406,7 +408,12 @@ copyFromRemote' r key file dest
 			forever $
 				send =<< readSV v
 		let feeder = writeSV v . fromBytesProcessed
-		bracketIO noop (const $ tryIO $ killThread tid) (const $ a feeder)
+		let cleanup = do
+			void $ tryIO $ killThread tid
+			tryNonAsync $
+				maybe noop (void . waitForProcess)
+					=<< tryTakeMVar pidv
+		bracketIO noop (const cleanup) (const $ a feeder)
 
 copyFromRemoteCheap :: Remote -> Key -> FilePath -> Annex Bool
 #ifndef mingw32_HOST_OS
