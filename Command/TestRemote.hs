@@ -169,7 +169,7 @@ chunkSizes base False =
 	, base `div` 1000
 	, base
 	]
-chunkSizes base True =
+chunkSizes _ True =
 	[ 0
 	]
 
