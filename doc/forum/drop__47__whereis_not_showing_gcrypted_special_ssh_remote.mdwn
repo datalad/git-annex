@@ -5,3 +5,5 @@ I do git annex copy --to server, and let it copy stuff. I repeat the same thing 
 Afterwards, I do git annex whereis, and I only get 2 copies showing - my laptop and my usb drive. Likewise, since I set numcopies to 2, it won't let me drop anything at all, because it doesn't know there's a copy on my server.
 
 Anything I can do about this? (What further info do you need?) 
+
+I should probably add that my server is a ubuntu machine, and so it runs version 5.20140412ubuntu1. My laptop runs a more recent 5.20140717-g5a7d4ff.
