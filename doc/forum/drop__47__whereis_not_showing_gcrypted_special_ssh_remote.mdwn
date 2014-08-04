@@ -1,0 +1,7 @@
+I have my laptop, my server and my usb drive. My server is a gcrypted remote via ssh. My laptop is just a repo that's referenced as a remote with a filepath.
+
+I do git annex copy --to server, and let it copy stuff. I repeat the same thing for the usb drive. 
+
+Afterwards, I do git annex whereis, and I only get 2 copies showing - my laptop and my usb drive. Likewise, since I set numcopies to 2, it won't let me drop anything at all, because it doesn't know there's a copy on my server.
+
+Anything I can do about this? (What further info do you need?) 
