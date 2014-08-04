@@ -7,7 +7,7 @@
 
 module Remote.GCrypt (
 	remote,
-	gen,
+	chainGen,
 	getGCryptUUID,
 	coreGCryptId,
 	setupRepo
@@ -57,19 +57,24 @@ remote = RemoteType {
 	setup = gCryptSetup
 }
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-gen gcryptr u c gc = do
+chainGen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
+chainGen gcryptr u c gc = do
 	g <- gitRepo
 	-- get underlying git repo with real path, not gcrypt path
 	r <- liftIO $ Git.GCrypt.encryptedRemote g gcryptr
 	let r' = r { Git.remoteName = Git.remoteName gcryptr }
+	gen r' u c gc
+
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
+gen baser u c gc = do
 	-- doublecheck that cache matches underlying repo's gcrypt-id
 	-- (which might not be set), only for local repos
-	(mgcryptid, r'') <- getGCryptId True r'
-	case (mgcryptid, Git.GCrypt.remoteRepoId g (Git.remoteName gcryptr)) of
+	(mgcryptid, r) <- getGCryptId True baser
+	g <- gitRepo
+	case (mgcryptid, Git.GCrypt.remoteRepoId g (Git.remoteName baser)) of
 		(Just gcryptid, Just cachedgcryptid)
-			| gcryptid /= cachedgcryptid -> resetup gcryptid r''
-		_ -> gen' r'' u c gc
+			| gcryptid /= cachedgcryptid -> resetup gcryptid r
+		_ -> gen' r u c gc
   where
 	-- A different drive may have been mounted, making a different
 	-- gcrypt remote available. So need to set the cached
@@ -79,10 +84,10 @@ gen gcryptr u c gc = do
 	resetup gcryptid r = do
 		let u' = genUUIDInNameSpace gCryptNameSpace gcryptid
 		v <- M.lookup u' <$> readRemoteLog
-		case (Git.remoteName gcryptr, v) of
+		case (Git.remoteName baser, v) of
 			(Just remotename, Just c') -> do
 				setGcryptEncryption c' remotename
-				setConfig (remoteConfig gcryptr "uuid") (fromUUID u')
+				setConfig (remoteConfig baser "uuid") (fromUUID u')
 				setConfig (ConfigKey $ Git.GCrypt.remoteConfigKey "gcrypt-id" remotename) gcryptid
 				gen' r u' c' gc
 			_ -> do

@@ -127,7 +127,7 @@ configRead r = do
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc
-	| Git.GCrypt.isEncrypted r = Remote.GCrypt.gen r u c gc
+	| Git.GCrypt.isEncrypted r = Remote.GCrypt.chainGen r u c gc
 	| otherwise = go <$> remoteCost gc defcst
   where
 	defcst = if repoCheap r then cheapRemoteCost else expensiveRemoteCost
