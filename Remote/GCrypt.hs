@@ -120,9 +120,11 @@ gen' r u c gc = do
 		(simplyPrepare $ retrieve this rsyncopts)
 		this
   where
-	specialcfg = (specialRemoteCfg c)
-		-- Rsync displays its own progress.
-		{ displayProgress = False }
+	specialcfg
+		| Git.repoIsUrl r = (specialRemoteCfg c)
+			-- Rsync displays its own progress.
+			{ displayProgress = False }
+		| otherwise = specialRemoteCfg c
 
 rsyncTransportToObjects :: Git.Repo -> Annex ([CommandParam], String)
 rsyncTransportToObjects r = do
