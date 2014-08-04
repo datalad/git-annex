@@ -28,18 +28,15 @@ seek :: CommandSeek
 seek = withKeys start
 
 start :: Key -> CommandStart
-start key = ifM (inAnnex key)
-	( error "key is already present in annex"
-	, fieldTransfer Download key $ \_p ->
-		ifM (getViaTmp key go)
-			( do
-				-- forcibly quit after receiving one key,
-				-- and shutdown cleanly
-				_ <- shutdown True
-				return True
-			, return False
-			)
-	)
+start key = fieldTransfer Download key $ \_p ->
+	ifM (getViaTmp key go)
+		( do
+			-- forcibly quit after receiving one key,
+			-- and shutdown cleanly
+			_ <- shutdown True
+			return True
+		, return False
+		)
   where
 	go tmp = do
 		opts <- filterRsyncSafeOptions . maybe [] words
