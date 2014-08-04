@@ -40,6 +40,7 @@ import Utility.Metered
 import Annex.UUID
 import Annex.Ssh
 import qualified Remote.Rsync
+import qualified Remote.Directory
 import Utility.Rsync
 import Utility.Tmp
 import Logs.Remote
@@ -335,14 +336,8 @@ retrieve r rsyncopts
 
 remove :: Remote -> Remote.Rsync.RsyncOpts -> Key -> Annex Bool
 remove r rsyncopts k
-	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) False $ do
-		let f = gCryptLocation r k
-		let d = parentDir f
-		liftIO $ do
-			allowWrite d
-			allowWrite f
-			removeDirectoryRecursive d
-		return True
+	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) False $
+		liftIO $ Remote.Directory.removeDirGeneric (Git.repoLocation (repo r)) (parentDir (gCryptLocation r k))
 	| Git.repoIsSsh (repo r) = shellOrRsync r removeshell removersync
 	| otherwise = unsupportedUrl
   where

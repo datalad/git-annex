@@ -7,7 +7,7 @@
 
 {-# LANGUAGE CPP #-}
 
-module Remote.Directory (remote) where
+module Remote.Directory (remote, removeDirGeneric) where
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
@@ -152,7 +152,20 @@ retrieveCheap _ _ _ _ = return False
 #endif
 
 remove :: FilePath -> Key -> Annex Bool
-remove d k = liftIO $ do
+remove d k = liftIO $ removeDirGeneric d (storeDir d k)
+
+{- Removes the directory, which must be located under the topdir.
+ -
+ - Succeeds even on directories and contents that do not have write
+ - permission.
+ -
+ - If the directory does not exist, succeeds as long as the topdir does
+ - exist. If the topdir does not exist, fails, because in this case the
+ - remote is not currently accessible and probably still has the content
+ - we were supposed to remove from it.
+ -}
+removeDirGeneric :: FilePath -> FilePath -> IO Bool
+removeDirGeneric topdir dir = do
 	void $ tryIO $ allowWrite dir
 #ifdef mingw32_HOST_OS
 	{- Windows needs the files inside the directory to be writable
@@ -162,14 +175,9 @@ remove d k = liftIO $ do
 	ok <- catchBoolIO $ do
 		removeDirectoryRecursive dir
 		return True
-	{- Removing the subdirectory will fail if it doesn't exist.
-	 - But, we want to succeed in that case, as long as the directory
-	 - remote's top-level directory does exist. -}
 	if ok
 		then return ok
-		else doesDirectoryExist d <&&> (not <$> doesDirectoryExist dir)
-  where
-	dir = storeDir d k
+		else doesDirectoryExist topdir <&&> (not <$> doesDirectoryExist dir)
 
 checkPresent :: FilePath -> ChunkConfig -> Key -> Annex (Either String Bool)
 checkPresent d (LegacyChunks _) k = Legacy.checkPresent d locations k
