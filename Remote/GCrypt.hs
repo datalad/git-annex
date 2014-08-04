@@ -300,9 +300,14 @@ store :: Remote -> Remote.Rsync.RsyncOpts -> Storer
 store r rsyncopts
 	| not $ Git.repoIsUrl (repo r) = 
 		byteStorer $ \k b p -> guardUsable (repo r) False $ liftIO $ do
-			let dest = gCryptLocation r k
-			createDirectoryIfMissing True $ parentDir dest
-			meteredWriteFile p dest b
+			let f = gCryptLocation r k
+			let d = parentDir f
+			createDirectoryIfMissing True d
+			allowWrite d
+			void $ liftIO $ tryIO $ allowWrite f
+			meteredWriteFile p f b
+			preventWrite f
+			preventWrite d
 			return True
 	| Git.repoIsSsh (repo r) = if isShell r
 		then fileStorer $ \k f p -> Ssh.rsyncHelper (Just p)
