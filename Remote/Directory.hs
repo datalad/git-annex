@@ -7,7 +7,11 @@
 
 {-# LANGUAGE CPP #-}
 
-module Remote.Directory (remote, removeDirGeneric) where
+module Remote.Directory (
+	remote,
+	finalizeStoreGeneric,
+	removeDirGeneric,
+) where
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
@@ -114,24 +118,30 @@ store :: FilePath -> ChunkConfig -> Key -> L.ByteString -> MeterUpdate -> Annex 
 store d chunkconfig k b p = liftIO $ do
 	void $ tryIO $ createDirectoryIfMissing True tmpdir
 	case chunkconfig of
-		LegacyChunks chunksize -> Legacy.store chunksize finalizer k b p tmpdir destdir
+		LegacyChunks chunksize -> Legacy.store chunksize finalizeStoreGeneric k b p tmpdir destdir
 		_ -> do
 			let tmpf = tmpdir </> keyFile k
 			meteredWriteFile p tmpf b
-			finalizer tmpdir destdir
+			finalizeStoreGeneric tmpdir destdir
 			return True
   where
 	tmpdir = tmpDir d k
 	destdir = storeDir d k
-	finalizer tmp dest = do
-		void $ tryIO $ allowWrite dest -- may already exist
-		void $ tryIO $ removeDirectoryRecursive dest -- or not exist
-		createDirectoryIfMissing True (parentDir dest)
-		renameDirectory tmp dest
-		-- may fail on some filesystems
-		void $ tryIO $ do
-			mapM_ preventWrite =<< dirContents dest
-			preventWrite dest
+
+{- Passed a temp directory that contains the files that should be placed
+ - in the dest directory, moves it into place. Anything already existing
+ - in the dest directory will be deleted. File permissions will be locked
+ - down. -}
+finalizeStoreGeneric :: FilePath -> FilePath -> IO ()
+finalizeStoreGeneric tmp dest = do
+	void $ tryIO $ allowWrite dest -- may already exist
+	void $ tryIO $ removeDirectoryRecursive dest -- or not exist
+	createDirectoryIfMissing True (parentDir dest)
+	renameDirectory tmp dest
+	-- may fail on some filesystems
+	void $ tryIO $ do
+		mapM_ preventWrite =<< dirContents dest
+		preventWrite dest
 
 retrieve :: FilePath -> ChunkConfig -> Preparer Retriever
 retrieve d (LegacyChunks _) = Legacy.retrieve locations d
