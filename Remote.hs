@@ -56,6 +56,7 @@ import Data.Ord
 import Common.Annex
 import Types.Remote
 import qualified Annex
+import Annex.Exception
 import Annex.UUID
 import Logs.UUID
 import Logs.Trust
@@ -312,3 +313,10 @@ isXMPPRemote :: Remote -> Bool
 isXMPPRemote remote = Git.repoIsUrl r && "xmpp::" `isPrefixOf` Git.repoLocation r
   where
 	r = repo remote
+
+hasKey :: Remote -> Key -> Annex (Either String Bool)
+hasKey r k = either (Left  . show) Right
+	<$> tryNonAsyncAnnex (checkPresent r k)
+
+hasKeyCheap :: Remote -> Bool
+hasKeyCheap = checkPresentCheap

@@ -46,7 +46,6 @@ import Utility.Tmp
 import Logs.Remote
 import Logs.Transfer
 import Utility.Gpg
-import Utility.FileMode
 
 remote :: RemoteType
 remote = RemoteType {
@@ -109,8 +108,8 @@ gen' r u c gc = do
 		, retrieveKeyFile = retreiveKeyFileDummy
 		, retrieveKeyFileCheap = \_ _ -> return False
 		, removeKey = remove this rsyncopts
-		, hasKey = checkPresent this rsyncopts
-		, hasKeyCheap = repoCheap r
+		, checkPresent = checkKey this rsyncopts
+		, checkPresentCheap = repoCheap r
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing
@@ -342,16 +341,15 @@ remove r rsyncopts k
 	removersync = Remote.Rsync.remove rsyncopts k
 	removeshell = Ssh.dropKey (repo r) k
 
-checkPresent :: Remote -> Remote.Rsync.RsyncOpts -> Key -> Annex (Either String Bool)
-checkPresent r rsyncopts k
+checkKey :: Remote -> Remote.Rsync.RsyncOpts -> Key -> Annex Bool
+checkKey r rsyncopts k
 	| not $ Git.repoIsUrl (repo r) =
 		guardUsable (repo r) (cantCheck $ repo r) $
-			liftIO $ catchDefaultIO (cantCheck $ repo r) $
-				Right <$> doesFileExist (gCryptLocation r k)
+			liftIO $ doesFileExist (gCryptLocation r k)
 	| Git.repoIsSsh (repo r) = shellOrRsync r checkshell checkrsync
 	| otherwise = unsupportedUrl
   where
-  	checkrsync = Remote.Rsync.checkPresent (repo r) rsyncopts k
+  	checkrsync = Remote.Rsync.checkKey (repo r) rsyncopts k
 	checkshell = Ssh.inAnnex (repo r) k
 
 {- Annexed objects are hashed using lower-case directories for max

@@ -52,8 +52,8 @@ gen r u c gc = do
 			retrieveKeyFile = retreiveKeyFileDummy,
 			retrieveKeyFileCheap = retrieveCheap dir chunkconfig,
 			removeKey = remove dir,
-			hasKey = checkPresent dir chunkconfig,
-			hasKeyCheap = True,
+			checkPresent = checkKey dir chunkconfig,
+			checkPresentCheap = True,
 			whereisKey = Nothing,
 			remoteFsck = Nothing,
 			repairRepo = Nothing,
@@ -189,13 +189,10 @@ removeDirGeneric topdir dir = do
 		then return ok
 		else doesDirectoryExist topdir <&&> (not <$> doesDirectoryExist dir)
 
-checkPresent :: FilePath -> ChunkConfig -> Key -> Annex (Either String Bool)
-checkPresent d (LegacyChunks _) k = Legacy.checkPresent d locations k
-checkPresent d _ k = liftIO $ do
-	v <- catchMsgIO $ anyM doesFileExist (locations d k)
-	case v of
-		Right False -> ifM (doesDirectoryExist d)
-			( return v
-			, return $ Left $ "directory " ++ d ++ " is not accessible"
-			)
-		_ -> return v
+checkKey :: FilePath -> ChunkConfig -> Key -> Annex Bool
+checkKey d (LegacyChunks _) k = Legacy.checkKey d locations k
+checkKey d _ k = liftIO $
+	ifM (anyM doesFileExist (locations d k))
+		( return True
+		, error $ "directory " ++ d ++ " is not accessible"
+		)

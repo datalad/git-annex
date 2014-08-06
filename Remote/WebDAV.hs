@@ -63,8 +63,8 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			retrieveKeyFile = retrieve this,
 			retrieveKeyFileCheap = retrieveCheap this,
 			removeKey = remove this,
-			hasKey = checkPresent this,
-			hasKeyCheap = False,
+			checkPresent = checkKey this,
+			checkPresentCheap = False,
 			whereisKey = Nothing,
 			remoteFsck = Nothing,
 			repairRepo = Nothing,
@@ -170,10 +170,10 @@ remove r k = davAction r False $ \(baseurl, user, pass) -> liftIO $ do
 	let url = davLocation baseurl k
 	isJust . eitherToMaybe <$> tryNonAsync (deleteDAV url user pass)
 
-checkPresent :: Remote -> Key -> Annex (Either String Bool)
-checkPresent r k = davAction r noconn go
+checkKey :: Remote -> Key -> Annex Bool
+checkKey r k = davAction r noconn (either error id <$$> go)
   where
-	noconn = Left $ error $ name r ++ " not configured"
+	noconn = error $ name r ++ " not configured"
 
 	go (baseurl, user, pass) = do
 		showAction $ "checking " ++ name r

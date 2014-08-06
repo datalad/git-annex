@@ -13,5 +13,5 @@ import qualified Git
 showChecking :: Git.Repo -> Annex ()
 showChecking r = showAction $ "checking " ++ Git.repoDescribe r
 
-cantCheck :: Git.Repo -> Either String Bool
-cantCheck r = Left $ "unable to check " ++ Git.repoDescribe r
+cantCheck :: Git.Repo -> a
+cantCheck r = error $ "unable to check " ++ Git.repoDescribe r

@@ -81,14 +81,14 @@ onRemote r (with, errorval) command params fields = do
 		Nothing -> return errorval
 
 {- Checks if a remote contains a key. -}
-inAnnex :: Git.Repo -> Key -> Annex (Either String Bool)
+inAnnex :: Git.Repo -> Key -> Annex Bool
 inAnnex r k = do
 	showChecking r
 	onRemote r (check, cantCheck r) "inannex" [Param $ key2file k] []
   where
 	check c p = dispatch <$> safeSystem c p
-	dispatch ExitSuccess = Right True
-	dispatch (ExitFailure 1) = Right False
+	dispatch ExitSuccess = True
+	dispatch (ExitFailure 1) = False
 	dispatch _ = cantCheck r
 
 {- Removes a key from a remote. -}

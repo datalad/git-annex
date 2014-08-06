@@ -103,8 +103,7 @@ retrieve locations d basek a = do
 		liftIO $ nukeFile tmp
 		sink b
 
-checkPresent :: FilePath -> (FilePath -> Key -> [FilePath]) -> Key -> Annex (Either String Bool)
-checkPresent d locations k = liftIO $ catchMsgIO $
-	withStoredFiles d locations k $
-		-- withStoredFiles checked that it exists
-		const $ return True
+checkKey :: FilePath -> (FilePath -> Key -> [FilePath]) -> Key -> Annex Bool
+checkKey d locations k = liftIO $ withStoredFiles d locations k $
+	-- withStoredFiles checked that it exists
+	const $ return True

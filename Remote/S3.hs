@@ -57,8 +57,8 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			retrieveKeyFile = retreiveKeyFileDummy,
 			retrieveKeyFileCheap = retrieveCheap this,
 			removeKey = remove this c,
-			hasKey = checkPresent this,
-			hasKeyCheap = False,
+			checkPresent = checkKey this,
+			checkPresentCheap = False,
 			whereisKey = Nothing,
 			remoteFsck = Nothing,
 			repairRepo = Nothing,
@@ -167,16 +167,16 @@ remove' :: Remote -> Key -> Annex Bool
 remove' r k = s3Action r False $ \(conn, bucket) ->
 	s3Bool =<< liftIO (deleteObject conn $ bucketKey r bucket k)
 
-checkPresent :: Remote -> Key -> Annex (Either String Bool)
-checkPresent r k = s3Action r noconn $ \(conn, bucket) -> do
+checkKey :: Remote -> Key -> Annex Bool
+checkKey r k = s3Action r noconn $ \(conn, bucket) -> do
 	showAction $ "checking " ++ name r
 	res <- liftIO $ getObjectInfo conn $ bucketKey r bucket k
 	case res of
-		Right _ -> return $ Right True
-		Left (AWSError _ _) -> return $ Right False
-		Left e -> return $ Left (s3Error e)
+		Right _ -> return True
+		Left (AWSError _ _) -> return False
+		Left e -> s3Error e
   where
-	noconn = Left $ error "S3 not configured"
+	noconn = error "S3 not configured"
 			
 s3Warning :: ReqError -> Annex Bool
 s3Warning e = do

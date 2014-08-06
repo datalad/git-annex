@@ -91,9 +91,9 @@ encryptableRemote c storeKeyEncrypted retrieveKeyFileEncrypted r = r
 	, removeKey = \k -> cip k >>= maybe
 		(removeKey r k)
 		(\(_, enckey) -> removeKey r enckey)
-	, hasKey = \k -> cip k >>= maybe
-		(hasKey r k)
-		(\(_, enckey) -> hasKey r enckey)
+	, checkPresent = \k -> cip k >>= maybe
+		(checkPresent r k)
+		(\(_, enckey) -> checkPresent r enckey)
 	, cost = maybe
 		(cost r)
 		(const $ cost r + encryptedRemoteCostAdj)

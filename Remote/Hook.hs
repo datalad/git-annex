@@ -45,8 +45,8 @@ gen r u c gc = do
 			retrieveKeyFile = retreiveKeyFileDummy,
 			retrieveKeyFileCheap = retrieveCheap hooktype,
 			removeKey = remove hooktype,
-			hasKey = checkPresent r hooktype,
-			hasKeyCheap = False,
+			checkPresent = checkKey r hooktype,
+			checkPresentCheap = False,
 			whereisKey = Nothing,
 			remoteFsck = Nothing,
 			repairRepo = Nothing,
@@ -128,11 +128,11 @@ retrieveCheap _ _ _ = return False
 remove :: HookName -> Key -> Annex Bool
 remove h k = runHook h "remove" k Nothing $ return True
 
-checkPresent :: Git.Repo -> HookName -> Key -> Annex (Either String Bool)
-checkPresent r h k = do
+checkKey :: Git.Repo -> HookName -> Key -> Annex Bool
+checkKey r h k = do
 	showAction $ "checking " ++ Git.repoDescribe r
 	v <- lookupHook h action
-	liftIO $ catchMsgIO $ check v
+	liftIO $ check v
   where
   	action = "checkpresent"
 	findkey s = key2file k `elem` lines s

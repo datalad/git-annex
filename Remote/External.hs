@@ -53,8 +53,8 @@ gen r u c gc = do
 			retrieveKeyFile = retreiveKeyFileDummy,
 			retrieveKeyFileCheap = \_ _ -> return False,
 			removeKey = remove external,
-			hasKey = checkPresent external,
-			hasKeyCheap = False,
+			checkPresent = checkKey external,
+			checkPresentCheap = False,
 			whereisKey = Nothing,
 			remoteFsck = Nothing,
 			repairRepo = Nothing,
@@ -121,8 +121,8 @@ remove external k = safely $
 					return False
 			_ -> Nothing
 
-checkPresent :: External -> Key -> Annex (Either String Bool)
-checkPresent external k = either (Left . show) id <$> tryAnnex go
+checkKey :: External -> Key -> Annex Bool
+checkKey external k = either error id <$> go
   where
 	go = handleRequest external (CHECKPRESENT k) Nothing $ \resp ->
 		case resp of

@@ -141,8 +141,8 @@ gen r u c gc
 			, retrieveKeyFile = copyFromRemote new
 			, retrieveKeyFileCheap = copyFromRemoteCheap new
 			, removeKey = dropKey new
-			, hasKey = inAnnex new
-			, hasKeyCheap = repoCheap r
+			, checkPresent = inAnnex new
+			, checkPresentCheap = repoCheap r
 			, whereisKey = Nothing
 			, remoteFsck = if Git.repoIsUrl r
 				then Nothing
@@ -284,11 +284,8 @@ tryGitConfigRead r
 			void $ tryAnnex $ ensureInitialized
 			Annex.getState Annex.repo
 
-{- Checks if a given remote has the content for a key inAnnex.
- - If the remote cannot be accessed, or if it cannot determine
- - whether it has the content, returns a Left error message.
- -}
-inAnnex :: Remote -> Key -> Annex (Either String Bool)
+{- Checks if a given remote has the content for a key in its annex. -}
+inAnnex :: Remote -> Key -> Annex Bool
 inAnnex rmt key
 	| Git.repoIsHttp r = checkhttp
 	| Git.repoIsUrl r = checkremote
@@ -298,17 +295,13 @@ inAnnex rmt key
 	checkhttp = do
 		showChecking r
 		ifM (Url.withUrlOptions $ \uo -> anyM (\u -> Url.checkBoth u (keySize key) uo) (keyUrls rmt key))
-			( return $ Right True
-			, return $ Left "not found"
+			( return True
+			, error "not found"
 			)
 	checkremote = Ssh.inAnnex r key
-	checklocal = guardUsable r (cantCheck r) $ dispatch <$> check
-	  where
-		check = either (Left . show) Right 
-			<$> tryAnnex (onLocal rmt $ Annex.Content.inAnnexSafe key)
-		dispatch (Left e) = Left e
-		dispatch (Right (Just b)) = Right b
-		dispatch (Right Nothing) = cantCheck r
+	checklocal = guardUsable r (cantCheck r) $
+		fromMaybe (cantCheck r)
+			<$> onLocal rmt (Annex.Content.inAnnexSafe key)
 
 keyUrls :: Remote -> Key -> [String]
 keyUrls r key = map tourl locs'

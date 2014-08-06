@@ -148,7 +148,7 @@ specialRemote' cfg c preparestorer prepareretriever baser = encr
 			(retrieveKeyFileCheap baser k d)
 			(\_ -> return False)
 		, removeKey = \k -> cip >>= removeKeyGen k
-		, hasKey = \k -> cip >>= hasKeyGen k
+		, checkPresent = \k -> cip >>= checkPresentGen k
 		, cost = maybe
 			(cost baser)
 			(const $ cost baser + encryptedRemoteCostAdj)
@@ -167,7 +167,7 @@ specialRemote' cfg c preparestorer prepareretriever baser = encr
 			displayprogress p k $ \p' ->
 				storeChunks (uuid baser) chunkconfig k src p'
 					(storechunk enc storer)
-					(hasKey baser)
+					(checkPresent baser)
 		go Nothing = return False
 		rollback = void $ removeKey encr k
 
@@ -193,10 +193,10 @@ specialRemote' cfg c preparestorer prepareretriever baser = encr
 		enck = maybe id snd enc
 		remover = removeKey baser
 
-	hasKeyGen k enc = hasKeyChunks checker (uuid baser) chunkconfig enck k
+	checkPresentGen k enc = checkPresentChunks checker (uuid baser) chunkconfig enck k
 	  where
 		enck = maybe id snd enc
-		checker = hasKey baser
+		checker = checkPresent baser
 
 	chunkconfig = chunkConfig cfg
 

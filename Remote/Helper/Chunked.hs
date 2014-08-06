@@ -12,7 +12,7 @@ module Remote.Helper.Chunked (
 	storeChunks,
 	removeChunks,
 	retrieveChunks,
-	hasKeyChunks,
+	checkPresentChunks,
 ) where
 
 import Common.Annex
@@ -94,8 +94,8 @@ storeChunks
 	-> Key
 	-> FilePath
 	-> MeterUpdate
-	-> (Key -> ContentSource -> MeterUpdate -> Annex Bool)
-	-> (Key -> Annex (Either String Bool))
+	-> Storer
+	-> CheckPresent
 	-> Annex Bool
 storeChunks u chunkconfig k f p storer checker = 
 	case chunkconfig of
@@ -158,7 +158,7 @@ storeChunks u chunkconfig k f p storer checker =
 seekResume
 	:: Handle
 	-> ChunkKeyStream
-	-> (Key -> Annex (Either String Bool))
+	-> CheckPresent
 	-> Annex (ChunkKeyStream, BytesProcessed)
 seekResume h chunkkeys checker = do
 	sz <- liftIO (hFileSize h)
@@ -172,7 +172,7 @@ seekResume h chunkkeys checker = do
 			liftIO $ hSeek h AbsoluteSeek sz
 			return (cks, toBytesProcessed sz)
 		| otherwise = do
-			v <- checker k
+			v <- tryNonAsyncAnnex (checker k)
 			case v of
 				Right True ->
 					check pos' cks' sz
@@ -331,43 +331,48 @@ setupResume ls currsize = map dropunneeded ls
 {- Checks if a key is present in a remote. This requires any one
  - of the lists of options returned by chunkKeys to all check out
  - as being present using the checker action.
+ -
+ - Throws an exception if the remote is not accessible.
  -}
-hasKeyChunks
-	:: (Key -> Annex (Either String Bool))
+checkPresentChunks
+	:: CheckPresent
 	-> UUID
 	-> ChunkConfig
 	-> EncKey
 	-> Key
-	-> Annex (Either String Bool)
-hasKeyChunks checker u chunkconfig encryptor basek
-	| noChunks chunkconfig =
+	-> Annex Bool
+checkPresentChunks checker u chunkconfig encryptor basek
+	| noChunks chunkconfig = do
 		-- Optimisation: Try the unchunked key first, to avoid
 		-- looking in the git-annex branch for chunk counts
 		-- that are likely not there.
-		ifM ((Right True ==) <$> checker (encryptor basek))
-			( return (Right True)
-			, checklists Nothing =<< chunkKeysOnly u basek
-			)
+		v <- check basek
+		case v of
+			Right True -> return True
+			_ -> checklists Nothing =<< chunkKeysOnly u basek
 	| otherwise = checklists Nothing =<< chunkKeys u chunkconfig basek
   where
-	checklists Nothing [] = return (Right False)
-	checklists (Just deferrederror) [] = return (Left deferrederror)
+	checklists Nothing [] = return False
+	checklists (Just deferrederror) [] = error deferrederror
 	checklists d (l:ls)
 		| not (null l) = do
 			v <- checkchunks l
 			case v of
 				Left e -> checklists (Just e) ls
-				Right True -> return (Right True)
+				Right True -> return True
 				Right False -> checklists Nothing ls
 		| otherwise = checklists d ls
 	
 	checkchunks :: [Key] -> Annex (Either String Bool)
 	checkchunks [] = return (Right True)
 	checkchunks (k:ks) = do
-		v <- checker (encryptor k)
-		if v == Right True
-			then checkchunks ks
-			else return v
+		v <- check k
+		case v of
+			Right True -> checkchunks ks
+			Right False -> return $ Right False
+			Left e -> return $ Left $ show e
+
+	check = tryNonAsyncAnnex . checker . encryptor
 
 {- A key can be stored in a remote unchunked, or as a list of chunked keys.
  - This can be the case whether or not the remote is currently configured

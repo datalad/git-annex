@@ -91,7 +91,7 @@ cannot tell when we've gotten the last chunk. (Also, we cannot strip
 padding.) Note that `addurl` sometimes generates keys w/o size info
 (particularly, it does so by design when using quvi).
 
-Problem: Also, this makes `hasKey` hard to implement: How can it know if
+Problem: Also, this makes `checkPresent` hard to implement: How can it know if
 all the chunks are present, if the key size is not known?
 
 Problem: Also, this makes it difficult to download encrypted keys, because
@@ -111,7 +111,7 @@ So, SHA256-1048576-c1--xxxxxxx for the first chunk of 1 megabyte.
 Before any chunks are stored, write a chunkcount file, eg
 SHA256-s12345-c0--xxxxxxx. Note that this key is the same as the original
 object's key, except with chunk number set to 0. This file contains both
-the number of chunks, and also the chunk size used. `hasKey` downloads this
+the number of chunks, and also the chunk size used. `checkPresent` downloads this
 file, and then verifies that each chunk is present, looking for keys with
 the expected chunk numbers and chunk size.
 
@@ -126,7 +126,7 @@ Note: This design lets an attacker with logs tell the (appoximate) size of
 objects, by finding the small files that contain a chunk count, and
 correlating when that is written/read and when other files are
 written/read. That could be solved by padding the chunkcount key up to the
-size of the rest of the keys, but that's very innefficient; `hasKey` is not
+size of the rest of the keys, but that's very innefficient; `checkPresent` is not
 designed to need to download large files.
 
 # design 3
@@ -139,7 +139,7 @@ This seems difficult; attacker could probably tell where the first encrypted
 part stops and the next encrypted part starts by looking for gpg headers,
 and so tell which files are the first chunks.
 
-Also, `hasKey` would need to download some or all of the first file.
+Also, `checkPresent` would need to download some or all of the first file.
 If all, that's a lot more expensive. If only some is downloaded, an
 attacker can guess that the file that was partially downloaded is the
 first chunk in a series, and wait for a time when it's fully downloaded to
@@ -163,7 +163,7 @@ The location log does not record locations of individual chunk keys
 (too space-inneficient). Instead, look at a chunk log in the
 git-annex branch to get the chunk count and size for a key.
 
-`hasKey` would check if any of the logged sets of chunks is 
+`checkPresent` would check if any of the logged sets of chunks is 
 present on the remote. It would also check if the non-chunked key is
 present, as a fallback.
 
@@ -225,7 +225,7 @@ Reasons:
 
 Note that this means that the chunks won't exactly match the configured
 chunk size. gpg does compression, which might make them a
-lot smaller. Or gpg overhead could make them slightly larger. So `hasKey`
+lot smaller. Or gpg overhead could make them slightly larger. So `checkPresent`
 cannot check exact file sizes.
 
 If padding is enabled, gpg compression should be disabled, to not leak
@@ -250,10 +250,10 @@ and skip forward to the next needed chunk. Easy.
 Uploads: Check if the 1st chunk is present. If so, check the second chunk,
 etc. Once the first missing chunk is found, start uploading from there.
 
-That adds one extra hasKey call per upload. Probably a win in most cases.
+That adds one extra checkPresent call per upload. Probably a win in most cases.
 Can be improved by making special remotes open a persistent
 connection that is used for transferring all chunks, as well as for
-checking hasKey.
+checking checkPresent.
 
 Note that this is safe to do only as long as the Key being transferred
 cannot possibly have 2 different contents in different repos. Notably not

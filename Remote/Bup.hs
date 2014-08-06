@@ -58,8 +58,8 @@ gen r u c gc = do
 		, retrieveKeyFile = retreiveKeyFileDummy
 		, retrieveKeyFileCheap = retrieveCheap buprepo
 		, removeKey = remove buprepo
-		, hasKey = checkPresent r bupr'
-		, hasKeyCheap = bupLocal buprepo
+		, checkPresent = checkKey r bupr'
+		, checkPresentCheap = bupLocal buprepo
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing
@@ -163,14 +163,13 @@ remove buprepo k = do
  - in a bup repository. One way it to check if the git repository has
  - a branch matching the name (as created by bup split -n).
  -}
-checkPresent :: Git.Repo -> Git.Repo -> Key -> Annex (Either String Bool)
-checkPresent r bupr k
+checkKey :: Git.Repo -> Git.Repo -> Key -> Annex Bool
+checkKey r bupr k
 	| Git.repoIsUrl bupr = do
 		showChecking r
-		ok <- onBupRemote bupr boolSystem "git" params
-		return $ Right ok
-	| otherwise = liftIO $ catchMsgIO $
-		boolSystem "git" $ Git.Command.gitCommandLine params bupr
+		onBupRemote bupr boolSystem "git" params
+	| otherwise = liftIO $ boolSystem "git" $
+		Git.Command.gitCommandLine params bupr
   where
 	params = 
 		[ Params "show-ref --quiet --verify"

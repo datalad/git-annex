@@ -12,7 +12,7 @@ module Remote.Rsync (
 	store,
 	retrieve,
 	remove,
-	checkPresent,
+	checkKey,
 	withRsyncScratchDir,
 	genRsyncOpts,
 	RsyncOpts
@@ -66,8 +66,8 @@ gen r u c gc = do
 			, retrieveKeyFile = retreiveKeyFileDummy
 			, retrieveKeyFileCheap = retrieveCheap o
 			, removeKey = remove o
-			, hasKey = checkPresent r o
-			, hasKeyCheap = False
+			, checkPresent = checkKey r o
+			, checkPresentCheap = False
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
@@ -214,14 +214,12 @@ remove o k = do
 		, dir </> keyFile k </> "***"
 		]
 
-checkPresent :: Git.Repo -> RsyncOpts -> Key -> Annex (Either String Bool)
-checkPresent r o k = do
+checkKey :: Git.Repo -> RsyncOpts -> Key -> Annex Bool
+checkKey r o k = do
 	showAction $ "checking " ++ Git.repoDescribe r
 	-- note: Does not currently differentiate between rsync failing
 	-- to connect, and the file not being present.
-	Right <$> check
-  where
-	check = untilTrue (rsyncUrls o k) $ \u -> 
+	untilTrue (rsyncUrls o k) $ \u -> 
 		liftIO $ catchBoolIO $ do
 			withQuietOutput createProcessSuccess $
 				proc "rsync" $ toCommand $

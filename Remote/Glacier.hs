@@ -52,8 +52,8 @@ gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
 			retrieveKeyFile = retreiveKeyFileDummy,
 			retrieveKeyFileCheap = retrieveCheap this,
 			removeKey = remove this,
-			hasKey = checkPresent this,
-			hasKeyCheap = False,
+			checkPresent = checkKey this,
+			checkPresentCheap = False,
 			whereisKey = Nothing,
 			remoteFsck = Nothing,
 			repairRepo = Nothing,
@@ -164,25 +164,21 @@ remove r k = glacierAction r
 	, Param $ archive r k
 	]
 
-checkPresent :: Remote -> Key -> Annex (Either String Bool)
-checkPresent r k = do
+checkKey :: Remote -> Key -> Annex Bool
+checkKey r k = do
 	showAction $ "checking " ++ name r
 	go =<< glacierEnv (config r) (uuid r)
   where
-	go Nothing = return $ Left "cannot check glacier"
+	go Nothing = error "cannot check glacier"
 	go (Just e) = do
 		{- glacier checkpresent outputs the archive name to stdout if
 		 - it's present. -}
-		v <- liftIO $ catchMsgIO $ 
-			readProcessEnv "glacier" (toCommand params) (Just e)
-		case v of
-			Right s -> do
-				let probablypresent = key2file k `elem` lines s
-				if probablypresent
-					then ifM (Annex.getFlag "trustglacier")
-						( return $ Right True, untrusted )
-					else return $ Right False
-			Left err -> return $ Left err
+		s <- liftIO $ readProcessEnv "glacier" (toCommand params) (Just e)
+		let probablypresent = key2file k `elem` lines s
+		if probablypresent
+			then ifM (Annex.getFlag "trustglacier")
+				( return True, error untrusted )
+			else return False
 
 	params = glacierParams (config r)
 		[ Param "archive"
@@ -192,7 +188,7 @@ checkPresent r k = do
 		, Param $ archive r k
 		]
 
-	untrusted = return $ Left $ unlines
+	untrusted = unlines
 			[ "Glacier's inventory says it has a copy."
 			, "However, the inventory could be out of date, if it was recently removed."
 			, "(Use --trust-glacier if you're sure it's still in Glacier.)"

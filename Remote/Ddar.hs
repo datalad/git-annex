@@ -54,8 +54,8 @@ gen r u c gc = do
 		, retrieveKeyFile = retreiveKeyFileDummy
 		, retrieveKeyFileCheap = retrieveCheap
 		, removeKey = remove ddarrepo
-		, hasKey = checkPresent ddarrepo
-		, hasKeyCheap = ddarLocal ddarrepo
+		, checkPresent = checkKey ddarrepo
+		, checkPresentCheap = ddarLocal ddarrepo
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing
@@ -181,13 +181,14 @@ inDdarManifest ddarrepo k = do
   where
 	k' = key2file k
 
-checkPresent :: DdarRepo -> Key -> Annex (Either String Bool)
-checkPresent ddarrepo key = do
+checkKey :: DdarRepo -> Key -> Annex Bool
+checkKey ddarrepo key = do
 	directoryExists <- ddarDirectoryExists ddarrepo
 	case directoryExists of
-		Left e -> return $ Left e
-		Right True -> inDdarManifest ddarrepo key
-		Right False -> return $ Right False
+		Left e -> error e
+		Right True -> either error return
+			=<< inDdarManifest ddarrepo key
+		Right False -> return False
 
 ddarLocal :: DdarRepo -> Bool
 ddarLocal = notElem ':'
