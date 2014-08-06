@@ -27,12 +27,9 @@ import qualified Git
 import Config
 import Config.Cost
 import Remote.Helper.Special
-import Remote.Helper.Encryptable
 import qualified Remote.Helper.Chunked.Legacy as Legacy
-import Crypto
 import Creds
 import Utility.Metered
-import Annex.Content
 import Annex.UUID
 import Remote.WebDAV.DavUrl
 
@@ -50,20 +47,22 @@ remote = RemoteType {
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
   where
-	new cst = Just $ encryptableRemote c
-		(storeEncrypted this)
-		(retrieveEncrypted this)
+	new cst = Just $ specialRemote c
+		(prepareStore this chunkconfig)
+		(prepareRetrieve this chunkconfig)
+		(prepareRemove this)
+		(prepareCheckPresent this chunkconfig)
 		this
 	  where
 		this = Remote {
 			uuid = u,
 			cost = cst,
 			name = Git.repoDescribe r,
-			storeKey = store this,
-			retrieveKeyFile = retrieve this,
-			retrieveKeyFileCheap = retrieveCheap this,
-			removeKey = remove this,
-			checkPresent = checkKey this,
+			storeKey = storeKeyDummy,
+			retrieveKeyFile = retreiveKeyFileDummy,
+			retrieveKeyFileCheap = retrieveCheap,
+			removeKey = removeKeyDummy,
+			checkPresent = checkPresentDummy,
 			checkPresentCheap = False,
 			whereisKey = Nothing,
 			remoteFsck = Nothing,
@@ -76,6 +75,7 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			availability = GloballyAvailable,
 			remotetype = remote
 		}
+		chunkconfig = getChunkConfig c
 
 webdavSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
 webdavSetup mu mcreds c = do
@@ -89,95 +89,67 @@ webdavSetup mu mcreds c = do
 	c'' <- setRemoteCredPair c' (davCreds u) creds
 	return (c'', u)
 
-store :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store r k _f p = metered (Just p) k $ \meterupdate ->
-	davAction r False $ \(baseurl, user, pass) -> 
-		sendAnnex k (void $ remove r k) $ \src ->
-			liftIO $ withMeteredFile src meterupdate $
-				storeHelper r k baseurl user pass
+prepareStore :: Remote -> ChunkConfig -> Preparer Storer
+prepareStore r chunkconfig = simplyPrepare $ fileStorer $ \k f p ->
+	davAction r False $ \(baseurl, user, pass) -> liftIO $
+		withMeteredFile f p $
+			storeHelper chunkconfig k baseurl user pass
 
-storeEncrypted :: Remote -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
-storeEncrypted r (cipher, enck) k p = metered (Just p) k $ \meterupdate ->
-	davAction r False $ \(baseurl, user, pass) ->
-		sendAnnex k (void $ remove r enck) $ \src ->
-			liftIO $ encrypt (getGpgEncParams r) cipher
-				(streamMeteredFile src meterupdate) $
-				readBytes $ storeHelper r enck baseurl user pass
-
-storeHelper :: Remote -> Key -> DavUrl -> DavUser -> DavPass -> L.ByteString -> IO Bool
-storeHelper r k baseurl user pass b = catchBoolIO $ do
+storeHelper :: ChunkConfig -> Key -> DavUrl -> DavUser -> DavPass -> L.ByteString -> IO Bool
+storeHelper chunkconfig k baseurl user pass b = do
 	mkdirRecursiveDAV tmpurl user pass
 	case chunkconfig of
-		NoChunks -> flip catchNonAsync (\e -> warningIO (show e) >> return False) $ do
-			storehttp tmpurl b
-			finalizer tmpurl keyurl
-			return True
-		UnpaddedChunks _ -> error "TODO: storeHelper with UnpaddedChunks"
 		LegacyChunks chunksize -> do
 			let storer urls = Legacy.storeChunked chunksize urls storehttp b
 			let recorder url s = storehttp url (L8.fromString s)
 			Legacy.storeChunks k tmpurl keyurl storer recorder finalizer
-
+		_ -> do
+			storehttp tmpurl b
+			finalizer tmpurl keyurl
+			return True
   where
 	tmpurl = tmpLocation baseurl k
 	keyurl = davLocation baseurl k
-	chunkconfig = getChunkConfig $ config r
 	finalizer srcurl desturl = do
 		void $ tryNonAsync (deleteDAV desturl user pass)
 		mkdirRecursiveDAV (urlParent desturl) user pass
 		moveDAV srcurl desturl user pass
 	storehttp url = putDAV url user pass
 
-retrieveCheap :: Remote -> Key -> FilePath -> Annex Bool
-retrieveCheap _ _ _ = return False
+retrieveCheap :: Key -> FilePath -> Annex Bool
+retrieveCheap _ _ = return False
 
-retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
-retrieve r k _f d p = metered (Just p) k $ \meterupdate ->
-	davAction r False $ \(baseurl, user, pass) -> liftIO $ catchBoolIO $
-		withStoredFiles r k baseurl user pass onerr $ \urls -> do
-			Legacy.meteredWriteFileChunks meterupdate d urls $ \url -> do
+prepareRetrieve :: Remote -> ChunkConfig -> Preparer Retriever
+prepareRetrieve r chunkconfig = simplyPrepare $ fileRetriever $ \d k p ->
+	davAction r onerr $ \(baseurl, user, pass) -> liftIO $
+		withStoredFiles chunkconfig k baseurl user pass onerr $ \urls -> do
+			Legacy.meteredWriteFileChunks p d urls $ \url -> do
 				mb <- getDAV url user pass
 				case mb of
-					Nothing -> throwIO "download failed"
+					Nothing -> onerr
 					Just b -> return b
-			return True
   where
-	onerr _ = return False
+	onerr = error "download failed"
 
-retrieveEncrypted :: Remote -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
-retrieveEncrypted r (cipher, enck) k d p = metered (Just p) k $ \meterupdate ->
-	davAction r False $ \(baseurl, user, pass) -> liftIO $ catchBoolIO $
-		withStoredFiles r enck baseurl user pass onerr $ \urls -> do
-			decrypt cipher (feeder user pass urls) $
-				readBytes $ meteredWriteFile meterupdate d
-			return True
-  where
-	onerr _ = return False
+prepareRemove :: Remote -> Preparer Remover
+prepareRemove r = simplyPrepare $ \k ->
+	davAction r False $ \(baseurl, user, pass) -> liftIO $ do
+		-- Delete the key's whole directory, including any
+		-- legacy chunked files, etc, in a single action.
+		let url = davLocation baseurl k
+		isJust . eitherToMaybe <$> tryNonAsync (deleteDAV url user pass)
 
-	feeder _ _ [] _ = noop
-	feeder user pass (url:urls) h = do
-		mb <- getDAV url user pass
-		case mb of
-			Nothing -> throwIO "download failed"
-			Just b -> do
-				L.hPut h b
-				feeder user pass urls h
+prepareCheckPresent :: Remote -> ChunkConfig -> Preparer CheckPresent
+prepareCheckPresent r chunkconfig = simplyPrepare $ checkKey r chunkconfig
 
-remove :: Remote -> Key -> Annex Bool
-remove r k = davAction r False $ \(baseurl, user, pass) -> liftIO $ do
-	-- Delete the key's whole directory, including any chunked
-	-- files, etc, in a single action.
-	let url = davLocation baseurl k
-	isJust . eitherToMaybe <$> tryNonAsync (deleteDAV url user pass)
-
-checkKey :: Remote -> Key -> Annex Bool
-checkKey r k = davAction r noconn (either error id <$$> go)
+checkKey :: Remote -> ChunkConfig -> Key -> Annex Bool
+checkKey r chunkconfig k = davAction r noconn (either error id <$$> go)
   where
 	noconn = error $ name r ++ " not configured"
 
 	go (baseurl, user, pass) = do
 		showAction $ "checking " ++ name r
-		liftIO $ withStoredFiles r k baseurl user pass onerr check
+		liftIO $ withStoredFiles chunkconfig k baseurl user pass onerr check
 	  where
 		check [] = return $ Right True
 		check (url:urls) = do
@@ -196,7 +168,7 @@ checkKey r k = davAction r noconn (either error id <$$> go)
 				else v
 
 withStoredFiles
-	:: Remote
+	:: ChunkConfig
 	-> Key
 	-> DavUrl
 	-> DavUser
@@ -204,9 +176,7 @@ withStoredFiles
 	-> (DavUrl -> IO a)
 	-> ([DavUrl] -> IO a)
 	-> IO a
-withStoredFiles r k baseurl user pass onerr a = case chunkconfig of
-	NoChunks -> a [keyurl]
-	UnpaddedChunks _ -> error "TODO: withStoredFiles with UnpaddedChunks"
+withStoredFiles chunkconfig k baseurl user pass onerr a = case chunkconfig of
 	LegacyChunks _ -> do
 		let chunkcount = keyurl ++ Legacy.chunkCount
 		v <- getDAV chunkcount user pass
@@ -217,9 +187,9 @@ withStoredFiles r k baseurl user pass onerr a = case chunkconfig of
 				if null chunks
 					then onerr chunkcount
 					else a chunks
+	_ -> a [keyurl]
   where
 	keyurl = davLocation baseurl k ++ keyFile k
-	chunkconfig = getChunkConfig $ config r
 
 davAction :: Remote -> a -> ((DavUrl, DavUser, DavPass) -> Annex a) -> Annex a
 davAction r unconfigured action = do

@@ -39,7 +39,7 @@ import Crypto
 import Config.Cost
 import Utility.Metered
 import Remote.Helper.Chunked as X
-import Remote.Helper.Encryptable as X hiding (encryptableRemote)
+import Remote.Helper.Encryptable as X
 import Remote.Helper.Messages
 import Annex.Content
 import Annex.Exception
@@ -119,7 +119,7 @@ byteRetriever :: (Key -> (L.ByteString -> Annex Bool) -> Annex Bool) -> Retrieve
 byteRetriever a k _m callback = a k (callback . ByteContent)
 
 {- The base Remote that is provided to specialRemote needs to have
- - storeKey, retreiveKeyFile, removeKey, and checkPresent methods,
+ - storeKey, retrieveKeyFile, removeKey, and checkPresent methods,
  - but they are never actually used (since specialRemote replaces them).
  - Here are some dummy ones.
  -}

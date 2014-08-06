@@ -14,9 +14,7 @@ import Types.Remote
 import Crypto
 import Types.Crypto
 import qualified Annex
-import Config.Cost
 import Utility.Base64
-import Utility.Metered
 
 {- Encryption setup for a remote. The user must specify whether to use
  - an encryption key, or not encrypt. An encrypted cipher is created, or is
@@ -69,42 +67,6 @@ encryptionSetup c = maybe genCipher updateCipher $ extractCipher c
                 -- public-key encryption, hence we leave it on newer
                 -- remotes (while being backward-compatible).
 		[ "keyid", "keyid+", "keyid-", "highRandomQuality" ]
-
-{- Modifies a Remote to support encryption. -}
--- TODO: deprecated
-encryptableRemote
-	:: RemoteConfig
-	-> ((Cipher, Key) -> Key -> MeterUpdate -> Annex Bool)
-	-> ((Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool)
-	-> Remote
-	-> Remote
-encryptableRemote c storeKeyEncrypted retrieveKeyFileEncrypted r = r
-	{ storeKey = \k f p -> cip k >>= maybe
-		(storeKey r k f p)
-		(\v -> storeKeyEncrypted v k p)
-	, retrieveKeyFile = \k f d p -> cip k >>= maybe
-		(retrieveKeyFile r k f d p)
-		(\v -> retrieveKeyFileEncrypted v k d p)
-	, retrieveKeyFileCheap = \k d -> cip k >>= maybe
-		(retrieveKeyFileCheap r k d)
-		(\_ -> return False)
-	, removeKey = \k -> cip k >>= maybe
-		(removeKey r k)
-		(\(_, enckey) -> removeKey r enckey)
-	, checkPresent = \k -> cip k >>= maybe
-		(checkPresent r k)
-		(\(_, enckey) -> checkPresent r enckey)
-	, cost = maybe
-		(cost r)
-		(const $ cost r + encryptedRemoteCostAdj)
-		(extractCipher c)
-	}
-  where
-	cip k = do
-		v <- cipherKey c
-		return $ case v of
-			Nothing -> Nothing
-			Just (cipher, enck) -> Just (cipher, enck k)
 
 {- Gets encryption Cipher. The decrypted Ciphers are cached in the Annex
  - state. -}
