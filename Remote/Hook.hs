@@ -37,6 +37,8 @@ gen r u c gc = do
 	return $ Just $ specialRemote c
 		(simplyPrepare $ store hooktype)
 		(simplyPrepare $ retrieve hooktype)
+		(simplyPrepare $ remove hooktype)
+		(simplyPrepare $ checkKey r hooktype)
 		Remote {
 			uuid = u,
 			cost = cst,
@@ -44,8 +46,8 @@ gen r u c gc = do
 			storeKey = storeKeyDummy,
 			retrieveKeyFile = retreiveKeyFileDummy,
 			retrieveKeyFileCheap = retrieveCheap hooktype,
-			removeKey = remove hooktype,
-			checkPresent = checkKey r hooktype,
+			removeKey = removeKeyDummy,
+			checkPresent = checkPresentDummy,
 			checkPresentCheap = False,
 			whereisKey = Nothing,
 			remoteFsck = Nothing,
@@ -125,10 +127,10 @@ retrieve h = fileRetriever $ \d k _p ->
 retrieveCheap :: HookName -> Key -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False
 
-remove :: HookName -> Key -> Annex Bool
+remove :: HookName -> Remover
 remove h k = runHook h "remove" k Nothing $ return True
 
-checkKey :: Git.Repo -> HookName -> Key -> Annex Bool
+checkKey :: Git.Repo -> HookName -> CheckPresent
 checkKey r h k = do
 	showAction $ "checking " ++ Git.repoDescribe r
 	v <- lookupHook h action

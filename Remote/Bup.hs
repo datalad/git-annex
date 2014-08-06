@@ -57,8 +57,8 @@ gen r u c gc = do
 		, storeKey = storeKeyDummy
 		, retrieveKeyFile = retreiveKeyFileDummy
 		, retrieveKeyFileCheap = retrieveCheap buprepo
-		, removeKey = remove buprepo
-		, checkPresent = checkKey r bupr'
+		, removeKey = removeKeyDummy
+		, checkPresent = checkPresentDummy
 		, checkPresentCheap = bupLocal buprepo
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
@@ -76,6 +76,8 @@ gen r u c gc = do
 	return $ Just $ specialRemote' specialcfg c
 		(simplyPrepare $ store this buprepo)
 		(simplyPrepare $ retrieve buprepo)
+		(simplyPrepare $ remove buprepo)
+		(simplyPrepare $ checkKey r bupr')
 		this
   where
 	buprepo = fromMaybe (error "missing buprepo") $ remoteAnnexBupRepo gc
@@ -146,7 +148,7 @@ retrieveCheap _ _ _ = return False
  -
  - We can, however, remove the git branch that bup created for the key.
  -}
-remove :: BupRepo -> Key -> Annex Bool
+remove :: BupRepo -> Remover
 remove buprepo k = do
 	go =<< liftIO (bup2GitRemote buprepo)
 	warning "content cannot be completely removed from bup remote"
@@ -163,7 +165,7 @@ remove buprepo k = do
  - in a bup repository. One way it to check if the git repository has
  - a branch matching the name (as created by bup split -n).
  -}
-checkKey :: Git.Repo -> Git.Repo -> Key -> Annex Bool
+checkKey :: Git.Repo -> Git.Repo -> CheckPresent
 checkKey r bupr k
 	| Git.repoIsUrl bupr = do
 		showChecking r

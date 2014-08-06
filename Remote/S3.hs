@@ -47,6 +47,8 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 	new cst = Just $ specialRemote c
 		(prepareStore this)
 		(prepareRetrieve this)
+		(simplyPrepare $ remove this c)
+		(simplyPrepare $ checkKey this)
 		this
 	  where
 		this = Remote {
@@ -55,9 +57,9 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			name = Git.repoDescribe r,
 			storeKey = storeKeyDummy,
 			retrieveKeyFile = retreiveKeyFileDummy,
-			retrieveKeyFileCheap = retrieveCheap this,
-			removeKey = remove this c,
-			checkPresent = checkKey this,
+			retrieveKeyFileCheap = retrieveCheap,
+			removeKey = removeKeyDummy,
+			checkPresent = checkPresentDummy,
 			checkPresentCheap = False,
 			whereisKey = Nothing,
 			remoteFsck = Nothing,
@@ -150,13 +152,13 @@ prepareRetrieve r = resourcePrepare (const $ s3Action r False) $ \(conn, bucket)
 		liftIO (getObject conn $ bucketKey r bucket k)
 			>>= either s3Error (sink . obj_data)
 
-retrieveCheap :: Remote -> Key -> FilePath -> Annex Bool
-retrieveCheap _ _ _ = return False
+retrieveCheap :: Key -> FilePath -> Annex Bool
+retrieveCheap _ _ = return False
 
 {- Internet Archive doesn't easily allow removing content.
  - While it may remove the file, there are generally other files
  - derived from it that it does not remove. -}
-remove :: Remote -> RemoteConfig -> Key -> Annex Bool
+remove :: Remote -> RemoteConfig -> Remover
 remove r c k
 	| isIA c = do
 		warning "Cannot remove content from the Internet Archive"
@@ -167,7 +169,7 @@ remove' :: Remote -> Key -> Annex Bool
 remove' r k = s3Action r False $ \(conn, bucket) ->
 	s3Bool =<< liftIO (deleteObject conn $ bucketKey r bucket k)
 
-checkKey :: Remote -> Key -> Annex Bool
+checkKey :: Remote -> CheckPresent
 checkKey r k = s3Action r noconn $ \(conn, bucket) -> do
 	showAction $ "checking " ++ name r
 	res <- liftIO $ getObjectInfo conn $ bucketKey r bucket k

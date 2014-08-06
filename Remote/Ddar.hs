@@ -44,6 +44,8 @@ gen r u c gc = do
 	return $ Just $ specialRemote' specialcfg c
 		(simplyPrepare $ store ddarrepo)
 		(simplyPrepare $ retrieve ddarrepo)
+		(simplyPrepare $ remove ddarrepo)
+		(simplyPrepare $ checkKey ddarrepo)
 		(this cst)
   where
 	this cst = Remote
@@ -53,8 +55,8 @@ gen r u c gc = do
 		, storeKey = storeKeyDummy
 		, retrieveKeyFile = retreiveKeyFileDummy
 		, retrieveKeyFileCheap = retrieveCheap
-		, removeKey = remove ddarrepo
-		, checkPresent = checkKey ddarrepo
+		, removeKey = removeKeyDummy
+		, checkPresent = checkPresentDummy
 		, checkPresentCheap = ddarLocal ddarrepo
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
@@ -140,7 +142,7 @@ retrieve ddarrepo = byteRetriever $ \k sink -> do
 retrieveCheap :: Key -> FilePath -> Annex Bool
 retrieveCheap _ _ = return False
 
-remove :: DdarRepo -> Key -> Annex Bool
+remove :: DdarRepo -> Remover
 remove ddarrepo key = do
 	(cmd, params) <- ddarRemoteCall ddarrepo 'd' [Param $ key2file key]
 	liftIO $ boolSystem cmd params
@@ -181,7 +183,7 @@ inDdarManifest ddarrepo k = do
   where
 	k' = key2file k
 
-checkKey :: DdarRepo -> Key -> Annex Bool
+checkKey :: DdarRepo -> CheckPresent
 checkKey ddarrepo key = do
 	directoryExists <- ddarDirectoryExists ddarrepo
 	case directoryExists of

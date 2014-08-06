@@ -9,9 +9,19 @@ module Remote.Helper.Messages where
 
 import Common.Annex
 import qualified Git
+import qualified Types.Remote as Remote
 
 showChecking :: Git.Repo -> Annex ()
 showChecking r = showAction $ "checking " ++ Git.repoDescribe r
 
-cantCheck :: Git.Repo -> a
-cantCheck r = error $ "unable to check " ++ Git.repoDescribe r
+class Checkable a where
+	descCheckable :: a -> String
+
+instance Checkable Git.Repo where
+	descCheckable = Git.repoDescribe
+
+instance Checkable (Remote.RemoteA a) where
+	descCheckable = Remote.name
+
+cantCheck :: Checkable a => a -> e
+cantCheck v = error $ "unable to check " ++ descCheckable v

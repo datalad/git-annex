@@ -45,6 +45,8 @@ gen r u c gc = do
 	return $ Just $ specialRemote c
 		(simplyPrepare $ store external)
 		(simplyPrepare $ retrieve external)
+		(simplyPrepare $ remove external)
+		(simplyPrepare $ checkKey external)
 		Remote {
 			uuid = u,
 			cost = cst,
@@ -52,8 +54,8 @@ gen r u c gc = do
 			storeKey = storeKeyDummy,
 			retrieveKeyFile = retreiveKeyFileDummy,
 			retrieveKeyFileCheap = \_ _ -> return False,
-			removeKey = remove external,
-			checkPresent = checkKey external,
+			removeKey = removeKeyDummy,
+			checkPresent = checkPresentDummy,
 			checkPresentCheap = False,
 			whereisKey = Nothing,
 			remoteFsck = Nothing,
@@ -109,7 +111,7 @@ retrieve external = fileRetriever $ \d k p ->
 					error errmsg
 			_ -> Nothing
 
-remove :: External -> Key -> Annex Bool
+remove :: External -> Remover
 remove external k = safely $ 
 	handleRequest external (REMOVE k) Nothing $ \resp ->
 		case resp of
@@ -121,7 +123,7 @@ remove external k = safely $
 					return False
 			_ -> Nothing
 
-checkKey :: External -> Key -> Annex Bool
+checkKey :: External -> CheckPresent
 checkKey external k = either error id <$> go
   where
 	go = handleRequest external (CHECKPRESENT k) Nothing $ \resp ->

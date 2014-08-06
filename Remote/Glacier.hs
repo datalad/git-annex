@@ -42,6 +42,8 @@ gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
 	new cst = Just $ specialRemote' specialcfg c
 		(prepareStore this)
 		(prepareRetrieve this)
+		(simplyPrepare $ remove this)
+		(simplyPrepare $ checkKey this)
 		this
 	  where
 		this = Remote {
@@ -51,8 +53,8 @@ gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
 			storeKey = storeKeyDummy,
 			retrieveKeyFile = retreiveKeyFileDummy,
 			retrieveKeyFileCheap = retrieveCheap this,
-			removeKey = remove this,
-			checkPresent = checkKey this,
+			removeKey = removeKeyDummy,
+			checkPresent = checkPresentDummy,
 			checkPresentCheap = False,
 			whereisKey = Nothing,
 			remoteFsck = Nothing,
@@ -155,7 +157,7 @@ retrieve r k sink = go =<< glacierEnv c u
 retrieveCheap :: Remote -> Key -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False
 
-remove :: Remote -> Key -> Annex Bool
+remove :: Remote -> Remover
 remove r k = glacierAction r
 	[ Param "archive"
 	
@@ -164,7 +166,7 @@ remove r k = glacierAction r
 	, Param $ archive r k
 	]
 
-checkKey :: Remote -> Key -> Annex Bool
+checkKey :: Remote -> CheckPresent
 checkKey r k = do
 	showAction $ "checking " ++ name r
 	go =<< glacierEnv (config r) (uuid r)

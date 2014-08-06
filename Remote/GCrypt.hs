@@ -107,8 +107,8 @@ gen' r u c gc = do
 		, storeKey = storeKeyDummy
 		, retrieveKeyFile = retreiveKeyFileDummy
 		, retrieveKeyFileCheap = \_ _ -> return False
-		, removeKey = remove this rsyncopts
-		, checkPresent = checkKey this rsyncopts
+		, removeKey = removeKeyDummy
+		, checkPresent = checkPresentDummy
 		, checkPresentCheap = repoCheap r
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
@@ -124,6 +124,8 @@ gen' r u c gc = do
 	return $ Just $ specialRemote' specialcfg c
 		(simplyPrepare $ store this rsyncopts)
 		(simplyPrepare $ retrieve this rsyncopts)
+		(simplyPrepare $ remove this rsyncopts)
+		(simplyPrepare $ checkKey this rsyncopts)
 		this
   where
 	specialcfg
@@ -331,7 +333,7 @@ retrieve r rsyncopts
 	| otherwise = unsupportedUrl
   where
 
-remove :: Remote -> Remote.Rsync.RsyncOpts -> Key -> Annex Bool
+remove :: Remote -> Remote.Rsync.RsyncOpts -> Remover
 remove r rsyncopts k
 	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) False $
 		liftIO $ Remote.Directory.removeDirGeneric (Git.repoLocation (repo r)) (parentDir (gCryptLocation r k))
@@ -341,7 +343,7 @@ remove r rsyncopts k
 	removersync = Remote.Rsync.remove rsyncopts k
 	removeshell = Ssh.dropKey (repo r) k
 
-checkKey :: Remote -> Remote.Rsync.RsyncOpts -> Key -> Annex Bool
+checkKey :: Remote -> Remote.Rsync.RsyncOpts -> CheckPresent
 checkKey r rsyncopts k
 	| not $ Git.repoIsUrl (repo r) =
 		guardUsable (repo r) (cantCheck $ repo r) $

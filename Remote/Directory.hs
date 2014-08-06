@@ -44,6 +44,8 @@ gen r u c gc = do
 	return $ Just $ specialRemote c
 		(prepareStore dir chunkconfig)
 		(retrieve dir chunkconfig)
+		(simplyPrepare $ remove dir)
+		(simplyPrepare $ checkKey dir chunkconfig)
 		Remote {
 			uuid = u,
 			cost = cst,
@@ -51,8 +53,8 @@ gen r u c gc = do
 			storeKey = storeKeyDummy,
 			retrieveKeyFile = retreiveKeyFileDummy,
 			retrieveKeyFileCheap = retrieveCheap dir chunkconfig,
-			removeKey = remove dir,
-			checkPresent = checkKey dir chunkconfig,
+			removeKey = removeKeyDummy,
+			checkPresent = checkPresentDummy,
 			checkPresentCheap = True,
 			whereisKey = Nothing,
 			remoteFsck = Nothing,
@@ -161,7 +163,7 @@ retrieveCheap d NoChunks k f = liftIO $ catchBoolIO $ do
 retrieveCheap _ _ _ _ = return False
 #endif
 
-remove :: FilePath -> Key -> Annex Bool
+remove :: FilePath -> Remover
 remove d k = liftIO $ removeDirGeneric d (storeDir d k)
 
 {- Removes the directory, which must be located under the topdir.
@@ -189,7 +191,7 @@ removeDirGeneric topdir dir = do
 		then return ok
 		else doesDirectoryExist topdir <&&> (not <$> doesDirectoryExist dir)
 
-checkKey :: FilePath -> ChunkConfig -> Key -> Annex Bool
+checkKey :: FilePath -> ChunkConfig -> CheckPresent
 checkKey d (LegacyChunks _) k = Legacy.checkKey d locations k
 checkKey d _ k = liftIO $
 	ifM (anyM doesFileExist (locations d k))

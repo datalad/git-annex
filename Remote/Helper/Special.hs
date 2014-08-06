@@ -11,6 +11,8 @@ module Remote.Helper.Special (
 	Preparer,
 	Storer,
 	Retriever,
+	Remover,
+	CheckPresent,
 	simplyPrepare,
 	ContentSource,
 	checkPrepare,
@@ -21,6 +23,8 @@ module Remote.Helper.Special (
 	byteRetriever,
 	storeKeyDummy,
 	retreiveKeyFileDummy,
+	removeKeyDummy,
+	checkPresentDummy,
 	SpecialRemoteCfg(..),
 	specialRemoteCfg,
 	specialRemote,
@@ -36,6 +40,7 @@ import Config.Cost
 import Utility.Metered
 import Remote.Helper.Chunked as X
 import Remote.Helper.Encryptable as X hiding (encryptableRemote)
+import Remote.Helper.Messages
 import Annex.Content
 import Annex.Exception
 import qualified Git
@@ -114,16 +119,27 @@ byteRetriever :: (Key -> (L.ByteString -> Annex Bool) -> Annex Bool) -> Retrieve
 byteRetriever a k _m callback = a k (callback . ByteContent)
 
 {- The base Remote that is provided to specialRemote needs to have
- - storeKey and retreiveKeyFile methods, but they are never
- - actually used (since specialRemote replaces them).
+ - storeKey, retreiveKeyFile, removeKey, and checkPresent methods,
+ - but they are never actually used (since specialRemote replaces them).
  - Here are some dummy ones.
  -}
 storeKeyDummy :: Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 storeKeyDummy _ _ _ = return False
 retreiveKeyFileDummy :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
 retreiveKeyFileDummy _ _ _ _ = return False
+removeKeyDummy :: Key -> Annex Bool
+removeKeyDummy _ = return False
+checkPresentDummy :: Key -> Annex Bool
+checkPresentDummy _ = error "missing checkPresent implementation"
 
-type RemoteModifier = RemoteConfig -> Preparer Storer -> Preparer Retriever -> Remote -> Remote
+type RemoteModifier
+	= RemoteConfig
+	-> Preparer Storer
+	-> Preparer Retriever
+	-> Preparer Remover
+	-> Preparer CheckPresent
+	-> Remote
+	-> Remote
 
 data SpecialRemoteCfg = SpecialRemoteCfg
 	{ chunkConfig :: ChunkConfig
@@ -139,13 +155,14 @@ specialRemote :: RemoteModifier
 specialRemote c = specialRemote' (specialRemoteCfg c) c
 
 specialRemote' :: SpecialRemoteCfg -> RemoteModifier
-specialRemote' cfg c preparestorer prepareretriever baser = encr
+specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckpresent baser = encr
   where
 	encr = baser
 		{ storeKey = \k _f p -> cip >>= storeKeyGen k p
 		, retrieveKeyFile = \k _f d p -> cip >>= retrieveKeyFileGen k d p
 		, retrieveKeyFileCheap = \k d -> cip >>= maybe
 			(retrieveKeyFileCheap baser k d)
+			-- retrieval of encrypted keys is never cheap
 			(\_ -> return False)
 		, removeKey = \k -> cip >>= removeKeyGen k
 		, checkPresent = \k -> cip >>= checkPresentGen k
@@ -160,8 +177,7 @@ specialRemote' cfg c preparestorer prepareretriever baser = encr
 	safely a = catchNonAsyncAnnex a (\e -> warning (show e) >> return False)
 
 	-- chunk, then encrypt, then feed to the storer
-	storeKeyGen k p enc =
-		safely $ preparestorer k $ safely . go
+	storeKeyGen k p enc = safely $ preparestorer k $ safely . go
 	  where
 		go (Just storer) = sendAnnex k rollback $ \src ->
 			displayprogress p k $ \p' ->
@@ -178,7 +194,7 @@ specialRemote' cfg c preparestorer prepareretriever baser = encr
 				readBytes $ \encb ->
 					storer (enck k) (ByteContent encb) p
 
-	-- call retriever to get chunks; decrypt them; stream to dest file
+	-- call retrieve-r to get chunks; decrypt them; stream to dest file
 	retrieveKeyFileGen k dest p enc =
 		safely $ prepareretriever k $ safely . go
 	  where
@@ -188,15 +204,17 @@ specialRemote' cfg c preparestorer prepareretriever baser = encr
 		go Nothing = return False
 		enck = maybe id snd enc
 
-	removeKeyGen k enc = removeChunks remover (uuid baser) chunkconfig enck k
+	removeKeyGen k enc = safely $ prepareremover k $ safely . go
 	  where
+		go (Just remover) = removeChunks remover (uuid baser) chunkconfig enck k
+		go Nothing = return False
 		enck = maybe id snd enc
-		remover = removeKey baser
 
-	checkPresentGen k enc = checkPresentChunks checker (uuid baser) chunkconfig enck k
+	checkPresentGen k enc = preparecheckpresent k go
 	  where
+	  	go (Just checker) = checkPresentChunks checker (uuid baser) chunkconfig enck k
+		go Nothing = cantCheck baser
 		enck = maybe id snd enc
-		checker = checkPresent baser
 
 	chunkconfig = chunkConfig cfg
 

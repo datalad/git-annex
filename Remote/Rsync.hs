@@ -58,6 +58,8 @@ gen r u c gc = do
 	return $ Just $ specialRemote' specialcfg c
 		(simplyPrepare $ fileStorer $ store o)
 		(simplyPrepare $ fileRetriever $ retrieve o)
+		(simplyPrepare $ remove o)
+		(simplyPrepare $ checkKey r o)
 		Remote
 			{ uuid = u
 			, cost = cst
@@ -65,8 +67,8 @@ gen r u c gc = do
 			, storeKey = storeKeyDummy
 			, retrieveKeyFile = retreiveKeyFileDummy
 			, retrieveKeyFileCheap = retrieveCheap o
-			, removeKey = remove o
-			, checkPresent = checkKey r o
+			, removeKey = removeKeyDummy
+			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
@@ -186,7 +188,7 @@ retrieve o f k p =
 retrieveCheap :: RsyncOpts -> Key -> FilePath -> Annex Bool
 retrieveCheap o k f = ifM (preseedTmp k f) ( rsyncRetrieve o k f Nothing , return False )
 
-remove :: RsyncOpts -> Key -> Annex Bool
+remove :: RsyncOpts -> Remover
 remove o k = do
 	ps <- sendParams
 	withRsyncScratchDir $ \tmp -> liftIO $ do
@@ -214,7 +216,7 @@ remove o k = do
 		, dir </> keyFile k </> "***"
 		]
 
-checkKey :: Git.Repo -> RsyncOpts -> Key -> Annex Bool
+checkKey :: Git.Repo -> RsyncOpts -> CheckPresent
 checkKey r o k = do
 	showAction $ "checking " ++ Git.repoDescribe r
 	-- note: Does not currently differentiate between rsync failing
