@@ -1,23 +1,8 @@
-The following commands and the output show that a directory associated with git-annex can not be deleted. Does anybody know why it can not be deleted? Is there anything wrong?
+This is a place to discuss using git-annex.
+If you need help, advice, or anything, post about it here.
 
+But, please don't post bug reports here. Put them in [[bugs]].  
+And please don't make wishlist requests here. Put them in [[todo]].  
+(If you post bugs/todo here, it'll just get moved.)
 
-    /tmp$ mkdir -p /tmp/music
-    /tmp$ cd /tmp/music
-    /tmp/music$ git init
-    Initialized empty Git repository in /private/tmp/music/.git/
-    /tmp/music$ git annex init 'Music on keller'
-    init Music on keller ok
-    (Recording state in git...)
-    /tmp/music$ echo Hello > hello.txt
-    /tmp/music$ git annex add --backend=SHA1 .
-    add hello.txt ok
-    (Recording state in git...)
-    /tmp/music$ git commit -a -m "Imported my music collection"
-    [master (root-commit) 433f42b] Imported my music collection
-     1 file changed, 1 insertion(+)
-     create mode 120000 hello.txt
-    /tmp/music$ cd ..
-    /tmp$ rm -rf music/
-    rm: cannot remove ‘music/.git/annex/objects/w8/X0/SHA1-s6--1d229271928d3f9e2bb0375bd6ce5db6c6d348d9/SHA1-s6--1d229271928d3f9e2bb0375bd6ce5db6c6d348d9’: Permission denied
-    /tmp$ sudo rm -rf music/
-    /tmp$ 
+[[!inline pages="forum/* and !*/Discussion" archive=yes rootpage=forum postformtext="Add a new thread titled:"]]
