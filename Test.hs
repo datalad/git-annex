@@ -1251,7 +1251,7 @@ test_bup_remote testenv = intmpclonerepo testenv $ when Build.SysConfig.bup $ do
 	annexed_notpresent annexedfile
 	git_annex testenv "copy" [annexedfile, "--from", "foo"] @? "copy --from bup remote failed"
 	annexed_present annexedfile
-	not <$> git_annex testenv "move" [annexedfile, "--from", "foo"] @? "move --from bup remote failed to fail"
+	git_annex testenv "move" [annexedfile, "--from", "foo"] @? "move --from bup remote failed"
 	annexed_present annexedfile
 
 -- gpg is not a build dependency, so only test when it's available
