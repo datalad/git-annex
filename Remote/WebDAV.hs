@@ -25,6 +25,7 @@ import qualified Git
 import Config
 import Config.Cost
 import Remote.Helper.Special
+import Remote.Helper.Http
 import qualified Remote.Helper.Chunked.Legacy as Legacy
 import Creds
 import Utility.Metered
@@ -93,29 +94,29 @@ prepareDAV = resourcePrepare . const . withDAVHandle
 
 store :: ChunkConfig -> Maybe DavHandle -> Storer
 store _ Nothing = byteStorer $ \_k _b _p -> return False
-store chunkconfig (Just dav) = fileStorer $ \k f p -> liftIO $
-	withMeteredFile f p $ storeHelper chunkconfig k dav
+store (LegacyChunks chunksize) (Just dav) = fileStorer $ \k f p -> liftIO $
+	withMeteredFile f p $ storeLegacyChunked chunksize k dav
+store _  (Just dav) = httpStorer $ \k reqbody -> liftIO $ goDAV dav $ do
+	let tmp = keyTmpLocation k
+	let dest = keyLocation k ++ keyFile k
+	void $ mkColRecursive tmpDir
+	inLocation tmp $
+		putContentM' (contentType, reqbody)
+	finalizeStore (baseURL dav) tmp dest
+	return True
 
-storeHelper :: ChunkConfig -> Key -> DavHandle -> L.ByteString -> IO Bool
-storeHelper chunkconfig k dav b = do
-	case chunkconfig of
-		LegacyChunks chunksize -> do
-			let storehttp l b' = do
-				void $ goDAV dav $ do
-					maybe noop (void . mkColRecursive) (locationParent l)
-					inLocation l $ putContentM (contentType, b')
-			let storer locs = Legacy.storeChunked chunksize locs storehttp b
-			let recorder l s = storehttp l (L8.fromString s)
-			let finalizer tmp' dest' = goDAV dav $ 
-				finalizeStore (baseURL dav) tmp' (fromJust $ locationParent dest')
-			Legacy.storeChunks k tmp dest storer recorder finalizer
-		_ -> goDAV dav $ do
-			void $ mkColRecursive tmpDir
-			inLocation tmp $
-				putContentM (contentType, b)
-			finalizeStore (baseURL dav) tmp dest
-			return True
+storeLegacyChunked :: ChunkSize -> Key -> DavHandle -> L.ByteString -> IO Bool
+storeLegacyChunked chunksize k dav b =
+	Legacy.storeChunks k tmp dest storer recorder finalizer
   where
+	storehttp l b' = void $ goDAV dav $ do
+		maybe noop (void . mkColRecursive) (locationParent l)
+		inLocation l $ putContentM (contentType, b')
+	storer locs = Legacy.storeChunked chunksize locs storehttp b
+	recorder l s = storehttp l (L8.fromString s)
+	finalizer tmp' dest' = goDAV dav $ 
+		finalizeStore (baseURL dav) tmp' (fromJust $ locationParent dest')
+
 	tmp = keyTmpLocation k
 	dest = keyLocation k ++ keyFile k
 
