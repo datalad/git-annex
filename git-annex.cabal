@@ -142,8 +142,8 @@ Executable git-annex
     CPP-Options: -DWITH_S3
 
   if flag(WebDAV)
-    Build-Depends: DAV (> 0.6),
-     http-client, http-conduit, http-types, lifted-base
+    Build-Depends: DAV (> 0.8),
+     http-client, http-conduit, http-types, lifted-base, transformers
     CPP-Options: -DWITH_WEBDAV
 
   if flag(Assistant) && ! os(solaris)
