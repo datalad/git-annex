@@ -77,8 +77,9 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 webdavSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
 webdavSetup mu mcreds c = do
 	u <- maybe (liftIO genUUID) return mu
-	let url = fromMaybe (error "Specify url=") $
-		M.lookup "url" c
+	url <- case M.lookup "url" c of
+		Nothing -> error "Specify url="
+		Just url -> return url
 	c' <- encryptionSetup c
 	creds <- maybe (getCreds c' u) (return . Just) mcreds
 	testDav url creds
