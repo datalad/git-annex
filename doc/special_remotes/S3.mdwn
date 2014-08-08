@@ -33,7 +33,8 @@ the S3 remote.
   embedcreds without gpg encryption.
 
 * `datacenter` - Defaults to "US". Other values include "EU",
-  "us-west-1", and "ap-southeast-1".
+  "us-west-1", "us-west-2", "ap-southeast-1", "ap-southeast-2", and
+  "sa-east-1".
 
 * `storageclass` - Default is "STANDARD". If you have configured git-annex
   to preserve multiple [[copies]], consider setting this to "REDUCED_REDUNDANCY"

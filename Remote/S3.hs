@@ -1,15 +1,19 @@
 {- S3 remotes
  -
- - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE TypeFamilies #-}
+
 module Remote.S3 (remote, iaHost, isIA, isIAHost, iaItemUrl) where
 
+import qualified Aws as AWS
+import qualified Aws.Core as AWS
+import qualified Aws.S3 as S3
 import Network.AWS.AWSConnection
 import Network.AWS.S3Object hiding (getStorageClass)
-import Network.AWS.S3Bucket hiding (size)
 import Network.AWS.AWSResult
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
@@ -17,6 +21,11 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
 import Data.Char
 import Network.Socket (HostName)
+import Network.HTTP.Conduit (Manager, newManager, closeManager)
+import Network.HTTP.Client (defaultManagerSettings, managerResponseTimeout, responseStatus, responseBody, RequestBody(..))
+import Network.HTTP.Types
+import Control.Monad.Trans.Resource
+import Control.Monad.Catch
 
 import Common.Annex
 import Types.Remote
@@ -86,8 +95,8 @@ s3Setup' u c = if isIA c then archiveorg else defaulthost
 	defaults = M.fromList
 		[ ("datacenter", T.unpack $ AWS.defaultRegion AWS.S3)
 		, ("storageclass", "STANDARD")
-		, ("host", defaultAmazonS3Host)
-		, ("port", show defaultAmazonS3Port)
+		, ("host", AWS.s3DefaultHost)
+		, ("port", "80")
 		, ("bucket", defbucket)
 		]
 		
@@ -119,7 +128,8 @@ s3Setup' u c = if isIA c then archiveorg else defaulthost
 			M.insert "mungekeys" "ia" $
 			-- bucket created only when files are uploaded
 			M.insert "x-amz-auto-make-bucket" "1" defaults
-		writeUUIDFile archiveconfig u
+		withS3Handle archiveconfig u $
+			writeUUIDFile archiveconfig u
 		use archiveconfig
 
 prepareStore :: Remote -> Preparer Storer
@@ -135,6 +145,8 @@ prepareStore r = resourcePrepare (const $ s3Action r False) $ \(conn, bucket) ->
 
 store :: (AWSConnection, Bucket) -> Remote -> Key -> MeterUpdate -> FilePath -> IO (AWSResult ())
 store (conn, bucket) r k p file = do
+	error "TODO"
+	{-
 	size <- (fromIntegral . fileSize <$> getFileStatus file) :: IO Integer
 	withMeteredFile file p $ \content -> do
 		-- size is provided to S3 so the whole content
@@ -145,12 +157,16 @@ store (conn, bucket) r k p file = do
 			content
 		sendObject conn $
 			setStorageClass (getStorageClass $ config r) object
+	-}
 
 prepareRetrieve :: Remote -> Preparer Retriever
 prepareRetrieve r = resourcePrepare (const $ s3Action r False) $ \(conn, bucket) ->
+	error "TODO"
+	{- 
 	byteRetriever $ \k sink ->
 		liftIO (getObject conn $ bucketKey r bucket k)
 			>>= either s3Error (sink . obj_data)
+	-}
 
 retrieveCheap :: Key -> FilePath -> Annex Bool
 retrieveCheap _ _ = return False
@@ -172,11 +188,14 @@ remove' r k = s3Action r False $ \(conn, bucket) ->
 checkKey :: Remote -> CheckPresent
 checkKey r k = s3Action r noconn $ \(conn, bucket) -> do
 	showAction $ "checking " ++ name r
+	{-
 	res <- liftIO $ getObjectInfo conn $ bucketKey r bucket k
 	case res of
 		Right _ -> return True
 		Left (AWSError _ _) -> return False
 		Left e -> s3Error e
+	-}
+	error "TODO"
   where
 	noconn = error "S3 not configured"
 			
@@ -184,9 +203,6 @@ s3Warning :: ReqError -> Annex Bool
 s3Warning e = do
 	warning $ prettyReqError e
 	return False
-
-s3Error :: ReqError -> a
-s3Error e = error $ prettyReqError e
 
 s3Bool :: AWSResult () -> Annex Bool
 s3Bool (Right _) = return True
@@ -229,75 +245,75 @@ iaMunge = (>>= munge)
 {- Generate the bucket if it does not already exist, including creating the
  - UUID file within the bucket.
  -
- - To check if the bucket exists, ask for its location. However, some ACLs
- - can allow read/write to buckets, but not querying location, so first
- - check if the UUID file already exists and we can skip doing anything.
+ - Some ACLs can allow read/write to buckets, but not querying them,
+ - so first check if the UUID file already exists and we can skip doing
+ - anything.
  -}
 genBucket :: RemoteConfig -> UUID -> Annex ()
 genBucket c u = do
-	conn <- s3ConnectionRequired c u
 	showAction "checking bucket"
-	unlessM ((== Right True) <$> checkUUIDFile c u conn) $ do
-		loc <- liftIO $ getBucketLocation conn bucket
-		case loc of
-			Right _ -> writeUUIDFile c u
-			Left err@(NetworkError _) -> s3Error err
-			Left (AWSError _ _) -> do
-				showAction $ "creating bucket in " ++ datacenter
-				res <- liftIO $ createBucketIn conn bucket datacenter
-				case res of
-					Right _ -> writeUUIDFile c u
-					Left err -> s3Error err
+	withS3Handle c u $ \h ->
+		go h =<< checkUUIDFile c u h
   where
-	bucket = fromJust $ getBucket c
+	go _ (Right True) = noop
+	go h _ = do
+		v <- sendS3Handle h (S3.getBucket bucket)
+		case v of
+			Right _ -> noop
+			Left _ -> do
+				showAction $ "creating bucket in " ++ datacenter
+				void $ mustSucceed $ sendS3Handle h $
+					S3.PutBucket bucket Nothing $
+						AWS.mkLocationConstraint $
+							T.pack datacenter
+		writeUUIDFile c u h
+	
+	bucket = T.pack $ fromJust $ getBucket c
 	datacenter = fromJust $ M.lookup "datacenter" c
 
 {- Writes the UUID to an annex-uuid file within the bucket.
  -
  - If the file already exists in the bucket, it must match.
  -
- - Note that IA items do not get created by createBucketIn. 
- - Rather, they are created the first time a file is stored in them.
- - So this also takes care of that.
+ - Note that IA buckets can only created by having a file
+ - stored in them. So this also takes care of that.
  -}
-writeUUIDFile :: RemoteConfig -> UUID -> Annex ()
-writeUUIDFile c u = do
-	conn <- s3ConnectionRequired c u
-	v <- checkUUIDFile  c u conn
+writeUUIDFile :: RemoteConfig -> UUID -> S3Handle -> Annex ()
+writeUUIDFile c u h = do
+	v <- checkUUIDFile c u h
 	case v of
-		Left e -> error e
-		Right True -> return ()
-		Right False -> do
-			let object = setStorageClass (getStorageClass c) (mkobject uuidb)
-			either s3Error return =<< liftIO (sendObject conn object)
+		Left e -> throwM e
+		Right True -> noop
+		Right False -> void $ mustSucceed $ sendS3Handle h mkobject
   where
-	file = uuidFile c
+	file = T.pack $ uuidFile c
 	uuidb = L.fromChunks [T.encodeUtf8 $ T.pack $ fromUUID u]
-	bucket = fromJust $ getBucket c
+	bucket = T.pack $ fromJust $ getBucket c
 
-	mkobject = S3Object bucket file "" (getXheaders c)
+	-- TODO: add headers from getXheaders
+	-- (See https://github.com/aristidb/aws/issues/119)
+	mkobject = (S3.putObject bucket file $ RequestBodyLBS uuidb)
+		{ S3.poStorageClass = Just (getStorageClass c) }
 
-{- Checks if the UUID file exists in the bucket and has the specified UUID already. -}
-checkUUIDFile :: RemoteConfig -> UUID -> AWSConnection -> Annex (Either String Bool)
-checkUUIDFile c u conn = check <$> liftIO (tryNonAsync $ getObject conn $ mkobject L.empty)
+{- Checks if the UUID file exists in the bucket
+ - and has the specified UUID already. -}
+checkUUIDFile :: RemoteConfig -> UUID -> S3Handle -> Annex (Either SomeException Bool)
+checkUUIDFile c u h = tryNonAsync $ check <$> get
   where
-	check (Right (Right o))
-		| obj_data o == uuidb = Right True
-		| otherwise = Left $ "This bucket is already in use by a different S3 special remote, with UUID: " ++ show (obj_data o)
-	check _ = Right False
+	get = liftIO 
+		. runResourceT 
+		. either (pure . Left) (Right <$$> AWS.loadToMemory)
+		=<< sendS3Handle h (S3.getObject bucket file)
+	check (Right (S3.GetObjectMemoryResponse _meta rsp)) =
+		responseStatus rsp == ok200 && responseBody rsp == uuidb
+	check (Left _S3Error) = False
 
+	bucket = T.pack $ fromJust $ getBucket c
+	file = T.pack $ uuidFile c
 	uuidb = L.fromChunks [T.encodeUtf8 $ T.pack $ fromUUID u]
-	bucket = fromJust $ getBucket c
-	file = uuidFile c
-
-	mkobject = S3Object bucket file "" (getXheaders c)
 
 uuidFile :: RemoteConfig -> FilePath
 uuidFile c = filePrefix c ++ "annex-uuid"
-
-s3ConnectionRequired :: RemoteConfig -> UUID -> Annex AWSConnection
-s3ConnectionRequired c u =
-	maybe (error "Cannot connect to S3") return =<< s3Connection c u
 
 s3Connection :: RemoteConfig -> UUID -> Annex (Maybe AWSConnection)
 s3Connection c u = go =<< getRemoteCredPairFor "S3" c (AWS.creds u)
@@ -311,13 +327,69 @@ s3Connection c u = go =<< getRemoteCredPairFor "S3" c (AWS.creds u)
 		[(p, _)] -> p
 		_ -> error $ "bad S3 port value: " ++ s
 
+data S3Handle = S3Handle Manager AWS.Configuration (S3.S3Configuration AWS.NormalQuery)
+
+{- Sends a request to S3 and gets back the response.
+ - 
+ - Note that pureAws's use of ResourceT is bypassed here;
+ - the response should be processed while the S3Handle is still open,
+ - eg within a call to withS3Handle.
+ -}
+sendS3Handle
+	:: (AWS.Transaction req res, AWS.ServiceConfiguration req ~ S3.S3Configuration)
+	=> S3Handle 
+	-> req
+	-> Annex (Either S3.S3Error res)
+sendS3Handle (S3Handle manager awscfg s3cfg) req = safely $ liftIO $
+	runResourceT $ AWS.pureAws awscfg s3cfg manager req
+  where
+	safely a = (Right <$> a) `catch` (pure . Left)
+
+mustSucceed :: Annex (Either S3.S3Error res) -> Annex res
+mustSucceed a = a >>= either s3Error return
+
+s3Error :: S3.S3Error -> a
+s3Error (S3.S3Error { S3.s3ErrorMessage = m }) = error $ "S3 error: " ++ T.unpack m
+
+withS3Handle :: RemoteConfig -> UUID -> (S3Handle -> Annex a) -> Annex a
+withS3Handle c u a = do
+	creds <- getRemoteCredPairFor "S3" c (AWS.creds u)
+	awscreds <- liftIO $ AWS.genCredentials $ fromMaybe nocreds creds
+	let awscfg = AWS.Configuration AWS.Timestamp awscreds (AWS.defaultLog AWS.Error)
+	bracketIO (newManager httpcfg) closeManager $ \mgr -> 
+		a $ S3Handle mgr awscfg s3cfg
+  where
+	s3cfg = s3Configuration c
+	httpcfg = defaultManagerSettings
+		{ managerResponseTimeout = Nothing }
+	nocreds = error "Cannot use S3 without credentials configured"
+
+s3Configuration :: RemoteConfig -> S3.S3Configuration AWS.NormalQuery
+s3Configuration c = (S3.s3 proto endpoint False) { S3.s3Port = port }
+  where
+	proto
+		| port == 443 = AWS.HTTPS
+		| otherwise = AWS.HTTP
+	host = fromJust $ M.lookup "host" c
+	datacenter = fromJust $ M.lookup "datacenter" c
+	-- When the default S3 host is configured, connect directly to
+	-- the S3 endpoint for the configured datacenter.
+	-- When another host is configured, it's used as-is.
+	endpoint
+		| host == AWS.s3DefaultHost = AWS.s3HostName $ T.pack datacenter
+		| otherwise = T.encodeUtf8 $ T.pack host
+	port = let s = fromJust $ M.lookup "port" c in
+		case reads s of
+		[(p, _)] -> p
+		_ -> error $ "bad S3 port value: " ++ s
+
 getBucket :: RemoteConfig -> Maybe Bucket
 getBucket = M.lookup "bucket"
 
-getStorageClass :: RemoteConfig -> StorageClass
+getStorageClass :: RemoteConfig -> S3.StorageClass
 getStorageClass c = case fromJust $ M.lookup "storageclass" c of
-	"REDUCED_REDUNDANCY" -> REDUCED_REDUNDANCY
-	_ -> STANDARD
+	"REDUCED_REDUNDANCY" -> S3.ReducedRedundancy
+	_ -> S3.Standard
 	
 getXheaders :: RemoteConfig -> [(String, String)]
 getXheaders = filter isxheader . M.assocs

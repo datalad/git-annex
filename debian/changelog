@@ -21,6 +21,10 @@ git-annex (5.20140718) UNRELEASED; urgency=medium
   * WebDAV: Avoid buffering whole file in memory when uploading and
     downloading.
   * WebDAV: Dropped support for DAV before 1.0.
+  * S3: Switched to using the haskell aws library.
+  * S3: Now supports https. To enable this, configure a S3 special remote to
+    use port=443. However, with encrypted special remotes, this does not
+    add any security.
   * testremote: New command to test uploads/downloads to a remote.
   * Dropping an object from a bup special remote now deletes the git branch
     for the object, although of course the object's content cannot be deleted
