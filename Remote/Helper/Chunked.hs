@@ -24,7 +24,6 @@ import Logs.Chunk
 import Utility.Metered
 import Crypto (EncKey)
 import Backend (isStableKey)
-import Annex.Exception
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
@@ -172,7 +171,7 @@ seekResume h chunkkeys checker = do
 			liftIO $ hSeek h AbsoluteSeek sz
 			return (cks, toBytesProcessed sz)
 		| otherwise = do
-			v <- tryNonAsyncAnnex (checker k)
+			v <- tryNonAsync (checker k)
 			case v of
 				Right True ->
 					check pos' cks' sz
@@ -231,7 +230,7 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 		-- Optimisation: Try the unchunked key first, to avoid
 		-- looking in the git-annex branch for chunk counts
 		-- that are likely not there.
-		getunchunked `catchNonAsyncAnnex`
+		getunchunked `catchNonAsync`
 			const (go =<< chunkKeysOnly u basek)
 	| otherwise = go =<< chunkKeys u chunkconfig basek
   where
@@ -241,7 +240,7 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 		let ls' = maybe ls (setupResume ls) currsize
 		if any null ls'
 			then return True -- dest is already complete
-			else firstavail currsize ls' `catchNonAsyncAnnex` giveup
+			else firstavail currsize ls' `catchNonAsync` giveup
 
 	giveup e = do
 		warning (show e)
@@ -251,20 +250,20 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 	firstavail currsize ([]:ls) = firstavail currsize ls
 	firstavail currsize ((k:ks):ls)
 		| k == basek = getunchunked
-			`catchNonAsyncAnnex` (const $ firstavail currsize ls)
+			`catchNonAsync` (const $ firstavail currsize ls)
 		| otherwise = do
 			let offset = resumeOffset currsize k
 			let p = maybe basep
 				(offsetMeterUpdate basep . toBytesProcessed)
 				offset
-			v <- tryNonAsyncAnnex $
+			v <- tryNonAsync $
 				retriever (encryptor k) p $ \content ->
 					bracketIO (maybe opennew openresume offset) hClose $ \h -> do
 						void $ tosink (Just h) p content
 						let sz = toBytesProcessed $
 							fromMaybe 0 $ keyChunkSize k
 						getrest p h sz sz ks
-							`catchNonAsyncAnnex` giveup
+							`catchNonAsync` giveup
 			case v of
 				Left e
 					| null ls -> giveup e
@@ -372,7 +371,7 @@ checkPresentChunks checker u chunkconfig encryptor basek
 			Right False -> return $ Right False
 			Left e -> return $ Left $ show e
 
-	check = tryNonAsyncAnnex . checker . encryptor
+	check = tryNonAsync . checker . encryptor
 
 {- A key can be stored in a remote unchunked, or as a list of chunked keys.
  - This can be the case whether or not the remote is currently configured

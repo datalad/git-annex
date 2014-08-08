@@ -15,7 +15,7 @@ module Remote.GCrypt (
 
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
-import Control.Exception.Extensible
+import Control.Exception
 
 import Common.Annex
 import Types.Remote

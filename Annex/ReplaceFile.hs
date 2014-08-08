@@ -9,7 +9,6 @@ module Annex.ReplaceFile where
 
 import Common.Annex
 import Annex.Perms
-import Annex.Exception
 
 {- Replaces a possibly already existing file with a new version, 
  - atomically, by running an action.
@@ -31,7 +30,7 @@ replaceFileOr :: FilePath -> (FilePath -> Annex ()) -> (FilePath -> Annex ()) ->
 replaceFileOr file action rollback = do
 	tmpdir <- fromRepo gitAnnexTmpMiscDir
 	void $ createAnnexDirectory tmpdir
-	bracketAnnex (liftIO $ setup tmpdir) rollback $ \tmpfile -> do
+	bracket (liftIO $ setup tmpdir) rollback $ \tmpfile -> do
 		action tmpfile
 		liftIO $ catchIO (rename tmpfile file) (fallback tmpfile)
   where

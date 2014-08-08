@@ -7,11 +7,25 @@
 
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Utility.Exception where
+module Utility.Exception (
+	module X,
+	catchBoolIO,
+	catchMaybeIO,
+	catchDefaultIO,
+	catchMsgIO,
+	catchIO,
+	tryIO,
+	bracketIO,
+	catchNonAsync,
+	tryNonAsync,
+	tryWhenExists,
+) where
 
+import Control.Monad.Catch as X hiding (Handler)
+import qualified Control.Monad.Catch as M
 import Control.Exception (IOException, AsyncException)
-import Control.Monad.Catch
 import Control.Monad
+import Control.Monad.IO.Class (liftIO, MonadIO)
 import System.IO.Error (isDoesNotExistError)
 import Utility.Data
 
@@ -44,14 +58,20 @@ catchIO = catch
 tryIO :: MonadCatch m => m a -> m (Either IOException a)
 tryIO = try
 
+{- bracket with setup and cleanup actions lifted to IO.
+ -
+ - Note that unlike catchIO and tryIO, this catches all exceptions. -}
+bracketIO :: (MonadMask m, MonadIO m) => IO v -> (v -> IO b) -> (v -> m a) -> m a
+bracketIO setup cleanup = bracket (liftIO setup) (liftIO . cleanup)
+
 {- Catches all exceptions except for async exceptions.
  - This is often better to use than catching them all, so that
  - ThreadKilled and UserInterrupt get through.
  -}
 catchNonAsync :: MonadCatch m => m a -> (SomeException -> m a) -> m a
 catchNonAsync a onerr = a `catches`
-	[ Handler (\ (e :: AsyncException) -> throwM e)
-	, Handler (\ (e :: SomeException) -> onerr e)
+	[ M.Handler (\ (e :: AsyncException) -> throwM e)
+	, M.Handler (\ (e :: SomeException) -> onerr e)
 	]
 
 tryNonAsync :: MonadCatch m => m a -> m (Either SomeException a)

@@ -20,7 +20,6 @@ import Options.Applicative hiding (command)
 #if MIN_VERSION_optparse_applicative(0,8,0)
 import qualified Options.Applicative.Types as Opt
 #endif
-import Control.Exception.Extensible
 import qualified Data.Map as M
 import qualified Text.JSON
 
@@ -1444,7 +1443,7 @@ indir testenv dir a = do
 		(try a::IO (Either SomeException ()))
 	case r of
 		Right () -> return ()
-		Left e -> throw e
+		Left e -> throwM e
 
 setuprepo :: TestEnv -> FilePath -> IO FilePath
 setuprepo testenv dir = do

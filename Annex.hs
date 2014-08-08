@@ -64,14 +64,16 @@ import Utility.Quvi (QuviVersion)
 import Utility.InodeCache
 
 import "mtl" Control.Monad.Reader
-import Control.Monad.Catch
 import Control.Concurrent
 import qualified Data.Map as M
 import qualified Data.Set as S
 
 {- git-annex's monad is a ReaderT around an AnnexState stored in a MVar.
- - This allows modifying the state in an exception-safe fashion.
  - The MVar is not exposed outside this module.
+ -
+ - Note that when an Annex action fails and the exception is caught,
+ - ny changes the action has made to the AnnexState are retained,
+ - due to the use of the MVar to store the state.
  -}
 newtype Annex a = Annex { runAnnex :: ReaderT (MVar AnnexState) IO a }
 	deriving (

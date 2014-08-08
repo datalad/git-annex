@@ -108,10 +108,10 @@ data Status = Stopping | ConnectionClosed
 
 {- Make connection robustly, with exponentioal backoff on failure. -}
 robustly :: Int -> IO Status -> IO ()
-robustly backoff a = handle =<< catchDefaultIO ConnectionClosed a
+robustly backoff a = caught =<< catchDefaultIO ConnectionClosed a
   where
-	handle Stopping = return ()
-	handle ConnectionClosed = do
+	caught Stopping = return ()
+	caught ConnectionClosed = do
 		threadDelaySeconds (Seconds backoff)
 		robustly increasedbackoff a
 

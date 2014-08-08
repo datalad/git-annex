@@ -11,7 +11,6 @@ module Utility.Directory where
 
 import System.IO.Error
 import System.Directory
-import Control.Exception (throw, bracket)
 import Control.Monad
 import Control.Monad.IfElse
 import System.FilePath
@@ -114,7 +113,7 @@ moveFile src dest = tryIO (rename src dest) >>= onrename
 			whenM (isdir dest) rethrow
 			viaTmp mv dest undefined
 	  where
-		rethrow = throw e
+		rethrow = throwM e
 		mv tmp _ = do
 			ok <- boolSystem "mv" [Param "-f", Param src, Param tmp]
 			unless ok $ do

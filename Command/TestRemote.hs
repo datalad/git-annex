@@ -31,7 +31,6 @@ import Locations
 import Test.Tasty
 import Test.Tasty.Runners
 import Test.Tasty.HUnit
-import Control.Exception
 import "crypto-api" Crypto.Random
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L

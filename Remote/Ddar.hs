@@ -8,7 +8,6 @@
 
 module Remote.Ddar (remote) where
 
-import Control.Exception
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
 import System.IO.Error

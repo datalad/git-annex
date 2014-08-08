@@ -21,7 +21,6 @@ import Logs.PreferredContent.Raw
 import Logs.RemoteState
 import Config.Cost
 import Annex.UUID
-import Annex.Exception
 import Creds
 
 import Control.Concurrent.STM
@@ -137,7 +136,7 @@ checkKey external k = either error id <$> go
 			_ -> Nothing
 
 safely :: Annex Bool -> Annex Bool
-safely a = go =<< tryAnnex a
+safely a = go =<< tryNonAsync a
   where
 	go (Right r) = return r
 	go (Left e) = do

@@ -14,10 +14,10 @@ import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.UTF8 as B8
 import qualified Data.ByteString.Lazy.UTF8 as L8
-import qualified Control.Exception.Lifted as EL
 import Network.HTTP.Client (HttpException(..))
 import Network.HTTP.Types
 import System.IO.Error
+import Control.Monad.Catch
 
 import Common.Annex
 import Types.Remote
@@ -31,7 +31,6 @@ import Creds
 import Utility.Metered
 import Utility.Url (URLString)
 import Annex.UUID
-import Annex.Exception
 import Remote.WebDAV.DavLocation
 
 remote :: RemoteType
@@ -301,11 +300,11 @@ moveDAV baseurl src dest = inLocation src $ moveContentM newurl
 	newurl = B8.fromString (locationUrl baseurl dest)
 
 existsDAV :: DavLocation -> DAVT IO (Either String Bool)
-existsDAV l = inLocation l check `EL.catch` (\(e :: EL.SomeException) -> return (Left $ show e))
+existsDAV l = inLocation l check `catchNonAsync` (\e -> return (Left $ show e))
   where
 	check = do
 		setDepth Nothing
-		EL.catchJust
+		catchJust
 			(matchStatusCodeException notFound404)
 			(getPropsM >> ispresent True)
 			(const $ ispresent False)
@@ -319,8 +318,7 @@ matchStatusCodeException _ _ = Nothing
 
 -- Ignores any exceptions when performing a DAV action.
 safely :: DAVT IO a -> DAVT IO (Maybe a)
-safely a = (Just <$> a)
-	`EL.catch` (\(_ :: EL.SomeException) -> return Nothing)
+safely = eitherToMaybe <$$> tryNonAsync
 
 choke :: IO (Either String a) -> IO a
 choke f = do
@@ -336,7 +334,7 @@ withDAVHandle r a = do
 	mcreds <- getCreds (config r) (uuid r)
 	case (mcreds, configUrl r) of
 		(Just (user, pass), Just baseurl) ->
-			bracketIO (mkDAVContext baseurl) closeDAVContext $ \ctx ->
+			withDAVContext baseurl $ \ctx ->
 				a (Just (DavHandle ctx (toDavUser user) (toDavPass pass) baseurl))
 		_ -> a Nothing
 

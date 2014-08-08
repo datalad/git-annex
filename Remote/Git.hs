@@ -27,7 +27,6 @@ import qualified Annex
 import Logs.Presence
 import Annex.Transfer
 import Annex.UUID
-import Annex.Exception
 import qualified Annex.Content
 import qualified Annex.BranchState
 import qualified Annex.Branch
@@ -56,7 +55,6 @@ import Creds
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
 import qualified Data.Map as M
-import Control.Exception.Extensible
 
 remote :: RemoteType
 remote = RemoteType {
@@ -281,7 +279,7 @@ tryGitConfigRead r
 		s <- Annex.new r
 		Annex.eval s $ do
 			Annex.BranchState.disableUpdate
-			void $ tryAnnex $ ensureInitialized
+			void $ tryNonAsync $ ensureInitialized
 			Annex.getState Annex.repo
 
 {- Checks if a given remote has the content for a key in its annex. -}

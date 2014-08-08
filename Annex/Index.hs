@@ -18,7 +18,6 @@ import Common.Annex
 import Git.Types
 import qualified Annex
 import Utility.Env
-import Annex.Exception
 
 {- Runs an action using a different git index file. -}
 withIndexFile :: FilePath -> Annex a -> Annex a
@@ -26,7 +25,7 @@ withIndexFile f a = do
 	g <- gitRepo
 	g' <- liftIO $ addGitEnv g "GIT_INDEX_FILE" f
 
-	r <- tryAnnex $ do
+	r <- tryNonAsync $ do
 		Annex.changeState $ \s -> s { Annex.repo = g' }
 		a
 	Annex.changeState $ \s -> s { Annex.repo = (Annex.repo s) { gitEnv = gitEnv g} }

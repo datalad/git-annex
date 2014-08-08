@@ -26,7 +26,6 @@ Build-Depends:
 	libghc-ifelse-dev,
 	libghc-bloomfilter-dev,
 	libghc-edit-distance-dev,
-	libghc-extensible-exceptions-dev,
 	libghc-hinotify-dev [linux-any],
 	libghc-stm-dev (>= 2.3),
 	libghc-dbus-dev (>= 0.10.3) [linux-any],

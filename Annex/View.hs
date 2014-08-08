@@ -410,19 +410,19 @@ withViewChanges addmeta removemeta = do
   where
 	handleremovals item
 		| DiffTree.srcsha item /= nullSha =
-			handle item removemeta
+			handlechange item removemeta
 				=<< catKey (DiffTree.srcsha item) (DiffTree.srcmode item)
 		| otherwise = noop
 	handleadds makeabs item
 		| DiffTree.dstsha item /= nullSha = 
-			handle item addmeta
+			handlechange item addmeta
 				=<< ifM isDirect
 					( catKey (DiffTree.dstsha item) (DiffTree.dstmode item)
 					-- optimisation
 					, isAnnexLink $ makeabs $ DiffTree.file item
 					)
 		| otherwise = noop
-	handle item a = maybe noop
+	handlechange item a = maybe noop
 		(void . commandAction . a (getTopFilePath $ DiffTree.file item))
 
 {- Generates a branch for a view. This is done using a different index

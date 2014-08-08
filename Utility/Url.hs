@@ -51,11 +51,11 @@ checkBoth url expected_size uo = do
 	v <- check url expected_size uo
 	return (fst v && snd v)
 check :: URLString -> Maybe Integer -> UrlOptions -> IO (Bool, Bool)
-check url expected_size = handle <$$> exists url
+check url expected_size = go <$$> exists url
   where
-	handle (False, _) = (False, False)
-	handle (True, Nothing) = (True, True)
-	handle (True, s) = case expected_size of
+	go (False, _) = (False, False)
+	go (True, Nothing) = (True, True)
+	go (True, s) = case expected_size of
 		Just _ -> (True, expected_size == s)
 		Nothing -> (True, True)
 

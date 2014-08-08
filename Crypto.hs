@@ -38,7 +38,6 @@ import Data.ByteString.Lazy.UTF8 (fromString)
 import Control.Applicative
 import qualified Data.Map as M
 import Control.Monad.IO.Class
-import Control.Monad.Catch (MonadMask)
 
 import Common.Annex
 import qualified Utility.Gpg as Gpg

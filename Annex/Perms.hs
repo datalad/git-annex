@@ -21,7 +21,6 @@ import Common.Annex
 import Utility.FileMode
 import Git.SharedRepository
 import qualified Annex
-import Annex.Exception
 import Config
 
 import System.Posix.Types
@@ -120,6 +119,6 @@ createContentDir dest = do
 modifyContent :: FilePath -> Annex a -> Annex a
 modifyContent f a = do
 	createContentDir f -- also thaws it
-	v <- tryAnnex a
+	v <- tryNonAsync a
 	freezeContentDir f
-	either throwAnnex return v
+	either throwM return v

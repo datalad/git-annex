@@ -42,13 +42,11 @@ import Remote.Helper.Chunked as X
 import Remote.Helper.Encryptable as X
 import Remote.Helper.Messages
 import Annex.Content
-import Annex.Exception
 import qualified Git
 import qualified Git.Command
 import qualified Git.Construct
 
 import qualified Data.ByteString.Lazy as L
-import Control.Exception (bracket)
 import qualified Data.Map as M
 
 {- Special remotes don't have a configured url, so Git.Repo does not
@@ -174,7 +172,7 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 	cip = cipherKey c
 	gpgopts = getGpgEncParams encr
 
-	safely a = catchNonAsyncAnnex a (\e -> warning (show e) >> return False)
+	safely a = catchNonAsync a (\e -> warning (show e) >> return False)
 
 	-- chunk, then encrypt, then feed to the storer
 	storeKeyGen k p enc = safely $ preparestorer k $ safely . go
