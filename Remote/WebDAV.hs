@@ -104,21 +104,6 @@ store _  (Just dav) = httpStorer $ \k reqbody -> liftIO $ goDAV dav $ do
 	finalizeStore (baseURL dav) tmp dest
 	return True
 
-storeLegacyChunked :: ChunkSize -> Key -> DavHandle -> L.ByteString -> IO Bool
-storeLegacyChunked chunksize k dav b =
-	Legacy.storeChunks k tmp dest storer recorder finalizer
-  where
-	storehttp l b' = void $ goDAV dav $ do
-		maybe noop (void . mkColRecursive) (locationParent l)
-		inLocation l $ putContentM (contentType, b')
-	storer locs = Legacy.storeChunked chunksize locs storehttp b
-	recorder l s = storehttp l (L8.fromString s)
-	finalizer tmp' dest' = goDAV dav $ 
-		finalizeStore (baseURL dav) tmp' (fromJust $ locationParent dest')
-
-	tmp = keyTmpLocation k
-	dest = keyLocation k ++ keyFile k
-
 finalizeStore :: URLString -> DavLocation -> DavLocation -> DAVT IO ()
 finalizeStore baseurl tmp dest = do
 	inLocation dest $ void $ safely $ delContentM
@@ -130,17 +115,18 @@ retrieveCheap _ _ = return False
 
 retrieve :: ChunkConfig -> Maybe DavHandle -> Retriever
 retrieve _ Nothing = error "unable to connect"
-retrieve chunkconfig (Just dav) = fileRetriever $ \d k p -> liftIO $
-	withStoredFiles chunkconfig k dav onerr $ \locs -> do
-		Legacy.meteredWriteFileChunks p d locs $ \l -> do
-			mb <- goDAV dav $ safely $
-				inLocation l $
-					snd <$> getContentM
-			case mb of
-				Nothing -> onerr
-				Just b -> return b
-  where
-	onerr = error "download failed"
+retrieve (LegacyChunks _) (Just dav) = retrieveLegacyChunked dav
+retrieve _ (Just dav) = fileRetriever $ \d k p -> liftIO $
+	meteredWriteFile p d =<< getDAV dav (keyLocation k ++ keyFile k)
+
+getDAV :: DavHandle -> DavLocation -> IO L.ByteString
+getDAV dav l = do
+	mb <- goDAV dav $ safely $
+		inLocation l $
+			snd <$> getContentM
+	case mb of
+		Nothing -> error "download failed"
+		Just b -> return b
 
 remove :: Maybe DavHandle -> Remover
 remove Nothing _ = return False
@@ -153,52 +139,14 @@ remove (Just dav) k = liftIO $ do
 
 checkKey :: Remote -> ChunkConfig -> Maybe DavHandle -> CheckPresent
 checkKey r _ Nothing _ = error $ name r ++ " not configured"
-checkKey r chunkconfig (Just dav) k = either error id <$> go
-  where
-	go = do
-		showAction $ "checking " ++ name r
-		liftIO $ withStoredFiles chunkconfig k dav onerr check
-
-	check [] = return $ Right True
-	check (l:ls) = do
-		v <- goDAV dav $ existsDAV l
-		if v == Right True
-			then check ls
-			else return v
-
-	{- Failed to read the chunkcount file; see if it's missing,
-	 - or if there's a problem accessing it,
-	- or perhaps this was an intermittent error. -}
-	onerr f = do
-		v <- goDAV dav $ existsDAV f
-		return $ if v == Right True
-			then Left $ "failed to read " ++ f
-			else v
-
-withStoredFiles
-	:: ChunkConfig
-	-> Key
-	-> DavHandle
-	-> (DavLocation -> IO a)
-	-> ([DavLocation] -> IO a)
-	-> IO a
-withStoredFiles chunkconfig k dav onerr a = case chunkconfig of
-	LegacyChunks _ -> do
-		let chunkcount = keyloc ++ Legacy.chunkCount
-		v <- goDAV dav $ safely $ 
-			inLocation chunkcount $
-				snd <$> getContentM
-		case v of
-			Just s -> a $ Legacy.listChunks keyloc $ L8.toString s
-			Nothing -> do
-				chunks <- Legacy.probeChunks keyloc $ \f ->
-					(== Right True) <$> goDAV dav (existsDAV f)
-				if null chunks
-					then onerr chunkcount
-					else a chunks
-	_ -> a [keyloc]
-  where
-	keyloc = keyLocation k ++ keyFile k
+checkKey r chunkconfig (Just dav) k = do
+	showAction $ "checking " ++ name r
+	case chunkconfig of
+		LegacyChunks _ -> checkKeyLegacyChunked dav k
+		_ -> do
+			v <- liftIO $ goDAV dav $
+				existsDAV (keyLocation k ++ keyFile k)
+			either error return v
 
 configUrl :: Remote -> Maybe URLString
 configUrl r = fixup <$> M.lookup "url" (config r)
@@ -349,3 +297,72 @@ prepDAV :: DavUser -> DavPass -> DAVT IO ()
 prepDAV user pass = do
 	setResponseTimeout Nothing -- disable default (5 second!) timeout
 	setCreds user pass
+
+--
+-- Legacy chunking code, to be removed eventually.
+--
+
+storeLegacyChunked :: ChunkSize -> Key -> DavHandle -> L.ByteString -> IO Bool
+storeLegacyChunked chunksize k dav b =
+	Legacy.storeChunks k tmp dest storer recorder finalizer
+  where
+	storehttp l b' = void $ goDAV dav $ do
+		maybe noop (void . mkColRecursive) (locationParent l)
+		inLocation l $ putContentM (contentType, b')
+	storer locs = Legacy.storeChunked chunksize locs storehttp b
+	recorder l s = storehttp l (L8.fromString s)
+	finalizer tmp' dest' = goDAV dav $ 
+		finalizeStore (baseURL dav) tmp' (fromJust $ locationParent dest')
+
+	tmp = keyTmpLocation k
+	dest = keyLocation k ++ keyFile k
+
+retrieveLegacyChunked :: DavHandle -> Retriever
+retrieveLegacyChunked dav = fileRetriever $ \d k p -> liftIO $
+	withStoredFilesLegacyChunked k dav onerr $ \locs ->
+		Legacy.meteredWriteFileChunks p d locs $ 
+			getDAV dav
+  where
+	onerr = error "download failed"
+
+checkKeyLegacyChunked :: DavHandle -> CheckPresent
+checkKeyLegacyChunked dav k = liftIO $
+	either error id <$> withStoredFilesLegacyChunked k dav onerr check
+  where
+	check [] = return $ Right True
+	check (l:ls) = do
+		v <- goDAV dav $ existsDAV l
+		if v == Right True
+			then check ls
+			else return v
+
+	{- Failed to read the chunkcount file; see if it's missing,
+	 - or if there's a problem accessing it,
+	- or perhaps this was an intermittent error. -}
+	onerr f = do
+		v <- goDAV dav $ existsDAV f
+		return $ if v == Right True
+			then Left $ "failed to read " ++ f
+			else v
+
+withStoredFilesLegacyChunked
+	:: Key
+	-> DavHandle
+	-> (DavLocation -> IO a)
+	-> ([DavLocation] -> IO a)
+	-> IO a
+withStoredFilesLegacyChunked k dav onerr a = do
+	let chunkcount = keyloc ++ Legacy.chunkCount
+	v <- goDAV dav $ safely $ 
+		inLocation chunkcount $
+			snd <$> getContentM
+	case v of
+		Just s -> a $ Legacy.listChunks keyloc $ L8.toString s
+		Nothing -> do
+			chunks <- Legacy.probeChunks keyloc $ \f ->
+				(== Right True) <$> goDAV dav (existsDAV f)
+			if null chunks
+				then onerr chunkcount
+				else a chunks
+  where
+	keyloc = keyLocation k ++ keyFile k
