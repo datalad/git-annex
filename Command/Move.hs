@@ -152,17 +152,17 @@ fromOk src key = go =<< Annex.getState Annex.force
 fromPerform :: Remote -> Bool -> Key -> AssociatedFile -> CommandPerform
 fromPerform src move key afile = moveLock move key $
 	ifM (inAnnex key)
-		( handle move True
-		, handle move =<< go
+		( dispatch move True
+		, dispatch move =<< go
 		)
   where
 	go = notifyTransfer Download afile $ 
 		download (Remote.uuid src) key afile noRetry $ \p -> do
 			showAction $ "from " ++ Remote.name src
 			getViaTmp key $ \t -> Remote.retrieveKeyFile src key afile t p
-	handle _ False = stop -- failed
-	handle False True = next $ return True -- copy complete
-	handle True True = do -- finish moving
+	dispatch _ False = stop -- failed
+	dispatch False True = next $ return True -- copy complete
+	dispatch True True = do -- finish moving
 		ok <- Remote.removeKey src key
 		next $ Command.Drop.cleanupRemote key src ok
 

@@ -25,7 +25,6 @@ import Config
 import Config.Cost
 import qualified Remote.Helper.Ssh as Ssh
 import Remote.Helper.Special
-import Remote.Helper.ChunkedEncryptable
 import Remote.Helper.Messages
 import Utility.Hash
 import Utility.UserInfo
@@ -58,9 +57,9 @@ gen r u c gc = do
 		, storeKey = storeKeyDummy
 		, retrieveKeyFile = retreiveKeyFileDummy
 		, retrieveKeyFileCheap = retrieveCheap buprepo
-		, removeKey = remove buprepo
-		, hasKey = checkPresent r bupr'
-		, hasKeyCheap = bupLocal buprepo
+		, removeKey = removeKeyDummy
+		, checkPresent = checkPresentDummy
+		, checkPresentCheap = bupLocal buprepo
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing
@@ -74,12 +73,18 @@ gen r u c gc = do
 		, availability = if bupLocal buprepo then LocallyAvailable else GloballyAvailable
 		, readonly = False
 		}
-	return $ Just $ encryptableRemote c
+	return $ Just $ specialRemote' specialcfg c
 		(simplyPrepare $ store this buprepo)
 		(simplyPrepare $ retrieve buprepo)
+		(simplyPrepare $ remove buprepo)
+		(simplyPrepare $ checkKey r bupr')
 		this
   where
 	buprepo = fromMaybe (error "missing buprepo") $ remoteAnnexBupRepo gc
+	specialcfg = (specialRemoteCfg c)
+		-- chunking would not improve bup
+		{ chunkConfig = NoChunks
+		}
 
 bupSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
 bupSetup mu _ c = do
@@ -143,7 +148,7 @@ retrieveCheap _ _ _ = return False
  -
  - We can, however, remove the git branch that bup created for the key.
  -}
-remove :: BupRepo -> Key -> Annex Bool
+remove :: BupRepo -> Remover
 remove buprepo k = do
 	go =<< liftIO (bup2GitRemote buprepo)
 	warning "content cannot be completely removed from bup remote"
@@ -160,14 +165,13 @@ remove buprepo k = do
  - in a bup repository. One way it to check if the git repository has
  - a branch matching the name (as created by bup split -n).
  -}
-checkPresent :: Git.Repo -> Git.Repo -> Key -> Annex (Either String Bool)
-checkPresent r bupr k
+checkKey :: Git.Repo -> Git.Repo -> CheckPresent
+checkKey r bupr k
 	| Git.repoIsUrl bupr = do
 		showChecking r
-		ok <- onBupRemote bupr boolSystem "git" params
-		return $ Right ok
-	| otherwise = liftIO $ catchMsgIO $
-		boolSystem "git" $ Git.Command.gitCommandLine params bupr
+		onBupRemote bupr boolSystem "git" params
+	| otherwise = liftIO $ boolSystem "git" $
+		Git.Command.gitCommandLine params bupr
   where
 	params = 
 		[ Params "show-ref --quiet --verify"

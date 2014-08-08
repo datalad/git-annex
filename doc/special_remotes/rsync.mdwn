@@ -14,13 +14,13 @@ Or for using rsync over SSH
 
 These parameters can be passed to `git annex initremote` to configure rsync:
 
+* `rsyncurl` - Required. This is the url or `hostname:/directory` to 
+  pass to rsync to tell it where to store content.
+
 * `encryption` - One of "none", "hybrid", "shared", or "pubkey".
   See [[encryption]].
 
 * `keyid` - Specifies the gpg key to use for [[encryption]].
-
-* `rsyncurl` - Required. This is the url or `hostname:/directory` to 
-  pass to rsync to tell it where to store content.
 
 * `shellescape` - Optional. Set to "no" to avoid shell escaping normally
   done when using rsync over ssh. That escaping is needed with typical
@@ -29,6 +29,10 @@ These parameters can be passed to `git annex initremote` to configure rsync:
   from the special remote fails with an error message containing a single
   quote (`'`) character. If that happens, you can run enableremote
   setting shellescape=no.
+
+* `chunk` - Enables [[chunking]] when storing large files.  
+  This is typically not a win for rsync, so no need to enable it.
+  But, it makes this interoperate with the [[directory]] special remote.
 
 The `annex-rsync-options` git configuration setting can be used to pass
 parameters to rsync.

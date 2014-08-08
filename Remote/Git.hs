@@ -27,7 +27,6 @@ import qualified Annex
 import Logs.Presence
 import Annex.Transfer
 import Annex.UUID
-import Annex.Exception
 import qualified Annex.Content
 import qualified Annex.BranchState
 import qualified Annex.Branch
@@ -56,7 +55,6 @@ import Creds
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
 import qualified Data.Map as M
-import Control.Exception.Extensible
 
 remote :: RemoteType
 remote = RemoteType {
@@ -127,7 +125,7 @@ configRead r = do
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc
-	| Git.GCrypt.isEncrypted r = Remote.GCrypt.gen r u c gc
+	| Git.GCrypt.isEncrypted r = Remote.GCrypt.chainGen r u c gc
 	| otherwise = go <$> remoteCost gc defcst
   where
 	defcst = if repoCheap r then cheapRemoteCost else expensiveRemoteCost
@@ -141,8 +139,8 @@ gen r u c gc
 			, retrieveKeyFile = copyFromRemote new
 			, retrieveKeyFileCheap = copyFromRemoteCheap new
 			, removeKey = dropKey new
-			, hasKey = inAnnex new
-			, hasKeyCheap = repoCheap r
+			, checkPresent = inAnnex new
+			, checkPresentCheap = repoCheap r
 			, whereisKey = Nothing
 			, remoteFsck = if Git.repoIsUrl r
 				then Nothing
@@ -281,14 +279,11 @@ tryGitConfigRead r
 		s <- Annex.new r
 		Annex.eval s $ do
 			Annex.BranchState.disableUpdate
-			void $ tryAnnex $ ensureInitialized
+			void $ tryNonAsync $ ensureInitialized
 			Annex.getState Annex.repo
 
-{- Checks if a given remote has the content for a key inAnnex.
- - If the remote cannot be accessed, or if it cannot determine
- - whether it has the content, returns a Left error message.
- -}
-inAnnex :: Remote -> Key -> Annex (Either String Bool)
+{- Checks if a given remote has the content for a key in its annex. -}
+inAnnex :: Remote -> Key -> Annex Bool
 inAnnex rmt key
 	| Git.repoIsHttp r = checkhttp
 	| Git.repoIsUrl r = checkremote
@@ -298,17 +293,13 @@ inAnnex rmt key
 	checkhttp = do
 		showChecking r
 		ifM (Url.withUrlOptions $ \uo -> anyM (\u -> Url.checkBoth u (keySize key) uo) (keyUrls rmt key))
-			( return $ Right True
-			, return $ Left "not found"
+			( return True
+			, error "not found"
 			)
 	checkremote = Ssh.inAnnex r key
-	checklocal = guardUsable r (cantCheck r) $ dispatch <$> check
-	  where
-		check = either (Left . show) Right 
-			<$> tryAnnex (onLocal rmt $ Annex.Content.inAnnexSafe key)
-		dispatch (Left e) = Left e
-		dispatch (Right (Just b)) = Right b
-		dispatch (Right Nothing) = cantCheck r
+	checklocal = guardUsable r (cantCheck r) $
+		fromMaybe (cantCheck r)
+			<$> onLocal rmt (Annex.Content.inAnnexSafe key)
 
 keyUrls :: Remote -> Key -> [String]
 keyUrls r key = map tourl locs'
@@ -390,6 +381,7 @@ copyFromRemote' r key file dest
 		Just (cmd, params) <- Ssh.git_annex_shell (repo r) "transferinfo" 
 			[Param $ key2file key] fields
 		v <- liftIO (newEmptySV :: IO (MSampleVar Integer))
+		pidv <- liftIO $ newEmptyMVar
 		tid <- liftIO $ forkIO $ void $ tryIO $ do
 			bytes <- readSV v
 			p <- createProcess $
@@ -397,6 +389,7 @@ copyFromRemote' r key file dest
 					{ std_in = CreatePipe
 					, std_err = CreatePipe
 					}
+			putMVar pidv (processHandle p)
 			hClose $ stderrHandle p
 			let h = stdinHandle p
 			let send b = do
@@ -406,7 +399,12 @@ copyFromRemote' r key file dest
 			forever $
 				send =<< readSV v
 		let feeder = writeSV v . fromBytesProcessed
-		bracketIO noop (const $ tryIO $ killThread tid) (const $ a feeder)
+		let cleanup = do
+			void $ tryIO $ killThread tid
+			tryNonAsync $
+				maybe noop (void . waitForProcess)
+					=<< tryTakeMVar pidv
+		bracketIO noop (const cleanup) (const $ a feeder)
 
 copyFromRemoteCheap :: Remote -> Key -> FilePath -> Annex Bool
 #ifndef mingw32_HOST_OS

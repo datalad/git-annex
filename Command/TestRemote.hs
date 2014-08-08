@@ -31,7 +31,6 @@ import Locations
 import Test.Tasty
 import Test.Tasty.Runners
 import Test.Tasty.HUnit
-import Control.Exception
 import "crypto-api" Crypto.Random
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
@@ -59,8 +58,9 @@ start basesz ws = do
 	showStart "testremote" name
 	r <- either error id <$> Remote.byName' name
 	showSideAction "generating test keys"
-	ks <- mapM randKey (keySizes basesz)
-	rs <- catMaybes <$> mapM (adjustChunkSize r) (chunkSizes basesz)
+	fast <- Annex.getState Annex.fast
+	ks <- mapM randKey (keySizes basesz fast)
+	rs <- catMaybes <$> mapM (adjustChunkSize r) (chunkSizes basesz fast)
 	rs' <- concat <$> mapM encryptionVariants rs
 	next $ perform rs' ks
 
@@ -76,7 +76,7 @@ perform rs ks = do
   where
 	desc r' k = intercalate "; " $ map unwords
 		[ [ "key size", show (keySize k) ]
-		, [ show (chunkConfig (Remote.config r')) ]
+		, [ show (getChunkConfig (Remote.config r')) ]
 		, ["encryption", fromMaybe "none" (M.lookup "encryption" (Remote.config r'))]
 		]
 
@@ -161,22 +161,29 @@ cleanup rs ks ok = do
 	forM_ ks removeAnnex
 	return ok
 
-chunkSizes :: Int -> [Int]
-chunkSizes base = 
+chunkSizes :: Int -> Bool -> [Int]
+chunkSizes base False =
 	[ 0 -- no chunking
 	, base `div` 100
 	, base `div` 1000
 	, base
 	]
+chunkSizes _ True =
+	[ 0
+	]
 
-keySizes :: Int -> [Int]
-keySizes base = filter (>= 0)
+keySizes :: Int -> Bool -> [Int]
+keySizes base fast = filter want
 	[ 0 -- empty key is a special case when chunking
 	, base
 	, base + 1
 	, base - 1
 	, base * 2
 	]
+  where
+	want sz
+		| fast = sz <= base && sz > 0
+		| otherwise = sz > 0
 
 randKey :: Int -> Annex Key
 randKey sz = withTmpFile "randkey" $ \f h -> do

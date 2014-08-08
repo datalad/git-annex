@@ -40,7 +40,6 @@ import Logs.Transfer
 import Config.Files
 import Utility.DiskFree
 import qualified Annex
-import Annex.Exception
 #ifdef WITH_WEBAPP
 import Assistant.WebApp.Types
 #endif
@@ -85,7 +84,7 @@ sanityCheckerStartupThread startupdelay = namedThreadUnchecked "SanityCheckerSta
 	liftIO $ fixUpSshRemotes
 
 	{- Clean up old temp files. -}
-	void $ liftAnnex $ tryAnnex $ do
+	void $ liftAnnex $ tryNonAsync $ do
 		cleanOldTmpMisc
 		cleanReallyOldTmp
 

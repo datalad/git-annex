@@ -113,10 +113,10 @@ byNameWithUUID = checkuuid <=< byName
 
 byName' :: RemoteName -> Annex (Either String Remote)
 byName' "" = return $ Left "no remote specified"
-byName' n = handle . filter matching <$> remoteList
+byName' n = go . filter matching <$> remoteList
   where
-	handle [] = Left $ "there is no available git remote named \"" ++ n ++ "\""
-	handle (match:_) = Right match
+	go [] = Left $ "there is no available git remote named \"" ++ n ++ "\""
+	go (match:_) = Right match
 	matching r = n == name r || toUUID n == uuid r
 
 {- Only matches remote name, not UUID -}
@@ -312,3 +312,9 @@ isXMPPRemote :: Remote -> Bool
 isXMPPRemote remote = Git.repoIsUrl r && "xmpp::" `isPrefixOf` Git.repoLocation r
   where
 	r = repo remote
+
+hasKey :: Remote -> Key -> Annex (Either String Bool)
+hasKey r k = either (Left  . show) Right <$> tryNonAsync (checkPresent r k)
+
+hasKeyCheap :: Remote -> Bool
+hasKeyCheap = checkPresentCheap

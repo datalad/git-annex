@@ -33,3 +33,11 @@ type Storer = Key -> ContentSource -> MeterUpdate -> Annex Bool
 -- callback, which will fully consume the content before returning.
 -- Throws exception if key is not present, or remote is not accessible.
 type Retriever = Key -> MeterUpdate -> (ContentSource -> Annex Bool) -> Annex Bool
+
+-- Action that removes a Key's content from a remote.
+-- Succeeds if key is already not present; never throws exceptions.
+type Remover = Key -> Annex Bool
+
+-- Checks if a Key's content is present on a remote.
+-- Throws an exception if the remote is not accessible.
+type CheckPresent = Key -> Annex Bool

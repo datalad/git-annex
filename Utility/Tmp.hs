@@ -14,7 +14,6 @@ import System.Directory
 import Control.Monad.IfElse
 import System.FilePath
 import Control.Monad.IO.Class
-import Control.Monad.Catch (bracket, MonadMask)
 
 import Utility.Exception
 import Utility.FileSystemEncoding
@@ -33,11 +32,11 @@ viaTmp a file content = bracket setup cleanup use
 	setup = do
 		createDirectoryIfMissing True dir
 		openTempFile dir template
-	cleanup (tmpfile, handle) = do
-		_ <- tryIO $ hClose handle
+	cleanup (tmpfile, h) = do
+		_ <- tryIO $ hClose h
 		tryIO $ removeFile tmpfile
-	use (tmpfile, handle) = do
-		hClose handle
+	use (tmpfile, h) = do
+		hClose h
 		a tmpfile content
 		rename tmpfile file
 
@@ -54,10 +53,10 @@ withTmpFileIn :: (MonadIO m, MonadMask m) => FilePath -> Template -> (FilePath -
 withTmpFileIn tmpdir template a = bracket create remove use
   where
 	create = liftIO $ openTempFile tmpdir template
-	remove (name, handle) = liftIO $ do
-		hClose handle
+	remove (name, h) = liftIO $ do
+		hClose h
 		catchBoolIO (removeFile name >> return True)
-	use (name, handle) = a name handle
+	use (name, h) = a name h
 
 {- Runs an action with a tmp directory located within the system's tmp
  - directory (or within "." if there is none), then removes the tmp

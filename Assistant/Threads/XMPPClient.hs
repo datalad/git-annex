@@ -117,7 +117,7 @@ xmppClient urlrenderer d creds xmppuuid =
 		void $ liftIO $ atomically . swapTMVar lasttraffic =<< getCurrentTime
 		inAssistant $ debug
 			["received:", show $ map logXMPPEvent l]
-		mapM_ (handle selfjid) l
+		mapM_ (handlemsg selfjid) l
 	sendpings selfjid lasttraffic = forever $ do
 		putStanza pingstanza
 
@@ -133,21 +133,21 @@ xmppClient urlrenderer d creds xmppuuid =
 		 - cause traffic, so good enough. -}
 	  	pingstanza = xmppPing selfjid
 
-	handle selfjid (PresenceMessage p) = do
+	handlemsg selfjid (PresenceMessage p) = do
 		void $ inAssistant $ 
 			updateBuddyList (updateBuddies p) <<~ buddyList
 		resendImportantMessages selfjid p
-	handle _ (GotNetMessage QueryPresence) = putStanza gitAnnexSignature
-	handle _ (GotNetMessage (NotifyPush us)) = void $ inAssistant $ pull us
-	handle selfjid (GotNetMessage (PairingNotification stage c u)) =
+	handlemsg _ (GotNetMessage QueryPresence) = putStanza gitAnnexSignature
+	handlemsg _ (GotNetMessage (NotifyPush us)) = void $ inAssistant $ pull us
+	handlemsg selfjid (GotNetMessage (PairingNotification stage c u)) =
 		maybe noop (inAssistant . pairMsgReceived urlrenderer stage u selfjid) (parseJID c)
-	handle _ (GotNetMessage m@(Pushing _ pushstage))
+	handlemsg _ (GotNetMessage m@(Pushing _ pushstage))
 		| isPushNotice pushstage = inAssistant $ handlePushNotice m
 		| isPushInitiation pushstage = inAssistant $ queuePushInitiation m
 		| otherwise = inAssistant $ storeInbox m
-	handle _ (Ignorable _) = noop
-	handle _ (Unknown _) = noop
-	handle _ (ProtocolError _) = noop
+	handlemsg _ (Ignorable _) = noop
+	handlemsg _ (Unknown _) = noop
+	handlemsg _ (ProtocolError _) = noop
 
 	resendImportantMessages selfjid (Presence { presenceFrom = Just jid }) = do
 		let c = formatJID jid

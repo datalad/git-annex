@@ -19,7 +19,6 @@ import Annex.Hook
 import Annex.View
 import Annex.View.ViewedFile
 import Annex.Perms
-import Annex.Exception
 import Logs.View
 import Logs.MetaData
 import Types.View

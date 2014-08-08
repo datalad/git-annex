@@ -13,7 +13,6 @@ import Common.Annex
 import Utility.UserInfo
 import qualified Git.Config
 import Config
-import Annex.Exception
 
 #ifndef mingw32_HOST_OS
 import Utility.Env
@@ -58,7 +57,7 @@ checkEnvironmentIO =
 {- Runs an action that commits to the repository, and if it fails, 
  - sets user.email and user.name to a dummy value and tries the action again. -}
 ensureCommit :: Annex a -> Annex a
-ensureCommit a = either retry return =<< tryAnnex a 
+ensureCommit a = either retry return =<< tryNonAsync a 
   where
   	retry _ = do
 		name <- liftIO myUserName

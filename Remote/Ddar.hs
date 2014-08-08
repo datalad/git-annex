@@ -8,7 +8,6 @@
 
 module Remote.Ddar (remote) where
 
-import Control.Exception
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
 import System.IO.Error
@@ -22,7 +21,6 @@ import qualified Git
 import Config
 import Config.Cost
 import Remote.Helper.Special
-import Remote.Helper.ChunkedEncryptable
 import Annex.Ssh
 import Annex.UUID
 
@@ -42,9 +40,11 @@ gen r u c gc = do
 		if ddarLocal ddarrepo
 			then nearlyCheapRemoteCost
 			else expensiveRemoteCost
-	return $ Just $ encryptableRemote c
+	return $ Just $ specialRemote' specialcfg c
 		(simplyPrepare $ store ddarrepo)
 		(simplyPrepare $ retrieve ddarrepo)
+		(simplyPrepare $ remove ddarrepo)
+		(simplyPrepare $ checkKey ddarrepo)
 		(this cst)
   where
 	this cst = Remote
@@ -54,9 +54,9 @@ gen r u c gc = do
 		, storeKey = storeKeyDummy
 		, retrieveKeyFile = retreiveKeyFileDummy
 		, retrieveKeyFileCheap = retrieveCheap
-		, removeKey = remove ddarrepo
-		, hasKey = checkPresent ddarrepo
-		, hasKeyCheap = ddarLocal ddarrepo
+		, removeKey = removeKeyDummy
+		, checkPresent = checkPresentDummy
+		, checkPresentCheap = ddarLocal ddarrepo
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing
@@ -71,6 +71,10 @@ gen r u c gc = do
 		, readonly = False
 		}
 	ddarrepo = fromMaybe (error "missing ddarrepo") $ remoteAnnexDdarRepo gc
+	specialcfg = (specialRemoteCfg c)
+		-- chunking would not improve ddar
+		{ chunkConfig = NoChunks
+		}
 
 ddarSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
 ddarSetup mu _ c = do
@@ -137,7 +141,7 @@ retrieve ddarrepo = byteRetriever $ \k sink -> do
 retrieveCheap :: Key -> FilePath -> Annex Bool
 retrieveCheap _ _ = return False
 
-remove :: DdarRepo -> Key -> Annex Bool
+remove :: DdarRepo -> Remover
 remove ddarrepo key = do
 	(cmd, params) <- ddarRemoteCall ddarrepo 'd' [Param $ key2file key]
 	liftIO $ boolSystem cmd params
@@ -178,13 +182,14 @@ inDdarManifest ddarrepo k = do
   where
 	k' = key2file k
 
-checkPresent :: DdarRepo -> Key -> Annex (Either String Bool)
-checkPresent ddarrepo key = do
+checkKey :: DdarRepo -> CheckPresent
+checkKey ddarrepo key = do
 	directoryExists <- ddarDirectoryExists ddarrepo
 	case directoryExists of
-		Left e -> return $ Left e
-		Right True -> inDdarManifest ddarrepo key
-		Right False -> return $ Right False
+		Left e -> error e
+		Right True -> either error return
+			=<< inDdarManifest ddarrepo key
+		Right False -> return False
 
 ddarLocal :: DdarRepo -> Bool
 ddarLocal = notElem ':'
