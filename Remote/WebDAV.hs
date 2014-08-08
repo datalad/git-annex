@@ -128,9 +128,16 @@ remove Nothing _ = return False
 remove (Just dav) k = liftIO $ do
 	-- Delete the key's whole directory, including any
 	-- legacy chunked files, etc, in a single action.
-	ret <- goDAV dav $ safely $
-		inLocation (keyDir k) delContentM
-	return (isJust ret)
+	let d = keyDir k
+	goDAV dav $ do
+		v <- safely $ inLocation d delContentM
+		case v of
+			Just _ -> return True
+			Nothing -> do
+				v' <- existsDAV d
+				case v' of
+					Right False -> return True
+					_ -> return False
 
 checkKey :: Remote -> ChunkConfig -> Maybe DavHandle -> CheckPresent
 checkKey r _ Nothing _ = error $ name r ++ " not configured"
