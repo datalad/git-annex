@@ -117,7 +117,7 @@ listenNMConnections client setconnected =
 #else
 	listen client matcher
 #endif
-		$ \event -> mapM_ handle
+		$ \event -> mapM_ handleevent
 			(map dictionaryItems $ mapMaybe fromVariant $ signalBody event)
   where
 	matcher = matchAny
@@ -128,7 +128,7 @@ listenNMConnections client setconnected =
 	nm_activatingconnection_key = toVariant ("ActivatingConnection" :: String)
 	noconnections = Just $ toVariant $ toVariant ([] :: [ObjectPath])
 	rootconnection = Just $ toVariant $ toVariant $ objectPath_ "/"
-	handle m
+	handleevent m
 		| lookup nm_active_connections_key m == noconnections =
 			setconnected False
 		| lookup nm_activatingconnection_key m == rootconnection =
@@ -150,7 +150,7 @@ listenWicdConnections client setconnected = do
 	match connmatcher $ \event ->
 		when (any (== wicd_success) (signalBody event)) $
 			setconnected True
-	match statusmatcher $ \event -> handle (signalBody event)
+	match statusmatcher $ \event -> handleevent (signalBody event)
   where
 	connmatcher = matchAny
 		{ matchInterface = Just "org.wicd.daemon"
@@ -162,7 +162,7 @@ listenWicdConnections client setconnected = do
 		}
 	wicd_success = toVariant ("success" :: String)
 	wicd_disconnected = toVariant [toVariant ("" :: String)]
-	handle status
+	handleevent status
 		| any (== wicd_disconnected) status = setconnected False
 		| otherwise = noop
 	match matcher a = 
