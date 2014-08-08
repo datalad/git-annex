@@ -97,7 +97,7 @@ Executable git-annex
   Build-Depends: MissingH, hslogger, directory, filepath,
    containers, utf8-string, network (>= 2.0), mtl (>= 2),
    bytestring, old-locale, time, HTTP, dataenc, SHA, process, json,
-   base (>= 4.5 && < 4.9), monad-control, exceptions (>= 0.5),
+   base (>= 4.5 && < 4.9), monad-control, exceptions (>= 0.5), transformers,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process,
    SafeSemaphore, uuid, random, dlist, unix-compat, async, stm (>= 2.3),
    data-default, case-insensitive
@@ -188,7 +188,7 @@ Executable git-annex
   if flag(Webapp)
     Build-Depends:
      yesod, yesod-default, yesod-static, yesod-form, yesod-core,
-     http-types, transformers, wai, wai-extra, warp, warp-tls,
+     http-types, wai, wai-extra, warp, warp-tls,
      blaze-builder, crypto-api, hamlet, clientsession,
      template-haskell, data-default, aeson, path-pieces,
      shakespeare
