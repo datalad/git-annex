@@ -141,7 +141,7 @@ Executable git-annex
     CPP-Options: -DWITH_S3
 
   if flag(WebDAV)
-    Build-Depends: DAV (>= 0.8),
+    Build-Depends: DAV (>= 1.0),
      http-client, http-conduit, http-types
     CPP-Options: -DWITH_WEBDAV
 
