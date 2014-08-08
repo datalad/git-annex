@@ -11,7 +11,7 @@ import Common.Annex
 import Types.StoreRetrieve
 import Utility.Metered
 import Remote.Helper.Special
-import Network.HTTP.Client (RequestBody(..))
+import Network.HTTP.Client (RequestBody(..), Response, responseBody, BodyReader)
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as S
@@ -35,5 +35,19 @@ httpStorer a = fileStorer $ \k f m -> do
 	pop [] = ([], S.empty)
 	pop (c:cs) = (cs, c)
 
---httpRetriever :: (Key -> Annex Response) -> Retriever
---httpRetriever a = byteRetriever $ \k sink 
+-- Reads the http body and stores it to the specified file, updating the
+-- meter as it goes.
+httpBodyRetriever :: FilePath -> MeterUpdate -> Response BodyReader -> IO ()
+httpBodyRetriever dest meterupdate resp = 
+	bracket (openBinaryFile dest WriteMode) hClose (go zeroBytesProcessed)
+  where
+	reader = responseBody resp
+	go sofar h = do
+		b <- reader
+		if S.null b
+			then return ()
+			else do
+				let sofar' = addBytesProcessed sofar $ S.length b
+				S.hPut h b
+				meterupdate sofar'
+				go sofar' h

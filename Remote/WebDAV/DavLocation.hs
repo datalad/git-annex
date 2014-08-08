@@ -29,14 +29,17 @@ inLocation :: (MonadIO m) => DavLocation -> DAVT m a -> DAVT m a
 inLocation d = inDAVLocation (</> d)
 
 {- The directory where files(s) for a key are stored. -}
-keyLocation :: Key -> DavLocation
-keyLocation k = addTrailingPathSeparator $ hashdir </> keyFile k
+keyDir :: Key -> DavLocation
+keyDir k = addTrailingPathSeparator $ hashdir </> keyFile k
   where
 #ifndef mingw32_HOST_OS
 	hashdir = hashDirLower k
 #else
 	hashdir = replace "\\" "/" (hashDirLower k)
 #endif
+
+keyLocation :: Key -> DavLocation
+keyLocation k = keyDir k ++ keyFile k
 
 {- Where we store temporary data for a key as it's being uploaded. -}
 keyTmpLocation :: Key -> DavLocation

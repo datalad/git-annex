@@ -97,7 +97,7 @@ store (LegacyChunks chunksize) (Just dav) = fileStorer $ \k f p -> liftIO $
 	withMeteredFile f p $ storeLegacyChunked chunksize k dav
 store _  (Just dav) = httpStorer $ \k reqbody -> liftIO $ goDAV dav $ do
 	let tmp = keyTmpLocation k
-	let dest = keyLocation k ++ keyFile k
+	let dest = keyLocation k
 	void $ mkColRecursive tmpDir
 	inLocation tmp $
 		putContentM' (contentType, reqbody)
@@ -117,16 +117,10 @@ retrieve :: ChunkConfig -> Maybe DavHandle -> Retriever
 retrieve _ Nothing = error "unable to connect"
 retrieve (LegacyChunks _) (Just dav) = retrieveLegacyChunked dav
 retrieve _ (Just dav) = fileRetriever $ \d k p -> liftIO $
-	meteredWriteFile p d =<< getDAV dav (keyLocation k ++ keyFile k)
-
-getDAV :: DavHandle -> DavLocation -> IO L.ByteString
-getDAV dav l = do
-	mb <- goDAV dav $ safely $
-		inLocation l $
-			snd <$> getContentM
-	case mb of
-		Nothing -> error "download failed"
-		Just b -> return b
+	goDAV dav $
+		inLocation (keyLocation k) $
+			withContentM $
+				httpBodyRetriever d p
 
 remove :: Maybe DavHandle -> Remover
 remove Nothing _ = return False
@@ -134,7 +128,7 @@ remove (Just dav) k = liftIO $ do
 	-- Delete the key's whole directory, including any
 	-- legacy chunked files, etc, in a single action.
 	ret <- goDAV dav $ safely $
-		inLocation (keyLocation k) delContentM
+		inLocation (keyDir k) delContentM
 	return (isJust ret)
 
 checkKey :: Remote -> ChunkConfig -> Maybe DavHandle -> CheckPresent
@@ -145,7 +139,7 @@ checkKey r chunkconfig (Just dav) k = do
 		LegacyChunks _ -> checkKeyLegacyChunked dav k
 		_ -> do
 			v <- liftIO $ goDAV dav $
-				existsDAV (keyLocation k ++ keyFile k)
+				existsDAV (keyLocation k)
 			either error return v
 
 configUrl :: Remote -> Maybe URLString
@@ -315,13 +309,15 @@ storeLegacyChunked chunksize k dav b =
 		finalizeStore (baseURL dav) tmp' (fromJust $ locationParent dest')
 
 	tmp = keyTmpLocation k
-	dest = keyLocation k ++ keyFile k
+	dest = keyLocation k
 
 retrieveLegacyChunked :: DavHandle -> Retriever
 retrieveLegacyChunked dav = fileRetriever $ \d k p -> liftIO $
 	withStoredFilesLegacyChunked k dav onerr $ \locs ->
-		Legacy.meteredWriteFileChunks p d locs $ 
-			getDAV dav
+		Legacy.meteredWriteFileChunks p d locs $ \l ->
+			goDAV dav $
+				inLocation l $
+					snd <$> getContentM
   where
 	onerr = error "download failed"
 
@@ -365,4 +361,4 @@ withStoredFilesLegacyChunked k dav onerr a = do
 				then onerr chunkcount
 				else a chunks
   where
-	keyloc = keyLocation k ++ keyFile k
+	keyloc = keyLocation k

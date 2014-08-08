@@ -18,7 +18,8 @@ git-annex (5.20140718) UNRELEASED; urgency=medium
   * Display exception message when a transfer fails due to an exception.
   * WebDAV: Sped up by avoiding making multiple http connections
     when storing a file.
-  * WebDAV: Avoid buffering whole file in memory when uploading.
+  * WebDAV: Avoid buffering whole file in memory when uploading and
+    downloading.
   * WebDAV: Dropped support for DAV before 1.0.
   * testremote: New command to test uploads/downloads to a remote.
   * Dropping an object from a bup special remote now deletes the git branch
