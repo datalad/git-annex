@@ -2,6 +2,8 @@ S3 has memory leaks
 
 Sending a file to S3 causes a slow memory increase toward the file size.
 
+> This is fixed, now that it uses aws. --[[Joey]]
+
 Copying the file back from S3 causes a slow memory increase toward the
 file size.
 

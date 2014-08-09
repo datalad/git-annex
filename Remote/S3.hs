@@ -12,9 +12,6 @@ module Remote.S3 (remote, iaHost, isIA, isIAHost, iaItemUrl) where
 import qualified Aws as AWS
 import qualified Aws.Core as AWS
 import qualified Aws.S3 as S3
-import Network.AWS.AWSConnection
-import Network.AWS.S3Object hiding (getStorageClass)
-import Network.AWS.AWSResult
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.ByteString.Lazy as L
@@ -55,8 +52,8 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
   where
 	new cst = Just $ specialRemote c
 		(prepareS3 this $ store this)
-		(prepareRetrieve this)
-		(prepareS3 this $ remove this)
+		(prepareS3 this retrieve)
+		(prepareS3 this remove)
 		(prepareS3 this $ checkKey this)
 		this
 	  where
@@ -149,10 +146,10 @@ store r h = fileStorer $ \k f p -> do
 	
 	return True
 
-prepareRetrieve :: Remote -> Preparer Retriever
-prepareRetrieve r = resourcePrepare (const $ s3Action r False) $ \(conn, bucket) ->
-	error "TODO"
+retrieve :: S3Handle -> Retriever
+retrieve _h = error "TODO"
 	{- 
+	resourcePrepare (const $ s3Action r False) $ \(conn, bucket) ->
 	byteRetriever $ \k sink ->
 		liftIO (getObject conn $ bucketKey r bucket k)
 			>>= either s3Error (sink . obj_data)
@@ -164,8 +161,8 @@ retrieveCheap _ _ = return False
 {- Internet Archive doesn't easily allow removing content.
  - While it may remove the file, there are generally other files
  - derived from it that it does not remove. -}
-remove :: Remote -> S3Handle -> Remover
-remove r h k
+remove :: S3Handle -> Remover
+remove h k
 	| hIsIA h = do
 		warning "Cannot remove content from the Internet Archive"
 		return False
@@ -194,26 +191,6 @@ catchMissingException a = catchJust missing a (const $ return False)
 	missing e
 		| AWS.headerErrorMessage e == "ETag missing" = Just ()
 		| otherwise = Nothing
-
-s3Warning :: ReqError -> Annex Bool
-s3Warning e = do
-	warning $ prettyReqError e
-	return False
-
-s3Bool :: AWSResult () -> Annex Bool
-s3Bool (Right _) = return True
-s3Bool (Left e) = s3Warning e
-
-s3Action :: Remote -> a -> ((AWSConnection, BucketName) -> Annex a) -> Annex a
-s3Action r noconn action = do
-	let bucket = M.lookup "bucket" $ config r
-	conn <- s3Connection (config r) (uuid r)
-	case (bucket, conn) of
-		(Just b, Just c) -> action (c, b)
-		_ -> return noconn
-
-bucketKey :: Remote -> BucketName -> Key -> S3Object
-bucketKey r bucket k = S3Object bucket (bucketObject (config r) k) "" [] L.empty
 
 {- Generate the bucket if it does not already exist, including creating the
  - UUID file within the bucket.
@@ -285,18 +262,6 @@ checkUUIDFile c u h = tryNonAsync $ check <$> get
 uuidFile :: RemoteConfig -> FilePath
 uuidFile c = getFilePrefix c ++ "annex-uuid"
 
-s3Connection :: RemoteConfig -> UUID -> Annex (Maybe AWSConnection)
-s3Connection c u = go =<< getRemoteCredPairFor "S3" c (AWS.creds u)
-  where
-	go Nothing = return Nothing
-	go (Just (ak, sk)) = return $ Just $ AWSConnection host port ak sk
-
-	host = fromJust $ M.lookup "host" c
-	port = let s = fromJust $ M.lookup "port" c in
-		case reads s of
-		[(p, _)] -> p
-		_ -> error $ "bad S3 port value: " ++ s
-
 data S3Handle = S3Handle 
 	{ hmanager :: Manager
 	, hawscfg :: AWS.Configuration
@@ -362,10 +327,6 @@ s3Configuration c = (S3.s3 proto endpoint False) { S3.s3Port = port }
 
 tryS3 :: Annex a -> Annex (Either S3.S3Error a)
 tryS3 a = (Right <$> a) `catch` (pure . Left)
-
-s3Error :: S3.S3Error -> a
-s3Error (S3.S3Error { S3.s3ErrorMessage = m }) = 
-	error $ "S3 error: " ++ T.unpack m
 
 getBucketName :: RemoteConfig -> Maybe BucketName
 getBucketName = M.lookup "bucket"
