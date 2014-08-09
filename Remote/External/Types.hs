@@ -32,7 +32,6 @@ module Remote.External.Types (
 ) where
 
 import Common.Annex
-import Annex.Exception
 import Types.Key (file2key, key2file)
 import Types.StandardGroups (PreferredContentExpression)
 import Utility.Metered (BytesProcessed(..))

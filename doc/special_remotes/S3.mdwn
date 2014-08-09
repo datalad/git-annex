@@ -18,6 +18,9 @@ the S3 remote.
 * `encryption` - One of "none", "hybrid", "shared", or "pubkey".
   See [[encryption]].
 
+* `chunk` - Enables [[chunking]] when storing large files.
+  `chunk=1MiB` is a good starting point for chunking.
+
 * `keyid` - Specifies the gpg key to use for [[encryption]].
 
 * `embedcreds` - Optional. Set to "yes" embed the login credentials inside

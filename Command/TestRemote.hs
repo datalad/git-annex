@@ -31,7 +31,6 @@ import Locations
 import Test.Tasty
 import Test.Tasty.Runners
 import Test.Tasty.HUnit
-import Control.Exception
 import "crypto-api" Crypto.Random
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
@@ -77,7 +76,7 @@ perform rs ks = do
   where
 	desc r' k = intercalate "; " $ map unwords
 		[ [ "key size", show (keySize k) ]
-		, [ show (chunkConfig (Remote.config r')) ]
+		, [ show (getChunkConfig (Remote.config r')) ]
 		, ["encryption", fromMaybe "none" (M.lookup "encryption" (Remote.config r'))]
 		]
 
@@ -169,7 +168,7 @@ chunkSizes base False =
 	, base `div` 1000
 	, base
 	]
-chunkSizes base True =
+chunkSizes _ True =
 	[ 0
 	]
 

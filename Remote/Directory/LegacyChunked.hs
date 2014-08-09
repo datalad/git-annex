@@ -7,8 +7,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE Rank2Types #-}
-
 module Remote.Directory.LegacyChunked where
 
 import qualified Data.ByteString.Lazy as L
@@ -16,7 +14,7 @@ import qualified Data.ByteString as S
 
 import Common.Annex
 import Utility.FileMode
-import Remote.Helper.ChunkedEncryptable
+import Remote.Helper.Special
 import qualified Remote.Helper.Chunked.Legacy as Legacy
 import Annex.Perms
 import Utility.Metered
@@ -96,17 +94,16 @@ retrieve locations d basek a = do
 	tmpdir <- fromRepo $ gitAnnexTmpMiscDir
 	createAnnexDirectory tmpdir
 	let tmp = tmpdir </> keyFile basek ++ ".directorylegacy.tmp"
-	a $ Just $ byteRetriever $ \k -> liftIO $ do
-		void $ withStoredFiles d locations k $ \fs -> do
+	a $ Just $ byteRetriever $ \k sink -> do
+		liftIO $ void $ withStoredFiles d locations k $ \fs -> do
 			forM_ fs $
 				S.appendFile tmp <=< S.readFile
 			return True
-		b <- L.readFile tmp
-		nukeFile tmp
-		return b
+		b <- liftIO $ L.readFile tmp
+		liftIO $ nukeFile tmp
+		sink b
 
-checkPresent :: FilePath -> (FilePath -> Key -> [FilePath]) -> Key -> Annex (Either String Bool)
-checkPresent d locations k = liftIO $ catchMsgIO $
-	withStoredFiles d locations k $
-		-- withStoredFiles checked that it exists
-		const $ return True
+checkKey :: FilePath -> (FilePath -> Key -> [FilePath]) -> Key -> Annex Bool
+checkKey d locations k = liftIO $ withStoredFiles d locations k $
+	-- withStoredFiles checked that it exists
+	const $ return True

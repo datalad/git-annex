@@ -13,7 +13,7 @@ These parameters can be passed to `git annex initremote` to configure
 gcrypt:
 
 * `encryption` - One of "none", "hybrid", "shared", or "pubkey".
-  See [[encryption]].
+  Required. See [[encryption]].
 
 * `keyid` - Specifies the gpg key to use for encryption of both the files
   git-annex stores in the repository, as well as to encrypt the git
@@ -23,6 +23,8 @@ gcrypt:
 * `gitrepo` - Required. The path or url to the git repository
   for gcrypt to use. This repository should be either empty, or an existing
   gcrypt repositry.
+
+* `chunk` - Enables [[chunking]] when storing large files.
 
 * `shellescape` - See [[rsync]] for the details of this option.
 

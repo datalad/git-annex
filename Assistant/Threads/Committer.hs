@@ -27,7 +27,6 @@ import qualified Utility.Lsof as Lsof
 import qualified Utility.DirWatcher as DirWatcher
 import Types.KeySource
 import Config
-import Annex.Exception
 import Annex.Content
 import Annex.Link
 import Annex.CatFile
@@ -217,7 +216,7 @@ commitStaged :: Annex Bool
 commitStaged = do
 	{- This could fail if there's another commit being made by
 	 - something else. -}
-	v <- tryAnnex Annex.Queue.flush
+	v <- tryNonAsync Annex.Queue.flush
 	case v of
 		Left _ -> return False
 		Right _ -> do

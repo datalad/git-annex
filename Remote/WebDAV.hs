@@ -11,15 +11,13 @@ module Remote.WebDAV (remote, davCreds, configUrl) where
 
 import Network.Protocol.HTTP.DAV
 import qualified Data.Map as M
+import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.UTF8 as B8
 import qualified Data.ByteString.Lazy.UTF8 as L8
-import qualified Data.ByteString.Lazy as L
-import qualified Control.Exception as E
-import qualified Control.Exception.Lifted as EL
 import Network.HTTP.Client (HttpException(..))
 import Network.HTTP.Types
-import System.Log.Logger (debugM)
 import System.IO.Error
+import Control.Monad.Catch
 
 import Common.Annex
 import Types.Remote
@@ -27,18 +25,13 @@ import qualified Git
 import Config
 import Config.Cost
 import Remote.Helper.Special
-import Remote.Helper.Encryptable
-import Remote.Helper.Chunked
+import Remote.Helper.Http
 import qualified Remote.Helper.Chunked.Legacy as Legacy
-import Crypto
 import Creds
 import Utility.Metered
-import Annex.Content
+import Utility.Url (URLString)
 import Annex.UUID
-import Remote.WebDAV.DavUrl
-
-type DavUser = B8.ByteString
-type DavPass = B8.ByteString
+import Remote.WebDAV.DavLocation
 
 remote :: RemoteType
 remote = RemoteType {
@@ -51,21 +44,23 @@ remote = RemoteType {
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
   where
-	new cst = Just $ encryptableRemote c
-		(storeEncrypted this)
-		(retrieveEncrypted this)
+	new cst = Just $ specialRemote c
+		(prepareDAV this $ store chunkconfig)
+		(prepareDAV this $ retrieve chunkconfig)
+		(prepareDAV this $ remove)
+		(prepareDAV this $ checkKey this chunkconfig)
 		this
 	  where
 		this = Remote {
 			uuid = u,
 			cost = cst,
 			name = Git.repoDescribe r,
-			storeKey = store this,
-			retrieveKeyFile = retrieve this,
-			retrieveKeyFileCheap = retrieveCheap this,
-			removeKey = remove this,
-			hasKey = checkPresent this,
-			hasKeyCheap = False,
+			storeKey = storeKeyDummy,
+			retrieveKeyFile = retreiveKeyFileDummy,
+			retrieveKeyFileCheap = retrieveCheap,
+			removeKey = removeKeyDummy,
+			checkPresent = checkPresentDummy,
+			checkPresentCheap = False,
 			whereisKey = Nothing,
 			remoteFsck = Nothing,
 			repairRepo = Nothing,
@@ -77,12 +72,14 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			availability = GloballyAvailable,
 			remotetype = remote
 		}
+		chunkconfig = getChunkConfig c
 
 webdavSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
 webdavSetup mu mcreds c = do
 	u <- maybe (liftIO genUUID) return mu
-	let url = fromMaybe (error "Specify url=") $
-		M.lookup "url" c
+	url <- case M.lookup "url" c of
+		Nothing -> error "Specify url="
+		Just url -> return url
 	c' <- encryptionSetup c
 	creds <- maybe (getCreds c' u) (return . Just) mcreds
 	testDav url creds
@@ -90,151 +87,81 @@ webdavSetup mu mcreds c = do
 	c'' <- setRemoteCredPair c' (davCreds u) creds
 	return (c'', u)
 
-store :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store r k _f p = metered (Just p) k $ \meterupdate ->
-	davAction r False $ \(baseurl, user, pass) -> 
-		sendAnnex k (void $ remove r k) $ \src ->
-			liftIO $ withMeteredFile src meterupdate $
-				storeHelper r k baseurl user pass
+-- Opens a http connection to the DAV server, which will be reused
+-- each time the helper is called.
+prepareDAV :: Remote -> (Maybe DavHandle -> helper) -> Preparer helper
+prepareDAV = resourcePrepare . const . withDAVHandle
 
-storeEncrypted :: Remote -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
-storeEncrypted r (cipher, enck) k p = metered (Just p) k $ \meterupdate ->
-	davAction r False $ \(baseurl, user, pass) ->
-		sendAnnex k (void $ remove r enck) $ \src ->
-			liftIO $ encrypt (getGpgEncParams r) cipher
-				(streamMeteredFile src meterupdate) $
-				readBytes $ storeHelper r enck baseurl user pass
+store :: ChunkConfig -> Maybe DavHandle -> Storer
+store _ Nothing = byteStorer $ \_k _b _p -> return False
+store (LegacyChunks chunksize) (Just dav) = fileStorer $ \k f p -> liftIO $
+	withMeteredFile f p $ storeLegacyChunked chunksize k dav
+store _  (Just dav) = httpStorer $ \k reqbody -> liftIO $ goDAV dav $ do
+	let tmp = keyTmpLocation k
+	let dest = keyLocation k
+	void $ mkColRecursive tmpDir
+	inLocation tmp $
+		putContentM' (contentType, reqbody)
+	finalizeStore (baseURL dav) tmp dest
+	return True
 
-storeHelper :: Remote -> Key -> DavUrl -> DavUser -> DavPass -> L.ByteString -> IO Bool
-storeHelper r k baseurl user pass b = catchBoolIO $ do
-	mkdirRecursiveDAV tmpurl user pass
-	case chunkconfig of
-		NoChunks -> flip catchNonAsync (\e -> warningIO (show e) >> return False) $ do
-			storehttp tmpurl b
-			finalizer tmpurl keyurl
-			return True
-		UnpaddedChunks _ -> error "TODO: storeHelper with UnpaddedChunks"
-		LegacyChunks chunksize -> do
-			let storer urls = Legacy.storeChunked chunksize urls storehttp b
-			let recorder url s = storehttp url (L8.fromString s)
-			Legacy.storeChunks k tmpurl keyurl storer recorder finalizer
+finalizeStore :: URLString -> DavLocation -> DavLocation -> DAVT IO ()
+finalizeStore baseurl tmp dest = do
+	inLocation dest $ void $ safely $ delContentM
+	maybe noop (void . mkColRecursive) (locationParent dest)
+	moveDAV baseurl tmp dest
 
-  where
-	tmpurl = tmpLocation baseurl k
-	keyurl = davLocation baseurl k
-	chunkconfig = chunkConfig $ config r
-	finalizer srcurl desturl = do
-		void $ tryNonAsync (deleteDAV desturl user pass)
-		mkdirRecursiveDAV (urlParent desturl) user pass
-		moveDAV srcurl desturl user pass
-	storehttp url = putDAV url user pass
+retrieveCheap :: Key -> FilePath -> Annex Bool
+retrieveCheap _ _ = return False
 
-retrieveCheap :: Remote -> Key -> FilePath -> Annex Bool
-retrieveCheap _ _ _ = return False
+retrieve :: ChunkConfig -> Maybe DavHandle -> Retriever
+retrieve _ Nothing = error "unable to connect"
+retrieve (LegacyChunks _) (Just dav) = retrieveLegacyChunked dav
+retrieve _ (Just dav) = fileRetriever $ \d k p -> liftIO $
+	goDAV dav $
+		inLocation (keyLocation k) $
+			withContentM $
+				httpBodyRetriever d p
 
-retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
-retrieve r k _f d p = metered (Just p) k $ \meterupdate ->
-	davAction r False $ \(baseurl, user, pass) -> liftIO $ catchBoolIO $
-		withStoredFiles r k baseurl user pass onerr $ \urls -> do
-			Legacy.meteredWriteFileChunks meterupdate d urls $ \url -> do
-				mb <- getDAV url user pass
-				case mb of
-					Nothing -> throwIO "download failed"
-					Just b -> return b
-			return True
-  where
-	onerr _ = return False
-
-retrieveEncrypted :: Remote -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
-retrieveEncrypted r (cipher, enck) k d p = metered (Just p) k $ \meterupdate ->
-	davAction r False $ \(baseurl, user, pass) -> liftIO $ catchBoolIO $
-		withStoredFiles r enck baseurl user pass onerr $ \urls -> do
-			decrypt cipher (feeder user pass urls) $
-				readBytes $ meteredWriteFile meterupdate d
-			return True
-  where
-	onerr _ = return False
-
-	feeder _ _ [] _ = noop
-	feeder user pass (url:urls) h = do
-		mb <- getDAV url user pass
-		case mb of
-			Nothing -> throwIO "download failed"
-			Just b -> do
-				L.hPut h b
-				feeder user pass urls h
-
-remove :: Remote -> Key -> Annex Bool
-remove r k = davAction r False $ \(baseurl, user, pass) -> liftIO $ do
-	-- Delete the key's whole directory, including any chunked
-	-- files, etc, in a single action.
-	let url = davLocation baseurl k
-	isJust . eitherToMaybe <$> tryNonAsync (deleteDAV url user pass)
-
-checkPresent :: Remote -> Key -> Annex (Either String Bool)
-checkPresent r k = davAction r noconn go
-  where
-	noconn = Left $ error $ name r ++ " not configured"
-
-	go (baseurl, user, pass) = do
-		showAction $ "checking " ++ name r
-		liftIO $ withStoredFiles r k baseurl user pass onerr check
-	  where
-		check [] = return $ Right True
-		check (url:urls) = do
-			v <- existsDAV url user pass
-			if v == Right True
-				then check urls
-				else return v
-
-		{- Failed to read the chunkcount file; see if it's missing,
-		 - or if there's a problem accessing it,
-		 - or perhaps this was an intermittent error. -}
-		onerr url = do
-			v <- existsDAV url user pass
-			return $ if v == Right True
-				then Left $ "failed to read " ++ url
-				else v
-
-withStoredFiles
-	:: Remote
-	-> Key
-	-> DavUrl
-	-> DavUser
-	-> DavPass
-	-> (DavUrl -> IO a)
-	-> ([DavUrl] -> IO a)
-	-> IO a
-withStoredFiles r k baseurl user pass onerr a = case chunkconfig of
-	NoChunks -> a [keyurl]
-	UnpaddedChunks _ -> error "TODO: withStoredFiles with UnpaddedChunks"
-	LegacyChunks _ -> do
-		let chunkcount = keyurl ++ Legacy.chunkCount
-		v <- getDAV chunkcount user pass
+remove :: Maybe DavHandle -> Remover
+remove Nothing _ = return False
+remove (Just dav) k = liftIO $ do
+	-- Delete the key's whole directory, including any
+	-- legacy chunked files, etc, in a single action.
+	let d = keyDir k
+	goDAV dav $ do
+		v <- safely $ inLocation d delContentM
 		case v of
-			Just s -> a $ Legacy.listChunks keyurl $ L8.toString s
+			Just _ -> return True
 			Nothing -> do
-				chunks <- Legacy.probeChunks keyurl $ \u -> (== Right True) <$> existsDAV u user pass
-				if null chunks
-					then onerr chunkcount
-					else a chunks
-  where
-	keyurl = davLocation baseurl k ++ keyFile k
-	chunkconfig = chunkConfig $ config r
+				v' <- existsDAV d
+				case v' of
+					Right False -> return True
+					_ -> return False
 
-davAction :: Remote -> a -> ((DavUrl, DavUser, DavPass) -> Annex a) -> Annex a
-davAction r unconfigured action = do
-	mcreds <- getCreds (config r) (uuid r)
-	case (mcreds, configUrl r) of
-		(Just (user, pass), Just url) ->
-			action (url, toDavUser user, toDavPass pass)
-		_ -> return unconfigured
+checkKey :: Remote -> ChunkConfig -> Maybe DavHandle -> CheckPresent
+checkKey r _ Nothing _ = error $ name r ++ " not configured"
+checkKey r chunkconfig (Just dav) k = do
+	showAction $ "checking " ++ name r
+	case chunkconfig of
+		LegacyChunks _ -> checkKeyLegacyChunked dav k
+		_ -> do
+			v <- liftIO $ goDAV dav $
+				existsDAV (keyLocation k)
+			either error return v
 
-configUrl :: Remote -> Maybe DavUrl
+configUrl :: Remote -> Maybe URLString
 configUrl r = fixup <$> M.lookup "url" (config r)
   where
 	-- box.com DAV url changed
 	fixup = replace "https://www.box.com/dav/" "https://dav.box.com/dav/"
+
+type DavUser = B8.ByteString
+type DavPass = B8.ByteString
+
+baseURL :: DavHandle -> URLString
+baseURL (DavHandle _ _ _ u) = u
+
 
 toDavUser :: String -> DavUser
 toDavUser = B8.fromString
@@ -242,46 +169,63 @@ toDavUser = B8.fromString
 toDavPass :: String -> DavPass
 toDavPass = B8.fromString
 
-{- Creates a directory in WebDAV, if not already present; also creating
- - any missing parent directories. -}
-mkdirRecursiveDAV :: DavUrl -> DavUser -> DavPass -> IO ()
-mkdirRecursiveDAV url user pass = go url
-  where
-	make u = mkdirDAV u user pass
-
-	go u = do
-		r <- E.try (make u) :: IO (Either E.SomeException Bool)
-		case r of
-			{- Parent directory is missing. Recurse to create
-			 - it, and try once more to create the directory. -}
-			Right False -> do
-				go (urlParent u)
-				void $ make u
-			{- Directory created successfully -}
-			Right True -> return ()
-			{- Directory already exists, or some other error
-			 - occurred. In the latter case, whatever wanted
-			 - to use this directory will fail. -}
-			Left _ -> return ()
-
 {- Test if a WebDAV store is usable, by writing to a test file, and then
- - deleting the file. Exits with an IO error if not. -}
-testDav :: String -> Maybe CredPair -> Annex ()
-testDav baseurl (Just (u, p)) = do
+ - deleting the file.
+ -
+ - Also ensures that the path of the url exists, trying to create it if not.
+ -
+ - Throws an error if store is not usable.
+ -}
+testDav :: URLString -> Maybe CredPair -> Annex ()
+testDav url (Just (u, p)) = do
 	showSideAction "testing WebDAV server"
-	test "make directory" $ mkdirRecursiveDAV baseurl user pass
-	test "write file" $ putDAV testurl user pass L.empty
-	test "delete file" $ deleteDAV testurl user pass
+	test $ liftIO $ evalDAVT url $ do
+		prepDAV user pass
+		makeParentDirs
+		inLocation tmpDir $ void mkCol
+		inLocation (tmpLocation "git-annex-test") $ do
+			putContentM (Nothing, L.empty)
+			delContentM
   where
-	test desc a = liftIO $
-		either (\e -> throwIO $ "WebDAV failed to " ++ desc ++ ": " ++ show e)
+	test a = liftIO $
+		either (\e -> throwIO $ "WebDAV test failed: " ++ show e)
 			(const noop)
 			=<< tryNonAsync a
 
 	user = toDavUser u
 	pass = toDavPass p
-	testurl = davUrl baseurl "git-annex-test"
 testDav _ Nothing = error "Need to configure webdav username and password."
+
+{- Tries to make all the parent directories in the WebDAV urls's path,
+ - right down to the root.
+ -
+ - Ignores any failures, which can occur for reasons including the WebDAV
+ - server only serving up WebDAV in a subdirectory. -}
+makeParentDirs :: DAVT IO ()
+makeParentDirs = go
+  where
+	go = do
+		l <- getDAVLocation
+		case locationParent l of
+			Nothing -> noop
+			Just p -> void $ safely $ inDAVLocation (const p) go
+		void $ safely mkCol
+
+{- Checks if the directory exists. If not, tries to create its
+ - parent directories, all the way down to the root, and finally creates
+ - it. -}
+mkColRecursive :: DavLocation -> DAVT IO Bool
+mkColRecursive d = go =<< existsDAV d
+  where
+	go (Right True) = return True
+	go _ = ifM (inLocation d mkCol)
+		( return True
+		, do
+			case locationParent d of
+				Nothing -> makeParentDirs
+				Just parent -> void (mkColRecursive parent)
+			inLocation d mkCol
+		)
 
 getCreds :: RemoteConfig -> UUID -> Annex (Maybe CredPair)
 getCreds c u = getRemoteCredPairFor "webdav" c (davCreds u)
@@ -300,54 +244,21 @@ contentType = Just $ B8.fromString "application/octet-stream"
 throwIO :: String -> IO a
 throwIO msg = ioError $ mkIOError userErrorType msg Nothing Nothing
 
-debugDAV :: DavUrl -> String -> IO ()
-debugDAV msg url = debugM "DAV" $ msg ++ " " ++ url
-
-{---------------------------------------------------------------------
- - Low-level DAV operations.
- ---------------------------------------------------------------------}
-
-putDAV :: DavUrl -> DavUser -> DavPass -> L.ByteString -> IO ()
-putDAV url user pass b = do
-	debugDAV "PUT" url
-	goDAV url user pass $ putContentM (contentType, b)
-
-getDAV :: DavUrl -> DavUser -> DavPass -> IO (Maybe L.ByteString)
-getDAV url user pass = do
-	debugDAV "GET" url
-	eitherToMaybe <$> tryNonAsync go
+moveDAV :: URLString -> DavLocation -> DavLocation -> DAVT IO ()
+moveDAV baseurl src dest = inLocation src $ moveContentM newurl
   where
-	go = goDAV url user pass $ snd <$> getContentM
+	newurl = B8.fromString (locationUrl baseurl dest)
 
-deleteDAV :: DavUrl -> DavUser -> DavPass -> IO ()
-deleteDAV url user pass = do
-	debugDAV "DELETE" url
-	goDAV url user pass delContentM
-
-moveDAV :: DavUrl -> DavUrl -> DavUser -> DavPass -> IO ()
-moveDAV url newurl user pass = do
-	debugDAV ("MOVE to " ++ newurl ++ " from ") url
-	goDAV url user pass $ moveContentM newurl'
+existsDAV :: DavLocation -> DAVT IO (Either String Bool)
+existsDAV l = inLocation l check `catchNonAsync` (\e -> return (Left $ show e))
   where
-	newurl' = B8.fromString newurl
-
-mkdirDAV :: DavUrl -> DavUser -> DavPass -> IO Bool
-mkdirDAV url user pass = do
-	debugDAV "MKDIR" url
-	goDAV url user pass mkCol
-
-existsDAV :: DavUrl -> DavUser -> DavPass -> IO (Either String Bool)
-existsDAV url user pass = do
-	debugDAV "EXISTS" url
-	either (Left . show) id <$> tryNonAsync check
-  where
-	ispresent = return . Right
-	check = goDAV url user pass $ do
+	check = do
 		setDepth Nothing
-		EL.catchJust
+		catchJust
 			(matchStatusCodeException notFound404)
 			(getPropsM >> ispresent True)
 			(const $ ispresent False)
+	ispresent = return . Right
 
 matchStatusCodeException :: Status -> HttpException -> Maybe ()
 matchStatusCodeException want (StatusCodeException s _ _)
@@ -355,15 +266,107 @@ matchStatusCodeException want (StatusCodeException s _ _)
 	| otherwise = Nothing
 matchStatusCodeException _ _ = Nothing
 
-goDAV :: DavUrl -> DavUser -> DavPass -> DAVT IO a -> IO a
-goDAV url user pass a = choke $ evalDAVT url $ do
-	setResponseTimeout Nothing -- disable default (5 second!) timeout
-	setCreds user pass
+-- Ignores any exceptions when performing a DAV action.
+safely :: DAVT IO a -> DAVT IO (Maybe a)
+safely = eitherToMaybe <$$> tryNonAsync
+
+choke :: IO (Either String a) -> IO a
+choke f = do
+	x <- f
+	case x of
+		Left e -> error e
+		Right r -> return r
+
+data DavHandle = DavHandle DAVContext DavUser DavPass URLString
+
+withDAVHandle :: Remote -> (Maybe DavHandle -> Annex a) -> Annex a
+withDAVHandle r a = do
+	mcreds <- getCreds (config r) (uuid r)
+	case (mcreds, configUrl r) of
+		(Just (user, pass), Just baseurl) ->
+			withDAVContext baseurl $ \ctx ->
+				a (Just (DavHandle ctx (toDavUser user) (toDavPass pass) baseurl))
+		_ -> a Nothing
+
+goDAV :: DavHandle -> DAVT IO a -> IO a
+goDAV (DavHandle ctx user pass _) a = choke $ run $ do
+	prepDAV user pass
 	a
   where
-	choke :: IO (Either String a) -> IO a
-	choke f = do
-		x <- f
-		case x of
-			Left e -> error e
-			Right r -> return r
+	run = fst <$$> runDAVContext ctx
+
+prepDAV :: DavUser -> DavPass -> DAVT IO ()
+prepDAV user pass = do
+	setResponseTimeout Nothing -- disable default (5 second!) timeout
+	setCreds user pass
+
+--
+-- Legacy chunking code, to be removed eventually.
+--
+
+storeLegacyChunked :: ChunkSize -> Key -> DavHandle -> L.ByteString -> IO Bool
+storeLegacyChunked chunksize k dav b =
+	Legacy.storeChunks k tmp dest storer recorder finalizer
+  where
+	storehttp l b' = void $ goDAV dav $ do
+		maybe noop (void . mkColRecursive) (locationParent l)
+		inLocation l $ putContentM (contentType, b')
+	storer locs = Legacy.storeChunked chunksize locs storehttp b
+	recorder l s = storehttp l (L8.fromString s)
+	finalizer tmp' dest' = goDAV dav $ 
+		finalizeStore (baseURL dav) tmp' (fromJust $ locationParent dest')
+
+	tmp = keyTmpLocation k
+	dest = keyLocation k
+
+retrieveLegacyChunked :: DavHandle -> Retriever
+retrieveLegacyChunked dav = fileRetriever $ \d k p -> liftIO $
+	withStoredFilesLegacyChunked k dav onerr $ \locs ->
+		Legacy.meteredWriteFileChunks p d locs $ \l ->
+			goDAV dav $
+				inLocation l $
+					snd <$> getContentM
+  where
+	onerr = error "download failed"
+
+checkKeyLegacyChunked :: DavHandle -> CheckPresent
+checkKeyLegacyChunked dav k = liftIO $
+	either error id <$> withStoredFilesLegacyChunked k dav onerr check
+  where
+	check [] = return $ Right True
+	check (l:ls) = do
+		v <- goDAV dav $ existsDAV l
+		if v == Right True
+			then check ls
+			else return v
+
+	{- Failed to read the chunkcount file; see if it's missing,
+	 - or if there's a problem accessing it,
+	- or perhaps this was an intermittent error. -}
+	onerr f = do
+		v <- goDAV dav $ existsDAV f
+		return $ if v == Right True
+			then Left $ "failed to read " ++ f
+			else v
+
+withStoredFilesLegacyChunked
+	:: Key
+	-> DavHandle
+	-> (DavLocation -> IO a)
+	-> ([DavLocation] -> IO a)
+	-> IO a
+withStoredFilesLegacyChunked k dav onerr a = do
+	let chunkcount = keyloc ++ Legacy.chunkCount
+	v <- goDAV dav $ safely $ 
+		inLocation chunkcount $
+			snd <$> getContentM
+	case v of
+		Just s -> a $ Legacy.listChunks keyloc $ L8.toString s
+		Nothing -> do
+			chunks <- Legacy.probeChunks keyloc $ \f ->
+				(== Right True) <$> goDAV dav (existsDAV f)
+			if null chunks
+				then onerr chunkcount
+				else a chunks
+  where
+	keyloc = keyLocation k

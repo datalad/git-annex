@@ -22,6 +22,7 @@ module Crypto (
 	describeCipher,
 	decryptCipher,		
 	encryptKey,
+	isEncKey,
 	feedFile,
 	feedBytes,
 	readBytes,
@@ -37,7 +38,6 @@ import Data.ByteString.Lazy.UTF8 (fromString)
 import Control.Applicative
 import qualified Data.Map as M
 import Control.Monad.IO.Class
-import Control.Monad.Catch (MonadMask)
 
 import Common.Annex
 import qualified Utility.Gpg as Gpg
@@ -150,8 +150,14 @@ type EncKey = Key -> Key
 encryptKey :: Mac -> Cipher -> EncKey
 encryptKey mac c k = stubKey
 	{ keyName = macWithCipher mac c (key2file k)
-	, keyBackendName = "GPG" ++ showMac mac
+	, keyBackendName = encryptedBackendNamePrefix ++ showMac mac
 	}
+
+encryptedBackendNamePrefix :: String
+encryptedBackendNamePrefix = "GPG"
+
+isEncKey :: Key -> Bool
+isEncKey k = encryptedBackendNamePrefix `isPrefixOf` keyBackendName k
 
 type Feeder = Handle -> IO ()
 type Reader m a = Handle -> m a

@@ -10,7 +10,6 @@
 module Command.Add where
 
 import Common.Annex
-import Annex.Exception
 import Command
 import Types.KeySource
 import Backend
@@ -32,6 +31,8 @@ import Utility.InodeCache
 import Annex.FileMatcher
 import Annex.ReplaceFile
 import Utility.Tmp
+
+import Control.Exception (IOException)
 
 def :: [Command]
 def = [notBareRepo $ withOptions [includeDotFilesOption] $
@@ -103,7 +104,7 @@ lockDown = either (\e -> showErr e >> return Nothing) (return . Just) <=< lockDo
 lockDown' :: FilePath -> Annex (Either IOException KeySource)
 lockDown' file = ifM crippledFileSystem
 	( withTSDelta $ liftIO . tryIO . nohardlink
-	, tryAnnexIO $ do
+	, tryIO $ do
 		tmp <- fromRepo gitAnnexTmpMiscDir
 		createAnnexDirectory tmp
 		go tmp
@@ -167,7 +168,7 @@ ingest (Just source) = withTSDelta $ \delta -> do
 		)
 
 	goindirect (Just (key, _)) mcache ms = do
-		catchAnnex (moveAnnex key $ contentLocation source)
+		catchNonAsync (moveAnnex key $ contentLocation source)
 			(undo (keyFilename source) key)
 		maybe noop (genMetaData key (keyFilename source)) ms
 		liftIO $ nukeFile $ keyFilename source
@@ -206,23 +207,23 @@ perform file = lockDown file >>= ingest >>= go
 
 {- On error, put the file back so it doesn't seem to have vanished.
  - This can be called before or after the symlink is in place. -}
-undo :: FilePath -> Key -> IOException -> Annex a
+undo :: FilePath -> Key -> SomeException -> Annex a
 undo file key e = do
 	whenM (inAnnex key) $ do
 		liftIO $ nukeFile file
-		catchAnnex (fromAnnex key file) tryharder
+		catchNonAsync (fromAnnex key file) tryharder
 		logStatus key InfoMissing
-	throwAnnex e
+	throwM e
   where
 	-- fromAnnex could fail if the file ownership is weird
-	tryharder :: IOException -> Annex ()
+	tryharder :: SomeException -> Annex ()
 	tryharder _ = do
 		src <- calcRepo $ gitAnnexLocation key
 		liftIO $ moveFile src file
 
 {- Creates the symlink to the annexed content, returns the link target. -}
 link :: FilePath -> Key -> Maybe InodeCache -> Annex String
-link file key mcache = flip catchAnnex (undo file key) $ do
+link file key mcache = flip catchNonAsync (undo file key) $ do
 	l <- inRepo $ gitAnnexLink file key
 	replaceFile file $ makeAnnexLink l
 

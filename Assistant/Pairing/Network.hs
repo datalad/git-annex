@@ -20,7 +20,6 @@ import Utility.Verifiable
 import Network.Multicast
 import Network.Info
 import Network.Socket
-import Control.Exception (bracket)
 import qualified Data.Map as M
 import Control.Concurrent
 

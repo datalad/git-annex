@@ -20,7 +20,6 @@ import Common.Annex
 import Logs.Transfer as X
 import Annex.Notification as X
 import Annex.Perms
-import Annex.Exception
 import Utility.Metered
 #ifdef mingw32_HOST_OS
 import Utility.WinLock
@@ -103,7 +102,7 @@ runTransfer t file shouldretry a = do
 		void $ tryIO $ removeFile $ transferLockFile tfile
 #endif
 	retry oldinfo metervar run = do
-		v <- tryAnnex run
+		v <- tryNonAsync run
 		case v of
 			Right b -> return b
 			Left e -> do

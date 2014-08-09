@@ -39,7 +39,7 @@ addHooks' r starthook stophook = r'
 		, retrieveKeyFile = \k f d p -> wrapper $ retrieveKeyFile r k f d p
 		, retrieveKeyFileCheap = \k f -> wrapper $ retrieveKeyFileCheap r k f
 		, removeKey = wrapper . removeKey r
-		, hasKey = wrapper . hasKey r
+		, checkPresent = wrapper . checkPresent r
 		}
 	  where
 		wrapper = runHooks r' starthook stophook

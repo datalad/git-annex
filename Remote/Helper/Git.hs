@@ -26,7 +26,7 @@ availabilityCalc r
 
 {- Avoids performing an action on a local repository that's not usable.
  - Does not check that the repository is still available on disk. -}
-guardUsable :: Git.Repo -> a -> Annex a -> Annex a
-guardUsable r onerr a
-	| Git.repoIsLocalUnknown r = return onerr
+guardUsable :: Git.Repo -> Annex a -> Annex a -> Annex a
+guardUsable r fallback a
+	| Git.repoIsLocalUnknown r = fallback
 	| otherwise = a

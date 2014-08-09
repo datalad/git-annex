@@ -7,8 +7,6 @@
 
 module Command.Indirect where
 
-import Control.Exception.Extensible
-
 import Common.Annex
 import Command
 import qualified Git
@@ -21,7 +19,6 @@ import Annex.Direct
 import Annex.Content
 import Annex.Content.Direct
 import Annex.CatFile
-import Annex.Exception
 import Annex.Init
 import qualified Command.Add
 
@@ -88,12 +85,12 @@ perform = do
 		removeInodeCache k
 		removeAssociatedFiles k
 		whenM (liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f) $ do
-			v <-tryAnnexIO (moveAnnex k f)
+			v <- tryNonAsync (moveAnnex k f)
 			case v of
 				Right _ -> do 
 					l <- inRepo $ gitAnnexLink f k
 					liftIO $ createSymbolicLink l f
-				Left e -> catchAnnex (Command.Add.undo f k e)
+				Left e -> catchNonAsync (Command.Add.undo f k e)
 					warnlocked
 		showEndOk
 

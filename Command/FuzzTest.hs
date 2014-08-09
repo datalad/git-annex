@@ -13,7 +13,6 @@ import Command
 import qualified Git.Config
 import Config
 import Utility.ThreadScheduler
-import Annex.Exception
 import Utility.DiskFree
 
 import Data.Time.Clock
@@ -56,7 +55,7 @@ fuzz :: Handle -> Annex ()
 fuzz logh = do
 	action <- genFuzzAction
 	record logh $ flip Started action
-	result <- tryAnnex $ runFuzzAction action
+	result <- tryNonAsync $ runFuzzAction action
 	record logh $ flip Finished $
 		either (const False) (const True) result
 

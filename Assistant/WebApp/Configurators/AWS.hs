@@ -129,6 +129,7 @@ postAddS3R = awsConfigurator $ do
 				, ("type", "S3")
 				, ("datacenter", T.unpack $ datacenter input)
 				, ("storageclass", show $ storageClass input)
+				, ("chunk", "1MiB")
 				]
 		_ -> $(widgetFile "configurators/adds3")
 #else

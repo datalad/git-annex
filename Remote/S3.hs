@@ -25,12 +25,9 @@ import qualified Git
 import Config
 import Config.Cost
 import Remote.Helper.Special
-import Remote.Helper.Encryptable
 import qualified Remote.Helper.AWS as AWS
-import Crypto
 import Creds
 import Utility.Metered
-import Annex.Content
 import Annex.UUID
 import Logs.Web
 
@@ -47,21 +44,23 @@ remote = RemoteType {
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
   where
-	new cst = Just $ encryptableRemote c
-		(storeEncrypted this)
-		(retrieveEncrypted this)
+	new cst = Just $ specialRemote c
+		(prepareStore this)
+		(prepareRetrieve this)
+		(simplyPrepare $ remove this c)
+		(simplyPrepare $ checkKey this)
 		this
 	  where
 		this = Remote {
 			uuid = u,
 			cost = cst,
 			name = Git.repoDescribe r,
-			storeKey = store this,
-			retrieveKeyFile = retrieve this,
-			retrieveKeyFileCheap = retrieveCheap this,
-			removeKey = remove this c,
-			hasKey = checkPresent this,
-			hasKeyCheap = False,
+			storeKey = storeKeyDummy,
+			retrieveKeyFile = retreiveKeyFileDummy,
+			retrieveKeyFileCheap = retrieveCheap,
+			removeKey = removeKeyDummy,
+			checkPresent = checkPresentDummy,
+			checkPresentCheap = False,
 			whereisKey = Nothing,
 			remoteFsck = Nothing,
 			repairRepo = Nothing,
@@ -123,71 +122,43 @@ s3Setup' u c = if isIA c then archiveorg else defaulthost
 		writeUUIDFile archiveconfig u
 		use archiveconfig
 
-store :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store r k _f p = s3Action r False $ \(conn, bucket) -> 
-	sendAnnex k (void $ remove' r k) $ \src -> do
-		ok <- s3Bool =<< storeHelper (conn, bucket) r k p src
+prepareStore :: Remote -> Preparer Storer
+prepareStore r = resourcePrepare (const $ s3Action r False) $ \(conn, bucket) -> 
+	fileStorer $ \k src p -> do
+		ok <- s3Bool =<< liftIO (store (conn, bucket) r k p src)
 
 		-- Store public URL to item in Internet Archive.
-		when (ok && isIA (config r)) $
+		when (ok && isIA (config r) && not (isChunkKey k)) $
 			setUrlPresent k (iaKeyUrl r k)
 
 		return ok
 
-storeEncrypted :: Remote -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
-storeEncrypted r (cipher, enck) k p = s3Action r False $ \(conn, bucket) -> 
-	-- To get file size of the encrypted content, have to use a temp file.
-	-- (An alternative would be chunking to to a constant size.)
-	withTmp enck $ \tmp -> sendAnnex k (void $ remove' r enck) $ \src -> do
-		liftIO $ encrypt (getGpgEncParams r) cipher (feedFile src) $
-			readBytes $ L.writeFile tmp
-		s3Bool =<< storeHelper (conn, bucket) r enck p tmp
+store :: (AWSConnection, Bucket) -> Remote -> Key -> MeterUpdate -> FilePath -> IO (AWSResult ())
+store (conn, bucket) r k p file = do
+	size <- (fromIntegral . fileSize <$> getFileStatus file) :: IO Integer
+	withMeteredFile file p $ \content -> do
+		-- size is provided to S3 so the whole content
+		-- does not need to be buffered to calculate it
+		let object = S3Object
+			bucket (bucketFile r k) ""
+			(("Content-Length", show size) : getXheaders (config r))
+			content
+		sendObject conn $
+			setStorageClass (getStorageClass $ config r) object
 
-storeHelper :: (AWSConnection, Bucket) -> Remote -> Key -> MeterUpdate -> FilePath -> Annex (AWSResult ())
-storeHelper (conn, bucket) r k p file = do
-	size <- maybe getsize (return . fromIntegral) $ keySize k
-	meteredBytes (Just p) size $ \meterupdate ->
-		liftIO $ withMeteredFile file meterupdate $ \content -> do
-			-- size is provided to S3 so the whole content
-			-- does not need to be buffered to calculate it
-			let object = S3Object
-				bucket (bucketFile r k) ""
-				(("Content-Length", show size) : getXheaders (config r))
-				content
-			sendObject conn $
-				setStorageClass (getStorageClass $ config r) object
-  where
-	getsize = liftIO $ fromIntegral . fileSize <$> getFileStatus file
+prepareRetrieve :: Remote -> Preparer Retriever
+prepareRetrieve r = resourcePrepare (const $ s3Action r False) $ \(conn, bucket) ->
+	byteRetriever $ \k sink ->
+		liftIO (getObject conn $ bucketKey r bucket k)
+			>>= either s3Error (sink . obj_data)
 
-retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
-retrieve r k _f d p = s3Action r False $ \(conn, bucket) ->
-	metered (Just p) k $ \meterupdate -> do
-		res <- liftIO $ getObject conn $ bucketKey r bucket k
-		case res of
-			Right o -> do
-				liftIO $ meteredWriteFile meterupdate d $
-					obj_data o
-				return True
-			Left e -> s3Warning e
-
-retrieveCheap :: Remote -> Key -> FilePath -> Annex Bool
-retrieveCheap _ _ _ = return False
-
-retrieveEncrypted :: Remote -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
-retrieveEncrypted r (cipher, enck) k d p = s3Action r False $ \(conn, bucket) ->
-	metered (Just p) k $ \meterupdate -> do
-		res <- liftIO $ getObject conn $ bucketKey r bucket enck
-		case res of
-			Right o -> liftIO $ decrypt cipher (\h -> meteredWrite meterupdate h $ obj_data o) $ 
-				readBytes $ \content -> do
-					L.writeFile d content
-					return True
-			Left e -> s3Warning e
+retrieveCheap :: Key -> FilePath -> Annex Bool
+retrieveCheap _ _ = return False
 
 {- Internet Archive doesn't easily allow removing content.
  - While it may remove the file, there are generally other files
  - derived from it that it does not remove. -}
-remove :: Remote -> RemoteConfig -> Key -> Annex Bool
+remove :: Remote -> RemoteConfig -> Remover
 remove r c k
 	| isIA c = do
 		warning "Cannot remove content from the Internet Archive"
@@ -198,16 +169,16 @@ remove' :: Remote -> Key -> Annex Bool
 remove' r k = s3Action r False $ \(conn, bucket) ->
 	s3Bool =<< liftIO (deleteObject conn $ bucketKey r bucket k)
 
-checkPresent :: Remote -> Key -> Annex (Either String Bool)
-checkPresent r k = s3Action r noconn $ \(conn, bucket) -> do
+checkKey :: Remote -> CheckPresent
+checkKey r k = s3Action r noconn $ \(conn, bucket) -> do
 	showAction $ "checking " ++ name r
 	res <- liftIO $ getObjectInfo conn $ bucketKey r bucket k
 	case res of
-		Right _ -> return $ Right True
-		Left (AWSError _ _) -> return $ Right False
-		Left e -> return $ Left (s3Error e)
+		Right _ -> return True
+		Left (AWSError _ _) -> return False
+		Left e -> s3Error e
   where
-	noconn = Left $ error "S3 not configured"
+	noconn = error "S3 not configured"
 			
 s3Warning :: ReqError -> Annex Bool
 s3Warning e = do

@@ -9,6 +9,7 @@ module Remote.Glacier (remote, jobList) where
 
 import qualified Data.Map as M
 import qualified Data.Text as T
+import qualified Data.ByteString.Lazy as L
 
 import Common.Annex
 import Types.Remote
@@ -17,13 +18,10 @@ import qualified Git
 import Config
 import Config.Cost
 import Remote.Helper.Special
-import Remote.Helper.Encryptable
 import qualified Remote.Helper.AWS as AWS
-import Crypto
 import Creds
 import Utility.Metered
 import qualified Annex
-import Annex.Content
 import Annex.UUID
 import Utility.Env
 
@@ -41,21 +39,23 @@ remote = RemoteType {
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
   where
-	new cst = Just $ encryptableRemote c
-		(storeEncrypted this)
-		(retrieveEncrypted this)
+	new cst = Just $ specialRemote' specialcfg c
+		(prepareStore this)
+		(prepareRetrieve this)
+		(simplyPrepare $ remove this)
+		(simplyPrepare $ checkKey this)
 		this
 	  where
 		this = Remote {
 			uuid = u,
 			cost = cst,
 			name = Git.repoDescribe r,
-			storeKey = store this,
-			retrieveKeyFile = retrieve this,
+			storeKey = storeKeyDummy,
+			retrieveKeyFile = retreiveKeyFileDummy,
 			retrieveKeyFileCheap = retrieveCheap this,
-			removeKey = remove this,
-			hasKey = checkPresent this,
-			hasKeyCheap = False,
+			removeKey = removeKeyDummy,
+			checkPresent = checkPresentDummy,
+			checkPresentCheap = False,
 			whereisKey = Nothing,
 			remoteFsck = Nothing,
 			repairRepo = Nothing,
@@ -66,6 +66,10 @@ gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
 			readonly = False,
 			availability = GloballyAvailable,
 			remotetype = remote
+		}
+	specialcfg = (specialRemoteCfg c)
+		-- Disabled until jobList gets support for chunks.
+		{ chunkConfig = NoChunks
 		}
 
 glacierSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
@@ -89,38 +93,18 @@ glacierSetup' enabling u c = do
 		, ("vault", defvault)
 		]
 
-store :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store r k _f p
+prepareStore :: Remote -> Preparer Storer
+prepareStore r = checkPrepare nonEmpty (byteStorer $ store r)
+
+nonEmpty :: Key -> Annex Bool
+nonEmpty k
 	| keySize k == Just 0 = do
 		warning "Cannot store empty files in Glacier."
 		return False
-	| otherwise = sendAnnex k (void $ remove r k) $ \src ->
-		metered (Just p) k $ \meterupdate ->
-			storeHelper r k $ streamMeteredFile src meterupdate
+	| otherwise = return True
 
-storeEncrypted :: Remote -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
-storeEncrypted r (cipher, enck) k p = sendAnnex k (void $ remove r enck) $ \src ->
-	metered (Just p) k $ \meterupdate ->
-		storeHelper r enck $ \h ->
-			encrypt (getGpgEncParams r) cipher (feedFile src)
-				(readBytes $ meteredWrite meterupdate h)
-
-retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
-retrieve r k _f d p = metered (Just p) k $ \meterupdate ->
-	retrieveHelper r k $
-		readBytes $ meteredWriteFile meterupdate d
-
-retrieveCheap :: Remote -> Key -> FilePath -> Annex Bool
-retrieveCheap _ _ _ = return False
-
-retrieveEncrypted :: Remote -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
-retrieveEncrypted r (cipher, enck) k d p = metered (Just p) k $ \meterupdate ->
-	retrieveHelper r enck $ readBytes $ \b ->
-		decrypt cipher (feedBytes b) $
-			readBytes $ meteredWriteFile meterupdate d
-
-storeHelper :: Remote -> Key -> (Handle -> IO ()) -> Annex Bool
-storeHelper r k feeder = go =<< glacierEnv c u
+store :: Remote -> Key -> L.ByteString -> MeterUpdate -> Annex Bool
+store r k b p = go =<< glacierEnv c u
   where
 	c = config r
 	u = uuid r
@@ -133,14 +117,17 @@ storeHelper r k feeder = go =<< glacierEnv c u
 		]
 	go Nothing = return False
 	go (Just e) = do
-		let p = (proc "glacier" (toCommand params)) { env = Just e }
+		let cmd = (proc "glacier" (toCommand params)) { env = Just e }
 		liftIO $ catchBoolIO $
-			withHandle StdinHandle createProcessSuccess p $ \h -> do
-				feeder h
+			withHandle StdinHandle createProcessSuccess cmd $ \h -> do
+				meteredWrite p h b
 				return True
 
-retrieveHelper :: Remote -> Key -> (Handle -> IO ()) -> Annex Bool
-retrieveHelper r k reader = go =<< glacierEnv c u
+prepareRetrieve :: Remote -> Preparer Retriever
+prepareRetrieve = simplyPrepare . byteRetriever . retrieve
+
+retrieve :: Remote -> Key -> (L.ByteString -> Annex Bool) -> Annex Bool
+retrieve r k sink = go =<< glacierEnv c u
   where
 	c = config r
 	u = uuid r
@@ -151,48 +138,49 @@ retrieveHelper r k reader = go =<< glacierEnv c u
 		, Param $ getVault $ config r
 		, Param $ archive r k
 		]
-	go Nothing = return False
+	go Nothing = error "cannot retrieve from glacier"
 	go (Just e) = do
-		let p = (proc "glacier" (toCommand params)) { env = Just e }
-		ok <- liftIO $ catchBoolIO $
-			withHandle StdoutHandle createProcessSuccess p $ \h ->
-				ifM (hIsEOF h)
-					( return False
-					, do
-						reader h
-						return True
-					)
-		unless ok later
+		let cmd = (proc "glacier" (toCommand params)) { env = Just e }
+		(_, Just h, _, pid) <- liftIO $ createProcess cmd
+		-- Glacier cannot store empty files, so if the output is
+		-- empty, the content is not available yet.
+		ok <- ifM (liftIO $ hIsEOF h)
+			( return False
+			, sink =<< liftIO (L.hGetContents h)
+			)
+		liftIO $ hClose h
+		liftIO $ forceSuccessProcess cmd pid
+		unless ok $ do
+			showLongNote "Recommend you wait up to 4 hours, and then run this command again."
 		return ok
-	later = showLongNote "Recommend you wait up to 4 hours, and then run this command again."
 
-remove :: Remote -> Key -> Annex Bool
+retrieveCheap :: Remote -> Key -> FilePath -> Annex Bool
+retrieveCheap _ _ _ = return False
+
+remove :: Remote -> Remover
 remove r k = glacierAction r
 	[ Param "archive"
+	
 	, Param "delete"
 	, Param $ getVault $ config r
 	, Param $ archive r k
 	]
 
-checkPresent :: Remote -> Key -> Annex (Either String Bool)
-checkPresent r k = do
+checkKey :: Remote -> CheckPresent
+checkKey r k = do
 	showAction $ "checking " ++ name r
 	go =<< glacierEnv (config r) (uuid r)
   where
-	go Nothing = return $ Left "cannot check glacier"
+	go Nothing = error "cannot check glacier"
 	go (Just e) = do
 		{- glacier checkpresent outputs the archive name to stdout if
 		 - it's present. -}
-		v <- liftIO $ catchMsgIO $ 
-			readProcessEnv "glacier" (toCommand params) (Just e)
-		case v of
-			Right s -> do
-				let probablypresent = key2file k `elem` lines s
-				if probablypresent
-					then ifM (Annex.getFlag "trustglacier")
-						( return $ Right True, untrusted )
-					else return $ Right False
-			Left err -> return $ Left err
+		s <- liftIO $ readProcessEnv "glacier" (toCommand params) (Just e)
+		let probablypresent = key2file k `elem` lines s
+		if probablypresent
+			then ifM (Annex.getFlag "trustglacier")
+				( return True, error untrusted )
+			else return False
 
 	params = glacierParams (config r)
 		[ Param "archive"
@@ -202,7 +190,7 @@ checkPresent r k = do
 		, Param $ archive r k
 		]
 
-	untrusted = return $ Left $ unlines
+	untrusted = unlines
 			[ "Glacier's inventory says it has a copy."
 			, "However, the inventory could be out of date, if it was recently removed."
 			, "(Use --trust-glacier if you're sure it's still in Glacier.)"
@@ -261,6 +249,10 @@ genVault c u = unlessM (runGlacier c u params) $
  -
  - A complication is that `glacier job list` will display the encrypted
  - keys when the remote is encrypted.
+ -
+ - Dealing with encrypted chunked keys would be tricky. However, there
+ - seems to be no benefit to using chunking with glacier, so chunking is
+ - not supported.
  -}
 jobList :: Remote -> [Key] -> Annex ([Key], [Key])
 jobList r keys = go =<< glacierEnv (config r) (uuid r)

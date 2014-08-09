@@ -15,14 +15,12 @@ import Types.CleanupActions
 import qualified Git
 import Config
 import Remote.Helper.Special
-import Remote.Helper.ChunkedEncryptable
 import Utility.Metered
 import Logs.Transfer
 import Logs.PreferredContent.Raw
 import Logs.RemoteState
 import Config.Cost
 import Annex.UUID
-import Annex.Exception
 import Creds
 
 import Control.Concurrent.STM
@@ -43,9 +41,11 @@ gen r u c gc = do
 	Annex.addCleanup (RemoteCleanup u) $ stopExternal external
 	cst <- getCost external r gc
 	avail <- getAvailability external r gc
-	return $ Just $ chunkedEncryptableRemote c
+	return $ Just $ specialRemote c
 		(simplyPrepare $ store external)
 		(simplyPrepare $ retrieve external)
+		(simplyPrepare $ remove external)
+		(simplyPrepare $ checkKey external)
 		Remote {
 			uuid = u,
 			cost = cst,
@@ -53,9 +53,9 @@ gen r u c gc = do
 			storeKey = storeKeyDummy,
 			retrieveKeyFile = retreiveKeyFileDummy,
 			retrieveKeyFileCheap = \_ _ -> return False,
-			removeKey = remove external,
-			hasKey = checkPresent external,
-			hasKeyCheap = False,
+			removeKey = removeKeyDummy,
+			checkPresent = checkPresentDummy,
+			checkPresentCheap = False,
 			whereisKey = Nothing,
 			remoteFsck = Nothing,
 			repairRepo = Nothing,
@@ -110,7 +110,7 @@ retrieve external = fileRetriever $ \d k p ->
 					error errmsg
 			_ -> Nothing
 
-remove :: External -> Key -> Annex Bool
+remove :: External -> Remover
 remove external k = safely $ 
 	handleRequest external (REMOVE k) Nothing $ \resp ->
 		case resp of
@@ -122,8 +122,8 @@ remove external k = safely $
 					return False
 			_ -> Nothing
 
-checkPresent :: External -> Key -> Annex (Either String Bool)
-checkPresent external k = either (Left . show) id <$> tryAnnex go
+checkKey :: External -> CheckPresent
+checkKey external k = either error id <$> go
   where
 	go = handleRequest external (CHECKPRESENT k) Nothing $ \resp ->
 		case resp of
@@ -136,7 +136,7 @@ checkPresent external k = either (Left . show) id <$> tryAnnex go
 			_ -> Nothing
 
 safely :: Annex Bool -> Annex Bool
-safely a = go =<< tryAnnex a
+safely a = go =<< tryNonAsync a
   where
 	go (Right r) = return r
 	go (Left e) = do

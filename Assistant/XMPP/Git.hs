@@ -150,16 +150,16 @@ xmppPush cid gitpush = do
 					SendPackOutput seqnum' b
 				toxmpp seqnum' inh
 	
-	fromxmpp outh controlh = withPushMessagesInSequence cid SendPack handle
+	fromxmpp outh controlh = withPushMessagesInSequence cid SendPack handlemsg
 	  where
-	  	handle (Just (Pushing _ (ReceivePackOutput _ b))) = 
+	  	handlemsg (Just (Pushing _ (ReceivePackOutput _ b))) = 
 			liftIO $ writeChunk outh b
-		handle (Just (Pushing _ (ReceivePackDone exitcode))) =
+		handlemsg (Just (Pushing _ (ReceivePackDone exitcode))) =
 			liftIO $ do
 				hPrint controlh exitcode
 				hFlush controlh
-		handle (Just _) = noop
-		handle Nothing = do
+		handlemsg (Just _) = noop
+		handlemsg Nothing = do
 			debug ["timeout waiting for git receive-pack output via XMPP"]
 			-- Send a synthetic exit code to git-annex
 			-- xmppgit, which will exit and cause git push
@@ -264,12 +264,12 @@ xmppReceivePack cid = do
 			let seqnum' = succ seqnum
 			sendNetMessage $ Pushing cid $ ReceivePackOutput seqnum' b
 			relaytoxmpp seqnum' outh
-	relayfromxmpp inh = withPushMessagesInSequence cid ReceivePack handle
+	relayfromxmpp inh = withPushMessagesInSequence cid ReceivePack handlemsg
 	  where
-	  	handle (Just (Pushing _ (SendPackOutput _ b))) =
+	  	handlemsg (Just (Pushing _ (SendPackOutput _ b))) =
 			liftIO $ writeChunk inh b
-		handle (Just _) = noop
-		handle Nothing = do
+		handlemsg (Just _) = noop
+		handlemsg Nothing = do
 			debug ["timeout waiting for git send-pack output via XMPP"]
 			-- closing the handle will make git receive-pack exit
 			liftIO $ do

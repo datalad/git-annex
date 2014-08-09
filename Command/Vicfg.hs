@@ -217,7 +217,7 @@ parseCfg curcfg = go [] curcfg . lines
 		| null l = Right cfg
 		| "#" `isPrefixOf` l = Right cfg
 		| null setting || null f = Left "missing field"
-		| otherwise = handle cfg f setting value'
+		| otherwise = parsed cfg f setting value'
 	  where
 		(setting, rest) = separate isSpace l
 		(r, value) = separate (== '=') rest
@@ -225,7 +225,7 @@ parseCfg curcfg = go [] curcfg . lines
 		f = reverse $ trimspace $ reverse $ trimspace r
 		trimspace = dropWhile isSpace
 
-	handle cfg f setting value
+	parsed cfg f setting value
 		| setting == "trust" = case readTrustLevel value of
 			Nothing -> badval "trust value" value
 			Just t ->

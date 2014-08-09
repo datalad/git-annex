@@ -38,10 +38,6 @@ import Data.Byteable
 #ifdef __ANDROID__
 import Data.Endian
 #endif
-#if defined(__ANDROID__) || defined (mingw32_HOST_OS)
-#else
-import Control.Exception (bracketOnError)
-#endif
 
 localhost :: HostName
 localhost = "localhost"

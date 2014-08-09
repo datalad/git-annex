@@ -1,7 +1,8 @@
 git-annex (5.20140718) UNRELEASED; urgency=medium
 
   * New chunk= option to chunk files stored in special remotes.
-    Currently supported by: directory, and all external special remotes.
+    Supported by: directory, S3, webdav, gcrypt, rsync, and all external
+    and hook special remotes.
   * Partially transferred files are automatically resumed when using
     chunked remotes!
   * The old chunksize= option is deprecated. Do not use for new remotes.
@@ -15,8 +16,15 @@ git-annex (5.20140718) UNRELEASED; urgency=medium
     were incompletely repaired before.
   * Fix cost calculation for non-encrypted remotes.
   * Display exception message when a transfer fails due to an exception.
-  * WebDAV: Dropped support for DAV before 0.6.1.
+  * WebDAV: Sped up by avoiding making multiple http connections
+    when storing a file.
+  * WebDAV: Avoid buffering whole file in memory when uploading and
+    downloading.
+  * WebDAV: Dropped support for DAV before 1.0.
   * testremote: New command to test uploads/downloads to a remote.
+  * Dropping an object from a bup special remote now deletes the git branch
+    for the object, although of course the object's content cannot be deleted
+    due to the nature of bup.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 21 Jul 2014 14:41:26 -0400
 

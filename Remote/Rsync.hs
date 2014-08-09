@@ -9,10 +9,10 @@
 
 module Remote.Rsync (
 	remote,
-	storeEncrypted,
-	retrieveEncrypted,
+	store,
+	retrieve,
 	remove,
-	checkPresent,
+	checkKey,
 	withRsyncScratchDir,
 	genRsyncOpts,
 	RsyncOpts
@@ -27,7 +27,6 @@ import Annex.Content
 import Annex.UUID
 import Annex.Ssh
 import Remote.Helper.Special
-import Remote.Helper.Encryptable
 import Remote.Rsync.RsyncUrl
 import Crypto
 import Utility.Rsync
@@ -37,8 +36,8 @@ import Utility.PID
 import Annex.Perms
 import Logs.Transfer
 import Types.Creds
+import Types.Key (isChunkKey)
 
-import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
 
 remote :: RemoteType
@@ -56,19 +55,21 @@ gen r u c gc = do
 		fromMaybe (error "missing rsyncurl") $ remoteAnnexRsyncUrl gc
 	let o = genRsyncOpts c gc transport url
 	let islocal = rsyncUrlIsPath $ rsyncUrl o
-	return $ Just $ encryptableRemote c
-		(storeEncrypted o $ getGpgEncParams (c,gc))
-		(retrieveEncrypted o)
+	return $ Just $ specialRemote' specialcfg c
+		(simplyPrepare $ fileStorer $ store o)
+		(simplyPrepare $ fileRetriever $ retrieve o)
+		(simplyPrepare $ remove o)
+		(simplyPrepare $ checkKey r o)
 		Remote
 			{ uuid = u
 			, cost = cst
 			, name = Git.repoDescribe r
-			, storeKey = store o
-			, retrieveKeyFile = retrieve o
+			, storeKey = storeKeyDummy
+			, retrieveKeyFile = retreiveKeyFileDummy
 			, retrieveKeyFileCheap = retrieveCheap o
-			, removeKey = remove o
-			, hasKey = checkPresent r o
-			, hasKeyCheap = False
+			, removeKey = removeKeyDummy
+			, checkPresent = checkPresentDummy
+			, checkPresentCheap = False
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
@@ -82,6 +83,10 @@ gen r u c gc = do
 			, availability = if islocal then LocallyAvailable else GloballyAvailable
 			, remotetype = remote
 			}
+  where
+	specialcfg = (specialRemoteCfg c)
+		-- Rsync displays its own progress.
+		{ displayProgress = False }
 
 genRsyncOpts :: RemoteConfig -> RemoteGitConfig -> [CommandParam] -> RsyncUrl -> RsyncOpts
 genRsyncOpts c gc transport url = RsyncOpts
@@ -139,33 +144,51 @@ rsyncSetup mu _ c = do
 	gitConfigSpecialRemote u c' "rsyncurl" url
 	return (c', u)
 
-store :: RsyncOpts -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store o k _f p = sendAnnex k (void $ remove o k) $ rsyncSend o p k False
+{- To send a single key is slightly tricky; need to build up a temporary
+ - directory structure to pass to rsync so it can create the hash
+ - directories.
+ -
+ - This would not be necessary if the hash directory structure used locally
+ - was always the same as that used on the rsync remote. So if that's ever
+ - unified, this gets nicer.
+ - (When we have the right hash directory structure, we can just
+ - pass --include=X --include=X/Y --include=X/Y/file --exclude=*)
+ -}
+store :: RsyncOpts -> Key -> FilePath -> MeterUpdate -> Annex Bool
+store o k src meterupdate = withRsyncScratchDir $ \tmp -> do
+	let dest = tmp </> Prelude.head (keyPaths k)
+	liftIO $ createDirectoryIfMissing True $ parentDir dest
+	ok <- liftIO $ if canrename
+		then do
+			rename src dest
+			return True
+		else createLinkOrCopy src dest
+	ps <- sendParams
+	if ok
+		then showResumable $ rsyncRemote Upload o (Just meterupdate) $ ps ++
+			[ Param "--recursive"
+			, partialParams
+			-- tmp/ to send contents of tmp dir
+			, File $ addTrailingPathSeparator tmp
+			, Param $ rsyncUrl o
+			]
+		else return False
+  where
+ 	{- If the key being sent is encrypted or chunked, the file
+	 - containing its content is a temp file, and so can be
+	 - renamed into place. Otherwise, the file is the annexed
+	 - object file, and has to be copied or hard linked into place. -}
+	canrename = isEncKey k || isChunkKey k
 
-storeEncrypted :: RsyncOpts -> [CommandParam] -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
-storeEncrypted o gpgOpts (cipher, enck) k p = withTmp enck $ \tmp ->
-	sendAnnex k (void $ remove o enck) $ \src -> do
-		liftIO $ encrypt gpgOpts cipher (feedFile src) $
-			readBytes $ L.writeFile tmp
-		rsyncSend o p enck True tmp
-
-retrieve :: RsyncOpts -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
-retrieve o k _ f p = rsyncRetrieve o k f (Just p)
+retrieve :: RsyncOpts -> FilePath -> Key -> MeterUpdate -> Annex ()
+retrieve o f k p = 
+	unlessM (rsyncRetrieve o k f (Just p)) $
+		error "rsync failed"
 
 retrieveCheap :: RsyncOpts -> Key -> FilePath -> Annex Bool
 retrieveCheap o k f = ifM (preseedTmp k f) ( rsyncRetrieve o k f Nothing , return False )
 
-retrieveEncrypted :: RsyncOpts -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
-retrieveEncrypted o (cipher, enck) _ f p = withTmp enck $ \tmp ->
-	ifM (rsyncRetrieve o enck tmp (Just p))
-		( liftIO $ catchBoolIO $ do
-			decrypt cipher (feedFile tmp) $
-				readBytes $ L.writeFile f
-			return True
-		, return False
-		)
-
-remove :: RsyncOpts -> Key -> Annex Bool
+remove :: RsyncOpts -> Remover
 remove o k = do
 	ps <- sendParams
 	withRsyncScratchDir $ \tmp -> liftIO $ do
@@ -193,14 +216,12 @@ remove o k = do
 		, dir </> keyFile k </> "***"
 		]
 
-checkPresent :: Git.Repo -> RsyncOpts -> Key -> Annex (Either String Bool)
-checkPresent r o k = do
+checkKey :: Git.Repo -> RsyncOpts -> CheckPresent
+checkKey r o k = do
 	showAction $ "checking " ++ Git.repoDescribe r
 	-- note: Does not currently differentiate between rsync failing
 	-- to connect, and the file not being present.
-	Right <$> check
-  where
-	check = untilTrue (rsyncUrls o k) $ \u -> 
+	untilTrue (rsyncUrls o k) $ \u -> 
 		liftIO $ catchBoolIO $ do
 			withQuietOutput createProcessSuccess $
 				proc "rsync" $ toCommand $
@@ -238,8 +259,8 @@ withRsyncScratchDir a = do
 		removeDirectoryRecursive d
 
 rsyncRetrieve :: RsyncOpts -> Key -> FilePath -> Maybe MeterUpdate -> Annex Bool
-rsyncRetrieve o k dest callback =
-	showResumable $ untilTrue (rsyncUrls o k) $ \u -> rsyncRemote Download o callback
+rsyncRetrieve o k dest meterupdate =
+	showResumable $ untilTrue (rsyncUrls o k) $ \u -> rsyncRemote Download o meterupdate
 		-- use inplace when retrieving to support resuming
 		[ Param "--inplace"
 		, Param u
@@ -263,33 +284,3 @@ rsyncRemote direction o callback params = do
 	opts
 		| direction == Download = rsyncDownloadOptions o
 		| otherwise = rsyncUploadOptions o
-
-{- To send a single key is slightly tricky; need to build up a temporary
- - directory structure to pass to rsync so it can create the hash
- - directories.
- -
- - This would not be necessary if the hash directory structure used locally
- - was always the same as that used on the rsync remote. So if that's ever
- - unified, this gets nicer.
- - (When we have the right hash directory structure, we can just
- - pass --include=X --include=X/Y --include=X/Y/file --exclude=*)
- -}
-rsyncSend :: RsyncOpts -> MeterUpdate -> Key -> Bool -> FilePath -> Annex Bool
-rsyncSend o callback k canrename src = withRsyncScratchDir $ \tmp -> do
-	let dest = tmp </> Prelude.head (keyPaths k)
-	liftIO $ createDirectoryIfMissing True $ parentDir dest
-	ok <- liftIO $ if canrename
-		then do
-			rename src dest
-			return True
-		else createLinkOrCopy src dest
-	ps <- sendParams
-	if ok
-		then showResumable $ rsyncRemote Upload o (Just callback) $ ps ++
-			[ Param "--recursive"
-			, partialParams
-			-- tmp/ to send contents of tmp dir
-			, File $ addTrailingPathSeparator tmp
-			, Param $ rsyncUrl o
-			]
-		else return False

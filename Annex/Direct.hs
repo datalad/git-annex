@@ -32,7 +32,6 @@ import Utility.InodeCache
 import Utility.CopyFile
 import Annex.Perms
 import Annex.ReplaceFile
-import Annex.Exception
 import Annex.VariantFile
 import Git.Index
 import Annex.Index
@@ -252,7 +251,7 @@ mergeDirectCleanup d oldref = do
 	go makeabs getsha getmode a araw (f, item)
 		| getsha item == nullSha = noop
 		| otherwise = void $
-			tryAnnex . maybe (araw item makeabs f) (\k -> void $ a item makeabs k f)
+			tryNonAsync . maybe (araw item makeabs f) (\k -> void $ a item makeabs k f)
 				=<< catKey (getsha item) (getmode item)
 
 	moveout _ _ = removeDirect

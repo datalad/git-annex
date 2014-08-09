@@ -47,7 +47,7 @@ import System.Log.Handler (setFormatter, LogHandler)
 import System.Log.Handler.Simple
 import qualified Data.Set as S
 
-import Common
+import Common hiding (handle)
 import Types
 import Types.Messages
 import qualified Messages.JSON as JSON

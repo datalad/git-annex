@@ -7,7 +7,6 @@
 
 module Command.Map where
 
-import Control.Exception.Extensible
 import qualified Data.Map as M
 
 import Common.Annex
@@ -247,7 +246,7 @@ combineSame = map snd . nubBy sameuuid . map pair
 
 safely :: IO Git.Repo -> IO (Maybe Git.Repo)
 safely a = do
-	result <- try a :: IO (Either SomeException Git.Repo)
+	result <- tryNonAsync a
 	case result of
 		Left _ -> return Nothing
 		Right r' -> return $ Just r'

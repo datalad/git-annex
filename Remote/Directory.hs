@@ -6,9 +6,12 @@
  -}
 
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE Rank2Types #-}
 
-module Remote.Directory (remote) where
+module Remote.Directory (
+	remote,
+	finalizeStoreGeneric,
+	removeDirGeneric,
+) where
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
@@ -21,7 +24,6 @@ import Config.Cost
 import Config
 import Utility.FileMode
 import Remote.Helper.Special
-import Remote.Helper.ChunkedEncryptable
 import qualified Remote.Directory.LegacyChunked as Legacy
 import Annex.Content
 import Annex.UUID
@@ -38,10 +40,12 @@ remote = RemoteType {
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
 	cst <- remoteCost gc cheapRemoteCost
-	let chunkconfig = chunkConfig c
-	return $ Just $ chunkedEncryptableRemote c
+	let chunkconfig = getChunkConfig c
+	return $ Just $ specialRemote c
 		(prepareStore dir chunkconfig)
 		(retrieve dir chunkconfig)
+		(simplyPrepare $ remove dir)
+		(simplyPrepare $ checkKey dir chunkconfig)
 		Remote {
 			uuid = u,
 			cost = cst,
@@ -49,9 +53,9 @@ gen r u c gc = do
 			storeKey = storeKeyDummy,
 			retrieveKeyFile = retreiveKeyFileDummy,
 			retrieveKeyFileCheap = retrieveCheap dir chunkconfig,
-			removeKey = remove dir,
-			hasKey = checkPresent dir chunkconfig,
-			hasKeyCheap = True,
+			removeKey = removeKeyDummy,
+			checkPresent = checkPresentDummy,
+			checkPresentCheap = True,
 			whereisKey = Nothing,
 			remoteFsck = Nothing,
 			repairRepo = Nothing,
@@ -116,29 +120,35 @@ store :: FilePath -> ChunkConfig -> Key -> L.ByteString -> MeterUpdate -> Annex 
 store d chunkconfig k b p = liftIO $ do
 	void $ tryIO $ createDirectoryIfMissing True tmpdir
 	case chunkconfig of
-		LegacyChunks chunksize -> Legacy.store chunksize finalizer k b p tmpdir destdir
+		LegacyChunks chunksize -> Legacy.store chunksize finalizeStoreGeneric k b p tmpdir destdir
 		_ -> do
 			let tmpf = tmpdir </> keyFile k
 			meteredWriteFile p tmpf b
-			finalizer tmpdir destdir
+			finalizeStoreGeneric tmpdir destdir
 			return True
   where
 	tmpdir = tmpDir d k
 	destdir = storeDir d k
-	finalizer tmp dest = do
-		void $ tryIO $ allowWrite dest -- may already exist
-		void $ tryIO $ removeDirectoryRecursive dest -- or not exist
-		createDirectoryIfMissing True (parentDir dest)
-		renameDirectory tmp dest
-		-- may fail on some filesystems
-		void $ tryIO $ do
-			mapM_ preventWrite =<< dirContents dest
-			preventWrite dest
+
+{- Passed a temp directory that contains the files that should be placed
+ - in the dest directory, moves it into place. Anything already existing
+ - in the dest directory will be deleted. File permissions will be locked
+ - down. -}
+finalizeStoreGeneric :: FilePath -> FilePath -> IO ()
+finalizeStoreGeneric tmp dest = do
+	void $ tryIO $ allowWrite dest -- may already exist
+	void $ tryIO $ removeDirectoryRecursive dest -- or not exist
+	createDirectoryIfMissing True (parentDir dest)
+	renameDirectory tmp dest
+	-- may fail on some filesystems
+	void $ tryIO $ do
+		mapM_ preventWrite =<< dirContents dest
+		preventWrite dest
 
 retrieve :: FilePath -> ChunkConfig -> Preparer Retriever
 retrieve d (LegacyChunks _) = Legacy.retrieve locations d
-retrieve d _ = simplyPrepare $ byteRetriever $ \k ->
-	liftIO $ L.readFile =<< getLocation d k
+retrieve d _ = simplyPrepare $ byteRetriever $ \k sink ->
+	sink =<< liftIO (L.readFile =<< getLocation d k)
 
 retrieveCheap :: FilePath -> ChunkConfig -> Key -> FilePath -> Annex Bool
 -- no cheap retrieval possible for chunks
@@ -153,8 +163,21 @@ retrieveCheap d NoChunks k f = liftIO $ catchBoolIO $ do
 retrieveCheap _ _ _ _ = return False
 #endif
 
-remove :: FilePath -> Key -> Annex Bool
-remove d k = liftIO $ do
+remove :: FilePath -> Remover
+remove d k = liftIO $ removeDirGeneric d (storeDir d k)
+
+{- Removes the directory, which must be located under the topdir.
+ -
+ - Succeeds even on directories and contents that do not have write
+ - permission.
+ -
+ - If the directory does not exist, succeeds as long as the topdir does
+ - exist. If the topdir does not exist, fails, because in this case the
+ - remote is not currently accessible and probably still has the content
+ - we were supposed to remove from it.
+ -}
+removeDirGeneric :: FilePath -> FilePath -> IO Bool
+removeDirGeneric topdir dir = do
 	void $ tryIO $ allowWrite dir
 #ifdef mingw32_HOST_OS
 	{- Windows needs the files inside the directory to be writable
@@ -164,22 +187,14 @@ remove d k = liftIO $ do
 	ok <- catchBoolIO $ do
 		removeDirectoryRecursive dir
 		return True
-	{- Removing the subdirectory will fail if it doesn't exist.
-	 - But, we want to succeed in that case, as long as the directory
-	 - remote's top-level directory does exist. -}
 	if ok
 		then return ok
-		else doesDirectoryExist d <&&> (not <$> doesDirectoryExist dir)
-  where
-	dir = storeDir d k
+		else doesDirectoryExist topdir <&&> (not <$> doesDirectoryExist dir)
 
-checkPresent :: FilePath -> ChunkConfig -> Key -> Annex (Either String Bool)
-checkPresent d (LegacyChunks _) k = Legacy.checkPresent d locations k
-checkPresent d _ k = liftIO $ do
-	v <- catchMsgIO $ anyM doesFileExist (locations d k)
-	case v of
-		Right False -> ifM (doesDirectoryExist d)
-			( return v
-			, return $ Left $ "directory " ++ d ++ " is not accessible"
-			)
-		_ -> return v
+checkKey :: FilePath -> ChunkConfig -> CheckPresent
+checkKey d (LegacyChunks _) k = Legacy.checkKey d locations k
+checkKey d _ k = liftIO $
+	ifM (anyM doesFileExist (locations d k))
+		( return True
+		, error $ "directory " ++ d ++ " is not accessible"
+		)

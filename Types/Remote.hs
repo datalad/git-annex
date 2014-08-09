@@ -68,12 +68,12 @@ data RemoteA a = Remote {
 	retrieveKeyFileCheap :: Key -> FilePath -> a Bool,
 	-- removes a key's contents (succeeds if the contents are not present)
 	removeKey :: Key -> a Bool,
-	-- Checks if a key is present in the remote; if the remote
-	-- cannot be accessed returns a Left error message.
-	hasKey :: Key -> a (Either String Bool),
-	-- Some remotes can check hasKey without an expensive network
+	-- Checks if a key is present in the remote.
+	-- Throws an exception if the remote cannot be accessed.
+	checkPresent :: Key -> a Bool,
+	-- Some remotes can checkPresent without an expensive network
 	-- operation.
-	hasKeyCheap :: Bool,
+	checkPresentCheap :: Bool,
 	-- Some remotes can provide additional details for whereis.
 	whereisKey :: Maybe (Key -> a [String]),
 	-- Some remotes can run a fsck operation on the remote,

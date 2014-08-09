@@ -18,7 +18,6 @@ import Common.Annex
 import Annex
 import Types.LockPool
 import qualified Git
-import Annex.Exception
 import Annex.Perms
 
 import qualified Data.Map as M

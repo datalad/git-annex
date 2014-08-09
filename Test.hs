@@ -20,7 +20,6 @@ import Options.Applicative hiding (command)
 #if MIN_VERSION_optparse_applicative(0,8,0)
 import qualified Options.Applicative.Types as Opt
 #endif
-import Control.Exception.Extensible
 import qualified Data.Map as M
 import qualified Text.JSON
 
@@ -1251,7 +1250,7 @@ test_bup_remote testenv = intmpclonerepo testenv $ when Build.SysConfig.bup $ do
 	annexed_notpresent annexedfile
 	git_annex testenv "copy" [annexedfile, "--from", "foo"] @? "copy --from bup remote failed"
 	annexed_present annexedfile
-	not <$> git_annex testenv "move" [annexedfile, "--from", "foo"] @? "move --from bup remote failed to fail"
+	git_annex testenv "move" [annexedfile, "--from", "foo"] @? "move --from bup remote failed"
 	annexed_present annexedfile
 
 -- gpg is not a build dependency, so only test when it's available
@@ -1444,7 +1443,7 @@ indir testenv dir a = do
 		(try a::IO (Either SomeException ()))
 	case r of
 		Right () -> return ()
-		Left e -> throw e
+		Left e -> throwM e
 
 setuprepo :: TestEnv -> FilePath -> IO FilePath
 setuprepo testenv dir = do

@@ -13,7 +13,6 @@ import Control.Applicative
 import Control.Concurrent
 import Control.Monad.IO.Class
 import qualified Data.Map as M
-import Control.Monad.Catch (bracket, MonadMask)
 
 import Common
 import qualified Build.SysConfig as SysConfig
