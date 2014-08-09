@@ -53,5 +53,5 @@ the S3 remote.
   and to "bar/" in another special remote, and both special remotes could
   then use the same bucket.
 
-* `x-amz-*` are passed through as http headers when storing keys
+* `x-amz-meta-*` are passed through as http headers when storing keys
   in S3.

@@ -137,8 +137,7 @@ prepareS3 r = resourcePrepare $ const $ withS3Handle (config r) (uuid r)
 store :: Remote -> S3Handle -> Storer
 store r h = fileStorer $ \k f p -> do
 	rbody <- liftIO $ httpBodyStorer f p
-	void $ sendS3Handle h $
-		S3.putObject (hBucket h) (hBucketObject h k) rbody
+	void $ sendS3Handle h $ putObject h (hBucketObject h k) rbody
 	
 	-- Store public URL to item in Internet Archive.
 	when (hIsIA h && not (isChunkKey k)) $
@@ -238,10 +237,7 @@ writeUUIDFile c u h = do
 	file = T.pack $ uuidFile c
 	uuidb = L.fromChunks [T.encodeUtf8 $ T.pack $ fromUUID u]
 
-	-- TODO: add headers from getXheaders
-	-- (See https://github.com/aristidb/aws/issues/119)
-	mkobject = (S3.putObject (hBucket h) file $ RequestBodyLBS uuidb)
-		{ S3.poStorageClass = Just (hStorageClass h) }
+	mkobject = putObject h file (RequestBodyLBS uuidb)
 
 {- Checks if the UUID file exists in the bucket
  - and has the specified UUID already. -}
@@ -262,6 +258,13 @@ checkUUIDFile c u h = tryNonAsync $ check <$> get
 uuidFile :: RemoteConfig -> FilePath
 uuidFile c = getFilePrefix c ++ "annex-uuid"
 
+-- TODO: auto-create bucket when hIsIA.
+putObject :: S3Handle -> T.Text -> RequestBody -> S3.PutObject
+putObject h file rbody = (S3.putObject (hBucket h) file rbody)
+	{ S3.poStorageClass = Just (hStorageClass h)
+	, S3.poMetadata = hMetaHeaders h
+	}
+
 data S3Handle = S3Handle 
 	{ hmanager :: Manager
 	, hawscfg :: AWS.Configuration
@@ -270,7 +273,8 @@ data S3Handle = S3Handle
 	-- Cached values.
 	, hBucket :: S3.Bucket
 	, hStorageClass :: S3.StorageClass
-	, hBucketObject :: Key -> S3.Bucket
+	, hBucketObject :: Key -> T.Text
+	, hMetaHeaders :: [(T.Text, T.Text)]
 	, hIsIA :: Bool
 	}
 
@@ -296,13 +300,14 @@ withS3Handle c u a = do
 	bucket <- maybe nobucket (return . T.pack) (getBucketName c)
 	let awscfg = AWS.Configuration AWS.Timestamp awscreds (AWS.defaultLog AWS.Error)
 	bracketIO (newManager httpcfg) closeManager $ \mgr -> 
-		a $ S3Handle mgr awscfg s3cfg bucket sc bo (isIA c)
+		a $ S3Handle mgr awscfg s3cfg bucket sc bo mh (isIA c)
   where
 	s3cfg = s3Configuration c
 	httpcfg = defaultManagerSettings
 		{ managerResponseTimeout = Nothing }
 	sc = getStorageClass c
-	bo = T.pack . bucketObject c -- memoized
+	bo = T.pack . bucketObject c
+	mh = getMetaHeaders c
 	nocreds = error "Cannot use S3 without credentials configured"
 	nobucket = error "S3 bucket not configured"
 
@@ -336,10 +341,13 @@ getStorageClass c = case M.lookup "storageclass" c of
 	Just "REDUCED_REDUNDANCY" -> S3.ReducedRedundancy
 	_ -> S3.Standard
 	
-getXheaders :: RemoteConfig -> [(String, String)]
-getXheaders = filter isxheader . M.assocs
+getMetaHeaders :: RemoteConfig -> [(T.Text, T.Text)]
+getMetaHeaders = map munge . filter ismetaheader . M.assocs
   where
-	isxheader (h, _) = "x-amz-" `isPrefixOf` h
+	ismetaheader (h, _) = metaprefix `isPrefixOf` h
+	metaprefix = "x-amz-meta-"
+	metaprefixlen = length metaprefix
+	munge (k, v) = (T.pack $ drop metaprefixlen k, T.pack v)
 
 getFilePrefix :: RemoteConfig -> String
 getFilePrefix = M.findWithDefault "" "fileprefix"
