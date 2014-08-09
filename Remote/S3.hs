@@ -40,7 +40,7 @@ import Utility.Metered
 import Annex.UUID
 import Logs.Web
 
-type Bucket = String
+type BucketName = String
 
 remote :: RemoteType
 remote = RemoteType {
@@ -116,7 +116,7 @@ s3Setup' u c = if isIA c then archiveorg else defaulthost
 		-- this determines the name of the archive.org item.
 		let bucket = replace " " "-" $ map toLower $
 			fromMaybe (error "specify bucket=") $
-				getBucket c
+				getBucketName c
 		let archiveconfig = 
 			-- hS3 does not pass through x-archive-* headers
 			M.mapKeys (replace "x-archive-" "x-amz-") $
@@ -143,7 +143,7 @@ prepareStore r = resourcePrepare (const $ s3Action r False) $ \(conn, bucket) ->
 
 		return ok
 
-store :: (AWSConnection, Bucket) -> Remote -> Key -> MeterUpdate -> FilePath -> IO (AWSResult ())
+store :: (AWSConnection, BucketName) -> Remote -> Key -> MeterUpdate -> FilePath -> IO (AWSResult ())
 store (conn, bucket) r k p file = do
 	error "TODO"
 	{-
@@ -208,7 +208,7 @@ s3Bool :: AWSResult () -> Annex Bool
 s3Bool (Right _) = return True
 s3Bool (Left e) = s3Warning e
 
-s3Action :: Remote -> a -> ((AWSConnection, Bucket) -> Annex a) -> Annex a
+s3Action :: Remote -> a -> ((AWSConnection, BucketName) -> Annex a) -> Annex a
 s3Action r noconn action = do
 	let bucket = M.lookup "bucket" $ config r
 	conn <- s3Connection (config r) (uuid r)
@@ -220,27 +220,12 @@ bucketFile :: Remote -> Key -> FilePath
 bucketFile r = munge . key2file
   where
 	munge s = case M.lookup "mungekeys" c of
-		Just "ia" -> iaMunge $ filePrefix c ++ s
-		_ -> filePrefix c ++ s
+		Just "ia" -> iaMunge $ getFilePrefix c ++ s
+		_ -> getFilePrefix c ++ s
 	c = config r
 
-filePrefix :: RemoteConfig -> String
-filePrefix = M.findWithDefault "" "fileprefix"
-
-bucketKey :: Remote -> Bucket -> Key -> S3Object
+bucketKey :: Remote -> BucketName -> Key -> S3Object
 bucketKey r bucket k = S3Object bucket (bucketFile r k) "" [] L.empty
-
-{- Internet Archive limits filenames to a subset of ascii,
- - with no whitespace. Other characters are xml entity
- - encoded. -}
-iaMunge :: String -> String
-iaMunge = (>>= munge)
-  where
-	munge c
-		| isAsciiUpper c || isAsciiLower c || isNumber c = [c]
-		| c `elem` "_-.\"" = [c]
-		| isSpace c = []
-		| otherwise = "&" ++ show (ord c) ++ ";"
 
 {- Generate the bucket if it does not already exist, including creating the
  - UUID file within the bucket.
@@ -257,18 +242,18 @@ genBucket c u = do
   where
 	go _ (Right True) = noop
 	go h _ = do
-		v <- sendS3Handle h (S3.getBucket bucket)
+		v <- tryS3 $ sendS3Handle h (S3.getBucket bucket)
 		case v of
 			Right _ -> noop
 			Left _ -> do
 				showAction $ "creating bucket in " ++ datacenter
-				void $ mustSucceed $ sendS3Handle h $
+				void $ sendS3Handle h $
 					S3.PutBucket bucket Nothing $
 						AWS.mkLocationConstraint $
 							T.pack datacenter
 		writeUUIDFile c u h
 	
-	bucket = T.pack $ fromJust $ getBucket c
+	bucket = T.pack $ fromJust $ getBucketName c
 	datacenter = fromJust $ M.lookup "datacenter" c
 
 {- Writes the UUID to an annex-uuid file within the bucket.
@@ -284,11 +269,11 @@ writeUUIDFile c u h = do
 	case v of
 		Left e -> throwM e
 		Right True -> noop
-		Right False -> void $ mustSucceed $ sendS3Handle h mkobject
+		Right False -> void $ sendS3Handle h mkobject
   where
 	file = T.pack $ uuidFile c
 	uuidb = L.fromChunks [T.encodeUtf8 $ T.pack $ fromUUID u]
-	bucket = T.pack $ fromJust $ getBucket c
+	bucket = T.pack $ fromJust $ getBucketName c
 
 	-- TODO: add headers from getXheaders
 	-- (See https://github.com/aristidb/aws/issues/119)
@@ -303,17 +288,17 @@ checkUUIDFile c u h = tryNonAsync $ check <$> get
 	get = liftIO 
 		. runResourceT 
 		. either (pure . Left) (Right <$$> AWS.loadToMemory)
-		=<< sendS3Handle h (S3.getObject bucket file)
+		=<< tryS3 (sendS3Handle h (S3.getObject bucket file))
 	check (Right (S3.GetObjectMemoryResponse _meta rsp)) =
 		responseStatus rsp == ok200 && responseBody rsp == uuidb
 	check (Left _S3Error) = False
 
-	bucket = T.pack $ fromJust $ getBucket c
+	bucket = T.pack $ fromJust $ getBucketName c
 	file = T.pack $ uuidFile c
 	uuidb = L.fromChunks [T.encodeUtf8 $ T.pack $ fromUUID u]
 
 uuidFile :: RemoteConfig -> FilePath
-uuidFile c = filePrefix c ++ "annex-uuid"
+uuidFile c = getFilePrefix c ++ "annex-uuid"
 
 s3Connection :: RemoteConfig -> UUID -> Annex (Maybe AWSConnection)
 s3Connection c u = go =<< getRemoteCredPairFor "S3" c (AWS.creds u)
@@ -332,24 +317,16 @@ data S3Handle = S3Handle Manager AWS.Configuration (S3.S3Configuration AWS.Norma
 {- Sends a request to S3 and gets back the response.
  - 
  - Note that pureAws's use of ResourceT is bypassed here;
- - the response should be processed while the S3Handle is still open,
- - eg within a call to withS3Handle.
+ - the response should be fully processed while the S3Handle
+ - is still open, eg within a call to withS3Handle.
  -}
 sendS3Handle
 	:: (AWS.Transaction req res, AWS.ServiceConfiguration req ~ S3.S3Configuration)
 	=> S3Handle 
 	-> req
-	-> Annex (Either S3.S3Error res)
-sendS3Handle (S3Handle manager awscfg s3cfg) req = safely $ liftIO $
+	-> Annex res
+sendS3Handle (S3Handle manager awscfg s3cfg) req = liftIO $
 	runResourceT $ AWS.pureAws awscfg s3cfg manager req
-  where
-	safely a = (Right <$> a) `catch` (pure . Left)
-
-mustSucceed :: Annex (Either S3.S3Error res) -> Annex res
-mustSucceed a = a >>= either s3Error return
-
-s3Error :: S3.S3Error -> a
-s3Error (S3.S3Error { S3.s3ErrorMessage = m }) = error $ "S3 error: " ++ T.unpack m
 
 withS3Handle :: RemoteConfig -> UUID -> (S3Handle -> Annex a) -> Annex a
 withS3Handle c u a = do
@@ -383,8 +360,15 @@ s3Configuration c = (S3.s3 proto endpoint False) { S3.s3Port = port }
 		[(p, _)] -> p
 		_ -> error $ "bad S3 port value: " ++ s
 
-getBucket :: RemoteConfig -> Maybe Bucket
-getBucket = M.lookup "bucket"
+tryS3 :: Annex a -> Annex (Either S3.S3Error a)
+tryS3 a = (Right <$> a) `catch` (pure . Left)
+
+s3Error :: S3.S3Error -> a
+s3Error (S3.S3Error { S3.s3ErrorMessage = m }) = 
+	error $ "S3 error: " ++ T.unpack m
+
+getBucketName :: RemoteConfig -> Maybe BucketName
+getBucketName = M.lookup "bucket"
 
 getStorageClass :: RemoteConfig -> S3.StorageClass
 getStorageClass c = case fromJust $ M.lookup "storageclass" c of
@@ -396,6 +380,21 @@ getXheaders = filter isxheader . M.assocs
   where
 	isxheader (h, _) = "x-amz-" `isPrefixOf` h
 
+getFilePrefix :: RemoteConfig -> String
+getFilePrefix = M.findWithDefault "" "fileprefix"
+
+{- Internet Archive limits filenames to a subset of ascii,
+ - with no whitespace. Other characters are xml entity
+ - encoded. -}
+iaMunge :: String -> String
+iaMunge = (>>= munge)
+  where
+	munge c
+		| isAsciiUpper c || isAsciiLower c || isNumber c = [c]
+		| c `elem` "_-.\"" = [c]
+		| isSpace c = []
+		| otherwise = "&" ++ show (ord c) ++ ";"
+
 {- Hostname to use for archive.org S3. -}
 iaHost :: HostName
 iaHost = "s3.us.archive.org"
@@ -406,10 +405,10 @@ isIA c = maybe False isIAHost (M.lookup "host" c)
 isIAHost :: HostName -> Bool
 isIAHost h = ".archive.org" `isSuffixOf` map toLower h
 
-iaItemUrl :: Bucket -> URLString
+iaItemUrl :: BucketName -> URLString
 iaItemUrl bucket = "http://archive.org/details/" ++ bucket
 
 iaKeyUrl :: Remote -> Key -> URLString
 iaKeyUrl r k = "http://archive.org/download/" ++ bucket ++ "/" ++ bucketFile r k
   where
-	bucket = fromMaybe "" $ getBucket $ config r
+	bucket = fromMaybe "" $ getBucketName $ config r
