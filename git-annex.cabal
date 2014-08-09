@@ -137,12 +137,12 @@ Executable git-annex
     CPP-Options: -DWITH_CRYPTOHASH
 
   if flag(S3)
-    Build-Depends: hS3, http-conduit, http-client, resourcet, http-types, aws
+    Build-Depends: aws, conduit, resourcet,
+     http-conduit, http-client, http-types
     CPP-Options: -DWITH_S3
 
   if flag(WebDAV)
-    Build-Depends: DAV (>= 1.0),
-     http-client, http-types
+    Build-Depends: DAV (>= 1.0), http-client, http-types
     CPP-Options: -DWITH_WEBDAV
 
   if flag(Assistant) && ! os(solaris)
