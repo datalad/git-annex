@@ -164,7 +164,7 @@ retrieve h = fileRetriever $ \f k p -> liftIO $ runResourceT $ do
 		case mbs of
 			Nothing -> return ()
 			Just bs -> do
-				let sofar' = sofar -- addBytesProcessed $ S.length bs
+				let sofar' = addBytesProcessed sofar (S.length bs)
 				liftIO $ do
 					void $ meterupdate sofar'
 					S.hPut fh bs
