@@ -118,7 +118,7 @@ s3Setup' u c = if isIA c then archiveorg else defaulthost
 			fromMaybe (error "specify bucket=") $
 				getBucketName c
 		let archiveconfig = 
-			-- hS3 does not pass through x-archive-* headers
+			-- IA acdepts x-amz-* as an alias for x-archive-*
 			M.mapKeys (replace "x-archive-" "x-amz-") $
 			-- encryption does not make sense here
 			M.insert "encryption" "none" $
