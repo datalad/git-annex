@@ -255,14 +255,14 @@ existsDAV l = inLocation l check `catchNonAsync` (\e -> return (Left $ show e))
 	check = do
 		setDepth Nothing
 		catchJust
-			(matchStatusCodeException notFound404)
+			(matchStatusCodeException (== notFound404))
 			(getPropsM >> ispresent True)
 			(const $ ispresent False)
 	ispresent = return . Right
 
-matchStatusCodeException :: Status -> HttpException -> Maybe ()
-matchStatusCodeException want (StatusCodeException s _ _)
-	| s == want = Just ()
+matchStatusCodeException :: (Status -> Bool) -> HttpException -> Maybe HttpException
+matchStatusCodeException want e@(StatusCodeException s _ _)
+	| want s = Just e
 	| otherwise = Nothing
 matchStatusCodeException _ _ = Nothing
 
@@ -289,11 +289,24 @@ withDAVHandle r a = do
 		_ -> a Nothing
 
 goDAV :: DavHandle -> DAVT IO a -> IO a
-goDAV (DavHandle ctx user pass _) a = choke $ run $ do
+goDAV (DavHandle ctx user pass _) a = choke $ run $ prettifyExceptions $ do
 	prepDAV user pass
 	a
   where
 	run = fst <$$> runDAVContext ctx
+
+{- Catch StatusCodeException and trim it to only the statusMessage part,
+ - eliminating a lot of noise, which can include the whole request that
+ - failed. The rethrown exception is no longer a StatusCodeException. -}
+prettifyExceptions :: DAVT IO a -> DAVT IO a
+prettifyExceptions a = catchJust (matchStatusCodeException (const True)) a go
+  where
+	go (StatusCodeException status _ _) = error $ unwords
+		[ "DAV failure:"
+		, show (statusCode status)
+		, show (statusMessage status)
+		]
+	go e = throwM e
 
 prepDAV :: DavUser -> DavPass -> DAVT IO ()
 prepDAV user pass = do

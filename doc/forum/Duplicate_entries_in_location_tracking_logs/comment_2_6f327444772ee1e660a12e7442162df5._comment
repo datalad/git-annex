@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="zardoz"
+ ip="134.147.14.84"
+ subject="comment 2"
+ date="2014-08-04T08:05:37Z"
+ content="""
+Thanks for the info, Joey! As long as the git tracks the history anyway, this should not increase space consumption that much.
+
+Perhaps it would be useful to have something like «git annex gc» that can clean up these things manually in some situations, e. g. to compact everything before doing a «git annex forget».
+"""]]

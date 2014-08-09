@@ -319,14 +319,15 @@ keyUrls r key = map tourl locs'
 dropKey :: Remote -> Key -> Annex Bool
 dropKey r key
 	| not $ Git.repoIsUrl (repo r) =
-		guardUsable (repo r) False $ commitOnCleanup r $ onLocal r $ do
-			ensureInitialized
-			whenM (Annex.Content.inAnnex key) $ do
-				Annex.Content.lockContent key $
-					Annex.Content.removeAnnex key
-				logStatus key InfoMissing
-				Annex.Content.saveState True
-			return True
+		guardUsable (repo r) (return False) $
+			commitOnCleanup r $ onLocal r $ do
+				ensureInitialized
+				whenM (Annex.Content.inAnnex key) $ do
+					Annex.Content.lockContent key $
+						Annex.Content.removeAnnex key
+					logStatus key InfoMissing
+					Annex.Content.saveState True
+				return True
 	| Git.repoIsHttp (repo r) = error "dropping from http remote not supported"
 	| otherwise = commitOnCleanup r $ Ssh.dropKey (repo r) key
 
@@ -335,7 +336,7 @@ copyFromRemote :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> 
 copyFromRemote r key file dest _p = copyFromRemote' r key file dest
 copyFromRemote' :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
 copyFromRemote' r key file dest
-	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) False $ do
+	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) (return False) $ do
 		params <- Ssh.rsyncParams r Download
 		u <- getUUID
 		-- run copy from perspective of remote
@@ -409,7 +410,7 @@ copyFromRemote' r key file dest
 copyFromRemoteCheap :: Remote -> Key -> FilePath -> Annex Bool
 #ifndef mingw32_HOST_OS
 copyFromRemoteCheap r key file
-	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) False $ do
+	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) (return False) $ do
 		loc <- liftIO $ gitAnnexLocation key (repo r) $
 			fromJust $ remoteGitConfig $ gitconfig r
 		liftIO $ catchBoolIO $ createSymbolicLink loc file >> return True
@@ -427,7 +428,7 @@ copyFromRemoteCheap _ _ _ = return False
 copyToRemote :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 copyToRemote r key file p
 	| not $ Git.repoIsUrl (repo r) =
-		guardUsable (repo r) False $ commitOnCleanup r $
+		guardUsable (repo r) (return False) $ commitOnCleanup r $
 			copylocal =<< Annex.Content.prepSendAnnex key
 	| Git.repoIsSsh (repo r) = commitOnCleanup r $
 		Annex.Content.sendAnnex key noop $ \object -> do

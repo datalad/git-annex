@@ -306,7 +306,7 @@ setGcryptEncryption c remotename = do
 store :: Remote -> Remote.Rsync.RsyncOpts -> Storer
 store r rsyncopts
 	| not $ Git.repoIsUrl (repo r) = 
-		byteStorer $ \k b p -> guardUsable (repo r) False $ liftIO $ do
+		byteStorer $ \k b p -> guardUsable (repo r) (return False) $ liftIO $ do
 			let tmpdir = Git.repoLocation (repo r) </> "tmp" </> keyFile k
 			void $ tryIO $ createDirectoryIfMissing True tmpdir
 			let tmpf = tmpdir </> keyFile k
@@ -323,7 +323,7 @@ store r rsyncopts
 retrieve :: Remote -> Remote.Rsync.RsyncOpts -> Retriever
 retrieve r rsyncopts
 	| not $ Git.repoIsUrl (repo r) = byteRetriever $ \k sink ->
-		guardUsable (repo r) False $
+		guardUsable (repo r) (return False) $
 			sink =<< liftIO (L.readFile $ gCryptLocation r k)
 	| Git.repoIsSsh (repo r) = if isShell r
 		then fileRetriever $ \f k p ->
@@ -335,7 +335,7 @@ retrieve r rsyncopts
 
 remove :: Remote -> Remote.Rsync.RsyncOpts -> Remover
 remove r rsyncopts k
-	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) False $
+	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) (return False) $
 		liftIO $ Remote.Directory.removeDirGeneric (Git.repoLocation (repo r)) (parentDir (gCryptLocation r k))
 	| Git.repoIsSsh (repo r) = shellOrRsync r removeshell removersync
 	| otherwise = unsupportedUrl
