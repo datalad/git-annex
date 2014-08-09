@@ -24,14 +24,18 @@ import Control.Concurrent
 -- Implemented as a fileStorer, so that the content can be streamed
 -- from the file in constant space.
 httpStorer :: (Key -> RequestBody -> Annex Bool) -> Storer
-httpStorer a = fileStorer $ \k f m -> do
-	size <- liftIO $ (fromIntegral . fileSize <$> getFileStatus f :: IO Integer)
-	let streamer sink = withMeteredFile f m $ \b -> do
+httpStorer a = fileStorer $ \k f m -> a k =<< liftIO (httpBodyStorer f m)
+
+-- Reads the file and generates a streaming request body, that will update
+-- the meter as it's sent.
+httpBodyStorer :: FilePath -> MeterUpdate -> IO RequestBody
+httpBodyStorer src m = do
+	size <- fromIntegral . fileSize <$> getFileStatus src :: IO Integer
+	let streamer sink = withMeteredFile src m $ \b -> do
 		mvar <- newMVar $ L.toChunks b
 		let getnextchunk = modifyMVar mvar $ pure . pop
 		sink getnextchunk
-	let body = RequestBodyStream (fromInteger size) streamer
-	a k body
+	return $ RequestBodyStream (fromInteger size) streamer
   where
 	pop [] = ([], S.empty)
 	pop (c:cs) = (cs, c)
