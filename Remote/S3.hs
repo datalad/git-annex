@@ -15,6 +15,7 @@ import qualified Aws.S3 as S3
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString as S
 import qualified Data.Map as M
 import Data.Char
 import Network.Socket (HostName)
@@ -23,6 +24,7 @@ import Network.HTTP.Client (defaultManagerSettings, managerResponseTimeout, resp
 import Network.HTTP.Types
 import Control.Monad.Trans.Resource
 import Control.Monad.Catch
+import Data.Conduit
 
 import Common.Annex
 import Types.Remote
@@ -36,6 +38,7 @@ import qualified Remote.Helper.AWS as AWS
 import Creds
 import Annex.UUID
 import Logs.Web
+import Utility.Metered
 
 type BucketName = String
 
@@ -145,14 +148,27 @@ store r h = fileStorer $ \k f p -> do
 	
 	return True
 
+{- Implemented as a fileRetriever, that uses conduit to stream the chunks
+ - out to the file. Would be better to implement a byteRetriever, but
+ - that is difficult. -}
 retrieve :: S3Handle -> Retriever
-retrieve _h = error "TODO"
-	{- 
-	resourcePrepare (const $ s3Action r False) $ \(conn, bucket) ->
-	byteRetriever $ \k sink ->
-		liftIO (getObject conn $ bucketKey r bucket k)
-			>>= either s3Error (sink . obj_data)
-	-}
+retrieve h = fileRetriever $ \f k p -> liftIO $ runResourceT $ do
+	(fr, fh) <- allocate (openFile f WriteMode) hClose
+	let req = S3.getObject (hBucket h) (hBucketObject h k)
+	S3.GetObjectResponse { S3.gorResponse = rsp } <- sendS3Handle' h req
+	responseBody rsp $$+- sinkprogressfile fh p zeroBytesProcessed
+	release fr
+  where
+	sinkprogressfile fh meterupdate sofar = do
+		mbs <- await
+		case mbs of
+			Nothing -> return ()
+			Just bs -> do
+				let sofar' = sofar -- addBytesProcessed $ S.length bs
+				liftIO $ do
+					void $ meterupdate sofar'
+					S.hPut fh bs
+				sinkprogressfile fh meterupdate sofar'
 
 retrieveCheap :: Key -> FilePath -> Annex Bool
 retrieveCheap _ _ = return False
@@ -289,9 +305,14 @@ sendS3Handle
 	=> S3Handle 
 	-> req
 	-> Annex res
-sendS3Handle h = liftIO . runResourceT . call
-  where
-	call = AWS.pureAws (hawscfg h) (hs3cfg h) (hmanager h)
+sendS3Handle h r = liftIO $ runResourceT $ sendS3Handle' h r
+
+sendS3Handle'
+	:: (AWS.Transaction r a, AWS.ServiceConfiguration r ~ S3.S3Configuration)
+	=> S3Handle
+	-> r
+	-> ResourceT IO a
+sendS3Handle' h = AWS.pureAws (hawscfg h) (hs3cfg h) (hmanager h)
 
 withS3Handle :: RemoteConfig -> UUID -> (S3Handle -> Annex a) -> Annex a
 withS3Handle c u a = do
