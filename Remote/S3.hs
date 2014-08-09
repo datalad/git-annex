@@ -242,18 +242,17 @@ genBucket c u = do
   where
 	go _ (Right True) = noop
 	go h _ = do
-		v <- tryS3 $ sendS3Handle h (S3.getBucket bucket)
+		v <- tryS3 $ sendS3Handle h (S3.getBucket $ hBucket h)
 		case v of
 			Right _ -> noop
 			Left _ -> do
 				showAction $ "creating bucket in " ++ datacenter
 				void $ sendS3Handle h $
-					S3.PutBucket bucket Nothing $
+					S3.PutBucket (hBucket h) Nothing $
 						AWS.mkLocationConstraint $
 							T.pack datacenter
 		writeUUIDFile c u h
 	
-	bucket = T.pack $ fromJust $ getBucketName c
 	datacenter = fromJust $ M.lookup "datacenter" c
 
 {- Writes the UUID to an annex-uuid file within the bucket.
@@ -273,12 +272,11 @@ writeUUIDFile c u h = do
   where
 	file = T.pack $ uuidFile c
 	uuidb = L.fromChunks [T.encodeUtf8 $ T.pack $ fromUUID u]
-	bucket = T.pack $ fromJust $ getBucketName c
 
 	-- TODO: add headers from getXheaders
 	-- (See https://github.com/aristidb/aws/issues/119)
-	mkobject = (S3.putObject bucket file $ RequestBodyLBS uuidb)
-		{ S3.poStorageClass = Just (getStorageClass c) }
+	mkobject = (S3.putObject (hBucket h) file $ RequestBodyLBS uuidb)
+		{ S3.poStorageClass = Just (hStorageClass h) }
 
 {- Checks if the UUID file exists in the bucket
  - and has the specified UUID already. -}
@@ -288,12 +286,11 @@ checkUUIDFile c u h = tryNonAsync $ check <$> get
 	get = liftIO 
 		. runResourceT 
 		. either (pure . Left) (Right <$$> AWS.loadToMemory)
-		=<< tryS3 (sendS3Handle h (S3.getObject bucket file))
+		=<< tryS3 (sendS3Handle h (S3.getObject (hBucket h) file))
 	check (Right (S3.GetObjectMemoryResponse _meta rsp)) =
 		responseStatus rsp == ok200 && responseBody rsp == uuidb
 	check (Left _S3Error) = False
 
-	bucket = T.pack $ fromJust $ getBucketName c
 	file = T.pack $ uuidFile c
 	uuidb = L.fromChunks [T.encodeUtf8 $ T.pack $ fromUUID u]
 
@@ -312,7 +309,13 @@ s3Connection c u = go =<< getRemoteCredPairFor "S3" c (AWS.creds u)
 		[(p, _)] -> p
 		_ -> error $ "bad S3 port value: " ++ s
 
-data S3Handle = S3Handle Manager AWS.Configuration (S3.S3Configuration AWS.NormalQuery)
+data S3Handle = S3Handle 
+	{ hmanager :: Manager
+	, hawscfg :: AWS.Configuration
+	, hs3cfg :: S3.S3Configuration AWS.NormalQuery
+	, hBucket :: S3.Bucket
+	, hStorageClass :: S3.StorageClass
+	}
 
 {- Sends a request to S3 and gets back the response.
  - 
@@ -325,21 +328,25 @@ sendS3Handle
 	=> S3Handle 
 	-> req
 	-> Annex res
-sendS3Handle (S3Handle manager awscfg s3cfg) req = liftIO $
-	runResourceT $ AWS.pureAws awscfg s3cfg manager req
+sendS3Handle h = liftIO . runResourceT . call
+  where
+	call = AWS.pureAws (hawscfg h) (hs3cfg h) (hmanager h)
 
 withS3Handle :: RemoteConfig -> UUID -> (S3Handle -> Annex a) -> Annex a
 withS3Handle c u a = do
 	creds <- getRemoteCredPairFor "S3" c (AWS.creds u)
 	awscreds <- liftIO $ AWS.genCredentials $ fromMaybe nocreds creds
+	bucket <- maybe nobucket (return . T.pack) (getBucketName c)
 	let awscfg = AWS.Configuration AWS.Timestamp awscreds (AWS.defaultLog AWS.Error)
 	bracketIO (newManager httpcfg) closeManager $ \mgr -> 
-		a $ S3Handle mgr awscfg s3cfg
+		a $ S3Handle mgr awscfg s3cfg bucket sc
   where
 	s3cfg = s3Configuration c
 	httpcfg = defaultManagerSettings
 		{ managerResponseTimeout = Nothing }
+	sc = getStorageClass c
 	nocreds = error "Cannot use S3 without credentials configured"
+	nobucket = error "S3 bucket not configured"
 
 s3Configuration :: RemoteConfig -> S3.S3Configuration AWS.NormalQuery
 s3Configuration c = (S3.s3 proto endpoint False) { S3.s3Port = port }
@@ -371,8 +378,8 @@ getBucketName :: RemoteConfig -> Maybe BucketName
 getBucketName = M.lookup "bucket"
 
 getStorageClass :: RemoteConfig -> S3.StorageClass
-getStorageClass c = case fromJust $ M.lookup "storageclass" c of
-	"REDUCED_REDUNDANCY" -> S3.ReducedRedundancy
+getStorageClass c = case M.lookup "storageclass" c of
+	Just "REDUCED_REDUNDANCY" -> S3.ReducedRedundancy
 	_ -> S3.Standard
 	
 getXheaders :: RemoteConfig -> [(String, String)]
