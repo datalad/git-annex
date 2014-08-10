@@ -7,7 +7,7 @@
 
 {-# LANGUAGE TypeFamilies #-}
 
-module Remote.S3 (remote, iaHost, isIA, isIAHost, iaItemUrl) where
+module Remote.S3 (remote, iaHost, configIA, isIAHost, iaItemUrl) where
 
 import qualified Aws as AWS
 import qualified Aws.Core as AWS
@@ -128,9 +128,7 @@ s3Setup' u c = if configIA c then archiveorg else defaulthost
 			M.insert "bucket" validbucket $
 			M.union c $
 			-- special constraints on key names
-			M.insert "mungekeys" "ia" $
-			-- bucket created only when files are uploaded
-			M.insert "x-amz-auto-make-bucket" "1" defaults
+			M.insert "mungekeys" "ia" defaults
 		info <- extractS3Info archiveconfig
 		withS3Handle archiveconfig u info $
 			writeUUIDFile archiveconfig u
@@ -283,12 +281,14 @@ checkUUIDFile c u h = tryNonAsync $ check <$> get
 uuidFile :: RemoteConfig -> FilePath
 uuidFile c = getFilePrefix c ++ "annex-uuid"
 
--- TODO: auto-create bucket when hIsIA.
 putObject :: S3Handle -> T.Text -> RequestBody -> S3.PutObject
-putObject h file rbody = (S3.putObject (bucket (hinfo h)) file rbody)
-	{ S3.poStorageClass = Just (storageClass (hinfo h))
-	, S3.poMetadata = metaHeaders (hinfo h)
+putObject h file rbody = (S3.putObject (bucket info) file rbody)
+	{ S3.poStorageClass = Just (storageClass info)
+	, S3.poMetadata = metaHeaders info
+	, S3.poAutoMakeBucket = isIA info
 	}
+  where
+	info = hinfo h
 
 data S3Handle = S3Handle 
 	{ hmanager :: Manager
