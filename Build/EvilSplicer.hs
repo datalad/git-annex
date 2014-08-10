@@ -46,7 +46,7 @@ import Prelude hiding (log)
 
 import Utility.Monad
 import Utility.Misc
-import Utility.Exception
+import Utility.Exception hiding (try)
 import Utility.Path
 import Utility.FileSystemEncoding
 
