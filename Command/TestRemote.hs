@@ -62,13 +62,16 @@ start basesz ws = do
 	ks <- mapM randKey (keySizes basesz fast)
 	rs <- catMaybes <$> mapM (adjustChunkSize r) (chunkSizes basesz fast)
 	rs' <- concat <$> mapM encryptionVariants rs
-	next $ perform rs' ks
+	unavailrs  <- catMaybes <$> mapM Remote.mkUnavailable [r]
+	next $ perform rs' unavailrs ks
 
-perform :: [Remote] -> [Key] -> CommandPerform
-perform rs ks = do
+perform :: [Remote] -> [Remote] -> [Key] -> CommandPerform
+perform rs unavailrs ks = do
 	st <- Annex.getState id
-	let tests = testGroup "Remote Tests" $
-		[ testGroup (desc r k) (test st r k) | k <- ks, r <- rs ]
+	let tests = testGroup "Remote Tests" $ concat
+		[ [ testGroup "unavailable remote" (testUnavailable st r (Prelude.head ks)) | r <- unavailrs ]
+		, [ testGroup (desc r k) (test st r k) | k <- ks, r <- rs ]
+		]
 	ok <- case tryIngredients [consoleTestReporter] mempty tests of
 		Nothing -> error "No tests found!?"
 		Just act -> liftIO act
@@ -154,6 +157,28 @@ test st r k =
 		Remote.retrieveKeyFile r k Nothing dest nullMeterUpdate
 	store = Remote.storeKey r k Nothing nullMeterUpdate
 	remove = Remote.removeKey r k
+
+testUnavailable :: Annex.AnnexState -> Remote -> Key -> [TestTree]
+testUnavailable st r k =
+	[ check (== Right False) "removeKey" $
+		Remote.removeKey r k
+	, check (== Right False) "storeKey" $
+		Remote.storeKey r k Nothing nullMeterUpdate
+	, check (`notElem` [Right True, Right False]) "checkPresent" $
+		Remote.checkPresent r k
+	, check (== Right False) "retrieveKeyFile" $
+		getViaTmp k $ \dest ->
+			Remote.retrieveKeyFile r k Nothing dest nullMeterUpdate
+	, check (== Right False) "retrieveKeyFileCheap" $
+		getViaTmp k $ \dest ->
+			Remote.retrieveKeyFileCheap r k dest
+	]
+  where
+	check checkval desc a = testCase desc $ do
+		v <- Annex.eval st $ do
+			Annex.setOutput QuietOutput
+			either (Left  . show) Right <$> tryNonAsync a
+		checkval v  @? ("(got: " ++ show v ++ ")")
 
 cleanup :: [Remote] -> [Key] -> Bool -> CommandCleanup
 cleanup rs ks ok = do

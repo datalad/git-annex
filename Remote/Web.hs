@@ -61,7 +61,8 @@ gen r _ c gc =
 		repo = r,
 		readonly = True,
 		availability = GloballyAvailable,
-		remotetype = remote
+		remotetype = remote,
+		mkUnavailable = return Nothing
 	}
 
 downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool

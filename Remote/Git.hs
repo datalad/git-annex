@@ -55,6 +55,7 @@ import Creds
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
 import qualified Data.Map as M
+import Network.URI
 
 remote :: RemoteType
 remote = RemoteType {
@@ -156,7 +157,21 @@ gen r u c gc
 			, readonly = Git.repoIsHttp r
 			, availability = availabilityCalc r
 			, remotetype = remote
+			, mkUnavailable = unavailable r u c gc
 			}
+
+unavailable :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
+unavailable r u c gc = gen r' u c gc
+  where
+	r' = case Git.location r of
+		Git.Local { Git.gitdir = d } ->
+			r { Git.location = Git.LocalUnknown d }
+		Git.Url url -> case uriAuthority url of
+			Just auth -> 
+				let auth' = auth { uriRegName = "!dne!" }
+				in r { Git.location = Git.Url (url { uriAuthority = Just auth' })}
+			Nothing -> r { Git.location = Git.Unknown }
+		_ -> r -- already unavailable
 
 {- Checks relatively inexpensively if a repository is available for use. -}
 repoAvail :: Git.Repo -> Annex Bool
@@ -180,7 +195,7 @@ tryGitConfigRead :: Git.Repo -> Annex Git.Repo
 tryGitConfigRead r 
 	| haveconfig r = return r -- already read
 	| Git.repoIsSsh r = store $ do
-		v <- Ssh.onRemote r (pipedconfig, Left undefined) "configlist" [] []
+		v <- Ssh.onRemote r (pipedconfig, return (Left undefined)) "configlist" [] []
 		case v of
 			Right r'
 				| haveconfig r' -> return r'
@@ -298,8 +313,8 @@ inAnnex rmt key
 			)
 	checkremote = Ssh.inAnnex r key
 	checklocal = guardUsable r (cantCheck r) $
-		fromMaybe (cantCheck r)
-			<$> onLocal rmt (Annex.Content.inAnnexSafe key)
+		maybe (cantCheck r) return
+			=<< onLocal rmt (Annex.Content.inAnnexSafe key)
 
 keyUrls :: Remote -> Key -> [String]
 keyUrls r key = map tourl locs'

@@ -72,6 +72,7 @@ gen r u c gc = do
 		, remotetype = remote
 		, availability = if bupLocal buprepo then LocallyAvailable else GloballyAvailable
 		, readonly = False
+		, mkUnavailable = return Nothing
 		}
 	return $ Just $ specialRemote' specialcfg c
 		(simplyPrepare $ store this buprepo)

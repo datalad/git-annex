@@ -69,6 +69,7 @@ gen r u c gc = do
 		, remotetype = remote
 		, availability = if ddarLocal ddarrepo then LocallyAvailable else GloballyAvailable
 		, readonly = False
+		, mkUnavailable = return Nothing
 		}
 	ddarrepo = fromMaybe (error "missing ddarrepo") $ remoteAnnexDdarRepo gc
 	specialcfg = (specialRemoteCfg c)

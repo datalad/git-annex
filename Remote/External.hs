@@ -65,7 +65,9 @@ gen r u c gc = do
 			gitconfig = gc,
 			readonly = False,
 			availability = avail,
-			remotetype = remote
+			remotetype = remote,
+			mkUnavailable = gen r u c $
+				gc { remoteAnnexExternalType = Just "!dne!" }
 		}
   where
 	externaltype = fromMaybe (error "missing externaltype") (remoteAnnexExternalType gc)

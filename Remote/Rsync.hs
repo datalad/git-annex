@@ -82,6 +82,7 @@ gen r u c gc = do
 			, readonly = False
 			, availability = if islocal then LocallyAvailable else GloballyAvailable
 			, remotetype = remote
+			, mkUnavailable = return Nothing
 			}
   where
 	specialcfg = (specialRemoteCfg c)

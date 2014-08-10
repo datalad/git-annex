@@ -65,7 +65,9 @@ gen r u c gc = do
 			localpath = Just dir,
 			readonly = False,
 			availability = LocallyAvailable,
-			remotetype = remote
+			remotetype = remote,
+			mkUnavailable = gen r u c $
+				gc { remoteAnnexDirectory = Just "/dev/null" }
 		}
   where
 	dir = fromMaybe (error "missing directory") $ remoteAnnexDirectory gc
@@ -196,5 +198,8 @@ checkKey d (LegacyChunks _) k = Legacy.checkKey d locations k
 checkKey d _ k = liftIO $
 	ifM (anyM doesFileExist (locations d k))
 		( return True
-		, error $ "directory " ++ d ++ " is not accessible"
+		, ifM (doesDirectoryExist d)
+			( return False
+			, error $ "directory " ++ d ++ " is not accessible"
+			)
 		)

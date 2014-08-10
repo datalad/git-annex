@@ -120,6 +120,7 @@ gen' r u c gc = do
 		, readonly = Git.repoIsHttp r
 		, availability = availabilityCalc r
 		, remotetype = remote
+		, mkUnavailable = return Nothing
 	}
 	return $ Just $ specialRemote' specialcfg c
 		(simplyPrepare $ store this rsyncopts)
@@ -255,7 +256,7 @@ setupRepo gcryptid r
 
 	{-  Ask git-annex-shell to configure the repository as a gcrypt
 	 -  repository. May fail if it is too old. -}
-	gitannexshellsetup = Ssh.onRemote r (boolSystem, False)
+	gitannexshellsetup = Ssh.onRemote r (boolSystem, return False)
 		"gcryptsetup" [ Param gcryptid ] []
 
 	denyNonFastForwards = "receive.denyNonFastForwards"
@@ -389,7 +390,7 @@ getGCryptId fast r
 	| Git.repoIsLocal r || Git.repoIsLocalUnknown r = extract <$>
 		liftIO (catchMaybeIO $ Git.Config.read r)
 	| not fast = extract . liftM fst <$> getM (eitherToMaybe <$>)
-		[ Ssh.onRemote r (Git.Config.fromPipe r, Left undefined) "configlist" [] []
+		[ Ssh.onRemote r (Git.Config.fromPipe r, return (Left undefined)) "configlist" [] []
 		, getConfigViaRsync r
 		]
 	| otherwise = return (Nothing, r)

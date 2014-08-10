@@ -200,7 +200,7 @@ tryScan r
 	  where
 		p = proc cmd $ toCommand params
 
-	configlist = Ssh.onRemote r (pipedconfig, Nothing) "configlist" [] []
+	configlist = Ssh.onRemote r (pipedconfig, return Nothing) "configlist" [] []
 	manualconfiglist = do
 		gc <- Annex.getRemoteGitConfig r
 		sshparams <- Ssh.toRepo r gc [Param sshcmd]
