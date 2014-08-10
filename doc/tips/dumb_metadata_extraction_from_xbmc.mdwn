@@ -12,4 +12,18 @@ Also notice how I remove the absolute prefix for the annex so that i can refer t
 
 So this quick and dirty hack could have been used to mark files as "new". Unfortunately, this won't unmark them when the playcount increases. So instead I think this should be a field, and we need to extract the playcount. Play around with shell scripting enough to get sick, get back into bad perl habits and you'll end up with this nasty script: [[git-annex-xbmc-playcount.pl]].
 
+After the script is ran, you can sort the files by play count with:
+
+    git annex view "playCount=*"
+
+Or just show the files that haven't been played yet:
+
+    git annex view playCount=0
+
+Use `git checkout master` to reset the view. Note that the above will flatten the tree hierarchy, which you may not way. Try this in that case:
+
+    git annex view playCount=0 films/=*
+
+For more information, see [[tips/metadata_driven_views/]].
+
 -- [[anarcat]]

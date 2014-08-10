@@ -7,6 +7,10 @@ my @lines = `echo 'SELECT playCount, path.strPath, files.strFileName FROM movie 
 for (@lines) {
     my ($count, $dir, $file) = split /\|/;
     chomp $file;
+    # empty or non-numeric count is zero
+    if ($count !~ /[0-9]/) {
+        $count = 0;
+    }
     $dir =~ s/$prefix//;
     if ($file =~ s#stack://##) {
         for (split /,/, $file) {
