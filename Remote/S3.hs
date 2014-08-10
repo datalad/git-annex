@@ -51,13 +51,16 @@ remote = RemoteType {
 }
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
+gen r u c gc = do
+	cst <- remoteCost gc expensiveRemoteCost
+	info <- extractS3Info c
+	return $ new cst info
   where
-	new cst = Just $ specialRemote c
-		(prepareS3 this $ store this)
-		(prepareS3 this retrieve)
-		(prepareS3 this remove)
-		(prepareS3 this $ checkKey this)
+	new cst info = Just $ specialRemote c
+		(prepareS3 this info $ store this)
+		(prepareS3 this info retrieve)
+		(prepareS3 this info remove)
+		(prepareS3 this info $ checkKey this)
 		this
 	  where
 		this = Remote {
@@ -88,7 +91,7 @@ s3Setup mu mcreds c = do
 	c' <- setRemoteCredPair c (AWS.creds u) mcreds
 	s3Setup' u c'
 s3Setup' :: UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
-s3Setup' u c = if isIA c then archiveorg else defaulthost
+s3Setup' u c = if configIA c then archiveorg else defaulthost
   where
 	remotename = fromJust (M.lookup "name" c)
 	defbucket = remotename ++ "-" ++ fromUUID u
@@ -114,7 +117,7 @@ s3Setup' u c = if isIA c then archiveorg else defaulthost
 		showNote "Internet Archive mode"
 		-- Ensure user enters a valid bucket name, since
 		-- this determines the name of the archive.org item.
-		let bucket = replace " " "-" $ map toLower $
+		let validbucket = replace " " "-" $ map toLower $
 			fromMaybe (error "specify bucket=") $
 				getBucketName c
 		let archiveconfig = 
@@ -122,28 +125,30 @@ s3Setup' u c = if isIA c then archiveorg else defaulthost
 			M.mapKeys (replace "x-archive-" "x-amz-") $
 			-- encryption does not make sense here
 			M.insert "encryption" "none" $
-			M.insert "bucket" bucket $
+			M.insert "bucket" validbucket $
 			M.union c $
 			-- special constraints on key names
 			M.insert "mungekeys" "ia" $
 			-- bucket created only when files are uploaded
 			M.insert "x-amz-auto-make-bucket" "1" defaults
-		withS3Handle archiveconfig u $
+		info <- extractS3Info archiveconfig
+		withS3Handle archiveconfig u info $
 			writeUUIDFile archiveconfig u
 		use archiveconfig
 
 -- Sets up a http connection manager for S3 encdpoint, which allows
 -- http connections to be reused across calls to the helper.
-prepareS3 :: Remote -> (S3Handle -> helper) -> Preparer helper
-prepareS3 r = resourcePrepare $ const $ withS3Handle (config r) (uuid r)
+prepareS3 :: Remote -> S3Info -> (S3Handle -> helper) -> Preparer helper
+prepareS3 r info = resourcePrepare $ const $
+	withS3Handle (config r) (uuid r) info
 
 store :: Remote -> S3Handle -> Storer
 store r h = fileStorer $ \k f p -> do
 	rbody <- liftIO $ httpBodyStorer f p
-	void $ sendS3Handle h $ putObject h (hBucketObject h k) rbody
+	void $ sendS3Handle h $ putObject h (bucketObject (hinfo h) k) rbody
 	
 	-- Store public URL to item in Internet Archive.
-	when (hIsIA h && not (isChunkKey k)) $
+	when (isIA (hinfo h) && not (isChunkKey k)) $
 		setUrlPresent k (iaKeyUrl r k)
 	
 	return True
@@ -154,11 +159,12 @@ store r h = fileStorer $ \k f p -> do
 retrieve :: S3Handle -> Retriever
 retrieve h = fileRetriever $ \f k p -> liftIO $ runResourceT $ do
 	(fr, fh) <- allocate (openFile f WriteMode) hClose
-	let req = S3.getObject (hBucket h) (hBucketObject h k)
+	let req = S3.getObject (bucket info) (bucketObject info k)
 	S3.GetObjectResponse { S3.gorResponse = rsp } <- sendS3Handle' h req
 	responseBody rsp $$+- sinkprogressfile fh p zeroBytesProcessed
 	release fr
   where
+	info = hinfo h
 	sinkprogressfile fh meterupdate sofar = do
 		mbs <- await
 		case mbs of
@@ -178,20 +184,22 @@ retrieveCheap _ _ = return False
  - derived from it that it does not remove. -}
 remove :: S3Handle -> Remover
 remove h k
-	| hIsIA h = do
+	| isIA info = do
 		warning "Cannot remove content from the Internet Archive"
 		return False
 	| otherwise = do
 		res <- tryNonAsync $ sendS3Handle h $
-			S3.DeleteObject (hBucketObject h k) (hBucket h)
+			S3.DeleteObject (bucketObject info k) (bucket info)
 		return $ either (const False) (const True) res
+  where
+	info = hinfo h
 
 checkKey :: Remote -> S3Handle -> CheckPresent
 checkKey r h k = do
 	showAction $ "checking " ++ name r
 	catchMissingException $ do
 		void $ sendS3Handle h $
-			S3.headObject (hBucket h) (hBucketObject h k)
+			S3.headObject (bucket (hinfo h)) (bucketObject (hinfo h) k)
 		return True
 	
 {- Catch exception headObject returns when an object is not present
@@ -217,18 +225,19 @@ catchMissingException a = catchJust missing a (const $ return False)
 genBucket :: RemoteConfig -> UUID -> Annex ()
 genBucket c u = do
 	showAction "checking bucket"
-	withS3Handle c u $ \h ->
+	info <- extractS3Info c
+	withS3Handle c u info $ \h ->
 		go h =<< checkUUIDFile c u h
   where
 	go _ (Right True) = noop
 	go h _ = do
-		v <- tryS3 $ sendS3Handle h (S3.getBucket $ hBucket h)
+		v <- tryS3 $ sendS3Handle h (S3.getBucket $ bucket $ hinfo h)
 		case v of
 			Right _ -> noop
 			Left _ -> do
 				showAction $ "creating bucket in " ++ datacenter
 				void $ sendS3Handle h $
-					S3.PutBucket (hBucket h) Nothing $
+					S3.PutBucket (bucket $ hinfo h) Nothing $
 						AWS.mkLocationConstraint $
 							T.pack datacenter
 		writeUUIDFile c u h
@@ -263,7 +272,7 @@ checkUUIDFile c u h = tryNonAsync $ check <$> get
 	get = liftIO 
 		. runResourceT 
 		. either (pure . Left) (Right <$$> AWS.loadToMemory)
-		=<< tryS3 (sendS3Handle h (S3.getObject (hBucket h) file))
+		=<< tryS3 (sendS3Handle h (S3.getObject (bucket (hinfo h)) file))
 	check (Right (S3.GetObjectMemoryResponse _meta rsp)) =
 		responseStatus rsp == ok200 && responseBody rsp == uuidb
 	check (Left _S3Error) = False
@@ -276,22 +285,16 @@ uuidFile c = getFilePrefix c ++ "annex-uuid"
 
 -- TODO: auto-create bucket when hIsIA.
 putObject :: S3Handle -> T.Text -> RequestBody -> S3.PutObject
-putObject h file rbody = (S3.putObject (hBucket h) file rbody)
-	{ S3.poStorageClass = Just (hStorageClass h)
-	, S3.poMetadata = hMetaHeaders h
+putObject h file rbody = (S3.putObject (bucket (hinfo h)) file rbody)
+	{ S3.poStorageClass = Just (storageClass (hinfo h))
+	, S3.poMetadata = metaHeaders (hinfo h)
 	}
 
 data S3Handle = S3Handle 
 	{ hmanager :: Manager
 	, hawscfg :: AWS.Configuration
 	, hs3cfg :: S3.S3Configuration AWS.NormalQuery
-
-	-- Cached values.
-	, hBucket :: S3.Bucket
-	, hStorageClass :: S3.StorageClass
-	, hBucketObject :: Key -> T.Text
-	, hMetaHeaders :: [(T.Text, T.Text)]
-	, hIsIA :: Bool
+	, hinfo :: S3Info
 	}
 
 {- Sends a request to S3 and gets back the response.
@@ -314,23 +317,18 @@ sendS3Handle'
 	-> ResourceT IO a
 sendS3Handle' h = AWS.pureAws (hawscfg h) (hs3cfg h) (hmanager h)
 
-withS3Handle :: RemoteConfig -> UUID -> (S3Handle -> Annex a) -> Annex a
-withS3Handle c u a = do
+withS3Handle :: RemoteConfig -> UUID -> S3Info -> (S3Handle -> Annex a) -> Annex a
+withS3Handle c u info a = do
 	creds <- getRemoteCredPairFor "S3" c (AWS.creds u)
 	awscreds <- liftIO $ AWS.genCredentials $ fromMaybe nocreds creds
-	bucket <- maybe nobucket (return . T.pack) (getBucketName c)
 	let awscfg = AWS.Configuration AWS.Timestamp awscreds (AWS.defaultLog AWS.Error)
 	bracketIO (newManager httpcfg) closeManager $ \mgr -> 
-		a $ S3Handle mgr awscfg s3cfg bucket sc bo mh (isIA c)
+		a $ S3Handle mgr awscfg s3cfg info
   where
 	s3cfg = s3Configuration c
 	httpcfg = defaultManagerSettings
 		{ managerResponseTimeout = Nothing }
-	sc = getStorageClass c
-	bo = T.pack . bucketObject c
-	mh = getMetaHeaders c
 	nocreds = error "Cannot use S3 without credentials configured"
-	nobucket = error "S3 bucket not configured"
 
 s3Configuration :: RemoteConfig -> S3.S3Configuration AWS.NormalQuery
 s3Configuration c = (S3.s3 proto endpoint False) { S3.s3Port = port }
@@ -354,6 +352,28 @@ s3Configuration c = (S3.s3 proto endpoint False) { S3.s3Port = port }
 tryS3 :: Annex a -> Annex (Either S3.S3Error a)
 tryS3 a = (Right <$> a) `catch` (pure . Left)
 
+data S3Info = S3Info
+	{ bucket :: S3.Bucket
+	, storageClass :: S3.StorageClass
+	, bucketObject :: Key -> T.Text
+	, metaHeaders :: [(T.Text, T.Text)]
+	, isIA :: Bool
+	}
+
+extractS3Info :: RemoteConfig -> Annex S3Info
+extractS3Info c = do
+	b <- maybe
+		(error "S3 bucket not configured")
+		(return . T.pack)
+		(getBucketName c)
+	return $ S3Info
+		{ bucket = b
+		, storageClass = getStorageClass c
+		, bucketObject = T.pack . getBucketObject c
+		, metaHeaders = getMetaHeaders c
+		, isIA = configIA c
+		}
+
 getBucketName :: RemoteConfig -> Maybe BucketName
 getBucketName = M.lookup "bucket"
 
@@ -373,8 +393,8 @@ getMetaHeaders = map munge . filter ismetaheader . M.assocs
 getFilePrefix :: RemoteConfig -> String
 getFilePrefix = M.findWithDefault "" "fileprefix"
 
-bucketObject :: RemoteConfig -> Key -> FilePath
-bucketObject c = munge . key2file
+getBucketObject :: RemoteConfig -> Key -> FilePath
+getBucketObject c = munge . key2file
   where
 	munge s = case M.lookup "mungekeys" c of
 		Just "ia" -> iaMunge $ getFilePrefix c ++ s
@@ -392,20 +412,20 @@ iaMunge = (>>= munge)
 		| isSpace c = []
 		| otherwise = "&" ++ show (ord c) ++ ";"
 
+configIA :: RemoteConfig -> Bool
+configIA = maybe False isIAHost . M.lookup "host"
+
 {- Hostname to use for archive.org S3. -}
 iaHost :: HostName
 iaHost = "s3.us.archive.org"
-
-isIA :: RemoteConfig -> Bool
-isIA c = maybe False isIAHost (M.lookup "host" c)
 
 isIAHost :: HostName -> Bool
 isIAHost h = ".archive.org" `isSuffixOf` map toLower h
 
 iaItemUrl :: BucketName -> URLString
-iaItemUrl bucket = "http://archive.org/details/" ++ bucket
+iaItemUrl b = "http://archive.org/details/" ++ b
 
 iaKeyUrl :: Remote -> Key -> URLString
-iaKeyUrl r k = "http://archive.org/download/" ++ bucket ++ "/" ++ bucketObject (config r) k
+iaKeyUrl r k = "http://archive.org/download/" ++ b ++ "/" ++ getBucketObject (config r) k
   where
-	bucket = fromMaybe "" $ getBucketName $ config r
+	b = fromMaybe "" $ getBucketName $ config r
