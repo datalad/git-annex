@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~rorymcc"
+ nickname="rorymcc"
+ subject="comment 3"
+ date="2014-08-11T18:41:05Z"
+ content="""
+Would just standard \"git rm ./000/\" etc. in master be OK? Instead of hunting down and reverting all the commits? 
+"""]]
