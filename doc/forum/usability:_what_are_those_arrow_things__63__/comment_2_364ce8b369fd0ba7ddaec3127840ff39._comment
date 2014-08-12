@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ ip="70.83.139.100"
+ subject="comment 2"
+ date="2014-08-12T19:56:58Z"
+ content="""
+the problem with this is that you end up having two copies of the same files (the direct and indirect repositories). also, the switch to direct mode exploded (because i screwed up, granted)....
+
+i have been thinking more and more than the webapp needs to have some sort of file manager as well, but that seems like a huge undertaking...
+
+a better file manager integration could certainly allow to improve this experience. for me the requirements would be:
+
+* \"clone this repo to\" - make a copy of this git annex repo to the specified target
+* \"annex-copy those files to\" - the above + a file-transfer-like dialog that would track the total file transfer (as opposed to \"begin/end\" of single files, see also [[todo/do_not_bug_me_about_intermediate_files/]])
+* probably some more stuff
+"""]]
