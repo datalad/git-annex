@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.7"
+ subject="comment 2"
+ date="2014-08-12T17:57:26Z"
+ content="""
+views are a somewhat new feature that still needs work, and you will find this question of what to do about a file added while in a view in the todo list [[here|design/metadata]].
+
+Since views are just git branches, you can check out the view branch where you added the file, and it'll still be there. You could merge the branch (probably not a good idea since the filenames are moved around in the view). 
+
+Using `fromkey` will also work, if you have the right key and the content is present in the annex -- I just tested it. 
+"""]]
