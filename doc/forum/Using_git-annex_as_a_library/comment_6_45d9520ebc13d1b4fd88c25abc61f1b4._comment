@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.7"
+ subject="comment 6"
+ date="2014-08-12T17:48:34Z"
+ content="""
+There are a couple of problems with using the haskell code as a library that would need to be addressed:
+
+* I can't guarantee much about providing every interface in a compatible way going forward. It might make sense to pick out some key interfaces and make those stable, but I don't know what the right choices would be.
+* If all of git-annex is a library, `cabal build` will build everything a second time. This is annoying when trying to do a fast edit/build/test cycle, but I don't know a way to make cabal not do it. AFAIK cabal build flags cannot be used to disable building a library.
+"""]]
