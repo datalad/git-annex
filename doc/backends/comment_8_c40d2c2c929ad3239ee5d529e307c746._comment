@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.7"
+ subject="comment 8"
+ date="2014-08-12T18:00:46Z"
+ content="""
+Ævar, you can use `git annex add --backend=SHA256` to temporarily override the backend.
+"""]]
