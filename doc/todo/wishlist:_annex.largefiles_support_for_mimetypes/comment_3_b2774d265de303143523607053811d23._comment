@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.7"
+ subject="comment 3"
+ date="2014-08-12T18:58:49Z"
+ content="""
+I think that to support this, the annex.largefiles preferred content expression would need to be supplimented with checks not available in the normal preferred content language. 
+
+In general, it's important that preferred content expressions be able to be evaluated without having the file content locally available, and it needs to be possible for a repository to evaluate the preferred content of a sibling repository and know if its sibling wants a file. These things would be defeated by any mime-based expressions. So such expressions should only be available in annex.largefiles and not in other preferred content expressions.
+
+Calling out to `file` or some other external program could work. Although speed can be important. If the assistant is seeing a file frequently change, it's not ideal for it to be repeatedly running `file` on it. There does not seem to be a pure haskell MIME type checking library available at present.
+"""]]
