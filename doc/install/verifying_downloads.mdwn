@@ -1,0 +1,59 @@
+When you download a git-annex package from downloads.kitenet.net,
+as listed in [[install]], you should use a https connection. That provides
+some security, but here's some more.
+
+The downloaded package's integrity can be verified by checking that
+it was signed using the right GPG key, specifically the git-annex
+distribution signing key. To do this, you need to download the .sig
+file accompanying your package. Just append .sig to the url. 
+
+For example, on Linux:
+
+	$ wget http://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz
+	$ wget http://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz.sig
+
+You can then download the public key, and check that the package is signed
+with it.
+
+	$ wget https://downloads.kitenet.net/git-annex/gpg-pubkey.asc
+	$ gpg --import gpg-pubey.asc
+	$ gpg --verify git-annex-standalone-*.tar.gz.sig
+
+(The git-annex assistant can automatically upgrade git-annex, and when it
+does, it always checks the signature like that.)
+
+But, how do you know that the gpg-pubkey.asc you downloaded
+is the right key? The answer is the GPG web of trust. 
+
+* Joey Hess generates these git-annex packages,
+  and has a GPG key, [C910D9222512E3C Joey Hess <id@joeyh.name>](http://pgp.cs.uu.nl/stats/788A3F4C.html), which has
+  been verified and signed over a hundred people.
+* For policy reasons, Joey does not sign the git-annex distribution signing
+  key with his GPG key. However, he has generated a signed statement,
+  below, attesting to its valididy. You can import Joey's key into gpg,
+  and then run gpg copy and paste the message below into `gpg --verify`
+
+<pre>
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+As of 12 August 2014, the GPG key used to sign the git-annex builds
+that are distributed on downloads.kitenet.net is: 5EE1DBA789C809CB
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIVAwUBU+p1dMkQ2SIlEuPHAQL0Sg//Uy/WY6tHZnI1nf5U5SrFOlOG21y4f8k1
+72ZiIfJVMUgckeyVBcC2DW56nNuqiZzCR1OmZcrrFeEQgcinFdlPrfRfAJnlYH5/
+PD4UlyoYpZa9uCvVLOI5oDKVJ1hm9zDtU7C7q3EqmTj7j+vg4k5xlLRwNr3FlXkJ
+F3SGyYryCOXfhKgSexFMI91CCV0+mDvt5SR1LWBFVXgSre3oBpcb3cPO1CsAzijQ
+FVdIAbuZC8NYK0+i8McaE8C7QUfJHbo9ibrE7VV90lFNoQb7YiBu2Yuq6+HdysAb
+c0M070LMOsNPJRkZpOu2yxX4nCFVLZhuWg+6kADqp8gYu33629+A0nYLcMzGXiYP
+RS8W4UbcqmvEbvvLYuMFF4UwcHMlMO/pGu14ITNMP6/Xd+rbiGs51rRLwDwCBq+7
+1pebaFpjGwunWzOW2MjummHtGQgNEAwXdob1b8EqxREhrULo1Kmr5uECebPL3iFi
+4W+A7yjs8Dci0dGI85pgIMgyqX2XSGy40VO+naDkAc4wPuy7NGcTTXJUTIfVTPsD
+gKrXx/GTxVQdIj9XrLbp8assE/HyM8H3H4KIMuCV8lBVxb5szWRkteU+d6CeLyYl
+FNc1OHnPRfhcwGbFr0fHQVMvgKMYDU2JxKBaIvZpsMHibftYhVyIX6uG98IXJ32w
+12l8WDf7RTU=
+=gqFI
+-----END PGP SIGNATURE-----
+</pre>
