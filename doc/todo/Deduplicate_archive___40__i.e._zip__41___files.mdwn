@@ -5,3 +5,5 @@ In this scenario, an online service (Bandcamp), automatically creates the archiv
 Would it be possible for git-annex to be able to detect this scenario (in a manner similar to zipcmp) and redirect an add/import to the already existing copy?
 
 I've found this due to trying to decommission an old annex by `git annex import --clean-duplicates ~/annex_old/.git/annex/objects` and finding these files being left.
+
+[[done]] --[[Joey]]
