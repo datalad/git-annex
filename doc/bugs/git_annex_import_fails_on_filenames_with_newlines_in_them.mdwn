@@ -42,3 +42,5 @@ foo
     git-annex version: 5.20140717
     git version 2.0.1
     Linux durian 3.14-1-amd64 #1 SMP Debian 3.14.9-1 (2014-06-30) x86_64 GNU/Linux
+
+[[!tag confirmed git-bug]]
