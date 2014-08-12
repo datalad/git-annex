@@ -19,7 +19,7 @@ detailed instructions             | quick install
 [[Windows]]                       | [download installer](http://downloads.kitenet.net/git-annex/windows/current/) **alpha**
 """]]
 
-All the downloads above use http for security. For added security, see
+All the downloads above use https for security. For added security, see
 [[verifying_downloads]].
 
 ## Using cabal
