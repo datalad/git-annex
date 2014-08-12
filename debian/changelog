@@ -31,6 +31,8 @@ git-annex (5.20140718) UNRELEASED; urgency=medium
     repositories, for safer detection of eg, renaming of files with the same
     size and mtime.
   * direct: Fix ugly warning messages.
+  * WORM backend: When adding a file in a subdirectory, avoid including the
+    subdirectory in the key name.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 21 Jul 2014 14:41:26 -0400
 

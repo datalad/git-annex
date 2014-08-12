@@ -55,3 +55,14 @@ $ readlink quux
 Linux 3.15.8
 
 git-annex 5.20140716
+
+> This was a bug. I suspect it got broken a while ago and I didn't noticed
+> since I rarely use WORM and when I do it's almost always adding files
+> in the current directory. [[fixed|done]] to take the filename only.
+> 
+> I don't think it's a problem to have the subdirectory path in the
+> existing WORM keys, other than the problems you note with this meaning
+> a later add of the same file will generate a different key. So I have not
+> done anything to try to fix up existing keys. (If this became a problem,
+> I could add upgrade code to the WORM backend.)
+> --[[Joey]]
