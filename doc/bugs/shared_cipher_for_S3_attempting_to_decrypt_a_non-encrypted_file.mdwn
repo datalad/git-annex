@@ -18,3 +18,5 @@ Now when I try to copy a file to the xxx-s3 remote, I get the following error:
     git-annex: copy: 1 failed
 
 Any ideas what might be wrong? Is shared cipher broken somehow?
+
+> [[fixed|done]] --[[Joey]]
