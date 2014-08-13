@@ -35,7 +35,7 @@ rm -f git-annex-installer.exe
 # for haskell libraries to link them with the cygwin library.
 cabal update || true
 
-cabal transformers-compat -fthree
+cabal install transformers-compat -fthree
 cabal install mtl-2.1.3.1
 cabal install DAV-1.0
 
