@@ -16,7 +16,7 @@ detailed instructions             | quick install
 &nbsp;&nbsp;[[ScientificLinux5]]  |
 &nbsp;&nbsp;[[openSUSE]]          | 
 &nbsp;&nbsp;[[Docker]]            | 
-[[Windows]]                       | [download installer](http://downloads.kitenet.net/git-annex/windows/current/) **alpha**
+[[Windows]]                       | [download installer](http://downloads.kitenet.net/git-annex/windows/current/) **beta**
 """]]
 
 All the downloads above use https for security. For added security, see
