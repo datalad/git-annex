@@ -7,9 +7,9 @@ set -x
 set -e
 
 # Path to the Haskell Platform.
-HP="/c/Program Files (x86)/Haskell Platform/2013.2.0.0"
+#HP="/c/haskell/2014.2.0.0"
 
-PATH="$HP/bin:$HP/lib/extralibs/bin:/c/Program Files (x86)/NSIS:/c/msysgit/cmd:/c/msysgit/bin:$PATH"
+PATH="/c/Program Files (x86)/NSIS:/c/msysgit/cmd:$PATH"
 
 # Run a command with the cygwin environment available.
 # However, programs not from cygwin are preferred.
