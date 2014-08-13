@@ -24,7 +24,7 @@ withcygpreferred () {
 UPGRADE_LOCATION=http://downloads.kitenet.net/git-annex/windows/current/git-annex-installer.exe
 
 # Uncomment to get rid of cabal installed libraries.
-rm -rf /c/Users/jenkins/AppData/Roaming/cabal /c/Users/jenkins/AppData/Roaming/ghc
+#rm -rf /c/Users/jenkins/AppData/Roaming/cabal /c/Users/jenkins/AppData/Roaming/ghc
 
 # Don't allow build artifact from a past successful build to be extracted
 # if we fail.
@@ -35,9 +35,9 @@ rm -f git-annex-installer.exe
 # for haskell libraries to link them with the cygwin library.
 cabal update || true
 
-cabal install transformers-compat -fthree
-cabal install mtl-2.1.3.1
-cabal install DAV-1.0
+# This workaround is still needed, it seems.
+#cabal install transformers-compat -fthree
+#cabal install DAV-1.0
 
 cabal install --only-dependencies || true
 
@@ -76,4 +76,5 @@ Build/BuildVersion > dist/build-version
 # (doesn't currently work well on autobuilder, reason unknown)
 rm -rf .t
 PATH=dist/build/git-annex/:$PATH
+export PATH
 withcyg dist/build/git-annex/git-annex.exe test || true
