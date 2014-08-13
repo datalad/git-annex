@@ -32,7 +32,7 @@ index 058505c..16854b2 100644
  
  	fstat(fileno(config_file), &st);
  
-+	/* not on android 
++	/* not on android
  	if (chmod(lock->filename, st.st_mode & 07777) < 0) {
  		ret = error("chmod on %s failed: %s",
  				lock->filename, strerror(errno));
