@@ -3,7 +3,7 @@
 # to all the necessary haskell packages being installed, with the
 # necessary patches to work on architectures that lack template haskell.
 #
-# Note that the newest version of packages is installed. 
+# Note that the newest version of packages are installed. 
 # It attempts to reuse patches for older versions, but 
 # new versions of packages often break cross-compilation by adding TH, 
 # etc
