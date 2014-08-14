@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="Ganwell"
- ip="178.174.3.221"
- subject="Problem solved"
- date="2014-08-14T23:45:38Z"
- content="""
-It turns out gpgtools will save a wrong passphrase, so thats why standard gpg worked and gpgtools didn't.
-"""]]
