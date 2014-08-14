@@ -20,8 +20,8 @@ fi
 cabalopts="$@"
 
 cabalinstall () {
-	echo cabal install "$@" "$cabalopts"
-	eval cabal install "$@" "$cabalopts"
+	echo cabal install -j1 "$@" "$cabalopts"
+	eval cabal install -j1 "$@" "$cabalopts"
 }
 
 patched () {
