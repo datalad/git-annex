@@ -1,0 +1,16 @@
+Gcrypt remotes work when using the git-annex command bundled in the git-annex.app. But gcrypt doesn't work when git-annex is installed via home-brew (brew install git-annex).
+
+The initial push will work, any subsequent commands (push/pull) will fail with:
+
+    gpg: anonymous recipient; trying secret key...
+    gpg: anonymous recipient; trying secret key...
+    gpg: anonymous recipient; trying secret key...
+    gpg: anonymous recipient; trying secret key...
+    gpg: decryption failed: No secret key
+    gcrypt: Failed to decrypt manifest!
+
+In both cases (app/brew) it tries the same keys. The app version will use its own version of gpg, which will trigger password prompts. With the brew version gpgtools is used, so I won't get any prompts. (Keychain)
+
+I tried "echo i | gpg -e -R XX -R XX | gpg -d" with the same recipients as the repo. It works well. 
+
+Has anybody hints or ideas what to try next?
