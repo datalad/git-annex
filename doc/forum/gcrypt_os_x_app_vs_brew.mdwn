@@ -14,3 +14,5 @@ In both cases (app/brew) it tries the same keys. The app version will use its ow
 I tried "echo i | gpg -e -R XX -R XX | gpg -d" with the same recipients as the repo. It works well. 
 
 Has anybody hints or ideas what to try next?
+
+Best, Jean-Louis
