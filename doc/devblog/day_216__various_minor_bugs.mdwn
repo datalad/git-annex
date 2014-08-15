@@ -1,8 +1,8 @@
 Working on getting caught up with backlog. 73 messages remain.
 
 Several minor bugs were fixed today. All edge cases. The most edge case one
-of all, I could not fix: git-annex cannot add a file that has a space in its
-filename, because `git cat-file --batch`'s interface does not support such
+of all, I could not fix: git-annex cannot add a file that has a space^Wnewline
+in its filename, because `git cat-file --batch`'s interface does not support such
 filenames.
 
 Added a page [[documenting how verify the signatures of git-annex releases|install/verifying_downloads]].
