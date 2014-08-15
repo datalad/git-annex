@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.7"
+ subject="comment 1"
+ date="2014-08-15T15:58:02Z"
+ content="""
+The standalone armel build should work fine on armhf, assuming that the kernel supports EABI, which I'm pretty sure it does (or multiarch armel would not work).
+"""]]
