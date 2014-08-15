@@ -36,6 +36,9 @@ git-annex (5.20140718) UNRELEASED; urgency=medium
   * S3, Glacier, WebDAV: Fix bug that prevented accessing the creds
     when the repository was configured with encryption=shared embedcreds=yes.
   * direct: Avoid leaving file content in misctemp if interrupted.
+  * git-annex-shell sendkey: Don't fail if a remote asks for a key to be sent
+    that already has a transfer lock file indicating it's being sent to that
+    remote. The remote may have moved between networks, or reconnected.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 21 Jul 2014 14:41:26 -0400
 

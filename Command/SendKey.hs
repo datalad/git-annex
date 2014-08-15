@@ -47,3 +47,11 @@ fieldTransfer direction key a = do
 		(\u -> runTransfer (Transfer direction (toUUID u) key) afile noRetry a)
 		=<< Fields.getField Fields.remoteUUID
 	liftIO $ exitBool ok
+  where
+	{- Allow the key to be sent to the remote even if there seems to be
+	 - another transfer of that key going on to that remote.
+	 - That one may be stale, etc.
+	 -}
+	runner
+		| direction == Upload = alwaysRunTransfer
+		| otherwise = runTransfer

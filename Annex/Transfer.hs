@@ -12,6 +12,7 @@ module Annex.Transfer (
 	upload,
 	download,
 	runTransfer,
+	alwaysRunTransfer,
 	noRetry,
 	forwardRetry,
 ) where
@@ -46,12 +47,23 @@ download u key f d a _witness = runTransfer (Transfer Download u key) f d a
  - no transfer information or lock file is used.
  -}
 runTransfer :: Transfer -> Maybe FilePath -> RetryDecider -> (MeterUpdate -> Annex Bool) -> Annex Bool
-runTransfer t file shouldretry a = do
+runTransfer = runTransfer' False
+
+{- Like runTransfer, but ignores any existing transfer lock file for the
+ - transfer, allowing re-running a transfer that is already in progress.
+ -
+ - Note that this may result in confusing progress meter display in the
+ - webapp, if multiple processes are writing to the transfer info file. -}
+alwaysRunTransfer :: Transfer -> Maybe FilePath -> RetryDecider -> (MeterUpdate -> Annex Bool) -> Annex Bool
+alwaysRunTransfer = runTransfer' True
+
+runTransfer' :: Bool -> Transfer -> Maybe FilePath -> RetryDecider -> (MeterUpdate -> Annex Bool) -> Annex Bool
+runTransfer' ignorelock t file shouldretry a = do
 	info <- liftIO $ startTransferInfo file
 	(meter, tfile, metervar) <- mkProgressUpdater t info
 	mode <- annexFileMode
 	(fd, inprogress) <- liftIO $ prep tfile mode info
-	if inprogress
+	if inprogress && not ignorelock
 		then do
 			showNote "transfer already in progress"
 			return False
