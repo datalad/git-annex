@@ -612,3 +612,6 @@ BST] XMPPClient: NetMessager stored Pushing "e57" (ReceivePackDone ExitSuccess) 
 
 # End of transcript or log.
 """]]
+
+> Pretty sure this must have been due to Char8 truncation. So,
+> [[fixed|done]].
