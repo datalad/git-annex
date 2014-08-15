@@ -39,7 +39,12 @@ replaceFileOr file action rollback = do
 		return tmpfile
 	go tmpfile = do
 		action tmpfile
-		liftIO $ catchIO (rename tmpfile file) (fallback tmpfile)
-	fallback tmpfile _ = do
-		createDirectoryIfMissing True $ parentDir file
-		moveFile tmpfile file
+		liftIO $ replaceFileFrom tmpfile file
+
+replaceFileFrom :: FilePath -> FilePath -> IO ()
+replaceFileFrom src dest = go `catchIO` fallback
+  where
+	go = moveFile src dest
+	fallback _ = do
+		createDirectoryIfMissing True $ parentDir dest
+		go

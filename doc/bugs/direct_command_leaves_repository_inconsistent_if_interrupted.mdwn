@@ -41,3 +41,5 @@ Similar issues and discussions:
 * [[forum/Cleaning_up_after_aborted_sync_in_direct_mode/]]
 * [[bugs/failure_to_return_to_indirect_mode_on_usb/]]
 * [[forum/git-status_typechange_in_direct_mode/]]
+
+[[!meta title="git annex lock --force deletes only copy of content after interrupted switch to direct mode"]

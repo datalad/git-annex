@@ -35,6 +35,7 @@ git-annex (5.20140718) UNRELEASED; urgency=medium
     subdirectory in the key name.
   * S3, Glacier, WebDAV: Fix bug that prevented accessing the creds
     when the repository was configured with encryption=shared embedcreds=yes.
+  * direct: Avoid leaving file content in misctemp if interrupted.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 21 Jul 2014 14:41:26 -0400
 
