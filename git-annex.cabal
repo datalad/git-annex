@@ -96,11 +96,11 @@ Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends: MissingH, hslogger, directory, filepath,
    containers, utf8-string, network (>= 2.0), mtl (>= 2),
-   bytestring, old-locale, time, HTTP, dataenc, SHA, process, json,
+   bytestring, old-locale, time, dataenc, SHA, process, json,
    base (>= 4.5 && < 4.9), monad-control, exceptions (>= 0.5), transformers,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process,
    SafeSemaphore, uuid, random, dlist, unix-compat, async, stm (>= 2.3),
-   data-default, case-insensitive
+   data-default, case-insensitive, http-conduit, http-types
   CC-Options: -Wall
   GHC-Options: -Wall
   Extensions: PackageImports
@@ -141,8 +141,7 @@ Executable git-annex
     CPP-Options: -DWITH_S3
 
   if flag(WebDAV)
-    Build-Depends: DAV (>= 1.0),
-     http-client, http-types
+    Build-Depends: DAV (>= 1.0), http-client
     CPP-Options: -DWITH_WEBDAV
 
   if flag(Assistant) && ! os(solaris)
@@ -188,7 +187,7 @@ Executable git-annex
   if flag(Webapp)
     Build-Depends:
      yesod, yesod-default, yesod-static, yesod-form, yesod-core,
-     http-types, wai, wai-extra, warp, warp-tls,
+     wai, wai-extra, warp, warp-tls,
      blaze-builder, crypto-api, hamlet, clientsession,
      template-haskell, data-default, aeson, path-pieces,
      shakespeare
