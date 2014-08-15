@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ganwell"
+ ip="178.174.3.221"
+ subject="Problem solved"
+ date="2014-08-14T23:53:05Z"
+ content="""
+It turns out gpgtools will save to wrong passphrase to the keychain without complaining. Thats why standard gpg worked and gpgtools didn't: There was a typo in the passphrase in the keychain.
+"""]]
