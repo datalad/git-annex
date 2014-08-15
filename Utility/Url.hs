@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Utility.Url (
 	URLString,
@@ -26,6 +27,7 @@ import Network.HTTP.Conduit
 import Network.HTTP.Types
 import Data.Default
 import qualified Data.CaseInsensitive as CI
+import qualified Data.ByteString as B
 import qualified Data.ByteString.UTF8 as B8
 
 import qualified Build.SysConfig
@@ -130,7 +132,7 @@ exists url uo = case parseURIRelaxed url of
 				(responseHeaders resp)
 	
 	existsconduit req = withManager $ \mgr -> do
-			let req' = (applyRequest uo req) { method = methodHead }
+			let req' = headRequest (applyRequest uo req)
 			resp <- http req' mgr
 			-- forces processing the response before the
 			-- manager is closed
@@ -139,6 +141,18 @@ exists url uo = case parseURIRelaxed url of
 				else liftIO dne
 			liftIO $ closeManager mgr
 			return ret
+
+headRequest :: Request -> Request
+headRequest r = r
+	{ method = methodHead
+	-- remove defaut Accept-Encoding header, to get actual,
+	-- not gzip compressed size.
+	, requestHeaders = (hAcceptEncoding, B.empty) :
+		filter (\(h, _) -> h /= hAcceptEncoding)
+		(requestHeaders r)
+	}
+  where
+	hAcceptEncoding = "Accept-Encoding"
 
 {- Used to download large files, such as the contents of keys.
  -
