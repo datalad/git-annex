@@ -27,7 +27,8 @@ cabalinstall () {
 patched () {
 	pkg=$1
 	shift 1
-	cabal unpack $pkg
+	cabal unpack $pkg$1
+	shift 1
 	cd $pkg*
 	git init
 	git config user.name dummy
@@ -74,7 +75,11 @@ install_pkgs () {
 	patched yesod-core
 	patched persistent
 	patched persistent-template
-	patched file-embed
+	# Newer versions of file-embed cause ghc -ddump-splices
+	# to output invalid character codes.
+	# Note that the system generating the splices should also
+	# use this version of file-embed.
+	patched file-embed -0.0.6
 	patched process-conduit
 	patched yesod-static
 	patched yesod-persistent
