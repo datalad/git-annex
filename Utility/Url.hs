@@ -10,7 +10,8 @@
 module Utility.Url (
 	URLString,
 	UserAgent,
-	UrlOptions(..),
+	UrlOptions,
+	mkUrlOptions,
 	check,
 	checkBoth,
 	exists,
@@ -35,30 +36,27 @@ type Headers = [String]
 
 type UserAgent = String
 
-data BaseUrlOptions = BaseUrlOptions
+data UrlOptions = UrlOptions
 	{ userAgent :: Maybe UserAgent
 	, reqHeaders :: Headers
 	, reqParams :: [CommandParam]
-	}
-
-instance Default BaseUrlOptions
-  where
-	def = UrlOptions Nothing [] []
-
-data UrlOptions = UrlOptions
-	{ urlOptions :: BaseUrlOptions
 	, applyRequest :: Request -> Request
 	}
 
-mkUrlOptions :: BaseUrlOptions -> UrlOptions
-mkUrlOptions uo = UrlOptions uo applyrequest
+instance Default UrlOptions
+  where
+	def = UrlOptions Nothing [] [] id
+
+mkUrlOptions :: Maybe UserAgent -> Headers -> [CommandParam] -> UrlOptions
+mkUrlOptions useragent reqheaders reqparams =
+	UrlOptions useragent reqheaders reqparams applyrequest
   where
 	applyrequest = \r -> r { requestHeaders = requestHeaders r ++ addedheaders }
 	addedheaders = uaheader ++ otherheaders
-	uaheader = case userAgent uo of
+	uaheader = case useragent of
 		Nothing -> []
 		Just ua -> [(hUserAgent, B8.fromString ua)]
-	otherheaders = map toheader (reqHeaders uo)
+	otherheaders = map toheader reqheaders
 	toheader s =
 		let (h, v) = separate (== ':') s
 		    h' = CI.mk (B8.fromString h)
@@ -67,7 +65,7 @@ mkUrlOptions uo = UrlOptions uo applyrequest
 			_ -> (h', B8.fromString v)
 
 addUserAgent :: UrlOptions -> [CommandParam] -> [CommandParam]
-addUserAgent (UrlOptions uo) ps = case userAgent uo of
+addUserAgent uo ps = case userAgent uo of
 	Nothing -> ps
 	-- --user-agent works for both wget and curl commands
 	Just ua -> ps ++ [Param "--user-agent", Param ua] 
