@@ -31,25 +31,5 @@ git-annex is now [[available in Homebrew|Homebrew]]!
 
 ## using MacPorts
 
-Install the Haskell Platform from [[http://hackage.haskell.org/platform/mac.html]].
-The version provided by Macports is too old to work with current versions of git-annex.
-Then execute
-
-<pre>
-sudo port install git-core ossp-uuid md5sha1sum coreutils gnutls libxml2 libgsasl pkgconfig
-sudo cabal update
-PATH=$HOME/bin:$PATH
-cabal install c2hs git-annex --bindir=$HOME/bin
-</pre>
-
-## PATH setup
-
-Do not forget to add to your PATH variable your ~/bin folder. In your .bashrc, for example:
-<pre>
-PATH=$HOME/bin:$PATH
-</pre>
-
-See also:
-
-* [[forum/OSX__39__s_haskell-platform_statically_links_things]]
-* [[forum/OSX__39__s_default_sshd_behaviour_has_limited_paths_set]]
+git-annex is not available in MacPorts, but can be built from source using
+MacPorts tools. See [[MacPorts]]
