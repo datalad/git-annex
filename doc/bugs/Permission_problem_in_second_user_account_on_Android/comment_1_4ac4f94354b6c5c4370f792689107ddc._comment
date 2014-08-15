@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.7"
+ subject="comment 1"
+ date="2014-08-15T17:52:57Z"
+ content="""
+I'm afraid all I can do to help with this is to say that the git-annex Android app does not do anything I know of to prevent running the programs, such as git, that are included in it. If your user cannot access them, it must be your OS configuration preventing it.
+"""]]
