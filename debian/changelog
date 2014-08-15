@@ -39,6 +39,7 @@ git-annex (5.20140718) UNRELEASED; urgency=medium
   * git-annex-shell sendkey: Don't fail if a remote asks for a key to be sent
     that already has a transfer lock file indicating it's being sent to that
     remote. The remote may have moved between networks, or reconnected.
+  * Switched from the old haskell HTTP library to http-conduit.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 21 Jul 2014 14:41:26 -0400
 
