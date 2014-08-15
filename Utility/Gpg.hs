@@ -119,8 +119,8 @@ feedRead params passphrase feeder reader = do
 #else
 	-- store the passphrase in a temp file for gpg
 	withTmpFile "gpg" $ \tmpfile h -> do
-		hPutStr h passphrase
-		hClose h
+		liftIO $ hPutStr h passphrase
+		liftIO $ hClose h
 		let passphrasefile = [Param "--passphrase-file", File tmpfile]
 		go $ passphrasefile ++ params
 #endif

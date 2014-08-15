@@ -58,7 +58,9 @@ gen r u c gc = do
 			gitconfig = gc,
 			readonly = False,
 			availability = GloballyAvailable,
-			remotetype = remote
+			remotetype = remote,
+			mkUnavailable = gen r u c $
+				gc { remoteAnnexHookType = Just "!dne!" }
 		}
   where
 	hooktype = fromMaybe (error "missing hooktype") $ remoteAnnexHookType gc

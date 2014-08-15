@@ -348,11 +348,12 @@ checkPresentChunks checker u chunkconfig encryptor basek
 		v <- check basek
 		case v of
 			Right True -> return True
+			Left e -> checklists (Just e) =<< chunkKeysOnly u basek
 			_ -> checklists Nothing =<< chunkKeysOnly u basek
 	| otherwise = checklists Nothing =<< chunkKeys u chunkconfig basek
   where
 	checklists Nothing [] = return False
-	checklists (Just deferrederror) [] = error deferrederror
+	checklists (Just deferrederror) [] = throwM deferrederror
 	checklists d (l:ls)
 		| not (null l) = do
 			v <- checkchunks l
@@ -362,14 +363,14 @@ checkPresentChunks checker u chunkconfig encryptor basek
 				Right False -> checklists Nothing ls
 		| otherwise = checklists d ls
 	
-	checkchunks :: [Key] -> Annex (Either String Bool)
+	checkchunks :: [Key] -> Annex (Either SomeException Bool)
 	checkchunks [] = return (Right True)
 	checkchunks (k:ks) = do
 		v <- check k
 		case v of
 			Right True -> checkchunks ks
 			Right False -> return $ Right False
-			Left e -> return $ Left $ show e
+			Left e -> return $ Left e
 
 	check = tryNonAsync . checker . encryptor
 

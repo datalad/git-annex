@@ -36,7 +36,7 @@ backend = Backend
 keyValue :: KeySource -> Annex (Maybe Key)
 keyValue source = do
 	stat <- liftIO $ getFileStatus $ contentLocation source
-	n <- genKeyName $ keyFilename source
+	n <- genKeyName $ takeFileName $ keyFilename source
 	return $ Just $ stubKey
 		{ keyName = n
 		, keyBackendName = name backend

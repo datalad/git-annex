@@ -30,14 +30,21 @@ replaceFileOr :: FilePath -> (FilePath -> Annex ()) -> (FilePath -> Annex ()) ->
 replaceFileOr file action rollback = do
 	tmpdir <- fromRepo gitAnnexTmpMiscDir
 	void $ createAnnexDirectory tmpdir
-	bracket (liftIO $ setup tmpdir) rollback $ \tmpfile -> do
-		action tmpfile
-		liftIO $ catchIO (rename tmpfile file) (fallback tmpfile)
+	tmpfile <- liftIO $ setup tmpdir
+	go tmpfile `catchNonAsync` (const $ rollback tmpfile)
   where
   	setup tmpdir = do
 		(tmpfile, h) <- openTempFileWithDefaultPermissions tmpdir "tmp"
 		hClose h
 		return tmpfile
-	fallback tmpfile _ = do
-		createDirectoryIfMissing True $ parentDir file
-		moveFile tmpfile file
+	go tmpfile = do
+		action tmpfile
+		liftIO $ replaceFileFrom tmpfile file
+
+replaceFileFrom :: FilePath -> FilePath -> IO ()
+replaceFileFrom src dest = go `catchIO` fallback
+  where
+	go = moveFile src dest
+	fallback _ = do
+		createDirectoryIfMissing True $ parentDir dest
+		go

@@ -95,7 +95,10 @@ data RemoteA a = Remote {
 	-- a Remote can be globally available. (Ie, "in the cloud".)
 	availability :: Availability,
 	-- the type of the remote
-	remotetype :: RemoteTypeA a
+	remotetype :: RemoteTypeA a,
+	-- For testing, makes a version of this remote that is not
+	-- available for use. All its actions should fail.
+	mkUnavailable :: a (Maybe (RemoteA a))
 }
 
 instance Show (RemoteA a) where

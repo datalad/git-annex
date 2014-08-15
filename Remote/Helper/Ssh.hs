@@ -69,7 +69,7 @@ git_annex_shell r command params fields
  - a specified error value. -}
 onRemote 
 	:: Git.Repo
-	-> (FilePath -> [CommandParam] -> IO a, a)
+	-> (FilePath -> [CommandParam] -> IO a, Annex a)
 	-> String
 	-> [CommandParam]
 	-> [(Field, String)]
@@ -78,7 +78,7 @@ onRemote r (with, errorval) command params fields = do
 	s <- git_annex_shell r command params fields
 	case s of
 		Just (c, ps) -> liftIO $ with c ps
-		Nothing -> return errorval
+		Nothing -> errorval
 
 {- Checks if a remote contains a key. -}
 inAnnex :: Git.Repo -> Key -> Annex Bool
@@ -86,14 +86,14 @@ inAnnex r k = do
 	showChecking r
 	onRemote r (check, cantCheck r) "inannex" [Param $ key2file k] []
   where
-	check c p = dispatch <$> safeSystem c p
-	dispatch ExitSuccess = True
-	dispatch (ExitFailure 1) = False
+	check c p = dispatch =<< safeSystem c p
+	dispatch ExitSuccess = return True
+	dispatch (ExitFailure 1) = return False
 	dispatch _ = cantCheck r
 
 {- Removes a key from a remote. -}
 dropKey :: Git.Repo -> Key -> Annex Bool
-dropKey r key = onRemote r (boolSystem, False) "dropkey"
+dropKey r key = onRemote r (boolSystem, return False) "dropkey"
 	[ Params "--quiet --force"
 	, Param $ key2file key
 	]

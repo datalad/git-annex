@@ -70,7 +70,8 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			localpath = Nothing,
 			readonly = False,
 			availability = GloballyAvailable,
-			remotetype = remote
+			remotetype = remote,
+			mkUnavailable = gen r u (M.insert "url" "http://!dne!/" c) gc
 		}
 		chunkconfig = getChunkConfig c
 

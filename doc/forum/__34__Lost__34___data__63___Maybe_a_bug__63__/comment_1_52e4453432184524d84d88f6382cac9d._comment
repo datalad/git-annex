@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="sts"
+ ip="134.147.240.107"
+ subject="comment 1"
+ date="2014-08-11T11:39:44Z"
+ content="""
+OK, I could find the commit where I have added the data. I can 'git show' the commit and see the keys. I can also checkout the commit and I can see my data. Now I tried to create symlinks based on the keys I found in the commit, so whats the right way?
+
+    git annex examinekey SHA256E-s1390161393--1dcba6e914ad6a9133d374e3c55fbf9a58f036e64298262692c7f8e7cdb65852.mkv
+    SHA256E-s1390161393--1dcba6e914ad6a9133d374e3c55fbf9a58f036e64298262692c7f8e7cdb65852.mkv
+
+    git annex fromkey SHA256E-s1390161393--1dcba6e914ad6a9133d374e3c55fbf9a58f036e64298262692c7f8e7cdb65852.mkv e01.mkv
+    git-annex: key (SHA256E-s1390161393--1dcba6e914ad6a9133d374e3c55fbf9a58f036e64298262692c7f8e7cdb65852.mkv) is not present in backend
+
+I am not sure what to do now :-/.
+"""]]

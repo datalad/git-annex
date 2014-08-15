@@ -1,54 +1,47 @@
-From ec690f617cab405ec2c6420bde53e9d9ed984e5c Mon Sep 17 00:00:00 2001
+From 6134cc328f513e32895462e884487513b28029ba Mon Sep 17 00:00:00 2001
 From: Joey Hess <joey@kitenet.net>
-Date: Thu, 3 Jul 2014 15:55:17 -0400
-Subject: [PATCH] Revert "config: preserve config file permissions on edits"
-
-This reverts commit daa22c6f8da466bd7a438f1bc27375fd737ffcf3.
+Date: Wed, 13 Aug 2014 13:50:56 -0400
+Subject: [PATCH] avoid using of chmod on android when changing config
 
 This breaks on Android's /sdcard, which has a variety of FUSE
 implentations, all total shite.
+---
+ config.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
 diff --git a/config.c b/config.c
-index a1aef1c..7f3303d 100644
+index 058505c..16854b2 100644
 --- a/config.c
 +++ b/config.c
-@@ -1637,13 +1637,6 @@ int git_config_set_multivar_in_file(const char *config_filename,
+@@ -1634,12 +1634,14 @@ int git_config_set_multivar_in_file(const char *config_filename,
  			MAP_PRIVATE, in_fd, 0);
  		close(in_fd);
  
--		if (fchmod(fd, st.st_mode & 07777) < 0) {
--			error("fchmod on %s failed: %s",
--				lock->filename, strerror(errno));
--			ret = CONFIG_NO_WRITE;
--			goto out_free;
--		}
--
++		/* not on android
+ 		if (chmod(lock->filename, st.st_mode & 07777) < 0) {
+ 			error("chmod on %s failed: %s",
+ 				lock->filename, strerror(errno));
+ 			ret = CONFIG_NO_WRITE;
+ 			goto out_free;
+ 		}
++		*/
+ 
  		if (store.seen == 0)
  			store.seen = 1;
+@@ -1813,11 +1815,13 @@ int git_config_rename_section_in_file(const char *config_filename,
  
-@@ -1792,7 +1785,6 @@ int git_config_rename_section_in_file(const char *config_filename,
- 	int out_fd;
- 	char buf[1024];
- 	FILE *config_file;
--	struct stat st;
+ 	fstat(fileno(config_file), &st);
  
- 	if (new_name && !section_name_is_ok(new_name)) {
- 		ret = error("invalid section name: %s", new_name);
-@@ -1814,14 +1806,6 @@ int git_config_rename_section_in_file(const char *config_filename,
- 		goto unlock_and_out;
++	/* not on android
+ 	if (chmod(lock->filename, st.st_mode & 07777) < 0) {
+ 		ret = error("chmod on %s failed: %s",
+ 				lock->filename, strerror(errno));
+ 		goto out;
  	}
++	*/
  
--	fstat(fileno(config_file), &st);
--
--	if (fchmod(out_fd, st.st_mode & 07777) < 0) {
--		ret = error("fchmod on %s failed: %s",
--				lock->filename, strerror(errno));
--		goto out;
--	}
--
  	while (fgets(buf, sizeof(buf), config_file)) {
  		int i;
- 		int length;
 -- 
-2.0.1
+2.1.0.rc1
 

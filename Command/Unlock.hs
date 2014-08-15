@@ -26,12 +26,17 @@ seek = withFilesInGit $ whenAnnexed start
 {- The unlock subcommand replaces the symlink with a copy of the file's
  - content. -}
 start :: FilePath -> Key -> CommandStart
-start file key = stopUnless (inAnnex key) $ do
+start file key = do
 	showStart "unlock" file
-	ifM (checkDiskSpace Nothing key 0)
-		( next $ perform file key
+	ifM (inAnnex key)
+		( ifM (checkDiskSpace Nothing key 0)
+			( next $ perform file key
+			, do
+				warning "not enough disk space to copy file"
+				next $ next $ return False
+			)
 		, do
-			warning "not enough disk space to copy file"
+			warning "content not present; cannot unlock"
 			next $ next $ return False
 		)
 

@@ -42,6 +42,7 @@ import Utility.Gpg
 import Annex.UUID
 import Assistant.Ssh
 import Config
+import Logs.Web (webUUID)
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -191,26 +192,29 @@ postEditNewCloudRepositoryR :: UUID -> Handler Html
 postEditNewCloudRepositoryR uuid = connectionNeeded >> editForm True (RepoUUID uuid)
 
 editForm :: Bool -> RepoId -> Handler Html
-editForm new (RepoUUID uuid) = page "Edit repository" (Just Configuration) $ do
-	mremote <- liftAnnex $ Remote.remoteFromUUID uuid
-	when (mremote == Nothing) $
-		whenM ((/=) uuid <$> liftAnnex getUUID) $
-			error "unknown remote"
-	curr <- liftAnnex $ getRepoConfig uuid mremote
-	liftAnnex $ checkAssociatedDirectory curr mremote
-	((result, form), enctype) <- liftH $
-		runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $ editRepositoryAForm mremote curr
-	case result of
-		FormSuccess input -> liftH $ do
-			setRepoConfig uuid mremote curr input
-			liftAnnex $ checkAssociatedDirectory input mremote
-			redirect DashboardR
-		_ -> do
-			let istransfer = repoGroup curr == RepoGroupStandard TransferGroup
-			config <- liftAnnex $ M.lookup uuid <$> readRemoteLog
-			let repoInfo = getRepoInfo mremote config
-			let repoEncryption = getRepoEncryption mremote config
-			$(widgetFile "configurators/edit/repository")
+editForm new (RepoUUID uuid)
+	| uuid == webUUID = page "The web" (Just Configuration) $ do
+		$(widgetFile "configurators/edit/webrepository")
+	| otherwise = page "Edit repository" (Just Configuration) $ do
+		mremote <- liftAnnex $ Remote.remoteFromUUID uuid
+		when (mremote == Nothing) $
+			whenM ((/=) uuid <$> liftAnnex getUUID) $
+				error "unknown remote"
+		curr <- liftAnnex $ getRepoConfig uuid mremote
+		liftAnnex $ checkAssociatedDirectory curr mremote
+		((result, form), enctype) <- liftH $
+			runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $ editRepositoryAForm mremote curr
+		case result of
+			FormSuccess input -> liftH $ do
+				setRepoConfig uuid mremote curr input
+				liftAnnex $ checkAssociatedDirectory input mremote
+				redirect DashboardR
+			_ -> do
+				let istransfer = repoGroup curr == RepoGroupStandard TransferGroup
+				config <- liftAnnex $ M.lookup uuid <$> readRemoteLog
+				let repoInfo = getRepoInfo mremote config
+				let repoEncryption = getRepoEncryption mremote config
+				$(widgetFile "configurators/edit/repository")
 editForm _new r@(RepoName _) = page "Edit repository" (Just Configuration) $ do
 	mr <- liftAnnex (repoIdRemote r)
 	let repoInfo = getRepoInfo mr Nothing

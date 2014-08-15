@@ -23,7 +23,7 @@ import Annex.Perms
 import Utility.FileMode
 import Crypto
 import Types.Remote (RemoteConfig, RemoteConfigKey)
-import Remote.Helper.Encryptable (remoteCipher, embedCreds)
+import Remote.Helper.Encryptable (remoteCipher, remoteCipher', embedCreds)
 import Utility.Env (getEnv)
 
 import qualified Data.ByteString.Lazy.Char8 as L
@@ -85,15 +85,19 @@ getRemoteCredPair c storage = maybe fromcache (return . Just) =<< fromenv
 	fromcache = maybe fromconfig (return . Just) =<< readCacheCredPair storage
 	fromconfig = case credPairRemoteKey storage of
 		Just key -> do
-			mcipher <- remoteCipher c
-			case (M.lookup key c, mcipher) of
-				(Nothing, _) -> return Nothing
-				(Just enccreds, Just cipher) -> do
+			mcipher <- remoteCipher' c
+			case (mcipher, M.lookup key c) of
+				(_, Nothing) -> return Nothing
+				(Just (_cipher, SharedCipher {}), Just bcreds) ->
+					-- When using a shared cipher, the
+					-- creds are not stored encrypted.
+					fromcreds $ fromB64 bcreds
+				(Just (cipher, _), Just enccreds) -> do
 					creds <- liftIO $ decrypt cipher
 						(feedBytes $ L.pack $ fromB64 enccreds)
 						(readBytes $ return . L.unpack)
 					fromcreds creds
-				(Just bcreds, Nothing) ->
+				(Nothing, Just bcreds) ->
 					fromcreds $ fromB64 bcreds
 		Nothing -> return Nothing
 	fromcreds creds = case decodeCredPair creds of

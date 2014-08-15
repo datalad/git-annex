@@ -52,11 +52,11 @@ catchMsgIO a = do
 
 {- catch specialized for IO errors only -}
 catchIO :: MonadCatch m => m a -> (IOException -> m a) -> m a
-catchIO = catch
+catchIO = M.catch
 
 {- try specialized for IO errors only -}
 tryIO :: MonadCatch m => m a -> m (Either IOException a)
-tryIO = try
+tryIO = M.try
 
 {- bracket with setup and cleanup actions lifted to IO.
  -

@@ -65,7 +65,8 @@ gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
 			localpath = Nothing,
 			readonly = False,
 			availability = GloballyAvailable,
-			remotetype = remote
+			remotetype = remote,
+			mkUnavailable = return Nothing
 		}
 	specialcfg = (specialRemoteCfg c)
 		-- Disabled until jobList gets support for chunks.

@@ -83,7 +83,8 @@ gen r u c gc = do
 		localpath = Nothing,
 		readonly = False,
 		availability = GloballyAvailable,
-		remotetype = remote
+		remotetype = remote,
+		mkUnavailable = return Nothing
 	}
 
 tahoeSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)

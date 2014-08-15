@@ -40,6 +40,10 @@ import Common
 import System.PosixCompat.Types
 import Utility.QuickCheck
 
+#ifdef mingw32_HOST_OS
+import Data.Word (Word64)
+#endif
+
 data InodeCachePrim = InodeCachePrim FileID FileOffset EpochTime
 	deriving (Show, Eq, Ord)
 
@@ -203,6 +207,11 @@ instance Arbitrary InodeCache where
 			<*> arbitrary
 			<*> arbitrary
 		in InodeCache <$> prim
+
+#ifdef mingw32_HOST_OS
+instance Arbitrary FileID where
+	arbitrary = fromIntegral <$> (arbitrary :: Gen Word64)
+#endif
 
 prop_read_show_inodecache :: InodeCache -> Bool
 prop_read_show_inodecache c = case readInodeCache (showInodeCache c) of
