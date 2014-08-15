@@ -36,4 +36,4 @@ MacPorts tools. See [[MacPorts]].
 
 ## building it yourself
 
-See [[cabal]].
+See [[porting]].
