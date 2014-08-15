@@ -32,4 +32,8 @@ git-annex is now [[available in Homebrew|Homebrew]]!
 ## using MacPorts
 
 git-annex is not available in MacPorts, but can be built from source using
-MacPorts tools. See [[MacPorts]]
+MacPorts tools. See [[MacPorts]].
+
+## building it yourself
+
+See [[cabal]].
