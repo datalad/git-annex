@@ -44,7 +44,7 @@ fieldTransfer :: Direction -> Key -> (MeterUpdate -> Annex Bool) -> CommandStart
 fieldTransfer direction key a = do
 	afile <- Fields.getField Fields.associatedFile
 	ok <- maybe (a $ const noop)
-		(\u -> runTransfer (Transfer direction (toUUID u) key) afile noRetry a)
+		(\u -> runner (Transfer direction (toUUID u) key) afile noRetry a)
 		=<< Fields.getField Fields.remoteUUID
 	liftIO $ exitBool ok
   where
