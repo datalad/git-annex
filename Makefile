@@ -218,7 +218,7 @@ android: Build/EvilSplicer
 	sed -i 's/^  Build-Depends: /  Build-Depends: yesod-routes, yesod-core, shakespeare-css, shakespeare-js, shakespeare, blaze-markup, file-embed, wai-app-static, /' tmp/androidtree/git-annex.cabal
 # Avoid warnings due to sometimes unused imports added for the splices.
 	sed -i 's/GHC-Options: \(.*\)-Wall/GHC-Options: \1-Wall -fno-warn-unused-imports /i' tmp/androidtree/git-annex.cabal
-	sed -i 's/Extensions: /Extensions: MagicHash /i' tmp/no-th-tree/git-annex.cabal
+	sed -i 's/Extensions: /Extensions: MagicHash /i' tmp/androidtree/git-annex.cabal
 # Cabal cannot cross compile with custom build type, so workaround.
 	sed -i 's/Build-type: Custom/Build-type: Simple/' tmp/androidtree/git-annex.cabal
 # Build just once, but link twice, for 2 different versions of Android.
