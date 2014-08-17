@@ -1,4 +1,4 @@
-git-annex (5.20140718) UNRELEASED; urgency=medium
+git-annex (5.20140817) unstable; urgency=medium
 
   * New chunk= option to chunk files stored in special remotes.
     Supported by: directory, S3, webdav, gcrypt, rsync, and all external
@@ -41,7 +41,7 @@ git-annex (5.20140718) UNRELEASED; urgency=medium
     remote. The remote may have moved between networks, or reconnected.
   * Switched from the old haskell HTTP library to http-conduit.
 
- -- Joey Hess <joeyh@debian.org>  Mon, 21 Jul 2014 14:41:26 -0400
+ -- Joey Hess <joeyh@debian.org>  Sun, 17 Aug 2014 10:30:58 -0400
 
 git-annex (5.20140717) unstable; urgency=high
 
