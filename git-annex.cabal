@@ -97,7 +97,7 @@ Executable git-annex
   Build-Depends: MissingH, hslogger, directory, filepath,
    containers, utf8-string, network (>= 2.0), mtl (>= 2),
    bytestring, old-locale, time, dataenc, SHA, process, json,
-   base (>= 4.5 && < 4.9), monad-control, exceptions (>= 0.5), transformers,
+   base (>= 4.5 && < 4.9), monad-control, exceptions (>= 0.6), transformers,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process,
    SafeSemaphore, uuid, random, dlist, unix-compat, async, stm (>= 2.3),
    data-default, case-insensitive, http-conduit, http-types
