@@ -7,6 +7,7 @@
 
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
 
 module Utility.Url (
 	URLString,
@@ -42,7 +43,11 @@ data UrlOptions = UrlOptions
 	{ userAgent :: Maybe UserAgent
 	, reqHeaders :: Headers
 	, reqParams :: [CommandParam]
+#if MIN_VERSION_http_conduit(2,0,0)
 	, applyRequest :: Request -> Request
+#else
+	, applyRequest :: forall m. Request m -> Request m
+#endif
 	}
 
 instance Default UrlOptions
@@ -142,7 +147,11 @@ exists url uo = case parseURIRelaxed url of
 			liftIO $ closeManager mgr
 			return ret
 
+#if MIN_VERSION_http_conduit(2,0,0)
 headRequest :: Request -> Request
+#else
+headRequest :: Request m -> Request m
+#endif
 headRequest r = r
 	{ method = methodHead
 	-- remove defaut Accept-Encoding header, to get actual,
@@ -151,8 +160,6 @@ headRequest r = r
 		filter (\(h, _) -> h /= hAcceptEncoding)
 		(requestHeaders r)
 	}
-  where
-	hAcceptEncoding = "Accept-Encoding"
 
 {- Used to download large files, such as the contents of keys.
  -
@@ -206,3 +213,14 @@ download' quiet url file uo =
 {- Allows for spaces and other stuff in urls, properly escaping them. -}
 parseURIRelaxed :: URLString -> Maybe URI
 parseURIRelaxed = parseURI . escapeURIString isAllowedInURI
+
+hAcceptEncoding :: CI.CI B.ByteString
+hAcceptEncoding = "Accept-Encoding"
+
+#if ! MIN_VERSION_http_types(0,7,0)
+hContentLength :: CI.CI B.ByteString
+hContentLength = "Content-Length"
+
+hUserAgent :: CI.CI B.ByteString
+hUserAgent = "User-Agent"
+#endif
