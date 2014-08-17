@@ -10,7 +10,6 @@ module Utility.Parallel where
 import Common
 
 import Control.Concurrent
-import Control.Exception
 
 {- Runs an action in parallel with a set of values, in a set of threads.
  - In order for the actions to truely run in parallel, requires GHC's

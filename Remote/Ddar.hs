@@ -8,11 +8,9 @@
 
 module Remote.Ddar (remote) where
 
-import Control.Exception
-import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
+import qualified Data.ByteString.Lazy as L
 import System.IO.Error
-import System.Process
 
 import Data.String.Utils
 import Common.Annex
@@ -23,12 +21,8 @@ import qualified Git
 import Config
 import Config.Cost
 import Remote.Helper.Special
-import Remote.Helper.Encryptable
-import Crypto
-import Annex.Content
 import Annex.Ssh
 import Annex.UUID
-import Utility.Metered
 
 type DdarRepo = String
 
@@ -46,17 +40,23 @@ gen r u c gc = do
 		if ddarLocal ddarrepo
 			then nearlyCheapRemoteCost
 			else expensiveRemoteCost
-
-	let new = Remote
+	return $ Just $ specialRemote' specialcfg c
+		(simplyPrepare $ store ddarrepo)
+		(simplyPrepare $ retrieve ddarrepo)
+		(simplyPrepare $ remove ddarrepo)
+		(simplyPrepare $ checkKey ddarrepo)
+		(this cst)
+  where
+	this cst = Remote
 		{ uuid = u
 		, cost = cst
 		, name = Git.repoDescribe r
-		, storeKey = store ddarrepo
-		, retrieveKeyFile = retrieve ddarrepo
+		, storeKey = storeKeyDummy
+		, retrieveKeyFile = retreiveKeyFileDummy
 		, retrieveKeyFileCheap = retrieveCheap
-		, removeKey = remove ddarrepo
-		, hasKey = checkPresent ddarrepo
-		, hasKeyCheap = ddarLocal ddarrepo
+		, removeKey = removeKeyDummy
+		, checkPresent = checkPresentDummy
+		, checkPresentCheap = ddarLocal ddarrepo
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing
@@ -69,13 +69,13 @@ gen r u c gc = do
 		, remotetype = remote
 		, availability = if ddarLocal ddarrepo then LocallyAvailable else GloballyAvailable
 		, readonly = False
+		, mkUnavailable = return Nothing
 		}
-	return $ Just $ encryptableRemote c
-		(storeEncrypted new ddarrepo)
-		(retrieveEncrypted ddarrepo)
-		new
-  where
 	ddarrepo = fromMaybe (error "missing ddarrepo") $ remoteAnnexDdarRepo gc
+	specialcfg = (specialRemoteCfg c)
+		-- chunking would not improve ddar
+		{ chunkConfig = NoChunks
+		}
 
 ddarSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
 ddarSetup mu _ c = do
@@ -92,17 +92,8 @@ ddarSetup mu _ c = do
 
 	return (c', u)
 
-pipeDdar :: [CommandParam] -> Maybe Handle -> Maybe Handle -> IO Bool
-pipeDdar params inh outh = do
-	p <- runProcess "ddar" (toCommand params)
-		Nothing Nothing inh outh Nothing
-	ok <- waitForProcess p
-	case ok of
-		ExitSuccess -> return True
-		_ -> return False
-
-store :: DdarRepo -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store ddarrepo k _f _p = sendAnnex k (void $ remove ddarrepo k) $ \src -> do
+store :: DdarRepo -> Storer
+store ddarrepo = fileStorer $ \k src _p -> do
 	let params =
 		[ Param "c"
 		, Param "-N"
@@ -111,21 +102,6 @@ store ddarrepo k _f _p = sendAnnex k (void $ remove ddarrepo k) $ \src -> do
 		, File src
 		]
 	liftIO $ boolSystem "ddar" params
-
-storeEncrypted :: Remote -> DdarRepo -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
-storeEncrypted r ddarrepo (cipher, enck) k _p =
-	sendAnnex k (void $ remove ddarrepo k) $ \src ->
-		liftIO $ catchBoolIO $
-			encrypt (getGpgEncParams r) cipher (feedFile src) $ \h ->
-				pipeDdar params (Just h) Nothing
-  where
-	params =
-		[ Param "c"
-		, Param "-N"
-		, Param $ key2file enck
-		, Param ddarrepo
-		, Param "-"
-		]
 
 {- Convert remote DdarRepo to host and path on remote end -}
 splitRemoteDdarRepo :: DdarRepo -> (String, String)
@@ -155,28 +131,18 @@ ddarExtractRemoteCall :: DdarRepo -> Key -> Annex (String, [CommandParam])
 ddarExtractRemoteCall ddarrepo k =
 	ddarRemoteCall ddarrepo 'x' [Param "--force-stdout", Param $ key2file k]
 
-retrieve :: DdarRepo -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
-retrieve ddarrepo k _f d _p = do
+retrieve :: DdarRepo -> Retriever
+retrieve ddarrepo = byteRetriever $ \k sink -> do
 	(cmd, params) <- ddarExtractRemoteCall ddarrepo k
-	liftIO $ catchBoolIO $ withFile d WriteMode $ \h -> do
-		let p = (proc cmd $ toCommand params){ std_out = UseHandle h }
-		(_, _, _, pid) <- Common.Annex.createProcess p
-		forceSuccessProcess p pid
-		return True
+	let p = (proc cmd $ toCommand params) { std_out = CreatePipe }
+	(_, Just h, _, pid) <- liftIO $ createProcess p
+	liftIO (hClose h >> forceSuccessProcess p pid)
+		`after` (sink =<< liftIO (L.hGetContents h))
 
 retrieveCheap :: Key -> FilePath -> Annex Bool
 retrieveCheap _ _ = return False
 
-retrieveEncrypted :: DdarRepo -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
-retrieveEncrypted ddarrepo (cipher, enck) _ f _p = do
-	(cmd, params) <- ddarExtractRemoteCall ddarrepo enck
-	let p = proc cmd $ toCommand params
-	liftIO $ catchBoolIO $ withHandle StdoutHandle createProcessSuccess p $ \h -> do
-		decrypt cipher (\toh -> L.hPut toh =<< L.hGetContents h) $
-			readBytes $ L.writeFile f
-		return True
-
-remove :: DdarRepo -> Key -> Annex Bool
+remove :: DdarRepo -> Remover
 remove ddarrepo key = do
 	(cmd, params) <- ddarRemoteCall ddarrepo 'd' [Param $ key2file key]
 	liftIO $ boolSystem cmd params
@@ -217,13 +183,14 @@ inDdarManifest ddarrepo k = do
   where
 	k' = key2file k
 
-checkPresent :: DdarRepo -> Key -> Annex (Either String Bool)
-checkPresent ddarrepo key = do
+checkKey :: DdarRepo -> CheckPresent
+checkKey ddarrepo key = do
 	directoryExists <- ddarDirectoryExists ddarrepo
 	case directoryExists of
-		Left e -> return $ Left e
-		Right True -> inDdarManifest ddarrepo key
-		Right False -> return $ Right False
+		Left e -> error e
+		Right True -> either error return
+			=<< inDdarManifest ddarrepo key
+		Right False -> return False
 
 ddarLocal :: DdarRepo -> Bool
 ddarLocal = notElem ':'

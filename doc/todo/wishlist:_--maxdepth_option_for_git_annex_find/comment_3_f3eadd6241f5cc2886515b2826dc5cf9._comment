@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 3"
+ date="2014-07-21T18:40:00Z"
+ content="""
+I think that --maxdepth has a well-defined meaning and this summary option would need to be named something else.
+
+I don't object to the idea of implementing it. However, I don't know that it would be very easy to implement either.
+"""]]

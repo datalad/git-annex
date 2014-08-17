@@ -13,7 +13,7 @@ import Messages
 
 def :: [Command]
 def = [ noRepo startIO $ dontCheck repoExists $
-	command "test" paramNothing seek SectionPlumbing
+	command "test" paramNothing seek SectionTesting
 		"run built-in test suite"]
 
 seek :: CommandSeek

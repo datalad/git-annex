@@ -18,7 +18,7 @@ You should decide whether to use encryption with a special remote before
 any data is stored in it. So, `git annex initremote` requires you
 to specify "encryption=none" when first setting up a remote in order
 to disable encryption. To use encryption, you run 
-run `git-annex initremote` in one of these ways:
+`git-annex initremote` in one of these ways:
 
 * `git annex initremote newremote type=... encryption=hybrid keyid=KEYID ...`
 * `git annex initremote newremote type=... encryption=shared`
@@ -43,7 +43,7 @@ enableremote` specifying the new encryption key:
 	git annex enableremote myremote keyid+=788A3F4C
 
 While a key can later be removed from the list, note that
-that will **not** necessarily prevent the owner of the key
+it will **not** necessarily prevent the owner of the key
 from accessing data on the remote (which is by design impossible to prevent,
 short of deleting the remote). In fact the only sound use of `keyid-=` is
 probably to replace a revoked key:
@@ -74,7 +74,7 @@ and since it's exactly the way everyone else uses gpg.
 
 	git annex initremote newremote type=.... encryption=pubkey keyid=KEYID ...
 
-A disavantage is that is not easy to later add additional public keys
+A disavantage is that it is not easy to later add additional public keys
 to the special remote. While the `enableremote` parameters `keyid+=` and
 `keyid-=` can be used, they have **no effect** on files that are already
 present on the remote. Probably the only use for these parameters is 
@@ -94,7 +94,7 @@ generated (and encrypted to the given key IDs).)
 ## MAC algorithm
 
 The default MAC algorithm to be applied on the filenames is HMACSHA1. A
-stronger one, for instance HMACSHA512, one can be chosen upon creation
+stronger one, for instance HMACSHA512, can be chosen upon creation
 of the special remote with the option `mac=HMACSHA512`. The available
 MAC algorithms are HMACSHA1, HMACSHA224, HMACSHA256, HMACSHA384, and
 HMACSHA512. Note that it is not possible to change algorithm for a

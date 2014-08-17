@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="24.159.78.125"
+ subject="comment 1"
+ date="2014-07-30T14:55:16Z"
+ content="""
+Known bug: [[bugs/Git_annexed_files_symlink_are_wrong_when_submodule_is_not_in_the_same_path]]
+
+I don't think there's much likelyhood of a fix though. Using direct mode probably works around the problem. Or you can use something like myrepos instead of git subtrees.
+"""]]

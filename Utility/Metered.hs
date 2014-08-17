@@ -16,12 +16,16 @@ import qualified Data.ByteString as S
 import System.IO.Unsafe
 import Foreign.Storable (Storable(sizeOf))
 import System.Posix.Types
+import Data.Int
 
 {- An action that can be run repeatedly, updating it on the bytes processed.
  -
  - Note that each call receives the total number of bytes processed, so
  - far, *not* an incremental amount since the last call. -}
 type MeterUpdate = (BytesProcessed -> IO ())
+
+nullMeterUpdate :: MeterUpdate
+nullMeterUpdate _ = return ()
 
 {- Total number of bytes processed so far. -}
 newtype BytesProcessed = BytesProcessed Integer
@@ -31,11 +35,19 @@ class AsBytesProcessed a where
 	toBytesProcessed :: a -> BytesProcessed
 	fromBytesProcessed :: BytesProcessed -> a
 
+instance AsBytesProcessed BytesProcessed where
+	toBytesProcessed = id
+	fromBytesProcessed = id
+
 instance AsBytesProcessed Integer where
 	toBytesProcessed i = BytesProcessed i
 	fromBytesProcessed (BytesProcessed i) = i
 
 instance AsBytesProcessed Int where
+	toBytesProcessed i = BytesProcessed $ toInteger i
+	fromBytesProcessed (BytesProcessed i) = fromInteger i
+
+instance AsBytesProcessed Int64 where
 	toBytesProcessed i = BytesProcessed $ toInteger i
 	fromBytesProcessed (BytesProcessed i) = fromInteger i
 
@@ -76,6 +88,13 @@ meteredWrite meterupdate h = go zeroBytesProcessed . L.toChunks
 meteredWriteFile :: MeterUpdate -> FilePath -> L.ByteString -> IO ()
 meteredWriteFile meterupdate f b = withBinaryFile f WriteMode $ \h ->
 	meteredWrite meterupdate h b
+
+{- Applies an offset to a MeterUpdate. This can be useful when
+ - performing a sequence of actions, such as multiple meteredWriteFiles,
+ - that all update a common meter progressively. Or when resuming.
+ -}
+offsetMeterUpdate :: MeterUpdate -> BytesProcessed -> MeterUpdate
+offsetMeterUpdate base offset = \n -> base (offset `addBytesProcessed` n)
 
 {- This is like L.hGetContents, but after each chunk is read, a meter
  - is updated based on the size of the chunk.

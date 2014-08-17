@@ -191,10 +191,10 @@ runActivity' urlrenderer (ScheduledSelfFsck _ d) = do
 	mapM_ reget =<< liftAnnex (dirKeys gitAnnexBadDir)
   where
 	reget k = queueTransfers "fsck found bad file; redownloading" Next k Nothing Download
-runActivity' urlrenderer (ScheduledRemoteFsck u s d) = handle =<< liftAnnex (remoteFromUUID u)
+runActivity' urlrenderer (ScheduledRemoteFsck u s d) = dispatch =<< liftAnnex (remoteFromUUID u)
   where
-	handle Nothing = debug ["skipping remote fsck of uuid without a configured remote", fromUUID u, fromSchedule s]
-	handle (Just rmt) = void $ case Remote.remoteFsck rmt of
+	dispatch Nothing = debug ["skipping remote fsck of uuid without a configured remote", fromUUID u, fromSchedule s]
+	dispatch (Just rmt) = void $ case Remote.remoteFsck rmt of
 		Nothing -> go rmt $ do
 			program <- readProgramFile
 			void $ batchCommand program $ 

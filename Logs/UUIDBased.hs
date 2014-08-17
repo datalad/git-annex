@@ -1,6 +1,6 @@
 {- git-annex uuid-based logs
  -
- - This is used to store information about a UUID in a way that can
+ - This is used to store information about UUIDs in a way that can
  - be union merged.
  -
  - A line of the log will look like: "UUID[ INFO[ timestamp=foo]]"

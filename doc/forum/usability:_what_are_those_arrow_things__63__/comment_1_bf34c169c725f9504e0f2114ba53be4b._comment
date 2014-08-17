@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.7"
+ subject="comment 1"
+ date="2014-08-12T19:49:35Z"
+ content="""
+If I wanted to share files with someone, I'd set them up with a direct mode repository and link it to my (probably indirect mode) repository.
+
+The question then becomes, how can this person decide which files to get if they don't want to or cannot get everything. I think that [[tips/File_manager_integration]] is a pretty good answer, although it does involve adding extensions to file managers. At least it involves adding something, rather than convincing a suprisingly large number of people that their ideas about symlinks are wrong. There are other possible answers, like building a file selection UI into the webapp..
+"""]]

@@ -23,6 +23,7 @@ backend = Backend
 	, fsckKey = Nothing
 	, canUpgradeKey = Nothing
 	, fastMigrate = Nothing
+	, isStableKey = const True
 	}
 
 {- The key includes the file size, modification time, and the
@@ -35,8 +36,8 @@ backend = Backend
 keyValue :: KeySource -> Annex (Maybe Key)
 keyValue source = do
 	stat <- liftIO $ getFileStatus $ contentLocation source
-	n <- genKeyName $ keyFilename source
-	return $ Just Key
+	n <- genKeyName $ takeFileName $ keyFilename source
+	return $ Just $ stubKey
 		{ keyName = n
 		, keyBackendName = name backend
 		, keySize = Just $ fromIntegral $ fileSize stat

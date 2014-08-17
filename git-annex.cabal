@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 5.20140717
+Version: 5.20140817
 Cabal-Version: >= 1.8
 License: GPL-3
 Maintainer: Joey Hess <joey@kitenet.net>
@@ -96,12 +96,11 @@ Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends: MissingH, hslogger, directory, filepath,
    containers, utf8-string, network (>= 2.0), mtl (>= 2),
-   bytestring, old-locale, time, HTTP,
-   extensible-exceptions, dataenc, SHA, process, json,
-   base (>= 4.5 && < 4.9), monad-control, exceptions (>= 0.5),
+   bytestring, old-locale, time, dataenc, SHA, process, json,
+   base (>= 4.5 && < 4.9), monad-control, exceptions (>= 0.6), transformers,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process,
    SafeSemaphore, uuid, random, dlist, unix-compat, async, stm (>= 2.3),
-   data-default, case-insensitive
+   data-default, case-insensitive, http-conduit, http-types
   CC-Options: -Wall
   GHC-Options: -Wall
   Extensions: PackageImports
@@ -112,7 +111,7 @@ Executable git-annex
     GHC-Options: -O2
 
   if (os(windows))
-    Build-Depends: Win32, Win32-extras
+    Build-Depends: Win32, Win32-extras, unix-compat (>= 0.4.1.3)
     C-Sources: Utility/winprocess.c
   else
     Build-Depends: unix
@@ -124,7 +123,7 @@ Executable git-annex
 
   if flag(TestSuite)
     Build-Depends: tasty (>= 0.7), tasty-hunit, tasty-quickcheck, tasty-rerun,
-     optparse-applicative
+     optparse-applicative, crypto-api
     CPP-Options: -DWITH_TESTSUITE
 
   if flag(TDFA)
@@ -143,8 +142,7 @@ Executable git-annex
 
   -- Not yet available for backport.
   --if flag(WebDAV)
-  --  Build-Depends: DAV ((>= 0.3 && < 0.6) || > 0.6),
-  --   http-client, http-conduit, http-types, lifted-base
+  --  Build-Depends: DAV (>= 1.0), http-client
   --  CPP-Options: -DWITH_WEBDAV
 
   if flag(Assistant) && ! os(solaris)
@@ -190,7 +188,7 @@ Executable git-annex
   if flag(Webapp)
     Build-Depends:
      yesod, yesod-default, yesod-static, yesod-form, yesod-core,
-     http-types, transformers, wai, wai-extra, warp, warp-tls,
+     wai, wai-extra, warp, warp-tls,
      blaze-builder, crypto-api, hamlet, clientsession,
      template-haskell, data-default, aeson, path-pieces,
      shakespeare

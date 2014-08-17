@@ -5,3 +5,267 @@ May be a useful starting point for [[deltas]].
 
 May also allow for downloading different chunks of a file concurrently from
 multiple remotes.
+
+Also, can allow resuming of interrupted uploads and downloads.
+
+# legacy chunking
+
+Supported by only the webdav and directory special remotes.
+
+Filenames are used for the chunks that make it easy to see which chunks
+belong together, even when encryption is used. There is also a chunkcount
+file, that similarly leaks information.
+
+It is not possible to enable chunking on a non-chunked remote.
+
+Problem: Two uploads of the same key from repos with different chunk sizes
+could lead to data loss. For example, suppose A is 10 mb chunksize, and B
+is 20 mb, and the upload speed is the same. If B starts first, when A will
+overwrite the file it is uploading for the 1st chunk. Then A uploads the
+second chunk, and once A is done, B finishes the 1st chunk and uploads its
+second. We now have [chunk 1(from A), chunk 2(from B)].
+
+# new requirements
+
+Every special remote should support chunking. (It does not make sense
+to support it for git remotes, but gcrypt remotes should support it.)
+
+S3 remotes should chunk by default, because the current S3 backend fails
+for files past a certian size. See [[bugs/Truncated_file_transferred_via_S3]].
+
+The size of chunks, as well as whether any chunking is done, should be
+configurable on the fly without invalidating data already stored in the
+remote. This seems important for usability (eg, so users can turn chunking
+on in the webapp when configuring an existing remote).
+
+Two concurrent uploaders of the same object to a remote should be safe,
+even if they're using different chunk sizes.
+
+The legacy chunk method needs to be supported for back-compat, so
+keep the chunksize= setting to enable that mode, and add a new chunk=
+setting for the new mode.
+
+# obscuring file sizes
+
+To hide from a remote any information about the sizes of files could be
+another goal of chunking. At least two things are needed for this:
+
+1. The filenames used on the remote don't indicate which chunks belong
+   together.
+
+2. The final short chunk needs to be padded with random data,
+   so that a remote sees only encrypted files with uniform sizes
+   and cannot make guesses about the kinds of data being stored.
+
+Note that padding cannot completely hide all information from an attacker
+who is logging puts or gets. An attacker could, for example, look at the
+times of puts, and guess at when git-annex has moved on to
+encrypting/decrypting the next object, and so guess at the approximate
+sizes of objects. (Concurrent uploads/downloads or random delays could be
+added to prevent these kinds of attacks.)
+
+And, obviously, if someone stores 10 tb of data in a remote, they probably
+have around 10 tb of files, so it's probably not a collection of recipes..
+
+Given its inneficiencies and lack of fully obscuring file sizes,
+padding may not be worth adding, but is considered in the designs below.
+
+# design 1
+
+Add an optional chunk field to Key. It is only present for chunk
+2 and above. Ie, SHA256-s12345--xxxxxxx is the first chunk (or whole
+object), while SHA256-s12345-c2--xxxxxxx is the second chunk.
+
+On an encrypted remote, Keys are generated with the chunk field, and then
+HMAC enrypted.
+
+Note that only using it for chunks 2+ means that git-annex can start by
+requesting the regular key, so an observer sees the same request whether
+chunked or not, and does not see eg, a pattern of failed requests for 
+a non-chunked key, followed by successful requests for the chunked keys.
+(Both more efficient and perhaps more secure.)
+
+Problem: This makes putting chunks easy. But there is a problem when getting 
+an object that has been chunked. If the key size is not known, we
+cannot tell when we've gotten the last chunk. (Also, we cannot strip
+padding.) Note that `addurl` sometimes generates keys w/o size info
+(particularly, it does so by design when using quvi).
+
+Problem: Also, this makes `checkPresent` hard to implement: How can it know if
+all the chunks are present, if the key size is not known?
+
+Problem: Also, this makes it difficult to download encrypted keys, because
+we only know the decrypted size, not the encrypted size, so we can't
+be sure how many chunks to get, and all chunks need to be downloaded before
+we can decrypt any of them. (Assuming we encrypt first; chunking first
+avoids this problem.)
+
+Problem: Does not solve concurrent uploads with different chunk sizes.
+
+# design 2
+
+When chunking is enabled, always put a chunk number in the Key,
+along with the chunk size.
+So, SHA256-1048576-c1--xxxxxxx for the first chunk of 1 megabyte.
+
+Before any chunks are stored, write a chunkcount file, eg
+SHA256-s12345-c0--xxxxxxx. Note that this key is the same as the original
+object's key, except with chunk number set to 0. This file contains both
+the number of chunks, and also the chunk size used. `checkPresent` downloads this
+file, and then verifies that each chunk is present, looking for keys with
+the expected chunk numbers and chunk size.
+
+This avoids problems with multiple writers using different chunk sizes,
+since they will be uploading to different files.
+
+Problem: In such a situation, some duplicate data might be stored, not
+referenced by the last chunkcount file to be written. It would not be
+dropped when the key was removed from the remote.
+
+Note: This design lets an attacker with logs tell the (appoximate) size of
+objects, by finding the small files that contain a chunk count, and
+correlating when that is written/read and when other files are
+written/read. That could be solved by padding the chunkcount key up to the
+size of the rest of the keys, but that's very innefficient; `checkPresent` is not
+designed to need to download large files.
+
+# design 3
+
+Like design 1, but add an encrypted chunk count prefix to the first object.
+This needs to be done in a way that does not let an attacker tell if the
+object has an encrypted chunk count prefix or not. 
+
+This seems difficult; attacker could probably tell where the first encrypted
+part stops and the next encrypted part starts by looking for gpg headers,
+and so tell which files are the first chunks.
+
+Also, `checkPresent` would need to download some or all of the first file.
+If all, that's a lot more expensive. If only some is downloaded, an
+attacker can guess that the file that was partially downloaded is the
+first chunk in a series, and wait for a time when it's fully downloaded to
+determine which are the other chunks.
+
+Problem: Two uploads of the same key from repos with different chunk sizes
+could lead to data loss. (Same as in design 2.)
+
+# design 4
+
+Use key SHA256-s12345-S1048576-C1--xxxxxxx for the first chunk of 1 megabyte.
+
+Note that keeping the 's'ize field unchanged is necessary because it 
+disambiguates eg, WORM keys. So a 'S'ize field is used to hold the chunk
+size.
+
+Instead of storing the chunk count in the special remote, store it in 
+the git-annex branch. 
+
+The location log does not record locations of individual chunk keys
+(too space-inneficient). Instead, look at a chunk log in the
+git-annex branch to get the chunk count and size for a key.
+
+`checkPresent` would check if any of the logged sets of chunks is 
+present on the remote. It would also check if the non-chunked key is
+present, as a fallback.
+
+When dropping a key from the remote, drop all logged chunk sizes.
+(Also drop any non-chunked key.)
+
+As long as the location log and the chunk log are committed atomically,
+this guarantees that no orphaned chunks end up on a remote
+(except any that might be left by interrupted uploads).
+
+This has the best security of the designs so far, because the special 
+remote doesn't know anything about chunk sizes. It uses a little more
+data in the git-annex branch, although with care (using the same timestamp
+as the location log), it can compress pretty well.
+
+## chunk log
+
+Stored in the git-annex branch, this provides a mapping `Key -> [[Key]]`.
+
+Note that a given remote uuid might have multiple sets of chunks (with
+different sizes) logged, if a key was stored on it twice using different
+chunk sizes. Also note that even when the log indicates a key is chunked,
+the object may be stored non-chunked on the remote too.
+
+For fixed size chunks, there's no need to store the list of chunk keys,
+instead the log only records the number of chunks (needed because the size
+of the parent Key may not be known), and the chunk size.
+
+Example:
+
+	1287290776.765152s e605dca6-446a-11e0-8b2a-002170d25c55:10240 9
+
+Later, might want to support other kinds of chunks, for example ones made
+using a rsync-style rolling checksum. It would probably not make sense to
+store the full [Key] list for such chunks in the log. Instead, it might be
+stored in a file on the remote.
+
+To support such future developments, when updating the chunk log, 
+git-annex should preserve unparsable values (the part after the colon).
+
+## chunk then encrypt
+
+Rather than encrypting the whole object 1st and then chunking, chunk and
+then encrypt.
+
+Reasons:
+
+1. If 2 repos are uploading the same key to a remote concurrently,
+   this allows some chunks to come from one and some from another,
+   and be reassembled without problems.
+
+2. Also allows chunks of the same object to be downloaded from different
+   remotes, perhaps concurrently, and again be reassembled without
+   problems.
+
+3. Prevents an attacker from re-assembling the chunked file using details
+   of the gpg output. Which would expose approximate
+   file size even if padding is being used to obscure it.
+
+Note that this means that the chunks won't exactly match the configured
+chunk size. gpg does compression, which might make them a
+lot smaller. Or gpg overhead could make them slightly larger. So `checkPresent`
+cannot check exact file sizes.
+
+If padding is enabled, gpg compression should be disabled, to not leak
+clues about how well the files compress and so what kind of file it is.
+
+## chunk key hashing
+
+A chunk key should hash into the same directory structure as its parent
+key. This will avoid lots of extra hash directories when using chunking
+with non-encrypted keys.
+
+Won't happen when the key is encrypted, but that is good; hashing to the
+same bucket then would allow statistical correlation.
+
+## resuming interupted transfers
+
+Resuming interrupted downloads, and uploads are both possible.
+
+Downloads: If the tmp file for a key exists, round it to the chunk size,
+and skip forward to the next needed chunk. Easy.
+
+Uploads: Check if the 1st chunk is present. If so, check the second chunk,
+etc. Once the first missing chunk is found, start uploading from there.
+
+That adds one extra checkPresent call per upload. Probably a win in most cases.
+Can be improved by making special remotes open a persistent
+connection that is used for transferring all chunks, as well as for
+checking checkPresent.
+
+Note that this is safe to do only as long as the Key being transferred
+cannot possibly have 2 different contents in different repos. Notably not
+necessarily the case for the URL keys generated for quvi.
+
+Both **done**.
+
+## parallel
+
+If 2 remotes both support chunking, uploading could upload different chunks
+to them in parallel. However, the chunk log does not currently allow
+representing the state where some chunks are on one remote and others on
+another remote.
+
+Parallel downloading of chunks from different remotes is a bit more doable.

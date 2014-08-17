@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="divB"
+ ip="204.17.143.10"
+ subject="comment 4"
+ date="2014-07-22T00:24:46Z"
+ content="""
+... and for the directories the same:
+
+1.) Create a (sub-)directory 'subdir' with files and sync everything
+2.) On the client: git annex get subdir . The subdirectory is now present, all files under it downloaded.
+3.) On the server create a new file in 'subdir' and git annex add; git annex sync --content
+4.) git annex sync --content on the client
+
+Result: Content of the files is not synced to client 
+"""]]

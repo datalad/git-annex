@@ -1,0 +1,28 @@
+git-annex 5.20140717 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Fix minor FD leak in journal code. Closes: #[754608](http://bugs.debian.org/754608)
+   * direct: Fix handling of case where a work tree subdirectory cannot
+     be written to due to permissions.
+   * migrate: Avoid re-checksumming when migrating from hashE to hash backend.
+   * uninit: Avoid failing final removal in some direct mode repositories
+     due to file modes.
+   * S3: Deal with AWS ACL configurations that do not allow creating or
+     checking the location of a bucket, but only reading and writing content to
+     it.
+   * resolvemerge: New plumbing command that runs the automatic merge conflict
+     resolver.
+   * Deal with change in git 2.0 that made indirect mode merge conflict
+     resolution leave behind old files.
+   * sync: Fix git sync with local git remotes even when they don't have an
+     annex.uuid set. (The assistant already did so.)
+   * Set gcrypt-publish-participants when setting up a gcrypt repository,
+     to avoid unncessary passphrase prompts.
+     This is a security/usability tradeoff. To avoid exposing the gpg key
+     ids who can decrypt the repository, users can unset
+     gcrypt-publish-participants.
+   * Install nautilus hooks even when ~/.local/share/nautilus/ does not yet
+     exist, since it is not automatically created for Gnome 3 users.
+   * Windows: Move .vbs files out of git\bin, to avoid that being in the
+     PATH, which caused some weird breakage. (Thanks, divB)
+   * Windows: Fix locking issue that prevented the webapp starting
+     (since 5.20140707)."""]]

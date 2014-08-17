@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnNqLKszWk9EoD4CDCqNXJRIklKFBCN1Ao"
+ nickname="maurizio"
+ subject="comment 4"
+ date="2014-07-17T19:48:30Z"
+ content="""
+I may be facing one unexpected behavior, but your statement that the \"webapp certainely allows to delete repositories\" does not match my experience. It does offer this option, but this option has failed on me so many times that I have learnt to live with a couple of repositories disabled, sitting here. Trying to delete them starts some process (emptying the repository, starting deletion process) but ends up in nothing. At least one of them does not seem to have a name anymore (probably what you refer to as $uuid) since only the part in square bracket is visible in the webapp. I concluded that this was what the webapp was supposed to do. 
+"""]]

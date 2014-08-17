@@ -22,6 +22,7 @@ import Utility.SshConfig
 import Utility.OSX
 #else
 import Utility.FreeDesktop
+import Utility.UserInfo
 import Assistant.Install.Menu
 #endif
 
@@ -36,13 +37,13 @@ standaloneAppBase = getEnv "GIT_ANNEX_APP_BASE"
  - Note that this is done every time it's started, so if the user moves
  - it around, the paths this sets up won't break.
  -
- - Nautilus hook script installation is done even for packaged apps,
- - since it has to go into the user's home directory.
+ - File manager hook script installation is done even for
+ - packaged apps, since it has to go into the user's home directory.
  -}
 ensureInstalled :: IO ()
 ensureInstalled = go =<< standaloneAppBase
   where
-	go Nothing = installNautilus "git-annex"
+	go Nothing = installFileManagerHooks "git-annex"
 	go (Just base) = do
 		let program = base </> "git-annex"
 		programfile <- programFile
@@ -78,7 +79,7 @@ ensureInstalled = go =<< standaloneAppBase
 			, runshell "\"$@\""
 			]
 
-		installNautilus program
+		installFileManagerHooks program
 
 installWrapper :: FilePath -> String -> IO ()
 installWrapper file content = do
@@ -88,15 +89,23 @@ installWrapper file content = do
 		viaTmp writeFile file content
 		modifyFileMode file $ addModes [ownerExecuteMode]
 
-installNautilus :: FilePath -> IO ()
+installFileManagerHooks :: FilePath -> IO ()
 #ifdef linux_HOST_OS
-installNautilus program = do
-	scriptdir <- (\d -> d </> "nautilus" </> "scripts") <$> userDataDir
-	createDirectoryIfMissing True scriptdir
-	genscript scriptdir "get"
-	genscript scriptdir "drop"
+installFileManagerHooks program = do
+	-- Gnome
+	nautilusScriptdir <- (\d -> d </> "nautilus" </> "scripts") <$> userDataDir
+	createDirectoryIfMissing True nautilusScriptdir
+	genNautilusScript nautilusScriptdir "get"
+	genNautilusScript nautilusScriptdir "drop"
+
+	-- KDE
+	home <- myHomeDir
+	let kdeServiceMenusdir = home </> ".kde" </> "share" </> "kde4" </> "services" </> "ServiceMenus"
+	createDirectoryIfMissing True kdeServiceMenusdir
+	writeFile (kdeServiceMenusdir </> "git-annex.desktop")
+		(kdeDesktopFile ["get", "drop"])
   where
-	genscript scriptdir action =
+	genNautilusScript scriptdir action =
 		installscript (scriptdir </> scriptname action) $ unlines
 			[ shebang_local
 			, autoaddedcomment
@@ -108,9 +117,38 @@ installNautilus program = do
 		modifyFileMode f $ addModes [ownerExecuteMode]
 	safetoinstallscript f = catchDefaultIO True $
 		elem autoaddedcomment . lines <$> readFileStrict f
-	autoaddedcomment = "# Automatically added by git-annex, do not edit. (To disable, chmod 600 this file.)"
+	autoaddedcomment = "# " ++ autoaddedmsg ++ " (To disable, chmod 600 this file.)"
+	autoaddedmsg = "Automatically added by git-annex, do not edit."
+
+	kdeDesktopFile actions = unlines $ concat $
+		kdeDesktopHeader actions : map kdeDesktopAction actions
+	kdeDesktopHeader actions =
+		[ "# " ++ autoaddedmsg
+		, "[Desktop Entry]"
+		, "Type=Service"
+		, "ServiceTypes=all/allfiles"
+		, "MimeType=all/all;"
+		, "Actions=" ++ intercalate ";" (map kdeDesktopSection actions)
+		, "X-KDE-Priority=TopLevel"
+		, "X-KDE-Submenu=Git-Annex"
+		, "X-KDE-Icon=git-annex"
+		, "X-KDE-ServiceTypes=KonqPopupMenu/Plugin"
+		]
+	kdeDesktopSection command = "GitAnnex" ++ command
+	kdeDesktopAction command = 
+		[ ""
+		, "[Desktop Action " ++ kdeDesktopSection command ++ "]"
+		, "Name=" ++ command
+		, "Icon=git-annex"
+		, unwords
+			[ "Exec=sh -c 'cd \"$(dirname '%U')\" &&"
+			, program
+			, command
+			, "--notify-start --notify-finish -- %U'"
+			]
+		]
 #else
-installNautilus _ = noop
+installFileManagerHooks _ = noop
 #endif
 
 {- Returns a cleaned up environment that lacks settings used to make the

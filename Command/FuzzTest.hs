@@ -13,7 +13,6 @@ import Command
 import qualified Git.Config
 import Config
 import Utility.ThreadScheduler
-import Annex.Exception
 import Utility.DiskFree
 
 import Data.Time.Clock
@@ -22,7 +21,7 @@ import Test.QuickCheck
 import Control.Concurrent
 
 def :: [Command]
-def = [ notBareRepo $ command "fuzztest" paramNothing seek SectionPlumbing
+def = [ notBareRepo $ command "fuzztest" paramNothing seek SectionTesting
 	"generates fuzz test files"]
 
 seek :: CommandSeek
@@ -56,7 +55,7 @@ fuzz :: Handle -> Annex ()
 fuzz logh = do
 	action <- genFuzzAction
 	record logh $ flip Started action
-	result <- tryAnnex $ runFuzzAction action
+	result <- tryNonAsync $ runFuzzAction action
 	record logh $ flip Finished $
 		either (const False) (const True) result
 

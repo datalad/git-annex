@@ -1,0 +1,29 @@
+I wanted to get the list of movies I haven't seen yet in XBMC, and i'm lazy. So I'll use [[metadata]] to be able to extract those movies only, for the road for example.
+
+First I fiddled around with shell scripts to extract the list of those films, which in XBMC-speak means that have a `NULL playCount`. Since there are two ways that XMBC can represent those files (in a `stack://` if there is multiple files for the movie or not), there are two scripts. For "stacked" movies:
+
+    echo 'SELECT files.strFileName FROM movie JOIN files ON files.idFile=movie.idFile JOIN path ON path.idPath=files.idPath WHERE playCount IS NULL AND files.strFileName LIKE "stack://%";' | sqlite3 /home/video/.xbmc/userdata/Database/MyVideos75.db | sed "s#stack://##;s/, /\n/g" | sed "s#/home/media/video/##"
+
+And the rest:
+
+    echo 'SELECT path.strPath || files.strFileName FROM movie JOIN files ON files.idFile=movie.idFile JOIN path ON path.idPath=files.idPath WHERE playCount IS NULL AND files.strFileName NOT LIKE "stack://%";' | sqlite3 /home/video/.xbmc/userdata/Database/MyVideos75.db | sed "s#/home/media/video/##"
+
+Also notice how I remove the absolute prefix for the annex so that i can refer to files as a relative path.
+
+So this quick and dirty hack could have been used to mark files as "new". Unfortunately, this won't unmark them when the playcount increases. So instead I think this should be a field, and we need to extract the playcount. Play around with shell scripting enough to get sick, get back into bad perl habits and you'll end up with this nasty script: [[git-annex-xbmc-playcount.pl]].
+
+After the script is ran, you can sort the files by play count with:
+
+    git annex view "playCount=*"
+
+Or just show the files that haven't been played yet:
+
+    git annex view playCount=0
+
+Use `git checkout master` to reset the view. Note that the above will flatten the tree hierarchy, which you may not way. Try this in that case:
+
+    git annex view playCount=0 films/=*
+
+For more information, see [[tips/metadata_driven_views/]].
+
+-- [[anarcat]]

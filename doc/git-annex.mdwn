@@ -949,12 +949,6 @@ subdirectories).
   Merge conflicts between two files that are not annexed will not be
   automatically resolved.
 
-* `test`
-
-  This runs git-annex's built-in test suite.
-
-  There are several parameters, provided by Haskell's tasty test framework.
-
 * `remotedaemon`
 
   Detects when network remotes have received git pushes and fetches from them.
@@ -962,6 +956,37 @@ subdirectories).
 * `xmppgit`
 
   This command is used internally to perform git pulls over XMPP.
+
+# TESTING COMMANDS
+
+* `test`
+
+  This runs git-annex's built-in test suite.
+
+  There are several parameters, provided by Haskell's tasty test framework.
+  Pass --help for details.
+
+* `testremote remote`
+
+  This tests a remote by generating some random objects and sending them to
+  the remote, then redownloading them, removing them from the remote, etc.
+
+  It's safe to run in an existing repository (the repository contents are
+  not altered), although it may perform expensive data transfers.
+
+  To perform a smaller set of tests, use --fast.
+
+  The --size option can be used to tune the size of the generated objects.
+
+  Testing a single remote will use the remote's configuration,
+  automatically varying the chunk sizes, and with simple shared encryption
+  enabled and disabled.
+
+* `fuzztest`
+
+  Generates random changes to files in the current repository,
+  for use in testing the assistant. This is dangerous, so it will not
+  do anything unless --forced.
 
 # OPTIONS
 

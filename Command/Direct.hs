@@ -7,8 +7,6 @@
 
 module Command.Direct where
 
-import Control.Exception.Extensible
-
 import Common.Annex
 import Command
 import qualified Git
@@ -16,7 +14,6 @@ import qualified Git.LsFiles
 import qualified Git.Branch
 import Config
 import Annex.Direct
-import Annex.Exception
 
 def :: [Command]
 def = [notBareRepo $ noDaemonRunning $
@@ -52,7 +49,7 @@ perform = do
 			Nothing -> noop
 			Just a -> do
 				showStart "direct" f
-				r' <- tryAnnex a
+				r' <- tryNonAsync a
 				case r' of
 					Left e -> warnlocked e
 					Right _ -> showEndOk

@@ -1,0 +1,38 @@
+### Please describe the problem.
+
+This is a followup from the discussion on https://git-annex.branchable.com/forum/Standard_groups__47__preferred_contents/ where I unfortunately did not get a complete answer.
+I don't know if it is really a bug but at least it does not work as I would expect and the documentation provides no clear discussion on that.
+
+Now to the problem:
+My annex is in "manual" mode (or equivalently "exclude="*" and present" or an expression which contains "present".
+Then I get a file using "git annex get file".
+I would expect that this file is now synced because it is "present".
+But it is not. When I change the file it is synced to the remotes. This is what it should be.
+However, when a remote changes that file, the content is NOT synced, the file is silently dropped.
+
+Similarly, when I get a complete directory tree in manual mode, I would expect that it is synced. That means, when a remote adds a file or changes a file in that directory, it is also synced to the local machine. But it is not. If it is changed, it is silently dropped (as written above). If a file is added, only the metadata is added but the content is not synced.
+
+### What steps will reproduce the problem?
+
+ - Create a file 'file' on the server, git annex add/sync etc.
+ - On the client: git annex wanted here 'exclude="*" and present'
+ - On the client: git annex get file . The file is now present on the client
+ - Change the file on the server, git annex sync
+ - git annex sync --content on the client
+ - Result: File is dropped again on client
+
+Similarly for directories:
+
+ - Create a (sub-)directory 'subdir' with files and sync everything
+ - On the client: git annex get subdir . The subdirectory is now present, all files under it downloaded.
+ - On the server create a new file in 'subdir' and git annex add; git annex sync --content
+ - git annex sync --content on the client
+ - Result: Content of the files is not synced to client
+
+### What version of git-annex are you using? On what operating system?
+
+    git-annex version: 5.20140717-g5a7d4ff
+    build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV DNS Feeds Quvi TDFA CryptoHash
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier ddar hook external
+

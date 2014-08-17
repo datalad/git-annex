@@ -14,9 +14,7 @@ import Types.Remote
 import Crypto
 import Types.Crypto
 import qualified Annex
-import Config.Cost
 import Utility.Base64
-import Utility.Metered
 
 {- Encryption setup for a remote. The user must specify whether to use
  - an encryption key, or not encrypt. An encrypted cipher is created, or is
@@ -66,57 +64,28 @@ encryptionSetup c = maybe genCipher updateCipher $ extractCipher c
 	c' = foldr M.delete c
                 -- git-annex used to remove 'encryption' as well, since
                 -- it was redundant; we now need to keep it for
-                -- public-key incryption, hence we leave it on newer
+                -- public-key encryption, hence we leave it on newer
                 -- remotes (while being backward-compatible).
 		[ "keyid", "keyid+", "keyid-", "highRandomQuality" ]
-
-{- Modifies a Remote to support encryption.
- -
- - Two additional functions must be provided by the remote,
- - to support storing and retrieving encrypted content. -}
-encryptableRemote
-	:: RemoteConfig
-	-> ((Cipher, Key) -> Key -> MeterUpdate -> Annex Bool)
-	-> ((Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool)
-	-> Remote
-	-> Remote
-encryptableRemote c storeKeyEncrypted retrieveKeyFileEncrypted r = 
-	r {
-		storeKey = store,
-		retrieveKeyFile = retrieve,
-		retrieveKeyFileCheap = retrieveCheap,
-		removeKey = withkey $ removeKey r,
-		hasKey = withkey $ hasKey r,
-		cost = cost r + encryptedRemoteCostAdj
-	}
-  where
-	store k f p = cip k >>= maybe
-		(storeKey r k f p)
-		(\enck -> storeKeyEncrypted enck k p)
-	retrieve k f d p = cip k >>= maybe
-		(retrieveKeyFile r k f d p)
-		(\enck -> retrieveKeyFileEncrypted enck k d p)
-	retrieveCheap k d = cip k >>= maybe
-		(retrieveKeyFileCheap r k d)
-		(\_ -> return False)
-	withkey a k = cip k >>= maybe (a k) (a . snd)
-	cip = cipherKey c
 
 {- Gets encryption Cipher. The decrypted Ciphers are cached in the Annex
  - state. -}
 remoteCipher :: RemoteConfig -> Annex (Maybe Cipher)
-remoteCipher c = go $ extractCipher c
+remoteCipher = fmap fst <$$> remoteCipher'
+
+remoteCipher' :: RemoteConfig -> Annex (Maybe (Cipher, StorableCipher))
+remoteCipher' c = go $ extractCipher c
   where
 	go Nothing = return Nothing
 	go (Just encipher) = do
 		cache <- Annex.getState Annex.ciphers
 		case M.lookup encipher cache of
-			Just cipher -> return $ Just cipher
+			Just cipher -> return $ Just (cipher, encipher)
 			Nothing -> do
 				showNote "gpg"
 				cipher <- liftIO $ decryptCipher encipher
 				Annex.changeState (\s -> s { Annex.ciphers = M.insert encipher cipher cache })
-				return $ Just cipher
+				return $ Just (cipher, encipher)
 
 {- Checks if the remote's config allows storing creds in the remote's config.
  - 
@@ -133,11 +102,11 @@ embedCreds c
 	| isJust (M.lookup "cipherkeys" c) && isJust (M.lookup "cipher" c) = True
 	| otherwise = False
 
-{- Gets encryption Cipher, and encrypted version of Key. -}
-cipherKey :: RemoteConfig -> Key -> Annex (Maybe (Cipher, Key))
-cipherKey c k = fmap make <$> remoteCipher c
+{- Gets encryption Cipher, and key encryptor. -}
+cipherKey :: RemoteConfig -> Annex (Maybe (Cipher, EncKey))
+cipherKey c = fmap make <$> remoteCipher c
   where
-	make ciphertext = (ciphertext, encryptKey mac ciphertext k)
+	make ciphertext = (ciphertext, encryptKey mac ciphertext)
 	mac = fromMaybe defaultMac $ M.lookup "mac" c >>= readMac
 
 {- Stores an StorableCipher in a remote's configuration. -}

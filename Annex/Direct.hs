@@ -32,7 +32,6 @@ import Utility.InodeCache
 import Utility.CopyFile
 import Annex.Perms
 import Annex.ReplaceFile
-import Annex.Exception
 import Annex.VariantFile
 import Git.Index
 import Annex.Index
@@ -252,7 +251,7 @@ mergeDirectCleanup d oldref = do
 	go makeabs getsha getmode a araw (f, item)
 		| getsha item == nullSha = noop
 		| otherwise = void $
-			tryAnnex . maybe (araw item makeabs f) (\k -> void $ a item makeabs k f)
+			tryNonAsync . maybe (araw item makeabs f) (\k -> void $ a item makeabs k f)
 				=<< catKey (getsha item) (getmode item)
 
 	moveout _ _ = removeDirect
@@ -354,11 +353,8 @@ toDirectGen k f = do
 		void $ addAssociatedFile k f
 		modifyContent loc $ do
 			thawContent loc
-			replaceFileOr f
-				(liftIO . moveFile loc)
-				$ \tmp -> do -- rollback
-					liftIO (moveFile tmp loc)
-					freezeContent loc
+			liftIO (replaceFileFrom loc f)
+				`catchIO` (\_ -> freezeContent loc)
 	fromdirect loc = do
 		replaceFile f $
 			liftIO . void . copyFileExternal loc

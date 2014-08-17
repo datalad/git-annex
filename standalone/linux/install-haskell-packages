@@ -3,7 +3,7 @@
 # to all the necessary haskell packages being installed, with the
 # necessary patches to work on architectures that lack template haskell.
 #
-# Note that the newest version of packages is installed. 
+# Note that the newest version of packages are installed. 
 # It attempts to reuse patches for older versions, but 
 # new versions of packages often break cross-compilation by adding TH, 
 # etc
@@ -20,14 +20,15 @@ fi
 cabalopts="$@"
 
 cabalinstall () {
-	echo cabal install "$@" "$cabalopts"
-	eval cabal install "$@" "$cabalopts"
+	echo cabal install -j1 "$@" "$cabalopts"
+	eval cabal install -j1 "$@" "$cabalopts"
 }
 
 patched () {
 	pkg=$1
 	shift 1
-	cabal unpack $pkg
+	cabal unpack $pkg$1
+	shift 1
 	cd $pkg*
 	git init
 	git config user.name dummy
@@ -74,7 +75,11 @@ install_pkgs () {
 	patched yesod-core
 	patched persistent
 	patched persistent-template
-	patched file-embed
+	# Newer versions of file-embed cause ghc -ddump-splices
+	# to output invalid character codes.
+	# Note that the system generating the splices should also
+	# use this version of file-embed.
+	patched file-embed -0.0.6
 	patched process-conduit
 	patched yesod-static
 	patched yesod-persistent

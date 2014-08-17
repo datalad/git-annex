@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.7"
+ subject="comment 1"
+ date="2014-08-15T17:46:15Z"
+ content="""
+It seems that this has something to do with an auto `git gc` run being trigged somehow during the repair. Puzzlingly, I cannot find any code that would delete the .git/gc.pid file, unless it somehow shows up as a branch ref or something like that.
+
+Can you run the command with --debug so we can see which particular git command triggered the git gc?
+"""]]

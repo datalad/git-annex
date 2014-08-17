@@ -14,7 +14,6 @@
 module Annex.Journal where
 
 import Common.Annex
-import Annex.Exception
 import qualified Git
 import Annex.Perms
 import Annex.LockFile

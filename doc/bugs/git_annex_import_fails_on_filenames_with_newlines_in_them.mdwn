@@ -1,0 +1,46 @@
+### Please describe the problem.
+I am importing a lot of old documents into my annex.  Some of these old files apparently have newlines in their filename.  A run of `git annex import` aborts when it encounters such a file; the file is moved to the annex, but it is left unstaged.
+
+### What steps will reproduce the problem?
+[[!format sh """
+bram@durian% mkdir annex
+bram@durian% cd annex
+bram@durian% git init
+Initialized empty Git repository in /home/bram/tmp/t/annex/.git/
+bram@durian% git annex init
+init  ok
+(Recording state in git...)
+bram@durian% echo foo > ../$'foo\nbar'
+bram@durian% ls -lb ..
+total 8
+drwxr-xr-x 3 bram bram 4096 Jul 26 18:20 annex/
+-rw-r--r-- 1 bram bram    4 Jul 26 18:20 foo\nbar
+bram@durian% git annex import ../foo$'\n'bar
+import foo
+bar git-annex: unknown response from git cat-file ("HEAD:./foo missing","HEAD:./foo\nbar")
+bram@durian% ls -lb
+total 4
+-r--r--r-- 2 bram bram 4 Jul 26 18:20 foo\nbar
+bram@durian% git status
+On branch master
+
+Initial commit
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	"foo\nbar"
+
+nothing added to commit but untracked files present (use "git add" to track)
+bram@durian% cat $'foo\nbar'
+foo
+"""]]
+
+
+### What version of git-annex are you using? On what operating system?
+    Debian unstable
+    git-annex version: 5.20140717
+    git version 2.0.1
+    Linux durian 3.14-1-amd64 #1 SMP Debian 3.14.9-1 (2014-06-30) x86_64 GNU/Linux
+
+[[!tag confirmed git-bug]]

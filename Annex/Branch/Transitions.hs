@@ -12,8 +12,9 @@ module Annex.Branch.Transitions (
 
 import Logs
 import Logs.Transitions
-import Logs.UUIDBased as UUIDBased
-import Logs.Presence.Pure as Presence
+import qualified Logs.UUIDBased as UUIDBased
+import qualified Logs.Presence.Pure as Presence
+import qualified Logs.Chunk.Pure as Chunk
 import Types.TrustLevel
 import Types.UUID
 
@@ -37,9 +38,11 @@ dropDead f content trustmap = case getLogVariety f of
 		-- because git remotes may still exist, and they need
 		-- to still know it's dead.
 		| f == trustLog -> PreserveFile
-		| otherwise -> ChangeFile $ UUIDBased.showLog id $ dropDeadFromUUIDBasedLog trustmap $ UUIDBased.parseLog Just content
+		| otherwise -> ChangeFile $ UUIDBased.showLog id $ dropDeadFromMapLog trustmap id $ UUIDBased.parseLog Just content
 	Just NewUUIDBasedLog -> ChangeFile $
-		UUIDBased.showLogNew id $ dropDeadFromUUIDBasedLog trustmap $ UUIDBased.parseLogNew Just content
+		UUIDBased.showLogNew id $ dropDeadFromMapLog trustmap id $ UUIDBased.parseLogNew Just content
+	Just (ChunkLog _) -> ChangeFile $
+		Chunk.showLog $ dropDeadFromMapLog trustmap fst $ Chunk.parseLog content
 	Just (PresenceLog _) ->
 		let newlog = Presence.compactLog $ dropDeadFromPresenceLog trustmap $ Presence.parseLog content
 		in if null newlog
@@ -48,8 +51,8 @@ dropDead f content trustmap = case getLogVariety f of
 	Just OtherLog -> PreserveFile
 	Nothing -> PreserveFile
 
-dropDeadFromUUIDBasedLog :: TrustMap -> UUIDBased.Log String -> UUIDBased.Log String
-dropDeadFromUUIDBasedLog trustmap = M.filterWithKey $ notDead trustmap . const
+dropDeadFromMapLog :: Ord k => TrustMap -> (k -> UUID) -> M.Map k v -> M.Map k v
+dropDeadFromMapLog trustmap getuuid = M.filterWithKey $ \k _v -> notDead trustmap getuuid k
 
 {- Presence logs can contain UUIDs or other values. Any line that matches
  - a dead uuid is dropped; any other values are passed through. -}

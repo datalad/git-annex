@@ -104,13 +104,13 @@ runWatcher = do
 		, errHook = errhook
 		}
 	scanevents <- liftAnnex $ annexStartupScan <$> Annex.getGitConfig
-	handle <- liftIO $ watchDir "." ignored scanevents hooks startup
+	h <- liftIO $ watchDir "." ignored scanevents hooks startup
 	debug [ "watching", "."]
 	
 	{- Let the DirWatcher thread run until signalled to pause it,
 	 - then wait for a resume signal, and restart. -}
 	waitFor PauseWatcher $ do
-		liftIO $ stopWatchDir handle
+		liftIO $ stopWatchDir h
 		waitFor ResumeWatcher runWatcher
   where
 	hook a = Just <$> asIO2 (runHandler a)
@@ -184,7 +184,7 @@ runHandler :: Handler -> FilePath -> Maybe FileStatus -> Assistant ()
 runHandler handler file filestatus = void $ do
 	r <- tryIO <~> handler (normalize file) filestatus
 	case r of
-		Left e -> liftIO $ print e
+		Left e -> liftIO $ warningIO $ show e
 		Right Nothing -> noop
 		Right (Just change) -> do
 			-- Just in case the commit thread is not

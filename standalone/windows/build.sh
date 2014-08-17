@@ -7,9 +7,9 @@ set -x
 set -e
 
 # Path to the Haskell Platform.
-HP="/c/Program Files (x86)/Haskell Platform/2013.2.0.0"
+#HP="/c/haskell/2014.2.0.0" # now in the default PATH
 
-PATH="$HP/bin:$HP/lib/extralibs/bin:/c/Program Files (x86)/NSIS:/c/msysgit/cmd:/c/msysgit/bin:$PATH"
+PATH="/c/Program Files (x86)/NSIS:/c/msysgit/cmd:$PATH"
 
 # Run a command with the cygwin environment available.
 # However, programs not from cygwin are preferred.
@@ -34,6 +34,10 @@ rm -f git-annex-installer.exe
 # cabal install is not run in cygwin, because we don't want configure scripts
 # for haskell libraries to link them with the cygwin library.
 cabal update || true
+
+# This workaround is still needed, it seems.
+#cabal install transformers-compat -fthree
+#cabal install DAV-1.0
 
 cabal install --only-dependencies || true
 
@@ -64,11 +68,13 @@ withcygpreferred Build/NullSoftInstaller.exe
 
 rm -f last-incremental-failed
 
-# Test git-annex
-# (doesn't currently work well on autobuilder, reason unknown)
-rm -rf .t
-withcyg dist/build/git-annex/git-annex.exe test || true
-
 rm -f dist/build-version
 ghc --make Build/BuildVersion.hs
 Build/BuildVersion > dist/build-version
+
+# Test git-annex
+# (doesn't currently work well on autobuilder, reason unknown)
+rm -rf .t
+PATH="$(pwd)/dist/build/git-annex/:$PATH"
+export PATH
+withcyg dist/build/git-annex/git-annex.exe test || true

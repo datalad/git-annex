@@ -50,8 +50,8 @@ gen r _ c gc =
 		retrieveKeyFile = downloadKey,
 		retrieveKeyFileCheap = downloadKeyCheap,
 		removeKey = dropKey,
-		hasKey = checkKey,
-		hasKeyCheap = False,
+		checkPresent = checkKey,
+		checkPresentCheap = False,
 		whereisKey = Just getUrls,
 		remoteFsck = Nothing,
 		repairRepo = Nothing,
@@ -61,7 +61,8 @@ gen r _ c gc =
 		repo = r,
 		readonly = True,
 		availability = GloballyAvailable,
-		remotetype = remote
+		remotetype = remote,
+		mkUnavailable = return Nothing
 	}
 
 downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
@@ -98,12 +99,12 @@ dropKey k = do
 	mapM_ (setUrlMissing k) =<< getUrls k
 	return True
 
-checkKey :: Key -> Annex (Either String Bool)
+checkKey :: Key -> Annex Bool
 checkKey key = do
 	us <- getUrls key
 	if null us
-		then return $ Right False
-		else return =<< checkKey' key us
+		then return False
+		else either error return =<< checkKey' key us
 checkKey' :: Key -> [URLString] -> Annex (Either String Bool)
 checkKey' key us = firsthit us (Right False) $ \u -> do
 	let (u', downloader) = getDownloader u

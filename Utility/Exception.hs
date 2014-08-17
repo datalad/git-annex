@@ -1,59 +1,88 @@
 {- Simple IO exception handling (and some more)
  -
- - Copyright 2011-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2014 Joey Hess <joey@kitenet.net>
  -
  - License: BSD-2-clause
  -}
 
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Utility.Exception where
+module Utility.Exception (
+	module X,
+	catchBoolIO,
+	catchMaybeIO,
+	catchDefaultIO,
+	catchMsgIO,
+	catchIO,
+	tryIO,
+	bracketIO,
+	catchNonAsync,
+	tryNonAsync,
+	tryWhenExists,
+) where
 
-import Control.Exception
-import qualified Control.Exception as E
-import Control.Applicative
+import Control.Monad.Catch as X hiding (Handler)
+import qualified Control.Monad.Catch as M
+import Control.Exception (IOException, AsyncException)
 import Control.Monad
+import Control.Monad.IO.Class (liftIO, MonadIO)
 import System.IO.Error (isDoesNotExistError)
 import Utility.Data
 
 {- Catches IO errors and returns a Bool -}
-catchBoolIO :: IO Bool -> IO Bool
+catchBoolIO :: MonadCatch m => m Bool -> m Bool
 catchBoolIO = catchDefaultIO False
 
 {- Catches IO errors and returns a Maybe -}
-catchMaybeIO :: IO a -> IO (Maybe a)
-catchMaybeIO a = catchDefaultIO Nothing $ Just <$> a
+catchMaybeIO :: MonadCatch m => m a -> m (Maybe a)
+catchMaybeIO a = do
+	catchDefaultIO Nothing $ do
+		v <- a
+		return (Just v)
 
 {- Catches IO errors and returns a default value. -}
-catchDefaultIO :: a -> IO a -> IO a
+catchDefaultIO :: MonadCatch m => a -> m a -> m a
 catchDefaultIO def a = catchIO a (const $ return def)
 
 {- Catches IO errors and returns the error message. -}
-catchMsgIO :: IO a -> IO (Either String a)
-catchMsgIO a = either (Left . show) Right <$> tryIO a
+catchMsgIO :: MonadCatch m => m a -> m (Either String a)
+catchMsgIO a = do
+	v <- tryIO a
+	return $ either (Left . show) Right v
 
 {- catch specialized for IO errors only -}
-catchIO :: IO a -> (IOException -> IO a) -> IO a
-catchIO = E.catch
+catchIO :: MonadCatch m => m a -> (IOException -> m a) -> m a
+catchIO = M.catch
 
 {- try specialized for IO errors only -}
-tryIO :: IO a -> IO (Either IOException a)
-tryIO = try
+tryIO :: MonadCatch m => m a -> m (Either IOException a)
+tryIO = M.try
+
+{- bracket with setup and cleanup actions lifted to IO.
+ -
+ - Note that unlike catchIO and tryIO, this catches all exceptions. -}
+bracketIO :: (MonadMask m, MonadIO m) => IO v -> (v -> IO b) -> (v -> m a) -> m a
+bracketIO setup cleanup = bracket (liftIO setup) (liftIO . cleanup)
 
 {- Catches all exceptions except for async exceptions.
  - This is often better to use than catching them all, so that
  - ThreadKilled and UserInterrupt get through.
  -}
-catchNonAsync :: IO a -> (SomeException -> IO a) -> IO a
+catchNonAsync :: MonadCatch m => m a -> (SomeException -> m a) -> m a
 catchNonAsync a onerr = a `catches`
-	[ Handler (\ (e :: AsyncException) -> throw e)
-	, Handler (\ (e :: SomeException) -> onerr e)
+	[ M.Handler (\ (e :: AsyncException) -> throwM e)
+	, M.Handler (\ (e :: SomeException) -> onerr e)
 	]
 
-tryNonAsync :: IO a -> IO (Either SomeException a)
-tryNonAsync a = (Right <$> a) `catchNonAsync` (return . Left)
+tryNonAsync :: MonadCatch m => m a -> m (Either SomeException a)
+tryNonAsync a = go `catchNonAsync` (return . Left)
+  where
+	go = do
+		v <- a
+		return (Right v)
 
 {- Catches only DoesNotExist exceptions, and lets all others through. -}
-tryWhenExists :: IO a -> IO (Maybe a)
-tryWhenExists a = eitherToMaybe <$>
-	tryJust (guard . isDoesNotExistError) a
+tryWhenExists :: MonadCatch m => m a -> m (Maybe a)
+tryWhenExists a = do
+	v <- tryJust (guard . isDoesNotExistError) a
+	return (eitherToMaybe v)

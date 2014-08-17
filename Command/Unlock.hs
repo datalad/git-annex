@@ -28,13 +28,20 @@ seek = withFilesInGit $ whenAnnexed start
 start :: FilePath -> Key -> CommandStart
 start file key = do
 	showStart "unlock" file
-	next $ perform file key
+	ifM (inAnnex key)
+		( ifM (checkDiskSpace Nothing key 0)
+			( next $ perform file key
+			, do
+				warning "not enough disk space to copy file"
+				next $ next $ return False
+			)
+		, do
+			warning "content not present; cannot unlock"
+			next $ next $ return False
+		)
 
 perform :: FilePath -> Key -> CommandPerform
 perform dest key = do
-	unlessM (inAnnex key) $ error "content not present"
-	unlessM (checkDiskSpace Nothing key 0) $ error "cannot unlock"
-
 	src <- calcRepo $ gitAnnexLocation key
 	tmpdest <- fromRepo $ gitAnnexTmpObjectLocation key
 	liftIO $ createDirectoryIfMissing True (parentDir tmpdest)
@@ -46,5 +53,7 @@ perform dest key = do
 				moveFile tmpdest dest
 			thawContent dest
 			next $ return True
-		, error "copy failed!"
+		, do
+			warning "copy failed!"
+			next $ return False
 		)

@@ -1,0 +1,64 @@
+Remained frustratingly stuck until 3 pm on the same stuff that puzzled
+me yesterday. However, 6 hours later, I have the directory
+special remote 100% working with both new chunk= and legacy chunksize=
+configuration, both with and without encryption.
+
+----
+
+So, the root of why this is was hard, since I thought about it a lot today
+in between beating my head into the wall: git-annex's internal API for remotes
+is really, really simple. It basically comes down to:
+
+[[!format haskell """
+	Remote
+		{ storeKey :: Key -> AssociatedFile -> MeterUpdate -> Annex Bool
+		, retrieveKeyFile :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
+		, removeKey :: Key -> Annex Bool
+		, hasKey :: Key -> Annex (Either String Bool)
+		}
+"""]]
+
+This simplicity is a Good Thing, because it maps very well to REST-type
+services. And it allows for quite a lot of variety in implementations of
+remotes. Ranging from reguar git remotes, that rsync files around without
+git-annex ever loading them itself, to remotes like webdav that load
+and store files themselves, to remotes like tahoe that intentionally do not
+support git-annex's built-in encryption methods.
+
+However, the simplicity of that API means that lots of complicated stuff,
+like handling chunking, encryption, etc, has to be handled on a per-remote
+basis. Or, more generally, by `Remote -> Remote` transformers that take
+a remote and add some useful feature to it.
+
+One problem is that the API is so simple that a remote transformer that adds
+encryption is not feasible. In fact, every encryptable remote has
+had its own code that loads a file from local disk, encrypts it, and sends
+it to the remote. Because there's no way to make a remote transformer that
+converts a `storeKey` into an encrypted `storeKey`. (Ditto for retrieving
+keys.)
+
+I almost made the API more complicated today. Twice. But both times
+I ended up not, and I think that was the right choice, even though
+it meant I had to write some quite painful code.
+
+----
+
+In the end, I instead wrote a little module that pulls together supporting
+both encryption and chunking. I'm not completely happy because those
+two things should be independent, and so separate. But, 120 lines of
+code that don't keep them separate is not the end of the world.
+
+That module also contains some more powerful, less general APIs, 
+that will work well with the kinds of remotes that will use it.
+
+The really nice result, is that the implementation of the directory
+special remote melts down from 267 lines of code to just 172! (Plus some
+legacy code for the old style chunking, refactored out into a file I can
+delete one day.) It's a lot cleaner too.
+
+With all this done, I expect I can pretty easily add the new style chunking
+to most git-annex remotes, and remove code from them while doing it!
+
+----
+
+Today's work was sponsored by Mark Hepburn.

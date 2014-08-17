@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="divB"
+ ip="204.17.143.10"
+ subject="comment 6"
+ date="2014-07-23T05:20:47Z"
+ content="""
+Hi daniele,
+
+I am not completely sure what you mean but I as far as I understand as soon as I set \"wanted\" to anything other than \"default\" the standard groups do not apply at all.
+I can't use vicfg because I use windows and this command hangs ... probably because there is no vi.
+
+However, I can still check the expressions:
+
+    $ git annex group here
+    manual
+    $ git annex wanted here
+    exclude=\"*\" and present
+    $
+
+Have you tried this? Does it work in your case?
+Because the standard preferred contents also contains \"present\" so I assume it would behave the same.
+Is maybe \"present\" broken or the behavior different than expected?
+
+
+"""]]

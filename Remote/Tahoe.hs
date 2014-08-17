@@ -72,8 +72,8 @@ gen r u c gc = do
 		retrieveKeyFile = retrieve u hdl,
 		retrieveKeyFileCheap = \_ _ -> return False,
 		removeKey = remove,
-		hasKey = checkPresent u hdl,
-		hasKeyCheap = False,
+		checkPresent = checkKey u hdl,
+		checkPresentCheap = False,
 		whereisKey = Nothing,
 		remoteFsck = Nothing,
 		repairRepo = Nothing,
@@ -83,7 +83,8 @@ gen r u c gc = do
 		localpath = Nothing,
 		readonly = False,
 		availability = GloballyAvailable,
-		remotetype = remote
+		remotetype = remote,
+		mkUnavailable = return Nothing
 	}
 
 tahoeSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
@@ -123,14 +124,16 @@ remove _k = do
 	warning "content cannot be removed from tahoe remote"
 	return False
 
-checkPresent :: UUID -> TahoeHandle -> Key -> Annex (Either String Bool)
-checkPresent u hdl k = go =<< getCapability u k
+checkKey :: UUID -> TahoeHandle -> Key -> Annex Bool
+checkKey u hdl k = go =<< getCapability u k
   where
-	go Nothing = return (Right False)
-	go (Just cap) = liftIO $ parseCheck <$> readTahoe hdl "check"
-		[ Param "--raw"
-		, Param cap
-		]
+	go Nothing = return False
+	go (Just cap) = liftIO $ do
+		v <- parseCheck <$> readTahoe hdl "check"
+			[ Param "--raw"
+			, Param cap
+			]
+		either error return v
 
 defaultTahoeConfigDir :: UUID -> IO TahoeConfigDir
 defaultTahoeConfigDir u = do

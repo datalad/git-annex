@@ -31,6 +31,7 @@ module Utility.Process (
 	stdinHandle,
 	stdoutHandle,
 	stderrHandle,
+	bothHandles,
 	processHandle,
 	devNull,
 ) where

@@ -9,7 +9,6 @@ module Git.Config where
 
 import qualified Data.Map as M
 import Data.Char
-import Control.Exception.Extensible
 
 import Common
 import Git

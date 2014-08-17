@@ -152,8 +152,8 @@ limitCopies want = case split ":" want of
 	go num good = case readish num of
 		Nothing -> Left "bad number for copies"
 		Just n -> Right $ \notpresent -> checkKey $
-			handle n good notpresent
-	handle n good notpresent key = do
+			go' n good notpresent
+	go' n good notpresent key = do
 		us <- filter (`S.notMember` notpresent)
 			<$> (filterM good =<< Remote.keyLocations key)
 		return $ length us >= n
@@ -170,10 +170,10 @@ addLackingCopies approx = addLimit . limitLackingCopies approx
 limitLackingCopies :: Bool -> MkLimit Annex
 limitLackingCopies approx want = case readish want of
 	Just needed -> Right $ \notpresent mi -> flip checkKey mi $
-		handle mi needed notpresent
+		go mi needed notpresent
 	Nothing -> Left "bad value for number of lacking copies"
   where
-	handle mi needed notpresent key = do
+	go mi needed notpresent key = do
 		NumCopies numcopies <- if approx
 			then approxNumCopies
 			else case mi of

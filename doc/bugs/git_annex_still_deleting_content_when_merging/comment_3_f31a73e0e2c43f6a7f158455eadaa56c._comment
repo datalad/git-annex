@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmMLeU-zCzx2mc5pL2XT8a1UNkQwHAHjg8"
+ nickname="daniele"
+ subject="comment 3"
+ date="2014-07-22T02:10:14Z"
+ content="""
+I was unsure as to what git-log command would best describe the problematic commits but in the meantime I did a:
+    
+     git log --graph --decorate=full --full-diff
+
+These are the only three commits of that afternoon (the surrounding history is from completely different hours and very likely unrelated, so it wasn't posted)
+
+    * commit d9eb9e94a3973598a847a5bdab1b65e459c1588a
+    | Author: COMPUTER B
+    | Date:   Thu Jul 17 18:17:16 2014 +0200
+    |  
+    * commit 6fa27f0849227c490ac4d4d62ca86e4befe5121e
+    | Author: COMPUTER A
+    | Date:   Thu Jul 17 18:17:14 2014 +0200
+    |  
+    * commit d25cc793739573057e475c92c8d37ce4ecc7bc9b
+    | Author: COMPUTER A
+    | Date:   Thu Jul 17 18:17:12 2014 +0200
+
+
+It's a straight line (fast forward?), I don't see any merging either. Is this normal? Shouldn't a change in Repo A bring a merge in Repo B (where everything stayed the same) when things are synchronized? I don't fully understand how annex syncs happen so don't mind this question if it's all normal.
+"""]]

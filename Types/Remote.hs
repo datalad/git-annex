@@ -56,7 +56,9 @@ data RemoteA a = Remote {
 	name :: RemoteName,
 	-- Remotes have a use cost; higher is more expensive
 	cost :: Cost,
-	-- Transfers a key to the remote.
+	-- Transfers a key's contents from disk to the remote.
+	-- The key should not appear to be present on the remote until
+	-- all of its contents have been transferred.
 	storeKey :: Key -> AssociatedFile -> MeterUpdate -> a Bool,
 	-- Retrieves a key's contents to a file.
 	-- (The MeterUpdate does not need to be used if it retrieves
@@ -64,14 +66,14 @@ data RemoteA a = Remote {
 	retrieveKeyFile :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> a Bool,
 	-- retrieves a key's contents to a tmp file, if it can be done cheaply
 	retrieveKeyFileCheap :: Key -> FilePath -> a Bool,
-	-- removes a key's contents
+	-- removes a key's contents (succeeds if the contents are not present)
 	removeKey :: Key -> a Bool,
-	-- Checks if a key is present in the remote; if the remote
-	-- cannot be accessed returns a Left error message.
-	hasKey :: Key -> a (Either String Bool),
-	-- Some remotes can check hasKey without an expensive network
+	-- Checks if a key is present in the remote.
+	-- Throws an exception if the remote cannot be accessed.
+	checkPresent :: Key -> a Bool,
+	-- Some remotes can checkPresent without an expensive network
 	-- operation.
-	hasKeyCheap :: Bool,
+	checkPresentCheap :: Bool,
 	-- Some remotes can provide additional details for whereis.
 	whereisKey :: Maybe (Key -> a [String]),
 	-- Some remotes can run a fsck operation on the remote,
@@ -93,7 +95,10 @@ data RemoteA a = Remote {
 	-- a Remote can be globally available. (Ie, "in the cloud".)
 	availability :: Availability,
 	-- the type of the remote
-	remotetype :: RemoteTypeA a
+	remotetype :: RemoteTypeA a,
+	-- For testing, makes a version of this remote that is not
+	-- available for use. All its actions should fail.
+	mkUnavailable :: a (Maybe (RemoteA a))
 }
 
 instance Show (RemoteA a) where

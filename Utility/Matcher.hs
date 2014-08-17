@@ -102,13 +102,13 @@ findClose l =
 	in (Group (reverse g), rest)
   where
   	go c [] = (c, []) -- not picky about extra Close
-	go c (t:ts) = handle t
+	go c (t:ts) = dispatch t
 	  where
-		handle Close = (c, ts)
-		handle Open = 
+		dispatch Close = (c, ts)
+		dispatch Open = 
 			let (c', ts') = go [] ts
 			in go (Group (reverse c') : c) ts'
-		handle _ = go (One t:c) ts
+		dispatch _ = go (One t:c) ts
 
 {- Checks if a Matcher matches, using a supplied function to check
  - the value of Operations. -}

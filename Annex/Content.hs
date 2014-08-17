@@ -16,6 +16,7 @@ module Annex.Content (
 	getViaTmpChecked,
 	getViaTmpUnchecked,
 	prepGetViaTmpChecked,
+	prepTmp,
 	withTmp,
 	checkDiskSpace,
 	moveAnnex,
@@ -55,7 +56,6 @@ import Annex.Perms
 import Annex.Link
 import Annex.Content.Direct
 import Annex.ReplaceFile
-import Annex.Exception
 
 #ifdef mingw32_HOST_OS
 import Utility.WinLock
@@ -166,7 +166,7 @@ lockContent key a = do
 	contentfile <- calcRepo $ gitAnnexLocation key
 	lockfile <- contentLockFile key
 	maybe noop setuplockfile lockfile
-	bracketAnnex (liftIO $ lock contentfile lockfile) (unlock lockfile) (const a)
+	bracket (liftIO $ lock contentfile lockfile) (unlock lockfile) (const a)
   where
 	alreadylocked = error "content is locked"
 	setuplockfile lockfile = modifyContent lockfile $
@@ -264,7 +264,10 @@ prepTmp key = do
 	createAnnexDirectory (parentDir tmp)
 	return tmp
 
-{- Creates a temp file, runs an action on it, and cleans up the temp file. -}
+{- Creates a temp file for a key, runs an action on it, and cleans up
+ - the temp file. If the action throws an exception, the temp file is
+ - left behind, which allows for resuming.
+ -}
 withTmp :: Key -> (FilePath -> Annex a) -> Annex a
 withTmp key action = do
 	tmp <- prepTmp key
@@ -416,7 +419,7 @@ withObjectLoc key indirect direct = ifM isDirect
 cleanObjectLoc :: Key -> Annex () -> Annex ()
 cleanObjectLoc key cleaner = do
 	file <- calcRepo $ gitAnnexLocation key
-	void $ tryAnnexIO $ thawContentDir file
+	void $ tryIO $ thawContentDir file
 	cleaner
 	liftIO $ removeparents file (3 :: Int)
   where

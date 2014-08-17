@@ -9,7 +9,7 @@
 
 Sorry, I ment that the file containing the symmetric encryption key should obviously not be used to encrypt itself, it would be stored in the repository \"unencrypted\" (but protected with a passphrase)
 
-> store a non-encrypted gpg key alongside the repsitory encrypted with it, but then you have to rely on a passphrase for all your security.
+> store a non-encrypted gpg key alongside the repository encrypted with it, but then you have to rely on a passphrase for all your security.
 
 Exactly. I think such a mode be a great addition. It might not be as secure as encryption based on a private key - depending on the passphrase strength -, but it would certainly be a lot more convenient and portable (and still much more secure than the shared encryption method).
 """]]

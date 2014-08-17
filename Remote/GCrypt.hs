@@ -7,7 +7,7 @@
 
 module Remote.GCrypt (
 	remote,
-	gen,
+	chainGen,
 	getGCryptUUID,
 	coreGCryptId,
 	setupRepo
@@ -15,7 +15,7 @@ module Remote.GCrypt (
 
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
-import Control.Exception.Extensible
+import Control.Exception
 
 import Common.Annex
 import Types.Remote
@@ -29,7 +29,6 @@ import qualified Git.GCrypt
 import qualified Git.Construct
 import qualified Git.Types as Git ()
 import qualified Annex.Branch
-import qualified Annex.Content
 import Config
 import Config.Cost
 import Remote.Helper.Git
@@ -38,16 +37,15 @@ import Remote.Helper.Special
 import Remote.Helper.Messages
 import qualified Remote.Helper.Ssh as Ssh
 import Utility.Metered
-import Crypto
 import Annex.UUID
 import Annex.Ssh
 import qualified Remote.Rsync
+import qualified Remote.Directory
 import Utility.Rsync
 import Utility.Tmp
 import Logs.Remote
 import Logs.Transfer
 import Utility.Gpg
-import Annex.Content
 
 remote :: RemoteType
 remote = RemoteType {
@@ -59,19 +57,24 @@ remote = RemoteType {
 	setup = gCryptSetup
 }
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-gen gcryptr u c gc = do
+chainGen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
+chainGen gcryptr u c gc = do
 	g <- gitRepo
 	-- get underlying git repo with real path, not gcrypt path
 	r <- liftIO $ Git.GCrypt.encryptedRemote g gcryptr
 	let r' = r { Git.remoteName = Git.remoteName gcryptr }
+	gen r' u c gc
+
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
+gen baser u c gc = do
 	-- doublecheck that cache matches underlying repo's gcrypt-id
 	-- (which might not be set), only for local repos
-	(mgcryptid, r'') <- getGCryptId True r'
-	case (mgcryptid, Git.GCrypt.remoteRepoId g (Git.remoteName gcryptr)) of
+	(mgcryptid, r) <- getGCryptId True baser
+	g <- gitRepo
+	case (mgcryptid, Git.GCrypt.remoteRepoId g (Git.remoteName baser)) of
 		(Just gcryptid, Just cachedgcryptid)
-			| gcryptid /= cachedgcryptid -> resetup gcryptid r''
-		_ -> gen' r'' u c gc
+			| gcryptid /= cachedgcryptid -> resetup gcryptid r
+		_ -> gen' r u c gc
   where
 	-- A different drive may have been mounted, making a different
 	-- gcrypt remote available. So need to set the cached
@@ -81,10 +84,10 @@ gen gcryptr u c gc = do
 	resetup gcryptid r = do
 		let u' = genUUIDInNameSpace gCryptNameSpace gcryptid
 		v <- M.lookup u' <$> readRemoteLog
-		case (Git.remoteName gcryptr, v) of
+		case (Git.remoteName baser, v) of
 			(Just remotename, Just c') -> do
 				setGcryptEncryption c' remotename
-				setConfig (remoteConfig gcryptr "uuid") (fromUUID u')
+				setConfig (remoteConfig baser "uuid") (fromUUID u')
 				setConfig (ConfigKey $ Git.GCrypt.remoteConfigKey "gcrypt-id" remotename) gcryptid
 				gen' r u' c' gc
 			_ -> do
@@ -101,12 +104,12 @@ gen' r u c gc = do
 		{ uuid = u
 		, cost = cst
 		, name = Git.repoDescribe r
-		, storeKey = \_ _ _ -> noCrypto
-		, retrieveKeyFile = \_ _ _ _ -> noCrypto
+		, storeKey = storeKeyDummy
+		, retrieveKeyFile = retreiveKeyFileDummy
 		, retrieveKeyFileCheap = \_ _ -> return False
-		, removeKey = remove this rsyncopts
-		, hasKey = checkPresent this rsyncopts
-		, hasKeyCheap = repoCheap r
+		, removeKey = removeKeyDummy
+		, checkPresent = checkPresentDummy
+		, checkPresentCheap = repoCheap r
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing
@@ -117,11 +120,20 @@ gen' r u c gc = do
 		, readonly = Git.repoIsHttp r
 		, availability = availabilityCalc r
 		, remotetype = remote
+		, mkUnavailable = return Nothing
 	}
-	return $ Just $ encryptableRemote c
-		(store this rsyncopts)
-		(retrieve this rsyncopts)
+	return $ Just $ specialRemote' specialcfg c
+		(simplyPrepare $ store this rsyncopts)
+		(simplyPrepare $ retrieve this rsyncopts)
+		(simplyPrepare $ remove this rsyncopts)
+		(simplyPrepare $ checkKey this rsyncopts)
 		this
+  where
+	specialcfg
+		| Git.repoIsUrl r = (specialRemoteCfg c)
+			-- Rsync displays its own progress.
+			{ displayProgress = False }
+		| otherwise = specialRemoteCfg c
 
 rsyncTransportToObjects :: Git.Repo -> Annex ([CommandParam], String)
 rsyncTransportToObjects r = do
@@ -147,7 +159,7 @@ rsyncTransport r
 noCrypto :: Annex a
 noCrypto = error "cannot use gcrypt remote without encryption enabled"
 
-unsupportedUrl :: Annex a
+unsupportedUrl :: a
 unsupportedUrl = error "using non-ssh remote repo url with gcrypt is not supported"
 
 gCryptSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
@@ -244,18 +256,23 @@ setupRepo gcryptid r
 
 	{-  Ask git-annex-shell to configure the repository as a gcrypt
 	 -  repository. May fail if it is too old. -}
-	gitannexshellsetup = Ssh.onRemote r (boolSystem, False)
+	gitannexshellsetup = Ssh.onRemote r (boolSystem, return False)
 		"gcryptsetup" [ Param gcryptid ] []
 
 	denyNonFastForwards = "receive.denyNonFastForwards"
 
-shellOrRsync :: Remote -> Annex a -> Annex a -> Annex a
-shellOrRsync r ashell arsync = case method of
-	AccessShell -> ashell
-	_ -> arsync
+isShell :: Remote -> Bool
+isShell r = case method of
+	AccessShell -> True
+	_ -> False
   where
   	method = toAccessMethod $ fromMaybe "" $
 		remoteAnnexGCrypt $ gitconfig r
+
+shellOrRsync :: Remote -> Annex a -> Annex a -> Annex a
+shellOrRsync r ashell arsync
+	| isShell r = ashell
+	| otherwise = arsync
 
 {- Configure gcrypt to use the same list of keyids that
  - were passed to initremote as its participants.
@@ -287,73 +304,55 @@ setGcryptEncryption c remotename = do
   where
 	remoteconfig n = ConfigKey $ n remotename
 
-store :: Remote -> Remote.Rsync.RsyncOpts -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
-store r rsyncopts (cipher, enck) k p
-	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) False $
-		metered (Just p) k $ \meterupdate -> spoolencrypted $ \h -> do
-			let dest = gCryptLocation r enck
-			createDirectoryIfMissing True $ parentDir dest
-			readBytes (meteredWriteFile meterupdate dest) h
+store :: Remote -> Remote.Rsync.RsyncOpts -> Storer
+store r rsyncopts
+	| not $ Git.repoIsUrl (repo r) = 
+		byteStorer $ \k b p -> guardUsable (repo r) (return False) $ liftIO $ do
+			let tmpdir = Git.repoLocation (repo r) </> "tmp" </> keyFile k
+			void $ tryIO $ createDirectoryIfMissing True tmpdir
+			let tmpf = tmpdir </> keyFile k
+			meteredWriteFile p tmpf b
+			let destdir = parentDir $ gCryptLocation r k
+			Remote.Directory.finalizeStoreGeneric tmpdir destdir
 			return True
-	| Git.repoIsSsh (repo r) = shellOrRsync r storeshell storersync
+	| Git.repoIsSsh (repo r) = if isShell r
+		then fileStorer $ \k f p -> Ssh.rsyncHelper (Just p)
+			=<< Ssh.rsyncParamsRemote False r Upload k f Nothing
+		else fileStorer $ Remote.Rsync.store rsyncopts
+	| otherwise = unsupportedUrl
+
+retrieve :: Remote -> Remote.Rsync.RsyncOpts -> Retriever
+retrieve r rsyncopts
+	| not $ Git.repoIsUrl (repo r) = byteRetriever $ \k sink ->
+		guardUsable (repo r) (return False) $
+			sink =<< liftIO (L.readFile $ gCryptLocation r k)
+	| Git.repoIsSsh (repo r) = if isShell r
+		then fileRetriever $ \f k p ->
+			unlessM (Ssh.rsyncHelper (Just p) =<< Ssh.rsyncParamsRemote False r Download k f Nothing) $
+				error "rsync failed"
+		else fileRetriever $ Remote.Rsync.retrieve rsyncopts
 	| otherwise = unsupportedUrl
   where
-  	gpgopts = getGpgEncParams r
-	storersync = Remote.Rsync.storeEncrypted rsyncopts gpgopts (cipher, enck) k p
-	storeshell = withTmp enck $ \tmp ->
-		ifM (spoolencrypted $ readBytes $ \b -> catchBoolIO $ L.writeFile tmp b >> return True)
-			( Ssh.rsyncHelper (Just p)
-				=<< Ssh.rsyncParamsRemote False r Upload enck tmp Nothing
-			, return False
-			)
-	spoolencrypted a = Annex.Content.sendAnnex k noop $ \src ->
-		liftIO $ catchBoolIO $
-			encrypt gpgopts cipher (feedFile src) a
 
-retrieve :: Remote -> Remote.Rsync.RsyncOpts -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
-retrieve r rsyncopts (cipher, enck) k d p
-	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) False $ do
-		retrievewith $ L.readFile src
-		return True
-	| Git.repoIsSsh (repo r) = shellOrRsync r retrieveshell retrieversync
-	| otherwise = unsupportedUrl
-  where
-	src = gCryptLocation r enck
-	retrievewith a = metered (Just p) k $ \meterupdate -> liftIO $
-		a >>= \b -> 
-			decrypt cipher (feedBytes b)
-				(readBytes $ meteredWriteFile meterupdate d)
-	retrieversync = Remote.Rsync.retrieveEncrypted rsyncopts (cipher, enck) k d p
-	retrieveshell = withTmp enck $ \tmp ->
-		ifM (Ssh.rsyncHelper (Just p) =<< Ssh.rsyncParamsRemote False r Download enck tmp Nothing)
-			( liftIO $ catchBoolIO $ do
-				decrypt cipher (feedFile tmp) $
-					readBytes $ L.writeFile d
-				return True
-			, return False
-			)
-
-remove :: Remote -> Remote.Rsync.RsyncOpts -> Key -> Annex Bool
+remove :: Remote -> Remote.Rsync.RsyncOpts -> Remover
 remove r rsyncopts k
-	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) False $ do
-		liftIO $ removeDirectoryRecursive $ parentDir $ gCryptLocation r k
-		return True
+	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) (return False) $
+		liftIO $ Remote.Directory.removeDirGeneric (Git.repoLocation (repo r)) (parentDir (gCryptLocation r k))
 	| Git.repoIsSsh (repo r) = shellOrRsync r removeshell removersync
 	| otherwise = unsupportedUrl
   where
 	removersync = Remote.Rsync.remove rsyncopts k
 	removeshell = Ssh.dropKey (repo r) k
 
-checkPresent :: Remote -> Remote.Rsync.RsyncOpts -> Key -> Annex (Either String Bool)
-checkPresent r rsyncopts k
+checkKey :: Remote -> Remote.Rsync.RsyncOpts -> CheckPresent
+checkKey r rsyncopts k
 	| not $ Git.repoIsUrl (repo r) =
 		guardUsable (repo r) (cantCheck $ repo r) $
-			liftIO $ catchDefaultIO (cantCheck $ repo r) $
-				Right <$> doesFileExist (gCryptLocation r k)
+			liftIO $ doesFileExist (gCryptLocation r k)
 	| Git.repoIsSsh (repo r) = shellOrRsync r checkshell checkrsync
 	| otherwise = unsupportedUrl
   where
-  	checkrsync = Remote.Rsync.checkPresent (repo r) rsyncopts k
+  	checkrsync = Remote.Rsync.checkKey (repo r) rsyncopts k
 	checkshell = Ssh.inAnnex (repo r) k
 
 {- Annexed objects are hashed using lower-case directories for max
@@ -391,7 +390,7 @@ getGCryptId fast r
 	| Git.repoIsLocal r || Git.repoIsLocalUnknown r = extract <$>
 		liftIO (catchMaybeIO $ Git.Config.read r)
 	| not fast = extract . liftM fst <$> getM (eitherToMaybe <$>)
-		[ Ssh.onRemote r (Git.Config.fromPipe r, Left undefined) "configlist" [] []
+		[ Ssh.onRemote r (Git.Config.fromPipe r, return (Left undefined)) "configlist" [] []
 		, getConfigViaRsync r
 		]
 	| otherwise = return (Nothing, r)

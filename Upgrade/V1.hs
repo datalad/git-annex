@@ -144,7 +144,7 @@ oldlog2key l
 readKey1 :: String -> Key
 readKey1 v
 	| mixup = fromJust $ file2key $ intercalate ":" $ Prelude.tail bits
-	| otherwise = Key
+	| otherwise = stubKey
 		{ keyName = n
 		, keyBackendName = b
 		, keySize = s

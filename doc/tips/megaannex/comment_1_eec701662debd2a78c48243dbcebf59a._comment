@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-07-21T19:56:13Z"
+ content="""
+Note that there has apparently been an API break, so this special remote may not work anymore. See: <http://git-annex.branchable.com/forum/MegaAnnex_not_working./>
+"""]]

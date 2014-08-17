@@ -11,7 +11,6 @@ module Logs.Transfer where
 
 import Common.Annex
 import Annex.Perms
-import Annex.Exception
 import qualified Git
 import Types.Key
 import Utility.Metered
@@ -94,7 +93,7 @@ percentComplete (Transfer { transferKey = key }) info =
 mkProgressUpdater :: Transfer -> TransferInfo -> Annex (MeterUpdate, FilePath, MVar Integer)
 mkProgressUpdater t info = do
 	tfile <- fromRepo $ transferFile t
-	_ <- tryAnnex $ createAnnexDirectory $ takeDirectory tfile
+	_ <- tryNonAsync $ createAnnexDirectory $ takeDirectory tfile
 	mvar <- liftIO $ newMVar 0
 	return (liftIO . updater tfile mvar, tfile, mvar)
   where

@@ -8,6 +8,7 @@
 module Git.Repair (
 	runRepair,
 	runRepairOf,
+	removeBadBranches,
 	successfulRepair,
 	cleanCorruptObjects,
 	retrieveMissingObjects,
@@ -191,8 +192,11 @@ isTrackingBranch b = "refs/remotes/" `isPrefixOf` fromRef b
  - any branches (filtered by a predicate) that reference them
  - Returns a list of all removed branches.
  -}
-removeBadBranches :: (Ref -> Bool) -> MissingObjects -> GoodCommits -> Repo -> IO ([Branch], GoodCommits)
-removeBadBranches removablebranch missing goodcommits r =
+removeBadBranches :: (Ref -> Bool) -> Repo -> IO [Branch]
+removeBadBranches removablebranch r = fst <$> removeBadBranches' removablebranch S.empty emptyGoodCommits r
+
+removeBadBranches' :: (Ref -> Bool) -> MissingObjects -> GoodCommits -> Repo -> IO ([Branch], GoodCommits)
+removeBadBranches' removablebranch missing goodcommits r =
 	go [] goodcommits =<< filter removablebranch <$> getAllRefs r
   where
 	go removed gcs [] = return (removed, gcs)
@@ -203,6 +207,11 @@ removeBadBranches removablebranch missing goodcommits r =
 			else do
 				nukeBranchRef b r
 				go (b:removed) gcs' bs
+
+badBranches :: MissingObjects -> Repo -> IO [Branch]
+badBranches missing r = filterM isbad =<< getAllRefs r
+  where
+	isbad b = not . fst <$> verifyCommit missing emptyGoodCommits b r
 
 {- Gets all refs, including ones that are corrupt.
  - git show-ref does not output refs to commits that are directly
@@ -439,8 +448,12 @@ runRepair removablebranch forced g = do
 	if foundBroken fsckresult
 		then runRepair' removablebranch fsckresult forced Nothing g
 		else do
-			putStrLn "No problems found."
-			return (True, [])
+			bad <- badBranches S.empty g
+			if null bad
+				then do
+					putStrLn "No problems found."
+					return (True, [])
+				else runRepair' removablebranch fsckresult forced Nothing g
 
 runRepairOf :: FsckResults -> (Ref -> Bool) -> Bool -> Maybe FilePath -> Repo -> IO (Bool, [Branch])
 runRepairOf fsckresult removablebranch forced referencerepo g = do
@@ -455,9 +468,9 @@ runRepair' removablebranch fsckresult forced referencerepo g = do
 	case stillmissing of
 		FsckFoundMissing s t
 			| S.null s -> if repoIsLocalBare g
-				then successfulfinish []
+				then checkbadbranches s
 				else ifM (checkIndex g)
-					( successfulfinish []
+					( checkbadbranches s
 					, do
 						putStrLn "No missing objects found, but the index file is corrupt!"
 						if forced
@@ -488,7 +501,7 @@ runRepair' removablebranch fsckresult forced referencerepo g = do
 			| otherwise -> unsuccessfulfinish
   where
 	repairbranches missing = do
-		(removedbranches, goodcommits) <- removeBadBranches removablebranch missing emptyGoodCommits g
+		(removedbranches, goodcommits) <- removeBadBranches' removablebranch missing emptyGoodCommits g
 		let remotebranches = filter isTrackingBranch removedbranches
 		unless (null remotebranches) $
 			putStrLn $ unwords
@@ -502,6 +515,16 @@ runRepair' removablebranch fsckresult forced referencerepo g = do
 		displayList (map fromRef deletedbranches)
 			"Deleted these local branches, which could not be recovered due to missing objects:"
 		return (resetbranches ++ deletedbranches)
+
+	checkbadbranches missing = do
+		bad <- badBranches missing g
+		case (null bad, forced) of
+			(True, _) -> successfulfinish []
+			(False, False) -> do
+				displayList (map fromRef bad)
+					"Some git branches refer to missing objects:"
+				unsuccessfulfinish
+			(False, True) -> successfulfinish =<< repairbranches missing
 
 	forcerepair missing fscktruncated = do
 		modifiedbranches <- repairbranches missing
