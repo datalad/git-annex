@@ -137,7 +137,7 @@ Executable git-annex
     CPP-Options: -DWITH_CRYPTOHASH
 
   if flag(S3)
-    Build-Depends: aws, conduit, resourcet
+    Build-Depends: aws (>= 0.10.2), conduit, resourcet
     CPP-Options: -DWITH_S3
 
   if flag(WebDAV)
