@@ -78,10 +78,11 @@ subdirectories).
   or transferring them from some kind of key-value store.
 
   Normally git-annex will choose which repository to copy the content from,
-  but you can override this using the `--from` option.  Only the last version
-  of the file is retrieved (use `--all` to retrieve all versions of
-  the file).  `--key=KEY` option can be used to retrieve a specified key
-  without the filename.
+  but you can override this using the `--from` option.
+ 
+  Rather than specifying a filename, the `--all` option can be used to 
+  get all available versions of all files, or the --key=KEY`
+  option can be used to get a specified key.
 
 * `drop [path ...]`
 
