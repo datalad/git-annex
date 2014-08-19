@@ -1,3 +1,9 @@
+git-annex (5.20140818) UNRELEASED; urgency=medium
+
+  * Make --help work when not in a git repository. Closes: #758592
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 19 Aug 2014 12:52:41 -0400
+
 git-annex (5.20140817) unstable; urgency=medium
 
   * New chunk= option to chunk files stored in special remotes.
