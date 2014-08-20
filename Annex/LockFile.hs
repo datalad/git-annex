@@ -37,7 +37,7 @@ lockFileShared file = go =<< fromLockPool file
 		mode <- annexFileMode
 		lockhandle <- liftIO $ noUmask mode $
 			openFd file ReadOnly (Just mode) defaultFileFlags
-		setFdOption lockhandle CloseOnExec True
+		liftIO $ setFdOption lockhandle CloseOnExec True
 		liftIO $ waitToSetLock lockhandle (ReadLock, AbsoluteSeek, 0, 0)
 #else
 		lockhandle <- liftIO $ waitToLock $ lockShared file

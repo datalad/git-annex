@@ -153,7 +153,7 @@ sshCleanup = mapM_ cleanup =<< enumSocketFiles
 		mode <- annexFileMode
 		fd <- liftIO $ noUmask mode $
 			openFd lockfile ReadWrite (Just mode) defaultFileFlags
-		setFdOption fd CloseOnExec True
+		liftIO $ setFdOption fd CloseOnExec True
 		v <- liftIO $ tryIO $
 			setLock fd (WriteLock, AbsoluteSeek, 0, 0)
 		case v of
