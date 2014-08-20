@@ -1,0 +1,24 @@
+### Please describe the problem.
+
+The windows build seems to be hardcoded to finding git at c:\program files\Git\
+I have git in another directory. Git-annex does not find it.
+
+### What steps will reproduce the problem?
+
+Install git-annex. Run the webapp.
+Get error "Internal Server Error 
+You need to install git in order to use git-annex!"
+
+### What version of git-annex are you using? On what operating system?
+
+Latest windows build, from 20140817
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
