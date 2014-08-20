@@ -19,12 +19,9 @@ import Annex
 import Types.LockPool
 import qualified Git
 import Annex.Perms
+import Utility.LockFile
 
 import qualified Data.Map as M
-
-#ifdef mingw32_HOST_OS
-import Utility.WinLock
-#endif
 
 {- Create a specified lock file, and takes a shared lock, which is retained
  - in the pool. -}
@@ -35,10 +32,7 @@ lockFileShared file = go =<< fromLockPool file
 	go Nothing = do
 #ifndef mingw32_HOST_OS
 		mode <- annexFileMode
-		lockhandle <- liftIO $ noUmask mode $
-			openFd file ReadWrite (Just mode) defaultFileFlags
-		liftIO $ setFdOption lockhandle CloseOnExec True
-		liftIO $ waitToSetLock lockhandle (ReadLock, AbsoluteSeek, 0, 0)
+		lockhandle <- liftIO $ noUmask mode $ lockShared (Just mode) file
 #else
 		lockhandle <- liftIO $ waitToLock $ lockShared file
 #endif
@@ -48,11 +42,7 @@ unlockFile :: FilePath -> Annex ()
 unlockFile file = maybe noop go =<< fromLockPool file
   where
 	go lockhandle = do
-#ifndef mingw32_HOST_OS
-		liftIO $ closeFd lockhandle
-#else
 		liftIO $ dropLock lockhandle
-#endif
 		changeLockPool $ M.delete file
 
 getLockPool :: Annex LockPool
@@ -73,16 +63,10 @@ withExclusiveLock getlockfile a = do
 	lockfile <- fromRepo getlockfile
 	createAnnexDirectory $ takeDirectory lockfile
 	mode <- annexFileMode
-	bracketIO (lock lockfile mode) unlock (const a)
+	bracketIO (lock mode lockfile) dropLock (const a)
   where
 #ifndef mingw32_HOST_OS
-	lock lockfile mode = do
-		l <- noUmask mode $ createFile lockfile mode
-		setFdOption l CloseOnExec True
-		waitToSetLock l (WriteLock, AbsoluteSeek, 0, 0)
-		return l
-	unlock = closeFd
+	lock mode = noUmask mode . lockExclusive (Just mode)
 #else
-	lock lockfile _mode = waitToLock $ lockExclusive lockfile
-	unlock = dropLock
+	lock _mode = waitToLock . lockExclusive
 #endif

@@ -5,7 +5,7 @@
  - License: BSD-2-clause
  -}
 
-module Utility.WinLock (
+module Utility.LockFile.Windows (
 	lockShared,
 	lockExclusive,
 	dropLock,
@@ -17,9 +17,6 @@ import System.Win32.Types
 import System.Win32.File
 import Control.Concurrent
 
-{- Locking is exclusive, and prevents the file from being opened for read
- - or write by any other process. So for advisory locking of a file, a
- - different LockFile should be used. -}
 type LockFile = FilePath
 
 type LockHandle = HANDLE
@@ -30,7 +27,11 @@ lockShared :: LockFile -> IO (Maybe LockHandle)
 lockShared = openLock fILE_SHARE_READ
 
 {- Tries to take an exclusive lock on a file. Fails if another process has
- - a shared or exclusive lock. -}
+ - a shared or exclusive lock.
+ -
+ - Note that exclusive locking also prevents the file from being opened for
+ - read or write by any other progess. So for advisory locking of a file's
+ - content, a different LockFile should be used. -}
 lockExclusive :: LockFile -> IO (Maybe LockHandle)
 lockExclusive = openLock fILE_SHARE_NONE
 

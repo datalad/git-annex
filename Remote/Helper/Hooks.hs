@@ -16,10 +16,9 @@ import Types.Remote
 import Types.CleanupActions
 import qualified Annex
 import Annex.LockFile
+import Utility.LockFile
 #ifndef mingw32_HOST_OS
 import Annex.Perms
-#else
-import Utility.WinLock
 #endif
 
 {- Modifies a remote's access functions to first run the
@@ -84,9 +83,7 @@ runHooks r starthook stophook a = do
 		unlockFile lck
 #ifndef mingw32_HOST_OS
 		mode <- annexFileMode
-		fd <- liftIO $ noUmask mode $
-			openFd lck ReadWrite (Just mode) defaultFileFlags
-		liftIO $ setFdOption fd CloseOnExec True
+		fd <- liftIO $ noUmask mode $ createLockFile (Just mode) lck
 		v <- liftIO $ tryIO $
 			setLock fd (WriteLock, AbsoluteSeek, 0, 0)
 		case v of

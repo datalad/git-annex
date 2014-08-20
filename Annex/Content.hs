@@ -56,10 +56,7 @@ import Annex.Perms
 import Annex.Link
 import Annex.Content.Direct
 import Annex.ReplaceFile
-
-#ifdef mingw32_HOST_OS
-import Utility.WinLock
-#endif
+import Utility.LockFile
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
@@ -177,24 +174,21 @@ lockContent key a = do
 			nukeFile lockfile
 #ifndef mingw32_HOST_OS
 	lock contentfile Nothing = opencontentforlock contentfile >>= dolock
-	lock _ (Just lockfile) = openforlock lockfile >>= dolock . Just
+	lock _ (Just lockfile) = createLockFile Nothing lockfile >>= dolock . Just
 	{- Since content files are stored with the write bit disabled, have
 	 - to fiddle with permissions to open for an exclusive lock. -}
 	opencontentforlock f = catchMaybeIO $ ifM (doesFileExist f)
 		( withModifiedFileMode f
 			(`unionFileModes` ownerWriteMode)
-			(openforlock f)
-		, openforlock f
+			(createLockFie Nothing f)
+		, createLockFile Nothing f
 		)
-	openforlock f = openFd f ReadWrite Nothing defaultFileFlags
 	dolock Nothing = return Nothing
 	dolock (Just fd) = do
 		v <- tryIO $ setLock fd (WriteLock, AbsoluteSeek, 0, 0)
 		case v of
 			Left _ -> alreadylocked
-			Right _ -> do
-				setFdOption fd CloseOnExec True
-				return $ Just fd
+			Right _ -> return $ Just fd
 	unlock mlockfile mfd = do
 		maybe noop cleanuplockfile mlockfile
 		liftIO $ maybe noop closeFd mfd
