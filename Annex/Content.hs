@@ -192,7 +192,9 @@ lockContent key a = do
 		v <- tryIO $ setLock fd (WriteLock, AbsoluteSeek, 0, 0)
 		case v of
 			Left _ -> alreadylocked
-			Right _ -> return $ Just fd
+			Right _ -> do
+				setFdOption fd CloseOnExec True
+				return $ Just fd
 	unlock mlockfile mfd = do
 		maybe noop cleanuplockfile mlockfile
 		liftIO $ maybe noop closeFd mfd

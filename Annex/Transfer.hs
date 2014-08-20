@@ -81,6 +81,7 @@ runTransfer' ignorelock t file shouldretry a = do
 		case mfd of
 			Nothing -> return (Nothing, False)
 			Just fd -> do
+				setFdOption fd CloseOnExec True
 				locked <- catchMaybeIO $
 					setLock fd (WriteLock, AbsoluteSeek, 0, 0)
 				if isNothing locked

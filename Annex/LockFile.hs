@@ -37,6 +37,7 @@ lockFileShared file = go =<< fromLockPool file
 		mode <- annexFileMode
 		lockhandle <- liftIO $ noUmask mode $
 			openFd file ReadOnly (Just mode) defaultFileFlags
+		setFdOption lockhandle CloseOnExec True
 		liftIO $ waitToSetLock lockhandle (ReadLock, AbsoluteSeek, 0, 0)
 #else
 		lockhandle <- liftIO $ waitToLock $ lockShared file
@@ -70,13 +71,19 @@ changeLockPool a = do
 withExclusiveLock :: (Git.Repo -> FilePath) -> Annex a -> Annex a
 withExclusiveLock getlockfile a = do
 	lockfile <- fromRepo getlockfile
+	liftIO $ hPutStrLn stderr (show ("locking", lockfile))
+	liftIO $ hFlush stderr
 	createAnnexDirectory $ takeDirectory lockfile
 	mode <- annexFileMode
-	bracketIO (lock lockfile mode) unlock (const a)
+	r <- bracketIO (lock lockfile mode) unlock (const a)
+	liftIO $ hPutStrLn stderr (show ("unlocked", lockfile))
+	liftIO $ hFlush stderr
+	return r
   where
 #ifndef mingw32_HOST_OS
 	lock lockfile mode = do
 		l <- noUmask mode $ createFile lockfile mode
+		setFdOption l CloseOnExec True
 		waitToSetLock l (WriteLock, AbsoluteSeek, 0, 0)
 		return l
 	unlock = closeFd

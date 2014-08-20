@@ -101,6 +101,7 @@ lockPreCommitHook a = do
 #ifndef mingw32_HOST_OS
 	lock lockfile mode = do
 		l <- liftIO $ noUmask mode $ createFile lockfile mode
+		setFdOption l CloseOnExec True
 		liftIO $ waitToSetLock l (WriteLock, AbsoluteSeek, 0, 0)
 		return l
 	unlock = closeFd

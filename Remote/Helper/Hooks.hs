@@ -86,6 +86,7 @@ runHooks r starthook stophook a = do
 		mode <- annexFileMode
 		fd <- liftIO $ noUmask mode $
 			openFd lck ReadWrite (Just mode) defaultFileFlags
+		setFdOption fd CloseOnExec True
 		v <- liftIO $ tryIO $
 			setLock fd (WriteLock, AbsoluteSeek, 0, 0)
 		case v of

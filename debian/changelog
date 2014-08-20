@@ -1,6 +1,8 @@
 git-annex (5.20140818) UNRELEASED; urgency=medium
 
   * Make --help work when not in a git repository. Closes: #758592
+  * Ensure that all lock fds are close-on-exec, fixing various problems with
+    them being inherited by child processes such as git commands.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 19 Aug 2014 12:52:41 -0400
 
