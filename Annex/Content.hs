@@ -101,23 +101,21 @@ inAnnexSafe key = inAnnex' (fromMaybe False) (Just False) go key
 		=<< contentLockFile key
 
 #ifndef mingw32_HOST_OS
-	checkindirect f = liftIO $ openExistingLockFile f >>= check is_missing
+	checkindirect contentfile = liftIO $ checkOr is_missing contentfile
 	{- In direct mode, the content file must exist, but
-	 - the lock file often generally won't exist unless a removal is in
-	 - process. This does not create the lock file, it only checks for
-	 - it. -}
+	 - the lock file generally won't exist unless a removal is in
+	 - process. -}
 	checkdirect contentfile lockfile = liftIO $
 		ifM (doesFileExist contentfile)
-			( openExistingLockFile lockfile >>= check is_unlocked
+			( checkOr is_unlocked lockfile
 			, return is_missing
 			)
-	check _ (Just h) = do
-		v <- getLock h (ReadLock, AbsoluteSeek, 0, 0)
-		closeFd h
+	checkOr def lockfile = do
+		v <- checkLocked lockfile
 		return $ case v of
-			Just _ -> is_locked
-			Nothing -> is_unlocked
-	check def Nothing = return def
+			Nothing -> def
+			Just True -> is_locked
+			Just False -> is_unlocked
 #else
 	checkindirect f = liftIO $ ifM (doesFileExist f)
 		( do
@@ -161,7 +159,7 @@ lockContent key a = do
 	contentfile <- calcRepo $ gitAnnexLocation key
 	lockfile <- contentLockFile key
 	maybe noop setuplockfile lockfile
-	bracket (liftIO $ lock contentfile lockfile) (unlock lockfile) (const a)
+	bracket (lock contentfile lockfile) (unlock lockfile) (const a)
   where
 	alreadylocked = error "content is locked"
 	setuplockfile lockfile = modifyContent lockfile $
@@ -171,8 +169,11 @@ lockContent key a = do
 		void $ liftIO $ tryIO $
 			nukeFile lockfile
 #ifndef mingw32_HOST_OS
-	lock contentfile Nothing = opencontentforlock contentfile >>= dolock
-	lock _ (Just lockfile) = createLockFile Nothing lockfile >>= dolock . Just
+	lock contentfile Nothing = liftIO $
+		opencontentforlock contentfile >>= dolock
+	lock _ (Just lockfile) = do
+		mode <- annexFileMode
+		liftIO $ createLockFile mode lockfile >>= dolock . Just
 	{- Since content files are stored with the write bit disabled, have
 	 - to fiddle with permissions to open for an exclusive lock. -}
 	opencontentforlock f = catchDefaultIO Nothing $ 
@@ -189,7 +190,8 @@ lockContent key a = do
 		maybe noop cleanuplockfile mlockfile
 		liftIO $ maybe noop closeFd mfd
 #else
-	lock _ (Just lockfile) = maybe alreadylocked (return . Just) =<< lockExclusive lockfile
+	lock _ (Just lockfile) = liftIO $
+		maybe alreadylocked (return . Just) =<< lockExclusive lockfile
 	lock _ Nothing = return Nothing
 	unlock mlockfile mlockhandle = do
 		liftIO $ maybe noop dropLock mlockhandle
