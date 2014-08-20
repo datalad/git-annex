@@ -17,9 +17,7 @@ import Utility.Metered
 import Utility.Percentage
 import Utility.QuickCheck
 import Utility.PID
-#ifdef mingw32_HOST_OS
-import Utility.WinLock
-#endif
+import Utility.LockFile
 
 import Data.Time.Clock
 import Data.Time.Clock.POSIX
@@ -131,9 +129,7 @@ checkTransfer :: Transfer -> Annex (Maybe TransferInfo)
 checkTransfer t = do
 	tfile <- fromRepo $ transferFile t
 #ifndef mingw32_HOST_OS
-	mode <- annexFileMode
-	mfd <- liftIO $ catchMaybeIO $
-		openFd (transferLockFile tfile) ReadOnly (Just mode) defaultFileFlags
+	mfd <- liftIO $ openExistingLockFile (transferLockFile tfile)
 	case mfd of
 		Nothing -> return Nothing -- failed to open file; not running
 		Just fd -> do

@@ -101,18 +101,16 @@ inAnnexSafe key = inAnnex' (fromMaybe False) (Just False) go key
 		=<< contentLockFile key
 
 #ifndef mingw32_HOST_OS
-	checkindirect f = liftIO $ openforlock f >>= check is_missing
+	checkindirect f = liftIO $ openExistingLockFile f >>= check is_missing
 	{- In direct mode, the content file must exist, but
 	 - the lock file often generally won't exist unless a removal is in
 	 - process. This does not create the lock file, it only checks for
 	 - it. -}
 	checkdirect contentfile lockfile = liftIO $
 		ifM (doesFileExist contentfile)
-			( openforlock lockfile >>= check is_unlocked
+			( openExistingLockFile lockfile >>= check is_unlocked
 			, return is_missing
 			)
-	openforlock f = catchMaybeIO $
-		openFd f ReadOnly Nothing defaultFileFlags
 	check _ (Just h) = do
 		v <- getLock h (ReadLock, AbsoluteSeek, 0, 0)
 		closeFd h
@@ -180,7 +178,7 @@ lockContent key a = do
 	opencontentforlock f = catchMaybeIO $ ifM (doesFileExist f)
 		( withModifiedFileMode f
 			(`unionFileModes` ownerWriteMode)
-			(createLockFie Nothing f)
+			(createLockFile Nothing f)
 		, createLockFile Nothing f
 		)
 	dolock Nothing = return Nothing
