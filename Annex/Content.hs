@@ -175,12 +175,10 @@ lockContent key a = do
 	lock _ (Just lockfile) = createLockFile Nothing lockfile >>= dolock . Just
 	{- Since content files are stored with the write bit disabled, have
 	 - to fiddle with permissions to open for an exclusive lock. -}
-	opencontentforlock f = catchMaybeIO $ ifM (doesFileExist f)
-		( withModifiedFileMode f
+	opencontentforlock f = catchDefaultIO Nothing $ 
+		withModifiedFileMode f
 			(`unionFileModes` ownerWriteMode)
-			(createLockFile Nothing f)
-		, createLockFile Nothing f
-		)
+			(openExistingLockFile f)
 	dolock Nothing = return Nothing
 	dolock (Just fd) = do
 		v <- tryIO $ setLock fd (WriteLock, AbsoluteSeek, 0, 0)

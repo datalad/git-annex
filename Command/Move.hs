@@ -150,11 +150,10 @@ fromOk src key = go =<< Annex.getState Annex.force
 		return $ u /= Remote.uuid src && elem src remotes
 
 fromPerform :: Remote -> Bool -> Key -> AssociatedFile -> CommandPerform
-fromPerform src move key afile = moveLock move key $
-	ifM (inAnnex key)
-		( dispatch move True
-		, dispatch move =<< go
-		)
+fromPerform src move key afile = ifM (inAnnex key)
+	( dispatch move True
+	, dispatch move =<< go
+	)
   where
 	go = notifyTransfer Download afile $ 
 		download (Remote.uuid src) key afile noRetry $ \p -> do
@@ -166,8 +165,9 @@ fromPerform src move key afile = moveLock move key $
 		ok <- Remote.removeKey src key
 		next $ Command.Drop.cleanupRemote key src ok
 
-{- Locks a key in order for it to be moved.
- - No lock is needed when a key is being copied. -}
+{- Locks a key in order for it to be moved away from the current repository.
+ - No lock is needed when a key is being copied, or moved to the current
+ - repository. -}
 moveLock :: Bool -> Key -> Annex a -> Annex a
 moveLock True key a = lockContent key a
 moveLock False _ a = a
