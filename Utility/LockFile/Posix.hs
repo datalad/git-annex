@@ -14,6 +14,7 @@ module Utility.LockFile.Posix (
 	openExistingLockFile,
 	isLocked,
 	checkLocked,
+	getLockStatus,
 	dropLock,
 ) where
 
@@ -23,7 +24,6 @@ import Utility.Applicative
 import System.IO
 import System.Posix
 import Data.Maybe
-import Control.Applicative
 
 type LockFile = FilePath
 
@@ -77,15 +77,23 @@ openLockFile filemode lockfile = do
 isLocked :: LockFile -> IO Bool
 isLocked = fromMaybe False <$$> checkLocked
 
+-- Returns Nothing when the file doesn't exist, for cases where
+-- that is different from it not being locked.
 checkLocked :: LockFile -> IO (Maybe Bool)
-checkLocked lockfile = go =<< catchMaybeIO open
+checkLocked = maybe Nothing (Just . isJust) <$$> getLockStatus'
+
+getLockStatus :: LockFile -> IO (Maybe (ProcessID, FileLock))
+getLockStatus = fromMaybe Nothing <$$> getLockStatus'
+
+getLockStatus' :: LockFile -> IO (Maybe (Maybe (ProcessID, FileLock)))
+getLockStatus' lockfile = go =<< catchMaybeIO open
   where
 	open = openFd lockfile ReadOnly Nothing defaultFileFlags
 	go Nothing = return Nothing
 	go (Just h) = do
-		ret <- isJust <$> getLock h (ReadLock, AbsoluteSeek, 0, 0)
+		ret <- getLock h (ReadLock, AbsoluteSeek, 0, 0)
 		closeFd h
-		return $ Just ret
+		return (Just ret)
 
 dropLock :: LockHandle -> IO ()
 dropLock (LockHandle fd) = closeFd fd
