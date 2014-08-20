@@ -71,14 +71,9 @@ changeLockPool a = do
 withExclusiveLock :: (Git.Repo -> FilePath) -> Annex a -> Annex a
 withExclusiveLock getlockfile a = do
 	lockfile <- fromRepo getlockfile
-	liftIO $ hPutStrLn stderr (show ("locking", lockfile))
-	liftIO $ hFlush stderr
 	createAnnexDirectory $ takeDirectory lockfile
 	mode <- annexFileMode
-	r <- bracketIO (lock lockfile mode) unlock (const a)
-	liftIO $ hPutStrLn stderr (show ("unlocked", lockfile))
-	liftIO $ hFlush stderr
-	return r
+	bracketIO (lock lockfile mode) unlock (const a)
   where
 #ifndef mingw32_HOST_OS
 	lock lockfile mode = do
