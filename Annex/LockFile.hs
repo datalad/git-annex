@@ -36,7 +36,7 @@ lockFileShared file = go =<< fromLockPool file
 #ifndef mingw32_HOST_OS
 		mode <- annexFileMode
 		lockhandle <- liftIO $ noUmask mode $
-			openFd file ReadOnly (Just mode) defaultFileFlags
+			openFd file ReadWrite (Just mode) defaultFileFlags
 		liftIO $ setFdOption lockhandle CloseOnExec True
 		liftIO $ waitToSetLock lockhandle (ReadLock, AbsoluteSeek, 0, 0)
 #else
