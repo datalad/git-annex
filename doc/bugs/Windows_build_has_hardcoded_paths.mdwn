@@ -11,7 +11,7 @@ You need to install git in order to use git-annex!"
 
 ### What version of git-annex are you using? On what operating system?
 
-Latest git-annex build, from 20140817.
+5.20140817-g71c2250.
 Windows XP.
 
 ### Please provide any additional information below.
