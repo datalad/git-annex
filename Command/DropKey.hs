@@ -28,8 +28,8 @@ start key = stopUnless (inAnnex key) $ do
 	next $ perform key
 
 perform :: Key -> CommandPerform
-perform key = lockContent key $ do
-	removeAnnex key
+perform key = lockContent key $ \contentlock -> do
+	removeAnnex contentlock
 	next $ cleanup key
 
 cleanup :: Key -> CommandCleanup

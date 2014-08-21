@@ -152,14 +152,20 @@ contentLockFile key = ifM isDirect
 	, return Nothing
 	)
 
+newtype ContentLock = ContentLock Key
+
 {- Content is exclusively locked while running an action that might remove
- - it. (If the content is not present, no locking is done.) -}
-lockContent :: Key -> Annex a -> Annex a
+ - it. (If the content is not present, no locking is done.)
+ -}
+lockContent :: Key -> (ContentLock -> Annex a) -> Annex a
 lockContent key a = do
 	contentfile <- calcRepo $ gitAnnexLocation key
 	lockfile <- contentLockFile key
 	maybe noop setuplockfile lockfile
-	bracket (lock contentfile lockfile) (unlock lockfile) (const a)
+	bracket
+		(lock contentfile lockfile)
+		(unlock lockfile)
+		(const $ a $ ContentLock key)
   where
 	alreadylocked = error "content is locked"
 	setuplockfile lockfile = modifyContent lockfile $
@@ -426,9 +432,10 @@ cleanObjectLoc key cleaner = do
 {- Removes a key's file from .git/annex/objects/
  -
  - In direct mode, deletes the associated files or files, and replaces
- - them with symlinks. -}
-removeAnnex :: Key -> Annex ()
-removeAnnex key = withObjectLoc key remove removedirect
+ - them with symlinks.
+ -}
+removeAnnex :: ContentLock -> Annex ()
+removeAnnex (ContentLock key) = withObjectLoc key remove removedirect
   where
 	remove file = cleanObjectLoc key $ do
 		secureErase file

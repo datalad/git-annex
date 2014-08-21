@@ -91,7 +91,7 @@ expectedPresent dest key = do
 	return $ dest `elem` remotes
 
 toPerform :: Remote -> Bool -> Key -> AssociatedFile -> Bool -> Either String Bool -> CommandPerform
-toPerform dest move key afile fastcheck isthere = moveLock move key $
+toPerform dest move key afile fastcheck isthere = do
 	case isthere of
 		Left err -> do
 			showNote err
@@ -115,8 +115,8 @@ toPerform dest move key afile fastcheck isthere = moveLock move key $
 			finish
   where
 	finish
-		| move = do
-			removeAnnex key
+		| move = lockContent key $ \contentlock -> do
+			removeAnnex contentlock
 			next $ Command.Drop.cleanupLocal key
 		| otherwise = next $ return True
 
@@ -164,10 +164,3 @@ fromPerform src move key afile = ifM (inAnnex key)
 	dispatch True True = do -- finish moving
 		ok <- Remote.removeKey src key
 		next $ Command.Drop.cleanupRemote key src ok
-
-{- Locks a key in order for it to be moved away from the current repository.
- - No lock is needed when a key is being copied, or moved to the current
- - repository. -}
-moveLock :: Bool -> Key -> Annex a -> Annex a
-moveLock True key a = lockContent key a
-moveLock False _ a = a
