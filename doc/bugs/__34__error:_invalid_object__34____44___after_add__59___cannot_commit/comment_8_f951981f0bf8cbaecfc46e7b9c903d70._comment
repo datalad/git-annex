@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="zardoz"
+ ip="78.48.163.229"
+ subject="comment 8"
+ date="2014-08-22T18:57:37Z"
+ content="""
+I just checked my other large git annex repo and noticed that here too I could no longer add files to the annex. The same observations as above apply. Here too on the tip of the git-anenx branch I had one huge commit in which I dropped the last of the unused WORM keys from another remote. Resetting the git-annex branch to git-annex~1 allowed me to make additions again, even though the reset tip was subsequently merged in again from the remote tracking branch.
+"""]]
