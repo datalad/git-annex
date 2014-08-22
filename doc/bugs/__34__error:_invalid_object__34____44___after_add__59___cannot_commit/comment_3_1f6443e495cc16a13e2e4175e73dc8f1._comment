@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="zardoz"
+ ip="78.48.163.229"
+ subject="comment 3"
+ date="2014-08-22T09:58:05Z"
+ content="""
+Doing a git annex fsck on a new clone of the repository succeded; the problem must somehow with the .git/annex/index then, I presume?
+
+I did a git reset to restore to the sane state state before adding, but the problem is that I cannot unannex the files I added. :(
+
+[[!format sh \"\"\"
+nx unannex scrapbook/data/20140822101558/1.jpg
+[2014-08-22 11:56:16 CEST] read: git [\"--git-dir=/home/seb/Webmirror/.git\",\"--work-tree=/home/seb/Webmirror\",\"show-ref\",\"--head\"]
+[2014-08-22 11:56:16 CEST] read: git [\"--git-dir=/home/seb/Webmirror/.git\",\"--work-tree=/home/seb/Webmirror\",\"diff-index\",\"-z\",\"--raw\",\"--no-renames\",\"-l0\",\"--cached\",\"HEAD\"]
+[2014-08-22 11:56:16 CEST] read: git [\"--git-dir=/home/seb/Webmirror/.git\",\"--work-tree=/home/seb/Webmirror\",\"ls-files\",\"--cached\",\"-z\",\"--\",\"scrapbook/data/20140822101558/1.jpg\"]
+[2014-08-22 11:56:16 CEST] call: git [\"--git-dir=/home/seb/Webmirror/.git\",\"--work-tree=/home/seb/Webmirror\",\"commit\",\"-q\",\"--allow-empty\",\"--no-verify\",\"-m\",\"content removed from git annex\"]
+[2014-08-22 11:56:16 CEST] chat: git [\"--git-dir=/home/seb/Webmirror/.git\",\"--work-tree=/home/seb/Webmirror\",\"hash-object\",\"-w\",\"--stdin-paths\",\"--no-filters\"]
+[2014-08-22 11:56:16 CEST] feed: git [\"--git-dir=/home/seb/Webmirror/.git\",\"--work-tree=/home/seb/Webmirror\",\"update-index\",\"-z\",\"--index-info\"]
+[2014-08-22 11:56:16 CEST] read: git [\"--git-dir=/home/seb/Webmirror/.git\",\"--work-tree=/home/seb/Webmirror\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+(Recording state in git...)
+[2014-08-22 11:56:16 CEST] read: git [\"--git-dir=/home/seb/Webmirror/.git\",\"--work-tree=/home/seb/Webmirror\",\"write-tree\"]
+error: invalid object 100644 5d471129a031f0f493de3736eaea6f2f4056aeee for '000/091/WORM-s1493-m1321288671--scrapbook%data%20111114173520%horiz-menu-tab-r_001.png.log'
+fatal: git-write-tree: error building trees
+git-annex: failed to read sha from git write-tree
+\"\"\"]]
+
+"""]]
