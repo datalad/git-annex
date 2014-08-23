@@ -1,0 +1,387 @@
+### Please describe the problem.
+Using the assistant on two computers to setup a shared encrypted repository (while sharing the same pgp key) on a third computer leads to files not propagating between one and two.
+
+The first and second computer does not get changes done on the other. If new files are added on the first computer it appears as if everything works (no error messages) but the files never reach the second computer (and vice versa).  
+
+
+### What steps will reproduce the problem?
+
+Three computers needed.
+
+* Computer A: Use the assistant to create a repository
+* Computer A: Use the assitant to setup a remote repository on Computer C (Add another repository - Remote server - Encrypt with GnuPG key/Encript repository with a new encryption key - Save changes)
+
+[At this point files propagate from A to C]
+ 
+* Computer A: Export the private and public gpg keys to files
+* Computer B: Import these private and public gpg files, fix trust to ultimate
+* Computer B: Use the assistant to create a repository
+* Computer B: Use the assitant to connect with the remote repository on Computer C (Add another repository - Remote server - Combine the repositories)
+
+[Files created on A before adding B now appear on B]
+
+[New files created on A do not appear on B, new files created on B do not appear on A. Files from A and B seem to propagate to C (the number of files/directories in the object sub directory on C goes up after adding files on A or B)]
+
+
+
+### What version of git-annex are you using? On what operating system?
+Computer A:
+[[!format sh """
+dirk@A:~$ lsb_release -a
+No LSB modules are available.
+Distributor ID:	Ubuntu
+Description:	Ubuntu 14.04.1 LTS
+Release:	14.04
+Codename:	trusty
+dirk@A:~$ git-annex version
+git-annex version: 5.20140818-g10bf03a
+build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA CryptoHash
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository version: 5
+upgrade supported from repository versions: 0 1 2 4
+dirk@A:~$
+
+dirk@A:~$ gpg --list-keys --list-options show-uid-validity
+/home/dirk/.gnupg/pubring.gpg
+-----------------------------
+pub   4096R/0A7AA2A4 2014-08-23
+uid       [ultimate] dirk's git-annex encryption key
+
+dirk@A:~$ gpg --list-secret-keys --list-options show-uid-validity
+/home/dirk/.gnupg/secring.gpg
+-----------------------------
+sec   4096R/0A7AA2A4 2014-08-23
+uid                  dirk's git-annex encryption key
+
+dirk@A:~$
+"""]]
+
+Computer B:
+[[!format sh """
+dirk@B:~$ lsb_release -a
+No LSB modules are available.
+Distributor ID:	Ubuntu
+Description:	Ubuntu 14.04.1 LTS
+Release:	14.04
+Codename:	trusty
+dirk@B:~$ git-annex version
+git-annex version: 5.20140818-g10bf03a
+build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA CryptoHash
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier ddar hook external
+dirk@B:~$
+
+dirk@B:~$ gpg --list-keys --list-options show-uid-validity
+/home/dirk/.gnupg/pubring.gpg
+-----------------------------
+pub   4096R/0A7AA2A4 2014-08-23
+uid       [ultimate] dirk's git-annex encryption key
+
+dirk@B:~$ gpg --list-secret-keys --list-options show-uid-validity
+/home/dirk/.gnupg/secring.gpg
+-----------------------------
+sec   4096R/0A7AA2A4 2014-08-23
+uid                  dirk's git-annex encryption key
+
+dirk@B:~$
+"""]]
+
+Computer C:
+[[!format sh """
+dirk@C:~$ lsb_release -a
+No LSB modules are available.
+Distributor ID:	Debian
+Description:	Debian GNU/Linux 7.6 (wheezy)
+Release:	7.6
+Codename:	wheezy
+dirk@C:~$ git-annex version
+git-annex version: 5.20140717~bpo70+1
+build flags: Assistant Webapp Pairing S3 Inotify DBus XMPP Feeds Quvi TDFA
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SHA256 SHA1 SHA512 SHA224 SHA384 WORM URL
+remote types: git gcrypt S3 bup directory rsync web tahoe glacier ddar hook external
+dirk@C:~$
+"""]]
+
+### Please provide any additional information below.
+
+.git/annex/daemon.log - Computer A
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+[2014-08-23 15:15:01 CEST] main: starting assistant version 5.20140818-g10bf03a
+[2014-08-23 15:15:01 CEST] Cronner: You should enable consistency checking to protect your data. 
+(scanning...) [2014-08-23 15:15:01 CEST] Watcher: Performing startup scan
+(started...) 
+gpg: new configuration file `/home/dirk/.gnupg/gpg.conf' created
+gpg: WARNING: options in `/home/dirk/.gnupg/gpg.conf' are not yet active during this run
+
+Not enough random bytes available.  Please do some other work to give
+the OS a chance to collect more entropy! (Need 235 more bytes)
+....+++++
+
+Not enough random bytes available.  Please do some other work to give
+the OS a chance to collect more entropy! (Need 196 more bytes)
+.......+++++
+gpg: /home/dirk/.gnupg/trustdb.gpg: trustdb created
+gpg: key 0A7AA2A4 marked as ultimately trusted
+Generating public/private rsa key pair.
+Your identification has been saved in /tmp/git-annex-keygen.0/key.
+Your public key has been saved in /tmp/git-annex-keygen.0/key.pub.
+The key fingerprint is:
+7d:02:34:56:d4:86:b6:e5:82:b0:d9:4f:3b:51:b3:c7 dirk@A
+The key's randomart image is:
++--[ RSA 2048]----+
+|        +ooo     |
+|      .o .o *    |
+|       =.o * +   |
+|      o oo= o E  |
+|        Soo+..   |
+|          +o     |
+|           .     |
+|                 |
+|                 |
++-----------------+
+(encryption setup) (hybrid cipher with gpg key 7815EA570A7AA2A4) gcrypt: Development version -- Repository format MAY CHANGE
+gpg: checking the trustdb
+gpg: 3 marginal(s) needed, 1 complete(s) needed, PGP trust model
+gpg: depth: 0  valid:   1  signed:   0  trust: 0-, 0q, 0n, 0m, 0f, 1u
+gcrypt: Repository not found: ssh://dirk@git-annex-C-dirk_1022_annex/~/annex/
+gcrypt: Development version -- Repository format MAY CHANGE
+gcrypt: Repository not found: ssh://dirk@git-annex-C-dirk_1022_annex/~/annex/
+gcrypt: Setting up new repository
+gcrypt: Remote ID is :id:00RaA3cNQu+nZDMERYMM
+gcrypt: Encrypting to:  -r 7815EA570A7AA2A4
+gcrypt: Requesting manifest signature
+To gcrypt::ssh://dirk@git-annex-C-dirk_1022_annex/~/annex/
+ * [new branch]      git-annex -> git-annex
+ok
+[2014-08-23 15:25:46 CEST] main: Syncing with C_annex 
+gcrypt: Development version -- Repository format MAY CHANGE
+gcrypt: Decrypting manifest
+gpg: Signature made Sat 23 Aug 2014 03:25:45 PM CEST using RSA key ID 0A7AA2A4
+gpg: Good signature from "dirk's git-annex encryption key"
+(Recording state in git...)
+gcrypt: Development version -- Repository format MAY CHANGE
+gcrypt: Decrypting manifest
+gpg: Signature made Sat 23 Aug 2014 03:25:45 PM CEST using RSA key ID 0A7AA2A4
+gpg: Good signature from "dirk's git-annex encryption key"
+gcrypt: Encrypting to:  -r 7815EA570A7AA2A4
+gcrypt: Requesting manifest signature
+To gcrypt::ssh://dirk@git-annex-C-dirk_1022_annex/~/annex/
+ * [new branch]      git-annex -> synced/git-annex
+ * [new branch]      annex/direct/master -> synced/master
+[2014-08-23 15:26:46 CEST] Pusher: Syncing with C_annex 
+gcrypt: Development version -- Repository format MAY CHANGE
+gcrypt: Decrypting manifest
+gpg: Signature made Sat 23 Aug 2014 03:25:49 PM CEST using RSA key ID 0A7AA2A4
+gpg: Good signature from "dirk's git-annex encryption key"
+Everything up-to-date
+[2014-08-23 15:34:01 CEST] Committer: Adding hhhhn.txt
+add hhhhn.txt ok
+add hhhhn.txt ok
+[2014-08-23 15:34:01 CEST] Committer: Committing changes to git
+(Recording state in git...)
+[2014-08-23 15:34:01 CEST] Pusher: Syncing with C_annex 
+(Recording state in git...)
+gcrypt: Development version -- Repository format MAY CHANGE
+(gpg) 
+GPGHMACSHA1--7a46226ea53e4043cb45e8df6a2382ac2696164e
+
+             74 100%    0.00kB/s    0:00:00  
+             74 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+[2014-08-23 15:34:01 CEST] Transferrer: Uploaded hhhhn.txt
+gcrypt: Decrypting manifest
+gpg: Signature made Sat 23 Aug 2014 03:33:27 PM CEST using RSA key ID 0A7AA2A4
+gpg: Good signature from "dirk's git-annex encryption key"
+gcrypt: WARNING:
+gcrypt: WARNING: Remote ID has changed!
+gcrypt: WARNING: from :id:00RaA3cNQu+nZDMERYMM
+gcrypt: WARNING: to   :id:h/BFJbR+mE8CEkASZ/tx
+gcrypt: WARNING:
+gcrypt: Encrypting to:  -r 7815EA570A7AA2A4
+gcrypt: Requesting manifest signature
+To gcrypt::ssh://dirk@git-annex-C-dirk_1022_annex/~/annex/
+   85b70d6..e1d6871  annex/direct/master -> synced/master
+ + 99dc810...a7a89ff git-annex -> synced/git-annex (forced update)
+[2014-08-23 15:34:07 CEST] Pusher: Syncing with C_annex 
+(Recording state in git...)
+gcrypt: Development version -- Repository format MAY CHANGE
+gcrypt: Decrypting manifest
+gpg: Signature made Sat 23 Aug 2014 03:34:04 PM CEST using RSA key ID 0A7AA2A4
+gpg: Good signature from "dirk's git-annex encryption key"
+gcrypt: Encrypting to:  -r 7815EA570A7AA2A4
+gcrypt: Requesting manifest signature
+To gcrypt::ssh://dirk@git-annex-C-dirk_1022_annex/~/annex/
+   a7a89ff..e68b5a9  git-annex -> synced/git-annex
+[2014-08-23 15:48:30 CEST] main: warning git-annex has been shut down
+# End of transcript or log.
+"""]]
+
+.git/annex/daemon.log - Computer B
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+[2014-08-23 15:30:11 CEST] main: starting assistant version 5.20140818-g10bf03a
+[2014-08-23 15:30:11 CEST] Cronner: You should enable consistency checking to protect your data. 
+
+  dbus failed; falling back to mtab polling (ClientError {clientErrorMessage = "runClient: unable to determine DBUS address", clientErrorFatal = True})
+
+  No known network monitor available through dbus; falling back to polling
+(scanning...) [2014-08-23 15:30:11 CEST] Watcher: Performing startup scan
+(started...) 
+Generating public/private rsa key pair.
+Your identification has been saved in /tmp/git-annex-keygen.0/key.
+Your public key has been saved in /tmp/git-annex-keygen.0/key.pub.
+The key fingerprint is:
+b5:c3:6b:af:fc:fe:82:f2:a6:f3:42:e9:50:4b:63:9e dirk@A
+The key's randomart image is:
++--[ RSA 2048]----+
+|                 |
+|                 |
+|          .      |
+|        =o .     |
+|       =S=+      |
+|      . E  o     |
+|       +  o.     |
+|        =oo..    |
+|        .O=++o.  |
++-----------------+
+gcrypt: Development version -- Repository format MAY CHANGE
+gcrypt: Decrypting manifest
+gpg: Signature made Sat 23 Aug 2014 03:25:49 PM CEST using RSA key ID 0A7AA2A4
+gpg: checking the trustdb
+gpg: 3 marginal(s) needed, 1 complete(s) needed, PGP trust model
+gpg: depth: 0  valid:   1  signed:   0  trust: 0-, 0q, 0n, 0m, 0f, 1u
+gpg: Good signature from "dirk's git-annex encryption key"
+gcrypt: Remote ID is :id:00RaA3cNQu+nZDMERYMM
+gcrypt: Development version -- Repository format MAY CHANGE
+gcrypt: Decrypting manifest
+gpg: Signature made Sat 23 Aug 2014 03:25:49 PM CEST using RSA key ID 0A7AA2A4
+gpg: Good signature from "dirk's git-annex encryption key"
+gcrypt: Remote ID is :id:00RaA3cNQu+nZDMERYMM
+Receiving objects:  14% (1/7)   
+Receiving objects:  28% (2/7)   
+Receiving objects:  42% (3/7)   
+Receiving objects:  57% (4/7)   
+Receiving objects:  71% (5/7)   
+Receiving objects:  85% (6/7)   
+Receiving objects: 100% (7/7)   
+Receiving objects: 100% (7/7), done.
+Receiving objects:  12% (1/8)   
+Receiving objects:  25% (2/8)   
+Receiving objects:  37% (3/8)   
+Receiving objects:  50% (4/8)   
+Receiving objects:  62% (5/8)   
+Receiving objects:  75% (6/8)   
+Receiving objects:  87% (7/8)   
+Receiving objects: 100% (8/8)   
+Receiving objects: 100% (8/8), done.
+From gcrypt::ssh://dirk@git-annex-C-dirk_1022_annex/~/annex
+ * [new branch]      git-annex  -> tmpgcryptremote/git-annex
+ * [new branch]      synced/git-annex -> tmpgcryptremote/synced/git-annex
+ * [new branch]      synced/master -> tmpgcryptremote/synced/master
+ * [new branch]      master     -> tmpgcryptremote/master
+(merging tmpgcryptremote/git-annex tmpgcryptremote/synced/git-annex into git-annex...)
+(Recording state in git...)
+(encryption update) (hybrid cipher with gpg key 7815EA570A7AA2A4) gcrypt: Development version -- Repository format MAY CHANGE
+gcrypt: Decrypting manifest
+gpg: Signature made Sat 23 Aug 2014 03:25:49 PM CEST using RSA key ID 0A7AA2A4
+gpg: Good signature from "dirk's git-annex encryption key"
+gcrypt: Remote ID is :id:00RaA3cNQu+nZDMERYMM
+From gcrypt::ssh://dirk@git-annex-C-dirk_1022_annex/~/annex
+ * [new branch]      git-annex  -> C_annex/git-annex
+ * [new branch]      synced/git-annex -> C_annex/synced/git-annex
+ * [new branch]      synced/master -> C_annex/synced/master
+ * [new branch]      master     -> C_annex/master
+gcrypt: Development version -- Repository format MAY CHANGE
+gcrypt: Decrypting manifest
+gpg: Signature made Sat 23 Aug 2014 03:25:49 PM CEST using RSA key ID 0A7AA2A4
+gpg: Good signature from "dirk's git-annex encryption key"
+gcrypt: Encrypting to:  -r 7815EA570A7AA2A4
+gcrypt: Requesting manifest signature
+remote: error: denying non-fast-forward refs/heads/master (you should pull first)        
+To ssh://dirk@git-annex-C-dirk_1022_annex/~/annex/
+ ! [remote rejected] refs/gcrypt/gitception+ -> master (non-fast-forward)
+error: failed to push some refs to 'ssh://dirk@git-annex-C-dirk_1022_annex/~/annex/'
+error: failed to push some refs to 'gcrypt::ssh://dirk@git-annex-C-dirk_1022_annex/~/annex/'
+ok
+[2014-08-23 15:31:36 CEST] main: Syncing with C_annex 
+
+Automatic merge went well; stopped before committing as requested
+Already up-to-date!
+gcrypt: Development version -- Repository format MAY CHANGE
+[2014-08-23 15:31:37 CEST] Pusher: Syncing with C_annex 
+(Recording state in git...)
+gcrypt: Development version -- Repository format MAY CHANGE
+gcrypt: Decrypting manifest
+gcrypt: Repository not found: ssh://dirk@git-annex-C-dirk_1022_annex/~/annex/
+gcrypt: Setting up new repository
+gpg: Signature made Sat 23 Aug 2014 03:25:49 PM CEST using RSA key ID 0A7AA2A4
+gpg: Good signature from "dirk's git-annex encryption key"
+fatal: ambiguous argument 'refs/heads/synced/master..refs/remotes/C_annex/synced/master': unknown revision or path not in the working tree.
+Use '--' to separate paths from revisions, like this:
+'git <command> [<revision>...] -- [<file>...]'
+gcrypt: Development version -- Repository format MAY CHANGE
+gcrypt: Remote ID is :id:h/BFJbR+mE8CEkASZ/tx
+gcrypt: Encrypting to:  -r 7815EA570A7AA2A4
+gcrypt: Requesting manifest signature
+gcrypt: Decrypting manifest
+gpg: Signature made Sat 23 Aug 2014 03:25:49 PM CEST using RSA key ID 0A7AA2A4
+gpg: Good signature from "dirk's git-annex encryption key"
+gcrypt: Encrypting to:  -r 7815EA570A7AA2A4
+gcrypt: Requesting manifest signature
+To gcrypt::ssh://dirk@git-annex-C-dirk_1022_annex/~/annex/
+ * [new branch]      git-annex -> synced/git-annex
+ * [new branch]      annex/direct/master -> synced/master
+fatal: Not a valid object name refs/gcrypt/gitception+
+To gcrypt::ssh://dirk@git-annex-C-dirk_1022_annex/~/annex/
+   5d2eb63..e4763b8  git-annex -> synced/git-annex
+   da18915..3068bad  annex/direct/master -> synced/master
+[2014-08-23 15:32:37 CEST] Pusher: Syncing with C_annex 
+gcrypt: Development version -- Repository format MAY CHANGE
+gcrypt: Decrypting manifest
+gpg: Signature made Sat 23 Aug 2014 03:31:43 PM CEST using RSA key ID 0A7AA2A4
+gpg: Good signature from "dirk's git-annex encryption key"
+gcrypt: WARNING:
+gcrypt: WARNING: Remote ID has changed!
+gcrypt: WARNING: from :id:00RaA3cNQu+nZDMERYMM
+gcrypt: WARNING: to   :id:h/BFJbR+mE8CEkASZ/tx
+gcrypt: WARNING:
+Everything up-to-date
+[2014-08-23 15:33:17 CEST] Committer: Adding fmksmxxs.txt
+add fmksmxxs.txt ok
+add fmksmxxs.txt ok
+[2014-08-23 15:33:18 CEST] Committer: Committing changes to git
+(Recording state in git...)
+[2014-08-23 15:33:18 CEST] Pusher: Syncing with C_annex 
+(Recording state in git...)
+gcrypt: Development version -- Repository format MAY CHANGE
+(gpg) gcrypt: Decrypting manifest
+gpg: Signature made Sat 23 Aug 2014 03:31:43 PM CEST using RSA key ID 0A7AA2A4
+gpg: Good signature from "dirk's git-annex encryption key"
+gcrypt: Encrypting to:  -r 7815EA570A7AA2A4
+gcrypt: Requesting manifest signature
+
+GPGHMACSHA1--f605f108429ffba3058a2fcf0bc006a1fbe600be
+
+             70 100%    0.00kB/s    0:00:00  
+             70 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+[2014-08-23 15:33:20 CEST] Transferrer: Uploaded fmksmxxs.txt
+To gcrypt::ssh://dirk@git-annex-C-dirk_1022_annex/~/annex/
+   e4763b8..85dbfc5  git-annex -> synced/git-annex
+   3068bad..85b70d6  annex/direct/master -> synced/master
+[2014-08-23 15:33:25 CEST] Pusher: Syncing with C_annex 
+(Recording state in git...)
+gcrypt: Development version -- Repository format MAY CHANGE
+gcrypt: Decrypting manifest
+gpg: Signature made Sat 23 Aug 2014 03:33:22 PM CEST using RSA key ID 0A7AA2A4
+gpg: Good signature from "dirk's git-annex encryption key"
+gcrypt: Encrypting to:  -r 7815EA570A7AA2A4
+gcrypt: Requesting manifest signature
+To gcrypt::ssh://dirk@git-annex-C-dirk_1022_annex/~/annex/
+   85dbfc5..99dc810  git-annex -> synced/git-annex
+[2014-08-23 15:48:39 CEST] main: warning git-annex has been shut down
+# End of transcript or log.
+"""]]
