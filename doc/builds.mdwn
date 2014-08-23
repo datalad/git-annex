@@ -43,5 +43,5 @@
 <h2>Windows</h2>
 <a href="https://qa.nest-initiative.org/view/msysGit/job/msysgit-git-annex-assistant-test/">here</a>
 <h2>Debian</h2>
-<iframe width=1024 scrolling=no height=200px frameborder=0 marginheight=0 marginwidth=0 src="https://buildd.debian.org/status/package.php?p=git-annex&suite=sid">
+<iframe width=1024 scrolling=no height=500px frameborder=0 marginheight=0 marginwidth=0 src="https://buildd.debian.org/status/package.php?p=git-annex&suite=sid">
 </iframe>
