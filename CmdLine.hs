@@ -26,6 +26,7 @@ import Common.Annex
 import qualified Annex
 import qualified Git
 import qualified Git.AutoCorrect
+import qualified Git.Config
 import Annex.Content
 import Annex.Environment
 import Command
@@ -44,7 +45,8 @@ dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
 		state <- Annex.new g
 		Annex.eval state $ do
 			checkEnvironment
-			checkfuzzy
+			when fuzzy $
+				inRepo $ autocorrect . Just
 			forM_ fields $ uncurry Annex.setField
 			when (cmdnomessages cmd) $ 
 				Annex.setOutput QuietOutput
@@ -54,13 +56,14 @@ dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
 			startup
 			performCommandAction cmd params
 			shutdown $ cmdnocommit cmd
-	go _flags params (Left e) =
+	go _flags params (Left e) = do
+		when fuzzy $
+	 		autocorrect =<< Git.Config.global
 		maybe (throw e) (\a -> a params) (cmdnorepo cmd)
 	err msg = msg ++ "\n\n" ++ usage header allcmds
 	cmd = Prelude.head cmds
 	(fuzzy, cmds, name, args) = findCmd fuzzyok allargs allcmds err
-	checkfuzzy = when fuzzy $
-		inRepo $ Git.AutoCorrect.prepare name cmdname cmds
+	autocorrect = Git.AutoCorrect.prepare name cmdname cmds
 
 {- Parses command line params far enough to find the Command to run, and
  - returns the remaining params.

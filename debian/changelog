@@ -6,6 +6,7 @@ git-annex (5.20140818) UNRELEASED; urgency=medium
   * When accessing a local remote, shut down git-cat-file processes
     afterwards, to ensure that remotes on removable media can be unmounted.
     Closes: #758630
+  * Fix handing of autocorrection when running outside a git repository.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 19 Aug 2014 12:52:41 -0400
 
