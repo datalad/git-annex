@@ -23,7 +23,7 @@ import Annex.Notification as X
 import Annex.Perms
 import Utility.Metered
 #ifdef mingw32_HOST_OS
-import Utility.WinLock
+import Utility.LockFile
 #endif
 
 import Control.Concurrent

@@ -15,7 +15,7 @@ import Utility.PID
 import Utility.LogFile
 #else
 import Utility.WinProcess
-import Utility.WinLock
+import Utility.LockFile
 #endif
 
 #ifndef mingw32_HOST_OS
