@@ -64,7 +64,7 @@ Build-Depends:
 	libghc-tasty-quickcheck-dev [!mipsel !sparc],
 	libghc-tasty-rerun-dev [!mipsel !sparc],
 	libghc-optparse-applicative-dev [!sparc],
-	lsof [!kfreebsd-i386 !kfreebsd-amd64],
+	lsof [!kfreebsd-i386 !kfreebsd-amd64 !hurd-any],
 	ikiwiki,
 	perlmagick,
 	git (>= 1:1.8.4),
