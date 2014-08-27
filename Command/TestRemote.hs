@@ -136,7 +136,7 @@ test st r k =
 	, check "retrieveKeyFile resume from end" $ do
 		loc <- Annex.calcRepo (gitAnnexLocation k)
 		tmp <- prepTmp k
-		void $ liftIO $ copyFileExternal loc tmp
+		void $ liftIO $ copyFileExternal CopyAllMetaData loc tmp
 		lockContent k removeAnnex
 		get
 	, check "fsck downloaded object" fsck

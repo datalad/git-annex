@@ -210,7 +210,7 @@ addContentWhenNotPresent key contentfile associatedfile = do
 	v <- isAnnexLink associatedfile
 	when (Just key == v) $
 		replaceFile associatedfile $
-			liftIO . void . copyFileExternal contentfile
+			liftIO . void . copyFileExternal CopyAllMetaData contentfile
 	updateInodeCache key associatedfile	
 
 {- Some filesystems get new inodes each time they are mounted.

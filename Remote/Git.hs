@@ -543,7 +543,7 @@ rsyncOrCopyFile rsyncparams src dest p =
 	docopy = liftIO $ bracket
 		(forkIO $ watchfilesize zeroBytesProcessed)
 		(void . tryIO . killThread)
-		(const $ copyFileExternal src dest)
+		(const $ copyFileExternal CopyTimeStamps src dest)
 	watchfilesize oldsz = do
 		threadDelay 500000 -- 0.5 seconds
 		v <- catchMaybeIO $

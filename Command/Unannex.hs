@@ -89,7 +89,7 @@ cleanupIndirect file key = do
 		)
   where
 	copyfrom src = 
-		thawContent file `after` liftIO (copyFileExternal src file)
+		thawContent file `after` liftIO (copyFileExternal CopyAllMetaData src file)
 	hardlinkfrom src =
 #ifndef mingw32_HOST_OS
 		-- creating a hard link could fall; fall back to copying

@@ -8,6 +8,9 @@ git-annex (5.20140818) UNRELEASED; urgency=medium
     Closes: #758630
   * Fix handing of autocorrection when running outside a git repository.
   * Fix stub git-annex test support when built without tasty.
+  * Do not preserve permissions and acls when copying files from
+    one local git repository to another. Timestamps are still preserved
+    as long as cp --preserve=timestamps is supported. Closes: #729757
 
  -- Joey Hess <joeyh@debian.org>  Tue, 19 Aug 2014 12:52:41 -0400
 

@@ -23,6 +23,7 @@ tests =
 	, TestCase "git version" getGitVersion
 	, testCp "cp_a" "-a"
 	, testCp "cp_p" "-p"
+	, testCp "cp_preserve_timestamps" "--preserve=timestamps"
 	, testCp "cp_reflink_auto" "--reflink=auto"
 	, TestCase "xargs -0" $ requireCmd "xargs_0" "xargs -0 </dev/null"
 	, TestCase "rsync" $ requireCmd "rsync" "rsync --version >/dev/null"
