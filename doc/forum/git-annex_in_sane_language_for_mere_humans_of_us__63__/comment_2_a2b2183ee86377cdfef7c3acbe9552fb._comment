@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawld54zdyk6b0W4jXnssSO_j2Nn3W1uVsUE"
+ nickname="Paul"
+ subject="comment 2"
+ date="2014-08-24T11:04:21Z"
+ content="""
+Python on this system \"just works\". That's because Python is a project with a real community, so if one pundit said \"not supported\", dozen of people shrugged and typed \"make\", then packed up result for thousands to use.
+
+But don't get carried away by OABI, that was just one random example how deployment of git-annex is problematic. There're bigger issues like community involvement, being able to investigate and resolve issues, submit patches, bring new working ideas, make git-annex development and lifecycle sustainable, in the end - as vividly cared by the author.
+
+"""]]
