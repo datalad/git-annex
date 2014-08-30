@@ -292,4 +292,4 @@ shell@hammerhead:/sdcard/git-annex.home $ ^D
 shell@hammerhead:/ $
 """]]
 
-Android is new for me, so it's possible I'm must doing something utterly wrong.
+Android is new to me, so it's possible I'm doing something utterly wrong.
