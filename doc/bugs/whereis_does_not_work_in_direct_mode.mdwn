@@ -20,7 +20,10 @@ The following script (available at <https://gist.github.com/gioele/dde462df89edf
  
 set -e ; set -u
 export LC_ALL=C
- 
+
+# alwayscommit must be set globally to affects whereis and sync
+git config --global annex.alwayscommit false 
+
 direct=true # set to false to make the problem disappear
  
 h=${h:-localhost}
