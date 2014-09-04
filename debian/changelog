@@ -1,3 +1,9 @@
+git-annex (5.20140832) UNRELEASED; urgency=medium
+
+  * webapp: Fixed visual glitch in xmpp pairing.
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 04 Sep 2014 16:17:22 -0400
+
 git-annex (5.20140831) unstable; urgency=medium
 
   * Make --help work when not in a git repository. Closes: #758592
