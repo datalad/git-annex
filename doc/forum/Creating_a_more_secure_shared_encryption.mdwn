@@ -1,0 +1,7 @@
+I was wondering if there was a way to make shared encryption more secure.  Here is my suggestion:  
+The shared repository is encrypted using a key for the whole repository, just the way normal encryption would work.  
+The server additionally keeps a copy of every user's public key.  
+When a user is authorized, their repository is initialized and they receive the common key, encrypted by their public key.  
+The only issue would be storage of the common key, which would have to be restricted to repository on a trusted machine.  
+
+Not sure if this would be easy for you to implement, but I figured I'd submit a post detailing it, to see if maybe it was doable.
