@@ -21,5 +21,5 @@ file`; otherwise it will "git add" it.
 
 ----
 
-[magit-annex](https://github.com/kyleam/magit-annex) adds magit support
-for a few features, including adding files and syncing.
+[magit-annex](https://github.com/magit/magit-annex) adds git annex
+operations to Magit.
