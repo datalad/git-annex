@@ -1,0 +1,44 @@
+Hi,
+
+I am been seeing quite big overheads using `git-annex`.  Is this is normal?
+
+The `.git/objects` folder is explosive in my system, often being larger
+than the content watched by git-annex.  Here's the actual statistics
+of my git-annex folders, where the fourth column is calculated as col3/(col2-col3).
+
+[[!table  data="""
+folder,size,size .git,relative size
+conf.annex,777536,720100,12.537433
+doc.annex,20351624,11260204,1.2385528
+images.annex,817064,435580,1.1418041
+misc.annex,803328,572476,2.4798399
+music.annex,23756116,9192740,0.63122314"""]]
+
+That is, four of five repos require more space for the `.git` folder than the actual files.  Most of this comes from the `objects` folder.  
+
+Number of files:
+
+[[!table data="""
+folder,no. files,no files .git,relative size
+conf.annex,11350,9539,5.2672557
+doc.annex,84954,66824,3.6858246
+images.annex,92787,91285,60.775632
+misc.annex,95461,95160,316.14618
+music.annex,16414,13520,4.6717346
+"""]]
+
+
+I use the assistant web interface, and direct
+mode.  I use two laptops running Linux that are synchronized
+directly over LAN at home or via a transfer repo on a ssh server
+where git-annex is installed.  The latter is set up using the web interface and the gcrypt repo.
+[Mostly, the transfer repo isn't working
+and I often end up with only symlinks on the computer where I did not edit the file in question, 
+but this is probably unrelated.]
+
+I have previously tried to fix it using `git gc` or `git annex forget`, but it doesn't seem to significantly reduce the sizes, and what it helps isn't persistent.
+
+Is this kind of 'overhead' something that one must accept when using
+`git-annex` or do such numbers indicate that something is wrong?
+
+Thanks.
