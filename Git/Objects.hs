@@ -33,3 +33,17 @@ looseObjectFile :: Repo -> Sha -> FilePath
 looseObjectFile r sha = objectsDir r </> prefix </> rest
   where
 	(prefix, rest) = splitAt 2 (fromRef sha)
+
+listAlternates :: Repo -> IO [FilePath]
+listAlternates r = catchDefaultIO [] (lines <$> readFile alternatesfile)
+  where
+	alternatesfile = objectsDir r </> "info" </> "alternates"
+
+{- A repository recently cloned with --shared will have one or more
+ - alternates listed, and contain no loose objects or packs. -}
+isSharedClone :: Repo -> IO Bool
+isSharedClone r = allM id
+	[ not . null <$> listAlternates r
+	, null <$> listLooseObjectShas r
+	, null <$> listPackFiles r
+	]

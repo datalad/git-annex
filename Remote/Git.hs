@@ -355,15 +355,27 @@ copyFromRemote' r key file dest
 	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) (return False) $ do
 		params <- Ssh.rsyncParams r Download
 		u <- getUUID
+		hardlink <- annexHardLink <$> Annex.getGitConfig
 		-- run copy from perspective of remote
 		onLocal r $ do
 			ensureInitialized
 			v <- Annex.Content.prepSendAnnex key
 			case v of
 				Nothing -> return False
-				Just (object, checksuccess) ->
-					runTransfer (Transfer Download u key) file noRetry
-						(rsyncOrCopyFile params object dest)
+				Just (object, checksuccess) -> do
+					let copier = rsyncOrCopyFile params object dest
+#ifndef mingw32_HOST_OS
+					let linker = createLink object dest >> return True
+					go <- ifM (pure hardlink <&&> not <$> isDirect)
+						( return $ \m -> liftIO (catchBoolIO linker)
+							<||> copier m
+						, return copier
+						)
+#else
+					let go = copier
+#endif
+					runTransfer (Transfer Download u key)
+						file noRetry go
 						<&&> checksuccess
 	| Git.repoIsSsh (repo r) = feedprogressback $ \feeder -> do
 		direct <- isDirect

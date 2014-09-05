@@ -1,6 +1,10 @@
 git-annex (5.20140832) UNRELEASED; urgency=medium
 
   * webapp: Fixed visual glitch in xmpp pairing.
+  * New annex.hardlink setting. Closes: #758593
+  * init: Automatically detect when a repository was cloned with --shared,
+    and set annex.hardlink=true, as well as marking the repository as
+    untrusted.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 04 Sep 2014 16:17:22 -0400
 

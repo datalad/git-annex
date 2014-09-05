@@ -1433,6 +1433,19 @@ Here are all the supported configuration settings.
   commit the data by running `git annex merge` (or by automatic merges)
   or `git annex sync`.
 
+* `annex.hardlink`
+
+  Set this to `true` to make file contents be hard linked into the
+  repository when possible, instead of a more expensive copy.
+
+  Use with caution -- This can invalidate numcopies counting, since
+  with hard links, fewer copies of a file can exist. So, it is a good
+  idea to mark a repository using this setting as untrusted.
+
+  When a repository is set up using `git clone --shared`, git-annex init
+  will automatically set annex.hardlink and mark the repository as
+  untrusted.
+
 * `annex.delayadd`
 
   Makes the watch and assistant commands delay for the specified number of

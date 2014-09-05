@@ -11,7 +11,6 @@ module Logs.Trust (
 	TrustLevel(..),
 	trustGet,
 	trustMap,
-	trustSet,
 	trustPartition,
 	trustExclude,
 	lookupTrust,
@@ -20,17 +19,15 @@ module Logs.Trust (
 ) where
 
 import qualified Data.Map as M
-import Data.Time.Clock.POSIX
 
 import Common.Annex
 import Types.TrustLevel
 import qualified Annex.Branch
 import qualified Annex
 import Logs
-import Logs.UUIDBased
 import Remote.List
 import qualified Types.Remote
-import Logs.Trust.Pure as X
+import Logs.Trust.Basic as X
 
 {- Returns a list of UUIDs that the trustLog indicates have the
  - specified trust level.
@@ -38,17 +35,6 @@ import Logs.Trust.Pure as X
  - the default. -}
 trustGet :: TrustLevel -> Annex [UUID]
 trustGet level = M.keys . M.filter (== level) <$> trustMap
-
-{- Changes the trust level for a uuid in the trustLog. -}
-trustSet :: UUID -> TrustLevel -> Annex ()
-trustSet uuid@(UUID _) level = do
-	ts <- liftIO getPOSIXTime
-	Annex.Branch.change trustLog $
-		showLog showTrustLog .
-			changeLog ts uuid level .
-				parseLog (Just . parseTrustLog)
-	Annex.changeState $ \s -> s { Annex.trustmap = Nothing }
-trustSet NoUUID _ = error "unknown UUID; cannot modify"
 
 {- Returns the TrustLevel of a given repo UUID. -}
 lookupTrust :: UUID -> Annex TrustLevel
