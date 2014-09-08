@@ -4,7 +4,7 @@
 
 Hello.
 
-I've installed git-annex and/or git-annex assistant on Windows 7 in a corp environment (hello gotchas!).
+I've installed git-annex and git-annex assistant on Windows 7 in a corp environment (hello gotchas!).
 
 In this post I'll describe issues I encountered, how I fixed them, recommendations I have for the installer, and some results from a couple `git annex test` runs.
 
@@ -113,7 +113,7 @@ and
     git-annex version: 5.20140908-g378fbb1
     build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV DNS Feeds Quvi TDFA CryptoHash
 
-...Note the corruption.  I think this happens when I drag the scroll bar while console output is being emitted.  (msysgit's problem?)  I would presume and hope that this is a "display only" issue.
+...Note the corruption.  I think this happens when I drag the scroll bar while console output is being emitted.  (msysgit's problem?)  I would presume and hope that this is a "display only" issue. UPDATE: see section Corruption below.
 
 # .vbs failure
 
@@ -122,6 +122,22 @@ I copied the `git-annex.lnk` out of my admin user's start menu onto my desktop a
 I think I know why.  `git-annex.exe` isn't on the path... but `git-annex.lnk` is in the CWD (Desktop in this case).  Yeah, that is the problem.  The vbs attempts to run "git-annex webapp", and this .lnk points to a valid "executable": `git-annex-webapp.vbs`...  So it just calls itself with an argument over and over again.
 
 Workaround: invoke `git annex webapp` from the normal git bash console.
+
+# Corruption?
+
+In some section above I speculated that the "jittery" corruption I was seeing in my console was a "display only" problem caused by scrolling around while new characters were being printed to the console.  Now, I don't think so.
+
+The corruption can be seen in the Log in the webapp.  Here's an example from the top of the log:
+
+    [2014-09-08 13:37:45 Central Daylight Time] main: starting assistant version 5.20140908-g378fbb1
+    Launching web browser on file://d:\annex\.git\annex\webapp.html
+    [2014-09-08 13:37:45 Central Daylight Time] Cronner: You should enable consistency checking to protect your data. 
+    (scanning...) [2014-09-08 13:37:45 Central Daylight Time] Watcher: Performing startup scan
+    (started...) rreerrcceevvcc::vv  ::ff  aaffiiaalliieellddee  dd((  NN((ooNN  ooee  rreerrrroorrrroo))rr
+    
+    ))
+
+I have no clue about this!  (Well...  "I think it's trying to communicate!") 
 
 # Conclusion
 
