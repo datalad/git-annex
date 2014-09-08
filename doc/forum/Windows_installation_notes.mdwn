@@ -1,0 +1,122 @@
+[[!toc]]
+
+# Introduction
+
+Hello.
+
+I've installed git-annex and/or git-annex assistant on Windows 7 in a corp environment (hello gotchas!).
+
+In this post I'll describe issues I encountered, how I fixed them, and recommendations I have for the installer.
+
+# Background
+
+My regular domain user doesn't have permissions to write to `C:\Program Files (x86)`, so I use a secondary domain user which is in the Administrators group.  I use "Run as different user" to run installers, etc.  (cf. "Run as Administrator")
+
+During msysgit installation I checked "only bash, don't add to path, don't integrate with Explorer" etc, since I like my third-party applications isolated.
+
+# The installer
+
+## Where to install `git-annex.exe`
+
+The nightly build of git-annex/assistant from NEST (20140908) only prompts for the base path of the msysgit location and it installs files in `$BASE/bin` and `$BASE/cmd`...  I'll try manually copying files post-install to mitigate the path issues described in other posts on this forum.
+
+The msysgit installer (1.9.4-preview20140815) presents a certain screen with three radio options:
+
+1. git bash only
+2. just git in `cmd.exe`
+3. git + unix tools in `cmd.exe`.
+
+I *think* this is the meaning of each:
+
+1. cmd.exe's PATH is not touched.
+2. `$GITBASE/cmd` is added to PATH
+3. `$GITBASE/bin` is added to PATH
+
+Therefore, I think that if you do something so that `git-annex.exe` is added to both $GITBASE/cmd and $GITBASE/bin (perhaps a symlink or even a .lnk file) then all three user preference options will be covered.
+
+All I did was copy `$BASE/cmd/git-annex.exe` to `$BASE/bin/git-annex.exe` and now both `git annex` and `git-annex` work in my msysgit "git bash" console.  I didn't test `cmd.exe` since I selected option 1 in the msysgit installer.
+
+## Installer locations: user profile or system-wide?
+
+I found a shortcut for the webapp in Start Menu/Startup ... for the wrong user.  Please prompt the user during the installation: "Install startup link system-wide or for current user?"
+
+# git annex test results
+
+## `$HOME` defaulted to some mapped drive, whoops!
+
+The test suite has been running since before I started this post.  Is that normal? :)
+
+I notice that it emits "Detected a crippled filesystem", "Enabling direct mode." and other messages again and again.  If those checks are expensive, maybe the result should be memoized/cached.
+
+Oh goodness, the test is reading and writing to my "home directory": a remote filesystem I never use.  It's slow.  I'll have to configure msysgit to use a different, more local `$HOME`.  This a common problem on this workstation.  I'll let the test finish in case it reveals something useful to you, but this will not be how I use it going forward...
+
+I am unable to attach `testWithMappedDriveHomeDirConsoleOutput.txt` to this post.  1 out of 84 tests failed.  Here is the only case sensitive occurrence of FAIL in the console output, with some lines of context.
+
+    OK
+        info:                                             Detected a filesystem without fifo support.
+      Disabling ssh connection caching.
+      Detected a crippled filesystem.
+      Enabling direct mode.
+    git-annex: Data.BloomFilter.Util.suggestSizing: capacity too large to represent
+    FAIL
+          Exception: user error (git-annex ["info","--json"] exited 1)
+        version:                                          Detected a filesystem without fifo support.
+      Disabling ssh connection caching.
+      Detected a crippled filesystem.
+      Enabling direct mode.
+    git-annex version: 5.20140908-g378fbb1
+    build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV DNS Feeds Quvi TDFA CryptoHash
+
+## test results with local NTFS `$HOME`
+
+...The console output is scrolling by much more quickly.
+
+2 out of 84 tests failed.
+
+        prop_past_sane:                                 OK
+          +++ OK, passed 1000 tests.
+        prop_duration_roundtrips:                       OK
+          +++ OK, passed 1000 tests.
+        prop_metadata_sane:                             OK
+          +++ OK, passed 1000 tests.
+        prop_metadata_serialize:                        OK
+          +++ OK, passed 1000 tests.
+        prop_branchView_legal:                          OK
+          +++ OK, passed 1000 tests.
+        prop_view_roundtrips:                           OK
+          +++I nOiKt,  Tpeasstsse
+    d  1 0i0n0i tt:e sts.
+        prop_viewedFile_rountrips:                      FAIL
+          *** Failed! Falsifiable (after 51 tests and 1 shrink):
+          "a:"
+          Use --quickcheck-replay '50 592211036 1831676953' to reproduce.
+      Unit Tests
+        add sha1dup:                                    init test repo
+      Detected a filesystem without fifo support.
+    
+      Disabling ssh connection caching.
+
+and
+
+    OK
+        info:                                             Detected a filesystem without fifo support.
+      Disabling ssh connection caching.
+      Detected a crippled filesystem.
+      Enabling direct mode.
+    git-annex: Data.BloomFilter.Util.suggestSizing: capacity too large to represent
+    FAIL
+          Exception: user error (git-annex ["info","--json"] exited 1)
+        version:                                          Detected a filesystem without fifo support.
+      Disabling ssh connection caching.
+      Detected a crippled filesystem.
+      Enabling direct mode.
+    git-annex version: 5.20140908-g378fbb1
+    build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV DNS Feeds Quvi TDFA CryptoHash
+
+...Note the corruption.  I think this happens when I drag the scroll bar while console output is being emitted.  (msysgit's problem?)  I would presume and hope that this is a "display only" issue.
+
+# Conclusion
+
+I hope this information is helpful.  I've enabled the 'email comments to me' option on this post and I'd be happy to perform further tests upon request.
+
+Cheers!
