@@ -115,6 +115,14 @@ and
 
 ...Note the corruption.  I think this happens when I drag the scroll bar while console output is being emitted.  (msysgit's problem?)  I would presume and hope that this is a "display only" issue.
 
+# .vbs failure
+
+I copied the `git-annex.lnk` out of my admin user's start menu onto my desktop and double clicked it.  `wscript.exe` got stuck in a loop where new copies were being spawned over and over again (and old copies dieing at the same rate).
+
+I think I know why.  `git-annex.exe` isn't on the path... but `git-annex.lnk` is in the CWD (Desktop in this case).  Yeah, that is the problem.  The vbs attempts to run "git-annex webapp", and this .lnk points to a valid "executable": `git-annex-webapp.vbs`...  So it just calls itself with an argument over and over again.
+
+Workaround: invoke `git annex webapp` from the normal git bash console.
+
 # Conclusion
 
 I hope this information is helpful.  I've enabled the 'email comments to me' option on this post and I'd be happy to perform further tests upon request.
