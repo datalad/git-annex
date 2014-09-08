@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ ip="81.111.193.130"
+ subject="comment 10"
+ date="2014-09-08T08:08:50Z"
+ content="""
+Removing .git/annex/index is safe, it is a step in getting git-annex to [forget a commit entirely](http://git-annex.branchable.com/forum/How_to_get_git-annex_to_forget_a_commit__63__).
+"""]]
