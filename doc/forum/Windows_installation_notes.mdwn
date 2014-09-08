@@ -6,7 +6,7 @@ Hello.
 
 I've installed git-annex and/or git-annex assistant on Windows 7 in a corp environment (hello gotchas!).
 
-In this post I'll describe issues I encountered, how I fixed them, and recommendations I have for the installer.
+In this post I'll describe issues I encountered, how I fixed them, recommendations I have for the installer, and some results from a couple `git annex test` runs.
 
 # Background
 
