@@ -46,7 +46,7 @@ perform dest key = do
 	tmpdest <- fromRepo $ gitAnnexTmpObjectLocation key
 	liftIO $ createDirectoryIfMissing True (parentDir tmpdest)
 	showAction "copying"
-	ifM (liftIO $ copyFileExternal src tmpdest)
+	ifM (liftIO $ copyFileExternal CopyAllMetaData src tmpdest)
 		( do
 			liftIO $ do
 				removeFile dest

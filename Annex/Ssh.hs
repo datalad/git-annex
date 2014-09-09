@@ -35,6 +35,7 @@ import Config.Files
 import Utility.Env
 import Types.CleanupActions
 import Annex.Index (addGitEnv)
+import Utility.LockFile
 #ifndef mingw32_HOST_OS
 import Annex.Perms
 #endif
@@ -151,14 +152,12 @@ sshCleanup = mapM_ cleanup =<< enumSocketFiles
 		let lockfile = socket2lock socketfile
 		unlockFile lockfile
 		mode <- annexFileMode
-		fd <- liftIO $ noUmask mode $
-			openFd lockfile ReadWrite (Just mode) defaultFileFlags
-		v <- liftIO $ tryIO $
-			setLock fd (WriteLock, AbsoluteSeek, 0, 0)
+		v <- liftIO $ noUmask mode $ tryLockExclusive (Just mode) lockfile
 		case v of
-			Left _ -> noop
-			Right _ -> forceStopSsh socketfile
-		liftIO $ closeFd fd
+			Nothing -> noop
+			Just lck -> do
+				forceStopSsh socketfile
+				liftIO $ dropLock lck
 #else
 		forceStopSsh socketfile
 #endif

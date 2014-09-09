@@ -64,7 +64,7 @@ subdirectories).
 
   Adds files in the path to the annex. If no path is specified, adds
   files from the current directory and below.
-  
+
   Files that are already checked into git, or that git has been configured
   to ignore will be silently skipped. (Use `--force` to add ignored files.)
 
@@ -79,6 +79,10 @@ subdirectories).
 
   Normally git-annex will choose which repository to copy the content from,
   but you can override this using the `--from` option.
+ 
+  Rather than specifying a filename, the `--all` option can be used to 
+  get all available versions of all files, or the --key=KEY`
+  option can be used to get a specified key.
 
 * `drop [path ...]`
 
@@ -272,10 +276,10 @@ subdirectories).
   (Other available variables: feedauthor, itemauthor, itemsummary, itemdescription, itemrights, itemid, itempubdate, title, author)
 
   The `--relaxed` and `--fast` options behave the same as they do in addurl.
-  
+
   When quvi is installed, links in the feed are tested to see if they
   are on a video hosting site, and the video is downloaded. This allows
-  importing eg, youtube playlists.
+  importing e.g., youtube playlists.
 
 * `watch`
 
@@ -319,7 +323,7 @@ subdirectories).
   This disables running a local web browser, and outputs the url you
   can use to open the webapp.
 
-  When using the webapp on a remote computer, you'll almost certianly
+  When using the webapp on a remote computer, you'll almost certainly
   want to enable HTTPS. The webapp will use HTTPS if it finds
   a .git/annex/privkey.pem and .git/annex/certificate.pem. Here's
   one way to generate those files, using a self-signed certificate:
@@ -388,7 +392,7 @@ subdirectories).
 
   The name of the remote is the same name used when originally
   creating that remote with "initremote". Run "git annex enableremote"
-  with no parameters to get a list of special remote names.
+  without any name to get a list of special remote names.
 
   Some special remotes may need parameters to be specified every time.
   For example, the directory special remote requires a directory= parameter.
@@ -425,7 +429,7 @@ subdirectories).
   Run without a number to get the current value.
 
   When git-annex is asked to drop a file, it first verifies that the
-  required number of copies can be satisfied amoung all the other
+  required number of copies can be satisfied among all the other
   repositories that have a copy of the file.
 
   This can be overridden on a per-file basis by the annex.numcopies setting
@@ -645,7 +649,7 @@ subdirectories).
   `--format`. The default output format is the same as `--format='${file}\\n'`
 
   These variables are available for use in formats: file, key, backend,
-  bytesize, humansize, keyname, hashdirlower, hashdirmixed, mtime (for 
+  bytesize, humansize, keyname, hashdirlower, hashdirmixed, mtime (for
   the mtime field of a WORM key).
 
 * `whereis [path ...]`
@@ -715,13 +719,13 @@ subdirectories).
 
 * `metadata [path ...] [-s field=value -s field+=value -s field-=value ...] [-g field]`
 
-  The content of a file can have any number of metadata fields 
+  The content of a file can have any number of metadata fields
   attached to it to describe it. Each metadata field can in turn
-  have any number of values. 
-  
+  have any number of values.
+
   This command can be used to set metadata, or show the currently set
   metadata.
-  
+
   To show current metadata, run without any -s parameters. The --json
   option will enable json output.
 
@@ -750,7 +754,7 @@ subdirectories).
   and checks out the view branch. Only files in the current branch whose
   metadata matches all the specified field values and tags will be
   shown in the view.
-  
+
   Multiple values for a metadata field can be specified, either by using
   a glob (`field="*"`) or by listing each wanted value. The resulting view
   will put files in subdirectories according to the value of their fields.
@@ -785,9 +789,9 @@ subdirectories).
   Changes the current view, adding an additional level of directories
   to categorize the files.
 
-  For example, when the view is by author/tag, `vadd year=*` will 
-  change it to year/author/tag. 
-  
+  For example, when the view is by author/tag, `vadd year=*` will
+  change it to year/author/tag.
+
   So will `vadd year=2014 year=2013`, but limiting the years in view
   to only those two.
 
@@ -934,7 +938,7 @@ subdirectories).
 * `findref [ref]`
 
   This is similar to the find command, but instead of finding files in the
-  current work tree, it finds files in the specified git ref. 
+  current work tree, it finds files in the specified git ref.
 
   Most MATCHING OPTIONS can be used with findref, to limit the files it
   finds. However, the --include and --exclude options will not work.
@@ -1125,7 +1129,7 @@ subdirectories).
   Caused a desktop notification to be displayed after each successful
   file download and upload.
 
-  (Only supported on some platforms, eg Linux with dbus. A no-op when
+  (Only supported on some platforms, e.g. Linux with dbus. A no-op when
   not supported.)
 
 * `--notify-start`
@@ -1316,7 +1320,7 @@ to e.g., fsck a repository on a removable drive when the drive gets
 connected.
 
 The scheduled jobs can be configured using `git annex vicfg` or
-`git annex schedule`. 
+`git annex schedule`.
 
 These actions are available: "fsck self", "fsck UUID" (where UUID
 is the UUID of a remote to fsck). After the action comes the duration
@@ -1372,7 +1376,7 @@ Here are all the supported configuration settings.
 
   This is a deprecated setting. You should instead use the
   `git annex numcopies` command to configure how many copies of files
-  are kept acros all repositories.
+  are kept across all repositories.
 
   This config setting is only looked at when `git annex numcopies` has
   never been configured.
@@ -1382,8 +1386,8 @@ Here are all the supported configuration settings.
 * `annex.genmetadata`
 
   Set this to `true` to make git-annex automatically generate some metadata
-  when adding files to the repository. 
-  
+  when adding files to the repository.
+
   In particular, it stores year and month metadata, from the file's
   modification date.
 
@@ -1424,7 +1428,7 @@ Here are all the supported configuration settings.
 
   By default, git-annex automatically commits data to the git-annex branch
   after each command is run. If you have a series
-  of commands that you want to make a single commit, you can 
+  of commands that you want to make a single commit, you can
   run the commands with `-c annex.alwayscommit=false`. You can later
   commit the data by running `git annex merge` (or by automatic merges)
   or `git annex sync`.
@@ -1441,7 +1445,7 @@ Here are all the supported configuration settings.
 
   Controls what the assistant does about unused file contents
   that are stored in the repository.
-  
+
   The default is `false`, which causes
   all old and unused file contents to be retained, unless the assistant
   is able to move them to some other repository (such as a backup repository).
@@ -1611,7 +1615,7 @@ Here are all the supported configuration settings.
 
   These options are passed after other applicable rsync options,
   so can be used to override them. For example, to limit upload bandwidth
-  to 10Kbye/s, set `--bwlimit 10`.
+  to 10Kbyte/s, set `--bwlimit 10`.
 
 * `remote.<name>.annex-rsync-download-options`
 
@@ -1686,7 +1690,7 @@ Here are all the supported configuration settings.
   In the command line, %file is replaced with the file that should be
   erased.
 
-  For example, to use the wipe command, set it to `wipe -f %file`
+  For example, to use the wipe command, set it to `wipe -f %file`.
 
 * `remote.<name>.rsyncurl`
 
@@ -1781,7 +1785,7 @@ not honor the settings from .gitattributes.
 
 Also note that when using views, only the toplevel .gitattributes file is
 preserved in the view, so other settings in other files won't have any
-efffect.
+effect.
 
 # FILES
 

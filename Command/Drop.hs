@@ -55,8 +55,12 @@ startRemote afile numcopies key remote = do
 	showStart' ("drop " ++ Remote.name remote) key afile
 	next $ performRemote key afile numcopies remote
 
+-- Note that lockContent is called before checking if the key is present
+-- on enough remotes to allow removal. This avoids a scenario where two
+-- or more remotes are trying to remove a key at the same time, and each
+-- see the key is present on the other.
 performLocal :: Key -> AssociatedFile -> NumCopies -> Maybe Remote -> CommandPerform
-performLocal key afile numcopies knownpresentremote = lockContent key $ do
+performLocal key afile numcopies knownpresentremote = lockContent key $ \contentlock -> do
 	(remotes, trusteduuids) <- Remote.keyPossibilitiesTrusted key
 	let trusteduuids' = case knownpresentremote of
 		Nothing -> trusteduuids
@@ -66,7 +70,7 @@ performLocal key afile numcopies knownpresentremote = lockContent key $ do
 	u <- getUUID
 	ifM (canDrop u key afile numcopies trusteduuids' tocheck [])
 		( do
-			removeAnnex key
+			removeAnnex contentlock
 			notifyDrop afile True
 			next $ cleanupLocal key
 		, do
@@ -75,7 +79,7 @@ performLocal key afile numcopies knownpresentremote = lockContent key $ do
 		)
 
 performRemote :: Key -> AssociatedFile -> NumCopies -> Remote -> CommandPerform
-performRemote key afile numcopies remote = lockContent key $ do
+performRemote key afile numcopies remote = do
 	-- Filter the remote it's being dropped from out of the lists of
 	-- places assumed to have the key, and places to check.
 	-- When the local repo has the key, that's one additional copy,

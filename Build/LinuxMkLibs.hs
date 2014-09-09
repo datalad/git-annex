@@ -82,7 +82,7 @@ symToHardLink f = whenM (isSymbolicLink <$> getSymbolicLinkStatus f) $ do
 installFile :: FilePath -> FilePath -> IO ()
 installFile top f = do
 	createDirectoryIfMissing True destdir
-	void $ copyFileExternal f destdir
+	void $ copyFileExternal CopyTimeStamps f destdir
   where
 	destdir = inTop top $ parentDir f
 

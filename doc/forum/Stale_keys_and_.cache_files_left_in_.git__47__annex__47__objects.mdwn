@@ -1,0 +1,39 @@
+I recently migrated some of my repositories from WORM to SHA1E, and
+noticed after finishing conversion and dropping all WORM keys that
+there are some stale files and directories left over in the
+.git/annex/objects directory. These seem to fall into two categories:
+
+1. There are some empty directories meant for WORM-keys. Strangely, I
+don’t believe the content of these keys has ever been present on this
+machine, and the corresponding .log files do not contain the local
+UUID. What might be the deal with those?
+
+Another set of empty WORM directories housed content I unannexed and
+checked into regular git on my other remote, and then pulled locally.
+A subsequent «dropunused» seems to have left the empty directories
+after dropping their content.
+
+I suppose the stale directories can be safely pruned away?
+
+One thing I noticed is that, while the terminal leaf in the objects
+directory is usually sticky (mode +t), the stale directories to
+content I unannexed are all non-sticky. Maybe this gives some
+indication where things got stuck? A few (though not all) of the other
+terminal directories are non-sticky, as well.
+
+2. There are some .map and .cache files leftover in
+.git/annex/objects. This is an indirect repository, but I briefly
+switched it to direct once. The stale files seem to belong to content
+with which I had some difficulties when «git annex add»’ing the files
+(I recall I had to add them multiple times before they were correctly
+indexed). I now examined these files again and noticed they were
+tracked via regular git. I «git rm»’ed them and readded them into the
+annex. Can the stale .cache and .map files be safely deleted?
+
+I noticed some of these keys have the format
+«WORM-s123-m-123456789--name», with an additional dash before the
+mtime. Has there been a format change, or does this indicate a
+problem?
+
+Best regards,
+Z.

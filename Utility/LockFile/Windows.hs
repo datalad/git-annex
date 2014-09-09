@@ -5,7 +5,7 @@
  - License: BSD-2-clause
  -}
 
-module Utility.WinLock (
+module Utility.LockFile.Windows (
 	lockShared,
 	lockExclusive,
 	dropLock,
@@ -17,9 +17,6 @@ import System.Win32.Types
 import System.Win32.File
 import Control.Concurrent
 
-{- Locking is exclusive, and prevents the file from being opened for read
- - or write by any other process. So for advisory locking of a file, a
- - different LockFile should be used. -}
 type LockFile = FilePath
 
 type LockHandle = HANDLE
@@ -30,7 +27,11 @@ lockShared :: LockFile -> IO (Maybe LockHandle)
 lockShared = openLock fILE_SHARE_READ
 
 {- Tries to take an exclusive lock on a file. Fails if another process has
- - a shared or exclusive lock. -}
+ - a shared or exclusive lock.
+ -
+ - Note that exclusive locking also prevents the file from being opened for
+ - read or write by any other progess. So for advisory locking of a file's
+ - content, a different LockFile should be used. -}
 lockExclusive :: LockFile -> IO (Maybe LockHandle)
 lockExclusive = openLock fILE_SHARE_NONE
 
@@ -44,15 +45,20 @@ lockExclusive = openLock fILE_SHARE_NONE
  - Note that createFile busy-waits to try to avoid failing when some other
  - process briefly has a file open. But that would make checking locks
  - much more expensive, so is not done here. Thus, the use of c_CreateFile.
+ -
+ - Also, passing Nothing for SECURITY_ATTRIBUTES ensures that the lock file
+ - is not inheerited by any child process.
  -}
 openLock :: ShareMode -> LockFile -> IO (Maybe LockHandle)
 openLock sharemode f = do
 	h <- withTString f $ \c_f ->
-		c_CreateFile c_f gENERIC_READ sharemode (maybePtr Nothing)
+		c_CreateFile c_f gENERIC_READ sharemode security_attributes
 			oPEN_ALWAYS fILE_ATTRIBUTE_NORMAL (maybePtr Nothing)
 	return $ if h == iNVALID_HANDLE_VALUE
 		then Nothing
 		else Just h
+  where
+	security_attributes = maybePtr Nothing
 
 dropLock :: LockHandle -> IO ()
 dropLock = closeHandle

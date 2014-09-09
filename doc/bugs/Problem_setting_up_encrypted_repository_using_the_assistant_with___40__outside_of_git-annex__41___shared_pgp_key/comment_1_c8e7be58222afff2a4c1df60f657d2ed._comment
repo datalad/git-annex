@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk7iPiqWr3BVPLWEDvJhSSvcOqheLEbLNo"
+ nickname="Dirk"
+ subject="comment 1"
+ date="2014-08-23T18:13:06Z"
+ content="""
+Restarting the two git-annex instances actually now leads to an error message on computer B.
+
+[[!format sh \"\"\"
+[2014-08-23 20:02:00 CEST] main: starting assistant version 5.20140818-g10bf03a
+[2014-08-23 20:02:00 CEST] Cronner: You should enable consistency checking to protect your data. 
+
+  dbus failed; falling back to mtab polling (ClientError {clientErrorMessage = \"runClient: unable to determine DBUS address\", clientErrorFatal = True})
+[2014-08-23 20:02:00 CEST] TransferScanner: Syncing with C_annex 
+
+  No known network monitor available through dbus; falling back to polling
+(scanning...) [2014-08-23 20:02:00 CEST] Watcher: Performing startup scan
+gcrypt: Development version -- Repository format MAY CHANGE
+(started...) 
+gcrypt: Decrypting manifest
+gpg: Signature made Sat 23 Aug 2014 03:34:08 PM CEST using RSA key ID 0A7AA2A4
+gpg: Good signature from \"dirk's git-annex encryption key\"
+gcrypt: Packfile 59a8d97d3d252effb044625e020f9dc8621804649186a5c33c4e47f9e961cc1a does not match digest!
+fatal: early EOF
+gcrypt: Development version -- Repository format MAY CHANGE
+gcrypt: Decrypting manifest
+gpg: Signature made Sat 23 Aug 2014 03:34:08 PM CEST using RSA key ID 0A7AA2A4
+gpg: Good signature from \"dirk's git-annex encryption key\"
+gcrypt: Encrypting to:  -r 7815EA570A7AA2A4
+gcrypt: Requesting manifest signature
+To gcrypt::ssh://dirk@git-annex-C-dirk_1022_annex/~/annex/
+   e1d6871..85b70d6  annex/direct/master -> synced/master
+ + e68b5a9...99dc810 git-annex -> synced/git-annex (forced update)
+\"\"\"]]
+"""]]

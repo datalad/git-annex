@@ -1,0 +1,1 @@
+I understand that for backwards compatibility the non-bare remotes use the old "mixed" case scheme. However, for new annexes, it'd make sense to be able to use the new one so the scheme matches in all remotes.

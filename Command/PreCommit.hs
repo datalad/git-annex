@@ -18,15 +18,11 @@ import Annex.Direct
 import Annex.Hook
 import Annex.View
 import Annex.View.ViewedFile
-import Annex.Perms
+import Annex.LockFile
 import Logs.View
 import Logs.MetaData
 import Types.View
 import Types.MetaData
-
-#ifdef mingw32_HOST_OS
-import Utility.WinLock
-#endif
 
 import qualified Data.Set as S
 
@@ -92,19 +88,4 @@ showMetaDataChange = showLongNote . unlines . concatMap showmeta . fromMetaData
 
 {- Takes exclusive lock; blocks until available. -}
 lockPreCommitHook :: Annex a -> Annex a
-lockPreCommitHook a = do
-	lockfile <- fromRepo gitAnnexPreCommitLock
-	createAnnexDirectory $ takeDirectory lockfile
-	mode <- annexFileMode
-	bracketIO (lock lockfile mode) unlock (const a)
-  where
-#ifndef mingw32_HOST_OS
-	lock lockfile mode = do
-		l <- liftIO $ noUmask mode $ createFile lockfile mode
-		liftIO $ waitToSetLock l (WriteLock, AbsoluteSeek, 0, 0)
-		return l
-	unlock = closeFd
-#else
-	lock lockfile _mode = liftIO $ waitToLock $  lockExclusive lockfile
-	unlock = dropLock
-#endif
+lockPreCommitHook = withExclusiveLock gitAnnexPreCommitLock

@@ -1,0 +1,27 @@
+### Please describe the problem.
+
+The tahoe-lafs remote has no built-in way to perform the repair operation.
+This results to data loss if expiration is enabled on the Tahoe grid.
+
+For the current tahoe-lafs release (1.10.0), the only way storage space is freed
+is via garbage collection. Garbage collection removes shares whose lease has expired.
+Data loss will occur if leases are not periodically renewed via
+"tahoe repair --add-lease WRITECAP".
+
+The current implementation of the Tahoe remote in git-annex does not offer a way to
+run lease renewal, and cannot be used on grids where GC is enabled. (GC is not enabled
+in the default configuration, but on private grids it is a sensible option.)
+
+One way renewal could be made easier to do is to add the uploaded files to a directory
+in Tahoe, so that the leases could be easily updated if the directory writecap is known,
+without needing to go through the full list of writecaps for each file stored.
+
+### What steps will reproduce the problem?
+
+1. Use tahoe remote on a tahoe grid where GC is enabled.
+
+2. After GC expiration period, data loss ensues.
+
+### What version of git-annex are you using? On what operating system?
+
+Seems to affect current git master (as of 2014-08-24).

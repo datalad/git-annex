@@ -1,3 +1,19 @@
+git-annex (5.20140831) unstable; urgency=medium
+
+  * Make --help work when not in a git repository. Closes: #758592
+  * Ensure that all lock fds are close-on-exec, fixing various problems with
+    them being inherited by child processes such as git commands.
+  * When accessing a local remote, shut down git-cat-file processes
+    afterwards, to ensure that remotes on removable media can be unmounted.
+    Closes: #758630
+  * Fix handing of autocorrection when running outside a git repository.
+  * Fix stub git-annex test support when built without tasty.
+  * Do not preserve permissions and acls when copying files from
+    one local git repository to another. Timestamps are still preserved
+    as long as cp --preserve=timestamps is supported. Closes: #729757
+
+ -- Joey Hess <joeyh@debian.org>  Sun, 31 Aug 2014 12:30:08 -0700
+
 git-annex (5.20140817) unstable; urgency=medium
 
   * New chunk= option to chunk files stored in special remotes.

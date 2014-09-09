@@ -17,7 +17,7 @@ remote.
 You should decide whether to use encryption with a special remote before
 any data is stored in it. So, `git annex initremote` requires you
 to specify "encryption=none" when first setting up a remote in order
-to disable encryption. To use encryption, you run 
+to disable encryption. To use encryption, you run
 `git-annex initremote` in one of these ways:
 
 * `git annex initremote newremote type=... encryption=hybrid keyid=KEYID ...`
@@ -29,10 +29,10 @@ to disable encryption. To use encryption, you run
 The [[hybrid_key_design|design/encryption]] allows additional
 encryption keys to be added on to a special remote later. Due to this
 flexibility, it is the default and recommended encryption scheme.
- 
+
 	git annex initremote newremote type=... [encryption=hybrid] keyid=KEYID ...
 
-Here the KEYID(s) are passed to `gpg` to find encryption keys. 
+Here the KEYID(s) are passed to `gpg` to find encryption keys.
 Typically, you will say "keyid=2512E3C7" to use a specific gpg key.
 Or, you might say "keyid=joey@kitenet.net" to search for matching keys.
 
@@ -58,8 +58,8 @@ risks associated with encryption.
 Alternatively, you can configure git-annex to use a shared cipher to
 encrypt data stored in a remote. This shared cipher is stored,
 **unencrypted** in the git repository. So it's shared among every
-clone of the git repository. 
-	
+clone of the git repository.
+
 	git annex initremote newremote type=... encryption=shared
 
 The advantage is you don't need to set up gpg keys. The disadvantage is
@@ -74,10 +74,10 @@ and since it's exactly the way everyone else uses gpg.
 
 	git annex initremote newremote type=.... encryption=pubkey keyid=KEYID ...
 
-A disavantage is that it is not easy to later add additional public keys
+A disadvantage is that it is not easy to later add additional public keys
 to the special remote. While the `enableremote` parameters `keyid+=` and
 `keyid-=` can be used, they have **no effect** on files that are already
-present on the remote. Probably the only use for these parameters is 
+present on the remote. Probably the only use for these parameters is
 to replace a revoked key:
 
 	git annex enableremote myremote keyid-=2512E3C7 keyid+=788A3F4C

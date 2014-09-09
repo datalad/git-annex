@@ -15,6 +15,7 @@ module Annex (
 	eval,
 	getState,
 	changeState,
+	withState,
 	setFlag,
 	setField,
 	setOutput,
@@ -213,6 +214,11 @@ changeState :: (AnnexState -> AnnexState) -> Annex ()
 changeState modifier = do
 	mvar <- ask
 	liftIO $ modifyMVar_ mvar $ return . modifier
+
+withState :: (AnnexState -> (AnnexState, b)) -> Annex b
+withState modifier = do
+	mvar <- ask
+	liftIO $ modifyMVar mvar $ return . modifier
 
 {- Sets a flag to True -}
 setFlag :: String -> Annex ()

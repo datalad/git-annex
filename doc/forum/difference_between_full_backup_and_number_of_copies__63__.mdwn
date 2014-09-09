@@ -1,0 +1,9 @@
+If I have three repositories setup in the git annex webui as:
+
+full backup,
+
+and every file put into one of the repos seems to be propagated to the other two,
+
+what is the usage of the setting "number of copies" which is default to 1 but can be increased to 2 or 3? Does this setting matter in this context?
+
+I'm using assistant version 5.20140517.4
