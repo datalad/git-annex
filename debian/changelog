@@ -1,3 +1,9 @@
+git-annex (5.20140831~bpo70+1) wheezy-backports; urgency=low
+
+  * Updating backport to newest release.
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 09 Sep 2014 11:48:36 -0400
+
 git-annex (5.20140831) unstable; urgency=medium
 
   * Make --help work when not in a git repository. Closes: #758592
