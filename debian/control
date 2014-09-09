@@ -51,7 +51,7 @@ Build-Depends:
 	libghc-gnutls-dev (>= 0.1.4-3~bpo70+1),
 	libghc-xml-types-dev,
 	libghc-async-dev,
-	libghc-feed-dev (>= 0.3.9.2),
+	libghc-feed-dev,
 	libghc-regex-tdfa-dev [!mipsel !s390],
 	libghc-regex-compat-dev [mipsel s390],
 	lsof [!kfreebsd-i386 !kfreebsd-amd64 !hurd-any],
