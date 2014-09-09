@@ -1,6 +1,6 @@
 git-annex (5.20140831~bpo70+1) wheezy-backports; urgency=low
 
-  * Updating backport to newest release.
+  * Updating backport to newest release. Closes: #760787
 
  -- Joey Hess <joeyh@debian.org>  Tue, 09 Sep 2014 11:48:36 -0400
 
