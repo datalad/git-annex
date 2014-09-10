@@ -23,3 +23,5 @@ Windows XP.
 
 # End of transcript or log.
 """]]
+
+[[!meta title="git-annex on windows does not find msgit if user does not let msgit add itsselt to PATH"]]
