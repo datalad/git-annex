@@ -1300,3 +1300,6 @@ fatal: Could not read from remote repository.
 Please make sure you have the correct access rights
 and the repository exists.
 """]]
+
+> This is due to using an old and buggy version of git-annex. This bug was
+> fixed 3 full months ago, in version 5.20140709. [[done]] --[[Joey]]
