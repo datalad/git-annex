@@ -14,6 +14,8 @@ git-annex (5.20140832) UNRELEASED; urgency=medium
   * Fix transfer lock file FD leak that could occur when two separate
     git-annex processes were both working to perform the same set of
     transfers.
+  * sync: Ensure that pending changes to git-annex branch are committed
+    when in direct mode. (Fixing a very minor reversion.)
 
  -- Joey Hess <joeyh@debian.org>  Thu, 04 Sep 2014 16:17:22 -0400
 
