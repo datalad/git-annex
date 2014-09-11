@@ -63,3 +63,15 @@ error: failed to push some refs to 'gcrypt::/autofs/ext/wdpassport0/annexes/user
 """]]
 
 The section above I clicked cancel on the pinentry dialog as can be seen. The question is, why was it asking me anyway?
+
+> gpg: anonymous recipient; trying secret key 7426266D ...
+> 
+> That means that you have git-remote-gcrypt configured to use anonymous
+> recipients. This causes gpg to try a bunch of gpg keys until it finds one
+> that works, rather than immediately trying the right key. 
+> 
+> I modified git-remote-gcrypt in July so you can configure
+> gcrypt.publish-participants to avoid this problem. 
+> 
+> There may also be a local confguration problem; I don't know. In any
+> case, it's not git-annex responsible, but git-remote-gcrypt. [[done]] --[[Joey]]
