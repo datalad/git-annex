@@ -92,7 +92,7 @@ gen r u c gc = do
 genRsyncOpts :: RemoteConfig -> RemoteGitConfig -> [CommandParam] -> RsyncUrl -> RsyncOpts
 genRsyncOpts c gc transport url = RsyncOpts
 	{ rsyncUrl = url
-	, rsyncOptions = opts []
+	, rsyncOptions = transport ++ opts []
 	, rsyncUploadOptions = transport ++ opts (remoteAnnexRsyncUploadOptions gc)
 	, rsyncDownloadOptions = transport ++ opts (remoteAnnexRsyncDownloadOptions gc)
 	, rsyncShellEscape = M.lookup "shellescape" c /= Just "no"
