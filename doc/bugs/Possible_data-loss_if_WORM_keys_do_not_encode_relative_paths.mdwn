@@ -21,3 +21,4 @@ Instead of just using the basename, WORM keys could be kept stable by
 using the relative path and anchoring it to the root of the
 repository.
 
+> [[fixed|done]] --[[Joey]]

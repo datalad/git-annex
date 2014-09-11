@@ -16,6 +16,10 @@ git-annex (5.20140832) UNRELEASED; urgency=medium
     transfers.
   * sync: Ensure that pending changes to git-annex branch are committed
     when in direct mode. (Fixing a very minor reversion.)
+  * WORM backend: Switched to include the relative path to the file inside
+    the repository, rather than just the file's base name. Note that if you're
+    relying on such things to keep files separate with WORM, you should really
+    be using a better backend.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 04 Sep 2014 16:17:22 -0400
 

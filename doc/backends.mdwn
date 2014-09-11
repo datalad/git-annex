@@ -13,7 +13,7 @@ can use different ones for different files.
 * `SHA256` -- Does not include the file extension in the key, which can
   lead to better deduplication but can confuse some programs.
 * `WORM` ("Write Once, Read Many") This assumes that any file with
-  the same basename, size, and modification time has the same content.
+  the same filename, size, and modification time has the same content.
   This is the least expensive backend, recommended for really large
   files or slow systems.
 * `SHA512`, `SHA512E` -- Best SHA-2 hash, for the very paranoid.
