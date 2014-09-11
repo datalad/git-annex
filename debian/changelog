@@ -11,6 +11,9 @@ git-annex (5.20140832) UNRELEASED; urgency=medium
     if a key is present on a rsync remote, and when dropping a key from
     the remote.
   * Promote file not found warning message to an error.
+  * Fix transfer lock file FD leak that could occur when two separate
+    git-annex processes were both working to perform the same set of
+    transfers.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 04 Sep 2014 16:17:22 -0400
 

@@ -36,3 +36,7 @@ lsof -p <my annex process>
 .../.git/annex/ssh/myserver.lock
 .../.git/annex/transfer/upload/b4d67c4f-8cca-423c-9363-f3063b7fe3e4/lck.SHA256E-s10448418--4f61fab4... ~200 different files.
 """]]
+
+> Thanks for a very clear bug report! Was easy from that to find
+> where the lock file was not being closed in this situation.
+> [[fixed|done]] --[[Joey]]
