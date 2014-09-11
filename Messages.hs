@@ -25,7 +25,6 @@ module Messages (
 	showErr,
 	warning,
 	warningIO,
-	fileNotFound,
 	indent,
 	maybeShowJSON,
 	showFullJSON,
@@ -45,7 +44,6 @@ import System.Log.Logger
 import System.Log.Formatter
 import System.Log.Handler (setFormatter, LogHandler)
 import System.Log.Handler.Simple
-import qualified Data.Set as S
 
 import Common hiding (handle)
 import Types
@@ -171,18 +169,6 @@ warningIO w = do
 	putStr "\n"
 	hFlush stdout
 	hPutStrLn stderr w
-
-{- Displays a warning one time about a file the user specified not existing. -}
-fileNotFound :: FilePath -> Annex ()
-fileNotFound file = do
-	st <- Annex.getState Annex.output
-	let shown = fileNotFoundShown st
-	when (S.notMember file shown) $ do
-		let shown' = S.insert file shown
-		let st' = st { fileNotFoundShown = shown' }
-		Annex.changeState $ \s -> s { Annex.output = st' }
-		liftIO $ hPutStrLn stderr $ unwords
-			[ "git-annex:", file, "not found" ]
 
 indent :: String -> String
 indent = intercalate "\n" . map (\l -> "  " ++ l) . lines

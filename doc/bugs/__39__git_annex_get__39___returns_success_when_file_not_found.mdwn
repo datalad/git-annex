@@ -24,3 +24,7 @@ henry@commsbox:~/work/tmp/test$ echo $?
 
 
 """]]
+
+> Ok, I can find no reason why it was implemented as a warning in 
+> 5f3661238de9f31e6fed0be74fca9d5f1659278c in the bug report associated
+> with that commit. So, promoted to error. [[done]] --[[Joey]] 
