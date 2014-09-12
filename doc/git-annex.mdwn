@@ -513,7 +513,7 @@ subdirectories).
 * `fsck [path ...]`
 
   With no parameters, this command checks the whole annex for consistency,
-  and warns about or fixes any problems found. This is a good compliment to
+  and warns about or fixes any problems found. This is a good complement to
   `git fsck`.
 
   With parameters, only the specified files are checked.
