@@ -20,6 +20,8 @@ git-annex (5.20140832) UNRELEASED; urgency=medium
     the repository, rather than just the file's base name. Note that if you're
     relying on such things to keep files separate with WORM, you should really
     be using a better backend.
+  * Rather than crashing when there's a problem with the requested bloomfilter
+    capacity/accuracy, fall back to a reasonable default bloom filter size.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 04 Sep 2014 16:17:22 -0400
 

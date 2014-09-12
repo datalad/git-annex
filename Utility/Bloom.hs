@@ -9,7 +9,7 @@
 
 module Utility.Bloom (
 	Bloom,
-	suggestSizing,
+	safeSuggestSizing,
 	Hashable,
 	cheapHashes,
 	notElemB,
@@ -25,7 +25,7 @@ import qualified Data.BloomFilter as Bloom
 #else
 import qualified Data.BloomFilter as Bloom
 #endif
-import Data.BloomFilter.Easy (suggestSizing, Bloom)
+import Data.BloomFilter.Easy (safeSuggestSizing, Bloom)
 import Data.BloomFilter.Hash (Hashable, cheapHashes)
 import Control.Monad.ST.Safe (ST)
 

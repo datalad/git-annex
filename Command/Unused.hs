@@ -189,7 +189,12 @@ bloomBitsHashes :: Annex (Int, Int)
 bloomBitsHashes = do
 	capacity <- bloomCapacity
 	accuracy <- bloomAccuracy
-	return $ suggestSizing capacity (1/ fromIntegral accuracy)
+	case safeSuggestSizing capacity (1 / fromIntegral accuracy) of
+		Left e -> do
+			warning $ "bloomfilter " ++ e ++ "; falling back to sane value"
+			-- precaulculated value for 500000 (1/1000)
+			return (8388608,10)
+		Right v -> return v
 
 {- Creates a bloom filter, and runs an action, such as withKeysReferenced,
  - to populate it.
