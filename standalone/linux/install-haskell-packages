@@ -28,7 +28,6 @@ patched () {
 	pkg=$1
 	shift 1
 	cabal unpack $pkg$1
-	shift 1
 	cd $pkg*
 	git init
 	git config user.name dummy
