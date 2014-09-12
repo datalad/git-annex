@@ -6,7 +6,7 @@ expected result: i see files
 
 actual result: i see a bare git repository.
 
-if i first `git init` the directory so it's not bare, at least i get a better handle on it.
+if i first `git init` the directory so it's not bare, at least i get a better handle on it: i can sync with the assistant, then `git merge synced/master` to see the files.
 
 really confusing to me, sorry if it's a dupe... 
 
