@@ -53,7 +53,7 @@ once, and can be left alone when refining a view.
 
 ## automatically added metadata
 
-When annex.genmetadata is set, git annex add automatically attaches
+When `annex.genmetadata` is set, git annex add automatically attaches
 some metadata to a file. Currently year and month fields, from its mtime.
 
 There's also a post-commit-annex hook script.
