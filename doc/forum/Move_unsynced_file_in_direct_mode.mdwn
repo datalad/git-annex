@@ -1,0 +1,97 @@
+When I rename unsynced files in a direct mode repo, the original symlink gets removed from git, but the new symlink doesn't get added back by autocommit or by explicitly using `git annex add`.
+
+First, I create a file in a git-annex repo:
+
+        $ mkdir annex1
+        $ cd annex1
+        $ git init
+        Initialized empty Git repository in /home/cwarden/annex1/.git/
+        $ git annex init
+        init  ok
+        (Recording state in git...)
+        $ echo test > test1
+        $ git annex add test1
+        add test1 ok
+        (Recording state in git...)
+        $ git annex sync
+        commit  ok
+        $ ls -l
+        total 4
+        lrwxrwxrwx 1 cwarden cwarden 178 Sep 12 10:14 test1 -> .git/annex/objects/w8/pv/SHA256E-s5--f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2/SHA256E-s5--f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2
+        $ cat test1
+        test
+
+Now, I clone the repo and enable autocommit and direct mode in the second repo:
+
+        $ cd ..
+        $ git clone annex1 annex2
+        Cloning into 'annex2'...
+        done.
+        $ cd annex2
+        $ git config annex.autocommit true
+        $ git annex direct
+        commit
+        On branch master
+        Your branch is up-to-date with 'origin/master'.
+
+        nothing to commit, working directory clean
+        ok
+        direct  ok
+
+I drop the file, then rename it:
+
+        $ git annex drop test1
+        (merging origin/git-annex into git-annex...)
+        (Recording state in git...)
+        $ mv test1 test2
+        $ ls -l
+        total 4
+        lrwxrwxrwx 1 cwarden cwarden 178 Sep 12 10:14 test2 -> .git/annex/objects/w8/pv/SHA256E-s5--f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2/SHA256E-s5--f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2
+        $ git annex sync
+        commit  (Recording state in git...)
+        ok
+        pull origin
+        ok
+        push origin
+        Counting objects: 6, done.
+        Delta compression using up to 4 threads.
+        Compressing objects: 100% (5/5), done.
+        Writing objects: 100% (6/6), 674 bytes | 0 bytes/s, done.
+        Total 6 (delta 1), reused 0 (delta 0)
+        To /home/cwarden/annex1
+                2772756..ffcb7a1  annex/direct/master -> synced/master
+         * [new branch]      git-annex -> synced/git-annex
+        ok
+        (Recording state in git...)
+
+Now, I want to get the renamed file:
+
+        $ git annex get test2
+        $ ls -l
+        total 4
+        lrwxrwxrwx 1 cwarden cwarden 178 Sep 12 10:14 test2 -> .git/annex/objects/w8/pv/SHA256E-s5--f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2/SHA256E-s5--f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2
+        $ cat test2
+        cat: test2: No such file or directory
+
+Explicitly adding test2 doesn't work:
+
+        $ git annex add test2
+        $ git annex get test2
+        $ cat test2
+        cat: test2: No such file or directory
+
+`git annex fsck` doesn't help:
+
+        $ git annex fsck
+        $ cat test2
+        cat: test2: No such file or directory
+
+The only way I've found to get the renamed file back into git is to use `core.bare=false`, but the [documentation](http://git-annex.branchable.com/direct_mode/) says that "there should be no good reason to need to do this, ever".
+
+        $ git -c core.bare=false add test2
+        $ git -c core.bare=false commit -m'force renamed file back into git'
+        $ git annex get test2
+        $ cat test2
+        test
+
+Is there a better solution?

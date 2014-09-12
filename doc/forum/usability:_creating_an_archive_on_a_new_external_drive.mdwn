@@ -1,0 +1,13 @@
+story: i got a new drive from the store. plug it in. it's recognized by XFCE and mounted automatically. turns out it's NTFS, but Debian doesn't seem to mind.
+
+go in the assistant, add it as an "External drive", make it a "full backup" and let it sync.
+
+expected result: i see files
+
+actual result: i see a bare git repository.
+
+if i first `git init` the directory so it's not bare, at least i get a better handle on it: i can sync with the assistant, then `git merge synced/master` to see the files.
+
+really confusing to me, sorry if it's a dupe... 
+
+workaround: use the commandline: `git clone <repo>` and `git annex get`. --[[anarcat]]
