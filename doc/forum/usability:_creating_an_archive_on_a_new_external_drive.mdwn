@@ -1,0 +1,9 @@
+story: i got a new drive from the store. plug it in. it's recognized by XFCE and mounted automatically. turns out it's NTFS, but Debian doesn't seem to mind.
+
+go in the assistant, add it as an "External drive", make it a "full backup" and let it sync.
+
+expected result: i see files
+
+actual result: i see a bare git repository.
+
+really confusing to me, sorry if it's a dupe... --[[anarcat]
