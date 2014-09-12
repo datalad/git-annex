@@ -10,4 +10,4 @@ if i first `git init` the directory so it's not bare, at least i get a better ha
 
 really confusing to me, sorry if it's a dupe... 
 
-workaround: use the commandline: `git clone <repo>` and `git annex get`. --[[anarcat]
+workaround: use the commandline: `git clone <repo>` and `git annex get`. --[[anarcat]]
