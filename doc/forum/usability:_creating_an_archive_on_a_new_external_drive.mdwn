@@ -6,4 +6,8 @@ expected result: i see files
 
 actual result: i see a bare git repository.
 
-really confusing to me, sorry if it's a dupe... --[[anarcat]
+if i first `git init` the directory so it's not bare, at least i get a better handle on it.
+
+really confusing to me, sorry if it's a dupe... 
+
+workaround: use the commandline: `git clone <repo>` and `git annex get`. --[[anarcat]
