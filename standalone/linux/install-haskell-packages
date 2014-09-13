@@ -44,7 +44,7 @@ patched () {
 			fi
 		fi
 	done
-	cabalinstall "$@"
+	cabalinstall
 	rm -rf $pkg*
 	cd ..
 }
