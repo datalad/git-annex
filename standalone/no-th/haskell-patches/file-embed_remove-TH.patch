@@ -1,17 +1,17 @@
-From 2b41af230ea5675592e87a2362d9c17bcd8df1db Mon Sep 17 00:00:00 2001
-From: dummy <dummy@example.com>
-Date: Tue, 10 Jun 2014 19:00:44 +0000
+From 497d09a91f9eb1e5979948cd128078491b0e8bca Mon Sep 17 00:00:00 2001
+From: Joey Hess <joey@kitenet.net>
+Date: Fri, 12 Sep 2014 20:52:08 -0400
 Subject: [PATCH] remove TH
 
 ---
- Data/FileEmbed.hs | 100 +++---------------------------------------------------
- 1 file changed, 5 insertions(+), 95 deletions(-)
+ Data/FileEmbed.hs | 87 ++++---------------------------------------------------
+ 1 file changed, 5 insertions(+), 82 deletions(-)
 
 diff --git a/Data/FileEmbed.hs b/Data/FileEmbed.hs
-index aae9d5a..efdbb7b 100644
+index 5617493..adacdba 100644
 --- a/Data/FileEmbed.hs
 +++ b/Data/FileEmbed.hs
-@@ -17,19 +17,18 @@
+@@ -17,13 +17,13 @@
  -- > {-# LANGUAGE TemplateHaskell #-}
  module Data.FileEmbed
      ( -- * Embed at compile time
@@ -19,7 +19,7 @@ index aae9d5a..efdbb7b 100644
 -    , embedOneFileOf
 -    , embedDir
 -    , getDir
-+   --   embedFile
++    --  embedFile
 +    --, embedOneFileOf
 +    --, embedDir
 +      getDir
@@ -30,13 +30,7 @@ index aae9d5a..efdbb7b 100644
  #endif
      , inject
      , injectFile
-       -- * Internal
-     , stringToBs
--    , bsToExp
-     ) where
- 
- import Language.Haskell.TH.Syntax
-@@ -57,85 +56,12 @@ import Data.ByteString.Unsafe (unsafePackAddressLen)
+@@ -56,73 +56,12 @@ import Data.ByteString.Unsafe (unsafePackAddressLen)
  import System.IO.Unsafe (unsafePerformIO)
  import System.FilePath ((</>))
  
@@ -102,27 +96,15 @@ index aae9d5a..efdbb7b 100644
 -    return $! TupE [LitE $ StringL path, exp']
 -
 -bsToExp :: B.ByteString -> Q Exp
--#if MIN_VERSION_template_haskell(2, 5, 0)
--bsToExp bs =
--    return $ VarE 'unsafePerformIO
--      `AppE` (VarE 'unsafePackAddressLen
--      `AppE` LitE (IntegerL $ fromIntegral $ B8.length bs)
--#if MIN_VERSION_template_haskell(2, 8, 0)
--      `AppE` LitE (StringPrimL $ B.unpack bs))
--#else
--      `AppE` LitE (StringPrimL $ B8.unpack bs))
--#endif
--#else
 -bsToExp bs = do
 -    helper <- [| stringToBs |]
 -    let chars = B8.unpack bs
 -    return $! AppE helper $! LitE $! StringL chars
--#endif
 -
  stringToBs :: String -> B.ByteString
  stringToBs = B8.pack
  
-@@ -177,22 +103,6 @@ padSize i =
+@@ -164,22 +103,6 @@ padSize i =
      let s = show i
       in replicate (sizeLen - length s) '0' ++ s
  
@@ -146,5 +128,5 @@ index aae9d5a..efdbb7b 100644
  inject :: B.ByteString -- ^ bs to inject
         -> B.ByteString -- ^ original BS containing dummy
 -- 
-2.0.0
+2.1.0
 
