@@ -92,10 +92,14 @@ Flag EKG
   Description: Enable use of EKG to monitor git-annex as it runs (at http://localhost:4242/)
   Default: False
 
+Flag network-uri
+  Description: Get Network.URI from the network-uri package
+  Default: True
+
 Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends: MissingH, hslogger, directory, filepath,
-   containers, utf8-string, network (>= 2.0), mtl (>= 2),
+   containers, utf8-string, mtl (>= 2),
    bytestring, old-locale, time, dataenc, SHA, process, json,
    base (>= 4.5 && < 4.9), monad-control, exceptions (>= 0.6), transformers,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process,
@@ -106,6 +110,11 @@ Executable git-annex
   Extensions: PackageImports
   -- Some things don't work with the non-threaded RTS.
   GHC-Options: -threaded
+
+  if flag(network-uri)
+    Build-Depends: network-uri (>= 2.6), network (>= 2.6)
+  else
+    Build-Depends: network (< 2.6), network (>= 2.0)
 
   if flag(Production)
     GHC-Options: -O2
