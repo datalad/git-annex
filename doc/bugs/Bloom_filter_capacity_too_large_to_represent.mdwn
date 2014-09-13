@@ -39,3 +39,6 @@ annexed files in working tree: 35300
 size of annexed files in working tree: 193.76 gigabytes
 bloom filter size: git-annex: Data.BloomFilter.Util.suggestSizing: capacity too large to represent
 """]]
+
+> I've worked around this problem in the arm autobuilder (only build
+> affected), so [[done]] --[[Joey]]
