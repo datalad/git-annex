@@ -17,9 +17,6 @@ import Test.Tasty.Ingredients.Rerun
 import Data.Monoid
 
 import Options.Applicative hiding (command)
-#if MIN_VERSION_optparse_applicative(0,8,0)
-import qualified Options.Applicative.Types as Opt
-#endif
 import qualified Data.Map as M
 import qualified Text.JSON
 
@@ -115,16 +112,13 @@ main ps = do
 				exitFailure
 			)
   where
-  	progdesc = "git-annex test"
 	parseOpts pprefs pinfo args =
 #if MIN_VERSION_optparse_applicative(0,8,0)
-		pure $ case execParserPure pprefs pinfo args of
-			Opt.Success v -> v
-			Opt.Failure f -> error $ fst $ Opt.execFailure f progdesc
-			Opt.CompletionInvoked _ -> error "completion not supported"
+		handleParseResult $ execParserPure pprefs pinfo args
 #else
 		either (error <=< flip errMessage progdesc) return $
 			execParserPure pprefs pinfo args
+  	progdesc = "git-annex test"
 #endif
 
 ingredients :: [Ingredient]

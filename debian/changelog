@@ -22,6 +22,7 @@ git-annex (5.20140832) UNRELEASED; urgency=medium
     be using a better backend.
   * Rather than crashing when there's a problem with the requested bloomfilter
     capacity/accuracy, fall back to a reasonable default bloom filter size.
+  * Fix build with optparse-applicative 0.10. Closes: #761484
 
  -- Joey Hess <joeyh@debian.org>  Thu, 04 Sep 2014 16:17:22 -0400
 
