@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://openid.stackexchange.com/user/7891307e-4b76-4697-8e71-083669c26e9f"
+ nickname="MichaelK"
+ subject="quvi in .gitattributes"
+ date="2014-09-15T18:54:36Z"
+ content="""
+Is there a way to put something like `* annex.quvi-options = -f best` in `.gitattributes`?  When trying to, I get ` is not a valid attribute name: .gitattributes:2`.
+"""]]
