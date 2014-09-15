@@ -1,3 +1,10 @@
+git-annex (5.20140916) UNRELEASED; urgency=medium
+
+  * assistant: Detect when repository has been deleted or moved, and
+    automatically shut down the assistant. Closes: #761261
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 15 Sep 2014 14:39:17 -0400
+
 git-annex (5.20140915) unstable; urgency=medium
 
   * New annex.hardlink setting. Closes: #758593

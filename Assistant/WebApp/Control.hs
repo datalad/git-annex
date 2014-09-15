@@ -53,15 +53,11 @@ getShutdownConfirmedR = do
 	 - page time to load in the browser. -}
 	void $ liftIO $ forkIO $ do
 		threadDelay 2000000
-#ifndef mingw32_HOST_OS
-		signalProcess sigTERM =<< getPID
-#else
-		terminatePID =<< getPID
-#endif
+		terminateSelf
 	redirect NotRunningR
 
 {- Use a custom page to avoid putting long polling elements on it that will 
- - fail and cause the web browser to show an error once the webapp is
+ - fail and cause thet web browser to show an error once the webapp is
  - truely stopped. -}
 getNotRunningR :: Handler Html
 getNotRunningR = customPage' False Nothing $
