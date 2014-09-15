@@ -1,0 +1,27 @@
+git-annex 5.20140915 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * New annex.hardlink setting. Closes: #[758593](http://bugs.debian.org/758593)
+   * init: Automatically detect when a repository was cloned with --shared,
+     and set annex.hardlink=true, as well as marking the repository as
+     untrusted.
+   * Fix parsing of ipv6 address in git remote address when it was not
+     formatted as an url.
+   * The annex-rsync-transport configuration is now also used when checking
+     if a key is present on a rsync remote, and when dropping a key from
+     the remote.
+   * Promote file not found warning message to an error.
+   * Fix transfer lock file FD leak that could occur when two separate
+     git-annex processes were both working to perform the same set of
+     transfers.
+   * sync: Ensure that pending changes to git-annex branch are committed
+     before push when in direct mode. (Fixing a very minor reversion.)
+   * WORM backend: Switched to include the relative path to the file inside
+     the repository, rather than just the file's base name. Note that if you're
+     relying on such things to keep files separate with WORM, you should really
+     be using a better backend.
+   * Rather than crashing when there's a problem with the requested bloomfilter
+     capacity/accuracy, fall back to a reasonable default bloom filter size.
+   * Fix build with optparse-applicative 0.10. Closes: #[761484](http://bugs.debian.org/761484)
+   * webapp: Fixed visual glitch in xmpp pairing that was reported live by a
+     user who tracked me down in front of a coffee cart in Portland.
+     (New bug reporting method of choice?)"""]]
