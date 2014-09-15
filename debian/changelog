@@ -1,6 +1,5 @@
-git-annex (5.20140832) UNRELEASED; urgency=medium
+git-annex (5.20140915) unstable; urgency=medium
 
-  * webapp: Fixed visual glitch in xmpp pairing.
   * New annex.hardlink setting. Closes: #758593
   * init: Automatically detect when a repository was cloned with --shared,
     and set annex.hardlink=true, as well as marking the repository as
@@ -15,7 +14,7 @@ git-annex (5.20140832) UNRELEASED; urgency=medium
     git-annex processes were both working to perform the same set of
     transfers.
   * sync: Ensure that pending changes to git-annex branch are committed
-    when in direct mode. (Fixing a very minor reversion.)
+    before push when in direct mode. (Fixing a very minor reversion.)
   * WORM backend: Switched to include the relative path to the file inside
     the repository, rather than just the file's base name. Note that if you're
     relying on such things to keep files separate with WORM, you should really
@@ -23,8 +22,11 @@ git-annex (5.20140832) UNRELEASED; urgency=medium
   * Rather than crashing when there's a problem with the requested bloomfilter
     capacity/accuracy, fall back to a reasonable default bloom filter size.
   * Fix build with optparse-applicative 0.10. Closes: #761484
+  * webapp: Fixed visual glitch in xmpp pairing that was reported live by a
+    user who tracked me down in front of a coffee cart in Portland. 
+    (New bug reporting method of choice?)
 
- -- Joey Hess <joeyh@debian.org>  Thu, 04 Sep 2014 16:17:22 -0400
+ -- Joey Hess <joeyh@debian.org>  Mon, 15 Sep 2014 10:45:00 -0400
 
 git-annex (5.20140831) unstable; urgency=medium
 
