@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
+{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
 
 module Assistant.WebApp.Control where
 
@@ -16,16 +16,10 @@ import Assistant.TransferSlots
 import Assistant.Restart
 import Utility.LogFile
 import Utility.NotificationBroadcaster
-import Utility.PID
 
 import Control.Concurrent
 import qualified Data.Map as M
 import qualified Data.Text as T
-#ifndef mingw32_HOST_OS
-import System.Posix (signalProcess, sigTERM)
-#else
-import Utility.WinProcess
-#endif
 
 getShutdownR :: Handler Html
 getShutdownR = page "Shutdown" Nothing $
