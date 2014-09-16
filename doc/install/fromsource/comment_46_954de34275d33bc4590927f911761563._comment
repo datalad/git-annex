@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.22"
+ subject="comment 46"
+ date="2014-09-16T19:33:11Z"
+ content="""
+Britt's comment is spot on, but git-annex tries pretty hard to work with lots of older versions of haskell libraries, as well as the latest and greatest. So it should be ok to install haskell libraries with apt-get and use them to build git-annex, as the (revised) instructions above show.
+
+What tends not to work so well is use apt-get to install older versions of haskell libraries and then cabal install on top to add newer stuff. Gets complicated and I'd recommend not going there. The instructions above show using either apt-get or cabal to install the haskell libraries, but not both.
+"""]]
