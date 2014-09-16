@@ -1,0 +1,68 @@
+So you want to build git-annex from source. This is encouraged for
+users with experience building code from source. But the build may
+require some care and feeding. This page will start with the easy
+methods and work up to the harder ones.
+
+## prerequisites
+
+Start by installing the 
+[Haskell Platform](http://hackage.haskell.org/platform/).
+
+In Debian, this is as simple as:
+
+	sudo apt-get install haskell-platform
+
+## downloading the source code
+
+The easiest way is using git; see [[download]] or just:
+
+	git clone git://git-annex.branchable.com/ git-annex
+
+Or, you can use cabal to get the source code:
+
+	cabal update; cabal unpack git-annex
+
+## building from source on Debian
+
+This is the method used by git-annex's author, and so it's the one most
+likely to work without problems.
+
+First, install everything git-annex needs to build:
+
+	sudo apt-get build-dep git-annex
+
+Now you can build git-annex using either `make` or `cabal build`.
+
+## minimal build with cabal
+
+This can be done anywhere, and builds git-annex without some features that
+require C libraries, that can be harder to get installed. This is plenty to
+get started using it, although it does not include the assistant or webapp.
+
+Be warned that this involves building a lot of Haskell libraries from
+source, and so it has a lot of moving parts, and it's not uncommon for it
+to be broken from time to time.
+
+	cabal configure -f"-assistant -webapp -webdav -pairing -xmpp -dns"
+	cabal build
+	PATH=$HOME/bin:$PATH
+	cabal install --bindir=$HOME/bin
+
+## full build with cabal
+
+To build with all features enabled, including the assistant and webapp,
+you will need to install several C libraries and their headers,
+including libgnutls, libgsasl, libxml2, and zlib. How to do that for
+your OS is beyond the scope of this page. Once the C libraries are
+installed:
+
+	cabal configure
+	cabal build
+	PATH=$HOME/bin:$PATH
+	cabal install --bindir=$HOME/bin
+
+## EKG
+
+When building with cabal, you can optionally enable the 
+[[EKG monitoring interface|ekg]]. This is great for debugging resource
+usage problems. Just pass `-f+EKG` to `cabal configure`

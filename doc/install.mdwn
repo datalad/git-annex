@@ -22,15 +22,13 @@ detailed instructions             | quick install
 All the downloads above use https for security. For added security, see
 [[verifying_downloads]].
 
-## Using cabal
+## Building it yourself
 
-As a haskell package, git-annex can be installed from source pretty easily
-[[using cabal|cabal]].
-
-## Installation from scratch
-
-This is not recommended, but if you really want to, see [[fromscratch]].
+git-annex is [[Free Software|license]], written in [Haskell](http://www.haskell.org/).
+Experienced users should not find it too hard to build and install
+it [[from source|fromsource]].
 
 ## See also
+
 
 [[autobuild overview|builds]]

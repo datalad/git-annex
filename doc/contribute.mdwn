@@ -24,7 +24,8 @@ you'll make Joey more productive!
 
 ## code contributions
 
-[[download]] the source code and send patches!
+[[download]] the source code, [[build|install/fromsource]] it
+and send patches!
 
 If you know Haskell, git-annex has lots of Haskell code that
 could be improved. See the [[coding_style]] and have at it.
