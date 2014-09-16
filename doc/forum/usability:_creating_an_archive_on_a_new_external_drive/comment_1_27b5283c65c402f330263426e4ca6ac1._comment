@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.22"
+ subject="comment 1"
+ date="2014-09-16T18:07:54Z"
+ content="""
+I started to make this change, and then I realized this problem: If a non-bare repository is made on an external drive, then to the user this is another place they can edit their files. Which means they will expect their changes made there to be committed. Which is highly problematic, because the assistant cannot be left running on an external drive or it won't be able to be unmounted. Or, a periodic `git annex add; git annex sync` could be run on the external drive, but that is a more expensive process (especially when run on a slow drive) and would not meet the expectations of users of the assistant that their changes will promptly propagate.
+
+So, I feel that leaving bare repositories is actually the best choice.
+"""]]
