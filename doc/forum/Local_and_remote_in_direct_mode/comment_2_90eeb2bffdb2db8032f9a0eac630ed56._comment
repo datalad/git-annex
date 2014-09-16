@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Petter_petterson"
+ ip="89.160.15.173"
+ subject="comment 2"
+ date="2014-09-16T08:15:05Z"
+ content="""
+Doing git remote add B ssh://machineB:/~/annex still makes the repository on machineB a bare one, just try it and check git config -l | grep core.bare...
+"""]]
