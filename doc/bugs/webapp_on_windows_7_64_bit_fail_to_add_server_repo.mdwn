@@ -64,3 +64,13 @@ secmem usage: 0/0 bytes in 0/0 blocks of pool 0/65536
 
 # End of transcript or log.
 """]]
+
+> Thanks for reporting this problem. I've fixed it to not crash when gpg 
+> fails to list secret keys.
+> 
+> That doesn't fix the problem that the cygnus build of gpg does not find
+> the user's home directory properly. But that's only needed for the
+> encrypted repository (gcrypt) support, which is listed in
+> [[windows_support]] as not yet available for Windows.
+>
+> So, not leaving this bug report open. [[done]] --[[Joey]]

@@ -2,6 +2,8 @@ git-annex (5.20140916) UNRELEASED; urgency=medium
 
   * assistant: Detect when repository has been deleted or moved, and
     automatically shut down the assistant. Closes: #761261
+  * Windows: Avoid crashing trying to list gpg secret keys, for gcrypt
+    which is not yet supported on Windows.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 15 Sep 2014 14:39:17 -0400
 
