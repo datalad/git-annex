@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ ip="70.83.139.100"
+ subject="comment 2"
+ date="2014-09-16T20:35:23Z"
+ content="""
+i wouldn't expect those changes to be committed. it's an external drive, and unless i manually sync it, it should take into account my changes.
+
+i am more surprised by the bare repository than i would be surprised by my changes not propagating back, i think. --[[anarcat]]
+"""]]
