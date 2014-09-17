@@ -113,13 +113,16 @@ main ps = do
 			)
   where
 	parseOpts pprefs pinfo args =
-#if MIN_VERSION_optparse_applicative(0,8,0)
-		handleParseResult $ execParserPure pprefs pinfo args
+#if MIN_VERSION_optparse_applicative(0,10,0)
+		case execParserPure pprefs pinfo args of
+			(Options.Applicative.Failure failure) -> do
+				let (msg, _exit) = renderFailure failure progdesc
+				error msg
+			v -> handleParseResult v
 #else
-		either (error <=< flip errMessage progdesc) return $
-			execParserPure pprefs pinfo args
-  	progdesc = "git-annex test"
+	handleParseResult $ execParserPure pprefs pinfo args
 #endif
+  	progdesc = "git-annex test"
 
 ingredients :: [Ingredient]
 ingredients =

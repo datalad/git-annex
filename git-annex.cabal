@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 5.20140915
+Version: 5.20140916
 Cabal-Version: >= 1.8
 License: GPL-3
 Maintainer: Joey Hess <joey@kitenet.net>
@@ -132,7 +132,7 @@ Executable git-annex
 
   if flag(TestSuite)
     Build-Depends: tasty (>= 0.7), tasty-hunit, tasty-quickcheck, tasty-rerun,
-     optparse-applicative, crypto-api
+     optparse-applicative (>= 0.9.1), crypto-api
     CPP-Options: -DWITH_TESTSUITE
 
   if flag(TDFA)
