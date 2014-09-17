@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlog_5wIICaMcrKTexlFNA6IO6UTp323aE"
+ nickname="Torkaly"
+ subject="comment 2"
+ date="2014-09-17T08:47:03Z"
+ content="""
+Thank you for the answer.
+
+There are no origin/synced/* branches, only a origin/git-annex and the local git-annex branch. What i need git annex merge to do, is to merge the fetched remote git-annex with the local git-annex. There is no need for creating or merging the synced-branches as there are no.
+
+"""]]
