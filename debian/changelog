@@ -8,6 +8,8 @@ git-annex (5.20140916) UNRELEASED; urgency=medium
     (Bug introduced in version 5.20140817.)
   * add: In direct mode, adding an annex symlink will check it into git,
     as was already done in indirect mode.
+  * Fix reversion in handling creds with encryption=shared embedcreds=yes
+    introduced in 5.20140817.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 15 Sep 2014 14:39:17 -0400
 

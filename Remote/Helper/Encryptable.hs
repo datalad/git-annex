@@ -71,21 +71,18 @@ encryptionSetup c = maybe genCipher updateCipher $ extractCipher c
 {- Gets encryption Cipher. The decrypted Ciphers are cached in the Annex
  - state. -}
 remoteCipher :: RemoteConfig -> Annex (Maybe Cipher)
-remoteCipher = fmap fst <$$> remoteCipher'
-
-remoteCipher' :: RemoteConfig -> Annex (Maybe (Cipher, StorableCipher))
-remoteCipher' c = go $ extractCipher c
+remoteCipher c = go $ extractCipher c
   where
 	go Nothing = return Nothing
 	go (Just encipher) = do
 		cache <- Annex.getState Annex.ciphers
 		case M.lookup encipher cache of
-			Just cipher -> return $ Just (cipher, encipher)
+			Just cipher -> return $ Just cipher
 			Nothing -> do
 				showNote "gpg"
 				cipher <- liftIO $ decryptCipher encipher
 				Annex.changeState (\s -> s { Annex.ciphers = M.insert encipher cipher cache })
-				return $ Just (cipher, encipher)
+				return $ Just cipher
 
 {- Checks if the remote's config allows storing creds in the remote's config.
  - 
