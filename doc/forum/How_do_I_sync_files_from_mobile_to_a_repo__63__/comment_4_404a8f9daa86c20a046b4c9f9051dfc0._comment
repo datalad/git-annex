@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 4"
+ date="2014-09-18T18:00:42Z"
+ content="""
+I have double-checked, and when I already have an existing, non-bare repository, pointing the webapp at it over ssh keeps it as a non-bare repository. As I would expect.
+
+> I even tried to do git remote add B ssh://machineB:/~/annex but to no avail, the created annex on machine B becomes a bare repo.
+
+I didn't try this because it's such a violation of the way git actually works that I just can't believe it could happen. If it does, you've found the git bug of the year.
+
+But, I think you just got confused about whether the repository existed before, or gave the wrong path to the existing repository which would result in a new, bare repository being created in the location you told it.
+
+If you really think this happens, show a transcript with enough details for me, or the git developers, to reproduce the problem.
+"""]]

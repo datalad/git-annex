@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-09-18T17:43:44Z"
+ content="""
+You can use any git repository as a git remote in git-annex, since git-annex uses plain old git repos.
+
+You will need to add some kind of [[special_remote|special_remotes]] to hold the content of the files stored in git-annex however.
+"""]]
