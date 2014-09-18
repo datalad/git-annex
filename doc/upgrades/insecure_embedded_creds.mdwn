@@ -26,8 +26,9 @@ to deal with it:
    and running `git annex enableremote $remotename embedcreds=yes`
 
 2. Remove the history of the git-annex branch of the repository.
-   You can use `git annex forget`` to do that; note that it will
-   remove other historical data too.
+   You can use `git annex forget` to do that; note that it will
+   remove other historical data too. Keep in mind that this will not
+   necessarily delete data from clones you do not control.
 
 3. If you're the only one who has access to the repository, you could decide
    to leave it as-is. It's no more insecure than if you had used
