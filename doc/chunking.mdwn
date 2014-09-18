@@ -28,4 +28,16 @@ To change the chunk size, pass a `chunk=nnMiB` parameter to
 `git annex enableremote`. This only affects the chunk sized used when
 storing new content.
 
+# old-style chunking
+
+Note that older versions of git-annex used a different chunk method, which
+was configured by passing `chunksize=nnMib` when initializing a remote.
+
+The old-style chunking had a number of problems, including being less
+efficient, and not allowing resumes of encrypted uploads.
+
+It's not possible to change a remote using that old chunking method to the
+new one, but git-annex continues to support the old-style chunking to
+support such remotes.
+
 See also: [[design document|design/assistant/chunks]]
