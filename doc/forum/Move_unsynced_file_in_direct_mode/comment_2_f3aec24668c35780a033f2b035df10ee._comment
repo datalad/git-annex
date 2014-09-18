@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="xn"
+ ip="71.59.214.243"
+ subject="comment 2"
+ date="2014-09-18T19:03:30Z"
+ content="""
+Thanks for tracking down that bug and for clearing up my confusion about `annex.autocommit`, Joey.
+
+I didn't realize `annex.autocommit=true` is only used by `git annex assistant` and `git annex watch`.  I thought that running `git annex sync` with `annex.autocommit=true` would also commit the change.
+
+A few small changes to `git-annex(1)` could clarify:
+
+    sync [remote ...]
+         ...
+         The sync process involves first committing all local *staged* changes...
+
+    annex.autocommit
+       Set to false to prevent git-annex assistant and *git-annex watch* from automatically committing changes to files in the repository.
+
+"""]]
