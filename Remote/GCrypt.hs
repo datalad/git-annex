@@ -168,7 +168,7 @@ gCryptSetup mu _ c = go $ M.lookup "gitrepo" c
 	remotename = fromJust (M.lookup "name" c)
   	go Nothing = error "Specify gitrepo="
 	go (Just gitrepo) = do
-		c' <- encryptionSetup c
+		(c', _encsetup) <- encryptionSetup c
 		inRepo $ Git.Command.run 
 			[ Params "remote add"
 			, Param remotename

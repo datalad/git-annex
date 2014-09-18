@@ -138,7 +138,7 @@ rsyncSetup mu _ c = do
 	-- verify configuration is sane
 	let url = fromMaybe (error "Specify rsyncurl=") $
 		M.lookup "rsyncurl" c
-	c' <- encryptionSetup c
+	(c', _encsetup) <- encryptionSetup c
 
 	-- The rsyncurl is stored in git config, not only in this remote's
 	-- persistant state, so it can vary between hosts.

@@ -94,7 +94,7 @@ bupSetup mu _ c = do
 	-- verify configuration is sane
 	let buprepo = fromMaybe (error "Specify buprepo=") $
 		M.lookup "buprepo" c
-	c' <- encryptionSetup c
+	(c', _encsetup) <- encryptionSetup c
 
 	-- bup init will create the repository.
 	-- (If the repository already exists, bup init again appears safe.)

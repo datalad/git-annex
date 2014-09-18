@@ -23,7 +23,7 @@ import Annex.Perms
 import Utility.FileMode
 import Crypto
 import Types.Remote (RemoteConfig, RemoteConfigKey)
-import Remote.Helper.Encryptable (remoteCipher, embedCreds)
+import Remote.Helper.Encryptable (remoteCipher, embedCreds, EncryptionIsSetup)
 import Utility.Env (getEnv)
 
 import qualified Data.ByteString.Lazy.Char8 as L
@@ -40,12 +40,17 @@ data CredPairStorage = CredPairStorage
 
 {- Stores creds in a remote's configuration, if the remote allows
  - that. Otherwise, caches them locally.
- - The creds are found in storage if not provided. -}
-setRemoteCredPair :: RemoteConfig -> CredPairStorage -> Maybe CredPair -> Annex RemoteConfig
-setRemoteCredPair c storage Nothing = 
-	maybe (return c) (setRemoteCredPair c storage . Just)
+ - The creds are found in storage if not provided.
+ -
+ - The remote's configuration should have already had a cipher stored in it
+ - if that's going to be done, so that the creds can be encrypted using the
+ - cipher. The EncryptionIsSetup phantom type ensures that is the case.
+ -}
+setRemoteCredPair :: EncryptionIsSetup -> RemoteConfig -> CredPairStorage -> Maybe CredPair -> Annex RemoteConfig
+setRemoteCredPair encsetup c storage Nothing = 
+	maybe (return c) (setRemoteCredPair encsetup c storage . Just)
 		=<< getRemoteCredPair c storage
-setRemoteCredPair c storage (Just creds)
+setRemoteCredPair _ c storage (Just creds)
 	| embedCreds c = case credPairRemoteKey storage of
 		Nothing -> localcache
 		Just key -> storeconfig key =<< remoteCipher c

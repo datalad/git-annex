@@ -84,7 +84,7 @@ ddarSetup mu _ c = do
 	-- verify configuration is sane
 	let ddarrepo = fromMaybe (error "Specify ddarrepo=") $
 		M.lookup "ddarrepo" c
-	c' <- encryptionSetup c
+	(c', _encsetup) <- encryptionSetup c
 
 	-- The ddarrepo is stored in git config, as well as this repo's
 	-- persistant state, so it can vary between hosts.

@@ -81,7 +81,7 @@ directorySetup mu _ c = do
 	absdir <- liftIO $ absPath dir
 	liftIO $ unlessM (doesDirectoryExist absdir) $
 		error $ "Directory does not exist: " ++ absdir
-	c' <- encryptionSetup c
+	(c', _encsetup) <- encryptionSetup c
 
 	-- The directory is stored in git config, not in this remote's
 	-- persistant state, so it can vary between hosts.
