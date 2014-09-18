@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="zardoz"
+ ip="78.48.163.229"
+ subject="comment 4"
+ date="2014-08-22T10:15:51Z"
+ content="""
+The file referred to in the error message seems to be in good shape:
+
+[[!format sh \"\"\"
+git --no-pager show git-annex:000/091/WORM-s1493-m1321288671--scrapbook%data%20111114173520%horiz-menu-tab-r_001.png.log
+1408605730.57892s 0 b25f42de-f4be-4d31-84d1-ab0b71dfec01
+1408562938.526946s 0 e148ea91-0eb6-4f47-86e9-db2136a15279
+\"\"\"]]
+
+Strangely, the SHA1 of the blob is different from the one reported in the write-tree error.
+"""]]

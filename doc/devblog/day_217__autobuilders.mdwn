@@ -1,0 +1,10 @@
+Over the past couple days, got the arm autobuilder working again. It had
+been down since June with several problems. cabal install tended to crash;
+apparenty this has something to do with threading in user-mode qemu,
+because -j1 avoids that. And strange invalid character problems were fixed
+by downgrading file-embed. Also, with Yury's help I got the Windows
+autobuilder upgraded to the new Haskell Platform and working again.
+
+Today a last few finishing touches, including getting rid of the last
+dependency on the old haskell HTTP library, since http-conduit is being
+used now. Ready for the release!

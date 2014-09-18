@@ -41,9 +41,9 @@ fuzzymatches input showchoice choices = fst $ unzip $
 
 {- Takes action based on git's autocorrect configuration, in preparation for
  - an autocorrected command being run. -}
-prepare :: String -> (c -> String) -> [c] -> Repo -> IO ()
+prepare :: String -> (c -> String) -> [c] -> Maybe Repo -> IO ()
 prepare input showmatch matches r =
-	case readish $ Git.Config.get "help.autocorrect" "0" r of
+	case readish . Git.Config.get "help.autocorrect" "0" =<< r of
 		Just n
 			| n == 0 -> list
 			| n < 0 -> warn

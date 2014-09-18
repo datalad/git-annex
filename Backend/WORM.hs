@@ -12,6 +12,7 @@ import Types.Backend
 import Types.Key
 import Types.KeySource
 import Backend.Utilities
+import Git.FilePath
 
 backends :: [Backend]
 backends = [backend]
@@ -27,16 +28,13 @@ backend = Backend
 	}
 
 {- The key includes the file size, modification time, and the
- - basename of the filename.
- -
- - That allows multiple files with the same names to have different keys,
- - while also allowing a file to be moved around while retaining the
- - same key.
+ - original filename relative to the top of the git repository.
  -}
 keyValue :: KeySource -> Annex (Maybe Key)
 keyValue source = do
 	stat <- liftIO $ getFileStatus $ contentLocation source
-	n <- genKeyName $ takeFileName $ keyFilename source
+	relf <- getTopFilePath <$> inRepo (toTopFilePath $ keyFilename source)
+	n <- genKeyName relf
 	return $ Just $ stubKey
 		{ keyName = n
 		, keyBackendName = name backend

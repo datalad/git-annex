@@ -90,7 +90,7 @@ start mode (srcfile, destfile) =
 		handleexisting =<< liftIO (catchMaybeIO $ getSymbolicLinkStatus destfile)
 		liftIO $ createDirectoryIfMissing True (parentDir destfile)
 		liftIO $ if mode == Duplicate || mode == SkipDuplicates
-			then void $ copyFileExternal srcfile destfile
+			then void $ copyFileExternal CopyAllMetaData srcfile destfile
 			else moveFile srcfile destfile
 		Command.Add.perform destfile
 	handleexisting Nothing = noop

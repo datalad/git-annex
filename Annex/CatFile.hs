@@ -12,6 +12,7 @@ module Annex.CatFile (
 	catTree,
 	catObjectDetails,
 	catFileHandle,
+	catFileStop,
 	catKey,
 	catKeyFile,
 	catKeyFileHEAD,
@@ -70,6 +71,14 @@ catFileHandle = do
 			let m' = M.insert indexfile h m
 			Annex.changeState $ \s -> s { Annex.catfilehandles = m' }
 			return h
+
+{- Stops all running cat-files. Should only be run when it's known that
+ - nothing is using the handles, eg at shutdown. -}
+catFileStop :: Annex ()
+catFileStop = do
+	m <- Annex.withState $ \s ->
+		(s { Annex.catfilehandles = M.empty }, Annex.catfilehandles s)
+	liftIO $ mapM_ Git.CatFile.catFileStop (M.elems m)
 
 {- From the Sha or Ref of a symlink back to the key.
  -

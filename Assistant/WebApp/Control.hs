@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
+{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
 
 module Assistant.WebApp.Control where
 
@@ -16,16 +16,10 @@ import Assistant.TransferSlots
 import Assistant.Restart
 import Utility.LogFile
 import Utility.NotificationBroadcaster
-import Utility.PID
 
 import Control.Concurrent
 import qualified Data.Map as M
 import qualified Data.Text as T
-#ifndef mingw32_HOST_OS
-import System.Posix (signalProcess, sigTERM)
-#else
-import Utility.WinProcess
-#endif
 
 getShutdownR :: Handler Html
 getShutdownR = page "Shutdown" Nothing $
@@ -53,15 +47,11 @@ getShutdownConfirmedR = do
 	 - page time to load in the browser. -}
 	void $ liftIO $ forkIO $ do
 		threadDelay 2000000
-#ifndef mingw32_HOST_OS
-		signalProcess sigTERM =<< getPID
-#else
-		terminatePID =<< getPID
-#endif
+		terminateSelf
 	redirect NotRunningR
 
 {- Use a custom page to avoid putting long polling elements on it that will 
- - fail and cause the web browser to show an error once the webapp is
+ - fail and cause thet web browser to show an error once the webapp is
  - truely stopped. -}
 getNotRunningR :: Handler Html
 getNotRunningR = customPage' False Nothing $

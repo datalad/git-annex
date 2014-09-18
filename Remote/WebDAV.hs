@@ -183,7 +183,7 @@ testDav url (Just (u, p)) = do
 	test $ liftIO $ evalDAVT url $ do
 		prepDAV user pass
 		makeParentDirs
-		inLocation tmpDir $ void mkCol
+		void $ mkColRecursive tmpDir
 		inLocation (tmpLocation "git-annex-test") $ do
 			putContentM (Nothing, L.empty)
 			delContentM

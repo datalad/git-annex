@@ -75,14 +75,19 @@ start file = ifAnnexed file addpresent add
 					showStart "add" file
 					next $ perform file
 	addpresent key = ifM isDirect
-		( ifM (goodContent key file) ( stop , add )
+		( do
+			ms <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus file
+			case ms of
+				Just s | isSymbolicLink s -> fixup key
+				_ -> ifM (goodContent key file) ( stop , add )
 		, fixup key
 		)
 	fixup key = do
-		-- fixup from an interrupted add; the symlink
-		-- is present but not yet added to git
+		-- the annexed symlink is present but not yet added to git
 		showStart "add" file
 		liftIO $ removeFile file
+		whenM isDirect $
+			void $ addAssociatedFile key file
 		next $ next $ cleanup file key Nothing =<< inAnnex key
 
 {- The file that's being added is locked down before a key is generated,

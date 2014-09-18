@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmfEGTjv4GsWkSG2lpuBitRDxVkml7yEQg"
+ nickname="Britt"
+ subject="Installing debs"
+ date="2014-09-16T02:16:28Z"
+ content="""
+@azul - the problem with installing dependencies from apt-get is that the Ubuntu haskell packages are rather old. It shouldn't be this way (and it has gotten a LOT better - I suggest installing the newest version of the Haskell Platform that you can), but often cabal will complain about a package it is unable to install because it failed on the install of that package's dependencies. You should try to cabal install $FAILED_DEPENDENCY (not an actual env variable), and you will often get more informative error messages - some packages require non-haskell dependencies (take gtk3, for instance) which cabal doesn't know how to handle at this point, because that would require some cross platform foo (cabal install runs on Windows and OSX, which don't have native package managers at all). 
+
+@Paul - It looks like you ran into a bug, because http-client no longer depends on network>=2.6, it now can take network 2.4 - 2.6 or 2.6 or greater. If you try again it should work. 
+
+Please don't be put off by haskell because of things like this - git annex is a very large and complicated project, and developing on large projects such as this pretty much require you to have pretty recent versions of all haskell packages. I really suggest you take a look at this book http://learnyouahaskell.com/introduction. Haskell is a beautiful language and it doesn't have to be esoteric, academic, or difficult at all. It's obvious since you are attempting to build this from source that you are either interested in haskell or you are only interested in the development of git-annex. Either way, it would behoove you to read that book. It is short, full of great examples, and it even has pleasant illustrations. It may look like a children's book, but by the end of it you will know how to use all of the major monads (you may not know what a monad is, but that isn't really that important anyway - you just need to know how they are used).
+"""]]

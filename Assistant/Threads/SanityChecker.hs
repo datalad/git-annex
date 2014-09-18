@@ -21,7 +21,9 @@ import Assistant.Drop
 import Assistant.Ssh
 import Assistant.TransferQueue
 import Assistant.Types.UrlRenderer
+import Assistant.Restart
 import qualified Annex.Branch
+import qualified Git
 import qualified Git.LsFiles
 import qualified Git.Command.Batch
 import qualified Git.Config
@@ -146,6 +148,8 @@ waitForNextCheck = do
  - will block the watcher. -}
 dailyCheck :: UrlRenderer -> Assistant Bool
 dailyCheck urlrenderer = do
+	checkRepoExists
+
 	g <- liftAnnex gitRepo
 	batchmaker <- liftIO getBatchCommandMaker
 
@@ -203,6 +207,7 @@ dailyCheck urlrenderer = do
 
 hourlyCheck :: Assistant ()
 hourlyCheck = do
+	checkRepoExists
 #ifndef mingw32_HOST_OS
 	checkLogSize 0
 #else
@@ -316,3 +321,9 @@ cleanOld check f = go =<< catchMaybeIO getmtime
 	getmtime = realToFrac . modificationTime <$> getSymbolicLinkStatus f
 	go (Just mtime) | check mtime = nukeFile f
 	go _ = noop
+
+checkRepoExists :: Assistant ()
+checkRepoExists = do
+	g <- liftAnnex gitRepo
+	liftIO $ unlessM (doesDirectoryExist $ Git.repoPath g) $
+		terminateSelf

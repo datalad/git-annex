@@ -91,7 +91,7 @@ expectedPresent dest key = do
 	return $ dest `elem` remotes
 
 toPerform :: Remote -> Bool -> Key -> AssociatedFile -> Bool -> Either String Bool -> CommandPerform
-toPerform dest move key afile fastcheck isthere = moveLock move key $
+toPerform dest move key afile fastcheck isthere = do
 	case isthere of
 		Left err -> do
 			showNote err
@@ -115,8 +115,8 @@ toPerform dest move key afile fastcheck isthere = moveLock move key $
 			finish
   where
 	finish
-		| move = do
-			removeAnnex key
+		| move = lockContent key $ \contentlock -> do
+			removeAnnex contentlock
 			next $ Command.Drop.cleanupLocal key
 		| otherwise = next $ return True
 
@@ -150,11 +150,10 @@ fromOk src key = go =<< Annex.getState Annex.force
 		return $ u /= Remote.uuid src && elem src remotes
 
 fromPerform :: Remote -> Bool -> Key -> AssociatedFile -> CommandPerform
-fromPerform src move key afile = moveLock move key $
-	ifM (inAnnex key)
-		( dispatch move True
-		, dispatch move =<< go
-		)
+fromPerform src move key afile = ifM (inAnnex key)
+	( dispatch move True
+	, dispatch move =<< go
+	)
   where
 	go = notifyTransfer Download afile $ 
 		download (Remote.uuid src) key afile noRetry $ \p -> do
@@ -165,9 +164,3 @@ fromPerform src move key afile = moveLock move key $
 	dispatch True True = do -- finish moving
 		ok <- Remote.removeKey src key
 		next $ Command.Drop.cleanupRemote key src ok
-
-{- Locks a key in order for it to be moved.
- - No lock is needed when a key is being copied. -}
-moveLock :: Bool -> Key -> Annex a -> Annex a
-moveLock True key a = lockContent key a
-moveLock False _ a = a

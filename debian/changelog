@@ -1,4 +1,63 @@
-git-annex (5.20140718) UNRELEASED; urgency=medium
+git-annex (5.20140916) UNRELEASED; urgency=medium
+
+  * assistant: Detect when repository has been deleted or moved, and
+    automatically shut down the assistant. Closes: #761261
+  * Windows: Avoid crashing trying to list gpg secret keys, for gcrypt
+    which is not yet supported on Windows.
+  * WebDav: Fix enableremote crash when the remote already exists.
+    (Bug introduced in version 5.20140817.)
+  * add: In direct mode, adding an annex symlink will check it into git,
+    as was already done in indirect mode.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 15 Sep 2014 14:39:17 -0400
+
+git-annex (5.20140915) unstable; urgency=medium
+
+  * New annex.hardlink setting. Closes: #758593
+  * init: Automatically detect when a repository was cloned with --shared,
+    and set annex.hardlink=true, as well as marking the repository as
+    untrusted.
+  * Fix parsing of ipv6 address in git remote address when it was not
+    formatted as an url.
+  * The annex-rsync-transport configuration is now also used when checking
+    if a key is present on a rsync remote, and when dropping a key from
+    the remote.
+  * Promote file not found warning message to an error.
+  * Fix transfer lock file FD leak that could occur when two separate
+    git-annex processes were both working to perform the same set of
+    transfers.
+  * sync: Ensure that pending changes to git-annex branch are committed
+    before push when in direct mode. (Fixing a very minor reversion.)
+  * WORM backend: Switched to include the relative path to the file inside
+    the repository, rather than just the file's base name. Note that if you're
+    relying on such things to keep files separate with WORM, you should really
+    be using a better backend.
+  * Rather than crashing when there's a problem with the requested bloomfilter
+    capacity/accuracy, fall back to a reasonable default bloom filter size.
+  * Fix build with optparse-applicative 0.10. Closes: #761484
+  * webapp: Fixed visual glitch in xmpp pairing that was reported live by a
+    user who tracked me down in front of a coffee cart in Portland. 
+    (New bug reporting method of choice?)
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 15 Sep 2014 10:45:00 -0400
+
+git-annex (5.20140831) unstable; urgency=medium
+
+  * Make --help work when not in a git repository. Closes: #758592
+  * Ensure that all lock fds are close-on-exec, fixing various problems with
+    them being inherited by child processes such as git commands.
+  * When accessing a local remote, shut down git-cat-file processes
+    afterwards, to ensure that remotes on removable media can be unmounted.
+    Closes: #758630
+  * Fix handing of autocorrection when running outside a git repository.
+  * Fix stub git-annex test support when built without tasty.
+  * Do not preserve permissions and acls when copying files from
+    one local git repository to another. Timestamps are still preserved
+    as long as cp --preserve=timestamps is supported. Closes: #729757
+
+ -- Joey Hess <joeyh@debian.org>  Sun, 31 Aug 2014 12:30:08 -0700
+
+git-annex (5.20140817) unstable; urgency=medium
 
   * New chunk= option to chunk files stored in special remotes.
     Supported by: directory, S3, webdav, gcrypt, rsync, and all external
@@ -16,15 +75,11 @@ git-annex (5.20140718) UNRELEASED; urgency=medium
     were incompletely repaired before.
   * Fix cost calculation for non-encrypted remotes.
   * Display exception message when a transfer fails due to an exception.
-  * WebDAV, S3: Sped up by avoiding making multiple http connections
+  * WebDAV: Sped up by avoiding making multiple http connections
     when storing a file.
-  * WebDAV, S3: Avoid buffering whole file in memory when uploading and
+  * WebDAV: Avoid buffering whole file in memory when uploading and
     downloading.
   * WebDAV: Dropped support for DAV before 1.0.
-  * S3: Switched to using the haskell aws library.
-  * S3: Now supports https. To enable this, configure a S3 special remote to
-    use port=443. However, with encrypted special remotes, this does not
-    add any security.
   * testremote: New command to test uploads/downloads to a remote.
   * Dropping an object from a bup special remote now deletes the git branch
     for the object, although of course the object's content cannot be deleted
@@ -45,7 +100,7 @@ git-annex (5.20140718) UNRELEASED; urgency=medium
     remote. The remote may have moved between networks, or reconnected.
   * Switched from the old haskell HTTP library to http-conduit.
 
- -- Joey Hess <joeyh@debian.org>  Mon, 21 Jul 2014 14:41:26 -0400
+ -- Joey Hess <joeyh@debian.org>  Sun, 17 Aug 2014 10:30:58 -0400
 
 git-annex (5.20140717) unstable; urgency=high
 

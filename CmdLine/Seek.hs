@@ -189,10 +189,9 @@ seekHelper :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> [FilePath]
 seekHelper a params = do
 	ll <- inRepo $ \g ->
 		runSegmentPaths (\fs -> Git.Command.leaveZombie <$> a fs g) params
-	{- Show warnings only for files/directories that do not exist. -}
 	forM_ (map fst $ filter (null . snd) $ zip params ll) $ \p ->
 		unlessM (isJust <$> liftIO (catchMaybeIO $ getSymbolicLinkStatus p)) $
-			fileNotFound p
+			error $ p ++ " not found"
 	return $ concat ll
 
 notSymlink :: FilePath -> IO Bool

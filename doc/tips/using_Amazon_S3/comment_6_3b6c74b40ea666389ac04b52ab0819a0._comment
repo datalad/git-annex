@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://schnouki.net/"
+ nickname="Schnouki"
+ subject="comment 6"
+ date="2014-09-09T12:48:59Z"
+ content="""
+Jack, if you don't want to use encryption you can use `encryption=none` as documented [here](http://git-annex.branchable.com/special_remotes/S3/).
+
+I'm not sure exactly what you're trying to do, but please note that you files won't be easily available on S3: they will be named as git-annex keys, with long and unreadable names such as \"SHA256E-s6311--c7533fdd259d872793b7298cbb56a1912e80c52a845661b0b9ff391c65ee2abc.html\" instead of \"index.html\".
+"""]]

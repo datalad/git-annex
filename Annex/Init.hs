@@ -23,8 +23,11 @@ import qualified Git.LsFiles
 import qualified Git.Config
 import qualified Git.Construct
 import qualified Git.Types as Git
+import qualified Git.Objects
 import qualified Annex.Branch
 import Logs.UUID
+import Logs.Trust.Basic
+import Types.TrustLevel
 import Annex.Version
 import Annex.UUID
 import Config
@@ -70,6 +73,7 @@ initialize mdescription = do
 		Annex.Branch.create
 		describeUUID u =<< genDescription mdescription
 
+-- Everything except for uuid setup.
 initialize' :: Annex ()
 initialize' = do
 	checkFifoSupport
@@ -87,6 +91,7 @@ initialize' = do
 			switchHEADBack
 		)
 	createInodeSentinalFile
+	checkSharedClone
 
 uninitialize :: Annex ()
 uninitialize = do
@@ -242,3 +247,10 @@ checkBadBare = allM (not <$>)
   where
 	hasPreCommitHook = inRepo $ doesFileExist . hookFile preCommitHook
 	hasDotGitHEAD = inRepo $ \r -> doesFileExist $ Git.localGitDir r </> "HEAD"
+
+checkSharedClone :: Annex ()
+checkSharedClone = whenM (inRepo Git.Objects.isSharedClone) $ do
+	showSideAction "Repository was cloned with --shared; setting annex.hardlink=true and making repository untrusted."
+	u <- getUUID
+	trustSet u UnTrusted
+	setConfig (annexConfig "hardlink") (Git.Config.boolConfig True)

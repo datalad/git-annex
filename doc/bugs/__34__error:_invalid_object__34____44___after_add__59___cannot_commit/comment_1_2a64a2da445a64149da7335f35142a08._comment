@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="zardoz"
+ ip="78.48.163.229"
+ subject="comment 1"
+ date="2014-08-22T09:27:34Z"
+ content="""
+git fsck only shows a few dangling blobs from a branch I did earlier and left behind, but otherwise reports no errors.
+
+git annex fsck --fast ultimately fails with the original error message at some point:
+
+[[!format sh \"\"\"
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+# nx fsck --fast|egrep -v 'ok$'
+[2014-08-22 11:14:43 CEST] read: git [\"--git-dir=/home/seb/Webmirror/.git\",\"--work-tree=/home/seb/Webmirror\",\"ls-files\",\"--cached\",\"-z\",\"--\"]
+[2014-08-22 11:14:43 CEST] chat: git [\"--git-dir=/home/seb/Webmirror/.git\",\"--work-tree=/home/seb/Webmirror\",\"check-attr\",\"-z\",\"--stdin\",\"annex.backend\",\"annex.numcopies\",\"--\"]
+[2014-08-22 11:14:43 CEST] read: git [\"--git-dir=/home/seb/Webmirror/.git\",\"--work-tree=/home/seb/Webmirror\",\"show-ref\",\"git-annex\"]
+[2014-08-22 11:14:43 CEST] read: git [\"--git-dir=/home/seb/Webmirror/.git\",\"--work-tree=/home/seb/Webmirror\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2014-08-22 11:14:43 CEST] read: git [\"--git-dir=/home/seb/Webmirror/.git\",\"--work-tree=/home/seb/Webmirror\",\"log\",\"refs/heads/git-annex..dda9b068ac5c075e79ab63a531770ad772ae8491\",\"-n1\",\"--pretty=%H\"]
+[2014-08-22 11:14:43 CEST] chat: git [\"--git-dir=/home/seb/Webmirror/.git\",\"--work-tree=/home/seb/Webmirror\",\"cat-file\",\"--batch\"]
+[2014-08-22 11:25:24 CEST] chat: git [\"--git-dir=/home/seb/Webmirror/.git\",\"--work-tree=/home/seb/Webmirror\",\"hash-object\",\"-w\",\"--stdin-paths\",\"--no-filters\"]
+[2014-08-22 11:25:24 CEST] feed: git [\"--git-dir=/home/seb/Webmirror/.git\",\"--work-tree=/home/seb/Webmirror\",\"update-index\",\"-z\",\"--index-info\"]
+[2014-08-22 11:25:24 CEST] read: git [\"--git-dir=/home/seb/Webmirror/.git\",\"--work-tree=/home/seb/Webmirror\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2014-08-22 11:25:24 CEST] read: git [\"--git-dir=/home/seb/Webmirror/.git\",\"--work-tree=/home/seb/Webmirror\",\"write-tree\"]
+error: invalid object 100644 5d471129a031f0f493de3736eaea6f2f4056aeee for '000/091/WORM-s1493-m1321288671--scrapbook%data%20111114173520%horiz-menu-tab-r_001.png.log'
+fatal: git-write-tree: error building trees
+git-annex: failed to read sha from git write-tree
+(Recording state in git...)
+
+# End of transcript or log.
+\"\"\"]]
+
+
+"""]]

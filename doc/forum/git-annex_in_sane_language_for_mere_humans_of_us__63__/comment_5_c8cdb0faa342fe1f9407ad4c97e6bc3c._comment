@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ganwell"
+ ip="178.174.3.166"
+ subject="How I solved it..."
+ date="2014-08-26T23:03:09Z"
+ content="""
+I decided it was a bit harsh, so I removed comment. Here is how I solved problem:
+
+I have a server without much storage which runs the git-annex process, the data is stored on the NAS mounted via iSCSI. I never even thought of trying to compile git-annex on a NAS. I did things like that many years ago and it used to much time, whether the language was, common or not, didn't change much. Missing floating point units on the NAS killed performance of the programms I wanted to run anyways.
+"""]]

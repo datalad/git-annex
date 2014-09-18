@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~electrichead"
+ nickname="electrichead"
+ subject="Regarding accessing files in a time capsule..."
+ date="2014-08-25T15:51:00Z"
+ content="""
+Imagine a rather contrived doomsday scenario: the file paths and/or basenames are important and, for some reason, the symlinks are not present (perhaps they got deleted, or aren't supported). `git` and `git-annex` no longer exist and let's assume knowledge of `git` internals is not useful here. All the *content* is there, stored under hashed file names under `.git/annex/objects`.
+
+I may be missing something obvious but I think options for restoring file paths include:
+
+  - direct mode bypasses this issue; all the files are right there. 
+  - the WORM backend perhaps carries enough information in the object file names to work with.
+  - file content/metadata may be sufficient to easily recreate a sensible directory structure in some cases, so no worries.
+
+These first two options may represent compromises in various use-cases and the last may not be applicable or, if it is, practical. The object-path mapping could trivially be backed up in plain text in lieu of these. Like I said, I may be overlooking something here that makes this unnecessary or even a non-concern (actually, I've convinced myself it's not a serious concern in most of the use-cases I've considered, but crossing i's and dotting t's).
+"""]]

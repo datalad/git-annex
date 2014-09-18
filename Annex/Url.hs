@@ -26,7 +26,7 @@ getUserAgent = Annex.getState $
 	Just . fromMaybe defaultUserAgent . Annex.useragent
 
 getUrlOptions :: Annex U.UrlOptions
-getUrlOptions = U.UrlOptions
+getUrlOptions = mkUrlOptions
 	<$> getUserAgent
 	<*> headers
 	<*> options

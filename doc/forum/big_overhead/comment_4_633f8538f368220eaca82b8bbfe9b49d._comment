@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="rasmus"
+ ip="109.201.154.209"
+ subject="Re: repack parameters"
+ date="2014-09-08T13:20:36Z"
+ content="""
+Thanks for your tips, Claes.  I was really aware of `git repack` and that set of parameters.
+
+I didn't mention, but sadly I'd run `git gc` on the repos just before collecting the above numbers.
+
+I tried to repack two repositories -- `doc.annex` and `config.annex` -- using the values you suggested.   However, it did not have any measurable effect (less than 100mb in both cases).  
+
+The number of unused files seem to be (much) less than 500 files in the repos.
+
+BTW: All of the extra size is in the `.git/objects/` folder.  `.git/annex/` is quite small (always much less than 1GB).  Would that indicate that large files are checked in with git sans annex somehow?
+"""]]

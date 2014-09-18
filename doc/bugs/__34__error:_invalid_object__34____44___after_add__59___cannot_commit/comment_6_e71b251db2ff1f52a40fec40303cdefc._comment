@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="zardoz"
+ ip="78.48.163.229"
+ subject="comment 6"
+ date="2014-08-22T13:15:06Z"
+ content="""
+I tried git annex repair on the repo (before doing any adds). It reports no fsck errors, but the repair then dies from a stack overflow.
+
+[[!format sh \"\"\"
+Running git fsck ...
+No problems found.
+Stack space overflow: current size 8388608 bytes.
+Use `+RTS -Ksize -RTS' to increase it.
+\"\"\"]]
+"""]]

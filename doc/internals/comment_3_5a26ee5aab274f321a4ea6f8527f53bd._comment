@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="zardoz"
+ ip="134.147.14.84"
+ subject="comment 3"
+ date="2014-09-15T10:34:36Z"
+ content="""
+Some documentation that would be nice having added in the appropriate places:
+
+* Exactly how is the index file being used? Is this just a copy of the git index file that we would get when checking out the git-annex branch? Why is the file kept around? Which sort of operations are done on the index, e.g. when doing git annex add?
+
+* For all time-stamped data-structures: Exactly which significance does the time-stamp have? E.g., for uuid.log, is this the date the name was changed?
+"""]]

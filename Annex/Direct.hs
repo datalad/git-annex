@@ -357,7 +357,7 @@ toDirectGen k f = do
 				`catchIO` (\_ -> freezeContent loc)
 	fromdirect loc = do
 		replaceFile f $
-			liftIO . void . copyFileExternal loc
+			liftIO . void . copyFileExternal CopyAllMetaData loc
 		updateInodeCache k f
 
 {- Removes a direct mode file, while retaining its content in the annex

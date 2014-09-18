@@ -6,11 +6,14 @@
  -}
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
 
 module Utility.Url (
 	URLString,
 	UserAgent,
-	UrlOptions(..),
+	UrlOptions,
+	mkUrlOptions,
 	check,
 	checkBoth,
 	exists,
@@ -25,6 +28,7 @@ import Network.HTTP.Conduit
 import Network.HTTP.Types
 import Data.Default
 import qualified Data.CaseInsensitive as CI
+import qualified Data.ByteString as B
 import qualified Data.ByteString.UTF8 as B8
 
 import qualified Build.SysConfig
@@ -39,11 +43,39 @@ data UrlOptions = UrlOptions
 	{ userAgent :: Maybe UserAgent
 	, reqHeaders :: Headers
 	, reqParams :: [CommandParam]
+#if MIN_VERSION_http_conduit(2,0,0)
+	, applyRequest :: Request -> Request
+#else
+	, applyRequest :: forall m. Request m -> Request m
+#endif
 	}
 
 instance Default UrlOptions
   where
-	def = UrlOptions Nothing [] []
+	def = UrlOptions Nothing [] [] id
+
+mkUrlOptions :: Maybe UserAgent -> Headers -> [CommandParam] -> UrlOptions
+mkUrlOptions useragent reqheaders reqparams =
+	UrlOptions useragent reqheaders reqparams applyrequest
+  where
+	applyrequest = \r -> r { requestHeaders = requestHeaders r ++ addedheaders }
+	addedheaders = uaheader ++ otherheaders
+	uaheader = case useragent of
+		Nothing -> []
+		Just ua -> [(hUserAgent, B8.fromString ua)]
+	otherheaders = map toheader reqheaders
+	toheader s =
+		let (h, v) = separate (== ':') s
+		    h' = CI.mk (B8.fromString h)
+		in case v of
+			(' ':v') -> (h', B8.fromString v')
+			_ -> (h', B8.fromString v)
+
+addUserAgent :: UrlOptions -> [CommandParam] -> [CommandParam]
+addUserAgent uo ps = case userAgent uo of
+	Nothing -> ps
+	-- --user-agent works for both wget and curl commands
+	Just ua -> ps ++ [Param "--user-agent", Param ua] 
 
 {- Checks that an url exists and could be successfully downloaded,
  - also checking that its size, if available, matches a specified size. -}
@@ -105,7 +137,7 @@ exists url uo = case parseURIRelaxed url of
 				(responseHeaders resp)
 	
 	existsconduit req = withManager $ \mgr -> do
-			let req' = (addUrlOptions uo req) { method = methodHead }
+			let req' = headRequest (applyRequest uo req)
 			resp <- http req' mgr
 			-- forces processing the response before the
 			-- manager is closed
@@ -115,11 +147,19 @@ exists url uo = case parseURIRelaxed url of
 			liftIO $ closeManager mgr
 			return ret
 
--- works for both wget and curl commands
-addUserAgent :: UrlOptions -> [CommandParam] -> [CommandParam]
-addUserAgent uo ps = case userAgent uo of
-	Nothing -> ps
-	Just ua -> ps ++ [Param "--user-agent", Param ua] 
+#if MIN_VERSION_http_conduit(2,0,0)
+headRequest :: Request -> Request
+#else
+headRequest :: Request m -> Request m
+#endif
+headRequest r = r
+	{ method = methodHead
+	-- remove defaut Accept-Encoding header, to get actual,
+	-- not gzip compressed size.
+	, requestHeaders = (hAcceptEncoding, B.empty) :
+		filter (\(h, _) -> h /= hAcceptEncoding)
+		(requestHeaders r)
+	}
 
 addUrlOptions :: UrlOptions -> Request -> Request
 addUrlOptions uo r = r { requestHeaders = requestHeaders r ++ uaheader ++ otherheaders}
@@ -187,3 +227,14 @@ download' quiet url file uo =
 {- Allows for spaces and other stuff in urls, properly escaping them. -}
 parseURIRelaxed :: URLString -> Maybe URI
 parseURIRelaxed = parseURI . escapeURIString isAllowedInURI
+
+hAcceptEncoding :: CI.CI B.ByteString
+hAcceptEncoding = "Accept-Encoding"
+
+#if ! MIN_VERSION_http_types(0,7,0)
+hContentLength :: CI.CI B.ByteString
+hContentLength = "Content-Length"
+
+hUserAgent :: CI.CI B.ByteString
+hUserAgent = "User-Agent"
+#endif

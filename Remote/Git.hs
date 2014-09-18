@@ -51,6 +51,7 @@ import qualified Remote.Helper.Ssh as Ssh
 import qualified Remote.GCrypt
 import Config.Files
 import Creds
+import Annex.CatFile
 
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
@@ -338,8 +339,8 @@ dropKey r key
 			commitOnCleanup r $ onLocal r $ do
 				ensureInitialized
 				whenM (Annex.Content.inAnnex key) $ do
-					Annex.Content.lockContent key $
-						Annex.Content.removeAnnex key
+					Annex.Content.lockContent key
+						Annex.Content.removeAnnex
 					logStatus key InfoMissing
 					Annex.Content.saveState True
 				return True
@@ -354,15 +355,27 @@ copyFromRemote' r key file dest
 	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) (return False) $ do
 		params <- Ssh.rsyncParams r Download
 		u <- getUUID
+		hardlink <- annexHardLink <$> Annex.getGitConfig
 		-- run copy from perspective of remote
 		onLocal r $ do
 			ensureInitialized
 			v <- Annex.Content.prepSendAnnex key
 			case v of
 				Nothing -> return False
-				Just (object, checksuccess) ->
-					runTransfer (Transfer Download u key) file noRetry
-						(rsyncOrCopyFile params object dest)
+				Just (object, checksuccess) -> do
+					let copier = rsyncOrCopyFile params object dest
+#ifndef mingw32_HOST_OS
+					let linker = createLink object dest >> return True
+					go <- ifM (pure hardlink <&&> not <$> isDirect)
+						( return $ \m -> liftIO (catchBoolIO linker)
+							<||> copier m
+						, return copier
+						)
+#else
+					let go = copier
+#endif
+					runTransfer (Transfer Download u key)
+						file noRetry go
 						<&&> checksuccess
 	| Git.repoIsSsh (repo r) = feedprogressback $ \feeder -> do
 		direct <- isDirect
@@ -500,6 +513,8 @@ repairRemote r a = return $ do
 {- Runs an action from the perspective of a local remote.
  -
  - The AnnexState is cached for speed and to avoid resource leaks.
+ - However, catFileStop is called to avoid git-cat-file processes hanging
+ - around on removable media.
  -
  - The repository's git-annex branch is not updated, as an optimisation.
  - No caller of onLocal can query data from the branch and be ensured
@@ -520,7 +535,8 @@ onLocal r a = do
 	cache st = Annex.changeState $ \s -> s
 		{ Annex.remoteannexstate = M.insert (uuid r) st (Annex.remoteannexstate s) }
 	go st a' = do
-		(ret, st') <- liftIO $ Annex.run st a'
+		(ret, st') <- liftIO $ Annex.run st $
+			catFileStop `after` a'
 		cache st'
 		return ret
 
@@ -539,7 +555,7 @@ rsyncOrCopyFile rsyncparams src dest p =
 	docopy = liftIO $ bracket
 		(forkIO $ watchfilesize zeroBytesProcessed)
 		(void . tryIO . killThread)
-		(const $ copyFileExternal src dest)
+		(const $ copyFileExternal CopyTimeStamps src dest)
 	watchfilesize oldsz = do
 		threadDelay 500000 -- 0.5 seconds
 		v <- catchMaybeIO $

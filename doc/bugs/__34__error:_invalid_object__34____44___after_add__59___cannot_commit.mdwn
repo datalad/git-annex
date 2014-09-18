@@ -1,0 +1,22 @@
+### Please describe the problem.
+After having added new content (SHA1E backend), when trying to commit, git commit fails with the following error:
+
+[[!format sh """
+(Recording state in git...)
+error: invalid object 100644 5d471129a031f0f493de3736eaea6f2f4056aeee for '000/091/WORM-s1493-m1321288671--scrapbook%data%20111114173520%horiz-menu-tab-r_001.png.log'
+fatal: git-write-tree: error building trees
+git-annex: failed to read sha from git write-tree
+"""]]
+
+The commit subsequently fails and the index is left as is. When I did git-annex add, I got the same error, but the additions seem to have been staged, at least.
+
+What’s curious about this is that I migrated all keys to SHA1E earlier and dropped all WORM keys. git annex info also says that all my keys are SHA1E.
+
+Can this be related to your changes to the WORM backend? I upgraded to git-annex 5.20140818 today. Rolling back to 5.20140716 didn’t allow me to commit, either, though.
+
+Any way I could resolve this? I don’t want to git reset for now, since this will leave the added objects in the annex store.
+
+### What version of git-annex are you using? On what operating system?
+git-annex 5.20140818
+
+Linux 3.16.1
