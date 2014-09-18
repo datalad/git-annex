@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 10"
+ date="2014-09-18T17:27:36Z"
+ content="""
+In the meantime, I've been looking over the Annex.Branch code. 
+
+`stageJournal` is only ever called in code paths that commit the updated index, so those code paths cannot result in dangling objects unless git-annex is interrupted before it can commit. (This may explain some of my own repos having a few dangling refs, that were not commits; I could have ctrl-c'd git-annex.)
+
+It's possible for a forced update of the local git-annex branch, done by eg a push from another repo, to overwrite a commit made to it. In this case, the git-annex index is merged with the branch, resulting in a new commit, and the old commit that was overwritten will indeed be dangling. However, `git annex sync` doesn't overwrite the git-annex branch; it pushes to synced/git-annex, or does a `taggedPush` to a private ref. It is the case that both those pushes are forced pushes, so can overwrite a branch ref and leave the old commit it pointed to dangling. In the case of `taggedPush`, the old commit should be a parent of the new, so it won't dangle. In the case of synced/git-annex being overwritten, the old commit could dangle, but only until whatever repo pushed it syncs again, at which time it should get incorporated as one of the parents of the new synced/git-annex it pushes. So, I don't see how long-term dangling commits could happen this way, except for in the case where a repository stops syncing/goes missing/rebases its git-annex branch (ie, git-annex forget is used). (This may explain the 2 dangling commits I found on elephant; we did delete some clones of that repository recently.)
+
+At this point I'm not convinced that the dangling objects I found in my own repos are due to some systematic problem, the above seems like it could explain them, and the above is not a problem on the class of the one Rasmus is having. Of course, it's hard to be sure you've spotted all possible ways that a resource leak can happen, and that's what these dangling objects basically are.
+"""]]
