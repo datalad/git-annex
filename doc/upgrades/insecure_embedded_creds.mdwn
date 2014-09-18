@@ -6,12 +6,9 @@ in (effectively) plaintext, not encrypted as they were supposed to be.
 That means that anyone who gets a copy of the git repository can extract the
 AWS credentials from it. Which would be bad..
 
-Fixed versions of git-annex will detect this problem when enabling such a
-remote, and print a warning message (including a pointer to this web page).
-
-This message will only be printed one time, since git-annex will
-change the embedded credentials to be encrypted properly.
-However, this leaves the non-encrypted version still in the git history.
+A remote with this problem cannot be enabled using `git annex
+enableremote`. Old versions of git-annex will fail with a gpg error;
+the current version will fail with a pointer to this web page.
 
 If your repository has this problem, chose from one of these approaches
 to deal with it:
@@ -25,11 +22,21 @@ to deal with it:
    `AWS_SECRET_ACCESS_KEY` and `AWS_ACCESS_KEY_ID` environment variables,
    and running `git annex enableremote $remotename embedcreds=yes`
 
-2. Remove the history of the git-annex branch of the repository.
-   You can use `git annex forget` to do that; note that it will
-   remove other historical data too. Keep in mind that this will not
-   necessarily delete data from clones you do not control.
+2. Fix the problem and then remove the history of the git-annex branch
+   of the repository.
 
-3. If you're the only one who has access to the repository, you could decide
-   to leave it as-is. It's no more insecure than if you had used
-   encryption=shared in the first place when setting it up.
+   Make sure you have a fixed version of git-annex, and force git-annex
+   to rewrite the embedded creds, with encryption this time, by setting
+   by setting the `AWS_SECRET_ACCESS_KEY` and `AWS_ACCESS_KEY_ID`
+   environment variables, and running `git annex enableremote $remotename embedcreds=yes`
+
+   Then, to get rid of old versions of the git-annex branch that still
+   contain the creds in cleartext, you can use `git annex forget`;
+   note that it will remove other historical data too.
+   
+   Keep in mind that this will not necessarily delete data from clones
+   you do not control.
+
+3. If you're sure that you're the only one who has access to the repository,
+   you could decide to leave it as-is. It's no more insecure than if you
+   had used encryption=shared in the first place when setting it up.
