@@ -3,6 +3,9 @@ git-annex (5.20140916) UNRELEASED; urgency=medium
   * Security fix for S3 and glacier when using embedcreds=yes with
     encryption=pubkey or encryption=hybrid. 
     The creds embedded in the git repo were *not* encrypted.
+    git-annex enableremote will warn when used on a remote that has
+    this problem. For details, see:
+    https://git-annex.branchable.com/upgrades/insecure_embedded_creds/
   * assistant: Detect when repository has been deleted or moved, and
     automatically shut down the assistant. Closes: #761261
   * Windows: Avoid crashing trying to list gpg secret keys, for gcrypt

@@ -11,6 +11,7 @@ module Remote.Helper.Encryptable (
 	noEncryptionUsed,
 	encryptionAlreadySetup,
 	remoteCipher,
+	remoteCipher',
 	embedCreds,
 	cipherKey,
 	storeCipher,
@@ -93,21 +94,24 @@ encryptionSetup c = maybe genCipher updateCipher $ extractCipher c
                 -- remotes (while being backward-compatible).
 		[ "keyid", "keyid+", "keyid-", "highRandomQuality" ]
 
+remoteCipher :: RemoteConfig -> Annex (Maybe Cipher)
+remoteCipher = fmap fst <$$> remoteCipher'
+
 {- Gets encryption Cipher. The decrypted Ciphers are cached in the Annex
  - state. -}
-remoteCipher :: RemoteConfig -> Annex (Maybe Cipher)
-remoteCipher c = go $ extractCipher c
+remoteCipher' :: RemoteConfig -> Annex (Maybe (Cipher, StorableCipher))
+remoteCipher' c = go $ extractCipher c
   where
 	go Nothing = return Nothing
 	go (Just encipher) = do
 		cache <- Annex.getState Annex.ciphers
 		case M.lookup encipher cache of
-			Just cipher -> return $ Just cipher
+			Just cipher -> return $ Just (cipher, encipher)
 			Nothing -> do
 				showNote "gpg"
 				cipher <- liftIO $ decryptCipher encipher
 				Annex.changeState (\s -> s { Annex.ciphers = M.insert encipher cipher cache })
-				return $ Just cipher
+				return $ Just (cipher, encipher)
 
 {- Checks if the remote's config allows storing creds in the remote's config.
  - 

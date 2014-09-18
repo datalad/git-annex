@@ -1,0 +1,34 @@
+git-annex had a bug in the S3 and Glacier remotes where if embedcreds=yes
+was set, and the remote used encryption=pubkey or encryption=hybrid,
+the embedded AWS credentials were stored in the git repository
+in (effectively) plaintext, not encrypted as they were supposed to be.
+
+That means that anyone who gets a copy of the git repository can extract the
+AWS credentials from it. Which would be bad..
+
+Fixed versions of git-annex will detect this problem when enabling such a
+remote, and print a warning message (including a pointer to this web page).
+
+This message will only be printed one time, since git-annex will
+change the embedded credentials to be encrypted properly.
+However, this leaves the non-encrypted version still in the git history.
+
+If your repository has this problem, you have two courses of action to fix
+it:
+
+1. Change your AWS credentials, so the ones stored in the clear in git
+   won't be used. 
+   
+   After changing the credentials, make sure you have a
+   fixed version of git-annex, and you can then re-embed the new creds
+   into the repository, encrypted this time, by setting the
+   `AWS_SECRET_ACCESS_KEY` and `AWS_ACCESS_KEY_ID` environment variables,
+   and running `git annex enableremote $remotename embedcreds=yes`
+
+2. Remove the history of the git-annex branch of the repository.
+   You can use `git annex forget`` to do that; note that it will
+   remove other historical data too.
+
+3. If you're the only one who has access to the repository, you could decide
+   to leave it as-is. It's no more insecure than if you had used
+   encryption=shared in the first place when setting it up.

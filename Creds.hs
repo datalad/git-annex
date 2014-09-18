@@ -23,7 +23,7 @@ import Annex.Perms
 import Utility.FileMode
 import Crypto
 import Types.Remote (RemoteConfig, RemoteConfigKey)
-import Remote.Helper.Encryptable (remoteCipher, embedCreds, EncryptionIsSetup)
+import Remote.Helper.Encryptable (remoteCipher, remoteCipher', embedCreds, EncryptionIsSetup)
 import Utility.Env (getEnv)
 
 import qualified Data.ByteString.Lazy.Char8 as L
@@ -90,20 +90,32 @@ getRemoteCredPair c storage = maybe fromcache (return . Just) =<< fromenv
 	fromcache = maybe fromconfig (return . Just) =<< readCacheCredPair storage
 	fromconfig = case credPairRemoteKey storage of
 		Just key -> do
-			mcipher <- remoteCipher c
+			mcipher <- remoteCipher' c
 			case (M.lookup key c, mcipher) of
 				(Nothing, _) -> return Nothing
-				(Just enccreds, Just cipher) -> do
-					creds <- liftIO $ decrypt cipher
-						(feedBytes $ L.pack $ fromB64 enccreds)
-						(readBytes $ return . L.unpack)
-					fromcreds creds
+				(Just enccreds, Just (cipher, storablecipher)) ->
+					fromenccreds enccreds cipher storablecipher
 				(Just bcreds, Nothing) ->
 					fromcreds $ fromB64 bcreds
 		Nothing -> return Nothing
+	fromenccreds enccreds cipher storablecipher = do
+		mcreds <- liftIO $ catchMaybeIO $ decrypt cipher
+			(feedBytes $ L.pack $ fromB64 enccreds)
+			(readBytes $ return . L.unpack)
+		case mcreds of
+			Just creds -> fromcreds creds
+			Nothing -> do
+				-- Work around un-encrypted creds storage
+				-- bug in old S3 and glacier remotes.
+				-- Not a problem for shared cipher.
+				case storablecipher of
+					SharedCipher {} -> showLongNote "gpg error above was caused by an old git-annex bug in credentials storage. Working around it.."
+					_ -> warning "*** Insecure credentials storage detected for this remote! See https://git-annex.branchable.com/upgrades/insecure_embedded_creds/"
+				fromcreds $ fromB64 enccreds
 	fromcreds creds = case decodeCredPair creds of
 		Just credpair -> do
 			writeCacheCredPair credpair storage
+
 			return $ Just credpair
 		_ -> error "bad creds"
 
