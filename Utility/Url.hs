@@ -161,20 +161,6 @@ headRequest r = r
 		(requestHeaders r)
 	}
 
-addUrlOptions :: UrlOptions -> Request -> Request
-addUrlOptions uo r = r { requestHeaders = requestHeaders r ++ uaheader ++ otherheaders}
-  where
-	uaheader = case userAgent uo of
-		Nothing -> []
-		Just ua -> [(hUserAgent, B8.fromString ua)]
-	otherheaders = map toheader (reqHeaders uo)
-	toheader s =
-		let (h, v) = separate (== ':') s
-		    h' = CI.mk (B8.fromString h)
-		in case v of
-			(' ':v') -> (h', B8.fromString v')
-			_ -> (h', B8.fromString v)
-
 {- Used to download large files, such as the contents of keys.
  -
  - Uses wget or curl program for its progress bar. (Wget has a better one,
