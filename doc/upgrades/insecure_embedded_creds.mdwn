@@ -13,8 +13,8 @@ This message will only be printed one time, since git-annex will
 change the embedded credentials to be encrypted properly.
 However, this leaves the non-encrypted version still in the git history.
 
-If your repository has this problem, you have two courses of action to fix
-it:
+If your repository has this problem, chose from one of these approaches
+to deal with it:
 
 1. Change your AWS credentials, so the ones stored in the clear in git
    won't be used. 
