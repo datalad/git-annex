@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmK0703vNSIQsP1mGf-4MAPnsBZiSc6yVo"
+ nickname="Emre"
+ subject="Understanding"
+ date="2014-09-19T21:24:19Z"
+ content="""
+If box does not have the encryption keys in this \"shared encryption\" scenario and if you had only your computer and this remote repo, does that mean losing your computer (ie your git repository) would mean also losing access to those encrypted content? So, actually an encrypted remote, even if marked as full backup, is not actually a backup unless you have a 3rd computer that has the same git repo, in the case of losing your original computer or accidentally wiping it...
+"""]]
