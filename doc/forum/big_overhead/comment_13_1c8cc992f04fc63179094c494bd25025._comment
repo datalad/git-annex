@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="I know what it is now"
+ date="2014-09-19T02:43:22Z"
+ content="""
+These objects are the ones written by git-remote-gcrypt when pushing to a remote. That's why the weird dates, root pseudo-commit, crazy filenames, and big gpg encrypted blobs. All countermeasures that git-remote-gcrypt uses to keep your encrypted git remote safe and not leak information about what's in it.
+
+So, this is a bug in git-remote-gcrypt. It needs to clean these objects up after pushing them! (Also after failed pushes.)
+"""]]
