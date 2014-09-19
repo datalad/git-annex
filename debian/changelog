@@ -1,7 +1,7 @@
 git-annex (5.20140916) UNRELEASED; urgency=medium
 
   * Security fix for S3 and glacier when using embedcreds=yes with
-    encryption=pubkey or encryption=hybrid. 
+    encryption=pubkey or encryption=hybrid. CVE-2014-6274
     The creds embedded in the git repo were *not* encrypted.
     git-annex enableremote will warn when used on a remote that has
     this problem. For details, see:
