@@ -120,7 +120,7 @@ main ps = do
 				error msg
 			v -> handleParseResult v
 #else
-	handleParseResult $ execParserPure pprefs pinfo args
+		handleParseResult $ execParserPure pprefs pinfo args
 #endif
   	progdesc = "git-annex test"
 
