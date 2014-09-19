@@ -1,4 +1,4 @@
-git-annex (5.20140916) UNRELEASED; urgency=medium
+git-annex (5.20140919) unstable; urgency=high
 
   * Security fix for S3 and glacier when using embedcreds=yes with
     encryption=pubkey or encryption=hybrid. CVE-2014-6274
@@ -15,7 +15,7 @@ git-annex (5.20140916) UNRELEASED; urgency=medium
   * add: In direct mode, adding an annex symlink will check it into git,
     as was already done in indirect mode.
 
- -- Joey Hess <joeyh@debian.org>  Mon, 15 Sep 2014 14:39:17 -0400
+ -- Joey Hess <joeyh@debian.org>  Fri, 19 Sep 2014 12:53:42 -0400
 
 git-annex (5.20140915) unstable; urgency=medium
 
