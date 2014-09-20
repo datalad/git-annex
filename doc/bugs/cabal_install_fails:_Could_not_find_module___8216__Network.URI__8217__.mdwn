@@ -1,0 +1,212 @@
+### Please describe the problem.
+
+Can't install git-annex from current git master. cabal install also fails. Both fail with the same error.
+
+### What steps will reproduce the problem?
+
+cabal install git-annex --bindir=$HOME/bin
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+$ uname -a
+Linux arch 3.16.3-1-ARCH #1 SMP PREEMPT Wed Sep 17 21:54:13 CEST 2014 x86_64 GNU/Linux
+
+$ cabal --version
+cabal-install version 1.20.0.3
+using version 1.20.0.0 of the Cabal library
+"""]]
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+$ cabal install git-annex --bindir=$HOME/bin
+Resolving dependencies...
+Configuring DAV-1.0.2...
+Configuring gnuidn-0.2.1...
+Configuring gsasl-0.3.5...
+Configuring hS3-0.5.8...
+Failed to install gsasl-0.3.5
+Build log ( /home/dirk/.cabal/logs/gsasl-0.3.5.log ):
+Configuring gsasl-0.3.5...
+setup-Simple-Cabal-1.18.1.3-x86_64-linux-ghc-7.8.3: The pkg-config package
+libgsasl version >=1.1 is required but it could not be found.
+Failed to install gnuidn-0.2.1
+Build log ( /home/dirk/.cabal/logs/gnuidn-0.2.1.log ):
+Configuring gnuidn-0.2.1...
+setup-Simple-Cabal-1.18.1.3-x86_64-linux-ghc-7.8.3: The program c2hs is
+required but it could not be found.
+Building hS3-0.5.8...
+Building DAV-1.0.2...
+Failed to install hS3-0.5.8
+Build log ( /home/dirk/.cabal/logs/hS3-0.5.8.log ):
+Configuring hS3-0.5.8...
+Building hS3-0.5.8...
+Preprocessing library hS3-0.5.8...
+
+Network/AWS/S3Object.hs:26:8:
+    Could not find module ‘Network.URI’
+    It is a member of the hidden package ‘network-uri-2.6.0.1’.
+    Perhaps you need to add ‘network-uri’ to the build-depends in your .cabal file.
+    Use -v to see a list of the files searched for.
+Failed to install DAV-1.0.2
+Build log ( /home/dirk/.cabal/logs/DAV-1.0.2.log ):
+Configuring DAV-1.0.2...
+Building DAV-1.0.2...
+Preprocessing library DAV-1.0.2...
+[1 of 2] Compiling Network.Protocol.HTTP.DAV.TH ( Network/Protocol/HTTP/DAV/TH.hs, dist/build/Network/Protocol/HTTP/DAV/TH.o )
+Loading package ghc-prim ... linking ... done.
+Loading package integer-gmp ... linking ... done.
+Loading package base ... linking ... done.
+Loading package array-0.5.0.0 ... linking ... done.
+Loading package deepseq-1.3.0.2 ... linking ... done.
+Loading package containers-0.5.5.1 ... linking ... done.
+Loading package bytestring-0.10.4.0 ... linking ... done.
+Loading package transformers-0.3.0.0 ... linking ... done.
+Loading package mtl-2.1.3.1 ... linking ... done.
+Loading package text-1.2.0.0 ... linking ... done.
+Loading package parsec-3.1.6 ... linking ... done.
+Loading package hashable-1.2.2.0 ... linking ... done.
+Loading package scientific-0.3.3.1 ... linking ... done.
+Loading package attoparsec-0.12.1.2 ... linking ... done.
+Loading package dlist-0.7.1 ... linking ... done.
+Loading package old-locale-1.0.0.6 ... linking ... done.
+Loading package syb-0.4.2 ... linking ... done.
+Loading package pretty-1.1.1.1 ... linking ... done.
+Loading package template-haskell ... linking ... done.
+Loading package time-1.4.2 ... linking ... done.
+Loading package unordered-containers-0.2.5.0 ... linking ... done.
+Loading package primitive-0.5.3.0 ... linking ... done.
+Loading package vector-0.10.11.0 ... linking ... done.
+Loading package aeson-0.8.0.0 ... linking ... done.
+Loading package blaze-builder-0.3.3.4 ... linking ... done.
+Loading package blaze-markup-0.6.1.1 ... linking ... done.
+Loading package blaze-html-0.7.0.3 ... linking ... done.
+Loading package filepath-1.3.0.2 ... linking ... done.
+Loading package unix-2.7.0.1 ... linking ... done.
+Loading package directory-1.2.1.0 ... linking ... done.
+Loading package exceptions-0.6.1 ... linking ... done.
+Loading package process-1.2.0.0 ... linking ... done.
+Loading package system-filepath-0.4.12 ... linking ... done.
+Loading package system-fileio-0.3.14 ... linking ... done.
+Loading package shakespeare-2.0.1.1 ... linking ... done.
+Loading package stm-2.4.3 ... linking ... done.
+Loading package transformers-base-0.4.3 ... linking ... done.
+Loading package monad-control-0.3.3.0 ... linking ... done.
+Loading package lifted-base-0.2.3.0 ... linking ... done.
+Loading package mmorph-1.0.4 ... linking ... done.
+Loading package resourcet-1.1.2.3 ... linking ... done.
+Loading package nats-0.2 ... linking ... done.
+Loading package semigroups-0.15.3 ... linking ... done.
+Loading package void-0.6.1 ... linking ... done.
+Loading package conduit-1.2.0.2 ... linking ... done.
+Loading package attoparsec-conduit-1.1.0 ... linking ... done.
+Loading package blaze-builder-conduit-1.1.0 ... linking ... done.
+Loading package network-2.6.0.2 ... linking ... done.
+Loading package random-1.1 ... linking ... done.
+Loading package zlib-0.5.4.1 ... linking ... done.
+Loading package streaming-commons-0.1.5 ... linking ... done.
+Loading package conduit-extra-1.1.3.4 ... linking ... done.
+Loading package data-default-class-0.0.1 ... linking ... done.
+Loading package data-default-instances-base-0.0.1 ... linking ... done.
+Loading package data-default-instances-containers-0.0.1 ... linking ... done.
+Loading package data-default-instances-dlist-0.0.1 ... linking ... done.
+Loading package data-default-instances-old-locale-0.0.1 ... linking ... done.
+Loading package data-default-0.5.3 ... linking ... done.
+Loading package xml-types-0.3.4 ... linking ... done.
+Loading package xml-conduit-1.2.2 ... linking ... done.
+Loading package xml-hamlet-0.4.0.9 ... linking ... done.
+Loading package transformers-compat-0.3.3.4 ... linking ... done.
+Loading package contravariant-1.2 ... linking ... done.
+Loading package tagged-0.7.2 ... linking ... done.
+Loading package distributive-0.4.4 ... linking ... done.
+Loading package comonad-4.2.2 ... linking ... done.
+Loading package semigroupoids-4.2 ... linking ... done.
+Loading package bifunctors-4.1.1.1 ... linking ... done.
+Loading package prelude-extras-0.4 ... linking ... done.
+Loading package profunctors-4.2.0.1 ... linking ... done.
+Loading package free-4.9 ... linking ... done.
+Loading package parallel-3.2.0.4 ... linking ... done.
+Loading package reflection-1.5.1 ... linking ... done.
+Loading package split-0.2.2 ... linking ... done.
+Loading package lens-4.4.0.2 ... linking ... done.
+Loading package byteable-0.1.1 ... linking ... done.
+Loading package securemem-0.1.3 ... linking ... done.
+Loading package crypto-cipher-types-0.0.9 ... linking ... done.
+Loading package cipher-aes-0.2.8 ... linking ... done.
+Loading package crypto-random-0.0.8 ... linking ... done.
+Loading package cprng-aes-0.5.2 ... linking ... done.
+Loading package cereal-0.4.0.1 ... linking ... done.
+Loading package socks-0.5.4 ... linking ... done.
+Loading package asn1-types-0.2.3 ... linking ... done.
+Loading package asn1-encoding-0.8.1.3 ... linking ... done.
+Loading package cipher-des-0.0.6 ... linking ... done.
+Loading package cipher-rc4-0.1.4 ... linking ... done.
+Loading package crypto-numbers-0.2.3 ... linking ... done.
+Loading package crypto-pubkey-types-0.4.2.2 ... linking ... done.
+Loading package cryptohash-0.11.6 ... linking ... done.
+Loading package crypto-pubkey-0.2.4 ... linking ... done.
+Loading package asn1-parse-0.8.1 ... linking ... done.
+Loading package base64-bytestring-1.0.0.1 ... linking ... done.
+Loading package pem-0.2.2 ... linking ... done.
+Loading package x509-1.4.12 ... linking ... done.
+Loading package x509-store-1.4.4 ... linking ... done.
+Loading package x509-validation-1.5.0 ... linking ... done.
+Loading package tls-1.2.9 ... linking ... done.
+Loading package x509-system-1.4.5 ... linking ... done.
+Loading package connection-0.2.3 ... linking ... done.
+Loading package case-insensitive-1.2.0.1 ... linking ... done.
+Loading package cookie-0.4.1.3 ... linking ... done.
+Loading package http-types-0.8.5 ... linking ... done.
+Loading package mime-types-0.1.0.4 ... linking ... done.
+Loading package network-uri-2.6.0.1 ... linking ... done.
+Loading package utf8-string-0.3.8 ... linking ... done.
+Loading package publicsuffixlist-0.1 ... linking ... done.
+Loading package http-client-0.4.0 ... linking ... done.
+Loading package http-client-tls-0.2.2 ... linking ... done.
+Loading package MonadRandom-0.3 ... linking ... done.
+Loading package either-4.3.1 ... linking ... done.
+Loading package safe-0.3.8 ... linking ... done.
+Loading package errors-1.4.7 ... linking ... done.
+[2 of 2] Compiling Network.Protocol.HTTP.DAV ( Network/Protocol/HTTP/DAV.hs, dist/build/Network/Protocol/HTTP/DAV.o )
+
+Network/Protocol/HTTP/DAV.hs:80:1: Warning:
+    The import of ‘unauthorized401’
+    from module ‘Network.HTTP.Types’ is redundant
+
+Network/Protocol/HTTP/DAV.hs:92:95: Warning:
+    ‘DAVT’ is an instance of MonadPlus but not Alternative - this will become an error in GHC 7.10, under the Applicative-Monad Proposal.
+
+Network/Protocol/HTTP/DAV.hs:213:1: Warning:
+    Defined but not used: ‘supportsCalDAV’
+
+Network/Protocol/HTTP/DAV.hs:88:10: Warning:
+    Orphan instance: instance Default DAVContext
+
+Network/Protocol/HTTP/DAV.hs:95:10: Warning:
+    Orphan instance: instance MonadMask m => MonadMask (EitherT e m)
+In-place registering DAV-1.0.2...
+Preprocessing executable 'hdav' for DAV-1.0.2...
+
+hdav.hs:33:8:
+    Could not find module ‘Network.URI’
+    It is a member of the hidden package ‘network-uri-2.6.0.1’.
+    Perhaps you need to add ‘network-uri’ to the build-depends in your .cabal file.
+    Use -v to see a list of the files searched for.
+cabal: Error: some packages failed to install:
+DAV-1.0.2 failed during the building phase. The exception was:
+ExitFailure 1
+git-annex-5.20140919 depends on DAV-1.0.2 which failed to install.
+gnuidn-0.2.1 failed during the configure step. The exception was:
+ExitFailure 1
+gsasl-0.3.5 failed during the configure step. The exception was:
+ExitFailure 1
+hS3-0.5.8 failed during the building phase. The exception was:
+ExitFailure 1
+network-protocol-xmpp-0.4.6 depends on gnuidn-0.2.1 which failed to install.
+
+# End of transcript or log.
+"""]]
