@@ -1,3 +1,9 @@
+git-annex (5.20140920) UNRELEASED; urgency=medium
+
+  * Depend on new enough git for --no-gpg-sign to work. Closes: #762446
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 22 Sep 2014 13:50:00 -0400
+
 git-annex (5.20140919) unstable; urgency=high
 
   * Security fix for S3 and glacier when using embedcreds=yes with
