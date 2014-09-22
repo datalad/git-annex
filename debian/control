@@ -57,7 +57,7 @@ Build-Depends:
 	lsof [!kfreebsd-i386 !kfreebsd-amd64 !hurd-any],
 	ikiwiki,
 	perlmagick,
-	git (>= 1:2.0),
+	git (>= 1:1.8.4),
 	rsync,
 	wget,
 	curl,
