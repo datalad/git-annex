@@ -5,7 +5,7 @@
   system. For a backup system that uses git and that git-annex supports
   storing data in, see [[special_remotes/bup]].
 
-* git-annex is not a filesystem or DropBox clone. However, the git-annex
+* git-annex is not a filesystem or Dropbox clone. However, the git-annex
   [[assistant]] is addressing some of the same needs in its own unique ways.
   (There is also a FUSE filesystem built on top of git-annex, called 
   [ShareBox](https://github.com/chmduquesne/sharebox-fs).)

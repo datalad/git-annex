@@ -377,7 +377,7 @@ sendAnnex key rollback sendobject = go =<< prepSendAnnex key
 			)
 
 {- Returns a file that contains an object's content,
- - and an check to run after the transfer is complete.
+ - and a check to run after the transfer is complete.
  -
  - In direct mode, it's possible for the file to change as it's being sent,
  - and the check detects this case and returns False.

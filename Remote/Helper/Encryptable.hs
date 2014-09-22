@@ -5,7 +5,18 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Remote.Helper.Encryptable where
+module Remote.Helper.Encryptable (
+	EncryptionIsSetup,
+	encryptionSetup,
+	noEncryptionUsed,
+	encryptionAlreadySetup,
+	remoteCipher,
+	remoteCipher',
+	embedCreds,
+	cipherKey,
+	storeCipher,
+	extractCipher,
+) where
 
 import qualified Data.Map as M
 
@@ -16,11 +27,26 @@ import Types.Crypto
 import qualified Annex
 import Utility.Base64
 
+-- Used to ensure that encryption has been set up before trying to
+-- eg, store creds in the remote config that would need to use the
+-- encryption setup.
+data EncryptionIsSetup = EncryptionIsSetup | NoEncryption
+
+-- Remotes that don't use encryption can use this instead of
+-- encryptionSetup.
+noEncryptionUsed :: EncryptionIsSetup
+noEncryptionUsed = NoEncryption
+
+-- Using this avoids the type-safe check, so you'd better be sure
+-- of what you're doing.
+encryptionAlreadySetup :: EncryptionIsSetup
+encryptionAlreadySetup = EncryptionIsSetup
+
 {- Encryption setup for a remote. The user must specify whether to use
  - an encryption key, or not encrypt. An encrypted cipher is created, or is
  - updated to be accessible to an additional encryption key. Or the user
  - could opt to use a shared cipher, which is stored unencrypted. -}
-encryptionSetup :: RemoteConfig -> Annex RemoteConfig
+encryptionSetup :: RemoteConfig -> Annex (RemoteConfig, EncryptionIsSetup)
 encryptionSetup c = maybe genCipher updateCipher $ extractCipher c
   where
 	-- The type of encryption
@@ -28,7 +54,7 @@ encryptionSetup c = maybe genCipher updateCipher $ extractCipher c
 	-- Generate a new cipher, depending on the chosen encryption scheme
 	genCipher = case encryption of
 		_ | M.member "cipher" c || M.member "cipherkeys" c -> cannotchange
-		Just "none" -> return c
+		Just "none" -> return (c, NoEncryption)
 		Just "shared" -> use "encryption setup" . genSharedCipher
 			=<< highRandomQuality
 		-- hybrid encryption is the default when a keyid is
@@ -48,7 +74,7 @@ encryptionSetup c = maybe genCipher updateCipher $ extractCipher c
 	cannotchange = error "Cannot set encryption type of existing remotes."
 	-- Update an existing cipher if possible.
 	updateCipher v = case v of
-		SharedCipher _ | maybe True (== "shared") encryption -> return c'
+		SharedCipher _ | maybe True (== "shared") encryption -> return (c', EncryptionIsSetup)
 		EncryptedCipher _ variant _
 			| maybe True (== if variant == Hybrid then "hybrid" else "pubkey") encryption ->
 				use "encryption update" $ updateEncryptedCipher newkeys v
@@ -57,7 +83,7 @@ encryptionSetup c = maybe genCipher updateCipher $ extractCipher c
 		showNote m
 		cipher <- liftIO a
 		showNote $ describeCipher cipher
-		return $ storeCipher c' cipher
+		return (storeCipher c' cipher, EncryptionIsSetup)
 	highRandomQuality = 
 		(&&) (maybe True ( /= "false") $ M.lookup "highRandomQuality" c)
 			<$> fmap not (Annex.getState Annex.fast)
@@ -68,11 +94,11 @@ encryptionSetup c = maybe genCipher updateCipher $ extractCipher c
                 -- remotes (while being backward-compatible).
 		[ "keyid", "keyid+", "keyid-", "highRandomQuality" ]
 
-{- Gets encryption Cipher. The decrypted Ciphers are cached in the Annex
- - state. -}
 remoteCipher :: RemoteConfig -> Annex (Maybe Cipher)
 remoteCipher = fmap fst <$$> remoteCipher'
 
+{- Gets encryption Cipher. The decrypted Ciphers are cached in the Annex
+ - state. -}
 remoteCipher' :: RemoteConfig -> Annex (Maybe (Cipher, StorableCipher))
 remoteCipher' c = go $ extractCipher c
   where

@@ -148,7 +148,8 @@ subdirectories).
   Or specify `--fast` to sync with the remotes with the
   lowest annex-cost value.
 
-  The sync process involves first committing all local changes,
+  The sync process involves first committing any local changes to files
+  that have previously been added to the repository,
   then fetching and merging the `synced/master` and the `git-annex` branch
   from the remote repositories, and finally pushing the changes back to
   those branches on the remote repositories. You can use standard git
@@ -513,7 +514,7 @@ subdirectories).
 * `fsck [path ...]`
 
   With no parameters, this command checks the whole annex for consistency,
-  and warns about or fixes any problems found. This is a good compliment to
+  and warns about or fixes any problems found. This is a good complement to
   `git fsck`.
 
   With parameters, only the specified files are checked.
@@ -1432,6 +1433,19 @@ Here are all the supported configuration settings.
   run the commands with `-c annex.alwayscommit=false`. You can later
   commit the data by running `git annex merge` (or by automatic merges)
   or `git annex sync`.
+
+* `annex.hardlink`
+
+  Set this to `true` to make file contents be hard linked into the
+  repository when possible, instead of a more expensive copy.
+
+  Use with caution -- This can invalidate numcopies counting, since
+  with hard links, fewer copies of a file can exist. So, it is a good
+  idea to mark a repository using this setting as untrusted.
+
+  When a repository is set up using `git clone --shared`, git-annex init
+  will automatically set annex.hardlink and mark the repository as
+  untrusted.
 
 * `annex.delayadd`
 

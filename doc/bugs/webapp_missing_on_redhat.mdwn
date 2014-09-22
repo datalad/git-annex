@@ -12,3 +12,10 @@ I am seeing the following error when running git annex webapp:
 
 git-annex: unknown command webapp
 
+> git-annex can be built without the webapp, and this is
+> often done if a distribution does not have the full haskell stack
+> packaged yet. The solution is to contact the distribution and let them
+> know they need to improve it, and/or use the standalone build from this
+> website.
+> 
+> So, please file a bug on redhat. [[done]] --[[Joey]]

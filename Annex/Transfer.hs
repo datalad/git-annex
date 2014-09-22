@@ -85,7 +85,9 @@ runTransfer' ignorelock t file shouldretry a = do
 				locked <- catchMaybeIO $
 					setLock fd (WriteLock, AbsoluteSeek, 0, 0)
 				if isNothing locked
-					then return (Nothing, True)
+					then do
+						closeFd fd
+						return (Nothing, True)
 					else do
 						void $ tryIO $ writeTransferInfoFile info tfile
 						return (mfd, False)

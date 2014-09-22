@@ -1,0 +1,7 @@
+Hi,
+
+when I fetch from a central repository and `git annex merge` a synced/master branch is created. How can I disable this behaviour?
+
+Or is there a better workflow for getting and pushing updates from/to a central git repo?
+
+bye

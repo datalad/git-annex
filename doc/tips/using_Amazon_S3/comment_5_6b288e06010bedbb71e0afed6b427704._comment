@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkmN2ZZIdYNiFKmEH7rz4jMb6sYsx_dptA"
+ nickname="Jack William"
+ subject="What if you do not want to encrypt?"
+ date="2014-09-07T18:35:19Z"
+ content="""
+Once use case for GIT with Amazon S3 is to maintain a web site on S3 you can easily update from a local machine. In that case you would not want to encrypt. Is encryption optional? This isn't clear from the instructions.
+"""]]

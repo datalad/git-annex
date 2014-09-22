@@ -1,3 +1,58 @@
+git-annex (5.20140920) UNRELEASED; urgency=medium
+
+  * Depend on new enough git for --no-gpg-sign to work. Closes: #762446
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 22 Sep 2014 13:50:00 -0400
+
+git-annex (5.20140919) unstable; urgency=high
+
+  * Security fix for S3 and glacier when using embedcreds=yes with
+    encryption=pubkey or encryption=hybrid. CVE-2014-6274
+    The creds embedded in the git repo were *not* encrypted.
+    git-annex enableremote will warn when used on a remote that has
+    this problem. For details, see:
+    https://git-annex.branchable.com/upgrades/insecure_embedded_creds/
+  * assistant: Detect when repository has been deleted or moved, and
+    automatically shut down the assistant. Closes: #761261
+  * Windows: Avoid crashing trying to list gpg secret keys, for gcrypt
+    which is not yet supported on Windows.
+  * WebDav: Fix enableremote crash when the remote already exists.
+    (Bug introduced in version 5.20140817.)
+  * add: In direct mode, adding an annex symlink will check it into git,
+    as was already done in indirect mode.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 19 Sep 2014 12:53:42 -0400
+
+git-annex (5.20140915) unstable; urgency=medium
+
+  * New annex.hardlink setting. Closes: #758593
+  * init: Automatically detect when a repository was cloned with --shared,
+    and set annex.hardlink=true, as well as marking the repository as
+    untrusted.
+  * Fix parsing of ipv6 address in git remote address when it was not
+    formatted as an url.
+  * The annex-rsync-transport configuration is now also used when checking
+    if a key is present on a rsync remote, and when dropping a key from
+    the remote.
+  * Promote file not found warning message to an error.
+  * Fix transfer lock file FD leak that could occur when two separate
+    git-annex processes were both working to perform the same set of
+    transfers.
+  * sync: Ensure that pending changes to git-annex branch are committed
+    before push when in direct mode. (Fixing a very minor reversion.)
+  * WORM backend: Switched to include the relative path to the file inside
+    the repository, rather than just the file's base name. Note that if you're
+    relying on such things to keep files separate with WORM, you should really
+    be using a better backend.
+  * Rather than crashing when there's a problem with the requested bloomfilter
+    capacity/accuracy, fall back to a reasonable default bloom filter size.
+  * Fix build with optparse-applicative 0.10. Closes: #761484
+  * webapp: Fixed visual glitch in xmpp pairing that was reported live by a
+    user who tracked me down in front of a coffee cart in Portland. 
+    (New bug reporting method of choice?)
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 15 Sep 2014 10:45:00 -0400
+
 git-annex (5.20140831~bpo70+1) wheezy-backports; urgency=low
 
   * Updating backport to newest release. Closes: #760787

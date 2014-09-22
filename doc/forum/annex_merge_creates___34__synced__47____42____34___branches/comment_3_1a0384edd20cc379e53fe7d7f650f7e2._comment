@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 3"
+ date="2014-09-18T17:39:19Z"
+ content="""
+`git annex merge` does not create any synced/* branches. These branches will be pulled down by `git pull` or `git annex sync`.
+"""]]

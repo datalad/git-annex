@@ -1,4 +1,4 @@
-<div .col-sm-9 ##{ident}>
+<div ##{ident}>
   <table .table>
     <tbody>
     $if null buddies

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="annexuser"
+ ip="71.198.212.13"
+ subject="comment 3"
+ date="2014-09-19T04:43:42Z"
+ content="""
+Was the version I listed above not using the new chunking from the `s3-aws` branch? How do I determine if my version of git-annex was built with the new or old chunking?
+"""]]

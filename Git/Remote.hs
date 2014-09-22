@@ -102,7 +102,13 @@ parseRemoteLocation s repo = ret $ calcloc s
 		&& not ("::" `isInfixOf` v)
 	scptourl v = "ssh://" ++ host ++ slash dir
 	  where
-		(host, dir) = separate (== ':') v
+		(host, dir)
+			-- handle ipv6 address inside []
+			| "[" `isPrefixOf` v = case break (== ']') v of
+				(h, ']':':':d) -> (h ++ "]", d)
+				(h, ']':d) -> (h ++ "]", d)
+				(h, d) -> (h, d)
+			| otherwise = separate (== ':') v
 		slash d	| d == "" = "/~/" ++ d
 			| "/" `isPrefixOf` d = d
 			| "~" `isPrefixOf` d = '/':d

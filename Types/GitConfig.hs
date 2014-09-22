@@ -52,6 +52,7 @@ data GitConfig = GitConfig
 	, annexGenMetaData :: Bool
 	, annexListen :: Maybe String
 	, annexStartupScan :: Bool
+	, annexHardLink :: Bool
 	, coreSymlinks :: Bool
 	, gcryptId :: Maybe String
 	}
@@ -87,6 +88,7 @@ extractGitConfig r = GitConfig
 	, annexGenMetaData = getbool (annex "genmetadata") False
 	, annexListen = getmaybe (annex "listen")
 	, annexStartupScan = getbool (annex "startupscan") True
+	, annexHardLink = getbool (annex "hardlink") False
 	, coreSymlinks = getbool "core.symlinks" True
 	, gcryptId = getmaybe "core.gcrypt-id"
 	}

@@ -92,7 +92,7 @@ gen r u c gc = do
 genRsyncOpts :: RemoteConfig -> RemoteGitConfig -> [CommandParam] -> RsyncUrl -> RsyncOpts
 genRsyncOpts c gc transport url = RsyncOpts
 	{ rsyncUrl = url
-	, rsyncOptions = opts []
+	, rsyncOptions = transport ++ opts []
 	, rsyncUploadOptions = transport ++ opts (remoteAnnexRsyncUploadOptions gc)
 	, rsyncDownloadOptions = transport ++ opts (remoteAnnexRsyncDownloadOptions gc)
 	, rsyncShellEscape = M.lookup "shellescape" c /= Just "no"
@@ -138,7 +138,7 @@ rsyncSetup mu _ c = do
 	-- verify configuration is sane
 	let url = fromMaybe (error "Specify rsyncurl=") $
 		M.lookup "rsyncurl" c
-	c' <- encryptionSetup c
+	(c', _encsetup) <- encryptionSetup c
 
 	-- The rsyncurl is stored in git config, not only in this remote's
 	-- persistant state, so it can vary between hosts.

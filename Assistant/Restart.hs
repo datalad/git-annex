@@ -53,6 +53,10 @@ postRestart url = do
 	liftIO . sendNotification . globalRedirNotifier =<< getDaemonStatus
 	void $ liftIO $ forkIO $ do
 		threadDelaySeconds (Seconds 120)
+		terminateSelf
+
+terminateSelf :: IO ()
+terminateSelf =
 #ifndef mingw32_HOST_OS
 		signalProcess sigTERM =<< getPID
 #else

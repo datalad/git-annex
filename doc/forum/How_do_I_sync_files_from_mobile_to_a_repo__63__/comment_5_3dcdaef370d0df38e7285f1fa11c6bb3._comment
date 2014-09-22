@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 5"
+ date="2014-09-18T18:05:33Z"
+ content="""
+It occurs to me that another way you could have gotten confused is, if ssh://machineB:/~/annex was eg, created in the first place by running the git-annex webapp on machineB, then it would be a direct mode repo. In this case, yes core.bare=true, but so does annex.direct=true. And that repository will not be a bare repo really; it will contain the same file tree as you have on your mobile.
+"""]]

@@ -70,7 +70,7 @@ hookSetup mu _ c = do
 	u <- maybe (liftIO genUUID) return mu
 	let hooktype = fromMaybe (error "Specify hooktype=") $
 		M.lookup "hooktype" c
-	c' <- encryptionSetup c
+	(c', _encsetup) <- encryptionSetup c
 	gitConfigSpecialRemote u c' "hooktype" hooktype
 	return (c', u)
 

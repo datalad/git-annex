@@ -10,3 +10,5 @@ Go to the pairing menu
 ### Please provide any additional information below.
 
 ![image of bug](http://i.imgur.com/fZe1ERD.png)
+
+> [[fixed|done]] --[[Joey]]

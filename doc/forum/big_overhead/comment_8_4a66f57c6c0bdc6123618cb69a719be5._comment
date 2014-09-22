@@ -1,0 +1,65 @@
+[[!comment format=mdwn
+ username="rasmus"
+ ip="217.130.110.20"
+ subject="comment 8"
+ date="2014-09-18T11:28:45Z"
+ content="""
+Hi Joey,
+
+Thanks for your careful reply.  
+
+Easy things first:
+
+I *never* add anything from the terminal, though I may do checks and `git annex get`, since sometimes the assistance actually grab the updated files.  Until recently I started git annex automatically on boot, but at the moment it simply renders my laptop useless for too long -- presumably due to the errors investigated here.
+
+I use btrfs (don't ask me why).  Searching online, I did not find a way to find the size of inodes, but I assume that it's sensible?  tune2fs doesn't work but as I understand it is designed for ext*.
+
+What takes up space in my `.git/objects` is files of several Mb.  So at the moment the `pack` folder is 700mb.  In the next biggest folder there's three files that are 73,4mb and 8 files that are 4kb.  This pattern repeats.  A couple of large files (73,4 shows up quite a bit as well as 45) and many small files. 
+
+I have an astonishing amount of dangling objects.  In the `doc.annex` `git rev-list HEAD --count` gives 27354.  In this repo I have 1108 unreachable blobs and commits, respectively 569 and 539.  This probably explains why `git prune` solves my problem but I don't understand why all these large files reappears when I sync -- even after having run `git prune` on both laptops.  Could they come from the `annex` on my remote server?
+
+`git show` isn't nice on blobs, but here is an example of a dangling commit
+
+
+    commit 478425bef867782e8ff22aca24316e9421288c49
+    Author: root <root@localhost>
+    Date:   Mon Dec 31 19:00:01 2012 -0400
+
+        Initial commit
+
+    diff --git a/6e5039464b41f39088a4aece64ced787aa2b04ec2dd5ac6f6c6ca4b9a06a99e5 b/6e5039464b41f39088a4aece64ced787aa2b04ec2dd5ac6f6c6ca4b9a06a99e5
+    new file mode 100644
+    index 0000000..af12763
+    Binary files /dev/null and b/6e5039464b41f39088a4aece64ced787aa2b04ec2dd5ac6f6c6ca4b9a06a99e5 differ
+    diff --git a/8ae4ee273eb540fb71b78152d10010ea2dd3d1bb82afe410ecf3d811cb72bd6d b/8ae4ee273eb540fb71b78152d10010ea2dd3d1bb82afe410ecf3d811cb72bd6d
+    new file mode 100644
+    index 0000000..0a6af91
+    Binary files /dev/null and b/8ae4ee273eb540fb71b78152d10010ea2dd3d1bb82afe410ecf3d811cb72bd6d differ
+    diff --git a/91bd0c092128cf2e60e1a608c31e92caf1f9c1595f83f2890ef17c0e4881aa0a b/91bd0c092128cf2e60e1a608c31e92caf1f9c1595f83f2890ef17c0e4881aa0a
+    new file mode 100644
+    index 0000000..26d921e
+    Binary files /dev/null and b/91bd0c092128cf2e60e1a608c31e92caf1f9c1595f83f2890ef17c0e4881aa0a differ
+    diff --git a/9f7728197cfcd9792eef1ff5930a4ab580e38e64291037130f1ad0914e34a1fc b/9f7728197cfcd9792eef1ff5930a4ab580e38e64291037130f1ad0914e34a1fc
+    new file mode 100644
+    index 0000000..2a92974
+    Binary files /dev/null and b/9f7728197cfcd9792eef1ff5930a4ab580e38e64291037130f1ad0914e34a1fc differ
+    diff --git a/ac801235d97275e761efa12a76ee009472cae8549a0835d5be8bd3f6657047fb b/ac801235d97275e761efa12a76ee009472cae8549a0835d5be8bd3f6657047fb
+    new file mode 100644
+    index 0000000..543430c
+    Binary files /dev/null and b/ac801235d97275e761efa12a76ee009472cae8549a0835d5be8bd3f6657047fb differ
+    diff --git a/d400d0f616a980ea5e3ef68a1f9d670d1eeccbd27f34d1cb7ea976e1f98e2fb7 b/d400d0f616a980ea5e3ef68a1f9d670d1eeccbd27f34d1cb7ea976e1f98e2fb7
+    new file mode 100644
+    index 0000000..7b7eadd
+    Binary files /dev/null and b/d400d0f616a980ea5e3ef68a1f9d670d1eeccbd27f34d1cb7ea976e1f98e2fb7 differ
+    diff --git a/e988a26fbabe3f498e2a564096948eafb289ccadfb186423c1f63c5a3b2c19db b/e988a26fbabe3f498e2a564096948eafb289ccadfb186423c1f63c5a3b2c19db
+    new file mode 100644
+    index 0000000..3bd1dfa
+    Binary files /dev/null and b/e988a26fbabe3f498e2a564096948eafb289ccadfb186423c1f63c5a3b2c19db differ
+
+There are several things I don't understand.  Why is the author root?  I never run `git annex` with `sudo` or as root.  I think the date is bogus.  I'm pretty sure I wasn't even running `git annex` in 2012 much less working with this repo. . . What is weird is that this is the date for *all* lost commits!  (Same for Author).  Over all lost commits there are 2352 binary files that differ.  Of these there are 284 unique hashes. . .  I don't know what this means other than my repo being seriously messed up.  I don't understand what I did wrong to end up in this state as I have been fairly careful in mainly using the `webapp`.
+
+I wonder if the best way to proceed is to start over, or whether this repo can be recovered.
+
+Thanks,
+Rasmus
+"""]]

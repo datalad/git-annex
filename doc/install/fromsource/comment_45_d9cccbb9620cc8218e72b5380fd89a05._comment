@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.22"
+ subject="no need for c2hs"
+ date="2014-09-16T19:28:09Z"
+ content="""
+The c2hs mentioned in some of the above comments is not needed any longer; ghc 7.6.3 and newer come with a hsc2hs command that is used.
+"""]]

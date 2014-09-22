@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmH7o6q2l99M-PQolOfbR3_i5B_jtTIcAE"
+ nickname="Giovanni"
+ subject="How to publish your files to the public"
+ date="2014-09-13T15:29:18Z"
+ content="""
+I don't know if this is what Jack wanted, but you can upload your files to S3 and let them be accessible through a public URL.
+
+First, go to (or create) the bucket you will use at [S3](https://console.aws.amazon.com/s3/) and add a public get policy to it:
+
+```
+   {
+    	\"Version\": \"2008-10-17\",
+    	\"Statement\": [
+    		{
+    			\"Sid\": \"AllowPublicRead\",
+    			\"Effect\": \"Allow\",
+    			\"Principal\": {
+    				\"AWS\": \"*\"
+    			},
+    			\"Action\": \"s3:GetObject\",
+    			\"Resource\": \"arn:aws:s3:::BUCKETNAME/*\"
+    		}
+    	]
+    }
+```
+
+Then set up your special remote with the options `encryption=none`, `bucket='BUCKETNAME'` `chunk=0` (and any others you want).
+
+Your files will be accessible through `http://BUCKETNAME.s3-website-LOCATION.amazonaws.com/KEY` where location is the one specified through the options `datacenter` and KEY is the SHA-SOMETHING hash of the file, created by git annex and accessible if you run `git annex lookupkey FILEPATH`.
+
+This way you can share a link to each file you have at your S3 remote.
+"""]]

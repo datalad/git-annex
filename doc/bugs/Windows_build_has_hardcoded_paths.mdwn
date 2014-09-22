@@ -23,3 +23,17 @@ Windows XP.
 
 # End of transcript or log.
 """]]
+
+[[!meta title="git-annex on windows does not find msgit if user does not let msysgit add itsselt to PATH"]]
+
+> I don't think it's any better for git-annex's installer to prompt for the
+> path to git, than it is for msysgit's installer to prompt for adding it
+> to the system path.
+> 
+> The best fix would be to bundle msysgit into the git-annex installer
+> along with all the other stuff. But, that adds build-time complications
+> I would rather avoid.
+>
+> For now, I am going to treat this as a documentation problem;
+> I've updated the install page to be clear that msysgit needs to be
+> installed into PATH. [[done]] --[[Joey]]

@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="zardoz"
+ ip="78.48.163.229"
+ subject="comment 9"
+ date="2014-09-07T14:04:51Z"
+ content="""
+Any ideas? I noticed one alternative way (cf. the reset workaround
+above) to make «git annex add» work again is by deleting
+.git/annex/index*. Is this safe?
+
+In both repos, I had not even staged annex additions before the index
+was corrupted; the corruption must somehow have been left-over from
+earlier actions, altough all previous additions succeeded at the time,
+before both repositories mysteriously stopped working (in the context
+of backend-migration).
+
+I still have the original snapshots around if you’d like to debug
+this. As noted, «git fsck» succeeds, and all the block-level checksums
+check out, so the problem can’t be on the block device or file-system
+level.
+
+"""]]

@@ -163,8 +163,9 @@ type UserId = String
 {- All of the user's secret keys, with their UserIds.
  - Note that the UserId may be empty. -}
 secretKeys :: IO (M.Map KeyId UserId)
-secretKeys = M.fromList . parse . lines <$> readStrict params
+secretKeys = catchDefaultIO M.empty makemap
   where
+	makemap = M.fromList . parse . lines <$> readStrict params
   	params = [Params "--with-colons --list-secret-keys --fixed-list-mode"]
 	parse = extract [] Nothing . map (split ":")
 	extract c (Just keyid) (("uid":_:_:_:_:_:_:_:_:userid:_):rest) =

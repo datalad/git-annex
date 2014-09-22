@@ -77,10 +77,9 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 s3Setup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
 s3Setup mu mcreds c = do
 	u <- maybe (liftIO genUUID) return mu
-	c' <- setRemoteCredPair c (AWS.creds u) mcreds
-	s3Setup' u c'
-s3Setup' :: UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
-s3Setup' u c = if isIA c then archiveorg else defaulthost
+	s3Setup' u mcreds c
+s3Setup' :: UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
+s3Setup' u mcreds c = if isIA c then archiveorg else defaulthost
   where
 	remotename = fromJust (M.lookup "name" c)
 	defbucket = remotename ++ "-" ++ fromUUID u
@@ -97,13 +96,15 @@ s3Setup' u c = if isIA c then archiveorg else defaulthost
 		return (fullconfig, u)
 
 	defaulthost = do
-		c' <- encryptionSetup c
-		let fullconfig = c' `M.union` defaults
+		(c', encsetup) <- encryptionSetup c
+		c'' <- setRemoteCredPair encsetup c' (AWS.creds u) mcreds
+		let fullconfig = c'' `M.union` defaults
 		genBucket fullconfig u
 		use fullconfig
 
 	archiveorg = do
 		showNote "Internet Archive mode"
+		void $ setRemoteCredPair noEncryptionUsed c (AWS.creds u) mcreds
 		-- Ensure user enters a valid bucket name, since
 		-- this determines the name of the archive.org item.
 		let bucket = replace " " "-" $ map toLower $

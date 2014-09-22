@@ -26,3 +26,6 @@ $ find .git/annex/objects/
 .git/annex/objects/df3/9a8/SHA256E-s676047--3cd28892ee54aba13e074f230709b2c3b87915ff36efd9be3ddfc603e92ecdda.JPG
 .git/annex/objects/df3/9a8/SHA256E-s676047--3cd28892ee54aba13e074f230709b2c3b87915ff36efd9be3ddfc603e92ecdda.JPG/SHA256E-s676047--3cd28892ee54aba13e074f230709b2c3b87915ff36efd9be3ddfc603e92ecdda.JPG
 ~~~~
+
+> Unforunately, I cannot see through the attitude problem to a clear bug
+> report. Lacking time/energy to try to coax one out. [[done]] --[[Joey]] 

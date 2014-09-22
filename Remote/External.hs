@@ -77,7 +77,7 @@ externalSetup mu _ c = do
 	u <- maybe (liftIO genUUID) return mu
 	let externaltype = fromMaybe (error "Specify externaltype=") $
 		M.lookup "externaltype" c
-	c' <- encryptionSetup c
+	(c', _encsetup) <- encryptionSetup c
 
 	external <- newExternal externaltype u c'
 	handleRequest external INITREMOTE Nothing $ \resp -> case resp of
@@ -191,7 +191,7 @@ handleRequest' lck external req mp responsehandler
 		send $ VALUE value
 	handleRemoteRequest (SETCREDS setting login password) = do
 		c <- liftIO $ atomically $ readTMVar $ externalConfig external
-		c' <- setRemoteCredPair c (credstorage setting) $
+		c' <- setRemoteCredPair encryptionAlreadySetup c (credstorage setting) $
 			Just (login, password)
 		void $ liftIO $ atomically $ swapTMVar (externalConfig external) c'
 	handleRemoteRequest (GETCREDS setting) = do
