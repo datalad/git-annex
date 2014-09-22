@@ -6,6 +6,14 @@ do. You have my most sincere thanks. --[[Joey]]
 (If I got your name wrong, or you don't want it publically posted here,
 email <joey@kitenet.net>.)
 
+## 2014-2015
+
+<img alt="NSF logo" src="http://www.nsf.gov/images/logos/nsf1.gif">
+
+git-annex development is partially supported by the
+[NSF](http://www.nsf.gov/images/logos/nsf1.gif) as a part of the
+[DataGit project](http://www.nsf.gov/awardsearch/showAward?AWD_ID=1429999).
+
 ## 2013-2014
 
 Continued git-annex development was [crowd funded](https://campaign.joeyh.name/)
