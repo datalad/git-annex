@@ -210,3 +210,7 @@ network-protocol-xmpp-0.4.6 depends on gnuidn-0.2.1 which failed to install.
 
 # End of transcript or log.
 """]]
+
+> This is a bug in hS3, not in git-annex. hS3 needs to be updated
+> per the example at <http://hackage.haskell.org/package/network>.
+> Email sent to hS3 author; [[done]]. --[[Joey]]
