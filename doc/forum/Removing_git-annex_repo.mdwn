@@ -1,0 +1,3 @@
+http://stackoverflow.com/questions/26041704/removing-repository-in-git-annex
+
+Does anyone know how to resolve it?
