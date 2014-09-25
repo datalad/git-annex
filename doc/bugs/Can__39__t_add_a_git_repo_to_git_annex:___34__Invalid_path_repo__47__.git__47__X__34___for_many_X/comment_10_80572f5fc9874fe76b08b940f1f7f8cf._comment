@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="JerSou"
+ ip="82.228.88.32"
+ subject="comment 10"
+ date="2014-09-25T19:26:03Z"
+ content="""
+I have the same thoughts, I thought a workaround (but I don't think ultimately use) :
+
+> \# for each git repo :
+
+>mv .git .gitToAnnex
+
+>ln -s .gitToAnnex .git
+
+>echo .gitToAnnex >> .gitignore
+"""]]
