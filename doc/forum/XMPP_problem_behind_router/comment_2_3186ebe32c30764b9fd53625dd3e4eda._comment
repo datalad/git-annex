@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.144"
+ subject="comment 2"
+ date="2014-09-25T15:48:39Z"
+ content="""
+I don't think that google XMPP server is at gmail.com. This suggests that the SRV record lookup to get from the email server to the xmpp server failed somehow. So, I'd look for a issue on the router's DNS server, or perhaps reconfigure DNS to bypass that server.
+"""]]
