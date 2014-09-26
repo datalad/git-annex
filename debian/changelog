@@ -1,6 +1,8 @@
 git-annex (5.20140920) UNRELEASED; urgency=medium
 
   * Depend on new enough git for --no-gpg-sign to work. Closes: #762446
+  * Work around failure to build on mips by using cabal, not Setup,
+    to build in debian/rules.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 22 Sep 2014 13:50:00 -0400
 
