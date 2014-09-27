@@ -1,3 +1,10 @@
+git-annex (5.20140927) UNRELEASED; urgency=medium
+
+  * Really depend (not just build-depend) on new enough git for --no-gpg-sign
+    to work. Closes: #763057
+
+ -- Joey Hess <joeyh@debian.org>  Sat, 27 Sep 2014 12:14:15 -0400
+
 git-annex (5.20140926) unstable; urgency=high
 
   * Depend on new enough git for --no-gpg-sign to work. Closes: #762446
