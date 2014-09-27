@@ -1,0 +1,6 @@
+git-annex 5.20140927 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Really depend (not just build-depend) on new enough git for --no-gpg-sign
+     to work. Closes: #[763057](http://bugs.debian.org/763057)
+   * Add temporary workaround for bug #763078 which broke building on armel
+     and armhf."""]]
