@@ -31,3 +31,6 @@ I ran the following while with appropriate environment variable WEBDAV_USERNAM a
     git-annex: WebDAV test failed: StatusCodeException (Status {statusCode = 405, statusMessage = "Method Not Allowed"}) [("Server","nginx"),("Date","Sat, 27 Sep 2014 09:36:42 GMT"),("Content-Type","application/xml; charset=utf-8"),("Content-Length","247"),("Connection","keep-alive"),("Vary","Host"),("Allow","OPTIONS, GET, HEAD, DELETE, PROPFIND, PUT, PROPPATCH, COPY, MOVE, REPORT, LOCK, UNLOCK"),("X-Response-Body-Start","<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<d:error xmlns:d=\"DAV:\" xmlns:s=\"http://sabredav.org/ns\">\n  <s:exception>Sabre_DAV_Exception_MethodNotAllowed</s:exception>\n  <s:message>The resource you tried to create already exists</s:message>\n</d:error>\n")] (CJ {expose = []}): user error
     failed
     git-annex: enableremote: 1 failed
+
+> You are using an old version of git-annex; this bug was fixed in
+> version 5.20140919. [[done]] --[[Joey]]
