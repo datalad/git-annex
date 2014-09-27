@@ -2,6 +2,8 @@ git-annex (5.20140927) UNRELEASED; urgency=medium
 
   * Really depend (not just build-depend) on new enough git for --no-gpg-sign
     to work. Closes: #763057
+  * Add temporary workaround for bug #763078 which broke building on armel
+    and armhf.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 27 Sep 2014 12:14:15 -0400
 
