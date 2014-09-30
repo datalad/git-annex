@@ -3,7 +3,7 @@ git-annex (5.20140927~bpo70+1) wheezy-backports; urgency=high
   * Updating backport to newest release, which contains a security fix.
   * Disabled workaround for ghc bug #763078, which does not affect wheezy.
 
- -- Joey Hess <joeyh@debian.org>  Tue, 09 Sep 2014 11:48:36 -0400
+ -- Joey Hess <joeyh@debian.org>  Tue, 30 Sep 2014 13:06:56 -0400
 
 git-annex (5.20140927) unstable; urgency=medium
 
