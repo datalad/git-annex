@@ -1,0 +1,5 @@
+git-annex 5.20140926 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Depend on new enough git for --no-gpg-sign to work. Closes: #[762446](http://bugs.debian.org/762446)
+   * Work around failure to build on mips by using cabal, not Setup,
+     to build in debian/rules."""]]
