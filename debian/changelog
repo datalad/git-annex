@@ -1,3 +1,9 @@
+git-annex (5.20140927~bpo70+2) wheezy-backports; urgency=medium
+
+  * Drop dependency on git back down for backport. Closes: #763622
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 01 Oct 2014 11:01:17 -0400
+
 git-annex (5.20140927~bpo70+1) wheezy-backports; urgency=high
 
   * Updating backport to newest release, which contains a security fix.

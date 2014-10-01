@@ -73,7 +73,7 @@ Package: git-annex
 Architecture: any
 Section: utils
 Depends: ${misc:Depends}, ${shlibs:Depends},
-	git (>= 1:2.0),
+	git (>= 1:1.8.4),
 	rsync,
 	wget,
 	curl,
