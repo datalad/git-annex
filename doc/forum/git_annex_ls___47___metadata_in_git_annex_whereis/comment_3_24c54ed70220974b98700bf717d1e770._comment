@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="sudoman"
+ ip="216.15.125.93"
+ subject="ls symlink workaround; idea for a solution"
+ date="2014-09-29T18:58:23Z"
+ content="""
+as a workaround, you could make a bash alias for `ls -l` -> `ls -lL`. the problem with this is that links to other links are fully dereferenced.
+
+what looks like this in a non-git-annex directory with `ls -lh`:
+
+    total 3.8M
+    -rw-r--r-- 1 sudoman sudoman 3.8M Sep 29 13:56 42x3551_02.pdf
+    lrwxrwxrwx 1 sudoman sudoman   14 Sep 29 14:00 tmp -> 42x3551_02.pdf
+
+looks like this in an indirect git annex repo with `ls -lhL`:
+
+    total 7.5M
+    -r--r--r-- 1 sudoman sudoman 3.8M Sep 29 13:56 42x3551_02.pdf
+    -r--r--r-- 1 sudoman sudoman 3.8M Sep 29 13:56 tmp
+
+
+the ls alias is a bit hackish, but for some purposes it's an improvement.
+
+rsync may work as desired when using a command like `rsync -l --safe-links` (haven't tried it. users might want to experiment by adding `--exclude` to that command.)
+
+
+a potential solution for ls (and cp) could be the inclusion of a patched version under `git annex util ls`. writing shim programs using `LD_PRELOAD` instead of patching may drastically reduce the amount of code needing future security updates.
+
+"""]]
