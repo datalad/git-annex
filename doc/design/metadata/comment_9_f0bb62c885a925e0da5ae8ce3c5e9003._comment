@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlM_DRhi_5pJrTA0HbApHR25iAgy-NBXTY"
+ nickname="Tor Arne"
+ subject="comment 9"
+ date="2014-10-01T23:35:39Z"
+ content="""
+Sorry for the noise, I see that tags _can_ be used for preferred content, excellent!
+
+But it seems metadata is tied to a key, not to a specific file/path. If I have 10 different files all with the same content (for some reason, say a simple txt file, Gemspec, or something), and I want to tag one of them as important, it doesn't mean they all are :o
+"""]]
