@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawlM_DRhi_5pJrTA0HbApHR25iAgy-NBXTY"
- nickname="Tor Arne"
- subject="comment 6"
- date="2014-10-01T22:02:56Z"
- content="""
-I was just about to start using git-annex for my data when I saw this bug report, which unfortunately is a blocker. Persisting basic metadata of files that are synced seems like a core feature of a file sync/transfer tool, so I'm really hoping this can be solved somehow :/
-
-"""]]
