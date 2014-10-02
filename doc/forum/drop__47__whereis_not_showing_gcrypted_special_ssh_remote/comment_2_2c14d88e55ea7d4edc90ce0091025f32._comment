@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.54"
+ subject="comment 2"
+ date="2014-10-02T15:48:02Z"
+ content="""
+Sorry that it took me so long to get back to you.
+
+The git remote that corresponds to your server should have an annex-uuid setting. (Eg, remote.server.annex-uuid.) Look up the uuid. Then look in `git-annex info`. I'd expect the uuid to be listed there. It might be that somehow two repositories got the same uuid set (probability says no, but things find ways to break). If that did happen, I think it would replicate what you've reported, and in that case, the server's uuid would be listed by `git annex info`, but perhaps it would have the name of the usb drive.
+"""]]
