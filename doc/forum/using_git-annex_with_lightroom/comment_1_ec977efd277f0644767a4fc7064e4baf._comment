@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.54"
+ subject="comment 1"
+ date="2014-10-02T15:23:18Z"
+ content="""
+There's not really a way to handle this sort of thing. I suggest that you put *.lrdata in `.gitignore`
+"""]]
