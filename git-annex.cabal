@@ -202,9 +202,11 @@ Executable git-annex
      template-haskell, data-default, aeson, path-pieces,
      shakespeare
     CPP-Options: -DWITH_WEBAPP
-  if flag(Webapp) && flag (Webapp-secure)
-    Build-Depends: warp-tls (>= 1.4), securemem, byteable
-    CPP-Options: -DWITH_WEBAPP_SECURE
+  -- Not yet available for backport, and wheezy's cabal
+  -- is buggy and disables the webapp too if this is uncommented.
+  --if flag(Webapp) && flag (Webapp-secure)
+  --  Build-Depends: warp-tls (>= 1.4), securemem, byteable
+  --  CPP-Options: -DWITH_WEBAPP_SECURE
 
   if flag(Pairing)
     Build-Depends: network-multicast, network-info

@@ -1,3 +1,11 @@
+git-annex (5.20140927~bpo70+3) wheezy-backports; urgency=medium
+
+  * Work around bug in cabal that causes it to disable webapp flag when
+    the webapp-secure flag cannot be resolved. Re-enables building the webapp
+    in this backport. Closes: #763796
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 02 Oct 2014 15:22:17 -0400
+
 git-annex (5.20140927~bpo70+2) wheezy-backports; urgency=medium
 
   * Drop dependency on git back down for backport. Closes: #763622
