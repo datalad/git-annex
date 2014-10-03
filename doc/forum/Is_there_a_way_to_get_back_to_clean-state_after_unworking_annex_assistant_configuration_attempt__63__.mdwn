@@ -20,13 +20,7 @@ Steps went thusly:
 13. A) start annex assistant, hangs in terminal (don't remember error message :-/)
 14. A) remove repo folder from android, remove annex,download apk again, reinstall
 15. A) run annex, select folder, add the "share with other devices repository", login with google account
-16. L) See fail syncing on linux
-
-fatal: Could not read from remote repository.
-
-Please make sure you have the correct access rights
-and the repository exists.
-
+16. L) See fail syncing on linux "fatal: Could not read from remote repository. Please make sure you have the correct access rights and the repository exists."
 17. A) android seems that it finished syncig, asks for remote repository
 18. A) specify my rsync account with correct folder "android_docs"
 19. A) Could not resolve hostname git-annex-$servername-$username_$port_$directory
