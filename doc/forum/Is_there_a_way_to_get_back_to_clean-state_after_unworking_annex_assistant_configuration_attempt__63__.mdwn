@@ -1,0 +1,28 @@
+I am trying to synchronize "Linux Workstation" and "Android Tablet" with annex assistant through RSync remote and my google account.
+
+I keep failing horribly :-) I followed http://git-annex.branchable.com/assistant/remote_sharing_walkthrough/,
+but I seem to either do the steps in wrong order, because I never managed to materialize the files on my Android device.
+
+Steps went thusly:
+
+1. L) install annex on linux and run assistant and select repository dir
+2. L) add rsync remote, set folder to android_docs
+3. L) add jabber account -> I see progress bars and it seems to sync just fine
+4. A) install annex on android, specify repository
+5. A) add the "share with other devices repository"
+6. A) login with my google account
+7. A) sync fails because I am on failing wifi network
+8. A) try to add RSync remote, accidentaly specify annex folder
+9. A) realize mistake, try to remove rsync repo
+10. A) hangs on "cleaning step"
+11. A) battery dies
+12. A) charge battery, start android, move to functional wifi network
+13. A) start annex assistant, hangs in terminal (don't remember error message :-/)
+14. A) remove repo folder from android, remove annex,download apk again, reinstall
+15. A) run annex, select folder, add the "share with other devices repository", login with google account
+16. L) See fail syncing on linux "fatal: Could not read from remote repository. Please make sure you have the correct access rights and the repository exists."
+17. A) android seems that it finished syncig, asks for remote repository
+18. A) specify my rsync account with correct folder "android_docs"
+19. A) Could not resolve hostname git-annex-$servername-$username_$port_$directory
+
+I am starting to thing, that randomly creating and removing repositories is not the way forward, so I'd like to get to clean state and redo my setup :)

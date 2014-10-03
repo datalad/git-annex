@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.54"
+ subject="comment 1"
+ date="2014-10-02T16:23:35Z"
+ content="""
+I cannot see a way that eg, `dropunused` could leave empty object directories. The few functions that remove content from a repository call `cleanObjectLoc` to prune the empty directories that result. Of course, the empty directories can be safely removed.
+
+IIRC older versions of direct mode might have made stale .cache and .map before. They can be deleted if you're not using direct mode.
+
+The only way I can see that a dash could come before the 'm' and the mtime is if the mtime were negative. I don't know how that would happen, but the code has certainly never put a dash there, and 
+WORM-s123-m-123456789--name is not a valid git-annex key; git-annex cannot parse it.
+"""]]
