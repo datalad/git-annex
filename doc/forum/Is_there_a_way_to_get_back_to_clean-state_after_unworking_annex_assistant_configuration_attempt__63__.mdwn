@@ -4,6 +4,7 @@ I keep failing horribly :-) I followed http://git-annex.branchable.com/assistant
 but I seem to either do the steps in wrong order, because I never managed to materialize the files on my Android device.
 
 Steps went thusly:
+
 1. L) install annex on linux and run assistant and select repository dir
 2. L) add rsync remote, set folder to android_docs
 3. L) add jabber account -> I see progress bars and it seems to sync just fine
