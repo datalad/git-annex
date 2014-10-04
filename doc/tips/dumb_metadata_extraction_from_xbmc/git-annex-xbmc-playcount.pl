@@ -6,6 +6,7 @@ use Pod::Usage;
 my $help = 0;
 my $usage = 0;
 my $dryrun = 0;
+my $verbose = 0;
 my $path = '';
 my $annex = '';
 my $home = $ENV{'HOME'};
@@ -15,10 +16,12 @@ sub main() {
     if (!$path) {
         $path = $home . '/.xbmc/userdata/Database';
     }
+    print("# checking XBMC directory '$path'\n") if ($verbose);
     $dbpath = finddb($path);
     if (!$dbpath) {
         pod2usage("$0: can't find a XBMC database in '$path'.");
     }
+    print("# using database '$dbpath'\n") if ($verbose);
     checkdb();
 }
 
@@ -53,12 +56,14 @@ sub checkargs() {
                'path=s' => \$path,
                'home=s' => \$home,
                'dryrun|n' => \$dryrun,
+               'verbose|v' => \$verbose,
         )
         or die("Error parsing commandline\n");
 }
 
 sub checkdb() {
     my @lines = `echo 'SELECT playCount, path.strPath, files.strFileName FROM movie JOIN files ON files.idFile=movie.idFile JOIN path ON path.idPath=files.idPath;' | sqlite3 $dbpath`;
+    print "# finding files...\n" if $verbose;
     for (@lines) {
         my ($count, $dir, $file) = split /\|/;
         chomp $file;
@@ -66,6 +71,7 @@ sub checkdb() {
         if ($count !~ /[0-9]/) {
             $count = 0;
         }
+        print "# $dir/$file\n" if $verbose;
         if ($file =~ s#stack://##) {
             for (split /,/, $file) {
                 s/$annex//;
@@ -113,6 +119,7 @@ git-annex-xbmc-playcount [--path .xbmc/userdata/Database]
   --annex    path to the git-annex repo
   --home     the home directory where the .xbmc directory is located
   --path     the location of the Database directory of XBMC, overrides --home
+  --verbose  show interaction details with the database
 
 =head1 DESCRIPTION
 
@@ -155,6 +162,11 @@ Note that this doesn't point directly to the datbase itself, because
 there are usually many database files and we want to automatically
 find the latest. This may be a stupid limitation.
 
+=item B<--verbose>
+
+Show more information about path discovery. Doesn't obstruct
+B<--dryrun> output because lines are prefixed with C<#>.
+
 =back
 
 =head1 EXAMPLES
@@ -193,9 +205,18 @@ stored.
 
 =head1 BUGS
 
+If there are pipes (C<|>) in filenames, the script may fail to find
+the files properly. We would need to rewrite the database code to use
+B<DBD::SQLite>(3pm) instead of a pipe to B<sqlite3>(1).
+
+=head1 LIMITATIONS
+
 It took longer writing this help than writing the stupid script.
 
 The script will not tag files not yet detected by XBMC.
+
+The script is not incremental, so it will repeatedly add the same
+counts to files it has already found.
 
 =head1 SEE ALSO
 
