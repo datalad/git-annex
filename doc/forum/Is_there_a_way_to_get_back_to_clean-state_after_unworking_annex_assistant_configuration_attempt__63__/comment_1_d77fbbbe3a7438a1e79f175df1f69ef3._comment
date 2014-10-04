@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawldUCypSR21BObbzC0Uf8NVd1vZnjYlXZc"
+ nickname="Adam"
+ subject="Ok, found it :-)"
+ date="2014-10-04T10:11:55Z"
+ content="""
+I think I found reliable although a bit excessive way to get back to clean state:
+
+1. stop all the running daemons
+2. on android, remove folder git-annex.home
+3. on linux, remove ~/.config/git-annex and ~/.ssh/git-annex
+4. on both attempted repositories I removed .git folder  
+5. I removed everything I have stored on rsync.net
+
+Then I re-did the steps on good wifi network an plugged in to power source on both devices :-)
+It seems that important step is to wait for the annex to share the remote repo with the other device (took ~5 minutes)
+"""]]
