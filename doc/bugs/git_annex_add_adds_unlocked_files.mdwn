@@ -3,27 +3,7 @@
 git annex add . should ignore unlocked files
 
 ### What steps will reproduce the problem?
-
-ubuntu@hostname:~/annex$ git init
-Initialized empty Git repository in /home/ubuntu/annex/.git/
-ubuntu@hostname:~/annex$ git annex init
-init  ok
-ubuntu@hostname:~/annex$ echo foo > test.txt
-ubuntu@hostname:~/annex$ git annex add .
-add test.txt (checksum...) ok
-(Recording state in git...)
-ubuntu@hostname:~/annex$ git commit -a -m first
-[master (root-commit) fe54856] first
- 1 file changed, 1 insertion(+)
- create mode 120000 test.txt
-ubuntu@hostname:~/annex$ git annex unlock test.txt
-unlock test.txt (copying...) ok
-ubuntu@hostname:~/annex$ echo foobar > test.txt
-ubuntu@hostname:~/annex$ echo foo > test2.txt
-ubuntu@hostname:~/annex$ git annex add .
-add test2.txt (checksum...) ok
-add test.txt (checksum...) ok <==================================================
-(Recording state in git...)
+SEE NEXT COMMENT
 
 ### What version of git-annex are you using? On what operating system?
 
