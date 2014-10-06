@@ -35,3 +35,5 @@ git version 1.7.9.5
 
 # End of transcript or log.
 """]]
+
+[[!tag moreinfo]]
