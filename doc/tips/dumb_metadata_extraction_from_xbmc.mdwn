@@ -20,7 +20,7 @@ Or just show the files that haven't been played yet:
 
     git annex view playCount=0
 
-Use `git checkout master` to reset the view. Note that the above will flatten the tree hierarchy, which you may not way. Try this in that case:
+Use `git checkout master` to reset the view. Note that the above will flatten the tree hierarchy, which you may not want. Try this in that case:
 
     git annex view playCount=0 films/=*
 
