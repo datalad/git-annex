@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.54"
+ subject="comment 1"
+ date="2014-10-06T15:11:18Z"
+ content="""
+There might be a general problem with using git-annex against a read-only filesystem, but the specific case here is a read-only filesystem containing a repository in an old format which git-annex needs to upgrade to the current format to use. So it's pretty reasonable that the (automatic) upgrade fails, since it's not being allowed to write to the repository to upgrade it.
+
+Now, if that repository is a indirect mode repo, there is really no change between version 3 and version 5, so it might do to let git-annex ignore the failure to write out the config, and treat that repo as if it's a v5 repo. It seems easier in most cases to mount the media read-write for git-annex to do the upgrade though.
+"""]]
