@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ ip="72.0.72.144"
+ subject="comment 2"
+ date="2014-10-06T15:18:20Z"
+ content="""
+i've seen problems like this not related to upgrades at all, in [[todo/read-only removable drives]]. furthermore, it seems to me that failure to upgrade a repository shouldn't be fatal and we should be able to recover and get files anyways, in the spirit of [[backwards compatibility|future_proofing]]. --[[anarcat]]
+"""]]
