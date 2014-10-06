@@ -28,3 +28,6 @@ Distributor ID: Debian
 Description:    Debian GNU/Linux testing (jessie)  
 Release:        testing  
 Codename:       jessie  
+
+> If you don't want git-annex to de-duplicate files you can use a backend
+> such as WORM. Here it's behaving as expected, so [[done]]. --[[Joey]]
