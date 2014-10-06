@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.54"
+ subject="comment 1"
+ date="2014-10-06T15:30:54Z"
+ content="""
+git-annex is behaving as expected here. The broken symlink allows you to run `git annex get` on it to get the file content back into the repository, or `git mv` to rename the file even though its content is not present, etc.
+
+You can probably accomplish what you want by using git branches. You want a branch for repo2 that has all the files, and a branch for repo1 that has only the files in repo1. git-annex doesn't maintain such branches for you, but you can probably come up with a way to create such branches (`git annex find` will be useful when scripting up a solution).
+
+Or you can adopt the approach the git-annex assistant uses for archived files -- a archive/ directory, where files are moved when they're no longer wanted in the local system, so that their symlinks don't clutter up the view, while still being easily accessible when the time comes to pull something out of the archive.
+"""]]
