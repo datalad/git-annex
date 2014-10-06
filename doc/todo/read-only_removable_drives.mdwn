@@ -5,3 +5,5 @@ I would expect it to at least be able to leech the files off of it.
 Otherwise, I would welcome advice on how to fix this problem without doing a `sudo chown -R` every time i plug this drive somewhere ... --[[anarcat]]
 
 > Workaround: `sudo setfacl -R -m u:anarcat:rwx /media/foo/annex`
+
+Note: this seems like there was at least one dupe opened about this in [[bugs/annex_get_fails_from_read-only_filesystem]].
