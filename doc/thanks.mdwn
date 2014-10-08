@@ -11,8 +11,8 @@ email <joey@kitenet.net>.)
 <img alt="NSF logo" src="https://www.nsf.gov/images/logos/nsf1.gif">
 
 git-annex development is partially supported by the
-[NSF](https://www.nsf.gov/) as a part of the
-[DataGit project](https://www.nsf.gov/awardsearch/showAward?AWD_ID=1429999).
+[NSF](https://www.nsf.gov/awardsearch/showAward?AWD_ID=1429999) as a part of the
+[DataLad project](http://datalad.org/).
 
 ## 2013-2014
 
