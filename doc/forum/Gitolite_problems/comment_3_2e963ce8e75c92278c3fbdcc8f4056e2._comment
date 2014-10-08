@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawni4vdaP56pzg8Om8aO_boLj03IQpDloxg"
+ nickname="Daniel"
+ subject="It worked!"
+ date="2014-10-08T21:23:26Z"
+ content="""
+Thanks Renaud. I am using a rsync special remote and I couldn't get it to start!
+
+I assume the normal way to get it to work would be to use git annex init on the remote, but I don't have git annex on the remote server. I used your method to bypass that issue.
+
+I think it would be really helpful if the documentation explained better how to use the special remotes. But! I should post that somewhere else.
+
+To be clear, here is what I did:
+
+1. create new folder on local
+2. git init and git annex init inside that folder
+3. git clone --bare the original repository to the new repository
+4. add new repository as a remote for the old repository
+5. push old repository information to new
+6. move new repository to another server
+7. update new repository as a remote for the old repository
+8. sync and it should be good to go!
+
+At least, I think that's how I did it ;-)
+"""]]
