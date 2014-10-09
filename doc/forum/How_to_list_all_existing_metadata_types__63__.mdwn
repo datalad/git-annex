@@ -1,0 +1,15 @@
+Is there any way to list all of the existing tag and metadata field types? What I mean is, I have files tagged with several different tags, files with several metadata fields; is there any way to list all the tag and field names being used (not all the files WITH those tags)?
+
+For example, something like:
+
+git annex metadata --listfields
+lastchanged
+month
+month-lastchanged
+year
+year-lastchanged
+
+git annex metadata --listtags
+Public
+Personal
+Work
