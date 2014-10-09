@@ -19,3 +19,6 @@ Latest
 
 # End of transcript or log.
 """]]
+
+> [[fixed|done]], although I have not made a release yet.
+> It's a 1 line change anyhow, just adding ViewPatterns. --[[Joey]]
