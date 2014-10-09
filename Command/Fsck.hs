@@ -282,7 +282,7 @@ verifyDirectMode key file = do
  - the key's metadata, if available.
  -
  - Not checked in direct mode, because files can be changed directly.
-  -}
+ -}
 checkKeySize :: Key -> Annex Bool
 checkKeySize key = ifM isDirect
 	( return True

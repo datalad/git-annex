@@ -15,7 +15,7 @@ import qualified Data.Map as M
 import Data.Time.Clock.POSIX
 import Data.Time
 import System.Locale
-  
+
 import Common
 
 data TimeStamp = Unknown | Date POSIXTime

@@ -101,8 +101,8 @@ itemNameHelp = [whamlet|
 
 iaCredsAForm :: Maybe CredPair -> MkAForm AWS.AWSCreds
 iaCredsAForm defcreds = AWS.AWSCreds
-        <$> accessKeyIDFieldWithHelp (T.pack . fst <$> defcreds)
-        <*> AWS.secretAccessKeyField (T.pack . snd <$> defcreds)
+	<$> accessKeyIDFieldWithHelp (T.pack . fst <$> defcreds)
+	<*> AWS.secretAccessKeyField (T.pack . snd <$> defcreds)
 
 #ifdef WITH_S3
 previouslyUsedIACreds :: Annex (Maybe CredPair)

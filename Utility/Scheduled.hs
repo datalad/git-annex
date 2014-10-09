@@ -44,7 +44,7 @@ import Data.Char
 
 {- Some sort of scheduled event. -}
 data Schedule = Schedule Recurrance ScheduledTime
-  deriving (Eq, Read, Show, Ord)
+	deriving (Eq, Read, Show, Ord)
 
 data Recurrance
 	= Daily
@@ -54,7 +54,7 @@ data Recurrance
 	| Divisible Int Recurrance
 	-- ^ Days, Weeks, or Months of the year evenly divisible by a number.
 	-- (Divisible Year is years evenly divisible by a number.)
-  deriving (Eq, Read, Show, Ord)
+	deriving (Eq, Read, Show, Ord)
 
 type WeekDay = Int
 type MonthDay = Int
@@ -63,7 +63,7 @@ type YearDay = Int
 data ScheduledTime
 	= AnyTime
 	| SpecificTime Hour Minute
-  deriving (Eq, Read, Show, Ord)
+	deriving (Eq, Read, Show, Ord)
 
 type Hour = Int
 type Minute = Int
@@ -73,7 +73,7 @@ type Minute = Int
 data NextTime
 	= NextTimeExactly LocalTime
 	| NextTimeWindow LocalTime LocalTime
-  deriving (Eq, Read, Show)
+	deriving (Eq, Read, Show)
 
 startTime :: NextTime -> LocalTime
 startTime (NextTimeExactly t) = t

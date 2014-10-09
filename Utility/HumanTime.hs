@@ -27,7 +27,7 @@ import Control.Applicative
 import qualified Data.Map as M
 
 newtype Duration = Duration { durationSeconds :: Integer }
-  deriving (Eq, Ord, Read, Show)
+	deriving (Eq, Ord, Read, Show)
 
 durationSince :: UTCTime -> IO Duration
 durationSince pasttime = do

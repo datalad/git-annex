@@ -20,7 +20,7 @@ import Control.Concurrent
 
 -- The URI of a remote is used to uniquely identify it (names change..)
 newtype RemoteURI = RemoteURI URI
-  deriving (Show)
+	deriving (Show)
 
 -- A Transport for a particular git remote consumes some messages
 -- from a Chan, and emits others to another Chan.

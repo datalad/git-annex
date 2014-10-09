@@ -72,7 +72,7 @@ needLsof = error $ unlines
 
 {- A special exception that can be thrown to pause or resume the watcher. -}
 data WatcherControl = PauseWatcher | ResumeWatcher
-        deriving (Show, Eq, Typeable)
+	deriving (Show, Eq, Typeable)
 
 instance E.Exception WatcherControl
 

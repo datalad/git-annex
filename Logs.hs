@@ -90,11 +90,11 @@ locationLogFile key = hashDirLower key ++ keyFile key ++ ".log"
 locationLogFileKey :: FilePath -> Maybe Key
 locationLogFileKey path
 	| ["remote", "web"] `isPrefixOf` splitDirectories dir = Nothing
-        | ext == ".log" = fileKey base
-        | otherwise = Nothing
+	| ext == ".log" = fileKey base
+	| otherwise = Nothing
   where
 	(dir, file) = splitFileName path
-        (base, ext) = splitAt (length file - 4) file
+	(base, ext) = splitAt (length file - 4) file
 
 {- The filename of the url log for a given key. -}
 urlLogFile :: Key -> FilePath

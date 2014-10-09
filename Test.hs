@@ -943,12 +943,12 @@ test_remove_conflict_resolution testenv = do
 		length v == 1
 			@? (what ++ " too many variant files in: " ++ show v)
 
- {- Check merge confalict resolution when a file is annexed in one repo,
-  - and checked directly into git in the other repo.
-  -
-  - This test requires indirect mode to set it up, but tests both direct and
-  - indirect mode.
-  -}
+{- Check merge confalict resolution when a file is annexed in one repo,
+ - and checked directly into git in the other repo.
+ -
+ - This test requires indirect mode to set it up, but tests both direct and
+ - indirect mode.
+ -}
 test_nonannexed_file_conflict_resolution :: TestEnv -> Assertion
 test_nonannexed_file_conflict_resolution testenv = do
 	check True False

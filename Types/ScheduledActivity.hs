@@ -17,7 +17,7 @@ import Data.Either
 data ScheduledActivity 
 	= ScheduledSelfFsck Schedule Duration
 	| ScheduledRemoteFsck UUID Schedule Duration
-  deriving (Eq, Read, Show, Ord)
+	deriving (Eq, Read, Show, Ord)
 
 {- Activities that run on a remote, within a time window, so
  - should be run when the remote gets connected. -}

@@ -58,7 +58,7 @@ encryptionSetup c = maybe genCipher updateCipher $ extractCipher c
 		Just "shared" -> use "encryption setup" . genSharedCipher
 			=<< highRandomQuality
 		-- hybrid encryption is the default when a keyid is
-                -- specified but no encryption
+		-- specified but no encryption
 		_ | maybe (M.member "keyid" c) (== "hybrid") encryption ->
 			use "encryption setup" . genEncryptedCipher key Hybrid
 				=<< highRandomQuality
@@ -88,10 +88,10 @@ encryptionSetup c = maybe genCipher updateCipher $ extractCipher c
 		(&&) (maybe True ( /= "false") $ M.lookup "highRandomQuality" c)
 			<$> fmap not (Annex.getState Annex.fast)
 	c' = foldr M.delete c
-                -- git-annex used to remove 'encryption' as well, since
-                -- it was redundant; we now need to keep it for
-                -- public-key encryption, hence we leave it on newer
-                -- remotes (while being backward-compatible).
+		-- git-annex used to remove 'encryption' as well, since
+		-- it was redundant; we now need to keep it for
+		-- public-key encryption, hence we leave it on newer
+		-- remotes (while being backward-compatible).
 		[ "keyid", "keyid+", "keyid-", "highRandomQuality" ]
 
 remoteCipher :: RemoteConfig -> Annex (Maybe Cipher)
