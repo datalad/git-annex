@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmwjQzWgiD7_I3zw-_91rMRf_6qoThupis"
+ nickname="Mike"
+ subject="comment 3"
+ date="2014-10-09T18:16:34Z"
+ content="""
+OK, I should have read more before writing.
+
+It seems like the procedure is described here:
+http://git-annex.branchable.com/walkthrough/unused_data/
+
+The process is:
+1. rm files or directories
+2. git annex sync in all remotes (that is a pain, I wish I only had to do it once)
+3. git annex unused
+4. git annex dropunused
+5. Repeat 4 and 5 on any repository where the data is stored
+
+That does work for me, it is just slightly cumbersome. If there is another way or if I am missing something, please let me know.
+
+Thanks,
+
+Mike
+"""]]
