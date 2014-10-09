@@ -2,14 +2,14 @@ Is there any way to list all of the existing tag and metadata field types? What 
 
 For example, something like:
 
-git annex metadata --listfields
-lastchanged
-month
-month-lastchanged
-year
-year-lastchanged
+    git annex metadata --listfields
+    lastchanged
+    month
+    month-lastchanged
+    year
+    year-lastchanged
 
-git annex metadata --listtags
-Public
-Personal
-Work
+    git annex metadata --listtags
+    Public
+    Personal
+    Work
