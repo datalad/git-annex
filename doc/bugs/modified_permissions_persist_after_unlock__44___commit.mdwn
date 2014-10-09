@@ -36,4 +36,5 @@ git version 1.7.9.5
 # End of transcript or log.
 """]]
 
-[[!tag moreinfo]]
+[[!tag confirmed]]
+[[!meta title="git commit of unlocked file leaves typechange staged in index"]]
