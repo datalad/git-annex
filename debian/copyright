@@ -28,6 +28,10 @@ Files: Utility/Gpg.hs Utility/DirWatcher*
 Copyright: © 2010-2014 Joey Hess <joey@kitenet.net>
 License: GPL-3+
 
+Files: Assistant/WebApp/Bootstrap3.hs
+Copyright: 2010 Michael Snoyman
+License: BSD-2-clause
+
 Files: doc/logo* */favicon.ico standalone/osx/git-annex.app/Contents/Resources/git-annex.icns standalone/android/icons/*
 Copyright: 2007 Henrik Nyh <http://henrik.nyh.se/>
            2010 Joey Hess <joey@kitenet.net>
