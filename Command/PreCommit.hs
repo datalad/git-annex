@@ -59,7 +59,7 @@ startIndirect f = next $ do
 	next $ return True
 
 startDirect :: [String] -> CommandStart
-startDirect _ = next $ next $ preCommitDirect
+startDirect _ = next $ next preCommitDirect
 
 addViewMetaData :: View -> ViewedFile -> Key -> CommandStart
 addViewMetaData v f k = do

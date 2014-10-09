@@ -96,7 +96,7 @@ start mode (srcfile, destfile) =
 	handleexisting Nothing = noop
 	handleexisting (Just s)
 		| isDirectory s = notoverwriting "(is a directory)"
-		| otherwise = ifM (Annex.getState Annex.force) $
+		| otherwise = ifM (Annex.getState Annex.force)
 			( liftIO $ nukeFile destfile
 			, notoverwriting "(use --force to override)"
 			)

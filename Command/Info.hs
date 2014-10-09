@@ -264,7 +264,7 @@ backend_usage = stat "backend usage" $ nojson $
   where
 	calc x y = multiLine $
 		map (\(n, b) -> b ++ ": " ++ show n) $
-		reverse $ sort $ map swap $ M.toList $
+		sortBy (flip compare) $ map swap $ M.toList $
 		M.unionWith (+) x y
 
 numcopies_stats :: Stat
@@ -273,7 +273,7 @@ numcopies_stats = stat "numcopies stats" $ nojson $
   where
 	calc = multiLine
 		. map (\(variance, count) -> show variance ++ ": " ++ show count)
-		. reverse . sortBy (comparing snd) . M.toList
+		. sortBy (flip (comparing snd)) . M.toList
 
 cachedPresentData :: StatState KeyData
 cachedPresentData = do

@@ -177,14 +177,14 @@ ingest (Just source) = withTSDelta $ \delta -> do
 			(undo (keyFilename source) key)
 		maybe noop (genMetaData key (keyFilename source)) ms
 		liftIO $ nukeFile $ keyFilename source
-		return $ (Just key, mcache)
+		return (Just key, mcache)
 	goindirect _ _ _ = failure "failed to generate a key"
 
 	godirect (Just (key, _)) (Just cache) ms = do
 		addInodeCache key cache
 		maybe noop (genMetaData key (keyFilename source)) ms
 		finishIngestDirect key source
-		return $ (Just key, Just cache)
+		return (Just key, Just cache)
 	godirect _ _ _ = failure "failed to generate a key"
 
 	failure msg = do

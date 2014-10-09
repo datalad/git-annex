@@ -68,7 +68,7 @@ repairAnnexBranch modifiedbranches
 				)
 		)
   where
-	okindex = Annex.Branch.withIndex $ inRepo $ Git.Repair.checkIndex
+	okindex = Annex.Branch.withIndex $ inRepo Git.Repair.checkIndex
 	commitindex = do
 		Annex.Branch.forceCommit "committing index after git repository repair"
 		liftIO $ putStrLn "Successfully recovered the git-annex branch using .git/annex/index"

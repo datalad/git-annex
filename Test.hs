@@ -957,7 +957,7 @@ test_nonannexed_file_conflict_resolution testenv = do
 	check False True
   where
 	check inr1 switchdirect = withtmpclonerepo testenv False $ \r1 ->
-		withtmpclonerepo testenv False $ \r2 -> do
+		withtmpclonerepo testenv False $ \r2 ->
 			whenM (isInDirect r1 <&&> isInDirect r2) $ do
 				indir testenv r1 $ do
 					disconnectOrigin
@@ -1007,7 +1007,7 @@ test_nonannexed_symlink_conflict_resolution testenv = do
 	check False True
   where
 	check inr1 switchdirect = withtmpclonerepo testenv False $ \r1 ->
-		withtmpclonerepo testenv False $ \r2 -> do
+		withtmpclonerepo testenv False $ \r2 ->
 			whenM (checkRepo (Types.coreSymlinks <$> Annex.getGitConfig) r1
 			       <&&> isInDirect r1 <&&> isInDirect r2) $ do
 				indir testenv r1 $ do
@@ -1094,9 +1094,9 @@ test_uncommitted_conflict_resolution testenv = do
  - lost track of whether a file was a symlink. 
  -}
 test_conflict_resolution_symlink_bit :: TestEnv -> Assertion
-test_conflict_resolution_symlink_bit testenv = do
+test_conflict_resolution_symlink_bit testenv =
 	withtmpclonerepo testenv False $ \r1 ->
-		withtmpclonerepo testenv False $ \r2 -> do
+		withtmpclonerepo testenv False $ \r2 ->
 			withtmpclonerepo testenv False $ \r3 -> do
 				indir testenv r1 $ do
 					writeFile conflictor "conflictor"
@@ -1152,7 +1152,7 @@ test_uninit_inbranch testenv = intmpclonerepoInDirect testenv $ do
 	not <$> git_annex testenv "uninit" [] @? "uninit failed to fail when git-annex branch was checked out"
 
 test_upgrade :: TestEnv -> Assertion
-test_upgrade testenv = intmpclonerepo testenv $ do
+test_upgrade testenv = intmpclonerepo testenv $
 	git_annex testenv "upgrade" [] @? "upgrade from same version failed"
 
 test_whereis :: TestEnv -> Assertion

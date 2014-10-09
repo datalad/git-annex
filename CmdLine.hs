@@ -6,7 +6,6 @@
  -}
 
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE BangPatterns #-}
 
 module CmdLine (
 	dispatch,

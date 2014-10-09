@@ -22,16 +22,15 @@ seek = withWords start
 
 start :: [String] -> CommandStart
 start [] = startGet
-start [s] = do
-	case readish s of
-		Nothing -> error $ "Bad number: " ++ s
-		Just n
-			| n > 0 -> startSet n
-			| n == 0 -> ifM (Annex.getState Annex.force)
-				( startSet n
-				, error "Setting numcopies to 0 is very unsafe. You will lose data! If you really want to do that, specify --force."
-				)
-			| otherwise -> error "Number cannot be negative!"
+start [s] = case readish s of
+	Nothing -> error $ "Bad number: " ++ s
+	Just n
+		| n > 0 -> startSet n
+		| n == 0 -> ifM (Annex.getState Annex.force)
+			( startSet n
+			, error "Setting numcopies to 0 is very unsafe. You will lose data! If you really want to do that, specify --force."
+			)
+		| otherwise -> error "Number cannot be negative!"
 start _ = error "Specify a single number."
 
 startGet :: CommandStart
@@ -39,9 +38,9 @@ startGet = next $ next $ do
 	Annex.setOutput QuietOutput
 	v <- getGlobalNumCopies
 	case v of
-		Just n -> liftIO $ putStrLn $ show $ fromNumCopies n
+		Just n -> liftIO $ print $ fromNumCopies n
 		Nothing -> do
-			liftIO $ putStrLn $ "global numcopies is not set"
+			liftIO $ putStrLn "global numcopies is not set"
 			old <- deprecatedNumCopies
 			case old of
 				Nothing -> liftIO $ putStrLn "(default is 1)"

@@ -51,7 +51,7 @@ start = do
 	
 	-- No messages need to be received from the caller,
 	-- but when it closes the connection, notice and terminate.
-	let receiver = forever $ void $ getLine
+	let receiver = forever $ void getLine
 	void $ liftIO $ concurrently sender receiver
 	stop
 

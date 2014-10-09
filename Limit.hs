@@ -82,7 +82,7 @@ addExclude = addLimit . limitExclude
 limitExclude :: MkLimit Annex
 limitExclude glob = Right $ const $ return . not . matchGlobFile glob
 
-matchGlobFile :: String -> (MatchInfo -> Bool)
+matchGlobFile :: String -> MatchInfo -> Bool
 matchGlobFile glob = go
 	where
 		cglob = compileGlob glob CaseSensative -- memoized

@@ -30,7 +30,7 @@ start gcryptid = next $ next $ do
 	g <- gitRepo
 	gu <- Remote.GCrypt.getGCryptUUID True g
 	let newgu = genUUIDInNameSpace gCryptNameSpace gcryptid
-	if gu == Nothing || gu == Just newgu
+	if isNothing gu || gu == Just newgu
 		then if Git.repoIsLocalBare g
 			then do
 				void $ Remote.GCrypt.setupRepo gcryptid g

@@ -63,7 +63,7 @@ findExisting name = do
 	return $ headMaybe matches
 
 newConfig :: String -> R.RemoteConfig
-newConfig name = M.singleton nameKey name
+newConfig = M.singleton nameKey
 
 findByName :: String ->  M.Map UUID R.RemoteConfig -> [(UUID, R.RemoteConfig)]
 findByName n = filter (matching . snd) . M.toList

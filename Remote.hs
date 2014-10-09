@@ -103,12 +103,12 @@ byNameWithUUID = checkuuid <=< byName
   where
 	checkuuid Nothing = return Nothing
 	checkuuid (Just r)
-		| uuid r == NoUUID =
+		| uuid r == NoUUID = error $
 			if remoteAnnexIgnore (gitconfig r)
-				then error $ noRemoteUUIDMsg r ++
+				then noRemoteUUIDMsg r ++
 					" (" ++ show (remoteConfig (repo r) "ignore") ++
 					" is set)"
-				else error $ noRemoteUUIDMsg r
+				else noRemoteUUIDMsg r
 		| otherwise = return $ Just r
 
 byName' :: RemoteName -> Annex (Either String Remote)

@@ -173,7 +173,7 @@ prop_logs_sane dummykey = and
 	, expect gotNewUUIDBasedLog (getLogVariety $ remoteStateLogFile dummykey)
 	, expect gotChunkLog (getLogVariety $ chunkLogFile dummykey)
 	, expect gotOtherLog (getLogVariety $ metaDataLogFile dummykey)
-	, expect gotOtherLog (getLogVariety $ numcopiesLog)
+	, expect gotOtherLog (getLogVariety numcopiesLog)
 	]
   where
 	expect = maybe False

@@ -19,7 +19,7 @@ def = [command "resolvemerge" paramNothing seek SectionPlumbing
 	"resolve merge conflicts"]
 
 seek :: CommandSeek
-seek ps = withNothing start ps
+seek = withNothing start
 
 start :: CommandStart
 start = do

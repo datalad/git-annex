@@ -32,7 +32,7 @@ seek ps = do
 		ps
 
 start :: Maybe Remote -> Maybe Remote -> FilePath -> Key -> CommandStart
-start to from file key = startKey to from (Just file) key
+start to from file = startKey to from (Just file)
 
 startKey :: Maybe Remote -> Maybe Remote -> Maybe FilePath -> Key -> CommandStart
 startKey to from afile key = do

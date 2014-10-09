@@ -34,7 +34,7 @@ seek ps = do
 		ps
 
 start :: Maybe Remote -> Maybe Remote -> Bool -> FilePath -> Key -> CommandStart
-start to from move file key = start' to from move (Just file) key
+start to from move = start' to from move . Just
 
 startKey :: Maybe Remote -> Maybe Remote -> Bool -> Key -> CommandStart
 startKey to from move = start' to from move Nothing
@@ -91,7 +91,7 @@ expectedPresent dest key = do
 	return $ dest `elem` remotes
 
 toPerform :: Remote -> Bool -> Key -> AssociatedFile -> Bool -> Either String Bool -> CommandPerform
-toPerform dest move key afile fastcheck isthere = do
+toPerform dest move key afile fastcheck isthere =
 	case isthere of
 		Left err -> do
 			showNote err
