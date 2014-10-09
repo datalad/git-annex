@@ -6,7 +6,7 @@
  -}
 
 {-# LANGUAGE TemplateHaskell, MultiParamTypeClasses #-}
-{-# ViewPatterns, OverloadedStrings #-}
+{-# LANGUAGE ViewPatterns, OverloadedStrings #-}
 {-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
