@@ -18,15 +18,16 @@ import Assistant.Gpg
 #if MIN_VERSION_yesod(1,2,0)
 import Yesod hiding (textField, passwordField)
 import Yesod.Form.Fields as F
+import Yesod.Form.Bootstrap3 hiding (bfs)
 #else
 import Yesod hiding (textField, passwordField, selectField, selectFieldList)
 import Yesod.Form.Fields as F hiding (selectField, selectFieldList)
 import Data.String (IsString (..))
 import Control.Monad (unless)
 import Data.Maybe (listToMaybe)
+import Assistant.WebApp.Bootstrap3 hiding (bfs)
 #endif
 import Data.Text (Text)
-import Assistant.WebApp.Bootstrap3 hiding (bfs)
 
 {- Yesod's textField sets the required attribute for required fields.
  - We don't want this, because many of the forms used in this webapp 
