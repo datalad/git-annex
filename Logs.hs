@@ -117,7 +117,7 @@ urlLogFileKey path
 	| ext == urlLogExt = fileKey base
 	| otherwise = Nothing
   where
-  	file = takeFileName path
+	file = takeFileName path
 	(base, ext) = splitAt (length file - extlen) file
 	extlen = length urlLogExt
 
@@ -144,7 +144,7 @@ chunkLogFileKey path
 	| ext == chunkLogExt = fileKey base
 	| otherwise = Nothing
   where
-  	file = takeFileName path
+	file = takeFileName path
 	(base, ext) = splitAt (length file - extlen) file
 	extlen = length chunkLogExt
 
@@ -176,10 +176,10 @@ prop_logs_sane dummykey = and
 	, expect gotOtherLog (getLogVariety $ numcopiesLog)
 	]
   where
-  	expect = maybe False
+	expect = maybe False
 	gotUUIDBasedLog UUIDBasedLog = True
 	gotUUIDBasedLog _ = False
-  	gotNewUUIDBasedLog NewUUIDBasedLog = True
+	gotNewUUIDBasedLog NewUUIDBasedLog = True
 	gotNewUUIDBasedLog _ = False
 	gotChunkLog (ChunkLog k) = k == dummykey
 	gotChunkLog _ = False

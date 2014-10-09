@@ -112,7 +112,7 @@ expand_rpath libs replacement_libs cmd
 		return $ map (replacem m) libs
 	| otherwise = return libs
   where
-  	probe c = "DYLD_PRINT_RPATHS=1 " ++ c ++ " --getting-rpath-dummy-option 2>&1 | grep RPATH"
+	probe c = "DYLD_PRINT_RPATHS=1 " ++ c ++ " --getting-rpath-dummy-option 2>&1 | grep RPATH"
 	parse s = case words s of
 		("RPATH":"successful":"expansion":"of":old:"to:":new:[]) -> 
 			Just (old, new)

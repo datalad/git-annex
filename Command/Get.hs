@@ -48,7 +48,7 @@ start' expensivecheck from key afile = stopUnless (not <$> inAnnex key) $
 				stopUnless (Command.Move.fromOk src key) $
 					go $ Command.Move.fromPerform src False key afile
   where
-  	go a = do
+	go a = do
 		showStart' "get" key afile
 		next a
 

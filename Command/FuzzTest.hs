@@ -47,7 +47,7 @@ guardTest = unlessM (fromMaybe False . Git.Config.isTrue <$> getConfig key "") $
 		, "Refusing to run fuzz tests, since " ++ keyname ++ " is not set!"
 		]
   where
-  	key = annexConfig "eat-my-repository"
+	key = annexConfig "eat-my-repository"
 	(ConfigKey keyname) = key
 
 
@@ -257,7 +257,7 @@ existingDir = do
 newFile :: IO (Maybe FuzzFile)
 newFile = go (100 :: Int)
   where
-  	go 0 = return Nothing
+	go 0 = return Nothing
 	go n = do
 		f <- genFuzzFile
 		ifM (doesnotexist (toFilePath f))
@@ -268,7 +268,7 @@ newFile = go (100 :: Int)
 newDir :: FilePath -> IO (Maybe FuzzDir)
 newDir parent = go (100 :: Int)
   where
-  	go 0 = return Nothing
+	go 0 = return Nothing
 	go n = do
 		(FuzzDir d) <- genFuzzDir
 		ifM (doesnotexist (parent </> d))

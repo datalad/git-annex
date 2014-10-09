@@ -222,7 +222,7 @@ badBranches missing r = filterM isbad =<< getAllRefs r
 getAllRefs :: Repo -> IO [Ref]
 getAllRefs r = map toref <$> dirContentsRecursive refdir
   where
-  	refdir = localGitDir r </> "refs"
+	refdir = localGitDir r </> "refs"
 	toref = Ref . relPathDirToFile (localGitDir r)
 
 explodePackedRefsFile :: Repo -> IO ()
@@ -411,7 +411,7 @@ displayList items header
 		putStrLn header
 		putStr $ unlines $ map (\i -> "\t" ++ i) truncateditems
   where
-  	numitems = length items
+	numitems = length items
 	truncateditems
 		| numitems > 10 = take 10 items ++ ["(and " ++ show (numitems - 10) ++ " more)"]
 		| otherwise = items

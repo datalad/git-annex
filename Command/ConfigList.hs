@@ -29,7 +29,7 @@ start = do
 	showConfig coreGCryptId =<< fromRepo (Git.Config.get coreGCryptId "")
 	stop
   where
-  	showConfig k v = liftIO $ putStrLn $ k ++ "=" ++ v
+	showConfig k v = liftIO $ putStrLn $ k ++ "=" ++ v
 
 {- The repository may not yet have a UUID; automatically initialize it
  - when there's a git-annex branch available. -}

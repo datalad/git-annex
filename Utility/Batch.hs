@@ -32,7 +32,7 @@ batch :: IO a -> IO a
 #if defined(linux_HOST_OS) || defined(__ANDROID__)
 batch a = wait =<< batchthread
   where
-  	batchthread = asyncBound $ do
+	batchthread = asyncBound $ do
 		setProcessPriority 0 maxNice
 		a
 #else

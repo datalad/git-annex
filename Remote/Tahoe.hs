@@ -167,7 +167,7 @@ writeSharedConvergenceSecret configdir scs =
 getSharedConvergenceSecret :: TahoeConfigDir -> IO SharedConvergenceSecret
 getSharedConvergenceSecret configdir = go (60 :: Int)
   where
-  	f = convergenceFile configdir
+	f = convergenceFile configdir
 	go n
 		| n == 0 = error $ "tahoe did not write " ++ f ++ " after 1 minute. Perhaps the daemon failed to start?"
 		| otherwise = do
@@ -190,7 +190,7 @@ startTahoeDaemon configdir = void $ boolTahoe configdir "start" []
 withTahoeConfigDir :: TahoeHandle -> (TahoeConfigDir -> IO a) -> IO a
 withTahoeConfigDir (TahoeHandle configdir v) a = go =<< atomically needsstart
   where
-  	go True = do
+	go True = do
 		startTahoeDaemon configdir
 		a configdir
 	go False = a configdir

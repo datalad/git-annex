@@ -36,7 +36,7 @@ notCurrentRepo uuid a = do
 		then redirect DeleteCurrentRepositoryR
 		else go =<< liftAnnex (Remote.remoteFromUUID uuid)
   where
-  	go Nothing = error "Unknown UUID"
+	go Nothing = error "Unknown UUID"
 	go (Just _) = a
 
 handleXMPPRemoval :: UUID -> Handler Html -> Handler Html

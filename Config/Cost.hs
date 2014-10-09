@@ -52,7 +52,7 @@ insertCostAfter l pos
 	| otherwise =
 		firstsegment ++ [costBetween item nextitem ] ++ lastsegment
   where
-  	nextpos = pos + 1
+	nextpos = pos + 1
 	maxpos = length l - 1
 	
 	item = l !! pos

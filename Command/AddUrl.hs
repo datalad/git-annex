@@ -56,7 +56,7 @@ seek ps = do
 start :: Bool -> Maybe FilePath -> Maybe Int -> String -> CommandStart
 start relaxed optfile pathdepth s = go $ fromMaybe bad $ parseURI s
   where
-  	(s', downloader) = getDownloader s
+	(s', downloader) = getDownloader s
 	bad = fromMaybe (error $ "bad url " ++ s') $
 		parseURI $ escapeURIString isUnescapedInURI s'
 	choosefile = flip fromMaybe optfile
@@ -95,8 +95,8 @@ start relaxed optfile pathdepth s = go $ fromMaybe bad $ parseURI s
 performQuvi :: Bool -> URLString -> URLString -> FilePath -> CommandPerform
 performQuvi relaxed pageurl videourl file = ifAnnexed file addurl geturl
   where
-  	quviurl = setDownloader pageurl QuviDownloader
-  	addurl key = next $ cleanup quviurl file key Nothing
+	quviurl = setDownloader pageurl QuviDownloader
+	addurl key = next $ cleanup quviurl file key Nothing
 	geturl = next $ isJust <$> addUrlFileQuvi relaxed quviurl videourl file
 #endif
 
@@ -189,7 +189,7 @@ download url file = do
 			, return Nothing
 			)
   where
-  	runtransfer dummykey tmp =  Transfer.notifyTransfer Transfer.Download (Just file) $
+	runtransfer dummykey tmp =  Transfer.notifyTransfer Transfer.Download (Just file) $
 		Transfer.download webUUID dummykey (Just file) Transfer.forwardRetry $ const $ do
 			liftIO $ createDirectoryIfMissing True (parentDir tmp)
 			downloadUrl [url] tmp

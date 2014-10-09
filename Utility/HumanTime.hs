@@ -47,8 +47,8 @@ daysToDuration i = Duration $ i * dsecs
 parseDuration :: String -> Maybe Duration
 parseDuration = Duration <$$> go 0
   where
-  	go n [] = return n
-  	go n s = do
+	go n [] = return n
+	go n s = do
 		num <- readish s :: Maybe Integer
 		case dropWhile isDigit s of
 			(c:rest) -> do

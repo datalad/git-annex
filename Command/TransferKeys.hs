@@ -57,7 +57,7 @@ runRequests readh writeh a = do
 		fileEncoding writeh
 	go =<< readrequests
   where
-  	go (d:rn:k:f:rest) = do
+	go (d:rn:k:f:rest) = do
 		case (deserialize d, deserialize rn, deserialize k, deserialize f) of
 			(Just direction, Just remotename, Just key, Just file) -> do
 				mremote <- Remote.byName' remotename

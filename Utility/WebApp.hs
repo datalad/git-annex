@@ -117,7 +117,7 @@ getSocket h = do
 	when (isJust h) $
 		error "getSocket with HostName not supported on this OS"
 	addr <- inet_addr "127.0.0.1"
- 	sock <- socket AF_INET Stream defaultProtocol
+	sock <- socket AF_INET Stream defaultProtocol
 	preparesocket sock
 	bindSocket sock (SockAddrInet aNY_PORT addr)
 	use sock

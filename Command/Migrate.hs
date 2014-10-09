@@ -65,7 +65,7 @@ upgradableKey backend key = isNothing (Types.Key.keySize key) || backendupgradab
 perform :: FilePath -> Key -> Backend -> Backend -> CommandPerform
 perform file oldkey oldbackend newbackend = go =<< genkey
   where
-  	go Nothing = stop
+	go Nothing = stop
 	go (Just (newkey, knowngoodcontent))
 		| knowngoodcontent = finish newkey
 		| otherwise = stopUnless checkcontent $ finish newkey

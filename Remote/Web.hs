@@ -120,7 +120,7 @@ checkKey' key us = firsthit us (Right False) $ \u -> do
 			Url.withUrlOptions $ catchMsgIO .
 				Url.checkBoth u' (keySize key)
   where
-  	firsthit [] miss _ = return miss
+	firsthit [] miss _ = return miss
 	firsthit (u:rest) _ a = do
 		r <- a u
 		case r of

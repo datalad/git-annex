@@ -138,7 +138,7 @@ checkKey r h k = do
 	v <- lookupHook h action
 	liftIO $ check v
   where
-  	action = "checkpresent"
+	action = "checkpresent"
 	findkey s = key2file k `elem` lines s
 	check Nothing = error $ action ++ " hook misconfigured"
 	check (Just hook) = do

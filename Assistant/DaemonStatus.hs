@@ -65,7 +65,7 @@ calcSyncRemotes = do
 		, syncingToCloudRemote = any iscloud syncdata
 		}
   where
-  	iscloud r = not (Remote.readonly r) && Remote.availability r == Remote.GloballyAvailable
+	iscloud r = not (Remote.readonly r) && Remote.availability r == Remote.GloballyAvailable
 
 {- Updates the syncRemotes list from the list of all remotes in Annex state. -}
 updateSyncRemotes :: Assistant ()

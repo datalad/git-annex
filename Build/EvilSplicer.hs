@@ -86,7 +86,7 @@ number = read <$> many1 digit
 coordsParser :: Parser (Coord, Coord)
 coordsParser = (try singleline <|> try weird <|> multiline) <?> "Coords"
   where
-  	singleline = do
+	singleline = do
 		line <- number
 		void $ char ':'
 		startcol <- number
@@ -151,7 +151,7 @@ spliceParser = do
 				(unlines codelines)
 				splicetype
   where
-  	tosplicetype "declarations" = SpliceDeclaration
+	tosplicetype "declarations" = SpliceDeclaration
 	tosplicetype "expression" = SpliceExpression
 	tosplicetype s = error $ "unknown splice type: " ++ s
 
@@ -177,7 +177,7 @@ spliceParser = do
 splicesExtractor :: Parser [Splice]
 splicesExtractor = rights <$> many extract
   where
-  	extract = try (Right <$> spliceParser) <|> (Left <$> compilerJunkLine)
+	extract = try (Right <$> spliceParser) <|> (Left <$> compilerJunkLine)
 	compilerJunkLine = restOfLine
 
 {- Modifies the source file, expanding the splices, which all must
@@ -214,8 +214,8 @@ applySplices destdir imports splices@(first:_) = do
 			hPutStr h newcontent
 		        hClose h
   where
-  	expand lls [] = lls
-  	expand lls (s:rest)
+	expand lls [] = lls
+	expand lls (s:rest)
 		| isExpressionSplice s = expand (expandExpressionSplice s lls) rest
 		| otherwise = expand (expandDeclarationSplice s lls) rest
 
@@ -291,12 +291,12 @@ expandExpressionSplice sp lls = concat [before, spliced:padding, end]
 		-- ie: bar $(splice)
 		| otherwise = s ++ " $ "
 	  where
-	  	s' = filter (not . isSpace) s
+		s' = filter (not . isSpace) s
 
 	findindent = length . takeWhile isSpace
 	addindent n = unlines . map (i ++) . lines
 	  where
-	  	i = take n $ repeat ' '
+		i = take n $ repeat ' '
 
 {- Tweaks code output by GHC in splices to actually build. Yipes. -}
 mangleCode :: String -> String
@@ -315,7 +315,7 @@ mangleCode = flip_colon
 	. remove_package_version
 	. emptylambda
   where
-  	{- Lambdas are often output without parens around them.
+	{- Lambdas are often output without parens around them.
 	 - This breaks when the lambda is immediately applied to a
 	 - parameter.
 	 - 
@@ -409,7 +409,7 @@ mangleCode = flip_colon
 
 	restofline = manyTill (noneOf "\n") newline
 
-  	{- For some reason, GHC sometimes doesn't like the multiline
+	{- For some reason, GHC sometimes doesn't like the multiline
 	 - strings it creates. It seems to get hung up on \{ at the
 	 - start of a new line sometimes, wanting it to not be escaped.
 	 -
@@ -646,7 +646,7 @@ parsecAndReplace p s = case parse find "" s of
 	Left _e -> s
 	Right l -> concatMap (either return id) l
   where
-  	find :: Parser [Either Char String]
+	find :: Parser [Either Char String]
 	find = many $ try (Right <$> p) <|> (Left <$> anyChar)
 
 main :: IO ()
@@ -654,7 +654,7 @@ main = go =<< getArgs
   where
 	go (destdir:log:header:[]) = run destdir log (Just header)
 	go (destdir:log:[]) = run destdir log Nothing
-  	go _ = error "usage: EvilSplicer destdir logfile [headerfile]"
+	go _ = error "usage: EvilSplicer destdir logfile [headerfile]"
 
 	run destdir log mheader = do
 		r <- parseFromFile splicesExtractor log

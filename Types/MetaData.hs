@@ -290,4 +290,4 @@ prop_metadata_serialize f v m = and
 	, deserialize (serialize m') == Just m'
 	]
   where
-  	m' = removeEmptyFields m
+	m' = removeEmptyFields m

@@ -78,7 +78,7 @@ upgradedEnv = "GIT_ANNEX_UPGRADED"
 startDistributionDownload :: GitAnnexDistribution -> Assistant ()
 startDistributionDownload d = go =<< liftIO . newVersionLocation d =<< liftIO oldVersionLocation
   where
-  	go Nothing = debug ["Skipping redundant upgrade"]
+	go Nothing = debug ["Skipping redundant upgrade"]
 	go (Just dest) = do
 		liftAnnex $ setUrlPresent k u
 		hook <- asIO1 $ distributionDownloadComplete d dest cleanup

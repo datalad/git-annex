@@ -100,10 +100,10 @@ catKey' modeguaranteed sha mode
 catLink :: Bool -> Sha -> Annex String
 catLink modeguaranteed sha = fromInternalGitPath . decodeBS <$> get
   where
-  	-- If the mode is not guaranteed to be correct, avoid
+	-- If the mode is not guaranteed to be correct, avoid
 	-- buffering the whole file content, which might be large.
 	-- 8192 is enough if it really is a symlink.
-  	get
+	get
 		| modeguaranteed = catObject sha
 		| otherwise = L.take 8192 <$> catObject sha
 
@@ -120,7 +120,7 @@ catKeyChecked :: Bool -> Ref -> Annex (Maybe Key)
 catKeyChecked needhead ref@(Ref r) =
 	catKey' False ref =<< findmode <$> catTree treeref
   where
-  	pathparts = split "/" r
+	pathparts = split "/" r
 	dir = intercalate "/" $ take (length pathparts - 1) pathparts
 	file = fromMaybe "" $ lastMaybe pathparts
 	treeref = Ref $ if needhead then "HEAD" ++ dir ++ "/" else dir ++ "/"

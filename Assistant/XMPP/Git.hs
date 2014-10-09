@@ -152,7 +152,7 @@ xmppPush cid gitpush = do
 	
 	fromxmpp outh controlh = withPushMessagesInSequence cid SendPack handlemsg
 	  where
-	  	handlemsg (Just (Pushing _ (ReceivePackOutput _ b))) = 
+		handlemsg (Just (Pushing _ (ReceivePackOutput _ b))) = 
 			liftIO $ writeChunk outh b
 		handlemsg (Just (Pushing _ (ReceivePackDone exitcode))) =
 			liftIO $ do
@@ -266,7 +266,7 @@ xmppReceivePack cid = do
 			relaytoxmpp seqnum' outh
 	relayfromxmpp inh = withPushMessagesInSequence cid ReceivePack handlemsg
 	  where
-	  	handlemsg (Just (Pushing _ (SendPackOutput _ b))) =
+		handlemsg (Just (Pushing _ (SendPackOutput _ b))) =
 			liftIO $ writeChunk inh b
 		handlemsg (Just _) = noop
 		handlemsg Nothing = do
@@ -337,7 +337,7 @@ handlePushNotice (Pushing cid (CanPush theiruuid shas)) =
 				, go
 				)
   where
-  	go = do
+	go = do
 		u <- liftAnnex getUUID
 		sendNetMessage $ Pushing cid (PushRequest u)
 	haveall l = liftAnnex $ not <$> anyM donthave l
@@ -359,9 +359,9 @@ writeChunk h b = do
 withPushMessagesInSequence :: ClientID -> PushSide -> (Maybe NetMessage -> Assistant ()) -> Assistant ()
 withPushMessagesInSequence cid side a = loop 0
   where
-  	loop seqnum = do
+	loop seqnum = do
 		m <- timeout xmppTimeout <~> waitInbox cid side
-	  	let go s = a m >> loop s
+		let go s = a m >> loop s
 		let next = seqnum + 1
 		case extractSequence =<< m of
 			Just seqnum'

@@ -119,7 +119,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 			)
 #endif
   where
-  	desc
+	desc
 		| assistant = "assistant"
 		| otherwise = "watch"
 	start daemonize webappwaiter = withThreadState $ \st -> do

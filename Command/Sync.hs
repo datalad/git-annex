@@ -356,7 +356,7 @@ syncFile rs f k = do
 	handleDropsFrom locs' rs "unwanted" True k (Just f)
 		Nothing callCommandAction
   where
-  	wantget have = allM id 
+	wantget have = allM id 
 		[ pure (not $ null have)
 		, not <$> inAnnex k
 		, wantGet True (Just k) (Just f)

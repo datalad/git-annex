@@ -33,7 +33,7 @@ replaceFileOr file action rollback = do
 	tmpfile <- liftIO $ setup tmpdir
 	go tmpfile `catchNonAsync` (const $ rollback tmpfile)
   where
-  	setup tmpdir = do
+	setup tmpdir = do
 		(tmpfile, h) <- openTempFileWithDefaultPermissions tmpdir "tmp"
 		hClose h
 		return tmpfile

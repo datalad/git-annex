@@ -29,7 +29,7 @@ start (name:ws) = go =<< InitRemote.findExisting name
   where
 	config = Logs.Remote.keyValToConfig ws
 	
-  	go Nothing = unknownNameError "Unknown special remote name."
+	go Nothing = unknownNameError "Unknown special remote name."
 	go (Just (u, c)) = do
 		let fullconfig = config `M.union` c	
 		t <- InitRemote.findType fullconfig

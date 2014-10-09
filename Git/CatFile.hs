@@ -94,7 +94,7 @@ catTree :: CatFileHandle -> Ref -> IO [(FilePath, FileMode)]
 catTree h treeref = go <$> catObjectDetails h treeref
   where
 	go (Just (b, _, TreeObject)) = parsetree [] b
-  	go _ = []
+	go _ = []
 
 	parsetree c b = case L.break (== 0) b of
 		(modefile, rest)

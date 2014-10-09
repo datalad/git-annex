@@ -196,7 +196,7 @@ repoList reposelector
 				_ -> Nothing
 		_ -> Nothing
 	  where
-	  	getconfig k = M.lookup k =<< M.lookup u m
+		getconfig k = M.lookup k =<< M.lookup u m
 		val iscloud r = Just (iscloud, (RepoUUID u, DisabledRepoActions $ r u))
 	list l = do
 		cc <- currentlyConnectedRemotes <$> liftAssistant getDaemonStatus
@@ -232,13 +232,13 @@ getRepositoriesReorderR = do
 	liftAssistant updateSyncRemotes
   where
 	go _ Nothing = noop
-  	go list (Just remote) = do
+	go list (Just remote) = do
 		rs <- catMaybes <$> mapM repoIdRemote list
 		forM_ (reorderCosts remote rs) $ \(r, newcost) ->
 			when (Remote.cost r /= newcost) $
 				setRemoteCost (Remote.repo r) newcost
 		void remoteListRefresh
-  	fromjs = fromMaybe (RepoUUID NoUUID) . readish . T.unpack
+	fromjs = fromMaybe (RepoUUID NoUUID) . readish . T.unpack
 
 reorderCosts :: Remote -> [Remote] -> [(Remote, Cost)]
 reorderCosts remote rs = zip rs'' (insertCostAfter costs i)

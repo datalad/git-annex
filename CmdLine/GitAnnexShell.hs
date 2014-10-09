@@ -66,7 +66,7 @@ options = commonOptions ++
 		check u = unexpectedUUID expected u
 	checkGCryptUUID expected = check =<< getGCryptUUID True =<< gitRepo
 	  where
-	  	check (Just u) | u == toUUID expected = noop
+		check (Just u) | u == toUUID expected = noop
 		check Nothing = unexpected expected "uninitialized repository"
 		check (Just u) = unexpectedUUID expected u
 	unexpectedUUID expected u = unexpected expected $ "UUID " ++ fromUUID u

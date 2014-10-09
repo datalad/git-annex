@@ -195,7 +195,7 @@ decodeMessage m = decode =<< gitAnnexTagInfo m
 		<*> a i
 	gen c i = c . toUUID <$> headMaybe (words (T.unpack (tagValue i)))
 	seqgen c i = do
-	  	packet <- decodeTagContent $ tagElement i
+		packet <- decodeTagContent $ tagElement i
 		let seqnum = fromMaybe 0 $ readish $ T.unpack $ tagValue i
 		return $ c seqnum packet
 	shasgen c i = do

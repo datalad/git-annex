@@ -48,7 +48,7 @@ makeRsyncRemote :: RemoteName -> String -> Annex String
 makeRsyncRemote name location = makeRemote name location $ const $ void $
 	go =<< Command.InitRemote.findExisting name
   where
-  	go Nothing = setupSpecialRemote name Rsync.remote config Nothing
+	go Nothing = setupSpecialRemote name Rsync.remote config Nothing
 		(Nothing, Command.InitRemote.newConfig name)
 	go (Just (u, c)) = setupSpecialRemote name Rsync.remote config Nothing
 		(Just u, c)

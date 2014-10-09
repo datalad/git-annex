@@ -38,12 +38,12 @@ isEncrypted _ = False
 encryptedRemote :: Repo -> Repo -> IO Repo
 encryptedRemote baserepo = go
   where
-  	go Repo { location = Url url }
+	go Repo { location = Url url }
 		| urlPrefix `isPrefixOf` u =
 			fromRemoteLocation (drop plen u) baserepo
 		| otherwise = notencrypted
 	  where
-  		u = show url
+		u = show url
 		plen = length urlPrefix
 	go _ = notencrypted
 	notencrypted = error "not a gcrypt encrypted repository"
@@ -92,7 +92,7 @@ getParticiantList globalconfigrepo repo remotename = KeyIds $ parse $ firstJust
 	]
   where
 	defaultkey = "gcrypt.participants"
-  	parse (Just "simple") = []
+	parse (Just "simple") = []
 	parse (Just l) = words l
 	parse Nothing = []
 

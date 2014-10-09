@@ -347,7 +347,7 @@ toDirectGen k f = do
 				(dloc:_) -> return $ Just $ fromdirect dloc
 		)
   where
-  	fromindirect loc = do
+	fromindirect loc = do
 		{- Move content from annex to direct file. -}
 		updateInodeCache k loc
 		void $ addAssociatedFile k f

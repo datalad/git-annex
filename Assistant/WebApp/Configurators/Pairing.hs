@@ -72,7 +72,7 @@ getStartXMPPPairSelfR :: Handler Html
 #ifdef WITH_XMPP
 getStartXMPPPairSelfR = go =<< liftAnnex getXMPPCreds
   where
-  	go Nothing = do
+	go Nothing = do
 		-- go get XMPP configured, then come back
 		redirect XMPPConfigForPairSelfR
 	go (Just creds) = do

@@ -153,7 +153,7 @@ performDownload relaxed cache todownload = case location todownload of
 							rundownload videourl ("." ++ Quvi.linkSuffix link) $
 								addUrlFileQuvi relaxed quviurl videourl
   where
-  	forced = Annex.getState Annex.force
+	forced = Annex.getState Annex.force
 
 	{- Avoids downloading any urls that are already known to be
 	 - associated with a file in the annex, unless forced. -}
@@ -192,7 +192,7 @@ performDownload relaxed cache todownload = case location todownload of
 		, return $ Just f
 		)
 	  where
-	  	f = if n < 2
+		f = if n < 2
 			then file
 			else
 				let (d, base) = splitFileName file

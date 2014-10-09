@@ -136,7 +136,7 @@ genCfg cfg descs = unlines $ intercalate [""]
 		(\(s, u) -> line "group" u $ unwords $ S.toList s)
 		(\u -> lcom $ line "group" u "")
 	  where
-	  	grouplist = unwords $ map fromStandardGroup [minBound..]
+		grouplist = unwords $ map fromStandardGroup [minBound..]
 
 	preferredcontent = settings cfg descs cfgPreferredContentMap
 		[ com "Repository preferred contents"
@@ -157,7 +157,7 @@ genCfg cfg descs = unlines $ intercalate [""]
 		(\(s, g) -> gline g s)
 		(\g -> gline g "")
 	  where
-	  	gline g value = [ unwords ["groupwanted", g, "=", value] ]
+		gline g value = [ unwords ["groupwanted", g, "=", value] ]
 		allgroups = S.unions $ stdgroups : M.elems (cfgGroupMap cfg)
 		stdgroups = S.fromList $ map fromStandardGroup [minBound..maxBound]
 

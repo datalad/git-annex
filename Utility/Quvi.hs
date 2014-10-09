@@ -113,7 +113,7 @@ supported Quvi04 url = boolSystem "quvi"
 supported Quvi09 url = (firstlevel <&&> secondlevel)
 		`catchNonAsync` (\_ -> return False)
   where
-  	firstlevel = case uriAuthority =<< parseURIRelaxed url of
+	firstlevel = case uriAuthority =<< parseURIRelaxed url of
 		Nothing -> return False
 		Just auth -> do
 			let domain = map toLower $ uriRegName auth

@@ -122,7 +122,7 @@ main ps = do
 #else
 		handleParseResult $ execParserPure pprefs pinfo args
 #endif
-  	progdesc = "git-annex test"
+	progdesc = "git-annex test"
 
 ingredients :: [Ingredient]
 ingredients =
@@ -822,7 +822,7 @@ test_conflict_resolution_movein_regression testenv = withtmpclonerepo testenv Fa
 		 - be missing the content of the file that had
 		 - been put in it. -}
 		forM_ [r1, r2] $ \r -> indir testenv r $ do
-		 	git_annex testenv "get" [] @? "unable to get all files after merge conflict resolution in " ++ rname r
+			git_annex testenv "get" [] @? "unable to get all files after merge conflict resolution in " ++ rname r
 
 {- Simple case of conflict resolution; 2 different versions of annexed
  - file. -}
@@ -1404,7 +1404,7 @@ intmpclonerepoInDirect testenv a = intmpclonerepo testenv $
 		, a
 		)
   where
-  	isdirect = annexeval $ do
+	isdirect = annexeval $ do
 		Annex.Init.initialize Nothing
 		Config.isDirect
 

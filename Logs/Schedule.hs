@@ -35,7 +35,7 @@ scheduleSet uuid@(UUID _) activities = do
 	Annex.Branch.change scheduleLog $
 		showLog id . changeLog ts uuid val . parseLog Just
   where
-  	val = fromScheduledActivities activities
+	val = fromScheduledActivities activities
 scheduleSet NoUUID _ = error "unknown UUID; cannot modify"
 
 scheduleMap :: Annex (M.Map UUID [ScheduledActivity])

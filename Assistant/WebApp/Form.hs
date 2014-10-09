@@ -129,7 +129,7 @@ withExpandableNote field (toggle, note) = withNote field $ [whamlet|
   ^{note}
 |]
   where
-  	ident = "toggle_" ++ toggle
+	ident = "toggle_" ++ toggle
 
 {- Adds a check box to an AForm to control encryption. -}
 #if MIN_VERSION_yesod(1,2,0)

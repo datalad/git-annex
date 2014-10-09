@@ -87,7 +87,7 @@ cronnerThread urlrenderer = namedThreadUnchecked "Cronner" $ do
 		liftIO $ waitNotification h
 		debug ["reloading changed activities"]
 		go h amap' nmap'
-  	startactivities as lastruntimes = forM as $ \activity ->
+	startactivities as lastruntimes = forM as $ \activity ->
 		case connectActivityUUID activity of
 			Nothing -> do
 				runner <- asIO2 (sleepingActivityThread urlrenderer)
@@ -108,8 +108,8 @@ cronnerThread urlrenderer = namedThreadUnchecked "Cronner" $ do
 sleepingActivityThread :: UrlRenderer -> ScheduledActivity -> Maybe LocalTime -> Assistant ()
 sleepingActivityThread urlrenderer activity lasttime = go lasttime =<< getnexttime lasttime
   where
-  	getnexttime = liftIO . nextTime schedule
-  	go _ Nothing = debug ["no scheduled events left for", desc]
+	getnexttime = liftIO . nextTime schedule
+	go _ Nothing = debug ["no scheduled events left for", desc]
 	go l (Just (NextTimeExactly t)) = waitrun l t Nothing
 	go l (Just (NextTimeWindow windowstart windowend)) =
 		waitrun l windowstart (Just windowend)
@@ -129,7 +129,7 @@ sleepingActivityThread urlrenderer activity lasttime = go lasttime =<< getnextti
 				go l =<< getnexttime l
 			else run nowt
 	  where
-	  	tolate nowt tz = case mmaxt of
+		tolate nowt tz = case mmaxt of
 			Just maxt -> nowt > maxt
 			-- allow the job to start 10 minutes late
 			Nothing ->diffUTCTime 

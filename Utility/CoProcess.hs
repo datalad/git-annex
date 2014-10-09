@@ -65,7 +65,7 @@ query ch send receive = do
 			restartable s (receive $ coProcessFrom s)
 				return
   where
-  	restartable s a cont
+	restartable s a cont
 		| coProcessNumRestarts (coProcessSpec s) > 0 =
 			maybe restart cont =<< catchMaybeIO a
 		| otherwise = cont =<< a
@@ -87,7 +87,7 @@ rawMode ch = do
 	raw $ coProcessTo s
 	return ch
   where
-  	raw h = do
+	raw h = do
 		fileEncoding h
 #ifdef mingw32_HOST_OS
 		hSetNewlineMode h noNewlineTranslation

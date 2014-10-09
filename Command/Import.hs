@@ -50,8 +50,8 @@ getDuplicateMode = gen
 	<*> getflag cleanDuplicatesOption
 	<*> getflag skipDuplicatesOption
   where
-  	getflag = Annex.getFlag . optionName
-  	gen False False False False = Default
+	getflag = Annex.getFlag . optionName
+	gen False False False False = Default
 	gen True False False False = Duplicate
 	gen False True False False = DeDuplicate
 	gen False False True False = CleanDuplicates

@@ -58,7 +58,7 @@ viewedFileReuse = takeFileName
 dirFromViewedFile :: ViewedFile -> FilePath
 dirFromViewedFile = joinPath . drop 1 . sep [] ""
   where
-  	sep l _ [] = reverse l
+	sep l _ [] = reverse l
 	sep l curr (c:cs)
 		| c == '%' = sep (reverse curr:l) "" cs
 		| c == '\\' = case cs of

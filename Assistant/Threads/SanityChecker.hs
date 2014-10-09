@@ -258,7 +258,7 @@ checkOldUnused :: UrlRenderer -> Assistant ()
 checkOldUnused urlrenderer = go =<< annexExpireUnused <$> liftAnnex Annex.getGitConfig
   where
 	go (Just Nothing) = noop
-  	go (Just (Just expireunused)) = expireUnused (Just expireunused)
+	go (Just (Just expireunused)) = expireUnused (Just expireunused)
 	go Nothing = maybe noop prompt =<< describeUnusedWhenBig
 
 	prompt msg = 

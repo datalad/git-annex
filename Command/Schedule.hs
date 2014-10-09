@@ -27,7 +27,7 @@ seek = withWords start
 start :: [String] -> CommandStart
 start = parse
   where
-  	parse (name:[]) = go name performGet
+	parse (name:[]) = go name performGet
 	parse (name:expr:[]) = go name $ \uuid -> do
 		showStart "schedile" name
 		performSet expr uuid

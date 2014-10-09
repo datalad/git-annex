@@ -201,7 +201,7 @@ $if (not exists)
     have been uploaded, and the Internet Archive has processed them.
 |]
   where
-  	bucket = fromMaybe "" $ M.lookup "bucket" c
+	bucket = fromMaybe "" $ M.lookup "bucket" c
 #ifdef WITH_S3
 	url = S3.iaItemUrl bucket
 #else

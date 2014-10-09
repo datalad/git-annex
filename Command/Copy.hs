@@ -23,7 +23,7 @@ seek ps = do
 	to <- getOptionField toOption Remote.byNameWithUUID
 	from <- getOptionField fromOption Remote.byNameWithUUID
 	withKeyOptions
-	 	(Command.Move.startKey to from False)
+		(Command.Move.startKey to from False)
 		(withFilesInGit $ whenAnnexed $ start to from)
 		ps
 

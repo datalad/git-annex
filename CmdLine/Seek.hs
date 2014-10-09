@@ -107,7 +107,7 @@ withFilesUnlocked' :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> (F
 withFilesUnlocked' typechanged a params = seekActions $
 	prepFiltered a unlockedfiles
   where
-  	check f = liftIO (notSymlink f) <&&> 
+	check f = liftIO (notSymlink f) <&&> 
 		(isJust <$> catKeyFile f <||> isJust <$> catKeyFileHEAD f)
 	unlockedfiles = filterM check =<< seekHelper typechanged params
 
@@ -165,7 +165,7 @@ withKeyOptions keyop fallbackop params = do
 			Just k -> go auto $ return [k]
 		_ -> error "Can only specify one of file names, --all, --unused, or --key"
   where
-  	go True _ = error "Cannot use --auto with --all or --unused or --key"
+	go True _ = error "Cannot use --auto with --all or --unused or --key"
 	go False a = do
 		matcher <- Limit.getMatcher
 		seekActions $ map (process matcher) <$> a

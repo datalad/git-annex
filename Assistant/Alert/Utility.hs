@@ -119,7 +119,7 @@ mergeAlert i al m = maybe updatePrune updateCombine (alertCombiner al)
 	  where
 		bloat = M.size m' - maxAlerts
 		pruneold l =
-	 		let (f, rest) = partition (\(_, a) -> isFiller a) l
+			let (f, rest) = partition (\(_, a) -> isFiller a) l
 			in drop bloat f ++ rest
 	updatePrune = pruneBloat $ M.filterWithKey pruneSame $
 		M.insertWith' const i al m

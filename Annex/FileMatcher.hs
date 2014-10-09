@@ -106,7 +106,7 @@ tokenizeMatcher = filter (not . null ) . concatMap splitparens . words
 largeFilesMatcher :: Annex (FileMatcher Annex)
 largeFilesMatcher = go =<< annexLargeFiles <$> Annex.getGitConfig
   where
-  	go Nothing = return matchAll
+	go Nothing = return matchAll
 	go (Just expr) = do
 		gm <- groupMap
 		rc <- readRemoteLog

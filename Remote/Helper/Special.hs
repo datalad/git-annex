@@ -196,7 +196,7 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 	retrieveKeyFileGen k dest p enc =
 		safely $ prepareretriever k $ safely . go
 	  where
-	  	go (Just retriever) = displayprogress p k $ \p' ->
+		go (Just retriever) = displayprogress p k $ \p' ->
 			retrieveChunks retriever (uuid baser) chunkconfig
 				enck k dest p' (sink dest enc)
 		go Nothing = return False
@@ -210,7 +210,7 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 
 	checkPresentGen k enc = preparecheckpresent k go
 	  where
-	  	go (Just checker) = checkPresentChunks checker (uuid baser) chunkconfig enck k
+		go (Just checker) = checkPresentChunks checker (uuid baser) chunkconfig enck k
 		go Nothing = cantCheck baser
 		enck = maybe id snd enc
 

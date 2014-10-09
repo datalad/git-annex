@@ -57,7 +57,7 @@ rsync = boolSystem "rsync" . rsyncParamsFixup
 rsyncParamsFixup :: [CommandParam] -> [CommandParam]
 rsyncParamsFixup = map fixup
   where
-  	fixup (File f) = File (toCygPath f)
+	fixup (File f) = File (toCygPath f)
 	fixup p = p
 
 {- Runs rsync, but intercepts its progress output and updates a meter.

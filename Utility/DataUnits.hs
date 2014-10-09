@@ -120,7 +120,7 @@ roughSize units short i
 
 	showUnit x (Unit size abbrev name) = s ++ " " ++ unit
 	  where
-	  	v = (fromInteger x :: Double) / fromInteger size
+		v = (fromInteger x :: Double) / fromInteger size
 		s = showImprecise 2 v
 		unit
 			| short = abbrev

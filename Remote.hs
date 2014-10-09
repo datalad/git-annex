@@ -101,7 +101,7 @@ byName (Just n) = either error Just <$> byName' n
 byNameWithUUID :: Maybe RemoteName -> Annex (Maybe Remote)
 byNameWithUUID = checkuuid <=< byName
   where
-  	checkuuid Nothing = return Nothing
+	checkuuid Nothing = return Nothing
 	checkuuid (Just r)
 		| uuid r == NoUUID =
 			if remoteAnnexIgnore (gitconfig r)

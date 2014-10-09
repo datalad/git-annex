@@ -44,7 +44,7 @@ lsTreeParams t = [ Params "ls-tree --full-tree -z -r --", File $ fromRef t ]
 lsTreeFiles :: Ref -> [FilePath] -> Repo -> IO [TreeItem]
 lsTreeFiles t fs repo = map parseLsTree <$> pipeNullSplitStrict ps repo
   where
-  	ps = [Params "ls-tree --full-tree -z --", File $ fromRef t] ++ map File fs
+	ps = [Params "ls-tree --full-tree -z --", File $ fromRef t] ++ map File fs
 
 {- Parses a line of ls-tree output.
  - (The --long format is not currently supported.) -}

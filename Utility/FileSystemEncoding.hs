@@ -111,7 +111,7 @@ truncateFilePath :: Int -> FilePath -> FilePath
 #ifndef mingw32_HOST_OS
 truncateFilePath n = go . reverse
   where
-  	go f =
+	go f =
 		let bytes = decodeW8 f
 		in if length bytes <= n
 			then reverse f

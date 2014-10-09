@@ -28,7 +28,7 @@ writeFsckResults u fsckresults = do
 				| S.null s -> nukeFile logfile
 				| otherwise -> store s t logfile
   where
-  	store s t logfile = do 
+	store s t logfile = do 
 		createDirectoryIfMissing True (parentDir logfile)
 		liftIO $ viaTmp writeFile logfile $ serialize s t
 	serialize s t =

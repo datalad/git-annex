@@ -58,7 +58,7 @@ dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
 			shutdown $ cmdnocommit cmd
 	go _flags params (Left e) = do
 		when fuzzy $
-	 		autocorrect =<< Git.Config.global
+			autocorrect =<< Git.Config.global
 		maybe (throw e) (\a -> a params) (cmdnorepo cmd)
 	err msg = msg ++ "\n\n" ++ usage header allcmds
 	cmd = Prelude.head cmds

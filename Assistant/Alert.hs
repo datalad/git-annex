@@ -145,7 +145,7 @@ syncResultAlert' succeeded failed = makeAlertFiller (not $ null succeeded) $
 		, alertHeader = Just $ tenseWords msg
 		}
   where
-  	msg
+	msg
 		| null succeeded = ["Failed to sync with", showRemotes failed]
 		| null failed = ["Synced with", showRemotes succeeded]
 		| otherwise =

@@ -63,7 +63,7 @@ start key = fieldTransfer Download key $ \_p ->
 		        Nothing -> return True
 		        Just size -> do
 				size' <- fromIntegral . fileSize
-       	        	        	<$> liftIO (getFileStatus tmp)
+					<$> liftIO (getFileStatus tmp)
 				return $ size == size'
 		if oksize
 			then case Backend.maybeLookupBackendName (Types.Key.keyBackendName key) of
@@ -76,7 +76,7 @@ start key = fieldTransfer Download key $ \_p ->
 				warning "recvkey: received key with wrong size; discarding"
 				return False
 	  where
-	  	runfsck check = ifM (check key tmp)
+		runfsck check = ifM (check key tmp)
 			( return True
 			, do
 				warning "recvkey: received key from direct mode repository seems to have changed as it was transferred; discarding"

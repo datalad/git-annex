@@ -100,7 +100,7 @@ localInfo dir = showCustom (unwords ["info", dir]) $ do
 	evalStateT (mapM_ showStat stats) =<< getLocalStatInfo dir
 	return True
   where
-  	tostats = map (\s -> s dir)
+	tostats = map (\s -> s dir)
 
 selStats :: [Stat] -> [Stat] -> Annex [Stat]
 selStats fast_stats slow_stats = do

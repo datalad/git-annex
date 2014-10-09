@@ -136,7 +136,7 @@ setRepoConfig uuid mremote oldc newc = do
 	when syncableChanged $
 		liftAssistant $ changeSyncable mremote (repoSyncable newc)
   where
-  	syncableChanged = repoSyncable oldc /= repoSyncable newc
+	syncableChanged = repoSyncable oldc /= repoSyncable newc
 	associatedDirectoryChanged = repoAssociatedDirectory oldc /= repoAssociatedDirectory newc
 	groupChanged = repoGroup oldc /= repoGroup newc
 	nameChanged = isJust mremote && legalName oldc /= legalName newc
@@ -255,7 +255,7 @@ getGitRepoInfo r = do
 
 getRepoEncryption :: Maybe Remote.Remote -> Maybe Remote.RemoteConfig -> Widget
 getRepoEncryption (Just _) (Just c) = case extractCipher c of
-  	Nothing ->
+	Nothing ->
 		[whamlet|not encrypted|]
 	(Just (SharedCipher _)) ->
 		[whamlet|encrypted: encryption key stored in git repository|]
@@ -274,7 +274,7 @@ getUpgradeRepositoryR  :: RepoId -> Handler ()
 getUpgradeRepositoryR (RepoUUID _) = redirect DashboardR
 getUpgradeRepositoryR r = go =<< liftAnnex (repoIdRemote r)
   where
-  	go Nothing = redirect DashboardR
+	go Nothing = redirect DashboardR
 	go (Just rmt) = do
 		liftIO fixSshKeyPairIdentitiesOnly
 		liftAnnex $ setConfig 

@@ -45,7 +45,7 @@ checkEnvironmentIO =
 		ensureEnv "GIT_COMMITTER_NAME" username
   where
 #ifndef __ANDROID__
-  	-- existing environment is not overwritten
+	-- existing environment is not overwritten
 	ensureEnv var val = void $ setEnv var val False
 #else
 	-- Environment setting is broken on Android, so this is dealt with
@@ -59,7 +59,7 @@ checkEnvironmentIO =
 ensureCommit :: Annex a -> Annex a
 ensureCommit a = either retry return =<< tryNonAsync a 
   where
-  	retry _ = do
+	retry _ = do
 		name <- liftIO myUserName
 		setConfig (ConfigKey "user.name") name
 		setConfig (ConfigKey "user.email") name

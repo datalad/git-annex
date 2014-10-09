@@ -103,7 +103,7 @@ makeInstaller gitannex license extrabins launchers = nsis $ do
 	name "git-annex"
 	outFile $ str installer
 	{- Installing into the same directory as git avoids needing to modify
- 	 - path myself, since the git installer already does it. -}
+	 - path myself, since the git installer already does it. -}
 	installDir gitInstallDir
 	requestExecutionLevel Admin
 

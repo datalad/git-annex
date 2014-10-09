@@ -125,7 +125,7 @@ lockDown' file = ifM crippledFileSystem
 	 - This is not done in direct mode, because files there need to
 	 - remain writable at all times.
 	-}
-  	go tmp = do
+	go tmp = do
 		unlessM isDirect $
 			freezeContent file
 		withTSDelta $ \delta -> liftIO $ do
@@ -134,7 +134,7 @@ lockDown' file = ifM crippledFileSystem
 			hClose h
 			nukeFile tmpfile
 			withhardlink delta tmpfile `catchIO` const (nohardlink delta)
-  	nohardlink delta = do
+	nohardlink delta = do
 		cache <- genInodeCache file delta
 		return KeySource
 			{ keyFilename = file
@@ -207,7 +207,7 @@ finishIngestDirect key source = do
 perform :: FilePath -> CommandPerform
 perform file = lockDown file >>= ingest >>= go
   where
-  	go (Just key, cache) = next $ cleanup file key cache True
+	go (Just key, cache) = next $ cleanup file key cache True
 	go (Nothing, _) = stop
 
 {- On error, put the file back so it doesn't seem to have vanished.

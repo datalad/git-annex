@@ -78,10 +78,10 @@ bestSocketPath abssocketfile = do
 			then Just socketfile
 			else Nothing
   where
-  	-- ssh appends a 16 char extension to the socket when setting it
+	-- ssh appends a 16 char extension to the socket when setting it
 	-- up, which needs to be taken into account when checking
 	-- that a valid socket was constructed.
-  	sshgarbage = replicate (1+16) 'X'
+	sshgarbage = replicate (1+16) 'X'
 
 sshConnectionCachingParams :: FilePath -> [CommandParam]
 sshConnectionCachingParams socketfile = 

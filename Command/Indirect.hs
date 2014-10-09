@@ -94,7 +94,7 @@ perform = do
 					warnlocked
 		showEndOk
 
- 	warnlocked :: SomeException -> Annex ()
+	warnlocked :: SomeException -> Annex ()
 	warnlocked e = do
 		warning $ show e
 		warning "leaving this file as-is; correct this problem and run git annex add on it"

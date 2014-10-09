@@ -148,7 +148,7 @@ gitAnnexLink file key r = do
 	loc <- gitAnnexLocation' key r False
 	return $ relPathDirToFile (parentDir absfile) loc
   where
-  	whoops = error $ "unable to normalize " ++ file
+	whoops = error $ "unable to normalize " ++ file
 
 {- File used to lock a key's content. -}
 gitAnnexContentLock :: Key -> Git.Repo -> GitConfig -> IO FilePath
@@ -356,7 +356,7 @@ isLinkToAnnex s = (pathSeparator:objectDir) `isInfixOf` s
 preSanitizeKeyName :: String -> String
 preSanitizeKeyName = concatMap escape
   where
-  	escape c
+	escape c
 		| isAsciiUpper c || isAsciiLower c || isDigit c = [c]
 		| c `elem` ".-_ " = [c] -- common, assumed safe
 		| c `elem` "/%:" = [c] -- handled by keyFile

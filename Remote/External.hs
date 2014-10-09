@@ -169,7 +169,7 @@ handleRequest' lck external req mp responsehandler
 		go
 	| otherwise = go
   where
-  	go = do
+	go = do
 		sendMessage lck external req
 		loop
 	loop = receiveMessage lck external responsehandler

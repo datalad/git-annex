@@ -100,7 +100,7 @@ prepareRemoveAnnexDir annexdir =
 removeUnannexed :: [Key] -> Annex [Key]
 removeUnannexed = go []
   where
-  	go c [] = return c
+	go c [] = return c
 	go c (k:ks) = ifM (inAnnexCheck k $ liftIO . enoughlinks)
 		( do
 			lockContent k removeAnnex

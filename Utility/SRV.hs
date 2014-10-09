@@ -74,7 +74,7 @@ lookupSRV (SRV srv) = do
 		maybe [] use r
 #endif
   where
-  	use = orderHosts . map tohosts
+	use = orderHosts . map tohosts
 	tohosts (priority, weight, port, hostname) =
 		( (priority, weight)
 		, (B8.toString hostname, PortNumber $ fromIntegral port)

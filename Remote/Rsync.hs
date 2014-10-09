@@ -175,7 +175,7 @@ store o k src meterupdate = withRsyncScratchDir $ \tmp -> do
 			]
 		else return False
   where
- 	{- If the key being sent is encrypted or chunked, the file
+	{- If the key being sent is encrypted or chunked, the file
 	 - containing its content is a temp file, and so can be
 	 - renamed into place. Otherwise, the file is the annexed
 	 - object file, and has to be copied or hard linked into place. -}
