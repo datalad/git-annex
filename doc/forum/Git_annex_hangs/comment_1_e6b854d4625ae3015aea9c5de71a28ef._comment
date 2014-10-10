@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.54"
+ subject="comment 1"
+ date="2014-10-10T18:51:57Z"
+ content="""
+I have followed up there, but the basic answer is, pass --debug to see what it's doing.
+"""]]
