@@ -4,11 +4,11 @@ I also would like to have anything in the git stash synchronized between the two
 
 So to be clear, I have a file structure like the following:
 
-./annex/.git
-./annex/project/README.md
-./annex/project/.git
-./annex/project2/README.md
-./annex/project2/.git
+    ./annex/.git
+    ./annex/project/README.md
+    ./annex/project/.git
+    ./annex/project2/README.md
+    ./annex/project2/.git
 
 In my testing it seems that the "project/.git" folders aren't synchronized between my two desktops, even though the rest of the files are.  A workaround is to rename "project/.git" to something else, like "project/.gitfoo", and then use --git-dir when issuing my git commands.
 
