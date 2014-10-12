@@ -17,3 +17,14 @@ I know that many specialremotes will not support this without much hassle, but i
 To keep the data consistent there can be a constraint that every action (add, sync, commit or others) first issue a `resetlinks`.
 
 What do you think of that?
+
+> Already implemented via the `annex.hardlink` configuration.
+> 
+> I don't think that separate commands/options to control whether or not
+> to hard link makes sense, because a repository containing hardlinks
+> needs to be set as untrusted to avoid breaking numcopies counting.
+> Which is done automatically by git-annex when it detects the repository
+> was cloned with `git clone --shared`.
+> 
+> [[done]]
+> --[[Joey]]
