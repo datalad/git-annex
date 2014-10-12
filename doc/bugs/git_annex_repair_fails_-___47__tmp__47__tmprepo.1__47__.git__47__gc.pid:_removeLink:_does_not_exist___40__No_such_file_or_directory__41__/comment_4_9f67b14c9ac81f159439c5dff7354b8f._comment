@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.54"
+ subject="comment 4"
+ date="2014-10-12T18:27:39Z"
+ content="""
+So the auto gc was triggered by git fetch. I have made the repair code prevent that from happening. I expect that will solve the problem, so I am marking this bug as closed.
+
+However, I don't understand really what could have caused it to try to remove the gc.pid file. I tried creating such a pid file manually after the fetch, and it didn't try to remove it.
+"""]]
