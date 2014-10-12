@@ -135,11 +135,16 @@ retrieveMissingObjects missing referencerepo r
 							pullremotes tmpr rmts fetchrefs (FsckFoundMissing stillmissing t)
 				, pullremotes tmpr rmts fetchrefs ms
 				)
-	fetchfrom fetchurl ps = runBool $
-		[ Param "fetch"
-		, Param fetchurl
-		, Params "--force --update-head-ok --quiet"
-		] ++ ps
+	fetchfrom fetchurl ps fetchr = runBool ps' fetchr'
+	  where
+		ps' = 
+			[ Param "fetch"
+			, Param fetchurl
+			, Params "--force --update-head-ok --quiet"
+			] ++ ps
+		fetchr' = fetchr { gitGlobalOpts = gitGlobalOpts fetchr ++ nogc }
+		nogc = [ Param "-c", Param "gc.auto=0" ]
+
 	-- fetch refs and tags
 	fetchrefstags = [ Param "+refs/heads/*:refs/heads/*", Param "--tags"]
 	-- Fetch all available refs (more likely to fail,
