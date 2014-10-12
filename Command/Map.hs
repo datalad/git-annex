@@ -206,14 +206,15 @@ tryScan r
 		sshparams <- Ssh.toRepo r gc [Param sshcmd]
 		liftIO $ pipedconfig "ssh" sshparams
 	  where
-		sshcmd = cddir ++ " && " ++
-			"git config --null --list"
+		sshcmd = "sh -c " ++ shellEscape
+			(cddir ++ " && " ++ "git config --null --list")
 		dir = Git.repoPath r
 		cddir
 			| "/~" `isPrefixOf` dir =
 				let (userhome, reldir) = span (/= '/') (drop 1 dir)
-				in "cd " ++ userhome ++ " && cd " ++ shellEscape (drop 1 reldir)
-			| otherwise = "cd " ++ shellEscape dir
+				in "cd " ++ userhome ++ " && " ++ cdto (drop 1 reldir)
+			| otherwise = cdto dir
+		cdto dir = "if ! cd " ++ shellEscape dir ++ " 2>/dev/null; then cd " ++ shellEscape dir ++ ".git; fi"
 
 	-- First, try sshing and running git config manually,
 	-- only fall back to git-annex-shell configlist if that
