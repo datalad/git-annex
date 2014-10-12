@@ -104,19 +104,19 @@ s3Setup' u mcreds c = if isIA c then archiveorg else defaulthost
 
 	archiveorg = do
 		showNote "Internet Archive mode"
-		void $ setRemoteCredPair noEncryptionUsed c (AWS.creds u) mcreds
+		c' <- setRemoteCredPair noEncryptionUsed c (AWS.creds u) mcreds
 		-- Ensure user enters a valid bucket name, since
 		-- this determines the name of the archive.org item.
 		let bucket = replace " " "-" $ map toLower $
 			fromMaybe (error "specify bucket=") $
-				getBucket c
+				getBucket c'
 		let archiveconfig = 
 			-- hS3 does not pass through x-archive-* headers
 			M.mapKeys (replace "x-archive-" "x-amz-") $
 			-- encryption does not make sense here
 			M.insert "encryption" "none" $
 			M.insert "bucket" bucket $
-			M.union c $
+			M.union c' $
 			-- special constraints on key names
 			M.insert "mungekeys" "ia" $
 			-- bucket created only when files are uploaded
