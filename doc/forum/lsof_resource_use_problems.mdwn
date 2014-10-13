@@ -1,0 +1,42 @@
+When the assistant runs lsof on my file system, the lsof process consumes a horrendous amount of memory (>11GB). This forces a large amount of swapping, and brings the system to its knees until the process exits. The same thing occurs when I run lsof manually, but this is currently making the assistant unusable for me. Is this normal when running lsof on a large number of files, or is something wrong with my particular setup?
+
+An example of resource usage from top, and some system details:
+
+---
+      PID USERNAME    THR PRI NICE   SIZE    RES STATE   C   TIME   WCPU COMMAND
+    33735 username       1  23    0 28208M 11507M pfault  0   0:07  58.50% lsof
+---
+    [username@hostname /mnt/media]$ uname -a
+    FreeBSD hostname 9.2-RELEASE-p10 FreeBSD 9.2-RELEASE-p10 #0 r262572+4fb5adc: Wed Aug  6 17:07:16 PDT 2014     root@build3.ixsystems.com:/fusion/jkh/921/freenas/os-base/amd64/fusion/jkh/921/freenas/FreeBSD/src/sys/FREENAS.amd64  amd64
+---
+    [username@hostname /mnt/media]$ lsof -h
+    lsof 4.88
+---
+    [username@hostname /mnt/media]$ git annex info
+    repository mode: direct
+    trusted repositories: 0
+    semitrusted repositories: 1
+            d03b21fc-666d-457d-b953-0ca0ac7393d8 -- [hostname_media_indirect]
+    untrusted repositories: 2
+            00000000-0000-0000-0000-000000000001 -- web
+            31497a4d-290e-409a-9fd2-20c7340c245b -- hostname_mnt/media [here]
+    transfers in progress: none
+    available local disk space: 780.1 gigabytes (+10 gigabytes reserved)
+    local annex keys: 41576
+    local annex size: 943.95 gigabytes (+ 49 unknown size)
+    annexed files in working tree: 41887
+    size of annexed files in working tree: 945.14 gigabytes (+ 50 unknown size)
+    bloom filter size: 16 mebibytes (8.3% full)
+    backend usage:
+            SHA512E: 81518
+            WORM: 1846
+            URL: 99
+---
+    [username@hostname /mnt/media]$ git annex version
+    git-annex version: 5.20140817
+    build flags: Assistant Webapp Webapp-secure Pairing S3 WebDAV Kqueue XMPP DNS Feeds Quvi TDFA CryptoHash
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier ddar hook external
+    local repository version: 5
+    supported repository version: 5
+    upgrade supported from repository versions: 0 1 2 4
