@@ -2002,18 +2002,6 @@ index 7e4af07..b59745a 100644
      , fieldEnctype = UrlEncoded
      }
    where
-diff --git a/yesod-form.cabal b/yesod-form.cabal
-index bfe94df..1f5aef5 100644
---- a/yesod-form.cabal
-+++ b/yesod-form.cabal
-@@ -51,7 +51,6 @@ library
-     exposed-modules: Yesod.Form
-                      Yesod.Form.Types
-                      Yesod.Form.Functions
--                     Yesod.Form.Bootstrap3
-                      Yesod.Form.Input
-                      Yesod.Form.Fields
-                      Yesod.Form.Jquery
 -- 
 2.1.0
 
