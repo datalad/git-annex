@@ -214,7 +214,7 @@ tryScan r
 				let (userhome, reldir) = span (/= '/') (drop 1 dir)
 				in "cd " ++ userhome ++ " && " ++ cdto (drop 1 reldir)
 			| otherwise = cdto dir
-		cdto dir = "if ! cd " ++ shellEscape dir ++ " 2>/dev/null; then cd " ++ shellEscape dir ++ ".git; fi"
+		cdto p = "if ! cd " ++ shellEscape p ++ " 2>/dev/null; then cd " ++ shellEscape p ++ ".git; fi"
 
 	-- First, try sshing and running git config manually,
 	-- only fall back to git-annex-shell configlist if that
