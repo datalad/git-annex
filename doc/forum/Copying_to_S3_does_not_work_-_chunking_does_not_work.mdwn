@@ -1,0 +1,45 @@
+I have a ~10 GB file in git-annex. I can't get it to go to S3 whatever I do.
+
+I added a S3 special remote:
+
+    git annex initremote s3-mybucket type=S3 chunk=1MiB keyid=ABCD1234 bucket=mybucket
+
+Then, I tried copying files to the remote.  Small files worked, but big files don't:
+
+    $ git annex copy bigfile.tgz --to s3-mybucket
+    copy bigfile.tgz (gpg)
+    You need a passphrase to unlock the secret key for
+    user: "user"
+    2048-bit RSA key, ID ABCD1234, created 2014-10-13 (main key ID ABCD1234)
+
+    (checking s3-mybucket...) (to s3-mybucket...)
+
+      Your proposed upload exceeds the maximum allowed size
+    failed
+    git-annex: copy: 1 failed
+
+I tried some stuff like this too:
+
+    git annex enableremote s3-oregon chunk=100MiB
+    git annex enableremote s3-oregon chunksize=100MiB
+
+It didn't work. Same result.
+
+    $ git annex version
+    git-annex version: 5.20140717
+    build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV FsEvents XMPP DNS Feeds Quvi TDFA CryptoHash
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier ddar hook external
+    local repository version: 5
+    supported repository version: 5
+    upgrade supported from repository versions: 0 1 2 4
+
+The chunk size did seem to bet set properly:
+
+    $ git checkout git-annex
+    $ cat remote.log
+    xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx bucket=mybucket chunk=100MiB chunksize=100MiB cipher=....
+
+I'm on OSX 10.9.4 and I installed git-annex via homebrew.
+
+Any ideas?
