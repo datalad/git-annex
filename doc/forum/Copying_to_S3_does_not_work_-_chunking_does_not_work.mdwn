@@ -20,8 +20,8 @@ Then, I tried copying files to the remote.  Small files worked, but big files do
 
 I tried some stuff like this too:
 
-    git annex enableremote s3-oregon chunk=100MiB
-    git annex enableremote s3-oregon chunksize=100MiB
+    git annex enableremote s3-mybucket chunk=100MiB
+    git annex enableremote s3-mybucket chunksize=100MiB
 
 It didn't work. Same result.
 
