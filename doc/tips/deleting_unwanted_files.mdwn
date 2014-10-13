@@ -21,6 +21,10 @@ But, let's say you don't care about that, you only want to keep files that are i
 Finally, sometimes you want to remove unused files from a special remote. To accomplish this, pass `--from remotename` to the unused and dropunused commands, and they will act on
 files stored in that remote, rather than on the local repository.
 
+## let the assistant take care of it
+
+If you're using the git-annex assistant, you don't normally need to worry about this. Just delete files however you normally would. The assistant will try to migrate unused file contents away from your local repository and store them in whatever backup repositories you've set up.
+
 ## delete all the copies method
 
 You have a file. You want that file to immediately vanish from the face of the earth to the best of your abilities.
@@ -28,5 +32,6 @@ You have a file. You want that file to immediately vanish from the face of the e
 1. `git annex drop --force file`
 2. `git annex whereis file`
 3. `git annex drop --force file --from $repo` repeat for each repository listed by the whereis command
+4. `rm file; git annex sync`
 
 Of course, if you have offline backup repositories that contain this file, you'll have to bring them online before you can drop it from them, etc.
