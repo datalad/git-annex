@@ -18,14 +18,17 @@ import Assistant.Gpg
 #if MIN_VERSION_yesod(1,2,0)
 import Yesod hiding (textField, passwordField)
 import Yesod.Form.Fields as F
-import Yesod.Form.Bootstrap3 hiding (bfs)
 #else
 import Yesod hiding (textField, passwordField, selectField, selectFieldList)
 import Yesod.Form.Fields as F hiding (selectField, selectFieldList)
 import Data.String (IsString (..))
 import Control.Monad (unless)
 import Data.Maybe (listToMaybe)
-import Assistant.WebApp.Bootstrap3 hiding (bfs)
+#endif
+#if MIN_VERSION_yesod_form(1,3,8)
+import Yesod.Form.Bootstrap3 as Y hiding (bfs)
+#else
+import Assistant.WebApp.Bootstrap3 as Y hiding (bfs)
 #endif
 import Data.Text (Text)
 
