@@ -34,7 +34,7 @@ It didn't work. Same result.
     supported repository version: 5
     upgrade supported from repository versions: 0 1 2 4
 
-The chunk size did seem to bet set properly:
+The chunk size did seem to be set properly:
 
     $ git checkout git-annex
     $ cat remote.log
