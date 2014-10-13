@@ -1,0 +1,32 @@
+It's quite hard to delete a file from a git repository once it's checked in and pushed to origin. This is normally ok, since git repositories contain mostly small files, and a good thing since losing hard work stinks. 
+
+With git-annex this changes some: Very large files can be managed with git-annex, and it's not uncommon to be done with such a file and want to delete it. So, git-annex provides a number of ways to handle this, while still trying to avoid accidental foot shooting that would lose the last copy of an important file.
+
+## the garbage collecting method
+
+In this method, you just remove annexed files whenever you want, and commit the changes. This is probably the most natural way to go.
+
+In an indirect mode repo, you can do this the same way you would in a regular git repository. For example, `git rm foo; git commit -m "removed foo". This leaves the contents of the files still in the annex, not really deleted yet.
+
+If you have a direct mode repo, you can't run `git rm` in it. Instead, you can just delete files using `rm` or your file manager, and then run `git annex sync` to commit the deletion. That will delete the file's content from your disk. Even if it's the only copy of the file!
+
+Either way, deleting files can leave some garbage lying around in either the local repository, or other repositories that contained a copy of the content of the file you deleted. Eventually you'll want to free up some disk space used by one of these repositories, and then it's time to take out the garbage.
+
+To collect the garbage, you can run `git annex unused` inside the repository which you want to slim down. That will list files stored in the annex that are not used by any git branches or tags. Followed by `git annex dropunused 1-10` to delete a range of the unused files from the annex.
+
+In recent versions of git-annex, `git annex dropunused` checks that enough other copies of a file's content exist in other repositories before deleting it, so this won't ever delete the last copy of some file. This is a good default, because these unused files are still referred to by some commits in the git history, and you might want to retain the full history of every version of a file.
+
+But, let's say you don't care about that, you only want to keep files that are in use by branches and tags. Then you can use `git annex dropunused --force` with a range of files, which will delete them even if it's the last copy.
+
+Finally, sometimes you want to remove unused files from a special remote. To accomplish this, pass `--from remotename` to the unused and dropunused commands, and they will act on
+files stored in that remote, rather than on the local repository.
+
+## delete all the copies method
+
+You have a file. You want that file to immediately vanish from the face of the earth to the best of your abilities.
+
+1. `git annex drop --force file`
+2. `git annex whereis file`
+3. `git annex drop --force file --from $repo` repeat for each repository listed by the whereis command
+
+Of course, if you have offline backup repositories that contain this file, you'll have to bring them online before you can drop it from them, etc.
