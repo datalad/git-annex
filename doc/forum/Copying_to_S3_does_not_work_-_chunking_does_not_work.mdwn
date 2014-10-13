@@ -1,3 +1,5 @@
+Posting this here because I am not sure if it is a bug or if I am missing something.
+
 I have a ~10 GB file in git-annex. I can't get it to go to S3 whatever I do.
 
 I added a S3 special remote:
