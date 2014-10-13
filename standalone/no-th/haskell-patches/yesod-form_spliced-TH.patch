@@ -17,6 +17,16 @@ diff --git a/Yesod/Form/Bootstrap3.hs b/Yesod/Form/Bootstrap3.hs
 index 84e85fc..943c416 100644
 --- a/Yesod/Form/Bootstrap3.hs
 +++ b/Yesod/Form/Bootstrap3.hs
+@@ -26,6 +26,9 @@ import Data.String (IsString(..))
+ import Yesod.Core
+ 
+ import qualified Data.Text as T
++import qualified Text.Hamlet
++import qualified Text.Blaze.Internal
++import qualified Data.Foldable
+ 
+ import Yesod.Form.Types
+ import Yesod.Form.Functions
 @@ -152,44 +152,144 @@ renderBootstrap3 formLayout aform fragment = do
      let views = views' []
          has (Just _) = True
@@ -104,7 +114,7 @@ index 84e85fc..943c416 100644
 +                                        Nothing;
 +                                      (asWidgetT . toWidget) (fvInput view_as0a);
 +                                      (asWidgetT . toWidget) (helpWidget view_as0a) }
-+                            BootstrapHorizontalForm labelOffset_as0b
++                            ; BootstrapHorizontalForm labelOffset_as0b
 +                                                    labelSize_as0c
 +                                                    inputOffset_as0d
 +                                                    inputSize_as0e
@@ -908,7 +918,7 @@ index c6091a9..3d7b267 100644
 +           ((Text.Blaze.Internal.preEscapedText . pack) "\">");
 +         (asWidgetT . toWidget) inside;
 +         (asWidgetT . toWidget)
-+           ((Text.Blaze.Internal.preEscapedText . pack) "</div>") }
++           ((Text.Blaze.Internal.preEscapedText . pack) "</div>") })
 +
 +    (\theId name isSel ->     do { (asWidgetT . toWidget)
 +           ((Text.Blaze.Internal.preEscapedText . pack)
