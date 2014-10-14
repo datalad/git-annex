@@ -4,13 +4,10 @@
 #
 # You should install ghc-android first.
 #
-# Note that the newest version of packages are installed. 
-# It attempts to reuse patches for older versions, but 
-# new versions of packages often break cross-compilation by adding TH, 
-# etc
-#
-# Future work: Convert to using the method used here:
-# https://github.com/kaoskorobase/ghc-ios-cabal-scripts/
+# The cabal.config is used to pin the haskell packages to the last
+# versions that have been gotten working. To update, delete the
+# cabal.config, run this script with an empty cabal and fix up the broken
+# patches, and then use cabal freeze to generate a new cabal.config.
 
 set -e
 
@@ -46,6 +43,9 @@ cabalinstall () {
 patched () {
 	pkg=$1
 	ver=$2
+	if [ -z "$ver" ]; then
+		ver="$(grep " $pkg " cabal.config | cut -d= -f 3 | sed 's/,$//')"
+	fi
 	if [ -z "$ver" ]; then
 		cabal unpack $pkg
 	else
