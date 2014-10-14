@@ -32,8 +32,8 @@ import Annex.Quvi
 import qualified Utility.Quvi as Quvi
 #endif
 
-def :: [Command]
-def = [notBareRepo $ withOptions [fileOption, pathdepthOption, relaxedOption] $
+cmd :: [Command]
+cmd = [notBareRepo $ withOptions [fileOption, pathdepthOption, relaxedOption] $
 	command "addurl" (paramRepeating paramUrl) seek
 		SectionCommon "add urls to annex"]
 

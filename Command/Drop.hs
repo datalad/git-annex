@@ -22,8 +22,8 @@ import Annex.Notification
 
 import qualified Data.Set as S
 
-def :: [Command]
-def = [withOptions [dropFromOption] $ command "drop" paramPaths seek
+cmd :: [Command]
+cmd = [withOptions [dropFromOption] $ command "drop" paramPaths seek
 	SectionCommon "indicate content of files not currently wanted"]
 
 dropFromOption :: Option

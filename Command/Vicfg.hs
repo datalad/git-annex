@@ -29,8 +29,8 @@ import Types.StandardGroups
 import Types.ScheduledActivity
 import Remote
 
-def :: [Command]
-def = [command "vicfg" paramNothing seek
+cmd :: [Command]
+cmd = [command "vicfg" paramNothing seek
 	SectionSetup "edit git-annex's configuration"]
 
 seek :: CommandSeek
@@ -101,7 +101,7 @@ defCfg curcfg = Cfg
 	}
   where
 	mapdef :: forall k v. Default v => M.Map k v -> M.Map k v
-	mapdef = M.map (const Data.Default.def)
+	mapdef = M.map (const def)
 
 diffCfg :: Cfg -> Cfg -> Cfg
 diffCfg curcfg newcfg = Cfg
@@ -142,7 +142,7 @@ genCfg cfg descs = unlines $ intercalate [""]
 		, com "(Valid trust levels: " ++ trustlevels ++ ")"
 		]
 		(\(t, u) -> line "trust" u $ showTrustLevel t)
-		(\u -> lcom $ line "trust" u $ showTrustLevel Data.Default.def)
+		(\u -> lcom $ line "trust" u $ showTrustLevel def)
 	  where
 		trustlevels = unwords $ map showTrustLevel [Trusted .. DeadTrusted]
 

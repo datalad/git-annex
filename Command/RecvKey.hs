@@ -20,8 +20,8 @@ import qualified Types.Key
 import qualified Types.Backend
 import qualified Backend
 
-def :: [Command]
-def = [noCommit $ command "recvkey" paramKey seek
+cmd :: [Command]
+cmd = [noCommit $ command "recvkey" paramKey seek
 	SectionPlumbing "runs rsync in server mode to receive content"]
 
 seek :: CommandSeek

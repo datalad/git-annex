@@ -13,8 +13,8 @@ import Annex.UUID
 import qualified Remote.GCrypt
 import qualified Git
 
-def :: [Command]
-def = [dontCheck repoExists $ noCommit $
+cmd :: [Command]
+cmd = [dontCheck repoExists $ noCommit $
 	command "gcryptsetup" paramValue seek
 		SectionPlumbing "sets up gcrypt repository"]
 

@@ -21,8 +21,8 @@ import qualified Command.Fsck
 
 import System.Console.GetOpt
 
-def :: [Command]
-def = [noCommit $ noRepo startNoRepo $ dontCheck repoExists $
+cmd :: [Command]
+cmd = [noCommit $ noRepo startNoRepo $ dontCheck repoExists $
 	command "help" paramNothing seek SectionQuery "display help"]
 
 seek :: CommandSeek
@@ -47,15 +47,15 @@ showGeneralHelp :: IO ()
 showGeneralHelp = putStrLn $ unlines
 	[ "The most frequently used git-annex commands are:"
 	, unlines $ map cmdline $ concat
-		[ Command.Init.def
-		, Command.Add.def
-		, Command.Drop.def
-		, Command.Get.def
-		, Command.Move.def
-		, Command.Copy.def
-		, Command.Sync.def
-		, Command.Whereis.def
-		, Command.Fsck.def
+		[ Command.Init.cmd
+		, Command.Add.cmd
+		, Command.Drop.cmd
+		, Command.Get.cmd
+		, Command.Move.cmd
+		, Command.Copy.cmd
+		, Command.Sync.cmd
+		, Command.Whereis.cmd
+		, Command.Fsck.cmd
 		]
 	, "Run 'git-annex' for a complete command list."
 	, "Run 'git-annex command --help' for help on a specific command."

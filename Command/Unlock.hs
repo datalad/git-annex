@@ -12,8 +12,8 @@ import Command
 import Annex.Content
 import Utility.CopyFile
 
-def :: [Command]
-def =
+cmd :: [Command]
+cmd =
 	[ c "unlock" "unlock files for modification"
 	, c "edit" "same as unlock"
 	]

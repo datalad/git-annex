@@ -13,8 +13,8 @@ import qualified Annex.Queue
 import Annex.Content
 import Types.Key
 
-def :: [Command]
-def = [notDirect $ notBareRepo $
+cmd :: [Command]
+cmd = [notDirect $ notBareRepo $
 	command "fromkey" (paramPair paramKey paramPath) seek
 		SectionPlumbing "adds a file using a specific key"]
 

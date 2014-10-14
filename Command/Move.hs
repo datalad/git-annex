@@ -17,8 +17,8 @@ import Annex.UUID
 import Annex.Transfer
 import Logs.Presence
 
-def :: [Command]
-def = [withOptions moveOptions $ command "move" paramPaths seek
+cmd :: [Command]
+cmd = [withOptions moveOptions $ command "move" paramPaths seek
 	SectionCommon "move content of files to/from another repository"]
 
 moveOptions :: [Option]

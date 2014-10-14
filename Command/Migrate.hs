@@ -17,8 +17,8 @@ import Annex.Content
 import qualified Command.ReKey
 import qualified Command.Fsck
 
-def :: [Command]
-def = [notDirect $ 
+cmd :: [Command]
+cmd = [notDirect $ 
 	command "migrate" paramPaths seek
 		SectionUtility "switch data to different backend"]
 

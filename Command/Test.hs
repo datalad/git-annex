@@ -11,8 +11,8 @@ import Common
 import Command
 import Messages
 
-def :: [Command]
-def = [ noRepo startIO $ dontCheck repoExists $
+cmd :: [Command]
+cmd = [ noRepo startIO $ dontCheck repoExists $
 	command "test" paramNothing seek SectionTesting
 		"run built-in test suite"]
 

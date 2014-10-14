@@ -16,8 +16,8 @@ import qualified Git
 import Command.Unused (withUnusedMaps, UnusedMaps(..), startUnused)
 import Config.NumCopies
 
-def :: [Command]
-def = [withOptions [Command.Drop.dropFromOption] $
+cmd :: [Command]
+cmd = [withOptions [Command.Drop.dropFromOption] $
 	command "dropunused" (paramRepeating paramNumRange)
 		seek SectionMaintenance "drop unused file content"]
 

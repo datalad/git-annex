@@ -39,8 +39,8 @@ import Data.Time
 import System.Posix.Types (EpochTime)
 import System.Locale
 
-def :: [Command]
-def = [withOptions fsckOptions $ command "fsck" paramPaths seek
+cmd :: [Command]
+cmd = [withOptions fsckOptions $ command "fsck" paramPaths seek
 	SectionMaintenance "check for problems"]
 
 fsckFromOption :: Option

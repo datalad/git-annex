@@ -25,8 +25,8 @@ import qualified Utility.Dot as Dot
 -- a link from the first repository to the second (its remote)
 data Link = Link Git.Repo Git.Repo
 
-def :: [Command]
-def = [dontCheck repoExists $
+cmd :: [Command]
+cmd = [dontCheck repoExists $
 	command "map" paramNothing seek SectionQuery
 		"generate map of repositories"]
 

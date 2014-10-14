@@ -14,8 +14,8 @@ import Git.Sha
 import qualified Git.Branch
 import Annex.AutoMerge
 
-def :: [Command]
-def = [command "resolvemerge" paramNothing seek SectionPlumbing
+cmd :: [Command]
+cmd = [command "resolvemerge" paramNothing seek SectionPlumbing
 	"resolve merge conflicts"]
 
 seek :: CommandSeek

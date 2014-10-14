@@ -37,8 +37,8 @@ import Types.MetaData
 import Logs.MetaData
 import Annex.MetaData
 
-def :: [Command]
-def = [notBareRepo $ withOptions [templateOption, relaxedOption] $
+cmd :: [Command]
+cmd = [notBareRepo $ withOptions [templateOption, relaxedOption] $
 	command "importfeed" (paramRepeating paramUrl) seek
 		SectionCommon "import files from podcast feeds"]
 

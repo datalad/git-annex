@@ -23,8 +23,8 @@ import Annex.UUID
 import qualified Annex
 import Git.Types (RemoteName)
 
-def :: [Command]
-def = [noCommit $ withOptions [allrepos] $ command "list" paramPaths seek
+cmd :: [Command]
+cmd = [noCommit $ withOptions [allrepos] $ command "list" paramPaths seek
 	SectionQuery "show which remotes contain files"]
 
 allrepos :: Option

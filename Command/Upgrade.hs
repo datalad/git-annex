@@ -11,8 +11,8 @@ import Common.Annex
 import Command
 import Upgrade
 
-def :: [Command]
-def = [dontCheck repoExists $ -- because an old version may not seem to exist
+cmd :: [Command]
+cmd = [dontCheck repoExists $ -- because an old version may not seem to exist
 	command "upgrade" paramNothing seek
 		SectionMaintenance "upgrade repository layout"]
 

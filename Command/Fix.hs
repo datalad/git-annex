@@ -18,8 +18,8 @@ import Utility.Touch
 #endif
 #endif
 
-def :: [Command]
-def = [notDirect $ noCommit $ command "fix" paramPaths seek
+cmd :: [Command]
+cmd = [notDirect $ noCommit $ command "fix" paramPaths seek
 	SectionMaintenance "fix up symlinks to point to annexed content"]
 
 seek :: CommandSeek

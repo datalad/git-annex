@@ -16,8 +16,8 @@ import Backend
 import Remote
 import Types.KeySource
 
-def :: [Command]
-def = [withOptions opts $ notBareRepo $ command "import" paramPaths seek
+cmd :: [Command]
+cmd = [withOptions opts $ notBareRepo $ command "import" paramPaths seek
 	SectionCommon "move and add files from outside git working copy"]
 
 opts :: [Option]

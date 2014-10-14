@@ -15,8 +15,8 @@ import qualified Command.InitRemote as InitRemote
 
 import qualified Data.Map as M
 
-def :: [Command]
-def = [command "enableremote"
+cmd :: [Command]
+cmd = [command "enableremote"
 	(paramPair paramName $ paramOptional $ paramRepeating paramKeyValue)
 	seek SectionSetup "enables use of an existing special remote"]
 

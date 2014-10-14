@@ -21,8 +21,8 @@ import Utility.FileMode
 import System.IO.HVFS
 import System.IO.HVFS.Utils
 
-def :: [Command]
-def = [addCheck check $ command "uninit" paramPaths seek 
+cmd :: [Command]
+cmd = [addCheck check $ command "uninit" paramPaths seek 
 	SectionUtility "de-initialize git-annex and clean out repository"]
 
 check :: Annex ()

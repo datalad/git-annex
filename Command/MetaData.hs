@@ -16,8 +16,8 @@ import Logs.MetaData
 import qualified Data.Set as S
 import Data.Time.Clock.POSIX
 
-def :: [Command]
-def = [withOptions metaDataOptions $
+cmd :: [Command]
+cmd = [withOptions metaDataOptions $
 	command "metadata" paramPaths seek
 	SectionMetaData "sets metadata of a file"]
 

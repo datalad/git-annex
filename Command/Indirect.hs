@@ -22,8 +22,8 @@ import Annex.CatFile
 import Annex.Init
 import qualified Command.Add
 
-def :: [Command]
-def = [notBareRepo $ noDaemonRunning $
+cmd :: [Command]
+cmd = [notBareRepo $ noDaemonRunning $
 	command "indirect" paramNothing seek
 		SectionSetup "switch repository to indirect mode"]
 

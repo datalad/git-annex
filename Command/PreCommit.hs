@@ -26,8 +26,8 @@ import Types.MetaData
 
 import qualified Data.Set as S
 
-def :: [Command]
-def = [command "pre-commit" paramPaths seek SectionPlumbing
+cmd :: [Command]
+cmd = [command "pre-commit" paramPaths seek SectionPlumbing
 	"run by git pre-commit hook"]
 
 seek :: CommandSeek

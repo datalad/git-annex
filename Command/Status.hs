@@ -16,8 +16,8 @@ import qualified Git.LsFiles as LsFiles
 import qualified Git.Ref
 import qualified Git
 
-def :: [Command]
-def = [notBareRepo $ noCommit $ noMessages $ withOptions [jsonOption] $
+cmd :: [Command]
+cmd = [notBareRepo $ noCommit $ noMessages $ withOptions [jsonOption] $
 	command "status" paramPaths seek SectionCommon
 		"show the working tree status"]
 

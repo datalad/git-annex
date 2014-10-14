@@ -69,8 +69,8 @@ data StatInfo = StatInfo
 -- a state monad for running Stats in
 type StatState = StateT StatInfo Annex
 
-def :: [Command]
-def = [noCommit $ dontCheck repoExists $ withOptions [jsonOption] $
+cmd :: [Command]
+cmd = [noCommit $ dontCheck repoExists $ withOptions [jsonOption] $
 	command "info" paramPaths seek SectionQuery
 	"shows general information about the annex"]
 

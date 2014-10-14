@@ -11,8 +11,8 @@ import Common.Annex
 import Command
 import Annex.Content
 
-def :: [Command]
-def = [noCommit $ command "inannex" (paramRepeating paramKey) seek
+cmd :: [Command]
+cmd = [noCommit $ command "inannex" (paramRepeating paramKey) seek
 	SectionPlumbing "checks if keys are present in the annex"]
 
 seek :: CommandSeek

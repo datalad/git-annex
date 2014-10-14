@@ -34,8 +34,8 @@ data RefChange = RefChange
 
 type Outputter = Bool -> POSIXTime -> [UUID] -> Annex ()
 
-def :: [Command]
-def = [withOptions options $
+cmd :: [Command]
+cmd = [withOptions options $
 	command "log" paramPaths seek SectionQuery "shows location log"]
 
 options :: [Option]

@@ -15,8 +15,8 @@ import qualified Annex.Branch
 import qualified Git.Config
 import Remote.GCrypt (coreGCryptId)
 
-def :: [Command]
-def = [noCommit $ command "configlist" paramNothing seek
+cmd :: [Command]
+cmd = [noCommit $ command "configlist" paramNothing seek
 	SectionPlumbing "outputs relevant git configuration"]
 
 seek :: CommandSeek

@@ -15,8 +15,8 @@ import Annex.Transfer
 import qualified Remote
 import Types.Remote
 
-def :: [Command]
-def = [withOptions transferKeyOptions $
+cmd :: [Command]
+cmd = [withOptions transferKeyOptions $
 	noCommit $ command "transferkey" paramKey seek SectionPlumbing
 		"transfers a key from or to a remote"]
 

@@ -13,8 +13,8 @@ import Command
 import Config.NumCopies
 import Types.Messages
 
-def :: [Command]
-def = [command "numcopies" paramNumber seek
+cmd :: [Command]
+cmd = [command "numcopies" paramNumber seek
 	SectionSetup "configure desired number of copies"]
 
 seek :: CommandSeek

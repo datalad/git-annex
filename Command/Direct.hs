@@ -15,8 +15,8 @@ import qualified Git.Branch
 import Config
 import Annex.Direct
 
-def :: [Command]
-def = [notBareRepo $ noDaemonRunning $
+cmd :: [Command]
+cmd = [notBareRepo $ noDaemonRunning $
 	command "direct" paramNothing seek
 		SectionSetup "switch repository to direct mode"]
 

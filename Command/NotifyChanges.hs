@@ -19,8 +19,8 @@ import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Concurrent.STM
 
-def :: [Command]
-def = [noCommit $ command "notifychanges" paramNothing seek SectionPlumbing
+cmd :: [Command]
+cmd = [noCommit $ command "notifychanges" paramNothing seek SectionPlumbing
 	"sends notification when git refs are changed"]
 
 seek :: CommandSeek

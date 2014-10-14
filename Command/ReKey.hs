@@ -17,8 +17,8 @@ import Logs.Web
 import Logs.Location
 import Utility.CopyFile
 
-def :: [Command]
-def = [notDirect $ command "rekey"
+cmd :: [Command]
+cmd = [notDirect $ command "rekey"
 	(paramOptional $ paramRepeating $ paramPair paramPath paramKey)
 	seek SectionPlumbing "change keys used for files"]
 

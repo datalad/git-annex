@@ -16,8 +16,8 @@ import Types.Messages
 
 import qualified Data.Map as M
 
-def :: [Command]
-def = [command "wanted" (paramPair paramRemote (paramOptional paramExpression)) seek
+cmd :: [Command]
+cmd = [command "wanted" (paramPair paramRemote (paramOptional paramExpression)) seek
 	SectionSetup "get or set preferred content expression"]
 
 seek :: CommandSeek

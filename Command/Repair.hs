@@ -16,8 +16,8 @@ import qualified Git.Ref
 import Git.Types
 import Annex.Version
 
-def :: [Command]
-def = [noCommit $ dontCheck repoExists $
+cmd :: [Command]
+cmd = [noCommit $ dontCheck repoExists $
 	command "repair" paramNothing seek SectionMaintenance "recover broken git repository"]
 
 seek :: CommandSeek

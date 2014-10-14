@@ -15,8 +15,8 @@ import Types.Group
 
 import qualified Data.Set as S
 
-def :: [Command]
-def = [command "ungroup" (paramPair paramRemote paramDesc) seek
+cmd :: [Command]
+cmd = [command "ungroup" (paramPair paramRemote paramDesc) seek
 	SectionSetup "remove a repository from a group"]
 
 seek :: CommandSeek
