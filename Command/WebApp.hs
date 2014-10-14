@@ -213,7 +213,7 @@ openBrowser mcmd htmlshim realurl outh errh = do
 #endif
   where
 	p = case mcmd of
-		Just cmd -> proc cmd [htmlshim]
+		Just c -> proc c [htmlshim]
 		Nothing -> 
 #ifndef mingw32_HOST_OS
 			browserProc url
