@@ -1,16 +1,16 @@
-From 8e115228601a97b19d3f713ccf2d13f58838d927 Mon Sep 17 00:00:00 2001
+From 438479e3573d4a9fa2e001b8f7ec5f9a595d7514 Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Mon, 26 May 2014 01:48:22 +0000
-Subject: [PATCH] expand TH
+Date: Tue, 14 Oct 2014 03:48:07 +0000
+Subject: [PATCH] avoid TH
 
 ---
- DAV.cabal                       |   24 +---
- Network/Protocol/HTTP/DAV.hs    |   96 ++++++++++++----
+ DAV.cabal                       |   25 +----
+ Network/Protocol/HTTP/DAV.hs    |   92 +++++++++++++---
  Network/Protocol/HTTP/DAV/TH.hs |  232 ++++++++++++++++++++++++++++++++++++++-
- 3 files changed, 307 insertions(+), 45 deletions(-)
+ 3 files changed, 306 insertions(+), 43 deletions(-)
 
 diff --git a/DAV.cabal b/DAV.cabal
-index 5d50e39..f2abf89 100644
+index f8fdd40..92945c3 100644
 --- a/DAV.cabal
 +++ b/DAV.cabal
 @@ -43,30 +43,7 @@ library
@@ -26,7 +26,7 @@ index 5d50e39..f2abf89 100644
 -                     , case-insensitive >= 0.4
 -                     , containers
 -                     , data-default
--                     , either >= 4.1
+-                     , either >= 4.3
 -                     , errors
 -                     , exceptions
 -                     , http-client >= 0.2
@@ -35,7 +35,7 @@ index 5d50e39..f2abf89 100644
 -                     , lens >= 3.0
 -                     , mtl >= 2.1
 -                     , network >= 2.3
--                     , optparse-applicative >= 0.5.0
+-                     , optparse-applicative >= 0.10.0
 -                     , transformers >= 0.3
 -                     , transformers-base
 -                     , utf8-string
@@ -412,3 +412,6 @@ index 0ecd476..1653bf6 100644
 +             __userAgent_a3kh)
 +     Data.Functor.<$> (_f_a3k7 __userAgent'_a3kg))
 +{-# INLINE userAgent #-}
+-- 
+1.7.10.4
+

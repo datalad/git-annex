@@ -1,3 +1,17 @@
+From 98077d391b930a4c1f69e3b8810409fd261eee34 Mon Sep 17 00:00:00 2001
+From: androidbuilder <androidbuilder@example.com>
+Date: Tue, 14 Oct 2014 03:17:38 +0000
+Subject: [PATCH] expand and remove TH
+
+---
+ Yesod/Form/Bootstrap3.hs |  186 +++++++++--
+ Yesod/Form/Fields.hs     |  797 +++++++++++++++++++++++++++++++++++-----------
+ Yesod/Form/Functions.hs  |  257 ++++++++++++---
+ Yesod/Form/Jquery.hs     |  134 ++++++--
+ Yesod/Form/MassInput.hs  |  226 ++++++++++---
+ Yesod/Form/Nic.hs        |   46 +--
+ 6 files changed, 1279 insertions(+), 367 deletions(-)
+
 diff --git a/Yesod/Form/Bootstrap3.hs b/Yesod/Form/Bootstrap3.hs
 index 84e85fc..1954fb4 100644
 --- a/Yesod/Form/Bootstrap3.hs
@@ -215,7 +229,7 @@ index 84e85fc..1954fb4 100644
                          , fvTooltip  = Nothing
                          , fvId       = bootstrapSubmitId
 diff --git a/Yesod/Form/Fields.hs b/Yesod/Form/Fields.hs
-index 8173e78..8ee847d 100644
+index 8173e78..68a284c 100644
 --- a/Yesod/Form/Fields.hs
 +++ b/Yesod/Form/Fields.hs
 @@ -1,4 +1,3 @@
@@ -426,10 +440,11 @@ index 8173e78..8ee847d 100644
      , fieldEnctype = UrlEncoded
      }
    where showVal = either id (pack . renderHtml)
-@@ -194,9 +262,17 @@ textareaField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m
+@@ -193,10 +261,17 @@ instance ToHtml Textarea where
+ textareaField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Textarea
  textareaField = Field
      { fieldParse = parseHelper $ Right . Textarea
-     , fieldView = \theId name attrs val isReq -> toWidget [hamlet|
+-    , fieldView = \theId name attrs val isReq -> toWidget [hamlet|
 -$newline never
 -<textarea id="#{theId}" name="#{name}" :isReq:required="" *{attrs}>#{either id unTextarea val}
 -|]
@@ -447,7 +462,7 @@ index 8173e78..8ee847d 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -204,10 +280,19 @@ hiddenField :: (Monad m, PathPiece p, RenderMessage (HandlerSite m) FormMessage)
+@@ -204,10 +279,19 @@ hiddenField :: (Monad m, PathPiece p, RenderMessage (HandlerSite m) FormMessage)
              => Field m p
  hiddenField = Field
      { fieldParse = parseHelper $ maybe (Left MsgValueRequired) Right . fromPathPiece
@@ -471,7 +486,7 @@ index 8173e78..8ee847d 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -215,20 +300,53 @@ textField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Tex
+@@ -215,20 +299,53 @@ textField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Tex
  textField = Field
      { fieldParse = parseHelper $ Right
      , fieldView = \theId name attrs val isReq ->
@@ -533,7 +548,7 @@ index 8173e78..8ee847d 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -300,10 +418,24 @@ emailField = Field
+@@ -300,10 +417,24 @@ emailField = Field
              case Email.canonicalizeEmail $ encodeUtf8 s of
                  Just e -> Right $ decodeUtf8With lenientDecode e
                  Nothing -> Left $ MsgInvalidEmail s
@@ -562,7 +577,7 @@ index 8173e78..8ee847d 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -318,10 +450,25 @@ multiEmailField = Field
+@@ -318,10 +449,25 @@ multiEmailField = Field
              in case partitionEithers addrs of
                  ([], good) -> Right good
                  (bad, _) -> Left $ MsgInvalidEmail $ cat bad
@@ -592,7 +607,7 @@ index 8173e78..8ee847d 100644
      , fieldEnctype = UrlEncoded
      }
      where
-@@ -337,20 +484,75 @@ searchField :: Monad m => RenderMessage (HandlerSite m) FormMessage => AutoFocus
+@@ -337,20 +483,75 @@ searchField :: Monad m => RenderMessage (HandlerSite m) FormMessage => AutoFocus
  searchField autoFocus = Field
      { fieldParse = parseHelper Right
      , fieldView = \theId name attrs val isReq -> do
@@ -680,7 +695,7 @@ index 8173e78..8ee847d 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -361,7 +563,28 @@ urlField = Field
+@@ -361,7 +562,28 @@ urlField = Field
              Nothing -> Left $ MsgInvalidUrl s
              Just _ -> Right s
      , fieldView = \theId name attrs val isReq ->
@@ -710,7 +725,7 @@ index 8173e78..8ee847d 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -374,18 +597,54 @@ selectField :: (Eq a, RenderMessage site FormMessage)
+@@ -374,18 +596,54 @@ selectField :: (Eq a, RenderMessage site FormMessage)
              => HandlerT site IO (OptionList a)
              -> Field (HandlerT site IO) a
  selectField = selectFieldHelper
@@ -777,7 +792,7 @@ index 8173e78..8ee847d 100644
  
  multiSelectFieldList :: (Eq a, RenderMessage site FormMessage, RenderMessage site msg)
                       => [(msg, a)]
-@@ -408,11 +667,45 @@ multiSelectField ioptlist =
+@@ -408,11 +666,45 @@ multiSelectField ioptlist =
      view theId name attrs val isReq = do
          opts <- fmap olOptions $ handlerToWidget ioptlist
          let selOpts = map (id &&& (optselected val)) opts
@@ -828,7 +843,7 @@ index 8173e78..8ee847d 100644
          where
              optselected (Left _) _ = False
              optselected (Right vals) opt = (optionInternalValue opt) `elem` vals
-@@ -435,54 +728,196 @@ checkboxesField ioptlist = (multiSelectField ioptlist)
+@@ -435,54 +727,196 @@ checkboxesField ioptlist = (multiSelectField ioptlist)
              opts <- fmap olOptions $ handlerToWidget ioptlist
              let optselected (Left _) _ = False
                  optselected (Right vals) opt = (optionInternalValue opt) `elem` vals
@@ -976,9 +991,6 @@ index 8173e78..8ee847d 100644
 -      <input id=#{theId}-none *{attrs} type=radio name=#{name} value=none checked>
 -      <label for=#{theId}-none>_{MsgSelectNone}
 -
--
--<input id=#{theId}-yes *{attrs} type=radio name=#{name} value=yes :showVal id val:checked>
--<label for=#{theId}-yes>_{MsgBoolYes}
 +      , fieldView = \theId name attrs val isReq ->       do { condH
 +             [(not isReq, 
 +               do { (asWidgetT . toWidget)
@@ -1056,13 +1068,16 @@ index 8173e78..8ee847d 100644
 +           (asWidgetT . toWidget)
 +             ((Text.Blaze.Internal.preEscapedText . pack) "</label>") }
  
+-<input id=#{theId}-yes *{attrs} type=radio name=#{name} value=yes :showVal id val:checked>
+-<label for=#{theId}-yes>_{MsgBoolYes}
+-
 -<input id=#{theId}-no *{attrs} type=radio name=#{name} value=no :showVal not val:checked>
 -<label for=#{theId}-no>_{MsgBoolNo}
 -|]
      , fieldEnctype = UrlEncoded
      }
    where
-@@ -508,10 +943,24 @@ $newline never
+@@ -508,10 +942,24 @@ $newline never
  checkBoxField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Bool
  checkBoxField = Field
      { fieldParse = \e _ -> return $ checkBoxParser e
@@ -1091,7 +1106,59 @@ index 8173e78..8ee847d 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -642,9 +1091,21 @@ fileField = Field
+@@ -555,51 +1003,6 @@ optionsPairs opts = do
+ optionsEnum :: (MonadHandler m, Show a, Enum a, Bounded a) => m (OptionList a)
+ optionsEnum = optionsPairs $ map (\x -> (pack $ show x, x)) [minBound..maxBound]
+ 
+-optionsPersist :: ( YesodPersist site, PersistEntity a
+-                  , PersistQuery (PersistEntityBackend a)
+-                  , PathPiece (Key a)
+-                  , RenderMessage site msg
+-                  , YesodPersistBackend site ~ PersistEntityBackend a
+-                  )
+-               => [Filter a]
+-               -> [SelectOpt a]
+-               -> (a -> msg)
+-               -> HandlerT site IO (OptionList (Entity a))
+-optionsPersist filts ords toDisplay = fmap mkOptionList $ do
+-    mr <- getMessageRender
+-    pairs <- runDB $ selectList filts ords
+-    return $ map (\(Entity key value) -> Option
+-        { optionDisplay = mr (toDisplay value)
+-        , optionInternalValue = Entity key value
+-        , optionExternalValue = toPathPiece key
+-        }) pairs
+-
+--- | An alternative to 'optionsPersist' which returns just the @Key@ instead of
+--- the entire @Entity@.
+---
+--- Since 1.3.2
+-optionsPersistKey
+-  :: (YesodPersist site
+-     , PersistEntity a
+-     , PersistQuery (PersistEntityBackend a)
+-     , PathPiece (Key a)
+-     , RenderMessage site msg
+-     , YesodPersistBackend site ~ PersistEntityBackend a
+-     )
+-  => [Filter a]
+-  -> [SelectOpt a]
+-  -> (a -> msg)
+-  -> HandlerT site IO (OptionList (Key a))
+-
+-optionsPersistKey filts ords toDisplay = fmap mkOptionList $ do
+-    mr <- getMessageRender
+-    pairs <- runDB $ selectList filts ords
+-    return $ map (\(Entity key value) -> Option
+-        { optionDisplay = mr (toDisplay value)
+-        , optionInternalValue = key
+-        , optionExternalValue = toPathPiece key
+-        }) pairs
+-
+ selectFieldHelper
+         :: (Eq a, RenderMessage site FormMessage)
+         => (Text -> Text -> [(Text, Text)] -> WidgetT site IO () -> WidgetT site IO ())
+@@ -642,9 +1045,21 @@ fileField = Field
          case files of
              [] -> Right Nothing
              file:_ -> Right $ Just file
@@ -1116,7 +1183,7 @@ index 8173e78..8ee847d 100644
      , fieldEnctype = Multipart
      }
  
-@@ -671,10 +1132,19 @@ fileAFormReq fs = AForm $ \(site, langs) menvs ints -> do
+@@ -671,10 +1086,19 @@ fileAFormReq fs = AForm $ \(site, langs) menvs ints -> do
              { fvLabel = toHtml $ renderMessage site langs $ fsLabel fs
              , fvTooltip = fmap (toHtml . renderMessage site langs) $ fsTooltip fs
              , fvId = id'
@@ -1140,7 +1207,7 @@ index 8173e78..8ee847d 100644
              , fvErrors = errs
              , fvRequired = True
              }
-@@ -703,10 +1173,19 @@ fileAFormOpt fs = AForm $ \(master, langs) menvs ints -> do
+@@ -703,10 +1127,19 @@ fileAFormOpt fs = AForm $ \(master, langs) menvs ints -> do
              { fvLabel = toHtml $ renderMessage master langs $ fsLabel fs
              , fvTooltip = fmap (toHtml . renderMessage master langs) $ fsTooltip fs
              , fvId = id'
@@ -1969,3 +2036,6 @@ index 2862678..7a0f25a 100644
 -addScript' f = do
 -    y <- getYesod
 -    addScriptEither $ f y
+-- 
+1.7.10.4
+

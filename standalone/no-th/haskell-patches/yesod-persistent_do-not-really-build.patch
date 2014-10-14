@@ -1,23 +1,23 @@
-From 92a34bc2b09572a58a4e696e0d8a0a61475535f7 Mon Sep 17 00:00:00 2001
+From 85917e8b5da3c67c6ca0791fdad735ffb864ae3b Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Tue, 10 Jun 2014 19:09:56 +0000
-Subject: [PATCH] do not really build
+Date: Tue, 14 Oct 2014 02:50:19 +0000
+Subject: [PATCH] not needed
 
 ---
- yesod-persistent.cabal | 10 ----------
+ yesod-persistent.cabal |   10 ----------
  1 file changed, 10 deletions(-)
 
 diff --git a/yesod-persistent.cabal b/yesod-persistent.cabal
-index b44499b..ef33863 100644
+index 2e5735d..438c76d 100644
 --- a/yesod-persistent.cabal
 +++ b/yesod-persistent.cabal
 @@ -14,16 +14,6 @@ description:     Some helpers for using Persistent from Yesod.
  
  library
      build-depends:   base                      >= 4        && < 5
--                   , yesod-core                >= 1.2.2    && < 1.3
--                   , persistent                >= 1.2      && < 1.4
--                   , persistent-template       >= 1.2      && < 1.4
+-                   , yesod-core                >= 1.4.0    && < 1.5
+-                   , persistent                >= 2.1      && < 2.2
+-                   , persistent-template       >= 2.1      && < 2.2
 -                   , transformers              >= 0.2.2
 -                   , blaze-builder
 -                   , conduit
@@ -29,5 +29,5 @@ index b44499b..ef33863 100644
  
  test-suite test
 -- 
-2.0.0
+1.7.10.4
 
