@@ -30,11 +30,6 @@ setupcabal () {
 	export PATH
 }
 
-cabalinstall () {
-	echo cabal install "$@" "$cabalopts"
-	eval cabal install "$@" "$cabalopts"
-}
-
 patched () {
 	pkg=$1
 	ver=$2
@@ -62,17 +57,22 @@ patched () {
 			fi
 		fi
 	done
-	cabalinstall
+
+	ln -sf ../../cabal.config
+	cabal install "$@" "$cabalopts"
+	rm -f cabal.config
+
 	rm -rf $pkg*
 	cd ..
 }
 
 installgitannexdeps () {
-	rm -f git-annex.cabal
-	ln -s ../../git-annex.cabal
-	echo cabal install --only-dependencies "$@"
+	pushd
+	cd ../..
+	ln -sf standalone/android/cabal.config
 	cabal install --only-dependencies "$@"
-	rm -f git-annex.cabal
+	rm -f cabal.config
+	popd
 }
 
 install_pkgs () {
