@@ -9,7 +9,6 @@ module Types.StandardGroups where
 
 import Types.Remote (RemoteConfig)
 import Types.Group
-import Data.Default
 
 import qualified Data.Map as M
 import Data.Maybe
