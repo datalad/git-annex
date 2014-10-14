@@ -34,7 +34,7 @@ patched () {
 	pkg=$1
 	ver=$2
 	if [ -z "$ver" ]; then
-		ver="$(grep " $pkg " cabal.config | cut -d= -f 3 | sed 's/,$//')"
+		ver="$(grep " $pkg " ../cabal.config | cut -d= -f 3 | sed 's/,$//')"
 	fi
 	if [ -z "$ver" ]; then
 		cabal unpack $pkg
