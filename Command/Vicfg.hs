@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE RankNTypes #-}
+
 module Command.Vicfg where
 
 import qualified Data.Map as M
@@ -12,6 +14,7 @@ import qualified Data.Set as S
 import System.Environment (getEnv)
 import Data.Tuple (swap)
 import Data.Char (isSpace)
+import Data.Default
 
 import Common.Annex
 import Command
@@ -49,7 +52,7 @@ vicfg curcfg f = do
 	-- Allow EDITOR to be processed by the shell, so it can contain options.
 	unlessM (liftIO $ boolSystem "sh" [Param "-c", Param $ unwords [vi, shellEscape f]]) $
 		error $ vi ++ " exited nonzero; aborting"
-	r <- parseCfg curcfg <$> liftIO (readFileStrict f)
+	r <- parseCfg (defCfg curcfg) <$> liftIO (readFileStrict f)
 	liftIO $ nukeFile f
 	case r of
 		Left s -> do
@@ -84,6 +87,21 @@ setCfg curcfg newcfg = do
 	mapM_ (uncurry requiredContentSet) $ M.toList $ cfgRequiredContentMap diff
 	mapM_ (uncurry groupPreferredContentSet) $ M.toList $ cfgGroupPreferredContentMap diff
 	mapM_ (uncurry scheduleSet) $ M.toList $ cfgScheduleMap diff
+
+{- Default config has all the keys from the input config, but with their
+ - default values. -}
+defCfg :: Cfg -> Cfg
+defCfg curcfg = Cfg
+	{ cfgTrustMap = mapdef $ cfgTrustMap curcfg
+	, cfgGroupMap = mapdef $ cfgGroupMap curcfg
+	, cfgPreferredContentMap = mapdef $ cfgPreferredContentMap curcfg
+	, cfgRequiredContentMap = mapdef $ cfgRequiredContentMap curcfg
+	, cfgGroupPreferredContentMap = mapdef $ cfgGroupPreferredContentMap curcfg
+	, cfgScheduleMap = mapdef $ cfgScheduleMap curcfg
+	}
+  where
+	mapdef :: forall k v. Default v => M.Map k v -> M.Map k v
+	mapdef = M.map (const Data.Default.def)
 
 diffCfg :: Cfg -> Cfg -> Cfg
 diffCfg curcfg newcfg = Cfg
@@ -124,7 +142,7 @@ genCfg cfg descs = unlines $ intercalate [""]
 		, com "(Valid trust levels: " ++ trustlevels ++ ")"
 		]
 		(\(t, u) -> line "trust" u $ showTrustLevel t)
-		(\u -> lcom $ line "trust" u $ showTrustLevel SemiTrusted)
+		(\u -> lcom $ line "trust" u $ showTrustLevel Data.Default.def)
 	  where
 		trustlevels = unwords $ map showTrustLevel [Trusted .. DeadTrusted]
 
@@ -203,7 +221,7 @@ lcom = map (\l -> if "#" `isPrefixOf` l then l else '#' : l)
 {- If there's a parse error, returns a new version of the file,
  - with the problem lines noted. -}
 parseCfg :: Cfg -> String -> Either String Cfg
-parseCfg curcfg = go [] curcfg . lines
+parseCfg defcfg = go [] defcfg . lines
   where
 	go c cfg []
 		| null (mapMaybe fst c) = Right cfg

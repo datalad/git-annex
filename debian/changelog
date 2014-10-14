@@ -1,3 +1,10 @@
+git-annex (5.20141014) UNRELEASED; urgency=medium
+
+  * vicfg: Deleting configurations now resets to the default, where
+    before it has no effect.
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 14 Oct 2014 14:09:24 -0400
+
 git-annex (5.20141013) unstable; urgency=medium
 
   * Adjust cabal file to support building w/o assistant on the hurd.

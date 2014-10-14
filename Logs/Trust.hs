@@ -19,6 +19,7 @@ module Logs.Trust (
 ) where
 
 import qualified Data.Map as M
+import Data.Default
 
 import Common.Annex
 import Types.TrustLevel
@@ -38,7 +39,7 @@ trustGet level = M.keys . M.filter (== level) <$> trustMap
 
 {- Returns the TrustLevel of a given repo UUID. -}
 lookupTrust :: UUID -> Annex TrustLevel
-lookupTrust u = (fromMaybe SemiTrusted . M.lookup u) <$> trustMap
+lookupTrust u = (fromMaybe def . M.lookup u) <$> trustMap
 
 {- Partitions a list of UUIDs to those matching a TrustLevel and not. -}
 trustPartition :: TrustLevel -> [UUID] -> Annex ([UUID], [UUID])
