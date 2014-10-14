@@ -282,3 +282,6 @@ git-annex-5.20140927
 
 # End of transcript or log.
 """]]
+
+> You're not building the most recent version of git-annex; this was
+> already fixed in version 5.20141013. [[done]] --[[Joey]]
