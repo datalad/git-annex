@@ -20,11 +20,6 @@ cabalopts="$@"
 setupcabal () {
 	cabal update
 
-	# Workaround for http://www.reddit.com/r/haskell/comments/26045a/if_youre_finding_cabal_cant_build_your_project/
-	# should be able to remove this eventually.
-	cabal install transformers-compat -fthree
-	cabal install mtl-2.1.3.1
-
 	# Some packages fail to install in a non unicode locale.
 	LANG=en_US.UTF-8
 	export LANG
@@ -73,10 +68,11 @@ patched () {
 }
 
 installgitannexdeps () {
-	pushd ../..
+	rm -f git-annex.cabal
+	ln -s ../../git-annex.cabal
 	echo cabal install --only-dependencies "$@"
 	cabal install --only-dependencies "$@"
-	popd
+	rm -f git-annex.cabal
 }
 
 install_pkgs () {
