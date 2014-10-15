@@ -28,7 +28,11 @@ import Yesod as Y
 #else
 import Yesod as Y hiding (Html)
 #endif
+#if MIN_VERSION_yesod_form(1,3,8)
+import Yesod.Form.Bootstrap3 as Y hiding (bfs)
+#else
 import Assistant.WebApp.Bootstrap3 as Y hiding (bfs)
+#endif
 #ifndef __NO_TH__
 import Yesod.Default.Util
 import Language.Haskell.TH.Syntax (Q, Exp)

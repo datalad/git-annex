@@ -24,11 +24,11 @@ seek :: CommandSeek
 seek = trustCommand "trust" Trusted
 
 trustCommand :: String -> TrustLevel -> CommandSeek
-trustCommand cmdname level = withWords start
+trustCommand cmd level = withWords start
   where
 	start ws = do
 		let name = unwords ws
-		showStart cmdname name
+		showStart cmd name
 		u <- Remote.nameToUUID name
 		next $ perform u
 	perform uuid = do

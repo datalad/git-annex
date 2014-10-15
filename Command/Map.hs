@@ -194,11 +194,11 @@ tryScan r
 	| Git.repoIsUrl r = return Nothing
 	| otherwise = liftIO $ safely $ Git.Config.read r
   where
-	pipedconfig c params = liftIO $ safely $
+	pipedconfig cmd params = liftIO $ safely $
 		withHandle StdoutHandle createProcessSuccess p $
 			Git.Config.hRead r
 	  where
-		p = proc c $ toCommand params
+		p = proc cmd $ toCommand params
 
 	configlist = Ssh.onRemote r (pipedconfig, return Nothing) "configlist" [] []
 	manualconfiglist = do
