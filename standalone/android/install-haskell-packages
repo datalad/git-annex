@@ -50,9 +50,15 @@ patched () {
 			fi
 		fi
 	done
-
+	set -x
 	ln -sf ../../cabal.config
-	cabal install "$@"
+	if [ -e config.sub ]; then
+		cp /usr/share/misc/config.sub .
+	fi
+	if [ -e config.guess ]; then
+		cp /usr/share/misc/config.guess .
+	fi
+	cabal install # --reinstall --force-reinstalls
 	rm -f cabal.config
 
 	rm -rf $pkg*
@@ -72,6 +78,8 @@ install_pkgs () {
 	rm -rf tmp
 	mkdir tmp
 	cd tmp
+cat <<EOF
+EOF
 	patched network
 	patched unix-time
 	patched lifted-base
@@ -82,7 +90,7 @@ install_pkgs () {
 	patched iproute
 	patched primitive
 	patched socks
-	patched entropy
+	# patched entropy # needed for newer version, not current pinned version
 	patched vector
 	patched stm-chans
 	patched persistent
@@ -119,17 +127,9 @@ install_pkgs () {
 	installgitannexdeps -fAndroid -f-Pairing
 }
 
-echo
-echo
-echo native build
-echo
-setupcabal
-installgitannexdeps
+# native cabal needs its own update
+cabal update
 
-echo 
-echo
-echo cross build
-echo
 PATH=$HOME/.ghc/$(cat abiversion)/bin:$HOME/.ghc/$(cat abiversion)/arm-linux-androideabi/bin:$PATH
 setupcabal
 install_pkgs
