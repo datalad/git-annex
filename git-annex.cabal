@@ -158,7 +158,7 @@ Executable git-annex
     Build-Depends: DAV (>= 1.0), http-client
     CPP-Options: -DWITH_WEBDAV
 
-  if flag(Assistant) && ! os(solaris) && ! os(gnu)
+  if flag(Assistant) && ! os(solaris)
     CPP-Options: -DWITH_ASSISTANT
 
   if flag(Assistant)
@@ -179,9 +179,8 @@ Executable git-annex
               Build-Depends: hinotify
               CPP-Options: -DWITH_INOTIFY
             else
-              if ! os(gnu)
-                CPP-Options: -DWITH_KQUEUE
-                C-Sources: Utility/libkqueue.c
+              CPP-Options: -DWITH_KQUEUE
+              C-Sources: Utility/libkqueue.c
 
   if (os(linux))
     if flag(Dbus)
