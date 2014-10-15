@@ -15,8 +15,6 @@ if [ ! -d haskell-patches ]; then
 	cd standalone/android
 fi
 
-cabalopts="$@"
-
 setupcabal () {
 	cabal update
 
@@ -54,7 +52,7 @@ patched () {
 	done
 
 	ln -sf ../../cabal.config
-	cabal install "$@" "$cabalopts"
+	cabal install "$@"
 	rm -f cabal.config
 
 	rm -rf $pkg*
