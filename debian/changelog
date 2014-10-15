@@ -4,6 +4,8 @@ git-annex (5.20141014) UNRELEASED; urgency=medium
     before it has no effect.
   * Remove hurd stuff from cabal file, since hackage currently rejects
     it.
+  * initremote: Don't allow creating a special remote that has the same
+    name as an existing git remote.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 14 Oct 2014 14:09:24 -0400
 
