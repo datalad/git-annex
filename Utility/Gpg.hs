@@ -334,7 +334,7 @@ testHarness a = do
 	setup = do
 		base <- getTemporaryDirectory
 		dir <- mktmpdir $ base </> "gpgtmpXXXXXX"
-		void $ setEnv var dir True
+		setEnv var dir True
 		-- For some reason, recent gpg needs a trustdb to be set up.
 		_ <- pipeStrict [Params "--trust-model auto --update-trustdb"] []
 		_ <- pipeStrict [Params "--import -q"] $ unlines

@@ -1346,7 +1346,6 @@ test_add_subdirs testenv = intmpclonerepo testenv $ do
 -- (when the OS allows) so test coverage collection works.
 git_annex :: TestEnv -> String -> [String] -> IO Bool
 git_annex testenv command params = do
-#ifndef mingw32_HOST_OS
 	forM_ (M.toList testenv) $ \(var, val) ->
 		Utility.Env.setEnv var val True
 
@@ -1357,11 +1356,6 @@ git_annex testenv command params = do
 		Left _ -> return False
   where
 	run = GitAnnex.run (command:"-q":params)
-#else
-	Utility.SafeCommand.boolSystemEnv "git-annex"
-		(map Param $ command : params)
-		(Just $ M.toList testenv)
-#endif
 
 {- Runs git-annex and returns its output. -}
 git_annex_output :: TestEnv -> String -> [String] -> IO String

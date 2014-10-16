@@ -52,7 +52,7 @@ unattendedUpgrade = do
 prepUpgrade :: Assistant ()
 prepUpgrade = do
 	void $ addAlert upgradingAlert
-	void $ liftIO $ setEnv upgradedEnv "1" True
+	liftIO $ setEnv upgradedEnv "1" True
 	prepRestart
 
 postUpgrade :: URLString -> Assistant ()

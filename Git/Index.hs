@@ -21,8 +21,8 @@ import Utility.Env
 override :: FilePath -> IO (IO ())
 override index = do
 	res <- getEnv var
-	void $ setEnv var index True
-	return $ void $ reset res
+	setEnv var index True
+	return $ reset res
   where
 	var = "GIT_INDEX_FILE"
 	reset (Just v) = setEnv var v True

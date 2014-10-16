@@ -19,10 +19,6 @@ usable!
 * Deleting a git repository from inside the webapp fails "RemoveDirectory
   permision denied ... file is being used by another process"
 
-* There are a lot of hacks to avoid setting environment on windows, 
-  because I didn't know about <https://hackage.haskell.org/package/setenv>.
-  Those hacks should be removed!
-
 ## potential encoding problems
 
 [[bugs/Unicode_file_names_ignored_on_Windows]] is fixed, but some potential

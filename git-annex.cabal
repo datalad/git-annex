@@ -125,7 +125,7 @@ Executable git-annex
     GHC-Options: -O2
 
   if (os(windows))
-    Build-Depends: Win32, Win32-extras, unix-compat (>= 0.4.1.3)
+    Build-Depends: Win32, Win32-extras, unix-compat (>= 0.4.1.3), setenv
     C-Sources: Utility/winprocess.c
   else
     Build-Depends: unix

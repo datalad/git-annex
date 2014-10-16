@@ -6,6 +6,10 @@ git-annex (5.20141014) UNRELEASED; urgency=medium
     it.
   * initremote: Don't allow creating a special remote that has the same
     name as an existing git remote.
+  * Windows: Use haskell setenv library to clean up several ugly workarounds
+    for inability to manipulate the environment on windows. This includes
+    making git-annex not re-exec itself on start on windows, and making the
+    test suite on Windows run tests without forking.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 14 Oct 2014 14:09:24 -0400
 

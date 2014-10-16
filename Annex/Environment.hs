@@ -35,23 +35,18 @@ checkEnvironment = do
 		liftIO checkEnvironmentIO
 
 checkEnvironmentIO :: IO ()
-checkEnvironmentIO =
-#ifdef mingw32_HOST_OS
-	noop
-#else
-	whenM (null <$> myUserGecos) $ do
-		username <- myUserName
-		ensureEnv "GIT_AUTHOR_NAME" username
-		ensureEnv "GIT_COMMITTER_NAME" username
+checkEnvironmentIO = whenM (null <$> myUserGecos) $ do
+	username <- myUserName
+	ensureEnv "GIT_AUTHOR_NAME" username
+	ensureEnv "GIT_COMMITTER_NAME" username
   where
 #ifndef __ANDROID__
 	-- existing environment is not overwritten
-	ensureEnv var val = void $ setEnv var val False
+	ensureEnv var val = setEnv var val False
 #else
 	-- Environment setting is broken on Android, so this is dealt with
 	-- in runshell instead.
 	ensureEnv _ _ = noop
-#endif
 #endif
 
 {- Runs an action that commits to the repository, and if it fails, 
