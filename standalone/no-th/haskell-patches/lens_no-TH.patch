@@ -1,20 +1,20 @@
-From bc312c7431877b3b788de5e7ce5ee743be73c0ba Mon Sep 17 00:00:00 2001
+From 10c9ade98b3ac2054947f411d77db2eb28896b9f Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Tue, 10 Jun 2014 22:13:58 +0000
-Subject: [PATCH] remove TH
+Date: Thu, 16 Oct 2014 01:43:10 +0000
+Subject: [PATCH] avoid TH
 
 ---
- lens.cabal                          | 19 +------------------
+ lens.cabal                          | 17 +----------------
  src/Control/Lens.hs                 |  8 ++------
  src/Control/Lens/Cons.hs            |  2 --
  src/Control/Lens/Internal/Fold.hs   |  2 --
  src/Control/Lens/Operators.hs       |  2 +-
  src/Control/Lens/Prism.hs           |  2 --
  src/Control/Monad/Primitive/Lens.hs |  1 -
- 7 files changed, 4 insertions(+), 32 deletions(-)
+ 7 files changed, 4 insertions(+), 30 deletions(-)
 
 diff --git a/lens.cabal b/lens.cabal
-index d70c2f4..28af768 100644
+index 5388301..d7b02b9 100644
 --- a/lens.cabal
 +++ b/lens.cabal
 @@ -10,7 +10,7 @@ stability:     provisional
@@ -26,7 +26,7 @@ index d70c2f4..28af768 100644
  -- build-tools:   cpphs
  tested-with:   GHC == 7.4.1, GHC == 7.4.2, GHC == 7.6.3, GHC == 7.8.1, GHC == 7.8.2
  synopsis:      Lenses, Folds and Traversals
-@@ -220,7 +220,6 @@ library
+@@ -217,7 +217,6 @@ library
      Control.Exception.Lens
      Control.Lens
      Control.Lens.Action
@@ -34,7 +34,16 @@ index d70c2f4..28af768 100644
      Control.Lens.Combinators
      Control.Lens.Cons
      Control.Lens.Each
-@@ -248,29 +247,24 @@ library
+@@ -234,8 +233,6 @@ library
+     Control.Lens.Internal.Context
+     Control.Lens.Internal.Deque
+     Control.Lens.Internal.Exception
+-    Control.Lens.Internal.FieldTH
+-    Control.Lens.Internal.PrismTH
+     Control.Lens.Internal.Fold
+     Control.Lens.Internal.Getter
+     Control.Lens.Internal.Indexed
+@@ -247,25 +244,21 @@ library
      Control.Lens.Internal.Reflection
      Control.Lens.Internal.Review
      Control.Lens.Internal.Setter
@@ -60,11 +69,7 @@ index d70c2f4..28af768 100644
      Control.Monad.Primitive.Lens
      Control.Parallel.Strategies.Lens
      Control.Seq.Lens
--    Data.Aeson.Lens
-     Data.Array.Lens
-     Data.Bits.Lens
-     Data.ByteString.Lens
-@@ -293,17 +287,10 @@ library
+@@ -291,12 +284,8 @@ library
      Data.Typeable.Lens
      Data.Vector.Lens
      Data.Vector.Generic.Lens
@@ -76,13 +81,8 @@ index d70c2f4..28af768 100644
 -    Language.Haskell.TH.Lens
      Numeric.Lens
  
--  other-modules:
--    Control.Lens.Internal.TupleIxedTH
--
-   cpp-options: -traditional
- 
-   if flag(safe)
-@@ -405,7 +392,6 @@ test-suite doctests
+   other-modules:
+@@ -403,7 +392,6 @@ test-suite doctests
        deepseq,
        doctest        >= 0.9.1,
        filepath,
@@ -90,7 +90,7 @@ index d70c2f4..28af768 100644
        mtl,
        nats,
        parallel,
-@@ -443,7 +429,6 @@ benchmark plated
+@@ -441,7 +429,6 @@ benchmark plated
      comonad,
      criterion,
      deepseq,
@@ -98,7 +98,7 @@ index d70c2f4..28af768 100644
      lens,
      transformers
  
-@@ -478,7 +463,6 @@ benchmark unsafe
+@@ -476,7 +463,6 @@ benchmark unsafe
      comonads-fd,
      criterion,
      deepseq,
@@ -106,7 +106,7 @@ index d70c2f4..28af768 100644
      lens,
      transformers
  
-@@ -495,6 +479,5 @@ benchmark zipper
+@@ -493,6 +479,5 @@ benchmark zipper
      comonads-fd,
      criterion,
      deepseq,
@@ -201,10 +201,10 @@ index 9992e63..631e8e6 100644
    , ( # )
    -- * "Control.Lens.Setter"
 diff --git a/src/Control/Lens/Prism.hs b/src/Control/Lens/Prism.hs
-index 9e0bec7..0cf6737 100644
+index b75c870..c6c6596 100644
 --- a/src/Control/Lens/Prism.hs
 +++ b/src/Control/Lens/Prism.hs
-@@ -59,8 +59,6 @@ import Unsafe.Coerce
+@@ -61,8 +61,6 @@ import Unsafe.Coerce
  import Data.Profunctor.Unsafe
  #endif
  
@@ -226,5 +226,5 @@ index ee942c6..2f37134 100644
  prim :: (PrimMonad m) => Iso' (m a) (State# (PrimState m) -> (# State# (PrimState m), a #))
  prim = iso internal primitive
 -- 
-2.0.0
+2.1.1
 
