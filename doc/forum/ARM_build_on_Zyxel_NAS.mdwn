@@ -1,0 +1,14 @@
+I am trying to run the linux standalone ARM build on my Zyxel NAS, but I get the following error
+
+`FATAL: kernel too old`
+
+The system runs the following:
+
+`
+uname -a
+`
+`
+Linux nas 2.6.31.8 #2 Thu Dec 19 14:31:05 CST 2013 armv5tel GNU/Linux
+`
+
+Help would be much appreciated.  
