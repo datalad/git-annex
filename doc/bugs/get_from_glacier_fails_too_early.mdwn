@@ -1,6 +1,7 @@
 ### Please describe the problem.
 
-In order to test the integrity of my file backup on glacier, I initiated get of a single file from glacier via:
+In order to test the integrity of my file backup on glacier,
+I initiated get of a single file from glacier via:
 
     $ git annex get --from=glacier localdir/myfile.jpg
 
@@ -26,7 +27,10 @@ git-annex: get: 1 failed
 [ben@voyagerS9 annex]$
 """]]
 
-The command immediately fails after entering the gpg passphrase, releasing the shell. But in the background the glacier-cli is still running, downloads the file from Amazon and then dumps the gpg encrypted file content into the terminal. (4 MB of binary character garbage on the screen)
+The command immediately fails after entering the gpg passphrase, releasing the shell.
+But in the background the glacier-cli is still running, downloads the file from Amazon
+and then dumps the gpg encrypted file content into the terminal.
+(4 MB of binary character garbage on the screen)
 
 git annex should not fail so early and wait until the data is coming in order to pipe it into gpg.
 
@@ -48,7 +52,8 @@ libgcrypt 1.6.2
 
 ### Possibly related information about the annexed repo and its history
 The file was uploaded sometime earlier this year with a different version of git annex:  Older source package for Arch Linux with Haskell packages from the Arch haskell repos.
-The special glacier remote was initially set up with an old gpg key (hybrid encryption), which is still in my keychain but has expired. I exchanged the Key with a new one by
+
+The special glacier remote was initially set up with an old gpg key (hybrid encryption), which is still in my keychain but has expired. I exchanged the key with a new one by
 
     $ git annex enableremote glacier keyid+=NEWKEY keyid-=OLDKEY
 
