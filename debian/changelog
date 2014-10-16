@@ -3,7 +3,7 @@ git-annex (5.20141014) UNRELEASED; urgency=medium
   * vicfg: Deleting configurations now resets to the default, where
     before it has no effect.
   * Remove hurd stuff from cabal file, since hackage currently rejects
-    it.
+    it, and the test suite fails on hurd.
   * initremote: Don't allow creating a special remote that has the same
     name as an existing git remote.
   * Windows: Use haskell setenv library to clean up several ugly workarounds
