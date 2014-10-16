@@ -48,7 +48,7 @@ setEnv :: String -> String -> Bool -> IO ()
 #ifndef mingw32_HOST_OS
 setEnv var val overwrite = PE.setEnv var val overwrite
 #else
-setEnv var val True = System.Setenv.setEnv var val
+setEnv var val True = System.SetEnv.setEnv var val
 setEnv var val False = do
 	r <- getEnv var
 	case r of
@@ -60,7 +60,7 @@ unsetEnv :: String -> IO ()
 #ifndef mingw32_HOST_OS
 unsetEnv = PE.unsetEnv
 #else
-unsetEnv = System.Setenv.unsetEnv
+unsetEnv = System.SetEnv.unsetEnv
 #endif
 
 {- Adds the environment variable to the input environment. If already
