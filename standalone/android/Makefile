@@ -122,7 +122,7 @@ $(GIT_ANNEX_ANDROID_SOURCETREE)/git/build-stamp: git.patch
 $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync/build-stamp: rsync.patch
 	# This is a known-good version that the patch works with.
 	cat rsync.patch | (cd $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync && git reset --hard eec26089b1c7bdbb260674480ffe6ece257bca63 && git am)
-	cp $(GIT_ANNEX_ANDROID_SOURCETREE)/automake/lib/config.sub $(GIT_ANNEX_ANDROID_SOURCETREE)/automake/lib/config.guess $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync/
+	cp /usr/share/misc/config.sub /usr/share/misc/config.guess $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync/
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync && ./configure --host=arm-linux-androideabi --disable-locale --disable-iconv-open --disable-iconv --disable-acl-support --disable-xattr-support
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync && $(MAKE)
 	touch $@
@@ -153,7 +153,6 @@ source: $(GIT_ANNEX_ANDROID_SOURCETREE)
 
 $(GIT_ANNEX_ANDROID_SOURCETREE):
 	mkdir -p $(GIT_ANNEX_ANDROID_SOURCETREE)
-	git clone git://git.savannah.gnu.org/automake.git $(GIT_ANNEX_ANDROID_SOURCETREE)/automake
 	git clone git://git.debian.org/git/d-i/busybox $(GIT_ANNEX_ANDROID_SOURCETREE)/busybox
 	git clone git://git.kernel.org/pub/scm/git/git.git $(GIT_ANNEX_ANDROID_SOURCETREE)/git
 	git clone git://git.samba.org/rsync.git $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync
