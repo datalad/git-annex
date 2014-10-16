@@ -1,7 +1,7 @@
-From 1a5b148a9be4a4947a691351dc694c6e265060b1 Mon Sep 17 00:00:00 2001
+From 6134cc328f513e32895462e884487513b28029ba Mon Sep 17 00:00:00 2001
 From: Joey Hess <joey@kitenet.net>
-Date: Thu, 16 Oct 2014 12:29:25 -0400
-Subject: [PATCH] void using of chmod on android when changing config
+Date: Wed, 13 Aug 2014 13:50:56 -0400
+Subject: [PATCH] avoid using of chmod on android when changing config
 
 This breaks on Android's /sdcard, which has a variety of FUSE
 implentations, all total shite.
@@ -10,17 +10,17 @@ implentations, all total shite.
  1 file changed, 4 insertions(+)
 
 diff --git a/config.c b/config.c
-index 15a2983..cb0db4d 100644
+index 058505c..16854b2 100644
 --- a/config.c
 +++ b/config.c
-@@ -2041,12 +2041,14 @@ int git_config_set_multivar_in_file(const char *config_filename,
+@@ -1634,12 +1634,14 @@ int git_config_set_multivar_in_file(const char *config_filename,
  			MAP_PRIVATE, in_fd, 0);
  		close(in_fd);
  
 +		/* not on android
- 		if (chmod(lock->filename.buf, st.st_mode & 07777) < 0) {
+ 		if (chmod(lock->filename, st.st_mode & 07777) < 0) {
  			error("chmod on %s failed: %s",
- 				lock->filename.buf, strerror(errno));
+ 				lock->filename, strerror(errno));
  			ret = CONFIG_NO_WRITE;
  			goto out_free;
  		}
@@ -28,14 +28,14 @@ index 15a2983..cb0db4d 100644
  
  		if (store.seen == 0)
  			store.seen = 1;
-@@ -2224,11 +2226,13 @@ int git_config_rename_section_in_file(const char *config_filename,
+@@ -1813,11 +1815,13 @@ int git_config_rename_section_in_file(const char *config_filename,
  
  	fstat(fileno(config_file), &st);
  
 +	/* not on android
- 	if (chmod(lock->filename.buf, st.st_mode & 07777) < 0) {
+ 	if (chmod(lock->filename, st.st_mode & 07777) < 0) {
  		ret = error("chmod on %s failed: %s",
- 				lock->filename.buf, strerror(errno));
+ 				lock->filename, strerror(errno));
  		goto out;
  	}
 +	*/
@@ -43,5 +43,5 @@ index 15a2983..cb0db4d 100644
  	while (fgets(buf, sizeof(buf), config_file)) {
  		int i;
 -- 
-2.1.1
+2.1.0.rc1
 
