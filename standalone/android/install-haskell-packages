@@ -16,8 +16,6 @@ if [ ! -d haskell-patches ]; then
 fi
 
 setupcabal () {
-	cabal update
-
 	# Some packages fail to install in a non unicode locale.
 	LANG=en_US.UTF-8
 	export LANG
@@ -40,6 +38,7 @@ patched () {
 	git config user.email dummy@example.com
 	git add .
 	git commit -m "pre-patched state of $pkg"
+	ln -sf ../../cabal.config
 	for patch in ../../haskell-patches/${pkg}_* ../../../no-th/haskell-patches/${pkg}_*; do
 		if [ -e "$patch" ]; then
 			echo trying $patch
@@ -50,8 +49,6 @@ patched () {
 			fi
 		fi
 	done
-	set -x
-	ln -sf ../../cabal.config
 	if [ -e config.sub ]; then
 		cp /usr/share/misc/config.sub .
 	fi
@@ -66,8 +63,7 @@ patched () {
 }
 
 installgitannexdeps () {
-	pushd
-	cd ../..
+	pushd ../..
 	ln -sf standalone/android/cabal.config
 	cabal install --only-dependencies "$@"
 	rm -f cabal.config
@@ -107,6 +103,7 @@ EOF
 	patched shakespeare-css
 	patched shakespeare-js
 	patched yesod-routes
+	patched hamlet
 	patched yesod-core
 	patched yesod-persistent
 	patched yesod-form
@@ -121,6 +118,8 @@ EOF
 	patched dns
 	patched gnutls
 	patched unbounded-delays
+	patched gnuidn
+	patched network-protocol-xmpp
 
 	cd ..
 
@@ -132,4 +131,6 @@ cabal update
 
 PATH=$HOME/.ghc/$(cat abiversion)/bin:$HOME/.ghc/$(cat abiversion)/arm-linux-androideabi/bin:$PATH
 setupcabal
+cabal update
+
 install_pkgs

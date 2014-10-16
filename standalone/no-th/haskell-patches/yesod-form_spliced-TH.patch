@@ -1,16 +1,16 @@
-From 98077d391b930a4c1f69e3b8810409fd261eee34 Mon Sep 17 00:00:00 2001
-From: androidbuilder <androidbuilder@example.com>
-Date: Tue, 14 Oct 2014 03:17:38 +0000
-Subject: [PATCH] expand and remove TH
+From 1b24ece1a40c9365f719472ca6e342c8c4065c25 Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Thu, 16 Oct 2014 02:31:20 +0000
+Subject: [PATCH] hack TH
 
 ---
- Yesod/Form/Bootstrap3.hs |  186 +++++++++--
- Yesod/Form/Fields.hs     |  797 +++++++++++++++++++++++++++++++++++-----------
- Yesod/Form/Functions.hs  |  257 ++++++++++++---
- Yesod/Form/Jquery.hs     |  134 ++++++--
- Yesod/Form/MassInput.hs  |  226 ++++++++++---
- Yesod/Form/Nic.hs        |   46 +--
- 6 files changed, 1279 insertions(+), 367 deletions(-)
+ Yesod/Form/Bootstrap3.hs | 186 +++++++++--
+ Yesod/Form/Fields.hs     | 816 +++++++++++++++++++++++++++++++++++------------
+ Yesod/Form/Functions.hs  | 257 ++++++++++++---
+ Yesod/Form/Jquery.hs     | 134 ++++++--
+ Yesod/Form/MassInput.hs  | 226 ++++++++++---
+ Yesod/Form/Nic.hs        |  67 +++-
+ 6 files changed, 1322 insertions(+), 364 deletions(-)
 
 diff --git a/Yesod/Form/Bootstrap3.hs b/Yesod/Form/Bootstrap3.hs
 index 84e85fc..1954fb4 100644
@@ -229,7 +229,7 @@ index 84e85fc..1954fb4 100644
                          , fvTooltip  = Nothing
                          , fvId       = bootstrapSubmitId
 diff --git a/Yesod/Form/Fields.hs b/Yesod/Form/Fields.hs
-index 8173e78..68a284c 100644
+index c6091a9..9e6bd4e 100644
 --- a/Yesod/Form/Fields.hs
 +++ b/Yesod/Form/Fields.hs
 @@ -1,4 +1,3 @@
@@ -279,7 +279,7 @@ index 8173e78..68a284c 100644
  import qualified Blaze.ByteString.Builder.Html.Utf8 as B
  import Blaze.ByteString.Builder (writeByteString, toLazyByteString)
  import Blaze.ByteString.Builder.Internal.Write (fromWriteList)
-@@ -87,15 +88,12 @@ import qualified Data.Text as T (drop, dropWhile)
+@@ -91,15 +92,12 @@ import qualified Data.Text as T (drop, dropWhile)
  import qualified Data.Text.Read
  
  import qualified Data.Map as Map
@@ -295,7 +295,7 @@ index 8173e78..68a284c 100644
  defaultFormMessage :: FormMessage -> Text
  defaultFormMessage = englishFormMessage
  
-@@ -107,10 +105,25 @@ intField = Field
+@@ -111,10 +109,25 @@ intField = Field
              Right (a, "") -> Right a
              _ -> Left $ MsgInvalidInteger s
  
@@ -325,7 +325,7 @@ index 8173e78..68a284c 100644
      , fieldEnctype = UrlEncoded
      }
    where
-@@ -124,10 +137,25 @@ doubleField = Field
+@@ -128,10 +141,25 @@ doubleField = Field
              Right (a, "") -> Right a
              _ -> Left $ MsgInvalidNumber s
  
@@ -355,7 +355,7 @@ index 8173e78..68a284c 100644
      , fieldEnctype = UrlEncoded
      }
    where showVal = either id (pack . show)
-@@ -135,10 +163,24 @@ $newline never
+@@ -139,10 +167,24 @@ $newline never
  dayField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Day
  dayField = Field
      { fieldParse = parseHelper $ parseDate . unpack
@@ -384,7 +384,7 @@ index 8173e78..68a284c 100644
      , fieldEnctype = UrlEncoded
      }
    where showVal = either id (pack . show)
-@@ -146,10 +188,23 @@ $newline never
+@@ -150,10 +192,23 @@ $newline never
  timeField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m TimeOfDay
  timeField = Field
      { fieldParse = parseHelper parseTime
@@ -412,7 +412,7 @@ index 8173e78..68a284c 100644
      , fieldEnctype = UrlEncoded
      }
    where
-@@ -162,10 +217,23 @@ $newline never
+@@ -166,10 +221,23 @@ $newline never
  htmlField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Html
  htmlField = Field
      { fieldParse = parseHelper $ Right . preEscapedText . sanitizeBalance
@@ -440,13 +440,13 @@ index 8173e78..68a284c 100644
      , fieldEnctype = UrlEncoded
      }
    where showVal = either id (pack . renderHtml)
-@@ -193,10 +261,17 @@ instance ToHtml Textarea where
+@@ -197,10 +265,18 @@ instance ToHtml Textarea where
  textareaField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Textarea
  textareaField = Field
      { fieldParse = parseHelper $ Right . Textarea
--    , fieldView = \theId name attrs val isReq -> toWidget [hamlet|
+-    , fieldView = \theId name attrs val _isReq -> toWidget [hamlet|
 -$newline never
--<textarea id="#{theId}" name="#{name}" :isReq:required="" *{attrs}>#{either id unTextarea val}
+-<textarea id="#{theId}" name="#{name}" *{attrs}>#{either id unTextarea val}
 -|]
 +    , fieldView = \theId name attrs val _isReq -> toWidget  $     \ _render_aJKe
 +      -> do { id
@@ -459,10 +459,11 @@ index 8173e78..68a284c 100644
 +              id ((Text.Blaze.Internal.preEscapedText . pack) ">");
 +              id (toHtml (either id unTextarea val));
 +              id ((Text.Blaze.Internal.preEscapedText . pack) "</textarea>") }
++
      , fieldEnctype = UrlEncoded
      }
  
-@@ -204,10 +279,19 @@ hiddenField :: (Monad m, PathPiece p, RenderMessage (HandlerSite m) FormMessage)
+@@ -208,10 +284,19 @@ hiddenField :: (Monad m, PathPiece p, RenderMessage (HandlerSite m) FormMessage)
              => Field m p
  hiddenField = Field
      { fieldParse = parseHelper $ maybe (Left MsgValueRequired) Right . fromPathPiece
@@ -486,7 +487,7 @@ index 8173e78..68a284c 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -215,20 +299,53 @@ textField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Tex
+@@ -219,20 +304,53 @@ textField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Tex
  textField = Field
      { fieldParse = parseHelper $ Right
      , fieldView = \theId name attrs val isReq ->
@@ -548,7 +549,7 @@ index 8173e78..68a284c 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -300,10 +417,24 @@ emailField = Field
+@@ -304,10 +422,24 @@ emailField = Field
              case Email.canonicalizeEmail $ encodeUtf8 s of
                  Just e -> Right $ decodeUtf8With lenientDecode e
                  Nothing -> Left $ MsgInvalidEmail s
@@ -577,7 +578,7 @@ index 8173e78..68a284c 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -318,10 +449,25 @@ multiEmailField = Field
+@@ -322,10 +454,25 @@ multiEmailField = Field
              in case partitionEithers addrs of
                  ([], good) -> Right good
                  (bad, _) -> Left $ MsgInvalidEmail $ cat bad
@@ -607,7 +608,7 @@ index 8173e78..68a284c 100644
      , fieldEnctype = UrlEncoded
      }
      where
-@@ -337,20 +483,75 @@ searchField :: Monad m => RenderMessage (HandlerSite m) FormMessage => AutoFocus
+@@ -341,20 +488,75 @@ searchField :: Monad m => RenderMessage (HandlerSite m) FormMessage => AutoFocus
  searchField autoFocus = Field
      { fieldParse = parseHelper Right
      , fieldView = \theId name attrs val isReq -> do
@@ -695,7 +696,7 @@ index 8173e78..68a284c 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -361,7 +562,28 @@ urlField = Field
+@@ -365,7 +567,28 @@ urlField = Field
              Nothing -> Left $ MsgInvalidUrl s
              Just _ -> Right s
      , fieldView = \theId name attrs val isReq ->
@@ -725,7 +726,7 @@ index 8173e78..68a284c 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -374,18 +596,54 @@ selectField :: (Eq a, RenderMessage site FormMessage)
+@@ -378,18 +601,54 @@ selectField :: (Eq a, RenderMessage site FormMessage)
              => HandlerT site IO (OptionList a)
              -> Field (HandlerT site IO) a
  selectField = selectFieldHelper
@@ -792,7 +793,7 @@ index 8173e78..68a284c 100644
  
  multiSelectFieldList :: (Eq a, RenderMessage site FormMessage, RenderMessage site msg)
                       => [(msg, a)]
-@@ -408,11 +666,45 @@ multiSelectField ioptlist =
+@@ -412,11 +671,45 @@ multiSelectField ioptlist =
      view theId name attrs val isReq = do
          opts <- fmap olOptions $ handlerToWidget ioptlist
          let selOpts = map (id &&& (optselected val)) opts
@@ -843,7 +844,7 @@ index 8173e78..68a284c 100644
          where
              optselected (Left _) _ = False
              optselected (Right vals) opt = (optionInternalValue opt) `elem` vals
-@@ -435,54 +727,196 @@ checkboxesField ioptlist = (multiSelectField ioptlist)
+@@ -439,54 +732,196 @@ checkboxesField ioptlist = (multiSelectField ioptlist)
              opts <- fmap olOptions $ handlerToWidget ioptlist
              let optselected (Left _) _ = False
                  optselected (Right vals) opt = (optionInternalValue opt) `elem` vals
@@ -1077,7 +1078,7 @@ index 8173e78..68a284c 100644
      , fieldEnctype = UrlEncoded
      }
    where
-@@ -508,10 +942,24 @@ $newline never
+@@ -512,10 +947,24 @@ $newline never
  checkBoxField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Bool
  checkBoxField = Field
      { fieldParse = \e _ -> return $ checkBoxParser e
@@ -1106,16 +1107,25 @@ index 8173e78..68a284c 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -555,51 +1003,6 @@ optionsPairs opts = do
+@@ -559,69 +1008,6 @@ optionsPairs opts = do
  optionsEnum :: (MonadHandler m, Show a, Enum a, Bounded a) => m (OptionList a)
  optionsEnum = optionsPairs $ map (\x -> (pack $ show x, x)) [minBound..maxBound]
  
+-#if MIN_VERSION_persistent(2, 0, 0)
 -optionsPersist :: ( YesodPersist site, PersistEntity a
 -                  , PersistQuery (PersistEntityBackend a)
 -                  , PathPiece (Key a)
 -                  , RenderMessage site msg
 -                  , YesodPersistBackend site ~ PersistEntityBackend a
 -                  )
+-#else
+-optionsPersist :: ( YesodPersist site, PersistEntity a
+-                  , PersistQuery (YesodPersistBackend site (HandlerT site IO))
+-                  , PathPiece (Key a)
+-                  , PersistEntityBackend a ~ PersistMonadBackend (YesodPersistBackend site (HandlerT site IO))
+-                  , RenderMessage site msg
+-                  )
+-#endif
 -               => [Filter a]
 -               -> [SelectOpt a]
 -               -> (a -> msg)
@@ -1133,6 +1143,7 @@ index 8173e78..68a284c 100644
 --- the entire @Entity@.
 ---
 --- Since 1.3.2
+-#if MIN_VERSION_persistent(2, 0, 0)
 -optionsPersistKey
 -  :: (YesodPersist site
 -     , PersistEntity a
@@ -1141,6 +1152,15 @@ index 8173e78..68a284c 100644
 -     , RenderMessage site msg
 -     , YesodPersistBackend site ~ PersistEntityBackend a
 -     )
+-#else
+-optionsPersistKey
+-  :: (YesodPersist site
+-     , PersistEntity a
+-     , PersistQuery (YesodPersistBackend site (HandlerT site IO))
+-     , PathPiece (Key a)
+-     , RenderMessage site msg
+-     , PersistEntityBackend a ~ PersistMonadBackend (YesodDB site))
+-#endif
 -  => [Filter a]
 -  -> [SelectOpt a]
 -  -> (a -> msg)
@@ -1154,11 +1174,10 @@ index 8173e78..68a284c 100644
 -        , optionInternalValue = key
 -        , optionExternalValue = toPathPiece key
 -        }) pairs
--
+ 
  selectFieldHelper
          :: (Eq a, RenderMessage site FormMessage)
-         => (Text -> Text -> [(Text, Text)] -> WidgetT site IO () -> WidgetT site IO ())
-@@ -642,9 +1045,21 @@ fileField = Field
+@@ -665,9 +1051,21 @@ fileField = Field
          case files of
              [] -> Right Nothing
              file:_ -> Right $ Just file
@@ -1183,7 +1202,7 @@ index 8173e78..68a284c 100644
      , fieldEnctype = Multipart
      }
  
-@@ -671,10 +1086,19 @@ fileAFormReq fs = AForm $ \(site, langs) menvs ints -> do
+@@ -694,10 +1092,19 @@ fileAFormReq fs = AForm $ \(site, langs) menvs ints -> do
              { fvLabel = toHtml $ renderMessage site langs $ fsLabel fs
              , fvTooltip = fmap (toHtml . renderMessage site langs) $ fsTooltip fs
              , fvId = id'
@@ -1207,7 +1226,7 @@ index 8173e78..68a284c 100644
              , fvErrors = errs
              , fvRequired = True
              }
-@@ -703,10 +1127,19 @@ fileAFormOpt fs = AForm $ \(master, langs) menvs ints -> do
+@@ -726,10 +1133,19 @@ fileAFormOpt fs = AForm $ \(master, langs) menvs ints -> do
              { fvLabel = toHtml $ renderMessage master langs $ fsLabel fs
              , fvTooltip = fmap (toHtml . renderMessage master langs) $ fsTooltip fs
              , fvId = id'
@@ -1971,14 +1990,11 @@ index a2b434d..75eb484 100644
 -                        <td .errors>#{err}
 -|]
 diff --git a/Yesod/Form/Nic.hs b/Yesod/Form/Nic.hs
-index 2862678..7a0f25a 100644
+index 7e4af07..b59745a 100644
 --- a/Yesod/Form/Nic.hs
 +++ b/Yesod/Form/Nic.hs
-@@ -6,14 +6,24 @@
- -- | Provide the user with a rich text editor.
- module Yesod.Form.Nic
-     ( YesodNic (..)
--    , nicHtmlField
+@@ -9,11 +9,22 @@ module Yesod.Form.Nic
+     , nicHtmlField
      ) where
  
 +import qualified Text.Blaze as Text.Blaze.Internal
@@ -2002,40 +2018,69 @@ index 2862678..7a0f25a 100644
  import Text.Blaze.Html.Renderer.String (renderHtml)
  import Data.Text (Text, pack)
  import Data.Maybe (listToMaybe)
-@@ -22,33 +32,3 @@ class Yesod a => YesodNic a where
-     -- | NIC Editor Javascript file.
-     urlNicEdit :: a -> Either (Route a) Text
-     urlNicEdit _ = Right "http://js.nicedit.com/nicEdit-latest.js"
--
--nicHtmlField :: YesodNic site => Field (HandlerT site IO) Html
--nicHtmlField = Field
--    { fieldParse = \e _ -> return . Right . fmap (preEscapedToMarkup . sanitizeBalance) . listToMaybe $ e
--    , fieldView = \theId name attrs val _isReq -> do
+@@ -27,20 +38,52 @@ nicHtmlField :: YesodNic site => Field (HandlerT site IO) Html
+ nicHtmlField = Field
+     { fieldParse = \e _ -> return . Right . fmap (preEscapedToMarkup . sanitizeBalance) . listToMaybe $ e
+     , fieldView = \theId name attrs val isReq -> do
 -        toWidget [shamlet|
 -$newline never
--    <textarea id="#{theId}" *{attrs} name="#{name}" .html>#{showVal val}
+-    <textarea id="#{theId}" *{attrs} name="#{name}" :isReq:required .html>#{showVal val}
 -|]
--        addScript' urlNicEdit
--        master <- getYesod
--        toWidget $
--          case jsLoader master of
++        toWidget  $         do { id
++               ((Text.Blaze.Internal.preEscapedText . pack)
++                  "<textarea class=\"html\" id=\"");
++             id (toHtml theId);
++             id ((Text.Blaze.Internal.preEscapedText . pack) "\" name=\"");
++             id (toHtml name);
++             id ((Text.Blaze.Internal.preEscapedText . pack) "\"");
++             Text.Hamlet.condH
++               [(isReq, 
++                 id ((Text.Blaze.Internal.preEscapedText . pack) " required"))]
++               Nothing;
++             id ((Text.Hamlet.attrsToHtml . Text.Hamlet.toAttributes) attrs);
++             id ((Text.Blaze.Internal.preEscapedText . pack) ">");
++             id (toHtml (showVal val));
++             id ((Text.Blaze.Internal.preEscapedText . pack) "</textarea>") }
++
+         addScript' urlNicEdit
+         master <- getYesod
+         toWidget $
+           case jsLoader master of
 -            BottomOfHeadBlocking -> [julius|
 -bkLib.onDomLoaded(function(){new nicEditor({fullPanel:true}).panelInstance("#{rawJS theId}")});
 -|]
 -            _ -> [julius|
 -(function(){new nicEditor({fullPanel:true}).panelInstance("#{rawJS theId}")})();
 -|]
--    , fieldEnctype = UrlEncoded
--    }
--  where
--    showVal = either id (pack . renderHtml)
--
--addScript' :: (MonadWidget m, HandlerSite m ~ site)
--           => (site -> Either (Route site) Text)
--           -> m ()
--addScript' f = do
--    y <- getYesod
--    addScriptEither $ f y
++            BottomOfHeadBlocking ->             Text.Julius.asJavascriptUrl
++              (\ _render_a2rMh
++                 -> Data.Monoid.mconcat
++                      [Text.Julius.Javascript
++                         ((Data.Text.Lazy.Builder.fromText
++                           . Text.Shakespeare.pack')
++                            "\nbkLib.onDomLoaded(function(){new nicEditor({fullPanel:true}).panelInstance(\""),
++                       Text.Julius.toJavascript (rawJS theId),
++                       Text.Julius.Javascript
++                         ((Data.Text.Lazy.Builder.fromText
++                           . Text.Shakespeare.pack')
++                            "\")});")])
++
++            _ ->             Text.Julius.asJavascriptUrl
++              (\ _render_a2rMm
++                 -> Data.Monoid.mconcat
++                      [Text.Julius.Javascript
++                         ((Data.Text.Lazy.Builder.fromText
++                           . Text.Shakespeare.pack')
++                            "\n(function(){new nicEditor({fullPanel:true}).panelInstance(\""),
++                       Text.Julius.toJavascript (rawJS theId),
++                       Text.Julius.Javascript
++                         ((Data.Text.Lazy.Builder.fromText
++                           . Text.Shakespeare.pack')
++                            "\")})();")])
++
+     , fieldEnctype = UrlEncoded
+     }
+   where
 -- 
-1.7.10.4
+2.1.1
 

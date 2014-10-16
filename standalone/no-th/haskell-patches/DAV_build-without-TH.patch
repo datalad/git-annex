@@ -1,19 +1,19 @@
-From 438479e3573d4a9fa2e001b8f7ec5f9a595d7514 Mon Sep 17 00:00:00 2001
+From e54cfacbb9fb24f75d3d93cd8ee6da67b161574f Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Tue, 14 Oct 2014 03:48:07 +0000
-Subject: [PATCH] avoid TH
+Date: Thu, 16 Oct 2014 02:51:28 +0000
+Subject: [PATCH] remove TH
 
 ---
- DAV.cabal                       |   25 +----
- Network/Protocol/HTTP/DAV.hs    |   92 +++++++++++++---
- Network/Protocol/HTTP/DAV/TH.hs |  232 ++++++++++++++++++++++++++++++++++++++-
- 3 files changed, 306 insertions(+), 43 deletions(-)
+ DAV.cabal                       |  28 +----
+ Network/Protocol/HTTP/DAV.hs    |  92 +++++++++++++---
+ Network/Protocol/HTTP/DAV/TH.hs | 232 +++++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 306 insertions(+), 46 deletions(-)
 
 diff --git a/DAV.cabal b/DAV.cabal
-index f8fdd40..92945c3 100644
+index 95fffd8..5669c51 100644
 --- a/DAV.cabal
 +++ b/DAV.cabal
-@@ -43,30 +43,7 @@ library
+@@ -47,33 +47,7 @@ library
                       , utf8-string
                       , xml-conduit >= 1.0          && < 1.3
                       , xml-hamlet >= 0.4           && < 0.5
@@ -34,13 +34,16 @@ index f8fdd40..92945c3 100644
 -                     , http-types >= 0.7
 -                     , lens >= 3.0
 -                     , mtl >= 2.1
--                     , network >= 2.3
 -                     , optparse-applicative >= 0.10.0
 -                     , transformers >= 0.3
 -                     , transformers-base
 -                     , utf8-string
 -                     , xml-conduit >= 1.0          && < 1.3
 -                     , xml-hamlet >= 0.4           && < 0.5
+-  if flag(network-uri)
+-    build-depends: network-uri >= 2.6, network >= 2.6
+-  else
+-    build-depends: network >= 2.3 && <2.6
 +                     , text
  
  source-repository head
@@ -413,5 +416,5 @@ index 0ecd476..1653bf6 100644
 +     Data.Functor.<$> (_f_a3k7 __userAgent'_a3kg))
 +{-# INLINE userAgent #-}
 -- 
-1.7.10.4
+2.1.1
 
