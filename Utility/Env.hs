@@ -53,7 +53,7 @@ setEnv var val False = do
 	r <- getEnv var
 	case r of
 		Nothing -> setEnv var val True
-		Just _ -> return True
+		Just _ -> return ()
 #endif
 
 unsetEnv :: String -> IO ()
