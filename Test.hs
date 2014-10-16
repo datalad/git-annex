@@ -73,8 +73,8 @@ import qualified Utility.Scheduled
 import qualified Utility.HumanTime
 import qualified Utility.ThreadScheduler
 import qualified Command.Uninit
-#ifndef mingw32_HOST_OS
 import qualified CmdLine.GitAnnex as GitAnnex
+#ifndef mingw32_HOST_OS
 import qualified Remote.Helper.Encryptable
 import qualified Types.Crypto
 import qualified Utility.Gpg
