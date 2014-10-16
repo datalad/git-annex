@@ -1,0 +1,47 @@
+I have been trying to uninit a very large directory and ran into problems.
+
+`git annex unannex` seems to be completely infeasible because of how long it takes, also it seemed to grow the directory enormously, probably because it copies large files and then waits to delete them?
+
+I tried unannexing with the following commands instead:
+
+    `git annex get --from=backup`
+    `git annex unannex --fast`
+    `git annex uninit`
+
+This does what it is supposed to it seems, it hard links all copies of files. However, the unint step gives the following message:
+
+    git-annex: Not fully uninitialized
+    Some annexed data is still left in /science/carlo/GR_Coverage_Manuscript_Revisions_140616/.git/annex/objects/
+    This may include deleted files, or old versions of modified files.
+
+    If you don't care about preserving the data, just delete the
+    directory.
+
+    Or, you can move it to another location, in case it turns out
+    something in there is important.
+
+    Or, you can run `git annex unused` followed by `git annex dropunused`
+    to remove data that is not used by any tag or branch, which might
+    take care of all the data.
+
+    Then run `git annex uninit` again to finish.
+
+However, running `git annex unused` returns nothing.
+
+When I run `du -l -h --max-depth=1` I get the following output:
+
+    646G ./01-Collate_New_Species_Data
+    6.3G ./02-Prep_Annotations
+    1.8T ./03-Map_Riboprofiling_Data
+    111G ./04-Generate_Preprocessed_Files
+    94G  ./05-Det_Codon_Specfic_Occupancy
+    3.6T ./.git
+    6.2T .
+
+The .git/annex/objects directory remains 3.5TB in size, while the root directory, minus the contents of .git is only 2.7TB.
+
+I want to delete the .git folder to free up space, but I am very nervous now, because it looks like there is extra data in git annex that isn't present in the main directory. I don't want that to be lost, that would be a complete disaster.
+
+I tried the exact same process on a test directory, and it seemed to work completely, but losing this data would be an absolute disaster, so I don't want to risk it.
+
+Any thoughts?
