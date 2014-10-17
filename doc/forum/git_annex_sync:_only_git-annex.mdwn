@@ -1,0 +1,3 @@
+Hi,
+
+i have an already existing git repository with a branch (*master*) and i added git annex to it (*git annex init*). Now i want to synchronise the file tracking information with annex through *git annex sync*, but keep the master branch unsynchronised (i want push/pull it manually as there are not only annexed files but also code). What is the best approach for my setup?
