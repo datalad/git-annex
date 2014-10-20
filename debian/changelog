@@ -10,6 +10,7 @@ git-annex (5.20141014) UNRELEASED; urgency=medium
     for inability to manipulate the environment on windows. This includes
     making git-annex not re-exec itself on start on windows, and making the
     test suite on Windows run tests without forking.
+  * glacier: Fix pipe setup when calling glacier-cli to retrieve an object.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 14 Oct 2014 14:09:24 -0400
 

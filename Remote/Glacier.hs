@@ -141,7 +141,10 @@ retrieve r k sink = go =<< glacierEnv c u
 		]
 	go Nothing = error "cannot retrieve from glacier"
 	go (Just e) = do
-		let cmd = (proc "glacier" (toCommand params)) { env = Just e }
+		let cmd = (proc "glacier" (toCommand params))
+			{ env = Just e
+			, std_out = CreatePipe
+			}
 		(_, Just h, _, pid) <- liftIO $ createProcess cmd
 		-- Glacier cannot store empty files, so if the output is
 		-- empty, the content is not available yet.
