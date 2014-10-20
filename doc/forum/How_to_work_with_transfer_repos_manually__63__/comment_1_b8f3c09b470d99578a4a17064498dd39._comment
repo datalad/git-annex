@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk9SYh6N-JUMkYkW4aOk55zC3Vr9KonDV4"
+ nickname="Florian"
+ subject="comment 1"
+ date="2014-10-20T10:51:16Z"
+ content="""
+Ok, git annex copy --to server --auto and git annex get on the receiver did the trick.
+
+But how can I drop files from the transfer server that both clients have? I tried git annex drop . or git annex drop --auto . but it just did nothing.
+
+Thx!
+"""]]
