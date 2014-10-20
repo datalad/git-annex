@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ ip="72.0.72.144"
+ subject="comment 7"
+ date="2014-10-20T20:04:09Z"
+ content="""
+alright, i documented those issues more distinctively in the summary. hopefully that will clear things up a little. i still need to do some work to reproduce two of those issues, maybe a lot of this is related to the upgrade problem mentionned in [[bugs/annex_get_fails_from_read-only_filesystem/]].
+"""]]
