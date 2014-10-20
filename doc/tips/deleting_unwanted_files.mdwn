@@ -29,6 +29,9 @@ If you're using the git-annex assistant, you don't normally need to worry about 
 
 You have a file. You want that file to immediately vanish from the face of the earth to the best of your abilities.
 
+Note that, since git-annex deduplicates files by default, any files with
+the same content will be removed by these commands.
+
 1. `git annex drop --force file`
 2. `git annex whereis file`
 3. `git annex drop --force file --from $repo` repeat for each repository listed by the whereis command
