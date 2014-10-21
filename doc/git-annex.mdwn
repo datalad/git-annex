@@ -676,17 +676,15 @@ subdirectories).
   To generate output suitable for the gource visualization program,
   specify `--gource`.
 
-* `info [directory ...]`
+* `info [directory|file ...]`
 
-  Displays some statistics and other information, including how much data
-  is in the annex and a list of all known repositories.
+  Displays statistics and other information for the specified item,
+  or if none is specified, for the repository as a whole.
+
+  When a directory is specified, the file matching options can be used
+  to select the files in the directory that are included in the statistics.
 
   To only show the data that can be gathered quickly, use `--fast`.
-
-  When a directory is specified, shows a differently formatted info
-  display for that directory. In this mode, all of the matching
-  options can be used to filter the files that will be included in
-  the information.
 
   For example, suppose you want to run "git annex get .", but
   would first like to see how much disk space that will use.

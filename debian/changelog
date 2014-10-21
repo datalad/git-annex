@@ -11,6 +11,8 @@ git-annex (5.20141014) UNRELEASED; urgency=medium
     making git-annex not re-exec itself on start on windows, and making the
     test suite on Windows run tests without forking.
   * glacier: Fix pipe setup when calling glacier-cli to retrieve an object.
+  * info: When run on a single annexed file, displays some info about the 
+    file, including its key and size.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 14 Oct 2014 14:09:24 -0400
 
