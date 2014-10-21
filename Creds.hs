@@ -24,7 +24,7 @@ import Annex.Perms
 import Utility.FileMode
 import Crypto
 import Types.Remote (RemoteConfig, RemoteConfigKey)
-import Remote.Helper.Encryptable (remoteCipher, remoteCipher', embedCreds, EncryptionIsSetup)
+import Remote.Helper.Encryptable (remoteCipher, remoteCipher', embedCreds, EncryptionIsSetup, extractCipher)
 import Utility.Env (getEnv)
 
 import qualified Data.ByteString.Lazy.Char8 as L
@@ -182,6 +182,8 @@ includeCredsInfo c storage info = do
 				( ret "stored locally"
 				, ret "not available"
 				)
-			Just _ -> ret "embedded in git repository"
+			Just _ -> case extractCipher c of
+				Just (EncryptedCipher _ _ _) -> ret "embedded in git repository (gpg encrypted)"
+				_ -> ret "embedded in git repository (not encrypted)"
   where
 	ret s = return $ ("creds", s) : info
