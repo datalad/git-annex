@@ -22,3 +22,6 @@ annex.version = 3 in the remote
     local repository version: 5
     supported repository version: 5
     upgrade supported from repository versions: 0 1 2 4
+
+[[!tag confirmed]]
+[[!meta title="read-only filesystem on remote prevents auto-upgrade from v3 to v5, and prevents using a remote"]]
