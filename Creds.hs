@@ -15,6 +15,7 @@ module Creds (
 	writeCacheCreds,
 	readCacheCreds,
 	removeCreds,
+	includeCredsInfo,
 ) where
 
 import Common.Annex
@@ -144,10 +145,16 @@ readCacheCredPair storage = maybe Nothing decodeCredPair
 	<$> readCacheCreds (credPairFile storage)
 
 readCacheCreds :: FilePath -> Annex (Maybe Creds)
-readCacheCreds file = do
+readCacheCreds f = liftIO . catchMaybeIO . readFile =<< cacheCredsFile f
+
+cacheCredsFile :: FilePath -> Annex FilePath
+cacheCredsFile basefile = do
 	d <- fromRepo gitAnnexCredsDir
-	let f = d </> file
-	liftIO $ catchMaybeIO $ readFile f
+	return $ d </> basefile
+
+existsCacheCredPair :: CredPairStorage -> Annex Bool
+existsCacheCredPair storage = 
+	liftIO . doesFileExist =<< cacheCredsFile (credPairFile storage)
 
 encodeCredPair :: CredPair -> Creds
 encodeCredPair (l, p) = unlines [l, p]
@@ -162,3 +169,19 @@ removeCreds file = do
 	d <- fromRepo gitAnnexCredsDir
 	let f = d </> file
 	liftIO $ nukeFile f
+
+includeCredsInfo :: RemoteConfig -> CredPairStorage -> [(String, String)] -> Annex [(String, String)]
+includeCredsInfo c storage info = do
+	v <- liftIO $ getEnvCredPair storage
+	case v of
+		Just _ -> do
+			let (uenv, penv) = credPairEnvironment storage
+			ret $ "from environment variables (" ++ unwords [uenv, penv] ++ ")"
+		Nothing -> case (\ck -> M.lookup ck c) =<< credPairRemoteKey storage of
+			Nothing -> ifM (existsCacheCredPair storage)
+				( ret "stored locally"
+				, ret "not available"
+				)
+			Just _ -> ret "embedded in git repository"
+  where
+	ret s = return $ ("creds", s) : info

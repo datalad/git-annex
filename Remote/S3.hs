@@ -72,7 +72,8 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			availability = GloballyAvailable,
 			remotetype = remote,
 			mkUnavailable = gen r u (M.insert "host" "!dne!" c) gc,
-			getInfo = return [("bucket", fromMaybe "unknown" (getBucket c))]
+			getInfo = includeCredsInfo c (AWS.creds u)
+				[ ("bucket", fromMaybe "unknown" (getBucket c)) ]
 		}
 
 s3Setup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
