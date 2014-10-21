@@ -38,3 +38,4 @@ Similarly for directories:
 
 
 [[!meta title="manual mode preferred content expression does not want newer versions of present files"]]
+[[!tag confirmed]]
