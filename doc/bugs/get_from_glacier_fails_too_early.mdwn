@@ -67,3 +67,6 @@ with no noticeable change.
 I had changed the AWS credentials a while ago.
 
 Tomorrow I will try to download a just recently uploaded file with the current credentials and keys.
+
+> [[done]];  I am not confident that I understand this failure on retrival,
+> and that I've fixed it.  --[[Joey]]
