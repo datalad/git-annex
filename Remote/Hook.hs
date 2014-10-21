@@ -60,7 +60,8 @@ gen r u c gc = do
 			availability = GloballyAvailable,
 			remotetype = remote,
 			mkUnavailable = gen r u c $
-				gc { remoteAnnexHookType = Just "!dne!" }
+				gc { remoteAnnexHookType = Just "!dne!" },
+			getInfo = return [("hooktype", hooktype)]
 		}
   where
 	hooktype = fromMaybe (error "missing hooktype") $ remoteAnnexHookType gc

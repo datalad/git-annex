@@ -68,6 +68,7 @@ gen r u c gc = do
 			remotetype = remote,
 			mkUnavailable = gen r u c $
 				gc { remoteAnnexExternalType = Just "!dne!" }
+			, getInfo = return [("externaltype", externaltype)]
 		}
   where
 	externaltype = fromMaybe (error "missing externaltype") (remoteAnnexExternalType gc)

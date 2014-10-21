@@ -16,6 +16,7 @@ module Remote.Helper.Encryptable (
 	cipherKey,
 	storeCipher,
 	extractCipher,
+	describeEncryption,
 ) where
 
 import qualified Data.Map as M
@@ -157,3 +158,10 @@ extractCipher c = case (M.lookup "cipher" c,
 	_ -> Nothing
   where
 	readkeys = KeyIds . split ","
+
+describeEncryption :: RemoteConfig -> String
+describeEncryption c = case extractCipher c of
+	Nothing -> "not encrypted"
+	(Just (SharedCipher _)) -> "encrypted (encryption key stored in git repository)"
+	(Just (EncryptedCipher _ _ (KeyIds { keyIds = ks }))) ->
+		"encrypted (to gpg keys: " ++ unwords ks ++ ")"

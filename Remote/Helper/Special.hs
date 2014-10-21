@@ -168,6 +168,12 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 			(cost baser)
 			(const $ cost baser + encryptedRemoteCostAdj)
 			(extractCipher c)
+		, getInfo = do
+			l <- getInfo baser
+			return $ l ++
+				[ ("encryption", describeEncryption c)
+				, ("chunking", describeChunkConfig (chunkConfig cfg))
+				]
 		}
 	cip = cipherKey c
 	gpgopts = getGpgEncParams encr

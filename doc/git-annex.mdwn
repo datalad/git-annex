@@ -679,8 +679,8 @@ subdirectories).
 * `info [directory|file|remote ...]`
 
   Displays statistics and other information for the specified item,
-  which can be a directory, or a file, or a remote (specified by name or
-  UUID). When no item is specified, displays statistics and information
+  which can be a directory, or a file, or a remote.
+  When no item is specified, displays statistics and information
   for the repository as a whole.
 
   When a directory is specified, the file matching options can be used

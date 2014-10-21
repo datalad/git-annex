@@ -67,7 +67,8 @@ gen r u c gc = do
 			availability = LocallyAvailable,
 			remotetype = remote,
 			mkUnavailable = gen r u c $
-				gc { remoteAnnexDirectory = Just "/dev/null" }
+				gc { remoteAnnexDirectory = Just "/dev/null" },
+			getInfo = return [("directory", dir)]
 		}
   where
 	dir = fromMaybe (error "missing directory") $ remoteAnnexDirectory gc

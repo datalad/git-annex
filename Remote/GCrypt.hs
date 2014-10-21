@@ -121,6 +121,7 @@ gen' r u c gc = do
 		, availability = availabilityCalc r
 		, remotetype = remote
 		, mkUnavailable = return Nothing
+		, getInfo = return $ gitRepoInfo r
 	}
 	return $ Just $ specialRemote' specialcfg c
 		(simplyPrepare $ store this rsyncopts)

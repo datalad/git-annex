@@ -71,7 +71,8 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			readonly = False,
 			availability = GloballyAvailable,
 			remotetype = remote,
-			mkUnavailable = gen r u (M.insert "url" "http://!dne!/" c) gc
+			mkUnavailable = gen r u (M.insert "url" "http://!dne!/" c) gc,
+			getInfo = return [("url", fromMaybe "unknown" (M.lookup "url" c))]
 		}
 		chunkconfig = getChunkConfig c
 

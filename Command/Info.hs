@@ -125,7 +125,8 @@ fileInfo file k = showCustom (unwords ["info", file]) $ do
 
 remoteInfo :: Remote -> Annex ()
 remoteInfo r = showCustom (unwords ["info", Remote.name r]) $ do
-	evalStateT (mapM_ showStat (remote_stats r)) emptyStatInfo
+	info <- map (\(k, v) -> simpleStat k (pure v)) <$> Remote.getInfo r
+	evalStateT (mapM_ showStat (remote_stats r ++ info)) emptyStatInfo
 	return True
 
 selStats :: [Stat] -> [Stat] -> Annex [Stat]
@@ -179,15 +180,20 @@ file_stats f k =
 	]
 
 remote_stats :: Remote -> [Stat]
-remote_stats r =
-	[ remote_name r
-	, remote_description r
-	, remote_uuid r
-	, remote_cost r
+remote_stats r = map (\s -> s r)
+	[ remote_name
+	, remote_description
+	, remote_uuid
+	, remote_cost
+	, remote_type
 	]
 
 stat :: String -> (String -> StatState String) -> Stat
 stat desc a = return $ Just (desc, a desc)
+
+-- The json simply contains the same string that is displayed.
+simpleStat :: String -> StatState String -> Stat
+simpleStat desc getval = stat desc $ json id getval
 
 nostat :: Stat
 nostat = return Nothing
@@ -209,7 +215,7 @@ showStat s = maybe noop calc =<< s
 		lift . showRaw =<< a
 
 repository_mode :: Stat
-repository_mode = stat "repository mode" $ json id $ lift $
+repository_mode = simpleStat "repository mode" $ lift $
 	ifM isDirect 
 		( return "direct", return "indirect" )
 
@@ -223,32 +229,36 @@ remote_list level = stat n $ nojson $ lift $ do
 	n = showTrustLevel level ++ " repositories"
 	
 dir_name :: FilePath -> Stat
-dir_name dir = stat "directory" $ json id $ pure dir
+dir_name dir = simpleStat "directory" $ pure dir
 
 file_name :: FilePath -> Stat
-file_name file = stat "file" $ json id $ pure file
+file_name file = simpleStat "file" $ pure file
 
 remote_name :: Remote -> Stat
-remote_name r = stat "remote" $ json id $ pure (Remote.name r)
+remote_name r = simpleStat "remote" $ pure (Remote.name r)
 
 remote_description :: Remote -> Stat
-remote_description r = stat "description" $ json id $ lift $
+remote_description r = simpleStat "description" $ lift $
 	Remote.prettyUUID (Remote.uuid r)
 
 remote_uuid :: Remote -> Stat
-remote_uuid r = stat "uuid" $ json id $ pure $
+remote_uuid r = simpleStat "uuid" $ pure $
 	fromUUID $ Remote.uuid r
 
 remote_cost :: Remote -> Stat
-remote_cost r = stat "cost" $ json id $ pure $
+remote_cost r = simpleStat "cost" $ pure $
 	show $ Remote.cost r
+
+remote_type :: Remote -> Stat
+remote_type r = simpleStat "type" $ pure $
+	Remote.typename $ Remote.remotetype r
 
 local_annex_keys :: Stat
 local_annex_keys = stat "local annex keys" $ json show $
 	countKeys <$> cachedPresentData
 
 local_annex_size :: Stat
-local_annex_size = stat "local annex size" $ json id $
+local_annex_size = simpleStat "local annex size" $
 	showSizeKeys <$> cachedPresentData
 
 known_annex_files :: Stat
@@ -256,7 +266,7 @@ known_annex_files = stat "annexed files in working tree" $ json show $
 	countKeys <$> cachedReferencedData
 
 known_annex_size :: Stat
-known_annex_size = stat "size of annexed files in working tree" $ json id $
+known_annex_size = simpleStat "size of annexed files in working tree" $
 	showSizeKeys <$> cachedReferencedData
 
 tmp_size :: Stat
@@ -266,13 +276,13 @@ bad_data_size :: Stat
 bad_data_size = staleSize "bad keys size" gitAnnexBadDir
 
 key_size :: Key -> Stat
-key_size k = stat "size" $ json id $ pure $ showSizeKeys $ foldKeys [k]
+key_size k = simpleStat "size" $ pure $ showSizeKeys $ foldKeys [k]
 
 key_name :: Key -> Stat
-key_name k = stat "key" $ json id $ pure $ key2file k
+key_name k = simpleStat "key" $ pure $ key2file k
 
 bloom_info :: Stat
-bloom_info = stat "bloom filter size" $ json id $ do
+bloom_info = simpleStat "bloom filter size" $ do
 	localkeys <- countKeys <$> cachedPresentData
 	capacity <- fromIntegral <$> lift Command.Unused.bloomCapacity
 	let note = aside $
@@ -305,7 +315,7 @@ transfer_list = stat "transfers in progress" $ nojson $ lift $ do
 		]
 
 disk_size :: Stat
-disk_size = stat "available local disk space" $ json id $ lift $
+disk_size = simpleStat "available local disk space" $ lift $
 	calcfree
 		<$> (annexDiskReserve <$> Annex.getGitConfig)
 		<*> inRepo (getDiskFree . gitAnnexDir)

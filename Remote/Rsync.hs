@@ -83,6 +83,7 @@ gen r u c gc = do
 			, availability = if islocal then LocallyAvailable else GloballyAvailable
 			, remotetype = remote
 			, mkUnavailable = return Nothing
+			, getInfo = return [("url", url)]
 			}
   where
 	specialcfg = (specialRemoteCfg c)

@@ -159,6 +159,7 @@ gen r u c gc
 			, availability = availabilityCalc r
 			, remotetype = remote
 			, mkUnavailable = unavailable r u c gc
+			, getInfo = return $ gitRepoInfo r
 			}
 
 unavailable :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)

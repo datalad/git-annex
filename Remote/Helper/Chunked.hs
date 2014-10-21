@@ -8,6 +8,7 @@
 module Remote.Helper.Chunked (
 	ChunkSize,
 	ChunkConfig(..),
+	describeChunkConfig,
 	getChunkConfig,
 	storeChunks,
 	removeChunks,
@@ -33,6 +34,14 @@ data ChunkConfig
 	| UnpaddedChunks ChunkSize
 	| LegacyChunks ChunkSize
 	deriving (Show)
+
+describeChunkConfig :: ChunkConfig -> String
+describeChunkConfig NoChunks = "none"
+describeChunkConfig (UnpaddedChunks sz) = describeChunkSize sz ++ "chunks"
+describeChunkConfig (LegacyChunks sz) = describeChunkSize sz ++ " chunks (old style)"
+
+describeChunkSize :: ChunkSize -> String
+describeChunkSize sz = roughSize storageUnits False (fromIntegral sz)
 
 noChunks :: ChunkConfig -> Bool
 noChunks NoChunks = True

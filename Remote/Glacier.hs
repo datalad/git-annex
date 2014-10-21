@@ -66,7 +66,8 @@ gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
 			readonly = False,
 			availability = GloballyAvailable,
 			remotetype = remote,
-			mkUnavailable = return Nothing
+			mkUnavailable = return Nothing,
+			getInfo = return [("glacier vault", getVault c)]
 		}
 	specialcfg = (specialRemoteCfg c)
 		-- Disabled until jobList gets support for chunks.
