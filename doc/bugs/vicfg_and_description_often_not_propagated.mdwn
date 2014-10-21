@@ -150,3 +150,5 @@ wanted a6febfa0-9fe5-4a65-95bb-dc255d87c2e2 = standard
 #schedule a6febfa0-9fe5-4a65-95bb-dc255d87c2e2 =
 # End of transcript or log.
 """]]
+
+[[!tag moreinfo]]
