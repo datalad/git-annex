@@ -13,6 +13,8 @@ git-annex (5.20141014) UNRELEASED; urgency=medium
   * glacier: Fix pipe setup when calling glacier-cli to retrieve an object.
   * info: When run on a single annexed file, displays some info about the 
     file, including its key and size.
+  * info: When passed the name or uuid of a remote, displays info about that
+    remote.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 14 Oct 2014 14:09:24 -0400
 

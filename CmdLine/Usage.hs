@@ -103,6 +103,8 @@ paramSize :: String
 paramSize = "SIZE"
 paramAddress :: String
 paramAddress = "ADDRESS"
+paramItem :: String
+paramItem = "ITEM"
 paramKeyValue :: String
 paramKeyValue = "K=V"
 paramNothing :: String

@@ -16,10 +16,11 @@ import Data.Tuple
 import Data.Ord
 
 import Common.Annex
-import qualified Remote
 import qualified Command.Unused
 import qualified Git
 import qualified Annex
+import qualified Remote
+import qualified Types.Remote as Remote
 import Command
 import Utility.DataUnits
 import Utility.DiskFree
@@ -75,7 +76,7 @@ type StatState = StateT StatInfo Annex
 
 cmd :: [Command]
 cmd = [noCommit $ dontCheck repoExists $ withOptions [jsonOption] $
-	command "info" paramPaths seek SectionQuery
+	command "info" (paramOptional $ paramRepeating paramItem) seek SectionQuery
 	"shows information about the specified item or the repository as a whole"]
 
 seek :: CommandSeek
@@ -99,11 +100,15 @@ globalInfo = do
 itemInfo :: String -> Annex ()
 itemInfo p = ifM (isdir p)
 	( dirInfo p
-	, maybe noinfo (fileInfo p) =<< isAnnexLink p
+	, do
+		v <- Remote.byName' p
+		case v of
+			Right r -> remoteInfo r
+			Left _ -> maybe noinfo (fileInfo p) =<< isAnnexLink p
 	)
   where
 	isdir = liftIO . catchBoolIO . (isDirectory <$$> getFileStatus)
-	noinfo = error $ p ++ " is not a directory or an annexed file"
+	noinfo = error $ p ++ " is not a directory or an annexed file or a remote"
 
 dirInfo :: FilePath -> Annex ()
 dirInfo dir = showCustom (unwords ["info", dir]) $ do
@@ -116,6 +121,11 @@ dirInfo dir = showCustom (unwords ["info", dir]) $ do
 fileInfo :: FilePath -> Key -> Annex ()
 fileInfo file k = showCustom (unwords ["info", file]) $ do
 	evalStateT (mapM_ showStat (file_stats file k)) emptyStatInfo
+	return True
+
+remoteInfo :: Remote -> Annex ()
+remoteInfo r = showCustom (unwords ["info", Remote.name r]) $ do
+	evalStateT (mapM_ showStat (remote_stats r)) emptyStatInfo
 	return True
 
 selStats :: [Stat] -> [Stat] -> Annex [Stat]
@@ -150,7 +160,7 @@ global_slow_stats =
 	]
 dir_fast_stats :: [FilePath -> Stat]
 dir_fast_stats =
-	[ local_dir
+	[ dir_name
 	, const local_annex_keys
 	, const local_annex_size
 	, const known_annex_files
@@ -163,9 +173,17 @@ dir_slow_stats =
 
 file_stats :: FilePath -> Key -> [Stat]
 file_stats f k =
-	[ local_file f
+	[ file_name f
 	, key_size k
 	, key_name k
+	]
+
+remote_stats :: Remote -> [Stat]
+remote_stats r =
+	[ remote_name r
+	, remote_description r
+	, remote_uuid r
+	, remote_cost r
 	]
 
 stat :: String -> (String -> StatState String) -> Stat
@@ -204,11 +222,26 @@ remote_list level = stat n $ nojson $ lift $ do
   where
 	n = showTrustLevel level ++ " repositories"
 	
-local_dir :: FilePath -> Stat
-local_dir dir = stat "directory" $ json id $ return dir
+dir_name :: FilePath -> Stat
+dir_name dir = stat "directory" $ json id $ pure dir
 
-local_file :: FilePath -> Stat
-local_file file = stat "file" $ json id $ return file
+file_name :: FilePath -> Stat
+file_name file = stat "file" $ json id $ pure file
+
+remote_name :: Remote -> Stat
+remote_name r = stat "remote" $ json id $ pure (Remote.name r)
+
+remote_description :: Remote -> Stat
+remote_description r = stat "description" $ json id $ lift $
+	Remote.prettyUUID (Remote.uuid r)
+
+remote_uuid :: Remote -> Stat
+remote_uuid r = stat "uuid" $ json id $ pure $
+	fromUUID $ Remote.uuid r
+
+remote_cost :: Remote -> Stat
+remote_cost r = stat "cost" $ json id $ pure $
+	show $ Remote.cost r
 
 local_annex_keys :: Stat
 local_annex_keys = stat "local annex keys" $ json show $
