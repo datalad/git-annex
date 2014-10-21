@@ -107,7 +107,7 @@ iaCredsAForm defcreds = AWS.AWSCreds
 #ifdef WITH_S3
 previouslyUsedIACreds :: Annex (Maybe CredPair)
 previouslyUsedIACreds = previouslyUsedCredPair AWS.creds S3.remote $
-	AWS.isIARemoteConfig . Remote.config
+	S3.isIA . Remote.config
 #endif
 
 accessKeyIDFieldWithHelp :: Maybe Text -> MkAForm Text

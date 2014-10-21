@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Remote.S3 (remote, iaHost, isIA, isIAHost, iaItemUrl) where
+module Remote.S3 (remote, iaHost, isIA, iaItemUrl) where
 
 import Network.AWS.AWSConnection
 import Network.AWS.S3Object hiding (getStorageClass)
@@ -72,8 +72,12 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			availability = GloballyAvailable,
 			remotetype = remote,
 			mkUnavailable = gen r u (M.insert "host" "!dne!" c) gc,
-			getInfo = includeCredsInfo c (AWS.creds u)
-				[ ("bucket", fromMaybe "unknown" (getBucket c)) ]
+			getInfo = includeCredsInfo c (AWS.creds u) $ catMaybes
+				[ Just ("bucket", fromMaybe "unknown" (getBucket c))
+				, if isIA c
+					then Just ("internet archive item", iaItemUrl $ fromMaybe "unknown" $ getBucket c)
+					else Nothing
+				]
 		}
 
 s3Setup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
