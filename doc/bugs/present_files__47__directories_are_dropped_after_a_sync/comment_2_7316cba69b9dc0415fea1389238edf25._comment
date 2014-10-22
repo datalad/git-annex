@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.96"
+ subject="comment 2"
+ date="2014-10-21T20:20:25Z"
+ content="""
+The problem is that there's no way for preferred content expressions to specify that a file is wanted just because some old version of the file is (or was) present.
+
+It's not clear to me how that could be added to the preferred content expressions in an efficient way.
+
+It might be possible to hack `git annex sync --content` and the assistant to look at incoming merges, and queue downloads of newer versions of files before merging.
+
+Also being discussed at <https://github.com/datalad/datalad/issues/6>.
+"""]]

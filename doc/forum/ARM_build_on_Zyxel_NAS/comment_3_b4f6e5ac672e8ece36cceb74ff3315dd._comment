@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.96"
+ subject="comment 3"
+ date="2014-10-22T16:22:24Z"
+ content="""
+I know kernel 3.2 would work. I don't know what the minimum kernel supported by glibc 2.13 is.
+"""]]
