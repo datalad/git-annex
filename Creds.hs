@@ -40,8 +40,10 @@ data CredPairStorage = CredPairStorage
 	}
 
 {- Stores creds in a remote's configuration, if the remote allows
- - that. Otherwise, caches them locally.
- - The creds are found in storage if not provided.
+ - that. Also caches them locally.
+ -
+ - The creds are found from the CredPairStorage storage if not provided,
+ - so may be provided by an environment variable etc.
  -
  - The remote's configuration should have already had a cipher stored in it
  - if that's going to be done, so that the creds can be encrypted using the
@@ -54,7 +56,7 @@ setRemoteCredPair encsetup c storage Nothing =
 setRemoteCredPair _ c storage (Just creds)
 	| embedCreds c = case credPairRemoteKey storage of
 		Nothing -> localcache
-		Just key -> storeconfig key =<< remoteCipher c
+		Just key -> storeconfig key =<< remoteCipher =<< localcache
 	| otherwise = localcache
   where
 	localcache = do

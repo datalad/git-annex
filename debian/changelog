@@ -16,6 +16,9 @@ git-annex (5.20141014) UNRELEASED; urgency=medium
   * info: When passed the name or uuid of a remote, displays info about that
     remote. Remotes that support encryption, chunking, or embedded
     creds will include that in their info.
+  * enableremote: When the remote has creds, update the local creds cache
+    file. Before, the old version of the creds could be left there, and
+    would continue to be used.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 14 Oct 2014 14:09:24 -0400
 
