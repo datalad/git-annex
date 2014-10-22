@@ -31,7 +31,7 @@ XFCE uses the Thunar file manager, which can also be easily configured to allow 
 
 for drop, and for get:
 
-    git-annex drop --notify-start --notify-finish -- %F
+    git-annex get --notify-start --notify-finish -- %F
 
 This gives me the resulting config on disk, in `.config/Thunar/uca.xml`:
 
