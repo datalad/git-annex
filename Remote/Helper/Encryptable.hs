@@ -163,5 +163,10 @@ describeEncryption :: RemoteConfig -> String
 describeEncryption c = case extractCipher c of
 	Nothing -> "not encrypted"
 	(Just (SharedCipher _)) -> "encrypted (encryption key stored in git repository)"
-	(Just (EncryptedCipher _ _ (KeyIds { keyIds = ks }))) ->
-		"encrypted (to gpg keys: " ++ unwords ks ++ ")"
+	(Just (EncryptedCipher _ v (KeyIds { keyIds = ks }))) -> unwords $ catMaybes
+		[ Just "encrypted (to gpg keys:"
+		, Just (unwords ks ++ ")")
+		, case v of
+			PubKey -> Nothing
+			Hybrid -> Just "(hybrid mode)"
+		]
