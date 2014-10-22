@@ -71,7 +71,9 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			readonly = False,
 			availability = GloballyAvailable,
 			remotetype = remote,
-			mkUnavailable = gen r u (M.insert "url" "http://!dne!/" c) gc
+			mkUnavailable = gen r u (M.insert "url" "http://!dne!/" c) gc,
+			getInfo = includeCredsInfo c (davCreds u) $
+				[("url", fromMaybe "unknown" (M.lookup "url" c))]
 		}
 		chunkconfig = getChunkConfig c
 
@@ -81,11 +83,11 @@ webdavSetup mu mcreds c = do
 	url <- case M.lookup "url" c of
 		Nothing -> error "Specify url="
 		Just url -> return url
-	c' <- encryptionSetup c
+	(c', encsetup) <- encryptionSetup c
 	creds <- maybe (getCreds c' u) (return . Just) mcreds
 	testDav url creds
 	gitConfigSpecialRemote u c' "webdav" "true"
-	c'' <- setRemoteCredPair c' (davCreds u) creds
+	c'' <- setRemoteCredPair encsetup c' (davCreds u) creds
 	return (c'', u)
 
 -- Opens a http connection to the DAV server, which will be reused

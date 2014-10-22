@@ -14,8 +14,8 @@ import qualified Remote
 import Annex.Wanted
 import Config.NumCopies
 
-def :: [Command]
-def = [withOptions Command.Move.moveOptions $ command "copy" paramPaths seek
+cmd :: [Command]
+cmd = [withOptions Command.Move.moveOptions $ command "copy" paramPaths seek
 	SectionCommon "copy content of files to/from another repository"]
 
 seek :: CommandSeek
@@ -23,7 +23,7 @@ seek ps = do
 	to <- getOptionField toOption Remote.byNameWithUUID
 	from <- getOptionField fromOption Remote.byNameWithUUID
 	withKeyOptions
-	 	(Command.Move.startKey to from False)
+		(Command.Move.startKey to from False)
 		(withFilesInGit $ whenAnnexed $ start to from)
 		ps
 

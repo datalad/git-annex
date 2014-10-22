@@ -14,8 +14,8 @@ import Annex.UUID
 import Types.UUID
 import qualified Remote
 	
-def :: [Command]
-def = [dontCheck repoExists $
+cmd :: [Command]
+cmd = [dontCheck repoExists $
 	command "reinit" (paramUUID ++ " or " ++ paramDesc) seek SectionUtility ""]
 
 seek :: CommandSeek

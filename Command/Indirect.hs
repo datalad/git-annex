@@ -22,8 +22,8 @@ import Annex.CatFile
 import Annex.Init
 import qualified Command.Add
 
-def :: [Command]
-def = [notBareRepo $ noDaemonRunning $
+cmd :: [Command]
+cmd = [notBareRepo $ noDaemonRunning $
 	command "indirect" paramNothing seek
 		SectionSetup "switch repository to indirect mode"]
 
@@ -94,7 +94,7 @@ perform = do
 					warnlocked
 		showEndOk
 
- 	warnlocked :: SomeException -> Annex ()
+	warnlocked :: SomeException -> Annex ()
 	warnlocked e = do
 		warning $ show e
 		warning "leaving this file as-is; correct this problem and run git annex add on it"

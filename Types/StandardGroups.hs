@@ -96,7 +96,7 @@ standardPreferredContent UnwantedGroup = "exclude=*"
 
 notArchived :: String
 notArchived = "not (copies=archive:1 or copies=smallarchive:1)"
-  	
+	
 {- Most repositories want any content that is only on untrusted
  - or dead repositories, or that otherwise does not have enough copies.
  - Does not look at .gitattributes since that is quite a lot slower.

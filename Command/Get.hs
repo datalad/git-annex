@@ -16,8 +16,8 @@ import Config.NumCopies
 import Annex.Wanted
 import qualified Command.Move
 
-def :: [Command]
-def = [withOptions getOptions $ command "get" paramPaths seek
+cmd :: [Command]
+cmd = [withOptions getOptions $ command "get" paramPaths seek
 	SectionCommon "make content of annexed files available"]
 
 getOptions :: [Option]
@@ -48,7 +48,7 @@ start' expensivecheck from key afile = stopUnless (not <$> inAnnex key) $
 				stopUnless (Command.Move.fromOk src key) $
 					go $ Command.Move.fromPerform src False key afile
   where
-  	go a = do
+	go a = do
 		showStart' "get" key afile
 		next a
 

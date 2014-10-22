@@ -60,7 +60,7 @@ runFsckForm new activity = case activity of
 	ScheduledSelfFsck s d -> go s d =<< liftAnnex getUUID
 	ScheduledRemoteFsck ru s d -> go s d ru
   where
-  	go (Schedule r t) d ru = do
+	go (Schedule r t) d ru = do
 		u <- liftAnnex getUUID
 		repolist <- liftAssistant (getrepolist ru)
 		runFormPostNoToken $ \msg -> do

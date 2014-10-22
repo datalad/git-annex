@@ -1,20 +1,15 @@
-From aaef1aadb21a198475a656132ef4488b85b8fd1b Mon Sep 17 00:00:00 2001
+From 087f1ae5e17f0e6d7c9f6b4092a5bb5bb6f5bf60 Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Thu, 3 Jul 2014 23:22:47 +0000
-Subject: [PATCH] use android net.dns1 command instead of resolv.conf file
+Date: Thu, 16 Oct 2014 02:59:11 +0000
+Subject: [PATCH] port
 
-Android has no /etc/resolv.conf. Some might have /system/etc/resolv.conf,
-but even that does not seem likely.
-
-This is likely a little slow, but is at least fine for git-annex's uses,
-since it only uses this library for occasional SRV lookups.
 ---
- Network/DNS/Resolver.hs |   11 +++++++++--
- dns.cabal               |    1 +
- 2 files changed, 10 insertions(+), 2 deletions(-)
+ Network/DNS/Resolver.hs | 13 ++++++++-----
+ dns.cabal               |  1 +
+ 2 files changed, 9 insertions(+), 5 deletions(-)
 
 diff --git a/Network/DNS/Resolver.hs b/Network/DNS/Resolver.hs
-index e4124b8..7aca431 100644
+index 5721e03..c4400d1 100644
 --- a/Network/DNS/Resolver.hs
 +++ b/Network/DNS/Resolver.hs
 @@ -19,7 +19,7 @@ module Network.DNS.Resolver (
@@ -26,7 +21,7 @@ index e4124b8..7aca431 100644
  import qualified Data.ByteString.Char8 as BS
  import Data.Char (isSpace)
  import Data.List (isPrefixOf)
-@@ -32,6 +32,7 @@ import Network.Socket (AddrInfoFlag(..), AddrInfo(..), SockAddr(..), PortNumber(
+@@ -32,6 +32,7 @@ import Network.Socket (AddrInfoFlag(..), AddrInfo(..), defaultHints, getAddrInfo
  import Prelude hiding (lookup)
  import System.Random (getStdRandom, randomR)
  import System.Timeout (timeout)
@@ -34,26 +29,28 @@ index e4124b8..7aca431 100644
  
  #if mingw32_HOST_OS == 1
  import Network.Socket (send)
-@@ -132,7 +133,13 @@ makeResolvSeed conf = ResolvSeed <$> addr
+@@ -130,10 +131,12 @@ makeResolvSeed conf = ResolvSeed <$> addr
+   where
      addr = case resolvInfo conf of
-         RCHostName numhost -> makeAddrInfo numhost Nothing
-         RCHostPort numhost mport -> makeAddrInfo numhost $ Just mport
--        RCFilePath file -> toAddr <$> readFile file >>= \i -> makeAddrInfo i Nothing
+         RCHostName numhost -> makeAddrInfo numhost
+-        RCFilePath file -> toAddr <$> readFile file >>= makeAddrInfo
+-    toAddr cs = let l:_ = filter ("nameserver" `isPrefixOf`) $ lines cs
+-                in extract l
+-    extract = reverse . dropWhile isSpace . reverse . dropWhile isSpace . drop 11
 +        RCFilePath file -> do
 +		-- Android has no /etc/resolv.conf; use getprop command.
 +		ls <- catch (lines <$> readProcess "getprop" ["net.dns1"] []) (const (return []) :: IOException -> IO [String])
-+		let addr = case ls of
++		makeAddrInfo $ case ls of
 +			[] -> "8.8.8.8" -- google public dns as a fallback only
 +			(l:_) -> l
-+		makeAddrInfo addr Nothing
-     toAddr cs = let l:_ = filter ("nameserver" `isPrefixOf`) $ lines cs
-                 in extract l
-     extract = reverse . dropWhile isSpace . reverse . dropWhile isSpace . drop 11
+ 
+ makeAddrInfo :: HostName -> IO AddrInfo
+ makeAddrInfo addr = do
 diff --git a/dns.cabal b/dns.cabal
-index 0a08a9e..724a3e0 100644
+index ceaf5f4..cd15e61 100644
 --- a/dns.cabal
 +++ b/dns.cabal
-@@ -38,6 +38,7 @@ Library
+@@ -37,6 +37,7 @@ Library
                        , network >= 2.3
                        , random
                        , resourcet
@@ -62,5 +59,5 @@ index 0a08a9e..724a3e0 100644
      Build-Depends:      base >= 4 && < 5
                        , attoparsec
 -- 
-1.7.10.4
+2.1.1
 

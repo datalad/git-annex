@@ -15,8 +15,8 @@ import qualified Annex.Branch
 import qualified Git.Config
 import Remote.GCrypt (coreGCryptId)
 
-def :: [Command]
-def = [noCommit $ command "configlist" paramNothing seek
+cmd :: [Command]
+cmd = [noCommit $ command "configlist" paramNothing seek
 	SectionPlumbing "outputs relevant git configuration"]
 
 seek :: CommandSeek
@@ -29,7 +29,7 @@ start = do
 	showConfig coreGCryptId =<< fromRepo (Git.Config.get coreGCryptId "")
 	stop
   where
-  	showConfig k v = liftIO $ putStrLn $ k ++ "=" ++ v
+	showConfig k v = liftIO $ putStrLn $ k ++ "=" ++ v
 
 {- The repository may not yet have a UUID; automatically initialize it
  - when there's a git-annex branch available. -}

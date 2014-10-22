@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.54"
+ subject="comment 3"
+ date="2014-10-12T20:14:36Z"
+ content="""
+Probably the same problem reported here:
+<https://github.com/datalad/datalad/issues/12>
+
+I guess this is a mismatch between the version of git that git-annex was built with and the version it's using. In particular, git check-attr behavior varies between git older than 1.7.7 and newer, and git-annex picks the version at build time.
+
+So, I think this is a broken Ubuntu PPA, and if that's the current one, the maintainer of the PPA needs to be contacted to update the git-annex to match the git version, or depend on an appropriate git version.
+"""]]

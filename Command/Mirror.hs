@@ -17,8 +17,8 @@ import Annex.Content
 import qualified Annex
 import Config.NumCopies
 
-def :: [Command]
-def = [withOptions (fromToOptions ++ keyOptions) $
+cmd :: [Command]
+cmd = [withOptions (fromToOptions ++ keyOptions) $
 	command "mirror" paramPaths seek
 		SectionCommon "mirror content of files to/from another repository"]
 
@@ -32,7 +32,7 @@ seek ps = do
 		ps
 
 start :: Maybe Remote -> Maybe Remote -> FilePath -> Key -> CommandStart
-start to from file key = startKey to from (Just file) key
+start to from file = startKey to from (Just file)
 
 startKey :: Maybe Remote -> Maybe Remote -> Maybe FilePath -> Key -> CommandStart
 startKey to from afile key = do

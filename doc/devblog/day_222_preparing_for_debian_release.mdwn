@@ -1,0 +1,12 @@
+Made two releases of git-annex, yesterday and today, which turned out to
+contain only Debian changes. So no need for other users to upgrade.
+
+This included fixing building on mips, and arm architectures.
+The mips build was running out of memory, and I was able to work around
+that. Then the arm builds broke today, because of a recent change to the
+version of llvm that has completely trashed ghc. Luckily, I was able
+to work around that too.
+
+Hopefully that will get last week's security fix into Debian testing,
+and otherwise have git-annex in Debian in good shape for the upcoming
+freeze.

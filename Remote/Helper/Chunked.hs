@@ -8,6 +8,7 @@
 module Remote.Helper.Chunked (
 	ChunkSize,
 	ChunkConfig(..),
+	describeChunkConfig,
 	getChunkConfig,
 	storeChunks,
 	removeChunks,
@@ -33,6 +34,14 @@ data ChunkConfig
 	| UnpaddedChunks ChunkSize
 	| LegacyChunks ChunkSize
 	deriving (Show)
+
+describeChunkConfig :: ChunkConfig -> String
+describeChunkConfig NoChunks = "none"
+describeChunkConfig (UnpaddedChunks sz) = describeChunkSize sz ++ "chunks"
+describeChunkConfig (LegacyChunks sz) = describeChunkSize sz ++ " chunks (old style)"
+
+describeChunkSize :: ChunkSize -> String
+describeChunkSize sz = roughSize storageUnits False (fromIntegral sz)
 
 noChunks :: ChunkConfig -> Bool
 noChunks NoChunks = True
@@ -123,7 +132,7 @@ storeChunks u chunkconfig k f p storer checker =
 	
 		loop bytesprocessed (chunk, bs) chunkkeys
 			| L.null chunk && numchunks > 0 = do
- 				-- Once all chunks are successfully
+				-- Once all chunks are successfully
 				-- stored, update the chunk log.
 				chunksStored u k (FixedSizeChunks chunksize) numchunks
 				return True
@@ -138,7 +147,7 @@ storeChunks u chunkconfig k f p storer checker =
 					)
 		  where
 			numchunks = numChunks chunkkeys
- 			{- The MeterUpdate that is passed to the action
+			{- The MeterUpdate that is passed to the action
 			 - storing a chunk is offset, so that it reflects
 			 - the total bytes that have already been stored
 			 - in previous chunks. -}
@@ -290,7 +299,7 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 		hSeek h AbsoluteSeek startpoint
 		return h
 
- 	{- Progress meter updating is a bit tricky: If the Retriever
+	{- Progress meter updating is a bit tricky: If the Retriever
 	 - populates a file, it is responsible for updating progress
 	 - as the file is being retrieved. 
 	 -

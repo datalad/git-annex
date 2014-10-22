@@ -66,7 +66,9 @@ gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
 			readonly = False,
 			availability = GloballyAvailable,
 			remotetype = remote,
-			mkUnavailable = return Nothing
+			mkUnavailable = return Nothing,
+			getInfo = includeCredsInfo c (AWS.creds u) $
+				[ ("glacier vault", getVault c) ]
 		}
 	specialcfg = (specialRemoteCfg c)
 		-- Disabled until jobList gets support for chunks.
@@ -76,12 +78,12 @@ gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
 glacierSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
 glacierSetup mu mcreds c = do
 	u <- maybe (liftIO genUUID) return mu
-	c' <- setRemoteCredPair c (AWS.creds u) mcreds
-	glacierSetup' (isJust mu) u c'
-glacierSetup' :: Bool -> UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
-glacierSetup' enabling u c = do
-	c' <- encryptionSetup c
-	let fullconfig = c' `M.union` defaults
+	glacierSetup' (isJust mu) u mcreds c
+glacierSetup' :: Bool -> UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
+glacierSetup' enabling u mcreds c = do
+	(c', encsetup) <- encryptionSetup c
+	c'' <- setRemoteCredPair encsetup c' (AWS.creds u) mcreds
+	let fullconfig = c'' `M.union` defaults
 	unless enabling $
 		genVault fullconfig u
 	gitConfigSpecialRemote u fullconfig "glacier" "true"
@@ -141,7 +143,10 @@ retrieve r k sink = go =<< glacierEnv c u
 		]
 	go Nothing = error "cannot retrieve from glacier"
 	go (Just e) = do
-		let cmd = (proc "glacier" (toCommand params)) { env = Just e }
+		let cmd = (proc "glacier" (toCommand params))
+			{ env = Just e
+			, std_out = CreatePipe
+			}
 		(_, Just h, _, pid) <- liftIO $ createProcess cmd
 		-- Glacier cannot store empty files, so if the output is
 		-- empty, the content is not available yet.

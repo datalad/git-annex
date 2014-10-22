@@ -19,8 +19,8 @@ import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Concurrent.STM
 
-def :: [Command]
-def = [noCommit $ command "notifychanges" paramNothing seek SectionPlumbing
+cmd :: [Command]
+cmd = [noCommit $ command "notifychanges" paramNothing seek SectionPlumbing
 	"sends notification when git refs are changed"]
 
 seek :: CommandSeek
@@ -51,7 +51,7 @@ start = do
 	
 	-- No messages need to be received from the caller,
 	-- but when it closes the connection, notice and terminate.
-	let receiver = forever $ void $ getLine
+	let receiver = forever $ void getLine
 	void $ liftIO $ concurrently sender receiver
 	stop
 

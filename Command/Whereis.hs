@@ -14,8 +14,8 @@ import Command
 import Remote
 import Logs.Trust
 
-def :: [Command]
-def = [noCommit $ withOptions (jsonOption : keyOptions) $
+cmd :: [Command]
+cmd = [noCommit $ withOptions (jsonOption : keyOptions) $
 	command "whereis" paramPaths seek SectionQuery
 		"lists repositories that have file content"]
 

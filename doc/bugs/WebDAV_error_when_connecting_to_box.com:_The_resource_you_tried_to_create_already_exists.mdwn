@@ -1,0 +1,36 @@
+### Please describe the problem.
+
+"git-annex enableremote box.com" fails with "git-annex: WebDAV test failed".  The server returns error message "The resource you tried to create already exists" (see below).
+
+### What steps will reproduce the problem?
+
+1. I initialize box.com special remote in desktop.  The path at box.com is at "gas/annex".
+
+2. I enable the box.com special remote in laptop.  I got the error I described above.
+
+### What version of git-annex are you using? On what operating system?
+
+    $ git annex version  
+    git-annex version: 5.20140831-g62e6ad8
+    build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA CryptoHash
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier ddar hook external
+    $ uname -a
+    Linux tkf-acer 3.12.9-2-ARCH #1 SMP PREEMPT Fri Jan 31 10:22:54 CET 2014 x86_64 GNU/Linux
+
+
+### Please provide any additional information below.
+
+I ran the following while with appropriate environment variable WEBDAV_USERNAM and WEBDAV_PASSWORD.
+
+    me@desktop$ git-annex initremote box type=webdav url=https://dav.box.com/dav/gas/annex chunk=50mb encryption=shared
+    
+    me@laptop$ git-annex enableremote box.com
+    enableremote box.com (testing WebDAV server...)
+    
+    git-annex: WebDAV test failed: StatusCodeException (Status {statusCode = 405, statusMessage = "Method Not Allowed"}) [("Server","nginx"),("Date","Sat, 27 Sep 2014 09:36:42 GMT"),("Content-Type","application/xml; charset=utf-8"),("Content-Length","247"),("Connection","keep-alive"),("Vary","Host"),("Allow","OPTIONS, GET, HEAD, DELETE, PROPFIND, PUT, PROPPATCH, COPY, MOVE, REPORT, LOCK, UNLOCK"),("X-Response-Body-Start","<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<d:error xmlns:d=\"DAV:\" xmlns:s=\"http://sabredav.org/ns\">\n  <s:exception>Sabre_DAV_Exception_MethodNotAllowed</s:exception>\n  <s:message>The resource you tried to create already exists</s:message>\n</d:error>\n")] (CJ {expose = []}): user error
+    failed
+    git-annex: enableremote: 1 failed
+
+> You are using an old version of git-annex; this bug was fixed in
+> version 5.20140919. [[done]] --[[Joey]]

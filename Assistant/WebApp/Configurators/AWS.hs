@@ -162,7 +162,7 @@ getEnableS3R :: UUID -> Handler Html
 #ifdef WITH_S3
 getEnableS3R uuid = do
 	m <- liftAnnex readRemoteLog
-	if isIARemoteConfig $ fromJust $ M.lookup uuid m
+	if maybe False S3.isIA (M.lookup uuid m)
 		then redirect $ EnableIAR uuid
 		else postEnableS3R uuid
 #else
@@ -207,7 +207,7 @@ makeAWSRemote maker remotetype defaultgroup (AWSCreds ak sk) name config =
 	setupCloudRemote defaultgroup Nothing $
 		maker hostname remotetype (Just creds) config
   where
-  	creds = (T.unpack ak, T.unpack sk)
+	creds = (T.unpack ak, T.unpack sk)
 	{- AWS services use the remote name as the basis for a host
 	 - name, so filter it to contain valid characters. -}
 	hostname = case filter isAlphaNum name of
@@ -220,12 +220,9 @@ getRepoInfo c = [whamlet|S3 remote using bucket: #{bucket}|]
 	bucket = fromMaybe "" $ M.lookup "bucket" c
 
 #ifdef WITH_S3
-isIARemoteConfig :: RemoteConfig -> Bool
-isIARemoteConfig = S3.isIAHost . fromMaybe "" . M.lookup "host"
-
 previouslyUsedAWSCreds :: Annex (Maybe CredPair)
 previouslyUsedAWSCreds = getM gettype [S3.remote, Glacier.remote]
   where
 	gettype t = previouslyUsedCredPair AWS.creds t $
-		not . isIARemoteConfig . Remote.config
+		not . S3.isIA . Remote.config
 #endif

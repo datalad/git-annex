@@ -15,6 +15,7 @@ module Creds (
 	writeCacheCreds,
 	readCacheCreds,
 	removeCreds,
+	includeCredsInfo,
 ) where
 
 import Common.Annex
@@ -23,7 +24,7 @@ import Annex.Perms
 import Utility.FileMode
 import Crypto
 import Types.Remote (RemoteConfig, RemoteConfigKey)
-import Remote.Helper.Encryptable (remoteCipher, remoteCipher', embedCreds)
+import Remote.Helper.Encryptable (remoteCipher, remoteCipher', embedCreds, EncryptionIsSetup, extractCipher)
 import Utility.Env (getEnv)
 
 import qualified Data.ByteString.Lazy.Char8 as L
@@ -39,16 +40,23 @@ data CredPairStorage = CredPairStorage
 	}
 
 {- Stores creds in a remote's configuration, if the remote allows
- - that. Otherwise, caches them locally.
- - The creds are found in storage if not provided. -}
-setRemoteCredPair :: RemoteConfig -> CredPairStorage -> Maybe CredPair -> Annex RemoteConfig
-setRemoteCredPair c storage Nothing = 
-	maybe (return c) (setRemoteCredPair c storage . Just)
+ - that. Also caches them locally.
+ -
+ - The creds are found from the CredPairStorage storage if not provided,
+ - so may be provided by an environment variable etc.
+ -
+ - The remote's configuration should have already had a cipher stored in it
+ - if that's going to be done, so that the creds can be encrypted using the
+ - cipher. The EncryptionIsSetup phantom type ensures that is the case.
+ -}
+setRemoteCredPair :: EncryptionIsSetup -> RemoteConfig -> CredPairStorage -> Maybe CredPair -> Annex RemoteConfig
+setRemoteCredPair encsetup c storage Nothing = 
+	maybe (return c) (setRemoteCredPair encsetup c storage . Just)
 		=<< getRemoteCredPair c storage
-setRemoteCredPair c storage (Just creds)
+setRemoteCredPair _ c storage (Just creds)
 	| embedCreds c = case credPairRemoteKey storage of
 		Nothing -> localcache
-		Just key -> storeconfig key =<< remoteCipher c
+		Just key -> storeconfig key =<< remoteCipher =<< localcache
 	| otherwise = localcache
   where
 	localcache = do
@@ -86,23 +94,31 @@ getRemoteCredPair c storage = maybe fromcache (return . Just) =<< fromenv
 	fromconfig = case credPairRemoteKey storage of
 		Just key -> do
 			mcipher <- remoteCipher' c
-			case (mcipher, M.lookup key c) of
-				(_, Nothing) -> return Nothing
-				(Just (_cipher, SharedCipher {}), Just bcreds) ->
-					-- When using a shared cipher, the
-					-- creds are not stored encrypted.
-					fromcreds $ fromB64 bcreds
-				(Just (cipher, _), Just enccreds) -> do
-					creds <- liftIO $ decrypt cipher
-						(feedBytes $ L.pack $ fromB64 enccreds)
-						(readBytes $ return . L.unpack)
-					fromcreds creds
-				(Nothing, Just bcreds) ->
+			case (M.lookup key c, mcipher) of
+				(Nothing, _) -> return Nothing
+				(Just enccreds, Just (cipher, storablecipher)) ->
+					fromenccreds enccreds cipher storablecipher
+				(Just bcreds, Nothing) ->
 					fromcreds $ fromB64 bcreds
 		Nothing -> return Nothing
+	fromenccreds enccreds cipher storablecipher = do
+		mcreds <- liftIO $ catchMaybeIO $ decrypt cipher
+			(feedBytes $ L.pack $ fromB64 enccreds)
+			(readBytes $ return . L.unpack)
+		case mcreds of
+			Just creds -> fromcreds creds
+			Nothing -> do
+				-- Work around un-encrypted creds storage
+				-- bug in old S3 and glacier remotes.
+				-- Not a problem for shared cipher.
+				case storablecipher of
+					SharedCipher {} -> showLongNote "gpg error above was caused by an old git-annex bug in credentials storage. Working around it.."
+					_ -> error "*** Insecure credentials storage detected for this remote! See https://git-annex.branchable.com/upgrades/insecure_embedded_creds/"
+				fromcreds $ fromB64 enccreds
 	fromcreds creds = case decodeCredPair creds of
 		Just credpair -> do
 			writeCacheCredPair credpair storage
+
 			return $ Just credpair
 		_ -> error "bad creds"
 
@@ -131,10 +147,16 @@ readCacheCredPair storage = maybe Nothing decodeCredPair
 	<$> readCacheCreds (credPairFile storage)
 
 readCacheCreds :: FilePath -> Annex (Maybe Creds)
-readCacheCreds file = do
+readCacheCreds f = liftIO . catchMaybeIO . readFile =<< cacheCredsFile f
+
+cacheCredsFile :: FilePath -> Annex FilePath
+cacheCredsFile basefile = do
 	d <- fromRepo gitAnnexCredsDir
-	let f = d </> file
-	liftIO $ catchMaybeIO $ readFile f
+	return $ d </> basefile
+
+existsCacheCredPair :: CredPairStorage -> Annex Bool
+existsCacheCredPair storage = 
+	liftIO . doesFileExist =<< cacheCredsFile (credPairFile storage)
 
 encodeCredPair :: CredPair -> Creds
 encodeCredPair (l, p) = unlines [l, p]
@@ -149,3 +171,21 @@ removeCreds file = do
 	d <- fromRepo gitAnnexCredsDir
 	let f = d </> file
 	liftIO $ nukeFile f
+
+includeCredsInfo :: RemoteConfig -> CredPairStorage -> [(String, String)] -> Annex [(String, String)]
+includeCredsInfo c storage info = do
+	v <- liftIO $ getEnvCredPair storage
+	case v of
+		Just _ -> do
+			let (uenv, penv) = credPairEnvironment storage
+			ret $ "from environment variables (" ++ unwords [uenv, penv] ++ ")"
+		Nothing -> case (\ck -> M.lookup ck c) =<< credPairRemoteKey storage of
+			Nothing -> ifM (existsCacheCredPair storage)
+				( ret "stored locally"
+				, ret "not available"
+				)
+			Just _ -> case extractCipher c of
+				Just (EncryptedCipher _ _ _) -> ret "embedded in git repository (gpg encrypted)"
+				_ -> ret "embedded in git repository (not encrypted)"
+  where
+	ret s = return $ ("creds", s) : info

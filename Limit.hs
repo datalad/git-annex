@@ -82,7 +82,7 @@ addExclude = addLimit . limitExclude
 limitExclude :: MkLimit Annex
 limitExclude glob = Right $ const $ return . not . matchGlobFile glob
 
-matchGlobFile :: String -> (MatchInfo -> Bool)
+matchGlobFile :: String -> MatchInfo -> Bool
 matchGlobFile glob = go
 	where
 		cglob = compileGlob glob CaseSensative -- memoized
@@ -234,7 +234,7 @@ limitSize vs s = case readSize dataUnits s of
 	Nothing -> Left "bad size"
 	Just sz -> Right $ go sz
   where
-  	go sz _ (MatchingFile fi) = lookupFileKey fi >>= check fi sz
+	go sz _ (MatchingFile fi) = lookupFileKey fi >>= check fi sz
 	go sz _ (MatchingKey key) = checkkey sz key
 	checkkey sz key = return $ keySize key `vs` Just sz
 	check _ sz (Just key) = checkkey sz key
@@ -254,7 +254,7 @@ limitMetaData s = case parseMetaData s of
 		let cglob = compileGlob (fromMetaValue v) CaseInsensative
 		in Right $ const $ checkKey (check f cglob)
   where
-  	check f cglob k = not . S.null 
+	check f cglob k = not . S.null 
 		. S.filter (matchGlob cglob . fromMetaValue) 
 		. metaDataValues f <$> getCurrentMetaData k
 

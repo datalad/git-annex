@@ -76,7 +76,7 @@ knownUrls = do
 		return $ concat r
   where
 	geturls Nothing = return []
-  	geturls (Just logsha) = getLog . L.unpack <$> catObject logsha
+	geturls (Just logsha) = getLog . L.unpack <$> catObject logsha
 
 data Downloader = DefaultDownloader | QuviDownloader
 

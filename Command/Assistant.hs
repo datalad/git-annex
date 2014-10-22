@@ -18,8 +18,8 @@ import Assistant.Install
 
 import System.Environment
 
-def :: [Command]
-def = [noRepo checkAutoStart $ dontCheck repoExists $ withOptions options $
+cmd :: [Command]
+cmd = [noRepo checkAutoStart $ dontCheck repoExists $ withOptions options $
 	notBareRepo $ command "assistant" paramNothing seek SectionCommon
 		"automatically handle changes"]
 

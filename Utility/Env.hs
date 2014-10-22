@@ -14,6 +14,7 @@ import Utility.Exception
 import Control.Applicative
 import Data.Maybe
 import qualified System.Environment as E
+import qualified System.SetEnv
 #else
 import qualified System.Posix.Env as PE
 #endif
@@ -39,27 +40,27 @@ getEnvironment = PE.getEnvironment
 getEnvironment = E.getEnvironment
 #endif
 
-{- Returns True if it could successfully set the environment variable.
+{- Sets an environment variable. To overwrite an existing variable,
+ - overwrite must be True.
  -
- - There is, apparently, no way to do this in Windows. Instead,
- - environment varuables must be provided when running a new process. -}
-setEnv :: String -> String -> Bool -> IO Bool
+ - On Windows, setting a variable to "" unsets it. -}
+setEnv :: String -> String -> Bool -> IO ()
 #ifndef mingw32_HOST_OS
-setEnv var val overwrite = do
-	PE.setEnv var val overwrite
-	return True
+setEnv var val overwrite = PE.setEnv var val overwrite
 #else
-setEnv _ _ _ = return False
+setEnv var val True = System.SetEnv.setEnv var val
+setEnv var val False = do
+	r <- getEnv var
+	case r of
+		Nothing -> setEnv var val True
+		Just _ -> return ()
 #endif
 
-{- Returns True if it could successfully unset the environment variable. -}
-unsetEnv :: String -> IO Bool
+unsetEnv :: String -> IO ()
 #ifndef mingw32_HOST_OS
-unsetEnv var = do
-	PE.unsetEnv var
-	return True
+unsetEnv = PE.unsetEnv
 #else
-unsetEnv _ = return False
+unsetEnv = System.SetEnv.unsetEnv
 #endif
 
 {- Adds the environment variable to the input environment. If already

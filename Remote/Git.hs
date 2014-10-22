@@ -159,6 +159,7 @@ gen r u c gc
 			, availability = availabilityCalc r
 			, remotetype = remote
 			, mkUnavailable = unavailable r u c gc
+			, getInfo = return $ gitRepoInfo r
 			}
 
 unavailable :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
@@ -305,7 +306,7 @@ inAnnex rmt key
 	| Git.repoIsUrl r = checkremote
 	| otherwise = checklocal
   where
-  	r = repo rmt
+	r = repo rmt
 	checkhttp = do
 		showChecking r
 		ifM (Url.withUrlOptions $ \uo -> anyM (\u -> Url.checkBoth u (keySize key) uo) (keyUrls rmt key))

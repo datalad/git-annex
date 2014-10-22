@@ -119,7 +119,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 			)
 #endif
   where
-  	desc
+	desc
 		| assistant = "assistant"
 		| otherwise = "watch"
 	start daemonize webappwaiter = withThreadState $ \st -> do
@@ -147,7 +147,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 		let threads = if isJust cannotrun
 			then webappthread
 			else webappthread ++
-				[ watch $ commitThread
+				[ watch commitThread
 #ifdef WITH_WEBAPP
 #ifdef WITH_PAIRING
 				, assist $ pairListenerThread urlrenderer
@@ -158,29 +158,29 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 				, assist $ xmppReceivePackThread urlrenderer
 #endif
 #endif
-				, assist $ pushThread
-				, assist $ pushRetryThread
-				, assist $ mergeThread
-				, assist $ transferWatcherThread
-				, assist $ transferPollerThread
-				, assist $ transfererThread
-				, assist $ remoteControlThread
-				, assist $ daemonStatusThread
+				, assist pushThread
+				, assist pushRetryThread
+				, assist mergeThread
+				, assist transferWatcherThread
+				, assist transferPollerThread
+				, assist transfererThread
+				, assist remoteControlThread
+				, assist daemonStatusThread
 				, assist $ sanityCheckerDailyThread urlrenderer
-				, assist $ sanityCheckerHourlyThread
+				, assist sanityCheckerHourlyThread
 				, assist $ problemFixerThread urlrenderer
 #ifdef WITH_CLIBS
 				, assist $ mountWatcherThread urlrenderer
 #endif
-				, assist $ netWatcherThread
+				, assist netWatcherThread
 				, assist $ upgraderThread urlrenderer
 				, assist $ upgradeWatcherThread urlrenderer
-				, assist $ netWatcherFallbackThread
+				, assist netWatcherFallbackThread
 				, assist $ transferScannerThread urlrenderer
 				, assist $ cronnerThread urlrenderer
-				, assist $ configMonitorThread
-				, assist $ glacierThread
-				, watch $ watchThread
+				, assist configMonitorThread
+				, assist glacierThread
+				, watch watchThread
 				-- must come last so that all threads that wait
 				-- on it have already started waiting
 				, watch $ sanityCheckerStartupThread startdelay

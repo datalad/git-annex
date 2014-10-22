@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.54"
+ subject="comment 4"
+ date="2014-10-09T18:23:58Z"
+ content="""
+This post is misplaced, it is not a tip about how to use git-annex, but a question. I will be moving it to the forum after posting this comment.
+
+The right answer is probably to run: `git annex drop $file`, with no --numcopies, no --force, etc. Just let git-annex do its job; it will check the remotes to ensure that enough copies of the file exist to make it safe to drop the content of the file from the local repository. (
+Note that --numcopies=0 is very unsafe, you're asking git-annex to delete even the last copy of your data without checking when you do that.)
+
+If your goal is to get rid of every copy of this file from every repository that has a copy, I suggest just `git rm $file; git commit`, followed by running `git annex unused` in the various repositories to clean them up.
+
+There is a faster way, which is to run `git annex drop --from $remote` for each remote that has the file. If you want to get rid of every copy of the file, for sure, you could add a --force to that.
+
+git-annex deduplicates data, so it's completely expected that if two files have the same content, dropping one will remove the content of the other.
+
+I cannot reproduce any .git/annex/objects/foo empty directories being left behind by git-annex after doing that. Perhaps you are not using a current version of git-annex?
+"""]]

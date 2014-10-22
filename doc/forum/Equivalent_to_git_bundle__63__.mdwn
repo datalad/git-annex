@@ -1,0 +1,10 @@
+Hi,
+
+git provides a neat way to create archives of git repos (or parts thereof): git bundle.
+
+git bundle obviously works with git annex as well, BUT those bundles don't include the actual content (in other words, only the symlinks are bundled up).
+
+Is there a way to get the git bundle functionality with git annex?
+
+THX & Cheers,
+Toby.

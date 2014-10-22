@@ -17,8 +17,8 @@ import Types.View
 import Annex.View
 import Logs.View
 
-def :: [Command]
-def = [notBareRepo $ notDirect $
+cmd :: [Command]
+cmd = [notBareRepo $ notDirect $
 	command "view" paramView seek SectionMetaData "enter a view branch"]
 
 seek :: CommandSeek
@@ -42,7 +42,7 @@ perform view = do
 	next $ checkoutViewBranch view applyView
 
 paramView :: String
-paramView = paramPair (paramRepeating "TAG") (paramRepeating "FIELD=VALUE")
+paramView = paramRepeating "FIELD=VALUE"
 
 mkView :: [String] -> Annex View
 mkView params = go =<< inRepo Git.Branch.current

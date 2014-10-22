@@ -90,7 +90,7 @@ tokenGroups :: [Token op] -> [TokenGroup op]
 tokenGroups [] = []
 tokenGroups (t:ts) = go t
   where
-  	go Open =
+	go Open =
 		let (gr, rest) = findClose ts
 		in gr : tokenGroups rest
 	go Close = tokenGroups ts -- not picky about missing Close
@@ -101,7 +101,7 @@ findClose l =
 	let (g, rest) = go [] l
 	in (Group (reverse g), rest)
   where
-  	go c [] = (c, []) -- not picky about extra Close
+	go c [] = (c, []) -- not picky about extra Close
 	go c (t:ts) = dispatch t
 	  where
 		dispatch Close = (c, ts)

@@ -121,6 +121,7 @@ gen' r u c gc = do
 		, availability = availabilityCalc r
 		, remotetype = remote
 		, mkUnavailable = return Nothing
+		, getInfo = return $ gitRepoInfo r
 	}
 	return $ Just $ specialRemote' specialcfg c
 		(simplyPrepare $ store this rsyncopts)
@@ -147,7 +148,7 @@ rsyncTransport r
 	| ":" `isInfixOf` loc = sshtransport $ separate (== ':') loc
 	| otherwise = othertransport
   where
-  	loc = Git.repoLocation r
+	loc = Git.repoLocation r
 	sshtransport (host, path) = do
 		let rsyncpath = if "/~/" `isPrefixOf` path
 			then drop 3 path
@@ -166,9 +167,9 @@ gCryptSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConf
 gCryptSetup mu _ c = go $ M.lookup "gitrepo" c
   where
 	remotename = fromJust (M.lookup "name" c)
-  	go Nothing = error "Specify gitrepo="
+	go Nothing = error "Specify gitrepo="
 	go (Just gitrepo) = do
-		c' <- encryptionSetup c
+		(c', _encsetup) <- encryptionSetup c
 		inRepo $ Git.Command.run 
 			[ Params "remote add"
 			, Param remotename
@@ -234,7 +235,7 @@ setupRepo gcryptid r
 	 - create the objectDir on the remote,
 	 - which is needed for direct rsync of objects to work.
 	 -}
-  	rsyncsetup = Remote.Rsync.withRsyncScratchDir $ \tmp -> do
+	rsyncsetup = Remote.Rsync.withRsyncScratchDir $ \tmp -> do
 		liftIO $ createDirectoryIfMissing True $ tmp </> objectDir
 		(rsynctransport, rsyncurl, _) <- rsyncTransport r
 		let tmpconfig = tmp </> "config"
@@ -266,7 +267,7 @@ isShell r = case method of
 	AccessShell -> True
 	_ -> False
   where
-  	method = toAccessMethod $ fromMaybe "" $
+	method = toAccessMethod $ fromMaybe "" $
 		remoteAnnexGCrypt $ gitconfig r
 
 shellOrRsync :: Remote -> Annex a -> Annex a -> Annex a
@@ -352,7 +353,7 @@ checkKey r rsyncopts k
 	| Git.repoIsSsh (repo r) = shellOrRsync r checkshell checkrsync
 	| otherwise = unsupportedUrl
   where
-  	checkrsync = Remote.Rsync.checkKey (repo r) rsyncopts k
+	checkrsync = Remote.Rsync.checkKey (repo r) rsyncopts k
 	checkshell = Ssh.inAnnex (repo r) k
 
 {- Annexed objects are hashed using lower-case directories for max

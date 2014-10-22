@@ -37,8 +37,8 @@ import Control.Concurrent.STM
 import Network.Socket (HostName)
 import System.Environment (getArgs)
 
-def :: [Command]
-def = [ withOptions [listenOption] $
+cmd :: [Command]
+cmd = [ withOptions [listenOption] $
 	noCommit $ noRepo startNoRepo $ dontCheck repoExists $ notBareRepo $
 	command "webapp" paramNothing seek SectionCommon "launch webapp"]
 
@@ -213,7 +213,7 @@ openBrowser mcmd htmlshim realurl outh errh = do
 #endif
   where
 	p = case mcmd of
-		Just cmd -> proc cmd [htmlshim]
+		Just c -> proc c [htmlshim]
 		Nothing -> 
 #ifndef mingw32_HOST_OS
 			browserProc url

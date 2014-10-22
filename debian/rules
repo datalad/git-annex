@@ -1,7 +1,6 @@
 #!/usr/bin/make -f
 
-# Avoid using cabal, as it writes to $HOME
-export CABAL=./Setup
+export CABAL=debian/cabal-wrapper
 
 # Do use the changelog's version number, rather than making one up.
 export RELEASE_BUILD=1

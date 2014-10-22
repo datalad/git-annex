@@ -13,15 +13,11 @@ fi
 
 cd
 rm -rf .ghc .cabal .android
-cabal update
-cabal install happy alex --bindir=$HOME/bin
-PATH=$HOME/bin:$PATH
-export PATH
 mkdir -p .android
 cd .android
 git clone https://github.com/joeyh/ghc-android
 cd ghc-android
-git checkout stable-ghc-snapshot
+git checkout jessie-ghc-snapshot
 ./build
 
 # This saves 2 gb, and the same sources are in build-*/ghc

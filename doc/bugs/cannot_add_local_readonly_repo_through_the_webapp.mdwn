@@ -1,0 +1,98 @@
+### Please describe the problem.
+
+A readonly repository that I can add fine on the commandline (and sync content from) cannot be added through the webapp.
+
+### What steps will reproduce the problem?
+
+Say I have a readonly (owned by root) repository in `~/test/a` and I create a `~/test/b` (owned by my user). In the webapp, when to add `/home/anarcat/test/a` as a "local repository" (`Add another local repository`) to the `~/test/b` repo, it fails when i enter that path, with "Cannot write a repository there." I obviously can't sync content from there then.
+
+This works on the commandline, although with warnings.
+
+### What version of git-annex are you using? On what operating system?
+
+Version: 5.20140927 
+Build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA CryptoHash
+
+Debian Jessie.
+
+### Please provide any additional information below.
+
+Here's the transcript of the commandline equivalent:
+
+~~~
+anarcat@marcos:test$ git init a
+Dépôt Git vide initialisé dans /home/anarcat/test/a/.git/
+anarcat@marcos:test$ git init b
+Dépôt Git vide initialisé dans /home/anarcat/test/b/.git/
+anarcat@marcos:test$ cd a
+anarcat@marcos:a$ git annex init
+init  ok
+(Recording state in git...)
+anarcat@marcos:a$ echo hellow world > README
+anarcat@marcos:a$ git annex add README
+add README ok
+(Recording state in git...)
+anarcat@marcos:a$ git commit -m"test repo a"
+[master (commit racine) 3ece2a1] test repo a
+ 1 file changed, 1 insertion(+)
+ create mode 120000 README
+anarcat@marcos:a$ cd ../ ^C
+anarcat@marcos:a$ sudo chown -R root .
+[sudo] password for anarcat:
+Sorry, try again.
+[sudo] password for anarcat:
+anarcat@marcos:a$ cd ../b
+anarcat@marcos:b$ git annex init
+init  ok
+(Recording state in git...)
+anarcat@marcos:b$ git remote add a ../a
+anarcat@marcos:b$ git annex sync a
+commit  ok
+pull a
+warning: no common commits
+remote: Décompte des objets: 13, fait.
+remote: Compression des objets: 100% (9/9), fait.
+remote: Total 13 (delta 1), reused 0 (delta 0)
+Dépaquetage des objets: 100% (13/13), fait.
+Depuis ../a
+ * [nouvelle branche] git-annex  -> a/git-annex
+ * [nouvelle branche] master     -> a/master
+
+
+merge: refs/remotes/a/synced/master - not something we can merge
+failed
+(merging a/git-annex into git-annex...)
+(Recording state in git...)
+push a
+Décompte des objets: 8, fait.
+Delta compression using up to 2 threads.
+Compression des objets: 100% (6/6), fait.
+Écriture des objets: 100% (8/8), 819 bytes | 0 bytes/s, fait.
+Total 8 (delta 1), reused 0 (delta 0)
+remote: error: insufficient permission for adding an object to repository database objects
+remote: fatal: failed to write object
+error: unpack failed: unpack-objects abnormal exit
+To ../a
+ ! [remote rejected] git-annex -> synced/git-annex (unpacker error)
+ ! [remote rejected] master -> synced/master (unpacker error)
+error: impossible de pousser des références vers '../a'
+
+  Pushing to a failed.
+
+  (non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote's git config)
+failed
+git-annex: sync: 2 failed
+anarcat@marcos:b$ ls
+README
+anarcat@marcos:b$ git annex copy --from a
+copy README (from a...) ok
+(Recording state in git...)
+anarcat@marcos:b$ ls -al
+total 16K
+drwxr-xr-x 3 anarcat anarcat 4096 oct.  20 15:36 .
+drwxr-xr-x 4 anarcat anarcat 4096 oct.  20 15:35 ..
+drwxr-xr-x 9 anarcat anarcat 4096 oct.  20 15:36 .git
+lrwxrwxrwx 1 anarcat anarcat  180 oct.  20 15:36 README -> .git/annex/objects/wz/Zq/SHA256E-s13--8c083c6897455257dfbace7a9012d92ca8ebfb6e6ebe8acddc6dfa8fc81226ed/SHA256E-s13--8c083c6897455257dfbace7a9012d92ca8ebfb6e6ebe8acddc6dfa8fc81226ed
+~~~
+
+This is part of the [[todo/read-only_removable_drives/]] series. --[[anarcat]]

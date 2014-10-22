@@ -55,3 +55,5 @@ If I fire up the web app and open the log, the end looks like this:
 3%       858.1KB/s 6h45mmux_client_request_session: read from master failed: Broken pipe
 
 """]]
+
+[[!tag moreinfo]]

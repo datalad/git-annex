@@ -92,7 +92,7 @@ parseSshUrl u
 		, sshCapabilities = []
 		}
 	  where
-	  	(user, host) = if '@' `elem` userhost
+		(user, host) = if '@' `elem` userhost
 			then separate (== '@') userhost
 			else ("", userhost)
 	fromrsync s
@@ -260,7 +260,7 @@ setupSshKeyPair sshkeypair sshdata = do
 fixSshKeyPairIdentitiesOnly :: IO ()
 fixSshKeyPairIdentitiesOnly = changeUserSshConfig $ unlines . go [] . lines
   where
-  	go c [] = reverse c
+	go c [] = reverse c
 	go c (l:[])
 		| all (`isInfixOf` l) indicators = go (fixedline l:l:c) []
 		| otherwise = go (l:c) []
@@ -268,7 +268,7 @@ fixSshKeyPairIdentitiesOnly = changeUserSshConfig $ unlines . go [] . lines
 		| all (`isInfixOf` l) indicators && not ("IdentitiesOnly" `isInfixOf` next) = 
 			go (fixedline l:l:c) (next:rest)
 		| otherwise = go (l:c) (next:rest)
-  	indicators = ["IdentityFile", "key.git-annex"]
+	indicators = ["IdentityFile", "key.git-annex"]
 	fixedline tmpl = takeWhile isSpace tmpl ++ "IdentitiesOnly yes"
 
 {- Add StrictHostKeyChecking to any ssh config stanzas that were written

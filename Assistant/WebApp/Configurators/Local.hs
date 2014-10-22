@@ -175,7 +175,7 @@ getAndroidCameraRepositoryR :: Handler ()
 getAndroidCameraRepositoryR = 
 	startFullAssistant "/sdcard/DCIM" SourceGroup $ Just addignore	
   where
-  	addignore = do
+	addignore = do
 		liftIO $ unlessM (doesFileExist ".gitignore") $
 			writeFile ".gitignore" ".thumbnails"
 		void $ inRepo $
@@ -274,8 +274,8 @@ getConfirmAddDriveR drive = ifM (liftIO $ probeRepoExists dir)
 	, newrepo
 	)
   where
-  	dir = removableDriveRepository drive
-  	newrepo = do
+	dir = removableDriveRepository drive
+	newrepo = do
 		secretkeys <- sortBy (comparing snd) . M.toList
 			<$> liftIO secretKeys
 		page "Encrypt repository?" (Just Configuration) $
@@ -338,7 +338,7 @@ getFinishAddDriveR drive = go
 			liftAnnex $ defaultStandardGroup u TransferGroup
 		liftAssistant $ immediateSyncRemote r
 		redirect $ EditNewRepositoryR u
-  	mountpoint = T.unpack (mountPoint drive)
+	mountpoint = T.unpack (mountPoint drive)
 	dir = removableDriveRepository drive
 	remotename = takeFileName mountpoint
 

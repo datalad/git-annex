@@ -13,8 +13,8 @@ import qualified Utility.Format
 import Command.Find (formatOption, getFormat, showFormatted, keyVars)
 import Types.Key
 
-def :: [Command]
-def = [noCommit $ noMessages $ withOptions [formatOption, jsonOption] $
+cmd :: [Command]
+cmd = [noCommit $ noMessages $ withOptions [formatOption, jsonOption] $
 	command "examinekey" (paramRepeating paramKey) seek
 	SectionPlumbing "prints information from a key"]
 

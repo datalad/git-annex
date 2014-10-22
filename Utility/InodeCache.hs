@@ -182,7 +182,7 @@ checkSentinalFile s = do
 		SentinalStatus (not unchanged) tsdelta
 	  where
 #ifdef mingw32_HOST_OS
-	  	unchanged = oldinode == newinode && oldsize == newsize
+		unchanged = oldinode == newinode && oldsize == newsize
 		tsdelta = TSDelta $ do
 			-- Run when generating an InodeCache, 
 			-- to get the current delta.

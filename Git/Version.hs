@@ -21,7 +21,7 @@ instance Show GitVersion where
 installed :: IO GitVersion
 installed = normalize . extract <$> readProcess "git" ["--version"]
   where
-  	extract s = case lines s of
+	extract s = case lines s of
 		[] -> ""
 		(l:_) -> unwords $ drop 2 $ words l
 

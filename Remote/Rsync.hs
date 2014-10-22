@@ -83,6 +83,7 @@ gen r u c gc = do
 			, availability = if islocal then LocallyAvailable else GloballyAvailable
 			, remotetype = remote
 			, mkUnavailable = return Nothing
+			, getInfo = return [("url", url)]
 			}
   where
 	specialcfg = (specialRemoteCfg c)
@@ -138,7 +139,7 @@ rsyncSetup mu _ c = do
 	-- verify configuration is sane
 	let url = fromMaybe (error "Specify rsyncurl=") $
 		M.lookup "rsyncurl" c
-	c' <- encryptionSetup c
+	(c', _encsetup) <- encryptionSetup c
 
 	-- The rsyncurl is stored in git config, not only in this remote's
 	-- persistant state, so it can vary between hosts.
@@ -175,7 +176,7 @@ store o k src meterupdate = withRsyncScratchDir $ \tmp -> do
 			]
 		else return False
   where
- 	{- If the key being sent is encrypted or chunked, the file
+	{- If the key being sent is encrypted or chunked, the file
 	 - containing its content is a temp file, and so can be
 	 - renamed into place. Otherwise, the file is the annexed
 	 - object file, and has to be copied or hard linked into place. -}

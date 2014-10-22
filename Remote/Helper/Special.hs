@@ -87,7 +87,7 @@ checkPrepare checker helper k a = ifM (checker k)
 -- Use to acquire a resource when preparing a helper.
 resourcePrepare :: (Key -> (r -> Annex Bool) -> Annex Bool) -> (r -> helper) -> Preparer helper
 resourcePrepare withr helper k a = withr k $ \r ->
-        a (Just (helper r))
+	a (Just (helper r))
 
 -- A Storer that expects to be provided with a file containing
 -- the content of the key to store.
@@ -168,6 +168,12 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 			(cost baser)
 			(const $ cost baser + encryptedRemoteCostAdj)
 			(extractCipher c)
+		, getInfo = do
+			l <- getInfo baser
+			return $ l ++
+				[ ("encryption", describeEncryption c)
+				, ("chunking", describeChunkConfig (chunkConfig cfg))
+				]
 		}
 	cip = cipherKey c
 	gpgopts = getGpgEncParams encr
@@ -196,7 +202,7 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 	retrieveKeyFileGen k dest p enc =
 		safely $ prepareretriever k $ safely . go
 	  where
-	  	go (Just retriever) = displayprogress p k $ \p' ->
+		go (Just retriever) = displayprogress p k $ \p' ->
 			retrieveChunks retriever (uuid baser) chunkconfig
 				enck k dest p' (sink dest enc)
 		go Nothing = return False
@@ -210,7 +216,7 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 
 	checkPresentGen k enc = preparecheckpresent k go
 	  where
-	  	go (Just checker) = checkPresentChunks checker (uuid baser) chunkconfig enck k
+		go (Just checker) = checkPresentChunks checker (uuid baser) chunkconfig enck k
 		go Nothing = cantCheck baser
 		enck = maybe id snd enc
 

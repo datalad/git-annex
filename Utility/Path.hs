@@ -235,11 +235,11 @@ toCygPath p
 	| null drive = recombine parts
 	| otherwise = recombine $ "/cygdrive" : driveletter drive : parts
   where
-  	(drive, p') = splitDrive p
+	(drive, p') = splitDrive p
 	parts = splitDirectories p'
-  	driveletter = map toLower . takeWhile (/= ':')
+	driveletter = map toLower . takeWhile (/= ':')
 	recombine = fixtrailing . Posix.joinPath
-  	fixtrailing s
+	fixtrailing s
 		| hasTrailingPathSeparator p = Posix.addTrailingPathSeparator s
 		| otherwise = s
 #endif
@@ -272,7 +272,7 @@ fileNameLengthLimit dir = do
 sanitizeFilePath :: String -> FilePath
 sanitizeFilePath = map sanitize
   where
-  	sanitize c
+	sanitize c
 		| c == '.' = c
 		| isSpace c || isPunctuation c || isSymbol c || isControl c || c == '/' = '_'
 		| otherwise = c

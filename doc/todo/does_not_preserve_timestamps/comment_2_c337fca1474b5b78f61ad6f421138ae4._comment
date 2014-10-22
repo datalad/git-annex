@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmK0703vNSIQsP1mGf-4MAPnsBZiSc6yVo"
+ nickname="Emre"
+ subject="comment 2"
+ date="2014-09-23T20:58:10Z"
+ content="""
+Thanks Joey for the comment. 
+
+But when syncing two repos, timestamps are critical at least for my use case. I can't lose this info. Even if it's expensive. 
+
+Appreciate if you can consider to add it for direct mode repos, ie when a file is synced to another repo and created there, it shall carry at least the mtime of the file in source repo. Owncloud sync does it, btsync does it, although I know git-annex is different than those. 
+"""]]

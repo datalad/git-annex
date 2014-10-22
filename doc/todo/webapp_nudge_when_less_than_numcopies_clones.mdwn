@@ -1,0 +1,7 @@
+Currently, nothing stops a user from setting up ~/annex, adding some special remote, and never once ending up with a clone of their repository, so there is really no backup of the repository as a whole, despite the special remotes.
+
+Potentially adding to the confusion, they might have remotes in repository groups "full backup" or "backup", and so think everything is backed up.
+
+Webapp could count the number of known remote uuids that are not special remotes, and require there to be at least numcopies of them (excluding the current repo I suppose), and pop up a nudge with a button that presents the various available ways to make a non-special remote.
+
+Working out if a remote uuid is a special remote is probably the hard bit. A special remote will be listed in uuid.log, with a type other than gcrypt or git. Any other uuid, that is not dead, can count as 1 clone. This does not handle git remotes that are not using git-annex (eg github), so it could also look through the git remote list and count any that don't have an annex-uuid.

@@ -456,7 +456,7 @@ removeAnnex (ContentLock key) = withObjectLoc key remove removedirect
 secureErase :: FilePath -> Annex ()
 secureErase file = maybe noop go =<< annexSecureEraseCommand <$> Annex.getGitConfig
   where
-  	go basecmd = void $ liftIO $
+	go basecmd = void $ liftIO $
 		boolSystem "sh" [Param "-c", Param $ gencmd basecmd]
 	gencmd = massReplace [ ("%file", shellEscape file) ]
 
@@ -555,7 +555,7 @@ saveState nocommit = doSideAction $ do
 downloadUrl :: [Url.URLString] -> FilePath -> Annex Bool
 downloadUrl urls file = go =<< annexWebDownloadCommand <$> Annex.getGitConfig
   where
-  	go Nothing = Url.withUrlOptions $ \uo ->
+	go Nothing = Url.withUrlOptions $ \uo ->
 		anyM (\u -> Url.download u file uo) urls
 	go (Just basecmd) = liftIO $ anyM (downloadcmd basecmd) urls
 	downloadcmd basecmd url =

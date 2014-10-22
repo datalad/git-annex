@@ -167,7 +167,7 @@ coreBare = "core.bare"
 fromPipe :: Repo -> String -> [CommandParam] -> IO (Either SomeException (Repo, String))
 fromPipe r cmd params = try $
 	withHandle StdoutHandle createProcessSuccess p $ \h -> do
- 		fileEncoding h
+		fileEncoding h
 		val <- hGetContentsStrict h
 		r' <- store val r
 		return (r', val)

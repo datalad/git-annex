@@ -175,7 +175,7 @@ winLockFile pid pidfile = do
 	cleanstale
 	return $ prefix ++ show pid ++ suffix
   where
-  	prefix = pidfile ++ "."
+	prefix = pidfile ++ "."
 	suffix = ".lck"
 	cleanstale = mapM_ (void . tryIO . removeFile) =<<
 		(filter iswinlockfile <$> dirContents (parentDir pidfile))

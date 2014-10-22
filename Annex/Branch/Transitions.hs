@@ -19,6 +19,7 @@ import Types.TrustLevel
 import Types.UUID
 
 import qualified Data.Map as M
+import Data.Default
 
 data FileTransition
 	= ChangeFile String
@@ -60,4 +61,4 @@ dropDeadFromPresenceLog :: TrustMap -> [Presence.LogLine] -> [Presence.LogLine]
 dropDeadFromPresenceLog trustmap = filter $ notDead trustmap (toUUID . Presence.info)
 
 notDead :: TrustMap -> (v -> UUID) -> v -> Bool
-notDead trustmap a v = M.findWithDefault SemiTrusted (a v) trustmap /= DeadTrusted
+notDead trustmap a v = M.findWithDefault def (a v) trustmap /= DeadTrusted

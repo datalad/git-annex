@@ -1,19 +1,19 @@
-From 8e115228601a97b19d3f713ccf2d13f58838d927 Mon Sep 17 00:00:00 2001
+From e54cfacbb9fb24f75d3d93cd8ee6da67b161574f Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Mon, 26 May 2014 01:48:22 +0000
-Subject: [PATCH] expand TH
+Date: Thu, 16 Oct 2014 02:51:28 +0000
+Subject: [PATCH] remove TH
 
 ---
- DAV.cabal                       |   24 +---
- Network/Protocol/HTTP/DAV.hs    |   96 ++++++++++++----
- Network/Protocol/HTTP/DAV/TH.hs |  232 ++++++++++++++++++++++++++++++++++++++-
- 3 files changed, 307 insertions(+), 45 deletions(-)
+ DAV.cabal                       |  28 +----
+ Network/Protocol/HTTP/DAV.hs    |  92 +++++++++++++---
+ Network/Protocol/HTTP/DAV/TH.hs | 232 +++++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 306 insertions(+), 46 deletions(-)
 
 diff --git a/DAV.cabal b/DAV.cabal
-index 5d50e39..f2abf89 100644
+index 95fffd8..5669c51 100644
 --- a/DAV.cabal
 +++ b/DAV.cabal
-@@ -43,30 +43,7 @@ library
+@@ -47,33 +47,7 @@ library
                       , utf8-string
                       , xml-conduit >= 1.0          && < 1.3
                       , xml-hamlet >= 0.4           && < 0.5
@@ -26,7 +26,7 @@ index 5d50e39..f2abf89 100644
 -                     , case-insensitive >= 0.4
 -                     , containers
 -                     , data-default
--                     , either >= 4.1
+-                     , either >= 4.3
 -                     , errors
 -                     , exceptions
 -                     , http-client >= 0.2
@@ -34,13 +34,16 @@ index 5d50e39..f2abf89 100644
 -                     , http-types >= 0.7
 -                     , lens >= 3.0
 -                     , mtl >= 2.1
--                     , network >= 2.3
--                     , optparse-applicative >= 0.5.0
+-                     , optparse-applicative >= 0.10.0
 -                     , transformers >= 0.3
 -                     , transformers-base
 -                     , utf8-string
 -                     , xml-conduit >= 1.0          && < 1.3
 -                     , xml-hamlet >= 0.4           && < 0.5
+-  if flag(network-uri)
+-    build-depends: network-uri >= 2.6, network >= 2.6
+-  else
+-    build-depends: network >= 2.3 && <2.6
 +                     , text
  
  source-repository head
@@ -412,3 +415,6 @@ index 0ecd476..1653bf6 100644
 +             __userAgent_a3kh)
 +     Data.Functor.<$> (_f_a3k7 __userAgent'_a3kg))
 +{-# INLINE userAgent #-}
+-- 
+2.1.1
+

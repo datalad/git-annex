@@ -36,8 +36,8 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
 
-def :: [Command]
-def = [ withOptions [sizeOption] $
+cmd :: [Command]
+cmd = [ withOptions [sizeOption] $
 		command "testremote" paramRemote seek SectionTesting
 			"test transfers to/from a remote"]
 

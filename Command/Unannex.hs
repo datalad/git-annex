@@ -22,8 +22,8 @@ import qualified Git.DiffTree as DiffTree
 import Utility.CopyFile
 import Command.PreCommit (lockPreCommitHook)
 
-def :: [Command]
-def = [command "unannex" paramPaths seek SectionUtility
+cmd :: [Command]
+cmd = [command "unannex" paramPaths seek SectionUtility
 		"undo accidential add command"]
 
 seek :: CommandSeek

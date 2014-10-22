@@ -63,7 +63,7 @@ runRepair u mrmt destructiverepair = do
 
 	return ok
   where
-  	localrepair fsckresults = do
+	localrepair fsckresults = do
 		-- Stop the watcher from running while running repairs.
 		changeSyncable Nothing False
 
@@ -140,9 +140,9 @@ repairStaleGitLocks r = do
 repairStaleLocks :: [FilePath] -> Assistant ()
 repairStaleLocks lockfiles = go =<< getsizes
   where
-  	getsize lf = catchMaybeIO $ 
+	getsize lf = catchMaybeIO $ 
 		(\s -> (lf, fileSize s)) <$> getFileStatus lf
-  	getsizes = liftIO $ catMaybes <$> mapM getsize lockfiles
+	getsizes = liftIO $ catMaybes <$> mapM getsize lockfiles
 	go [] = return ()
 	go l = ifM (liftIO $ null <$> Lsof.query ("--" : map fst l))
 		( do

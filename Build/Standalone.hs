@@ -40,7 +40,7 @@ main :: IO ()
 main = getArgs >>= go
   where
 	go [] = error "specify topdir"
-        go (topdir:_) = do
+	go (topdir:_) = do
 		let dir = progDir topdir
 		createDirectoryIfMissing True dir
 		installed <- forM bundledPrograms $ installProg dir

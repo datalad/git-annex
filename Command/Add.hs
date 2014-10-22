@@ -34,8 +34,8 @@ import Utility.Tmp
 
 import Control.Exception (IOException)
 
-def :: [Command]
-def = [notBareRepo $ withOptions [includeDotFilesOption] $
+cmd :: [Command]
+cmd = [notBareRepo $ withOptions [includeDotFilesOption] $
 	command "add" paramPaths seek SectionCommon
 		"add files to annex"]
 
@@ -125,7 +125,7 @@ lockDown' file = ifM crippledFileSystem
 	 - This is not done in direct mode, because files there need to
 	 - remain writable at all times.
 	-}
-  	go tmp = do
+	go tmp = do
 		unlessM isDirect $
 			freezeContent file
 		withTSDelta $ \delta -> liftIO $ do
@@ -134,7 +134,7 @@ lockDown' file = ifM crippledFileSystem
 			hClose h
 			nukeFile tmpfile
 			withhardlink delta tmpfile `catchIO` const (nohardlink delta)
-  	nohardlink delta = do
+	nohardlink delta = do
 		cache <- genInodeCache file delta
 		return KeySource
 			{ keyFilename = file
@@ -177,14 +177,14 @@ ingest (Just source) = withTSDelta $ \delta -> do
 			(undo (keyFilename source) key)
 		maybe noop (genMetaData key (keyFilename source)) ms
 		liftIO $ nukeFile $ keyFilename source
-		return $ (Just key, mcache)
+		return (Just key, mcache)
 	goindirect _ _ _ = failure "failed to generate a key"
 
 	godirect (Just (key, _)) (Just cache) ms = do
 		addInodeCache key cache
 		maybe noop (genMetaData key (keyFilename source)) ms
 		finishIngestDirect key source
-		return $ (Just key, Just cache)
+		return (Just key, Just cache)
 	godirect _ _ _ = failure "failed to generate a key"
 
 	failure msg = do
@@ -207,7 +207,7 @@ finishIngestDirect key source = do
 perform :: FilePath -> CommandPerform
 perform file = lockDown file >>= ingest >>= go
   where
-  	go (Just key, cache) = next $ cleanup file key cache True
+	go (Just key, cache) = next $ cleanup file key cache True
 	go (Nothing, _) = stop
 
 {- On error, put the file back so it doesn't seem to have vanished.

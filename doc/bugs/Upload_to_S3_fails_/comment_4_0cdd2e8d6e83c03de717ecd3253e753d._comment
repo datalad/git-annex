@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="67.223.1.203"
+ subject="comment 4"
+ date="2014-09-19T18:33:17Z"
+ content="""
+Your version supports both new and old style chunking. Which is used depends on how the S3 remote was configured when it was set up. It can't really be changed w/o re-setting up the remote. You can check which is used by `git show git-annex:remote.log`, find the line for the UUID of the remote, and see if it has chunk= (new chunking) or chunksize= (old chunking).
+"""]]

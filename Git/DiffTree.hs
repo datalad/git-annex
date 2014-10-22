@@ -53,7 +53,7 @@ diffIndex ref = diffIndex' ref [Param "--cached"]
 diffWorkTree :: Ref -> Repo -> IO ([DiffTreeItem], IO Bool)
 diffWorkTree ref repo =
 	ifM (Git.Ref.headExists repo)
-                ( diffIndex' ref [] repo
+		( diffIndex' ref [] repo
 		, return ([], return True)
 		)
 

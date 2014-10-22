@@ -11,8 +11,8 @@ import Command
 import Types.TrustLevel
 import Command.Trust (trustCommand)
 
-def :: [Command]
-def = [command "dead" (paramRepeating paramRemote) seek
+cmd :: [Command]
+cmd = [command "dead" (paramRepeating paramRemote) seek
 	SectionSetup "hide a lost repository"]
 
 seek :: CommandSeek

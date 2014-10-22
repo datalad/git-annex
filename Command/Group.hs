@@ -15,8 +15,8 @@ import Types.Group
 
 import qualified Data.Set as S
 
-def :: [Command]
-def = [command "group" (paramPair paramRemote paramDesc) seek
+cmd :: [Command]
+cmd = [command "group" (paramPair paramRemote paramDesc) seek
 	SectionSetup "add a repository to a group"]
 
 seek :: CommandSeek

@@ -57,7 +57,7 @@ modifyTList tlist a = do
 	unless (emptyDList dl') $
 		putTMVar tlist dl'
   where
-  	emptyDList = D.list True (\_ _ -> False)
+	emptyDList = D.list True (\_ _ -> False)
 
 consTList :: TList a -> a -> STM ()
 consTList tlist v = modifyTList tlist $ \dl -> D.cons v dl

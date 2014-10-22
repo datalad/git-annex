@@ -39,8 +39,8 @@ import Data.Time
 import System.Posix.Types (EpochTime)
 import System.Locale
 
-def :: [Command]
-def = [withOptions fsckOptions $ command "fsck" paramPaths seek
+cmd :: [Command]
+cmd = [withOptions fsckOptions $ command "fsck" paramPaths seek
 	SectionMaintenance "check for problems"]
 
 fsckFromOption :: Option
@@ -282,7 +282,7 @@ verifyDirectMode key file = do
  - the key's metadata, if available.
  -
  - Not checked in direct mode, because files can be changed directly.
-  -}
+ -}
 checkKeySize :: Key -> Annex Bool
 checkKeySize key = ifM isDirect
 	( return True
@@ -329,7 +329,7 @@ checkKeySizeOr bad key file = case Types.Key.keySize key of
 checkBackend :: Backend -> Key -> Maybe FilePath -> Annex Bool
 checkBackend backend key mfile = go =<< isDirect
   where
-  	go False = do
+	go False = do
 		content <- calcRepo $ gitAnnexLocation key
 		checkBackendOr badContent backend key content
 	go True = maybe nocheck checkdirect mfile

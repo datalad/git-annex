@@ -4,6 +4,7 @@ Priority: optional
 Build-Depends: 
 	debhelper (>= 9),
 	ghc (>= 7.4),
+	cabal-install,
 	libghc-mtl-dev (>= 2.1.1),
 	libghc-missingh-dev,
 	libghc-data-default-dev,
@@ -69,12 +70,13 @@ Build-Depends:
 	lsof [!kfreebsd-i386 !kfreebsd-amd64 !hurd-any],
 	ikiwiki,
 	perlmagick,
-	git (>= 1:1.8.4),
+	git (>= 1:2.0),
 	rsync,
 	wget,
 	curl,
 	openssh-client,
 	git-remote-gcrypt (>= 0.20130908-6),
+	llvm-3.4 [armel armhf],
 Maintainer: Joey Hess <joeyh@debian.org>
 Standards-Version: 3.9.5
 Vcs-Git: git://git.kitenet.net/git-annex
@@ -85,7 +87,7 @@ Package: git-annex
 Architecture: any
 Section: utils
 Depends: ${misc:Depends}, ${shlibs:Depends},
-	git (>= 1:1.8.4),
+	git (>= 1:2.0),
 	rsync,
 	wget,
 	curl,
@@ -108,10 +110,15 @@ Description: manage files with git, without checking their contents into git
  dealing with files larger than git can currently easily handle, whether due
  to limitations in memory, time, or disk space.
  .
- Even without file content tracking, being able to manage files with git,
- move files around and delete files with versioned directory trees, and use
- branches and distributed clones, are all very handy reasons to use git. And
- annexed files can co-exist in the same git repository with regularly
- versioned files, which is convenient for maintaining documents, Makefiles,
- etc that are associated with annexed files but that benefit from full
- revision control.
+ It can store large files in many places, from local hard drives, to a
+ large number of cloud storage services, including S3, WebDAV,
+ and rsync, with a dozen cloud storage providers usable via plugins.
+ Files can be stored encrypted with gpg, so that the cloud storage
+ provider cannot see your data. git-annex keeps track of where each file
+ is stored, so it knows how many copies are available, and has many
+ facilities to ensure your data is preserved.
+ .
+ git-annex can also be used to keep a folder in sync between computers,
+ noticing when files are changed, and automatically committing them
+ to git and transferring them to other computers. The git-annex webapp
+ makes it easy to set up and use git-annex this way.

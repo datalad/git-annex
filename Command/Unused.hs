@@ -35,8 +35,8 @@ import Git.FilePath
 import Logs.View (is_branchView)
 import Utility.Bloom
 
-def :: [Command]
-def = [withOptions [unusedFromOption] $ command "unused" paramNothing seek
+cmd :: [Command]
+cmd = [withOptions [unusedFromOption] $ command "unused" paramNothing seek
 	SectionMaintenance "look for unused file content"]
 
 unusedFromOption :: Option

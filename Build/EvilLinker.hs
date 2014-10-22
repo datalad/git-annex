@@ -58,13 +58,13 @@ parseGccLink = do
 	collect2params <- restOfLine
 	return $ CmdParams (path ++ collectcmd) (escapeDosPaths collect2params) cenv
   where
-  	collectcmd = "collect2.exe"
-  	collectgccenv = "COLLECT_GCC"
+	collectcmd = "collect2.exe"
+	collectgccenv = "COLLECT_GCC"
 	collectltoenv = "COLLECT_LTO_WRAPPER"
 	pathenv = "COMPILER_PATH"
 	libpathenv = "LIBRARY_PATH"
-  	optenv = "COLLECT_GCC_OPTIONS"
-  	collectenv = do
+	optenv = "COLLECT_GCC_OPTIONS"
+	collectenv = do
 		void $ many1 $ do
 			notFollowedBy $ string collectgccenv
 			restOfLine
@@ -148,7 +148,7 @@ runAtFile p s f extraparams = do
 	removeFile f
 	return out
   where
- 	c = case parse p "" s of
+	c = case parse p "" s of
 		Left e -> error $
 			(show e) ++ 
 			"\n<<<\n" ++ s ++ "\n>>>"

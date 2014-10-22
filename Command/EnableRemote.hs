@@ -15,8 +15,8 @@ import qualified Command.InitRemote as InitRemote
 
 import qualified Data.Map as M
 
-def :: [Command]
-def = [command "enableremote"
+cmd :: [Command]
+cmd = [command "enableremote"
 	(paramPair paramName $ paramOptional $ paramRepeating paramKeyValue)
 	seek SectionSetup "enables use of an existing special remote"]
 
@@ -29,7 +29,7 @@ start (name:ws) = go =<< InitRemote.findExisting name
   where
 	config = Logs.Remote.keyValToConfig ws
 	
-  	go Nothing = unknownNameError "Unknown special remote name."
+	go Nothing = unknownNameError "Unknown special remote name."
 	go (Just (u, c)) = do
 		let fullconfig = config `M.union` c	
 		t <- InitRemote.findType fullconfig

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.54"
+ subject="comment 3"
+ date="2014-10-12T17:42:28Z"
+ content="""
+Sorry I didn't get to this earlier. I'm glad you managed to solve the problem, but there is something I am curious about: You say you had 2 folders set as full backups. Were these git repositories in their own right, or were they something else, eg directory special remotes?
+
+I ask because, if there were git repositories then the repair should have been able to pull the missing git objects from them, and fix your repository. Unless the broken disk somehow kept corrupting it, I suppose..
+"""]]

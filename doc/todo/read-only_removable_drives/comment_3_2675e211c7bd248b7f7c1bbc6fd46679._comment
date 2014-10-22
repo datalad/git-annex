@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.54"
+ subject="comment 3"
+ date="2014-10-06T16:03:04Z"
+ content="""
+Note that I still don't have a test case that reproduces this. I have tried and failed a second time to reproduce the original reported problem.
+
+Also, one issue per bug report tends to result in happier developers.
+"""]]

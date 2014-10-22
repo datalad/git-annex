@@ -57,7 +57,7 @@ externalSHA command shasize file = do
 			Left $ "Unexpected character in output of " ++ command ++ "\"" ++ sha ++ "\""
 		| otherwise = Right sha'
 	  where
-	  	sha' = map toLower sha
+		sha' = map toLower sha
 
 expectedSHALength :: Int -> Int
 expectedSHALength 1 = 40

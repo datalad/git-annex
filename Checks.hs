@@ -35,7 +35,7 @@ noDaemonRunning :: Command -> Command
 noDaemonRunning = addCheck $ whenM (isJust <$> daemonpid) $
 	error "You cannot run this command while git-annex watch or git-annex assistant is running."
   where
-  	daemonpid = liftIO . checkDaemon =<< fromRepo gitAnnexPidFile
+	daemonpid = liftIO . checkDaemon =<< fromRepo gitAnnexPidFile
 
 dontCheck :: CommandCheck -> Command -> Command
 dontCheck check cmd = mutateCheck cmd $ \c -> filter (/= check) c

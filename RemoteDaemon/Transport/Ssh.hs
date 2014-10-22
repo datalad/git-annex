@@ -119,5 +119,5 @@ robustly backoff a = caught =<< catchDefaultIO ConnectionClosed a
 		| b2 > maxbackoff = maxbackoff
 		| otherwise = b2
 	  where
-	  	b2 = backoff * 2
+		b2 = backoff * 2
 		maxbackoff = 3600 -- one hour

@@ -62,7 +62,7 @@ removableRemote urlrenderer uuid = do
 				<$> liftAnnex (Remote.remoteFromUUID uuid)
 			mapM_ (queueremaining r) keys
   where
-  	queueremaining r k = 
+	queueremaining r k = 
 		queueTransferWhenSmall "remaining object in unwanted remote"
 			Nothing (Transfer Download uuid k) r
 	{- Scanning for keys can take a long time; do not tie up

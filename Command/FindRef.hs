@@ -10,8 +10,8 @@ module Command.FindRef where
 import Command
 import qualified Command.Find as Find
 
-def :: [Command]
-def = [Find.mkCommand $ command "findref" paramRef seek SectionPlumbing
+cmd :: [Command]
+cmd = [Find.mkCommand $ command "findref" paramRef seek SectionPlumbing
 	"lists files in a git ref"]
 
 seek :: CommandSeek

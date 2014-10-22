@@ -16,7 +16,7 @@ import qualified Remote
 data RepoId
 	= RepoUUID UUID
 	| RepoName RemoteName
-  deriving (Eq, Ord, Show, Read)
+	deriving (Eq, Ord, Show, Read)
 
 mkRepoId :: Remote -> RepoId
 mkRepoId r = case Remote.uuid r of

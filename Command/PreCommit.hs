@@ -26,8 +26,8 @@ import Types.MetaData
 
 import qualified Data.Set as S
 
-def :: [Command]
-def = [command "pre-commit" paramPaths seek SectionPlumbing
+cmd :: [Command]
+cmd = [command "pre-commit" paramPaths seek SectionPlumbing
 	"run by git pre-commit hook"]
 
 seek :: CommandSeek
@@ -59,7 +59,7 @@ startIndirect f = next $ do
 	next $ return True
 
 startDirect :: [String] -> CommandStart
-startDirect _ = next $ next $ preCommitDirect
+startDirect _ = next $ next preCommitDirect
 
 addViewMetaData :: View -> ViewedFile -> Key -> CommandStart
 addViewMetaData v f k = do

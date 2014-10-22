@@ -13,10 +13,7 @@ import Common.Annex
 import Utility.UserInfo
 import qualified Git.Config
 import Config
-
-#ifndef mingw32_HOST_OS
 import Utility.Env
-#endif
 
 {- Checks that the system's environment allows git to function.
  - Git requires a GECOS username, or suitable git configuration, or
@@ -35,23 +32,18 @@ checkEnvironment = do
 		liftIO checkEnvironmentIO
 
 checkEnvironmentIO :: IO ()
-checkEnvironmentIO =
-#ifdef mingw32_HOST_OS
-	noop
-#else
-	whenM (null <$> myUserGecos) $ do
-		username <- myUserName
-		ensureEnv "GIT_AUTHOR_NAME" username
-		ensureEnv "GIT_COMMITTER_NAME" username
+checkEnvironmentIO = whenM (null <$> myUserGecos) $ do
+	username <- myUserName
+	ensureEnv "GIT_AUTHOR_NAME" username
+	ensureEnv "GIT_COMMITTER_NAME" username
   where
 #ifndef __ANDROID__
-  	-- existing environment is not overwritten
-	ensureEnv var val = void $ setEnv var val False
+	-- existing environment is not overwritten
+	ensureEnv var val = setEnv var val False
 #else
 	-- Environment setting is broken on Android, so this is dealt with
 	-- in runshell instead.
 	ensureEnv _ _ = noop
-#endif
 #endif
 
 {- Runs an action that commits to the repository, and if it fails, 
@@ -59,7 +51,7 @@ checkEnvironmentIO =
 ensureCommit :: Annex a -> Annex a
 ensureCommit a = either retry return =<< tryNonAsync a 
   where
-  	retry _ = do
+	retry _ = do
 		name <- liftIO myUserName
 		setConfig (ConfigKey "user.name") name
 		setConfig (ConfigKey "user.email") name

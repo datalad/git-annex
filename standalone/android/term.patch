@@ -585,7 +585,7 @@ index 57219c3..79b45ef 100755
  # Make sure target-11 is installed
  
 -$ANDROID update sdk -u -t android-11
-+$ANDROID update sdk -u -t android-18
++$ANDROID update sdk -u -t android-19
  
  DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
  ATE_ROOT="$( cd $DIR/.. && pwd )"
@@ -594,5 +594,5 @@ index 57219c3..79b45ef 100755
      PROJECT_DIR="$( dirname "$PROJECT_FILE" )"
      echo "Updating $PROJECT_FILE"
 -    $ANDROID update project -p "$PROJECT_DIR" --target android-11
-+    $ANDROID update project -p "$PROJECT_DIR" --target android-18
++    $ANDROID update project -p "$PROJECT_DIR" --target android-19
  done

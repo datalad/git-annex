@@ -60,6 +60,6 @@ getLog = newestValue <$$> readLog
 
 setLog :: (SingleValueSerializable v) => FilePath -> v -> Annex ()
 setLog f v = do
-        now <- liftIO getPOSIXTime
-        let ent = LogEntry now v
+	now <- liftIO getPOSIXTime
+	let ent = LogEntry now v
 	Annex.Branch.change f $ \_old -> showLog (S.singleton ent)

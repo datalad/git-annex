@@ -117,7 +117,7 @@ decode_c s = unescape ("", s)
 	handle (x:'x':n1:n2:rest)
 		| isescape x && allhex = (fromhex, rest)
 	  where
-	  	allhex = isHexDigit n1 && isHexDigit n2
+		allhex = isHexDigit n1 && isHexDigit n2
 		fromhex = [chr $ readhex [n1, n2]]
 		readhex h = Prelude.read $ "0x" ++ h :: Int
 	handle (x:n1:n2:n3:rest)

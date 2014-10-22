@@ -1,36 +1,27 @@
-From 2c736615e38ee4f582af9d98d7169cf07b84d875 Mon Sep 17 00:00:00 2001
-From: Joey Hess <joey@kitenet.net>
-Date: Mon, 10 Feb 2014 23:27:32 +0000
+From 61d0e47cd038f25157e48385fc080d0d374b214d Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Tue, 14 Oct 2014 02:07:57 +0000
 Subject: [PATCH] support Android cert store
 
-Android puts it in a different place and has only hashed files.
+Android has only hashsed cert files.
 See https://github.com/vincenthz/hs-certificate/issues/19
 ---
- System/X509/Unix.hs |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ System/X509/Unix.hs |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/System/X509/Unix.hs b/System/X509/Unix.hs
-index cbf9bbe..cab4f4a 100644
+index 9df3331..a30da26 100644
 --- a/System/X509/Unix.hs
 +++ b/System/X509/Unix.hs
-@@ -34,7 +34,7 @@ import qualified Control.Exception as E
- import Data.Char
- 
- defaultSystemPath :: FilePath
--defaultSystemPath = "/etc/ssl/certs/"
-+defaultSystemPath = "/system/etc/security/cacerts/"
- 
- envPathOverride :: String
- envPathOverride = "SYSTEM_CERTIFICATE_PATH"
-@@ -46,7 +46,7 @@ listDirectoryCerts path = (map (path </>) . filter isCert <$> getDirectoryConten
+@@ -56,7 +56,7 @@ listDirectoryCerts path = do
                          && isDigit (s !! 9)
                          && (s !! 8) == '.'
                          && all isHexDigit (take 8 s)
 -          isCert x = (not $ isPrefixOf "." x) && (not $ isHashedFile x)
 +          isCert x = (not $ isPrefixOf "." x) 
  
- getSystemCertificateStore :: IO CertificateStore
- getSystemCertificateStore = makeCertificateStore . concat <$> (getSystemPath >>= listDirectoryCerts >>= mapM readCertificates)
+           getDirContents = E.catch (Just <$> getDirectoryContents path) emptyPaths
+             where emptyPaths :: E.IOException -> IO (Maybe [FilePath])
 -- 
 1.7.10.4
 

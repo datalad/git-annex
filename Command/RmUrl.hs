@@ -11,8 +11,8 @@ import Common.Annex
 import Command
 import Logs.Web
 
-def :: [Command]
-def = [notBareRepo $
+cmd :: [Command]
+cmd = [notBareRepo $
 	command "rmurl" (paramPair paramFile paramUrl) seek
 		SectionCommon "record file is not available at url"]
 

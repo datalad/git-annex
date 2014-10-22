@@ -72,7 +72,7 @@ needLsof = error $ unlines
 
 {- A special exception that can be thrown to pause or resume the watcher. -}
 data WatcherControl = PauseWatcher | ResumeWatcher
-        deriving (Show, Eq, Typeable)
+	deriving (Show, Eq, Typeable)
 
 instance E.Exception WatcherControl
 
@@ -192,7 +192,7 @@ runHandler handler file filestatus = void $ do
 			liftAnnex Annex.Queue.flushWhenFull
 			recordChange change
   where
-  	normalize f
+	normalize f
 		| "./" `isPrefixOf` file = drop 2 f
 		| otherwise = f
 
@@ -246,7 +246,7 @@ onAddDirect symlinkssupported matcher file fs = do
 				debug ["add direct", file]
 				add matcher file
   where
- 	{- On a filesystem without symlinks, we'll get changes for regular
+	{- On a filesystem without symlinks, we'll get changes for regular
 	 - files that git uses to stand-in for symlinks. Detect when
 	 - this happens, and stage the symlink, rather than annexing the
 	 - file. -}
@@ -276,7 +276,7 @@ onAddSymlink isdirect file filestatus = unlessIgnored file $ do
 onAddSymlink' :: Maybe String -> Maybe Key -> Bool -> Handler
 onAddSymlink' linktarget mk isdirect file filestatus = go mk
   where
-  	go (Just key) = do
+	go (Just key) = do
 		when isdirect $
 			liftAnnex $ void $ addAssociatedFile key file
 		link <- liftAnnex $ inRepo $ gitAnnexLink file key

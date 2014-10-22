@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.54"
+ subject="relevant excerpt "
+ date="2014-10-12T18:08:55Z"
+ content="""
+<pre>
+[2014-08-20 09:05:45 MSK] call: git [\"--git-dir=/tmp/tmprepo.0/.git\",\"--work-tree=/tmp/tmprepo.0\",\"fetch\",\"ssh://crabman@git-annex-192.168.1.246-crabman_annex/~/annex/\",\"--force\",\"--update-head-ok\",\"--quiet\",\"+*:*\"]
+Auto packing the repository in background for optimum performance.
+See \"git help gc\" for manual housekeeping.
+[2014-08-20 09:05:50 MSK] call: rsync [\"-qr\",\"/tmp/tmprepo.0/.git/objects/\",\"/home/crabman/annex/.git/objects/\"]
+[2014-08-20 09:14:58 MSK] read: git [\"--git-dir=/home/crabman/annex/.git\",\"--work-tree=/home/crabman/annex\",\"-c\",\"core.bare=false\",\"show\",\"584a7836d05e6733224a53e5882547eeb87d43db\"]
+[2014-08-20 09:14:59 MSK] read: git [\"--git-dir=/home/crabman/annex/.git\",\"--work-tree=/home/crabman/annex\",\"-c\",\"core.bare=false\",\"show\",\"62fee7cc3ec6ea4c56ba42015ab9bf8f0f808dee\"]
+[2014-08-20 09:14:59 MSK] read: git [\"--git-dir=/home/crabman/annex/.git\",\"--work-tree=/home/crabman/annex\",\"-c\",\"core.bare=false\",\"show\",\"c7a698397328c71a33bbc2852fda8d09d52c4f38\"]
+Running git fsck ...
+Trying to recover missing objects from remote 192.168.1.246_annex.
+Unpacking all pack files.
+Trying to recover missing objects from remote 192.168.1.246_annex.
+
+git-annex: /tmp/tmprepo.0/.git/gc.pid: removeLink: does not exist (No such file or directory)
+</pre>
+"""]]

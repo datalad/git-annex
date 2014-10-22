@@ -25,8 +25,12 @@ import Data.String (IsString (..))
 import Control.Monad (unless)
 import Data.Maybe (listToMaybe)
 #endif
+#if MIN_VERSION_yesod_form(1,3,8)
+import Yesod.Form.Bootstrap3 as Y hiding (bfs)
+#else
+import Assistant.WebApp.Bootstrap3 as Y hiding (bfs)
+#endif
 import Data.Text (Text)
-import Assistant.WebApp.Bootstrap3 hiding (bfs)
 
 {- Yesod's textField sets the required attribute for required fields.
  - We don't want this, because many of the forms used in this webapp 
@@ -129,7 +133,7 @@ withExpandableNote field (toggle, note) = withNote field $ [whamlet|
   ^{note}
 |]
   where
-  	ident = "toggle_" ++ toggle
+	ident = "toggle_" ++ toggle
 
 {- Adds a check box to an AForm to control encryption. -}
 #if MIN_VERSION_yesod(1,2,0)

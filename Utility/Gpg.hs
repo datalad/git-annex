@@ -166,7 +166,7 @@ secretKeys :: IO (M.Map KeyId UserId)
 secretKeys = catchDefaultIO M.empty makemap
   where
 	makemap = M.fromList . parse . lines <$> readStrict params
-  	params = [Params "--with-colons --list-secret-keys --fixed-list-mode"]
+	params = [Params "--with-colons --list-secret-keys --fixed-list-mode"]
 	parse = extract [] Nothing . map (split ":")
 	extract c (Just keyid) (("uid":_:_:_:_:_:_:_:_:userid:_):rest) =
 		extract ((keyid, decode_c userid):c) Nothing rest
@@ -196,7 +196,7 @@ genSecretKey keytype passphrase userid keysize =
 	withHandle StdinHandle createProcessSuccess (proc gpgcmd params) feeder
   where
 	params = ["--batch", "--gen-key"]
-  	feeder h = do
+	feeder h = do
 		hPutStr h $ unlines $ catMaybes
 			[ Just $  "Key-Type: " ++ 
 				case keytype of
@@ -232,7 +232,7 @@ genRandom highQuality size = checksize <$> readStrict
 	randomquality :: Int
 	randomquality = if highQuality then 2 else 1
 
- 	{- The size is the number of bytes of entropy desired; the data is
+	{- The size is the number of bytes of entropy desired; the data is
 	 - base64 encoded, so needs 8 bits to represent every 6 bytes of
 	 - entropy. -}
 	expectedlength = size * 8 `div` 6
@@ -334,7 +334,7 @@ testHarness a = do
 	setup = do
 		base <- getTemporaryDirectory
 		dir <- mktmpdir $ base </> "gpgtmpXXXXXX"
-		void $ setEnv var dir True
+		setEnv var dir True
 		-- For some reason, recent gpg needs a trustdb to be set up.
 		_ <- pipeStrict [Params "--trust-model auto --update-trustdb"] []
 		_ <- pipeStrict [Params "--import -q"] $ unlines

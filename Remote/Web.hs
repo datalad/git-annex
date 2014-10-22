@@ -62,7 +62,8 @@ gen r _ c gc =
 		readonly = True,
 		availability = GloballyAvailable,
 		remotetype = remote,
-		mkUnavailable = return Nothing
+		mkUnavailable = return Nothing,
+		getInfo = return []
 	}
 
 downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
@@ -120,7 +121,7 @@ checkKey' key us = firsthit us (Right False) $ \u -> do
 			Url.withUrlOptions $ catchMsgIO .
 				Url.checkBoth u' (keySize key)
   where
-  	firsthit [] miss _ = return miss
+	firsthit [] miss _ = return miss
 	firsthit (u:rest) _ a = do
 		r <- a u
 		case r of

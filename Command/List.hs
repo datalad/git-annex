@@ -23,8 +23,8 @@ import Annex.UUID
 import qualified Annex
 import Git.Types (RemoteName)
 
-def :: [Command]
-def = [noCommit $ withOptions [allrepos] $ command "list" paramPaths seek
+cmd :: [Command]
+cmd = [noCommit $ withOptions [allrepos] $ command "list" paramPaths seek
 	SectionQuery "show which remotes contain files"]
 
 allrepos :: Option
@@ -71,15 +71,15 @@ type Present = Bool
 header :: [(RemoteName, TrustLevel)] -> String
 header remotes = unlines (zipWith formatheader [0..] remotes) ++ pipes (length remotes)
   where
-    formatheader n (remotename, trustlevel) = pipes n ++ remotename ++ trust trustlevel
-    pipes = flip replicate '|'
-    trust UnTrusted = " (untrusted)"
-    trust _ = ""
+	formatheader n (remotename, trustlevel) = pipes n ++ remotename ++ trust trustlevel
+	pipes = flip replicate '|'
+	trust UnTrusted = " (untrusted)"
+	trust _ = ""
 
 format :: [(TrustLevel, Present)] -> FilePath -> String
 format remotes file = thereMap ++ " " ++ file
   where 
-    thereMap = concatMap there remotes
-    there (UnTrusted, True) = "x"
-    there (_, True) = "X"
-    there (_, False) = "_"
+	thereMap = concatMap there remotes
+	there (UnTrusted, True) = "x"
+	there (_, True) = "X"
+	there (_, False) = "_"

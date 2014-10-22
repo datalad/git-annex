@@ -14,8 +14,8 @@ import Types.View
 import Logs.View
 import Command.View (checkoutViewBranch)
 
-def :: [Command]
-def = [notBareRepo $ notDirect $
+cmd :: [Command]
+cmd = [notBareRepo $ notDirect $
 	command "vcycle" paramNothing seek SectionUtility
 	"switch view to next layout"]
 

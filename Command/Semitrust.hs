@@ -11,8 +11,8 @@ import Command
 import Types.TrustLevel
 import Command.Trust (trustCommand)
 
-def :: [Command]
-def = [command "semitrust" (paramRepeating paramRemote) seek
+cmd :: [Command]
+cmd = [command "semitrust" (paramRepeating paramRemote) seek
 	SectionSetup "return repository to default trust level"]
 
 seek :: CommandSeek

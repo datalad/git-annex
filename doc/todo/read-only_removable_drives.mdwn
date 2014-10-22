@@ -5,3 +5,13 @@ I would expect it to at least be able to leech the files off of it.
 Otherwise, I would welcome advice on how to fix this problem without doing a `sudo chown -R` every time i plug this drive somewhere ... --[[anarcat]]
 
 > Workaround: `sudo setfacl -R -m u:anarcat:rwx /media/foo/annex`
+
+Note: this seems like there was at least one dupe opened about this in [[bugs/annex_get_fails_from_read-only_filesystem]].
+
+I concede that this may refer to many different issues, so here's a short inventory of issues with readonly repositories:
+
+* trying to add an external readonly drive through the webapp: not detected: see [[todo/show_readonly_removable_drives_in_the_webapp]]
+* trying to add an external readonly drive through the commandline: fails to sync? - couldn't reproduce locally, i will need to go back to that machine for more tests :(
+* trying to add a ssh readonly remote through the webapp: fails to sync and considers the remote "git-only" (which also fails) - couldn't reproduce locally either - maybe this is related to the upgrade option in [[bugs/annex_get_fails_from_read-only_filesystem/]] 
+* trying to add a local readonly remote through the webapp: fails to add, see [[bugs/cannot_add_local_readonly_repo_through_the_webapp]]
+* failing to sync with a readonly remote of a different version: still an issue, see [[bugs/annex_get_fails_from_read-only_filesystem/]] - at least content should be syncable even if the upgrade fails (think of failure conditions such as broken hard drives that are put in readonly mode or ddrescue'd disk images)

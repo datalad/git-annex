@@ -73,8 +73,8 @@ import qualified Utility.Scheduled
 import qualified Utility.HumanTime
 import qualified Utility.ThreadScheduler
 import qualified Command.Uninit
-#ifndef mingw32_HOST_OS
 import qualified CmdLine.GitAnnex as GitAnnex
+#ifndef mingw32_HOST_OS
 import qualified Remote.Helper.Encryptable
 import qualified Types.Crypto
 import qualified Utility.Gpg
@@ -120,9 +120,9 @@ main ps = do
 				error msg
 			v -> handleParseResult v
 #else
-	handleParseResult $ execParserPure pprefs pinfo args
+		handleParseResult $ execParserPure pprefs pinfo args
 #endif
-  	progdesc = "git-annex test"
+	progdesc = "git-annex test"
 
 ingredients :: [Ingredient]
 ingredients =
@@ -822,7 +822,7 @@ test_conflict_resolution_movein_regression testenv = withtmpclonerepo testenv Fa
 		 - be missing the content of the file that had
 		 - been put in it. -}
 		forM_ [r1, r2] $ \r -> indir testenv r $ do
-		 	git_annex testenv "get" [] @? "unable to get all files after merge conflict resolution in " ++ rname r
+			git_annex testenv "get" [] @? "unable to get all files after merge conflict resolution in " ++ rname r
 
 {- Simple case of conflict resolution; 2 different versions of annexed
  - file. -}
@@ -943,12 +943,12 @@ test_remove_conflict_resolution testenv = do
 		length v == 1
 			@? (what ++ " too many variant files in: " ++ show v)
 
- {- Check merge confalict resolution when a file is annexed in one repo,
-  - and checked directly into git in the other repo.
-  -
-  - This test requires indirect mode to set it up, but tests both direct and
-  - indirect mode.
-  -}
+{- Check merge confalict resolution when a file is annexed in one repo,
+ - and checked directly into git in the other repo.
+ -
+ - This test requires indirect mode to set it up, but tests both direct and
+ - indirect mode.
+ -}
 test_nonannexed_file_conflict_resolution :: TestEnv -> Assertion
 test_nonannexed_file_conflict_resolution testenv = do
 	check True False
@@ -957,7 +957,7 @@ test_nonannexed_file_conflict_resolution testenv = do
 	check False True
   where
 	check inr1 switchdirect = withtmpclonerepo testenv False $ \r1 ->
-		withtmpclonerepo testenv False $ \r2 -> do
+		withtmpclonerepo testenv False $ \r2 ->
 			whenM (isInDirect r1 <&&> isInDirect r2) $ do
 				indir testenv r1 $ do
 					disconnectOrigin
@@ -1007,7 +1007,7 @@ test_nonannexed_symlink_conflict_resolution testenv = do
 	check False True
   where
 	check inr1 switchdirect = withtmpclonerepo testenv False $ \r1 ->
-		withtmpclonerepo testenv False $ \r2 -> do
+		withtmpclonerepo testenv False $ \r2 ->
 			whenM (checkRepo (Types.coreSymlinks <$> Annex.getGitConfig) r1
 			       <&&> isInDirect r1 <&&> isInDirect r2) $ do
 				indir testenv r1 $ do
@@ -1094,9 +1094,9 @@ test_uncommitted_conflict_resolution testenv = do
  - lost track of whether a file was a symlink. 
  -}
 test_conflict_resolution_symlink_bit :: TestEnv -> Assertion
-test_conflict_resolution_symlink_bit testenv = do
+test_conflict_resolution_symlink_bit testenv =
 	withtmpclonerepo testenv False $ \r1 ->
-		withtmpclonerepo testenv False $ \r2 -> do
+		withtmpclonerepo testenv False $ \r2 ->
 			withtmpclonerepo testenv False $ \r3 -> do
 				indir testenv r1 $ do
 					writeFile conflictor "conflictor"
@@ -1152,7 +1152,7 @@ test_uninit_inbranch testenv = intmpclonerepoInDirect testenv $ do
 	not <$> git_annex testenv "uninit" [] @? "uninit failed to fail when git-annex branch was checked out"
 
 test_upgrade :: TestEnv -> Assertion
-test_upgrade testenv = intmpclonerepo testenv $ do
+test_upgrade testenv = intmpclonerepo testenv $
 	git_annex testenv "upgrade" [] @? "upgrade from same version failed"
 
 test_whereis :: TestEnv -> Assertion
@@ -1346,7 +1346,6 @@ test_add_subdirs testenv = intmpclonerepo testenv $ do
 -- (when the OS allows) so test coverage collection works.
 git_annex :: TestEnv -> String -> [String] -> IO Bool
 git_annex testenv command params = do
-#ifndef mingw32_HOST_OS
 	forM_ (M.toList testenv) $ \(var, val) ->
 		Utility.Env.setEnv var val True
 
@@ -1357,11 +1356,6 @@ git_annex testenv command params = do
 		Left _ -> return False
   where
 	run = GitAnnex.run (command:"-q":params)
-#else
-	Utility.SafeCommand.boolSystemEnv "git-annex"
-		(map Param $ command : params)
-		(Just $ M.toList testenv)
-#endif
 
 {- Runs git-annex and returns its output. -}
 git_annex_output :: TestEnv -> String -> [String] -> IO String
@@ -1404,7 +1398,7 @@ intmpclonerepoInDirect testenv a = intmpclonerepo testenv $
 		, a
 		)
   where
-  	isdirect = annexeval $ do
+	isdirect = annexeval $ do
 		Annex.Init.initialize Nothing
 		Config.isDirect
 

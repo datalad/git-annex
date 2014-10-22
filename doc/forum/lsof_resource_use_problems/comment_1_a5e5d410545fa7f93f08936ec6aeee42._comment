@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.111"
+ subject="comment 1"
+ date="2014-10-13T21:21:18Z"
+ content="""
+That seems very wrong.. On my linux system here, I can `lsof /` and it uses 4 kb total, and runs in 0.09 seconds, to report on 3500 open files.
+
+But, I don't know about freebsd. lsof may be more expensive there for some reason, like needing to look in kernel memory rather than in /proc perhaps? But expensive to the tune of gigabytes of space used, that must be lsof misbehaving.
+"""]]

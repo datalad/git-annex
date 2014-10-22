@@ -1,5 +1,62 @@
-git-annex (5.20140916) UNRELEASED; urgency=medium
+git-annex (5.20141014) UNRELEASED; urgency=medium
 
+  * vicfg: Deleting configurations now resets to the default, where
+    before it has no effect.
+  * Remove hurd stuff from cabal file, since hackage currently rejects
+    it, and the test suite fails on hurd.
+  * initremote: Don't allow creating a special remote that has the same
+    name as an existing git remote.
+  * Windows: Use haskell setenv library to clean up several ugly workarounds
+    for inability to manipulate the environment on windows. This includes
+    making git-annex not re-exec itself on start on windows, and making the
+    test suite on Windows run tests without forking.
+  * glacier: Fix pipe setup when calling glacier-cli to retrieve an object.
+  * info: When run on a single annexed file, displays some info about the 
+    file, including its key and size.
+  * info: When passed the name or uuid of a remote, displays info about that
+    remote. Remotes that support encryption, chunking, or embedded
+    creds will include that in their info.
+  * enableremote: When the remote has creds, update the local creds cache
+    file. Before, the old version of the creds could be left there, and
+    would continue to be used.
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 14 Oct 2014 14:09:24 -0400
+
+git-annex (5.20141013) unstable; urgency=medium
+
+  * Adjust cabal file to support building w/o assistant on the hurd.
+  * Support building with yesod 1.4.
+  * S3: Fix embedcreds=yes handling for the Internet Archive.
+  * map: Handle .git prefixed remote repos. Closes: #614759
+  * repair: Prevent auto gc from happening when fetching from a remote.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 13 Oct 2014 10:13:06 -0400
+
+git-annex (5.20140927) unstable; urgency=medium
+
+  * Really depend (not just build-depend) on new enough git for --no-gpg-sign
+    to work. Closes: #763057
+  * Add temporary workaround for bug #763078 which broke building on armel
+    and armhf.
+
+ -- Joey Hess <joeyh@debian.org>  Sat, 27 Sep 2014 14:25:09 -0400
+
+git-annex (5.20140926) unstable; urgency=high
+
+  * Depend on new enough git for --no-gpg-sign to work. Closes: #762446
+  * Work around failure to build on mips by using cabal, not Setup,
+    to build in debian/rules.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 26 Sep 2014 15:09:02 -0400
+
+git-annex (5.20140919) unstable; urgency=high
+
+  * Security fix for S3 and glacier when using embedcreds=yes with
+    encryption=pubkey or encryption=hybrid. CVE-2014-6274
+    The creds embedded in the git repo were *not* encrypted.
+    git-annex enableremote will warn when used on a remote that has
+    this problem. For details, see:
+    https://git-annex.branchable.com/upgrades/insecure_embedded_creds/
   * assistant: Detect when repository has been deleted or moved, and
     automatically shut down the assistant. Closes: #761261
   * Windows: Avoid crashing trying to list gpg secret keys, for gcrypt
@@ -9,7 +66,7 @@ git-annex (5.20140916) UNRELEASED; urgency=medium
   * add: In direct mode, adding an annex symlink will check it into git,
     as was already done in indirect mode.
 
- -- Joey Hess <joeyh@debian.org>  Mon, 15 Sep 2014 14:39:17 -0400
+ -- Joey Hess <joeyh@debian.org>  Fri, 19 Sep 2014 12:53:42 -0400
 
 git-annex (5.20140915) unstable; urgency=medium
 

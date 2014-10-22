@@ -454,7 +454,7 @@ handleTransitions jl localts refs = do
 			ignoreRefs untransitionedrefs
 			return True
   where
-  	getreftransition ref = do
+	getreftransition ref = do
 		ts <- parseTransitionsStrictly "remote" . decodeBS
 			<$> catFile ref transitionsLog
 		return (ref, ts)
@@ -470,7 +470,7 @@ ignoreRefs rs = do
 getIgnoredRefs :: Annex (S.Set Git.Ref)
 getIgnoredRefs = S.fromList . mapMaybe Git.Sha.extractSha . lines <$> content
   where
-  	content = do
+	content = do
 		f <- fromRepo gitAnnexIgnoredRefs
 		liftIO $ catchDefaultIO "" $ readFile f
 
@@ -498,7 +498,7 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 				ref <- getBranch
 				commitIndex jl ref message (nub $ fullname:transitionedrefs)
   where
-  	message
+	message
 		| neednewlocalbranch && null transitionedrefs = "new branch for transition " ++ tdesc
 		| otherwise = "continuing transition " ++ tdesc
 	tdesc = show $ map describeTransition $ transitionList ts

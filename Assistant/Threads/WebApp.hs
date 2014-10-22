@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE TemplateHaskell, MultiParamTypeClasses #-}
+{-# LANGUAGE ViewPatterns, OverloadedStrings #-}
 {-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
@@ -97,7 +98,7 @@ webAppThread assistantdata urlrenderer noannex cannotrun postfirstrun listenhost
 			urlfile <- getAnnex' $ fromRepo gitAnnexUrlFile
 			go tlssettings addr webapp htmlshim (Just urlfile)
   where
-  	-- The webapp thread does not wait for the startupSanityCheckThread
+	-- The webapp thread does not wait for the startupSanityCheckThread
 	-- to finish, so that the user interface remains responsive while
 	-- that's going on.
 	thread = namedThreadUnchecked "WebApp"

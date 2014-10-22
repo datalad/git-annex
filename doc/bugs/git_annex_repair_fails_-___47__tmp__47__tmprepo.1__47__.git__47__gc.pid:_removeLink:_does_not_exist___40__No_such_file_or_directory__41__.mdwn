@@ -36,3 +36,5 @@ git-annex: repair: 1 failed
 
 # End of transcript or log.
 """]]
+
+> Provisionally [[done]]; see comment. --[[Joey]]

@@ -12,8 +12,8 @@ import Command
 import Annex.View
 import Command.View (paramView, checkoutViewBranch)
 
-def :: [Command]
-def = [notBareRepo $ notDirect $
+cmd :: [Command]
+cmd = [notBareRepo $ notDirect $
 	command "vfilter" paramView seek SectionMetaData "filter current view"]
 
 seek :: CommandSeek

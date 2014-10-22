@@ -12,8 +12,8 @@ import Assistant
 import Command
 import Utility.HumanTime
 
-def :: [Command]
-def = [notBareRepo $ withOptions [foregroundOption, stopOption] $ 
+cmd :: [Command]
+cmd = [notBareRepo $ withOptions [foregroundOption, stopOption] $ 
 	command "watch" paramNothing seek SectionCommon "watch for changes"]
 
 seek :: CommandSeek

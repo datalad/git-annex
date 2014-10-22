@@ -102,7 +102,7 @@ refineView origview = checksize . calc Unchanged origview
 			let (components', viewchanges) = runWriter $
 				mapM (\c -> updateViewComponent c field vf) (viewComponents view)
 			    viewchange = if field `elem` map viewField (viewComponents origview)
-			    	then maximum viewchanges
+				then maximum viewchanges
 				else Narrowing
 			in (view { viewComponents = components' }, viewchange)
 		| otherwise = 
@@ -207,7 +207,7 @@ viewComponentMatcher :: ViewComponent -> (MetaData -> Maybe [MetaValue])
 viewComponentMatcher viewcomponent = \metadata -> 
 	matcher (currentMetaDataValues metafield metadata)
   where
-  	metafield = viewField viewcomponent
+	metafield = viewField viewcomponent
 	matcher = case viewFilter viewcomponent of
 		FilterValues s -> \values -> setmatches $
 			S.intersection s values
@@ -236,8 +236,8 @@ toViewPath = concatMap escapeslash . fromMetaValue
 fromViewPath :: FilePath -> MetaValue
 fromViewPath = toMetaValue . deescapeslash []
   where
-  	deescapeslash s [] = reverse s
-  	deescapeslash s (c:cs)
+	deescapeslash s [] = reverse s
+	deescapeslash s (c:cs)
 		| c == pseudoSlash = case cs of
 			(c':cs')
 				| c' == pseudoSlash -> deescapeslash (pseudoSlash:s) cs'

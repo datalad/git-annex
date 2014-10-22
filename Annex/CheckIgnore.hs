@@ -18,7 +18,7 @@ import qualified Annex
 checkIgnored :: FilePath -> Annex Bool
 checkIgnored file = go =<< checkIgnoreHandle
   where
-  	go Nothing = return False
+	go Nothing = return False
 	go (Just h) = liftIO $ Git.checkIgnored h file
 
 checkIgnoreHandle :: Annex (Maybe Git.CheckIgnoreHandle)

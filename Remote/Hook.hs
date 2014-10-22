@@ -60,7 +60,8 @@ gen r u c gc = do
 			availability = GloballyAvailable,
 			remotetype = remote,
 			mkUnavailable = gen r u c $
-				gc { remoteAnnexHookType = Just "!dne!" }
+				gc { remoteAnnexHookType = Just "!dne!" },
+			getInfo = return [("hooktype", hooktype)]
 		}
   where
 	hooktype = fromMaybe (error "missing hooktype") $ remoteAnnexHookType gc
@@ -70,7 +71,7 @@ hookSetup mu _ c = do
 	u <- maybe (liftIO genUUID) return mu
 	let hooktype = fromMaybe (error "Specify hooktype=") $
 		M.lookup "hooktype" c
-	c' <- encryptionSetup c
+	(c', _encsetup) <- encryptionSetup c
 	gitConfigSpecialRemote u c' "hooktype" hooktype
 	return (c', u)
 
@@ -138,7 +139,7 @@ checkKey r h k = do
 	v <- lookupHook h action
 	liftIO $ check v
   where
-  	action = "checkpresent"
+	action = "checkpresent"
 	findkey s = key2file k `elem` lines s
 	check Nothing = error $ action ++ " hook misconfigured"
 	check (Just hook) = do

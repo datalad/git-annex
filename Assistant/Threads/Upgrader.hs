@@ -39,7 +39,7 @@ upgraderThread urlrenderer = namedThread "Upgrader" $
 		h <- liftIO . newNotificationHandle False . networkConnectedNotifier =<< getDaemonStatus
 		go h =<< liftIO getCurrentTime
   where
-  	{- Wait for a network connection event. Then see if it's been
+	{- Wait for a network connection event. Then see if it's been
 	 - half a day since the last upgrade check. If so, proceed with
 	 - check. -}
 	go h lastchecked = do

@@ -16,8 +16,8 @@ import Backend
 import Remote
 import Types.KeySource
 
-def :: [Command]
-def = [withOptions opts $ notBareRepo $ command "import" paramPaths seek
+cmd :: [Command]
+cmd = [withOptions opts $ notBareRepo $ command "import" paramPaths seek
 	SectionCommon "move and add files from outside git working copy"]
 
 opts :: [Option]
@@ -50,8 +50,8 @@ getDuplicateMode = gen
 	<*> getflag cleanDuplicatesOption
 	<*> getflag skipDuplicatesOption
   where
-  	getflag = Annex.getFlag . optionName
-  	gen False False False False = Default
+	getflag = Annex.getFlag . optionName
+	gen False False False False = Default
 	gen True False False False = Duplicate
 	gen False True False False = DeDuplicate
 	gen False False True False = CleanDuplicates
@@ -96,7 +96,7 @@ start mode (srcfile, destfile) =
 	handleexisting Nothing = noop
 	handleexisting (Just s)
 		| isDirectory s = notoverwriting "(is a directory)"
-		| otherwise = ifM (Annex.getState Annex.force) $
+		| otherwise = ifM (Annex.getState Annex.force)
 			( liftIO $ nukeFile destfile
 			, notoverwriting "(use --force to override)"
 			)

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 2"
+ date="2014-09-18T18:52:17Z"
+ content="""
+If you're using the new chunking system, git-annex should support resuming the upload to S3. Next time you try to send the file, it should find the chunks that were successfully sent, and resume at the chunk where it failed.
+
+Supporting this even for encrypted uploads was a major benefit of the new chunking system, so I hope it works...?
+"""]]

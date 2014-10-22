@@ -7,7 +7,7 @@
 
 {-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses #-}
 {-# LANGUAGE TemplateHaskell, OverloadedStrings, RankNTypes #-}
-{-# LANGUAGE FlexibleInstances, FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances, FlexibleContexts, ViewPatterns #-}
 {-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 

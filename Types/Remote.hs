@@ -98,7 +98,9 @@ data RemoteA a = Remote {
 	remotetype :: RemoteTypeA a,
 	-- For testing, makes a version of this remote that is not
 	-- available for use. All its actions should fail.
-	mkUnavailable :: a (Maybe (RemoteA a))
+	mkUnavailable :: a (Maybe (RemoteA a)),
+	-- Information about the remote, for git annex info to display.
+	getInfo :: a [(String, String)]
 }
 
 instance Show (RemoteA a) where

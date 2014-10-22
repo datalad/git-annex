@@ -19,8 +19,8 @@ import Logs.Trust
 
 import Data.Ord
 
-def :: [Command]
-def = [command "initremote"
+cmd :: [Command]
+cmd = [command "initremote"
 	(paramPair paramName $ paramOptional $ paramRepeating paramKeyValue)
 	seek SectionSetup "creates a special (non-git) remote"]
 
@@ -33,11 +33,15 @@ start (name:ws) = ifM (isJust <$> findExisting name)
 	( error $ "There is already a special remote named \"" ++ name ++
 		"\". (Use enableremote to enable an existing special remote.)"
 	, do
-		let c = newConfig name
-		t <- findType config
+		ifM (isJust <$> Remote.byNameOnly name)
+			( error $ "There is already a remote named \"" ++ name ++ "\""
+			, do
+				let c = newConfig name
+				t <- findType config
 
-		showStart "initremote" name
-		next $ perform t name $ M.union config c
+				showStart "initremote" name
+				next $ perform t name $ M.union config c
+			)
 	)
   where
 	config = Logs.Remote.keyValToConfig ws
@@ -63,7 +67,7 @@ findExisting name = do
 	return $ headMaybe matches
 
 newConfig :: String -> R.RemoteConfig
-newConfig name = M.singleton nameKey name
+newConfig = M.singleton nameKey
 
 findByName :: String ->  M.Map UUID R.RemoteConfig -> [(UUID, R.RemoteConfig)]
 findByName n = filter (matching . snd) . M.toList

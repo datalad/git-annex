@@ -1,0 +1,30 @@
+Imagine the following situation:  
+You have a directory structure like this:
+
+`./`  
+`+--dir1`  
+`|+--file1 (local)`  
+`|+--file2 (remote1)`  
+`|+--file3 (remote2)`
+
+Now when these files are quite big and you need them in one directory temporarily you would need to use `git annex get dir1` to copy them all over to local. This can take some time.
+
+I whish we had a command like this:  
+`git annex getlinks dir1`  
+where git annex would try to not link to the missing local objects but to the remote ones. So there is no need to copy the data around just to use it for a short time. After you are done you could use `git annex resetlinks dir1` to reset the links to the local objects.
+
+I know that many specialremotes will not support this without much hassle, but it would be cool to be able to get atleast the links from external drives and maybe ssh remotes via sshfs.
+To keep the data consistent there can be a constraint that every action (add, sync, commit or others) first issue a `resetlinks`.
+
+What do you think of that?
+
+> Already implemented via the `annex.hardlink` configuration.
+> 
+> I don't think that separate commands/options to control whether or not
+> to hard link makes sense, because a repository containing hardlinks
+> needs to be set as untrusted to avoid breaking numcopies counting.
+> Which is done automatically by git-annex when it detects the repository
+> was cloned with `git clone --shared`.
+> 
+> [[done]]
+> --[[Joey]]

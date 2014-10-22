@@ -44,7 +44,7 @@ import Data.Char
 
 {- Some sort of scheduled event. -}
 data Schedule = Schedule Recurrance ScheduledTime
-  deriving (Eq, Read, Show, Ord)
+	deriving (Eq, Read, Show, Ord)
 
 data Recurrance
 	= Daily
@@ -54,7 +54,7 @@ data Recurrance
 	| Divisible Int Recurrance
 	-- ^ Days, Weeks, or Months of the year evenly divisible by a number.
 	-- (Divisible Year is years evenly divisible by a number.)
-  deriving (Eq, Read, Show, Ord)
+	deriving (Eq, Read, Show, Ord)
 
 type WeekDay = Int
 type MonthDay = Int
@@ -63,7 +63,7 @@ type YearDay = Int
 data ScheduledTime
 	= AnyTime
 	| SpecificTime Hour Minute
-  deriving (Eq, Read, Show, Ord)
+	deriving (Eq, Read, Show, Ord)
 
 type Hour = Int
 type Minute = Int
@@ -73,7 +73,7 @@ type Minute = Int
 data NextTime
 	= NextTimeExactly LocalTime
 	| NextTimeWindow LocalTime LocalTime
-  deriving (Eq, Read, Show)
+	deriving (Eq, Read, Show)
 
 startTime :: NextTime -> LocalTime
 startTime (NextTimeExactly t) = t
@@ -96,9 +96,9 @@ calcNextTime schedule@(Schedule recurrance scheduledtime) lasttime currenttime
 			NextTimeExactly t -> window (localDay t) (localDay t)
 	| otherwise = NextTimeExactly . startTime <$> findfromtoday False
   where
-  	findfromtoday anytime = findfrom recurrance afterday today
+	findfromtoday anytime = findfrom recurrance afterday today
 	  where
-	  	today = localDay currenttime
+		today = localDay currenttime
 		afterday = sameaslastrun || toolatetoday
 		toolatetoday = not anytime && localTimeOfDay currenttime >= nexttime
 		sameaslastrun = lastrun == Just today
@@ -163,8 +163,8 @@ calcNextTime schedule@(Schedule recurrance scheduledtime) lasttime currenttime
 		Divisible n r'@(Yearly _) -> handlediv n r' ynum Nothing
 		Divisible _ r'@(Divisible _ _) -> findfrom r' afterday candidate
 	  where
-	  	skip n = findfrom r False (addDays n candidate)
-	  	handlediv n r' getval mmax
+		skip n = findfrom r False (addDays n candidate)
+		handlediv n r' getval mmax
 			| n > 0 && maybe True (n <=) mmax =
 				findfromwhere r' (divisible n . getval) afterday candidate
 			| otherwise = Nothing
@@ -267,7 +267,7 @@ toRecurrance s = case words s of
 	constructor u
 		| "s" `isSuffixOf` u = constructor $ reverse $ drop 1 $ reverse u
 		| otherwise = Nothing
-  	withday sd u = do
+	withday sd u = do
 		c <- constructor u
 		d <- readish sd
 		Just $ c (Just d)
@@ -285,7 +285,7 @@ fromScheduledTime AnyTime = "any time"
 fromScheduledTime (SpecificTime h m) = 
 	show h' ++ (if m > 0 then ":" ++ pad 2 (show m) else "") ++ " " ++ ampm
   where
-  	pad n s = take (n - length s) (repeat '0') ++ s
+	pad n s = take (n - length s) (repeat '0') ++ s
 	(h', ampm)
 		| h == 0 = (12, "AM")
 		| h < 12 = (h, "AM")
@@ -304,10 +304,10 @@ toScheduledTime v = case words v of
 	(s:[]) -> go s id
 	_ -> Nothing
   where
-  	h0 h
+	h0 h
 		| h == 12 = 0
 		| otherwise = h
-  	go :: String -> (Int -> Int) -> Maybe ScheduledTime
+	go :: String -> (Int -> Int) -> Maybe ScheduledTime
 	go s adjust =
 		let (h, m) = separate (== ':') s
 		in SpecificTime
@@ -363,7 +363,7 @@ instance Arbitrary Recurrance where
 				]
 		]
 	  where
-	  	arbday = oneof
+		arbday = oneof
 			[ Just <$> nonNegative arbitrary
 			, pure Nothing
 			]

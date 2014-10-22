@@ -70,7 +70,7 @@ remoteLocationIsSshUrl _ = False
 parseRemoteLocation :: String -> Repo -> RemoteLocation
 parseRemoteLocation s repo = ret $ calcloc s
   where
-  	ret v
+	ret v
 #ifdef mingw32_HOST_OS
 		| dosstyle v = RemotePath (dospath v)
 #endif

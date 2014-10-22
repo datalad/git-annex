@@ -164,8 +164,8 @@ waitChangeTime a = waitchanges 0
 	 -}
 	aftermaxcommit oldchanges = loop (30 :: Int)
 	  where
-	  	loop 0 = continue oldchanges
-	  	loop n = do
+		loop 0 = continue oldchanges
+		loop n = do
 			liftAnnex noop -- ensure Annex state is free
 			liftIO $ threadDelaySeconds (Seconds 1)
 			changes <- getAnyChanges
@@ -301,7 +301,7 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 	add change@(InProcessAddChange { keySource = ks }) = 
 		catchDefaultIO Nothing <~> doadd
 	  where
-	  	doadd = sanitycheck ks $ do
+		doadd = sanitycheck ks $ do
 			(mkey, mcache) <- liftAnnex $ do
 				showStart "add" $ keyFilename ks
 				Command.Add.ingest $ Just ks

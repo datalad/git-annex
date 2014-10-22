@@ -69,7 +69,7 @@ runTransfer' ignorelock t file shouldretry a = do
 			return False
 		else do
 			ok <- retry info metervar $
-		 		bracketIO (return fd) (cleanup tfile) (const $ a meter)
+				bracketIO (return fd) (cleanup tfile) (const $ a meter)
 			unless ok $ recordFailedTransfer t info
 			return ok
   where

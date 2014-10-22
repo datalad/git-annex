@@ -90,11 +90,11 @@ locationLogFile key = hashDirLower key ++ keyFile key ++ ".log"
 locationLogFileKey :: FilePath -> Maybe Key
 locationLogFileKey path
 	| ["remote", "web"] `isPrefixOf` splitDirectories dir = Nothing
-        | ext == ".log" = fileKey base
-        | otherwise = Nothing
+	| ext == ".log" = fileKey base
+	| otherwise = Nothing
   where
 	(dir, file) = splitFileName path
-        (base, ext) = splitAt (length file - 4) file
+	(base, ext) = splitAt (length file - 4) file
 
 {- The filename of the url log for a given key. -}
 urlLogFile :: Key -> FilePath
@@ -117,7 +117,7 @@ urlLogFileKey path
 	| ext == urlLogExt = fileKey base
 	| otherwise = Nothing
   where
-  	file = takeFileName path
+	file = takeFileName path
 	(base, ext) = splitAt (length file - extlen) file
 	extlen = length urlLogExt
 
@@ -144,7 +144,7 @@ chunkLogFileKey path
 	| ext == chunkLogExt = fileKey base
 	| otherwise = Nothing
   where
-  	file = takeFileName path
+	file = takeFileName path
 	(base, ext) = splitAt (length file - extlen) file
 	extlen = length chunkLogExt
 
@@ -173,13 +173,13 @@ prop_logs_sane dummykey = and
 	, expect gotNewUUIDBasedLog (getLogVariety $ remoteStateLogFile dummykey)
 	, expect gotChunkLog (getLogVariety $ chunkLogFile dummykey)
 	, expect gotOtherLog (getLogVariety $ metaDataLogFile dummykey)
-	, expect gotOtherLog (getLogVariety $ numcopiesLog)
+	, expect gotOtherLog (getLogVariety numcopiesLog)
 	]
   where
-  	expect = maybe False
+	expect = maybe False
 	gotUUIDBasedLog UUIDBasedLog = True
 	gotUUIDBasedLog _ = False
-  	gotNewUUIDBasedLog NewUUIDBasedLog = True
+	gotNewUUIDBasedLog NewUUIDBasedLog = True
 	gotNewUUIDBasedLog _ = False
 	gotChunkLog (ChunkLog k) = k == dummykey
 	gotChunkLog _ = False

@@ -30,3 +30,8 @@ guardUsable :: Git.Repo -> Annex a -> Annex a -> Annex a
 guardUsable r fallback a
 	| Git.repoIsLocalUnknown r = fallback
 	| otherwise = a
+
+gitRepoInfo :: Git.Repo -> [(String, String)]
+gitRepoInfo r =
+	[ ("repository location", Git.repoLocation r)
+	]

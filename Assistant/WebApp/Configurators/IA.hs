@@ -101,13 +101,13 @@ itemNameHelp = [whamlet|
 
 iaCredsAForm :: Maybe CredPair -> MkAForm AWS.AWSCreds
 iaCredsAForm defcreds = AWS.AWSCreds
-        <$> accessKeyIDFieldWithHelp (T.pack . fst <$> defcreds)
-        <*> AWS.secretAccessKeyField (T.pack . snd <$> defcreds)
+	<$> accessKeyIDFieldWithHelp (T.pack . fst <$> defcreds)
+	<*> AWS.secretAccessKeyField (T.pack . snd <$> defcreds)
 
 #ifdef WITH_S3
 previouslyUsedIACreds :: Annex (Maybe CredPair)
 previouslyUsedIACreds = previouslyUsedCredPair AWS.creds S3.remote $
-	AWS.isIARemoteConfig . Remote.config
+	S3.isIA . Remote.config
 #endif
 
 accessKeyIDFieldWithHelp :: Maybe Text -> MkAForm Text
@@ -201,7 +201,7 @@ $if (not exists)
     have been uploaded, and the Internet Archive has processed them.
 |]
   where
-  	bucket = fromMaybe "" $ M.lookup "bucket" c
+	bucket = fromMaybe "" $ M.lookup "bucket" c
 #ifdef WITH_S3
 	url = S3.iaItemUrl bucket
 #else

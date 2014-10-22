@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.54"
+ subject="comment 1"
+ date="2014-10-09T19:57:54Z"
+ content="""
+git-annex doesn't currently have a way to generate those lists itself, but you could use `git annex metadata --json` to get the metadata of all files, and pipe that json into a parser to get the data you want.
+
+The output could also be parsed in non-json mode. For example, this will list the tags:
+
+    git annex metadata  | grep '^  tag=' | cut -d '=' -f 2 | sort | uniq
+
+Although it's possible for metadata to contain newlines, and so parsing the json is a more reliable approach.
+
+Another nice way to see all the tags is to switch to a view of all tags:
+
+    git annex view 'tag=*'
+    ls
+"""]]

@@ -56,7 +56,7 @@ parseSshConfig = go [] . lines
 		| iscomment l = hoststanza host c ((Left $ mkcomment l):hc) ls
 		| otherwise = case splitline l of
 			(indent, k, v)
-			 	| isHost k -> hoststanza v
+				| isHost k -> hoststanza v
 					(HostConfig host (reverse hc):c) [] ls
 				| otherwise -> hoststanza host c
 					((Right $ SshSetting indent k v):hc) ls
@@ -87,7 +87,7 @@ genSshConfig = unlines . concatMap gen
 findHostConfigKey :: SshConfig -> Key -> Maybe Value
 findHostConfigKey (HostConfig _ cs) wantk = go (rights cs) (map toLower wantk)
   where
-  	go [] _ = Nothing
+	go [] _ = Nothing
 	go ((SshSetting _ k v):rest) wantk'
 		| map toLower k == wantk' = Just v
 		| otherwise = go rest wantk'
@@ -98,7 +98,7 @@ addToHostConfig :: SshConfig -> Key -> Value -> SshConfig
 addToHostConfig (HostConfig host cs) k v = 
 	HostConfig host $ Right (SshSetting indent k v) : cs
   where
- 	{- The indent is taken from any existing SshSetting
+	{- The indent is taken from any existing SshSetting
 	 - in the HostConfig (largest indent wins). -}
 	indent = fromMaybe "\t" $ headMaybe $ reverse $
 		sortBy (comparing length) $ map getindent cs

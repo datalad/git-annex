@@ -66,4 +66,4 @@ readProgramFile = do
 			)
 		)
   where
-  	cmd = "git-annex"
+	cmd = "git-annex"

@@ -17,8 +17,8 @@ import Types.Messages
 
 import qualified Data.Set as S
 
-def :: [Command]
-def = [command "schedule" (paramPair paramRemote (paramOptional paramExpression)) seek
+cmd :: [Command]
+cmd = [command "schedule" (paramPair paramRemote (paramOptional paramExpression)) seek
 	SectionSetup "get or set scheduled jobs"]
 
 seek :: CommandSeek
@@ -27,7 +27,7 @@ seek = withWords start
 start :: [String] -> CommandStart
 start = parse
   where
-  	parse (name:[]) = go name performGet
+	parse (name:[]) = go name performGet
 	parse (name:expr:[]) = go name $ \uuid -> do
 		showStart "schedile" name
 		performSet expr uuid

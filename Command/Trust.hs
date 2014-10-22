@@ -16,19 +16,19 @@ import Logs.Group
 
 import qualified Data.Set as S
 
-def :: [Command]
-def = [command "trust" (paramRepeating paramRemote) seek
+cmd :: [Command]
+cmd = [command "trust" (paramRepeating paramRemote) seek
 	SectionSetup "trust a repository"]
 
 seek :: CommandSeek
 seek = trustCommand "trust" Trusted
 
 trustCommand :: String -> TrustLevel -> CommandSeek
-trustCommand cmd level = withWords start
+trustCommand c level = withWords start
   where
 	start ws = do
 		let name = unwords ws
-		showStart cmd name
+		showStart c name
 		u <- Remote.nameToUUID name
 		next $ perform u
 	perform uuid = do

@@ -133,7 +133,7 @@ prop_idempotent_key_decode f
 	| normalfieldorder = maybe True (\k -> key2file k == f) (file2key f)
 	| otherwise = True
   where
-  	-- file2key will accept the fields in any order, so don't
+	-- file2key will accept the fields in any order, so don't
 	-- try the test unless the fields are in the normal order
 	normalfieldorder = fields `isPrefixOf` "smSC"
 	fields = map (f !!) $ filter (< length f) $ map succ $

@@ -193,7 +193,7 @@ postEnableSshGCryptR :: UUID -> Handler Html
 postEnableSshGCryptR u = whenGcryptInstalled $
 	enableSshRemote getsshinput enableRsyncNetGCrypt enablegcrypt u
   where
-  	enablegcrypt sshdata _ = prepSsh False sshdata $ \sshdata' ->
+	enablegcrypt sshdata _ = prepSsh False sshdata $ \sshdata' ->
 		sshConfigurator $
 			checkExistingGCrypt sshdata' $
 				error "Expected to find an encrypted git repository, but did not."
@@ -232,7 +232,7 @@ enableSshRemote getsshinput rsyncnetsetup genericsetup u = do
 				_ -> showform form enctype UntestedServer
 		_ -> redirect AddSshR
   where
-  	unmangle sshdata = sshdata
+	unmangle sshdata = sshdata
 		{ sshHostName = T.pack $ unMangleSshHostName $
 			T.unpack $ sshHostName sshdata
 		}
@@ -423,7 +423,7 @@ getConfirmSshR sshdata u
 		secretkeys <- sortBy (comparing snd) . M.toList
 			<$> liftIO secretKeys
 		$(widgetFile "configurators/ssh/confirm")
-  	handleexisting Nothing = sshConfigurator $
+	handleexisting Nothing = sshConfigurator $
 		-- Not a UUID we know, so prompt about combining.
 		$(widgetFile "configurators/ssh/combine")
 	handleexisting (Just _) = prepSsh False sshdata $ \sshdata' -> do
@@ -471,7 +471,7 @@ checkExistingGCrypt sshdata nope = checkGCryptRepoEncryption repourl nope nope $
 			combineExistingGCrypt sshdata u
 		Nothing -> error "The location contains a gcrypt repository that is not a git-annex special remote. This is not supported."
   where
-  	repourl = genSshUrl sshdata
+	repourl = genSshUrl sshdata
 
 {- Enables an existing gcrypt special remote. -}
 enableGCrypt :: SshData -> RemoteName -> Handler Html
@@ -488,7 +488,7 @@ combineExistingGCrypt sshdata u = do
 	reponame <- liftAnnex $ getGCryptRemoteName u repourl
 	enableGCrypt sshdata reponame
   where
-  	repourl = genSshUrl sshdata
+	repourl = genSshUrl sshdata
 
 {- Sets up remote repository for ssh, or directory for rsync. -}
 prepSsh :: Bool -> SshData -> (SshData -> Handler Html) -> Handler Html
@@ -579,7 +579,7 @@ postAddRsyncNetR = do
 					"That is not a rsync.net host name."
 		_ -> showform UntestedServer
   where
-  	inpage = page "Add a Rsync.net repository" (Just Configuration)
+	inpage = page "Add a Rsync.net repository" (Just Configuration)
 	hostnamefield = textField `withExpandableNote` ("Help", help)
 	help = [whamlet|
 <div>

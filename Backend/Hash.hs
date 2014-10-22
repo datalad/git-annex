@@ -144,7 +144,7 @@ trivialMigrate oldkey newbackend
 hashFile :: Hash -> FilePath -> Integer -> Annex String
 hashFile hash file filesize = liftIO $ go hash
   where
-  	go (SHAHash hashsize) = case shaHasher hashsize filesize of
+	go (SHAHash hashsize) = case shaHasher hashsize filesize of
 		Left sha -> sha <$> L.readFile file
 		Right command ->
 			either error return 

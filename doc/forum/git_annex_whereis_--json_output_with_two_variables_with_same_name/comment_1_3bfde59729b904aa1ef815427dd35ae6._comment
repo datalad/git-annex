@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.54"
+ subject="comment 1"
+ date="2014-10-10T17:09:32Z"
+ content="""
+The \"3 copies\" string is not meant to be machine-parsable anyway. Why don't you just look at the whereis object in the json, and count the number of items in its list, which will give you the number of copies.
+"""]]

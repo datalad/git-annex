@@ -79,7 +79,7 @@ pipeWriteRead params writer repo = assertLocal repo $
 	writeReadProcessEnv "git" (toCommand $ gitCommandLine params repo) 
 		(gitEnv repo) writer (Just adjusthandle)
   where
-  	adjusthandle h = do
+	adjusthandle h = do
 		fileEncoding h
 		hSetNewlineMode h noNewlineTranslation
 
@@ -117,7 +117,7 @@ gitCoProcessStart restartable params repo = CoProcess.start numrestarts "git"
 	(toCommand $ gitCommandLine params repo)
 	(gitEnv repo)
   where
-  	{- If a long-running git command like cat-file --batch
+	{- If a long-running git command like cat-file --batch
 	 - crashes, it will likely start up again ok. If it keeps crashing
 	 - 10 times, something is badly wrong. -}
 	numrestarts = if restartable then 10 else 0

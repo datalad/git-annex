@@ -17,8 +17,8 @@ import qualified Types.Remote as R
 import qualified Remote
 import qualified Backend
 
-def :: [Command]
-def = [noCommit $ noRepo startNoRepo $ dontCheck repoExists $
+cmd :: [Command]
+cmd = [noCommit $ noRepo startNoRepo $ dontCheck repoExists $
 	command "version" paramNothing seek SectionQuery "show version info"]
 
 seek :: CommandSeek

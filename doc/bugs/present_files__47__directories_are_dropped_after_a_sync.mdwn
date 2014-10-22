@@ -1,6 +1,6 @@
 ### Please describe the problem.
 
-This is a followup from the discussion on https://git-annex.branchable.com/forum/Standard_groups__47__preferred_contents/ where I unfortunately did not get a complete answer.
+This is a followup from the discussion on <https://git-annex.branchable.com/forum/Standard_groups__47__preferred_contents/> where I unfortunately did not get a complete answer.
 I don't know if it is really a bug but at least it does not work as I would expect and the documentation provides no clear discussion on that.
 
 Now to the problem:
@@ -36,3 +36,6 @@ Similarly for directories:
     key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
     remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier ddar hook external
 
+
+[[!meta title="manual mode preferred content expression does not want newer versions of present files"]]
+[[!tag confirmed]]

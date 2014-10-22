@@ -11,8 +11,8 @@ import Common.Annex
 import Command
 import Assistant.XMPP.Git
 
-def :: [Command]
-def = [noCommit $ noRepo startNoRepo $ dontCheck repoExists $
+cmd :: [Command]
+cmd = [noCommit $ noRepo startNoRepo $ dontCheck repoExists $
 	command "xmppgit" paramNothing seek
 		SectionPlumbing "git to XMPP relay"]
 
@@ -37,9 +37,9 @@ gitRemoteHelper = do
 	respond []
   where
 	expect s = do
-		cmd <- getLine
-		unless (cmd == s) $
-			error $ "git-remote-helpers protocol error: expected: " ++ s ++ ", but got: " ++ cmd
+		gitcmd <- getLine
+		unless (gitcmd == s) $
+			error $ "git-remote-helpers protocol error: expected: " ++ s ++ ", but got: " ++ gitcmd
 	respond l = do
 		mapM_ putStrLn l
 		putStrLn ""

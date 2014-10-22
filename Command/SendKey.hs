@@ -16,8 +16,8 @@ import Annex.Transfer
 import qualified CmdLine.GitAnnexShell.Fields as Fields
 import Utility.Metered
 
-def :: [Command]
-def = [noCommit $ command "sendkey" paramKey seek
+cmd :: [Command]
+cmd = [noCommit $ command "sendkey" paramKey seek
 	SectionPlumbing "runs rsync in server mode to send content"]
 
 seek :: CommandSeek

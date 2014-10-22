@@ -67,7 +67,7 @@ getCurrentMetaData k = do
 	return $ currentMetaData $ unionMetaData loggedmeta
 		(lastchanged ls loggedmeta)
   where
-  	lastchanged [] _ = emptyMetaData
+	lastchanged [] _ = emptyMetaData
 	lastchanged ls (MetaData currentlyset) =
 		let m = foldl' (flip M.union) M.empty (map genlastchanged ls)
 		in MetaData $

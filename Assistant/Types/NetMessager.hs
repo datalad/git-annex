@@ -85,7 +85,7 @@ logNetMessage (Pushing c stage) = show $ Pushing (logClientID c) $
 		SendPackOutput n _ -> SendPackOutput n elided
 		s -> s
   where
-  	elided = T.encodeUtf8 $ T.pack "<elided>"
+	elided = T.encodeUtf8 $ T.pack "<elided>"
 logNetMessage (PairingNotification stage c uuid) =
 	show $ PairingNotification stage (logClientID c) uuid
 logNetMessage m = show m

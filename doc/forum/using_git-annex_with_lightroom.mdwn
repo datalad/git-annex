@@ -1,0 +1,6 @@
+I'm using git-annex to sync my photos across multiple computers, and it works beautifully. I would also like to sync Lightroom catalogues. The photo editing program creates a *.lrdata directory where it stores the edits in its own tree format. Merging two such directories obviously creates a mess. 
+
+Is there an elegant way to tell git-annex to treat the whole directory as a single file and overwrite the whole directory structure at once? I'm guessing the same problem occurs with mac os packages.
+
+Many thanks!
+Alex

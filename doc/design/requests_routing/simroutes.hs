@@ -182,7 +182,7 @@ merge (ImmobileNode ir) t@(TransferNode { transferrepo = tr }) =
 		, satisfiedRequests = satisfiedRequests' `S.union` checkSatisfied wantFiles' haveFiles'
 		}
 	  where
-	  	wantFiles' = foldr addRequest (wantFiles r1) (wantFiles r2)
+		wantFiles' = foldr addRequest (wantFiles r1) (wantFiles r2)
 		haveFiles' = S.foldr (addFile wantFiles' satisfiedRequests') (haveFiles r1) (haveFiles r2)
 		satisfiedRequests' = satisfiedRequests r1 `S.union` satisfiedRequests r2
 
@@ -229,7 +229,7 @@ emptyImmobile = ImmobileNode (NodeRepo [] S.empty S.empty)
 
 mkTransfer :: (RandomGen g) => [NodeName] -> Rand g TransferNode
 mkTransfer immobiles = do
-  	-- Transfer nodes are given random routes. May be simplistic.
+	-- Transfer nodes are given random routes. May be simplistic.
 	-- Also, some immobile nodes will not be serviced by any transfer nodes.
 	numpossiblelocs <- getRandomR transferDestinationsRange
 	possiblelocs <- sequence (replicate numpossiblelocs (randomfrom immobiles))
@@ -283,7 +283,7 @@ summarize _initial@(Network origis _) _final@(Network is _ts) = format
 	--, ("Immobile nodes at end", show is)
 	]
   where
-  	findoriginreqs = filter (\r -> requestTTL r == originTTL)
+	findoriginreqs = filter (\r -> requestTTL r == originTTL)
 	findunsatisfied r = 
 		let wantedfs = S.fromList $ map requestedFile (findoriginreqs (wantFiles r))
 		in S.difference wantedfs (haveFiles r)

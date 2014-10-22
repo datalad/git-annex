@@ -131,7 +131,7 @@ xmppClient urlrenderer d creds xmppuuid =
 		{- XEP-0199 says that the server will respond with either
 		 - a ping response or an error message. Either will
 		 - cause traffic, so good enough. -}
-	  	pingstanza = xmppPing selfjid
+		pingstanza = xmppPing selfjid
 
 	handlemsg selfjid (PresenceMessage p) = do
 		void $ inAssistant $ 

@@ -32,7 +32,7 @@ setup = do
 	when (isAbsolute cmd) $ do
 		path <- getSearchPath
 		let path' = takeDirectory cmd : path
-		void $ setEnv "PATH" (intercalate [searchPathSeparator] path') True
+		setEnv "PATH" (intercalate [searchPathSeparator] path') True
 
 {- Checks each of the files in a directory to find open files.
  - Note that this will find hard links to files elsewhere that are open. -}

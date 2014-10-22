@@ -30,3 +30,10 @@ import qualified Propellor.Property.SiteSpecific.GitAnnexBuilder as GitAnnexBuil
 
 This will autobuild every hour at :15, and the autobuilt image will be
 left inside the container in /home/builder/gitbuilder/out/
+
+# container for backport building
+
+For building the Debian stable backport, the container
+`joeyh/git-annex-wheezy-backport` is used. This is nothing special, it
+just has the right versions of build dependencies installed from Debian
+stable and backports.

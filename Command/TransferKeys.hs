@@ -21,8 +21,8 @@ import Git.Types (RemoteName)
 
 data TransferRequest = TransferRequest Direction Remote Key AssociatedFile
 
-def :: [Command]
-def = [command "transferkeys" paramNothing seek
+cmd :: [Command]
+cmd = [command "transferkeys" paramNothing seek
 	SectionPlumbing "transfers keys"]
 
 seek :: CommandSeek
@@ -57,7 +57,7 @@ runRequests readh writeh a = do
 		fileEncoding writeh
 	go =<< readrequests
   where
-  	go (d:rn:k:f:rest) = do
+	go (d:rn:k:f:rest) = do
 		case (deserialize d, deserialize rn, deserialize k, deserialize f) of
 			(Just direction, Just remotename, Just key, Just file) -> do
 				mremote <- Remote.byName' remotename
