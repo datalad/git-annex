@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.96"
+ subject="comment 4"
+ date="2014-10-22T16:18:50Z"
+ content="""
+I struggle to see how you could draw that conclusion from what I said.
+
+git-annex will work fine in an existing git repository. You can mix regular git commands like `git add`, `git push`, `git pull`, `git merge` with git-annex commands like `git annex add`, `git annex copy --to origin`, `git annex get`, `git annex merge`, in the same repository.
+
+The `git annex sync` command effcetively runs `git commit; git pull; git annex merge; git push; git annex copy --to origin; git annex get`. If you don't want to run all those commands at once, you don't want to run `git annex sync`. That will not prevent you from using git-annex in any way.
+"""]]
