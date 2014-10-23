@@ -34,6 +34,10 @@ Description:
 Flag S3
   Description: Enable S3 support
 
+Flag PatchedAWS
+  Description: Building on system, like Debian, with old AWS patched to support git-annex
+  Default: False
+
 Flag WebDAV
   Description: Enable WebDAV support
 
@@ -151,7 +155,11 @@ Executable git-annex
     CPP-Options: -DWITH_CRYPTOHASH
 
   if flag(S3)
-    Build-Depends: aws (>= 0.10.2), conduit, resourcet
+    Build-Depends: conduit, resourcet
+    if flag(PatchedAWS)
+      Build-Depends: aws (>= 0.9.2)
+    else
+      Build-Depends: aws (>= 0.10.2)
     CPP-Options: -DWITH_S3
 
   if flag(WebDAV)
