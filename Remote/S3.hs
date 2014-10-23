@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Remote.S3 (remote, iaHost, isIA, iaItemUrl) where
+module Remote.S3 (remote, iaHost, configIA, iaItemUrl) where
 
 import Network.AWS.AWSConnection
 import Network.AWS.S3Object hiding (getStorageClass)
@@ -74,7 +74,7 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			mkUnavailable = gen r u (M.insert "host" "!dne!" c) gc,
 			getInfo = includeCredsInfo c (AWS.creds u) $ catMaybes
 				[ Just ("bucket", fromMaybe "unknown" (getBucket c))
-				, if isIA c
+				, if configIA c
 					then Just ("internet archive item", iaItemUrl $ fromMaybe "unknown" $ getBucket c)
 					else Nothing
 				]
@@ -85,7 +85,7 @@ s3Setup mu mcreds c = do
 	u <- maybe (liftIO genUUID) return mu
 	s3Setup' u mcreds c
 s3Setup' :: UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
-s3Setup' u mcreds c = if isIA c then archiveorg else defaulthost
+s3Setup' u mcreds c = if configIA c then archiveorg else defaulthost
   where
 	remotename = fromJust (M.lookup "name" c)
 	defbucket = remotename ++ "-" ++ fromUUID u
@@ -136,7 +136,7 @@ prepareStore r = resourcePrepare (const $ s3Action r False) $ \(conn, bucket) ->
 		ok <- s3Bool =<< liftIO (store (conn, bucket) r k p src)
 
 		-- Store public URL to item in Internet Archive.
-		when (ok && isIA (config r) && not (isChunkKey k)) $
+		when (ok && configIA (config r) && not (isChunkKey k)) $
 			setUrlPresent k (iaKeyUrl r k)
 
 		return ok
@@ -168,7 +168,7 @@ retrieveCheap _ _ = return False
  - derived from it that it does not remove. -}
 remove :: Remote -> RemoteConfig -> Remover
 remove r c k
-	| isIA c = do
+	| configIA c = do
 		warning "Cannot remove content from the Internet Archive"
 		return False
 	| otherwise = remove' r k
@@ -336,8 +336,8 @@ getXheaders = filter isxheader . M.assocs
 iaHost :: HostName
 iaHost = "s3.us.archive.org"
 
-isIA :: RemoteConfig -> Bool
-isIA c = maybe False isIAHost (M.lookup "host" c)
+configIA :: RemoteConfig -> Bool
+configIA c = maybe False isIAHost (M.lookup "host" c)
 
 isIAHost :: HostName -> Bool
 isIAHost h = ".archive.org" `isSuffixOf` map toLower h

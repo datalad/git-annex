@@ -239,7 +239,7 @@ getRepoInfo :: Maybe Remote.Remote -> Maybe Remote.RemoteConfig -> Widget
 getRepoInfo (Just r) (Just c) = case M.lookup "type" c of
 	Just "S3"
 #ifdef WITH_S3
-		| S3.isIA c -> IA.getRepoInfo c
+		| S3.configIA c -> IA.getRepoInfo c
 #endif
 		| otherwise -> AWS.getRepoInfo c
 	Just t

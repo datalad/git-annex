@@ -162,7 +162,7 @@ getEnableS3R :: UUID -> Handler Html
 #ifdef WITH_S3
 getEnableS3R uuid = do
 	m <- liftAnnex readRemoteLog
-	if maybe False S3.isIA (M.lookup uuid m)
+	if maybe False S3.confgiIA (M.lookup uuid m)
 		then redirect $ EnableIAR uuid
 		else postEnableS3R uuid
 #else
@@ -224,5 +224,5 @@ previouslyUsedAWSCreds :: Annex (Maybe CredPair)
 previouslyUsedAWSCreds = getM gettype [S3.remote, Glacier.remote]
   where
 	gettype t = previouslyUsedCredPair AWS.creds t $
-		not . S3.isIA . Remote.config
+		not . S3.configIA . Remote.config
 #endif
