@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.96"
+ subject="comment 1"
+ date="2014-10-22T21:36:27Z"
+ content="""
+The man page documents this:
+
+> To avoid contacting the remote to check if it has every
+> file when copying --to the repository, specify --fast
+
+As you've noted, this has to rely on the location tracking information being up-to-date, so if it's not it might miss copying a file to the remote that the remote doesn't currently have but used to. Otherwise, it's fine to use `copy --fast --to --remote` or `copy --not --in remote --to remote`, which is functionally identical.
+
+The check is not a GET request, it's a HEAD request, to check if the file
+is present. Does S3 have a way to combine multiple HEAD requests in a
+single http request? That seems unlikely. Maybe it is enough to reuse an
+open http connection for multiple HEADs? Anything needing a single HEAD request would not fit well into git-annex, but ways to do more caching of open http connections are being considered.
+"""]]
