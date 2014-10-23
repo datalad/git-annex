@@ -59,9 +59,7 @@ regionInfo service = map (\(t, r) -> (t, fromServiceRegion r)) $
 		[ ("US East (N. Virginia)", [S3Region "US", GlacierRegion "us-east-1"])
 		, ("US West (Oregon)", [BothRegion "us-west-2"])
 		, ("US West (N. California)", [BothRegion "us-west-1"])
-		-- Requires AWS4-HMAC-SHA256 which S3 library does not
-		-- currently support.
-		-- , ("EU (Frankfurt)", [BothRegion "eu-central-1"])
+		, ("EU (Frankfurt)", [BothRegion "eu-central-1"])
 		, ("EU (Ireland)", [S3Region "EU", GlacierRegion "eu-west-1"])
 		, ("Asia Pacific (Singapore)", [S3Region "ap-southeast-1"])
 		, ("Asia Pacific (Tokyo)", [BothRegion "ap-northeast-1"])
