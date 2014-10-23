@@ -86,7 +86,7 @@ gen r u c gc = do
 			mkUnavailable = gen r u (M.insert "host" "!dne!" c) gc,
 			getInfo = includeCredsInfo c (AWS.creds u) $ catMaybes
 				[ Just ("bucket", fromMaybe "unknown" (getBucketName c))
-				, if isIA c
+				, if configIA c
 					then Just ("internet archive item", iaItemUrl $ fromMaybe "unknown" $ getBucketName c)
 					else Nothing
 				]
@@ -97,7 +97,7 @@ s3Setup mu mcreds c = do
 	u <- maybe (liftIO genUUID) return mu
 	s3Setup' u mcreds c
 s3Setup' :: UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
-s3Setup' u mcreds c = if isIA c then archiveorg else defaulthost
+s3Setup' u mcreds c = if configIA c then archiveorg else defaulthost
   where
 	remotename = fromJust (M.lookup "name" c)
 	defbucket = remotename ++ "-" ++ fromUUID u
