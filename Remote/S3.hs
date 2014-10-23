@@ -206,7 +206,7 @@ checkKey r h k = do
 	showAction $ "checking " ++ name r
 #if MIN_VERSION_aws(0,10,0)
 	rsp <- go
-	return (isJust $ S3.horMetadata r)
+	return (isJust $ S3.horMetadata rsp)
 #else
 	catchMissingException $ do
 		void go
