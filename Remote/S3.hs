@@ -203,23 +203,30 @@ remove h k
 checkKey :: Remote -> S3Handle -> CheckPresent
 checkKey r h k = do
 	showAction $ "checking " ++ name r
+#if MIN_VERSION_aws(0,10,0)
+	rsp <- go
+	return (isJust $ S3.horMetadata r)
+#else
 	catchMissingException $ do
-		void $ sendS3Handle h $
-			S3.headObject (bucket (hinfo h)) (bucketObject (hinfo h) k)
+		void go
 		return True
-	
-{- Catch exception headObject returns when an object is not present
- - in the bucket, and returns False. All other exceptions indicate a
- - check error and are let through. -}
-catchMissingException :: Annex Bool -> Annex Bool
-catchMissingException a = catchJust missing a (const $ return False)
+#endif
   where
-	-- This is not very good; see
-	-- https://github.com/aristidb/aws/issues/121
-	missing :: AWS.HeaderException -> Maybe ()
-	missing e
-		| AWS.headerErrorMessage e == "ETag missing" = Just ()
-		| otherwise = Nothing
+	go = sendS3Handle h $
+		S3.headObject (bucket (hinfo h)) (bucketObject (hinfo h) k)
+
+#if ! MIN_VERSION_aws(0,10,0)
+	{- Catch exception headObject returns when an object is not present
+	 - in the bucket, and returns False. All other exceptions indicate a
+	 - check error and are let through. -}
+	catchMissingException :: Annex Bool -> Annex Bool
+	catchMissingException a = catchJust missing a (const $ return False)
+	  where
+		missing :: AWS.HeaderException -> Maybe ()
+		missing e
+			| AWS.headerErrorMessage e == "ETag missing" = Just ()
+			| otherwise = Nothing
+#endif
 
 {- Generate the bucket if it does not already exist, including creating the
  - UUID file within the bucket.
