@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE TypeFamilies #-}
+
 module Remote.S3 (remote, iaHost, configIA, isIA, iaItemUrl) where
 
 import qualified Aws as AWS
