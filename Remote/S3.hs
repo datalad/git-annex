@@ -83,9 +83,9 @@ gen r u c gc = do
 			remotetype = remote,
 			mkUnavailable = gen r u (M.insert "host" "!dne!" c) gc,
 			getInfo = includeCredsInfo c (AWS.creds u) $ catMaybes
-				[ Just ("bucket", fromMaybe "unknown" (getBucket c))
+				[ Just ("bucket", fromMaybe "unknown" (getBucketName c))
 				, if isIA c
-					then Just ("internet archive item", iaItemUrl $ fromMaybe "unknown" $ getBucket c)
+					then Just ("internet archive item", iaItemUrl $ fromMaybe "unknown" $ getBucketName c)
 					else Nothing
 				]
 		}
