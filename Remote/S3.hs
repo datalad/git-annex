@@ -7,7 +7,7 @@
 
 {-# LANGUAGE TypeFamilies #-}
 
-module Remote.S3 (remote, iaHost, configIA, isIA, iaItemUrl) where
+module Remote.S3 (remote, iaHost, configIA, iaItemUrl) where
 
 import qualified Aws as AWS
 import qualified Aws.Core as AWS
