@@ -9,8 +9,8 @@ file accompanying your package. Just append .sig to the url.
 
 For example, on Linux:
 
-	$ wget http://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz
-	$ wget http://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz.sig
+	$ wget https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz
+	$ wget https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz.sig
 
 You can then download the public key, and check that the package is signed
 with it.
