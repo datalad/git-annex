@@ -73,7 +73,7 @@ getSideBarR nid = do
 	liftIO $ threadDelay 100000
 
 	page <- widgetToPageContent sideBarDisplay
-	giveUrlRenderer $ [hamlet|^{pageBody page}|]
+	withUrlRenderer $ [hamlet|^{pageBody page}|]
 
 {- Called by the client to close an alert. -}
 getCloseAlert :: AlertId -> Handler ()

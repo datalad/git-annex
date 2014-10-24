@@ -125,7 +125,7 @@ getBuddyListR nid = do
 	waitNotifier getBuddyListBroadcaster nid
 
 	p <- widgetToPageContent buddyListDisplay
-	giveUrlRenderer $ [hamlet|^{pageBody p}|]
+	withUrlRenderer $ [hamlet|^{pageBody p}|]
 
 buddyListDisplay :: Widget
 buddyListDisplay = do

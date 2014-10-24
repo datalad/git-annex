@@ -91,7 +91,7 @@ getRepoListR :: NotificationId -> RepoSelector -> Handler Html
 getRepoListR nid reposelector = do
 	waitNotifier getRepoListBroadcaster nid
 	p <- widgetToPageContent $ repoListDisplay reposelector
-	giveUrlRenderer $ [hamlet|^{pageBody p}|]
+	withUrlRenderer $ [hamlet|^{pageBody p}|]
 
 mainRepoSelector :: RepoSelector
 mainRepoSelector = RepoSelector

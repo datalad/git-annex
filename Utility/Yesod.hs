@@ -1,9 +1,9 @@
 {- Yesod stuff, that's typically found in the scaffolded site.
  -
  - Also a bit of a compatability layer to make it easier to support yesod
- - 1.1 and 1.2 in the same code base.
+ - 1.1-1.4 in the same code base.
  -
- - Copyright 2012, 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -17,8 +17,10 @@ module Utility.Yesod
 	, widgetFile
 	, hamletTemplate
 #endif
+#if ! MIN_VERSION_yesod(1,4,0)
+	, withUrlRenderer
+#endif
 #if ! MIN_VERSION_yesod(1,2,0)
-	, giveUrlRenderer
 	, Html
 #endif
 	) where
@@ -39,6 +41,11 @@ import Language.Haskell.TH.Syntax (Q, Exp)
 #if MIN_VERSION_yesod_default(1,1,0)
 import Data.Default (def)
 import Text.Hamlet hiding (Html)
+#endif
+#endif
+#if ! MIN_VERSION_yesod(1,4,0)
+#if MIN_VERSION_yesod(1,2,0)
+import Data.Text (Text)
 #endif
 #endif
 
@@ -69,8 +76,13 @@ liftH = lift
 
 {- Misc new names for stuff. -}
 #if ! MIN_VERSION_yesod(1,2,0)
-giveUrlRenderer :: forall master sub. HtmlUrl (Route master) -> GHandler sub master RepHtml
-giveUrlRenderer = hamletToRepHtml
+withUrlRenderer :: forall master sub. HtmlUrl (Route master) -> GHandler sub master RepHtml
+withUrlRenderer = hamletToRepHtml
 
 type Html = RepHtml
+#else
+#if ! MIN_VERSION_yesod(1,4,0)
+withUrlRenderer :: MonadHandler m => ((Route (HandlerSite m) -> [(Text, Text)] -> Text) -> output) -> m output
+withUrlRenderer = giveUrlRenderer
+#endif
 #endif
