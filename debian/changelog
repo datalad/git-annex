@@ -1,4 +1,4 @@
-git-annex (5.20141014) UNRELEASED; urgency=medium
+git-annex (5.20141024) unstable; urgency=medium
 
   * vicfg: Deleting configurations now resets to the default, where
     before it has no effect.
@@ -20,7 +20,7 @@ git-annex (5.20141014) UNRELEASED; urgency=medium
     file. Before, the old version of the creds could be left there, and
     would continue to be used.
 
- -- Joey Hess <joeyh@debian.org>  Tue, 14 Oct 2014 14:09:24 -0400
+ -- Joey Hess <joeyh@debian.org>  Fri, 24 Oct 2014 13:03:29 -0400
 
 git-annex (5.20141013) unstable; urgency=medium
 
