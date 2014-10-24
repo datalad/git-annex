@@ -1,0 +1,21 @@
+git-annex 5.20141024 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * vicfg: Deleting configurations now resets to the default, where
+     before it has no effect.
+   * Remove hurd stuff from cabal file, since hackage currently rejects
+     it, and the test suite fails on hurd.
+   * initremote: Don't allow creating a special remote that has the same
+     name as an existing git remote.
+   * Windows: Use haskell setenv library to clean up several ugly workarounds
+     for inability to manipulate the environment on windows. This includes
+     making git-annex not re-exec itself on start on windows, and making the
+     test suite on Windows run tests without forking.
+   * glacier: Fix pipe setup when calling glacier-cli to retrieve an object.
+   * info: When run on a single annexed file, displays some info about the
+     file, including its key and size.
+   * info: When passed the name or uuid of a remote, displays info about that
+     remote. Remotes that support encryption, chunking, or embedded
+     creds will include that in their info.
+   * enableremote: When the remote has creds, update the local creds cache
+     file. Before, the old version of the creds could be left there, and
+     would continue to be used."""]]
