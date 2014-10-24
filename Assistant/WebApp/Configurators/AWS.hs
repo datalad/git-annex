@@ -162,7 +162,7 @@ getEnableS3R :: UUID -> Handler Html
 #ifdef WITH_S3
 getEnableS3R uuid = do
 	m <- liftAnnex readRemoteLog
-	if maybe False S3.confgiIA (M.lookup uuid m)
+	if maybe False S3.configIA (M.lookup uuid m)
 		then redirect $ EnableIAR uuid
 		else postEnableS3R uuid
 #else
