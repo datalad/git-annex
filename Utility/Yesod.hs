@@ -81,7 +81,7 @@ withUrlRenderer = hamletToRepHtml
 
 type Html = RepHtml
 #else
-#if ! MIN_VERSION_yesod(1,4,0)
+#if ! MIN_VERSION_yesod_core(1,2,20)
 withUrlRenderer :: MonadHandler m => ((Route (HandlerSite m) -> [(Text, Text)] -> Text) -> output) -> m output
 withUrlRenderer = giveUrlRenderer
 #endif
