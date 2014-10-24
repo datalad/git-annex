@@ -19,7 +19,7 @@ detailed instructions             | quick install
 [[Windows]]                       | [download installer](https://downloads.kitenet.net/git-annex/windows/current/) **beta**
 """]]
 
-All the downloads above use https for security. For added security, see
+All the download links above use https for security. For added security, see
 [[verifying_downloads]].
 
 ## Building it yourself
