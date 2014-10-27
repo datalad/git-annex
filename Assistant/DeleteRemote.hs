@@ -18,6 +18,7 @@ import Assistant.DaemonStatus
 import qualified Remote
 import Remote.List
 import qualified Git.Remote
+import qualified Git.Remote.Remove
 import Logs.Trust
 import qualified Annex
 
@@ -34,7 +35,7 @@ disableRemote uuid = do
 	remote <- fromMaybe (error "unknown remote")
 		<$> liftAnnex (Remote.remoteFromUUID uuid)
 	liftAnnex $ do
-		inRepo $ Git.Remote.remove (Remote.name remote)
+		inRepo $ Git.Remote.Remove.remove (Remote.name remote)
 		void $ remoteListRefresh
 	updateSyncRemotes
 	return remote

@@ -14,6 +14,7 @@ import Assistant.Gpg
 import Utility.Gpg
 import qualified Git.Command
 import qualified Git.Remote
+import qualified Git.Remote.Remove
 import qualified Git.Construct
 import qualified Annex.Branch
 import qualified Git.GCrypt
@@ -76,7 +77,7 @@ getGCryptRemoteName u repoloc = do
 			(M.lookup "name" <=< M.lookup u) <$> readRemoteLog
 		, return Nothing
 		)
-	void $ inRepo $ Git.Remote.remove tmpremote
+	void $ inRepo $ Git.Remote.Remove.remove tmpremote
 	maybe missing return mname
   where
 	missing = error $ "Cannot find configuration for the gcrypt remote at " ++ repoloc
