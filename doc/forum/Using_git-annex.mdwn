@@ -1,0 +1,41 @@
+Hi,
+
+I have created a git annex repo, added data. I then went to check it out in another location in the following way (my goal is to checkout origin, add a test file, push it back to origin).
+ git clone ../test_repo/
+   282  17:19   cd test_repo/
+   283  17:19   ls
+   284  17:19   git status
+   285  17:22   git annex init DEV
+   286  17:22   touch test.txt
+   287  17:22   vi test.txt
+   288  17:22   git annex merge
+   289  17:22   git annex add test.txt
+   290  17:22   git commit -am "test"
+   291  17:23   git push origin master git-annex 
+
+However I am getting the following error
+
+Counting objects: 3, done.
+Delta compression using up to 48 threads.
+Compressing objects: 100% (3/3), done.
+Writing objects: 100% (3/3), 364 bytes | 0 bytes/s, done.
+Total 3 (delta 1), reused 0 (delta 0)
+remote: error: refusing to update checked out branch: refs/heads/master
+remote: error: By default, updating the current branch in a non-bare repository
+remote: error: is denied, because it will make the index and work tree inconsistent
+remote: error: with what you pushed, and will require 'git reset --hard' to match
+remote: error: the work tree to HEAD.
+remote: error: 
+remote: error: You can set 'receive.denyCurrentBranch' configuration variable to
+remote: error: 'ignore' or 'warn' in the remote repository to allow pushing into
+remote: error: its current branch; however, this is not recommended unless you
+remote: error: arranged to update its work tree to match what you pushed in some
+remote: error: other way.
+remote: error: 
+remote: error: To squelch this message and still keep the default behaviour, set
+remote: error: 'receive.denyCurrentBranch' configuration variable to 'refuse'.
+To /test_repo/
+ ! [remote rejected] master -> master (branch is currently checked out)
+error: failed to push some refs to '/test_repo/'
+
+What am I missing?
