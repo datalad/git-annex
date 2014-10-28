@@ -40,6 +40,7 @@ import Creds
 import Annex.UUID
 import Logs.Web
 import Utility.Metered
+import Utility.DataUnits
 
 type BucketName = String
 
@@ -151,14 +152,46 @@ prepareS3 r info = resourcePrepare $ const $
 
 store :: Remote -> S3Handle -> Storer
 store r h = fileStorer $ \k f p -> do
-	rbody <- liftIO $ httpBodyStorer f p
-	void $ sendS3Handle h $ putObject h (bucketObject (hinfo h) k) rbody
-	
+	case partSize (hinfo h) of
+		Just sz -> do
+			fsz <- fromIntegral . fileSize <$> liftIO (getFileStatus f)
+			if fsz > sz
+				then multipartupload sz k f p
+				else singlepartupload k f p
+		Nothing -> singlepartupload k f p	
 	-- Store public URL to item in Internet Archive.
 	when (isIA (hinfo h) && not (isChunkKey k)) $
 		setUrlPresent k (iaKeyUrl r k)
-	
 	return True
+  where
+	singlepartupload k f p = do
+		rbody <- liftIO $ httpBodyStorer f p
+		void $ sendS3Handle h $ putObject h (bucketObject (hinfo h) k) rbody
+	multipartupload sz k f p = do
+#if MIN_VERSION_aws(0,10,4)
+		let info = hinfo h
+		let objects = bucketObject info h
+
+		uploadid <- S3.imurUploadId <$> sendS3Handle' h $ 
+			(S3.postInitiateMultipartUpload (bucket info) object)
+				{ S3.imuStorageClass = Just (storageClass info)
+				, S3.imuMetadata = metaHeaders info
+				, S3.imuAutoMakeBucket = isIA info
+				, S3.imuExpires = Nothing -- TODO set some reasonable expiry
+				}
+
+		-- TODO open file, read each part of size sz (streaming
+		-- it); send part to S3, and get a list of etags of all
+		-- the parts
+		
+
+		void $ sendS3Handle' h $
+			S3.postCompleteMultipartUpload (bucket info) object uploadid $
+				zip [1..] (map T.pack etags)
+#else
+		warning $ "Cannot do multipart upload (partsize " ++ show sz ++ "); built with too old a version of the aws library."
+		singlepartupload k f p
+#endif
 
 {- Implemented as a fileRetriever, that uses conduit to stream the chunks
  - out to the file. Would be better to implement a byteRetriever, but
@@ -373,6 +406,7 @@ data S3Info = S3Info
 	, storageClass :: S3.StorageClass
 	, bucketObject :: Key -> T.Text
 	, metaHeaders :: [(T.Text, T.Text)]
+	, partSize :: Maybe Integer
 	, isIA :: Bool
 	}
 
@@ -387,6 +421,7 @@ extractS3Info c = do
 		, storageClass = getStorageClass c
 		, bucketObject = T.pack . getBucketObject c
 		, metaHeaders = getMetaHeaders c
+		, partSize = getPartSize c
 		, isIA = configIA c
 		}
 
@@ -397,7 +432,10 @@ getStorageClass :: RemoteConfig -> S3.StorageClass
 getStorageClass c = case M.lookup "storageclass" c of
 	Just "REDUCED_REDUNDANCY" -> S3.ReducedRedundancy
 	_ -> S3.Standard
-	
+
+getPartSize :: RemoteConfig -> Maybe Integer
+getPartSize c = readSize dataUnits =<< M.lookup "partsize" c
+
 getMetaHeaders :: RemoteConfig -> [(T.Text, T.Text)]
 getMetaHeaders = map munge . filter ismetaheader . M.assocs
   where

@@ -21,6 +21,11 @@ the S3 remote.
 * `chunk` - Enables [[chunking]] when storing large files.
   `chunk=1MiB` is a good starting point for chunking.
 
+* `partsize` - Specifies the largest object to attempt to store in the
+  bucket. Multipart uploads will be used when storing larger objects.
+  This is not enabled by default, but can be enabled or changed at any
+  time. Setting `partsize=1GiB` is reasonable for S3.
+
 * `keyid` - Specifies the gpg key to use for [[encryption]].
 
 * `embedcreds` - Optional. Set to "yes" embed the login credentials inside
