@@ -13,7 +13,6 @@ import Assistant.WebApp.Common
 import Assistant.Gpg
 import Utility.Gpg
 import qualified Git.Command
-import qualified Git.Remote
 import qualified Git.Remote.Remove
 import qualified Git.Construct
 import qualified Annex.Branch

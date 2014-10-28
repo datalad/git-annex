@@ -17,7 +17,6 @@ import Logs.Location
 import Assistant.DaemonStatus
 import qualified Remote
 import Remote.List
-import qualified Git.Remote
 import qualified Git.Remote.Remove
 import Logs.Trust
 import qualified Annex
