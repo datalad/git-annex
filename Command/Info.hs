@@ -221,7 +221,8 @@ repository_mode = simpleStat "repository mode" $ lift $
 
 remote_list :: TrustLevel -> Stat
 remote_list level = stat n $ nojson $ lift $ do
-	us <- M.keys <$> (M.union <$> uuidMap <*> remoteMap Remote.name)
+	us <- filter (/= NoUUID) . M.keys 
+		<$> (M.union <$> uuidMap <*> remoteMap Remote.name)
 	rs <- fst <$> trustPartition level us
 	s <- prettyPrintUUIDs n rs
 	return $ if null s then "0" else show (length rs) ++ "\n" ++ beginning s
