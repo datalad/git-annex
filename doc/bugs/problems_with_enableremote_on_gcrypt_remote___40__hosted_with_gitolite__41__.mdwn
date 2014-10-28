@@ -103,3 +103,5 @@ git-annex: uuid mismatch (UUID "78104a6f-16a9-504b-8e8a-d8a3c59351e8",Just (UUID
 
 # End of transcript or log.
 """]]
+
+> [[done]]; see comments. --[[Joey]]
