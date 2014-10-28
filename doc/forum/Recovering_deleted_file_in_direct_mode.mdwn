@@ -1,0 +1,13 @@
+I accidentally deleted a file from a git-annex repository with a plain "rm". How can I restore it from other repositories that have it?
+
+I tried using
+
+    git annex copy --from $REMOTE $REMOVED_FILE
+
+but git-annex complaints about
+
+    $REMOVED_FILE not found
+
+I suppose that I could switch to indirect mode and do checkout and older version, but I'd prefer not to. My repository contains thousands of quite big files; it would take a lot of time and the probability of something going wrong during the conversion is quite high (see other bugs reported during import).
+
+I'm using git-annex 5.20141024-g613f396.

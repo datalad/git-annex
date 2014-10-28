@@ -66,7 +66,7 @@ customPage' with_longpolling navbaritem content = do
 				when with_longpolling $
 					addScript $ StaticR js_longpolling_js
 				$(widgetFile "page")
-			giveUrlRenderer $(Hamlet.hamletFile $ hamletTemplate "bootstrap")
+			withUrlRenderer $(Hamlet.hamletFile $ hamletTemplate "bootstrap")
 		Just msg -> error msg
   where
 	navdetails i = (navBarName i, navBarRoute i, Just i == navbaritem)

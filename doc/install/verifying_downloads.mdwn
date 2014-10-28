@@ -9,8 +9,8 @@ file accompanying your package. Just append .sig to the url.
 
 For example, on Linux:
 
-	$ wget http://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz
-	$ wget http://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz.sig
+	$ wget https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz
+	$ wget https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz.sig
 
 You can then download the public key, and check that the package is signed
 with it.
@@ -26,6 +26,8 @@ But, how do you know that the gpg-pubkey.asc you downloaded
 is the right key? The answer is the GPG web of trust. 
 
 * Joey Hess generates these git-annex packages,
-  and has a GPG key, [C910D9222512E3C Joey Hess <id@joeyh.name>](http://pgp.cs.uu.nl/stats/2512E3C7.html), which has
+  and has a GPG key, [C910D9222512E3C7 Joey Hess <id@joeyh.name>](http://pgp.cs.uu.nl/stats/2512E3C7.html), which has
   been verified and signed by many people.
 * Joey's GPG key has signed the git-annex distribution signing key.
+
+Don't take this page's word about this, check it yourself!

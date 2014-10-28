@@ -25,7 +25,7 @@ import Assistant.WebApp.RepoList
 import Assistant.WebApp.Configurators
 import Assistant.XMPP
 #endif
-import qualified Git.Remote
+import qualified Git.Remote.Remove
 import Remote.List
 import Creds
 
@@ -125,7 +125,7 @@ getBuddyListR nid = do
 	waitNotifier getBuddyListBroadcaster nid
 
 	p <- widgetToPageContent buddyListDisplay
-	giveUrlRenderer $ [hamlet|^{pageBody p}|]
+	withUrlRenderer $ [hamlet|^{pageBody p}|]
 
 buddyListDisplay :: Widget
 buddyListDisplay = do
@@ -211,7 +211,7 @@ getDisconnectXMPPR = do
 	rs <- filter Remote.isXMPPRemote . syncRemotes
 		<$> liftAssistant getDaemonStatus
 	liftAnnex $ do
-		mapM_ (inRepo . Git.Remote.remove . Remote.name) rs
+		mapM_ (inRepo . Git.Remote.Remove.remove . Remote.name) rs
 		void remoteListRefresh
 		removeCreds xmppCredsFile
 	liftAssistant $ do

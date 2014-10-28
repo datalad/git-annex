@@ -12,8 +12,6 @@ module Git.Remote where
 import Common
 import Git
 import Git.Types
-import qualified Git.Command
-import qualified Git.BuildVersion
 
 import Data.Char
 import qualified Data.Map as M
@@ -44,17 +42,6 @@ makeLegalName s = case filter legal $ replace "/" "_" s of
 	legal '.' = True
 	legal c = isAlphaNum c
 	
-remove :: RemoteName -> Repo -> IO ()
-remove remotename = Git.Command.run
-	[ Param "remote"
-	-- name of this subcommand changed
-	, Param $
-		if Git.BuildVersion.older "1.8.0"
-			then "rm"
-			else "remove"
-	, Param remotename
-	]
-
 data RemoteLocation = RemoteUrl String | RemotePath FilePath
 
 remoteLocationIsUrl :: RemoteLocation -> Bool

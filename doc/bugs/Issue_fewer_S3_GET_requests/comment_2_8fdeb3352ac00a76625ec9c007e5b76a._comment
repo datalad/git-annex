@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmUJBh1lYmvfCCiGr3yrdx-QhuLCSRnU5c"
+ nickname="Justin"
+ subject="comment 2"
+ date="2014-10-24T04:49:20Z"
+ content="""
+Oh jeez, I screwed that up wrt HEAD and GET.  Sorry.  The cost per HEAD on Google is 1/10 the price of GET, so we're talking $.13 to HEAD my 130k-file annex, which is totally reasonable.
+
+One can GET a bucket, which is what I was looking at.  This returns up to 1000 elements of its contents (and there's a way to iterate over larger buckets).  Of course this would only be useful if the majority of files in the bucket were of interest to git-annex, and it sounds like more trouble than it's worth at the prices I'm seeing.
+
+There might be a throughput improvement to be had by keeping the connection alive, although in my brief investigation, I think there may be a larger gain to be had by pipelining the various steps.  Based on the fact that git-annex oomed when trying to upload a large file from my rpi, it seems like maybe the whole file is encrypted in memory before it's uploaded?  And certainly the HEAD(s) appear not to be done in parallel with the upload.
+
+Sorry again for that HEAD/GET fail.
+"""]]

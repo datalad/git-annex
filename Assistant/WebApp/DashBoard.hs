@@ -66,7 +66,7 @@ getTransfersR nid = do
 	waitNotifier getTransferBroadcaster nid
 
 	p <- widgetToPageContent transfersDisplay
-	giveUrlRenderer $ [hamlet|^{pageBody p}|]
+	withUrlRenderer $ [hamlet|^{pageBody p}|]
 
 {- The main dashboard. -}
 dashboard :: Bool -> Widget

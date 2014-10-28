@@ -2,10 +2,10 @@
 
 [[!table format=dsv header=yes data="""
 detailed instructions             | quick install
-[[OSX]]                           | [download git-annex.app](http://downloads.kitenet.net/git-annex/OSX/current/)
+[[OSX]]                           | [download git-annex.app](https://downloads.kitenet.net/git-annex/OSX/current/)
 &nbsp;&nbsp;[[OSX/Homebrew]]      | `brew install git-annex`
-[[Android]]                       | [download git-annex.apk](http://downloads.kitenet.net/git-annex/android/current/) **beta**
-[[Linux|linux_standalone]]        | [download prebuilt linux tarball](http://downloads.kitenet.net/git-annex/linux/current/)
+[[Android]]                       | [download git-annex.apk](https://downloads.kitenet.net/git-annex/android/current/) **beta**
+[[Linux|linux_standalone]]        | [download prebuilt linux tarball](https://downloads.kitenet.net/git-annex/linux/current/)
 &nbsp;&nbsp;[[Debian]]            | `apt-get install git-annex`
 &nbsp;&nbsp;[[Ubuntu]]            | `apt-get install git-annex`
 &nbsp;&nbsp;[[Fedora]]            | `yum install git-annex`
@@ -16,10 +16,10 @@ detailed instructions             | quick install
 &nbsp;&nbsp;[[ScientificLinux5]]  |
 &nbsp;&nbsp;[[openSUSE]]          | 
 &nbsp;&nbsp;[[Docker]]            | 
-[[Windows]]                       | [download installer](http://downloads.kitenet.net/git-annex/windows/current/) **beta**
+[[Windows]]                       | [download installer](https://downloads.kitenet.net/git-annex/windows/current/) **beta**
 """]]
 
-All the downloads above use https for security. For added security, see
+All the download links above use https for security. For added security, see
 [[verifying_downloads]].
 
 ## Building it yourself
