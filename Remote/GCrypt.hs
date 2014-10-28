@@ -202,7 +202,7 @@ gCryptSetup mu _ c = go $ M.lookup "gitrepo" c
 						method <- setupRepo gcryptid =<< inRepo (Git.Construct.fromRemoteLocation gitrepo)
 						gitConfigSpecialRemote u c' "gcrypt" (fromAccessMethod method)
 						return (c', u)
-					else error $ "uuid mismatch " ++ show (u, mu, gcryptid)
+					else error $ "uuid mismatch; expected " ++ show mu ++ " but remote gitrepo has " ++ show u ++ " (" ++ show gcryptid ++ ")"
 
 {- Sets up the gcrypt repository. The repository is either a local
  - repo, or it is accessed via rsync directly, or it is accessed over ssh
