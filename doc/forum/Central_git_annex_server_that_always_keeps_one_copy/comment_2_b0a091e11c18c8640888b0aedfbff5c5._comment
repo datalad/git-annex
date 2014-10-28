@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2014-10-28T20:28:26Z"
+ content="""
+If you configure the central repository to be in the "full backup" group,
+then the assistant and `git annex sync --content` etc will send the
+contents of all files to it, and never remove the contents of files from
+it.
+
+This doesn't prevent someone manually running `git annex drop --from
+$centralrepo --force`, or similar. But then, nothing prevents users from
+using git to push annexed files to the central repo, and never sending the
+contents of the files along to it.
+
+It would be possible to make `git-annex-shell` have a config setting that
+would prevent ever dropping keys. But I'd like to talk about this use case
+more, to make sure that really makes sense.
+"""]]
