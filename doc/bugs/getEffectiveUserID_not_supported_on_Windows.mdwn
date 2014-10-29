@@ -8,15 +8,15 @@ After a clean install of the latest git-annex for Windows (https://downloads.kit
     git init
     git annex init
 
-Running for example ´git annex version´ or ´git annex info´ gives the same error message.
+Running for example `git annex version` or `git annex info` gives the same error message.
 
 
 ### What version of git-annex are you using? On what operating system?
 
-git-annex version should be 5.20141024, but the installer does not specify version and ´git annex info´ does not work, so it is hard to tell for sure.
+git-annex version should be 5.20141024, but the installer does not specify version and `git annex info` does not work, so it is hard to tell for sure.
 Running Windows 7, x64. Also tried running as administrator and in a cmd.exe shell as well as Powershell.
 
 
 ### Please provide any additional information below.
 
-The ´git annex test´ command does work, and all 84 tests passes.
+The `git annex test` command does work, and all 84 tests passes.
