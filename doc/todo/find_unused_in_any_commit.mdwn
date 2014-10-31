@@ -1,0 +1,14 @@
+`git annex unused` only looks at tags and branches. Some users would like
+to drop any objects that are not pointed to by any commit, but keep any
+object that any commit ever referenced.
+
+This could be a switch, like --ever.
+
+The implementation would need to walk the history of all branches and check
+all commits. This would tend to be slow. It could look at tags+branches as
+it does now as a first pass, and only do the slow part if there are objects
+not referred to by the tags+branches. And, it could stop looking through
+the whole commit history if there were no more objects to check. Still,
+gonna be slooow. Another optimisation would be to get only the objects
+changed by the commit, and not look at the whole tree as it appeared on
+each commit. --[[Joey]]
