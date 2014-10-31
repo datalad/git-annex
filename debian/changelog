@@ -1,3 +1,9 @@
+git-annex (5.20141025) UNRELEASED; urgency=medium
+
+  * Windows: Fix crash when user.name is not set in git config.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 31 Oct 2014 16:13:43 -0400
+
 git-annex (5.20141024) unstable; urgency=medium
 
   * vicfg: Deleting configurations now resets to the default, where

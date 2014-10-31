@@ -20,3 +20,9 @@ Running Windows 7, x64. Also tried running as administrator and in a cmd.exe she
 ### Please provide any additional information below.
 
 The `git annex test` command does work, and all 84 tests passes.
+
+> [[fixed|done]]; I was able to reproduce this bug, and it was crashing
+> trying to look up the geckos username. I don't understand why this worked
+> before; some change exposed this code path on Windows. In any case, I've
+> fixed the crash, and I will be updating the windows builds with this bug
+> fix. --[[Joey]]
