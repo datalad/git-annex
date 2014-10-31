@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2014-10-31T20:15:58Z"
+ content="""
+There is really no way to do this.
+
+We could consider hard-linking the files, but then modifying one would
+modify the other, which is likely to be confusing. And, FAT doesn't support
+hard links anyway.
+
+I don't want to complicate git-annex's notion of whether an object is
+present or not with the possibility that it might be present for some
+files but not for others. For example, `git annex get` would then need
+to make a copy of content that was already locally present, while
+currently it knows that if the file is locally present, it has nothing to
+do.
+
+I think that the solution is to use either a better filesystem
+which can support the suprerior indirect mode, or to switch your
+repository to use the WORM backend which does not do deduplication.
+"""]]
