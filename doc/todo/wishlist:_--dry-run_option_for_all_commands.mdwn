@@ -1,0 +1,3 @@
+Could a --dry-run option be added to the git annex commands? Or, at least, to the most common ones like `git annex add`.
+
+Given that there is no undo command, it would be nice to have the ability to simulate what git annex will do.
