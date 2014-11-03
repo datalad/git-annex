@@ -188,6 +188,8 @@ store r h = fileStorer $ \k f p -> do
 		uploadid <- S3.imurUploadId <$> sendS3Handle h req
 
 		-- TODO: progress display
+		-- TODO: avoid needing tons of memory
+		--       https://github.com/aristidb/aws/issues/142
 		etags <- liftIO $ withManager $ \mgr -> 
 			CB.sourceFile f
 			$= Multipart.chunkedConduit sz
