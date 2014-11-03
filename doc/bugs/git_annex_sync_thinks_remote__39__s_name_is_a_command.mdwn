@@ -96,3 +96,5 @@ git-annex: sync: 2 failed
 
 # End of transcript or log.
 """]]
+
+[[!tag moreinfo]]
