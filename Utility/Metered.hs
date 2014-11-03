@@ -99,15 +99,23 @@ offsetMeterUpdate base offset = \n -> base (offset `addBytesProcessed` n)
 {- This is like L.hGetContents, but after each chunk is read, a meter
  - is updated based on the size of the chunk.
  -
- - Note that the meter update is run in unsafeInterleaveIO, which means that
- - it can be run at any time. It's even possible for updates to run out
- - of order, as different parts of the ByteString are consumed.
- -
  - All the usual caveats about using unsafeInterleaveIO apply to the
  - meter updates, so use caution.
  -}
 hGetContentsMetered :: Handle -> MeterUpdate -> IO L.ByteString
-hGetContentsMetered h meterupdate = lazyRead zeroBytesProcessed
+hGetContentsMetered h = hGetUntilMetered h (const True)
+
+{- Reads from the Handle, updating the meter after each chunk.
+ -
+ - Note that the meter update is run in unsafeInterleaveIO, which means that
+ - it can be run at any time. It's even possible for updates to run out
+ - of order, as different parts of the ByteString are consumed.
+ -
+ - Stops at EOF, or when keepgoing evaluates to False.
+ - Closes the Handle at EOF, but otherwise leaves it open.
+ -}
+hGetUntilMetered :: Handle -> (Integer -> Bool) -> MeterUpdate -> IO L.ByteString
+hGetUntilMetered h keepgoing meterupdate = lazyRead zeroBytesProcessed
   where
 	lazyRead sofar = unsafeInterleaveIO $ loop sofar
 
@@ -118,14 +126,16 @@ hGetContentsMetered h meterupdate = lazyRead zeroBytesProcessed
 				hClose h
 				return $ L.empty
 			else do
-				let sofar' = addBytesProcessed sofar $
-					S.length c
+				let sofar' = addBytesProcessed sofar (S.length c)
 				meterupdate sofar'
-				{- unsafeInterleaveIO causes this to be
-				 - deferred until the data is read from the
-				 - ByteString. -}
-				cs <- lazyRead sofar'
-				return $ L.append (L.fromChunks [c]) cs
+				if keepgoing (fromBytesProcessed sofar')
+					then do
+						{- unsafeInterleaveIO causes this to be
+						 - deferred until the data is read from the
+						 - ByteString. -}
+						cs <- lazyRead sofar'
+						return $ L.append (L.fromChunks [c]) cs
+					else return $ L.fromChunks [c]
 
 {- Same default chunk size Lazy ByteStrings use. -}
 defaultChunkSize :: Int
