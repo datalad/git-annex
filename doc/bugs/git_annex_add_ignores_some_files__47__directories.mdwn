@@ -10,3 +10,5 @@ No idea :( sometimes it happens and sometimes not.
 ### Please provide any additional information below.
 
 git add works fine. It correctly stages the files.
+
+This is regular repository (not direct). 
