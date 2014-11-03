@@ -13,10 +13,6 @@ module Remote.S3 (remote, iaHost, configIA, iaItemUrl) where
 import qualified Aws as AWS
 import qualified Aws.Core as AWS
 import qualified Aws.S3 as S3
-#if MIN_VERSION_aws(0,10,6)
-import qualified Aws.S3.Commands.Multipart as Multipart
-import qualified Data.Conduit.List as CL
-#endif
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.ByteString.Lazy as L
@@ -24,12 +20,18 @@ import qualified Data.ByteString as S
 import qualified Data.Map as M
 import Data.Char
 import Network.Socket (HostName)
-import Network.HTTP.Conduit (Manager, newManager, closeManager)
+import Network.HTTP.Conduit (Manager, newManager, closeManager, withManager)
 import Network.HTTP.Client (defaultManagerSettings, managerResponseTimeout, responseStatus, responseBody, RequestBody(..))
 import Network.HTTP.Types
 import Control.Monad.Trans.Resource
 import Control.Monad.Catch
 import Data.Conduit
+#if MIN_VERSION_aws(0,10,6)
+import qualified Aws.S3.Commands.Multipart as Multipart
+import qualified Data.Conduit.List as CL
+import qualified Data.Conduit.Binary as CB
+import Network.HTTP.Conduit (withManager)
+#endif
 
 import Common.Annex
 import Types.Remote
@@ -175,22 +177,24 @@ store r h = fileStorer $ \k f p -> do
 	multipartupload sz k f p = do
 #if MIN_VERSION_aws(0,10,6)
 		let info = hinfo h
-		let object = bucketObject info h
+		let object = bucketObject info k
 
-		uploadid <- S3.imurUploadId <$> sendS3Handle' h $ 
-			(S3.postInitiateMultipartUpload (bucket info) object)
+		let req = (S3.postInitiateMultipartUpload (bucket info) object)
 				{ S3.imuStorageClass = Just (storageClass info)
 				, S3.imuMetadata = metaHeaders info
 				, S3.imuAutoMakeBucket = isIA info
 				, S3.imuExpires = Nothing -- TODO set some reasonable expiry
 				}
+		uploadid <- S3.imurUploadId <$> sendS3Handle h req
 
-		etags <- sourceFile f
+		-- TODO: progress display
+		etags <- liftIO $ withManager $ \mgr -> 
+			CB.sourceFile f
 			$= Multipart.chunkedConduit sz
-			$= Multipart.putConduit (hawscfg h) (hs3cfg h) (hmanager h) (bucket info) object uploadid
+			$= Multipart.putConduit (hawscfg h) (hs3cfg h) mgr (bucket info) object uploadid
 			$$ CL.consume
 
-		void $ sendS3Handle' h $ S3.postCompleteMultipartUpload
+		void $ sendS3Handle h $ S3.postCompleteMultipartUpload
 			(bucket info) object uploadid (zip [1..] etags)
 #else
 		warning $ "Cannot do multipart upload (partsize " ++ show sz ++ "); built with too old a version of the aws library."
