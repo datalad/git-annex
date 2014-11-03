@@ -15,3 +15,9 @@ This is regular repository (not direct).
 
 EDIT:
 It seems that all the problem directories have either .git directory in them (I understand that git cannot manage .git but what about all the other files in there?) or are full of symlinks (git annex cannot manage symlinks?)
+
+> You should `git add` symlinks. They are not large files, so 
+> are out of scope for git-annex.
+> 
+> Git repositories cannot contain other git repositories. [[done]]
+> --[[Joey]]
