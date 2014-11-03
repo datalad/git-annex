@@ -13,7 +13,7 @@ module Remote.S3 (remote, iaHost, configIA, iaItemUrl) where
 import qualified Aws as AWS
 import qualified Aws.Core as AWS
 import qualified Aws.S3 as S3
-#if MIN_VERSION_aws(0,10,4)
+#if MIN_VERSION_aws(0,10,6)
 import qualified Aws.S3.Commands.Multipart as Multipart
 import qualified Data.Conduit.List as CL
 #endif
@@ -173,7 +173,7 @@ store r h = fileStorer $ \k f p -> do
 		rbody <- liftIO $ httpBodyStorer f p
 		void $ sendS3Handle h $ putObject h (bucketObject (hinfo h) k) rbody
 	multipartupload sz k f p = do
-#if MIN_VERSION_aws(0,10,4)
+#if MIN_VERSION_aws(0,10,6)
 		let info = hinfo h
 		let object = bucketObject info h
 
