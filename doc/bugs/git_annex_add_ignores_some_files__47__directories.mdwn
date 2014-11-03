@@ -12,3 +12,6 @@ No idea :( sometimes it happens and sometimes not.
 git add works fine. It correctly stages the files.
 
 This is regular repository (not direct). 
+
+EDIT:
+It seems that all the problem directories have either .git directory in them (I understand that git cannot manage .git but what about all the other files in there?) or are full of symlinks (git annex cannot manage symlinks?)
