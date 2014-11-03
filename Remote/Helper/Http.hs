@@ -11,7 +11,7 @@ import Common.Annex
 import Types.StoreRetrieve
 import Utility.Metered
 import Remote.Helper.Special
-import Network.HTTP.Client (RequestBody(..), Response, responseStatus, responseBody, BodyReader)
+import Network.HTTP.Client (RequestBody(..), Response, responseStatus, responseBody, BodyReader, NeedsPopper)
 import Network.HTTP.Types
 
 import qualified Data.ByteString.Lazy as L
@@ -31,11 +31,14 @@ httpStorer a = fileStorer $ \k f m -> a k =<< liftIO (httpBodyStorer f m)
 httpBodyStorer :: FilePath -> MeterUpdate -> IO RequestBody
 httpBodyStorer src m = do
 	size <- fromIntegral . fileSize <$> getFileStatus src :: IO Integer
-	let streamer sink = withMeteredFile src m $ \b -> do
-		mvar <- newMVar $ L.toChunks b
-		let getnextchunk = modifyMVar mvar $ pure . pop
-		sink getnextchunk
+	let streamer sink = withMeteredFile src m $ \b -> mkPopper b sink
 	return $ RequestBodyStream (fromInteger size) streamer
+
+mkPopper :: L.ByteString -> NeedsPopper () -> IO ()
+mkPopper b sink = do
+	mvar <- newMVar $ L.toChunks b
+	let getnextchunk = modifyMVar mvar $ pure . pop
+	sink getnextchunk
   where
 	pop [] = ([], S.empty)
 	pop (c:cs) = (cs, c)
