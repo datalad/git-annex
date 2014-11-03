@@ -95,6 +95,7 @@ gen r u c gc = do
 				, if configIA c
 					then Just ("internet archive item", iaItemUrl $ fromMaybe "unknown" $ getBucketName c)
 					else Nothing
+				, Just ("multipart", maybe "disabled" (roughSize storageUnits False) (getPartSize c))
 				]
 		}
 
