@@ -1,0 +1,76 @@
+A fairly common request is that a repo is using direct mode, and the user
+has made some change, and now wants to undo it. Since direct mode doesn't
+allow using `git revert`, the repo would need to be switched to indirect
+mode first, which can range from annoying to really annoying to impossible
+(on eg FAT).
+
+## general approach
+
+`git annex foo $gitcmd` could:
+
+1. check out a local clone of the repo
+2. run "git $gitcmd" inside the cline
+3. merge any changes from the clone back into the direct mode repo
+   and update the work tree the same as is done by `git annex merge`.
+
+This is a general bypass for the direct mode guard. It should work anywhere
+(even on FAT). It avoids problems like `git commit -a` being unsafe in
+direct mode, since running such a command in a local clone, which does not
+use direct mode is always safe.
+
+One problem with it is that it can only operate on changes that have been
+committed. If you've just accidentially deleted a file and want to undo
+that, and haven't run `git annex sync` to commit it, you can't revert it.
+
+Also, while this is general, I don't know if the generality is useful.
+What other changes, than revert, would it make sense to do with such a
+command? It could be used to check out some other branch, but step 3 above
+would merge that branch back into the direct mode repo.
+
+## git annex undo
+
+I don't want to recapitulate all of the git commands in git-annex for
+direct mode. So I don't want to add `git annex revert` and `git annex
+branch` etc, etc.
+
+So, adding `git annex undo` feels like a step down a slippery slope. But it
+might be justified as providing just enough functionality to make direct
+mode a lot more useful, without trying to recapitulate all the flexability 
+of git. Like `git annex merge` and `git annex sync` also do.
+
+Another use case is binding `git annex undo $file` to an action in a file
+manager.
+
+Here's a design for undo:
+
+1. Can be passed one or more files. Which may or may not exist in the work tree.
+2. First, commits the current state of the files as staged in the index,
+   or in the working tree. This may involve checksumming modified files.
+3. Then, for each file, looks back through git history, to find the commit
+   just before the most recent change that was made to that file.
+   Stage the version of the file as it was in that commit.
+4. Updates work tree, and leaves the changes staged
+   but not committed. (To allow the user to bundle up multiple undos in a
+   single commit).
+6. Does not get or drop content. The content may even be completely
+   missing after an undo.
+
+Note that undoing an undo should get back to the original state. This is
+why #2 commits changes first. This way, if a file has a staged change,
+it gets committed, and then that commit is reverted, resulting in another
+commit. Which a later run of undo can in turn revert. If it didn't commit,
+the history about the staged change that was reverted would be lost.
+
+What about undoing changes to a whole directory? It first would
+need to look through the git history to find every file under that
+directory. And then it would behave as if it were passed all those
+files. This would be useful for reverting `rm -rf`. But it could be very
+expensive. And it could lead to surprising results, like undoing a lot
+of unrelated changes when running on a bunch of files in a directory
+that were changed at different times.
+
+Maybe instead of letting a directory be passed, make undo with no
+parameters revert all changes made in the most recent commit.
+
+Also, --depth could make undo look for an older commit than the most
+recent one to affect the specified file.

@@ -32,7 +32,7 @@ checkEnvironment = do
 		liftIO checkEnvironmentIO
 
 checkEnvironmentIO :: IO ()
-checkEnvironmentIO = whenM (null <$> myUserGecos) $ do
+checkEnvironmentIO = whenM (isNothing <$> myUserGecos) $ do
 	username <- myUserName
 	ensureEnv "GIT_AUTHOR_NAME" username
 	ensureEnv "GIT_COMMITTER_NAME" username

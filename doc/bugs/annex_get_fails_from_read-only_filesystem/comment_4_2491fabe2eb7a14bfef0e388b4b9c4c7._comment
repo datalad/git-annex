@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="anarcat"
+ ip="70.83.139.100"
+ subject="comment 4"
+ date="2014-10-30T15:22:32Z"
+ content="""
+the problem here is that it upgrading the repo will not work on a readonly filesystem, so we can't upgrade, we can't get files, so we can't sync.
+
+we should be able to sync anyways - can't we try our best shot at getting files even without upgrading the metadata? i mean i'm looking for something in .git/annex/objects/, maybe i don't care about tracking so much - i just want to recover some files... 
+"""]]

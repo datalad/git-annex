@@ -65,7 +65,7 @@ statusDirect f = checkstatus =<< liftIO (catchMaybeIO $ getFileStatus f)
   where
 	checkstatus Nothing = return $ Just DeletedFile
 	checkstatus (Just s)
-		-- Git thinks that present direct mode files modifed,
+		-- Git thinks that present direct mode files are modifed,
 		-- so have to check.
 		| not (isSymbolicLink s) = checkkey s =<< catKeyFile f
 		| otherwise = Just <$> checkNew f

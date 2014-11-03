@@ -72,6 +72,14 @@ that line up with the open and close punctuation.
 		, address = "baz"
 		}
 
+Similarly, data structures line up the leading `=` with the following `|`
+
+	data Foo
+		= Bar
+		| Baz
+		| Quux Foo
+		deriving (Eq, Ord)
+
 Module imports are separated into two blocks, one for third-party modules,
 and one for modules that are part of git-annex. (Additional blocks can be used
 if it makes sense.)

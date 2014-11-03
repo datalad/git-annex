@@ -2,7 +2,9 @@ In the world of git, we're not scared about internal implementation
 details, and sometimes we like to dive in and tweak things by hand. Here's
 some documentation to that end.
 
-## `.git/annex/objects/aa/bb/*/*`
+## The .git/ directory
+
+### `.git/annex/objects/aa/bb/*/*`
 
 This is where locally available file contents are actually stored.
 Files added to the annex get a symlink checked into git that points
@@ -27,11 +29,11 @@ Also in [[direct_mode]], some additional data is stored in these directories.
 changed, and `.map` files contain a list of file(s) in the work directory
 that contain the key.
 
-# `.git/annex/tmp/`
+### `.git/annex/tmp/`
 
 This directory contains partially transferred objects.
 
-# `.git/annex/misctmp/`
+### `.git/annex/misctmp/`
 
 This is a temp directory for miscellaneous other temp files.
 
@@ -39,26 +41,26 @@ While .git/annex/objects and .git/annex/tmp can be put on different
 filesystems if desired, .git/annex/misctmp 
 has to be on the same filesystem as the work tree and git repository.
 
-# `.git/annex/bad/`
+### `.git/annex/bad/`
 
 git-annex fsck puts any bad objects it finds in here.
 
-# `.git/annex/transfers/`
+### `.git/annex/transfers/`
 
 Contains information files for uploads and downloads that are in progress,
 as well as any that have failed. Used especially by the assistant.
 It is safe to delete these files.
 
-# `.git/annex/ssh/`
+### `.git/annex/ssh/`
 
 ssh connection caching files are written in here.
 
-# `.git/annex/index`
+### `.git/annex/index`
 
-This is a git index file which git-annex uses for commits to the git-annex
-branch.
+This is a git index file which git-annex uses to stage files
+when preparing commits to the git-annex branch. 
 
-# `.git/annex/journal/`
+### `.git/annex/journal/`
 
 git-annex uses this to journal changes to the git-annex branch,
 before committing a set of changes.
@@ -67,13 +69,9 @@ before committing a set of changes.
 
 This branch is managed by git-annex, with the contents listed below.
 
-The file `.git/annex/index` is a separate git index file it uses
-to accumulate changes for the git-annex branch.
-Also, `.git/annex/journal/` is used to record changes before they
-are added to git.
-
-This branch operates on objects exclusively. No file names will ever
-be stored in this branch.
+This branch is not connected to your master, etc branches. It it used for
+internal tracking of information about git-annex repositories and annexed
+objects.
 
 The files stored in this branch are all designed to be auto-merged
 using git's [[union merge driver|git-union-merge]]. So each line

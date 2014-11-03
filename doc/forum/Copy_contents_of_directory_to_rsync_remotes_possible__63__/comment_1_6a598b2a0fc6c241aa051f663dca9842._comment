@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2014-10-28T19:26:01Z"
+ content="""
+git-annex has to tell rsync to transfer the "24863" directory,
+otherwise rsync would not create that directory, and would then
+fail to create "24863/2fe" since its parent directory doesn't exist.
+
+Might be able to use use ACLS, I suppose, but they bring a lot of complexity.
+"""]]
