@@ -1,5 +1,5 @@
 ### Please describe the problem.
-After I run git annex add some folders in current directory remain unannexed and git shows them as untracked. Even git annex add "problemDirName" does nothing. git annex add --force doesn't help either. 
+After I run "git annex add" some folders (not empty) in current directory remain unannexed and git shows them as untracked. Even git annex add "problemDirName" does nothing. git annex add --force doesn't help either. 
 
 ### What steps will reproduce the problem?
 No idea :( sometimes it happens and sometimes not.
