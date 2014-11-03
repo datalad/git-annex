@@ -13,6 +13,10 @@ module Remote.S3 (remote, iaHost, configIA, iaItemUrl) where
 import qualified Aws as AWS
 import qualified Aws.Core as AWS
 import qualified Aws.S3 as S3
+#if MIN_VERSION_aws(0,10,4)
+import qualified Aws.S3.Commands.Multipart as Multipart
+import qualified Data.Conduit.List as CL
+#endif
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.ByteString.Lazy as L
@@ -170,7 +174,7 @@ store r h = fileStorer $ \k f p -> do
 	multipartupload sz k f p = do
 #if MIN_VERSION_aws(0,10,4)
 		let info = hinfo h
-		let objects = bucketObject info h
+		let object = bucketObject info h
 
 		uploadid <- S3.imurUploadId <$> sendS3Handle' h $ 
 			(S3.postInitiateMultipartUpload (bucket info) object)
@@ -180,14 +184,13 @@ store r h = fileStorer $ \k f p -> do
 				, S3.imuExpires = Nothing -- TODO set some reasonable expiry
 				}
 
-		-- TODO open file, read each part of size sz (streaming
-		-- it); send part to S3, and get a list of etags of all
-		-- the parts
-		
+		etags <- sourceFile f
+			$= Multipart.chunkedConduit sz
+			$= Multipart.putConduit (hawscfg h) (hs3cfg h) (hmanager h) (bucket info) object uploadid
+			$$ CL.consume
 
-		void $ sendS3Handle' h $
-			S3.postCompleteMultipartUpload (bucket info) object uploadid $
-				zip [1..] (map T.pack etags)
+		void $ sendS3Handle' h $ S3.postCompleteMultipartUpload
+			(bucket info) object uploadid (zip [1..] etags)
 #else
 		warning $ "Cannot do multipart upload (partsize " ++ show sz ++ "); built with too old a version of the aws library."
 		singlepartupload k f p
