@@ -26,10 +26,6 @@ import Network.HTTP.Types
 import Control.Monad.Trans.Resource
 import Control.Monad.Catch
 import Data.Conduit
-#if MIN_VERSION_aws(0,10,6)
-import qualified Data.Conduit.List as CL
-import qualified Data.Conduit.Binary as CB
-#endif
 
 import Common.Annex
 import Types.Remote
@@ -188,16 +184,17 @@ store r h = fileStorer $ \k f p -> do
 		-- Send parts of the file, taking care to stream each part
 		-- w/o buffering in memory, since the parts can be large.
 		etags <- bracketIO (openBinaryFile f ReadMode) hClose $ \fh -> do
-			let sendparts etags partnum = ifM (hIsEOF fh)
+			let sendparts meter etags partnum = ifM (liftIO $ hIsOpen fh)
 				( return (reverse etags)
 				, do
-					b <- liftIO $ hGetUntilMetered fh (< partsz) p
-					let body = RequestBodyStream (L.length b) (mkPopper b)
+					b <- liftIO $ hGetUntilMetered fh (< partsz) meter
+					let sz = L.length b
+					let body = RequestBodyStream sz (mkPopper b)
 					S3.UploadPartResponse _ etag <- sendS3Handle h $
 						 S3.uploadPart (bucket info) object partnum uploadid body
-					sendparts (etag:etags) (partnum + 1)
+					sendparts (offsetMeterUpdate meter (toBytesProcessed sz)) (etag:etags) (partnum + 1)
 				)
-			sendparts [] 1
+			sendparts p [] 1
 
 		void $ sendS3Handle h $ S3.postCompleteMultipartUpload
 			(bucket info) object uploadid (zip [1..] etags)
