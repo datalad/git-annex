@@ -20,7 +20,7 @@ import qualified Data.ByteString as S
 import qualified Data.Map as M
 import Data.Char
 import Network.Socket (HostName)
-import Network.HTTP.Conduit (Manager, newManager, closeManager, withManager)
+import Network.HTTP.Conduit (Manager, newManager, closeManager)
 import Network.HTTP.Client (defaultManagerSettings, managerResponseTimeout, responseStatus, responseBody, RequestBody(..))
 import Network.HTTP.Types
 import Control.Monad.Trans.Resource
@@ -184,7 +184,7 @@ store r h = fileStorer $ \k f p -> do
 		-- Send parts of the file, taking care to stream each part
 		-- w/o buffering in memory, since the parts can be large.
 		etags <- bracketIO (openBinaryFile f ReadMode) hClose $ \fh -> do
-			let sendparts meter etags partnum = ifM (liftIO $ hIsOpen fh)
+			let sendparts meter etags partnum = ifM (liftIO $ hIsClosed fh)
 				( return (reverse etags)
 				, do
 					b <- liftIO $ hGetUntilMetered fh (< partsz) meter
