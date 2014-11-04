@@ -3,9 +3,6 @@
  subject="""comment 11"""
  date="2014-11-03T21:27:22Z"
  content="""
-Implemented on s3-aws-multipart branch. But..
-
-* Needs version of haskell aws library not released yet.
-* Uses 220 mb of memory when uploading a 500 mb file with partsize=100mb.
-  Reason not currently known; see <https://github.com/aristidb/aws/issues/142>
+Now implemented on s3-aws branch. Needs a version of the 
+haskell aws library that is not quite released yet (but available in git).
 """]]
