@@ -6,9 +6,6 @@
 Implemented on s3-aws-multipart branch. But..
 
 * Needs version of haskell aws library not released yet.
-* Does not currently provide a progress display when doing a multipart
-  upload.
-* Uses 900+ mb of memory when uploading a 500 mb file with partsize=100mb.
-  (I think this is due to Aws.S3.Commands.Multipart.chunkedConduit,
-  which it probably can't use if it's to do progress displays anyway).
+* Uses 220 mb of memory when uploading a 500 mb file with partsize=100mb.
+  Reason not currently known; see <https://github.com/aristidb/aws/issues/142>
 """]]
