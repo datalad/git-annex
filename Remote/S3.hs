@@ -183,7 +183,7 @@ store r h = fileStorer $ \k f p -> do
 
 		-- The actual part size will be a even multiple of the
 		-- 32k chunk size that hGetUntilMetered uses.
-		let partsz' = (partsz `div` defaultChunkSize) * defaultChunkSize
+		let partsz' = (partsz `div` toInteger defaultChunkSize) * toInteger defaultChunkSize
 
 		-- Send parts of the file, taking care to stream each part
 		-- w/o buffering in memory, since the parts can be large.
@@ -198,7 +198,7 @@ store r h = fileStorer $ \k f p -> do
 						then fsz - pos
 						else partsz'
 					b <- liftIO $ hGetUntilMetered fh (< partsz') meter
-					let body = RequestBodyStream sz (mkPopper b)
+					let body = RequestBodyStream (fromIntegral sz) (mkPopper b)
 					S3.UploadPartResponse _ etag <- sendS3Handle h $
 						 S3.uploadPart (bucket info) object partnum uploadid body
 					sendparts (offsetMeterUpdate meter (toBytesProcessed sz)) (etag:etags) (partnum + 1)
