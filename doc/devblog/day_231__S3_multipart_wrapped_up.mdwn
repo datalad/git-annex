@@ -1,0 +1,13 @@
+S3 multipart is finally completely working. I still don't understand the
+memory issue that stumped me yesterday, but rewrote the code to use a
+simpler approach, which avoids the problem. Various other issues, and
+testing it with large files, took all day.
+
+This is now merged into the `s3-aws` branch, so when that branch lands, S3
+support will massively improve, from the current situation of using a buggy
+library that buffers uploaded files in memory, and cannot support very
+large file uploads at all, to being able to support hopefully files of
+arbitrary hugeness (at least up to a few terabytes).
+
+BTW, thanks to Aristid Breitkreuz and Junji Hashimoto for working on the
+multipart support in the `aws` library.
