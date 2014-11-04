@@ -120,7 +120,7 @@ hGetUntilMetered h keepgoing meterupdate = lazyRead zeroBytesProcessed
 	lazyRead sofar = unsafeInterleaveIO $ loop sofar
 
 	loop sofar = do
-		c <- S.hGetSome h defaultChunkSize
+		c <- S.hGet h defaultChunkSize
 		if S.null c
 			then do
 				hClose h
