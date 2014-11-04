@@ -181,16 +181,9 @@ store r h = fileStorer $ \k f p -> do
 				}
 		uploadid <- S3.imurUploadId <$> sendS3Handle h startreq
 
-		{- The actual part size will be a even multiple of the
-		 - 32k chunk size that hGetUntilMetered uses.
-		 -
-		 - Also, half-size parts are used. This is so that
-		 - the final part of a file can be rolled into the
-		 - last full-size part, which avoids a problem when the
-		 - final part could otherwise be too small for S3 to accept
-		 - it.
-		 -}
-		let partsz' = (partsz `div` toInteger defaultChunkSize `div` 2) * toInteger defaultChunkSize
+		-- The actual part size will be a even multiple of the
+		-- 32k chunk size that hGetUntilMetered uses.
+		let partsz' = (partsz `div` toInteger defaultChunkSize) * toInteger defaultChunkSize
 
 		-- Send parts of the file, taking care to stream each part
 		-- w/o buffering in memory, since the parts can be large.
@@ -202,7 +195,7 @@ store r h = fileStorer $ \k f p -> do
 					else do
 						-- Calculate size of part that will
 						-- be read.
-						let sz = if fsz - pos < partsz' * 2
+						let sz = if fsz - pos < partsz'
 							then fsz - pos
 							else partsz'
 						let p' = offsetMeterUpdate p (toBytesProcessed pos)
