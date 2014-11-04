@@ -188,21 +188,21 @@ store r h = fileStorer $ \k f p -> do
 		-- Send parts of the file, taking care to stream each part
 		-- w/o buffering in memory, since the parts can be large.
 		etags <- bracketIO (openBinaryFile f ReadMode) hClose $ \fh -> do
-			let sendparts meter etags partnum = ifM (liftIO $ hIsClosed fh)
-				( return (reverse etags)
-				, do
-					pos <- liftIO $ hTell fh
-					-- Calculate size of part that will
-					-- be read.
-					let sz = if fsz - pos < partsz'
-						then fsz - pos
-						else partsz'
-					b <- liftIO $ hGetUntilMetered fh (< partsz') meter
-					let body = RequestBodyStream (fromIntegral sz) (mkPopper b)
-					S3.UploadPartResponse _ etag <- sendS3Handle h $
-						 S3.uploadPart (bucket info) object partnum uploadid body
-					sendparts (offsetMeterUpdate meter (toBytesProcessed sz)) (etag:etags) (partnum + 1)
-				)
+			let sendparts meter etags partnum = do
+				pos <- liftIO $ hTell fh
+				if pos >= fsz
+					then return (reverse etags)
+					else do
+						-- Calculate size of part that will
+						-- be read.
+						let sz = if fsz - pos < partsz'
+							then fsz - pos
+							else partsz'
+						b <- liftIO $ hGetUntilMetered fh (< partsz') meter
+						let body = RequestBodyStream (fromIntegral sz) (mkPopper b)
+						S3.UploadPartResponse _ etag <- sendS3Handle h $
+							 S3.uploadPart (bucket info) object partnum uploadid body
+						sendparts (offsetMeterUpdate meter (toBytesProcessed sz)) (etag:etags) (partnum + 1)
 			sendparts p [] 1
 
 		void $ sendS3Handle h $ S3.postCompleteMultipartUpload
