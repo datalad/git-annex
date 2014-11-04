@@ -198,10 +198,11 @@ store r h = fileStorer $ \k f p -> do
 						let sz = if fsz - pos < partsz'
 							then fsz - pos
 							else partsz'
-						b <- liftIO $ hGetUntilMetered fh (< partsz') meter
-						let body = RequestBodyStream (fromIntegral sz) (mkPopper b)
-						S3.UploadPartResponse _ etag <- sendS3Handle h $
-							 S3.uploadPart (bucket info) object partnum uploadid body
+						let numchunks = ceiling (fromIntegral sz / defaultChunkSize)
+						let popper = handlePopper numchunks defaultChunkSize p fh
+						let req = S3.uploadPart (bucket info) object partnum uploadid $
+							 RequestBodyStream (fromIntegral sz) popper
+						S3.UploadPartResponse _ etag <- sendS3Handle h req
 						sendparts (offsetMeterUpdate meter (toBytesProcessed sz)) (etag:etags) (partnum + 1)
 			sendparts p [] 1
 
