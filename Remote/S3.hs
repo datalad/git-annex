@@ -173,13 +173,13 @@ store r h = fileStorer $ \k f p -> do
 		let info = hinfo h
 		let object = bucketObject info k
 
-		let req = (S3.postInitiateMultipartUpload (bucket info) object)
+		let startreq = (S3.postInitiateMultipartUpload (bucket info) object)
 				{ S3.imuStorageClass = Just (storageClass info)
 				, S3.imuMetadata = metaHeaders info
 				, S3.imuAutoMakeBucket = isIA info
 				, S3.imuExpires = Nothing -- TODO set some reasonable expiry
 				}
-		uploadid <- S3.imurUploadId <$> sendS3Handle h req
+		uploadid <- S3.imurUploadId <$> sendS3Handle h startreq
 
 		-- The actual part size will be a even multiple of the
 		-- 32k chunk size that hGetUntilMetered uses.
@@ -198,8 +198,9 @@ store r h = fileStorer $ \k f p -> do
 						let sz = if fsz - pos < partsz'
 							then fsz - pos
 							else partsz'
-						let numchunks = ceiling (fromIntegral sz / defaultChunkSize)
-						let popper = handlePopper numchunks defaultChunkSize p fh
+						let p' = offsetMeterUpdate p (toBytesProcessed pos)
+						let numchunks = ceiling (fromIntegral sz / fromIntegral defaultChunkSize :: Double)
+						let popper = handlePopper numchunks defaultChunkSize p' fh
 						let req = S3.uploadPart (bucket info) object partnum uploadid $
 							 RequestBodyStream (fromIntegral sz) popper
 						S3.UploadPartResponse _ etag <- sendS3Handle h req
