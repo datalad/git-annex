@@ -157,7 +157,7 @@ store r h = fileStorer $ \k f p -> do
 		Just partsz | partsz > 0 -> do
 			fsz <- fromIntegral . fileSize <$> liftIO (getFileStatus f)
 			if fsz > partsz
-				then multipartupload partsz k f p
+				then multipartupload fsz partsz k f p
 				else singlepartupload k f p
 		_ -> singlepartupload k f p	
 	-- Store public URL to item in Internet Archive.
@@ -168,7 +168,7 @@ store r h = fileStorer $ \k f p -> do
 	singlepartupload k f p = do
 		rbody <- liftIO $ httpBodyStorer f p
 		void $ sendS3Handle h $ putObject h (bucketObject (hinfo h) k) rbody
-	multipartupload partsz k f p = do
+	multipartupload fsz partsz k f p = do
 #if MIN_VERSION_aws(0,10,6)
 		let info = hinfo h
 		let object = bucketObject info k
@@ -181,14 +181,23 @@ store r h = fileStorer $ \k f p -> do
 				}
 		uploadid <- S3.imurUploadId <$> sendS3Handle h req
 
+		-- The actual part size will be a even multiple of the
+		-- 32k chunk size that hGetUntilMetered uses.
+		let partsz' = (partsz `div` defaultChunkSize) * defaultChunkSize
+
 		-- Send parts of the file, taking care to stream each part
 		-- w/o buffering in memory, since the parts can be large.
 		etags <- bracketIO (openBinaryFile f ReadMode) hClose $ \fh -> do
 			let sendparts meter etags partnum = ifM (liftIO $ hIsClosed fh)
 				( return (reverse etags)
 				, do
-					b <- liftIO $ hGetUntilMetered fh (< partsz) meter
-					let sz = L.length b
+					pos <- liftIO $ hTell fh
+					-- Calculate size of part that will
+					-- be read.
+					let sz = if fsz - pos < partsz'
+						then fsz - pos
+						else partsz'
+					b <- liftIO $ hGetUntilMetered fh (< partsz') meter
 					let body = RequestBodyStream sz (mkPopper b)
 					S3.UploadPartResponse _ etag <- sendS3Handle h $
 						 S3.uploadPart (bucket info) object partnum uploadid body
@@ -199,7 +208,7 @@ store r h = fileStorer $ \k f p -> do
 		void $ sendS3Handle h $ S3.postCompleteMultipartUpload
 			(bucket info) object uploadid (zip [1..] etags)
 #else
-		warning $ "Cannot do multipart upload (partsize " ++ show partsz ++ "); built with too old a version of the aws library."
+		warning $ "Cannot do multipart upload (partsize " ++ show partsz ++ ") of large file (" ++ show fsz ++ "); built with too old a version of the aws library."
 		singlepartupload k f p
 #endif
 
