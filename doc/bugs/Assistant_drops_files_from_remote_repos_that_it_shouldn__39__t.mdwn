@@ -1,0 +1,37 @@
+### Please describe the problem.
+
+git-annex assistant starts to drop files in remote repos, even when they are set to manual.
+
+### What steps will reproduce the problem?
+
+
+Create 3 repos:
+
+* A -- standard, archive
+* m1 -- standard, manual
+* m2 -- standard, manual
+
+System has 3 files annexed: file1, file2, file3. Repo "A" has all three files, m1 has none, m2 has file3.
+
+So, while in m1:
+
+    m1 $ git annex find --want-drop --in m2
+    file3
+
+file3 shouln't be dropped from m2. There is no reason to do this. m2 is set as manual, and it shouldn't be touched in any case.
+
+Now, let's get this file in m1:
+
+    m1 $ git annex get file3
+    get file3 (from m2...) ok
+    (Recording state in git...)
+    m1 $ git annex find --want-drop --in m2
+
+So when 'file3' is present in local repo, it's not going to be dropped from m2.
+
+I guess that rule 'present' works in local repo context while 'drop' acts on remote files.
+
+
+### What version of git-annex are you using? On what operating system?
+
+I'm using latest version in Debian Jessie (5.20141024).
