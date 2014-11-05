@@ -97,4 +97,6 @@ git-annex: sync: 2 failed
 # End of transcript or log.
 """]]
 
-[[!tag moreinfo]]
+> Chalking this one up as a local misconfiguration; I think it's ok for 
+> git-annex to run the version of itself ~/.config/git-annex/program
+> points to. So, [[done]] --[[Joey]]
