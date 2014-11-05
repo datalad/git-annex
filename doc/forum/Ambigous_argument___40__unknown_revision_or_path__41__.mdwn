@@ -104,18 +104,18 @@ Again it transfer some files...and then
 
     error: Ref refs/heads/synced/git-annex is at ac6d09794a274e861db1ef00295e361e15d85ca3 but expected 4a802d679a5a7e2eae3c16b2ed0a8d724b665b0a
     remote: error: failed to lock refs/heads/synced/git-annex
-    To ssh://espenfl@git-annex-scoobycloud.synology.me-espenfl_7000_.2Fvolume1.2Fwork_espen.2Fwork/volume1/work_espen/work/
+    To ssh://username@git-annex-server-username_7000_.2Fvolume1.2Fwork_user.2Fwork/volume1/work_user/work/
      ! [remote rejected] git-annex -> synced/git-annex (failed to lock)
-    error: failed to push some refs to 'ssh://espenfl@git-annex-scoobycloud.synology.me-espenfl_7000_.2Fvolume1.2Fwork_espen.2Fwork/volume1/work_espen/work/'
-    [2014-11-05 10:13:52 CET] read: git ["--git-dir=/home/officeusername/work/.git","--work-tree=/home/officeusername/work","-c","core.bare=false","push","scoobycloud.synology.me__volume1_work_espen_work","master"]
+    error: failed to push some refs to 'ssh://username@git-annex-server-username_7000_.2Fvolume1.2Fwork_user.2Fwork/volume1/work_user/work/'
+    [2014-11-05 10:13:52 CET] read: git ["--git-dir=/home/officeusername/work/.git","--work-tree=/home/officeusername/work","-c","core.bare=false","push","server.me__volume1_work_user_work","master"]
 
-          8,454,144   2%    2.67MB/s    0:02:24  [2014-11-05 10:13:53 CET] NetWatcherFallback: fallback pushing to [Remote { name ="scoobycloud.synology.me__volume1_work_espen_work" }]
-    [2014-11-05 10:13:53 CET] call: git ["--git-dir=/home/officeusername/work/.git","--work-tree=/home/officeusername/work","-c","core.bare=false","push","scoobycloud.synology.me__volume1_work_espen_work","+git-annex:refs/synced/a455ea74-d6fe-4f82-b796-72c20fc113fd/git-annex","refs/heads/annex/direct/master:refs/synced/a455ea74-d6fe-4f82-b796-72c20fc113fd/annex/direct/master"]
+          8,454,144   2%    2.67MB/s    0:02:24  [2014-11-05 10:13:53 CET] NetWatcherFallback: fallback pushing to [Remote { name ="server__volume1_work_user_work" }]
+    [2014-11-05 10:13:53 CET] call: git ["--git-dir=/home/officeusername/work/.git","--work-tree=/home/officeusername/work","-c","core.bare=false","push","server.me__volume1_work_user_work","+git-annex:refs/synced/a455ea74-d6fe-4f82-b796-72c20fc113fd/git-annex","refs/heads/annex/direct/master:refs/synced/a455ea74-d6fe-4f82-b796-72c20fc113fd/annex/direct/master"]
 
-         12,058,624   2%    2.86MB/s    0:02:13  To ssh://espenfl@git-annex-scoobycloud.synology.me-espenfl_7000_.2Fvolume1.2Fwork_espen.2Fwork/volume1/work_espen/work/
+         12,058,624   2%    2.86MB/s    0:02:13  To ssh://username@git-annex-server-username_7000_.2Fvolume1.2Fwork_user.2Fwork/volume1/work_user/work/
        00aa6bd..ac6d097  git-annex -> refs/synced/a455ea74-d6fe-4f82-b796-72c20fc113fd/git-annex
 
-         16,875,520   4%    3.34MB/s    0:01:53  [2014-11-05 10:13:55 CET] Pusher: Syncing with scoobycloud.synology.me__volume1_work_espen_work
+         16,875,520   4%    3.34MB/s    0:01:53  [2014-11-05 10:13:55 CET] Pusher: Syncing with server__volume1_work_user_work
 
 Again
 
