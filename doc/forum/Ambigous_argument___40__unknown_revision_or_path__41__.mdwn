@@ -1,0 +1,148 @@
+Okey, so I set up a repo on a client computer with files in a directory. All went fine without errors. Then I created the remote server in backup mode. Everything went well with the sync. Back at the office I now want the same repo content on this computer, so I fire up the assistant, add a local repo directory (empty of course) and then add a remote server. Then this happens
+
+    [2014-11-05 09:17:24 CET] main: Syncing with server__volume1_work_user_work
+    From ssh://git-annex-server-username_7000_.2Fvolume1.2Fwork_user.2Fwork/volume1/work_user/work
+     * [new branch]      git-annex  -> server__volume1_work_user_work/git-annex
+     * [new branch]      master     -> server__volume1_work_user_work/master
+     * [new branch]      synced/git-annex -> server__volume1_work_user_work/synced/git-annex
+     * [new branch]      synced/master -> server__volume1_work_user_work/synced/master
+    (merging server__volume1_work_user_work/git-annex server__volume1_work_user_work/synced/git-annex into git-annex...)
+    (Recording state in git...)
+    fatal: ambiguous argument 'refs/heads/synced/master..refs/remotes/server__volume1_work_user_work/synced/master': unknown revision or path not in the working tree.
+    Use '--' to separate paths from revisions, like this:
+    'git <command> [<revision>...] -- [<file>...]'
+
+    Automatic merge went well; stopped before committing as requested
+    To ssh://username@git-annex-server-username_7000_.2Fvolume1.2Fwork_user.2Fwork/volume1/work_user/work/
+       3943547..00aa6bd  git-annex -> synced/git-annex
+     ! [rejected]        annex/direct/master -> synced/master (non-fast-forward)
+    error: failed to push some refs to 'ssh://username@git-annex-server-username_7000_.2Fvolume1.2Fwork_user.2Fwork/volume1/work_user/work/'
+    hint: Updates were rejected because a pushed branch tip is behind its remote
+    hint: counterpart. Check out this branch and integrate the remote changes
+    hint: (e.g. 'git pull ...') before pushing again.
+    hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+    [2014-11-05 09:20:09 CET] Pusher: Syncing with server__volume1_work_user_work
+    [2014-11-05 09:20:09 CET] Committer: Committing changes to git
+    (Recording state in git...)
+
+    SHA256E-s1570--7437c0b77825d2636723cde82f0094854357aec43619b7d62707b5c26c4b0379.c
+
+                  0   0%    0.00kB/s    0:00:00
+              1,570 100%    1.50MB/s    0:00:00 (xfr#1, to-chk=0/1)
+    [2014-11-05 09:20:10 CET] Transferrer: Downloaded timing_ds20.c
+    To ssh://username@git-annex-server-username_7000_.2Fvolume1.2Fwork_user.2Fwork/volume1/work_user/work/
+       0e52256..2515592  annex/direct/master -> synced/master
+    error: Ref refs/heads/synced/master is at 2515592b1a0b2a355b5334c315d8857619b4a9c3 but expected 0e522560b9b6f0e52f789187e2fbd9076174bc4b
+    remote: error: failed to lock refs/heads/synced/master
+    To ssh://username@git-annex-server-username_7000_.2Fvolume1.2Fwork_user.2Fwork/volume1/work_user/work/
+     ! [remote rejected] annex/direct/master -> synced/master (failed to lock)
+    error: failed to push some refs to 'ssh://username@git-annex-server-username_7000_.2Fvolume1.2Fwork_user.2Fwork/volume1/work_user/work/'
+    To ssh://username@git-annex-server-username_7000_.2Fvolume1.2Fwork_user.2Fwork/volume1/work_user/work/
+     * [new branch]      git-annex -> refs/synced/a455ea74-d6fe-4f82-b796-72c20fc113fd/git-annex
+     * [new branch]      annex/direct/master -> refs/synced/a455ea74-d6fe-4f82-b796-72c20fc113fd/annex/direct/master
+
+    SHA256E-s7--19d210b22987ea279fe707c89b3afdbe530537118d3bac62c722b6ec54901e5a
+
+                  0   0%    0.00kB/s    0:00:00
+                  7 100%    6.84kB/s    0:00:00 (xfr#1, to-chk=0/1)
+    [2014-11-05 09:20:13 CET] Transferrer: Downloaded somefile
+    [2014-11-05 09:20:13 CET] Pusher: Syncing with server__volume1_work_user_work
+    (Recording state in git...)
+
+    SHA256E-s7762408--27c11674fe8c0b23f469aa90342dd45bf9ec9c83108251985b3231178f0f4ed5.pdf
+
+                  0   0%    0.00kB/s    0:00:00
+          5,406,720  69%    5.12MB/s    0:00:00
+          7,762,408 100%    5.01MB/s    0:00:01 (xfr#1, to-chk=0/1)
+    To ssh://username@git-annex-server-username_7000_.2Fvolume1.2Fwork_user.2Fwork/volume1/work_user/work/
+       00aa6bd..841a157  git-annex -> synced/git-annex
+    [2014-11-05 09:20:16 CET] Transferrer: Downloaded anotherfile.pdf
+
+    SHA256E-s322841--452ddf060131e1cfe44a02ee23840494d4566c4b1ad58f0131d52f17fbf65ea2.pdf
+
+And then it continues transfering the files. Then this happens
+
+    error: Ref refs/heads/synced/git-annex is at 4a802d679a5a7e2eae3c16b2ed0a8d724b665b0a but expected 45004c24db2eb24dddc04d1542d3689aa27b9507
+    remote: error: failed to lock refs/heads/synced/git-annex
+    To ssh://username@git-annex-server-username_7000_.2Fvolume1.2Fwork_user.2Fwork/volume1/work_user/work/
+     ! [remote rejected] git-annex -> synced/git-annex (failed to lock)
+    error: failed to push some refs to 'ssh://username@git-annex-server-username_7000_.2Fvolume1.2Fwork_user.2Fwork/volume1/work_user/work/'
+    [2014-11-05 10:13:48 CET] read: git ["--git-dir=/home/officeusername/work/.git","--work-tree=/home/officeusername/work","-c","core.bare=false","push","server__volume1_work_user_work","master"]
+
+    SHA256E-s115543--4aca4053b23d914ea034f06439edcb7d3d9bcc24b5d9865f5e062394ca1263e0
+   
+                  0   0%    0.00kB/s    0:00:00
+            115,543 100%    2.98MB/s    0:00:00 (xfr#1, to-chk=0/1)
+    [2014-11-05 10:13:48 CET] feed: ssh ["-S",".git/annex/ssh/abf79f467a5dcf714ddaf5162ffc09ba","-o","ControlMaster=auto","-o","ControlPersist=yes","-T","username@git-annex-server-username_7000_.2Fvolume1.2Fwork_user.2Fwork","git-annex-shell 'transferinfo' '/volume1/work_user/work/' 'SHA256E-s115543--4aca4053b23d914ea034f06439edcb7d3d9bcc24b5d9865f5e062394ca1263e0' --uuid 05bdd8d5-da30-4024-a921-0f8b1a2f33df '--' 'remoteuuid=a455ea74-d6fe-4f82-b796-72c20fc113fd' 'associatedfile=pathtosomefile' '--'"]
+    [2014-11-05 10:13:48 CET] NetWatcherFallback: trying manual pull to resolve failed pushes
+    [2014-11-05 10:13:48 CET] call: git ["--git-dir=/home/officeusername/work/.git","--work-tree=/home/officeusername/work","-c","core.bare=false","fetch","server__volume1_work_user_work"]
+    [2014-11-05 10:13:48 CET] Watcher: add symlink pathtosomefile
+    [2014-11-05 10:13:48 CET] Transferrer: Downloaded file
+    [2014-11-05 10:13:48 CET] TransferWatcher: transfer finishing: Transfer {transferDirection = Download, transferUUID = UUID "05bdd8d5-da30-4024-a921-0f8b1a2f33df", transferKey = Key {keyName = "4aca4053b23d914ea034f06439edcb7d3d9bcc24b5d9865f5e062394ca1263e0", keyBackendName = "SHA256E", keySize = Just 115543, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}}
+    [2014-11-05 10:13:48 CET] Transferrer: Transferring: Download UUID "05bdd8d5-da30-4024-a921-0f8b1a2f33df" pathtosomefile2 Nothing
+    [2014-11-05 10:13:48 CET] TransferWatcher: transfer starting: Download UUID "05bdd8d5-da30-4024-a921-0f8b1a2f33df" SHA256E-s145572--50e4d0d2fa52fb6843258509637307b8efc87d31abab834e7bc3174296689e25 Nothing
+    [2014-11-05 10:13:48 CET] TransferWatcher: transfer starting: Download UUID "05bdd8d5-da30-4024-a921-0f8b1a2f33df" pathtosomefile2 Nothing
+    [2014-11-05 10:13:48 CET] read: rsync ["--progress","--inplace","--perms","-e","'ssh' '-S' '.git/annex/ssh/abf79f467a5dcf714ddaf5162ffc09ba' '-o' 'ControlMaster=auto' '-o' 'ControlPersist=yes' '-T' 'username@git-annex-server-username_7000_.2Fvolume1.2Fwork_user.2Fwork' 'git-annex-shell ''sendkey'' ''/volume1/work_user/work/'' ''SHA256E-s145572--50e4d0d2fa52fb6843258509637307b8efc87d31abab834e7bc3174296689e25'' --uuid 05bdd8d5-da30-4024-a921-0f8b1a2f33df ''--'' ''remoteuuid=a455ea74-d6fe-4f82-b796-72c20fc113fd'' ''direct=1'' ''associatedfile=pathtosomefile2'' ''--'''","--","dummy:","/home/officeusername/work/.git/annex/tmp/SHA256E-s145572--50e4d0d2fa52fb6843258509637307b8efc87d31abab834e7bc3174296689e25"]
+    [2014-11-05 10:13:49 CET] Committer: committing 2 changes
+    [2014-11-05 10:13:49 CET] Committer: Committing changes to git
+    (Recording state in git...)
+    [2014-11-05 10:13:49 CET] feed: git ["--git-dir=/home/officeusername/work/.git","--work-tree=/home/officeusername/work","-c","core.bare=false","update-index","-z","--index-info"]
+    [2014-11-05 10:13:49 CET] read: git ["--git-dir=/home/officeusername/work/.git","--work-tree=/home/officeusername/work","-c","core.bare=false","symbolic-ref","HEAD"]
+    [2014-11-05 10:13:49 CET] read: git ["--git-dir=/home/officeusername/work/.git","--work-tree=/home/officeusername/work","-c","core.bare=false","show-ref","--hash","refs/heads/annex/direct/master"]
+    [2014-11-05 10:13:49 CET] read: git ["--git-dir=/home/officeusername/work/.git","--work-tree=/home/officeusername/work","-c","core.bare=false","write-tree"]
+    [2014-11-05 10:13:49 CET] read: git ["--git-dir=/home/officeusername/work/.git","--work-tree=/home/officeusername/work","-c","core.bare=false","rev-parse","2515592b1a0b2a355b5334c315d8857619b4a9c3:"]
+    [2014-11-05 10:13:49 CET] read: git ["--git-dir=/home/officeusername/work/.git","--work-tree=/home/officeusername/work","-c","core.bare=false","symbolic-ref","HEAD"]
+    [2014-11-05 10:13:49 CET] read: git ["--git-dir=/home/officeusername/work/.git","--work-tree=/home/officeusername/work","-c","core.bare=false","show-ref","refs/heads/annex/direct/master"]
+    [2014-11-05 10:13:49 CET] call: git ["--git-dir=/home/officeusername/work/.git","--work-tree=/home/officeusername/work","-c","core.bare=false","branch","-f","synced/master"]
+    [2014-11-05 10:13:49 CET] call: git ["--git-dir=/home/officeusername/work/.git","--work-tree=/home/officeusername/work","-c","core.bare=false","branch","-f","master"]
+    drop server__volume1_work_user_work pathtosomefile2
+    [2014-11-05 10:13:49 CET] call: ssh ["-S",".git/annex/ssh/abf79f467a5dcf714ddaf5162ffc09ba","-o","ControlMaster=auto","-o","ControlPersist=yes","-T","username@git-annex-server-username_7000_.2Fvolume1.2Fwork_user.2Fwork","git-annex-shell 'dropkey' '/volume1/work_user/work/' '--quiet' '--force' 'SHA256E-s674028--398092ddec93e33310ca8be87b4d48b2c84a873b579b80002cad3738c1461266' --uuid 05bdd8d5-da30-4024-a921-0f8b1a2f33df"]
+
+    SHA256E-s145572--50e4d0d2fa52fb6843258509637307b8efc87d31abab834e7bc3174296689e25
+
+Again it transfer some files...and then
+
+    error: Ref refs/heads/synced/git-annex is at ac6d09794a274e861db1ef00295e361e15d85ca3 but expected 4a802d679a5a7e2eae3c16b2ed0a8d724b665b0a
+    remote: error: failed to lock refs/heads/synced/git-annex
+    To ssh://espenfl@git-annex-scoobycloud.synology.me-espenfl_7000_.2Fvolume1.2Fwork_espen.2Fwork/volume1/work_espen/work/
+     ! [remote rejected] git-annex -> synced/git-annex (failed to lock)
+    error: failed to push some refs to 'ssh://espenfl@git-annex-scoobycloud.synology.me-espenfl_7000_.2Fvolume1.2Fwork_espen.2Fwork/volume1/work_espen/work/'
+    [2014-11-05 10:13:52 CET] read: git ["--git-dir=/home/officeusername/work/.git","--work-tree=/home/officeusername/work","-c","core.bare=false","push","scoobycloud.synology.me__volume1_work_espen_work","master"]
+
+          8,454,144   2%    2.67MB/s    0:02:24  [2014-11-05 10:13:53 CET] NetWatcherFallback: fallback pushing to [Remote { name ="scoobycloud.synology.me__volume1_work_espen_work" }]
+    [2014-11-05 10:13:53 CET] call: git ["--git-dir=/home/officeusername/work/.git","--work-tree=/home/officeusername/work","-c","core.bare=false","push","scoobycloud.synology.me__volume1_work_espen_work","+git-annex:refs/synced/a455ea74-d6fe-4f82-b796-72c20fc113fd/git-annex","refs/heads/annex/direct/master:refs/synced/a455ea74-d6fe-4f82-b796-72c20fc113fd/annex/direct/master"]
+
+         12,058,624   2%    2.86MB/s    0:02:13  To ssh://espenfl@git-annex-scoobycloud.synology.me-espenfl_7000_.2Fvolume1.2Fwork_espen.2Fwork/volume1/work_espen/work/
+       00aa6bd..ac6d097  git-annex -> refs/synced/a455ea74-d6fe-4f82-b796-72c20fc113fd/git-annex
+
+         16,875,520   4%    3.34MB/s    0:01:53  [2014-11-05 10:13:55 CET] Pusher: Syncing with scoobycloud.synology.me__volume1_work_espen_work
+
+Again
+
+    error: Ref refs/heads/synced/git-annex is at 383d9581c2722ab87647cf26f1ab8f25758866a4 but expected d158cddb1055adbe44973208d5562961acb0c42b
+    remote: error: failed to lock refs/heads/synced/git-annex
+    To ssh://username@git-annex-server-username_7000_.2Fvolume1.2Fwork_user.2Fwork/volume1/work_user/work/
+     ! [remote rejected] git-annex -> synced/git-annex (failed to lock)
+    error: failed to push some refs to 'ssh://username@git-annex-server-username_7000_.2Fvolume1.2Fwork_user.2Fwork/volume1/work_user/work/'
+    [2014-11-05 11:13:58 CET] read: git ["--git-dir=/home/officeusername/work/.git","--work-tree=/home/officeusername/work","-c","core.bare=false","push","server__volume1_work_user_work","master"]
+    ok
+    [2014-11-05 11:13:58 CET] dropped somefile (from UUID "05bdd8d5-da30-4024-a921-0f8b1a2f33df") (copies now 2) : file renamed
+    [2014-11-05 11:13:58 CET] TransferWatcher: transfer starting: Download UUID "05bdd8d5-da30-4024-a921-0f8b1a2f33df" someotherfile Nothing
+
+Then some other stuff
+
+    error: Ref refs/remotes/server__volume1_work_user_work/synced/git-annex is at 2e867456306f9ac0dd61e29c221ea3968dc4cb70 but expected 086e08a168498b84a74065c1f71e114a9868867d
+    From ssh://git-annex-server-username_7000_.2Fvolume1.2Fwork_user.2Fwork/volume1/work_user/work
+    ! 086e08a..2e86745  synced/git-annex -> server__volume1_work_user_work/synced/git-annex  (unable to update local ref)
+
+And so on. When submitting this, the system is still transfering files (arrow pointing to the left, so that has to be from the server to the office computer I suppose). Checking the office computer file index by running
+
+    git ls-files | wl -l
+
+yields the expected number of files. So, in addition to the errors above this seems a bit strange to me that it is still transferring files.
+
+Thinking about the error messages above...is it so that the download and git repo updates work in parallel, so if git tries to update on a partly transferred files the checksum is wrong and then I get the errors above? If so, is the file transferred again later and is there a way to suppress the "failed to sync" in the webapp? 
+
+Another thing, then I add the remote server it automatically goes into transfer mode, even though I configured it to be a backup from home before coming into the office. Maybe it is not autodetected. Would it cause problem to later change it from transfer to backup mode?
+
+Hope someone can point me in the right direction. And thanks in advance!
