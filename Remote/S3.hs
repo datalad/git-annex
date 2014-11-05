@@ -299,7 +299,7 @@ genBucket c u = do
   where
 	go _ (Right True) = noop
 	go h _ = do
-		v <- tryS3 $ sendS3Handle h (S3.getBucket $ bucket $ hinfo h)
+		v <- tryNonAsync $ sendS3Handle h (S3.getBucket $ bucket $ hinfo h)
 		case v of
 			Right _ -> noop
 			Left _ -> do
@@ -323,9 +323,8 @@ writeUUIDFile :: RemoteConfig -> UUID -> S3Handle -> Annex ()
 writeUUIDFile c u h = do
 	v <- checkUUIDFile c u h
 	case v of
-		Left e -> throwM e
 		Right True -> noop
-		Right False -> void $ sendS3Handle h mkobject
+		_ -> void $ sendS3Handle h mkobject
   where
 	file = T.pack $ uuidFile c
 	uuidb = L.fromChunks [T.encodeUtf8 $ T.pack $ fromUUID u]
