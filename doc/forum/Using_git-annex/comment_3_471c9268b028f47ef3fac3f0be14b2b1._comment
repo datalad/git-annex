@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2014-11-06T19:42:33Z"
+ content="""
+git-annex certianly works with git over ssh. You seem to not have git-annex
+installed on your git server, which will limit what you can do with it.
+
+I cannot find the message "You appear to be using ssh to clone a git:// URL." 
+in either git or git-annex's code base. Perhaps the message is coming from
+something like gitosis or gitolite on your git server?
+
+It's hard to give advice when you're not said anything about how you've set
+things up.
+"""]]
