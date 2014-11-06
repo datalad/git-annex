@@ -1,3 +1,10 @@
+  * S3: Switched to using the haskell aws library.
+  * S3: No longer buffers entire files in memory when uploading without
+    chunking.
+  * S3: When built with a new enough version of the haskell aws library,
+    supports doing multipart uploads, in order to store extremely large
+    files in S3 when not using chunking.
+
 git-annex (5.20141025) UNRELEASED; urgency=medium
 
   * Windows: Fix crash when user.name is not set in git config.
