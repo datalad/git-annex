@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2014-11-06T19:33:18Z"
+ content="""
+The command `git annex find --want-drop --in m2`
+finds files that meet 2 criteria:
+
+1. Present in the m2 remote. In this case, that is file3.
+2. Are not wanted to be present in the repository in which you run
+   git-annex. In this case, that's all files, since you're running it
+   in m1, which has no files, and is set to manual mode.
+
+Combining criterion 1 and criterion 2, the command finds file3.
+Not that you expected, but only I think because you misunderstood 
+what --in does.
+
+So, I don't see a bug here?
+"""]]
