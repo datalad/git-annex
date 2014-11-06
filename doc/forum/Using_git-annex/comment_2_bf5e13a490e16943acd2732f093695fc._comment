@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawktbkKjilg70XC9XBFpIgVhtfLYH-0UMHY"
+ nickname="Tad"
+ subject="comment 2"
+ date="2014-11-06T15:39:12Z"
+ content="""
+Ok so when I create my origin and after I add files to it, when I run git annex sync I get
+
+Invalid command: 'git-annex-shell 'configlist' '/~/gitfile.git''
+  You appear to be using ssh to clone a git:// URL.
+  Make sure your core.gitProxy config option and the
+  GIT_PROXY_COMMAND environment variable are NOT set.
+warning: no common commits
+
+and then it hangs. Is git-annex not accepting git via ssh?
+"""]]

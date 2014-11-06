@@ -1,10 +1,9 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawnDx6KWBl4PpP7qikNB7rp0hK_UvwQq_L0"
- nickname="Александр"
- subject="Dropping files from remotes"
- date="2014-11-05T16:09:54Z"
- content="""
-I think I found a bug where git-annex assistant starts to drop files in remote repos when it shouldn't. It can be easily reproduced with latest version in Debian Jessy (5.20141024) like this:
+### Please describe the problem.
+
+git-annex assistant starts to drop files in remote repos, even when they are set to manual.
+
+### What steps will reproduce the problem?
+
 
 Create 3 repos:
 
@@ -12,7 +11,7 @@ Create 3 repos:
 * m1 -- standard, manual
 * m2 -- standard, manual
 
-System has 3 files annexed: file1, file2, file3. Repo \"A\" has all three files, m1 has none, m2 has file3.
+System has 3 files annexed: file1, file2, file3. Repo "A" has all three files, m1 has none, m2 has file3.
 
 So, while in m1:
 
@@ -32,4 +31,7 @@ So when 'file3' is present in local repo, it's not going to be dropped from m2.
 
 I guess that rule 'present' works in local repo context while 'drop' acts on remote files.
 
-"""]]
+
+### What version of git-annex are you using? On what operating system?
+
+I'm using latest version in Debian Jessie (5.20141024) on amd64 and armhf. I've also reproduced the bug with manually compiled 5.20141105-g8d8b248 on amd64.
