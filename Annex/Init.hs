@@ -21,8 +21,6 @@ import qualified Annex
 import qualified Git
 import qualified Git.LsFiles
 import qualified Git.Config
-import qualified Git.Construct
-import qualified Git.Types as Git
 import qualified Git.Objects
 import qualified Annex.Branch
 import Logs.UUID
@@ -41,12 +39,7 @@ import Utility.UserInfo
 import Utility.FileMode
 #endif
 import Annex.Hook
-import Git.Hook (hookFile)
 import Upgrade
-import Annex.Content
-import Logs.Location
-
-import System.Log.Logger
 
 genDescription :: Maybe String -> Annex String
 genDescription (Just d) = return d
