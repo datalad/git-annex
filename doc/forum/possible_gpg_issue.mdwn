@@ -1,0 +1,28 @@
+Hi,
+
+I'm having an issue and not sure if it's to do with git-annex or something external. I'm on Ubuntu 14.04, and have been using git-annex for several months without this issue, but it suddenly started (possibly) after several packages were updated via apt-get upgrade.
+
+We have two remotes configured, one is a local (LAN) smb share, the other is on Amazon S3. We're using shared encryption on the S3 remote, and no encryption on the smb remote.
+
+The problem that started happening recently is when copying to the smb remote. There is no problem copying from the remote, and no problem reading or writing to the drive outside of git-annex. However, copying to the remote fails after it seems to copy most or all of the file and then hang on a gpg step. Again, there is no encryption on this remote. The other S3 remote with shared encryption has no issues. Other devices on the LAN, all OS X, have no issues writing to the remote.
+
+I don't have enough info to necessarily claim this is a bug in git-annex, but I'm not sure what to poke at next to try to figure it out. Any help or advice would be greatly appreciated.
+
+Below is the debug output from a failed git annex copy command.
+
+    cw@ubuntu$ git annex copy annexedfile --to smbremote --debug
+    [2014-11-07 15:35:13 PST] read: git ["--git-dir=/repobase/.git","--work-tree=/repobase","show-ref","git-annex"]
+    [2014-11-07 15:35:13 PST] read: git ["--git-dir=/repobase/.git","--work-tree=/repobase","show-ref","--hash","refs/heads/git-annex"]
+    [2014-11-07 15:35:13 PST] read: git ["--git-dir=/repobase.git","--work-tree=/repobase","log","refs/heads/git-annex..aa8813d486939544701359dc28fa7b0916917961","--oneline","-n1"]
+    [2014-11-07 15:35:13 PST] read: git ["--git-dir=/repobase/.git","--work-tree=/repobase","log","refs/heads/git-annex..097d5b482d6856ce22814a0c2c5eee43e3e030e4","--oneline","-n1"]
+    [2014-11-07 15:35:13 PST] chat: git ["--git-dir=/repobase/.git","--work-tree=/repobase","cat-file","--batch"]
+    [2014-11-07 15:35:13 PST] read: git ["--git-dir=/repobase/.git","--work-tree=/repobase","ls-files","--cached","-z","--","annexedfile"]
+    copy annexedfile (gpg) (to smbremote...) 
+    [2014-11-07 15:35:13 PST] chat: gpg ["--quiet","--trust-model","always","--batch","--passphrase-fd","11","--symmetric","--force-mdc","--no-textmode"]
+    95%           0.0 B/s 0s/mnt/annex/tmp/GPGHMACSHA1--a097a9b653d1facbe7d37d0e8f9f580261d9adef/GPGHMACSHA1--a097a9b653d1facbe7d37d0e8f9f580261d9adef: hClose: does not exist (Host is down)
+    failed                  
+    git-annex: copy: 1 failed
+    cw@ubuntu$
+
+Thanks,
+cw
