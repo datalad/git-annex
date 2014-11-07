@@ -13,7 +13,7 @@ Below is the debug output from a failed git annex copy command.
     cw@ubuntu$ git annex copy annexedfile --to smbremote --debug
     [2014-11-07 15:35:13 PST] read: git ["--git-dir=/repobase/.git","--work-tree=/repobase","show-ref","git-annex"]
     [2014-11-07 15:35:13 PST] read: git ["--git-dir=/repobase/.git","--work-tree=/repobase","show-ref","--hash","refs/heads/git-annex"]
-    [2014-11-07 15:35:13 PST] read: git ["--git-dir=/repobase.git","--work-tree=/repobase","log","refs/heads/git-annex..aa8813d486939544701359dc28fa7b0916917961","--oneline","-n1"]
+    [2014-11-07 15:35:13 PST] read: git ["--git-dir=/repobase/.git","--work-tree=/repobase","log","refs/heads/git-annex..aa8813d486939544701359dc28fa7b0916917961","--oneline","-n1"]
     [2014-11-07 15:35:13 PST] read: git ["--git-dir=/repobase/.git","--work-tree=/repobase","log","refs/heads/git-annex..097d5b482d6856ce22814a0c2c5eee43e3e030e4","--oneline","-n1"]
     [2014-11-07 15:35:13 PST] chat: git ["--git-dir=/repobase/.git","--work-tree=/repobase","cat-file","--batch"]
     [2014-11-07 15:35:13 PST] read: git ["--git-dir=/repobase/.git","--work-tree=/repobase","ls-files","--cached","-z","--","annexedfile"]
