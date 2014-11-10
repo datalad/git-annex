@@ -107,9 +107,11 @@ withFilesUnlocked' :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> (F
 withFilesUnlocked' typechanged a params = seekActions $
 	prepFiltered a unlockedfiles
   where
-	check f = liftIO (notSymlink f) <&&> 
-		(isJust <$> catKeyFile f <||> isJust <$> catKeyFileHEAD f)
-	unlockedfiles = filterM check =<< seekHelper typechanged params
+	unlockedfiles = filterM isUnlocked =<< seekHelper typechanged params
+
+isUnlocked :: FilePath -> Annex Bool
+isUnlocked f = liftIO (notSymlink f) <&&> 
+	(isJust <$> catKeyFile f <||> isJust <$> catKeyFileHEAD f)
 
 {- Finds files that may be modified. -}
 withFilesMaybeModified :: (FilePath -> CommandStart) -> CommandSeek

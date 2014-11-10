@@ -38,3 +38,6 @@ git version 1.7.9.5
 
 [[!tag confirmed]]
 [[!meta title="git commit of unlocked file leaves typechange staged in index"]]
+
+> [[fixed|done]]; git-annex pre-commit will block such commits from being
+> made. Git devs didn't seem to have a way to improve its behavior. --[[Joey]]

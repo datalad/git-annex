@@ -194,6 +194,7 @@ unitTests note gettestenv = testGroup ("Unit Tests " ++ note)
 	, check "lock" test_lock
 	, check "edit (no pre-commit)" test_edit
 	, check "edit (pre-commit)" test_edit_precommit
+	, check "partial commit" test_partial_commit
 	, check "fix" test_fix
 	, check "trust" test_trust
 	, check "fsck (basics)" test_fsck_basic
@@ -501,6 +502,14 @@ test_edit' precommit testenv = intmpclonerepoInDirect testenv $ do
 	c <- readFile annexedfile
 	assertEqual "content of modified file" c (changedcontent annexedfile)
 	not <$> git_annex testenv "drop" [annexedfile] @? "drop wrongly succeeded with no known copy of modified file"
+
+test_partial_commit :: TestEnv -> Assertion
+test_partial_commit testenv = intmpclonerepoInDirect testenv $ do
+	git_annex testenv "get" [annexedfile] @? "get of file failed"
+	annexed_present annexedfile
+	git_annex testenv "unlock" [annexedfile] @? "unlock failed"
+	not <$> boolSystem "git" [Params "commit -q -m test", File annexedfile]
+		@? "partial commit of unlocked file not blocked by pre-commit hook"
 
 test_fix :: TestEnv -> Assertion
 test_fix testenv = intmpclonerepoInDirect testenv $ do
