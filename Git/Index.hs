@@ -45,7 +45,7 @@ indexFileLock r = indexFile r ++ ".lock"
  - Changes made to this index will influence the commit, but won't
  - affect the real index file.
  -
- - This detects when we're in this situation, using a heiristic, which
+ - This detects when we're in this situation, using a heuristic, which
  - might be broken by changes to git. Any use of this should have a test
  - case to make sure it works.
  -}
