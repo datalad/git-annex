@@ -93,6 +93,7 @@ getbuild repodir (url, f) = do
 
 makeinfos :: [(FilePath, Version)] -> Annex ()
 makeinfos updated = do
+	mapM_ (\f -> inRepo $ runBool [Param "annex", Param "add", File f]) (map fst updated)
 	version <- liftIO getChangelogVersion
 	void $ inRepo $ runBool 
 		[ Param "commit"
