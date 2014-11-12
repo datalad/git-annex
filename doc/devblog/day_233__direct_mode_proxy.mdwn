@@ -1,0 +1,29 @@
+Ever since the direct mode guard was added a year ago, direct mode has been
+a lot safer to use, but very limited in the git commands that could be run
+in a direct mode repository.
+
+The worst limitation was that there was no way to `git revert` unwanted
+changes. But also, there was no way to check out different branches,
+or run commands like `git mv`.
+
+Today I made `git annex proxy`, which allows doing all of those things,
+and more. [documentation here](http://git-annex.branchable.com/direct_mode/#index5h2)
+
+It's so flexible that I'm not sure where the boundries lie yet, but it
+seems it will work for any git command that updates both the work tree and
+the index. Some git commands only update one or the other and not both and
+won't work with the proxy. As an advanced user tool, I think this is a
+great solution. I still want to make a simpler
+[[undo command|todo/direct_mode_undo]] that can nicely integrate into file
+managers.
+
+The implementation of `git annex proxy` is
+[quite simple](http://source.git-annex.branchable.com/?p=source.git;a=blob;f=Command/Proxy.h), because it
+reuses all the complicated work tree update code that was already written
+for `git annex merge`.
+
+----
+
+And here's the lede I buried: I've gotten two years of funding to work
+on git-annex part-time!
+[Details in my personal blog](http://joeyh.name/blog/entry/continuing_to_be_pleasantly_surprised/).
