@@ -61,16 +61,10 @@ it gets committed, and then that commit is reverted, resulting in another
 commit. Which a later run of undo can in turn revert. If it didn't commit,
 the history about the staged change that was reverted would be lost.
 
-What about undoing changes to a whole directory? It first would
-need to look through the git history to find every file under that
-directory. And then it would behave as if it were passed all those
-files. This would be useful for reverting `rm -rf`. But it could be very
-expensive. And it could lead to surprising results, like undoing a lot
-of unrelated changes when running on a bunch of files in a directory
-that were changed at different times.
-
-Maybe instead of letting a directory be passed, make undo with no
-parameters revert all changes made in the most recent commit.
+What about undoing changes to a whole directory? Recursively undoing
+the last change to each file would be expensive, and likely confusing.
+Instead, when a directory is passed, it could find the most recent commit
+that touched files in that directory, and undo the changes to those files.
 
 Also, --depth could make undo look for an older commit than the most
 recent one to affect the specified file.
