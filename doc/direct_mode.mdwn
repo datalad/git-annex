@@ -7,6 +7,10 @@ including modifying them. The disadvantage is that mant regular git
 commands cannot be used in a direct mode repository, since they don't
 understand how to update its working tree.
 
+[[!toc]]
+
+## enabling (and disabling) direct mode
+
 Normally, git-annex repositories start off in indirect mode. With some
 exceptions:
 
@@ -15,8 +19,6 @@ exceptions:
   that don't support things like symlinks will be automatically put
   into direct mode.
 * Windows always uses direct mode.
-
-## enabling (and disabling) direct mode
 
 Any repository can be converted to use direct mode at any time, and if you
 decide not to use it, you can convert back to indirect mode just as easily.
