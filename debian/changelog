@@ -3,6 +3,9 @@ git-annex (5.20141126) UNRELEASED; urgency=medium
   * pre-commit: Block partial commit of unlocked annexed file, since
     that left a typechange staged in index due to some infelicity of git's
     handling of partial commits.
+  * proxy: New command for direct mode repositories, allows bypassing
+    the direct mode guard in a safe way to do all sorts of things
+    including git revert, git mv, git checkout ...
   * Debian package is now maintained by Gergely Nagy.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 10 Nov 2014 15:31:55 -0400

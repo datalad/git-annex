@@ -225,9 +225,17 @@ mergeDirectCommit allowff old branch commitmode = do
   where
 	canff = maybe (return False) (\o -> inRepo $ Git.Branch.fastForwardable o branch) old
 
-{- Cleans up after a direct mode merge. The merge must have been staged
- - in the index. Uses diff-index to compare the staged changes with
- - the tree before the merge, and applies those changes to the work tree.
+mergeDirectCleanup :: FilePath -> Git.Ref -> Annex ()
+mergeDirectCleanup d oldref = do
+	updateWorkTree d oldref
+	liftIO $ removeDirectoryRecursive d
+
+{- Updates the direct mode work tree to reflect the changes staged in the
+ - index by a git command, that was run in a temporary work tree.
+ -
+ - Uses diff-index to compare the staged changes with provided ref
+ - which should be the tree before the merge, and applies those
+ - changes to the work tree.
  -
  - There are really only two types of changes: An old item can be deleted,
  - or a new item added. Two passes are made, first deleting and then
@@ -236,8 +244,8 @@ mergeDirectCommit allowff old branch commitmode = do
  - order, but we cannot add the directory until the file with the
  - same name is removed.)
  -}
-mergeDirectCleanup :: FilePath -> Git.Ref -> Annex ()
-mergeDirectCleanup d oldref = do
+updateWorkTree :: FilePath -> Git.Ref -> Annex ()
+updateWorkTree d oldref = do
 	(items, cleanup) <- inRepo $ DiffTree.diffIndex oldref
 	makeabs <- flip fromTopFilePath <$> gitRepo
 	let fsitems = zip (map (makeabs . DiffTree.file) items) items
@@ -246,7 +254,6 @@ mergeDirectCleanup d oldref = do
 	forM_ fsitems $
 		go makeabs DiffTree.dstsha DiffTree.dstmode movein movein_raw
 	void $ liftIO cleanup
-	liftIO $ removeDirectoryRecursive d
   where
 	go makeabs getsha getmode a araw (f, item)
 		| getsha item == nullSha = noop

@@ -37,6 +37,10 @@ better to make it use a separate work tree, but the same .git directory?
 Then step #3 would instead update the direct mode work tree to refect
 the new HEAD, and step #4 would not be needed.
 
+> This is done.. But, I think an undo command would also be good
+> to do, as a nicer user interface that can integrate well with a file
+> manager. --[[Joey]]
+
 ## git annex undo
 
 I don't want to recapitulate all of the git commands in git-annex for

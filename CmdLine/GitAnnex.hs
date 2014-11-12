@@ -83,6 +83,7 @@ import qualified Command.Direct
 import qualified Command.Indirect
 import qualified Command.Upgrade
 import qualified Command.Forget
+import qualified Command.Proxy
 import qualified Command.Version
 import qualified Command.Help
 #ifdef WITH_ASSISTANT
@@ -175,6 +176,7 @@ cmds = concat
 	, Command.Indirect.cmd
 	, Command.Upgrade.cmd
 	, Command.Forget.cmd
+	, Command.Proxy.cmd
 	, Command.Version.cmd
 	, Command.Help.cmd
 #ifdef WITH_ASSISTANT
