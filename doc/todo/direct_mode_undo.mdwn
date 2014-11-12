@@ -6,26 +6,36 @@ mode first, which can range from annoying to really annoying to impossible
 
 ## general approach
 
-`git annex foo $gitcmd` could:
+`git annex proxy $gitcmd` could:
 
 1. check out a local clone of the repo
-2. run "git $gitcmd" inside the cline
-3. merge any changes from the clone back into the direct mode repo
+2. run "git $gitcmd" inside the clone
+3. Merge any changes from the clone back into the direct mode repo
    and update the work tree the same as is done by `git annex merge`.
+4. If a different branch was checked out in the clone, update the repo
+   to have that same branch checked out.
 
 This is a general bypass for the direct mode guard. It should work anywhere
 (even on FAT). It avoids problems like `git commit -a` being unsafe in
 direct mode, since running such a command in a local clone, which does not
 use direct mode is always safe.
 
+Beyond handling undo, #4 means that this can be used to check 
+out past versions of the repo (eg, `git annex proxy checkout HEAD^^`)
+
 One problem with it is that it can only operate on changes that have been
 committed. If you've just accidentially deleted a file and want to undo
 that, and haven't run `git annex sync` to commit it, you can't revert it.
 
-Also, while this is general, I don't know if the generality is useful.
-What other changes, than revert, would it make sense to do with such a
-command? It could be used to check out some other branch, but step 3 above
-would merge that branch back into the direct mode repo.
+The need to make a local clone will make it a bit slow, since the whole
+work tree will need to be set up. It might be possible to reuse the clone
+next time (after resetting it to reflect the current HEAD).
+
+Some things like the reflog and local branches don't get cloned, so
+git commands that try to act on those wouldn't work. Maybe it would be
+better to make it use a separate work tree, but the same .git directory?
+Then step #3 would instead update the direct mode work tree to refect
+the new HEAD, and step #4 would not be needed.
 
 ## git annex undo
 
