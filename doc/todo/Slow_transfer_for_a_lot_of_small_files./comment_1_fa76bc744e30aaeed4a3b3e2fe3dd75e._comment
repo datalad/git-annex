@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnKT33H9qVVGJOybP00Zq2NZmNAyB65mic"
+ nickname="Lucas"
+ subject="comment 1"
+ date="2014-11-12T07:58:07Z"
+ content="""
+Opening multiple connections to a host can be preferable sometimes and it's unlikely to be an issue at all for the larger remotes like Google, Microsoft or S3.
+
+For example, the OneDrive provider spends a lot of time sitting around waiting for initialisation between uploads. Using, say 5 threads instead of 1 would allow it to continue doing things while it waits.
+
+Multiple connections can also vastly improve upload speeds for users with congested home internet connections.
+"""]]
