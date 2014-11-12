@@ -37,7 +37,6 @@ start (c:ps) = liftIO . exitWith =<< ifM isDirect
 	go tmp = do
 		oldref <- fromMaybe Git.Sha.emptyTree
 			<$> inRepo Git.Branch.currentSha
-		liftIO $ print oldref
 		exitcode <- liftIO $ proxy tmp
 		mergeDirectCleanup tmp oldref
 		return exitcode
