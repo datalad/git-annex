@@ -22,8 +22,7 @@ cmd = [notBareRepo $
 		SectionCommon "safely bypass direct mode guard"]
 
 seek :: CommandSeek
-seek ("--":ps) = withWords start ps
-seek ps = withWords start ps
+seek = withWords start
 
 start :: [String] -> CommandStart
 start [] = error "Did not specify command to run."
