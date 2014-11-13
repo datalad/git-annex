@@ -3,7 +3,7 @@ After git annex been installed, I cannot any longer (with no hacks) use my right
 After installing git annex for Windows it overtook this shortcut and redirects my browser to a weird localhost server with a weird port.
 
 ### What steps will reproduce the problem?
-Installing git annex for Windows. :)
+Installing git annex for Windows  and tapping rAlt+A. :)
 
 ### What version of git-annex are you using? On what operating system?
 The newest version, Windows 8.
