@@ -80,5 +80,7 @@ the last change to each file would be expensive, and likely confusing.
 Instead, when a directory is passed, it could find the most recent commit
 that touched files in that directory, and undo the changes to those files.
 
+> [[done]] --[[Joey]]
+
 Also, --depth could make undo look for an older commit than the most
 recent one to affect the specified file.

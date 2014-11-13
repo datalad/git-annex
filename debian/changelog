@@ -6,6 +6,8 @@ git-annex (5.20141126) UNRELEASED; urgency=medium
   * proxy: New command for direct mode repositories, allows bypassing
     the direct mode guard in a safe way to do all sorts of things
     including git revert, git mv, git checkout ...
+  * undo: New command to undo the most recent change to a file
+    or to the contents of a directory.
   * Work around behavior change in lsof 4.88's -F output format.
   * Debian package is now maintained by Gergely Nagy.
 
