@@ -19,7 +19,7 @@ import qualified Git.Sha
 cmd :: [Command]
 cmd = [notBareRepo $
 	command "proxy" ("-- git command") seek
-		SectionCommon "safely bypass direct mode guard"]
+		SectionPlumbing "safely bypass direct mode guard"]
 
 seek :: CommandSeek
 seek = withWords start
