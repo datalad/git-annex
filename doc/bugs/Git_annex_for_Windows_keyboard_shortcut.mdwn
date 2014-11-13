@@ -1,5 +1,5 @@
 ### Please describe the problem.
-After git annex been installed, I cannot any longer (with no hacks) use my left ALT+A shortcut creating special char.
+After git annex been installed, I cannot any longer (with no hacks) use my right ALT+A shortcut creating special char.
 After installing git annex for Windows it overtook this shortcut.
 
 ### What steps will reproduce the problem?
