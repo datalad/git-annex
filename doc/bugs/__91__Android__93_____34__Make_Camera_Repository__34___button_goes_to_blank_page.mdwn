@@ -10,7 +10,7 @@ When first installing the Android app, it opens the browser to the "Welcome to g
 
 ### What version of git-annex are you using? On what operating system?
 
-Android. I don't see a way to find version info about the Android app itself, but the terminal output for "version" says it's running git-annex version 5.20141104-gcaafd06
+Current (2014-11-14) Android 4.3/4.4 build. I don't see a way to find version info about the Android app itself, but the terminal output for "version" says it's running git-annex version 5.20141104-gcaafd06
 
 ### Please provide any additional information below.
 
