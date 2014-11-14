@@ -8,6 +8,7 @@ git-annex (5.20141126) UNRELEASED; urgency=medium
     including git revert, git mv, git checkout ...
   * undo: New command to undo the most recent change to a file
     or to the contents of a directory.
+  * Add undo action to nautilus and konqueror integration.
   * Work around behavior change in lsof 4.88's -F output format.
   * Debian package is now maintained by Gergely Nagy.
 

@@ -1,5 +1,6 @@
 Integrating git-annex and your file manager provides an easy way to select
-annexed files to get or drop.
+annexed files to get or drop. The file manager can also be used to undo
+changes to file managed by git-annex.
 
 [[!toc]]
 
@@ -25,13 +26,20 @@ This is set up by git-annex creating a
 
 ## XFCE (Thunar)
 
-XFCE uses the Thunar file manager, which can also be easily configured to allow for custom actions. Just go to the "Configure custom actions..." item in the "Edit" menu, and create a custom action for get and drop with the following commands:
+XFCE uses the Thunar file manager, which can also be easily configured to
+allow for custom actions. Just go to the "Configure custom actions..." item
+in the "Edit" menu, and create a custom action for get, drop, and undo with the
+following commands:
 
     git-annex drop --notify-start --notify-finish -- %F
 
 for drop, and for get:
 
     git-annex get --notify-start --notify-finish -- %F
+    
+and for undo:
+
+    git-annex undo --notify-start --notify-finish -- %F
 
 This gives me the resulting config on disk, in `.config/Thunar/uca.xml`:
 
@@ -68,7 +76,9 @@ The complete instructions on how to setup actions is [in the XFCE documentation]
 
 ## OS X (Finder)
 
-For OS X, it is possible to get context menus in Finder. Due to how OS X deals with sym links, one needs to operate on folders if using indirect mode. Direct mode operation has not been tested.
+For OS X, it is possible to get context menus in Finder. Due to how OS X
+deals with sym links, one needs to operate on folders if using indirect
+mode. Direct mode operation has not been tested.
 
 1. Open Automator and create a new Service.
 2. Using the Drop down menus in the top create the sentence "Service receives selected folders in Finder.app" to have it work on folders. For direct mode operation it is probably reasonable to select "files or folders".
@@ -81,7 +91,9 @@ For OS X, it is possible to get context menus in Finder. Due to how OS X deals w
             cd "$(dirname "$f")" && git-annex get "$f"
         done
 
-The purpose of the first line is there to get git-annex on to the path. The reason for the for loop is in case multiple files or folders are marked when running the context menu command.
+The purpose of the first line is there to get git-annex on to the path. The
+reason for the for loop is in case multiple files or folders are marked
+when running the context menu command.
 
 Finally save the the workflow under the name for which it should be listed in the context menu.
 
