@@ -123,7 +123,6 @@ makeInstaller gitannex license extrabins launchers = nsis $ do
 		, StartOptions "SW_SHOWNORMAL"
 		, IconFile "$INSTDIR/cmd/git-annex.exe"
 		, IconIndex 2
-		, KeyboardShortcut "ALT|CONTROL|a"
 		, Description "git-annex webapp"
 		]
 	createShortcut autoStartItem

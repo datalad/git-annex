@@ -17,3 +17,6 @@ The newest version, Windows 8.
 
 # End of transcript or log.
 """]]
+
+> Seems I misunderstood, I thought that would only apply in the start menu.
+> Removed the shortcut. [[done]] --[[Joey]]
