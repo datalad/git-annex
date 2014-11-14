@@ -92,18 +92,20 @@ installWrapper file content = do
 installFileManagerHooks :: FilePath -> IO ()
 #ifdef linux_HOST_OS
 installFileManagerHooks program = do
+	let actions = ["get", "drop", "undo"]
+
 	-- Gnome
 	nautilusScriptdir <- (\d -> d </> "nautilus" </> "scripts") <$> userDataDir
 	createDirectoryIfMissing True nautilusScriptdir
-	genNautilusScript nautilusScriptdir "get"
-	genNautilusScript nautilusScriptdir "drop"
+	forM_ actions $
+		genNautilusScript nautilusScriptdir
 
 	-- KDE
 	home <- myHomeDir
 	let kdeServiceMenusdir = home </> ".kde" </> "share" </> "kde4" </> "services" </> "ServiceMenus"
 	createDirectoryIfMissing True kdeServiceMenusdir
 	writeFile (kdeServiceMenusdir </> "git-annex.desktop")
-		(kdeDesktopFile ["get", "drop"])
+		(kdeDesktopFile actions)
   where
 	genNautilusScript scriptdir action =
 		installscript (scriptdir </> scriptname action) $ unlines
