@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnRFOsnEk8AJg1mXlq3mJDdt1YdYepozE8"
+ nickname="Murmel"
+ subject="Other loop strategy?"
+ date="2014-11-13T21:42:57Z"
+ content="""
+My motiviation to have such a feature is to free space if a key is unused in the \"--ever\" sense. I think it is no problem if this is a slow operation, as you don't use it often. How about this strategy: Loop over keys, for each key find out with something like \"git log -S\" if it is used.
+"""]]
