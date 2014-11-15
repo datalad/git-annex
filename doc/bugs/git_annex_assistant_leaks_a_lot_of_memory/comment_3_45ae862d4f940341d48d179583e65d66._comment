@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="https://renaud.casenave.fr/"
+ subject="comment 3"
+ date="2014-11-15T02:07:38Z"
+ content="""
+Well it's been a week and still no luck compiling git-annex using cabal :(
+
+I'm blocked here (at pretty much the start):
+
+    % cabal install --only-dependencies
+    Resolving dependencies...
+    cabal: Could not resolve dependencies:
+    trying: git-annex-5.20141125 (user goal)
+    trying: git-annex-5.20141125:+tahoe
+    trying: git-annex-5.20141125:+dns
+    trying: aeson-0.6.0.2/installed-5b6... (dependency of
+    git-annex-5.20141125:+tahoe)
+    trying: vector-0.9.1/installed-5fe... (dependency of
+    aeson-0.6.0.2/installed-5b6...)
+    trying: dns-1.4.4 (dependency of git-annex-5.20141125:+dns)
+    next goal: network (dependency of dns-1.4.4)
+    rejecting: network-2.3.0.13/installed-0e3... (conflict:
+    git-annex-5.20141125:network-uri => network(>=2.6))
+    trying: network-2.6.0.2
+    next goal: conduit-extra (dependency of dns-1.4.4)
+    rejecting: conduit-extra-1.1.4.2, 1.1.4.1, 1.1.4, 1.1.3.4, 1.1.3.3, 1.1.3.2,
+    1.1.3.1, 1.1.3, 1.1.2, 1.1.1, 1.1.0.4 (conflict: vector =>
+    primitive==0.4.1/installed-505..., conduit-extra => primitive>=0.5)
+    rejecting: conduit-extra-1.1.0.3, 1.1.0.2, 1.1.0.1 (conflict: vector =>
+    primitive==0.4.1/installed-505..., conduit-extra => primitive>=0.5 && <0.6)
+    rejecting: conduit-extra-1.1.0 (conflict: network==2.6.0.2, conduit-extra =>
+    network>=2.3 && <2.5)
+    rejecting: conduit-extra-1.0.0.1, 1.0.0, 0.1.7, 0.1.6, 0.1.5, 0.1.4, 0.1.3,
+    0.1.2, 0.1.1, 0.1.0 (conflict: dns => conduit-extra>=1.1)
+    zsh: exit 1     cabal install --only-dependencies
+
+Should I just wait for the maintainers to fix the dependencies? Or is there another way?
+"""]]
