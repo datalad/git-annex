@@ -13,6 +13,7 @@ module Utility.Process (
 	CreateProcess(..),
 	StdHandle(..),
 	readProcess,
+	readProcess',
 	readProcessEnv,
 	writeReadProcessEnv,
 	forceSuccessProcess,
@@ -66,16 +67,18 @@ readProcess :: FilePath	-> [String] -> IO String
 readProcess cmd args = readProcessEnv cmd args Nothing
 
 readProcessEnv :: FilePath -> [String] -> Maybe [(String, String)] -> IO String
-readProcessEnv cmd args environ =
-	withHandle StdoutHandle createProcessSuccess p $ \h -> do
-		output  <- hGetContentsStrict h
-		hClose h
-		return output
+readProcessEnv cmd args environ = readProcess' p
   where
 	p = (proc cmd args)
 		{ std_out = CreatePipe
 		, env = environ
 		}
+
+readProcess' :: CreateProcess -> IO String
+readProcess' p = withHandle StdoutHandle createProcessSuccess p $ \h -> do
+	output  <- hGetContentsStrict h
+	hClose h
+	return output
 
 {- Runs an action to write to a process on its stdin, 
  - returns its output, and also allows specifying the environment.
