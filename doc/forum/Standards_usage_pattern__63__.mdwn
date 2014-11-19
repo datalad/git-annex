@@ -1,0 +1,8 @@
+Hi,
+
+I have few devices: 2x android, 2x windows, 2x linux and I would like to share at least one folder on all of them.
+None of the devices have public IPs and some regularly change location (work laptops). Because the XMPP support is missing on windows I couldn't find a way to synchronize the repositories (the keys) or did I miss something in the documentation?
+How can I archieve "seamless" synchronization when I start the webapp on the devices?
+
+Thank you,
+Karol
