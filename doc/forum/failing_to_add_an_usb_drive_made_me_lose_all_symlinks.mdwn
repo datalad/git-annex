@@ -24,4 +24,4 @@ How can I recover them?
 
 EDIT 2
 -------
-Seems that I overwritten my repo with a new repo. Because git log only shows 4 entries from today.
+Seems that I overwritten my repo with a new repo. Because git log only shows 4 entries from today. Is it possible that the webapp has made that?
