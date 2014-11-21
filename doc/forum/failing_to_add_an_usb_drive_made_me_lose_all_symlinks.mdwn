@@ -1,0 +1,4 @@
+Dear all,
+        I had (snif!) and indirect repo with 2.7 of pdf files with filenames were manually added by me with author and title, and took years of work. I had them in a git annex repo from quite some time. Now I'm trying to sync them to an usb drive. Main repo lives in an ubuntu box with ext4 filesystem. I failed many times to do this, both on fat and exfat external drives (direct). As I was failing, I tried to to a test on the same local filesystem. So I have my main repo in /home/juan/papers and the other in /tmp/papers. While trying to sync them using the assistant, i noticed that most of the folders and symlinks from the main repo just dissapeared. I still have them in .git/annex/objects but I don't know how to recover the links.
+I must say I'm an everyday git user, and big fan of git-annex but I'm trying to use it for six months without luck. I think I will quit after recovering the data, if possible.
+Thanks for the help guys, I'm very sad.
