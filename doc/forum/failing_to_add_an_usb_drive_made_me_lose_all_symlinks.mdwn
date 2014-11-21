@@ -21,3 +21,7 @@ After digging around a bit, I found that I had the keys, and could find out the 
      3 files changed, 3 insertions(+)
 
 How can I recover them?
+
+EDIT 2
+-------
+Seems that I overwritten my repo with a new repo. Because git log only shows 4 entries from today.
