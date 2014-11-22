@@ -3,7 +3,7 @@ git, and in turn point at the content of large files that is stored in
 `.git/annex/objects/`. Direct mode gets rid of the symlinks.
 
 The advantage of direct mode is that you can access files directly,
-including modifying them. The disadvantage is that mant regular git
+including modifying them. The disadvantage is that many regular git
 commands cannot be used in a direct mode repository, since they don't
 understand how to update its working tree.
 
