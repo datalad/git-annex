@@ -84,6 +84,7 @@ import qualified Command.Indirect
 import qualified Command.Upgrade
 import qualified Command.Forget
 import qualified Command.Proxy
+import qualified Command.DiffDriver
 import qualified Command.Undo
 import qualified Command.Version
 import qualified Command.Help
@@ -178,6 +179,7 @@ cmds = concat
 	, Command.Upgrade.cmd
 	, Command.Forget.cmd
 	, Command.Proxy.cmd
+	, Command.DiffDriver.cmd
 	, Command.Undo.cmd
 	, Command.Version.cmd
 	, Command.Help.cmd

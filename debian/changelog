@@ -13,6 +13,8 @@ git-annex (5.20141126) UNRELEASED; urgency=medium
   * Debian package is now maintained by Gergely Nagy.
   * Windows: Remove Alt+A keyboard shortcut, which turns out to have scope
     outside the menus.
+  * diffdriver: New git-annex command, to make git external diff drivers
+    work with annexed files.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 10 Nov 2014 15:31:55 -0400
 

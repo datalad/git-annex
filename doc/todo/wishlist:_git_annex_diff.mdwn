@@ -7,3 +7,7 @@ Should be relatively simple, only there would have to be a way to deal with the 
 Of course you wouldn't want to diff two large files, but with git annex assistant, all files are annexed by default (right?), so this would be useful.
 
 There might already be a way to easily diff two versions of an annexed file which I'm missing -- in that case please point me to it! :)
+
+> [[done]]; rather than adding a `git annex diff`, I made git-annex be able to be used as a git diff driver command,
+> which in turn can run some third-party external diff driver that does
+> some smart handling of binary files.
