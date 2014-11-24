@@ -47,7 +47,7 @@ This file is available directly from the web; so git-annex can download it:
 	(Recording state in git...)
 	# git commit -a -m 'added a screencast I made'
 
-Feel free the rename the files, etc, using normal git commands:
+Feel free to rename the files, etc, using normal git commands:
 
 	# git mv Haskell_Amuse_Bouche-b9FagOVqxmI.mp4 Haskell_Amuse_Bouche.mp4
 	# git mv kitenet.net_~joey_screencasts_git-annex_coding_in_haskell.ogg git-annex_coding_in_haskell.ogg
