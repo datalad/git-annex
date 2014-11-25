@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlbKgUeSjtEVC2PoXZsOEcQqTDwI52fsb8"
+ nickname="John"
+ subject="what is stored?"
+ date="2014-11-25T20:57:29Z"
+ content="""
+I have an image 'logo.jpg' that is 100kb.  I am using indirect mode.
+I add the logo to the annex; my understanding is that the file contents is stored in .git/annex/....
+
+I do more work in Photoshop to improve logo.jpg.  Now, I have a new version of 'logo.jpg' that is 150kb.
+I add this new version of logo.jpg to the annex.
+
+Does the .git/annex area now contain two instances of the logo.jpg contents, one for the 100kb and one for the 150kb, with metadata pointing to each?
+
+
+"""]]
