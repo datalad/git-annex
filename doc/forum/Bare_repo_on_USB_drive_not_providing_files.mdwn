@@ -5,10 +5,10 @@ I faced a huge interoperability problem regarding the filesystem format. I tried
 
 Scenario 1: Direct mode on USB drive 
 While this worked in another case, in this case when setting up the repo with the assistant it deleted all symlinks from the main repo. I wasn't able to correctly do this and finally gave up. 
-Can anyone help me setting up this scenario? It will be link the following:
-   * ubuntu box (ext4): main repo, indirect mode, all files
-   * usb drive (exfat): sync repo, direct mode, all files (having the files available is a plus)
-   * osx laptop (hpfs+): partial repo, indirect mode, some files
+Can anyone help me setting up this scenario? It will be link the following: 
+ * ubuntu box (ext4): main repo, indirect mode, all files
+ * usb drive (exfat): sync repo, direct mode, all files (having the files available is a plus)
+ * osx laptop (hpfs+): partial repo, indirect mode, some files
 
 
 Scenario 2: Bare repo on USB drive 
