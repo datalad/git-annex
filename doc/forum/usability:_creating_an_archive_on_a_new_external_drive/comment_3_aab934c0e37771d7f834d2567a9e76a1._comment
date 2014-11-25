@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 3"
+ date="2014-11-25T21:26:44Z"
+ content="""
+Of course you wouldn't expect that, I've explained the problem to you and you're technically adept and know about issues with keeping open files on removable drives.
+
+However, I have to consider the affordances of what the assistant sets up, and the natural affordance of a drive containing a directory with your files in it is to be able edit those files. And when changes in every other clone of that directory get automatically synced, the expectation would be for the same to hold true on this directory on the removable drive.
+
+I can see perhaps having the assistant run `git annex merge` in a removable repo after pushing to it (but `git annex sync` should not do that; violates least surprise for a git pull+merge+push wrapper like that to affect the work trees of other repos). As long as the assistant defaults to making removable repos bare, it won't expose normal users to the problem, and only advanced users who know how to set up non-bare repos. 
+
+If this is only for advanced users though, it (both assistant and `git annex sync`) could just as well run a configurable command on a removable repo after pushing to it. Or, the advanced user could use their skillz to make the removable drive be formatted with a reasonable filesystem that allows executable files, and then set up a git post-receive hook.
+"""]]
