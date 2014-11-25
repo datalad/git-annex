@@ -1,0 +1,16 @@
+Dear all,
+     In the first place I will explain what I want to achieve and then the way I figured out to do it. I have a lot of scientific simulations which I need to be traceable (cross check experiment version with code version, etc). I run them mostly on my ubuntu box (14.10, ext4)  and store them on an indirect repo. From time to time, I find useful to work on them on my laptop (OSX 10.10, low disk space, hfs+). 
+My idea was to full sync the main repo with a usb drive, and then at home get only the files I need to work from the USB drive.
+I faced a huge interoperability problem regarding the filesystem format. I tried using ext4, hfs+, fat32 and exfat. Regarding performance and stability, exfat is the only usable option between linux and osx (using hfs+ got the repo corrupted many times while writing from linux). However that forces me to use either a direct mode repo on the USB drive or a bare one. 
+
+Scenario 1: Direct mode on USB drive 
+While this worked in another case, in this case when setting up the repo with the assistant it deleted all symlinks from the main repo. I wasn't able to correctly do this and finally gave up. 
+Can anyone help me setting up this scenario? It will be link the following:
+   * ubuntu box (ext4): main repo, indirect mode, all files
+   * usb drive (exfat): sync repo, direct mode, all files (having the files available is a plus)
+   * osx laptop (hpfs+): partial repo, indirect mode, some files
+
+
+Scenario 2: Bare repo on USB drive 
+In this case the bare repo gets synced, with all data (2.6Gb). However when I clone it on the laptop, I get the  message that files are not available, it says that they are only on main repo. This puzzles me because files seem to be on the bare repo.
+What's wrong in this case? How can I debug this?
