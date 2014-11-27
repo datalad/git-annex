@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmWBvsZvSsAL8P2ye3F0OBStjFCVnOImzM"
+ nickname="Jarno"
+ subject="How about with the 'proxy' command?"
+ date="2014-11-27T22:40:17Z"
+ content="""
+With the proxy command, would the following be an appropriate way to discard all changes (mods, adds, dels) since last sync in a direct mode repo?
+
+    git annex proxy -- git clean -df
+    git annex proxy -- git checkout -f .
+
+Also, is it necessary to run annex sync or other direct mode housekeeping commands afterwards?
+"""]]
