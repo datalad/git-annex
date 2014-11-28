@@ -5,6 +5,7 @@ The new ''git annex proxy'' command fails every command in the 2014-11-28 daily 
 ### What steps will reproduce the problem?
 
 1) Install daily Windows build via https://downloads.kitenet.net/git-annex/autobuild/windows/.
+
 2) Run, in git bash:
 
     $ git annex proxy -- pull
