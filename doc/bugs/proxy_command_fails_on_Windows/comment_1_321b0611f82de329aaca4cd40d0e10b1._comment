@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmWBvsZvSsAL8P2ye3F0OBStjFCVnOImzM"
+ nickname="Jarno"
+ subject="Not a bug"
+ date="2014-11-28T16:48:22Z"
+ content="""
+Turns out this was **not a Git Annex bug**, but a symptom of not restarting \"git shell\"s (or Windows) after Git Annex upgrade. Apparently it sets some paths that don't take effect before a relogin.
+"""]]
