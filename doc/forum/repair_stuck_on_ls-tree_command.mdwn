@@ -6,9 +6,10 @@ It repeatedly launches the following command:
 
 git --git-dir=/home/vincent/photos2/.git --work-tree=/home/vincent/photos2 ls-tree --full-tree -z -r -- 5fe5193e079631c0ceac0688ae0a6c1636491b61
 
-I have tried to execute it by hand and it produces a lot of output. I have redirected it into some files in order to count the content produced by this command.
+I have tried to execute it by hand and it produces a lot of output. I have redirected it into some file in order to count the content produced by this command.
 
 vincent@berlioz:~/photos2/.git$ git --git-dir=/home/vincent/photos2/.git --work-tree=/home/vincent/photos2 ls-tree --full-tree -z -r -- 5fe5193e079631c0ceac0688ae0a6c1636491b61 > /tmp/ls-tree
+
 vincent@berlioz:/tmp$ wc ls-tree 
        0   232525 11611220 ls-tree
 
