@@ -29,6 +29,9 @@ Before doing the git annex repair command I have tried to delete a distant annex
          3.20120629 950
             900 http://ftp.fr.debian.org/debian/ wheezy/main amd64 Packages
 
+    vincent@berlioz:~/photos2$ du -sh .
+    152G	.
+
 Info gathered from another client annex:
 
     vincent@tigrou:/mnt/mars/images/photos2$ git annex info
