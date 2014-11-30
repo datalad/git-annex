@@ -15,17 +15,28 @@ vincent@berlioz:/tmp$ wc ls-tree
 
 Could this cause some troubles to git-annex ? Maybe my repository is just too big and it demands some time to deal with the whole thing?
 
-Before doing the git annex repair command I have tried to delete a distant annex (hosted on a raspberry pi, running an arm raspbian) from this one, using the git annex webapp website. Since it was kind of stuck I asked webapp to shutdown. I ran git annex repair for some time. It looked like stuck. I stopped it, then tried git fsck. It ran well. I tried git annex fsck, it took all my RAM and swap. The process was eating 14 Giga bytes of memory. I tried git gc and the same memory problem occured. I ran git annex repair again and it has been 38 hours now. I am lost. Please help.
+Before doing the git annex repair command I have tried to delete a distant annex (hosted on a raspberry pi, running an arm raspbian) from this one, using the git annex webapp website. Since it was kind of stuck I asked webapp to shutdown. I ran git annex repair for some time. It looked like stuck. I stopped it, then tried git fsck. It ran well. I tried git annex fsck, it took all my RAM and swap. The process was eating 14 Giga bytes of memory. I tried git gc and the same memory problem occured. I ran git annex repair again and it has been running for 38 hours now. I am lost. Please help.
 
 vincent@berlioz:~$ LANG=C apt-cache policy git-annex
+
 git-annex:
+
   Installed: 5.20141125
+
   Candidate: 5.20141125
+
   Package pin: 5.20141125
+
   Version table:
+
  *** 5.20141125 950
+
         400 http://ftp.fr.debian.org/debian/ testing/main amd64 Packages
+
          50 http://ftp.fr.debian.org/debian/ unstable/main amd64 Packages
+
         100 /var/lib/dpkg/status
+
      3.20120629 950
+
         900 http://ftp.fr.debian.org/debian/ wheezy/main amd64 Packages
