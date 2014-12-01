@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="vho"
+ subject="Update"
+ date="2014-12-01T15:47:23Z"
+ content="""
+It seems I could sort things of.
+
+I have run git annex sync from another annex. It took 30 minutes but could synchronize with the slow annex. Then I launched git annex sync on the slow annex (the one which seemed to had troubles with the repair command). It took 278 minutes, used all my ram and swap, but managed to end successfully.
+
+I launched git annex sync again today, another 279 minutes:
+
+    vincent@berlioz:~/photos2$ time git annex sync
+    commit  ok
+    pull tigrou
+    Error reading response length from authentication socket.
+    Compression automatique du dépôt en tâche de fond pour optimiser les performances.
+    Voir \"git help gc\" pour toute information sur le nettoyage manuel.
+    ok
+    pull gateway
+    Compression automatique du dépôt en tâche de fond pour optimiser les performances.
+    Voir \"git help gc\" pour toute information sur le nettoyage manuel.
+    ok
+    push gateway
+    fatal: The remote end hung up unexpectedly
+     
+      Pushing to gateway failed.
+      
+      (non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote's git config)
+    failed
+    git-annex: sync: 1 failed
+    
+    real    279m27.760s
+    user    7m15.159s
+    sys     3m4.340s
+
+I will try to do some git gc.
+"""]]

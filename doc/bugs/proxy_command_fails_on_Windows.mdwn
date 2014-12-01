@@ -1,6 +1,6 @@
 ### Please describe the problem.
 
-The new ''git annex proxy'' command fails every command in the 2014-11-28 daily build for Windows.
+The new ''git annex proxy'' command fails every call in the 2014-11-28 daily Windows build.
 
 ### What steps will reproduce the problem?
 
@@ -15,7 +15,7 @@ The new ''git annex proxy'' command fails every command in the 2014-11-28 daily 
 
 ### What version of git-annex are you using? On what operating system?
 
-Daily Windows build 5.20141128-g70f997e
+Daily Windows build 5.20141128-g70f997e on Windows 7 x64
 
 ### Please provide any additional information below.
 
