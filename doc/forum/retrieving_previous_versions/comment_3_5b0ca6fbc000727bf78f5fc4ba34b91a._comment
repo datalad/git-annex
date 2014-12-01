@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2014-12-01T22:30:16Z"
+ content="""
+Yes, both versions of the file are stored in `.git/annex/objects`,
+unless you move them to some other repository, or unless
+you use `git annex dropunused` to delete the old version.
+"""]]
