@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2014-12-01T22:00:54Z"
+ content="""
+This naming is necessary to deal with the problem that a view could
+contain two files with the name name. So the directory is included to 
+work around it.
+
+Menomic: `%` looks sort of like a `/`
+"""]]
