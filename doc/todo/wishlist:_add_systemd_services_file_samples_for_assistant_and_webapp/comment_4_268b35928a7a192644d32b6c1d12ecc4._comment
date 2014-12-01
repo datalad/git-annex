@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2014-12-01T22:19:51Z"
+ content="""
+I don't know what the plans are exactly for the user-mode systemd.
+
+It seems to me that, if it eventually becomes the session manager for the
+desktop, then it will probably grow a generator to handle XDG autostart
+.desktop files, and generate systemd services for them. Or, those XDG
+autostart files will become deprecated, and programs will ship user-mode
+service files.
+
+In the first case, git-annex doesn't need to include a systemd file, and in
+the second case it should. So best it seems to wait and see, or hear from
+someone with more information.
+"""]]
