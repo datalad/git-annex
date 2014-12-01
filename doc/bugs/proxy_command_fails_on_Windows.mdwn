@@ -30,3 +30,7 @@ Daily Windows build 5.20141128-g70f997e
     local repository version: 5
     supported repository version: 5
     upgrade supported from repository versions: 2 3 4
+
+> Seems the man page was mis-read, or possibly I've fixed it,
+> since it certianly says you need to specify "-- git cmd", not
+> just "-- cmd". [[done]] --[[Joey]]
