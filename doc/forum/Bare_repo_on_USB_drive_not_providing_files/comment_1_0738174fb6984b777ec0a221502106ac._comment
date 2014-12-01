@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2014-12-01T22:03:52Z"
+ content="""
+You should be able to use a direct mode repo on a USB drive.
+Of course, if you delete files from there, the deletion will propigate
+to other clones of that repo. It could be that there's some bug
+with direct mode repos that causes file deletions to be incorrectly
+committed; if so you could a) revert the bad commits and b) file a bug
+report with details to reproduce the problem.
+
+As to a bare repo on a USB drive, it will work too. It sounds to me like
+you forgot to run `git annex sync` after copying the files to that repo.
+And/or forgot to run `git annex sync` before asking git-annex to get
+the files from the drive.
+
+That is to say, the fulll process would be:
+
+Plug drive into first computer, and run in that computer's repo:
+
+	git annex copy --to usbdrive
+	git annex sync
+
+And then move drive to other computer, and run in that computer's
+repo:
+	
+	git annex sync
+	git annex copy --from usbdrive
+"""]]
