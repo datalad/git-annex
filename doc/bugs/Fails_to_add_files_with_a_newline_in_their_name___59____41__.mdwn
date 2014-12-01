@@ -66,3 +66,6 @@ $>
 
 # End of transcript or log.
 """]]
+
+> [[dup|done]] of
+> [[git_annex_import_fails_on_filenames_with_newlines_in_them]] --[[Joey]]
