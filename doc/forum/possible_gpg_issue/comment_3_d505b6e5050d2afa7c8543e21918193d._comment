@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2014-12-01T21:36:40Z"
+ content="""
+The relevant error message seems to be this:
+
+	hClose: does not exist (Host is down)
+
+Which doesn't point at gpg being the problem to me. git-annex is trying to
+close a file after writing it, and that's failing with EHOSTDOWN. Not a usual
+error code, but then you're using a network filesystem, which has many unusual
+failure modes.
+
+The next step would probably be to strace git-annex to see what syscall
+is failing. Looks like it might be close(2), but then again hClose might be
+doing something else first.
+
+It's possible that this has something to do with the SMB share not supporting
+some POSIX filesystem feature that git-annex uses. Lack of support for fcntl
+locking is a problem with NFS, dunno about SMB.
+
+What would probably work better would be to set up a
+[[directory special remote|special_remotes/directory]] on the SMB share.
+That requires a lot less from the filesystem than a full-fledged git remote
+does.
+
+(Two parts of what you said don't make sense to me BTS. I see no evidence of it hanging in the transcript, so am unclear why
+you said it was hanging, as opposed to gracefully failing. And, you said the SMB remote was not configured to use encryption, but it's clearly
+encrypted in the transcript.)
+"""]]
