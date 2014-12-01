@@ -1,6 +1,9 @@
 Back from the holiday, catching up on traffic. Backlog stands at 113
 messages.
 
+Here's a nice tip that Giovanni added:
+[[tips/publishing_your_files_to_the_public]] (using a public S3 bucket)
+
 Just before going on break, I added a new feature that I didn't mention
 here. `git annex diffdriver` integrates git-annex with git's external diff
 driver support. So if you have a smart diff program that can diff, say,
