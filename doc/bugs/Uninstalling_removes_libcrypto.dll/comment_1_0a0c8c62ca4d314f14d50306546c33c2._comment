@@ -8,4 +8,14 @@ process should remove that.
 
 I suspect what's going on is that the uninstaller is accidentially
 being told the full path to the library, as it was on the build system.
+
+Hmm, doesn't seem so, relevant code is:
+
+	removefilesFrom d = mapM_ (\f -> delete [RebootOK] $ fromString $ d ++ "/" ++ takeFileName f)
+
+Note `takeFileName`..
+
+Alternate theory: Maybe if git-annex is installed before git, it
+installs libcrypto.dll. Then maybe git's installer sees that is installed
+and doesn't install its own copy.
 """]]
