@@ -1,0 +1,15 @@
+Back from the holiday, catching up on traffic. Backlog stands at 113
+messages.
+
+Just before going on break, I added a new feature that I didn't mention
+here. `git annex diffdriver` integrates git-annex with git's external diff
+driver support. So if you have a smart diff program that can diff, say,
+genome sequences, or cat videos, or something in some useful way, it
+can be hooked up to `git diff` and will be able to see the content of
+annexed files.
+
+Also today, I spent a couple hours today updating the license file included
+in the standalone git-annex builds to include the licenses of all the
+haskell libraries git-annex depends on. Which I had for some reason not
+thought to include before, despite them getting built into the git-annex
+binary.
