@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2014-12-02T17:37:49Z"
+ content="""
+Symlinks to read-only files in .git/annex/objects is how a git-annex
+repository normally looks.
+
+Perhaps you want to use [[direct_mode]]?
+
+This has nothing to do with shared encryption that I can see.
+"""]]
