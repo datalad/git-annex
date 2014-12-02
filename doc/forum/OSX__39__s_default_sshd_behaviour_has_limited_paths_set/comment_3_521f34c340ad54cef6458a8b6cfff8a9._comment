@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2014-12-02T17:42:36Z"
+ content="""
+When the git-annex webapp is used to add a ssh repository, it
+installs a ssh key in `~/.ssh/authorized_keys`, which makes
+ssh run `~/.ssh/git-annex-shell` if necessary.
+
+This is not done for you if you set up a ssh remote using git at the
+commend line. In that case, arranging for git-annex-shell to be in PATH
+on the remote host somehow is left up to you.
+"""]]
