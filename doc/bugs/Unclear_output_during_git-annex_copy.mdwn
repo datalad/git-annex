@@ -13,3 +13,5 @@ Fortunately, it appears that actually all files were encrypted (only GPGHMAC fil
 so this is hopefully just a cosmetic issue.
 
 git-annex version: 5.20141024-g613f396
+
+> removed confusing output, [[done]] --[[Joey]]

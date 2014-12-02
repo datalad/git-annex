@@ -15,6 +15,9 @@ git-annex (5.20141126) UNRELEASED; urgency=medium
     outside the menus.
   * diffdriver: New git-annex command, to make git external diff drivers
     work with annexed files.
+  * Don't show "(gpg)" when decrypting the remote encryption cipher,
+    since this could be taken to read that's the only time git-annex
+    runs gpg, which is not the case.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 10 Nov 2014 15:31:55 -0400
 

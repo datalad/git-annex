@@ -109,7 +109,6 @@ remoteCipher' c = go $ extractCipher c
 		case M.lookup encipher cache of
 			Just cipher -> return $ Just (cipher, encipher)
 			Nothing -> do
-				showNote "gpg"
 				cipher <- liftIO $ decryptCipher encipher
 				Annex.changeState (\s -> s { Annex.ciphers = M.insert encipher cipher cache })
 				return $ Just (cipher, encipher)
