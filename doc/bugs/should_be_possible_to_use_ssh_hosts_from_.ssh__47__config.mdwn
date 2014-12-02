@@ -19,7 +19,7 @@ Add a remote host that is only reachable through a proxy.
 ### What version of git-annex are you using? On what operating system?
 
 gentoo
-git-annex-5.20141125 {android androidsplice +assistant +cryptohash +dbus +desktop-notify +dns doc ekg +feed +inotify +pairing +production +quvi +s3 +tahoe +tdfa +testsuite +webapp +webapp-secure +webdav +xmpp}
+git-annex-5.20141125 {+assistant +cryptohash +dbus +desktop-notify +dns +feed +inotify +pairing +production +quvi +s3 +tahoe +tdfa +testsuite +webapp +webapp-secure +webdav +xmpp}
 
 
 
