@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2014-12-02T18:39:34Z"
+ content="""
+There's no particular size limit for metadata. But things may not scale
+well past some size.
+
+Having a big metadata value could make git-annex be a little slow when
+dealing with metadata, since it has to parse the metadata log file.
+So if you stored say, 1 mb in metadata, that's one mb of disk IO and data
+processing every time git-annex looks at the metadata for that file.
+
+All the metadata for a file will also be buffered in memory when git-annex
+is looking at that file's metadata. So `git-annex view` would use 1 mb or
+so more memory in the above example. (But git-annex only looks at one
+file's metadata at a time, so its memory use won't grow if you have a lot
+of files with metadata.)
+
+Also of course, the metadata is stored in git, and so it will make your git
+repository bigger.
+
+I would not expect any reasonable description of a photo to be large enough
+for its size to be a problem.
+
+I'd even feel ok with putting the full text of a license in as metadata
+(GPL is 30kb, and git would deduplicate redundant license metadata).
+"""]]
