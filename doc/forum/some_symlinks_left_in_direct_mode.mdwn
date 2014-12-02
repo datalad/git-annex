@@ -1,0 +1,5 @@
+Dear all,
+   I have a repository in direct mode which still has some symlinks pointing to .git/annex/objects. Is there a way to turn them back into regular files. I don't recall why this happen, I guess I started on indirect mode and after that I converted it to direct mode.
+Thanks in advance.
+Best regards,
+              Juan
