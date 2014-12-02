@@ -2,11 +2,13 @@
 
 I am using a ssh-host configured in .ssh/config in a corporate-environment like this:
 
-Host home
-	Hostname 1.2.3.4
-	Port 443
-	ProxyCommand corkscrew proxy.fqdn 8080 %h %p ~/.authfile
+[[!format sh """
+  Host home
+        Hostname 1.2.3.4
+        Port 443
+        ProxyCommand corkscrew proxy.fqdn 8080 %h %p ~/.authfile
         # http://www.agroman.net/corkscrew/
+"""]]
 
 I now want to be able to add this host as a remote repository, but don't have the ability to add it. A tunnel to localhost would be possible but then I would have to setup this portforwarding for git-annex separately every time it is started.
 
