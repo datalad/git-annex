@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2014-12-02T19:02:10Z"
+ content="""
+The webdav server seems to have rejected the MKCOL command,
+which makes a collection (subdirectory) on the server.
+
+Is radicale intended to be a general-purpose webdav server?
+The description of the debian package says it's a CalDAV and CardDAV
+server. Perhaps it simply doesn't support generic top-level collections.
+"""]]
