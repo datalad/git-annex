@@ -22,10 +22,9 @@ Just install Propellor and add this to its `config.hs`:
 [[!format haskell """
 import qualified Propellor.Property.SiteSpecific.GitAnnexBuilder as GitAnnexBuilder
 
-	, host hostname@"your.machine.net" = Just $ props
+	, host "your.machine.net"
 	        & Docker.configured
-		& Docker.docked container hostname "amd64-git-annex-builder"
-	, GitAnnexBuilder.standardAutoBuilderContainer dockerImage "amd64" 15 "2h"
+		& Docker.docked (GitAnnexBuilder.standardAutoBuilderContainer dockerImage "amd64" 15 "2h")
 """]]
 
 This will autobuild every hour at :15, and the autobuilt image will be
