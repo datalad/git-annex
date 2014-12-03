@@ -15,7 +15,7 @@ built, it is published. `docker pull joeyh/git-annex-android-builder`
 
 So's the armel autobuilder container. 
 `docker pull joeyh/git-annex-armel-builder`, and its companion container
-`docker pull joeyh/git-annex-armel-builder-companion`
+`docker pull joeyh/git-annex-armel-companion`
 
 # building autobuilder containers using Propellor
 
