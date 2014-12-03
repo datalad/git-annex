@@ -36,5 +36,5 @@ Once the prerequisites are installed, run:
 	cd gitannex
 	build
 
-(To build the git-annex installer, you also need to install the NulSoft
+(To build the git-annex installer, you also need to install the NullSoft
 installer system.)
