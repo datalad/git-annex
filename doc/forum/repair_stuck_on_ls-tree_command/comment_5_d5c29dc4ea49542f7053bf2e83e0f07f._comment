@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnPgn611P6ym5yyL0BS8rUzO0_ZKRldMt0"
+ nickname="Samuel"
+ subject="Not so big tree"
+ date="2014-12-03T07:36:22Z"
+ content="""
+The output of the ls-tree command suggests this tree is the git-annex branch at some point in time.
+
+I tried on my photos annex to ls-tree the git-annex branch and got.
+
+    $ git ls-tree -r --full-tree git-annex | wc
+    156405  625620 23685538
+
+My git-annex tree is about 22Mib in size, that means twice bigger than yours (no
+dumb joke intended) and I don't suffer such problem.
+
+"""]]
