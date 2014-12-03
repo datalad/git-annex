@@ -1,4 +1,4 @@
-git-annex (5.20141126) UNRELEASED; urgency=medium
+git-annex (5.20141203) unstable; urgency=medium
 
   * proxy: New command for direct mode repositories, allows bypassing
     the direct mode guard in a safe way to do all sorts of things
@@ -27,7 +27,7 @@ git-annex (5.20141126) UNRELEASED; urgency=medium
   * Windows: Install ssh and other bundled programs to Git/cmd,
     instead of Git/bin, since the latter is not in the default msysgit PATH.
 
- -- Joey Hess <joeyh@debian.org>  Mon, 10 Nov 2014 15:31:55 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 03 Dec 2014 15:16:52 -0400
 
 git-annex (5.20141125) unstable; urgency=medium
 
