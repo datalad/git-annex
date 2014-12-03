@@ -8,6 +8,10 @@
 # versions that have been gotten working. To update, delete the
 # cabal.config, run this script with an empty cabal and fix up the broken
 # patches, and then use cabal freeze to generate a new cabal.config.
+#
+# This only installs haskell packages for ghc-android. The host ghc
+# also needs to have all the git-annex build deps installed, in similar
+# versions. Those are installed from Debian packages using apt.
 
 set -e
 
