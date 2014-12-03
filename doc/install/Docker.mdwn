@@ -13,6 +13,10 @@ Most of these are not published, but you can build your own. (See below.)
 Since the Android autobuilder container can take quite a lot of work to get
 built, it is published. `docker pull joeyh/git-annex-android-builder`
 
+So's the armel autobuilder container. 
+`docker pull joeyh/git-annex-armel-builder`, and its companion container
+`docker pull joeyh/git-annex-armel-builder-companion`
+
 # building autobuilder containers using Propellor
 
 The Docker containers are built using
