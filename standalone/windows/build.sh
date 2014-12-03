@@ -61,7 +61,7 @@ fi
 
 # Build the installer
 cabal install nsis
-ghc --make Build/NullSoftInstaller.hs
+ghc -fforce-recomp --make Build/NullSoftInstaller.hs
 # Want to include cygwin programs in bundle, not others, since
 # it includes the cygwin libs that go with them.
 withcygpreferred Build/NullSoftInstaller.exe
