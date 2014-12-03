@@ -1,0 +1,62 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmWBvsZvSsAL8P2ye3F0OBStjFCVnOImzM"
+ nickname="Jarno"
+ subject="comment 2"
+ date="2014-12-03T20:04:42Z"
+ content="""
+Thank you, `remote.foo.annex-readonly` looks like a nice solution for the update-changes-from-other.sh!
+
+For discard-all-my-changes.sh, `reset --hard` through proxy worked otherwise nicely, but it doesn't seem to restore deletions:
+
+    $ git annex proxy -- git reset --hard origin/master
+    HEAD is now at 37aed97 git-annex automatic sync
+
+    $ echo \"A\" > test.txt
+    
+    $ git annex add test.txt
+    add test.txt ok
+    (Recording state in git...)
+    
+    $ git annex sync
+    commit  ok
+    pull origin
+    ok
+    push origin
+    Counting objects: 17, done.
+    Delta compression using up to 8 threads.
+    Compressing objects: 100% (7/7), done.
+    Writing objects: 100% (8/8), 783 bytes | 0 bytes/s, done.
+    Total 8 (delta 4), reused 1 (delta 0)
+    To ssh://gitannex@serv-gitannex:/home/gitannex/git-annex-test.git
+       88a25b5..0a8281d  git-annex -> synced/git-annex
+       37aed97..2978dcd  annex/direct/master -> synced/master
+    ok
+    
+    $ rm test.txt
+    
+    $ git annex proxy -- git reset --hard origin/master
+    warning: packfile .git/objects/pack/pack-42568744cdbba46b2dd71a7f37546a52bb26684
+    4.pack cannot be accessed
+    HEAD is now at 2978dcd git-annex automatic sync
+    
+    $ ls test.txt
+    ls: test.txt: No such file or directory
+    
+    $ git annex status
+    D test.txt
+
+    $ git annex version
+    git-annex version: 5.20141128-g70f997e
+    build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV DNS Feed
+    s Quvi TDFA CryptoHash
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SH
+    A256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier ddar ho
+    ok external
+    local repository version: 5
+    supported repository version: 5
+    upgrade supported from repository versions: 2 3 4
+
+Note the \"pack cannot be accessed\" after the second reset.
+
+"""]]
