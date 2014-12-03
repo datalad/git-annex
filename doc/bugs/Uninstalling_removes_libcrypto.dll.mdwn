@@ -20,3 +20,6 @@ Windows 8.
 
 # End of transcript or log.
 """]]
+
+> [[fixed|done]]; git-annex no longer includes its own ssh, and uses the
+> one from msysgit. --[[Joey]]
