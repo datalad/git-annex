@@ -12,6 +12,12 @@ git-annex (5.20141126) UNRELEASED; urgency=medium
     that left a typechange staged in index due to some infelicity of git's
     handling of partial commits.
   * Work around behavior change in lsof 4.88's -F output format.
+  * S3: Switched to using the haskell aws library.
+  * S3: No longer buffers entire files in memory when uploading without
+    chunking.
+  * S3: When built with a new enough version of the haskell aws library,
+    supports doing multipart uploads, in order to store extremely large
+    files in S3 when not using chunking.
   * Don't show "(gpg)" when decrypting the remote encryption cipher,
     since this could be taken to read that's the only time git-annex
     runs gpg, which is not the case.

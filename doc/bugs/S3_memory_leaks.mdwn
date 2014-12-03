@@ -2,8 +2,12 @@ S3 has memory leaks
 
 Sending a file to S3 causes a slow memory increase toward the file size.
 
+> This is fixed, now that it uses aws. --[[Joey]]
+
 Copying the file back from S3 causes a slow memory increase toward the
 file size.
+
+> [[fixed|done]] too! --[[Joey]]
 
 The author of hS3 is aware of the problem, and working on it. I think I
 have identified the root cause of the buffering; it's done by hS3 so it can

@@ -8,6 +8,10 @@ export RELEASE_BUILD=1
 %:
 	dh $@
 
+# Debian currently has a patched aws 0.9.2, rather than the newer 0.10.2.
+override_dh_auto_configure:
+	debian/cabal-wrapper configure -fPatchedAWS
+
 # Not intended for use by anyone except the author.
 announcedir:
 	@echo ${HOME}/src/git-annex/doc/news
