@@ -133,12 +133,9 @@ makeInstaller gitannex license extrabins launchers = nsis $ do
 		, IconIndex 2
 		, Description "git-annex autostart"
 		]
-	section "bins" [] $ do
-		setOutPath "$INSTDIR\\bin"
-		mapM_ addfile extrabins
 	section "cmd" [] $ do
 		setOutPath "$INSTDIR\\cmd"
-		addfile gitannex
+		mapM_ addfile (gitannex:extrabins)
 	section "meta" [] $ do
 		setOutPath "$INSTDIR"
 		addfile license
@@ -147,8 +144,7 @@ makeInstaller gitannex license extrabins launchers = nsis $ do
 	uninstall $ do
 		delete [RebootOK] $ startMenuItem
 		delete [RebootOK] $ autoStartItem
-		removefilesFrom "$INSTDIR/bin" extrabins
-		removefilesFrom "$INSTDIR/cmd" [gitannex]
+		removefilesFrom "$INSTDIR/cmd" (gitannex:extrabins)
 		removefilesFrom "$INSTDIR" $
 			launchers ++
 			[ license

@@ -18,8 +18,8 @@ git-annex (5.20141126) UNRELEASED; urgency=medium
   * Don't show "(gpg)" when decrypting the remote encryption cipher,
     since this could be taken to read that's the only time git-annex
     runs gpg, which is not the case.
-  * Windows: ssh is no longer included in the git-annex bundle,
-    since msysgit includes it.
+  * Windows: Install ssh and other bundled programs to Git/cmd,
+    instead of Git/bin, since the latter is not in the default msysgit PATH.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 10 Nov 2014 15:31:55 -0400
 

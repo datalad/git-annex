@@ -31,17 +31,15 @@ bundledPrograms = catMaybes
 	, Just "cp"
 #ifndef mingw32_HOST_OS
 	-- using xargs on windows led to problems, so it's not used there
-	-- (and msysgit includes a copy anyway)
 	, Just "xargs"
 #endif
 	, Just "rsync"
 #ifndef darwin_HOST_OS
-#ifndef mingw32_HOST_OS
 	-- OS X has ssh installed by default.
 	-- Linux probably has ssh, but not guaranteed.
-	-- On Windows, msysgit provides ssh, but not ssh-keygen.
+	-- On Windows, msysgit provides ssh, but not in PATH, 
+	-- so we ship our own.
 	, Just "ssh"
-#endif
 	, Just "ssh-keygen"
 #endif
 #ifndef mingw32_HOST_OS

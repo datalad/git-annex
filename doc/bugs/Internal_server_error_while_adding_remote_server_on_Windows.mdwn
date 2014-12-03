@@ -27,3 +27,7 @@ recv: failed (No error)
 
 # End of transcript or log.
 """]]
+
+> [[fixed|done]]; git-annex's ssh is now installed to Git/cmd, 
+> so it will be in the PATH as long as the instructions are followed to let
+> msysgit add git to the PATH. --[[Joey]]
