@@ -28,9 +28,9 @@ patched () {
                 ver="$(grep " $pkg " ../cabal.config | cut -d= -f 3 | sed 's/,$//')"
         fi
         if [ -z "$ver" ]; then
-                cabal unpack $pkg
+                cabal unpack --pristine $pkg
         else
-                cabal unpack $pkg-$ver
+                cabal unpack --pristine $pkg-$ver
         fi
 	cd $pkg*
 	git init
