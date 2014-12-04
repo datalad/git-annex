@@ -79,6 +79,8 @@ install_pkgs () {
 	patched yesod-routes
 	patched monad-logger
 	patched skein
+	patched shakespeare-js
+	patched hamlet
 	patched yesod-core
 	patched persistent
 	patched persistent-template
