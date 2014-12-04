@@ -1,0 +1,35 @@
+`git annex addurl` supports regular urls, as well as detecting videos that
+quvi can download. We'd like to extend this to support extensible uri
+handling. 
+
+Use cases range from torrent download support, to pulling data
+from scientific data repositories that use their own APIs.
+
+The basic idea is to have external special remotes (or perhaps built-in
+ones in some cases), which addurl can use to download an object, referred
+to by some uri-like thing. The uri starts with "$downloader:"
+
+	git annex addurl torrent:$foo
+	git annex addurl CERN:$bar
+
+Problem: This requires mapping from the name of the downloader, which is
+probably the same as the git-annex-remote-$downloader program implementing
+the special remote protocol, to the UUID of a remote. That's assuming we
+want location tracking to be able to know that a file is both available
+from CERN and from a torrent, for example.
+
+It would also be nice to be able to easily configure a regexp that normal
+urls, if they match, are made to use a particular downloader. So, for
+torrents, this would make matching urls have torrent: prefixed to them.
+
+	git config annex.downloader.torrent.regexp '(^magnet:|\.torrent$)'
+
+It might also be useful to allow bypassing the complexity of the external
+special remote interface, and let a downloader be specified simply by:
+
+	git config annex.downloader.torrent.command 'aria2c %url $file'
+
+In this case, the UUID used would be the UUID of the web special remote, I
+suppose?
+
+Some other discussion at <https://github.com/datalad/datalad/issues/10>
