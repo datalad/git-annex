@@ -3,13 +3,10 @@
 # to all the necessary haskell packages being installed, with the
 # necessary patches to work on architectures that lack template haskell.
 #
-# Note that the newest version of packages are installed. 
-# It attempts to reuse patches for older versions, but 
-# new versions of packages often break cross-compilation by adding TH, 
-# etc
-#
-# Future work: Convert to using the method used here:
-# https://github.com/kaoskorobase/ghc-ios-cabal-scripts/
+# The cabal.config is used to pin the haskell packages to the last
+# versions that have been gotten working. To update, delete the
+# cabal.config, run this script with an empty cabal and fix up the broken
+# patches, and then use cabal freeze to generate a new cabal.config.
 
 set -e
 
@@ -26,14 +23,22 @@ cabalinstall () {
 
 patched () {
 	pkg=$1
-	shift 1
-	cabal unpack $pkg$1
+	ver=$2
+        if [ -z "$ver" ]; then
+                ver="$(grep " $pkg " ../cabal.config | cut -d= -f 3 | sed 's/,$//')"
+        fi
+        if [ -z "$ver" ]; then
+                cabal unpack $pkg
+        else
+                cabal unpack $pkg-$ver
+        fi
 	cd $pkg*
 	git init
 	git config user.name dummy
 	git config user.email dummy@example.com
 	git add .
 	git commit -m "pre-patched state of $pkg"
+	ln -sf ../../cabal.config
 	for patch in ../../haskell-patches/${pkg}_* ../../../no-th/haskell-patches/${pkg}_*; do
 		if [ -e "$patch" ]; then
 			echo trying $patch
@@ -45,16 +50,19 @@ patched () {
 		fi
 	done
 	cabalinstall
-	rm -rf $pkg*
+	rm -f cabal.config
 	cd ..
+	rm -rf $pkg*
 }
 
 installgitannexdeps () {
 	pushd ../..
+	ln -sf standalone/linux/cabal.config
 	echo "cabal install QuickCheck -f-templateHaskell"
 	cabal install -j1 QuickCheck -f-templateHaskell
 	echo cabal install --only-dependencies "$@"
 	cabal install -j1 --only-dependencies "$@"
+	rm -f cabal.config
 	popd
 }
 
@@ -74,11 +82,7 @@ install_pkgs () {
 	patched yesod-core
 	patched persistent
 	patched persistent-template
-	# Newer versions of file-embed cause ghc -ddump-splices
-	# to output invalid character codes.
-	# Note that the system generating the splices should also
-	# use this version of file-embed.
-	patched file-embed -0.0.6
+	patched file-embed
 	patched process-conduit
 	patched yesod-static
 	patched yesod-persistent
