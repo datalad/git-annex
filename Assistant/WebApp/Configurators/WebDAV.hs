@@ -78,7 +78,7 @@ postAddBoxComR = boxConfigurator $ do
 				-- Box.com has a max file size of 100 mb, but
 				-- using smaller chunks has better memory
 				-- performance.
-				, ("chunksize", "10mb")
+				, ("chunk", "10mb")
 				]
 		_ -> $(widgetFile "configurators/addbox.com")
 #else
