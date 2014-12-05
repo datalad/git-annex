@@ -17,7 +17,7 @@ See [[hashing]] for details.
 Each subdirectory has the [[name_of_a_key|key_format]] in one of the
 [[key-value_backends|backends]]. The file inside also has the name of the key.
 This two-level structure is used because it allows the write bit to be removed
-from the subdirectories as well as from the files. That prevents accidentially
+from the subdirectories as well as from the files. That prevents accidentally
 deleting or changing the file contents. See [[lockdown]] for details.
 
 In [[direct_mode]], file contents are not stored in here, and instead
@@ -158,7 +158,7 @@ File format is identical to preferred-content.log.
 ## `group-preferred-content.log`
 
 Contains standard preferred content settings for groups. (Overriding or
-supplimenting the ones built into git-annex.)
+supplementing the ones built into git-annex.)
 
 The file format is one line per group, staring with a timestamp, then a
 space, then the group name followed by a space and then the preferred
@@ -205,7 +205,7 @@ values.
 Lines are timestamped, and record when values are added (`field +value`),
 but also when values are removed (`field -value`). Removed values
 are retained in the log so that when merging an old line that sets a value
-that was later unset, the value is not accidentially added back.
+that was later unset, the value is not accidentally added back.
 
 For example:
 
@@ -214,8 +214,8 @@ For example:
 
 The value can be completely arbitrary data, although it's typically
 reasonably short. If the value contains any whitespace
-(including \r or \r), it will be base64 encoded. Base64 encoded values
-are indicated by prefixing them with "!" 
+(including \r or \n), it will be base64 encoded. Base64 encoded values
+are indicated by prefixing them with "!".
 
 ## `aaa/bbb/*.log.cnk`
 
@@ -237,7 +237,7 @@ Used to record scheduled events, such as periodic fscks.
 The file format is simply one line per repository, with the uuid followed by a
 space and then its schedule, followed by a timestamp.
 
-There can be multiple events in the schedule, separated by "; "
+There can be multiple events in the schedule, separated by "; ".
 
 The format of the scheduled events is the same described in
 the SCHEDULED JOBS section of the man page.

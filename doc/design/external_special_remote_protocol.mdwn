@@ -91,14 +91,14 @@ send one of the corresponding replies listed in the next section.
 The following requests *must* all be supported by the special remote.
 
 * `INITREMOTE`  
-  Request that the remote initialize itself. This is where any one-time
+  Requests the remote to initialize itself. This is where any one-time
   setup tasks can be done, for example creating an Amazon S3 bucket.  
   Note: This may be run repeatedly over time, as a remote is initialized in
   different repositories, or as the configuration of a remote is changed.
   (Both `git annex initremote` and `git-annex enableremote` run this.)
   So any one-time setup tasks should be done idempotently.
 * `PREPARE`  
-  Tells the special remote it's time to prepare itself to be used.  
+  Tells the remote that it's time to prepare itself to be used.  
   Only INITREMOTE can come before this.
 * `TRANSFER STORE|RETRIEVE Key File`  
   Requests the transfer of a key. For STORE, the File is the file to upload;
@@ -110,20 +110,20 @@ The following requests *must* all be supported by the special remote.
   Multiple transfers might be requested by git-annex, but it's fine for the 
   program to serialize them and only do one at a time.  
 * `CHECKPRESENT Key`  
-  Requests the remote check if a key is present in it.
+  Requests the remote to check if a key is present in it.
 * `REMOVE Key`  
-  Requests the remote remove a key's contents.
+  Requests the remote to remove key's contents.
 
 The following requests can optionally be supported. If not handled,
 replying with `UNSUPPORTED-REQUEST` is acceptable.
 
 * `GETCOST`  
-  Requests the remote return a use cost. Higher costs are more expensive.
+  Requests the remote to return a use cost. Higher costs are more expensive.
   (See Config/Cost.hs for some standard costs.)
 * `GETAVAILABILITY`
-  Requests the remote send back an `AVAILABILITY` reply.
+  Requests the remote to send back an `AVAILABILITY` reply.
   If the remote replies with `UNSUPPORTED-REQUEST`, its availability
-  is asssumed to be global. So, only remotes that are only reachable
+  is assumed to be global. So, only remotes that are only reachable
   locally need to worry about implementing this.
 
 More optional requests may be added, without changing the protocol version,
