@@ -1,0 +1,6 @@
+Hello,
+
+I've installed to ~/software/ using the prebuilt tarballs. I'm using the assistant with auto updates set to ask. Everytime I start the assistant it claims a new that a new version of git-annex has been installed. I click Finish Upgrade, it does the upgrade and it says to have finished upgrading to version 5.20141105-g8b19598. Next boot / restart everything starts again and it upgrades always to the same version.
+
+Thanks!
+Florian
