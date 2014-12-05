@@ -112,7 +112,7 @@ The following requests *must* all be supported by the special remote.
 * `CHECKPRESENT Key`  
   Requests the remote to check if a key is present in it.
 * `REMOVE Key`  
-  Requests the remote to remove key's contents.
+  Requests the remote to remove a key's contents.
 
 The following requests can optionally be supported. If not handled,
 replying with `UNSUPPORTED-REQUEST` is acceptable.
