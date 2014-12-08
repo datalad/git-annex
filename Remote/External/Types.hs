@@ -39,6 +39,7 @@ import Logs.Transfer (Direction(..))
 import Config.Cost (Cost)
 import Types.Remote (RemoteConfig)
 import Types.Availability (Availability(..))
+import Utility.Url (URLString)
 import qualified Utility.SimpleProtocol as Proto
 
 import Control.Concurrent.STM
@@ -90,6 +91,7 @@ data Request
 	| INITREMOTE
 	| GETCOST
 	| GETAVAILABILITY
+	| CLAIMURL URLString
 	| TRANSFER Direction Key FilePath
 	| CHECKPRESENT Key
 	| REMOVE Key
@@ -106,6 +108,7 @@ instance Proto.Sendable Request where
 	formatMessage INITREMOTE = ["INITREMOTE"]
 	formatMessage GETCOST = ["GETCOST"]
 	formatMessage GETAVAILABILITY = ["GETAVAILABILITY"]
+	formatMessage (CLAIMURL url) = [ "CLAIMURL", Proto.serialize url ]
 	formatMessage (TRANSFER direction key file) =
 		[ "TRANSFER"
 		, Proto.serialize direction
@@ -130,6 +133,8 @@ data Response
 	| AVAILABILITY Availability
 	| INITREMOTE_SUCCESS
 	| INITREMOTE_FAILURE ErrorMsg
+	| CLAIMURL_SUCCESS
+	| CLAIMURL_FAILURE
 	| UNSUPPORTED_REQUEST
 	deriving (Show)
 
@@ -147,6 +152,8 @@ instance Proto.Receivable Response where
 	parseCommand "AVAILABILITY" = Proto.parse1 AVAILABILITY
 	parseCommand "INITREMOTE-SUCCESS" = Proto.parse0 INITREMOTE_SUCCESS
 	parseCommand "INITREMOTE-FAILURE" = Proto.parse1 INITREMOTE_FAILURE
+	parseCommand "CLAIMURL-SUCCESS" = Proto.parse0 CLAIMURL_SUCCESS
+	parseCommand "CLAIMURL-FAILURE" = Proto.parse0 CLAIMURL_FAILURE
 	parseCommand "UNSUPPORTED-REQUEST" = Proto.parse0 UNSUPPORTED_REQUEST
 	parseCommand _ = Proto.parseFail
 
@@ -165,8 +172,8 @@ data RemoteRequest
 	| GETWANTED
 	| SETSTATE Key String
 	| GETSTATE Key
-	| SETURLPRESENT Key String
-	| SETURLMISSING Key String
+	| SETURLPRESENT Key URLString
+	| SETURLMISSING Key URLString
 	| GETURLS Key String
 	| DEBUG String
 	deriving (Show)

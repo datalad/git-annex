@@ -103,7 +103,7 @@ data RemoteA a = Remote {
 	-- Information about the remote, for git annex info to display.
 	getInfo :: a [(String, String)],
 	-- Some remotes can download from an url (or uri).
-	claimUrl :: Maybe (URLString -> IO Bool)
+	claimUrl :: Maybe (URLString -> a Bool)
 }
 
 instance Show (RemoteA a) where

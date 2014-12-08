@@ -125,6 +125,10 @@ replying with `UNSUPPORTED-REQUEST` is acceptable.
   If the remote replies with `UNSUPPORTED-REQUEST`, its availability
   is assumed to be global. So, only remotes that are only reachable
   locally need to worry about implementing this.
+* `CLAIMURL Value`  
+  Asks the remote if it wishes to claim responsibility for downloading
+  an url. If so, the remote should send back an `CLAIMURL-SUCCESS` reply.
+  If not, it can send `CLAIMURL-FAILURE`.
 
 More optional requests may be added, without changing the protocol version,
 so if an unknown request is seen, reply with `UNSUPPORTED-REQUEST`.
@@ -167,6 +171,10 @@ while it's handling a request.
   Indicates the INITREMOTE succeeded and the remote is ready to use.
 * `INITREMOTE-FAILURE ErrorMsg`  
   Indicates that INITREMOTE failed.
+* `CLAIMURL-SUCCESS`  
+  Indicates that the CLAIMURL url will be handled by this remote.
+* `CLAIMURL-FAILURE`  
+  Indicates that the CLAIMURL url wil not be handled by this remote.
 * `UNSUPPORTED-REQUEST`  
   Indicates that the special remote does not know how to handle a request.
 

@@ -70,7 +70,7 @@ gen r u c gc = do
 			mkUnavailable = gen r u c $
 				gc { remoteAnnexExternalType = Just "!dne!" },
 			getInfo = return [("externaltype", externaltype)],
-			claimUrl = Nothing
+			claimUrl = Just (claimurl external)
 		}
   where
 	externaltype = fromMaybe (error "missing externaltype") (remoteAnnexExternalType gc)
@@ -416,3 +416,12 @@ getAvailability external r gc = maybe query return (remoteAnnexAvailability gc)
 			_ -> Nothing
 		setRemoteAvailability r avail
 		return avail
+
+claimurl :: External -> URLString -> Annex Bool
+claimurl external url =
+	handleRequest external (CLAIMURL url) Nothing $ \req -> case req of
+		CLAIMURL_SUCCESS -> Just $ return True
+		CLAIMURL_FAILURE -> Just $ return False
+		UNSUPPORTED_REQUEST -> Just $ return False
+		_ -> Nothing
+

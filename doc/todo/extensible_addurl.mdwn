@@ -22,7 +22,7 @@ both available from CERN and from a torrent, for example.
 
 Solution: Add a new method to remotes:
 
-	claimUrl :: Maybe (URLString -> IO Bool)
+	claimUrl :: Maybe (URLString -> Annex Bool)
 
 Remotes that implement this method (including special remotes) will
 be queried when such an uri is added, to see which claims it. Once the
