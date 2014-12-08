@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="edward"
+ subject="URL backend file paths hit the 260 character file path limit on Windows"
+ date="2014-12-08T19:13:39Z"
+ content="""
+It isn't possible to checkout a git annex repository on Windows that includes quvi videos because the file path is often greater than 260 characters.
+
+See [[bugs/\"git-annex: direct: 1 failed\" on Windows]].
+"""]]
