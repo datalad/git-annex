@@ -7,16 +7,38 @@ from scientific data repositories that use their own APIs.
 
 The basic idea is to have external special remotes (or perhaps built-in
 ones in some cases), which addurl can use to download an object, referred
-to by some uri-like thing. The uri starts with "$downloader:"
+to by some uri-like thing. The uri starts with "$downloader:" to indicate
+that it's not a regular url and so is not handled by the web special
+remote.
 
 	git annex addurl torrent:$foo
 	git annex addurl CERN:$bar
 
 Problem: This requires mapping from the name of the downloader, which is
 probably the same as the git-annex-remote-$downloader program implementing
-the special remote protocol, to the UUID of a remote. That's assuming we
-want location tracking to be able to know that a file is both available
-from CERN and from a torrent, for example.
+the special remote protocol (but not always), to the UUID of a remote.
+That's assuming we want location tracking to be able to know that a file is
+both available from CERN and from a torrent, for example.
+
+Solution: Add a new method to remotes:
+
+	claimUri :: Maybe (Uri -> Bool)
+
+Remotes that implement this method (including special remotes) will
+be queried when such an uri is added, to see which claims it. Once the
+remote is known, addurl will record that the Key is present on that remote,
+and record the uri in the url log. 
+
+Then retrieval of the Key works more or less as usual. The only
+difference being that remotes that support this interface can look
+at the url log to find the one with the right "$downloader:" prefix,
+and so know where to download from. (Much as the web special remote already
+does.)
+
+Prerequisite: Expand the external special remote interface to support
+accessing the url log.
+
+----
 
 It would also be nice to be able to easily configure a regexp that normal
 urls, if they match, are made to use a particular downloader. So, for
@@ -29,7 +51,7 @@ special remote interface, and let a downloader be specified simply by:
 
 	git config annex.downloader.torrent.command 'aria2c %url $file'
 
-In this case, the UUID used would be the UUID of the web special remote, I
-suppose?
+This could be implemented in either the web special remote or even in an
+external special remote.
 
 Some other discussion at <https://github.com/datalad/datalad/issues/10>
