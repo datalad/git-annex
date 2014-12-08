@@ -134,7 +134,7 @@ replying with `UNSUPPORTED-REQUEST` is acceptable.
   (without downloading it). If the url is not accessible, send
   `CHECKURL-FAILURE`. If the url is accessible and the size is known,
   send the size in `CHECKURL-SIZE`. If the url is accessible, but the size
-  is unknown, send `CHECKURL-SIZEUNOWN`.
+  is unknown, send `CHECKURL-SIZEUNKOWN`.
 
 More optional requests may be added, without changing the protocol version,
 so if an unknown request is seen, reply with `UNSUPPORTED-REQUEST`.
