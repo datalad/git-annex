@@ -247,6 +247,17 @@ in control.
 * `GETSTATE Key`  
   Gets any state that has been stored for the key.  
   (git-annex replies with VALUE followed by the state.)
+* `SETURLPRESENT Key Value`  
+  Records an url (or uri) where the Key can be downloaded from.
+* `SETURLMISSING Key Value`  
+  Records that the key can no longer be downloaded from the specified
+  url (or uri).
+* `GETURLS Key Value`  
+  Gets the recorded urls where a Key can be downloaded from.
+  Only urls that start with the Value will be returned. The Value
+  may be empty to get all urls.
+  (git-annex replies one or more times with VALUE for each url.
+  The final VALUE has an empty value, indicating the end of the url list.)
 * `DEBUG message`
   Tells git-annex to display the message if --debug is enabled.
 
@@ -288,7 +299,5 @@ start a new process the next time it needs to use a remote.
   the remote. However, \n and probably \0 need to be escaped somehow in the
   file data, which adds complication.
 * uuid discovery during INITREMOTE.
-* Support for getting and setting the list of urls that can be associated
-  with a key.
 * Hook into webapp. Needs a way to provide some kind of prompt to the user
   in the webapp, etc.

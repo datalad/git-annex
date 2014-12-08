@@ -165,6 +165,9 @@ data RemoteRequest
 	| GETWANTED
 	| SETSTATE Key String
 	| GETSTATE Key
+	| SETURLPRESENT Key String
+	| SETURLMISSING Key String
+	| GETURLS Key String
 	| DEBUG String
 	deriving (Show)
 
@@ -182,6 +185,9 @@ instance Proto.Receivable RemoteRequest where
 	parseCommand "GETWANTED" = Proto.parse0 GETWANTED
 	parseCommand "SETSTATE" = Proto.parse2 SETSTATE
 	parseCommand "GETSTATE" = Proto.parse1 GETSTATE
+	parseCommand "SETURLPRESENT" = Proto.parse2 SETURLPRESENT
+	parseCommand "SETURLMISSING" = Proto.parse2 SETURLMISSING
+	parseCommand "GETURLS" = Proto.parse2 GETURLS
 	parseCommand "DEBUG" = Proto.parse1 DEBUG
 	parseCommand _ = Proto.parseFail
 

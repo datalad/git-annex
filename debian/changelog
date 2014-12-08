@@ -2,6 +2,8 @@ git-annex (5.20141204) UNRELEASED; urgency=medium
 
   * Webapp: When adding a new box.com remote, use the new style chunking.
     Thanks, Jon Ander Peñalba.
+  * External special remote protocol now includes commands for setting
+    and getting the urls associated with a key.
 
  -- Joey Hess <id@joeyh.name>  Fri, 05 Dec 2014 13:42:08 -0400
 

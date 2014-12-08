@@ -9,6 +9,7 @@ module Logs.Web (
 	URLString,
 	webUUID,
 	getUrls,
+	getUrlsWithPrefix,
 	setUrlPresent,
 	setUrlMissing,
 	knownUrls,
@@ -45,6 +46,9 @@ getUrls key = go $ urlLogFile key : oldurlLogs key
 		if null us
 			then go ls
 			else return us
+
+getUrlsWithPrefix :: Key -> String -> Annex [URLString]
+getUrlsWithPrefix key prefix = filter (prefix `isPrefixOf`) <$> getUrls key
 
 setUrlPresent :: Key -> URLString -> Annex ()
 setUrlPresent key url = do

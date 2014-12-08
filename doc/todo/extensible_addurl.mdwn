@@ -36,7 +36,7 @@ and so know where to download from. (Much as the web special remote already
 does.)
 
 Prerequisite: Expand the external special remote interface to support
-accessing the url log.
+accessing the url log. (done)
 
 ----
 

@@ -19,6 +19,7 @@ import Utility.Metered
 import Logs.Transfer
 import Logs.PreferredContent.Raw
 import Logs.RemoteState
+import Logs.Web
 import Config.Cost
 import Annex.UUID
 import Creds
@@ -215,6 +216,11 @@ handleRequest' lck external req mp responsehandler
 		state <- fromMaybe ""
 			<$> getRemoteState (externalUUID external) key
 		send $ VALUE state
+	handleRemoteRequest (SETURLPRESENT key url) = setUrlPresent key url
+	handleRemoteRequest (SETURLMISSING key url) = setUrlMissing key url
+	handleRemoteRequest (GETURLS key prefix) = do
+		mapM_ (send . VALUE) =<< getUrlsWithPrefix key prefix
+		send (VALUE "") -- end of list
 	handleRemoteRequest (DEBUG msg) = liftIO $ debugM "external" msg
 	handleRemoteRequest (VERSION _) =
 		sendMessage lck external $ ERROR "too late to send VERSION"
