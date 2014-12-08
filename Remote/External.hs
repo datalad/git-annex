@@ -223,7 +223,8 @@ handleRequest' lck external req mp responsehandler
 	handleRemoteRequest (SETURLMISSING key url) =
 		setUrlMissing (externalUUID external) key url
 	handleRemoteRequest (GETURLS key prefix) = do
-		mapM_ (send . VALUE) =<< getUrlsWithPrefix key prefix
+		mapM_ (send . VALUE . fst . getDownloader)
+			=<< getUrlsWithPrefix key prefix
 		send (VALUE "") -- end of list
 	handleRemoteRequest (DEBUG msg) = liftIO $ debugM "external" msg
 	handleRemoteRequest (VERSION _) =
