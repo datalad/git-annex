@@ -70,7 +70,8 @@ gen r u c gc = do
 			mkUnavailable = gen r u c $
 				gc { remoteAnnexExternalType = Just "!dne!" },
 			getInfo = return [("externaltype", externaltype)],
-			claimUrl = Just (claimurl external)
+			claimUrl = Just (claimurl external),
+			checkUrl = checkurl external
 		}
   where
 	externaltype = fromMaybe (error "missing externaltype") (remoteAnnexExternalType gc)
@@ -217,8 +218,10 @@ handleRequest' lck external req mp responsehandler
 		state <- fromMaybe ""
 			<$> getRemoteState (externalUUID external) key
 		send $ VALUE state
-	handleRemoteRequest (SETURLPRESENT key url) = setUrlPresent key url
-	handleRemoteRequest (SETURLMISSING key url) = setUrlMissing key url
+	handleRemoteRequest (SETURLPRESENT key url) =
+		setUrlPresent (externalUUID external) key url
+	handleRemoteRequest (SETURLMISSING key url) =
+		setUrlMissing (externalUUID external) key url
 	handleRemoteRequest (GETURLS key prefix) = do
 		mapM_ (send . VALUE) =<< getUrlsWithPrefix key prefix
 		send (VALUE "") -- end of list
@@ -425,3 +428,11 @@ claimurl external url =
 		UNSUPPORTED_REQUEST -> Just $ return False
 		_ -> Nothing
 
+checkurl :: External -> URLString -> Annex (Maybe Integer)
+checkurl external url = 
+	handleRequest external (CHECKURL url) Nothing $ \req -> case req of
+		CHECKURL_SIZE sz -> Just $ return $ Just sz
+		CHECKURL_SIZEUNKNOWN -> Just $ return Nothing
+		CHECKURL_FAILURE errmsg -> Just $ error errmsg
+		UNSUPPORTED_REQUEST -> error "CHECKURL not implemented by external special remote"
+		_ -> Nothing

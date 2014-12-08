@@ -10,6 +10,7 @@ module Command.RmUrl where
 import Common.Annex
 import Command
 import Logs.Web
+import qualified Remote
 
 cmd :: [Command]
 cmd = [notBareRepo $
@@ -26,5 +27,9 @@ start (file, url) = flip whenAnnexed file $ \_ key -> do
 
 cleanup :: String -> Key -> CommandCleanup
 cleanup url key = do
-	setUrlMissing key url
+	r <- Remote.claimingUrl url
+	let url' = if Remote.uuid r == webUUID
+		then url
+		else setDownloader url OtherDownloader
+	setUrlMissing (Remote.uuid r) key url'
 	return True

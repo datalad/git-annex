@@ -62,7 +62,8 @@ gen r u c gc = do
 			mkUnavailable = gen r u c $
 				gc { remoteAnnexHookType = Just "!dne!" },
 			getInfo = return [("hooktype", hooktype)],
-			claimUrl = Nothing
+			claimUrl = Nothing,
+			checkUrl = const $ return Nothing
 		}
   where
 	hooktype = fromMaybe (error "missing hooktype") $ remoteAnnexHookType gc

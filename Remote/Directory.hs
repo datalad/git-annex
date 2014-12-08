@@ -69,7 +69,8 @@ gen r u c gc = do
 			mkUnavailable = gen r u c $
 				gc { remoteAnnexDirectory = Just "/dev/null" },
 			getInfo = return [("directory", dir)],
-			claimUrl = Nothing
+			claimUrl = Nothing,
+			checkUrl = const $ return Nothing
 		}
   where
 	dir = fromMaybe (error "missing directory") $ remoteAnnexDirectory gc

@@ -16,6 +16,7 @@ import qualified Command.Add
 import Logs.Web
 import Logs.Location
 import Utility.CopyFile
+import qualified Remote
 
 cmd :: [Command]
 cmd = [notDirect $ command "rekey"
@@ -61,8 +62,9 @@ cleanup file oldkey newkey = do
 	-- If the old key had some associated urls, record them for
 	-- the new key as well.
 	urls <- getUrls oldkey
-	unless (null urls) $
-		mapM_ (setUrlPresent newkey) urls
+	forM_ urls $ \url -> do
+		r <- Remote.claimingUrl url
+		setUrlPresent (Remote.uuid r) newkey url
 
 	-- Update symlink to use the new key.
 	liftIO $ removeFile file

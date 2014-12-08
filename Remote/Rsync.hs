@@ -85,6 +85,7 @@ gen r u c gc = do
 			, mkUnavailable = return Nothing
 			, getInfo = return [("url", url)]
 			, claimUrl = Nothing
+			, checkUrl = const $ return Nothing
 			}
   where
 	specialcfg = (specialRemoteCfg c)

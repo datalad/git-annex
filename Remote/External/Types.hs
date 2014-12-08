@@ -92,6 +92,7 @@ data Request
 	| GETCOST
 	| GETAVAILABILITY
 	| CLAIMURL URLString
+	| CHECKURL URLString
 	| TRANSFER Direction Key FilePath
 	| CHECKPRESENT Key
 	| REMOVE Key
@@ -109,6 +110,7 @@ instance Proto.Sendable Request where
 	formatMessage GETCOST = ["GETCOST"]
 	formatMessage GETAVAILABILITY = ["GETAVAILABILITY"]
 	formatMessage (CLAIMURL url) = [ "CLAIMURL", Proto.serialize url ]
+	formatMessage (CHECKURL url) = [ "CHECKURL", Proto.serialize url ]
 	formatMessage (TRANSFER direction key file) =
 		[ "TRANSFER"
 		, Proto.serialize direction
@@ -135,6 +137,9 @@ data Response
 	| INITREMOTE_FAILURE ErrorMsg
 	| CLAIMURL_SUCCESS
 	| CLAIMURL_FAILURE
+	| CHECKURL_SIZE Size
+	| CHECKURL_SIZEUNKNOWN
+	| CHECKURL_FAILURE ErrorMsg
 	| UNSUPPORTED_REQUEST
 	deriving (Show)
 
@@ -154,6 +159,9 @@ instance Proto.Receivable Response where
 	parseCommand "INITREMOTE-FAILURE" = Proto.parse1 INITREMOTE_FAILURE
 	parseCommand "CLAIMURL-SUCCESS" = Proto.parse0 CLAIMURL_SUCCESS
 	parseCommand "CLAIMURL-FAILURE" = Proto.parse0 CLAIMURL_FAILURE
+	parseCommand "CHECKURL-SIZE" = Proto.parse1 CHECKURL_SIZE
+	parseCommand "CHECKURL-SIZEUNKNOWN" = Proto.parse0 CHECKURL_SIZEUNKNOWN
+	parseCommand "CHECKURL-FAILURE" = Proto.parse1 CHECKURL_FAILURE
 	parseCommand "UNSUPPORTED-REQUEST" = Proto.parse0 UNSUPPORTED_REQUEST
 	parseCommand _ = Proto.parseFail
 
@@ -225,6 +233,7 @@ instance Proto.Receivable AsyncMessage where
 type ErrorMsg = String
 type Setting = String
 type ProtocolVersion = Int
+type Size = Integer
 
 supportedProtocolVersions :: [ProtocolVersion]
 supportedProtocolVersions = [1]
@@ -250,6 +259,10 @@ instance Proto.Serializable ProtocolVersion where
 	deserialize = readish
 
 instance Proto.Serializable Cost where
+	serialize = show
+	deserialize = readish
+
+instance Proto.Serializable Size where
 	serialize = show
 	deserialize = readish
 

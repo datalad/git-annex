@@ -69,7 +69,8 @@ gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
 			mkUnavailable = return Nothing,
 			getInfo = includeCredsInfo c (AWS.creds u) $
 				[ ("glacier vault", getVault c) ],
-			claimUrl = Nothing
+			claimUrl = Nothing,
+			checkUrl = const $ return Nothing
 		}
 	specialcfg = (specialRemoteCfg c)
 		-- Disabled until jobList gets support for chunks.

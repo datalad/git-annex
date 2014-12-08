@@ -123,6 +123,7 @@ gen' r u c gc = do
 		, mkUnavailable = return Nothing
 		, getInfo = return $ gitRepoInfo r
 		, claimUrl = Nothing
+		, checkUrl = const $ return Nothing
 	}
 	return $ Just $ specialRemote' specialcfg c
 		(simplyPrepare $ store this rsyncopts)

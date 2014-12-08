@@ -63,6 +63,7 @@ import Types.CleanupActions
 import Utility.Quvi (QuviVersion)
 #endif
 import Utility.InodeCache
+import Utility.Url
 
 import "mtl" Control.Monad.Reader
 import Control.Concurrent
@@ -128,6 +129,7 @@ data AnnexState = AnnexState
 	, useragent :: Maybe String
 	, errcounter :: Integer
 	, unusedkeys :: Maybe (S.Set Key)
+	, tempurls :: M.Map Key URLString
 #ifdef WITH_QUVI
 	, quviversion :: Maybe QuviVersion
 #endif
@@ -173,6 +175,7 @@ newState c r = AnnexState
 	, useragent = Nothing
 	, errcounter = 0
 	, unusedkeys = Nothing
+	, tempurls = M.empty
 #ifdef WITH_QUVI
 	, quviversion = Nothing
 #endif

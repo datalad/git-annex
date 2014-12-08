@@ -125,10 +125,16 @@ replying with `UNSUPPORTED-REQUEST` is acceptable.
   If the remote replies with `UNSUPPORTED-REQUEST`, its availability
   is assumed to be global. So, only remotes that are only reachable
   locally need to worry about implementing this.
-* `CLAIMURL Value`  
+* `CLAIMURL Url`  
   Asks the remote if it wishes to claim responsibility for downloading
   an url. If so, the remote should send back an `CLAIMURL-SUCCESS` reply.
   If not, it can send `CLAIMURL-FAILURE`.
+* `CHECKURL Url`  
+  Asks the remote to check if the url's content can currently be downloaded
+  (without downloading it). If the url is not accessible, send
+  `CHECKURL-FAILURE`. If the url is accessible and the size is known,
+  send the size in `CHECKURL-SIZE`. If the url is accessible, but the size
+  is unknown, send `CHECKURL-SIZEUNOWN`.
 
 More optional requests may be added, without changing the protocol version,
 so if an unknown request is seen, reply with `UNSUPPORTED-REQUEST`.
@@ -175,6 +181,14 @@ while it's handling a request.
   Indicates that the CLAIMURL url will be handled by this remote.
 * `CLAIMURL-FAILURE`  
   Indicates that the CLAIMURL url wil not be handled by this remote.
+* `CHECKURL-SIZE Size`  
+  Indicates that the requested url has been verified to exist,
+  and its size is known. The size is in bytes.
+* `CHECKURL-SIZEUNKNOWN`  
+  Indicates that the requested url has been verified to exist,
+  but its size could not be determined.
+* `CHECKURL-FAILURE`  
+  Indicates that the requested url could not be accessed.
 * `UNSUPPORTED-REQUEST`  
   Indicates that the special remote does not know how to handle a request.
 
@@ -255,14 +269,14 @@ in control.
 * `GETSTATE Key`  
   Gets any state that has been stored for the key.  
   (git-annex replies with VALUE followed by the state.)
-* `SETURLPRESENT Key Value`  
+* `SETURLPRESENT Key Url`  
   Records an url (or uri) where the Key can be downloaded from.
-* `SETURLMISSING Key Value`  
+* `SETURLMISSING Key Url`  
   Records that the key can no longer be downloaded from the specified
   url (or uri).
-* `GETURLS Key Value`  
+* `GETURLS Key Prefix`  
   Gets the recorded urls where a Key can be downloaded from.
-  Only urls that start with the Value will be returned. The Value
+  Only urls that start with the Prefix will be returned. The Prefix
   may be empty to get all urls.
   (git-annex replies one or more times with VALUE for each url.
   The final VALUE has an empty value, indicating the end of the url list.)

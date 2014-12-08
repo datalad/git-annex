@@ -4,6 +4,9 @@ git-annex (5.20141204) UNRELEASED; urgency=medium
     Thanks, Jon Ander Peñalba.
   * External special remote protocol now includes commands for setting
     and getting the urls associated with a key.
+  * Urls can now be claimed by remotes. This will allow creating,
+    for example, a external special remote that handles magnet: and
+    *.torrent urls.
 
  -- Joey Hess <id@joeyh.name>  Fri, 05 Dec 2014 13:42:08 -0400
 

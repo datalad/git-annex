@@ -86,7 +86,8 @@ gen r u c gc = do
 		remotetype = remote,
 		mkUnavailable = return Nothing,
 		getInfo = return [],
-		claimUrl = Nothing
+		claimUrl = Nothing,
+		checkUrl = const $ return Nothing
 	}
 
 tahoeSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)

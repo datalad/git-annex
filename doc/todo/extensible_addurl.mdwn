@@ -25,11 +25,40 @@ Solution: Add a new method to remotes:
 	claimUrl :: Maybe (URLString -> Annex Bool)
 
 Remotes that implement this method (including special remotes) will
-be queried when such an uri is added, to see which claims it. Once the
-remote is known, addurl will record that the Key is present on that remote,
-and record the uri in the url log. 
+be queried when such an uri is added, to see which claims it.
 
-Then retrieval of the Key works more or less as usual. The only
+Once the remote is known, addurl --file will record that the Key is present
+on that remote, and record the uri in the url log.
+
+----
+
+What about using addurl to add a new file? In this mode, the Key is not yet
+known. addurl currently handles this by generating a dummy Key for the url
+(hitting the url to get its size), and running a Transfer using the dummy
+key that downloads from the web. Once the download is done, the dummy Key
+is upgraded to the final Key. 
+
+Something similar could be done for other remotes, but the url log for the
+dummy key would need to have the url added to it, for the remote to know
+what to download, and then that could be removed after the download. Which
+causes ugly churn in git, and would leave a mess if interrupted.
+
+One option is to add another new method to remotes:
+
+	downloadUrl :: Maybe (URLString -> Annex FilePath)
+
+Or, the url log could have support added for recording temporary key
+urls in memory. (done)
+
+Another problem is that the size of the Key isn't known. addurl
+could always operate in relaxed mode, where it generates a size-less Key.
+Or, yet another method could be added: (done)
+
+	sizeUrl :: URLString -> Annex (Maybe Integer)
+
+----
+
+Retrieval of the Key works more or less as usual. The only
 difference being that remotes that support this interface can look
 at the url log to find the one with the right "$downloader:" prefix,
 and so know where to download from. (Much as the web special remote already
@@ -55,3 +84,5 @@ This could be implemented in either the web special remote or even in an
 external special remote.
 
 Some other discussion at <https://github.com/datalad/datalad/issues/10>
+
+> [[done]]! --[[Joey]] 

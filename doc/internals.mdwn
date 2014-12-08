@@ -182,8 +182,9 @@ Example:
 ## `aaa/bbb/*.log.web`
 
 These log files record urls used by the
-[[web_special_remote|special_remotes/web]]. Their format is similar
-to the location tracking files, but with urls rather than UUIDs.
+[[web_special_remote|special_remotes/web]] and sometimes by other remotes.
+Their format is similar to the location tracking files, but with urls
+rather than UUIDs.
 
 ## `aaa/bbb/*.log.rmt`
 

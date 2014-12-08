@@ -75,6 +75,7 @@ gen r u c gc = do
 		, mkUnavailable = return Nothing
 		, getInfo = return [("repo", buprepo)]
 		, claimUrl = Nothing
+		, checkUrl = const $ return Nothing
 		}
 	return $ Just $ specialRemote' specialcfg c
 		(simplyPrepare $ store this buprepo)

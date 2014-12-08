@@ -93,7 +93,8 @@ gen r u c gc = do
 					else Nothing
 				, Just ("partsize", maybe "unlimited" (roughSize storageUnits False) (getPartSize c))
 				],
-			claimUrl = Nothing
+			claimUrl = Nothing,
+			checkUrl = const $ return Nothing
 		}
 
 s3Setup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
@@ -163,7 +164,7 @@ store r h = fileStorer $ \k f p -> do
 		_ -> singlepartupload k f p	
 	-- Store public URL to item in Internet Archive.
 	when (isIA (hinfo h) && not (isChunkKey k)) $
-		setUrlPresent k (iaKeyUrl r k)
+		setUrlPresent webUUID k (iaKeyUrl r k)
 	return True
   where
 	singlepartupload k f p = do

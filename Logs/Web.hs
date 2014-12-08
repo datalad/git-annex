@@ -1,6 +1,6 @@
 {- Web url logs.
  -
- - Copyright 2011, 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,12 +16,16 @@ module Logs.Web (
 	Downloader(..),
 	getDownloader,
 	setDownloader,
+	setTempUrl,
+	removeTempUrl,
 ) where
 
 import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.Map as M
 import Data.Tuple.Utils
 
 import Common.Annex
+import qualified Annex
 import Logs
 import Logs.Presence
 import Logs.Location
@@ -37,7 +41,10 @@ webUUID = UUID "00000000-0000-0000-0000-000000000001"
 
 {- Gets all urls that a key might be available from. -}
 getUrls :: Key -> Annex [URLString]
-getUrls key = go $ urlLogFile key : oldurlLogs key
+getUrls key = do
+	l <- go $ urlLogFile key : oldurlLogs key
+	tmpl <- Annex.getState (maybeToList . M.lookup key . Annex.tempurls)
+	return (tmpl ++ l)
   where
 	go [] = return []
 	go (l:ls) = do
@@ -49,19 +56,18 @@ getUrls key = go $ urlLogFile key : oldurlLogs key
 getUrlsWithPrefix :: Key -> String -> Annex [URLString]
 getUrlsWithPrefix key prefix = filter (prefix `isPrefixOf`) <$> getUrls key
 
-setUrlPresent :: Key -> URLString -> Annex ()
-setUrlPresent key url = do
+setUrlPresent :: UUID -> Key -> URLString -> Annex ()
+setUrlPresent uuid key url = do
 	us <- getUrls key
 	unless (url `elem` us) $ do
 		addLog (urlLogFile key) =<< logNow InfoPresent url
-		-- update location log to indicate that the web has the key
-		logChange key webUUID InfoPresent
+		logChange key uuid InfoPresent
 
-setUrlMissing :: Key -> URLString -> Annex ()
-setUrlMissing key url = do
+setUrlMissing :: UUID -> Key -> URLString -> Annex ()
+setUrlMissing uuid key url = do
 	addLog (urlLogFile key) =<< logNow InfoMissing url
 	whenM (null <$> getUrls key) $
-		logChange key webUUID InfoMissing
+		logChange key uuid InfoMissing
 
 {- Finds all known urls. -}
 knownUrls :: Annex [URLString]
@@ -81,18 +87,27 @@ knownUrls = do
 	geturls Nothing = return []
 	geturls (Just logsha) = getLog . L.unpack <$> catObject logsha
 
-data Downloader = DefaultDownloader | QuviDownloader
+setTempUrl :: Key -> URLString -> Annex ()
+setTempUrl key url = Annex.changeState $ \s ->
+	s { Annex.tempurls = M.insert key url (Annex.tempurls s) }
 
-{- Determines the downloader for an URL.
- -
- - Some URLs are not downloaded by normal means, and this is indicated
- - by prefixing them with downloader: when they are recorded in the url
- - logs. -}
+removeTempUrl :: Key -> Annex ()
+removeTempUrl key = Annex.changeState $ \s ->
+	s { Annex.tempurls = M.delete key (Annex.tempurls s) }
+
+data Downloader = WebDownloader | QuviDownloader | OtherDownloader
+	deriving (Eq)
+
+{- To keep track of how an url is downloaded, it's mangled slightly in
+ - the log. For quvi, "quvi:" is prefixed. For urls that are handled by
+ - some other remote, ":" is prefixed. -}
+setDownloader :: URLString -> Downloader -> String
+setDownloader u WebDownloader = u
+setDownloader u QuviDownloader = "quvi:" ++ u
+setDownloader u OtherDownloader = ":" ++ u
+
 getDownloader :: URLString -> (URLString, Downloader)
 getDownloader u = case separate (== ':') u of
 	("quvi", u') -> (u', QuviDownloader)
-	_ -> (u, DefaultDownloader)
-
-setDownloader :: URLString -> Downloader -> URLString
-setDownloader u DefaultDownloader = u
-setDownloader u QuviDownloader = "quvi:" ++ u
+	("", u') -> (u', OtherDownloader)
+	_ -> (u, WebDownloader)

@@ -1,4 +1,4 @@
-{- Web remotes.
+{- Web remote.
  -
  - Copyright 2011 Joey Hess <joey@kitenet.net>
  -
@@ -52,7 +52,7 @@ gen r _ c gc =
 		removeKey = dropKey,
 		checkPresent = checkKey,
 		checkPresentCheap = False,
-		whereisKey = Just getUrls,
+		whereisKey = Just getWebUrls,
 		remoteFsck = Nothing,
 		repairRepo = Nothing,
 		config = c,
@@ -64,11 +64,12 @@ gen r _ c gc =
 		remotetype = remote,
 		mkUnavailable = return Nothing,
 		getInfo = return [],
-		claimUrl = Nothing -- implicitly claims all urls
+		claimUrl = Nothing, -- implicitly claims all urls
+		checkUrl = const $ return Nothing
 	}
 
 downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
-downloadKey key _file dest _p = get =<< getUrls key
+downloadKey key _file dest _p = get =<< getWebUrls key
   where
 	get [] = do
 		warning "no known url"
@@ -86,7 +87,7 @@ downloadKey key _file dest _p = get =<< getUrls key
 					warning "quvi support needed for this url"
 					return False
 #endif
-				DefaultDownloader -> downloadUrl [u'] dest
+				_ -> downloadUrl [u'] dest
 
 downloadKeyCheap :: Key -> FilePath -> Annex Bool
 downloadKeyCheap _ _ = return False
@@ -98,12 +99,12 @@ uploadKey _ _ _ = do
 
 dropKey :: Key -> Annex Bool
 dropKey k = do
-	mapM_ (setUrlMissing k) =<< getUrls k
+	mapM_ (setUrlMissing webUUID k) =<< getWebUrls k
 	return True
 
 checkKey :: Key -> Annex Bool
 checkKey key = do
-	us <- getUrls key
+	us <- getWebUrls key
 	if null us
 		then return False
 		else either error return =<< checkKey' key us
@@ -118,7 +119,7 @@ checkKey' key us = firsthit us (Right False) $ \u -> do
 #else
 			return $ Left "quvi support needed for this url"
 #endif
-		DefaultDownloader -> do
+		_ -> do
 			Url.withUrlOptions $ catchMsgIO .
 				Url.checkBoth u' (keySize key)
   where
@@ -128,3 +129,9 @@ checkKey' key us = firsthit us (Right False) $ \u -> do
 		case r of
 			Right _ -> return r
 			Left _ -> firsthit rest r a
+
+getWebUrls :: Key -> Annex [URLString]
+getWebUrls key = filter supported <$> getUrls key
+  where
+	supported u = snd (getDownloader u) 
+		`elem` [WebDownloader, QuviDownloader]
