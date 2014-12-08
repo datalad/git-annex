@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="edward"
+ subject="another example"
+ date="2014-12-06T21:01:03Z"
+ content="""
+I'm having the same problem:
+
+> git-annex: c:\Users\TV\annex\.git\annex\objects\566\a33\URL--quvi&chttps&c%%www.youtube.com%watch,63v,61XS-kKX9wQk0,38index,615,38list,61PLQ-uHSnFig5NCQkhJfkn8ogXFwzrP4SIf\: openTempFile: does not exist (No such file or directory)    
+> failed    
+> git-annex: init: 1 failed    
+
+In my case the filename is slightly shorter, 154 characters, for Aaron the offending filename was 162 characters.
+
+I think the full filename that git annex is trying to write is 270 characters:
+
+> c:\Users\TV\annex\.git\annex\objects\566\a33\URL--quvi&chttps&c%%www.youtube.com%watch,63v,61XS-kKX9wQk0,38index,615,38list,61PLQ-uHSnFig5NCQkhJfkn8ogXFwzrP4SIf/URL--quvi&chttps&c%%www.youtube.com%watch,63v,61XS-kKX9wQk0,38index,615,38list,61PLQ-uHSnFig5NCQkhJfkn8ogXFwzrP4SIf
+"""]]
