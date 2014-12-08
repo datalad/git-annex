@@ -84,6 +84,7 @@ gen r u c gc = do
 			, remotetype = remote
 			, mkUnavailable = return Nothing
 			, getInfo = return [("url", url)]
+			, claimUrl = Nothing
 			}
   where
 	specialcfg = (specialRemoteCfg c)

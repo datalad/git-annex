@@ -160,6 +160,7 @@ gen r u c gc
 			, remotetype = remote
 			, mkUnavailable = unavailable r u c gc
 			, getInfo = return $ gitRepoInfo r
+			, claimUrl = Nothing
 			}
 
 unavailable :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)

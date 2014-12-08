@@ -63,7 +63,8 @@ gen r _ c gc =
 		availability = GloballyAvailable,
 		remotetype = remote,
 		mkUnavailable = return Nothing,
-		getInfo = return []
+		getInfo = return [],
+		claimUrl = Nothing -- implicitly claims all urls
 	}
 
 downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool

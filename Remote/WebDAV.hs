@@ -73,7 +73,8 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			remotetype = remote,
 			mkUnavailable = gen r u (M.insert "url" "http://!dne!/" c) gc,
 			getInfo = includeCredsInfo c (davCreds u) $
-				[("url", fromMaybe "unknown" (M.lookup "url" c))]
+				[("url", fromMaybe "unknown" (M.lookup "url" c))],
+			claimUrl = Nothing
 		}
 		chunkconfig = getChunkConfig c
 

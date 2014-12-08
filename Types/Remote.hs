@@ -29,6 +29,7 @@ import Config.Cost
 import Utility.Metered
 import Git.Types
 import Utility.SafeCommand
+import Utility.Url
 
 type RemoteConfigKey = String
 type RemoteConfig = M.Map RemoteConfigKey String
@@ -100,7 +101,9 @@ data RemoteA a = Remote {
 	-- available for use. All its actions should fail.
 	mkUnavailable :: a (Maybe (RemoteA a)),
 	-- Information about the remote, for git annex info to display.
-	getInfo :: a [(String, String)]
+	getInfo :: a [(String, String)],
+	-- Some remotes can download from an url (or uri).
+	claimUrl :: Maybe (URLString -> IO Bool)
 }
 
 instance Show (RemoteA a) where

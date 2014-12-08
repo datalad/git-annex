@@ -29,8 +29,7 @@ import qualified Annex.Branch
 import Annex.CatFile
 import qualified Git
 import qualified Git.LsFiles
-
-type URLString = String
+import Utility.Url
 
 -- Dummy uuid for the whole web. Do not alter.
 webUUID :: UUID

@@ -71,6 +71,7 @@ gen r u c gc = do
 		, readonly = False
 		, mkUnavailable = return Nothing
 		, getInfo = return [("repo", ddarrepo)]
+		, claimUrl = Nothing
 		}
 	ddarrepo = fromMaybe (error "missing ddarrepo") $ remoteAnnexDdarRepo gc
 	specialcfg = (specialRemoteCfg c)

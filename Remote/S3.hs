@@ -92,7 +92,8 @@ gen r u c gc = do
 					then Just ("internet archive item", iaItemUrl $ fromMaybe "unknown" $ getBucketName c)
 					else Nothing
 				, Just ("partsize", maybe "unlimited" (roughSize storageUnits False) (getPartSize c))
-				]
+				],
+			claimUrl = Nothing
 		}
 
 s3Setup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
