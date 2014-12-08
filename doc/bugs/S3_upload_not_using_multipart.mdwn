@@ -57,6 +57,6 @@ Please provide any additional information below.
 > enough version of the aws library. You need to configure the remote to
 > use an appropriate value for multipart, eg:
 > 
-> git annex enableremote cloud multipart=1GiB
+> git annex enableremote cloud partsize=1GiB
 > 
 > --[[Joey]]
