@@ -72,16 +72,24 @@ downloadtorrent () {
 	dest="$3"
 
 	tmpdir="$(mktemp -d)"
-	if ! runcmd aria2c --select-file="$n" "$torrent" -d "$tmpdir"; then
-		false
-	fi
 
 	# aria2c will create part of the directory structure
 	# contained in the torrent. It may download parts of other files
 	# in addition to the one we asked for. So, we need to find
 	# out the filename we want, and look for it.
-	wantdir="$(btshowmetainfo "$torrent" | grep "^directory name: " | sed "s/^directory name: //")"
-	wantfile="$(btshowmetainfo "$tmp" | grep '^   ' | sed 's/^   //' | head -n "$n" | tail -n 1 | sed 's/ ([0-9]*)$//')"
+	wantdir="$(btshowmetainfo "$torrent" | grep "^directory name: " | sed "s/^directory name: //" || true)"
+	if [ -n "$wantdir" ]; then
+		wantfile="$(btshowmetainfo "$torrent" | grep '^   ' | sed 's/^   //' | head -n "$n" | tail -n 1 | sed 's/ ([0-9]*)$//')"
+		if ! runcmd aria2c --select-file="$n" "$torrent" -d "$tmpdir"; then
+			false
+		fi
+	else
+		wantfile="$(btshowmetainfo "$torrent" | egrep "^file name.*: " | sed "s/^file name.*: //")"
+		wantdir=.
+		if ! runcmd aria2c "$torrent" -d "$tmpdir"; then
+			false
+		fi
+	fi
 	if [ -e "$tmpdir/$wantdir/$wantfile" ]; then
 		mv "$tmpdir/$wantdir/$wantfile" "$dest"
 		rm -rf "$tmpdir"
@@ -130,6 +138,11 @@ while read line; do
 					n=$(expr $n + 1)
 					printf " $url#$n $size $file"
 				done
+				if [ "$n" = 0 ]; then
+					file="$(btshowmetainfo "$tmp" | egrep "^file name.*: " | sed "s/^file name.*: //")"
+					size="$(btshowmetainfo "$tmp" | egrep "^file size.*: " | sed "s/^file size.*: \([0-9]*\).*/\1/")"
+					printf " $url $size $file"
+				fi
 				printf "\n"
 				IFS="$oldIFS"
 			fi
@@ -154,7 +167,7 @@ while read line; do
 						if ! runcmd curl -o "$tmp" "$url"; then
 							echo TRANSFER-FAILURE RETRIEVE "$key" "failed downloading torrent file from $url"
 						else
-							filenum="$(echo "$url" | sed 's/.*#\(\d*\)/\1/')"
+							filenum="$(echo "$url" | sed 's/(.*#\(\d*\)/\1/')"
 							if downloadtorrent "$tmp" "$filenum" "$file"; then
 								echo TRANSFER-SUCCESS RETRIEVE "$key"
 							else
