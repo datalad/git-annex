@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawntodrSgODU27WUCyN2PV7TC14YMkyaoxQ"
+ nickname="Dennis"
+ subject="comment 4"
+ date="2014-12-11T10:58:21Z"
+ content="""
+I suffer from the same issue.
+
+In ~/.profile I put the line `git-annex assistant --quiet --autostart --startdelay=5s > /dev/null &`.
+
+Htop shows:
+
+    26291 xxx      20   0 6584M 3123M  9864 S  0.0 81.6 29h29:17 git-annex assistant --startdelay=5s
+    26292 xxx      20   0 6584M 3123M  9864 S  0.0 81.6 12h38:32 git-annex assistant --startdelay=5s
+    26293 xxx      20   0 6584M 3123M  9864 S  0.0 81.6 21h45:49 git-annex assistant --startdelay=5s
+    26321 xxx      20   0 6584M 3123M  9864 D  0.0 81.6 18:34.12 git-annex assistant --startdelay=5s
+    21019 xxx      20   0 6584M 3123M  9864 S  0.0 81.6  0:00.08 git-annex assistant --startdelay=5s
+    21908 xxx      20   0 6584M 3123M  9864 S  0.0 81.6  0:00.00 git-annex assistant --startdelay=5s
+    26290 xxx      20   0 6584M 3123M  9864 S  0.0 81.6 64h33:50 git-annex assistant --startdelay=5s
+
+"""]]
