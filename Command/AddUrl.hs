@@ -82,7 +82,7 @@ seek us = do
 startRemote :: Remote -> Bool -> FilePath -> URLString -> Maybe Integer -> CommandStart
 startRemote r relaxed file uri sz = do
 	showStart "addurl" file
-	showNote $ "using " ++ Remote.name r 
+	showNote $ "from " ++ Remote.name r 
 	next $ performRemote r relaxed uri file sz
 
 performRemote :: Remote -> Bool -> URLString -> FilePath -> Maybe Integer -> CommandPerform
