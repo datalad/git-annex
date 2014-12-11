@@ -73,17 +73,17 @@ seek us = do
 						next $ next $ return False
 					Right (UrlContents sz mf) -> do
 						void $ commandAction $
-							startRemote r relaxed (fromMaybe deffile mf) pathdepth u sz
+							startRemote r relaxed (fromMaybe deffile mf) u sz
 					Right (UrlMulti l) ->
 						forM_ l $ \(u', sz, f) ->
 							void $ commandAction $
-								startRemote r relaxed (deffile </> f) pathdepth u' sz
+								startRemote r relaxed (deffile </> f) u' sz
 
-startRemote :: Remote -> Bool -> FilePath -> Maybe Int -> String -> Maybe Integer -> CommandStart
-startRemote r relaxed file pathdepth s sz = do
+startRemote :: Remote -> Bool -> FilePath -> URLString -> Maybe Integer -> CommandStart
+startRemote r relaxed file uri sz = do
 	showStart "addurl" file
 	showNote $ "using " ++ Remote.name r 
-	next $ performRemote r relaxed s file sz
+	next $ performRemote r relaxed uri file sz
 
 performRemote :: Remote -> Bool -> URLString -> FilePath -> Maybe Integer -> CommandPerform
 performRemote r relaxed uri file sz = ifAnnexed file adduri geturi
@@ -93,24 +93,28 @@ performRemote r relaxed uri file sz = ifAnnexed file adduri geturi
 	checkexistssize key = return $ case sz of
 		Nothing -> (True, True)
 		Just n -> (True, n == fromMaybe n (keySize key))
-	geturi = do
-		urlkey <- Backend.URL.fromUrl uri sz
-		liftIO $ createDirectoryIfMissing True (parentDir file)
-		next $ ifM (Annex.getState Annex.fast <||> pure relaxed)
-			( do
-				cleanup (Remote.uuid r) loguri file urlkey Nothing
-				return True
-			, do
-				-- Set temporary url for the urlkey
-				-- so that the remote knows what url it
-				-- should use to download it.
-				setTempUrl urlkey uri
-				let downloader = Remote.retrieveKeyFile r urlkey (Just file)
-				ok <- isJust <$>
-					downloadWith downloader urlkey (Remote.uuid r) loguri file
-				removeTempUrl urlkey
-				return ok
-			)
+	geturi = next $ isJust <$> downloadRemoteFile r relaxed uri file sz
+
+downloadRemoteFile :: Remote -> Bool -> URLString -> FilePath -> Maybe Integer -> Annex (Maybe Key)
+downloadRemoteFile r relaxed uri file sz = do
+	urlkey <- Backend.URL.fromUrl uri sz
+	liftIO $ createDirectoryIfMissing True (parentDir file)
+	ifM (Annex.getState Annex.fast <||> pure relaxed)
+		( do
+			cleanup (Remote.uuid r) loguri file urlkey Nothing
+			return (Just urlkey)
+		, do
+			-- Set temporary url for the urlkey
+			-- so that the remote knows what url it
+			-- should use to download it.
+			setTempUrl urlkey uri
+			let downloader = Remote.retrieveKeyFile r urlkey (Just file)
+			ret <- downloadWith downloader urlkey (Remote.uuid r) loguri file
+			removeTempUrl urlkey
+			return ret
+		)
+  where
+	loguri = setDownloader uri OtherDownloader
 
 startWeb :: Bool -> Maybe FilePath -> Maybe Int -> String -> CommandStart
 startWeb relaxed optfile pathdepth s = go $ fromMaybe bad $ parseURI s

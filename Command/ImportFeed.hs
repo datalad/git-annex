@@ -22,10 +22,13 @@ import Common.Annex
 import qualified Annex
 import Command
 import qualified Annex.Url as Url
+import qualified Remote
+import qualified Types.Remote as Remote
+import Types.UrlContents
 import Logs.Web
 import qualified Utility.Format
 import Utility.Tmp
-import Command.AddUrl (addUrlFile, relaxedOption)
+import Command.AddUrl (addUrlFile, downloadRemoteFile, relaxedOption)
 import Annex.Perms
 import Backend.URL (fromUrl)
 #ifdef WITH_QUVI
@@ -137,8 +140,27 @@ downloadFeed url = do
 performDownload :: Bool -> Cache -> ToDownload -> Annex Bool
 performDownload relaxed cache todownload = case location todownload of
 	Enclosure url -> checkknown url $
-		rundownload url (takeExtension url) $ 
-			addUrlFile relaxed url
+		rundownload url (takeExtension url) $ \f -> do
+			r <- Remote.claimingUrl url
+			if Remote.uuid r == webUUID
+				then maybeToList <$> addUrlFile relaxed url f
+				else do
+					res <- tryNonAsync $ maybe
+						(error $ "unable to checkUrl of " ++ Remote.name r)
+						(flip id url)
+						(Remote.checkUrl r)
+					case res of
+						Left _ -> return []
+						Right (UrlContents sz _) ->
+							maybeToList <$>
+								downloadRemoteFile r relaxed url f sz
+						Right (UrlMulti l) -> do
+							kl <- forM l $ \(url', sz, subf) ->
+								downloadRemoteFile r relaxed url' (f </> subf) sz
+							return $ if all isJust kl
+								then catMaybes kl
+								else []
+							
 	QuviLink pageurl -> do
 #ifdef WITH_QUVI
 		let quviurl = setDownloader pageurl QuviDownloader
@@ -151,8 +173,8 @@ performDownload relaxed cache todownload = case location todownload of
 					Just link -> do
 						let videourl = Quvi.linkUrl link
 						checkknown videourl $
-							rundownload videourl ("." ++ Quvi.linkSuffix link) $
-								addUrlFileQuvi relaxed quviurl videourl
+							rundownload videourl ("." ++ Quvi.linkSuffix link) $ \f ->
+								maybeToList <$> addUrlFileQuvi relaxed quviurl videourl f
 #else
 		return False
 #endif
@@ -172,16 +194,17 @@ performDownload relaxed cache todownload = case location todownload of
 			Nothing -> return True
 			Just f -> do
 				showStart "addurl" f
-				mk <- getter f
-				case mk of
-					Just key -> do
-						whenM (annexGenMetaData <$> Annex.getGitConfig) $
-							addMetaData key $ extractMetaData todownload
-						showEndOk
-						return True
-					Nothing -> do
+				ks <- getter f
+				if null ks
+					then do
 						showEndFail
 						checkFeedBroken (feedurl todownload)
+					else do
+						forM_ ks $ \key ->
+							whenM (annexGenMetaData <$> Annex.getGitConfig) $
+								addMetaData key $ extractMetaData todownload
+						showEndOk
+						return True
 
 	{- Find a unique filename to save the url to.
 	 - If the file exists, prefixes it with a number.
