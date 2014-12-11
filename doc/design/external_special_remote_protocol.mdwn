@@ -131,10 +131,8 @@ replying with `UNSUPPORTED-REQUEST` is acceptable.
   If not, it can send `CLAIMURL-FAILURE`.
 * `CHECKURL Url`  
   Asks the remote to check if the url's content can currently be downloaded
-  (without downloading it). If the url is not accessible, send
-  `CHECKURL-FAILURE`. If the url is accessible and the size is known,
-  send the size in `CHECKURL-SIZE`. If the url is accessible, but the size
-  is unknown, send `CHECKURL-SIZEUNKOWN`.
+  (without downloading it). The remote replies with one of `CHECKURL-FAILURE`,
+  `CHECKURL-CONTENTS`, or `CHECKURL-MULTI`.
 
 More optional requests may be added, without changing the protocol version,
 so if an unknown request is seen, reply with `UNSUPPORTED-REQUEST`.
