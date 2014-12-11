@@ -21,6 +21,7 @@ import qualified Annex.Url as Url
 import qualified Backend.URL
 import qualified Remote
 import qualified Types.Remote as Remote
+import Annex.URLClaim
 import Annex.Content
 import Logs.Web
 import Types.Key
@@ -58,23 +59,23 @@ seek ps = do
 
 start :: Bool -> Maybe FilePath -> Maybe Int -> String -> CommandStart
 start relaxed optfile pathdepth s = do
-	r <- Remote.claimingUrl s
+	(r, claim) <- urlClaim s
 	if Remote.uuid r == webUUID
 		then startWeb relaxed optfile pathdepth s
-		else startRemote r relaxed optfile pathdepth s
+		else startRemote r claim relaxed optfile pathdepth s
 
-startRemote :: Remote -> Bool -> Maybe FilePath -> Maybe Int -> String -> CommandStart
-startRemote r relaxed optfile pathdepth s = do
+startRemote :: Remote -> URLClaim -> Bool -> Maybe FilePath -> Maybe Int -> String -> CommandStart
+startRemote r claim relaxed optfile pathdepth s = do
 	url <- case Url.parseURIRelaxed s of
 		Nothing -> error $ "bad uri " ++ s
 		Just u -> pure u
 	pathmax <- liftIO $ fileNameLengthLimit "."
-	let file = choosefile $ url2file url pathdepth pathmax
+	let file = flip fromMaybe optfile $ case claim of
+		URLClaimedAs f -> f
+		URLClaimed -> url2file url pathdepth pathmax
 	showStart "addurl" file
 	showNote $ "using " ++ Remote.name r 
 	next $ performRemote r relaxed s file
-  where
-	choosefile = flip fromMaybe optfile
 
 performRemote :: Remote -> Bool -> URLString -> FilePath -> CommandPerform
 performRemote r relaxed uri file = ifAnnexed file adduri geturi

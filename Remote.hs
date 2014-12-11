@@ -46,7 +46,6 @@ module Remote (
 	logStatus,
 	checkAvailable,
 	isXMPPRemote,
-	claimingUrl,
 ) where
 
 import qualified Data.Map as M
@@ -61,7 +60,6 @@ import Annex.UUID
 import Logs.UUID
 import Logs.Trust
 import Logs.Location hiding (logStatus)
-import Logs.Web
 import Remote.List
 import Config
 import Git.Types (RemoteName)
@@ -320,12 +318,3 @@ hasKey r k = either (Left  . show) Right <$> tryNonAsync (checkPresent r k)
 
 hasKeyCheap :: Remote -> Bool
 hasKeyCheap = checkPresentCheap
-
-{- The web special remote claims urls by default. -}
-claimingUrl :: URLString -> Annex Remote
-claimingUrl url = do
-	rs <- remoteList
-	let web = Prelude.head $ filter (\r -> uuid r == webUUID) rs
-	fromMaybe web <$> firstM checkclaim rs
-  where
-	checkclaim = maybe (pure False) (flip id url) . claimUrl

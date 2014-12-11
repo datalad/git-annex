@@ -136,6 +136,7 @@ data Response
 	| INITREMOTE_SUCCESS
 	| INITREMOTE_FAILURE ErrorMsg
 	| CLAIMURL_SUCCESS
+	| CLAIMURL_AS FilePath
 	| CLAIMURL_FAILURE
 	| CHECKURL_SIZE Size
 	| CHECKURL_SIZEUNKNOWN
@@ -158,6 +159,7 @@ instance Proto.Receivable Response where
 	parseCommand "INITREMOTE-SUCCESS" = Proto.parse0 INITREMOTE_SUCCESS
 	parseCommand "INITREMOTE-FAILURE" = Proto.parse1 INITREMOTE_FAILURE
 	parseCommand "CLAIMURL-SUCCESS" = Proto.parse0 CLAIMURL_SUCCESS
+	parseCommand "CLAIMURL-AS" = Proto.parse1 CLAIMURL_AS
 	parseCommand "CLAIMURL-FAILURE" = Proto.parse0 CLAIMURL_FAILURE
 	parseCommand "CHECKURL-SIZE" = Proto.parse1 CHECKURL_SIZE
 	parseCommand "CHECKURL-SIZEUNKNOWN" = Proto.parse0 CHECKURL_SIZEUNKNOWN

@@ -179,6 +179,9 @@ while it's handling a request.
   Indicates that INITREMOTE failed.
 * `CLAIMURL-SUCCESS`  
   Indicates that the CLAIMURL url will be handled by this remote.
+* `CLAIMURL-AS Filename`
+  Indicates that the CLAIMURL url will be handled by this remote,
+  and suggests a filename to use for it.
 * `CLAIMURL-FAILURE`  
   Indicates that the CLAIMURL url wil not be handled by this remote.
 * `CHECKURL-SIZE Size`  

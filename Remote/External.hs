@@ -12,6 +12,7 @@ import qualified Annex
 import Common.Annex
 import Types.Remote
 import Types.CleanupActions
+import Types.URLClaim
 import qualified Git
 import Config
 import Remote.Helper.Special
@@ -421,12 +422,13 @@ getAvailability external r gc = maybe query return (remoteAnnexAvailability gc)
 		setRemoteAvailability r avail
 		return avail
 
-claimurl :: External -> URLString -> Annex Bool
+claimurl :: External -> URLString -> Annex (Maybe URLClaim)
 claimurl external url =
 	handleRequest external (CLAIMURL url) Nothing $ \req -> case req of
-		CLAIMURL_SUCCESS -> Just $ return True
-		CLAIMURL_FAILURE -> Just $ return False
-		UNSUPPORTED_REQUEST -> Just $ return False
+		CLAIMURL_SUCCESS -> Just $ return $ Just URLClaimed
+		(CLAIMURL_AS f) -> Just $ return $ Just $ URLClaimedAs f
+		CLAIMURL_FAILURE -> Just $ return Nothing
+		UNSUPPORTED_REQUEST -> Just $ return Nothing
 		_ -> Nothing
 
 checkurl :: External -> URLString -> Annex (Maybe Integer)
