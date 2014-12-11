@@ -1,0 +1,67 @@
+Some more work on the interface that lets remotes claim urls for `git annex
+addurl`. Added support for remotes suggesting a filename to use when
+adding an url. Also, added support for urls that result in multiple files
+when downloaded. The obvious use case for that is an url to a torrent that
+contains multiple files.
+
+Then, got `git annex importfeed` to also check if a remote claims an url.
+
+Finally, I put together a quick demo external remote using this new
+interface. [[special_remotes/external/git-annex-remote-torrent]]
+adds support for torrent files to git-annex, using aria2c to download them.
+It supports multi-file torrents, but not magnet links. (I'll probably
+rewrite this more robustly and efficiently in haskell sometime soon.)
+
+Here's a demo:
+
+<pre>
+# git annex initremote torrent type=external encryption=none externaltype=torrent
+initremote torrent ok
+(Recording state in git...)
+# ls
+# git annex addurl  --fast file:///home/joey/my.torrent
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   198  100   198    0     0  3946k      0 --:--:-- --:--:-- --:--:-- 3946k
+addurl _home_joey_my.torrent/bar (using torrent) ok
+addurl _home_joey_my.torrent/baz (using torrent) ok
+addurl _home_joey_my.torrent/foo (using torrent) ok
+(Recording state in git...)
+# ls _home_joey_my.torrent/
+bar@  baz@  foo@
+# git annex get _home_joey_my.torrent/baz
+get _home_joey_my.torrent/baz (from torrent...) 
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:-100   198  100   198    0     0  3580k      0 --:--:-- --:--:-- --:--:-- 3580k
+
+12/11 18:14:56 [NOTICE] IPv4 DHT: listening on UDP port 6946
+
+12/11 18:14:56 [NOTICE] IPv4 BitTorrent: listening on TCP port 6961
+
+12/11 18:14:56 [NOTICE] IPv6 BitTorrent: listening on TCP port 6961
+
+12/11 18:14:56 [NOTICE] Seeding is over.
+12/11 18:14:57 [NOTICE] Download complete: /home/joey/tmp/tmp.Le89hJSXyh/tor
+
+12/11 18:14:57 [NOTICE] Your share ratio was 0.0, uploaded/downloaded=0B/0B
+                                                                               
+Download Results:
+gid   |stat|avg speed  |path/URI
+======+====+===========+=======================================================
+71f6b6|OK  |       0B/s|/home/joey/tmp/tmp.Le89hJSXyh/tor/baz
+
+Status Legend:
+(OK):download completed.
+ok                      
+(Recording state in git...)
+# git annex find
+_home_joey_my.torrent/baz
+# git annex whereis _home_joey_my.torrent/baz
+whereis _home_joey_my.torrent/baz (2 copies) 
+  	1878241d-ee49-446d-8cce-041c46442d94 -- [torrent]
+   	52412020-2bb3-4aa4-ae16-0da22ba48875 -- joey@darkstar:~/tmp/repo [here]
+
+  torrent: file:///home/joey/my.torrent#2
+ok
+</pre>
