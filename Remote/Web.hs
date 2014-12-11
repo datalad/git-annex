@@ -65,7 +65,7 @@ gen r _ c gc =
 		mkUnavailable = return Nothing,
 		getInfo = return [],
 		claimUrl = Nothing, -- implicitly claims all urls
-		checkUrl = const $ return Nothing
+		checkUrl = Nothing
 	}
 
 downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool

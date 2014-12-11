@@ -137,8 +137,8 @@ data Response
 	| INITREMOTE_FAILURE ErrorMsg
 	| CLAIMURL_SUCCESS
 	| CLAIMURL_FAILURE
-	| CHECKURL_SIZE Size
-	| CHECKURL_SIZEUNKNOWN
+	| CHECKURL_CONTENTS Size FilePath
+	| CHECKURL_MULTI [(URLString, Size, FilePath)]
 	| CHECKURL_FAILURE ErrorMsg
 	| UNSUPPORTED_REQUEST
 	deriving (Show)
@@ -159,8 +159,8 @@ instance Proto.Receivable Response where
 	parseCommand "INITREMOTE-FAILURE" = Proto.parse1 INITREMOTE_FAILURE
 	parseCommand "CLAIMURL-SUCCESS" = Proto.parse0 CLAIMURL_SUCCESS
 	parseCommand "CLAIMURL-FAILURE" = Proto.parse0 CLAIMURL_FAILURE
-	parseCommand "CHECKURL-SIZE" = Proto.parse1 CHECKURL_SIZE
-	parseCommand "CHECKURL-SIZEUNKNOWN" = Proto.parse0 CHECKURL_SIZEUNKNOWN
+	parseCommand "CHECKURL-CONTENTS" = Proto.parse2 CHECKURL_CONTENTS
+	parseCommand "CHECKURL-MULTI" = Proto.parse1 CHECKURL_MULTI
 	parseCommand "CHECKURL-FAILURE" = Proto.parse1 CHECKURL_FAILURE
 	parseCommand "UNSUPPORTED-REQUEST" = Proto.parse0 UNSUPPORTED_REQUEST
 	parseCommand _ = Proto.parseFail
@@ -233,7 +233,7 @@ instance Proto.Receivable AsyncMessage where
 type ErrorMsg = String
 type Setting = String
 type ProtocolVersion = Int
-type Size = Integer
+type Size = Maybe Integer
 
 supportedProtocolVersions :: [ProtocolVersion]
 supportedProtocolVersions = [1]
@@ -263,8 +263,10 @@ instance Proto.Serializable Cost where
 	deserialize = readish
 
 instance Proto.Serializable Size where
-	serialize = show
-	deserialize = readish
+	serialize (Just s) = show s
+	serialize Nothing = "UNKNOWN"
+	deserialize "UNKNOWN" = Just Nothing
+	deserialize s = maybe Nothing (Just . Just) (readish s)
 
 instance Proto.Serializable Availability where
 	serialize GloballyAvailable = "GLOBAL"
@@ -277,3 +279,12 @@ instance Proto.Serializable Availability where
 instance Proto.Serializable BytesProcessed where
 	serialize (BytesProcessed n) = show n
 	deserialize = BytesProcessed <$$> readish
+
+instance Proto.Serializable [(URLString, Size, FilePath)] where
+	serialize = unwords . map go
+	  where
+		go (url, sz, f) = url ++ " " ++ maybe "UNKNOWN" show sz ++ " " ++ f
+	deserialize = Just . go [] . words
+	  where
+		go c (url:sz:f:rest) = go ((url, readish sz, f):c) rest
+		go c _ = reverse c

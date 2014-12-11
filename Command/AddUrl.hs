@@ -25,6 +25,7 @@ import Annex.Content
 import Logs.Web
 import Types.Key
 import Types.KeySource
+import Types.UrlContents
 import Config
 import Annex.Content.Direct
 import Logs.Location
@@ -50,73 +51,70 @@ relaxedOption :: Option
 relaxedOption = flagOption [] "relaxed" "skip size check"
 
 seek :: CommandSeek
-seek ps = do
-	f <- getOptionField fileOption return
+seek us = do
+	optfile <- getOptionField fileOption return
 	relaxed <- getOptionFlag relaxedOption
-	d <- getOptionField pathdepthOption (return . maybe Nothing readish)
-	withStrings (start relaxed f d) ps
+	pathdepth <- getOptionField pathdepthOption (return . maybe Nothing readish)
+	forM_ us $ \u -> do
+		r <- Remote.claimingUrl u
+		if Remote.uuid r == webUUID
+			then void $ commandAction $ startWeb relaxed optfile pathdepth u
+			else do
+				let handlecontents url c = case c of
+					UrlContents sz mkf -> 
+						void $ commandAction $
+							startRemote r relaxed optfile pathdepth url sz mkf
+					UrlNested l ->
+						forM_ l $ \(url', c) ->
+							handlecontents url' c
+				res <- tryNonAsync $ maybe
+					(error "unable to checkUrl")
+					(flip id u)
+					(Remote.checkUrl r)
+				case res of
+					Left e -> void $ commandAction $ do
+						showStart "addurl" u
+						warning (show e)
+						next $ next $ return False
+					Right c -> handlecontents u c
 
-start :: Bool -> Maybe FilePath -> Maybe Int -> String -> CommandStart
-start relaxed optfile pathdepth s = do
-	r <- Remote.claimingUrl s
-	if Remote.uuid r == webUUID
-		then startWeb relaxed optfile pathdepth s
-		else startRemote r relaxed optfile pathdepth s
-
-startRemote :: Remote -> Bool -> Maybe FilePath -> Maybe Int -> String -> CommandStart
-startRemote r relaxed optfile pathdepth s = do
+startRemote :: Remote -> Bool -> Maybe FilePath -> Maybe Int -> String -> Maybe Integer -> (FilePath -> FilePath) -> CommandStart
+startRemote r relaxed optfile pathdepth s sz mkf = do
 	url <- case Url.parseURIRelaxed s of
 		Nothing -> error $ "bad uri " ++ s
 		Just u -> pure u
 	pathmax <- liftIO $ fileNameLengthLimit "."
-	let file = choosefile $ url2file url pathdepth pathmax
+	let file = mkf $ choosefile $ url2file url pathdepth pathmax
 	showStart "addurl" file
 	showNote $ "using " ++ Remote.name r 
-	next $ performRemote r relaxed s file
+	next $ performRemote r relaxed s file sz
   where
 	choosefile = flip fromMaybe optfile
 
-performRemote :: Remote -> Bool -> URLString -> FilePath -> CommandPerform
-performRemote r relaxed uri file = ifAnnexed file adduri geturi
+performRemote :: Remote -> Bool -> URLString -> FilePath -> Maybe Integer -> CommandPerform
+performRemote r relaxed uri file sz = ifAnnexed file adduri geturi
   where
 	loguri = setDownloader uri OtherDownloader
 	adduri = addUrlChecked relaxed loguri (Remote.uuid r) checkexistssize
-	checkexistssize key = do
-		res <- tryNonAsync $ Remote.checkUrl r uri
-		case res of
-			Left e -> do
-				warning (show e)
-				return (False, False)
-			Right Nothing ->
-				return (True, True)
-			Right (Just sz) ->
-				return (True, sz == fromMaybe sz (keySize key))
+	checkexistssize key = return $ case sz of
+		Nothing -> (True, True)
+		Just n -> (True, n == fromMaybe n (keySize key))
 	geturi = do
-		dummykey <- Backend.URL.fromUrl uri =<<
-			if relaxed
-				then return Nothing
-				else Remote.checkUrl r uri
+		urlkey <- Backend.URL.fromUrl uri sz
 		liftIO $ createDirectoryIfMissing True (parentDir file)
 		next $ ifM (Annex.getState Annex.fast <||> pure relaxed)
 			( do
-				res <- tryNonAsync $ Remote.checkUrl r uri
-				case res of
-					Left e -> do
-						warning (show e)
-						return False
-					Right size -> do
-						key <- Backend.URL.fromUrl uri size
-						cleanup (Remote.uuid r) loguri file key Nothing
-						return True
+				cleanup (Remote.uuid r) loguri file urlkey Nothing
+				return True
 			, do
-				-- Set temporary url for the dummy key
+				-- Set temporary url for the urlkey
 				-- so that the remote knows what url it
 				-- should use to download it.
-				setTempUrl dummykey uri
-				let downloader = Remote.retrieveKeyFile r dummykey (Just file)
+				setTempUrl urlkey uri
+				let downloader = Remote.retrieveKeyFile r urlkey (Just file)
 				ok <- isJust <$>
-					downloadWith downloader dummykey (Remote.uuid r) loguri file
-				removeTempUrl dummykey
+					downloadWith downloader urlkey (Remote.uuid r) loguri file
+				removeTempUrl urlkey
 				return ok
 			)
 

@@ -25,6 +25,7 @@ import Types.UUID
 import Types.GitConfig
 import Types.Availability
 import Types.Creds
+import Types.UrlContents
 import Config.Cost
 import Utility.Metered
 import Git.Types
@@ -104,11 +105,10 @@ data RemoteA a = Remote {
 	getInfo :: a [(String, String)],
 	-- Some remotes can download from an url (or uri).
 	claimUrl :: Maybe (URLString -> a Bool),
-	-- Checks that the url is accessible, and gets the size of its
-	-- content. Returns Nothing if the url is accessible, but
-	-- its size cannot be determined inexpensively.
+	-- Checks that the url is accessible, and gets information about
+	-- its contents, without downloading the full content.
 	-- Throws an exception if the url is inaccessible.
-	checkUrl :: URLString -> a (Maybe Integer)
+	checkUrl :: Maybe (URLString -> a UrlContents)
 }
 
 instance Show (RemoteA a) where

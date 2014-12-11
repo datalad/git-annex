@@ -12,6 +12,7 @@ import qualified Annex
 import Common.Annex
 import Types.Remote
 import Types.CleanupActions
+import Types.UrlContents
 import qualified Git
 import Config
 import Remote.Helper.Special
@@ -71,7 +72,7 @@ gen r u c gc = do
 				gc { remoteAnnexExternalType = Just "!dne!" },
 			getInfo = return [("externaltype", externaltype)],
 			claimUrl = Just (claimurl external),
-			checkUrl = checkurl external
+			checkUrl = Just (checkurl external)
 		}
   where
 	externaltype = fromMaybe (error "missing externaltype") (remoteAnnexExternalType gc)
@@ -429,11 +430,14 @@ claimurl external url =
 		UNSUPPORTED_REQUEST -> Just $ return False
 		_ -> Nothing
 
-checkurl :: External -> URLString -> Annex (Maybe Integer)
+checkurl :: External -> URLString -> Annex UrlContents
 checkurl external url = 
 	handleRequest external (CHECKURL url) Nothing $ \req -> case req of
-		CHECKURL_SIZE sz -> Just $ return $ Just sz
-		CHECKURL_SIZEUNKNOWN -> Just $ return Nothing
+		CHECKURL_CONTENTS sz f -> Just $ return $ UrlContents sz
+			(if null f then id else const f)
+		CHECKURL_MULTI l -> Just $ return $ UrlNested $ map mknested l
 		CHECKURL_FAILURE errmsg -> Just $ error errmsg
 		UNSUPPORTED_REQUEST -> error "CHECKURL not implemented by external special remote"
 		_ -> Nothing
+  where
+	mknested (url', sz, f) = (url', UrlContents sz (const f))

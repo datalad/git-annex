@@ -63,7 +63,7 @@ gen r u c gc = do
 				gc { remoteAnnexHookType = Just "!dne!" },
 			getInfo = return [("hooktype", hooktype)],
 			claimUrl = Nothing,
-			checkUrl = const $ return Nothing
+			checkUrl = Nothing
 		}
   where
 	hooktype = fromMaybe (error "missing hooktype") $ remoteAnnexHookType gc

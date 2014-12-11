@@ -70,7 +70,7 @@ gen r u c gc = do
 				gc { remoteAnnexDirectory = Just "/dev/null" },
 			getInfo = return [("directory", dir)],
 			claimUrl = Nothing,
-			checkUrl = const $ return Nothing
+			checkUrl = Nothing
 		}
   where
 	dir = fromMaybe (error "missing directory") $ remoteAnnexDirectory gc

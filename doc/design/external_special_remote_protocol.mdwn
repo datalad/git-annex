@@ -181,12 +181,18 @@ while it's handling a request.
   Indicates that the CLAIMURL url will be handled by this remote.
 * `CLAIMURL-FAILURE`  
   Indicates that the CLAIMURL url wil not be handled by this remote.
-* `CHECKURL-SIZE Size`  
+* `CHECKURL-CONTENTS Size|UNKNOWN Filename`  
+  Indicates that the requested url has been verified to exist.  
+  The Size is the size in bytes, or use "UNKNOWN" if the size could not be
+  determined.  
+  The Filename can be empty (in which case a default is used),
+  or can specify a filename that is suggested to be used for this url.
+* `CHECKURL-MULTI Url Size|UNKNOWN Filename ...`  
   Indicates that the requested url has been verified to exist,
-  and its size is known. The size is in bytes.
-* `CHECKURL-SIZEUNKNOWN`  
-  Indicates that the requested url has been verified to exist,
-  but its size could not be determined.
+  and contains multiple files, which can each be accessed using
+  their own url.  
+  Note that since a list is returned, neither the Url nor the Filename
+  can contain spaces.
 * `CHECKURL-FAILURE`  
   Indicates that the requested url could not be accessed.
 * `UNSUPPORTED-REQUEST`  

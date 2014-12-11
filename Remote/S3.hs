@@ -94,7 +94,7 @@ gen r u c gc = do
 				, Just ("partsize", maybe "unlimited" (roughSize storageUnits False) (getPartSize c))
 				],
 			claimUrl = Nothing,
-			checkUrl = const $ return Nothing
+			checkUrl = Nothing
 		}
 
 s3Setup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
