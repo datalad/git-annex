@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="vho"
+ subject="Trying to make git gc pass with a huge swap"
+ date="2014-12-11T16:52:16Z"
+ content="""
+I have created a 100 GB swap file and ran git gc again.
+It ate my 8 GB of RAM + 38 GB of swap. It ended successfully:
+
+    vincent@berlioz:~/photos2$ time git gc --aggressive
+    Décompte des objets: 2263783, fait.
+    Compression des objets: 100% (2253014/2253014), fait.
+    Écriture des objets: 100% (2263783/2263783), fait.
+    Total 2263783 (delta 1567807), reused 284965 (delta 0)
+    Suppression des objets dupliqués: 100% (256/256), fait.
+    Vérification de la connectivité: 2263783, fait.
+    
+    real	110m18.565s
+    user	37m38.225s
+    sys	3m23.457s
+
+Yet the following git annex sync didn't do better than previous ones and took 285 minutes to complete.
+
+I am going to check my hard disk drive to see if there aren't any third party problem.
+
+    vincent@berlioz:~/photos2$ du -sh --exclude=.git/annex
+    510M	.
+
+Yet it shrank by 300 MB.
+
+"""]]
