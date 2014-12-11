@@ -140,6 +140,7 @@ performDownload relaxed cache todownload = case location todownload of
 		rundownload url (takeExtension url) $ 
 			addUrlFile relaxed url
 	QuviLink pageurl -> do
+#ifdef WITH_QUVI
 		let quviurl = setDownloader pageurl QuviDownloader
 		checkknown quviurl $ do
 			mp <- withQuviOptions Quvi.query [Quvi.quiet, Quvi.httponly] pageurl
@@ -152,6 +153,9 @@ performDownload relaxed cache todownload = case location todownload of
 						checkknown videourl $
 							rundownload videourl ("." ++ Quvi.linkSuffix link) $
 								addUrlFileQuvi relaxed quviurl videourl
+#else
+		return False
+#endif
   where
 	forced = Annex.getState Annex.force
 
