@@ -16,7 +16,6 @@ import qualified Command.Add
 import Logs.Web
 import Logs.Location
 import Utility.CopyFile
-import Annex.URLClaim
 import qualified Remote
 
 cmd :: [Command]
@@ -64,7 +63,7 @@ cleanup file oldkey newkey = do
 	-- the new key as well.
 	urls <- getUrls oldkey
 	forM_ urls $ \url -> do
-		r <- fst <$> urlClaim url
+		r <- Remote.claimingUrl url
 		setUrlPresent (Remote.uuid r) newkey url
 
 	-- Update symlink to use the new key.

@@ -14,7 +14,6 @@ import Command
 import Remote
 import Logs.Trust
 import Logs.Web
-import Annex.URLClaim
 
 cmd :: [Command]
 cmd = [noCommit $ withOptions (jsonOption : keyOptions) $
@@ -72,4 +71,4 @@ performRemote key remote = do
 			. filter (\(_, d) -> d == OtherDownloader)
 			. map getDownloader
 			<$> getUrls key
-		filterM (\u -> (==) <$> pure remote <*> (fst <$> urlClaim u)) us
+		filterM (\u -> (==) <$> pure remote <*> claimingUrl u) us
