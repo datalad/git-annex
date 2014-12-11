@@ -434,10 +434,8 @@ checkurl :: External -> URLString -> Annex UrlContents
 checkurl external url = 
 	handleRequest external (CHECKURL url) Nothing $ \req -> case req of
 		CHECKURL_CONTENTS sz f -> Just $ return $ UrlContents sz
-			(if null f then id else const f)
-		CHECKURL_MULTI l -> Just $ return $ UrlNested $ map mknested l
+			(if null f then Nothing else Just f)
+		CHECKURL_MULTI l -> Just $ return $ UrlMulti l
 		CHECKURL_FAILURE errmsg -> Just $ error errmsg
 		UNSUPPORTED_REQUEST -> error "CHECKURL not implemented by external special remote"
 		_ -> Nothing
-  where
-	mknested (url', sz, f) = (url', UrlContents sz (const f))

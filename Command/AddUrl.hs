@@ -60,14 +60,10 @@ seek us = do
 		if Remote.uuid r == webUUID
 			then void $ commandAction $ startWeb relaxed optfile pathdepth u
 			else do
-				let handlecontents url c = case c of
-					UrlContents sz mkf -> 
-						void $ commandAction $
-							startRemote r relaxed optfile pathdepth url sz mkf
-					UrlNested l -> forM_ l $
-						uncurry handlecontents
+				pathmax <- liftIO $ fileNameLengthLimit "."
+				let deffile = fromMaybe (urlString2file u pathdepth pathmax) optfile
 				res <- tryNonAsync $ maybe
-					(error "unable to checkUrl")
+					(error $ "unable to checkUrl of " ++ Remote.name r)
 					(flip id u)
 					(Remote.checkUrl r)
 				case res of
@@ -75,20 +71,19 @@ seek us = do
 						showStart "addurl" u
 						warning (show e)
 						next $ next $ return False
-					Right c -> handlecontents u c
+					Right (UrlContents sz mf) -> do
+						void $ commandAction $
+							startRemote r relaxed (fromMaybe deffile mf) pathdepth u sz
+					Right (UrlMulti l) ->
+						forM_ l $ \(u', sz, f) ->
+							void $ commandAction $
+								startRemote r relaxed (deffile </> f) pathdepth u' sz
 
-startRemote :: Remote -> Bool -> Maybe FilePath -> Maybe Int -> String -> Maybe Integer -> (FilePath -> FilePath) -> CommandStart
-startRemote r relaxed optfile pathdepth s sz mkf = do
-	url <- case Url.parseURIRelaxed s of
-		Nothing -> error $ "bad uri " ++ s
-		Just u -> pure u
-	pathmax <- liftIO $ fileNameLengthLimit "."
-	let file = mkf $ choosefile $ url2file url pathdepth pathmax
+startRemote :: Remote -> Bool -> FilePath -> Maybe Int -> String -> Maybe Integer -> CommandStart
+startRemote r relaxed file pathdepth s sz = do
 	showStart "addurl" file
 	showNote $ "using " ++ Remote.name r 
 	next $ performRemote r relaxed s file sz
-  where
-	choosefile = flip fromMaybe optfile
 
 performRemote :: Remote -> Bool -> URLString -> FilePath -> Maybe Integer -> CommandPerform
 performRemote r relaxed uri file sz = ifAnnexed file adduri geturi
@@ -324,3 +319,8 @@ url2file url pathdepth pathmax = case pathdepth of
 	frombits a = intercalate "/" $ a urlbits
 	urlbits = map (truncateFilePath pathmax . sanitizeFilePath) $
 		filter (not . null) $ split "/" fullurl
+
+urlString2file :: URLString -> Maybe Int -> Int -> FilePath
+urlString2file s pathdepth pathmax = case Url.parseURIRelaxed s of
+	Nothing -> error $ "bad uri " ++ s
+	Just u -> url2file u pathdepth pathmax

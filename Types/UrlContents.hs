@@ -11,9 +11,8 @@ import Utility.Url
 
 data UrlContents
 	-- An URL contains a file, whose size may be known.
-	-- A default filename will be provided, and can be overridded
-	-- or built on.
-	= UrlContents (Maybe Integer) (FilePath -> FilePath)
+	-- There might be a nicer filename to use.
+	= UrlContents (Maybe Integer) (Maybe FilePath)
 	-- Sometimes an URL points to multiple files, each accessible
 	-- by their own URL.
-	| UrlNested [(URLString, UrlContents)]
+	| UrlMulti [(URLString, Maybe Integer, FilePath)]
