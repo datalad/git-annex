@@ -64,9 +64,8 @@ seek us = do
 					UrlContents sz mkf -> 
 						void $ commandAction $
 							startRemote r relaxed optfile pathdepth url sz mkf
-					UrlNested l ->
-						forM_ l $ \(url', c) ->
-							handlecontents url' c
+					UrlNested l -> forM_ l $
+						uncurry handlecontents
 				res <- tryNonAsync $ maybe
 					(error "unable to checkUrl")
 					(flip id u)
@@ -210,7 +209,7 @@ addUrlChecked relaxed url u checkexistssize key
 		setUrlPresent u key url
 		next $ return True
 	| otherwise = ifM (elem url <$> getUrls key)
-		( stop
+		( next $ return True -- nothing to do
 		, do
 			(exists, samesize) <- checkexistssize key
 			if exists && samesize
