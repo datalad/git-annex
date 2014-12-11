@@ -140,8 +140,7 @@ while read line; do
 			file="$4"
 			case "$2" in
 				STORE)
-					runcmd echo "upload not supported"
-					echo TRANSFER-FAILURE STORE "$key"
+					echo TRANSFER-FAILURE STORE "$key" "upload not supported"
 				;;
 				RETRIEVE)
 					urltmp=$(mktemp)
