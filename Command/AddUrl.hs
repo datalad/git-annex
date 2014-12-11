@@ -150,6 +150,13 @@ startWeb relaxed optfile pathdepth s = go $ fromMaybe bad $ parseURI s
 	usequvi = error "not built with quvi support"
 #endif
 
+performWeb :: Bool -> URLString -> FilePath -> CommandPerform
+performWeb relaxed url file = ifAnnexed file addurl geturl
+  where
+	geturl = next $ isJust <$> addUrlFile relaxed url file
+	addurl = addUrlChecked relaxed url webUUID checkexistssize
+	checkexistssize = Url.withUrlOptions . Url.check url . keySize
+
 #ifdef WITH_QUVI
 performQuvi :: Bool -> URLString -> URLString -> FilePath -> CommandPerform
 performQuvi relaxed pageurl videourl file = ifAnnexed file addurl geturl
@@ -190,13 +197,6 @@ addUrlFileQuvi relaxed quviurl videourl file = do
 					else return Nothing
 		)
 #endif
-
-performWeb :: Bool -> URLString -> FilePath -> CommandPerform
-performWeb relaxed url file = ifAnnexed file addurl geturl
-  where
-	geturl = next $ isJust <$> addUrlFile relaxed url file
-	addurl = addUrlChecked relaxed url webUUID checkexistssize
-	checkexistssize = Url.withUrlOptions . Url.check url . keySize
 
 addUrlChecked :: Bool -> URLString -> UUID -> (Key -> Annex (Bool, Bool)) -> Key -> CommandPerform
 addUrlChecked relaxed url u checkexistssize key
