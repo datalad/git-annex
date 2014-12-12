@@ -39,6 +39,7 @@ mkSafeFilePath p = SafeFilePath $ if null p' then "file" else p'
 	safe s
 		| isDrive s = False
 		| s == ".." = False
+		| s == ".git" = False
 		| null s = False
 		| otherwise = True
 
