@@ -82,7 +82,7 @@ seek us = do
 startRemote :: Remote -> Bool -> FilePath -> URLString -> Maybe Integer -> CommandStart
 startRemote r relaxed file uri sz = do
 	pathmax <- liftIO $ fileNameLengthLimit "."
-	let file' = truncateFilePath pathmax file
+	let file' = joinPath $ map (truncateFilePath pathmax) $ splitDirectories file
 	showStart "addurl" file'
 	showNote $ "from " ++ Remote.name r 
 	next $ performRemote r relaxed uri file' sz
