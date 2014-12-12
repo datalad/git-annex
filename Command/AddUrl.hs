@@ -73,11 +73,11 @@ seek us = do
 						next $ next $ return False
 					Right (UrlContents sz mf) -> do
 						void $ commandAction $
-							startRemote r relaxed (fromMaybe deffile mf) u sz
+							startRemote r relaxed (maybe deffile fromSafeFilePath mf) u sz
 					Right (UrlMulti l) ->
 						forM_ l $ \(u', sz, f) ->
 							void $ commandAction $
-								startRemote r relaxed (deffile </> f) u' sz
+								startRemote r relaxed (deffile </> fromSafeFilePath f) u' sz
 
 startRemote :: Remote -> Bool -> FilePath -> URLString -> Maybe Integer -> CommandStart
 startRemote r relaxed file uri sz = do

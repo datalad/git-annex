@@ -434,12 +434,14 @@ checkurl :: External -> URLString -> Annex UrlContents
 checkurl external url = 
 	handleRequest external (CHECKURL url) Nothing $ \req -> case req of
 		CHECKURL_CONTENTS sz f -> Just $ return $ UrlContents sz
-			(if null f then Nothing else Just f)
+			(if null f then Nothing else Just $ mkSafeFilePath f)
 		-- Treat a single item multi response specially to
 		-- simplify the external remote implementation.
 		CHECKURL_MULTI ((_, sz, f):[]) ->
-			Just $ return $ UrlContents sz (Just f)
-		CHECKURL_MULTI l -> Just $ return $ UrlMulti l
+			Just $ return $ UrlContents sz $ Just $ mkSafeFilePath f
+		CHECKURL_MULTI l -> Just $ return $ UrlMulti $ map mkmulti l
 		CHECKURL_FAILURE errmsg -> Just $ error errmsg
 		UNSUPPORTED_REQUEST -> error "CHECKURL not implemented by external special remote"
 		_ -> Nothing
+  where
+	mkmulti (u, s, f) = (u, s, mkSafeFilePath f)

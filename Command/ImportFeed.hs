@@ -156,7 +156,7 @@ performDownload relaxed cache todownload = case location todownload of
 								downloadRemoteFile r relaxed url f sz
 						Right (UrlMulti l) -> do
 							kl <- forM l $ \(url', sz, subf) ->
-								downloadRemoteFile r relaxed url' (f </> subf) sz
+								downloadRemoteFile r relaxed url' (f </> fromSafeFilePath subf) sz
 							return $ if all isJust kl
 								then catMaybes kl
 								else []

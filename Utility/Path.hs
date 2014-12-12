@@ -267,7 +267,8 @@ fileNameLengthLimit dir = do
  - sane FilePath.
  -
  - All spaces and punctuation and other wacky stuff are replaced
- - with '_', except for '.' "../" will thus turn into ".._", which is safe.
+ - with '_', except for '.'
+ - "../" will thus turn into ".._", which is safe.
  -}
 sanitizeFilePath :: String -> FilePath
 sanitizeFilePath = map sanitize
