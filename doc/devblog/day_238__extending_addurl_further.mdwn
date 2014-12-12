@@ -8,7 +8,7 @@ Then, got `git annex importfeed` to also check if a remote claims an url.
 
 Finally, I put together a quick demo external remote using this new
 interface. [[special_remotes/external/git-annex-remote-torrent]]
-adds support for torrent files to git-annex, using aria2c to download them.
+adds support for torrent files to git-annex, using [aria2c](http://aria2.sourceforge.net/) to download them.
 It supports multi-file torrents, but not magnet links. (I'll probably
 rewrite this more robustly and efficiently in haskell sometime soon.)
 
