@@ -267,7 +267,7 @@ downloadWith downloader dummykey u url file =
 			)
   where
 	runtransfer tmp =  Transfer.notifyTransfer Transfer.Download (Just file) $
-		Transfer.download webUUID dummykey (Just file) Transfer.forwardRetry $ \p -> do
+		Transfer.download u dummykey (Just file) Transfer.forwardRetry $ \p -> do
 			liftIO $ createDirectoryIfMissing True (parentDir tmp)
 			downloader tmp p
 
