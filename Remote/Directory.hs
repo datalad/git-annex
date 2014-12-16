@@ -46,32 +46,32 @@ gen r u c gc = do
 		(retrieve dir chunkconfig)
 		(simplyPrepare $ remove dir)
 		(simplyPrepare $ checkKey dir chunkconfig)
-		Remote {
-			uuid = u,
-			cost = cst,
-			name = Git.repoDescribe r,
-			storeKey = storeKeyDummy,
-			retrieveKeyFile = retreiveKeyFileDummy,
-			retrieveKeyFileCheap = retrieveCheap dir chunkconfig,
-			removeKey = removeKeyDummy,
-			checkPresent = checkPresentDummy,
-			checkPresentCheap = True,
-			whereisKey = Nothing,
-			remoteFsck = Nothing,
-			repairRepo = Nothing,
-			config = c,
-			repo = r,
-			gitconfig = gc,
-			localpath = Just dir,
-			readonly = False,
-			availability = LocallyAvailable,
-			remotetype = remote,
-			mkUnavailable = gen r u c $
-				gc { remoteAnnexDirectory = Just "/dev/null" },
-			getInfo = return [("directory", dir)],
-			claimUrl = Nothing,
-			checkUrl = Nothing
-		}
+		Remote
+			{ uuid = u
+			, cost = cst
+			, name = Git.repoDescribe r
+			, storeKey = storeKeyDummy
+			, retrieveKeyFile = retreiveKeyFileDummy
+			, retrieveKeyFileCheap = retrieveCheap dir chunkconfig
+			, removeKey = removeKeyDummy
+			, checkPresent = checkPresentDummy
+			, checkPresentCheap = True
+			, whereisKey = Nothing
+			, remoteFsck = Nothing
+			, repairRepo = Nothing
+			, config = c
+			, repo = r
+			, gitconfig = gc
+			, localpath = Just dir
+			, readonly = False
+			, availability = LocallyAvailable
+			, remotetype = remote
+			, mkUnavailable = gen r u c $
+				gc { remoteAnnexDirectory = Just "/dev/null" }
+			, getInfo = return [("directory", dir)]
+			, claimUrl = Nothing
+			, checkUrl = Nothing
+			}
   where
 	dir = fromMaybe (error "missing directory") $ remoteAnnexDirectory gc
 

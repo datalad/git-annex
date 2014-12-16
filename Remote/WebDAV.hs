@@ -51,32 +51,32 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 		(prepareDAV this $ checkKey this chunkconfig)
 		this
 	  where
-		this = Remote {
-			uuid = u,
-			cost = cst,
-			name = Git.repoDescribe r,
-			storeKey = storeKeyDummy,
-			retrieveKeyFile = retreiveKeyFileDummy,
-			retrieveKeyFileCheap = retrieveCheap,
-			removeKey = removeKeyDummy,
-			checkPresent = checkPresentDummy,
-			checkPresentCheap = False,
-			whereisKey = Nothing,
-			remoteFsck = Nothing,
-			repairRepo = Nothing,
-			config = c,
-			repo = r,
-			gitconfig = gc,
-			localpath = Nothing,
-			readonly = False,
-			availability = GloballyAvailable,
-			remotetype = remote,
-			mkUnavailable = gen r u (M.insert "url" "http://!dne!/" c) gc,
-			getInfo = includeCredsInfo c (davCreds u) $
-				[("url", fromMaybe "unknown" (M.lookup "url" c))],
-			claimUrl = Nothing,
-			checkUrl = Nothing
-		}
+		this = Remote
+			{ uuid = u
+			, cost = cst
+			, name = Git.repoDescribe r
+			, storeKey = storeKeyDummy
+			, retrieveKeyFile = retreiveKeyFileDummy
+			, retrieveKeyFileCheap = retrieveCheap
+			, removeKey = removeKeyDummy
+			, checkPresent = checkPresentDummy
+			, checkPresentCheap = False
+			, whereisKey = Nothing
+			, remoteFsck = Nothing
+			, repairRepo = Nothing
+			, config = c
+			, repo = r
+			, gitconfig = gc
+			, localpath = Nothing
+			, readonly = False
+			, availability = GloballyAvailable
+			, remotetype = remote
+			, mkUnavailable = gen r u (M.insert "url" "http://!dne!/" c) gc
+			, getInfo = includeCredsInfo c (davCreds u) $
+				[("url", fromMaybe "unknown" (M.lookup "url" c))]
+			, claimUrl = Nothing
+			, checkUrl = Nothing
+			}
 		chunkconfig = getChunkConfig c
 
 webdavSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)

@@ -39,32 +39,32 @@ gen r u c gc = do
 		(simplyPrepare $ retrieve hooktype)
 		(simplyPrepare $ remove hooktype)
 		(simplyPrepare $ checkKey r hooktype)
-		Remote {
-			uuid = u,
-			cost = cst,
-			name = Git.repoDescribe r,
-			storeKey = storeKeyDummy,
-			retrieveKeyFile = retreiveKeyFileDummy,
-			retrieveKeyFileCheap = retrieveCheap hooktype,
-			removeKey = removeKeyDummy,
-			checkPresent = checkPresentDummy,
-			checkPresentCheap = False,
-			whereisKey = Nothing,
-			remoteFsck = Nothing,
-			repairRepo = Nothing,
-			config = c,
-			localpath = Nothing,
-			repo = r,
-			gitconfig = gc,
-			readonly = False,
-			availability = GloballyAvailable,
-			remotetype = remote,
-			mkUnavailable = gen r u c $
-				gc { remoteAnnexHookType = Just "!dne!" },
-			getInfo = return [("hooktype", hooktype)],
-			claimUrl = Nothing,
-			checkUrl = Nothing
-		}
+		Remote
+			{ uuid = u
+			, cost = cst
+			, name = Git.repoDescribe r
+			, storeKey = storeKeyDummy
+			, retrieveKeyFile = retreiveKeyFileDummy
+			, retrieveKeyFileCheap = retrieveCheap hooktype
+			, removeKey = removeKeyDummy
+			, checkPresent = checkPresentDummy
+			, checkPresentCheap = False
+			, whereisKey = Nothing
+			, remoteFsck = Nothing
+			, repairRepo = Nothing
+			, config = c
+			, localpath = Nothing
+			, repo = r
+			, gitconfig = gc
+			, readonly = False
+			, availability = GloballyAvailable
+			, remotetype = remote
+			, mkUnavailable = gen r u c $
+				gc { remoteAnnexHookType = Just "!dne!" }
+			, getInfo = return [("hooktype", hooktype)]
+			, claimUrl = Nothing
+			, checkUrl = Nothing
+			}
   where
 	hooktype = fromMaybe (error "missing hooktype") $ remoteAnnexHookType gc
 

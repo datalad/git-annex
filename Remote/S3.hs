@@ -65,37 +65,37 @@ gen r u c gc = do
 		(prepareS3 this info $ checkKey this)
 		this
 	  where
-		this = Remote {
-			uuid = u,
-			cost = cst,
-			name = Git.repoDescribe r,
-			storeKey = storeKeyDummy,
-			retrieveKeyFile = retreiveKeyFileDummy,
-			retrieveKeyFileCheap = retrieveCheap,
-			removeKey = removeKeyDummy,
-			checkPresent = checkPresentDummy,
-			checkPresentCheap = False,
-			whereisKey = Nothing,
-			remoteFsck = Nothing,
-			repairRepo = Nothing,
-			config = c,
-			repo = r,
-			gitconfig = gc,
-			localpath = Nothing,
-			readonly = False,
-			availability = GloballyAvailable,
-			remotetype = remote,
-			mkUnavailable = gen r u (M.insert "host" "!dne!" c) gc,
-			getInfo = includeCredsInfo c (AWS.creds u) $ catMaybes
+		this = Remote
+			{ uuid = u
+			, cost = cst
+			, name = Git.repoDescribe r
+			, storeKey = storeKeyDummy
+			, retrieveKeyFile = retreiveKeyFileDummy
+			, retrieveKeyFileCheap = retrieveCheap
+			, removeKey = removeKeyDummy
+			, checkPresent = checkPresentDummy
+			, checkPresentCheap = False
+			, whereisKey = Nothing
+			, remoteFsck = Nothing
+			, repairRepo = Nothing
+			, config = c
+			, repo = r
+			, gitconfig = gc
+			, localpath = Nothing
+			, readonly = False
+			, availability = GloballyAvailable
+			, remotetype = remote
+			, mkUnavailable = gen r u (M.insert "host" "!dne!" c) gc
+			, getInfo = includeCredsInfo c (AWS.creds u) $ catMaybes
 				[ Just ("bucket", fromMaybe "unknown" (getBucketName c))
 				, if configIA c
 					then Just ("internet archive item", iaItemUrl $ fromMaybe "unknown" $ getBucketName c)
 					else Nothing
 				, Just ("partsize", maybe "unlimited" (roughSize storageUnits False) (getPartSize c))
-				],
-			claimUrl = Nothing,
-			checkUrl = Nothing
-		}
+				]
+			, claimUrl = Nothing
+			, checkUrl = Nothing
+			}
 
 s3Setup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
 s3Setup mu mcreds c = do

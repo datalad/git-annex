@@ -48,32 +48,32 @@ gen r u c gc = do
 		(simplyPrepare $ retrieve external)
 		(simplyPrepare $ remove external)
 		(simplyPrepare $ checkKey external)
-		Remote {
-			uuid = u,
-			cost = cst,
-			name = Git.repoDescribe r,
-			storeKey = storeKeyDummy,
-			retrieveKeyFile = retreiveKeyFileDummy,
-			retrieveKeyFileCheap = \_ _ -> return False,
-			removeKey = removeKeyDummy,
-			checkPresent = checkPresentDummy,
-			checkPresentCheap = False,
-			whereisKey = Nothing,
-			remoteFsck = Nothing,
-			repairRepo = Nothing,
-			config = c,
-			localpath = Nothing,
-			repo = r,
-			gitconfig = gc,
-			readonly = False,
-			availability = avail,
-			remotetype = remote,
-			mkUnavailable = gen r u c $
-				gc { remoteAnnexExternalType = Just "!dne!" },
-			getInfo = return [("externaltype", externaltype)],
-			claimUrl = Just (claimurl external),
-			checkUrl = Just (checkurl external)
-		}
+		Remote
+			{ uuid = u
+			, cost = cst
+			, name = Git.repoDescribe r
+			, storeKey = storeKeyDummy
+			, retrieveKeyFile = retreiveKeyFileDummy
+			, retrieveKeyFileCheap = \_ _ -> return False
+			, removeKey = removeKeyDummy
+			, checkPresent = checkPresentDummy
+			, checkPresentCheap = False
+			, whereisKey = Nothing
+			, remoteFsck = Nothing
+			, repairRepo = Nothing
+			, config = c
+			, localpath = Nothing
+			, repo = r
+			, gitconfig = gc
+			, readonly = False
+			, availability = avail
+			, remotetype = remote
+			, mkUnavailable = gen r u c $
+				gc { remoteAnnexExternalType = Just "!dne!" }
+			, getInfo = return [("externaltype", externaltype)]
+			, claimUrl = Just (claimurl external)
+			, checkUrl = Just (checkurl external)
+			}
   where
 	externaltype = fromMaybe (error "missing externaltype") (remoteAnnexExternalType gc)
 

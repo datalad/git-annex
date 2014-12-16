@@ -42,31 +42,31 @@ list = do
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r _ c gc = 
-	return $ Just Remote {
-		uuid = webUUID,
-		cost = expensiveRemoteCost,
-		name = Git.repoDescribe r,
-		storeKey = uploadKey,
-		retrieveKeyFile = downloadKey,
-		retrieveKeyFileCheap = downloadKeyCheap,
-		removeKey = dropKey,
-		checkPresent = checkKey,
-		checkPresentCheap = False,
-		whereisKey = Just getWebUrls,
-		remoteFsck = Nothing,
-		repairRepo = Nothing,
-		config = c,
-		gitconfig = gc,
-		localpath = Nothing,
-		repo = r,
-		readonly = True,
-		availability = GloballyAvailable,
-		remotetype = remote,
-		mkUnavailable = return Nothing,
-		getInfo = return [],
-		claimUrl = Nothing, -- implicitly claims all urls
-		checkUrl = Nothing
-	}
+	return $ Just Remote
+		{ uuid = webUUID
+		, cost = expensiveRemoteCost
+		, name = Git.repoDescribe r
+		, storeKey = uploadKey
+		, retrieveKeyFile = downloadKey
+		, retrieveKeyFileCheap = downloadKeyCheap
+		, removeKey = dropKey
+		, checkPresent = checkKey
+		, checkPresentCheap = False
+		, whereisKey = Just getWebUrls
+		, remoteFsck = Nothing
+		, repairRepo = Nothing
+		, config = c
+		, gitconfig = gc
+		, localpath = Nothing
+		, repo = r
+		, readonly = True
+		, availability = GloballyAvailable
+		, remotetype = remote
+		, mkUnavailable = return Nothing
+		, getInfo = return []
+		, claimUrl = Nothing -- implicitly claims all urls
+		, checkUrl = Nothing
+		}
 
 downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
 downloadKey key _file dest _p = get =<< getWebUrls key

@@ -64,31 +64,31 @@ gen r u c gc = do
 	hdl <- liftIO $ TahoeHandle
 		<$> maybe (defaultTahoeConfigDir u) return (remoteAnnexTahoe gc)
 		<*> newEmptyTMVarIO
-	return $ Just $ Remote {
-		uuid = u,
-		cost = cst,
-		name = Git.repoDescribe r,
-		storeKey = store u hdl,
-		retrieveKeyFile = retrieve u hdl,
-		retrieveKeyFileCheap = \_ _ -> return False,
-		removeKey = remove,
-		checkPresent = checkKey u hdl,
-		checkPresentCheap = False,
-		whereisKey = Nothing,
-		remoteFsck = Nothing,
-		repairRepo = Nothing,
-		config = c,
-		repo = r,
-		gitconfig = gc,
-		localpath = Nothing,
-		readonly = False,
-		availability = GloballyAvailable,
-		remotetype = remote,
-		mkUnavailable = return Nothing,
-		getInfo = return [],
-		claimUrl = Nothing,
-		checkUrl = Nothing
-	}
+	return $ Just $ Remote
+		{ uuid = u
+		, cost = cst
+		, name = Git.repoDescribe r
+		, storeKey = store u hdl
+		, retrieveKeyFile = retrieve u hdl
+		, retrieveKeyFileCheap = \_ _ -> return False
+		, removeKey = remove
+		, checkPresent = checkKey u hdl
+		, checkPresentCheap = False
+		, whereisKey = Nothing
+		, remoteFsck = Nothing
+		, repairRepo = Nothing
+		, config = c
+		, repo = r
+		, gitconfig = gc
+		, localpath = Nothing
+		, readonly = False
+		, availability = GloballyAvailable
+		, remotetype = remote
+		, mkUnavailable = return Nothing
+		, getInfo = return []
+		, claimUrl = Nothing
+		, checkUrl = Nothing
+		}
 
 tahoeSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
 tahoeSetup mu _ c = do

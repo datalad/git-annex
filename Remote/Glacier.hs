@@ -46,32 +46,32 @@ gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
 		(simplyPrepare $ checkKey this)
 		this
 	  where
-		this = Remote {
-			uuid = u,
-			cost = cst,
-			name = Git.repoDescribe r,
-			storeKey = storeKeyDummy,
-			retrieveKeyFile = retreiveKeyFileDummy,
-			retrieveKeyFileCheap = retrieveCheap this,
-			removeKey = removeKeyDummy,
-			checkPresent = checkPresentDummy,
-			checkPresentCheap = False,
-			whereisKey = Nothing,
-			remoteFsck = Nothing,
-			repairRepo = Nothing,
-			config = c,
-			repo = r,
-			gitconfig = gc,
-			localpath = Nothing,
-			readonly = False,
-			availability = GloballyAvailable,
-			remotetype = remote,
-			mkUnavailable = return Nothing,
-			getInfo = includeCredsInfo c (AWS.creds u) $
-				[ ("glacier vault", getVault c) ],
-			claimUrl = Nothing,
-			checkUrl = Nothing
-		}
+		this = Remote
+			{ uuid = u
+			, cost = cst
+			, name = Git.repoDescribe r
+			, storeKey = storeKeyDummy
+			, retrieveKeyFile = retreiveKeyFileDummy
+			, retrieveKeyFileCheap = retrieveCheap this
+			, removeKey = removeKeyDummy
+			, checkPresent = checkPresentDummy
+			, checkPresentCheap = False
+			, whereisKey = Nothing
+			, remoteFsck = Nothing
+			, repairRepo = Nothing
+			, config = c
+			, repo = r
+			, gitconfig = gc
+			, localpath = Nothing
+			, readonly = False
+			, availability = GloballyAvailable
+			, remotetype = remote
+			, mkUnavailable = return Nothing
+			, getInfo = includeCredsInfo c (AWS.creds u) $
+				[ ("glacier vault", getVault c) ]
+			, claimUrl = Nothing
+			, checkUrl = Nothing
+			}
 	specialcfg = (specialRemoteCfg c)
 		-- Disabled until jobList gets support for chunks.
 		{ chunkConfig = NoChunks
