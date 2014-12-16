@@ -191,9 +191,18 @@ download' quiet url file uo =
 	wget = go "wget" $ headerparams ++ quietopt "-q" ++ wgetparams
 	{- Regular wget needs --clobber to continue downloading an existing
 	 - file. On Android, busybox wget is used, which does not
-	 - support, or need that option. -}
+	 - support, or need that option.
+	 -
+	 - When the wget version is new enough, pass options for
+	 - a less cluttered download display.
+	 -}
 #ifndef __ANDROID__
-	wgetparams = [Params "--clobber -c -O"]
+	wgetparams = catMaybes
+		[ if Build.SysConfig.wgetquietprogress
+			then Just $ Params "-q --show-progress"
+			else Nothing
+		, Just $ Params "--clobber -c -O"
+		]
 #else
 	wgetparams = [Params "-c -O"]
 #endif
