@@ -1,0 +1,5 @@
+I'm using the webapp on my two main computers with up-to-date Debian (one has testing and the other one sid) and I have consistency checks scheduled every day.
+
+The problem is that almost every time the check runs I'm getting the "Attempting to repair" message and git-annex starts using 100% CPU for quite a while, but after it it seams to have done no change to the git tree or the files.
+
+The two computers are never on at the same time, but they are constantly syncing files (through box.com), I don't now if downloading files while the check is in progress might have something to do.
