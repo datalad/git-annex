@@ -9,3 +9,8 @@ bittornado). I looked into using
 <http://hackage.haskell.org/package/torrent> instead,
 but that package is out of date and doesn't currently build. I've got a
 patch fixing that, but am waiting to hear back from the library's author.
+
+There is a bit of a behavior change here; while before `git annex adurl` of
+a torrent file would add the torrent file itself to the repository, it now will
+download and add the contents of the torrent. I think/hope this behavior
+change is ok..
