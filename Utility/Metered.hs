@@ -143,3 +143,36 @@ defaultChunkSize = 32 * k - chunkOverhead
   where
 	k = 1024
 	chunkOverhead = 2 * sizeOf (undefined :: Int) -- GHC specific
+
+{- Parses the String looking for a command's progress output, and returns
+ - Maybe the number of bytes rsynced so far, and any any remainder of the
+ - string that could be an incomplete progress output. That remainder
+ - should be prepended to future output, and fed back in. This interface
+ - allows the command's output to be read in any desired size chunk, or
+ - even one character at a time.
+ -}
+type ProgressParser = String -> (Maybe BytesProcessed, String)
+
+{- Runs a command and runs a ProgressParser on its output, in order
+ - to update the meter. The command's output is also sent to stdout. -}
+commandMeter :: ProgressParser -> MeterUpdate -> FilePath -> [CommandParam] -> IO Bool
+commandMeter progressparser meterupdate cmd params = liftIO $ catchBoolIO $
+	withHandle StdoutHandle createProcessSuccess p $
+		feedprogress zeroBytesProcessed []
+  where
+	p = proc cmd (toCommand params)
+
+	feedprogress prev buf h = do
+		s <- hGetSomeString h 80
+		if null s
+			then return True
+			else do
+				putStr s
+				hFlush stdout
+				let (mbytes, buf') = progressparser (buf++s)
+				case mbytes of
+					Nothing -> feedprogress prev buf' h
+					(Just bytes) -> do
+						when (bytes /= prev) $
+							meterupdate bytes
+						feedprogress bytes buf' h
