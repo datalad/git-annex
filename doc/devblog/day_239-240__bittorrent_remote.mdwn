@@ -1,0 +1,11 @@
+Spent a couple days adding a [[bittorrent_special_remote|special_remotes/bittorrent]]
+to git-annex. This is better than the demo external torrent remote I made
+on Friday: It's built into git-annex; it supports magnet links; it even
+parses aria2c's output so the webapp can display progress bars.
+
+Besides needing `aria2` to download torrents, it also currently depends on
+the `btshowmetainfo` command from the original bittorrent client (or
+bittornado). I looked into using
+<http://hackage.haskell.org/package/torrent> instead,
+but that package is out of date and doesn't currently build. I've got a
+patch fixing that, but am waiting to hear back from the library's author.
