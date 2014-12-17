@@ -19,7 +19,6 @@ import Assistant.Types.UrlRenderer
 import Logs.Transfer
 import Logs.Location
 import Logs.Group
-import Logs.Web (webUUID)
 import qualified Remote
 import qualified Types.Remote as Remote
 import Utility.ThreadScheduler
@@ -115,7 +114,7 @@ failedTransferScan r = do
  - since we need to look at the locations of all keys anyway.
  -}
 expensiveScan :: UrlRenderer -> [Remote] -> Assistant ()
-expensiveScan urlrenderer rs = unless onlyweb $ batch <~> do
+expensiveScan urlrenderer rs = batch <~> do
 	debug ["starting scan of", show visiblers]
 
 	let us = map Remote.uuid rs
@@ -135,7 +134,6 @@ expensiveScan urlrenderer rs = unless onlyweb $ batch <~> do
 	remove <- asIO1 $ removableRemote urlrenderer
 	liftIO $ mapM_ (void . tryNonAsync . remove) $ S.toList removablers
   where
-	onlyweb = all (== webUUID) $ map Remote.uuid rs
 	visiblers = let rs' = filter (not . Remote.readonly) rs
 		in if null rs' then rs else rs'
 
