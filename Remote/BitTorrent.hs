@@ -255,6 +255,9 @@ downloadTorrentContent k u dest filenum p = do
 		, Param "--seed-time=0"
 		, Param "--summary-interval=0"
 		, Param "--file-allocation=none"
+		-- Needed so aria will resume partially downloaded files
+		-- in multi-file torrents.
+		, Param "--check-integrity=true"
 		]
 	
 	{- aria2c will create part of the directory structure
@@ -265,7 +268,7 @@ downloadTorrentContent k u dest filenum p = do
 	wantedfile torrent = do
 		fs <- liftIO $ map fst <$> torrentFileSizes torrent
 		if length fs >= filenum
-			then return (fs !! filenum)
+			then return (fs !! (filenum - 1))
 			else error "Number of files in torrent seems to have changed."
 
 checkDependencies :: Annex ()
