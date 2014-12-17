@@ -353,6 +353,7 @@ torrentFileSizes torrent = do
 		fn = reverse $ drop 2 $
 			dropWhile (/= '(') $ dropWhile (== ')') $ reverse l
 
+	-- a malicious torrent file might try to do directory traversal
 	scrub f = if isAbsolute f || any (== "..") (splitPath f)
 		then error "found unsafe filename in torrent!"
 		else f
@@ -365,4 +366,4 @@ torrentContents u = convert
 	convert l = UrlMulti $ map mkmulti (zip l [1..])
 
 	mkmulti ((fn, sz), n) = 
-		(torrentUrlWithNum u n, Just sz, mkSafeFilePath fn)
+		(torrentUrlWithNum u n, Just sz, mkSafeFilePath $ joinPath $ drop 1 $ splitPath fn)
