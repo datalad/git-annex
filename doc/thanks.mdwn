@@ -14,6 +14,8 @@ git-annex development is partially supported by the
 [NSF](https://www.nsf.gov/awardsearch/showAward?AWD_ID=1429999) as a part of the
 [DataLad project](http://datalad.org/).
 
+Thanks also to Martin f. Krafft and John Byrnes.
+
 ## 2013-2014
 
 Continued git-annex development was [crowd funded](https://campaign.joeyh.name/)
