@@ -102,14 +102,12 @@ dropKey k = do
 	mapM_ (setUrlMissing bitTorrentUUID k) =<< getBitTorrentUrls k
 	return True
 
-{- This is a very poor check, but checking if a torrent has enough seeders
- - with all the pieces etc is quite hard.. and even if implemented, it
- - tells us nothing about the later state of the torrent.
- -
- - This is why this remote needs to default to untrusted!
+{- We punt and don't try to check if a torrent has enough seeders
+ - with all the pieces etc. That would be quite hard.. and even if
+ - implemented, it tells us nothing about the later state of the torrent.
  -}
 checkKey :: Key -> Annex Bool
-checkKey key = not . null <$> getBitTorrentUrls key
+checkKey key = error "cannot reliably check torrent status"
 
 -- Makes this remote UnTrusted, unless it already has a trust set.
 defaultUnTrusted :: Annex ()
