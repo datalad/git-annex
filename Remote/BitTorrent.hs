@@ -77,16 +77,17 @@ downloadKey key _file dest p = do
 	get . map (torrentUrlNum . fst . getDownloader) =<< getBitTorrentUrls key
   where
 	get [] = do
-		warning "no known torrent url"
+		warning "could not download torrent"
 		return False
 	get urls = do
 		showOutput -- make way for download progress bar
 		untilTrue urls $ \(u, filenum) -> do
 			registerTorrentCleanup u
 			checkDependencies
-			unlessM (downloadTorrentFile u) $
-				error "could not download torrent file"
-			downloadTorrentContent key u dest filenum p
+			ifM (downloadTorrentFile u)
+				( downloadTorrentContent key u dest filenum p
+				, return False
+				)
 
 downloadKeyCheap :: Key -> FilePath -> Annex Bool
 downloadKeyCheap _ _ = return False
