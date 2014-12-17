@@ -110,7 +110,7 @@ downloadRemoteFile r relaxed uri file sz = do
 			-- Set temporary url for the urlkey
 			-- so that the remote knows what url it
 			-- should use to download it.
-			setTempUrl urlkey uri
+			setTempUrl urlkey loguri
 			let downloader = Remote.retrieveKeyFile r urlkey (Just file)
 			ret <- downloadWith downloader urlkey (Remote.uuid r) loguri file
 			removeTempUrl urlkey
