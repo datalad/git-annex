@@ -192,7 +192,7 @@ postEditNewCloudRepositoryR uuid = connectionNeeded >> editForm True (RepoUUID u
 
 editForm :: Bool -> RepoId -> Handler Html
 editForm new (RepoUUID uuid)
-	| uuid == webUUID = page "The web" (Just Configuration) $ do
+	| uuid == webUUID || uuid == bitTorrentUUID = page "The web" (Just Configuration) $ do
 		$(widgetFile "configurators/edit/webrepository")
 	| otherwise = page "Edit repository" (Just Configuration) $ do
 		mremote <- liftAnnex $ Remote.remoteFromUUID uuid
