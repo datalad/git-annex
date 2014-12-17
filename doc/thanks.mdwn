@@ -14,7 +14,7 @@ git-annex development is partially supported by the
 [NSF](https://www.nsf.gov/awardsearch/showAward?AWD_ID=1429999) as a part of the
 [DataLad project](http://datalad.org/).
 
-Thanks also to Martin f. Krafft and John Byrnes.
+Thanks also to these folks for their support: martin f. krafft and John Byrnes.
 
 ## 2013-2014
 
@@ -134,7 +134,7 @@ Poobalasubramanian, Alexandre Garel, David Clark, Jeff Johnson,
 Mica Semrick, Paul Staab, Rémi Vanicat, Martin Holtschneider, Jan Ivar
 Beddari, Peter Simons, Thomas Koch, Justin Geibel, Guillaume DELVIT, Shanti
 Bouchez, Oliver Brandt, François Deppierraz, Chad Walstrom, Tim Mattison,
-Jakub Antoni Tyszko, Casa do Boneco, Florian Tham, martin f. krafft,
+Jakub Antoni Tyszko, Casa do Boneco, Florian Tham,
 and 30 anonymous bitcoin users
 
 With an especial thanks to the WikiMedia foundation,
