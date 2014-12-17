@@ -20,6 +20,4 @@ Torrent swarms tend to come and go, so git-annex defaults to *not*
 trusting the bittorrent special remote.
 
 Multi-file torrents are supported; to handle them, `git annex addurl`
-will add a directory containing all the files from the torrent. To
-specify a single file from a multi-file torrent, append "#n" to its url;
-"#1" is the first file, "#2" is the second, and so on.
+will add a directory containing all the files from the torrent.
