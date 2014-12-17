@@ -16,8 +16,5 @@ bittornado or the original BitTorrent client.
 Currently git-annex only supports downloading content from a torrent; 
 it cannot upload or remove content.
 
-Torrent swarms tend to come and go, so git-annex defaults to *not*
-trusting the bittorrent special remote.
-
 Multi-file torrents are supported; to handle them, `git annex addurl`
 will add a directory containing all the files from the torrent.

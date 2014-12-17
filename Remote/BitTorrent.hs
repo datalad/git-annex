@@ -72,8 +72,7 @@ gen r _ c gc =
 		}
 
 downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
-downloadKey key _file dest p = do
-	defaultUnTrusted
+downloadKey key _file dest p = 
 	get . map (torrentUrlNum . fst . getDownloader) =<< getBitTorrentUrls key
   where
 	get [] = do
@@ -108,11 +107,6 @@ dropKey k = do
  -}
 checkKey :: Key -> Annex Bool
 checkKey key = error "cannot reliably check torrent status"
-
--- Makes this remote UnTrusted, unless it already has a trust set.
-defaultUnTrusted :: Annex ()
-defaultUnTrusted = whenM (isNothing . M.lookup bitTorrentUUID <$> trustMapRaw) $
-	trustSet bitTorrentUUID UnTrusted
 
 getBitTorrentUrls :: Key -> Annex [URLString]
 getBitTorrentUrls key = filter supported <$> getUrls key
