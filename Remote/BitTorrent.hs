@@ -149,9 +149,11 @@ torrentUrlWithNum :: URLString -> Int -> URLString
 torrentUrlWithNum u n = u ++ "#" ++ show n
 
 torrentUrlNum :: URLString -> (URLString, Int)
-torrentUrlNum u =
-	let (n, ru) = separate (== '#') (reverse u)
-	in (reverse ru, fromMaybe 1 $ readish $ reverse n)
+torrentUrlNum u
+	| '#' `elem` u = 
+		let (n, ru) = separate (== '#') (reverse u)
+		in (reverse ru, fromMaybe 1 $ readish $ reverse n)
+	| otherwise = (u, 1)
 
 {- A Key corresponding to the URL of a torrent file. -}
 torrentUrlKey :: URLString -> Annex Key
