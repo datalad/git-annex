@@ -9,6 +9,11 @@ git-annex (5.20141204) UNRELEASED; urgency=medium
     *.torrent urls.
   * Use wget -q --show-progress for less verbose wget output,
     when built with wget 1.16.
+  * Added bittorrent special remote.
+  * addurl behavior change: When downloading an url ending in .torrent,
+    it will download files from bittorrent, instead of the old behavior
+    of adding the torrent file to the repository.
+  * Added Recommends on aria2 and bittornado | bittorrent.
 
  -- Joey Hess <id@joeyh.name>  Fri, 05 Dec 2014 13:42:08 -0400
 

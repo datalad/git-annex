@@ -15,7 +15,6 @@ module Logs.Trust (
 	trustExclude,
 	lookupTrust,
 	trustMapLoad,
-	trustMapRaw,
 ) where
 
 import qualified Data.Map as M
@@ -23,7 +22,6 @@ import Data.Default
 
 import Common.Annex
 import Types.TrustLevel
-import qualified Annex.Branch
 import qualified Annex
 import Logs
 import Remote.List
@@ -77,8 +75,3 @@ trustMapLoad = do
 	configuredtrust r = (\l -> Just (Types.Remote.uuid r, l))
 		=<< readTrustLevel 
 		=<< remoteAnnexTrustLevel (Types.Remote.gitconfig r)
-
-{- Does not include forcetrust or git config values, just those from the
- - log file. -}
-trustMapRaw :: Annex TrustMap
-trustMapRaw = calcTrustMap <$> Annex.Branch.get trustLog

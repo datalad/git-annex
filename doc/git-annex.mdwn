@@ -1728,6 +1728,10 @@ Here are all the supported configuration settings.
   Options to pass to quvi when using it to find the url to download for a
   video.
 
+* `annex.aria-torrent-options`
+
+  Options to pass to aria2c when using it to download a torrent.
+
 * `annex.http-headers`
 
   HTTP headers to send when downloading from the web. Multiple lines of

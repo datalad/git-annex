@@ -17,6 +17,7 @@ They cannot be used by other git commands though.
 * [[webdav]]
 * [[tahoe]]
 * [[web]]
+* [[bittorrent]]
 * [[xmpp]]
 * [[hook]]
 

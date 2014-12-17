@@ -8,6 +8,7 @@
 module Logs.Trust.Basic (
 	module X,
 	trustSet,
+	trustMapRaw,
 ) where
 
 import Data.Time.Clock.POSIX
@@ -30,3 +31,8 @@ trustSet uuid@(UUID _) level = do
 				parseLog (Just . parseTrustLog)
 	Annex.changeState $ \s -> s { Annex.trustmap = Nothing }
 trustSet NoUUID _ = error "unknown UUID; cannot modify"
+
+{- Does not include forcetrust or git config values, just those from the
+ - log file. -}
+trustMapRaw :: Annex TrustMap
+trustMapRaw = calcTrustMap <$> Annex.Branch.get trustLog

@@ -9,9 +9,12 @@ module Types.CleanupActions where
 
 import Types.UUID
 
+import Utility.Url
+
 data CleanupAction
 	= RemoteCleanup UUID
 	| StopHook UUID
 	| FsckCleanup
 	| SshCachingCleanup
+	| TorrentCleanup URLString
 	deriving (Eq, Ord)

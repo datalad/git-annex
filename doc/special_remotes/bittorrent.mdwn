@@ -1,0 +1,25 @@
+Similar to the [[web]] special remote, git-annex can use BitTorrent as
+a source for files that are added to the git-annex repository.
+
+It supports both `.torrent` files, and `magnet:` links. When you run `git
+annex addurl` with either of these, it will download the contents of the
+torrent and add it to the git annex repository.
+
+See [[tips/using_the_web_as_a_special_remote]] for usage examples.
+
+git-annex uses [aria2](http://aria2.sourceforge.net/) to download torrents.
+It also needs the `btshowmetainfo` program, from either
+bittornado or the original BitTorrent client.
+
+## notes
+
+Currently git-annex only supports downloading content from a torrent; 
+it cannot upload or remove content.
+
+Torrent swarms tend to come and go, so git-annex defaults to *not*
+trusting the bittorrent special remote.
+
+Multi-file torrents are supported; to handle them, `git annex addurl`
+will add a directory containing all the files from the torrent. To
+specify a single file from a multi-file torrent, append "#n" to its url;
+"#1" is the first file, "#2" is the second, and so on.

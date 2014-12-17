@@ -42,6 +42,7 @@ data GitConfig = GitConfig
 	, annexDebug :: Bool
 	, annexWebOptions :: [String]
 	, annexQuviOptions :: [String]
+	, annexAriaTorrentOptions :: [String]
 	, annexWebDownloadCommand :: Maybe String
 	, annexCrippledFileSystem :: Bool
 	, annexLargeFiles :: Maybe String
@@ -77,6 +78,7 @@ extractGitConfig r = GitConfig
 	, annexDebug = getbool (annex "debug") False
 	, annexWebOptions = getwords (annex "web-options")
 	, annexQuviOptions = getwords (annex "quvi-options")
+	, annexAriaTorrentOptions = getwords (annex "aria-torrent-options")
 	, annexWebDownloadCommand = getmaybe (annex "web-download-command")
 	, annexCrippledFileSystem = getbool (annex "crippledfilesystem") False
 	, annexLargeFiles = getmaybe (annex "largefiles")

@@ -30,6 +30,7 @@ import qualified Remote.Bup
 import qualified Remote.Directory
 import qualified Remote.Rsync
 import qualified Remote.Web
+import qualified Remote.BitTorrent
 #ifdef WITH_WEBDAV
 import qualified Remote.WebDAV
 #endif
@@ -52,6 +53,7 @@ remoteTypes =
 	, Remote.Directory.remote
 	, Remote.Rsync.remote
 	, Remote.Web.remote
+	, Remote.BitTorrent.remote
 #ifdef WITH_WEBDAV
 	, Remote.WebDAV.remote
 #endif
