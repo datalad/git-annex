@@ -181,9 +181,9 @@ while read line; do
 		;;
 		CHECKPRESENT)
 			key="$2"
-			# Let's just assume that torrents are always present
+			# Let's just assume that torrents are never present
 			# for simplicity.
-			echo CHECKPRESENT-SUCCESS "$key"
+			echo CHECKPRESENT-UNKNOWN "$key" "cannot reliably check torrent status"
 		;;
 		REMOVE)
 			key="$2"
