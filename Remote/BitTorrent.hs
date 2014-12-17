@@ -305,6 +305,9 @@ parseAriaProgress totalsize = go [] . reverse . split ['\r']
 
 	frompercent p = toBytesProcessed $ totalsize * p `div` 100
 
+{- It would be better to use http://hackage.haskell.org/package/torrent,
+ - but that package won't currently build. I sent a patch fixing it
+ - to its author and plan to upload in Jan 2015 if I don't hear back. -}
 btshowmetainfo :: FilePath -> String -> IO [String]
 btshowmetainfo torrent field = 
 	findfield [] . lines <$> readProcess "btshowmetainfo" [torrent]
