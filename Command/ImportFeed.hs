@@ -30,6 +30,7 @@ import qualified Utility.Format
 import Utility.Tmp
 import Command.AddUrl (addUrlFile, downloadRemoteFile, relaxedOption)
 import Annex.Perms
+import Annex.UUID
 import Backend.URL (fromUrl)
 #ifdef WITH_QUVI
 import Annex.Quvi

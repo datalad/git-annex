@@ -22,6 +22,7 @@ import qualified Backend.URL
 import qualified Remote
 import qualified Types.Remote as Remote
 import Annex.Content
+import Annex.UUID
 import Logs.Web
 import Types.Key
 import Types.KeySource

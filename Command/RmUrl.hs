@@ -10,6 +10,7 @@ module Command.RmUrl where
 import Common.Annex
 import Command
 import Logs.Web
+import Annex.UUID
 import qualified Remote
 
 cmd :: [Command]

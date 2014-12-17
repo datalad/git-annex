@@ -42,7 +42,6 @@ import Utility.Gpg
 import Annex.UUID
 import Assistant.Ssh
 import Config
-import Logs.Web (webUUID)
 
 import qualified Data.Text as T
 import qualified Data.Map as M

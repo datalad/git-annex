@@ -23,6 +23,8 @@ module Annex.UUID (
 	storeUUID,
 	storeUUIDIn,
 	setUUID,
+	webUUID,
+	bitTorrentUUID,
 ) where
 
 import Common.Annex
@@ -98,3 +100,11 @@ setUUID :: Git.Repo -> UUID -> IO Git.Repo
 setUUID r u = do
 	let s = show configkey ++ "=" ++ fromUUID u
 	Git.Config.store s r
+
+-- Dummy uuid for the whole web. Do not alter.
+webUUID :: UUID
+webUUID = UUID "00000000-0000-0000-0000-000000000001"
+
+-- Dummy uuid for bittorrent. Do not alter.
+bitTorrentUUID :: UUID
+bitTorrentUUID = UUID "00000000-0000-0000-0000-000000000002"

@@ -7,7 +7,6 @@
 
 module Logs.Web (
 	URLString,
-	webUUID,
 	getUrls,
 	getUrlsWithPrefix,
 	setUrlPresent,
@@ -34,10 +33,6 @@ import Annex.CatFile
 import qualified Git
 import qualified Git.LsFiles
 import Utility.Url
-
--- Dummy uuid for the whole web. Do not alter.
-webUUID :: UUID
-webUUID = UUID "00000000-0000-0000-0000-000000000001"
 
 {- Gets all urls that a key might be available from. -}
 getUrls :: Key -> Annex [URLString]

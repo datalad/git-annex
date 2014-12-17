@@ -23,14 +23,11 @@ import Utility.Metered
 import Utility.Tmp
 import Backend.URL
 import Annex.Perms
+import Annex.UUID
 import qualified Annex.Url as Url
 
 import qualified Data.Map as M
 import Network.URI
-
--- Dummy uuid for bittorrent. Do not alter.
-bitTorrentUUID :: UUID
-bitTorrentUUID = UUID "00000000-0000-0000-0000-000000000002"
 
 remote :: RemoteType
 remote = RemoteType {

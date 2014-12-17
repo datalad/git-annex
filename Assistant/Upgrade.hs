@@ -21,6 +21,7 @@ import Logs.Web
 import Logs.Presence
 import Logs.Location
 import Annex.Content
+import Annex.UUID
 import qualified Backend
 import qualified Types.Backend
 import qualified Types.Key

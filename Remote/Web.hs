@@ -16,6 +16,7 @@ import qualified Git.Construct
 import Annex.Content
 import Config.Cost
 import Logs.Web
+import Annex.UUID
 import Types.Key
 import Utility.Metered
 import qualified Annex.Url as Url
