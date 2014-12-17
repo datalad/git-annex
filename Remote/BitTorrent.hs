@@ -18,6 +18,7 @@ import Logs.Trust.Basic
 import Types.TrustLevel
 import Types.UrlContents
 import Types.CleanupActions
+import Types.Key
 import Utility.Metered
 import Utility.Tmp
 import Backend.URL
@@ -88,7 +89,7 @@ downloadKey key _file dest p = do
 			checkDependencies
 			unlessM (downloadTorrentFile u) $
 				error "could not download torrent file"
-			downloadTorrentContent u dest filenum p
+			downloadTorrentContent key u dest filenum p
 
 downloadKeyCheap :: Key -> FilePath -> Annex Bool
 downloadKeyCheap _ _ = return False
@@ -228,12 +229,13 @@ downloadMagnetLink u metadir dest = ifM download
 		, Param "--bt-save-metadata"
 		, Param u
 		, Param "--seed-time=0"
+		, Param "--summary-interval=0"
 		, Param "-d"
 		, File metadir
 		]
 
-downloadTorrentContent :: URLString -> FilePath -> Int -> MeterUpdate -> Annex Bool
-downloadTorrentContent u dest filenum p = do
+downloadTorrentContent :: Key -> URLString -> FilePath -> Int -> MeterUpdate -> Annex Bool
+downloadTorrentContent k u dest filenum p = do
 	torrent <- tmpTorrentFile u
 	tmpdir <- tmpTorrentDir u
 	createAnnexDirectory tmpdir
@@ -246,13 +248,14 @@ downloadTorrentContent u dest filenum p = do
 		, return False
 		)
   where
-	-- TODO parse aria's output and update progress meter
-	download torrent tmpdir = runAria
+	download torrent tmpdir = ariaProgress (keySize k) p
 		[ Param $ "--select-file=" ++ show filenum
 		, File torrent
 		, Param "-d"
 		, File tmpdir
 		, Param "--seed-time=0"
+		, Param "--summary-interval=0"
+		, Param "--file-allocation=none"
 		]
 	
 	{- aria2c will create part of the directory structure
@@ -272,10 +275,34 @@ checkDependencies = do
 	unless (null missing) $
 		error $ "need to install additional software in order to download from bittorrent: " ++ unwords missing
 
-runAria :: [CommandParam] -> Annex Bool
-runAria ps = do
+ariaParams :: [CommandParam] -> Annex [CommandParam]
+ariaParams ps = do
 	opts <- map Param . annexAriaTorrentOptions <$> Annex.getGitConfig
-	liftIO $ boolSystem "aria2c" (ps ++ opts)
+	return (ps ++ opts)
+
+runAria :: [CommandParam] -> Annex Bool
+runAria ps = liftIO . boolSystem "aria2c" =<< ariaParams ps
+
+-- Parse aria output to find "(n%)" and update the progress meter
+-- with it. The output is also output to stdout.
+ariaProgress :: Maybe Integer -> MeterUpdate -> [CommandParam] -> Annex Bool
+ariaProgress Nothing _ ps = runAria ps
+ariaProgress (Just sz) meter ps =
+	liftIO . commandMeter (parseAriaProgress sz) meter "aria2c"
+		=<< ariaParams ps
+
+parseAriaProgress :: Integer -> ProgressParser
+parseAriaProgress totalsize = go [] . reverse . split ['\r']
+  where
+	go remainder [] = (Nothing, remainder)
+	go remainder (x:xs) = case readish (findpercent x) of
+		Nothing -> go (x++remainder) xs
+		Just p -> (Just (frompercent p), remainder)
+
+	-- "(N%)"
+	findpercent = takeWhile (/= '%') . drop 1 . dropWhile (/= '(')
+
+	frompercent p = toBytesProcessed $ totalsize * p `div` 100
 
 btshowmetainfo :: FilePath -> String -> IO [String]
 btshowmetainfo torrent field = 
