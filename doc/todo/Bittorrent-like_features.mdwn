@@ -46,4 +46,4 @@ This way, a torrent would just become another source for a specific file. When w
 
 That way we avoid the implementation complexity of shoving a complete bittorrent client within the assistant. The `get` operation would block until the torrent is downloaded, i guess... --[[anarcat]]
 
-> This is now implemented. Including magnet link support, and multi-file torrent support. Leaving toto item open for the blue-sky stuff at top. --[[Joey]]
+> This is now [[implemented|special_remotes/bittorrent/]]. Including magnet link support, and multi-file torrent support. Leaving todo item open for the blue-sky stuff at top. --[[Joey]]
