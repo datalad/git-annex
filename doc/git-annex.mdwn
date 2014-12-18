@@ -225,8 +225,11 @@ subdirectories).
   alternate locations from which the file can be downloaded. In this mode,
   addurl can be used both to add new files, or to add urls to existing files.
 
-  When quvi is installed, urls are automatically tested to see if they
+  When `quvi` is installed, urls are automatically tested to see if they
   point to a video hosting site, and the video is downloaded instead.
+
+  Urls to torrent files (including magnet links) will cause the content of
+  the torrent to be downloaded, using `aria2c`.
 
 * `rmurl file url`
 
