@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnx8kHW66N3BqmkVpgtXDlYMvr8TJ5VvfY"
+ nickname="Yaroslav"
+ subject="unavailable files"
+ date="2014-12-18T16:37:13Z"
+ content="""
+for my use cases the best would be if FUSE simply didn't return until file becomes available. Making an option to return immediately with EBUSY/ENODATA could also be generally useful but not in my case :-/
+I wonder if any timeout would kick in in some use-cases if it takes too long?
+"""]]

@@ -1,0 +1,21 @@
+Would it be possible to add an `--inject` option to import?
+
+Say, for example, I have an annex on computer A which has a subset of files and a directory of files which are potentional duplicates of files in the annex.
+
+I would like to do something like this:
+
+    mkdir ~/annex/import
+    cd ~/annex/import
+    git annex import --deduplicate --inject ~/directory/of/files
+
+This would do the same as `--deduplicate`, except if the file is not present in the annex, it would be injected. For example:
+
+Annex knows about A and B, A is present but B is not.
+$DIR contains A, B and C.
+
+A would be deleted from $DIR due to `--deduplicate`.
+B would be injected into the repo (making it present) due to `--inject`, then deleted from $DIR.
+C would be added to the annex, resulting in this
+
+    $ ls ~/annex/import
+    C
