@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2014-12-18T19:59:54Z"
+ content="""
+You can see the url(s) of a file when you run `git annex whereis $file`
+"""]]
