@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="vho"
+ subject="update"
+ date="2014-12-18T00:43:22Z"
+ content="""
+Hi,
+
+I have uploaded the repository to:
+http://dl.free.fr/bczxhyOhy
+
+You can decrypt it with your gpg key. It weights 200 Mo.
+
+Moreover when I try to run git annex whereis on files present only on the defective annex from another annex I get the following error:
+
+    $ git annex whereis IMG_4701.JPG
+    whereis IMG_4701.JPG (0 copies) failed
+    git-annex: whereis: 1 failed
+
+I guess the defective annex could not completely synchronize with the others.
+
+I also tried to look at the git tree with gitk --all.
+Well there seems to be a lot of commit with message update (recovery from race)
+I am forced to kill gitk because it starts lagging a lot.
+
+Hopefully you will be able to provide me some hints on how to resolve this issue.
+
+Best regards
+-- 
+vho
+"""]]
