@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Remote.BitTorrent (remote) where
 
 import Common.Annex
@@ -14,8 +16,6 @@ import qualified Git
 import qualified Git.Construct
 import Config.Cost
 import Logs.Web
-import Logs.Trust.Basic
-import Types.TrustLevel
 import Types.UrlContents
 import Types.CleanupActions
 import Types.Key
@@ -26,8 +26,12 @@ import Annex.Perms
 import Annex.UUID
 import qualified Annex.Url as Url
 
-import qualified Data.Map as M
 import Network.URI
+
+#ifdef WITH_TORRENTPARSER
+import Data.Torrent
+import qualified Data.ByteString.Lazy as B
+#endif
 
 remote :: RemoteType
 remote = RemoteType {
@@ -106,7 +110,7 @@ dropKey k = do
  - implemented, it tells us nothing about the later state of the torrent.
  -}
 checkKey :: Key -> Annex Bool
-checkKey key = error "cannot reliably check torrent status"
+checkKey = error "cannot reliably check torrent status"
 
 getBitTorrentUrls :: Key -> Annex [URLString]
 getBitTorrentUrls key = filter supported <$> getUrls key
@@ -266,9 +270,16 @@ downloadTorrentContent k u dest filenum p = do
 
 checkDependencies :: Annex ()
 checkDependencies = do
-	missing <- liftIO $ filterM (not <$$> inPath) ["aria2c", "btshowmetainfo"]
+	missing <- liftIO $ filterM (not <$$> inPath) deps
 	unless (null missing) $
 		error $ "need to install additional software in order to download from bittorrent: " ++ unwords missing
+  where
+	deps =
+		[ "aria2c"
+#ifndef TORRENT
+		, "btshowmetainfo"
+#endif
+		]
 
 ariaParams :: [CommandParam] -> Annex [CommandParam]
 ariaParams ps = do
@@ -299,9 +310,8 @@ parseAriaProgress totalsize = go [] . reverse . split ['\r']
 
 	frompercent p = toBytesProcessed $ totalsize * p `div` 100
 
-{- It would be better to use http://hackage.haskell.org/package/torrent,
- - but that package won't currently build. I sent a patch fixing it
- - to its author and plan to upload in Jan 2015 if I don't hear back. -}
+{- Used only if the haskell torrent library is not available. -}
+#ifndef WITH_TORRENTPARSER
 btshowmetainfo :: FilePath -> String -> IO [String]
 btshowmetainfo torrent field = 
 	findfield [] . lines <$> readProcess "btshowmetainfo" [torrent]
@@ -319,12 +329,25 @@ btshowmetainfo torrent field =
 	multiline c [] = findfield c []
 
 	fieldkey = field ++ take (14 - length field) (repeat '.') ++ ": "
+#endif
 
 {- Examines the torrent file and gets the list of files in it,
  - and their sizes.
  -}
 torrentFileSizes :: FilePath -> IO [(FilePath, Integer)]
 torrentFileSizes torrent = do
+#ifdef WITH_TORRENTPARSER
+	let mkfile = joinPath . map (scrub . decodeBS)
+	b <- B.readFile torrent
+	return $ case readTorrent b of
+		Left e -> error $ "failed to parse torrent: " ++ e
+		Right t -> case tInfo t of
+			SingleFile { tLength = l, tName = f } ->
+				[ (mkfile [f], l) ]
+			MultiFile { tFiles = fs, tName = dir } ->
+				map (\tf -> (mkfile $ dir:filePath tf, fileLength tf)) fs
+  where
+#else
 	files <- getfield "files"
 	if null files
 		then do
@@ -334,13 +357,12 @@ torrentFileSizes torrent = do
 				((fn:[]), (Just sz:[])) -> return [(scrub fn, sz)]
 		 		_ -> parsefailed (show (fnl, szl))
 		else do
-			v <- btshowmetainfo torrent "directory name"
+			v <- getfield "directory name"
 			case v of
 				(d:[]) -> return $ map (splitsize d) files
 				_ -> parsefailed (show v)
   where
 	getfield = btshowmetainfo torrent
-
 	parsefailed s = error $ "failed to parse btshowmetainfo output for torrent file: " ++ show s
 
 	-- btshowmetainfo outputs a list of "filename (size)"
@@ -351,7 +373,7 @@ torrentFileSizes torrent = do
 				reverse l
 		fn = reverse $ drop 2 $
 			dropWhile (/= '(') $ dropWhile (== ')') $ reverse l
-
+#endif
 	-- a malicious torrent file might try to do directory traversal
 	scrub f = if isAbsolute f || any (== "..") (splitPath f)
 		then error "found unsafe filename in torrent!"

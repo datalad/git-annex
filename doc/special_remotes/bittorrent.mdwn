@@ -8,8 +8,10 @@ torrent and add it to the git annex repository.
 See [[tips/using_the_web_as_a_special_remote]] for usage examples.
 
 git-annex uses [aria2](http://aria2.sourceforge.net/) to download torrents.
-It also needs the `btshowmetainfo` program, from either
-bittornado or the original BitTorrent client.
+
+If git-annex is not built using the haskell torrent library to parse
+torrents, it also needs the needs the `btshowmetainfo` program, from
+either bittornado or the original BitTorrent client.
 
 ## notes
 

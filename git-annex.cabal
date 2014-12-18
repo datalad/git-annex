@@ -93,6 +93,9 @@ Flag CryptoHash
 Flag DesktopNotify
   Description: Enable desktop environment notifications
 
+Flag TorrentParser
+  Description: Use haskell torrent library to parse torrent files
+
 Flag EKG
   Description: Enable use of EKG to monitor git-annex as it runs (at http://localhost:4242/)
   Default: False
@@ -233,6 +236,10 @@ Executable git-annex
   if flag(Tahoe)
     Build-Depends: aeson
     CPP-Options: -DWITH_TAHOE
+
+  if flag(TorrentParser)
+    Build-Depends: torrent (>= 10000.0.0)
+    CPP-Options: -DWITH_TORRENTPARSER
 
   if flag(EKG)
     Build-Depends: ekg

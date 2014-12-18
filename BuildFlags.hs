@@ -86,6 +86,11 @@ buildFlags = filter (not . null)
 #else
 #warning Building without CryptoHash.
 #endif
+#ifdef WITH_TORRENTParser
+	, "TorrentParser"
+#else
+#warning Building without haskell torrent library; will instead use btshowmetainfo to parse torrent files.
+#endif
 #ifdef WITH_EKG
 	, "EKG"
 #endif
