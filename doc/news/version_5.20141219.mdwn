@@ -1,0 +1,20 @@
+git-annex 5.20141219 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Webapp: When adding a new box.com remote, use the new style chunking.
+     Thanks, Jon Ander Peñalba.
+   * External special remote protocol now includes commands for setting
+     and getting the urls associated with a key.
+   * Urls can now be claimed by remotes. This will allow creating,
+     for example, a external special remote that handles magnet: and
+     *.torrent urls.
+   * Use wget -q --show-progress for less verbose wget output,
+     when built with wget 1.16.
+   * Added bittorrent special remote.
+   * addurl behavior change: When downloading an url ending in .torrent,
+     it will download files from bittorrent, instead of the old behavior
+     of adding the torrent file to the repository.
+   * Added Recommends on aria2.
+   * When possible, build with the haskell torrent library for parsing
+     torrent files. As a fallback, can instead use btshowmetainfo from
+     bittornado | bittorrent.
+   * Fix build with -f-S3."""]]

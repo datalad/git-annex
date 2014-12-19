@@ -1,7 +1,0 @@
-git-annex 5.20141013 released with [[!toggle text="these changes"]]
-[[!toggleable text="""
-   * Adjust cabal file to support building w/o assistant on the hurd.
-   * Support building with yesod 1.4.
-   * S3: Fix embedcreds=yes handling for the Internet Archive.
-   * map: Handle .git prefixed remote repos. Closes: #[614759](http://bugs.debian.org/614759)
-   * repair: Prevent auto gc from happening when fetching from a remote."""]]
