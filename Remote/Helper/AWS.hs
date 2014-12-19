@@ -5,21 +5,19 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE OverloadedStrings, TupleSections #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TupleSections #-}
 
 module Remote.Helper.AWS where
 
 import Common.Annex
 import Creds
 
-import qualified Aws
-import qualified Aws.S3 as S3
 import qualified Data.Map as M
 import qualified Data.ByteString as B
 import qualified Data.Text as T
 import Data.Text.Encoding (encodeUtf8)
 import Data.Text (Text)
-import Data.IORef
 
 creds :: UUID -> CredPairStorage
 creds u = CredPairStorage
@@ -27,13 +25,6 @@ creds u = CredPairStorage
 	, credPairEnvironment = ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY")
 	, credPairRemoteKey = Just "s3creds"
 	}
-
-genCredentials :: CredPair -> IO Aws.Credentials
-genCredentials (keyid, secret) = Aws.Credentials
-	<$> pure (encodeUtf8 (T.pack keyid))
-	<*> pure (encodeUtf8 (T.pack secret))
-	<*> newIORef []
-	<*> pure Nothing
 
 data Service = S3 | Glacier
 	deriving (Eq)
@@ -82,7 +73,3 @@ s3HostName r = encodeUtf8 $ T.concat ["s3-", r, ".amazonaws.com"]
 
 s3DefaultHost :: String
 s3DefaultHost = "s3.amazonaws.com"
-
-mkLocationConstraint :: Region -> S3.LocationConstraint
-mkLocationConstraint "US" = S3.locationUsClassic
-mkLocationConstraint r = r

@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE CPP #-}
 
 module Remote.S3 (remote, iaHost, configIA, iaItemUrl) where
@@ -26,6 +27,7 @@ import Network.HTTP.Types
 import Control.Monad.Trans.Resource
 import Control.Monad.Catch
 import Data.Conduit
+import Data.IORef
 
 import Common.Annex
 import Types.Remote
@@ -308,7 +310,7 @@ genBucket c u = do
 				showAction $ "creating bucket in " ++ datacenter
 				void $ sendS3Handle h $
 					S3.PutBucket (bucket $ hinfo h) Nothing $
-						AWS.mkLocationConstraint $
+						mkLocationConstraint $
 							T.pack datacenter
 		writeUUIDFile c u h
 	
@@ -391,7 +393,7 @@ sendS3Handle' h = AWS.pureAws (hawscfg h) (hs3cfg h) (hmanager h)
 withS3Handle :: RemoteConfig -> UUID -> S3Info -> (S3Handle -> Annex a) -> Annex a
 withS3Handle c u info a = do
 	creds <- getRemoteCredPairFor "S3" c (AWS.creds u)
-	awscreds <- liftIO $ AWS.genCredentials $ fromMaybe nocreds creds
+	awscreds <- liftIO $ genCredentials $ fromMaybe nocreds creds
 	let awscfg = AWS.Configuration AWS.Timestamp awscreds (AWS.defaultLog AWS.Error)
 	bracketIO (newManager httpcfg) closeManager $ \mgr -> 
 		a $ S3Handle mgr awscfg s3cfg info
@@ -505,3 +507,14 @@ iaKeyUrl :: Remote -> Key -> URLString
 iaKeyUrl r k = "http://archive.org/download/" ++ b ++ "/" ++ getBucketObject (config r) k
   where
 	b = fromMaybe "" $ getBucketName $ config r
+
+genCredentials :: CredPair -> IO AWS.Credentials
+genCredentials (keyid, secret) = AWS.Credentials
+	<$> pure (T.encodeUtf8 (T.pack keyid))
+	<*> pure (T.encodeUtf8 (T.pack secret))
+	<*> newIORef []
+	<*> pure Nothing
+
+mkLocationConstraint :: AWS.Region -> S3.LocationConstraint
+mkLocationConstraint "US" = S3.locationUsClassic
+mkLocationConstraint r = r

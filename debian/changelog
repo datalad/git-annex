@@ -17,6 +17,7 @@ git-annex (5.20141204) UNRELEASED; urgency=medium
   * When possible, build with the haskell torrent library for parsing
     torrent files. As a fallback, can instead use btshowmetainfo from
     bittornado | bittorrent.
+  * Fix build with -f-S3.
 
  -- Joey Hess <id@joeyh.name>  Fri, 05 Dec 2014 13:42:08 -0400
 

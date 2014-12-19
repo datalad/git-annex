@@ -35,3 +35,5 @@ I'm installing dependencies with cabal but have disabled S3 support
     cabal configure "${_features[@]}"
 
     make
+
+> [[fixed|done]] --[[Joey]]
