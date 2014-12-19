@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="ghen1"
+ subject="Solved"
+ date="2014-12-19T12:56:55Z"
+ content="""
+I've figured it out:
+
+In the annex in which the view was made (in my case *sdrive*), the views must be deleted with single-quotes:
+
+    git branch -D 'views/(added=14_09);(tag=Shared)'
+    git branch -D 'views/(added=14_09);Images_=_'
+    git branch -D 'views/added=_'
+
+In the connected annexes, for which *sdrive* is a remote, this command removes the remote branches:
+
+    git fetch -p sdrive
+
+     x [deleted]         (none)     -> sdrive/views/(added=14_09);(tag=Shared)
+     x [deleted]         (none)     -> sdrive/views/(added=14_09);Images_=_
+     x [deleted]         (none)     -> sdrive/views/added=_
+
+After these steps *git annex* recognized old files as unused.
+"""]]
