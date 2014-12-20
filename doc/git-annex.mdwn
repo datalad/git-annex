@@ -31,7 +31,7 @@ content from the key-value store.
 # EXAMPLES
 
 	# git annex get video/hackity_hack_and_kaxxt.mov
-	get video/_why_hackity_hack_and_kaxxt.mov (not available)
+	get video/hackity_hack_and_kaxxt.mov (not available)
 	  I was unable to access these remotes: server
 	  Try making some of these repositories available:
 	  	5863d8c0-d9a9-11df-adb2-af51e6559a49  -- my home file server
