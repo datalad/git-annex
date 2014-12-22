@@ -1,3 +1,9 @@
+git-annex (5.20141220) UNRELEASED; urgency=medium
+
+  * vicfg: Avoid crashing on badly encoded config data.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 22 Dec 2014 15:16:38 -0400
+
 git-annex (5.20141219) unstable; urgency=medium
 
   * Webapp: When adding a new box.com remote, use the new style chunking.

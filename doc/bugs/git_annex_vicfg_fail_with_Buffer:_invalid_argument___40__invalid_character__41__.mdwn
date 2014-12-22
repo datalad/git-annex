@@ -11,7 +11,10 @@ The problem does exit on all the clone of the repos.
 
 ### What steps will reproduce the problem?
 
-I don't know if the "è" in the directory name is linked to this. It seem also that the description of one of the repository has been incorrect (something like "toubib: ~/Biblioth⯁⯁⯁que calibre/" where the three ⯁ replace one incorrectly encoded char that was, since then, changed.
+I don't know if the "è" in the directory name is linked to this. It seem
+also that the description of one of the repository has been incorrect
+(something like "toubib: ~/Biblioth⯁⯁⯁que calibre/" where the three ⯁
+replace one incorrectly encoded char that was, since then, changed.
 
 
 ### What version of git-annex are you using? On what operating system?
@@ -27,3 +30,5 @@ I'm using the more uptodate version that are in Debian sid:
     local repository version: 5
     supported repository version: 5
     upgrade supported from repository versions: 0 1 2 4
+
+> [[fixed|done]] --[[Joey]]
