@@ -16,24 +16,15 @@ module Git.DiffTree (
 ) where
 
 import Numeric
-import System.Posix.Types
 
 import Common
 import Git
 import Git.Sha
 import Git.Command
 import Git.FilePath
+import Git.DiffTreeItem
 import qualified Git.Filename
 import qualified Git.Ref
-
-data DiffTreeItem = DiffTreeItem
-	{ srcmode :: FileMode
-	, dstmode :: FileMode
-	, srcsha :: Sha -- nullSha if file was added
-	, dstsha :: Sha -- nullSha if file was deleted
-	, status :: String
-	, file :: TopFilePath
-	} deriving Show
 
 {- Checks if the DiffTreeItem modifies a file with a given name
  - or under a directory by that name. -}
