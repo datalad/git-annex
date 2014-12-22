@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnx8kHW66N3BqmkVpgtXDlYMvr8TJ5VvfY"
+ nickname="Yaroslav"
+ subject="spinning wheel"
+ date="2014-12-22T20:33:44Z"
+ content="""
+Just tried torrents backend -- it works -- THANKS!!!
+But amount of output dumped upon user is somewhat outstanding (I can't even scroll terminal back far enough for 1 file fetch).  May be for such backends, where no easy/reasonable way to estimate progress it would be possible at least to have some spinning wheel animation which would react (spin) to any output received from the corresponding downloader/backend?  (unless in debug mode in which normal output probably should be shown as well)
+"""]]
