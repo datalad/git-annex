@@ -1,0 +1,18 @@
+Hello,
+
+I have three repos horus (client, this one), astarte (transfer, remote) and external_2tb (client, connected usb). On a git annex sync --content it first copies the content to external and astarte and then dropping the content from astarte right after. 
+
+    copy FLAC/Corvus Corax - Cantus Buranus/Corvus Corax - 08 - Sol solo.flac copy FLAC/Corvus Corax - Cantus Buranus/Corvus Corax - 08 - Sol solo.flac (to external_2TB...) 
+    Corvus Corax - 08 - Sol solo.flac
+         33,541,833 100%  257.72MB/s    0:00:00 (xfr#1, to-chk=0/1)
+    ok
+    copy FLAC/Corvus Corax - Cantus Buranus/Corvus Corax - 08 - Sol solo.flac copy FLAC/Corvus Corax - Cantus Buranus/Corvus Corax - 08 - Sol solo.flac (checking astarte...) (to astarte...) 
+    Corvus Corax - 08 - Sol solo.flac
+        33,541,833 100%  437.82kB/s    0:01:14 (xfr#1, to-chk=0/1)
+    ok
+    drop astarte FLAC/Corvus Corax - Cantus Buranus/Corvus Corax - 08 - Sol solo.flac ok
+
+Why copying it anyway?
+
+Regards,
+Florian
