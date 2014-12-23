@@ -21,6 +21,7 @@ import Control.Applicative
 import qualified System.FilePath.Posix as Posix
 #else
 import System.Posix.Files
+import Utility.Exception
 #endif
 
 import qualified "MissingH" System.Path as MissingH
@@ -255,7 +256,9 @@ fileNameLengthLimit :: FilePath -> IO Int
 fileNameLengthLimit _ = return 255
 #else
 fileNameLengthLimit dir = do
-	l <- fromIntegral <$> getPathVar dir FileNameLimit
+	-- getPathVar can fail due to statfs(2) overflow
+	l <- catchDefaultIO 0 $
+		fromIntegral <$> getPathVar dir FileNameLimit
 	if l <= 0
 		then return 255
 		else return $ minimum [l, 255]
