@@ -32,6 +32,27 @@ Store in the database the Ref of the branch that was used to construct it.
 4. Store incremental fsck info in db.
 5. Replace .map files with 3. for direct mode.
 
+## sqlite or not?
+
+sqllite seems like the most likely thing to work. But it does involve ugh,
+SQL. And even if that's hidden by a layer like persistent, it's still going
+to involve some technical debt (eg, database migrations).
+
+It would be great if there were some haskell thing like acid-state
+that I could use instead. But, acid-sate needs to load the whole
+DB into memory. In the comments of
+[[bugs/incremental_fsck_should_not_use_sticky_bit]] I examined several
+other haskell database-like things, and found them all wanting, except for
+possibly TCache.
+
+TODO: This seems promising; investigate it:
+<https://awelonblue.wordpress.com/2014/12/19/vcache-an-acid-state-killer/>  
+It uses LMDB, which is a C library, and its PVar is a variable named by a
+bytestring, so it's essentially a key/value store where the values can be
+arbitrary Haskell data types. Since git-annex already has Keys, and most
+of the need for the database is to look up some cached value for a Key,
+this seems like a pretty good fit!
+
 ## case study: persistent with sqllite
 
 Here's a non-normalized database schema in persistent's syntax.
