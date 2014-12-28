@@ -46,7 +46,7 @@ To share all the links in a given folder, for example, you can go to that folder
 The same applies to all the filters you can do with git-annex.
 
 For example, let's share links to all the files whose _author_'s name starts with "Mario" and are, in fact, stored at your public-s3 remote.
-However, instead of just a list of links we will output a markdown-formatted list of the filenames linked to their S3 files:
+However, instead of just a list of links we will output a markdown-formatted list of the filenames linked to their S3 urls:
 
     for filename in (git annex find --metadata "author=Mario*" --and --in public-s3)
        echo "* ["$filename"](https://public-annex.s3.amazonaws.com/"(git annex lookupkey $filename)")"
