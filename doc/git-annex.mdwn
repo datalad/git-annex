@@ -143,8 +143,9 @@ subdirectories).
 * `sync [remote ...]`
 
   Use this command when you want to synchronize the local repository with
-  one or more of its remotes. You can specify the remotes to sync with by
-  name; the default is to sync with all remotes.
+  one or more of its remotes. You can specify the remotes (or remote
+  groups) to sync with by name; the default if none are specified is to
+  sync with all remotes.
   Or specify `--fast` to sync with the remotes with the
   lowest annex-cost value.
 

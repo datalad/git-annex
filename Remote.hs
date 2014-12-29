@@ -26,6 +26,7 @@ module Remote (
 	uuidDescriptions,
 	byName,
 	byName',
+	byNameOrGroup,
 	byNameOnly,
 	byNameWithUUID,
 	byCost,
@@ -94,7 +95,11 @@ addName desc n
 	| otherwise = desc ++ " [" ++ n ++ "]"
 
 {- When a name is specified, looks up the remote matching that name.
- - (Or it can be a UUID.) -}
+ - (Or it can be a UUID.)
+ -
+ - Throws an error if a name is specified and no matching remote can be
+ - found.
+ -}
 byName :: Maybe RemoteName -> Annex (Maybe Remote)
 byName Nothing = return Nothing
 byName (Just n) = either error Just <$> byName' n
@@ -120,6 +125,14 @@ byName' n = go . filter matching <$> remoteList
 	go [] = Left $ "there is no available git remote named \"" ++ n ++ "\""
 	go (match:_) = Right match
 	matching r = n == name r || toUUID n == uuid r
+
+{- Finds the remote or remote group matching the name. -}
+byNameOrGroup :: RemoteName -> Annex [Remote]
+byNameOrGroup n = go =<< getConfigMaybe (ConfigKey ("remotes." ++ n))
+  where
+	go (Just l) = concatMap maybeToList <$>
+		mapM (Remote.byName . Just) (split " " l)
+	go Nothing = maybeToList <$> Remote.byName (Just n)
 
 {- Only matches remote name, not UUID -}
 byNameOnly :: RemoteName -> Annex (Maybe Remote)

@@ -2,6 +2,7 @@ git-annex (5.20141220) UNRELEASED; urgency=medium
 
   * vicfg: Avoid crashing on badly encoded config data.
   * Work around statfs() overflow on some XFS systems.
+  * sync: Now supports remote groups, the same way git remote update does.
 
  -- Joey Hess <id@joeyh.name>  Mon, 22 Dec 2014 15:16:38 -0400
 

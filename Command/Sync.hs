@@ -6,7 +6,17 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Command.Sync where
+module Command.Sync (
+	cmd,
+	prepMerge,
+	mergeLocal,
+	mergeRemote,
+	commitStaged,
+	pushBranch,
+	updateBranch,
+	syncBranch,
+	updateSyncBranch,
+) where
 
 import Common.Annex
 import Command
@@ -109,16 +119,21 @@ syncRemotes :: [String] -> Annex [Remote]
 syncRemotes rs = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
   where
 	pickfast = (++) <$> listed <*> (filterM good =<< fastest <$> available)
+	
 	wanted
 		| null rs = filterM good =<< concat . Remote.byCost <$> available
 		| otherwise = listed
-	listed = catMaybes <$> mapM (Remote.byName . Just) rs
+	
+	listed = concat <$> mapM Remote.byNameOrGroup rs
+	
 	available = filter (remoteAnnexSync . Remote.gitconfig)
 		. filter (not . Remote.isXMPPRemote)
 		<$> Remote.remoteList
+	
 	good r
 		| Remote.gitSyncableRemote r = Remote.Git.repoAvail $ Remote.repo r
 		| otherwise = return True
+	
 	fastest = fromMaybe [] . headMaybe . Remote.byCost
 
 commit :: CommandStart
