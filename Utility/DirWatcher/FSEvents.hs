@@ -19,9 +19,9 @@ watchDir dir ignored scanevents hooks = do
 	unlessM fileLevelEventsSupported $
 		error "Need at least OSX 10.7.0 for file-level FSEvents"
 	scan dir
-	eventStreamCreate [dir] 1.0 True True True go
+	eventStreamCreate [dir] 1.0 True True True dispatch
   where
-	go evt
+	dispatch evt
 		| ignoredPath ignored (eventPath evt) = noop
 		| otherwise = do
 			{- More than one flag may be set, if events occurred
