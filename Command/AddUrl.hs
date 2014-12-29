@@ -210,7 +210,7 @@ addUrlChecked relaxed url u checkexistssize key
 	| relaxed = do
 		setUrlPresent u key url
 		next $ return True
-	| otherwise = ifM (elem url <$> getUrls key)
+	| otherwise = ifM ((elem url <$> getUrls key) <&&> (elem u <$> loggedLocations key))
 		( next $ return True -- nothing to do
 		, do
 			(exists, samesize) <- checkexistssize key

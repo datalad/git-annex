@@ -54,9 +54,9 @@ getUrlsWithPrefix key prefix = filter (prefix `isPrefixOf`) <$> getUrls key
 setUrlPresent :: UUID -> Key -> URLString -> Annex ()
 setUrlPresent uuid key url = do
 	us <- getUrls key
-	unless (url `elem` us) $ do
+	unless (url `elem` us) $
 		addLog (urlLogFile key) =<< logNow InfoPresent url
-		logChange key uuid InfoPresent
+	logChange key uuid InfoPresent
 
 setUrlMissing :: UUID -> Key -> URLString -> Annex ()
 setUrlMissing uuid key url = do
