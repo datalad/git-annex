@@ -63,7 +63,7 @@ static struct mntent *statfs_to_mntent (struct statfs *mntbuf) {
 	_mntent.mnt_dir = mntbuf->f_mntonname;
 	_mntent.mnt_type = mntbuf->f_fstypename;
 
-	_mntent.mnt_opts = '\0';
+	_mntent.mnt_opts = NULL;
 	_mntent.mnt_freq = 0;
 	_mntent.mnt_passno = 0;
 
