@@ -42,7 +42,7 @@ import Data.Progress.Tracker
 import Data.Quantity
 import System.Log.Logger
 import System.Log.Formatter
-import System.Log.Handler (setFormatter, LogHandler)
+import System.Log.Handler (setFormatter)
 import System.Log.Handler.Simple
 
 import Common hiding (handle)
