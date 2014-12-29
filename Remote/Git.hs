@@ -358,7 +358,9 @@ copyFromRemote' r key file dest
 	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) (return False) $ do
 		params <- Ssh.rsyncParams r Download
 		u <- getUUID
+#ifndef mingw32_HOST_OS
 		hardlink <- annexHardLink <$> Annex.getGitConfig
+#endif
 		-- run copy from perspective of remote
 		onLocal r $ do
 			ensureInitialized

@@ -13,8 +13,10 @@ module Utility.UserInfo (
 	myUserGecos,
 ) where
 
-import Control.Applicative
 import System.PosixCompat
+#ifndef mingw32_HOST_OS
+import Control.Applicative
+#endif
 
 import Utility.Env
 

@@ -40,15 +40,15 @@ import Assistant.Unused
 import Logs.Unused
 import Logs.Transfer
 import Config.Files
-import Utility.DiskFree
+import Types.Key (keyBackendName)
 import qualified Annex
 #ifdef WITH_WEBAPP
 import Assistant.WebApp.Types
 #endif
 #ifndef mingw32_HOST_OS
 import Utility.LogFile
+import Utility.DiskFree
 #endif
-import Types.Key (keyBackendName)
 
 import Data.Time.Clock.POSIX
 import qualified Data.Text as T

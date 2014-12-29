@@ -34,10 +34,6 @@ import Utility.FileMode
 import Utility.ThreadScheduler
 import Utility.Env
 
-#ifdef mingw32_HOST_OS
-import Utility.Rsync
-#endif
-
 import qualified Data.Text as T
 import qualified Data.Map as M
 import Network.Socket

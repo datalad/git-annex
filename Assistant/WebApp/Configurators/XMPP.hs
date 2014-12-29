@@ -24,10 +24,10 @@ import Assistant.DaemonStatus
 import Assistant.WebApp.RepoList
 import Assistant.WebApp.Configurators
 import Assistant.XMPP
-#endif
 import qualified Git.Remote.Remove
 import Remote.List
 import Creds
+#endif
 
 #ifdef WITH_XMPP
 import Network.Protocol.XMPP

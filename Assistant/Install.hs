@@ -22,7 +22,9 @@ import Utility.SshConfig
 import Utility.OSX
 #else
 import Utility.FreeDesktop
+#ifdef linux_HOST_OS
 import Utility.UserInfo
+#endif
 import Assistant.Install.Menu
 #endif
 

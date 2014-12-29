@@ -35,9 +35,9 @@ import Config.Files
 import Utility.Env
 import Types.CleanupActions
 import Annex.Index (addGitEnv)
-import Utility.LockFile
 #ifndef mingw32_HOST_OS
 import Annex.Perms
+import Utility.LockFile
 #endif
 
 {- Generates parameters to ssh to a given host (or user@host) on a given

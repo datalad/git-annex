@@ -21,8 +21,6 @@ import Utility.LockFile
 #ifndef mingw32_HOST_OS
 import System.Posix
 import Control.Concurrent.Async
-#else
-import System.Exit
 #endif
 
 #ifndef mingw32_HOST_OS

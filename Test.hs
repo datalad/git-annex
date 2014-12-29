@@ -116,13 +116,12 @@ main ps = do
 #if MIN_VERSION_optparse_applicative(0,10,0)
 		case execParserPure pprefs pinfo args of
 			(Options.Applicative.Failure failure) -> do
-				let (msg, _exit) = renderFailure failure progdesc
+				let (msg, _exit) = renderFailure failure "git-annex test"
 				error msg
 			v -> handleParseResult v
 #else
 		handleParseResult $ execParserPure pprefs pinfo args
 #endif
-	progdesc = "git-annex test"
 
 ingredients :: [Ingredient]
 ingredients =

@@ -32,14 +32,14 @@ import Config
 import Annex.Direct
 import Annex.Content.Direct
 import Annex.Environment
-import Annex.Perms
 import Backend
+import Annex.Hook
+import Upgrade
 #ifndef mingw32_HOST_OS
 import Utility.UserInfo
 import Utility.FileMode
+import Annex.Perms
 #endif
-import Annex.Hook
-import Upgrade
 
 genDescription :: Maybe String -> Annex String
 genDescription (Just d) = return d

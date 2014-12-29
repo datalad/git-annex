@@ -7,6 +7,7 @@
  -}
 
 {-# LANGUAGE CPP #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Utility.InodeCache (
 	InodeCache,
@@ -182,7 +183,10 @@ checkSentinalFile s = do
 		SentinalStatus (not unchanged) tsdelta
 	  where
 #ifdef mingw32_HOST_OS
-		unchanged = oldinode == newinode && oldsize == newsize
+		-- Since mtime can appear to change when the time zone is
+		-- changed in windows, we cannot look at the mtime for the
+		-- sentinal file.
+		unchanged = oldinode == newinode && oldsize == newsize && (newmtime == newmtime)
 		tsdelta = TSDelta $ do
 			-- Run when generating an InodeCache, 
 			-- to get the current delta.
