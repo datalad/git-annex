@@ -27,10 +27,11 @@ module Utility.Touch (
 
 import Utility.FileSystemEncoding
 
-import Foreign
-import Foreign.C
 import Control.Monad (when)
 #endif
+
+import Foreign
+import Foreign.C
 
 newtype TimeSpec = TimeSpec CTime
 
