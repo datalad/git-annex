@@ -36,7 +36,11 @@ TR_TORRENT_ID: $TR_TORRENT_ID
 TR_TORRENT_NAME: $TR_TORRENT_NAME
 "
 
-echo $message
+# heredocs preserve newlines
+cat <<EOF
+$message
+EOF
+# add the actual torrent and commit whatever's left to commit
 cd "$TR_TORRENT_DIR"
 git annex add "$TR_TORRENT_NAME" && \
 git commit -F- <<EOF
