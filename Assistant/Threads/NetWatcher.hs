@@ -15,7 +15,6 @@ import Assistant.Sync
 import Utility.ThreadScheduler
 import qualified Types.Remote as Remote
 import Assistant.DaemonStatus
-import Assistant.RemoteControl
 import Utility.NotificationBroadcaster
 
 #if WITH_DBUS
@@ -23,6 +22,7 @@ import Utility.DBus
 import DBus.Client
 import DBus
 import Assistant.NetMessager
+import Assistant.RemoteControl
 #else
 #ifdef linux_HOST_OS
 #warning Building without dbus support; will poll for network connection changes
