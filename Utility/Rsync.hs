@@ -5,6 +5,8 @@
  - License: BSD-2-clause
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Utility.Rsync where
 
 import Common
@@ -53,12 +55,18 @@ rsync = boolSystem "rsync" . rsyncParamsFixup
 
 {- On Windows, rsync is from Cygwin, and expects to get Cygwin formatted
  - paths to files. (It thinks that C:foo refers to a host named "C").
- - Fix up all Files in the Params appropriately. -}
+ - Fix up the Params appropriately. -}
 rsyncParamsFixup :: [CommandParam] -> [CommandParam]
+#ifdef mingw32_HOST_OS
 rsyncParamsFixup = map fixup
   where
 	fixup (File f) = File (toCygPath f)
+	fixup (Param s)
+		| rsyncUrlIsPath s = Param (toCygPath s)
 	fixup p = p
+#else
+rsyncParamsFixup = id
+#endif
 
 {- Checks if an rsync url involves the remote shell (ssh or rsh).
  - Use of such urls with rsync requires additional shell
@@ -78,6 +86,9 @@ rsyncUrlIsShell s
 {- Checks if a rsync url is really just a local path. -}
 rsyncUrlIsPath :: String -> Bool
 rsyncUrlIsPath s
+#ifdef mingw32_HOST_OS
+	| not (null (takeDrive s)) = True
+#endif
 	| rsyncUrlIsShell s = False
 	| otherwise = ':' `notElem` s
 
