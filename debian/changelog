@@ -4,6 +4,9 @@ git-annex (5.20141220) UNRELEASED; urgency=medium
   * Work around statfs() overflow on some XFS systems.
   * sync: Now supports remote groups, the same way git remote update does.
   * setpresentkey: A new plumbing-level command.
+  * Run shutdown cleanup actions even if there were failures processing
+    the command. Amoung other fixes, this means that addurl will stage
+    added files even if adding one of the urls fails.
 
  -- Joey Hess <id@joeyh.name>  Mon, 22 Dec 2014 15:16:38 -0400
 

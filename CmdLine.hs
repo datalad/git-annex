@@ -53,8 +53,8 @@ dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
 			whenM (annexDebug <$> Annex.getGitConfig) $
 				liftIO enableDebugOutput
 			startup
-			performCommandAction cmd params
-			shutdown $ cmdnocommit cmd
+			performCommandAction cmd params $
+				shutdown $ cmdnocommit cmd
 	go _flags params (Left e) = do
 		when fuzzy $
 			autocorrect =<< Git.Config.global
