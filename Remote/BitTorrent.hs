@@ -200,7 +200,8 @@ downloadTorrentFile u = do
 					return ok
 				else do
 					misctmp <- fromRepo gitAnnexTmpMiscDir
-					withTmpFileIn misctmp "torrent" $ \f _h -> do
+					withTmpFileIn misctmp "torrent" $ \f h -> do
+						liftIO $ hClose h
 						ok <- Url.withUrlOptions $ Url.download u f
 						when ok $
 							liftIO $ renameFile f torrent
