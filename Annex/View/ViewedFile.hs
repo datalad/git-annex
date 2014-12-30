@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Annex.View.ViewedFile (
 	ViewedFile,
 	MkViewedFile,
@@ -43,10 +45,18 @@ viewedFileFromReference f = concat
 
 	{- To avoid collisions with filenames or directories that contain
 	 - '%', and to allow the original directories to be extracted
-	 - from the ViewedFile, '%' is escaped to '\%' (and '\' to '\\').
+	 - from the ViewedFile, '%' is escaped. )
 	 -}
 	escape :: String -> String
-	escape = replace "%" "\\%" . replace "\\" "\\\\"
+	escape = replace "%" (escchar:'%':[]) . replace [escchar] [escchar, escchar]
+
+escchar :: Char
+#ifndef mingw32_HOST_OS
+escchar = '\\'
+#else
+-- \ is path separator on Windows, so instead use !
+escchar = '!'
+#endif
 
 {- For use when operating already within a view, so whatever filepath
  - is present in the work tree is already a ViewedFile. -}
@@ -61,7 +71,7 @@ dirFromViewedFile = joinPath . drop 1 . sep [] ""
 	sep l _ [] = reverse l
 	sep l curr (c:cs)
 		| c == '%' = sep (reverse curr:l) "" cs
-		| c == '\\' = case cs of
+		| c == escchar = case cs of
 			(c':cs') -> sep l (c':curr) cs'
 			[] -> sep l curr cs
 		| otherwise = sep l (c:curr) cs

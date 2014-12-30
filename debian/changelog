@@ -10,6 +10,7 @@ git-annex (5.20141220) UNRELEASED; urgency=medium
   * bittorrent: Fix locking problem when using addurl file://
   * Windows: Fix local rsync filepath munging (fixes 26 test suite failures).
   * Windows: Got the rsync special remote working.
+  * Windows: Fix handling of views of filenames containing '%'
 
  -- Joey Hess <id@joeyh.name>  Mon, 22 Dec 2014 15:16:38 -0400
 
