@@ -1,0 +1,22 @@
+Took a holiday week off from git-annex development, and started a new side
+project building [shell-monad](http://joeyh.name/code/shell-monad/), which
+might eventually be used in some parts of git-annex that generate shell
+scripts.
+
+Message backlog is 165 and I have not dove back into it, but I have started
+spinning back up the development engines in preparation for new year
+takeoff. 
+
+Yesterday, added some minor new features -- `git annex sync` now
+supports git remote groups, and I added a new plumbing command
+`setpresentkey` for those times when you really need to mess with
+git-annex's internal bookkeeping. Also cleaned up a lot of build warning
+messages on OSX and Windows.
+
+Today, first some improvements to make `addurl` more robust.
+Then the rest of the day was spent on Windows. Fixed (again)
+the Windows port's problem with rsync hating DOS style filenames. Got
+the rsync special remote fully working on Windows for the first time.
+
+Best of all, got the Windows autobuilder to successfully run the test
+suite successfully.
