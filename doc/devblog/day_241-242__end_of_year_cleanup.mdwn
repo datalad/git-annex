@@ -18,5 +18,5 @@ Then the rest of the day was spent on Windows. Fixed (again)
 the Windows port's problem with rsync hating DOS style filenames. Got
 the rsync special remote fully working on Windows for the first time.
 
-Best of all, got the Windows autobuilder to successfully run the test
-suite successfully.
+Best of all, got the Windows autobuilder to run the test
+suite successfully, and fixed a couple test suite failures on Windows.
