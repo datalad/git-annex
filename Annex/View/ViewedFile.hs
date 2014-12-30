@@ -70,6 +70,7 @@ prop_viewedFile_roundtrips :: FilePath -> Bool
 prop_viewedFile_roundtrips f
 	-- Relative filenames wanted, not directories.
 	| any (isPathSeparator) (end f ++ beginning f) = True
+	| isAbsolute f = True
 	| otherwise = dir == dirFromViewedFile (viewedFileFromReference f)
   where
 	dir = joinPath $ beginning $ splitDirectories f
