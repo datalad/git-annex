@@ -76,7 +76,7 @@ Build/BuildVersion > dist/build-version
 # (doesn't currently work well on autobuilder, reason unknown)
 PATH="$(pwd)/dist/build/git-annex/:$PATH"
 export PATH
-mkdir -d c:/WINDOWS/Temp/git-annex-test/
+mkdir -p c:/WINDOWS/Temp/git-annex-test/
 cd c:/WINDOWS/Temp/git-annex-test/
 withcyg git-annex.exe test || true
 rm -rf .t
