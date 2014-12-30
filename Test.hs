@@ -1223,7 +1223,6 @@ test_directory_remote testenv = intmpclonerepo testenv $ do
 
 test_rsync_remote :: TestEnv -> Assertion
 test_rsync_remote testenv = intmpclonerepo testenv $ do
-#ifndef mingw32_HOST_OS
 	createDirectory "dir"
 	git_annex testenv "initremote" (words "foo type=rsync encryption=none rsyncurl=dir") @? "initremote failed"
 	git_annex testenv "get" [annexedfile] @? "get of file failed"
@@ -1236,11 +1235,6 @@ test_rsync_remote testenv = intmpclonerepo testenv $ do
 	annexed_present annexedfile
 	not <$> git_annex testenv "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
 	annexed_present annexedfile
-#else
-	-- Rsync remotes with a rsyncurl of a directory do not currently
-	-- work on Windows.
-	noop
-#endif
 
 test_bup_remote :: TestEnv -> Assertion
 test_bup_remote testenv = intmpclonerepo testenv $ when Build.SysConfig.bup $ do
