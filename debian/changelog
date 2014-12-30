@@ -8,6 +8,7 @@ git-annex (5.20141220) UNRELEASED; urgency=medium
     the command. Amoung other fixes, this means that addurl will stage
     added files even if adding one of the urls fails.
   * bittorrent: Fix locking problem when using addurl file://
+  * Windows: Fix local rsync filepath munging (fixes 26 test suite failures).
 
  -- Joey Hess <id@joeyh.name>  Mon, 22 Dec 2014 15:16:38 -0400
 

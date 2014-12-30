@@ -87,7 +87,7 @@ rsyncUrlIsPath s
  - The params must enable rsync's --progress mode for this to work.
  -}
 rsyncProgress :: MeterUpdate -> [CommandParam] -> IO Bool
-rsyncProgress meterupdate = commandMeter parseRsyncProgress meterupdate "rsync"
+rsyncProgress meterupdate = commandMeter parseRsyncProgress meterupdate "rsync" . rsyncParamsFixup
 
 {- Strategy: Look for chunks prefixed with \r (rsync writes a \r before
  - the first progress output, and each thereafter). The first number
