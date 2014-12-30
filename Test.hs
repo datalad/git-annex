@@ -1318,7 +1318,7 @@ test_crypto = do
 		key2files cipher = Locations.keyPaths .
 			Crypto.encryptKey Types.Crypto.HmacSha1 cipher
 #else
-test_crypto _env = putStrLn "gpg testing not implemented on Windows"
+test_crypto = putStrLn "gpg testing not implemented on Windows"
 #endif
 
 test_add_subdirs :: Assertion
