@@ -57,9 +57,6 @@ seems unreliable/broken on Windows.
 
 ## minor problems
 
-* rsync special remotes with a rsyncurl of a local directory are known
-  buggy. (git-annex tells rsync C:foo and it thinks it means a remote host
-  named C...)
 * webapp lets user choose to encrypt repo, and generate gpg key,
   before checking that gcrypt is not installed
 * Ssh connection caching does not work on Windows, so `git annex get`
