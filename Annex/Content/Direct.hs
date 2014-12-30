@@ -130,9 +130,13 @@ goodContent key file = sameInodeCache file =<< recordedInodeCache key
  - A key can be associated with multiple files, so may return more than
  - one. -}
 recordedInodeCache :: Key -> Annex [InodeCache]
-recordedInodeCache key = withInodeCacheFile key $ \f ->
-	liftIO $ catchDefaultIO [] $
-		mapMaybe readInodeCache . lines <$> readFileStrict f
+recordedInodeCache key = do
+	liftIO $ print ("recordedInodeCache", key, "start")
+	r <- withInodeCacheFile key $ \f ->
+		liftIO $ catchDefaultIO [] $
+			mapMaybe readInodeCache . lines <$> readFileStrict f
+	liftIO $ print ("recordedInodeCache", key, "end")
+	return r
 
 {- Caches an inode for a file.
  -
@@ -151,16 +155,24 @@ addInodeCache key cache = do
 
 {- Writes inode cache for a key. -}
 writeInodeCache :: Key -> [InodeCache] -> Annex ()
-writeInodeCache key caches = withInodeCacheFile key $ \f -> 
-	modifyContent f $
-		liftIO $ writeFile f $
-			unlines $ map showInodeCache caches
+writeInodeCache key caches = do
+	liftIO $ print ("writeInodeCache", key, "start")
+	r <- withInodeCacheFile key $ \f -> 
+		modifyContent f $
+			liftIO $ writeFile f $
+				unlines $ map showInodeCache caches
+	liftIO $ print ("writeInodeCache", key, "stop")
+	return r
 
 {- Removes an inode cache. -}
 removeInodeCache :: Key -> Annex ()
-removeInodeCache key = withInodeCacheFile key $ \f ->
-	modifyContent f $
-		liftIO $ nukeFile f
+removeInodeCache key = do
+	liftIO $ print ("removeInodeCache", key, "start")
+	r <- withInodeCacheFile key $ \f ->
+		modifyContent f $
+			liftIO $ nukeFile f
+	liftIO $ print ("removeInodeCache", key, "stop")
+	return r
 
 withInodeCacheFile :: Key -> (FilePath -> Annex a) -> Annex a
 withInodeCacheFile key a = a =<< calcRepo (gitAnnexInodeCache key)
