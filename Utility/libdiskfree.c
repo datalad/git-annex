@@ -8,12 +8,10 @@
 /* Include appropriate headers for the OS, and define what will be used to
  * check the free space. */
 #if defined(__APPLE__)
+# define _DARWIN_FEATURE_64_BIT_INODE 1
 # include <sys/param.h>
 # include <sys/mount.h>
-/* In newer OSX versions, statfs64 is deprecated, in favor of statfs,
- * which is 64 bit only with a build option -- but statfs64 still works,
- * and this keeps older OSX also supported. */
-# define STATCALL statfs64
+# define STATCALL statfs
 # define STATSTRUCT statfs64
 #else
 #if defined (__FreeBSD__)
