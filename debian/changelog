@@ -1,4 +1,4 @@
-git-annex (5.20141220) UNRELEASED; urgency=medium
+git-annex (5.20141231) unstable; urgency=medium
 
   * vicfg: Avoid crashing on badly encoded config data.
   * Work around statfs() overflow on some XFS systems.
@@ -13,7 +13,7 @@ git-annex (5.20141220) UNRELEASED; urgency=medium
   * Windows: Fix handling of views of filenames containing '%'
   * OSX: Switched away from deprecated statfs64 interface.
 
- -- Joey Hess <id@joeyh.name>  Mon, 22 Dec 2014 15:16:38 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 31 Dec 2014 15:15:46 -0400
 
 git-annex (5.20141219) unstable; urgency=medium
 
