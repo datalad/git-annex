@@ -1,0 +1,14 @@
+git-annex 5.20141231 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * vicfg: Avoid crashing on badly encoded config data.
+   * Work around statfs() overflow on some XFS systems.
+   * sync: Now supports remote groups, the same way git remote update does.
+   * setpresentkey: A new plumbing-level command.
+   * Run shutdown cleanup actions even if there were failures processing
+     the command. Among other fixes, this means that addurl will stage
+     added files even if adding one of the urls fails.
+   * bittorrent: Fix locking problem when using addurl file://
+   * Windows: Fix local rsync filepath munging (fixes 26 test suite failures).
+   * Windows: Got the rsync special remote working.
+   * Windows: Fix handling of views of filenames containing '%'
+   * OSX: Switched away from deprecated statfs64 interface."""]]
