@@ -5,7 +5,7 @@ git-annex (5.20141231) unstable; urgency=medium
   * sync: Now supports remote groups, the same way git remote update does.
   * setpresentkey: A new plumbing-level command.
   * Run shutdown cleanup actions even if there were failures processing
-    the command. Amoung other fixes, this means that addurl will stage
+    the command. Among other fixes, this means that addurl will stage
     added files even if adding one of the urls fails.
   * bittorrent: Fix locking problem when using addurl file://
   * Windows: Fix local rsync filepath munging (fixes 26 test suite failures).
