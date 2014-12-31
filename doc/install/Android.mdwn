@@ -30,8 +30,5 @@ git-annex can be built from source for Android.
    This builds a chroot with a `builder` user.
    The rest of the build will run in this chroot as that user.
 2. In the chroot, run `standalone/android/install-haskell-packages`
-   Note that this will break from time to time as new versions of packages
-   are released, and the patches it applies have to be updated when
-   this happens.
 3. Finally, once the chroot is set up, you can build an Android binary
    with `make android`, and `make androidapp` will build the complete APK.
