@@ -1,0 +1,31 @@
+### Please describe the problem.
+
+If you `git annex edit FILE`, an already-committed file, then do `git annex sync`, FILE will be added to .git/objects, but can be cleaned up with `git prune`. An annoyance, but not a huge problem.
+
+If, on the other hand, you do git annex add, then edit, then sync, it will actually be committed to the git repository. Fixing that is a lot less trivial than `git prune`.
+
+### What steps will reproduce the problem?
+
+    anthony@Watt:/tmp/test$ du -sh .git/objects/
+    24K     .git/objects/
+    anthony@Watt:/tmp/test$ dd if=/dev/urandom bs=$[1024*1024] count=100 of=100mb-3
+    100+0 records in
+    100+0 records out
+    104857600 bytes (105 MB) copied, 6.08718 s, 17.2 MB/s
+    anthony@Watt:/tmp/test$ git annex add 100mb-3
+    add 100mb-3 ok
+    (Recording state in git...)
+    anthony@Watt:/tmp/test$ git annex edit 100mb-3
+    unlock 100mb-3 (copying...) ok
+    anthony@Watt:/tmp/test$ git annex sync
+    commit  ok
+    anthony@Watt:/tmp/test [$?=130]$ git prune
+    anthony@Watt:/tmp/test$ du -sh .git/objects/
+    101M    .git/objects/
+    anthony@Watt:/tmp/test$ ls -l 100mb-3 
+    -rw-r--r-- 1 anthony anthony 104857600 Jan  1 13:41 100mb-3
+
+
+### What version of git-annex are you using? On what operating system?
+
+5.20141125 on Debian testing/unstable
