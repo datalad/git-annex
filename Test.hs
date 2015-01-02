@@ -450,6 +450,12 @@ test_lock = intmpclonerepoInDirect $ do
 	not <$> git_annex "unlock" [annexedfile] @? "unlock failed to fail with not present file"
 	annexed_notpresent annexedfile
 
+	-- regression test: unlock of newly added, not committed file
+	-- should fail
+	writeFile "newfile" "foo"
+	git_annex "add" ["newfile"] @? "add new file failed"
+	not <$> git_annex "unlock" ["newfile"] @? "unlock failed to fail on newly added, never committed file"
+
 	git_annex "get" [annexedfile] @? "get of file failed"
 	annexed_present annexedfile
 	git_annex "unlock" [annexedfile] @? "unlock failed"		
