@@ -2,7 +2,15 @@
 
 If you `git annex edit FILE`, an already-committed file, then do `git annex sync`, FILE will be added to .git/objects, but can be cleaned up with `git prune`. An annoyance, but not a huge problem.
 
+> This is why you're recommended to use `git add` after you're done
+> changing unlocked files. This avoids the git commit staging the file
+> in the index, even though the pre-commit hook fixes that up. It does
+> indeed leave the file contents in .git/objects, although with no refs
+> pointing to it, `git prune` will delete it sooner or later. --[[Joey]]
+
 If, on the other hand, you do git annex add, then edit, then sync, it will actually be committed to the git repository. Fixing that is a lot less trivial than `git prune`.
+
+> This is indeed a problem..
 
 ### What steps will reproduce the problem?
 
@@ -29,3 +37,20 @@ If, on the other hand, you do git annex add, then edit, then sync, it will actua
 ### What version of git-annex are you using? On what operating system?
 
 5.20141125 on Debian testing/unstable
+
+> Analysis: This only happens when a file is added and then unlocked
+> without first being committed.
+> 
+> In this situation, the file has a typechange between the index and
+> the working tree. However, by the time the pre-commit hook gets
+> run, git commit has already staged the unlocked file content into the
+> index. So, there is nolonger a typechange between the index and the work
+> tree. And, since the file is new, there is no typechange between the
+> index and last commit either. The latter is what the pre-commit hook
+> looks for.
+> 
+> Conclusion: The pre-commit hook cannot possibly detect this situation.
+> Instead, it seems the only way to block the problem is to prevent
+> unlocking a file that does not have any git history.
+> 
+> And I've [[done]] that now. --[[Joey]]

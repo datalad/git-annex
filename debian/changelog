@@ -1,3 +1,11 @@
+git-annex (5.20141232) UNRELEASED; urgency=medium
+
+  * unlock: Don't allow unlocking files that have never been committed to git
+    before, to avoid an intractable problem that prevents the pre-commit
+    hook from telling if such a file is intended to be an annexed file or not.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 02 Jan 2015 13:35:13 -0400
+
 git-annex (5.20141231) unstable; urgency=medium
 
   * vicfg: Avoid crashing on badly encoded config data.
