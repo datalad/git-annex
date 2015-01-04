@@ -1,4 +1,4 @@
-{- git-annex hashing backends
+{- git-tnnex hashing backends
  -
  - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
  -
@@ -132,13 +132,20 @@ needsUpgrade :: Key -> Bool
 needsUpgrade key = "\\" `isPrefixOf` keyHash key ||
 	any (not . validExtension) (takeExtensions $ keyName key)
 
-{- Fast migration from hashE to hash backend. (Optimisation) -}
-trivialMigrate :: Key -> Backend -> Maybe Key
-trivialMigrate oldkey newbackend
+trivialMigrate :: Key -> Backend -> AssociatedFile -> Maybe Key
+trivialMigrate oldkey newbackend afile
+	{- Fast migration from hashE to hash backend. -}
 	| keyBackendName oldkey == name newbackend ++ "E" = Just $ oldkey
 		{ keyName = keyHash oldkey
 		, keyBackendName = name newbackend
 		}
+	{- Fast migration from hash to hashE backend. -}
+	| keyBackendName oldkey ++"E" == name newbackend = case afile of
+		Nothing -> Nothing
+		Just file -> Just $ oldkey
+			{ keyName = keyHash oldkey ++ selectExtension file
+			, keyBackendName = name newbackend
+			}
 	| otherwise = Nothing
 
 hashFile :: Hash -> FilePath -> Integer -> Annex String

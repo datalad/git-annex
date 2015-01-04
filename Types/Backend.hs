@@ -21,7 +21,7 @@ data BackendA a = Backend
 	, canUpgradeKey :: Maybe (Key -> Bool)
 	-- Checks if there is a fast way to migrate a key to a different
 	-- backend (ie, without re-hashing).
-	, fastMigrate :: Maybe (Key -> BackendA a -> Maybe Key)
+	, fastMigrate :: Maybe (Key -> BackendA a -> AssociatedFile -> Maybe Key)
 	-- Checks if a key is known (or assumed) to always refer to the
 	-- same data.
 	, isStableKey :: Key -> Bool

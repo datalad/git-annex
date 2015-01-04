@@ -72,7 +72,7 @@ perform file oldkey oldbackend newbackend = go =<< genkey
 	checkcontent = Command.Fsck.checkBackend oldbackend oldkey $ Just file
 	finish newkey = stopUnless (Command.ReKey.linkKey oldkey newkey) $
 		next $ Command.ReKey.cleanup file oldkey newkey
-	genkey = case maybe Nothing (\fm -> fm oldkey newbackend) (fastMigrate oldbackend) of
+	genkey = case maybe Nothing (\fm -> fm oldkey newbackend (Just file)) (fastMigrate oldbackend) of
 		Just newkey -> return $ Just (newkey, True)
 		Nothing -> do
 			content <- calcRepo $ gitAnnexLocation oldkey
