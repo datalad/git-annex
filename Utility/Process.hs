@@ -1,7 +1,7 @@
 {- System.Process enhancements, including additional ways of running
  - processes, and logging.
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -38,7 +38,7 @@ module Utility.Process (
 ) where
 
 import qualified System.Process
-import System.Process as X hiding (CreateProcess(..), createProcess, runInteractiveProcess, readProcess, readProcessWithExitCode, system, rawSystem, runInteractiveCommand, runProcess)
+import qualified System.Process as X hiding (CreateProcess(..), createProcess, runInteractiveProcess, readProcess, readProcessWithExitCode, system, rawSystem, runInteractiveCommand, runProcess)
 import System.Process hiding (createProcess, readProcess)
 import System.Exit
 import System.IO
@@ -47,7 +47,7 @@ import Control.Concurrent
 import qualified Control.Exception as E
 import Control.Monad
 #ifndef mingw32_HOST_OS
-import System.Posix.IO
+import qualified System.Posix.IO
 #else
 import Control.Applicative
 #endif
@@ -175,9 +175,9 @@ processTranscript' cmd opts environ input = do
 #ifndef mingw32_HOST_OS
 {- This implementation interleves stdout and stderr in exactly the order
  - the process writes them. -}
-	(readf, writef) <- createPipe
-	readh <- fdToHandle readf
-	writeh <- fdToHandle writef
+	(readf, writef) <- System.Posix.IO.createPipe
+	readh <- System.Posix.IO.fdToHandle readf
+	writeh <- System.Posix.IO.fdToHandle writef
 	p@(_, _, _, pid) <- createProcess $
 		(proc cmd opts)
 			{ std_in = if isJust input then CreatePipe else Inherit

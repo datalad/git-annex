@@ -38,6 +38,7 @@ import Utility.Env
 import Network.Protocol.XMPP
 import qualified Data.Text as T
 import System.Posix.Types
+import qualified System.Posix.IO
 import Control.Concurrent
 import System.Timeout
 import qualified Data.ByteString as B
@@ -104,9 +105,9 @@ xmppPush cid gitpush = do
 	u <- liftAnnex getUUID
 	sendNetMessage $ Pushing cid (StartingPush u)
 
-	(Fd inf, writepush) <- liftIO createPipe
-	(readpush, Fd outf) <- liftIO createPipe
-	(Fd controlf, writecontrol) <- liftIO createPipe
+	(Fd inf, writepush) <- liftIO System.Posix.IO.createPipe
+	(readpush, Fd outf) <- liftIO System.Posix.IO.createPipe
+	(Fd controlf, writecontrol) <- liftIO System.Posix.IO.createPipe
 
 	tmpdir <- gettmpdir
 	installwrapper tmpdir

@@ -19,6 +19,7 @@ import qualified Build.SysConfig as SysConfig
 
 #ifndef mingw32_HOST_OS
 import System.Posix.Types
+import qualified System.Posix.IO
 import System.Path
 import Utility.Env
 #else
@@ -108,7 +109,7 @@ feedRead :: (MonadIO m, MonadMask m) => [CommandParam] -> String -> (Handle -> I
 feedRead params passphrase feeder reader = do
 #ifndef mingw32_HOST_OS
 	-- pipe the passphrase into gpg on a fd
-	(frompipe, topipe) <- liftIO createPipe
+	(frompipe, topipe) <- liftIO System.Posix.IO.createPipe
 	liftIO $ void $ forkIO $ do
 		toh <- fdToHandle topipe
 		hPutStrLn toh passphrase
