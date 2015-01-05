@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-01-05T17:01:12Z"
+ content="""
+I refreshed my memory and did some testing, and the WORM backend
+deals with extremely large filenames by detecting the filename length
+limitations of the filesystem where the repository is located, and if a
+WORM key is longer than the maximum filename length, it will truncate it
+down to fit.
+
+This avoids any problems in my testing, as long as the WORM keys are being
+generated and used all on filesystems with similar filename length limits.
+If you are using a version of git-annex older than 4.20131024, it won't
+do that, and you should upgrade.
+
+If you are using a mixture of filesystems, eg EXT4 and VFAT, this can still
+result in WORM key names generated on EXT4 being too long to fit on the
+VFAT filesystem. In this case, I would recommend not using WORM.
+
+Incidentially, that version also made many problimatic characters
+not be included in WORM key names, so they're more portable to eg, FAT
+filesystems.
+"""]]
