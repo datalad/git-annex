@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-01-05T20:33:13Z"
+ content="""
+I have not looked into this particular S3 feature, since I see little point
+in using it. git-annex can encrypt files client-side before sending to S3,
+which is much better.
+
+However, you can probably configure git-annex to send the header.
+See the `x-amx-meta-*` option documented in [[special_remotes/S3]].
+If the header was named encryptplz and needed to be set to
+"canhazsecurityburger", you would enable it with something like:
+
+	git annex enableremote mys3remote x-amz-meta-encryptplz=canhazsecurityburger
+"""]]
