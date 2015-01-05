@@ -7,6 +7,7 @@
 
 module Git.Version (
 	installed,
+	older,
 	normalize,
 	GitVersion,
 ) where
@@ -22,3 +23,8 @@ installed = normalize . extract <$> readProcess "git" ["--version"]
 	extract s = case lines s of
 		[] -> ""
 		(l:_) -> unwords $ drop 2 $ words l
+
+older :: String -> IO Bool
+older n = do
+	v <- installed
+	return $ v < normalize n 

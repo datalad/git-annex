@@ -13,15 +13,17 @@ import Common
 import Git
 import Git.Types
 import qualified Git.Command
-import qualified Git.BuildVersion
+import qualified Git.Version
 
 remove :: RemoteName -> Repo -> IO ()
-remove remotename = Git.Command.run
-	[ Param "remote"
-	-- name of this subcommand changed
-	, Param $
-		if Git.BuildVersion.older "1.8.0"
-			then "rm"
-			else "remove"
-	, Param remotename
-	]
+remove remotename r = do
+	old <- Git.Version.older "1.8.0"
+	Git.Command.run
+		[ Param "remote"
+		-- name of this subcommand changed
+		, Param $
+			if old
+				then "rm"
+				else "remove"
+		, Param remotename
+		] r
