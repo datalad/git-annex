@@ -1,15 +1,5 @@
 #! /bin/sh
 
-# This simple script will make sure files downloaded by the
-# [Transmission BitTorrent client](https://www.transmissionbt.com/) will
-# be added into git-annex.
-#
-# To enable it, install it to /usr/local/bin and add the following to
-# your settings.json:
-#    "script-torrent-done-enabled": true,
-#    "script-torrent-done-filename": "/usr/local/bin/transmission-git-annex-add",
-# -- [[anarcat]]
-
 set -e
 
 # environment from transmission:
