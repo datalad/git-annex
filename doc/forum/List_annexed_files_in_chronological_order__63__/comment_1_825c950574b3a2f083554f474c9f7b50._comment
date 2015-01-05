@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-01-05T16:45:08Z"
+ content="""
+This is a general git question, not a git-annex question. That is, any
+command that can list the files in a git repo, in whatever order you want,
+will also work in a git-annex repo.
+
+You probably want to use `git log --stat`, possibly with some more options
+to control the output format.
+"""]]
