@@ -78,11 +78,12 @@ build: start
 	git rev-parse HEAD > $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi/lib.version.so
 	cp ../trustedkeys.gpg $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi/lib.trustedkeys.so
 
+	set -e; \
 	for v in 4.0 4.3 5.0; do \
 		mkdir -p ../../tmp/$$v; \
 		cp ../../tmp/androidtree/dist/build/git-annex/$$v/git-annex $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi/lib.git-annex.so; \
 		arm-linux-androideabi-strip --strip-unneeded --remove-section=.comment --remove-section=.note $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi/lib.git-annex.so; \
-		cd $(GIT_ANNEX_ANDROID_SOURCETREE)/term && ant debug; \
+		(cd $(GIT_ANNEX_ANDROID_SOURCETREE)/term && ant debug); \
 		cp $(GIT_ANNEX_ANDROID_SOURCETREE)/term/bin/Term-debug.apk ../../tmp/$$v/git-annex.apk; \
 	done
 
