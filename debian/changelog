@@ -6,6 +6,7 @@ git-annex (5.20141232) UNRELEASED; urgency=medium
   * Avoid re-checksumming when migrating from hash to hashE backend.
     Closes: #774494
   * Fix build with process 1.2.1.0.
+  * Android: Provide a version built with -fPIE -pie to support Android 5.0.
 
  -- Joey Hess <id@joeyh.name>  Fri, 02 Jan 2015 13:35:13 -0400
 

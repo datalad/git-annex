@@ -78,17 +78,13 @@ build: start
 	git rev-parse HEAD > $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi/lib.version.so
 	cp ../trustedkeys.gpg $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi/lib.trustedkeys.so
 
-	mkdir -p ../../tmp/4.0 ../../tmp/4.3
-	
-	cp ../../tmp/androidtree/dist/build/git-annex/4.3/git-annex $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi/lib.git-annex.so
-	arm-linux-androideabi-strip --strip-unneeded --remove-section=.comment --remove-section=.note $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi/lib.git-annex.so
-	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/term && ant debug
-	cp $(GIT_ANNEX_ANDROID_SOURCETREE)/term/bin/Term-debug.apk ../../tmp/4.3/git-annex.apk
-
-	cp ../../tmp/androidtree/dist/build/git-annex/4.0/git-annex $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi/lib.git-annex.so
-	arm-linux-androideabi-strip --strip-unneeded --remove-section=.comment --remove-section=.note $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi/lib.git-annex.so
-	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/term && ant debug
-	cp $(GIT_ANNEX_ANDROID_SOURCETREE)/term/bin/Term-debug.apk ../../tmp/4.0/git-annex.apk
+	for v in 4.0 4.3 5.0; do \
+		mkdir -p ../../tmp/$$v; \
+		cp ../../tmp/androidtree/dist/build/git-annex/$$v/git-annex $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi/lib.git-annex.so; \
+		arm-linux-androideabi-strip --strip-unneeded --remove-section=.comment --remove-section=.note $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi/lib.git-annex.so; \
+		cd $(GIT_ANNEX_ANDROID_SOURCETREE)/term && ant debug; \
+		cp $(GIT_ANNEX_ANDROID_SOURCETREE)/term/bin/Term-debug.apk ../../tmp/$$v/git-annex.apk; \
+	done
 
 $(GIT_ANNEX_ANDROID_SOURCETREE)/openssl/build-stamp:
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/openssl && CC=$$(which cc) ./Configure android
