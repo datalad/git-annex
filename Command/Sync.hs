@@ -227,12 +227,15 @@ pullRemote remote branch = do
  - while the synced/master may have changes that some
  - other remote synced to this remote. So, merge them both. -}
 mergeRemote :: Remote -> Maybe Git.Ref -> CommandCleanup
-mergeRemote remote b = case b of
-	Nothing -> do
-		branch <- inRepo Git.Branch.currentUnsafe
-		and <$> mapM (merge Nothing) (branchlist branch)
-	Just thisbranch ->
-		and <$> (mapM (merge (Just thisbranch)) =<< tomerge (branchlist b))
+mergeRemote remote b = ifM isBareRepo
+	( return True
+	, case b of
+		Nothing -> do
+			branch <- inRepo Git.Branch.currentUnsafe
+			and <$> mapM (merge Nothing) (branchlist branch)
+		Just thisbranch ->
+			and <$> (mapM (merge (Just thisbranch)) =<< tomerge (branchlist b))
+	)
   where
 	merge thisbranch br = autoMergeFrom (remoteBranch remote br) thisbranch Git.Branch.ManualCommit
 	tomerge = filterM (changed remote)

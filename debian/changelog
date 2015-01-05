@@ -7,6 +7,8 @@ git-annex (5.20141232) UNRELEASED; urgency=medium
     Closes: #774494
   * Fix build with process 1.2.1.0.
   * Android: Provide a version built with -fPIE -pie to support Android 5.0.
+  * sync: Fix an edge case where syncing in a bare repository would try to
+    merge and so fail.
 
  -- Joey Hess <id@joeyh.name>  Fri, 02 Jan 2015 13:35:13 -0400
 
