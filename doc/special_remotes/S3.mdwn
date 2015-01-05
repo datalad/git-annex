@@ -60,8 +60,6 @@ the S3 remote.
   but can be enabled or changed at any time.
   time.
 
-  NOTE: there is a [[bug|/bugs/S3_upload_not_using_multipart/]] which depends on the AWS library. See [[this comment|http://git-annex.branchable.com/bugs/S3_upload_not_using_multipart/#comment-4c45dac68866d3550c0b32ed466e2c6a]] (the latest as of now).
-
 * `fileprefix` - By default, git-annex places files in a tree rooted at the
   top of the S3 bucket. When this is set, it's prefixed to the filenames
   used. For example, you could set it to "foo/" in one special remote,
