@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-01-05T21:09:47Z"
+ content="""
+Using git-annex's encryption=shared will have the same
+key management ease as letting Amazon encrypt. 
+
+In both cases you're putting the shared encryption key into the
+configuration of a git-annex S3 remote. Anyone who can access the git
+repository can access the encryption key.
+"""]]
