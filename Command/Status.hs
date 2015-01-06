@@ -28,9 +28,9 @@ start :: [FilePath] -> CommandStart
 start [] = do
 	-- Like git status, when run without a directory, behave as if
 	-- given the path to the top of the repository.
-	currdir <- liftIO getCurrentDirectory
 	top <- fromRepo Git.repoPath
-	start' [relPathDirToFile currdir top]
+	d <- liftIO $ relPathCwdToFile top
+	start' [d]
 start locs = start' locs
 	
 start' :: [FilePath] -> CommandStart

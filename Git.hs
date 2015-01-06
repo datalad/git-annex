@@ -31,6 +31,7 @@ module Git (
 	hookPath,
 	assertLocal,
 	adjustPath,
+	relPath,
 ) where
 
 import Network.URI (uriPath, uriScheme, unEscapeString)
@@ -141,25 +142,28 @@ hookPath script repo = do
 	isexecutable f = isExecutable . fileMode <$> getFileStatus f
 #endif
 
-{- Adusts the path to a local Repo.
- -
- - On windows, prefixing a path with \\?\ makes it be processed as a raw
- - path (/ is not converted to \). The benefit is that such a path does
- - avoids Windows's 260 byte limitation on the entire path. -}
-adjustPath :: Repo -> Repo
-adjustPath r@(Repo { location = l@(Local { gitdir = d, worktree = w }) }) = r
-	{ location = l 
-		{ gitdir = adjustPath' d
-		, worktree = fmap adjustPath' w
-		}
-	}
-adjustPath r@(Repo { location = LocalUnknown d }) = 
-	r { location = LocalUnknown (adjustPath' d) }
-adjustPath r = r
+{- Makes the path to a local Repo be relative to the cwd. -}
+relPath :: Repo -> IO Repo
+relPath = adjustPath torel
+  where
+	torel p = do
+		p' <- relPathCwdToFile p
+		if null p'
+			then return "."
+			else return p'
 
-adjustPath' :: FilePath -> FilePath
-#if mingw32_HOST_OS
-adjustPath' d = "\\\\?\\" ++ d
-#else
-adjustPath' = id
-#endif
+{- Adusts the path to a local Repo using the provided function. -}
+adjustPath :: (FilePath -> IO FilePath) -> Repo -> IO Repo
+adjustPath f r@(Repo { location = l@(Local { gitdir = d, worktree = w }) }) = do
+	d' <- f d
+	w' <- maybe (pure Nothing) (Just <$$> f) w
+	return $ r 
+		{ location = l 
+			{ gitdir = d'
+			, worktree = w'
+			}
+		}
+adjustPath f r@(Repo { location = LocalUnknown d }) = do
+	d' <- f d
+	return $ r { location = LocalUnknown d' }
+adjustPath _ r = pure r

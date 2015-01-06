@@ -126,14 +126,19 @@ absPath file = do
  -    relPathCwdToFile "/tmp/foo/bar" == "" 
  -}
 relPathCwdToFile :: FilePath -> IO FilePath
-relPathCwdToFile f = relPathDirToFile <$> getCurrentDirectory <*> absPath f
+relPathCwdToFile f = do
+	c <- getCurrentDirectory
+	relPathDirToFile c f
 
-{- Constructs a relative path from a directory to a file.
- -
- - Both must be absolute, and cannot contain .. etc. (eg use absPath first).
+{- Constructs a relative path from a directory to a file. -}
+relPathDirToFile :: FilePath -> FilePath -> IO FilePath
+relPathDirToFile from to = relPathDirToFileAbs <$> absPath from <*> absPath to
+
+{- This requires the first path to be absolute, and the
+ - second path cannot contain ../ or ./
  -}
-relPathDirToFile :: FilePath -> FilePath -> FilePath
-relPathDirToFile from to = join s $ dotdots ++ uncommon
+relPathDirToFileAbs :: FilePath -> FilePath -> FilePath
+relPathDirToFileAbs from to = join s $ dotdots ++ uncommon
   where
 	s = [pathSeparator]
 	pfrom = split s from
@@ -149,7 +154,7 @@ prop_relPathDirToFile_basics from to
 	| from == to = null r
 	| otherwise = not (null r)
   where
-	r = relPathDirToFile from to 
+	r = relPathDirToFileAbs from to 
 
 prop_relPathDirToFile_regressionTest :: Bool
 prop_relPathDirToFile_regressionTest = same_dir_shortcurcuits_at_difference
@@ -158,7 +163,7 @@ prop_relPathDirToFile_regressionTest = same_dir_shortcurcuits_at_difference
 	 - location, but it's not really the same directory.
 	 - Code used to get this wrong. -}
 	same_dir_shortcurcuits_at_difference =
-		relPathDirToFile (joinPath [pathSeparator : "tmp", "r", "lll", "xxx", "yyy", "18"])
+		relPathDirToFileAbs (joinPath [pathSeparator : "tmp", "r", "lll", "xxx", "yyy", "18"])
 			(joinPath [pathSeparator : "tmp", "r", ".git", "annex", "objects", "18", "gk", "SHA256-foo", "SHA256-foo"])
 				== joinPath ["..", "..", "..", "..", ".git", "annex", "objects", "18", "gk", "SHA256-foo", "SHA256-foo"]
 
@@ -187,7 +192,7 @@ relHome :: FilePath -> IO String
 relHome path = do
 	home <- myHomeDir
 	return $ if dirContains home path
-		then "~/" ++ relPathDirToFile home path
+		then "~/" ++ relPathDirToFileAbs home path
 		else path
 
 {- Checks if a command is available in PATH.

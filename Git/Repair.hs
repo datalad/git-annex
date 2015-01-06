@@ -225,10 +225,13 @@ badBranches missing r = filterM isbad =<< getAllRefs r
  - Relies on packed refs being exploded before it's called.
  -}
 getAllRefs :: Repo -> IO [Ref]
-getAllRefs r = map toref <$> dirContentsRecursive refdir
-  where
-	refdir = localGitDir r </> "refs"
-	toref = Ref . relPathDirToFile (localGitDir r)
+getAllRefs r = getAllRefs' (localGitDir r </> "refs")
+
+getAllRefs' :: FilePath -> IO [Ref]
+getAllRefs' refdir = do
+	let topsegs = length (splitPath refdir) - 1
+	let toref = Ref . joinPath . drop topsegs . splitPath
+	map toref <$> dirContentsRecursive refdir
 
 explodePackedRefsFile :: Repo -> IO ()
 explodePackedRefsFile r = do

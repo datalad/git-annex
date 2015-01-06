@@ -114,7 +114,7 @@ addAssociatedFile key file = do
 normaliseAssociatedFile :: FilePath -> Annex FilePath
 normaliseAssociatedFile file = do
 	top <- fromRepo Git.repoPath
-	liftIO $ relPathDirToFile top <$> absPath file
+	liftIO $ relPathDirToFile top file
 
 {- Checks if a file in the tree, associated with a key, has not been modified.
  -

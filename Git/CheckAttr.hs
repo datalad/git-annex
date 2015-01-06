@@ -84,7 +84,7 @@ checkAttr (h, attrs, oldgit, currdir) want file = do
 	 - so use relative filenames. -}
 	file'
 		| oldgit = absPathFrom currdir file
-		| otherwise = relPathDirToFile currdir $ absPathFrom currdir file
+		| otherwise = relPathDirToFileAbs currdir $ absPathFrom currdir file
 	oldattrvalue attr l = end bits !! 0
 	  where
 		bits = split sep l

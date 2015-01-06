@@ -39,8 +39,7 @@ fromTopFilePath p repo = absPathFrom (repoPath repo) (getTopFilePath p)
 
 {- The input FilePath can be absolute, or relative to the CWD. -}
 toTopFilePath :: FilePath -> Git.Repo -> IO TopFilePath
-toTopFilePath file repo = TopFilePath <$>
-	relPathDirToFile (repoPath repo) <$> absPath file
+toTopFilePath file repo = TopFilePath <$> relPathDirToFile (repoPath repo) file
 
 {- The input FilePath must already be relative to the top of the git
  - repository -}

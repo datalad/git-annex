@@ -79,9 +79,11 @@ import qualified Remote.Helper.Encryptable
 import qualified Types.Crypto
 import qualified Utility.Gpg
 #endif
+import qualified Messages
 
 main :: [String] -> IO ()
 main ps = do
+	Messages.enableDebugOutput
 	let tests = testGroup "Tests"
 		-- Test both direct and indirect mode.
 		-- Windows is only going to use direct mode,

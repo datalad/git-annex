@@ -87,8 +87,8 @@ import qualified Git
  - Everything else should not end in a trailing path sepatator. 
  -
  - Only functions (with names starting with "git") that build a path
- - based on a git repository should return an absolute path.
- - Everything else should use relative paths.
+ - based on a git repository should return full path relative to the git
+ - repository. Everything else returns path segments.
  -}
 
 {- The directory git annex uses for local state, relative to the .git
@@ -108,7 +108,7 @@ annexLocations key = map (annexLocation key) annexHashes
 annexLocation :: Key -> Hasher -> FilePath
 annexLocation key hasher = objectDir </> keyPath key hasher
 
-{- Annexed object's absolute location in a repository.
+{- Annexed object's location in a repository.
  -
  - When there are multiple possible locations, returns the one where the
  - file is actually present.
@@ -146,7 +146,7 @@ gitAnnexLink file key r = do
 	currdir <- getCurrentDirectory
 	let absfile = fromMaybe whoops $ absNormPathUnix currdir file
 	loc <- gitAnnexLocation' key r False
-	return $ relPathDirToFile (parentDir absfile) loc
+	relPathDirToFile (parentDir absfile) loc
   where
 	whoops = error $ "unable to normalize " ++ file
 
