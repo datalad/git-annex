@@ -12,6 +12,9 @@ git-annex (5.20141232) UNRELEASED; urgency=medium
   * Check git version at runtime, rather than assuming it will be the same
     as the git version used at build time when running git-checkattr and
     git-branch remove.
+  * Generate shorter keys for WORM and URL, avoiding keys that are longer
+    than used for SHA256, so as to not break on systems like Windows that
+    have very small maximum path length limits.
 
  -- Joey Hess <id@joeyh.name>  Fri, 02 Jan 2015 13:35:13 -0400
 

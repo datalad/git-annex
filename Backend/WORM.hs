@@ -34,9 +34,8 @@ keyValue :: KeySource -> Annex (Maybe Key)
 keyValue source = do
 	stat <- liftIO $ getFileStatus $ contentLocation source
 	relf <- getTopFilePath <$> inRepo (toTopFilePath $ keyFilename source)
-	n <- genKeyName relf
 	return $ Just $ stubKey
-		{ keyName = n
+		{ keyName = genKeyName relf
 		, keyBackendName = name backend
 		, keySize = Just $ fromIntegral $ fileSize stat
 		, keyMtime = Just $ modificationTime stat
