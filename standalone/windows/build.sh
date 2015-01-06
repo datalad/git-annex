@@ -73,7 +73,8 @@ ghc --make Build/BuildVersion.hs
 Build/BuildVersion > dist/build-version
 
 # Test git-annex
-# (doesn't currently work well on autobuilder, reason unknown)
+# The test is run in c:/WINDOWS/Temp, because running it in the autobuilder
+# directory runs afoul of Windows's short PATH_MAX.
 PATH="$(pwd)/dist/build/git-annex/:$PATH"
 export PATH
 mkdir -p c:/WINDOWS/Temp/git-annex-test/
