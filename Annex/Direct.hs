@@ -160,8 +160,8 @@ addDirect file cache = do
  -}
 mergeDirect :: Maybe Git.Ref -> Maybe Git.Ref -> Git.Branch -> Annex Bool -> Git.Branch.CommitMode -> Annex Bool
 mergeDirect startbranch oldref branch resolvemerge commitmode = exclusively $ do
-	reali <- fromRepo indexFile
-	tmpi <- fromRepo indexFileLock
+	reali <- liftIO . absPath =<< fromRepo indexFile
+	tmpi <- liftIO . absPath =<< fromRepo indexFileLock
 	liftIO $ copyFile reali tmpi
 
 	d <- fromRepo gitAnnexMergeDir
@@ -198,9 +198,12 @@ stageMerge d branch commitmode = do
 	merger <- ifM (coreSymlinks <$> Annex.getGitConfig)
 		( return Git.Merge.stageMerge
 		, return $ \ref -> Git.Merge.mergeNonInteractive ref commitmode
-		) 
-	inRepo $ \g -> merger branch $ 
-		g { location = Local { gitdir = Git.localGitDir g, worktree = Just d } }
+		)
+	inRepo $ \g -> do
+		wd <- liftIO $ absPath d
+		gd <- liftIO $ absPath $ Git.localGitDir g
+		merger branch $ 
+			g { location = Local { gitdir = gd, worktree = Just (addTrailingPathSeparator wd) } }
 
 {- Commits after a direct mode merge is complete, and after the work
  - tree has been updated by mergeDirectCleanup.
