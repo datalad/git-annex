@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 2"
+ date="2015-01-06T19:18:26Z"
+ content="""
+On Linux and OSX, there is a maximum filename size, typically 255 bytes. git-annex always ensures that keys it generates are a maximum of 255 bytes long, no matter the platform. But, in dir/subdir/file, each of the 3 segments of the path is allowed to be that long. The limit on the total path size on Linux is a more reasonable 4096 bytes; OSX has only 1024 bytes. 
+
+I don't know what to do about Windows having such an absurdly small `MAX_PATH` compared to more modern systems.
+
+The length of just a SHA512 checksum is 128 bytes; that means SHA512 backend cannot be used on windows, at all, since the paths git-annex generates will be at least twice that long, and will easily overflow `PATH_MAX`. I've confirmed this; just adding a file with --backend=SHA512 fails with a \"No such file or directory\" error when it tries to use the path.
+
+A SHA256 is a more manageable 64 bytes long. So a typical path to such an object will end with eg \".git\annex\objects\566\a33\SHA256E--d728a4c4727febe1c28509482ae1b7b2215798218e544eed7cb7b4dc988f838b\SHA256E--d728a4c4727febe1c28509482ae1b7b2215798218e544eed7cb7b4dc988f838b\" -- 174 bytes long (or a bit longer when there are also extension and size in the key) and leaving only 86 bytes or so for `c:\path\to\repo`.
+
+Perhaps git-annex should reduce its maximum key size from 255 to 64 bytes, the same as SHA256. Then url keys would work on Windows, except for in deep paths, where git-annex cannot work at all. This would be an easy change.
+
+git-annex could also avoid using absolute paths, which it currently uses extensively for simplicity (and possiibly robustness against renames of repositories and changes of working directory?), and use relative paths instead. This would probably solve the two examples given in the bug report, and it would make git-annex work better when in a deep path in Windows. It would not make SHA512 work though; with keys that long, the relative path is still too long. (And, it's still possible to get a relative path that has so many '../../' and subdirectories etc that it overflows `PATH_MAX`. It would probably take a really crazy repository directory structure though.)
+
+The MSDN article has one very interesting bit:
+
+> The Windows API has many functions that also have Unicode versions to permit an extended-length path for a maximum total path length of 32,767 characters. This type of path is composed of components separated by backslashes, each up to the value returned in the lpMaximumComponentLength parameter of the GetVolumeInformation function (this value is commonly 255 characters). To specify an extended-length path, use the \"\\?\\" prefix. For example, \"\\?\D:\very long path\".
+
+(It seems that, when using that prefix, `/` is not converted to `\` .. I think git-annex is quite good about getting the slashes the right way round these days.)
+
+So it might be possible for git-annex to use that prefix and avoid this issue entirely. Haskell's FilePath library does understand that prefix (treats it as part of the drive). Since git-annex always uses the path to the top of the Repo when constructing the problimatic FilePaths, I might be able to just change the Repo constructor to add that prefix, and everything follow from that. I tried doing that, unfortunately this makes *git* fail, with \"fatal: relative path syntax cannot be used outside working tree\" when operating on such a repo. Cause git doesn't understand that prefix.
+"""]]
