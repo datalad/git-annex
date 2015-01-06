@@ -1,0 +1,14 @@
+git-annex internally uses all absolute paths all the time.
+For a couple of reasons, I'd like it to use relative paths.
+The best reason is, it would let a repository be moved while git-annex was
+running, without breaking. A lesser reason is that Windows has some
+crazy small limit on the length of a path (260 bytes?!), and using relative
+paths would avoid hitting it so often.
+
+I tried to do this today, in a `relativepaths` branch. I eventually got the
+test suite to pass, but I am very unsure about this change. A lot of random
+assumptions broke, and the test suite won't catch them all. In a few
+places, git-annex commands do change the current directory, and that
+will break with relative paths.
+
+A frustrating day.
