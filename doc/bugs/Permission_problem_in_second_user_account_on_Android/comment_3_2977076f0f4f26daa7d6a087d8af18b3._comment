@@ -1,0 +1,43 @@
+[[!comment format=mdwn
+ username="http://inkwell.za.net/"
+ nickname="kwill"
+ subject="Logfile with errors"
+ date="2015-01-06T11:43:12Z"
+ content="""
+Found the logfile for the attempted installation at `/storage/emulated/10/git-annex.home/git-annex-install.log`
+
+It looks like there's a problem quite early on. BTW this is on Android 4.4 running on a Nexus 7 (2012). Only modification is installation of F-Droid. Is it worth / possible to install the recent Android 5.0 build?
+
+    Installation starting to /data/data/ga.androidterm
+    abcdef_SOME_LONG_HEX_STRING
+    mv: can't rename '/data/data/ga.androidterm/bin': Permission denied
+    installing busybox
+    ln: /data/data/ga.androidterm/bin/busybox: Permission denied
+    installing git-annex
+    ln: /data/data/ga.androidterm/bin/git-annex: Permission denied
+    
+    ... (more of the same)
+    
+    busybox: /data/data/ga.androidterm/bin/[: Permission denied
+    busybox: /data/data/ga.androidterm/bin/[[: Permission denied
+    busybox: /data/data/ga.androidterm/bin/ar: Permission denied
+    busybox: /data/data/ga.androidterm/bin/arp: Permission denied
+    
+    ... (more of the same)
+    
+    busybox: /data/data/ga.androidterm/bin/zcat: Permission denied
+    tar: can't remove old file ./links/git-shell: Permission denied
+    tar: write: Broken pipe
+    cat: can't open '/data/data/ga.androidterm/links/git': Permission denied
+    rm: can't stat '/data/data/ga.androidterm/links/git': Permission denied
+    cat: can't open '/data/data/ga.androidterm/links/git-shell': Permission denied
+    rm: can't stat '/data/data/ga.androidterm/links/git-shell': Permission denied
+    cat: can't open '/data/data/ga.androidterm/links/git-upload-pack': Permission denied
+    rm: can't stat '/data/data/ga.androidterm/links/git-upload-pack': Permission denied
+    lib/lib.runshell.so: line 133: can't create /data/data/ga.androidterm/runshell: Permission denied
+    lib/lib.runshell.so: line 133: can't create /data/data/ga.androidterm/runshell: Permission denied
+    chmod: runshell: Operation not permitted
+    lib/lib.runshell.so: line 133: can't create /data/data/ga.androidterm/bin/trustedkeys.gpg: Permission denied
+    lib/lib.runshell.so: line 133: can't create /data/data/ga.androidterm/installed-version: Permission denied
+    Installation complete
+"""]]
