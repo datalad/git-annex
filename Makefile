@@ -232,7 +232,7 @@ android: Build/EvilSplicer
 		--ghc-options=-optl-z --ghc-options=-optlnocopyreloc \
 		&& mv dist/build/git-annex/git-annex dist/build/git-annex/4.3/git-annex
 	cd tmp/androidtree && $$HOME/.ghc/$(shell cat standalone/android/abiversion)/arm-linux-androideabi/bin/cabal build \
-		--ghc-options=-optl-z --ghc-options=-optlnocopyreloc --ghc-options=-optl-fPIE --ghc-options=-optl-pie \
+		--ghc-options=-optl-z --ghc-options=-optlnocopyreloc --ghc-options=-optl-fPIE --ghc-options=-optl-pie --ghc-options=-optc-fPIE --ghc-options=-optc-pie \
 		&& mv dist/build/git-annex/git-annex dist/build/git-annex/5.0/git-annex
 
 androidapp:
