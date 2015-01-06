@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmwjQzWgiD7_I3zw-_91rMRf_6qoThupis"
+ nickname="Mike"
+ subject="comment 7"
+ date="2015-01-06T18:01:40Z"
+ content="""
+Unfortunately, that is not useful for this at all. We are talking about millions of files here, and the issue is leaving behind old hard links, so that program just won't work at all.
+
+Furthermore, this questions has all ready been answered in previous comments.
+"""]]
