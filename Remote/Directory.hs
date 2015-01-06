@@ -143,7 +143,7 @@ finalizeStoreGeneric :: FilePath -> FilePath -> IO ()
 finalizeStoreGeneric tmp dest = do
 	void $ tryIO $ allowWrite dest -- may already exist
 	void $ tryIO $ removeDirectoryRecursive dest -- or not exist
-	createDirectoryIfMissing True (parentDir dest)
+	createDirectoryIfMissing True (takeDirectory dest)
 	renameDirectory tmp dest
 	-- may fail on some filesystems
 	void $ tryIO $ do

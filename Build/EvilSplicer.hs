@@ -204,7 +204,7 @@ applySplices destdir imports splices@(first:_) = do
 	let f = splicedFile first
 	let dest = (destdir </> f)
 	lls <- map (++ "\n") . lines <$> readFileStrictAnyEncoding f
-	createDirectoryIfMissing True (parentDir dest)
+	createDirectoryIfMissing True (takeDirectory dest)
 	let newcontent = concat $ addimports $ expand lls splices
 	oldcontent <- catchMaybeIO $ readFileStrictAnyEncoding dest
 	when (oldcontent /= Just newcontent) $ do

@@ -64,7 +64,7 @@ getbuild repodir (url, f) = do
 	let dest = repodir </> f
 	let tmp = dest ++ ".tmp"
 	nukeFile tmp
-	createDirectoryIfMissing True (parentDir dest)
+	createDirectoryIfMissing True (takeDirectory dest)
 	let oops s = do
 		nukeFile tmp
 		putStrLn $ "*** " ++ s

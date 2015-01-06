@@ -200,7 +200,7 @@ fixLink key file = do
 	go want have
 		| want /= fromInternalGitPath have = do
 			showNote "fixing link"
-			liftIO $ createDirectoryIfMissing True (parentDir file)
+			liftIO $ createDirectoryIfMissing True (takeDirectory file)
 			liftIO $ removeFile file
 			addAnnexLink want file
 		| otherwise = noop
@@ -218,7 +218,7 @@ verifyLocationLog key desc = do
 	file <- calcRepo $ gitAnnexLocation key
 	when (present && not direct) $
 		freezeContent file
-	whenM (liftIO $ doesDirectoryExist $ parentDir file) $
+	whenM (liftIO $ doesDirectoryExist $ takeDirectory file) $
 		freezeContentDir file
 
 	{- In direct mode, modified files will show up as not present,
@@ -450,7 +450,7 @@ needFsck _ _ = return True
  -}
 recordFsckTime :: Key -> Annex ()
 recordFsckTime key = do
-	parent <- parentDir <$> calcRepo (gitAnnexLocation key)
+	parent <- takeDirectory <$> calcRepo (gitAnnexLocation key)
 	liftIO $ void $ tryIO $ do
 		touchFile parent
 #ifndef mingw32_HOST_OS
@@ -459,7 +459,7 @@ recordFsckTime key = do
 
 getFsckTime :: Key -> Annex (Maybe EpochTime)
 getFsckTime key = do
-	parent <- parentDir <$> calcRepo (gitAnnexLocation key)
+	parent <- takeDirectory <$> calcRepo (gitAnnexLocation key)
 	liftIO $ catchDefaultIO Nothing $ do
 		s <- getFileStatus parent
 		return $ if isSticky $ fileMode s
@@ -477,7 +477,7 @@ getFsckTime key = do
 recordStartTime :: Annex ()
 recordStartTime = do
 	f <- fromRepo gitAnnexFsckState
-	createAnnexDirectory $ parentDir f
+	createAnnexDirectory $ takeDirectory f
 	liftIO $ do
 		nukeFile f
 		withFile f WriteMode $ \h -> do

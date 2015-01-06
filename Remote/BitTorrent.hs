@@ -189,7 +189,7 @@ downloadTorrentFile u = do
 		, do
 			showAction "downloading torrent file"
 			showOutput
-			createAnnexDirectory (parentDir torrent)
+			createAnnexDirectory (takeDirectory torrent)
 			if isTorrentMagnetUrl u
 				then do
 					tmpdir <- tmpTorrentDir u

@@ -1071,7 +1071,7 @@ test_uncommitted_conflict_resolution = do
 		withtmpclonerepo False $ \r2 -> do
 			indir r1 $ do
 				disconnectOrigin
-				createDirectoryIfMissing True (parentDir remoteconflictor)
+				createDirectoryIfMissing True (takeDirectory remoteconflictor)
 				writeFile remoteconflictor annexedcontent
 				git_annex "add" [conflictor] @? "add remoteconflicter failed"
 				git_annex "sync" [] @? "sync failed in r1"

@@ -173,7 +173,7 @@ instance Arbitrary FuzzAction where
 
 runFuzzAction :: FuzzAction -> Annex ()
 runFuzzAction (FuzzAdd (FuzzFile f)) = liftIO $ do
-	createDirectoryIfMissing True $ parentDir f
+	createDirectoryIfMissing True $ takeDirectory f
 	n <- getStdRandom random :: IO Int
 	writeFile f $ show n ++ "\n"
 runFuzzAction (FuzzDelete (FuzzFile f)) = liftIO $ nukeFile f
@@ -210,7 +210,7 @@ genFuzzAction = do
 			case md of
 				Nothing -> genFuzzAction
 				Just d -> do
-					newd <- liftIO $ newDir (parentDir $ toFilePath d)
+					newd <- liftIO $ newDir (takeDirectory $ toFilePath d)
 					maybe genFuzzAction (return . FuzzMoveDir d) newd
 		FuzzDeleteDir _ -> do
 			d <- liftIO existingDir

@@ -556,7 +556,7 @@ rsyncOrCopyFile rsyncparams src dest p =
 	ifM (sameDeviceIds src dest) (docopy, dorsync)
   where
 	sameDeviceIds a b = (==) <$> getDeviceId a <*> getDeviceId b
-	getDeviceId f = deviceID <$> liftIO (getFileStatus $ parentDir f)
+	getDeviceId f = deviceID <$> liftIO (getFileStatus $ takeDirectory f)
 	docopy = liftIO $ bracket
 		(forkIO $ watchfilesize zeroBytesProcessed)
 		(void . tryIO . killThread)

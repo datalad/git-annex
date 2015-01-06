@@ -73,7 +73,7 @@ moveContent = do
   where
 	move f = do
 		let k = fileKey1 (takeFileName f)
-		let d = parentDir f
+		let d = takeDirectory f
 		liftIO $ allowWrite d
 		liftIO $ allowWrite f
 		moveAnnex k f
@@ -114,7 +114,7 @@ moveLocationLogs = do
 		dest <- fromRepo $ logFile2 k
 		dir <- fromRepo Upgrade.V2.gitStateDir
 		let f = dir </> l
-		liftIO $ createDirectoryIfMissing True (parentDir dest)
+		liftIO $ createDirectoryIfMissing True (takeDirectory dest)
 		-- could just git mv, but this way deals with
 		-- log files that are not checked into git,
 		-- as well as merging with already upgraded

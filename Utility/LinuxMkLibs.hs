@@ -10,6 +10,7 @@ module Utility.LinuxMkLibs where
 import Control.Applicative
 import Data.Maybe
 import System.Directory
+import System.FilePath
 import Data.List.Utils
 import System.Posix.Files
 import Data.Char
@@ -28,14 +29,14 @@ installLib installfile top lib = ifM (doesFileExist lib)
 	( do
 		installfile top lib
 		checksymlink lib
-		return $ Just $ parentDir lib
+		return $ Just $ takeDirectory lib
 	, return Nothing
 	)
   where
 	checksymlink f = whenM (isSymbolicLink <$> getSymbolicLinkStatus (inTop top f)) $ do
 		l <- readSymbolicLink (inTop top f)
-		let absl = absPathFrom (parentDir f) l
-		let target = relPathDirToFile (parentDir f) absl
+		let absl = absPathFrom (takeDirectory f) l
+		let target = relPathDirToFile (takeDirectory f) absl
 		installfile top absl
 		nukeFile (top ++ f)
 		createSymbolicLink target (inTop top f)
