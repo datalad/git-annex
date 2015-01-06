@@ -267,7 +267,7 @@ updateWorkTree d oldref = do
 	 - Empty work tree directories are removed, per git behavior. -}
 	moveout_raw _ _ f = liftIO $ do
 		nukeFile f
-		void $ tryIO $ removeDirectory $ parentDir f
+		void $ tryIO $ removeDirectory $ takeDirectory f
 	
 	{- If the file is already present, with the right content for the
 	 - key, it's left alone. 
@@ -288,7 +288,7 @@ updateWorkTree d oldref = do
 	movein_raw item makeabs f = do
 		preserveUnannexed item makeabs f oldref
 		liftIO $ do
-			createDirectoryIfMissing True $ parentDir f
+			createDirectoryIfMissing True $ takeDirectory f
 			void $ tryIO $ rename (d </> getTopFilePath (DiffTree.file item)) f
 
 {- If the file that's being moved in is already present in the work
@@ -306,13 +306,14 @@ preserveUnannexed item makeabs absf oldref = do
 	checkdirs (DiffTree.file item)
   where
 	checkdirs from = do
-		let p = parentDir (getTopFilePath from)
-		let d = asTopFilePath p
-		unless (null p) $ do
-			let absd = makeabs d
-			whenM (liftIO (colliding_nondir absd) <&&> unannexed absd) $
-				liftIO $ findnewname absd 0
-			checkdirs d
+		case parentDir (getTopFilePath from) of
+			Nothing -> noop
+			Just p -> do
+				let d = asTopFilePath p
+				let absd = makeabs d
+				whenM (liftIO (colliding_nondir absd) <&&> unannexed absd) $
+					liftIO $ findnewname absd 0
+				checkdirs d
 			
 	collidingitem f = isJust
 		<$> catchMaybeIO (getSymbolicLinkStatus f)
@@ -379,7 +380,7 @@ removeDirect k f = do
 			)
 	liftIO $ do
 		nukeFile f
-		void $ tryIO $ removeDirectory $ parentDir f
+		void $ tryIO $ removeDirectory $ takeDirectory f
 
 {- Called when a direct mode file has been changed. Its old content may be
  - lost. -}

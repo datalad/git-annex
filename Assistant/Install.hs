@@ -49,7 +49,7 @@ ensureInstalled = go =<< standaloneAppBase
 	go (Just base) = do
 		let program = base </> "git-annex"
 		programfile <- programFile
-		createDirectoryIfMissing True (parentDir programfile)
+		createDirectoryIfMissing True (takeDirectory programfile)
 		writeFile programfile program
 
 #ifdef darwin_HOST_OS
@@ -87,7 +87,7 @@ installWrapper :: FilePath -> String -> IO ()
 installWrapper file content = do
 	curr <- catchDefaultIO "" $ readFileStrict file
 	when (curr /= content) $ do
-		createDirectoryIfMissing True (parentDir file)
+		createDirectoryIfMissing True (takeDirectory file)
 		viaTmp writeFile file content
 		modifyFileMode file $ addModes [ownerExecuteMode]
 

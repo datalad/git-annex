@@ -10,8 +10,9 @@ module Annex.Direct.Fixup where
 import Git.Types
 import Git.Config
 import qualified Git.Construct as Construct
-import Utility.Path
 import Utility.SafeCommand
+
+import System.FilePath
 
 {- Direct mode repos have core.bare=true, but are not really bare.
  - Fix up the Repo to be a non-bare repo, and arrange for git commands
@@ -19,7 +20,7 @@ import Utility.SafeCommand
 fixupDirect :: Repo -> IO Repo
 fixupDirect r@(Repo { location = l@(Local { gitdir = d, worktree = Nothing }) }) = do
 	let r' = r
-		{ location = l { worktree = Just (parentDir d) }
+		{ location = l { worktree = Just (takeDirectory d) }
 		, gitGlobalOpts = gitGlobalOpts r ++
 			[ Param "-c"
 			, Param $ coreBare ++ "=" ++ boolConfig False

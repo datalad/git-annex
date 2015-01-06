@@ -125,7 +125,7 @@ prepSocket socketfile = do
 	-- Cleanup at end of this run.
 	Annex.addCleanup SshCachingCleanup sshCleanup
 
-	liftIO $ createDirectoryIfMissing True $ parentDir socketfile
+	liftIO $ createDirectoryIfMissing True $ takeDirectory socketfile
 	lockFileShared $ socket2lock socketfile
 
 enumSocketFiles :: Annex [FilePath]

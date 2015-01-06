@@ -153,7 +153,7 @@ tahoeConfigure configdir furl mscs = do
 
 createClient :: TahoeConfigDir -> IntroducerFurl -> IO Bool
 createClient configdir furl = do
-	createDirectoryIfMissing True (parentDir configdir)
+	createDirectoryIfMissing True (takeDirectory configdir)
 	boolTahoe configdir "create-client"
 		[ Param "--nickname", Param "git-annex"
 		, Param "--introducer", Param furl

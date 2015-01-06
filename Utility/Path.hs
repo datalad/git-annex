@@ -77,14 +77,12 @@ absNormPathUnix dir path = todos <$> MissingH.absNormPath (fromdos dir) (fromdos
 	todos = replace "/" "\\"
 #endif
 
-{- Returns the parent directory of a path.
- -
- - To allow this to be easily used in loops, which terminate upon reaching the
- - top, the parent of / is "" -}
-parentDir :: FilePath -> FilePath
+{- Just the parent directory of a path, or Nothing if the path has no
+ - parent (ie for "/") -}
+parentDir :: FilePath -> Maybe FilePath
 parentDir dir
-	| null dirs = ""
-	| otherwise = joinDrive drive (join s $ init dirs)
+	| null dirs = Nothing
+	| otherwise = Just $ joinDrive drive (join s $ init dirs)
   where
 	-- on Unix, the drive will be "/" when the dir is absolute, otherwise ""
 	(drive, path) = splitDrive dir
@@ -94,8 +92,8 @@ parentDir dir
 prop_parentDir_basics :: FilePath -> Bool
 prop_parentDir_basics dir
 	| null dir = True
-	| dir == "/" = parentDir dir == ""
-	| otherwise = p /= dir
+	| dir == "/" = parentDir dir == Nothing
+	| otherwise = p /= Just dir
   where
 	p = parentDir dir
 

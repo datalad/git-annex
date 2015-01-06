@@ -247,7 +247,7 @@ sentinalStatus = maybe check return =<< Annex.getState Annex.sentinalstatus
 createInodeSentinalFile :: Annex ()
 createInodeSentinalFile = unlessM (alreadyexists <||> hasobjects) $ do
 	s <- annexSentinalFile
-	createAnnexDirectory (parentDir (sentinalFile s))
+	createAnnexDirectory (takeDirectory (sentinalFile s))
 	liftIO $ writeSentinalFile s
   where
 	alreadyexists = liftIO. sentinalFileExists =<< annexSentinalFile

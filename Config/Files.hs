@@ -33,7 +33,7 @@ modifyAutoStartFile func = do
 	let dirs' = nubBy equalFilePath $ func dirs
 	when (dirs' /= dirs) $ do
 		f <- autoStartFile
-		createDirectoryIfMissing True (parentDir f)
+		createDirectoryIfMissing True (takeDirectory f)
 		viaTmp writeFile f $ unlines dirs'
 
 {- Adds a directory to the autostart file. If the directory is already

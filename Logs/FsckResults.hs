@@ -29,7 +29,7 @@ writeFsckResults u fsckresults = do
 				| otherwise -> store s t logfile
   where
 	store s t logfile = do 
-		createDirectoryIfMissing True (parentDir logfile)
+		createDirectoryIfMissing True (takeDirectory logfile)
 		liftIO $ viaTmp writeFile logfile $ serialize s t
 	serialize s t =
 		let ls = map fromRef (S.toList s)
