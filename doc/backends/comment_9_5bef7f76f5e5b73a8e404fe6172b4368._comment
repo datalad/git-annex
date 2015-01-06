@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm_YXzEdPHzbSGVwtmTR7g1BqDtTnIBB5s"
+ nickname="Matthias"
+ subject="Over-long pathnames?"
+ date="2015-01-06T09:41:03Z"
+ content="""
+the SHA* backends generate too-complicated paths:
+
+lrwxrwxrwx 1 root root 193 Apr 22  2009 test.ogg -> ../../../.git/annex/objects/fX/pz/SHA256-s71983--4a55ff578b4c592c06a1f4d9e0f8a6949ea9961d9717fc22e7b3c412620ac890/SHA256-s71983--4a55ff578b4c592c06a1f4d9e0f8a6949ea9961d9717fc22e7b3c412620ac890
+
+I don't want the additional directory. What is it for?? It contains exactly one file and adds a couple of disk seeks to file lookup.
+"""]]
