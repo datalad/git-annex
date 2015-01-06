@@ -153,7 +153,7 @@ fromRemoteLocation s repo = gen $ parseRemoteLocation s repo
 fromRemotePath :: FilePath -> Repo -> IO Repo
 fromRemotePath dir repo = do
 	dir' <- expandTilde dir
-	fromAbsPath $ repoPath repo </> dir'
+	fromPath $ repoPath repo </> dir'
 
 {- Git remotes can have a directory that is specified relative
  - to the user's home directory, or that contains tilde expansions.
