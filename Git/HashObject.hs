@@ -32,7 +32,7 @@ hashObjectStop = CoProcess.stop
 hashFile :: HashObjectHandle -> FilePath -> IO Sha
 hashFile h file = CoProcess.query h send receive
   where
-	send to = hPutStrLn to file
+	send to = hPutStrLn to =<< absPath file
 	receive from = getSha "hash-object" $ hGetLine from
 
 {- Injects a blob into git. Unfortunately, the current git-hash-object
