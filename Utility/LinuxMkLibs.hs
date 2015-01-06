@@ -10,6 +10,7 @@ module Utility.LinuxMkLibs where
 import Control.Applicative
 import Data.Maybe
 import System.Directory
+import System.FilePath
 import Data.List.Utils
 import System.Posix.Files
 import Data.Char
