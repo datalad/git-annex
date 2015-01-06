@@ -187,7 +187,7 @@ newState c r = AnnexState
  - Ensures the config is read, if it was not already. -}
 new :: Git.Repo -> IO AnnexState
 new r = do
-	r' <- Git.Config.read r
+	r' <- Git.adjustPath <$> Git.Config.read r
 	let c = extractGitConfig r'
 	newState c <$> if annexDirect c then fixupDirect r' else return r'
 

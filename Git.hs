@@ -30,6 +30,7 @@ module Git (
 	attributes,
 	hookPath,
 	assertLocal,
+	adjustPath,
 ) where
 
 import Network.URI (uriPath, uriScheme, unEscapeString)
@@ -138,4 +139,27 @@ hookPath script repo = do
 	isexecutable f = doesFileExist f
 #else
 	isexecutable f = isExecutable . fileMode <$> getFileStatus f
+#endif
+
+{- Adusts the path to a local Repo.
+ -
+ - On windows, prefixing a path with \\?\ makes it be processed as a raw
+ - path (/ is not converted to \). The benefit is that such a path does
+ - avoids Windows's 260 byte limitation on the entire path. -}
+adjustPath :: Repo -> Repo
+adjustPath r@(Repo { location = l@(Local { gitdir = d, worktree = w }) }) = r
+	{ location = l 
+		{ gitdir = adjustPath' d
+		, worktree = fmap adjustPath' w
+		}
+	}
+adjustPath r@(Repo { location = LocalUnknown d }) = 
+	r { location = LocalUnknown (adjustPath' d) }
+adjustPath r = r
+
+adjustPath' :: FilePath -> FilePath
+#if mingw32_HOST_OS
+adjustPath' d = "\\\\?\\" ++ d
+#else
+adjustPath' = id
 #endif
