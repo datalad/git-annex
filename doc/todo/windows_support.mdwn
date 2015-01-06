@@ -3,6 +3,12 @@ usable!
 
 ## status
 
+* There can be problems when the git-annex repository is in a deep
+  or long path. Ie, `C:\loooooooooooooooooongdir\`.
+  [Details here](http://git-annex.branchable.com/bugs/__34__git-annex:_direct:_1_failed__34___on_Windows)
+  Workaround: Put your git-annex repo in `C:\annex` or some similar short
+  path if possible.
+
 * XMPP library not yet built. (See below.)
 
 * Local pairing seems to fail, after acking on Linux box, it stalls.
