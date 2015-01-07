@@ -53,10 +53,8 @@ mkView params = go =<< inRepo Git.Branch.current
 
 checkoutViewBranch :: View -> (View -> Annex Git.Branch) -> CommandCleanup
 checkoutViewBranch view mkbranch = do
-	oldcwd <- liftIO getCurrentDirectory
+	here <- liftIO getCurrentDirectory
 
-	{- Change to top of repository before creating view branch. -}
-	liftIO . setCurrentDirectory =<< fromRepo Git.repoPath
 	branch <- mkbranch view
 	
 	showOutput
@@ -68,9 +66,9 @@ checkoutViewBranch view mkbranch = do
 		setView view
 		{- A git repo can easily have empty directories in it,
 		 - and this pollutes the view, so remove them. -}
-		liftIO $ removeemptydirs "."
-		unlessM (liftIO $ doesDirectoryExist oldcwd) $ do
-			top <- fromRepo Git.repoPath
+		top <- fromRepo Git.repoPath
+		liftIO $ removeemptydirs top
+		unlessM (liftIO $ doesDirectoryExist here) $ do
 			showLongNote (cwdmissing top)
 	return ok
   where
