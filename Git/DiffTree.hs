@@ -61,7 +61,7 @@ diffIndex' :: Ref -> [CommandParam] -> Repo -> IO ([DiffTreeItem], IO Bool)
 diffIndex' ref params repo =
 	ifM (Git.Ref.headExists repo)
 		( getdiff (Param "diff-index")
-			( params ++ [Param $ fromRef ref] )
+			( params ++ [Param $ fromRef ref] ++ [Param "--"] )
 			repo
 		, return ([], return True)
 		)
