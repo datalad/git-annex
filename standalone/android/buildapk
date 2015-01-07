@@ -45,7 +45,7 @@ if [ "$androidversion" = 5 ]; then
 		;;
 		esac
 	done
-	PATH="$androidtoolchain:$PATH/5.0"
+	PATH="$androidtoolchain:$PATH/5"
 else
 	PATH="$androidtoolchain:$PATH"
 fi
