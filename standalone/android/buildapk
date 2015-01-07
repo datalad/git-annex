@@ -89,10 +89,10 @@ cp "$GIT_ANNEX_ANDROID_SOURCETREE/busybox/busybox" "$GIT_ANNEX_ANDROID_SOURCETRE
 cp "$GIT_ANNEX_ANDROID_SOURCETREE/openssh/ssh" "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.ssh.so"
 cp "$GIT_ANNEX_ANDROID_SOURCETREE/openssh/ssh-keygen" "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.ssh-keygen.so"
 cp "$GIT_ANNEX_ANDROID_SOURCETREE/rsync/rsync" "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.rsync.so"
-cp "$GIT_ANNEX_ANDROID_SOURCETREE/gnupg/g10/gpg "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.gpg.so"
+cp "$GIT_ANNEX_ANDROID_SOURCETREE/gnupg/g10/gpg" "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.gpg.so"
 cp "$GIT_ANNEX_ANDROID_SOURCETREE/git/git" "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.git.so"
 cp "$GIT_ANNEX_ANDROID_SOURCETREE/git/git-shell" "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.git-shell.so"
-cp "$GIT_ANNEX_ANDROID_SOURCETREE/git/git-upload-pack "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.git-upload-pack.so"
+cp "$GIT_ANNEX_ANDROID_SOURCETREE/git/git-upload-pack" "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.git-upload-pack.so"
 arm-linux-androideabi-strip --strip-unneeded --remove-section=.comment --remove-section=.note "$GIT_ANNEX_ANDROID_SOURCETREE"/term/libs/armeabi/*
 cp runshell "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.runshell.so"
 cc start.c -o "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.start.so"
