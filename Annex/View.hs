@@ -340,8 +340,9 @@ applyView' mkviewedfile getfilemetadata view = do
 	genViewBranch view $ do
 		uh <- inRepo Git.UpdateIndex.startUpdateIndex
 		hasher <- inRepo hashObjectStart
-		forM_ l $ \f ->
-			go uh hasher f =<< Backend.lookupFile f
+		forM_ l $ \f -> do
+			relf <- getTopFilePath <$> inRepo (toTopFilePath f)
+			go uh hasher relf =<< Backend.lookupFile f
 		liftIO $ do
 			hashObjectStop hasher
 			void $ stopUpdateIndex uh
@@ -352,7 +353,8 @@ applyView' mkviewedfile getfilemetadata view = do
 		metadata <- getCurrentMetaData k
 		let metadata' = getfilemetadata f `unionMetaData` metadata
 		forM_ (genviewedfiles f metadata') $ \fv -> do
-			stagesymlink uh hasher fv =<< inRepo (gitAnnexLink fv k)
+			f' <- fromRepo $ fromTopFilePath $ asTopFilePath fv
+			stagesymlink uh hasher f' =<< inRepo (gitAnnexLink f' k)
 	go uh hasher f Nothing
 		| "." `isPrefixOf` f = do
 			s <- liftIO $ getSymbolicLinkStatus f
