@@ -25,11 +25,11 @@ androidtoolchain="$HOME/.ghc/$(cat abiversion)/bin"
 # For Android 5, use a wrapped version of the C compiler,
 # which sets PIE build flags.
 if [ "$androidversion" = 5 ]; then
-	rm -rf "$androidtoolchain/5.0"
-	mkdir -p "$androidtoolchain/5.0"
+	rm -rf "$androidtoolchain/5"
+	mkdir -p "$androidtoolchain/5"
 	for f in $(find "$androidtoolchain" -maxdepth 1 -not -type d -printf '%f\n'); do
 		src="$androidtoolchain/$f"
-		dest="$androidtoolchain/5.0/$f"
+		dest="$androidtoolchain/5/$f"
 		case "$f" in
 		*-ld*)
 			wrap "$src" "$dest" "-pie"
@@ -45,7 +45,7 @@ if [ "$androidversion" = 5 ]; then
 		;;
 		esac
 	done
-	PATH="$androidtoolchain:$PATH/5"
+	PATH="$androidtoolchain/5:$PATH"
 else
 	PATH="$androidtoolchain:$PATH"
 fi
