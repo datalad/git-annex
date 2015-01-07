@@ -29,6 +29,7 @@ import Annex.Hook
 import qualified Git.Command
 import qualified Git.LsFiles as LsFiles
 import qualified Git.Branch
+import qualified Git.Types as Git
 import qualified Git.Ref
 import qualified Git
 import qualified Remote.Git
@@ -107,7 +108,7 @@ seek rs = do
  - of the repo. This also means that sync always acts on all files in the
  - repository, not just on a subdirectory. -}
 prepMerge :: Annex ()
-prepMerge = liftIO . setCurrentDirectory =<< fromRepo Git.repoPath
+prepMerge = Annex.changeDirectory =<< fromRepo Git.repoPath
 
 syncBranch :: Git.Ref -> Git.Ref
 syncBranch = Git.Ref.under "refs/heads/synced" . fromDirectBranch

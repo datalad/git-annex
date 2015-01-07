@@ -31,6 +31,7 @@ module Annex (
 	changeGitRepo,
 	getRemoteGitConfig,
 	withCurrentState,
+	changeDirectory,
 ) where
 
 import Common
@@ -300,3 +301,14 @@ withCurrentState :: Annex a -> Annex (IO a)
 withCurrentState a = do
 	s <- getState id
 	return $ eval s a
+
+{- It's not safe to use setCurrentDirectory in the Annex monad,
+ - because the git repo paths are stored relative.
+ - Instead, use this.
+ -}
+changeDirectory :: FilePath -> Annex ()
+changeDirectory d = do
+	r <- liftIO . Git.adjustPath absPath =<< gitRepo
+	liftIO $ setCurrentDirectory d
+	r' <- liftIO $ Git.relPath r
+	changeState $ \s -> s { repo = r' }
