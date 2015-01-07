@@ -80,7 +80,7 @@ perl -i -pe 's/(android:versionName=)"[^"]+"/$1"'"$VER"'"/' \
 	"$GIT_ANNEX_ANDROID_SOURCETREE/term/AndroidManifest.xml"
 
 # Debug build because it does not need signing keys.
-cd "$GIT_ANNEX_ANDROID_SOURCETREE/term" && tools/build-debug
+(cd "$GIT_ANNEX_ANDROID_SOURCETREE/term" && tools/build-debug)
 
 # Install executables as pseudo-libraries so they will be
 # unpacked from the .apk.
@@ -119,12 +119,12 @@ rm -rf $gittree/bin/git-cvsserver \
 # commands are still shell scripts. Those are put into
 # a tarball, along with a list of all the links that should be
 # set up.
-cd $gittree && mkdir -p links
-cd $gittree && find -samefile bin/git -not -wholename ./bin/git > links/git
-cd $gittree && find -samefile bin/git-shell -not -wholename ./bin/git-shell > links/git-shell
-cd $gittree && find -samefile bin/git-upload-pack -not -wholename ./bin/git-upload-pack > links/git-upload-pack
-cd $gittree && find -type f -not -samefile bin/git -not -samefile bin/git-shell -not -samefile bin/git-upload-pack | tar czf ../git.tar.gz -T -
-cp "$GIT_ANNEX_ANDROID_SOURCETREE/git/git.tar.gz" "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.git.tar.gz.so"
+(cd $gittree && mkdir -p links)
+(cd $gittree && find -samefile bin/git -not -wholename ./bin/git > links/git)
+(cd $gittree && find -samefile bin/git-shell -not -wholename ./bin/git-shell > links/git-shell)
+(cd $gittree && find -samefile bin/git-upload-pack -not -wholename ./bin/git-upload-pack > links/git-upload-pack)
+(cd $gittree && find -type f -not -samefile bin/git -not -samefile bin/git-shell -not -samefile bin/git-upload-pack | tar czf ../git.tar.gz -T -)
+(cp "$GIT_ANNEX_ANDROID_SOURCETREE/git/git.tar.gz" "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.git.tar.gz.so")
 
 git rev-parse HEAD > "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.version.so"
 cp ../trustedkeys.gpg "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.trustedkeys.so"
@@ -133,7 +133,7 @@ genapk () {
 	mkdir -p ../../tmp/$1; \
 	cp ../../tmp/androidtree/dist/build/git-annex/$1/git-annex "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.git-annex.so"
 	arm-linux-androideabi-strip --strip-unneeded --remove-section=.comment --remove-section=.note "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.git-annex.so"
-	cd "$GIT_ANNEX_ANDROID_SOURCETREE/term" && ant debug
+	(cd "$GIT_ANNEX_ANDROID_SOURCETREE/term" && ant debug)
 	cp "$GIT_ANNEX_ANDROID_SOURCETREE/term/bin/Term-debug.apk" ../../tmp/$1/git-annex.apk
 }
 
