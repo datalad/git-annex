@@ -21,6 +21,9 @@ $(GIT_ANNEX_ANDROID_SOURCETREE):
 	git clone git://github.com/jackpal/Android-Terminal-Emulator.git $(GIT_ANNEX_ANDROID_SOURCETREE)/term
 
 $(GIT_ANNEX_ANDROID_SOURCETREE)/openssl/build-stamp:
+	# This is a version which the openssh below can build with.
+	# Newer versions changed something to do with BIGNUM.
+	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/openssl && git reset --hard 616f71e486d693991b594439c884ec624b32c2d4
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/openssl && CC=$$(which cc) ./Configure android
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/openssl && $(MAKE)
 	touch $@
