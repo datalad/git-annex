@@ -64,7 +64,7 @@ if [ ! -e "$src" ] ; then
 	cp -a "$GIT_ANNEX_ANDROID_SOURCETREE" "$src"
 fi
 GIT_ANNEX_ANDROID_SOURCETREE="$src"
-export "$GIT_ANNEX_ANDROID_SOURCETREE"
+export GIT_ANNEX_ANDROID_SOURCETREE
 
 gittree="$GIT_ANNEX_ANDROID_SOURCETREE/git/installed-tree"
 
