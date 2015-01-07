@@ -105,3 +105,5 @@ c:\temp\sbv>
 
 # End of transcript or log.
 """]]
+
+[[!meta title="window's tiny mind is confused by some long paths used by git-annex"]]
