@@ -14,7 +14,7 @@ fi
 VER="$(perl -e '$_=<>;print m/\((.*?)\)/'<../../CHANGELOG)"
 
 wrap () {
-	sed -e "s!PROG!$1!" -e "s!OPTS!$3! < wrapper.pl > "$2"
+	sed -e "s!PROG!$1!" -e "s!OPTS!$3!" < wrapper.pl > "$2"
 	chmod +x "$2"
 }
 
