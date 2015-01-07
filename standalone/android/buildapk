@@ -16,7 +16,7 @@ VER="$(perl -e '$_=<>;print m/\((.*?)\)/'<../../CHANGELOG)"
 wrap () {
 	echo "#!/bin/sh -e" > "$2"
 	echo "echo \"$1 added options: $2\" >&2" >> "$2"
-	echo "$1 $3" >> "$2"
+	echo "$1 $3 "'"$@"' >> "$2"
 	chmod +x "$2"
 }
 
