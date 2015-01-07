@@ -59,7 +59,7 @@ export GIT_ANNEX_ANDROID_SOURCETREE
 if [ ! -e "$GIT_ANNEX_ANDROID_SOURCETREE" ]; then
 	make source
 fi
-src="$GIT_ANNEX_ANDROID_SOURCETREE/$androidversion"
+src="$GIT_ANNEX_ANDROID_SOURCETREE-$androidversion"
 if [ ! -e "$src" ] ; then
 	cp -a "$GIT_ANNEX_ANDROID_SOURCETREE" "$src"
 fi
