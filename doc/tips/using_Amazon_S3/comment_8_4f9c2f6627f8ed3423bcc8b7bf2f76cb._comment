@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkPIqJZ88VZEVqLhLOd1LMdYXcy6bAW9qE"
+ nickname="Lemao"
+ subject="comment 8"
+ date="2015-01-07T13:54:23Z"
+ content="""
+I use github as my central git repository and I would like to use S3 to store large files with annex. Since the s3 remote in .git/config is not stored in github, how do I make sure I reconnect to the same s3 bucket in case I delete my local clone? Reinitializing the remote will create a completely new bucket.
+
+I would also be a good idea to centralize git-annex folders inside a single bucket so I keep the global namespace under control and can narrow down the permissioning.
+"""]]
