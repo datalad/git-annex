@@ -14,6 +14,7 @@ import Utility.FreeDesktop
 import Utility.OSX
 import Utility.Path
 import System.Directory
+import System.Path
 #endif
 
 installAutoStart :: FilePath -> FilePath -> IO ()
