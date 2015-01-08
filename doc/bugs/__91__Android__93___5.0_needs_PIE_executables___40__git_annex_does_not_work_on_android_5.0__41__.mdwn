@@ -16,3 +16,5 @@ Currently nightly on Android 5.0 (Nexus 5)
 
 # End of transcript or log.
 """]]
+
+> [[fixed|done]] --[[Joey]]

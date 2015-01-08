@@ -10,6 +10,7 @@ of the app. Go to Setup -&gt; Security, and enable "Unknown Sources".
 Then download the git-annex.apk for your version of Android, and 
 open it to install.
 
+* [Android 5.0 git-annex.apk](http://downloads.kitenet.net/git-annex/android/current/5.0/git-annex.apk)
 * [Android 4.4 and 4.3 git-annex.apk](http://downloads.kitenet.net/git-annex/android/current/4.3/git-annex.apk)
 * [Android 4.0 to 4.2 git-annex.apk](http://downloads.kitenet.net/git-annex/android/current/4.0/git-annex.apk)
 

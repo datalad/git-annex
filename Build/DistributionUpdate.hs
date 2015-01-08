@@ -32,7 +32,7 @@ signingKey = "89C809CB"
 autobuilds :: [(URLString, FilePath)]
 autobuilds = 
 	(map linuxarch ["i386", "amd64", "armel"]) ++
-	(map androidversion ["4.0", "4.3"]) ++
+	(map androidversion ["4.0", "4.3", "5.0"]) ++
 	[ (autobuild "x86_64-apple-yosemite/git-annex.dmg", "git-annex/OSX/current/10.10_Yosemite/git-annex.dmg")
 	, (autobuild "windows/git-annex-installer.exe", "git-annex/windows/current/git-annex-installer.exe")
 	]
