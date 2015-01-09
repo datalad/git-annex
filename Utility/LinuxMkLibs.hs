@@ -36,7 +36,7 @@ installLib installfile top lib = ifM (doesFileExist lib)
 	checksymlink f = whenM (isSymbolicLink <$> getSymbolicLinkStatus (inTop top f)) $ do
 		l <- readSymbolicLink (inTop top f)
 		let absl = absPathFrom (takeDirectory f) l
-		let target = relPathDirToFile (takeDirectory f) absl
+		target <- relPathDirToFile (takeDirectory f) absl
 		installfile top absl
 		nukeFile (top ++ f)
 		createSymbolicLink target (inTop top f)
