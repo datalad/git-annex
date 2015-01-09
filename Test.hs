@@ -141,7 +141,7 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
 	, testProperty "prop_logs_sane" Logs.prop_logs_sane
 	, testProperty "prop_idempotent_configEscape" Logs.Remote.prop_idempotent_configEscape
 	, testProperty "prop_parse_show_Config" Logs.Remote.prop_parse_show_Config
-	, testProperty "prop_parentDir_basics" Utility.Path.prop_parentDir_basics
+	, testProperty "prop_upFrom_basics" Utility.Path.prop_upFrom_basics
 	, testProperty "prop_relPathDirToFile_basics" Utility.Path.prop_relPathDirToFile_basics
 	, testProperty "prop_relPathDirToFile_regressionTest" Utility.Path.prop_relPathDirToFile_regressionTest
 	, testProperty "prop_cost_sane" Config.Cost.prop_cost_sane

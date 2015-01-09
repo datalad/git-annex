@@ -77,31 +77,29 @@ absNormPathUnix dir path = todos <$> MissingH.absNormPath (fromdos dir) (fromdos
 	todos = replace "/" "\\"
 #endif
 
-{- Returns the parent directory of a path.
- -
- - To allow this to be easily used in loops, which terminate upon reaching the
- - top, the parent of / is ""
- -
- - An additional subtle difference between this and takeDirectory
- - is that takeDirectory "foo/bar/" is "foo/bar", while parentDir is "foo"
- -}
+{- takeDirectory "foo/bar/" is "foo/bar". This instead yields "foo" -}
 parentDir :: FilePath -> FilePath
-parentDir dir
-	| null dirs = ""
-	| otherwise = joinDrive drive (join s $ init dirs)
+parentDir = takeDirectory . dropTrailingPathSeparator
+
+{- Just the parent directory of a path, or Nothing if the path has no
+- parent (ie for "/" or ".") -}
+upFrom :: FilePath -> Maybe FilePath
+upFrom dir
+	| null dirs = Nothing
+	| otherwise = Just $ joinDrive drive (join s $ init dirs)
   where
 	-- on Unix, the drive will be "/" when the dir is absolute, otherwise ""
 	(drive, path) = splitDrive dir
 	dirs = filter (not . null) $ split s path
 	s = [pathSeparator]
 
-prop_parentDir_basics :: FilePath -> Bool
-prop_parentDir_basics dir
+prop_upFrom_basics :: FilePath -> Bool
+prop_upFrom_basics dir
 	| null dir = True
-	| dir == "/" = parentDir dir == ""
-	| otherwise = p /= dir
+	| dir == "/" = p == Nothing
+	| otherwise = p /= Just dir
   where
-	p = parentDir dir
+	p = upFrom dir
 
 {- Checks if the first FilePath is, or could be said to contain the second.
  - For example, "foo/" contains "foo/bar". Also, "foo", "./foo", "foo/" etc

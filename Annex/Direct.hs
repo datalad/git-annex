@@ -308,10 +308,10 @@ preserveUnannexed item makeabs absf oldref = do
 		liftIO $ findnewname absf 0
 	checkdirs (DiffTree.file item)
   where
-	checkdirs from = do
-		let p = parentDir (getTopFilePath from)
-		let d = asTopFilePath p
-		unless (null p) $ do
+	checkdirs from = case upFrom (getTopFilePath from) of
+		Nothing -> noop
+		Just p -> do
+			let d = asTopFilePath p
 			let absd = makeabs d
 			whenM (liftIO (colliding_nondir absd) <&&> unannexed absd) $
 				liftIO $ findnewname absd 0
