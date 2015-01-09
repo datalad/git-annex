@@ -46,8 +46,8 @@ fromCwd = getCurrentDirectory >>= seekUp
 		r <- checkForRepo dir
 		case r of
 			Nothing -> case parentDir dir of
-				Nothing -> return Nothing
-				Just d -> seekUp d
+				"" -> return Nothing
+				d -> seekUp d
 			Just loc -> Just <$> newFrom loc
 
 {- Local Repo constructor, accepts a relative or absolute path. -}

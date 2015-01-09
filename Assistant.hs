@@ -78,7 +78,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 	logfile <- fromRepo gitAnnexLogFile
 	liftIO $ debugM desc $ "logging to " ++ logfile
 #ifndef mingw32_HOST_OS
-	createAnnexDirectory (takeDirectory logfile)
+	createAnnexDirectory (parentDir logfile)
 	logfd <- liftIO $ handleToFd =<< openLog logfile
 	if foreground
 		then do
@@ -98,7 +98,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 	-- log file. The only way to do so is to restart the program.
 	when (foreground || not foreground) $ do
 		let flag = "GIT_ANNEX_OUTPUT_REDIR"
-		createAnnexDirectory (takeDirectory logfile)
+		createAnnexDirectory (parentDir logfile)
 		ifM (liftIO $ isNothing <$> getEnv flag)
 			( liftIO $ withFile devNull WriteMode $ \nullh -> do
 				loghandle <- openLog logfile

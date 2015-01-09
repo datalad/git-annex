@@ -101,7 +101,7 @@ performRemote r relaxed uri file sz = ifAnnexed file adduri geturi
 downloadRemoteFile :: Remote -> Bool -> URLString -> FilePath -> Maybe Integer -> Annex (Maybe Key)
 downloadRemoteFile r relaxed uri file sz = do
 	urlkey <- Backend.URL.fromUrl uri sz
-	liftIO $ createDirectoryIfMissing True (takeDirectory file)
+	liftIO $ createDirectoryIfMissing True (parentDir file)
 	ifM (Annex.getState Annex.fast <||> pure relaxed)
 		( do
 			cleanup (Remote.uuid r) loguri file urlkey Nothing
@@ -195,7 +195,7 @@ addUrlFileQuvi relaxed quviurl videourl file = do
 				showOutput
 				ok <- Transfer.notifyTransfer Transfer.Download (Just file) $
 					Transfer.download webUUID key (Just file) Transfer.forwardRetry $ const $ do
-						liftIO $ createDirectoryIfMissing True (takeDirectory tmp)
+						liftIO $ createDirectoryIfMissing True (parentDir tmp)
 						downloadUrl [videourl] tmp
 				if ok
 					then do
@@ -227,7 +227,7 @@ addUrlChecked relaxed url u checkexistssize key
 
 addUrlFile :: Bool -> URLString -> FilePath -> Annex (Maybe Key)
 addUrlFile relaxed url file = do
-	liftIO $ createDirectoryIfMissing True (takeDirectory file)
+	liftIO $ createDirectoryIfMissing True (parentDir file)
 	ifM (Annex.getState Annex.fast <||> pure relaxed)
 		( nodownload relaxed url file
 		, downloadWeb url file
@@ -269,7 +269,7 @@ downloadWith downloader dummykey u url file =
   where
 	runtransfer tmp =  Transfer.notifyTransfer Transfer.Download (Just file) $
 		Transfer.download u dummykey (Just file) Transfer.forwardRetry $ \p -> do
-			liftIO $ createDirectoryIfMissing True (takeDirectory tmp)
+			liftIO $ createDirectoryIfMissing True (parentDir tmp)
 			downloader tmp p
 
 {- Hits the url to get the size, if available.

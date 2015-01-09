@@ -47,7 +47,7 @@ mklibs top = do
 	writeFile (top </> "linker")
 		(Prelude.head $ filter ("ld-linux" `isInfixOf`) libs')
 	writeFile (top </> "gconvdir")
-		(takeDirectory $ Prelude.head $ filter ("/gconv/" `isInfixOf`) glibclibs)
+		(parentDir $ Prelude.head $ filter ("/gconv/" `isInfixOf`) glibclibs)
 	
 	mapM_ (installLinkerShim top) exes
 
@@ -75,7 +75,7 @@ installLinkerShim top exe = do
 symToHardLink :: FilePath -> IO ()
 symToHardLink f = whenM (isSymbolicLink <$> getSymbolicLinkStatus f) $ do
 	l <- readSymbolicLink f
-	let absl = absPathFrom (takeDirectory f) l
+	let absl = absPathFrom (parentDir f) l
 	nukeFile f
 	createLink absl f
 
@@ -84,7 +84,7 @@ installFile top f = do
 	createDirectoryIfMissing True destdir
 	void $ copyFileExternal CopyTimeStamps f destdir
   where
-	destdir = inTop top $ takeDirectory f
+	destdir = inTop top $ parentDir f
 
 checkExe :: FilePath -> IO Bool
 checkExe f

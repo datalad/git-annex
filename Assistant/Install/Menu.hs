@@ -38,7 +38,7 @@ fdoDesktopMenu command = genDesktopEntry
 
 installIcon :: FilePath -> FilePath -> IO ()
 installIcon src dest = do
-	createDirectoryIfMissing True (takeDirectory dest)
+	createDirectoryIfMissing True (parentDir dest)
 	withBinaryFile src ReadMode $ \hin ->
 		withBinaryFile dest WriteMode $ \hout ->
 			hGetContents hin >>= hPutStr hout

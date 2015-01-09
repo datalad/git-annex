@@ -34,7 +34,7 @@ start _ = error "specify a key and a dest file"
 perform :: Key -> FilePath -> CommandPerform
 perform key file = do
 	link <- inRepo $ gitAnnexLink file key
-	liftIO $ createDirectoryIfMissing True (takeDirectory file)
+	liftIO $ createDirectoryIfMissing True (parentDir file)
 	liftIO $ createSymbolicLink link file
 	next $ cleanup file
 

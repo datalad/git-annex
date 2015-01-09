@@ -22,7 +22,6 @@ import Assistant.Install.Menu
 import Control.Applicative
 import System.Directory
 import System.Environment
-import System.FilePath
 #ifndef mingw32_HOST_OS
 import System.Posix.User
 #endif
@@ -76,6 +75,6 @@ install command = do
 		( return ()
 		, do
 			programfile <- inDestDir =<< programFile
-			createDirectoryIfMissing True (takeDirectory programfile)
+			createDirectoryIfMissing True (parentDir programfile)
 			writeFile programfile command
 		)

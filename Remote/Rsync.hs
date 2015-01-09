@@ -161,7 +161,7 @@ rsyncSetup mu _ c = do
 store :: RsyncOpts -> Key -> FilePath -> MeterUpdate -> Annex Bool
 store o k src meterupdate = withRsyncScratchDir $ \tmp -> do
 	let dest = tmp </> Prelude.head (keyPaths k)
-	liftIO $ createDirectoryIfMissing True $ takeDirectory dest
+	liftIO $ createDirectoryIfMissing True $ parentDir dest
 	ok <- liftIO $ if canrename
 		then do
 			rename src dest
@@ -214,7 +214,7 @@ remove o k = do
 	 - traverses directories. -}
 	includes = concatMap use annexHashes
 	use h = let dir = h k in
-		[ takeDirectory dir
+		[ parentDir dir
 		, dir
 		-- match content directory and anything in it
 		, dir </> keyFile k </> "***"

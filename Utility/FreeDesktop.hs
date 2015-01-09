@@ -27,6 +27,7 @@ module Utility.FreeDesktop (
 ) where
 
 import Utility.Exception
+import Utility.Path
 import Utility.UserInfo
 import Utility.Process
 import Utility.PartialPrelude
@@ -78,7 +79,7 @@ buildDesktopMenuFile d = unlines ("[Desktop Entry]" : map keyvalue d) ++ "\n"
 
 writeDesktopMenuFile :: DesktopEntry -> String -> IO ()
 writeDesktopMenuFile d file = do
-	createDirectoryIfMissing True (takeDirectory file)
+	createDirectoryIfMissing True (parentDir file)
 	writeFile file $ buildDesktopMenuFile d
 
 {- Path to use for a desktop menu file, in either the systemDataDir or

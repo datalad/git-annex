@@ -83,7 +83,7 @@ checkRepositoryPath p = do
 	home <- myHomeDir
 	let basepath = expandTilde home $ T.unpack p
 	path <- absPath basepath
-	let parent = takeDirectory path
+	let parent = parentDir path
 	problems <- catMaybes <$> mapM runcheck
 		[ (return $ path == "/", "Enter the full path to use for the repository.")
 		, (return $ all isSpace basepath, "A blank path? Seems unlikely.")
@@ -416,7 +416,7 @@ startFullAssistant path repogroup setup = do
 canWrite :: FilePath -> IO Bool		
 canWrite dir = do
 	tocheck <- ifM (doesDirectoryExist dir)
-		(return dir, return $ takeDirectory dir)
+		(return dir, return $ parentDir dir)
 	catchBoolIO $ fileAccess tocheck False True False
 
 {- Gets the UUID of the git repo at a location, which may not exist, or

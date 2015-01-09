@@ -161,7 +161,7 @@ upgradeToDistribution newdir cleanup distributionfile = do
 	{- OS X uses a dmg, so mount it, and copy the contents into place. -}
 	unpack = liftIO $ do
 		olddir <- oldVersionLocation
-		withTmpDirIn (takeDirectory newdir) "git-annex.upgrade" $ \tmpdir -> do
+		withTmpDirIn (parentDir newdir) "git-annex.upgrade" $ \tmpdir -> do
 			void $ boolSystem "hdiutil"
 				[ Param "attach", File distributionfile
 				, Param "-mountpoint", File tmpdir
@@ -186,7 +186,7 @@ upgradeToDistribution newdir cleanup distributionfile = do
 	 - into place. -}
 	unpack = liftIO $ do
 		olddir <- oldVersionLocation
-		withTmpDirIn (takeDirectory newdir) "git-annex.upgrade" $ \tmpdir -> do
+		withTmpDirIn (parentDir newdir) "git-annex.upgrade" $ \tmpdir -> do
 			let tarball = tmpdir </> "tar"
 			-- Cannot rely on filename extension, and this also
 			-- avoids problems if tar doesn't support transparent
@@ -217,14 +217,14 @@ upgradeToDistribution newdir cleanup distributionfile = do
 		unlessM (doesDirectoryExist dir) $
 			error $ "did not find " ++ dir ++ " in " ++ distributionfile
 	makeorigsymlink olddir = do
-		let origdir = takeDirectory olddir </> installBase
+		let origdir = parentDir olddir </> installBase
 		nukeFile origdir
 		createSymbolicLink newdir origdir
 
 {- Finds where the old version was installed. -}
 oldVersionLocation :: IO FilePath
 oldVersionLocation = do
-	pdir <- takeDirectory <$> readProgramFile
+	pdir <- parentDir <$> readProgramFile
 #ifdef darwin_HOST_OS
 	let dirs = splitDirectories pdir
 	{- It will probably be deep inside a git-annex.app directory. -}
@@ -253,7 +253,7 @@ newVersionLocation d olddir =
 			return Nothing
   where
 	s = installBase ++ "." ++ distributionVersion d
-	topdir = takeDirectory olddir
+	topdir = parentDir olddir
 	newloc = topdir </> s
 	trymkdir dir fallback =
 		(createDirectory dir >> return (Just dir))

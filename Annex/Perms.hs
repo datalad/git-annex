@@ -71,12 +71,12 @@ annexFileMode = withShared $ return . go
 createAnnexDirectory :: FilePath -> Annex ()
 createAnnexDirectory dir = traverse dir [] =<< top
   where
-	top = takeDirectory <$> fromRepo gitAnnexDir
+	top = parentDir <$> fromRepo gitAnnexDir
 	traverse d below stop
 		| d `equalFilePath` stop = done
 		| otherwise = ifM (liftIO $ doesDirectoryExist d)
 			( done
-			, traverse (takeDirectory d) (d:below) stop
+			, traverse (parentDir d) (d:below) stop
 			)
 	  where
 		done = forM_ below $ \p -> do
@@ -92,14 +92,14 @@ freezeContentDir :: FilePath -> Annex ()
 freezeContentDir file = unlessM crippledFileSystem $
 	liftIO . go =<< fromRepo getSharedRepository
   where
-	dir = takeDirectory file
+	dir = parentDir file
 	go GroupShared = groupWriteRead dir
 	go AllShared = groupWriteRead dir
 	go _ = preventWrite dir
 
 thawContentDir :: FilePath -> Annex ()
 thawContentDir file = unlessM crippledFileSystem $
-	liftIO $ allowWrite $ takeDirectory file
+	liftIO $ allowWrite $ parentDir file
 
 {- Makes the directory tree to store an annexed file's content,
  - with appropriate permissions on each level. -}
@@ -111,7 +111,7 @@ createContentDir dest = do
 	unlessM crippledFileSystem $
 		liftIO $ allowWrite dir
   where
-	dir = takeDirectory dest
+	dir = parentDir dest
 
 {- Creates the content directory for a file if it doesn't already exist,
  - or thaws it if it does, then runs an action to modify the file, and

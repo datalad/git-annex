@@ -46,5 +46,5 @@ replaceFileFrom src dest = go `catchIO` fallback
   where
 	go = moveFile src dest
 	fallback _ = do
-		createDirectoryIfMissing True $ takeDirectory dest
+		createDirectoryIfMissing True $ parentDir dest
 		go

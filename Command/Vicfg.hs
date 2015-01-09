@@ -39,7 +39,7 @@ seek = withNothing start
 start :: CommandStart
 start = do
 	f <- fromRepo gitAnnexTmpCfgFile
-	createAnnexDirectory $ takeDirectory f
+	createAnnexDirectory $ parentDir f
 	cfg <- getCfg
 	descs <- uuidDescriptions
 	liftIO $ writeFileAnyEncoding f $ genCfg cfg descs

@@ -315,7 +315,7 @@ store r rsyncopts
 			void $ tryIO $ createDirectoryIfMissing True tmpdir
 			let tmpf = tmpdir </> keyFile k
 			meteredWriteFile p tmpf b
-			let destdir = takeDirectory $ gCryptLocation r k
+			let destdir = parentDir $ gCryptLocation r k
 			Remote.Directory.finalizeStoreGeneric tmpdir destdir
 			return True
 	| Git.repoIsSsh (repo r) = if isShell r
@@ -340,7 +340,7 @@ retrieve r rsyncopts
 remove :: Remote -> Remote.Rsync.RsyncOpts -> Remover
 remove r rsyncopts k
 	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) (return False) $
-		liftIO $ Remote.Directory.removeDirGeneric (Git.repoLocation (repo r)) (takeDirectory (gCryptLocation r k))
+		liftIO $ Remote.Directory.removeDirGeneric (Git.repoLocation (repo r)) (parentDir (gCryptLocation r k))
 	| Git.repoIsSsh (repo r) = shellOrRsync r removeshell removersync
 	| otherwise = unsupportedUrl
   where

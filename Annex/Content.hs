@@ -261,7 +261,7 @@ finishGetViaTmp check key action = do
 prepTmp :: Key -> Annex FilePath
 prepTmp key = do
 	tmp <- fromRepo $ gitAnnexTmpObjectLocation key
-	createAnnexDirectory (takeDirectory tmp)
+	createAnnexDirectory (parentDir tmp)
 	return tmp
 
 {- Creates a temp file for a key, runs an action on it, and cleans up
@@ -425,7 +425,7 @@ cleanObjectLoc key cleaner = do
   where
 	removeparents _ 0 = noop
 	removeparents file n = do
-		let dir = takeDirectory file
+		let dir = parentDir file
 		maybe noop (const $ removeparents dir (n-1))
 			<=< catchMaybeIO $ removeDirectory dir
 
@@ -474,7 +474,7 @@ moveBad key = do
 	src <- calcRepo $ gitAnnexLocation key
 	bad <- fromRepo gitAnnexBadDir
 	let dest = bad </> takeFileName src
-	createAnnexDirectory (takeDirectory dest)
+	createAnnexDirectory (parentDir dest)
 	cleanObjectLoc key $
 		liftIO $ moveFile src dest
 	logStatus key InfoMissing

@@ -146,7 +146,7 @@ gitAnnexLink file key r = do
 	currdir <- getCurrentDirectory
 	let absfile = fromMaybe whoops $ absNormPathUnix currdir file
 	loc <- gitAnnexLocation' key r False
-	relPathDirToFile (takeDirectory absfile) loc
+	relPathDirToFile (parentDir absfile) loc
   where
 	whoops = error $ "unable to normalize " ++ file
 

@@ -43,7 +43,7 @@ perform file link = do
 			<$> getSymbolicLinkStatus file
 #endif
 #endif
-		createDirectoryIfMissing True (takeDirectory file)
+		createDirectoryIfMissing True (parentDir file)
 		removeFile file
 		createSymbolicLink link file
 #ifdef WITH_CLIBS

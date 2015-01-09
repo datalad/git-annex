@@ -311,7 +311,7 @@ checkFeedBroken' url f = do
 	now <- liftIO getCurrentTime
 	case prev of
 		Nothing -> do
-			createAnnexDirectory (takeDirectory f)
+			createAnnexDirectory (parentDir f)
 			liftIO $ writeFile f $ show now
 			return False
 		Just prevtime -> do

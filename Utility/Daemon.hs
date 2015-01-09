@@ -83,7 +83,7 @@ foreground pidfile a = do
  - Fails if the pid file is already locked by another process. -}
 lockPidFile :: FilePath -> IO ()
 lockPidFile pidfile = do
-	createDirectoryIfMissing True (takeDirectory pidfile)
+	createDirectoryIfMissing True (parentDir pidfile)
 #ifndef mingw32_HOST_OS
 	fd <- openFd pidfile ReadWrite (Just stdFileMode) defaultFileFlags
 	locked <- catchMaybeIO $ setLock fd (WriteLock, AbsoluteSeek, 0, 0)
@@ -176,6 +176,6 @@ winLockFile pid pidfile = do
 	prefix = pidfile ++ "."
 	suffix = ".lck"
 	cleanstale = mapM_ (void . tryIO . removeFile) =<<
-		(filter iswinlockfile <$> dirContents (takeDirectory pidfile))
+		(filter iswinlockfile <$> dirContents (parentDir pidfile))
 	iswinlockfile f = suffix `isSuffixOf` f && prefix `isPrefixOf` f
 #endif
