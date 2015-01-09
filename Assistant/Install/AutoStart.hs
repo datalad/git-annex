@@ -12,8 +12,8 @@ module Assistant.Install.AutoStart where
 import Utility.FreeDesktop
 #ifdef darwin_HOST_OS
 import Utility.OSX
+import Utility.Path
 import System.Directory
-import System.FilePath
 #endif
 
 installAutoStart :: FilePath -> FilePath -> IO ()
