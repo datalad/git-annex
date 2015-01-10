@@ -111,7 +111,7 @@ showSideAction m = Annex.getState Annex.output >>= go
 	p = handle q $ putStrLn $ "(" ++ m ++ "...)"
 			
 showStoringStateAction :: Annex ()
-showStoringStateAction = showSideAction "Recording state in git"
+showStoringStateAction = showSideAction "recording state in git"
 
 {- Performs an action, supressing showSideAction messages. -}
 doQuietSideAction :: Annex a -> Annex a
