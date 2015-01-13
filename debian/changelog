@@ -1,4 +1,4 @@
-git-annex (5.20141232) UNRELEASED; urgency=medium
+git-annex (5.20150113) unstable; urgency=medium
 
   * unlock: Don't allow unlocking files that have never been committed to git
     before, to avoid an intractable problem that prevents the pre-commit
@@ -24,7 +24,7 @@ git-annex (5.20141232) UNRELEASED; urgency=medium
   * Bugfix: A file named HEAD in the work tree could confuse some git commands
     run by git-annex.
 
- -- Joey Hess <id@joeyh.name>  Fri, 02 Jan 2015 13:35:13 -0400
+ -- Joey Hess <id@joeyh.name>  Tue, 13 Jan 2015 12:10:08 -0400
 
 git-annex (5.20141231) unstable; urgency=medium
 
