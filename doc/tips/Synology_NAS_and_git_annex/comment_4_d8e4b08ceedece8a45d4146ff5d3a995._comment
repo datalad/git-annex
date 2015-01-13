@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="eeerky"
+ subject="shared keys?"
+ date="2015-01-13T15:24:25Z"
+ content="""
+I'm not sure if I'm misreading this walkthrough, but does prefixing your key in authorize_keys file mean that the specific key pair can only be used in conjunction with git annex?
+
+In other words, if I wish to have one key pair between my laptop and server, could I use that one key pair for both git-annex and simple shell access? 
+
+What I'm seeing now is that the path to my **git-annex-shell** script is correct, but my server goes into high cpu and doesn't let me login when I try sshing into it.
+"""]]
