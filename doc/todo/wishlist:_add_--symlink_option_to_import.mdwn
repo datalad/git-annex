@@ -1,1 +1,3 @@
 Make 'git annex import' for each imported file leave a symlink behind. One may consider this a bit nasty as this introduces symlinks out of the annex. There are also some things careful to consider, link to the annexed symlinks or into the .git/annex/objects store? the first breaks views, the second relies on implementation details. Shall these be absolute (i'd say yes) or relative (won't harm) links etc. But after all it gives a easier migration and possibly even some new usage to manage files outside of the annex. A sister-command for 'export' comes in mind, drop a symlink anywhere. Anyways, when you feel this is a good idea, keep it, otherwise just delete this idea. Thanks ;)
+
+> Closing as I don't think this is a good idea. [[done]] --[[Joey]]
