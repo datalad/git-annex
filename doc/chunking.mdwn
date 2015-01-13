@@ -1,4 +1,4 @@
-Some [[special_remotes]] have support for breaking large files up into
+Most [[special_remotes]] have support for breaking large files up into
 chunks that are stored on the remote.
 
 This can be useful to work around limitations on the size of files
