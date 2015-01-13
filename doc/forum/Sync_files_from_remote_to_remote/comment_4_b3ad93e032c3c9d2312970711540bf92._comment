@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="Jan"
+ subject="comment 4"
+ date="2015-01-13T09:35:10Z"
+ content="""
+Thanks for your answers. But I want to encrypt the content, so initialising a repo on the stick is not a possibility if I understand it correctly. And wouldn't `--not --in=usb` exclude a lot of content I actually want ? (Haven't tried it yet)
+"""]]
