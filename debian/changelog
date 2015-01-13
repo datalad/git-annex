@@ -5,6 +5,7 @@ git-annex (5.20150114) UNRELEASED; urgency=medium
     on the remote, and their size. This is rather expensive to calculate,
     so comes last and --fast will disable it.
   * Git remote info now includes the date of the last sync with the remote.
+  * sync: Added --message/-m option like git commit.
 
  -- Joey Hess <id@joeyh.name>  Tue, 13 Jan 2015 17:03:39 -0400
 

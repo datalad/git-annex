@@ -52,10 +52,16 @@ cmd = [withOptions syncOptions $
 	seek SectionCommon "synchronize local repository with remotes"]
 
 syncOptions :: [Option]
-syncOptions = [ contentOption ]
+syncOptions =
+	[ contentOption
+	, messageOption
+	]
 
 contentOption :: Option
 contentOption = flagOption [] "content" "also transfer file contents"
+
+messageOption :: Option
+messageOption = fieldOption ['m'] "message" "MSG" "specify commit message"
 
 seek :: CommandSeek
 seek rs = do
@@ -139,6 +145,8 @@ syncRemotes rs = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
 
 commit :: CommandStart
 commit = next $ next $ do
+	commitmessage <- fromMaybe "git-annex automatic sync"
+		<$> Annex.getField (optionName messageOption)
 	showStart "commit" ""
 	Annex.Branch.commit "update"
 	ifM isDirect
@@ -154,8 +162,6 @@ commit = next $ next $ do
 				]
 			return True
 		)
-  where
-	commitmessage = "git-annex automatic sync"
 
 commitStaged :: Git.Branch.CommitMode -> String -> Annex Bool
 commitStaged commitmode commitmessage = go =<< inRepo Git.Branch.currentUnsafe
