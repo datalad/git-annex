@@ -22,6 +22,7 @@ import Git.Command
 import Data.Default
 import Data.Time.Clock
 import Data.Char
+import System.Posix.Directory
 
 -- git-annex distribution signing key (for Joey Hess)
 signingKey :: String
@@ -49,10 +50,12 @@ autobuilds =
 
 main :: IO ()
 main = do
+	version <- liftIO getChangelogVersion
 	repodir <- getRepoDir
+	changeWorkingDirectory repodir
 	updated <- catMaybes <$> mapM (getbuild repodir) autobuilds
-	state <- Annex.new =<< Git.Construct.fromPath repodir
-	Annex.eval state (makeinfos updated)
+	state <- Annex.new =<< Git.Construct.fromPath "."
+	Annex.eval state (makeinfos updated version)
 
 -- Download a build from the autobuilder, and return its version.
 -- It's very important that the version matches the build, otherwise
@@ -91,26 +94,24 @@ getbuild repodir (url, f) = do
 		return $ if null bv || any (not . versionchar) bv then Nothing else Just bv
 	versionchar c = isAlphaNum c || c == '.' || c == '-'
 
-makeinfos :: [(FilePath, Version)] -> Annex ()
-makeinfos updated = do
+makeinfos :: [(FilePath, Version)] -> Version -> Annex ()
+makeinfos updated version = do
 	mapM_ (\f -> inRepo $ runBool [Param "annex", Param "add", File f]) (map fst updated)
-	version <- liftIO getChangelogVersion
 	void $ inRepo $ runBool 
 		[ Param "commit"
 		, Param "-a"
 		, Param "-m"
 		, Param $ "publishing git-annex " ++ version
 		]
-	basedir <- liftIO getRepoDir
 	now <- liftIO getCurrentTime
-	liftIO $ putStrLn $ "building info files in " ++ basedir
+	liftIO $ putStrLn $ "building info files"
 	forM_ updated $ \(f, bv) -> do
-		v <- lookupFile (basedir </> f)
+		v <- lookupFile f
 		case v of
 			Nothing -> noop
 			Just k -> whenM (inAnnex k) $ do
 				liftIO $ putStrLn f
-				let infofile = basedir </> f ++ ".info"
+				let infofile = f ++ ".info"
 				liftIO $ writeFile infofile $ show $ GitAnnexDistribution
 					{ distributionUrl = mkUrl f
 					, distributionKey = k
@@ -120,7 +121,7 @@ makeinfos updated = do
 					}
 				void $ inRepo $ runBool [Param "add", File infofile]
 				signFile infofile
-				signFile (basedir </> f)
+				signFile f
 	void $ inRepo $ runBool 
 		[ Param "commit"
 		, Param "-m"
@@ -137,14 +138,14 @@ makeinfos updated = do
 	
 	-- Check for out of date info files.
 	infos <- liftIO $ filter (".info" `isSuffixOf`)
-		<$> dirContentsRecursive (basedir </> "git-annex")
+		<$> dirContentsRecursive "git-annex"
 	ds <- liftIO $ forM infos (readish <$$> readFile)
 	let dis = zip infos ds
-	let ood = filter (outofdate version) dis
+	let ood = filter outofdate dis
 	unless (null ood) $
 		error $ "Some info files are out of date: " ++ show (map fst ood)
   where
-	outofdate version (_, md) = case md of
+	outofdate (_, md) = case md of
 		Nothing -> True
 		Just d -> distributionVersion d /= version
 
