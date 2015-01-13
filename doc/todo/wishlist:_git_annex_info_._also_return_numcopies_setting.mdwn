@@ -1,1 +1,44 @@
 The stats produced by `git annex info .` are nice but I often find myself separately looking up the actual numcopies set value.  Can this also be included in the report please?
+
+> There is not necessarily one single numcopies setting; gitattributes
+> can configure different numcopies for different files.
+> 
+> The numcopies stats in the report are reported as plus or
+> minus relative to the numcopies setting. Using a relative number like
+> that, it can eliminate the complexity of which files have which
+> numcompies setting.
+
+<pre>
+numcopies stats: 
+	numcopies +0: 27
+	numcopies +1: 43
+	numcopies +2: 1
+</pre>
+
+> What could be added is a summary of the absolute number of copies
+> that exist of files, without taking the numcopies configuration
+> into account.
+
+<pre>
+absolute number of copies:
+	1 copy: 47
+	2 copies: 23
+	3 copies: 1
+</pre>
+
+> It turns out you can already get this display though!
+> Just use `git annex info . --numcopies=0`.
+
+<pre>
+numcopies stats: 
+	numcopies +1: 47
+	numcopies +2: 23
+	numcopies +3: 1
+</pre>
+
+> So, in this mode, it's showing the number of copies that exist of files,
+> relative to numcopies, which is forced to be 0. So, there are 47 files
+> with 1 copy, 23 with 2 copies, and 1 with 3 copies.
+> 
+> I think I've convinced myself no changes need to be made! [[done]]
+> --[[Joey]]
