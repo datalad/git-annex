@@ -1,3 +1,13 @@
+git-annex (5.20150114) UNRELEASED; urgency=medium
+
+  * info: Can now display info about a given uuid.
+  * Added to remote/uuid info: Count of the number of keys present
+    on the remote, and their size. This is rather expensive to calculate,
+    so comes last and --fast will disable it.
+  * Git remote info now includes the date of the last sync with the remote.
+
+ -- Joey Hess <id@joeyh.name>  Tue, 13 Jan 2015 17:03:39 -0400
+
 git-annex (5.20150113) unstable; urgency=medium
 
   * unlock: Don't allow unlocking files that have never been committed to git

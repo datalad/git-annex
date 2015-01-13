@@ -29,6 +29,7 @@ import Annex.Link
 import Types.Key
 import Logs.UUID
 import Logs.Trust
+import Logs.Location
 import Config.NumCopies
 import Remote
 import Config
@@ -65,11 +66,12 @@ instance Show Variance where
 data StatInfo = StatInfo
 	{ presentData :: Maybe KeyData
 	, referencedData :: Maybe KeyData
+	, remoteData :: M.Map UUID KeyData
 	, numCopiesStats :: Maybe NumCopiesStats
 	}
-		
+
 emptyStatInfo :: StatInfo
-emptyStatInfo = StatInfo Nothing Nothing Nothing
+emptyStatInfo = StatInfo Nothing Nothing M.empty Nothing
 
 -- a state monad for running Stats in
 type StatState = StateT StatInfo Annex
@@ -104,11 +106,17 @@ itemInfo p = ifM (isdir p)
 		v <- Remote.byName' p
 		case v of
 			Right r -> remoteInfo r
-			Left _ -> maybe noinfo (fileInfo p) =<< isAnnexLink p
+			Left _ -> do
+				v' <- Remote.nameToUUID' p
+				liftIO $ print v'
+				case v' of
+					Right u -> uuidInfo u
+					Left _ -> maybe noinfo (fileInfo p)
+						=<< isAnnexLink p
 	)
   where
 	isdir = liftIO . catchBoolIO . (isDirectory <$$> getFileStatus)
-	noinfo = error $ p ++ " is not a directory or an annexed file or a remote"
+	noinfo = error $ p ++ " is not a directory or an annexed file or a remote or a uuid"
 
 dirInfo :: FilePath -> Annex ()
 dirInfo dir = showCustom (unwords ["info", dir]) $ do
@@ -126,7 +134,14 @@ fileInfo file k = showCustom (unwords ["info", file]) $ do
 remoteInfo :: Remote -> Annex ()
 remoteInfo r = showCustom (unwords ["info", Remote.name r]) $ do
 	info <- map (\(k, v) -> simpleStat k (pure v)) <$> Remote.getInfo r
-	evalStateT (mapM_ showStat (remote_stats r ++ info)) emptyStatInfo
+	l <- selStats (remote_fast_stats r ++ info) (uuid_slow_stats (Remote.uuid r))
+	evalStateT (mapM_ showStat l) emptyStatInfo
+	return True
+
+uuidInfo :: UUID -> Annex ()
+uuidInfo u = showCustom (unwords ["info", fromUUID u]) $ do
+	l <- selStats [] ((uuid_slow_stats u))
+	evalStateT (mapM_ showStat l) emptyStatInfo
 	return True
 
 selStats :: [Stat] -> [Stat] -> Annex [Stat]
@@ -179,13 +194,19 @@ file_stats f k =
 	, key_name k
 	]
 
-remote_stats :: Remote -> [Stat]
-remote_stats r = map (\s -> s r)
+remote_fast_stats :: Remote -> [Stat]
+remote_fast_stats r = map (\s -> s r)
 	[ remote_name
 	, remote_description
 	, remote_uuid
 	, remote_cost
 	, remote_type
+	]
+
+uuid_slow_stats :: UUID -> [Stat]
+uuid_slow_stats u = map (\s -> s u)
+	[ remote_annex_keys
+	, remote_annex_size
 	]
 
 stat :: String -> (String -> StatState String) -> Stat
@@ -261,6 +282,14 @@ local_annex_keys = stat "local annex keys" $ json show $
 local_annex_size :: Stat
 local_annex_size = simpleStat "local annex size" $
 	showSizeKeys <$> cachedPresentData
+
+remote_annex_keys :: UUID -> Stat
+remote_annex_keys u = stat "remote annex keys" $ json show $
+	countKeys <$> cachedRemoteData u
+
+remote_annex_size :: UUID -> Stat
+remote_annex_size u = simpleStat "remote annex size" $
+	showSizeKeys <$> cachedRemoteData u
 
 known_annex_files :: Stat
 known_annex_files = stat "annexed files in working tree" $ json show $
@@ -361,6 +390,16 @@ cachedPresentData = do
 			put s { presentData = Just v }
 			return v
 
+cachedRemoteData :: UUID -> StatState KeyData
+cachedRemoteData u = do
+	s <- get
+	case M.lookup u (remoteData s) of
+		Just v -> return v
+		Nothing -> do
+			v <- foldKeys <$> lift (loggedKeysFor u)
+			put s { remoteData = M.insert u v (remoteData s) }
+			return v
+
 cachedReferencedData :: StatState KeyData
 cachedReferencedData = do
 	s <- get
@@ -383,7 +422,7 @@ getDirStatInfo dir = do
 	(presentdata, referenceddata, numcopiesstats) <-
 		Command.Unused.withKeysFilesReferencedIn dir initial
 			(update matcher fast)
-	return $ StatInfo (Just presentdata) (Just referenceddata) (Just numcopiesstats)
+	return $ StatInfo (Just presentdata) (Just referenceddata) M.empty (Just numcopiesstats)
   where
 	initial = (emptyKeyData, emptyKeyData, emptyNumCopiesStats)
 	update matcher fast key file vs@(presentdata, referenceddata, numcopiesstats) =

@@ -696,10 +696,12 @@ subdirectories).
   To generate output suitable for the gource visualization program,
   specify `--gource`.
 
-* `info [directory|file|remote ...]`
+* `info [directory|file|remote|uuid ...]`
 
   Displays statistics and other information for the specified item,
-  which can be a directory, or a file, or a remote.
+  which can be a directory, or a file, or a remote, or the uuid of a
+  repository. 
+
   When no item is specified, displays statistics and information
   for the repository as a whole.
 

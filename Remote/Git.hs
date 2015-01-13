@@ -159,7 +159,7 @@ gen r u c gc
 			, availability = availabilityCalc r
 			, remotetype = remote
 			, mkUnavailable = unavailable r u c gc
-			, getInfo = return $ gitRepoInfo r
+			, getInfo = gitRepoInfo new
 			, claimUrl = Nothing
 			, checkUrl = Nothing
 			}

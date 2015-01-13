@@ -6,3 +6,6 @@ It would be nice if I could see that info, preferably with a timestamp telling m
 
 Thanks,
 Richard
+
+> I left out the stuff that `vicfg` displays. But otherwise
+> everything mentioned on this page is [[done]]. --[[Joey]]

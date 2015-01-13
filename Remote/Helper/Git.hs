@@ -10,6 +10,9 @@ module Remote.Helper.Git where
 import Common.Annex
 import qualified Git
 import Types.Availability
+import qualified Types.Remote as Remote
+
+import Data.Time.Clock.POSIX
 
 repoCheap :: Git.Repo -> Bool
 repoCheap = not . Git.repoIsUrl
@@ -31,7 +34,15 @@ guardUsable r fallback a
 	| Git.repoIsLocalUnknown r = fallback
 	| otherwise = a
 
-gitRepoInfo :: Git.Repo -> [(String, String)]
-gitRepoInfo r =
-	[ ("repository location", Git.repoLocation r)
-	]
+gitRepoInfo :: Remote -> Annex [(String, String)]
+gitRepoInfo r = do
+	d <- fromRepo Git.localGitDir
+	mtimes <- liftIO $ mapM (modificationTime <$$> getFileStatus)
+		=<< dirContentsRecursive (d </> "refs" </> "remotes" </> Remote.name r)
+	let lastsynctime = case mtimes of
+		[] -> "never"
+		_ -> show $ posixSecondsToUTCTime $ realToFrac $ maximum mtimes
+	return
+		[ ("repository location", Git.repoLocation (Remote.repo r))
+		, ("last synced", lastsynctime)
+		]
