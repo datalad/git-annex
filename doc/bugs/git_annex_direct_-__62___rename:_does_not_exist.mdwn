@@ -2,13 +2,13 @@
 
 git annex direct displays warnings(?)
 ### What steps will reproduce the problem?
-mkdir test
-cd test
-git init
-git annex init
-touch foobar.txt
-git annex add
-git annex direct
+    mkdir test
+    cd test
+    git init
+    git annex init
+    touch foobar.txt
+    git annex add
+    git annex direct
 
 
 ### What version of git-annex are you using? On what operating system?
