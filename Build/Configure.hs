@@ -15,6 +15,7 @@ import Utility.Process
 import Utility.SafeCommand
 import Utility.ExternalSHA
 import Utility.Env
+import Utility.Exception
 import qualified Git.Version
 import Utility.DottedVersion
 
@@ -106,7 +107,8 @@ checkWgetQuietProgress = Config "wgetquietprogress" . BoolConfig
 	<$> getWgetVersion 
 
 getWgetVersion :: IO (Maybe DottedVersion)
-getWgetVersion = extract <$> readProcess "wget" ["--version"]
+getWgetVersion = catchDefaultIO Nothing $
+	extract <$> readProcess "wget" ["--version"]
   where
 	extract s = case lines s of
 		[] -> Nothing

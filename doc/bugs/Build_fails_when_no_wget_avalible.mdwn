@@ -38,3 +38,9 @@ ExitFailure 1
 """]]
 
 -- Carl
+
+> wget is not intended to be a hard build dependency. The Debian package
+> should always be built with wget, so it's a build-dependency there.
+>
+> I've fixed the configure script to not crash in this situation.
+> [[done]]. --[[Joey]]

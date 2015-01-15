@@ -9,6 +9,7 @@ git-annex (5.20150114) UNRELEASED; urgency=medium
   * remotedaemon: Fix problem that could prevent ssh connections being
     made after two LOSTNET messages were received in a row (perhaps due to
     two different network interfaces being brought down).
+  * Fix build failure when wget is not installed.
 
  -- Joey Hess <id@joeyh.name>  Tue, 13 Jan 2015 17:03:39 -0400
 
