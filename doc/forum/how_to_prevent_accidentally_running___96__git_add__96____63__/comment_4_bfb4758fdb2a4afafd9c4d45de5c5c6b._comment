@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnWvnTWY6LrcPB4BzYEBn5mRTpNhg5EtEg"
+ nickname="Bence"
+ subject="comment 4"
+ date="2015-01-15T16:15:21Z"
+ content="""
+Based on the above, I'm using this script in the `pre-commit` hook.
+
+It gets the staged files and checks if they are links or not. If a file being committed is not a link (maybe it was added with `git add filename` ???), the script aborts the commit.
+
+    #!/bin/sh
+    
+    # Don't allow files to be added to the normal repo.
+    stagedfiles=$(git diff --cached --name-only);
+    echo \"$stagedfiles\" | while IFS= read -r file; do
+    	if [ ! -L \"$file\" ]; then
+    		echo \"[Error] The file \\"$file\\" should not be added to the repo.\";
+    		echo \"#Remove from the index and add with git-annex:\";
+    		echo \"\$ git rm --cached \\"$file\\" && git annex add \\"$file\\"\";
+    		exit 1;
+    	#else
+    	#	echo \"OK : $file\";
+    	fi;
+    done;
+    
+    # automatically configured by git-annex
+    git annex pre-commit .
+"""]]
