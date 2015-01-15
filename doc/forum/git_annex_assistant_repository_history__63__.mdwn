@@ -1,0 +1,7 @@
+Hi,
+
+Even after googling for a while, I'm still having a hard time finding an answer for this:
+
+How can I access the revision history information for an annex-assistant repository?  For example, to recover a file on one computer that another computer deleted.  Or, to view how another computer modified a file.
+
+Thanks!

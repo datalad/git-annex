@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmiPEySoakXDQ4OUAmC9neEOZW17W1KvlU"
+ nickname="Francesco Saverio"
+ subject="Default value of annex.queuesize"
+ date="2015-01-14T15:45:46Z"
+ content="""
+What is the default value of :
+
+    annex.queuesize 
+
+Without knowing the default value it is impossible to increase it :) thank you
+"""]]
