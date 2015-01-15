@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-01-15T18:59:01Z"
+ content="""
+The repository is just a git repository, so you can use whatever git tools
+you like to examine its history. For example, gitk.
+"""]]
