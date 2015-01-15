@@ -18,7 +18,7 @@ import qualified Git
 import Git.Command
 import Utility.ThreadScheduler
 
-import Control.Concurrent.Chan
+import Control.Concurrent.STM
 import Control.Concurrent.Async
 
 transport :: Transport
@@ -58,7 +58,7 @@ transport' r url transporthandle ichan ochan = do
 
 		return $ either (either id id) id status
 
-	send msg = writeChan ochan msg
+	send msg = atomically $ writeTChan ochan msg
 
 	fetch = do
 		send (SYNCING url)
@@ -80,7 +80,7 @@ transport' r url transporthandle ichan ochan = do
 			Nothing -> return Stopping
 	
 	handlecontrol = do
-		msg <- readChan ichan
+		msg <- atomically $ readTChan ichan
 		case msg of
 			STOP -> return Stopping
 			LOSTNET -> return Stopping

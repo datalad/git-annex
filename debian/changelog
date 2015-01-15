@@ -6,6 +6,9 @@ git-annex (5.20150114) UNRELEASED; urgency=medium
     so comes last and --fast will disable it.
   * Git remote info now includes the date of the last sync with the remote.
   * sync: Added --message/-m option like git commit.
+  * remotedaemon: Fix problem that could prevent ssh connections being
+    made after two LOSTNET messages were received in a row (perhaps due to
+    two different network interfaces being brought down).
 
  -- Joey Hess <id@joeyh.name>  Tue, 13 Jan 2015 17:03:39 -0400
 

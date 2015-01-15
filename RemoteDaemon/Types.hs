@@ -17,6 +17,7 @@ import qualified Utility.SimpleProtocol as Proto
 
 import Network.URI
 import Control.Concurrent
+import Control.Concurrent.STM
 
 -- The URI of a remote is used to uniquely identify it (names change..)
 newtype RemoteURI = RemoteURI URI
@@ -24,7 +25,7 @@ newtype RemoteURI = RemoteURI URI
 
 -- A Transport for a particular git remote consumes some messages
 -- from a Chan, and emits others to another Chan.
-type Transport = RemoteRepo -> RemoteURI -> TransportHandle -> Chan Consumed -> Chan Emitted -> IO ()
+type Transport = RemoteRepo -> RemoteURI -> TransportHandle -> TChan Consumed -> TChan Emitted -> IO ()
 
 type RemoteRepo = Git.Repo
 type LocalRepo = Git.Repo
