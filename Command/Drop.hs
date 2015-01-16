@@ -156,7 +156,7 @@ notEnoughCopies key need have skip bad = do
 		show (length have) ++ " out of " ++ show (fromNumCopies need) ++ 
 		" necessary copies"
 	Remote.showTriedRemotes bad
-	Remote.showLocations key (have++skip)
+	Remote.showLocations True key (have++skip)
 		"Rather than dropping this file, try using: git annex move"
 	hint
 	return False

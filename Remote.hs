@@ -272,11 +272,13 @@ keyPossibilities' key trusted = do
 	return (sortBy (comparing cost) validremotes, validtrusteduuids)
 
 {- Displays known locations of a key. -}
-showLocations :: Key -> [UUID] -> String -> Annex ()
-showLocations key exclude nolocmsg = do
+showLocations :: Bool -> Key -> [UUID] -> String -> Annex ()
+showLocations separateuntrusted key exclude nolocmsg = do
 	u <- getUUID
 	uuids <- keyLocations key
-	untrusteduuids <- trustGet UnTrusted
+	untrusteduuids <- if separateuntrusted
+		then trustGet UnTrusted
+		else pure []
 	let uuidswanted = filteruuids uuids (u:exclude++untrusteduuids) 
 	let uuidsskipped = filteruuids uuids (u:exclude++uuidswanted)
 	ppuuidswanted <- prettyPrintUUIDs "wanted" uuidswanted

@@ -79,7 +79,7 @@ getKeyFile' key afile dest = dispatch
 			( docopy r witness <||> trycopy full rs witness
 			, trycopy full rs witness
 			)
-	showlocs = Remote.showLocations key []
+	showlocs = Remote.showLocations False key []
 		"No other repository is known to contain the file."
 	-- This check is to avoid an ugly message if a remote is a
 	-- drive that is not mounted.
