@@ -154,6 +154,27 @@ becomes
 
 	metadata=tag=done
 
+### difference: unused
+
+The --unused option makes git-annex operate on every key that `git annex
+unused` has determined to be unused. The corresponding `unused` keyword
+in a preferred content expression also matches those keys. 
+
+However, the latter doesn't make git-annex consider those keys. So
+when git-annex is only checking preferred content expressions against files
+in the repository (which are obviously used), `unused` in a preferred
+content expression won't match anything.
+
+So when is `unused` useful in a preferred content expression?
+
+Using `git annex sync --content --all` will ensure that all keys, including
+unused ones, are examined and the preferred content expressions followed.
+
+The git-annex assistant periodically scans for unused files, and
+moves them to some repository whose preferred content expression
+matches "unused". (Or, if annex.expireunused is set, it may just delete
+them.)
+
 ## upgrades
 
 It's important that all clones of a repository can understand one-another's
