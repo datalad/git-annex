@@ -131,8 +131,8 @@ byNameOrGroup :: RemoteName -> Annex [Remote]
 byNameOrGroup n = go =<< getConfigMaybe (ConfigKey ("remotes." ++ n))
   where
 	go (Just l) = concatMap maybeToList <$>
-		mapM (Remote.byName . Just) (split " " l)
-	go Nothing = maybeToList <$> Remote.byName (Just n)
+		mapM (byName . Just) (split " " l)
+	go Nothing = maybeToList <$> byName (Just n)
 
 {- Only matches remote name, not UUID -}
 byNameOnly :: RemoteName -> Annex (Maybe Remote)
@@ -279,8 +279,8 @@ showLocations key exclude nolocmsg = do
 	untrusteduuids <- trustGet UnTrusted
 	let uuidswanted = filteruuids uuids (u:exclude++untrusteduuids) 
 	let uuidsskipped = filteruuids uuids (u:exclude++uuidswanted)
-	ppuuidswanted <- Remote.prettyPrintUUIDs "wanted" uuidswanted
-	ppuuidsskipped <- Remote.prettyPrintUUIDs "skipped" uuidsskipped
+	ppuuidswanted <- prettyPrintUUIDs "wanted" uuidswanted
+	ppuuidsskipped <- prettyPrintUUIDs "skipped" uuidsskipped
 	showLongNote $ message ppuuidswanted ppuuidsskipped
 	ignored <- filter (remoteAnnexIgnore . gitconfig) <$> remoteList
 	unless (null ignored) $
