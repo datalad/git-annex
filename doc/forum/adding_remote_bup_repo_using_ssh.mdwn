@@ -1,0 +1,42 @@
+I have two machines connected to my home network. machine A. Machine A has a git-annex repo which stores the data using a remote bup repo. The bup repo resides on Machine A itself. Now, I want to set up the same kind of environment in Machine B ( git annex repo backed down by bup remote). The only condition is that I need to re-use the bup repo in the machine A. So I went up like this:
+    
+    git clone ssh://192.168.1.33/path/to/git-annex-repo-on-machine-a
+
+This succeeded. The next step was to add a reference to the bup repo on machine A to this new git-annex repo in machine B. I went about like this:
+
+    git annex initremote mybup type=bup encryption=none buprepo=192.168.1.33:/path/to/bup-repo-on-machine-a
+
+This seems to work OK, except the fact that the following shows up:
+
+    Reinitialized existing Git repository in /Users/XXX/.bup/ 
+    Reinitialized existing Git repository in /Users/path/to/bup-repo-on-machine-a
+
+*Q1*: Why does git-annex create bup repos on the local folder while initializaing a remote bup repo?
+
+After that, I tried to get the file from the git repo using 
+
+    git annex get <file>  --from mybup
+
+..And nothing happened. This is the debug output from the last command :
+
+    read: git ["--git-dir=/private/tmp/annexed-setups/.git","--work-tree=/private/tmp/annexed-setups","show-ref","git-annex"]
+    read: git ["--git-dir=/private/tmp/annexed-setups/.git","--work-tree=/private/tmp/annexed-setups","show-ref","--hash","refs/heads/git-annex"]
+    read: git ["--git-dir=/private/tmp/annexed-setups/.git","--work-tree=/private/tmp/annexed-setups","log","refs/heads/git-   annex..c9af31cb3e563657e83b8b8e1f9a8de1ff690e4f","-n1","--pretty=%H"]
+    read: git ["--git-dir=/private/tmp/annexed-setups/.git","--work-tree=/private/tmp/annexed-setups","log","refs/heads/git-annex..b7b2af7f94af4770d5b4da7231bc3e41c0a6129d","-n1","--pretty=%H"]
+    read: git ["--git-dir=/private/tmp/annexed-setups/.git","--work-tree=/private/tmp/annexed-setups","log","refs/heads/git-annex..7b1017c5e68ec5a2b298b899bf723d0093fa0c7c","-n1","--pretty=%H"]
+    chat: git ["--git-dir=/private/tmp/annexed-setups/.git","--work-tree=/private/tmp/annexed-setups","cat-file","--batch"]
+    read: git ["--git-dir=/private/tmp/annexed-setups/.git","--work-tree=/private/tmp/annexed-setups","ls-files","--cached","-z","--","file.iso"]
+
+The file was not obtained from the remote. However, when I did 
+
+    git annex fsck --from mybup
+
+This resolved all the files properly and then when I did a 
+
+    git annex list. 
+
+it showed all files to be reachable from the mybup repo. 
+
+*Q2* Is this the correct workflow? 
+*Q3* Do I need to do a [costly] fsck for bup remote to properly work over ssh?
+
