@@ -1,0 +1,7 @@
+Hello there,
+
+I've got two computers, let's call them Alice and Bob, which should share the same repository. Alice and Bob are never online at the same time, and the remote repository setup as "transfer file repository" is an account on Box.com. So Jabber is obviously no option.
+
+I've tried setting up this with the webapp, but it's not working as intended: Bob never pulls the content from Alice from the remote repository. 
+
+How can I setup this to make it work with the remote repository in the web app? I am kinda at a loss right now. 
