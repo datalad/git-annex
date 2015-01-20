@@ -63,3 +63,7 @@ zolee@zolee-Latitude-E6440:/media/zolee/Stuff/dell-zoli-git-annex/egyetem/2009-2
 
 # End of transcript or log.
 """]]
+
+> dup of
+> [[git_annex_import_fails_on_filenames_with_newlines_in_them]]; closing as
+> such. [[done]] --[[Joey]] 
