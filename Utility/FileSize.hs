@@ -8,8 +8,10 @@
 module Utility.FileSize where
 
 import System.PosixCompat.Files
+#ifdef mingw32_HOST_OS
 import Control.Exception (bracket)
 import System.IO
+#endif
 
 {- Gets the size of a file.
  -
@@ -19,7 +21,7 @@ import System.IO
  -}
 getFileSize :: FilePath -> IO Integer
 #ifndef mingw32_HOST_OS
-getFileSize f = fromIntegral . fileSize <$> getFileStatus f
+getFileSize f = fmap (fromIntegral . fileSize) (getFileStatus f)
 #else
 getFileSize f = bracket (openFile f ReadMode) hClose hFileSize
 #endif
