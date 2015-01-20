@@ -132,8 +132,7 @@ runTransfer' ignorelock t file shouldretry a = do
 			liftIO $ readMVar metervar
 		| otherwise = do
 			f <- fromRepo $ gitAnnexTmpObjectLocation (transferKey t)
-			liftIO $ catchDefaultIO 0 $
-				fromIntegral . fileSize <$> getFileStatus f
+			liftIO $ catchDefaultIO 0 $ getFileSize f
 
 type RetryDecider = TransferInfo -> TransferInfo -> Bool
 

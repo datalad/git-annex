@@ -239,9 +239,7 @@ limitSize vs s = case readSize dataUnits s of
 	checkkey sz key = return $ keySize key `vs` Just sz
 	check _ sz (Just key) = checkkey sz key
 	check fi sz Nothing = do
-		filesize <- liftIO $ catchMaybeIO $
-			fromIntegral . fileSize
-				<$> getFileStatus (relFile fi)
+		filesize <- liftIO $ catchMaybeIO $ getFileSize (relFile fi)
 		return $ filesize `vs` Just sz
 
 addMetaData :: String -> Annex ()

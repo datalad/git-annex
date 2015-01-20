@@ -244,8 +244,7 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 	| otherwise = go =<< chunkKeys u chunkconfig basek
   where
 	go ls = do
-		currsize <- liftIO $ catchMaybeIO $
-			toInteger . fileSize <$> getFileStatus dest
+		currsize <- liftIO $ catchMaybeIO $ getFileSize dest
 		let ls' = maybe ls (setupResume ls) currsize
 		if any null ls'
 			then return True -- dest is already complete

@@ -225,7 +225,7 @@ checkLogSize :: Int -> Assistant ()
 checkLogSize n = do
 	f <- liftAnnex $ fromRepo gitAnnexLogFile
 	logs <- liftIO $ listLogs f
-	totalsize <- liftIO $ sum <$> mapM filesize logs
+	totalsize <- liftIO $ sum <$> mapM getFileSize logs
 	when (totalsize > 2 * oneMegabyte) $ do
 		notice ["Rotated logs due to size:", show totalsize]
 		liftIO $ openLog f >>= handleToFd >>= redirLog
@@ -237,9 +237,7 @@ checkLogSize n = do
 						checkLogSize (n + 1)
 				_ -> noop
   where
-	filesize f = fromIntegral . fileSize <$> liftIO (getFileStatus f)
-
-	oneMegabyte :: Int
+	oneMegabyte :: Integer
 	oneMegabyte = 1000000
 #endif
 

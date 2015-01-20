@@ -32,11 +32,13 @@ backend = Backend
  -}
 keyValue :: KeySource -> Annex (Maybe Key)
 keyValue source = do
-	stat <- liftIO $ getFileStatus $ contentLocation source
+	let f = contentLocation source
+	stat <- liftIO $ getFileStatus f
+	sz <- liftIO $ getFileSize' f stat
 	relf <- getTopFilePath <$> inRepo (toTopFilePath $ keyFilename source)
 	return $ Just $ stubKey
 		{ keyName = genKeyName relf
 		, keyBackendName = name backend
-		, keySize = Just $ fromIntegral $ fileSize stat
+		, keySize = Just sz
 		, keyMtime = Just $ modificationTime stat
 		}

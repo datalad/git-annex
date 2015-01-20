@@ -102,9 +102,12 @@ exists url uo = case parseURIRelaxed url of
 		-- so fall back to reading files and using curl.
 		Nothing
 			| uriScheme u == "file:" -> do
-				s <- catchMaybeIO $ getFileStatus (unEscapeString $ uriPath u)
+				let f = unEscapeString (uriPath u)
+				s <- catchMaybeIO $ getFileStatus f
 				case s of
-					Just stat -> return (True, Just $ fromIntegral $ fileSize stat)
+					Just stat -> do
+						sz <- getFileSize' f stat
+						return (True, Just sz)
 					Nothing -> dne
 			| Build.SysConfig.curl -> do
 				output <- catchDefaultIO "" $

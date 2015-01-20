@@ -563,9 +563,7 @@ rsyncOrCopyFile rsyncparams src dest p =
 		(const $ copyFileExternal CopyTimeStamps src dest)
 	watchfilesize oldsz = do
 		threadDelay 500000 -- 0.5 seconds
-		v <- catchMaybeIO $
-			toBytesProcessed . fileSize
-				<$> getFileStatus dest
+		v <- catchMaybeIO $ toBytesProcessed <$> getFileSize dest
 		case v of
 			Just sz
 				| sz /= oldsz -> do

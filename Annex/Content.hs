@@ -234,8 +234,8 @@ prepGetViaTmpChecked key unabletoget getkey = do
 	tmp <- fromRepo $ gitAnnexTmpObjectLocation key
 
 	e <- liftIO $ doesFileExist tmp
-	alreadythere <- if e
-		then fromIntegral . fileSize <$> liftIO (getFileStatus tmp)
+	alreadythere <- liftIO $ if e
+		then getFileSize tmp
 		else return 0
 	ifM (checkDiskSpace Nothing key alreadythere)
 		( do

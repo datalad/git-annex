@@ -159,7 +159,7 @@ store :: Remote -> S3Handle -> Storer
 store r h = fileStorer $ \k f p -> do
 	case partSize (hinfo h) of
 		Just partsz | partsz > 0 -> do
-			fsz <- fromIntegral . fileSize <$> liftIO (getFileStatus f)
+			fsz <- liftIO $ getFileSize f
 			if fsz > partsz
 				then multipartupload fsz partsz k f p
 				else singlepartupload k f p

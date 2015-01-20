@@ -68,8 +68,7 @@ hashNameE hash = hashName hash ++ "E"
 keyValue :: Hash -> KeySource -> Annex (Maybe Key)
 keyValue hash source = do
 	let file = contentLocation source
-	stat <- liftIO $ getFileStatus file
-	let filesize = fromIntegral $ fileSize stat
+	filesize <- liftIO $ getFileSize file
 	s <- hashFile hash file filesize
 	return $ Just $ stubKey
 		{ keyName = s
@@ -103,7 +102,7 @@ checkKeyChecksum hash key file = do
 	mstat <- liftIO $ catchMaybeIO $ getFileStatus file
 	case (mstat, fast) of
 		(Just stat, False) -> do
-			let filesize = fromIntegral $ fileSize stat
+			filesize <- liftIO $ getFileSize' file stat
 			showSideAction "checksum"
 			check <$> hashFile hash file filesize
 		_ -> return True

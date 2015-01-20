@@ -40,6 +40,9 @@ module Utility.InodeCache (
 import Common
 import System.PosixCompat.Types
 import Utility.QuickCheck
+-- While fileSize overflows and wraps at 2gb on Windows,
+-- it's ok for purposes of comparison.
+import System.PosixCompat.Files (fileSize)
 
 #ifdef mingw32_HOST_OS
 import Data.Word (Word64)

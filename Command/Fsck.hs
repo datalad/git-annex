@@ -303,8 +303,7 @@ checkKeySizeOr :: (Key -> Annex String) -> Key -> FilePath -> Annex Bool
 checkKeySizeOr bad key file = case Types.Key.keySize key of
 	Nothing -> return True
 	Just size -> do
-		size' <- fromIntegral . fileSize
-			<$> liftIO (getFileStatus file)
+		size' <- liftIO $ getFileSize file
 		comparesizes size size'
   where
 	comparesizes a b = do

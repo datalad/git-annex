@@ -62,8 +62,7 @@ start key = fieldTransfer Download key $ \_p ->
 		oksize <- case Types.Key.keySize key of
 		        Nothing -> return True
 		        Just size -> do
-				size' <- fromIntegral . fileSize
-					<$> liftIO (getFileStatus tmp)
+				size' <- liftIO $ getFileSize tmp
 				return $ size == size'
 		if oksize
 			then case Backend.maybeLookupBackendName (Types.Key.keyBackendName key) of

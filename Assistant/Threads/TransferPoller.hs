@@ -36,8 +36,7 @@ transferPollerThread = namedThread "TransferPoller" $ do
 		 - temp file being used for the transfer. -}
 		| transferDirection t == Download = do
 			let f = gitAnnexTmpObjectLocation (transferKey t) g
-			sz <- liftIO $ catchMaybeIO $
-				fromIntegral . fileSize <$> getFileStatus f
+			sz <- liftIO $ catchMaybeIO $ getFileSize f
 			newsize t info sz
 		{- Uploads don't need to be polled for when the TransferWatcher
 		 - thread can track file modifications. -}
