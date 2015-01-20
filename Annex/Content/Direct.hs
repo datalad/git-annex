@@ -174,10 +174,10 @@ sameInodeCache file old = go =<< withTSDelta (liftIO . genInodeCache file)
 	go (Just curr) = elemInodeCaches curr old
 
 {- Checks if a FileStatus matches the recorded InodeCache of a file. -}
-sameFileStatus :: Key -> FileStatus -> Annex Bool
-sameFileStatus key status = do
+sameFileStatus :: Key -> FilePath -> FileStatus -> Annex Bool
+sameFileStatus key f status = do
 	old <- recordedInodeCache key
-	curr <- withTSDelta $ \delta -> liftIO $ toInodeCache delta status
+	curr <- withTSDelta $ \delta -> liftIO $ toInodeCache delta f status
 	case (old, curr) of
 		(_, Just c) -> elemInodeCaches c old
 		([], Nothing) -> return True

@@ -224,7 +224,7 @@ onAddDirect symlinkssupported matcher file fs = do
 	v <- liftAnnex $ catKeyFile file
 	case (v, fs) of
 		(Just key, Just filestatus) ->
-			ifM (liftAnnex $ sameFileStatus key filestatus)
+			ifM (liftAnnex $ sameFileStatus key file filestatus)
 				{- It's possible to get an add event for
 				 - an existing file that is not
 				 - really modified, but it might have

@@ -70,7 +70,7 @@ statusDirect f = checkstatus =<< liftIO (catchMaybeIO $ getFileStatus f)
 		| not (isSymbolicLink s) = checkkey s =<< catKeyFile f
 		| otherwise = Just <$> checkNew f
 	
-	checkkey s (Just k) = ifM (sameFileStatus k s)
+	checkkey s (Just k) = ifM (sameFileStatus k f s)
 		( return Nothing
 		, return $ Just ModifiedFile
 		)

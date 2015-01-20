@@ -40,15 +40,12 @@ module Utility.InodeCache (
 import Common
 import System.PosixCompat.Types
 import Utility.QuickCheck
--- While fileSize overflows and wraps at 2gb on Windows,
--- it's ok for purposes of comparison.
-import System.PosixCompat.Files (fileSize)
 
 #ifdef mingw32_HOST_OS
 import Data.Word (Word64)
 #endif
 
-data InodeCachePrim = InodeCachePrim FileID FileOffset EpochTime
+data InodeCachePrim = InodeCachePrim FileID Integer EpochTime
 	deriving (Show, Eq, Ord)
 
 newtype InodeCache = InodeCache InodeCachePrim
@@ -115,15 +112,16 @@ readInodeCache s = case words s of
 
 genInodeCache :: FilePath -> TSDelta -> IO (Maybe InodeCache)
 genInodeCache f delta = catchDefaultIO Nothing $
-	toInodeCache delta =<< getFileStatus f
+	toInodeCache delta f =<< getFileStatus f
 
-toInodeCache :: TSDelta -> FileStatus -> IO (Maybe InodeCache)
-toInodeCache (TSDelta getdelta) s
+toInodeCache :: TSDelta -> FilePath -> FileStatus -> IO (Maybe InodeCache)
+toInodeCache (TSDelta getdelta) f s
 	| isRegularFile s = do
 		delta <- getdelta
+		sz <- getFileSize' f s
 		return $ Just $ InodeCache $ InodeCachePrim
 			(fileID s)
-			(fileSize s)
+			sz
 			(modificationTime s + delta)
 	| otherwise = pure Nothing
 

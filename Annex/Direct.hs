@@ -56,7 +56,7 @@ stageDirect = do
 	go (file, Just sha, Just mode) = withTSDelta $ \delta -> do
 		shakey <- catKey sha mode
 		mstat <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus file
-		mcache <- liftIO $ maybe (pure Nothing) (toInodeCache delta) mstat
+		mcache <- liftIO $ maybe (pure Nothing) (toInodeCache delta file) mstat
 		filekey <- isAnnexLink file
 		case (shakey, filekey, mstat, mcache) of
 			(_, Just key, _, _)
