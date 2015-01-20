@@ -59,3 +59,6 @@ add extras/Extra Content - Reason Drum Takes/Kit Samples/1. Bass Drum mic (BD)/D
 
 # End of transcript or log.
 """]]
+
+> [[done]]; this is a duplicate of the bug referred to in my comment below.
+> --[[Joey]]
