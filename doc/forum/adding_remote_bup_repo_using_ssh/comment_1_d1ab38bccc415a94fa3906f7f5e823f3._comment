@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-01-20T16:05:31Z"
+ content="""
+IIRC bup always initializes ~/.bup, even when using a remote repository.
+
+Your mistake is that you have run `git annex initremote` twice -- so now
+git-annex knows about two different remotes, which both happen to be backed
+by the same bup repository -- but git-annex doesn't know that.
+
+Instead, you should run `git annex initremote` in one repository, and then
+use `git annex enableremote` in clones of that repository to enable your
+bup remote.
+
+You will probably want to kill off the redundant bup remote with `git annex
+dead mybup` and then using `git annex enableremote` to enable the other one.
+"""]]
