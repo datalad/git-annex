@@ -85,7 +85,7 @@ parentDir = takeDirectory . dropTrailingPathSeparator
 - parent (ie for "/" or ".") -}
 upFrom :: FilePath -> Maybe FilePath
 upFrom dir
-	| null dirs = Nothing
+	| length dirs < 2 = Nothing
 	| otherwise = Just $ joinDrive drive (join s $ init dirs)
   where
 	-- on Unix, the drive will be "/" when the dir is absolute, otherwise ""
