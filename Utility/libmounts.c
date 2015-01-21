@@ -5,7 +5,7 @@
  * Copyright (c) 2001
  *      David Rufino <daverufino@btinternet.com>
  * Copyright 2012
- *      Joey Hess <joey@kitenet.net>
+ *      Joey Hess <id@joeyh.name>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions

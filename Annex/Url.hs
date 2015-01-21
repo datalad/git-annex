@@ -1,7 +1,7 @@
 {- Url downloading, with git-annex user agent and configured http
  - headers and wget/curl options.
  -
- - Copyright 2013-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2013-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}

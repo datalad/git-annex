@@ -4,7 +4,7 @@
  - This module does *not* attempt to be a portability shim, it just exposes
  - the native locking of the OS.
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}

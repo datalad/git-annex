@@ -1,6 +1,6 @@
 {- disk free space checking 
  -
- - Copyright 2012, 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2012, 2014 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}

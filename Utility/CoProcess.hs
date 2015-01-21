@@ -1,7 +1,7 @@
 {- Interface for running a shell command as a coprocess,
  - sending it queries and getting back results.
  -
- - Copyright 2012-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2013 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}

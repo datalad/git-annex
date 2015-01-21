@@ -1,6 +1,6 @@
 {- dotted versions, such as 1.0.1
  -
- - Copyright 2011-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2014 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}

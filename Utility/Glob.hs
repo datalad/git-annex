@@ -3,7 +3,7 @@
  - This uses TDFA when available, with a fallback to regex-compat.
  - TDFA is less buggy in its support for non-unicode characters.
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}

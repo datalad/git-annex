@@ -6,7 +6,7 @@
  - Unlike a TQueue, the entire contents of a TList can be efficiently
  - read without modifying it.
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -}
 
 {-# LANGUAGE BangPatterns #-}

@@ -1,6 +1,6 @@
 {- Streaming JSON output.
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}

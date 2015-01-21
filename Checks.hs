@@ -3,7 +3,7 @@
  - Common sanity checks for commands, and an interface to selectively
  - remove them, or add others.
  - 
- - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}

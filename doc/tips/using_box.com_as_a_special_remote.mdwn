@@ -42,7 +42,7 @@ using the webdav special remote.
 * Create `~/.davfs2/secrets`. This file contains your Box.com login and password.
   Your login is probably the email address you signed up with.
 
-        echo "/media/box.com joey@kitenet.net mypassword" > ~/.davfs2/secrets
+        echo "/media/box.com id@joeyh.name mypassword" > ~/.davfs2/secrets
         chmod 600 ~/.davfs2/secrets
 
 * Now you should be able to mount Box, as a non-root user:

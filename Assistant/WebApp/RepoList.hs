@@ -1,6 +1,6 @@
 {- git-annex assistant webapp repository list
  -
- - Copyright 2012,2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012,2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}

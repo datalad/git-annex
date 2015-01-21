@@ -1,6 +1,6 @@
 {- thread scheduling
  -
- - Copyright 2012, 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012, 2013 Joey Hess <id@joeyh.name>
  - Copyright 2011 Bas van Dijk & Roel van Dijk
  -
  - License: BSD-2-clause

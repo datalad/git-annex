@@ -34,7 +34,7 @@ flexibility, it is the default and recommended encryption scheme.
 
 Here the KEYID(s) are passed to `gpg` to find encryption keys.
 Typically, you will say "keyid=2512E3C7" to use a specific gpg key.
-Or, you might say "keyid=joey@kitenet.net" to search for matching keys.
+Or, you might say "keyid=id@joeyh.name" to search for matching keys.
 
 To add a new key and allow it to access all the content that is stored
 in the encrypted special remote, just run `git annex

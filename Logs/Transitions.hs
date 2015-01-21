@@ -7,7 +7,7 @@
  - done that is listed in the remote branch by checking that the local
  - branch contains the same transition, with the same or newer start time.
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}

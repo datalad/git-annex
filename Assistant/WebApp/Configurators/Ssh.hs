@@ -1,6 +1,6 @@
 {- git-annex assistant webapp configurator for ssh-based remotes
  -
- - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}

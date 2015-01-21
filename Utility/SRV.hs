@@ -3,7 +3,7 @@
  - Uses either the ADNS Haskell library, or the standalone Haskell DNS
  - package, or the host command.
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}

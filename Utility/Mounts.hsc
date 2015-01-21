@@ -4,7 +4,7 @@
  - Volker Wysk <hsss@volker-wysk.de>
  - 
  - Modified to support BSD, Mac OS X, and Android by
- - Joey Hess <joey@kitenet.net>
+ - Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU LGPL version 2.1 or higher.
  -}

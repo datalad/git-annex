@@ -1,6 +1,6 @@
 {- git-annex "URL" backend -- keys whose content is available from urls.
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}

@@ -126,7 +126,7 @@ git-shell(1)
 
 # AUTHOR
 
-Joey Hess <joey@kitenet.net>
+Joey Hess <id@joeyh.name>
 
 <http://git-annex.branchable.com/>
 

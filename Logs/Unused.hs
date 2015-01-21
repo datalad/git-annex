@@ -10,7 +10,7 @@
  - The timestamp indicates when the key was first determined to be unused.
  - Older versions of the log omit the timestamp.
  -
- - Copyright 2010-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}

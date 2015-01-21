@@ -31,7 +31,7 @@ File modes are not currently merged.
 
 # AUTHOR
 
-Joey Hess <joey@kitenet.net>
+Joey Hess <id@joeyh.name>
 
 <http://git-annex.branchable.com/>
 

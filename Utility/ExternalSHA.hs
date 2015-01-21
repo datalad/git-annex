@@ -3,7 +3,7 @@
  - This is typically a bit faster than using Haskell libraries,
  - by around 1% to 10%. Worth it for really big files.
  -
- - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2013 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}

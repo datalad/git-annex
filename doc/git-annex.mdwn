@@ -1896,7 +1896,7 @@ should be included, in, for example, `/usr/share/doc/git-annex/`.
 
 # AUTHOR
 
-Joey Hess <joey@kitenet.net>
+Joey Hess <id@joeyh.name>
 
 <http://git-annex.branchable.com/>
 

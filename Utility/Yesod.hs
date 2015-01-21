@@ -3,7 +3,7 @@
  - Also a bit of a compatability layer to make it easier to support yesod
  - 1.1-1.4 in the same code base.
  -
- - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}

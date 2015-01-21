@@ -10,7 +10,7 @@
  - Is forgiving about misplaced closing parens, so "foo and (bar or baz"
  - will be handled, as will "foo and ( bar or baz ) )"
  -
- - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2013 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
