@@ -4,7 +4,7 @@ I have 2 indirect mode repos, both on network filesystems, that I have only used
 data on one end, then syncing via `git annex sync` and `git annex get`.  The problem
 is that`.nfs` copies are being made for each git annex object data file, e.g:
 
-./.git/annex/objects/34/2x/SHA256E-s4112535690--c5f0e5a8af7bf17dd4a8ca192c8ddfb01fe6ec10908c80cffa5ac64c00e28443.vtk.gz/.nfs0000000006d0018600002147
+`./.git/annex/objects/34/2x/SHA256E-s4112535690--c5f0e5a8af7bf17dd4a8ca192c8ddfb01fe6ec10908c80cffa5ac64c00e28443.vtk.gz/.nfs0000000006d0018600002147`
 
 Reading up on .nfs files, they are generated when "an open file is removed but is still being accessed".
 
