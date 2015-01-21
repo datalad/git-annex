@@ -163,3 +163,30 @@ by merging with a repo from an old version.
 
 git-annex fsck could also fix up any broken links that do result from the
 inevitable cases where users ignore the docs.
+
+## version numbers vs configuration
+
+A particular annex.version like 5 encompasses a number of somewhat distinct
+things
+
+* git-annex branch layout
+* .git/annex/objects/ layout
+* other git stuff (like eg, the name of the HEAD branch in direct mode)
+
+If the user is specifying at `git annex init` time some nonstandard things
+they want to make the default meet their use case better, that is more
+a matter of configuration than of picking a version. 
+
+For example, we could say that the user is opting out of the second-level
+object hash directories. Or we could say the user is choosing to use v6,
+which is like  v5 except with different object hash directory structure.
+
+	git annex init --config annex.objects.hashdirectories 1 
+		--config annex.objects.hashlower true
+	git annex init --version 6
+
+The former would be more flexible. The latter is simpler. 
+
+The former also lets the user chose *no* hash directories, or 
+choose 2 levels of hash directories while using the (v5 default) mixed
+case hashing.
