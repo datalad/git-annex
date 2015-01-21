@@ -12,7 +12,6 @@ import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
 import System.IO.Error
 
-import Data.String.Utils
 import Common.Annex
 import Types.Remote
 import Types.Key
@@ -164,7 +163,7 @@ ddarDirectoryExists ddarrepo
 			ExitSuccess -> return $ Right True
 			ExitFailure 1 -> return $ Right False
 			ExitFailure code -> return $ Left $ "ssh call " ++
-				show (Data.String.Utils.join " " $ toCommand params) ++
+				show (unwords $ toCommand params) ++
 				" failed with status " ++ show code
   where
 	(host, ddarrepo') = splitRemoteDdarRepo ddarrepo
