@@ -18,9 +18,6 @@ import Annex.Content
 import Annex.Init
 import Utility.FileMode
 
-import System.IO.HVFS
-import System.IO.HVFS.Utils
-
 cmd :: [Command]
 cmd = [addCheck check $ command "uninit" paramPaths seek 
 	SectionUtility "de-initialize git-annex and clean out repository"]
@@ -91,7 +88,7 @@ finish = do
  - preparation for removal. -}
 prepareRemoveAnnexDir :: FilePath -> IO ()
 prepareRemoveAnnexDir annexdir =
-	recurseDir SystemFS annexdir >>= mapM_ (void . tryIO . allowWrite)
+	mapM_ (void . tryIO . allowWrite) =<< dirContentsRecursive annexdir
 
 {- Keys that were moved out of the annex have a hard link still in the
  - annex, with > 1 link count, and those can be removed.
