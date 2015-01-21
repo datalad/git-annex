@@ -144,9 +144,11 @@ gitAnnexLocation' key r crippled
 gitAnnexLink :: FilePath -> Key -> Git.Repo -> IO FilePath
 gitAnnexLink file key r = do
 	currdir <- getCurrentDirectory
-	let absfile = absPathFrom currdir file
+	let absfile = fromMaybe whoops $ absNormPathUnix currdir file
 	loc <- gitAnnexLocation' key r False
 	relPathDirToFile (parentDir absfile) loc
+  where
+	whoops = error $ "unable to normalize " ++ file
 
 {- File used to lock a key's content. -}
 gitAnnexContentLock :: Key -> Git.Repo -> GitConfig -> IO FilePath
