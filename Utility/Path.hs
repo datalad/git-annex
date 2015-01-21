@@ -5,7 +5,7 @@
  - License: BSD-2-clause
  -}
 
-{-# LANGUAGE PackageImports, CPP #-}
+{-# LANGUAGE CPP #-}
 
 module Utility.Path where
 
@@ -24,7 +24,6 @@ import System.Posix.Files
 import Utility.Exception
 #endif
 
-import qualified "MissingH" System.Path as MissingH
 import Utility.Monad
 import Utility.UserInfo
 
@@ -64,18 +63,6 @@ simplifyPath path = dropTrailingPathSeparator $
  -}
 absPathFrom :: FilePath -> FilePath -> FilePath
 absPathFrom dir path = simplifyPath (combine dir path)
-
-{- On Windows, this converts the paths to unix-style, in order to run
- - MissingH's absNormPath on them. Resulting path will use / separators. -}
-absNormPathUnix :: FilePath -> FilePath -> Maybe FilePath
-#ifndef mingw32_HOST_OS
-absNormPathUnix dir path = MissingH.absNormPath dir path
-#else
-absNormPathUnix dir path = todos <$> MissingH.absNormPath (fromdos dir) (fromdos path)
-  where
-	fromdos = replace "\\" "/"
-	todos = replace "/" "\\"
-#endif
 
 {- takeDirectory "foo/bar/" is "foo/bar". This instead yields "foo" -}
 parentDir :: FilePath -> FilePath
