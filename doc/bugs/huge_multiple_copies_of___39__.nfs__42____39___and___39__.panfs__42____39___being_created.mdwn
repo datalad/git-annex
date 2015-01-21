@@ -1,0 +1,30 @@
+### Please describe the problem.
+
+I have 2 indirect mode repos, both on network filesystems, that I have only used for adding
+data on one end, then syncing via `git annex sync` and `git annex get`.  The problem
+is that`.nfs` copies are being made for each git annex object data file, e.g:
+
+./.git/annex/objects/34/2x/SHA256E-s4112535690--c5f0e5a8af7bf17dd4a8ca192c8ddfb01fe6ec10908c80cffa5ac64c00e28443.vtk.gz/.nfs0000000006d0018600002147
+
+Reading up on .nfs files, they are generated when "an open file is removed but is still being accessed".
+
+### What steps will reproduce the problem?
+Clone a git annex repo on a network file system,  run 
+`git annex sync` ,
+`git annex drop` ,
+`git annex get` 
+
+### What version of git-annex are you using? On what operating system?
+* git-annex version: 5.20140818-g10bf03a
+* 2.6.34.9-69.fc13.x86_64 fedora 13
+* 2.6.32-279.22.1.el6.x86_64 centOS
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
