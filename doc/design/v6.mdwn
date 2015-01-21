@@ -1,0 +1,165 @@
+This page's purpose is to collect and explore plans for a future
+annex.version 6.
+
+There are two major possible changes that could go in v6 or a later
+version that would require a hard migration of git-annex repositories:
+
+1. Changing .git/annex/objects/ paths, as appear in the git-annex symlinks.
+
+2. Changing the layout of the git-annex branch in a substantial way.
+
+## object path changes
+
+Any change in this area requires the user make changes to their master
+branch, any other active branches. Old un-converted tags and other
+historical trees in git would also be broken. This is a pretty bad user
+experience. (And it bloats history with a commit that rewrites everything
+too.
+
+For this reason, any changes in this area have been avoided, going all the
+way back to v2 (2011). 
+
+> git-annex had approximately 3 users at the
+> time of that migration, and as one of them, I can say it was a total PITA.
+--[[Joey]] 
+
+So, there would need to be significant payoffs to justify this change.
+
+Note that changing the hash directories might also change where objects are
+stored in special remotes. Because repos can be offline or expensive to
+migrate (or both -- Glacier!) any such changes need to keep looking in the
+old locations for backwards compatability.
+
+Possible reasons to make changes:
+
+* It's annoyingly inconsistent that git-annex uses a different hash
+  directory layout for non-bare repository (on a non-crippled filesystem)
+  than is used for bare repositories and some special remotes.
+
+  Users occasionally stumble over this difference when messing with
+  internals. The code is somewhat complicated by it. In some cases,
+  git-annex checks both locations (eg, a bare repo defaults to xxx/yyy
+  but really old ones might use xX/yY for some keys).
+
+  The mixed case hash directories have caused trouble on case-insensative
+  filesystems, although that has mostly been papered over to avoid
+  problems.
+
+* The hash directories, and also the per-key directories
+  can slow down using a repository on a non-SSD disk.
+  
+  <https://github.com/datalad/datalad/issues/32>
+
+  Initial benchmarks suggest that going from xX/yY/KEY/OBJ to xX/yY/OBJ
+  directories would improve speed 3x.
+
+  Presumably, removing the yY would also speed it up, unless there are too
+  many objects and the filesystem gets slow w/o the hash directories.
+
+## git-annex branch changes
+
+This might involve, eg, rethinking the xxx/yyy/ hash directories used
+in the git-annex branch.
+
+Would this require a hard version transition? It might be possible to avoid
+one, but then git-annex would have to look in both the old and the new
+place. And if a un-transitioned repo was merged into a transitioned one,
+git-annex would have to look in *both* places, and union merge the two sets
+of data on the fly. This doubles the git-cat-file overhead of every
+operation involving the git-annex branch. So a hard transition would
+probably be best.
+
+Also, note that w/o a hard transition, there's the risk that a old
+git-annex version gets ahold of a git-annex branch created by a new
+git-annex version, and sees only half of the story (the un-transitioned
+files). This could be a very confusing failure mode. It doesn't help that
+the git-annex branch does not currently have any kind of
+version number embedded in it, so the old version of git-annex doesn't even
+have a way to check if it can handle the branch.
+
+Possible reasons to make changes:
+
+* There is a discussion of some possible changes to the hash directories here
+  <https://github.com/datalad/datalad/issues/17#issuecomment-68558319> with a
+  goal of reducing the overhead of the git-annex branch in the overall size
+  of the git-annex repository. 
+  
+  Removing the second-level hash directories might improve performance.
+  It doesn't save much space when a repository is having incremental changes
+  made to it. However, if millions of annexed objects are being added
+  in a single commit, removing the second-level hash directories does save
+  space; it halves the number of tree
+  objects[1](https://github.com/datalad/datalad/issues/17#issuecomment-68759754).
+
+  Also,
+  <https://github.com/datalad/datalad/issues/17#issuecomment-68569727>
+  suggests using xxx/yyy.log, where one log contains information for
+  multiple keys. This would probably improve performance too due to
+  caching, although in some cases git-annex would have to process extra
+  information to get to the info about the key it wants, which hurts
+  performance. The disk usage change of this method has not yet been
+  quantified.
+
+* Another reason to do it would be improving git-annex to use vector clocks,
+  instead of its current assumption that client's clocks are close enough to
+  accurate. This would presumably change the contents of the files.
+
+* While not a sufficient reason on its own, the best practices for file
+  formats in the git-annex branch has evolved over time, and there are some
+  files that have unusual formats for historical reasons. Other files have
+  modern formats, but their parsers have to cope with old versions that
+  have other formats. A hard transition would provide an opportunity to
+  clean up a lot of that.
+
+## living on the edge
+
+Rather than a hard transition, git-annex could add a v6 mode
+that could be optionally enabled when initing a repo for the first time.
+
+Users who know they need that mode could then turn it one, and get the
+benefits, while everyone else avoids a transition that doesn't benefit them
+much.
+
+There could even be multiple modes, with different tradeoffs depending on
+how the repo will be used, its size, etc. Of course that adds complexity.
+
+But the main problem with this idea is, how to avoid the foot shooting
+result of merging repo A(v5) into repo B(v6)? This seems like it would be
+all to easy for a user to do. 
+
+As far as git-annex branch changes go, it might be possible for git-annex
+to paper over the problem by handling both versions in the merged git-annex
+branch, as discussed earlier. But for .git/annex/objects/ changes, there
+does not seem to be a reasonable thing for git-annex to do. When it's
+receiving an object into a mixed v5 and v6 repo, it can't know which
+location that repo expects the object file to be located in. Different
+files in the repo might point to the same object in different locations!
+Total mess. Must avoid this.
+
+Currently, annex.version is a per-local-repo setting. git-annex can't tell 
+if two repos that it's merging have different annex.version's. 
+
+It would be possible to add a git-annex:version file, which would work for
+git-annex branch merging. Ie, `git-annex merge` could detect if different
+git-annex branches have different versions, and refuse to merge them (or
+upgrade the old one before merging it).
+
+Also, that file could be used by git-annex, to automatically set
+annex.version when auto-initing a clone of a repo that was initted with
+a newer than default version.
+
+But git-anex:version won't prevent merging B/master into A's master.
+That merge can be done by git; nothing in git-annex can prevent it.
+
+What we could do is have a .annex-version flag file in the root of the
+repo. Then git merge would at least have a merge conflict. Note that this
+means inflicting the file on all git-annex repos, even ones used by people
+with no intention of living on the edge. And, it would take quite a while
+until all such repos get updated to contain such a file.
+
+Or, we could just document that if you initialize a repo with experimental
+annex.version, you're living on the edge and you can screw up your repo
+by merging with a repo from an old version.
+
+git-annex fsck could also fix up any broken links that do result from the
+inevitable cases where users ignore the docs.
