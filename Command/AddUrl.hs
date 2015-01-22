@@ -120,17 +120,16 @@ downloadRemoteFile r relaxed uri file sz = do
 	loguri = setDownloader uri OtherDownloader
 
 startWeb :: Bool -> Maybe FilePath -> Maybe Int -> String -> CommandStart
-startWeb relaxed optfile pathdepth s = go $ fromMaybe bad $ parseURI s
+startWeb relaxed optfile pathdepth s = go $ fromMaybe bad $ parseURI urlstring
   where
-	(s', downloader) = getDownloader s
-	bad = fromMaybe (error $ "bad url " ++ s') $
-		parseURI $ escapeURIString isUnescapedInURI s'
-	choosefile = flip fromMaybe optfile
+	(urlstring, downloader) = getDownloader s
+	bad = fromMaybe (error $ "bad url " ++ urlstring) $
+		parseURI $ escapeURIString isUnescapedInURI urlstring
 	go url = case downloader of
 		QuviDownloader -> usequvi
 		_ -> 
 #ifdef WITH_QUVI
-			ifM (quviSupported s')
+			ifM (quviSupported urlstring)
 				( usequvi
 				, regulardownload url
 				)
@@ -139,30 +138,44 @@ startWeb relaxed optfile pathdepth s = go $ fromMaybe bad $ parseURI s
 #endif
 	regulardownload url = do
 		pathmax <- liftIO $ fileNameLengthLimit "."
-		let file = choosefile $ url2file url pathdepth pathmax
+		urlinfo <- if relaxed
+			then pure $ Url.UrlInfo True Nothing Nothing
+			else Url.withUrlOptions (Url.getUrlInfo urlstring)
+		file <- case optfile of
+			Just f -> pure f
+			Nothing -> case Url.urlSuggestedFile urlinfo of
+				Nothing -> pure $ url2file url pathdepth pathmax
+				Just sf -> do
+					let f = truncateFilePath pathmax $
+						sanitizeFilePath sf
+					ifM (liftIO $ doesFileExist f <||> doesDirectoryExist f)
+						( pure $ url2file url pathdepth pathmax
+						, pure f
+						)
 		showStart "addurl" file
-		next $ performWeb relaxed s' file
+		next $ performWeb relaxed urlstring file urlinfo
 #ifdef WITH_QUVI
-	badquvi = error $ "quvi does not know how to download url " ++ s'
+	badquvi = error $ "quvi does not know how to download url " ++ urlstring
 	usequvi = do
 		page <- fromMaybe badquvi
-			<$> withQuviOptions Quvi.forceQuery [Quvi.quiet, Quvi.httponly] s'
+			<$> withQuviOptions Quvi.forceQuery [Quvi.quiet, Quvi.httponly] urlstring
 		let link = fromMaybe badquvi $ headMaybe $ Quvi.pageLinks page
 		pathmax <- liftIO $ fileNameLengthLimit "."
-		let file = choosefile $ truncateFilePath pathmax $ sanitizeFilePath $
-			Quvi.pageTitle page ++ "." ++ Quvi.linkSuffix link
+		let file = flip fromMaybe optfile $
+			truncateFilePath pathmax $ sanitizeFilePath $
+				Quvi.pageTitle page ++ "." ++ Quvi.linkSuffix link
 		showStart "addurl" file
-		next $ performQuvi relaxed s' (Quvi.linkUrl link) file
+		next $ performQuvi relaxed urlstring (Quvi.linkUrl link) file
 #else
 	usequvi = error "not built with quvi support"
 #endif
 
-performWeb :: Bool -> URLString -> FilePath -> CommandPerform
-performWeb relaxed url file = ifAnnexed file addurl geturl
+performWeb :: Bool -> URLString -> FilePath -> Url.UrlInfo -> CommandPerform
+performWeb relaxed url file urlinfo = ifAnnexed file addurl geturl
   where
-	geturl = next $ isJust <$> addUrlFile relaxed url file
-	addurl = addUrlChecked relaxed url webUUID checkexistssize
-	checkexistssize = Url.withUrlOptions . Url.check url . keySize
+	geturl = next $ isJust <$> addUrlFile relaxed url urlinfo file
+	addurl = addUrlChecked relaxed url webUUID $ \k -> return $
+		(Url.urlExists urlinfo, Url.urlSize urlinfo == keySize k)
 
 #ifdef WITH_QUVI
 performQuvi :: Bool -> URLString -> URLString -> FilePath -> CommandPerform
@@ -189,7 +202,8 @@ addUrlFileQuvi relaxed quviurl videourl file = do
 			 - retained, because the size of a video stream
 			 - might change and we want to be able to download
 			 - it later. -}
-			sizedkey <- addSizeUrlKey videourl key
+			urlinfo <- Url.withUrlOptions (Url.getUrlInfo videourl)
+			let sizedkey = addSizeUrlKey urlinfo key
 			prepGetViaTmpChecked sizedkey Nothing $ do
 				tmp <- fromRepo $ gitAnnexTmpObjectLocation key
 				showOutput
@@ -225,17 +239,17 @@ addUrlChecked relaxed url u checkexistssize key
 					stop
 		)
 
-addUrlFile :: Bool -> URLString -> FilePath -> Annex (Maybe Key)
-addUrlFile relaxed url file = do
+addUrlFile :: Bool -> URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
+addUrlFile relaxed url urlinfo file = do
 	liftIO $ createDirectoryIfMissing True (parentDir file)
 	ifM (Annex.getState Annex.fast <||> pure relaxed)
-		( nodownload relaxed url file
-		, downloadWeb url file
+		( nodownload relaxed url urlinfo file
+		, downloadWeb url urlinfo file
 		)
 
-downloadWeb :: URLString -> FilePath -> Annex (Maybe Key)
-downloadWeb url file = do
-	dummykey <- addSizeUrlKey url =<< Backend.URL.fromUrl url Nothing
+downloadWeb :: URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
+downloadWeb url urlinfo file = do
+	dummykey <- addSizeUrlKey urlinfo <$> Backend.URL.fromUrl url Nothing
 	let downloader f _ = do
 		showOutput
 		downloadUrl [url] f
@@ -272,15 +286,9 @@ downloadWith downloader dummykey u url file =
 			liftIO $ createDirectoryIfMissing True (parentDir tmp)
 			downloader tmp p
 
-{- Hits the url to get the size, if available.
- -
- - This is needed to avoid exceeding the diskreserve when downloading,
- - and so the assistant can display a pretty progress bar.
- -}
-addSizeUrlKey :: URLString -> Key -> Annex Key
-addSizeUrlKey url key = do
-	size <- snd <$> Url.withUrlOptions (Url.exists url)
-	return $ key { keySize = size }
+{- Adds the url size to the Key. -}
+addSizeUrlKey :: Url.UrlInfo -> Key -> Key
+addSizeUrlKey urlinfo key = key { keySize = Url.urlSize urlinfo }
 
 cleanup :: UUID -> URLString -> FilePath -> Key -> Maybe FilePath -> Annex ()
 cleanup u url file key mtmp = do
@@ -295,19 +303,15 @@ cleanup u url file key mtmp = do
 		Annex.Queue.flush
 	maybe noop (moveAnnex key) mtmp
 
-nodownload :: Bool -> URLString -> FilePath -> Annex (Maybe Key)
-nodownload relaxed url file = do
-	(exists, size) <- if relaxed
-		then pure (True, Nothing)
-		else Url.withUrlOptions (Url.exists url)
-	if exists
-		then do
-			key <- Backend.URL.fromUrl url size
-			cleanup webUUID url file key Nothing
-			return (Just key)
-		else do
-			warning $ "unable to access url: " ++ url
-			return Nothing
+nodownload :: Bool -> URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
+nodownload relaxed url urlinfo file
+	| Url.urlExists urlinfo = do
+		key <- Backend.URL.fromUrl url (Url.urlSize urlinfo)
+		cleanup webUUID url file key Nothing
+		return (Just key)
+	| otherwise = do
+		warning $ "unable to access url: " ++ url
+		return Nothing
 
 url2file :: URI -> Maybe Int -> Int -> FilePath
 url2file url pathdepth pathmax = case pathdepth of

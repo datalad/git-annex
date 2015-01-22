@@ -218,8 +218,10 @@ subdirectories).
   is there at a future point, specify `--relaxed`. (Implies `--fast`.)
 
   Normally the filename is based on the full url, so will look like
-  "www.example.com_dir_subdir_bigfile". For a shorter filename, specify
-  `--pathdepth=N`. For example, `--pathdepth=1` will use "dir/subdir/bigfile",
+  "www.example.com_dir_subdir_bigfile". In some cases, addurl is able to
+  come up with a better filename based on other information. Or, for a
+  shorter filename, specify `--pathdepth=N`. For example,
+  `--pathdepth=1` will use "dir/subdir/bigfile",
   while `--pathdepth=3` will use "bigfile". It can also be negative;
   `--pathdepth=-2` will use the last two parts of the url.
 

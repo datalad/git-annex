@@ -16,6 +16,9 @@ git-annex (5.20150114) UNRELEASED; urgency=medium
   * Avoid using fileSize which maxes out at just 2 gb on Windows.
     Instead, use hFileSize, which doesn't have a bounded size.
     Fixes support for files > 2 gb on Windows.
+  * addurl: When a Content-Disposition header suggests a filename to use,
+    addurl will consider using it, if it's reasonable and doesn't conflict
+    with an existing file. (--file overrides this)
 
  -- Joey Hess <id@joeyh.name>  Tue, 13 Jan 2015 17:03:39 -0400
 

@@ -17,6 +17,8 @@ module Utility.Url (
 	check,
 	checkBoth,
 	exists,
+	UrlInfo(..),
+	getUrlInfo,
 	download,
 	downloadQuiet,
 	parseURIRelaxed
@@ -84,18 +86,27 @@ checkBoth url expected_size uo = do
 	v <- check url expected_size uo
 	return (fst v && snd v)
 check :: URLString -> Maybe Integer -> UrlOptions -> IO (Bool, Bool)
-check url expected_size = go <$$> exists url
+check url expected_size = go <$$> getUrlInfo url
   where
-	go (False, _) = (False, False)
-	go (True, Nothing) = (True, True)
-	go (True, s) = case expected_size of
+	go (UrlInfo False _ _) = (False, False)
+	go (UrlInfo True Nothing _) = (True, True)
+	go (UrlInfo True s _) = case expected_size of
 		Just _ -> (True, expected_size == s)
 		Nothing -> (True, True)
 
+exists :: URLString -> UrlOptions -> IO Bool
+exists url uo = urlExists <$> getUrlInfo url uo
+
+data UrlInfo = UrlInfo
+	{ urlExists :: Bool
+	, urlSize :: Maybe Integer
+	, urlSuggestedFile :: Maybe FilePath
+	}
+
 {- Checks that an url exists and could be successfully downloaded,
- - also returning its size if available. -}
-exists :: URLString -> UrlOptions -> IO (Bool, Maybe Integer)
-exists url uo = case parseURIRelaxed url of
+ - also returning its size and suggested filename if available. -}
+getUrlInfo :: URLString -> UrlOptions -> IO UrlInfo
+getUrlInfo url uo = case parseURIRelaxed url of
 	Just u -> case parseUrl (show u) of
 		Just req -> existsconduit req `catchNonAsync` const dne
 		-- http-conduit does not support file:, ftp:, etc urls,
@@ -107,18 +118,21 @@ exists url uo = case parseURIRelaxed url of
 				case s of
 					Just stat -> do
 						sz <- getFileSize' f stat
-						return (True, Just sz)
+						found (Just sz) Nothing
 					Nothing -> dne
 			| Build.SysConfig.curl -> do
 				output <- catchDefaultIO "" $
 					readProcess "curl" $ toCommand curlparams
 				case lastMaybe (lines output) of
-					Just ('2':_:_) -> return (True, extractlencurl output)
+					Just ('2':_:_) -> found
+						(extractlencurl output)
+						Nothing
 					_ -> dne
 			| otherwise -> dne
 	Nothing -> dne
   where
-	dne = return (False, Nothing)
+	dne = return $ UrlInfo False Nothing Nothing
+	found sz f = return $ UrlInfo True sz f
 
 	curlparams = addUserAgent uo $
 		[ Param "-s"
@@ -133,22 +147,35 @@ exists url uo = case parseURIRelaxed url of
 			_ -> Nothing
 		_ -> Nothing
 	
-	extractlen resp = readish . B8.toString =<< headMaybe lenheaders
-	  where
-		lenheaders = map snd $ 
-			filter (\(h, _) -> h == hContentLength)
-				(responseHeaders resp)
-	
+	extractlen = readish . B8.toString <=< firstheader hContentLength
+
+	extractfilename = contentDispositionFilename . B8.toString
+		<=< firstheader hContentDisposition
+
+	firstheader h = headMaybe . map snd .
+		filter (\p -> fst p == h) . responseHeaders
+
 	existsconduit req = withManager $ \mgr -> do
 		let req' = headRequest (applyRequest uo req)
 		resp <- http req' mgr
 		-- forces processing the response before the
 		-- manager is closed
-		ret <- if responseStatus resp == ok200
-			then return (True, extractlen resp)
-			else liftIO dne
+		ret <- liftIO $ if responseStatus resp == ok200
+			then found
+				(extractlen resp)
+				(extractfilename resp)
+			else dne
 		liftIO $ closeManager mgr
 		return ret
+
+-- Parse eg: attachment; filename="fname.ext"
+-- per RFC 2616
+contentDispositionFilename :: String -> Maybe FilePath
+contentDispositionFilename s
+	| "attachment; filename=\"" `isPrefixOf` s && "\"" `isSuffixOf` s =
+		Just $ reverse $ drop 1 $ reverse $ 
+			drop 1 $ dropWhile (/= '"') s
+	| otherwise = Nothing
 
 #if MIN_VERSION_http_conduit(2,0,0)
 headRequest :: Request -> Request
@@ -228,6 +255,9 @@ parseURIRelaxed = parseURI . escapeURIString isAllowedInURI
 
 hAcceptEncoding :: CI.CI B.ByteString
 hAcceptEncoding = "Accept-Encoding"
+
+hContentDisposition :: CI.CI B.ByteString
+hContentDisposition = "Content-Disposition"
 
 #if ! MIN_VERSION_http_types(0,7,0)
 hContentLength :: CI.CI B.ByteString

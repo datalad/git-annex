@@ -144,7 +144,9 @@ performDownload relaxed cache todownload = case location todownload of
 		rundownload url (takeExtension url) $ \f -> do
 			r <- Remote.claimingUrl url
 			if Remote.uuid r == webUUID
-				then maybeToList <$> addUrlFile relaxed url f
+				then do
+					urlinfo <- Url.withUrlOptions (Url.getUrlInfo url)
+					maybeToList <$> addUrlFile relaxed url urlinfo f
 				else do
 					res <- tryNonAsync $ maybe
 						(error $ "unable to checkUrl of " ++ Remote.name r)
