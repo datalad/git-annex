@@ -140,15 +140,15 @@ exists url uo = case parseURIRelaxed url of
 				(responseHeaders resp)
 	
 	existsconduit req = withManager $ \mgr -> do
-			let req' = headRequest (applyRequest uo req)
-			resp <- http req' mgr
-			-- forces processing the response before the
-			-- manager is closed
-			ret <- if responseStatus resp == ok200
-				then return (True, extractlen resp)
-				else liftIO dne
-			liftIO $ closeManager mgr
-			return ret
+		let req' = headRequest (applyRequest uo req)
+		resp <- http req' mgr
+		-- forces processing the response before the
+		-- manager is closed
+		ret <- if responseStatus resp == ok200
+			then return (True, extractlen resp)
+			else liftIO dne
+		liftIO $ closeManager mgr
+		return ret
 
 #if MIN_VERSION_http_conduit(2,0,0)
 headRequest :: Request -> Request
