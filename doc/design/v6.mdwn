@@ -46,7 +46,7 @@ Possible reasons to make changes:
   problems.
 
 * The hash directories, and also the per-key directories
-  can slow down using a repository on a non-SSD disk.
+  can slow down using a repository on a disk (both SSD and spinning).
   
   <https://github.com/datalad/datalad/issues/32>
 
