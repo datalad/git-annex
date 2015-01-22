@@ -19,6 +19,8 @@ git-annex (5.20150114) UNRELEASED; urgency=medium
   * addurl: When a Content-Disposition header suggests a filename to use,
     addurl will consider using it, if it's reasonable and doesn't conflict
     with an existing file. (--file overrides this)
+  * Fix default repository description created by git annex init,
+    which got broken by the relative path changes in the last release.
 
  -- Joey Hess <id@joeyh.name>  Tue, 13 Jan 2015 17:03:39 -0400
 

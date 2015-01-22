@@ -44,7 +44,7 @@ import Annex.Perms
 genDescription :: Maybe String -> Annex String
 genDescription (Just d) = return d
 genDescription Nothing = do
-	reldir <- liftIO . relHome =<< fromRepo Git.repoPath
+	reldir <- liftIO . relHome =<< liftIO . absPath =<< fromRepo Git.repoPath
 	hostname <- fromMaybe "" <$> liftIO getHostname
 #ifndef mingw32_HOST_OS
 	let at = if null hostname then "" else "@"
