@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 1"
+ date="2015-01-22T01:05:56Z"
+ content="""
+My gut feeling for incompatible changes in v6 is to somehow make v5 and below error out on all merges with a v6 repo.
+
+Conversely, v6 git-annex running in v6 repos would transition all data while merging in v5 repos.
+
+As a migration path for existing repos, you could move `git-annex` and `master` to `git-annex_v5` and `master_v5`. Once you are certain all known repos within that repo group are transitioned, either kill the v5 branches automagically or print info on cli/web UI on what needs to be run to get rid of them.
+
+Having several plain git 1+ GiB repos (i.e. without any annex objects), I would love to transition after v6 and the migration paths have been hung a month or three to dry.
+"""]]
