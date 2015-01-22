@@ -41,6 +41,7 @@ module Utility.DataUnits (
 	memoryUnits,
 	bandwidthUnits,
 	oldSchoolUnits,
+	Unit(..),
 
 	roughSize,
 	compareSizes,
