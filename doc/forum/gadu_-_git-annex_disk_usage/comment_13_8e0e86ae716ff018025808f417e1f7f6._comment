@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkWHj0RxNMfuwvFzo2d-V6vBKOYwW_Fnfk"
+ nickname="Andrew"
+ subject="Update on determining disk usage"
+ date="2015-01-22T06:29:36Z"
+ content="""
+I just had a look at this question today as I learn git-annex.  I think the commands have changed since the last comment.  However, there remain several ways to determine disk usage, for example in the folder `Music`
+
+    git annex info Music
+
+but you could also use `du` with
+
+    du --human-readable --dereference Music
+"""]]
