@@ -108,7 +108,6 @@ itemInfo p = ifM (isdir p)
 			Right r -> remoteInfo r
 			Left _ -> do
 				v' <- Remote.nameToUUID' p
-				liftIO $ print v'
 				case v' of
 					Right u -> uuidInfo u
 					Left _ -> maybe noinfo (fileInfo p)
