@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawntodrSgODU27WUCyN2PV7TC14YMkyaoxQ"
+ nickname="Dennis"
+ subject="Ubuntu Trusty 14.04"
+ date="2015-01-24T03:20:48Z"
+ content="""
+I am searching for current packages for Ubuntu Trusty 14.04. The version shipped is 5.20140412ubuntu1, but I would like to try a more recent version to see if an issue I experience still persists. Is there any up-to-date PPA available for Trusty?
+"""]]
