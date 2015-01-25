@@ -1,4 +1,4 @@
-I just created a gcrypt special remote and got an error from `git-annex-shell`, though my local git-annex didn't complain and seemed to think the creation went okay.
+I just created a gcrypt special remote and got an error from (I think) `git-annex-shell`, though my local git-annex didn't complain and seemed to think the creation went okay.
 
     annex $ ga initremote ma type=gcrypt encryption=hybrid gitrepo=ssh://ma/meta/s/spw/local/annex keyid=3B6D411B                                                  
     (merging synced/git-annex into git-annex...)
@@ -23,6 +23,6 @@ I just created a gcrypt special remote and got an error from `git-annex-shell`, 
 
 Further `git annex sync ma` runs go off without a hitch and the master branch gets pushed a synced/master, though it didn't get pushed on this initial creation as can be seen from the above output.
 
-Is this a bug?  Do I have anything to worry about?  Thanks.
+Is it a bug that my local git-annex said "ok" when there was an error, or is this just a case of my local git-annex falling back to rsync instead of git-annex-shell because I didn't set up my $PATH properly on the remote?  Should I be worried that my gcrypt repo wasn't set up correctly and thus can't be trusted to hold my annexed data and metadata?  Thanks.
 
-Local git-annex: 5.20141125.  Remote git annex (standalone build): 5.20150113-gcf247cf.
+Local git-annex: 5.20141125.  Remote git-annex (standalone build): 5.20150113-gcf247cf.
