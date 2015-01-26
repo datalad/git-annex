@@ -1,0 +1,1 @@
+Currently, in a git annex view, filenames take the form basename%path%.ext. I understand that this is a carefully drafted mapping to allow changes to be merged back into metadata. However, maybe it would be possible to make the separator ('%') and the order (e.g. path%basename.ext instead) configurable?

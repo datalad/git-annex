@@ -1,0 +1,30 @@
+### Please describe the problem.
+
+git-annex dies of signal 11 when syncing content with Box.
+
+I noticed that the assistant stopped syncing after a few files, so I tried to sync manually through the terminal and saw the error.
+
+### What steps will reproduce the problem?
+
+    $ git annex sync box.com --content
+    commit  ok
+    copy myfile1 (checking box.com...) (to box.com...) 
+    ok                      
+    copy myfile2 (checking box.com...) (to box.com...) 
+    ok                      
+    copy myfile3 (checking box.com...) (to box.com...) 
+    ok                      
+    copy myfile4 (checking box.com...) (to box.com...) 
+    ok                      
+    copy myfile5 (checking box.com...) error: git-annex died of signal 11
+
+The number of files that are copied correctly is quite random, some times it syncs 200 files and other times only 2 or 3.
+
+
+### What version of git-annex are you using? On what operating system?
+
+5.20141125 on Debian Sid (everything install from official packages)
+
+### Please provide any additional information below.
+
+I don't know how to get more details of the problem, I haven't manage to get a more precise error activating logs or verbose mode, if there's anything I can do to debug the problem I'll be more than willing.
