@@ -232,7 +232,7 @@ onAddDirect symlinkssupported matcher file fs = do
 				 - so it symlink is restaged to make sure. -}
 				( ifM (shouldRestage <$> getDaemonStatus)
 					( do
-						link <- liftAnnex $ inRepo $ gitAnnexLink file key
+						link <- liftAnnex $ calcRepo $ gitAnnexLink file key
 						addLink file link (Just key)
 					, noChange
 					)
@@ -279,7 +279,7 @@ onAddSymlink' linktarget mk isdirect file filestatus = go mk
 	go (Just key) = do
 		when isdirect $
 			liftAnnex $ void $ addAssociatedFile key file
-		link <- liftAnnex $ inRepo $ gitAnnexLink file key
+		link <- liftAnnex $ calcRepo $ gitAnnexLink file key
 		if linktarget == Just link
 			then ensurestaged (Just link) =<< getDaemonStatus
 			else do

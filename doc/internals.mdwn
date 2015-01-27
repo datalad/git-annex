@@ -257,3 +257,12 @@ Example:
 
 	ForgetGitHistory 1387325539.685136s
 	ForgetDeadRemotes 1387325539.685136s
+
+## `difference.log`
+
+Used when a repository has fundamental differences from other repositories,
+that should prevent merging.
+
+Example:
+
+	e605dca6-446a-11e0-8b2a-002170d25c55 [Version 5] timestamp=1422387398.30395s

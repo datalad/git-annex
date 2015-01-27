@@ -352,7 +352,7 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 	done change mcache file key = liftAnnex $ do
 		logStatus key InfoPresent
 		link <- ifM isDirect
-			( inRepo $ gitAnnexLink file key
+			( calcRepo $ gitAnnexLink file key
 			, Command.Add.link file key mcache
 			)
 		whenM (pure DirWatcher.eventsCoalesce <||> isDirect) $

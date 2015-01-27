@@ -27,6 +27,7 @@ import Logs.UUID
 import Logs.Trust.Basic
 import Types.TrustLevel
 import Annex.Version
+import Annex.Difference
 import Annex.UUID
 import Config
 import Annex.Direct
@@ -73,6 +74,7 @@ initialize' = do
 	checkCrippledFileSystem
 	unlessM isBare $
 		hookWrite preCommitHook
+	setDifferences
 	setVersion supportedVersion
 	ifM (crippledFileSystem <&&> not <$> isBare)
 		( do

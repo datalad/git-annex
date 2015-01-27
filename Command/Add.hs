@@ -230,7 +230,7 @@ undo file key e = do
 {- Creates the symlink to the annexed content, returns the link target. -}
 link :: FilePath -> Key -> Maybe InodeCache -> Annex String
 link file key mcache = flip catchNonAsync (undo file key) $ do
-	l <- inRepo $ gitAnnexLink file key
+	l <- calcRepo $ gitAnnexLink file key
 	replaceFile file $ makeAnnexLink l
 
 	-- touch symlink to have same time as the original file,
@@ -272,7 +272,7 @@ cleanup :: FilePath -> Key -> Maybe InodeCache -> Bool -> CommandCleanup
 cleanup file key mcache hascontent = do
 	ifM (isDirect <&&> pure hascontent)
 		( do
-			l <- inRepo $ gitAnnexLink file key
+			l <- calcRepo $ gitAnnexLink file key
 			stageSymlink file =<< hashSymlink l
 		, addLink file key mcache
 		)

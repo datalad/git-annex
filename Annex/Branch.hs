@@ -49,9 +49,11 @@ import Annex.Perms
 import Logs
 import Logs.Transitions
 import Logs.Trust.Pure
+import Logs.Difference.Pure
 import Annex.ReplaceFile
 import qualified Annex.Queue
 import Annex.Branch.Transitions
+import qualified Annex
 
 {- Name of the branch that is used to store git-annex's information. -}
 name :: Git.Ref
@@ -160,6 +162,7 @@ updateTo pairs = do
 			<$> getLocal transitionsLog
 		unless (null branches) $ do
 			showSideAction merge_desc
+			mapM_ checkBranchDifferences refs
 			mergeIndex jl refs
 		let commitrefs = nub $ fullname:refs
 		unlessM (handleTransitions jl localtransitions commitrefs) $ do
@@ -537,3 +540,11 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 				apply rest hasher file content' trustmap
 			PreserveFile ->
 				apply rest hasher file content trustmap
+
+checkBranchDifferences :: Git.Ref -> Annex ()
+checkBranchDifferences ref = do
+	theirdiffs <- allDifferences . parseDifferencesLog . decodeBS
+		<$> catFile ref differenceLog
+	mydiffs <- annexDifferences <$> Annex.getGitConfig
+	when (theirdiffs /= mydiffs) $
+		error "Remote repository is tuned in incompatable way; cannot be merged with local repository."

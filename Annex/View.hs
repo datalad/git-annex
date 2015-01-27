@@ -354,7 +354,7 @@ applyView' mkviewedfile getfilemetadata view = do
 		let metadata' = getfilemetadata f `unionMetaData` metadata
 		forM_ (genviewedfiles f metadata') $ \fv -> do
 			f' <- fromRepo $ fromTopFilePath $ asTopFilePath fv
-			stagesymlink uh hasher f' =<< inRepo (gitAnnexLink f' k)
+			stagesymlink uh hasher f' =<< calcRepo (gitAnnexLink f' k)
 	go uh hasher f Nothing
 		| "." `isPrefixOf` f = do
 			s <- liftIO $ getSymbolicLinkStatus f

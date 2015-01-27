@@ -134,7 +134,7 @@ resolveMerge' (Just us) them u = do
 	
 	makelink key = do
 		let dest = variantFile file key
-		l <- inRepo $ gitAnnexLink dest key
+		l <- calcRepo $ gitAnnexLink dest key
 		replacewithlink dest l
 		stageSymlink dest =<< hashSymlink l
 

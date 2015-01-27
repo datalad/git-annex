@@ -88,7 +88,7 @@ perform = do
 			v <- tryNonAsync (moveAnnex k f)
 			case v of
 				Right _ -> do 
-					l <- inRepo $ gitAnnexLink f k
+					l <- calcRepo $ gitAnnexLink f k
 					liftIO $ createSymbolicLink l f
 				Left e -> catchNonAsync (Command.Add.undo f k e)
 					warnlocked

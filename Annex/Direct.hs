@@ -86,7 +86,7 @@ stageDirect = do
 		deletegit file
 	
 	stageannexlink file key = do
-		l <- inRepo $ gitAnnexLink file key
+		l <- calcRepo $ gitAnnexLink file key
 		stageSymlink file =<< hashSymlink l
 		void $ addAssociatedFile key file
 
@@ -131,7 +131,7 @@ addDirect file cache = do
 		return False
 	got (Just (key, _)) = ifM (sameInodeCache file [cache])
 		( do
-			l <- inRepo $ gitAnnexLink file key
+			l <- calcRepo $ gitAnnexLink file key
 			stageSymlink file =<< hashSymlink l
 			addInodeCache key cache
 			void $ addAssociatedFile key file
@@ -282,7 +282,7 @@ updateWorkTree d oldref = do
 	 - with the content. -}
 	movein item makeabs k f = unlessM (goodContent k f) $ do
 		preserveUnannexed item makeabs f oldref
-		l <- inRepo $ gitAnnexLink f k
+		l <- calcRepo $ gitAnnexLink f k
 		replaceFile f $ makeAnnexLink l
 		toDirect k f
 	

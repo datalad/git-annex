@@ -20,6 +20,7 @@ import Config.Cost
 import Types.Distribution
 import Types.Availability
 import Types.NumCopies
+import Types.Difference
 import Utility.HumanTime
 
 {- Main git-annex settings. Each setting corresponds to a git-config key
@@ -56,6 +57,7 @@ data GitConfig = GitConfig
 	, annexHardLink :: Bool
 	, coreSymlinks :: Bool
 	, gcryptId :: Maybe String
+	, annexDifferences :: Differences
 	}
 
 extractGitConfig :: Git.Repo -> GitConfig
@@ -93,6 +95,7 @@ extractGitConfig r = GitConfig
 	, annexHardLink = getbool (annex "hardlink") False
 	, coreSymlinks = getbool "core.symlinks" True
 	, gcryptId = getmaybe "core.gcrypt-id"
+	, annexDifferences = getDifferences r
 	}
   where
 	getbool k def = fromMaybe def $ getmaybebool k

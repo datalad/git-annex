@@ -192,7 +192,7 @@ check cs = and <$> sequence cs
  -}
 fixLink :: Key -> FilePath -> Annex Bool
 fixLink key file = do
-	want <- inRepo $ gitAnnexLink file key
+	want <- calcRepo $ gitAnnexLink file key
 	have <- getAnnexLinkTarget file
 	maybe noop (go want) have
 	return True

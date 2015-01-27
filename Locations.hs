@@ -76,6 +76,7 @@ import Common
 import Types
 import Types.Key
 import Types.UUID
+import Types.Difference
 import qualified Git
 
 {- Conventions:
@@ -120,17 +121,22 @@ annexLocation key hasher = objectDir </> keyPath key hasher
  - the actual location of the file's content.
  -}
 gitAnnexLocation :: Key -> Git.Repo -> GitConfig -> IO FilePath
-gitAnnexLocation key r config = gitAnnexLocation' key r (annexCrippledFileSystem config)
-gitAnnexLocation' :: Key -> Git.Repo -> Bool -> IO FilePath
-gitAnnexLocation' key r crippled
+gitAnnexLocation key r config = gitAnnexLocation' key r config (annexCrippledFileSystem config)
+gitAnnexLocation' :: Key -> Git.Repo -> GitConfig -> Bool -> IO FilePath
+gitAnnexLocation' key r config crippled
 	{- Bare repositories default to hashDirLower for new
 	 - content, as it's more portable.
 	 -
 	 - Repositories on filesystems that are crippled also use
 	 - hashDirLower, since they do not use symlinks and it's
-	 - more portable. -}
-	| Git.repoIsLocalBare r || crippled =
-		check $ map inrepo $ annexLocations key
+	 - more portable.
+	 -
+	 - ObjectHashLower can also be set to force it.
+	 -}
+	| Git.repoIsLocalBare r 
+		|| crippled 
+		|| hasDifference (== ObjectHashLower True) (annexDifferences config) =
+			check $ map inrepo $ annexLocations key
 	{- Non-bare repositories only use hashDirMixed, so
 	 - don't need to do any work to check if the file is
 	 - present. -}
@@ -141,11 +147,11 @@ gitAnnexLocation' key r crippled
 	check [] = error "internal"
 
 {- Calculates a symlink to link a file to an annexed object. -}
-gitAnnexLink :: FilePath -> Key -> Git.Repo -> IO FilePath
-gitAnnexLink file key r = do
+gitAnnexLink :: FilePath -> Key -> Git.Repo -> GitConfig -> IO FilePath
+gitAnnexLink file key r config = do
 	currdir <- getCurrentDirectory
 	let absfile = fromMaybe whoops $ absNormPathUnix currdir file
-	loc <- gitAnnexLocation' key r False
+	loc <- gitAnnexLocation' key r config False
 	relPathDirToFile (parentDir absfile) loc
   where
 	whoops = error $ "unable to normalize " ++ file

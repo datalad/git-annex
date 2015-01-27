@@ -446,7 +446,7 @@ removeAnnex (ContentLock key) = withObjectLoc key remove removedirect
 		removeInodeCache key
 		mapM_ (resetfile cache) fs
 	resetfile cache f = whenM (sameInodeCache f cache) $ do
-		l <- inRepo $ gitAnnexLink f key
+		l <- calcRepo $ gitAnnexLink f key
 		secureErase f
 		replaceFile f $ makeAnnexLink l
 

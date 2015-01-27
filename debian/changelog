@@ -21,6 +21,11 @@ git-annex (5.20150114) UNRELEASED; urgency=medium
     with an existing file. (--file overrides this)
   * Fix default repository description created by git annex init,
     which got broken by the relative path changes in the last release.
+  * init: Repository tuning parameters can now be passed when initializing a
+    repository for the first time. For details, see
+    http://git-annex.branchable.com/tuning/
+  * merge: Refuse to merge changes from a git-annex branch of a repo
+    that has been tuned in incompatable ways.
 
  -- Joey Hess <id@joeyh.name>  Tue, 13 Jan 2015 17:03:39 -0400
 

@@ -39,6 +39,7 @@ topLevelUUIDBasedLogs =
 	, preferredContentLog
 	, requiredContentLog
 	, scheduleLog
+	, differenceLog
 	]
 
 {- All the ways to get a key from a presence log file -}
@@ -81,6 +82,9 @@ groupPreferredContentLog = "group-preferred-content.log"
 
 scheduleLog :: FilePath
 scheduleLog = "schedule.log"
+
+differenceLog :: FilePath
+differenceLog = "difference.log"
 
 {- The pathname of the location log file for a given key. -}
 locationLogFile :: Key -> String
