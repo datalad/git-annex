@@ -1,0 +1,7 @@
+When using the "(+) Local computer" feature, I get the error message
+
+Internal Server Error: wrong number of words in ssh public key
+
+This is due to the use of pattern matching in this line https://github.com/RichiH/git-annex/blob/master/Assistant/Ssh.hs#L73 and because the key comment contains spaces. And of course it cotains spaces, on windows people often use their full name as user name. I will fill a bug later.
+
+My question is, how can I work around this bug? The client with this public key is running windows. How can I influence or at least see how this public key looks like? I could not find any documentation on this.
