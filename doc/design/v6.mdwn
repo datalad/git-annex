@@ -56,6 +56,8 @@ Possible reasons to make changes:
   Presumably, removing the yY would also speed it up, unless there are too
   many objects and the filesystem gets slow w/o the hash directories.
 
+* Removing a directory level would also reduce disk usage, see [[forum/scalability_with_lots_of_files/]] for more info.
+
 ## git-annex branch changes
 
 This might involve, eg, rethinking the xxx/yyy/ hash directories used
