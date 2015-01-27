@@ -243,7 +243,7 @@ addUrlFile :: Bool -> URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
 addUrlFile relaxed url urlinfo file = do
 	liftIO $ createDirectoryIfMissing True (parentDir file)
 	ifM (Annex.getState Annex.fast <||> pure relaxed)
-		( nodownload relaxed url urlinfo file
+		( nodownload url urlinfo file
 		, downloadWeb url urlinfo file
 		)
 
@@ -303,8 +303,8 @@ cleanup u url file key mtmp = do
 		Annex.Queue.flush
 	maybe noop (moveAnnex key) mtmp
 
-nodownload :: Bool -> URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
-nodownload relaxed url urlinfo file
+nodownload :: URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
+nodownload url urlinfo file
 	| Url.urlExists urlinfo = do
 		key <- Backend.URL.fromUrl url (Url.urlSize urlinfo)
 		cleanup webUUID url file key Nothing
