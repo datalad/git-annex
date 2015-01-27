@@ -193,27 +193,27 @@ case hashing.
 
 ## concrete design
 
-Make git-annex:version be used by newer git-annex versions than v5,
+Make git-annex:difference.log be used by newer git-annex versions than v5,
 and by nonstandard configurations.
 
 The file contents will be "timestamp uuid [value, ..]", where value is a
 serialized data type that describes divergence from v5 (since v5 and older
-don't have the git-annex:version file).
+don't have the git-annex:difference.log file).
 
 So, for example, "[Version 6]" could indicate that v6 is being used. Or,
 "[ObjectHashLower True, ObjectHashDirectories 1, BranchHashDirectories 1]"
 indicate a nonstandard configuration on top of v5 (this might turn out to
 be identical to v6; just make the compare equal and no problem).
 
-git-annex merge would check if it's merging in a git-annex:version from
-another repo that doesn't match the git-annex:version of the local repo,
+git-annex merge would check if it's merging in a git-annex:difference.log from
+another repo that doesn't match the git-annex:difference.log of the local repo,
 and abort. git-annex sync (and the assistant) would check the same, but
 before merging master branches either, to avoid a bad merge there.
 
-The git-annex:version of a local repo could be changed by an upgrade
+The git-annex:difference.log of a local repo could be changed by an upgrade
 or some sort of transition. When this happens, the new value is written
 for the uuid of the local repo. git-annex merge would then refuse to merge
-with remote repos until they were also transitioned to the new version.
+with remote repos until they were also transitioned.
 
 (There's perhaps some overlap here with the existing
 git-annex:transitions.log, however the current transitions involve
