@@ -19,6 +19,7 @@ import System.FilePath.Posix
 #ifdef mingw32_HOST_OS
 import Data.String.Utils
 #endif
+import Annex.DirHashes
 
 type RsyncUrl = String
 
@@ -36,7 +37,7 @@ rsyncEscape o u
 	| otherwise = u
 
 rsyncUrls :: RsyncOpts -> Key -> [RsyncUrl]
-rsyncUrls o k = map use (annexHashes def)
+rsyncUrls o k = map (use . def) dirHashes
   where
 	use h = rsyncUrl o </> hash h </> rsyncEscape o (f </> f)
 	f = keyFile k

@@ -37,6 +37,7 @@ import Annex.Perms
 import Logs.Transfer
 import Types.Creds
 import Types.Key (isChunkKey)
+import Annex.DirHashes
 
 import qualified Data.Map as M
 
@@ -212,7 +213,7 @@ remove o k = do
 	 - content could be. Note that the parent directories have
 	 - to also be explicitly included, due to how rsync
 	 - traverses directories. -}
-	includes = concatMap use (annexHashes def)
+	includes = concatMap (use .def) dirHashes
 	use h = let dir = h k in
 		[ parentDir dir
 		, dir

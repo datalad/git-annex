@@ -1,6 +1,6 @@
 {- git-annex file locations
  -
- - Copyright 2010-2013 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -20,7 +20,6 @@ module Locations (
 	gitAnnexInodeSentinal,
 	gitAnnexInodeSentinalCache,
 	annexLocations,
-	annexLocation,
 	gitAnnexDir,
 	gitAnnexObjectDir,
 	gitAnnexTmpMiscDir,
@@ -59,7 +58,6 @@ module Locations (
 	gitAnnexRemotesDir,
 	gitAnnexAssistantDefaultDir,
 	isLinkToAnnex,
-	annexHashes,
 	HashLevels(..),
 	hashDirMixed,
 	hashDirLower,
@@ -68,18 +66,16 @@ module Locations (
 	prop_idempotent_fileKey
 ) where
 
-import Data.Bits
-import Data.Word
-import Data.Hash.MD5
 import Data.Char
 import Data.Default
 
 import Common
-import Types
+import Types.GitConfig
 import Types.Key
 import Types.UUID
 import Types.Difference
 import qualified Git
+import Annex.DirHashes
 
 {- Conventions:
  -
@@ -105,11 +101,15 @@ objectDir :: FilePath
 objectDir = addTrailingPathSeparator $ annexDir </> "objects"
 
 {- Annexed file's possible locations relative to the .git directory.
- - There are two different possibilities, using different hashes. -}
-annexLocations :: Key -> [FilePath]
-annexLocations key = map (annexLocation key) (annexHashes def)
-annexLocation :: Key -> Hasher -> FilePath
-annexLocation key hasher = objectDir </> keyPath key hasher
+ - There are two different possibilities, using different hashes.
+ -
+ - Also, some repositories have a Difference in hash directory depth.
+ -}
+annexLocations :: GitConfig -> Key -> [FilePath]
+annexLocations config key = map (annexLocation config key) dirHashes
+
+annexLocation :: GitConfig -> Key -> (HashLevels -> Hasher) -> FilePath
+annexLocation config key hasher = objectDir </> keyPath key (hasher $ objectHashLevels config)
 
 {- Annexed object's location in a repository.
  -
@@ -138,11 +138,11 @@ gitAnnexLocation' key r config crippled
 	| Git.repoIsLocalBare r 
 		|| crippled 
 		|| hasDifference (== ObjectHashLower) (annexDifferences config) =
-			check $ map inrepo $ annexLocations key
+			check $ map inrepo $ annexLocations config key
 	{- Non-bare repositories only use hashDirMixed, so
 	 - don't need to do any work to check if the file is
 	 - present. -}
-	| otherwise = return $ inrepo $ annexLocation key (hashDirMixed def)
+	| otherwise = return $ inrepo $ annexLocation config key hashDirMixed
   where
 	inrepo d = Git.localGitDir r </> d
 	check locs@(l:_) = fromMaybe l <$> firstM doesFileExist locs
@@ -407,9 +407,9 @@ prop_idempotent_fileKey s
   where
 	k = stubKey { keyName = s, keyBackendName = "test" }
 
-{- A location to store a key on the filesystem. A directory hash is used,
- - to protect against filesystems that dislike having many items in a
- - single directory.
+{- A location to store a key on a special remote that uses a filesystem.
+ - A directory hash is used, to protect against filesystems that dislike
+ - having many items in a single directory.
  -
  - The file is put in a directory with the same name, this allows
  - write-protecting the directory to avoid accidental deletion of the file.
@@ -419,51 +419,11 @@ keyPath key hasher = hasher key </> f </> f
   where
 	f = keyFile key
 
-{- All possibile locations to store a key using different directory hashes. -}
-keyPaths :: Key -> [FilePath]
-keyPaths key = map (keyPath key) (annexHashes def)
-
-{- Two different directory hashes may be used. The mixed case hash
- - came first, and is fine, except for the problem of case-strict
- - filesystems such as Linux VFAT (mounted with shortname=mixed),
- - which do not allow using a directory "XX" when "xx" already exists.
- - To support that, most repositories use the lower case hash for new data. -}
-annexHashes :: HashLevels -> [Hasher]
-annexHashes n = [hashDirLower n, hashDirMixed n]
-
-type Hasher = Key -> FilePath
-
--- Number of hash levels to use. 2 is the default.
-newtype HashLevels = HashLevels Int
-
-instance Default HashLevels where
-	def = HashLevels 2
-
-hashDirs :: HashLevels -> Int -> String -> FilePath
-hashDirs (HashLevels 1) sz s = addTrailingPathSeparator $ take sz s
-hashDirs _ sz s = addTrailingPathSeparator $ take sz s </> drop sz s
-
-hashDirMixed :: HashLevels -> Hasher
-hashDirMixed n k = hashDirs n 2 $ take 4 $ display_32bits_as_dir =<< [a,b,c,d]
-  where
-	ABCD (a,b,c,d) = md5 $ md5FilePath $ key2file $ nonChunkKey k
-
-hashDirLower :: HashLevels -> Hasher
-hashDirLower n k = hashDirs n 3 $ take 6 $ md5s $ md5FilePath $ key2file $ nonChunkKey k
-
-{- modified version of display_32bits_as_hex from Data.Hash.MD5
- -   Copyright (C) 2001 Ian Lynagh 
- -   License: Either BSD or GPL
+{- All possibile locations to store a key in a special remote
+ - using different directory hashes.
+ -
+ - This is compatible with the annexLocations, for interoperability between
+ - special remotes and git-annex repos.
  -}
-display_32bits_as_dir :: Word32 -> String
-display_32bits_as_dir w = trim $ swap_pairs cs
-  where 
-	-- Need 32 characters to use. To avoid inaverdently making
-	-- a real word, use letters that appear less frequently.
-	chars = ['0'..'9'] ++ "zqjxkmvwgpfZQJXKMVWGPF"
-	cs = map (\x -> getc $ (shiftR w (6*x)) .&. 31) [0..7]
-	getc n = chars !! fromIntegral n
-	swap_pairs (x1:x2:xs) = x2:x1:swap_pairs xs
-	swap_pairs _ = []
-	-- Last 2 will always be 00, so omit.
-	trim = take 6
+keyPaths :: Key -> [FilePath]
+keyPaths key = map (keyPath key . def) dirHashes

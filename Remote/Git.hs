@@ -327,13 +327,15 @@ keyUrls r key = map tourl locs'
 	-- If the remote is known to not be bare, try the hash locations
 	-- used for non-bare repos first, as an optimisation.
 	locs
-		| remoteAnnexBare (gitconfig r) == Just False = reverse (annexLocations key)
-		| otherwise = annexLocations key
+		| remoteAnnexBare remoteconfig == Just False = reverse (annexLocations cfg key)
+		| otherwise = annexLocations cfg key
 #ifndef mingw32_HOST_OS
 	locs' = locs
 #else
 	locs' = map (replace "\\" "/") locs
 #endif
+	remoteconfig = gitconfig r
+	cfg = fromJust $ remoteGitConfig remoteconfig
 
 dropKey :: Remote -> Key -> Annex Bool
 dropKey r key
