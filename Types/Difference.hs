@@ -68,8 +68,7 @@ instance Monoid Differences where
 defver :: Difference
 defver = Version 5
 
--- Larger values of the same Difference constructor dominate
--- over smaller values, so given [Version 6, Version 5], returns [Version 6]
+-- Given [Version 6, Version 5], returns [Version 6]
 simplify :: [Difference] -> [Difference]
 simplify = go . sort
   where
@@ -80,9 +79,6 @@ simplify = go . sort
 		| otherwise = d1 : go (d2:ds)
 
 	like (Version _) (Version _) = True
-	like (ObjectHashLower _) (ObjectHashLower _) = True
-	like (ObjectHashDirectories _) (ObjectHashDirectories _) = True
-	like (BranchHashDirectories _) (BranchHashDirectories _) = True
 	like _ _ = False
 
 getDifferences :: Git.Repo -> Differences
