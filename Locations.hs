@@ -426,4 +426,4 @@ keyPath key hasher = hasher key </> f </> f
  - special remotes and git-annex repos.
  -}
 keyPaths :: Key -> [FilePath]
-keyPaths key = map (keyPath key . def) dirHashes
+keyPaths key = map (\h -> keyPath key (h def)) dirHashes

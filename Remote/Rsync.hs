@@ -213,8 +213,8 @@ remove o k = do
 	 - content could be. Note that the parent directories have
 	 - to also be explicitly included, due to how rsync
 	 - traverses directories. -}
-	includes = concatMap (use .def) dirHashes
-	use h = let dir = h k in
+	includes = concatMap use dirHashes
+	use h = let dir = h def k in
 		[ parentDir dir
 		, dir
 		-- match content directory and anything in it

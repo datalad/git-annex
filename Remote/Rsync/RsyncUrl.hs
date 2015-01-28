@@ -37,12 +37,12 @@ rsyncEscape o u
 	| otherwise = u
 
 rsyncUrls :: RsyncOpts -> Key -> [RsyncUrl]
-rsyncUrls o k = map (use . def) dirHashes
+rsyncUrls o k = map use dirHashes
   where
 	use h = rsyncUrl o </> hash h </> rsyncEscape o (f </> f)
 	f = keyFile k
 #ifndef mingw32_HOST_OS
-	hash h = h k
+	hash h = h def k
 #else
 	hash h = replace "\\" "/" (h k)
 #endif
