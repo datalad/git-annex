@@ -137,7 +137,7 @@ gitAnnexLocation' key r config crippled
 	 -}
 	| Git.repoIsLocalBare r 
 		|| crippled 
-		|| hasDifference (== ObjectHashLower) (annexDifferences config) =
+		|| hasDifference ObjectHashLower (annexDifferences config) =
 			check $ map inrepo $ annexLocations config key
 	{- Non-bare repositories only use hashDirMixed, so
 	 - don't need to do any work to check if the file is

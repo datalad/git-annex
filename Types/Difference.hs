@@ -13,15 +13,16 @@ module Types.Difference (
 	differenceConfigKey,
 	differenceConfigVal,
 	hasDifference,
+	listDifferences,
 ) where
 
 import Utility.PartialPrelude
 import qualified Git
 import qualified Git.Config
 
-import Data.List
 import Data.Maybe
 import Data.Monoid
+import qualified Data.Set as S
 
 -- Describes differences from the v5 repository format.
 --
@@ -45,27 +46,23 @@ data Difference
 	deriving (Show, Read, Ord, Eq, Enum, Bounded)
 
 data Differences
-	= Differences [Difference]
+	= Differences (S.Set Difference)
 	| UnknownDifferences
 
 instance Eq Differences where
-	Differences a == Differences b = canon a == canon b
+	Differences a == Differences b = a == b
 	_ == _ = False -- UnknownDifferences cannot be equal
 
 instance Monoid Differences where
-	mempty = Differences []
-	mappend (Differences l1) (Differences l2) = Differences (canon (l1 ++ l2))
+	mempty = Differences S.empty
+	mappend (Differences a) (Differences b) = Differences (S.union a b)
 	mappend _ _ = UnknownDifferences
-
--- Canonical form, allowing comparison.
-canon :: [Difference] -> [Difference]
-canon = nub . sort
 
 readDifferences :: String -> Differences
 readDifferences = maybe UnknownDifferences Differences . readish
 
 getDifferences :: Git.Repo -> Differences
-getDifferences r = Differences $ catMaybes $
+getDifferences r = Differences $ S.fromList $ catMaybes $
 	map getmaybe [minBound .. maxBound]
   where
 	getmaybe d = case Git.Config.isTrue =<< Git.Config.getMaybe (differenceConfigKey d) r of
@@ -83,6 +80,10 @@ differenceConfigVal _ = Git.Config.boolConfig True
 tunable :: String -> String
 tunable k = "annex.tune." ++ k
 
-hasDifference :: (Difference -> Bool) -> Differences -> Bool
-hasDifference f (Differences l) = any f l
+hasDifference :: Difference -> Differences -> Bool
+hasDifference d (Differences s) = S.member d s
 hasDifference _ UnknownDifferences = False
+
+listDifferences :: Differences -> [Difference]
+listDifferences (Differences s) = S.toList s
+listDifferences UnknownDifferences = []

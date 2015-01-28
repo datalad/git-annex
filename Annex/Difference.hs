@@ -34,7 +34,7 @@ setDifferences = do
 	otherds <- allDifferences <$> recordedDifferences
 	ds <- mappend otherds . annexDifferences <$> Annex.getGitConfig
 	when (ds /= mempty) $ do
-		ds'@(Differences l) <- ifM (isJust <$> getVersion)
+		ds' <- ifM (isJust <$> getVersion)
 			( do
 				oldds <- recordedDifferencesFor u
 				when (ds /= oldds) $
@@ -53,6 +53,6 @@ setDifferences = do
 						return otherds
 					else return ds
 			)
-		forM_ l $ \d ->
+		forM_ (listDifferences ds') $ \d ->
 			setConfig (ConfigKey $ differenceConfigKey d) (differenceConfigVal d)
 		recordDifferences ds' u

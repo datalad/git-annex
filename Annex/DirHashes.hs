@@ -42,7 +42,7 @@ branchHashLevels = configHashLevels OneLevelBranchHash
 
 configHashLevels :: Difference -> GitConfig -> HashLevels
 configHashLevels d config
-	| hasDifference (== d) (annexDifferences config) = HashLevels 1
+	| hasDifference d (annexDifferences config) = HashLevels 1
 	| otherwise = def
 
 branchHashDir :: GitConfig -> Key -> String
