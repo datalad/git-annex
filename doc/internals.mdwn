@@ -265,4 +265,4 @@ that should prevent merging.
 
 Example:
 
-	e605dca6-446a-11e0-8b2a-002170d25c55 [Version 5] timestamp=1422387398.30395s
+	e605dca6-446a-11e0-8b2a-002170d25c55 [ObjectHashLower] timestamp=1422387398.30395s

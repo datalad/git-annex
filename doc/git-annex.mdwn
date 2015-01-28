@@ -1839,7 +1839,7 @@ Here are all the supported configuration settings.
   Used by hook special remotes and external special remotes to record
   the type of the remote.
 
-* `annex.tune.objecthashdirectories`, `annex.tune.objecthashlower`, `annex.tune.branchhashdirectories`
+* `annex.tune.objecthash1`, `annex.tune.objecthashlower`, `annex.tune.branchhash1`
 
   These can be passed to `git annex init` to tune the repository.
   They cannot be safely changed in a running repository.

@@ -31,9 +31,7 @@ import qualified Data.Map as M
 setDifferences :: Annex ()
 setDifferences = do
 	u <- getUUID
-	otherds <- either error return 
-		=<< sanityCheckDifferences . allDifferences
-			<$> recordedDifferences
+	otherds <- allDifferences <$> recordedDifferences
 	ds <- mappend otherds . annexDifferences <$> Annex.getGitConfig
 	when (ds /= mempty) $ do
 		ds'@(Differences l) <- ifM (isJust <$> getVersion)

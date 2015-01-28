@@ -24,10 +24,11 @@ import Logs.UUIDBased
 import Logs.Difference.Pure
 
 recordDifferences :: Differences -> UUID -> Annex ()
-recordDifferences differences uuid = do
+recordDifferences (Differences differences) uuid = do
 	ts <- liftIO getPOSIXTime
 	Annex.Branch.change differenceLog $
 		showLog id . changeLog ts uuid (show differences) . parseLog Just
+recordDifferences UnknownDifferences _ = return ()
 
 -- Map of UUIDs that have Differences recorded.
 -- If a new version of git-annex has added a Difference this version
