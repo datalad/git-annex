@@ -7,6 +7,7 @@
 
 module Command.Find where
 
+import Data.Default
 import qualified Data.Map as M
 
 import Common.Annex
@@ -65,8 +66,8 @@ keyVars key =
 	, ("bytesize", size show)
 	, ("humansize", size $ roughSize storageUnits True)
 	, ("keyname", keyName key)
-	, ("hashdirlower", hashDirLower key)
-	, ("hashdirmixed", hashDirMixed key)
+	, ("hashdirlower", hashDirLower def key)
+	, ("hashdirmixed", hashDirMixed def key)
 	, ("mtime", whenavail show $ keyMtime key)
 	]
   where

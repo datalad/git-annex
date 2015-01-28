@@ -38,6 +38,7 @@ import Logs.Transfer
 import Types.Creds
 import Types.Key (isChunkKey)
 
+import Data.Default
 import qualified Data.Map as M
 
 remote :: RemoteType
@@ -212,7 +213,7 @@ remove o k = do
 	 - content could be. Note that the parent directories have
 	 - to also be explicitly included, due to how rsync
 	 - traverses directories. -}
-	includes = concatMap use annexHashes
+	includes = concatMap use (annexHashes def)
 	use h = let dir = h k in
 		[ parentDir dir
 		, dir

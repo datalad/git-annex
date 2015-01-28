@@ -60,6 +60,7 @@ module Locations (
 	gitAnnexAssistantDefaultDir,
 	isLinkToAnnex,
 	annexHashes,
+	HashLevels(..),
 	hashDirMixed,
 	hashDirLower,
 	preSanitizeKeyName,
@@ -71,6 +72,7 @@ import Data.Bits
 import Data.Word
 import Data.Hash.MD5
 import Data.Char
+import Data.Default
 
 import Common
 import Types
@@ -105,7 +107,7 @@ objectDir = addTrailingPathSeparator $ annexDir </> "objects"
 {- Annexed file's possible locations relative to the .git directory.
  - There are two different possibilities, using different hashes. -}
 annexLocations :: Key -> [FilePath]
-annexLocations key = map (annexLocation key) annexHashes
+annexLocations key = map (annexLocation key) (annexHashes def)
 annexLocation :: Key -> Hasher -> FilePath
 annexLocation key hasher = objectDir </> keyPath key hasher
 
@@ -140,7 +142,7 @@ gitAnnexLocation' key r config crippled
 	{- Non-bare repositories only use hashDirMixed, so
 	 - don't need to do any work to check if the file is
 	 - present. -}
-	| otherwise = return $ inrepo $ annexLocation key hashDirMixed
+	| otherwise = return $ inrepo $ annexLocation key (hashDirMixed def)
   where
 	inrepo d = Git.localGitDir r </> d
 	check locs@(l:_) = fromMaybe l <$> firstM doesFileExist locs
@@ -419,28 +421,35 @@ keyPath key hasher = hasher key </> f </> f
 
 {- All possibile locations to store a key using different directory hashes. -}
 keyPaths :: Key -> [FilePath]
-keyPaths key = map (keyPath key) annexHashes
+keyPaths key = map (keyPath key) (annexHashes def)
 
 {- Two different directory hashes may be used. The mixed case hash
  - came first, and is fine, except for the problem of case-strict
  - filesystems such as Linux VFAT (mounted with shortname=mixed),
  - which do not allow using a directory "XX" when "xx" already exists.
  - To support that, most repositories use the lower case hash for new data. -}
+annexHashes :: HashLevels -> [Hasher]
+annexHashes n = [hashDirLower n, hashDirMixed n]
+
 type Hasher = Key -> FilePath
 
-annexHashes :: [Hasher]
-annexHashes = [hashDirLower, hashDirMixed]
+-- Number of hash levels to use. 2 is the default.
+newtype HashLevels = HashLevels Int
 
-hashDirMixed :: Hasher
-hashDirMixed k = addTrailingPathSeparator $ take 2 dir </> drop 2 dir
+instance Default HashLevels where
+	def = HashLevels 2
+
+hashDirs :: HashLevels -> Int -> String -> FilePath
+hashDirs (HashLevels 1) sz s = addTrailingPathSeparator $ take sz s
+hashDirs _ sz s = addTrailingPathSeparator $ take sz s </> drop sz s
+
+hashDirMixed :: HashLevels -> Hasher
+hashDirMixed n k = hashDirs n 2 $ take 4 $ display_32bits_as_dir =<< [a,b,c,d]
   where
-	dir = take 4 $ display_32bits_as_dir =<< [a,b,c,d]
 	ABCD (a,b,c,d) = md5 $ md5FilePath $ key2file $ nonChunkKey k
 
-hashDirLower :: Hasher
-hashDirLower k = addTrailingPathSeparator $ take 3 dir </> drop 3 dir
-  where
-	dir = take 6 $ md5s $ md5FilePath $ key2file $ nonChunkKey k
+hashDirLower :: HashLevels -> Hasher
+hashDirLower n k = hashDirs n 3 $ take 6 $ md5s $ md5FilePath $ key2file $ nonChunkKey k
 
 {- modified version of display_32bits_as_hex from Data.Hash.MD5
  -   Copyright (C) 2001 Ian Lynagh 

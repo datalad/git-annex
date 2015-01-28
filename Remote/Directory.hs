@@ -15,6 +15,7 @@ module Remote.Directory (
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
+import Data.Default
 
 import Common.Annex
 import Types.Remote
@@ -107,7 +108,7 @@ getLocation d k = do
 
 {- Directory where the file(s) for a key are stored. -}
 storeDir :: FilePath -> Key -> FilePath
-storeDir d k = addTrailingPathSeparator $ d </> hashDirLower k </> keyFile k
+storeDir d k = addTrailingPathSeparator $ d </> hashDirLower def k </> keyFile k
 
 {- Where we store temporary data for a key, in the directory, as it's being
  - written. -}

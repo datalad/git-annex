@@ -16,6 +16,7 @@ module Remote.GCrypt (
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
 import Control.Exception
+import Data.Default
 
 import Common.Annex
 import Types.Remote
@@ -361,7 +362,7 @@ checkKey r rsyncopts k
 {- Annexed objects are hashed using lower-case directories for max
  - portability. -}
 gCryptLocation :: Remote -> Key -> FilePath
-gCryptLocation r key = Git.repoLocation (repo r) </> objectDir </> keyPath key hashDirLower
+gCryptLocation r key = Git.repoLocation (repo r) </> objectDir </> keyPath key (hashDirLower def)
 
 data AccessMethod = AccessDirect | AccessShell
 

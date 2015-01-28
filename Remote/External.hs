@@ -28,6 +28,7 @@ import Creds
 import Control.Concurrent.STM
 import System.Log.Logger (debugM)
 import qualified Data.Map as M
+import Data.Default
 
 remote :: RemoteType
 remote = RemoteType {
@@ -184,7 +185,7 @@ handleRequest' lck external req mp responsehandler
 	handleRemoteRequest (PROGRESS bytesprocessed) =
 		maybe noop (\a -> liftIO $ a bytesprocessed) mp
 	handleRemoteRequest (DIRHASH k) = 
-		send $ VALUE $ hashDirMixed k
+		send $ VALUE $ hashDirMixed def k
 	handleRemoteRequest (SETCONFIG setting value) =
 		liftIO $ atomically $ do
 			let v = externalConfig external

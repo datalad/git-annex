@@ -9,6 +9,7 @@ module Upgrade.V1 where
 
 import System.Posix.Types
 import Data.Char
+import Data.Default
 
 import Common.Annex
 import Types.Key
@@ -228,7 +229,7 @@ logFile1 :: Git.Repo -> Key -> String
 logFile1 repo key = Upgrade.V2.gitStateDir repo ++ keyFile1 key ++ ".log"
 
 logFile2 :: Key -> Git.Repo -> String
-logFile2 = logFile' hashDirLower
+logFile2 = logFile' (hashDirLower def)
 
 logFile' :: (Key -> FilePath) -> Key -> Git.Repo -> String
 logFile' hasher key repo =

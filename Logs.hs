@@ -10,6 +10,8 @@ module Logs where
 import Common.Annex
 import Types.Key
 
+import Data.Default
+
 {- There are several varieties of log file formats. -}
 data LogVariety
 	= UUIDBasedLog
@@ -88,7 +90,7 @@ differenceLog = "difference.log"
 
 {- The pathname of the location log file for a given key. -}
 locationLogFile :: Key -> String
-locationLogFile key = hashDirLower key ++ keyFile key ++ ".log"
+locationLogFile key = hashDirLower def key ++ keyFile key ++ ".log"
 
 {- Converts a pathname into a key if it's a location log. -}
 locationLogFileKey :: FilePath -> Maybe Key
@@ -102,13 +104,13 @@ locationLogFileKey path
 
 {- The filename of the url log for a given key. -}
 urlLogFile :: Key -> FilePath
-urlLogFile key = hashDirLower key </> keyFile key ++ urlLogExt
+urlLogFile key = hashDirLower def key </> keyFile key ++ urlLogExt
 
 {- Old versions stored the urls elsewhere. -}
 oldurlLogs :: Key -> [FilePath]
 oldurlLogs key =
-	[ "remote/web" </> hashDirLower key </> key2file key ++ ".log"
-	, "remote/web" </> hashDirLower key </> keyFile key ++ ".log"
+	[ "remote/web" </> hashDirLower def key </> key2file key ++ ".log"
+	, "remote/web" </> hashDirLower def key </> keyFile key ++ ".log"
 	]
 
 urlLogExt :: String
@@ -131,7 +133,7 @@ isUrlLog file = urlLogExt `isSuffixOf` file
 
 {- The filename of the remote state log for a given key. -}
 remoteStateLogFile :: Key -> FilePath
-remoteStateLogFile key = hashDirLower key </> keyFile key ++ remoteStateLogExt
+remoteStateLogFile key = hashDirLower def key </> keyFile key ++ remoteStateLogExt
 
 remoteStateLogExt :: String
 remoteStateLogExt = ".log.rmt"
@@ -141,7 +143,7 @@ isRemoteStateLog path = remoteStateLogExt `isSuffixOf` path
 
 {- The filename of the chunk log for a given key. -}
 chunkLogFile :: Key -> FilePath
-chunkLogFile key = hashDirLower key </> keyFile key ++ chunkLogExt
+chunkLogFile key = hashDirLower def key </> keyFile key ++ chunkLogExt
 
 chunkLogFileKey :: FilePath -> Maybe Key
 chunkLogFileKey path
@@ -160,7 +162,7 @@ isChunkLog path = chunkLogExt `isSuffixOf` path
 
 {- The filename of the metadata log for a given key. -}
 metaDataLogFile :: Key -> FilePath
-metaDataLogFile key = hashDirLower key </> keyFile key ++ metaDataLogExt
+metaDataLogFile key = hashDirLower def key </> keyFile key ++ metaDataLogExt
 
 metaDataLogExt :: String
 metaDataLogExt = ".log.met"

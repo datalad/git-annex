@@ -7,8 +7,6 @@
 
 module Remote.Hook (remote) where
 
-import qualified Data.Map as M
-
 import Common.Annex
 import Types.Remote
 import Types.Key
@@ -19,6 +17,9 @@ import Config.Cost
 import Annex.UUID
 import Remote.Helper.Special
 import Utility.Env
+
+import Data.Default
+import qualified Data.Map as M
 
 type Action = String
 type HookName = String
@@ -90,7 +91,7 @@ hookEnv action k f = Just <$> mergeenv (fileenv f ++ keyenv)
 		]
 	fileenv Nothing = []
 	fileenv (Just file) =  [envvar "FILE" file]
-	hashbits = map takeDirectory $ splitPath $ hashDirMixed k
+	hashbits = map takeDirectory $ splitPath $ hashDirMixed def k
 
 lookupHook :: HookName -> Action -> Annex (Maybe String)
 lookupHook hookname action = do

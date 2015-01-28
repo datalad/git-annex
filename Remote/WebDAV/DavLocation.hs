@@ -17,6 +17,7 @@ import Utility.Url (URLString)
 import System.FilePath.Posix -- for manipulating url paths
 import Network.Protocol.HTTP.DAV (inDAVLocation, DAVT)
 import Control.Monad.IO.Class (MonadIO)
+import Data.Default
 #ifdef mingw32_HOST_OS
 import Data.String.Utils
 #endif
@@ -33,9 +34,9 @@ keyDir :: Key -> DavLocation
 keyDir k = addTrailingPathSeparator $ hashdir </> keyFile k
   where
 #ifndef mingw32_HOST_OS
-	hashdir = hashDirLower k
+	hashdir = hashDirLower def k
 #else
-	hashdir = replace "\\" "/" (hashDirLower k)
+	hashdir = replace "\\" "/" (hashDirLower def k)
 #endif
 
 keyLocation :: Key -> DavLocation
