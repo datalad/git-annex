@@ -141,7 +141,8 @@ getLog :: Key -> [CommandParam] -> Annex [String]
 getLog key os = do
 	top <- fromRepo Git.repoPath
 	p <- liftIO $ relPathCwdToFile top
-	let logfile = p </> locationLogFile key
+	config <- Annex.getGitConfig
+	let logfile = p </> locationLogFile config key
 	inRepo $ pipeNullSplitZombie $
 		[ Params "log -z --pretty=format:%ct --raw --abbrev=40"
 		, Param "--remove-empty"

@@ -38,6 +38,7 @@ import Common.Annex
 import Types.MetaData
 import Annex.MetaData.StandardFields
 import qualified Annex.Branch
+import qualified Annex
 import Logs
 import Logs.SingleValue
 
@@ -52,7 +53,9 @@ instance SingleValueSerializable MetaData where
 	deserialize = Types.MetaData.deserialize
 
 getMetaDataLog :: Key -> Annex (Log MetaData)
-getMetaDataLog = readLog . metaDataLogFile
+getMetaDataLog key = do
+	config <- Annex.getGitConfig
+	readLog $ metaDataLogFile config key
 
 {- Go through the log from oldest to newest, and combine it all
  - into a single MetaData representing the current state.
@@ -97,10 +100,12 @@ addMetaData k metadata = addMetaData' k metadata =<< liftIO getPOSIXTime
 addMetaData' :: Key -> MetaData -> POSIXTime -> Annex ()
 addMetaData' k d@(MetaData m) now
 	| d == emptyMetaData = noop
-	| otherwise = Annex.Branch.change (metaDataLogFile k) $
-		showLog . simplifyLog 
-			. S.insert (LogEntry now metadata)
-			. parseLog
+	| otherwise = do
+		config <- Annex.getGitConfig
+		Annex.Branch.change (metaDataLogFile config k) $
+			showLog . simplifyLog 
+				. S.insert (LogEntry now metadata)
+				. parseLog
   where
 	metadata = MetaData $ M.filterWithKey (\f _ -> not (isLastChangedField f)) m
 
@@ -181,6 +186,7 @@ copyMetaData oldkey newkey
 	| oldkey == newkey = noop
 	| otherwise = do
 		l <- getMetaDataLog oldkey
-		unless (S.null l) $
-			Annex.Branch.change (metaDataLogFile newkey) $
+		unless (S.null l) $ do
+			config <- Annex.getGitConfig
+			Annex.Branch.change (metaDataLogFile config newkey) $
 				const $ showLog l

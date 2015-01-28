@@ -9,6 +9,8 @@ module Annex.DirHashes (
 	Hasher,
 	HashLevels(..),
 	objectHashLevels,
+	branchHashLevels,
+	branchHashDir,
 	dirHashes,
 	hashDirMixed,
 	hashDirLower,
@@ -33,10 +35,18 @@ instance Default HashLevels where
 	def = HashLevels 2
 
 objectHashLevels :: GitConfig -> HashLevels
-objectHashLevels config
-	| hasDifference (== OneLevelObjectHash) (annexDifferences config) =
-		HashLevels 1
+objectHashLevels = configHashLevels OneLevelObjectHash
+
+branchHashLevels :: GitConfig -> HashLevels
+branchHashLevels = configHashLevels OneLevelBranchHash
+
+configHashLevels :: Difference -> GitConfig -> HashLevels
+configHashLevels d config
+	| hasDifference (== d) (annexDifferences config) = HashLevels 1
 	| otherwise = def
+
+branchHashDir :: GitConfig -> Key -> String
+branchHashDir config key = hashDirLower (branchHashLevels config) key
 
 {- Two different directory hashes may be used. The mixed case hash
  - came first, and is fine, except for the problem of case-strict

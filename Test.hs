@@ -38,7 +38,6 @@ import qualified Types.KeySource
 import qualified Types.Backend
 import qualified Types.TrustLevel
 import qualified Types
-import qualified Logs
 import qualified Logs.MapLog
 import qualified Logs.Trust
 import qualified Logs.Remote
@@ -138,7 +137,6 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
 	, testProperty "prop_idempotent_key_decode" Types.Key.prop_idempotent_key_decode
 	, testProperty "prop_idempotent_shellEscape" Utility.SafeCommand.prop_idempotent_shellEscape
 	, testProperty "prop_idempotent_shellEscape_multiword" Utility.SafeCommand.prop_idempotent_shellEscape_multiword
-	, testProperty "prop_logs_sane" Logs.prop_logs_sane
 	, testProperty "prop_idempotent_configEscape" Logs.Remote.prop_idempotent_configEscape
 	, testProperty "prop_parse_show_Config" Logs.Remote.prop_parse_show_Config
 	, testProperty "prop_upFrom_basics" Utility.Path.prop_upFrom_basics

@@ -26,7 +26,8 @@ git-annex (5.20150114) UNRELEASED; urgency=medium
     http://git-annex.branchable.com/tuning/
   * merge: Refuse to merge changes from a git-annex branch of a repo
     that has been tuned in incompatable ways.
-  * Support annex.tune.objecthash1 and annex.tune.objecthashlower.
+  * Support annex.tune.objecthash1, annex.tune.objecthashlower, and
+    annex.tune.branchhash1.
 
  -- Joey Hess <id@joeyh.name>  Tue, 13 Jan 2015 17:03:39 -0400
 

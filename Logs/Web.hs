@@ -37,7 +37,8 @@ import Utility.Url
 {- Gets all urls that a key might be available from. -}
 getUrls :: Key -> Annex [URLString]
 getUrls key = do
-	l <- go $ urlLogFile key : oldurlLogs key
+	config <- Annex.getGitConfig
+	l <- go $ urlLogFile config key : oldurlLogs config key
 	tmpl <- Annex.getState (maybeToList . M.lookup key . Annex.tempurls)
 	return (tmpl ++ l)
   where
@@ -54,13 +55,15 @@ getUrlsWithPrefix key prefix = filter (prefix `isPrefixOf`) <$> getUrls key
 setUrlPresent :: UUID -> Key -> URLString -> Annex ()
 setUrlPresent uuid key url = do
 	us <- getUrls key
-	unless (url `elem` us) $
-		addLog (urlLogFile key) =<< logNow InfoPresent url
+	unless (url `elem` us) $ do
+		config <- Annex.getGitConfig
+		addLog (urlLogFile config key) =<< logNow InfoPresent url
 	logChange key uuid InfoPresent
 
 setUrlMissing :: UUID -> Key -> URLString -> Annex ()
 setUrlMissing uuid key url = do
-	addLog (urlLogFile key) =<< logNow InfoMissing url
+	config <- Annex.getGitConfig
+	addLog (urlLogFile config key) =<< logNow InfoMissing url
 	whenM (null <$> getUrls key) $
 		logChange key uuid InfoMissing
 
