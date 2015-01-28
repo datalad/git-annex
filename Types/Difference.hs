@@ -8,12 +8,14 @@
 module Types.Difference (
 	Difference(..),
 	Differences(..),
+	readDifferences,
 	getDifferences,
 	differenceConfigKey,
 	differenceConfigVal,
 	hasDifference,
 ) where
 
+import Utility.PartialPrelude
 import qualified Git
 import qualified Git.Config
 
@@ -55,8 +57,12 @@ instance Monoid Differences where
 	mappend (Differences l1) (Differences l2) = Differences (canon (l1 ++ l2))
 	mappend _ _ = UnknownDifferences
 
+-- Canonical form, allowing comparison.
 canon :: [Difference] -> [Difference]
 canon = nub . sort
+
+readDifferences :: String -> Differences
+readDifferences = maybe UnknownDifferences Differences . readish
 
 getDifferences :: Git.Repo -> Differences
 getDifferences r = Differences $ catMaybes $

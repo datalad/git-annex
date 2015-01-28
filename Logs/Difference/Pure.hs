@@ -18,8 +18,7 @@ import Types.Difference
 import Logs.UUIDBased
 
 parseDifferencesLog :: String -> (M.Map UUID Differences)
-parseDifferencesLog = simpleMap 
-	. parseLog (Just . maybe UnknownDifferences Differences . readish)
+parseDifferencesLog = simpleMap . parseLog (Just . readDifferences)
 
 -- The sum of all recorded differences, across all UUIDs.
 allDifferences :: M.Map UUID Differences -> Differences
