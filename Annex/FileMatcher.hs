@@ -28,12 +28,12 @@ checkFileMatcher :: (FileMatcher Annex) -> FilePath -> Annex Bool
 checkFileMatcher matcher file = checkMatcher matcher Nothing (Just file) S.empty True
 
 checkMatcher :: (FileMatcher Annex) -> Maybe Key -> AssociatedFile -> AssumeNotPresent -> Bool -> Annex Bool
-checkMatcher matcher mkey afile notpresent def
-	| isEmpty matcher = return def
+checkMatcher matcher mkey afile notpresent d
+	| isEmpty matcher = return d
 	| otherwise = case (mkey, afile) of
 		(_, Just file) -> go =<< fileMatchInfo file
 		(Just key, _) -> go (MatchingKey key)
-		_ -> return def
+		_ -> return d
   where
 	go mi = matchMrun matcher $ \a -> a notpresent mi
 

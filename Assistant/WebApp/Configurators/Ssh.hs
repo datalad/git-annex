@@ -91,15 +91,15 @@ sshInputAForm :: Field Handler Text -> SshInput -> AForm Handler SshInput
 #else
 sshInputAForm :: Field WebApp WebApp Text -> SshInput -> AForm WebApp WebApp SshInput
 #endif
-sshInputAForm hostnamefield def = normalize <$> gen
+sshInputAForm hostnamefield d = normalize <$> gen
   where
 	gen = SshInput
-		<$> aopt check_hostname (bfs "Host name") (Just $ inputHostname def)
-		<*> aopt check_username (bfs "User name") (Just $ inputUsername def)
-		<*> areq (selectFieldList authmethods) (bfs "Authenticate with") (Just $ inputAuthMethod def)
+		<$> aopt check_hostname (bfs "Host name") (Just $ inputHostname d)
+		<*> aopt check_username (bfs "User name") (Just $ inputUsername d)
+		<*> areq (selectFieldList authmethods) (bfs "Authenticate with") (Just $ inputAuthMethod d)
 		<*> aopt passwordField (bfs "Password") Nothing
-		<*> aopt textField (bfs "Directory") (Just $ Just $ fromMaybe (T.pack gitAnnexAssistantDefaultDir) $ inputDirectory def)
-		<*> areq intField (bfs "Port") (Just $ inputPort def)
+		<*> aopt textField (bfs "Directory") (Just $ Just $ fromMaybe (T.pack gitAnnexAssistantDefaultDir) $ inputDirectory d)
+		<*> areq intField (bfs "Port") (Just $ inputPort d)
 	
 	authmethods :: [(Text, AuthMethod)]
 	authmethods =
@@ -133,10 +133,10 @@ sshInputAForm hostnamefield def = normalize <$> gen
 
 	-- The directory is implicitly in home, so remove any leading ~/
 	normalize i = i { inputDirectory = normalizedir <$> inputDirectory i }
-	normalizedir d
-		| "~/" `T.isPrefixOf` d = T.drop 2 d
-		| "/~/" `T.isPrefixOf` d = T.drop 3 d
-		| otherwise = d
+	normalizedir dir
+		| "~/" `T.isPrefixOf` dir = T.drop 2 dir
+		| "/~/" `T.isPrefixOf` dir = T.drop 3 dir
+		| otherwise = dir
 
 data ServerStatus
 	= UntestedServer

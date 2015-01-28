@@ -110,10 +110,10 @@ inAnnexSafe key = inAnnex' (fromMaybe False) (Just False) go key
 			( checkOr is_unlocked lockfile
 			, return is_missing
 			)
-	checkOr def lockfile = do
+	checkOr d lockfile = do
 		v <- checkLocked lockfile
 		return $ case v of
-			Nothing -> def
+			Nothing -> d
 			Just True -> is_locked
 			Just False -> is_unlocked
 #else

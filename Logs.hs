@@ -10,8 +10,6 @@ module Logs where
 import Common.Annex
 import Types.Key
 
-import Data.Default
-
 {- There are several varieties of log file formats. -}
 data LogVariety
 	= UUIDBasedLog

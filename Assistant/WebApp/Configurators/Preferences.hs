@@ -34,17 +34,17 @@ data PrefsForm = PrefsForm
 	}
 
 prefsAForm :: PrefsForm -> MkAForm PrefsForm
-prefsAForm def = PrefsForm
+prefsAForm d = PrefsForm
 	<$> areq (storageField `withNote` diskreservenote)
-		(bfs "Disk reserve") (Just $ diskReserve def)
+		(bfs "Disk reserve") (Just $ diskReserve d)
 	<*> areq (positiveIntField `withNote` numcopiesnote)
-		(bfs "Number of copies") (Just $ numCopies def)
+		(bfs "Number of copies") (Just $ numCopies d)
 	<*> areq (checkBoxField `withNote` autostartnote)
-		"Auto start" (Just $ autoStart def)
+		"Auto start" (Just $ autoStart d)
 	<*> areq (selectFieldList autoUpgradeChoices)
-		(bfs autoUpgradeLabel) (Just $ autoUpgrade def)
+		(bfs autoUpgradeLabel) (Just $ autoUpgrade d)
 	<*> areq (checkBoxField `withNote` debugnote)
-		"Enable debug logging" (Just $ debugEnabled def)
+		"Enable debug logging" (Just $ debugEnabled d)
   where
 	diskreservenote = [whamlet|<br>Avoid downloading files from other repositories when there is too little free disk space.|]
 	numcopiesnote = [whamlet|<br>Only drop a file after verifying that other repositories contain this many copies.|]

@@ -23,7 +23,7 @@ instance Show ConfigKey where
 
 {- Looks up a setting in git config. -}
 getConfig :: ConfigKey -> String -> Annex String
-getConfig (ConfigKey key) def = fromRepo $ Git.Config.get key def
+getConfig (ConfigKey key) d = fromRepo $ Git.Config.get key d
 
 getConfigMaybe :: ConfigKey -> Annex (Maybe String)
 getConfigMaybe (ConfigKey key) = fromRepo $ Git.Config.getMaybe key
@@ -58,7 +58,7 @@ annexConfig key = ConfigKey $ "annex." ++ key
  - by remote.<name>.annex-cost, or if remote.<name>.annex-cost-command
  - is set and prints a number, that is used. -}
 remoteCost :: RemoteGitConfig -> Cost -> Annex Cost
-remoteCost c def = fromMaybe def <$> remoteCost' c
+remoteCost c d = fromMaybe d <$> remoteCost' c
 
 remoteCost' :: RemoteGitConfig -> Annex (Maybe Cost)
 remoteCost' c = case remoteAnnexCostCommand c of

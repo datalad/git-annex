@@ -161,8 +161,8 @@ creds2Form :: XMPPCreds -> XMPPForm
 creds2Form c = XMPPForm (xmppJID c) (xmppPassword c)
 
 xmppAForm :: (Maybe XMPPForm) -> MkAForm XMPPForm
-xmppAForm def = XMPPForm
-	<$> areq jidField (bfs "Jabber address") (formJID <$> def)
+xmppAForm d = XMPPForm
+	<$> areq jidField (bfs "Jabber address") (formJID <$> d)
 	<*> areq passwordField (bfs "Password") Nothing
 
 jidField :: MkField Text

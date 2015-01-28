@@ -98,7 +98,7 @@ extractGitConfig r = GitConfig
 	, annexDifferences = getDifferences r
 	}
   where
-	getbool k def = fromMaybe def $ getmaybebool k
+	getbool k d = fromMaybe d $ getmaybebool k
 	getmaybebool k = Git.Config.isTrue =<< getmaybe k
 	getmayberead k = readish =<< getmaybe k
 	getmaybe k = Git.Config.getMaybe k r
@@ -178,7 +178,7 @@ extractRemoteGitConfig r remotename = RemoteGitConfig
 	, remoteGitConfig = Nothing
 	}
   where
-	getbool k def = fromMaybe def $ getmaybebool k
+	getbool k d = fromMaybe d $ getmaybebool k
 	getmaybebool k = Git.Config.isTrue =<< getmaybe k
 	getmayberead k = readish =<< getmaybe k
 	getmaybe k = mplus (Git.Config.getMaybe (key k) r)

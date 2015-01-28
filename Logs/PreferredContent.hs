@@ -52,12 +52,12 @@ isRequiredContent :: Maybe UUID -> AssumeNotPresent -> Maybe Key -> AssociatedFi
 isRequiredContent = checkMap requiredContentMap
 
 checkMap :: Annex (FileMatcherMap Annex) -> Maybe UUID -> AssumeNotPresent -> Maybe Key -> AssociatedFile -> Bool -> Annex Bool
-checkMap getmap mu notpresent mkey afile def = do
+checkMap getmap mu notpresent mkey afile d = do
 	u <- maybe getUUID return mu
 	m <- getmap
 	case M.lookup u m of
-		Nothing -> return def
-		Just matcher -> checkMatcher matcher mkey afile notpresent def
+		Nothing -> return d
+		Just matcher -> checkMatcher matcher mkey afile notpresent d
 
 preferredContentMap :: Annex (FileMatcherMap Annex)
 preferredContentMap = maybe (fst <$> preferredRequiredMapsLoad) return

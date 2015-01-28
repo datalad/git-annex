@@ -29,7 +29,6 @@ import System.Posix (signalProcess, sigTERM)
 #else
 import Utility.WinProcess
 #endif
-import Data.Default
 import Network.URI
 
 {- Before the assistant can be restarted, have to remove our 

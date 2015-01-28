@@ -38,7 +38,6 @@ import Logs.Transfer
 import Types.Creds
 import Types.Key (isChunkKey)
 
-import Data.Default
 import qualified Data.Map as M
 
 remote :: RemoteType

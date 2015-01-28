@@ -28,7 +28,6 @@ import Creds
 import Control.Concurrent.STM
 import System.Log.Logger (debugM)
 import qualified Data.Map as M
-import Data.Default
 
 remote :: RemoteType
 remote = RemoteType {

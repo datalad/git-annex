@@ -28,7 +28,6 @@ import Common
 import Network.URI
 import Network.HTTP.Conduit
 import Network.HTTP.Types
-import Data.Default
 import qualified Data.CaseInsensitive as CI
 import qualified Data.ByteString as B
 import qualified Data.ByteString.UTF8 as B8

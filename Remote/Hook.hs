@@ -18,7 +18,6 @@ import Annex.UUID
 import Remote.Helper.Special
 import Utility.Env
 
-import Data.Default
 import qualified Data.Map as M
 
 type Action = String

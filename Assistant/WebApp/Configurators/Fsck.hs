@@ -167,8 +167,8 @@ getFsckPreferences = FsckPreferences
 	<$> (annexFsckNudge <$> Annex.getGitConfig)
 
 fsckPreferencesAForm :: FsckPreferences -> MkAForm FsckPreferences
-fsckPreferencesAForm def = FsckPreferences
-	<$> areq (checkBoxField `withNote` nudgenote) "Reminders" (Just $ enableFsckNudge def)
+fsckPreferencesAForm d = FsckPreferences
+	<$> areq (checkBoxField `withNote` nudgenote) "Reminders" (Just $ enableFsckNudge d)
   where
 	nudgenote = [whamlet|Remind me when using repositories that lack consistency checks.|]
 

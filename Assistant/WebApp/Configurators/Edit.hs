@@ -144,13 +144,13 @@ setRepoConfig uuid mremote oldc newc = do
 	legalName = makeLegalName . T.unpack . repoName
 
 editRepositoryAForm :: Maybe Remote -> RepoConfig -> MkAForm RepoConfig
-editRepositoryAForm mremote def = RepoConfig
+editRepositoryAForm mremote d = RepoConfig
 	<$> areq (if ishere then readonlyTextField else textField)
-		(bfs "Name") (Just $ repoName def)
-	<*> aopt textField (bfs "Description") (Just $ repoDescription def)
-	<*> areq (selectFieldList groups `withNote` help) (bfs "Repository group") (Just $ repoGroup def)
+		(bfs "Name") (Just $ repoName d)
+	<*> aopt textField (bfs "Description") (Just $ repoDescription d)
+	<*> areq (selectFieldList groups `withNote` help) (bfs "Repository group") (Just $ repoGroup d)
 	<*> associateddirectory
-	<*> areq checkBoxField "Syncing enabled" (Just $ repoSyncable def)
+	<*> areq checkBoxField "Syncing enabled" (Just $ repoSyncable d)
   where
 	ishere = isNothing mremote
 	isspecial = fromMaybe False $
@@ -163,14 +163,14 @@ editRepositoryAForm mremote def = RepoConfig
 		| isspecial = const True
 		| otherwise = not . specialRemoteOnly
 	customgroups :: [(Text, RepoGroup)]
-	customgroups = case repoGroup def of
+	customgroups = case repoGroup d of
 		RepoGroupCustom s -> [(T.pack s, RepoGroupCustom s)]
 		_ -> []
 	help = [whamlet|<a href="@{RepoGroupR}">What's this?</a>|]
 
-	associateddirectory = case repoAssociatedDirectory def of
+	associateddirectory = case repoAssociatedDirectory d of
 		Nothing -> aopt hiddenField "" Nothing
-		Just d -> aopt textField (bfs "Associated directory") (Just $ Just d)
+		Just dir -> aopt textField (bfs "Associated directory") (Just $ Just dir)
 
 getEditRepositoryR :: RepoId -> Handler Html
 getEditRepositoryR = postEditRepositoryR
