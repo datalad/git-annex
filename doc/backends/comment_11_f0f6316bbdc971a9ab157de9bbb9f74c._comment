@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnx8kHW66N3BqmkVpgtXDlYMvr8TJ5VvfY"
+ nickname="Yaroslav"
+ subject="add MD5SUM (with E) backend?"
+ date="2015-01-29T22:07:40Z"
+ content="""
+probably in many cases MD5SUM might be sufficient to cover the space of the available load and 
+
+- its size would be even smaller than SHA1 (thus smaller git-annex footprint)
+- immediate matching to often distributed MD5SUMs
+- matching to ETags (whenever wasn't a multipart upload) in S3 buckets
+
+or use of MD5SUM hash is really not recommended for non-encryption-critical cases too?
+"""]]
