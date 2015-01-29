@@ -44,7 +44,9 @@ main = do
 			return p
 		webappscript <- vbsLauncher tmpdir "git-annex-webapp" "git-annex webapp"
 		autostartscript <- vbsLauncher tmpdir "git-annex-autostart" "git annex assistant --autostart"
-		writeFile nsifile $ makeInstaller gitannex license
+		let htmlhelp = tmpdir </> "git-annex.html"
+		writeFile htmlhelp htmlHelpText
+		writeFile nsifile $ makeInstaller gitannex license htmlhelp
 			(catMaybes extrabins)
 			[ webappscript, autostartscript ]
 		mustSucceed "makensis" [File nsifile]
@@ -95,11 +97,11 @@ needGit = strConcat
 	, gitInstallDir
 	, fromString " , it seems to not be installed, "
 	, fromString "or may be installed in another location. "
-	, fromString "You can install git from http://git-scm.com//"
+	, fromString "You can install git from http:////git-scm.com//"
 	]
 
-makeInstaller :: FilePath -> FilePath -> [FilePath] -> [FilePath] -> String
-makeInstaller gitannex license extrabins launchers = nsis $ do
+makeInstaller :: FilePath -> FilePath -> FilePath -> [FilePath] -> [FilePath] -> String
+makeInstaller gitannex license htmlhelp extrabins launchers = nsis $ do
 	name "git-annex"
 	outFile $ str installer
 	{- Installing into the same directory as git avoids needing to modify
@@ -137,6 +139,8 @@ makeInstaller gitannex license extrabins launchers = nsis $ do
 		setOutPath "$INSTDIR\\cmd"
 		mapM_ addfile (gitannex:extrabins)
 	section "meta" [] $ do
+		setOutPath "$INSTDIR\\doc\\git\\html"
+		addfile htmlhelp
 		setOutPath "$INSTDIR"
 		addfile license
 		mapM_ addfile launchers
@@ -145,6 +149,7 @@ makeInstaller gitannex license extrabins launchers = nsis $ do
 		delete [RebootOK] $ startMenuItem
 		delete [RebootOK] $ autoStartItem
 		removefilesFrom "$INSTDIR/cmd" (gitannex:extrabins)
+		removefilesFrom "$INSTDIR\\doc\\git\\html" [htmlhelp]
 		removefilesFrom "$INSTDIR" $
 			launchers ++
 			[ license
@@ -195,4 +200,17 @@ cygwinDlls =
 	, "cygreadline7.dll"
 	, "cygncursesw-10.dll"
 	, "cygusb0.dll"
+	]
+
+-- msysgit opens Program Files/Git/doc/git/html/git-annex.html
+-- when git annex --help is run.
+writeHtmlText :: String
+writeHtmlText = unlines
+	[ "<html>"
+	, "<title>git-annex help</title>"
+	, "<body>"
+	, "For help on git-annex, run \"git annex help\", or"
+	, "<a href=\"https://git-annex.branchable.com/git-annex/\">read the man page</a>."
+	, "</body>"
+	, "</html"
 	]
