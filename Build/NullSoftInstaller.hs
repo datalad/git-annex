@@ -204,8 +204,8 @@ cygwinDlls =
 
 -- msysgit opens Program Files/Git/doc/git/html/git-annex.html
 -- when git annex --help is run.
-writeHtmlText :: String
-writeHtmlText = unlines
+htmlHelpText :: String
+htmlHelpText = unlines
 	[ "<html>"
 	, "<title>git-annex help</title>"
 	, "<body>"
