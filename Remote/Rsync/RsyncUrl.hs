@@ -44,5 +44,5 @@ rsyncUrls o k = map use dirHashes
 #ifndef mingw32_HOST_OS
 	hash h = h def k
 #else
-	hash h = replace "\\" "/" (h k)
+	hash h = replace "\\" "/" (h def k)
 #endif
