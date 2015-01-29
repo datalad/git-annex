@@ -95,7 +95,7 @@ needGit = strConcat
 	, gitInstallDir
 	, fromString " , it seems to not be installed, "
 	, fromString "or may be installed in another location. "
-	, fromString "You can install git from http:////git-scm.com//"
+	, fromString "You can install git from http://git-scm.com//"
 	]
 
 makeInstaller :: FilePath -> FilePath -> [FilePath] -> [FilePath] -> String
