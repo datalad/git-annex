@@ -14,7 +14,7 @@ Build-Depends:
 	libghc-cryptohash-dev,
 	libghc-dataenc-dev,
 	libghc-utf8-string-dev,
-	libghc-aws-dev (>= 0.9.2),
+	libghc-aws-dev (>= 0.9.2-2~),
 	libghc-conduit-dev,
 	libghc-resourcet-dev,
 	libghc-dav-dev (>= 1.0) [amd64 i386 kfreebsd-amd64 kfreebsd-i386 powerpc],
