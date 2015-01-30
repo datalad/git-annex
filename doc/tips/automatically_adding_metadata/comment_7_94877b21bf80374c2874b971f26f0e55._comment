@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnW_CrhP9p50n9UUhTg_a9glyKWSvnrjRQ"
+ nickname="Michele"
+ subject="pre-commit is OK on windows now - auto adding last mod datetime"
+ date="2015-01-30T11:48:24Z"
+ content="""
+@Joey just tested a nightly build and now pre-commit-annex is called, and with my modifications it autoadds last modified times for content.
+Trivially it's just the matter of adding:
+
+	field=\"datemod\"
+	value=$(stat -c %Y $f)
+	addmeta \"$f\" \"$field\" \"$value\"
+
+to the body of the process() function to the supplied pre-commit-annex script.
+thanks
+"""]]
