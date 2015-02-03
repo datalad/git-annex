@@ -1,0 +1,30 @@
+Hi,
+
+I would like to use Github and Google drive to transfer my files across devices. Here is what I've done so far :
+
+* Creating a local repo
+* Adding the files with `git annex add`
+* Pushing the files to google drive
+* Pushing the metadata to github
+* Cloning the github repo
+
+But I can't seem to get my files on the second repo from github. The naive way :
+
+    git annex get 1.pdf
+    Invalid command: 'git-annex-shell 'configlist' '/~/myid/papers''
+    You appear to be using ssh to clone a git:// URL.
+    Make sure your core.gitProxy config option and the
+    GIT_PROXY_COMMAND environment variable are NOT set.
+
+    Remote origin does not have git-annex installed; setting annex-ignore
+
+    This could be a problem with the git-annex installation on the remote. Please make sure that git-annex-shell is available in PATH when you ssh into the remote. Once you have fixed the git-annex installation, run: git config remote.origin.annex-ignore false
+
+After initializing the google drive remote on the second repo, I can't download the files :
+
+    git annex get 1.pdf --from googledrive
+     20:03:19 [googledriveannex-0.2.1] startRemote : '['GETAVAILABILITY']'
+
+After describing the remote with `git annex describe googledrive "my remote"`, it does nothing :
+
+    git annex get 1.pdf --from googledrive
