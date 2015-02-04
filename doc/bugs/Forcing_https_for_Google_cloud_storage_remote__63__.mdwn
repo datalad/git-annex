@@ -27,3 +27,5 @@ I tried to persuade `git annex` to use a SSL connection but without encouraging 
 Debian wheezy, git-annex version: 5.20141024~bpo70+1
 
 ### Please provide any additional information below.
+
+> [[done]]; port=443 supported since 5.20141203. --[[Joey]]
