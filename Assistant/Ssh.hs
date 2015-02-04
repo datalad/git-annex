@@ -111,33 +111,25 @@ sshTranscript :: [String] -> (Maybe String) -> IO (String, Bool)
 sshTranscript opts input = processTranscript "ssh" opts input
 
 {- Ensure that the ssh public key doesn't include any ssh options, like
- - command=foo, or other weirdness -}
-validateSshPubKey :: SshPubKey -> IO ()
+ - command=foo, or other weirdness.
+ -
+ - The returned version of the key has its comment removed.
+ -}
+validateSshPubKey :: SshPubKey -> Either String SshPubKey
 validateSshPubKey pubkey
-	| length (lines pubkey) == 1 =
-		either error return $ check $ words pubkey
-	| otherwise = error "too many lines in ssh public key"
+	| length (lines pubkey) == 1 = check $ words pubkey
+	| otherwise = Left "too many lines in ssh public key"
   where
-	check [prefix, _key, comment] = do
-		checkprefix prefix
-		checkcomment comment
-	check [prefix, _key] =
-		checkprefix prefix
+	check (prefix:key:_) = checkprefix prefix (unwords [prefix, key])
 	check _ = err "wrong number of words in ssh public key"
 
-	ok = Right ()
 	err msg = Left $ unwords [msg, pubkey]
 
-	checkprefix prefix
-		| ssh == "ssh" && all isAlphaNum keytype = ok
+	checkprefix prefix validpubkey
+		| ssh == "ssh" && all isAlphaNum keytype = Right validpubkey
 		| otherwise = err "bad ssh public key prefix"
 	  where
 		(ssh, keytype) = separate (== '-') prefix
-
-	checkcomment comment = case filter (not . safeincomment) comment of
-		[] -> ok
-		badstuff -> err $ "bad comment in ssh public key (contains: \"" ++ badstuff ++ "\")"
-	safeincomment c = isAlphaNum c || c == '@' || c == '-' || c == '_' || c == '.'
 
 addAuthorizedKeys :: Bool -> FilePath -> SshPubKey -> IO Bool
 addAuthorizedKeys gitannexshellonly dir pubkey = boolSystem "sh"
