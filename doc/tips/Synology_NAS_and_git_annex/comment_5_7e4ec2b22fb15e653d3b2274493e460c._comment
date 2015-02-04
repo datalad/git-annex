@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2015-02-04T19:16:36Z"
+ content="""
+@Antoni git-annex-shell configlist does not do anything that would
+normally make it use much memory at all.
+
+You might find strace or similar tools useful to figure out what's going
+on.
+"""]]
