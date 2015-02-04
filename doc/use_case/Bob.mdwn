@@ -20,6 +20,6 @@ even if the world has forgotten about git-annex and git.
 
 Run in a cron job, git-annex adds new files to archival drives at night. It
 also helps Bob keep track of intentional and unintentional copies of
-files and logs information he can use to decide when it's time to duplicate
+files, and logs information he can use to decide when it's time to duplicate
 the content of old drives.  
 <small>[[more about backup copies|copies]]</small>
