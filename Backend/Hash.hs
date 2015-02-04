@@ -32,9 +32,7 @@ type HashSize = Int
 hashes :: [Hash]
 hashes = concat 
 	[ map SHAHash [256, 1, 512, 224, 384]
-#ifdef WITH_CRYPTOHASH
 	, map SkeinHash [256, 512]
-#endif
 	]
 
 {- The SHA256E backend is the default, so genBackendE comes first. -}
@@ -178,10 +176,8 @@ shaHasher hashsize filesize
 
 skeinHasher :: HashSize -> (L.ByteString -> String)
 skeinHasher hashsize 
-#ifdef WITH_CRYPTOHASH
 	| hashsize == 256 = show . skein256
 	| hashsize == 512 = show . skein512
-#endif
 	| otherwise = error $ "unsupported skein size " ++ show hashsize
 
 {- A varient of the SHA256E backend, for testing that needs special keys

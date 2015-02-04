@@ -81,11 +81,6 @@ buildFlags = filter (not . null)
 #ifdef WITH_TDFA
 	, "TDFA"
 #endif
-#ifdef WITH_CRYPTOHASH
-	, "CryptoHash"
-#else
-#warning Building without CryptoHash.
-#endif
 #ifdef WITH_TORRENTPARSER
 	, "TorrentParser"
 #else

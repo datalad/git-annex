@@ -28,6 +28,7 @@ git-annex (5.20150114) UNRELEASED; urgency=medium
     that has been tuned in incompatable ways.
   * Support annex.tune.objecthash1, annex.tune.objecthashlower, and
     annex.tune.branchhash1.
+  * Remove support for building without cryptohash.
 
  -- Joey Hess <id@joeyh.name>  Tue, 13 Jan 2015 17:03:39 -0400
 
