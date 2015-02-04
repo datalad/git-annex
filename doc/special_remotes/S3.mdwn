@@ -1,8 +1,9 @@
 This special remote type stores file contents in a bucket in Amazon S3
 or a similar service.
 
-See [[tips/using_Amazon_S3]] and
-[[tips/Internet_Archive_via_S3]] for usage examples.
+See [[tips/using_Amazon_S3]], 
+[[tips/Internet_Archive_via_S3]], and [[tips/using_Google_Cloud_Storage]]
+for usage examples.
 
 ## configuration
 
