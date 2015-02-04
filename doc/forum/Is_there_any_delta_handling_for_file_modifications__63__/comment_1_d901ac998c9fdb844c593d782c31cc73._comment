@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-02-04T17:53:50Z"
+ content="""
+git-annex does not do deltas. However, the bup and ddar special remotes
+can both be used to store annexed files and will automatically do delta
+compression.
+"""]]
