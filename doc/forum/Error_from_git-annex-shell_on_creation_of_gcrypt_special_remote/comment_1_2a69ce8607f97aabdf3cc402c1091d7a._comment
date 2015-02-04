@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-02-04T18:09:49Z"
+ content="""
+It seems that some versions of git-shell will give this unhelpful
+error message. Newer versions instead say 
+"fatal: Interactive git shell is not enabled."
+
+The initial push of the git-annex branch is not what failed.
+It seems that the attempt to run "git-annex-shell gcryptsetup"
+was what failed.
+
+My guess is that the remote server has an older version of git-annex
+installed in /usr/bin, which doesn't understand the gcryptsetup
+command, and that your newer installation of the standalone
+version is not getting run when it sshes in. (A common problem; `~/.bashrc`
+and `~/.bash_profile` are both ignored.) The old version of
+git-annex-shell then passed the "gcryptsetup" command on to git-shell,
+which I guess rejected it like that. (Not sure why.)
+
+git-annex seems to have successfully fallen back to using rsync to
+configure the ssh://ma/meta/s/spw/local/annex repository's core.gcrypt-id.
+(You might want to check that was set correctly.)
+
+Also, since it detected an old/not-working git-annex-shell on the remote,
+it will have set git.remote.ma.gcrypt to "true", rather than
+"shell", and this will cause git-annex to bypass using git-annex-shell
+and instead use direct rsync. 
+"""]]
