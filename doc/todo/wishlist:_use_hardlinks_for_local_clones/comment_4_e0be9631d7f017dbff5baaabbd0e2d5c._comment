@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-02-04T20:03:19Z"
+ content="""
+No, please don't wrap your `cp`. Forcing git-annex to hard link
+files like that can result in data loss, in a number of different
+scenarios. And it's generally asking for a broken system.
+
+Since version 5.20140915, you can "git clone --shared" and
+this will set up a clone of a repository in which git-annex will
+use hardlinks, in a safe and reliable way. (Notably it marks the clone
+as untrusted.)
+"""]]
