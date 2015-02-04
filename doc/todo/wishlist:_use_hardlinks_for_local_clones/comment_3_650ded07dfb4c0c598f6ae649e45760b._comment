@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkHTRzRZoBFEDl9XcTfVveW8yO7CTKMg-o"
+ nickname="Felix"
+ subject="use your own cp"
+ date="2015-02-04T14:16:14Z"
+ content="""
+As a workaround one could use another cp. Maybe something like this:
+
+Make an executable shell script \"cp\":
+
+    #!/bin/sh
+
+    p1=\"$1\"
+    shift
+
+    if [ \"$p1\" = '--reflink=auto' ] ; then
+        p1='--link'
+    fi
+
+    exec /bin/cp \"$p1\" \"$@\"
+
+
+And put it into a directory which is found before the \"real\" cp:
+
+    export PATH=/path/to/special/cp/:$PATH
+
+
+This \"cp\" makes a hardlink if the '--reflink=auto' parameter is used (1st).
+
+"""]]
