@@ -5,8 +5,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Backend.Hash (
 	backends,
 	testKeyBackend,
@@ -24,7 +22,7 @@ import qualified Build.SysConfig as SysConfig
 import qualified Data.ByteString.Lazy as L
 import Data.Char
 
-data Hash = SHAHash HashSize | SkeinHash HashSize
+data Hash = SHAHash HashSize | SkeinHash HashSize | MD5Hash
 type HashSize = Int
 
 {- Order is slightly significant; want SHA256 first, and more general
@@ -33,6 +31,7 @@ hashes :: [Hash]
 hashes = concat 
 	[ map SHAHash [256, 1, 512, 224, 384]
 	, map SkeinHash [256, 512]
+	, [MD5Hash]
 	]
 
 {- The SHA256E backend is the default, so genBackendE comes first. -}
@@ -58,6 +57,7 @@ genBackendE hash = (genBackend hash)
 hashName :: Hash -> String
 hashName (SHAHash size) = "SHA" ++ show size
 hashName (SkeinHash size) = "SKEIN" ++ show size
+hashName MD5Hash = "MD5"
 
 hashNameE :: Hash -> String
 hashNameE hash = hashName hash ++ "E"
@@ -154,6 +154,7 @@ hashFile hash file filesize = liftIO $ go hash
 			either error return 
 				=<< externalSHA command hashsize file
 	go (SkeinHash hashsize) = skeinHasher hashsize <$> L.readFile file
+	go MD5Hash = md5Hasher <$> L.readFile file
 
 shaHasher :: HashSize -> Integer -> Either (L.ByteString -> String) String
 shaHasher hashsize filesize
@@ -179,6 +180,9 @@ skeinHasher hashsize
 	| hashsize == 256 = show . skein256
 	| hashsize == 512 = show . skein512
 	| otherwise = error $ "unsupported skein size " ++ show hashsize
+
+md5Hasher :: L.ByteString -> String
+md5Hasher = show . md5
 
 {- A varient of the SHA256E backend, for testing that needs special keys
  - that cannot collide with legitimate keys in the repository.

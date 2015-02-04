@@ -17,8 +17,8 @@ can use different ones for different files.
   This is the least expensive backend, recommended for really large
   files or slow systems.
 * `SHA512`, `SHA512E` -- Best SHA-2 hash, for the very paranoid.
-* `SHA1`, `SHA1E` -- Smaller hash than `SHA256` for those who want a checksum
-   but are not concerned about security.
+* `SHA1`, `SHA1E`, `MD5`, `MD5E` -- Smaller hashes than `SHA256`
+   for those who want a checksum but are not concerned about security.
 * `SHA384`, `SHA384E`, `SHA224`, `SHA224E` -- Hashes for people who like
   unusual sizes.
 * `SKEIN512`, `SKEIN512E`, `SKEIN256`, `SKEIN256E`

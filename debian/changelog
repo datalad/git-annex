@@ -29,6 +29,7 @@ git-annex (5.20150114) UNRELEASED; urgency=medium
   * Support annex.tune.objecthash1, annex.tune.objecthashlower, and
     annex.tune.branchhash1.
   * Remove support for building without cryptohash.
+  * Added MD5 and MD5E backends.
 
  -- Joey Hess <id@joeyh.name>  Tue, 13 Jan 2015 17:03:39 -0400
 

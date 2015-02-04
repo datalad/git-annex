@@ -8,6 +8,7 @@ module Utility.Hash (
 	sha512,
 	skein256,
 	skein512,
+	md5,
 	prop_hashes_stable
 ) where
 
@@ -42,6 +43,9 @@ skein256 = hashlazy
 skein512 :: L.ByteString -> Digest Skein512_512
 skein512 = hashlazy
 
+md5 ::  L.ByteString -> Digest MD5
+md5 = hashlazy
+
 {- Check that all the hashes continue to hash the same. -}
 prop_hashes_stable :: Bool
 prop_hashes_stable = all (\(hasher, result) -> hasher foo == result)
@@ -52,6 +56,7 @@ prop_hashes_stable = all (\(hasher, result) -> hasher foo == result)
 	, (show . sha512, "f7fbba6e0636f890e56fbbf3283e524c6fa3204ae298382d624741d0dc6638326e282c41be5e4254d8820772c5518a2c5a8c0c7f7eda19594a7eb539453e1ed7")
 	, (show . skein256, "a04efd9a0aeed6ede40fe5ce0d9361ae7b7d88b524aa19917b9315f1ecf00d33")
 	, (show . skein512, "fd8956898113510180aa4658e6c0ac85bd74fb47f4a4ba264a6b705d7a8e8526756e75aecda12cff4f1aca1a4c2830fbf57f458012a66b2b15a3dd7d251690a7")
+	, (show . md5, "acbd18db4cc2f85cedef654fccc4a4d8")
 	]
   where
 	foo = L.fromChunks [T.encodeUtf8 $ T.pack "foo"]
