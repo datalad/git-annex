@@ -1,10 +1,10 @@
-git-annex (5.20150114) UNRELEASED; urgency=medium
+git-annex (5.20150205) unstable; urgency=medium
 
   * info: Can now display info about a given uuid.
   * Added to remote/uuid info: Count of the number of keys present
     on the remote, and their size. This is rather expensive to calculate,
     so comes last and --fast will disable it.
-  * Git remote info now includes the date of the last sync with the remote.
+  * info remote: Include the date of the last sync with the remote.
   * sync: Added --message/-m option like git commit.
   * remotedaemon: Fix problem that could prevent ssh connections being
     made after two LOSTNET messages were received in a row (perhaps due to
@@ -12,10 +12,6 @@ git-annex (5.20150114) UNRELEASED; urgency=medium
   * Fix build failure when wget is not installed.
   * Fix wording of message displayed when unable to get a file that
     is available in untrusted repositories.
-  * Windows: Fix running of the pre-commit-annex hook.
-  * Avoid using fileSize which maxes out at just 2 gb on Windows.
-    Instead, use hFileSize, which doesn't have a bounded size.
-    Fixes support for files > 2 gb on Windows.
   * addurl: When a Content-Disposition header suggests a filename to use,
     addurl will consider using it, if it's reasonable and doesn't conflict
     with an existing file. (--file overrides this)
@@ -25,16 +21,19 @@ git-annex (5.20150114) UNRELEASED; urgency=medium
     repository for the first time. For details, see
     http://git-annex.branchable.com/tuning/
   * merge: Refuse to merge changes from a git-annex branch of a repo
-    that has been tuned in incompatable ways.
+    that has been tuned in incompatible ways.
   * Support annex.tune.objecthash1, annex.tune.objecthashlower, and
     annex.tune.branchhash1.
   * Remove support for building without cryptohash.
   * Added MD5 and MD5E backends.
   * assistant: Fix local pairing when ssh pubkey comment contains spaces.
-  * Windows: Fix S3 special remote; need to call withSocketsDo to support
-    Windows. Thanks, Trent.
+  * Avoid using fileSize which maxes out at just 2 gb on Windows.
+    Instead, use hFileSize, which doesn't have a bounded size.
+    Fixes support for files > 2 gb on Windows.
+  * Windows: Fix running of the pre-commit-annex hook.
+  * Windows: Fix S3 special remote; need to call withSocketsDo. Thanks, Trent.
 
- -- Joey Hess <id@joeyh.name>  Tue, 13 Jan 2015 17:03:39 -0400
+ -- Joey Hess <id@joeyh.name>  Thu, 05 Feb 2015 14:08:33 -0400
 
 git-annex (5.20150113) unstable; urgency=medium
 
