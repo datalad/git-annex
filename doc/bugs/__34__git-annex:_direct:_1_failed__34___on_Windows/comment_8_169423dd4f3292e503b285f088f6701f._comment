@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkDqgw0JLrxLH3GIpg36Mp79F_1pxZxWxU"
+ nickname="Benjamin"
+ subject="comment 8"
+ date="2015-02-05T13:05:31Z"
+ content="""
+Despite all things, that may or may not be possible to do to shorten the path lengths used by git-annex, it would be very helpful to properly detect that this problem is occuring and give a reasonable error message. Since windows' \"couldn't find path\"-message doesn't tell you what's going on.
+"""]]
