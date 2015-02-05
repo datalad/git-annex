@@ -31,6 +31,8 @@ git-annex (5.20150114) UNRELEASED; urgency=medium
   * Remove support for building without cryptohash.
   * Added MD5 and MD5E backends.
   * assistant: Fix local pairing when ssh pubkey comment contains spaces.
+  * Windows: Fix S3 special remote; need to call withSocketsDo to support
+    Windows. Thanks, Trent.
 
  -- Joey Hess <id@joeyh.name>  Tue, 13 Jan 2015 17:03:39 -0400
 

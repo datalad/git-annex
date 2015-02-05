@@ -9,6 +9,7 @@
 
 import System.Environment (getArgs, getProgName)
 import System.FilePath
+import Network.Socket (withSocketsDo)
 
 import qualified CmdLine.GitAnnex
 import qualified CmdLine.GitAnnexShell
@@ -22,7 +23,7 @@ import Utility.Env
 #endif
 
 main :: IO ()
-main = do
+main = withSocketsDo $ do
 	ps <- getArgs
 	run ps =<< getProgName
   where

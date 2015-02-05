@@ -38,3 +38,5 @@ index cdaa754..0eed9db 100644
         run ps =<< getProgName
    where
 """]]
+
+> Thanks very much for the patch! [[done]] --[[Joey]]
