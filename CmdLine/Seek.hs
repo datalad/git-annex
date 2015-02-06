@@ -77,7 +77,7 @@ withPathContents a params = do
 		, return [(p, takeFileName p)]
 		)
 	checkmatch matcher (f, relf) = matcher $ MatchingFile $ FileInfo
-		{ relFile = f
+		{ currFile = f
 		, matchFile = relf
 		}
 

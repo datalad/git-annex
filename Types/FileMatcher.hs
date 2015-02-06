@@ -19,8 +19,10 @@ data MatchInfo
 	| MatchingKey Key
 
 data FileInfo = FileInfo
-	{ relFile :: FilePath -- may be relative to cwd
-	, matchFile :: FilePath -- filepath to match on; may be relative to top
+	{ currFile :: FilePath
+	-- ^ current path to the file, for operations that examine it
+	, matchFile :: FilePath
+	-- ^ filepath to match on; may be relative to top of repo or cwd
 	}
 
 type FileMatcherMap a = M.Map UUID (Utility.Matcher.Matcher (S.Set UUID -> MatchInfo -> a Bool))

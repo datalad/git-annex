@@ -42,7 +42,7 @@ fileMatchInfo file = do
 	matchfile <- getTopFilePath <$> inRepo (toTopFilePath file)
 	return $ MatchingFile FileInfo
 		{ matchFile = matchfile
-		, relFile = file
+		, currFile = file
 		}
 
 matchAll :: FileMatcher Annex
