@@ -39,7 +39,7 @@ cmd = [withOptions options $
 	command "log" paramPaths seek SectionQuery "shows location log"]
 
 options :: [Option]
-options = passthruOptions ++ [gourceOption]
+options = passthruOptions ++ [gourceOption] ++ annexedMatchingOptions
 
 passthruOptions :: [Option]
 passthruOptions = map odate ["since", "after", "until", "before"] ++

@@ -35,9 +35,11 @@ import Utility.Tmp
 import Control.Exception (IOException)
 
 cmd :: [Command]
-cmd = [notBareRepo $ withOptions [includeDotFilesOption] $
-	command "add" paramPaths seek SectionCommon
-		"add files to annex"]
+cmd = [notBareRepo $ withOptions addOptions $
+	command "add" paramPaths seek SectionCommon "add files to annex"]
+
+addOptions :: [Option]
+addOptions = includeDotFilesOption : fileMatchingOptions
 
 includeDotFilesOption :: Option
 includeDotFilesOption = flagOption [] "include-dotfiles" "don't skip dotfiles"

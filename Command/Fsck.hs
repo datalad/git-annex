@@ -62,7 +62,7 @@ fsckOptions =
 	, startIncrementalOption
 	, moreIncrementalOption
 	, incrementalScheduleOption
-	] ++ keyOptions
+	] ++ keyOptions ++ annexedMatchingOptions
 
 seek :: CommandSeek
 seek ps = do

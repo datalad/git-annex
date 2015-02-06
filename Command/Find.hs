@@ -20,7 +20,8 @@ import Utility.DataUnits
 import Types.Key
 
 cmd :: [Command]
-cmd = [mkCommand $ command "find" paramPaths seek SectionQuery "lists available files"]
+cmd = [withOptions annexedMatchingOptions $ mkCommand $
+	command "find" paramPaths seek SectionQuery "lists available files"]
 
 mkCommand :: Command -> Command
 mkCommand = noCommit . noMessages . withOptions [formatOption, print0Option, jsonOption]

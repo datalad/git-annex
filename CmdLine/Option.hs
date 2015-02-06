@@ -7,7 +7,6 @@
 
 module CmdLine.Option (
 	commonOptions,
-	matcherOptions,
 	flagOption,
 	fieldOption,
 	optionName,
@@ -21,9 +20,9 @@ import Common.Annex
 import qualified Annex
 import Types.Messages
 import Types.DesktopNotify
-import Limit
 import CmdLine.Usage
 
+-- Options accepted by both git-annex and git-annex-shell sub-commands.
 commonOptions :: [Option]
 commonOptions =
 	[ Option [] ["force"] (NoArg (setforce True))
@@ -55,18 +54,6 @@ commonOptions =
 	setdebug = Annex.changeGitConfig $ \c -> c { annexDebug = True }
 	unsetdebug = Annex.changeGitConfig $ \c -> c { annexDebug = False }
 	setdesktopnotify v = Annex.changeState $ \s -> s { Annex.desktopnotify = Annex.desktopnotify s <> v }
-
-matcherOptions :: [Option]
-matcherOptions =
-	[ longopt "not" "negate next option"
-	, longopt "and" "both previous and next option must match"
-	, longopt "or" "either previous or next option must match"
-	, shortopt "(" "open group of options"
-	, shortopt ")" "close group of options"
-	]
-  where
-	longopt o = Option [] [o] $ NoArg $ addToken o
-	shortopt o = Option o [] $ NoArg $ addToken o
 
 {- An option that sets a flag. -}
 flagOption :: String -> String -> String -> Option

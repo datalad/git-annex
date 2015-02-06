@@ -55,7 +55,7 @@ noRepo a c = c { cmdnorepo = Just a }
 
 {- Adds options to a command. -}
 withOptions :: [Option] -> Command -> Command
-withOptions o c = c { cmdoptions = o }
+withOptions o c = c { cmdoptions = cmdoptions c ++ o }
 
 {- For start and perform stages to indicate what step to run next. -}
 next :: a -> Annex (Maybe a)

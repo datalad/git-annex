@@ -11,8 +11,9 @@ import Command
 import qualified Command.Find as Find
 
 cmd :: [Command]
-cmd = [Find.mkCommand $ command "findref" paramRef seek SectionPlumbing
-	"lists files in a git ref"]
+cmd = [withOptions nonWorkTreeMatchingOptions $ Find.mkCommand $ 
+	command "findref" paramRef seek SectionPlumbing
+		"lists files in a git ref"]
 
 seek :: CommandSeek
 seek refs = do

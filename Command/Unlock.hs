@@ -19,7 +19,8 @@ cmd =
 	, c "edit" "same as unlock"
 	]
   where
-	c n = notDirect . command n paramPaths seek SectionCommon
+	c n = notDirect . withOptions annexedMatchingOptions 
+		. command n paramPaths seek SectionCommon
 
 seek :: CommandSeek
 seek = withFilesInGit $ whenAnnexed start

@@ -992,9 +992,6 @@ subdirectories).
   This is similar to the find command, but instead of finding files in the
   current work tree, it finds files in the specified git ref.
 
-  Most MATCHING OPTIONS can be used with findref, to limit the files it
-  finds. However, the --include and --exclude options will not work.
-
 * `proxy -- git cmd [options]`
 
   Only useful in a direct mode repository, this runs the specified git

@@ -23,8 +23,11 @@ import Annex.Notification
 import qualified Data.Set as S
 
 cmd :: [Command]
-cmd = [withOptions [dropFromOption] $ command "drop" paramPaths seek
+cmd = [withOptions (dropOptions) $ command "drop" paramPaths seek
 	SectionCommon "indicate content of files not currently wanted"]
+
+dropOptions :: [Option]
+dropOptions = dropFromOption : annexedMatchingOptions
 
 dropFromOption :: Option
 dropFromOption = fieldOption ['f'] "from" paramRemote "drop content from a remote"

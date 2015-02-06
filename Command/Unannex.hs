@@ -23,7 +23,8 @@ import Utility.CopyFile
 import Command.PreCommit (lockPreCommitHook)
 
 cmd :: [Command]
-cmd = [command "unannex" paramPaths seek SectionUtility
+cmd = [withOptions annexedMatchingOptions $
+	command "unannex" paramPaths seek SectionUtility
 		"undo accidential add command"]
 
 seek :: CommandSeek

@@ -77,7 +77,7 @@ emptyStatInfo = StatInfo Nothing Nothing M.empty Nothing
 type StatState = StateT StatInfo Annex
 
 cmd :: [Command]
-cmd = [noCommit $ dontCheck repoExists $ withOptions [jsonOption] $
+cmd = [noCommit $ dontCheck repoExists $ withOptions (jsonOption : annexedMatchingOptions) $
 	command "info" (paramOptional $ paramRepeating paramItem) seek SectionQuery
 	"shows information about the specified item or the repository as a whole"]
 

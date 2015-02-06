@@ -16,7 +16,7 @@ import Logs.Trust
 import Logs.Web
 
 cmd :: [Command]
-cmd = [noCommit $ withOptions (jsonOption : keyOptions) $
+cmd = [noCommit $ withOptions (jsonOption : annexedMatchingOptions ++ keyOptions) $
 	command "whereis" paramPaths seek SectionQuery
 		"lists repositories that have file content"]
 

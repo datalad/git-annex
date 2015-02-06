@@ -28,7 +28,7 @@ metaDataOptions =
 	, untagOption
 	, getOption
 	, jsonOption
-	] ++ keyOptions
+	] ++ keyOptions ++ annexedMatchingOptions
 
 storeModMeta :: ModMeta -> Annex ()
 storeModMeta modmeta = Annex.changeState $

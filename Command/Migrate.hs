@@ -18,7 +18,7 @@ import qualified Command.ReKey
 import qualified Command.Fsck
 
 cmd :: [Command]
-cmd = [notDirect $ 
+cmd = [notDirect $ withOptions annexedMatchingOptions $
 	command "migrate" paramPaths seek
 		SectionUtility "switch data to different backend"]
 

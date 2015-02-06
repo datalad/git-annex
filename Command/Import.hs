@@ -26,7 +26,7 @@ opts =
 	, deduplicateOption
 	, cleanDuplicatesOption
 	, skipDuplicatesOption
-	]
+	] ++ fileMatchingOptions
 
 duplicateOption :: Option
 duplicateOption = flagOption [] "duplicate" "do not delete source files"

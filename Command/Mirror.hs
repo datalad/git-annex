@@ -18,7 +18,7 @@ import qualified Annex
 import Config.NumCopies
 
 cmd :: [Command]
-cmd = [withOptions (fromToOptions ++ keyOptions) $
+cmd = [withOptions (fromToOptions ++ annexedMatchingOptions ++ keyOptions) $
 	command "mirror" paramPaths seek
 		SectionCommon "mirror content of files to/from another repository"]
 
