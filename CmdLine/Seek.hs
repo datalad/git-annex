@@ -66,14 +66,20 @@ withFilesInRefs a = mapM_ go
 					void $ commandAction $ a f k
 
 withPathContents :: ((FilePath, FilePath) -> CommandStart) -> CommandSeek
-withPathContents a params = seekActions $ 
-	map a . concat <$> liftIO (mapM get params)
+withPathContents a params = do
+	matcher <- Limit.getMatcher
+	seekActions $ map a <$> (filterM (checkmatch matcher) =<< ps)
   where
+	ps = concat <$> liftIO (mapM get params)
 	get p = ifM (isDirectory <$> getFileStatus p)
 		( map (\f -> (f, makeRelative (parentDir p) f))
 			<$> dirContentsRecursiveSkipping (".git" `isSuffixOf`) True p
 		, return [(p, takeFileName p)]
 		)
+	checkmatch matcher (f, relf) = matcher $ MatchingFile $ FileInfo
+		{ relFile = f
+		, matchFile = relf
+		}
 
 withWords :: ([String] -> CommandStart) -> CommandSeek
 withWords a params = seekActions $ return [a params]

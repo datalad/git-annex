@@ -272,6 +272,11 @@ subdirectories).
 
   (Note that using `--deduplicate` or `--clean-duplicates` with the WORM
   backend does not look at file content, but filename and mtime.)
+  
+  To control which files are imported, many of the MATCHING OPTIONS can 
+  be used.
+
+		git annex import /dir --include='*.png'
 
 * `importfeed [url ...]`
 
@@ -724,7 +729,7 @@ subdirectories).
   When no item is specified, displays statistics and information
   for the repository as a whole.
 
-  When a directory is specified, the file matching options can be used
+  When a directory is specified, the MATCHING OPTIONS can be used
   to select the files in the directory that are included in the statistics.
 
   To only show the data that can be gathered quickly, use `--fast`.

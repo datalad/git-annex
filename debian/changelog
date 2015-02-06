@@ -6,6 +6,8 @@ git-annex (5.20150206) UNRELEASED; urgency=medium
     parameters it does not understand.
   * groupwanted: New command to set the groupwanted preferred content
     expression.
+  * import: Support file matching options such as --exclude, --include, 
+    --smallerthan, --largerthan
 
  -- Joey Hess <id@joeyh.name>  Fri, 06 Feb 2015 13:57:08 -0400
 
