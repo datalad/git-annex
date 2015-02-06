@@ -80,3 +80,6 @@ git-annex: copy: 230 failed
 
 # End of transcript or log.
 """]]
+
+> git-annex will now detect this misconfiguration and refuse to use it, so
+> [[done]] --[[Joey]]

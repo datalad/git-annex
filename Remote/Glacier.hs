@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Remote.Glacier (remote, jobList) where
+module Remote.Glacier (remote, jobList, checkSaneGlacierCommand) where
 
 import qualified Data.Map as M
 import qualified Data.Text as T
@@ -223,7 +223,9 @@ glacierParams c params = datacenter:params
 			(M.lookup "datacenter" c)
 
 glacierEnv :: RemoteConfig -> UUID -> Annex (Maybe [(String, String)])
-glacierEnv c u = go =<< getRemoteCredPairFor "glacier" c creds
+glacierEnv c u = do
+	liftIO checkSaneGlacierCommand
+	go =<< getRemoteCredPairFor "glacier" c creds
   where
 	go Nothing = return Nothing
 	go (Just (user, pass)) = do
@@ -301,3 +303,14 @@ jobList r keys = go =<< glacierEnv (config r) (uuid r)
 					| otherwise ->
 						parse c rest
 	parse c (_:rest) = parse c rest
+
+-- boto's version of glacier exits 0 when given a parameter it doesn't
+-- understand. See https://github.com/boto/boto/issues/2942
+checkSaneGlacierCommand :: IO ()
+checkSaneGlacierCommand = 
+	whenM ((Nothing /=) <$> catchMaybeIO shouldfail) $
+		error wrongcmd
+  where
+	test = proc "glacier" ["--compatibility-test-git-annex"]
+	shouldfail = withQuietOutput createProcessSuccess test
+	wrongcmd = "The glacier program in PATH seems to be from boto, not glacier-cli. Cannot use this program."

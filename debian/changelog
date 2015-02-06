@@ -1,3 +1,12 @@
+git-annex (5.20150206) UNRELEASED; urgency=medium
+
+  * glacier: Detect when the glacier command in PATH is the wrong one,
+    from boto, rather than from glacier-cli, and refuse to use it,
+    since the boto program fails to fail when passed
+    parameters it does not understand.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 06 Feb 2015 13:57:08 -0400
+
 git-annex (5.20150205) unstable; urgency=medium
 
   * info: Can now display info about a given uuid.
