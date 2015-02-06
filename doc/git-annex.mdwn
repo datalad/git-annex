@@ -504,6 +504,21 @@ subdirectories).
   Without an expression, displays the current preferred content setting
   of the repository.
 
+* `groupwanted groupname [expression]`
+
+  Sets or displays the groupwanted expression. This will be used by
+  repositories that are in the group, and that have their preferred
+  content expression set to "groupwanted".
+
+  For example, to configure a group named redundantarchive, and
+  make repositories in the group want to contain 3 copies of every file:
+
+	git annex groupwanted redundantarchive "not (copies=redundantarchive:3)"
+	for repo in foo bar baz; do
+		git annex group $repo redundantarchive
+		git annex wanted $repo groupwanted
+	done
+
 * `schedule repository [expression]`
 
   When run with an expression, configures scheduled jobs to run at a
@@ -1375,7 +1390,9 @@ no equivilant to `--in`.
 
 When a repository is in one of the standard predefined groups, like "backup"
 and "client", setting its preferred content to "standard" will use a
-built-in preferred content expression developed for that group.
+built-in preferred content expression developed for that group. Or,
+setting its preferred content to "groupwanted" will make it use whatever
+groupwanted expression you set for the group.
 
 # SCHEDULED JOBS
 

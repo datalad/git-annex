@@ -72,7 +72,7 @@ All content is wanted, unless it's already been archived somewhere else.
 `(not (copies=archive:1 or copies=smallarchive:1)) or approxlackingcopies=1`
 
 Note that if you want to archive multiple copies (not a bad idea!),
-you can set `groupwanted archive` to a version of 
+you can set `git-annex groupwanted archive` to a version of 
 the above preferred content expression with a larger number of copies
 than 1. Then make the archive repositories have a preferred
 content expression of "groupwanted" in order to use your modified

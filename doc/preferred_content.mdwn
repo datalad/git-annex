@@ -125,8 +125,8 @@ But, you can do more complicated things, for example:
 
 The "groupwanted" keyword can be used to refer to a preferred content
 expression that is associated with a group. This is like the "standard"
-keyword, but you can set up groupwanted preferred content expressions
-using `git annex vicfg`.
+keyword, but you can configure the preferred content expressions
+using `git annex groupwanted`.
 
 Note that when writing a groupwanted preferred content expression,
 you can use all of the keywords listed above, including "standard".
@@ -134,7 +134,8 @@ you can use all of the keywords listed above, including "standard".
 
 For example, to make a variant of the standard client preferred content
 expression that does not want files in the "out" directory, you
-could set `groupwanted client = standard and exclude=out/*`.
+could run: `git annex groupwanted client "standard and exclude=out/*"`
+
 Then repositories that are in the client group and have their preferred
 content expression set to "groupwanted" will use that, while
 other client repositories that have their preferred content expression
@@ -143,6 +144,17 @@ set to "standard" will use the standard expression.
 Or, you could make a new group, with your own custom preferred content
 expression tuned for your needs, and every repository you put in this
 group and make its preferred content be "groupwanted" will use it.
+
+For example, the archive group only wants to archive 1 copy of each file,
+spread amoung every repository in the group.
+Here's how to configure a group named redundantarchive, that instead
+wants to contain 3 copies of each file:
+
+	git annex groupwanted redundantarchive "not (copies=redundantarchive:3)"
+	for repo in foo bar baz; do
+		git annex group $repo redundantarchive
+		git annex wanted $repo groupwanted
+	done
 
 ### difference: metadata matching
 
