@@ -1,0 +1,28 @@
+Made a release yesterday, and caught up on most recent messages
+earlier this week. Backlog stands at 128 messages.
+
+Had to deal with an ugly problem with /usr/bin/glacier today. Seems that
+there are multiple programs all using that name, some of them shipping in
+some linux distributions, and the one from boto fails to fail when passed
+parameters it doesn't understand. Yugh! I had to make git-annex probe to
+make sure the right glacier program is installed.
+
+I'm planning to deprecate the glacier special remote at some point.
+Instead, I'd like to make the S3 special remote support the S3-glacier
+lifecycle, so objects can be uploaded to S3, set to transition to
+glacier, and then if necessary pulled back from glacier to S3. That should
+be much simpler and less prone to break.
+
+But not yet; [haskell-aws needs glacier support added](https://github.com/aristidb/aws/issues/81).
+Or I could use the new amazonka library, but I'd rather stick with
+haskell-aws.
+
+Some other minor improvements today included adding `git annex
+groupwanted`, which makes for easier examples than using vicfg, and
+making `git annex import` support options like --include and --exclude.
+
+Also I moved a many file matching options to only be accepted by
+the commands that actually use them. Of the remaining common
+options, most of them make sense for every command to accept (eg, --force
+and --debug). It would make sense to move --backend, --notify-start/finish,
+and perhaps --user-agent. Eventually.
