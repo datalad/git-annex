@@ -3,9 +3,9 @@
 2. git assistant broken
 
 ### What steps will reproduce the problem?
-fresh download of 19.5.msysgit.0
-fresh download of recent git-annex
-git-annex version 5.20150205-g0f63eb0
+ fresh download of 19.5.msysgit.0
+ fresh download of recent git-annex
+ git-annex version 5.20150205-g0f63eb0
 
 ### What version of git-annex are you using? On what operating system?
 Window 7 new Download today.
