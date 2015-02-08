@@ -10,6 +10,8 @@ git-annex (5.20150206) UNRELEASED; urgency=medium
     --smallerthan, --largerthan
   * The file matching options are now only accepted by commands that
     can actually use them, instead of by all commands.
+  * import: Avoid checksumming file twice when run in the default
+    or --duplicate mode.
 
  -- Joey Hess <id@joeyh.name>  Fri, 06 Feb 2015 13:57:08 -0400
 

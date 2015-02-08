@@ -67,14 +67,8 @@ start :: DuplicateMode -> (FilePath, FilePath) -> CommandStart
 start mode (srcfile, destfile) =
 	ifM (liftIO $ isRegularFile <$> getSymbolicLinkStatus srcfile)
 		( do
-			isdup <- do
-				backend <- chooseBackend destfile
-				let ks = KeySource srcfile srcfile Nothing
-				v <- genKey ks backend
-				case v of
-					Just (k, _) -> not . null <$> keyLocations k
-					_ -> return False
-			case pickaction isdup of
+			ma <- pickaction
+			case ma of
 				Nothing -> stop
 				Just a -> do
 					showStart "import" destfile
@@ -101,15 +95,16 @@ start mode (srcfile, destfile) =
 			, notoverwriting "(use --force to override)"
 			)
 	notoverwriting why = error $ "not overwriting existing " ++ destfile ++ " " ++ why
-	pickaction isdup = case mode of
-		DeDuplicate
-			| isdup -> Just deletedup
-			| otherwise -> Just importfile
-		CleanDuplicates
-			| isdup -> Just deletedup
-			| otherwise -> Nothing
-		SkipDuplicates
-			| isdup -> Nothing
-			| otherwise -> Just importfile
-		_ -> Just importfile
-
+	checkdup dupa notdupa = do
+		backend <- chooseBackend destfile
+		let ks = KeySource srcfile srcfile Nothing
+		v <- genKey ks backend
+		isdup <- case v of
+			Just (k, _) -> not . null <$> keyLocations k
+			_ -> return False
+		return $ if isdup then dupa else notdupa
+	pickaction = case mode of
+		DeDuplicate -> checkdup (Just deletedup) (Just importfile)
+		CleanDuplicates -> checkdup (Just deletedup) Nothing
+		SkipDuplicates -> checkdup Nothing (Just importfile)
+		_ -> return (Just importfile)
