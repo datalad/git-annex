@@ -21,42 +21,38 @@ cmd = [withOptions opts $ notBareRepo $ command "import" paramPaths seek
 	SectionCommon "move and add files from outside git working copy"]
 
 opts :: [Option]
-opts =
-	[ duplicateOption
-	, deduplicateOption
-	, cleanDuplicatesOption
-	, skipDuplicatesOption
-	] ++ fileMatchingOptions
-
-duplicateOption :: Option
-duplicateOption = flagOption [] "duplicate" "do not delete source files"
-
-deduplicateOption :: Option
-deduplicateOption = flagOption [] "deduplicate" "delete source files whose content was imported before"
-
-cleanDuplicatesOption :: Option
-cleanDuplicatesOption = flagOption [] "clean-duplicates" "delete duplicate source files (import nothing)"
-
-skipDuplicatesOption :: Option
-skipDuplicatesOption = flagOption [] "skip-duplicates" "import only new files"
+opts = duplicateModeOptions ++ fileMatchingOptions
 
 data DuplicateMode = Default | Duplicate | DeDuplicate | CleanDuplicates | SkipDuplicates
-	deriving (Eq)
+	deriving (Eq, Enum, Bounded)
+
+associatedOption :: DuplicateMode -> Maybe Option
+associatedOption Default = Nothing
+associatedOption Duplicate = Just $
+	flagOption [] "duplicate" "do not delete source files"
+associatedOption DeDuplicate = Just $
+	flagOption [] "deduplicate" "delete source files whose content was imported before"
+associatedOption CleanDuplicates = Just $
+	flagOption [] "clean-duplicates" "delete duplicate source files (import nothing)"
+associatedOption SkipDuplicates = Just $
+	flagOption [] "skip-duplicates" "import only new files"
+
+duplicateModeOptions :: [Option]
+duplicateModeOptions = mapMaybe associatedOption [minBound..maxBound]
 
 getDuplicateMode :: Annex DuplicateMode
-getDuplicateMode = gen
-	<$> getflag duplicateOption
-	<*> getflag deduplicateOption
-	<*> getflag cleanDuplicatesOption
-	<*> getflag skipDuplicatesOption
+getDuplicateMode = go . catMaybes <$> mapM getflag [minBound..maxBound]
   where
-	getflag = Annex.getFlag . optionName
-	gen False False False False = Default
-	gen True False False False = Duplicate
-	gen False True False False = DeDuplicate
-	gen False False True False = CleanDuplicates
-	gen False False False True = SkipDuplicates
-	gen _ _ _ _ = error "bad combination of --duplicate, --deduplicate, --clean-duplicates, --skip-duplicates"
+	getflag m = case associatedOption m of
+		Nothing -> return Nothing
+		Just o -> ifM (Annex.getFlag (optionName o))
+			( return (Just m)
+			, return Nothing
+			)
+	go [] = Default
+	go [m] = m
+	go ms = error $ "cannot combine " ++
+		unwords (map (optionParam . fromJust . associatedOption) ms)
 
 seek :: CommandSeek
 seek ps = do

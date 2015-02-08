@@ -10,6 +10,7 @@ module CmdLine.Option (
 	flagOption,
 	fieldOption,
 	optionName,
+	optionParam,
 	ArgDescr(..),
 	OptDescr(..),
 ) where
@@ -68,3 +69,6 @@ fieldOption short opt paramdesc description =
 {- The flag or field name used for an option. -}
 optionName :: Option -> String
 optionName (Option _ o _ _) = Prelude.head o
+
+optionParam :: Option -> String
+optionParam o = "--" ++ optionName o
