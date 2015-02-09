@@ -191,6 +191,7 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 	, testCase "edit (pre-commit)" test_edit_precommit
 	, testCase "partial commit" test_partial_commit
 	, testCase "fix" test_fix
+	, testCase "direct" test_direct
 	, testCase "trust" test_trust
 	, testCase "fsck (basics)" test_fsck_basic
 	, testCase "fsck (bare)" test_fsck_bare
@@ -529,6 +530,14 @@ test_fix = intmpclonerepoInDirect $ do
   where
 	subdir = "s"
 	newfile = subdir ++ "/" ++ annexedfile
+
+test_direct :: Assertion
+test_direct = intmpclonerepoInDirect $ do
+	git_annex "get" [annexedfile] @? "get of file failed"
+	annexed_present annexedfile
+	git_annex "direct" [] @? "switch to direct mode failed"
+	annexed_present annexedfile
+	git_annex "indirect" [] @? "switch to indirect mode failed"
 
 test_trust :: Assertion
 test_trust = intmpclonerepo $ do
