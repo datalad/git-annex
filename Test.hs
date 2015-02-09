@@ -330,6 +330,9 @@ test_drop_withremote = intmpclonerepo $ do
 	git_annex "numcopies" ["1"] @? "numcopies config failed"
 	git_annex "drop" [annexedfile] @? "drop failed though origin has copy"
 	annexed_notpresent annexedfile
+	-- make sure that the correct symlink is staged for the file
+	-- after drop
+	git_annex_expectoutput "status" [] []
 	inmainrepo $ annexed_present annexedfile
 
 test_drop_untrustedremote :: Assertion

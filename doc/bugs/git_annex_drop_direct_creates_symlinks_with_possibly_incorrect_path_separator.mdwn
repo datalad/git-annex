@@ -32,3 +32,6 @@ changing the path separator seemingly solves:
 ### Please provide any additional information below.
 
 no additional info.
+
+> I see that I broke this some time ago. Fixed it now, and added a test
+> case. [[done]] --[[Joey]]

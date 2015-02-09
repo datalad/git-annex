@@ -75,6 +75,7 @@ import Types.Key
 import Types.UUID
 import Types.Difference
 import qualified Git
+import Git.FilePath
 import Annex.DirHashes
 
 {- Conventions:
@@ -154,7 +155,7 @@ gitAnnexLink file key r config = do
 	currdir <- getCurrentDirectory
 	let absfile = fromMaybe whoops $ absNormPathUnix currdir file
 	loc <- gitAnnexLocation' key r config False
-	relPathDirToFile (parentDir absfile) loc
+	toInternalGitPath <$> relPathDirToFile (parentDir absfile) loc
   where
 	whoops = error $ "unable to normalize " ++ file
 

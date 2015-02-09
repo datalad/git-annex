@@ -66,7 +66,7 @@ absPathFrom :: FilePath -> FilePath -> FilePath
 absPathFrom dir path = simplifyPath (combine dir path)
 
 {- On Windows, this converts the paths to unix-style, in order to run
- - MissingH's absNormPath on them. Resulting path will use / separators. -}
+ - MissingH's absNormPath on them. -}
 absNormPathUnix :: FilePath -> FilePath -> Maybe FilePath
 #ifndef mingw32_HOST_OS
 absNormPathUnix dir path = MissingH.absNormPath dir path
