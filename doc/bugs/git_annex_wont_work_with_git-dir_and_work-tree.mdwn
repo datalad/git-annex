@@ -25,3 +25,5 @@ RemoteControl crashed: user error (nice ["ionice","-c3","/home/gioacchino/opt/gi
 
 WebApp crashed: <file descriptor: 11>: hPutStr: illegal operation (handle is closed
 """]]
+
+[[!meta title="assistant does not support nonstandard --git-dir"]]
