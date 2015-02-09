@@ -1,0 +1,81 @@
+### Please describe the problem.
+1. git annex  - command not found - found a workaround
+2. git assistant broken
+
+### What steps will reproduce the problem?
+1. fresh download of 19.5.msysgit.0
+2. fresh download of recent git-annex
+### What version of git-annex are you using? On what operating system?
+1. Window 7.
+2. git version 1.9.5.msysgit.0
+2. git-annex version 5.20150205-g0f63eb0
+
+### Please provide any additional information below.
+After copying
+   cp cmd/git-annex bin
+in the  git install directory it was working.
+
+Adding a fresh "removeable Storage" repository delivered
+git [Param "config",Param "core.fsyncobjectfiles",Param "true"] failed
+
+calling the command (locally) manually:
+   git config core.fsyncobjectfiles true
+works fine, but i found no way to call it on the remote directory.
+The "annex" directory on H: was created and looks like a bare git depot.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+[2015-02-07 17:09:04 Mitteleuropõische Zeit] main: starting assistant version 5.20150205-g0f63eb0
+[2015-02-07 17:09:04 Mitteleuropõische Zeit] Cronner: You should enable consistency checking to protect your data. 
+(scanning...) [2015-02-07 17:09:05 Mitteleuropõische Zeit] Watcher: Performing startup scan
+(started...) [2015-02-07 17:09:42 Mitteleuropõische Zeit] main: starting assistant version 5.20150205-g0f63eb0
+[2015-02-07 17:09:42 Mitteleuropõische Zeit] Cronner: You should enable consistency checking to protect your data. 
+recv: failed (No error)
+(scanning...) [2015-02-07 17:09:42 Mitteleuropõische Zeit] Watcher: Performing startup scan
+(started...) [2015-02-07 17:09:51 Mitteleuropõische Zeit] main: starting assistant version 5.20150205-g0f63eb0
+[2015-02-07 17:09:52 Mitteleuropõische Zeit] Cronner: You should enable consistency checking to protect your data. 
+(scanning...) [2015-02-07 17:09:52 Mitteleuropõische Zeit] Watcher: Performing startup scan
+(started...) [2015-02-07 17:10:18 Mitteleuropõische Zeit] Committer: Adding DSC07173.JPG DSC07174.JPG DSC07175.JPG
+
+add 2014-08-01-Waal\DSC07173.JPG Committer crashed: sha256sum parse error
+[2015-02-07 17:10:18 Mitteleuropõische Zeit] Committer: warning Committer crashed: sha256sum parse error
+recv: failed (No error)
+[2015-02-07 17:10:27 Mitteleuropõische Zeit] Committer: Adding DSC07175.JPG DSC07176.JPG DSC07177.JPG DSC07178.JPG
+add 2014-08-01-Waal\DSC07175.JPG Committer crashed: sha256sum parse error
+[2015-02-07 17:10:27 Mitteleuropõische Zeit] Committer: warning Committer crashed: sha256sum parse error
+[2015-02-07 17:10:37 Mitteleuropõische Zeit] main: starting assistant version 5.20150205-g0f63eb0
+[2015-02-07 17:10:37 Mitteleuropõische Zeit] Cronner: You should enable consistency checking to protect your data. 
+recv: failed (No error)
+recv: failed (No error)
+DaemonStatus crashed: MoveFileEx ".git\\annex\\daemon.status6720.tmp" ".git\\annex\\daemon.status": permission denied (Zugriff verweigert)
+[2015-02-07 17:10:37 Mitteleuropõische Zeit] DaemonStatus: warning DaemonStatus crashed: MoveFileEx ".git\\annex\\daemon.status6720.tmp" ".git\\annex\\daemon.status": permission denied (Zugriff verweigert)
+(scanning...) [2015-02-07 17:10:37 Mitteleuropõische Zeit] Watcher: Performing startup scan
+(started...) [2015-02-07 17:10:38 Mitteleuropõische Zeit] Committer: Adding DSC07178.JPG DSC07177.JPG DSC07176.JPG DSC07175.JPG DSC07174.JPG DSC07173.JPG
+
+add .\2014-08-01-Waal\DSC07178.JPG Committer crashed: sha256sum parse error
+[2015-02-07 17:10:38 Mitteleuropõische Zeit] Committer: warning Committer crashed: sha256sum parse error
+[2015-02-07 17:10:40 Mitteleuropõische Zeit] main: starting assistant version 5.20150205-g0f63eb0
+WebApp crashed: MoveFileEx ".git\\annex\\webapp.html5592.tmp" ".git\\annex\\webapp.html": permission denied (Zugriff verweigert)
+[2015-02-07 17:10:40 Mitteleuropõische Zeit] WebApp: warning WebApp crashed: MoveFileEx ".git\\annex\\webapp.html5592.tmp" ".git\\annex\\webapp.html": permission denied (Zugriff verweigert)
+[2015-02-07 17:10:40 Mitteleuropõische Zeit] Cronner: You should enable consistency checking to protect your data. 
+(scanning...) [2015-02-07 17:10:41 Mitteleuropõische Zeit] Watcher: Performing startup scan
+(started...) [2015-02-07 17:10:41 Mitteleuropõische Zeit] Committer: Adding DSC07178.JPG DSC07177.JPG DSC07176.JPG DSC07175.JPG DSC07174.JPG DSC07173.JPG
+
+add .\2014-08-01-Waal\DSC07178.JPG Committer crashed: sha256sum parse error
+[2015-02-07 17:10:42 Mitteleuropõische Zeit] Committer: warning Committer crashed: sha256sum parse error
+rerrrcereevcecc:vcvv :v::f :  af ffiafaaliaiielilldelee dedd( d  N( ((oN(NN oNooe o  re eerrerrorrrrroroo)rorr
+)r))
+)
+
+
+recv: failed (No error)
+recv: failed (No error)
+fatal: unable to access '..\..\..\..\H:\annex/config': Invalid argument
+07/Feb/2015:17:11:40 +0100 [Error#yesod-core] git [Param "config",Param "core.fsyncobjectfiles",Param "true"] failed @(yesod-core-1.2.19:Yesod.Core.Class.Yesod .\Yesod\Core\Class\Yesod.hs:503:5)
+
+
+
+# End of transcript or log.
+"""]]
+

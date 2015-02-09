@@ -1,0 +1,25 @@
+I am using git-annex to store the output of a build process that produces large binary files (~1GB). These files are built on a number of workers which then commit the files to a central server (git annex add && copy to origin)
+
+I am trying to delete some of the older builds but have been unable to see any disk space be freed on the server (Disk usage is identical before and after the delete).
+
+    df -h 
+    mcchicken-srv://repo 284G 114G 157G  43% /srv/repo
+
+To delete the files I have performed the following:
+
+* git clone <repo-url>
+* git annex drop <1gb_file>
+* git rm <1gb_file>
+* git commit
+* git annex sync
+* [log into server]
+* git annex sync
+* git annex unused
+* git annex dropunused
+
+
+I have also tried other variations of the above technique that I have found online, but to no avail.
+
+In all cases the files appear to not be in the repo when a clone is performed, However the disk usage on the server never decreases.
+
+How would I delete the older builds in a manner that will free up disk space?
