@@ -16,13 +16,11 @@ import Assistant.WebApp.Types
 import Assistant.Alert
 import Assistant.DaemonStatus
 import Utility.ThreadScheduler
-import Utility.Format
 import Git
 
 import Network.Multicast
 import Network.Socket
 import qualified Data.Text as T
-import Data.Char
 
 pairListenerThread :: UrlRenderer -> NamedThread
 pairListenerThread urlrenderer = namedThread "PairListener" $ do
@@ -39,16 +37,18 @@ pairListenerThread urlrenderer = namedThread "PairListener" $ do
 		Nothing -> go reqs cache sock
 		Just m -> do
 			debug ["received", show msg]
-			sane <- checkSane msg
 			(pip, verified) <- verificationCheck m
 				=<< (pairingInProgress <$> getDaemonStatus)
 			let wrongstage = maybe False (\p -> pairMsgStage m <= inProgressPairStage p) pip
 			let fromus = maybe False (\p -> remoteSshPubKey (pairMsgData m) == remoteSshPubKey (inProgressPairData p)) pip
-			case (wrongstage, fromus, sane, pairMsgStage m) of
+			case (wrongstage, fromus, checkSane (pairMsgData m), pairMsgStage m) of
 				(_, True, _, _) -> do
 					debug ["ignoring message that looped back"]
 					go reqs cache sock
-				(_, _, False, _) -> go reqs cache sock
+				(_, _, False, _) -> do
+					liftAnnex $ warning
+						"illegal control characters in pairing message; ignoring"
+					go reqs cache sock
 				-- PairReq starts a pairing process, so a
 				-- new one is always heeded, even if
 				-- some other pairing is in process.
@@ -83,19 +83,10 @@ pairListenerThread urlrenderer = namedThread "PairListener" $ do
 				"detected possible pairing brute force attempt; disabled pairing"
 			stopSending pip
 			return (Nothing, False)
-		|otherwise = return (Just pip, verified && sameuuid)
+		| otherwise = return (Just pip, verified && sameuuid)
 	  where
 		verified = verifiedPairMsg m pip
 		sameuuid = pairUUID (inProgressPairData pip) == pairUUID (pairMsgData m)
-		
-	checkSane msg
-		{- Control characters could be used in a
-		 - console poisoning attack. -}
-		| any isControl (filter (/= '\n') (decode_c msg)) = do
-			liftAnnex $ warning
-				"illegal control characters in pairing message; ignoring"
-			return False
-		| otherwise = return True
 
 	{- PairReqs invalidate the cache of recently finished pairings.
 	 - This is so that, if a new pairing is started with the

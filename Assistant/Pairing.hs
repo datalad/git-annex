@@ -58,6 +58,15 @@ data PairData = PairData
 	}
 	deriving (Eq, Read, Show)
 
+checkSane :: PairData -> Bool
+checkSane p = all (not . any isControl)
+	[ fromMaybe "" (remoteHostName p)
+	, remoteUserName p
+	, remoteDirectory p
+	, remoteSshPubKey p
+	, fromUUID (pairUUID p)
+	]
+
 type UserName = String
 
 {- A pairing that is in progress has a secret, a thread that is
