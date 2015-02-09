@@ -29,6 +29,7 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.Bits.Utils
+import Control.Concurrent (threadDelay)
 
 import Common.Annex
 import Annex.BranchState
@@ -232,28 +233,32 @@ forceCommit message = lockJournal $ \jl -> do
 
 {- Commits the staged changes in the index to the branch.
  - 
- - Ensures that the branch's index file is first updated to the state
+ - Ensures that the branch's index file is first updated to merge the state
  - of the branch at branchref, before running the commit action. This
  - is needed because the branch may have had changes pushed to it, that
  - are not yet reflected in the index.
- -
- - Also safely handles a race that can occur if a change is being pushed
- - into the branch at the same time. When the race happens, the commit will
- - be made on top of the newly pushed change, but without the index file
- - being updated to include it. The result is that the newly pushed
- - change is reverted. This race is detected and another commit made
- - to fix it.
  - 
  - The branchref value can have been obtained using getBranch at any
  - previous point, though getting it a long time ago makes the race
  - more likely to occur.
+ -
+ - Note that changes may be pushed to the branch at any point in time!
+ - So, there's a race. If the commit is made using the newly pushed tip of
+ - the branch as its parent, and that ref has not yet been merged into the
+ - index, then the result is that the commit will revert the pushed
+ - changes, since they have not been merged into the index. This race
+ - is detected and another commit made to fix it.
+ -
+ - (It's also possible for the branch to be overwritten,
+ - losing the commit made here. But that's ok; the data is still in the
+ - index and will get committed again later.)
  -}
 commitIndex :: JournalLocked -> Git.Ref -> String -> [Git.Ref] -> Annex ()
 commitIndex jl branchref message parents = do
 	showStoringStateAction
-	commitIndex' jl branchref message parents
-commitIndex' :: JournalLocked -> Git.Ref -> String -> [Git.Ref] -> Annex ()
-commitIndex' jl branchref message parents = do
+	commitIndex' jl branchref message message 0 parents
+commitIndex' :: JournalLocked -> Git.Ref -> String -> String -> Integer -> [Git.Ref] -> Annex ()
+commitIndex' jl branchref message basemessage retrynum parents = do
 	updateIndex jl branchref
 	committedref <- inRepo $ Git.Branch.commitAlways Git.Branch.AutomaticCommit message fullname parents
 	setIndexSha committedref
@@ -276,12 +281,16 @@ commitIndex' jl branchref message parents = do
 		| otherwise = True -- race!
 		
 	{- To recover from the race, union merge the lost refs
-	 - into the index, and recommit on top of the bad commit. -}
+	 - into the index. -}
 	fixrace committedref lostrefs = do
+		showSideAction "recovering from race"
+		let retrynum' = retrynum+1
+		-- small sleep to let any activity that caused
+		-- the race settle down
+		liftIO $ threadDelay (100000 + fromInteger retrynum')
 		mergeIndex jl lostrefs
-		commitIndex jl committedref racemessage [committedref]
-		
-	racemessage = message ++ " (recovery from race)"
+		let racemessage = basemessage ++ " (recovery from race #" ++ show retrynum' ++ "; expected commit parent " ++ show branchref ++ " but found " ++ show lostrefs ++ " )"
+		commitIndex' jl committedref racemessage basemessage retrynum' [committedref]
 
 {- Lists all files on the branch. There may be duplicates in the list. -}
 files :: Annex [FilePath]

@@ -17,6 +17,7 @@ git-annex (5.20150206) UNRELEASED; urgency=medium
   * webapp: Fix reversion in opening webapp when starting it manually
     inside a repository.
   * assistant: Improve sanity check for control characters when pairing.
+  * Improve race recovery code when committing to git-annex branch.
 
  -- Joey Hess <id@joeyh.name>  Fri, 06 Feb 2015 13:57:08 -0400
 

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2015-02-09T21:13:28Z"
+ content="""
+Finally got back to this. I downloaded the file.
+
+You may be able to fix your repository by running `git annex forget`
+
+I guess this is the same problem described in
+[[bugs/git-annex_branch_shows_commit_with_looong_commitlog]]
+"""]]
