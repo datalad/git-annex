@@ -195,10 +195,15 @@ recordUrl _ = noop
 #endif
 
 openBrowser :: Maybe FilePath -> FilePath -> String -> Maybe Handle -> Maybe Handle -> IO ()
-#ifndef __ANDROID__
-openBrowser mcmd htmlshim _realurl outh errh = runbrowser
-#else
 openBrowser mcmd htmlshim realurl outh errh = do
+	htmlshim' <- absPath htmlshim
+	openBrowser' mcmd htmlshim' realurl outh errh
+
+openBrowser' :: Maybe FilePath -> FilePath -> String -> Maybe Handle -> Maybe Handle -> IO ()
+#ifndef __ANDROID__
+openBrowser' mcmd htmlshim _realurl outh errh = runbrowser
+#else
+openBrowser' mcmd htmlshim realurl outh errh = do
 	recordUrl url
 	{- Android's `am` command does not work reliably across the
 	 - wide range of Android devices. Intead, FIFO should be set to 
