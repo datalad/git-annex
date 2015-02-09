@@ -506,7 +506,7 @@ fsckOnRemote r params
 			[ ("GIT_WORK_TREE", Git.repoPath r')
 			, ("GIT_DIR", Git.localGitDir r')
 			] environ
-		batchCommandEnv program (Param "fsck" : params) $ Just environ'
+		batchCommandEnv program (Param "fsck" : params) (Just environ')
 
 {- The passed repair action is run in the Annex monad of the remote. -}
 repairRemote :: Git.Repo -> Annex Bool -> Annex (IO Bool)
