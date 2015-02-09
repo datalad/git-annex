@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2015-02-09T19:09:53Z"
+ content="""
+I had never heard of [exFAT](http://en.wikipedia.org/wiki/ExFAT) before.
+
+I guess you were mounting it in linux using the FUSE implementation of
+exFAT. It's not very surprising when FUSE filesystems leave off support
+for some syscalls. In this case, chmod.
+
+Since even git clone fails, git-annex obviously cannot work.
+
+A bare repository might be the only option if you're stuck using exFAT for
+some reason.
+"""]]
