@@ -1,0 +1,10 @@
+Plowing through the backlog today, and fixing quite a few bugs! Got the
+backlog down to 87 messages from ~140. And some of the things I got to were
+old and/or hard.
+
+About a third of the day was spent revisiting
+[[bugs/git-annex_branch_shows_commit_with_looong_commitlog]].
+I still don't understand how that behavior can happen, but I have a
+donated repository where it did happen. Made several changes to try to make
+the problem less likely to occur, and not as annoying when it does occur,
+and maybe get me more info if it does happen to someone again.
