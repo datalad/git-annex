@@ -227,6 +227,7 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 	, testCase "crypto" test_crypto
 	, testCase "preferred content" test_preferred_content
 	, testCase "add subdirs" test_add_subdirs
+	, testCase "addurl" test_addurl
 	]
 
 -- this test case create the main repo
@@ -1355,6 +1356,16 @@ test_add_subdirs = intmpclonerepo $ do
 	writeFile ("dir2" </> "foo") $ content annexedfile
 	setCurrentDirectory "dir"
 	git_annex "add" [".." </> "dir2"] @? "add of ../subdir failed"
+
+test_addurl :: Assertion
+test_addurl = intmpclonerepo $ do
+	-- file:// only; this test suite should not hit the network
+	f <- absPath "myurl"
+	writeFile f "foo"
+	git_annex "addurl" ["file://" ++ f] @? "addurl failed on file:// url"
+	let dest = "addurlurldest"
+	git_annex "addurl" ["--file", dest, "file://" ++ f] @? "addurl failed on file:// url with --file"
+	doesFileExist dest @? (dest ++ " missing after addurl --file")
 
 -- This is equivilant to running git-annex, but it's all run in-process
 -- so test coverage collection works.
