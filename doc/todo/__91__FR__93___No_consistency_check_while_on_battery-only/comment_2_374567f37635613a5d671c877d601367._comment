@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="rasmus"
+ subject="comment 2"
+ date="2015-02-10T18:33:20Z"
+ content="""
+Yeah, probably it's more complicated than just checking `/sys/class/power_supply/BAT0/`...  There's something called [`pmset`](https://developer.apple.com/library/mac/documentation/Darwin/Reference/ManPages/man1/pmset.1.html) for macs, but I don't have a mac so I don't know how relevant it is.  For Windows there seems also to be some sort of [api](https://msdn.microsoft.com/en-us/library/windows/desktop/aa372659%28v=vs.85%29.aspx), but again I don't know anything about windows...
+"""]]
