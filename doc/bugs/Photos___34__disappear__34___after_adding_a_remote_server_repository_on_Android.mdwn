@@ -20,3 +20,5 @@ Using git-annex Android and Debian.
 ### Please provide any additional information below.
 
 I thought that adding a remote server repository would result in two non-bare repositories, such as what the Local pairing mode achieves. However Local pairing is not available on Android. I assumed the remote server would function in the same manner, except that I entered the SSH connection information manually.
+
+> [[done]]; not a bug per comment --[[Joey]]
