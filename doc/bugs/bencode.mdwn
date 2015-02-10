@@ -26,3 +26,7 @@ For what it's worth, I like the idea that packages can become stable (or old) an
 
 # End of transcript or log.
 """]]
+
+> Closing, since it's been over a month with no followup to my question,
+> and I cannot find any license problems at all with bencode. --[[Joey]]
+> [[done]]
