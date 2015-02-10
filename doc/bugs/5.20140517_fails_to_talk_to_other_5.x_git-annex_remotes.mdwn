@@ -34,4 +34,4 @@ git annex sync server
 
 If this is intended behavior, it seems to me the major version of git annex should be bumped, at the very least... -- [[anarcat]]
 
-[[!tag moreinfo]]
+> [[done]], seems operator error --[[Joey]]
