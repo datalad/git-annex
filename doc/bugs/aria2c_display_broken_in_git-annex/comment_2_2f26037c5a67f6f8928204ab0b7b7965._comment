@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="comment 2"
+ date="2015-02-10T17:22:08Z"
+ content="""
+maybe adding `\r` chars ourselves would fix it?
+"""]]
