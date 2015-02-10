@@ -32,6 +32,27 @@ withFilesInGit :: (FilePath -> CommandStart) -> CommandSeek
 withFilesInGit a params = seekActions $ prepFiltered a $
 	seekHelper LsFiles.inRepo params
 
+withFilesInGitNonRecursive :: (FilePath -> CommandStart) -> CommandSeek
+withFilesInGitNonRecursive a params = ifM (Annex.getState Annex.force)
+	( withFilesInGit a params
+	, if null params
+		then needforce
+		else seekActions $ prepFiltered a (getfiles [] params)
+	)
+  where
+	getfiles c [] = return (reverse c)
+	getfiles c (p:ps) = do
+		(fs, cleanup) <- inRepo $ LsFiles.inRepo [p]
+		case fs of
+			[f] -> do
+				void $ liftIO $ cleanup
+				getfiles (f:c) ps
+			[] -> do
+				void $ liftIO $ cleanup
+				getfiles c ps
+			_ -> needforce
+	needforce = error "Not recursively setting metadata. Use --force to do that."
+
 withFilesNotInGit :: Bool -> (FilePath -> CommandStart) -> CommandSeek
 withFilesNotInGit skipdotfiles a params
 	| skipdotfiles = do

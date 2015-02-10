@@ -22,6 +22,9 @@ git-annex (5.20150206) UNRELEASED; urgency=medium
     built with process-1.2
   * bittorrent: Fix mojibake introduced in parsing arai2c progress output.
   * fsck --from: If a download from a remote fails, propigate the failure.
+  * metadata: When setting metadata, do not recurse into directories by
+    default, since that can be surprising behavior and difficult to recover
+    from. The old behavior is available by using --force.
 
  -- Joey Hess <id@joeyh.name>  Fri, 06 Feb 2015 13:57:08 -0400
 

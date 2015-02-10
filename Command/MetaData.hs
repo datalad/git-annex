@@ -58,9 +58,12 @@ seek ps = do
 	getfield <- getOptionField getOption $ \ms ->
 		return $ either error id . mkMetaField <$> ms
 	now <- liftIO getPOSIXTime
+	let seeker = if null modmeta
+		then withFilesInGit
+		else withFilesInGitNonRecursive
 	withKeyOptions
 		(startKeys now getfield modmeta)
-		(withFilesInGit (whenAnnexed $ start now getfield modmeta))
+		(seeker $ whenAnnexed $ start now getfield modmeta)
 		ps
 
 start :: POSIXTime -> Maybe MetaField -> [ModMeta] -> FilePath -> Key -> CommandStart
