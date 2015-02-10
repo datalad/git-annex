@@ -1,3 +1,5 @@
+[[!meta title="mojibake in aria2c output"]]
+
 ### Please describe the problem.
 
 French messages in the `aria2c` client called from `git-annex` are garbled, probably double utf-8 encoded.
