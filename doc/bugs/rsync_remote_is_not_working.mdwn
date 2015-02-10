@@ -24,3 +24,5 @@ The other small issue
 * Kill the webapp process, re-run webapp, add remote again, it worked very quickly
 * But future interaction with the remote still requires password, both commandline & webapp
 
+> Closing this bug report since it seems it was largely due to a
+> misunderstanding of what "small archive" does. [[done]] --[[Joey]]
