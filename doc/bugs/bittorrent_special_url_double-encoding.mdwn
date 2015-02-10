@@ -170,4 +170,4 @@ LC_ALL=
 # End of transcript or log.
 """]]
 
---[[anarcat]]
+Previous similar UTF-8 bug: [[forget_corrupts_non-ascii_chars]]. Looks similar. --[[anarcat]]
