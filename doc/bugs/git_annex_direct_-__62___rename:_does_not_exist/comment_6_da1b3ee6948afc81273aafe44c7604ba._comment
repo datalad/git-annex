@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnwNDA50ZupMvOgpgDqzDRyu5B-mYlVwa4"
+ nickname="Andreas"
+ subject="comment 6"
+ date="2015-02-10T07:38:01Z"
+ content="""
+5.20140717 (ubuntu 14.10)
+
+There is no easy way (ready made binary package to download) to get a more recent version, right?
+
+BTW: I am also seeing issues with 5.20141024-g613f396 on ARM with a glacier remote. Maybe I am asking for too much there. ;) 
+"""]]
