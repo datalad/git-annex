@@ -31,3 +31,5 @@ Mac OS X 10.9.4
 
 # End of transcript or log.
 """]]
+
+> [[done]]; fixed in [[!commit d84eab8a8af0c8cfa85de5baabfd9a2cf306f968]]
