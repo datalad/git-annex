@@ -1,4 +1,5 @@
 [[!meta title="aria2c output very verbose (non-console mode)"]]
+[[!tag confirmed]]
 
 ### Please describe the problem.
 
