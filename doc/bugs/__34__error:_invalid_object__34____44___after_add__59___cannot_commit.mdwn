@@ -20,3 +20,5 @@ Any way I could resolve this? I don’t want to git reset for now, since this wi
 git-annex 5.20140818
 
 Linux 3.16.1
+
+[[!tag moreinfo]]
