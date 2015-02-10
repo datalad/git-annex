@@ -1,6 +1,6 @@
 {- Metered IO
  -
- - Copyright 2012, 2013 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2105 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -17,6 +17,7 @@ import System.IO.Unsafe
 import Foreign.Storable (Storable(sizeOf))
 import System.Posix.Types
 import Data.Int
+import Data.Bits.Utils
 
 {- An action that can be run repeatedly, updating it on the bytes processed.
  -
@@ -163,12 +164,13 @@ commandMeter progressparser meterupdate cmd params = liftIO $ catchBoolIO $
 	p = proc cmd (toCommand params)
 
 	feedprogress prev buf h = do
-		s <- hGetSomeString h 80
-		if null s
+		b <- S.hGetSome h 80
+		if S.null b
 			then return True
 			else do
-				putStr s
+				S.hPut stdout b
 				hFlush stdout
+				let s = w82s (S.unpack b)
 				let (mbytes, buf') = progressparser (buf++s)
 				case mbytes of
 					Nothing -> feedprogress prev buf' h

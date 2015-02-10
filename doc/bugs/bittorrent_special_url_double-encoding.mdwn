@@ -173,3 +173,5 @@ LC_ALL=
 """]]
 
 Previous similar UTF-8 bug: [[forget_corrupts_non-ascii_chars]]. Looks similar. --[[anarcat]]
+
+> [[fixed|done]] --[[Joey]]
