@@ -18,3 +18,5 @@ Launch Git Annex from the applications menu.
 
 Using 4.3/4.4 daily build (nov 1st 2014) apk.
 CyanogemMod 11 (M10)
+
+> Seems to be a dup of [[Android_Default_startup_command]]; [[done]] --[[Joey]]
