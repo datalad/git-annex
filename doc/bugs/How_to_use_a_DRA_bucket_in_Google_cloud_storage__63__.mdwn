@@ -21,3 +21,7 @@ Wheezy, git-annex version: 5.20141024~bpo70+1
 ### Please provide any additional information below.
 
 There didn't seem to be any extra logs and `--debug` didn't seem to add anything useful.
+
+> Closing, as it seems others have gotten this to work with a more recent
+> version of git-annex. Please followup if it doesn't work. [[done]]
+> --[[Joey]]
