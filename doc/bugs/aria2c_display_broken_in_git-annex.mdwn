@@ -1,3 +1,5 @@
+[[!meta title="aria2c output very verbose (non-console mode)"]]
+
 ### Please describe the problem.
 
 Instead of displaying what are probably carriage returns, git-annex strips those out and outputs a *lot* of lines when downloading stuff through aria2c. On small downloads, it's not a big deal, but on large downloads it can flood the screen pretty badly.
