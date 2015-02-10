@@ -23,3 +23,6 @@ git annex direct displays warnings(?)
 
 # End of transcript or log.
 """]]
+
+> [[done]]; cannot reproduce with current version of git-annex AFAICS.
+> --[[Joey]]
