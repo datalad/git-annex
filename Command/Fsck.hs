@@ -141,7 +141,10 @@ performRemote key file backend numcopies remote =
 	dispatch (Right True) = withtmp $ \tmpfile ->
 		ifM (getfile tmpfile)
 			( go True (Just tmpfile)
-			, go True Nothing
+			, do
+				warning "failed to download file from remote"
+				go True Nothing
+				return False
 			)
 	dispatch (Right False) = go False Nothing
 	go present localcopy = check

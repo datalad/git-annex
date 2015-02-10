@@ -33,3 +33,4 @@ Not really sure, but rerunning the commands show that the openBinaryFile happens
 
 built using Homebrew (i.e. in a cabal sandbox) on OS X Yosemite 10.10.1
 
+> [[fixed|done]] as described in comment --[[Joey]]
