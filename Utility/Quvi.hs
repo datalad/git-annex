@@ -22,6 +22,7 @@ data QuviVersion
 	= Quvi04
 	| Quvi09
 	| NoQuvi
+	deriving (Show)
 
 data Page = Page
 	{ pageTitle :: String
@@ -61,7 +62,8 @@ parseEnum s = Page
 	m = M.fromList $ map (separate (== '=')) $ lines s
 
 probeVersion :: IO QuviVersion
-probeVersion = examine <$> processTranscript "quvi" ["--version"] Nothing
+probeVersion = catchDefaultIO NoQuvi $
+	examine <$> processTranscript "quviaaa" ["--version"] Nothing
   where
 	examine (s, True)
 		| "quvi v0.4" `isInfixOf` s = Quvi04
