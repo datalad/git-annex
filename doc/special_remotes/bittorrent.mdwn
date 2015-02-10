@@ -27,3 +27,5 @@ git-annex takes a cautious approach and when dropping a file, won't
 treat this special remote as one of the required [[copies]]. It's probably
 a good idea to configure git-annex to fully distrust this remote, by
 running `git annex untrust bittorrent`
+
+This feature is available only from version `5.20141219`.
