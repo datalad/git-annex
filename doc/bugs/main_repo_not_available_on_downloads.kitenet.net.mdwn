@@ -25,3 +25,10 @@ Thanks! -- [[anarcat]]
 > <del>done; apparently some pebak. --[[Joey]]</del>
 
 > > it's baaaack! :) -- [[anarcat]]
+
+>>> Please don't reuse old bug reports for unrelated issues. It muddies the
+>>> waters.
+>>> 
+>>> I've fixed git-update-server-info hook on the repository, fixing this
+>>> second problem.
+>>> [[done]] --[[Joey]]
