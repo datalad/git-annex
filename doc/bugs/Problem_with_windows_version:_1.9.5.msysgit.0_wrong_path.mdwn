@@ -79,3 +79,4 @@ fatal: unable to access '..\..\..\..\H:\annex/config': Invalid argument
 # End of transcript or log.
 """]]
 
+> User error; [[closing|done]] --[[Joey]]
