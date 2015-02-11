@@ -1,0 +1,10 @@
+it seems that `git-annex` sometimes does commits with empty commit messages. this makes rebasing git-annex branches much much harder than they need to, because rebase freaks out on those weird commits:
+
+<pre>
+anarcat@marcos:video$ git rebase --continue
+Waiting for Emacs...
+Aborting commit due to empty commit message.
+Could not commit staged changes.
+</pre>
+
+This was trying to fix [[a broken merge|forum/canceling_wrong_repository_merge/]]... --[[anarcat]]
