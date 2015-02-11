@@ -1361,7 +1361,7 @@ test_addurl :: Assertion
 test_addurl = intmpclonerepo $ do
 	-- file:// only; this test suite should not hit the network
 	f <- absPath "myurl"
-	let url = replace "\\" "/" ("file://" ++ dropDrive f)
+	let url = replace "\\" "/" ("file:///" ++ dropDrive f)
 	writeFile f "foo"
 	git_annex "addurl" [url] @? ("addurl failed on " ++ url)
 	let dest = "addurlurldest"
