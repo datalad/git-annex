@@ -50,6 +50,7 @@ commitThread = namedThread "Committer" $ do
 	delayadd <- liftAnnex $
 		maybe delayaddDefault (return . Just . Seconds)
 			=<< annexDelayAdd <$> Annex.getGitConfig
+	msg <- liftAnnex Command.Sync.commitMsg
 	waitChangeTime $ \(changes, time) -> do
 		readychanges <- handleAdds havelsof delayadd changes
 		if shouldCommit False time (length readychanges) readychanges
@@ -60,7 +61,7 @@ commitThread = namedThread "Committer" $ do
 					, "changes"
 					]
 				void $ alertWhile commitAlert $
-					liftAnnex commitStaged
+					liftAnnex $ commitStaged msg
 				recordCommit
 				let numchanges = length readychanges
 				mapM_ checkChangeContent readychanges
@@ -212,15 +213,15 @@ shouldCommit scanning now len changes
 	recentchanges = filter thissecond changes
 	timeDelta c = now `diffUTCTime` changeTime c
 
-commitStaged :: Annex Bool
-commitStaged = do
+commitStaged :: String -> Annex Bool
+commitStaged msg = do
 	{- This could fail if there's another commit being made by
 	 - something else. -}
 	v <- tryNonAsync Annex.Queue.flush
 	case v of
 		Left _ -> return False
 		Right _ -> do
-			ok <- Command.Sync.commitStaged Git.Branch.AutomaticCommit ""
+			ok <- Command.Sync.commitStaged Git.Branch.AutomaticCommit msg
 			when ok $
 				Command.Sync.updateSyncBranch =<< inRepo Git.Branch.current
 			return ok

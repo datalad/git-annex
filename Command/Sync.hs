@@ -12,6 +12,7 @@ module Command.Sync (
 	mergeLocal,
 	mergeRemote,
 	commitStaged,
+	commitMsg,
 	pushBranch,
 	updateBranch,
 	syncBranch,
@@ -41,10 +42,12 @@ import qualified Command.Move
 import Logs.Location
 import Annex.Drop
 import Annex.UUID
+import Logs.UUID
 import Annex.AutoMerge
 import Annex.Ssh
 
 import Control.Concurrent.MVar
+import qualified Data.Map as M
 
 cmd :: [Command]
 cmd = [withOptions syncOptions $
@@ -145,8 +148,8 @@ syncRemotes rs = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
 
 commit :: CommandStart
 commit = next $ next $ do
-	commitmessage <- fromMaybe "git-annex automatic sync"
-		<$> Annex.getField (optionName messageOption)
+	commitmessage <- maybe commitMsg return
+		=<< Annex.getField (optionName messageOption)
 	showStart "commit" ""
 	Annex.Branch.commit "update"
 	ifM isDirect
@@ -162,6 +165,12 @@ commit = next $ next $ do
 				]
 			return True
 		)
+
+commitMsg :: Annex String
+commitMsg = do
+	u <- getUUID
+	m <- uuidMap
+	return $ "git-annex in " ++ fromMaybe "unknown" (M.lookup u m)
 
 commitStaged :: Git.Branch.CommitMode -> String -> Annex Bool
 commitStaged commitmode commitmessage = go =<< inRepo Git.Branch.currentUnsafe

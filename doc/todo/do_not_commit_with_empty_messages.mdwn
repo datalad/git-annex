@@ -8,3 +8,8 @@ Could not commit staged changes.
 </pre>
 
 This was trying to fix [[a broken merge|forum/canceling_wrong_repository_merge/]]... --[[anarcat]]
+
+> While I think it's silly to use empty dummy commit messages when there
+> is nothing of value to say about the commit, I guess I can add value
+> by putting in the name of the repository where the commit was made. So,
+> [[done]] --[[Joey]] 
