@@ -1361,10 +1361,11 @@ test_addurl :: Assertion
 test_addurl = intmpclonerepo $ do
 	-- file:// only; this test suite should not hit the network
 	f <- absPath "myurl"
+	let url = replace "\\" "/" ("file://" ++ dropDrive f)
 	writeFile f "foo"
-	git_annex "addurl" ["file://" ++ f] @? "addurl failed on file:// url"
+	git_annex "addurl" [url] @? ("addurl failed on " ++ url)
 	let dest = "addurlurldest"
-	git_annex "addurl" ["--file", dest, "file://" ++ f] @? "addurl failed on file:// url with --file"
+	git_annex "addurl" ["--file", dest, url] @? ("addurl failed on " ++ url ++ "  with --file")
 	doesFileExist dest @? (dest ++ " missing after addurl --file")
 
 -- This is equivilant to running git-annex, but it's all run in-process
