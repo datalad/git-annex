@@ -12,10 +12,10 @@ module Annex.Ssh (
 	sshCacheDir,
 	sshReadPort,
 	forceSshCleanup,
-	sshCachingEnv,
-	sshCachingTo,
-	inRepoWithSshCachingTo,
-	runSshCaching,
+	sshOptionsEnv,
+	sshOptionsTo,
+	inRepoWithSshOptionsTo,
+	runSshOptions,
 	sshAskPassEnv,
 	runSshAskPass
 ) where
@@ -233,31 +233,38 @@ sshReadPort params = (port, reverse args)
 			    | otherwise = aux (p,q:ps) rest
 	readPort p = fmap fst $ listToMaybe $ reads p
 
-{- When this env var is set, git-annex runs ssh with parameters
- - to use the socket file that the env var contains.
+{- When this env var is set, git-annex runs ssh with the specified
+ - options. (The options are separated by newlines.)
  -
  - This is a workaround for GIT_SSH not being able to contain
  - additional parameters to pass to ssh. -}
-sshCachingEnv :: String
-sshCachingEnv = "GIT_ANNEX_SSHCACHING"
+sshOptionsEnv :: String
+sshOptionsEnv = "GIT_ANNEX_SSHOPTION"
+
+toSshOptionsEnv :: [CommandParam] -> String
+toSshOptionsEnv = unlines . toCommand
+
+fromSshOptionsEnv :: String -> [CommandParam]
+fromSshOptionsEnv = map Param . lines
 
 {- Enables ssh caching for git push/pull to a particular
  - remote git repo. (Can safely be used on non-ssh remotes.)
  -
+ - Also propigates any configured ssh-options.
+ -
  - Like inRepo, the action is run with the local git repo.
  - But here it's a modified version, with gitEnv to set GIT_SSH=git-annex,
- - and sshCachingEnv set so that git-annex will know what socket
+ - and sshOptionsEnv set so that git-annex will know what socket
  - file to use. -}
-inRepoWithSshCachingTo :: Git.Repo -> (Git.Repo -> IO a) -> Annex a
-inRepoWithSshCachingTo remote a =
-	liftIO . a =<< sshCachingTo remote =<< gitRepo
+inRepoWithSshOptionsTo :: Git.Repo -> RemoteGitConfig -> (Git.Repo -> IO a) -> Annex a
+inRepoWithSshOptionsTo remote gc a =
+	liftIO . a =<< sshOptionsTo remote gc =<< gitRepo
 
-{- To make any git commands be run with ssh caching enabled, 
- - alters the local Git.Repo's gitEnv to set GIT_SSH=git-annex,
- - and set sshCachingEnv so that git-annex will know what socket
- - file to use. -}
-sshCachingTo :: Git.Repo -> Git.Repo -> Annex Git.Repo
-sshCachingTo remote g 
+{- To make any git commands be run with ssh caching enabled,
+ - and configured ssh-options alters the local Git.Repo's gitEnv
+ - to set GIT_SSH=git-annex, and sets sshOptionsEnv. -}
+sshOptionsTo :: Git.Repo -> RemoteGitConfig -> Git.Repo -> Annex Git.Repo
+sshOptionsTo remote gc g 
 	| not (Git.repoIsUrl remote) || Git.repoIsHttp remote = uncached
 	| otherwise = case Git.Url.hostuser remote of
 		Nothing -> uncached
@@ -268,15 +275,19 @@ sshCachingTo remote g
 				Just sockfile -> do
 					command <- liftIO readProgramFile
 					prepSocket sockfile
+					let val = toSshOptionsEnv $ concat
+						[ sshConnectionCachingParams sockfile
+						, map Param (remoteAnnexSshOptions gc)
+						]
 					liftIO $ do
-						g' <- addGitEnv g sshCachingEnv sockfile
+						g' <- addGitEnv g sshOptionsEnv val
 						addGitEnv g' "GIT_SSH" command
   where
 	uncached = return g
 
-runSshCaching :: [String] -> FilePath -> IO ()
-runSshCaching args sockfile = do
-	let args' = toCommand (sshConnectionCachingParams sockfile) ++ args
+runSshOptions :: [String] -> String -> IO ()
+runSshOptions args s = do
+	let args' = toCommand (fromSshOptionsEnv s) ++ args
 	let p = proc "ssh" args'
 	exitWith =<< waitForProcess . processHandle =<< createProcess p
 

@@ -234,8 +234,9 @@ pullRemote remote branch = do
 		stopUnless fetch $
 			next $ mergeRemote remote branch
   where
-	fetch = inRepoWithSshCachingTo (Remote.repo remote) $ Git.Command.runBool
-		[Param "fetch", Param $ Remote.name remote]
+	fetch = inRepoWithSshOptionsTo (Remote.repo remote) (Remote.gitconfig remote) $
+		Git.Command.runBool
+			[Param "fetch", Param $ Remote.name remote]
 
 {- The remote probably has both a master and a synced/master branch.
  - Which to merge from? Well, the master has whatever latest changes
@@ -270,7 +271,7 @@ pushRemote remote (Just branch) = go =<< needpush
 		showStart "push" (Remote.name remote)
 		next $ next $ do
 			showOutput
-			ok <- inRepoWithSshCachingTo (Remote.repo remote) $
+			ok <- inRepoWithSshOptionsTo (Remote.repo remote) (Remote.gitconfig remote) $
 				pushBranch remote branch
 			unless ok $ do
 				warning $ unwords [ "Pushing to " ++ Remote.name remote ++ " failed." ]

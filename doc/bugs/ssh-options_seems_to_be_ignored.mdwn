@@ -43,3 +43,6 @@ Debian testing 5.20141125
 
 # End of transcript or log.
 """]]
+
+> [[fixed|done]], ssh-options is now propigated everywhere that ssh
+> connection caching goes --[[Joey]]

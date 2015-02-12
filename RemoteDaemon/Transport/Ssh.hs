@@ -22,13 +22,13 @@ import Control.Concurrent.STM
 import Control.Concurrent.Async
 
 transport :: Transport
-transport r url h@(TransportHandle g s) ichan ochan = do
+transport rr@(RemoteRepo r gc) url h@(TransportHandle g s) ichan ochan = do
 	-- enable ssh connection caching wherever inLocalRepo is called
-	g' <- liftAnnex h $ sshCachingTo r g
-	transport' r url (TransportHandle g' s) ichan ochan
+	g' <- liftAnnex h $ sshOptionsTo r gc g
+	transport' rr url (TransportHandle g' s) ichan ochan
 
 transport' :: Transport
-transport' r url transporthandle ichan ochan = do
+transport' (RemoteRepo r _) url transporthandle ichan ochan = do
 
 	v <- liftAnnex transporthandle $ git_annex_shell r "notifychanges" [] []
 	case v of

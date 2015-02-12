@@ -117,14 +117,16 @@ genRemoteMap h@(TransportHandle g _) ochan =
 	gen r = case Git.location r of
 		Git.Url u -> case M.lookup (uriScheme u) remoteTransports of
 			Just transport
-				| remoteAnnexSync (extractRemoteGitConfig r (Git.repoDescribe r)) -> do
+				| remoteAnnexSync gc -> do
 					ichan <- newTChanIO :: IO (TChan Consumed)
 					return $ Just
 						( r
-						, (transport r (RemoteURI u) h ichan ochan, ichan)
+						, (transport (RemoteRepo r gc) (RemoteURI u) h ichan ochan, ichan)
 						)
 			_ -> return Nothing
 		_ -> return Nothing
+	  where
+		gc = extractRemoteGitConfig r (Git.repoDescribe r)
 
 genTransportHandle :: IO TransportHandle
 genTransportHandle = do

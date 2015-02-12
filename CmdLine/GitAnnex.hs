@@ -218,6 +218,6 @@ run args = do
 	go [] = dispatch True args cmds gitAnnexOptions [] header Git.CurrentRepo.get
 	go ((v, a):rest) = maybe (go rest) a =<< getEnv v
 	envmodes =
-		[ (sshCachingEnv, runSshCaching args)
+		[ (sshOptionsEnv, runSshOptions args)
 		, (sshAskPassEnv, runSshAskPass)
 		]

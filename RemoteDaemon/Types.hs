@@ -14,6 +14,7 @@ import Common
 import qualified Annex
 import qualified Git.Types as Git
 import qualified Utility.SimpleProtocol as Proto
+import Types.GitConfig
 
 import Network.URI
 import Control.Concurrent
@@ -27,7 +28,7 @@ newtype RemoteURI = RemoteURI URI
 -- from a Chan, and emits others to another Chan.
 type Transport = RemoteRepo -> RemoteURI -> TransportHandle -> TChan Consumed -> TChan Emitted -> IO ()
 
-type RemoteRepo = Git.Repo
+data RemoteRepo = RemoteRepo Git.Repo RemoteGitConfig
 type LocalRepo = Git.Repo
 
 -- All Transports share a single AnnexState MVar
