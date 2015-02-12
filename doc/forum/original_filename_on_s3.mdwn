@@ -1,0 +1,3 @@
+I understand that S3 is seen as a "backend" storage mechanism, but since S3 files are available directly on the web, it would be nice to have the real filenames up there.
+
+Is there a way to set that up? I know about [[tips/publishing_your_files_to_the_public/]], but it assumes you have a local git repo with all the data in the first place, something which may not be available... --[[anarcat]]
