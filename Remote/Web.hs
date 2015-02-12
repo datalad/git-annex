@@ -38,7 +38,7 @@ remote = RemoteType {
 -- a new release to the survivors by carrier pigeon.)
 list :: Annex [Git.Repo]
 list = do
-	r <- liftIO $ Git.Construct.remoteNamed "web" Git.Construct.fromUnknown
+	r <- liftIO $ Git.Construct.remoteNamed "web" (pure Git.Construct.fromUnknown)
 	return [r]
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)

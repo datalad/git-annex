@@ -66,10 +66,9 @@ global = do
 	home <- myHomeDir
 	ifM (doesFileExist $ home </> ".gitconfig")
 		( do
-			repo <- Git.Construct.fromUnknown
-			repo' <- withHandle StdoutHandle createProcessSuccess p $
-				hRead repo
-			return $ Just repo'
+			repo <- withHandle StdoutHandle createProcessSuccess p $
+				hRead (Git.Construct.fromUnknown)
+			return $ Just repo
 		, return Nothing
 		)
   where

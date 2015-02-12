@@ -19,8 +19,8 @@ module Git.Construct (
 	fromRemotes,
 	fromRemoteLocation,
 	repoAbsPath,
-	newFrom,
 	checkForRepo,
+	newFrom,
 ) where
 
 #ifndef mingw32_HOST_OS
@@ -48,7 +48,7 @@ fromCwd = getCurrentDirectory >>= seekUp
 			Nothing -> case upFrom dir of
 				Nothing -> return Nothing
 				Just d -> seekUp d
-			Just loc -> Just <$> newFrom loc
+			Just loc -> pure $ Just $ newFrom loc
 
 {- Local Repo constructor, accepts a relative or absolute path. -}
 fromPath :: FilePath -> IO Repo
@@ -62,7 +62,7 @@ fromAbsPath dir
 	| otherwise =
 		error $ "internal error, " ++ dir ++ " is not absolute"
   where
-	ret = newFrom . LocalUnknown
+	ret = pure . newFrom . LocalUnknown
 	{- Git always looks for "dir.git" in preference to
 	 - to "dir", even if dir ends in a "/". -}
 	canondir = dropTrailingPathSeparator dir
@@ -90,13 +90,13 @@ fromUrl url
 fromUrlStrict :: String -> IO Repo
 fromUrlStrict url
 	| startswith "file://" url = fromAbsPath $ unEscapeString $ uriPath u
-	| otherwise = newFrom $ Url u
+	| otherwise = pure $ newFrom $ Url u
   where
 	u = fromMaybe bad $ parseURI url
 	bad = error $ "bad url " ++ url
 
 {- Creates a repo that has an unknown location. -}
-fromUnknown :: IO Repo
+fromUnknown :: Repo
 fromUnknown = newFrom Unknown
 
 {- Converts a local Repo into a remote repo, using the reference repo
@@ -223,8 +223,8 @@ checkForRepo dir =
 		gitdirprefix = "gitdir: "
 	gitSignature file = doesFileExist $ dir </> file
 
-newFrom :: RepoLocation -> IO Repo
-newFrom l = return Repo
+newFrom :: RepoLocation -> Repo
+newFrom l = Repo
 	{ location = l
 	, config = M.empty
 	, fullconfig = M.empty
@@ -233,5 +233,4 @@ newFrom l = return Repo
 	, gitEnv = Nothing
 	, gitGlobalOpts = []
 	}
-
 

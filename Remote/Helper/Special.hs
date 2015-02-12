@@ -59,7 +59,7 @@ findSpecialRemotes s = do
 	liftIO $ mapM construct $ remotepairs m
   where
 	remotepairs = M.toList . M.filterWithKey match
-	construct (k,_) = Git.Construct.remoteNamedFromKey k Git.Construct.fromUnknown
+	construct (k,_) = Git.Construct.remoteNamedFromKey k (pure Git.Construct.fromUnknown)
 	match k _ = startswith "remote." k && endswith (".annex-"++s) k
 
 {- Sets up configuration for a special remote in .git/config. -}

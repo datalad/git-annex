@@ -44,7 +44,7 @@ remote = RemoteType {
 -- There is only one bittorrent remote, and it always exists.
 list :: Annex [Git.Repo]
 list = do
-	r <- liftIO $ Git.Construct.remoteNamed "bittorrent" Git.Construct.fromUnknown
+	r <- liftIO $ Git.Construct.remoteNamed "bittorrent" (pure Git.Construct.fromUnknown)
 	return [r]
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
