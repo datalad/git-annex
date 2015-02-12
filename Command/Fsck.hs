@@ -143,7 +143,7 @@ performRemote key file backend numcopies remote =
 			( go True (Just tmpfile)
 			, do
 				warning "failed to download file from remote"
-				go True Nothing
+				void $ go True Nothing
 				return False
 			)
 	dispatch (Right False) = go False Nothing
