@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-02-12T18:27:26Z"
+ content="""
+Are you sure it's git-annex that's making the connections, and not
+git-remote-gcrypt? What kind of uri are you using?
+
+I tried to reproduce such a problem, making this gcrypt special remote:
+
+git annex initremote gcrypt type=gcrypt gitrepo=ssh://localhost/tmp/r encryption=shared --fast
+
+When I `git annex sync gcrypt`, only 1 ssh connection is made:
+
+joey@darkstar:~/tmp/meep>systemctl status ssh.socket | grep Accepted  
+ Accepted: 80; Connected: 1  
+joey@darkstar:~/tmp/meep>git annex sync gcrypt >/dev/null 2>&1  
+joey@darkstar:~/tmp/meep>systemctl status ssh.socket | grep Accepted  
+ Accepted: 81; Connected: 1  
+
+git-annex's ssh connection caching code is working for this gcrypt remote,
+because git-annex's `GIT_SSH=` is being propigated through gcrypt to git
+push and pull.
+"""]]
