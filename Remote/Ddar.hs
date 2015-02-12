@@ -23,7 +23,10 @@ import Remote.Helper.Special
 import Annex.Ssh
 import Annex.UUID
 
-type DdarRepo = String
+data DdarRepo = DdarRepo
+	{ ddarRepoConfig :: RemoteGitConfig
+	, ddarRepoLocation :: String
+	}
 
 remote :: RemoteType
 remote = RemoteType {
@@ -62,18 +65,18 @@ gen r u c gc = do
 		, config = c
 		, repo = r
 		, gitconfig = gc
-		, localpath = if ddarLocal ddarrepo && not (null ddarrepo)
-			then Just ddarrepo
+		, localpath = if ddarLocal ddarrepo && not (null $ ddarRepoLocation ddarrepo)
+			then Just $ ddarRepoLocation ddarrepo
 			else Nothing
 		, remotetype = remote
 		, availability = if ddarLocal ddarrepo then LocallyAvailable else GloballyAvailable
 		, readonly = False
 		, mkUnavailable = return Nothing
-		, getInfo = return [("repo", ddarrepo)]
+		, getInfo = return [("repo", ddarRepoLocation ddarrepo)]
 		, claimUrl = Nothing
 		, checkUrl = Nothing
 		}
-	ddarrepo = fromMaybe (error "missing ddarrepo") $ remoteAnnexDdarRepo gc
+	ddarrepo = maybe (error "missing ddarrepo") (DdarRepo gc) (remoteAnnexDdarRepo gc)
 	specialcfg = (specialRemoteCfg c)
 		-- chunking would not improve ddar
 		{ chunkConfig = NoChunks
@@ -100,7 +103,7 @@ store ddarrepo = fileStorer $ \k src _p -> do
 		[ Param "c"
 		, Param "-N"
 		, Param $ key2file k
-		, Param ddarrepo
+		, Param $ ddarRepoLocation ddarrepo
 		, File src
 		]
 	liftIO $ boolSystem "ddar" params
@@ -110,25 +113,23 @@ splitRemoteDdarRepo :: DdarRepo -> (String, String)
 splitRemoteDdarRepo ddarrepo =
 	(host, ddarrepo')
   where
-	(host, remainder) = span (/= ':') ddarrepo
+	(host, remainder) = span (/= ':') (ddarRepoLocation ddarrepo)
 	ddarrepo' = drop 1 remainder
 
 {- Return the command and parameters to use for a ddar call that may need to be
  - made on a remote repository. This will call ssh if needed. -}
-
 ddarRemoteCall :: DdarRepo -> Char -> [CommandParam] -> Annex (String, [CommandParam])
 ddarRemoteCall ddarrepo cmd params
 	| ddarLocal ddarrepo = return ("ddar", localParams)
 	| otherwise = do
-		remoteCachingParams <- sshCachingOptions (host, Nothing) []
-		return ("ssh", remoteCachingParams ++ remoteParams)
+		os <- sshOptions (host, Nothing) (ddarRepoConfig ddarrepo) remoteParams
+		return ("ssh", os)
   where
 	(host, ddarrepo') = splitRemoteDdarRepo ddarrepo
-	localParams = Param [cmd] : Param ddarrepo : params
+	localParams = Param [cmd] : Param (ddarRepoLocation ddarrepo) : params
 	remoteParams = Param host : Param "ddar" : Param [cmd] : Param ddarrepo' : params
 
 {- Specialized ddarRemoteCall that includes extraction command and flags -}
-
 ddarExtractRemoteCall :: DdarRepo -> Key -> Annex (String, [CommandParam])
 ddarExtractRemoteCall ddarrepo k =
 	ddarRemoteCall ddarrepo 'x' [Param "--force-stdout", Param $ key2file k]
@@ -152,13 +153,13 @@ remove ddarrepo key = do
 ddarDirectoryExists :: DdarRepo -> Annex (Either String Bool)
 ddarDirectoryExists ddarrepo
 	| ddarLocal ddarrepo = do
-		maybeStatus <- liftIO $ tryJust (guard . isDoesNotExistError) $ getFileStatus ddarrepo
+		maybeStatus <- liftIO $ tryJust (guard . isDoesNotExistError) $ getFileStatus $ ddarRepoLocation ddarrepo
 		return $ case maybeStatus of
 			Left _ -> Right False
 			Right status -> Right $ isDirectory status
 	| otherwise = do
-		sshCachingParams <- sshCachingOptions (host, Nothing) []
-		exitCode <- liftIO $ safeSystem "ssh" $ sshCachingParams ++ params
+		ps <- sshOptions (host, Nothing) (ddarRepoConfig ddarrepo) params
+		exitCode <- liftIO $ safeSystem "ssh" ps
 		case exitCode of
 			ExitSuccess -> return $ Right True
 			ExitFailure 1 -> return $ Right False
@@ -195,4 +196,4 @@ checkKey ddarrepo key = do
 		Right False -> return False
 
 ddarLocal :: DdarRepo -> Bool
-ddarLocal = notElem ':'
+ddarLocal = notElem ':' . ddarRepoLocation

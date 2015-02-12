@@ -26,6 +26,8 @@ git-annex (5.20150206) UNRELEASED; urgency=medium
     default, since that can be surprising behavior and difficult to recover
     from. The old behavior is available by using --force.
   * sync, assistant: Include repository name in head branch commit message.
+  * The ssh-options git config is now used by gcrypt, rsync, and ddar
+    special remotes that use ssh as a transport.
 
  -- Joey Hess <id@joeyh.name>  Fri, 06 Feb 2015 13:57:08 -0400
 

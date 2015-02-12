@@ -15,6 +15,7 @@ module Types.GitConfig (
 import Common
 import qualified Git
 import qualified Git.Config
+import qualified Git.Construct
 import Utility.DataUnits
 import Config.Cost
 import Types.Distribution
@@ -193,3 +194,5 @@ notempty Nothing = Nothing
 notempty (Just "") = Nothing
 notempty (Just s) = Just s
 
+instance Default RemoteGitConfig where
+	def = extractRemoteGitConfig Git.Construct.fromUnknown "dummy"

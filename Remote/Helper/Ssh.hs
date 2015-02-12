@@ -30,7 +30,7 @@ toRepo :: Git.Repo -> RemoteGitConfig -> [CommandParam] -> Annex [CommandParam]
 toRepo r gc sshcmd = do
 	let opts = map Param $ remoteAnnexSshOptions gc
 	let host = fromMaybe (error "bad ssh url") $ Git.Url.hostuser r
-	params <- sshCachingOptions (host, Git.Url.port r) opts
+	params <- sshOptions (host, Git.Url.port r) gc opts
 	return $ params ++ Param host : sshcmd
 
 {- Generates parameters to run a git-annex-shell command on a remote

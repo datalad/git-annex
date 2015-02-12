@@ -70,7 +70,7 @@ gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remot
 gen baser u c gc = do
 	-- doublecheck that cache matches underlying repo's gcrypt-id
 	-- (which might not be set), only for local repos
-	(mgcryptid, r) <- getGCryptId True baser
+	(mgcryptid, r) <- getGCryptId True baser gc
 	g <- gitRepo
 	case (mgcryptid, Git.GCrypt.remoteRepoId g (Git.remoteName baser)) of
 		(Just gcryptid, Just cachedgcryptid)
@@ -99,7 +99,7 @@ gen' :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remo
 gen' r u c gc = do
 	cst <- remoteCost gc $
 		if repoCheap r then nearlyCheapRemoteCost else expensiveRemoteCost
-	(rsynctransport, rsyncurl) <- rsyncTransportToObjects r
+	(rsynctransport, rsyncurl) <- rsyncTransportToObjects r gc
 	let rsyncopts = Remote.Rsync.genRsyncOpts c gc rsynctransport rsyncurl
 	let this = Remote 
 		{ uuid = u
@@ -139,13 +139,13 @@ gen' r u c gc = do
 			{ displayProgress = False }
 		| otherwise = specialRemoteCfg c
 
-rsyncTransportToObjects :: Git.Repo -> Annex ([CommandParam], String)
-rsyncTransportToObjects r = do
-	(rsynctransport, rsyncurl, _) <- rsyncTransport r
+rsyncTransportToObjects :: Git.Repo -> RemoteGitConfig -> Annex ([CommandParam], String)
+rsyncTransportToObjects r gc = do
+	(rsynctransport, rsyncurl, _) <- rsyncTransport r gc
 	return (rsynctransport, rsyncurl ++ "/annex/objects")
 
-rsyncTransport :: Git.Repo -> Annex ([CommandParam], String, AccessMethod)
-rsyncTransport r
+rsyncTransport :: Git.Repo -> RemoteGitConfig -> Annex ([CommandParam], String, AccessMethod)
+rsyncTransport r gc
 	| "ssh://" `isPrefixOf` loc = sshtransport $ break (== '/') $ drop (length "ssh://") loc
 	| "//:" `isInfixOf` loc = othertransport
 	| ":" `isInfixOf` loc = sshtransport $ separate (== ':') loc
@@ -156,7 +156,7 @@ rsyncTransport r
 		let rsyncpath = if "/~/" `isPrefixOf` path
 			then drop 3 path
 			else path
-		opts <- sshCachingOptions (host, Nothing) []
+		opts <- sshOptions (host, Nothing) gc []
 		return (rsyncShell $ Param "ssh" : opts, host ++ ":" ++ rsyncpath, AccessShell)
 	othertransport = return ([], loc, AccessDirect)
 
@@ -218,7 +218,7 @@ gCryptSetup mu _ c = go $ M.lookup "gitrepo" c
 setupRepo :: Git.GCrypt.GCryptId -> Git.Repo -> Annex AccessMethod
 setupRepo gcryptid r
 	| Git.repoIsUrl r = do
-		(_, _, accessmethod) <- rsyncTransport r
+		(_, _, accessmethod) <- rsyncTransport r def
 		case accessmethod of
 			AccessDirect -> rsyncsetup
 			AccessShell -> ifM gitannexshellsetup
@@ -240,7 +240,7 @@ setupRepo gcryptid r
 	 -}
 	rsyncsetup = Remote.Rsync.withRsyncScratchDir $ \tmp -> do
 		liftIO $ createDirectoryIfMissing True $ tmp </> objectDir
-		(rsynctransport, rsyncurl, _) <- rsyncTransport r
+		(rsynctransport, rsyncurl, _) <- rsyncTransport r def
 		let tmpconfig = tmp </> "config"
 		void $ liftIO $ rsync $ rsynctransport ++
 			[ Param $ rsyncurl ++ "/config"
@@ -376,7 +376,7 @@ toAccessMethod _ = AccessDirect
 
 getGCryptUUID :: Bool -> Git.Repo -> Annex (Maybe UUID)
 getGCryptUUID fast r = (genUUIDInNameSpace gCryptNameSpace <$>) . fst
-	<$> getGCryptId fast r
+	<$> getGCryptId fast r def
 
 coreGCryptId :: String
 coreGCryptId = "core.gcrypt-id"
@@ -389,22 +389,22 @@ coreGCryptId = "core.gcrypt-id"
  - tries git-annex-shell and direct rsync of the git config file.
  -
  - (Also returns a version of input repo with its config read.) -}
-getGCryptId :: Bool -> Git.Repo -> Annex (Maybe Git.GCrypt.GCryptId, Git.Repo)
-getGCryptId fast r
+getGCryptId :: Bool -> Git.Repo -> RemoteGitConfig -> Annex (Maybe Git.GCrypt.GCryptId, Git.Repo)
+getGCryptId fast r gc
 	| Git.repoIsLocal r || Git.repoIsLocalUnknown r = extract <$>
 		liftIO (catchMaybeIO $ Git.Config.read r)
 	| not fast = extract . liftM fst <$> getM (eitherToMaybe <$>)
 		[ Ssh.onRemote r (Git.Config.fromPipe r, return (Left undefined)) "configlist" [] []
-		, getConfigViaRsync r
+		, getConfigViaRsync r gc
 		]
 	| otherwise = return (Nothing, r)
   where
 	extract Nothing = (Nothing, r)
 	extract (Just r') = (Git.Config.getMaybe coreGCryptId r', r')
 
-getConfigViaRsync :: Git.Repo -> Annex (Either SomeException (Git.Repo, String))
-getConfigViaRsync r = do
-	(rsynctransport, rsyncurl, _) <- rsyncTransport r
+getConfigViaRsync :: Git.Repo -> RemoteGitConfig -> Annex (Either SomeException (Git.Repo, String))
+getConfigViaRsync r gc = do
+	(rsynctransport, rsyncurl, _) <- rsyncTransport r gc
 	liftIO $ do
 		withTmpFile "tmpconfig" $ \tmpconfig _ -> do
 			void $ rsync $ rsynctransport ++

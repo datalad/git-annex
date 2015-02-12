@@ -1,6 +1,6 @@
 {- git-annex ssh interface, with connection caching
  -
- - Copyright 2012-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -8,7 +8,7 @@
 {-# LANGUAGE CPP #-}
 
 module Annex.Ssh (
-	sshCachingOptions,
+	sshOptions,
 	sshCacheDir,
 	sshReadPort,
 	forceSshCleanup,
@@ -41,20 +41,26 @@ import Utility.LockFile
 #endif
 
 {- Generates parameters to ssh to a given host (or user@host) on a given
- - port, with connection caching. -}
-sshCachingOptions :: (String, Maybe Integer) -> [CommandParam] -> Annex [CommandParam]
-sshCachingOptions (host, port) opts = go =<< sshInfo (host, port)
+ - port. This includes connection caching parameters, and any ssh-options. -}
+sshOptions :: (String, Maybe Integer) -> RemoteGitConfig -> [CommandParam] -> Annex [CommandParam]
+sshOptions (host, port) gc opts = go =<< sshCachingInfo (host, port)
   where
 	go (Nothing, params) = ret params
 	go (Just socketfile, params) = do
 		prepSocket socketfile
 		ret params
-	ret ps = return $ ps ++ opts ++ portParams port ++ [Param "-T"]
+	ret ps = return $ concat
+		[ ps
+		, map Param (remoteAnnexSshOptions gc)
+		, opts
+		, portParams port
+		, [Param "-T"]
+		]
 
 {- Returns a filename to use for a ssh connection caching socket, and
  - parameters to enable ssh connection caching. -}
-sshInfo :: (String, Maybe Integer) -> Annex (Maybe FilePath, [CommandParam])
-sshInfo (host, port) = go =<< sshCacheDir
+sshCachingInfo :: (String, Maybe Integer) -> Annex (Maybe FilePath, [CommandParam])
+sshCachingInfo (host, port) = go =<< sshCacheDir
   where
 	go Nothing = return (Nothing, [])
 	go (Just dir) = do
@@ -256,7 +262,7 @@ sshCachingTo remote g
 	| otherwise = case Git.Url.hostuser remote of
 		Nothing -> uncached
 		Just host -> do
-			(msockfile, _) <- sshInfo (host, Git.Url.port remote)
+			(msockfile, _) <- sshCachingInfo (host, Git.Url.port remote)
 			case msockfile of
 				Nothing -> return g
 				Just sockfile -> do
