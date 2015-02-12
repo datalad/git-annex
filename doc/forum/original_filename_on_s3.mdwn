@@ -1,3 +1,5 @@
-I understand that S3 is seen as a "backend" storage mechanism, but since S3 files are available directly on the web, it would be nice to have the real filenames up there.
+I understand that [[special_remotes/S3/]] is seen as a "backend" storage mechanism, but since S3 files are available directly on the web, it would be nice to have the real filenames up there.
 
-Is there a way to set that up? I know about [[tips/publishing_your_files_to_the_public/]], but it assumes you have a local git repo with all the data in the first place, something which may not be available... --[[anarcat]]
+Is there a way to set that up? I know about [[tips/publishing_your_files_to_the_public/]], but it assumes you have a local git repo with all the data in the first place, something which may not be available...
+
+my use case is that we have ~1TB of files already stored in S3 under specific filenames, and those filenames are how the files are accessed on the main website. changing all those filenames would be a significant burden... i'm not even sure this can be done cheaply on S3 in the first place. --[[anarcat]]
