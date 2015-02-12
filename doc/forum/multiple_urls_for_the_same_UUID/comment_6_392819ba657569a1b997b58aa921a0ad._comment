@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnm19dBCRphmtjXfopm_NpvnRwz-qIJ2Tw"
+ nickname="Remi"
+ subject="comment 6"
+ date="2015-02-12T14:47:38Z"
+ content="""
+I had the same problem, and I solved it using a host specific directory with symlink:
+
+On host \"host1\", I've a directory named \"/home/me/host1/\" that contain a symlink \"mygitrepos\" to \"/home/me/mygitrepos/\".
+On host \"host2\", I've a directory named \"/home/me/host2/\" that contain a symlink \"mygitrepos\" to \"/home/me/mygitrepos/\".
+
+On the usb drive, the remote are set as:
+
+    [remote \\"host1\\"]
+        url = /home/me/host1/mygitrepos
+        fetch = +refs/heads/*:refs/remotes/host1/*
+        annex-uuid = ce6175ba-4a0d-49e6-88b1-615dac7a37c1
+    [remote \\"host2\\"]
+        url = /home/me/host2/mygitrepos
+        fetch = +refs/heads/*:refs/remotes/host2/*
+        annex-uuid = f7e3fbe8-f7f5-4231-a885-a72a46680d0b
+
+(I didn't set the net remote, but it should work). With this added indirection I protect myself against git (and git-annex) confusion.
+
+"""]]
