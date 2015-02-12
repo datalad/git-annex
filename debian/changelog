@@ -28,7 +28,8 @@ git-annex (5.20150206) UNRELEASED; urgency=medium
   * sync, assistant: Include repository name in head branch commit message.
   * The ssh-options git config is now used by gcrypt, rsync, and ddar
     special remotes that use ssh as a transport.
-  * sync: Use the ssh-options git config when doing git pull and push.
+  * sync, assistant: Use the ssh-options git config when doing git pull
+    and push.
   * remotedaemon: Use the ssh-options git config.
 
  -- Joey Hess <id@joeyh.name>  Fri, 06 Feb 2015 13:57:08 -0400
