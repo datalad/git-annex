@@ -36,4 +36,4 @@ root@koumbit-mp-test:/var/isuma/media/video# ps axf | grep annex
 # End of transcript or log.
 """]]
 
-couldn't it alter its process name to make this a little more intuitive? --[[anarcat]]
+couldn't it alter its process name to make this a little more intuitive? This is especially problematic because i am trying to hook git-annex into Puppet and Facter, which require me to guess where the various git-annex repos are on the server. The way i was doing that so far was with `lsof -c 'git-annex' -F0tn`, which is obviously failing under those circumstances.... Unless there's a better way to find those repos across the system? I assume there's a git-annex assistant running here... --[[anarcat]]
