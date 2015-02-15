@@ -104,6 +104,23 @@ command run on that work tree, and then updating the real work
 tree to reflect any changes staged or committed by the git command,
 with appropriate handling of the direct mode files.
 
+## undoing changes in direct mode
+
+There is also the `undo` command to do the equivalent of the above revert in a simpler way. Say you made a change in direct mode, the assistant dutifully committed it and you realise your mistake, you can try:
+
+    git annex undo file
+
+to revert the last committed change to `file` in direct mode. Note that if the file is marked as modified and *not* committed, this may not do what you expect and may very well revert the *previous* change to that file! So first check if the file is actually committed:
+
+    $ git annex status file # check if the file was committed
+    M file
+    $ # uh-oh, not running the assistant or the file wasn't added!
+    $ git annex add file # make sure we commit the working copy so we revert *that*
+    $ git annex status file # look how that change is now committed
+    $ git annex undo file # okay, good to go, now we're reverting to the previous version
+
+If you would have skipped that `git annex add`, above, you would have revert to the version *before* the version that was before the modified version! In other words, two versions before!
+
 ## forcing git to use the work tree in direct mode
 
 This is for experts only. You can lose data doing this, or check enormous
