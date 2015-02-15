@@ -123,6 +123,11 @@ eg, esquelito.
 Update2: Using esquelito to do a join got this down to 0.109s.
 See `database` branch for code.
 
+Update3: Converting to a single un-normalized table for AssociatedFiles
+avoids the join, and increased lookup speed to 0.087s. Of course, when
+a key has multiple associated files, this will use more disk space, due
+to not normalizing the key.
+
 Compare the above with 1000 calls to `associatedFiles`, which is approximately
 as fast as just opening and reading 1000 files, so will take well under
 0.05s with a **cold** cache.
