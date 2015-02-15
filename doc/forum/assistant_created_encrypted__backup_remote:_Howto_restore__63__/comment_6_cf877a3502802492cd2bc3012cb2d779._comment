@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.144"
+ subject="comment 6"
+ date="2014-09-25T15:59:34Z"
+ content="""
+Right.
+
+So, I think I should go change the description displayed by the webapp to \"full backup (file contents only)\" and \"full backup (entire git repository)\" or so. It's a little hard to word it precisely without making it hard to understand.
+
+Or, the webapp could display a nudge to make a clone when no other clones of the git repository exist. I think that's probably more valuable, so [[todo_added|todo/webapp_nudge_when_less_than_numcopies_clones]].
+"""]]

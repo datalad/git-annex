@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.191"
+ subject="comment 3"
+ date="2014-04-17T20:58:41Z"
+ content="""
+@Mesut, I think you're doing everything right. It can take a long time for the highly secure gpg key to be generated. Sit tight and let it finish, or you can pass --fast to generate a key that is a tiny bit less secure.
+"""]]

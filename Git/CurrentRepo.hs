@@ -1,11 +1,9 @@
 {- The current git repository.
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
-
-{-# LANGUAGE CPP #-}
 
 module Git.CurrentRepo where
 
@@ -13,9 +11,7 @@ import Common
 import Git.Types
 import Git.Construct
 import qualified Git.Config
-#ifndef mingw32_HOST_OS
 import Utility.Env
-#endif
 
 {- Gets the current git repository.
  -
@@ -37,29 +33,25 @@ get = do
 	case wt of
 		Nothing -> return r
 		Just d -> do
-			cwd <- getCurrentDirectory
-			unless (d `dirContains` cwd) $
+			curr <- getCurrentDirectory
+			unless (d `dirContains` curr) $
 				setCurrentDirectory d
 			return $ addworktree wt r
   where
-#ifndef mingw32_HOST_OS
 	pathenv s = do
 		v <- getEnv s
 		case v of
 			Just d -> do
-				void $ unsetEnv s
+				unsetEnv s
 				Just <$> absPath d
 			Nothing -> return Nothing
-#else
-	pathenv _ = return Nothing
-#endif
 
 	configure Nothing (Just r) = Git.Config.read r
 	configure (Just d) _ = do
 		absd <- absPath d
-		cwd <- getCurrentDirectory
-		r <- newFrom $ Local { gitdir = absd, worktree = Just cwd }
-		Git.Config.read r
+		curr <- getCurrentDirectory
+		Git.Config.read $ newFrom $
+			Local { gitdir = absd, worktree = Just curr }
 	configure Nothing Nothing = error "Not in a git repository."
 
 	addworktree w r = changelocation r $

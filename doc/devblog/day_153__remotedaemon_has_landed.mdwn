@@ -1,0 +1,10 @@
+After fixing a few bugs in the `remotecontrol` branch, It's landed in
+`master`. Try a daily build today, and see if the assistant can keep in
+sync using nothing more than a remote ssh repository!
+
+So, now all the groundwork for telehash is laid too. I only need a
+telehash library to start developing on top of. Development on telehash-c
+is continuing, but I'm more excited that
+[htelehash](https://github.com/alanz/htelehash/tree/v2) 
+has been revived and is being updated to the v2 protocol, seemingly quite
+quickly.

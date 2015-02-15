@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm_YXzEdPHzbSGVwtmTR7g1BqDtTnIBB5s"
+ nickname="Matthias"
+ subject="User doesn't have to be logged in"
+ date="2014-11-26T11:29:10Z"
+ content="""
+my git-annex backend systems don't even have a GUI , much less a logged-in user on them.
+"""]]

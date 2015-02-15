@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""MD5"""
+ date="2015-02-04T17:25:45Z"
+ content="""
+I've added MD5 and MD5E. Of course, if you choose to use these, or the WORM
+backend, you give up the cryptographic verification that the content
+currently in your repository is the same content that was in it before.
+Whether that matters in your application is up to you.
+"""]]

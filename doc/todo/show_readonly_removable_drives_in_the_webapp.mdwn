@@ -1,0 +1,15 @@
+Coming from [[todo/read-only_removable_drives/]], this is use case 1: use inserts an `ext` formatted filesystem that he built at home (so files are owned by uid `1000`)  in the office computer (where he is uid `1001`). Now, this is a limitation of UNIX-style removable drives, admittedly, but I would expect to be able to sync "down" from the hard drives to copy the contents locally.
+
+So in short, expected behavior:
+
+1. insert the drive
+2. drive is shown in the webapp menu
+3. add the drive as a remote for the local repo
+4. sync the content from the drive to the local repo
+
+Actual behavior:
+
+1. insert the drive
+2. drive is not shown in the webapp menu
+
+--[[anarcat]]

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.191"
+ subject="comment 4"
+ date="2014-04-17T19:44:55Z"
+ content="""
+You can use `git annex enableremote` to change an existing remote's configuration. So this should work:
+
+    # export AWS_ACCESS_KEY_ID=\"newRANDOMGOBBLDEYGOOK\"
+    # export AWS_SECRET_ACCESS_KEY=\"news3kr1t\"
+    # git annex enableremote cloud
+
+"""]]

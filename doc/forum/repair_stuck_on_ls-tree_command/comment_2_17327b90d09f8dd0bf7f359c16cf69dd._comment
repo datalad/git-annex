@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2014-12-02T17:24:30Z"
+ content="""
+According to the ls-tree output you posted, the git tree object
+5fe5193e079631c0ceac0688ae0a6c1636491b61 is somehow 11 mb
+in size, which seems quite enormous, since a git tree object
+is just a list of files in a directory in the repo.
+
+Does your repository actually contain a directory that big? 
+(This seems unlikely, since git annex info says there are only 59117 annxed
+files.)
+
+What is in the output of `git-ls-tree 5fe5193e079631c0ceac0688ae0a6c1636491b61`
+that is so enormous?
+
+I think you need to figure this out to get anywhere, because it's quite
+strange. Or, if you're willing to put the git repository someplace
+(minus .git/annex/), I could take a look at it.
+"""]]

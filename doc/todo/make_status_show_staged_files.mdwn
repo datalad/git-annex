@@ -1,0 +1,23 @@
+### Please describe the problem.
+
+`git annex status` does not report the fact that some files have been added but not yet committed.
+
+### What steps will reproduce the problem?
+
+    $ # alwayscommit = false
+    $ echo "new" > new-file
+    $ git annex status
+    ? new-file
+    $ git annex add
+    add new-file
+    $ git annex status
+    $
+
+Using the `git status` command directly will show the added files
+
+    $ git -c core.bare=false status --porcelain | grep -v '^ T'
+    AT new-file
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 5.20141024-g613f396

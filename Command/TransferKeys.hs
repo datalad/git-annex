@@ -1,6 +1,6 @@
 {- git-annex command, used internally by assistant
  -
- - Copyright 2012, 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012, 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -13,50 +13,37 @@ import Common.Annex
 import Command
 import Annex.Content
 import Logs.Location
-import Logs.Transfer
+import Annex.Transfer
 import qualified Remote
 import Types.Key
-
-import GHC.IO.Handle
+import Utility.SimpleProtocol (ioHandles)
+import Git.Types (RemoteName)
 
 data TransferRequest = TransferRequest Direction Remote Key AssociatedFile
 
-def :: [Command]
-def = [command "transferkeys" paramNothing seek
+cmd :: [Command]
+cmd = [command "transferkeys" paramNothing seek
 	SectionPlumbing "transfers keys"]
 
 seek :: CommandSeek
 seek = withNothing start
 
 start :: CommandStart
-start = withHandles $ \(readh, writeh) -> do
+start = do
+	(readh, writeh) <- liftIO ioHandles
 	runRequests readh writeh runner
 	stop
   where
 	runner (TransferRequest direction remote key file)
-		| direction == Upload = 
+		| direction == Upload = notifyTransfer direction file $
 			upload (Remote.uuid remote) key file forwardRetry $ \p -> do
 				ok <- Remote.storeKey remote key file p
 				when ok $
 					Remote.logStatus remote key InfoPresent
 				return ok
-		| otherwise = download (Remote.uuid remote) key file forwardRetry $ \p ->
-			getViaTmp key $ \t -> Remote.retrieveKeyFile remote key file t p
-
-{- stdin and stdout are connected with the caller, to be used for
- - communication with it. But doing a transfer might involve something
- - that tries to read from stdin, or write to stdout. To avoid that, close
- - stdin, and duplicate stderr to stdout. Return two new handles
- - that are duplicates of the original (stdin, stdout). -}
-withHandles :: ((Handle, Handle) -> Annex a) -> Annex a
-withHandles a = do
-	readh <- liftIO $ hDuplicate stdin
-	writeh <- liftIO $ hDuplicate stdout
-	liftIO $ do
-		nullh <- openFile devNull ReadMode
-		nullh `hDuplicateTo` stdin
-		stderr `hDuplicateTo` stdout
-	a (readh, writeh)
+		| otherwise = notifyTransfer direction file $
+			download (Remote.uuid remote) key file forwardRetry $ \p ->
+				getViaTmp key $ \t -> Remote.retrieveKeyFile remote key file t p
 
 runRequests
 	:: Handle
@@ -70,13 +57,13 @@ runRequests readh writeh a = do
 		fileEncoding writeh
 	go =<< readrequests
   where
-  	go (d:u:k:f:rest) = do
-		case (deserialize d, deserialize u, deserialize k, deserialize f) of
-			(Just direction, Just uuid, Just key, Just file) -> do
-				mremote <- Remote.remoteFromUUID uuid
+	go (d:rn:k:f:rest) = do
+		case (deserialize d, deserialize rn, deserialize k, deserialize f) of
+			(Just direction, Just remotename, Just key, Just file) -> do
+				mremote <- Remote.byName' remotename
 				case mremote of
-					Nothing -> sendresult False
-					Just remote -> sendresult =<< a
+					Left _ -> sendresult False
+					Right remote -> sendresult =<< a
 						(TransferRequest direction remote key file)
 			_ -> sendresult False
 		go rest
@@ -89,13 +76,15 @@ runRequests readh writeh a = do
 		hPutStrLn writeh $ serialize b
 		hFlush writeh
 
-sendRequest :: Transfer -> AssociatedFile -> Handle -> IO ()
-sendRequest t f h = do
+sendRequest :: Transfer -> TransferInfo -> Handle -> IO ()
+sendRequest t info h = do
 	hPutStr h $ intercalate fieldSep
 		[ serialize (transferDirection t)
-		, serialize (transferUUID t)
+		, maybe (serialize (fromUUID (transferUUID t)))
+			(serialize . Remote.name)
+			(transferRemote info)
 		, serialize (transferKey t)
-		, serialize f
+		, serialize (associatedFile info)
 		, "" -- adds a trailing null
 		]
 	hFlush h
@@ -130,9 +119,9 @@ instance TCSerialized AssociatedFile where
 	deserialize "" = Just Nothing
 	deserialize f = Just $ Just f
 
-instance TCSerialized UUID where
-	serialize = fromUUID
-	deserialize = Just . toUUID
+instance TCSerialized RemoteName where
+	serialize n = n
+	deserialize n = Just n
 
 instance TCSerialized Key where
 	serialize = key2file

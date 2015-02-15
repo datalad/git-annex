@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.176"
+ subject="comment 1"
+ date="2014-05-27T18:45:35Z"
+ content="""
+I was able to use that server from git-annex on Linux successfully.
+
+I also tried on OSX, which appears to be the OS you're using. The assistant didn't crash. I may not have exactly replicated what you did though.
+
+Can you enable debug logging in Configuration -> Preferences and try to do this again, and send any parts of the log that mention XMPP?
+"""]]

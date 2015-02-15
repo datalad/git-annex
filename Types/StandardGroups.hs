@@ -1,6 +1,6 @@
 {- git-annex standard repository groups
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -96,7 +96,7 @@ standardPreferredContent UnwantedGroup = "exclude=*"
 
 notArchived :: String
 notArchived = "not (copies=archive:1 or copies=smallarchive:1)"
-  	
+	
 {- Most repositories want any content that is only on untrusted
  - or dead repositories, or that otherwise does not have enough copies.
  - Does not look at .gitattributes since that is quite a lot slower.

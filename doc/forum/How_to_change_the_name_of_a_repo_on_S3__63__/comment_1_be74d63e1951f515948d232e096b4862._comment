@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-05-16T16:28:40Z"
+ content="""
+If you look at the [[S3_documentation|special_remotes/S3]] you will see a `bucket` setting that does what you want. You can use `git annex enableremote` to change it.
+"""]]

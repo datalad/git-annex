@@ -1,0 +1,54 @@
+Hi,
+
+I have run the git annex repair command on one of my repositories and it has been running for 38h hours now. I have monitored the process and its sons with htop and it seems that git annex repair is stuck.
+
+It repeatedly launches the following command: 
+
+    git --git-dir=/home/vincent/photos2/.git --work-tree=/home/vincent/photos2 ls-tree --full-tree -z -r -- 5fe5193e079631c0ceac0688ae0a6c1636491b61
+
+I have tried to execute it by hand and it produces a lot of output. I have redirected it into some file in order to count the content produced by this command.
+
+    vincent@berlioz:~/photos2/.git$ git --git-dir=/home/vincent/photos2/.git --work-tree=/home/vincent/photos2 ls-tree --full-tree -z -r -- 5fe5193e079631c0ceac0688ae0a6c1636491b61 > /tmp/ls-tree
+    vincent@berlioz:/tmp$ wc ls-tree 
+           0   232525 11611220 ls-tree
+
+Could this cause some troubles to git-annex ? Maybe my repository is just too big and it demands some time to deal with the whole thing?
+
+Before doing the git annex repair command I have tried to delete a distant annex (hosted on a raspberry pi, running an arm raspbian) from this one, using the git annex webapp website. Since it was kind of stuck I asked webapp to shutdown. I ran git annex repair for some time. It looked like stuck. I stopped it, then tried git fsck. It ran well. I tried git annex fsck, it took all my RAM and swap. The process was eating 14 Giga bytes of memory. I tried git gc and the same memory problem occured. I ran git annex repair again and it has been running for 38 hours now. I am lost. Please help.
+
+    vincent@berlioz:~$ LANG=C apt-cache policy git-annex
+    git-annex:
+      Installed: 5.20141125
+      Candidate: 5.20141125
+      Package pin: 5.20141125
+      Version table:
+     *** 5.20141125 950
+            400 http://ftp.fr.debian.org/debian/ testing/main amd64 Packages
+             50 http://ftp.fr.debian.org/debian/ unstable/main amd64 Packages
+            100 /var/lib/dpkg/status
+         3.20120629 950
+            900 http://ftp.fr.debian.org/debian/ wheezy/main amd64 Packages
+
+    vincent@berlioz:~/photos2$ du -sh .
+    152G	.
+
+Info gathered from another client annex:
+
+    vincent@tigrou:/mnt/mars/images/photos2$ git annex info
+    repository mode: indirect
+    trusted repositories: 0
+    semitrusted repositories: 11
+        8<------------skipped repositories list------------->8
+    untrusted repositories: 1
+    	a357bb9e-7a9d-4112-b74c-13707e2c7f85 -- vincent@rhett:~/photos [gateway]
+    transfers in progress: none
+    available local disk space: 945.91 gigabytes (+1 megabyte reserved)
+    bad keys size: 368 bytes (clean up with git-annex unused)
+    local annex keys: 76070
+    local annex size: 383.91 gigabytes
+    annexed files in working tree: 59117
+    size of annexed files in working tree: 319.73 gigabytes
+    bloom filter size: 16 mebibytes (15.2% full)
+    backend usage: 
+            SHA256E: 101902
+            SHA256: 33285

@@ -1,0 +1,21 @@
+Hi Joey,
+
+I'm trying to extract data from a git annex whereis --json, but discovered that in json, the output has two values with same name.
+For instance: 
+
+{
+ "command":"whereis",
+ "file":"filename.webm",
+ "note":"3 copies",
+ "whereis":[
+  {"uuid":"1b7d69fe-22e2-11e4-bc47-279f5115dfde","description":"chasqui","here":false},
+  {"uuid":"e5cc9824-450b-4340-b30f-c2d92c6a52f7","description":"coco","here":false},
+  {"uuid":"f84a1327-febb-4199-a106-9c3fd2288826","description":"[dpadua]","here":false}],
+ "note":"\t1b7d69fe-22e2-11e4-bc47-279f5115dfde -- chasqui\n \te5cc9824-450b-4340-b30f-c2d92c6a52f7 -- coco\n \tf84a1327-febb-4199-a106-9c3fd2288826 -- [dpadua]\n",
+ "untrusted":[],
+ "success":true
+}
+
+When I read the json from another program, it gets only the second value (and I wanted the first, the number of copies). I'm using git-annex version 5.20140831+b1
+
+

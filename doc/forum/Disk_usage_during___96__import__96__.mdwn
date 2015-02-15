@@ -1,0 +1,5 @@
+Does `git-annex import` move data to the working directory before moving it to `.git/annex/objects`?
+
+The reason I'm asking is that I use the split SSD/HDD setup with some annexes, i.e., everything resides on an SSD except for the git-annex objects directory.
+
+If git-annex wrote imported data to the working directoy (on the SSD) first and moved it to the objects directory (on the HDD) later, it would cause lots of unnecessary writes to the SSD.

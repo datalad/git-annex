@@ -1,6 +1,6 @@
 {- Remote costs.
  -
- - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -52,7 +52,7 @@ insertCostAfter l pos
 	| otherwise =
 		firstsegment ++ [costBetween item nextitem ] ++ lastsegment
   where
-  	nextpos = pos + 1
+	nextpos = pos + 1
 	maxpos = length l - 1
 	
 	item = l !! pos

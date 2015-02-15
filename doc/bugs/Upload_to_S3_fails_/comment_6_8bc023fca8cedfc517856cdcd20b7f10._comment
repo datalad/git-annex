@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.96"
+ subject="comment 6"
+ date="2014-10-21T16:31:02Z"
+ content="""
+I need to know if the S3 remote is configured to use the new style chunking feature, and what size chunks it is configured to use. I have already explained how to check that in this thread.
+
+I also need to know if retrying the upload after it fails lets it resume where it left off.
+"""]]

@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,8 +12,8 @@ import Command
 import qualified Remote
 import Logs.UUID
 
-def :: [Command]
-def = [command "describe" (paramPair paramRemote paramDesc) seek
+cmd :: [Command]
+cmd = [command "describe" (paramPair paramRemote paramDesc) seek
 	SectionSetup "change description of a repository"]
 
 seek :: CommandSeek

@@ -1,6 +1,6 @@
 {- Bundled programs
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -20,7 +20,7 @@ bundledPrograms :: [FilePath]
 bundledPrograms = catMaybes
 	[ Nothing
 #ifndef mingw32_HOST_OS
-	-- git is not included in the windows bundle
+	-- git is not included in the windows bundle; msysgit is used
 	, Just "git"
 	-- Not strictly needed in PATH by git-annex, but called
 	-- by git when it sshes to a remote.
@@ -36,7 +36,9 @@ bundledPrograms = catMaybes
 	, Just "rsync"
 #ifndef darwin_HOST_OS
 	-- OS X has ssh installed by default.
-	-- (Linux probably, but not guaranteed.)
+	-- Linux probably has ssh, but not guaranteed.
+	-- On Windows, msysgit provides ssh, but not in PATH, 
+	-- so we ship our own.
 	, Just "ssh"
 	, Just "ssh-keygen"
 #endif
@@ -45,7 +47,12 @@ bundledPrograms = catMaybes
 #endif
 	, SysConfig.gpg
 	, ifset SysConfig.curl "curl"
+#ifndef darwin_HOST_OS
+	-- wget on OSX has been problimatic, looking for certs in the wrong
+	-- places. Don't ship it, use curl or the OSX's own wget if it has
+	-- one.
 	, ifset SysConfig.wget "wget"
+#endif
 	, ifset SysConfig.bup "bup"
 	, SysConfig.lsof
 	, SysConfig.gcrypt

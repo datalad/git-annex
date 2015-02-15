@@ -1,6 +1,6 @@
 {- git fsck interface
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -23,7 +23,6 @@ import Utility.Batch
 import qualified Git.Version
 
 import qualified Data.Set as S
-import System.Process (std_out, std_err)
 import Control.Concurrent.Async
 
 type MissingObjects = S.Set Sha

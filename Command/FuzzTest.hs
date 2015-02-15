@@ -1,6 +1,6 @@
 {- git-annex fuzz generator
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -13,7 +13,6 @@ import Command
 import qualified Git.Config
 import Config
 import Utility.ThreadScheduler
-import Annex.Exception
 import Utility.DiskFree
 
 import Data.Time.Clock
@@ -21,8 +20,8 @@ import System.Random (getStdRandom, random, randomR)
 import Test.QuickCheck
 import Control.Concurrent
 
-def :: [Command]
-def = [ notBareRepo $ command "fuzztest" paramNothing seek SectionPlumbing
+cmd :: [Command]
+cmd = [ notBareRepo $ command "fuzztest" paramNothing seek SectionTesting
 	"generates fuzz test files"]
 
 seek :: CommandSeek
@@ -48,7 +47,7 @@ guardTest = unlessM (fromMaybe False . Git.Config.isTrue <$> getConfig key "") $
 		, "Refusing to run fuzz tests, since " ++ keyname ++ " is not set!"
 		]
   where
-  	key = annexConfig "eat-my-repository"
+	key = annexConfig "eat-my-repository"
 	(ConfigKey keyname) = key
 
 
@@ -56,7 +55,7 @@ fuzz :: Handle -> Annex ()
 fuzz logh = do
 	action <- genFuzzAction
 	record logh $ flip Started action
-	result <- tryAnnex $ runFuzzAction action
+	result <- tryNonAsync $ runFuzzAction action
 	record logh $ flip Finished $
 		either (const False) (const True) result
 
@@ -258,7 +257,7 @@ existingDir = do
 newFile :: IO (Maybe FuzzFile)
 newFile = go (100 :: Int)
   where
-  	go 0 = return Nothing
+	go 0 = return Nothing
 	go n = do
 		f <- genFuzzFile
 		ifM (doesnotexist (toFilePath f))
@@ -269,7 +268,7 @@ newFile = go (100 :: Int)
 newDir :: FilePath -> IO (Maybe FuzzDir)
 newDir parent = go (100 :: Int)
   where
-  	go 0 = return Nothing
+	go 0 = return Nothing
 	go n = do
 		(FuzzDir d) <- genFuzzDir
 		ifM (doesnotexist (parent </> d))

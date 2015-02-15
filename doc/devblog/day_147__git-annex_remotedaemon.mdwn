@@ -1,0 +1,5 @@
+Built `git-annex remotedaemon` command today. It's buggy, but it already
+works! If you have a new enough git-annex-shell on a remote server, you can
+run "git annex remotedaemon" in a git-annex repository, and it will notice
+any pushes that get made to that remote from any other clone, and pull down
+the changes.

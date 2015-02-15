@@ -1,6 +1,6 @@
 {- git-annex assistant daemon status
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -26,6 +26,7 @@ import Data.Time.Clock.POSIX
 import Data.Time
 import System.Locale
 import qualified Data.Map as M
+import qualified Data.Set as S
 import qualified Data.Text as T
 
 getDaemonStatus :: Assistant DaemonStatus
@@ -64,7 +65,7 @@ calcSyncRemotes = do
 		, syncingToCloudRemote = any iscloud syncdata
 		}
   where
-  	iscloud r = not (Remote.readonly r) && Remote.availability r == Remote.GloballyAvailable
+	iscloud r = not (Remote.readonly r) && Remote.availability r == Remote.GloballyAvailable
 
 {- Updates the syncRemotes list from the list of all remotes in Annex state. -}
 updateSyncRemotes :: Assistant ()
@@ -77,6 +78,15 @@ updateSyncRemotes = do
 		updateAlertMap $
 			M.filter $ \alert ->
 				alertName alert /= Just CloudRepoNeededAlert
+
+changeCurrentlyConnected :: (S.Set UUID -> S.Set UUID) -> Assistant ()
+changeCurrentlyConnected sm = do
+	modifyDaemonStatus_ $ \ds -> ds
+		{ currentlyConnectedRemotes = sm (currentlyConnectedRemotes ds)
+		}
+	v <- currentlyConnectedRemotes <$> getDaemonStatus
+	debug [show v]
+	liftIO . sendNotification =<< syncRemotesNotifier <$> getDaemonStatus
 
 updateScheduleLog :: Assistant ()
 updateScheduleLog =

@@ -1,6 +1,6 @@
 {- git-annex assistant repo pairing, core data types
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -57,6 +57,15 @@ data PairData = PairData
 	, pairUUID :: UUID
 	}
 	deriving (Eq, Read, Show)
+
+checkSane :: PairData -> Bool
+checkSane p = all (not . any isControl)
+	[ fromMaybe "" (remoteHostName p)
+	, remoteUserName p
+	, remoteDirectory p
+	, remoteSshPubKey p
+	, fromUUID (pairUUID p)
+	]
 
 type UserName = String
 

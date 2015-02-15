@@ -1,0 +1,10 @@
+Working through the forum posts and bugs. Backlog is down to 95.
+
+Discovered the first known security hole in git-annex!
+Turns out that S3 and Glacier remotes that were configured with embedcreds=yes and encryption=pubkey or encryption=hybrid
+didn't actually encrypt the AWS credentials that get embedded into the git
+repo. This doesn't affect any repos set up by the assistant.
+
+I've fixed the problem and am going to make a release soon.
+If your repo is affected, see 
+[[upgrades/insecure_embedded_creds]] for what to do about it.

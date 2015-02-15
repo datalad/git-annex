@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -14,8 +14,8 @@ import qualified Command.Add
 import Command.Unused (withUnusedMaps, UnusedMaps(..), startUnused)
 import Types.Key
 
-def :: [Command]
-def = [notDirect $ command "addunused" (paramRepeating paramNumRange)
+cmd :: [Command]
+cmd = [notDirect $ command "addunused" (paramRepeating paramNumRange)
 	seek SectionMaintenance "add back unused files"]
 
 seek :: CommandSeek

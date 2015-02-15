@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -13,8 +13,8 @@ import qualified Annex.Queue
 import Annex.Content
 import Types.Key
 
-def :: [Command]
-def = [notDirect $ notBareRepo $
+cmd :: [Command]
+cmd = [notDirect $ notBareRepo $
 	command "fromkey" (paramPair paramKey paramPath) seek
 		SectionPlumbing "adds a file using a specific key"]
 
@@ -33,7 +33,7 @@ start _ = error "specify a key and a dest file"
 
 perform :: Key -> FilePath -> CommandPerform
 perform key file = do
-	link <- inRepo $ gitAnnexLink file key
+	link <- calcRepo $ gitAnnexLink file key
 	liftIO $ createDirectoryIfMissing True (parentDir file)
 	liftIO $ createSymbolicLink link file
 	next $ cleanup file

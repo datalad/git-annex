@@ -1,6 +1,6 @@
 {- git-annex assistant out of band network messager interface
  -
- - Copyright 2012-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -80,7 +80,7 @@ checkImportantNetMessages (storedclient, sentclient) = go <<~ netMessager
 queuePushInitiation :: NetMessage -> Assistant ()
 queuePushInitiation msg@(Pushing clientid stage) = do
 	tv <- getPushInitiationQueue side
-  	liftIO $ atomically $ do
+	liftIO $ atomically $ do
 		r <- tryTakeTMVar tv
 		case r of
 			Nothing -> putTMVar tv [msg]
@@ -88,7 +88,7 @@ queuePushInitiation msg@(Pushing clientid stage) = do
 				let !l' = msg : filter differentclient l
 				putTMVar tv l'
   where
-  	side = pushDestinationSide stage
+	side = pushDestinationSide stage
 	differentclient (Pushing cid _) = cid /= clientid
 	differentclient _ = True
 queuePushInitiation _ = noop

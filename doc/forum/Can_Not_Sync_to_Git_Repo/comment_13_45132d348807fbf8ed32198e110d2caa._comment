@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlo7XnC4EU3u_9t80JUYXV7XPnUqBQ7mD4"
+ nickname="Ryan"
+ subject="comment 13"
+ date="2014-12-19T00:09:35Z"
+ content="""
+I'm having the same problem with my direct repo:
+
+git branch -a
+  git-annex
+* master
+  synced/git-annex
+  synced/master
+  remotes/cluster/git-annex
+  remotes/cluster/master
+  remotes/cluster/synced/master
+
+git annex version
+git-annex version: 5.20140818-g10bf03a
+build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA CryptoHash
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository version: 5
+upgrade supported from repository versions: 0 1 2 4
+"""]]

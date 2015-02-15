@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="http://edheil.wordpress.com/"
- ip="99.54.57.201"
- subject="comment 4"
- date="2013-02-25T14:57:20Z"
- content="""
-Yeah, the assistant wants to drop *everything* on my USB drive.  When I vicfg I see that the usb drive repo is \"untrusted/backup/standard\".  Why in the world would the assistant want to drop everything on it?
-
-"""]]

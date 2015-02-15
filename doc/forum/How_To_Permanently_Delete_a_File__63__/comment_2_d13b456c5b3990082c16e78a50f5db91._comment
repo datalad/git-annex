@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmwjQzWgiD7_I3zw-_91rMRf_6qoThupis"
+ nickname="Mike"
+ subject="comment 2"
+ date="2014-10-09T18:02:59Z"
+ content="""
+Tried another approach:
+
+``git annex unannex <file>; rm <file>``
+
+This does not delete the original, and it only works if you do ``git annex get <file>`` first. It won't update the remote, unless you cd into that remote and run ``git annex sync`` there. After that there is the illusion the file is done, but its content is still in .git/annex/objects. In my test case I could vim into the file in question in the objects directory and it was still there.
+
+So ``git annex drop`` deletes both copies of duplicate files and so is too dangerous to use and ``git annex unannex`` doesn't delete the file anywhere. I am a little stuck here, what do I do?
+"""]]

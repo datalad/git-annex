@@ -1,18 +1,18 @@
 {- Using bup as a remote.
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Remote.Bup (remote) where
 
-import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
-import System.Process
+import qualified Data.ByteString.Lazy as L
 import Data.ByteString.Lazy.UTF8 (fromString)
 
 import Common.Annex
+import qualified Annex
 import Types.Remote
 import Types.Key
 import Types.Creds
@@ -25,12 +25,9 @@ import Config
 import Config.Cost
 import qualified Remote.Helper.Ssh as Ssh
 import Remote.Helper.Special
-import Remote.Helper.Encryptable
 import Remote.Helper.Messages
-import Crypto
 import Utility.Hash
 import Utility.UserInfo
-import Annex.Content
 import Annex.UUID
 import Utility.Metered
 
@@ -53,16 +50,16 @@ gen r u c gc = do
 			else expensiveRemoteCost
 	(u', bupr') <- getBupUUID bupr u
 	
-	let new = Remote
+	let this = Remote
 		{ uuid = u'
 		, cost = cst
 		, name = Git.repoDescribe r
-		, storeKey = store new buprepo
-		, retrieveKeyFile = retrieve buprepo
+		, storeKey = storeKeyDummy
+		, retrieveKeyFile = retreiveKeyFileDummy
 		, retrieveKeyFileCheap = retrieveCheap buprepo
-		, removeKey = remove
-		, hasKey = checkPresent r bupr'
-		, hasKeyCheap = bupLocal buprepo
+		, removeKey = removeKeyDummy
+		, checkPresent = checkPresentDummy
+		, checkPresentCheap = bupLocal buprepo
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing
@@ -75,13 +72,23 @@ gen r u c gc = do
 		, remotetype = remote
 		, availability = if bupLocal buprepo then LocallyAvailable else GloballyAvailable
 		, readonly = False
+		, mkUnavailable = return Nothing
+		, getInfo = return [("repo", buprepo)]
+		, claimUrl = Nothing
+		, checkUrl = Nothing
 		}
-	return $ Just $ encryptableRemote c
-		(storeEncrypted new buprepo)
-		(retrieveEncrypted buprepo)
-		new
+	return $ Just $ specialRemote' specialcfg c
+		(simplyPrepare $ store this buprepo)
+		(simplyPrepare $ retrieve buprepo)
+		(simplyPrepare $ remove buprepo)
+		(simplyPrepare $ checkKey r bupr')
+		this
   where
 	buprepo = fromMaybe (error "missing buprepo") $ remoteAnnexBupRepo gc
+	specialcfg = (specialRemoteCfg c)
+		-- chunking would not improve bup
+		{ chunkConfig = NoChunks
+		}
 
 bupSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
 bupSetup mu _ c = do
@@ -90,7 +97,7 @@ bupSetup mu _ c = do
 	-- verify configuration is sane
 	let buprepo = fromMaybe (error "Specify buprepo=") $
 		M.lookup "buprepo" c
-	c' <- encryptionSetup c
+	(c', _encsetup) <- encryptionSetup c
 
 	-- bup init will create the repository.
 	-- (If the repository already exists, bup init again appears safe.)
@@ -114,85 +121,61 @@ bup command buprepo params = do
 	showOutput -- make way for bup output
 	liftIO $ boolSystem "bup" $ bupParams command buprepo params
 
-pipeBup :: [CommandParam] -> Maybe Handle -> Maybe Handle -> IO Bool
-pipeBup params inh outh = do
-	p <- runProcess "bup" (toCommand params)
-		Nothing Nothing inh outh Nothing
-	ok <- waitForProcess p
-	case ok of
-		ExitSuccess -> return True
-		_ -> return False
-
 bupSplitParams :: Remote -> BupRepo -> Key -> [CommandParam] -> Annex [CommandParam]
 bupSplitParams r buprepo k src = do
 	let os = map Param $ remoteAnnexBupSplitOptions $ gitconfig r
 	showOutput -- make way for bup output
 	return $ bupParams "split" buprepo 
-		(os ++ [Param "-n", Param (bupRef k)] ++ src)
+		(os ++ [Param "-q", Param "-n", Param (bupRef k)] ++ src)
 
-store :: Remote -> BupRepo -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store r buprepo k _f _p = sendAnnex k (rollback k buprepo) $ \src -> do
-	params <- bupSplitParams r buprepo k [File src]
-	liftIO $ boolSystem "bup" params
+store :: Remote -> BupRepo -> Storer
+store r buprepo = byteStorer $ \k b p -> do
+	params <- bupSplitParams r buprepo k []
+	let cmd = proc "bup" (toCommand params)
+	liftIO $ withHandle StdinHandle createProcessSuccess cmd $ \h -> do
+		meteredWrite p h b
+		return True
 
-storeEncrypted :: Remote -> BupRepo -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
-storeEncrypted r buprepo (cipher, enck) k _p =
-	sendAnnex k (rollback enck buprepo) $ \src -> do
-		params <- bupSplitParams r buprepo enck []
-		liftIO $ catchBoolIO $
-			encrypt (getGpgEncParams r) cipher (feedFile src) $ \h ->
-				pipeBup params (Just h) Nothing
-
-retrieve :: BupRepo -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
-retrieve buprepo k _f d _p = do
+retrieve :: BupRepo -> Retriever
+retrieve buprepo = byteRetriever $ \k sink -> do
 	let params = bupParams "join" buprepo [Param $ bupRef k]
-	liftIO $ catchBoolIO $ withFile d WriteMode $
-		pipeBup params Nothing . Just
+	let p = proc "bup" (toCommand params)
+	(_, Just h, _, pid) <- liftIO $ createProcess $ p { std_out = CreatePipe }
+	liftIO (hClose h >> forceSuccessProcess p pid)
+		`after` (sink =<< liftIO (L.hGetContents h))
 
 retrieveCheap :: BupRepo -> Key -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False
-
-retrieveEncrypted :: BupRepo -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
-retrieveEncrypted buprepo (cipher, enck) _ f _p = liftIO $ catchBoolIO $
-	withHandle StdoutHandle createProcessSuccess p $ \h -> do
-		decrypt cipher (\toh -> L.hPut toh =<< L.hGetContents h) $
-			readBytes $ L.writeFile f
-		return True
-  where
-	params = bupParams "join" buprepo [Param $ bupRef enck]
-	p = proc "bup" $ toCommand params
-
-remove :: Key -> Annex Bool
-remove _ = do
-	warning "content cannot be removed from bup remote"
-	return False
 
 {- Cannot revert having stored a key in bup, but at least the data for the
  - key will be used for deltaing data of other keys stored later.
  -
  - We can, however, remove the git branch that bup created for the key.
  -}
-rollback :: Key -> BupRepo -> Annex ()
-rollback k bupr = go =<< liftIO (bup2GitRemote bupr)
+remove :: BupRepo -> Remover
+remove buprepo k = do
+	go =<< liftIO (bup2GitRemote buprepo)
+	warning "content cannot be completely removed from bup remote"
+	return True
   where
 	go r
 		| Git.repoIsUrl r = void $ onBupRemote r boolSystem "git" params
-		| otherwise = void $ liftIO $ catchMaybeIO $
-			boolSystem "git" $ Git.Command.gitCommandLine params r
-	params = [ Params "branch -D", Param (bupRef k) ]
+		| otherwise = void $ liftIO $ catchMaybeIO $ do
+			r' <- Git.Config.read r
+			boolSystem "git" $ Git.Command.gitCommandLine params r'
+	params = [ Params "branch -q -D", Param (bupRef k) ]
 
 {- Bup does not provide a way to tell if a given dataset is present
  - in a bup repository. One way it to check if the git repository has
  - a branch matching the name (as created by bup split -n).
  -}
-checkPresent :: Git.Repo -> Git.Repo -> Key -> Annex (Either String Bool)
-checkPresent r bupr k
+checkKey :: Git.Repo -> Git.Repo -> CheckPresent
+checkKey r bupr k
 	| Git.repoIsUrl bupr = do
 		showChecking r
-		ok <- onBupRemote bupr boolSystem "git" params
-		return $ Right ok
-	| otherwise = liftIO $ catchMsgIO $
-		boolSystem "git" $ Git.Command.gitCommandLine params bupr
+		onBupRemote bupr boolSystem "git" params
+	| otherwise = liftIO $ boolSystem "git" $
+		Git.Command.gitCommandLine params bupr
   where
 	params = 
 		[ Params "show-ref --quiet --verify"
@@ -223,7 +206,8 @@ storeBupUUID u buprepo = do
 
 onBupRemote :: Git.Repo -> (FilePath -> [CommandParam] -> IO a) -> FilePath -> [CommandParam] -> Annex a
 onBupRemote r a command params = do
-	sshparams <- Ssh.toRepo r [Param $
+	c <- Annex.getRemoteGitConfig r
+	sshparams <- Ssh.toRepo r c [Param $
 			"cd " ++ dir ++ " && " ++ unwords (command : toCommand params)]
 	liftIO $ a "ssh" sshparams
   where

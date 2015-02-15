@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.244"
+ subject="comment 1"
+ date="2014-04-02T18:45:36Z"
+ content="""
+A better workaround is:
+
+include='pictures/dir?with?spaces'
+
+Tokenizing text with embedded quotes is a bit of a PITA, certianly doable I suppose..
+"""]]

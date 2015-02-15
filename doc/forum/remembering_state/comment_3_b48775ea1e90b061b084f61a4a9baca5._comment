@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 3"
+ date="2014-05-15T20:01:14Z"
+ content="""
+While you can certianly use views for this, I tend to do the same with my sound files without view, but just using location tracking info. I have a set of music I'm currently listening to, and want to have more or less the same files on multiple computers as I have on my laptop. With maybe a bit more on some computers with more space. So, I do:
+
+    git annex sync
+    git annex get --in darkstar
+
+Where \"darkstar\" is the name of the repository on my laptop. 
+
+Another nice trick that also takes advantage of the location tracking logs is this to get back some files you dropped temporarily to free up space:
+
+    git annex get --in='here@{yesterday}'
+
+
+"""]]

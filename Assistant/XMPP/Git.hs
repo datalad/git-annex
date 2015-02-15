@@ -1,6 +1,6 @@
 {- git over XMPP
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -38,7 +38,7 @@ import Utility.Env
 import Network.Protocol.XMPP
 import qualified Data.Text as T
 import System.Posix.Types
-import System.Process (std_in, std_out, std_err)
+import qualified System.Posix.IO
 import Control.Concurrent
 import System.Timeout
 import qualified Data.ByteString as B
@@ -74,7 +74,7 @@ makeXMPPGitRemote :: String -> JID -> UUID -> Assistant Bool
 makeXMPPGitRemote buddyname jid u = do
 	remote <- liftAnnex $ addRemote $
 		makeGitRemote buddyname $ gitXMPPLocation jid
-	liftAnnex $ storeUUID (remoteConfig (Remote.repo remote) "uuid") u
+	liftAnnex $ storeUUIDIn (remoteConfig (Remote.repo remote) "uuid") u
 	liftAnnex $ void remoteListRefresh
 	remote' <- liftAnnex $ fromMaybe (error "failed to add remote")
 		<$> Remote.byName (Just buddyname)
@@ -105,22 +105,22 @@ xmppPush cid gitpush = do
 	u <- liftAnnex getUUID
 	sendNetMessage $ Pushing cid (StartingPush u)
 
-	(Fd inf, writepush) <- liftIO createPipe
-	(readpush, Fd outf) <- liftIO createPipe
-	(Fd controlf, writecontrol) <- liftIO createPipe
+	(Fd inf, writepush) <- liftIO System.Posix.IO.createPipe
+	(readpush, Fd outf) <- liftIO System.Posix.IO.createPipe
+	(Fd controlf, writecontrol) <- liftIO System.Posix.IO.createPipe
 
 	tmpdir <- gettmpdir
 	installwrapper tmpdir
 
-	env <- liftIO getEnvironment
+	environ <- liftIO getEnvironment
 	path <- liftIO getSearchPath
-	let myenv = addEntries
+	let myenviron = addEntries
 		[ ("PATH", intercalate [searchPathSeparator] $ tmpdir:path)
 		, (relayIn, show inf)
 		, (relayOut, show outf)
 		, (relayControl, show controlf)
 		]
-		env
+		environ
 
 	inh <- liftIO $ fdToHandle readpush
 	outh <- liftIO $ fdToHandle writepush
@@ -132,7 +132,7 @@ xmppPush cid gitpush = do
 	{- This can take a long time to run, so avoid running it in the
 	 - Annex monad. Also, override environment. -}
 	g <- liftAnnex gitRepo
-	r <- liftIO $ gitpush $ g { gitEnv = Just myenv }
+	r <- liftIO $ gitpush $ g { gitEnv = Just myenviron }
 
 	liftIO $ do
 		mapM_ killThread [t1, t2]
@@ -151,16 +151,16 @@ xmppPush cid gitpush = do
 					SendPackOutput seqnum' b
 				toxmpp seqnum' inh
 	
-	fromxmpp outh controlh = withPushMessagesInSequence cid SendPack handle
+	fromxmpp outh controlh = withPushMessagesInSequence cid SendPack handlemsg
 	  where
-	  	handle (Just (Pushing _ (ReceivePackOutput _ b))) = 
+		handlemsg (Just (Pushing _ (ReceivePackOutput _ b))) = 
 			liftIO $ writeChunk outh b
-		handle (Just (Pushing _ (ReceivePackDone exitcode))) =
+		handlemsg (Just (Pushing _ (ReceivePackDone exitcode))) =
 			liftIO $ do
 				hPrint controlh exitcode
 				hFlush controlh
-		handle (Just _) = noop
-		handle Nothing = do
+		handlemsg (Just _) = noop
+		handlemsg Nothing = do
 			debug ["timeout waiting for git receive-pack output via XMPP"]
 			-- Send a synthetic exit code to git-annex
 			-- xmppgit, which will exit and cause git push
@@ -265,12 +265,12 @@ xmppReceivePack cid = do
 			let seqnum' = succ seqnum
 			sendNetMessage $ Pushing cid $ ReceivePackOutput seqnum' b
 			relaytoxmpp seqnum' outh
-	relayfromxmpp inh = withPushMessagesInSequence cid ReceivePack handle
+	relayfromxmpp inh = withPushMessagesInSequence cid ReceivePack handlemsg
 	  where
-	  	handle (Just (Pushing _ (SendPackOutput _ b))) =
+		handlemsg (Just (Pushing _ (SendPackOutput _ b))) =
 			liftIO $ writeChunk inh b
-		handle (Just _) = noop
-		handle Nothing = do
+		handlemsg (Just _) = noop
+		handlemsg Nothing = do
 			debug ["timeout waiting for git send-pack output via XMPP"]
 			-- closing the handle will make git receive-pack exit
 			liftIO $ do
@@ -338,7 +338,7 @@ handlePushNotice (Pushing cid (CanPush theiruuid shas)) =
 				, go
 				)
   where
-  	go = do
+	go = do
 		u <- liftAnnex getUUID
 		sendNetMessage $ Pushing cid (PushRequest u)
 	haveall l = liftAnnex $ not <$> anyM donthave l
@@ -360,9 +360,9 @@ writeChunk h b = do
 withPushMessagesInSequence :: ClientID -> PushSide -> (Maybe NetMessage -> Assistant ()) -> Assistant ()
 withPushMessagesInSequence cid side a = loop 0
   where
-  	loop seqnum = do
+	loop seqnum = do
 		m <- timeout xmppTimeout <~> waitInbox cid side
-	  	let go s = a m >> loop s
+		let go s = a m >> loop s
 		let next = seqnum + 1
 		case extractSequence =<< m of
 			Just seqnum'

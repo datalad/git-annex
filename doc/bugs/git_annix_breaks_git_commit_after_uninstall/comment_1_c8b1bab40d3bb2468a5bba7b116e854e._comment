@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://me.tinco.nl/"
- nickname="Tinco"
- subject="comment 1"
- date="2013-05-19T15:35:27Z"
- content="""
-I'm sorry, there seems to be an annex directory in the .git of that repository.. apparently I have accidentily made it an annex repository. I'm going to find out how to remove it now :)
-"""]]

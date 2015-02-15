@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnwfqF4wL6l_O26RyzoBowUMvQ_955Vpao"
+ nickname="Markus"
+ subject="comment 7"
+ date="2014-06-14T06:29:55Z"
+ content="""
+FWIW: Removing the [raspi-copies-and-fills](https://github.com/simonjhall/copies-and-fills) package ('apt-get purge raspi-copies-and-fills') stops annex from printing the message over and over again. According to the package's description though, you suffer a performance penalty without the package.
+"""]]

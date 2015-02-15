@@ -1,0 +1,18 @@
+Today was spent reworking so much of the webdav special remote that it was
+essentially rewritten from scratch.
+
+The main improvement is that it now keeps a http connection open and uses
+it to perform multiple actions. Before, one connection was made per action.
+This is even done for operations on chunks. So, now storing a chunked file
+in webdav makes only 2 http connections total. Before, it would take around
+10 connections *per chunk*. So a big win for performance, although there is
+still room for improvement: It would be possible to reduce that down to
+just 1 connection, and indeed keep a persistent connection reused when
+acting on multiple files.
+
+Finished up by making uploading a large (non-chunked) file to webdav not
+buffer the whole file in memory. 
+
+I still need to make downloading a file from webdav not buffer it, and
+test, and then I'll be done with webdav and can move on to making
+similar changes to S3.

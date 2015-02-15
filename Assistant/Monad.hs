@@ -1,6 +1,6 @@
 {- git-annex assistant monad
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -43,6 +43,8 @@ import Assistant.Types.RepoProblem
 import Assistant.Types.Buddies
 import Assistant.Types.NetMessager
 import Assistant.Types.ThreadName
+import Assistant.Types.RemoteControl
+import Assistant.Types.CredPairCache
 
 newtype Assistant a = Assistant { mkAssistant :: ReaderT AssistantData IO a }
 	deriving (
@@ -68,6 +70,8 @@ data AssistantData = AssistantData
 	, branchChangeHandle :: BranchChangeHandle
 	, buddyList :: BuddyList
 	, netMessager :: NetMessager
+	, remoteControl :: RemoteControl
+	, credPairCache :: CredPairCache
 	}
 
 newAssistantData :: ThreadState -> DaemonStatusHandle -> IO AssistantData
@@ -86,6 +90,8 @@ newAssistantData st dstatus = AssistantData
 	<*> newBranchChangeHandle
 	<*> newBuddyList
 	<*> newNetMessager
+	<*> newRemoteControl
+	<*> newCredPairCache
 
 runAssistant :: AssistantData -> Assistant a -> IO a
 runAssistant d a = runReaderT (mkAssistant a) d

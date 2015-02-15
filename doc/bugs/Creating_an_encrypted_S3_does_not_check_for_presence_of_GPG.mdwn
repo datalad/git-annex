@@ -16,3 +16,4 @@ What version of git-annex are you using? On what operating system?
 Please provide any additional information below.
 
 [[!tag /design/assistant]]
+[[!tag confirmed]]

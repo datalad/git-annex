@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="rasmus"
+ ip="193.145.48.43"
+ subject="comment 6"
+ date="2014-09-10T12:07:53Z"
+ content="""
+Seems `git prune` only worked as a temporary fix.  My `doc.annex/.git/objects` is 3.6Gb after two days.  I don't get why `git` sans `annex` is checking in stuff -- which I assume is the reason it's stored in `.git/objects`.
+"""]]

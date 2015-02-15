@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="http://edheil.wordpress.com/"
- ip="173.162.44.162"
- subject="comment 6"
- date="2013-08-26T19:38:12Z"
- content="""
-a final note -- according to the process monitor, the process eating CPU is \"ga.androidterm\".  There are also a small swarm of about 6 git processes none of which are consuming much CPU time at all.
-
-"""]]

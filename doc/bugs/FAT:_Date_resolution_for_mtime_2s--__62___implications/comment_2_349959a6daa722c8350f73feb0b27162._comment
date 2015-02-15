@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="martin"
+ ip="89.183.46.169"
+ subject="Possible solution?"
+ date="2014-05-13T17:51:41Z"
+ content="""
+How about this quick'n dirty vfat compromise:
+
+For vfat only we do like this (at least for `git annex fsck` command, so that the user doesn't wonder about the strange effects of vfat and can repair this):
+
+if we have an exact time difference of 1s (probably \"inode problem\") or 1h (\"utc problem\")
+we treat this file as likely unmodified and check this via the normal checksum algorithm. 
+
+if checksum is ok,  we give a message to the user, that the \"file has only a vfat timestamp problem\" but has correct checksum and if the user decides to do so git annex sets the timestamp in the filesystem to the value from annex' internal tables...
+
+"""]]

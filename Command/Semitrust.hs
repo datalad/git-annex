@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,8 +11,8 @@ import Command
 import Types.TrustLevel
 import Command.Trust (trustCommand)
 
-def :: [Command]
-def = [command "semitrust" (paramRepeating paramRemote) seek
+cmd :: [Command]
+cmd = [command "semitrust" (paramRepeating paramRemote) seek
 	SectionSetup "return repository to default trust level"]
 
 seek :: CommandSeek

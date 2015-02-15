@@ -7,7 +7,7 @@
  - done that is listed in the remote branch by checking that the local
  - branch contains the same transition, with the same or newer start time.
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -53,7 +53,7 @@ showTransitions = unlines . map showTransitionLine . S.elems
 parseTransitions :: String -> Maybe Transitions
 parseTransitions = check . map parseTransitionLine . lines
   where
-  	check l
+	check l
 		| all isJust l = Just $ S.fromList $ catMaybes l
 		| otherwise = Nothing
 
@@ -68,8 +68,8 @@ showTransitionLine (TransitionLine ts t) = unwords [show t, show ts]
 parseTransitionLine :: String -> Maybe TransitionLine
 parseTransitionLine s = TransitionLine <$> pdate ds <*> readish ts
   where
-  	ws = words s
-  	ts = Prelude.head ws
+	ws = words s
+	ts = Prelude.head ws
 	ds = unwords $ Prelude.tail ws
 	pdate = utcTimeToPOSIXSeconds <$$> parseTime defaultTimeLocale "%s%Qs"
 

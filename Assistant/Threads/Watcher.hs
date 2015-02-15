@@ -1,6 +1,6 @@
 {- git-annex assistant tree watcher
  -
- - Copyright 2012-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -35,6 +35,7 @@ import Annex.CatFile
 import Annex.CheckIgnore
 import Annex.Link
 import Annex.FileMatcher
+import Types.FileMatcher
 import Annex.ReplaceFile
 import Git.Types
 import Config
@@ -71,7 +72,7 @@ needLsof = error $ unlines
 
 {- A special exception that can be thrown to pause or resume the watcher. -}
 data WatcherControl = PauseWatcher | ResumeWatcher
-        deriving (Show, Eq, Typeable)
+	deriving (Show, Eq, Typeable)
 
 instance E.Exception WatcherControl
 
@@ -103,13 +104,13 @@ runWatcher = do
 		, errHook = errhook
 		}
 	scanevents <- liftAnnex $ annexStartupScan <$> Annex.getGitConfig
-	handle <- liftIO $ watchDir "." ignored scanevents hooks startup
+	h <- liftIO $ watchDir "." ignored scanevents hooks startup
 	debug [ "watching", "."]
 	
 	{- Let the DirWatcher thread run until signalled to pause it,
 	 - then wait for a resume signal, and restart. -}
 	waitFor PauseWatcher $ do
-		liftIO $ stopWatchDir handle
+		liftIO $ stopWatchDir h
 		waitFor ResumeWatcher runWatcher
   where
 	hook a = Just <$> asIO2 (runHandler a)
@@ -183,7 +184,7 @@ runHandler :: Handler -> FilePath -> Maybe FileStatus -> Assistant ()
 runHandler handler file filestatus = void $ do
 	r <- tryIO <~> handler (normalize file) filestatus
 	case r of
-		Left e -> liftIO $ print e
+		Left e -> liftIO $ warningIO $ show e
 		Right Nothing -> noop
 		Right (Just change) -> do
 			-- Just in case the commit thread is not
@@ -191,12 +192,12 @@ runHandler handler file filestatus = void $ do
 			liftAnnex Annex.Queue.flushWhenFull
 			recordChange change
   where
-  	normalize f
+	normalize f
 		| "./" `isPrefixOf` file = drop 2 f
 		| otherwise = f
 
 {- Small files are added to git as-is, while large ones go into the annex. -}
-add :: FileMatcher -> FilePath -> Assistant (Maybe Change)
+add :: FileMatcher Annex -> FilePath -> Assistant (Maybe Change)
 add bigfilematcher file = ifM (liftAnnex $ checkFileMatcher bigfilematcher file)
 	( pendingAddChange file
 	, do
@@ -205,7 +206,7 @@ add bigfilematcher file = ifM (liftAnnex $ checkFileMatcher bigfilematcher file)
 		madeChange file AddFileChange
 	)
 
-onAdd :: FileMatcher -> Handler
+onAdd :: FileMatcher Annex -> Handler
 onAdd matcher file filestatus
 	| maybe False isRegularFile filestatus =
 		unlessIgnored file $
@@ -218,12 +219,12 @@ shouldRestage ds = scanComplete ds || forceRestage ds
 {- In direct mode, add events are received for both new files, and
  - modified existing files.
  -}
-onAddDirect :: Bool -> FileMatcher -> Handler
+onAddDirect :: Bool -> FileMatcher Annex -> Handler
 onAddDirect symlinkssupported matcher file fs = do
 	v <- liftAnnex $ catKeyFile file
 	case (v, fs) of
 		(Just key, Just filestatus) ->
-			ifM (liftAnnex $ sameFileStatus key filestatus)
+			ifM (liftAnnex $ sameFileStatus key file filestatus)
 				{- It's possible to get an add event for
 				 - an existing file that is not
 				 - really modified, but it might have
@@ -231,7 +232,7 @@ onAddDirect symlinkssupported matcher file fs = do
 				 - so it symlink is restaged to make sure. -}
 				( ifM (shouldRestage <$> getDaemonStatus)
 					( do
-						link <- liftAnnex $ inRepo $ gitAnnexLink file key
+						link <- liftAnnex $ calcRepo $ gitAnnexLink file key
 						addLink file link (Just key)
 					, noChange
 					)
@@ -245,7 +246,7 @@ onAddDirect symlinkssupported matcher file fs = do
 				debug ["add direct", file]
 				add matcher file
   where
- 	{- On a filesystem without symlinks, we'll get changes for regular
+	{- On a filesystem without symlinks, we'll get changes for regular
 	 - files that git uses to stand-in for symlinks. Detect when
 	 - this happens, and stage the symlink, rather than annexing the
 	 - file. -}
@@ -270,15 +271,15 @@ onAddSymlink :: Bool -> Handler
 onAddSymlink isdirect file filestatus = unlessIgnored file $ do
 	linktarget <- liftIO (catchMaybeIO $ readSymbolicLink file)
 	kv <- liftAnnex (Backend.lookupFile file)
-	onAddSymlink' linktarget (fmap fst kv) isdirect file filestatus
+	onAddSymlink' linktarget kv isdirect file filestatus
 
 onAddSymlink' :: Maybe String -> Maybe Key -> Bool -> Handler
 onAddSymlink' linktarget mk isdirect file filestatus = go mk
   where
-  	go (Just key) = do
+	go (Just key) = do
 		when isdirect $
 			liftAnnex $ void $ addAssociatedFile key file
-		link <- liftAnnex $ inRepo $ gitAnnexLink file key
+		link <- liftAnnex $ calcRepo $ gitAnnexLink file key
 		if linktarget == Just link
 			then ensurestaged (Just link) =<< getDaemonStatus
 			else do

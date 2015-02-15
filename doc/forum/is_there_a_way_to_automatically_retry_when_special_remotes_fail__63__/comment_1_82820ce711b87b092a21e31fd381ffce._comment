@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-01-05T20:23:40Z"
+ content="""
+The git-annex assistant will automatically retry uploads/downloads, if you
+want to use it.
+
+Or, you can use a simple loop until git-annex succeeds:
+
+	while ! git-annex annex copy newdir/* --to my-s3-remote ; do echo retry ; done
+
+As to picking up where it left off, make sure you have a recent
+release of git-annex, and then you can enable chunking for a S3
+remote. git-annex can then resume an upload or download starting
+at the next chunk that needs to be transferred.
+
+See [[chunking]].
+"""]]

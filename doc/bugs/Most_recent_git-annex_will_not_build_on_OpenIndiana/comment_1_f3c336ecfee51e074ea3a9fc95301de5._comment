@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="2001:4978:f:21a::2"
- subject="comment 1"
- date="2012-10-17T17:42:30Z"
- content="""
-kqueue is used by the new assistant and watch features. It seems something else would need to be used for Solaris. I have modified the Makefile to (try to) detect Solaris and disable these features. I assumed your uname would be \"Solaris\", so you may need to modify it slightly.
-"""]]

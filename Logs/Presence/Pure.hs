@@ -1,6 +1,6 @@
 {- git-annex presence log, pure operations
  -
- - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -30,14 +30,16 @@ parseLog = mapMaybe parseline . lines
   where
 	parseline l = LogLine
 		<$> (utcTimeToPOSIXSeconds <$> parseTime defaultTimeLocale "%s%Qs" d)
-		<*> parsestatus s
+		<*> parseStatus s
 		<*> pure rest
 	  where
 		(d, pastd) = separate (== ' ') l
 		(s, rest) = separate (== ' ') pastd
-	parsestatus "1" = Just InfoPresent
-	parsestatus "0" = Just InfoMissing
-	parsestatus _ = Nothing
+
+parseStatus :: String -> Maybe LogStatus
+parseStatus "1" = Just InfoPresent
+parseStatus "0" = Just InfoMissing
+parseStatus _ = Nothing
 
 {- Generates a log file. -}
 showLog :: [LogLine] -> String

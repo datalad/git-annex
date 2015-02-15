@@ -10,16 +10,16 @@
  - Is forgiving about misplaced closing parens, so "foo and (bar or baz"
  - will be handled, as will "foo and ( bar or baz ) )"
  -
- - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2013 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 {-# LANGUAGE Rank2Types, KindSignatures #-}
 
 module Utility.Matcher (
 	Token(..),
-	Matcher,
+	Matcher(..),
 	token,
 	tokens,
 	generate,
@@ -64,10 +64,10 @@ generate = simplify . process MAny . tokenGroups
 	process m [] = m
 	process m ts = uncurry process $ consume m ts
 
-	consume m ((One And):rest) = term (m `MAnd`) rest
-	consume m ((One Or):rest) = term (m `MOr`) rest
-	consume m ((One Not):rest) = term (\p -> m `MAnd` (MNot p)) rest
-	consume m ((One (Operation o)):rest) = (m `MAnd` MOp o, rest)
+	consume m (One And:rest) = term (m `MAnd`) rest
+	consume m (One Or:rest) = term (m `MOr`) rest
+	consume m (One Not:rest) = term (\p -> m `MAnd` (MNot p)) rest
+	consume m (One (Operation o):rest) = (m `MAnd` MOp o, rest)
 	consume m (Group g:rest) = (process m g, rest)
 	consume m (_:rest) = consume m rest
 	consume m [] = (m, [])
@@ -90,7 +90,7 @@ tokenGroups :: [Token op] -> [TokenGroup op]
 tokenGroups [] = []
 tokenGroups (t:ts) = go t
   where
-  	go Open =
+	go Open =
 		let (gr, rest) = findClose ts
 		in gr : tokenGroups rest
 	go Close = tokenGroups ts -- not picky about missing Close
@@ -101,14 +101,14 @@ findClose l =
 	let (g, rest) = go [] l
 	in (Group (reverse g), rest)
   where
-  	go c [] = (c, []) -- not picky about extra Close
-	go c (t:ts) = handle t
+	go c [] = (c, []) -- not picky about extra Close
+	go c (t:ts) = dispatch t
 	  where
-		handle Close = (c, ts)
-		handle Open = 
+		dispatch Close = (c, ts)
+		dispatch Open = 
 			let (c', ts') = go [] ts
 			in go (Group (reverse c') : c) ts'
-		handle _ = go (One t:c) ts
+		dispatch _ = go (One t:c) ts
 
 {- Checks if a Matcher matches, using a supplied function to check
  - the value of Operations. -}

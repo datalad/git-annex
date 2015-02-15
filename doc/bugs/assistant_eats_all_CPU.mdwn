@@ -520,3 +520,10 @@ $ ps -O start xf | grep git-annex
 13761 23:56:38 Z ?        00:00:00      \_ [git] <defunct>
  6252 12:56:59 S ?        00:01:09 /usr/bin/emacs23
 """]]
+
+#### This bug is fixed
+
+> [[fixed|done]]. This was a Cronner bug, triggered when you had a
+> scheduled fsck job that runs monthly at any time, and the last time it ran was on a day of a
+> month > 12. Workaround: Disable scheduled fsck jobs, or change them to
+> run on a specific day of the month. Or upgrade. --[[Joey]]

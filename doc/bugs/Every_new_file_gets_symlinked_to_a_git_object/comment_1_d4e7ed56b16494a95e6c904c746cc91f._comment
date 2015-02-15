@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.152.246.110"
- subject="comment 1"
- date="2013-07-27T19:55:38Z"
- content="""
-This is how git-annex is intended to work in indirect mode. You must have created your repository by hand, and not enabled [[direct_mode]]. Stop the assistant and run `git annex direct`
-"""]]

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""more info needed"""
+ date="2015-02-09T17:20:23Z"
+ content="""
+What version of git-annex was used to get the latest transcript above?
+
+The sequence of commands you gave works fine for me, no error.
+
+(Based on the filename in the error message, it seems likely that `replaceFile` 
+is what's failing (called by `toDirectGen`), but that always creates the misctemp
+directory if it doesn't exist. Also, the example given doesn't actually
+trigger any code path that calls `replaceFile`. This makes me doubt that
+a current version of git-annex is being used..)
+"""]]

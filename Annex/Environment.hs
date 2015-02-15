@@ -1,6 +1,6 @@
 {- git-annex environment
  -
- - Copyright 2012, 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012, 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -13,11 +13,7 @@ import Common.Annex
 import Utility.UserInfo
 import qualified Git.Config
 import Config
-import Annex.Exception
-
-#ifndef mingw32_HOST_OS
 import Utility.Env
-#endif
 
 {- Checks that the system's environment allows git to function.
  - Git requires a GECOS username, or suitable git configuration, or
@@ -36,30 +32,27 @@ checkEnvironment = do
 		liftIO checkEnvironmentIO
 
 checkEnvironmentIO :: IO ()
-checkEnvironmentIO =
-#ifdef mingw32_HOST_OS
-	noop
-#else
-	whenM (null <$> myUserGecos) $ do
-		username <- myUserName
-		ensureEnv "GIT_AUTHOR_NAME" username
-		ensureEnv "GIT_COMMITTER_NAME" username
+checkEnvironmentIO = whenM (isNothing <$> myUserGecos) $ do
+	username <- myUserName
+	ensureEnv "GIT_AUTHOR_NAME" username
+	ensureEnv "GIT_COMMITTER_NAME" username
   where
 #ifndef __ANDROID__
-  	-- existing environment is not overwritten
-	ensureEnv var val = void $ setEnv var val False
+	-- existing environment is not overwritten
+	ensureEnv var val = setEnv var val False
 #else
 	-- Environment setting is broken on Android, so this is dealt with
 	-- in runshell instead.
 	ensureEnv _ _ = noop
 #endif
-#endif
 
 {- Runs an action that commits to the repository, and if it fails, 
- - sets user.email to a dummy value and tries the action again. -}
+ - sets user.email and user.name to a dummy value and tries the action again. -}
 ensureCommit :: Annex a -> Annex a
-ensureCommit a = either retry return =<< tryAnnex a 
+ensureCommit a = either retry return =<< tryNonAsync a 
   where
-  	retry _ = do
-		setConfig (ConfigKey "user.email") =<< liftIO myUserName
+	retry _ = do
+		name <- liftIO myUserName
+		setConfig (ConfigKey "user.name") name
+		setConfig (ConfigKey "user.email") name
 		a

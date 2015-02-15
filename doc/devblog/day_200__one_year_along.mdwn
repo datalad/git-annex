@@ -1,0 +1,17 @@
+Updated the Debian backport. (Also the git-remote-gcrypt backport.)
+
+Made the assistant install a desktop file to integrate with Konqueror.
+
+Improved `git annex repair`, fixing a bug that could cause it to leave
+broken branch refs and yet think that the repair was successful.
+
+----
+
+A bit surprised to see that now been a full year since I started doing
+development funded by my campaign. Not done yet!
+
+Update on campaign rewards: <https://campaign.joeyh.name/blog/stickers_soon/>
+
+----
+
+Today's work was sponsored by Douglas Butts.

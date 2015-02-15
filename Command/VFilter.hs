@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,8 +12,8 @@ import Command
 import Annex.View
 import Command.View (paramView, checkoutViewBranch)
 
-def :: [Command]
-def = [notBareRepo $ notDirect $
+cmd :: [Command]
+cmd = [notBareRepo $ notDirect $
 	command "vfilter" paramView seek SectionMetaData "filter current view"]
 
 seek :: CommandSeek

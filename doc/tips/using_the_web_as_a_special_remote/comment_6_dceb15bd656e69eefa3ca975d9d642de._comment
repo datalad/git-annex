@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.244"
+ subject="comment 6"
+ date="2014-04-07T20:07:45Z"
+ content="""
+Using the URL backend for youtube is intentional. Youtube may serve up different encodings for the same video over time, and this way git-annex treats them all as equvilant. If you want to \"freeze\" the repository to the current one, use `git annex migrate`, and be prepared for `git annex get --from web` to not work long term.
+"""]]

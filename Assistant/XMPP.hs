@@ -1,6 +1,6 @@
 {- core xmpp support
  -
- - Copyright 2012-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -195,7 +195,7 @@ decodeMessage m = decode =<< gitAnnexTagInfo m
 		<*> a i
 	gen c i = c . toUUID <$> headMaybe (words (T.unpack (tagValue i)))
 	seqgen c i = do
-	  	packet <- decodeTagContent $ tagElement i
+		packet <- decodeTagContent $ tagElement i
 		let seqnum = fromMaybe 0 $ readish $ T.unpack $ tagValue i
 		return $ c seqnum packet
 	shasgen c i = do

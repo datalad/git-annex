@@ -4,7 +4,7 @@
  - git-annex branch. Among other things, it ensures that if git-annex is
  - interrupted, its recorded data is not lost.
  -
- - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -13,16 +13,10 @@
 
 module Annex.Journal where
 
-import System.IO.Binary
-
 import Common.Annex
-import Annex.Exception
 import qualified Git
 import Annex.Perms
-
-#ifdef mingw32_HOST_OS
-import Utility.WinLock
-#endif
+import Annex.LockFile
 
 {- Records content for a file in the branch to the journal.
  -
@@ -42,7 +36,12 @@ setJournalFile _jl file content = do
 	jfile <- fromRepo $ journalFile file
 	let tmpfile = tmp </> takeFileName jfile
 	liftIO $ do
-		writeBinaryFile tmpfile content
+		withFile tmpfile WriteMode $ \h -> do
+			fileEncoding h
+#ifdef mingw32_HOST_OS
+			hSetNewlineMode h noNewlineTranslation
+#endif
+			hPutStr h content
 		moveFile tmpfile jfile
 
 {- Gets any journalled content for a file in the branch. -}
@@ -54,7 +53,7 @@ getJournalFile _jl = getJournalFileStale
  - changes. -}
 getJournalFileStale :: FilePath -> Annex (Maybe String)
 getJournalFileStale file = inRepo $ \g -> catchMaybeIO $
-	readFileStrict $ journalFile file g
+	readFileStrictAnyEncoding $ journalFile file g
 
 {- List of files that have updated content in the journal. -}
 getJournalledFiles :: JournalLocked -> Annex [FilePath]
@@ -77,9 +76,18 @@ getJournalFilesStale = do
 		getDirectoryContents $ gitAnnexJournalDir g
 	return $ filter (`notElem` [".", ".."]) fs
 
+withJournalHandle :: (DirectoryHandle -> IO a) -> Annex a
+withJournalHandle a = do
+	d <- fromRepo gitAnnexJournalDir
+	bracketIO (openDirectory d) closeDirectory (liftIO . a)
+
 {- Checks if there are changes in the journal. -}
 journalDirty :: Annex Bool
-journalDirty = not . null <$> getJournalFilesStale
+journalDirty = do
+	d <- fromRepo gitAnnexJournalDir
+	liftIO $ 
+		(not <$> isDirectoryEmpty d)
+			`catchIO` (const $ doesDirectoryExist d)
 
 {- Produces a filename to use in the journal for a file on the branch.
  -
@@ -109,19 +117,4 @@ data JournalLocked = ProduceJournalLocked
 {- Runs an action that modifies the journal, using locking to avoid
  - contention with other git-annex processes. -}
 lockJournal :: (JournalLocked -> Annex a) -> Annex a
-lockJournal a = do
-	lockfile <- fromRepo gitAnnexJournalLock
-	createAnnexDirectory $ takeDirectory lockfile
-	mode <- annexFileMode
-	bracketIO (lock lockfile mode) unlock (const $ a ProduceJournalLocked)
-  where
-#ifndef mingw32_HOST_OS
-	lock lockfile mode = do
-		l <- noUmask mode $ createFile lockfile mode
-		waitToSetLock l (WriteLock, AbsoluteSeek, 0, 0)
-		return l
-	unlock = closeFd
-#else
-	lock lockfile _mode = waitToLock $ lockExclusive lockfile
-	unlock = dropLock
-#endif
+lockJournal a = withExclusiveLock gitAnnexJournalLock $ a ProduceJournalLocked

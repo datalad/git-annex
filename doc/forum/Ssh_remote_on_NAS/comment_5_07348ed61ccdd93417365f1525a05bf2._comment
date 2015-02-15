@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2014-10-28T20:26:08Z"
+ content="""
+git-upload-pack is a git command, which is not present in PATH
+on your NAS when git sshes in and tries to run it. 
+"""]]

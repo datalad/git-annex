@@ -1,13 +1,16 @@
-<div .span9 .hero-unit>
-  <h2>
-    Preferences
-  <p>
-    <form method="post" .form-horizontal enctype=#{enctype}>
-      <fieldset>
-        ^{form}
-        ^{webAppFormAuthToken}
-        <div .form-actions>
-          <button .btn .btn-primary type=submit>
-            Save Preferences
-          <a .btn href="@{ConfigurationR}">
-            Cancel
+<div .col-sm-9>
+  <div .content-box>
+    <h2>
+      Preferences
+    <p>
+      <form method="post" .form-horizontal enctype=#{enctype}>
+        <fieldset>
+          ^{form}
+          ^{webAppFormAuthToken}
+          <div .form-group>
+            <div .col-sm-10 .col-sm-offset-2>
+              <button .btn .btn-primary type=submit>
+                Save Preferences
+              \ 
+              <a .btn .btn-default href="@{ConfigurationR}">
+                Cancel

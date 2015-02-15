@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="216.145.95.162"
+ subject="comment 2"
+ date="2014-05-17T17:00:19Z"
+ content="""
+git-annex doesn't allow bonding repositories like that, but it does have repository groups which can accomplish the same thing.
+
+For example, if you put B C and D into the archive group, and set the [[preferred_content]] expression to \"standard\", then each repository will only want files that have not yet reached some other archive repository.
+
+Or, you can make up your own group name, like \"BCD\" and set the preferred content of each repository to something like \"not (copies=BCD:2)\"  -- and now it will try to have 2 copies of each file on one of the drives.
+
+Once it's configured, using either the git-annex assistant, or `git annex sync --content` will copy files around according to the configuration.
+
+This will tend to fill up the first drive, or the first 2 drives, and only use subsequent drives if files don't fit on the first drive. You can use [[cost]] settings to control which drives files are put on.
+"""]]

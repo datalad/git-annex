@@ -1,31 +1,27 @@
-From 885cc873196f535de7cd1ac2ccfa217d10308d1f Mon Sep 17 00:00:00 2001
+From 606c5f4f4b2d476d274907eb2bb8c12b60fc451f Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Fri, 7 Mar 2014 02:28:34 +0000
-Subject: [PATCH] avoid building with jsmin
+Date: Wed, 21 May 2014 04:43:30 +0000
+Subject: [PATCH] remove TH
 
-jsmin needs language-javascript, which fails to build for android due to
-a problem or incompatability with happy.
-
-This also avoids all the TH code.
 ---
  Yesod/EmbeddedStatic/Generators.hs |  3 +--
  Yesod/Static.hs                    | 29 ++++++++++++++++++-----------
- yesod-static.cabal                 |  7 -------
- 3 files changed, 19 insertions(+), 20 deletions(-)
+ yesod-static.cabal                 |  9 ---------
+ 3 files changed, 19 insertions(+), 22 deletions(-)
 
 diff --git a/Yesod/EmbeddedStatic/Generators.hs b/Yesod/EmbeddedStatic/Generators.hs
-index e83785d..6b1c10e 100644
+index 08febb9..e3a6d51 100644
 --- a/Yesod/EmbeddedStatic/Generators.hs
 +++ b/Yesod/EmbeddedStatic/Generators.hs
-@@ -43,7 +43,6 @@ import Language.Haskell.TH
+@@ -42,7 +42,6 @@ import Language.Haskell.TH
  import Network.Mime (defaultMimeLookup)
  import System.Directory (doesDirectoryExist, getDirectoryContents, findExecutable)
  import System.FilePath ((</>))
 -import Text.Jasmine (minifym)
  import qualified Data.ByteString.Lazy as BL
  import qualified Data.Conduit.List as C
- import qualified Data.Text as T
-@@ -158,7 +157,7 @@ concatFilesWith loc process files = do
+ import Data.Conduit.Binary (sourceHandle)
+@@ -162,7 +161,7 @@ concatFilesWith loc process files = do
  
  -- | Convienient rexport of 'minifym' with a type signature to work with 'concatFilesWith'.
  jasmine :: BL.ByteString -> IO BL.ByteString
@@ -35,7 +31,7 @@ index e83785d..6b1c10e 100644
  -- | Use <https://github.com/mishoo/UglifyJS2 UglifyJS2> to compress javascript.
  -- Assumes @uglifyjs@ is located in the path and uses options @[\"-m\", \"-c\"]@
 diff --git a/Yesod/Static.hs b/Yesod/Static.hs
-index dd21791..37f7e00 100644
+index 725ebf4..33eaffd 100644
 --- a/Yesod/Static.hs
 +++ b/Yesod/Static.hs
 @@ -37,8 +37,8 @@ module Yesod.Static
@@ -74,9 +70,9 @@ index dd21791..37f7e00 100644
 -import Data.FileEmbed (embedDir)
 +import Data.FileEmbed
  
+ import Control.Monad.Trans.Resource (runResourceT)
  import Yesod.Core
- import Yesod.Core.Types
-@@ -135,6 +135,7 @@ staticDevel dir = do
+@@ -136,6 +136,7 @@ staticDevel dir = do
      hashLookup <- cachedETagLookupDevel dir
      return $ Static $ webAppSettingsWithLookup (F.decodeString dir) hashLookup
  
@@ -84,7 +80,7 @@ index dd21791..37f7e00 100644
  -- | Produce a 'Static' based on embedding all of the static files' contents in the
  -- executable at compile time.
  --
-@@ -149,6 +150,7 @@ staticDevel dir = do
+@@ -150,6 +151,7 @@ staticDevel dir = do
  -- This will cause yesod to embed those assets into the generated HTML file itself.
  embed :: Prelude.FilePath -> Q Exp
  embed fp = [|Static (embeddedSettings $(embedDir fp))|]
@@ -92,7 +88,7 @@ index dd21791..37f7e00 100644
  
  instance RenderRoute Static where
      -- | A route on the static subsite (see also 'staticFiles').
-@@ -214,6 +216,7 @@ getFileListPieces = flip evalStateT M.empty . flip go id
+@@ -215,6 +217,7 @@ getFileListPieces = flip evalStateT M.empty . flip go id
                  put $ M.insert s s m
                  return s
  
@@ -100,7 +96,7 @@ index dd21791..37f7e00 100644
  -- | Template Haskell function that automatically creates routes
  -- for all of your static files.
  --
-@@ -266,7 +269,7 @@ staticFilesList dir fs =
+@@ -267,7 +270,7 @@ staticFilesList dir fs =
  -- see if their copy is up-to-date.
  publicFiles :: Prelude.FilePath -> Q [Dec]
  publicFiles dir = mkStaticFiles' dir "StaticRoute" False
@@ -109,7 +105,7 @@ index dd21791..37f7e00 100644
  
  mkHashMap :: Prelude.FilePath -> IO (M.Map F.FilePath S8.ByteString)
  mkHashMap dir = do
-@@ -309,6 +312,7 @@ cachedETagLookup dir = do
+@@ -310,6 +313,7 @@ cachedETagLookup dir = do
      etags <- mkHashMap dir
      return $ (\f -> return $ M.lookup f etags)
  
@@ -117,7 +113,7 @@ index dd21791..37f7e00 100644
  mkStaticFiles :: Prelude.FilePath -> Q [Dec]
  mkStaticFiles fp = mkStaticFiles' fp "StaticRoute" True
  
-@@ -356,6 +360,7 @@ mkStaticFilesList fp fs routeConName makeHash = do
+@@ -357,6 +361,7 @@ mkStaticFilesList fp fs routeConName makeHash = do
                  [ Clause [] (NormalB $ (ConE route) `AppE` f' `AppE` qs) []
                  ]
              ]
@@ -125,7 +121,7 @@ index dd21791..37f7e00 100644
  
  base64md5File :: Prelude.FilePath -> IO String
  base64md5File = fmap (base64 . encode) . hashFile
-@@ -394,7 +399,7 @@ base64 = map tr
+@@ -395,7 +400,7 @@ base64 = map tr
  -- single static file at compile time.
  
  data CombineType = JS | CSS
@@ -134,7 +130,7 @@ index dd21791..37f7e00 100644
  combineStatics' :: CombineType
                  -> CombineSettings
                  -> [Route Static] -- ^ files to combine
-@@ -428,7 +433,7 @@ combineStatics' combineType CombineSettings {..} routes = do
+@@ -429,7 +434,7 @@ combineStatics' combineType CombineSettings {..} routes = do
          case combineType of
              JS -> "js"
              CSS -> "css"
@@ -143,7 +139,7 @@ index dd21791..37f7e00 100644
  -- | Data type for holding all settings for combining files.
  --
  -- This data type is a settings type. For more information, see:
-@@ -504,6 +509,7 @@ instance Default CombineSettings where
+@@ -505,6 +510,7 @@ instance Default CombineSettings where
  errorIntro :: [FilePath] -> [Char] -> [Char]
  errorIntro fps s = "Error minifying " ++ show fps ++ ": " ++ s
  
@@ -151,7 +147,7 @@ index dd21791..37f7e00 100644
  liftRoutes :: [Route Static] -> Q Exp
  liftRoutes =
      fmap ListE . mapM go
-@@ -550,4 +556,5 @@ combineScripts' :: Bool -- ^ development? if so, perform no combining
+@@ -551,4 +557,5 @@ combineScripts' :: Bool -- ^ development? if so, perform no combining
                  -> Q Exp
  combineScripts' development cs con routes
      | development = [| mapM_ (addScript . $(return $ ConE con)) $(liftRoutes routes) |]
@@ -159,36 +155,39 @@ index dd21791..37f7e00 100644
 +    | otherwise = [| addScript $ $(return $ ConE con) $(combineStatics' JS cs routes) |]a
 +-}
 diff --git a/yesod-static.cabal b/yesod-static.cabal
-index 3423149..416aae6 100644
+index 2582a95..5df03b3 100644
 --- a/yesod-static.cabal
 +++ b/yesod-static.cabal
-@@ -48,18 +48,12 @@ library
+@@ -49,7 +49,6 @@ library
                     , data-default
                     , shakespeare-css       >= 1.0.3
                     , mime-types            >= 0.1
 -                   , hjsmin
-                    , process-conduit       >= 1.0      && < 1.1
                     , filepath              >= 1.3
                     , resourcet             >= 0.4
                     , unordered-containers  >= 0.2
+@@ -62,13 +61,6 @@ library
+                    , hashable              >= 1.1
  
      exposed-modules: Yesod.Static
 -                     Yesod.EmbeddedStatic
 -                     Yesod.EmbeddedStatic.Generators
 -                     Yesod.EmbeddedStatic.Types
+-                     Yesod.EmbeddedStatic.Css.AbsoluteUrl
 -
 -    other-modules:   Yesod.EmbeddedStatic.Internal
+-                     Yesod.EmbeddedStatic.Css.Util
  
      ghc-options:     -Wall
      extensions: TemplateHaskell
-@@ -99,7 +93,6 @@ test-suite tests
+@@ -108,7 +100,6 @@ test-suite tests
                     , data-default
                     , shakespeare-css
                     , mime-types
 -                   , hjsmin
-                    , process-conduit
                     , filepath
                     , resourcet
+                    , unordered-containers
 -- 
-1.9.0
+2.0.0.rc2
 

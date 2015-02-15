@@ -1,4 +1,4 @@
-Joey Hess <joey@kitenet.net> is the author of git-annex. If you need to
+Joey Hess <id@joeyh.name> is the author of git-annex. If you need to
 talk about something privately, email me.
 
 The [[forum]] is the best place to discuss git-annex.

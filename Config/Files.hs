@@ -1,6 +1,6 @@
 {- git-annex extra config files
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -66,4 +66,4 @@ readProgramFile = do
 			)
 		)
   where
-  	cmd = "git-annex"
+	cmd = "git-annex"

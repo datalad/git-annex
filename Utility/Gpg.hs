@@ -1,6 +1,6 @@
 {- gpg interface
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,6 +11,7 @@ module Utility.Gpg where
 
 import Control.Applicative
 import Control.Concurrent
+import Control.Monad.IO.Class
 import qualified Data.Map as M
 
 import Common
@@ -18,7 +19,7 @@ import qualified Build.SysConfig as SysConfig
 
 #ifndef mingw32_HOST_OS
 import System.Posix.Types
-import Control.Exception (bracket)
+import qualified System.Posix.IO
 import System.Path
 import Utility.Env
 #else
@@ -104,23 +105,23 @@ pipeStrict params input = do
  -
  - Note that to avoid deadlock with the cleanup stage,
  - the reader must fully consume gpg's input before returning. -}
-feedRead :: [CommandParam] -> String -> (Handle -> IO ()) -> (Handle -> IO a) -> IO a
+feedRead :: (MonadIO m, MonadMask m) => [CommandParam] -> String -> (Handle -> IO ()) -> (Handle -> m a) -> m a
 feedRead params passphrase feeder reader = do
 #ifndef mingw32_HOST_OS
 	-- pipe the passphrase into gpg on a fd
-	(frompipe, topipe) <- createPipe
-	void $ forkIO $ do
+	(frompipe, topipe) <- liftIO System.Posix.IO.createPipe
+	liftIO $ void $ forkIO $ do
 		toh <- fdToHandle topipe
 		hPutStrLn toh passphrase
 		hClose toh
 	let Fd pfd = frompipe
 	let passphrasefd = [Param "--passphrase-fd", Param $ show pfd]
-	closeFd frompipe `after` go (passphrasefd ++ params)
+	liftIO (closeFd frompipe) `after` go (passphrasefd ++ params)
 #else
 	-- store the passphrase in a temp file for gpg
 	withTmpFile "gpg" $ \tmpfile h -> do
-		hPutStr h passphrase
-		hClose h
+		liftIO $ hPutStr h passphrase
+		liftIO $ hClose h
 		let passphrasefile = [Param "--passphrase-file", File tmpfile]
 		go $ passphrasefile ++ params
 #endif
@@ -128,15 +129,24 @@ feedRead params passphrase feeder reader = do
 	go params' = pipeLazy params' feeder reader
 
 {- Like feedRead, but without passphrase. -}
-pipeLazy :: [CommandParam] -> (Handle -> IO ()) -> (Handle -> IO a) -> IO a
+pipeLazy :: (MonadIO m, MonadMask m) => [CommandParam] -> (Handle -> IO ()) -> (Handle -> m a) -> m a
 pipeLazy params feeder reader = do
-	params' <- stdParams $ Param "--batch" : params
-	withBothHandles createProcessSuccess (proc gpgcmd params')
-		$ \(to, from) -> do
-			void $ forkIO $ do
-				feeder to
-				hClose to
-			reader from
+	params' <- liftIO $ stdParams $ Param "--batch" : params
+	let p = (proc gpgcmd params')
+		{ std_in = CreatePipe
+		, std_out = CreatePipe
+		, std_err = Inherit
+		}
+	bracket (setup p) (cleanup p) go
+  where
+	setup = liftIO . createProcess
+	cleanup p (_, _, _, pid) = liftIO $ forceSuccessProcess p pid
+	go p = do
+		let (to, from) = bothHandles p
+		liftIO $ void $ forkIO $ do
+			feeder to
+			hClose to
+		reader from
 
 {- Finds gpg public keys matching some string. (Could be an email address,
  - a key id, or a name; See the section 'HOW TO SPECIFY A USER ID' of
@@ -145,7 +155,7 @@ findPubKeys :: String -> IO KeyIds
 findPubKeys for = KeyIds . parse . lines <$> readStrict params
   where
 	params = [Params "--with-colons --list-public-keys", Param for]
-	parse = catMaybes . map (keyIdField . split ":")
+	parse = mapMaybe (keyIdField . split ":")
 	keyIdField ("pub":_:_:_:f:_) = Just f
 	keyIdField _ = Nothing
 
@@ -154,9 +164,10 @@ type UserId = String
 {- All of the user's secret keys, with their UserIds.
  - Note that the UserId may be empty. -}
 secretKeys :: IO (M.Map KeyId UserId)
-secretKeys = M.fromList . parse . lines <$> readStrict params
+secretKeys = catchDefaultIO M.empty makemap
   where
-  	params = [Params "--with-colons --list-secret-keys --fixed-list-mode"]
+	makemap = M.fromList . parse . lines <$> readStrict params
+	params = [Params "--with-colons --list-secret-keys --fixed-list-mode"]
 	parse = extract [] Nothing . map (split ":")
 	extract c (Just keyid) (("uid":_:_:_:_:_:_:_:_:userid:_):rest) =
 		extract ((keyid, decode_c userid):c) Nothing rest
@@ -186,7 +197,7 @@ genSecretKey keytype passphrase userid keysize =
 	withHandle StdinHandle createProcessSuccess (proc gpgcmd params) feeder
   where
 	params = ["--batch", "--gen-key"]
-  	feeder h = do
+	feeder h = do
 		hPutStr h $ unlines $ catMaybes
 			[ Just $  "Key-Type: " ++ 
 				case keytype of
@@ -195,7 +206,7 @@ genSecretKey keytype passphrase userid keysize =
 					Algo n -> show n
 			, Just $ "Key-Length: " ++ show keysize
 			, Just $ "Name-Real: " ++ userid
-			, Just $ "Expire-Date: 0"
+			, Just "Expire-Date: 0"
 			, if null passphrase
 				then Nothing
 				else Just $ "Passphrase: " ++ passphrase
@@ -222,7 +233,7 @@ genRandom highQuality size = checksize <$> readStrict
 	randomquality :: Int
 	randomquality = if highQuality then 2 else 1
 
- 	{- The size is the number of bytes of entropy desired; the data is
+	{- The size is the number of bytes of entropy desired; the data is
 	 - base64 encoded, so needs 8 bits to represent every 6 bytes of
 	 - entropy. -}
 	expectedlength = size * 8 `div` 6
@@ -324,7 +335,7 @@ testHarness a = do
 	setup = do
 		base <- getTemporaryDirectory
 		dir <- mktmpdir $ base </> "gpgtmpXXXXXX"
-		void $ setEnv var dir True
+		setEnv var dir True
 		-- For some reason, recent gpg needs a trustdb to be set up.
 		_ <- pipeStrict [Params "--trust-model auto --update-trustdb"] []
 		_ <- pipeStrict [Params "--import -q"] $ unlines

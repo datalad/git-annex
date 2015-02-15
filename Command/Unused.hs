@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -10,9 +10,6 @@
 module Command.Unused where
 
 import qualified Data.Set as S
-import Data.BloomFilter
-import Data.BloomFilter.Easy
-import Data.BloomFilter.Hash
 import Control.Monad.ST
 import qualified Data.Map as M
 
@@ -35,9 +32,11 @@ import qualified Annex.Branch
 import Annex.CatFile
 import Types.Key
 import Git.FilePath
+import Logs.View (is_branchView)
+import Utility.Bloom
 
-def :: [Command]
-def = [withOptions [unusedFromOption] $ command "unused" paramNothing seek
+cmd :: [Command]
+cmd = [withOptions [unusedFromOption] $ command "unused" paramNothing seek
 	SectionMaintenance "look for unused file content"]
 
 unusedFromOption :: Option
@@ -190,7 +189,12 @@ bloomBitsHashes :: Annex (Int, Int)
 bloomBitsHashes = do
 	capacity <- bloomCapacity
 	accuracy <- bloomAccuracy
-	return $ suggestSizing capacity (1/ fromIntegral accuracy)
+	case safeSuggestSizing capacity (1 / fromIntegral accuracy) of
+		Left e -> do
+			warning $ "bloomfilter " ++ e ++ "; falling back to sane value"
+			-- precaulculated value for 500000 (1/1000)
+			return (8388608,10)
+		Right v -> return v
 
 {- Creates a bloom filter, and runs an action, such as withKeysReferenced,
  - to populate it.
@@ -250,7 +254,7 @@ withKeysReferenced' mdir initial a = do
 		x <- Backend.lookupFile f
 		case x of
 			Nothing -> go v fs
-			Just (k, _) -> do
+			Just k -> do
 				!v' <- a k f v
 				go v' fs
 
@@ -270,6 +274,7 @@ withKeysReferencedInGit a = do
 	ourbranchend = '/' : Git.fromRef Annex.Branch.name
 	ourbranches (_, b) = not (ourbranchend `isSuffixOf` b)
 		&& not ("refs/synced/" `isPrefixOf` b)
+		&& not (is_branchView (Git.Ref b))
 	addHead headRef refs = case headRef of
 		-- if HEAD diverges from all branches (except the branch it
 		-- points to), run the actions on staged keys (and keys
@@ -294,7 +299,7 @@ withKeysReferencedInGitRef a ref = do
 	forM_ ts $ tKey lookAtWorkingTree >=> maybe noop a
 	liftIO $ void clean
   where
-	tKey True = fmap fst <$$> Backend.lookupFile . getTopFilePath . DiffTree.file
+	tKey True = Backend.lookupFile . getTopFilePath . DiffTree.file
 	tKey False = fileKey . takeFileName . decodeBS <$$>
 		catFile ref . getTopFilePath . DiffTree.file
 

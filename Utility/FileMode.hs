@@ -1,22 +1,24 @@
 {- File mode utilities.
  -
- - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2012 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 {-# LANGUAGE CPP #-}
 
 module Utility.FileMode where
 
-import Common
-
-import Control.Exception (bracket)
+import System.IO
+import Control.Monad
 import System.PosixCompat.Types
+import Utility.PosixFiles
 #ifndef mingw32_HOST_OS
 import System.Posix.Files
 #endif
 import Foreign (complement)
+
+import Utility.Exception
 
 {- Applies a conversion function to a file's mode. -}
 modifyFileMode :: FilePath -> (FileMode -> FileMode) -> IO ()
@@ -55,6 +57,12 @@ readModes = [ownerReadMode, groupReadMode, otherReadMode]
 
 executeModes :: [FileMode]
 executeModes = [ownerExecuteMode, groupExecuteMode, otherExecuteMode]
+
+otherGroupModes :: [FileMode]
+otherGroupModes = 
+	[ groupReadMode, otherReadMode
+	, groupWriteMode, otherWriteMode
+	]
 
 {- Removes the write bits from a file. -}
 preventWrite :: FilePath -> IO ()
@@ -145,9 +153,5 @@ setSticky f = modifyFileMode f $ addModes [stickyMode]
 writeFileProtected :: FilePath -> String -> IO ()
 writeFileProtected file content = withUmask 0o0077 $
 	withFile file WriteMode $ \h -> do
-		void $ tryIO $ modifyFileMode file $
-			removeModes
-				[ groupReadMode, otherReadMode
-				, groupWriteMode, otherWriteMode
-				]
+		void $ tryIO $ modifyFileMode file $ removeModes otherGroupModes
 		hPutStr h content

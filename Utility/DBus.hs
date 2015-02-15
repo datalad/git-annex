@@ -1,14 +1,15 @@
 {- DBus utilities
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
 
 module Utility.DBus where
 
+import Utility.PartialPrelude
 import Utility.Exception
 
 import DBus.Client
@@ -22,7 +23,7 @@ type ServiceName = String
 listServiceNames :: Client -> IO [ServiceName]
 listServiceNames client = do
 	reply <- callDBus client "ListNames" []
-	return $ fromMaybe [] $ fromVariant (methodReturnBody reply !! 0)
+	return $ fromMaybe [] $ fromVariant =<< headMaybe (methodReturnBody reply)
 
 callDBus :: Client -> MemberName -> [Variant] -> IO MethodReturn
 callDBus client name params = call_ client $

@@ -1,0 +1,25 @@
+From ff2d1519fb294a123636ac6bd80e50741922c856 Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Sun, 25 May 2014 09:41:13 +0200
+Subject: [PATCH] disable i386 opt stuff to allow cross-compilation
+
+---
+ primitive.cabal | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/primitive.cabal b/primitive.cabal
+index 9651dfd..b655e8d 100644
+--- a/primitive.cabal
++++ b/primitive.cabal
+@@ -47,8 +47,6 @@ Library
+   cc-options: -O3 -fomit-frame-pointer -Wall
+   if !os(solaris)
+       cc-options: -ftree-vectorize
+-  if arch(i386) || arch(x86_64)
+-      cc-options: -msse2
+ 
+ source-repository head
+   type:     git
+-- 
+2.0.0.rc2
+

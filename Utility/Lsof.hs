@@ -1,11 +1,11 @@
 {- lsof interface
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
-{-# LANGUAGE BangPatterns, CPP #-}
+{-# LANGUAGE CPP #-}
 
 module Utility.Lsof where
 
@@ -32,7 +32,7 @@ setup = do
 	when (isAbsolute cmd) $ do
 		path <- getSearchPath
 		let path' = takeDirectory cmd : path
-		void $ setEnv "PATH" (intercalate [searchPathSeparator] path') True
+		setEnv "PATH" (intercalate [searchPathSeparator] path') True
 
 {- Checks each of the files in a directory to find open files.
  - Note that this will find hard links to files elsewhere that are open. -}
@@ -93,11 +93,15 @@ parseFormatted s = bundle $ go [] $ lines s
 		_ -> parsefail
 
 	parsefiles c [] = (c, [])
-	parsefiles c (l:ls) = case splitnull l of
-		['a':mode, 'n':file, ""] ->
-			parsefiles ((file, parsemode mode):c) ls
-		(('p':_):_) -> (c, l:ls)
-		_ -> parsefail
+	parsefiles c (l:ls) = parsefiles' c (splitnull l) l ls
+
+	parsefiles' c ['a':mode, 'n':file, ""] _ ls =
+		parsefiles ((file, parsemode mode):c) ls
+	parsefiles' c (('p':_):_) l ls = (c, l:ls)
+	-- Some buggy versions of lsof emit a f field
+	-- that was not requested, so ignore it.
+	parsefiles' c (('f':_):rest) l ls = parsefiles' c rest l ls
+	parsefiles' _ _ _ _ = parsefail
 
 	parsemode ('r':_) = OpenReadOnly
 	parsemode ('w':_) = OpenWriteOnly
@@ -110,7 +114,7 @@ parseFormatted s = bundle $ go [] $ lines s
 
 {- Parses lsof's default output format. -}
 parseDefault :: LsofParser
-parseDefault = catMaybes . map parseline . drop 1 . lines
+parseDefault = mapMaybe parseline . drop 1 . lines
   where
 	parseline l = case words l of
 		(command : spid : _user : _fd : _type : _device : _size : _node : rest) -> 

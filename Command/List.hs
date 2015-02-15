@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  - Copyright 2013 Antoine Beaupré
  -
  - Licensed under the GNU GPL version 3 or higher.
@@ -23,9 +23,10 @@ import Annex.UUID
 import qualified Annex
 import Git.Types (RemoteName)
 
-def :: [Command]
-def = [noCommit $ withOptions [allrepos] $ command "list" paramPaths seek
-	SectionQuery "show which remotes contain files"]
+cmd :: [Command]
+cmd = [noCommit $ withOptions (allrepos : annexedMatchingOptions) $
+	command "list" paramPaths seek
+		SectionQuery "show which remotes contain files"]
 
 allrepos :: Option
 allrepos = flagOption [] "allrepos" "show all repositories, not only remotes"
@@ -38,7 +39,7 @@ seek ps = do
 
 getList :: Annex [(UUID, RemoteName, TrustLevel)]
 getList = ifM (Annex.getFlag $ optionName allrepos)
-	( nubBy ((==) `on` fst3) <$> ((++) <$> getRemotes <*> getAll)
+	( nubBy ((==) `on` fst3) <$> ((++) <$> getRemotes <*> getAllUUIDs)
 	, getRemotes
 	)
   where
@@ -48,7 +49,7 @@ getList = ifM (Annex.getFlag $ optionName allrepos)
 		hereu <- getUUID
 		heretrust <- lookupTrust hereu
 		return $ (hereu, "here", heretrust) : zip3 (map uuid rs) (map name rs) ts
-	getAll = do
+	getAllUUIDs = do
 		rs <- M.toList <$> uuidMap
 		rs3 <- forM rs $ \(u, n) -> (,,)
 			<$> pure u
@@ -60,8 +61,8 @@ getList = ifM (Annex.getFlag $ optionName allrepos)
 printHeader :: [(UUID, RemoteName, TrustLevel)] -> Annex ()
 printHeader l = liftIO $ putStrLn $ header $ map (\(_, n, t) -> (n, t)) l
 
-start :: [(UUID, RemoteName, TrustLevel)] -> FilePath -> (Key, Backend) -> CommandStart
-start l file (key, _) = do
+start :: [(UUID, RemoteName, TrustLevel)] -> FilePath -> Key -> CommandStart
+start l file key = do
 	ls <- S.fromList <$> keyLocations key
 	liftIO $ putStrLn $ format (map (\(u, _, t) -> (t, S.member u ls)) l) file
 	stop
@@ -71,15 +72,15 @@ type Present = Bool
 header :: [(RemoteName, TrustLevel)] -> String
 header remotes = unlines (zipWith formatheader [0..] remotes) ++ pipes (length remotes)
   where
-    formatheader n (remotename, trustlevel) = pipes n ++ remotename ++ trust trustlevel
-    pipes = flip replicate '|'
-    trust UnTrusted = " (untrusted)"
-    trust _ = ""
+	formatheader n (remotename, trustlevel) = pipes n ++ remotename ++ trust trustlevel
+	pipes = flip replicate '|'
+	trust UnTrusted = " (untrusted)"
+	trust _ = ""
 
 format :: [(TrustLevel, Present)] -> FilePath -> String
 format remotes file = thereMap ++ " " ++ file
   where 
-    thereMap = concatMap there remotes
-    there (UnTrusted, True) = "x"
-    there (_, True) = "X"
-    there (_, False) = "_"
+	thereMap = concatMap there remotes
+	there (UnTrusted, True) = "x"
+	there (_, True) = "X"
+	there (_, False) = "_"

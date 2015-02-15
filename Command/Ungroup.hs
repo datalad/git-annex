@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -15,8 +15,8 @@ import Types.Group
 
 import qualified Data.Set as S
 
-def :: [Command]
-def = [command "ungroup" (paramPair paramRemote paramDesc) seek
+cmd :: [Command]
+cmd = [command "ungroup" (paramPair paramRemote paramDesc) seek
 	SectionSetup "remove a repository from a group"]
 
 seek :: CommandSeek

@@ -1,13 +1,11 @@
 {- git-annex Messages data types
  - 
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Types.Messages where
-
-import qualified Data.Set as S
 
 data OutputType = NormalOutput | QuietOutput | JSONOutput
 
@@ -17,8 +15,7 @@ data SideActionBlock = NoBlock | StartBlock | InBlock
 data MessageState = MessageState
 	{ outputType :: OutputType
 	, sideActionBlock :: SideActionBlock
-	, fileNotFoundShown :: S.Set FilePath
 	}
 
 defaultMessageState :: MessageState
-defaultMessageState = MessageState NormalOutput NoBlock S.empty
+defaultMessageState = MessageState NormalOutput NoBlock

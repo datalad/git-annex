@@ -1,0 +1,9 @@
+I'd like to provide a team of some non-technical Windows (=direct mode) users with the following git-shell scripts to make collaboration safer than with plain "sync":
+
+1) **update-changes-from-others.sh** -- Like sync, but don't commit any local changes. Merge them like sync, don't discard.
+
+2) **sync-all-but-deletes.sh** -- Like sync but don't commit any deletions (-> renames may become additions).
+
+3) **discard-all-my-changes.sh** -- Forcibly discard all local changes, then checkout and get latest master head.
+
+Any pointers on how to approach implementing these safely?

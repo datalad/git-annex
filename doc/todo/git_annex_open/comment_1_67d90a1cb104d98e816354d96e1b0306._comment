@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2014-11-10T17:11:52Z"
+ content="""
+Hmm, well, there have been requests for access to files as they're being
+get-ed before. This does have the advantage of providing that,
+but I don't know if I like trying in xdg-open, which might not always
+be the way a user wants to open a file.
+
+git-annex does have progress info available while a file is being
+transferred. (If nothing else, it tends to know the key size, and can
+see the file size.) However I don't know how it could tell if "enough"
+of the file was available to stream it.
+
+I guess what I'd be most comfortable with is putting in plumbing.
+Like making `examinekey` be able to report the temporary file
+that is used when a key is being downloaded. It might also make sense to
+have a bit of plumbing that waits for a file being downloaded to get
+to X% complete, or something.
+"""]]

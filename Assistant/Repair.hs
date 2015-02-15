@@ -1,6 +1,6 @@
 {- git-annex assistant repository repair
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -63,7 +63,7 @@ runRepair u mrmt destructiverepair = do
 
 	return ok
   where
-  	localrepair fsckresults = do
+	localrepair fsckresults = do
 		-- Stop the watcher from running while running repairs.
 		changeSyncable Nothing False
 
@@ -140,9 +140,8 @@ repairStaleGitLocks r = do
 repairStaleLocks :: [FilePath] -> Assistant ()
 repairStaleLocks lockfiles = go =<< getsizes
   where
-  	getsize lf = catchMaybeIO $ 
-		(\s -> (lf, fileSize s)) <$> getFileStatus lf
-  	getsizes = liftIO $ catMaybes <$> mapM getsize lockfiles
+	getsize lf = catchMaybeIO $ (\s -> (lf, s)) <$> getFileSize lf
+	getsizes = liftIO $ catMaybes <$> mapM getsize lockfiles
 	go [] = return ()
 	go l = ifM (liftIO $ null <$> Lsof.query ("--" : map fst l))
 		( do

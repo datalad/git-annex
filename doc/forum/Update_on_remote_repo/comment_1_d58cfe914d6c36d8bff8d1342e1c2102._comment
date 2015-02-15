@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2014-12-02T17:05:05Z"
+ content="""
+You can run the git-annex assistant in any (non-bare) git repository,
+including one on the server.
+
+A git post-receive hook is another way to update a repository on
+a server. See [[tips/setup_a_public_repository_on_a_web_site]]
+"""]]

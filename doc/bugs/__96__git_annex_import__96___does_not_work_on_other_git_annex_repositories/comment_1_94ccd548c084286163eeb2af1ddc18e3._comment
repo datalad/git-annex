@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.152.108.220"
- subject="comment 1"
- date="2013-09-25T18:21:25Z"
- content="""
-Import skips symlinks and other non-regular files. It would work if the source repository was in direct mode.
-"""]]

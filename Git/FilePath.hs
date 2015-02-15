@@ -5,7 +5,7 @@
  - top of the repository even when run in a subdirectory. Adding some
  - types helps keep that straight.
  -
- - Copyright 2012-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -39,8 +39,7 @@ fromTopFilePath p repo = absPathFrom (repoPath repo) (getTopFilePath p)
 
 {- The input FilePath can be absolute, or relative to the CWD. -}
 toTopFilePath :: FilePath -> Git.Repo -> IO TopFilePath
-toTopFilePath file repo = TopFilePath <$>
-	relPathDirToFile (repoPath repo) <$> absPath file
+toTopFilePath file repo = TopFilePath <$> relPathDirToFile (repoPath repo) file
 
 {- The input FilePath must already be relative to the top of the git
  - repository -}

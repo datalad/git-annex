@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -34,12 +34,12 @@ data RefChange = RefChange
 
 type Outputter = Bool -> POSIXTime -> [UUID] -> Annex ()
 
-def :: [Command]
-def = [withOptions options $
+cmd :: [Command]
+cmd = [withOptions options $
 	command "log" paramPaths seek SectionQuery "shows location log"]
 
 options :: [Option]
-options = passthruOptions ++ [gourceOption]
+options = passthruOptions ++ [gourceOption] ++ annexedMatchingOptions
 
 passthruOptions :: [Option]
 passthruOptions = map odate ["since", "after", "until", "before"] ++
@@ -64,9 +64,15 @@ seek ps = do
 		Annex.getField (optionName o)
 	use o v = [Param ("--" ++ optionName o), Param v]
 
-start :: M.Map UUID String -> TimeZone -> [CommandParam] -> Bool ->
-	FilePath -> (Key, Backend) -> CommandStart
-start m zone os gource file (key, _) = do
+start
+	:: M.Map UUID String
+	-> TimeZone
+	-> [CommandParam]
+	-> Bool
+	-> FilePath
+	-> Key
+	-> CommandStart
+start m zone os gource file key = do
 	showLog output =<< readLog <$> getLog key os
 	-- getLog produces a zombie; reap it
 	liftIO reapZombies
@@ -135,7 +141,8 @@ getLog :: Key -> [CommandParam] -> Annex [String]
 getLog key os = do
 	top <- fromRepo Git.repoPath
 	p <- liftIO $ relPathCwdToFile top
-	let logfile = p </> locationLogFile key
+	config <- Annex.getGitConfig
+	let logfile = p </> locationLogFile config key
 	inRepo $ pipeNullSplitZombie $
 		[ Params "log -z --pretty=format:%ct --raw --abbrev=40"
 		, Param "--remove-empty"

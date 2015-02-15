@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -17,8 +17,8 @@ import Annex.Content
 import qualified Annex
 import Config.NumCopies
 
-def :: [Command]
-def = [withOptions (fromToOptions ++ keyOptions) $
+cmd :: [Command]
+cmd = [withOptions (fromToOptions ++ annexedMatchingOptions ++ keyOptions) $
 	command "mirror" paramPaths seek
 		SectionCommon "mirror content of files to/from another repository"]
 
@@ -31,8 +31,8 @@ seek ps = do
 		(withFilesInGit $ whenAnnexed $ start to from)
 		ps
 
-start :: Maybe Remote -> Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
-start to from file (key, _backend) = startKey to from (Just file) key
+start :: Maybe Remote -> Maybe Remote -> FilePath -> Key -> CommandStart
+start to from file = startKey to from (Just file)
 
 startKey :: Maybe Remote -> Maybe Remote -> Maybe FilePath -> Key -> CommandStart
 startKey to from afile key = do

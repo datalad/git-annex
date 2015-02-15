@@ -59,7 +59,7 @@ retest: git-annex
 
 # hothasktags chokes on some template haskell etc, so ignore errors
 tags:
-	find . | grep -v /.git/ | grep -v /tmp/ | grep -v /dist/ | grep -v /doc/ | egrep '\.hs$$' | xargs hothasktags > tags 2>/dev/null
+	(for f in $$(find . | grep -v /.git/ | grep -v /tmp/ | grep -v /dist/ | grep -v /doc/ | egrep '\.hs$$'); do hothasktags -c --cpp -c -traditional -c --include=dist/build/autogen/cabal_macros.h $$f; done) 2>/dev/null | sort > tags
 
 # If ikiwiki is available, build static html docs suitable for being
 # shipped in the software package.
@@ -83,7 +83,8 @@ clean:
 	rm -rf tmp dist git-annex $(mans) configure  *.tix .hpc \
 		doc/.ikiwiki html dist tags Build/SysConfig.hs build-stamp \
 		Setup Build/InstallDesktopFile Build/EvilSplicer \
-		Build/Standalone Build/OSXMkLibs Build/LinuxMkLibs Build/DistributionUpdate \
+		Build/Standalone Build/OSXMkLibs Build/LinuxMkLibs \
+		Build/DistributionUpdate Build/BuildVersion \
 		git-union-merge .tasty-rerun-log
 	find . -name \*.o -exec rm {} \;
 	find . -name \*.hi -exec rm {} \;
@@ -120,6 +121,7 @@ linuxstandalone-nobuild: Build/Standalone Build/LinuxMkLibs
 	ln -sf git-annex "$(LINUXSTANDALONE_DEST)/bin/git-annex-shell"
 	zcat standalone/licences.gz > $(LINUXSTANDALONE_DEST)/LICENSE
 	cp doc/logo_16x16.png doc/logo.svg $(LINUXSTANDALONE_DEST)
+	cp standalone/trustedkeys.gpg $(LINUXSTANDALONE_DEST)
 
 	./Build/Standalone "$(LINUXSTANDALONE_DEST)"
 	
@@ -140,7 +142,7 @@ OSXAPP_BASE=$(OSXAPP_DEST)/Contents/MacOS/bundle
 osxapp: Build/Standalone Build/OSXMkLibs
 	$(MAKE) git-annex
 
-	rm -rf "$(OSXAPP_DEST)"
+	rm -rf "$(OSXAPP_DEST)" "$(OSXAPP_BASE)"
 	install -d tmp/build-dmg
 	cp -R standalone/osx/git-annex.app "$(OSXAPP_DEST)"
 
@@ -150,6 +152,7 @@ osxapp: Build/Standalone Build/OSXMkLibs
 	ln -sf git-annex "$(OSXAPP_BASE)/git-annex-shell"
 	gzcat standalone/licences.gz > $(OSXAPP_BASE)/LICENSE
 	cp $(OSXAPP_BASE)/LICENSE tmp/build-dmg/LICENSE.txt
+	cp standalone/trustedkeys.gpg $(OSXAPP_BASE)
 
 	./Build/Standalone $(OSXAPP_BASE)
 
@@ -185,6 +188,7 @@ no-th-webapp-stage1: Build/EvilSplicer
 	sed -i 's/^  Build-Depends: /  Build-Depends: yesod-routes, yesod-core, shakespeare-css, shakespeare-js, shakespeare, blaze-markup, file-embed, wai-app-static, /' tmp/no-th-tree/git-annex.cabal
 # Avoid warnings due to sometimes unused imports added for the splices.
 	sed -i 's/GHC-Options: \(.*\)-Wall/GHC-Options: \1-Wall -fno-warn-unused-imports /i' tmp/no-th-tree/git-annex.cabal
+	sed -i 's/Extensions: /Extensions: MagicHash /i' tmp/no-th-tree/git-annex.cabal
 
 # Run on the arm system, after stage1
 no-th-webapp-stage2: 
@@ -214,10 +218,11 @@ android: Build/EvilSplicer
 	sed -i 's/^  Build-Depends: /  Build-Depends: yesod-routes, yesod-core, shakespeare-css, shakespeare-js, shakespeare, blaze-markup, file-embed, wai-app-static, /' tmp/androidtree/git-annex.cabal
 # Avoid warnings due to sometimes unused imports added for the splices.
 	sed -i 's/GHC-Options: \(.*\)-Wall/GHC-Options: \1-Wall -fno-warn-unused-imports /i' tmp/androidtree/git-annex.cabal
+	sed -i 's/Extensions: /Extensions: MagicHash /i' tmp/androidtree/git-annex.cabal
 # Cabal cannot cross compile with custom build type, so workaround.
 	sed -i 's/Build-type: Custom/Build-type: Simple/' tmp/androidtree/git-annex.cabal
-# Build just once, but link twice, for 2 different versions of Android.
-	mkdir -p tmp/androidtree/dist/build/git-annex/4.0 tmp/androidtree/dist/build/git-annex/4.3
+# Build just once, but link repeatedly, for different versions of Android.
+	mkdir -p tmp/androidtree/dist/build/git-annex/4.0 tmp/androidtree/dist/build/git-annex/4.3 tmp/androidtree/dist/build/git-annex/5.0
 	if [ ! -e tmp/androidtree/dist/setup-config ]; then \
 		cd tmp/androidtree && $$HOME/.ghc/$(shell cat standalone/android/abiversion)/arm-linux-androideabi/bin/cabal configure -fAndroid $(ANDROID_FLAGS); \
 	fi
@@ -226,6 +231,9 @@ android: Build/EvilSplicer
 	cd tmp/androidtree && $$HOME/.ghc/$(shell cat standalone/android/abiversion)/arm-linux-androideabi/bin/cabal build \
 		--ghc-options=-optl-z --ghc-options=-optlnocopyreloc \
 		&& mv dist/build/git-annex/git-annex dist/build/git-annex/4.3/git-annex
+	cd tmp/androidtree && $$HOME/.ghc/$(shell cat standalone/android/abiversion)/arm-linux-androideabi/bin/cabal build \
+		--ghc-options=-optl-z --ghc-options=-optlnocopyreloc --ghc-options=-optl-fPIE --ghc-options=-optl-pie --ghc-options=-optc-fPIE --ghc-options=-optc-pie \
+		&& mv dist/build/git-annex/git-annex dist/build/git-annex/5.0/git-annex
 
 androidapp:
 	$(MAKE) android
@@ -253,7 +261,7 @@ hdevtools:
 distributionupdate:
 	git pull
 	cabal configure
-	ghc --make Build/DistributionUpdate -XPackageImports
+	ghc -Wall --make Build/DistributionUpdate -XPackageImports -optP-include -optPdist/build/autogen/cabal_macros.h
 	./Build/DistributionUpdate
 
 .PHONY: git-annex git-union-merge git-recover-repository tags build-stamp

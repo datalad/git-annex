@@ -6,7 +6,7 @@
  - UUIDs of remotes are cached in git config, using keys named
  - remote.<name>.annex-uuid
  -
- - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -21,7 +21,10 @@ module Annex.UUID (
 	gCryptNameSpace,
 	removeRepoUUID,
 	storeUUID,
+	storeUUIDIn,
 	setUUID,
+	webUUID,
+	bitTorrentUUID,
 ) where
 
 import Common.Annex
@@ -70,7 +73,7 @@ getRepoUUID r = do
   where
 	updatecache u = do
 		g <- gitRepo
-		when (g /= r) $ storeUUID cachekey u
+		when (g /= r) $ storeUUIDIn cachekey u
 	cachekey = remoteConfig r "uuid"
 
 removeRepoUUID :: Annex ()
@@ -84,13 +87,24 @@ getUncachedUUID = toUUID . Git.Config.get key ""
 {- Make sure that the repo has an annex.uuid setting. -}
 prepUUID :: Annex ()
 prepUUID = whenM ((==) NoUUID <$> getUUID) $
-	storeUUID configkey =<< liftIO genUUID
+	storeUUID =<< liftIO genUUID
 
-storeUUID :: ConfigKey -> UUID -> Annex ()
-storeUUID configfield = setConfig configfield . fromUUID
+storeUUID :: UUID -> Annex ()
+storeUUID = storeUUIDIn configkey
+
+storeUUIDIn :: ConfigKey -> UUID -> Annex ()
+storeUUIDIn configfield = setConfig configfield . fromUUID
 
 {- Only sets the configkey in the Repo; does not change .git/config -}
 setUUID :: Git.Repo -> UUID -> IO Git.Repo
 setUUID r u = do
 	let s = show configkey ++ "=" ++ fromUUID u
 	Git.Config.store s r
+
+-- Dummy uuid for the whole web. Do not alter.
+webUUID :: UUID
+webUUID = UUID "00000000-0000-0000-0000-000000000001"
+
+-- Dummy uuid for bittorrent. Do not alter.
+bitTorrentUUID :: UUID
+bitTorrentUUID = UUID "00000000-0000-0000-0000-000000000002"

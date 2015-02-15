@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmBUR4O9mofxVbpb8JV9mEbVfIYv670uJo"
+ nickname="Justin"
+ subject="comment 2"
+ date="2014-09-14T18:57:12Z"
+ content="""
+If `/computer1/annex/` was already an annex repository you should have synced the phone to that, not to a new bare repository at `/computer1/annex/mobile/`
+"""]]

@@ -1,6 +1,6 @@
 {- git hash-object interface
  -
- - Copyright 2011-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -32,7 +32,7 @@ hashObjectStop = CoProcess.stop
 hashFile :: HashObjectHandle -> FilePath -> IO Sha
 hashFile h file = CoProcess.query h send receive
   where
-	send to = hPutStrLn to file
+	send to = hPutStrLn to =<< absPath file
 	receive from = getSha "hash-object" $ hGetLine from
 
 {- Injects a blob into git. Unfortunately, the current git-hash-object

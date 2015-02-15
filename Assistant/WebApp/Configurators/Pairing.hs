@@ -1,6 +1,6 @@
 {- git-annex assistant webapp configurator for pairing
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -21,7 +21,6 @@ import Assistant.Ssh
 import Assistant.Alert
 import Assistant.DaemonStatus
 import Utility.Verifiable
-import Utility.Network
 #endif
 #ifdef WITH_XMPP
 import Assistant.XMPP.Client
@@ -73,7 +72,7 @@ getStartXMPPPairSelfR :: Handler Html
 #ifdef WITH_XMPP
 getStartXMPPPairSelfR = go =<< liftAnnex getXMPPCreds
   where
-  	go Nothing = do
+	go Nothing = do
 		-- go get XMPP configured, then come back
 		redirect XMPPConfigForPairSelfR
 	go (Just creds) = do
@@ -266,8 +265,8 @@ data InputSecret = InputSecret { secretText :: Maybe Text }
 promptSecret :: Maybe PairMsg -> (Text -> Secret -> Widget) -> Handler Html
 promptSecret msg cont = pairPage $ do
 	((result, form), enctype) <- liftH $
-		runFormPostNoToken $ renderBootstrap $
-			InputSecret <$> aopt textField "Secret phrase" Nothing
+		runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $
+			InputSecret <$> aopt textField (bfs "Secret phrase") Nothing
 	case result of
 		FormSuccess v -> do
 			let rawsecret = fromMaybe "" $ secretText v

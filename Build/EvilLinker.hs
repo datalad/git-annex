@@ -3,7 +3,7 @@
  -
  - See https://ghc.haskell.org/trac/ghc/ticket/8596
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -20,7 +20,7 @@ import Data.Maybe
 import Data.List
 
 import Utility.Monad
-import Utility.Process
+import Utility.Process hiding (env)
 import Utility.Env
 
 data CmdParams = CmdParams
@@ -58,13 +58,13 @@ parseGccLink = do
 	collect2params <- restOfLine
 	return $ CmdParams (path ++ collectcmd) (escapeDosPaths collect2params) cenv
   where
-  	collectcmd = "collect2.exe"
-  	collectgccenv = "COLLECT_GCC"
+	collectcmd = "collect2.exe"
+	collectgccenv = "COLLECT_GCC"
 	collectltoenv = "COLLECT_LTO_WRAPPER"
 	pathenv = "COMPILER_PATH"
 	libpathenv = "LIBRARY_PATH"
-  	optenv = "COLLECT_GCC_OPTIONS"
-  	collectenv = do
+	optenv = "COLLECT_GCC_OPTIONS"
+	collectenv = do
 		void $ many1 $ do
 			notFollowedBy $ string collectgccenv
 			restOfLine
@@ -148,7 +148,7 @@ runAtFile p s f extraparams = do
 	removeFile f
 	return out
   where
- 	c = case parse p "" s of
+	c = case parse p "" s of
 		Left e -> error $
 			(show e) ++ 
 			"\n<<<\n" ++ s ++ "\n>>>"

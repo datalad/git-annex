@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="jewel"
+ ip="23.30.55.105"
+ subject="comment 3"
+ date="2014-10-12T19:04:00Z"
+ content="""
+Thanks for the warning.  I'll keep hourly incremental backups (using obnam) on each computer just in case something terrible happens.
+"""]]

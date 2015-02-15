@@ -25,3 +25,4 @@ What version of git-annex are you using? On what operating system?
 
 [[!meta title="webapp does not allow disabling encryption on rsync special remotes"]]
 [[!tag /design/assistant]]
+[[!tag confirmed]]

@@ -1,6 +1,6 @@
 {- git cat-file interface
  -
- - Copyright 2011, 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2011, 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -94,7 +94,7 @@ catTree :: CatFileHandle -> Ref -> IO [(FilePath, FileMode)]
 catTree h treeref = go <$> catObjectDetails h treeref
   where
 	go (Just (b, _, TreeObject)) = parsetree [] b
-  	go _ = []
+	go _ = []
 
 	parsetree c b = case L.break (== 0) b of
 		(modefile, rest)

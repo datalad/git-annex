@@ -1,6 +1,6 @@
 {- git-annex trust levels
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -14,6 +14,7 @@ module Types.TrustLevel (
 ) where
 
 import qualified Data.Map as M
+import Data.Default
 
 import Types.UUID
 
@@ -21,6 +22,9 @@ import Types.UUID
 -- remotes last and trusted ones first.
 data TrustLevel = Trusted | SemiTrusted | UnTrusted | DeadTrusted
 	deriving (Eq, Enum, Ord, Bounded)
+
+instance Default TrustLevel  where
+	def = SemiTrusted
 
 type TrustMap = M.Map UUID TrustLevel
 

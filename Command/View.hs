@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -17,8 +17,8 @@ import Types.View
 import Annex.View
 import Logs.View
 
-def :: [Command]
-def = [notBareRepo $ notDirect $
+cmd :: [Command]
+cmd = [notBareRepo $ notDirect $
 	command "view" paramView seek SectionMetaData "enter a view branch"]
 
 seek :: CommandSeek
@@ -42,7 +42,7 @@ perform view = do
 	next $ checkoutViewBranch view applyView
 
 paramView :: String
-paramView = paramPair (paramRepeating "TAG") (paramRepeating "FIELD=VALUE")
+paramView = paramRepeating "FIELD=VALUE"
 
 mkView :: [String] -> Annex View
 mkView params = go =<< inRepo Git.Branch.current
@@ -53,10 +53,8 @@ mkView params = go =<< inRepo Git.Branch.current
 
 checkoutViewBranch :: View -> (View -> Annex Git.Branch) -> CommandCleanup
 checkoutViewBranch view mkbranch = do
-	oldcwd <- liftIO getCurrentDirectory
+	here <- liftIO getCurrentDirectory
 
-	{- Change to top of repository before creating view branch. -}
-	liftIO . setCurrentDirectory =<< fromRepo Git.repoPath
 	branch <- mkbranch view
 	
 	showOutput
@@ -68,9 +66,9 @@ checkoutViewBranch view mkbranch = do
 		setView view
 		{- A git repo can easily have empty directories in it,
 		 - and this pollutes the view, so remove them. -}
-		liftIO $ removeemptydirs "."
-		unlessM (liftIO $ doesDirectoryExist oldcwd) $ do
-			top <- fromRepo Git.repoPath
+		top <- fromRepo Git.repoPath
+		liftIO $ removeemptydirs top
+		unlessM (liftIO $ doesDirectoryExist here) $ do
 			showLongNote (cwdmissing top)
 	return ok
   where

@@ -1,6 +1,6 @@
 {- Standard git remotes.
  -
- - Copyright 2011-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -22,11 +22,11 @@ import qualified Git.Config
 import qualified Git.Construct
 import qualified Git.Command
 import qualified Git.GCrypt
+import qualified Git.Types as Git
 import qualified Annex
 import Logs.Presence
-import Logs.Transfer
+import Annex.Transfer
 import Annex.UUID
-import Annex.Exception
 import qualified Annex.Content
 import qualified Annex.BranchState
 import qualified Annex.Branch
@@ -50,19 +50,20 @@ import Remote.Helper.Messages
 import qualified Remote.Helper.Ssh as Ssh
 import qualified Remote.GCrypt
 import Config.Files
+import Creds
+import Annex.CatFile
 
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
-import System.Process (std_in, std_err)
 import qualified Data.Map as M
-import Control.Exception.Extensible
+import Network.URI
 
 remote :: RemoteType
 remote = RemoteType {
 	typename = "git",
 	enumerate = list,
 	generate = gen,
-	setup = error "not supported"
+	setup = gitSetup
 }
 
 list :: Annex [Git.Repo]
@@ -80,6 +81,35 @@ list = do
 				Git.Construct.remoteNamed n $
 					Git.Construct.fromRemoteLocation url g
 
+{- Git remotes are normally set up using standard git command, not
+ - git-annex initremote and enableremote.
+ -
+ - For initremote, the git remote must already be set up, and have a uuid.
+ - Initremote simply remembers its location.
+ -
+ - enableremote simply sets up a git remote using the stored location.
+ - No attempt is made to make the remote be accessible via ssh key setup,
+ - etc.
+ -}
+gitSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
+gitSetup Nothing _ c = do
+	let location = fromMaybe (error "Specify location=url") $
+		Url.parseURIRelaxed =<< M.lookup "location" c
+	g <- Annex.gitRepo
+	u <- case filter (\r -> Git.location r == Git.Url location) (Git.remotes g) of
+		[r] -> getRepoUUID r
+		[] -> error "could not find existing git remote with specified location"
+		_ -> error "found multiple git remotes with specified location"
+	return (c, u)
+gitSetup (Just u) _ c = do
+	inRepo $ Git.Command.run
+		[ Param "remote"
+		, Param "add"
+		, Param $ fromMaybe (error "no name") (M.lookup "name" c)
+		, Param $ fromMaybe (error "no location") (M.lookup "location" c)
+		]
+	return (c, u)
+
 {- It's assumed to be cheap to read the config of non-URL remotes, so this is
  - done each time git-annex is run in a way that uses remotes.
  -
@@ -87,10 +117,9 @@ list = do
  - cached UUID value. -}
 configRead :: Git.Repo -> Annex Git.Repo
 configRead r = do
-	g <- fromRepo id
-	let c = extractRemoteGitConfig g (Git.repoDescribe r)
+	gc <- Annex.getRemoteGitConfig r
 	u <- getRepoUUID r
-	case (repoCheap r, remoteAnnexIgnore c, u) of
+	case (repoCheap r, remoteAnnexIgnore gc, u) of
 		(_, True, _) -> return r
 		(True, _, _) -> tryGitConfigRead r
 		(False, _, NoUUID) -> tryGitConfigRead r
@@ -98,7 +127,7 @@ configRead r = do
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc
-	| Git.GCrypt.isEncrypted r = Remote.GCrypt.gen r u c gc
+	| Git.GCrypt.isEncrypted r = Remote.GCrypt.chainGen r u c gc
 	| otherwise = go <$> remoteCost gc defcst
   where
 	defcst = if repoCheap r then cheapRemoteCost else expensiveRemoteCost
@@ -112,8 +141,8 @@ gen r u c gc
 			, retrieveKeyFile = copyFromRemote new
 			, retrieveKeyFileCheap = copyFromRemoteCheap new
 			, removeKey = dropKey new
-			, hasKey = inAnnex new
-			, hasKeyCheap = repoCheap r
+			, checkPresent = inAnnex new
+			, checkPresentCheap = repoCheap r
 			, whereisKey = Nothing
 			, remoteFsck = if Git.repoIsUrl r
 				then Nothing
@@ -129,7 +158,24 @@ gen r u c gc
 			, readonly = Git.repoIsHttp r
 			, availability = availabilityCalc r
 			, remotetype = remote
+			, mkUnavailable = unavailable r u c gc
+			, getInfo = gitRepoInfo new
+			, claimUrl = Nothing
+			, checkUrl = Nothing
 			}
+
+unavailable :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
+unavailable r u c gc = gen r' u c gc
+  where
+	r' = case Git.location r of
+		Git.Local { Git.gitdir = d } ->
+			r { Git.location = Git.LocalUnknown d }
+		Git.Url url -> case uriAuthority url of
+			Just auth -> 
+				let auth' = auth { uriRegName = "!dne!" }
+				in r { Git.location = Git.Url (url { uriAuthority = Just auth' })}
+			Nothing -> r { Git.location = Git.Unknown }
+		_ -> r -- already unavailable
 
 {- Checks relatively inexpensively if a repository is available for use. -}
 repoAvail :: Git.Repo -> Annex Bool
@@ -153,7 +199,7 @@ tryGitConfigRead :: Git.Repo -> Annex Git.Repo
 tryGitConfigRead r 
 	| haveconfig r = return r -- already read
 	| Git.repoIsSsh r = store $ do
-		v <- Ssh.onRemote r (pipedconfig, Left undefined) "configlist" [] []
+		v <- Ssh.onRemote r (pipedconfig, return (Left undefined)) "configlist" [] []
 		case v of
 			Right r'
 				| haveconfig r' -> return r'
@@ -162,19 +208,10 @@ tryGitConfigRead r
 	| Git.repoIsHttp r = store geturlconfig
 	| Git.GCrypt.isEncrypted r = handlegcrypt =<< getConfigMaybe (remoteConfig r "uuid")
 	| Git.repoIsUrl r = return r
-	| otherwise = store $ safely $ do
-		s <- Annex.new r
-		Annex.eval s $ do
-			Annex.BranchState.disableUpdate
-			ensureInitialized
-			Annex.getState Annex.repo
+	| otherwise = store $ liftIO $ 
+		readlocalannexconfig `catchNonAsync` (const $ return r)
   where
 	haveconfig = not . M.null . Git.config
-
-	-- Reading config can fail due to IO error or
-	-- for other reasons; catch all possible exceptions.
-	safely a = either (const $ return r) return
-			=<< liftIO (try a :: IO (Either SomeException Git.Repo))
 
 	pipedconfig cmd params = do
 		v <- Git.Config.fromPipe r cmd params
@@ -197,7 +234,7 @@ tryGitConfigRead r
 				)
 		case v of
 			Left _ -> do
-				set_ignore "not usable by git-annex"
+				set_ignore "not usable by git-annex" False
 				return r
 			Right r' -> do
 				-- Cache when http remote is not bare for
@@ -225,15 +262,18 @@ tryGitConfigRead r
 	configlist_failed = case Git.remoteName r of
 		Nothing -> return r
 		Just n -> do
-			whenM (inRepo $ Git.Command.runBool [Param "fetch", Param "--quiet", Param n]) $
-				set_ignore "does not have git-annex installed"
+			whenM (inRepo $ Git.Command.runBool [Param "fetch", Param "--quiet", Param n]) $ do
+				set_ignore "does not have git-annex installed" True
 			return r
 	
-	set_ignore msg = do
+	set_ignore msg longmessage = do
 		let k = "annex-ignore"
 		case Git.remoteName r of
 			Nothing -> noop
-			Just n -> warning $ "Remote " ++ n ++ " " ++ msg ++ "; setting " ++ k
+			Just n -> do
+				warning $ "Remote " ++ n ++ " " ++ msg ++ "; setting " ++ k
+				when longmessage $
+					warning $ "This could be a problem with the git-annex installation on the remote. Please make sure that git-annex-shell is available in PATH when you ssh into the remote. Once you have fixed the git-annex installation, run: git config remote." ++ n ++ "." ++ k ++ " false"
 		setremote k (Git.Config.boolConfig True)
 	
 	setremote k v = case Git.remoteName r of
@@ -251,31 +291,34 @@ tryGitConfigRead r
 			Just v -> store $ liftIO $ setUUID r $
 				genUUIDInNameSpace gCryptNameSpace v
 
-{- Checks if a given remote has the content for a key inAnnex.
- - If the remote cannot be accessed, or if it cannot determine
- - whether it has the content, returns a Left error message.
- -}
-inAnnex :: Remote -> Key -> Annex (Either String Bool)
+	{- The local repo may not yet be initialized, so try to initialize
+	 - it if allowed. However, if that fails, still return the read
+	 - git config. -}
+	readlocalannexconfig = do
+		s <- Annex.new r
+		Annex.eval s $ do
+			Annex.BranchState.disableUpdate
+			void $ tryNonAsync $ ensureInitialized
+			Annex.getState Annex.repo
+
+{- Checks if a given remote has the content for a key in its annex. -}
+inAnnex :: Remote -> Key -> Annex Bool
 inAnnex rmt key
 	| Git.repoIsHttp r = checkhttp
 	| Git.repoIsUrl r = checkremote
 	| otherwise = checklocal
   where
-  	r = repo rmt
+	r = repo rmt
 	checkhttp = do
 		showChecking r
 		ifM (Url.withUrlOptions $ \uo -> anyM (\u -> Url.checkBoth u (keySize key) uo) (keyUrls rmt key))
-			( return $ Right True
-			, return $ Left "not found"
+			( return True
+			, error "not found"
 			)
 	checkremote = Ssh.inAnnex r key
-	checklocal = guardUsable r (cantCheck r) $ dispatch <$> check
-	  where
-		check = either (Left . show) Right 
-			<$> tryAnnex (onLocal rmt $ Annex.Content.inAnnexSafe key)
-		dispatch (Left e) = Left e
-		dispatch (Right (Just b)) = Right b
-		dispatch (Right Nothing) = cantCheck r
+	checklocal = guardUsable r (cantCheck r) $
+		maybe (cantCheck r) return
+			=<< onLocal rmt (Annex.Content.inAnnexSafe key)
 
 keyUrls :: Remote -> Key -> [String]
 keyUrls r key = map tourl locs'
@@ -284,25 +327,28 @@ keyUrls r key = map tourl locs'
 	-- If the remote is known to not be bare, try the hash locations
 	-- used for non-bare repos first, as an optimisation.
 	locs
-		| remoteAnnexBare (gitconfig r) == Just False = reverse (annexLocations key)
-		| otherwise = annexLocations key
+		| remoteAnnexBare remoteconfig == Just False = reverse (annexLocations cfg key)
+		| otherwise = annexLocations cfg key
 #ifndef mingw32_HOST_OS
 	locs' = locs
 #else
 	locs' = map (replace "\\" "/") locs
 #endif
+	remoteconfig = gitconfig r
+	cfg = fromJust $ remoteGitConfig remoteconfig
 
 dropKey :: Remote -> Key -> Annex Bool
 dropKey r key
 	| not $ Git.repoIsUrl (repo r) =
-		guardUsable (repo r) False $ commitOnCleanup r $ onLocal r $ do
-			ensureInitialized
-			whenM (Annex.Content.inAnnex key) $ do
-				Annex.Content.lockContent key $
-					Annex.Content.removeAnnex key
-				logStatus key InfoMissing
-				Annex.Content.saveState True
-			return True
+		guardUsable (repo r) (return False) $
+			commitOnCleanup r $ onLocal r $ do
+				ensureInitialized
+				whenM (Annex.Content.inAnnex key) $ do
+					Annex.Content.lockContent key
+						Annex.Content.removeAnnex
+					logStatus key InfoMissing
+					Annex.Content.saveState True
+				return True
 	| Git.repoIsHttp (repo r) = error "dropping from http remote not supported"
 	| otherwise = commitOnCleanup r $ Ssh.dropKey (repo r) key
 
@@ -311,18 +357,32 @@ copyFromRemote :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> 
 copyFromRemote r key file dest _p = copyFromRemote' r key file dest
 copyFromRemote' :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
 copyFromRemote' r key file dest
-	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) False $ do
-		let params = Ssh.rsyncParams r Download
+	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) (return False) $ do
+		params <- Ssh.rsyncParams r Download
 		u <- getUUID
+#ifndef mingw32_HOST_OS
+		hardlink <- annexHardLink <$> Annex.getGitConfig
+#endif
 		-- run copy from perspective of remote
 		onLocal r $ do
 			ensureInitialized
 			v <- Annex.Content.prepSendAnnex key
 			case v of
 				Nothing -> return False
-				Just (object, checksuccess) ->
-					upload u key file noRetry
-						(rsyncOrCopyFile params object dest)
+				Just (object, checksuccess) -> do
+					let copier = rsyncOrCopyFile params object dest
+#ifndef mingw32_HOST_OS
+					let linker = createLink object dest >> return True
+					go <- ifM (pure hardlink <&&> not <$> isDirect)
+						( return $ \m -> liftIO (catchBoolIO linker)
+							<||> copier m
+						, return copier
+						)
+#else
+					let go = copier
+#endif
+					runTransfer (Transfer Download u key)
+						file noRetry go
 						<&&> checksuccess
 	| Git.repoIsSsh (repo r) = feedprogressback $ \feeder -> do
 		direct <- isDirect
@@ -357,6 +417,7 @@ copyFromRemote' r key file dest
 		Just (cmd, params) <- Ssh.git_annex_shell (repo r) "transferinfo" 
 			[Param $ key2file key] fields
 		v <- liftIO (newEmptySV :: IO (MSampleVar Integer))
+		pidv <- liftIO $ newEmptyMVar
 		tid <- liftIO $ forkIO $ void $ tryIO $ do
 			bytes <- readSV v
 			p <- createProcess $
@@ -364,6 +425,7 @@ copyFromRemote' r key file dest
 					{ std_in = CreatePipe
 					, std_err = CreatePipe
 					}
+			putMVar pidv (processHandle p)
 			hClose $ stderrHandle p
 			let h = stdinHandle p
 			let send b = do
@@ -373,12 +435,17 @@ copyFromRemote' r key file dest
 			forever $
 				send =<< readSV v
 		let feeder = writeSV v . fromBytesProcessed
-		bracketIO noop (const $ tryIO $ killThread tid) (const $ a feeder)
+		let cleanup = do
+			void $ tryIO $ killThread tid
+			tryNonAsync $
+				maybe noop (void . waitForProcess)
+					=<< tryTakeMVar pidv
+		bracketIO noop (const cleanup) (const $ a feeder)
 
 copyFromRemoteCheap :: Remote -> Key -> FilePath -> Annex Bool
 #ifndef mingw32_HOST_OS
 copyFromRemoteCheap r key file
-	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) False $ do
+	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) (return False) $ do
 		loc <- liftIO $ gitAnnexLocation key (repo r) $
 			fromJust $ remoteGitConfig $ gitconfig r
 		liftIO $ catchBoolIO $ createSymbolicLink loc file >> return True
@@ -396,7 +463,7 @@ copyFromRemoteCheap _ _ _ = return False
 copyToRemote :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 copyToRemote r key file p
 	| not $ Git.repoIsUrl (repo r) =
-		guardUsable (repo r) False $ commitOnCleanup r $
+		guardUsable (repo r) (return False) $ commitOnCleanup r $
 			copylocal =<< Annex.Content.prepSendAnnex key
 	| Git.repoIsSsh (repo r) = commitOnCleanup r $
 		Annex.Content.sendAnnex key noop $ \object -> do
@@ -411,14 +478,14 @@ copyToRemote r key file p
 		-- the remote's Annex, but it needs access to the current
 		-- Annex monad's state.
 		checksuccessio <- Annex.withCurrentState checksuccess
-		let params = Ssh.rsyncParams r Upload
+		params <- Ssh.rsyncParams r Upload
 		u <- getUUID
 		-- run copy from perspective of remote
 		onLocal r $ ifM (Annex.Content.inAnnex key)
 			( return True
 			, do
 				ensureInitialized
-				download u key file noRetry $ const $
+				runTransfer (Transfer Download u key) file noRetry $ const $
 					Annex.Content.saveState True `after`
 						Annex.Content.getViaTmpChecked (liftIO checksuccessio) key
 							(\d -> rsyncOrCopyFile params object d p)
@@ -434,12 +501,12 @@ fsckOnRemote r params
 	| otherwise = return $ do
 		program <- readProgramFile
 		r' <- Git.Config.read r
-		env <- getEnvironment
-		let env' = addEntries 
+		environ <- getEnvironment
+		let environ' = addEntries 
 			[ ("GIT_WORK_TREE", Git.repoPath r')
 			, ("GIT_DIR", Git.localGitDir r')
-			] env
-		batchCommandEnv program (Param "fsck" : params) $ Just env'
+			] environ
+		batchCommandEnv program (Param "fsck" : params) (Just environ')
 
 {- The passed repair action is run in the Annex monad of the remote. -}
 repairRemote :: Git.Repo -> Annex Bool -> Annex (IO Bool)
@@ -453,6 +520,8 @@ repairRemote r a = return $ do
 {- Runs an action from the perspective of a local remote.
  -
  - The AnnexState is cached for speed and to avoid resource leaks.
+ - However, catFileStop is called to avoid git-cat-file processes hanging
+ - around on removable media.
  -
  - The repository's git-annex branch is not updated, as an optimisation.
  - No caller of onLocal can query data from the branch and be ensured
@@ -473,7 +542,8 @@ onLocal r a = do
 	cache st = Annex.changeState $ \s -> s
 		{ Annex.remoteannexstate = M.insert (uuid r) st (Annex.remoteannexstate s) }
 	go st a' = do
-		(ret, st') <- liftIO $ Annex.run st a'
+		(ret, st') <- liftIO $ Annex.run st $
+			catFileStop `after` a'
 		cache st'
 		return ret
 
@@ -492,12 +562,10 @@ rsyncOrCopyFile rsyncparams src dest p =
 	docopy = liftIO $ bracket
 		(forkIO $ watchfilesize zeroBytesProcessed)
 		(void . tryIO . killThread)
-		(const $ copyFileExternal src dest)
+		(const $ copyFileExternal CopyTimeStamps src dest)
 	watchfilesize oldsz = do
 		threadDelay 500000 -- 0.5 seconds
-		v <- catchMaybeIO $
-			toBytesProcessed . fileSize
-				<$> getFileStatus dest
+		v <- catchMaybeIO $ toBytesProcessed <$> getFileSize dest
 		case v of
 			Just sz
 				| sz /= oldsz -> do

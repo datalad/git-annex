@@ -1,5 +1,4 @@
-Work on git-annex is [crowdfunded](https://campaign.joeyh.name/).
-Joey blogs about his progress here on a semi-daily basis.
+Joey blogs about his work here on a semi-daily basis.
 
 [[!sidebar content="""
 [[!calendar type="month" pages="page(devblog/*)"]]

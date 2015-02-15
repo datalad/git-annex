@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlM_DRhi_5pJrTA0HbApHR25iAgy-NBXTY"
+ nickname="Tor Arne"
+ subject="comment 6"
+ date="2014-10-01T22:39:01Z"
+ content="""
+Isn't this what the metadata feature does though? http://git-annex.branchable.com/design/metadata/
+
+With annex.genmetadata true set, it should store year and mont (but not day/time? if so why not?
+
+Is the missing piece of the puzzle to apply the metadata again on checkout?
+"""]]

@@ -1,6 +1,6 @@
 {- git-annex assistant restarting
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -24,13 +24,11 @@ import qualified Annex
 import qualified Git
 
 import Control.Concurrent
-import System.Process (cwd)
 #ifndef mingw32_HOST_OS
 import System.Posix (signalProcess, sigTERM)
 #else
 import Utility.WinProcess
 #endif
-import Data.Default
 import Network.URI
 
 {- Before the assistant can be restarted, have to remove our 
@@ -54,6 +52,10 @@ postRestart url = do
 	liftIO . sendNotification . globalRedirNotifier =<< getDaemonStatus
 	void $ liftIO $ forkIO $ do
 		threadDelaySeconds (Seconds 120)
+		terminateSelf
+
+terminateSelf :: IO ()
+terminateSelf =
 #ifndef mingw32_HOST_OS
 		signalProcess sigTERM =<< getPID
 #else
@@ -93,7 +95,7 @@ newAssistantUrl repo = do
  - warp-tls listens to http, in order to show an error page, so this works.
  -}
 assistantListening :: URLString -> IO Bool
-assistantListening url = catchBoolIO $ fst <$> exists url' def
+assistantListening url = catchBoolIO $ exists url' def
   where
 	url' = case parseURI url of
 		Nothing -> url

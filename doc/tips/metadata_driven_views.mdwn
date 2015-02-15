@@ -6,7 +6,7 @@ keeps track of.
 
 One nice way to use the metadata is through **views**. You can ask
 git-annex to create a view of files in the currently checked out branch
-that have certian metadata. Once you're in a view, you can move and copy
+that have certain metadata. Once you're in a view, you can move and copy
 files to adjust their metadata further. Rather than the traditional
 hierarchical directory structure, views are dynamic; you can easily
 refine or reorder a view.
@@ -106,9 +106,9 @@ by tag.
 	# tree -d
 	2014
 	  |-- work
-          |-- todo
+	  |-- todo
 	  |-- urgent
-          `-- done
+	  `-- done
 	2013
 	  |-- work
 	  `-- done

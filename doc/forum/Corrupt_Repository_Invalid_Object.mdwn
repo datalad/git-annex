@@ -1,0 +1,10 @@
+One of my repositories got corrupted. I am not exactly sure how it happened (was running a series of commands) but I think I accidentally ran regular mv instead of git mv. To fix it I deleted the moved file then checkout the original link however this did not fixed the problem. I ended up with a corrupted repo. Now running any command ends with the following error,
+
+    ga sync
+    (merging origin/git-annex origin/synced/git-annex into git-annex...)
+    (Recording state in git...)
+    error: invalid object 040000 6ad564920e3d78d31c9456f5be3869a0319f9f08 for'3fd/d44'                                                                                
+    fatal: git-write-tree: error building trees
+    git-annex: failed to read sha from git write-tree
+
+Was wondering how to fix this? I did run git fsck and git annex fsck but non fixed the problem.

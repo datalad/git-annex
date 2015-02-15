@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawne3YCXovu_ERUYNpH46AVo0FlgyQwt3HI"
+ nickname="Pierre"
+ subject="comment 2"
+ date="2015-01-05T20:47:31Z"
+ content="""
+Thanks for your reponse. I'll try specifying the header as you are suggesting.
+
+FYI, one reason for not handling encryption locally is to not have to manage encryption keys. If multiple people need to be able to decrypt the data, I would have to manage all their keys.
+"""]]

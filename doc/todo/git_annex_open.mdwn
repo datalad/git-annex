@@ -1,0 +1,9 @@
+I had an idea the other night that there could be a `git annex open` command. What this would do would be the following:
+
+* if the file is already present locally: just `xdg-open` it
+* if it is not present and cannot be streamed: `git annex get "$@" && xdg-open "$@"`
+* if it can be streamed: `git annex get "$@"` and `xdg-open` when enough content has been streamed that we are confident it will play completely (unless network conditions change)
+
+This would need some [[metadata]] support partly to guess if the file can be streamed, but also to find the content. It would also assume some more intelligence in `git annex get` where git annex would have progress information (maybe through [[chunking]]?).
+
+How does that idea sound? --[[anarcat]]

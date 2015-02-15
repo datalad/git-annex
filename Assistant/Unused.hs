@@ -1,6 +1,6 @@
 {- git-annex assistant unused files
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -77,7 +77,7 @@ expireUnused duration = do
 	forM_ oldkeys $ \k -> do
 		debug ["removing old unused key", key2file k]
 		liftAnnex $ do
-			removeAnnex k
+			lockContent k removeAnnex
 			logStatus k InfoMissing
   where
 	boundry = durationToPOSIXTime <$> duration

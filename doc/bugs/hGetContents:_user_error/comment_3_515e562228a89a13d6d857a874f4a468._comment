@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://m-f-k.myopenid.com/"
- ip="84.138.125.150"
- subject="server's architecture"
- date="2013-06-30T23:37:00Z"
- content="""
-It's a i686 virtual server at strato.de.  Running kernel 2.6.32.
-"""]]

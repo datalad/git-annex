@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.154.4.90"
- subject="comment 1"
- date="2013-07-16T18:29:37Z"
- content="""
-All you have to do to get file1 back is check its symlink back out of git's history. `git checkout file1` should suffice to recover. \"Loses content\" is way overstating the severity of this bug.
-"""]]

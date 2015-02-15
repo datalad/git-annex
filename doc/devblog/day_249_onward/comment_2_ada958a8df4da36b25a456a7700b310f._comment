@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-02-09T18:38:27Z"
+ content="""
+Don't worry, by "deprecate glacier", I mean at worst "refuse to make new glacier
+remotes". No plans to remove a remote that someone is using.
+"""]]

@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="anarcat"
+ ip="70.83.139.100"
+ subject="maybe this should be split up, here are the issues i know about"
+ date="2014-10-06T16:14:36Z"
+ content="""
+well this specific issue is more about how git-annex cannot get files off readonly medium, whether it is webapp or not.
+
+maybe it would be wiser to split this up in separate bug reports, because I had at least three different situations:
+
+* trying to add an external readonly drive through the webapp: not detected
+* trying to add an external readonly drive through the commandline: fails to sync? - to be confirmed
+* trying to add a ssh readonly remote through the webapp: fails to sync and considers the remote \"git-only\" (which also fails)
+
+I would need to try the third case through the commandline.
+
+And then there's the upgrade scenario in [[bugs/annex_get_fails_from_read-only_filesystem/]].
+
+Did i miss anything?
+"""]]

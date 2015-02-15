@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn4bbuawnh-nSo9pAh8irYAcV4MQCcfdHo"
+ nickname="Stefan"
+ subject="a workaround"
+ date="2015-02-10T05:00:01Z"
+ content="""
+Hacked together a small line that would convert my deletion to a annex drop, would be needed to be used in a cronjob or something like that:
+
+git st -s | grep \"^ D .*\" |  tee >(git checkout -- `grep -oE \"\S*$\"`) >(git annex drop `grep -oE \"\S*$\"`) 
+
+I guess it works only in indirect mode, maybe a git annex fsck before it would be good? (adding --force to the drop command would be good too I think)
+
+So either I rethink my usecase, maybe its ok that its a deletion or use something like that. I am not shure yet.
+I find it somethimes a bit hard to track unused files down and delete em (over several remotes).
+
+So I like the direct mode, and some programs still have problems using that files, as example du dont give you real size except you use -D of files, and even nautilus supports basicly dropping files, you cant drop on other repository with it.
+
+maybe I should also look how to easily remote git annex from some trees then I would be more willing to just play with that files around and go back to normal more painless, or I start with a smaller directory.
+
+the real fun I guess happens if you automate things like cloning of some paths to another remote as soon as its available I guess. I also dont like the interfaces to annex to much, 
+mv /mnt/share/file_x /path
+ is just simpler than 
+git annex move file_x --from=kodi --to=local-repos
+
+but thats maybe just practise :)
+"""]]

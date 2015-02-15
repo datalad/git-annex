@@ -1,0 +1,27 @@
+### Please describe the problem.
+`git-annex sync gcryptremote` makes too many ssh connections one after another for each sub-task involved, potentially triggering firewall rate-limits on the SSH server.
+
+### What steps will reproduce the problem?
+sync with gcrypt remote while watching sshd logs on the server (I was getting >=5 connections per single sync in quick succession)
+
+### What version of git-annex are you using? On what operating system?
+Fedora 19, installed through cabal (without s3 and webapp support as the deps were failing to build)
+
+    $ git annex version
+    git-annex version: 5.20150205
+    build flags: Assistant Pairing WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA TorrentParser
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E MD5E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 MD5 WORM URL
+    remote types: git gcrypt bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+    local repository version: 5
+    supported repository version: 5
+    upgrade supported from repository versions: 0 1 2 4
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]

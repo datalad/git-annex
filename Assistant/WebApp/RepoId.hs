@@ -1,6 +1,6 @@
 {- git-annex assistant webapp RepoId type
  -
- - Copyright 2012,2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012,2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -16,7 +16,7 @@ import qualified Remote
 data RepoId
 	= RepoUUID UUID
 	| RepoName RemoteName
-  deriving (Eq, Ord, Show, Read)
+	deriving (Eq, Ord, Show, Read)
 
 mkRepoId :: Remote -> RepoId
 mkRepoId r = case Remote.uuid r of

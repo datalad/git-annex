@@ -1,0 +1,5 @@
+I've got a remote I setup while connected to my home network that is no longer syncing when I'm on the same network. I'm not sure how to debug the problem. Any tips?
+
+I will say that when I edit the repository in the assistant, the url it gives for the "git repository location at" field looks incorrect. It's got an extra "git-annex-" prepended to the hostname. I'm not sure how to alter that.
+
+I'm using version 5.20140517~bpo70+1, from the wheezy backports.

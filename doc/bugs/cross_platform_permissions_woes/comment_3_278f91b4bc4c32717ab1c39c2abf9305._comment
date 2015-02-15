@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="64.134.31.139"
- subject="comment 3"
- date="2013-10-16T15:47:38Z"
- content="""
-I think you will have better luck if you upgrade your server's git-annex version. I checked and some fixes for exactly this problem went in around May. Also, testing with the current version, I followed your procedure exactly and did not see the problem.
-"""]]

@@ -1,0 +1,14 @@
+Worked on [[todo/extensible_addurl]] today. When `git annex addurl` is run,
+remotes will be asked if they claim the url, and whichever remote does will
+be used to download it, and location tracking will indicate that remote
+contains the object. This is a masive 1000 line patch touching 30 files,
+including follow-on changes in `rmurl` and `whereis` and even `rekey`.
+
+It should now be possible to build an external special remote that handles
+*.torrent and magnet: urls and passes them off to a bittorrent client for
+download, for example.
+
+Another use for this would be to make an external special remote that
+uses youtube-dl or some other program than quvi for downloading web videos.
+The builtin quvi support could probably be moved out of the web special
+remote, to a separate remote. I haven't tried to do that yet.

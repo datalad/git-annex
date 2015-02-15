@@ -1,6 +1,6 @@
 {- git-annex file matching
  -
- - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -13,7 +13,6 @@ import Common.Annex
 import Limit
 import Utility.Matcher
 import Types.Group
-import Types.Limit
 import Logs.Group
 import Logs.Remote
 import Annex.UUID
@@ -25,18 +24,16 @@ import Types.Remote (RemoteConfig)
 import Data.Either
 import qualified Data.Set as S
 
-type FileMatcher = Matcher MatchFiles
-
-checkFileMatcher :: FileMatcher -> FilePath -> Annex Bool
+checkFileMatcher :: (FileMatcher Annex) -> FilePath -> Annex Bool
 checkFileMatcher matcher file = checkMatcher matcher Nothing (Just file) S.empty True
 
-checkMatcher :: FileMatcher -> Maybe Key -> AssociatedFile -> AssumeNotPresent -> Bool -> Annex Bool
-checkMatcher matcher mkey afile notpresent def
-	| isEmpty matcher = return def
+checkMatcher :: (FileMatcher Annex) -> Maybe Key -> AssociatedFile -> AssumeNotPresent -> Bool -> Annex Bool
+checkMatcher matcher mkey afile notpresent d
+	| isEmpty matcher = return d
 	| otherwise = case (mkey, afile) of
 		(_, Just file) -> go =<< fileMatchInfo file
 		(Just key, _) -> go (MatchingKey key)
-		_ -> return def
+		_ -> return d
   where
 	go mi = matchMrun matcher $ \a -> a notpresent mi
 
@@ -45,18 +42,18 @@ fileMatchInfo file = do
 	matchfile <- getTopFilePath <$> inRepo (toTopFilePath file)
 	return $ MatchingFile FileInfo
 		{ matchFile = matchfile
-		, relFile = file
+		, currFile = file
 		}
 
-matchAll :: FileMatcher
+matchAll :: FileMatcher Annex
 matchAll = generate []
 
-parsedToMatcher :: [Either String (Token MatchFiles)] -> Either String FileMatcher
+parsedToMatcher :: [Either String (Token (MatchFiles Annex))] -> Either String (FileMatcher Annex)
 parsedToMatcher parsed = case partitionEithers parsed of
 	([], vs) -> Right $ generate vs
 	(es, _) -> Left $ unwords $ map ("Parse failure: " ++) es
 
-exprParser :: FileMatcher -> FileMatcher -> GroupMap -> M.Map UUID RemoteConfig -> Maybe UUID -> String -> [Either String (Token MatchFiles)]
+exprParser :: FileMatcher Annex -> FileMatcher Annex -> GroupMap -> M.Map UUID RemoteConfig -> Maybe UUID -> String -> [Either String (Token (MatchFiles Annex))]
 exprParser matchstandard matchgroupwanted groupmap configmap mu expr =
 	map parse $ tokenizeMatcher expr
   where
@@ -69,7 +66,7 @@ exprParser matchstandard matchgroupwanted groupmap configmap mu expr =
 	preferreddir = fromMaybe "public" $
 		M.lookup "preferreddir" =<< (`M.lookup` configmap) =<< mu
 
-parseToken :: FileMatcher -> FileMatcher -> MkLimit -> MkLimit -> GroupMap -> String -> Either String (Token MatchFiles)
+parseToken :: FileMatcher Annex -> FileMatcher Annex -> MkLimit Annex -> MkLimit Annex -> GroupMap -> String -> Either String (Token (MatchFiles Annex))
 parseToken matchstandard matchgroupwanted checkpresent checkpreferreddir groupmap t
 	| t `elem` tokens = Right $ token t
 	| t == "standard" = call matchstandard
@@ -106,10 +103,10 @@ tokenizeMatcher = filter (not . null ) . concatMap splitparens . words
 
 {- Generates a matcher for files large enough (or meeting other criteria)
  - to be added to the annex, rather than directly to git. -}
-largeFilesMatcher :: Annex FileMatcher
+largeFilesMatcher :: Annex (FileMatcher Annex)
 largeFilesMatcher = go =<< annexLargeFiles <$> Annex.getGitConfig
   where
-  	go Nothing = return matchAll
+	go Nothing = return matchAll
 	go (Just expr) = do
 		gm <- groupMap
 		rc <- readRemoteLog

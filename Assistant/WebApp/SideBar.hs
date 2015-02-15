@@ -1,6 +1,6 @@
 {- git-annex assistant webapp sidebar
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -38,7 +38,7 @@ sideBarDisplay = do
 	bootstrapclass :: AlertClass -> Text
 	bootstrapclass Activity = "alert-info"
 	bootstrapclass Warning = "alert"
-	bootstrapclass Error = "alert-error"
+	bootstrapclass Error = "alert-danger"
 	bootstrapclass Success = "alert-success"
 	bootstrapclass Message = "alert-info"
 
@@ -73,7 +73,7 @@ getSideBarR nid = do
 	liftIO $ threadDelay 100000
 
 	page <- widgetToPageContent sideBarDisplay
-	giveUrlRenderer $ [hamlet|^{pageBody page}|]
+	withUrlRenderer $ [hamlet|^{pageBody page}|]
 
 {- Called by the client to close an alert. -}
 getCloseAlert :: AlertId -> Handler ()
@@ -103,8 +103,7 @@ htmlIcon InfoIcon = bootstrapIcon "info-sign"
 htmlIcon SuccessIcon = bootstrapIcon "ok"
 htmlIcon ErrorIcon = bootstrapIcon "exclamation-sign"
 htmlIcon UpgradeIcon = bootstrapIcon "arrow-up"
--- utf-8 umbrella (utf-8 cloud looks too stormy)
-htmlIcon TheCloud = [whamlet|&#9730;|]
+htmlIcon ConnectionIcon = bootstrapIcon "signal"
 
 bootstrapIcon :: Text -> Widget
-bootstrapIcon name = [whamlet|<i .icon-#{name}></i>|]
+bootstrapIcon name = [whamlet|<span .glyphicon .glyphicon-#{name}>|]

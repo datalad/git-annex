@@ -3,9 +3,9 @@
  - This is typically a bit faster than using Haskell libraries,
  - by around 1% to 10%. Worth it for really big files.
  -
- - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2013 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 module Utility.ExternalSHA (externalSHA) where
@@ -14,8 +14,8 @@ import Utility.SafeCommand
 import Utility.Process
 import Utility.FileSystemEncoding
 import Utility.Misc
+import Utility.Exception
 
-import System.Process
 import Data.List
 import Data.Char
 import Control.Applicative
@@ -23,7 +23,7 @@ import System.IO
 
 externalSHA :: String -> Int -> FilePath -> IO (Either String String)
 externalSHA command shasize file = do
-	ls <- lines <$> readsha (toCommand [File file])
+	ls <- lines <$> catchDefaultIO "" (readsha (toCommand [File file]))
 	return $ sanitycheck =<< parse ls
   where
 	{- sha commands output the filename, so need to set fileEncoding -}
@@ -57,7 +57,7 @@ externalSHA command shasize file = do
 			Left $ "Unexpected character in output of " ++ command ++ "\"" ++ sha ++ "\""
 		| otherwise = Right sha'
 	  where
-	  	sha' = map toLower sha
+		sha' = map toLower sha
 
 expectedSHALength :: Int -> Int
 expectedSHALength 1 = 40

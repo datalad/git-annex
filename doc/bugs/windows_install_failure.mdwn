@@ -28,3 +28,6 @@ Windows 7 64 bit
 """]]
 
 [[!meta title="windows installer fails unless run as admin user"]]
+
+> [[dup|done]] of
+> [[git-annex_does_not_install_on_windows_without_admin_rights]] --[[Joey]] 

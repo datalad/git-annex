@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="feulif"
+ ip="151.27.171.22"
+ subject="comment 4"
+ date="2014-07-17T22:24:45Z"
+ content="""
+First of all, I understand this is more a nas-related issue rather than a git-annex-related one, so thank you for your support and valuable software.
+
+But I'm still struggling with this error.
+
+Now I've reinstalled git on the NAS and, as previously, I can run every git command when I'm logged in.
+But when I try to sync my PC with the git remote on the NAS, then I get this error:
+
+
+    git annex sync
+    sh: git-annex-shell: command not found
+    sh: git-upload-pack: command not found
+    fatal: Could not read from remote repository.
+    
+    Please make sure you have the correct access rights
+    and the repository exists.
+    commit  
+    ok
+    git-annex: no branch is checked out
+
+Can this be really related to some access right? What user is git annex using when syncing with an SSH remote (e.g. admin) ? the one I specified when setting up the remote? where is it complaining about git-upload-pack non found, on the nas or on the PC I'm syncing from?
+
+"""]]

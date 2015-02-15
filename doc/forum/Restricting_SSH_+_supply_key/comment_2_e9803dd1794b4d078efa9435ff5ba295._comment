@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="divB"
+ ip="171.67.173.91"
+ subject="comment 2"
+ date="2014-07-11T21:43:11Z"
+ content="""
+Hey Joey,
+
+Cool, that's great! Thanks!
+
+As for the client side. I assume you probably don't know too much about the git setup on Windows ... but maybe (or someone else has an idea :)
+
+1.) The ssh client config for git is \"c:\Program Files (x86)\Git\etc\ssh\ssh_config\" which is *very* unhandy since it's system wide! If it would at least be in the user profile ... (as mentioned, within the \".git\" directory of the repository would be the best)
+
+2.) Even if I create a \"Host\" and use \"IdentityFile\", ssh still queries the agent! This is absolutely unwanted and slows down things! I have a particular key \"git-annex.key\" and *only* this should be tried - no agent. The reason why the agent is especially problematic for me is that I use a special agent which \"locks\" itself after some inactivity and requires to re-enter the passwords.
+
+Thank you!
+
+"""]]

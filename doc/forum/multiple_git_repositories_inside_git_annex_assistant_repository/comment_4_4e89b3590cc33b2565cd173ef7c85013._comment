@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlM_DRhi_5pJrTA0HbApHR25iAgy-NBXTY"
+ nickname="Tor Arne"
+ subject="comment 4"
+ date="2014-10-14T22:09:37Z"
+ content="""
+If I use git-annex to keep my home and work computer in sync, the conflict would only happen if I somehow manage to make a change in the git repo on one machine that's not propagated to the other straight away (eg, network down), and I then modify the git repo of the other as well?
+
+Could git-annex have a different merge strategy in this case, not try to merge anything under .git and give a warning?
+
+"""]]

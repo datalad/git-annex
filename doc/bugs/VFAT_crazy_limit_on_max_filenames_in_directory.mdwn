@@ -1,0 +1,2 @@
+VFAT limits have been hit when the .git/annex/journal/
+directory gets a lot of stuff in it. See <http://bugs.debian.org/696313>

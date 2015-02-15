@@ -34,9 +34,24 @@ if [ ! -e "$HOME/.ssh/git-annex-shell" ]; then
 	(
 		echo "#!/bin/sh"
 		echo "set -e"
+		echo "if [ \"x\$SSH_ORIGINAL_COMMAND\" != \"x\" ]; then"
 		echo "exec $base/runshell git-annex-shell -c \"\$SSH_ORIGINAL_COMMAND\""
+		echo "else"
+		echo "exec $base/runshell git-annex-shell -c \"\$@\""
+		echo "fi"
 	) > "$HOME/.ssh/git-annex-shell"
 	chmod +x "$HOME/.ssh/git-annex-shell"
+fi
+
+# And this shim is used by the webapp when adding a remote ssh server.
+if [ ! -e "$HOME/.ssh/git-annex-wrapper" ]; then
+	mkdir "$HOME/.ssh" >/dev/null 2>&1 || true
+	(
+		echo "#!/bin/sh"
+		echo "set -e"
+		echo "exec $base/runshell \"\$@\""
+	) > "$HOME/.ssh/git-annex-wrapper"
+	chmod +x "$HOME/.ssh/git-annex-wrapper"
 fi
 
 # Put our binaries first, to avoid issues with out of date or incompatable

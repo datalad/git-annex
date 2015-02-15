@@ -1,0 +1,203 @@
+#!/bin/sh
+# This is a demo git-annex external special remote program,
+# which adds basic torrent download support to git-annex.
+#
+# Uses aria2c. Also needs the original bittorrent (or bittornado) for the
+# btshowmetainfo command.
+# 
+# Install in PATH as git-annex-remote-torrent
+#
+# Enable remote by running:
+#  git annex initremote torrent type=external encryption=none externaltype=torrent
+#  git annex untrust torrent
+#
+# Copyright 2014 Joey Hess; licenced under the GNU GPL version 3 or higher.
+
+set -e
+
+# This program speaks a line-based protocol on stdin and stdout.
+# When running any commands, their stdout should be redirected to stderr
+# (or /dev/null) to avoid messing up the protocol.
+runcmd () {
+	"$@" >&2
+}
+
+# Gets a VALUE response and stores it in $RET
+getvalue () {
+	read resp
+	# Tricky POSIX shell code to split first word of the resp,
+	# preserving all other whitespace
+	case "${resp%% *}" in
+		VALUE)
+			RET="$(echo "$resp" | sed 's/^VALUE \?//')"
+		;;
+		*)
+		RET=""
+		;;
+	esac
+}
+
+# Get a list of all known torrent urls for a key,
+# storing it in a temp file.
+geturls () {
+	key="$1"
+	tmp="$2"
+
+	echo GETURLS "$key"
+	getvalue
+	while [ -n "$RET" ]; do
+		if istorrent "$RET"; then
+			echo "$RET" >> "$tmp"
+		fi
+		getvalue
+	done
+}
+
+# Does the url end in .torrent?
+# Note that we use #N on the url to indicate which file
+# from a multi-file torrent is wanted.
+istorrent () {
+	echo "$1" | egrep -q "\.torrent(#.*)?$"
+}
+
+# Download a single file from a torrent.
+#
+# Note: Does not support resuming interrupted transfers.
+# Note: Does not feed progress info back to git-annex, and since
+# the destination file is only populated at the end, git-annex will fail
+# to display a progress bar for this download.
+downloadtorrent () {
+	torrent="$1"
+	n="$2"
+	dest="$3"
+
+	tmpdir="$(mktemp -d)"
+
+	# aria2c will create part of the directory structure
+	# contained in the torrent. It may download parts of other files
+	# in addition to the one we asked for. So, we need to find
+	# out the filename we want, and look for it.
+	wantdir="$(btshowmetainfo "$torrent" | grep "^directory name: " | sed "s/^directory name: //" || true)"
+	if [ -n "$wantdir" ]; then
+		wantfile="$(btshowmetainfo "$torrent" | grep '^   ' | sed 's/^   //' | head -n "$n" | tail -n 1 | sed 's/ ([0-9]*)$//')"
+		if ! runcmd aria2c --select-file="$n" "$torrent" -d "$tmpdir"; then
+			false
+		fi
+	else
+		wantfile="$(btshowmetainfo "$torrent" | egrep "^file name.*: " | sed "s/^file name.*: //")"
+		wantdir=.
+		if ! runcmd aria2c "$torrent" -d "$tmpdir"; then
+			false
+		fi
+	fi
+	if [ -e "$tmpdir/$wantdir/$wantfile" ]; then
+		mv "$tmpdir/$wantdir/$wantfile" "$dest"
+		rm -rf "$tmpdir"
+	else
+		rm -rf "$tmpdir"
+		false
+	fi
+}
+
+# This has to come first, to get the protocol started.
+echo VERSION 1
+
+while read line; do
+	set -- $line
+	case "$1" in
+		INITREMOTE)
+			echo INITREMOTE-SUCCESS
+		;;
+		PREPARE)
+			echo PREPARE-SUCCESS
+		;;
+		CLAIMURL)
+			url="$2"
+			if istorrent "$url"; then
+				echo CLAIMURL-SUCCESS
+			else
+				echo CLAIMURL-FAILURE
+			fi
+		;;
+		CHECKURL)
+			url="$2"
+			# List contents of torrent.
+			tmp=$(mktemp)
+			if ! runcmd curl -o "$tmp" "$url"; then
+				echo CHECKURL-FAILURE
+			else
+				oldIFS="$IFS"
+			IFS="
+"
+				printf "CHECKURL-MULTI"
+				n=0
+				for l in $(btshowmetainfo "$tmp" | grep '^   ' | sed 's/^   //'); do
+					# Note that the file cannot contain spaces.
+					file="$(echo "$l" | sed 's/ ([0-9]*)$//' | sed 's/ /_/g')"
+					size="$(echo "$l" | sed 's/.* (\([0-9]*\))$/\1/')"
+					n=$(expr $n + 1)
+					printf " $url#$n $size $file"
+				done
+				if [ "$n" = 0 ]; then
+					file="$(btshowmetainfo "$tmp" | egrep "^file name.*: " | sed "s/^file name.*: //")"
+					size="$(btshowmetainfo "$tmp" | egrep "^file size.*: " | sed "s/^file size.*: \([0-9]*\).*/\1/")"
+					printf " $url $size $file"
+				fi
+				printf "\n"
+				IFS="$oldIFS"
+			fi
+			rm -f "$tmp"
+		;;
+		TRANSFER)
+			key="$3"
+			file="$4"
+			case "$2" in
+				STORE)
+					echo TRANSFER-FAILURE STORE "$key" "upload not supported"
+				;;
+				RETRIEVE)
+					urltmp=$(mktemp)
+					geturls "$key" "$urltmp"
+					url="$(head "$urltmp")" || true
+					rm -f "$urltmp"
+					if [ -z "$url" ]; then
+						echo TRANSFER-FAILURE RETRIEVE "$key" "no known torrent urls for this key"
+					else
+						tmp=$(mktemp)
+						if ! runcmd curl -o "$tmp" "$url"; then
+							echo TRANSFER-FAILURE RETRIEVE "$key" "failed downloading torrent file from $url"
+						else
+							filenum="$(echo "$url" | sed 's/(.*#\(\d*\)/\1/')"
+							if downloadtorrent "$tmp" "$filenum" "$file"; then
+								echo TRANSFER-SUCCESS RETRIEVE "$key"
+							else
+								echo TRANSFER-FAILURE RETRIEVE "$key" "failed to download torrent contents from $url"
+							fi
+						fi
+						rm -f "$tmp"					
+					fi
+				;;
+			esac
+		;;
+		CHECKPRESENT)
+			key="$2"
+			# Let's just assume that torrents are never present
+			# for simplicity.
+			echo CHECKPRESENT-UNKNOWN "$key" "cannot reliably check torrent status"
+		;;
+		REMOVE)
+			key="$2"
+			# Remove all torrent urls for the key.
+			tmp=$(mktemp)
+			geturls "$key" "$tmp"
+			for url in $(cat "$tmp"); do
+				echo SETURLMISSING "$key" "$url"
+			done
+			rm -f "$tmp"
+			echo REMOVE-SUCCESS "$key"
+		;;
+		*)
+			echo UNSUPPORTED-REQUEST
+		;;
+	esac	
+done

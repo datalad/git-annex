@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkAUMhKOSkh9JaBA6xst3XxQIIsDEq5Zd4"
+ nickname="Ovidiu"
+ subject="How to do this on Mac OSX"
+ date="2014-05-08T22:46:49Z"
+ content="""
+So I have a local repository on my MBP and a backup repository on S3. 
+How do I now restore OLD or deleted file versions on my MBP with git-annex assistant?
+"""]]

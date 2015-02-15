@@ -1,0 +1,25 @@
+git-annex 5.20150113 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * unlock: Don't allow unlocking files that have never been committed to git
+     before, to avoid an intractable problem that prevents the pre-commit
+     hook from telling if such a file is intended to be an annexed file or not.
+   * Avoid re-checksumming when migrating from hash to hashE backend.
+     Closes: #[774494](http://bugs.debian.org/774494)
+   * Fix build with process 1.2.1.0.
+   * Android: Provide a version built with -fPIE -pie to support Android 5.0.
+   * sync: Fix an edge case where syncing in a bare repository would try to
+     merge and so fail.
+   * Check git version at runtime, rather than assuming it will be the same
+     as the git version used at build time when running git-checkattr and
+     git-branch remove.
+   * Switch to using relative paths to the git repository.
+     - This allows the git repository to be moved while git-annex is running in
+       it, with fewer problems.
+     - On Windows, this avoids some of the problems with the absurdly small
+       MAX\_PATH of 260 bytes. In particular, git-annex repositories should
+       work in deeper/longer directory structures than before.
+   * Generate shorter keys for WORM and URL, avoiding keys that are longer
+     than used for SHA256, so as to not break on systems like Windows that
+     have very small maximum path length limits.
+   * Bugfix: A file named HEAD in the work tree could confuse some git commands
+     run by git-annex."""]]

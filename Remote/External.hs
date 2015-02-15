@@ -1,6 +1,6 @@
 {- External special remote interface.
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,26 +12,22 @@ import qualified Annex
 import Common.Annex
 import Types.Remote
 import Types.CleanupActions
+import Types.UrlContents
 import qualified Git
 import Config
 import Remote.Helper.Special
-import Remote.Helper.Encryptable
-import Crypto
 import Utility.Metered
 import Logs.Transfer
 import Logs.PreferredContent.Raw
 import Logs.RemoteState
+import Logs.Web
 import Config.Cost
-import Annex.Content
 import Annex.UUID
-import Annex.Exception
 import Creds
 
 import Control.Concurrent.STM
-import System.Process (std_in, std_out, std_err)
 import System.Log.Logger (debugM)
 import qualified Data.Map as M
-import qualified Data.ByteString.Lazy as L
 
 remote :: RemoteType
 remote = RemoteType {
@@ -47,30 +43,37 @@ gen r u c gc = do
 	Annex.addCleanup (RemoteCleanup u) $ stopExternal external
 	cst <- getCost external r gc
 	avail <- getAvailability external r gc
-	return $ Just $ encryptableRemote c
-		(storeEncrypted external $ getGpgEncParams (c,gc))
-		(retrieveEncrypted external)
-		Remote {
-			uuid = u,
-			cost = cst,
-			name = Git.repoDescribe r,
-			storeKey = store external,
-			retrieveKeyFile = retrieve external,
-			retrieveKeyFileCheap = \_ _ -> return False,
-			removeKey = remove external,
-			hasKey = checkPresent external,
-			hasKeyCheap = False,
-			whereisKey = Nothing,
-			remoteFsck = Nothing,
-			repairRepo = Nothing,
-			config = c,
-			localpath = Nothing,
-			repo = r,
-			gitconfig = gc,
-			readonly = False,
-			availability = avail,
-			remotetype = remote
-		}
+	return $ Just $ specialRemote c
+		(simplyPrepare $ store external)
+		(simplyPrepare $ retrieve external)
+		(simplyPrepare $ remove external)
+		(simplyPrepare $ checkKey external)
+		Remote
+			{ uuid = u
+			, cost = cst
+			, name = Git.repoDescribe r
+			, storeKey = storeKeyDummy
+			, retrieveKeyFile = retreiveKeyFileDummy
+			, retrieveKeyFileCheap = \_ _ -> return False
+			, removeKey = removeKeyDummy
+			, checkPresent = checkPresentDummy
+			, checkPresentCheap = False
+			, whereisKey = Nothing
+			, remoteFsck = Nothing
+			, repairRepo = Nothing
+			, config = c
+			, localpath = Nothing
+			, repo = r
+			, gitconfig = gc
+			, readonly = False
+			, availability = avail
+			, remotetype = remote
+			, mkUnavailable = gen r u c $
+				gc { remoteAnnexExternalType = Just "!dne!" }
+			, getInfo = return [("externaltype", externaltype)]
+			, claimUrl = Just (claimurl external)
+			, checkUrl = Just (checkurl external)
+			}
   where
 	externaltype = fromMaybe (error "missing externaltype") (remoteAnnexExternalType gc)
 
@@ -79,7 +82,7 @@ externalSetup mu _ c = do
 	u <- maybe (liftIO genUUID) return mu
 	let externaltype = fromMaybe (error "Specify externaltype=") $
 		M.lookup "externaltype" c
-	c' <- encryptionSetup c
+	(c', _encsetup) <- encryptionSetup c
 
 	external <- newExternal externaltype u c'
 	handleRequest external INITREMOTE Nothing $ \resp -> case resp of
@@ -91,25 +94,8 @@ externalSetup mu _ c = do
 	gitConfigSpecialRemote u c'' "externaltype" externaltype
 	return (c'', u)
 
-store :: External -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store external k _f p = sendAnnex k rollback $ \f ->
-	metered (Just p) k $
-		storeHelper external k f
-  where
-	rollback = void $ remove external k
-
-storeEncrypted :: External -> [CommandParam] -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
-storeEncrypted external gpgOpts (cipher, enck) k p = withTmp enck $ \tmp ->
-	sendAnnex k rollback $ \src -> do
-		metered (Just p) k $ \meterupdate -> do
-			liftIO $ encrypt gpgOpts cipher (feedFile src) $
-				readBytes $ L.writeFile tmp
-			storeHelper external enck tmp meterupdate
-  where
-	rollback = void $ remove external enck
-
-storeHelper :: External -> Key -> FilePath -> MeterUpdate -> Annex Bool
-storeHelper external k f p = safely $
+store :: External -> Storer
+store external = fileStorer $ \k f p ->
 	handleRequest external (TRANSFER Upload k f) (Just p) $ \resp ->
 		case resp of
 			TRANSFER_SUCCESS Upload k' | k == k' ->
@@ -120,34 +106,18 @@ storeHelper external k f p = safely $
 					return False
 			_ -> Nothing
 
-retrieve :: External -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
-retrieve external k _f d p = metered (Just p) k $
-	retrieveHelper external k d
-
-retrieveEncrypted :: External -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
-retrieveEncrypted external (cipher, enck) k f p = withTmp enck $ \tmp ->
-	metered (Just p) k $ \meterupdate -> 
-		ifM (retrieveHelper external enck tmp meterupdate)
-			( liftIO $ catchBoolIO $ do
-				decrypt cipher (feedFile tmp) $
-					readBytes $ L.writeFile f
-				return True
-			, return False
-			)
-
-retrieveHelper :: External -> Key -> FilePath -> MeterUpdate -> Annex Bool
-retrieveHelper external k d p = safely $
+retrieve :: External -> Retriever
+retrieve external = fileRetriever $ \d k p -> 
 	handleRequest external (TRANSFER Download k d) (Just p) $ \resp ->
 		case resp of
 			TRANSFER_SUCCESS Download k'
-				| k == k' -> Just $ return True
+				| k == k' -> Just $ return ()
 			TRANSFER_FAILURE Download k' errmsg
 				| k == k' -> Just $ do
-					warning errmsg
-					return False
+					error errmsg
 			_ -> Nothing
 
-remove :: External -> Key -> Annex Bool
+remove :: External -> Remover
 remove external k = safely $ 
 	handleRequest external (REMOVE k) Nothing $ \resp ->
 		case resp of
@@ -159,8 +129,8 @@ remove external k = safely $
 					return False
 			_ -> Nothing
 
-checkPresent :: External -> Key -> Annex (Either String Bool)
-checkPresent external k = either (Left . show) id <$> tryAnnex go
+checkKey :: External -> CheckPresent
+checkKey external k = either error id <$> go
   where
 	go = handleRequest external (CHECKPRESENT k) Nothing $ \resp ->
 		case resp of
@@ -173,7 +143,7 @@ checkPresent external k = either (Left . show) id <$> tryAnnex go
 			_ -> Nothing
 
 safely :: Annex Bool -> Annex Bool
-safely a = go =<< tryAnnex a
+safely a = go =<< tryNonAsync a
   where
 	go (Right r) = return r
 	go (Left e) = do
@@ -204,7 +174,7 @@ handleRequest' lck external req mp responsehandler
 		go
 	| otherwise = go
   where
-  	go = do
+	go = do
 		sendMessage lck external req
 		loop
 	loop = receiveMessage lck external responsehandler
@@ -214,7 +184,7 @@ handleRequest' lck external req mp responsehandler
 	handleRemoteRequest (PROGRESS bytesprocessed) =
 		maybe noop (\a -> liftIO $ a bytesprocessed) mp
 	handleRemoteRequest (DIRHASH k) = 
-		send $ VALUE $ hashDirMixed k
+		send $ VALUE $ hashDirMixed def k
 	handleRemoteRequest (SETCONFIG setting value) =
 		liftIO $ atomically $ do
 			let v = externalConfig external
@@ -226,7 +196,7 @@ handleRequest' lck external req mp responsehandler
 		send $ VALUE value
 	handleRemoteRequest (SETCREDS setting login password) = do
 		c <- liftIO $ atomically $ readTMVar $ externalConfig external
-		c' <- setRemoteCredPair c (credstorage setting) $
+		c' <- setRemoteCredPair encryptionAlreadySetup c (credstorage setting) $
 			Just (login, password)
 		void $ liftIO $ atomically $ swapTMVar (externalConfig external) c'
 	handleRemoteRequest (GETCREDS setting) = do
@@ -249,6 +219,14 @@ handleRequest' lck external req mp responsehandler
 		state <- fromMaybe ""
 			<$> getRemoteState (externalUUID external) key
 		send $ VALUE state
+	handleRemoteRequest (SETURLPRESENT key url) =
+		setUrlPresent (externalUUID external) key url
+	handleRemoteRequest (SETURLMISSING key url) =
+		setUrlMissing (externalUUID external) key url
+	handleRemoteRequest (GETURLS key prefix) = do
+		mapM_ (send . VALUE . fst . getDownloader)
+			=<< getUrlsWithPrefix key prefix
+		send (VALUE "") -- end of list
 	handleRemoteRequest (DEBUG msg) = liftIO $ debugM "external" msg
 	handleRemoteRequest (VERSION _) =
 		sendMessage lck external $ ERROR "too late to send VERSION"
@@ -443,3 +421,27 @@ getAvailability external r gc = maybe query return (remoteAnnexAvailability gc)
 			_ -> Nothing
 		setRemoteAvailability r avail
 		return avail
+
+claimurl :: External -> URLString -> Annex Bool
+claimurl external url =
+	handleRequest external (CLAIMURL url) Nothing $ \req -> case req of
+		CLAIMURL_SUCCESS -> Just $ return True
+		CLAIMURL_FAILURE -> Just $ return False
+		UNSUPPORTED_REQUEST -> Just $ return False
+		_ -> Nothing
+
+checkurl :: External -> URLString -> Annex UrlContents
+checkurl external url = 
+	handleRequest external (CHECKURL url) Nothing $ \req -> case req of
+		CHECKURL_CONTENTS sz f -> Just $ return $ UrlContents sz
+			(if null f then Nothing else Just $ mkSafeFilePath f)
+		-- Treat a single item multi response specially to
+		-- simplify the external remote implementation.
+		CHECKURL_MULTI ((_, sz, f):[]) ->
+			Just $ return $ UrlContents sz $ Just $ mkSafeFilePath f
+		CHECKURL_MULTI l -> Just $ return $ UrlMulti $ map mkmulti l
+		CHECKURL_FAILURE errmsg -> Just $ error errmsg
+		UNSUPPORTED_REQUEST -> error "CHECKURL not implemented by external special remote"
+		_ -> Nothing
+  where
+	mkmulti (u, s, f) = (u, s, mkSafeFilePath f)

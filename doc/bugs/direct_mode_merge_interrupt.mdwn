@@ -1,0 +1,54 @@
+Seems to me there is a bug in how merges are done in direct mode. This is
+done in two steps:
+
+1. Merge the remote branch into the local branch, with work tree directed
+   to a temp dir.
+2. Use the temp dir and the newly merged branch to update the work tree.
+
+If this is interrupted between 1 and 2, by eg the user ctrl-Cing or power
+being lost, the result is a repository that thinks the current branch has
+been merged, but does not have an updated work tree. The next sync in that
+repository will see the files as deleted (or as being an old version), and
+commit the current work tree state to the branch. 
+
+Result is files appear to be lost, although `git revert` in an indirect
+mode repo can get them back.
+
+To fix this, direct mode merge would need to avoid updating the current
+branch when merging the remote branch into it (how?). It should first
+update the whole work tree, and only after it's updated should it update
+the index and the current branch to reflect the merge.  
+
+This way, if the merge is interrupted, the work tree may have uncommitted
+changed -- but it's fine if they get accidentially committed, since when
+the merge is re-done, those changes will by the same ones made by the
+merge. (I assume this is how `git merge` normally works.) --[[Joey]]
+
+> Implemented that. And then realized that even updating the index
+> as part of a merge results in the work tree being out of sync with the
+> index. Which will cause the next sync to again delete any files that
+> are in the index but not the work tree. Urgh. 
+> 
+> Seems that a direct mode
+> merge also needs to use a different index file to stage its changes?
+> (Ugh)
+> > done --[[Joey]]
+
+> > > I had to revert the fix on FAT/Windows due to 
+> > > a git bug: <http://marc.info/?l=git&m=140262402204212&w=2>
+> > > Once that bug's fixed, I can revisit this. --[[Joey]]
+
+[[!meta title="direct mode merge interrupt (fixed for all except FAT, Windows)"]]
+
+## other options
+
+> Or could perhaps use `git-merge-tree`
+> and avoid staging the merge in the index until the work-tree is updated.
+> 
+> Alternatively, could use another strategy.. Add a lock file which is held while 
+> the merge is in progress and contains the pre-merge sha.
+> If the lock file is present but not held, state is inconsistent.
+> `git-annex sync` and the SanityChecker should
+> then run mergeDirectCleanup to recover, before any commits can be made
+> from the inconsistent state. This approach seems to get complicated
+> quickly.. --[[Joey]]

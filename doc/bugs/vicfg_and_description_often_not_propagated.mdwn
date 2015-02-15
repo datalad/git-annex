@@ -1,0 +1,154 @@
+### Please describe the problem.
+
+I can change the settings in one repo and sync it everywhere. Just to be surprised that one repo starts syncing to the transfer, every time it turns out that this repo lost its vicfg settings. Especially the Repository preferred contents are all back on standard. It was even once that it had the current settings and after the change and sync it goes back to some older state instead of the new one.
+
+### What steps will reproduce the problem?
+
+Well that is very hard. I have 8 repos and it happens randomly to some of them. I recreated all of them recently because I thought they are corrupt, that didn't help, just took me one week of time. It is also very hard to find a way to reproduce this because every vicfg causes a merge which takes minutes to hours.
+
+### What version of git-annex are you using? On what operating system?
+
+Linux: git-annex version: 5.20140412ubuntu1
+
+Mac OS: git-annex version: 5.20140717
+
+### Please provide any additional information below.
+
+Layout:
+
+transfer on rsync.net, conntented to that:
+
+ - Two OS X Clients
+
+ - Two Linux Archives
+
+My settings:
+
+
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+# git-annex configuration
+# 
+# Changes saved to this file will be recorded in the git-annex branch.
+# 
+# Lines in this file have the format:
+#   setting field = value
+
+# Repository trust configuration
+# (Valid trust levels: trusted semitrusted untrusted dead)
+# (for Music bei Pirmin)
+trust 0734498b-817c-419f-a0c0-660854dc7cbe = trusted
+# (for Music bei Jean (Willikins) [willikins])
+trust 20e9d2e5-9563-4507-82d5-bf8e23be29a5 = trusted
+# (for Music bei Jean (Willikins Clone))
+trust 6e3431e9-8ec2-404a-9c35-b967db63147d = trusted
+# (for Music bei Jean (Watson))
+trust a6febfa0-9fe5-4a65-95bb-dc255d87c2e2 = trusted
+# (for )
+trust dafe9a64-2480-40e2-9688-9f783577ef72 = dead
+# (for web)
+#trust 00000000-0000-0000-0000-000000000001 = semitrusted
+# (for music transfer via rsync.net [music_rsync])
+#trust 83c42610-42ad-459d-92a4-1aca2dfb97e1 = semitrusted
+
+# Repository groups
+# (Standard groups: client transfer backup incrementalbackup smallarchive archive source manual public unwanted)
+# (Separate group names with spaces)
+# (for Music bei Jean (Willikins) [willikins])
+group 20e9d2e5-9563-4507-82d5-bf8e23be29a5 = archive
+# (for Music bei Jean (Willikins Clone))
+group 6e3431e9-8ec2-404a-9c35-b967db63147d = archive
+# (for )
+group 26d38f31-cb6c-412c-84ef-597d7959a680 = backup
+# (for Music bei Pirmin)
+group 0734498b-817c-419f-a0c0-660854dc7cbe = client
+# (for Music bei Jean (Watson))
+group a6febfa0-9fe5-4a65-95bb-dc255d87c2e2 = client
+# (for music transfer via rsync.net [music_rsync])
+group 83c42610-42ad-459d-92a4-1aca2dfb97e1 = transfer
+# (for )
+group dafe9a64-2480-40e2-9688-9f783577ef72 = unwanted
+# (for web)
+#group 00000000-0000-0000-0000-000000000001 = 
+
+# Repository preferred contents
+# (Set to "standard" to use a repository's group's preferred contents)
+# (for Music bei Jean (Willikins) [willikins])
+wanted 20e9d2e5-9563-4507-82d5-bf8e23be29a5 = (not (copies=archive:2 or copies=smallarchive:2)) or approxlackingcopies=2
+# (for Music bei Jean (Willikins Clone))
+wanted 6e3431e9-8ec2-404a-9c35-b967db63147d = (not (copies=archive:2 or copies=smallarchive:2)) or approxlackingcopies=2
+# (for music transfer via rsync.net [music_rsync])
+wanted 83c42610-42ad-459d-92a4-1aca2dfb97e1 = not (inallgroup=client and copies=archive:2 and copies=client:2) and ((((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1))) and not unused) or approxlackingcopies=1)
+# (for Music bei Pirmin)
+wanted 0734498b-817c-419f-a0c0-660854dc7cbe = standard
+# (for )
+wanted 26d38f31-cb6c-412c-84ef-597d7959a680 = standard
+# (for )
+wanted dafe9a64-2480-40e2-9688-9f783577ef72 = standard
+# (for web)
+#wanted 00000000-0000-0000-0000-000000000001 = 
+# (for Music bei Jean (Watson))
+wanted a6febfa0-9fe5-4a65-95bb-dc255d87c2e2 = standard
+
+# Group preferred contents
+# (Used by repositories with "groupwanted" in their preferred contents)
+#groupwanted archive = 
+#groupwanted backup = 
+#groupwanted client = 
+#groupwanted incrementalbackup = 
+#groupwanted manual = 
+#groupwanted public = 
+#groupwanted smallarchive = 
+#groupwanted source = 
+#groupwanted transfer = 
+#groupwanted unwanted = 
+
+# Standard preferred contents
+# (Used by wanted or groupwanted expressions containing "standard")
+# (For reference only; built-in and cannot be changed!)
+# standard client = (((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1))) and not unused) or approxlackingcopies=1
+# standard transfer = (not (inallgroup=client and copies=client:2) and ((((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1))) and not unused) or approxlackingcopies=1)) or approxlackingcopies=1
+# standard backup = include=* or unused
+# standard incrementalbackup = ((include=* or unused) and (not copies=incrementalbackup:1)) or approxlackingcopies=1
+# standard smallarchive = ((include=*/archive/* or include=archive/*) and ((not (copies=archive:1 or copies=smallarchive:1)) or approxlackingcopies=1)) or approxlackingcopies=1
+# standard archive = (not (copies=archive:1 or copies=smallarchive:1)) or approxlackingcopies=1
+# standard source = not (copies=1)
+# standard manual = present and ((((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1))) and not unused) or approxlackingcopies=1)
+# standard public = inpreferreddir
+# standard unwanted = exclude=*
+
+# Repository required contents
+# (for web)
+#required 00000000-0000-0000-0000-000000000001 = 
+# (for Music bei Pirmin)
+#required 0734498b-817c-419f-a0c0-660854dc7cbe = 
+# (for Music bei Jean (Willikins) [willikins])
+#required 20e9d2e5-9563-4507-82d5-bf8e23be29a5 = 
+# (for Music bei Jean (Willikins Clone))
+#required 6e3431e9-8ec2-404a-9c35-b967db63147d = 
+# (for music transfer via rsync.net [music_rsync])
+#required 83c42610-42ad-459d-92a4-1aca2dfb97e1 = 
+# (for Music bei Jean (Watson))
+#required a6febfa0-9fe5-4a65-95bb-dc255d87c2e2 = 
+
+# Scheduled activities
+# (Separate multiple activities with "; ")
+# (for web)
+#schedule 00000000-0000-0000-0000-000000000001 = 
+# (for Music bei Pirmin)
+#schedule 0734498b-817c-419f-a0c0-660854dc7cbe = 
+# (for Music bei Jean (Willikins) [willikins])
+#schedule 20e9d2e5-9563-4507-82d5-bf8e23be29a5 = 
+# (for Music bei Jean (Willikins Clone))
+#schedule 6e3431e9-8ec2-404a-9c35-b967db63147d = 
+# (for music transfer via rsync.net [music_rsync])
+#schedule 83c42610-42ad-459d-92a4-1aca2dfb97e1 = 
+# (for Music bei Jean (Watson))
+#schedule a6febfa0-9fe5-4a65-95bb-dc255d87c2e2 =
+# End of transcript or log.
+"""]]
+
+[[!tag moreinfo]]

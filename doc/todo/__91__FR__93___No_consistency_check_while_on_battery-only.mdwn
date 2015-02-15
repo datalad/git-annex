@@ -1,0 +1,14 @@
+I hope this has not been mentioned before.  I only found in mentioned in a comment of a devblog post.
+
+### Please describe the problem.
+With `git annex assistant` running, consistency checks is sometimes triggered while the computer is battery-powered (as opposed to plugged into AC).
+
+### What steps will reproduce the problem?
+Configure `git annex assistant` to make consistency check daily (or whatever the default is), unplug from power and wait.
+
+### What version of git-annex are you using? On what operating system?
+`5.20141231` on Archlinux 64 bit.  (From the changelog I guess it's also present in the newest version).
+
+### Please provide any additional information below.
+
+It would be nice if one could toggle whether consistency check may run while not plugged into AC.

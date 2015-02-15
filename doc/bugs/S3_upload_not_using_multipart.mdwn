@@ -51,3 +51,12 @@ Please provide any additional information below.
 	supported repository versions: 3
 	upgrade supported from repository versions: 0 1 2
 
+[[!tag confirmed]]
+
+> [[fixed|done]] This is now supported, when git-annex is built with a new
+> enough version of the aws library. You need to configure the remote to
+> use an appropriate value for multipart, eg:
+> 
+> git annex enableremote cloud partsize=1GiB
+> 
+> --[[Joey]]

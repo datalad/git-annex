@@ -1,6 +1,6 @@
 {- git-annex file locations
  -
- - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -20,7 +20,6 @@ module Locations (
 	gitAnnexInodeSentinal,
 	gitAnnexInodeSentinalCache,
 	annexLocations,
-	annexLocation,
 	gitAnnexDir,
 	gitAnnexObjectDir,
 	gitAnnexTmpMiscDir,
@@ -41,6 +40,8 @@ module Locations (
 	gitAnnexMergeDir,
 	gitAnnexJournalDir,
 	gitAnnexJournalLock,
+	gitAnnexPreCommitLock,
+	gitAnnexMergeLock,
 	gitAnnexIndex,
 	gitAnnexIndexStatus,
 	gitAnnexViewIndex,
@@ -57,7 +58,7 @@ module Locations (
 	gitAnnexRemotesDir,
 	gitAnnexAssistantDefaultDir,
 	isLinkToAnnex,
-	annexHashes,
+	HashLevels(..),
 	hashDirMixed,
 	hashDirLower,
 	preSanitizeKeyName,
@@ -65,16 +66,17 @@ module Locations (
 	prop_idempotent_fileKey
 ) where
 
-import Data.Bits
-import Data.Word
-import Data.Hash.MD5
 import Data.Char
+import Data.Default
 
 import Common
-import Types
+import Types.GitConfig
 import Types.Key
 import Types.UUID
+import Types.Difference
 import qualified Git
+import Git.FilePath
+import Annex.DirHashes
 
 {- Conventions:
  -
@@ -85,8 +87,8 @@ import qualified Git
  - Everything else should not end in a trailing path sepatator. 
  -
  - Only functions (with names starting with "git") that build a path
- - based on a git repository should return an absolute path.
- - Everything else should use relative paths.
+ - based on a git repository should return full path relative to the git
+ - repository. Everything else returns path segments.
  -}
 
 {- The directory git annex uses for local state, relative to the .git
@@ -100,13 +102,17 @@ objectDir :: FilePath
 objectDir = addTrailingPathSeparator $ annexDir </> "objects"
 
 {- Annexed file's possible locations relative to the .git directory.
- - There are two different possibilities, using different hashes. -}
-annexLocations :: Key -> [FilePath]
-annexLocations key = map (annexLocation key) annexHashes
-annexLocation :: Key -> Hasher -> FilePath
-annexLocation key hasher = objectDir </> keyPath key hasher
+ - There are two different possibilities, using different hashes.
+ -
+ - Also, some repositories have a Difference in hash directory depth.
+ -}
+annexLocations :: GitConfig -> Key -> [FilePath]
+annexLocations config key = map (annexLocation config key) dirHashes
 
-{- Annexed object's absolute location in a repository.
+annexLocation :: GitConfig -> Key -> (HashLevels -> Hasher) -> FilePath
+annexLocation config key hasher = objectDir </> keyPath key (hasher $ objectHashLevels config)
+
+{- Annexed object's location in a repository.
  -
  - When there are multiple possible locations, returns the one where the
  - file is actually present.
@@ -118,35 +124,40 @@ annexLocation key hasher = objectDir </> keyPath key hasher
  - the actual location of the file's content.
  -}
 gitAnnexLocation :: Key -> Git.Repo -> GitConfig -> IO FilePath
-gitAnnexLocation key r config = gitAnnexLocation' key r (annexCrippledFileSystem config)
-gitAnnexLocation' :: Key -> Git.Repo -> Bool -> IO FilePath
-gitAnnexLocation' key r crippled
+gitAnnexLocation key r config = gitAnnexLocation' key r config (annexCrippledFileSystem config)
+gitAnnexLocation' :: Key -> Git.Repo -> GitConfig -> Bool -> IO FilePath
+gitAnnexLocation' key r config crippled
 	{- Bare repositories default to hashDirLower for new
 	 - content, as it's more portable.
 	 -
 	 - Repositories on filesystems that are crippled also use
 	 - hashDirLower, since they do not use symlinks and it's
-	 - more portable. -}
-	| Git.repoIsLocalBare r || crippled =
-		check $ map inrepo $ annexLocations key
+	 - more portable.
+	 -
+	 - ObjectHashLower can also be set to force it.
+	 -}
+	| Git.repoIsLocalBare r 
+		|| crippled 
+		|| hasDifference ObjectHashLower (annexDifferences config) =
+			check $ map inrepo $ annexLocations config key
 	{- Non-bare repositories only use hashDirMixed, so
 	 - don't need to do any work to check if the file is
 	 - present. -}
-	| otherwise = return $ inrepo $ annexLocation key hashDirMixed
+	| otherwise = return $ inrepo $ annexLocation config key hashDirMixed
   where
 	inrepo d = Git.localGitDir r </> d
 	check locs@(l:_) = fromMaybe l <$> firstM doesFileExist locs
 	check [] = error "internal"
 
 {- Calculates a symlink to link a file to an annexed object. -}
-gitAnnexLink :: FilePath -> Key -> Git.Repo -> IO FilePath
-gitAnnexLink file key r = do
-	cwd <- getCurrentDirectory
-	let absfile = fromMaybe whoops $ absNormPathUnix cwd file
-	loc <- gitAnnexLocation' key r False
-	return $ relPathDirToFile (parentDir absfile) loc
+gitAnnexLink :: FilePath -> Key -> Git.Repo -> GitConfig -> IO FilePath
+gitAnnexLink file key r config = do
+	currdir <- getCurrentDirectory
+	let absfile = fromMaybe whoops $ absNormPathUnix currdir file
+	loc <- gitAnnexLocation' key r config False
+	toInternalGitPath <$> relPathDirToFile (parentDir absfile) loc
   where
-  	whoops = error $ "unable to normalize " ++ file
+	whoops = error $ "unable to normalize " ++ file
 
 {- File used to lock a key's content. -}
 gitAnnexContentLock :: Key -> Git.Repo -> GitConfig -> IO FilePath
@@ -257,6 +268,14 @@ gitAnnexJournalDir r = addTrailingPathSeparator $ gitAnnexDir r </> "journal"
 gitAnnexJournalLock :: Git.Repo -> FilePath
 gitAnnexJournalLock r = gitAnnexDir r </> "journal.lck"
 
+{- Lock file for the pre-commit hook. -}
+gitAnnexPreCommitLock :: Git.Repo -> FilePath
+gitAnnexPreCommitLock r = gitAnnexDir r </> "precommit.lck"
+
+{- Lock file for direct mode merge. -}
+gitAnnexMergeLock :: Git.Repo -> FilePath
+gitAnnexMergeLock r = gitAnnexDir r </> "merge.lck"
+
 {- .git/annex/index is used to stage changes to the git-annex branch -}
 gitAnnexIndex :: Git.Repo -> FilePath
 gitAnnexIndex r = gitAnnexDir r </> "index"
@@ -346,7 +365,7 @@ isLinkToAnnex s = (pathSeparator:objectDir) `isInfixOf` s
 preSanitizeKeyName :: String -> String
 preSanitizeKeyName = concatMap escape
   where
-  	escape c
+	escape c
 		| isAsciiUpper c || isAsciiLower c || isDigit c = [c]
 		| c `elem` ".-_ " = [c] -- common, assumed safe
 		| c `elem` "/%:" = [c] -- handled by keyFile
@@ -389,9 +408,9 @@ prop_idempotent_fileKey s
   where
 	k = stubKey { keyName = s, keyBackendName = "test" }
 
-{- A location to store a key on the filesystem. A directory hash is used,
- - to protect against filesystems that dislike having many items in a
- - single directory.
+{- A location to store a key on a special remote that uses a filesystem.
+ - A directory hash is used, to protect against filesystems that dislike
+ - having many items in a single directory.
  -
  - The file is put in a directory with the same name, this allows
  - write-protecting the directory to avoid accidental deletion of the file.
@@ -401,43 +420,11 @@ keyPath key hasher = hasher key </> f </> f
   where
 	f = keyFile key
 
-{- All possibile locations to store a key using different directory hashes. -}
-keyPaths :: Key -> [FilePath]
-keyPaths key = map (keyPath key) annexHashes
-
-{- Two different directory hashes may be used. The mixed case hash
- - came first, and is fine, except for the problem of case-strict
- - filesystems such as Linux VFAT (mounted with shortname=mixed),
- - which do not allow using a directory "XX" when "xx" already exists.
- - To support that, most repositories use the lower case hash for new data. -}
-type Hasher = Key -> FilePath
-annexHashes :: [Hasher]
-annexHashes = [hashDirLower, hashDirMixed]
-
-hashDirMixed :: Hasher
-hashDirMixed k = addTrailingPathSeparator $ take 2 dir </> drop 2 dir
-  where
-	dir = take 4 $ display_32bits_as_dir =<< [a,b,c,d]
-	ABCD (a,b,c,d) = md5 $ md5FilePath $ key2file k
-
-hashDirLower :: Hasher
-hashDirLower k = addTrailingPathSeparator $ take 3 dir </> drop 3 dir
-  where
-	dir = take 6 $ md5s $ md5FilePath $ key2file k
-
-{- modified version of display_32bits_as_hex from Data.Hash.MD5
- -   Copyright (C) 2001 Ian Lynagh 
- -   License: Either BSD or GPL
+{- All possibile locations to store a key in a special remote
+ - using different directory hashes.
+ -
+ - This is compatible with the annexLocations, for interoperability between
+ - special remotes and git-annex repos.
  -}
-display_32bits_as_dir :: Word32 -> String
-display_32bits_as_dir w = trim $ swap_pairs cs
-  where 
-	-- Need 32 characters to use. To avoid inaverdently making
-	-- a real word, use letters that appear less frequently.
-	chars = ['0'..'9'] ++ "zqjxkmvwgpfZQJXKMVWGPF"
-	cs = map (\x -> getc $ (shiftR w (6*x)) .&. 31) [0..7]
-	getc n = chars !! fromIntegral n
-	swap_pairs (x1:x2:xs) = x2:x1:swap_pairs xs
-	swap_pairs _ = []
-	-- Last 2 will always be 00, so omit.
-	trim = take 6
+keyPaths :: Key -> [FilePath]
+keyPaths key = map (\h -> keyPath key (h def)) dirHashes

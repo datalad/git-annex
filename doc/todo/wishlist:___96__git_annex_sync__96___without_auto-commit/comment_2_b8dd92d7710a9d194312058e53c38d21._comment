@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="zardoz"
+ ip="92.227.51.179"
+ subject="comment 2"
+ date="2014-05-13T20:27:38Z"
+ content="""
+I filed a bug today, which boils down to a related issue.
+
+http://git-annex.branchable.com/bugs/git_annex_list__47__whereis_and_uncommited_local_changes/
+"""]]

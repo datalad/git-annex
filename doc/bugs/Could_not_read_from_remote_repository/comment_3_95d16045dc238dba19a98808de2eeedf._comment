@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnvVfFLW4CTKs7UjdiLIsOn_cxj1Jnh64I"
+ nickname="Charl"
+ subject="Could it be gmail.com XMPP throttling?"
+ date="2014-03-23T19:26:08Z"
+ content="""
+I was seeing similar error messages, until I registered for a different XMPP account at jabber.de and started using that instead of my gmail.com account.
+
+My current suspicion is that it could be Google performing throttling on their XMPP service. See here: http://stackoverflow.com/questions/1843837/what-is-the-throttling-rate-that-gtalk-applies-to-xmpp-messages
+
+"""]]

@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-02-04T19:38:58Z"
+ content="""
+git-annex really doesn't care what filenames are used with in a view.
+It only needs to ensure that each file gets a unique filename. Which
+is why the directory is included in the filename, to avoid conflicts
+if 2 files with the same name appear in different directories.
+
+It would probably be better to make it avoid needing to include the
+directory in the filename unless there is such a conflict, rather than
+adding complexity configuring that.
+
+However, since views are currently built by streaming the contents of the
+branch to git update-index, git-annex can't just eg, examine the working
+tree to see if a conflicting file exists. It seems it would need to keep
+a map of the files it's added to the view branch so far, and check against
+the map. But that would make memory use scale with the number of files in
+the view, which I'd prefer to avoid..
+
+I'm going to move this from bugs to todo.
+"""]]

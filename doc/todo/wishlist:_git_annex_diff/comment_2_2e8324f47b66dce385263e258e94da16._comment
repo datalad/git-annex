@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="Bram"
+ ip="81.20.68.186"
+ subject="Diff of unlocked file"
+ date="2014-10-14T10:11:04Z"
+ content="""
+I wrote a little shell script that implements part of this request. It shows the diff between an unlocked file and its locked version (i.e. the current edits that have not yet been annexed).
+This only works in non-direct mode, and obviously with 'diffable' content only.
+
+Usage is simple, the only parameter it requires is the unlocked filename.
+
+    #!/bin/bash
+    
+    DIFF=\"diff\"
+    FILE=\"$1\"
+    KEY=$(git annex lookupkey \"$FILE\")
+    
+    GITPATH=\"$(git rev-parse --show-toplevel)/.git\"
+    ANNEXPATH=$GITPATH/annex/objects/$(git annex examinekey --format='${hashdirmixed}${key}/${key}' \"$KEY\")
+    
+    if [ -L \"$FILE\" ]; then
+      echo \"$FILE is not unlocked.\" > /dev/stderr
+    else
+      if [ -r \"$ANNEXPATH\" ]; then
+        $DIFF \"$ANNEXPATH\" \"$FILE\"
+      else
+        echo \"Cannot find $ANNEXPATH\" > /dev/stderr
+        exit 1
+      fi
+      exit 1
+    fi
+"""]]

@@ -13,6 +13,7 @@ import qualified Data.Map as Data.Map.Base
 import qualified Data.Foldable
 import qualified Data.Text
 import qualified Data.Text.Lazy.Builder
+import qualified Data.Text.Lazy.Builder as Data.Text.Internal.Builder
 import qualified Text.Shakespeare
 import qualified Text.Hamlet
 import qualified Text.Julius
@@ -29,6 +30,9 @@ import qualified Data.Text.Encoding
 import qualified Network.Wai
 import qualified Network.Wai as Network.Wai.Internal
 import qualified Yesod.Core.Types
+import qualified GHC.IO
+import qualified Data.ByteString.Unsafe
+import qualified Data.ByteString.Char8
 {- End EvilSplicer headers. -}
 
 

@@ -104,6 +104,18 @@ feed is "http://gdata.youtube.com/feeds/api/playlists/PL4F80C7D2DC8D9B6C"
 More details about youtube feeds at <http://googlesystem.blogspot.com/2008/01/youtube-feeds.html>
 -- `git-annex importfeed` should handle all of them.
 
+## bittorrent
+
+The [[bittorrent_special_remote|special_remotes/bittorrent]] lets git-annex
+also download the content of torrent files, and magnet links to torrents.
+
+You can simply pass the url to a torrent to `git annex addurl`
+the same as any other url.
+
+You have to have [aria2](http://aria2.sourceforge.net/) 
+and bittornado (or the original bittorrent) installed for this
+to work.
+
 ## podcasts
 
 This is done using `git annex importfeed`. See [[downloading podcasts]].

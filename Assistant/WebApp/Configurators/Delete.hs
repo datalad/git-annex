@@ -1,6 +1,6 @@
 {- git-annex assistant webapp repository deletion
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -36,16 +36,24 @@ notCurrentRepo uuid a = do
 		then redirect DeleteCurrentRepositoryR
 		else go =<< liftAnnex (Remote.remoteFromUUID uuid)
   where
-  	go Nothing = error "Unknown UUID"
+	go Nothing = error "Unknown UUID"
 	go (Just _) = a
 
+handleXMPPRemoval :: UUID -> Handler Html -> Handler Html
+handleXMPPRemoval uuid nonxmpp = do
+	remote <- fromMaybe (error "unknown remote")
+		<$> liftAnnex (Remote.remoteFromUUID uuid)
+	if Remote.isXMPPRemote remote
+		then deletionPage $ $(widgetFile "configurators/delete/xmpp")
+		else nonxmpp
+
 getDisableRepositoryR :: UUID -> Handler Html
-getDisableRepositoryR uuid = notCurrentRepo uuid $ do
+getDisableRepositoryR uuid = notCurrentRepo uuid $ handleXMPPRemoval uuid $ do
 	void $ liftAssistant $ disableRemote uuid
 	redirect DashboardR
 
 getDeleteRepositoryR :: UUID -> Handler Html
-getDeleteRepositoryR uuid = notCurrentRepo uuid $
+getDeleteRepositoryR uuid = notCurrentRepo uuid $ handleXMPPRemoval uuid $ do
 	deletionPage $ do
 		reponame <- liftAnnex $ Remote.prettyUUID uuid
 		$(widgetFile "configurators/delete/start")
@@ -81,8 +89,8 @@ deleteCurrentRepository = dangerPage $ do
 	havegitremotes <- haveremotes syncGitRemotes
 	havedataremotes <- haveremotes syncDataRemotes
 	((result, form), enctype) <- liftH $
-		runFormPostNoToken $ renderBootstrap $ sanityVerifierAForm $
-			SanityVerifier magicphrase
+		runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $
+			sanityVerifierAForm $ SanityVerifier magicphrase
 	case result of
 		FormSuccess _ -> liftH $ do
 			dir <- liftAnnex $ fromRepo Git.repoPath
@@ -114,7 +122,7 @@ data SanityVerifier = SanityVerifier T.Text
 
 sanityVerifierAForm :: SanityVerifier -> MkAForm SanityVerifier
 sanityVerifierAForm template = SanityVerifier
-	<$> areq checksanity "Confirm deletion?" Nothing
+	<$> areq checksanity (bfs "Confirm deletion?") Nothing
   where
 	checksanity = checkBool (\input -> SanityVerifier input == template)
 		insane textField

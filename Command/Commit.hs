@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,8 +12,8 @@ import Command
 import qualified Annex.Branch
 import qualified Git
 
-def :: [Command]
-def = [command "commit" paramNothing seek
+cmd :: [Command]
+cmd = [command "commit" paramNothing seek
 	SectionPlumbing "commits any staged changes to the git-annex branch"]
 
 seek :: CommandSeek

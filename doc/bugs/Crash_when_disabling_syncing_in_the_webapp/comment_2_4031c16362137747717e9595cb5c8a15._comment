@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk9nck8WX8-ADF3Fdh5vFo4Qrw1I_bJcR8"
+ nickname="Jon Ander"
+ subject="comment 2"
+ date="2014-04-01T08:04:51Z"
+ content="""
+Yes, this is Debian Linux and I've been able to reproduce it in i386 and amd64. git-annex is installed from the Debian repositories.
+
+I'll try to continue testing the issue and will report back if I can find any useful info.
+"""]]

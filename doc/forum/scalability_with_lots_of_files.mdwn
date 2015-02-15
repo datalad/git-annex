@@ -1,0 +1,43 @@
+What is git-annex's [[scalability]] with large (10k+) number of files and a few (~10) repositories?
+
+I have had difficult times maintaining a music archive of around 20k files, spread around 17 repositories.
+
+`ncdu` tells me, of the actual files in the direct repository:
+
+<pre>
+$ ncdu --exclude .git
+ Total disk usage: 109,3GiB  Apparent size: 109,3GiB  Items: 23771
+</pre>
+
+Now looking at the git-annex metadata:
+
+<pre>
+$ time git clone -b git-annex /srv/mp3
+Cloning into 'mp3'...
+done.
+Checking out files: 100% (31207/31207), done.
+0.69user 1.72system 0:04.65elapsed 51%CPU (0avgtext+0avgdata 47732maxresident)k
+40inputs+489552outputs (1major+2906minor)pagefaults 0swaps
+$ git branch
+  annex/direct/master
+* git-annex
+  master
+$ wc -l uuid.log
+7 uuid.log
+$ find -type f | wc
+  31429   62214 3013920
+$ du -sh .
+361M    .
+$ du -sch *  | tail -1
+243M    total
+</pre>
+
+So basically, it looks like the git-annex location tracking takes up around 243M, 361M if we include git's history of it (I assume). This means around 8KiB of storage per file, and 4KiB/file for history (git is doing a pretty good job here). (8KiB kind of makes sense here: one file for the tracking log (4KiB) and another directory to hold it (another 4KiB)...)
+
+Is that about right? Are there ways to compress that somehow? Could I at least drop the *history* of that from git without too much harm - that would already save 120MiB...
+
+That repository is around 18 months old.
+
+(It's interesting to notice the limitation of the "one file per record" storage format here: since git-annex has so many little files, and all of those take at least $blocksize (it seems like it's 4KB here), it takes up space pretty quickly. Another good point for git here: packing files together saves a *lot* of space! Could files be packed *before* being stored in the git-annex branch? or is that totally stupid. :)
+
+Thanks! --[[anarcat]]

@@ -1,0 +1,19 @@
+I have a Desktop computer at home and another at work, and work from home every other day.  I'd like to use git-annex assistant to keep my git checkouts in sync across both of them.  I may be a bit unusual in that I don't always commit before going home.
+
+I also would like to have anything in the git stash synchronized between the two, the .git/config file, etc.
+
+So to be clear, I have a file structure like the following:
+
+    ./annex/.git
+    ./annex/project/README.md
+    ./annex/project/.git
+    ./annex/project2/README.md
+    ./annex/project2/.git
+
+In my testing it seems that the "project/.git" folders aren't synchronized between my two desktops, even though the rest of the files are.  A workaround is to rename "project/.git" to something else, like "project/.gitfoo", and then use --git-dir when issuing my git commands.
+
+Is this something that can be worked around?  I apologize if this is covered elsewhere, as I wasn't thinking of the right terms to search for.
+
+I've looked through the code and can't find anything obvious.  I imagine this is because git hard-codes all ".git" subdirectories as something it should ignore.
+
+Is there a better workaround?  I realize this is probably a niche use case.

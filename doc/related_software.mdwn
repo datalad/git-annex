@@ -11,4 +11,11 @@ designed to interoperate with it.
   utility, with a `-A` switch that enables git-annex support.
 * Emacs Org mode can auto-commit attached files to git-annex.
 * [git annex darktable integration](https://github.com/xxv/darktable-git-annex)
-* [Nautilus file manager ingegration](https://gist.github.com/ion1/9660286)
+* [Magit](http://github.com/magit/magit), an Emacs mode for Git, has
+  [an extension](https://github.com/magit/magit-annex) for git annex.
+* [DataLad](http://datalad.org/) uses git-annex to provide access to
+  scientific data available from various sources.
+* The [Baobáxia](https://github.com/RedeMocambos/baobaxia) project
+  built by the Brazilian [Mocambos network](http://www.mocambos.net/)
+  is [using git-annex to connect isolated communities](http://www.modspil.dk/itpolitik/baob_xia.html).
+  Repositories sync over satellite internet and/or sneakernet.

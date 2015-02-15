@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmcS2gG2R_AIiBBOsWuxGf1yEn_l797jjU"
+ nickname="Mesar"
+ subject="comment 1"
+ date="2014-07-20T00:50:15Z"
+ content="""
+
+When you did:
+
+    marshal@home[~/annex]> git-annex copy --auto --to usbdrive
+
+this copies the file content (see .git/annex/objects/*), and updates the metadata in both repos.
+The reason why you are not seeing the files on the usb is because the metadata has not been merged into your master branch.
+This is verified by the output of:
+
+    marshal@home[/media/marshal/Sony USB/annex]> git-annex sync laptop
+
+To verify that you indeed do have the files and their content, don't do the above sync, but instead do:
+
+    marshal@home[/media/marshal/Sony USB/annex]> git annex merge
+
+the local metadata in the sync/git-annex branch will be merged in, and the local directory will be populated with the new symlinks to the content which you already have in the /media/marshal/Sony USB/annex/.git/annex/objects/*
+"""]]

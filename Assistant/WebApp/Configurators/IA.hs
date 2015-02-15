@@ -1,6 +1,6 @@
 {- git-annex assistant webapp configurators for Internet Archive
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -83,8 +83,8 @@ iaInputAForm :: Maybe CredPair -> MkAForm IAInput
 iaInputAForm defcreds = IAInput
 	<$> accessKeyIDFieldWithHelp (T.pack . fst <$> defcreds)
 	<*> AWS.secretAccessKeyField (T.pack . snd <$> defcreds)
-	<*> areq (selectFieldList mediatypes) "Media Type" (Just MediaOmitted)
-	<*> areq (textField `withExpandableNote` ("Help", itemNameHelp)) "Item Name" Nothing
+	<*> areq (selectFieldList mediatypes) (bfs "Media Type") (Just MediaOmitted)
+	<*> areq (textField `withExpandableNote` ("Help", itemNameHelp)) (bfs "Item Name") Nothing
   where
 	mediatypes :: [(Text, MediaType)]
 	mediatypes = map (\t -> (T.pack $ showMediaType t, t)) [minBound..]
@@ -101,13 +101,13 @@ itemNameHelp = [whamlet|
 
 iaCredsAForm :: Maybe CredPair -> MkAForm AWS.AWSCreds
 iaCredsAForm defcreds = AWS.AWSCreds
-        <$> accessKeyIDFieldWithHelp (T.pack . fst <$> defcreds)
-        <*> AWS.secretAccessKeyField (T.pack . snd <$> defcreds)
+	<$> accessKeyIDFieldWithHelp (T.pack . fst <$> defcreds)
+	<*> AWS.secretAccessKeyField (T.pack . snd <$> defcreds)
 
 #ifdef WITH_S3
 previouslyUsedIACreds :: Annex (Maybe CredPair)
 previouslyUsedIACreds = previouslyUsedCredPair AWS.creds S3.remote $
-	AWS.isIARemoteConfig . Remote.config
+	S3.configIA . Remote.config
 #endif
 
 accessKeyIDFieldWithHelp :: Maybe Text -> MkAForm Text
@@ -126,7 +126,7 @@ postAddIAR :: Handler Html
 postAddIAR = iaConfigurator $ do
 	defcreds <- liftAnnex previouslyUsedIACreds
 	((result, form), enctype) <- liftH $
-		runFormPostNoToken $ renderBootstrap $ iaInputAForm defcreds
+		runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $ iaInputAForm defcreds
 	case result of
 		FormSuccess input -> liftH $ do
 			let name = escapeBucket $ T.unpack $ itemName input
@@ -165,7 +165,7 @@ enableIARemote :: UUID -> Widget
 enableIARemote uuid = do
 	defcreds <- liftAnnex previouslyUsedIACreds
 	((result, form), enctype) <- liftH $
-		runFormPostNoToken $ renderBootstrap $ iaCredsAForm defcreds
+		runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $ iaCredsAForm defcreds
 	case result of
 		FormSuccess creds -> liftH $ do
 			m <- liftAnnex readRemoteLog
@@ -191,7 +191,7 @@ escapeHeader = escapeURIString (\c -> isUnescapedInURI c && c /= ' ')
 getRepoInfo :: RemoteConfig -> Widget
 getRepoInfo c = do
 	uo <- liftAnnex Url.getUrlOptions
-	exists <- liftIO $ catchDefaultIO False $ fst <$> Url.exists url uo
+	exists <- liftIO $ catchDefaultIO False $ Url.exists url uo
 	[whamlet|
 <a href="#{url}">
   Internet Archive item
@@ -201,7 +201,7 @@ $if (not exists)
     have been uploaded, and the Internet Archive has processed them.
 |]
   where
-  	bucket = fromMaybe "" $ M.lookup "bucket" c
+	bucket = fromMaybe "" $ M.lookup "bucket" c
 #ifdef WITH_S3
 	url = S3.iaItemUrl bucket
 #else

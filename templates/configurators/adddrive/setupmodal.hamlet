@@ -1,7 +1,9 @@
 <div .modal .fade #setupmodal>
-  <div .modal-header>
-    <h3>
-      Setting up repository on removable drive.
-  <div .modal-body>
-    <p>
-      This may take a few minutes; do not remove the drive.
+  <div .modal-dialog>
+    <div .modal-content>
+      <div .modal-header>
+        <h3>
+          Setting up repository on removable drive.
+      <div .modal-body>
+        <p>
+          This may take a few minutes; do not remove the drive.

@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,8 +12,9 @@ import Command
 import qualified Annex.Queue
 import qualified Annex
 	
-def :: [Command]
-def = [notDirect $ command "lock" paramPaths seek SectionCommon
+cmd :: [Command]
+cmd = [notDirect $ withOptions annexedMatchingOptions $
+	command "lock" paramPaths seek SectionCommon
 	"undo unlock command"]
 
 seek :: CommandSeek

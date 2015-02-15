@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -18,17 +18,18 @@ import Utility.Touch
 #endif
 #endif
 
-def :: [Command]
-def = [notDirect $ noCommit $ command "fix" paramPaths seek
-	SectionMaintenance "fix up symlinks to point to annexed content"]
+cmd :: [Command]
+cmd = [notDirect $ noCommit $ withOptions annexedMatchingOptions $
+	command "fix" paramPaths seek
+		SectionMaintenance "fix up symlinks to point to annexed content"]
 
 seek :: CommandSeek
 seek = withFilesInGit $ whenAnnexed start
 
 {- Fixes the symlink to an annexed file. -}
-start :: FilePath -> (Key, Backend) -> CommandStart
-start file (key, _) = do
-	link <- inRepo $ gitAnnexLink file key
+start :: FilePath -> Key -> CommandStart
+start file key = do
+	link <- calcRepo $ gitAnnexLink file key
 	stopUnless ((/=) (Just link) <$> liftIO (catchMaybeIO $ readSymbolicLink file)) $ do
 		showStart "fix" file
 		next $ perform file link

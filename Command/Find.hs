@@ -1,12 +1,13 @@
 {- git-annex command
  -
- - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Command.Find where
 
+import Data.Default
 import qualified Data.Map as M
 
 import Common.Annex
@@ -18,9 +19,12 @@ import qualified Utility.Format
 import Utility.DataUnits
 import Types.Key
 
-def :: [Command]
-def = [noCommit $ noMessages $ withOptions [formatOption, print0Option, jsonOption] $
+cmd :: [Command]
+cmd = [withOptions annexedMatchingOptions $ mkCommand $
 	command "find" paramPaths seek SectionQuery "lists available files"]
+
+mkCommand :: Command -> Command
+mkCommand = noCommit . noMessages . withOptions [formatOption, print0Option, jsonOption]
 
 formatOption :: Option
 formatOption = fieldOption [] "format" paramFormat "control format of output"
@@ -39,8 +43,8 @@ seek ps = do
 	format <- getFormat
 	withFilesInGit (whenAnnexed $ start format) ps
 
-start :: Maybe Utility.Format.Format -> FilePath -> (Key, Backend) -> CommandStart
-start format file (key, _) = do
+start :: Maybe Utility.Format.Format -> FilePath -> Key -> CommandStart
+start format file key = do
 	-- only files inAnnex are shown, unless the user has requested
 	-- others via a limit
 	whenM (limited <||> inAnnex key) $
@@ -63,8 +67,8 @@ keyVars key =
 	, ("bytesize", size show)
 	, ("humansize", size $ roughSize storageUnits True)
 	, ("keyname", keyName key)
-	, ("hashdirlower", hashDirLower key)
-	, ("hashdirmixed", hashDirMixed key)
+	, ("hashdirlower", hashDirLower def key)
+	, ("hashdirmixed", hashDirMixed def key)
 	, ("mtime", whenavail show $ keyMtime key)
 	]
   where

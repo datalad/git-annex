@@ -1,8 +1,8 @@
 {- QuickCheck with additional instances
  -
- - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}

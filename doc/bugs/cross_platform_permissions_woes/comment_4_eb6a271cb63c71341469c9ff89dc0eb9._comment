@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawmCzVCPjgg_Un_114P8iiSwExms0G2csCA"
- nickname="Michele"
- subject="solved"
- date="2013-10-18T21:00:38Z"
- content="""
-installing very recent version on linux solved the problem !!! indeed a bug, but an old one! (quite difficult to get an updated version with cabal on fc19 and so forth, i would add a couple suggestion to share in the fedora install page)
-thank you 
-"""]]

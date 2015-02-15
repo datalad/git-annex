@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://schnouki.net/"
+ nickname="Schnouki"
+ subject="comment 3"
+ date="2014-04-22T14:59:47Z"
+ content="""
+Not running the assistant (freshly rebooted NAS, checked with `ps ax | grep annex`), not running any other git command. Still happened, until a few minutes ago: I found the cause for this issue... and it's quite frustrating.
+
+Every now and then, I interrupt a running `git annex sync` with Ctrl+C. And sometimes this causes my NAS repository to end up with `bare = true` in its `.git/config`. When this happens, I just remove the offending line and call it a day. Now I just added a `bare = false` line to that file, and that solved the problem. It seems that somehow, if you don't explicitely tell git that your repo is not bare, it considers it as a bare repository -- and the final push from `git annex sync` actually updates the `master` branch without updating the work tree.
+
+This is probably not a bug in git-annex, but rather a weird behaviour in git -- and for sure something I didn't expect to happend. But anyway it works now :) Leaving this here in case it helps other people.
+
+Joey, thanks again for your time and your help.
+"""]]

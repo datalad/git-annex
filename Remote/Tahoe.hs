@@ -13,7 +13,7 @@
  -
  - Tahoe has its own encryption, so git-annex's encryption is not used.
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -64,27 +64,31 @@ gen r u c gc = do
 	hdl <- liftIO $ TahoeHandle
 		<$> maybe (defaultTahoeConfigDir u) return (remoteAnnexTahoe gc)
 		<*> newEmptyTMVarIO
-	return $ Just $ Remote {
-		uuid = u,
-		cost = cst,
-		name = Git.repoDescribe r,
-		storeKey = store u hdl,
-		retrieveKeyFile = retrieve u hdl,
-		retrieveKeyFileCheap = \_ _ -> return False,
-		removeKey = remove,
-		hasKey = checkPresent u hdl,
-		hasKeyCheap = False,
-		whereisKey = Nothing,
-		remoteFsck = Nothing,
-		repairRepo = Nothing,
-		config = c,
-		repo = r,
-		gitconfig = gc,
-		localpath = Nothing,
-		readonly = False,
-		availability = GloballyAvailable,
-		remotetype = remote
-	}
+	return $ Just $ Remote
+		{ uuid = u
+		, cost = cst
+		, name = Git.repoDescribe r
+		, storeKey = store u hdl
+		, retrieveKeyFile = retrieve u hdl
+		, retrieveKeyFileCheap = \_ _ -> return False
+		, removeKey = remove
+		, checkPresent = checkKey u hdl
+		, checkPresentCheap = False
+		, whereisKey = Nothing
+		, remoteFsck = Nothing
+		, repairRepo = Nothing
+		, config = c
+		, repo = r
+		, gitconfig = gc
+		, localpath = Nothing
+		, readonly = False
+		, availability = GloballyAvailable
+		, remotetype = remote
+		, mkUnavailable = return Nothing
+		, getInfo = return []
+		, claimUrl = Nothing
+		, checkUrl = Nothing
+		}
 
 tahoeSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
 tahoeSetup mu _ c = do
@@ -123,14 +127,16 @@ remove _k = do
 	warning "content cannot be removed from tahoe remote"
 	return False
 
-checkPresent :: UUID -> TahoeHandle -> Key -> Annex (Either String Bool)
-checkPresent u hdl k = go =<< getCapability u k
+checkKey :: UUID -> TahoeHandle -> Key -> Annex Bool
+checkKey u hdl k = go =<< getCapability u k
   where
-	go Nothing = return (Right False)
-	go (Just cap) = liftIO $ parseCheck <$> readTahoe hdl "check"
-		[ Param "--raw"
-		, Param cap
-		]
+	go Nothing = return False
+	go (Just cap) = liftIO $ do
+		v <- parseCheck <$> readTahoe hdl "check"
+			[ Param "--raw"
+			, Param cap
+			]
+		either error return v
 
 defaultTahoeConfigDir :: UUID -> IO TahoeConfigDir
 defaultTahoeConfigDir u = do
@@ -164,7 +170,7 @@ writeSharedConvergenceSecret configdir scs =
 getSharedConvergenceSecret :: TahoeConfigDir -> IO SharedConvergenceSecret
 getSharedConvergenceSecret configdir = go (60 :: Int)
   where
-  	f = convergenceFile configdir
+	f = convergenceFile configdir
 	go n
 		| n == 0 = error $ "tahoe did not write " ++ f ++ " after 1 minute. Perhaps the daemon failed to start?"
 		| otherwise = do
@@ -187,7 +193,7 @@ startTahoeDaemon configdir = void $ boolTahoe configdir "start" []
 withTahoeConfigDir :: TahoeHandle -> (TahoeConfigDir -> IO a) -> IO a
 withTahoeConfigDir (TahoeHandle configdir v) a = go =<< atomically needsstart
   where
-  	go True = do
+	go True = do
 		startTahoeDaemon configdir
 		a configdir
 	go False = a configdir
@@ -216,7 +222,7 @@ readTahoe hdl command params = withTahoeConfigDir hdl $ \configdir ->
 
 tahoeParams :: TahoeConfigDir -> String -> [CommandParam] -> [CommandParam]
 tahoeParams configdir command params = 
-	Param command : Param "-d" : File configdir : params
+	Param "-d" : File configdir : Param command : params
 
 storeCapability :: UUID -> Key -> Capability -> Annex ()
 storeCapability u k cap = setRemoteState u k cap

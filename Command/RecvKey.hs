@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -20,26 +20,23 @@ import qualified Types.Key
 import qualified Types.Backend
 import qualified Backend
 
-def :: [Command]
-def = [noCommit $ command "recvkey" paramKey seek
+cmd :: [Command]
+cmd = [noCommit $ command "recvkey" paramKey seek
 	SectionPlumbing "runs rsync in server mode to receive content"]
 
 seek :: CommandSeek
 seek = withKeys start
 
 start :: Key -> CommandStart
-start key = ifM (inAnnex key)
-	( error "key is already present in annex"
-	, fieldTransfer Download key $ \_p ->
-		ifM (getViaTmp key go)
-			( do
-				-- forcibly quit after receiving one key,
-				-- and shutdown cleanly
-				_ <- shutdown True
-				return True
-			, return False
-			)
-	)
+start key = fieldTransfer Download key $ \_p ->
+	ifM (getViaTmp key go)
+		( do
+			-- forcibly quit after receiving one key,
+			-- and shutdown cleanly
+			_ <- shutdown True
+			return True
+		, return False
+		)
   where
 	go tmp = do
 		opts <- filterRsyncSafeOptions . maybe [] words
@@ -65,8 +62,7 @@ start key = ifM (inAnnex key)
 		oksize <- case Types.Key.keySize key of
 		        Nothing -> return True
 		        Just size -> do
-				size' <- fromIntegral . fileSize
-       	        	        	<$> liftIO (getFileStatus tmp)
+				size' <- liftIO $ getFileSize tmp
 				return $ size == size'
 		if oksize
 			then case Backend.maybeLookupBackendName (Types.Key.keyBackendName key) of
@@ -79,7 +75,7 @@ start key = ifM (inAnnex key)
 				warning "recvkey: received key with wrong size; discarding"
 				return False
 	  where
-	  	runfsck check = ifM (check key tmp)
+		runfsck check = ifM (check key tmp)
 			( return True
 			, do
 				warning "recvkey: received key from direct mode repository seems to have changed as it was transferred; discarding"

@@ -1,0 +1,54 @@
+Today I put together a lot of things I've been thinking about:
+
+* There's some evidence that git-annex needs tuning to handle some unusual
+  repositories. In particular very big repositories might benefit from
+  different object hashing.
+* It's really hard to handle [[upgrades]] that change the fundamentals of
+  how git-annex repositories work. Such an upgrade would need every
+  git-annex user to upgrade their repository, and would be very painful.
+  It's hard to imagine a change that is worth that amount of pain.
+* There are other changes some would like to see (like lower-case object
+  hash directory names) that are certianly not enough to warrant a flag
+  day repo format upgrade.
+* It would be nice to let people who want to have some flexability to play
+  around with changes, in their own repos, as long as they don't a)
+  make git-annex a lot more complicated, or b) negatively impact others.
+  (Without having to fork git-annex.)
+
+This is discussed in more depth in [[design/v6]].
+
+The solution, which I've built today, is support for
+[[tuning]] settings, when a new repository is first created. The resulting
+repository will be different in some significant way from a default
+git-annex repository, but git-annex will support it just fine. 
+
+The main limitations are:
+
+* You can't change the tuning of an existing repository
+  (unless a tool gets written to transition it).
+* You absolutely don't want to merge repo B, which has been tuned in
+  nonstandard ways, into repo A which has not. Or A into B. (Unless you like
+  watching slow motion car crashes.)
+
+I built all the infrastructure for this today. Basically, the git-annex
+branch gets a record of all tunings that have been applied, and they're
+automatically propigated to new clones of a repository.
+
+And I implemented the first tunable setting:
+
+	git -c annex.tune.objecthashlower=true annex init
+
+This is definitely an experimental feature for now.
+`git-annex merge` and similar commands will detect attempts to merge
+between incompatably tuned repositories, and error out. But, there are a
+lot of ways to shoot yourself in the foot if you use this feature:
+
+* Nothing stops `git merge` from merging two incompatable repositories.
+* Nothing stops any version of git-annex older from today from merging
+  either.
+
+Now that the groundwork is laid, I can pretty easily, and inexpensively,
+add more tunable settings. The next two I plan to add are already
+documented, `annex.tune.objecthashdirectories` and 
+`annex.tune.branchhashdirectories`. Most new tunables should take about 4
+lines of code to add to git-annex.

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.55"
+ subject="comment 3"
+ date="2014-07-04T20:57:54Z"
+ content="""
+Yall need to tell me your git-annex versions. [[devblog/day_183__rubbing_sticks_together]] fixed a horrible slowdown that indeed causes git-annex on windows to unnecessarily look at lots of files.
+
+Also, is this using the git-annex assistant, or using git-annex at the command line that's being slow?
+
+As to using symlinks on windows, cygwin's build of git is able to handle them somehow. I have not tried to get it working with git-annex, but it seems at least possible that indirect mode could be accomplished that way.
+"""]]

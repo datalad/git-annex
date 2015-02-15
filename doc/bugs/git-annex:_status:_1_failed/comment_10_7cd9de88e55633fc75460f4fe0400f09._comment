@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="RaspberryPie"
- ip="204.8.156.142"
- subject="comment 10"
- date="2013-10-15T18:49:26Z"
- content="""
-`git annex status` complains about `.git/annex/tmp/problematic_file--`. That file doesn't exist, but `.git/annex/tmp/problematic_file-` (with one dash) does. And the file itself (no dashes) does exist in a subdir of the annex.  
-"""]]

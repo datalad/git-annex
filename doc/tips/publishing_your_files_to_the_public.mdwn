@@ -1,0 +1,55 @@
+# Creating a special S3 remote to hold files shareable by URL
+
+(In this example, I'll assume you'll be creating a bucket in S3 named **public-annex** and a special remote in git-annex, which will store its files in the previous bucket, named **public-s3**, but change these names if you are going to do the thing for real)
+
+First, in the AWS dashboard, go to (or create) the bucket you will use at S3 and add a public get policy to it:
+
+    {
+      "Version": "2008-10-17",
+      "Statement": [
+        {
+          "Sid": "AllowPublicRead",
+          "Effect": "Allow",
+          "Principal": {
+            "AWS": "*"
+          },
+          "Action": "s3:GetObject",
+          "Resource": "arn:aws:s3:::public-annex/*"
+        }
+      ]
+    }
+
+Then set up your special [S3](http://git-annex.branchable.com/special_remotes/S3/) remote with (at least) these options:
+
+    git annex initremote public-s3 type=s3 encryption=none bucket=public-annex chunk=0
+
+This way git-annex will upload the files to this repo, (when you call `git annex copy [FILES...] --to public-s3`) without encrypting them and without chunking them, and, because of the policy of the bucket, they will be accessible by anyone with the link.
+
+Following the example, the files will be accessible at `http://public-annex.s3.amazonaws.com/KEY` where `KEY` is the file key created by git-annex and which you can discover running
+
+    git annex lookupkey FILEPATH
+
+This way you can share a link to each file you have at your S3 remote.
+
+___________________
+
+## Sharing all links in a folder
+
+To share all the links in a given folder, for example, you can go to that folder and run (this is an example with the _fish_ shell, but I'm sure you can do the same in _bash_, I just don't know exactly):
+
+    for filename in (ls)
+        echo $filename": https://public-annex.s3.amazonaws.com/"(git annex lookupkey $filename)
+    end
+
+## Sharing all links matching certain metadata
+
+The same applies to all the filters you can do with git-annex.
+
+For example, let's share links to all the files whose _author_'s name starts with "Mario" and are, in fact, stored at your public-s3 remote.
+However, instead of just a list of links we will output a markdown-formatted list of the filenames linked to their S3 urls:
+
+    for filename in (git annex find --metadata "author=Mario*" --and --in public-s3)
+       echo "* ["$filename"](https://public-annex.s3.amazonaws.com/"(git annex lookupkey $filename)")"
+    end
+
+Very useful.

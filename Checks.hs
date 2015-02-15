@@ -3,7 +3,7 @@
  - Common sanity checks for commands, and an interface to selectively
  - remove them, or add others.
  - 
- - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -35,7 +35,7 @@ noDaemonRunning :: Command -> Command
 noDaemonRunning = addCheck $ whenM (isJust <$> daemonpid) $
 	error "You cannot run this command while git-annex watch or git-annex assistant is running."
   where
-  	daemonpid = liftIO . checkDaemon =<< fromRepo gitAnnexPidFile
+	daemonpid = liftIO . checkDaemon =<< fromRepo gitAnnexPidFile
 
 dontCheck :: CommandCheck -> Command -> Command
 dontCheck check cmd = mutateCheck cmd $ \c -> filter (/= check) c

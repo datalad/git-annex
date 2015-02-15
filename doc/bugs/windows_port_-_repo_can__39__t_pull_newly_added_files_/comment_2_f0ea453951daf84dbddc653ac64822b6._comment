@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawmhfodZquCI_EEl-f3h7HkROTszlsQL6yA"
- nickname="Joe"
- subject="comment 2"
- date="2013-06-15T19:39:09Z"
- content="""
-joey, Thank you for the reply. I have read that and also read about the direct mode guard. I only used git merge because I was stuck and didn't know what else to do. I assume the proper way to refresh my backup repo is to git annex sync. That's what's failing with the non-fast-forward error. I don't know what to do from there. Thank you for any help.
-"""]]

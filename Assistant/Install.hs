@@ -1,6 +1,6 @@
 {- Assistant installation
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -22,6 +22,9 @@ import Utility.SshConfig
 import Utility.OSX
 #else
 import Utility.FreeDesktop
+#ifdef linux_HOST_OS
+import Utility.UserInfo
+#endif
 import Assistant.Install.Menu
 #endif
 
@@ -30,16 +33,19 @@ standaloneAppBase = getEnv "GIT_ANNEX_APP_BASE"
 
 {- The standalone app does not have an installation process.
  - So when it's run, it needs to set up autostarting of the assistant
- - daemon, as well as writing the programFile, and putting a
- - git-annex-shell wrapper into ~/.ssh
+ - daemon, as well as writing the programFile, and putting the
+ - git-annex-shell and git-annex-wrapper wrapper scripts into ~/.ssh
  -
  - Note that this is done every time it's started, so if the user moves
  - it around, the paths this sets up won't break.
+ -
+ - File manager hook script installation is done even for
+ - packaged apps, since it has to go into the user's home directory.
  -}
 ensureInstalled :: IO ()
 ensureInstalled = go =<< standaloneAppBase
   where
-	go Nothing = noop
+	go Nothing = installFileManagerHooks "git-annex"
 	go (Just base) = do
 		let program = base </> "git-annex"
 		programfile <- programFile
@@ -56,27 +62,98 @@ ensureInstalled = go =<< standaloneAppBase
 #endif
 		installAutoStart program autostartfile
 
-		{- This shim is only updated if it doesn't
-		 - already exist with the right content. -}
 		sshdir <- sshDir
-		let shim = sshdir </> "git-annex-shell"
-		let runshell var = "exec " ++ base </> "runshell" ++
-			" git-annex-shell -c \"" ++ var ++ "\""
-		let content = unlines
+		let runshell var = "exec " ++ base </> "runshell " ++ var
+		let rungitannexshell var = runshell $ "git-annex-shell -c \"" ++ var ++ "\""
+
+		installWrapper (sshdir </> "git-annex-shell") $ unlines
 			[ shebang_local
 			, "set -e"
 			, "if [ \"x$SSH_ORIGINAL_COMMAND\" != \"x\" ]; then"
-			,   runshell "$SSH_ORIGINAL_COMMAND"
+			,   rungitannexshell "$SSH_ORIGINAL_COMMAND"
 			, "else"
-			,   runshell "$@"
+			,   rungitannexshell "$@"
 			, "fi"
 			]
+		installWrapper (sshdir </> "git-annex-wrapper") $ unlines
+			[ shebang_local
+			, "set -e"
+			, runshell "\"$@\""
+			]
 
-		curr <- catchDefaultIO "" $ readFileStrict shim
-		when (curr /= content) $ do
-			createDirectoryIfMissing True (parentDir shim)
-			viaTmp writeFile shim content
-			modifyFileMode shim $ addModes [ownerExecuteMode]
+		installFileManagerHooks program
+
+installWrapper :: FilePath -> String -> IO ()
+installWrapper file content = do
+	curr <- catchDefaultIO "" $ readFileStrict file
+	when (curr /= content) $ do
+		createDirectoryIfMissing True (parentDir file)
+		viaTmp writeFile file content
+		modifyFileMode file $ addModes [ownerExecuteMode]
+
+installFileManagerHooks :: FilePath -> IO ()
+#ifdef linux_HOST_OS
+installFileManagerHooks program = do
+	let actions = ["get", "drop", "undo"]
+
+	-- Gnome
+	nautilusScriptdir <- (\d -> d </> "nautilus" </> "scripts") <$> userDataDir
+	createDirectoryIfMissing True nautilusScriptdir
+	forM_ actions $
+		genNautilusScript nautilusScriptdir
+
+	-- KDE
+	home <- myHomeDir
+	let kdeServiceMenusdir = home </> ".kde" </> "share" </> "kde4" </> "services" </> "ServiceMenus"
+	createDirectoryIfMissing True kdeServiceMenusdir
+	writeFile (kdeServiceMenusdir </> "git-annex.desktop")
+		(kdeDesktopFile actions)
+  where
+	genNautilusScript scriptdir action =
+		installscript (scriptdir </> scriptname action) $ unlines
+			[ shebang_local
+			, autoaddedcomment
+			, "exec " ++ program ++ " " ++ action ++ " --notify-start --notify-finish -- \"$@\""
+			]
+	scriptname action = "git-annex " ++ action
+	installscript f c = whenM (safetoinstallscript f) $ do
+		writeFile f c
+		modifyFileMode f $ addModes [ownerExecuteMode]
+	safetoinstallscript f = catchDefaultIO True $
+		elem autoaddedcomment . lines <$> readFileStrict f
+	autoaddedcomment = "# " ++ autoaddedmsg ++ " (To disable, chmod 600 this file.)"
+	autoaddedmsg = "Automatically added by git-annex, do not edit."
+
+	kdeDesktopFile actions = unlines $ concat $
+		kdeDesktopHeader actions : map kdeDesktopAction actions
+	kdeDesktopHeader actions =
+		[ "# " ++ autoaddedmsg
+		, "[Desktop Entry]"
+		, "Type=Service"
+		, "ServiceTypes=all/allfiles"
+		, "MimeType=all/all;"
+		, "Actions=" ++ intercalate ";" (map kdeDesktopSection actions)
+		, "X-KDE-Priority=TopLevel"
+		, "X-KDE-Submenu=Git-Annex"
+		, "X-KDE-Icon=git-annex"
+		, "X-KDE-ServiceTypes=KonqPopupMenu/Plugin"
+		]
+	kdeDesktopSection command = "GitAnnex" ++ command
+	kdeDesktopAction command = 
+		[ ""
+		, "[Desktop Action " ++ kdeDesktopSection command ++ "]"
+		, "Name=" ++ command
+		, "Icon=git-annex"
+		, unwords
+			[ "Exec=sh -c 'cd \"$(dirname '%U')\" &&"
+			, program
+			, command
+			, "--notify-start --notify-finish -- %U'"
+			]
+		]
+#else
+installFileManagerHooks _ = noop
+#endif
 
 {- Returns a cleaned up environment that lacks settings used to make the
  - standalone builds use their bundled libraries and programs.
@@ -87,15 +164,15 @@ ensureInstalled = go =<< standaloneAppBase
 cleanEnvironment :: IO (Maybe [(String, String)])
 cleanEnvironment = clean <$> getEnvironment
   where
-	clean env
+	clean environ
 		| null vars = Nothing
-		| otherwise = Just $ catMaybes $ map (restoreorig env) env
+		| otherwise = Just $ catMaybes $ map (restoreorig environ) environ
 		| otherwise = Nothing
 	  where
 		vars = words $ fromMaybe "" $
-			lookup "GIT_ANNEX_STANDLONE_ENV" env
-		restoreorig oldenv p@(k, _v)
-			| k `elem` vars = case lookup ("ORIG_" ++ k) oldenv of
+			lookup "GIT_ANNEX_STANDLONE_ENV" environ
+		restoreorig oldenviron p@(k, _v)
+			| k `elem` vars = case lookup ("ORIG_" ++ k) oldenviron of
 				(Just v')
 					| not (null v') -> Just (k, v')
 				_ -> Nothing

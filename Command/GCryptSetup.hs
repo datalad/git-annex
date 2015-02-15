@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -13,8 +13,8 @@ import Annex.UUID
 import qualified Remote.GCrypt
 import qualified Git
 
-def :: [Command]
-def = [dontCheck repoExists $ noCommit $
+cmd :: [Command]
+cmd = [dontCheck repoExists $ noCommit $
 	command "gcryptsetup" paramValue seek
 		SectionPlumbing "sets up gcrypt repository"]
 
@@ -30,7 +30,7 @@ start gcryptid = next $ next $ do
 	g <- gitRepo
 	gu <- Remote.GCrypt.getGCryptUUID True g
 	let newgu = genUUIDInNameSpace gCryptNameSpace gcryptid
-	if gu == Nothing || gu == Just newgu
+	if isNothing gu || gu == Just newgu
 		then if Git.repoIsLocalBare g
 			then do
 				void $ Remote.GCrypt.setupRepo gcryptid g

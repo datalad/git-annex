@@ -1,6 +1,6 @@
 {- git-annex assistant commit thread
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -27,7 +27,6 @@ import qualified Utility.Lsof as Lsof
 import qualified Utility.DirWatcher as DirWatcher
 import Types.KeySource
 import Config
-import Annex.Exception
 import Annex.Content
 import Annex.Link
 import Annex.CatFile
@@ -35,6 +34,7 @@ import qualified Annex
 import Utility.InodeCache
 import Annex.Content.Direct
 import qualified Command.Sync
+import qualified Git.Branch
 
 import Data.Time.Clock
 import Data.Tuple.Utils
@@ -50,6 +50,7 @@ commitThread = namedThread "Committer" $ do
 	delayadd <- liftAnnex $
 		maybe delayaddDefault (return . Just . Seconds)
 			=<< annexDelayAdd <$> Annex.getGitConfig
+	msg <- liftAnnex Command.Sync.commitMsg
 	waitChangeTime $ \(changes, time) -> do
 		readychanges <- handleAdds havelsof delayadd changes
 		if shouldCommit False time (length readychanges) readychanges
@@ -60,7 +61,7 @@ commitThread = namedThread "Committer" $ do
 					, "changes"
 					]
 				void $ alertWhile commitAlert $
-					liftAnnex commitStaged
+					liftAnnex $ commitStaged msg
 				recordCommit
 				let numchanges = length readychanges
 				mapM_ checkChangeContent readychanges
@@ -164,8 +165,8 @@ waitChangeTime a = waitchanges 0
 	 -}
 	aftermaxcommit oldchanges = loop (30 :: Int)
 	  where
-	  	loop 0 = continue oldchanges
-	  	loop n = do
+		loop 0 = continue oldchanges
+		loop n = do
 			liftAnnex noop -- ensure Annex state is free
 			liftIO $ threadDelaySeconds (Seconds 1)
 			changes <- getAnyChanges
@@ -212,14 +213,18 @@ shouldCommit scanning now len changes
 	recentchanges = filter thissecond changes
 	timeDelta c = now `diffUTCTime` changeTime c
 
-commitStaged :: Annex Bool
-commitStaged = do
+commitStaged :: String -> Annex Bool
+commitStaged msg = do
 	{- This could fail if there's another commit being made by
 	 - something else. -}
-	v <- tryAnnex Annex.Queue.flush
+	v <- tryNonAsync Annex.Queue.flush
 	case v of
 		Left _ -> return False
-		Right _ -> Command.Sync.commitStaged ""
+		Right _ -> do
+			ok <- Command.Sync.commitStaged Git.Branch.AutomaticCommit msg
+			when ok $
+				Command.Sync.updateSyncBranch =<< inRepo Git.Branch.current
+			return ok
 
 {- OSX needs a short delay after a file is added before locking it down,
  - when using a non-direct mode repository, as pasting a file seems to
@@ -297,7 +302,7 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 	add change@(InProcessAddChange { keySource = ks }) = 
 		catchDefaultIO Nothing <~> doadd
 	  where
-	  	doadd = sanitycheck ks $ do
+		doadd = sanitycheck ks $ do
 			(mkey, mcache) <- liftAnnex $ do
 				showStart "add" $ keyFilename ks
 				Command.Add.ingest $ Just ks
@@ -313,10 +318,11 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 	adddirect toadd = do
 		ct <- liftAnnex compareInodeCachesWith
 		m <- liftAnnex $ removedKeysMap ct cs
+		delta <- liftAnnex getTSDelta
 		if M.null m
 			then forM toadd add
 			else forM toadd $ \c -> do
-				mcache <- liftIO $ genInodeCache $ changeFile c
+				mcache <- liftIO $ genInodeCache (changeFile c) delta
 				case mcache of
 					Nothing -> add c
 					Just cache ->
@@ -347,7 +353,7 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 	done change mcache file key = liftAnnex $ do
 		logStatus key InfoPresent
 		link <- ifM isDirect
-			( inRepo $ gitAnnexLink file key
+			( calcRepo $ gitAnnexLink file key
 			, Command.Add.link file key mcache
 			)
 		whenM (pure DirWatcher.eventsCoalesce <||> isDirect) $

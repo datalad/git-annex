@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2012-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,47 +16,43 @@ import Backend
 import Remote
 import Types.KeySource
 
-def :: [Command]
-def = [withOptions opts $ notBareRepo $ command "import" paramPaths seek
+cmd :: [Command]
+cmd = [withOptions opts $ notBareRepo $ command "import" paramPaths seek
 	SectionCommon "move and add files from outside git working copy"]
 
 opts :: [Option]
-opts =
-	[ duplicateOption
-	, deduplicateOption
-	, cleanDuplicatesOption
-	, skipDuplicatesOption
-	]
-
-duplicateOption :: Option
-duplicateOption = flagOption [] "duplicate" "do not delete source files"
-
-deduplicateOption :: Option
-deduplicateOption = flagOption [] "deduplicate" "delete source files whose content was imported before"
-
-cleanDuplicatesOption :: Option
-cleanDuplicatesOption = flagOption [] "clean-duplicates" "delete duplicate source files (import nothing)"
-
-skipDuplicatesOption :: Option
-skipDuplicatesOption = flagOption [] "skip-duplicates" "import only new files"
+opts = duplicateModeOptions ++ fileMatchingOptions
 
 data DuplicateMode = Default | Duplicate | DeDuplicate | CleanDuplicates | SkipDuplicates
-	deriving (Eq)
+	deriving (Eq, Enum, Bounded)
+
+associatedOption :: DuplicateMode -> Maybe Option
+associatedOption Default = Nothing
+associatedOption Duplicate = Just $
+	flagOption [] "duplicate" "do not delete source files"
+associatedOption DeDuplicate = Just $
+	flagOption [] "deduplicate" "delete source files whose content was imported before"
+associatedOption CleanDuplicates = Just $
+	flagOption [] "clean-duplicates" "delete duplicate source files (import nothing)"
+associatedOption SkipDuplicates = Just $
+	flagOption [] "skip-duplicates" "import only new files"
+
+duplicateModeOptions :: [Option]
+duplicateModeOptions = mapMaybe associatedOption [minBound..maxBound]
 
 getDuplicateMode :: Annex DuplicateMode
-getDuplicateMode = gen
-	<$> getflag duplicateOption
-	<*> getflag deduplicateOption
-	<*> getflag cleanDuplicatesOption
-	<*> getflag skipDuplicatesOption
+getDuplicateMode = go . catMaybes <$> mapM getflag [minBound..maxBound]
   where
-  	getflag = Annex.getFlag . optionName
-  	gen False False False False = Default
-	gen True False False False = Duplicate
-	gen False True False False = DeDuplicate
-	gen False False True False = CleanDuplicates
-	gen False False False True = SkipDuplicates
-	gen _ _ _ _ = error "bad combination of --duplicate, --deduplicate, --clean-duplicates, --skip-duplicates"
+	getflag m = case associatedOption m of
+		Nothing -> return Nothing
+		Just o -> ifM (Annex.getFlag (optionName o))
+			( return (Just m)
+			, return Nothing
+			)
+	go [] = Default
+	go [m] = m
+	go ms = error $ "cannot combine " ++
+		unwords (map (optionParam . fromJust . associatedOption) ms)
 
 seek :: CommandSeek
 seek ps = do
@@ -67,14 +63,8 @@ start :: DuplicateMode -> (FilePath, FilePath) -> CommandStart
 start mode (srcfile, destfile) =
 	ifM (liftIO $ isRegularFile <$> getSymbolicLinkStatus srcfile)
 		( do
-			isdup <- do
-				backend <- chooseBackend destfile
-				let ks = KeySource srcfile srcfile Nothing
-				v <- genKey ks backend
-				case v of
-					Just (k, _) -> not . null <$> keyLocations k
-					_ -> return False
-			case pickaction isdup of
+			ma <- pickaction
+			case ma of
 				Nothing -> stop
 				Just a -> do
 					showStart "import" destfile
@@ -90,26 +80,27 @@ start mode (srcfile, destfile) =
 		handleexisting =<< liftIO (catchMaybeIO $ getSymbolicLinkStatus destfile)
 		liftIO $ createDirectoryIfMissing True (parentDir destfile)
 		liftIO $ if mode == Duplicate || mode == SkipDuplicates
-			then void $ copyFileExternal srcfile destfile
+			then void $ copyFileExternal CopyAllMetaData srcfile destfile
 			else moveFile srcfile destfile
 		Command.Add.perform destfile
 	handleexisting Nothing = noop
 	handleexisting (Just s)
 		| isDirectory s = notoverwriting "(is a directory)"
-		| otherwise = ifM (Annex.getState Annex.force) $
+		| otherwise = ifM (Annex.getState Annex.force)
 			( liftIO $ nukeFile destfile
 			, notoverwriting "(use --force to override)"
 			)
 	notoverwriting why = error $ "not overwriting existing " ++ destfile ++ " " ++ why
-	pickaction isdup = case mode of
-		DeDuplicate
-			| isdup -> Just deletedup
-			| otherwise -> Just importfile
-		CleanDuplicates
-			| isdup -> Just deletedup
-			| otherwise -> Nothing
-		SkipDuplicates
-			| isdup -> Nothing
-			| otherwise -> Just importfile
-		_ -> Just importfile
-
+	checkdup dupa notdupa = do
+		backend <- chooseBackend destfile
+		let ks = KeySource srcfile srcfile Nothing
+		v <- genKey ks backend
+		isdup <- case v of
+			Just (k, _) -> not . null <$> keyLocations k
+			_ -> return False
+		return $ if isdup then dupa else notdupa
+	pickaction = case mode of
+		DeDuplicate -> checkdup (Just deletedup) (Just importfile)
+		CleanDuplicates -> checkdup (Just deletedup) Nothing
+		SkipDuplicates -> checkdup Nothing (Just importfile)
+		_ -> return (Just importfile)

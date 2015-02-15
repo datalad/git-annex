@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,8 +11,8 @@ import Common.Annex
 import Command
 import Annex.Init
 	
-def :: [Command]
-def = [dontCheck repoExists $
+cmd :: [Command]
+cmd = [dontCheck repoExists $
 	command "init" paramDesc seek SectionSetup "initialize git-annex"]
 
 seek :: CommandSeek

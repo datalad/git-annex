@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="martin"
+ ip="193.174.111.250"
+ subject="another scenario"
+ date="2014-06-05T19:52:04Z"
+ content="""
+If a user uses such a crippled filesystem as a transfer repo and he does an `git-annex get --auto` on the target pc for getting the content he gets only 50% of the content. (user gets only a strange message that git-annex cannot access the repo or something like this) The user does not have the intuition to do an extra `git-annex add` to get the content because from his perspective he did not made any changes... (sorry for my bad english - i hope you know what i mean)
+"""]]

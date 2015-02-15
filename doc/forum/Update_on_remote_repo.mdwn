@@ -1,0 +1,6 @@
+Hello,
+
+using the git-annex assistant I can activate auto update on the client machines. What about the server that serves as transfer repository? It needs to have git-annex installed. Is there any possibility of auto update there? What is the recommended procedure?
+
+Thanks,
+Florian

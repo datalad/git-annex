@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-06-04T18:21:13Z"
+ content="""
+your box.com repository only stores encrypted file contents, it does not include the git repository. So you need to either set up XMPP, which will allow the clients to sync while they're turned on, or you need to put a git repository on a remote server, which the clients can use to sync anytime.
+
+Recent versions of git-annex allow encrypting the git repository. Use the \"remote server\" option in the webapp UI to set it up.
+"""]]

@@ -1,9 +1,11 @@
 {- git-annex command
  -
- - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
+
+{-# LANGUAGE RankNTypes #-}
 
 module Command.Vicfg where
 
@@ -12,6 +14,7 @@ import qualified Data.Set as S
 import System.Environment (getEnv)
 import Data.Tuple (swap)
 import Data.Char (isSpace)
+import Data.Default
 
 import Common.Annex
 import Command
@@ -26,8 +29,8 @@ import Types.StandardGroups
 import Types.ScheduledActivity
 import Remote
 
-def :: [Command]
-def = [command "vicfg" paramNothing seek
+cmd :: [Command]
+cmd = [command "vicfg" paramNothing seek
 	SectionSetup "edit git-annex's configuration"]
 
 seek :: CommandSeek
@@ -39,7 +42,7 @@ start = do
 	createAnnexDirectory $ parentDir f
 	cfg <- getCfg
 	descs <- uuidDescriptions
-	liftIO $ writeFile f $ genCfg cfg descs
+	liftIO $ writeFileAnyEncoding f $ genCfg cfg descs
 	vicfg cfg f
 	stop
 
@@ -49,11 +52,11 @@ vicfg curcfg f = do
 	-- Allow EDITOR to be processed by the shell, so it can contain options.
 	unlessM (liftIO $ boolSystem "sh" [Param "-c", Param $ unwords [vi, shellEscape f]]) $
 		error $ vi ++ " exited nonzero; aborting"
-	r <- parseCfg curcfg <$> liftIO (readFileStrict f)
+	r <- parseCfg (defCfg curcfg) <$> liftIO (readFileStrictAnyEncoding f)
 	liftIO $ nukeFile f
 	case r of
 		Left s -> do
-			liftIO $ writeFile f s
+			liftIO $ writeFileAnyEncoding f s
 			vicfg curcfg f
 		Right newcfg -> setCfg curcfg newcfg
 
@@ -61,6 +64,7 @@ data Cfg = Cfg
 	{ cfgTrustMap :: TrustMap
 	, cfgGroupMap :: M.Map UUID (S.Set Group)
 	, cfgPreferredContentMap :: M.Map UUID PreferredContentExpression
+	, cfgRequiredContentMap :: M.Map UUID PreferredContentExpression
 	, cfgGroupPreferredContentMap :: M.Map Group PreferredContentExpression
 	, cfgScheduleMap :: M.Map UUID [ScheduledActivity]
 	}
@@ -70,6 +74,7 @@ getCfg = Cfg
 	<$> trustMapRaw -- without local trust overrides
 	<*> (groupsByUUID <$> groupMap)
 	<*> preferredContentMapRaw
+	<*> requiredContentMapRaw
 	<*> groupPreferredContentMapRaw
 	<*> scheduleMap
 
@@ -79,14 +84,31 @@ setCfg curcfg newcfg = do
 	mapM_ (uncurry trustSet) $ M.toList $ cfgTrustMap diff
 	mapM_ (uncurry groupSet) $ M.toList $ cfgGroupMap diff
 	mapM_ (uncurry preferredContentSet) $ M.toList $ cfgPreferredContentMap diff
+	mapM_ (uncurry requiredContentSet) $ M.toList $ cfgRequiredContentMap diff
 	mapM_ (uncurry groupPreferredContentSet) $ M.toList $ cfgGroupPreferredContentMap diff
 	mapM_ (uncurry scheduleSet) $ M.toList $ cfgScheduleMap diff
+
+{- Default config has all the keys from the input config, but with their
+ - default values. -}
+defCfg :: Cfg -> Cfg
+defCfg curcfg = Cfg
+	{ cfgTrustMap = mapdef $ cfgTrustMap curcfg
+	, cfgGroupMap = mapdef $ cfgGroupMap curcfg
+	, cfgPreferredContentMap = mapdef $ cfgPreferredContentMap curcfg
+	, cfgRequiredContentMap = mapdef $ cfgRequiredContentMap curcfg
+	, cfgGroupPreferredContentMap = mapdef $ cfgGroupPreferredContentMap curcfg
+	, cfgScheduleMap = mapdef $ cfgScheduleMap curcfg
+	}
+  where
+	mapdef :: forall k v. Default v => M.Map k v -> M.Map k v
+	mapdef = M.map (const def)
 
 diffCfg :: Cfg -> Cfg -> Cfg
 diffCfg curcfg newcfg = Cfg
 	{ cfgTrustMap = diff cfgTrustMap
 	, cfgGroupMap = diff cfgGroupMap
 	, cfgPreferredContentMap = diff cfgPreferredContentMap
+	, cfgRequiredContentMap = diff cfgRequiredContentMap
 	, cfgGroupPreferredContentMap = diff cfgGroupPreferredContentMap
 	, cfgScheduleMap = diff cfgScheduleMap
 	}
@@ -102,6 +124,7 @@ genCfg cfg descs = unlines $ intercalate [""]
 	, preferredcontent
 	, grouppreferredcontent
 	, standardgroups
+	, requiredcontent
 	, schedule
 	]
   where
@@ -119,7 +142,7 @@ genCfg cfg descs = unlines $ intercalate [""]
 		, com "(Valid trust levels: " ++ trustlevels ++ ")"
 		]
 		(\(t, u) -> line "trust" u $ showTrustLevel t)
-		(\u -> lcom $ line "trust" u $ showTrustLevel SemiTrusted)
+		(\u -> lcom $ line "trust" u $ showTrustLevel def)
 	  where
 		trustlevels = unwords $ map showTrustLevel [Trusted .. DeadTrusted]
 
@@ -131,21 +154,28 @@ genCfg cfg descs = unlines $ intercalate [""]
 		(\(s, u) -> line "group" u $ unwords $ S.toList s)
 		(\u -> lcom $ line "group" u "")
 	  where
-	  	grouplist = unwords $ map fromStandardGroup [minBound..]
+		grouplist = unwords $ map fromStandardGroup [minBound..]
 
 	preferredcontent = settings cfg descs cfgPreferredContentMap
-		[ com "Repository preferred contents" ]
+		[ com "Repository preferred contents"
+		, com "(Set to \"standard\" to use a repository's group's preferred contents)"
+		]
 		(\(s, u) -> line "wanted" u s)
-		(\u -> line "wanted" u "standard")
+		(\u -> line "wanted" u "")
+	
+	requiredcontent = settings cfg descs cfgRequiredContentMap
+		[ com "Repository required contents" ]
+		(\(s, u) -> line "required" u s)
+		(\u -> line "required" u "")
 
 	grouppreferredcontent = settings' cfg allgroups cfgGroupPreferredContentMap
 		[ com "Group preferred contents"
 		, com "(Used by repositories with \"groupwanted\" in their preferred contents)"
 		]
 		(\(s, g) -> gline g s)
-		(\g -> gline g "standard")
+		(\g -> gline g "")
 	  where
-	  	gline g value = [ unwords ["groupwanted", g, "=", value] ]
+		gline g value = [ unwords ["groupwanted", g, "=", value] ]
 		allgroups = S.unions $ stdgroups : M.elems (cfgGroupMap cfg)
 		stdgroups = S.fromList $ map fromStandardGroup [minBound..maxBound]
 
@@ -191,7 +221,7 @@ lcom = map (\l -> if "#" `isPrefixOf` l then l else '#' : l)
 {- If there's a parse error, returns a new version of the file,
  - with the problem lines noted. -}
 parseCfg :: Cfg -> String -> Either String Cfg
-parseCfg curcfg = go [] curcfg . lines
+parseCfg defcfg = go [] defcfg . lines
   where
 	go c cfg []
 		| null (mapMaybe fst c) = Right cfg
@@ -205,7 +235,7 @@ parseCfg curcfg = go [] curcfg . lines
 		| null l = Right cfg
 		| "#" `isPrefixOf` l = Right cfg
 		| null setting || null f = Left "missing field"
-		| otherwise = handle cfg f setting value'
+		| otherwise = parsed cfg f setting value'
 	  where
 		(setting, rest) = separate isSpace l
 		(r, value) = separate (== '=') rest
@@ -213,7 +243,7 @@ parseCfg curcfg = go [] curcfg . lines
 		f = reverse $ trimspace $ reverse $ trimspace r
 		trimspace = dropWhile isSpace
 
-	handle cfg f setting value
+	parsed cfg f setting value
 		| setting == "trust" = case readTrustLevel value of
 			Nothing -> badval "trust value" value
 			Just t ->
@@ -228,6 +258,12 @@ parseCfg curcfg = go [] curcfg . lines
 				Nothing ->
 					let m = M.insert u value (cfgPreferredContentMap cfg)
 					in Right $ cfg { cfgPreferredContentMap = m }
+		| setting == "required" = 
+			case checkPreferredContentExpression value of
+				Just e -> Left e
+				Nothing ->
+					let m = M.insert u value (cfgRequiredContentMap cfg)
+					in Right $ cfg { cfgRequiredContentMap = m }
 		| setting == "groupwanted" =
 			case checkPreferredContentExpression value of
 				Just e -> Left e
@@ -255,7 +291,6 @@ parseCfg curcfg = go [] curcfg . lines
 		[ com "** There was a problem parsing your input!"
 		, com "** Search for \"Parse error\" to find the bad lines."
 		, com "** Either fix the bad lines, or delete them (to discard your changes)."
-		, ""
 		]
 	parseerr = com "** Parse error in next line: "
 

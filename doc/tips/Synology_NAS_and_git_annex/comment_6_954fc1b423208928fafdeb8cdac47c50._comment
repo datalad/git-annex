@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2015-02-11T17:05:15Z"
+ content="""
+There's a bug report for the memory use hang now: 
+[[bugs/git-annex_on_NAS_eats_all_memory]]
+"""]]

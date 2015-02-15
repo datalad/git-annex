@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk7iPiqWr3BVPLWEDvJhSSvcOqheLEbLNo"
+ nickname="Dirk"
+ subject="comment 2"
+ date="2014-06-09T21:16:36Z"
+ content="""
+Thanks for the fix. The new tarball does not show the issue anymore.
+
+Regarding \"due to the way it is run\":
+
+* I use Konsole as my terminal under xfce, inside of that is bash
+* I made sure that I removed old stuff beforehand \"rm -rf .config/git-annex/ Desktop/annex/ .ssh/git-annex-*\"
+* I went to the directory in the tarball \"git-annex.linux\" and called \"./git-annex webapp\"
+* Browser used is firefox
+
+I guess I should setup the PATH properly. This was just meant as a test for the tarball given that there is no up to date package for ubuntu available anymore.
+
+Not sure if there is other information that would help you determine if I run this in a special way.
+"""]]

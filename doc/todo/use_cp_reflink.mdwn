@@ -1,7 +1,0 @@
-The unlock command needs to copy a file, and it would be great to use this:
-	cp --reflink=auto src dst
-
-O(1) overhead on BTRFS. Needs coreutils 7.6; and remember that git-annex
-may be used on systems without coreutils..
-
-[[done]]

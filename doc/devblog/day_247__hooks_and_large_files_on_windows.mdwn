@@ -1,0 +1,30 @@
+Today I got The pre-commit-annex hook working on Windows. It turns out that
+msysgit runs hook scripts even when they're not executable, and it parses
+the #! line itself. Now git-annex does too, on Windows.
+
+Also, added a new chapter to the walkthrough,
+[[walkthrough/using_special_remotes]]. They clearly needed to be mentioned,
+especially to show the workflow of running initremote in one repository,
+then syncing another repository and running enableremote to enable the same
+special remote there.
+
+Then more fun Windows porting! Turns out git-annex on Windows didn't handle
+files > 2 gb correctly; the way it was getting file size 
+[uses a too small data type on Windows](https://github.com/jystic/unix-compat/issues/16).
+Luckily git-annex itself treats all file sizes as unbounded Integers,
+so I was easily able to swap in a `getFileSize` that returns correct
+values for large files.
+
+While I haven't blogged since the 13th and have not been too active until
+today, there are still a number of little improvements that have been done
+here and there.
+
+Including a fix for an interesting bug where the assistant would tell
+the remotedaemon that the network connection has been lost, twice in a row,
+and this would make the remotedeamon fail to reconnect to the remote when
+the network came up. I'm not sure what situation triggers this bug (Maybe
+machines with 2 interfaces? Or maybe a double disconnection event for 1
+interface?), but I was able to reproduce it by sending messages to the
+remotedaemon, and so fixed it.
+
+Backlog is down to 118 messages.

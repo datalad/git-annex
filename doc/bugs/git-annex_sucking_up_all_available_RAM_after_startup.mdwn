@@ -45,3 +45,5 @@ I'm fairly unsure where to look for the cause and what logs to provide you with 
 
 # End of transcript or log.
 """]]
+
+[[!tag moreinfo]]

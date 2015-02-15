@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -15,8 +15,8 @@ import Types.Key
 import qualified CmdLine.GitAnnexShell.Fields as Fields
 import Utility.Metered
 
-def :: [Command]
-def = [noCommit $ command "transferinfo" paramKey seek SectionPlumbing
+cmd :: [Command]
+cmd = [noCommit $ command "transferinfo" paramKey seek SectionPlumbing
 	"updates sender on number of bytes of content received"]
 
 seek :: CommandSeek

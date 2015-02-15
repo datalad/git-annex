@@ -1,6 +1,6 @@
 {- git-annex command infrastructure
  -
- - Copyright 2010-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -55,7 +55,7 @@ noRepo a c = c { cmdnorepo = Just a }
 
 {- Adds options to a command. -}
 withOptions :: [Option] -> Command -> Command
-withOptions o c = c { cmdoptions = o }
+withOptions o c = c { cmdoptions = cmdoptions c ++ o }
 
 {- For start and perform stages to indicate what step to run next. -}
 next :: a -> Annex (Maybe a)
@@ -70,11 +70,11 @@ stopUnless :: Annex Bool -> Annex (Maybe a) -> Annex (Maybe a)
 stopUnless c a = ifM c ( a , stop )
 
 {- Modifies an action to only act on files that are already annexed,
- - and passes the key and backend on to it. -}
-whenAnnexed :: (FilePath -> (Key, Backend) -> Annex (Maybe a)) -> FilePath -> Annex (Maybe a)
+ - and passes the key on to it. -}
+whenAnnexed :: (FilePath -> Key -> Annex (Maybe a)) -> FilePath -> Annex (Maybe a)
 whenAnnexed a file = ifAnnexed file (a file) (return Nothing)
 
-ifAnnexed :: FilePath -> ((Key, Backend) -> Annex a) -> Annex a -> Annex a
+ifAnnexed :: FilePath -> (Key -> Annex a) -> Annex a -> Annex a
 ifAnnexed file yes no = maybe no yes =<< Backend.lookupFile file
 
 isBareRepo :: Annex Bool

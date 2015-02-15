@@ -18,7 +18,7 @@
  - and so foo currently has no value.
  -
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -38,6 +38,7 @@ import Common.Annex
 import Types.MetaData
 import Annex.MetaData.StandardFields
 import qualified Annex.Branch
+import qualified Annex
 import Logs
 import Logs.SingleValue
 
@@ -52,7 +53,9 @@ instance SingleValueSerializable MetaData where
 	deserialize = Types.MetaData.deserialize
 
 getMetaDataLog :: Key -> Annex (Log MetaData)
-getMetaDataLog = readLog . metaDataLogFile
+getMetaDataLog key = do
+	config <- Annex.getGitConfig
+	readLog $ metaDataLogFile config key
 
 {- Go through the log from oldest to newest, and combine it all
  - into a single MetaData representing the current state.
@@ -67,7 +70,7 @@ getCurrentMetaData k = do
 	return $ currentMetaData $ unionMetaData loggedmeta
 		(lastchanged ls loggedmeta)
   where
-  	lastchanged [] _ = emptyMetaData
+	lastchanged [] _ = emptyMetaData
 	lastchanged ls (MetaData currentlyset) =
 		let m = foldl' (flip M.union) M.empty (map genlastchanged ls)
 		in MetaData $
@@ -95,10 +98,14 @@ addMetaData k metadata = addMetaData' k metadata =<< liftIO getPOSIXTime
  - will tend to be generated across the different log files, and so
  - git will be able to pack the data more efficiently. -}
 addMetaData' :: Key -> MetaData -> POSIXTime -> Annex ()
-addMetaData' k (MetaData m) now = Annex.Branch.change (metaDataLogFile k) $
-	showLog . simplifyLog 
-		. S.insert (LogEntry now metadata)
-		. parseLog
+addMetaData' k d@(MetaData m) now
+	| d == emptyMetaData = noop
+	| otherwise = do
+		config <- Annex.getGitConfig
+		Annex.Branch.change (metaDataLogFile config k) $
+			showLog . simplifyLog 
+				. S.insert (LogEntry now metadata)
+				. parseLog
   where
 	metadata = MetaData $ M.filterWithKey (\f _ -> not (isLastChangedField f)) m
 
@@ -179,6 +186,7 @@ copyMetaData oldkey newkey
 	| oldkey == newkey = noop
 	| otherwise = do
 		l <- getMetaDataLog oldkey
-		unless (S.null l) $
-			Annex.Branch.change (metaDataLogFile newkey) $
+		unless (S.null l) $ do
+			config <- Annex.getGitConfig
+			Annex.Branch.change (metaDataLogFile config newkey) $
 				const $ showLog l

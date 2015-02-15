@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://launchpad.net/~maestro-alubia"
- nickname="maestro-alubia"
- subject="Fixed"
- date="2013-06-30T11:50:42Z"
- content="""
-The bug seems to be fixed in recent versions of git-annex (tested with 4.20130601 on \"client\" and 4.20130621 on \"server\"). Everything is now working as expected. Thank you very much for your work!
-"""]]

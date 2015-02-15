@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.244"
+ subject="comment 2"
+ date="2014-04-07T21:07:35Z"
+ content="""
+Except of log when this apparently happened. Note the 6 minute time discontinuity when it was apparently looping:
+
+<pre>
+[2014-04-07 23:24:24 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"write-tree\"]
+[2014-04-07 23:24:24 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"rev-parse\",\"84068090af4bcd3d24f16d865ac07b0478f20ada:\"]
+[2014-04-07 23:24:24 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"symbolic-ref\",\"HEAD\"]
+[2014-04-07 23:24:24 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"show-ref\",\"refs/heads/master\"]
+[2014-04-07 23:30:13 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"show-ref\",\"git-annex\"]
+[2014-04-07 23:30:13 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2014-04-07 23:30:13 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"log\",\"refs/heads/git-annex..214ed317536695b91c8dd5bed059c46c11ad00be\",\"--oneline\",\"-n1\"]
+</pre>
+
+Also probably relevant, the network topology AIUI was: `client --> server` where both nodes ran the assistant. This happened on the server shortly after the client dropped off a refs/heads/synced/master.
+
+(Also, the \"logging to a deleted file\" appears to have been a local misconfiguration; a cron job that repeatedly tried to start the assistant. Only one will start, but later ones will rotate the logs before noticing it's running and giving up.)
+"""]]

@@ -1,0 +1,49 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmWBvsZvSsAL8P2ye3F0OBStjFCVnOImzM"
+ nickname="Jarno"
+ subject="Properly saving the changes before hard reset..?"
+ date="2014-12-03T21:46:23Z"
+ content="""
+BTW, my complete discard-all-my-changes.sh is, at the moment:
+
+    git annex add .
+    git annex proxy -- git commit -m \"Temp commit: changes to be discarded on $HOSTNAME.\"
+    git annex proxy -- git reset --hard origin/master
+    git annex get
+    git -c core.bare=false clean -dfi
+
+Is that `proxy -- git commit` even the proper way to save the changes locally before discarding, or will the branch change of the proxied commit always lose the annexed data? While testing, I've noticed that `add .` followed by `proxy -- git commit` at least sometimes replaces the contents of the changed file with a hash, with no apparent way to get them back.
+
+Example:
+
+    $ echo \"test string\" >> show-changes.sh
+    
+    $ git annex add show-changes.sh
+    add show-changes.sh ok
+    (Recording state in git...)
+    
+    $ git annex proxy -- git commit -m \"test\"
+    [annex/direct/master a2a594f] test
+     1 file changed, 1 insertion(+), 1 deletion(-)
+
+    $ cat show-changes.sh
+    ..\..\..\..\.git\annex\objects\QG\3J\SHA256E-s313--a05d6ed6cb73f6a95d98606d37e01
+    4e5b65e86b9fdb8e9fedded7d36a06ea90a.sh\SHA256E-s313--a05d6ed6cb73f6a95d98606d37e
+    014e5b65e86b9fdb8e9fedded7d36a06ea90a.sh    
+
+    $ git annex get show-changes.sh
+    get show-changes.sh (not available)
+      No other repository is known to contain the file.
+    failed
+    git-annex: get: 1 failed
+
+    $ git annex fsck show-changes.sh
+    fsck show-changes.sh (fixing link) ok
+    (Recording state in git...)
+
+    $ cat show-changes.sh
+    .git\annex\objects\QG\3J\SHA256E-s313--a05d6ed6cb73f6a95d98606d37e014e5b65e86b9f
+    db8e9fedded7d36a06ea90a.sh\SHA256E-s313--a05d6ed6cb73f6a95d98606d37e014e5b65e86b
+    9fdb8e9fedded7d36a06ea90a.sh
+
+"""]]

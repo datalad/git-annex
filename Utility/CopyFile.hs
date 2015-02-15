@@ -1,24 +1,28 @@
 {- file copying
  -
- - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2014 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 {-# LANGUAGE CPP #-}
 
 module Utility.CopyFile (
 	copyFileExternal,
-	createLinkOrCopy
+	createLinkOrCopy,
+	CopyMetaData(..)
 ) where
 
 import Common
 import qualified Build.SysConfig as SysConfig
 
+data CopyMetaData = CopyTimeStamps | CopyAllMetaData
+	deriving (Eq)
+
 {- The cp command is used, because I hate reinventing the wheel,
  - and because this allows easy access to features like cp --reflink. -}
-copyFileExternal :: FilePath -> FilePath -> IO Bool
-copyFileExternal src dest = do
+copyFileExternal :: CopyMetaData -> FilePath -> FilePath -> IO Bool
+copyFileExternal meta src dest = do
 	whenM (doesFileExist dest) $
 		removeFile dest
 	boolSystem "cp" $ params ++ [File src, File dest]
@@ -26,12 +30,16 @@ copyFileExternal src dest = do
 #ifndef __ANDROID__
 	params = map snd $ filter fst
 		[ (SysConfig.cp_reflink_auto, Param "--reflink=auto")
-		, (SysConfig.cp_a, Param "-a")
-		, (SysConfig.cp_p && not SysConfig.cp_a, Param "-p")
+		, (allmeta && SysConfig.cp_a, Param "-a")
+		, (allmeta && SysConfig.cp_p && not SysConfig.cp_a
+			, Param "-p")
+		, (not allmeta && SysConfig.cp_preserve_timestamps
+			, Param "--preserve=timestamps")
 		]
 #else
 	params = []
 #endif
+	allmeta = meta == CopyAllMetaData
 
 {- Create a hard link if the filesystem allows it, and fall back to copying
  - the file. -}
@@ -39,10 +47,10 @@ createLinkOrCopy :: FilePath -> FilePath -> IO Bool
 #ifndef mingw32_HOST_OS
 createLinkOrCopy src dest = go `catchIO` const fallback
   where
-  	go = do
+	go = do
 		createLink src dest
 		return True
-  	fallback = copyFileExternal src dest
+	fallback = copyFileExternal CopyAllMetaData src dest
 #else
-createLinkOrCopy = copyFileExternal
+createLinkOrCopy = copyFileExternal CopyAllMetaData
 #endif

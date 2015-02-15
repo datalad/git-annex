@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="annexuser123"
+ ip="88.65.52.206"
+ subject="comment 1"
+ date="2014-08-04T18:00:00Z"
+ content="""
+To add further to this, the gcrypted remote does not show up in either the usb drive's git annex info, nor the laptop's git annex info. 
+
+Despite that, I can push to it and copy to it. 
+"""]]

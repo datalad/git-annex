@@ -3,8 +3,13 @@ git, and in turn point at the content of large files that is stored in
 `.git/annex/objects/`. Direct mode gets rid of the symlinks.
 
 The advantage of direct mode is that you can access files directly,
-including modifying them. The disadvantage is that most regular git
-commands cannot be used in a direct mode repository.
+including modifying them. The disadvantage is that many regular git
+commands cannot be used in a direct mode repository, since they don't
+understand how to update its working tree.
+
+[[!toc]]
+
+## enabling (and disabling) direct mode
 
 Normally, git-annex repositories start off in indirect mode. With some
 exceptions:
@@ -14,8 +19,6 @@ exceptions:
   that don't support things like symlinks will be automatically put
   into direct mode.
 * Windows always uses direct mode.
-
-## enabling (and disabling) direct mode
 
 Any repository can be converted to use direct mode at any time, and if you
 decide not to use it, you can convert back to indirect mode just as easily.
@@ -82,11 +85,29 @@ There are still lots of git commands you can use in direct mode. For
 example, you can run `git log` on files, run `git push`, `git fetch`,
 `git config`, `git remote add` etc.
 
+## proxing git commands in direct mode
+
+For those times when you really need to run a command like `git revert
+HEAD` in a direct mode repository, git-annex has the ability to proxy
+the command to work in direct mode.
+
+For example:
+
+	git annex proxy -- git revert HEAD
+
+	git annex proxy -- git checkout HEAD^^
+
+	git annex proxy -- git mv mydir newname
+
+This works by setting up a temporary work tree, letting the git
+command run on that work tree, and then updating the real work
+tree to reflect any changes staged or committed by the git command,
+with appropriate handling of the direct mode files.
+
 ## forcing git to use the work tree in direct mode
 
 This is for experts only. You can lose data doing this, or check enormous
 files directly into your git repository, and it's your fault if you do!
-Also, there should be no good reason to need to do this, ever.
 
 Ok, with the warnings out of the way, all you need to do to make any
 git command access the work tree in direct mode is pass it 

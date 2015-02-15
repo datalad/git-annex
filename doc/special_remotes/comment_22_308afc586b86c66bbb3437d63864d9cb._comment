@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmp1ThsNNAbSn46ju-gwFELfStlhl8usJo"
+ nickname="donkeyicydragon"
+ subject="Enhancing special remotes as backup spaces"
+ date="2014-04-22T21:08:49Z"
+ content="""
+Hi Joey,
+
+I am thinking about using google drive as an encrypted backup for my important files. However, I fear that if all my git annex repositories are unrecoverable that the encrypted data on the special remote will not help me much. Assuming I have backed up my gpg key I still get a bunch of decrypted files but the folder structure is lost. Would it be possible to implement something like a safety feature that also uploads an (encrypted) tar of all symlinks (pointing to the respective encrypted files) of the (current/or master-branch) git working tree? 
+
+I am almost sure this is already implementable using hooks however I could not find information on which types of hooks are available. I am looking for one that is triggered once after all copy/move operations to a special remote are finished. Can you point me in the right direction?
+
+Marek
+
+
+"""]]

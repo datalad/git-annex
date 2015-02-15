@@ -1,6 +1,6 @@
 {- git-annex watch command
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,8 +12,8 @@ import Assistant
 import Command
 import Utility.HumanTime
 
-def :: [Command]
-def = [notBareRepo $ withOptions [foregroundOption, stopOption] $ 
+cmd :: [Command]
+cmd = [notBareRepo $ withOptions [foregroundOption, stopOption] $ 
 	command "watch" paramNothing seek SectionCommon "watch for changes"]
 
 seek :: CommandSeek

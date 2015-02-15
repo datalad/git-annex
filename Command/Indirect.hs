@@ -1,18 +1,16 @@
 {- git-annex command
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Command.Indirect where
 
-import Control.Exception.Extensible
-
 import Common.Annex
 import Command
 import qualified Git
-import qualified Git.Command
+import qualified Git.Branch
 import qualified Git.LsFiles
 import Git.FileMode
 import Config
@@ -21,12 +19,11 @@ import Annex.Direct
 import Annex.Content
 import Annex.Content.Direct
 import Annex.CatFile
-import Annex.Exception
 import Annex.Init
 import qualified Command.Add
 
-def :: [Command]
-def = [notBareRepo $ noDaemonRunning $
+cmd :: [Command]
+cmd = [notBareRepo $ noDaemonRunning $
 	command "indirect" paramNothing seek
 		SectionSetup "switch repository to indirect mode"]
 
@@ -49,9 +46,8 @@ perform = do
 	showStart "commit" ""
 	whenM stageDirect $ do
 		showOutput
-		void $ inRepo $ Git.Command.runBool
-			[ Param "commit"
-			, Param "-m"
+		void $ inRepo $ Git.Branch.commitCommand Git.Branch.ManualCommit
+			[ Param "-m"
 			, Param "commit before switching to indirect mode"
 			]
 	showEndOk
@@ -74,7 +70,7 @@ perform = do
 		case r of
 			Just s
 				| isSymbolicLink s -> void $ flip whenAnnexed f $
-					\_ (k, _) -> do
+					\_ k -> do
 						removeInodeCache k
 						removeAssociatedFiles k
 						return Nothing
@@ -89,16 +85,16 @@ perform = do
 		removeInodeCache k
 		removeAssociatedFiles k
 		whenM (liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f) $ do
-			v <-tryAnnexIO (moveAnnex k f)
+			v <- tryNonAsync (moveAnnex k f)
 			case v of
 				Right _ -> do 
-					l <- inRepo $ gitAnnexLink f k
+					l <- calcRepo $ gitAnnexLink f k
 					liftIO $ createSymbolicLink l f
-				Left e -> catchAnnex (Command.Add.undo f k e)
+				Left e -> catchNonAsync (Command.Add.undo f k e)
 					warnlocked
 		showEndOk
 
- 	warnlocked :: SomeException -> Annex ()
+	warnlocked :: SomeException -> Annex ()
 	warnlocked e = do
 		warning $ show e
 		warning "leaving this file as-is; correct this problem and run git annex add on it"

@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.154.0.60"
- subject="comment 1"
- date="2012-09-15T16:39:19Z"
- content="""
-Something is going on that I don't understand. When I run `cabal install --bindir ~/bin`, my shell passes `/home/joey/bin` to cabal, so of course it works.
-"""]]

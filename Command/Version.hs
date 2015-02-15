@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -17,8 +17,8 @@ import qualified Types.Remote as R
 import qualified Remote
 import qualified Backend
 
-def :: [Command]
-def = [noCommit $ noRepo startNoRepo $ dontCheck repoExists $
+cmd :: [Command]
+cmd = [noCommit $ noRepo startNoRepo $ dontCheck repoExists $
 	command "version" paramNothing seek SectionQuery "show version info"]
 
 seek :: CommandSeek

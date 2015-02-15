@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2014-11-03T17:08:50Z"
+ content="""
+`git status` looks at the index and work tree. In an indirect mode
+repository, `git annex status` does too, and is not significantly slower.
+
+In direct mode, `git annex status` has to look up from git the key
+that corresponds to each file in the work tree. This is the main
+thing that slows it down.
+
+(See the code for details, it's quite clear.)
+
+The best workaround is proably to pass git-annex status a subdirectory
+that you're interested in, so it can only look at the contents of that one
+directory.
+"""]]

@@ -1,6 +1,6 @@
 {- git-annex repository initialization
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,44 +11,41 @@ module Annex.Init (
 	ensureInitialized,
 	isInitialized,
 	initialize,
+	initialize',
 	uninitialize,
 	probeCrippledFileSystem,
 ) where
 
 import Common.Annex
-import Utility.Network
 import qualified Annex
 import qualified Git
 import qualified Git.LsFiles
 import qualified Git.Config
-import qualified Git.Construct
-import qualified Git.Types as Git
+import qualified Git.Objects
 import qualified Annex.Branch
 import Logs.UUID
+import Logs.Trust.Basic
+import Types.TrustLevel
 import Annex.Version
+import Annex.Difference
 import Annex.UUID
 import Config
 import Annex.Direct
 import Annex.Content.Direct
 import Annex.Environment
-import Annex.Perms
 import Backend
+import Annex.Hook
+import Upgrade
 #ifndef mingw32_HOST_OS
 import Utility.UserInfo
 import Utility.FileMode
+import Annex.Perms
 #endif
-import Annex.Hook
-import Git.Hook (hookFile)
-import Upgrade
-import Annex.Content
-import Logs.Location
-
-import System.Log.Logger
 
 genDescription :: Maybe String -> Annex String
 genDescription (Just d) = return d
 genDescription Nothing = do
-	reldir <- liftIO . relHome =<< fromRepo Git.repoPath
+	reldir <- liftIO . relHome =<< liftIO . absPath =<< fromRepo Git.repoPath
 	hostname <- fromMaybe "" <$> liftIO getHostname
 #ifndef mingw32_HOST_OS
 	let at = if null hostname then "" else "@"
@@ -61,10 +58,23 @@ genDescription Nothing = do
 initialize :: Maybe String -> Annex ()
 initialize mdescription = do
 	prepUUID
+	initialize'
+
+	u <- getUUID
+	{- This will make the first commit to git, so ensure git is set up
+	 - properly to allow commits when running it. -}
+	ensureCommit $ do
+		Annex.Branch.create
+		describeUUID u =<< genDescription mdescription
+
+-- Everything except for uuid setup.
+initialize' :: Annex ()
+initialize' = do
 	checkFifoSupport
 	checkCrippledFileSystem
 	unlessM isBare $
 		hookWrite preCommitHook
+	setDifferences
 	setVersion supportedVersion
 	ifM (crippledFileSystem <&&> not <$> isBare)
 		( do
@@ -76,12 +86,7 @@ initialize mdescription = do
 			switchHEADBack
 		)
 	createInodeSentinalFile
-	u <- getUUID
-	{- This will make the first commit to git, so ensure git is set up
-	 - properly to allow commits when running it. -}
-	ensureCommit $ do
-		Annex.Branch.create
-		describeUUID u =<< genDescription mdescription
+	checkSharedClone
 
 uninitialize :: Annex ()
 uninitialize = do
@@ -97,9 +102,7 @@ uninitialize = do
  - Checks repository version and handles upgrades too.
  -}
 ensureInitialized :: Annex ()
-ensureInitialized = do
-	getVersion >>= maybe needsinit checkUpgrade
-	fixBadBare
+ensureInitialized = getVersion >>= maybe needsinit checkUpgrade
   where
 	needsinit = ifM Annex.Branch.hasSibling
 			( initialize Nothing
@@ -184,56 +187,9 @@ enableDirectMode = unlessM isDirect $ do
 		maybe noop (`toDirect` f) =<< isAnnexLink f
 	void $ liftIO clean
 
-{- Work around for git-annex version 5.20131118 - 5.20131127, which
- - had a bug that unset core.bare when initializing a bare repository.
- - 
- - This resulted in objects sent to the repository being stored in 
- - repo/.git/annex/objects, so move them to repo/annex/objects.
- -
- - This check slows down every git-annex run somewhat (by one file stat),
- - so should be removed after a suitable period of time has passed.
- - Since the bare repository may be on an offline USB drive, best to
- - keep it for a while. However, git-annex was only buggy for a few
- - weeks, so not too long.
- -}
-fixBadBare :: Annex ()
-fixBadBare = whenM checkBadBare $ do
-	ks <- getKeysPresent InAnnex
-	liftIO $ debugM "Init" $ unwords
-		[ "Detected bad bare repository with"
-		, show (length ks)
-		, "objects; fixing"
-		]
-	g <- Annex.gitRepo
-	gc <- Annex.getGitConfig
-	d <- Git.repoPath <$> Annex.gitRepo
-	void $ liftIO $ boolSystem "git"
-		[ Param $ "--git-dir=" ++ d
-		, Param "config"
-		, Param Git.Config.coreBare
-		, Param $ Git.Config.boolConfig True
-		]
-	g' <- liftIO $ Git.Construct.fromPath d
-	s' <- liftIO $ Annex.new $ g' { Git.location = Git.Local { Git.gitdir = d, Git.worktree = Nothing } }
-	Annex.changeState $ \s -> s
-		{ Annex.repo = Annex.repo s'
-		, Annex.gitconfig = Annex.gitconfig s'
-		}
-	forM_ ks $ \k -> do
-		oldloc <- liftIO $ gitAnnexLocation k g gc
-		thawContentDir oldloc
-		moveAnnex k oldloc
-		logStatus k InfoPresent
-	let dotgit = d </> ".git"
-	liftIO $ removeDirectoryRecursive dotgit
-		`catchIO` const (renameDirectory dotgit (d </> "removeme"))
-
-{- A repostory with the problem won't know it's a bare repository, but will
- - have no pre-commit hook (which is not set up in a bare repository),
- - and will not have a HEAD file in its .git directory. -}
-checkBadBare :: Annex Bool
-checkBadBare = allM (not <$>)
-	[isBare, hasPreCommitHook, hasDotGitHEAD]
-  where
-	hasPreCommitHook = inRepo $ doesFileExist . hookFile preCommitHook
-	hasDotGitHEAD = inRepo $ \r -> doesFileExist $ Git.localGitDir r </> "HEAD"
+checkSharedClone :: Annex ()
+checkSharedClone = whenM (inRepo Git.Objects.isSharedClone) $ do
+	showSideAction "Repository was cloned with --shared; setting annex.hardlink=true and making repository untrusted."
+	u <- getUUID
+	trustSet u UnTrusted
+	setConfig (annexConfig "hardlink") (Git.Config.boolConfig True)

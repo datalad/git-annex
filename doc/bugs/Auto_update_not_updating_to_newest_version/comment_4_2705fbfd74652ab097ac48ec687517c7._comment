@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.43"
- subject="comment 4"
- date="2014-01-17T19:36:39Z"
- content="""
-Well that upgrade did seem to succeed. The log almost looks like 2 git-annex assistant processes were running (which should not happen), it seems to have downloaded the upgrade twice somehow.
-"""]]

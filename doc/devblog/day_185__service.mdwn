@@ -1,0 +1,6 @@
+More work on [[todo/windows_git-annex_service]], but am stuck with a
+permissions problem.
+
+Fixed a bug that prevented two assistants from syncing when there was only
+a uni-directional link between them. Only affected direct mode, and
+was introduced back when I added the direct mode guard.

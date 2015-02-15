@@ -1,6 +1,6 @@
 {- git-annex assistant webapp configurators
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -39,6 +39,14 @@ makeMiscRepositories = $(widgetFile "configurators/addrepository/misc")
 makeCloudRepositories :: Widget
 makeCloudRepositories = $(widgetFile "configurators/addrepository/cloud")
 
+makeXMPPConnection :: Widget
+makeXMPPConnection = $(widgetFile "configurators/addrepository/xmppconnection")
+
+makeSshRepository :: Widget
+makeSshRepository = $(widgetFile "configurators/addrepository/ssh")
+
+makeConnectionRepositories :: Widget
+makeConnectionRepositories = $(widgetFile "configurators/addrepository/connection")
+
 makeArchiveRepositories :: Widget
 makeArchiveRepositories = $(widgetFile "configurators/addrepository/archive")
-

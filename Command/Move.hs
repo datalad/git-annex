@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -14,15 +14,15 @@ import qualified Annex
 import Annex.Content
 import qualified Remote
 import Annex.UUID
+import Annex.Transfer
 import Logs.Presence
-import Logs.Transfer
 
-def :: [Command]
-def = [withOptions moveOptions $ command "move" paramPaths seek
+cmd :: [Command]
+cmd = [withOptions moveOptions $ command "move" paramPaths seek
 	SectionCommon "move content of files to/from another repository"]
 
 moveOptions :: [Option]
-moveOptions = fromToOptions ++ keyOptions
+moveOptions = fromToOptions ++ keyOptions ++ annexedMatchingOptions
 
 seek :: CommandSeek
 seek ps = do
@@ -33,8 +33,8 @@ seek ps = do
 		(withFilesInGit $ whenAnnexed $ start to from True)
 		ps
 
-start :: Maybe Remote -> Maybe Remote -> Bool -> FilePath -> (Key, Backend) -> CommandStart
-start to from move file (key, _) = start' to from move (Just file) key
+start :: Maybe Remote -> Maybe Remote -> Bool -> FilePath -> Key -> CommandStart
+start to from move = start' to from move . Just
 
 startKey :: Maybe Remote -> Maybe Remote -> Bool -> Key -> CommandStart
 startKey to from move = start' to from move Nothing
@@ -91,15 +91,16 @@ expectedPresent dest key = do
 	return $ dest `elem` remotes
 
 toPerform :: Remote -> Bool -> Key -> AssociatedFile -> Bool -> Either String Bool -> CommandPerform
-toPerform dest move key afile fastcheck isthere = moveLock move key $
+toPerform dest move key afile fastcheck isthere =
 	case isthere of
 		Left err -> do
 			showNote err
 			stop
 		Right False -> do
 			showAction $ "to " ++ Remote.name dest
-			ok <- upload (Remote.uuid dest) key afile noRetry $
-				Remote.storeKey dest key afile
+			ok <- notifyTransfer Upload afile $
+				upload (Remote.uuid dest) key afile noRetry $
+					Remote.storeKey dest key afile
 			if ok
 				then do
 					Remote.logStatus dest key InfoPresent
@@ -114,8 +115,8 @@ toPerform dest move key afile fastcheck isthere = moveLock move key $
 			finish
   where
 	finish
-		| move = do
-			removeAnnex key
+		| move = lockContent key $ \contentlock -> do
+			removeAnnex contentlock
 			next $ Command.Drop.cleanupLocal key
 		| otherwise = next $ return True
 
@@ -149,23 +150,17 @@ fromOk src key = go =<< Annex.getState Annex.force
 		return $ u /= Remote.uuid src && elem src remotes
 
 fromPerform :: Remote -> Bool -> Key -> AssociatedFile -> CommandPerform
-fromPerform src move key afile = moveLock move key $
-	ifM (inAnnex key)
-		( handle move True
-		, handle move =<< go
-		)
+fromPerform src move key afile = ifM (inAnnex key)
+	( dispatch move True
+	, dispatch move =<< go
+	)
   where
-	go = download (Remote.uuid src) key afile noRetry $ \p -> do
-		showAction $ "from " ++ Remote.name src
-		getViaTmp key $ \t -> Remote.retrieveKeyFile src key afile t p
-	handle _ False = stop -- failed
-	handle False True = next $ return True -- copy complete
-	handle True True = do -- finish moving
+	go = notifyTransfer Download afile $ 
+		download (Remote.uuid src) key afile noRetry $ \p -> do
+			showAction $ "from " ++ Remote.name src
+			getViaTmp key $ \t -> Remote.retrieveKeyFile src key afile t p
+	dispatch _ False = stop -- failed
+	dispatch False True = next $ return True -- copy complete
+	dispatch True True = do -- finish moving
 		ok <- Remote.removeKey src key
 		next $ Command.Drop.cleanupRemote key src ok
-
-{- Locks a key in order for it to be moved.
- - No lock is needed when a key is being copied. -}
-moveLock :: Bool -> Key -> Annex a -> Annex a
-moveLock True key a = lockContent key a
-moveLock False _ a = a

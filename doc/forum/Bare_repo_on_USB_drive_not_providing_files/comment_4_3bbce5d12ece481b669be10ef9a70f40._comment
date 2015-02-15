@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmTNrhkVQ26GBLaLD5-zNuEiR8syTj4mI8"
+ nickname="Juan"
+ subject="I think I got it working, however, same setup works different on fat and exfat"
+ date="2014-12-09T15:04:37Z"
+ content="""
+After struggling a lot, I tried to do the same but with an fat32 drive. Seems that some of the problems I'm experiencing are due to some (linux) filesystem functions working different with fat and exfat.
+Just to get this right, using repos on USB drive formatted as fat32 works perfectly under linux and mac. When I go to the exfat drive, linux fails, and osx keeps working.
+Are you able to test it?
+Steps to reproduce it: 
+1)make a test repo on linux: cd /tmp; mkdir test_repo; cd test repo; git init; git annex init \"test repo on linux box\" 
+2) go to exfat drive and clone it: git clone /tmp/rest_repo
+
+> git clone /home/juan/juanc/tmp/prueba_git 
+Cloning into 'prueba_git'... 
+error: chmod on /media/juan/USB_LIVE/tmp/test1/prueba_git/.git/config.lock failed: Function not implemented 
+error: chmod on /media/juan/USB_LIVE/tmp/test1/prueba_git/.git/config.lock failed: Function not implemented 
+error: chmod on /media/juan/USB_LIVE/tmp/test1/prueba_git/.git/config.lock failed: Function not implemented 
+error: chmod on /media/juan/USB_LIVE/tmp/test1/prueba_git/.git/config.lock failed: Function not implemented 
+error: chmod on /media/juan/USB_LIVE/tmp/test1/prueba_git/.git/config.lock failed: Function not implemented  
+error: chmod on /media/juan/USB_LIVE/tmp/test1/prueba_git/.git/config.lock failed: Function not implemented 
+fatal: 'origin' does not appear to be a git repository 
+fatal: Could not read from remote repository. 
+ 
+Please make sure you have the correct access rights 
+and the repository exists. 
+
+"""]]

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2014-12-02T17:34:41Z"
+ content="""
+I'm glad you were able to solve it!
+
+Now that you know what the bad commit is, can you tell me what it looks
+like? The assistant should not be committing deletions of all files, 
+unless all files actually were deleted...
+"""]]

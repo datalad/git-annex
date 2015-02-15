@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkEYZEqLf3Aj_FGV7S0FvsMplmGqqb555M"
+ nickname="Sergiusz"
+ subject="bup-join local-arch/2014-12-03-235617 "
+ date="2014-12-04T19:38:07Z"
+ content="""
+How can I restore the previous commit from bup archives created with bup-split? Yes, I know I can use bup-join local-arch~1 git notation, but I would like to use bup-join local-arch/2014-12-03-235617 (bup-ls local-arch results) ...but this method does not work ...
+
+s.
+"""]]

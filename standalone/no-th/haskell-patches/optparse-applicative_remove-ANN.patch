@@ -1,0 +1,33 @@
+From b128590966d4946219e45e2efd88acf7a354abc2 Mon Sep 17 00:00:00 2001
+From: androidbuilder <androidbuilder@example.com>
+Date: Tue, 14 Oct 2014 02:28:02 +0000
+Subject: [PATCH] remove ANN
+
+---
+ Options/Applicative.hs           |    2 --
+ Options/Applicative/Help/Core.hs |    2 --
+ 2 files changed, 4 deletions(-)
+
+diff --git a/Options/Applicative.hs b/Options/Applicative.hs
+index bd4129d..f412062 100644
+--- a/Options/Applicative.hs
++++ b/Options/Applicative.hs
+@@ -34,5 +34,3 @@ import Options.Applicative.Common
+ import Options.Applicative.Builder
+ import Options.Applicative.Builder.Completer
+ import Options.Applicative.Extra
+-
+-{-# ANN module "HLint: ignore Use import/export shortcut" #-}
+diff --git a/Options/Applicative/Help/Core.hs b/Options/Applicative/Help/Core.hs
+index 0a79169..3f1ce3f 100644
+--- a/Options/Applicative/Help/Core.hs
++++ b/Options/Applicative/Help/Core.hs
+@@ -139,5 +139,3 @@ parserUsage pprefs p progn = hsep
+   [ string "Usage:"
+   , string progn
+   , align (extractChunk (briefDesc pprefs p)) ]
+-
+-{-# ANN footerHelp "HLint: ignore Eta reduce" #-}
+-- 
+1.7.10.4
+

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2014-12-01T22:40:05Z"
+ content="""
+Yes, the new `git annex proxy` command was added partly thanks to this
+thread, and you can use it like that.
+
+There's also a new `git annex undo` command that's easier to use than the
+proxy command. It just undoes the last change you made to the file or
+directory you specify.
+"""]]

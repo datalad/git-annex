@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="tdussa"
+ ip="217.84.74.69"
+ subject="Why not automatically add the whole date?"
+ date="2014-04-30T20:41:20Z"
+ content="""
+Hi,
+
+apologies if I am missing something, but from what I understand, git-annex will automatically add the year and the month from a file's mtime to its metadata if instructed to do so.
+
+So... What about the day (or the time, for that matter?)?  What is the reasoning behind the decision not to add those bits automatically?  And, is there a way to get git-annex to add those bits of information automatically as well (besides the obvious way of creating a pre-commit-hook script to that effect)?
+
+THX & Cheers,
+Toby.
+"""]]

@@ -1,6 +1,6 @@
 {- git-annex command data types
  -
- - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2011 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -69,6 +69,7 @@ data CommandSection
 	| SectionMetaData
 	| SectionUtility
 	| SectionPlumbing
+	| SectionTesting
 	deriving (Eq, Ord, Enum, Bounded)
 
 descSection :: CommandSection -> String
@@ -79,3 +80,4 @@ descSection SectionQuery = "Query commands"
 descSection SectionMetaData = "Metadata commands"
 descSection SectionUtility = "Utility commands"
 descSection SectionPlumbing = "Plumbing commands"
+descSection SectionTesting = "Testing commands"

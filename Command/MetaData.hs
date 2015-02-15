@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,8 +16,8 @@ import Logs.MetaData
 import qualified Data.Set as S
 import Data.Time.Clock.POSIX
 
-def :: [Command]
-def = [withOptions metaDataOptions $
+cmd :: [Command]
+cmd = [withOptions metaDataOptions $
 	command "metadata" paramPaths seek
 	SectionMetaData "sets metadata of a file"]
 
@@ -28,7 +28,7 @@ metaDataOptions =
 	, untagOption
 	, getOption
 	, jsonOption
-	] ++ keyOptions
+	] ++ keyOptions ++ annexedMatchingOptions
 
 storeModMeta :: ModMeta -> Annex ()
 storeModMeta modmeta = Annex.changeState $
@@ -58,13 +58,16 @@ seek ps = do
 	getfield <- getOptionField getOption $ \ms ->
 		return $ either error id . mkMetaField <$> ms
 	now <- liftIO getPOSIXTime
+	let seeker = if null modmeta
+		then withFilesInGit
+		else withFilesInGitNonRecursive
 	withKeyOptions
 		(startKeys now getfield modmeta)
-		(withFilesInGit (whenAnnexed $ start now getfield modmeta))
+		(seeker $ whenAnnexed $ start now getfield modmeta)
 		ps
 
-start :: POSIXTime -> Maybe MetaField -> [ModMeta] -> FilePath -> (Key, Backend) -> CommandStart
-start now f ms file (k, _) = start' (Just file) now f ms k
+start :: POSIXTime -> Maybe MetaField -> [ModMeta] -> FilePath -> Key -> CommandStart
+start now f ms file = start' (Just file) now f ms
 
 startKeys :: POSIXTime -> Maybe MetaField -> [ModMeta] -> Key -> CommandStart
 startKeys = start' Nothing

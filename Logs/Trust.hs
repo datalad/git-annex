@@ -1,6 +1,6 @@
 {- git-annex trust log
  -
- - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,26 +11,22 @@ module Logs.Trust (
 	TrustLevel(..),
 	trustGet,
 	trustMap,
-	trustSet,
 	trustPartition,
 	trustExclude,
 	lookupTrust,
 	trustMapLoad,
-	trustMapRaw,
 ) where
 
 import qualified Data.Map as M
-import Data.Time.Clock.POSIX
+import Data.Default
 
 import Common.Annex
 import Types.TrustLevel
-import qualified Annex.Branch
 import qualified Annex
 import Logs
-import Logs.UUIDBased
 import Remote.List
 import qualified Types.Remote
-import Logs.Trust.Pure as X
+import Logs.Trust.Basic as X
 
 {- Returns a list of UUIDs that the trustLog indicates have the
  - specified trust level.
@@ -39,20 +35,9 @@ import Logs.Trust.Pure as X
 trustGet :: TrustLevel -> Annex [UUID]
 trustGet level = M.keys . M.filter (== level) <$> trustMap
 
-{- Changes the trust level for a uuid in the trustLog. -}
-trustSet :: UUID -> TrustLevel -> Annex ()
-trustSet uuid@(UUID _) level = do
-	ts <- liftIO getPOSIXTime
-	Annex.Branch.change trustLog $
-		showLog showTrustLog .
-			changeLog ts uuid level .
-				parseLog (Just . parseTrustLog)
-	Annex.changeState $ \s -> s { Annex.trustmap = Nothing }
-trustSet NoUUID _ = error "unknown UUID; cannot modify"
-
 {- Returns the TrustLevel of a given repo UUID. -}
 lookupTrust :: UUID -> Annex TrustLevel
-lookupTrust u = (fromMaybe SemiTrusted . M.lookup u) <$> trustMap
+lookupTrust u = (fromMaybe def . M.lookup u) <$> trustMap
 
 {- Partitions a list of UUIDs to those matching a TrustLevel and not. -}
 trustPartition :: TrustLevel -> [UUID] -> Annex ([UUID], [UUID])
@@ -90,8 +75,3 @@ trustMapLoad = do
 	configuredtrust r = (\l -> Just (Types.Remote.uuid r, l))
 		=<< readTrustLevel 
 		=<< remoteAnnexTrustLevel (Types.Remote.gitconfig r)
-
-{- Does not include forcetrust or git config values, just those from the
- - log file. -}
-trustMapRaw :: Annex TrustMap
-trustMapRaw = calcTrustMap <$> Annex.Branch.get trustLog

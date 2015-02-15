@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ ip="2001:1928:1:9::1"
+ subject="look at mosh"
+ date="2014-04-04T14:07:51Z"
+ content="""
+you may want to look at how \"mosh\" handles authentication: http://mosh.mit.edu/
+
+from what i understand, it negociates an authentication token using SSH and then uses that to encrypt and authenticate UDP traffic. seems like similar issues here...
+"""]]

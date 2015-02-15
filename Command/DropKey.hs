@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -13,8 +13,8 @@ import qualified Annex
 import Logs.Location
 import Annex.Content
 
-def :: [Command]
-def = [noCommit $ command "dropkey" (paramRepeating paramKey) seek
+cmd :: [Command]
+cmd = [noCommit $ command "dropkey" (paramRepeating paramKey) seek
 	SectionPlumbing "drops annexed content for specified keys"] 
 
 seek :: CommandSeek
@@ -28,8 +28,8 @@ start key = stopUnless (inAnnex key) $ do
 	next $ perform key
 
 perform :: Key -> CommandPerform
-perform key = lockContent key $ do
-	removeAnnex key
+perform key = lockContent key $ \contentlock -> do
+	removeAnnex contentlock
 	next $ cleanup key
 
 cleanup :: Key -> CommandCleanup

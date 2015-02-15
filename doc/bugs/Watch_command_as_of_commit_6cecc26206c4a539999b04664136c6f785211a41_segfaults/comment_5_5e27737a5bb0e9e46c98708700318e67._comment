@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
- nickname="Jimmy"
- subject="comment 5"
- date="2012-07-27T12:20:07Z"
- content="""
-After some debugging, I looked at the Utility/libkqueue.c and used it as a test, it seems to be hanging/segfaulting around the call to that library. Annoyingly I get segfaults from the library every so often on OSX, it's pretty a random event.
-"""]]

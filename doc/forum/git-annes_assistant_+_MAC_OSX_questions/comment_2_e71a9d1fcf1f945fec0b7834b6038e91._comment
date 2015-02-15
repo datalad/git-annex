@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkYmMFDdf3GJ9Oba6NCVkzGc4JyB9WavMs"
+ nickname="Xinruo"
+ subject="comment 2"
+ date="2014-05-11T15:15:50Z"
+ content="""
+> say I add a folder called: Documents, it has now apparently successfully synced to box.com and S3. I say apparently because there is no tool in the assistant to check
+
+From the command line, git annex whereis FILE will tell you which remotes have the file, or git annex list will list out this for a directory
+
+> I can't seem to figure out how to delete the log of the assistant, its getting quite longish
+
+They live in .git/annex/daemon.log*
+
+> I can't seem to figure out how to upgrade from 5.20140420 to 5.20140421
+
+> I move a file from a local repo to the archive folder but nothing happens except git-annex recording the move: (Recording state in git...) /Users/ovi/Sharing/git-annex/Finance/1-564 Erkl. z. Gebiets- u. Steuereigenschaft 08_04.pdf still has writers, not adding [2014-05-09 17:22:43 SAST] Committer: Committing changes to git
+
+It says the pdf still has writers.. Maybe the file is locked by another program? In this case the file is not going to be annexed, I believe, until the lock is revoked.
+
+"""]]

@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.172"
- subject="comment 2"
- date="2014-02-11T00:48:35Z"
- content="""
-I think you need to check your remote is configured properly before filing a bug report. But, there has been no change that is intended to lead to such a behavior.
-"""]]

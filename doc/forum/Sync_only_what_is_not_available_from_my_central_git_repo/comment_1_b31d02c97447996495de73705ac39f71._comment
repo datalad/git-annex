@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="gjost"
+ ip="75.140.92.244"
+ subject="comment 1"
+ date="2014-05-20T15:19:35Z"
+ content="""
+> If I leave from a meeting or brainstorming session without having pushed all of my work into the cloud then I cannot continue working from home. This is because our office is behind multiple levels of NAT over which we have no control. Hence I am unable to remote into my machine in order to push work up to GitHub or scp it to my laptop.
+
+This is not a git-annex solution, but you could use Pagekite to SSH to your work machine from home.
+
+
+"""]]

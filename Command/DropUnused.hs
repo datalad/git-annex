@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010,2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2010,2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,8 +16,8 @@ import qualified Git
 import Command.Unused (withUnusedMaps, UnusedMaps(..), startUnused)
 import Config.NumCopies
 
-def :: [Command]
-def = [withOptions [Command.Drop.dropFromOption] $
+cmd :: [Command]
+cmd = [withOptions [Command.Drop.dropFromOption] $
 	command "dropunused" (paramRepeating paramNumRange)
 		seek SectionMaintenance "drop unused file content"]
 
@@ -34,8 +34,8 @@ perform numcopies key = maybe droplocal dropremote =<< Remote.byNameWithUUID =<<
   where
 	dropremote r = do
 		showAction $ "from " ++ Remote.name r
-		Command.Drop.performRemote key numcopies r
-	droplocal = Command.Drop.performLocal key numcopies Nothing
+		Command.Drop.performRemote key Nothing numcopies r
+	droplocal = Command.Drop.performLocal key Nothing numcopies Nothing
 	from = Annex.getField $ optionName Command.Drop.dropFromOption
 
 performOther :: (Key -> Git.Repo -> FilePath) -> Key -> CommandPerform

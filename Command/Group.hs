@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -15,8 +15,8 @@ import Types.Group
 
 import qualified Data.Set as S
 
-def :: [Command]
-def = [command "group" (paramPair paramRemote paramDesc) seek
+cmd :: [Command]
+cmd = [command "group" (paramPair paramRemote paramDesc) seek
 	SectionSetup "add a repository to a group"]
 
 seek :: CommandSeek
@@ -26,10 +26,14 @@ start :: [String] -> CommandStart
 start (name:g:[]) = do
 	showStart "group" name
 	u <- Remote.nameToUUID name
-	next $ perform u g
+	next $ setGroup u g
+start (name:[]) = do
+	u <- Remote.nameToUUID name
+	showRaw . unwords . S.toList =<< lookupGroups u
+	stop
 start _ = error "Specify a repository and a group."
 
-perform :: UUID -> Group -> CommandPerform
-perform uuid g = do
+setGroup :: UUID -> Group -> CommandPerform
+setGroup uuid g = do
 	groupChange uuid (S.insert g) 
 	next $ return True

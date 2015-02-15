@@ -1,25 +1,22 @@
 {- git-annex command
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Command.Direct where
 
-import Control.Exception.Extensible
-
 import Common.Annex
 import Command
 import qualified Git
-import qualified Git.Command
 import qualified Git.LsFiles
+import qualified Git.Branch
 import Config
 import Annex.Direct
-import Annex.Exception
 
-def :: [Command]
-def = [notBareRepo $ noDaemonRunning $
+cmd :: [Command]
+cmd = [notBareRepo $ noDaemonRunning $
 	command "direct" paramNothing seek
 		SectionSetup "switch repository to direct mode"]
 
@@ -33,9 +30,8 @@ perform :: CommandPerform
 perform = do
 	showStart "commit" ""
 	showOutput
-	_ <- inRepo $ Git.Command.runBool
-		[ Param "commit"
-		, Param "-a"
+	_ <- inRepo $ Git.Branch.commitCommand Git.Branch.ManualCommit
+		[ Param "-a"
 		, Param "-m"
 		, Param "commit before switching to direct mode"
 		]
@@ -47,13 +43,13 @@ perform = do
 	void $ liftIO clean
 	next cleanup
   where
-	go = whenAnnexed $ \f (k, _) -> do
+	go = whenAnnexed $ \f k -> do
 		r <- toDirectGen k f
 		case r of
 			Nothing -> noop
 			Just a -> do
 				showStart "direct" f
-				r' <- tryAnnex a
+				r' <- tryNonAsync a
 				case r' of
 					Left e -> warnlocked e
 					Right _ -> showEndOk

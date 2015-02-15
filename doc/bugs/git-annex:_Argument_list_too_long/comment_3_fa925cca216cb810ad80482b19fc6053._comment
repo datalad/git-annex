@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawnsuhFUIfWNT-Q-C02FDaSQqceFDge5M9w"
- nickname="Florian"
- subject="comment 3"
- date="2013-09-15T23:08:48Z"
- content="""
-Ok, I managed to get the transcript. It is located at <http://xgm.de/upload/transcript.log> (partly) resp. <http://xgm.de/upload/transcript.log.gz> (complete). Looks like the same script is executed again and again with an ever growing LD_LIBRARY_PATH argument list. The same happens when I simply run \"git-annex\" on the shell of the server. \"runshell\" standalone works fine.
-"""]]

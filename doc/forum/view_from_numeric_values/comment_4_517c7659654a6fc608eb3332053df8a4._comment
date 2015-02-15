@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="cehteh"
+ ip="217.8.62.137"
+ subject="comment 4"
+ date="2014-03-26T20:03:51Z"
+ content="""
+I agree with you that things must stay simple. All what should be done is having the same effects like normal globs but adding arithmetic comparisons to it (could you think about a globbing extension over numeric values?). Then the generated views will have the same properties/semnatic as the normal glob'ed views without other side effects (if you want to go that far, this would even hold true for disjunct, parenthesized and otherwise complex expression).
+
+Example (how it should work, except my bug report 'set metadata on wrong files')
+
+    git annex metadata a.txt -s foo=bar -s num=1
+    git annex metadata b.txt -s foo=baz -s num=2
+    git annex metadata c.txt -s foo=barf -s num=3
+
+    git annex view foo=bar* num=* -ne 2
+
+should give
+    ./bar/1/a.txt ./barf/3/c.txt
+
+am I right now than one could
+
+    mkdir -p ./baz/2
+    mv /bar/1/a.txt ./baz/2
+
+to change the metadata of a.txt, despite the foo=baz and num=2 fields where initially filtered out when creating the view?
+If this assumption is true then having arithmetic filters, no matter how complex they are won't change the existing semantics over what globs do.
+
+"""]]

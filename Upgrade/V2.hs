@@ -1,6 +1,6 @@
 {- git-annex v2 -> v3 upgrade support
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,6 +12,7 @@ import qualified Git
 import qualified Git.Command
 import qualified Git.Ref
 import qualified Annex.Branch
+import qualified Annex
 import Annex.Content
 import Utility.Tmp
 import Logs
@@ -47,7 +48,8 @@ upgrade = do
 
 	e <- liftIO $ doesDirectoryExist old
 	when e $ do
-		mapM_ (\(k, f) -> inject f $ locationLogFile k) =<< locationLogs
+		config <- Annex.getGitConfig
+		mapM_ (\(k, f) -> inject f $ locationLogFile config k) =<< locationLogs
 		mapM_ (\f -> inject f f) =<< logFiles old
 
 	saveState False

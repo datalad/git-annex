@@ -1,8 +1,8 @@
 {- data size display and parsing
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -
  -
  - And now a rant: 
@@ -41,6 +41,7 @@ module Utility.DataUnits (
 	memoryUnits,
 	bandwidthUnits,
 	oldSchoolUnits,
+	Unit(..),
 
 	roughSize,
 	compareSizes,
@@ -111,7 +112,7 @@ roughSize units short i
 	| i < 0 = '-' : findUnit units' (negate i)
 	| otherwise = findUnit units' i
   where
-	units' = reverse $ sort units -- largest first
+	units' = sortBy (flip compare) units -- largest first
 
 	findUnit (u@(Unit s _ _):us) i'
 		| i' >= s = showUnit i' u
@@ -120,7 +121,7 @@ roughSize units short i
 
 	showUnit x (Unit size abbrev name) = s ++ " " ++ unit
 	  where
-	  	v = (fromInteger x :: Double) / fromInteger size
+		v = (fromInteger x :: Double) / fromInteger size
 		s = showImprecise 2 v
 		unit
 			| short = abbrev

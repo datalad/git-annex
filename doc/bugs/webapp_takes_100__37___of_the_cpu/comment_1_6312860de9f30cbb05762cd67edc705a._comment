@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.227"
- subject="comment 1"
- date="2013-12-31T19:38:24Z"
- content="""
-The webapp pushes a changed html div to the browser when eg, updating the progress bar. This is inneficient, which doesn't usually matter, since git-annex is not generally used with a large number of small files
-"""]]

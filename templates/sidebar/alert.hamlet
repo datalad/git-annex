@@ -10,7 +10,8 @@
     $else
       $maybe i <- alertIcon alert
         ^{htmlIcon i} #
-      <strong>#{h}</strong> #
+      <strong>#{h}
+      \ 
   $nothing
     $maybe i <- alertIcon alert
       ^{htmlIcon i} #

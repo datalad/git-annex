@@ -1,0 +1,75 @@
+Hello,
+
+I am trying to wrap my head around annex still.  I'm creating a source local git repo, editing an annex file, and then syncing in a second repo.  In that second repo I'm trying to figure out how I can get a status notifying me that a file is out of date.
+
+If I use 'annex sync --content' the files are all up to date, as expected, but what I kind of expected is 'annex status' to say something like 'files out of date, blah blah'.  I am spelling out my example below.  
+
+Annex version is 5.20140613
+
+
+## I create a source and target repo, and I add a git managed file and an annex managed file
+
+    $ mkdir source target
+    $ cd source
+    $ git init
+    $ git annex init
+    $ cat > gitfile
+    hi this is my git file
+    $ cat > annexfile
+    hi this is my annex file
+    $ git add gitfile 
+    $ git annex add annexfile 
+    $ git commit -m 'init commit'
+    $ cd ../target
+    $ git clone ../source/ .
+    $ ls -al
+    total 16
+    drwxr-xr-x  170 Jul 15 15:55 .
+    drwxr-xr-x  136 Jul 15 15:54 ..
+    drwxr-xr-x  442 Jul 15 15:55 .git
+    lrwxr-xr-x  180 Jul 15 15:55 annexfile -> .git/annex/objects/Qp/F0/SHA256E-s25--045cf30cb201c6723cb6fad9ca539f639de7f242b87775b876ef9ccb1f577ccf/SHA256E-s25--045cf30cb201c6723cb6fad9ca539f639de7f242b87775b876ef9ccb1f577ccf
+    -rw-r--r--  23 Jul 15 15:55 gitfile
+    $ git annex sync
+    ...
+    To [base path]/target/../source/
+     * [new branch]      git-annex -> synced/git-annex
+     * [new branch]      master -> synced/master
+    ok
+    $ cat gitfile 
+    hi this is my git file
+    $ cat annexfile 
+    cat: annexfile: No such file or directory
+    $ git annex sync --content
+    $ cat annexfile 
+    hi this is my annex file
+
+## So far so good.  Now I'm going to edit my annexed file in source repo and see if I can find out that the file was edited in the target
+
+    $ cd ..
+    $ cd source
+    $ git annex edit annexfile 
+    $ cat > annexfile 
+    wow I changed my annex file
+    $ git annex add annexfile 
+    $ git commit -m 'changed an annex file'
+    $ cd ..
+    $ cd target
+    $ git pull
+    $ cat annexfile 
+    cat: annexfile: No such file or directory
+    $ git annex sync
+    $ ls
+    annexfile gitfile
+    $ cat annexfile 
+    cat: annexfile: No such file or directory
+    $ git annex status
+    [no output]
+
+## Here is where I'd expect something saying 'annexfile is out of date', etc.
+## I can infer it because the link is missing, but I'm sure there's a more logical way.
+
+    $ git annex sync --content
+    $ cat annexfile 
+    wow I changed my annex file
+
+## After I synced content all is well.

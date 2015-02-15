@@ -10,24 +10,30 @@ import Control.Monad
 
 import Build.TestConfig
 import Build.Version
+import Utility.PartialPrelude
+import Utility.Process
 import Utility.SafeCommand
 import Utility.ExternalSHA
 import Utility.Env
+import Utility.Exception
 import qualified Git.Version
+import Utility.DottedVersion
 
 tests :: [TestCase]
 tests =
-	[ TestCase "version" getVersion
+	[ TestCase "version" (Config "packageversion" . StringConfig <$> getVersion)
 	, TestCase "UPGRADE_LOCATION" getUpgradeLocation
 	, TestCase "git" $ requireCmd "git" "git --version >/dev/null"
 	, TestCase "git version" getGitVersion
 	, testCp "cp_a" "-a"
 	, testCp "cp_p" "-p"
+	, testCp "cp_preserve_timestamps" "--preserve=timestamps"
 	, testCp "cp_reflink_auto" "--reflink=auto"
 	, TestCase "xargs -0" $ requireCmd "xargs_0" "xargs -0 </dev/null"
 	, TestCase "rsync" $ requireCmd "rsync" "rsync --version >/dev/null"
 	, TestCase "curl" $ testCmd "curl" "curl --version >/dev/null"
 	, TestCase "wget" $ testCmd "wget" "wget --version >/dev/null"
+	, TestCase "wget supports -q --show-progress" checkWgetQuietProgress
 	, TestCase "bup" $ testCmd "bup" "bup --version >/dev/null"
 	, TestCase "nice" $ testCmd "nice" "nice true >/dev/null"
 	, TestCase "ionice" $ testCmd "ionice" "ionice -c3 true >/dev/null"
@@ -60,7 +66,7 @@ shaTestCases l = map make l
 		Config key . MaybeStringConfig <$> search (shacmds n)
 	  where
 		key = "sha" ++ show n
-	  	search [] = return Nothing
+		search [] = return Nothing
 		search (c:cmds) = do
 			sha <- externalSHA c n "/dev/null"
 			if sha == Right knowngood
@@ -94,6 +100,19 @@ getGitVersion = do
 	when (v < oldestallowed) $
 		error $ "installed git version " ++ show v ++ " is too old! (Need " ++ show oldestallowed ++ " or newer)"
 	return $ Config "gitversion" $ StringConfig $ show v
+
+checkWgetQuietProgress :: Test
+checkWgetQuietProgress = Config "wgetquietprogress" . BoolConfig
+	. maybe False (>= normalize "1.16")
+	<$> getWgetVersion 
+
+getWgetVersion :: IO (Maybe DottedVersion)
+getWgetVersion = catchDefaultIO Nothing $
+	extract <$> readProcess "wget" ["--version"]
+  where
+	extract s = case lines s of
+		[] -> Nothing
+		(l:_) -> normalize <$> headMaybe (drop 2 $ words l)
 
 getSshConnectionCaching :: Test
 getSshConnectionCaching = Config "sshconnectioncaching" . BoolConfig <$>

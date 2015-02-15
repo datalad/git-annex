@@ -3,9 +3,9 @@
  - Uses either the ADNS Haskell library, or the standalone Haskell DNS
  - package, or the host command.
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 {-# LANGUAGE CPP #-}
@@ -74,7 +74,7 @@ lookupSRV (SRV srv) = do
 		maybe [] use r
 #endif
   where
-  	use = orderHosts . map tohosts
+	use = orderHosts . map tohosts
 	tohosts (priority, weight, port, hostname) =
 		( (priority, weight)
 		, (B8.toString hostname, PortNumber $ fromIntegral port)

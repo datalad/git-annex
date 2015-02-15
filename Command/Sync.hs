@@ -1,12 +1,23 @@
 {- git-annex command
  -
  - Copyright 2011 Joachim Breitner <mail@joachim-breitner.de>
- - Copyright 2011-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Command.Sync where
+module Command.Sync (
+	cmd,
+	prepMerge,
+	mergeLocal,
+	mergeRemote,
+	commitStaged,
+	commitMsg,
+	pushBranch,
+	updateBranch,
+	syncBranch,
+	updateSyncBranch,
+) where
 
 import Common.Annex
 import Command
@@ -19,9 +30,9 @@ import Annex.Hook
 import qualified Git.Command
 import qualified Git.LsFiles as LsFiles
 import qualified Git.Branch
+import qualified Git.Types as Git
 import qualified Git.Ref
 import qualified Git
-import qualified Types.Remote
 import qualified Remote.Git
 import Config
 import Annex.Wanted
@@ -31,20 +42,29 @@ import qualified Command.Move
 import Logs.Location
 import Annex.Drop
 import Annex.UUID
+import Logs.UUID
 import Annex.AutoMerge
+import Annex.Ssh
 
 import Control.Concurrent.MVar
+import qualified Data.Map as M
 
-def :: [Command]
-def = [withOptions syncOptions $
+cmd :: [Command]
+cmd = [withOptions syncOptions $
 	command "sync" (paramOptional (paramRepeating paramRemote))
 	seek SectionCommon "synchronize local repository with remotes"]
 
 syncOptions :: [Option]
-syncOptions = [ contentOption ]
+syncOptions =
+	[ contentOption
+	, messageOption
+	]
 
 contentOption :: Option
 contentOption = flagOption [] "content" "also transfer file contents"
+
+messageOption :: Option
+messageOption = fieldOption ['m'] "message" "MSG" "specify commit message"
 
 seek :: CommandSeek
 seek rs = do
@@ -97,7 +117,7 @@ seek rs = do
  - of the repo. This also means that sync always acts on all files in the
  - repository, not just on a subdirectory. -}
 prepMerge :: Annex ()
-prepMerge = liftIO . setCurrentDirectory =<< fromRepo Git.repoPath
+prepMerge = Annex.changeDirectory =<< fromRepo Git.repoPath
 
 syncBranch :: Git.Ref -> Git.Ref
 syncBranch = Git.Ref.under "refs/heads/synced" . fromDirectBranch
@@ -109,48 +129,57 @@ syncRemotes :: [String] -> Annex [Remote]
 syncRemotes rs = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
   where
 	pickfast = (++) <$> listed <*> (filterM good =<< fastest <$> available)
+	
 	wanted
 		| null rs = filterM good =<< concat . Remote.byCost <$> available
 		| otherwise = listed
-	listed = catMaybes <$> mapM (Remote.byName . Just) rs
-	available = filter (remoteAnnexSync . Types.Remote.gitconfig)
+	
+	listed = concat <$> mapM Remote.byNameOrGroup rs
+	
+	available = filter (remoteAnnexSync . Remote.gitconfig)
 		. filter (not . Remote.isXMPPRemote)
 		<$> Remote.remoteList
+	
 	good r
-		| Remote.gitSyncableRemote r = Remote.Git.repoAvail $ Types.Remote.repo r
+		| Remote.gitSyncableRemote r = Remote.Git.repoAvail $ Remote.repo r
 		| otherwise = return True
+	
 	fastest = fromMaybe [] . headMaybe . Remote.byCost
 
 commit :: CommandStart
-commit = next $ next $ ifM isDirect
-	( do
-		showStart "commit" ""
-		void stageDirect
-		void preCommitDirect
-		commitStaged commitmessage
-	, do
-		showStart "commit" ""
-		Annex.Branch.commit "update"
-		-- Commit will fail when the tree is clean, so ignore failure.
-		_ <- inRepo $ tryIO . Git.Command.runQuiet
-			[ Param "commit"
-			, Param "-a"
-			, Param "-m"
-			, Param commitmessage
-			]
-		return True
-	)
-  where
-	commitmessage = "git-annex automatic sync"
+commit = next $ next $ do
+	commitmessage <- maybe commitMsg return
+		=<< Annex.getField (optionName messageOption)
+	showStart "commit" ""
+	Annex.Branch.commit "update"
+	ifM isDirect
+		( do
+			void stageDirect
+			void preCommitDirect
+			commitStaged Git.Branch.ManualCommit commitmessage
+		, do
+			inRepo $ Git.Branch.commitQuiet Git.Branch.ManualCommit
+				[ Param "-a"
+				, Param "-m"
+				, Param commitmessage
+				]
+			return True
+		)
 
-commitStaged :: String -> Annex Bool
-commitStaged commitmessage = go =<< inRepo Git.Branch.currentUnsafe
+commitMsg :: Annex String
+commitMsg = do
+	u <- getUUID
+	m <- uuidMap
+	return $ "git-annex in " ++ fromMaybe "unknown" (M.lookup u m)
+
+commitStaged :: Git.Branch.CommitMode -> String -> Annex Bool
+commitStaged commitmode commitmessage = go =<< inRepo Git.Branch.currentUnsafe
   where
 	go Nothing = return False
 	go (Just branch) = do
 		runAnnexHook preCommitAnnexHook
 		parent <- inRepo $ Git.Ref.sha branch
-		void $ inRepo $ Git.Branch.commit False commitmessage branch
+		void $ inRepo $ Git.Branch.commit commitmode False commitmessage branch
 			(maybeToList parent)
 		return True
 
@@ -169,11 +198,16 @@ mergeLocal (Just branch) = go =<< needmerge
 	go False = stop
 	go True = do
 		showStart "merge" $ Git.Ref.describe syncbranch
-		next $ next $ autoMergeFrom syncbranch (Just branch)
+		next $ next $ autoMergeFrom syncbranch (Just branch) Git.Branch.ManualCommit
 
 pushLocal :: Maybe Git.Ref -> CommandStart
-pushLocal Nothing = stop
-pushLocal (Just branch) = do
+pushLocal b = do
+	updateSyncBranch b
+	stop
+
+updateSyncBranch :: Maybe Git.Ref -> Annex ()
+updateSyncBranch Nothing = noop
+updateSyncBranch (Just branch) = do
 	-- Update the sync branch to match the new state of the branch
 	inRepo $ updateBranch $ syncBranch branch
 	-- In direct mode, we're operating on some special direct mode
@@ -181,7 +215,6 @@ pushLocal (Just branch) = do
 	-- branch.
 	whenM isDirect $
 		inRepo $ updateBranch $ fromDirectBranch branch
-	stop
 
 updateBranch :: Git.Ref -> Git.Repo -> IO ()
 updateBranch syncbranch g = 
@@ -201,8 +234,9 @@ pullRemote remote branch = do
 		stopUnless fetch $
 			next $ mergeRemote remote branch
   where
-	fetch = inRepo $ Git.Command.runBool
-		[Param "fetch", Param $ Remote.name remote]
+	fetch = inRepoWithSshOptionsTo (Remote.repo remote) (Remote.gitconfig remote) $
+		Git.Command.runBool
+			[Param "fetch", Param $ Remote.name remote]
 
 {- The remote probably has both a master and a synced/master branch.
  - Which to merge from? Well, the master has whatever latest changes
@@ -210,14 +244,17 @@ pullRemote remote branch = do
  - while the synced/master may have changes that some
  - other remote synced to this remote. So, merge them both. -}
 mergeRemote :: Remote -> Maybe Git.Ref -> CommandCleanup
-mergeRemote remote b = case b of
-	Nothing -> do
-		branch <- inRepo Git.Branch.currentUnsafe
-		and <$> mapM (merge Nothing) (branchlist branch)
-	Just thisbranch ->
-		and <$> (mapM (merge (Just thisbranch)) =<< tomerge (branchlist b))
+mergeRemote remote b = ifM isBareRepo
+	( return True
+	, case b of
+		Nothing -> do
+			branch <- inRepo Git.Branch.currentUnsafe
+			and <$> mapM (merge Nothing) (branchlist branch)
+		Just thisbranch ->
+			and <$> (mapM (merge (Just thisbranch)) =<< tomerge (branchlist b))
+	)
   where
-	merge thisbranch = flip autoMergeFrom thisbranch . remoteBranch remote
+	merge thisbranch br = autoMergeFrom (remoteBranch remote br) thisbranch Git.Branch.ManualCommit
 	tomerge = filterM (changed remote)
 	branchlist Nothing = []
 	branchlist (Just branch) = [branch, syncBranch branch]
@@ -227,14 +264,15 @@ pushRemote _remote Nothing = stop
 pushRemote remote (Just branch) = go =<< needpush
   where
 	needpush
-		| remoteAnnexReadOnly (Types.Remote.gitconfig remote) = return False
+		| remoteAnnexReadOnly (Remote.gitconfig remote) = return False
 		| otherwise = anyM (newer remote) [syncBranch branch, Annex.Branch.name]
 	go False = stop
 	go True = do
 		showStart "push" (Remote.name remote)
 		next $ next $ do
 			showOutput
-			ok <- inRepo $ pushBranch remote branch
+			ok <- inRepoWithSshOptionsTo (Remote.repo remote) (Remote.gitconfig remote) $
+				pushBranch remote branch
 			unless ok $ do
 				warning $ unwords [ "Pushing to " ++ Remote.name remote ++ " failed." ]
 				showLongNote "(non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote's git config)"
@@ -337,8 +375,8 @@ seekSyncContent rs = do
 		(\v -> void (liftIO (tryPutMVar mvar ())) >> syncFile rs f v)
 		noop
 
-syncFile :: [Remote] -> FilePath -> (Key, Backend) -> Annex ()
-syncFile rs f (k, _) = do
+syncFile :: [Remote] -> FilePath -> Key -> Annex ()
+syncFile rs f k = do
 	locs <- loggedLocations k
 	let (have, lack) = partition (\r -> Remote.uuid r `elem` locs) rs
 
@@ -353,7 +391,7 @@ syncFile rs f (k, _) = do
 	handleDropsFrom locs' rs "unwanted" True k (Just f)
 		Nothing callCommandAction
   where
-  	wantget have = allM id 
+	wantget have = allM id 
 		[ pure (not $ null have)
 		, not <$> inAnnex k
 		, wantGet True (Just k) (Just f)
@@ -367,7 +405,7 @@ syncFile rs f (k, _) = do
 		next $ next $ getViaTmp k $ \dest -> getKeyFile' k (Just f) dest have
 
 	wantput r
-		| Remote.readonly r || remoteAnnexReadOnly (Types.Remote.gitconfig r) = return False
+		| Remote.readonly r || remoteAnnexReadOnly (Remote.gitconfig r) = return False
 		| otherwise = wantSend True (Just k) (Just f) (Remote.uuid r)
 	handleput lack = ifM (inAnnex k)
 		( map put <$> filterM wantput lack

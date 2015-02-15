@@ -8,7 +8,7 @@
  - Repositories record their UUID and the date when they --get or --drop
  - a value.
  - 
- - Copyright 2010-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -29,6 +29,7 @@ import Logs
 import Logs.Presence
 import Annex.UUID
 import Git.Types (RefDate)
+import qualified Annex
 
 {- Log a change in the presence of a key's value in current repository. -}
 logStatus :: Key -> LogStatus -> Annex ()
@@ -38,7 +39,9 @@ logStatus key s = do
 
 {- Log a change in the presence of a key's value in a repository. -}
 logChange :: Key -> UUID -> LogStatus -> Annex ()
-logChange key (UUID u) s = addLog (locationLogFile key) =<< logNow s u
+logChange key (UUID u) s = do
+	config <- Annex.getGitConfig
+	addLog (locationLogFile config key) =<< logNow s u
 logChange _ NoUUID _ = noop
 
 {- Returns a list of repository UUIDs that, according to the log, have
@@ -51,7 +54,9 @@ loggedLocationsHistorical :: RefDate -> Key -> Annex [UUID]
 loggedLocationsHistorical = getLoggedLocations . historicalLog
 
 getLoggedLocations :: (FilePath -> Annex [String]) -> Key -> Annex [UUID]
-getLoggedLocations getter key = map toUUID <$> (getter . locationLogFile) key
+getLoggedLocations getter key = do
+	config <- Annex.getGitConfig
+	map toUUID <$> (getter . locationLogFile config) key
 
 {- Finds all keys that have location log information.
  - (There may be duplicate keys in the list.) -}

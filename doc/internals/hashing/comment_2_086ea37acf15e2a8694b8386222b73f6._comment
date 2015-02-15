@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnx8kHW66N3BqmkVpgtXDlYMvr8TJ5VvfY"
+ nickname="Yaroslav"
+ subject="comment 2"
+ date="2014-12-04T20:26:47Z"
+ content="""
+1c to support  Péter's statement:
+
+    $> git annex examinekey --format='${hashdirmixed}' \"SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\"
+    pX/ZJ/%  
+"""]]

@@ -1,9 +1,0 @@
-Preamble: Obviously, the core feature of git-annex is the ability to keep a subset of files in a local repo. The main trade-off is that you don't get version tracking.
-
-Use case: On my laptop, I might not have enough disk space to store everything. Not so for my main box nor my backup server. And I would _really_ like to have proper version tracking for many of my files. Thus...
-
-Wish: ...why not use git as a version backend? That way, I could just push all my stuff to the central instance(s) and have the best of both worlds. Depending on what backend is used in the local repos, it might make sense to define a list of supported client backends with pre-computed keys.
-
--- RichiH
-
-[[done]] (bup)

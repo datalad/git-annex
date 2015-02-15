@@ -1,6 +1,6 @@
 {- git-annex XMPP client
  -
- - Copyright 2012, 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012, 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -42,17 +42,20 @@ xmppClientThread urlrenderer = namedThread "XMPPClient" $
 	restartableClient . xmppClient urlrenderer =<< getAssistant id
 
 {- Runs the client, handing restart events. -}
-restartableClient :: (XMPPCreds -> IO ()) -> Assistant ()
+restartableClient :: (XMPPCreds -> UUID -> IO ()) -> Assistant ()
 restartableClient a = forever $ go =<< liftAnnex getXMPPCreds
   where
 	go Nothing = waitNetMessagerRestart
 	go (Just creds) = do
-		tid <- liftIO $ forkIO $ a creds
+		xmppuuid <- maybe NoUUID Remote.uuid . headMaybe 
+			. filter Remote.isXMPPRemote . syncRemotes
+			<$> getDaemonStatus
+		tid <- liftIO $ forkIO $ a creds xmppuuid
 		waitNetMessagerRestart
 		liftIO $ killThread tid
 
-xmppClient :: UrlRenderer -> AssistantData -> XMPPCreds -> IO ()
-xmppClient urlrenderer d creds =
+xmppClient :: UrlRenderer -> AssistantData -> XMPPCreds -> UUID -> IO ()
+xmppClient urlrenderer d creds xmppuuid =
 	retry (runclient creds) =<< getCurrentTime
   where
 	liftAssistant = runAssistant d
@@ -68,8 +71,11 @@ xmppClient urlrenderer d creds =
 		liftAssistant $
 			updateBuddyList (const noBuddies) <<~ buddyList
 		void client
-		liftAssistant $ modifyDaemonStatus_ $ \s -> s
-			{ xmppClientID = Nothing }
+		liftAssistant $ do
+			modifyDaemonStatus_ $ \s -> s
+				{ xmppClientID = Nothing }
+			changeCurrentlyConnected $ S.delete xmppuuid
+			
 		now <- getCurrentTime
 		if diffUTCTime now starttime > 300
 			then do
@@ -87,6 +93,7 @@ xmppClient urlrenderer d creds =
 		inAssistant $ do
 			modifyDaemonStatus_ $ \s -> s
 				{ xmppClientID = Just $ xmppJID creds }
+			changeCurrentlyConnected $ S.insert xmppuuid
 			debug ["connected", logJid selfjid]
 
 		lasttraffic <- liftIO $ atomically . newTMVar =<< getCurrentTime
@@ -110,7 +117,7 @@ xmppClient urlrenderer d creds =
 		void $ liftIO $ atomically . swapTMVar lasttraffic =<< getCurrentTime
 		inAssistant $ debug
 			["received:", show $ map logXMPPEvent l]
-		mapM_ (handle selfjid) l
+		mapM_ (handlemsg selfjid) l
 	sendpings selfjid lasttraffic = forever $ do
 		putStanza pingstanza
 
@@ -124,23 +131,23 @@ xmppClient urlrenderer d creds =
 		{- XEP-0199 says that the server will respond with either
 		 - a ping response or an error message. Either will
 		 - cause traffic, so good enough. -}
-	  	pingstanza = xmppPing selfjid
+		pingstanza = xmppPing selfjid
 
-	handle selfjid (PresenceMessage p) = do
+	handlemsg selfjid (PresenceMessage p) = do
 		void $ inAssistant $ 
 			updateBuddyList (updateBuddies p) <<~ buddyList
 		resendImportantMessages selfjid p
-	handle _ (GotNetMessage QueryPresence) = putStanza gitAnnexSignature
-	handle _ (GotNetMessage (NotifyPush us)) = void $ inAssistant $ pull us
-	handle selfjid (GotNetMessage (PairingNotification stage c u)) =
+	handlemsg _ (GotNetMessage QueryPresence) = putStanza gitAnnexSignature
+	handlemsg _ (GotNetMessage (NotifyPush us)) = void $ inAssistant $ pull us
+	handlemsg selfjid (GotNetMessage (PairingNotification stage c u)) =
 		maybe noop (inAssistant . pairMsgReceived urlrenderer stage u selfjid) (parseJID c)
-	handle _ (GotNetMessage m@(Pushing _ pushstage))
+	handlemsg _ (GotNetMessage m@(Pushing _ pushstage))
 		| isPushNotice pushstage = inAssistant $ handlePushNotice m
 		| isPushInitiation pushstage = inAssistant $ queuePushInitiation m
 		| otherwise = inAssistant $ storeInbox m
-	handle _ (Ignorable _) = noop
-	handle _ (Unknown _) = noop
-	handle _ (ProtocolError _) = noop
+	handlemsg _ (Ignorable _) = noop
+	handlemsg _ (Unknown _) = noop
+	handlemsg _ (ProtocolError _) = noop
 
 	resendImportantMessages selfjid (Presence { presenceFrom = Just jid }) = do
 		let c = formatJID jid

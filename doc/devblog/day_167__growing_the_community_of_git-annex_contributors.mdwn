@@ -1,0 +1,11 @@
+Released git-annex 5.20140517 today. The changelog for this release
+is very unusual, because it's full of contributions from others! There are
+as many patches from others in this release as git-annex got in the first
+entire two years of its existence.
+
+I'd like to keep that going. Also, I could really use help triaging bug
+reports right now. So I have updated the **[[contribute]]** page with more
+info about easy ways to contribute to git-annex. If you read this devblog,
+you're an ideal contributor, and you don't need to know how to write
+haskell either.. So take a [[look at the page|contribute]] and see if
+you can help out.

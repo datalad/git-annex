@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010, 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2010, 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,17 +11,17 @@ import Common.Annex
 import Command
 import qualified Remote
 import Annex.Content
-import Logs.Transfer
+import Annex.Transfer
 import Config.NumCopies
 import Annex.Wanted
 import qualified Command.Move
 
-def :: [Command]
-def = [withOptions getOptions $ command "get" paramPaths seek
+cmd :: [Command]
+cmd = [withOptions getOptions $ command "get" paramPaths seek
 	SectionCommon "make content of annexed files available"]
 
 getOptions :: [Option]
-getOptions = fromOption : keyOptions
+getOptions = fromOption : annexedMatchingOptions ++ keyOptions
 
 seek :: CommandSeek
 seek ps = do
@@ -31,8 +31,8 @@ seek ps = do
 		(withFilesInGit $ whenAnnexed $ start from)
 		ps
 
-start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
-start from file (key, _) = start' expensivecheck from key (Just file)
+start :: Maybe Remote -> FilePath -> Key -> CommandStart
+start from file key = start' expensivecheck from key (Just file)
   where
 	expensivecheck = checkAuto (numCopiesCheck file key (<) <||> wantGet False (Just key) (Just file))
 
@@ -48,7 +48,7 @@ start' expensivecheck from key afile = stopUnless (not <$> inAnnex key) $
 				stopUnless (Command.Move.fromOk src key) $
 					go $ Command.Move.fromPerform src False key afile
   where
-  	go a = do
+	go a = do
 		showStart' "get" key afile
 		next a
 
@@ -69,17 +69,17 @@ getKeyFile' key afile dest = dispatch
 		showNote "not available"
 		showlocs
 		return False
-	dispatch remotes = trycopy remotes remotes
-	trycopy full [] = do
+	dispatch remotes = notifyTransfer Download afile $ trycopy remotes remotes
+	trycopy full [] _ = do
 		Remote.showTriedRemotes full
 		showlocs
 		return False
-	trycopy full (r:rs) =
+	trycopy full (r:rs) witness =
 		ifM (probablyPresent r)
-			( docopy r (trycopy full rs)
-			, trycopy full rs
+			( docopy r witness <||> trycopy full rs witness
+			, trycopy full rs witness
 			)
-	showlocs = Remote.showLocations key []
+	showlocs = Remote.showLocations False key []
 		"No other repository is known to contain the file."
 	-- This check is to avoid an ugly message if a remote is a
 	-- drive that is not mounted.
@@ -87,8 +87,6 @@ getKeyFile' key afile dest = dispatch
 		| Remote.hasKeyCheap r =
 			either (const False) id <$> Remote.hasKey r key
 		| otherwise = return True
-	docopy r continue = do
-		ok <- download (Remote.uuid r) key afile noRetry $ \p -> do
-			showAction $ "from " ++ Remote.name r
-			Remote.retrieveKeyFile r key afile dest p
-		if ok then return ok else continue
+	docopy r = download (Remote.uuid r) key afile noRetry $ \p -> do
+		showAction $ "from " ++ Remote.name r
+		Remote.retrieveKeyFile r key afile dest p

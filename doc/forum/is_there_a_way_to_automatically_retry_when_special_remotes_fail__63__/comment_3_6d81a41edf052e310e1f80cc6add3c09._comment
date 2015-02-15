@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 3"
+ date="2015-01-08T18:13:47Z"
+ content="""
+That's what the while loop above does; runs the git-annex command, and retries it until it succeeds.
+"""]]

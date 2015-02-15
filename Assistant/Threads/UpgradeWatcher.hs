@@ -1,6 +1,6 @@
 {- git-annex assistant thread to detect when git-annex is upgraded
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -51,9 +51,9 @@ upgradeWatcherThread urlrenderer = namedThread "UpgradeWatcher" $ do
 		let depth = length (splitPath dir) + 1
 		let nosubdirs f = length (splitPath f) == depth
 		void $ liftIO $ watchDir dir nosubdirs False hooks (startup mvar)
-  	-- Ignore bogus events generated during the startup scan.
+	-- Ignore bogus events generated during the startup scan.
 	-- We ask the watcher to not generate them, but just to be safe..
-  	startup mvar scanner = do
+	startup mvar scanner = do
 		r <- scanner
 		void $ swapMVar mvar Started
 		return r

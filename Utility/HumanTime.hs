@@ -1,8 +1,8 @@
 {- Time for humans.
  -
- - Copyright 2012-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2013 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 module Utility.HumanTime (
@@ -27,7 +27,7 @@ import Control.Applicative
 import qualified Data.Map as M
 
 newtype Duration = Duration { durationSeconds :: Integer }
-  deriving (Eq, Ord, Read, Show)
+	deriving (Eq, Ord, Read, Show)
 
 durationSince :: UTCTime -> IO Duration
 durationSince pasttime = do
@@ -47,8 +47,8 @@ daysToDuration i = Duration $ i * dsecs
 parseDuration :: String -> Maybe Duration
 parseDuration = Duration <$$> go 0
   where
-  	go n [] = return n
-  	go n s = do
+	go n [] = return n
+	go n s = do
 		num <- readish s :: Maybe Integer
 		case dropWhile isDigit s of
 			(c:rest) -> do
@@ -59,7 +59,7 @@ parseDuration = Duration <$$> go 0
 fromDuration :: Duration -> String
 fromDuration Duration { durationSeconds = d }
 	| d == 0 = "0s"
-	| otherwise = concat $ map showunit $ go [] units d
+	| otherwise = concatMap showunit $ go [] units d
   where
 	showunit (u, n)
 		| n > 0 = show n ++ [u]

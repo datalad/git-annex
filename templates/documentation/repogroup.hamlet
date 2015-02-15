@@ -1,60 +1,61 @@
-<div .span9 .hero-unit>
-  <h2>
-    Repository groups
-  <p>
-    Each repository you configure git-annex to use is a member of a #
-    repository group. Each group of repositories has a different #
-    purpose.
-  <p>
-    Let's start with the <b>client repositories</b>. These are the #
-    repositories that contain files that you can directly use. Generally #
-    you'll have one client repository per computer. The whole point of #
-    the git-annex assistant is to keep these repositories in sync as you #
-    change files, add files, delete files, etc.
-  <p>
-    The next most important repository group is the #
-    <b>transfer repositories</b>. #
-    These are used to transfer files between clients, when the clients #
-    cannot directly talk to one-another. Transfer repositories only #
-    hold the files that need to be synced to other repositories, so they #
-    are relatively small.
-  <p>
-    You can get along without any <b>full backup repositories</b>, but #
-    they're a useful safeguard. These repositories accumulate every file
-    they can get ahold of. A large removable drive makes a good full backup #
-    repository.
-  <p>
-    Similarly, the <b>incremental backup repositories</b> try to back up #
-    every file, but these only accumulate files that are not already #
-    present in a full or incremental backup.
-  <p>
-    Next we come to the <b>archive repositories</b>.
-    The archive repositories coordinate together, so that each file is #
-    archived in only one place. When you move files into a folder named #
-    "archive", the content of the files will be removed from all your #
-    client repositories (either immediately or as soon as an archive #
-    repository gets a copy of the file). This is handy if you have old files #
-    you don't need anymore, but want to keep archived for later. #
-    When you copy or move a file out of an "archive" folder, it'll be #
-    retrieved from the archive repository.
-  <p>
-    The <b>small archive repositories</b> are like other archive #
-    repositories, but smaller. While archive repositories normally accumulate #
-    every file they can, small archive repositories only accumulate files #
-    after you've put them in an "archive" directory. They otherwise behave #
-    the same
-  <p>
-    Sometimes useful for devices like cameras are the #
-    <b>source repositories</b>. Repositories in this group only retain #
-    files until they can be moved to some other repository, like a client #
-    or transfer repository.
-  <p>
-    If you configure a repository that can be viewed by the public, #
-    but you don't want all your files to show up there, you can #
-    configure it to be a <b>public repository</b>. Then only files #
-    located in a directory you choose will be sent to it.
-  <p>
-    Finally, repositories can be configured to be in <b>manual mode</b>. This #
-    prevents content being automatically synced to the repository, but #
-    you can use command-line tools like `git annex get` and `git annex drop` #
-    to control what content is present.
+<div .col-sm-9>
+  <div .content-box>
+    <h2>
+      Repository groups
+    <p>
+      Each repository you configure git-annex to use is a member of a #
+      repository group. Each group of repositories has a different #
+      purpose.
+    <p>
+      Let's start with the <b>client repositories</b>. These are the #
+      repositories that contain files that you can directly use. Generally #
+      you'll have one client repository per computer. The whole point of #
+      the git-annex assistant is to keep these repositories in sync as you #
+      change files, add files, delete files, etc.
+    <p>
+      The next most important repository group is the #
+      <b>transfer repositories</b>. #
+      These are used to transfer files between clients, when the clients #
+      cannot directly talk to one-another. Transfer repositories only #
+      hold the files that need to be synced to other repositories, so they #
+      are relatively small.
+    <p>
+      You can get along without any <b>full backup repositories</b>, but #
+      they're a useful safeguard. These repositories accumulate every file
+      they can get ahold of. A large removable drive makes a good full backup #
+      repository.
+    <p>
+      Similarly, the <b>incremental backup repositories</b> try to back up #
+      every file, but these only accumulate files that are not already #
+      present in a full or incremental backup.
+    <p>
+      Next we come to the <b>archive repositories</b>.
+      The archive repositories coordinate together, so that each file is #
+      archived in only one place. When you move files into a folder named #
+      "archive", the content of the files will be removed from all your #
+      client repositories (either immediately or as soon as an archive #
+      repository gets a copy of the file). This is handy if you have old files #
+      you don't need anymore, but want to keep archived for later. #
+      When you copy or move a file out of an "archive" folder, it'll be #
+      retrieved from the archive repository.
+    <p>
+      The <b>small archive repositories</b> are like other archive #
+      repositories, but smaller. While archive repositories normally accumulate #
+      every file they can, small archive repositories only accumulate files #
+      after you've put them in an "archive" directory. They otherwise behave #
+      the same
+    <p>
+      Sometimes useful for devices like cameras are the #
+      <b>source repositories</b>. Repositories in this group only retain #
+      files until they can be moved to some other repository, like a client #
+      or transfer repository.
+    <p>
+      If you configure a repository that can be viewed by the public, #
+      but you don't want all your files to show up there, you can #
+      configure it to be a <b>public repository</b>. Then only files #
+      located in a directory you choose will be sent to it.
+    <p>
+      Finally, repositories can be configured to be in <b>manual mode</b>. This #
+      prevents content being automatically synced to the repository, but #
+      you can use command-line tools like `git annex get` and `git annex drop` #
+      to control what content is present.

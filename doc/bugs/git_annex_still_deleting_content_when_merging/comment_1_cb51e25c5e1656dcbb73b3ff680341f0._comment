@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-07-21T17:37:22Z"
+ content="""
+Well, this is definitely a different bug or issue than the \"ugly bug\". In particular, it only affects a single file. Also, based on the commits, this may not be occuring in a merge commit at all (although I am not sure; I am not familiar with the log syntax shown).
+
+AFAICS, the problem occurs on machine B. Which machine is the transcript from?
+
+The \"Removing shared.skg\" is a good clue. This seems to be printed by `git`, in merge-recursive.c's `process_entry`. What is puzzling to me is that it's printed after the \"Automatic merge went well; stopped before committing as requested\", which  AFAICS is printed out by git last thing. Is this \"Removing\" message then printed out by another git command?
+
+Enabling debug logging would probably help a lot, to narrow that down the next time this occurs.
+"""]]

@@ -1,8 +1,8 @@
 {- parallel processing via threads
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 module Utility.Parallel where
@@ -10,7 +10,6 @@ module Utility.Parallel where
 import Common
 
 import Control.Concurrent
-import Control.Exception
 
 {- Runs an action in parallel with a set of values, in a set of threads.
  - In order for the actions to truely run in parallel, requires GHC's

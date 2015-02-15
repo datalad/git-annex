@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm7eqCMh_B7mxE0tnchbr0JoYu11FUAFRY"
+ nickname="Stéphane"
+ subject="No git-annex process."
+ date="2014-06-11T17:55:56Z"
+ content="""
+> It sounds rather like the webapp is failing to create the repository. Although I would expect for it to show an error message in red beneath the repository path. OTOH, it also sounds like something (either the webapp or eg a manual git-annex run) set up a git-annex repository in ~/Documents.
+
+As told before, there was definitely no git repository there before the webapp tried to create one.
+
+> git-annex will be started automatically on login as long as ~/.config/git-annex/autostart lists a repository to use. If that file exists and contains ~/Documents then we'll know that the webapp successfully set up the repository.
+
+There exists a ~/.config/git-annex/autostart containing one line, the correct /home/mylogin/Documents path to the folder.
+
+There is no process with git or annex in its name when user logs on his desktop session.
+
+
+    $ grep . $(dpkg -L git-annex | grep -i desktop)
+    /usr/share/applications/git-annex.desktop:[Desktop Entry]
+    /usr/share/applications/git-annex.desktop:Type=Application
+    /usr/share/applications/git-annex.desktop:Version=1.0
+    /usr/share/applications/git-annex.desktop:Name=Git Annex
+    /usr/share/applications/git-annex.desktop:Comment=Track and sync the files in your Git Annex
+    /usr/share/applications/git-annex.desktop:Terminal=false
+    /usr/share/applications/git-annex.desktop:Exec=/usr/bin/git-annex webapp
+    /usr/share/applications/git-annex.desktop:Icon=git-annex
+    /usr/share/applications/git-annex.desktop:Categories=Network;FileTransfer;
+    /etc/xdg/autostart/git-annex.desktop:[Desktop Entry]
+    /etc/xdg/autostart/git-annex.desktop:Type=Application
+    /etc/xdg/autostart/git-annex.desktop:Version=1.0
+    /etc/xdg/autostart/git-annex.desktop:Name=Git Annex Assistant
+    /etc/xdg/autostart/git-annex.desktop:Comment=Autostart
+    /etc/xdg/autostart/git-annex.desktop:Terminal=false
+    /etc/xdg/autostart/git-annex.desktop:Exec=/usr/bin/git-annex assistant --autostart
+    /etc/xdg/autostart/git-annex.desktop:Categories=
+
+"""]]

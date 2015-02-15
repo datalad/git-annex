@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2015-02-10T16:54:54Z"
+ content="""
+You can download a current build of git-annex from
+<http://git-annex.branchable.com/install/Linux_standalone>
+
+I've already linked to that once before in this very thread!
+
+I am going to close this bug. Please followup if you anage to a) get a
+current git-annex build installed and b) can then provide instructions to
+reproduce this bug using it.
+"""]]

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2014-10-31T20:40:18Z"
+ content="""
+git does not allow pushing into a non-bare repsitory. This is why
+bare repositories exist.
+
+You have basically 3 choices:
+
+1. Go to the first repo you made, and `git pull` from the other repo
+   into it. Pulling in this direction will work.
+2. Set up a bare repo that both the non-bare repos use.
+3. Use `git annex sync`, which avoids this problem. You need to run
+   it in both repos in order to get them to sync with one-another.
+"""]]

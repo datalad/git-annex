@@ -1,0 +1,46 @@
+git-annex now has experimental support for tuning a repository for
+different work loads. 
+
+For example, a repository with a very large number of files in it may work
+better if git-annex uses some nonstandard hash format, for either the
+`.git/annex/objects/` directory, or for the log files in the git-annex
+branch.
+
+A repository can currently only be tuned when it is first created; this is
+done by passing `-c name=value` parameters to `git annex init`.
+
+For example, this will make git-annex use only 1 level for hash directories
+in `.git/annex/objects`:
+
+	git -c annex.tune.objecthash1=true annex init
+
+It's very important to keep in mind that this makes a nonstandard format
+git-annex repository. In general, this cannot safely be used with
+git-annex older than version 5.20150128. Older version of git-annex will
+not understand and will get confused and perhaps do bad things.
+
+Also, it's not safe to merge two separate git repositories that have been
+tuned differently (or one tuned and the other one not). git-annex will
+prevent merging their git-annex branches together, but it cannot prevent
+`git merge remote/master` merging two branches, and the result will be ugly
+at best (`git annex fix` can fix up the mess somewhat).
+
+Again, tuned repositories are an experimental feature; use with caution!
+
+The following tuning parameters are available:
+
+* `annex.tune.objecthash1=true`  
+  Use just one level of hash directories in `.git/annex/objects/`,
+  instead of the default two levels.
+
+* `annex.tune.objecthashlower=true`  
+  Make the hash directories in `.git/annex/objects/` use
+  all lower-case, instead of the default mixed-case.
+
+* `annex.tune.branchhash1=true`  
+  Use just one level of hash directories in the git-annex branch,
+  instead of the default two levels.
+
+Note that git-annex will automatically propigate these setting to
+`.git/config` for tuned repositories. You should never directly change
+these settings in `.git/config`

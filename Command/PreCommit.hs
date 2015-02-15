@@ -1,9 +1,11 @@
 {- git-annex command
  -
- - Copyright 2010-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
+
+{-# LANGUAGE CPP #-}
 
 module Command.PreCommit where
 
@@ -16,28 +18,39 @@ import Annex.Direct
 import Annex.Hook
 import Annex.View
 import Annex.View.ViewedFile
+import Annex.LockFile
 import Logs.View
 import Logs.MetaData
 import Types.View
 import Types.MetaData
+import qualified Git.Index as Git
+import qualified Git.LsFiles as Git
 
 import qualified Data.Set as S
 
-def :: [Command]
-def = [command "pre-commit" paramPaths seek SectionPlumbing
+cmd :: [Command]
+cmd = [command "pre-commit" paramPaths seek SectionPlumbing
 	"run by git pre-commit hook"]
 
 seek :: CommandSeek
-seek ps = ifM isDirect
+seek ps = lockPreCommitHook $ ifM isDirect
 	( do
 		-- update direct mode mappings for committed files
 		withWords startDirect ps
 		runAnnexHook preCommitAnnexHook
 	, do
-		-- fix symlinks to files being committed
-		withFilesToBeCommitted (whenAnnexed Command.Fix.start) ps
-		-- inject unlocked files into the annex
-		withFilesUnlockedToBeCommitted startIndirect ps
+		ifM (liftIO Git.haveFalseIndex)
+			( do
+				(fs, cleanup) <- inRepo $ Git.typeChangedStaged ps
+				whenM (anyM isUnlocked fs) $
+					error "Cannot make a partial commit with unlocked annexed files. You should `git annex add` the files you want to commit, and then run git commit."
+				void $ liftIO cleanup
+			, do
+				-- fix symlinks to files being committed
+				withFilesToBeCommitted (whenAnnexed Command.Fix.start) ps
+				-- inject unlocked files into the annex
+				withFilesUnlockedToBeCommitted startIndirect ps
+			)
 		runAnnexHook preCommitAnnexHook
 		-- committing changes to a view updates metadata
 		mv <- currentView
@@ -56,7 +69,7 @@ startIndirect f = next $ do
 	next $ return True
 
 startDirect :: [String] -> CommandStart
-startDirect _ = next $ next $ preCommitDirect
+startDirect _ = next $ next preCommitDirect
 
 addViewMetaData :: View -> ViewedFile -> Key -> CommandStart
 addViewMetaData v f k = do
@@ -82,3 +95,7 @@ showMetaDataChange = showLongNote . unlines . concatMap showmeta . fromMetaData
 	showset v
 		| isSet v = "+"
 		| otherwise = "-"
+
+{- Takes exclusive lock; blocks until available. -}
+lockPreCommitHook :: Annex a -> Annex a
+lockPreCommitHook = withExclusiveLock gitAnnexPreCommitLock

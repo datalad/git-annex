@@ -1,0 +1,6 @@
+Spent hours today in a 10-minute build/test cycle, tracking down a bug that
+caused the assistant to crash on Windows after exactly 10 minutes uptime.
+Eventually found the cause; this is fallout from last month's work
+that got it logging to the debug.log on Windows.
+
+There was more, but that was the interesting one..

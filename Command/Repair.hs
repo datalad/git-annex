@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,8 +16,8 @@ import qualified Git.Ref
 import Git.Types
 import Annex.Version
 
-def :: [Command]
-def = [noCommit $ dontCheck repoExists $
+cmd :: [Command]
+cmd = [noCommit $ dontCheck repoExists $
 	command "repair" paramNothing seek SectionMaintenance "recover broken git repository"]
 
 seek :: CommandSeek
@@ -68,7 +68,7 @@ repairAnnexBranch modifiedbranches
 				)
 		)
   where
-	okindex = Annex.Branch.withIndex $ inRepo $ Git.Repair.checkIndex
+	okindex = Annex.Branch.withIndex $ inRepo Git.Repair.checkIndex
 	commitindex = do
 		Annex.Branch.forceCommit "committing index after git repository repair"
 		liftIO $ putStrLn "Successfully recovered the git-annex branch using .git/annex/index"

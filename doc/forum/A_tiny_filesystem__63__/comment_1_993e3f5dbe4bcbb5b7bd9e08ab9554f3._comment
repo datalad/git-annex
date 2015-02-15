@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.244"
+ subject="comment 1"
+ date="2014-04-05T22:34:32Z"
+ content="""
+git-annex can indeed be sped up by preventing modification of files in the tree. you can do this by running \"git annex indirect\"
+"""]]

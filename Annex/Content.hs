@@ -1,6 +1,6 @@
 {- git-annex file content managing
  -
- - Copyright 2010-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,6 +16,7 @@ module Annex.Content (
 	getViaTmpChecked,
 	getViaTmpUnchecked,
 	prepGetViaTmpChecked,
+	prepTmp,
 	withTmp,
 	checkDiskSpace,
 	moveAnnex,
@@ -55,11 +56,7 @@ import Annex.Perms
 import Annex.Link
 import Annex.Content.Direct
 import Annex.ReplaceFile
-import Annex.Exception
-
-#ifdef mingw32_HOST_OS
-import Utility.WinLock
-#endif
+import Utility.LockFile
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
@@ -104,27 +101,32 @@ inAnnexSafe key = inAnnex' (fromMaybe False) (Just False) go key
 		=<< contentLockFile key
 
 #ifndef mingw32_HOST_OS
-	checkindirect f = liftIO $ openforlock f >>= check is_missing
+	checkindirect contentfile = liftIO $ checkOr is_missing contentfile
 	{- In direct mode, the content file must exist, but
-	 - the lock file often generally won't exist unless a removal is in
-	 - process. This does not create the lock file, it only checks for
-	 - it. -}
+	 - the lock file generally won't exist unless a removal is in
+	 - process. -}
 	checkdirect contentfile lockfile = liftIO $
 		ifM (doesFileExist contentfile)
-			( openforlock lockfile >>= check is_unlocked
+			( checkOr is_unlocked lockfile
 			, return is_missing
 			)
-	openforlock f = catchMaybeIO $
-		openFd f ReadOnly Nothing defaultFileFlags
-	check _ (Just h) = do
-		v <- getLock h (ReadLock, AbsoluteSeek, 0, 0)
-		closeFd h
+	checkOr d lockfile = do
+		v <- checkLocked lockfile
 		return $ case v of
-			Just _ -> is_locked
-			Nothing -> is_unlocked
-	check def Nothing = return def
+			Nothing -> d
+			Just True -> is_locked
+			Just False -> is_unlocked
 #else
-	checkindirect _ = return is_missing
+	checkindirect f = liftIO $ ifM (doesFileExist f)
+		( do
+			v <- lockShared f
+			case v of
+				Nothing -> return is_locked
+				Just lockhandle -> do
+					dropLock lockhandle
+					return is_unlocked
+		, return is_missing
+		)
 	{- In Windows, see if we can take a shared lock. If so, 
 	 - remove the lock file to clean up after ourselves. -}
 	checkdirect contentfile lockfile =
@@ -150,14 +152,20 @@ contentLockFile key = ifM isDirect
 	, return Nothing
 	)
 
+newtype ContentLock = ContentLock Key
+
 {- Content is exclusively locked while running an action that might remove
- - it. (If the content is not present, no locking is done.) -}
-lockContent :: Key -> Annex a -> Annex a
+ - it. (If the content is not present, no locking is done.)
+ -}
+lockContent :: Key -> (ContentLock -> Annex a) -> Annex a
 lockContent key a = do
 	contentfile <- calcRepo $ gitAnnexLocation key
 	lockfile <- contentLockFile key
 	maybe noop setuplockfile lockfile
-	bracketAnnex (liftIO $ lock contentfile lockfile) (unlock lockfile) (const a)
+	bracket
+		(lock contentfile lockfile)
+		(unlock lockfile)
+		(const $ a $ ContentLock key)
   where
 	alreadylocked = error "content is locked"
 	setuplockfile lockfile = modifyContent lockfile $
@@ -167,17 +175,17 @@ lockContent key a = do
 		void $ liftIO $ tryIO $
 			nukeFile lockfile
 #ifndef mingw32_HOST_OS
-	lock contentfile Nothing = opencontentforlock contentfile >>= dolock
-	lock _ (Just lockfile) = openforlock lockfile >>= dolock . Just
+	lock contentfile Nothing = liftIO $
+		opencontentforlock contentfile >>= dolock
+	lock _ (Just lockfile) = do
+		mode <- annexFileMode
+		liftIO $ createLockFile mode lockfile >>= dolock . Just
 	{- Since content files are stored with the write bit disabled, have
 	 - to fiddle with permissions to open for an exclusive lock. -}
-	opencontentforlock f = catchMaybeIO $ ifM (doesFileExist f)
-		( withModifiedFileMode f
+	opencontentforlock f = catchDefaultIO Nothing $ 
+		withModifiedFileMode f
 			(`unionFileModes` ownerWriteMode)
-			(openforlock f)
-		, openforlock f
-		)
-	openforlock f = openFd f ReadWrite Nothing defaultFileFlags
+			(openExistingLockFile f)
 	dolock Nothing = return Nothing
 	dolock (Just fd) = do
 		v <- tryIO $ setLock fd (WriteLock, AbsoluteSeek, 0, 0)
@@ -188,7 +196,8 @@ lockContent key a = do
 		maybe noop cleanuplockfile mlockfile
 		liftIO $ maybe noop closeFd mfd
 #else
-	lock _ (Just lockfile) = maybe alreadylocked (return . Just) =<< lockExclusive lockfile
+	lock _ (Just lockfile) = liftIO $
+		maybe alreadylocked (return . Just) =<< lockExclusive lockfile
 	lock _ Nothing = return Nothing
 	unlock mlockfile mlockhandle = do
 		liftIO $ maybe noop dropLock mlockhandle
@@ -209,7 +218,7 @@ getViaTmpUnchecked = finishGetViaTmp (return True)
 
 getViaTmpChecked :: Annex Bool -> Key -> (FilePath -> Annex Bool) -> Annex Bool
 getViaTmpChecked check key action = 
-	prepGetViaTmpChecked key $
+	prepGetViaTmpChecked key False $
 		finishGetViaTmp check key action
 
 {- Prepares to download a key via a tmp file, and checks that there is
@@ -220,20 +229,20 @@ getViaTmpChecked check key action =
  -
  - Wen there's enough free space, runs the download action.
  -}
-prepGetViaTmpChecked :: Key -> Annex Bool -> Annex Bool
-prepGetViaTmpChecked key getkey = do
+prepGetViaTmpChecked :: Key -> a -> Annex a -> Annex a
+prepGetViaTmpChecked key unabletoget getkey = do
 	tmp <- fromRepo $ gitAnnexTmpObjectLocation key
 
 	e <- liftIO $ doesFileExist tmp
-	alreadythere <- if e
-		then fromIntegral . fileSize <$> liftIO (getFileStatus tmp)
+	alreadythere <- liftIO $ if e
+		then getFileSize tmp
 		else return 0
 	ifM (checkDiskSpace Nothing key alreadythere)
 		( do
 			-- The tmp file may not have been left writable
 			when e $ thawContent tmp
 			getkey
-		, return False
+		, return unabletoget
 		)
 
 finishGetViaTmp :: Annex Bool -> Key -> (FilePath -> Annex Bool) -> Annex Bool
@@ -255,7 +264,10 @@ prepTmp key = do
 	createAnnexDirectory (parentDir tmp)
 	return tmp
 
-{- Creates a temp file, runs an action on it, and cleans up the temp file. -}
+{- Creates a temp file for a key, runs an action on it, and cleans up
+ - the temp file. If the action throws an exception, the temp file is
+ - left behind, which allows for resuming.
+ -}
 withTmp :: Key -> (FilePath -> Annex a) -> Annex a
 withTmp key action = do
 	tmp <- prepTmp key
@@ -365,7 +377,7 @@ sendAnnex key rollback sendobject = go =<< prepSendAnnex key
 			)
 
 {- Returns a file that contains an object's content,
- - and an check to run after the transfer is complete.
+ - and a check to run after the transfer is complete.
  -
  - In direct mode, it's possible for the file to change as it's being sent,
  - and the check detects this case and returns False.
@@ -407,7 +419,7 @@ withObjectLoc key indirect direct = ifM isDirect
 cleanObjectLoc :: Key -> Annex () -> Annex ()
 cleanObjectLoc key cleaner = do
 	file <- calcRepo $ gitAnnexLocation key
-	void $ tryAnnexIO $ thawContentDir file
+	void $ tryIO $ thawContentDir file
 	cleaner
 	liftIO $ removeparents file (3 :: Int)
   where
@@ -420,9 +432,10 @@ cleanObjectLoc key cleaner = do
 {- Removes a key's file from .git/annex/objects/
  -
  - In direct mode, deletes the associated files or files, and replaces
- - them with symlinks. -}
-removeAnnex :: Key -> Annex ()
-removeAnnex key = withObjectLoc key remove removedirect
+ - them with symlinks.
+ -}
+removeAnnex :: ContentLock -> Annex ()
+removeAnnex (ContentLock key) = withObjectLoc key remove removedirect
   where
 	remove file = cleanObjectLoc key $ do
 		secureErase file
@@ -433,7 +446,7 @@ removeAnnex key = withObjectLoc key remove removedirect
 		removeInodeCache key
 		mapM_ (resetfile cache) fs
 	resetfile cache f = whenM (sameInodeCache f cache) $ do
-		l <- inRepo $ gitAnnexLink f key
+		l <- calcRepo $ gitAnnexLink f key
 		secureErase f
 		replaceFile f $ makeAnnexLink l
 
@@ -443,7 +456,7 @@ removeAnnex key = withObjectLoc key remove removedirect
 secureErase :: FilePath -> Annex ()
 secureErase file = maybe noop go =<< annexSecureEraseCommand <$> Annex.getGitConfig
   where
-  	go basecmd = void $ liftIO $
+	go basecmd = void $ liftIO $
 		boolSystem "sh" [Param "-c", Param $ gencmd basecmd]
 	gencmd = massReplace [ ("%file", shellEscape file) ]
 
@@ -542,7 +555,7 @@ saveState nocommit = doSideAction $ do
 downloadUrl :: [Url.URLString] -> FilePath -> Annex Bool
 downloadUrl urls file = go =<< annexWebDownloadCommand <$> Annex.getGitConfig
   where
-  	go Nothing = Url.withUrlOptions $ \uo ->
+	go Nothing = Url.withUrlOptions $ \uo ->
 		anyM (\u -> Url.download u file uo) urls
 	go (Just basecmd) = liftIO $ anyM (downloadcmd basecmd) urls
 	downloadcmd basecmd url =
@@ -567,7 +580,7 @@ preseedTmp key file = go =<< inAnnex key
 		( return True
 		, do
 			s <- calcRepo $ gitAnnexLocation key
-			liftIO $ copyFileExternal s file
+			liftIO $ copyFileExternal CopyTimeStamps s file
 		)
 
 {- Blocks writing to an annexed file, and modifies file permissions to

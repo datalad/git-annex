@@ -1,8 +1,8 @@
 {- Win32-notify interface
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 module Utility.DirWatcher.Win32Notify where
@@ -17,10 +17,10 @@ watchDir :: FilePath -> (FilePath -> Bool) -> Bool -> WatchHooks -> IO WatchMana
 watchDir dir ignored scanevents hooks = do
 	scan dir
 	wm <- initWatchManager
-	void $ watchDirectory wm dir True [Create, Delete, Modify, Move] handle
+	void $ watchDirectory wm dir True [Create, Delete, Modify, Move] dispatch
 	return wm
   where
-	handle evt
+	dispatch evt
 		| ignoredPath ignored (filePath evt) = noop
 		| otherwise = case evt of
 			(Deleted _ _)

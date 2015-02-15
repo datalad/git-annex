@@ -1,8 +1,8 @@
 {- user info
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 {-# LANGUAGE CPP #-}
@@ -13,8 +13,10 @@ module Utility.UserInfo (
 	myUserGecos,
 ) where
 
-import Control.Applicative
 import System.PosixCompat
+#ifndef mingw32_HOST_OS
+import Control.Applicative
+#endif
 
 import Utility.Env
 
@@ -40,16 +42,20 @@ myUserName = myVal env userName
 	env = ["USERNAME", "USER", "LOGNAME"]
 #endif
 
-myUserGecos :: IO String
-#ifdef __ANDROID__
-myUserGecos = return "" -- userGecos crashes on Android
+myUserGecos :: IO (Maybe String)
+-- userGecos crashes on Android and is not available on Windows.
+#if defined(__ANDROID__) || defined(mingw32_HOST_OS)
+myUserGecos = return Nothing
 #else
-myUserGecos = myVal [] userGecos
+myUserGecos = Just <$> myVal [] userGecos
 #endif
 
 myVal :: [String] -> (UserEntry -> String) -> IO String
-myVal envvars extract = maybe (extract <$> getpwent) return =<< check envvars
+myVal envvars extract = go envvars
   where
-	check [] = return Nothing
-	check (v:vs) = maybe (check vs) (return . Just) =<< getEnv v
-	getpwent = getUserEntryForID =<< getEffectiveUserID
+#ifndef mingw32_HOST_OS
+	go [] = extract <$> (getUserEntryForID =<< getEffectiveUserID)
+#else
+	go [] = error $ "environment not set: " ++ show envvars
+#endif
+	go (v:vs) = maybe (go vs) return =<< getEnv v

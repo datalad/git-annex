@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -8,6 +8,7 @@
 module Command.Uninit where
 
 import Common.Annex
+import qualified Annex
 import Command
 import qualified Git
 import qualified Git.Command
@@ -15,9 +16,13 @@ import qualified Command.Unannex
 import qualified Annex.Branch
 import Annex.Content
 import Annex.Init
+import Utility.FileMode
 
-def :: [Command]
-def = [addCheck check $ command "uninit" paramPaths seek 
+import System.IO.HVFS
+import System.IO.HVFS.Utils
+
+cmd :: [Command]
+cmd = [addCheck check $ command "uninit" paramPaths seek 
 	SectionUtility "de-initialize git-annex and clean out repository"]
 
 check :: Annex ()
@@ -26,8 +31,8 @@ check = do
 	when (b == Annex.Branch.name) $ error $
 		"cannot uninit when the " ++ Git.fromRef b ++ " branch is checked out"
 	top <- fromRepo Git.repoPath
-	cwd <- liftIO getCurrentDirectory
-	whenM ((/=) <$> liftIO (absPath top) <*> liftIO (absPath cwd)) $
+	currdir <- liftIO getCurrentDirectory
+	whenM ((/=) <$> liftIO (absPath top) <*> liftIO (absPath currdir)) $
 		error "can only run uninit from the top of the git repository"
   where
 	current_branch = Git.Ref . Prelude.head . lines <$> revhead
@@ -36,13 +41,14 @@ check = do
 
 seek :: CommandSeek
 seek ps = do
-	withFilesNotInGit (whenAnnexed startCheckIncomplete) ps
+	withFilesNotInGit False (whenAnnexed startCheckIncomplete) ps
+	Annex.changeState $ \s -> s { Annex.fast = True }
 	withFilesInGit (whenAnnexed Command.Unannex.start) ps
 	finish
 
 {- git annex symlinks that are not checked into git could be left by an
  - interrupted add. -}
-startCheckIncomplete :: FilePath -> (Key, Backend) -> CommandStart
+startCheckIncomplete :: FilePath -> Key -> CommandStart
 startCheckIncomplete file _ = error $ unlines
 	[ file ++ " points to annexed content, but is not checked into git."
 	, "Perhaps this was left behind by an interrupted git annex add?"
@@ -54,6 +60,7 @@ finish = do
 	annexdir <- fromRepo gitAnnexDir
 	annexobjectdir <- fromRepo gitAnnexObjectDir
 	leftovers <- removeUnannexed =<< getKeysPresent InAnnex
+	liftIO $ prepareRemoveAnnexDir annexdir
 	if null leftovers
 		then liftIO $ removeDirectoryRecursive annexdir
 		else error $ unlines
@@ -80,6 +87,12 @@ finish = do
 		[Param "branch", Param "-D", Param $ Git.fromRef Annex.Branch.name]
 	liftIO exitSuccess
 
+{- Turn on write bits in all remaining files in the annex directory, in
+ - preparation for removal. -}
+prepareRemoveAnnexDir :: FilePath -> IO ()
+prepareRemoveAnnexDir annexdir =
+	recurseDir SystemFS annexdir >>= mapM_ (void . tryIO . allowWrite)
+
 {- Keys that were moved out of the annex have a hard link still in the
  - annex, with > 1 link count, and those can be removed.
  -
@@ -87,10 +100,10 @@ finish = do
 removeUnannexed :: [Key] -> Annex [Key]
 removeUnannexed = go []
   where
-  	go c [] = return c
+	go c [] = return c
 	go c (k:ks) = ifM (inAnnexCheck k $ liftIO . enoughlinks)
 		( do
-			removeAnnex k
+			lockContent k removeAnnex
 			go c ks
 		, go (k:c) ks
 		)

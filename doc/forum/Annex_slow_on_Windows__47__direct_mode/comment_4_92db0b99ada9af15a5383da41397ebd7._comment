@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="divB"
+ ip="171.67.172.69"
+ subject="Also in the same boat"
+ date="2014-07-07T01:12:18Z"
+ content="""
+Even worse here. git-annex looked (and still looks) so promising for exactly I want (share >100GB photos/data with my girlfriend which are on my private DSL connected server but each of us should only download whatever he currently needs for offline usage and everything should stay consistent, e.g. is one edits, adds or deletes files). However, after long testing in Windows I gave up. I had so many issues and speed was one of them. So I looked again at other solutions (ownCloud pydio) but they are not good either. unison is one thing that just works perfectly but it is not suited to sync huge stuff where just parts are available on one machine.
+
+I still put much hope in git-annex that it's useable at some point also in Windows. If there would be another of these kickstarters for that, I'd be in.
+
+One BIG dealbreaker for me is SSH. It popped up a couple of times already there is inconsistency between ssh.exe, plink.exe and %GIT_SSH%.
+But the biggest issue is that ssh.exe in Windows does not do connection sharing: For each single file a new SSH session is created! That way it works only for huge files (movies) where the overhead is small. In my tests I had smaller files, that's just unuseable.
+
+I know it's a conundrum. unison just leaves one ssh connection open, that would be nice. I know however that this requires bigger changes. But what about for example starting something in background (during a git-annex command) that leaves the SSH session open and pumps data via some IPC?
+
+Last but not least: links. I agree windows links are unuseable. But would it really be real links? What about just basic *.lnk files?
+
+
+"""]]

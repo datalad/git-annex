@@ -1,6 +1,6 @@
 {- git-annex assistant sanity checker
  -
- - Copyright 2012, 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012, 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -21,9 +21,11 @@ import Assistant.Drop
 import Assistant.Ssh
 import Assistant.TransferQueue
 import Assistant.Types.UrlRenderer
+import Assistant.Restart
 import qualified Annex.Branch
+import qualified Git
 import qualified Git.LsFiles
-import qualified Git.Command
+import qualified Git.Command.Batch
 import qualified Git.Config
 import Utility.ThreadScheduler
 import qualified Assistant.Threads.Watcher as Watcher
@@ -38,13 +40,14 @@ import Assistant.Unused
 import Logs.Unused
 import Logs.Transfer
 import Config.Files
-import Utility.DiskFree
+import Types.Key (keyBackendName)
 import qualified Annex
 #ifdef WITH_WEBAPP
 import Assistant.WebApp.Types
 #endif
 #ifndef mingw32_HOST_OS
 import Utility.LogFile
+import Utility.DiskFree
 #endif
 
 import Data.Time.Clock.POSIX
@@ -81,6 +84,11 @@ sanityCheckerStartupThread startupdelay = namedThreadUnchecked "SanityCheckerSta
 
 	{- Fix up ssh remotes set up by past versions of the assistant. -}
 	liftIO $ fixUpSshRemotes
+
+	{- Clean up old temp files. -}
+	void $ liftAnnex $ tryNonAsync $ do
+		cleanOldTmpMisc
+		cleanReallyOldTmp
 
 	{- If there's a startup delay, it's done here. -}
 	liftIO $ maybe noop (threadDelaySeconds . Seconds . fromIntegral . durationSeconds) startupdelay
@@ -140,6 +148,8 @@ waitForNextCheck = do
  - will block the watcher. -}
 dailyCheck :: UrlRenderer -> Assistant Bool
 dailyCheck urlrenderer = do
+	checkRepoExists
+
 	g <- liftAnnex gitRepo
 	batchmaker <- liftIO getBatchCommandMaker
 
@@ -160,7 +170,7 @@ dailyCheck urlrenderer = do
 	 - to have a lot of small objects and they should not be a
 	 - significant size. -}
 	when (Git.Config.getMaybe "gc.auto" g == Just "0") $
-		liftIO $ void $ Git.Command.runBatch batchmaker
+		liftIO $ void $ Git.Command.Batch.run batchmaker
 			[ Param "-c", Param "gc.auto=670000"
 			, Param "gc"
 			, Param "--auto"
@@ -197,6 +207,7 @@ dailyCheck urlrenderer = do
 
 hourlyCheck :: Assistant ()
 hourlyCheck = do
+	checkRepoExists
 #ifndef mingw32_HOST_OS
 	checkLogSize 0
 #else
@@ -214,10 +225,10 @@ checkLogSize :: Int -> Assistant ()
 checkLogSize n = do
 	f <- liftAnnex $ fromRepo gitAnnexLogFile
 	logs <- liftIO $ listLogs f
-	totalsize <- liftIO $ sum <$> mapM filesize logs
+	totalsize <- liftIO $ sum <$> mapM getFileSize logs
 	when (totalsize > 2 * oneMegabyte) $ do
 		notice ["Rotated logs due to size:", show totalsize]
-		liftIO $ openLog f >>= redirLog
+		liftIO $ openLog f >>= handleToFd >>= redirLog
 		when (n < maxLogs + 1) $ do
 			df <- liftIO $ getDiskFree $ takeDirectory f
 			case df of
@@ -226,9 +237,7 @@ checkLogSize n = do
 						checkLogSize (n + 1)
 				_ -> noop
   where
-	filesize f = fromIntegral . fileSize <$> liftIO (getFileStatus f)
-
-	oneMegabyte :: Int
+	oneMegabyte :: Integer
 	oneMegabyte = 1000000
 #endif
 
@@ -247,7 +256,7 @@ checkOldUnused :: UrlRenderer -> Assistant ()
 checkOldUnused urlrenderer = go =<< annexExpireUnused <$> liftAnnex Annex.getGitConfig
   where
 	go (Just Nothing) = noop
-  	go (Just (Just expireunused)) = expireUnused (Just expireunused)
+	go (Just (Just expireunused)) = expireUnused (Just expireunused)
 	go Nothing = maybe noop prompt =<< describeUnusedWhenBig
 
 	prompt msg = 
@@ -258,3 +267,61 @@ checkOldUnused urlrenderer = go =<< annexExpireUnused <$> liftAnnex Annex.getGit
 #else
 		debug [show $ renderTense Past msg]
 #endif
+
+{- Files may be left in misctmp by eg, an interrupted add of files
+ - by the assistant, which hard links files to there as part of lockdown
+ - checks. Delete these files if they're more than a day old.
+ -
+ - Note that this is not safe to run after the Watcher starts up, since it
+ - will create such files, and due to hard linking they may have old
+ - mtimes. So, this should only be called from the
+ - sanityCheckerStartupThread, which runs before the Watcher starts up.
+ -
+ - Also, if a git-annex add is being run at the same time the assistant
+ - starts up, its tmp files could be deleted. However, the watcher will
+ - come along and add everything once it starts up anyway, so at worst
+ - this would make the git-annex add fail unexpectedly.
+ -}
+cleanOldTmpMisc :: Annex ()
+cleanOldTmpMisc = do
+	now <- liftIO getPOSIXTime
+	let oldenough = now - (60 * 60 * 24)
+	tmp <- fromRepo gitAnnexTmpMiscDir
+	liftIO $ mapM_ (cleanOld (<= oldenough)) =<< dirContentsRecursive tmp
+
+{- While .git/annex/tmp is now only used for storing partially transferred
+ - objects, older versions of git-annex used it for misctemp. Clean up any
+ - files that might be left from that, by looking for files whose names
+ - cannot be the key of an annexed object. Only delete files older than
+ - 1 week old.
+ -
+ - Also, some remotes such as rsync may use this temp directory for storing
+ - eg, encrypted objects that are being transferred. So, delete old
+ - objects that use a GPGHMAC backend.
+ -}
+cleanReallyOldTmp :: Annex ()
+cleanReallyOldTmp = do
+	now <- liftIO getPOSIXTime
+	let oldenough = now - (60 * 60 * 24 * 7)
+	tmp <- fromRepo gitAnnexTmpObjectDir
+	liftIO $ mapM_ (cleanjunk (<= oldenough)) =<< dirContentsRecursive tmp
+  where
+	cleanjunk check f = case fileKey (takeFileName f) of
+		Nothing -> cleanOld check f
+		Just k
+			| "GPGHMAC" `isPrefixOf` keyBackendName k ->
+				cleanOld check f
+			| otherwise -> noop
+
+cleanOld :: (POSIXTime -> Bool) -> FilePath -> IO ()
+cleanOld check f = go =<< catchMaybeIO getmtime
+  where
+	getmtime = realToFrac . modificationTime <$> getSymbolicLinkStatus f
+	go (Just mtime) | check mtime = nukeFile f
+	go _ = noop
+
+checkRepoExists :: Assistant ()
+checkRepoExists = do
+	g <- liftAnnex gitRepo
+	liftIO $ unlessM (doesDirectoryExist $ Git.repoPath g) $
+		terminateSelf

@@ -13,11 +13,6 @@ git-annex is designed for scalability. The key points are:
   but git-annex is designed so that it does not need to hold all
   the details about your repository in memory.
 
-  The one exception is that [[todo/git-annex_unused_eats_memory]],
-  because it *does* need to hold the whole repo state in memory. But
-  that is still considered a bug, and hoped to be solved one day.
-  Luckily, that command is not often used.
-
 * Many files can be managed. The limiting factor is git's own
   limitations in scaling to repositories with a lot of files, and as git
   improves this will improve. Scaling to hundreds of thousands of files

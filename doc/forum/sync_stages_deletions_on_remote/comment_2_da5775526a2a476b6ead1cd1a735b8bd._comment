@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.191"
+ subject="comment 2"
+ date="2014-04-17T19:28:59Z"
+ content="""
+`git annex sync` will push changes to your NAS, but this does not cause the work tree there to be updated. You must be running some command on the NAS that gets it work tree into the state you show. You need to tell us what that command is, since it seems to be where things are going wrong. Maybe you're running the git-annex assistant on the NAS, or maybe you run `git annex sync` on the NAS. 
+"""]]

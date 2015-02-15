@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.43"
- subject="comment 1"
- date="2014-01-08T22:06:35Z"
- content="""
-Those builds are done on Debian stable for portability reasons, and it has too old a version of haskell-cryptohash for SKEIN.
-"""]]

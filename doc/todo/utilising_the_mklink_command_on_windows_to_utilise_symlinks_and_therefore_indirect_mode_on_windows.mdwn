@@ -1,0 +1,7 @@
+It seems like it is possible to achieve this now on later versions of Windows (7 and above).
+
+The mklink tool creates a symlink that works on windows.
+
+There would be some work required so that a linux symlink and a windows symlink are considered the same, a user has recommend 'git update-index --assume-unchanged' for this.
+
+There is a good write up of someone using this approach on vanilla git here: http://stackoverflow.com/questions/5917249/git-symlinks-in-windows

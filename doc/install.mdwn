@@ -2,30 +2,33 @@
 
 [[!table format=dsv header=yes data="""
 detailed instructions             | quick install
-[[OSX]]                           | [download git-annex.app](http://downloads.kitenet.net/git-annex/OSX/current/)
-[[Android]]                       | [download git-annex.apk](http://downloads.kitenet.net/git-annex/android/current/) **beta**
-[[Linux|linux_standalone]]        | [download prebuilt linux tarball](http://downloads.kitenet.net/git-annex/linux/current/)
+[[OSX]]                           | [download git-annex.app](https://downloads.kitenet.net/git-annex/OSX/current/)
+&nbsp;&nbsp;[[OSX/Homebrew]]      | `brew install git-annex`
+[[Android]]                       | [download git-annex.apk](https://downloads.kitenet.net/git-annex/android/current/) **beta**
+[[Linux|linux_standalone]]        | [download prebuilt linux tarball](https://downloads.kitenet.net/git-annex/linux/current/)
 &nbsp;&nbsp;[[Debian]]            | `apt-get install git-annex`
 &nbsp;&nbsp;[[Ubuntu]]            | `apt-get install git-annex`
 &nbsp;&nbsp;[[Fedora]]            | `yum install git-annex`
 &nbsp;&nbsp;[[FreeBSD]]           | `pkg_add -r hs-git-annex`
-&nbsp;&nbsp;[[ArchLinux]]         | `yaourt -Sy git-annex`
+&nbsp;&nbsp;[[ArchLinux]]         | `yaourt -Sy git-annex-bin`
 &nbsp;&nbsp;[[NixOS]]             | `nix-env -i git-annex`
 &nbsp;&nbsp;[[Gentoo]]            | `emerge git-annex`
 &nbsp;&nbsp;[[ScientificLinux5]]  |
 &nbsp;&nbsp;[[openSUSE]]          | 
-[[Windows]]                       | [download installer](http://downloads.kitenet.net/git-annex/windows/current/) **alpha**
+&nbsp;&nbsp;[[Docker]]            | 
+[[Windows]]                       | [download installer](https://downloads.kitenet.net/git-annex/windows/current/) **beta**
 """]]
 
-## Using cabal
+All the download links above use https for security. For added security, see
+[[verifying_downloads]].
 
-As a haskell package, git-annex can be installed from source pretty easily
-[[using cabal|cabal]].
+## Building it yourself
 
-## Installation from scratch
-
-This is not recommended, but if you really want to, see [[fromscratch]].
+git-annex is [[Free Software|license]], written in [Haskell](http://www.haskell.org/).
+Experienced users should not find it too hard to build and install
+it [[from source|fromsource]].
 
 ## See also
+
 
 [[autobuild overview|builds]]

@@ -1,0 +1,6 @@
+Have for the first time gotten git-annex to run as a proper Windows
+service, using nssm.
+([details](http://git-annex.branchable.com/todo/windows_support/#comment-a61be55862ea32e3dc30972f905bb987))
+Not quite ready yet though; doesn't run as the right user.
+
+And a few other windows porting bits.

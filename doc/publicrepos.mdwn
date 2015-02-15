@@ -4,14 +4,26 @@ the public repositories that you can clone to try out git-annex.
 * [downloads.kitenet.net](http://downloads.kitenet.net/)  
   `git clone https://downloads.kitenet.net/.git/`  
   Various downloads of things produced by Joey Hess, including git-annex
-  builds.
-* [debconf-share](https://downloads.kitenet.net/.git/)  
+  builds and videos.
+
+* debconf-share  
   `git clone http://annex.debconf.org/debconf-share/.git/`  
   [DebConf](http://debconf.org/) Media, photos, videos, etc.
+
 * [conference-proceedings](https://github.com/RichiH/conference_proceedings)  
   `git clone https://github.com/RichiH/conference_proceedings.git`  
   A growing collection of videos of technology conferences.
   Submit a pull request to add your own!
+
+* [ocharles's papers](https://github.com/ocharles/papers)  
+  Lots of CS papers read by [Oliver](http://ocharles.org.uk/blog/).
+
+* [MRI brain scan data](http://studyforrest.org/pages/access.html)  
+  `git clone http://psydata.ovgu.de/forrest_gump/.git studyforrest`  
+  High-resolution, ultra-highfield fMRI dataset on auditory perception.
+
+* [rejuvyesh's papers](https://github.com/rejuvyesh/papers)   
+  Quite a few AI papers read by [rejuvyesh](http://rejuvyesh.com)
 
 This is a wiki -- add your own public repository to the list!
 See [[tips/centralized_git_repository_tutorial]].

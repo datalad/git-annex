@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="Xyem"
+ ip="178.79.137.64"
+ subject="comment 1"
+ date="2014-04-15T14:25:04Z"
+ content="""
+git-annex's metadata and views made me stop hopping between programs (digikam, tagsistant etc.) to organise my photos (I had even just started working on my own FUSE tagging filesystem which was effectively going to be tagsistant, but with a git-annex'y backend).
+
+As usual, my method is probably a little odd :)
+
+Photos are 'git import'ed into a $(uuidgen) directory (so no worries about filename collisions) and tagged with media=Photograph and tag=untagged. Then I go through them and add relevant tags (one of which is \"xbmc\", no prizes for guessing how that works with the views :]) and move them into a more appropriate directory structure, using gqview and its \"sort manager\". This is really nice and fast, due to it only copying/moving symlinks!
+
+One thing I'm considering doing it putting a shim between git-annex and gqview, so that it generates entries in the sort manager which are appropriate for the current view. So, for example, if the view is location=*, the sort manager would have:
+
+    location=Malta
+    location=York
+
+While it wouldn't get updated if I create new tags (by creating directories in the view), it would save a lot of time creating them every time the view changes.
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="madduck"
+ ip="2001:a60:f0fb:0:224:d7ff:fe04:c82c"
+ subject="Does not work"
+ date="2014-04-06T10:48:06Z"
+ content="""
+This does not seem to work, even with latest git-annex. I think it's because git-annex [[!debbug desc=\"creates files without honouring +s on the parent directory\" 729757]]. I just found out it also doesn't honour default ACLs. I hope this can be fixed soon.
+"""]]

@@ -31,7 +31,7 @@ content from the key-value store.
 # EXAMPLES
 
 	# git annex get video/hackity_hack_and_kaxxt.mov
-	get video/_why_hackity_hack_and_kaxxt.mov (not available)
+	get video/hackity_hack_and_kaxxt.mov (not available)
 	  I was unable to access these remotes: server
 	  Try making some of these repositories available:
 	  	5863d8c0-d9a9-11df-adb2-af51e6559a49  -- my home file server
@@ -62,10 +62,14 @@ subdirectories).
 
 * `add [path ...]`
 
-  Adds files in the path to the annex. Files that are already checked into
-  git, or that git has been configured to ignore will be silently skipped.
-  (Use `--force` to add ignored files.) Dotfiles are skipped unless explicitly
-  listed.
+  Adds files in the path to the annex. If no path is specified, adds
+  files from the current directory and below.
+
+  Files that are already checked into git, or that git has been configured
+  to ignore will be silently skipped. (Use `--force` to add ignored files.)
+
+  Dotfiles are skipped unless explicitly listed, or the --include-dotfiles
+  option is used.
 
 * `get [path ...]`
 
@@ -75,6 +79,10 @@ subdirectories).
 
   Normally git-annex will choose which repository to copy the content from,
   but you can override this using the `--from` option.
+ 
+  Rather than specifying a filename, the `--all` option can be used to 
+  get all available versions of all files, or the --key=KEY`
+  option can be used to get a specified key.
 
 * `drop [path ...]`
 
@@ -135,11 +143,14 @@ subdirectories).
 * `sync [remote ...]`
 
   Use this command when you want to synchronize the local repository with
-  one or more of its remotes. You can specify the remotes to sync with;
-  the default is to sync with all remotes. Or specify `--fast` to sync with
-  the remotes with the lowest annex-cost value.
+  one or more of its remotes. You can specify the remotes (or remote
+  groups) to sync with by name; the default if none are specified is to
+  sync with all remotes.
+  Or specify `--fast` to sync with the remotes with the
+  lowest annex-cost value.
 
-  The sync process involves first committing all local changes,
+  The sync process involves first committing any local changes to files
+  that have previously been added to the repository,
   then fetching and merging the `synced/master` and the `git-annex` branch
   from the remote repositories, and finally pushing the changes back to
   those branches on the remote repositories. You can use standard git
@@ -163,10 +174,12 @@ subdirectories).
   This behavior can be overridden by configuring the preferred content of
   a repository. See see PREFERRED CONTENT below.
 
+  The `--message` or `-m` option can be used to specify a commit message.
+
 * `merge`
 
-  This performs the same merging that is done by the sync command, but
-  without pushing or pulling any data.
+  This performs the same merging (and merge conflict resolution)
+  that is done by the sync command, but without pushing or pulling any data.
 
   One way to use this is to put `git annex merge` into a repository's
   post-receive hook. Then any syncs to the repository will update its working
@@ -205,8 +218,10 @@ subdirectories).
   is there at a future point, specify `--relaxed`. (Implies `--fast`.)
 
   Normally the filename is based on the full url, so will look like
-  "www.example.com_dir_subdir_bigfile". For a shorter filename, specify
-  `--pathdepth=N`. For example, `--pathdepth=1` will use "dir/subdir/bigfile",
+  "www.example.com_dir_subdir_bigfile". In some cases, addurl is able to
+  come up with a better filename based on other information. Or, for a
+  shorter filename, specify `--pathdepth=N`. For example,
+  `--pathdepth=1` will use "dir/subdir/bigfile",
   while `--pathdepth=3` will use "bigfile". It can also be negative;
   `--pathdepth=-2` will use the last two parts of the url.
 
@@ -215,8 +230,11 @@ subdirectories).
   alternate locations from which the file can be downloaded. In this mode,
   addurl can be used both to add new files, or to add urls to existing files.
 
-  When quvi is installed, urls are automatically tested to see if they
+  When `quvi` is installed, urls are automatically tested to see if they
   point to a video hosting site, and the video is downloaded instead.
+
+  Urls to torrent files (including magnet links) will cause the content of
+  the torrent to be downloaded, using `aria2c`.
 
 * `rmurl file url`
 
@@ -254,6 +272,11 @@ subdirectories).
 
   (Note that using `--deduplicate` or `--clean-duplicates` with the WORM
   backend does not look at file content, but filename and mtime.)
+  
+  To control which files are imported, many of the MATCHING OPTIONS can 
+  be used.
+
+		git annex import /dir --include='*.png'
 
 * `importfeed [url ...]`
 
@@ -264,13 +287,29 @@ subdirectories).
 
   Use `--template` to control where the files are stored.
   The default template is '${feedtitle}/${itemtitle}${extension}'
-  (Other available variables: feedauthor, itemauthor, itemsummary, itemdescription, itemrights, itemid)
+  (Other available variables: feedauthor, itemauthor, itemsummary, itemdescription, itemrights, itemid, itempubdate, title, author)
 
   The `--relaxed` and `--fast` options behave the same as they do in addurl.
-  
+
   When quvi is installed, links in the feed are tested to see if they
   are on a video hosting site, and the video is downloaded. This allows
-  importing eg, youtube playlists.
+  importing e.g., youtube playlists.
+
+* `undo [filename|directory] ...`
+
+  When passed a filename, undoes the last change that was made to that
+  file.
+
+  When passed a directory, undoes the last change that was made to the
+  contents of that directory.
+
+  Running undo a second time will undo the undo, returning the working
+  tree to the same state it had before. In order for undoing an undo of
+  staged changes, any staged changes are first committed by the
+  undo command.
+
+  Note that this does not undo get/drop of a file's content; it only
+  operates on the file tree committed to git.
 
 * `watch`
 
@@ -314,7 +353,7 @@ subdirectories).
   This disables running a local web browser, and outputs the url you
   can use to open the webapp.
 
-  When using the webapp on a remote computer, you'll almost certianly
+  When using the webapp on a remote computer, you'll almost certainly
   want to enable HTTPS. The webapp will use HTTPS if it finds
   a .git/annex/privkey.pem and .git/annex/certificate.pem. Here's
   one way to generate those files, using a self-signed certificate:
@@ -383,7 +422,7 @@ subdirectories).
 
   The name of the remote is the same name used when originally
   creating that remote with "initremote". Run "git annex enableremote"
-  with no parameters to get a list of special remote names.
+  without any name to get a list of special remote names.
 
   Some special remotes may need parameters to be specified every time.
   For example, the directory special remote requires a directory= parameter.
@@ -420,7 +459,7 @@ subdirectories).
   Run without a number to get the current value.
 
   When git-annex is asked to drop a file, it first verifies that the
-  required number of copies can be satisfied amoung all the other
+  required number of copies can be satisfied among all the other
   repositories that have a copy of the file.
 
   This can be overridden on a per-file basis by the annex.numcopies setting
@@ -452,6 +491,8 @@ subdirectories).
   Adds a repository to a group, such as "archival", "enduser", or "transfer".
   The groupname must be a single word.
 
+  Omit the groupname to show the current groups that a repository is in.
+
 * `ungroup repository groupname`
 
   Removes a repository from a group.
@@ -467,6 +508,21 @@ subdirectories).
 
   Without an expression, displays the current preferred content setting
   of the repository.
+
+* `groupwanted groupname [expression]`
+
+  Sets or displays the groupwanted expression. This will be used by
+  repositories that are in the group, and that have their preferred
+  content expression set to "groupwanted".
+
+  For example, to configure a group named redundantarchive, and
+  make repositories in the group want to contain 3 copies of every file:
+
+	git annex groupwanted redundantarchive "not (copies=redundantarchive:3)"
+	for repo in foo bar baz; do
+		git annex group $repo redundantarchive
+		git annex wanted $repo groupwanted
+	done
 
 * `schedule repository [expression]`
 
@@ -487,9 +543,9 @@ subdirectories).
 
   As part of the switch to direct mode, any changed files will be committed.
 
-  Note that git commands that operate on the work tree are often unsafe to
-  use in direct mode repositories, and can result in data loss or other
-  bad behavior.
+  Note that git commands that operate on the work tree will refuse to
+  run in direct mode repositories. Use `git annex proxy` to safely run such
+  commands.
 
 * `indirect`
 
@@ -502,7 +558,7 @@ subdirectories).
 * `fsck [path ...]`
 
   With no parameters, this command checks the whole annex for consistency,
-  and warns about or fixes any problems found. This is a good compliment to
+  and warns about or fixes any problems found. This is a good complement to
   `git fsck`.
 
   With parameters, only the specified files are checked.
@@ -638,7 +694,8 @@ subdirectories).
   `--format`. The default output format is the same as `--format='${file}\\n'`
 
   These variables are available for use in formats: file, key, backend,
-  bytesize, humansize, keyname, hashdirlower, hashdirmixed, mtime.
+  bytesize, humansize, keyname, hashdirlower, hashdirmixed, mtime (for
+  the mtime field of a WORM key).
 
 * `whereis [path ...]`
 
@@ -663,17 +720,19 @@ subdirectories).
   To generate output suitable for the gource visualization program,
   specify `--gource`.
 
-* `info [directory ...]`
+* `info [directory|file|remote|uuid ...]`
 
-  Displays some statistics and other information, including how much data
-  is in the annex and a list of all known repositories.
+  Displays statistics and other information for the specified item,
+  which can be a directory, or a file, or a remote, or the uuid of a
+  repository. 
+
+  When no item is specified, displays statistics and information
+  for the repository as a whole.
+
+  When a directory is specified, the MATCHING OPTIONS can be used
+  to select the files in the directory that are included in the statistics.
 
   To only show the data that can be gathered quickly, use `--fast`.
-
-  When a directory is specified, shows a differently formatted info
-  display for that directory. In this mode, all of the matching
-  options can be used to filter the files that will be included in
-  the information.
 
   For example, suppose you want to run "git annex get .", but
   would first like to see how much disk space that will use.
@@ -707,12 +766,13 @@ subdirectories).
 
 * `metadata [path ...] [-s field=value -s field+=value -s field-=value ...] [-g field]`
 
-  Each file can have any number of metadata fields attached to it,
-  which each in turn have any number of values. 
-  
+  The content of a file can have any number of metadata fields
+  attached to it to describe it. Each metadata field can in turn
+  have any number of values.
+
   This command can be used to set metadata, or show the currently set
   metadata.
-  
+
   To show current metadata, run without any -s parameters. The --json
   option will enable json output.
 
@@ -741,7 +801,7 @@ subdirectories).
   and checks out the view branch. Only files in the current branch whose
   metadata matches all the specified field values and tags will be
   shown in the view.
-  
+
   Multiple values for a metadata field can be specified, either by using
   a glob (`field="*"`) or by listing each wanted value. The resulting view
   will put files in subdirectories according to the value of their fields.
@@ -776,9 +836,9 @@ subdirectories).
   Changes the current view, adding an additional level of directories
   to categorize the files.
 
-  For example, when the view is by author/tag, `vadd year=*` will 
-  change it to year/author/tag. 
-  
+  For example, when the view is by author/tag, `vadd year=*` will
+  change it to year/author/tag.
+
   So will `vadd year=2014 year=2013`, but limiting the years in view
   to only those two.
 
@@ -839,6 +899,17 @@ subdirectories).
   Use this to stop using git annex. It will unannex every file in the
   repository, and remove all of git-annex's other data, leaving you with a
   git repository plus the previously annexed files.
+
+* `reinit uuid|description`
+
+  Normally, initializing a repository generates a new, unique identifier
+  (UUID) for that repository. Occasionally it may be useful to reuse a
+  UUID -- for example, if a repository got deleted, and you're
+  setting it back up.
+
+  Use this with caution; it can be confusing to have two existing
+  repositories with the same UUID. Also, you will probably want to run
+  a fsck.
 
 # PLUMBING COMMANDS
 
@@ -903,6 +974,11 @@ subdirectories).
   stdio protocol, which is intentionally not documented (as it may change
   at any time).
 
+* `setpresentkey key uuid [1|0]`
+
+  This plumbing-level command changes git-annex's records about whether
+  the specified key is present in a remote with the specified uuid.
+
 * `rekey [file key ...]`
 
   This plumbing-level command is similar to migrate, but you specify
@@ -911,15 +987,93 @@ subdirectories).
   With `--force`, even files whose content is not currently available will
   be rekeyed. Use with caution.
 
+* `findref [ref]`
+
+  This is similar to the find command, but instead of finding files in the
+  current work tree, it finds files in the specified git ref.
+
+* `proxy -- git cmd [options]`
+
+  Only useful in a direct mode repository, this runs the specified git
+  command with a temporary work tree, and updates the working tree to
+  reflect any changes staged or committed by the git command.
+  
+  For example, to revert the most recent change that was committed
+  to the repository:
+
+    git annex proxy -- git revert HEAD
+
+  To check out a past version of the repository:
+
+    git annex proxy -- git checkout HEAD^^
+
+  To rename a directory:
+
+    git annex proxy -- git mv mydir newname
+
+* `resolvemerge`
+
+  Resolves a conflicted merge, by adding both conflicting versions of the
+  file to the tree, using variants of their filename. This is done
+  automatically when using `git annex sync` or `git annex merge`.
+
+  Note that only merge conflicts that involve an annexed file are resolved.
+  Merge conflicts between two files that are not annexed will not be
+  automatically resolved.
+
+* `diffdriver`
+
+  This is an external git diff driver shim. Normally, when using `git diff`
+  with an external git driver, the symlinks to annexed files are not set up
+  right, so the external git driver cannot read them in order to perform
+  smart diffing of their contents. This command works around the problem,
+  by passing the fixed up files to the real external diff driver.
+
+  To use, just configure git to use "git-annex diffdriver -- cmd params --"
+  as the external diff command, where cmd is the real external diff
+  command you want to use, and params are any extra parameters to pass
+  to it. Note the trailing "--", which is required.
+
+  For example, set `GIT_EXTERNAL_DIFF=git-annex diffdriver -- j-c-diff --`
+
+* `remotedaemon`
+
+  Detects when network remotes have received git pushes and fetches from them.
+
+* `xmppgit`
+
+  This command is used internally to perform git pulls over XMPP.
+
+# TESTING COMMANDS
+
 * `test`
 
   This runs git-annex's built-in test suite.
 
   There are several parameters, provided by Haskell's tasty test framework.
+  Pass --help for details.
 
-* `xmppgit`
+* `testremote remote`
 
-  This command is used internally to perform git pulls over XMPP.
+  This tests a remote by generating some random objects and sending them to
+  the remote, then redownloading them, removing them from the remote, etc.
+
+  It's safe to run in an existing repository (the repository contents are
+  not altered), although it may perform expensive data transfers.
+
+  To perform a smaller set of tests, use --fast.
+
+  The --size option can be used to tune the size of the generated objects.
+
+  Testing a single remote will use the remote's configuration,
+  automatically varying the chunk sizes, and with simple shared encryption
+  enabled and disabled.
+
+* `fuzztest`
+
+  Generates random changes to files in the current repository,
+  for use in testing the assistant. This is dangerous, so it will not
+  do anything unless --forced.
 
 # OPTIONS
 
@@ -1052,6 +1206,19 @@ subdirectories).
 * `--user-agent=value`
 
   Overrides the User-Agent to use when downloading files from the web.
+
+* `--notify-finish`
+
+  Caused a desktop notification to be displayed after each successful
+  file download and upload.
+
+  (Only supported on some platforms, e.g. Linux with dbus. A no-op when
+  not supported.)
+
+* `--notify-start`
+
+  Caused a desktop notification to be displayed when a file upload
+  or download has started, or when a file is dropped.
 
 * `-c name=value`
 
@@ -1225,7 +1392,9 @@ no equivilant to `--in`.
 
 When a repository is in one of the standard predefined groups, like "backup"
 and "client", setting its preferred content to "standard" will use a
-built-in preferred content expression developed for that group.
+built-in preferred content expression developed for that group. Or,
+setting its preferred content to "groupwanted" will make it use whatever
+groupwanted expression you set for the group.
 
 # SCHEDULED JOBS
 
@@ -1236,7 +1405,7 @@ to e.g., fsck a repository on a removable drive when the drive gets
 connected.
 
 The scheduled jobs can be configured using `git annex vicfg` or
-`git annex schedule`. 
+`git annex schedule`.
 
 These actions are available: "fsck self", "fsck UUID" (where UUID
 is the UUID of a remote to fsck). After the action comes the duration
@@ -1292,7 +1461,7 @@ Here are all the supported configuration settings.
 
   This is a deprecated setting. You should instead use the
   `git annex numcopies` command to configure how many copies of files
-  are kept acros all repositories.
+  are kept across all repositories.
 
   This config setting is only looked at when `git annex numcopies` has
   never been configured.
@@ -1302,8 +1471,12 @@ Here are all the supported configuration settings.
 * `annex.genmetadata`
 
   Set this to `true` to make git-annex automatically generate some metadata
-  when adding files to the repository. In particular, it stores
-  year and month metadata, from the file's modification date.
+  when adding files to the repository.
+
+  In particular, it stores year and month metadata, from the file's
+  modification date.
+
+  When importfeed is used, it stores additional metadata from the feed.
 
 * `annex.queuesize`
 
@@ -1339,9 +1512,24 @@ Here are all the supported configuration settings.
 * `annex.alwayscommit`
 
   By default, git-annex automatically commits data to the git-annex branch
-  after each command is run. To disable these commits,
-  set to `false`. Then data will only be committed when
-  running `git annex merge` (or by automatic merges) or `git annex sync`.
+  after each command is run. If you have a series
+  of commands that you want to make a single commit, you can
+  run the commands with `-c annex.alwayscommit=false`. You can later
+  commit the data by running `git annex merge` (or by automatic merges)
+  or `git annex sync`.
+
+* `annex.hardlink`
+
+  Set this to `true` to make file contents be hard linked into the
+  repository when possible, instead of a more expensive copy.
+
+  Use with caution -- This can invalidate numcopies counting, since
+  with hard links, fewer copies of a file can exist. So, it is a good
+  idea to mark a repository using this setting as untrusted.
+
+  When a repository is set up using `git clone --shared`, git-annex init
+  will automatically set annex.hardlink and mark the repository as
+  untrusted.
 
 * `annex.delayadd`
 
@@ -1355,7 +1543,7 @@ Here are all the supported configuration settings.
 
   Controls what the assistant does about unused file contents
   that are stored in the repository.
-  
+
   The default is `false`, which causes
   all old and unused file contents to be retained, unless the assistant
   is able to move them to some other repository (such as a backup repository).
@@ -1450,6 +1638,14 @@ Here are all the supported configuration settings.
   The command will only be run once *all* running git-annex processes
   are finished using the remote.
 
+* `remote.<name>.annex-shell`
+
+  Specify an alternative git-annex-shell executable on the remote
+  instead of looking for "git-annex-shell" on the PATH.
+
+  This is useful if the git-annex-shell program is outside the PATH
+  or has a non-standard name.
+
 * `remote.<name>.annex-ignore`
 
   If set to `true`, prevents git-annex
@@ -1517,7 +1713,7 @@ Here are all the supported configuration settings.
 
   These options are passed after other applicable rsync options,
   so can be used to override them. For example, to limit upload bandwidth
-  to 10Kbye/s, set `--bwlimit 10`.
+  to 10Kbyte/s, set `--bwlimit 10`.
 
 * `remote.<name>.annex-rsync-download-options`
 
@@ -1566,6 +1762,10 @@ Here are all the supported configuration settings.
   Options to pass to quvi when using it to find the url to download for a
   video.
 
+* `annex.aria-torrent-options`
+
+  Options to pass to aria2c when using it to download a torrent.
+
 * `annex.http-headers`
 
   HTTP headers to send when downloading from the web. Multiple lines of
@@ -1592,7 +1792,7 @@ Here are all the supported configuration settings.
   In the command line, %file is replaced with the file that should be
   erased.
 
-  For example, to use the wipe command, set it to `wipe -f %file`
+  For example, to use the wipe command, set it to `wipe -f %file`.
 
 * `remote.<name>.rsyncurl`
 
@@ -1604,6 +1804,12 @@ Here are all the supported configuration settings.
 
   Used by bup special remotes, this configures
   the location of the bup repository to use. Normally this is automatically
+  set up by `git annex initremote`, but you can change it if needed.
+
+* `remote.<name>.ddarrepo`
+
+  Used by ddar special remotes, this configures
+  the location of the ddar repository to use. Normally this is automatically
   set up by `git annex initremote`, but you can change it if needed.
 
 * `remote.<name>.directory`
@@ -1652,6 +1858,12 @@ Here are all the supported configuration settings.
   Used by hook special remotes and external special remotes to record
   the type of the remote.
 
+* `annex.tune.objecthash1`, `annex.tune.objecthashlower`, `annex.tune.branchhash1`
+
+  These can be passed to `git annex init` to tune the repository.
+  They cannot be safely changed in a running repository.
+  For details, see <http://git-annex.branchable.com/tuning/>.
+
 # CONFIGURATION VIA .gitattributes
 
 The key-value backend used when adding a new file to the annex can be
@@ -1681,7 +1893,7 @@ not honor the settings from .gitattributes.
 
 Also note that when using views, only the toplevel .gitattributes file is
 preserved in the view, so other settings in other files won't have any
-efffect.
+effect.
 
 # FILES
 
@@ -1697,7 +1909,7 @@ used by git-annex.
 `~/.config/git-annex/autostart` is a list of git repositories
 to start the git-annex assistant in.
 
-`.git/hooks/pre-commit-annex` in your git repsitory will be run whenever
+`.git/hooks/pre-commit-annex` in your git repository will be run whenever
 a commit is made, either by git commit, git-annex sync, or the git-annex
 assistant.
 
@@ -1711,7 +1923,7 @@ should be included, in, for example, `/usr/share/doc/git-annex/`.
 
 # AUTHOR
 
-Joey Hess <joey@kitenet.net>
+Joey Hess <id@joeyh.name>
 
 <http://git-annex.branchable.com/>
 

@@ -1,18 +1,38 @@
-## roadmap
+## ahead
 
-Now in the 
-[sustaining git-annex development](https://campaign.joeyh.name/) year
-(starting September 2013).
+* [[assistant/deltas]]
+* [[assistant/gpgkeys]]
+* [[assistant/telehash]]
+* [[design/requests_routing]]
+* [[design/v6]]
 
-* Month 1 [[!traillink assistant/encrypted_git_remotes]]
-* Month 2 [[!traillink assistant/disaster_recovery]]
-* Month 3 user-driven features and polishing [[!traillink todo/direct_mode_guard]] [[!traillink assistant/upgrading]]
-* Month 4 [[!traillink assistant/windows text="Windows webapp"]], Linux arm, [[!traillink todo/support_for_writing_external_special_remotes]]
-* Month 5 user-driven features and polishing
-* Month 6 get Windows out of beta, [[!traillink design/metadata text="metadata and views"]]
-* **Month 7 user-driven features and polishing**
-* Month 8 [[!traillink assistant/telehash]]
-* Month 9 [[!traillink assistant/gpgkeys]] [[!traillink assistant/sshpassword]]
-* Month 10 get [[assistant/Android]] out of beta
-* Month 11 [[!traillink assistant/chunks]] [[!traillink assistant/deltas]]
-* Month 12 user-driven features and polishing
+## now
+
+* Feb 2015 user-driven features and polishing, [[design/caching_database]]
+
+## the rearview
+
+* Jan 2015 Android 5, relative paths, workload [[tuning]]
+* Dec 2014 [[todo/extensible_addurl]], bittorrent special remote
+* Nov 2014 direct mode proxy, undo command, diffdriver
+* Oct 2014 user-driven features and polishing, S3 multipart
+* Sep 2014 vacation
+
+2013-2014 [crowdfunded](https://campaign.joeyh.name/) year
+
+* Aug 2014 user-driven features and polishing
+* Jul 2014 [[!traillink assistant/chunks]]
+* Jun 2014 polish [[assistant/Windows]] port
+* May 2014 Brazil!, [[!traillink assistant/sshpassword]]
+* Apr 2014 [[!traillink git-remote-daemon]]
+* Mar 2014 user-driven features and polishing
+* Feb 2014 get Windows out of beta, [[!traillink design/metadata text="metadata and views"]]
+* Jan 2014 user-driven features and polishing
+* Dec 2013 [[!traillink assistant/windows text="Windows webapp"]], Linux arm, external special remotes
+* Nov 2013 [[!traillink direct_mode]] guard [[!traillink assistant/upgrading]]
+* Oct 2013 [[!traillink assistant/disaster_recovery]]
+* Sep 2013 [[!traillink assistant/encrypted_git_remotes]]
+
+2012-2013 kickstarted year developing [[git-annex assistant|assistant]]
+
+2010-2011 initial git-annex development

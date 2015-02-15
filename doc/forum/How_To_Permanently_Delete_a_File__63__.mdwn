@@ -1,0 +1,13 @@
+Hi,
+
+We have several large git annex repos where all of the files are on remotes and we want to got through and clean up the repositories by deleting some subset of files.
+
+What is the fastest way to permanently delete files from a git annex repository with remotes?
+
+I guess I can to ``git annex drop --numcopies=0 <file>; git rm <file>``. Does that actually delete the file permanently?
+
+Is there a faster way?
+
+Thanks,
+
+Mike

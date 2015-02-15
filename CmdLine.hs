@@ -1,6 +1,6 @@
 {- git-annex command line parsing and dispatch
  -
- - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -25,6 +25,7 @@ import Common.Annex
 import qualified Annex
 import qualified Git
 import qualified Git.AutoCorrect
+import qualified Git.Config
 import Annex.Content
 import Annex.Environment
 import Command
@@ -34,30 +35,34 @@ import Types.Messages
 dispatch :: Bool -> CmdParams -> [Command] -> [Option] -> [(String, String)] -> String -> IO Git.Repo -> IO ()
 dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
 	setupConsole
-	r <- E.try getgitrepo :: IO (Either E.SomeException Git.Repo)
-	case r of
-		Left e -> maybe (throw e) (\a -> a params) (cmdnorepo cmd)
-		Right g -> do
-			state <- Annex.new g
-			Annex.eval state $ do
-				checkEnvironment
-				checkfuzzy
-				forM_ fields $ uncurry Annex.setField
-				when (cmdnomessages cmd) $ 
-					Annex.setOutput QuietOutput
-				sequence_ flags
-				whenM (annexDebug <$> Annex.getGitConfig) $
-					liftIO enableDebugOutput
-				startup
-				performCommandAction cmd params
-				shutdown $ cmdnocommit cmd
+	case getOptCmd args cmd commonoptions of
+		Right (flags, params) -> go flags params
+			=<< (E.try getgitrepo :: IO (Either E.SomeException Git.Repo))
+		Left parseerr -> error parseerr
   where
+	go flags params (Right g) = do
+		state <- Annex.new g
+		Annex.eval state $ do
+			checkEnvironment
+			when fuzzy $
+				inRepo $ autocorrect . Just
+			forM_ fields $ uncurry Annex.setField
+			when (cmdnomessages cmd) $ 
+				Annex.setOutput QuietOutput
+			sequence_ flags
+			whenM (annexDebug <$> Annex.getGitConfig) $
+				liftIO enableDebugOutput
+			startup
+			performCommandAction cmd params $
+				shutdown $ cmdnocommit cmd
+	go _flags params (Left e) = do
+		when fuzzy $
+			autocorrect =<< Git.Config.global
+		maybe (throw e) (\a -> a params) (cmdnorepo cmd)
 	err msg = msg ++ "\n\n" ++ usage header allcmds
 	cmd = Prelude.head cmds
 	(fuzzy, cmds, name, args) = findCmd fuzzyok allargs allcmds err
-	(flags, params) = getOptCmd args cmd commonoptions
-	checkfuzzy = when fuzzy $
-		inRepo $ Git.AutoCorrect.prepare name cmdname cmds
+	autocorrect = Git.AutoCorrect.prepare name cmdname cmds
 
 {- Parses command line params far enough to find the Command to run, and
  - returns the remaining params.
@@ -81,12 +86,12 @@ findCmd fuzzyok argv cmds err
 
 {- Parses command line options, and returns actions to run to configure flags
  - and the remaining parameters for the command. -}
-getOptCmd :: CmdParams -> Command -> [Option] -> ([Annex ()], CmdParams)
+getOptCmd :: CmdParams -> Command -> [Option] -> Either String ([Annex ()], CmdParams)
 getOptCmd argv cmd commonoptions = check $
 	getOpt Permute (commonoptions ++ cmdoptions cmd) argv
   where
-	check (flags, rest, []) = (flags, rest)
-	check (_, _, errs) = error $ unlines
+	check (flags, rest, []) = Right (flags, rest)
+	check (_, _, errs) = Left $ unlines
 		[ concat errs
 		, commandUsage cmd
 		]

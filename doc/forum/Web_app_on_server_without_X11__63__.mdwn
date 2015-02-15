@@ -1,0 +1,3 @@
+When I run git-annex-webapp, a browser is opened and I am redirected to the assistant. However, how can I run the web app and just have it start the server process without opening a browser, and navigating to the page from a remote computer?
+
+Thanks!

@@ -1,6 +1,6 @@
 {- git-annex scheduled activities
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -17,7 +17,7 @@ import Data.Either
 data ScheduledActivity 
 	= ScheduledSelfFsck Schedule Duration
 	| ScheduledRemoteFsck UUID Schedule Duration
-  deriving (Eq, Read, Show, Ord)
+	deriving (Eq, Read, Show, Ord)
 
 {- Activities that run on a remote, within a time window, so
  - should be run when the remote gets connected. -}

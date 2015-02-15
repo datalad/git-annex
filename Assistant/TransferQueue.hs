@@ -1,6 +1,6 @@
 {- git-annex assistant pending transfer queue
  -
- - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -92,7 +92,7 @@ queueTransfersMatching matching reason schedule k f direction
 			filterM (wantSend True (Just k) f . Remote.uuid) $
 				filter (\r -> not (inset s r || Remote.readonly r)) rs
 	  where
-	  	locs = S.fromList <$> Remote.keyLocations k
+		locs = S.fromList <$> Remote.keyLocations k
 		inset s r = S.member (Remote.uuid r) s
 	gentransfer r = Transfer
 		{ transferDirection = direction

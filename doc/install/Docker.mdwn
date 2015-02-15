@@ -1,0 +1,42 @@
+There is not yet a pre-built Docker image for git-annex. However, it's
+easy to add it to an image.
+
+For example:
+
+	docker run -i -t joeyh/debian-unstable apt-get install git-annex
+
+# containers for autobuilders
+
+The git-annex Linux autobuilds are built using Docker containers.
+Most of these are not published, but you can build your own. (See below.)
+
+Since the Android autobuilder container can take quite a lot of work to get
+built, it is published. `docker pull joeyh/git-annex-android-builder`
+
+So's the armel autobuilder container. 
+`docker pull joeyh/git-annex-armel-builder`, and its companion container
+`docker pull joeyh/git-annex-armel-companion`
+
+# building autobuilder containers using Propellor
+
+The Docker containers are built using
+[Propellor](http://joeyh.name/code/propellor). To generate your own image,
+Just install Propellor and add this to its `config.hs`:
+
+[[!format haskell """
+import qualified Propellor.Property.SiteSpecific.GitAnnexBuilder as GitAnnexBuilder
+
+	, host "your.machine.net"
+	        & Docker.configured
+		& Docker.docked (GitAnnexBuilder.standardAutoBuilderContainer dockerImage "amd64" 15 "2h")
+"""]]
+
+This will autobuild every hour at :15, and the autobuilt image will be
+left inside the container in /home/builder/gitbuilder/out/
+
+# container for backport building
+
+For building the Debian stable backport, the container
+`joeyh/git-annex-wheezy-backport` is used. This is nothing special, it
+just has the right versions of build dependencies installed from Debian
+stable and backports.

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 15"
+ date="2014-05-15T19:53:16Z"
+ content="""
+We seem to have some rumor going around that `git annex sync` pushes all branches. It does not. It pushes only the git-annex branch and the currently checked out branch.
+"""]]

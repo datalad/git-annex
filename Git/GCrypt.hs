@@ -2,7 +2,7 @@
  -
  - https://github.com/blake2-ppc/git-remote-gcrypt
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,8 +16,11 @@ import qualified Git.Config as Config
 import qualified Git.Command as Command
 import Utility.Gpg
 
+urlScheme :: String
+urlScheme = "gcrypt:"
+
 urlPrefix :: String
-urlPrefix = "gcrypt::"
+urlPrefix = urlScheme ++ ":"
 
 isEncrypted :: Repo -> Bool
 isEncrypted Repo { location = Url url } = urlPrefix `isPrefixOf` show url
@@ -35,12 +38,12 @@ isEncrypted _ = False
 encryptedRemote :: Repo -> Repo -> IO Repo
 encryptedRemote baserepo = go
   where
-  	go Repo { location = Url url }
+	go Repo { location = Url url }
 		| urlPrefix `isPrefixOf` u =
 			fromRemoteLocation (drop plen u) baserepo
 		| otherwise = notencrypted
 	  where
-  		u = show url
+		u = show url
 		plen = length urlPrefix
 	go _ = notencrypted
 	notencrypted = error "not a gcrypt encrypted repository"
@@ -89,12 +92,15 @@ getParticiantList globalconfigrepo repo remotename = KeyIds $ parse $ firstJust
 	]
   where
 	defaultkey = "gcrypt.participants"
-  	parse (Just "simple") = []
+	parse (Just "simple") = []
 	parse (Just l) = words l
 	parse Nothing = []
 
 remoteParticipantConfigKey :: RemoteName -> String
 remoteParticipantConfigKey = remoteConfigKey "gcrypt-participants"
+
+remotePublishParticipantConfigKey :: RemoteName -> String
+remotePublishParticipantConfigKey = remoteConfigKey "gcrypt-publish-participants"
 
 remoteSigningKey :: RemoteName -> String
 remoteSigningKey = remoteConfigKey "gcrypt-signingkey"

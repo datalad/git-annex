@@ -1,0 +1,4 @@
+Hi
+I created shares between Linux and Android(using nightly 4.4). I used Assistant on both. It seems like the files from Android to Linux are all missing, at least the symlinks are broken maybe. However files from Linux to Android are fine.
+
+thanks

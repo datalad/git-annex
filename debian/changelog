@@ -1,12 +1,624 @@
-git-annex (5.20140307) UNRELEASED; urgency=medium
+git-annex (5.20150206) UNRELEASED; urgency=medium
+
+  * glacier: Detect when the glacier command in PATH is the wrong one,
+    from boto, rather than from glacier-cli, and refuse to use it,
+    since the boto program fails to fail when passed
+    parameters it does not understand.
+  * groupwanted: New command to set the groupwanted preferred content
+    expression.
+  * import: Support file matching options such as --exclude, --include, 
+    --smallerthan, --largerthan
+  * The file matching options are now only accepted by commands that
+    can actually use them, instead of by all commands.
+  * import: Avoid checksumming file twice when run in the default
+    or --duplicate mode.
+  * Windows: Fix bug in dropping an annexed file, which
+    caused a symlink to be staged that contained backslashes.
+  * webapp: Fix reversion in opening webapp when starting it manually
+    inside a repository.
+  * assistant: Improve sanity check for control characters when pairing.
+  * Improve race recovery code when committing to git-annex branch.
+  * addurl: Avoid crash if quvi is not installed, when git-annex was
+    built with process-1.2
+  * bittorrent: Fix mojibake introduced in parsing arai2c progress output.
+  * fsck --from: If a download from a remote fails, propigate the failure.
+  * metadata: When setting metadata, do not recurse into directories by
+    default, since that can be surprising behavior and difficult to recover
+    from. The old behavior is available by using --force.
+  * sync, assistant: Include repository name in head branch commit message.
+  * The ssh-options git config is now used by gcrypt, rsync, and ddar
+    special remotes that use ssh as a transport.
+  * sync, assistant: Use the ssh-options git config when doing git pull
+    and push.
+  * remotedaemon: Use the ssh-options git config.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 06 Feb 2015 13:57:08 -0400
+
+git-annex (5.20150205) unstable; urgency=medium
+
+  * info: Can now display info about a given uuid.
+  * Added to remote/uuid info: Count of the number of keys present
+    on the remote, and their size. This is rather expensive to calculate,
+    so comes last and --fast will disable it.
+  * info remote: Include the date of the last sync with the remote.
+  * sync: Added --message/-m option like git commit.
+  * remotedaemon: Fix problem that could prevent ssh connections being
+    made after two LOSTNET messages were received in a row (perhaps due to
+    two different network interfaces being brought down).
+  * Fix build failure when wget is not installed.
+  * Fix wording of message displayed when unable to get a file that
+    is available in untrusted repositories.
+  * addurl: When a Content-Disposition header suggests a filename to use,
+    addurl will consider using it, if it's reasonable and doesn't conflict
+    with an existing file. (--file overrides this)
+  * Fix default repository description created by git annex init,
+    which got broken by the relative path changes in the last release.
+  * init: Repository tuning parameters can now be passed when initializing a
+    repository for the first time. For details, see
+    http://git-annex.branchable.com/tuning/
+  * merge: Refuse to merge changes from a git-annex branch of a repo
+    that has been tuned in incompatible ways.
+  * Support annex.tune.objecthash1, annex.tune.objecthashlower, and
+    annex.tune.branchhash1.
+  * Remove support for building without cryptohash.
+  * Added MD5 and MD5E backends.
+  * assistant: Fix local pairing when ssh pubkey comment contains spaces.
+  * Avoid using fileSize which maxes out at just 2 gb on Windows.
+    Instead, use hFileSize, which doesn't have a bounded size.
+    Fixes support for files > 2 gb on Windows.
+  * Windows: Fix running of the pre-commit-annex hook.
+  * Windows: Fix S3 special remote; need to call withSocketsDo. Thanks, Trent.
+
+ -- Joey Hess <id@joeyh.name>  Thu, 05 Feb 2015 14:08:33 -0400
+
+git-annex (5.20150113) unstable; urgency=medium
+
+  * unlock: Don't allow unlocking files that have never been committed to git
+    before, to avoid an intractable problem that prevents the pre-commit
+    hook from telling if such a file is intended to be an annexed file or not.
+  * Avoid re-checksumming when migrating from hash to hashE backend.
+    Closes: #774494
+  * Fix build with process 1.2.1.0.
+  * Android: Provide a version built with -fPIE -pie to support Android 5.0.
+  * sync: Fix an edge case where syncing in a bare repository would try to
+    merge and so fail.
+  * Check git version at runtime, rather than assuming it will be the same
+    as the git version used at build time when running git-checkattr and
+    git-branch remove.
+  * Switch to using relative paths to the git repository.
+    - This allows the git repository to be moved while git-annex is running in
+      it, with fewer problems.
+    - On Windows, this avoids some of the problems with the absurdly small
+      MAX_PATH of 260 bytes. In particular, git-annex repositories should
+      work in deeper/longer directory structures than before.
+  * Generate shorter keys for WORM and URL, avoiding keys that are longer
+    than used for SHA256, so as to not break on systems like Windows that
+    have very small maximum path length limits.
+  * Bugfix: A file named HEAD in the work tree could confuse some git commands
+    run by git-annex.
+
+ -- Joey Hess <id@joeyh.name>  Tue, 13 Jan 2015 12:10:08 -0400
+
+git-annex (5.20141231) unstable; urgency=medium
+
+  * vicfg: Avoid crashing on badly encoded config data.
+  * Work around statfs() overflow on some XFS systems.
+  * sync: Now supports remote groups, the same way git remote update does.
+  * setpresentkey: A new plumbing-level command.
+  * Run shutdown cleanup actions even if there were failures processing
+    the command. Among other fixes, this means that addurl will stage
+    added files even if adding one of the urls fails.
+  * bittorrent: Fix locking problem when using addurl file://
+  * Windows: Fix local rsync filepath munging (fixes 26 test suite failures).
+  * Windows: Got the rsync special remote working.
+  * Windows: Fix handling of views of filenames containing '%'
+  * OSX: Switched away from deprecated statfs64 interface.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 31 Dec 2014 15:15:46 -0400
+
+git-annex (5.20141219) unstable; urgency=medium
+
+  * Webapp: When adding a new box.com remote, use the new style chunking.
+    Thanks, Jon Ander Peñalba.
+  * External special remote protocol now includes commands for setting
+    and getting the urls associated with a key.
+  * Urls can now be claimed by remotes. This will allow creating,
+    for example, a external special remote that handles magnet: and
+    *.torrent urls.
+  * Use wget -q --show-progress for less verbose wget output,
+    when built with wget 1.16.
+  * Added bittorrent special remote.
+  * addurl behavior change: When downloading an url ending in .torrent,
+    it will download files from bittorrent, instead of the old behavior
+    of adding the torrent file to the repository.
+  * Added Recommends on aria2.
+  * When possible, build with the haskell torrent library for parsing
+    torrent files. As a fallback, can instead use btshowmetainfo from
+    bittornado | bittorrent.
+  * Fix build with -f-S3.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 19 Dec 2014 16:53:26 -0400
+
+git-annex (5.20141203) unstable; urgency=medium
+
+  * proxy: New command for direct mode repositories, allows bypassing
+    the direct mode guard in a safe way to do all sorts of things
+    including git revert, git mv, git checkout ...
+  * undo: New command to undo the most recent change to a file
+    or to the contents of a directory.
+  * Add undo action to nautilus and konqueror integration.
+  * diffdriver: New git-annex command, to make git external diff drivers
+    work with annexed files.
+  * pre-commit: Block partial commit of unlocked annexed file, since
+    that left a typechange staged in index due to some infelicity of git's
+    handling of partial commits.
+  * Work around behavior change in lsof 4.88's -F output format.
+  * S3: Switched to using the haskell aws library.
+  * S3: No longer buffers entire files in memory when uploading without
+    chunking.
+  * S3: When built with a new enough version of the haskell aws library,
+    supports doing multipart uploads, in order to store extremely large
+    files in S3 when not using chunking.
+  * Don't show "(gpg)" when decrypting the remote encryption cipher,
+    since this could be taken to read that's the only time git-annex
+    runs gpg, which is not the case.
+  * Debian package is now maintained by Gergely Nagy.
+  * Windows: Remove Alt+A keyboard shortcut, which turns out to have scope
+    outside the menus.
+  * Windows: Install ssh and other bundled programs to Git/cmd,
+    instead of Git/bin, since the latter is not in the default msysgit PATH.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 03 Dec 2014 15:16:52 -0400
+
+git-annex (5.20141125) unstable; urgency=medium
+
+  * Remove fixup code for bad bare repositories created by
+    versions 5.20131118 through 5.20131127. That fixup code would
+    accidentially fire when --git-dir was incorrectly
+    pointed at the working tree of a git-annex repository,
+    possibly resulting in data loss. Closes: #768093
+  * Windows: Fix crash when user.name is not set in git config.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 05 Nov 2014 11:41:51 -0400
+
+git-annex (5.20141024) unstable; urgency=medium
+
+  * vicfg: Deleting configurations now resets to the default, where
+    before it has no effect.
+  * Remove hurd stuff from cabal file, since hackage currently rejects
+    it, and the test suite fails on hurd.
+  * initremote: Don't allow creating a special remote that has the same
+    name as an existing git remote.
+  * Windows: Use haskell setenv library to clean up several ugly workarounds
+    for inability to manipulate the environment on windows. This includes
+    making git-annex not re-exec itself on start on windows, and making the
+    test suite on Windows run tests without forking.
+  * glacier: Fix pipe setup when calling glacier-cli to retrieve an object.
+  * info: When run on a single annexed file, displays some info about the 
+    file, including its key and size.
+  * info: When passed the name or uuid of a remote, displays info about that
+    remote. Remotes that support encryption, chunking, or embedded
+    creds will include that in their info.
+  * enableremote: When the remote has creds, update the local creds cache
+    file. Before, the old version of the creds could be left there, and
+    would continue to be used.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 24 Oct 2014 13:03:29 -0400
+
+git-annex (5.20141013) unstable; urgency=medium
+
+  * Adjust cabal file to support building w/o assistant on the hurd.
+  * Support building with yesod 1.4.
+  * S3: Fix embedcreds=yes handling for the Internet Archive.
+  * map: Handle .git prefixed remote repos. Closes: #614759
+  * repair: Prevent auto gc from happening when fetching from a remote.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 13 Oct 2014 10:13:06 -0400
+
+git-annex (5.20140927) unstable; urgency=medium
+
+  * Really depend (not just build-depend) on new enough git for --no-gpg-sign
+    to work. Closes: #763057
+  * Add temporary workaround for bug #763078 which broke building on armel
+    and armhf.
+
+ -- Joey Hess <joeyh@debian.org>  Sat, 27 Sep 2014 14:25:09 -0400
+
+git-annex (5.20140926) unstable; urgency=high
+
+  * Depend on new enough git for --no-gpg-sign to work. Closes: #762446
+  * Work around failure to build on mips by using cabal, not Setup,
+    to build in debian/rules.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 26 Sep 2014 15:09:02 -0400
+
+git-annex (5.20140919) unstable; urgency=high
+
+  * Security fix for S3 and glacier when using embedcreds=yes with
+    encryption=pubkey or encryption=hybrid. CVE-2014-6274
+    The creds embedded in the git repo were *not* encrypted.
+    git-annex enableremote will warn when used on a remote that has
+    this problem. For details, see:
+    https://git-annex.branchable.com/upgrades/insecure_embedded_creds/
+  * assistant: Detect when repository has been deleted or moved, and
+    automatically shut down the assistant. Closes: #761261
+  * Windows: Avoid crashing trying to list gpg secret keys, for gcrypt
+    which is not yet supported on Windows.
+  * WebDav: Fix enableremote crash when the remote already exists.
+    (Bug introduced in version 5.20140817.)
+  * add: In direct mode, adding an annex symlink will check it into git,
+    as was already done in indirect mode.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 19 Sep 2014 12:53:42 -0400
+
+git-annex (5.20140915) unstable; urgency=medium
+
+  * New annex.hardlink setting. Closes: #758593
+  * init: Automatically detect when a repository was cloned with --shared,
+    and set annex.hardlink=true, as well as marking the repository as
+    untrusted.
+  * Fix parsing of ipv6 address in git remote address when it was not
+    formatted as an url.
+  * The annex-rsync-transport configuration is now also used when checking
+    if a key is present on a rsync remote, and when dropping a key from
+    the remote.
+  * Promote file not found warning message to an error.
+  * Fix transfer lock file FD leak that could occur when two separate
+    git-annex processes were both working to perform the same set of
+    transfers.
+  * sync: Ensure that pending changes to git-annex branch are committed
+    before push when in direct mode. (Fixing a very minor reversion.)
+  * WORM backend: Switched to include the relative path to the file inside
+    the repository, rather than just the file's base name. Note that if you're
+    relying on such things to keep files separate with WORM, you should really
+    be using a better backend.
+  * Rather than crashing when there's a problem with the requested bloomfilter
+    capacity/accuracy, fall back to a reasonable default bloom filter size.
+  * Fix build with optparse-applicative 0.10. Closes: #761484
+  * webapp: Fixed visual glitch in xmpp pairing that was reported live by a
+    user who tracked me down in front of a coffee cart in Portland. 
+    (New bug reporting method of choice?)
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 15 Sep 2014 10:45:00 -0400
+
+git-annex (5.20140831) unstable; urgency=medium
+
+  * Make --help work when not in a git repository. Closes: #758592
+  * Ensure that all lock fds are close-on-exec, fixing various problems with
+    them being inherited by child processes such as git commands.
+  * When accessing a local remote, shut down git-cat-file processes
+    afterwards, to ensure that remotes on removable media can be unmounted.
+    Closes: #758630
+  * Fix handing of autocorrection when running outside a git repository.
+  * Fix stub git-annex test support when built without tasty.
+  * Do not preserve permissions and acls when copying files from
+    one local git repository to another. Timestamps are still preserved
+    as long as cp --preserve=timestamps is supported. Closes: #729757
+
+ -- Joey Hess <joeyh@debian.org>  Sun, 31 Aug 2014 12:30:08 -0700
+
+git-annex (5.20140817) unstable; urgency=medium
+
+  * New chunk= option to chunk files stored in special remotes.
+    Supported by: directory, S3, webdav, gcrypt, rsync, and all external
+    and hook special remotes.
+  * Partially transferred files are automatically resumed when using
+    chunked remotes!
+  * The old chunksize= option is deprecated. Do not use for new remotes.
+  * Legacy code for directory remotes using the old chunksize= option
+    will keep them working, but more slowly than before.
+  * webapp: Automatically install Konqueror integration scripts
+    to get and drop files.
+  * repair: Removing bad objects could leave fsck finding no more
+    unreachable objects, but some branches no longer accessible.
+    Fix this, including support for fixing up repositories that
+    were incompletely repaired before.
+  * Fix cost calculation for non-encrypted remotes.
+  * Display exception message when a transfer fails due to an exception.
+  * WebDAV: Sped up by avoiding making multiple http connections
+    when storing a file.
+  * WebDAV: Avoid buffering whole file in memory when uploading and
+    downloading.
+  * WebDAV: Dropped support for DAV before 1.0.
+  * testremote: New command to test uploads/downloads to a remote.
+  * Dropping an object from a bup special remote now deletes the git branch
+    for the object, although of course the object's content cannot be deleted
+    due to the nature of bup.
+  * unlock: Better error handling; continue past files that are not available
+    or cannot be unlocked due to disk space, and try all specified files.
+  * Windows: Now uses actual inode equivilants in new direct mode
+    repositories, for safer detection of eg, renaming of files with the same
+    size and mtime.
+  * direct: Fix ugly warning messages.
+  * WORM backend: When adding a file in a subdirectory, avoid including the
+    subdirectory in the key name.
+  * S3, Glacier, WebDAV: Fix bug that prevented accessing the creds
+    when the repository was configured with encryption=shared embedcreds=yes.
+  * direct: Avoid leaving file content in misctemp if interrupted.
+  * git-annex-shell sendkey: Don't fail if a remote asks for a key to be sent
+    that already has a transfer lock file indicating it's being sent to that
+    remote. The remote may have moved between networks, or reconnected.
+  * Switched from the old haskell HTTP library to http-conduit.
+
+ -- Joey Hess <joeyh@debian.org>  Sun, 17 Aug 2014 10:30:58 -0400
+
+git-annex (5.20140717) unstable; urgency=high
+
+  * Fix minor FD leak in journal code. Closes: #754608
+  * direct: Fix handling of case where a work tree subdirectory cannot
+    be written to due to permissions.
+  * migrate: Avoid re-checksumming when migrating from hashE to hash backend.
+  * uninit: Avoid failing final removal in some direct mode repositories
+    due to file modes.
+  * S3: Deal with AWS ACL configurations that do not allow creating or
+    checking the location of a bucket, but only reading and writing content to
+    it.
+  * resolvemerge: New plumbing command that runs the automatic merge conflict
+    resolver.
+  * Deal with change in git 2.0 that made indirect mode merge conflict
+    resolution leave behind old files.
+  * sync: Fix git sync with local git remotes even when they don't have an
+    annex.uuid set. (The assistant already did so.)
+  * Set gcrypt-publish-participants when setting up a gcrypt repository,
+    to avoid unncessary passphrase prompts.
+    This is a security/usability tradeoff. To avoid exposing the gpg key
+    ids who can decrypt the repository, users can unset
+    gcrypt-publish-participants.
+  * Install nautilus hooks even when ~/.local/share/nautilus/ does not yet
+    exist, since it is not automatically created for Gnome 3 users.
+  * Windows: Move .vbs files out of git\bin, to avoid that being in the
+    PATH, which caused some weird breakage. (Thanks, divB)
+  * Windows: Fix locking issue that prevented the webapp starting
+    (since 5.20140707).
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 17 Jul 2014 11:27:25 -0400
+
+git-annex (5.20140709) unstable; urgency=medium
+
+  * Fix race in direct mode merge code that could cause all files in the
+    repository to be removed. It should be able to recover repositories
+    experiencing this bug without data loss. See:
+    http://git-annex.branchable.com/bugs/bad_merge_commit_deleting_all_files/
+  * Fix git version that supported --no-gpg-sign.
+  * Fix bug in automatic merge conflict resolution, when one side is an
+    annexed symlink, and the other side is a non-annexed symlink.
+  * Really fix bug that caused the assistant to make many unncessary
+    empty merge commits.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 09 Jul 2014 15:28:03 -0400
+
+git-annex (5.20140707) unstable; urgency=medium
+
+  * assistant: Fix bug, introduced in last release, that caused the assistant
+    to make many unncessary empty merge commits.
+  * assistant: Fix one-way assistant->assistant sync in direct mode.
+  * Fix bug in annex.queuesize calculation that caused much more
+    queue flushing than necessary.
+  * importfeed: When annex.genmetadata is set, metadata from the feed
+    is added to files that are imported from it.
+  * Support users who have set commit.gpgsign, by disabling gpg signatures
+    for git-annex branch commits and commits made by the assistant.
+  * Fix memory leak when committing millions of changes to the git-annex
+    branch, eg after git-annex add has run on 2 million files in one go.
+  * Support building with bloomfilter 2.0.0.
+  * Run standalone install process when the assistant is started
+    (was only being run when the webapp was opened).
+  * Android: patch git to avoid fchmod, which fails on /sdcard.
+  * Windows: Got rid of that pesky DOS box when starting the webapp.
+  * Windows: Added Startup menu item so assistant starts automatically
+    on login.
+  * Windows: Fix opening file browser from webapp when repo is in a
+    directory with spaces.
+  * Windows: Assistant now logs to daemon.log.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 07 Jul 2014 12:24:13 -0400
+
+git-annex (5.20140613) unstable; urgency=medium
+
+  * Ignore setsid failures.
+  * Avoid leaving behind .tmp files when failing in some cases, including
+    importing files to a disk that is full.
+  * Avoid bad commits after interrupted direct mode sync (or merge).
+  * Fix build with wai 0.3.0.
+  * Deal with FAT's low resolution timestamps, which in combination with
+    Linux's caching of higher res timestamps while a FAT is mounted, caused
+    direct mode repositories on FAT to seem to have modified files after
+    they were unmounted and remounted.
+  * Windows: Fix opening webapp when repository is in a directory with
+    spaces in the path.
+  * Detect when Windows has lost its mind in a timezone change, and
+    automatically apply a delta to the timestamps it returns, to get back to
+    sane values.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 13 Jun 2014 09:58:07 -0400
+
+git-annex (5.20140606) unstable; urgency=medium
+
+  * webapp: When adding a new local repository, fix bug that caused its
+    group and preferred content to be set in the current repository,
+    even when not combining.
+  * webapp: Avoid stomping on existing description, group and
+    preferred content settings when enabling or combining with
+    an already existing remote.
+  * assistant: Make sanity checker tmp dir cleanup code more robust.
+  * unused: Avoid checking view branches for unused files.
+  * webapp: Include ssh port in mangled hostname.
+  * Windows: Fix bug introduced in last release that caused files
+    in the git-annex branch to have lines teminated with \r.
+  * Windows: Fix retrieving of files from local bare git repositories.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 06 Jun 2014 12:54:06 -0400
+
+git-annex (5.20140529) unstable; urgency=medium
+
+  * Fix encoding of data written to git-annex branch. Avoid truncating
+    unicode characters to 8 bits. Allow any encoding to be used, as with
+    filenames (but utf8 is the sane choice). Affects metadata and repository
+    descriptions, and preferred content expressions.
+  * assistant: When there are multiple remotes giving different ways
+    to access the same repository, honor remote cost settings and use
+    the cheapest available.
+  * webapp: More robust startup when annex directory is not a git repo.
+  * initremote/enableremote: Basic support for using with regular git remotes;
+    initremote stores the location of an already existing git remote,
+    and enableremote setups up a remote using its stored location.
+  * webapp: Support for enabling known git repositories on ssh servers.
+    The repository must have been added using initremote.
+  * webapp: When setting up a ssh remote, record it using initremote,
+    so that it can be easily enabled elsewhere.
+  * webapp: When setting up a ssh remote, if the user inputs ~/foo,
+    normalize that to foo, since it's in the home directory by default.
+  * Use exceptions in place of deprecated MonadCatchIO-transformers
+    Thanks, Ben Gamari.
+  * android: Run busybox install with -s, since some versions of Android
+    prohibit making hard links.
+  * Android webapp: Fix EvilSplicer bugs that mangled the css files,
+    preventing icons from displaying, and also slightly broke the js files.
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 29 May 2014 14:41:56 -0400
+
+git-annex (5.20140517) unstable; urgency=medium
+
+  * webapp: Switched to bootstrap 3.
+    Thanks, Sören Brunk.
+  * Standalone builds now check gpg signatures before upgrading.
+  * Simplified repository description line format. The remote name,
+    if any, is always in square brackets after the description.
+  * assistant: Clean up stale tmp files on startup.
+  * webapp: Better ssh password prompting.
+  * Depend on git-remote-gcrypt 0.20130908-6. Older versions
+    fail when the assistant is run with no controlling tty.
+  * Added ddar special remote.
+    Thanks, Robie Basak.
+  * webapp: Fixed drag and drop to reorder the list of remotes.
+  * group: When no groups are specified to set, lists the current groups
+    of a repository.
+  * Add remote.$name.annex-shell configuration.
+    Thanks, Fraser Tweedale 
+  * Support symlinking git-annex and git-annex-shell
+    from the Linux standalone bundle into PATH.
+    Thanks, jlebar.
+
+ -- Joey Hess <joeyh@debian.org>  Sat, 17 May 2014 13:30:39 -0400
+
+git-annex (5.20140421) unstable; urgency=medium
+
+  * assistant: Now detects immediately when other repositories push
+    changes to a ssh remote, and pulls.
+    ** XMPP is no longer needed in this configuration! **
+    This requires the remote server have git-annex-shell with
+    notifychanges support (>= 5.20140405)
+  * webapp: Show a network signal icon next to ssh and xmpp remotes that
+    it's currently connected with.
+  * webapp: Rework xmpp nudge to prompt for either xmpp or a ssh remote 
+    to be set up.
+  * sync, assistant, remotedaemon: Use ssh connection caching for git pushes
+    and pulls.
+  * remotedaemon: When network connection is lost, close all cached ssh
+    connections.
+  * Improve handling of monthly/yearly scheduling.
+  * Avoid depending on shakespeare except for when building the webapp.
+  * uninit: Avoid making unncessary copies of files.
+  * info: Allow use in a repository where annex.uuid is not set.
+  * reinit: New command that can initialize a new repository using
+    the configuration of a previously known repository.
+    Useful if a repository got deleted and you want
+    to clone it back the way it was.
+  * drop --from: When local repository is untrusted, its copy of a file does
+    not count.
+  * Bring back rsync -p, but only when git-annex is running on a non-crippled
+    file system. This is a better approach to fix #700282 while not
+    unncessarily losing file permissions on non-crippled systems.
+  * webapp: Start even if the current directory is listed in
+    ~/.config/git-annex/autostart but no longer has a git repository in it.
+  * findref: New command, like find but shows files in a specified git ref.
+  * webapp: Fix UI for removing XMPP connection.
+  * When init detects that git is not configured to commit, and sets
+    user.email to work around the problem, also make it set user.name.
+  * webapp: Support using git-annex on a remote server, which was installed
+    from the standalone tarball or OSX app, and so does not have
+    git-annex in PATH (and may also not have git or rsync in PATH).
+  * standalone tarball, OSX app: Install a ~/.ssh/git-annex-wrapper, which
+    can be used to run git-annex, git, rsync, etc.
+
+ -- Joey Hess <joeyh@debian.org>  Sun, 20 Apr 2014 19:43:14 -0400
+
+git-annex (5.20140412) unstable; urgency=high
+
+  * Last release didn't quite fix the high cpu issue in all cases, this should.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 11 Apr 2014 17:14:38 -0400
+
+git-annex (5.20140411) unstable; urgency=high
+
+  * importfeed: Filename template can now contain an itempubdate variable.
+    Needs feed 0.3.9.2.
+  * Fix rsync progress parsing in locales that use comma in number display.
+    Closes: #744148
+  * assistant: Fix high CPU usage triggered when a monthly fsck is scheduled,
+    and the last time the job ran was a day of the month > 12. This caused a
+    runaway loop. Thanks to Anarcat for his assistance, and to Maximiliano
+    Curia for identifying the cause of this bug.
+  * Remove wget from OSX dmg, due to issues with cert paths that broke
+    git-annex automatic upgrading. Instead, curl is used, unless the
+    OSX system has wget installed, which will then be used.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 11 Apr 2014 14:59:49 -0400
+
+git-annex (5.20140405) unstable; urgency=medium
+
+  * git-annex-shell: Added notifychanges command.
+  * Improve display of dbus notifications. Thanks, Johan Kiviniemi.
+  * Fix nautilus script installation to not crash when the nautilus script dir
+    does not exist. Instead, only install scripts when the directory already
+    exists.
+
+ -- Joey Hess <joeyh@debian.org>  Sat, 05 Apr 2014 16:54:33 -0400
+
+git-annex (5.20140402) unstable; urgency=medium
+
+  * unannex, uninit: Avoid committing after every file is unannexed,
+    for massive speedup.
+  * --notify-finish switch will cause desktop notifications after each 
+    file upload/download/drop completes
+    (using the dbus Desktop Notifications Specification)
+  * --notify-start switch will show desktop notifications when each
+    file upload/download starts.
+  * webapp: Automatically install Nautilus integration scripts
+    to get and drop files.
+  * tahoe: Pass -d parameter before subcommand; putting it after
+    the subcommand no longer works with tahoe-lafs version 1.10.
+    (Thanks, Alberto Berti)
+  * forget --drop-dead: Avoid removing the dead remote from the trust.log,
+    so that if git remotes for it still exist anywhere, git annex info
+    will still know it's dead and not show it.
+  * git-annex-shell: Make configlist automatically initialize
+    a remote git repository, as long as a git-annex branch has
+    been pushed to it, to simplify setup of remote git repositories,
+    including via gitolite.
+  * add --include-dotfiles: New option, perhaps useful for backups.
+  * Version 5.20140227 broke creation of glacier repositories,
+    not including the datacenter and vault in their configuration.
+    This bug is fixed, but glacier repositories set up with the broken
+    version of git-annex need to have the datacenter and vault set
+    in order to be usable. This can be done using git annex enableremote
+    to add the missing settings. For details, see
+    http://git-annex.branchable.com/bugs/problems_with_glacier/
+  * Added required content configuration.
+  * assistant: Improve ssh authorized keys line generated in local pairing
+    or for a remote ssh server to set environment variables in an 
+    alternative way that works with the non-POSIX fish shell, as well
+    as POSIX shells.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 02 Apr 2014 16:42:53 -0400
+
+git-annex (5.20140320) unstable; urgency=medium
 
   * Fix zombie leak and general inneficiency when copying files to a
     local git repo.
+  * Fix ssh connection caching stop method to work with openssh 6.5p1,
+    which broke the old method.
   * webapp: Added a "Sync now" item to each repository's menu.
-  * unused: In direct mode, files that are deleted from the work tree
-    are no longer incorrectly detected as unused.
-  * repair: Improve memory usage when git fsck finds a great many broken
-    objects.
   * webapp: Use securemem for constant time auth token comparisons.
   * copy --fast --to remote: Avoid printing anything for files that
     are already believed to be present on the remote.
@@ -14,28 +626,31 @@ git-annex (5.20140307) UNRELEASED; urgency=medium
     the repository's description will now fail when multiple repositories
     match, rather than picking a repository at random.
     (So will --in=)
-  * Fix ssh connection caching stop method to work with openssh 6.5p1,
-    which broke the old method.
   * Better workaround for problem umasks when eg, setting up ssh keys.
   * "standard" can now be used as a first-class keyword in preferred content
     expressions. For example "standard or (include=otherdir/*)"
-  * Avoid encoding errors when using the unused log file.
-  * vicfg: Allows editing preferred content expressions for groups.
   * groupwanted can be used in preferred content expressions.
+  * vicfg: Allows editing preferred content expressions for groups.
+  * Improve behavior when unable to parse a preferred content expression
+    (thanks, ion).
   * metadata: Add --get
   * metadata: Support --key option (and some other ones like --all)
-  * map: Fix crash when one of the remotes of a repo is a local directory
-    that does not exist, or is not a git repo.
-  * rsync special remote: Fix slashes when used on Windows.
   * For each metadata field, there's now an automatically maintained
     "$field-lastchanged" that gives the date of the last change to that
     field. Also the "lastchanged" field for the date of the last change
     to any of a file's metadata.
+  * unused: In direct mode, files that are deleted from the work tree
+    and so have no content present are no longer incorrectly detected as
+    unused.
+  * Avoid encoding errors when using the unused log file.
+  * map: Fix crash when one of the remotes of a repo is a local directory
+    that does not exist, or is not a git repo.
+  * repair: Improve memory usage when git fsck finds a great many broken
+    objects.
   * Windows: Fix some filename encoding bugs.
-  * Improve behavior when unable to parse a preferred content expression
-    (thanks, ion).
+  * rsync special remote: Fix slashes when used on Windows.
 
- -- Joey Hess <joeyh@debian.org>  Thu, 06 Mar 2014 16:17:01 -0400
+ -- Joey Hess <joeyh@debian.org>  Thu, 20 Mar 2014 13:21:12 -0400
 
 git-annex (5.20140306) unstable; urgency=high
 

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ ip="72.0.72.144"
+ subject="confusing..."
+ date="2014-05-14T05:04:01Z"
+ content="""
+this is still really confusing. having to create the repo by hand is a really confusing step - i have setup an external drive to have my files with me as i move around, having to go through hoops to find them in a bare repository seems contrary to the spirit of \"future proofing\" inherent to git annex.
+
+the solution i found was to `git init` the repo on the removable drive before adding it through the webapp. i hope this can eventually be fixed, as it led to confusion among many other users (e.g. [[forum/Accessing_files_in_bare_repository/]], [[bugs/Adding a repository as a \"remote server\" creates a bare repository next to the existing one/]],  [[forum/remote server client repositories are bare!?/]] and so on). --[[anarcat]]
+"""]]

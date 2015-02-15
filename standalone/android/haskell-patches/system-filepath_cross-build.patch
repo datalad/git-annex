@@ -1,14 +1,14 @@
-From 9345a1ad95cc263f99ef124c7a386fb5aaa5405b Mon Sep 17 00:00:00 2001
-From: androidbuilder <androidbuilder@example.com>
-Date: Fri, 7 Feb 2014 22:18:12 +0000
-Subject: [PATCH] fix
+From 0e728d5b049224394908d793c73902a8c981e636 Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Mon, 26 May 2014 01:04:40 +0000
+Subject: [PATCH] fix cross build
 
 ---
  system-filepath.cabal |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/system-filepath.cabal b/system-filepath.cabal
-index d5fbbdd..efdf9ca 100644
+index d6aa726..f4e5e0f 100644
 --- a/system-filepath.cabal
 +++ b/system-filepath.cabal
 @@ -6,7 +6,7 @@ license-file: license.txt
@@ -17,7 +17,7 @@ index d5fbbdd..efdf9ca 100644
  copyright: John Millikin 2010-2012
 -build-type: Custom
 +build-type: Simple
- cabal-version: >= 1.6
+ cabal-version: >= 1.8
  category: System
  stability: experimental
 -- 

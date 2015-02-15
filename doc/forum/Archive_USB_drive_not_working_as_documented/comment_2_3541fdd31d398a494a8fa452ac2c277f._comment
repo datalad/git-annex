@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnwSZggfi3YE0EAuxAB9jT6pMcB73V8ae4"
+ nickname="Marshal"
+ subject="comment 2"
+ date="2014-07-20T01:33:25Z"
+ content="""
+Thank you Mesar! 
+
+I think I'm beginning to understand. Indeed, the files were there on the usbdrive repo (in .git/annex/objects). No need to sync or merge. I was able to drop a file from the laptop repo and get it back from the usbdrive.
+
+What is a bit unnerving, is that the symlinks are not present on the usbdrive, so it looks empty except for the .git directory.
+
+Thanks so much for clearing this up. More to explore... 
+"""]]

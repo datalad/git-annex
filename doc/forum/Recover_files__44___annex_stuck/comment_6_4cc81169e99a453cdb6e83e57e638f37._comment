@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmwjQzWgiD7_I3zw-_91rMRf_6qoThupis"
+ nickname="Mike"
+ subject="Reinstall GHC or Cabal?"
+ date="2014-06-18T16:49:35Z"
+ content="""
+Do I need to reinstall ghc or cabal with rtsopts enabled somehow in order to be able to compile git-annex with -K1000m?
+"""]]

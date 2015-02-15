@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -15,25 +15,34 @@ import Text.Feed.Types
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.Time.Clock
+import Data.Time.Format
+import System.Locale
 
 import Common.Annex
 import qualified Annex
 import Command
 import qualified Annex.Url as Url
+import qualified Remote
+import qualified Types.Remote as Remote
+import Types.UrlContents
 import Logs.Web
 import qualified Utility.Format
 import Utility.Tmp
-import Command.AddUrl (addUrlFile, relaxedOption)
+import Command.AddUrl (addUrlFile, downloadRemoteFile, relaxedOption)
 import Annex.Perms
+import Annex.UUID
 import Backend.URL (fromUrl)
 #ifdef WITH_QUVI
 import Annex.Quvi
 import qualified Utility.Quvi as Quvi
 import Command.AddUrl (addUrlFileQuvi)
 #endif
+import Types.MetaData
+import Logs.MetaData
+import Annex.MetaData
 
-def :: [Command]
-def = [notBareRepo $ withOptions [templateOption, relaxedOption] $
+cmd :: [Command]
+cmd = [notBareRepo $ withOptions [templateOption, relaxedOption] $
 	command "importfeed" (paramRepeating paramUrl) seek
 		SectionCommon "import files from podcast feeds"]
 
@@ -132,9 +141,31 @@ downloadFeed url = do
 performDownload :: Bool -> Cache -> ToDownload -> Annex Bool
 performDownload relaxed cache todownload = case location todownload of
 	Enclosure url -> checkknown url $
-		rundownload url (takeExtension url) $ 
-			addUrlFile relaxed url
+		rundownload url (takeExtension url) $ \f -> do
+			r <- Remote.claimingUrl url
+			if Remote.uuid r == webUUID
+				then do
+					urlinfo <- Url.withUrlOptions (Url.getUrlInfo url)
+					maybeToList <$> addUrlFile relaxed url urlinfo f
+				else do
+					res <- tryNonAsync $ maybe
+						(error $ "unable to checkUrl of " ++ Remote.name r)
+						(flip id url)
+						(Remote.checkUrl r)
+					case res of
+						Left _ -> return []
+						Right (UrlContents sz _) ->
+							maybeToList <$>
+								downloadRemoteFile r relaxed url f sz
+						Right (UrlMulti l) -> do
+							kl <- forM l $ \(url', sz, subf) ->
+								downloadRemoteFile r relaxed url' (f </> fromSafeFilePath subf) sz
+							return $ if all isJust kl
+								then catMaybes kl
+								else []
+							
 	QuviLink pageurl -> do
+#ifdef WITH_QUVI
 		let quviurl = setDownloader pageurl QuviDownloader
 		checkknown quviurl $ do
 			mp <- withQuviOptions Quvi.query [Quvi.quiet, Quvi.httponly] pageurl
@@ -145,10 +176,13 @@ performDownload relaxed cache todownload = case location todownload of
 					Just link -> do
 						let videourl = Quvi.linkUrl link
 						checkknown videourl $
-							rundownload videourl ("." ++ Quvi.linkSuffix link) $
-								addUrlFileQuvi relaxed quviurl videourl
+							rundownload videourl ("." ++ Quvi.linkSuffix link) $ \f ->
+								maybeToList <$> addUrlFileQuvi relaxed quviurl videourl f
+#else
+		return False
+#endif
   where
-  	forced = Annex.getState Annex.force
+	forced = Annex.getState Annex.force
 
 	{- Avoids downloading any urls that are already known to be
 	 - associated with a file in the annex, unless forced. -}
@@ -163,14 +197,17 @@ performDownload relaxed cache todownload = case location todownload of
 			Nothing -> return True
 			Just f -> do
 				showStart "addurl" f
-				ok <- getter f
-				if ok
+				ks <- getter f
+				if null ks
 					then do
-						showEndOk
-						return True
-					else do
 						showEndFail
 						checkFeedBroken (feedurl todownload)
+					else do
+						forM_ ks $ \key ->
+							whenM (annexGenMetaData <$> Annex.getGitConfig) $
+								addMetaData key $ extractMetaData todownload
+						showEndOk
+						return True
 
 	{- Find a unique filename to save the url to.
 	 - If the file exists, prefixes it with a number.
@@ -185,47 +222,84 @@ performDownload relaxed cache todownload = case location todownload of
 		, return $ Just f
 		)
 	  where
-	  	f = if n < 2
+		f = if n < 2
 			then file
 			else
 				let (d, base) = splitFileName file
 				in d </> show n ++ "_" ++ base
 		tryanother = makeunique url (n + 1) file
 		alreadyexists = liftIO $ isJust <$> catchMaybeIO (getSymbolicLinkStatus f)
-		checksameurl (k, _) = ifM (elem url <$> getUrls k)
+		checksameurl k = ifM (elem url <$> getUrls k)
 			( return Nothing
 			, tryanother
 			)
-	
+
 defaultTemplate :: String
 defaultTemplate = "${feedtitle}/${itemtitle}${extension}"
 
 {- Generates a filename to use for a feed item by filling out the template.
  - The filename may not be unique. -}
 feedFile :: Utility.Format.Format -> ToDownload -> String -> FilePath
-feedFile tmpl i extension = Utility.Format.format tmpl $ M.fromList
-	[ field "feedtitle" $ getFeedTitle $ feed i
-	, fieldMaybe "itemtitle" $ getItemTitle $ item i
-	, fieldMaybe "feedauthor" $ getFeedAuthor $ feed i
-	, fieldMaybe "itemauthor" $ getItemAuthor $ item i
-	, fieldMaybe "itemsummary" $ getItemSummary $ item i
-	, fieldMaybe "itemdescription" $ getItemDescription $ item i
-	, fieldMaybe "itemrights" $ getItemRights $ item i
-	, fieldMaybe "itemid" $ snd <$> getItemId (item i)
-	, ("extension", sanitizeFilePath extension)
+feedFile tmpl i extension = Utility.Format.format tmpl $
+	M.map sanitizeFilePath $ M.fromList $ extractFields i ++
+		[ ("extension", extension)
+		, extractField "itempubdate" [pubdate $ item i]
+		]
+  where
+#if MIN_VERSION_feed(0,3,9)
+	pubdate itm = case getItemPublishDate itm :: Maybe (Maybe UTCTime) of
+		Just (Just d) -> Just $
+			formatTime defaultTimeLocale "%F" d
+		-- if date cannot be parsed, use the raw string
+		_ -> replace "/" "-" <$> getItemPublishDateString itm
+#else
+	pubdate _ = Nothing
+#endif
+
+extractMetaData :: ToDownload -> MetaData
+#if MIN_VERSION_feed(0,3,9)
+extractMetaData i = case getItemPublishDate (item i) :: Maybe (Maybe UTCTime) of
+	Just (Just d) -> unionMetaData meta (dateMetaData d meta)
+	_ -> meta
+#else
+extractMetaData i = meta
+#endif
+  where
+	tometa (k, v) = (mkMetaFieldUnchecked k, S.singleton (toMetaValue v))
+	meta = MetaData $ M.fromList $ map tometa $ extractFields i
+
+{- Extract fields from the feed and item, that are both used as metadata,
+ - and to generate the filename. -}
+extractFields :: ToDownload -> [(String, String)]
+extractFields i = map (uncurry extractField)
+	[ ("feedtitle", [feedtitle])
+	, ("itemtitle", [itemtitle])
+	, ("feedauthor", [feedauthor])
+	, ("itemauthor", [itemauthor])
+	, ("itemsummary", [getItemSummary $ item i])
+	, ("itemdescription", [getItemDescription $ item i])
+	, ("itemrights", [getItemRights $ item i])
+	, ("itemid", [snd <$> getItemId (item i)])
+	, ("title", [itemtitle, feedtitle])
+	, ("author", [itemauthor, feedauthor])
 	]
   where
-	field k v = 
-		let s = sanitizeFilePath v in
-		if null s then (k, "none") else (k, s)
-	fieldMaybe k Nothing = (k, "none")
-	fieldMaybe k (Just v) = field k v
+	feedtitle = Just $ getFeedTitle $ feed i
+	itemtitle = getItemTitle $ item i
+	feedauthor = getFeedAuthor $ feed i
+	itemauthor = getItemAuthor $ item i
+
+extractField :: String -> [Maybe String] -> (String, String)
+extractField k [] = (k, "none")
+extractField k (Just v:_)
+	| not (null v) = (k, v)
+extractField k (_:rest) = extractField k rest
 
 {- Called when there is a problem with a feed.
  - Throws an error if the feed is broken, otherwise shows a warning. -}
 feedProblem :: URLString -> String -> Annex ()
 feedProblem url message = ifM (checkFeedBroken url)
-	( error $ message ++ " (having repeated problems with this feed!)"
+	( error $ message ++ " (having repeated problems with feed: " ++ url ++ ")"
 	, warning $ "warning: " ++ message
 	)
 

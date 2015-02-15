@@ -1,6 +1,6 @@
 {- git-annex assistant webapp dashboard
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -66,7 +66,7 @@ getTransfersR nid = do
 	waitNotifier getTransferBroadcaster nid
 
 	p <- widgetToPageContent transfersDisplay
-	giveUrlRenderer $ [hamlet|^{pageBody p}|]
+	withUrlRenderer $ [hamlet|^{pageBody p}|]
 
 {- The main dashboard. -}
 dashboard :: Bool -> Widget
@@ -115,23 +115,25 @@ getFileBrowserR = whenM openFileBrowser redirectBack
  - blocking the response to the browser on it. -}
 openFileBrowser :: Handler Bool
 openFileBrowser = do
-	path <- liftAnnex $ fromRepo Git.repoPath
+	path <- liftIO . absPath =<< liftAnnex (fromRepo Git.repoPath)
 #ifdef darwin_HOST_OS
 	let cmd = "open"
-	let params = [Param path]
+	let p = proc cmd [path]
 #else
 #ifdef mingw32_HOST_OS
+	{- Changing to the directory and then opening . works around
+	 - spaces in directory name, etc. -}
 	let cmd = "cmd"
-	let params = [Param $ "/c start " ++ path]
+	let p = (proc cmd ["/c start ."]) { cwd = Just path }
 #else
 	let cmd = "xdg-open"
-	let params = [Param path]
+	let p = proc cmd [path]
 #endif
 #endif
 	ifM (liftIO $ inPath cmd)
 		( do
 			let run = void $ liftIO $ forkIO $ void $
-				boolSystem cmd params
+				createProcess p
 			run
 #ifdef mingw32_HOST_OS
 			{- On windows, if the file browser is not

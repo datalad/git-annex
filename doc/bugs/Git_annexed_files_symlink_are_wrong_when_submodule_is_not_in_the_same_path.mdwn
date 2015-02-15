@@ -61,3 +61,5 @@ I tried playing with making the repository direct and then indirect, hoping that
 	Linux konixwork 3.9-1-amd64 #1 SMP Debian 3.9.8-1 x86_64 GNU/Linux
 
 ### Please provide any additional information below.
+
+[[!tag confirmed]]

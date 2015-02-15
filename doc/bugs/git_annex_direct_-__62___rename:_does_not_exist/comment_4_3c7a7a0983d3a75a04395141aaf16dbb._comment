@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnwNDA50ZupMvOgpgDqzDRyu5B-mYlVwa4"
+ nickname="Andreas"
+ subject="comment 4"
+ date="2015-01-21T07:30:51Z"
+ content="""
+This is what I see:
+    
+    ➜  ~  mkdir test
+    ➜  ~  cd test 
+    ➜  test  git init
+    Initialized empty Git repository in /home/deas/test/.git/
+    ➜  test git:(master) 
+    ➜  test git:(master) git annex init
+    init  ok
+    (Recording state in git...)
+    ➜  test git:(master) touch foobar.txt
+    ➜  test git:(master) ✗ git annex  add
+    add foobar.txt ok
+    (Recording state in git...)
+    ➜  test git:(master) ✗ git annex  direct
+    commit  
+    [master (root-commit) a6e3d83] commit before switching to direct mode
+    1 file changed, 1 insertion(+)
+    create mode 120000 foobar.txt
+    ok
+    direct foobar.txt 
+    /home/deas/test/.git/annex/misctmp/tmp6895: rename: does not exist (No such file or directory)
+    
+    leaving this file as-is; correct this problem and run git annex fsck on it
+    direct  ok
+    ➜  test git:(annex/direct/master)
+"""]]

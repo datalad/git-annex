@@ -1,6 +1,6 @@
 {- Git configuration
  -
- - Copyright 2011-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -23,7 +23,7 @@ instance Show ConfigKey where
 
 {- Looks up a setting in git config. -}
 getConfig :: ConfigKey -> String -> Annex String
-getConfig (ConfigKey key) def = fromRepo $ Git.Config.get key def
+getConfig (ConfigKey key) d = fromRepo $ Git.Config.get key d
 
 getConfigMaybe :: ConfigKey -> Annex (Maybe String)
 getConfigMaybe (ConfigKey key) = fromRepo $ Git.Config.getMaybe key
@@ -32,7 +32,10 @@ getConfigMaybe (ConfigKey key) = fromRepo $ Git.Config.getMaybe key
 setConfig :: ConfigKey -> String -> Annex ()
 setConfig (ConfigKey key) value = do
 	inRepo $ Git.Command.run [Param "config", Param key, Param value]
-	Annex.changeGitRepo =<< inRepo Git.Config.reRead
+	reloadConfig
+
+reloadConfig :: Annex ()
+reloadConfig = Annex.changeGitRepo =<< inRepo Git.Config.reRead
 
 {- Unsets a git config setting. (Leaves it in state currently.) -}
 unsetConfig :: ConfigKey -> Annex ()
@@ -55,7 +58,7 @@ annexConfig key = ConfigKey $ "annex." ++ key
  - by remote.<name>.annex-cost, or if remote.<name>.annex-cost-command
  - is set and prints a number, that is used. -}
 remoteCost :: RemoteGitConfig -> Cost -> Annex Cost
-remoteCost c def = fromMaybe def <$> remoteCost' c
+remoteCost c d = fromMaybe d <$> remoteCost' c
 
 remoteCost' :: RemoteGitConfig -> Annex (Maybe Cost)
 remoteCost' c = case remoteAnnexCostCommand c of

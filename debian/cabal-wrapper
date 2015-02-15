@@ -1,0 +1,20 @@
+#!/bin/sh
+# It would be more usual to use:
+#   export CABAL=./Setup
+# But Setup currently has a very bad dependency resolver, and very bad
+# debugging output, and tends to eat all memory and die on small buildds.
+#
+# This should be revisited once Debian has a newer ghc than 7.6.3,
+# and hopefully gets the improved dependency resolver from cabal.
+set -e
+
+# Avoid cabal writing to HOME, and avoid local cabal settings
+# influencing the build.
+HOME=$(mktemp -d)
+export HOME
+
+# Temporary workaround for #763078
+PATH=/usr/lib/llvm-3.4/bin:$PATH
+export PATH
+
+cabal "$@"

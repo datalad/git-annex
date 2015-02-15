@@ -19,4 +19,9 @@ on the drive.
 * Check for any problems with the annexed data: `cd $good; git annex fsck`
 * Now you can remove the corrupted repository, the new one is ready to use.
 
+Alternatively, recent versions of git-annex have a `git annex repair`
+command that uses <http://git-repair.branchable.com/> to repair a
+repository in-place. The git-annex assistant will detect most corruptions
+and offer to run the repair for you automatically.
+
 --[[Joey]]

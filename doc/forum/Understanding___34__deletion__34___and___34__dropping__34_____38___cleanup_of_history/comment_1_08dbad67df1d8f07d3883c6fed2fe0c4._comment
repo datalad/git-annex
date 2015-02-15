@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-02-04T19:55:54Z"
+ content="""
+`git-annex unused` finds files that are not used by the heads of any
+branches or tags. These files may still be referred to in individual
+commits in git history, or there could be no commits at all that 
+refer to them. It's up to you to decide whether these are really
+"unused" or not.
+
+git-annex doesn't currently have an concept of file age. You can
+look at git history to find that out, but it's quite expensive 
+to do that for a lot of files, and so a --older-than option
+would make it pretty slow.
+"""]]

@@ -1,6 +1,6 @@
 {- git-annex assistant alert types
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -26,7 +26,7 @@ data AlertName
 	| SanityCheckFixAlert
 	| WarningAlert String
 	| PairAlert String
-	| XMPPNeededAlert
+	| ConnectionNeededAlert
 	| RemoteRemovalAlert String
 	| CloudRepoNeededAlert
 	| SyncAlert
@@ -54,7 +54,7 @@ data Alert = Alert
 	, alertButtons :: [AlertButton]
 	}
 
-data AlertIcon = ActivityIcon | SyncIcon | SuccessIcon | ErrorIcon | InfoIcon | UpgradeIcon | TheCloud
+data AlertIcon = ActivityIcon | SyncIcon | SuccessIcon | ErrorIcon | InfoIcon | UpgradeIcon | ConnectionIcon
 
 type AlertMap = M.Map AlertId Alert
 

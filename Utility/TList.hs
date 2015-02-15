@@ -6,7 +6,7 @@
  - Unlike a TQueue, the entire contents of a TList can be efficiently
  - read without modifying it.
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -}
 
 {-# LANGUAGE BangPatterns #-}
@@ -57,7 +57,7 @@ modifyTList tlist a = do
 	unless (emptyDList dl') $
 		putTMVar tlist dl'
   where
-  	emptyDList = D.list True (\_ _ -> False)
+	emptyDList = D.list True (\_ _ -> False)
 
 consTList :: TList a -> a -> STM ()
 consTList tlist v = modifyTList tlist $ \dl -> D.cons v dl

@@ -1,0 +1,40 @@
+### Please describe the problem.
+git annex repair fails to repair the repo and reports this error:
+
+    git-annex: /tmp/tmprepo.2/.git/gc.pid: removeLink: does not exist (No such file or directory)
+    failed
+    git-annex: repair: 1 failed
+
+
+### What steps will reproduce the problem?
+
+
+### What version of git-annex are you using? On what operating system?
+git-annex-5.20140717 on gentoo with use flags: assistant cryptohash dbus desktop-notify dns feed inotify pairing production quvi s3 tahoe tdfa testsuite webapp webapp-secure webdav xmpp
+
+### Please provide any additional information below.
+
+[[!format sh """
+~/annex $ git annex repair
+Running git fsck ...
+Unpacking all pack files.
+Unpacking objects: 100% (630/630), done.
+Unpacking objects: 100% (630/630), done.
+Unpacking objects: 100% (638/638), done.
+Initialized empty Git repository in /tmp/tmprepo.2/.git/
+Trying to recover missing objects from remote 192.168.1.246_annex.
+Unpacking all pack files.
+Unpacking objects: 100% (210608/210608), done.
+Trying to recover missing objects from remote 192.168.1.246_annex.
+Auto packing the repository in background for optimum performance.
+See "git help gc" for manual housekeeping.
+
+git-annex: /tmp/tmprepo.2/.git/gc.pid: removeLink: does not exist (No such file or directory)
+failed
+git-annex: repair: 1 failed
+
+
+# End of transcript or log.
+"""]]
+
+> Provisionally [[done]]; see comment. --[[Joey]]

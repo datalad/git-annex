@@ -1,34 +1,36 @@
-<div .span9 .hero-unit>
-  <h2>
-    Deleting #{reldir}
-  <p>
-    Deleting this repository will remove <tt>#{reldir}</tt> and all its #
-    ^{actionButton FileBrowserR (Just "files") (Just "Click to open a file browser") "" "icon-folder-open"}.
-  $if havegitremotes
-    $if havedataremotes
-      <div .alert>
-        Since this repository is currently configured to sync to other #
-        repositories, you may be able to remove this repository without #
-        losing any data, if all files have been synced to them. #
-        No guarantees -- It's up to you to make sure before you continue.
+<div .col-sm-9>
+  <div .content-box>
+    <h2>
+      Deleting #{reldir}
+    <p>
+      Deleting this repository will remove <tt>#{reldir}</tt> and all its #
+      ^{actionButton FileBrowserR (Just "files") (Just "Click to open a file browser") "" "glyphicon-folder-open"}.
+    $if havegitremotes
+      $if havedataremotes
+        <div .alert>
+          Since this repository is currently configured to sync to other #
+          repositories, you may be able to remove this repository without #
+          losing any data, if all files have been synced to them. #
+          No guarantees -- It's up to you to make sure before you continue.
+      $else
+        <div .alert .alert-danger>
+          This repository is not uploading its files to other repositories,
+          so you will lose data if you delete it!
     $else
-      <div .alert .alert-error>
-        This repository is not uploading its files to other repositories,
+      <div .alert .alert-danger>
+        This repository is not syncing to other git repositories, #
         so you will lose data if you delete it!
-  $else
-    <div .alert .alert-error>
-      This repository is not syncing to other git repositories, #
-      so you will lose data if you delete it!
-  <p>
-    If you choose to delete this repository, and potentially lose #
-    data, enter "#{magicphrase}" into the box.
-  <p>
-    <form method="post" .form-horizontal enctype=#{enctype}>
-      <fieldset>
-        ^{form}
-        ^{webAppFormAuthToken}
-        <div .form-actions>
-          <button .btn .btn-danger type=submit>
-            <i .icon-warning-sign></i> Delete this repository #
-          <a .btn href="@{DashboardR}">
-            Cancel
+    <p>
+      If you choose to delete this repository, and potentially lose #
+      data, enter "#{magicphrase}" into the box.
+    <p>
+      <form method="post" .form-horizontal enctype=#{enctype}>
+        <fieldset>
+          ^{form}
+          ^{webAppFormAuthToken}
+          <div .col-md-2>
+            <button .btn .btn-danger type=submit>
+              <span .glyphicon .glyphicon-warning-sign>
+              \ Delete this repository #
+            <a .btn .btn-default href="@{DashboardR}">
+              Cancel

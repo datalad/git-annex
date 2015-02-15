@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkftzaCvV7EDKVDfJhsQZ3E1Vn-0db516w"
+ nickname="Edward"
+ subject="GHC 7.8 Issue"
+ date="2014-08-20T20:06:01Z"
+ content="""
+Just an FYI: I tried to \"cabal install --only-dependencies\" with GHC 7.8 and it fails because DAV-1.0.1 is pulling in lens-3.10.3 which is not compatible with GHC 7.8 due to changes in Typeable. 
+
+I don't have enough experience with cabal to figure out why it's not trying to use a newer version of lens.
+"""]]

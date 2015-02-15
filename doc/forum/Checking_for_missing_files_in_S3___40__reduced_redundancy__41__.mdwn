@@ -1,0 +1,5 @@
+I would like to use git-annex with [S3 reduced redundancy storace (RRS)](https://aws.amazon.com/s3/faqs/#rrs_anchor), a cheaper S3 service with an higher chance of seeing your files disappear overnight. This means that git-annex may think that a certain files has been copied to a S3 remote while, in fact, it is no longer there.
+
+I would like to check that the files S3 are really there and, if some files are not, record that we lost that copy. In the case of S3, either the data is there and it is complete or it is not there at all, so there is no need to check the data itself, just the presence of the files.
+
+Is there a way to check that all the files that are supposed to be in a S3 remote are still there?

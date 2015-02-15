@@ -1,0 +1,16 @@
+Worked on triaging several bugs. Fixed an easy one, which involved the
+assistant choosing the wrong path to a repository that has multiple
+remotes. After today, backlog is down to 43, nearly pre-Brazil levels.
+
+It seems that git-remote-gcrypt [[never quite worked on OSX|bugs/remote_gcrypt_based_repos_and_conflicting_uuids]].
+It looked like it did, but a bug prevented anything being pushed to the remote.
+Tracked down and fixed that bug.
+
+This evening, getting back to working on the armel autobuilder setup
+using propellor. The autobuilder will use a pair of docker containers, one
+armel and a companion amd64, and their quite complex setup will be *almost*
+fully automated (except for the haskell library patching part).
+
+----
+
+Today's work was sponsored by Mica Semrick.

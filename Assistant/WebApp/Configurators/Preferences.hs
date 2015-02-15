@@ -1,6 +1,6 @@
 {- git-annex assistant general preferences
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -34,17 +34,17 @@ data PrefsForm = PrefsForm
 	}
 
 prefsAForm :: PrefsForm -> MkAForm PrefsForm
-prefsAForm def = PrefsForm
+prefsAForm d = PrefsForm
 	<$> areq (storageField `withNote` diskreservenote)
-		"Disk reserve" (Just $ diskReserve def)
+		(bfs "Disk reserve") (Just $ diskReserve d)
 	<*> areq (positiveIntField `withNote` numcopiesnote)
-		"Number of copies" (Just $ numCopies def)
+		(bfs "Number of copies") (Just $ numCopies d)
 	<*> areq (checkBoxField `withNote` autostartnote)
-		"Auto start" (Just $ autoStart def)
+		"Auto start" (Just $ autoStart d)
 	<*> areq (selectFieldList autoUpgradeChoices)
-		autoUpgradeLabel (Just $ autoUpgrade def)
+		(bfs autoUpgradeLabel) (Just $ autoUpgrade d)
 	<*> areq (checkBoxField `withNote` debugnote)
-		"Enable debug logging" (Just $ debugEnabled def)
+		"Enable debug logging" (Just $ debugEnabled d)
   where
 	diskreservenote = [whamlet|<br>Avoid downloading files from other repositories when there is too little free disk space.|]
 	numcopiesnote = [whamlet|<br>Only drop a file after verifying that other repositories contain this many copies.|]
@@ -109,7 +109,7 @@ postPreferencesR :: Handler Html
 postPreferencesR = page "Preferences" (Just Configuration) $ do
 	((result, form), enctype) <- liftH $ do
 		current <- liftAnnex getPrefs
-		runFormPostNoToken $ renderBootstrap $ prefsAForm current
+		runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $ prefsAForm current
 	case result of
 		FormSuccess new -> liftH $ do
 			liftAnnex $ storePrefs new

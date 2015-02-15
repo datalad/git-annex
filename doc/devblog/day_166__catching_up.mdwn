@@ -1,0 +1,40 @@
+Powered through the backlog today, and got it down to 67! Probably most of
+the rest is the hard ones though.
+
+A theme today was: It's stupid hard to get git-annex-shell installed into
+PATH. While that should be the simplest thing in the world, I'm pinned
+between two problems:
+
+1. There's no single portable package format, so all the decades of
+   development nice ways to get things into PATH don't work for everybody.
+2. bash provides not a single dotfile that will work in all circumstances
+   to configure PATH. In particular, "ssh $host git-annex-shell" causes bash
+   to helpfully avoid looking at any dotfiles at all.
+
+Today's flailing to work around that inluded:
+
+* Merged a patch from Fraser Tweedale to allow `git config remote.origin.annex-shell /not/in/path/git-annex-shell`
+* Merged a patch from Justin Lebar to allow symlinking the git-annex-shell
+  etc from the standalone tarball to a directory that is in PATH. (Only
+  on Linux, not OSX yet.)
+* Improved the warning message git-annex prints when a remote server does
+  not have git-annex-shell in PATH, suggesting some things the user could
+  do to try to fix it.
+
+I've found out why OSX machines were retrying upgrades repeatedly. The
+version in the .info file did not match the actual git-annex version for
+OSX. I've fixed the info file version, but will need to come up with a
+system to avoid such mismatches.
+
+Made a few other fixes. A notable one is that dragging and dropping
+repositories in the webapp to reorder the list (and configure costs)
+had been broken since November.
+
+git-annex 5.20140421 finally got into Debian testing today, so I updated
+the backport. I recommend upgrading, especially if you're using the
+assistant with a ssh remote, since you'll get all of last month's nice
+features that make XMPP unnecessary in that configuration.
+
+----
+
+Today's work was sponsored by Geoffrey Irving.

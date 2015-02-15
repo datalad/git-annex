@@ -1,0 +1,3 @@
+While experimenting with direct mode on Windows, I've got confused (and feeling momentary dread about apparent loss of data) many times when opening a file, and finding out that it in fact only contained the checksum; that is, was in the "dropped" state. As an **idea to prevent this confusion**, would it perhaps be possible to make the dropped files non-readable (permission denied) to the user somehow?
+
+(Background: I'm trying to build a version controlled development environment for a bunch of artists collaborating on large binaries, and making the process as fool-proof as possible is a priority.)

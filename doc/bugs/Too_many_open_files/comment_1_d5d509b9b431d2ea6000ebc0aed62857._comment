@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.64"
- subject="comment 1"
- date="2013-11-26T16:28:25Z"
- content="""
-You can use `lsof -c git-annex` to find out what files git-annex has open. (lsof is included in the git-annex.app bundle on OSX) That would be very helpful in tracking this down.
-"""]]

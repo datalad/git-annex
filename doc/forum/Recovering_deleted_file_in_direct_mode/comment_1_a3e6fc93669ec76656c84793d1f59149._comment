@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2014-10-28T19:22:54Z"
+ content="""
+> the probability of something going wrong during the conversion is quite high (see other bugs reported during import)
+
+I don't know what bugs you speak of. If the probability of something going
+wrong is quite high, then you must have a reproducible test case. Submit a
+bug with such a test case, and I can fix it.
+"""]]

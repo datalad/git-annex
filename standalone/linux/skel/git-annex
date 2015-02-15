@@ -1,5 +1,5 @@
 #!/bin/sh
-link="$(readlink "$0")" || true
+link="$(readlink -f "$0" 2>/dev/null || readlink "$0")" || true
 if [ -n "$link" ]; then
 	base="$(dirname "$link")"
 else

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2014-10-31T20:31:39Z"
+ content="""
+`git-annex unused` looks at what data is used by git branches and tags, but
+not by other commits. It's a reasonable request and I have made a todo for
+it: [[todo/find_unused_in_any_commit]] .. But I am unure if it can be
+implemented to run fast enough to be usable.
+"""]]

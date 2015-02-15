@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.154.0.23"
- subject="comment 2"
- date="2012-10-24T15:50:40Z"
- content="""
-`rsynctmp` is only used when sending files to a rsync special remote. You can certainly delete it if you got a stale one, but the next time a file is sent to a rsync special remote it should delete it anyway.
-"""]]

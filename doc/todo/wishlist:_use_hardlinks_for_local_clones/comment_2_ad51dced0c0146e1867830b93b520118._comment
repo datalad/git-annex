@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlUGPPMvAP5Hu0NyNqeRMPC4pANeJNHZ0o"
+ nickname="Sylvain"
+ subject="why worry about modifications ?"
+ date="2014-11-02T17:46:57Z"
+ content="""
+I don't understand why you worry about having one remote modify the file locally which would get propagated to the other because of the hardlinks. When using checksumming, the repos would be pretty screwed if someone would do that anyways.
+
+In other words, hardlinking the SHA-checksummed files in .git/annex/objects/ across repos and/or between e.g. a directory remote and a repo would sound a pretty safe and nice optimization to me. I am like the OP, deduplication that does not require brtfs would be a great git annex feature.
+"""]]

@@ -1,7 +1,7 @@
 {- git check-ignore interface, with handle automatically stored in
  - the Annex monad
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -18,7 +18,7 @@ import qualified Annex
 checkIgnored :: FilePath -> Annex Bool
 checkIgnored file = go =<< checkIgnoreHandle
   where
-  	go Nothing = return False
+	go Nothing = return False
 	go (Just h) = liftIO $ Git.checkIgnored h file
 
 checkIgnoreHandle :: Annex (Maybe Git.CheckIgnoreHandle)

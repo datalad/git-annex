@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,8 +11,8 @@ import Common.Annex
 import Command
 import Annex.Content
 
-def :: [Command]
-def = [noCommit $ command "inannex" (paramRepeating paramKey) seek
+cmd :: [Command]
+cmd = [noCommit $ command "inannex" (paramRepeating paramKey) seek
 	SectionPlumbing "checks if keys are present in the annex"]
 
 seek :: CommandSeek

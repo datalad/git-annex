@@ -11,7 +11,7 @@
  - exception of git. The user needs to install git separately,
  - and the installer checks for that.
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -37,13 +37,18 @@ main = do
 		mustSucceed "ln" [File "dist/build/git-annex/git-annex.exe", File gitannex]
 		let license = tmpdir </> licensefile
 		mustSucceed "sh" [Param "-c", Param $ "zcat standalone/licences.gz > '" ++ license ++ "'"]
-		extrafiles <- forM (cygwinPrograms ++ cygwinDlls) $ \f -> do
+		extrabins <- forM (cygwinPrograms ++ cygwinDlls) $ \f -> do
 			p <- searchPath f
 			when (isNothing p) $
 				print ("unable to find in PATH", f)
 			return p
-		writeFile nsifile $ makeInstaller gitannex license $
-			catMaybes extrafiles
+		webappscript <- vbsLauncher tmpdir "git-annex-webapp" "git-annex webapp"
+		autostartscript <- vbsLauncher tmpdir "git-annex-autostart" "git annex assistant --autostart"
+		let htmlhelp = tmpdir </> "git-annex.html"
+		writeFile htmlhelp htmlHelpText
+		writeFile nsifile $ makeInstaller gitannex license htmlhelp
+			(catMaybes extrabins)
+			[ webappscript, autostartscript ]
 		mustSucceed "makensis" [File nsifile]
 	removeFile nsifile -- left behind if makensis fails
   where
@@ -53,6 +58,17 @@ main = do
 		case r of
 			True -> return ()
 			False -> error $ cmd ++ " failed"
+
+{- Generates a .vbs launcher which runs a command without any visible DOS
+ - box. -}
+vbsLauncher :: FilePath -> String -> String -> IO String
+vbsLauncher tmpdir basename cmd = do
+	let f = tmpdir </> basename ++ ".vbs"
+	writeFile f $ unlines
+		[ "Set objshell=CreateObject(\"Wscript.Shell\")"
+		, "objShell.Run(\"" ++ cmd ++ "\"), 0, False"
+		]
+	return f
 
 gitannexprogram :: FilePath
 gitannexprogram = "git-annex.exe"
@@ -67,10 +83,13 @@ uninstaller :: FilePath
 uninstaller = "git-annex-uninstall.exe"
 
 gitInstallDir :: Exp FilePath
-gitInstallDir = fromString "$PROGRAMFILES\\Git\\bin"
+gitInstallDir = fromString "$PROGRAMFILES\\Git"
 
 startMenuItem :: Exp FilePath
 startMenuItem = "$SMPROGRAMS/git-annex.lnk"
+
+autoStartItem :: Exp FilePath
+autoStartItem = "$SMSTARTUP/git-annex-autostart.lnk"
 
 needGit :: Exp String
 needGit = strConcat
@@ -81,12 +100,12 @@ needGit = strConcat
 	, fromString "You can install git from http:////git-scm.com//"
 	]
 
-makeInstaller :: FilePath -> FilePath -> [FilePath] -> String
-makeInstaller gitannex license extrafiles = nsis $ do
+makeInstaller :: FilePath -> FilePath -> FilePath -> [FilePath] -> [FilePath] -> String
+makeInstaller gitannex license htmlhelp extrabins launchers = nsis $ do
 	name "git-annex"
 	outFile $ str installer
 	{- Installing into the same directory as git avoids needing to modify
- 	 - path myself, since the git installer already does it. -}
+	 - path myself, since the git installer already does it. -}
 	installDir gitInstallDir
 	requestExecutionLevel Admin
 
@@ -101,30 +120,44 @@ makeInstaller gitannex license extrafiles = nsis $ do
 	-- Start menu shortcut
 	Development.NSIS.createDirectory "$SMPROGRAMS"
 	createShortcut startMenuItem
-		[ Target "$INSTDIR/git-annex.exe"
-		, Parameters "webapp"
-		, IconFile "$INSTDIR/git-annex.exe"
+		[ Target "wscript.exe"
+		, Parameters "\"$INSTDIR/git-annex-webapp.vbs\""
+		, StartOptions "SW_SHOWNORMAL"
+		, IconFile "$INSTDIR/cmd/git-annex.exe"
 		, IconIndex 2
-		, StartOptions "SW_SHOWMINIMIZED"
-		, KeyboardShortcut "ALT|CONTROL|a"
 		, Description "git-annex webapp"
 		]
-	-- Groups of files to install
-	section "main" [] $ do
+	createShortcut autoStartItem
+		[ Target "wscript.exe"
+		, Parameters "\"$INSTDIR/git-annex-autostart.vbs\""
+		, StartOptions "SW_SHOWNORMAL"
+		, IconFile "$INSTDIR/cmd/git-annex.exe"
+		, IconIndex 2
+		, Description "git-annex autostart"
+		]
+	section "cmd" [] $ do
+		setOutPath "$INSTDIR\\cmd"
+		mapM_ addfile (gitannex:extrabins)
+	section "meta" [] $ do
+		setOutPath "$INSTDIR\\doc\\git\\html"
+		addfile htmlhelp
 		setOutPath "$INSTDIR"
-		addfile gitannex
 		addfile license
-		mapM_ addfile extrafiles
+		mapM_ addfile launchers
 		writeUninstaller $ str uninstaller
 	uninstall $ do
 		delete [RebootOK] $ startMenuItem
-		mapM_ (\f -> delete [RebootOK] $ fromString $ "$INSTDIR/" ++ f) $
-			[ gitannexprogram
-			, licensefile
+		delete [RebootOK] $ autoStartItem
+		removefilesFrom "$INSTDIR/cmd" (gitannex:extrabins)
+		removefilesFrom "$INSTDIR\\doc\\git\\html" [htmlhelp]
+		removefilesFrom "$INSTDIR" $
+			launchers ++
+			[ license
 			, uninstaller
-			] ++ cygwinPrograms ++ cygwinDlls
+			]
   where
 	addfile f = file [] (str f)
+	removefilesFrom d = mapM_ (\f -> delete [RebootOK] $ fromString $ d ++ "/" ++ takeFileName f)
 
 cygwinPrograms :: [FilePath]
 cygwinPrograms = map (\p -> p ++ ".exe") bundledPrograms
@@ -167,4 +200,17 @@ cygwinDlls =
 	, "cygreadline7.dll"
 	, "cygncursesw-10.dll"
 	, "cygusb0.dll"
+	]
+
+-- msysgit opens Program Files/Git/doc/git/html/git-annex.html
+-- when git annex --help is run.
+htmlHelpText :: String
+htmlHelpText = unlines
+	[ "<html>"
+	, "<title>git-annex help</title>"
+	, "<body>"
+	, "For help on git-annex, run \"git annex help\", or"
+	, "<a href=\"https://git-annex.branchable.com/git-annex/\">read the man page</a>."
+	, "</body>"
+	, "</html"
 	]

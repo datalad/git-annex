@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://launchpad.net/~eythian"
- nickname="eythian"
- subject="comment 1"
- date="2013-09-06T23:37:10Z"
- content="""
-I also had a huge bunch of files come across corrupted, but the one that came after I made this change wasn't. This might be a sign that GPG is corrupting things on the way past.
-"""]]

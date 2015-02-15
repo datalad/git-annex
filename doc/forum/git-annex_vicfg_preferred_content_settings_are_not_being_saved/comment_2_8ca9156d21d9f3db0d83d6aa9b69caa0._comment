@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="ghen1"
+ ip="66.41.70.34"
+ subject="comment 2"
+ date="2014-10-12T21:03:01Z"
+ content="""
+The custom settings I had made before (the rest are still commented out):
+trust a8372263-6eba-47e2-9604-3e2c9bbb6d42 = trusted
+wanted 3e2bcb1e-39ad-4863-a9ce-a18a262644c1 = present or (not include=/Books/*)
+wanted a8372263-6eba-47e2-9604-3e2c9bbb6d42 = present or include=/Books/*
+
+I am trying to comment them out again.
+
+Based on your answer, I guessed that these settings don't just reset to default when they are commented out, so I tried changing the above trusted setting to semitrusted, and sure enough it worked.
+
+So it seems once these settings are made they can't be commented out again, and any invalid settings are ignored?
+"""]]

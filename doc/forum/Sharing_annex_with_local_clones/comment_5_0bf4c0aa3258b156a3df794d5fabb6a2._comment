@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2014-11-06T19:50:54Z"
+ content="""
+Yes, there's another option since git-annex version 5.20140915.
+
+annex.hardlink can be set to true, and then `git annex get` will
+simply hardlink the files into place. 
+
+Note the caution about using this option:
+
+              Use with caution --  This  can  invalidate  numcopies  counting,
+              since  with hard links, fewer copies of a file can exist. So, it
+              is a good idea to  mark  a  repository  using  this  setting  as
+              untrusted.
+
+And, there's a nice easy way to set up local clone that is configured this way:
+
+              When  a repository is set up using git clone --shared, git-annex
+              init will automatically set annex.hardlink and mark the  reposi‐
+              tory as untrusted.
+"""]]

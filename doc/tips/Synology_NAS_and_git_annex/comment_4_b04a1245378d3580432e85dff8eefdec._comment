@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnjDzZkA6SzZHgT5_Jy3Rw3s7m_W3-oNLY"
+ nickname="Antoni"
+ subject="Process seems to hang on Synology"
+ date="2015-01-22T20:18:12Z"
+ content="""
+I think I've completed the setup correctly, as I
+
+* am able to execute git-annex-shell on the server
+* locally running ``git-annex sync`` triggers the git-annex process on the server
+
+However, once I provide the password to the key on my local machine, nothing seemingly happens - there is no output after the password prompt.
+
+The repository I'm trying to sync with the remote on the server is ~200 mb and is in my lan.
+
+When monitoring the remote server, I see the following in process being triggered:
+
+````
+31433 31431 amk      D     656m270.7  7.1 /volume1/homes/amk/bin/git-annex.linux//lib/ld-linux.so.3 --library-path /volume1/homes/amk/bin/git-annex.linux//etc/ld.so.conf.d:/volume1/homes/amk/bin/git-annex.linux//usr/lib/arm-linux-gnueabi/audit:/volume1/homes/amk/bin/git-annex.linux//usr/lib/arm-linux-gnueabi/gconv:/volume1/homes/amk/bin/git-annex.linux//usr/lib:/volume1/homes/amk/bin/git-annex.linux//usr/lib/arm-linux-gnueabi:/volume1/homes/amk/bin/git-annex.linux//lib:/volume1/homes/amk/bin/git-annex.linux//lib/arm-linux-gnueabi: /volume1/homes/amk/bin/git-annex.linux/shimmed/git-annex-shell/git-annex-shell -c git-annex-shell 'configlist' '/volume1/homes/amk/archive/annex'
+````
+
+The memory usage goes up graudally, reaching well over 200mb, hogging the cpu significantly. I have never used git-annex before, so I'm not sure what else I should be looking for. This is what the server runs on:
+``armv7l GNU/Linux synology_armada370_214se``
+
+Is this an issue caused by the host architecture mismatch? 
+"""]]

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmqz6wCn-Q1vzrsHGvEJHOt_T5ZESilxhc"
+ nickname="Sören"
+ subject="comment 1"
+ date="2014-04-06T11:34:37Z"
+ content="""
+The problem has been reported [here](http://git-annex.branchable.com/bugs/git-annex_fails_to_start_when_nautilus_script_directory_is_missing/) as well and is already fixed in the latest [release](http://git-annex.branchable.com/news/version_5.20140405/).
+
+"""]]

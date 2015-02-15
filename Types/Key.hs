@@ -2,7 +2,7 @@
  - 
  - Most things should not need this, using Types instead
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -13,6 +13,9 @@ module Types.Key (
 	stubKey,
 	key2file,
 	file2key,
+	nonChunkKey,
+	chunkKeyOffset,
+	isChunkKey,
 
 	prop_idempotent_key_encode,
 	prop_idempotent_key_decode
@@ -30,6 +33,8 @@ data Key = Key
 	, keyBackendName :: String
 	, keySize :: Maybe Integer
 	, keyMtime :: Maybe EpochTime
+	, keyChunkSize :: Maybe Integer
+	, keyChunkNum :: Maybe Integer
 	} deriving (Eq, Ord, Read, Show)
 
 {- A filename may be associated with a Key. -}
@@ -41,7 +46,25 @@ stubKey = Key
 	, keyBackendName = ""
 	, keySize = Nothing
 	, keyMtime = Nothing
+	, keyChunkSize = Nothing
+	, keyChunkNum = Nothing
 	}
+
+-- Gets the parent of a chunk key.
+nonChunkKey :: Key -> Key
+nonChunkKey k = k
+	{ keyChunkSize = Nothing
+	, keyChunkNum = Nothing
+	}
+
+-- Where a chunk key is offset within its parent.
+chunkKeyOffset :: Key -> Maybe Integer
+chunkKeyOffset k = (*)
+	<$> keyChunkSize k
+	<*> (pred <$> keyChunkNum k)
+
+isChunkKey :: Key -> Bool
+isChunkKey k = isJust (keyChunkSize k) && isJust (keyChunkNum k)
 
 fieldSep :: Char
 fieldSep = '-'
@@ -50,13 +73,13 @@ fieldSep = '-'
  - The name field is always shown last, separated by doubled fieldSeps,
  - and is the only field allowed to contain the fieldSep. -}
 key2file :: Key -> FilePath
-key2file Key { keyBackendName = b, keySize = s, keyMtime = m, keyName = n } =
-	b +++ ('s' ?: s) +++ ('m' ?: m) +++ (fieldSep : n)
+key2file Key { keyBackendName = b, keySize = s, keyMtime = m, keyChunkSize = cs, keyChunkNum = cn, keyName = n } =
+	b +++ ('s' ?: s) +++ ('m' ?: m) +++ ('S' ?: cs) +++ ('C' ?: cn) +++ (fieldSep : n)
   where
 	"" +++ y = y
 	x +++ "" = x
 	x +++ y = x ++ fieldSep:y
-	c ?: (Just v) = c : show v
+	f ?: (Just v) = f : show v
 	_ ?: _ = ""
 
 file2key :: FilePath -> Maybe Key
@@ -84,6 +107,13 @@ file2key s
 	addfield 'm' k v = do
 		mtime <- readish v
 		return $ k { keyMtime = Just mtime }
+	addfield 'S' k v = do
+		chunksize <- readish v
+		return $ k { keyChunkSize = Just chunksize }
+	addfield 'C' k v = case readish v of
+		Just chunknum | chunknum > 0 ->
+			return $ k { keyChunkNum = Just chunknum }
+		_ -> return k
 	addfield _ _ _ = Nothing
 
 instance Arbitrary Key where
@@ -92,6 +122,8 @@ instance Arbitrary Key where
 		<*> (listOf1 $ elements ['A'..'Z']) -- BACKEND
 		<*> ((abs <$>) <$> arbitrary) -- size cannot be negative
 		<*> arbitrary
+		<*> ((abs <$>) <$> arbitrary) -- chunksize cannot be negative
+		<*> ((succ . abs <$>) <$> arbitrary) -- chunknum cannot be 0 or negative
 
 prop_idempotent_key_encode :: Key -> Bool
 prop_idempotent_key_encode k = Just k == (file2key . key2file) k
@@ -101,8 +133,8 @@ prop_idempotent_key_decode f
 	| normalfieldorder = maybe True (\k -> key2file k == f) (file2key f)
 	| otherwise = True
   where
-  	-- file2key will accept the fields in any order, so don't
+	-- file2key will accept the fields in any order, so don't
 	-- try the test unless the fields are in the normal order
-	normalfieldorder = fields `isPrefixOf` "sm"
+	normalfieldorder = fields `isPrefixOf` "smSC"
 	fields = map (f !!) $ filter (< length f) $ map succ $
 		elemIndices fieldSep f

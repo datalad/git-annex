@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-01-05T20:31:10Z"
+ content="""
+This must have something to do with the preferred content settings of
+astarte. Can you show the output of this command: `git annex wanted astarte`
+"""]]

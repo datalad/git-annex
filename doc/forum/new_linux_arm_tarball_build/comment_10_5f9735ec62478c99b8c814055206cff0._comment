@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmH9ARM62C6zcEpzh2muCs4wq-GkLRntgQ"
+ nickname="Randy"
+ subject="raspbian"
+ date="2014-04-16T10:59:10Z"
+ content="""
+This works fairly well for me on Raspian. However I am getting the same error as Justin. 
+
+    ERROR: ld.so: object '/usr/lib/arm-linux-gnueabihf/libcofi_rpi.so' from /etc/ld.so.preload cannot be preloaded: ignored.
+
+I'm ignoring the errors for now, but it's a lot of noise that actually makes it slightly difficult to see the important output.
+"""]]

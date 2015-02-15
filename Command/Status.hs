@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,8 +16,8 @@ import qualified Git.LsFiles as LsFiles
 import qualified Git.Ref
 import qualified Git
 
-def :: [Command]
-def = [notBareRepo $ noCommit $ noMessages $ withOptions [jsonOption] $
+cmd :: [Command]
+cmd = [notBareRepo $ noCommit $ noMessages $ withOptions [jsonOption] $
 	command "status" paramPaths seek SectionCommon
 		"show the working tree status"]
 
@@ -28,9 +28,9 @@ start :: [FilePath] -> CommandStart
 start [] = do
 	-- Like git status, when run without a directory, behave as if
 	-- given the path to the top of the repository.
-	cwd <- liftIO getCurrentDirectory
 	top <- fromRepo Git.repoPath
-	start' [relPathDirToFile cwd top]
+	d <- liftIO $ relPathCwdToFile top
+	start' [d]
 start locs = start' locs
 	
 start' :: [FilePath] -> CommandStart
@@ -65,12 +65,12 @@ statusDirect f = checkstatus =<< liftIO (catchMaybeIO $ getFileStatus f)
   where
 	checkstatus Nothing = return $ Just DeletedFile
 	checkstatus (Just s)
-		-- Git thinks that present direct mode files modifed,
+		-- Git thinks that present direct mode files are modifed,
 		-- so have to check.
 		| not (isSymbolicLink s) = checkkey s =<< catKeyFile f
 		| otherwise = Just <$> checkNew f
 	
-	checkkey s (Just k) = ifM (sameFileStatus k s)
+	checkkey s (Just k) = ifM (sameFileStatus k f s)
 		( return Nothing
 		, return $ Just ModifiedFile
 		)

@@ -3,7 +3,6 @@ A walkthrough of the basic features of git-annex.
 [[!toc]]
 
 [[!inline feeds=no trail=yes show=0 template=walkthrough pagenames="""
-	walkthrough/setup_git
 	walkthrough/creating_a_repository
 	walkthrough/adding_a_remote
 	walkthrough/adding_files
@@ -15,6 +14,7 @@ A walkthrough of the basic features of git-annex.
 	walkthrough/removing_files:_When_things_go_wrong
 	walkthrough/modifying_annexed_files
 	walkthrough/using_ssh_remotes
+	walkthrough/using_special_remotes
 	walkthrough/moving_file_content_between_repositories
 	walkthrough/quiet_please:_When_git-annex_seems_to_skip_files
 	walkthrough/using_tags_and_branches

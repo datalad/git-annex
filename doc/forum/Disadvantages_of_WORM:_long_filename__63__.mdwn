@@ -1,0 +1,13 @@
+Hello,
+
+first, I felt very comfortable with git-annex, but now I run into problems more often, and I think they are related to the WORM backend. I use this backend for my photos, since they are big (25MB) and never modified (camera raws, I don't touch them). So I edited my `.gitattributes` to use `WORM`.
+
+The problems usually are as follows: I perform an operation, and git (I think it is git which has the problems), and the process exits with exit code 1 and tells me "cannot open binary file: File name too long". The same happens from time to time when I have filenames containing special characters such as ', which can happen when I tag my music collection. I suspect the WORM backend to cause the problems, since the file names in `.git/annex` are indeed very long and ugly beccause of all the escaping done here.
+
+I am sorry that I cannot give a recipe how to reproduce this behaviour, and sometimes it helps to enter a subdirectory and perform the operation from there, for example:
+
+`$ git annex copy --to dest Pictures` fails, but `$ cd Pictures/dir_with_problematic_file; git annex copy --to dest .` works.
+
+Is there some advice or did anyone here observe similar behaviour?
+
+Best regards, Philipp

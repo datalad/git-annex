@@ -2,7 +2,7 @@
  -
  - Runtime state about the git-annex branch.
  -
- - Copyright 2011-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}

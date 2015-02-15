@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- nickname="joey"
- subject="comment 1"
- date="2013-02-28T02:12:50Z"
- content="""
-Pass -f-TestSuite to cabal to disable building the test suite.
-"""]]

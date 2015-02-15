@@ -1,19 +1,15 @@
-The git-annex Windows port is not ready for prime time. But it does exist
-now! --[[Joey]] 
+The git-annex Windows port is beta, but rapidly becoming polished and
+usable!
 
 ## status
 
-* Doesn't daemonize. Maybe use
-  <http://hackage.haskell.org/package/Win32-services>
-  or perhaps easier,
-  <http://hackage.haskell.org/package/Win32-services-wrapper>
+* There can be problems when the git-annex repository is in a deep
+  or long path. Ie, `C:\loooooooooooooooooongdir\`.
+  [Details here](http://git-annex.branchable.com/bugs/__34__git-annex:_direct:_1_failed__34___on_Windows)
+  Workaround: Put your git-annex repo in `C:\annex` or some similar short
+  path if possible.
 
 * XMPP library not yet built. (See below.)
-
-* View debug log is empty in windows -- all logs go to console.
-  This messes up a few parts of UI that direct user to the debug log.
-  Should try to get rid of the console, but only once ssh passwords
-  (and possibly gpg) are not prompted there anymore.
 
 * Local pairing seems to fail, after acking on Linux box, it stalls.
   (Also, of course, the Windows box is unlikely to have a ssh server,
@@ -67,9 +63,6 @@ seems unreliable/broken on Windows.
 
 ## minor problems
 
-* rsync special remotes with a rsyncurl of a local directory are known
-  buggy. (git-annex tells rsync C:foo and it thinks it means a remote host
-  named C...)
 * webapp lets user choose to encrypt repo, and generate gpg key,
   before checking that gcrypt is not installed
 * Ssh connection caching does not work on Windows, so `git annex get`

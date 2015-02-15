@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,8 +16,8 @@ import Types.View
 import Logs.View
 import Command.View (checkoutViewBranch)
 
-def :: [Command]
-def = [notBareRepo $ notDirect $
+cmd :: [Command]
+cmd = [notBareRepo $ notDirect $
 	command "vpop" (paramOptional paramNumber) seek SectionMetaData
 	"switch back to previous view"]
 

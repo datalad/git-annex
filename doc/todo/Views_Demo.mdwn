@@ -11,3 +11,5 @@ So, are you considering a metadata syntax that can support complex metadata? One
 FWIW,
 
 Bob
+
+> [[closing|done]]; requested feature was already present --[[Joey]]

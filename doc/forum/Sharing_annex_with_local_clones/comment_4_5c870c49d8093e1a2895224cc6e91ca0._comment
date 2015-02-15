@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkr_KjpfjbrD4ln15NsBBn7c9j90U6uwqY"
+ nickname="Nicolas"
+ subject="comment 4"
+ date="2014-11-04T23:05:46Z"
+ content="""
+On file system not supporting reflink is there another solution for sharing annex with local clones ?
+"""]]

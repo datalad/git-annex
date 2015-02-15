@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.152.108.211"
- subject="comment 1"
- date="2013-01-03T19:48:46Z"
- content="""
-Something I would like to support, although complicated by what \"delete\" means. At its simplest it can mean removing the git remote configuration, but leaving the remote's data as-is, so it can be added back, or other repositories can continue to access it. More complicated, it could mean completely deleting the repository, and its data -- which would probably first need to move any data that was solely in that repository off to elsewhere.
-"""]]

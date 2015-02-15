@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnx8kHW66N3BqmkVpgtXDlYMvr8TJ5VvfY"
+ nickname="Yaroslav"
+ subject="even less verbose"
+ date="2014-12-23T16:50:36Z"
+ content="""
+While working on this one, might be worth even reserving even a quieter mode of operation which would e.g. just report a # of already processed files. e.g.
+
+\"0% done: fetched 100 out of 1,234,567 files\"
+
+;-) ?
+"""]]

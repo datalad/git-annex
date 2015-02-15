@@ -1,0 +1,13 @@
+Very quick one, if anyone has to share experience with views (i would find them useful to get partial checkout views, as long as I can find a special setup to preserve the tree/filenames hyerarchy): 
+
+by using (filtering) views I am getting file names changed to include the (orignal) dir name,
+for instance:
+
+2008/pippo.doc
+
+after a git annex view 2008/=*, comes out as pippo_%2008%.doc
+is this avoidable ?
+
+(i've been trying to follow metadata walkthrough etc. but i always get the dirname in the filename between percents...)
+
+btw: version is 5.20141105

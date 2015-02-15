@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.176"
+ subject="comment 3"
+ date="2014-05-27T19:03:20Z"
+ content="""
+Hmm, so it was.. There was so little logged that I missed it.
+
+Can you reproduce the crash?
+
+I think that OSX has some ways to get a dump of information about a crash, but I don't know details.
+"""]]

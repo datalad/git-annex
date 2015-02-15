@@ -1,6 +1,6 @@
 {- git-annex transfer information files and lock files
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,16 +11,13 @@ module Logs.Transfer where
 
 import Common.Annex
 import Annex.Perms
-import Annex.Exception
 import qualified Git
 import Types.Key
 import Utility.Metered
 import Utility.Percentage
 import Utility.QuickCheck
 import Utility.PID
-#ifdef mingw32_HOST_OS
-import Utility.WinLock
-#endif
+import Utility.LockFile
 
 import Data.Time.Clock
 import Data.Time.Clock.POSIX
@@ -88,115 +85,13 @@ percentComplete :: Transfer -> TransferInfo -> Maybe Percentage
 percentComplete (Transfer { transferKey = key }) info =
 	percentage <$> keySize key <*> Just (fromMaybe 0 $ bytesComplete info)
 
-type RetryDecider = TransferInfo -> TransferInfo -> Bool
-
-noRetry :: RetryDecider
-noRetry _ _ = False
-
-{- Retries a transfer when it fails, as long as the failed transfer managed
- - to send some data. -}
-forwardRetry :: RetryDecider
-forwardRetry old new = bytesComplete old < bytesComplete new
-
-upload :: UUID -> Key -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex Bool) -> Annex Bool
-upload u key = runTransfer (Transfer Upload u key)
-
-download :: UUID -> Key -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex Bool) -> Annex Bool
-download u key = runTransfer (Transfer Download u key)
-
-{- Runs a transfer action. Creates and locks the lock file while the
- - action is running, and stores info in the transfer information
- - file.
- -
- - If the transfer action returns False, the transfer info is 
- - left in the failedTransferDir.
- -
- - If the transfer is already in progress, returns False.
- -
- - An upload can be run from a read-only filesystem, and in this case
- - no transfer information or lock file is used.
- -}
-runTransfer :: Transfer -> Maybe FilePath -> RetryDecider -> (MeterUpdate -> Annex Bool) -> Annex Bool
-runTransfer t file shouldretry a = do
-	info <- liftIO $ startTransferInfo file
-	(meter, tfile, metervar) <- mkProgressUpdater t info
-	mode <- annexFileMode
-	(fd, inprogress) <- liftIO $ prep tfile mode info
-	if inprogress
-		then do
-			showNote "transfer already in progress"
-			return False
-		else do
-			ok <- retry info metervar $
-		 		bracketIO (return fd) (cleanup tfile) (const $ a meter)
-			unless ok $ recordFailedTransfer t info
-			return ok
-  where
-#ifndef mingw32_HOST_OS
-	prep tfile mode info = do
-		mfd <- catchMaybeIO $
-			openFd (transferLockFile tfile) ReadWrite (Just mode)
-				defaultFileFlags { trunc = True }
-		case mfd of
-			Nothing -> return (Nothing, False)
-			Just fd -> do
-				locked <- catchMaybeIO $
-					setLock fd (WriteLock, AbsoluteSeek, 0, 0)
-				if isNothing locked
-					then return (Nothing, True)
-					else do
-						void $ tryIO $ writeTransferInfoFile info tfile
-						return (mfd, False)
-#else
-	prep tfile _mode info = do
-		v <- catchMaybeIO $ lockExclusive (transferLockFile tfile)
-		case v of
-			Nothing -> return (Nothing, False)
-			Just Nothing -> return (Nothing, True)
-			Just (Just lockhandle) -> do
-				void $ tryIO $ writeTransferInfoFile info tfile
-				return (Just lockhandle, False)
-#endif
-	cleanup _ Nothing = noop
-	cleanup tfile (Just lockhandle) = do
-		void $ tryIO $ removeFile tfile
-#ifndef mingw32_HOST_OS
-		void $ tryIO $ removeFile $ transferLockFile tfile
-		closeFd lockhandle
-#else
-		{- Windows cannot delete the lockfile until the lock
-		 - is closed. So it's possible to race with another
-		 - process that takes the lock before it's removed,
-		 - so ignore failure to remove.
-		 -}
-		dropLock lockhandle
-		void $ tryIO $ removeFile $ transferLockFile tfile
-#endif
-	retry oldinfo metervar run = do
-		v <- tryAnnex run
-		case v of
-			Right b -> return b
-			Left _ -> do
-				b <- getbytescomplete metervar
-				let newinfo = oldinfo { bytesComplete = Just b }
-				if shouldretry oldinfo newinfo
-					then retry newinfo metervar run
-					else return False
-	getbytescomplete metervar
-		| transferDirection t == Upload =
-			liftIO $ readMVar metervar
-		| otherwise = do
-			f <- fromRepo $ gitAnnexTmpObjectLocation (transferKey t)
-			liftIO $ catchDefaultIO 0 $
-				fromIntegral . fileSize <$> getFileStatus f
-
 {- Generates a callback that can be called as transfer progresses to update
  - the transfer info file. Also returns the file it'll be updating, and a
  - MVar that can be used to read the number of bytesComplete. -}
 mkProgressUpdater :: Transfer -> TransferInfo -> Annex (MeterUpdate, FilePath, MVar Integer)
 mkProgressUpdater t info = do
 	tfile <- fromRepo $ transferFile t
-	_ <- tryAnnex $ createAnnexDirectory $ takeDirectory tfile
+	_ <- tryNonAsync $ createAnnexDirectory $ takeDirectory tfile
 	mvar <- liftIO $ newMVar 0
 	return (liftIO . updater tfile mvar, tfile, mvar)
   where
@@ -234,19 +129,12 @@ checkTransfer :: Transfer -> Annex (Maybe TransferInfo)
 checkTransfer t = do
 	tfile <- fromRepo $ transferFile t
 #ifndef mingw32_HOST_OS
-	mode <- annexFileMode
-	mfd <- liftIO $ catchMaybeIO $
-		openFd (transferLockFile tfile) ReadOnly (Just mode) defaultFileFlags
-	case mfd of
-		Nothing -> return Nothing -- failed to open file; not running
-		Just fd -> do
-			locked <- liftIO $
-				getLock fd (WriteLock, AbsoluteSeek, 0, 0)
-			liftIO $ closeFd fd
-			case locked of
-				Nothing -> return Nothing
-				Just (pid, _) -> liftIO $ catchDefaultIO Nothing $
-					readTransferInfoFile (Just pid) tfile
+	liftIO $ do
+		v <- getLockStatus (transferLockFile tfile)
+		case v of
+			Just (pid, _) -> catchDefaultIO Nothing $
+				readTransferInfoFile (Just pid) tfile
+			Nothing -> return Nothing
 #else
 	v <- liftIO $ lockShared $ transferLockFile tfile
 	liftIO $ case v of

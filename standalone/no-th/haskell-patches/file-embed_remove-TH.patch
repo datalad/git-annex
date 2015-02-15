@@ -1,6 +1,6 @@
-From cd49a96991dc3dd8867038fa9d426a8ccdb25f8d Mon Sep 17 00:00:00 2001
+From 497d09a91f9eb1e5979948cd128078491b0e8bca Mon Sep 17 00:00:00 2001
 From: Joey Hess <joey@kitenet.net>
-Date: Tue, 17 Dec 2013 18:40:48 +0000
+Date: Fri, 12 Sep 2014 20:52:08 -0400
 Subject: [PATCH] remove TH
 
 ---
@@ -8,7 +8,7 @@ Subject: [PATCH] remove TH
  1 file changed, 5 insertions(+), 82 deletions(-)
 
 diff --git a/Data/FileEmbed.hs b/Data/FileEmbed.hs
-index 5617493..ad92cdc 100644
+index 5617493..adacdba 100644
 --- a/Data/FileEmbed.hs
 +++ b/Data/FileEmbed.hs
 @@ -17,13 +17,13 @@
@@ -19,7 +19,7 @@ index 5617493..ad92cdc 100644
 -    , embedOneFileOf
 -    , embedDir
 -    , getDir
-+   --   embedFile
++    --  embedFile
 +    --, embedOneFileOf
 +    --, embedDir
 +      getDir
@@ -30,7 +30,7 @@ index 5617493..ad92cdc 100644
  #endif
      , inject
      , injectFile
-@@ -56,72 +56,11 @@ import Data.ByteString.Unsafe (unsafePackAddressLen)
+@@ -56,73 +56,12 @@ import Data.ByteString.Unsafe (unsafePackAddressLen)
  import System.IO.Unsafe (unsafePerformIO)
  import System.FilePath ((</>))
  
@@ -81,7 +81,7 @@ index 5617493..ad92cdc 100644
 -    e <- ListE <$> ((runIO $ fileList fp) >>= mapM (pairToExp fp))
 -    return $ SigE e typ
 -
---- | Get a directory tree in the IO monad.
+ -- | Get a directory tree in the IO monad.
  --
  -- This is the workhorse of 'embedDir'
  getDir :: FilePath -> IO [(FilePath, B.ByteString)]
@@ -100,9 +100,10 @@ index 5617493..ad92cdc 100644
 -    helper <- [| stringToBs |]
 -    let chars = B8.unpack bs
 -    return $! AppE helper $! LitE $! StringL chars
- 
+-
  stringToBs :: String -> B.ByteString
  stringToBs = B8.pack
+ 
 @@ -164,22 +103,6 @@ padSize i =
      let s = show i
       in replicate (sizeLen - length s) '0' ++ s
@@ -127,5 +128,5 @@ index 5617493..ad92cdc 100644
  inject :: B.ByteString -- ^ bs to inject
         -> B.ByteString -- ^ original BS containing dummy
 -- 
-1.8.5.1
+2.1.0
 

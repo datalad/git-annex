@@ -1,6 +1,6 @@
 {- git-annex build flags reporting
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -57,6 +57,9 @@ buildFlags = filter (not . null)
 #ifdef WITH_DBUS
 	, "DBus"
 #endif
+#ifdef WITH_DESKTOP_NOTIFY
+	, "DesktopNotify"
+#endif
 #ifdef WITH_XMPP
 	, "XMPP"
 #else
@@ -78,10 +81,10 @@ buildFlags = filter (not . null)
 #ifdef WITH_TDFA
 	, "TDFA"
 #endif
-#ifdef WITH_CRYPTOHASH
-	, "CryptoHash"
+#ifdef WITH_TORRENTPARSER
+	, "TorrentParser"
 #else
-#warning Building without CryptoHash.
+#warning Building without haskell torrent library; will instead use btshowmetainfo to parse torrent files.
 #endif
 #ifdef WITH_EKG
 	, "EKG"

@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -13,9 +13,10 @@ import Common.Annex
 import Command
 import Remote
 import Logs.Trust
+import Logs.Web
 
-def :: [Command]
-def = [noCommit $ withOptions (jsonOption : keyOptions) $
+cmd :: [Command]
+cmd = [noCommit $ withOptions (jsonOption : annexedMatchingOptions ++ keyOptions) $
 	command "whereis" paramPaths seek SectionQuery
 		"lists repositories that have file content"]
 
@@ -27,8 +28,8 @@ seek ps = do
 		(withFilesInGit $ whenAnnexed $ start m)
 		ps
 
-start :: M.Map UUID Remote -> FilePath -> (Key, Backend) -> CommandStart
-start remotemap file (key, _) = start' remotemap key (Just file)
+start :: M.Map UUID Remote -> FilePath -> Key -> CommandStart
+start remotemap file key = start' remotemap key (Just file)
 
 startKeys :: M.Map UUID Remote -> Key -> CommandStart
 startKeys remotemap key = start' remotemap key Nothing
@@ -57,9 +58,17 @@ perform remotemap key = do
 	untrustedheader = "The following untrusted locations may also have copies:\n"
 
 performRemote :: Key -> Remote -> Annex () 
-performRemote key remote = maybe noop go $ whereisKey remote
+performRemote key remote = do
+	ls <- (++)
+		<$> askremote
+		<*> claimedurls
+	unless (null ls) $ showLongNote $ unlines $
+		map (\l -> name remote ++ ": " ++ l) ls
   where
-	go a = do
-		ls <- a key
-		unless (null ls) $ showLongNote $ unlines $
-			map (\l -> name remote ++ ": " ++ l) ls
+	askremote = maybe (pure []) (flip id key) (whereisKey remote)
+	claimedurls = do
+		us <- map fst 
+			. filter (\(_, d) -> d == OtherDownloader)
+			. map getDownloader
+			<$> getUrls key
+		filterM (\u -> (==) <$> pure remote <*> claimingUrl u) us

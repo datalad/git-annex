@@ -1,24 +1,27 @@
 {- git-annex automatic merge conflict resolution
  -
- - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Annex.AutoMerge (autoMergeFrom) where
+module Annex.AutoMerge
+	( autoMergeFrom
+	, resolveMerge
+	, commitResolvedMerge
+	) where
 
 import Common.Annex
 import qualified Annex.Queue
 import Annex.Direct
 import Annex.CatFile
 import Annex.Link
-import qualified Git.Command
 import qualified Git.LsFiles as LsFiles
 import qualified Git.UpdateIndex as UpdateIndex
 import qualified Git.Merge
 import qualified Git.Ref
-import qualified Git.Sha
 import qualified Git
+import qualified Git.Branch
 import Git.Types (BlobType(..))
 import Config
 import Annex.ReplaceFile
@@ -29,23 +32,22 @@ import qualified Data.Set as S
 
 {- Merges from a branch into the current branch
  - (which may not exist yet),
- - with automatic merge conflict resolution. -}
-autoMergeFrom :: Git.Ref -> (Maybe Git.Ref) -> Annex Bool
-autoMergeFrom branch currbranch = do
+ - with automatic merge conflict resolution.
+ -
+ - Callers should use Git.Branch.changed first, to make sure that
+ - there are changed from the current branch to the branch being merged in.
+ -}
+autoMergeFrom :: Git.Ref -> (Maybe Git.Ref) -> Git.Branch.CommitMode -> Annex Bool
+autoMergeFrom branch currbranch commitmode = do
 	showOutput
 	case currbranch of
 		Nothing -> go Nothing
 		Just b -> go =<< inRepo (Git.Ref.sha b)
   where
 	go old = ifM isDirect
-		( do
-			d <- fromRepo gitAnnexMergeDir
-			r <- inRepo (mergeDirect d branch)
-				<||> resolveMerge old branch
-			mergeDirectCleanup d (fromMaybe Git.Sha.emptyTree old) Git.Ref.headRef
-			return r
-		, inRepo (Git.Merge.mergeNonInteractive branch)
-			<||> resolveMerge old branch
+		( mergeDirect currbranch old branch (resolveMerge old branch) commitmode
+		, inRepo (Git.Merge.mergeNonInteractive branch commitmode)
+			<||> (resolveMerge old branch <&&> commitResolvedMerge commitmode)
 		)
 
 {- Resolves a conflicted merge. It's important that any conflicts be
@@ -70,9 +72,11 @@ autoMergeFrom branch currbranch = do
  -
  - In indirect mode, the merge is resolved in the work tree and files
  - staged, to clean up from a conflicted merge that was run in the work
- - tree. In direct mode, the work tree is not touched here; files are 
- - staged to the index, and written to the gitAnnexMergeDir, and later
- - mergeDirectCleanup handles updating the work tree.
+ - tree.
+ -
+ - In direct mode, the work tree is not touched here; files are staged to
+ - the index, and written to the gitAnnexMergeDir, for later handling by
+ - the direct mode merge code.
  -}
 resolveMerge :: Maybe Git.Ref -> Git.Ref -> Annex Bool
 resolveMerge us them = do
@@ -92,14 +96,6 @@ resolveMerge us them = do
 		unlessM isDirect $
 			cleanConflictCruft mergedfs top
 		Annex.Queue.flush
-		whenM isDirect $
-			void preCommitDirect
-		void $ inRepo $ Git.Command.runBool
-			[ Param "commit"
-			, Param "--no-verify"
-			, Param "-m"
-			, Param "git-annex automatic merge conflict fix"
-			]
 		showLongNote "Merge conflict was automatically resolved; you may want to examine the result."
 	return merged
 
@@ -118,11 +114,11 @@ resolveMerge' (Just us) them u = do
 				makelink keyUs
 		-- Our side is annexed file, other side is not.
 		(Just keyUs, Nothing) -> resolveby $ do
-			graftin them file
+			graftin them file LsFiles.valThem LsFiles.valThem
 			makelink keyUs
 		-- Our side is not annexed file, other side is.
 		(Nothing, Just keyThem) -> resolveby $ do
-			graftin us file
+			graftin us file LsFiles.valUs LsFiles.valUs
 			makelink keyThem
 		-- Neither side is annexed file; cannot resolve.
 		(Nothing, Nothing) -> return Nothing
@@ -138,18 +134,42 @@ resolveMerge' (Just us) them u = do
 	
 	makelink key = do
 		let dest = variantFile file key
-		l <- inRepo $ gitAnnexLink dest key
-		ifM isDirect
-			( do
-				d <- fromRepo gitAnnexMergeDir
-				replaceFile (d </> dest) $ makeAnnexLink l
-			, replaceFile dest $ makeAnnexLink l
-			)
+		l <- calcRepo $ gitAnnexLink dest key
+		replacewithlink dest l
 		stageSymlink dest =<< hashSymlink l
 
-	{- stage a graft of a directory or file from a branch -}
-	graftin b item = Annex.Queue.addUpdateIndex
-		=<< fromRepo (UpdateIndex.lsSubTree b item)
+	replacewithlink dest link = ifM isDirect
+		( do
+			d <- fromRepo gitAnnexMergeDir
+			replaceFile (d </> dest) $ makeGitLink link
+		, replaceFile dest $ makeGitLink link
+		)
+
+	{- Stage a graft of a directory or file from a branch.
+	 -
+	 - When there is a conflicted merge where one side is a directory
+	 - or file, and the other side is a symlink, git merge always
+	 - updates the work tree to contain the non-symlink. So, the
+	 - directory or file will already be in the work tree correctly,
+	 - and they just need to be staged into place. Do so by copying the
+	 - index. (Note that this is also better than calling git-add
+	 - because on a crippled filesystem, it preserves any symlink
+	 - bits.)
+	 -
+	 - It's also possible for the branch to have a symlink in it,
+	 - which is not a git-annex symlink. In this special case,
+	 - git merge does not update the work tree to contain the symlink
+	 - from the branch, so we have to do so manually.
+	 -}
+	graftin b item select select' = do
+		Annex.Queue.addUpdateIndex
+			=<< fromRepo (UpdateIndex.lsSubTree b item)
+		when (select (LsFiles.unmergedBlobType u) == Just SymlinkBlob) $
+			case select' (LsFiles.unmergedSha u) of
+				Nothing -> noop
+				Just sha -> do
+					link <- catLink True sha
+					replacewithlink item link
 		
 	resolveby a = do
 		{- Remove conflicted file from index so merge can be resolved. -}
@@ -158,7 +178,7 @@ resolveMerge' (Just us) them u = do
 		return (Just file)
 
 {- git-merge moves conflicting files away to files
- - named something like f~HEAD or f~branch, but the
+ - named something like f~HEAD or f~branch or just f, but the
  - exact name chosen can vary. Once the conflict is resolved,
  - this cruft can be deleted. To avoid deleting legitimate
  - files that look like this, only delete files that are
@@ -175,5 +195,12 @@ cleanConflictCruft resolvedfs top = do
 			liftIO $ nukeFile f
 		| otherwise = noop
 	s = S.fromList resolvedfs
-	matchesresolved f = S.member (base f) s
+	matchesresolved f = S.member f s || S.member (base f) s
 	base f = reverse $ drop 1 $ dropWhile (/= '~') $ reverse f
+	
+commitResolvedMerge :: Git.Branch.CommitMode -> Annex Bool
+commitResolvedMerge commitmode = inRepo $ Git.Branch.commitCommand commitmode
+	[ Param "--no-verify"
+	, Param "-m"
+	, Param "git-annex automatic merge conflict fix"
+	]

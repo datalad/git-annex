@@ -1,8 +1,8 @@
 {- Metered IO
  -
- - Copyright 2012, 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2105 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 {-# LANGUAGE TypeSynonymInstances #-}
@@ -16,12 +16,17 @@ import qualified Data.ByteString as S
 import System.IO.Unsafe
 import Foreign.Storable (Storable(sizeOf))
 import System.Posix.Types
+import Data.Int
+import Data.Bits.Utils
 
 {- An action that can be run repeatedly, updating it on the bytes processed.
  -
  - Note that each call receives the total number of bytes processed, so
  - far, *not* an incremental amount since the last call. -}
 type MeterUpdate = (BytesProcessed -> IO ())
+
+nullMeterUpdate :: MeterUpdate
+nullMeterUpdate _ = return ()
 
 {- Total number of bytes processed so far. -}
 newtype BytesProcessed = BytesProcessed Integer
@@ -31,11 +36,19 @@ class AsBytesProcessed a where
 	toBytesProcessed :: a -> BytesProcessed
 	fromBytesProcessed :: BytesProcessed -> a
 
+instance AsBytesProcessed BytesProcessed where
+	toBytesProcessed = id
+	fromBytesProcessed = id
+
 instance AsBytesProcessed Integer where
 	toBytesProcessed i = BytesProcessed i
 	fromBytesProcessed (BytesProcessed i) = i
 
 instance AsBytesProcessed Int where
+	toBytesProcessed i = BytesProcessed $ toInteger i
+	fromBytesProcessed (BytesProcessed i) = fromInteger i
+
+instance AsBytesProcessed Int64 where
 	toBytesProcessed i = BytesProcessed $ toInteger i
 	fromBytesProcessed (BytesProcessed i) = fromInteger i
 
@@ -77,36 +90,53 @@ meteredWriteFile :: MeterUpdate -> FilePath -> L.ByteString -> IO ()
 meteredWriteFile meterupdate f b = withBinaryFile f WriteMode $ \h ->
 	meteredWrite meterupdate h b
 
+{- Applies an offset to a MeterUpdate. This can be useful when
+ - performing a sequence of actions, such as multiple meteredWriteFiles,
+ - that all update a common meter progressively. Or when resuming.
+ -}
+offsetMeterUpdate :: MeterUpdate -> BytesProcessed -> MeterUpdate
+offsetMeterUpdate base offset = \n -> base (offset `addBytesProcessed` n)
+
 {- This is like L.hGetContents, but after each chunk is read, a meter
  - is updated based on the size of the chunk.
- -
- - Note that the meter update is run in unsafeInterleaveIO, which means that
- - it can be run at any time. It's even possible for updates to run out
- - of order, as different parts of the ByteString are consumed.
  -
  - All the usual caveats about using unsafeInterleaveIO apply to the
  - meter updates, so use caution.
  -}
 hGetContentsMetered :: Handle -> MeterUpdate -> IO L.ByteString
-hGetContentsMetered h meterupdate = lazyRead zeroBytesProcessed
+hGetContentsMetered h = hGetUntilMetered h (const True)
+
+{- Reads from the Handle, updating the meter after each chunk.
+ -
+ - Note that the meter update is run in unsafeInterleaveIO, which means that
+ - it can be run at any time. It's even possible for updates to run out
+ - of order, as different parts of the ByteString are consumed.
+ -
+ - Stops at EOF, or when keepgoing evaluates to False.
+ - Closes the Handle at EOF, but otherwise leaves it open.
+ -}
+hGetUntilMetered :: Handle -> (Integer -> Bool) -> MeterUpdate -> IO L.ByteString
+hGetUntilMetered h keepgoing meterupdate = lazyRead zeroBytesProcessed
   where
 	lazyRead sofar = unsafeInterleaveIO $ loop sofar
 
 	loop sofar = do
-		c <- S.hGetSome h defaultChunkSize
+		c <- S.hGet h defaultChunkSize
 		if S.null c
 			then do
 				hClose h
 				return $ L.empty
 			else do
-				let sofar' = addBytesProcessed sofar $
-					S.length c
+				let sofar' = addBytesProcessed sofar (S.length c)
 				meterupdate sofar'
-				{- unsafeInterleaveIO causes this to be
-				 - deferred until the data is read from the
-				 - ByteString. -}
-				cs <- lazyRead sofar'
-				return $ L.append (L.fromChunks [c]) cs
+				if keepgoing (fromBytesProcessed sofar')
+					then do
+						{- unsafeInterleaveIO causes this to be
+						 - deferred until the data is read from the
+						 - ByteString. -}
+						cs <- lazyRead sofar'
+						return $ L.append (L.fromChunks [c]) cs
+					else return $ L.fromChunks [c]
 
 {- Same default chunk size Lazy ByteStrings use. -}
 defaultChunkSize :: Int
@@ -114,3 +144,37 @@ defaultChunkSize = 32 * k - chunkOverhead
   where
 	k = 1024
 	chunkOverhead = 2 * sizeOf (undefined :: Int) -- GHC specific
+
+{- Parses the String looking for a command's progress output, and returns
+ - Maybe the number of bytes rsynced so far, and any any remainder of the
+ - string that could be an incomplete progress output. That remainder
+ - should be prepended to future output, and fed back in. This interface
+ - allows the command's output to be read in any desired size chunk, or
+ - even one character at a time.
+ -}
+type ProgressParser = String -> (Maybe BytesProcessed, String)
+
+{- Runs a command and runs a ProgressParser on its output, in order
+ - to update the meter. The command's output is also sent to stdout. -}
+commandMeter :: ProgressParser -> MeterUpdate -> FilePath -> [CommandParam] -> IO Bool
+commandMeter progressparser meterupdate cmd params = liftIO $ catchBoolIO $
+	withHandle StdoutHandle createProcessSuccess p $
+		feedprogress zeroBytesProcessed []
+  where
+	p = proc cmd (toCommand params)
+
+	feedprogress prev buf h = do
+		b <- S.hGetSome h 80
+		if S.null b
+			then return True
+			else do
+				S.hPut stdout b
+				hFlush stdout
+				let s = w82s (S.unpack b)
+				let (mbytes, buf') = progressparser (buf++s)
+				case mbytes of
+					Nothing -> feedprogress prev buf' h
+					(Just bytes) -> do
+						when (bytes /= prev) $
+							meterupdate bytes
+						feedprogress bytes buf' h

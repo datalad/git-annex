@@ -1,6 +1,6 @@
 {- Adds hooks to remotes.
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -15,11 +15,10 @@ import Common.Annex
 import Types.Remote
 import Types.CleanupActions
 import qualified Annex
-import Annex.LockPool
+import Annex.LockFile
+import Utility.LockFile
 #ifndef mingw32_HOST_OS
 import Annex.Perms
-#else
-import Utility.WinLock
 #endif
 
 {- Modifies a remote's access functions to first run the
@@ -39,7 +38,7 @@ addHooks' r starthook stophook = r'
 		, retrieveKeyFile = \k f d p -> wrapper $ retrieveKeyFile r k f d p
 		, retrieveKeyFileCheap = \k f -> wrapper $ retrieveKeyFileCheap r k f
 		, removeKey = wrapper . removeKey r
-		, hasKey = wrapper . hasKey r
+		, checkPresent = wrapper . checkPresent r
 		}
 	  where
 		wrapper = runHooks r' starthook stophook
@@ -48,7 +47,7 @@ runHooks :: Remote -> Maybe String -> Maybe String -> Annex a -> Annex a
 runHooks r starthook stophook a = do
 	dir <- fromRepo gitAnnexRemotesDir
 	let lck = dir </> remoteid ++ ".lck"
-	whenM (notElem lck . M.keys <$> getPool) $ do
+	whenM (notElem lck . M.keys <$> getLockPool) $ do
 		liftIO $ createDirectoryIfMissing True dir
 		firstrun lck
 	a
@@ -63,7 +62,7 @@ runHooks r starthook stophook a = do
 		-- of it from running the stophook. If another
 		-- instance is shutting down right now, this
 		-- will block waiting for its exclusive lock to clear.
-		lockFile lck
+		lockFileShared lck
 
 		-- The starthook is run even if some other git-annex
 		-- is already running, and ran it before.
@@ -84,19 +83,12 @@ runHooks r starthook stophook a = do
 		unlockFile lck
 #ifndef mingw32_HOST_OS
 		mode <- annexFileMode
-		fd <- liftIO $ noUmask mode $
-			openFd lck ReadWrite (Just mode) defaultFileFlags
-		v <- liftIO $ tryIO $
-			setLock fd (WriteLock, AbsoluteSeek, 0, 0)
-		case v of
-			Left _ -> noop
-			Right _ -> run stophook
-		liftIO $ closeFd fd
+		v <- liftIO $ noUmask mode $ tryLockExclusive (Just mode) lck
 #else
 		v <- liftIO $ lockExclusive lck
+#endif
 		case v of
 			Nothing -> noop
 			Just lockhandle -> do
 				run stophook
 				liftIO $ dropLock lockhandle
-#endif

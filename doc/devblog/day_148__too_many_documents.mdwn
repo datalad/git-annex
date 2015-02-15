@@ -1,0 +1,8 @@
+Various bug triage today. Was not good for much after shuffling paper for
+the whole first part of the day, but did get a few little things done.
+
+Re <http://heartbleed.com/>, git-annex does not use OpenSSL itself,
+but when using XMPP, the remote server's key could have been intercepted
+using this new technique. Also, the git-annex autobuilds and this website
+are served over https -- working on generating new https certificates now.
+Be safe out there..

@@ -1,6 +1,6 @@
 {- git-annex fsck results log files
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -28,7 +28,7 @@ writeFsckResults u fsckresults = do
 				| S.null s -> nukeFile logfile
 				| otherwise -> store s t logfile
   where
-  	store s t logfile = do 
+	store s t logfile = do 
 		createDirectoryIfMissing True (parentDir logfile)
 		liftIO $ viaTmp writeFile logfile $ serialize s t
 	serialize s t =

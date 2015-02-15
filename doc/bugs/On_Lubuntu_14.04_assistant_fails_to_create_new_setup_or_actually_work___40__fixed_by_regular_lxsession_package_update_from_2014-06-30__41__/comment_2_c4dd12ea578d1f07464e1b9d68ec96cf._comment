@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm7eqCMh_B7mxE0tnchbr0JoYu11FUAFRY"
+ nickname="Stéphane"
+ subject="comment 2"
+ date="2014-06-09T20:34:55Z"
+ content="""
+> It sounds rather like the webapp is failing to create the repository. Although I would expect for it to show an error message in red beneath the repository path. 
+
+No message in red at any time.
+
+> OTOH, it also sounds like something (either the webapp or eg a manual git-annex run) set up a git-annex repository in ~/Documents.
+
+There was none before the webapp.
+After the webapp failure, there was one, but without any file.
+Only after I manually did git annex add, it looked \"unlocked\".
+
+> git-annex will be started automatically on login as long as ~/.config/git-annex/autostart lists a repository to use. If that file exists and contains ~/Documents then we'll know that the webapp successfully set up the repository.
+
+Can't check now, the machine is off.  Should check soon.  Thanks.
+"""]]

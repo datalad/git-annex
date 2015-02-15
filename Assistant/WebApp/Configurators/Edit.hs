@@ -1,6 +1,6 @@
 {- git-annex assistant webapp configurator for editing existing repos
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -11,11 +11,12 @@ module Assistant.WebApp.Configurators.Edit where
 
 import Assistant.WebApp.Common
 import Assistant.WebApp.Gpg
+import Assistant.WebApp.Configurators
 import Assistant.DaemonStatus
 import Assistant.WebApp.MakeRemote (uniqueRemoteName)
-import Assistant.WebApp.Configurators.XMPP (xmppNeeded)
 import Assistant.ScanRemotes
 import Assistant.Sync
+import Assistant.Alert
 import qualified Assistant.WebApp.Configurators.AWS as AWS
 import qualified Assistant.WebApp.Configurators.IA as IA
 #ifdef WITH_S3
@@ -60,6 +61,10 @@ data RepoConfig = RepoConfig
 
 getRepoConfig :: UUID -> Maybe Remote -> Annex RepoConfig
 getRepoConfig uuid mremote = do
+	-- Ensure we're editing current data by discarding caches.
+	void groupMapLoad
+	void uuidMapLoad
+
 	groups <- lookupGroups uuid
 	remoteconfig <- M.lookup uuid <$> readRemoteLog
 	let (repogroup, associateddirectory) = case getStandardGroup groups of
@@ -130,7 +135,7 @@ setRepoConfig uuid mremote oldc newc = do
 	when syncableChanged $
 		liftAssistant $ changeSyncable mremote (repoSyncable newc)
   where
-  	syncableChanged = repoSyncable oldc /= repoSyncable newc
+	syncableChanged = repoSyncable oldc /= repoSyncable newc
 	associatedDirectoryChanged = repoAssociatedDirectory oldc /= repoAssociatedDirectory newc
 	groupChanged = repoGroup oldc /= repoGroup newc
 	nameChanged = isJust mremote && legalName oldc /= legalName newc
@@ -139,13 +144,13 @@ setRepoConfig uuid mremote oldc newc = do
 	legalName = makeLegalName . T.unpack . repoName
 
 editRepositoryAForm :: Maybe Remote -> RepoConfig -> MkAForm RepoConfig
-editRepositoryAForm mremote def = RepoConfig
+editRepositoryAForm mremote d = RepoConfig
 	<$> areq (if ishere then readonlyTextField else textField)
-		"Name" (Just $ repoName def)
-	<*> aopt textField "Description" (Just $ repoDescription def)
-	<*> areq (selectFieldList groups `withNote` help) "Repository group" (Just $ repoGroup def)
+		(bfs "Name") (Just $ repoName d)
+	<*> aopt textField (bfs "Description") (Just $ repoDescription d)
+	<*> areq (selectFieldList groups `withNote` help) (bfs "Repository group") (Just $ repoGroup d)
 	<*> associateddirectory
-	<*> areq checkBoxField "Syncing enabled" (Just $ repoSyncable def)
+	<*> areq checkBoxField "Syncing enabled" (Just $ repoSyncable d)
   where
 	ishere = isNothing mremote
 	isspecial = fromMaybe False $
@@ -158,14 +163,14 @@ editRepositoryAForm mremote def = RepoConfig
 		| isspecial = const True
 		| otherwise = not . specialRemoteOnly
 	customgroups :: [(Text, RepoGroup)]
-	customgroups = case repoGroup def of
+	customgroups = case repoGroup d of
 		RepoGroupCustom s -> [(T.pack s, RepoGroupCustom s)]
 		_ -> []
 	help = [whamlet|<a href="@{RepoGroupR}">What's this?</a>|]
 
-	associateddirectory = case repoAssociatedDirectory def of
+	associateddirectory = case repoAssociatedDirectory d of
 		Nothing -> aopt hiddenField "" Nothing
-		Just d -> aopt textField "Associated directory" (Just $ Just d)
+		Just dir -> aopt textField (bfs "Associated directory") (Just $ Just dir)
 
 getEditRepositoryR :: RepoId -> Handler Html
 getEditRepositoryR = postEditRepositoryR
@@ -183,29 +188,32 @@ getEditNewCloudRepositoryR :: UUID -> Handler Html
 getEditNewCloudRepositoryR = postEditNewCloudRepositoryR
 
 postEditNewCloudRepositoryR :: UUID -> Handler Html
-postEditNewCloudRepositoryR uuid = xmppNeeded >> editForm True (RepoUUID uuid)
+postEditNewCloudRepositoryR uuid = connectionNeeded >> editForm True (RepoUUID uuid)
 
 editForm :: Bool -> RepoId -> Handler Html
-editForm new (RepoUUID uuid) = page "Edit repository" (Just Configuration) $ do
-	mremote <- liftAnnex $ Remote.remoteFromUUID uuid
-	when (mremote == Nothing) $
-		whenM ((/=) uuid <$> liftAnnex getUUID) $
-			error "unknown remote"
-	curr <- liftAnnex $ getRepoConfig uuid mremote
-	liftAnnex $ checkAssociatedDirectory curr mremote
-	((result, form), enctype) <- liftH $
-		runFormPostNoToken $ renderBootstrap $ editRepositoryAForm mremote curr
-	case result of
-		FormSuccess input -> liftH $ do
-			setRepoConfig uuid mremote curr input
-			liftAnnex $ checkAssociatedDirectory input mremote
-			redirect DashboardR
-		_ -> do
-			let istransfer = repoGroup curr == RepoGroupStandard TransferGroup
-			config <- liftAnnex $ M.lookup uuid <$> readRemoteLog
-			let repoInfo = getRepoInfo mremote config
-			let repoEncryption = getRepoEncryption mremote config
-			$(widgetFile "configurators/edit/repository")
+editForm new (RepoUUID uuid)
+	| uuid == webUUID || uuid == bitTorrentUUID = page "The web" (Just Configuration) $ do
+		$(widgetFile "configurators/edit/webrepository")
+	| otherwise = page "Edit repository" (Just Configuration) $ do
+		mremote <- liftAnnex $ Remote.remoteFromUUID uuid
+		when (mremote == Nothing) $
+			whenM ((/=) uuid <$> liftAnnex getUUID) $
+				error "unknown remote"
+		curr <- liftAnnex $ getRepoConfig uuid mremote
+		liftAnnex $ checkAssociatedDirectory curr mremote
+		((result, form), enctype) <- liftH $
+			runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $ editRepositoryAForm mremote curr
+		case result of
+			FormSuccess input -> liftH $ do
+				setRepoConfig uuid mremote curr input
+				liftAnnex $ checkAssociatedDirectory input mremote
+				redirect DashboardR
+			_ -> do
+				let istransfer = repoGroup curr == RepoGroupStandard TransferGroup
+				config <- liftAnnex $ M.lookup uuid <$> readRemoteLog
+				let repoInfo = getRepoInfo mremote config
+				let repoEncryption = getRepoEncryption mremote config
+				$(widgetFile "configurators/edit/repository")
 editForm _new r@(RepoName _) = page "Edit repository" (Just Configuration) $ do
 	mr <- liftAnnex (repoIdRemote r)
 	let repoInfo = getRepoInfo mr Nothing
@@ -230,7 +238,7 @@ getRepoInfo :: Maybe Remote.Remote -> Maybe Remote.RemoteConfig -> Widget
 getRepoInfo (Just r) (Just c) = case M.lookup "type" c of
 	Just "S3"
 #ifdef WITH_S3
-		| S3.isIA c -> IA.getRepoInfo c
+		| S3.configIA c -> IA.getRepoInfo c
 #endif
 		| otherwise -> AWS.getRepoInfo c
 	Just t
@@ -246,7 +254,7 @@ getGitRepoInfo r = do
 
 getRepoEncryption :: Maybe Remote.Remote -> Maybe Remote.RemoteConfig -> Widget
 getRepoEncryption (Just _) (Just c) = case extractCipher c of
-  	Nothing ->
+	Nothing ->
 		[whamlet|not encrypted|]
 	(Just (SharedCipher _)) ->
 		[whamlet|encrypted: encryption key stored in git repository|]
@@ -265,7 +273,7 @@ getUpgradeRepositoryR  :: RepoId -> Handler ()
 getUpgradeRepositoryR (RepoUUID _) = redirect DashboardR
 getUpgradeRepositoryR r = go =<< liftAnnex (repoIdRemote r)
   where
-  	go Nothing = redirect DashboardR
+	go Nothing = redirect DashboardR
 	go (Just rmt) = do
 		liftIO fixSshKeyPairIdentitiesOnly
 		liftAnnex $ setConfig 
@@ -275,3 +283,23 @@ getUpgradeRepositoryR r = go =<< liftAnnex (repoIdRemote r)
 		liftAssistant updateSyncRemotes
 		liftAssistant $ syncRemote rmt
 		redirect DashboardR
+
+{- If there is no currently connected remote, display an alert suggesting
+ - to set up one. -}
+connectionNeeded :: Handler ()
+connectionNeeded = whenM noconnection $ do
+	urlrender <- getUrlRender
+	void $ liftAssistant $ do
+		close <- asIO1 removeAlert
+		addAlert $ connectionNeededAlert $ AlertButton
+			{ buttonLabel = "Connect"
+			, buttonUrl = urlrender ConnectionNeededR
+			, buttonAction = Just close
+			, buttonPrimary = True
+			}
+  where
+	noconnection = S.null . currentlyConnectedRemotes <$> liftAssistant getDaemonStatus
+
+getConnectionNeededR :: Handler Html
+getConnectionNeededR = page "Connection needed" (Just Configuration) $ do
+	$(widgetFile "configurators/needconnection")

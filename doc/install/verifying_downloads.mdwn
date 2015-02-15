@@ -1,0 +1,33 @@
+When you download a git-annex package from downloads.kitenet.net,
+as listed in [[install]], you should use a https connection. That provides
+some security, but here's some more.
+
+The downloaded package's integrity can be verified by checking that
+it was signed using the right GPG key, specifically the git-annex
+distribution signing key. To do this, you need to download the .sig
+file accompanying your package. Just append .sig to the url. 
+
+For example, on Linux:
+
+	$ wget https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz
+	$ wget https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz.sig
+
+You can then download the public key, and check that the package is signed
+with it.
+
+	$ wget https://downloads.kitenet.net/git-annex/gpg-pubkey.asc
+	$ gpg --import gpg-pubey.asc
+	$ gpg --verify git-annex-standalone-*.tar.gz.sig
+
+(The git-annex assistant can automatically upgrade git-annex, and when it
+does, it always checks the signature like that.)
+
+But, how do you know that the gpg-pubkey.asc you downloaded
+is the right key? The answer is the GPG web of trust. 
+
+* Joey Hess generates these git-annex packages,
+  and has a GPG key, [C910D9222512E3C7 Joey Hess <id@joeyh.name>](http://pgp.cs.uu.nl/stats/2512E3C7.html), which has
+  been verified and signed by many people.
+* Joey's GPG key has signed the git-annex distribution signing key.
+
+Don't take this page's word about this, check it yourself!

@@ -1,0 +1,9 @@
+It appears that git-annex issues one GET request to S3 / Google cloud for every file it tries to copy, if you don't pass --fast.  (I could be wrong; I'm basing this on the fact that each "checking <remote name>" takes about the same amount of time, and that it's slow enough to be hitting the network.)
+
+Amazon lets you GET 1000 objects in one GET request, and afaict a request that returns 1000 objects costs just as much as a request that returns 1 object.  The cost of GET'ing every file in my annex is nontrivial -- Google charges 0.01 per 1000 GETs, and my repo has 130k objects, so that's $1.3, compared to a monthly cost for storage of under $10.  This means that if I want to back up my files more than, say, once a week, I need to write a script that parses the JSON output of git annex whereis and uploads with --fast only the files that aren't present in the cloud.  It also means that I have to trust the output of whereis.
+
+All those GETs also slow down the non-fast copy, and this also applies to other kinds of remotes.
+
+There are a number of ways one could implement this.  One way would be to have a command that updates the whereis data from the remote and then to add a parameter (maybe you already have it) to copy that's like --fast but skips files that are already present (maybe this is what --fast already does, but I did a quick check and it doesn't seem to).  Because of the way git annex names files, I think it would be hard to coalesce GETs during a copy command, but it could be done.
+
+Anyway, please don't consider this a high-priority request; I can get by as-is, and I <3 git annex.

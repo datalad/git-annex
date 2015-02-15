@@ -1,13 +1,13 @@
 {- git-annex assistant webapp types
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 {-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses #-}
 {-# LANGUAGE TemplateHaskell, OverloadedStrings, RankNTypes #-}
-{-# LANGUAGE FlexibleInstances, FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances, FlexibleContexts, ViewPatterns #-}
 {-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
@@ -73,35 +73,25 @@ instance Yesod WebApp where
 	defaultLayout content = do
 		webapp <- getYesod
 		pageinfo <- widgetToPageContent $ do
-			addStylesheet $ StaticR bootstrap_css
-			addStylesheet $ StaticR bootstrap_responsive_css
+			addStylesheet $ StaticR css_bootstrap_css
+			addStylesheet $ StaticR css_bootstrap_theme_css
+			addScript $ StaticR js_jquery_full_js
+			addScript $ StaticR js_bootstrap_js
 			$(widgetFile "error")
-		giveUrlRenderer $(hamletFile $ hamletTemplate "bootstrap")
+		withUrlRenderer $(hamletFile $ hamletTemplate "bootstrap")
 
 instance RenderMessage WebApp FormMessage where
 	renderMessage _ _ = defaultFormMessage
-
-{- Runs an Annex action from the webapp.
- -
- - When the webapp is run outside a git-annex repository, the fallback
- - value is returned.
- -}
-#if MIN_VERSION_yesod(1,2,0)
-liftAnnexOr :: forall a. a -> Annex a -> Handler a
-#else
-liftAnnexOr :: forall sub a. a -> Annex a -> GHandler sub WebApp a
-#endif
-liftAnnexOr fallback a = ifM (noAnnex <$> getYesod)
-	( return fallback
-	, liftAssistant $ liftAnnex a
-	)
 
 #if MIN_VERSION_yesod(1,2,0)
 instance LiftAnnex Handler where
 #else
 instance LiftAnnex (GHandler sub WebApp) where
 #endif
-	liftAnnex = liftAnnexOr $ error "internal liftAnnex"
+	liftAnnex a = ifM (noAnnex <$> getYesod)
+		( error "internal liftAnnex"
+		, liftAssistant $ liftAnnex a
+		)
 
 #if MIN_VERSION_yesod(1,2,0)
 instance LiftAnnex (WidgetT WebApp IO) where
@@ -164,9 +154,11 @@ data RemovableDrive = RemovableDrive
 data RepoKey = RepoKey KeyId | NoRepoKey
 	deriving (Read, Show, Eq, Ord)
 
+#if ! MIN_VERSION_path_pieces(0,1,4)
 instance PathPiece Bool where
 	toPathPiece = pack . show
 	fromPathPiece = readish . unpack
+#endif
 
 instance PathPiece RemovableDrive where
 	toPathPiece = pack . show

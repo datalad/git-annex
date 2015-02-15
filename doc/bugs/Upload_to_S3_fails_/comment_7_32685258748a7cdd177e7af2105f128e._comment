@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkvSZ1AFJdY_1FeutZr_KWeqtzjZta1PNE"
+ nickname="Thedward"
+ subject="comment 7"
+ date="2014-10-21T17:35:16Z"
+ content="""
+It is running the new style chunking (chunk=1MiB).
+
+It does not appear to resume when it tries again. If I try copying a file to the remote from the command line, it always starts at 0% and dies at some point before 100% even if it has tried to copy that file before.
+"""]]

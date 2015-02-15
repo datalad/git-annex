@@ -3,7 +3,7 @@
 [[!img /assistant/osx-app.png align=right link=/assistant]]
 For easy installation, use the prebuilt app bundle.
 
-* 10.9 Mavericks: [git-annex.dmg](https://downloads.kitenet.net/git-annex/OSX/current/10.9_Mavericks/git-annex.dmg)
+* 10.10 Yosemite / 10.9 Mavericks: [git-annex.dmg](https://downloads.kitenet.net/git-annex/OSX/current/10.10_Yosemite/git-annex.dmg)
 * 10.8.2 Mountain Lion: [git-annex.dmg.bz2](https://downloads.kitenet.net/git-annex/OSX/current/10.8.2_Mountain_Lion/git-annex.dmg.bz2) **warning: not being updated any longer**
 * 10.7.5 Lion: [git-annex.dmg](https://downloads.kitenet.net/git-annex/OSX/current/10.7.5_Lion/git-annex.dmg) **warning: not being updated any longer**
 
@@ -20,46 +20,21 @@ several more. Handy if you don't otherwise have git installed.
 
 ## autobuilds
 
-[[Joey]] autobuilds the app for Mavericks.
+[[Joey]] autobuilds the app for 10.10 Yosemite
+(also reported to work on 10.9 Mavericks).
+Thanks to Kevin McKenzie for hosting the autobuilder.
 
-* [autobuild of git-annex.dmg](https://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-mavericks/git-annex.dmg) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-mavericks/))
+* [autobuild of git-annex.dmg](https://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-yosemite/git-annex.dmg) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-yosemite/))
 
-## using Brew
+## using Homebrew
 
-<pre>
-brew update
-brew install haskell-platform git ossp-uuid md5sha1sum coreutils gnutls libidn gsasl pkg-config libxml2
-brew link libxml2 --force
-cabal update
-mkdir $HOME/bin
-PATH=$HOME/bin:$PATH
-PATH=$HOME/.cabal/bin:$PATH
-cabal install c2hs --bindir=$HOME/bin
-cabal install gnuidn
-cabal install git-annex --bindir=$HOME/bin
-</pre>
+git-annex is now [[available in Homebrew|Homebrew]]!
 
 ## using MacPorts
 
-Install the Haskell Platform from [[http://hackage.haskell.org/platform/mac.html]].
-The version provided by Macports is too old to work with current versions of git-annex.
-Then execute
+git-annex is not available in MacPorts, but can be built from source using
+MacPorts tools. See [[MacPorts]].
 
-<pre>
-sudo port install git-core ossp-uuid md5sha1sum coreutils gnutls libxml2 libgsasl pkgconfig
-sudo cabal update
-PATH=$HOME/bin:$PATH
-cabal install c2hs git-annex --bindir=$HOME/bin
-</pre>
+## building it yourself
 
-## PATH setup
-
-Do not forget to add to your PATH variable your ~/bin folder. In your .bashrc, for example:
-<pre>
-PATH=$HOME/bin:$PATH
-</pre>
-
-See also:
-
-* [[forum/OSX__39__s_haskell-platform_statically_links_things]]
-* [[forum/OSX__39__s_default_sshd_behaviour_has_limited_paths_set]]
+See [[porting]].

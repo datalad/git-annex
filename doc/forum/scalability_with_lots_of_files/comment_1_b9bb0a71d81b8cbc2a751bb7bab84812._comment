@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-02-04T19:21:07Z"
+ content="""
+Git automatically packs loose object files after a while, which includes
+git-annex branch files. See `git-gc --help`.
+
+It also delta compresses files, and git-annex's log files will delta
+compress and compress pretty well, so your du's of a checked out git-annex
+branch don't mean much.
+
+As far as I can tell, your git repository is 118mb in size, including
+the git-annex branch and all history.
+
+You can use `git annex forget` to drop historical location tracking
+info for files.
+"""]]

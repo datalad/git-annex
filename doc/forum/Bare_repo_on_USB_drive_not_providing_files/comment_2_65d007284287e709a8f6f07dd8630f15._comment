@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmTNrhkVQ26GBLaLD5-zNuEiR8syTj4mI8"
+ nickname="Juan"
+ subject="I finally solved it"
+ date="2014-12-02T01:32:34Z"
+ content="""
+I fnally made it work. I tried git-annex sync wihtout luck. What tricked me was the size of the bare repo, it made me thought that it had the files. However after I've made a git annex get on the bare repo it got all the files and after that everthing worked as expected.
+So, if I don't get you wrong, it is safer to use a bare repo on the USB drive?
+Thanks for the help.
+Best regards,
+                     Juan
+"""]]

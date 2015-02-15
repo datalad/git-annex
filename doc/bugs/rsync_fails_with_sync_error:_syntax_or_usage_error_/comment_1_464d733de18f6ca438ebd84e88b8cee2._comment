@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2014-10-31T20:45:41Z"
+ content="""
+This is a rsync protocol level error; one side is sending something
+that the other side fails to deal with. We can see in your log that the
+two rsync are communicating successfully over the ssh connection
+at first.
+
+This could be something not clean about your ssh connection, or some incompatability
+in the versions of rsync or git-annex between the client and the server.
+It probably wouldn't hurt to make sure client and server have the same rsync
+version, and perhaps upgrade them both to the newest git-annex in case this
+problem is somehow fixed there.
+
+Then, seems to me that the next step is to get git-annex-shell out of the
+picture and see if you can still reproduce the problem. You can find the rsync
+command that git-annex-shell runs by passing --debug to it. The just replace
+the git-annex-shell command in your python code with the rsync command it runs.
+
+Here's a shell command line I came up with by doing that. It will have
+different paths for your repo, and localhost will need to be changed to your
+server's name.
+
+<pre>
+rsync --progress --inplace --perms --debug=all -e 'ssh  -4 -T localhost "rsync --server -t --inplace -e.Lsf . //home/joey/annex/.git/annex/tmp/SHA256E-s30--bdce956a335681853344fce6f1f940a5c8b7061007398661a3b14f2037843744" dummy rsync --server -pe.Lsfx --log-format=X --debug=ALL --inplace . .'  /tmp/annex/.git/annex/objects/Wx/Mf/SHA256E-s30--bdce956a335681853344fce6f1f940a5c8b7061007398661a3b14f2037843744/SHA256E-s30--bdce956a335681853344fce6f1f940a5c8b7061007398661a3b14f2037843744 dummy:
+</pre>
+"""]]

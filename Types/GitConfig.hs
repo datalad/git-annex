@@ -1,6 +1,6 @@
 {- git-annex configuration
  -
- - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -15,11 +15,13 @@ module Types.GitConfig (
 import Common
 import qualified Git
 import qualified Git.Config
+import qualified Git.Construct
 import Utility.DataUnits
 import Config.Cost
 import Types.Distribution
 import Types.Availability
 import Types.NumCopies
+import Types.Difference
 import Utility.HumanTime
 
 {- Main git-annex settings. Each setting corresponds to a git-config key
@@ -42,6 +44,7 @@ data GitConfig = GitConfig
 	, annexDebug :: Bool
 	, annexWebOptions :: [String]
 	, annexQuviOptions :: [String]
+	, annexAriaTorrentOptions :: [String]
 	, annexWebDownloadCommand :: Maybe String
 	, annexCrippledFileSystem :: Bool
 	, annexLargeFiles :: Maybe String
@@ -52,8 +55,10 @@ data GitConfig = GitConfig
 	, annexGenMetaData :: Bool
 	, annexListen :: Maybe String
 	, annexStartupScan :: Bool
+	, annexHardLink :: Bool
 	, coreSymlinks :: Bool
 	, gcryptId :: Maybe String
+	, annexDifferences :: Differences
 	}
 
 extractGitConfig :: Git.Repo -> GitConfig
@@ -76,6 +81,7 @@ extractGitConfig r = GitConfig
 	, annexDebug = getbool (annex "debug") False
 	, annexWebOptions = getwords (annex "web-options")
 	, annexQuviOptions = getwords (annex "quvi-options")
+	, annexAriaTorrentOptions = getwords (annex "aria-torrent-options")
 	, annexWebDownloadCommand = getmaybe (annex "web-download-command")
 	, annexCrippledFileSystem = getbool (annex "crippledfilesystem") False
 	, annexLargeFiles = getmaybe (annex "largefiles")
@@ -87,11 +93,13 @@ extractGitConfig r = GitConfig
 	, annexGenMetaData = getbool (annex "genmetadata") False
 	, annexListen = getmaybe (annex "listen")
 	, annexStartupScan = getbool (annex "startupscan") True
+	, annexHardLink = getbool (annex "hardlink") False
 	, coreSymlinks = getbool "core.symlinks" True
 	, gcryptId = getmaybe "core.gcrypt-id"
+	, annexDifferences = getDifferences r
 	}
   where
-	getbool k def = fromMaybe def $ getmaybebool k
+	getbool k d = fromMaybe d $ getmaybebool k
 	getmaybebool k = Git.Config.isTrue =<< getmaybe k
 	getmayberead k = readish =<< getmaybe k
 	getmaybe k = Git.Config.getMaybe k r
@@ -119,6 +127,7 @@ data RemoteGitConfig = RemoteGitConfig
 
 	{- These settings are specific to particular types of remotes
 	 - including special remotes. -}
+	, remoteAnnexShell :: Maybe String
 	, remoteAnnexSshOptions :: [String]
 	, remoteAnnexRsyncOptions :: [String]
 	, remoteAnnexRsyncUploadOptions :: [String]
@@ -131,6 +140,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexBupSplitOptions :: [String]
 	, remoteAnnexDirectory :: Maybe FilePath
 	, remoteAnnexGCrypt :: Maybe String
+	, remoteAnnexDdarRepo :: Maybe String
 	, remoteAnnexHookType :: Maybe String
 	, remoteAnnexExternalType :: Maybe String
 	{- A regular git remote's git repository config. -}
@@ -150,6 +160,7 @@ extractRemoteGitConfig r remotename = RemoteGitConfig
 	, remoteAnnexAvailability = getmayberead "availability"
 	, remoteAnnexBare = getmaybebool "bare"
 
+	, remoteAnnexShell = getmaybe "shell"
 	, remoteAnnexSshOptions = getoptions "ssh-options"
 	, remoteAnnexRsyncOptions = getoptions "rsync-options"
 	, remoteAnnexRsyncDownloadOptions = getoptions "rsync-download-options"
@@ -162,12 +173,13 @@ extractRemoteGitConfig r remotename = RemoteGitConfig
 	, remoteAnnexBupSplitOptions = getoptions "bup-split-options"
 	, remoteAnnexDirectory = notempty $ getmaybe "directory"
 	, remoteAnnexGCrypt = notempty $ getmaybe "gcrypt"
+	, remoteAnnexDdarRepo = getmaybe "ddarrepo"
 	, remoteAnnexHookType = notempty $ getmaybe "hooktype"
 	, remoteAnnexExternalType = notempty $ getmaybe "externaltype"
 	, remoteGitConfig = Nothing
 	}
   where
-	getbool k def = fromMaybe def $ getmaybebool k
+	getbool k d = fromMaybe d $ getmaybebool k
 	getmaybebool k = Git.Config.isTrue =<< getmaybe k
 	getmayberead k = readish =<< getmaybe k
 	getmaybe k = mplus (Git.Config.getMaybe (key k) r)
@@ -182,3 +194,5 @@ notempty Nothing = Nothing
 notempty (Just "") = Nothing
 notempty (Just s) = Just s
 
+instance Default RemoteGitConfig where
+	def = extractRemoteGitConfig Git.Construct.fromUnknown "dummy"

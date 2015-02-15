@@ -1,18 +1,19 @@
-<div .span9 .hero-unit>
-  <h2>
-    Pairing in progress ..
-  $if T.null secret
-    <p>
-      You do not need to leave this page open; pairing will finish #
-      automatically.
-  $else
-    <p>
-      Now you should either go tell the owner of the computer you want to pair #
-      with the secret phrase you selected ("#{secret}"), or go enter it into #
-      the computer you want to pair with.
-    <p>
-      You do not need to leave this page open; pairing will finish automatically #
-      as soon as the secret phrase is entered into the other computer.
-    <p>
-      If you're not seeing a pair request on the other computer, try moving #
-      it to the same switch or wireless network as this one.
+<div .col-sm-9>
+  <div .content-box>
+    <h2>
+      Pairing in progress ..
+    $if T.null secret
+      <p>
+        You do not need to leave this page open; pairing will finish #
+        automatically.
+    $else
+      <p>
+        Now you should either go tell the owner of the computer you want to pair #
+        with the secret phrase you selected ("#{secret}"), or go enter it into #
+        the computer you want to pair with.
+      <p>
+        You do not need to leave this page open; pairing will finish automatically #
+        as soon as the secret phrase is entered into the other computer.
+      <p>
+        If you're not seeing a pair request on the other computer, try moving #
+        it to the same switch or wireless network as this one.

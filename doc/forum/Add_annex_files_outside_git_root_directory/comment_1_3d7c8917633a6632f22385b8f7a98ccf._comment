@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-02-04T17:19:46Z"
+ content="""
+git-annex should have no difficulty doing that, and in fact its test
+suite includes some adds of files in subdirs.
+
+The most likely reason for this behavior would be if you have configured
+a `.gitignore` file (or other method of configuring gitignore) to 
+exclude the file you want to add. If so, "git annex add --force
+mydir/myfile" would override the gitignore.
+
+Internally, git-annex add runs "git ls-files --others --exclude-standard"
+and passes it the files/dirs you specified to add, and then adds
+the files that command lists. So you can run that command and see
+what it lists too.
+"""]]

@@ -20,6 +20,8 @@
 /config/xmpp/for/self XMPPConfigForPairSelfR GET POST
 /config/xmpp/for/frield XMPPConfigForPairFriendR GET POST
 /config/xmpp/needcloudrepo/#UUID NeedCloudRepoR GET
+/config/xmpp/disconnect DisconnectXMPPR GET
+/config/needconnection ConnectionNeededR GET
 /config/fsck ConfigFsckR GET POST
 /config/fsck/preferences ConfigFsckPreferencesR POST
 /config/upgrade/start/#GitAnnexDistribution ConfigStartUpgradeR GET
@@ -79,6 +81,7 @@
 /config/repository/enable/IA/#UUID EnableIAR GET POST
 /config/repository/enable/glacier/#UUID EnableGlacierR GET POST
 /config/repository/enable/webdav/#UUID EnableWebDAVR GET POST
+/config/repository/enable/sshgitremote/#UUID EnableSshGitRemoteR GET POST
 
 /config/repository/reorder RepositoriesReorderR GET
 

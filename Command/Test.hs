@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,9 +11,9 @@ import Common
 import Command
 import Messages
 
-def :: [Command]
-def = [ noRepo startIO $ dontCheck repoExists $
-	command "test" paramNothing seek SectionPlumbing
+cmd :: [Command]
+cmd = [ noRepo startIO $ dontCheck repoExists $
+	command "test" paramNothing seek SectionTesting
 		"run built-in test suite"]
 
 seek :: CommandSeek

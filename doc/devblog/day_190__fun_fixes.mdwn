@@ -1,0 +1,13 @@
+Spent the morning improving behavior when `commit.gpgsign` is set.
+Now git-annex will let gpg sign commits that are made when eg, manually
+running `git annex sync`, but not commits implicitly made to the git-annex
+branch. And any commits made by the assistant are not gpg signed. This was
+slightly tricky, since lots of different places in git-annex ran `git
+commit`, `git merge` and similar.
+
+Then got back to a test I left running over vacation, that added millions
+of files to a git annex repo. This was able to reproduce a problem where
+`git annex add` blew the stack and crashed at the end. There turned out to
+be two different memory issues, one was in git-annex and the other is in
+Haskell's core `getDirectoryContents`. Was able to entirely fix it,
+eventually.

@@ -1,0 +1,6 @@
+Built the `git annex undo` command. This is intended to be a simple
+interface for users who have changed one file, and want to undo the change
+without the complexities of `git revert` or `git annex proxy`. It's simple
+enough that I added undo as an action in the file manager integration.
+
+And yes, you can undo an undo. :)

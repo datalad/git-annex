@@ -1,11 +1,11 @@
-From e6d5c141186dbdbe97c698294485ffc4dcd3a843 Mon Sep 17 00:00:00 2001
+From db9eb179885874af342bb2c3adef7185496ba1f1 Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Fri, 18 Oct 2013 16:45:50 +0000
-Subject: [PATCH] hack for bionic + cross build
+Date: Wed, 15 Oct 2014 16:37:32 +0000
+Subject: [PATCH] hack for bionic
 
 ---
- Data/UnixTime/Types.hsc |   12 ------------
- cbits/conv.c            |    2 +-
+ Data/UnixTime/Types.hsc | 12 ------------
+ cbits/conv.c            |  2 +-
  2 files changed, 1 insertion(+), 13 deletions(-)
 
 diff --git a/Data/UnixTime/Types.hsc b/Data/UnixTime/Types.hsc
@@ -39,10 +39,10 @@ index d30f39b..ec7ca4c 100644
  -- Format of the strptime()/strftime() style.
  type Format = ByteString
 diff --git a/cbits/conv.c b/cbits/conv.c
-index 7ff7b87..2e4c870 100644
+index ec31fef..b7bc0f9 100644
 --- a/cbits/conv.c
 +++ b/cbits/conv.c
-@@ -55,7 +55,7 @@ time_t c_parse_unix_time_gmt(char *fmt, char *src) {
+@@ -96,7 +96,7 @@ time_t c_parse_unix_time_gmt(char *fmt, char *src) {
  #else
      strptime(src, fmt, &dst);
  #endif
@@ -52,5 +52,5 @@ index 7ff7b87..2e4c870 100644
  
  size_t c_format_unix_time(char *fmt, time_t src, char* dst, int siz) {
 -- 
-1.7.10.4
+2.1.1
 

@@ -1,6 +1,6 @@
 {- git-annex assistant remote deletion utilities
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -17,7 +17,7 @@ import Logs.Location
 import Assistant.DaemonStatus
 import qualified Remote
 import Remote.List
-import qualified Git.Remote
+import qualified Git.Remote.Remove
 import Logs.Trust
 import qualified Annex
 
@@ -34,7 +34,7 @@ disableRemote uuid = do
 	remote <- fromMaybe (error "unknown remote")
 		<$> liftAnnex (Remote.remoteFromUUID uuid)
 	liftAnnex $ do
-		inRepo $ Git.Remote.remove (Remote.name remote)
+		inRepo $ Git.Remote.Remove.remove (Remote.name remote)
 		void $ remoteListRefresh
 	updateSyncRemotes
 	return remote
@@ -62,7 +62,7 @@ removableRemote urlrenderer uuid = do
 				<$> liftAnnex (Remote.remoteFromUUID uuid)
 			mapM_ (queueremaining r) keys
   where
-  	queueremaining r k = 
+	queueremaining r k = 
 		queueTransferWhenSmall "remaining object in unwanted remote"
 			Nothing (Transfer Download uuid k) r
 	{- Scanning for keys can take a long time; do not tie up

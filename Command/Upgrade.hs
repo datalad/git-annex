@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,8 +11,8 @@ import Common.Annex
 import Command
 import Upgrade
 
-def :: [Command]
-def = [dontCheck repoExists $ -- because an old version may not seem to exist
+cmd :: [Command]
+cmd = [dontCheck repoExists $ -- because an old version may not seem to exist
 	command "upgrade" paramNothing seek
 		SectionMaintenance "upgrade repository layout"]
 

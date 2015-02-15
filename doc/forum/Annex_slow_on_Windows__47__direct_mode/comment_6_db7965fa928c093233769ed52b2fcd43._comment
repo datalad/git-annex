@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Idhup"
+ ip="178.175.139.138"
+ subject="Connection sharing workaround"
+ date="2014-07-07T10:20:23Z"
+ content="""
+I had the same issues but was able to work around most of them. I simply created keypairs on my Windows machines that allowed me to log in to my Ubuntu server. Means that while the overhead does make it smaller (I guess), the whole sync process can simply be run in the background without me having to check for a password prompt for 30 minutes, just to miss the short period during which I can enter it. Also, the actual object storage was moved to a directory special remote on the server, so Windows clients can simply automount a samba share and push the content over that line, which is less of a hazzle.
+
+Also, the speed issue got *much* better when I added all files. I still had a lot of files just lying around on my Windows machine. Once I added them all, the sync process sped up by several magnitudes. So, if https://git-annex.branchable.com/forum/fatal:_Out_of_memory__63___mmap_failed:_No_such_file_or_directory/ can be solved, I guess I'm happy on Windows.
+"""]]

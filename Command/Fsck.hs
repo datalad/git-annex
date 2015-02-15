@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -39,8 +39,8 @@ import Data.Time
 import System.Posix.Types (EpochTime)
 import System.Locale
 
-def :: [Command]
-def = [withOptions fsckOptions $ command "fsck" paramPaths seek
+cmd :: [Command]
+cmd = [withOptions fsckOptions $ command "fsck" paramPaths seek
 	SectionMaintenance "check for problems"]
 
 fsckFromOption :: Option
@@ -62,7 +62,7 @@ fsckOptions =
 	, startIncrementalOption
 	, moreIncrementalOption
 	, incrementalScheduleOption
-	] ++ keyOptions
+	] ++ keyOptions ++ annexedMatchingOptions
 
 seek :: CommandSeek
 seek ps = do
@@ -104,12 +104,16 @@ getIncremental = do
 						resetStartTime
 		return True
 
-start :: Maybe Remote -> Incremental -> FilePath -> (Key, Backend) -> CommandStart
-start from inc file (key, backend) = do
-	numcopies <- getFileNumCopies file
-	case from of
-		Nothing -> go $ perform key file backend numcopies
-		Just r -> go $ performRemote key file backend numcopies r
+start :: Maybe Remote -> Incremental -> FilePath -> Key -> CommandStart
+start from inc file key = do
+	v <- Backend.getBackend file key
+	case v of
+		Nothing -> stop
+		Just backend -> do
+			numcopies <- getFileNumCopies file
+			case from of
+				Nothing -> go $ perform key file backend numcopies
+				Just r -> go $ performRemote key file backend numcopies r
   where
 	go = runFsck inc file key
 
@@ -137,7 +141,10 @@ performRemote key file backend numcopies remote =
 	dispatch (Right True) = withtmp $ \tmpfile ->
 		ifM (getfile tmpfile)
 			( go True (Just tmpfile)
-			, go True Nothing
+			, do
+				warning "failed to download file from remote"
+				void $ go True Nothing
+				return False
 			)
 	dispatch (Right False) = go False Nothing
 	go present localcopy = check
@@ -188,7 +195,7 @@ check cs = and <$> sequence cs
  -}
 fixLink :: Key -> FilePath -> Annex Bool
 fixLink key file = do
-	want <- inRepo $ gitAnnexLink file key
+	want <- calcRepo $ gitAnnexLink file key
 	have <- getAnnexLinkTarget file
 	maybe noop (go want) have
 	return True
@@ -278,7 +285,7 @@ verifyDirectMode key file = do
  - the key's metadata, if available.
  -
  - Not checked in direct mode, because files can be changed directly.
-  -}
+ -}
 checkKeySize :: Key -> Annex Bool
 checkKeySize key = ifM isDirect
 	( return True
@@ -299,8 +306,7 @@ checkKeySizeOr :: (Key -> Annex String) -> Key -> FilePath -> Annex Bool
 checkKeySizeOr bad key file = case Types.Key.keySize key of
 	Nothing -> return True
 	Just size -> do
-		size' <- fromIntegral . fileSize
-			<$> liftIO (getFileStatus file)
+		size' <- liftIO $ getFileSize file
 		comparesizes size size'
   where
 	comparesizes a b = do
@@ -325,7 +331,7 @@ checkKeySizeOr bad key file = case Types.Key.keySize key of
 checkBackend :: Backend -> Key -> Maybe FilePath -> Annex Bool
 checkBackend backend key mfile = go =<< isDirect
   where
-  	go False = do
+	go False = do
 		content <- calcRepo $ gitAnnexLocation key
 		checkBackendOr badContent backend key content
 	go True = maybe nocheck checkdirect mfile

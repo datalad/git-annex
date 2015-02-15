@@ -1,6 +1,6 @@
 {- git-annex assistant webapp page display
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -59,16 +59,14 @@ customPage' with_longpolling navbaritem content = do
 		Nothing -> do
 			navbar <- map navdetails <$> selectNavBar
 			pageinfo <- widgetToPageContent $ do
-				addStylesheet $ StaticR bootstrap_css
-				addStylesheet $ StaticR bootstrap_responsive_css
-				addScript $ StaticR jquery_full_js
-				addScript $ StaticR bootstrap_dropdown_js
-				addScript $ StaticR bootstrap_modal_js
-				addScript $ StaticR bootstrap_collapse_js
+				addStylesheet $ StaticR css_bootstrap_css
+				addStylesheet $ StaticR css_bootstrap_theme_css
+				addScript $ StaticR js_jquery_full_js
+				addScript $ StaticR js_bootstrap_js
 				when with_longpolling $
-					addScript $ StaticR longpolling_js
+					addScript $ StaticR js_longpolling_js
 				$(widgetFile "page")
-			giveUrlRenderer $(Hamlet.hamletFile $ hamletTemplate "bootstrap")
+			withUrlRenderer $(Hamlet.hamletFile $ hamletTemplate "bootstrap")
 		Just msg -> error msg
   where
 	navdetails i = (navBarName i, navBarRoute i, Just i == navbaritem)

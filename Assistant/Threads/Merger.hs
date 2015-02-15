@@ -1,6 +1,6 @@
 {- git-annex assistant git merge thread
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -78,12 +78,13 @@ onChange file
 	changedbranch = fileToBranch file
 
 	mergecurrent (Just current)
-		| equivBranches changedbranch current = do
-			debug
-				[ "merging", Git.fromRef changedbranch
-				, "into", Git.fromRef current
-				]
-			void $ liftAnnex  $ autoMergeFrom changedbranch (Just current)
+		| equivBranches changedbranch current =
+			whenM (liftAnnex $ inRepo $ Git.Branch.changed current changedbranch) $ do
+				debug
+					[ "merging", Git.fromRef changedbranch
+					, "into", Git.fromRef current
+					]
+				void $ liftAnnex $ autoMergeFrom changedbranch (Just current) Git.Branch.AutomaticCommit
 	mergecurrent _ = noop
 
 	handleDesynced = case fromTaggedBranch changedbranch of

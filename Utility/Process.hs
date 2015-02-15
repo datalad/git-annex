@@ -1,18 +1,19 @@
 {- System.Process enhancements, including additional ways of running
  - processes, and logging.
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 {-# LANGUAGE CPP, Rank2Types #-}
 
 module Utility.Process (
 	module X,
-	CreateProcess,
+	CreateProcess(..),
 	StdHandle(..),
 	readProcess,
+	readProcess',
 	readProcessEnv,
 	writeReadProcessEnv,
 	forceSuccessProcess,
@@ -31,11 +32,13 @@ module Utility.Process (
 	stdinHandle,
 	stdoutHandle,
 	stderrHandle,
+	bothHandles,
+	processHandle,
 	devNull,
 ) where
 
 import qualified System.Process
-import System.Process as X hiding (CreateProcess(..), createProcess, runInteractiveProcess, readProcess, readProcessWithExitCode, system, rawSystem, runInteractiveCommand, runProcess)
+import qualified System.Process as X hiding (CreateProcess(..), createProcess, runInteractiveProcess, readProcess, readProcessWithExitCode, system, rawSystem, runInteractiveCommand, runProcess)
 import System.Process hiding (createProcess, readProcess)
 import System.Exit
 import System.IO
@@ -44,7 +47,7 @@ import Control.Concurrent
 import qualified Control.Exception as E
 import Control.Monad
 #ifndef mingw32_HOST_OS
-import System.Posix.IO
+import qualified System.Posix.IO
 #else
 import Control.Applicative
 #endif
@@ -64,16 +67,18 @@ readProcess :: FilePath	-> [String] -> IO String
 readProcess cmd args = readProcessEnv cmd args Nothing
 
 readProcessEnv :: FilePath -> [String] -> Maybe [(String, String)] -> IO String
-readProcessEnv cmd args environ =
-	withHandle StdoutHandle createProcessSuccess p $ \h -> do
-		output  <- hGetContentsStrict h
-		hClose h
-		return output
+readProcessEnv cmd args environ = readProcess' p
   where
 	p = (proc cmd args)
 		{ std_out = CreatePipe
 		, env = environ
 		}
+
+readProcess' :: CreateProcess -> IO String
+readProcess' p = withHandle StdoutHandle createProcessSuccess p $ \h -> do
+	output  <- hGetContentsStrict h
+	hClose h
+	return output
 
 {- Runs an action to write to a process on its stdin, 
  - returns its output, and also allows specifying the environment.
@@ -166,13 +171,13 @@ processTranscript :: String -> [String] -> (Maybe String) -> IO (String, Bool)
 processTranscript cmd opts input = processTranscript' cmd opts Nothing input
 
 processTranscript' :: String -> [String] -> Maybe [(String, String)] -> (Maybe String) -> IO (String, Bool)
+processTranscript' cmd opts environ input = do
 #ifndef mingw32_HOST_OS
 {- This implementation interleves stdout and stderr in exactly the order
  - the process writes them. -}
-processTranscript' cmd opts environ input = do
-	(readf, writef) <- createPipe
-	readh <- fdToHandle readf
-	writeh <- fdToHandle writef
+	(readf, writef) <- System.Posix.IO.createPipe
+	readh <- System.Posix.IO.fdToHandle readf
+	writeh <- System.Posix.IO.fdToHandle writef
 	p@(_, _, _, pid) <- createProcess $
 		(proc cmd opts)
 			{ std_in = if isJust input then CreatePipe else Inherit
@@ -183,24 +188,13 @@ processTranscript' cmd opts environ input = do
 	hClose writeh
 
 	get <- mkreader readh
-
-	-- now write and flush any input
-	case input of
-		Just s -> do
-			let inh = stdinHandle p
-			unless (null s) $ do
-				hPutStr inh s
-				hFlush inh
-			hClose inh
-		Nothing -> return ()
-
+	writeinput input p
 	transcript <- get
 
 	ok <- checkSuccessProcess pid
 	return (transcript, ok)
 #else
 {- This implementation for Windows puts stderr after stdout. -}
-processTranscript' cmd opts environ input = do
 	p@(_, _, _, pid) <- createProcess $
 		(proc cmd opts)
 			{ std_in = if isJust input then CreatePipe else Inherit
@@ -211,17 +205,9 @@ processTranscript' cmd opts environ input = do
 
 	getout <- mkreader (stdoutHandle p)
 	geterr <- mkreader (stderrHandle p)
-
-	case input of
-		Just s -> do
-			let inh = stdinHandle p
-			unless (null s) $ do
-				hPutStr inh s
-				hFlush inh
-			hClose inh
-		Nothing -> return ()
-	
+	writeinput input p
 	transcript <- (++) <$> getout <*> geterr
+
 	ok <- checkSuccessProcess pid
 	return (transcript, ok)
 #endif
@@ -235,6 +221,14 @@ processTranscript' cmd opts environ input = do
 		return $ do
 			takeMVar v
 			return s
+
+	writeinput (Just s) p = do
+		let inh = stdinHandle p
+		unless (null s) $ do
+			hPutStr inh s
+			hFlush inh
+		hClose inh
+	writeinput Nothing _ = return ()
 
 {- Runs a CreateProcessRunner, on a CreateProcess structure, that
  - is adjusted to pipe only from/to a single StdHandle, and passes
@@ -312,6 +306,9 @@ stderrHandle _ = error "expected stderrHandle"
 bothHandles :: (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> (Handle, Handle)
 bothHandles (Just hin, Just hout, _, _) = (hin, hout)
 bothHandles _ = error "expected bothHandles"
+
+processHandle :: (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> ProcessHandle
+processHandle (_, _, _, pid) = pid
 
 {- Debugging trace for a CreateProcess. -}
 debugProcess :: CreateProcess -> IO ()

@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2014-10-20T15:33:02Z"
+ content="""
+Well, are there any files in your repository (outside .git) that
+are still symlinks to content in .git? If not, you know that
+every file in the repository's working tree has been unannexed
+ok.
+
+The remaining files in .git/annex/objects are not unused, so some branch or tag
+must refer to those files.
+
+You might try running `git log --stat -S'KEY'`
+where KEY is the basename name of one of the files in .git/annex/objects.
+This will find commits to the repo that refer to that object, so you'll
+know where it was used and what filename corresponded to it.
+"""]]

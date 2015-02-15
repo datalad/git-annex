@@ -20,3 +20,10 @@ sometimes need to manually dropunused old uploads, that never completed.
 The question, then, is whether resuming uploads is useful enough to add
 this overhead and user-visible complexity.
 --[[Joey]] 
+
+> The new-style chunking code chunks and then encrypts. This means that
+> each individual chunk is a stand-alone file that can be decrypted later,
+> and so resumes of uploads to encrypted, chunked remotes works now.
+>
+> I think that's better than the ideas discussed above, so [[done]]
+> --[[Joey]]

@@ -1,6 +1,6 @@
 {- git-annex assistant webapp repository list
  -
- - Copyright 2012,2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012,2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -33,9 +33,10 @@ import qualified Data.Text as T
 import Data.Function
 import Control.Concurrent
 
-type RepoList = [(RepoDesc, RepoId, Actions)]
+type RepoList = [(RepoDesc, RepoId, CurrentlyConnected, Actions)]
 
 type RepoDesc = String
+type CurrentlyConnected = Bool
 
 {- Actions that can be performed on a repo in the list. -}
 data Actions
@@ -90,7 +91,7 @@ getRepoListR :: NotificationId -> RepoSelector -> Handler Html
 getRepoListR nid reposelector = do
 	waitNotifier getRepoListBroadcaster nid
 	p <- widgetToPageContent $ repoListDisplay reposelector
-	giveUrlRenderer $ [hamlet|^{pageBody p}|]
+	withUrlRenderer $ [hamlet|^{pageBody p}|]
 
 mainRepoSelector :: RepoSelector
 mainRepoSelector = RepoSelector
@@ -112,10 +113,10 @@ cloudRepoList = repoListDisplay RepoSelector
 repoListDisplay :: RepoSelector -> Widget
 repoListDisplay reposelector = do
 	autoUpdate ident (NotifierRepoListR reposelector) (10 :: Int) (10 :: Int)
-	addScript $ StaticR jquery_ui_core_js
-	addScript $ StaticR jquery_ui_widget_js
-	addScript $ StaticR jquery_ui_mouse_js
-	addScript $ StaticR jquery_ui_sortable_js
+	addScript $ StaticR js_jquery_ui_core_js
+	addScript $ StaticR js_jquery_ui_widget_js
+	addScript $ StaticR js_jquery_ui_mouse_js
+	addScript $ StaticR js_jquery_ui_sortable_js
 
 	repolist <- liftH $ repoList reposelector
 	let addmore = nudgeAddMore reposelector
@@ -188,16 +189,27 @@ repoList reposelector
 				Just rr	| remoteLocationIsUrl (parseRemoteLocation rr g) ->
 					val True EnableSshGCryptR
 				_ -> Nothing
+		Just "git" -> 
+			case getconfig "location" of
+				Just loc | remoteLocationIsSshUrl (parseRemoteLocation loc g) ->
+					val True EnableSshGitRemoteR
+				_ -> Nothing
 		_ -> Nothing
 	  where
-	  	getconfig k = M.lookup k =<< M.lookup u m
+		getconfig k = M.lookup k =<< M.lookup u m
 		val iscloud r = Just (iscloud, (RepoUUID u, DisabledRepoActions $ r u))
-	list l = liftAnnex $
+	list l = do
+		cc <- currentlyConnectedRemotes <$> liftAssistant getDaemonStatus
 		forM (nubBy ((==) `on` fst) l) $ \(repoid, actions) ->
-			(,,)
-				<$> describeRepoId repoid
+			(,,,)
+				<$> liftAnnex (describeRepoId repoid)
 				<*> pure repoid
+				<*> pure (getCurrentlyConnected repoid cc)
 				<*> pure actions
+
+getCurrentlyConnected :: RepoId -> S.Set UUID -> CurrentlyConnected
+getCurrentlyConnected (RepoUUID u) cc = S.member u cc
+getCurrentlyConnected _ _ = False
 
 getEnableSyncR :: RepoId -> Handler ()
 getEnableSyncR = flipSync True
@@ -216,17 +228,17 @@ getRepositoriesReorderR = do
 	{- Get uuid of the moved item, and the list it was moved within. -}
 	moved <- fromjs <$> runInputGet (ireq textField "moved")
 	list <- map fromjs <$> lookupGetParams "list[]"
-	liftAnnex $ go list =<< Remote.remoteFromUUID moved
+	liftAnnex $ go list =<< repoIdRemote moved
 	liftAssistant updateSyncRemotes
   where
 	go _ Nothing = noop
-  	go list (Just remote) = do
-		rs <- catMaybes <$> mapM Remote.remoteFromUUID list
+	go list (Just remote) = do
+		rs <- catMaybes <$> mapM repoIdRemote list
 		forM_ (reorderCosts remote rs) $ \(r, newcost) ->
 			when (Remote.cost r /= newcost) $
 				setRemoteCost (Remote.repo r) newcost
 		void remoteListRefresh
-  	fromjs = toUUID . T.unpack
+	fromjs = fromMaybe (RepoUUID NoUUID) . readish . T.unpack
 
 reorderCosts :: Remote -> [Remote] -> [(Remote, Cost)]
 reorderCosts remote rs = zip rs'' (insertCostAfter costs i)

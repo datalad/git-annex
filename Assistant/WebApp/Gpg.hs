@@ -1,6 +1,6 @@
 {- git-annex webapp gpg stuff
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -13,7 +13,7 @@ import Assistant.WebApp.Common
 import Assistant.Gpg
 import Utility.Gpg
 import qualified Git.Command
-import qualified Git.Remote
+import qualified Git.Remote.Remove
 import qualified Git.Construct
 import qualified Annex.Branch
 import qualified Git.GCrypt
@@ -27,11 +27,12 @@ import qualified Data.Map as M
 gpgKeyDisplay :: KeyId -> Maybe UserId -> Widget
 gpgKeyDisplay keyid userid = [whamlet|
   <span title="key id #{keyid}">
-    <i .icon-user></i> #
-      $maybe name <- userid
-        #{name}
-      $nothing
-        key id #{keyid}
+    <span .glyphicon .glyphicon-user>
+    \ 
+    $maybe name <- userid
+      #{name}
+    $nothing
+      key id #{keyid}
 |]
 
 genKeyModal :: Widget
@@ -75,7 +76,7 @@ getGCryptRemoteName u repoloc = do
 			(M.lookup "name" <=< M.lookup u) <$> readRemoteLog
 		, return Nothing
 		)
-	void $ inRepo $ Git.Remote.remove tmpremote
+	void $ inRepo $ Git.Remote.Remove.remove tmpremote
 	maybe missing return mname
   where
 	missing = error $ "Cannot find configuration for the gcrypt remote at " ++ repoloc

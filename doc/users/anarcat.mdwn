@@ -9,7 +9,7 @@ My tips
 
 ... or the ones I commented it, to be more precise.
 
-[[!inline pages="tips/* and and link(users/anarcat) and !bugs/*/*" sort=mtime feeds=no actions=yes archive=yes show=0]]
+[[!inline pages="tips/* and and link(users/anarcat)" sort=mtime feeds=no actions=yes archive=yes show=0]]
 
 
 My todos
@@ -18,13 +18,13 @@ My todos
 ... same.
 
 [[!inline pages="todo/* and !todo/done and !link(todo/done) and
-link(users/anarcat) and !todo/*/*" sort=mtime feeds=no actions=yes archive=yes show=0]]
+link(users/anarcat)" sort=mtime feeds=no actions=yes archive=yes show=0]]
 
 Done
 ----
 
 [[!inline pages="todo/* and !todo/done and link(todo/done) and
-link(users/anarcat) and !todo/*/*" feeds=no actions=yes archive=yes show=0]]
+link(users/anarcat)" feeds=no actions=yes archive=yes show=0]]
 
 My bugs
 =======
@@ -32,13 +32,13 @@ My bugs
 ... same.
 
 [[!inline pages="bugs/* and !bugs/done and !link(bugs/done) and
-link(users/anarcat) and !bugs/*/*" sort=mtime feeds=no actions=yes archive=yes show=0]]
+link(users/anarcat)" sort=mtime feeds=no actions=yes archive=yes show=0  template=buglist]]
 
 Fixed
 -----
 
 [[!inline pages="bugs/* and !bugs/done and link(bugs/done) and
-link(users/anarcat) and !bugs/*/*" feeds=no actions=yes archive=yes show=0]]
+link(users/anarcat)" feeds=no actions=yes archive=yes show=0  template=buglist]]
 
 Forum posts
 ===========
@@ -46,3 +46,10 @@ Forum posts
 Forums where I posted.
 
 [[!inline pages="forum/* and link(users/anarcat)" sort=mtime feeds=no actions=yes archive=yes show=0]]
+
+Git annex dev news
+==================
+
+I find the recent changes a little too noisy, but i want more than just the [[news]], so i made up this little hybrid feed:
+
+[[!inline pages="(news/* and !news/*/* and !*/Discussion) or (devblog/* and !devblog/*/*)" feedonly="yes"]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmjjrCHEIa4vpDIJoBuJsrF3y8wZQElVHw"
+ nickname="Siyuan"
+ subject="Non-direct mode for Windows"
+ date="2014-10-08T15:55:04Z"
+ content="""
+Why Windows is restricted to direct mode? NTFS has symbolic links too. Is that fundamentally different from POSIX symlinks that it cannot be done?
+"""]]

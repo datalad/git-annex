@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2015-02-12T20:25:12Z"
+ content="""
+You have two configured git remotes, host1 and host2, with the same
+"url = /m/stuff". Only one of these remotes can be accessed at a time,
+depending on where the drive is docked.
+
+So, why not just combine those two remote configs
+into a single remote. Call it "host".
+
+git-annex will automatically notice when the uuid of the repository
+pointed to by "host" changes, and it will update the .git/config
+appropriately.
+
+That BTW, happens to be just how I use git-annex with my own USB drive,
+and it works great.
+
+---
+
+git annex sync will still try to sync with "host1-net" and "host2-net", as well
+as which ever one of the two "host" points to. There's a small redundancy
+there, but since it will sync with "host" first, as it knows local file
+access is less expensive, the redundant sync will not involve much work.
+
+"""]]

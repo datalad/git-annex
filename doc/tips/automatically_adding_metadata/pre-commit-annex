@@ -1,6 +1,11 @@
 #!/bin/sh
+#
 # This script can be used to add git-annex metadata to files when they're
-# committed.
+# committed. It is typically installed as .git/hooks/pre-commit-annex
+#
+# You can also run this script by hand, passing it the names of files
+# already checked into git-annex, and it will extract/refresh the git-annex
+# metadata from the files.
 #
 # Copyright 2014 Joey Hess <id@joeyh.name>
 # License: GPL-3+
@@ -11,8 +16,6 @@ want="$(perl -e 'print (join("|", map {s/_/ /g; "^$_ - "} (split " ", shift())))
 if [ -z "$want" ]; then
 	exit 0
 fi
-
-echo "$want"
 
 case "$(git config --bool metadata.overwrite || true)" in
 	true)
@@ -46,7 +49,8 @@ fi
 
 IFS="
 "
-for f in $(git diff-index --name-only --cached $against); do
+
+process () {
 	if [ -e "$f" ]; then
 		for l in $(extract "$f" | egrep "$want"); do
 			field="${l%% - *}"
@@ -54,4 +58,14 @@ for f in $(git diff-index --name-only --cached $against); do
 			addmeta "$f" "$field" "$value"
 		done
 	fi
-done
+}
+
+if [ -n "$*" ]; then
+	for f in $@; do
+		process "$f"
+	done
+else
+	for f in $(git diff-index --name-only --cached $against); do
+		process "$f"
+	done
+fi

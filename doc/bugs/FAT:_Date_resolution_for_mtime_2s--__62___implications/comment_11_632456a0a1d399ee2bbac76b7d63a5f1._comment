@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 11"
+ date="2014-06-11T17:22:12Z"
+ content="""
+@martin, to the best of my knowledge and testing, what you're proposing `git annex add` do in this case is identical to what it already happens to do, except for the message displayed.
+
+Do you have an example of it not doing that?
+
+We seem to be talking past one-another, since I've now said three times this is what it does. And I've tested it twice.
+
+I don't think that the current behavior of add, or your suggested behavior (which again, happens to be nearly identical) is sufficient to close this bug report with.
+"""]]

@@ -1,6 +1,6 @@
 {- metadata based branch views
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -102,7 +102,7 @@ refineView origview = checksize . calc Unchanged origview
 			let (components', viewchanges) = runWriter $
 				mapM (\c -> updateViewComponent c field vf) (viewComponents view)
 			    viewchange = if field `elem` map viewField (viewComponents origview)
-			    	then maximum viewchanges
+				then maximum viewchanges
 				else Narrowing
 			in (view { viewComponents = components' }, viewchange)
 		| otherwise = 
@@ -207,7 +207,7 @@ viewComponentMatcher :: ViewComponent -> (MetaData -> Maybe [MetaValue])
 viewComponentMatcher viewcomponent = \metadata -> 
 	matcher (currentMetaDataValues metafield metadata)
   where
-  	metafield = viewField viewcomponent
+	metafield = viewField viewcomponent
 	matcher = case viewFilter viewcomponent of
 		FilterValues s -> \values -> setmatches $
 			S.intersection s values
@@ -236,8 +236,8 @@ toViewPath = concatMap escapeslash . fromMetaValue
 fromViewPath :: FilePath -> MetaValue
 fromViewPath = toMetaValue . deescapeslash []
   where
-  	deescapeslash s [] = reverse s
-  	deescapeslash s (c:cs)
+	deescapeslash s [] = reverse s
+	deescapeslash s (c:cs)
 		| c == pseudoSlash = case cs of
 			(c':cs')
 				| c' == pseudoSlash -> deescapeslash (pseudoSlash:s) cs'
@@ -340,19 +340,21 @@ applyView' mkviewedfile getfilemetadata view = do
 	genViewBranch view $ do
 		uh <- inRepo Git.UpdateIndex.startUpdateIndex
 		hasher <- inRepo hashObjectStart
-		forM_ l $ \f ->
-			go uh hasher f =<< Backend.lookupFile f
+		forM_ l $ \f -> do
+			relf <- getTopFilePath <$> inRepo (toTopFilePath f)
+			go uh hasher relf =<< Backend.lookupFile f
 		liftIO $ do
 			hashObjectStop hasher
 			void $ stopUpdateIndex uh
 			void clean
   where
 	genviewedfiles = viewedFiles view mkviewedfile -- enables memoization
-	go uh hasher f (Just (k, _)) = do
+	go uh hasher f (Just k) = do
 		metadata <- getCurrentMetaData k
 		let metadata' = getfilemetadata f `unionMetaData` metadata
 		forM_ (genviewedfiles f metadata') $ \fv -> do
-			stagesymlink uh hasher fv =<< inRepo (gitAnnexLink fv k)
+			f' <- fromRepo $ fromTopFilePath $ asTopFilePath fv
+			stagesymlink uh hasher f' =<< calcRepo (gitAnnexLink f' k)
 	go uh hasher f Nothing
 		| "." `isPrefixOf` f = do
 			s <- liftIO $ getSymbolicLinkStatus f
@@ -410,19 +412,19 @@ withViewChanges addmeta removemeta = do
   where
 	handleremovals item
 		| DiffTree.srcsha item /= nullSha =
-			handle item removemeta
+			handlechange item removemeta
 				=<< catKey (DiffTree.srcsha item) (DiffTree.srcmode item)
 		| otherwise = noop
 	handleadds makeabs item
 		| DiffTree.dstsha item /= nullSha = 
-			handle item addmeta
+			handlechange item addmeta
 				=<< ifM isDirect
 					( catKey (DiffTree.dstsha item) (DiffTree.dstmode item)
 					-- optimisation
 					, isAnnexLink $ makeabs $ DiffTree.file item
 					)
 		| otherwise = noop
-	handle item a = maybe noop
+	handlechange item a = maybe noop
 		(void . commandAction . a (getTopFilePath $ DiffTree.file item))
 
 {- Generates a branch for a view. This is done using a different index
@@ -433,7 +435,7 @@ genViewBranch :: View -> Annex () -> Annex Git.Branch
 genViewBranch view a = withIndex $ do
 	a
 	let branch = branchView view
-	void $ inRepo $ Git.Branch.commit True (fromRef branch) branch []
+	void $ inRepo $ Git.Branch.commit Git.Branch.AutomaticCommit True (fromRef branch) branch []
 	return branch
 
 {- Runs an action using the view index file.

@@ -1,8 +1,8 @@
 {- Simple Base64 access
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 module Utility.Base64 (toB64, fromB64Maybe, fromB64) where

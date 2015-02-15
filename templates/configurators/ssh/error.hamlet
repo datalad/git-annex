@@ -1,11 +1,13 @@
-<div .span9 .hero-unit>
-  <h2>
-    <i .icon-warning-sign></i> Failed to make repository
-  <p>
-    Something went wrong setting up the repository on the remote server.
-  <p>
-    Transcript:
-    <pre>
-      #{msg}
-  <p>
-    To retry setting up the repository, reload this page.
+<div .col-sm-9>
+  <div .content-box>
+    <h2>
+      <span .glyphicon .glyphicon-warning-sign>
+      \ Failed to make repository
+    <p>
+      Something went wrong setting up the repository on the remote server.
+    <p>
+      Transcript:
+      <pre>
+        #{msg}
+    <p>
+      To retry setting up the repository, reload this page.

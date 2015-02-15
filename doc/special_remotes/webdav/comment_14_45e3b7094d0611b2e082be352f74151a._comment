@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://olivier.mehani.name/"
+ nickname="olivier-mehani"
+ subject="comment 14"
+ date="2014-11-05T22:57:21Z"
+ content="""
+I have a similar problem to Maarten's, with some potential differences:
+* The WebDAV server is actually an ownCloud 7 instance;
+* The WebDAV server's SSL cert is issued by CAcert (whose root keys are otherwise installed on my system);
+* The cetificate lists the WebDAV VHost's name as an Subject Alt Name rather than its Common Name.
+
+    $ WEBDAV_USERNAME=shtrom WEBDAV_PASSWORD=correcthorsebatterystaple git annex initremote owncloud type=webdav url=https://owncloud/remote.php/webdav/annexdav chunk=10mb encryption=none
+    initremote owncloud (testing WebDAV server...)
+    git-annex: WebDAV failed to write file: TlsException (HandshakeFailed (Error_Protocol (\"certificate rejected: [NameMismatch \\"owncloud\\"]\",True,CertificateUnknown))): user error
+failed
+    git-annex: initremote: 1 failed
+
+"""]]

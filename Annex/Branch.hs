@@ -1,6 +1,6 @@
 {- management of the git-annex branch
  -
- - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -25,9 +25,11 @@ module Annex.Branch (
 	performTransitions,
 ) where
 
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy as L
 import qualified Data.Set as S
 import qualified Data.Map as M
+import Data.Bits.Utils
+import Control.Concurrent (threadDelay)
 
 import Common.Annex
 import Annex.BranchState
@@ -48,9 +50,11 @@ import Annex.Perms
 import Logs
 import Logs.Transitions
 import Logs.Trust.Pure
+import Logs.Difference.Pure
 import Annex.ReplaceFile
 import qualified Annex.Queue
 import Annex.Branch.Transitions
+import qualified Annex
 
 {- Name of the branch that is used to store git-annex's information. -}
 name :: Git.Ref
@@ -91,7 +95,7 @@ getBranch = maybe (hasOrigin >>= go >>= use) return =<< branchsha
 		fromMaybe (error $ "failed to create " ++ fromRef name)
 			<$> branchsha
 	go False = withIndex' True $
-		inRepo $ Git.Branch.commitAlways "branch created" fullname []
+		inRepo $ Git.Branch.commitAlways Git.Branch.AutomaticCommit "branch created" fullname []
 	use sha = do
 		setIndexSha sha
 		return sha
@@ -159,6 +163,7 @@ updateTo pairs = do
 			<$> getLocal transitionsLog
 		unless (null branches) $ do
 			showSideAction merge_desc
+			mapM_ checkBranchDifferences refs
 			mergeIndex jl refs
 		let commitrefs = nub $ fullname:refs
 		unlessM (handleTransitions jl localtransitions commitrefs) $ do
@@ -199,7 +204,7 @@ getHistorical :: RefDate -> FilePath -> Annex String
 getHistorical date = getRef (Git.Ref.dateRef fullname date)
 
 getRef :: Ref -> FilePath -> Annex String
-getRef ref file = withIndex $ L.unpack <$> catFile ref file
+getRef ref file = withIndex $ decodeBS <$> catFile ref file
 
 {- Applies a function to modifiy the content of a file.
  -
@@ -217,7 +222,7 @@ set = setJournalFile
 commit :: String -> Annex ()
 commit = whenM journalDirty . forceCommit
 
-{- Commits the current index to the branch even without any journalleda
+{- Commits the current index to the branch even without any journalled
  - changes. -}
 forceCommit :: String -> Annex ()
 forceCommit message = lockJournal $ \jl -> do
@@ -228,30 +233,34 @@ forceCommit message = lockJournal $ \jl -> do
 
 {- Commits the staged changes in the index to the branch.
  - 
- - Ensures that the branch's index file is first updated to the state
+ - Ensures that the branch's index file is first updated to merge the state
  - of the branch at branchref, before running the commit action. This
  - is needed because the branch may have had changes pushed to it, that
  - are not yet reflected in the index.
- -
- - Also safely handles a race that can occur if a change is being pushed
- - into the branch at the same time. When the race happens, the commit will
- - be made on top of the newly pushed change, but without the index file
- - being updated to include it. The result is that the newly pushed
- - change is reverted. This race is detected and another commit made
- - to fix it.
  - 
  - The branchref value can have been obtained using getBranch at any
  - previous point, though getting it a long time ago makes the race
  - more likely to occur.
+ -
+ - Note that changes may be pushed to the branch at any point in time!
+ - So, there's a race. If the commit is made using the newly pushed tip of
+ - the branch as its parent, and that ref has not yet been merged into the
+ - index, then the result is that the commit will revert the pushed
+ - changes, since they have not been merged into the index. This race
+ - is detected and another commit made to fix it.
+ -
+ - (It's also possible for the branch to be overwritten,
+ - losing the commit made here. But that's ok; the data is still in the
+ - index and will get committed again later.)
  -}
 commitIndex :: JournalLocked -> Git.Ref -> String -> [Git.Ref] -> Annex ()
 commitIndex jl branchref message parents = do
 	showStoringStateAction
-	commitIndex' jl branchref message parents
-commitIndex' :: JournalLocked -> Git.Ref -> String -> [Git.Ref] -> Annex ()
-commitIndex' jl branchref message parents = do
+	commitIndex' jl branchref message message 0 parents
+commitIndex' :: JournalLocked -> Git.Ref -> String -> String -> Integer -> [Git.Ref] -> Annex ()
+commitIndex' jl branchref message basemessage retrynum parents = do
 	updateIndex jl branchref
-	committedref <- inRepo $ Git.Branch.commitAlways message fullname parents
+	committedref <- inRepo $ Git.Branch.commitAlways Git.Branch.AutomaticCommit message fullname parents
 	setIndexSha committedref
 	parentrefs <- commitparents <$> catObject committedref
 	when (racedetected branchref parentrefs) $
@@ -259,7 +268,8 @@ commitIndex' jl branchref message parents = do
   where
 	-- look for "parent ref" lines and return the refs
 	commitparents = map (Git.Ref . snd) . filter isparent .
-		map (toassoc . L.unpack) . L.lines
+		map (toassoc . decodeBS) . L.split newline
+	newline = c2w8 '\n'
 	toassoc = separate (== ' ')
 	isparent (k,_) = k == "parent"
 		
@@ -271,12 +281,16 @@ commitIndex' jl branchref message parents = do
 		| otherwise = True -- race!
 		
 	{- To recover from the race, union merge the lost refs
-	 - into the index, and recommit on top of the bad commit. -}
+	 - into the index. -}
 	fixrace committedref lostrefs = do
+		showSideAction "recovering from race"
+		let retrynum' = retrynum+1
+		-- small sleep to let any activity that caused
+		-- the race settle down
+		liftIO $ threadDelay (100000 + fromInteger retrynum')
 		mergeIndex jl lostrefs
-		commitIndex jl committedref racemessage [committedref]
-		
-	racemessage = message ++ " (recovery from race)"
+		let racemessage = basemessage ++ " (recovery from race #" ++ show retrynum' ++ "; expected commit parent " ++ show branchref ++ " but found " ++ show lostrefs ++ " )"
+		commitIndex' jl committedref racemessage basemessage retrynum' [committedref]
 
 {- Lists all files on the branch. There may be duplicates in the list. -}
 files :: Annex [FilePath]
@@ -332,7 +346,7 @@ withIndex :: Annex a -> Annex a
 withIndex = withIndex' False
 withIndex' :: Bool -> Annex a -> Annex a
 withIndex' bootstrapping a = do
-	f <- fromRepo gitAnnexIndex
+	f <- liftIO . absPath =<< fromRepo gitAnnexIndex
 	withIndexFile f $ do
 		checkIndexOnce $ unlessM (liftIO $ doesFileExist f) $ do
 			unless bootstrapping create
@@ -387,19 +401,40 @@ stageJournal jl = withIndex $ do
 	prepareModifyIndex jl
 	g <- gitRepo
 	let dir = gitAnnexJournalDir g
-	fs <- getJournalFiles jl
-	liftIO $ do
+	(jlogf, jlogh) <- openjlog
+	withJournalHandle $ \jh -> do
 		h <- hashObjectStart g
 		Git.UpdateIndex.streamUpdateIndex g
-			[genstream dir h fs]
+			[genstream dir h jh jlogh]
 		hashObjectStop h
-	return $ liftIO $ mapM_ (removeFile . (dir </>)) fs
+	return $ cleanup dir jlogh jlogf
   where
-	genstream dir h fs streamer = forM_ fs $ \file -> do
-		let path = dir </> file
-		sha <- hashFile h path
-		streamer $ Git.UpdateIndex.updateIndexLine
-			sha FileBlob (asTopFilePath $ fileJournal file)
+	genstream dir h jh jlogh streamer = do
+		v <- readDirectory jh
+		case v of
+			Nothing -> return ()
+			Just file -> do
+				unless (dirCruft file) $ do
+					let path = dir </> file
+					sha <- hashFile h path
+					hPutStrLn jlogh file
+					streamer $ Git.UpdateIndex.updateIndexLine
+						sha FileBlob (asTopFilePath $ fileJournal file)
+				genstream dir h jh jlogh streamer
+	-- Clean up the staged files, as listed in the temp log file.
+	-- The temp file is used to avoid needing to buffer all the
+	-- filenames in memory.
+	cleanup dir jlogh jlogf = do
+		hFlush jlogh
+		hSeek jlogh AbsoluteSeek 0
+		stagedfs <- lines <$> hGetContents jlogh
+		mapM_ (removeFile . (dir </>)) stagedfs
+		hClose jlogh
+		nukeFile jlogf
+	openjlog = do
+		tmpdir <- fromRepo gitAnnexTmpMiscDir
+		createAnnexDirectory tmpdir
+		liftIO $ openTempFile tmpdir "jlog"
 
 {- This is run after the refs have been merged into the index,
  - but before the result is committed to the branch.
@@ -431,8 +466,8 @@ handleTransitions jl localts refs = do
 			ignoreRefs untransitionedrefs
 			return True
   where
-  	getreftransition ref = do
-		ts <- parseTransitionsStrictly "remote" . L.unpack
+	getreftransition ref = do
+		ts <- parseTransitionsStrictly "remote" . decodeBS
 			<$> catFile ref transitionsLog
 		return (ref, ts)
 
@@ -447,7 +482,7 @@ ignoreRefs rs = do
 getIgnoredRefs :: Annex (S.Set Git.Ref)
 getIgnoredRefs = S.fromList . mapMaybe Git.Sha.extractSha . lines <$> content
   where
-  	content = do
+	content = do
 		f <- fromRepo gitAnnexIgnoredRefs
 		liftIO $ catchDefaultIO "" $ readFile f
 
@@ -469,13 +504,13 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 		Annex.Queue.flush
 		if neednewlocalbranch
 			then do
-				committedref <- inRepo $ Git.Branch.commitAlways message fullname transitionedrefs
+				committedref <- inRepo $ Git.Branch.commitAlways Git.Branch.AutomaticCommit message fullname transitionedrefs
 				setIndexSha committedref
 			else do
 				ref <- getBranch
 				commitIndex jl ref message (nub $ fullname:transitionedrefs)
   where
-  	message
+	message
 		| neednewlocalbranch && null transitionedrefs = "new branch for transition " ++ tdesc
 		| otherwise = "continuing transition " ++ tdesc
 	tdesc = show $ map describeTransition $ transitionList ts
@@ -514,3 +549,11 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 				apply rest hasher file content' trustmap
 			PreserveFile ->
 				apply rest hasher file content trustmap
+
+checkBranchDifferences :: Git.Ref -> Annex ()
+checkBranchDifferences ref = do
+	theirdiffs <- allDifferences . parseDifferencesLog . decodeBS
+		<$> catFile ref differenceLog
+	mydiffs <- annexDifferences <$> Annex.getGitConfig
+	when (theirdiffs /= mydiffs) $
+		error "Remote repository is tuned in incompatable way; cannot be merged with local repository."

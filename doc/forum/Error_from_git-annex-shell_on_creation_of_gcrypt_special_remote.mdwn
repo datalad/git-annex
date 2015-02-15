@@ -1,0 +1,28 @@
+I just created a gcrypt special remote and got an error from (I think) `git-annex-shell`, though my local git-annex didn't complain and seemed to think the creation went okay.
+
+    annex $ ga initremote ma type=gcrypt encryption=hybrid gitrepo=ssh://ma/meta/s/spw/local/annex keyid=3B6D411B                                                  
+    (merging synced/git-annex into git-annex...)
+    (Recording state in git...)
+    initremote ma (encryption setup) (hybrid cipher with gpg key 0F56D0553B6D411B) gcrypt: Development version -- Repository format MAY CHANGE
+    gcrypt: Repository not found: ssh://ma/meta/s/spw/local/annex
+    gcrypt: Development version -- Repository format MAY CHANGE
+    gcrypt: Repository not found: ssh://ma/meta/s/spw/local/annex
+    gcrypt: Setting up new repository
+    gcrypt: Remote ID is :id:icUy+qU392R5L5H7g8Yk
+    Counting objects: 111456, done.
+    Compressing objects: 100% (74045/74045), done.
+    Total 111456 (delta 59312), reused 85857 (delta 33717)
+    gcrypt: Encrypting to:  -r 0F56D0553B6D411B
+    gcrypt: Requesting manifest signature
+    To gcrypt::ssh://ma/meta/s/spw/local/annex
+     * [new branch]      git-annex -> git-annex
+    fatal: What do you think I am? A shell?
+    git-annex-shell: git-shell failed
+    ok
+    (Recording state in git...)
+
+Further `git annex sync ma` runs go off without a hitch and the master branch gets pushed a synced/master, though it didn't get pushed on this initial creation as can be seen from the above output.
+
+Is it a bug that my local git-annex said "ok" when there was an error, or is this just a case of my local git-annex falling back to rsync instead of git-annex-shell because I didn't set up my $PATH properly on the remote?  Should I be worried that my gcrypt repo wasn't set up correctly and thus can't be trusted to hold my annexed data and metadata?  Thanks.
+
+Local git-annex: 5.20141125.  Remote git-annex (standalone build): 5.20150113-gcf247cf.

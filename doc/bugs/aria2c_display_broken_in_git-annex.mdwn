@@ -1,0 +1,147 @@
+[[!meta title="aria2c output very verbose (non-console mode)"]]
+[[!tag confirmed]]
+
+### Please describe the problem.
+
+Instead of displaying what are probably carriage returns, git-annex strips those out and outputs a *lot* of lines when downloading stuff through aria2c. On small downloads, it's not a big deal, but on large downloads it can flood the screen pretty badly.
+
+### What steps will reproduce the problem?
+
+Just download a torrent with git-annex.
+
+### What version of git-annex are you using? On what operating system?
+
+`5.20150205-gbf9058a` on current debian jessie.
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+anarcat@marcos:iso(master +)$ /srv/downloads.kitenet.net/git-annex/linux/current/git-annex.linux/git-annex addurl http://images.kali.org/kali-linux-1.1.0-amd64.torrent
+(downloading torrent file...)
+--2015-02-09 22:12:51--  http://images.kali.org/kali-linux-1.1.0-amd64.torrent
+Résolution de images.kali.org (images.kali.org)… 50.7.37.130
+Connexion à images.kali.org (images.kali.org)|50.7.37.130|:80… connecté.
+requête HTTP transmise, en attente de la réponse… 200 OK
+Taille : 233152 (228K) [application/octet-stream]
+Sauvegarde en : « ../.git/annex/misctmp/torrent32659 »
+
+100%[=====================================================================================================================================================================================================>] 233 152      610KB/s   ds 0,4s
+
+2015-02-09 22:12:52 (610 KB/s) — « ../.git/annex/misctmp/torrent32659 » sauvegardé [233152/233152]
+
+addurl images.kali.org_kali_linux_1.1.0_amd64.torrent/kali_linux_1.1.0_amd64.iso (from bittorrent)
+
+
+02/09 22:12:52 [NOTICE] IPv4 DHT: listening on UDP port 6940
+
+02/09 22:12:52 [ERROR] Erreur d'intÃ©gritÃ© dÃ©tectÃ©e. fichier=../.git/annex/misctmp/URL--http&c%%images.kali.org%kali-linux-1.1.0-amd64.torrent/kali-linux-1.1.0-amd64
+
+02/09 22:12:52 [NOTICE] IPv4 BitTorrent: listening on TCP port 6923
+
+02/09 22:12:52 [NOTICE] IPv6 BitTorrent: listening on TCP port 6923
+[#066a28 0B/2.8GiB(0%) CN:0 SD:0 DL:0B]
+[#066a28 0B/2.8GiB(0%) CN:44 SD:0 DL:0B]
+[#066a28 0B/2.8GiB(0%) CN:44 SD:0 DL:0B]
+[#066a28 0B/2.8GiB(0%) CN:44 SD:1 DL:0B]
+[#066a28 0B/2.8GiB(0%) CN:44 SD:2 DL:0B]
+[#066a28 16KiB/2.8GiB(0%) CN:44 SD:2 DL:11KiB ETA:72h44m54s]
+[#066a28 32KiB/2.8GiB(0%) CN:44 SD:4 DL:11KiB ETA:72h55m47s]
+[#066a28 48KiB/2.8GiB(0%) CN:44 SD:5 DL:10KiB ETA:79h7m17s]
+[#066a28 64KiB/2.8GiB(0%) CN:49 SD:6 DL:10KiB ETA:77h27m]
+[#066a28 96KiB/2.8GiB(0%) CN:47 SD:6 DL:13KiB ETA:60h20m41s]
+[#066a28 160KiB/2.8GiB(0%) CN:45 SD:6 DL:20KiB ETA:41h20m43s]
+[#066a28 304KiB/2.8GiB(0%) CN:45 SD:6 DL:33KiB ETA:24h28m29s]
+[#066a28 384KiB/2.8GiB(0%) CN:45 SD:6 DL:38KiB ETA:21h34m21s]
+[#066a28 416KiB/2.8GiB(0%) CN:44 SD:6 DL:37KiB ETA:21h54m17s]
+[#066a28 512KiB/2.8GiB(0%) CN:44 SD:6 DL:42KiB ETA:19h26m19s]
+[#066a28 544KiB/2.8GiB(0%) CN:44 SD:6 DL:41KiB ETA:19h48m32s]
+[#066a28 624KiB/2.8GiB(0%) CN:44 SD:6 DL:44KiB ETA:18h38m8s]
+[#066a28 720KiB/2.8GiB(0%) CN:44 SD:6 DL:52KiB ETA:15h42m33s]
+[#066a28 736KiB/2.8GiB(0%) CN:44 SD:6 DL:50KiB ETA:16h30m42s]
+[#066a28 768KiB/2.8GiB(0%) CN:44 SD:7 DL:52KiB ETA:15h42m44s]
+[#066a28 896KiB/2.8GiB(0%) CN:44 SD:7 DL:57KiB ETA:14h20m4s]
+[#066a28 1.0MiB/2.8GiB(0%) CN:44 SD:7 DL:69KiB ETA:11h58m54s]
+[#066a28 1.1MiB/2.8GiB(0%) CN:44 SD:7 DL:79KiB ETA:10h21m22s]
+[#066a28 1.2MiB/2.8GiB(0%) CN:44 SD:7 DL:87KiB ETA:9h24m15s]
+[#066a28 1.4MiB/2.8GiB(0%) CN:44 SD:6 DL:90KiB ETA:9h8m26s]
+[#066a28 1.4MiB/2.8GiB(0%) CN:44 SD:6 DL:88KiB ETA:9h23m40s]
+[#066a28 1.5MiB/2.8GiB(0%) CN:44 SD:6 DL:85KiB ETA:9h41m21s]
+[#066a28 1.6MiB/2.8GiB(0%) CN:44 SD:6 DL:89KiB ETA:9h12m17s]
+[#066a28 1.6MiB/2.8GiB(0%) CN:44 SD:6 DL:86KiB ETA:9h32m9s]
+[#066a28 1.7MiB/2.8GiB(0%) CN:44 SD:6 DL:85KiB UL:451KiB(288KiB) ETA:9h37m58s]
+[#066a28 1.8MiB/2.8GiB(0%) CN:44 SD:6 DL:89KiB UL:168KiB(288KiB) ETA:9h16m53s]
+[#066a28 1.8MiB/2.8GiB(0%) CN:44 SD:6 DL:84KiB UL:105KiB(288KiB) ETA:9h47m6s]
+[#066a28 1.8MiB/2.8GiB(0%) CN:44 SD:6 DL:89KiB UL:76KiB(288KiB) ETA:9h16m44s]
+[#066a28 1.9MiB/2.8GiB(0%) CN:44 SD:7 DL:85KiB UL:59KiB(288KiB) ETA:9h36m53s]
+[#066a28 1.9MiB/2.8GiB(0%) CN:44 SD:7 DL:79KiB UL:49KiB(288KiB) ETA:10h24m56s]
+[#066a28 2.1MiB/2.8GiB(0%) CN:44 SD:7 DL:80KiB UL:42KiB(288KiB) ETA:10h15m19s]
+[#066a28 2.2MiB/2.8GiB(0%) CN:44 SD:7 DL:75KiB UL:68KiB(544KiB) ETA:10h56m]
+[#066a28 2.3MiB/2.8GiB(0%) CN:44 SD:7 DL:75KiB UL:60KiB(544KiB) ETA:10h54m12s]
+[#066a28 2.4MiB/2.8GiB(0%) CN:44 SD:7 DL:70KiB UL:54KiB(544KiB) ETA:11h39m51s]
+[#066a28 2.4MiB/2.8GiB(0%) CN:44 SD:7 DL:71KiB UL:49KiB(544KiB) ETA:11h29m45s]
+[#066a28 2.6MiB/2.8GiB(0%) CN:44 SD:7 DL:74KiB UL:44KiB(544KiB) ETA:11h1m53s]
+[#066a28 2.6MiB/2.8GiB(0%) CN:44 SD:7 DL:73KiB UL:41KiB(544KiB) ETA:11h14m27s]
+[#066a28 2.7MiB/2.8GiB(0%) CN:44 SD:7 DL:76KiB UL:38KiB(544KiB) ETA:10h52m4s]
+[#066a28 2.7MiB/2.8GiB(0%) CN:44 SD:7 DL:73KiB UL:19KiB(544KiB) ETA:11h18m54s]
+[#066a28 2.8MiB/2.8GiB(0%) CN:44 SD:7 DL:78KiB UL:27KiB(544KiB) ETA:10h31m16s]
+[#066a28 2.9MiB/2.8GiB(0%) CN:44 SD:7 DL:74KiB UL:25KiB(544KiB) ETA:11h7m40s]
+[#066a28 2.9MiB/2.8GiB(0%) CN:44 SD:7 DL:72KiB UL:22KiB(544KiB) ETA:11h22m19s]
+[#066a28 3.0MiB/2.8GiB(0%) CN:44 SD:7 DL:77KiB UL:41KiB(800KiB) ETA:10h42m53s]
+[#066a28 3.0MiB/2.8GiB(0%) CN:44 SD:7 DL:79KiB UL:38KiB(800KiB) ETA:10h24m56s]
+[#066a28 3.2MiB/2.8GiB(0%) CN:44 SD:7 DL:82KiB UL:35KiB(800KiB) ETA:10h4m14s]
+[#066a28 3.2MiB/2.8GiB(0%) CN:44 SD:7 DL:76KiB UL:72KiB(800KiB) ETA:10h44m14s]
+[#066a28 3.2MiB/2.8GiB(0%) CN:44 SD:7 DL:69KiB UL:113KiB(1.0MiB) ETA:11h48m20s]
+[#066a28 3.3MiB/2.8GiB(0%) CN:44 SD:8 DL:69KiB UL:92KiB(1.0MiB) ETA:11h54m37s]
+[#066a28 3.4MiB/2.8GiB(0%) CN:44 SD:8 DL:73KiB UL:78KiB(1.0MiB) ETA:11h17m38s]
+[#066a28 3.6MiB/2.8GiB(0%) CN:44 SD:8 DL:78KiB UL:67KiB(1.0MiB) ETA:10h27m51s]
+[#066a28 3.7MiB/2.8GiB(0%) CN:44 SD:9 DL:76KiB UL:59KiB(1.0MiB) ETA:10h46m10s]
+[#066a28 3.7MiB/2.8GiB(0%) CN:44 SD:9 DL:72KiB UL:53KiB(1.0MiB) ETA:11h21m24s]
+[#066a28 3.8MiB/2.8GiB(0%) CN:44 SD:10 DL:75KiB UL:72KiB(1.2MiB) ETA:10h55m4s]
+[#066a28 3.9MiB/2.8GiB(0%) CN:44 SD:10 DL:74KiB UL:66KiB(1.2MiB) ETA:11h9m6s]
+[#066a28 4.0MiB/2.8GiB(0%) CN:44 SD:10 DL:80KiB UL:62KiB(1.3MiB) ETA:10h12m8s]
+[#066a28 4.1MiB/2.8GiB(0%) CN:44 SD:10 DL:84KiB UL:58KiB(1.3MiB) ETA:9h45m9s]
+[#066a28 4.2MiB/2.8GiB(0%) CN:44 SD:9 DL:88KiB UL:54KiB(1.3MiB) ETA:9h17m20s]
+[#066a28 4.2MiB/2.8GiB(0%) CN:44 SD:9 DL:83KiB UL:46KiB(1.3MiB) ETA:9h53m47s]
+[#066a28 4.3MiB/2.8GiB(0%) CN:44 SD:8 DL:75KiB UL:42KiB(1.3MiB) ETA:10h55m25s]
+[#066a28 4.4MiB/2.8GiB(0%) CN:44 SD:8 DL:82KiB UL:39KiB(1.3MiB) ETA:10h3m52s]
+[#066a28 4.4MiB/2.8GiB(0%) CN:44 SD:7 DL:80KiB UL:36KiB(1.3MiB) ETA:10h18m43s]
+[#066a28 4.4MiB/2.8GiB(0%) CN:44 SD:7 DL:76KiB UL:53KiB(1.5MiB) ETA:10h49m36s]
+[#066a28 4.4MiB/2.8GiB(0%) CN:44 SD:7 DL:66KiB UL:48KiB(1.5MiB) ETA:12h22m22s]
+[#066a28 4.5MiB/2.8GiB(0%) CN:44 SD:7 DL:57KiB UL:43KiB(1.5MiB) ETA:14h27m44s]
+[#066a28 4.5MiB/2.8GiB(0%) CN:44 SD:7 DL:55KiB UL:39KiB(1.5MiB) ETA:14h52m9s]
+[#066a28 4.5MiB/2.8GiB(0%) CN:44 SD:8 DL:52KiB UL:37KiB(1.5MiB) ETA:15h48m10s]
+[#066a28 4.6MiB/2.8GiB(0%) CN:44 SD:8 DL:50KiB UL:21KiB(1.5MiB) ETA:16h13m54s]
+[#066a28 4.6MiB/2.8GiB(0%) CN:44 SD:9 DL:42KiB UL:30KiB(1.5MiB) ETA:19h24m47s]
+[#066a28 4.6MiB/2.8GiB(0%) CN:44 SD:9 DL:41KiB UL:53KiB(1.8MiB) ETA:19h44m57s]
+[#066a28 4.7MiB/2.8GiB(0%) CN:44 SD:9 DL:32KiB UL:48KiB(1.8MiB) ETA:25h20m56s]
+[#066a28 4.7MiB/2.8GiB(0%) CN:44 SD:10 DL:38KiB UL:44KiB(1.8MiB) ETA:21h24m33s]
+[#066a28 4.8MiB/2.8GiB(0%) CN:44 SD:10 DL:34KiB UL:40KiB(1.8MiB) ETA:23h45m37s]
+[#066a28 4.8MiB/2.8GiB(0%) CN:48 SD:10 DL:31KiB UL:56KiB(2.0MiB) ETA:26h11m56s]
+[#066a28 4.8MiB/2.8GiB(0%) CN:46 SD:10 DL:30KiB UL:52KiB(2.0MiB) ETA:27h15m40s]
+[#066a28 4.9MiB/2.8GiB(0%) CN:44 SD:10 DL:32KiB UL:75KiB(2.0MiB) ETA:25h13m45s]
+[#066a28 4.9MiB/2.8GiB(0%) CN:44 SD:10 DL:36KiB UL:66KiB(2.0MiB) ETA:22h32m9s]
+[#066a28 4.9MiB/2.8GiB(0%) CN:44 SD:10 DL:35KiB UL:61KiB(2.0MiB) ETA:23h9m10s]
+[#066a28 5.0MiB/2.8GiB(0%) CN:44 SD:9 DL:36KiB UL:80KiB(2.3MiB) ETA:22h43m56s]
+[#066a28 5.0MiB/2.8GiB(0%) CN:44 SD:9 DL:35KiB UL:69KiB(2.3MiB) ETA:23h6m29s]
+[#066a28 5.1MiB/2.8GiB(0%) CN:44 SD:10 DL:37KiB UL:62KiB(2.3MiB) ETA:21h58m37s]
+[#066a28 5.1MiB/2.8GiB(0%) CN:44 SD:10 DL:38KiB UL:58KiB(2.3MiB) ETA:21h19m1s]
+[#066a28 5.1MiB/2.8GiB(0%) CN:49 SD:12 DL:35KiB UL:55KiB(2.3MiB) ETA:23h3s]
+[#066a28 5.2MiB/2.8GiB(0%) CN:48 SD:11 DL:38KiB UL:48KiB(2.3MiB) ETA:21h41m12s]
+[#066a28 5.2MiB/2.8GiB(0%) CN:45 SD:11 DL:32KiB UL:64KiB(2.6MiB) ETA:25h8m51s]
+[#066a28 5.2MiB/2.8GiB(0%) CN:44 SD:12 DL:32KiB UL:59KiB(2.6MiB) ETA:25h17m48s]
+^C
+anarcat@marcos:iso(master +%)$ aria2c kali-linux-1.1.0-amd64.torrent
+
+02/09 22:17:16 [NOTICE] IPv4 DHT: listening on UDP port 6963
+
+02/09 22:17:16 [NOTICE] IPv4 BitTorrent: listening on TCP port 6950
+
+02/09 22:17:16 [NOTICE] IPv6 BitTorrent: listening on TCP port 6950
+[#51d0f6 5.2MiB/2.8GiB(0%) CN:44 SD:12 DL:241KiB ETA:3h25m7s]
+
+# End of transcript or log.
+"""]]
+
+Could be caused by [[bittorrent_special_url_double-encoding]]? --[[anarcat]]

@@ -1,0 +1,9 @@
+Hi!
+
+I have a few questions according to deletion and dropping with git-annex:
+
+1. I couldn't figure out what unused files really are. What is *unused* related to? (Head of) branches? How does a file become unused?  
+2. If I'm working in indirect mode, I can safely `git rm` files and restore them later, by checking out the corresponding commit. Consider several git-annex repos being in sync, where the repository contains a nested directory structure. Is there a way to completely remove all deletes files within some directory (which might but not must be the root of the repo), that have been deleted for more than X days? For example I would want to run something like `git annex drop-deleted --from-folder some/subdirectory/ --older-than 5`. Is there a way to achieve this?
+3. Just like 2, is there a way to remove (the content of) all non-current *versions* of all file that are older than Y days?
+
+Thanks in advance!

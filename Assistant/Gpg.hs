@@ -1,6 +1,6 @@
 {- git-annex assistant gpg stuff
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,7 +20,7 @@ newUserId :: IO UserId
 newUserId = do
 	oldkeys <- secretKeys
 	username <- myUserName
-  	let basekeyname = username ++ "'s git-annex encryption key"
+	let basekeyname = username ++ "'s git-annex encryption key"
 	return $ Prelude.head $ filter (\n -> M.null $ M.filter (== n) oldkeys)
 		( basekeyname
 		: map (\n -> basekeyname ++ show n) ([2..] :: [Int])

@@ -1,0 +1,104 @@
+[[!comment format=mdwn
+ username="http://alan.petitepomme.net/"
+ nickname="Alan Schmitt"
+ subject="comment 14"
+ date="2014-04-04T11:07:31Z"
+ content="""
+I just discovered there were 30GB in this tmp directory. Here are the file names. It seems that the file names are partial (they are missing some characters: it seems most file names are missing the last 16 characters and the file extension). As I'm in dire need of disk space, I'm going to delete this files now.
+
+    schmitta@top-wifi ~/D/a/.g/a/tmp (GIT_DIR!)> pwd
+    /Users/schmitta/Documents/annex/.git/annex/tmp
+    schmitta@top-wifi ~/D/a/.g/a/tmp (GIT_DIR!)> ls -al
+    total 73802184
+    drwxr-xr-x  91 schmitta  staff        3094 16 mar 11:15 .
+    drwxr-xr-x  34 schmitta  staff        1156  4 avr 12:58 ..
+    -r--r--r--@  6 schmitta  staff   132882914  8 déc 20:17 12426.
+    -r--r--r--@  6 schmitta  staff   113471066  8 déc 20:15 12426.2-
+    -r--r--r--@  6 schmitta  staff   148673586  8 déc 20:24 12427.
+    -r--r--r--@  6 schmitta  staff    96197733  8 déc 20:09 12427.2-
+    -r--r--r--@  6 schmitta  staff   132882914  8 déc 20:17 12489.
+    -r--r--r--@  6 schmitta  staff   113471066  8 déc 20:15 12489.2-
+    -r--r--r--@  6 schmitta  staff   148673586  8 déc 20:24 12490.
+    -r--r--r--@  6 schmitta  staff    96197733  8 déc 20:09 12490.2-
+    -r--r--r--@  6 schmitta  staff   132882914  8 déc 20:17 12498.
+    -r--r--r--@  6 schmitta  staff   113471066  8 déc 20:15 12498.2-
+    -r--r--r--@  6 schmitta  staff   148673586  8 déc 20:24 12499.
+    -r--r--r--@  6 schmitta  staff    96197733  8 déc 20:09 12499.2-
+    -r--r--r--@  6 schmitta  staff   132882914  8 déc 20:17 12504.
+    -r--r--r--@  6 schmitta  staff   113471066  8 déc 20:15 12504.2-
+    -r--r--r--@  6 schmitta  staff   148673586  8 déc 20:24 12505.
+    -r--r--r--@  6 schmitta  staff    96197733  8 déc 20:09 12505.2-
+    -r--r--r--@  6 schmitta  staff   132882914  8 déc 20:17 12562.
+    -r--r--r--@  6 schmitta  staff   113471066  8 déc 20:15 12562.2-
+    -r--r--r--@  6 schmitta  staff   148673586  8 déc 20:24 12563.
+    -r--r--r--@  6 schmitta  staff    96197733  8 déc 20:09 12563.2-
+    -r--r--r--   2 schmitta  staff  1237391994 21 déc 19:27 BTSM With Flowerchild Li562
+    -r--r--r--   2 schmitta  staff  1097868668 18 déc 13:24 BTSM with Flowerchild 562
+    -r--r--r--   3 schmitta  staff   181962494  1 déc 05:19 Cosmos - A Personal Voyage - Episod422
+    -r--r--r--   3 schmitta  staff   199341564 17 déc 14:28 Cosmos - A Personal Voyage - Episod423
+    -r--r--r--   3 schmitta  staff   196677905  9 jan 08:36 Cosmos - A Personal Voyage - Episod424
+    -r--r--r--   3 schmitta  staff   196671683 26 déc 19:36 Cosmos - A Personal Voyage - Episod425
+    -r--r--r--   3 schmitta  staff   199297657 19 jan 14:33 Cosmos - A Personal Voyage - Episod426
+    -r--r--r--   3 schmitta  staff   194250261 18 jan 17:10 Cosmos - A Personal Voyage - Episod427
+    -r--r--r--   3 schmitta  staff   216726281 16 jan 16:26 Cosmos - A Personal Voyage - Episod428
+    -r--r--r--   3 schmitta  staff   204634401 16 jan 12:17 Cosmos - A Personal Voyage - Episod429
+    -r--r--r--   3 schmitta  staff   179412519 11 jan 11:29 Cosmos - A Personal Voyage - Episod430
+    -r--r--r--   3 schmitta  staff   181962494  1 déc 05:19 Cosmos - A Personal Voyage - Episod572
+    -r--r--r--   3 schmitta  staff   199341564 17 déc 14:28 Cosmos - A Personal Voyage - Episod573
+    -r--r--r--   3 schmitta  staff   196677905  9 jan 08:36 Cosmos - A Personal Voyage - Episod574
+    -r--r--r--   3 schmitta  staff   196671683 26 déc 19:36 Cosmos - A Personal Voyage - Episod575
+    -r--r--r--   3 schmitta  staff   199297657 19 jan 14:33 Cosmos - A Personal Voyage - Episod576
+    -r--r--r--   3 schmitta  staff   194250261 18 jan 17:10 Cosmos - A Personal Voyage - Episod577
+    -r--r--r--   3 schmitta  staff   216726281 16 jan 16:26 Cosmos - A Personal Voyage - Episod578
+    -r--r--r--   3 schmitta  staff   204634401 16 jan 12:17 Cosmos - A Personal Voyage - Episod579
+    -r--r--r--   3 schmitta  staff   179412519 11 jan 11:29 Cosmos - A Personal Voyage - Episod580
+    -r--r--r--   3 schmitta  staff   237284500 15 mai  2012 Cosmos - A Personal Voyage - Episode422
+    -r--r--r--   3 schmitta  staff   207386296 28 jan 18:39 Cosmos - A Personal Voyage - Episode423
+    -r--r--r--   3 schmitta  staff   194659898 28 jan 20:35 Cosmos - A Personal Voyage - Episode424
+    -r--r--r--   3 schmitta  staff   221944244 11 jan 07:18 Cosmos - A Personal Voyage - Episode425
+    -r--r--r--   3 schmitta  staff   237284500 15 mai  2012 Cosmos - A Personal Voyage - Episode572
+    -r--r--r--   3 schmitta  staff   207386296 28 jan 18:39 Cosmos - A Personal Voyage - Episode573
+    -r--r--r--   3 schmitta  staff   194659898 28 jan 20:35 Cosmos - A Personal Voyage - Episode574
+    -r--r--r--   3 schmitta  staff   221944244 11 jan 07:18 Cosmos - A Personal Voyage - Episode575
+    -r--r--r--   1 schmitta  staff   166417358 25 nov 08:47 Icy Plays - Kerbal Space Program - Better Than Starting Mann456
+    -r--r--r--   2 schmitta  staff  1110410229 28 déc 00:40 Kerbal Space Program - BTSM With Flowerchild Li562
+    -r--r--r--   1 schmitta  staff   898936971 26 déc 06:22 Let's Play Minecraft Better Than Wolves   Ep 10 _ HARDCORE _ Ooooh le petit mat572
+    -r--r--r--   1 schmitta  staff   816306596 27 déc 05:08 Let's Play Minecraft Better Than Wolves   Ep 11 _ HARDCORE _ Un peu de cannabis pour le moral 572
+    -r--r--r--   1 schmitta  staff   897143936 27 déc 10:42 Let's Play Minecraft Better Than Wolves   Ep 12 _ HARDCORE _ Chaud l'enf572
+    -r--r--r--   1 schmitta  staff   922364739 29 déc 08:30 Let's Play Minecraft Better Than Wolves   Ep 13 _ HARDCORE _ Walking dea572
+    -r--r--r--   1 schmitta  staff  1321555505  1 jan 02:15 Let's Play Minecraft Better Than Wolves   Ep 14 l HARDCORE l Couvre572
+    -r--r--r--   1 schmitta  staff   889592223  5 jan 02:07 Let's Play Minecraft Better Than Wolves   Ep 15 l HARDCORE l Pa572
+    -r--r--r--   1 schmitta  staff   153571799  6 jan 03:56 Let's Play Minecraft Better Than Wolves   Ep 16 l HARDCORE l Point de s572
+    -r--r--r--   1 schmitta  staff  1036932250  9 jan 07:36 Let's Play Minecraft Better Than Wolves   Ep 17 l HARDCORE l Satané meuh572
+    -r--r--r--   1 schmitta  staff  1289798767 11 jan 22:08 Let's Play Minecraft Better Than Wolves   Ep 18 l HARDCORE l Un Moulin572
+    -r--r--r--   1 schmitta  staff  1582120875 19 jan 15:39 Let's Play Minecraft Better Than Wolves   Ep 19 l HARDCORE l Explosion de ca572
+    -r--r--r--   1 schmitta  staff   728469432 13 fév 07:02 Let's Play Minecraft Better Than Wolves   Ep 2 _ HARDCORE _ Préparation pour l'explorat422
+    -r--r--r--   1 schmitta  staff   911653518 22 jan 13:35 Let's Play Minecraft Better Than Wolves   Ep 20 l HARDCORE l Minesha572
+    -r--r--r--   1 schmitta  staff  1377428597 28 jan 08:43 Let's Play Minecraft Better Than Wolves   Ep 21 l HARDCORE l Terreur en sous-sol o_O !572
+    -r--r--r--   1 schmitta  staff  1376224927  4 fév 03:24 Let's Play Minecraft Better Than Wolves   Ep 22 l HARDCORE l Machinerie infern572
+    -r--r--r--   1 schmitta  staff  1102293665 13 fév 03:56 Let's Play Minecraft Better Than Wolves   Ep 23 l HARDCORE l Piston chenil572
+    -r--r--r--   1 schmitta  staff  1835677068 19 fév 09:14 Let's Play Minecraft Better Than Wolves   Ep 24 l HARDCORE l Piston chenille et o_Oce572
+    -r--r--r--   1 schmitta  staff   753740284 30 déc 19:31 Let's Play Minecraft Better Than Wolves   Ep 3 _ HARDCORE _ First pioche en fer422
+    -r--r--r--   1 schmitta  staff  1019022279 30 déc 18:38 Let's Play Minecraft Better Than Wolves   Ep 5 _ HARDCORE _ Fonderie super desi572
+    -r--r--r--   1 schmitta  staff   788714805 30 déc 17:47 Let's Play Minecraft Better Than Wolves   Ep 6 _ HARDCORE _ Minage de la mor572
+    -r--r--r--   1 schmitta  staff   778987710 23 déc 19:56 Let's Play Minecraft Better Than Wolves   Ep 7 _ HARDCORE _ Diamant572
+    -r--r--r--   1 schmitta  staff   644564981 23 déc 23:06 Let's Play Minecraft Better Than Wolves   Ep 8 _ HARDCORE _ Et le poulet ma572
+    -r--r--r--   1 schmitta  staff   871173289 24 déc 10:44 Let's Play Minecraft Better Than Wolves   Ep 9 _ HARDCORE _ Araignée verte de la jun572
+    -r--------@  4 schmitta  staff   149520850 14 aoû  2010 OPLSS10-Mc422
+    -r--------@  4 schmitta  staff    95020824 14 aoû  2010 OPLSS10-Mc423
+    -r--------@  4 schmitta  staff    98980596  1 sep  2010 OPLSS10-Mc424
+    -r--------@  4 schmitta  staff   207525348  1 sep  2010 OPLSS10-Mc425
+    -r--------@  4 schmitta  staff   149520850 14 aoû  2010 OPLSS10-Mc534
+    -r--------@  4 schmitta  staff    95020824 14 aoû  2010 OPLSS10-Mc535
+    -r--------@  4 schmitta  staff    98980596  1 sep  2010 OPLSS10-Mc536
+    -r--------@  4 schmitta  staff   207525348  1 sep  2010 OPLSS10-Mc537
+    -r--------@  4 schmitta  staff   149520850 14 aoû  2010 OPLSS10-Mc572
+    -r--------@  4 schmitta  staff    95020824 14 aoû  2010 OPLSS10-Mc573
+    -r--------@  4 schmitta  staff    98980596  1 sep  2010 OPLSS10-Mc574
+    -r--------@  4 schmitta  staff   207525348  1 sep  2010 OPLSS10-Mc575
+    -r--r--r--@  2 schmitta  staff   150781568 10 mar 13:34 XD300-23_68HighlightsAResearchCntAugHuma469
+    -r--r--r--@  2 schmitta  staff   145745487 10 mar 13:36 XD300-24_68HighlightsAResearchCntAugHuma469
+    -r--r--r--@  2 schmitta  staff   142414085 10 mar 13:36 XD300-25_68HighlightsAResearchCntAugHuma469
+    -r--------@  2 schmitta  staff   548973365  7 jan 20:21 laumond-20120119449.mp4
+    -r--r--r--@  2 schmitta  staff  1820482781  8 mar 18:15 salt-020131469
+"""]]

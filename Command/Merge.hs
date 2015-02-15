@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2011, 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2011, 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -13,8 +13,8 @@ import qualified Annex.Branch
 import qualified Git.Branch
 import Command.Sync (prepMerge, mergeLocal)
 
-def :: [Command]
-def = [command "merge" paramNothing seek SectionMaintenance
+cmd :: [Command]
+cmd = [command "merge" paramNothing seek SectionMaintenance
 	"automatically merge changes from remotes"]
 
 seek :: CommandSeek

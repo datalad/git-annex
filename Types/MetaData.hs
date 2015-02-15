@@ -1,6 +1,6 @@
 {- git-annex general metadata
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -264,7 +264,9 @@ parseMetaData p = (,)
 instance Arbitrary MetaData where
 	arbitrary = do
 		size <- arbitrarySizedBoundedIntegral `suchThat` (< 500)
-		MetaData . M.fromList <$> vector size
+		MetaData . M.filterWithKey legal . M.fromList <$> vector size
+	  where
+		legal k _v = legalField $ fromMetaField k
 
 instance Arbitrary MetaValue where
 	arbitrary = MetaValue <$> arbitrary <*> arbitrary
@@ -288,4 +290,4 @@ prop_metadata_serialize f v m = and
 	, deserialize (serialize m') == Just m'
 	]
   where
-  	m' = removeEmptyFields m
+	m' = removeEmptyFields m

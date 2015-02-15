@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkYmMFDdf3GJ9Oba6NCVkzGc4JyB9WavMs"
+ nickname="Xinruo"
+ subject="comment 2"
+ date="2014-05-15T02:07:06Z"
+ content="""
+I think a better solution is to use http://git-annex.branchable.com/tips/metadata_driven_views/
+You can tag the files as favorites, then use get --metadata tag=favorites to get only favorites files.
+"""]]

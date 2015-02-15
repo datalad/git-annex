@@ -1,8 +1,8 @@
 {- querying quvi (import qualified)
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 {-# LANGUAGE OverloadedStrings #-}
@@ -22,6 +22,7 @@ data QuviVersion
 	= Quvi04
 	| Quvi09
 	| NoQuvi
+	deriving (Show)
 
 data Page = Page
 	{ pageTitle :: String
@@ -61,7 +62,8 @@ parseEnum s = Page
 	m = M.fromList $ map (separate (== '=')) $ lines s
 
 probeVersion :: IO QuviVersion
-probeVersion = examine <$> processTranscript "quvi" ["--version"] Nothing
+probeVersion = catchDefaultIO NoQuvi $
+	examine <$> processTranscript "quviaaa" ["--version"] Nothing
   where
 	examine (s, True)
 		| "quvi v0.4" `isInfixOf` s = Quvi04
@@ -113,7 +115,7 @@ supported Quvi04 url = boolSystem "quvi"
 supported Quvi09 url = (firstlevel <&&> secondlevel)
 		`catchNonAsync` (\_ -> return False)
   where
-  	firstlevel = case uriAuthority =<< parseURIRelaxed url of
+	firstlevel = case uriAuthority =<< parseURIRelaxed url of
 		Nothing -> return False
 		Just auth -> do
 			let domain = map toLower $ uriRegName auth

@@ -1,0 +1,23 @@
+Spent all day on some horrible timestamp issues on legacy systems. 
+
+On FAT, timestamps have a 2s granularity, which is ok, but then Linux adds
+a temporary higher resolution cache, which is lost on unmount. This
+confused git-annex since the mtimes seemed to change and it had to
+re-checksum half the files to get unconfused, which was not good.
+I found a way to use the inode sentinal file to detect when on FAT
+and put in a workaround, without degrading git-annex everywhere else.
+
+On Windows, time zones are a utter disaster; it changes the mtime it reports
+for files after the time zone has changed. Also there's a bug in the
+haskell time library which makes it return old time zone data after a time
+zone change. (I just finished developing a fix for that bug..)
+
+Left with nothing but a few sticks, I rubbed them together, and
+actually found a way to deal with this problem too. Scary details in
+[[bugs/Windows_file_timestamp_timezone_madness]]. While I've implemented
+it, it's stuck on a branch until I find a way to make git-annex notice when
+the timezone changes while it's running.
+
+----
+
+Today's work was sponsored by Svenne Krap.

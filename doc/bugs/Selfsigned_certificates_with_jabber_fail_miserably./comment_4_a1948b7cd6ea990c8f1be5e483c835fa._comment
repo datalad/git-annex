@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://xlogon.net/yminus"
+ nickname="http://xlogon.net/yminus"
+ subject="comment 4"
+ date="2014-05-08T21:12:49Z"
+ content="""
+When will this issue be fixed? Currently my Jabber account is on jabber.ccc.de.
+
+This is the error message:
+
+    Unable to connect to the Jabber server. Maybe you entered the wrong password? (Error message: host jabberd.jabber.ccc.de.:5222 failed: AuthenticationFailure (Element {elementName = Name {nameLocalName = \"failure\", nameNamespace = Just \"urn:ietf:params:xml:ns:xmpp-sasl\", namePrefix = Nothing}, elementAttributes = [], elementNodes = [NodeElement (Element {elementName = Name {nameLocalName = \"bad-protocol\", nameNamespace = Just \"urn:ietf:params:xml:ns:xmpp-sasl\", namePrefix = Nothing}, elementAttributes = [], elementNodes = []})]}); host jabberd.jabber.ccc.de.:80 failed: AuthenticationFailure (Element {elementName = Name {nameLocalName = \"failure\", nameNamespace = Just \"urn:ietf:params:xml:ns:xmpp-sasl\", namePrefix = Nothing}, elementAttributes = [], elementNodes = [NodeElement (Element {elementName = Name {nameLocalName = \"bad-protocol\", nameNamespace = Just \"urn:ietf:params:xml:ns:xmpp-sasl\", namePrefix = Nothing}, elementAttributes = [], elementNodes = []})]}))
+
+Can you advise me another trustworthy non-profit and free (free as in free beer\" as well as \"free as in free speech\") jabber server?
+"""]]

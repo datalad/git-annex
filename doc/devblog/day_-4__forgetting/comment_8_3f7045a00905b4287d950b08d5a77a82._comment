@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="stp"
+ ip="188.193.207.34"
+ subject="Any update on cleaning up commands?"
+ date="2014-03-21T16:32:43Z"
+ content="""
+Is there any update on cleaning up object/file references to objects/content not at all present and lost. I would love my git annex fsck --all to show current failures and not these old files all the time.
+Thanks
+"""]]

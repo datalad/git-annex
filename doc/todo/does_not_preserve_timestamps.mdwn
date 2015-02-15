@@ -1,0 +1,16 @@
+### Please describe the problem.
+I see that files are synced between my computers with git-annex but the timestamps do not match. The one that receives files always puts the current time of file creation on the file.
+
+### What steps will reproduce the problem?
+Install git-annex on two computers. Connect with XMPP. Then add cloud storage with shared encryption for transferring files. Since you want also backup, choose "full backup" as the type of cloud storage.
+
+
+### What version of git-annex are you using? On what operating system?
+Downloaded binary package dated 13/09/2014 amd64 Ubuntu 14.04.
+
+
+### Please provide any additional information below.
+
+Files are in sync. For example, I move a file from a directory to my synced annex directory. It contains timestamp of 01/01/2010 for example. Once the file gets transferred to the remote computer, it gets current time, for example 20/09/2014 rather than keeping 01/01/2010. 
+
+All computers are linux based, ext4 filesystems. File transfers are done through shared encryption rsync remote.

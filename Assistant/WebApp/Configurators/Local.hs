@@ -1,6 +1,6 @@
 {- git-annex assistant webapp configurators for making local repositories
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -14,12 +14,11 @@ import Assistant.WebApp.Gpg
 import Assistant.WebApp.MakeRemote
 import Assistant.Sync
 import Assistant.Restart
-import Annex.Init
+import Annex.MakeRepo
 import qualified Git
-import qualified Git.Construct
 import qualified Git.Config
 import qualified Git.Command
-import qualified Annex
+import qualified Git.Branch
 import Config.Files
 import Utility.FreeDesktop
 import Utility.DiskFree
@@ -27,17 +26,14 @@ import Utility.DiskFree
 import Utility.Mounts
 #endif
 import Utility.DataUnits
-import Utility.Network
 import Remote (prettyUUID)
 import Annex.UUID
-import Annex.Direct
 import Types.StandardGroups
 import Logs.PreferredContent
 import Logs.UUID
 import Utility.UserInfo
 import Config
 import Utility.Gpg
-import qualified Annex.Branch
 import qualified Remote.GCrypt as GCrypt
 import qualified Types.Remote
 
@@ -116,11 +112,11 @@ defaultRepositoryPath :: Bool -> IO FilePath
 defaultRepositoryPath firstrun = do
 #ifndef mingw32_HOST_OS
 	home <- myHomeDir
-	cwd <- liftIO getCurrentDirectory
-	if home == cwd && firstrun
+	currdir <- liftIO getCurrentDirectory
+	if home == currdir && firstrun
 		then inhome
-		else ifM (legit cwd <&&> canWrite cwd)
-			( return cwd
+		else ifM (legit currdir <&&> canWrite currdir)
+			( return currdir
 			, inhome
 			)
 #else
@@ -144,7 +140,7 @@ defaultRepositoryPath firstrun = do
 
 newRepositoryForm :: FilePath -> Hamlet.Html -> MkMForm RepositoryPath
 newRepositoryForm defpath msg = do
-	(pathRes, pathView) <- mreq (repositoryPathField True) ""
+	(pathRes, pathView) <- mreq (repositoryPathField True) (bfs "")
 		(Just $ T.pack $ addTrailingPathSeparator defpath)
 	let (err, errmsg) = case pathRes of
 		FormMissing -> (False, "")
@@ -179,7 +175,7 @@ getAndroidCameraRepositoryR :: Handler ()
 getAndroidCameraRepositoryR = 
 	startFullAssistant "/sdcard/DCIM" SourceGroup $ Just addignore	
   where
-  	addignore = do
+	addignore = do
 		liftIO $ unlessM (doesFileExist ".gitignore") $
 			writeFile ".gitignore" ".thumbnails"
 		void $ inRepo $
@@ -197,8 +193,7 @@ postNewRepositoryR = page "Add another repository" (Just Configuration) $ do
 		FormSuccess (RepositoryPath p) -> do
 			let path = T.unpack p
 			isnew <- liftIO $ makeRepo path False
-			u <- liftIO $ initRepo isnew True path Nothing
-			liftH $ liftAnnexOr () $ setStandardGroup u ClientGroup
+			u <- liftIO $ initRepo isnew True path Nothing (Just ClientGroup)
 			liftIO $ addAutoStartFile path
 			liftIO $ startAssistant path
 			askcombine u path
@@ -209,19 +204,26 @@ postNewRepositoryR = page "Add another repository" (Just Configuration) $ do
 		mainrepo <- fromJust . relDir <$> liftH getYesod
 		$(widgetFile "configurators/newrepository/combine")
 
+{- Ensure that a remote's description, group, etc are available by
+ - immediately pulling from it. Also spawns a sync to push to it as well. -}
+immediateSyncRemote :: Remote -> Assistant ()
+immediateSyncRemote r = do
+	currentbranch <- liftAnnex (inRepo Git.Branch.current)
+	void $ manualPull currentbranch [r]
+	syncRemote r
+
 getCombineRepositoryR :: FilePath -> UUID -> Handler Html
 getCombineRepositoryR newrepopath newrepouuid = do
-	r <- combineRepos newrepopath remotename
-	liftAssistant $ syncRemote r
+	liftAssistant . immediateSyncRemote =<< combineRepos newrepopath remotename
 	redirect $ EditRepositoryR $ RepoUUID newrepouuid
   where
 	remotename = takeFileName newrepopath
 
 selectDriveForm :: [RemovableDrive] -> Hamlet.Html -> MkMForm RemovableDrive
-selectDriveForm drives = renderBootstrap $ RemovableDrive
+selectDriveForm drives = renderBootstrap3 bootstrapFormLayout $ RemovableDrive
 	<$> pure Nothing
-	<*> areq (selectFieldList pairs `withNote` onlywritable) "Select drive:" Nothing
-	<*> areq textField "Use this directory on the drive:"
+	<*> areq (selectFieldList pairs `withNote` onlywritable) (bfs "Select drive:") Nothing
+	<*> areq textField (bfs "Use this directory on the drive:")
 		(Just $ T.pack gitAnnexAssistantDefaultDir)
   where
 	pairs = zip (map describe drives) (map mountPoint drives)
@@ -272,8 +274,8 @@ getConfirmAddDriveR drive = ifM (liftIO $ probeRepoExists dir)
 	, newrepo
 	)
   where
-  	dir = removableDriveRepository drive
-  	newrepo = do
+	dir = removableDriveRepository drive
+	newrepo = do
 		secretkeys <- sortBy (comparing snd) . M.toList
 			<$> liftIO secretKeys
 		page "Encrypt repository?" (Just Configuration) $
@@ -322,7 +324,7 @@ getFinishAddDriveR drive = go
 			return (u, r)
 	{- Making a new unencrypted repo, or combining with an existing one. -}
 	makeunencrypted = makewith $ \isnew -> (,)
-		<$> liftIO (initRepo isnew False dir $ Just remotename)
+		<$> liftIO (initRepo isnew False dir (Just remotename) Nothing)
 		<*> combineRepos dir remotename
 	makewith a = do
 		liftIO $ createDirectoryIfMissing True dir
@@ -332,10 +334,11 @@ getFinishAddDriveR drive = go
 			setConfig (ConfigKey "core.fsyncobjectfiles")
 				(Git.Config.boolConfig True)
 		(u, r) <- a isnew
-		liftAnnex $ setStandardGroup u TransferGroup
-		liftAssistant $ syncRemote r
+		when isnew $
+			liftAnnex $ defaultStandardGroup u TransferGroup
+		liftAssistant $ immediateSyncRemote r
 		redirect $ EditNewRepositoryR u
-  	mountpoint = T.unpack (mountPoint drive)
+	mountpoint = T.unpack (mountPoint drive)
 	dir = removableDriveRepository drive
 	remotename = takeFileName mountpoint
 
@@ -399,75 +402,12 @@ startFullAssistant path repogroup setup = do
 	webapp <- getYesod
 	url <- liftIO $ do
 		isnew <- makeRepo path False
-		u <- initRepo isnew True path Nothing
-		inDir path $ do
-			setStandardGroup u repogroup
-			fromMaybe noop setup
+		void $ initRepo isnew True path Nothing (Just repogroup)
+		inDir path $ fromMaybe noop setup
 		addAutoStartFile path
 		setCurrentDirectory path
 		fromJust $ postFirstRun webapp
 	redirect $ T.pack url
-
-{- Makes a new git repository. Or, if a git repository already
- - exists, returns False. -}
-makeRepo :: FilePath -> Bool -> IO Bool
-makeRepo path bare = ifM (probeRepoExists path)
-	( return False
-	, do
-		(transcript, ok) <-
-			processTranscript "git" (toCommand params) Nothing
-		unless ok $
-			error $ "git init failed!\nOutput:\n" ++ transcript
-		return True
-	)
-  where
-	baseparams = [Param "init", Param "--quiet"]
-	params
-		| bare = baseparams ++ [Param "--bare", File path]
-		| otherwise = baseparams ++ [File path]
-
-{- Runs an action in the git repository in the specified directory. -}
-inDir :: FilePath -> Annex a -> IO a
-inDir dir a = do
-	state <- Annex.new =<< Git.Config.read =<< Git.Construct.fromPath dir
-	Annex.eval state a
-
-{- Creates a new repository, and returns its UUID. -}
-initRepo :: Bool -> Bool -> FilePath -> Maybe String -> IO UUID
-initRepo True primary_assistant_repo dir desc = inDir dir $ do
-	initRepo' desc
-	{- Initialize the master branch, so things that expect
-	 - to have it will work, before any files are added. -}
-	unlessM (Git.Config.isBare <$> gitRepo) $
-		void $ inRepo $ Git.Command.runBool
-			[ Param "commit"
-			, Param "--quiet"
-			, Param "--allow-empty"
-			, Param "-m"
-			, Param "created repository"
-			]
-	{- Repositories directly managed by the assistant use direct mode.
-	 - 
-	 - Automatic gc is disabled, as it can be slow. Insted, gc is done
-	 - once a day.
-	 -}
-	when primary_assistant_repo $ do
-		setDirect True
-		inRepo $ Git.Command.run
-			[Param "config", Param "gc.auto", Param "0"]
-	getUUID
-{- Repo already exists, could be a non-git-annex repo though. -}
-initRepo False _ dir desc = inDir dir $ do
-	initRepo' desc
-	getUUID
-
-initRepo' :: Maybe String -> Annex ()
-initRepo' desc = unlessM isInitialized $ do
-	initialize desc
-	{- Ensure branch gets committed right away so it is
-	 - available for merging when a removable drive repo is being
-	 - added. -}
-	Annex.Branch.commit "update"
 
 {- Checks if the user can write to a directory.
  -
@@ -478,11 +418,6 @@ canWrite dir = do
 	tocheck <- ifM (doesDirectoryExist dir)
 		(return dir, return $ parentDir dir)
 	catchBoolIO $ fileAccess tocheck False True False
-
-{- Checks if a git repo exists at a location. -}
-probeRepoExists :: FilePath -> IO Bool
-probeRepoExists dir = isJust <$>
-	catchDefaultIO Nothing (Git.Construct.checkForRepo dir)
 
 {- Gets the UUID of the git repo at a location, which may not exist, or
  - not be a git-annex repo. -}

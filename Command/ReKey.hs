@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,9 +16,10 @@ import qualified Command.Add
 import Logs.Web
 import Logs.Location
 import Utility.CopyFile
+import qualified Remote
 
-def :: [Command]
-def = [notDirect $ command "rekey"
+cmd :: [Command]
+cmd = [notDirect $ command "rekey"
 	(paramOptional $ paramRepeating $ paramPair paramPath paramKey)
 	seek SectionPlumbing "change keys used for files"]
 
@@ -29,7 +30,7 @@ start :: (FilePath, String) -> CommandStart
 start (file, keyname) = ifAnnexed file go stop
   where
 	newkey = fromMaybe (error "bad key") $ file2key keyname
-	go (oldkey, _)
+	go oldkey
 		| oldkey == newkey = stop
 		| otherwise = do
 			showStart "rekey" file
@@ -61,8 +62,9 @@ cleanup file oldkey newkey = do
 	-- If the old key had some associated urls, record them for
 	-- the new key as well.
 	urls <- getUrls oldkey
-	unless (null urls) $
-		mapM_ (setUrlPresent newkey) urls
+	forM_ urls $ \url -> do
+		r <- Remote.claimingUrl url
+		setUrlPresent (Remote.uuid r) newkey url
 
 	-- Update symlink to use the new key.
 	liftIO $ removeFile file

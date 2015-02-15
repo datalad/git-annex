@@ -123,3 +123,4 @@ Codename:	precise
 """]]
 
 
+> [[!taglink confirmed]] (but may be out of scope for git-annex) --[[Joey]] 

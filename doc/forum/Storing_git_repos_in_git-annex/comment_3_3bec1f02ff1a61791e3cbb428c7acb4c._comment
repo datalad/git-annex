@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmNu4V5fvpLlBhaCUfXXOB0MI5NXwh8SkU"
+ nickname="Adam"
+ subject="comment 3"
+ date="2014-05-17T00:23:02Z"
+ content="""
+Well, like Pere, I am rather surprised by your response, Joey.  I've been an enthusiastic supporter and follower of git-annex for a long time now, and have been looking forward to using it.  I didn't expect a snarky reply...and you said yourself that it was snarky.  Maybe you had a bad day or something?  :)
+
+I don't understand why this request or idea is so controversial to you.  I have several computers, and I use git to store basic text files like shell scripts and config files--a very common situation.  I use Dropbox to sync them automatically between computers.  I could use just git, and push/pull manually, but the whole point of having computers is for them to do things for me, automatically.  The purpose of the git-annex assistant, as I understand it, is to do exactly that.  Doing the push/pull manually would be a step backwards.  And giving up manual control of the git repository, losing the ability to track changes to my files, would be a huge step backwards.
+
+This seems like it must be a very common use case among Linux users, especially ones who use the shell, git, etc.  If git-annex isn't good for this situation, what is?  Surely there's a better way than opening a shell and running \"git pull\" every time I walk from one computer to the other.
+"""]]

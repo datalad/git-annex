@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-01-05T20:52:11Z"
+ content="""
+This works, but it's very inneficient. You're
+adding metadata (which is committed to git!) to represent location information. 
+git-annex already knows about location information,
+so it could just look at it and use it to build the view.
+
+The reason I haven't implemented this yet is I'm not clear about what to do
+if a file is dropped while in a view. It seems like git-annex should update
+the view to no longer show the dropped file. But this means that any change
+to a file's presence needs to update the view, and so it entangles the
+implementation of views with a core part of git-annex. And it might be
+pretty inneficient to need to build a new view branch each time a file is
+dropped too.
+
+With your hack, the view doesn't automatically update when a file is
+dropped. Since you're using it this way, maybe you have some advice or
+thoughts about this question?
+"""]]

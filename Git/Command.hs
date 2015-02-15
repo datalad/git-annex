@@ -1,6 +1,6 @@
 {- running git commands
  -
- - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -9,17 +9,14 @@
 
 module Git.Command where
 
-import System.Process (std_out, env)
-
 import Common
 import Git
 import Git.Types
 import qualified Utility.CoProcess as CoProcess
-import Utility.Batch
 
 {- Constructs a git command line operating on the specified repo. -}
 gitCommandLine :: [CommandParam] -> Repo -> [CommandParam]
-gitCommandLine params r@(Repo { location = l@(Local _ _ ) }) =
+gitCommandLine params r@(Repo { location = l@(Local { } ) }) =
 	setdir : settree ++ gitGlobalOpts r ++ params
   where
 	setdir = Param $ "--git-dir=" ++ gitdir l
@@ -32,12 +29,6 @@ gitCommandLine _ repo = assertLocal repo $ error "internal"
 runBool :: [CommandParam] -> Repo -> IO Bool
 runBool params repo = assertLocal repo $
 	boolSystemEnv "git" (gitCommandLine params repo) (gitEnv repo)
-
-{- Runs git in batch mode. -}
-runBatch :: BatchCommandMaker -> [CommandParam] -> Repo -> IO Bool
-runBatch batchmaker params repo = assertLocal repo $ do
-	let (cmd, params') = batchmaker ("git", gitCommandLine params repo)
-	boolSystemEnv cmd params' (gitEnv repo)
 
 {- Runs git in the specified repo, throwing an error if it fails. -}
 run :: [CommandParam] -> Repo -> IO ()
@@ -88,7 +79,7 @@ pipeWriteRead params writer repo = assertLocal repo $
 	writeReadProcessEnv "git" (toCommand $ gitCommandLine params repo) 
 		(gitEnv repo) writer (Just adjusthandle)
   where
-  	adjusthandle h = do
+	adjusthandle h = do
 		fileEncoding h
 		hSetNewlineMode h noNewlineTranslation
 
@@ -126,7 +117,7 @@ gitCoProcessStart restartable params repo = CoProcess.start numrestarts "git"
 	(toCommand $ gitCommandLine params repo)
 	(gitEnv repo)
   where
-  	{- If a long-running git command like cat-file --batch
+	{- If a long-running git command like cat-file --batch
 	 - crashes, it will likely start up again ok. If it keeps crashing
 	 - 10 times, something is badly wrong. -}
 	numrestarts = if restartable then 10 else 0

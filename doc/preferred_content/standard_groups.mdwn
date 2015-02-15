@@ -1,19 +1,28 @@
 git-annex comes with some built-in [[preferred_content]] settings, that can
 be used with repositories that are in special groups. To make a
 repository use one of these, just set its preferred content expression
-to "standard", and put it in one of these groups.
+to "standard", and put it in one of these groups. For example, to put the current
+repository in the manual group and use this group to control the preferred
+content, run
+
+    git annex wanted . standard
+    git annex group . manual
+
+In the webapp, just edit the repository and select the group.
 
 (Note that most of these standard expressions also make the repository
 want to get any content that is only currently available on untrusted and
 dead repositories. So if an untrusted repository gets connected,
 any repository that can will back it up.)
 
+The following standard groups are available:
+
 ### client
 
 All content is wanted, unless it's for a file in a "archive" directory,
 which has reached an archive repository, or is unused.
 
-`(((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1))) and not unused) or roughlylackingcopies=1`
+`(((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1))) and not unused) or approxlackingcopies=1`
 
 ### transfer
 
@@ -63,7 +72,7 @@ All content is wanted, unless it's already been archived somewhere else.
 `(not (copies=archive:1 or copies=smallarchive:1)) or approxlackingcopies=1`
 
 Note that if you want to archive multiple copies (not a bad idea!),
-you can set `groupwanted archive` to a version of 
+you can set `git-annex groupwanted archive` to a version of 
 the above preferred content expression with a larger number of copies
 than 1. Then make the archive repositories have a preferred
 content expression of "groupwanted" in order to use your modified

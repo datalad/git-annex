@@ -4,7 +4,7 @@
  - the values a user passes to a command, and prepare actions operating
  - on them.
  -
- - Copyright 2010-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -19,6 +19,8 @@ import qualified Annex
 import qualified Git
 import qualified Git.Command
 import qualified Git.LsFiles as LsFiles
+import qualified Git.LsTree as LsTree
+import Git.FilePath
 import qualified Limit
 import CmdLine.Option
 import CmdLine.Action
@@ -30,14 +32,36 @@ withFilesInGit :: (FilePath -> CommandStart) -> CommandSeek
 withFilesInGit a params = seekActions $ prepFiltered a $
 	seekHelper LsFiles.inRepo params
 
-withFilesNotInGit :: (FilePath -> CommandStart) -> CommandSeek
-withFilesNotInGit a params = do
-	{- dotfiles are not acted on unless explicitly listed -}
-	files <- filter (not . dotfile) <$>
-		seekunless (null ps && not (null params)) ps
-	dotfiles <- seekunless (null dotps) dotps
-	seekActions $ prepFiltered a $
-		return $ concat $ segmentPaths params (files++dotfiles)
+withFilesInGitNonRecursive :: (FilePath -> CommandStart) -> CommandSeek
+withFilesInGitNonRecursive a params = ifM (Annex.getState Annex.force)
+	( withFilesInGit a params
+	, if null params
+		then needforce
+		else seekActions $ prepFiltered a (getfiles [] params)
+	)
+  where
+	getfiles c [] = return (reverse c)
+	getfiles c (p:ps) = do
+		(fs, cleanup) <- inRepo $ LsFiles.inRepo [p]
+		case fs of
+			[f] -> do
+				void $ liftIO $ cleanup
+				getfiles (f:c) ps
+			[] -> do
+				void $ liftIO $ cleanup
+				getfiles c ps
+			_ -> needforce
+	needforce = error "Not recursively setting metadata. Use --force to do that."
+
+withFilesNotInGit :: Bool -> (FilePath -> CommandStart) -> CommandSeek
+withFilesNotInGit skipdotfiles a params
+	| skipdotfiles = do
+		{- dotfiles are not acted on unless explicitly listed -}
+		files <- filter (not . dotfile) <$>
+			seekunless (null ps && not (null params)) ps
+		dotfiles <- seekunless (null dotps) dotps
+		go (files++dotfiles)
+	| otherwise = go =<< seekunless False params
   where
 	(dotps, ps) = partition dotfile params
 	seekunless True _ = return []
@@ -45,16 +69,38 @@ withFilesNotInGit a params = do
 		force <- Annex.getState Annex.force
 		g <- gitRepo
 		liftIO $ Git.Command.leaveZombie <$> LsFiles.notInRepo force l g
+	go l = seekActions $ prepFiltered a $
+		return $ concat $ segmentPaths params l
+
+withFilesInRefs :: (FilePath -> Key -> CommandStart) -> CommandSeek
+withFilesInRefs a = mapM_ go
+  where
+	go r = do	
+		matcher <- Limit.getMatcher
+		l <- inRepo $ LsTree.lsTree (Git.Ref r)
+		forM_ l $ \i -> do
+			let f = getTopFilePath $ LsTree.file i
+			v <- catKey (Git.Ref $ LsTree.sha i) (LsTree.mode i)
+			case v of
+				Nothing -> noop
+				Just k -> whenM (matcher $ MatchingKey k) $
+					void $ commandAction $ a f k
 
 withPathContents :: ((FilePath, FilePath) -> CommandStart) -> CommandSeek
-withPathContents a params = seekActions $ 
-	map a . concat <$> liftIO (mapM get params)
+withPathContents a params = do
+	matcher <- Limit.getMatcher
+	seekActions $ map a <$> (filterM (checkmatch matcher) =<< ps)
   where
+	ps = concat <$> liftIO (mapM get params)
 	get p = ifM (isDirectory <$> getFileStatus p)
 		( map (\f -> (f, makeRelative (parentDir p) f))
 			<$> dirContentsRecursiveSkipping (".git" `isSuffixOf`) True p
 		, return [(p, takeFileName p)]
 		)
+	checkmatch matcher (f, relf) = matcher $ MatchingFile $ FileInfo
+		{ currFile = f
+		, matchFile = relf
+		}
 
 withWords :: ([String] -> CommandStart) -> CommandSeek
 withWords a params = seekActions $ return [a params]
@@ -88,9 +134,11 @@ withFilesUnlocked' :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> (F
 withFilesUnlocked' typechanged a params = seekActions $
 	prepFiltered a unlockedfiles
   where
-  	check f = liftIO (notSymlink f) <&&> 
-		(isJust <$> catKeyFile f <||> isJust <$> catKeyFileHEAD f)
-	unlockedfiles = filterM check =<< seekHelper typechanged params
+	unlockedfiles = filterM isUnlocked =<< seekHelper typechanged params
+
+isUnlocked :: FilePath -> Annex Bool
+isUnlocked f = liftIO (notSymlink f) <&&> 
+	(isJust <$> catKeyFile f <||> isJust <$> catKeyFileHEAD f)
 
 {- Finds files that may be modified. -}
 withFilesMaybeModified :: (FilePath -> CommandStart) -> CommandSeek
@@ -146,7 +194,7 @@ withKeyOptions keyop fallbackop params = do
 			Just k -> go auto $ return [k]
 		_ -> error "Can only specify one of file names, --all, --unused, or --key"
   where
-  	go True _ = error "Cannot use --auto with --all or --unused or --key"
+	go True _ = error "Cannot use --auto with --all or --unused or --key"
 	go False a = do
 		matcher <- Limit.getMatcher
 		seekActions $ map (process matcher) <$> a
@@ -170,10 +218,9 @@ seekHelper :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> [FilePath]
 seekHelper a params = do
 	ll <- inRepo $ \g ->
 		runSegmentPaths (\fs -> Git.Command.leaveZombie <$> a fs g) params
-	{- Show warnings only for files/directories that do not exist. -}
 	forM_ (map fst $ filter (null . snd) $ zip params ll) $ \p ->
 		unlessM (isJust <$> liftIO (catchMaybeIO $ getSymbolicLinkStatus p)) $
-			fileNotFound p
+			error $ p ++ " not found"
 	return $ concat ll
 
 notSymlink :: FilePath -> IO Bool

@@ -1,19 +1,19 @@
 {- Temporary files and directories.
  -
- - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 {-# LANGUAGE CPP #-}
 
 module Utility.Tmp where
 
-import Control.Exception (bracket)
 import System.IO
 import System.Directory
 import Control.Monad.IfElse
 import System.FilePath
+import Control.Monad.IO.Class
 
 import Utility.Exception
 import Utility.FileSystemEncoding
@@ -24,45 +24,52 @@ type Template = String
 {- Runs an action like writeFile, writing to a temp file first and
  - then moving it into place. The temp file is stored in the same
  - directory as the final file to avoid cross-device renames. -}
-viaTmp :: (FilePath -> String -> IO ()) -> FilePath -> String -> IO ()
-viaTmp a file content = do
-	let (dir, base) = splitFileName file
-	createDirectoryIfMissing True dir
-	(tmpfile, handle) <- openTempFile dir (base ++ ".tmp")
-	hClose handle
-	a tmpfile content
-	rename tmpfile file
+viaTmp :: (MonadMask m, MonadIO m) => (FilePath -> String -> m ()) -> FilePath -> String -> m ()
+viaTmp a file content = bracketIO setup cleanup use
+  where
+	(dir, base) = splitFileName file
+	template = base ++ ".tmp"
+	setup = do
+		createDirectoryIfMissing True dir
+		openTempFile dir template
+	cleanup (tmpfile, h) = do
+		_ <- tryIO $ hClose h
+		tryIO $ removeFile tmpfile
+	use (tmpfile, h) = do
+		liftIO $ hClose h
+		a tmpfile content
+		liftIO $ rename tmpfile file
 
 {- Runs an action with a tmp file located in the system's tmp directory
  - (or in "." if there is none) then removes the file. -}
-withTmpFile :: Template -> (FilePath -> Handle -> IO a) -> IO a
+withTmpFile :: (MonadIO m, MonadMask m) => Template -> (FilePath -> Handle -> m a) -> m a
 withTmpFile template a = do
-	tmpdir <- catchDefaultIO "." getTemporaryDirectory
+	tmpdir <- liftIO $ catchDefaultIO "." getTemporaryDirectory
 	withTmpFileIn tmpdir template a
 
 {- Runs an action with a tmp file located in the specified directory,
  - then removes the file. -}
-withTmpFileIn :: FilePath -> Template -> (FilePath -> Handle -> IO a) -> IO a
+withTmpFileIn :: (MonadIO m, MonadMask m) => FilePath -> Template -> (FilePath -> Handle -> m a) -> m a
 withTmpFileIn tmpdir template a = bracket create remove use
   where
-	create = openTempFile tmpdir template
-	remove (name, handle) = do
-		hClose handle
+	create = liftIO $ openTempFile tmpdir template
+	remove (name, h) = liftIO $ do
+		hClose h
 		catchBoolIO (removeFile name >> return True)
-	use (name, handle) = a name handle
+	use (name, h) = a name h
 
 {- Runs an action with a tmp directory located within the system's tmp
  - directory (or within "." if there is none), then removes the tmp
  - directory and all its contents. -}
-withTmpDir :: Template -> (FilePath -> IO a) -> IO a
+withTmpDir :: (MonadMask m, MonadIO m) => Template -> (FilePath -> m a) -> m a
 withTmpDir template a = do
-	tmpdir <- catchDefaultIO "." getTemporaryDirectory
+	tmpdir <- liftIO $ catchDefaultIO "." getTemporaryDirectory
 	withTmpDirIn tmpdir template a
 
 {- Runs an action with a tmp directory located within a specified directory,
  - then removes the tmp directory and all its contents. -}
-withTmpDirIn :: FilePath -> Template -> (FilePath -> IO a) -> IO a
-withTmpDirIn tmpdir template = bracket create remove
+withTmpDirIn :: (MonadMask m, MonadIO m) => FilePath -> Template -> (FilePath -> m a) -> m a
+withTmpDirIn tmpdir template = bracketIO create remove
   where
 	remove d = whenM (doesDirectoryExist d) $ do
 #if mingw32_HOST_OS

@@ -1,6 +1,6 @@
 {- git-annex assistant upgrading
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -21,6 +21,7 @@ import Logs.Web
 import Logs.Presence
 import Logs.Location
 import Annex.Content
+import Annex.UUID
 import qualified Backend
 import qualified Types.Backend
 import qualified Types.Key
@@ -32,7 +33,12 @@ import Config.Files
 import Utility.ThreadScheduler
 import Utility.Tmp
 import Utility.UserInfo
+import Utility.Gpg
+import Utility.FileMode
 import qualified Utility.Lsof as Lsof
+import qualified Build.SysConfig
+import qualified Utility.Url as Url
+import qualified Annex.Url as Url
 
 import qualified Data.Map as M
 import Data.Tuple.Utils
@@ -47,7 +53,7 @@ unattendedUpgrade = do
 prepUpgrade :: Assistant ()
 prepUpgrade = do
 	void $ addAlert upgradingAlert
-	void $ liftIO $ setEnv upgradedEnv "1" True
+	liftIO $ setEnv upgradedEnv "1" True
 	prepRestart
 
 postUpgrade :: URLString -> Assistant ()
@@ -73,9 +79,9 @@ upgradedEnv = "GIT_ANNEX_UPGRADED"
 startDistributionDownload :: GitAnnexDistribution -> Assistant ()
 startDistributionDownload d = go =<< liftIO . newVersionLocation d =<< liftIO oldVersionLocation
   where
-  	go Nothing = debug ["Skipping redundant upgrade"]
+	go Nothing = debug ["Skipping redundant upgrade"]
 	go (Just dest) = do
-		liftAnnex $ setUrlPresent k u
+		liftAnnex $ setUrlPresent webUUID k u
 		hook <- asIO1 $ distributionDownloadComplete d dest cleanup
 		modifyDaemonStatus_ $ \s -> s
 			{ transferHook = M.insert k hook (transferHook s) }
@@ -91,8 +97,8 @@ startDistributionDownload d = go =<< liftIO . newVersionLocation d =<< liftIO ol
 		, transferKey = k
 		}
 	cleanup = liftAnnex $ do
-		removeAnnex k
-		setUrlMissing k u
+		lockContent k removeAnnex
+		setUrlMissing webUUID k u
 		logStatus k InfoMissing
 
 {- Called once the download is done.
@@ -218,18 +224,18 @@ upgradeToDistribution newdir cleanup distributionfile = do
 {- Finds where the old version was installed. -}
 oldVersionLocation :: IO FilePath
 oldVersionLocation = do
-#ifdef darwin_HOST_OS
 	pdir <- parentDir <$> readProgramFile
+#ifdef darwin_HOST_OS
 	let dirs = splitDirectories pdir
 	{- It will probably be deep inside a git-annex.app directory. -}
 	let olddir = case findIndex ("git-annex.app" `isPrefixOf`) dirs of
 		Nothing -> pdir
 		Just i -> joinPath (take (i + 1) dirs)
 #else
-	olddir <- parentDir <$> readProgramFile
+	let olddir = pdir
 #endif
 	when (null olddir) $
-		error $ "Cannot find old distribution bundle; not upgrading."
+		error $ "Cannot find old distribution bundle; not upgrading. (Looked in " ++ pdir ++ ")"
 	return olddir
 
 {- Finds a place to install the new version.
@@ -313,3 +319,48 @@ upgradeSanityCheck = ifM usingDistribution
 
 usingDistribution :: IO Bool
 usingDistribution = isJust <$> getEnv "GIT_ANNEX_STANDLONE_ENV"
+
+downloadDistributionInfo :: Assistant (Maybe GitAnnexDistribution)
+downloadDistributionInfo = do
+	uo <- liftAnnex Url.getUrlOptions
+	liftIO $ withTmpDir "git-annex.tmp" $ \tmpdir -> do
+		let infof = tmpdir </> "info"
+		let sigf = infof ++ ".sig"
+		ifM (Url.downloadQuiet distributionInfoUrl infof uo
+			<&&> Url.downloadQuiet distributionInfoSigUrl sigf uo
+			<&&> verifyDistributionSig sigf)
+			( readish <$> readFileStrict infof
+			, return Nothing
+			)
+
+distributionInfoUrl :: String
+distributionInfoUrl = fromJust Build.SysConfig.upgradelocation ++ ".info"
+
+distributionInfoSigUrl :: String
+distributionInfoSigUrl = distributionInfoUrl ++ ".sig"
+
+{- Verifies that a file from the git-annex distribution has a valid
+ - signature. Pass the detached .sig file; the file to be verified should
+ - be located next to it.
+ -
+ - The gpg keyring used to verify the signature is located in
+ - trustedkeys.gpg, next to the git-annex program.
+ -}
+verifyDistributionSig :: FilePath -> IO Bool
+verifyDistributionSig sig = do
+	p <- readProgramFile
+	if isAbsolute p
+		then withUmask 0o0077 $ withTmpDir "git-annex-gpg.tmp" $ \gpgtmp -> do
+			let trustedkeys = takeDirectory p </> "trustedkeys.gpg"
+			boolSystem gpgcmd
+				[ Param "--no-default-keyring"
+				, Param "--no-auto-check-trustdb"
+				, Param "--no-options"
+				, Param "--homedir"
+				, File gpgtmp
+				, Param "--keyring"
+				, File trustedkeys
+				, Param "--verify"
+				, File sig
+				]
+		else return False

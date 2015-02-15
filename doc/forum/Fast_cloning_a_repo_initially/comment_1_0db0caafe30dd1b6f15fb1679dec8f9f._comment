@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="24.159.78.125"
+ subject="comment 1"
+ date="2014-05-23T15:30:23Z"
+ content="""
+I don't recommend moving direct mode repositories between filesystems, because git-annex relies on the inode as one way to detect if files in a direct mode repo have changed. It will notice that all the inode numbers have changed, and fall back to a mode where it only uses mtime.
+
+Anyway, your situation is better handled by initializing a repository on the desktop, and a separate one on the laptop. Then add remotes tying the repos together, and git-annex sync will just do the right thing, including not transferring files that have already been synced to both places.
+"""]]

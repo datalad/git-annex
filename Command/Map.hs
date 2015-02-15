@@ -1,13 +1,12 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Command.Map where
 
-import Control.Exception.Extensible
 import qualified Data.Map as M
 
 import Common.Annex
@@ -26,8 +25,8 @@ import qualified Utility.Dot as Dot
 -- a link from the first repository to the second (its remote)
 data Link = Link Git.Repo Git.Repo
 
-def :: [Command]
-def = [dontCheck repoExists $
+cmd :: [Command]
+cmd = [dontCheck repoExists $
 	command "map" paramNothing seek SectionQuery
 		"generate map of repositories"]
 
@@ -195,25 +194,27 @@ tryScan r
 	| Git.repoIsUrl r = return Nothing
 	| otherwise = liftIO $ safely $ Git.Config.read r
   where
-	pipedconfig cmd params = liftIO $ safely $
+	pipedconfig pcmd params = liftIO $ safely $
 		withHandle StdoutHandle createProcessSuccess p $
 			Git.Config.hRead r
 	  where
-		p = proc cmd $ toCommand params
+		p = proc pcmd $ toCommand params
 
-	configlist = Ssh.onRemote r (pipedconfig, Nothing) "configlist" [] []
+	configlist = Ssh.onRemote r (pipedconfig, return Nothing) "configlist" [] []
 	manualconfiglist = do
-		sshparams <- Ssh.toRepo r [Param sshcmd]
+		gc <- Annex.getRemoteGitConfig r
+		sshparams <- Ssh.toRepo r gc [Param sshcmd]
 		liftIO $ pipedconfig "ssh" sshparams
 	  where
-		sshcmd = cddir ++ " && " ++
-			"git config --null --list"
+		sshcmd = "sh -c " ++ shellEscape
+			(cddir ++ " && " ++ "git config --null --list")
 		dir = Git.repoPath r
 		cddir
 			| "/~" `isPrefixOf` dir =
 				let (userhome, reldir) = span (/= '/') (drop 1 dir)
-				in "cd " ++ userhome ++ " && cd " ++ shellEscape (drop 1 reldir)
-			| otherwise = "cd " ++ shellEscape dir
+				in "cd " ++ userhome ++ " && " ++ cdto (drop 1 reldir)
+			| otherwise = cdto dir
+		cdto p = "if ! cd " ++ shellEscape p ++ " 2>/dev/null; then cd " ++ shellEscape p ++ ".git; fi"
 
 	-- First, try sshing and running git config manually,
 	-- only fall back to git-annex-shell configlist if that
@@ -246,7 +247,7 @@ combineSame = map snd . nubBy sameuuid . map pair
 
 safely :: IO Git.Repo -> IO (Maybe Git.Repo)
 safely a = do
-	result <- try a :: IO (Either SomeException Git.Repo)
+	result <- tryNonAsync a
 	case result of
 		Left _ -> return Nothing
 		Right r' -> return $ Just r'

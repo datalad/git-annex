@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-01-20T17:05:12Z"
+ content="""
+If you can reproduce the error message, perhaps you can paste it into this
+bug report. At the moment, I have absolutely nothing to go on.
+
+You can download a build of a current version of git-annex from
+[[install/Linux_standalone]] for testing.
+"""]]

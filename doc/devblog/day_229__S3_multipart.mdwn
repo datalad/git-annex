@@ -1,0 +1,11 @@
+Some progress on the [[bugs/S3_upload_not_using_multipart]] bug. The aws
+library now includes the multipart API. However, when I dug into it, it
+looks like the API needs some changes to get the ETAG of each uploaded
+part. Once that's fixed, git-annex should be able to support S3 multipart
+uploads, although I think that git-annex's own chunking is better in most
+situations -- it supports resuming uploads and downloads better. The main
+use case for S3 multipart seems to be using git-annex to publish large
+files.
+
+Also, managed to get the backlog down from 100 to just 65 messages,
+including catching up on quite old parts of backlog.

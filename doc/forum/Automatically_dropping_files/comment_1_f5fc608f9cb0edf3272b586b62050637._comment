@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="216.145.95.162"
+ subject="comment 1"
+ date="2014-05-19T15:41:05Z"
+ content="""
+`git annex drop --auto` *does* automatically drop files that are not wanted, according to your preferred content settings.
+
+If your preferred content for a repo is `metadata=tag=done`, then only files tagged \"done\" will be kept in the repository. 
+
+Of course, files are only dropped if enough other copies can be verified to exist in other repositories..
+"""]]

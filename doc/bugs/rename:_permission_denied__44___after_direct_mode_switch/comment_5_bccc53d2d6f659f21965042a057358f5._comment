@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://nicolas-schodet.myopenid.com/"
- ip="2a01:e35:1381:3350:1e4b:d6ff:fe78:1ddb"
- subject="comment 5"
- date="2013-12-20T20:19:05Z"
- content="""
-Yes, right, but symbolic links are not supposed to have flags... so the chflags does nothing...
-"""]]

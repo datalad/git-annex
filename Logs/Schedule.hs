@@ -1,6 +1,6 @@
 {- git-annex scheduled activities log
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -35,7 +35,7 @@ scheduleSet uuid@(UUID _) activities = do
 	Annex.Branch.change scheduleLog $
 		showLog id . changeLog ts uuid val . parseLog Just
   where
-  	val = fromScheduledActivities activities
+	val = fromScheduledActivities activities
 scheduleSet NoUUID _ = error "unknown UUID; cannot modify"
 
 scheduleMap :: Annex (M.Map UUID [ScheduledActivity])

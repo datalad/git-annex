@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,18 +16,51 @@ import qualified Annex
 import Annex.Content
 import Annex.Content.Direct
 import qualified Git.Command
-import qualified Git.LsFiles as LsFiles
+import qualified Git.Branch
+import qualified Git.Ref
+import qualified Git.DiffTree as DiffTree
 import Utility.CopyFile
+import Command.PreCommit (lockPreCommitHook)
 
-def :: [Command]
-def = [command "unannex" paramPaths seek SectionUtility
+cmd :: [Command]
+cmd = [withOptions annexedMatchingOptions $
+	command "unannex" paramPaths seek SectionUtility
 		"undo accidential add command"]
 
 seek :: CommandSeek
-seek = withFilesInGit $ whenAnnexed start
+seek = wrapUnannex . (withFilesInGit $ whenAnnexed start)
 
-start :: FilePath -> (Key, Backend) -> CommandStart
-start file (key, _) = stopUnless (inAnnex key) $ do
+wrapUnannex :: Annex a -> Annex a
+wrapUnannex a = ifM isDirect
+	( a
+	{- Run with the pre-commit hook disabled, to avoid confusing
+	 - behavior if an unannexed file is added back to git as
+	 - a normal, non-annexed file and then committed.
+	 - Otherwise, the pre-commit hook would think that the file
+	 - has been unlocked and needs to be re-annexed.
+	 -
+	 - At the end, make a commit removing the unannexed files.
+	 -}
+	, ifM cleanindex
+		( lockPreCommitHook $ commit `after` a
+		, error "Cannot proceed with uncommitted changes staged in the index. Recommend you: git commit"
+		)
+	)
+  where
+	commit = inRepo $ Git.Branch.commitCommand Git.Branch.ManualCommit
+		[ Param "-q"
+		, Param "--allow-empty"
+		, Param "--no-verify"
+		, Param "-m", Param "content removed from git annex"
+		]
+	cleanindex = do
+		(diff, cleanup) <- inRepo $ DiffTree.diffIndex Git.Ref.headRef
+		if null diff
+			then void (liftIO cleanup) >> return True
+			else void (liftIO cleanup) >> return False
+
+start :: FilePath -> Key -> CommandStart
+start file key = stopUnless (inAnnex key) $ do
 	showStart "unannex" file
 	next $ ifM isDirect
 		( performDirect file key
@@ -36,38 +69,28 @@ start file (key, _) = stopUnless (inAnnex key) $ do
 performIndirect :: FilePath -> Key -> CommandPerform
 performIndirect file key = do
 	liftIO $ removeFile file
-	
-	-- git rm deletes empty directory without --cached
 	inRepo $ Git.Command.run [Params "rm --cached --force --quiet --", File file]
-	
-	-- If the file was already committed, it is now staged for removal.
-	-- Commit that removal now, to avoid later confusing the
-	-- pre-commit hook, if this file is later added back to
-	-- git as a normal non-annexed file, to thinking that the
-	-- file has been unlocked and needs to be re-annexed.
-	(s, reap) <- inRepo $ LsFiles.staged [file]
-	unless (null s) $
-		inRepo $ Git.Command.run
-			[ Param "commit"
-			, Param "-q"
-			, Param "--no-verify"
-			, Param "-m", Param "content removed from git annex"
-			, Param "--", File file
-			]
-	void $ liftIO reap
-
 	next $ cleanupIndirect file key
 
 cleanupIndirect :: FilePath -> Key -> CommandCleanup
 cleanupIndirect file key = do
 	src <- calcRepo $ gitAnnexLocation key
 	ifM (Annex.getState Annex.fast)
-		( hardlinkfrom src
+		( do
+			-- Only make a hard link if the annexed file does not
+			-- already have other hard links pointing at it.
+			-- This avoids unannexing (and uninit) ending up
+			-- hard linking files together, which would be
+			-- surprising.
+			s <- liftIO $ getFileStatus src
+			if linkCount s > 1
+				then copyfrom src
+				else hardlinkfrom src
 		, copyfrom src
 		)
   where
 	copyfrom src = 
-		thawContent file `after` liftIO (copyFileExternal src file)
+		thawContent file `after` liftIO (copyFileExternal CopyAllMetaData src file)
 	hardlinkfrom src =
 #ifndef mingw32_HOST_OS
 		-- creating a hard link could fall; fall back to copying

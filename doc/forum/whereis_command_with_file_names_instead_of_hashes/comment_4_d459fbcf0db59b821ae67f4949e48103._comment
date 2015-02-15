@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkNE-H4vEcbcGndxq5daT8qUb7yIf7r1OE"
+ nickname="Łukasz"
+ subject="comment 4"
+ date="2014-07-07T10:05:06Z"
+ content="""
+git-annex whereis --not --in here
+
+Does not display anything.
+
+git-annex whereis --not --in here -A
+
+Displays files on remote only. Every file has an additional message (0 copies) failed. This displays hash names. How to display file names ? I am 100% sure that my remote repo has some files that are not present on laptop or PC.
+"""]]

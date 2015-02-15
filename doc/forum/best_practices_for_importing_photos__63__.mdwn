@@ -1,0 +1,13 @@
+What are everyone's tips for importing photos to make best use of metadata and views?
+
+Let's assume there's no need to be compatible with a photo manager app, but we may be importing lots of duplicates, and while content deduplication is great, I'd like to avoid naming problems too.
+
+Do you bother to rename your photos?
+
+Do you use EXIF metadata as git-annex metadata? Selectively or wholesale, with all the redundant tags in EXIF?
+
+If you do use a photo manager app, do you need to do anything special to make that work?
+
+Thanks for your responses everyone!
+
+-mike

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn26A25mnLHRtWAP587-NPwEFKzolmENL4"
+ nickname="Marco"
+ subject="Also with standalone git-annex"
+ date="2014-09-24T14:14:43Z"
+ content="""
+Update: I also tried to install the standalone distribution in the home of the annex user on the server as shown in the video (BTW, nice illustration!), but I get the same error.
+(On the client side I installed the osx app instead.)
+"""]]

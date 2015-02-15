@@ -1,6 +1,6 @@
 {- git repository configuration handling
  -
- - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -9,8 +9,6 @@ module Git.Config where
 
 import qualified Data.Map as M
 import Data.Char
-import System.Process (cwd, env)
-import Control.Exception.Extensible
 
 import Common
 import Git
@@ -68,10 +66,9 @@ global = do
 	home <- myHomeDir
 	ifM (doesFileExist $ home </> ".gitconfig")
 		( do
-			repo <- Git.Construct.fromUnknown
-			repo' <- withHandle StdoutHandle createProcessSuccess p $
-				hRead repo
-			return $ Just repo'
+			repo <- withHandle StdoutHandle createProcessSuccess p $
+				hRead (Git.Construct.fromUnknown)
+			return $ Just repo
 		, return Nothing
 		)
   where
@@ -169,7 +166,7 @@ coreBare = "core.bare"
 fromPipe :: Repo -> String -> [CommandParam] -> IO (Either SomeException (Repo, String))
 fromPipe r cmd params = try $
 	withHandle StdoutHandle createProcessSuccess p $ \h -> do
- 		fileEncoding h
+		fileEncoding h
 		val <- hGetContentsStrict h
 		r' <- store val r
 		return (r', val)

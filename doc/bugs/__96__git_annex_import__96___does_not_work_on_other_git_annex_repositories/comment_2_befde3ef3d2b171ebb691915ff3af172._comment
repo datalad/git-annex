@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://id.koumbit.net/anarcat"
- ip="72.0.72.144"
- subject="it's worse than not working, it kills! :)"
- date="2013-10-07T12:06:22Z"
- content="""
-so yeah, it doesn't really work well, and maybe that is to be expected because of symlinks, but it's much worse than that: the original git annex repo will actually be destroyed because git annex import will [[trash the .git metadata directory|bugs/git_annex_import_destroys_a_fellow_git_annex_repository]]. Recovering from that is... interesting, to say the least. :)
-"""]]

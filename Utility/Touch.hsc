@@ -1,8 +1,8 @@
 {- More control over touching a file.
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 {-# LANGUAGE ForeignFunctionInterface #-}
@@ -12,21 +12,6 @@ module Utility.Touch (
 	touchBoth,
 	touch
 ) where
-
-import Utility.FileSystemEncoding
-
-import Foreign
-import Foreign.C
-import Control.Monad (when)
-
-newtype TimeSpec = TimeSpec CTime
-
-{- Changes the access and modification times of an existing file.
-   Can follow symlinks, or not. Throws IO error on failure. -}
-touchBoth :: FilePath -> TimeSpec -> TimeSpec -> Bool -> IO ()
-
-touch :: FilePath -> TimeSpec -> Bool -> IO ()
-touch file mtime = touchBoth file mtime mtime
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -38,6 +23,26 @@ touch file mtime = touchBoth file mtime mtime
 #endif
 
 #if (defined UTIME_OMIT && defined UTIME_NOW && defined AT_FDCWD && defined AT_SYMLINK_NOFOLLOW)
+#define use_utimensat 1
+
+import Utility.FileSystemEncoding
+
+import Control.Monad (when)
+import Foreign
+#endif
+
+import Foreign.C
+
+newtype TimeSpec = TimeSpec CTime
+
+{- Changes the access and modification times of an existing file.
+   Can follow symlinks, or not. Throws IO error on failure. -}
+touchBoth :: FilePath -> TimeSpec -> TimeSpec -> Bool -> IO ()
+
+touch :: FilePath -> TimeSpec -> Bool -> IO ()
+touch file mtime = touchBoth file mtime mtime
+
+#ifdef use_utimensat
 
 at_fdcwd :: CInt
 at_fdcwd = #const AT_FDCWD

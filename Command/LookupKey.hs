@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,8 +12,8 @@ import Command
 import Annex.CatFile
 import Types.Key
 
-def :: [Command]
-def = [notBareRepo $ noCommit $ noMessages $
+cmd :: [Command]
+cmd = [notBareRepo $ noCommit $ noMessages $
 	command "lookupkey" (paramRepeating paramFile) seek
 		SectionPlumbing "looks up key used for file"]
 

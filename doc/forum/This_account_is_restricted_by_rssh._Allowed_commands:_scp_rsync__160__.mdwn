@@ -1,0 +1,5 @@
+Hello,
+
+I'm using the git-annex assistant (in Mac Mavericks) and I'm trying to create a new remote rsync repo, I have the details and everything but I can't do it over ssh, I need the call to use rsync otherwise I get: **This account is restricted by rssh. Allowed commands: scp rsync ** . Can this be changed manually? How can I create a remote rsync repo?
+
+Thanks

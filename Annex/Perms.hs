@@ -1,6 +1,6 @@
 {- git-annex file permissions
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -21,7 +21,6 @@ import Common.Annex
 import Utility.FileMode
 import Git.SharedRepository
 import qualified Annex
-import Annex.Exception
 import Config
 
 import System.Posix.Types
@@ -120,6 +119,6 @@ createContentDir dest = do
 modifyContent :: FilePath -> Annex a -> Annex a
 modifyContent f a = do
 	createContentDir f -- also thaws it
-	v <- tryAnnex a
+	v <- tryNonAsync a
 	freezeContentDir f
-	either throwAnnex return v
+	either throwM return v

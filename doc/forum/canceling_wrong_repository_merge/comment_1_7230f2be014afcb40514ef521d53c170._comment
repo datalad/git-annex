@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ subject="comment 1"
+ date="2015-02-11T15:05:32Z"
+ content="""
+it turns out that using [this procedure](https://sethrobertson.github.io/GitFixUm/fixup.html#remove_deep) worked for me. i just had to reproduce it on all remotes.
+"""]]

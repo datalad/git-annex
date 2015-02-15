@@ -1,0 +1,100 @@
+## requesting content
+ 
+In some situations, nodes only want particular files, and not everything.
+(Or don't have the bandwidth to get everything.) A way to handle this,
+that should work in a fully ad-hoc, offline distributed network,
+suggested by Vincenzo Tozzi:
+
+* Nodes generate a request for a specific file they want, committed
+  to git somewhere.
+* This request has a TTL (of eg 3 or 4).
+* When syncing, copy the requests that a node has, and decrease their TTL
+  by 1. Requests with a TTL of 0 have timed out and are not copied.
+  (So, requests are stored in git, but on eg, per-node branches.)
+* Only copy content to nodes that have a request for it (either one
+  originating with them, or one they copied from another node).
+* Each request indicates the requesting node, so once no nodes have an
+  active request for a particular file, it's ok to drop it from the
+  transfer nodes (honoring numcopies etc of course).
+
+## simulation
+
+A simulation of a network using this method is in [[simroutes.hs]].
+
+Question: How efficient is this method? Does the network fill with many
+copies that are not needed, before the request is fulfilled?
+
+## storing requests
+
+Requests could be stored in the location tracking file.
+
+Currently:
+
+	time 0|1 uuid1
+	time 0|1 uuid2
+
+* Use negative numbers for the TTL of a request:
+
+	time -3! uuid1
+	time -2 uuid2
+
+  The `!` indicates that the request originated on
+  that node.
+* To propigate a request, set -1 * (TTL+1) in the line
+  for the uuid of the repository that is propigating it.  
+  This should be done as part of the git-annex branch merge,
+  so if a location tracking file is merged, any open requests
+  get propigated to the current repository automatically.
+* When a requested file reaches a node that requested it,
+  the location is set to 1; this automatically clears the
+  request.
+* When a file has no more originating requests, clear all
+  the copied requests:
+
+	time 1 uuid1
+	time -2 uuid2
+
+  Becomes:
+
+	time 1 uuid1
+	time' 0 uuid2
+
+## generating requests
+
+	git annex request [file...]
+
+Indicates that the file is wanted in the current repository.
+
+(git annex get could also do this on failure, or suggest doing this)
+
+## acting on requests
+
+Add a preferred content expression that looks at request data:
+
+	requestedby=N
+
+Matches files that have been requested by at least N nodes.
+
+	requested
+
+Matches files that the current node has requested.
+
+### Example preferred content expressions
+
+For an immobile node that accumulates files it requests, and also
+temporarily stores files requested by other such nodes:
+
+	present or requestedby=1
+
+For a node that only transfers files between the immobile nodes:
+
+	requestedby=1
+
+For an immobile node that only accumulates files it requests, but never
+stores files requested by other nodes:
+
+	present or requested
+
+TODO: Would be nice to be able to prioritize files that more nodes are
+requesting, or that have some urgent flag set. But currently there is no
+way to do that; content is either preferred or not preferred.

@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="rasmus"
+ ip="109.201.154.177"
+ subject="But how to clean this folder?"
+ date="2014-03-20T21:55:26Z"
+ content="""
+Joey,
+
+I have sometimes experienced that there is way too much content in the `.git/annex/objects` folder.  For instance, my terminal emulator recently crashed during a sync which seemed to create a lot of folders.  
+
+In the annex repo where this happened I now got way too many folders (annex sometimes complain about no. of inodes or something like that) and I don't know how to clean it correctly.
+
+Here's a \"screenshot\":
+
+    [doc.annex] $ ls -a
+    .  ..  documents  .git  .gitignore
+    [doc.annex] $ find . -type d | wc -l
+    38568
+    [doc.annex] $ git annex fsck  > /dev/null 2>&1
+    [doc.annex] $ find . -type d | wc -l
+    38568
+    [doc.annex] $ git annex repair  > /dev/null 2>&1
+    [doc.annex] $ find . -type d | wc -l
+    38568
+    [doc.annex] $ find documents -type d | wc -l
+    1513
+    [doc.annex] $ find .git/annex/objects -type d | wc -l
+    36712
+
+This is a `direct`-mode repo.  With `.git/objectcts` I can use `git gc`.  How can I tell annex to tidy up?  I have tried `fsck`, `repair` and `forget`.
+
+Any hints on how to deal with this?  Other than manually clean up by deleting `.git/annex/objects` and rerunning `fsck`?
+"""]]

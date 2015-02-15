@@ -16,7 +16,6 @@ Clone that to the laptop:
 	laptop$ cd /other
 	laptop$ git clone ssh://server//one/git/m
 	Cloning into 'm'...
-	Warning: No xauth data; using fake authentication data for X11 forwarding.
 	remote: Counting objects: 5, done.        
 	remote: Compressing objects: 100% (3/3), done.        
 	remote: Total 5 (delta 0), reused 0 (delta 0)        
@@ -28,18 +27,9 @@ Clone that to the laptop:
 	init laptop ok
         laptop$ 
 
-Merge the `git-annex` repository (this is the bit that is often
-overlooked!):
-
-	laptop$ git annex merge	
-	merge . (merging "origin/git-annex" into git-annex...)
-	ok
-	laptop$ 
-
 Add some content:
 
 	laptop$ git annex addurl http://kitenet.net/~joey/screencasts/git-annex_coding_in_haskell.ogg
-	"kitenet.net_~joey_screencasts_git-annex_coding_in_haskell.ogg"
 	addurl kitenet.net_~joey_screencasts_git-annex_coding_in_haskell.ogg (downloading http://kitenet.net/~joey/screencasts/git-annex_coding_in_haskell.ogg ...) --2011-12-15 08:13:10--  http://kitenet.net/~joey/screencasts/git-annex_coding_in_haskell.ogg
 	Resolving kitenet.net (kitenet.net)... 2001:41c8:125:49::10, 80.68.85.49
 	Connecting to kitenet.net (kitenet.net)|2001:41c8:125:49::10|:80... connected.
@@ -53,6 +43,9 @@ Add some content:
 
 	(checksum...) ok
 	(Recording state in git...)
+
+Don't forget to commit it:
+
 	laptop$ git commit -m 'See Joey play.'
 	[master (root-commit) 106e923] See Joey play.
 	 1 files changed, 1 insertions(+), 0 deletions(-)
@@ -61,7 +54,7 @@ Add some content:
 
 All fine, now push it back to the centralised master:
 
-	laptop$ git push
+	laptop$ git push origin master
 	Counting objects: 20, done.
 	Delta compression using up to 4 threads.
 	Compressing objects: 100% (11/11), done.
@@ -70,6 +63,9 @@ All fine, now push it back to the centralised master:
 	To ssh://server//one/git/m
 	   3ba1386..ad3bc9e  git-annex -> git-annex
 	laptop$ 
+
+You'll probably want to use `git annex copy --to origin` to copy the
+annexed file contents to the server. See the [[walkthrough]] for details.
 
 You can add more "client" repositories by following the `laptop`
 sequence of operations.

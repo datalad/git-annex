@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="robert_hickman"
+ subject="comment 2"
+ date="2015-02-10T01:40:47Z"
+ content="""
+Thank you Joey, The setting should be added to the local, with the remote set to 'full backup'?
+
+I've tried updating that setting to client but it still doesn’t seem to be working. Looking at the log, there is a line 'fatal: not a valid object name refs/remotes/adesktop_annex/annex/direct/master'. Also it appears to have attempted to sync but quit on an invalid FAT file name. Should this stop syncing altogether? Or can it just ignore/report these problem files.
+
+Also thanks for saying how to do part-downloads, I was wandering if it could do that.
+"""]]

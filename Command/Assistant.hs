@@ -1,6 +1,6 @@
 {- git-annex assistant
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -14,11 +14,12 @@ import Annex.Init
 import Config.Files
 import qualified Build.SysConfig
 import Utility.HumanTime
+import Assistant.Install
 
 import System.Environment
 
-def :: [Command]
-def = [noRepo checkAutoStart $ dontCheck repoExists $ withOptions options $
+cmd :: [Command]
+cmd = [noRepo checkAutoStart $ dontCheck repoExists $ withOptions options $
 	notBareRepo $ command "assistant" paramNothing seek SectionCommon
 		"automatically handle changes"]
 
@@ -50,6 +51,7 @@ start foreground stopdaemon autostart startdelay
 		liftIO $ autoStart startdelay
 		stop
 	| otherwise = do
+		liftIO ensureInstalled
 		ensureInitialized
 		Command.Watch.start True foreground stopdaemon startdelay
 

@@ -1,6 +1,6 @@
 {- git-annex assistant alert utilities
  -
- - Copyright 2012, 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012, 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -14,7 +14,6 @@ import Utility.Tense
 import qualified Data.Text as T
 import Data.Text (Text)
 import qualified Data.Map as M
-import Data.Monoid
 
 {- This is as many alerts as it makes sense to display at a time.
  - A display might be smaller, or larger, the point is to not overwhelm the
@@ -120,7 +119,7 @@ mergeAlert i al m = maybe updatePrune updateCombine (alertCombiner al)
 	  where
 		bloat = M.size m' - maxAlerts
 		pruneold l =
-	 		let (f, rest) = partition (\(_, a) -> isFiller a) l
+			let (f, rest) = partition (\(_, a) -> isFiller a) l
 			in drop bloat f ++ rest
 	updatePrune = pruneBloat $ M.filterWithKey pruneSame $
 		M.insertWith' const i al m

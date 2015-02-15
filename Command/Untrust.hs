@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,8 +11,8 @@ import Command
 import Types.TrustLevel
 import Command.Trust (trustCommand)
 
-def :: [Command]
-def = [command "untrust" (paramRepeating paramRemote) seek
+cmd :: [Command]
+cmd = [command "untrust" (paramRepeating paramRemote) seek
 	SectionSetup "do not trust a repository"]
 
 seek :: CommandSeek

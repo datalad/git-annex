@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="zardoz"
+ ip="92.227.51.179"
+ subject="comment 1"
+ date="2014-05-13T16:50:57Z"
+ content="""
+A related issue is that a change from/to daylight-saving time will make files appear to be one hour older/younger. A modify-window couldn’t acommodate that. VFAT is really a huge pain…
+"""]]

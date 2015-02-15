@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="spwhitton"
- ip="82.36.235.9"
- subject="comment 3"
- date="2013-03-12T11:37:50Z"
- content="""
-That's right--I don't think it should do that for existing respositories.  I didn't realise it wasn't standard to use the webapp to recreate the autostart file.
-"""]]

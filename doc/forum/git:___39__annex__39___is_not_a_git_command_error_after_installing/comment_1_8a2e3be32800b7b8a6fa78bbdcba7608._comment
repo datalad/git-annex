@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk53Hn5PfMJ9Y0rmLdAeRGmgq7XSGWcoNA"
+ nickname="Iain"
+ subject="comment 1"
+ date="2015-01-29T16:28:59Z"
+ content="""
+Solved it, you need to add git/cmd to your windows path variable
+"""]]

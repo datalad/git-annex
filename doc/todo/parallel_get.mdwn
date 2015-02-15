@@ -1,0 +1,73 @@
+Wish: `git annex get [files] -jN` should run up to N downloads of files
+concurrently.
+
+This can already be done by just starting up N separate git-annex
+processes all trying to get the same files. They'll coordinate themselves
+to avoid downloading the same file twice.
+
+But, the output of concurrent git annex get's in a single teminal is a
+mess.
+
+It would be nice to have something similar to docker's output when fetching
+layers of an image. Something like:
+
+	get foo1 ok
+	get foo2 ok
+	get foo3 -> 5% 100 KiB/s
+	get foo4 -> 3% 90 KiB/s
+	get foo5 -> 20% 1 MiB/s
+
+Where the bottom N lines are progress displays for the downloads that are
+currently in progress. When a download finishes, it can scroll up the
+screen with "ok".
+
+	get foo1 ok
+	get foo2 ok
+	get foo5 ok
+	get foo3 -> 5% 100 KiB/s
+	get foo4 -> 3% 90 KiB/s
+	get foo6 -> 0% 110 Kib/S
+
+This display could perhaps be generalized for other concurrent actions.
+For example, drop:
+
+	drop foo1 ok
+	drop foo2 failed
+	  Not enough copies ...
+	drop foo3 -> (checking r1...)
+	drop foo4 -> (checking r2...)
+
+But, do get first.
+
+Pain points: 
+
+1. Currently, git-annex lets tools like rsync and wget display their own
+   progress. This makes sense for the single-file at a time get, because
+   rsync can display better output than just a percentage. (This is especially
+   the case with aria2c for torrents, which displays seeder/leecher info in
+   addition to percentage.)
+
+   But in multi-get mode, the progress display would be simplified. git-annex
+   can already get percent done information, either as reported by individiual
+   backends, or by falling back to polling the file as it's downloaded.
+
+2. The mechanics of updating the screen for a multi-line progress output
+   require some terminal handling code. Using eg, curses, in a mode that
+   doesn't take over the whole screen display, but just moves the cursor
+   up to the line for the progress that needs updating and redraws that
+   line. Doing this portably is probably going to be a pain, especially
+   I have no idea if it can be done on Windows.
+
+   An alternative would be a display more like apt uses for concurrent
+   downloads, all on one line:
+
+	get foo1 ok
+	get foo2 ok
+	get [foo3 -> 5% 100 KiB/s] [foo4 -> 3% 90 KiB/s] [foo5 -> 20% 1 MiB/s]
+
+   The problem with that is it has to avoid scrolling off the right
+   side, so it probably has to truncate the line. Since filenames
+   are often longer than "fooN", it probably has to elipsise the filename.
+   This approach is just not as flexible or nice in general.
+
+See also: [[parallel_possibilities]]

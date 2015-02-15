@@ -1,6 +1,6 @@
 {- A pool of "git-annex transferkeys" processes
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -15,7 +15,6 @@ import Utility.Batch
 import qualified Command.TransferKeys as T
 
 import Control.Concurrent.STM hiding (check)
-import System.Process (create_group, std_in, std_out)
 import Control.Exception (throw)
 import Control.Concurrent
 
@@ -56,9 +55,9 @@ checkTransferrerPoolItem program batchmaker i = case i of
 
 {- Requests that a Transferrer perform a Transfer, and waits for it to
  - finish. -}
-performTransfer :: Transferrer -> Transfer -> AssociatedFile -> IO Bool
-performTransfer transferrer t f = catchBoolIO $ do
-	T.sendRequest t f (transferrerWrite transferrer)
+performTransfer :: Transferrer -> Transfer -> TransferInfo -> IO Bool
+performTransfer transferrer t info = catchBoolIO $ do
+	T.sendRequest t info (transferrerWrite transferrer)
 	T.readResponse (transferrerRead transferrer)
 
 {- Starts a new git-annex transferkeys process, setting up handles

@@ -6,7 +6,7 @@
  -
  - The line with the newest timestamp wins.
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -60,6 +60,6 @@ getLog = newestValue <$$> readLog
 
 setLog :: (SingleValueSerializable v) => FilePath -> v -> Annex ()
 setLog f v = do
-        now <- liftIO getPOSIXTime
-        let ent = LogEntry now v
+	now <- liftIO getPOSIXTime
+	let ent = LogEntry now v
 	Annex.Branch.change f $ \_old -> showLog (S.singleton ent)

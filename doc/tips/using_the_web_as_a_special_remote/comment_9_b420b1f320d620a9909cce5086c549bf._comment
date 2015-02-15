@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.55"
+ subject="comment 9"
+ date="2014-09-30T18:09:04Z"
+ content="""
+For urls using http basic auth, you can use the standard url form, http://username:password@example.org/url/ , which should work with `git annex addurl`. The url, including the password, will be stored in the git-annex branch though. If you want to protect the password from being exposed to anyone who gets a clone of the repository, just download manually, and then `git annex add` the file.
+"""]]

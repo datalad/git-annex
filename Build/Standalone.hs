@@ -1,6 +1,6 @@
 {- Makes standalone bundle.
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -40,7 +40,7 @@ main :: IO ()
 main = getArgs >>= go
   where
 	go [] = error "specify topdir"
-        go (topdir:_) = do
+	go (topdir:_) = do
 		let dir = progDir topdir
 		createDirectoryIfMissing True dir
 		installed <- forM bundledPrograms $ installProg dir

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ ip="81.111.193.130"
+ subject="comment 1"
+ date="2014-07-17T15:43:03Z"
+ content="""
+Joey has pointed me to the solution.
+
+git-annex was remembering these files due to them being present in *.git/annex/index*.
+
+A simple `rm .git/annex/index` after moving the git-annex branch to the earlier commit prevents the \"ghost\" log files from being recreated and Joey confirmed this is safe to do (git-annex automatically recreates it).
+"""]]

@@ -1,6 +1,6 @@
 {- dropping of unwanted content
  -
- - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,7 +16,6 @@ import qualified Remote
 import qualified Command.Drop
 import Command
 import Annex.Wanted
-import Annex.Exception
 import Config
 import Annex.Content.Direct
 
@@ -120,5 +119,5 @@ handleDropsFrom locs rs reason fromhere key afile knownpresentremote runner = do
 
 	slocs = S.fromList locs
 	
-	safely a = either (const False) id <$> tryAnnex a
+	safely a = either (const False) id <$> tryNonAsync a
 

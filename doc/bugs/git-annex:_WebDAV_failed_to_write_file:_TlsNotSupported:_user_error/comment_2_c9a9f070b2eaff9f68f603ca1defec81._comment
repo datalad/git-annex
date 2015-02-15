@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.87"
- subject="comment 2"
- date="2013-12-16T16:23:10Z"
- content="""
-This turns out to have been a bug in version 0.5 of the haskell DAV library, and was fixed already in a newer version. So cabal update; cabal install DAV; cabal install git-annex
-"""]]

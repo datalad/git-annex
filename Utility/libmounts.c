@@ -5,7 +5,7 @@
  * Copyright (c) 2001
  *      David Rufino <daverufino@btinternet.com>
  * Copyright 2012
- *      Joey Hess <joey@kitenet.net>
+ *      Joey Hess <id@joeyh.name>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -63,7 +63,7 @@ static struct mntent *statfs_to_mntent (struct statfs *mntbuf) {
 	_mntent.mnt_dir = mntbuf->f_mntonname;
 	_mntent.mnt_type = mntbuf->f_fstypename;
 
-	_mntent.mnt_opts = '\0';
+	_mntent.mnt_opts = NULL;
 	_mntent.mnt_freq = 0;
 	_mntent.mnt_passno = 0;
 

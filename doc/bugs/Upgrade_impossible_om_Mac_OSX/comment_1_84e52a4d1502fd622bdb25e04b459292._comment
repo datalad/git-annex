@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkAUMhKOSkh9JaBA6xst3XxQIIsDEq5Zd4"
+ nickname="Ovidiu"
+ subject="fixed"
+ date="2014-05-09T13:12:59Z"
+ content="""
+re-downloaded the old version, re-isntalled and now it actually starts downlaoding the new version => http://screencast.com/t/id2Ng57Z9
+
+NOT sure though, why it now uploads the new version to all repositories? i.e. box.com? IS there a reason for this?
+
+Transfers
+git-annex.dmg (for upgrade)→box.com 42% of 22.52 MiB
+"""]]

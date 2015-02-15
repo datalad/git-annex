@@ -1,0 +1,9 @@
+Worked more on the `relativepaths` branch last night, and I am actually
+fairly happy with it now, and plan to merge it after I've run it for a bit
+longer myself.
+
+It seems that I did manage to get a git-annex executable that is built PIE
+so it will work on Android 5.0. But all the C programs like busybox
+included in the Android app also have to be built that way. Arranging for
+everything to get built twice and with the right options took up most of
+today.

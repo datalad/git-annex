@@ -1,0 +1,18 @@
+I'm unable to set up a standard architecture: 2 computers sharing some files, talking via a jabber account and transferring files via e.g. box.com.
+Steps:
+
+Computer 1: 
+a) Install git-annex, open up the assistant, create a new repository, add a jabber account
+b) Add a box.com account using
+WEBDAV_USERNAME=[username] WEBDAV_PASSWORD=[password] git annex initremote box.com type=webdav url=https://dav.box.com/dav/git-annex chunksize=75mb encryption=pubkey keyid=[key id].
+All seemed fine.
+
+Computer 2:
+a) same
+b) at this point I saw the option of adding box.com as a cloud storage. I clicked enable and got the message
+
+user error (gpg ["--quiet","--trust-model","always","--decrypt"] exited 2)
+
+In the meantime, on Computer 1 I saw the same option. I clicked enable and got the same message.
+
+It all works fine if I use shared encryption.

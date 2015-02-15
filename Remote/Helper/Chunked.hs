@@ -1,144 +1,409 @@
 {- git-annex chunked remotes
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Remote.Helper.Chunked where
+module Remote.Helper.Chunked (
+	ChunkSize,
+	ChunkConfig(..),
+	describeChunkConfig,
+	getChunkConfig,
+	storeChunks,
+	removeChunks,
+	retrieveChunks,
+	checkPresentChunks,
+) where
 
 import Common.Annex
 import Utility.DataUnits
+import Types.StoreRetrieve
 import Types.Remote
+import Types.Key
+import Logs.Chunk
 import Utility.Metered
+import Crypto (EncKey)
+import Backend (isStableKey)
 
-import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
-import Data.Int
-import qualified Control.Exception as E
+import qualified Data.Map as M
 
-type ChunkSize = Maybe Int64
+data ChunkConfig
+	= NoChunks
+	| UnpaddedChunks ChunkSize
+	| LegacyChunks ChunkSize
+	deriving (Show)
 
-{- Gets a remote's configured chunk size. -}
-chunkSize :: RemoteConfig -> ChunkSize
-chunkSize m =
+describeChunkConfig :: ChunkConfig -> String
+describeChunkConfig NoChunks = "none"
+describeChunkConfig (UnpaddedChunks sz) = describeChunkSize sz ++ "chunks"
+describeChunkConfig (LegacyChunks sz) = describeChunkSize sz ++ " chunks (old style)"
+
+describeChunkSize :: ChunkSize -> String
+describeChunkSize sz = roughSize storageUnits False (fromIntegral sz)
+
+noChunks :: ChunkConfig -> Bool
+noChunks NoChunks = True
+noChunks _ = False
+
+getChunkConfig :: RemoteConfig -> ChunkConfig
+getChunkConfig m =
 	case M.lookup "chunksize" m of
-		Nothing -> Nothing
-		Just v -> case readSize dataUnits v of
-			Nothing -> error "bad chunksize"
-			Just size
-				| size <= 0 -> error "bad chunksize"
-				| otherwise -> Just $ fromInteger size
-
-{- This is an extension that's added to the usual file (or whatever)
- - where the remote stores a key. -}
-type ChunkExt = String
-
-{- A record of the number of chunks used.
- -
- - While this can be guessed at based on the size of the key, encryption
- - makes that larger. Also, using this helps deal with changes to chunksize
- - over the life of a remote.
- -}
-chunkCount :: ChunkExt
-chunkCount = ".chunkcount"
-
-{- An infinite stream of extensions to use for chunks. -}
-chunkStream :: [ChunkExt]
-chunkStream = map (\n -> ".chunk" ++ show n) [1 :: Integer ..]
-
-{- Parses the String from the chunkCount file, and returns the files that
- - are used to store the chunks. -}
-listChunks :: FilePath -> String -> [FilePath]
-listChunks basedest chunkcount = take count $ map (basedest ++) chunkStream
+		Nothing -> case M.lookup "chunk" m of
+			Nothing -> NoChunks
+			Just v -> readsz UnpaddedChunks v "chunk"
+		Just v -> readsz LegacyChunks v "chunksize"
   where
-	count = fromMaybe 0 $ readish chunkcount
+	readsz c v f = case readSize dataUnits v of
+		Just size
+			| size == 0 -> NoChunks
+			| size > 0 -> c (fromInteger size)
+		_ -> error $ "bad configuration " ++ f ++ "=" ++ v
 
-{- For use when there is no chunkCount file; uses the action to find
- - chunks, and returns them, or Nothing if none found. Relies on
- - storeChunks's finalizer atomically moving the chunks into place once all
- - are written.
- -
- - This is only needed to work around a bug that caused the chunkCount file
- - not to be written.
- -}
-probeChunks :: FilePath -> (FilePath -> IO Bool) -> IO [FilePath]
-probeChunks basedest check = go [] $ map (basedest ++) chunkStream
+-- An infinite stream of chunk keys, starting from chunk 1.
+newtype ChunkKeyStream = ChunkKeyStream [Key]
+
+chunkKeyStream :: Key -> ChunkSize -> ChunkKeyStream
+chunkKeyStream basek chunksize = ChunkKeyStream $ map mk [1..]
   where
-	go l [] = return (reverse l)
-	go l (c:cs) = ifM (check c)
-		( go (c:l) cs
-		, go l []
-		)
+	mk chunknum = sizedk { keyChunkNum = Just chunknum }
+	sizedk = basek { keyChunkSize = Just (toInteger chunksize) }
 
-{- Given the base destination to use to store a value,
- - generates a stream of temporary destinations (just one when not chunking)
- - and passes it to an action, which should chunk and store the data,
- - and return the destinations it stored to, or [] on error. Then
- - calls the recorder to write the chunk count (if chunking). Finally, the
- - finalizer is called to rename the tmp into the dest 
- - (and do any other cleanup).
- -}
-storeChunks :: Key -> FilePath -> FilePath -> ChunkSize -> ([FilePath] -> IO [FilePath]) -> (FilePath -> String -> IO ()) -> (FilePath -> FilePath -> IO ()) -> IO Bool
-storeChunks key tmp dest chunksize storer recorder finalizer = either onerr return
-	=<< (E.try go :: IO (Either E.SomeException Bool))
-  where
-	go = do
-		stored <- storer tmpdests
-		when (isJust chunksize) $ do
-			let chunkcount = basef ++ chunkCount
-			recorder chunkcount (show $ length stored)
-		finalizer tmp dest
-		return (not $ null stored)
-	onerr e = do
-		print e
-		return False
+nextChunkKeyStream :: ChunkKeyStream -> (Key, ChunkKeyStream)
+nextChunkKeyStream (ChunkKeyStream (k:l)) = (k, ChunkKeyStream l)
+nextChunkKeyStream (ChunkKeyStream []) = undefined -- stream is infinite!
 
-	basef = tmp ++ keyFile key
-	tmpdests
-		| isNothing chunksize = [basef]
-		| otherwise = map (basef ++ ) chunkStream
+takeChunkKeyStream :: ChunkCount -> ChunkKeyStream -> [Key]
+takeChunkKeyStream n (ChunkKeyStream l) = genericTake n l
 
-{- Given a list of destinations to use, chunks the data according to the
- - ChunkSize, and runs the storer action to store each chunk. Returns
- - the destinations where data was stored, or [] on error.
+-- Number of chunks already consumed from the stream.
+numChunks :: ChunkKeyStream -> Integer
+numChunks = pred . fromJust . keyChunkNum . fst . nextChunkKeyStream
+
+{- Splits up the key's content into chunks, passing each chunk to
+ - the storer action, along with a corresponding chunk key and a
+ - progress meter update callback.
  -
- - This buffers each chunk in memory.
+ - To support resuming, the checker is used to find the first missing
+ - chunk key. Storing starts from that chunk.
+ -
+ - This buffers each chunk in memory, so can use a lot of memory
+ - with a large ChunkSize.
  - More optimal versions of this can be written, that rely
  - on L.toChunks to split the lazy bytestring into chunks (typically
  - smaller than the ChunkSize), and eg, write those chunks to a Handle.
  - But this is the best that can be done with the storer interface that
  - writes a whole L.ByteString at a time.
  -}
-storeChunked :: ChunkSize -> [FilePath] -> (FilePath -> L.ByteString -> IO ()) -> L.ByteString -> IO [FilePath]
-storeChunked chunksize dests storer content = either onerr return
-	=<< (E.try (go chunksize dests) :: IO (Either E.SomeException [FilePath]))
+storeChunks
+	:: UUID
+	-> ChunkConfig
+	-> Key
+	-> FilePath
+	-> MeterUpdate
+	-> Storer
+	-> CheckPresent
+	-> Annex Bool
+storeChunks u chunkconfig k f p storer checker = 
+	case chunkconfig of
+		(UnpaddedChunks chunksize) | isStableKey k -> 
+			bracketIO open close (go chunksize)
+		_ -> storer k (FileContent f) p
   where
-	go _ [] = return [] -- no dests!?
-	go Nothing (d:_) = do
-		storer d content
-		return [d]
-	go (Just sz) _
-		-- always write a chunk, even if the data is 0 bytes
-		| L.null content = go Nothing dests
-		| otherwise = storechunks sz [] dests content
-		
-	onerr e = do
-		print e
-		return []
-	
-	storechunks _ _ [] _ = return [] -- ran out of dests
-	storechunks sz useddests (d:ds) b
-		| L.null b = return $ reverse useddests
-		| otherwise = do
-			let (chunk, b') = L.splitAt sz b
-			storer d chunk
-			storechunks sz (d:useddests) ds b'
+	open = tryIO $ openBinaryFile f ReadMode
 
-{- Writes a series of chunks to a file. The feeder is called to get
- - each chunk. -}
-meteredWriteFileChunks :: MeterUpdate -> FilePath -> [v] -> (v -> IO L.ByteString) -> IO ()
-meteredWriteFileChunks meterupdate dest chunks feeder =
-	withBinaryFile dest WriteMode $ \h ->
-		forM_ chunks $
-			meteredWrite meterupdate h <=< feeder
+	close (Right h) = hClose h
+	close (Left _) = noop
+
+	go _ (Left e) = do
+		warning (show e)
+		return False
+	go chunksize (Right h) = do
+		let chunkkeys = chunkKeyStream k chunksize
+		(chunkkeys', startpos) <- seekResume h chunkkeys checker
+		b <- liftIO $ L.hGetContents h
+		gochunks p startpos chunksize b chunkkeys'
+
+	gochunks :: MeterUpdate -> BytesProcessed -> ChunkSize -> L.ByteString -> ChunkKeyStream -> Annex Bool
+	gochunks meterupdate startpos chunksize = loop startpos . splitchunk
+	  where
+		splitchunk = L.splitAt chunksize
+	
+		loop bytesprocessed (chunk, bs) chunkkeys
+			| L.null chunk && numchunks > 0 = do
+				-- Once all chunks are successfully
+				-- stored, update the chunk log.
+				chunksStored u k (FixedSizeChunks chunksize) numchunks
+				return True
+			| otherwise = do
+				liftIO $ meterupdate' zeroBytesProcessed
+				let (chunkkey, chunkkeys') = nextChunkKeyStream chunkkeys
+				ifM (storer chunkkey (ByteContent chunk) meterupdate')
+					( do
+						let bytesprocessed' = addBytesProcessed bytesprocessed (L.length chunk)
+						loop bytesprocessed' (splitchunk bs) chunkkeys'
+					, return False
+					)
+		  where
+			numchunks = numChunks chunkkeys
+			{- The MeterUpdate that is passed to the action
+			 - storing a chunk is offset, so that it reflects
+			 - the total bytes that have already been stored
+			 - in previous chunks. -}
+			meterupdate' = offsetMeterUpdate meterupdate bytesprocessed
+
+{- Check if any of the chunk keys are present. If found, seek forward
+ - in the Handle, so it will be read starting at the first missing chunk.
+ - Returns the ChunkKeyStream truncated to start at the first missing
+ - chunk, and the number of bytes skipped due to resuming.
+ -
+ - As an optimisation, if the file fits into a single chunk, there's no need
+ - to check if that chunk is present -- we know it's not, because otherwise
+ - the whole file would be present and there would be no reason to try to
+ - store it.
+ -}
+seekResume
+	:: Handle
+	-> ChunkKeyStream
+	-> CheckPresent
+	-> Annex (ChunkKeyStream, BytesProcessed)
+seekResume h chunkkeys checker = do
+	sz <- liftIO (hFileSize h)
+	if sz <= fromMaybe 0 (keyChunkSize $ fst $ nextChunkKeyStream chunkkeys)
+		then return (chunkkeys, zeroBytesProcessed)
+		else check 0 chunkkeys sz
+  where
+	check pos cks sz
+		| pos >= sz = do
+			-- All chunks are already stored!
+			liftIO $ hSeek h AbsoluteSeek sz
+			return (cks, toBytesProcessed sz)
+		| otherwise = do
+			v <- tryNonAsync (checker k)
+			case v of
+				Right True ->
+					check pos' cks' sz
+				_ -> do
+					when (pos > 0) $
+						liftIO $ hSeek h AbsoluteSeek pos
+					return (cks, toBytesProcessed pos)
+	  where
+		(k, cks') = nextChunkKeyStream cks
+		pos' = pos + fromMaybe 0 (keyChunkSize k)
+
+{- Removes all chunks of a key from a remote, by calling a remover
+ - action on each.
+ -
+ - The remover action should succeed even if asked to
+ - remove a key that is not present on the remote.
+ -
+ - This action may be called on a chunked key. It will simply remove it.
+ -}
+removeChunks :: (Key -> Annex Bool) -> UUID -> ChunkConfig -> EncKey -> Key -> Annex Bool
+removeChunks remover u chunkconfig encryptor k = do
+	ls <- chunkKeys u chunkconfig k
+	ok <- allM (remover . encryptor) (concat ls)
+	when ok $ do
+		let chunksizes = catMaybes $ map (keyChunkSize <=< headMaybe) ls
+		forM_ chunksizes $ chunksRemoved u k . FixedSizeChunks . fromIntegral
+	return ok
+
+{- Retrieves a key from a remote, using a retriever action.
+ -
+ - When the remote is chunked, tries each of the options returned by
+ - chunkKeys until it finds one where the retriever successfully
+ - gets the first chunked key. The content of that key, and any
+ - other chunks in the list is fed to the sink.
+ -
+ - If retrival of one of the subsequent chunks throws an exception,
+ - gives up and returns False. Note that partial data may have been
+ - written to the sink in this case.
+ -
+ - Resuming is supported when using chunks. When the destination file
+ - already exists, it skips to the next chunked key that would be needed
+ - to resume.
+ -}
+retrieveChunks 
+	:: Retriever
+	-> UUID
+	-> ChunkConfig
+	-> EncKey
+	-> Key
+	-> FilePath
+	-> MeterUpdate
+	-> (Maybe Handle -> Maybe MeterUpdate -> ContentSource -> Annex Bool)
+	-> Annex Bool
+retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
+	| noChunks chunkconfig =
+		-- Optimisation: Try the unchunked key first, to avoid
+		-- looking in the git-annex branch for chunk counts
+		-- that are likely not there.
+		getunchunked `catchNonAsync`
+			const (go =<< chunkKeysOnly u basek)
+	| otherwise = go =<< chunkKeys u chunkconfig basek
+  where
+	go ls = do
+		currsize <- liftIO $ catchMaybeIO $ getFileSize dest
+		let ls' = maybe ls (setupResume ls) currsize
+		if any null ls'
+			then return True -- dest is already complete
+			else firstavail currsize ls' `catchNonAsync` giveup
+
+	giveup e = do
+		warning (show e)
+		return False
+
+	firstavail _ [] = return False
+	firstavail currsize ([]:ls) = firstavail currsize ls
+	firstavail currsize ((k:ks):ls)
+		| k == basek = getunchunked
+			`catchNonAsync` (const $ firstavail currsize ls)
+		| otherwise = do
+			let offset = resumeOffset currsize k
+			let p = maybe basep
+				(offsetMeterUpdate basep . toBytesProcessed)
+				offset
+			v <- tryNonAsync $
+				retriever (encryptor k) p $ \content ->
+					bracketIO (maybe opennew openresume offset) hClose $ \h -> do
+						void $ tosink (Just h) p content
+						let sz = toBytesProcessed $
+							fromMaybe 0 $ keyChunkSize k
+						getrest p h sz sz ks
+							`catchNonAsync` giveup
+			case v of
+				Left e
+					| null ls -> giveup e
+					| otherwise -> firstavail currsize ls
+				Right r -> return r
+
+	getrest _ _ _ _ [] = return True
+	getrest p h sz bytesprocessed (k:ks) = do
+		let p' = offsetMeterUpdate p bytesprocessed
+		liftIO $ p' zeroBytesProcessed
+		ifM (retriever (encryptor k) p' $ tosink (Just h) p')
+			( getrest p h sz (addBytesProcessed bytesprocessed sz) ks
+			, giveup "chunk retrieval failed"
+			)
+
+	getunchunked = retriever (encryptor basek) basep $ tosink Nothing basep
+
+	opennew = openBinaryFile dest WriteMode
+
+	-- Open the file and seek to the start point in order to resume.
+	openresume startpoint = do
+		-- ReadWriteMode allows seeking; AppendMode does not.
+		h <- openBinaryFile dest ReadWriteMode
+		hSeek h AbsoluteSeek startpoint
+		return h
+
+	{- Progress meter updating is a bit tricky: If the Retriever
+	 - populates a file, it is responsible for updating progress
+	 - as the file is being retrieved. 
+	 -
+	 - However, if the Retriever generates a lazy ByteString,
+	 - it is not responsible for updating progress (often it cannot).
+	 - Instead, the sink is passed a meter to update as it consumes
+	 - the ByteString.
+	 -}
+	tosink h p content = sink h p' content
+	  where
+		p'
+			| isByteContent content = Just p
+			| otherwise = Nothing
+
+{- Can resume when the chunk's offset is at or before the end of
+ - the dest file. -}
+resumeOffset :: Maybe Integer -> Key -> Maybe Integer
+resumeOffset Nothing _ = Nothing
+resumeOffset currsize k
+	| offset <= currsize = offset
+	| otherwise = Nothing
+  where
+	offset = chunkKeyOffset k
+
+{- Drops chunks that are already present in a file, based on its size.
+ - Keeps any non-chunk keys.
+ -}
+setupResume :: [[Key]] -> Integer -> [[Key]]
+setupResume ls currsize = map dropunneeded ls
+  where
+	dropunneeded [] = []
+	dropunneeded l@(k:_) = case keyChunkSize k of
+		Just chunksize | chunksize > 0 ->
+			genericDrop (currsize `div` chunksize) l
+		_ -> l
+
+{- Checks if a key is present in a remote. This requires any one
+ - of the lists of options returned by chunkKeys to all check out
+ - as being present using the checker action.
+ -
+ - Throws an exception if the remote is not accessible.
+ -}
+checkPresentChunks
+	:: CheckPresent
+	-> UUID
+	-> ChunkConfig
+	-> EncKey
+	-> Key
+	-> Annex Bool
+checkPresentChunks checker u chunkconfig encryptor basek
+	| noChunks chunkconfig = do
+		-- Optimisation: Try the unchunked key first, to avoid
+		-- looking in the git-annex branch for chunk counts
+		-- that are likely not there.
+		v <- check basek
+		case v of
+			Right True -> return True
+			Left e -> checklists (Just e) =<< chunkKeysOnly u basek
+			_ -> checklists Nothing =<< chunkKeysOnly u basek
+	| otherwise = checklists Nothing =<< chunkKeys u chunkconfig basek
+  where
+	checklists Nothing [] = return False
+	checklists (Just deferrederror) [] = throwM deferrederror
+	checklists d (l:ls)
+		| not (null l) = do
+			v <- checkchunks l
+			case v of
+				Left e -> checklists (Just e) ls
+				Right True -> return True
+				Right False -> checklists Nothing ls
+		| otherwise = checklists d ls
+	
+	checkchunks :: [Key] -> Annex (Either SomeException Bool)
+	checkchunks [] = return (Right True)
+	checkchunks (k:ks) = do
+		v <- check k
+		case v of
+			Right True -> checkchunks ks
+			Right False -> return $ Right False
+			Left e -> return $ Left e
+
+	check = tryNonAsync . checker . encryptor
+
+{- A key can be stored in a remote unchunked, or as a list of chunked keys.
+ - This can be the case whether or not the remote is currently configured
+ - to use chunking.
+ -
+ - It's even possible for a remote to have the same key stored multiple
+ - times with different chunk sizes!
+ -
+ - This finds all possible lists of keys that might be on the remote that
+ - can be combined to get back the requested key, in order from most to
+ - least likely to exist.
+ -}
+chunkKeys :: UUID -> ChunkConfig -> Key -> Annex [[Key]]
+chunkKeys u chunkconfig k = do
+	l <- chunkKeysOnly u k
+	return $ if noChunks chunkconfig
+		then [k] : l
+		else l ++ [[k]]
+
+chunkKeysOnly :: UUID -> Key -> Annex [[Key]]
+chunkKeysOnly u k = map (toChunkList k) <$> getCurrentChunks u k
+
+toChunkList :: Key -> (ChunkMethod, ChunkCount) -> [Key]
+toChunkList k (FixedSizeChunks chunksize, chunkcount) =
+	takeChunkKeyStream chunkcount $ chunkKeyStream k chunksize
+toChunkList _ (UnknownChunks _, _) = []

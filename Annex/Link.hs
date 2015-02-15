@@ -5,7 +5,7 @@
  - On other filesystems, git instead stores the symlink target in a regular
  - file.
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -35,13 +35,17 @@ isAnnexLink file = maybe Nothing (fileKey . takeFileName) <$> getAnnexLinkTarget
  - content.
  -}
 getAnnexLinkTarget :: FilePath -> Annex (Maybe LinkTarget)
-getAnnexLinkTarget file = ifM (coreSymlinks <$> Annex.getGitConfig)
-	( check readSymbolicLink $
+getAnnexLinkTarget f = getAnnexLinkTarget' f
+	=<< (coreSymlinks <$> Annex.getGitConfig)
+
+{- Pass False to force looking inside file. -}
+getAnnexLinkTarget' :: FilePath -> Bool -> Annex (Maybe LinkTarget)
+getAnnexLinkTarget' file coresymlinks = if coresymlinks
+	then check readSymbolicLink $
 		return Nothing
-	, check readSymbolicLink $
+	else check readSymbolicLink $
 		check probefilecontent $
 			return Nothing
-	)
   where
 	check getlinktarget fallback = do
 		v <- liftIO $ catchMaybeIO $ getlinktarget file
@@ -68,6 +72,9 @@ getAnnexLinkTarget file = ifM (coreSymlinks <$> Annex.getGitConfig)
 					then ""
 					else s
 
+makeAnnexLink :: LinkTarget -> FilePath -> Annex ()
+makeAnnexLink = makeGitLink
+
 {- Creates a link on disk.
  -
  - On a filesystem that does not support symlinks, writes the link target
@@ -75,8 +82,8 @@ getAnnexLinkTarget file = ifM (coreSymlinks <$> Annex.getGitConfig)
  - it's staged as such, so use addAnnexLink when adding a new file or
  - modified link to git.
  -}
-makeAnnexLink :: LinkTarget -> FilePath -> Annex ()
-makeAnnexLink linktarget file = ifM (coreSymlinks <$> Annex.getGitConfig)
+makeGitLink :: LinkTarget -> FilePath -> Annex ()
+makeGitLink linktarget file = ifM (coreSymlinks <$> Annex.getGitConfig)
 	( liftIO $ do
 		void $ tryIO $ removeFile file
 		createSymbolicLink linktarget file

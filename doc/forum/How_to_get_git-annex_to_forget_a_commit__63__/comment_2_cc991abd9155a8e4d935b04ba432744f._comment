@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 2"
+ date="2014-07-17T16:05:33Z"
+ content="""
+Of course, if the repository has any git remotes, there will also be remote-tracking branches for the git-annex branch that get automatically merged back in, etc. 
+"""]]

@@ -1,0 +1,3 @@
+Attended at the f-droid sprint at LibrePlanet, and have been getting a
+handle on how their build server works with an eye toward adding git-annex
+to it. Not entirely successful getting vagrant to build an image yet.

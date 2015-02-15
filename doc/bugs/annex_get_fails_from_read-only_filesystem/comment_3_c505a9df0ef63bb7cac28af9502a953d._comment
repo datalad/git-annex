@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.54"
+ subject="comment 3"
+ date="2014-10-06T15:59:10Z"
+ content="""
+From a code complication POV, it's useful for git-annex to only support one version of repository at a time.
+
+As far as backwards compatablity goes, I don't anticipate ever removing the upgrade code from git-annex. It still supports upgrading v0 repos which probably only I ever used!
+"""]]

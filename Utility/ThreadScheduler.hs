@@ -1,18 +1,21 @@
 {- thread scheduling
  -
- - Copyright 2012, 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012, 2013 Joey Hess <id@joeyh.name>
  - Copyright 2011 Bas van Dijk & Roel van Dijk
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 {-# LANGUAGE CPP #-}
 
 module Utility.ThreadScheduler where
 
-import Common
-
+import Control.Monad
 import Control.Concurrent
+#ifndef mingw32_HOST_OS
+import Control.Monad.IfElse
+import System.Posix.IO
+#endif
 #ifndef mingw32_HOST_OS
 import System.Posix.Signals
 #ifndef __ANDROID__
@@ -54,8 +57,7 @@ unboundDelay time = do
 waitForTermination :: IO ()
 waitForTermination = do
 #ifdef mingw32_HOST_OS
-	runEvery (Seconds 600) $
-		void getLine
+	forever $ threadDelaySeconds (Seconds 6000)
 #else
 	lock <- newEmptyMVar
 	let check sig = void $

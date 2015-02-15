@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawnR7hb8IaKB3IKZptRukje0yahmhfLOO98"
- nickname="Adam"
- subject="comment 2"
- date="2013-04-01T19:23:12Z"
- content="""
-I think I hit this same issue when trying to work with a significant amount of files and data. It'd be good if git-annex were smarter about when a file is identical, especially if the file was copied through `rsync -a`.
-"""]]

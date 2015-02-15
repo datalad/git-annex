@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 3"
+ date="2015-01-06T20:51:20Z"
+ content="""
+I've started a `relativepaths` branch that uses all relative paths to the git repo. After working on it for several hours, there are still 16 test suite failures (update: 10) (update: 1). The potential for uncaught breakage is much higher than I am happy with. (Amoung other problems, git-annex does call setCurrentDirectory in several places, and this utterly breaks the relative paths).
+
+Using that branch on windows, I am still unable to add files with --backend=SHA512; even relative paths don't make it short enough for such keys.
+"""]]

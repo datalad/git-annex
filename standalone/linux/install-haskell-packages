@@ -3,37 +3,42 @@
 # to all the necessary haskell packages being installed, with the
 # necessary patches to work on architectures that lack template haskell.
 #
-# Note that the newest version of packages is installed. 
-# It attempts to reuse patches for older versions, but 
-# new versions of packages often break cross-compilation by adding TH, 
-# etc
-#
-# Future work: Convert to using the method used here:
-# https://github.com/kaoskorobase/ghc-ios-cabal-scripts/
+# The cabal.config is used to pin the haskell packages to the last
+# versions that have been gotten working. To update, delete the
+# cabal.config, run this script with an empty cabal and fix up the broken
+# patches, and then use cabal freeze to generate a new cabal.config.
 
 set -e
 
-if [ ! -d ../haskell-patches ]; then
+if [ ! -d haskell-patches ]; then
 	cd standalone/linux
 fi
 
 cabalopts="$@"
 
 cabalinstall () {
-	echo cabal install "$@" "$cabalopts"
-	eval cabal install "$@" "$cabalopts"
+	echo cabal install -j1 "$@" "$cabalopts"
+	eval cabal install -j1 "$@" "$cabalopts"
 }
 
 patched () {
 	pkg=$1
-	shift 1
-	cabal unpack $pkg
+	ver=$2
+        if [ -z "$ver" ]; then
+                ver="$(grep " $pkg " ../cabal.config | cut -d= -f 3 | sed 's/,$//')"
+        fi
+        if [ -z "$ver" ]; then
+                cabal unpack --pristine $pkg
+        else
+                cabal unpack --pristine $pkg-$ver
+        fi
 	cd $pkg*
 	git init
 	git config user.name dummy
 	git config user.email dummy@example.com
 	git add .
 	git commit -m "pre-patched state of $pkg"
+	ln -sf ../../cabal.config
 	for patch in ../../haskell-patches/${pkg}_* ../../../no-th/haskell-patches/${pkg}_*; do
 		if [ -e "$patch" ]; then
 			echo trying $patch
@@ -44,15 +49,20 @@ patched () {
 			fi
 		fi
 	done
-	cabalinstall "$@"
-	rm -rf $pkg*
+	cabalinstall
+	rm -f cabal.config
 	cd ..
+	rm -rf $pkg*
 }
 
 installgitannexdeps () {
 	pushd ../..
+	ln -sf standalone/linux/cabal.config
+	echo "cabal install QuickCheck -f-templateHaskell"
+	cabal install -j1 QuickCheck -f-templateHaskell
 	echo cabal install --only-dependencies "$@"
-	cabal install --only-dependencies "$@"
+	cabal install -j1 --only-dependencies "$@"
+	rm -f cabal.config
 	popd
 }
 
@@ -63,18 +73,18 @@ install_pkgs () {
 
 	patched network
 	patched wai-app-static
+	patched vector
+	patched aeson
 	patched shakespeare
-	patched shakespeare-css
 	patched yesod-routes
-	patched hamlet
 	patched monad-logger
-	patched shakespeare-i18n
+	patched skein
 	patched shakespeare-js
+	patched hamlet
 	patched yesod-core
 	patched persistent
 	patched persistent-template
 	patched file-embed
-	patched shakespeare-text
 	patched process-conduit
 	patched yesod-static
 	patched yesod-persistent
@@ -94,4 +104,9 @@ install_pkgs () {
 }
 
 cabal update
+
+# Some packages fail to install in a non unicode locale.
+LANG=C.UTF-8
+export LANG
+
 install_pkgs

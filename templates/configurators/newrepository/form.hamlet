@@ -1,11 +1,13 @@
 #{msg}
 <p>
-  <div .input-prepend .input-append>
-    <span .add-on>
-      <i .icon-folder-open></i>
-    ^{fvInput pathView}
-    <button type=submit .btn .btn-primary>
-      Make Repository
+  <div .form-group>
+    <div .input-group>
+      <span .input-group-addon>
+        <span .glyphicon .glyphicon-folder-open>
+      ^{fvInput pathView}
+      <span .input-group-btn>
+        <button type=submit .btn .btn-primary>
+          Make Repository
 $if err
-  <div .alert .alert-error>
+  <div .alert .alert-danger>
     #{errmsg}

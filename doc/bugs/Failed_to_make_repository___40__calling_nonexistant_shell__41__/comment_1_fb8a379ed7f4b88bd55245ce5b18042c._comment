@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.154.4.90"
- subject="comment 1"
- date="2013-07-16T19:30:55Z"
- content="""
-That's not really how you're meant to use the standalone tarball. Just untar it somewhere, and add that directory to PATH (eg, in `~/.bash_profile`).
-"""]]

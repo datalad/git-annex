@@ -1,12 +1,13 @@
 {- git-annex metadata
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Annex.MetaData (
 	genMetaData,
+	dateMetaData,
 	module X
 ) where
 
@@ -37,20 +38,18 @@ genMetaData :: Key -> FilePath -> FileStatus -> Annex ()
 genMetaData key file status = do
 	maybe noop (flip copyMetaData key) =<< catKeyFileHEAD file
 	whenM (annexGenMetaData <$> Annex.getGitConfig) $ do
-		metadata <- getCurrentMetaData key
-		let metadata' = genMetaData' status metadata
-		unless (metadata' == emptyMetaData) $
-			addMetaData key metadata'
+		curr <- getCurrentMetaData key
+		addMetaData key (dateMetaData mtime curr)
+  where
+	mtime = posixSecondsToUTCTime $ realToFrac $ modificationTime status
 
-{- Generates metadata from the FileStatus.
+{- Generates metadata for a file's date stamp.
  - Does not overwrite any existing metadata values. -}
-genMetaData' :: FileStatus -> MetaData -> MetaData
-genMetaData' status old = MetaData $ M.fromList $ filter isnew
+dateMetaData :: UTCTime -> MetaData -> MetaData
+dateMetaData mtime old = MetaData $ M.fromList $ filter isnew
 	[ (yearMetaField, S.singleton $ toMetaValue $ show y)
 	, (monthMetaField, S.singleton $ toMetaValue $ show m)
 	]
   where
 	isnew (f, _) = S.null (currentMetaDataValues f old)
-	(y, m, _d) = toGregorian $ utctDay $ 
-		posixSecondsToUTCTime $ realToFrac $
-			modificationTime status
+	(y, m, _d) = toGregorian $ utctDay $ mtime

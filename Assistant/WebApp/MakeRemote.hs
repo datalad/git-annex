@@ -1,6 +1,6 @@
 {- git-annex assistant webapp making remotes
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -26,12 +26,20 @@ import Utility.Yesod
 
 {- Runs an action that creates or enables a cloud remote,
  - and finishes setting it up, then starts syncing with it,
- - and finishes by displaying the page to edit it. -}
+ - and finishes by displaying the page to edit it.
+ -
+ - This includes displaying the connectionNeeded nudge if appropariate.
+ -}
 setupCloudRemote :: StandardGroup -> Maybe Cost -> Annex RemoteName -> Handler a
-setupCloudRemote defaultgroup mcost name = do
-	r <- liftAnnex $ addRemote name
+setupCloudRemote = setupRemote postsetup . Just
+  where
+	postsetup = redirect . EditNewCloudRepositoryR . Remote.uuid
+
+setupRemote :: (Remote -> Handler a) -> Maybe StandardGroup -> Maybe Cost -> Annex RemoteName -> Handler a
+setupRemote postsetup mgroup mcost getname = do
+	r <- liftAnnex $ addRemote getname
 	liftAnnex $ do
-		setStandardGroup (Remote.uuid r) defaultgroup
+		maybe noop (defaultStandardGroup (Remote.uuid r)) mgroup
 		maybe noop (Config.setRemoteCost (Remote.repo r)) mcost
 	liftAssistant $ syncRemote r
-	redirect $ EditNewCloudRepositoryR $ Remote.uuid r
+	postsetup r

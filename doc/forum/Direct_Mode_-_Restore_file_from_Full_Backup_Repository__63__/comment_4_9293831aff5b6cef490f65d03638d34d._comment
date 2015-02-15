@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmK0703vNSIQsP1mGf-4MAPnsBZiSc6yVo"
+ nickname="Emre"
+ subject="comment 4"
+ date="2014-10-02T21:57:02Z"
+ content="""
+If git-annex target user community are the ones with some level of git know-how, then you may be right. But I'm not one of them. The only time I use git is to clone a repo from the internet when I want to compile latest source code. Nothing more. Reverting etc are alien to me. 
+
+Besides, what happens if there are multiple files in a commit but you want to revert only one file? This may be a stupid question if git is able to filter files when reverting, but accept my apologies if so, since I do not know git.
+
+I simply want to use git-annex to sync files, keeping some versions of the files in case needed.  
+"""]]

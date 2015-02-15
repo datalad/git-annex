@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -14,13 +14,20 @@ import qualified Annex
 import Annex.UUID
 import Logs.Location
 import Logs.Trust
+import Logs.PreferredContent
 import Config.NumCopies
 import Annex.Content
 import Annex.Wanted
+import Annex.Notification
 
-def :: [Command]
-def = [withOptions [dropFromOption] $ command "drop" paramPaths seek
+import qualified Data.Set as S
+
+cmd :: [Command]
+cmd = [withOptions (dropOptions) $ command "drop" paramPaths seek
 	SectionCommon "indicate content of files not currently wanted"]
+
+dropOptions :: [Option]
+dropOptions = dropFromOption : annexedMatchingOptions
 
 dropFromOption :: Option
 dropFromOption = fieldOption ['f'] "from" paramRemote "drop content from a remote"
@@ -30,8 +37,8 @@ seek ps = do
 	from <- getOptionField dropFromOption Remote.byNameWithUUID
 	withFilesInGit (whenAnnexed $ start from) ps
 
-start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
-start from file (key, _) = checkDropAuto from file key $ \numcopies ->
+start :: Maybe Remote -> FilePath -> Key -> CommandStart
+start from file key = checkDropAuto from file key $ \numcopies ->
 	stopUnless (checkAuto $ wantDrop False (Remote.uuid <$> from) (Just key) (Just file)) $
 		case from of
 			Nothing -> startLocal (Just file) numcopies key Nothing
@@ -44,39 +51,56 @@ start from file (key, _) = checkDropAuto from file key $ \numcopies ->
 startLocal :: AssociatedFile -> NumCopies -> Key -> Maybe Remote -> CommandStart
 startLocal afile numcopies key knownpresentremote = stopUnless (inAnnex key) $ do
 	showStart' "drop" key afile
-	next $ performLocal key numcopies knownpresentremote
+	next $ performLocal key afile numcopies knownpresentremote
 
 startRemote :: AssociatedFile -> NumCopies -> Key -> Remote -> CommandStart
 startRemote afile numcopies key remote = do
 	showStart' ("drop " ++ Remote.name remote) key afile
-	next $ performRemote key numcopies remote
+	next $ performRemote key afile numcopies remote
 
-performLocal :: Key -> NumCopies -> Maybe Remote -> CommandPerform
-performLocal key numcopies knownpresentremote = lockContent key $ do
+-- Note that lockContent is called before checking if the key is present
+-- on enough remotes to allow removal. This avoids a scenario where two
+-- or more remotes are trying to remove a key at the same time, and each
+-- see the key is present on the other.
+performLocal :: Key -> AssociatedFile -> NumCopies -> Maybe Remote -> CommandPerform
+performLocal key afile numcopies knownpresentremote = lockContent key $ \contentlock -> do
 	(remotes, trusteduuids) <- Remote.keyPossibilitiesTrusted key
 	let trusteduuids' = case knownpresentremote of
 		Nothing -> trusteduuids
 		Just r -> nub (Remote.uuid r:trusteduuids)
 	untrusteduuids <- trustGet UnTrusted
 	let tocheck = Remote.remotesWithoutUUID remotes (trusteduuids'++untrusteduuids)
-	stopUnless (canDropKey key numcopies trusteduuids' tocheck []) $ do
-		removeAnnex key
-		next $ cleanupLocal key
+	u <- getUUID
+	ifM (canDrop u key afile numcopies trusteduuids' tocheck [])
+		( do
+			removeAnnex contentlock
+			notifyDrop afile True
+			next $ cleanupLocal key
+		, do
+			notifyDrop afile False
+			stop
+		)
 
-performRemote :: Key -> NumCopies -> Remote -> CommandPerform
-performRemote key numcopies remote = lockContent key $ do
+performRemote :: Key -> AssociatedFile -> NumCopies -> Remote -> CommandPerform
+performRemote key afile numcopies remote = do
 	-- Filter the remote it's being dropped from out of the lists of
 	-- places assumed to have the key, and places to check.
-	-- When the local repo has the key, that's one additional copy.
+	-- When the local repo has the key, that's one additional copy,
+	-- as long asthe local repo is not untrusted.
 	(remotes, trusteduuids) <- Remote.keyPossibilitiesTrusted key
 	present <- inAnnex key
 	u <- getUUID
-	let have = filter (/= uuid) $
-		if present then u:trusteduuids else trusteduuids
+	trusteduuids' <- if present
+		then ifM ((<= SemiTrusted) <$> lookupTrust u)
+			( pure (u:trusteduuids)
+			, pure trusteduuids
+			)
+		else pure trusteduuids
+	let have = filter (/= uuid) trusteduuids'
 	untrusteduuids <- trustGet UnTrusted
 	let tocheck = filter (/= remote) $
 		Remote.remotesWithoutUUID remotes (have++untrusteduuids)
-	stopUnless (canDropKey key numcopies have tocheck [uuid]) $ do
+	stopUnless (canDrop uuid key afile numcopies have tocheck [uuid]) $ do
 		ok <- Remote.removeKey remote key
 		next $ cleanupRemote key remote ok
   where
@@ -95,13 +119,19 @@ cleanupRemote key remote ok = do
 
 {- Checks specified remotes to verify that enough copies of a key exist to
  - allow it to be safely removed (with no data loss). Can be provided with
- - some locations where the key is known/assumed to be present. -}
-canDropKey :: Key -> NumCopies -> [UUID] -> [Remote] -> [UUID] -> Annex Bool
-canDropKey key numcopies have check skip = do
-	force <- Annex.getState Annex.force
-	if force || numcopies == NumCopies 0
-		then return True
-		else findCopies key numcopies skip have check
+ - some locations where the key is known/assumed to be present.
+ -
+ - Also checks if it's required content, and refuses to drop if so.
+ -
+ - --force overrides and always allows dropping.
+ -}
+canDrop :: UUID -> Key -> AssociatedFile -> NumCopies -> [UUID] -> [Remote] -> [UUID] -> Annex Bool
+canDrop dropfrom key afile numcopies have check skip = ifM (Annex.getState Annex.force)
+	( return True
+	, checkRequiredContent dropfrom key afile
+		<&&>
+	  findCopies key numcopies skip have check
+	)
 
 findCopies :: Key -> NumCopies -> [UUID] -> [UUID] -> [Remote] -> Annex Bool
 findCopies key need skip = helper [] []
@@ -129,13 +159,26 @@ notEnoughCopies key need have skip bad = do
 		show (length have) ++ " out of " ++ show (fromNumCopies need) ++ 
 		" necessary copies"
 	Remote.showTriedRemotes bad
-	Remote.showLocations key (have++skip)
+	Remote.showLocations True key (have++skip)
 		"Rather than dropping this file, try using: git annex move"
 	hint
 	return False
   where
 	unsafe = showNote "unsafe"
 	hint = showLongNote "(Use --force to override this check, or adjust numcopies.)"
+
+checkRequiredContent :: UUID -> Key -> AssociatedFile -> Annex Bool
+checkRequiredContent u k afile =
+	ifM (isRequiredContent (Just u) S.empty (Just k) afile False)
+		( requiredContent
+		, return True
+		)
+
+requiredContent :: Annex Bool
+requiredContent = do
+	showLongNote "That file is required content, it cannot be dropped!"
+	showLongNote "(Use --force to override this check, or adjust required content configuration.)"
+	return False
 
 {- In auto mode, only runs the action if there are enough
  - copies on other semitrusted repositories. -}

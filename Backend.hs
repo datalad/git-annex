@@ -1,6 +1,6 @@
 {- git-annex key/value backends
  -
- - Copyright 2010,2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -10,10 +10,12 @@ module Backend (
 	orderedList,
 	genKey,
 	lookupFile,
+	getBackend,
 	isAnnexLink,
 	chooseBackend,
 	lookupBackendName,
-	maybeLookupBackendName
+	maybeLookupBackendName,
+	isStableKey,
 ) where
 
 import Common.Annex
@@ -30,6 +32,8 @@ import Config
 import qualified Backend.Hash
 import qualified Backend.WORM
 import qualified Backend.URL
+
+import qualified Data.Map as M
 
 list :: [Backend]
 list = Backend.Hash.backends ++ Backend.WORM.backends ++ Backend.URL.backends
@@ -74,7 +78,7 @@ genKey' (b:bs) source = do
 		| c == '\n' = '_'
 		| otherwise = c
 
-{- Looks up the key and backend corresponding to an annexed file,
+{- Looks up the key corresponding to an annexed file,
  - by examining what the file links to.
  -
  - In direct mode, there is often no link on disk, in which case
@@ -82,7 +86,7 @@ genKey' (b:bs) source = do
  - on disk still takes precedence over what was committed to git in direct
  - mode.
  -}
-lookupFile :: FilePath -> Annex (Maybe (Key, Backend))
+lookupFile :: FilePath -> Annex (Maybe Key)
 lookupFile file = do
 	mkey <- isAnnexLink file
 	case mkey of
@@ -92,14 +96,15 @@ lookupFile file = do
 			, return Nothing
 			)
   where
-	makeret k = let bname = keyBackendName k in
-		case maybeLookupBackendName bname of
-			Just backend -> return $ Just (k, backend)
-			Nothing -> do
-				warning $
-					"skipping " ++ file ++
-					" (unknown backend " ++ bname ++ ")"
-				return Nothing
+	makeret k = return $ Just k
+
+getBackend :: FilePath -> Key -> Annex (Maybe Backend)
+getBackend file k = let bname = keyBackendName k in
+	case maybeLookupBackendName bname of
+		Just backend -> return $ Just backend
+		Nothing -> do
+			warning $ "skipping " ++ file ++ " (unknown backend " ++ bname ++ ")"
+			return Nothing
 
 {- Looks up the backend that should be used for a file.
  - That can be configured on a per-file basis in the gitattributes file. -}
@@ -114,7 +119,13 @@ lookupBackendName :: String -> Backend
 lookupBackendName s = fromMaybe unknown $ maybeLookupBackendName s
   where
 	unknown = error $ "unknown backend " ++ s
+
 maybeLookupBackendName :: String -> Maybe Backend
-maybeLookupBackendName s = headMaybe matches
-  where
-	matches = filter (\b -> s == B.name b) list
+maybeLookupBackendName s = M.lookup s nameMap
+
+nameMap :: M.Map String Backend
+nameMap = M.fromList $ zip (map B.name list) list
+
+isStableKey :: Key -> Bool
+isStableKey k = maybe False (`B.isStableKey` k) 
+	(maybeLookupBackendName (keyBackendName k))

@@ -1,6 +1,6 @@
 {- git-annex-shell main program
  -
- - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -29,22 +29,24 @@ import qualified Command.RecvKey
 import qualified Command.SendKey
 import qualified Command.TransferInfo
 import qualified Command.Commit
+import qualified Command.NotifyChanges
 import qualified Command.GCryptSetup
 
 cmds_readonly :: [Command]
 cmds_readonly = concat
-	[ gitAnnexShellCheck Command.ConfigList.def
-	, gitAnnexShellCheck Command.InAnnex.def
-	, gitAnnexShellCheck Command.SendKey.def
-	, gitAnnexShellCheck Command.TransferInfo.def
+	[ gitAnnexShellCheck Command.ConfigList.cmd
+	, gitAnnexShellCheck Command.InAnnex.cmd
+	, gitAnnexShellCheck Command.SendKey.cmd
+	, gitAnnexShellCheck Command.TransferInfo.cmd
+	, gitAnnexShellCheck Command.NotifyChanges.cmd
 	]
 
 cmds_notreadonly :: [Command]
 cmds_notreadonly = concat
-	[ gitAnnexShellCheck Command.RecvKey.def
-	, gitAnnexShellCheck Command.DropKey.def
-	, gitAnnexShellCheck Command.Commit.def
-	, Command.GCryptSetup.def
+	[ gitAnnexShellCheck Command.RecvKey.cmd
+	, gitAnnexShellCheck Command.DropKey.cmd
+	, gitAnnexShellCheck Command.Commit.cmd
+	, Command.GCryptSetup.cmd
 	]
 
 cmds :: [Command]
@@ -64,7 +66,7 @@ options = commonOptions ++
 		check u = unexpectedUUID expected u
 	checkGCryptUUID expected = check =<< getGCryptUUID True =<< gitRepo
 	  where
-	  	check (Just u) | u == toUUID expected = noop
+		check (Just u) | u == toUUID expected = noop
 		check Nothing = unexpected expected "uninitialized repository"
 		check (Just u) = unexpectedUUID expected u
 	unexpectedUUID expected u = unexpected expected $ "UUID " ++ fromUUID u

@@ -1,8 +1,9 @@
 This special remote type stores file contents in a bucket in Amazon S3
 or a similar service.
 
-See [[tips/using_Amazon_S3]] and
-[[tips/Internet_Archive_via_S3]] for usage examples.
+See [[tips/using_Amazon_S3]], 
+[[tips/Internet_Archive_via_S3]], and [[tips/using_Google_Cloud_Storage]]
+for usage examples.
 
 ## configuration
 
@@ -20,6 +21,9 @@ the S3 remote.
 
 * `keyid` - Specifies the gpg key to use for [[encryption]].
 
+* `chunk` - Enables [[chunking]] when storing large files.
+  `chunk=1MiB` is a good starting point for chunking.
+
 * `embedcreds` - Optional. Set to "yes" embed the login credentials inside
   the git repository, which allows other clones to also access them. This is
   the default when gpg encryption is enabled; the credentials are stored
@@ -30,7 +34,8 @@ the S3 remote.
   embedcreds without gpg encryption.
 
 * `datacenter` - Defaults to "US". Other values include "EU",
-  "us-west-1", and "ap-southeast-1".
+  "us-west-1", "us-west-2", "ap-southeast-1", "ap-southeast-2", and
+  "sa-east-1".
 
 * `storageclass` - Default is "STANDARD". If you have configured git-annex
   to preserve multiple [[copies]], consider setting this to "REDUCED_REDUNDANCY"
@@ -43,11 +48,24 @@ the S3 remote.
   so by default, a bucket name is chosen based on the remote name
   and UUID. This can be specified to pick a bucket name.
 
+* `partsize` - Amazon S3 only accepts uploads up to a certian file size,
+  and storing larger files requires a multipart upload process.
+
+  Setting `partsize=1GiB` is recommended for Amazon S3 when not using
+  chunking; this will cause multipart uploads to be done using parts
+  up to 1GiB in size. Note that setting partsize to less than 100MiB
+  will cause Amazon S3 to reject uploads.
+
+  This is not enabled by default, since other S3 implementations may
+  not support multipart uploads or have different limits,
+  but can be enabled or changed at any time.
+  time.
+
 * `fileprefix` - By default, git-annex places files in a tree rooted at the
   top of the S3 bucket. When this is set, it's prefixed to the filenames
   used. For example, you could set it to "foo/" in one special remote,
   and to "bar/" in another special remote, and both special remotes could
   then use the same bucket.
 
-* `x-amz-*` are passed through as http headers when storing keys
+* `x-amz-meta-*` are passed through as http headers when storing keys
   in S3.

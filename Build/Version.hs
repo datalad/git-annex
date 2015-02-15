@@ -10,9 +10,10 @@ import System.Directory
 import Data.Char
 import System.Process
 
-import Build.TestConfig
 import Utility.Monad
 import Utility.Exception
+
+type Version = String
 
 {- Set when making an official release. (Distribution vendors should set
  - this too.) -}
@@ -25,10 +26,10 @@ isReleaseBuild = isJust <$> catchMaybeIO (getEnv "RELEASE_BUILD")
  -
  - If git or a git repo is not available, or something goes wrong,
  - or this is a release build, just use the version from the changelog. -}
-getVersion :: Test
+getVersion :: IO Version
 getVersion = do
 	changelogversion <- getChangelogVersion
-	version <- ifM (isReleaseBuild)
+	ifM (isReleaseBuild)
 		( return changelogversion
 		, catchDefaultIO changelogversion $ do
 			let major = takeWhile (/= '.') changelogversion
@@ -40,9 +41,8 @@ getVersion = do
 				then return changelogversion
 				else return $ concat [ major, ".", autoversion ]
 		)
-	return $ Config "packageversion" (StringConfig version)
 	
-getChangelogVersion :: IO String
+getChangelogVersion :: IO Version
 getChangelogVersion = do
 	changelog <- readFile "debian/changelog"
 	let verline = takeWhile (/= '\n') changelog

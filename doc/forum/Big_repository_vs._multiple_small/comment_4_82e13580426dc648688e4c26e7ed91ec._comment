@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/FHnTlSBo1eCGJRwueeKeB6.RCaPbGMPr5jxx8A--#ce0d8"
+ nickname="Hamza"
+ subject="comment 4"
+ date="2014-04-18T09:16:44Z"
+ content="""
+with git you can not checkout parts of a repo it is all or nothing but with annex you can download your files dir by dir. When you clone you get symlinks for all files but only the files you want are downloaded.
+"""]]

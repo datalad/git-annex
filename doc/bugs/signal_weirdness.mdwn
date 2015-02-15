@@ -46,3 +46,5 @@ it assumes they never trap SIGINT on their own.
 Which is why the current behavior of not blocking SIGINT was chosen,
 as a less bad alternative. Still, I'd like to find a better one.
 --[[Joey]] 
+
+[[!tag confirmed]]

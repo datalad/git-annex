@@ -22,8 +22,12 @@ daemon as needed.
 These parameters can be passed to `git annex initremote` to configure
 the tahoe remote.
 
+* `shared-convergence-secret` - Optional. Can be useful to set to
+  allow tahoe to deduplicate information. By default, a new
+  shared-convergence-secret is created for each tahoe remote.
+
 * `embedcreds` - Optional. Set to "yes" embed the tahoe credentials 
-  (specifically the introducer furl and shared-convergence-secret)
+  (specifically the introducer-furl and shared-convergence-secret)
   inside the git repository, which allows other clones to also use them
   in order to access the tahoe grid.
 

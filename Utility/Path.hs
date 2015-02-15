@@ -1,8 +1,8 @@
 {- path manipulation
  -
- - Copyright 2010-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2014 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 {-# LANGUAGE PackageImports, CPP #-}
@@ -21,6 +21,7 @@ import Control.Applicative
 import qualified System.FilePath.Posix as Posix
 #else
 import System.Posix.Files
+import Utility.Exception
 #endif
 
 import qualified "MissingH" System.Path as MissingH
@@ -65,7 +66,7 @@ absPathFrom :: FilePath -> FilePath -> FilePath
 absPathFrom dir path = simplifyPath (combine dir path)
 
 {- On Windows, this converts the paths to unix-style, in order to run
- - MissingH's absNormPath on them. Resulting path will use / separators. -}
+ - MissingH's absNormPath on them. -}
 absNormPathUnix :: FilePath -> FilePath -> Maybe FilePath
 #ifndef mingw32_HOST_OS
 absNormPathUnix dir path = MissingH.absNormPath dir path
@@ -76,27 +77,29 @@ absNormPathUnix dir path = todos <$> MissingH.absNormPath (fromdos dir) (fromdos
 	todos = replace "/" "\\"
 #endif
 
-{- Returns the parent directory of a path.
- -
- - To allow this to be easily used in loops, which terminate upon reaching the
- - top, the parent of / is "" -}
+{- takeDirectory "foo/bar/" is "foo/bar". This instead yields "foo" -}
 parentDir :: FilePath -> FilePath
-parentDir dir
-	| null dirs = ""
-	| otherwise = joinDrive drive (join s $ init dirs)
+parentDir = takeDirectory . dropTrailingPathSeparator
+
+{- Just the parent directory of a path, or Nothing if the path has no
+- parent (ie for "/" or ".") -}
+upFrom :: FilePath -> Maybe FilePath
+upFrom dir
+	| length dirs < 2 = Nothing
+	| otherwise = Just $ joinDrive drive (join s $ init dirs)
   where
 	-- on Unix, the drive will be "/" when the dir is absolute, otherwise ""
 	(drive, path) = splitDrive dir
 	dirs = filter (not . null) $ split s path
 	s = [pathSeparator]
 
-prop_parentDir_basics :: FilePath -> Bool
-prop_parentDir_basics dir
+prop_upFrom_basics :: FilePath -> Bool
+prop_upFrom_basics dir
 	| null dir = True
-	| dir == "/" = parentDir dir == ""
-	| otherwise = p /= dir
+	| dir == "/" = p == Nothing
+	| otherwise = p /= Just dir
   where
-	p = parentDir dir
+	p = upFrom dir
 
 {- Checks if the first FilePath is, or could be said to contain the second.
  - For example, "foo/" contains "foo/bar". Also, "foo", "./foo", "foo/" etc
@@ -125,14 +128,19 @@ absPath file = do
  -    relPathCwdToFile "/tmp/foo/bar" == "" 
  -}
 relPathCwdToFile :: FilePath -> IO FilePath
-relPathCwdToFile f = relPathDirToFile <$> getCurrentDirectory <*> absPath f
+relPathCwdToFile f = do
+	c <- getCurrentDirectory
+	relPathDirToFile c f
 
-{- Constructs a relative path from a directory to a file.
- -
- - Both must be absolute, and cannot contain .. etc. (eg use absPath first).
+{- Constructs a relative path from a directory to a file. -}
+relPathDirToFile :: FilePath -> FilePath -> IO FilePath
+relPathDirToFile from to = relPathDirToFileAbs <$> absPath from <*> absPath to
+
+{- This requires the first path to be absolute, and the
+ - second path cannot contain ../ or ./
  -}
-relPathDirToFile :: FilePath -> FilePath -> FilePath
-relPathDirToFile from to = join s $ dotdots ++ uncommon
+relPathDirToFileAbs :: FilePath -> FilePath -> FilePath
+relPathDirToFileAbs from to = join s $ dotdots ++ uncommon
   where
 	s = [pathSeparator]
 	pfrom = split s from
@@ -148,7 +156,7 @@ prop_relPathDirToFile_basics from to
 	| from == to = null r
 	| otherwise = not (null r)
   where
-	r = relPathDirToFile from to 
+	r = relPathDirToFileAbs from to 
 
 prop_relPathDirToFile_regressionTest :: Bool
 prop_relPathDirToFile_regressionTest = same_dir_shortcurcuits_at_difference
@@ -157,7 +165,7 @@ prop_relPathDirToFile_regressionTest = same_dir_shortcurcuits_at_difference
 	 - location, but it's not really the same directory.
 	 - Code used to get this wrong. -}
 	same_dir_shortcurcuits_at_difference =
-		relPathDirToFile (joinPath [pathSeparator : "tmp", "r", "lll", "xxx", "yyy", "18"])
+		relPathDirToFileAbs (joinPath [pathSeparator : "tmp", "r", "lll", "xxx", "yyy", "18"])
 			(joinPath [pathSeparator : "tmp", "r", ".git", "annex", "objects", "18", "gk", "SHA256-foo", "SHA256-foo"])
 				== joinPath ["..", "..", "..", "..", ".git", "annex", "objects", "18", "gk", "SHA256-foo", "SHA256-foo"]
 
@@ -186,7 +194,7 @@ relHome :: FilePath -> IO String
 relHome path = do
 	home <- myHomeDir
 	return $ if dirContains home path
-		then "~/" ++ relPathDirToFile home path
+		then "~/" ++ relPathDirToFileAbs home path
 		else path
 
 {- Checks if a command is available in PATH.
@@ -235,11 +243,11 @@ toCygPath p
 	| null drive = recombine parts
 	| otherwise = recombine $ "/cygdrive" : driveletter drive : parts
   where
-  	(drive, p') = splitDrive p
+	(drive, p') = splitDrive p
 	parts = splitDirectories p'
-  	driveletter = map toLower . takeWhile (/= ':')
+	driveletter = map toLower . takeWhile (/= ':')
 	recombine = fixtrailing . Posix.joinPath
-  	fixtrailing s
+	fixtrailing s
 		| hasTrailingPathSeparator p = Posix.addTrailingPathSeparator s
 		| otherwise = s
 #endif
@@ -255,7 +263,9 @@ fileNameLengthLimit :: FilePath -> IO Int
 fileNameLengthLimit _ = return 255
 #else
 fileNameLengthLimit dir = do
-	l <- fromIntegral <$> getPathVar dir FileNameLimit
+	-- getPathVar can fail due to statfs(2) overflow
+	l <- catchDefaultIO 0 $
+		fromIntegral <$> getPathVar dir FileNameLimit
 	if l <= 0
 		then return 255
 		else return $ minimum [l, 255]
@@ -267,12 +277,13 @@ fileNameLengthLimit dir = do
  - sane FilePath.
  -
  - All spaces and punctuation and other wacky stuff are replaced
- - with '_', except for '.' "../" will thus turn into ".._", which is safe.
+ - with '_', except for '.'
+ - "../" will thus turn into ".._", which is safe.
  -}
 sanitizeFilePath :: String -> FilePath
 sanitizeFilePath = map sanitize
   where
-  	sanitize c
+	sanitize c
 		| c == '.' = c
 		| isSpace c || isPunctuation c || isSymbol c || isControl c || c == '/' = '_'
 		| otherwise = c

@@ -1,0 +1,2 @@
+http://stackoverflow.com/questions/26305691/git-annex-hangs
+Does anyone know what might be causing this?

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 3"
+ date="2014-06-09T19:44:49Z"
+ content="""
+What did the bad commit that you ended up reverting look like?
+
+It seems to me that something must have went wrong due to your interrupting the first sync on the NAS. Perhaps this left it with newly added files not yet moved into place in the tree. So the next time you synced, this would cause it to see that the files seemed to have been deleted and make a commit reflecting that.
+
+This, then is a bug in how direct mode handles merges. [[bugs/direct_mode_merge_interrupt]]
+"""]]

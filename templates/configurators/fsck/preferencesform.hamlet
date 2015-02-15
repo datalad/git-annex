@@ -1,6 +1,7 @@
 <div .well>
   <form method="post" .form-horizontal action=@{ConfigFsckPreferencesR} enctype=#{enctype}>
     ^{form}
-    <div .form-actions>
-      <button .btn .btn-primary type=submit>
-        Save
+    <div .form-group>
+      <div .col-sm-10 .col-sm-offset-2>
+        <button .btn .btn-primary type=submit>
+          Save

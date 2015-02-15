@@ -1,6 +1,6 @@
 {- git-annex webapp launcher
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -34,12 +34,11 @@ import Annex.Version
 
 import Control.Concurrent
 import Control.Concurrent.STM
-import System.Process (env, std_out, std_err)
 import Network.Socket (HostName)
 import System.Environment (getArgs)
 
-def :: [Command]
-def = [ withOptions [listenOption] $
+cmd :: [Command]
+cmd = [ withOptions [listenOption] $
 	noCommit $ noRepo startNoRepo $ dontCheck repoExists $ notBareRepo $
 	command "webapp" paramNothing seek SectionCommon "launch webapp"]
 
@@ -59,13 +58,14 @@ start' :: Bool -> Maybe HostName -> CommandStart
 start' allowauto listenhost = do
 	liftIO ensureInstalled
 	ifM isInitialized 
-		( go
-		, auto
+		( maybe notinitialized (go <=< needsUpgrade) =<< getVersion
+		, if allowauto
+			then liftIO $ startNoRepo []
+			else notinitialized
 		)
 	stop
   where
-	go = do
-		cannotrun <- needsUpgrade . fromMaybe (error "no version") =<< getVersion
+	go cannotrun = do
 		browser <- fromRepo webBrowser
 		f <- liftIO . absPath =<< fromRepo gitAnnexHtmlShim
 		listenhost' <- if isJust listenhost
@@ -87,18 +87,17 @@ start' allowauto listenhost = do
 							then maybe noop (`hPutStrLn` url) origout
 							else openBrowser browser htmlshim url origout origerr
 			)
-	auto
-		| allowauto = liftIO $ startNoRepo []
-		| otherwise = do
-			d <- liftIO getCurrentDirectory
-			error $ "no git repository in " ++ d
 	checkpid = do
 		pidfile <- fromRepo gitAnnexPidFile
 		liftIO $ isJust <$> checkDaemon pidfile
 	checkshim f = liftIO $ doesFileExist f
+	notinitialized = do
+		g <- Annex.gitRepo
+		liftIO $ cannotStartIn (Git.repoLocation g) "repository has not been initialized by git-annex"
+		liftIO $ firstRun listenhost
 
 {- When run without a repo, start the first available listed repository in
- - the autostart file. If not, it's our first time being run! -}
+ - the autostart file. If none, it's our first time being run! -}
 startNoRepo :: CmdParams -> IO ()
 startNoRepo _ = do
 	-- FIXME should be able to reuse regular getopt, but 
@@ -107,17 +106,25 @@ startNoRepo _ = do
 	let listenhost = headMaybe $ map (snd . separate (== '=')) $ 
 		filter ("--listen=" `isPrefixOf`) args
 
-	dirs <- liftIO $ filterM doesDirectoryExist =<< readAutoStartFile
-	case dirs of
-		[] -> firstRun listenhost
-		(d:_) -> do
+	go listenhost =<< liftIO (filterM doesDirectoryExist =<< readAutoStartFile)
+  where
+	go listenhost [] = firstRun listenhost
+	go listenhost (d:ds) = do
+		v <- tryNonAsync $ do
 			setCurrentDirectory d
-			state <- Annex.new =<< Git.CurrentRepo.get
-			void $ Annex.eval state $ do
+			Annex.new =<< Git.CurrentRepo.get
+		case v of
+			Left e -> do
+				cannotStartIn d (show e)
+				go listenhost ds
+			Right state -> void $ Annex.eval state $ do
 				whenM (fromRepo Git.repoIsLocalBare) $
 					error $ d ++ " is a bare git repository, cannot run the webapp in it"
 				callCommandAction $
 					start' False listenhost
+
+cannotStartIn :: FilePath -> String -> IO ()
+cannotStartIn d reason = warningIO $ "unable to start webapp in repository " ++ d ++ ": " ++ reason
 
 {- Run the webapp without a repository, which prompts the user, makes one,
  - changes to it, starts the regular assistant, and redirects the
@@ -188,10 +195,15 @@ recordUrl _ = noop
 #endif
 
 openBrowser :: Maybe FilePath -> FilePath -> String -> Maybe Handle -> Maybe Handle -> IO ()
-#ifndef __ANDROID__
-openBrowser mcmd htmlshim _realurl outh errh = runbrowser
-#else
 openBrowser mcmd htmlshim realurl outh errh = do
+	htmlshim' <- absPath htmlshim
+	openBrowser' mcmd htmlshim' realurl outh errh
+
+openBrowser' :: Maybe FilePath -> FilePath -> String -> Maybe Handle -> Maybe Handle -> IO ()
+#ifndef __ANDROID__
+openBrowser' mcmd htmlshim _realurl outh errh = runbrowser
+#else
+openBrowser' mcmd htmlshim realurl outh errh = do
 	recordUrl url
 	{- Android's `am` command does not work reliably across the
 	 - wide range of Android devices. Intead, FIFO should be set to 
@@ -206,8 +218,17 @@ openBrowser mcmd htmlshim realurl outh errh = do
 #endif
   where
 	p = case mcmd of
-		Just cmd -> proc cmd [htmlshim]
-		Nothing -> browserProc url
+		Just c -> proc c [htmlshim]
+		Nothing -> 
+#ifndef mingw32_HOST_OS
+			browserProc url
+#else
+			{- Windows hack to avoid using the full path,
+			 - which might contain spaces that cause problems
+			 - for browserProc. -}
+			(browserProc (takeFileName htmlshim))
+				{ cwd = Just (takeDirectory htmlshim) } 
+#endif
 #ifdef __ANDROID__
 	{- Android does not support file:// urls, but neither is
 	 - the security of the url in the process table important

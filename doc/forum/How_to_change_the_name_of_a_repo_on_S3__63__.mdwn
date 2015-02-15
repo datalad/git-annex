@@ -1,0 +1,2 @@
+git-annex created a gitannexxxxxxxxxxxxxxxxxxxxx folder on S3 and I guess I'm a bit OCD but I'd like to rename it to git-annex. 
+Of course I can rename it in my S3 console but where does git-annex store that name so I can also change it on my local install of git-annex.

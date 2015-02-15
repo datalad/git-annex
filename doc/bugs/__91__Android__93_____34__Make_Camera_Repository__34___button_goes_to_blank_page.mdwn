@@ -1,0 +1,17 @@
+### Please describe the problem.
+
+When first installing the Android app, it opens the browser to the "Welcome to git-annex!" page. There is a big button to "Make Camera Repository". I click it, and am brought to a completely blank page. If I re-open the web app, it does appear to have created the DCIM repository (it shows in the repository list), but should probably show something (a confirmation, at least?) on that page.
+
+### What steps will reproduce the problem?
+
+1. Install the android app
+2. Run it
+3. Click the "Make Camera Repository" button
+
+### What version of git-annex are you using? On what operating system?
+
+Current (2014-11-14) Android 4.3/4.4 build on a non-rooted Moto X. I don't see a way to find version info about the Android app itself, but the terminal output for "version" says it's running git-annex version 5.20141104-gcaafd06
+
+### Please provide any additional information below.
+
+

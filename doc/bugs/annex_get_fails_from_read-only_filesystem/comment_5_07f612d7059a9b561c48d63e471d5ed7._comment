@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://jaen.saul.ee/id/"
+ nickname="Jaen"
+ subject="Re: why this happened"
+ date="2014-10-30T19:04:56Z"
+ content="""
+I agree that at least read-only support should be there. This error was from an filesystem type that is impossible to mount read-write.
+
+Now that I am looking at it again with fresh eyes, I suppose it's possible to get around this by mounting an union filesystem with a read-write temp layer on top of the read-only one (not that a regular user would ever figure that out...)
+"""]]

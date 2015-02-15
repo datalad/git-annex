@@ -1,6 +1,6 @@
 {- git-annex assistant repo syncing
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -15,6 +15,7 @@ import Assistant.Alert
 import Assistant.Alert.Utility
 import Assistant.DaemonStatus
 import Assistant.ScanRemotes
+import Assistant.RemoteControl
 import qualified Command.Sync
 import Utility.Parallel
 import qualified Git
@@ -95,7 +96,7 @@ reconnectRemotes notifypushes rs = void $ do
 		=<< fromMaybe [] . M.lookup (Remote.uuid r) . connectRemoteNotifiers
 			<$> getDaemonStatus
 
-{- Updates the local sync branch, then pushes it to all remotes, in
+{- Pushes the local sync branch to all remotes, in
  - parallel, along with the git-annex branch. This is the same
  - as "git annex sync", except in parallel, and will co-exist with use of
  - "git annex sync".
@@ -147,7 +148,6 @@ pushToRemotes' now notifypushes remotes = do
 	go _ _ _ _ [] = return [] -- no remotes, so nothing to do
 	go shouldretry (Just branch) g u rs =  do
 		debug ["pushing to", show rs]
-		liftIO $ Command.Sync.updateBranch (Command.Sync.syncBranch branch) g
 		(succeeded, failed) <- liftIO $ inParallel (push g branch) rs
 		updatemap succeeded []
 		if null failed
@@ -258,6 +258,7 @@ changeSyncable Nothing enable = do
 changeSyncable (Just r) True = do
 	liftAnnex $ changeSyncFlag r True
 	syncRemote r
+	sendRemoteControl RELOAD
 changeSyncable (Just r) False = do
 	liftAnnex $ changeSyncFlag r False
 	updateSyncRemotes

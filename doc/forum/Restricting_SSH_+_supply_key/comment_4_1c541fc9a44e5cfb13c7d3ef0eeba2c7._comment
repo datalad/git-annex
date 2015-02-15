@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="divB"
+ ip="128.12.90.218"
+ subject="comment 4"
+ date="2014-07-15T03:11:18Z"
+ content="""
+Hi Joey,
+
+Sorry that I bother so much with this.
+Thank you so much for your answer. At least with the command line it works now. I had it in %USERPROFILE%/.ssh/ssh_config (where I think it's supposed to be) rather than %USERPROFILE%/.ssh/config. In this file I have a stanza \"Host annex\" with Hostname, Port and IdentityFile set. When I call \"ssh annex\" from the command line everything works. It seems that it also works when I use e.g. \"git annex sync\" from the command line.
+
+However, if I use the webapp, the daemon.log is full of:
+
+    Please make sure you have the correct access rights
+    and the repository exists.
+    ssh: Could not resolve hostname annex: hostname nor servname provided, or not known
+    fatal: Could not read from remote repository.
+
+Is it possible that the assistant ignores the ssh config or does something differently?
+
+Thanks again!
+
+"""]]

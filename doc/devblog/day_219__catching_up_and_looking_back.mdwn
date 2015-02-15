@@ -1,0 +1,109 @@
+Yesterday and today were the first good solid days working on git-annex in a
+while. There's a big backlog, currently of 133 messages, so I have been
+concentrating on bug reports first. Happily, not many new bugs have been
+reported lately, and I've made good progress on them, fixing 5 bugs today,
+including a file descriptor leak.
+
+## catching up
+
+In this end of summer rush, I've been too busy to blog for the past 20 days,
+but not entirely too busy to work on git-annex. Two releases have been made
+in that time, and a fair amount of improvements worked on.
+
+Including a new feature: When a local git repository is cloned with `git
+clone --shared`, git-annex detects this and defaults to a special mode
+where file contents get hard linked into the clone. It also makes the cloned
+repository be untrusted, to avoid confusing numcopies counting with the
+hard links. This can be useful for temporary working repositories without
+the overhead of lots of copies of files.
+
+## looking back
+
+I want to look back further, over the crowdfunded year of work covered
+by this devblog. There were a lot of things I wanted to accomplish this
+past year, and I managed to get to most of them. As well as a few surprises.
+
+* Windows support improved more than I guessed in my wildest dreams.  
+  git-annex went from working not too well on the command line to
+  being pretty solid there, as well as having a working
+  and almost polished webapp on Windows.  
+  There are still warts -- it's Windows after all!
+
+* Android didn't get many improvements. Most of the time I had budgeted to
+  Android porting ended up being used on Windows porting instead. I did,
+  however, get the Android build environment cleaned up a lot from the initial
+  hacked together one, and generally kept it building and working on Android.
+
+* The [direct mode guard](http://git-annex.branchable.com/devblog/day_48__direct_mode_guard_design/)
+  was not planned, but the need for it became clear, and
+  it's dramatically reduced the amount of command-line foot-shooting
+  that goes on in direct mode.
+
+* Repository repair was planned, and I've very proud of [git-repair](http://git-repair.branchable.com/).
+  Also pleased with the webapp's UI for scheduling repository consistency
+  checks.  
+  Always room for improvement in this kind of thing, but this brings a new
+  capability to both git and git-annex.
+
+* The [[external_special_remote_interface|special_remotes/external]] came
+  together beautifully. External special remotes are now just as well
+  supported as built-in ones, except the webapp cannot be used to configure
+  them.
+
+* Using git-remote-gcrypt for fully encrypted git repositories, including
+  support in the webapp for setting them (and gpg keys if necessary),
+  happened. Still needs testing/more use/improvements. Avoided doing
+  much in the area of gpg key management, which is probably good to avoid when
+  possible, but is probably needed to make this a really suitable option for
+  end users.
+
+* Telehash is still being built, and it's not clear if they've gotten it
+  to work at all yet. The v2 telehash has recently been superseded by a
+  a new v3. So I am not pleased that I didn't get git-annex working with
+  telehash, but it was outside my control. This is a problem that needs to get
+  solved outside git-annex first, either by telehash or something else.
+  The plan is to keep an eye on everything in this space, including for example,
+  Maidsafe.
+
+* In the meantime, the new notifychanges support in git-annex-shell
+  makes XMPP/telehash/whatever unnecessary in a lot of configurations.
+  git-annex's remotedaemon architecture supports that and is designed
+  to support other notification methods later. And the webapp has a lot of
+  improvements in the area of setting up ssh remotes, so fewer users will
+  be stuck with XMPP.
+
+* I didn't quite get to [[design/assistant/deltas]], but the final month
+  of work on chunking provides a lot of new features and hopefully a
+  foundation that will get to deltas eventually. There is a new haskell
+  library that's being developed with the goal of being used for git-annex
+  deltas.
+
+* I hadn't planned to make git-annex be able to upgrade itself, when installed
+  from this website. But there was a need for that, and so it happened.
+  Even got a gpg key trust path for the distribution of git-annex.
+
+* Metadata driven views was an entirely unplanned feature. The current
+  prototype is very exciting, it opens up entire new use cases. 
+  I had to hold myself back to not work on it too much,
+  especially as it shaded into adding a caching database to git-annex.
+  Had too much other stuff planned to do all I wanted.
+  Clearly this is an area I want to spend more time on!
+
+Those are most of the big features and changes, but probably half
+of my work on git-annex this past year was in smaller things, and general
+maintenance. Lots of others have contributed, some with 
+code (like the large effort to switch to bootstrap3),
+and others with documentation, bug reports, etc.
+
+Perhaps it's best to turn to `git diff --stat` to sum up the activity
+and see just how much both the crowdfunding campaign and
+the previous kickstarter have pushed git-annex into high gear:
+ 
+	   campaign: 5410 files changed, 124159 insertions(+), 79395 deletions(-)
+	kickstarter: 4411 files changed, 123262 insertions(+), 13935 deletions(-)
+	year before: 1281 files changed,   7263 insertions(+), 55831 deletions(-)
+
+What's next? The hope is, no more crowdfunded campaigns where I have
+to promise the moon anytime soon. Instead, the goal is to move to a more
+mature and sustainable funding model, and continue to grow the git-annex
+community, and the spaces where it's useful.

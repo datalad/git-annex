@@ -1,6 +1,6 @@
 {- git-annex output messages
  -
- - Copyright 2010-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -25,7 +25,6 @@ module Messages (
 	showErr,
 	warning,
 	warningIO,
-	fileNotFound,
 	indent,
 	maybeShowJSON,
 	showFullJSON,
@@ -43,11 +42,10 @@ import Data.Progress.Tracker
 import Data.Quantity
 import System.Log.Logger
 import System.Log.Formatter
-import System.Log.Handler (setFormatter, LogHandler)
+import System.Log.Handler (setFormatter)
 import System.Log.Handler.Simple
-import qualified Data.Set as S
 
-import Common
+import Common hiding (handle)
 import Types
 import Types.Messages
 import qualified Messages.JSON as JSON
@@ -113,7 +111,7 @@ showSideAction m = Annex.getState Annex.output >>= go
 	p = handle q $ putStrLn $ "(" ++ m ++ "...)"
 			
 showStoringStateAction :: Annex ()
-showStoringStateAction = showSideAction "Recording state in git"
+showStoringStateAction = showSideAction "recording state in git"
 
 {- Performs an action, supressing showSideAction messages. -}
 doQuietSideAction :: Annex a -> Annex a
@@ -171,18 +169,6 @@ warningIO w = do
 	putStr "\n"
 	hFlush stdout
 	hPutStrLn stderr w
-
-{- Displays a warning one time about a file the user specified not existing. -}
-fileNotFound :: FilePath -> Annex ()
-fileNotFound file = do
-	st <- Annex.getState Annex.output
-	let shown = fileNotFoundShown st
-	when (S.notMember file shown) $ do
-		let shown' = S.insert file shown
-		let st' = st { fileNotFoundShown = shown' }
-		Annex.changeState $ \s -> s { Annex.output = st' }
-		liftIO $ hPutStrLn stderr $ unwords
-			[ "git-annex:", file, "not found" ]
 
 indent :: String -> String
 indent = intercalate "\n" . map (\l -> "  " ++ l) . lines

@@ -1,6 +1,6 @@
 {- git-annex ssh interface, with connection caching
  -
- - Copyright 2012,2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -8,50 +8,59 @@
 {-# LANGUAGE CPP #-}
 
 module Annex.Ssh (
-	sshCachingOptions,
+	sshOptions,
 	sshCacheDir,
 	sshReadPort,
+	forceSshCleanup,
+	sshOptionsEnv,
+	sshOptionsTo,
+	inRepoWithSshOptionsTo,
+	runSshOptions,
+	sshAskPassEnv,
+	runSshAskPass
 ) where
 
 import qualified Data.Map as M
 import Data.Hash.MD5
-import System.Process (cwd)
+import System.Exit
 
 import Common.Annex
-import Annex.LockPool
+import Annex.LockFile
 import qualified Build.SysConfig as SysConfig
 import qualified Annex
+import qualified Git
+import qualified Git.Url
 import Config
+import Config.Files
 import Utility.Env
 import Types.CleanupActions
+import Annex.Index (addGitEnv)
 #ifndef mingw32_HOST_OS
 import Annex.Perms
+import Utility.LockFile
 #endif
 
 {- Generates parameters to ssh to a given host (or user@host) on a given
- - port, with connection caching. -}
-sshCachingOptions :: (String, Maybe Integer) -> [CommandParam] -> Annex [CommandParam]
-sshCachingOptions (host, port) opts = do
-	Annex.addCleanup SshCachingCleanup sshCleanup
-	go =<< sshInfo (host, port)
+ - port. This includes connection caching parameters, and any ssh-options. -}
+sshOptions :: (String, Maybe Integer) -> RemoteGitConfig -> [CommandParam] -> Annex [CommandParam]
+sshOptions (host, port) gc opts = go =<< sshCachingInfo (host, port)
   where
 	go (Nothing, params) = ret params
 	go (Just socketfile, params) = do
-		cleanstale
-		liftIO $ createDirectoryIfMissing True $ parentDir socketfile
-		lockFile $ socket2lock socketfile
+		prepSocket socketfile
 		ret params
-	ret ps = return $ ps ++ opts ++ portParams port ++ [Param "-T"]
-	-- If the lock pool is empty, this is the first ssh of this
-	-- run. There could be stale ssh connections hanging around
-	-- from a previous git-annex run that was interrupted.
-	cleanstale = whenM (not . any isLock . M.keys <$> getPool)
-		sshCleanup
+	ret ps = return $ concat
+		[ ps
+		, map Param (remoteAnnexSshOptions gc)
+		, opts
+		, portParams port
+		, [Param "-T"]
+		]
 
 {- Returns a filename to use for a ssh connection caching socket, and
  - parameters to enable ssh connection caching. -}
-sshInfo :: (String, Maybe Integer) -> Annex (Maybe FilePath, [CommandParam])
-sshInfo (host, port) = go =<< sshCacheDir
+sshCachingInfo :: (String, Maybe Integer) -> Annex (Maybe FilePath, [CommandParam])
+sshCachingInfo (host, port) = go =<< sshCacheDir
   where
 	go Nothing = return (Nothing, [])
 	go (Just dir) = do
@@ -75,10 +84,10 @@ bestSocketPath abssocketfile = do
 			then Just socketfile
 			else Nothing
   where
-  	-- ssh appends a 16 char extension to the socket when setting it
+	-- ssh appends a 16 char extension to the socket when setting it
 	-- up, which needs to be taken into account when checking
 	-- that a valid socket was constructed.
-  	sshgarbage = replicate (1+16) 'X'
+	sshgarbage = replicate (1+16) 'X'
 
 sshConnectionCachingParams :: FilePath -> [CommandParam]
 sshConnectionCachingParams socketfile = 
@@ -102,55 +111,79 @@ sshCacheDir
   where
 	gettmpdir = liftIO $ getEnv "GIT_ANNEX_TMP_DIR"
 	usetmpdir tmpdir = liftIO $ catchMaybeIO $ do
-		createDirectoryIfMissing True tmpdir
-		return tmpdir
+		let socktmp = tmpdir </> "ssh"
+		createDirectoryIfMissing True socktmp
+		return socktmp
 
 portParams :: Maybe Integer -> [CommandParam]
 portParams Nothing = []
 portParams (Just port) = [Param "-p", Param $ show port]
 
-{- Stop any unused ssh processes. -}
-sshCleanup :: Annex ()
-sshCleanup = go =<< sshCacheDir
+{- Prepare to use a socket file. Locks a lock file to prevent
+ - other git-annex processes from stopping the ssh on this socket. -}
+prepSocket :: FilePath -> Annex ()
+prepSocket socketfile = do
+	-- If the lock pool is empty, this is the first ssh of this
+	-- run. There could be stale ssh connections hanging around
+	-- from a previous git-annex run that was interrupted.
+	whenM (not . any isLock . M.keys <$> getLockPool)
+		sshCleanup
+	-- Cleanup at end of this run.
+	Annex.addCleanup SshCachingCleanup sshCleanup
+
+	liftIO $ createDirectoryIfMissing True $ parentDir socketfile
+	lockFileShared $ socket2lock socketfile
+
+enumSocketFiles :: Annex [FilePath]
+enumSocketFiles = go =<< sshCacheDir
   where
-	go Nothing = noop
-	go (Just dir) = do
-		sockets <- liftIO $ filter (not . isLock)
-			<$> catchDefaultIO [] (dirContents dir)
-		forM_ sockets cleanup
+	go Nothing = return []
+	go (Just dir) = liftIO $ filter (not . isLock)
+		<$> catchDefaultIO [] (dirContents dir)
+
+{- Stop any unused ssh connection caching processes. -}
+sshCleanup :: Annex ()
+sshCleanup = mapM_ cleanup =<< enumSocketFiles
+  where
 	cleanup socketfile = do
 #ifndef mingw32_HOST_OS
 		-- Drop any shared lock we have, and take an
 		-- exclusive lock, without blocking. If the lock
 		-- succeeds, nothing is using this ssh, and it can
 		-- be stopped.
+		--
+		-- After ssh is stopped cannot remove the lock file;
+		-- other processes may be waiting on our exclusive
+		-- lock to use it.
 		let lockfile = socket2lock socketfile
 		unlockFile lockfile
 		mode <- annexFileMode
-		fd <- liftIO $ noUmask mode $
-			openFd lockfile ReadWrite (Just mode) defaultFileFlags
-		v <- liftIO $ tryIO $
-			setLock fd (WriteLock, AbsoluteSeek, 0, 0)
+		v <- liftIO $ noUmask mode $ tryLockExclusive (Just mode) lockfile
 		case v of
-			Left _ -> noop
-			Right _ -> stopssh socketfile
-		liftIO $ closeFd fd
+			Nothing -> noop
+			Just lck -> do
+				forceStopSsh socketfile
+				liftIO $ dropLock lck
 #else
-		stopssh socketfile
+		forceStopSsh socketfile
 #endif
-	stopssh socketfile = do
-		let (dir, base) = splitFileName socketfile
-		let params = sshConnectionCachingParams base
-		-- "ssh -O stop" is noisy on stderr even with -q
-		void $ liftIO $ catchMaybeIO $
-			withQuietOutput createProcessSuccess $
-				(proc "ssh" $ toCommand $
-					[ Params "-O stop"
-					] ++ params ++ [Param "localhost"])
-					{ cwd = Just dir }
-		liftIO $ nukeFile socketfile
-		-- Cannot remove the lock file; other processes may
-		-- be waiting on our exclusive lock to use it.
+
+{- Stop all ssh connection caching processes, even when they're in use. -}
+forceSshCleanup :: Annex ()
+forceSshCleanup = mapM_ forceStopSsh =<< enumSocketFiles
+
+forceStopSsh :: FilePath -> Annex ()
+forceStopSsh socketfile = do
+	let (dir, base) = splitFileName socketfile
+	let params = sshConnectionCachingParams base
+	-- "ssh -O stop" is noisy on stderr even with -q
+	void $ liftIO $ catchMaybeIO $
+		withQuietOutput createProcessSuccess $
+			(proc "ssh" $ toCommand $
+				[ Params "-O stop"
+				] ++ params ++ [Param "localhost"])
+				{ cwd = Just dir }
+	liftIO $ nukeFile socketfile
 
 {- This needs to be as short as possible, due to limitations on the length
  - of the path to a socket file. At the same time, it needs to be unique
@@ -199,3 +232,70 @@ sshReadPort params = (port, reverse args)
 	aux (p,ps) (q:rest) | "-p" `isPrefixOf` q = aux (readPort $ drop 2 q, ps) rest
 			    | otherwise = aux (p,q:ps) rest
 	readPort p = fmap fst $ listToMaybe $ reads p
+
+{- When this env var is set, git-annex runs ssh with the specified
+ - options. (The options are separated by newlines.)
+ -
+ - This is a workaround for GIT_SSH not being able to contain
+ - additional parameters to pass to ssh. -}
+sshOptionsEnv :: String
+sshOptionsEnv = "GIT_ANNEX_SSHOPTION"
+
+toSshOptionsEnv :: [CommandParam] -> String
+toSshOptionsEnv = unlines . toCommand
+
+fromSshOptionsEnv :: String -> [CommandParam]
+fromSshOptionsEnv = map Param . lines
+
+{- Enables ssh caching for git push/pull to a particular
+ - remote git repo. (Can safely be used on non-ssh remotes.)
+ -
+ - Also propigates any configured ssh-options.
+ -
+ - Like inRepo, the action is run with the local git repo.
+ - But here it's a modified version, with gitEnv to set GIT_SSH=git-annex,
+ - and sshOptionsEnv set so that git-annex will know what socket
+ - file to use. -}
+inRepoWithSshOptionsTo :: Git.Repo -> RemoteGitConfig -> (Git.Repo -> IO a) -> Annex a
+inRepoWithSshOptionsTo remote gc a =
+	liftIO . a =<< sshOptionsTo remote gc =<< gitRepo
+
+{- To make any git commands be run with ssh caching enabled,
+ - and configured ssh-options alters the local Git.Repo's gitEnv
+ - to set GIT_SSH=git-annex, and sets sshOptionsEnv. -}
+sshOptionsTo :: Git.Repo -> RemoteGitConfig -> Git.Repo -> Annex Git.Repo
+sshOptionsTo remote gc g 
+	| not (Git.repoIsUrl remote) || Git.repoIsHttp remote = uncached
+	| otherwise = case Git.Url.hostuser remote of
+		Nothing -> uncached
+		Just host -> do
+			(msockfile, _) <- sshCachingInfo (host, Git.Url.port remote)
+			case msockfile of
+				Nothing -> return g
+				Just sockfile -> do
+					command <- liftIO readProgramFile
+					prepSocket sockfile
+					let val = toSshOptionsEnv $ concat
+						[ sshConnectionCachingParams sockfile
+						, map Param (remoteAnnexSshOptions gc)
+						]
+					liftIO $ do
+						g' <- addGitEnv g sshOptionsEnv val
+						addGitEnv g' "GIT_SSH" command
+  where
+	uncached = return g
+
+runSshOptions :: [String] -> String -> IO ()
+runSshOptions args s = do
+	let args' = toCommand (fromSshOptionsEnv s) ++ args
+	let p = proc "ssh" args'
+	exitWith =<< waitForProcess . processHandle =<< createProcess p
+
+{- When this env var is set, git-annex is being used as a ssh-askpass
+ - program, and should read the password from the specified location,
+ - and output it for ssh to read. -}
+sshAskPassEnv :: String
+sshAskPassEnv = "GIT_ANNEX_SSHASKPASS"
+
+runSshAskPass :: FilePath -> IO ()
+runSshAskPass passfile = putStrLn =<< readFile passfile

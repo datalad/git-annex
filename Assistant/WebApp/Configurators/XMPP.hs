@@ -1,6 +1,6 @@
 {- git-annex assistant XMPP configuration
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -24,29 +24,15 @@ import Assistant.DaemonStatus
 import Assistant.WebApp.RepoList
 import Assistant.WebApp.Configurators
 import Assistant.XMPP
+import qualified Git.Remote.Remove
+import Remote.List
+import Creds
 #endif
 
 #ifdef WITH_XMPP
 import Network.Protocol.XMPP
 import Network
 import qualified Data.Text as T
-#endif
-
-{- Displays an alert suggesting to configure XMPP. -}
-xmppNeeded :: Handler ()
-#ifdef WITH_XMPP
-xmppNeeded = whenM (isNothing <$> liftAnnex getXMPPCreds) $ do
-	urlrender <- getUrlRender
-	void $ liftAssistant $ do
-		close <- asIO1 removeAlert
-		addAlert $ xmppNeededAlert $ AlertButton
-			{ buttonLabel = "Configure a Jabber account"
-			, buttonUrl = urlrender XMPPConfigR
-			, buttonAction = Just close
-			, buttonPrimary = True
-			}
-#else
-xmppNeeded = return ()
 #endif
 
 {- When appropriate, displays an alert suggesting to configure a cloud repo
@@ -113,7 +99,7 @@ xmppform :: Route WebApp -> Handler Html
 xmppform next = xmppPage $ do
 	((result, form), enctype) <- liftH $ do
 		oldcreds <- liftAnnex getXMPPCreds
-		runFormPostNoToken $ renderBootstrap $ xmppAForm $
+		runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $ xmppAForm $
 			creds2Form <$> oldcreds
 	let showform problem = $(widgetFile "configurators/xmpp")
 	case result of
@@ -139,7 +125,7 @@ getBuddyListR nid = do
 	waitNotifier getBuddyListBroadcaster nid
 
 	p <- widgetToPageContent buddyListDisplay
-	giveUrlRenderer $ [hamlet|^{pageBody p}|]
+	withUrlRenderer $ [hamlet|^{pageBody p}|]
 
 buddyListDisplay :: Widget
 buddyListDisplay = do
@@ -164,7 +150,7 @@ getXMPPRemotes :: Assistant [(JID, Remote)]
 getXMPPRemotes = catMaybes . map pair . filter Remote.isXMPPRemote . syncGitRemotes
 	<$> getDaemonStatus
   where
-  	pair r = maybe Nothing (\jid -> Just (jid, r)) $
+	pair r = maybe Nothing (\jid -> Just (jid, r)) $
 		parseJID $ getXMPPClientID r
 
 data XMPPForm = XMPPForm
@@ -175,9 +161,9 @@ creds2Form :: XMPPCreds -> XMPPForm
 creds2Form c = XMPPForm (xmppJID c) (xmppPassword c)
 
 xmppAForm :: (Maybe XMPPForm) -> MkAForm XMPPForm
-xmppAForm def = XMPPForm
-	<$> areq jidField "Jabber address" (formJID <$> def)
-	<*> areq passwordField "Password" Nothing
+xmppAForm d = XMPPForm
+	<$> areq jidField (bfs "Jabber address") (formJID <$> d)
+	<*> areq passwordField (bfs "Password") Nothing
 
 jidField :: MkField Text
 jidField = checkBool (isJust . parseJID) bad textField
@@ -211,12 +197,29 @@ testXMPP creds = do
 			}
 		_ -> return $ Left $ intercalate "; " $ map formatlog bad
   where
-  	formatlog ((h, p), Left e) = "host " ++ h ++ ":" ++ showport p ++ " failed: " ++ show e
-  	formatlog _ = ""
+	formatlog ((h, p), Left e) = "host " ++ h ++ ":" ++ showport p ++ " failed: " ++ show e
+	formatlog _ = ""
 
 	showport (PortNumber n) = show n
 	showport (Service s) = s
 	showport (UnixSocket s) = s
+#endif
+
+getDisconnectXMPPR :: Handler Html
+getDisconnectXMPPR = do
+#ifdef WITH_XMPP
+	rs <- filter Remote.isXMPPRemote . syncRemotes
+		<$> liftAssistant getDaemonStatus
+	liftAnnex $ do
+		mapM_ (inRepo . Git.Remote.Remove.remove . Remote.name) rs
+		void remoteListRefresh
+		removeCreds xmppCredsFile
+	liftAssistant $ do
+		updateSyncRemotes
+		notifyNetMessagerRestart
+	redirect DashboardR
+#else
+	xmppPage $ $(widgetFile "configurators/xmpp/disabled")
 #endif
 
 xmppPage :: Widget -> Handler Html

@@ -1,11 +1,12 @@
 {- git-annex assistant webapp thread
  -
- - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 {-# LANGUAGE TemplateHaskell, MultiParamTypeClasses #-}
+{-# LANGUAGE ViewPatterns, OverloadedStrings #-}
 {-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
@@ -47,6 +48,8 @@ import Yesod
 import Network.Socket (SockAddr, HostName)
 import Data.Text (pack, unpack)
 import qualified Network.Wai.Handler.WarpTLS as TLS
+import Network.Wai.Middleware.RequestLogger
+import System.Log.Logger
 
 mkYesodDispatch "WebApp" $(parseRoutesFile "Assistant/WebApp/routes")
 
@@ -83,7 +86,7 @@ webAppThread assistantdata urlrenderer noannex cannotrun postfirstrun listenhost
 	setUrlRenderer urlrenderer $ yesodRender webapp (pack "")
 	app <- toWaiAppPlain webapp
 	app' <- ifM debugEnabled
-		( return $ httpDebugLogger app
+		( return $ logStdout app
 		, return app
 		)
 	runWebApp tlssettings listenhost' app' $ \addr -> if noannex
@@ -95,7 +98,7 @@ webAppThread assistantdata urlrenderer noannex cannotrun postfirstrun listenhost
 			urlfile <- getAnnex' $ fromRepo gitAnnexUrlFile
 			go tlssettings addr webapp htmlshim (Just urlfile)
   where
-  	-- The webapp thread does not wait for the startupSanityCheckThread
+	-- The webapp thread does not wait for the startupSanityCheckThread
 	-- to finish, so that the user interface remains responsive while
 	-- that's going on.
 	thread = namedThreadUnchecked "WebApp"
@@ -135,3 +138,9 @@ getTlsSettings = do
 #else
 	return Nothing
 #endif
+
+{- Checks if debugging is actually enabled. -}
+debugEnabled :: IO Bool
+debugEnabled = do
+	l <- getRootLogger
+	return $ getLevel l <= Just DEBUG

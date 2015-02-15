@@ -1,16 +1,21 @@
 <ul .dropdown-menu>
   <li>
     <a href="@{NewRepositoryR}">
-      <i .icon-plus-sign></i> Add another local repository
+      <span .glyphicon .glyphicon-plus-sign>
+      \ Add another local repository
   <li>
     <a href="@{RepositorySwitcherR}">
-      <i .icon-folder-close></i> Switch repository
+      <span .glyphicon .glyphicon-folder-close>
+      \ Switch repository
   <li>
     <a href="@{RestartR}">
-      <i .icon-repeat></i> Restart daemon
+      <span .glyphicon .glyphicon-repeat>
+      \ Restart daemon
   <li>
     <a href="@{ShutdownR}">
-      <i .icon-off></i> Shutdown daemon
+      <span .glyphicon .glyphicon-off>
+      \ Shutdown daemon
   <li>
     <a href="@{LogR}">
-      <i .icon-list></i> View log
+      <span .glyphicon .glyphicon-list>
+      \ View log

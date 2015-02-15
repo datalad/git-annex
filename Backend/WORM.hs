@@ -1,6 +1,6 @@
 {- git-annex "WORM" backend -- Write Once, Read Many
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,6 +12,7 @@ import Types.Backend
 import Types.Key
 import Types.KeySource
 import Backend.Utilities
+import Git.FilePath
 
 backends :: [Backend]
 backends = [backend]
@@ -22,22 +23,22 @@ backend = Backend
 	, getKey = keyValue
 	, fsckKey = Nothing
 	, canUpgradeKey = Nothing
+	, fastMigrate = Nothing
+	, isStableKey = const True
 	}
 
 {- The key includes the file size, modification time, and the
- - basename of the filename.
- -
- - That allows multiple files with the same names to have different keys,
- - while also allowing a file to be moved around while retaining the
- - same key.
+ - original filename relative to the top of the git repository.
  -}
 keyValue :: KeySource -> Annex (Maybe Key)
 keyValue source = do
-	stat <- liftIO $ getFileStatus $ contentLocation source
-	n <- genKeyName $ keyFilename source
-	return $ Just Key
-		{ keyName = n
+	let f = contentLocation source
+	stat <- liftIO $ getFileStatus f
+	sz <- liftIO $ getFileSize' f stat
+	relf <- getTopFilePath <$> inRepo (toTopFilePath $ keyFilename source)
+	return $ Just $ stubKey
+		{ keyName = genKeyName relf
 		, keyBackendName = name backend
-		, keySize = Just $ fromIntegral $ fileSize stat
+		, keySize = Just sz
 		, keyMtime = Just $ modificationTime stat
 		}

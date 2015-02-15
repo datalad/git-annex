@@ -71,3 +71,7 @@ repositories have a non-git out of band signaling mechanism. This could,
 for example, be used by laptopB to tell laptopA that it's trying to send 
 a file directly to laptopC. laptopA could then defer the upload to the
 cloud for a while.
+
+## syncing only requested content
+
+See [[adhoc_routing]]

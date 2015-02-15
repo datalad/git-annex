@@ -1,0 +1,3 @@
+I've just tried using git annex assistant for the first time, to synchronize a shared directory between machines. This shared directory contains a collection of bare git repositories for various projects. Unfortunately this doesn't seem to work, as to be recognised as valid bare repos, they need to have the ref/heads and ref/tags subdirectories. git annex assistant fails to synchronise these, as they are empty.
+
+What should I do? How can I make git annex reproduce the source directory structure when synchronising?

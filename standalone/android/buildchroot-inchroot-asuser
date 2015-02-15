@@ -1,18 +1,23 @@
 #!/bin/sh
 # Runs inside the chroot set up by buildchroot, as the user it creates
 set -e
+set -x
+
+# Put in /tmp by buildchroot, but when bootstrapping with propellor,
+# this is run inside a checked out git-annex tree.
+if [ -e /tmp/abiversion ]; then
+	ABIVERSION=$(cat /tmp/abiversion)
+else
+	ABIVERSION=$(cat standalone/android/abiversion)
+fi
 
 cd
-rm -rf .ghc .cabal
-cabal update
-cabal install happy alex --bindir=$HOME/bin
-PATH=$HOME/bin:$PATH
-export PATH
+rm -rf .ghc .cabal .android
 mkdir -p .android
 cd .android
 git clone https://github.com/joeyh/ghc-android
 cd ghc-android
-git checkout stable-ghc-snapshot
+git checkout jessie-ghc-snapshot
 ./build
 
 # This saves 2 gb, and the same sources are in build-*/ghc
@@ -29,10 +34,7 @@ mv adt-bundle-linux-x86-* adt-bundle-linux-x86
 rm -rf adt-bundle-linux-x86/eclipse
 
 # The git-annex android Makefile needs this cc symlink.
-ln -s arm-linux-androideabi-gcc $HOME/.ghc/$(cat /tmp/abiversion)/bin/cc
-
-cd
-git clone git://git-annex.branchable.com/ git-annex
+ln -s arm-linux-androideabi-gcc $HOME/.ghc/$ABIVERSION/bin/cc
 
 git config --global user.email androidbuilder@example.com
 git config --global user.name androidbuilder

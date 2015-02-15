@@ -1,0 +1,45 @@
+This is a method for hiding broken links using git-annex views.
+
+Each annex will need it's own name for this system to work. For this example I'll use "localdrive." After getting file content, run:
+
+    git-annex metadata --not --in=here --metadata in=localdrive . -s in-=localdrive
+    git-annex metadata --in=here --not --metadata in=localdrive . -s in+=localdrive
+    git-annex view /=*
+    git-annex vfilter in=localdrive
+
+Unused links will be hidden. Folder structures will remain the same.
+
+To switch back use:
+
+    git-annex vpop 2
+
+Because this is a lot to type, I've placed these in a bash script in the base folder (ignored with .gitignore so it isn't sent to other repos). The local repo name can be changed by editing THISREPO:
+
+    #!/bin/bash
+    
+    THISREPO='localdrive'
+    
+    git-annex metadata --not --in=here --metadata in=$THISREPO . -s in-=$THISREPO
+    git-annex metadata --in=here --not --metadata in=$THISREPO . -s in+=$THISREPO
+    git-annex view /=*
+    git-annex vfilter in=$THISREPO
+    
+    exit 0
+
+## Hiding Broken Links in Preferred Content Repos
+
+If you have a repo with preferred content settings, this can be shortened to a single script which can be run to "refresh" the view:
+
+    #!/bin/bash
+    
+    THISREPO='pcrepo'
+    
+    git-annex vpop 2
+    git-annex sync
+    git-annex get --auto
+    git-annex metadata --not --in=here --metadata in=$THISREPO . -s in-=$THISREPO
+    git-annex metadata --in=here --not --metadata in=$THISREPO . -s in+=$THISREPO
+    git-annex view /=*
+    git-annex vfilter in=$THISREPO
+    
+    exit 0

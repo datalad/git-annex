@@ -1,50 +1,53 @@
-<div .span9 .hero-unit>
-  <h2>
-    Pairing with a local computer
-  <p>
-    $if start
-      Pair with a computer on your local network (or VPN), and the #
-      two git annex repositories will be combined into one, with changes #
-      kept in sync between them.
-    $else
-      Pairing with #{username}@#{hostname} will combine your two git annex #
-      repositories into one, allowing you to share files.
-  <p>
-    $if start
-      For security, enter a secret phrase. To verify that you're pairing #
-      with the right computer, its git-annex webapp will then prompt for the #
-      same secret phrase. That's all this secret phrase will be used for.
-    $else
-      $if sameusername
-        For security, you need to enter the same secret phrase that was #
-        entered on #{hostname} when the pairing was started.
-      $else
-        For security, a secret phrase has been selected, which you need #
-        to enter here to finish the pairing. If you don't know the #
-        phrase, go ask #{username} ...
-  $if badphrase
-    <div .alert .alert-error>
-      <i .icon-warning-sign></i> #{problem}
-  <p>
-    <form method="post" .form-horizontal enctype=#{enctype}>
-      <fieldset>
-        ^{form}
-        ^{webAppFormAuthToken}
-        <div .form-actions>
-          <button .btn .btn-primary type=submit>
-            $if start
-              Start pairing
-            $else
-              Finish pairing
-    <div .alert .alert-info>
+<div .col-sm-9>
+  <div .content-box>
+    <h2>
+      Pairing with a local computer
+    <p>
       $if start
-        <p>
-          A good secret phrase is reasonably long. You'll only #
-          type it a few times. Only letters and numbers matter; #
-          punctuation and white space is ignored.
-        <p>
-          A quotation is one good choice, something like: #
-          "#{sampleQuote}"
+        Pair with a computer on your local network (or VPN), and the #
+        two git annex repositories will be combined into one, with changes #
+        kept in sync between them.
       $else
-        Only letters and numbers matter; punctuation and spaces are #
-        ignored.
+        Pairing with #{username}@#{hostname} will combine your two git annex #
+        repositories into one, allowing you to share files.
+    <p>
+      $if start
+        For security, enter a secret phrase. To verify that you're pairing #
+        with the right computer, its git-annex webapp will then prompt for the #
+        same secret phrase. That's all this secret phrase will be used for.
+      $else
+        $if sameusername
+          For security, you need to enter the same secret phrase that was #
+          entered on #{hostname} when the pairing was started.
+        $else
+          For security, a secret phrase has been selected, which you need #
+          to enter here to finish the pairing. If you don't know the #
+          phrase, go ask #{username} ...
+    $if badphrase
+      <div .alert .alert-danger>
+        <span .glyphicon .glyphicon-warning-sign>
+        \ #{problem}
+    <p>
+      <form method="post" .form-horizontal enctype=#{enctype}>
+        <fieldset>
+          ^{form}
+          ^{webAppFormAuthToken}
+          <div .form-group>
+            <div .col-sm-10 .col-sm-offset-2>
+              <button .btn .btn-primary type=submit>
+                $if start
+                  Start pairing
+                $else
+                  Finish pairing
+      <div .alert .alert-info>
+        $if start
+          <p>
+            A good secret phrase is reasonably long. You'll only #
+            type it a few times. Only letters and numbers matter; #
+            punctuation and white space is ignored.
+          <p>
+            A quotation is one good choice, something like: #
+            "#{sampleQuote}"
+        $else
+          Only letters and numbers matter; punctuation and spaces are #
+          ignored.

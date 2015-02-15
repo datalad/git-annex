@@ -7,9 +7,9 @@ set -x
 set -e
 
 # Path to the Haskell Platform.
-HP="/c/Program Files (x86)/Haskell Platform/2013.2.0.0"
+#HP="/c/haskell/2014.2.0.0" # now in the default PATH
 
-PATH="$HP/bin:$HP/lib/extralibs/bin:/c/Program Files (x86)/NSIS:/c/msysgit/cmd:/c/msysgit/bin:$PATH"
+PATH="/c/Program Files (x86)/NSIS:/c/msysgit/cmd:$PATH"
 
 # Run a command with the cygwin environment available.
 # However, programs not from cygwin are preferred.
@@ -35,6 +35,10 @@ rm -f git-annex-installer.exe
 # for haskell libraries to link them with the cygwin library.
 cabal update || true
 
+# This workaround is still needed, it seems.
+#cabal install transformers-compat -fthree
+#cabal install DAV-1.0
+
 cabal install --only-dependencies || true
 
 # Detect when the last build was an incremental build and failed, 
@@ -57,14 +61,28 @@ fi
 
 # Build the installer
 cabal install nsis
-ghc --make Build/NullSoftInstaller.hs
+ghc -fforce-recomp --make Build/NullSoftInstaller.hs
 # Want to include cygwin programs in bundle, not others, since
 # it includes the cygwin libs that go with them.
 withcygpreferred Build/NullSoftInstaller.exe
 
 rm -f last-incremental-failed
 
+rm -f dist/build-version
+ghc --make Build/BuildVersion.hs
+Build/BuildVersion > dist/build-version
+
 # Test git-annex
-# (doesn't currently work well on autobuilder, reason unknown)
-rm -rf .t
-withcyg dist/build/git-annex/git-annex.exe test || true
+# The test is run in c:/WINDOWS/Temp, because running it in the autobuilder
+# directory runs afoul of Windows's short PATH_MAX.
+PATH="$(pwd)/dist/build/git-annex/:$PATH"
+export PATH
+mkdir -p c:/WINDOWS/Temp/git-annex-test/
+cd c:/WINDOWS/Temp/git-annex-test/
+if withcyg git-annex.exe test; then
+	rm -rf .t
+else
+	rm -rf .t
+	echo "Test suite failure; failing build!"
+	false
+fi

@@ -1,0 +1,59 @@
+### Please describe the problem.
+
+Uploading a 21GB file to an S3 special remote fails. It will generally fail somewhere at about 3-15%. I am using the new chunking feature, with chunks set to 25MiB.
+
+### What steps will reproduce the problem?
+
+    $ git annex copy my-big-file.tar.bz --to s3
+    copy my-big-file.tar.bz (gpg) (checking s3...) (to s3...)
+    13%       863.8KB/s 6h0m
+      ErrorClosed
+    failed
+    git-annex: copy: 1 failed
+
+### What version of git-annex are you using? On what operating system?
+
+Running on Arch Linux.
+
+    git-annex version: 5.20140818-g10bf03a
+    build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA CryptoHash
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier ddar hook external
+    local repository version: 5
+    supported repository version: 5
+    upgrade supported from repository versions: 0 1 2 4
+
+### Please provide any additional information below.
+
+If I fire up the web app and open the log, the end looks like this:
+
+
+[[!format sh """
+...
+
+3%       857.3KB/s 6h46m
+3%       857.3KB/s 6h46m
+3%       857.3KB/s 6h46m
+3%       857.4KB/s 6h46m
+3%       857.4KB/s 6h46m
+3%       857.5KB/s 6h46m
+3%       857.5KB/s 6h46m
+3%       857.6KB/s 6h46m
+3%       857.6KB/s 6h46m
+3%       857.6KB/s 6h46m
+3%       857.7KB/s 6h46m
+3%       857.7KB/s 6h46m
+3%       857.8KB/s 6h46m
+3%       857.8KB/s 6h46m
+3%       857.8KB/s 6h46m
+3%       857.9KB/s 6h46m
+3%       857.9KB/s 6h46m
+3%       858.0KB/s 6h46m
+3%       858.0KB/s 6h46m
+3%       858.1KB/s 6h46m
+3%       858.1KB/s 6h45m
+3%       858.1KB/s 6h45mmux_client_request_session: read from master failed: Broken pipe
+
+"""]]
+
+[[!tag moreinfo]]

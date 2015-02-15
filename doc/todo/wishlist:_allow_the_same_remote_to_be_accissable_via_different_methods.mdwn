@@ -1,5 +1,0 @@
-This is a wishlist item:
-
-Please allow the same remote to be available via different remotes. So in my LAN my remote is available using a ssh-connection, and when I travel with my laptop, the git-annex can also reach this remote using the Jabber transport.
-
-> [[done]]; this has always been fully supported. --[[Joey]]

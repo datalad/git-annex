@@ -1,6 +1,0 @@
-The 32-bit standalone build appears to require two libraries (lib32-libyaml and lib32-gsasl) that are not available on Arch Linux. [See the comments on the AUR package](https://aur.archlinux.org/packages/git-annex-bin/). I'd appreciate it if you could bring back the 64-bit build.
-
-> [[done]], based on <https://aur.archlinux.org/packages/git-annex-bin/>
-> they are managing with what I am providing. Also, Arch Linux has a
-> proper build of git-annex from source, so I'm not going to worry about
-> git-annex-bin, the rationalle for which I don't even understand. --[[Joey]]

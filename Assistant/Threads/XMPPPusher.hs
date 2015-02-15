@@ -9,7 +9,7 @@
  - they would deadlock with only one thread. For larger numbers of
  - clients, the two threads are also sufficient.
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -34,7 +34,7 @@ xmppReceivePackThread = pusherThread "XMPPReceivePack" ReceivePack
 pusherThread :: String -> PushSide -> UrlRenderer -> NamedThread
 pusherThread threadname side urlrenderer = namedThread threadname $ go Nothing
   where
-  	go lastpushedto = do
+	go lastpushedto = do
 		msg <- waitPushInitiation side $ selectNextPush lastpushedto
 		debug ["started running push", logNetMessage msg]
 
@@ -78,4 +78,4 @@ selectNextPush lastpushedto l = go [] l
 		(Pushing clientid _)
 			| Just clientid /= lastpushedto -> (m, rejected ++ ms)
 		_ -> go (m:rejected) ms
-  	go [] [] = undefined
+	go [] [] = undefined

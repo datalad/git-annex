@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.54"
+ subject="comment 1"
+ date="2014-10-02T15:54:44Z"
+ content="""
+rsync.net alone is not sufficient, because it's only used for storing the (encrypted) contents of files, not for syncing the git repository, or finding out when there other computer has made a change to the repository.
+
+You can use rsync.net plus xmpp. However, xmpp is not encrypted when it passes through the xmpp server.
+
+A fully encrypted option is to install git-anex on a server accessible by ssh, and then use the assistant to set up an encrypted git repository on the server. No xmpp needed in this configuration.
+"""]]

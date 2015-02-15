@@ -1,6 +1,6 @@
 {- git-annex assistant fsck configuration
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -60,14 +60,14 @@ runFsckForm new activity = case activity of
 	ScheduledSelfFsck s d -> go s d =<< liftAnnex getUUID
 	ScheduledRemoteFsck ru s d -> go s d ru
   where
-  	go (Schedule r t) d ru = do
+	go (Schedule r t) d ru = do
 		u <- liftAnnex getUUID
 		repolist <- liftAssistant (getrepolist ru)
 		runFormPostNoToken $ \msg -> do
-			(reposRes, reposView) <- mreq (selectFieldList repolist) "" (Just ru)
-			(durationRes, durationView) <- mreq intField "" (Just $ durationSeconds d `quot` 60 )
-			(timeRes, timeView) <- mreq (selectFieldList times) "" (Just t)
-			(recurranceRes, recurranceView) <- mreq (selectFieldList recurrances) "" (Just r)
+			(reposRes, reposView) <- mreq (selectFieldList repolist) (bfs "") (Just ru)
+			(durationRes, durationView) <- mreq intField (bfs "") (Just $ durationSeconds d `quot` 60 )
+			(timeRes, timeView) <- mreq (selectFieldList times) (bfs "") (Just t)
+			(recurranceRes, recurranceView) <- mreq (selectFieldList recurrances) (bfs "") (Just r)
 			let form = do
 				webAppFormAuthToken
 				$(widgetFile "configurators/fsck/formcontent")
@@ -167,15 +167,16 @@ getFsckPreferences = FsckPreferences
 	<$> (annexFsckNudge <$> Annex.getGitConfig)
 
 fsckPreferencesAForm :: FsckPreferences -> MkAForm FsckPreferences
-fsckPreferencesAForm def = FsckPreferences
-	<$> areq (checkBoxField `withNote` nudgenote) "Reminders" (Just $ enableFsckNudge def)
+fsckPreferencesAForm d = FsckPreferences
+	<$> areq (checkBoxField `withNote` nudgenote) "Reminders" (Just $ enableFsckNudge d)
   where
 	nudgenote = [whamlet|Remind me when using repositories that lack consistency checks.|]
 
 runFsckPreferencesForm :: Handler ((FormResult FsckPreferences, Widget), Enctype)
 runFsckPreferencesForm = do
 	prefs <- liftAnnex getFsckPreferences
-	runFormPostNoToken $ renderBootstrap $ fsckPreferencesAForm prefs
+	runFormPostNoToken $ renderBootstrap3 formLayout $ fsckPreferencesAForm prefs
+  where formLayout = BootstrapHorizontalForm (ColSm 0) (ColSm 2) (ColSm 0) (ColSm 10)
 
 showFsckPreferencesForm :: Widget
 showFsckPreferencesForm = do

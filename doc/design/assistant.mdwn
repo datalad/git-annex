@@ -3,7 +3,7 @@ These are the design pages for the git-annex [[/assistant]].
 Parts of the design is still being fleshed out, still many ideas
 and use cases to add. Feel free to chip in with comments! --[[Joey]]
 
-See [[roadmap]] for current plans.
+See [[roadmap]] for current plans, as this list was mostly completed.
 
 ## initial development kickstarter year overview (2012-2013)
 

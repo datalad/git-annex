@@ -1,6 +1,6 @@
 {- git-annex v1 -> v2 upgrade support
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -9,6 +9,7 @@ module Upgrade.V1 where
 
 import System.Posix.Types
 import Data.Char
+import Data.Default
 
 import Common.Annex
 import Types.Key
@@ -92,7 +93,7 @@ updateSymlinks = do
 		case r of
 			Nothing -> noop
 			Just (k, _) -> do
-				link <- inRepo $ gitAnnexLink f k
+				link <- calcRepo $ gitAnnexLink f k
 				liftIO $ removeFile f
 				liftIO $ createSymbolicLink link f
 				Annex.Queue.addCommand "add" [Param "--"] [f]
@@ -144,7 +145,7 @@ oldlog2key l
 readKey1 :: String -> Key
 readKey1 v
 	| mixup = fromJust $ file2key $ intercalate ":" $ Prelude.tail bits
-	| otherwise = Key
+	| otherwise = stubKey
 		{ keyName = n
 		, keyBackendName = b
 		, keySize = s
@@ -228,7 +229,7 @@ logFile1 :: Git.Repo -> Key -> String
 logFile1 repo key = Upgrade.V2.gitStateDir repo ++ keyFile1 key ++ ".log"
 
 logFile2 :: Key -> Git.Repo -> String
-logFile2 = logFile' hashDirLower
+logFile2 = logFile' (hashDirLower def)
 
 logFile' :: (Key -> FilePath) -> Key -> Git.Repo -> String
 logFile' hasher key repo =

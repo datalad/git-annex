@@ -1,6 +1,6 @@
 {- xmpp client support
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -15,7 +15,6 @@ import Network.Protocol.XMPP
 import Network
 import Control.Concurrent
 import qualified Data.Text as T
-import Control.Exception (SomeException)
 
 {- Everything we need to know to connect to an XMPP server. -}
 data XMPPCreds = XMPPCreds
@@ -34,18 +33,18 @@ connectXMPP c a = case parseJID (xmppJID c) of
 
 {- Do a SRV lookup, but if it fails, fall back to the cached xmppHostname. -}
 connectXMPP' :: JID -> XMPPCreds -> (JID -> XMPP a) -> IO [(HostPort, Either SomeException ())]
-connectXMPP' jid c a = reverse <$> (handle =<< lookupSRV srvrecord)
+connectXMPP' jid c a = reverse <$> (handlesrv =<< lookupSRV srvrecord)
   where
 	srvrecord = mkSRVTcp "xmpp-client" $
 		T.unpack $ strDomain $ jidDomain jid
 	serverjid = JID Nothing (jidDomain jid) Nothing
 
-	handle [] = do
+	handlesrv [] = do
 		let h = xmppHostname c
 		let p = PortNumber $ fromIntegral $ xmppPort c
 		r <- run h p $ a jid
 		return [r]
-	handle srvs = go [] srvs
+	handlesrv srvs = go [] srvs
 
 	go l [] = return l
 	go l ((h,p):rest) = do

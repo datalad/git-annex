@@ -91,38 +91,48 @@ send one of the corresponding replies listed in the next section.
 The following requests *must* all be supported by the special remote.
 
 * `INITREMOTE`  
-  Request that the remote initialize itself. This is where any one-time
+  Requests the remote to initialize itself. This is where any one-time
   setup tasks can be done, for example creating an Amazon S3 bucket.  
   Note: This may be run repeatedly over time, as a remote is initialized in
   different repositories, or as the configuration of a remote is changed.
   (Both `git annex initremote` and `git-annex enableremote` run this.)
   So any one-time setup tasks should be done idempotently.
 * `PREPARE`  
-  Tells the special remote it's time to prepare itself to be used.  
+  Tells the remote that it's time to prepare itself to be used.  
   Only INITREMOTE can come before this.
 * `TRANSFER STORE|RETRIEVE Key File`  
-  Requests the transfer of a key. For Send, the File is the file to upload;
-  for Receive the File is where to store the download.  
+  Requests the transfer of a key. For STORE, the File is the file to upload;
+  for RETRIEVE the File is where to store the download.  
   Note that the File should not influence the filename used on the remote.
   The filename will not contain any whitespace.  
+  Note that it's important that, while a Key is being stored, CHECKPRESENT
+  not indicate it's present until all the data has been transferred.  
   Multiple transfers might be requested by git-annex, but it's fine for the 
-  program to serialize them and only do one at a time.
+  program to serialize them and only do one at a time.  
 * `CHECKPRESENT Key`  
-  Requests the remote check if a key is present in it.
+  Requests the remote to check if a key is present in it.
 * `REMOVE Key`  
-  Requests the remote remove a key's contents.
+  Requests the remote to remove a key's contents.
 
 The following requests can optionally be supported. If not handled,
 replying with `UNSUPPORTED-REQUEST` is acceptable.
 
 * `GETCOST`  
-  Requests the remote return a use cost. Higher costs are more expensive.
+  Requests the remote to return a use cost. Higher costs are more expensive.
   (See Config/Cost.hs for some standard costs.)
 * `GETAVAILABILITY`
-  Requests the remote send back an `AVAILABILITY` reply.
+  Requests the remote to send back an `AVAILABILITY` reply.
   If the remote replies with `UNSUPPORTED-REQUEST`, its availability
-  is asssumed to be global. So, only remotes that are only reachable
+  is assumed to be global. So, only remotes that are only reachable
   locally need to worry about implementing this.
+* `CLAIMURL Url`  
+  Asks the remote if it wishes to claim responsibility for downloading
+  an url. If so, the remote should send back an `CLAIMURL-SUCCESS` reply.
+  If not, it can send `CLAIMURL-FAILURE`.
+* `CHECKURL Url`  
+  Asks the remote to check if the url's content can currently be downloaded
+  (without downloading it). The remote replies with one of `CHECKURL-FAILURE`,
+  `CHECKURL-CONTENTS`, or `CHECKURL-MULTI`.
 
 More optional requests may be added, without changing the protocol version,
 so if an unknown request is seen, reply with `UNSUPPORTED-REQUEST`.
@@ -165,6 +175,24 @@ while it's handling a request.
   Indicates the INITREMOTE succeeded and the remote is ready to use.
 * `INITREMOTE-FAILURE ErrorMsg`  
   Indicates that INITREMOTE failed.
+* `CLAIMURL-SUCCESS`  
+  Indicates that the CLAIMURL url will be handled by this remote.
+* `CLAIMURL-FAILURE`  
+  Indicates that the CLAIMURL url wil not be handled by this remote.
+* `CHECKURL-CONTENTS Size|UNKNOWN Filename`  
+  Indicates that the requested url has been verified to exist.  
+  The Size is the size in bytes, or use "UNKNOWN" if the size could not be
+  determined.  
+  The Filename can be empty (in which case a default is used),
+  or can specify a filename that is suggested to be used for this url.
+* `CHECKURL-MULTI Url Size|UNKNOWN Filename ...`  
+  Indicates that the requested url has been verified to exist,
+  and contains multiple files, which can each be accessed using
+  their own url.  
+  Note that since a list is returned, neither the Url nor the Filename
+  can contain spaces.
+* `CHECKURL-FAILURE`  
+  Indicates that the requested url could not be accessed.
 * `UNSUPPORTED-REQUEST`  
   Indicates that the special remote does not know how to handle a request.
 
@@ -245,6 +273,17 @@ in control.
 * `GETSTATE Key`  
   Gets any state that has been stored for the key.  
   (git-annex replies with VALUE followed by the state.)
+* `SETURLPRESENT Key Url`  
+  Records an url (or uri) where the Key can be downloaded from.
+* `SETURLMISSING Key Url`  
+  Records that the key can no longer be downloaded from the specified
+  url (or uri).
+* `GETURLS Key Prefix`  
+  Gets the recorded urls where a Key can be downloaded from.
+  Only urls that start with the Prefix will be returned. The Prefix
+  may be empty to get all urls.
+  (git-annex replies one or more times with VALUE for each url.
+  The final VALUE has an empty value, indicating the end of the url list.)
 * `DEBUG message`
   Tells git-annex to display the message if --debug is enabled.
 
@@ -286,8 +325,5 @@ start a new process the next time it needs to use a remote.
   the remote. However, \n and probably \0 need to be escaped somehow in the
   file data, which adds complication.
 * uuid discovery during INITREMOTE.
-* Support for splitting files into chunks.
-* Support for getting and setting the list of urls that can be associated
-  with a key.
 * Hook into webapp. Needs a way to provide some kind of prompt to the user
   in the webapp, etc.

@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.176"
+ subject="comment 6"
+ date="2014-05-27T20:23:03Z"
+ content="""
+I checked the evilspliced tmp/androidtree/Assistant/WebApp/Types.hs, and the bootstrap.css there ends correctly, nothing weird appended.
+
+The TH generated for this:
+
+<pre>
+       (\"css/bootstrap.css\", 
+        GHC.IO.unsafePerformIO
+          (Data.ByteString.Unsafe.unsafePackAddressLen
+             121220
+             file_content_omitted)
+</pre>
+
+That looks right, in particular the size is the same as the number of bytes in the file.
+
+Hmm.. To double-check, I edited the file so that the string containing the content of this file was defined in foo.
+
+<pre>
+*Main> length foo
+113023
+</pre>
+
+This might be innocuous; there are some unicode characters in the string that encode to multiple bytes. OTOH, if you see exactly 8197 bytes of extra garbage appended, I think we have our culprit.
+"""]]

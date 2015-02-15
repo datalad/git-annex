@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="gregor"
+ subject="workaround:"
+ date="2014-12-02T18:04:16Z"
+ content="""
+my workaround is to setup the remote with the local port-forward end then edit the .ssh/config to use the needed ProxyCommand
+"""]]

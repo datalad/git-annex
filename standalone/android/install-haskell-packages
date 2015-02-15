@@ -4,13 +4,14 @@
 #
 # You should install ghc-android first.
 #
-# Note that the newest version of packages is installed. 
-# It attempts to reuse patches for older versions, but 
-# new versions of packages often break cross-compilation by adding TH, 
-# etc
+# The cabal.config is used to pin the haskell packages to the last
+# versions that have been gotten working. To update, delete the
+# cabal.config, run this script with an empty cabal and fix up the broken
+# patches, and then use cabal freeze to generate a new cabal.config.
 #
-# Future work: Convert to using the method used here:
-# https://github.com/kaoskorobase/ghc-ios-cabal-scripts/
+# This only installs haskell packages for ghc-android. The host ghc
+# also needs to have all the git-annex build deps installed, in similar
+# versions. Those are installed from Debian packages using apt.
 
 set -e
 
@@ -18,20 +19,22 @@ if [ ! -d haskell-patches ]; then
 	cd standalone/android
 fi
 
-cabalopts="$@"
-
-cabalinstall () {
-	echo cabal install "$@" "$cabalopts"
-	eval cabal install "$@" "$cabalopts"
+setupcabal () {
+	# Some packages fail to install in a non unicode locale.
+	LANG=en_US.UTF-8
+	export LANG
 }
 
 patched () {
 	pkg=$1
 	ver=$2
 	if [ -z "$ver" ]; then
-		cabal unpack $pkg
+		ver="$(grep " $pkg " ../cabal.config | cut -d= -f 3 | sed 's/,$//')"
+	fi
+	if [ -z "$ver" ]; then
+		cabal unpack --pristine $pkg
 	else
-		cabal unpack $pkg-$ver
+		cabal unpack --pristine $pkg-$ver
 	fi
 	cd $pkg*
 	git init
@@ -39,6 +42,7 @@ patched () {
 	git config user.email dummy@example.com
 	git add .
 	git commit -m "pre-patched state of $pkg"
+	ln -sf ../../cabal.config
 	for patch in ../../haskell-patches/${pkg}_* ../../../no-th/haskell-patches/${pkg}_*; do
 		if [ -e "$patch" ]; then
 			echo trying $patch
@@ -49,15 +53,24 @@ patched () {
 			fi
 		fi
 	done
-	cabalinstall
+	if [ -e config.sub ]; then
+		cp /usr/share/misc/config.sub .
+	fi
+	if [ -e config.guess ]; then
+		cp /usr/share/misc/config.guess .
+	fi
+	cabal install # --reinstall --force-reinstalls
+	rm -f cabal.config
+
 	rm -rf $pkg*
 	cd ..
 }
 
 installgitannexdeps () {
 	pushd ../..
-	echo cabal install --only-dependencies "$@"
+	ln -sf standalone/android/cabal.config
 	cabal install --only-dependencies "$@"
+	rm -f cabal.config
 	popd
 }
 
@@ -65,19 +78,19 @@ install_pkgs () {
 	rm -rf tmp
 	mkdir tmp
 	cd tmp
-
+cat <<EOF
+EOF
 	patched network
 	patched unix-time
 	patched lifted-base
 	patched zlib
 	patched MissingH
-	patched bloomfilter
 	patched distributive
 	patched comonad
 	patched iproute
 	patched primitive
 	patched socks
-	patched entropy
+	# patched entropy # needed for newer version, not current pinned version
 	patched vector
 	patched stm-chans
 	patched persistent
@@ -88,11 +101,13 @@ install_pkgs () {
 	patched x509-system
 	patched persistent-template
 	patched system-filepath
+	patched optparse-applicative
 	patched wai-app-static
 	patched shakespeare
 	patched shakespeare-css
 	patched shakespeare-js
 	patched yesod-routes
+	patched hamlet
 	patched yesod-core
 	patched yesod-persistent
 	patched yesod-form
@@ -106,7 +121,8 @@ install_pkgs () {
 	patched uuid
 	patched dns
 	patched gnutls
-	patched libxml-sax
+	patched unbounded-delays
+	patched gnuidn
 	patched network-protocol-xmpp
 
 	cd ..
@@ -114,17 +130,11 @@ install_pkgs () {
 	installgitannexdeps -fAndroid -f-Pairing
 }
 
-echo
-echo
-echo native build
-echo
+# native cabal needs its own update
 cabal update
-installgitannexdeps
 
-echo 
-echo
-echo cross build
-echo
 PATH=$HOME/.ghc/$(cat abiversion)/bin:$HOME/.ghc/$(cat abiversion)/arm-linux-androideabi/bin:$PATH
+setupcabal
 cabal update
+
 install_pkgs

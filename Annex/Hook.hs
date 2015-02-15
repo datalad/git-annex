@@ -4,7 +4,7 @@
  - not change, otherwise removing old hooks using an old version of
  - the script would fail.
  -
- - Copyright 2013-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2013-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,7 +16,6 @@ import qualified Git.Hook as Git
 import Config
 import qualified Annex
 import Utility.Shell
-import Utility.FileMode
 
 import qualified Data.Map as M
 
@@ -53,19 +52,16 @@ hookWarning h msg = do
  - the existing hooks are cached. -}
 runAnnexHook :: Git.Hook -> Annex ()
 runAnnexHook hook = do
-	cmd <- fromRepo $ Git.hookFile hook
 	m <- Annex.getState Annex.existinghooks
 	case M.lookup hook m of
-		Just True -> run cmd
+		Just True -> run
 		Just False -> noop
 		Nothing -> do
-			exists <- hookexists cmd
+			exists <- inRepo $ Git.hookExists hook
 			Annex.changeState $ \s -> s
 				{ Annex.existinghooks = M.insert hook exists m }
-			when exists $
-				run cmd
+			when exists run
   where
-	hookexists f = liftIO $ catchBoolIO $
-		isExecutable . fileMode <$> getFileStatus f
-	run cmd = unlessM (liftIO $ boolSystem cmd []) $
-		warning $ cmd ++ " failed"
+	run = unlessM (inRepo $ Git.runHook hook) $ do
+		h <- fromRepo $ Git.hookFile hook
+		warning $ h ++ " failed"

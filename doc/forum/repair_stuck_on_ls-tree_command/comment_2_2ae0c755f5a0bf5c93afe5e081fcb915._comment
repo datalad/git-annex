@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="vho"
+ subject="Still stuck"
+ date="2014-12-02T09:59:20Z"
+ content="""
+vincent@berlioz:~/photos2$ git config --global pack.packSizeLimit 100m
+vincent@berlioz:~/photos2$ git config --global pack.windowMemory 100m
+vincent@berlioz:~/photos2$ git config --global pack.threads 1
+vincent@berlioz:~/photos2$ time git gc
+error: pack-objects died of signal 9
+error: failed to run repack
+
+real    21m29.451s
+user    1m31.414s
+sys     0m9.141s
+
+:(
+
+"""]]

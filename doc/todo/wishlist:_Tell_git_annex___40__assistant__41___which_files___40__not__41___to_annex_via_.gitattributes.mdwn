@@ -1,9 +1,0 @@
-Title says it all.
-
-It would be nice if I could tell git annex (assistant) which files (not) to annex (automatically).
-
-[[!tag /design/assistant]]
-
-> [[done]]; use `annex.largefiles` git config to configure criteria for
-> which files should be annexed. The rest will be added to git as normal
-> files. --[[Joey]]

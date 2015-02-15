@@ -1,0 +1,12 @@
+Today was mostly spent driving across Brazil, but I had energy this evening
+for a little work on git-annex.
+
+Made the assistant delete old temporary files on startup. I've had
+scattered reports of a few users whose `.git/annex/tmp` contained many
+files, apparently put there by the assistant when it locks down a file
+prior to annexing it. That seems it could possibly be a bug -- or it could
+just be unclean shutdowns interrupting the assistant. Anyway, this will
+deal with any source of tmp cruft, and I made sure to preserve
+tmp files for partially downloaded content.
+
+[[!meta date="Sun, 27 Apr 2014 22:12:55 -0300"]]
