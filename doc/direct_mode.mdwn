@@ -119,7 +119,7 @@ to revert the last committed change to `file` in direct mode. Note that if the f
     $ git annex status file # look how that change is now committed
     $ git annex undo file # okay, good to go, now we're reverting to the previous version
 
-If you would have skipped that `git annex add`, above, you would have revert to the version *before* the version that was before the modified version! In other words, two versions before!
+If you would have skipped that `git annex add`, above, you would have revert to the version *before* the version that was before the modified version! In other words, two versions before! Note that you can use the `--depth` flag to revert even earlier versions of the file.
 
 ## forcing git to use the work tree in direct mode
 
