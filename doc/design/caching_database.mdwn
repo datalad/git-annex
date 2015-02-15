@@ -45,14 +45,6 @@ DB into memory. In the comments of
 other haskell database-like things, and found them all wanting, except for
 possibly TCache.
 
-TODO: This seems promising; investigate it:
-<https://awelonblue.wordpress.com/2014/12/19/vcache-an-acid-state-killer/>  
-It uses LMDB, which is a C library, and its PVar is a variable named by a
-bytestring, so it's essentially a key/value store where the values can be
-arbitrary Haskell data types. Since git-annex already has Keys, and most
-of the need for the database is to look up some cached value for a Key,
-this seems like a pretty good fit!
-
 ## case study: persistent with sqllite
 
 Here's a non-normalized database schema in persistent's syntax.
