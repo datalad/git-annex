@@ -22,15 +22,21 @@ AssociatedFiles
 main :: IO ()
 main = runSqlite "foo.db" $ do
 	runMigration migrateAll
+	if True then populate else return ()
+	query
 
+populate = do
 	forM_ [1..30000] $ \i -> do
+		--delete $ from $ \f -> do
+		--	where_ (f ^. CachedKeyKey ==. val (show i))
 		k <- insert $ CachedKey (show i)
-		liftIO $ print k
-		insert $ AssociatedFiles k (show i)
+		liftIO $ print ("stored", k)
+		insert $ AssociatedFiles k ("file" ++show (i+1))
+		--insert $ AssociatedFiles k ("otherfile" ++show (i+2))
 
-		[(k2)] <- select $ from $ \k -> do
-			where_ (k ^. CachedKeyKey ==. val (show i))
-			return (k ^. CachedKeyId)
-		liftIO $ print (2, k2)
-		delete $ from $ \f -> do
-			where_ (f ^. AssociatedFilesKey ==. k2)
+query = forM_ [1..1000] $ \i -> do
+	r <- select $ from $ \(k, f) -> do
+		where_ (k ^. CachedKeyKey ==. val (show i))
+		where_ (f ^. AssociatedFilesKey ==. k ^. CachedKeyId)
+		return (f ^. AssociatedFilesFile)
+	liftIO $ print ("got", r)
