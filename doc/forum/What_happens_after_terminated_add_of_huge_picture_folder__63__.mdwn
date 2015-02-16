@@ -1,76 +1,76 @@
 Step by step:
 
-git annex add ./hugePictureFolder
-// no it's to big and taking to long, let's not do this
-CRTL+D
-git drop --force ./hugePictureFolder
-git status
-fatal: bad default revision 'HEAD'
-git reset --hard git-annex
-git status // ok
-ls 
-drwxr-xr-x 10 rolas rolas      4096 Vas 16 11:40 000
-drwxr-xr-x  9 rolas rolas      4096 Vas 16 11:40 001
-drwxr-xr-x 11 rolas rolas      4096 Vas 16 11:40 002
-drwxr-xr-x 12 rolas rolas      4096 Vas 16 11:40 003
-drwxr-xr-x  6 rolas rolas      4096 Vas 16 11:40 004
-drwxr-xr-x 12 rolas rolas      4096 Vas 16 11:40 005
-drwxr-xr-x 11 rolas rolas      4096 Vas 16 11:40 006
-drwxr-xr-x 13 rolas rolas      4096 Vas 16 11:40 007
-drwxr-xr-x  6 rolas rolas      4096 Vas 16 11:40 008
-drwxr-xr-x 13 rolas rolas      4096 Vas 16 11:40 009
-drwxr-xr-x 14 rolas rolas      4096 Vas 16 11:40 00a
-drwxr-xr-x 16 rolas rolas      4096 Vas 16 11:40 00b
-drwxr-xr-x 11 rolas rolas      4096 Vas 16 11:40 00c
-drwxr-xr-x  9 rolas rolas      4096 Vas 16 11:40 00d
-drwxr-xr-x 20 rolas rolas      4096 Vas 16 11:40 00e
-drwxr-xr-x 18 rolas rolas      4096 Vas 16 11:40 00f
-drwxr-xr-x 14 rolas rolas      4096 Vas 16 11:40 010
-drwxr-xr-x 11 rolas rolas      4096 Vas 16 11:40 011
-drwxr-xr-x 10 rolas rolas      4096 Vas 16 11:40 012
-drwxr-xr-x 12 rolas rolas      4096 Vas 16 11:40 013
-drwxr-xr-x  7 rolas rolas      4096 Vas 16 11:40 014
-drwxr-xr-x 16 rolas rolas      4096 Vas 16 11:40 015
-drwxr-xr-x  7 rolas rolas      4096 Vas 16 11:40 016
-drwxr-xr-x 10 rolas rolas      4096 Vas 16 11:40 017
-drwxr-xr-x  9 rolas rolas      4096 Vas 16 11:40 018
-drwxr-xr-x 10 rolas rolas      4096 Vas 16 11:40 019
-drwxr-xr-x  8 rolas rolas      4096 Vas 16 11:40 01a
-drwxr-xr-x 10 rolas rolas      4096 Vas 16 11:40 01b
-drwxr-xr-x 10 rolas rolas      4096 Vas 16 11:40 01c
-drwxr-xr-x  8 rolas rolas      4096 Vas 16 11:40 01d
-drwxr-xr-x 10 rolas rolas      4096 Vas 16 11:40 01e
-drwxr-xr-x 11 rolas rolas      4096 Vas 16 11:40 01f
-drwxr-xr-x 15 rolas rolas      4096 Vas 16 11:40 020
-drwxr-xr-x 13 rolas rolas      4096 Vas 16 11:40 021
-drwxr-xr-x  5 rolas rolas      4096 Vas 16 11:40 022
-drwxr-xr-x 10 rolas rolas      4096 Vas 16 11:40 023
-drwxr-xr-x  9 rolas rolas      4096 Vas 16 11:40 024
-drwxr-xr-x 12 rolas rolas      4096 Vas 16 11:40 025
-drwxr-xr-x  8 rolas rolas      4096 Vas 16 11:40 026
-drwxr-xr-x 12 rolas rolas      4096 Vas 16 11:40 027
-drwxr-xr-x 10 rolas rolas      4096 Vas 16 11:40 028
-drwxr-xr-x 10 rolas rolas      4096 Vas 16 11:40 029
-drwxr-xr-x  9 rolas rolas      4096 Vas 16 11:40 02a
-drwxr-xr-x  9 rolas rolas      4096 Vas 16 11:40 02b
-drwxr-xr-x  6 rolas rolas      4096 Vas 16 11:40 02c
-drwxr-xr-x  7 rolas rolas      4096 Vas 16 11:40 02d
-drwxr-xr-x 10 rolas rolas      4096 Vas 16 11:40 02e
-drwxr-xr-x  5 rolas rolas      4096 Vas 16 11:40 02f
-drwxr-xr-x 13 rolas rolas      4096 Vas 16 11:40 030
-drwxr-xr-x 10 rolas rolas      4096 Vas 16 11:40 031
-drwxr-xr-x 10 rolas rolas      4096 Vas 16 11:40 032
-...
-...
-
-What did I Do? Can I do CTRL+D? If yes, what should I do to recover?
-
-Thanks
- 
-$ git --version
-git version 2.3.0
-
-$ git annex version
-git-annex version: 5.20140412ubuntu1
-
+git annex add ./hugePictureFolder<br>
+// no it's to big and taking to long, let's not do this<br>
+CRTL+D<br>
+git annex --force drop ./hugePictureFolder<br>
+git status<br>
+fatal: bad default revision 'HEAD'<br>
+git reset --hard git-annex<br>
+git status // ok<br>
+ls <br>
+drwxr-xr-x 10 rolas rolas      4096 Vas 16 11:40 000<br>
+drwxr-xr-x  9 rolas rolas      4096 Vas 16 11:40 001<br>
+drwxr-xr-x 11 rolas rolas      4096 Vas 16 11:40 002<br>
+drwxr-xr-x 12 rolas rolas      4096 Vas 16 11:40 003<br>
+drwxr-xr-x  6 rolas rolas      4096 Vas 16 11:40 004<br>
+drwxr-xr-x 12 rolas rolas      4096 Vas 16 11:40 005<br>
+drwxr-xr-x 11 rolas rolas      4096 Vas 16 11:40 006<br>
+drwxr-xr-x 13 rolas rolas      4096 Vas 16 11:40 007<br>
+drwxr-xr-x  6 rolas rolas      4096 Vas 16 11:40 008<br>
+drwxr-xr-x 13 rolas rolas      4096 Vas 16 11:40 009<br>
+drwxr-xr-x 14 rolas rolas      4096 Vas 16 11:40 00a<br>
+drwxr-xr-x 16 rolas rolas      4096 Vas 16 11:40 00b<br>
+drwxr-xr-x 11 rolas rolas      4096 Vas 16 11:40 00c<br>
+drwxr-xr-x  9 rolas rolas      4096 Vas 16 11:40 00d<br>
+drwxr-xr-x 20 rolas rolas      4096 Vas 16 11:40 00e<br>
+drwxr-xr-x 18 rolas rolas      4096 Vas 16 11:40 00f<br>
+drwxr-xr-x 14 rolas rolas      4096 Vas 16 11:40 010<br>
+drwxr-xr-x 11 rolas rolas      4096 Vas 16 11:40 011<br>
+drwxr-xr-x 10 rolas rolas      4096 Vas 16 11:40 012<br>
+drwxr-xr-x 12 rolas rolas      4096 Vas 16 11:40 013<br>
+drwxr-xr-x  7 rolas rolas      4096 Vas 16 11:40 014<br>
+drwxr-xr-x 16 rolas rolas      4096 Vas 16 11:40 015<br>
+drwxr-xr-x  7 rolas rolas      4096 Vas 16 11:40 016<br>
+drwxr-xr-x 10 rolas rolas      4096 Vas 16 11:40 017<br>
+drwxr-xr-x  9 rolas rolas      4096 Vas 16 11:40 018<br>
+drwxr-xr-x 10 rolas rolas      4096 Vas 16 11:40 019<br>
+drwxr-xr-x  8 rolas rolas      4096 Vas 16 11:40 01a<br>
+drwxr-xr-x 10 rolas rolas      4096 Vas 16 11:40 01b<br>
+drwxr-xr-x 10 rolas rolas      4096 Vas 16 11:40 01c<br>
+drwxr-xr-x  8 rolas rolas      4096 Vas 16 11:40 01d<br>
+drwxr-xr-x 10 rolas rolas      4096 Vas 16 11:40 01e<br>
+drwxr-xr-x 11 rolas rolas      4096 Vas 16 11:40 01f<br>
+drwxr-xr-x 15 rolas rolas      4096 Vas 16 11:40 020<br>
+drwxr-xr-x 13 rolas rolas      4096 Vas 16 11:40 021<br>
+drwxr-xr-x  5 rolas rolas      4096 Vas 16 11:40 022<br>
+drwxr-xr-x 10 rolas rolas      4096 Vas 16 11:40 023<br>
+drwxr-xr-x  9 rolas rolas      4096 Vas 16 11:40 024<br>
+drwxr-xr-x 12 rolas rolas      4096 Vas 16 11:40 025<br>
+drwxr-xr-x  8 rolas rolas      4096 Vas 16 11:40 026<br>
+drwxr-xr-x 12 rolas rolas      4096 Vas 16 11:40 027<br>
+drwxr-xr-x 10 rolas rolas      4096 Vas 16 11:40 028<br>
+drwxr-xr-x 10 rolas rolas      4096 Vas 16 11:40 029<br>
+drwxr-xr-x  9 rolas rolas      4096 Vas 16 11:40 02a<br>
+drwxr-xr-x  9 rolas rolas      4096 Vas 16 11:40 02b<br>
+drwxr-xr-x  6 rolas rolas      4096 Vas 16 11:40 02c<br>
+drwxr-xr-x  7 rolas rolas      4096 Vas 16 11:40 02d<br>
+drwxr-xr-x 10 rolas rolas      4096 Vas 16 11:40 02e<br>
+drwxr-xr-x  5 rolas rolas      4096 Vas 16 11:40 02f<br>
+drwxr-xr-x 13 rolas rolas      4096 Vas 16 11:40 030<br>
+drwxr-xr-x 10 rolas rolas      4096 Vas 16 11:40 031<br>
+drwxr-xr-x 10 rolas rolas      4096 Vas 16 11:40 032<br>
+...<br>
+...<br>
+<br>
+What did I Do? Can I do CTRL+D? If yes, what should I do to recover?<br>
+<br>
+Thanks<br>
+ <br>
+$ git --version<br>
+git version 2.3.0<br>
+<br>
+$ git annex version<br>
+git-annex version: 5.20140412ubuntu1<br>
+<br>
 
