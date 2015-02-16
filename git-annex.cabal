@@ -110,7 +110,8 @@ Executable git-annex
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance,
    SafeSemaphore, uuid, random, dlist, unix-compat, async, stm (>= 2.3),
    data-default, case-insensitive, http-conduit, http-types,
-   cryptohash (>= 0.10.0)
+   cryptohash (>= 0.10.0),
+   esqueleto, persistent-sqlite, persistent, persistent-template
   CC-Options: -Wall
   GHC-Options: -Wall
   Extensions: PackageImports

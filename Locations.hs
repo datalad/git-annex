@@ -57,6 +57,7 @@ module Locations (
 	gitAnnexSshDir,
 	gitAnnexRemotesDir,
 	gitAnnexAssistantDefaultDir,
+	gitAnnexFsckDb,
 	isLinkToAnnex,
 	HashLevels(..),
 	hashDirMixed,
@@ -339,6 +340,10 @@ gitAnnexRemotesDir r = addTrailingPathSeparator $ gitAnnexDir r </> "remotes"
  - repositories, by default. -}
 gitAnnexAssistantDefaultDir :: FilePath
 gitAnnexAssistantDefaultDir = "annex"
+
+{- Database used to record fsck info. -}
+gitAnnexFsckDb :: Git.Repo -> FilePath
+gitAnnexFsckDb r = gitAnnexDir r </> "fsck.db"
 
 {- Checks a symlink target to see if it appears to point to annexed content.
  -

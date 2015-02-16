@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2013 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -26,13 +26,13 @@ import Logs.Trust
 import Config.NumCopies
 import Annex.UUID
 import Utility.DataUnits
-import Utility.FileMode
 import Config
 import Types.Key
 import Types.CleanupActions
 import Utility.HumanTime
 import Git.FilePath
 import Utility.PID
+import qualified Database.Fsck as FsckDb
 
 import Data.Time.Clock.POSIX
 import Data.Time
@@ -72,6 +72,7 @@ seek ps = do
 		(\k -> startKey i k =<< getNumCopies)
 		(withFilesInGit $ whenAnnexed $ start from i)
 		ps
+	withFsckDb i (liftIO . FsckDb.closeDb)
 
 getIncremental :: Annex Incremental
 getIncremental = do
@@ -82,15 +83,17 @@ getIncremental = do
 	case (i, starti, morei) of
 		(False, False, False) -> return NonIncremental
 		(False, True, False) -> startIncremental
-		(False ,False, True) -> ContIncremental <$> getStartTime
+		(False ,False, True) -> contIncremental
 		(True, False, False) ->
-			maybe startIncremental (return . ContIncremental . Just)
+			maybe startIncremental (const contIncremental)
 				=<< getStartTime
 		_ -> error "Specify only one of --incremental, --more, or --incremental-schedule"
   where
 	startIncremental = do
 		recordStartTime
-		return StartIncremental
+		FsckDb.newPass
+		StartIncremental <$> FsckDb.openDb
+	contIncremental = ContIncremental <$> FsckDb.openDb
 
 	checkschedule Nothing = error "bad --incremental-schedule value"
 	checkschedule (Just delta) = do
@@ -415,8 +418,7 @@ badContentRemote remote key = do
 	return $ (if ok then "dropped from " else "failed to drop from ")
 		++ Remote.name remote
 
-data Incremental = StartIncremental | ContIncremental (Maybe EpochTime) | NonIncremental
-	deriving (Eq, Show)
+data Incremental = StartIncremental FsckDb.DbHandle | ContIncremental FsckDb.DbHandle | NonIncremental
 
 runFsck :: Incremental -> FilePath -> Key -> Annex Bool -> CommandStart
 runFsck inc file key a = ifM (needFsck inc key)
@@ -425,48 +427,23 @@ runFsck inc file key a = ifM (needFsck inc key)
 		next $ do
 			ok <- a
 			when ok $
-				recordFsckTime key
+				recordFsckTime inc key
 			next $ return ok
 	, stop
 	)
 
 {- Check if a key needs to be fscked, with support for incremental fscks. -}
 needFsck :: Incremental -> Key -> Annex Bool
-needFsck (ContIncremental Nothing) _ = return True
-needFsck (ContIncremental starttime) key = do
-	fscktime <- getFsckTime key
-	return $ fscktime < starttime
+needFsck (ContIncremental h) key = not <$> FsckDb.inDb h key
 needFsck _ _ = return True
 
-{- To record the time that a key was last fscked, without
- - modifying its mtime, we set the timestamp of its parent directory.
- - Each annexed file is the only thing in its directory, so this is fine.
- -
- - To record that the file was fscked, the directory's sticky bit is set.
- - (None of the normal unix behaviors of the sticky bit should matter, so
- - we can reuse this permission bit.)
- -
- - Note that this relies on the parent directory being deleted when a file
- - is dropped. That way, if it's later added back, the fsck record
- - won't still be present.
- -}
-recordFsckTime :: Key -> Annex ()
-recordFsckTime key = do
-	parent <- parentDir <$> calcRepo (gitAnnexLocation key)
-	liftIO $ void $ tryIO $ do
-		touchFile parent
-#ifndef mingw32_HOST_OS
-		setSticky parent
-#endif
+withFsckDb :: Incremental -> (FsckDb.DbHandle -> Annex ()) -> Annex ()
+withFsckDb (ContIncremental h) a = a h
+withFsckDb (StartIncremental h) a = a h
+withFsckDb NonIncremental _ = noop
 
-getFsckTime :: Key -> Annex (Maybe EpochTime)
-getFsckTime key = do
-	parent <- parentDir <$> calcRepo (gitAnnexLocation key)
-	liftIO $ catchDefaultIO Nothing $ do
-		s <- getFileStatus parent
-		return $ if isSticky $ fileMode s
-			then Just $ modificationTime s
-			else Nothing
+recordFsckTime :: Incremental -> Key -> Annex ()
+recordFsckTime inc key = withFsckDb inc $ \h -> FsckDb.addDb h key
 
 {- Records the start time of an incremental fsck.
  -
