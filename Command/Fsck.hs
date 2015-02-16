@@ -443,9 +443,7 @@ withFsckDb (StartIncremental h) a = a h
 withFsckDb NonIncremental _ = noop
 
 recordFsckTime :: Incremental -> Key -> Annex ()
-recordFsckTime inc key = withFsckDb inc $ \h -> liftIO $ do
-	FsckDb.addDb h key
-	FsckDb.commitDb h
+recordFsckTime inc key = withFsckDb inc $ \h -> liftIO $ FsckDb.addDb h key
 
 {- Records the start time of an incremental fsck.
  -

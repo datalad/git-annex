@@ -40,7 +40,6 @@ share [mkPersist sqlSettings, mkMigrate "migrateFsck"] [persistLowerCase|
 Fscked
   key SKey
   UniqueKey key
-  deriving Show
 |]
 
 {- The database is removed when starting a new incremental fsck pass. -}
@@ -62,7 +61,7 @@ openDb = do
 	liftIO $ H.openDb db
 
 addDb :: H.DbHandle -> Key -> IO ()
-addDb h = void . H.runDb h . insert . Fscked . toSKey
+addDb h = void . H.runDb' h commitPolicy . insert . Fscked . toSKey
 
 inDb :: H.DbHandle -> Key -> IO Bool
 inDb h k = H.runDb h $ do
@@ -70,3 +69,10 @@ inDb h k = H.runDb h $ do
 		where_ (r ^. FsckedKey ==. val (toSKey k))
 		return (r ^. FsckedKey)
 	return $ not $ null r
+
+{- Bundle up addDb transactions and commit after 60 seconds.
+ - This is a balance between resuming where the last incremental
+ - fsck left off, and making too many commits which slows down the fsck
+ - of lots of small or not present files. -}
+commitPolicy :: H.CommitPolicy
+commitPolicy = H.CommitAfterSeconds 60
