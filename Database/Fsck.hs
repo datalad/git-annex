@@ -75,4 +75,4 @@ inDb h k = H.runDb h $ do
  - fsck left off, and making too many commits which slows down the fsck
  - of lots of small or not present files. -}
 commitPolicy :: H.CommitPolicy
-commitPolicy = H.CommitAfterSeconds 60
+commitPolicy = H.CommitAfter (fromIntegral (60 :: Int))

@@ -67,7 +67,7 @@ workerThread db jobs = go
 runDb :: DbHandle -> SqlPersistM a -> IO a
 runDb h = runDb' h CommitManually
 
-data CommitPolicy = CommitManually | CommitAfterSeconds Int
+data CommitPolicy = CommitManually | CommitAfter NominalDiffTime
 
 runDb' :: DbHandle -> CommitPolicy -> SqlPersistM a -> IO a
 runDb' h@(DbHandle _ jobs t) pol a = do
@@ -76,11 +76,11 @@ runDb' h@(DbHandle _ jobs t) pol a = do
 	r <- either throwIO return =<< takeMVar res
 	case pol of
 		CommitManually -> return ()
-		CommitAfterSeconds n -> do
+		CommitAfter n -> do
 			now <- getCurrentTime
 			prev <- takeMVar t
 			putMVar t now
-			when (diffUTCTime now prev > fromIntegral n) $
+			when (diffUTCTime now prev > n) $
 				commitDb h
 	return r
 
