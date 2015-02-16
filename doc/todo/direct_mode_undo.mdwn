@@ -84,3 +84,5 @@ that touched files in that directory, and undo the changes to those files.
 
 Also, --depth could make undo look for an older commit than the most
 recent one to affect the specified file.
+
+See [[direct_mode]] for documentation about this feature.

@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="https://openid.stackexchange.com/user/814e4910-8e9b-4fe5-83ef-ff863c1a7314"
+ nickname="BehemothTheCat"
+ subject="push fails"
+ date="2015-02-14T00:11:40Z"
+ content="""
+These instructions don't work for me, unfortunately.
+
+This step:
+
+    git push origin master git-annex
+
+results in:
+
+    To ssh://my.server.com/home/itz/git/annex.git
+     ! [rejected]        git-annex -> git-annex (non-fast-forward)
+    error: failed to push some refs to 'ssh://my.server.com/home/itz/git/annex.git'
+    hint: Updates were rejected because a pushed branch tip is behind its remote
+    hint: counterpart. Check out this branch and integrate the remote changes
+    hint: (e.g. 'git pull ...') before pushing again.
+    hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+
+Versions: git 1:1.9.1-1~bpo70+2 , git-annex 5.20141024~bpo70+1 (both packaged by Debian, same on local and remote)
+
+And yes, I did a pull on the master branch first.  Afraid to do anything
+with the git-annex branch without explicit instruction.
+
+"""]]
