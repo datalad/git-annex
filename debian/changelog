@@ -31,6 +31,10 @@ git-annex (5.20150206) UNRELEASED; urgency=medium
   * sync, assistant: Use the ssh-options git config when doing git pull
     and push.
   * remotedaemon: Use the ssh-options git config.
+  * fsck: Incremental fsck uses sqlite to store its records, instead
+    of abusing the sticky bit. Existing sticky bits are ignored,
+    incremental fscks started by old versions won't be resumed by
+    this version.
 
  -- Joey Hess <id@joeyh.name>  Fri, 06 Feb 2015 13:57:08 -0400
 
