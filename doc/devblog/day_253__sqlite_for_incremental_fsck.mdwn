@@ -1,0 +1,56 @@
+Yesterday I did a little more investigation of key/value stores.
+I'd love a pure haskell key/value store that didn't buffer everything in
+memory, and that allowed concurrent readers, and was ACID, and production
+quality. But so far, I have not found anything that meets all those
+criteria. It seems that sqlite is the best choice for now.
+
+Started working on the `database` branch today. The plan is to use
+sqlite for incremental fsck first, and if that works well, do the rest
+of what's planned in [[design/caching_database]].
+
+At least for now, I'm going to use a dedicated database file for each
+different thing. (This may not be as space-efficient due to lacking
+normalization, but it keeps things simple.) 
+
+So, .git/annex/fsck.db will be used by incremental fsck, and it has
+a super simple Persistent database schema:
+
+[[!format haskell """
+Fscked
+  key SKey
+  UniqueKey key
+"""]]
+
+It was pretty easy to implement this and make incremental fsck use it. The
+hard part is making it both fast and robust.
+
+At first, I was doing everything inside a single `runSqlite` action.
+Including creating the table. But, it turns out that runs as a single
+transaction, and if it was interrupted, this left the database in a
+state where it exists, but has no tables. Hard to recover from.
+
+So, I separated out creating the database, made that be done in a separate
+transation and fully atomically. Now `fsck --incremental` could be crtl-c'd
+and resumed with `fsck --more`, but it would lose the transaction and so
+not remember anything had been checked.
+
+To fix that, I tried making a separate transation per file fscked. That
+worked, and it resumes nicely where it left off, but all those transactions
+made it much slower.
+
+To fix the speed, I made it commit just one transaction per minute. This
+seems like an ok balance. Having fsck re-do one minute's work when restarting
+an interrupted incremental fsck is perfectly reasonable, and now the speed,
+using the sqlite database, is nearly as fast as the old sticky bit hack was.
+(Specifically, 6m7s old vs 6m27s new, fscking 37000 files from cold cache
+in --fast mode.)
+
+There is still a problem with multiple concurrent `fsck --more`
+failing. Probably a concurrent writer problem? And, some porting will be
+required to get sqlite and persistent working on Windows and Android.
+So the branch isn't ready to merge yet, but it seems promising.
+
+In retrospect, while incremental fsck has the simplest database schema, it
+might be one of the harder things listed in [[design/caching_database]], 
+just because it involves so many writes to the database. The other use
+cases are more read heavy.
