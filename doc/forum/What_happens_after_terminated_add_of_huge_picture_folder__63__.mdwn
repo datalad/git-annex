@@ -66,6 +66,7 @@ drwxr-xr-x 10 rolas rolas      4096 Vas 16 11:40 032<br>
 What did I Do? Can I do CTRL+D? If yes, what should I do to recover?<br>
 <br>
 Thanks<br>
+Rolandas<br>
  <br>
 $ git --version<br>
 git version 2.3.0<br>
