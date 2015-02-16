@@ -8,8 +8,9 @@
 module Database.Handle (
 	DbHandle,
 	openDb,
-	closeDb,
 	runDb,
+	commitDb,
+	closeDb,
 ) where
 
 import Utility.Exception
@@ -26,27 +27,28 @@ import qualified Data.Text as T
  - the database. It has a MVar which Jobs are submitted to. -}
 data DbHandle = DbHandle (Async ()) (MVar Job)
 
-data Job = Job (SqlPersistM ()) | CloseJob
+data Job = RunJob (SqlPersistM ()) | CommitJob | CloseJob
 
 openDb :: FilePath -> IO DbHandle
 openDb db = do
 	jobs <- newEmptyMVar
-	worker <- async (workerThread db jobs)
+	worker <- async (workerThread (T.pack db) jobs)
 	return $ DbHandle worker jobs
 
-workerThread :: FilePath -> MVar Job -> IO ()
-workerThread db jobs = runSqlite (T.pack db) go
+workerThread :: T.Text -> MVar Job -> IO ()
+workerThread db jobs = go
   where
 	go = do
+		r <- runSqlite db transaction
+		case r of
+			CloseJob -> return ()
+			_ -> go
+	transaction = do
 		job <- liftIO $ takeMVar jobs
 		case job of
-			Job a -> a >> go
-			CloseJob -> return ()
-
-closeDb :: DbHandle -> IO ()
-closeDb (DbHandle worker jobs) = do
-	putMVar jobs CloseJob
-	wait worker
+			RunJob a -> a >> transaction
+			CommitJob -> return CommitJob
+			CloseJob -> return CloseJob
 
 {- Runs an action using the DbHandle.
  -
@@ -59,5 +61,15 @@ closeDb (DbHandle worker jobs) = do
 runDb :: DbHandle -> SqlPersistM a -> IO a
 runDb (DbHandle _ jobs) a = do
 	res <- newEmptyMVar
-	putMVar jobs $ Job $ liftIO . putMVar res =<< tryNonAsync a
+	putMVar jobs $ RunJob $ liftIO . putMVar res =<< tryNonAsync a
 	either throwIO return =<< takeMVar res
+
+{- Commits any transaction that was created by the previous calls to runDb,
+ - and starts a new transaction. -}
+commitDb :: DbHandle -> IO ()
+commitDb (DbHandle _ jobs) = putMVar jobs CommitJob
+
+closeDb :: DbHandle -> IO ()
+closeDb (DbHandle worker jobs) = do
+	putMVar jobs CloseJob
+	wait worker

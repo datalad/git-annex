@@ -434,7 +434,7 @@ runFsck inc file key a = ifM (needFsck inc key)
 
 {- Check if a key needs to be fscked, with support for incremental fscks. -}
 needFsck :: Incremental -> Key -> Annex Bool
-needFsck (ContIncremental h) key = not <$> FsckDb.inDb h key
+needFsck (ContIncremental h) key = liftIO $ not <$> FsckDb.inDb h key
 needFsck _ _ = return True
 
 withFsckDb :: Incremental -> (FsckDb.DbHandle -> Annex ()) -> Annex ()
@@ -443,7 +443,9 @@ withFsckDb (StartIncremental h) a = a h
 withFsckDb NonIncremental _ = noop
 
 recordFsckTime :: Incremental -> Key -> Annex ()
-recordFsckTime inc key = withFsckDb inc $ \h -> FsckDb.addDb h key
+recordFsckTime inc key = withFsckDb inc $ \h -> liftIO $ do
+	FsckDb.addDb h key
+	FsckDb.commitDb h
 
 {- Records the start time of an incremental fsck.
  -

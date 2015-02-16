@@ -11,6 +11,7 @@
 module Database.Fsck (
 	newPass,
 	openDb,
+	H.commitDb,
 	H.closeDb,
 	H.DbHandle,
 	addDb,
@@ -60,11 +61,11 @@ openDb = do
 		liftIO $ renameFile newdb db
 	liftIO $ H.openDb db
 
-addDb :: H.DbHandle -> Key -> Annex ()
-addDb h = void . liftIO . H.runDb h . insert . Fscked . toSKey
+addDb :: H.DbHandle -> Key -> IO ()
+addDb h = void . H.runDb h . insert . Fscked . toSKey
 
-inDb :: H.DbHandle -> Key -> Annex Bool
-inDb h k = liftIO $ H.runDb h $ do
+inDb :: H.DbHandle -> Key -> IO Bool
+inDb h k = H.runDb h $ do
 	r <- select $ from $ \r -> do
 		where_ (r ^. FsckedKey ==. val (toSKey k))
 		return (r ^. FsckedKey)
