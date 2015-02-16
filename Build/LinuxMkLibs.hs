@@ -44,31 +44,40 @@ mklibs top = do
 	-- Various files used by runshell to set up env vars used by the
 	-- linker shims.
 	writeFile (top </> "libdirs") (unlines libdirs)
-	writeFile (top </> "linker")
-		(Prelude.head $ filter ("ld-linux" `isInfixOf`) libs')
 	writeFile (top </> "gconvdir")
 		(parentDir $ Prelude.head $ filter ("/gconv/" `isInfixOf`) glibclibs)
 	
-	mapM_ (installLinkerShim top) exes
+	let linker = Prelude.head $ filter ("ld-linux" `isInfixOf`) libs'
+	mapM_ (installLinkerShim top linker) exes
 
 {- Installs a linker shim script around a binary.
  -
  - Note that each binary is put into its own separate directory,
  - to avoid eg git looking for binaries in its directory rather
- - than in PATH.-}
-installLinkerShim :: FilePath -> FilePath -> IO ()
-installLinkerShim top exe = do
-	createDirectoryIfMissing True shimdir
+ - than in PATH.
+ -
+ - The linker is symlinked to a file with the same basename as the binary,
+ - since that looks better in ps than "ld-linux.so".
+ -}
+installLinkerShim :: FilePath -> FilePath -> FilePath -> IO ()
+installLinkerShim top linker exe = do
+	createDirectoryIfMissing True (top </> shimdir)
+	createDirectoryIfMissing True (top </> exedir)
 	renameFile exe exedest
+	link <- relPathDirToFile (top </> exedir) (top ++ linker)
+	unlessM (doesFileExist (top </> exelink)) $
+		createSymbolicLink link (top </> exelink)
 	writeFile exe $ unlines
 		[ "#!/bin/sh"
-		, "exec \"$GIT_ANNEX_LINKER\" --library-path \"$GIT_ANNEX_LD_LIBRARY_PATH\" \"$GIT_ANNEX_SHIMMED/" ++ base ++ "/" ++ base ++ "\" \"$@\""
+		, "exec \"$GIT_ANNEX_DIR/" ++ exelink ++ "\" --library-path \"$GIT_ANNEX_LD_LIBRARY_PATH\" \"$GIT_ANNEX_DIR/shimmed/" ++ base ++ "/" ++ base ++ "\" \"$@\""
 		]
 	modifyFileMode exe $ addModes executeModes
   where
 	base = takeFileName exe
-	shimdir = top </> "shimmed" </> base
-	exedest = shimdir </> base
+	shimdir = "shimmed" </> base
+	exedir = "exe"
+	exedest = top </> shimdir </> base
+	exelink = exedir </> base
 
 {- Converting symlinks to hard links simplifies the binary shimming
  - process. -}
