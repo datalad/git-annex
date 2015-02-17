@@ -16,6 +16,7 @@ module Database.Handle (
 ) where
 
 import Utility.Exception
+import Messages
 
 import Database.Persist.Sqlite (runSqlite)
 import Database.Esqueleto hiding (Key)
@@ -41,8 +42,9 @@ openDb db = do
 	return $ DbHandle worker jobs t
 
 workerThread :: T.Text -> MVar Job -> IO ()
-workerThread db jobs = go
+workerThread db jobs = catchNonAsync go showerr
   where
+  	showerr e = liftIO $ warningIO $ "sqlite worker thread crashed: " ++ show e
 	go = do
 		r <- runSqlite db transaction
 		case r of
