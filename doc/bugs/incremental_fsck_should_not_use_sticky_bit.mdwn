@@ -15,3 +15,5 @@ Create a shared repository (core.sharedrepository = group), let a different user
 Debian's 4.20131106~bpo70+1
 
 [[!tag confirmed]]
+
+> [[fixed|done]] --[[Joey]]
