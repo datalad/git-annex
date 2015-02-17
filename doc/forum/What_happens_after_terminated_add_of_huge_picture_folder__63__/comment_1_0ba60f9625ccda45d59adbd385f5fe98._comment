@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnPgn611P6ym5yyL0BS8rUzO0_ZKRldMt0"
+ nickname="Samuel"
+ subject="Reseting to the git-annex branch"
+ date="2015-02-17T09:21:12Z"
+ content="""
+Well, it appears you explicitely asked for reseting to the git-annex branch with the following command
+  git annex reset --hard git-annex
+To go back to the master branch, containing the symlinks, just do
+  git annex checkout master
+
+"""]]
