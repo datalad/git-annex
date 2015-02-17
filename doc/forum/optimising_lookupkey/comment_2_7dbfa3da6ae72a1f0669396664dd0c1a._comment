@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-02-17T21:50:11Z"
+ content="""
+And yes, it's fine to bypass git-annex when querying git. 
+
+Or even when manipulating the git-annex branch, so long as you either
+delete or update .git/annex/index. git-annex is not intended to be magical,
+see [[internals]].
+"""]]
