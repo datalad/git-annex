@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2015-02-17T21:43:16Z"
+ content="""
+It's entirely expected and normal for git-annex to update the UUID
+of a remote with `url = somepath` when it notices that the repo at 
+`somepath` has changed.
+
+This is what you want to happen. If git-annex didn't notice and react to
+the UUID change, its location tracking information (for UUID A) would be
+inconsistent with the actual status of the repo (using UUID B).
+"""]]
