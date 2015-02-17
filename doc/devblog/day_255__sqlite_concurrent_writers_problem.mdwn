@@ -1,0 +1,34 @@
+Worked today on making incremental fsck's use of sqlite be safe with
+multiple concurrent fsck processes.
+
+The first problem was that having `fsck --incremental` running and starting a
+new `fsck --incremental` caused it to crash. And with good reason, since
+starting a new incremental fsck deletes the old database, the old process
+was left writing to a datbase that had been deleted and recreated out from
+underneath it. Fixed with some locking.
+
+Next problem is harder. Sqlite doesn't support multiple concurrent writers
+at all. One of them will fail to write. It's not even possible to have two
+processes building up separate transactions at the same time. Before using
+sqlite, incremental fsck could work perfectly well with multiple fsck
+processes running concurrently. I'd like to keep that working.
+
+My partial solution, so far, is to make git-annex buffer writes, and every
+so often send them all to sqlite at once, in a transaction. So most of the
+time, nothing is writing to the database. (And if it gets unlucky and
+a write fails due to a collision with another writer, it can just wait and
+retry the write later.) This lets multiple processes write to the database
+successfully.
+
+But, for the purposes of concurrent, incremental fsck, it's not ideal.
+Each process doesn't immediately learn of files that another process has
+checked. So they'll tend to do redundant work. Only way I can see to
+improve this is to use some other mechanism for short-term IPC between the
+fsck processes.
+
+----
+
+Also, I made `git annex fsck --from remote --incremental` use a different
+database per remote. This is a real improvement over the sticky bits;
+multiple incremental fscks can be in progress at once, 
+checking different remotes.
