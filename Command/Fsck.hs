@@ -67,15 +67,16 @@ fsckOptions =
 seek :: CommandSeek
 seek ps = do
 	from <- getOptionField fsckFromOption Remote.byNameWithUUID
-	i <- getIncremental
+	u <- maybe getUUID (pure . Remote.uuid) from
+	i <- getIncremental u
 	withKeyOptions
 		(\k -> startKey i k =<< getNumCopies)
 		(withFilesInGit $ whenAnnexed $ start from i)
 		ps
 	withFsckDb i FsckDb.closeDb
 
-getIncremental :: Annex Incremental
-getIncremental = do
+getIncremental :: UUID -> Annex Incremental
+getIncremental u = do
 	i <- maybe (return False) (checkschedule . parseDuration)
 		=<< Annex.getField (optionName incrementalScheduleOption)
 	starti <- Annex.getFlag (optionName startIncrementalOption)
@@ -86,27 +87,27 @@ getIncremental = do
 		(False ,False, True) -> contIncremental
 		(True, False, False) ->
 			maybe startIncremental (const contIncremental)
-				=<< getStartTime
+				=<< getStartTime u
 		_ -> error "Specify only one of --incremental, --more, or --incremental-schedule"
   where
 	startIncremental = do
-		recordStartTime
-		ifM FsckDb.newPass
-			( StartIncremental <$> FsckDb.openDb
+		recordStartTime u
+		ifM (FsckDb.newPass u)
+			( StartIncremental <$> FsckDb.openDb u
 			, error "Cannot start a new --incremental fsck pass; another fsck process is already running."
 			)
-	contIncremental = ContIncremental <$> FsckDb.openDb
+	contIncremental = ContIncremental <$> FsckDb.openDb u
 
 	checkschedule Nothing = error "bad --incremental-schedule value"
 	checkschedule (Just delta) = do
 		Annex.addCleanup FsckCleanup $ do
-			v <- getStartTime
+			v <- getStartTime u
 			case v of
 				Nothing -> noop
 				Just started -> do
 					now <- liftIO getPOSIXTime
-					when (now - realToFrac started >= durationToPOSIXTime delta)
-						resetStartTime
+					when (now - realToFrac started >= durationToPOSIXTime delta) $
+						resetStartTime u
 		return True
 
 start :: Maybe Remote -> Incremental -> FilePath -> Key -> CommandStart
@@ -420,7 +421,7 @@ badContentRemote remote key = do
 	return $ (if ok then "dropped from " else "failed to drop from ")
 		++ Remote.name remote
 
-data Incremental = StartIncremental FsckDb.DbHandle | ContIncremental FsckDb.DbHandle | NonIncremental
+data Incremental = StartIncremental FsckDb.FsckHandle | ContIncremental FsckDb.FsckHandle | NonIncremental
 
 runFsck :: Incremental -> FilePath -> Key -> Annex Bool -> CommandStart
 runFsck inc file key a = ifM (needFsck inc key)
@@ -439,7 +440,7 @@ needFsck :: Incremental -> Key -> Annex Bool
 needFsck (ContIncremental h) key = liftIO $ not <$> FsckDb.inDb h key
 needFsck _ _ = return True
 
-withFsckDb :: Incremental -> (FsckDb.DbHandle -> Annex ()) -> Annex ()
+withFsckDb :: Incremental -> (FsckDb.FsckHandle -> Annex ()) -> Annex ()
 withFsckDb (ContIncremental h) a = a h
 withFsckDb (StartIncremental h) a = a h
 withFsckDb NonIncremental _ = noop
@@ -455,9 +456,9 @@ recordFsckTime inc key = withFsckDb inc $ \h -> liftIO $ FsckDb.addDb h key
  - (This is not possible to do on Windows, and so the timestamp in
  - the file will only be equal or greater than the modification time.)
  -}
-recordStartTime :: Annex ()
-recordStartTime = do
-	f <- fromRepo gitAnnexFsckState
+recordStartTime :: UUID -> Annex ()
+recordStartTime u = do
+	f <- fromRepo (gitAnnexFsckState u)
 	createAnnexDirectory $ parentDir f
 	liftIO $ do
 		nukeFile f
@@ -472,13 +473,13 @@ recordStartTime = do
 	showTime :: POSIXTime -> String
 	showTime = show
 
-resetStartTime :: Annex ()
-resetStartTime = liftIO . nukeFile =<< fromRepo gitAnnexFsckState
+resetStartTime :: UUID -> Annex ()
+resetStartTime u = liftIO . nukeFile =<< fromRepo (gitAnnexFsckState u)
 
 {- Gets the incremental fsck start time. -}
-getStartTime :: Annex (Maybe EpochTime)
-getStartTime = do
-	f <- fromRepo gitAnnexFsckState
+getStartTime :: UUID -> Annex (Maybe EpochTime)
+getStartTime u = do
+	f <- fromRepo (gitAnnexFsckState u)
 	liftIO $ catchDefaultIO Nothing $ do
 		timestamp <- modificationTime <$> getFileStatus f
 		let fromstatus = Just (realToFrac timestamp)

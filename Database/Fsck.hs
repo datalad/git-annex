@@ -9,11 +9,10 @@
 {-# LANGUAGE OverloadedStrings, GADTs, FlexibleContexts #-}
 
 module Database.Fsck (
+	FsckHandle,
 	newPass,
 	openDb,
 	closeDb,
-	H.commitDb,
-	H.DbHandle,
 	addDb,
 	inDb,
 	FsckedId,
@@ -25,6 +24,7 @@ import Locations
 import Utility.Directory
 import Annex
 import Types.Key
+import Types.UUID
 import Annex.Perms
 import Annex.LockFile
 
@@ -36,6 +36,8 @@ import Control.Monad.IO.Class (liftIO)
 import System.Directory
 import Data.Maybe
 import Control.Applicative
+
+data FsckHandle = FsckHandle H.DbHandle UUID
 
 {- Each key stored in the database has already been fscked as part
  - of the latest incremental fsck pass. -}
@@ -51,15 +53,15 @@ Fscked
  - database. Removing the database in that situation would lead to crashes
  - or undefined behavior.
  -}
-newPass :: Annex Bool
-newPass = isJust <$> tryExclusiveLock gitAnnexFsckDbLock go
+newPass :: UUID -> Annex Bool
+newPass u = isJust <$> tryExclusiveLock (gitAnnexFsckDbLock u) go
   where
-	go = liftIO. nukeFile =<< fromRepo gitAnnexFsckDb
+	go = liftIO. nukeFile =<< fromRepo (gitAnnexFsckDb u)
 
 {- Opens the database, creating it atomically if it doesn't exist yet. -}
-openDb :: Annex H.DbHandle
-openDb = do
-	db <- fromRepo gitAnnexFsckDb
+openDb :: UUID -> Annex FsckHandle
+openDb u = do
+	db <- fromRepo (gitAnnexFsckDb u)
 	unlessM (liftIO $ doesFileExist db) $ do
 		let newdb = db ++ ".new"
 		h <- liftIO $ H.openDb newdb
@@ -68,23 +70,24 @@ openDb = do
 		liftIO $ H.closeDb h
 		setAnnexFilePerm newdb
 		liftIO $ renameFile newdb db
-	lockFileShared =<< fromRepo gitAnnexFsckDbLock
-	liftIO $ H.openDb db
+	lockFileShared =<< fromRepo (gitAnnexFsckDbLock u)
+	h <- liftIO $ H.openDb db
+	return $ FsckHandle h u
 
-closeDb :: H.DbHandle -> Annex ()
-closeDb h = do
+closeDb :: FsckHandle -> Annex ()
+closeDb (FsckHandle h u) = do
 	liftIO $ H.closeDb h
-	unlockFile =<< fromRepo gitAnnexFsckDbLock
+	unlockFile =<< fromRepo (gitAnnexFsckDbLock u)
 
-addDb :: H.DbHandle -> Key -> IO ()
-addDb h k = H.queueDb h 1000 $
+addDb :: FsckHandle -> Key -> IO ()
+addDb (FsckHandle h _) k = H.queueDb h 1000 $
 	unlessM (inDb' sk) $
 		insert_ $ Fscked sk
   where
 	sk = toSKey k
 
-inDb :: H.DbHandle -> Key -> IO Bool
-inDb h = H.runDb h . inDb' . toSKey
+inDb :: FsckHandle -> Key -> IO Bool
+inDb (FsckHandle h _) = H.runDb h . inDb' . toSKey
 
 inDb' :: SKey -> SqlPersistM Bool
 inDb' sk = do

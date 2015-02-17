@@ -29,6 +29,8 @@ module Locations (
 	gitAnnexBadLocation,
 	gitAnnexUnusedLog,
 	gitAnnexFsckState,
+	gitAnnexFsckDb,
+	gitAnnexFsckDbLock,
 	gitAnnexFsckResultsLog,
 	gitAnnexScheduleState,
 	gitAnnexTransferDir,
@@ -57,8 +59,6 @@ module Locations (
 	gitAnnexSshDir,
 	gitAnnexRemotesDir,
 	gitAnnexAssistantDefaultDir,
-	gitAnnexFsckDb,
-	gitAnnexFsckDbLock,
 	isLinkToAnnex,
 	HashLevels(..),
 	hashDirMixed,
@@ -220,9 +220,22 @@ gitAnnexBadLocation key r = gitAnnexBadDir r </> keyFile key
 gitAnnexUnusedLog :: FilePath -> Git.Repo -> FilePath
 gitAnnexUnusedLog prefix r = gitAnnexDir r </> (prefix ++ "unused")
 
-{- .git/annex/fsckstate is used to store information about incremental fscks. -}
-gitAnnexFsckState :: Git.Repo -> FilePath
-gitAnnexFsckState r = gitAnnexDir r </> "fsckstate"
+{- .git/annex/fsck/uuid/ is used to store information about incremental
+ - fscks. -}
+gitAnnexFsckDir :: UUID -> Git.Repo -> FilePath
+gitAnnexFsckDir u r = gitAnnexDir r </> "fsck" </> fromUUID u
+
+{- used to store information about incremental fscks. -}
+gitAnnexFsckState :: UUID -> Git.Repo -> FilePath
+gitAnnexFsckState u r = gitAnnexFsckDir u r </> "state"
+
+{- Database used to record fsck info. -}
+gitAnnexFsckDb :: UUID -> Git.Repo -> FilePath
+gitAnnexFsckDb u r = gitAnnexFsckDir u r </> "fsck.db"
+
+{- Lock file for the fsck database. -}
+gitAnnexFsckDbLock :: UUID -> Git.Repo -> FilePath
+gitAnnexFsckDbLock u r = gitAnnexFsckDir u r </> "fsck.lck"
 
 {- .git/annex/fsckresults/uuid is used to store results of git fscks -}
 gitAnnexFsckResultsLog :: UUID -> Git.Repo -> FilePath
@@ -341,14 +354,6 @@ gitAnnexRemotesDir r = addTrailingPathSeparator $ gitAnnexDir r </> "remotes"
  - repositories, by default. -}
 gitAnnexAssistantDefaultDir :: FilePath
 gitAnnexAssistantDefaultDir = "annex"
-
-{- Database used to record fsck info. -}
-gitAnnexFsckDb :: Git.Repo -> FilePath
-gitAnnexFsckDb r = gitAnnexDir r </> "fsck.db"
-
-{- Lock file for the fsck database. -}
-gitAnnexFsckDbLock :: Git.Repo -> FilePath
-gitAnnexFsckDbLock r = gitAnnexDir r </> "fsck.dbl"
 
 {- Checks a symlink target to see if it appears to point to annexed content.
  -

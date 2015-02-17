@@ -36,6 +36,9 @@ git-annex (5.20150206) UNRELEASED; urgency=medium
     of abusing the sticky bit. Existing sticky bits are ignored,
     incremental fscks started by old versions won't be resumed by
     this version.
+  * fsck: Multiple incremental fscks of different repos (some remote)
+    can now be in progress at the same time in the same repo without it
+    getting confused about which files have been checked for which remotes.
 
  -- Joey Hess <id@joeyh.name>  Fri, 06 Feb 2015 13:57:08 -0400
 
