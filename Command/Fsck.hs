@@ -72,7 +72,7 @@ seek ps = do
 		(\k -> startKey i k =<< getNumCopies)
 		(withFilesInGit $ whenAnnexed $ start from i)
 		ps
-	withFsckDb i (liftIO . FsckDb.closeDb)
+	withFsckDb i FsckDb.closeDb
 
 getIncremental :: Annex Incremental
 getIncremental = do
@@ -91,8 +91,10 @@ getIncremental = do
   where
 	startIncremental = do
 		recordStartTime
-		FsckDb.newPass
-		StartIncremental <$> FsckDb.openDb
+		ifM FsckDb.newPass
+			( StartIncremental <$> FsckDb.openDb
+			, error "Cannot start a new --incremental fsck pass; another fsck process is already running."
+			)
 	contIncremental = ContIncremental <$> FsckDb.openDb
 
 	checkschedule Nothing = error "bad --incremental-schedule value"

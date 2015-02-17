@@ -1,6 +1,6 @@
 {- git-annex lock files.
  -
- - Copyright 2012, 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,6 +12,7 @@ module Annex.LockFile (
 	unlockFile,
 	getLockPool,
 	withExclusiveLock,
+	tryExclusiveLock,
 ) where
 
 import Common.Annex
@@ -70,3 +71,21 @@ withExclusiveLock getlockfile a = do
 #else
 	lock _mode = waitToLock . lockExclusive
 #endif
+
+{- Tries to take an exclusive lock and run an action. If the lock is
+ - already held, returns Nothing. -}
+tryExclusiveLock :: (Git.Repo -> FilePath) -> Annex a -> Annex (Maybe a)
+tryExclusiveLock getlockfile a = do
+	lockfile <- fromRepo getlockfile
+	createAnnexDirectory $ takeDirectory lockfile
+	mode <- annexFileMode
+	bracketIO (lock mode lockfile) unlock go
+  where
+#ifndef mingw32_HOST_OS
+	lock mode = noUmask mode . tryLockExclusive (Just mode)
+#else
+	lock _mode = lockExclusive
+#endif
+	unlock = maybe noop dropLock
+	go Nothing = return Nothing
+	go (Just _) = Just <$> a

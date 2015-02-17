@@ -58,6 +58,7 @@ module Locations (
 	gitAnnexRemotesDir,
 	gitAnnexAssistantDefaultDir,
 	gitAnnexFsckDb,
+	gitAnnexFsckDbLock,
 	isLinkToAnnex,
 	HashLevels(..),
 	hashDirMixed,
@@ -344,6 +345,10 @@ gitAnnexAssistantDefaultDir = "annex"
 {- Database used to record fsck info. -}
 gitAnnexFsckDb :: Git.Repo -> FilePath
 gitAnnexFsckDb r = gitAnnexDir r </> "fsck.db"
+
+{- Lock file for the fsck database. -}
+gitAnnexFsckDbLock :: Git.Repo -> FilePath
+gitAnnexFsckDbLock r = gitAnnexDir r </> "fsck.dbl"
 
 {- Checks a symlink target to see if it appears to point to annexed content.
  -
