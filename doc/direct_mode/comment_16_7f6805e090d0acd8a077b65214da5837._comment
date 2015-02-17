@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ subject="comment 16"
+ date="2015-02-17T05:22:00Z"
+ content="""
+i believe this is [answered here](https://git-annex.branchable.com/todo/windows_support/#comment-e72601243c643d7821e68d3a04489fcb). TLDR; basically NTFS + symlink works in Linux, but not in Windows/Cygwin, which git-annex seems to be using. YMMV.
+"""]]
