@@ -25,11 +25,11 @@ Store in the database the Ref of the branch that was used to construct it.
 
 ## implementation plan
 
-1. Implement for metadata, on a branch, with sqlite.
+1. Store incremental fsck info in db, on a branch, with sqlite.
 2. Make sure that builds on all platforms.
-3. Add associated file mappings support. This is needed to fully
+3. Implement for metadata, on a branch, with sqlite.
+4. Add associated file mappings support. This is needed to fully
    use the caching database to construct views.
-4. Store incremental fsck info in db.
 5. Replace .map files with 3. for direct mode.
 
 ## sqlite or not?
@@ -39,11 +39,20 @@ SQL. And even if that's hidden by a layer like persistent, it's still going
 to involve some technical debt (eg, database migrations).
 
 It would be great if there were some haskell thing like acid-state
-that I could use instead. But, acid-sate needs to load the whole
+that I could use instead. But, acid-state needs to load the whole
 DB into memory. In the comments of
 [[bugs/incremental_fsck_should_not_use_sticky_bit]] I examined several
 other haskell database-like things, and found them all wanting, except for
 possibly TCache. (And TCache is backed by persistent/sqlite anyway.)
+
+## one db or multiple?
+
+Using a single database will use less space. Eg, each Key will only need to
+appear in it once, with proper normalization.
+
+OTOH, it's more complicated, and harder to recover from problems.
+
+Currently leaning toward one database per purpose.
 
 ## case study: persistent with sqllite
 
@@ -122,6 +131,11 @@ eg, esquelito.
 
 Update2: Using esquelito to do a join got this down to 0.109s.
 See `database` branch for code.
+
+Update3: Converting to a single un-normalized table for AssociatedFiles
+avoids the join, and increased lookup speed to 0.087s. Of course, when
+a key has multiple associated files, this will use more disk space, due
+to not normalizing the key.
 
 Compare the above with 1000 calls to `associatedFiles`, which is approximately
 as fast as just opening and reading 1000 files, so will take well under

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ subject="watch out for direct mode"
+ date="2015-02-16T23:22:19Z"
+ content="""
+so while `git rebase` can do magic, it will not work out of the box on direct mode repositories, unless you use `-c core.bare=false`, in which case you will totally shoot yourself in the foot because git will happily remove all those real files sitting in the checkout. you will need to `git annex indirect` before you do any of that magic. working on a clone of the git repo is also a good idea, if only for testing.
+
+i personnally destroyed my whole music collection doing such a cleanup of the history. fortunately, i had a recent archived clone of the repo, so things weren't so bad.
+
+but watch out for direct mode, as always.
+"""]]

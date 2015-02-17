@@ -104,6 +104,14 @@ command run on that work tree, and then updating the real work
 tree to reflect any changes staged or committed by the git command,
 with appropriate handling of the direct mode files.
 
+## undoing changes in direct mode
+
+There is also the `undo` command to do the equivalent of the above revert in a simpler way. Say you made a change in direct mode, the assistant dutifully committed it and you realise your mistake, you can try:
+
+    git annex undo file
+
+to revert the last change to `file`. Note that you can use the `--depth` flag to revert earlier versions of the file.
+
 ## forcing git to use the work tree in direct mode
 
 This is for experts only. You can lose data doing this, or check enormous

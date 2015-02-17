@@ -1,0 +1,33 @@
+My copy of *git-annex* refuses to sync all, namely when I try it I get the following error
+
+    $ git annex sync --content --all
+    git-annex: unrecognized option `--all'
+
+    Usage: git-annex sync [REMOTE ...] [option ...]
+        --content  also transfer file contents
+
+    To see additional options common to all commands, run: git annex help options
+
+This contradicts the advice on [preferred content](http://git-annex.branchable.com/preferred_content/) set out under **difference: unused**, 
+and I cannot see any other options in my man page that would address the lack of this option.
+
+The problem I am trying to solve is that I wish to preserve all history on the backup drives.  Namely, if I do the following
+
+    touch test-of-annex-backup.txt
+    git annex add test-of-annex-backup.txt
+    git commit --message='test: Create empty test-of-annex-backup.txt file'
+    git annex edit test-of-annex-backup.txt
+    echo "This line creates version 2 of this file" > test-of-annex-backup.txt
+    git annex add test-of-annex-backup.txt
+    git commit --message='test: Create version 2 of test-of-annex-backup.txt'
+    git annex sync --content --all
+
+I expect to see 2 copies of `test-of-annex-backup.txt` be copied to each accessible annex repository in the `backup` group
+
+I tried googling for `"git annex sync --content --all"`, but I only find pages telling me that this is what I should use, and none saying the option has been deprecated.
+
+I am very confused, as this seems to me an almost stereotypical use of *git-annex*, and yet I cannot see how to do it
+
+thanks
+
+Andrew

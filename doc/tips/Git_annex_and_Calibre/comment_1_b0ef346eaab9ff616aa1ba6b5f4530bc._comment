@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ subject="spurious changes in metadata.db"
+ date="2015-02-15T05:03:20Z"
+ content="""
+note that metadata.db seems to change even though no change was performed on the library. i filed a [bug report upstream](https://bugs.launchpad.net/calibre/+bug/1422058) to try and figure out what is going on here. -- [[anarcat]]
+"""]]

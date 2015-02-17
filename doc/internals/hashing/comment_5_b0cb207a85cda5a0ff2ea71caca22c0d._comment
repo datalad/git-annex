@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ subject="why md5sum?"
+ date="2015-02-13T15:59:46Z"
+ content="""
+why the extra processing to generate the hashing directories?
+
+we already have a hash here, for example, `SHA256E-s8242375--5f82490990812ad3feabb02355750710a9d94283ab256d1c691c3bf8d7d9fbe3.ogg` has a loon `5f82490990812ad3feabb02355750710a9d94283ab256d1c691c3bf8d7d9fbe3` hash. Why not use the first characters of that? This is will not change for a give file, and has a higher chance of generating collisions (which is a good thing here, because we can reuse directories).
+
+In other words, why aren't the hashes of `SHA256E-s8242375--5f82490990812ad3feabb02355750710a9d94283ab256d1c691c3bf8d7d9fbe3.ogg` simply `5f8/249`? --[[anarcat]]
+"""]]
