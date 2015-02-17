@@ -77,18 +77,18 @@ closeDb h = do
 	unlockFile =<< fromRepo gitAnnexFsckDbLock
 
 addDb :: H.DbHandle -> Key -> IO ()
-addDb h = void . H.runDb' h commitPolicy . insert . Fscked . toSKey
+addDb h k = H.queueDb h 1000 $
+	unlessM (inDb' sk) $
+		insert_ $ Fscked sk
+  where
+	sk = toSKey k
 
 inDb :: H.DbHandle -> Key -> IO Bool
-inDb h k = H.runDb h $ do
+inDb h = H.runDb h . inDb' . toSKey
+
+inDb' :: SKey -> SqlPersistM Bool
+inDb' sk = do
 	r <- select $ from $ \r -> do
-		where_ (r ^. FsckedKey ==. val (toSKey k))
+		where_ (r ^. FsckedKey ==. val sk)
 		return (r ^. FsckedKey)
 	return $ not $ null r
-
-{- Bundle up addDb transactions and commit after 60 seconds.
- - This is a balance between resuming where the last incremental
- - fsck left off, and making too many commits which slows down the fsck
- - of lots of small or not present files. -}
-commitPolicy :: H.CommitPolicy
-commitPolicy = H.CommitAfter (fromIntegral (60 :: Int))
