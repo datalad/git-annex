@@ -65,8 +65,8 @@ openDb u = do
 	unlessM (liftIO $ doesFileExist db) $ do
 		let newdb = db ++ ".new"
 		h <- liftIO $ H.openDb newdb
-		void $ liftIO $ H.runDb h $
-			runMigrationSilent migrateFsck
+		void $ liftIO $ H.commitDb h $
+			void $ runMigrationSilent migrateFsck
 		liftIO $ H.closeDb h
 		setAnnexFilePerm newdb
 		liftIO $ renameFile newdb db
@@ -87,7 +87,7 @@ addDb (FsckHandle h _) k = H.queueDb h 1000 $
 	sk = toSKey k
 
 inDb :: FsckHandle -> Key -> IO Bool
-inDb (FsckHandle h _) = H.runDb h . inDb' . toSKey
+inDb (FsckHandle h _) = H.queryDb h . inDb' . toSKey
 
 inDb' :: SKey -> SqlPersistM Bool
 inDb' sk = do
