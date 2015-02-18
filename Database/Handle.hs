@@ -9,6 +9,7 @@
 
 module Database.Handle (
 	DbHandle,
+	initDb,
 	openDb,
 	queryDb,
 	closeDb,
@@ -22,6 +23,7 @@ import Utility.Exception
 import Messages
 
 import Database.Persist.Sqlite
+import qualified Database.Sqlite as Sqlite
 import Control.Monad
 import Control.Monad.IO.Class (liftIO)
 import Control.Concurrent
@@ -33,6 +35,29 @@ import qualified Data.Text as T
  - the database. It has a MVar which Jobs are submitted to. -}
 data DbHandle = DbHandle (Async ()) (MVar Job) (MVar DbQueue)
 
+{- Ensures that the database is initialized. Pass the migration action for
+ - the database.
+ -
+ - The database is put into WAL mode, to prevent readers from blocking
+ - writers, and prevent a writer from blocking readers.
+ -}
+initDb :: FilePath -> SqlPersistM () -> IO DbHandle
+initDb db migration = do
+	enableWAL db
+	h <- openDb db
+	either throwIO (const $ return ()) =<< commitDb h migration
+	return h
+	
+enableWAL :: FilePath -> IO ()
+enableWAL db = do
+	conn <- Sqlite.open (T.pack db)
+	stmt <- Sqlite.prepare conn (T.pack "PRAGMA journal_mode=WAL;")
+	void $ Sqlite.step stmt
+	void $ Sqlite.finalize stmt
+	Sqlite.close conn
+
+{- Opens the database, but does not perform any migrations. Only use
+ - if the database is known to exist and have the right tables. -}
 openDb :: FilePath -> IO DbHandle
 openDb db = do
 	jobs <- newEmptyMVar
@@ -120,12 +145,8 @@ queueDb h@(DbHandle _ _ qvar) maxsz a = do
 		then do
 			r <- commitDb h qa'
 			case r of
-				Left e -> do
-					print ("commit deferred", e)
-					enqueue 0
-				Right _ -> do
-					print "commit made"
-					putMVar qvar emptyDbQueue
+				Left e -> enqueue 0
+				Right _ -> putMVar qvar emptyDbQueue
 		else enqueue sz'
 
 {- If flushing the queue fails, this could be because there is another

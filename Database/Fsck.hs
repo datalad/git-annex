@@ -21,7 +21,8 @@ module Database.Fsck (
 import Database.Types
 import qualified Database.Handle as H
 import Locations
-import Utility.Directory
+import Utility.PosixFiles
+import Utility.Exception
 import Annex
 import Types.Key
 import Types.UUID
@@ -34,6 +35,7 @@ import Control.Monad
 import Control.Monad.IfElse
 import Control.Monad.IO.Class (liftIO)
 import System.Directory
+import System.FilePath
 import Data.Maybe
 import Control.Applicative
 
@@ -56,20 +58,27 @@ Fscked
 newPass :: UUID -> Annex Bool
 newPass u = isJust <$> tryExclusiveLock (gitAnnexFsckDbLock u) go
   where
-	go = liftIO. nukeFile =<< fromRepo (gitAnnexFsckDb u)
+	go = liftIO . void . tryIO . removeDirectoryRecursive
+		=<< fromRepo (gitAnnexFsckDbDir u)
 
 {- Opens the database, creating it atomically if it doesn't exist yet. -}
 openDb :: UUID -> Annex FsckHandle
 openDb u = do
-	db <- fromRepo (gitAnnexFsckDb u)
+	dbdir <- fromRepo (gitAnnexFsckDbDir u)
+	let db = dbdir </> "db"
 	unlessM (liftIO $ doesFileExist db) $ do
-		let newdb = db ++ ".new"
-		h <- liftIO $ H.openDb newdb
-		void $ liftIO $ H.commitDb h $
-			void $ runMigrationSilent migrateFsck
-		liftIO $ H.closeDb h
-		setAnnexFilePerm newdb
-		liftIO $ renameFile newdb db
+		let tmpdbdir = dbdir ++ ".tmp"
+		let tmpdb = tmpdbdir </> "db"
+		liftIO $ do
+			createDirectoryIfMissing True tmpdbdir
+			h <- H.initDb tmpdb $ void $
+				runMigrationSilent migrateFsck
+			H.closeDb h
+		setAnnexDirPerm tmpdbdir
+		setAnnexFilePerm tmpdb
+		liftIO $ do
+			void $ tryIO $ removeDirectoryRecursive dbdir
+			rename tmpdbdir dbdir
 	lockFileShared =<< fromRepo (gitAnnexFsckDbLock u)
 	h <- liftIO $ H.openDb db
 	return $ FsckHandle h u

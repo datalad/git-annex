@@ -29,7 +29,7 @@ module Locations (
 	gitAnnexBadLocation,
 	gitAnnexUnusedLog,
 	gitAnnexFsckState,
-	gitAnnexFsckDb,
+	gitAnnexFsckDbDir,
 	gitAnnexFsckDbLock,
 	gitAnnexFsckResultsLog,
 	gitAnnexScheduleState,
@@ -229,9 +229,9 @@ gitAnnexFsckDir u r = gitAnnexDir r </> "fsck" </> fromUUID u
 gitAnnexFsckState :: UUID -> Git.Repo -> FilePath
 gitAnnexFsckState u r = gitAnnexFsckDir u r </> "state"
 
-{- Database used to record fsck info. -}
-gitAnnexFsckDb :: UUID -> Git.Repo -> FilePath
-gitAnnexFsckDb u r = gitAnnexFsckDir u r </> "fsck.db"
+{- Directory containing database used to record fsck info. -}
+gitAnnexFsckDbDir :: UUID -> Git.Repo -> FilePath
+gitAnnexFsckDbDir u r = gitAnnexFsckDir u r </> "db"
 
 {- Lock file for the fsck database. -}
 gitAnnexFsckDbLock :: UUID -> Git.Repo -> FilePath
