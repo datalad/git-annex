@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""re: why md5sum?"""
+ date="2015-02-17T21:51:59Z"
+ content="""
+Not all types of keys contain hashes.
+"""]]

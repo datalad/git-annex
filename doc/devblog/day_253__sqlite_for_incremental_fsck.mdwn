@@ -1,3 +1,5 @@
+[[!meta title="day 254  sqlite for incremental fsck"]]
+
 Yesterday I did a little more investigation of key/value stores.
 I'd love a pure haskell key/value store that didn't buffer everything in
 memory, and that allowed concurrent readers, and was ACID, and production

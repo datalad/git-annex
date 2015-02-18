@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ subject="document in the manpage?"
+ date="2015-02-17T05:28:33Z"
+ content="""
+the manpage makes a passing reference to \"groups\", but nowhere in the manpage is there a reference to this page, which i had to find through google. maybe this should be in the manpage?
+"""]]

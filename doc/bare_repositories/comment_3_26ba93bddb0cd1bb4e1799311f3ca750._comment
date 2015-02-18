@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-02-17T21:54:33Z"
+ content="""
+Since the two repos git-annex branches have diverged, you need to run `git
+annex merge` to merge them before you can push that branch.
+
+Of course, `git annex sync` handles all that for you. It can be used
+against a bare repository as well as a non-bare.
+"""]]
