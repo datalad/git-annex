@@ -100,13 +100,20 @@ workerThread db jobs = catchNonAsync loop showerr
  - Only one action can be run at a time against a given DbHandle.
  - If called concurrently in the same process, this will block until
  - it is able to run.
+ -
+ - Warning: Under heavy traffic, this can fail with an exception
+ - that contains "ErrorBusy". WAL mode does not entirely prevent this.
+ - The fallback value is returned in this case.
  -}
-queryDb :: DbHandle -> SqlPersistM a -> IO a
-queryDb (DbHandle _ jobs _) a = do
-	res <- newEmptyMVar
-	putMVar jobs $ QueryJob $
-		liftIO . putMVar res =<< tryNonAsync a
-	either throwIO return =<< takeMVar res
+queryDb :: DbHandle -> a -> SqlPersistM a -> IO a
+queryDb (DbHandle _ jobs _) fallback a =
+	catchNonAsync go (\_ -> return fallback )
+  where
+	go = do
+		res <- newEmptyMVar
+		putMVar jobs $ QueryJob $
+			liftIO . putMVar res =<< tryNonAsync a
+		either throwIO return =<< takeMVar res
 
 closeDb :: DbHandle -> IO ()
 closeDb h@(DbHandle worker jobs _) = do

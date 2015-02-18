@@ -96,7 +96,7 @@ addDb (FsckHandle h _) k = H.queueDb h 1000 $
 	sk = toSKey k
 
 inDb :: FsckHandle -> Key -> IO Bool
-inDb (FsckHandle h _) = H.queryDb h . inDb' . toSKey
+inDb (FsckHandle h _) = H.queryDb h False . inDb' . toSKey
 
 inDb' :: SKey -> SqlPersistM Bool
 inDb' sk = do
