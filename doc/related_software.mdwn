@@ -3,12 +3,10 @@ designed to interoperate with it.
 
 * The [[git-annex assistant|assistant]] is included in git-annex,
   and extends its use cases into new territory.
-* [git-annex-watcher](https://github.com/rubiojr/git-annex-watcher)
-  is a status icon for your desktop.
-* [[forum/gadu_-_git-annex_disk_usage]] is a du like utility that
-  is git-annex aware.
-* [sizes](http://hackage.haskell.org/package/sizes) is another du-like
-  utility, with a `-A` switch that enables git-annex support.
+* [gitlab-shell](https://gitlab.com/gitlab-org/gitlab-shell) supports
+  git-annex. So git-annex can be used with repositries served by Gitlab,
+  including gitlab.com, or deploy your own.
+  [See Gitlab's announcment](https://about.gitlab.com/2015/02/17/gitlab-annex-solves-the-problem-of-versioning-large-binaries-with-git/)
 * Emacs Org mode can auto-commit attached files to git-annex.
 * [git annex darktable integration](https://github.com/xxv/darktable-git-annex)
 * [Magit](http://github.com/magit/magit), an Emacs mode for Git, has
@@ -19,3 +17,9 @@ designed to interoperate with it.
   built by the Brazilian [Mocambos network](http://www.mocambos.net/)
   is [using git-annex to connect isolated communities](http://www.modspil.dk/itpolitik/baob_xia.html).
   Repositories sync over satellite internet and/or sneakernet.
+* [[forum/gadu_-_git-annex_disk_usage]] is a du like utility that
+  is git-annex aware.
+* [sizes](http://hackage.haskell.org/package/sizes) is another du-like
+  utility, with a `-A` switch that enables git-annex support.
+* [git-annex-watcher](https://github.com/rubiojr/git-annex-watcher)
+  is a status icon for your desktop.
