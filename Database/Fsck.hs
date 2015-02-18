@@ -7,6 +7,7 @@
 
 {-# LANGUAGE QuasiQuotes, TypeFamilies, TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings, GADTs, FlexibleContexts #-}
+{-# LANGUAGE MultiParamTypeClasses, GeneralizedNewtypeDeriving #-}
 
 module Database.Fsck (
 	FsckHandle,
