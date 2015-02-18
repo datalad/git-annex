@@ -107,7 +107,7 @@ workerThread db jobs = catchNonAsync loop showerr
  -}
 queryDb :: DbHandle -> a -> SqlPersistM a -> IO a
 queryDb (DbHandle _ jobs _) fallback a =
-	catchNonAsync go (\_ -> return fallback )
+	catchNonAsync go (\e -> print e >> return fallback )
   where
 	go = do
 		res <- newEmptyMVar
