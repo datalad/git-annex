@@ -1,0 +1,3 @@
+coming from [[bugs/weird_entry_in_process_list]] - are there plans to make an init.d / systemd .service file for git-annex?
+
+my use case is that i have dedicated machines that will sync a common directory. they will run only one assistant - would patches to make a `git-annex` user, and the associated startup scripts, in the debian package be welcome? --[[anarcat]]
