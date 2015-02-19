@@ -21,7 +21,7 @@ git-annex (5.20150219) unstable; urgency=medium
   * addurl: Avoid crash if quvi is not installed, when git-annex was
     built with process-1.2
   * bittorrent: Fix mojibake introduced in parsing arai2c progress output.
-  * fsck --from: If a download from a remote fails, propigate the failure.
+  * fsck --from: If a download from a remote fails, propagate the failure.
   * metadata: When setting metadata, do not recurse into directories by
     default, since that can be surprising behavior and difficult to recover
     from. The old behavior is available by using --force.
