@@ -1,4 +1,4 @@
-git-annex (5.20150206) UNRELEASED; urgency=medium
+git-annex (5.20150219) unstable; urgency=medium
 
   * glacier: Detect when the glacier command in PATH is the wrong one,
     from boto, rather than from glacier-cli, and refuse to use it,
@@ -33,7 +33,7 @@ git-annex (5.20150206) UNRELEASED; urgency=medium
   * remotedaemon: Use the ssh-options git config.
   * Linux standalone: Improved process names of linker shimmed programs.
 
- -- Joey Hess <id@joeyh.name>  Fri, 06 Feb 2015 13:57:08 -0400
+ -- Joey Hess <id@joeyh.name>  Thu, 19 Feb 2015 14:16:03 -0400
 
 git-annex (5.20150205) unstable; urgency=medium
 
