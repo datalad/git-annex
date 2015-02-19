@@ -1,0 +1,17 @@
+Today's release doesn't have the database branch merged of course, but it
+still has a significant amount of changes.
+
+Developed a test case for the sqlite problem, that
+reliably reproduces it, and sent it to the sqlite mailing list. It seems
+that under heavy write load, when a new connection is made to the database,
+SELECT can fail for a little while. Once one SELECT succeeds, that database
+connection becomes solid, and won't fail any more (apparently). This makes
+me think there might be some connection initialization steps that don't end
+up finishing before the SELECT goes through in this situation. I should be
+able to work around this problem by probing new connections for stability,
+and probably will have to, since it'll be years before any bug fixed sqlite
+is available everywhere.
+
+I also noticed that current git-annex incremental parallel fsck doesn't
+really parallelize well; eg the processes do duplicate work. So, the
+database branch is not really a regression in this area.
