@@ -63,7 +63,7 @@ parseEnum s = Page
 
 probeVersion :: IO QuviVersion
 probeVersion = catchDefaultIO NoQuvi $
-	examine <$> processTranscript "quviaaa" ["--version"] Nothing
+	examine <$> processTranscript "quvi" ["--version"] Nothing
   where
 	examine (s, True)
 		| "quvi v0.4" `isInfixOf` s = Quvi04
