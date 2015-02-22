@@ -75,26 +75,20 @@ data Job
 type TableName = String
 
 workerThread :: T.Text -> TableName -> MVar Job -> IO ()
-workerThread db tablename jobs = catchNonAsync loop showerr
+workerThread db tablename jobs = catchNonAsync (run loop) showerr
   where
   	showerr e = liftIO $ warningIO $
 		"sqlite worker thread crashed: " ++ show e
 	
 	loop = do
-		r <- run queryloop
-		case r of
-			QueryJob _ -> loop
+		job <- liftIO $ takeMVar jobs
+		case job of
+			QueryJob a -> a >> loop
 			-- change is run in a separate database connection
 			-- since sqlite only supports a single writer at a
 			-- time, and it may crash the database connection
-			ChangeJob a -> a run >> loop
+			ChangeJob a -> liftIO (a run) >> loop
 			CloseJob -> return ()
-
-	queryloop = do
-		job <- liftIO $ takeMVar jobs
-		case job of
-			QueryJob a -> a >> queryloop
-			_ -> return job
 	
 	-- like runSqlite, but calls settle on the raw sql Connection.
 	run a = do
