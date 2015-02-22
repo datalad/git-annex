@@ -302,6 +302,7 @@ expandExpressionSplice sp lls = concat [before, spliced:padding, end]
 mangleCode :: String -> String
 mangleCode = flip_colon
 	. persist_dequalify_hack
+	. let_do
 	. remove_unnecessary_type_signatures
 	. lambdaparenhack
 	. lambdaparens
@@ -502,7 +503,7 @@ mangleCode = flip_colon
 	nested_instances = replace "  data instance Route" "  data Route"
 		. replace "  data instance Unique" "  data Unique"
 		. replace "  data instance EntityField" "  data EntityField"
-		. replace "  type instance PersistEntityBackend" = "  type PersistEntityBackend"
+		. replace "  type instance PersistEntityBackend" "  type PersistEntityBackend"
 
 	{- GHC does not properly parenthesise generated data type
 	 - declarations. -}
@@ -564,6 +565,19 @@ mangleCode = flip_colon
 		. replace "Database.Persist.Sql.Class.sqlType" "sqlType"
 		. replace "Database.Persist.Class.PersistField.toPersistValue" "toPersistValue"
 		. replace "Database.Persist.Class.PersistField.fromPersistValue" "fromPersistValue"
+
+	{- Sometimes generates invalid bracketed code with a let
+	 - expression:
+	 -
+	 - foo = do { let x = foo;
+	 -            use foo }
+	 -
+	 - Fix by converting the "let x" to :x <- return $"
+	 -}
+	let_do = parsecAndReplace $ do
+		void $ string "= do { let "
+		x <- hstoken
+		return $ "= do { " ++ x ++ " <- return $ "
 
 {- Embedded files use unsafe packing, which is problimatic
  - for several reasons, including that GHC sometimes omits trailing
