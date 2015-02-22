@@ -1,25 +1,42 @@
-From e6542197f1da6984bb6cd3310dba77363dfab2d9 Mon Sep 17 00:00:00 2001
-From: dummy <dummy@example.com>
-Date: Thu, 16 Oct 2014 01:51:02 +0000
-Subject: [PATCH] stub out
+From 93431ffee852ead6a9354f91f911ce2cd1bde5b0 Mon Sep 17 00:00:00 2001
+From: Joey Hess <joeyh@joeyh.name>
+Date: Sun, 22 Feb 2015 15:21:19 -0400
+Subject: [PATCH] stub out TH
 
+this method avoids needing to delete the entire file contents, so patch is
+kept minimal
 ---
- persistent-template.cabal | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ persistent-template.cabal   | 1 +
+ stub/Database/Persist/TH.hs | 8 ++++++++
+ 2 files changed, 9 insertions(+)
+ create mode 100644 stub/Database/Persist/TH.hs
 
 diff --git a/persistent-template.cabal b/persistent-template.cabal
-index 59b4149..e11b418 100644
+index 59b4149..4705d97 100644
 --- a/persistent-template.cabal
 +++ b/persistent-template.cabal
-@@ -26,7 +26,7 @@ library
-                    , aeson
-                    , monad-logger
-                    , unordered-containers
--    exposed-modules: Database.Persist.TH
-+    exposed-modules: 
+@@ -30,6 +30,7 @@ library
      ghc-options:     -Wall
      if impl(ghc >= 7.4)
         cpp-options: -DGHC_7_4
++    hs-source-dirs: stub
+ 
+ test-suite test
+     type:          exitcode-stdio-1.0
+diff --git a/stub/Database/Persist/TH.hs b/stub/Database/Persist/TH.hs
+new file mode 100644
+index 0000000..1833b2d
+--- /dev/null
++++ b/stub/Database/Persist/TH.hs
+@@ -0,0 +1,8 @@
++{-# LANGUAGE RecordWildCards #-}
++{-# LANGUAGE CPP #-}
++{-# LANGUAGE OverloadedStrings #-}
++{-# LANGUAGE RankNTypes #-}
++{-# OPTIONS_GHC -fno-warn-orphans -fno-warn-missing-fields #-}
++-- | This module provides utilities for creating backends. Regular users do not
++-- need to use this module.
++module Database.Persist.TH where
 -- 
-2.1.1
+2.1.4
 
