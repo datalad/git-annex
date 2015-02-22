@@ -35,7 +35,7 @@ import qualified Data.ByteString.Unsafe
 import qualified Data.ByteString.Char8
 import qualified Database.Persist.Class as Database.Persist.Class.PersistField
 import qualified Database.Persist.Sql as Database.Persist.Sql.Class
-import qualified Database.Persist.Sql.Class as Database.Persist.Types.Base
+import qualified Database.Persist.Sql as Database.Persist.Types.Base
 {- End EvilSplicer headers. -}
 
 
