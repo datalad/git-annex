@@ -1,4 +1,4 @@
-From 93431ffee852ead6a9354f91f911ce2cd1bde5b0 Mon Sep 17 00:00:00 2001
+From b22a4d77c1262f77ce4298b53ca90a138a14ceb7 Mon Sep 17 00:00:00 2001
 From: Joey Hess <joeyh@joeyh.name>
 Date: Sun, 22 Feb 2015 15:21:19 -0400
 Subject: [PATCH] stub out TH
@@ -6,11 +6,24 @@ Subject: [PATCH] stub out TH
 this method avoids needing to delete the entire file contents, so patch is
 kept minimal
 ---
- persistent-template.cabal   | 1 +
- stub/Database/Persist/TH.hs | 8 ++++++++
- 2 files changed, 9 insertions(+)
+ Database/Persist/TH.hs      |  1 +
+ persistent-template.cabal   |  1 +
+ stub/Database/Persist/TH.hs | 21 +++++++++++++++++++++
+ 3 files changed, 23 insertions(+)
  create mode 100644 stub/Database/Persist/TH.hs
 
+diff --git a/Database/Persist/TH.hs b/Database/Persist/TH.hs
+index 43eb3ee..2172b77 100644
+--- a/Database/Persist/TH.hs
++++ b/Database/Persist/TH.hs
+@@ -35,6 +35,7 @@ module Database.Persist.TH
+       -- * Internal
+     , packPTH
+     , lensPTH
++    , plusPlus
+     ) where
+ 
+ import Prelude hiding ((++), take, concat, splitAt)
 diff --git a/persistent-template.cabal b/persistent-template.cabal
 index 59b4149..4705d97 100644
 --- a/persistent-template.cabal
@@ -25,10 +38,10 @@ index 59b4149..4705d97 100644
      type:          exitcode-stdio-1.0
 diff --git a/stub/Database/Persist/TH.hs b/stub/Database/Persist/TH.hs
 new file mode 100644
-index 0000000..1833b2d
+index 0000000..dfbb874
 --- /dev/null
 +++ b/stub/Database/Persist/TH.hs
-@@ -0,0 +1,8 @@
+@@ -0,0 +1,21 @@
 +{-# LANGUAGE RecordWildCards #-}
 +{-# LANGUAGE CPP #-}
 +{-# LANGUAGE OverloadedStrings #-}
@@ -37,6 +50,19 @@ index 0000000..1833b2d
 +-- | This module provides utilities for creating backends. Regular users do not
 +-- need to use this module.
 +module Database.Persist.TH where
++
++import Data.Text
++
++type Lens s t a b = forall f. Functor f => (a -> f b) -> s -> f t
++
++lensPTH :: (s -> a) -> (s -> b -> t) -> Lens s t a b
++lensPTH sa sbt afb s = fmap (sbt s) (afb $ sa s)
++
++packPTH :: String -> Text
++packPTH = pack
++#if !MIN_VERSION_text(0, 11, 2)
++{-# NOINLINE packPTH #-}
++#endif
 -- 
 2.1.4
 
