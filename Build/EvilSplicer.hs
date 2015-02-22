@@ -451,7 +451,7 @@ mangleCode = flip_colon
 		void newline
 		indent1 <- many1 $ char ' '
 		prefix <- manyTill (noneOf "\n") (try (string "-> "))
-		if length prefix > 10
+		if length prefix > 20
 			then unexpected "too long a prefix"
 			else if "\\ " `isInfixOf` prefix
 				then unexpected "lambda expression"
