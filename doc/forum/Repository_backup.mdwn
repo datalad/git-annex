@@ -1,0 +1,5 @@
+What's the best way of backing up the git repository itself? I feel fairly comfortable using a special remote to create an offsite backup in S3 or Glacier or whatnot, but restoring from those still requires I have a working repository somewhere that can map chunks back to files, no? 
+
+I can probably just create a repo that has no content, tar it up, and store it on my backup medium (or on bitbucket or wherever), but that seems kinda hackish--it'd be nice to handle this within git-annex. In fact, it'd be really neat if I could handle this with any existing special remote--for example, if there were a way to commit and restore the git repo state (and symlink tree) to the remote. But that doesn't seem to exist. Is there a recommended approach for this? Am I just missing something obvious?
+
+Thanks. 

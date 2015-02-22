@@ -1,0 +1,21 @@
+I've found that running git annex add on a directory in a direct repository freezes. Example output:
+
+    > git annex add Signs\ \(2002\ Film\) --debug
+    
+    [2015-02-22 10:10:04 GMT] read: git ["--git-dir=/Volumes/plato/Films/.git","--work-tree=/Volumes/plato/Films","-c","core.bare=false","ls-files","--others","--exclude-standard","-z","--","Signs (2002 Film)"]
+    [2015-02-22 10:10:04 GMT] chat: git ["--git-dir=/Volumes/plato/Films/.git","--work-tree=/Volumes/plato/Films","-c","core.bare=false","cat-file","--batch"]
+    add Signs (2002 Film)/VIDEO_TS/VIDEO_TS.BUP [2015-02-22 10:10:04 GMT] chat: git ["--git-dir=/Volumes/plato/Films/.git","--work-tree=/Volumes/plato/Films","-c","core.bare=false","check-attr","-z","--stdin","annex.backend","annex.numcopies","--"]
+    [2015-02-22 10:10:05 GMT] chat: git ["--git-dir=/Volumes/plato/Films/.git","--work-tree=/Volumes/plato/Films","-c","core.bare=false","hash-object","-t","blob","-w","--stdin","--no-filters"]
+    [2015-02-22 10:10:05 GMT] chat: git ["--git-dir=/Volumes/plato/Films/.git","--work-tree=/Volumes/plato/Films","-c","core.bare=false","cat-file","--batch"]
+    ok
+    add Signs (2002 Film)/VIDEO_TS/VIDEO_TS.IFO [2015-02-22 10:10:05 GMT] chat: git ["--git-dir=/Volumes/plato/Films/.git","--work-tree=/Volumes/plato/Films","-c","core.bare=false","hash-object","-t","blob","-w","--stdin","--no-filters"]
+    ok
+
+Lots of files, ending in:
+
+    add Signs (2002 Film)/VIDEO_TS/VTS_13_1.VOB [2015-02-22 10:56:49 GMT] chat: git ["--git-dir=/Volumes/plato/Films/.git","--work-tree=/Volumes/plato/Films","-c","core.bare=false","hash-object","-t","blob","-w","--stdin","--no-filters"]
+    ok
+    [2015-02-22 10:56:49 GMT] read: git ["--git-dir=/Volumes/plato/Films/.git","--work-tree=/Volumes/plato/Films","-c","core.bare=false","ls-files","--modified","-z","--","Signs (2002 Film)"]
+
+
+It then hung for just under two hours before I hit ctrl+C. The files are on a remote SMB server mounted via OS X (hence direct mode) and git annex is being run on an OS X machine. git version 2.3.0, git-annex version 5.20150205. Both installed using homebrew. Any thoughts?

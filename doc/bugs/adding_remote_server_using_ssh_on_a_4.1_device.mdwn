@@ -1,0 +1,34 @@
+### Please describe the problem.
+
+Unable to add remote server using ssh on a 4.1 device.
+
+The error message on the android is: Failed to ssh to the server. Transcript: Could not create directory '(null)/.ssh'.
+
+The message from sshd on the server is: Feb 20 11:32:37 thrain sshd[1662]: Did not receive identification string from 10.1.0.16
+
+(thrain is the sshd server, 10.1.0.16 is the android)
+
+### What steps will reproduce the problem?
+
+On the android, go into the get-annex webpage, select add remote repository,
+add the particulars
+
+hit check this server.
+
+### What version of git-annex are you using? On what operating system?
+
+The android version of git-annex is 5.20150219-gd24cgd3
+The version of address is 4.1.1
+
+The sshd server is debian wheezy
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
