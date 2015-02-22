@@ -1,0 +1,25 @@
+I'm snowed in, but keeping busy..
+
+Developed a complete workaround for the [sqlite SELECT ErrorBusy bug](http://news.gmane.org/find-root.php?message_id=20150219163255.GA13383%40kitenet.net).
+So after a week, I finally have sqlite working robustly. And, I merged in
+the branch that uses sqlite for incremental fsck.
+
+Benchmarking an incremental fsck --fast run, checking 40 thousand files,
+it used to take 4m30s using sticky bits, and using sqlite slowed it down by
+10s. So one added second per 4 thousand or so files. I think that's ok.
+Incremental fsck is intended to be used in big repos, which are probably not
+checked in --fast most, so the checksumming of files will by far swamp
+that overhead.
+
+Also got sqlite and persistent installed on all the autobuilders. This
+was easier than expected, because persistent bundles its own copy of
+sqlite.
+
+That would have been a good stopping place for the day's work.. But then I
+got to spent 5 more hours getting the EvilSplicer to support Persistent.
+Urgh. :-/
+
+Now I can look forward to using sqlite for something more interesting than
+incremental fsck, like metadata caching for views, or the direct mode mappings.
+But, given all the trouble I had with sqlite, I'm going to put that off for
+a little while, to make sure that I've really gotten sqlite to work robustly.
