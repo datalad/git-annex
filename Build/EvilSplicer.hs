@@ -304,7 +304,8 @@ mangleCode = flip_colon
 	. persist_dequalify_hack
 	. let_do
 	. remove_unnecessary_type_signatures
-	. lambdaparenhack
+	. lambdaparenhackyesod
+	. lambdaparenhackpersistent
 	. lambdaparens
 	. declaration_parens
 	. case_layout
@@ -385,7 +386,7 @@ mangleCode = flip_colon
 	 - FIXME: This is a hack. lambdaparens could just always add a
 	 - layer of parens even when a lambda seems to be in parent.
 	 -}
-	lambdaparenhack = parsecAndReplace $ do
+	lambdaparenhackyesod = parsecAndReplace $ do
 		indent1 <- many1 $ char ' '
 		staticr <- string "StaticR"
 		void newline
@@ -407,6 +408,44 @@ mangleCode = flip_colon
 			, indent1 ++ yesod_dispatch_env
 			, indent1 ++ "(" ++ lambdaprefix ++ l1
 			, indent1 ++ lambdaarrow ++ l2 ++ l3 ++ ")"
+			]
+
+	{- Hack to reorder misplaced paren in persistent code.
+	 -
+	 - = ((Right Fscked)
+         -    (\ persistValue_a36iM
+         -       -> case fromPersistValue persistValue_a36iM of {
+         -            Right r_a36iN -> Right r_a36iN
+         -            Left err_a36iO
+         -              -> (Left
+         -                  $ ((("field " `Data.Monoid.mappend` (packPTH "key"))
+         -                      `Data.Monoid.mappend` ": ")
+         -                     `Data.Monoid.mappend` err_a36iO)) }
+         -       x_a36iL))
+	 -
+	 - Fixed by adding another level of params around the lambda
+	 - (lambdaparams should be generalized to cover this case).
+	 -}
+	lambdaparenhackpersistent = parsecAndReplace $ do
+		indent1 <- many1 $ char ' '
+		start <- do
+			s1 <- string "(\\ "
+			s2 <- string "persistValue_"
+			s3 <- restofline
+			return $ s1 ++ s2 ++ s3
+		void $ string indent1
+		indent2 <- many1 $ char ' '
+		void $ string "-> "
+		l1 <- restofline
+		lambdalines <- many $ try $ do
+			void $ string $ indent1 ++ indent2 ++ " "
+			l <- restofline
+			return $ indent1 ++ indent2 ++ " " ++ l
+		return $ concat
+			[ indent1 ++ "(" ++ start ++ "\n"
+			, indent1 ++ indent2 ++ "-> " ++ l1 ++ "\n"
+			, intercalate "\n" lambdalines
+			, ")\n"
 			]
 
 	restofline = manyTill (noneOf "\n") newline
@@ -572,11 +611,13 @@ mangleCode = flip_colon
 	 - foo = do { let x = foo;
 	 -            use foo }
 	 -
-	 - Fix by converting the "let x" to "x <- return $"
+	 - Fix by converting the "let x = " to "x <- return $"
 	 -}
 	let_do = parsecAndReplace $ do
 		void $ string "= do { let "
 		x <- hstoken
+		ws <- many $ oneOf " \t\r\n"
+		void $ string "= "
 		return $ "= do { " ++ x ++ " <- return $ "
 
 {- Embedded files use unsafe packing, which is problimatic
