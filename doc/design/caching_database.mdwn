@@ -25,7 +25,7 @@ Store in the database the Ref of the branch that was used to construct it.
 
 ## implementation plan
 
-1. Store incremental fsck info in db, on a branch, with sqlite.
+1. Store incremental fsck info in db, on a branch, with sqlite. **done**
 2. Make sure that builds on all platforms.
 3. Implement for metadata, on a branch, with sqlite.
 4. Add associated file mappings support. This is needed to fully
@@ -148,3 +148,9 @@ perform better when adding an associated file to a key that already has many.
 For metadata, the story is much nicer. Querying for 30000 keys that all
 have a particular tag in their metadata takes 0.65s. So fast enough to be
 used in views.
+
+Update4: Comparing git-annex fsck using the sticky bit to the final sqlite
+implementation:
+
+sticky bit: 4m30.787s  
+sqlite: 4m40.789s  
