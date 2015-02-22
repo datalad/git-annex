@@ -301,6 +301,7 @@ expandExpressionSplice sp lls = concat [before, spliced:padding, end]
 {- Tweaks code output by GHC in splices to actually build. Yipes. -}
 mangleCode :: String -> String
 mangleCode = flip_colon
+	. persist_dequalify_hack
 	. remove_unnecessary_type_signatures
 	. lambdaparenhack
 	. lambdaparens
@@ -553,6 +554,13 @@ mangleCode = flip_colon
 	 - that above, so have to fix up after it here. 
 	 - The ; is added by case_layout. -}
 	flip_colon = replace "; : _ " "; _ : "
+
+	{- TH for persistent has some qualified symbols in places
+	 - that are not allowed. -}
+	persist_dequalify_hack = replace "Database.Persist.TH.++" "++"
+		. replace "Database.Persist.Sql.Class.sqlType" "sqlType"
+		. replace "Database.Persist.Class.PersistField.toPersistValue" "toPersistValue"
+		. replace "Database.Persist.Class.PersistField.fromPersistValue" "fromPersistValue"
 
 {- Embedded files use unsafe packing, which is problimatic
  - for several reasons, including that GHC sometimes omits trailing
