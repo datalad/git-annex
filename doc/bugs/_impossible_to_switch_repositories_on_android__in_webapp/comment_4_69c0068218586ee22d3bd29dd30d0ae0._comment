@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnbPKLjBONawBd74MKJZo05juCqdsP1jAU"
+ nickname="Ramon"
+ subject="bug still there"
+ date="2015-02-22T14:58:41Z"
+ content="""
+As of today (with v 5.20150219-gd24cfd3, on two different Android tablets, one with Android 4.1.1 and the other 4.4.1) it is still impossible to switch repos in Android webapp. So configuration, etc, of different repos becomes somewhat of a pain.
+"""]]
