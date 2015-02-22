@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlc-3pdibcizrdz4WmZooECL0k6AvM1cWc"
+ nickname="Joe"
+ subject="S3 file/folder names"
+ date="2015-02-19T22:22:26Z"
+ content="""
+Is there a way to tell the S3 backend to store the files as they are named locally, instead of by hashed content name? i.e., I've annexed foo/bar.txt and annex puts it in s3 as mybucket.name/foo/bar.txt instead of mybucket.name/GPGHMACSHA1-random.txt
+
+Or should I just write a script to s3cmd sync my annex, and add the S3/cloudfront distribution URL as a web remote?
+"""]]

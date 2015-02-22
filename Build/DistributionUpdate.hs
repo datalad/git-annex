@@ -19,7 +19,6 @@ import Annex.Content
 import Backend
 import Git.Command
 
-import Data.Default
 import Data.Time.Clock
 import Data.Char
 import System.Posix.Directory

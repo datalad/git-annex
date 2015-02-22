@@ -4,7 +4,7 @@ multiple concurrent fsck processes.
 The first problem was that having `fsck --incremental` running and starting a
 new `fsck --incremental` caused it to crash. And with good reason, since
 starting a new incremental fsck deletes the old database, the old process
-was left writing to a datbase that had been deleted and recreated out from
+was left writing to a database that had been deleted and recreated out from
 underneath it. Fixed with some locking.
 
 Next problem is harder. Sqlite doesn't support multiple concurrent writers

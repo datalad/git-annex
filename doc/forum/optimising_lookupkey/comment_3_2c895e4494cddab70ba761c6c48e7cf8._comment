@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="thanks"
+ date="2015-02-18T21:53:52Z"
+ content="""
+great, thanks for the feedback!
+
+i agree that 25ms is quite fast to fire up a 52MB binary. :) i am just saying that if this is going to end up as part of building a webpage, i need something faster, or cache the results somewhere.
+
+duly noted for the other points, thanks again. i see a great intimate relationship building between `git cat-file` and me. ;)
+"""]]
