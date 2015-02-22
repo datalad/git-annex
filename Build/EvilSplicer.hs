@@ -496,10 +496,13 @@ mangleCode = flip_colon
 	 -        ^^^^^^^^
 	 - The marked word should not be there.
 	 -
-	 - FIXME: This is a yesod-specific hack, it should look for the
-	 - outer instance.
+	 - FIXME: This is a yesod and persistent-specific hack,
+	 - it should look for the outer instance.
 	 -}
-	nested_instances = replace "  data instance Route" "  data Route" 
+	nested_instances = replace "  data instance Route" "  data Route"
+		. replace "  data instance Unique" "  data Unique"
+		. replace "  data instance EntityField" "  data EntityField"
+		. replace "  type instance PersistEntityBackend" = "  type PersistEntityBackend"
 
 	{- GHC does not properly parenthesise generated data type
 	 - declarations. -}
