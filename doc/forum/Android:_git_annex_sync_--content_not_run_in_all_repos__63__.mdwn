@@ -1,0 +1,24 @@
+I have two repositories in an Android device, and each is synced with a corresponding repo in a computer:
+
+A-android <-> A-computer
+
+B-android <-> B-computer
+
+Both are configured as "client: a repository on your computer".
+
+
+One of the repositories (say, A) has the expected behavior (changes in the Android device show in the computer and viceversa).
+
+The other repo pair doesn't. Changes in the computer do appear in the Android device, but not the other way around. I can get them to appear if, in the computer, I do
+
+~/B-computer$ git annex sync --content
+
+but not otherwise. For example, from the Android web app clicking "sync" in B-android or B-computer does not make the changes in the Android appear in the computer. 
+
+I am very new to git annex, but I do not understand this; I've searched around to no avail; I think that I should expect sync to run for all repositories  
+[http://git-annex.branchable.com/design/assistant/#comment-6ddc18af9685a7ddbbe6e639e7b15feb](http://git-annex.branchable.com/design/assistant/#comment-6ddc18af9685a7ddbbe6e639e7b15feb), but 
+then maybe not to do what I expect: [http://git-annex.branchable.com/sync/#comment-1a0a053001ef684a0f3c5325e8062483](http://git-annex.branchable.com/sync/#comment-1a0a053001ef684a0f3c5325e8062483).
+
+
+The problem with the behavior I see is that in addition to making me unsure if I am seeing the latest stuff when I do, say, "ls" or "cat", it leads to trouble (if I edit the same file in both the Android and the computer, eventually I will get a conflict, of course). If this is by design, is there a way to get all of the repositories to show the first behavior (changes propagated android <-> computer)?
+
