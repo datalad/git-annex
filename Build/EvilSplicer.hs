@@ -572,7 +572,7 @@ mangleCode = flip_colon
 	 - foo = do { let x = foo;
 	 -            use foo }
 	 -
-	 - Fix by converting the "let x" to :x <- return $"
+	 - Fix by converting the "let x" to "x <- return $"
 	 -}
 	let_do = parsecAndReplace $ do
 		void $ string "= do { let "
