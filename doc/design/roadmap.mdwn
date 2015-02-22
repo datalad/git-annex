@@ -1,5 +1,6 @@
 ## ahead
 
+* [[design/caching_database]] for metadata views, direct mode mappings
 * [[assistant/deltas]]
 * [[assistant/gpgkeys]]
 * [[assistant/telehash]]
@@ -8,7 +9,7 @@
 
 ## now
 
-* Feb 2015 user-driven features and polishing, [[design/caching_database]]
+* Feb 2015 user-driven features and polishing, [[design/caching_database]] part 1
 
 ## the rearview
 
