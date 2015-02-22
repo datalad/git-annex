@@ -557,7 +557,7 @@ mangleCode = flip_colon
 
 	{- TH for persistent has some qualified symbols in places
 	 - that are not allowed. -}
-	persist_dequalify_hack = replace "Database.Persist.TH.++" "++"
+	persist_dequalify_hack = replace "Database.Persist.TH.++" "`Data.Text.append`"
 		. replace "Database.Persist.Sql.Class.sqlType" "sqlType"
 		. replace "Database.Persist.Class.PersistField.toPersistValue" "toPersistValue"
 		. replace "Database.Persist.Class.PersistField.fromPersistValue" "fromPersistValue"
