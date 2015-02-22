@@ -72,16 +72,15 @@ openDb u = do
 		let tmpdb = tmpdbdir </> "db"
 		liftIO $ do
 			createDirectoryIfMissing True tmpdbdir
-			h <- H.initDb tmpdb $ void $
+			H.initDb tmpdb $ void $
 				runMigrationSilent migrateFsck
-			H.closeDb h
 		setAnnexDirPerm tmpdbdir
 		setAnnexFilePerm tmpdb
 		liftIO $ do
 			void $ tryIO $ removeDirectoryRecursive dbdir
 			rename tmpdbdir dbdir
 	lockFileShared =<< fromRepo (gitAnnexFsckDbLock u)
-	h <- liftIO $ H.openDb db
+	h <- liftIO $ H.openDb db "fscked"
 	return $ FsckHandle h u
 
 closeDb :: FsckHandle -> Annex ()
@@ -90,14 +89,13 @@ closeDb (FsckHandle h u) = do
 	unlockFile =<< fromRepo (gitAnnexFsckDbLock u)
 
 addDb :: FsckHandle -> Key -> IO ()
-addDb (FsckHandle h _) k = H.queueDb h 1000 $
-	unlessM (inDb' sk) $
-		insert_ $ Fscked sk
+addDb (FsckHandle h _) k = H.queueDb h 1000 $ 
+	void $ insertUnique $ Fscked sk
   where
 	sk = toSKey k
 
 inDb :: FsckHandle -> Key -> IO Bool
-inDb (FsckHandle h _) = H.queryDb h False . inDb' . toSKey
+inDb (FsckHandle h _) = H.queryDb h . inDb' . toSKey
 
 inDb' :: SKey -> SqlPersistM Bool
 inDb' sk = do
