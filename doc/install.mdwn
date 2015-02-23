@@ -9,7 +9,7 @@ detailed instructions             | quick install
 &nbsp;&nbsp;[[Debian]]            | `apt-get install git-annex`
 &nbsp;&nbsp;[[Ubuntu]]            | `apt-get install git-annex`
 &nbsp;&nbsp;[[Fedora]]            | `yum install git-annex`
-&nbsp;&nbsp;[[FreeBSD]]           | `pkg_add -r hs-git-annex`
+&nbsp;&nbsp;[[FreeBSD]]           | `pkg install hs-git-annex`
 &nbsp;&nbsp;[[ArchLinux]]         | `yaourt -Sy git-annex-bin`
 &nbsp;&nbsp;[[NixOS]]             | `nix-env -i git-annex`
 &nbsp;&nbsp;[[Gentoo]]            | `emerge git-annex`
