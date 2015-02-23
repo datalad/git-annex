@@ -1,5 +1,5 @@
 ### Please describe the problem.
-"git-annex unannex" requires an unexpected (and undesirable) commit only when adding files in a new directory. This undesirable because whenever "git-annex add" is accidentally run in a new directory, the only way to undo it is to commit first and then unannex, which adds two unwanted commits to the git log. Moreover, this behavior is not consitent with unannex on files in non-new directories: in that case unannex works as expected.
+"git-annex unannex" requires an unexpected (and undesirable) commit only when adding files in a new directory. This is undesirable because whenever "git-annex add" is accidentally run in a new directory, the only way to undo it is to commit first and then unannex, which adds two unwanted commits to the git log. Moreover, this behavior is not consistent with unannex on files in non-new directories: in that case unannex works as expected.
 
 ### What steps will reproduce the problem?
 <pre><code>/tmp> mkdir test
