@@ -32,3 +32,7 @@ of Bath CS department.
 * x86-32: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/i386/git-annex-standalone-i386.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/i386/))
 * x86-64: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/amd64/git-annex-standalone-amd64.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/amd64/))
 * arm: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/armel/git-annex-standalone-armel.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/armel/))
+
+## technical details
+
+The way those tarballs are built is described in [joeyh's blog](http://joeyh.name/blog/entry/completely_linux_distribution-independent_packaging/).
