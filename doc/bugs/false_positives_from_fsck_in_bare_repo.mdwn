@@ -1,0 +1,45 @@
+### Please describe the problem.
+
+git annex fsck complains about no known copies of files which seem to be there
+
+### What steps will reproduce the problem?
+
+run git annex fsck in a bare repo? At least I tried 3, two from one set of mirrors, and one from another
+
+### What version of git-annex are you using? On what operating system?
+
+╰─% apt-cache policy git-annex
+git-annex:
+  Installed: 5.20141125
+  Candidate: 5.20141125
+  Version table:
+ *** 5.20141125 0
+        900 http://http.debian.net/debian/ jessie/main amd64 Packages
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+$ cd /media/usbdata3/data/audio.git/
+$ tail /tmp/usbdata3.audio.log
+  ** No known copies exist of SHA256E-s22382--ceaa24fd4ef186b90146cbfc48a2da261e85d63288520aa3efd80705f1976117.jpg
+  ** No known copies exist of SHA256E-s6532--4cf24963db72d1c06b03310a83922875bfff4d82b7285096a7bf76ecdba39552.jpg
+  ** No known copies exist of SHA256E-s9539--eb1db62f33125aee2093ecf530f94497f8c890b3ffddb5214cbd2ad99ce5a4c4.jpg
+  ** No known copies exist of SHA256E-s13710--5d69a49a290012f480e6848f88122e90f803177c610524234e16136d95bc7715.jpg
+  ** No known copies exist of SHA256E-s3515--3a225ae6b26571a27d7e70f49948e2be4d78f1fb29e64308880e208e20bc2868.jpg
+  ** No known copies exist of SHA256E-s8359--9291d7b0bf3a862901607ec7c56d5e1ee6a0f3889e775e4db23999b38322e83f.jpg
+  ** No known copies exist of SHA256E-s3157--4c43cf5618f939a09dada21b45b3860bcb4c6968fa166daf3215f879a25e504d.gif
+  ** No known copies exist of SHA256E-s2676--13b4b08525ce90b44ea9eb703630646f2d8f41d9a07b65d130aaf653a072d408.gif
+  ** No known copies exist of SHA256E-s5863--f0eb8c34ea1aa834280c78f1ec28d50aef81379ba62fb0bbf084664c7a7e2746.jpg
+git-annex: fsck: 10484 failed
+$ find . -name SHA256E-s5863--f0eb8c34ea1aa834280c7\*
+./annex/objects/5b3/5c3/SHA256E-s5863--f0eb8c34ea1aa834280c78f1ec28d50aef81379ba62fb0bbf084664c7a7e2746.jpg
+./annex/objects/5b3/5c3/SHA256E-s5863--f0eb8c34ea1aa834280c78f1ec28d50aef81379ba62fb0bbf084664c7a7e2746.jpg/SHA256E-s5863--f0eb8c34ea1aa834280c78f1ec28d50aef81379ba62fb0bbf084664c7a7e2746.jpg
+$ sha256sum ./annex/objects/5b3/5c3/SHA256E-s5863--f0eb8c34ea1aa834280c78f1ec28d50aef81379ba62fb0bbf084664c7a7e2746.jpg/SHA256E-s5863--f0eb8c34ea1aa834280c78f1ec28d50aef81379ba62fb0bbf084664c7a7e2746.jpg
+f0eb8c34ea1aa834280c78f1ec28d50aef81379ba62fb0bbf084664c7a7e2746  ./annex/objects/5b3/5c3/SHA256E-s5863--f0eb8c34ea1aa834280c78f1ec28d50aef81379ba62fb0bbf084664c7a7e2746.jpg/SHA256E-s5863--f0eb8c34ea1aa834280c78f1ec28d50aef81379ba62fb0bbf084664c7a7e2746.jpg
+$ 
+
+# End of transcript or log.
+"""]]
