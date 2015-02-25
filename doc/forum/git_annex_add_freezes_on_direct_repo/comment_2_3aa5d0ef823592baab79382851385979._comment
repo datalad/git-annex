@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-02-25T18:17:45Z"
+ content="""
+So you're using git-annex in a directory that is not on the local computer,
+but that uses a network filesystem?
+
+That seems likely to be the cause of your problem. For example, such
+filesystem often have trouble with POSIX file locks that git-annex uses.
+"""]]
