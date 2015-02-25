@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-02-25T18:14:42Z"
+ content="""
+The best way is to make a git remote and let `git-annex sync`
+sync with it. You can put the git remote on github, gitorious, any
+server with ssh, any server with rsync, a local backup drive, etc.
+
+Special remotes are key/value storage; this is not a very good
+match for the access patterns needed for a git remote.
+"""]]
