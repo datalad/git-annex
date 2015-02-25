@@ -699,7 +699,7 @@ subdirectories).
 
 * `whereis [path ...]`
 
-  Displays a information about where the contents of files are located.
+  Displays information about where the contents of files are located.
 
 * `list [path ...]`
 
