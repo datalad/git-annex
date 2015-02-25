@@ -54,4 +54,6 @@ git:
 
 """]]
 
-and as a result we have no load reachable in this double-nested submodule
+and as a result we have no load reachable in this double-nested submodulea
+
+> This is a duplicate of <http://git-annex.branchable.com/bugs/Git_annexed_files_symlink_are_wrong_when_submodule_is_not_in_the_same_path/>. [[done]] --[[Joey]]
