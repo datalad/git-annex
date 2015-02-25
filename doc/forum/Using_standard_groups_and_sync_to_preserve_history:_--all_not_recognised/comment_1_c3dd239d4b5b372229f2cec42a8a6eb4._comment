@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-02-25T19:28:03Z"
+ content="""
+It looks like the documentation is wrong; `git annex sync` has never
+supported `--all` or `--unused`. I've fixed the documentation. If you do
+need this, please file a todo item so I can remember to try to implement
+it. Should be doable, but not trivially so.
+"""]]
