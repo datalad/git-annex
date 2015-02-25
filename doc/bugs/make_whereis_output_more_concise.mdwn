@@ -52,3 +52,9 @@ git-annex:
         500 http://neuro.debian.net/debian-devel/ jessie/main amd64 Packages
         100 /var/lib/dpkg/status
 """]]
+
+> See `git annex list`, which comes right after `whereis` in the
+> man page, and is described as "similar to whereis but a more compact
+> display".
+>
+> [[done]] --[[Joey]]
