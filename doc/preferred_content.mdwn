@@ -179,11 +179,6 @@ content expression won't match anything.
 
 So when is `unused` useful in a preferred content expression?
 
-Using `git annex sync --content --all` will ensure that all keys, including
-unused ones, are examined and the preferred content expressions followed.
-Similarly, `git annex sync --content --unused` will only look at the unused
-keys.
-
 The git-annex assistant periodically scans for unused files, and
 moves them to some repository whose preferred content expression
 matches "unused". (Or, if annex.expireunused is set, it may just delete
