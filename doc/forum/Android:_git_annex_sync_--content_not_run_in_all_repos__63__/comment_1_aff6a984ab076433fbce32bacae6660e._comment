@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-02-25T19:22:17Z"
+ content="""
+It sounds like the android device is sending the files to repository
+B-computer, but it is not updating its repository until you run
+`git annex sync` manually.
+
+Are you sure that the git-annex assistant is actively managing the `B-computer`
+repository? I would `tail -f .git/annex/daemon.log` in that repository 
+when making a change to B-android, and see what it does.
+"""]]
