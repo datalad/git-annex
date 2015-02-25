@@ -18,3 +18,6 @@ Going to the terminal and running git --global for email and name solved the pro
 
 # End of transcript or log.
 """]]
+
+> [[closing|done]] since no version was provided and the current version
+> almost certianly deals with this. --[[Joey]]
