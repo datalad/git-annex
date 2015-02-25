@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-02-25T18:10:38Z"
+ content="""
+I cannot reproduce this, and you did not provide any kind of transcript,
+which makes it hard to guess where you went wrong.
+
+Here is a transcript of it working.
+
+<pre>
+joey@darkstar:~/tmp/1>mkdir /tmp/demo
+joey@darkstar:~/tmp/1>git annex initremote demo type=rsync encryption=none rsyncurl=localhost:/tmp/demo
+initremote demo ok
+(recording state in git...)
+joey@darkstar:~/tmp/1>git annex copy --to demo
+copy foo (checking demo...) (to demo...) 
+sending incremental file list
+f28/
+f28/734/
+f28/734/SHA256E-s30--20c71ffd77c7f25e52416eb6afd36bf8df9410a9942d8a42e7caf74f6cfa5fb8/
+f28/734/SHA256E-s30--20c71ffd77c7f25e52416eb6afd36bf8df9410a9942d8a42e7caf74f6cfa5fb8/SHA256E-s30--20c71ffd77c7f25e52416eb6afd36bf8df9410a9942d8a42e7caf74f6cfa5fb8
+             30 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/5)
+ok
+(recording state in git...)
+joey@darkstar:~/tmp/1>cd ..
+joey@darkstar:~/tmp>cd 2
+joey@darkstar:~/tmp/2>git annex sync
+[...]
+joey@darkstar:~/tmp/2>git annex enableremote demo
+enableremote demo ok
+(recording state in git...)
+joey@darkstar:~/tmp/2>git annex get --from demo
+get foo (from demo...) 
+SHA256E-s30--20c71ffd77c7f25e52416eb6afd36bf8df9410a9942d8a42e7caf74f6cfa5fb8
+             30 100%   29.30kB/s    0:00:00 (xfr#1, to-chk=0/1)
+ok
+(recording state in git...)
+"""]]
