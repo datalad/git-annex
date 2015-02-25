@@ -53,11 +53,14 @@ wrapUnannex a = ifM isDirect
 		, Param "--no-verify"
 		, Param "-m", Param "content removed from git annex"
 		]
-	cleanindex = do
-		(diff, cleanup) <- inRepo $ DiffTree.diffIndex Git.Ref.headRef
-		if null diff
-			then void (liftIO cleanup) >> return True
-			else void (liftIO cleanup) >> return False
+	cleanindex = ifM (inRepo Git.Ref.headExists)
+		( do
+			(diff, cleanup) <- inRepo $ DiffTree.diffIndex Git.Ref.headRef
+			if null diff
+				then void (liftIO cleanup) >> return True
+				else void (liftIO cleanup) >> return False
+		, return False
+		)
 
 start :: FilePath -> Key -> CommandStart
 start file key = stopUnless (inAnnex key) $ do

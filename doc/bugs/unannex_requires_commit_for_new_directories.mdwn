@@ -28,3 +28,4 @@ git-annex: Cannot proceed with uncommitted changes staged in the index. Recommen
 ### What version of git-annex are you using? On what operating system?
 The issue occurs with last version of git-annex, available at the time of this post (2015-02-19 16:20). I could reproduce the issue in all other versions of git-annex I tried (not many though). I am using Linux, Ubuntu 12.04 amd64.
 
+> [[done]]; added check for repository too new to have a HEAD. --[[Joey]]

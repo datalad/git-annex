@@ -7,6 +7,10 @@ git-annex (5.2015022) UNRELEASED; urgency=medium
   * fsck: Multiple incremental fscks of different repos (including remotes)
     can now be running at the same time in the same repo without it
     getting confused about which files have been checked for which remotes.
+  * unannex: Refuse to unannex when repo is too new to have a HEAD,
+    since in this case there must be staged changes in the index
+    (if there is anything to unannex), and the unannex code path
+    needs to run with a clean index.
 
  -- Joey Hess <id@joeyh.name>  Thu, 19 Feb 2015 14:16:03 -0400
 
