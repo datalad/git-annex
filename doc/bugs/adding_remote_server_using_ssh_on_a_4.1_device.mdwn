@@ -1,3 +1,5 @@
+[[!meta title="adding remote server using ssh on an Android 4.1 device"]]
+
 ### Please describe the problem.
 
 Unable to add remote server using ssh on a 4.1 device.
