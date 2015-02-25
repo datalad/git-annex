@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-02-25T19:18:58Z"
+ content="""
+Since you have a ssh server, it's better to avoid jabber. Install
+git-annex 5.20140405 or newer on the server, and the clients will
+use it to communicate with one-another.
+"""]]
