@@ -1392,9 +1392,12 @@ no equivilant to `--in`.
 
 When a repository is in one of the standard predefined groups, like "backup"
 and "client", setting its preferred content to "standard" will use a
-built-in preferred content expression developed for that group. Or,
-setting its preferred content to "groupwanted" will make it use whatever
-groupwanted expression you set for the group.
+built-in preferred content expression developed for that group. 
+See <https://git-annex.branchable.com/preferred_content/standard_groups/>
+
+If you have set a groupwanted expression for a group, it will be used
+when a repository in the group has its preferred content set to
+"groupwanted".
 
 # SCHEDULED JOBS
 
