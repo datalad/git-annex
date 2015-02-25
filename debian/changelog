@@ -11,6 +11,10 @@ git-annex (5.2015022) UNRELEASED; urgency=medium
     since in this case there must be staged changes in the index
     (if there is anything to unannex), and the unannex code path
     needs to run with a clean index.
+  * Linux standalone: Set LOCPATH=/dev/null to work around
+    https://ghc.haskell.org/trac/ghc/ticket/7695
+    This prevents localization from working, but git-annex
+    is not localized anyway.
 
  -- Joey Hess <id@joeyh.name>  Thu, 19 Feb 2015 14:16:03 -0400
 

@@ -33,3 +33,7 @@ and the current bundle on the NAS
 
 # End of transcript or log.
 """]]
+
+> Went ahead with setting LOCPATH=/dev/null in runshell, so it won't
+> run into whatever problem with the locales is causing it to hit this GHC
+> bug. [[done]] (I hope) --[[Joey]]
