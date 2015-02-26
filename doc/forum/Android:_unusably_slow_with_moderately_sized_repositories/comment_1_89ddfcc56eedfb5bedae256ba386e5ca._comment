@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnbPKLjBONawBd74MKJZo05juCqdsP1jAU"
+ nickname="Ramon"
+ subject="comment 1"
+ date="2015-02-26T18:21:03Z"
+ content="""
+Update: So after about 16 hours, route 2 seems to be completed. But then, the behavior is something I do not understand:
+- I create a file in the computer and the log there shows it gets created and added in the repo in the computer
+
+[2015-02-26 18:33:40 CET] Committer: Adding A
+add A-test/A ok
+add A-test/A ok
+[2015-02-26 18:33:40 CET] Committer: Committing changes to git
+(Recording state in git...)
+(Recording state in git...)
+
+
+- But the android is spinning for minutes and minutes without doing anything. I restart it, and it takes it more than 20' to finish the scan, and then its start syncing, but to no avail:
+
+(scanning...) [2015-02-26 18:37:15 CET] Watcher: Performing startup scan
+(started...) 
+[2015-02-26 18:58:05 CET] main: Syncing with xxx.xxx.xxx.xxx__home_someone_somewhere 
+
+(yes, I can connect from the android to the computer using ssh from another app ---connect bot)
+
+
+So I think maybe I am misuing git annex somehow?
+
+"""]]
