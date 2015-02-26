@@ -1,0 +1,55 @@
+I am trying to sync a repository between a computer and two Android devices. The data in the directory of files (i.e., not the .git directory) takes about 7.4 GB and there are about 10000 files and directories in total (as reported by find . | wc -l) of which 7000 are files (as reported by find - -type f | wc -l).
+
+I've used two different routes: 1. start the assistant in the Android in a directory with all the files: 2. start the assistant in the Android in an empty dir and sync with the git-annex repository in the computer. None are working. I am using, in the androids, v. 5.20150224-g9dca034 and in the computer the latest Debian version (5.20141125).
+
+Details follow:
+
+
+1. In one Android, I had already transmitted all the files (nothing git-related; just the directory). So I placed that directory under /sdcard/annex, and started the assistant. I did not add any other repository (i.e., the computer was not added). After more than 12 hours, it is not done. The webapp in the Android shows "Adding blablabla".
+
+If I compare the sizes of directories between the computer and the android with du I get:
+
+Computer:~  du -H -d 1
+215624  ./.git
+7710564 ./directory
+7926192 .
+
+
+Android (using adb shell):~ du -H -d 1
+7681744 ./directory
+35388   ./.git
+7717136 .
+
+
+Over the last six hours it seems the size in the Android is getting closer and closer to that in the computer, but it seems is never quite getting there. And then, I think after this is completed (if ever), I'll need to sync with the computer.
+
+
+2. In the other Android I started the assistant, and added the computer as the other repository. Let them sync. Initially I was getting the TransferScanner crashed problem in
+[Android version does not sync](http://git-annex.branchable.com/forum/Android_version_does_not_sync/). So I issued the git-annex sync as suggested. Things started syncing. But again, after more than 12 hourse, it is not done and I have no idea how long I'd have to wait. In this case, git-annex seems to be placing stuff in ./git, as the things downloaded are actually links. A du shows this:
+
+392304  ./.git
+82464   ./directory
+474776  .
+
+-------
+
+So I think I am experiencing two different problems:
+
+A. git is just taking forever (route 1.) in the Android. There are not network issues possible there, since that Android is not downloading/syncing anything with anyone. Interestingly, in case this is of any use, from adb shell a top shows: 
+
+User 27%, System 16%, IOW 1%, IRQ 0%
+User 318 + Nice 28 + Sys 199 + Idle 674 + IOW 20 + IRQ 0 + SIRQ 0 = 1239
+
+
+and the git-annex process taking between 3% to 15% CPU.
+
+
+B. git + network issues in route 2.  But I doubt this is mainly a network problem. As a comparison, using syncthing I was able to initially sync (i.e., download to the android device) the complete set of files in about four hours and then checking for changes in the Android takes syncthing about 1 to 3 minutes. I've also repeated this using a private seafile server (seafile server running in the computer); downloading all files takes about the same (about four hours), and then checking for changes against the seafile server takes between 45 minutes and an hour. For comparison, a top also shows that git-annex is taking between 2 and 15% CPU.
+
+
+So I am wondering if I am making some silly mistake here, or maybe this is not the intended use case (because of number or size of files for an Android device). Of course, computer-to-computer things work just fine. It is the Android part which is not working. 
+
+
+
+
+
