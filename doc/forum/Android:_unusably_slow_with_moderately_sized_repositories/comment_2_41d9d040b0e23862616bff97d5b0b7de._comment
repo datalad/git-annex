@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnbPKLjBONawBd74MKJZo05juCqdsP1jAU"
+ nickname="Ramon"
+ subject="comment 2"
+ date="2015-02-26T18:47:47Z"
+ content="""
+And I forgot to add, sorry, that when after a long time (say, another 20 minutes) something gets downloaded to the Android device, it is the reference, not the actual file. And this I also do not understand at all. So it seems I need to issue the 
+
+git annex sync --content
+
+by hand. But I thought I do not need to. 
+
+I think I am definitely misusing or misunderstanding git annex ;-( 
+"""]]
