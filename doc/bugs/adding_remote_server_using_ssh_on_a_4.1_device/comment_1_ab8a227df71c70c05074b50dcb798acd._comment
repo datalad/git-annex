@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnbPKLjBONawBd74MKJZo05juCqdsP1jAU"
+ nickname="Ramon"
+ subject="comment 1"
+ date="2015-02-27T01:43:42Z"
+ content="""
+I had the same problem, also with Android 4.1.1 (an Asus TF201). This is what I did:
+
+- Download version for Android 4.3 and 4.4 (autobuilds) and install that one over the previous.
+- Add the remote, which worked just fine.
+- Reinstall the version for Android 4.1 (autobuilds)
+
+And things seem to be working (things are syncing to the Android)
+
+"""]]

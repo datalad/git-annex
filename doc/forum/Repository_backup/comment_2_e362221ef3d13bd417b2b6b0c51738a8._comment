@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnb2yfWzJ2lYQw1UTm6XVZ4y8qashNagZA"
+ nickname="Daniel"
+ subject="Re: comment1"
+ date="2015-02-26T12:48:56Z"
+ content="""
+Thanks for the tip!
+
+Yeah, I get that special remotes aren't meant for this, and backing up a bare (i.e. contentless) git repo somewhere else is pretty trivial. My only point was that it'd be nice to have a single unified offsite backup--if you backup the content to S3, say, and the git repo itself to Github, you now have two points of failure and, in some sense, twice the management hassle. (I now need both my Amazon and Github credentials to restore, for example.) 
+
+This seems somewhat undesirable in a backup system. 
+
+An easy way around this may be for me to just have a wrapper script that first backs up content to the special remote and then copies the .git repo (minus the objects) to the same place. So it's something I can easily enough work around. 
+"""]]
