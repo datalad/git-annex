@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: Is the Mavericks build still beeing updated?"""
+ date="2015-02-27T18:57:51Z"
+ content="""
+The Yosemite build linked above has been reported to work on Mavericks too,
+and is being updated. There is no separate Mavericks build anymore.
+
+There were some old mavericks builds floating around the downloads site; 
+I've removed those and symlinked the mavericks directory to the yosimite
+directory.
+"""]]
