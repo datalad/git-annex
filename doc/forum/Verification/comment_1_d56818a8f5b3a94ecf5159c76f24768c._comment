@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-02-27T18:51:52Z"
+ content="""
+Well, it depends on how big the files are, but taking a few hours to sync
+might indicate that your repositories are not immediately notifying
+one-another of changes. It might be falling back to polling every half
+an hour for new changes.
+
+You could fix that by setting up XMPP, or better, by installing git-annex
+5.20140421 or newer on the SSH server; then the clients would immediately
+notify when there are changes.
+
+You can find out if all files are present on the server by running
+`git annex find --not --in $server` on one of the clients. Any files
+it prints out have not been stored in the server.
+"""]]
