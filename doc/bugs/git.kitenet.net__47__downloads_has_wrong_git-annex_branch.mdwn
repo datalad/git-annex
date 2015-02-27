@@ -41,3 +41,18 @@ requête HTTP transmise, en attente de la réponse… 200 OK
 5.20141125 on debian jessie.
 
 Sorry for the noise in that other bug report! I really thought it was the same issue .... --[[anarcat]]
+
+> The repository has a synced/git-annex that is newer, so it will be
+> available if using git-annex sync.
+> 
+> It looks like git-annex sync has not pushed git-annex:git-annex since
+> [[!commit 6cdac3a003b6850fd96a60d94320d084d8651096]]. I think that commit might
+> have removed that accidentially; I can't tell for sure. 
+> 
+> Adding git-annex:git-annex
+> to the direct push would avoid this problem. Long as that push is not
+> forced, there's no risk of overwriting other changes to the git-annex
+> branch. (Even if it does get overwritten, there's no data loss; things
+> will get into sync eventually.)
+> 
+> So, I've added back the git-annex:git-annex push. [[done]] --[[Joey]]

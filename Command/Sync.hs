@@ -315,7 +315,9 @@ pushBranch remote branch g = tryIO (directpush g) `after` syncpush g
 		, refspec branch
 		]
 	directpush = Git.Command.runQuiet $ pushparams
-		[Git.fromRef $ Git.Ref.base $ fromDirectBranch branch]
+		[ Git.fromRef $ Git.Ref.base $ Annex.Branch.name
+		, Git.fromRef $ Git.Ref.base $ fromDirectBranch branch
+		]
 	pushparams branches =
 		[ Param "push"
 		, Param $ Remote.name remote
