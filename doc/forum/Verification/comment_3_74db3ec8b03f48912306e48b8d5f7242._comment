@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Régis"
+ subject="comment 3"
+ date="2015-02-28T18:33:27Z"
+ content="""
+Also, I noted a difference between encrypted (gcrypt) repos and unencrypted repos. The second ones have the other icon saying that it is live messaging. The encrypted one have a standard icon.
+Is it a technical limitation that encrypted repos can not live message ? And could it be the reason why the sync is not happening itself until i manually choose \"sync\" from the menu ?
+"""]]
