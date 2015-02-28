@@ -49,7 +49,7 @@ import Remote.Helper.Git
 import Remote.Helper.Messages
 import qualified Remote.Helper.Ssh as Ssh
 import qualified Remote.GCrypt
-import Config.Files
+import Annex.Path
 import Creds
 import Annex.CatFile
 
@@ -499,7 +499,7 @@ fsckOnRemote r params
 			Nothing -> return False
 			Just (c, ps) -> batchCommand c ps
 	| otherwise = return $ do
-		program <- readProgramFile
+		program <- programPath
 		r' <- Git.Config.read r
 		environ <- getEnvironment
 		let environ' = addEntries 

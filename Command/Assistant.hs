@@ -11,6 +11,7 @@ import Common.Annex
 import Command
 import qualified Command.Watch
 import Annex.Init
+import Annex.Path
 import Config.Files
 import qualified Build.SysConfig
 import Utility.HumanTime
@@ -69,7 +70,7 @@ autoStart startdelay = do
 	when (null dirs) $ do
 		f <- autoStartFile
 		error $ "Nothing listed in " ++ f
-	program <- readProgramFile
+	program <- programPath
 	haveionice <- pure Build.SysConfig.ionice <&&> inPath "ionice"
 	forM_ dirs $ \d -> do
 		putStrLn $ "git-annex autostart in " ++ d

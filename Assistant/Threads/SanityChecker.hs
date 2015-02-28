@@ -39,7 +39,7 @@ import Git.Index
 import Assistant.Unused
 import Logs.Unused
 import Logs.Transfer
-import Config.Files
+import Annex.Path
 import Types.Key (keyBackendName)
 import qualified Annex
 #ifdef WITH_WEBAPP
@@ -182,7 +182,7 @@ dailyCheck urlrenderer = do
 	{- Run git-annex unused once per day. This is run as a separate
 	 - process to stay out of the annex monad and so it can run as a
 	 - batch job. -}
-	program <- liftIO readProgramFile
+	program <- liftIO programPath
 	let (program', params') = batchmaker (program, [Param "unused"])
 	void $ liftIO $ boolSystem program' params'
 	{- Invalidate unused keys cache, and queue transfers of all unused

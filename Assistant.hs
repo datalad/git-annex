@@ -104,7 +104,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 			( liftIO $ withFile devNull WriteMode $ \nullh -> do
 				loghandle <- openLog logfile
 				e <- getEnvironment
-				cmd <- readProgramFile
+				cmd <- programPath
 				ps <- getArgs
 				(_, _, _, pid) <- createProcess (proc cmd ps)
 					{ env = Just (addEntry flag "1" e)

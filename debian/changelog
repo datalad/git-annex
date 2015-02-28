@@ -19,6 +19,8 @@ git-annex (5.2015022) UNRELEASED; urgency=medium
     git-annex:git-annex push, as long as the remote branch
     is an ancestor of the local branch, to better support bare git repos.
     (This used to be done, but it forgot to do it since version 4.20130909.)
+  * When re-execing git-annex, use current program location, rather than
+    ~/.config/git-annex/program, when possible.
 
  -- Joey Hess <id@joeyh.name>  Thu, 19 Feb 2015 14:16:03 -0400
 

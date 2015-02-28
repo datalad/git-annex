@@ -28,7 +28,7 @@ import Logs.UUID
 import Assistant.RemoteControl
 import Types.Creds
 import Assistant.CredPairCache
-import Config.Files
+import Annex.Path
 import Utility.Tmp
 import Utility.FileMode
 import Utility.ThreadScheduler
@@ -381,7 +381,7 @@ sshAuthTranscript sshinput opts input = case inputAuthMethod sshinput of
 		Just (fromMaybe "" input)
 
 	setupAskPass = do
-		program <- liftIO readProgramFile
+		program <- liftIO programPath
 		v <- getCachedCred login
 		liftIO $ case v of
 			Nothing -> go [passwordprompts 0] Nothing

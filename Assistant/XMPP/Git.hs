@@ -20,6 +20,7 @@ import Assistant.MakeRemote
 import Assistant.Sync
 import qualified Command.Sync
 import qualified Annex.Branch
+import Annex.Path
 import Annex.UUID
 import Logs.UUID
 import Annex.TaggedPush
@@ -27,7 +28,6 @@ import Annex.CatFile
 import Config
 import Git
 import qualified Git.Branch
-import Config.Files
 import qualified Types.Remote as Remote
 import qualified Remote as Remote
 import Remote.List
@@ -173,7 +173,7 @@ xmppPush cid gitpush = do
 	installwrapper tmpdir = liftIO $ do
 		createDirectoryIfMissing True tmpdir
 		let wrapper = tmpdir </> "git-remote-xmpp"
-		program <- readProgramFile
+		program <- programPath
 		writeFile wrapper $ unlines
 			[ shebang_local
 			, "exec " ++ program ++ " xmppgit"

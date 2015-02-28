@@ -31,7 +31,7 @@ import qualified Annex
 import qualified Git
 import qualified Git.Url
 import Config
-import Config.Files
+import Annex.Path
 import Utility.Env
 import Types.CleanupActions
 import Annex.Index (addGitEnv)
@@ -273,7 +273,7 @@ sshOptionsTo remote gc g
 			case msockfile of
 				Nothing -> return g
 				Just sockfile -> do
-					command <- liftIO readProgramFile
+					command <- liftIO programPath
 					prepSocket sockfile
 					let val = toSshOptionsEnv $ concat
 						[ sshConnectionCachingParams sockfile

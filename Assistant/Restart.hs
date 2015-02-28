@@ -19,9 +19,9 @@ import Utility.Url
 import Utility.PID
 import qualified Git.Construct
 import qualified Git.Config
-import Config.Files
 import qualified Annex
 import qualified Git
+import Annex.Path
 
 import Control.Concurrent
 #ifndef mingw32_HOST_OS
@@ -110,7 +110,7 @@ assistantListening url = catchBoolIO $ exists url' def
  -}
 startAssistant :: FilePath -> IO ()
 startAssistant repo = void $ forkIO $ do
-	program <- readProgramFile
+	program <- programPath
 	(_, _, _, pid) <- 
 		createProcess $
 			(proc program ["assistant"]) { cwd = Just repo }

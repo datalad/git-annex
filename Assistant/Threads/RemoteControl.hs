@@ -9,7 +9,7 @@ module Assistant.Threads.RemoteControl where
 
 import Assistant.Common
 import RemoteDaemon.Types
-import Config.Files
+import Annex.Path
 import Utility.Batch
 import Utility.SimpleProtocol
 import Assistant.Alert
@@ -28,7 +28,7 @@ import qualified Data.Set as S
 
 remoteControlThread :: NamedThread
 remoteControlThread = namedThread "RemoteControl" $ do
-	program <- liftIO readProgramFile
+	program <- liftIO programPath
 	(cmd, params) <- liftIO $ toBatchCommand
 		(program, [Param "remotedaemon"])
 	let p = proc cmd (toCommand params)

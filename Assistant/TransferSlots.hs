@@ -28,7 +28,7 @@ import qualified Remote
 import qualified Types.Remote as Remote
 import Annex.Content
 import Annex.Wanted
-import Config.Files
+import Annex.Path
 import Utility.Batch
 
 import qualified Data.Map as M 
@@ -284,7 +284,7 @@ startTransfer t = do
 		alterTransferInfo t $ \i -> i { transferPaused = False }
 		liftIO $ throwTo tid ResumeTransfer
 	start info = do
-		program <- liftIO readProgramFile
+		program <- liftIO programPath
 		batchmaker <- liftIO getBatchCommandMaker
 		inImmediateTransferSlot program batchmaker $
 			genTransfer t info

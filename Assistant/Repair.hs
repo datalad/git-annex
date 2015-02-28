@@ -19,7 +19,7 @@ import qualified Types.Remote as Remote
 import Logs.FsckResults
 import Annex.UUID
 import Utility.Batch
-import Config.Files
+import Annex.Path
 import Assistant.Sync
 import Assistant.Alert
 import Assistant.DaemonStatus
@@ -105,7 +105,7 @@ runRepair u mrmt destructiverepair = do
 		return ok
 	
 	backgroundfsck params = liftIO $ void $ async $ do
-		program <- readProgramFile
+		program <- programPath
 		batchCommand program (Param "fsck" : params)
 
 {- Detect when a git lock file exists and has no git process currently
