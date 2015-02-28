@@ -288,11 +288,8 @@ removeEmptyRecursive dir = do
 {- This is a file that the UpgradeWatcher can watch for modifications to
  - detect when git-annex has been upgraded.
  -}
-upgradeFlagFile :: IO (Maybe FilePath)
-upgradeFlagFile = ifM usingDistribution
-	( Just <$> programFile
-	, programPath
-	)
+upgradeFlagFile :: IO FilePath
+upgradeFlagFile = programPath
 
 {- Sanity check to see if an upgrade is complete and the program is ready
  - to be run. -}
@@ -303,13 +300,10 @@ upgradeSanityCheck = ifM usingDistribution
 		-- Ensure that the program is present, and has no writers,
 		-- and can be run. This should handle distribution
 		-- upgrades, manual upgrades, etc.
-		v <- programPath
-		case v of
-			Nothing -> return False
-			Just program -> do
-				untilM (doesFileExist program <&&> nowriter program) $
-					threadDelaySeconds (Seconds 60)
-				boolSystem program [Param "version"]
+		program <- programPath
+		untilM (doesFileExist program <&&> nowriter program) $
+			threadDelaySeconds (Seconds 60)
+		boolSystem program [Param "version"]
 	)
   where
 	nowriter f = null

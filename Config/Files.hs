@@ -62,8 +62,13 @@ readProgramFile = do
 		( return p
 		, ifM (inPath cmd)
 			( return cmd
-			, error $ "cannot find git-annex program in PATH or in the location listed in " ++ programfile
+			, cannotFindProgram
 			)
 		)
   where
 	cmd = "git-annex"
+
+cannotFindProgram :: IO a
+cannotFindProgram = do
+	f <- programFile
+	error $ "cannot find git-annex program in PATH or in the location listed in " ++ f

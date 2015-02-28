@@ -17,9 +17,10 @@ import System.Environment
  - 
  - getExecutablePath is available since ghc 7.4.2. On OSs it supports
  - well, it returns the complete path to the program. But, on other OSs,
- - it might return just the basename.
+ - it might return just the basename. Fall back to reading the programFile,
+ - or searching for the command name in PATH.
  -}
-programPath :: IO (Maybe FilePath)
+programPath :: IO FilePath
 programPath = do
 #if MIN_VERSION_base(4,6,0)
 	exe <- getExecutablePath
@@ -29,6 +30,4 @@ programPath = do
 #else
 	p <- readProgramFile
 #endif
-	-- In case readProgramFile returned just the command name,
-	-- fall back to finding it in PATH.
-	searchPath p
+	maybe cannotFindProgram return =<< searchPath p
