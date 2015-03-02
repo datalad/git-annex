@@ -14,6 +14,7 @@ import Common
 import Git
 import Git.Types
 import qualified Git.Construct
+import qualified Git.Command
 import Utility.UserInfo
 
 {- Returns a single git config setting, or a default value if not set. -}
@@ -193,3 +194,17 @@ changeFile f k v = boolSystem "git"
 	, Param k
 	, Param v
 	]
+
+{- Unsets a git config setting, in both the git repo,
+ - and the cached config in the Repo.
+ -
+ - If unsetting the config fails, including in a read-only repo, or
+ - when the config is not set, returns Nothing.
+ -}
+unset :: String -> Repo -> IO (Maybe Repo)
+unset k r = ifM (Git.Command.runBool ps r)
+	( return $ Just $ r { config = M.delete k (config r) }
+	, return Nothing
+	)
+  where
+	ps = [Param "config", Param "--unset-all", Param k]

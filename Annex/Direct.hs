@@ -406,7 +406,25 @@ setDirect wantdirect = do
 	Annex.changeGitConfig $ \c -> c { annexDirect = wantdirect }
   where
 	val = Git.Config.boolConfig wantdirect
-	setbare = setConfig (ConfigKey Git.Config.coreBare) val
+	coreworktree = ConfigKey "core.worktree"
+	indirectworktree = ConfigKey "core.indirect-worktree"
+	setbare = do
+		-- core.worktree is not compatable with
+		-- core.bare; git does not allow both to be set, so
+		-- unset it when enabling direct mode, caching in
+		-- core.indirect-worktree
+		if wantdirect
+			then moveconfig coreworktree indirectworktree
+			else moveconfig indirectworktree coreworktree
+		setConfig (ConfigKey Git.Config.coreBare) val
+	moveconfig src dest = do
+		v <- getConfigMaybe src
+		case v of
+			Nothing -> noop
+			Just wt -> do
+				unsetConfig src
+				setConfig dest wt
+				reloadConfig
 
 {- Since direct mode sets core.bare=true, incoming pushes could change
  - the currently checked out branch. To avoid this problem, HEAD

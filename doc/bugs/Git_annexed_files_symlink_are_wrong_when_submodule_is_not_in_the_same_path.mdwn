@@ -63,3 +63,9 @@ I tried playing with making the repository direct and then indirect, hoping that
 ### Please provide any additional information below.
 
 [[!tag confirmed]]
+
+> [[fixed|done]] -- with a current version of git, git-annex now supports
+> [[/submodules]]. NB: Filesystem must support symlinks, or this won't
+> work.
+> 
+> -- [[Joey]]

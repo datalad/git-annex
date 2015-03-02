@@ -37,13 +37,9 @@ setConfig (ConfigKey key) value = do
 reloadConfig :: Annex ()
 reloadConfig = Annex.changeGitRepo =<< inRepo Git.Config.reRead
 
-{- Unsets a git config setting. (Leaves it in state currently.) -}
+{- Unsets a git config setting. (Leaves it in state.) -}
 unsetConfig :: ConfigKey -> Annex ()
-unsetConfig ck@(ConfigKey key) = ifM (isJust <$> getConfigMaybe ck)
-	( inRepo $ Git.Command.run
-		[Param "config", Param "--unset", Param key]
-	, noop -- avoid unsetting something not set; that would fail
-	)
+unsetConfig (ConfigKey key) = void $ inRepo $ Git.Config.unset key
 
 {- A per-remote config setting in git config. -}
 remoteConfig :: Git.Repo -> UnqualifiedConfigKey -> ConfigKey
