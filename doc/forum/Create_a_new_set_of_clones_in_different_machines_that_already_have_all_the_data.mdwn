@@ -1,0 +1,12 @@
+Hello.
+
+I've been looking for a while, but I can't find any documentation for my use case.
+
+Currently I have several TiB of information synchronized in different geographic locations with Bittorrent Sync.
+
+I want to switch to git-annex for this purpose, but given the amount of data and the relatively slow pipes between the boxes, a standard init-clone-get flow would take weeks to complete.
+
+Is there a way to create the clones separately on each box, so there's no need to redistribute already distributed data?
+
+Thanks in advance,
+Fer.
