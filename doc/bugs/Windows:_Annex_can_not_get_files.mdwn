@@ -1,0 +1,160 @@
+### Please describe the problem.
+git annex on windows does not seem to be able to get files from one (local) repository to another (also local) if the remote contains a drive letter (or generally a : in the path)
+
+### What steps will reproduce the problem?
+0. c:\> git init annex1
+0. c:\> cd annex1
+0. c:\annex1\> git annex init dir1
+0. c:\annex1\> echo "This is a git annex repository" > README.txt
+0. c:\annex1\> git annex add README.txt
+0. c:\annex1\> git annex sync
+0. c:\annex1\> cd \
+1. c:\> git init annex2
+1. c:\> cd annex2
+1. c:\annex2\> git annex init dir2
+1. c:\annex2\> git remote add dir1 c:\annex1
+1. c:\annex2\> git annex sync dir1
+2. c:\annex2\> git annex get README.txt
+
+### What version of git-annex are you using? On what operating system?
+C:\annex2>git version
+git version 1.9.4.msysgit.0
+
+C:\annex2>git annex version
+git-annex version: 5.20150113-gcf247cf
+build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV DNS Feed
+s Quvi TDFA CryptoHash TorrentParser
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SH
+A256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glac
+ier ddar hook external
+local repository version: 5
+supported repository version: 5
+upgrade supported from repository versions: 2 3 4
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+C:\>git init annex1
+Initialized empty Git repository in C:/annex1/.git/
+
+C:\>cd annex1
+
+C:\annex1>git annex init dir1
+init dir1
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+
+  Enabling direct mode.
+ok
+(Recording state in git...)
+
+C:\annex1>echo "This is a git annex repository" > README.txt
+
+C:\annex1>git annex add README.txt
+add README.txt ok
+(Recording state in git...)
+
+C:\annex1>git annex sync
+commit  ok
+
+C:\annex1>cd \
+
+C:\>git init annex2
+Initialized empty Git repository in C:/annex2/.git/
+
+C:\>cd annex2
+
+C:\annex2>git annex init dir2
+init dir2
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+
+  Enabling direct mode.
+ok
+(Recording state in git...)
+
+C:\annex2>git remote add dir1 c:\annex1
+
+C:\annex2>git annex sync dir1
+commit  ok
+pull dir1
+warning: no common commits
+remote: Counting objects: 13, done.
+remote: Compressing objects: 100% (9/9), done.
+remote: Total 13 (delta 1), reused 0 (delta 0)
+Unpacking objects: 100% (13/13), done.
+From c:\annex1
+ * [new branch]      annex/direct/master -> dir1/annex/direct/master
+ * [new branch]      git-annex  -> dir1/git-annex
+ * [new branch]      master     -> dir1/master
+ * [new branch]      synced/master -> dir1/synced/master
+
+Merge made by the 'recursive' strategy.
+ README.txt | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 120000 README.txt
+
+Already up-to-date.
+ok
+(merging dir1/git-annex into git-annex...)
+(Recording state in git...)
+push dir1
+Counting objects: 15, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (10/10), done.
+Writing objects: 100% (12/12), 1.18 KiB | 0 bytes/s, done.
+Total 12 (delta 4), reused 0 (delta 0)
+To c:\annex1
+   a7d2b83..0e86493  annex/direct/master -> synced/master
+ * [new branch]      git-annex -> synced/git-annex
+ok
+
+C:\annex2>git annex get README.txt
+get README.txt (not available)
+  Try making some of these repositories available:
+        f005c222-3e80-46a3-81a2-72c6cae18035 -- dir1              <<<---- WTF: It's c:\annex1
+failed
+git-annex: get: 1 failed
+
+C:\annex2>git annex list
+here
+|dir1
+||web
+|||bittorrent
+||||
+____ README.txt                                                   <<<----- WTF2: Why doesn't annex2 know that annex1 has a copy?
+
+C:\annex2>git annex whereis README.txt
+whereis README.txt (1 copy)
+        f005c222-3e80-46a3-81a2-72c6cae18035 -- dir1
+ok
+
+C:\annex2>cd \annex1
+
+C:\annex1>git annex list
+(merging synced/git-annex into git-annex...)
+here
+|web
+||bittorrent
+|||
+X__ README.txt                                                    <<<--- But annex1 knows where it is.
+
+C:\annex1>git annex sync
+commit  ok
+merge synced/master
+Updating a7d2b83..0e86493
+Fast-forward
+error: duplicate parent 0e86493f9431d6df13ef49831e00b22be93e509c ignored              <<<---- Could this be the problem?
+ok
+
+C:\annex1>cd \annex2
+
+"""]]
