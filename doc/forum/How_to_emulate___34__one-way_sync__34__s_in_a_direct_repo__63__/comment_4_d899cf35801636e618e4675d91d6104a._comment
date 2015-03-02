@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnbPKLjBONawBd74MKJZo05juCqdsP1jAU"
+ nickname="Ramon"
+ subject="comment 4"
+ date="2015-03-01T23:58:19Z"
+ content="""
+But is there a way to have the changes in one node (the \"read only\") discarded when there are changes in the remote, so that the new version in the remote is propagated to the read only node?
+So I guess what I'd like is something like *update-changes-from-others.sh* (Like sync, but don't commit any local changes. Merge them like sync, don't discard) but without the merging, so discarding any changes as soon as a new version appears in the remote. 
+
+
+I've tried the ```remote.foo.annex-readonly = true``` in Android but I am not getting my intended behavior.
+
+For instance, suppose a computer and a Android device (but with direct mode, since working with assistant)
+
+- Create file in computer
+- Let it appear in Android
+- Modify in Android; this change apparently does not propagate back to the computer.
+- Modify again in computer; sometime later one gets a conflict (file.variant-xxxx and file-variant-yyyy, with the computer getting one of the conflicts as a link that points nowhere).
+
+
+Adding ```autocommit = false``` does not help either.
+
+
+"""]]

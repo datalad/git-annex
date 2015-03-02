@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnbPKLjBONawBd74MKJZo05juCqdsP1jAU"
+ nickname="Ramon"
+ subject="comment 1"
+ date="2015-02-27T22:06:51Z"
+ content="""
+I can confirm the above using, in the computer 
+
+5.20150219-g52daae5 
+
+and 5.20150226-g9c72d37
+
+In the computer, files that were edited in the Android while offline, might not always disappear, but might reappear as content after first being shown as links that point nowhere. Or may remain as links that point nowhere.
+
+In the Androids files that contain links (instead of original content) continue containint the links for over 1 hour.
+
+Binary (e.g., PDFs) and plain text files do not always behave the same. Plain text files are more easily affected (whereas PDFs are back to what they should be sooner).
+
+"""]]

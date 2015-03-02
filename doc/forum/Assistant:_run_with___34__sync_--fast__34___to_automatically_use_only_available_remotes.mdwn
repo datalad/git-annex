@@ -1,0 +1,18 @@
+I have a set of machines, call them A, B, C, I am trying to keep synced. However, all three of them do not always see all the other two (e.g., I might need a vpn tunnel up to see C from A, etc, or C is down, etc). 
+Everything works as expected (i.e., content gets from one machine to the others) if in the webapp I disable the non-reachable nodes (or, equivalently, I set annex-sync to false in .git/config). But I wonder if there is a way to have git annex not use the non-reachable remotes. Using git-annex sync --fast does not seem to do it (since all remotes I guess have the same annex-cost value).
+
+
+I understand a possible solution involves using 
+
+```
+remote.<name>.annex-cost-command
+```
+
+so that I set the cost of the non-available remote to a large value. But then, I'd need to tell the assistant to always use, by default
+
+
+```
+git-annex sync --fast --content
+```
+
+and I do not know how to make it use "--fast". 
