@@ -1,0 +1,8 @@
+I had thought that git-annex and git submodules couldn't mix. However,
+looking at it again, it turned out to be possible to use git-annex quite
+sanely in a submodule, with just a little tweaking of how git normally
+configures the repository. Details of this still experimental feature are in
+[[/submodules]].
+
+There is still some work to be done to make git-annex work with submodules
+in repositories on filesystems that don't support symlinks.
