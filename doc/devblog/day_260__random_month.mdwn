@@ -1,0 +1,27 @@
+This month is going to be a bit more random than usual where git-annex
+development is concerned.
+
+* On Saturday, the [Seven Day Roguelike](http://7drl.org/) competition
+  begins, and I will be spending a week building a game in haskell,
+  to the exclusion of almost all other work.
+* On March 18th, I'll be at the [Boston Haskell User's group](http://www.meetup.com/Boston-Haskell/events/219298257/).
+  (Attending, not presenting.)
+* March 19-20, I'll be at Dartmouth visiting with the DataLad developers
+  and learning more about what it needs from git-annex.
+* March 21-22, I'll be at the FSF's [LibrePlanet](https://libreplanet.org/2015)
+  conference at MIT.
+
+Got started on the randomness today with this 
+[[design proposal for using git-annex to back up the entire Internet Archive|design/iabackup]].
+This is something the Archive Team is [considering taking on](http://archiveteam.org/index.php?title=INTERNETARCHIVE.BAK),
+and I had several hours driving and hiking to think about it and came up
+with a workable design. (Assuming large enough crowd of volenteers.)
+
+Don't know if it will happen, but it was a useful thought problem to see how
+git-annex works, and doesn't work in this unusual use case.
+
+One interesting thing to come out of that is that git-annex fsck does not
+currently make any record of successful fscks. In a very large distributed
+system, it can be useful to have successful fscks of an object's content recorded,
+by updating the timestamp in the location log to say "this repository still
+had the content at this time".
