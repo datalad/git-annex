@@ -1,0 +1,197 @@
+This is a fairly detailed design proposal for using git-annex to build
+<http://archiveteam.org/index.php?title=INTERNETARCHIVE.BAK>
+
+## sharding to scale
+
+The IA contains some 24 million Items.
+
+git repositories do not scale well past the 1-10 million file 
+range, and very badly above that. Storing individual IA Items
+would strain git's scalability badly.
+
+Solution: Create multiple git repositories, and split the Items amoung
+them.
+
+* Needs a map from an Item to its repository. (Could be stored in a
+  database, or whatever.)
+
+* If each git repository holds 10 thousand items, that's 2400 repositories,
+  which is not an unmanagable number. (For comparison, git.debian.org
+  has 18500 repositories.)
+
+* The IA is ~20 Petabytes large. Each shard would thus be around 8
+  Terabytes. (However, Items sizes will vary a lot, so there's the
+  potential to get a shard that's unusually small or large. This could be
+  dealt with when assigning Items to the shards, to balance sizes out.)
+
+* The Items in each shard are then distributed out to the clients who
+  have been assigned that shard. Clients will store varying amounts of
+  data, but probably under 1 Terabyte per client. And we want redundancy
+  (LOCKSS) -- say at least 3 copies. So, estimate around 25-100 clients need
+  to be assigned to each shard to get it backed up.
+
+* Add new shards as the IA continues to grow.
+
+## the IA git repository
+
+We're building a pyramid of git-annex repositories, and at the tip
+of this is a single git repository, which represents the entire Internet
+Archive.
+
+This IA git repository contains no files. But, git-annex in each of the
+~2400 shards knows about it, and by default every Item in every shard
+is recorded as having a copy present in the IA git repository.
+
+If the IA lost an Item somehow, this would be reflected by updating
+the git-annex location tracking to say the IA git repository no longer
+contains the item.
+
+Creating this repository is simple:
+
+	git init ia.git
+	cd ia.git
+	git annex init "The Internet Archive"
+	git annex trust .
+
+## creating the shards
+
+Each shard starts as a clone of the IA git repository.
+
+Items are added to the shard, either all at once, or perhaps on-demand.
+
+To add an Item to the shard:
+
+1. Create a (reproducible checksum) tarball of all the files in the Item
+   (probably excluding "derived" files).
+
+2. Checksum the tarball and derive a git-annex key, and add it to the git
+   repository.
+   
+   The symlink can have a name corresponding to the Item name.
+   (Eg  "LauraPoitrasCitizenfour.tar" for
+   <https://archive.org/details/LauraPoitrasCitizenfour>)
+
+   The easy way is to write the tarball to disk in the shard's git repo,
+   and "git annex add", but it's also possible to do this without ever
+   storing the tarball on disk.
+
+4. Update git-annex location tracking to indicate that this item
+   is present in the Internet Archive.
+
+   If $iauuid is the UUID of the IA git repository, the command
+   is: `setpresentkey $key $iauuid 1` (This command needs git-annex
+   5.20141231)
+
+5. git commit
+
+## adding a client
+
+When a client registers to participate:
+
+1. Generate a UUID, which is assigned to this client, and send it to the
+   client, and assign that UUID to a particular shard.
+2. Send the client an appropriate auth token (eg, a locked down ssh private
+   key) to let them access the origin repository.
+3. Client clones its assigned shard git repository,
+   runs `git annex init reinit $UUID`, and enables direct mode.
+
+Note that a client could be assigned to multiple shards, rather than just
+one. Probably good to keep a pool of empty shards that have clients waiting
+for new Items to be added.
+
+## distributing Items
+
+1. Client runs `git annex sync --content`, which downloads as many
+   Items from the IA as will fit in their disk's free space
+   (leaving some conigurable amount free in reserve by configuring
+   annex.diskreserve)
+2. Note that [[numcopies]] and [[preferred_content]] settings can be
+   used to make clients only want to download an Item if it's not yet
+   reached the desired number of copies. Lots of flexability here in
+   git-annex.
+3. git-annex will push back to the server an updated git-annex branch,
+   which will record when it has successfully stored an Item.
+
+## bad actors
+
+Clients can misbehave in probably many ways. The best defense for many
+misbehaviors is to distribute Items to enough different clients that we can
+trust some of them.
+
+The main git-annex specific misbehavior is that a client could try to push
+garbage information back to the origin repository on the server.
+
+To guard against this, the server will reject all pushes of branches other
+than the git-annex branch, which is the only one clients need to modify.
+
+Check pushes of the git-annex branch. There are only a few files that
+clients can legitimately modify, and the modifications will always involve
+that client's UUID, not some other client's UUID. Reject anything shady.
+
+These checks can be done in a git `update` hook.
+
+## verification
+
+We want a lightweight verification process, to verify that a client still
+has the data. This can be done using `git annex fsck`, which can be
+configured to eg, check each file only once per month.
+
+git-annex will need a modification here. Currently, a successful fsck
+does not leave any trace in the git-annex branch that it happened. But
+we want the server to track when a client is not fscking (the user probably
+dropped out).
+
+The modification is simple; just have a successful fsck
+update the timestamp in the fscked file's location log.
+It will probably take just a few hours to code.
+
+With that change, the server can check for files that not enough clients
+have verified they have recently, and distribute them to more clients.
+
+Note that bad actors can lie about this verification; it's not a proof they
+still have the file. But, a bad actor could prove they have a file, and
+refuse to give it back if the IA needed to restore the backup, too.
+
+## fire drill
+
+If we really want to test how well the system is working, we need a fire
+drill.
+
+1. Pick some Items that we'll assume the IA has lost in some disaster.
+2. Look up the shard the Item belongs to.
+3. Get the git-annex key of the Item, and tell git-annex it's been
+   lost from the IA, by running in its shard: `setpresentkey $key $iauuid 0`
+4. The next time a client runs `git annex sync --content`, it will notice
+   that the IA repo doesn't have the Item anymore. The client will then
+   send the Item back to the origin repo.
+5. To guard against bad actors, that restored Item should be checked with
+   `git annex fsck`. If its checksum is good, it can be re-injected back
+   into the IA. (Or, the fire drill was successful.)
+
+## other optional nice stuff
+
+The user running a client can delete some or all of their files at any
+time, to free up disk space. The next time `git-annex sync` runs on the client,
+it'll notice and let the server know, and other clients will then take
+over storing it. (Or if the git-annex assistant is run on the client,
+it would inform the server immediately.)
+
+The user is also free to move Items around (within the git repository
+directory), unpack Items to examine their contents, etc. This doesn't
+affect anyone else.
+
+Offline storage is supported. As long as the user can spin it up from time
+to time to run `git annex fsck`.
+
+More advanced users might have multiple repositories on different disks.
+Each has their own UUID, and they could move Items around between them as
+desired; this would be communicated back to the origin repository
+automatically.
+
+Shards could have themes, and users could request to be part of the
+shard that includes Software, or Grateful Dead, etc. This might encourage
+users to devote more resources.
+
+The contents of Items sometimes changes.
+This can be reflected by updating an Item's file in the git repository.
+Clients will then download the new version of the Item.
