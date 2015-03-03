@@ -1,0 +1,5 @@
+I have some photo backups that I would like to have 2 copies but the rest can be one. 
+
+Is there any way to create numcopies rules per directory, rather than by filetype?
+
+I really enjoy this program Joey, thanks!
