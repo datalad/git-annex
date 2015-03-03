@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="markusk"
+ subject="comment 1"
+ date="2015-03-03T21:04:55Z"
+ content="""
+Look for \".gitattributes\" files in http://git-annex.branchable.com/walkthrough/backups/ and the \"annex.numcopies\" option to use inside these files. You can place the files at any location. 
+
+
+"""]]
