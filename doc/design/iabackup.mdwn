@@ -193,6 +193,13 @@ Shards could have themes, and users could request to be part of the
 shard that includes Software, or Grateful Dead, etc. This might encourage
 users to devote more resources.
 
+Or, rather than doing a lucky dip and getting one or a couple shards,
+a user could clone em all, and pick just which Items to store.
+
 The contents of Items sometimes changes.
 This can be reflected by updating an Item's file in the git repository.
 Clients will then download the new version of the Item.
+
+Items sometimes go dark; this could be reflected by deleting the item
+from the repository. It's up to the clients what they do with the content
+of such Items.
