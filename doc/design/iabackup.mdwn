@@ -129,7 +129,8 @@ Check pushes of the git-annex branch. There are only a few files that
 clients can legitimately modify, and the modifications will always involve
 that client's UUID, not some other client's UUID. Reject anything shady.
 
-These checks can be done in a git `update` hook.
+These checks can be done in a git `update` hook. Rough estimate is that
+such a hook would be a couple hundred lines of code.
 
 ## verification
 
