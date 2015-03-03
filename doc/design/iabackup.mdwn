@@ -92,7 +92,7 @@ When a client registers to participate:
 1. Generate a UUID, which is assigned to this client, and send it to the
    client, and assign that UUID to a particular shard.
 2. Send the client an appropriate auth token (eg, a locked down ssh private
-   key) to let them access the origin repository.
+   key) to let them access the shard's git repository (or all the shards).
 3. Client clones its assigned shard git repository,
    runs `git annex init reinit $UUID`, and enables direct mode.
 
