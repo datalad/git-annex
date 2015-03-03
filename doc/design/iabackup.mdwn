@@ -169,6 +169,8 @@ drill.
 5. To guard against bad actors, that restored Item should be checked with
    `git annex fsck`. If its checksum is good, it can be re-injected back
    into the IA. (Or, the fire drill was successful.)
+   (Remember to turn off the fire alarm by running
+   `setpresentkey $key $iauuid 1`)
 
 ## other optional nice stuff
 
