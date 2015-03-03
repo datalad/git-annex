@@ -106,7 +106,7 @@ for new Items to be added.
    Items from the IA as will fit in their disk's free space
    (leaving some conigurable amount free in reserve by configuring
    annex.diskreserve)
-2. Note that [[numcopies]] and [[preferred_content]] settings can be
+2. Note that [[numcopies|copies]] and [[preferred_content]] settings can be
    used to make clients only want to download an Item if it's not yet
    reached the desired number of copies. Lots of flexability here in
    git-annex.
