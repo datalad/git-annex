@@ -17,7 +17,8 @@ them.
 
 * If each git repository holds 10 thousand items, that's 2400 repositories,
   which is not an unmanagable number. (For comparison, git.debian.org
-  has 18500 repositories.)
+  has 18500 repositories.) (100 thousand items would be the higher end, for
+  240 repositories.)
 
 * The IA is ~20 Petabytes large. Each shard would thus be around 8
   Terabytes. (However, Items sizes will vary a lot, so there's the
