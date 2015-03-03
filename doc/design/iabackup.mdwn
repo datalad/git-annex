@@ -74,7 +74,8 @@ To add an Item to the shard:
 
    The easy way is to write the tarball to disk in the shard's git repo,
    and "git annex add", but it's also possible to do this without ever
-   storing the tarball on disk.
+   storing the tarball on disk. (The tarball would then be reconstructed
+   on the fly each time a client requests to download it.)
 
 4. Update git-annex location tracking to indicate that this item
    is present in the Internet Archive.
