@@ -101,6 +101,9 @@ Note that a client could be assigned to multiple shards, rather than just
 one. Probably good to keep a pool of empty shards that have clients waiting
 for new Items to be added.
 
+Note that direct mode seems like a good idea because it lets the user
+easily delete files to free up space.
+
 ## distributing Items
 
 1. Client runs `git annex sync --content`, which downloads as many
