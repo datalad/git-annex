@@ -21,7 +21,7 @@ them.
   240 repositories.)
 
 * The IA is ~20 Petabytes large. Each shard would thus be around 8
-  Terabytes. (However, Items sizes will vary a lot, so there's the
+  Terabytes. (Item sizes will vary a lot, so there's the
   potential to get a shard that's unusually small or large. This could be
   dealt with when assigning Items to the shards, to balance sizes out.)
 
@@ -210,3 +210,9 @@ Clients will then download the new version of the Item.
 Items sometimes go dark; this could be reflected by deleting the item
 from the repository. It's up to the clients what they do with the content
 of such Items.
+
+## other potential gotchas
+
+If any single Item is very large (eg, 10 terabytes), there may not be
+any clients that can handle it. This could be dealt with by splitting up
+the item into smaller files.
