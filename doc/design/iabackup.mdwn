@@ -114,7 +114,7 @@ easily delete files to free up space.
 
 1. Client runs `git annex sync --content`, which downloads as many
    Items from the IA as will fit in their disk's free space
-   (leaving some conigurable amount free in reserve by configuring
+   (leaving some configurable amount free in reserve by configuring
    annex.diskreserve)
 2. Note that [[numcopies|copies]] and [[preferred_content]] settings can be
    used to make clients only want to download an Item if it's not yet
