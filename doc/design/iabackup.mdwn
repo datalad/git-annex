@@ -234,6 +234,11 @@ Items sometimes go dark; this could be reflected by deleting the item
 from the repository. It's up to the clients what they do with the content
 of such Items.
 
+Client's repos could be put into groups to classify them. For example,
+there could be groups per continent, or for trust levels, or whatever.
+These can be used by [[preferred_content]] expressions to fine tune how
+Items are spread out amoung the available clients.
+
 ## other potential gotchas
 
 If any single Item is very large (eg, 10 terabytes), there may not be
