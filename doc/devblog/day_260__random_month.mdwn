@@ -15,7 +15,7 @@ Got started on the randomness today with this
 [[design proposal for using git-annex to back up the entire Internet Archive|design/iabackup]].
 This is something the Archive Team is [considering taking on](http://archiveteam.org/index.php?title=INTERNETARCHIVE.BAK),
 and I had several hours driving and hiking to think about it and came up
-with a workable design. (Assuming large enough crowd of volenteers.)
+with a workable design. (Assuming large enough crowd of volunteers.)
 
 Don't know if it will happen, but it was a useful thought problem to see how
 git-annex works, and doesn't work in this unusual use case.
