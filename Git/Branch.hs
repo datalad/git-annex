@@ -43,9 +43,6 @@ currentUnsafe r = parse . firstLine
 		| null l = Nothing
 		| otherwise = Just $ Git.Ref l
 
-currentSha :: Repo -> IO (Maybe Git.Sha)
-currentSha r = maybe (pure Nothing) (`Git.Ref.sha` r) =<< current r
-
 {- Checks if the second branch has any commits not present on the first
  - branch. -}
 changed :: Branch -> Branch -> Repo -> IO Bool

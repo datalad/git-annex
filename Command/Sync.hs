@@ -174,15 +174,15 @@ commitMsg = do
 	return $ "git-annex in " ++ fromMaybe "unknown" (M.lookup u m)
 
 commitStaged :: Git.Branch.CommitMode -> String -> Annex Bool
-commitStaged commitmode commitmessage = go =<< inRepo Git.Branch.currentUnsafe
-  where
-	go Nothing = return False
-	go (Just branch) = do
-		runAnnexHook preCommitAnnexHook
-		parent <- inRepo $ Git.Ref.sha branch
-		void $ inRepo $ Git.Branch.commit commitmode False commitmessage branch
-			(maybeToList parent)
-		return True
+commitStaged commitmode commitmessage = do
+	runAnnexHook preCommitAnnexHook
+	mb <- inRepo Git.Branch.currentUnsafe
+	let (getparent, branch) = case mb of
+		Just b -> (Git.Ref.sha b, b)
+		Nothing -> (Git.Ref.headSha, Git.Ref.headRef)
+	parents <- maybeToList <$> inRepo getparent
+	void $ inRepo $ Git.Branch.commit commitmode False commitmessage branch parents
+	return True
 
 mergeLocal :: Maybe Git.Ref -> CommandStart
 mergeLocal Nothing = stop

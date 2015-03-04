@@ -13,8 +13,8 @@ import Config
 import Utility.Tmp
 import Utility.Env
 import Annex.Direct
-import qualified Git.Branch
 import qualified Git.Sha
+import qualified Git.Ref
 
 cmd :: [Command]
 cmd = [notBareRepo $
@@ -35,7 +35,7 @@ start (c:ps) = liftIO . exitWith =<< ifM isDirect
   where
 	go tmp = do
 		oldref <- fromMaybe Git.Sha.emptyTree
-			<$> inRepo Git.Branch.currentSha
+			<$> inRepo Git.Ref.headSha
 		exitcode <- liftIO $ proxy tmp
 		mergeDirectCleanup tmp oldref
 		return exitcode

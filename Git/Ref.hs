@@ -88,6 +88,9 @@ sha branch repo = process <$> showref repo
 	process [] = Nothing
 	process s = Just $ Ref $ firstLine s
 
+headSha :: Repo -> IO (Maybe Sha)
+headSha = sha headRef
+
 {- List of (shas, branches) matching a given ref or refs. -}
 matching :: [Ref] -> Repo -> IO [(Sha, Branch)]
 matching refs repo =  matching' (map fromRef refs) repo
