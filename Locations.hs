@@ -79,6 +79,7 @@ import Types.Difference
 import qualified Git
 import Git.FilePath
 import Annex.DirHashes
+import Annex.Fixup
 
 {- Conventions:
  -
@@ -126,9 +127,9 @@ annexLocation config key hasher = objectDir </> keyPath key (hasher $ objectHash
  - the actual location of the file's content.
  -}
 gitAnnexLocation :: Key -> Git.Repo -> GitConfig -> IO FilePath
-gitAnnexLocation key r config = gitAnnexLocation' key r config (annexCrippledFileSystem config) doesFileExist
-gitAnnexLocation' :: Key -> Git.Repo -> GitConfig -> Bool -> (FilePath -> IO Bool) -> IO FilePath
-gitAnnexLocation' key r config crippled checker
+gitAnnexLocation key r config = gitAnnexLocation' key r config (annexCrippledFileSystem config) doesFileExist (Git.localGitDir r)
+gitAnnexLocation' :: Key -> Git.Repo -> GitConfig -> Bool -> (FilePath -> IO Bool) -> FilePath -> IO FilePath
+gitAnnexLocation' key r config crippled checker gitdir
 	{- Bare repositories default to hashDirLower for new
 	 - content, as it's more portable.
 	 -
@@ -147,18 +148,27 @@ gitAnnexLocation' key r config crippled checker
 	 - present. -}
 	| otherwise = return $ inrepo $ annexLocation config key hashDirMixed
   where
-	inrepo d = Git.localGitDir r </> d
+	inrepo d = gitdir </> d
 	check locs@(l:_) = fromMaybe l <$> firstM checker locs
 	check [] = error "internal"
 
-{- Calculates a symlink to link a file to an annexed object. -}
+{- Calculates a symlink target to link a file to an annexed object. -}
 gitAnnexLink :: FilePath -> Key -> Git.Repo -> GitConfig -> IO FilePath
 gitAnnexLink file key r config = do
 	currdir <- getCurrentDirectory
 	let absfile = fromMaybe whoops $ absNormPathUnix currdir file
-	loc <- gitAnnexLocation' key r config False (\_ -> return True)
+	let gitdir = getgitdir currdir
+	loc <- gitAnnexLocation' key r config False (\_ -> return True) gitdir
 	toInternalGitPath <$> relPathDirToFile (parentDir absfile) loc
   where
+	getgitdir currdir
+		{- This special case is for git submodules on filesystems not
+		 - supporting symlinks; generate link target that will
+		 - work portably. -}
+		| coreSymlinks config == False && needsSubmoduleFixup r =
+			fromMaybe whoops $ absNormPathUnix currdir $
+				Git.repoPath r </> ".git"
+		| otherwise = Git.localGitDir r
 	whoops = error $ "unable to normalize " ++ file
 
 {- File used to lock a key's content. -}

@@ -60,12 +60,13 @@ fixupDirect r = return r
  - submodule is mounted.
  -
  - When the filesystem doesn't support symlinks, we cannot make .git
- - into a symlink. In this case, we merely adjust the Repo so that
+ - into a symlink. But we don't need too, since the repo will use direct
+ - mode, In this case, we merely adjust the Repo so that
  - symlinks to objects that get checked in will be in the right form.
  -}
 fixupSubmodule :: Repo -> GitConfig -> IO Repo
 fixupSubmodule r@(Repo { location = l@(Local { worktree = Just w, gitdir = d }) }) c
-	| (".git" </> "modules") `isInfixOf` d = do
+	| needsSubmoduleFixup r = do
 		when (coreSymlinks c) $
 			replacedotgit
 				`catchNonAsync` \_e -> hPutStrLn stderr
@@ -84,3 +85,8 @@ fixupSubmodule r@(Repo { location = l@(Local { worktree = Just w, gitdir = d }) 
 		maybe (error "unset core.worktree failed") (\_ -> return ())
 			=<< Git.Config.unset "core.worktree" r
 fixupSubmodule r _ = return r
+
+needsSubmoduleFixup :: Repo -> Bool
+needsSubmoduleFixup (Repo { location = (Local { worktree = Just _, gitdir = d }) }) =
+	(".git" </> "modules") `isInfixOf` d
+needsSubmoduleFixup _ = False
