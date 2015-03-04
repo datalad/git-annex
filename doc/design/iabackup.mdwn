@@ -215,7 +215,8 @@ of such Items.
 
 If any single Item is very large (eg, 10 terabytes), there may not be
 any clients that can handle it. This could be dealt with by splitting up
-the item into smaller files.
+the item into smaller files. Word is there is a single 2 tb item, and a few
+more around 100 gb, so this is probably not a concern.
 
 A client could add other files to its local repo, and git-annex branch
 pushes would include junk data about those files. It should probably be
