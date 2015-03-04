@@ -71,8 +71,9 @@ seek rs = do
 	prepMerge
 
 	-- There may not be a branch checked out until after the commit,
-	-- or perhaps after it gets merged from the remote.
-	-- So only look it up once it's needed, and if once there is a
+	-- or perhaps after it gets merged from the remote, or perhaps
+	-- never.
+	-- So only look it up once it's needed, and once there is a
 	-- branch, cache it.
 	mvar <- liftIO newEmptyMVar
 	let getbranch = ifM (liftIO $ isEmptyMVar mvar)
