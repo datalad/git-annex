@@ -1,6 +1,8 @@
 This is a fairly detailed design proposal for using git-annex to build
 <http://archiveteam.org/index.php?title=INTERNETARCHIVE.BAK>
 
+[[!toc ]]
+
 ## sharding to scale
 
 The IA contains some 24 million Items.
@@ -32,6 +34,10 @@ them.
   to be assigned to each shard to get it backed up.
 
 * Add new shards as the IA continues to grow.
+
+Question: How many files are in IA across all Items? It might be better
+to use $item/$file rather than $item.tar as the unit that's stored in
+the git-annex repository. This would need more shards.
 
 ## the IA git repository
 
@@ -176,6 +182,23 @@ drill.
    (Remember to turn off the fire alarm by running
    `setpresentkey $key $iauuid 1`)
 
+## shard servers
+
+A server at the IA (or otherwise with a fast pipe) is needed to serve one or
+more shards. Let's consider what this server needs to have on it:
+
+* git and git-annex
+* ssh server
+* rsync
+* The git repository for the shard. Probably a few hundred mb?
+* The git update hook to filter out bad pushes.
+* Some way to get the content of a given Item from the IA 
+  when a client wants to download it. This probably means
+  generating the $item.tar file and buffering it to disk for a while.
+* So, enough disk to buffer a reasonable number of items.
+* Some way to learn when a new user has registered to access a shard,
+  so their ssh key is given access.
+
 ## other optional nice stuff
 
 The user running a client can delete some or all of their files at any
@@ -226,8 +249,8 @@ this seems excessive).
 There may be a thundering herd problem, where many clients end up
 downloading the same Item at the same time, and more copies than neecessary
 result. The next `git annex sync --content` in some of the
-redundant clients will notice this and drop that item, and presumably
-download some other item. However, it might be good to rate limit the
+redundant clients will notice this and drop that Item, and presumably
+download some other Item. However, it might be good to rate limit the
 number of concurrent downloads of a given item, to prevent this and perhaps
 other issues. This could be done by a wrapper around git-annex shell or
 perhaps a git-annex modification.
