@@ -126,9 +126,9 @@ annexLocation config key hasher = objectDir </> keyPath key (hasher $ objectHash
  - the actual location of the file's content.
  -}
 gitAnnexLocation :: Key -> Git.Repo -> GitConfig -> IO FilePath
-gitAnnexLocation key r config = gitAnnexLocation' key r config (annexCrippledFileSystem config)
-gitAnnexLocation' :: Key -> Git.Repo -> GitConfig -> Bool -> IO FilePath
-gitAnnexLocation' key r config crippled
+gitAnnexLocation key r config = gitAnnexLocation' key r config (annexCrippledFileSystem config) doesFileExist
+gitAnnexLocation' :: Key -> Git.Repo -> GitConfig -> Bool -> (FilePath -> IO Bool) -> IO FilePath
+gitAnnexLocation' key r config crippled checker
 	{- Bare repositories default to hashDirLower for new
 	 - content, as it's more portable.
 	 -
@@ -148,7 +148,7 @@ gitAnnexLocation' key r config crippled
 	| otherwise = return $ inrepo $ annexLocation config key hashDirMixed
   where
 	inrepo d = Git.localGitDir r </> d
-	check locs@(l:_) = fromMaybe l <$> firstM doesFileExist locs
+	check locs@(l:_) = fromMaybe l <$> firstM checker locs
 	check [] = error "internal"
 
 {- Calculates a symlink to link a file to an annexed object. -}
@@ -156,7 +156,7 @@ gitAnnexLink :: FilePath -> Key -> Git.Repo -> GitConfig -> IO FilePath
 gitAnnexLink file key r config = do
 	currdir <- getCurrentDirectory
 	let absfile = fromMaybe whoops $ absNormPathUnix currdir file
-	loc <- gitAnnexLocation' key r config False
+	loc <- gitAnnexLocation' key r config False (\_ -> return True)
 	toInternalGitPath <$> relPathDirToFile (parentDir absfile) loc
   where
 	whoops = error $ "unable to normalize " ++ file
