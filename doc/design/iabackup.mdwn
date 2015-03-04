@@ -221,3 +221,12 @@ A client could add other files to its local repo, and git-annex branch
 pushes would include junk data about those files. It should probably be
 filtered out by the git update hook (rejecting the whole push because of
 this seems excessive).
+
+There may be a thundering herd problem, where many clients end up
+downloading the same Item at the same time, and more copies than neecessary
+result. The next `git annex sync --content` in some of the
+redundant clients will notice this and drop that item, and presumably
+download some other item. However, it might be good to rate limit the
+number of concurrent downloads of a given item, to prevent this and perhaps
+other issues. This could be done by a wrapper around git-annex shell or
+perhaps a git-annex modification.
