@@ -71,6 +71,7 @@ import qualified Utility.Hash
 import qualified Utility.Scheduled
 import qualified Utility.HumanTime
 import qualified Utility.ThreadScheduler
+import qualified Utility.Base64
 import qualified Command.Uninit
 import qualified CmdLine.GitAnnex as GitAnnex
 #ifndef mingw32_HOST_OS
@@ -163,6 +164,7 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
 	, testProperty "prop_branchView_legal" Logs.View.prop_branchView_legal
 	, testProperty "prop_view_roundtrips" Annex.View.prop_view_roundtrips
 	, testProperty "prop_viewedFile_rountrips" Annex.View.ViewedFile.prop_viewedFile_roundtrips
+	, testProperty "prop_b64_roundtrips" Utility.Base64.prop_b64_roundtrips
 	]
 
 {- These tests set up the test environment, but also test some basic parts

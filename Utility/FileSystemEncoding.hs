@@ -14,6 +14,8 @@ module Utility.FileSystemEncoding (
 	decodeBS,
 	decodeW8,
 	encodeW8,
+	encodeW8NUL,
+	decodeW8NUL,
 	truncateFilePath,
 ) where
 
@@ -25,6 +27,7 @@ import System.IO.Unsafe
 import qualified Data.Hash.MD5 as MD5
 import Data.Word
 import Data.Bits.Utils
+import Data.List.Utils
 import qualified Data.ByteString.Lazy as L
 #ifdef mingw32_HOST_OS
 import qualified Data.ByteString.Lazy.UTF8 as L8
@@ -89,6 +92,9 @@ decodeBS = L8.toString
  - w82c produces a String, which may contain Chars that are invalid
  - unicode. From there, this is really a simple matter of applying the
  - file system encoding, only complicated by GHC's interface to doing so.
+ -
+ - Note that the encoding stops at any NUL in the input. FilePaths
+ - do not normally contain embedded NUL, but Haskell Strings may.
  -}
 {-# NOINLINE encodeW8 #-}
 encodeW8 :: [Word8] -> FilePath
@@ -100,6 +106,17 @@ encodeW8 w8 = unsafePerformIO $ do
  - represent the FilePath on disk. -}
 decodeW8 :: FilePath -> [Word8]
 decodeW8 = s2w8 . _encodeFilePath
+
+{- Like encodeW8 and decodeW8, but NULs are passed through unchanged. -}
+encodeW8NUL :: [Word8] -> FilePath
+encodeW8NUL = join nul . map encodeW8 . split (s2w8 nul)
+  where
+	nul = ['\NUL']
+
+decodeW8NUL :: FilePath -> [Word8]
+decodeW8NUL = join (s2w8 nul) . map decodeW8 . split nul
+  where
+	nul = ['\NUL']
 
 {- Truncates a FilePath to the given number of bytes (or less),
  - as represented on disk.

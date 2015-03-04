@@ -224,6 +224,7 @@ data ModMeta
 	| DelMeta MetaField MetaValue
 	| SetMeta MetaField MetaValue -- removes any existing values
 	| MaybeSetMeta MetaField MetaValue -- when field has no existing value
+	deriving (Show)
 
 {- Applies a ModMeta, generating the new MetaData.
  - Note that the new MetaData does not include all the 

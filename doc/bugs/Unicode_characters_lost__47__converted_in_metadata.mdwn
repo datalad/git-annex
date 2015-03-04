@@ -13,3 +13,5 @@ Unicode characters in metadata are pruned/converted/lost:
 ### What version of git-annex are you using? On what operating system?
 
 5.20141125 Debian
+
+> [[fixed|done]]; test pass. --[[Joey]]

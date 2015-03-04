@@ -22,6 +22,11 @@ git-annex (5.2015022) UNRELEASED; urgency=medium
   * When re-execing git-annex, use current program location, rather than
     ~/.config/git-annex/program, when possible.
   * Submodules are now supported by git-annex!
+  * metadata: Fix encoding problem that led to mojibake when storing
+    metadata strings that contained both unicode characters and a space
+    (or '!') character.
+  * Also potentially fixes encoding problem when embedding credentials
+    that contain unicode characters.
 
  -- Joey Hess <id@joeyh.name>  Thu, 19 Feb 2015 14:16:03 -0400
 

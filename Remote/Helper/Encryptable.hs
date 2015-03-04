@@ -20,13 +20,14 @@ module Remote.Helper.Encryptable (
 ) where
 
 import qualified Data.Map as M
+import qualified "dataenc" Codec.Binary.Base64 as B64
+import Data.Bits.Utils
 
 import Common.Annex
 import Types.Remote
 import Crypto
 import Types.Crypto
 import qualified Annex
-import Utility.Base64
 
 -- Used to ensure that encryption has been set up before trying to
 -- eg, store creds in the remote config that would need to use the
@@ -137,9 +138,9 @@ cipherKey c = fmap make <$> remoteCipher c
 
 {- Stores an StorableCipher in a remote's configuration. -}
 storeCipher :: RemoteConfig -> StorableCipher -> RemoteConfig
-storeCipher c (SharedCipher t) = M.insert "cipher" (toB64 t) c
+storeCipher c (SharedCipher t) = M.insert "cipher" (toB64bs t) c
 storeCipher c (EncryptedCipher t _ ks) =
-	M.insert "cipher" (toB64 t) $ M.insert "cipherkeys" (showkeys ks) c
+	M.insert "cipher" (toB64bs t) $ M.insert "cipherkeys" (showkeys ks) c
   where
 	showkeys (KeyIds l) = intercalate "," l
 
@@ -149,11 +150,11 @@ extractCipher c = case (M.lookup "cipher" c,
 			M.lookup "cipherkeys" c,
 			M.lookup "encryption" c) of
 	(Just t, Just ks, encryption) | maybe True (== "hybrid") encryption ->
-		Just $ EncryptedCipher (fromB64 t) Hybrid (readkeys ks)
+		Just $ EncryptedCipher (fromB64bs t) Hybrid (readkeys ks)
 	(Just t, Just ks, Just "pubkey") ->
-		Just $ EncryptedCipher (fromB64 t) PubKey (readkeys ks)
+		Just $ EncryptedCipher (fromB64bs t) PubKey (readkeys ks)
 	(Just t, Nothing, encryption) | maybe True (== "shared") encryption ->
-		Just $ SharedCipher (fromB64 t)
+		Just $ SharedCipher (fromB64bs t)
 	_ -> Nothing
   where
 	readkeys = KeyIds . split ","
@@ -169,3 +170,14 @@ describeEncryption c = case extractCipher c of
 			PubKey -> Nothing
 			Hybrid -> Just "(hybrid mode)"
 		]
+
+{- Not using Utility.Base64 because these "Strings" are really
+ - bags of bytes and that would convert to unicode and not roung-trip
+ - cleanly. -}
+toB64bs :: String -> String
+toB64bs = B64.encode . s2w8
+
+fromB64bs :: String -> String
+fromB64bs s = fromMaybe bad $ w82s <$> B64.decode s
+  where
+	bad = error "bad base64 encoded data"
