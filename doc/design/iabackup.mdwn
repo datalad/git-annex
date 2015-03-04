@@ -7,7 +7,7 @@ This is a fairly detailed design proposal for using git-annex to build
 
 The IA contains some 24 million Items.
 
-git repositories do not scale well past the 1-10 million file 
+git repositories do not scale well in the 1-10 million file 
 range, and very badly above that. Storing individual IA Items
 would strain git's scalability badly.
 
