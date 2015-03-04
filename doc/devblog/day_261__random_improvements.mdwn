@@ -1,0 +1,5 @@
+Fixed a mojibake bug that affected metadata values that included both
+whitespace and unicode characters. This was very fiddly to get right.
+
+Finished up Monday's work to support submodules, getting them working
+on filesystems that don't support symlinks.
