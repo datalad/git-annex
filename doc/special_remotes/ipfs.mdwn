@@ -60,7 +60,7 @@ to look up the ipfs address of the file:
 	whereis somefile
 		ed1c811d-fe42-4436-aa75-56566c990aa8 -- ipfs
 	
-	ipfs: QmYgXEfjsLbPvVKrrD4Hf6QvXYRPRjH5XFGajDqtxBnD4W
+	ipfs: ipfs:QmYgXEfjsLbPvVKrrD4Hf6QvXYRPRjH5XFGajDqtxBnD4W
 
 In the example above, the ipfs address for the file is
 `QmYgXEfjsLbPvVKrrD4Hf6QvXYRPRjH5XFGajDqtxBnD4W`. You can give this
