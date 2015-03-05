@@ -271,3 +271,17 @@ download some other Item. However, it might be good to rate limit the
 number of concurrent downloads of a given item, to prevent this and perhaps
 other issues. This could be done by a wrapper around git-annex shell or
 perhaps a git-annex modification.
+
+With clients all fscking their part of a shard once a month,
+that will increase the size of the git repository, with new distributed
+fsck updates. Basically, it grows by one line per file in the shard,
+times the amount of redundancy that's been reached. So, a 10 thousand item
+shard with redundancy 3 will grow by 30000 lines per month. Line length
+for location log is 58 bytes, so that's 1.7 mb growth per month of the git
+repo. (That's for blobs, plus additional overhead for trees and commits.)
+However, git will delta compress most of it, so it might be
+significantly smaller. If the distributed fsck timestamps are all
+the same for a client, they will delta compress along with everything else.
+This could reduce the blob growth to a few dozen bytes per client per month.
+This is something to keep an eye on, especially since shipping large git
+repo changes to clients is not desirable.
