@@ -43,6 +43,7 @@ import Utility.Url (URLString)
 import qualified Utility.SimpleProtocol as Proto
 
 import Control.Concurrent.STM
+import Network.URI
 
 -- If the remote is not yet running, the ExternalState TMVar is empty.
 data External = External
@@ -182,6 +183,8 @@ data RemoteRequest
 	| GETSTATE Key
 	| SETURLPRESENT Key URLString
 	| SETURLMISSING Key URLString
+	| SETURIPRESENT Key URI
+	| SETURIMISSING Key URI
 	| GETURLS Key String
 	| DEBUG String
 	deriving (Show)
@@ -202,6 +205,8 @@ instance Proto.Receivable RemoteRequest where
 	parseCommand "GETSTATE" = Proto.parse1 GETSTATE
 	parseCommand "SETURLPRESENT" = Proto.parse2 SETURLPRESENT
 	parseCommand "SETURLMISSING" = Proto.parse2 SETURLMISSING
+	parseCommand "SETURIPRESENT" = Proto.parse2 SETURIPRESENT
+	parseCommand "SETURIMISSING" = Proto.parse2 SETURIMISSING
 	parseCommand "GETURLS" = Proto.parse2 GETURLS
 	parseCommand "DEBUG" = Proto.parse1 DEBUG
 	parseCommand _ = Proto.parseFail
@@ -288,3 +293,7 @@ instance Proto.Serializable [(URLString, Size, FilePath)] where
 	  where
 		go c (url:sz:f:rest) = go ((url, readish sz, f):c) rest
 		go c _ = reverse c
+
+instance Proto.Serializable URI where
+	serialize = show
+	deserialize = parseURI

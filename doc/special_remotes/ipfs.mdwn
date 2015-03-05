@@ -7,8 +7,7 @@ keep your data safe while you're using ipfs.
 
 ## prerequisites
 
-* git-annex version 5.20141219 or newer, which has [[external]] special remote
-  support.
+* git-annex version 5.20150305 or newer.
 * Install [[external/git-annex-remote-ipfs]] somewhere in PATH
   and `chmod +x` the script.
 * Install [go-ipfs](https://github.com/jbenet/go-ipfs) somewhere in PATH.

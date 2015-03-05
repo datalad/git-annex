@@ -223,6 +223,10 @@ handleRequest' lck external req mp responsehandler
 		setUrlPresent (externalUUID external) key url
 	handleRemoteRequest (SETURLMISSING key url) =
 		setUrlMissing (externalUUID external) key url
+	handleRemoteRequest (SETURIPRESENT key uri) =
+		withurl (SETURLPRESENT key) uri
+	handleRemoteRequest (SETURIMISSING key uri) =
+		withurl (SETURLMISSING key) uri
 	handleRemoteRequest (GETURLS key prefix) = do
 		mapM_ (send . VALUE . fst . getDownloader)
 			=<< getUrlsWithPrefix key prefix
@@ -242,6 +246,9 @@ handleRequest' lck external req mp responsehandler
 		}
 	  where
 		base = replace "/" "_" $ fromUUID (externalUUID external) ++ "-" ++ setting
+			
+	withurl mk uri = handleRemoteRequest $ mk $
+		setDownloader (show uri) OtherDownloader
 
 sendMessage :: Sendable m => ExternalLock -> External -> m -> Annex ()
 sendMessage lck external m = 

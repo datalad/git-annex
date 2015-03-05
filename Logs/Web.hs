@@ -94,7 +94,7 @@ removeTempUrl key = Annex.changeState $ \s ->
 	s { Annex.tempurls = M.delete key (Annex.tempurls s) }
 
 data Downloader = WebDownloader | QuviDownloader | OtherDownloader
-	deriving (Eq)
+	deriving (Eq, Show)
 
 {- To keep track of how an url is downloaded, it's mangled slightly in
  - the log. For quvi, "quvi:" is prefixed. For urls that are handled by

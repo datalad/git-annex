@@ -274,10 +274,19 @@ in control.
   Gets any state that has been stored for the key.  
   (git-annex replies with VALUE followed by the state.)
 * `SETURLPRESENT Key Url`  
-  Records an url (or uri) where the Key can be downloaded from.
+  Records an URL where the Key can be downloaded from.
 * `SETURLMISSING Key Url`  
   Records that the key can no longer be downloaded from the specified
-  url (or uri).
+  URL.
+* `SETURIPRESENT Key Uri`  
+  Records a special URI where the Key can be downloaded from.  
+  For example, "ipfs:ADDRESS" is used for the ipfs special remote;
+  its CLAIMURL handler checks for such URIS and claims them. Setting
+  it present as an URI makes `git annex whereis` display the URI
+  as belonging to the special remote.
+* `SETURIMISSING Key Uri`  
+  Records that the key can no longer be downloaded from the specified
+  URI.
 * `GETURLS Key Prefix`  
   Gets the recorded urls where a Key can be downloaded from.
   Only urls that start with the Prefix will be returned. The Prefix

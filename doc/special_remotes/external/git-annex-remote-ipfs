@@ -89,7 +89,7 @@ while read line; do
 					if [ -z "$addr" ]; then
 						echo TRANSFER-FAILURE STORE "$key" "ipfs add failed"
 					else
-						echo "SETURLPRESENT" "$key" "$(addresstourl "$addr")"
+						echo "SETURIPRESENT" "$key" "$(addresstourl "$addr")"
 						echo TRANSFER-SUCCESS STORE "$key"
 					fi
 				;;
