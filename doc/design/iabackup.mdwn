@@ -3,6 +3,18 @@ This is a fairly detailed design proposal for using git-annex to build
 
 [[!toc ]]
 
+## end-user view
+
+What the end user sees is a directory, with a .git subdirectory,
+and 10 thousand little files (actually, they're broken symlinks, on
+Linux/OSX). Over time, some of the symlinks start filling in with
+"random" content from the IA. 
+
+The user can look at that content, or even delete files they don't want to
+host.
+
+The user can control how much total disk space the directory takes up.
+
 ## sharding to scale
 
 The IA contains some 24 million Items.
