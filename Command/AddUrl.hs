@@ -38,7 +38,7 @@ import qualified Utility.Quvi as Quvi
 #endif
 
 cmd :: [Command]
-cmd = [notBareRepo $ withOptions [fileOption, pathdepthOption, relaxedOption] $
+cmd = [notBareRepo $ withOptions [fileOption, pathdepthOption, relaxedOption, rawOption] $
 	command "addurl" (paramRepeating paramUrl) seek
 		SectionCommon "add urls to annex"]
 
@@ -51,14 +51,18 @@ pathdepthOption = fieldOption [] "pathdepth" paramNumber "path components to use
 relaxedOption :: Option
 relaxedOption = flagOption [] "relaxed" "skip size check"
 
+rawOption :: Option
+rawOption = flagOption [] "raw" "disable special handling for torrents, quvi, etc"
+
 seek :: CommandSeek
 seek us = do
 	optfile <- getOptionField fileOption return
 	relaxed <- getOptionFlag relaxedOption
+	raw <- getOptionFlag rawOption
 	pathdepth <- getOptionField pathdepthOption (return . maybe Nothing readish)
 	forM_ us $ \u -> do
 		r <- Remote.claimingUrl u
-		if Remote.uuid r == webUUID
+		if Remote.uuid r == webUUID || raw
 			then void $ commandAction $ startWeb relaxed optfile pathdepth u
 			else do
 				pathmax <- liftIO $ fileNameLengthLimit "."

@@ -28,7 +28,7 @@ import Types.UrlContents
 import Logs.Web
 import qualified Utility.Format
 import Utility.Tmp
-import Command.AddUrl (addUrlFile, downloadRemoteFile, relaxedOption)
+import Command.AddUrl (addUrlFile, downloadRemoteFile, relaxedOption, rawOption)
 import Annex.Perms
 import Annex.UUID
 import Backend.URL (fromUrl)
@@ -42,7 +42,7 @@ import Logs.MetaData
 import Annex.MetaData
 
 cmd :: [Command]
-cmd = [notBareRepo $ withOptions [templateOption, relaxedOption] $
+cmd = [notBareRepo $ withOptions [templateOption, relaxedOption, rawOption] $
 	command "importfeed" (paramRepeating paramUrl) seek
 		SectionCommon "import files from podcast feeds"]
 
@@ -53,23 +53,30 @@ seek :: CommandSeek
 seek ps = do
 	tmpl <- getOptionField templateOption return
 	relaxed <- getOptionFlag relaxedOption
+	raw <- getOptionFlag rawOption
+	let opts = Opts { relaxedOpt = relaxed, rawOpt = raw }
 	cache <- getCache tmpl
-	withStrings (start relaxed cache) ps
+	withStrings (start opts cache) ps
 
-start :: Bool -> Cache -> URLString -> CommandStart
-start relaxed cache url = do
+data Opts = Opts
+	{ relaxedOpt :: Bool
+	, rawOpt :: Bool
+	}
+
+start :: Opts -> Cache -> URLString -> CommandStart
+start opts cache url = do
 	showStart "importfeed" url
-	next $ perform relaxed cache url
+	next $ perform opts cache url
 
-perform :: Bool -> Cache -> URLString -> CommandPerform
-perform relaxed cache url = do
+perform :: Opts -> Cache -> URLString -> CommandPerform
+perform opts cache url = do
 	v <- findDownloads url
 	case v of
 		[] -> do
 			feedProblem url "bad feed content"
 			next $ return True
 		l -> do
-			ok <- and <$> mapM (performDownload relaxed cache) l
+			ok <- and <$> mapM (performDownload opts cache) l
 			unless ok $
 				feedProblem url "problem downloading item"
 			next $ cleanup url True
@@ -138,15 +145,15 @@ downloadFeed url = do
 			, return Nothing
 			)
 
-performDownload :: Bool -> Cache -> ToDownload -> Annex Bool
-performDownload relaxed cache todownload = case location todownload of
+performDownload :: Opts -> Cache -> ToDownload -> Annex Bool
+performDownload opts cache todownload = case location todownload of
 	Enclosure url -> checkknown url $
 		rundownload url (takeExtension url) $ \f -> do
 			r <- Remote.claimingUrl url
-			if Remote.uuid r == webUUID
+			if Remote.uuid r == webUUID || rawOpt opts
 				then do
 					urlinfo <- Url.withUrlOptions (Url.getUrlInfo url)
-					maybeToList <$> addUrlFile relaxed url urlinfo f
+					maybeToList <$> addUrlFile (relaxedOpt opts) url urlinfo f
 				else do
 					res <- tryNonAsync $ maybe
 						(error $ "unable to checkUrl of " ++ Remote.name r)
@@ -156,10 +163,10 @@ performDownload relaxed cache todownload = case location todownload of
 						Left _ -> return []
 						Right (UrlContents sz _) ->
 							maybeToList <$>
-								downloadRemoteFile r relaxed url f sz
+								downloadRemoteFile r (relaxedOpt opts) url f sz
 						Right (UrlMulti l) -> do
 							kl <- forM l $ \(url', sz, subf) ->
-								downloadRemoteFile r relaxed url' (f </> fromSafeFilePath subf) sz
+								downloadRemoteFile r (relaxedOpt opts) url' (f </> fromSafeFilePath subf) sz
 							return $ if all isJust kl
 								then catMaybes kl
 								else []
@@ -177,7 +184,7 @@ performDownload relaxed cache todownload = case location todownload of
 						let videourl = Quvi.linkUrl link
 						checkknown videourl $
 							rundownload videourl ("." ++ Quvi.linkSuffix link) $ \f ->
-								maybeToList <$> addUrlFileQuvi relaxed quviurl videourl f
+								maybeToList <$> addUrlFileQuvi (relaxedOpt opts) quviurl videourl f
 #else
 		return False
 #endif

@@ -236,6 +236,10 @@ subdirectories).
   Urls to torrent files (including magnet links) will cause the content of
   the torrent to be downloaded, using `aria2c`.
 
+  To prevent special handling of urls by quvi, bittorrent, and other
+  special remotes, specify `--raw`. This will for example, make addurl
+  download the .torrent file and not the contents it points to.
+
 * `rmurl file url`
 
   Record that the file is no longer available at the url.
@@ -289,7 +293,8 @@ subdirectories).
   The default template is '${feedtitle}/${itemtitle}${extension}'
   (Other available variables: feedauthor, itemauthor, itemsummary, itemdescription, itemrights, itemid, itempubdate, title, author)
 
-  The `--relaxed` and `--fast` options behave the same as they do in addurl.
+  The `--relaxed`, `--fast`, and `--raw` options behave the same as they
+  do in addurl.
 
   When quvi is installed, links in the feed are tested to see if they
   are on a video hosting site, and the video is downloaded. This allows
