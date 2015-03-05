@@ -1,0 +1,125 @@
+#!/bin/sh
+# This is a git-annex external special remote program,
+# which adds experimental ipfs support to git-annex.
+#
+# Install in PATH as git-annex-remote-ipfs
+#
+# Copyright 2015 Joey Hess; licenced under the GNU GPL version 3 or higher.
+
+set -e
+
+# use ipfs: as a prefix to indicate when an "url" is really stored in ipfs
+isipfsurl () {
+	echo "$1" | egrep -q "^ipfs:"
+}
+
+# convert an ipfs: url to an address that the ipfs client understands
+urltoaddress () {
+	echo "$1" | sed -e 's/^ipfs://'
+}
+
+addresstourl () {
+	echo "ipfs:$1"
+}
+
+# Gets a VALUE response and stores it in $RET
+getvalue () {
+	read resp
+	# Tricky POSIX shell code to split first word of the resp,
+	# preserving all other whitespace
+	case "${resp%% *}" in
+		VALUE)
+			RET="$(echo "$resp" | sed 's/^VALUE \?//')"
+		;;
+		*)
+		RET=""
+		;;
+	esac
+}
+
+# Get a list of all known ipfs addresses for a key,
+# storing it in a temp file.
+getaddrs () {
+        key="$1"
+        tmp="$2"
+
+        echo GETURLS "$key"
+        getvalue
+        while [ -n "$RET" ]; do
+                if isipfsurl "$RET"; then
+                        echo "$RET" >> "$tmp"
+                fi
+                getvalue
+        done
+}
+
+# This has to come first, to get the protocol started.
+echo VERSION 1
+
+while read line; do
+	set -- $line
+	case "$1" in
+		INITREMOTE)
+			echo INITREMOTE-SUCCESS
+		;;
+		PREPARE)
+			echo PREPARE-SUCCESS
+		;;
+		CLAIMURL)
+			url="$2"
+			if isipfsurl "$url"; then
+				echo CLAIMURL-SUCCESS
+			else
+				echo CLAIMURL-FAILURE
+			fi
+		;;
+		CHECKURL)
+			url="$2"
+			# TODO if size of file can be quickly determined
+			# (without downloading it) return the size
+			# instead of UNKNOWN
+			echo CHECKURL-CONTENTS UNKNOWN "$(urltoaddress "$url")"
+		;;
+		TRANSFER)
+			key="$3"
+			file="$4"
+			case "$2" in
+				STORE)
+					addr=$(ipfs add -q "$file" </dev/null) || true
+					if [ -z "$addr" ]; then
+						echo TRANSFER-FAILURE STORE "$key" "ipfs add failed"
+					else
+						echo "SETURLPRESENT" "$key" "$(addresstourl "$addr")"
+						echo TRANSFER-SUCCESS STORE "$key"
+					fi
+				;;
+				RETRIEVE)
+					addrtmp=$(mktemp)
+					getaddrs "$key" "$addrtmp"
+					addr="$(urltoaddress "$(head "$addrtmp")")" || true
+					rm -f "$addrtmp"
+					if [ -z "$addr" ]; then
+						echo TRANSFER-FAILURE RETRIEVE "$key" "no known ipfs address for this key"
+					else
+						if ! ipfs get --output="$file" "$addr" >&2 </dev/null; then
+							echo TRANSFER-FAILURE RETRIEVE "$key" "failed downloading ipfs $addr"
+						else
+							echo TRANSFER-SUCCESS RETRIEVE "$key"
+						fi
+					fi
+				;;
+			esac
+		;;
+		CHECKPRESENT)
+			key="$2"
+			echo CHECKPRESENT-FAILURE "$key"
+		;;
+		REMOVE)
+			key="$2"
+			echo REMOVE-FAILURE "$key" "cannot remove content from ipfs (instead, run ipfs gc to clear your local ipfs cache)"
+		;;
+		*)
+			echo UNSUPPORTED-REQUEST
+		;;
+	esac	
+done

@@ -1,0 +1,86 @@
+This special remote stores file contents in [ipfs](http://ipfs.io/).
+
+Warning: As this page is being written, ipfs is still considered alpha
+quality code, not suitable for production use. Still, it's fun to play
+with, has some nice features and great potential, and git-annex can
+keep your data safe while you're using ipfs.
+
+## prerequisites
+
+* git-annex version 5.20141219 or newer, which has [[external]] special remote
+  support.
+* Install [[external/git-annex-remote-ipfs]] somewhere in PATH
+  and `chmod +x` the script.
+* Install [go-ipfs](https://github.com/jbenet/go-ipfs) somewhere in PATH.
+* Run `ipfs init` and start the `ipfs daemon`
+
+(Note that this special remote does not use ipfs's FUSE support; it
+communicates with ipfs using the `ipfs` command-line utility.)
+
+## configuration
+
+These parameters can be passed to `git annex initremote` to configure the
+remote:
+
+* `encryption` - One of "none", "hybrid", "shared", or "pubkey".
+  See [[encryption]]. Note that this is git-annex's encryption, not ipfs's
+  encryption.
+
+* `keyid` - Specifies the gpg key to use for [[encryption]].
+
+Setup example:
+
+	# git annex initremote ipfs type=external externaltype=ipfs encryption=none
+
+## content distribution
+
+After `git annex copy --to ipfs`, a file will typically only have
+been copied to your computer's local ipfs object store. It will not reach
+other ipfs nodes on the network until they request the content.
+
+If you set up a clone of your repository on another computer, and install
+ipfs and enable the ipfs remote there, you can proceed with using it to get
+files that have been stored in ipfs:
+
+	# git annex sync
+	# git annex enableremote ipfs
+	# git annex copy --from ipfs
+
+# content removal
+
+Removing content from ipfs requires all nodes that have a copy to decide to
+delete it. This is not something git-annex can arrange to happen, or
+reliably tell has happened, so `git annex drop --from ipfs` will always fail.
+
+## using ipfs addresses
+
+Once a file has been copied to ipfs, you can use `git annex whereis`
+to look up the ipfs address of the file:
+
+	# git annex whereis somefile
+	whereis somefile
+		ed1c811d-fe42-4436-aa75-56566c990aa8 -- ipfs
+	
+	ipfs: QmYgXEfjsLbPvVKrrD4Hf6QvXYRPRjH5XFGajDqtxBnD4W
+
+In the example above, the ipfs address for the file is
+`QmYgXEfjsLbPvVKrrD4Hf6QvXYRPRjH5XFGajDqtxBnD4W`. You can give this
+address to any other ipfs user and they can use it to download the file!
+
+You can also use ipfs addresses with `git annex addurl`. For example:
+
+	# git annex addurl ipfs:QmYgXEfjsLbPvVKrrD4Hf6QvXYRPRjH5XFGajDqtxBnD4W --file somefile
+
+That's a real file; try it!
+
+## future directions
+
+While perhaps useful, this is just a proof of concept. It's particularly
+lacking in that it doesn't integrate well git-annex's [[location_tracking]]
+with ipfs. 
+
+Tracking which ipfs nodes have a copy of an annexed object
+would make this special remote work better. In particular, git-annex does
+not currently trust ipfs to contain a copy of an object, since it has no
+way of keeping track of which which ipfs nodes might contain it. So, eg, 
+`git annex drop` will refuse to trust ipfs.
