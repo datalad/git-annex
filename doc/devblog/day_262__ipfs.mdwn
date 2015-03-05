@@ -5,11 +5,11 @@ As a first step toward using it with git-annex, I built an experimental
 [[ipfs_special_remote|special_remotes/ipfs]]. It has some nice abilities;
 any ipfs address can be downloaded to a file in the repository:
 
-	> git annex addurl ipfs:QmYgXEfjsLbPvVKrrD4Hf6QvXYRPRjH5XFGajDqtxBnD4W --file somefile
+	git annex addurl ipfs:QmYgXEfjsLbPvVKrrD4Hf6QvXYRPRjH5XFGajDqtxBnD4W --file somefile
 
 And, any file in the git-annex repository can be published to the world
 via ipfs, by simply using `git annex copy --to ipfs`. The ipfs address
-is for the file is then visible in `git annex whereis`.
+for the file is then visible in `git annex whereis`.
 
 Had to extend the external special remote protocol slightly for that, so
 that ipfs addresses can be recorded as uris in git-annex, and will show up
