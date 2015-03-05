@@ -1,0 +1,29 @@
+There are SSH keys in ~/.ssh to a remote server that I added as a git annex remote. On my Debian box, I am able to `git annex copy` and `git annex move` to and from the remote to a local repo at `~/archive` with no problems. I also have no problems with external USB drives formatted ext4. 
+
+I have an external usb drive formatted NTFS that I connect to a Debian box. I added the remote server like the others and when I try to copy or move to and from it, this error code shows up. 
+
+
+
+    pull archive 
+    Control socket connect(.git/annex/ssh/f7be67fcc0a6f016ba90edcdd8e02e1f): Connection refused
+    Failed to connect to new control master
+    fatal: Could not read from remote repository.
+
+    Please make sure you have the correct access rights
+    and the repository exists.
+    failed
+    push archive 
+    Control socket connect(.git/annex/ssh/f7be67fcc0a6f016ba90edcdd8e02e1f): Connection refused
+    Failed to connect to new control master
+    fatal: Could not read from remote repository.
+
+    Please make sure you have the correct access rights
+    and the repository exists.
+
+    Pushing to archive failed.
+
+
+
+I think it is because of NTFS and the ssh key stored in `~/.ssh`, but I don't know what is going on. 
+
+Thanks!
