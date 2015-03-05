@@ -46,7 +46,7 @@ files that have been stored in ipfs:
 	# git annex enableremote ipfs
 	# git annex copy --from ipfs
 
-# content removal
+## content removal
 
 Removing content from ipfs requires all nodes that have a copy to decide to
 delete it. This is not something git-annex can arrange to happen, or
