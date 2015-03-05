@@ -1,0 +1,40 @@
+I'm running [git-annex](http://ix.io/gJJ) from <https://aur.archlinux.org/packages/git-annex-bin> btw on Archlinux.
+
+I fetched a copy of my [git-annex wedding test repo](https://github.com/kaihendry/krwedding) to a machine on ssh called 'bible'.
+
+Now I'm trying to fetch via ssh from my local machine "X1C3".
+
+I can't work out how to fetch from it from b1b15a9b-1aa1-4f94-8b9a-2186d71c0d1a .... what am I missing?
+
+    X1C3:~/annex/krwedding$ git-annex whereis krfeature.mp4
+     whereis krfeature.mp4 (3 copies)
+        00000000-0000-0000-0000-000000000001 -- web
+        10418340-834d-41c2-b38f-7ee84bf6a23a -- s3
+        b1b15a9b-1aa1-4f94-8b9a-2186d71c0d1a -- Jamie's bible
+      web: http://r2d2.webconverger.org/2013-12-22/krfeature.mp4
+      web: http://static.prazefarm.co.uk/krfeature.mp4
+      web: https://objects.dreamhost.com/wedding-video/krfeature.mp4
+    ok
+    X1C3:~/annex/krwedding$ git-annex get . --from "Jamie's bible"
+    git-annex: there is no available git remote named "Jamie's bible"
+    X1C3:~/annex/krwedding$ git-annex enableremote Jamie's bible
+    > ^C
+    X1C3:~/annex/krwedding$ git-annex enableremote "Jamie's bible"
+    git-annex: Unknown special remote name.
+    Known special remotes: s3
+    X1C3:~/annex/krwedding$ git-annex get . --from b1b15a9b-1aa1-4f94-8b9a-2186d71c0d1a
+    git-annex: there is no available git remote named "b1b15a9b-1aa1-4f94-8b9a-2186d71c0d1a"
+
+Why doesn't the UUID work? :/
+
+I even [tried renaming the remote to the UUID... didn't work](http://ix.io/gJI)
+
+# Issue 1
+
+Keep getting `git-annex-shell: user error (git ["config","--null","--list"] exited 126)` even though when I run `git config` my return error is 0: <http://ix.io/gJG>
+
+
+# Issue 2
+
+I can't work out the [git-annex remote type for ssh, in order to rename the remote](http://ix.io/gJH). I think the issue here is that my ssh remote name "Jamie's bible" doesn't match with the `git remote` name bible.
+
