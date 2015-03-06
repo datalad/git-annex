@@ -29,12 +29,17 @@ Why doesn't the UUID work? :/
 
 I even [tried renaming the remote to the UUID... didn't work](http://ix.io/gJI)
 
+**Solution**: Neither UUID or the description is used by get. I also should not have resorted to [[special_remotes]] setup for setting up a git remote.
+
 # Issue 1
 
 Keep getting `git-annex-shell: user error (git ["config","--null","--list"] exited 126)` even though when I run `git config` my return error is 0: <http://ix.io/gJG>
+
+**Solution**: This was because my ssh git URL was incorrect. A better error message has been implemented: <http://source.git-annex.branchable.com/?p=source.git;a=commitdiff;h=3439ea4>
 
 
 # Issue 2
 
 I can't work out the [git-annex remote type for ssh, in order to rename the remote](http://ix.io/gJH). I think the issue here is that my ssh remote name "Jamie's bible" doesn't match with the `git remote` name bible.
 
+**Solution**: A _rw_ git URL configured with `git remote` are not [[special_remotes]]. I confused the two. If you need to define public git URL ([[time capsule use case|future_proofing]]), it is possible with an undocumented `git annex initremote foo type=git location=url`. So to summarise, just manually setup the git remote `git remote add ssh://someplace/path/to/repo` (don't worry about the name) and git-annex will find it!
