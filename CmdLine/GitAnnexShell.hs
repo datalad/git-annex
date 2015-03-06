@@ -12,6 +12,7 @@ import System.Console.GetOpt
 
 import Common.Annex
 import qualified Git.Construct
+import qualified Git.Config
 import CmdLine
 import Command
 import Annex.UUID
@@ -101,11 +102,16 @@ builtin cmd dir params = do
 	let (params', fieldparams, opts) = partitionParams params
 	    fields = filter checkField $ parseFields fieldparams
 	    cmds' = map (newcmd $ unwords opts) cmds
-	dispatch False (cmd : params') cmds' options fields header $
-		Git.Construct.repoAbsPath dir >>= Git.Construct.fromAbsPath
+	dispatch False (cmd : params') cmds' options fields header mkrepo
   where
 	addrsyncopts opts seek k = setField "RsyncOptions" opts >> seek k
 	newcmd opts c = c { cmdseek = addrsyncopts opts (cmdseek c) }
+	mkrepo = do
+		r <- Git.Construct.repoAbsPath dir >>= Git.Construct.fromAbsPath
+		Git.Config.read r
+			`catchIO` \_ -> do
+				hn <- fromMaybe "unknown" <$> getHostname
+				error $ "failed to read git config of git repository in " ++ hn ++ " on " ++ dir ++ "; perhaps this repository is not set up correctly or has moved"
 
 external :: [String] -> IO ()
 external params = do

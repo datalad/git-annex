@@ -33,6 +33,8 @@ git-annex (5.2015022) UNRELEASED; urgency=medium
     useful for things like ipfs that don't use regular urls.
   * addurl: Added --raw option, which bypasses special handling of quvi,
     bittorrent etc urls.
+  * git-annex-shell: Improve error message when the specified repository
+    doesn't exist or git config fails for some reason.
 
  -- Joey Hess <id@joeyh.name>  Thu, 19 Feb 2015 14:16:03 -0400
 
