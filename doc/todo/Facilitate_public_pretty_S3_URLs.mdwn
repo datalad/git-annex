@@ -1,0 +1,16 @@
+I archive all my photos/video to a bucket CNAMED to http://s.natalian.org/ with a simple YYYY-MM-DD prefix.
+
+E.g. <http://s.natalian.org/2015-03-06/1425615579_1918x1060.png>
+
+I'm not doing a great job of backing up the S3 bucket to another S3 compatible host, since `s3cmd sync`/`aws sync` is so slow, but that's beside the point. Ideally it could be tracked by **git-annex**!
+
+Adding all the objects into git-annex, IIUC currently would require me:
+
+* to download the ~80GB and then add them to git-annex
+* there is no way to keep my current S3 URLs with the [[special_remotes/S3]] since `git-annex` has it's own special way of storing to a bucket, e.g. https://s3-ap-southeast-1.amazonaws.com/s3-10418340-834d-41c2-b38f-7ee84bf6a23a/SHA256E-s1034208123--235e4f288d094c2e1870bc3d9d353abf34542c04c1d26905e882718a7ccf74cf.mp4 - I'd rather not have HTTP redirects
+* AFAICT there is no way currently with git-annex to mark the [[special_remotes/S3]] as public, which is needed for public URLs to work
+* AFAICT there is no current automated method the mapping via `git-annex addurl` with the public URLs of the each file in the bucket
+
+The ideal solution in my mind is for git-annex to track the contents of S3 as they are now, preserving the URLs and tracking the checksums in a separate index file.
+
+Thank you!

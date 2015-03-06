@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnx8kHW66N3BqmkVpgtXDlYMvr8TJ5VvfY"
+ nickname="Yaroslav"
+ subject="great to see such a large scale effort ongoing"
+ date="2015-03-06T04:47:30Z"
+ content="""
+and I would still maintain my view that removing intermediate directory withing .git/annex/objects whose  current roles is simply to provide read-only protection might half the burden on the underlying file system, either annex repo(s) are multitude or a single one [1]. lean view [2] could also be of good use as well[2].  Similar exercises with simulated annex'es with >5M files also \"helped\" to identify problems with ZOL (ZFS on Linux) caching suggesting that even mere handling of such vast arrays of tiny files (as dead symlinks) might give filesystems a good test, so the leaner impact would be -- the better.
+
+[1] e.g. https://github.com/datalad/datalad/issues/32#issuecomment-70523036
+[2] https://github.com/datalad/datalad/issues/25
+"""]]
