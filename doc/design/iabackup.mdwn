@@ -17,14 +17,15 @@ The user can control how much total disk space the directory takes up.
 
 ## sharding to scale
 
-The IA contains some 24 million Items.
+The IA contains some 14 million Items. Inside these Items are 271 million
+files.
 
 git repositories do not scale well in the 1-10 million file 
 range, and very badly above that. Storing individual IA Items
 would strain git's scalability badly.
 
-Solution: Create multiple git repositories, and split the Items amoung
-them.
+Solution: Create multiple git repositories, and split the Items
+amoung them. Make a tarball of each Item.
 
 * Needs a map from an Item to its repository. (Could be stored in a
   database, or whatever.)
@@ -47,9 +48,22 @@ them.
 
 * Add new shards as the IA continues to grow.
 
-Question: How many files are in IA across all Items? It might be better
-to use $item/$file rather than $item.tar as the unit that's stored in
-the git-annex repository. This would need more shards.
+Or, the files could be checked directly into the repositories, not tarred up.
+With 100 thousand files per repository, it needs 2710 repositories.
+This seems much manageable than 10 thousand files in 27100 repositories.
+
+The big advantage of not tarring up files is that the url to the file
+can be added with `git annex addurl`, and then clients can download
+the content direct from the IA http servers, rather than needing to
+connect to a ssh server to get the tarballs. This simplifies and scales
+better for seeding the downloads. (Uploads still need that ssh server
+connection.)
+
+Problem: Would still need to get the checksums for the files, for git-annex
+to use. The census published by the IA only has md5sums in it. While
+git-annex can use md5sums, this allows bad actors to find md5 collisions
+with files from the archive, and upload bogus files that checksum ok
+when restoring.
 
 ## the IA git repository
 
@@ -274,14 +288,9 @@ perhaps a git-annex modification.
 
 With clients all fscking their part of a shard once a month,
 that will increase the size of the git repository, with new distributed
-fsck updates. Basically, it grows by one line per file in the shard,
-times the amount of redundancy that's been reached. So, a 10 thousand item
-shard with redundancy 3 will grow by 30000 lines per month. Line length
-for location log is 58 bytes, so that's 1.7 mb growth per month of the git
-repo. (That's for blobs, plus additional overhead for trees and commits.)
-However, git will delta compress most of it, so it might be
-significantly smaller. If the distributed fsck timestamps are all
-the same for a client, they will delta compress along with everything else.
-This could reduce the blob growth to a few dozen bytes per client per month.
-This is something to keep an eye on, especially since shipping large git
-repo changes to clients is not desirable.
+fsck updates. I have run some test and this fsck overhead delta compresses
+well. With a 10 thousand file repo and 100 clients all updating the
+location log, the monthly fsck only added 1 mb to the repository size
+(after `git gc --aggressive`). Should scale linearly with number of files
+in repo. Note that `git annex forget` could be used to forget old
+historical data if the repo grew too large from fsck updates.
