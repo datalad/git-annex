@@ -1,0 +1,20 @@
+I wish to preserve all history on the backup drives using standard groups and the `sync` command. Namely, if I do the following
+
+    touch test-of-annex-backup.txt
+    git annex add test-of-annex-backup.txt
+    git commit --message='test: Create empty test-of-annex-backup.txt file'
+    git annex edit test-of-annex-backup.txt
+    echo "This line creates version 2 of this file" > test-of-annex-backup.txt
+    git annex add test-of-annex-backup.txt
+    git commit --message='test: Create version 2 of test-of-annex-backup.txt'
+    git annex sync --content --all
+
+I expect to see 2 copies of `test-of-annex-backup.txt` be copied to each accessible annex repository in the `backup` [standard group](http://git-annex.branchable.com/preferred_content/standard_groups/)
+
+At present, the `backup` standard group prefers unused files, but the `sync` command cannot act on this configuration, since it lacks an `--all` option.  This is surprising to me as a user, and appears to contradict the intent of the preferred content, as evinced by the awkward explanation of why it is there in [preferred content](http://git-annex.branchable.com/preferred_content/)
+
+Please add an `--all` option to the `sync` command
+
+Thanks
+
+Andrew
