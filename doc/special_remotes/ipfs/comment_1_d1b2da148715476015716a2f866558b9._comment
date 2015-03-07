@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ subject="about copying to the local store"
+ date="2015-03-07T13:16:02Z"
+ content="""
+there's a [discussion](https://github.com/jbenet/go-ipfs/issues/875) happening upstream about how copying to the local datastore could be avoided.
+"""]]
