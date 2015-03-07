@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkWHj0RxNMfuwvFzo2d-V6vBKOYwW_Fnfk"
+ nickname="Andrew"
+ subject="Thanks for the clarification"
+ date="2015-03-07T03:00:14Z"
+ content="""
+I will post the todo, and in the meantime I can script a `git annex copy --unused` followed by a `git annex sync --content` to capture the full history in the archive
+
+regards
+
+Andrew
+"""]]
