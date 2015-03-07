@@ -20,6 +20,7 @@ error: Invalid path 'doc/walkthrough/transferring_files:_When_things_go_wrong.md
 Checking out files: 100% (7235/7235), done.
 
 git status shows many deleted
+
 git reset --hard shows same error as clone
 
 ### What version of git-annex are you using? On what operating system?
