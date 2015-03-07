@@ -1,0 +1,43 @@
+### Please describe the problem.
+
+Can't clone repository on Windows 7 64bit
+
+### What steps will reproduce the problem?
+git clone git://git-annex.branchable.com/ gitannex
+
+...
+
+error: Invalid path 'doc/walkthrough/fsck:_verifying_your_data.mdwn'
+
+error: Invalid path 'doc/walkthrough/fsck:_when_things_go_wrong.mdwn'
+
+error: Invalid path 'doc/walkthrough/quiet_please:_When_git-annex_seems_to_skip_files.mdwn'
+
+error: Invalid path 'doc/walkthrough/removing_files:_When_things_go_wrong.mdwn'
+
+error: Invalid path 'doc/walkthrough/transferring_files:_When_things_go_wrong.mdwn'
+
+Checking out files: 100% (7235/7235), done.
+
+git status shows many deleted
+git reset --hard shows same error as clone
+
+### What version of git-annex are you using? On what operating system?
+git annex version
+
+git-annex version: 5.20150219-g3fc8d83
+build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV DNS Feeds Quvi TDFA TorrentParser
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E MD5E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 MD5 WORM
+ URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: unknown
+supported repository version: 5
+upgrade supported from repository versions: 2 3 4
+
+git --version
+
+git version 1.9.5.msysgit.0
+
+Windows 7 64bit
+
+
