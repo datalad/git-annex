@@ -1,0 +1,13 @@
+Hello,
+
+I downloaded git-annex-installer.exe from https://downloads.kitenet.net/git-annex/windows/current/git-annex-installer.exe . 
+When I try to run it on my work windows 7 64-bit laptop, Symantec Encpoint Protection complains with a WS.Reputation.1 flag that the file has a low reputation and quarantines the file. 
+
+I searched online trying to find why git-annex is flagged as such by Symantec but was unable to find anything.
+I prefer not to build from source if possible as this is my work laptop and it would require that I install Haskell, MingW, and Cygwin. 
+
+Any pointers/suggestions would be greatly appreciated.
+
+Thanks,
+
+Ahmad
