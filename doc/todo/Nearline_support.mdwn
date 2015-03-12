@@ -1,0 +1,4 @@
+This has been described as Google's [[special_remotes/glacier]].
+
+* [Announcement](http://googlecloudplatform.blogspot.in/2015/03/introducing-Google-Cloud-Storage-Nearline-near-online-data-at-an-offline-price.html)
+* <https://cloud.google.com/storage/docs/nearline-storage>
