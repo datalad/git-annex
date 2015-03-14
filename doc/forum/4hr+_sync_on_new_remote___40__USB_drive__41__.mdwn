@@ -1,0 +1,82 @@
+I need some help understanding what would cause ``git-annex sync`` to still be running 4hrs+ on a new remote (FAT32 USB drive - BTEST) ? From all my searching, it appears to be part of git's optimization routines. But to be this long and slow seems odd. Also I am not sure what there would be optimize since it's a brand new remote ? The src (WTEST) doesn't seem to show any need to run ``git gc``.
+
+I followed the walkthrough's setup of a remote and followed that up with ``git-annex sync``. I did not specify the source for the sync as there is only one other (WTEST). The content is mostly ISO files and Win32 executables in 7 separate commits. In between ``git-annex import`` and ``git commit``, the working directory was removed with ``git rm '*'`` but no ``git-annex drop``. There were lots of duplicate files and it truly was satisfying to not see the disk usage increase. My backend is also MD5E for purposes of quicker imports and ease of hash lookup from other sources.
+
+I would like to have 20-30 USB remotes. The length of time to get one remote up and running at this point is horrendous. Other people seem to have better experiences with it. Only odd thing that I see with my configuration is that the remote FAT32 drive is in ``indirect`` mode. My understanding is that ``git-annex`` would automatically switch to ``direct`` if it detected a filesystem that did not support symbolic links. 
+
+What is wrong with my setup ? How can I fix it ?
+
+[[!format sh """ 
+BTEST$ git-annex sync
+
+commit  ok
+
+pull origin
+
+Auto packing the repository for optimum performance. You may also
+
+run "git gc" manually. See "git help gc" for more information.
+
+Counting objects: 521834, done.
+
+Delta compression using up to 4 threads.
+
+Compressing objects:  12% (59687/462488)
+"""]]
+
+[[!format sh """
+
+WTEST$ git-annex info
+
+repository mode: indirect
+trusted repositories: 0
+semitrusted repositories: 4
+        00000000-0000-0000-0000-000000000001 -- web
+        00000000-0000-0000-0000-000000000002 -- bittorrent
+        98dfasdf-ab83-4a0e-8b73-4dfasffdsaff1ae -- WTEST [here]
+        9dfdsfdf8-c5d5-4761-ab67-ffsadfsadfsa83 -- BTEST
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 488.16 gigabytes (+1 megabyte reserved)
+local annex keys: 57327
+local annex size: 58.57 gigabytes
+annexed files in working tree: 4322
+size of annexed files in working tree: 6.82 gigabytes
+bloom filter size: 16 mebibytes (11.5% full)
+backend usage:
+        MD5E: 61649
+"""]]
+
+[[!format sh """
+WTEST$git object-count -v
+
+count: 521829
+size: 66794240
+in-pack: 0
+packs: 0
+size-pack: 0
+prune-packable: 0
+garbage: 0
+size-garbage: 0
+"""]]
+
+
+[[!format sh """
+WTEST$git config -l
+
+core.repositoryformatversion=0
+core.filemode=false
+core.bare=false
+core.logallrefupdates=true
+core.ignorecase=true
+core.precomposeunicode=true
+annex.uuid=98dfasdf-ab83-4a0e-8b73-4dfasffdsaff1ae
+annex.sshcaching=false
+annex.version=5
+annex.backends=MD5E
+annex.queuesize=102400
+annex.genmetadata=true
+remote.BTEST.url=/Volumes/BTEST
+remote.BTEST.fetch=+refs/heads/*:refs/remotes/BTEST/*
+remote.BTEST.annex-uuid=9dfdsfdf8-c5d5-4761-ab67-ffsadfsadfsa83
+"""]]
