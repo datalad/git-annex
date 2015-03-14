@@ -6,23 +6,7 @@ I would like to have 20-30 USB remotes. The length of time to get one remote up 
 
 What is wrong with my setup ? How can I fix it ?
 
-[[!format sh """ 
-BTEST$ git-annex sync
-
-commit  ok
-
-pull origin
-
-Auto packing the repository for optimum performance. You may also
-
-run "git gc" manually. See "git help gc" for more information.
-
-Counting objects: 521834, done.
-
-Delta compression using up to 4 threads.
-
-Compressing objects:  12% (59687/462488)
-"""]]
+Here's the basic config of WTEST.
 
 [[!format sh """
 
@@ -79,4 +63,30 @@ annex.genmetadata=true
 remote.BTEST.url=/Volumes/BTEST
 remote.BTEST.fetch=+refs/heads/*:refs/remotes/BTEST/*
 remote.BTEST.annex-uuid=9dfdsfdf8-c5d5-4761-ab67-ffsadfsadfsa83
+"""]]
+
+**The long running sync.**
+
+[[!format sh """ 
+BTEST$ git-annex sync
+
+commit  ok
+
+pull origin
+
+Auto packing the repository for optimum performance. You may also
+
+run "git gc" manually. See "git help gc" for more information.
+
+Counting objects: 521834, done.
+
+Delta compression using up to 4 threads.
+
+Compressing objects:  12% (59687/462488)
+"""]]
+
+**Update 7hrs later:**
+
+[[!format sh """
+Writing objects:  70% (366184/521834)
 """]]
