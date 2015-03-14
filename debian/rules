@@ -7,7 +7,3 @@ export RELEASE_BUILD=1
 
 %:
 	dh $@
-
-# Not intended for use by anyone except the author.
-announcedir:
-	@echo ${HOME}/src/git-annex/doc/news
