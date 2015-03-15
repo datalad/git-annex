@@ -964,6 +964,17 @@ subdirectories).
   instead read from stdin. Any number of lines can be provided in this
   mode, each containing a key and filename, sepearated by whitespace.
 
+* `registerurl [key url]`
+
+  This plumbing-level command can be used to register urls where a
+  key can be downloaded from.
+
+  No verification is performed of the url's contents.
+
+  If the key and url are not specified on the command line, they are
+  instead read from stdin. Any number of lines can be provided in this
+  mode, each containing a key and url, sepearated by whitespace.
+
 * `dropkey [key ...]`
 
   This plumbing-level command drops the annexed data for the specified

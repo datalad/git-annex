@@ -49,7 +49,7 @@ massAdd = go True =<< map words . lines <$> liftIO getContents
 		ok <- perform' key f
 		let !status' = status && ok
 		go status' rest
-	go status (_:rest) = error "Expected pairs of key and file on stdin, but got something else."
+	go _ _ = error "Expected pairs of key and file on stdin, but got something else."
 
 perform :: Key -> FilePath -> CommandPerform
 perform key file = do

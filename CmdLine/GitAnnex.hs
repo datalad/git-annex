@@ -24,6 +24,7 @@ import qualified Command.Get
 import qualified Command.LookupKey
 import qualified Command.ExamineKey
 import qualified Command.FromKey
+import qualified Command.RegisterUrl
 import qualified Command.DropKey
 import qualified Command.TransferKey
 import qualified Command.TransferKeys
