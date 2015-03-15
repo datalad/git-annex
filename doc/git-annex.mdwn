@@ -952,13 +952,17 @@ subdirectories).
 
         	git annex examinekey --format='.git/annex/objects/${hashdirmixed}${key}/${key}'
 
-* `fromkey key file`
+* `fromkey [key file]`
 
   This plumbing-level command can be used to manually set up a file
   in the git repository to link to a specified key.
 
   Normally, the annex needs to already contain the content object for the
   key. To override this, use --force.
+
+  If the key and file are not specified on the command line, they are
+  instead read from stdin. Any number of lines can be provided in this
+  mode, each containing a key and filename, sepearated by whitespace.
 
 * `dropkey [key ...]`
 
