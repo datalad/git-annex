@@ -35,6 +35,7 @@ git-annex (5.2015022) UNRELEASED; urgency=medium
     bittorrent etc urls.
   * git-annex-shell: Improve error message when the specified repository
     doesn't exist or git config fails for some reason.
+  * fromkey --force: Skip test that the key has its content in the annex.
 
  -- Joey Hess <id@joeyh.name>  Thu, 19 Feb 2015 14:16:03 -0400
 

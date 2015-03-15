@@ -957,6 +957,9 @@ subdirectories).
   This plumbing-level command can be used to manually set up a file
   in the git repository to link to a specified key.
 
+  Normally, the annex needs to already contain the content object for the
+  key. To override this, use --force.
+
 * `dropkey [key ...]`
 
   This plumbing-level command drops the annexed data for the specified

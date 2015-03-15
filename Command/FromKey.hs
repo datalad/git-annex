@@ -12,6 +12,7 @@ import Command
 import qualified Annex.Queue
 import Annex.Content
 import Types.Key
+import qualified Annex
 
 cmd :: [Command]
 cmd = [notDirect $ notBareRepo $
@@ -19,17 +20,20 @@ cmd = [notDirect $ notBareRepo $
 		SectionPlumbing "adds a file using a specific key"]
 
 seek :: CommandSeek
-seek = withWords start
+seek ps = do
+	force <- Annex.getState Annex.force
+	withWords (start force) ps
 
-start :: [String] -> CommandStart
-start (keyname:file:[]) = do
+start :: Bool -> [String] -> CommandStart
+start force (keyname:file:[]) = do
 	let key = fromMaybe (error "bad key") $ file2key keyname
-	inbackend <- inAnnex key
-	unless inbackend $ error $
-		"key ("++ keyname ++") is not present in backend"
+	unless force $ do
+		inbackend <- inAnnex key
+		unless inbackend $ error $
+			"key ("++ keyname ++") is not present in backend (use --force to override this sanity check)"
 	showStart "fromkey" file
 	next $ perform key file
-start _ = error "specify a key and a dest file"
+start _ _ = error "specify a key and a dest file"
 
 perform :: Key -> FilePath -> CommandPerform
 perform key file = do
