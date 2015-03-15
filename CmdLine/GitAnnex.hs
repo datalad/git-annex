@@ -151,6 +151,7 @@ cmds = concat
 	, Command.LookupKey.cmd
 	, Command.ExamineKey.cmd
 	, Command.FromKey.cmd
+	, Command.RegisterUrl.cmd
 	, Command.DropKey.cmd
 	, Command.TransferKey.cmd
 	, Command.TransferKeys.cmd
