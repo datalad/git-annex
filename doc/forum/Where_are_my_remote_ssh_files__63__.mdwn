@@ -1,0 +1,10 @@
+<img src=http://s.natalian.org/2015-03-10/where-are-the-files.png>
+
+I managed to sync files to a remote ssh store "bible" with `git annex sync --content` however, where I ssh to bible, I was surprised not to see any of the JPG files that were copied there.
+
+
+What am I missing?
+
+# Solution
+
+I need to run `git annex sync` on the host bible too!

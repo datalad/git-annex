@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlc-3pdibcizrdz4WmZooECL0k6AvM1cWc"
+ nickname="Joe"
+ subject="direct-mode to direct-mode perhaps?"
+ date="2015-03-09T17:40:59Z"
+ content="""
+It seems like the problem is when using a direct-mode repository on both sides of the copy.
+
+I can get and copy files to and from the USB stick when I'm dealing with my Linux-based (indirect mode) repository.
+
+Could it be that git-annex isn't properly noticing that c:\annex is in direct mode, and so it should copy from c:\annex\readme.txt instead of c:\annex\.git\annex\objects\... ?
+"""]]

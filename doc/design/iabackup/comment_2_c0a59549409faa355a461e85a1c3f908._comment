@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 2"
+ date="2015-03-09T16:48:18Z"
+ content="""
+I've tried throwing about ~16 million files at git/git-annex in the past where some files were 1-2kb in size (around 30% of them). git/git-annex doesn't work well at that scale.
+"""]]

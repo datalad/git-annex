@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawksOCeakibYmGDt3wLLo4nkY0FkB72I2Uo"
+ nickname="Source"
+ subject="comment 1"
+ date="2015-03-07T02:50:19Z"
+ content="""
+I think I have tracked down part of the issue. It due to the options that are called by `git-annex` when trying to `rsync` between the NTFS local hard drive and the SSH remote. 
+
+I got `rsync` to work by using `rsync -vrc source dest` as options (outside of git-annex). Found [here](http://askubuntu.com/questions/112863/rsync-not-working-between-ntfs-fat-and-ext).
+
+Is there any way to change the rsync options put out by git-annex when copying/moving to and from local ntfs drives on linux?
+"""]]

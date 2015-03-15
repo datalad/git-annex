@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlc-3pdibcizrdz4WmZooECL0k6AvM1cWc"
+ nickname="Joe"
+ subject="Ah, but I can directly overwrite the file"
+ date="2015-03-09T17:46:58Z"
+ content="""
+If I copy f:\annex\bin\s3.exe into c:\annex\bin\s3.exe, (overwriting the .git symlink record) git annex sync will properly record that the file is now in this replica.
+
+So I guess I have a workaround(ish)
+
+--Joe
+"""]]

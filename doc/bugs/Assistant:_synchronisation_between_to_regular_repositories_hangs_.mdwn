@@ -1,0 +1,28 @@
+### Please describe the problem.
+
+Two regular repositories created with the assistant, one on the computer and one on an USB stick cannot synchronise. Log reports problem with the index file:
+
+     /media/usb/annex/.git/index: copyFile: does not exist (No such file or directory)
+
+### What steps will reproduce the problem?
+
+Create a repository and then another on an usb stick (with `Add another repository`) and add a file to the first one, it doesn't synchronise.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex 5.20141125 from Debian Jessie
+
+### Please provide any additional information below.
+
+I was able to solve the problem by copying the .git/index file from the first repository to the second one.
+
+Also note that the second repository is on a FAT32 usb stick
+
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]

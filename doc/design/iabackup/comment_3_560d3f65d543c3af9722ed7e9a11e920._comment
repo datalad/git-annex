@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmsy_GIefGlGGD_XJp_R6EsWIRUC4ev9XU"
+ nickname="David"
+ subject="This is a BIG task"
+ date="2015-03-13T20:48:56Z"
+ content="""
+If I understand it correctly, 20PB at 2400 shards of 8TB each with 3 copies is 24TB/shard at 1TB/client is 2400*24 = ~60K clients assuming no churn. So it would probably need ~100K clients to cover the churn and have a good chance that each shard had 3 copies at all times. That's 1/3 the size of BOINC's active population.
+
+It would take time to scale to that population. And it would take time to get three copies out of the Archive. During that time, the Archive is growing. The back of my envelope says that doing this in 2.5yrs roughly doubles the Archive's outbound bandwidth if you average it across the 2.5 years. But the population would grow slowly to start with, then faster, so that the bandwidth impact would be back-loaded. And at the end of the 2.5 years, you would need a lot more than the 100K users.
+
+A design that used erasure coding or entanglement would reduce the storage and bandwidth demand considerably while providing adequate reliability.
+
+"""]]
