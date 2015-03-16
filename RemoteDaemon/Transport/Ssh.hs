@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module RemoteDaemon.Transport.Ssh (transport) where
+module RemoteDaemon.Transport.Ssh (transport, transportUsingCmd) where
 
 import Common.Annex
 import Annex.Ssh
@@ -22,23 +22,24 @@ import Control.Concurrent.STM
 import Control.Concurrent.Async
 
 transport :: Transport
-transport rr@(RemoteRepo r gc) url h@(TransportHandle g s) ichan ochan = do
-	-- enable ssh connection caching wherever inLocalRepo is called
-	g' <- liftAnnex h $ sshOptionsTo r gc g
-	transport' rr url (TransportHandle g' s) ichan ochan
-
-transport' :: Transport
-transport' (RemoteRepo r _) url transporthandle ichan ochan = do
-
-	v <- liftAnnex transporthandle $ git_annex_shell r "notifychanges" [] []
+transport rr@(RemoteRepo r _) url h ichan ochan = do
+	v <- liftAnnex h $ git_annex_shell r "notifychanges" [] []
 	case v of
 		Nothing -> noop
-		Just (cmd, params) -> robustly 1 $
-			connect cmd (toCommand params)
-  where
-	connect cmd params = do
+		Just (cmd, params) -> transportUsingCmd cmd params rr url h ichan ochan
+
+transportUsingCmd :: FilePath -> [CommandParam] -> Transport
+transportUsingCmd cmd params rr@(RemoteRepo r gc) url h@(TransportHandle g s) ichan ochan = do
+	-- enable ssh connection caching wherever inLocalRepo is called
+	g' <- liftAnnex h $ sshOptionsTo r gc g
+	let transporthandle = TransportHandle g' s
+	transportUsingCmd' cmd params rr url transporthandle ichan ochan
+
+transportUsingCmd' :: FilePath -> [CommandParam] -> Transport
+transportUsingCmd' cmd params (RemoteRepo r _) url transporthandle ichan ochan =
+	robustly 1 $ do
 		(Just toh, Just fromh, Just errh, pid) <-
-			createProcess (proc cmd params)
+			createProcess (proc cmd (toCommand params))
 			{ std_in = CreatePipe
 			, std_out = CreatePipe
 			, std_err = CreatePipe
@@ -57,7 +58,7 @@ transport' (RemoteRepo r _) url transporthandle ichan ochan = do
 		void $ waitForProcess pid
 
 		return $ either (either id id) id status
-
+  where
 	send msg = atomically $ writeTChan ochan msg
 
 	fetch = do
@@ -106,7 +107,7 @@ transport' (RemoteRepo r _) url transporthandle ichan ochan = do
 
 data Status = Stopping | ConnectionClosed
 
-{- Make connection robustly, with exponentioal backoff on failure. -}
+{- Make connection robustly, with exponential backoff on failure. -}
 robustly :: Int -> IO Status -> IO ()
 robustly backoff a = caught =<< catchDefaultIO ConnectionClosed a
   where

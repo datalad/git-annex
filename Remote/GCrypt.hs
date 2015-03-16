@@ -10,7 +10,8 @@ module Remote.GCrypt (
 	chainGen,
 	getGCryptUUID,
 	coreGCryptId,
-	setupRepo
+	setupRepo,
+	accessShellConfig,
 ) where
 
 import qualified Data.Map as M
@@ -265,17 +266,19 @@ setupRepo gcryptid r
 
 	denyNonFastForwards = "receive.denyNonFastForwards"
 
-isShell :: Remote -> Bool
-isShell r = case method of
+accessShell :: Remote -> Bool
+accessShell = accessShellConfig . gitconfig
+
+accessShellConfig :: RemoteGitConfig -> Bool
+accessShellConfig c = case method of
 	AccessShell -> True
 	_ -> False
   where
-	method = toAccessMethod $ fromMaybe "" $
-		remoteAnnexGCrypt $ gitconfig r
+	method = toAccessMethod $ fromMaybe "" $ remoteAnnexGCrypt c
 
 shellOrRsync :: Remote -> Annex a -> Annex a -> Annex a
 shellOrRsync r ashell arsync
-	| isShell r = ashell
+	| accessShell r = ashell
 	| otherwise = arsync
 
 {- Configure gcrypt to use the same list of keyids that
@@ -319,7 +322,7 @@ store r rsyncopts
 			let destdir = parentDir $ gCryptLocation r k
 			Remote.Directory.finalizeStoreGeneric tmpdir destdir
 			return True
-	| Git.repoIsSsh (repo r) = if isShell r
+	| Git.repoIsSsh (repo r) = if accessShell r
 		then fileStorer $ \k f p -> Ssh.rsyncHelper (Just p)
 			=<< Ssh.rsyncParamsRemote False r Upload k f Nothing
 		else fileStorer $ Remote.Rsync.store rsyncopts
@@ -330,7 +333,7 @@ retrieve r rsyncopts
 	| not $ Git.repoIsUrl (repo r) = byteRetriever $ \k sink ->
 		guardUsable (repo r) (return False) $
 			sink =<< liftIO (L.readFile $ gCryptLocation r k)
-	| Git.repoIsSsh (repo r) = if isShell r
+	| Git.repoIsSsh (repo r) = if accessShell r
 		then fileRetriever $ \f k p ->
 			unlessM (Ssh.rsyncHelper (Just p) =<< Ssh.rsyncParamsRemote False r Download k f Nothing) $
 				error "rsync failed"
