@@ -36,9 +36,9 @@ inside the source tree.
 
 ## minimal build with cabal
 
-This can be done anywhere, and builds git-annex without some features that
-require C libraries, that can be harder to get installed. This is plenty to
-get started using it, although it does not include the assistant or webapp.
+This can be done anywhere, and builds git-annex without some optional features
+that require harder-to-install C libraries. This is plenty to let you get started with
+git-annex, but it does not include the assistant or webapp.
 
 Inside the source tree, run:
 
