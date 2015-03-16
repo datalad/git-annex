@@ -6,7 +6,7 @@ This is a fairly detailed design proposal for using git-annex to build
 ## end-user view
 
 What the end user sees is a directory, with a .git subdirectory,
-and 10 thousand little files (actually, they're broken symlinks, on
+and 100 thousand little files (actually, they're broken symlinks, on
 Linux/OSX). Over time, some of the symlinks start filling in with
 "random" content from the IA. 
 
@@ -14,109 +14,54 @@ The user can look at that content, or even delete files they don't want to
 host.
 
 The user can control how much total disk space the directory takes up.
+(It will use around 100 mb when empty.)
 
 ## sharding to scale
 
 The IA contains some 14 million Items. Inside these Items are 271 million
-files.
+files. Around 177 million of those are available for download.
 
 git repositories do not scale well in the 1-10 million file 
-range, and very badly above that. Storing individual IA Items
+range, and very badly above that. Storing all that in a git repository
 would strain git's scalability badly.
 
-Solution: Create multiple git repositories, and split the Items
-amoung them. Make a tarball of each Item.
+Solution: Create multiple git repositories, and split the files
+amoung them.
 
-* Needs a map from an Item to its repository. (Could be stored in a
-  database, or whatever.)
+* If each git repository holds 100 thousand files, that is 1770
+  repositories, which is not an unmanagable number. 
+  (For comparison, git.debian.org has 18500 repositories.)
 
-* If each git repository holds 10 thousand items, that's 2400 repositories,
-  which is not an unmanagable number. (For comparison, git.debian.org
-  has 18500 repositories.) (100 thousand items would be the higher end, for
-  240 repositories.)
+* The IA is ~20 Petabytes large. Each shard would thus be around 1
+  terabyte in size, although this will vary considerably.
 
-* The IA is ~20 Petabytes large. Each shard would thus be around 8
-  Terabytes. (Item sizes will vary a lot, so there's the
-  potential to get a shard that's unusually small or large. This could be
-  dealt with when assigning Items to the shards, to balance sizes out.)
+* Clients are assigned one or more shards, and clone those repositories.
 
-* The Items in each shard are then distributed out to the clients who
-  have been assigned that shard. Clients will store varying amounts of
-  data, but probably under 1 Terabyte per client. And we want redundancy
-  (LOCKSS) -- say at least 3 copies. So, estimate around 25-100 clients need
-  to be assigned to each shard to get it backed up.
+* A client decides which files in its shard to back up, and does
+  so by running "git annex get" on them. This downloads the files
+  over http from the IA.
+
+* A client will typically not back up its entire shard, but maybe
+  only 500 gb or less of it. Also, we want redundancy (LOCKSS)
+  -- say at least 3 copies of each file. So, a given shard will probably
+  have between 3 and 9 clients handling it.
 
 * Add new shards as the IA continues to grow.
 
-Or, the files could be checked directly into the repositories, not tarred up.
-With 100 thousand files per repository, it needs 2710 repositories.
-This seems much manageable than 10 thousand files in 27100 repositories.
-
-The big advantage of not tarring up files is that the url to the file
-can be added with `git annex addurl`, and then clients can download
-the content direct from the IA http servers, rather than needing to
-connect to a ssh server to get the tarballs. This simplifies and scales
-better for seeding the downloads. (Uploads still need that ssh server
-connection.)
-
-Problem: Would still need to get the checksums for the files, for git-annex
+Problem: Need to get the checksums for the files, for git-annex
 to use. The census published by the IA only has md5sums in it. While
 git-annex can use md5sums, this allows bad actors to find md5 collisions
 with files from the archive, and upload bogus files that checksum ok
 when restoring.
 
-## the IA git repository
+## creating a shard
 
-We're building a pyramid of git-annex repositories, and at the tip
-of this is a single git repository, which represents the entire Internet
-Archive.
+This is a simple matter of making a git repository and telling git-annex
+the filenames and urls that belong in it.
 
-This IA git repository contains no files. But, git-annex in each of the
-~2400 shards knows about it, and by default every Item in every shard
-is recorded as having a copy present in the IA git repository.
-
-If the IA lost an Item somehow, this would be reflected by updating
-the git-annex location tracking to say the IA git repository no longer
-contains the item.
-
-Creating this repository is simple:
-
-	git init ia.git
-	cd ia.git
-	git annex init "The Internet Archive"
-	git annex trust .
-
-## creating the shards
-
-Each shard starts as a clone of the IA git repository.
-
-Items are added to the shard, either all at once, or perhaps on-demand.
-
-To add an Item to the shard:
-
-1. Create a (reproducible checksum) tarball of all the files in the Item
-   (probably excluding "derived" files).
-
-2. Checksum the tarball and derive a git-annex key, and add it to the git
-   repository.
-   
-   The symlink can have a name corresponding to the Item name.
-   (Eg  "LauraPoitrasCitizenfour.tar" for
-   <https://archive.org/details/LauraPoitrasCitizenfour>)
-
-   The easy way is to write the tarball to disk in the shard's git repo,
-   and "git annex add", but it's also possible to do this without ever
-   storing the tarball on disk. (The tarball would then be reconstructed
-   on the fly each time a client requests to download it.)
-
-4. Update git-annex location tracking to indicate that this item
-   is present in the Internet Archive.
-
-   If $iauuid is the UUID of the IA git repository, the command
-   is: `setpresentkey $key $iauuid 1` (This command needs git-annex
-   5.20141231)
-
-5. git commit
+A script can do this using the `git annex fromkey` and `git annex
+registerurl` commands. Time to make such a repository with 100k files
+is in the 10 minute range (faster on SSD or randisk).
 
 ## adding a client
 
@@ -127,32 +72,35 @@ When a client registers to participate:
 2. Send the client an appropriate auth token (eg, a locked down ssh private
    key) to let them access the shard's git repository (or all the shards).
 3. Client clones its assigned shard git repository,
-   runs `git annex init reinit $UUID`, and enables direct mode.
+   runs `git annex init reinit $UUID`.
 
 Note that a client could be assigned to multiple shards, rather than just
 one. Probably good to keep a pool of empty shards that have clients waiting
-for new Items to be added.
+for new files to be added.
 
-Note that direct mode seems like a good idea because it lets the user
-easily delete files to free up space.
+Note that we may want to enable direct mode in the client's clone, 
+because it lets the user easily delete files to free up space.
+OTOH, direct mode is slow and less safe, so we might prefer to use indirect
+mode, and then the client would need to use `git annex drop` if they
+decided to remove content.
 
-## distributing Items
+## distributing files
 
 1. Client runs `git annex sync --content`, which downloads as many
-   Items from the IA as will fit in their disk's free space
+   files from the IA as will fit in their disk's free space
    (leaving some configurable amount free in reserve by configuring
    annex.diskreserve)
 2. Note that [[numcopies|copies]] and [[preferred_content]] settings can be
-   used to make clients only want to download an Item if it's not yet
+   used to make clients only want to download an file if it's not yet
    reached the desired number of copies. Lots of flexability here in
    git-annex.
 3. git-annex will push back to the server an updated git-annex branch,
-   which will record when it has successfully stored an Item.
+   which will record when it has successfully stored an file.
 
 ## bad actors
 
 Clients can misbehave in probably many ways. The best defense for many
-misbehaviors is to distribute Items to enough different clients that we can
+misbehaviors is to distribute files to enough different clients that we can
 trust some of them.
 
 The main git-annex specific misbehavior is that a client could try to push
@@ -195,14 +143,14 @@ refuse to give it back if the IA needed to restore the backup, too.
 If we really want to test how well the system is working, we need a fire
 drill.
 
-1. Pick some Items that we'll assume the IA has lost in some disaster.
-2. Look up the shard the Item belongs to.
-3. Get the git-annex key of the Item, and tell git-annex it's been
+1. Pick some files that we'll assume the IA has lost in some disaster.
+2. Look up the shard the file belongs to.
+3. Get the git-annex key of the file, and tell git-annex it's been
    lost from the IA, by running in its shard: `setpresentkey $key $iauuid 0`
 4. The next time a client runs `git annex sync --content`, it will notice
-   that the IA repo doesn't have the Item anymore. The client will then
-   send the Item back to the origin repo.
-5. To guard against bad actors, that restored Item should be checked with
+   that the IA repo doesn't have the file anymore. The client will then
+   send the file back to the origin repo.
+5. To guard against bad actors, that restored file should be checked with
    `git annex fsck`. If its checksum is good, it can be re-injected back
    into the IA. (Or, the fire drill was successful.)
    (Remember to turn off the fire alarm by running
@@ -210,18 +158,14 @@ drill.
 
 ## shard servers
 
-A server at the IA (or otherwise with a fast pipe) is needed to serve one or
-more shards. Let's consider what this server needs to have on it:
+A server at the IA (or otherwise with a fast pipe) is needed to serve
+the shards. One server can probably manage them all.
+Let's consider what this server needs to have on it:
 
 * git and git-annex
 * ssh server
-* rsync
-* The git repository for the shard. Probably a few hundred mb?
+* The git repository for each shard. A few hundred mb per shard.
 * The git update hook to filter out bad pushes.
-* Some way to get the content of a given Item from the IA 
-  when a client wants to download it. This probably means
-  generating the $item.tar file and buffering it to disk for a while.
-* So, enough disk to buffer a reasonable number of items.
 * Some way to learn when a new user has registered to access a shard,
   so their ssh key is given access.
 
@@ -233,15 +177,14 @@ it'll notice and let the server know, and other clients will then take
 over storing it. (Or if the git-annex assistant is run on the client,
 it would inform the server immediately.)
 
-The user is also free to move Items around (within the git repository
-directory), unpack Items to examine their contents, etc. This doesn't
-affect anyone else.
+The user is also free to move files around (within the git repository
+directory), modify files, view them, etc. This doesn't affect anyone else.
 
 Offline storage is supported. As long as the user can spin it up from time
 to time to run `git annex fsck`.
 
 More advanced users might have multiple repositories on different disks.
-Each has their own UUID, and they could move Items around between them as
+Each has their own UUID, and they could move files around between them as
 desired; this would be communicated back to the origin repository
 automatically.
 
@@ -250,26 +193,28 @@ shard that includes Software, or Grateful Dead, etc. This might encourage
 users to devote more resources.
 
 Or, rather than doing a lucky dip and getting one or a couple shards,
-a user could clone em all, and pick just which Items to store.
+a user could clone em all, and pick just which files to get.
 
-The contents of Items sometimes changes.
-This can be reflected by updating an Item's file in the git repository.
-Clients will then download the new version of the Item.
+The contents of files sometimes changes.
+This can be reflected by updating the file in the git repository.
+Clients will then download the new version of the file. (They will also
+tend to retain the old version, although this can be dealt with by using
+`git annex unused`).
 
-Items sometimes go dark; this could be reflected by deleting the item
-from the repository. It's up to the clients what they do with the content
-of such Items.
+Items sometimes go dark; this could be reflected by deleting the Item's
+files from the repository. It's up to the clients what they do with the
+content of such Items.
 
 Client's repos could be put into groups to classify them. For example,
 there could be groups per continent, or for trust levels, or whatever.
 These can be used by [[preferred_content]] expressions to fine tune how
-Items are spread out amoung the available clients.
+files are spread out amoung the available clients.
 
 ## other potential gotchas
 
-If any single Item is very large (eg, 10 terabytes), there may not be
+If any single file is very large (eg, 10 terabytes), there may not be
 any clients that can handle it. This could be dealt with by splitting up
-the item into smaller files. Word is there is a single 2 tb item, and a few
+the file into smaller chunks. Word is there is a single 2 tb item, and a few
 more around 100 gb, so this is probably not a concern.
 
 A client could add other files to its local repo, and git-annex branch
@@ -278,13 +223,12 @@ filtered out by the git update hook (rejecting the whole push because of
 this seems excessive).
 
 There may be a thundering herd problem, where many clients end up
-downloading the same Item at the same time, and more copies than neecessary
+downloading the same file at the same time, and more copies than neecessary
 result. The next `git annex sync --content` in some of the
-redundant clients will notice this and drop that Item, and presumably
-download some other Item. However, it might be good to rate limit the
-number of concurrent downloads of a given item, to prevent this and perhaps
-other issues. This could be done by a wrapper around git-annex shell or
-perhaps a git-annex modification.
+redundant clients will notice this and drop that file, and presumably
+download some other file. It would be good to avoid this problem,
+perhaps by having a new client initially download a random set of the
+files in their shard that don't yet have enough copies.
 
 With clients all fscking their part of a shard once a month,
 that will increase the size of the git repository, with new distributed
