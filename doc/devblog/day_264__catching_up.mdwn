@@ -1,0 +1,7 @@
+Caught up with most of the recent backlog today. Was not very bad.
+
+Fixed `remotedaemon` to support gcrypt remotes, which was never
+quite working before.
+
+Seem to be on track to making a release tomorrow with a whole month's
+changes.
