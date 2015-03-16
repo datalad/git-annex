@@ -42,3 +42,7 @@ git version 1.9.5.msysgit.0
 Windows 7 64bit
 
 
+> Here's a nickle kid, go buy yourself a real OS that supports
+> colon in filenames.  [[done]]
+> 
+> --[[Joey]] 
