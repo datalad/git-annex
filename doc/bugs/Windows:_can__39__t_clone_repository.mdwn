@@ -43,6 +43,14 @@ Windows 7 64bit
 
 
 > Here's a nickle kid, go buy yourself a real OS that supports
-> colon in filenames.  [[done]]
+> colon in filenames.  
+> 
+> Windows has all kinds of stupid limitations that are enough fun
+> making git-annex support, without trying to make its source/website
+> repo also avoid them. 
+> 
+> The solution is cygwin; git-annex's windows autobuilder uses cygwin's
+> version of git to check out its git repository, and that should work for you.
+> [[done]]
 > 
 > --[[Joey]] 
