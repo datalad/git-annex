@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-03-16T18:00:33Z"
+ content="""
+Recent versions of git-annex have expanded `git annex info $remote`
+to be able to show some info for special remotes. What is
+shown depends on the type of remote. For example, it will show
+the bucket used for a S3 remote, or the url used for a WebDAV remote.
+"""]]
