@@ -1,0 +1,12 @@
+### Please describe the problem.
+Openssh was not compiled to support ed25519 algorithm
+
+### What steps will reproduce the problem?
+only enable ed25519 on server and try to connect via ssh.
+fails with "no hostkey alg"
+
+### What version of git-annex are you using? On what operating system?
+5.20150219-gd24cfd3, Android 5.0.1
+
+regards,
+David
