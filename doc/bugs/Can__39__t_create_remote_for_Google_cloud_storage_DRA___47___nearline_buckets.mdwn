@@ -1,0 +1,42 @@
+### Please describe the problem.
+
+Creating a remote for a GCS durable reduced availability (DRA) or nearline bucket fails with "Invalid argument".
+
+### What steps will reproduce the problem?
+
+    $ git annex initremote test encryption=none bucket=BUCKET type=S3 host=storage.googleapis.com
+
+This works if BUCKET is a standard bucket, but fails with "invalid argument" if BUCKET is a DRA or nearline bucket.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 5.20150205
+on macos 10.10
+
+### Please provide any additional information below.
+
+I spent some time in strace, and my best guess is that this is because git-annex is sending x-amz-storage-class: STANDARD.  I couldn't figure out a way to disable this; if I did e.g.
+
+    $ git annex initremote test encryption=none bucket=BUCKET type=S3 host=storage.googleapis.com storageclass="NEARLINE"
+
+it still fails and still sends storage-class: STANDARD.  I also tried storageclass="" -- same thing.
+
+Here's the HTTP request that's failing:
+
+    PUT /annex-uuid HTTP/1.1\r\nAuthorization: AWS GOOG<...>:<...>=\r\nDate: Mon, 16 Mar 2015 01:41:38 GMT\r\nHost: jlebar-backup-annex-nearline-test.storage.googleapis.com\r\nContent-Type: \r\nx-amz-storage-class: STANDARD\r\nContent-Length: 36\r\n\r\n<...>
+
+And the (rather unhelpful) HTTP response:
+
+    HTTP/1.1 400 Bad Request\r\nContent-Type: application/xml; charset=UTF-8\r\nContent-Length: 117\r\nVary: Origin\r\nDate: Mon, 16 Mar 2015 01:41:38 GMT\r\nServer: UploadServer      (\"Built on Feb 27 2015 12:13:16 (1425067996)\")\r\nAlternate-Protocol: 80:quic,p=0.5\r\n\r\n<?xml version='1.0' encoding='UTF-8'?><Error><Code>InvalidArgument</Code><Message>Invalid argument.</ Message></Error>
+
+[[!format sh """
+
+$ AWS_ACCESS_KEY_ID=... AWS_SECRET_ACCESS_KEY="..." git annex --debug initremote test encryption=none bucket=<DRA bucket> type=S3 host=storage.googleapis.com
+[2015-03-15 19:12:19 PDT] read: git ["--git-dir=.git","--work-tree=.","show-ref","git-annex"]
+[2015-03-15 19:12:19 PDT] read: git ["--git-dir=.git","--work-tree=.","show-ref","--hash","refs/heads/git-annex"]
+[2015-03-15 19:12:19 PDT] read: git ["--git-dir=.git","--work-tree=.","log","refs/heads/git-annex..d7640d68e3bd55735fb275816df0b94ec05031a7","-n1","--pretty=%H"]
+[2015-03-15 19:12:20 PDT] chat: git ["--git-dir=.git","--work-tree=.","cat-file","--batch"]
+initremote test (checking bucket...) git-annex: S3Error {s3StatusCode = Status {statusCode = 400, statusMessage = "Bad Request"}, s3ErrorCode = "InvalidArgument", s3ErrorMessage = "Invalid argument.", s3ErrorResource = Nothing, s3ErrorHostId = Nothing, s3ErrorAccessKeyId = Nothing, s3ErrorStringToSign = Nothing}
+
+# End of transcript or log.
+"""]]
