@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-03-16T17:34:22Z"
+ content="""
+Well, non-bare git repositories are supposed to have a .git/index file.
+
+Perhaps some damage to your USB stick caused it to lose this file?
+"""]]
