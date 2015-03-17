@@ -1,0 +1,42 @@
+git-annex 5.20150317 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * fsck: Incremental fsck uses sqlite to store its records, instead
+     of abusing the sticky bit. Existing sticky bits are ignored;
+     incremental fscks started by old versions won't be resumed by
+     this version.
+   * fsck: Multiple incremental fscks of different repos (including remotes)
+     can now be running at the same time in the same repo without it
+     getting confused about which files have been checked for which remotes.
+   * unannex: Refuse to unannex when repo is too new to have a HEAD,
+     since in this case there must be staged changes in the index
+     (if there is anything to unannex), and the unannex code path
+     needs to run with a clean index.
+   * Linux standalone: Set LOCPATH=/dev/null to work around
+     https://ghc.haskell.org/trac/ghc/ticket/7695
+     This prevents localization from working, but git-annex
+     is not localized anyway.
+   * sync: As well as the synced/git-annex push, attempt a
+     git-annex:git-annex push, as long as the remote branch
+     is an ancestor of the local branch, to better support bare git repos.
+     (This used to be done, but it forgot to do it since version 4.20130909.)
+   * When re-execing git-annex, use current program location, rather than
+     ~/.config/git-annex/program, when possible.
+   * Submodules are now supported by git-annex!
+   * metadata: Fix encoding problem that led to mojibake when storing
+     metadata strings that contained both unicode characters and a space
+     (or '!') character.
+   * Also potentially fixes encoding problem when embedding credentials
+     that contain unicode characters.
+   * sync: Fix committing when in a direct mode repo that has no HEAD ref.
+     (For example, a newly checked out git submodule.)
+   * Added SETURIPRESENT and SETURIMISSING to external special remote protocol,
+     useful for things like ipfs that don't use regular urls.
+   * addurl: Added --raw option, which bypasses special handling of quvi,
+     bittorrent etc urls.
+   * git-annex-shell: Improve error message when the specified repository
+     doesn't exist or git config fails for some reason.
+   * fromkey --force: Skip test that the key has its content in the annex.
+   * fromkey: Add stdin mode.
+   * registerurl: New plumbing command for mass-adding urls to keys.
+   * remotedaemon: Fixed support for notifications of changes to gcrypt
+     remotes, which was never tested and didn't quite work before."""]]
