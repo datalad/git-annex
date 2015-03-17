@@ -1,0 +1,34 @@
+### Please describe the problem.
+
+Imported podcast files with iso-8859-1 encoding and swedish
+characters break repo on Android client with errors like.
+
+``error: unable to create file pod/Pennypodden___om_bostadspolitik/E54___�se_Richard__Gr�nby_.mp3 (Invalid argument)``
+
+Android clients empty direct repo is then distributed to all clients. Whole
+annex repo appears empty on all clients. Old revision has to be checked out to
+get files back. As soon as Android client syncs again however, all repos are
+emptied.
+
+### What steps will reproduce the problem?
+Set up indirect repo on linux laptop and direct repo on Android phone. On the
+laptop do:
+
+``git-annex importfeed http://www.pennygangen.se/podcast/podcast.xml``
+
+Wait for changes to propagate if using the assistant or sync manually.
+
+### What version of git-annex are you using? On what operating system?
+
+ - Debian sid and testing with 5.20141125 on various clients and 
+ - Android 4.4 with 5.20150219-gd24cfd3 on the phone.
+
+### Please provide any additional information below.
+
+After failing to write the files with problematic filenames git annex appears
+to belive it should commit the fact that the repo is empty and sync this
+emptiness to everyone.
+
+``convmv -f iso-8859-1 -t utf8 $problemfile --notest`` on the laptop fixes the
+filenames and the Android client stops wrecking everything.
+
