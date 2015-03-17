@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnG-DZQa3d3Jn7K2q36TlbmZ8v2YuV-23M"
+ nickname="Fer"
+ subject="Command line?"
+ date="2015-03-17T13:31:34Z"
+ content="""
+Th expression format in the file is the same as preferred, but the latter can be set through command line (git-annex wanted REPO EXP), but I can't find any way to set required through command line. Is there any way, in the works, or not planned?
+
+Thanks!
+"""]]
