@@ -1,0 +1,29 @@
+[[!comment format=hs
+ username="risca"
+ subject="Problem solved!"
+ date="2015-03-17T09:37:04Z"
+ content="""
+I was experiencing the same issue (FATAL: bad git-annex-shell command: git-annex-shell 'configlist' '/myrepo' at /usr/share/gitolite3/commands/git-annex-shell line 25, <DATA> line 1.)
+
+I solved with the following patch:
+
+--- /usr/share/gitolite3/commands/git-annex-shell       2015-03-17 10:26:46.114680811 +0100
++++ orig.git-annex-shell        2015-03-17 10:25:16.074680925 +0100
+@@ -23,7 +23,7 @@ my $cmd = $ENV{SSH_ORIGINAL_COMMAND};
+ # the second parameter.
+ # Further parameters are not validated here (see below).
+ die \"bad git-annex-shell command: $cmd\"
+-  unless $cmd =~ m#^(git-annex-shell '\w+' ')/(?:\~\/)?([0-9a-zA-Z][0-9a-zA-Z._\@/+-]*)('( .*|))$#;
++  unless $cmd =~ m#^(git-annex-shell '\w+' ')/\~/([0-9a-zA-Z][0-9a-zA-Z._\@/+-]*)('( .*|))$#;
+ my $start = $1;
+ my $repo  = $2;
+ my $end   = $3;
+
+
+References: http://git-annex.branchable.com/tips/using_gitolite_with_git-annex/#comment-16ee81f0d9e973ecb2fbb9d4a1fff261
+It was shown 3 years ago! I don't know why the bug it's still on. I'm using debian with:
+ - git-annex:
+  Installed: 5.20141024~bpo70+1
+ - gitolite3:
+  Installed: 3.6-1~bpo70+1
+"""]]
