@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmSedKB9mVUCUcxmY5snWkfFVvTSnmiNKo"
+ nickname="Jeffery"
+ subject="comment 4"
+ date="2015-03-18T12:14:55Z"
+ content="""
+According to the documentation for nearline: \"You can access data in a Nearline bucket in the same way you access data in a Standard bucket.\" and that you just use \"Nearline\" as the storage class... so this might work?
+"""]]
