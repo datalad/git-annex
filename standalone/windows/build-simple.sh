@@ -1,7 +1,5 @@
 #!/bin/sh
 # Script to build git-annex on windows. Run by build.bat
-# Does not currently build the NSIS installer. See build.sh for how to do
-# that.
 
 set -e
 set -x
