@@ -1,2 +1,5 @@
-Is there a way to use notify-start and notify-finish, not when using git annex on the command line but also when using the assistant ?
-I would like to get notifications when I move files to annexed folders for when the transfer to the server is finished and such things.
+Is there a way to use notify-start and notify-finish, not when using git annex
+on the command line but also when using the assistant ?
+
+I would like to get notifications when I move files to annexed folders for when
+the transfer to the server is finished and such things.
