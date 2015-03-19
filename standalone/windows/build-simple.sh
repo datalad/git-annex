@@ -21,6 +21,7 @@ withcygpreferred () {
 # Install haskell dependencies.
 # cabal install is not run in cygwin, because we don't want configure scripts
 # for haskell libraries to link them with the cygwin library.
+cabal update || true
 cabal install --only-dependencies || true
 
 # Build git-annex
