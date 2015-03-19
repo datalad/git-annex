@@ -40,3 +40,6 @@ git-annex 5.20150317 released with [[!toggle text="these changes"]]
    * registerurl: New plumbing command for mass-adding urls to keys.
    * remotedaemon: Fixed support for notifications of changes to gcrypt
      remotes, which was never tested and didn't quite work before."""]]
+
+Update: The OSX build for this release was missing the webapp. An updated
+build is now available fixing that problem.
