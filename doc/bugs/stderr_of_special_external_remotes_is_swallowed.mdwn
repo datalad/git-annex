@@ -1,0 +1,8 @@
+### Please describe the problem.
+
+complicates troubleshooting of custom special remotes since annex seems to swallow all output, including stderr
+
+### What version of git-annex are you using? On what operating system?
+
+5.20150302
+
