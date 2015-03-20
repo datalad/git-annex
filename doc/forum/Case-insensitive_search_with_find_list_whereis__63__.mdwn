@@ -1,0 +1,1 @@
+Are case-insensitive searchs possible with find, list, and whereis?
