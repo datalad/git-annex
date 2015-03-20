@@ -1,0 +1,5 @@
+I know we can associate arbitrary [[metadata]] to files. I'd like to be able to sync *remote* specific metadata (say `ip = 10.0.0.1`) fields around. I was originally thinking of shoving this in the description but I am not sure that (a) it gets synced around and (b) it will scale well enough.
+
+Then I thought we could use the key/value storage, but then the keyname would change with metadata changes so maybe that won't work...? Another option I thought of was to just throw stuff in a separate directory in the git-annex branch.
+
+Thoughts? --[[anarcat]]
