@@ -1010,6 +1010,15 @@ subdirectories).
 
   It exits 0 if the key is recorded to be present and 1 if not.
 
+* `checkpresentkey key remote`
+
+  This plumbing-level command verifies if the specified key's content
+  is present in the specified remote.
+
+  Exits 0 if the content is verified present, or 1 if it is verified to not
+  be present. If there is a problem checking the remote, the special
+  exit code 100 is used, and an error message is output to stderr.
+
 * `rekey [file key ...]`
 
   This plumbing-level command is similar to migrate, but you specify

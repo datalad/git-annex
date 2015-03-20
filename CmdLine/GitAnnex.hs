@@ -30,6 +30,7 @@ import qualified Command.TransferKey
 import qualified Command.TransferKeys
 import qualified Command.SetPresentKey
 import qualified Command.ReadPresentKey
+import qualified Command.CheckPresentKey
 import qualified Command.ReKey
 import qualified Command.MetaData
 import qualified Command.View
@@ -158,6 +159,7 @@ cmds = concat
 	, Command.TransferKeys.cmd
 	, Command.SetPresentKey.cmd
 	, Command.ReadPresentKey.cmd
+	, Command.CheckPresentKey.cmd
 	, Command.ReKey.cmd
 	, Command.MetaData.cmd
 	, Command.View.cmd
