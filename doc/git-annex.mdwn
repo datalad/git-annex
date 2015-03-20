@@ -1000,7 +1000,15 @@ subdirectories).
 * `setpresentkey key uuid [1|0]`
 
   This plumbing-level command changes git-annex's records about whether
-  the specified key is present in a remote with the specified uuid.
+  the specified key's content is present in a remote with the specified uuid.
+
+* `readpresentkey key uuid`
+
+  This plumbing-level command reads git-annex's records about whether
+  the specified key's content is present in the remote with the speficied
+  uuid.
+
+  It exits 0 if the key is recorded to be present and 1 if not.
 
 * `rekey [file key ...]`
 

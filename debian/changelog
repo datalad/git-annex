@@ -1,3 +1,9 @@
+git-annex (5.20150318) UNRELEASED; urgency=medium
+
+  * readpresentkey: New plumbing command for checking location log.
+
+ -- Joey Hess <id@joeyh.name>  Thu, 19 Mar 2015 17:05:32 -0400
+
 git-annex (5.20150317) unstable; urgency=medium
 
   * fsck: Incremental fsck uses sqlite to store its records, instead
