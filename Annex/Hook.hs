@@ -25,6 +25,9 @@ preCommitHook = Git.Hook "pre-commit" (mkHookScript "git annex pre-commit .")
 preCommitAnnexHook :: Git.Hook
 preCommitAnnexHook = Git.Hook "pre-commit-annex" ""
 
+postUpdateAnnexHook :: Git.Hook
+postUpdateAnnexHook = Git.Hook "post-update-annex" ""
+
 mkHookScript :: String -> String
 mkHookScript s = unlines
 	[ shebang_local

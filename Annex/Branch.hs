@@ -55,6 +55,7 @@ import Annex.ReplaceFile
 import qualified Annex.Queue
 import Annex.Branch.Transitions
 import qualified Annex
+import Annex.Hook
 
 {- Name of the branch that is used to store git-annex's information. -}
 name :: Git.Ref
@@ -166,13 +167,16 @@ updateTo pairs = do
 			mapM_ checkBranchDifferences refs
 			mergeIndex jl refs
 		let commitrefs = nub $ fullname:refs
-		unlessM (handleTransitions jl localtransitions commitrefs) $ do
-			ff <- if dirty
-				then return False
-				else inRepo $ Git.Branch.fastForward fullname refs
-			if ff
-				then updateIndex jl branchref
-				else commitIndex jl branchref merge_desc commitrefs
+		ifM (handleTransitions jl localtransitions commitrefs)
+			( runAnnexHook postUpdateAnnexHook
+			, do
+				ff <- if dirty
+					then return False
+					else inRepo $ Git.Branch.fastForward fullname refs
+				if ff
+					then updateIndex jl branchref
+					else commitIndex jl branchref merge_desc commitrefs
+			)
 		liftIO cleanjournal
 
 {- Gets the content of a file, which may be in the journal, or in the index
@@ -384,6 +388,7 @@ setIndexSha ref = do
 	f <- fromRepo gitAnnexIndexStatus
 	liftIO $ writeFile f $ fromRef ref ++ "\n"
 	setAnnexFilePerm f
+	runAnnexHook postUpdateAnnexHook
 
 {- Stages the journal into the index and returns an action that will
  - clean up the staged journal files, which should only be run once

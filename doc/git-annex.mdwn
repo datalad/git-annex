@@ -1953,8 +1953,12 @@ used by git-annex.
 to start the git-annex assistant in.
 
 `.git/hooks/pre-commit-annex` in your git repository will be run whenever
-a commit is made, either by git commit, git-annex sync, or the git-annex
-assistant.
+a commit is made to the HEAD branch, either by git commit, git-annex
+sync, or the git-annex assistant.
+
+`.git/hooks/post-update-annex` in your git repository will be run
+whenever the git-annex branch is updated. You can make this hook run
+`git update-server-info` when publishing a git-annex repository by http.
 
 # SEE ALSO
 
