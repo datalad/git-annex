@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="giomasce"
+ subject="Python implementation"
+ date="2015-03-22T22:38:54Z"
+ content="""
+I wrote a Python implementation of the two hashing functions for a project of mine. [Here it is](https://gist.github.com/giomasce/a7802bda1417521c5b30), hoping it can be helpful for somone.
+
+"""]]
