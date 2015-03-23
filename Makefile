@@ -24,10 +24,8 @@ git-annex: Build/SysConfig.hs
 	$(CABAL) build
 	ln -sf dist/build/git-annex/git-annex git-annex
 
-git-annex.1: doc/git-annex.mdwn
-	./Build/mdwn2man git-annex 1 doc/git-annex.mdwn > git-annex.1
-git-annex-shell.1: doc/git-annex-shell.mdwn
-	./Build/mdwn2man git-annex-shell 1 doc/git-annex-shell.mdwn > git-annex-shell.1
+%.1: doc/%.mdwn
+	./Build/mdwn2man $@ 1 $< > $@
 
 # These are not built normally.
 git-union-merge.1: doc/git-union-merge.mdwn
