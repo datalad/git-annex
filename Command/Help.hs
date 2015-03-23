@@ -23,7 +23,7 @@ import System.Console.GetOpt
 
 cmd :: [Command]
 cmd = [noCommit $ noRepo startNoRepo $ dontCheck repoExists $
-	command "help" paramNothing seek SectionQuery "display help"]
+	command "help" (paramOptional "COMMAND") seek SectionCommon "display help"]
 
 seek :: CommandSeek
 seek = withWords start
@@ -38,6 +38,7 @@ startNoRepo = start'
 
 start' :: [String] -> IO ()
 start' ["options"] = showCommonOptions
+start' [c] = showGitHelp c
 start' _ = showGeneralHelp
 
 showCommonOptions :: IO ()
@@ -58,8 +59,17 @@ showGeneralHelp = putStrLn $ unlines
 		, Command.Fsck.cmd
 		]
 	, "Run 'git-annex' for a complete command list."
-	, "Run 'git-annex command --help' for help on a specific command."
+	, "Run 'git-annex help command' for help on a specific command."
 	, "Run `git annex help options' for a list of common options."
 	]
   where
 	cmdline c = "\t" ++ cmdname c ++ "\t" ++ cmddesc c
+
+showGitHelp :: String -> IO ()
+showGitHelp c = 
+	unlessM (githelp) $
+		putStrLn $ "View online help at " ++ url
+  where
+	githelp = boolSystem "git" [Param "help", Param fullc]
+	fullc = "git-annex-" ++ c
+	url = "https://git-annex.branchable.com/" ++ fullc ++ "/"

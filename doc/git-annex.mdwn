@@ -60,6 +60,12 @@ files in the directory. When no path is specified, most git-annex commands
 default to acting on all relevant files in the current directory (and
 subdirectories).
 
+* `help`
+
+  Display built-in help.
+
+  For help on a specific command, use `git annex help command`
+
 * `add [path ...]`
 
   Adds files in the path to the annex. If no path is specified, adds
