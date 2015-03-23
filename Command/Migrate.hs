@@ -16,6 +16,7 @@ import Types.KeySource
 import Annex.Content
 import qualified Command.ReKey
 import qualified Command.Fsck
+import qualified Annex
 
 cmd :: [Command]
 cmd = [notDirect $ withOptions annexedMatchingOptions $
@@ -27,13 +28,14 @@ seek = withFilesInGit $ whenAnnexed start
 
 start :: FilePath -> Key -> CommandStart
 start file key = do
+	forced <- Annex.getState Annex.force
 	v <- Backend.getBackend file key
 	case v of
 		Nothing -> stop
 		Just oldbackend -> do
 			exists <- inAnnex key
 			newbackend <- choosebackend =<< chooseBackend file
-			if (newbackend /= oldbackend || upgradableKey oldbackend key) && exists
+			if (newbackend /= oldbackend || upgradableKey oldbackend key || forced) && exists
 				then do
 					showStart "migrate" file
 					next $ perform file key oldbackend newbackend
