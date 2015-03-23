@@ -1,0 +1,29 @@
+# NAME
+
+git-annex describe - change description of a repository
+
+# SYNOPSIS
+
+git annex describe repository description
+
+# DESCRIPTION
+
+Changes the description of a repository.
+
+The repository to describe can be specified by git remote name or
+by uuid. To change the description of the current repository, use
+"here".
+
+Repository descriptions are displayed by git-annex in various places.
+They are most useful when git-annex knows about a repository, but there is
+no git remote corresponding to it.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

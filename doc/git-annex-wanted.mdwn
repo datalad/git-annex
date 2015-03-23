@@ -1,0 +1,29 @@
+# NAME
+
+git-annex wanted - get or set preferred content expression
+
+# SYNOPSIS
+
+git annex wanted `repository [expression]`
+
+# DESCRIPTION
+
+When run with an expression, configures the content that is preferred
+to be held in the archive. See [[git-annex-preferred-content]](1)
+
+For example:
+
+	git annex wanted . "include=*.mp3 or include=*.ogg"
+
+Without an expression, displays the current preferred content setting
+of the repository.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

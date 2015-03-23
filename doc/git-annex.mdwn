@@ -191,161 +191,80 @@ subdirectories).
   Until a repository (or one of its remotes) has been initialized,
   git-annex will refuse to operate on it, to avoid accidentally
   using it in a repository that was not intended to have an annex.
-
-  It's useful, but not mandatory, to initialize each new clone
-  of a repository with its own description. If you don't provide one,
-  one will be generated using the username, hostname and the path.
+  
+  See [[git-annex-init]](1) for details.
 
 * `describe repository description`
 
   Changes the description of a repository.
+  
+  See [[git-annex-describe]](1) for details.
 
-  The repository to describe can be specified by git remote name or
-  by uuid. To change the description of the current repository, use
-  "here".
-
-* `initremote name [param=value ...]`
+* `initremote name type=value [param=value ...]`
 
   Creates a new special remote, and adds it to `.git/config`.
 
-  The remote's configuration is specified by the parameters. Different
-  types of special remotes need different configuration values. The
-  command will prompt for parameters as needed.
-
-  All special remotes support encryption. You can either specify
-  `encryption=none` to disable encryption, or specify
-  `encryption=hybrid keyid=$keyid ...` to specify a GPG key id (or an email
-  address associated with a key).
-
-  There are actually three schemes that can be used for management of the
-  encryption keys. When using the encryption=hybrid scheme, additional
-  GPG keys can be given access to the encrypted special remote easily
-  (without re-encrypting everything). When using encryption=shared,
-  a shared key is generated and stored in the git repository, allowing
-  anyone who can clone the git repository to access it. Finally, when using
-  encryption=pubkey, content in the special remote is directly encrypted
-  to the specified GPG keys, and additional ones cannot easily be given
-  access.
-
-  Note that with encryption enabled, a cryptographic key is created.
-  This requires sufficient entropy. If initremote seems to hang or take
-  a long time while generating the key, you may want to Ctrl-c it and
-  re-run with `--fast`, which causes it to use a lower-quality source of
-  randomness.
-
-  Example Amazon S3 remote:
-
-    	git annex initremote mys3 type=S3 encryption=hybrid keyid=me@example.com datacenter=EU
-
+  See [[git-annex-initremote]](1) for details.
+  
 * `enableremote name [param=value ...]`
 
-  Enables use of an existing special remote in the current repository,
-  which may be a different repository than the one in which it was
-  originally created with the initremote command.
-
-  The name of the remote is the same name used when originally
-  creating that remote with "initremote". Run "git annex enableremote"
-  without any name to get a list of special remote names.
-
-  Some special remotes may need parameters to be specified every time.
-  For example, the directory special remote requires a directory= parameter.
-
-  This command can also be used to modify the configuration of an existing
-  special remote, by specifying new values for parameters that were
-  originally set when using initremote. (However, some settings such as
-  the as the encryption scheme cannot be changed once a special remote
-  has been created.)
-
-  The GPG keys that an encrypted special remote is encrypted with can be
-  changed using the keyid+= and keyid-= parameters. These respectively
-  add and remove keys from the list. However, note that removing a key
-  does NOT necessarily prevent the key's owner from accessing data
-  in the encrypted special remote
-  (which is by design impossible, short of deleting the remote).
-
-  One use-case of keyid-= is to replace a revoked key with
-  a new key:
-
-        	git annex enableremote mys3 keyid-=revokedkey keyid+=newkey
-
-  Also, note that for encrypted special remotes using plain public-key
-  encryption (encryption=pubkey), adding or removing a key has NO effect
-  on files that have already been copied to the remote. Hence using
-  keyid+= and keyid-= with such remotes should be used with care, and
-  make little sense except in cases like the revoked key example above.
+  Enables use of an existing special remote in the current repository.
+  
+  See [[git-annex-enableremote]](1) for details.
 
 * `numcopies [N]`
 
-  Tells git-annex how many copies it should preserve of files, over all
-  repositories. The default is 1.
-
-  Run without a number to get the current value.
-
-  When git-annex is asked to drop a file, it first verifies that the
-  required number of copies can be satisfied among all the other
-  repositories that have a copy of the file.
-
-  This can be overridden on a per-file basis by the annex.numcopies setting
-  in .gitattributes files.
+  Configure desired number of copies.
+  
+  See [[git-annex-numcopies]](1) for details.
 
 * `trust [repository ...]`
 
   Records that a repository is trusted to not unexpectedly lose
   content. Use with care.
-
-  To trust the current repository, use "here".
+  
+  See [[git-annex-trust]](1) for details.
 
 * `untrust [repository ...]`
 
   Records that a repository is not trusted and could lose content
   at any time.
+  
+  See [[git-annex-untrust]](1) for details.
 
 * `semitrust [repository ...]`
 
   Returns a repository to the default semi trusted state.
+  
+  See [[git-annex-semitrust]](1) for details.
 
 * `dead [repository ...]`
 
   Indicates that the repository has been irretrievably lost.
-  (To undo, use semitrust.)
+  
+  See [[git-annex-dead]](1) for details.
 
 * `group repository groupname`
 
-  Adds a repository to a group, such as "archival", "enduser", or "transfer".
-  The groupname must be a single word.
-
-  Omit the groupname to show the current groups that a repository is in.
+  Add a repository to a group.
+  
+  See [[git-annex-group]](1) for details.
 
 * `ungroup repository groupname`
 
   Removes a repository from a group.
+  
+  See [[git-annex-ungroup]](1) for details.
 
 * `wanted repository [expression]`
+  
+  Get or set preferred content expression.
 
-  When run with an expression, configures the content that is preferred
-  to be held in the archive. See PREFERRED CONTENT below.
-
-  For example:
-
-        	git annex wanted . "include=*.mp3 or include=*.ogg"
-
-  Without an expression, displays the current preferred content setting
-  of the repository.
+  See [[git-annex-wanted]](1) for details.
 
 * `groupwanted groupname [expression]`
 
-  Sets or displays the groupwanted expression. This will be used by
-  repositories that are in the group, and that have their preferred
-  content expression set to "groupwanted".
-
-  For example, to configure a group named redundantarchive, and
-  make repositories in the group want to contain 3 copies of every file:
-
-	git annex groupwanted redundantarchive "not (copies=redundantarchive:3)"
-	for repo in foo bar baz; do
-		git annex group $repo redundantarchive
-		git annex wanted $repo groupwanted
-	done
+  See [[git-annex-groupwanted]](1) for details.
 
 * `schedule repository [expression]`
 
@@ -358,23 +277,21 @@ subdirectories).
   Opens EDITOR on a temp file containing most of the above configuration
   settings, as well as a few others, and when it exits, stores any changes
   made back to the git-annex branch.
+  
+  See [[git-annex-vicfg]](1) for details.
 
 * `direct`
 
   Switches a repository to use direct mode, where rather than symlinks to
   files, the files are directly present in the repository.
-
-  As part of the switch to direct mode, any changed files will be committed.
-
-  Note that git commands that operate on the work tree will refuse to
-  run in direct mode repositories. Use `git annex proxy` to safely run such
-  commands.
+  
+  See [[git-annex-direct]](1) for details.
 
 * `indirect`
 
   Switches a repository back from direct mode to the default, indirect mode.
-
-  As part of the switch from direct mode, any changed files will be committed.
+  
+  See [[git-annex-indirect]](1) for details.
 
 # REPOSITORY MAINTENANCE COMMANDS
 

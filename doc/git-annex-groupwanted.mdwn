@@ -1,0 +1,32 @@
+# NAME
+
+git-annex groupwanted - get or set groupwanted expression
+
+# SYNOPSIS
+
+git annex groupwanted `groupname [expression]`
+
+# DESCRIPTION
+
+Sets or displays the groupwanted expression. This will be used by
+repositories that are in the group, and that have their preferred
+content expression set to "groupwanted".
+  
+For example, to configure a group named redundantarchive, and
+make repositories in the group want to contain 3 copies of every file:
+  
+	git annex groupwanted redundantarchive "not (copies=redundantarchive:3)"
+	for repo in foo bar baz; do
+		git annex group $repo redundantarchive
+		git annex wanted $repo groupwanted
+	done
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

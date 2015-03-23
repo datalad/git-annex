@@ -1,0 +1,25 @@
+# NAME
+
+git-annex trust - trust a repository
+
+# SYNOPSIS
+
+git annex trust `[repository ...]`
+
+# DESCRIPTION
+
+Records that a repository is trusted to not unexpectedly lose
+content. Use with care.
+
+Repositories can be specified using their remote name, their
+description, or their UUID. To trust the current repository, use "here".
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

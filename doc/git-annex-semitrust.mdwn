@@ -1,0 +1,24 @@
+# NAME
+
+git-annex semitrust - return repository to default trust level
+
+# SYNOPSIS
+
+git annex semitrust `[repository ...]`
+
+# DESCRIPTION
+
+Returns a repository to the default semi trusted state.
+
+Repositories can be specified using their remote name, their
+description, or their UUID. For the current repository, use "here".
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.
