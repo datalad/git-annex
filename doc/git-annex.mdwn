@@ -63,72 +63,46 @@ subdirectories).
 * `add [path ...]`
 
   Adds files in the path to the annex. If no path is specified, adds
-  files from the current directory and below.
-
-  Files that are already checked into git, or that git has been configured
-  to ignore will be silently skipped. (Use `--force` to add ignored files.)
-
-  Dotfiles are skipped unless explicitly listed, or the --include-dotfiles
-  option is used.
+  files from the current directory and below. 
+  
+  See [[git-annex-add]](1) for details.
 
 * `get [path ...]`
 
-  Makes the content of annexed files available in this repository. This
-  will involve copying them from another repository, or downloading them,
-  or transferring them from some kind of key-value store.
-
-  Normally git-annex will choose which repository to copy the content from,
-  but you can override this using the `--from` option.
- 
-  Rather than specifying a filename, the `--all` option can be used to 
-  get all available versions of all files, or the --key=KEY`
-  option can be used to get a specified key.
+  Makes the content of annexed files available in this repository.
+  
+  See [[git-annex-get]](1) for details.
 
 * `drop [path ...]`
 
   Drops the content of annexed files from this repository.
+  
+  See [[git-annex-drop]](1) for details.
 
-  git-annex will refuse to drop content if it cannot verify it is
-  safe to do so. This can be overridden with the `--force` switch.
+* `move [path ...] [--from=remote|--to=remote]`
 
-  To drop content from a remote, specify `--from`.
+  Moves the content of files from or to another remote.
 
-* `move [path ...]`
+  See [[git-annex-move]](1) for details.
 
-  When used with the `--from` option, moves the content of annexed files
-  from the specified repository to the current one.
+* `copy [path ...] [--from=remote|--to=remote]`
 
-  When used with the `--to` option, moves the content of annexed files from
-  the current repository to the specified one.
+  Copies the content of files from or to another remote.
 
-* `copy [path ...]`
-
-  When used with the `--from` option, copies the content of annexed files
-  from the specified repository to the current one.
-
-  When used with the `--to` option, copies the content of annexed files from
-  the current repository to the specified one.
-
-  To avoid contacting the remote to check if it has every file
-  when copying --to the repository, specify `--fast`
-
-  To force checking the remote for every file when copying --from the
-  repository, specify `--force`.
+  See [[git-annex-copy]](1) for details.
 
 * `status [path ...]`
 
   Similar to `git status --short`, displays the status of the files in the
-  working tree. Shows files that are not checked into git, files that
-  have been deleted, and files that have been modified.
-  Particularly useful in direct mode.
+  working tree. Particularly useful in direct mode.
+
+  See [[git-annex-status]](1) for details.
 
 * `unlock [path ...]`
 
-  Normally, the content of annexed files is protected from being changed.
-  Unlocking an annexed file allows it to be modified. This replaces the
-  symlink for each specified file with a copy of the file's content.
-  You can then modify it and `git annex add` (or `git commit`) to inject
-  it back into the annex.
+  Unlock annexed files for modification.
+  
+  See [[git-annex-unlock]](1) for details.
 
 * `edit [path ...]`
 
@@ -139,209 +113,62 @@ subdirectories).
 
   Use this to undo an unlock command if you don't want to modify
   the files, or have made modifications you want to discard.
+  
+  See [[git-annex-lock]](1) for details.
 
 * `sync [remote ...]`
 
-  Use this command when you want to synchronize the local repository with
-  one or more of its remotes. You can specify the remotes (or remote
-  groups) to sync with by name; the default if none are specified is to
-  sync with all remotes.
-  Or specify `--fast` to sync with the remotes with the
-  lowest annex-cost value.
+  Synchronize local repository with remotes.
+  
+  See [[git-annex-sync]](1) for details.
 
-  The sync process involves first committing any local changes to files
-  that have previously been added to the repository,
-  then fetching and merging the `synced/master` and the `git-annex` branch
-  from the remote repositories, and finally pushing the changes back to
-  those branches on the remote repositories. You can use standard git
-  commands to do each of those steps by hand, or if you don't want to
-  worry about the details, you can use sync.
+* `mirror [path ...] [--to=remote|--from=remote]`
 
-  Merge conflicts are automatically handled by sync. When two conflicting
-  versions of a file have been committed, both will be added to the tree,
-  under different filenames. For example, file "foo" would be replaced
-  with "foo.somekey" and "foo.otherkey".
-
-  Note that syncing with a remote will not update the remote's working
-  tree with changes made to the local repository. However, those changes
-  are pushed to the remote, so they can be merged into its working tree
-  by running "git annex sync" on the remote.
-
-  With the `--content` option, the contents of annexed files in the work
-  tree will also be uploaded and downloaded from remotes. By default,
-  this tries to get each annexed file that the local repository does not
-  yet have, and then copies each file to every remote that it is syncing with.
-  This behavior can be overridden by configuring the preferred content of
-  a repository. See see PREFERRED CONTENT below.
-
-  The `--message` or `-m` option can be used to specify a commit message.
-
-* `merge`
-
-  This performs the same merging (and merge conflict resolution)
-  that is done by the sync command, but without pushing or pulling any data.
-
-  One way to use this is to put `git annex merge` into a repository's
-  post-receive hook. Then any syncs to the repository will update its working
-  copy automatically.
-
-* `mirror [path ...]`
-
-  This causes a destination repository to mirror a source repository.
-
-  To use the local repository as the source repository,
-  specify mirror `--to` remote.
-
-  To use a remote as the source repository, specify mirror `--from` remote.
-
-  Each specified file in the source repository is mirrored to the destination
-  repository. If a file's content is present in the source repository, it is
-  copied to the destination repository. If a file's content is not present in
-  the source repository, it will be dropped from the destination repository
-  when the numcopies setting allows.
-
-  Note that mirror does not sync the git repository, but only the file
-  contents.
-
-  Also, --all may be specified to mirror all objects stored in the git
-  annex, not only objects used by currently existing files. However, this
-  bypasses checking the .gitattributes annex.numcopies setting when
-  dropping files.
+  Mirror content of files to/from another repository.
+  
+  See [[git-annex-mirror]](1) for details.
 
 * `addurl [url ...]`
 
   Downloads each url to its own file, which is added to the annex.
-
-  To avoid immediately downloading the url, specify `--fast`.
-
-  To avoid storing the size of the url's content, and accept whatever
-  is there at a future point, specify `--relaxed`. (Implies `--fast`.)
-
-  Normally the filename is based on the full url, so will look like
-  "www.example.com_dir_subdir_bigfile". In some cases, addurl is able to
-  come up with a better filename based on other information. Or, for a
-  shorter filename, specify `--pathdepth=N`. For example,
-  `--pathdepth=1` will use "dir/subdir/bigfile",
-  while `--pathdepth=3` will use "bigfile". It can also be negative;
-  `--pathdepth=-2` will use the last two parts of the url.
-
-  Or, to directly specify what file the url is added to, specify `--file`.
-  This changes the behavior; now all the specified urls are recorded as
-  alternate locations from which the file can be downloaded. In this mode,
-  addurl can be used both to add new files, or to add urls to existing files.
-
-  When `quvi` is installed, urls are automatically tested to see if they
-  point to a video hosting site, and the video is downloaded instead.
-
-  Urls to torrent files (including magnet links) will cause the content of
-  the torrent to be downloaded, using `aria2c`.
-
-  To prevent special handling of urls by quvi, bittorrent, and other
-  special remotes, specify `--raw`. This will for example, make addurl
-  download the .torrent file and not the contents it points to.
+  
+  See [[git-annex-addurl]](1) for details.
 
 * `rmurl file url`
 
   Record that the file is no longer available at the url.
+  
+  See [[git-annex-rmurl]](1) for details.
 
 * `import [path ...]`
 
-  Moves files from somewhere outside the git working copy, and adds them to
-  the annex. Individual files to import can be specified.
-  If a directory is specified, the entire directory is imported.
-
-        	git annex import /media/camera/DCIM/*
-
-  By default, importing two files with the same contents from two different
-  locations will result in both files being added to the repository.
-  (With all checksumming backends, including the default SHA256E,
-  only one copy of the data will be stored.)
-
-  To not delete files from the import location, use the
-  `--duplicate` option. This could allow importing the same files repeatedly
-  to different locations in a repository. More likely, it could be used to
-  import the same files to a number of different branches or separate git
-  repositories.
-
-  To only import files whose content has not been seen before by git-annex,
-  use the `--deduplicate` option. Duplicate files will be deleted from the
-  import location.
-
-  To only import files whose content has not been seen before by git-annex,
-  but avoid deleting duplicate files, use the `--skip-duplicates` option.
-
-  The `--clean-duplicates` option does not import any new files, but any files
-  found in the import location that are duplicates of content in the annex
-  are deleted.
-
-  (Note that using `--deduplicate` or `--clean-duplicates` with the WORM
-  backend does not look at file content, but filename and mtime.)
+  Move and add files from outside git working copy into the annex.
   
-  To control which files are imported, many of the MATCHING OPTIONS can 
-  be used.
-
-		git annex import /dir --include='*.png'
+  See [[git-annex-import]](1) for details.
 
 * `importfeed [url ...]`
 
-  Imports the contents of podcast feeds. Only downloads files whose
-  urls have not already been added to the repository before, so you can
-  delete, rename, etc the resulting files and repeated runs won't duplicate
-  them. (Use `--force` to force downloading urls it's seen before.)
-
-  Use `--template` to control where the files are stored.
-  The default template is '${feedtitle}/${itemtitle}${extension}'
-  (Other available variables: feedauthor, itemauthor, itemsummary, itemdescription, itemrights, itemid, itempubdate, title, author)
-
-  The `--relaxed`, `--fast`, and `--raw` options behave the same as they
-  do in addurl.
-
-  When quvi is installed, links in the feed are tested to see if they
-  are on a video hosting site, and the video is downloaded. This allows
-  importing e.g., youtube playlists.
+  Imports the contents of podcast feeds into the annex.
+  
+  See [[git-annex-importfeed]](1) for details.
 
 * `undo [filename|directory] ...`
 
-  When passed a filename, undoes the last change that was made to that
-  file.
-
-  When passed a directory, undoes the last change that was made to the
-  contents of that directory.
-
-  Running undo a second time will undo the undo, returning the working
-  tree to the same state it had before. In order for undoing an undo of
-  staged changes, any staged changes are first committed by the
-  undo command.
-
-  Note that this does not undo get/drop of a file's content; it only
-  operates on the file tree committed to git.
+  Undo last change to a file or directory.
+  
+  See [[git-annex-undo]](1) for details.
 
 * `watch`
 
-  Watches for changes to files in the current directory and its subdirectories,
-  and takes care of automatically adding new files, as well as dealing with
-  deleted, copied, and moved files. With this running as a daemon in the
-  background, you no longer need to manually run git commands when
-  manipulating your files.
-
-  By default, all files in the directory will be added to the repository.
-  (Including dotfiles.) To block some files from being added, use
-  `.gitignore` files.
-
-  By default, all files that are added are added to the annex, the same
-  as when you run `git annex add`. If you configure annex.largefiles,
-  files that it does not match will instead be added with `git add`.
-
-  To not daemonize, run with `--foreground` ; to stop a running daemon,
-  run with `--stop`.
+  Watch for changes and autocommit.
+  
+  See [[git-annex-watch]](1) for details.
 
 * `assistant`
 
-  Like watch, but also automatically syncs changes to other remotes.
-  Typically started at boot, or when you log in.
+  Atomatically sync folders between devices.
 
-  With the `--autostart` option, the assistant is started in any repositories
-  it has created. These are listed in `~/.config/git-annex/autostart`.
+  See [[git-annex-assistant]](1) for details.
 
 * `webapp`
 
@@ -349,22 +176,7 @@ subdirectories).
   and control of the git-annex assistant. If the assistant is not
   already running, it will be started.
 
-  By default, the webapp can only be accessed from localhost, and running
-  it opens a browser window.
-
-  To use the webapp on a remote computer, use the `--listen=address`
-  option to specify the address the web server should listen on
-  (or set annex.listen).
-  This disables running a local web browser, and outputs the url you
-  can use to open the webapp.
-
-  When using the webapp on a remote computer, you'll almost certainly
-  want to enable HTTPS. The webapp will use HTTPS if it finds
-  a .git/annex/privkey.pem and .git/annex/certificate.pem. Here's
-  one way to generate those files, using a self-signed certificate:
-
-    openssl genrsa -out .git/annex/privkey.pem 4096
-    openssl req -new -x509 -key .git/annex/privkey.pem > .git/annex/certificate.pem
+  See [[git-annex-webapp]](1) for details.
 
 # REPOSITORY SETUP COMMANDS
 
@@ -531,9 +343,9 @@ subdirectories).
 
 * `schedule repository [expression]`
 
-  When run with an expression, configures scheduled jobs to run at a
-  particular time. This can be used to make the assistant periodically run
-  incremental fscks. See SCHEDULED JOBS below.
+  Get or set scheduled jobs.
+
+  See [[git-annex-schedule]](1) for details.
 
 * `vicfg`
 
@@ -630,6 +442,12 @@ subdirectories).
   This is useful to run if you have been moving the symlinks around,
   but is done automatically when committing a change with git too.
 
+* `merge`
+
+  Automatically merge changes from remotes.
+
+  See [[git-annex-merge]](1) for details.
+
 * `upgrade`
 
   Upgrades the repository to current layout.
@@ -690,8 +508,8 @@ subdirectories).
   finds files in the current directory and its subdirectories.
 
   By default, only lists annexed files whose content is currently present.
-  This can be changed by specifying matching options. To list all
-  annexed files, present or not, specify `--include "*"`. To list all
+  This can be changed by specifying [[git-annex-matching-options]](1).
+  To list all annexed files, present or not, specify `--include "*"`. To list all
   annexed files whose content is not present, specify `--not --in=here`
 
   To output filenames terminated with nulls, for use with xargs -0,
@@ -734,8 +552,9 @@ subdirectories).
   When no item is specified, displays statistics and information
   for the repository as a whole.
 
-  When a directory is specified, the MATCHING OPTIONS can be used
-  to select the files in the directory that are included in the statistics.
+  When a directory is specified, the [[git-annex-matching-options]](1)
+  can be used to select the files in the directory that are included
+  in the statistics.
 
   To only show the data that can be gathered quickly, use `--fast`.
 
@@ -1265,205 +1084,6 @@ subdirectories).
 
   Overrides git configuration settings. May be specified multiple times.
 
-# MATCHING OPTIONS
-
-These options can all be specified multiple times, and can be combined to
-limit which files git-annex acts on.
-
-Arbitrarily complicated expressions can be built using these options.
-For example:
-
-	--exclude '*.mp3' --and --not -( --in=usbdrive --or --in=archive -)
-
-The above example prevents git-annex from working on mp3 files whose
-file contents are present at either of two repositories.
-
-* `--exclude=glob`
-
-  Skips files matching the glob pattern. The glob is matched relative to
-  the current directory. For example:
-
-        	--exclude='*.mp3' --exclude='subdir/*'
-
-  Note that this will not match anything when using --all or --unused.
-
-* `--include=glob`
-
-  Skips files not matching the glob pattern.  (Same as `--not --exclude`.)
-  For example, to include only mp3 and ogg files:
-
-        	--include='*.mp3' --or --include='*.ogg'
-
-  Note that this will not skip anything when using --all or --unused.
-
-* `--in=repository`
-
-  Matches only files that git-annex believes have their contents present
-  in a repository. Note that it does not check the repository to verify
-  that it still has the content.
-
-  The repository should be specified using the name of a configured remote,
-  or the UUID or description of a repository. For the current repository,
-  use `--in=here`
-
-* `--in=repository@{date}`
-
-  Matches files currently in the work tree whose content was present in
-  the repository on the given date.
-
-  The date is specified in the same syntax documented in
-  gitrevisions(7). Note that this uses the reflog, so dates far in the
-  past cannot be queried.
-
-  For example, you might need to run `git annex drop .` to temporarily
-  free up disk space. The next day, you can get back the files you dropped
-  using `git annex get . --in=here@{yesterday}`
-
-* `--copies=number`
-
-  Matches only files that git-annex believes to have the specified number
-  of copies, or more. Note that it does not check remotes to verify that
-  the copies still exist.
-
-* `--copies=trustlevel:number`
-
-  Matches only files that git-annex believes have the specified number of
-  copies, on remotes with the specified trust level. For example,
-  `--copies=trusted:2`
-
-  To match any trust level at or higher than a given level,
-  use 'trustlevel+'. For example, `--copies=semitrusted+:2`
-
-* `--copies=groupname:number`
-
-  Matches only files that git-annex believes have the specified number of
-  copies, on remotes in the specified group. For example,
-  `--copies=archive:2`
-
-* `--lackingcopies=number`
-
-  Matches only files that git-annex believes need the specified number or 
-  more additional copies to be made in order to satisfy their numcopies
-  settings.
-
-* `--approxlackingcopies=number`
-
-  Like lackingcopies, but does not look at .gitattributes annex.numcopies
-  settings. This makes it significantly faster.
-
-* `--inbackend=name`
-
-  Matches only files whose content is stored using the specified key-value
-  backend.
-
-* `--inallgroup=groupname`
-
-  Matches only files that git-annex believes are present in all repositories
-  in the specified group.
-
-* `--smallerthan=size`
-* `--largerthan=size`
-
-  Matches only files whose content is smaller than, or larger than the
-  specified size.
-
-  The size can be specified with any commonly used units, for example,
-  "0.5 gb" or "100 KiloBytes"
-
-* `--metadata field=glob`
-
-  Matches only files that have a metadata field attached with a value that
-  matches the glob. The values of metadata fields are matched case
-  insensitively.
-
-* `--want-get`
-
-  Matches files that the preferred content settings for the repository
-  make it want to get. Note that this will match even files that are
-  already present, unless limited with e.g., `--not --in .`
-  
-  Note that this will not match anything when using --all or --unused.
-
-* `--want-drop`
-
-  Matches files that the preferred content settings for the repository
-  make it want to drop. Note that this will match even files that have
-  already been dropped, unless limited with e.g., `--in .`
-  
-  Note that this will not match anything when using --all or --unused.
-
-* `--not`
-
-  Inverts the next matching option. For example, to only act on
-  files with less than 3 copies, use `--not --copies=3`
-
-* `--and`
-
-  Requires that both the previous and the next matching option matches.
-  The default.
-
-* `--or`
-
-  Requires that either the previous, or the next matching option matches.
-
-* `-(`
-
-  Opens a group of matching options.
-
-* `-)`
-
-  Closes a group of matching options.
-
-# PREFERRED CONTENT
-
-Each repository has a preferred content setting, which specifies content
-that the repository wants to have present. These settings can be configured
-using `git annex vicfg` or `git annex wanted`.
-They are used by the `--auto` option, and by the git-annex assistant.
-
-The preferred content settings are similar, but not identical to
-the matching options specified above, just without the dashes.
-For example:
-
-	exclude=archive/* and (include=*.mp3 or smallerthan=1mb)
-
-The main differences are that `exclude=` and `include=` always
-match relative to the top of the git repository, and that there is
-no equivilant to `--in`.
-
-When a repository is in one of the standard predefined groups, like "backup"
-and "client", setting its preferred content to "standard" will use a
-built-in preferred content expression developed for that group. 
-See <https://git-annex.branchable.com/preferred_content/standard_groups/>
-
-If you have set a groupwanted expression for a group, it will be used
-when a repository in the group has its preferred content set to
-"groupwanted".
-
-# SCHEDULED JOBS
-
-The git-annex assistant daemon can be configured to run scheduled jobs.
-This is similar to cron and anacron (and you can use them if you prefer),
-but has the advantage of being integrated into git-annex, and so being able
-to e.g., fsck a repository on a removable drive when the drive gets
-connected.
-
-The scheduled jobs can be configured using `git annex vicfg` or
-`git annex schedule`.
-
-These actions are available: "fsck self", "fsck UUID" (where UUID
-is the UUID of a remote to fsck). After the action comes the duration
-to allow the action to run, and finally the schedule of when to run it.
-
-To schedule multiple jobs, separate them with "; ".
-
-Some examples:
-
-	fsck self 30m every day at any time
-	fsck self 1h every month at 3 AM
-	fsck self 1h on day 1 of every month at any time
-	fsck self 1h every week divisible by 2 at any time
-
 # CONFIGURATION VIA .git/config
 
 Like other git commands, git-annex is configured via `.git/config`.
@@ -1963,7 +1583,7 @@ whenever the git-annex branch is updated. You can make this hook run
 
 # SEE ALSO
 
-Most of git-annex's documentation is available on its web site,
+More git-annex documentation is available on its web site,
 <http://git-annex.branchable.com/>
 
 If git-annex is installed from a package, a copy of its documentation

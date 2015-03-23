@@ -1,0 +1,46 @@
+# NAME
+
+git-annex get - make content of annexed files available
+
+# SYNOPSIS
+
+git annex get `[path ...]`
+
+# DESCRIPTION
+
+Makes the content of annexed files available in this repository. This
+will involve copying them from a remote repository, or downloading them,
+or transferring them from some kind of key-value store.
+
+# OPTIONS
+
+* `--from=remote`
+
+  Normally git-annex will choose which remotes to get the content
+  from. Use this option to specify which remote to use.
+
+* `--all`
+
+  Rather than specifying a filename or path to get, this option can be
+  used to get all available versions of all files.
+
+* `--key=keyname`
+
+  Use this option to get a specified key.
+
+* file matching options
+ 
+  The [[git-annex-matching-options]](1)
+  can be used to specify files to get.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-drop]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

@@ -1,0 +1,51 @@
+# NAME
+
+git-annex move - move content of files to/from another repository
+
+# SYNOPSIS
+
+git annex move `[path ...] [--from=remote|--to=remote]`
+
+# DESCRIPTION
+
+Moves the content of files from or to another remote.
+
+# OPTIONS
+
+* `--from=remote`
+
+  Use this option to move the content of files from the specified
+  remote to the local repository.
+
+* `--to=remote`
+
+  Use this option to move the content of files from the local repository
+  to the specified remote.
+
+* `--all`
+
+  Rather than specifying a filename or path to move, this option can be
+  used to move all available versions of all files.
+
+* `--unused`
+
+  Operate on files found by last run of git-annex unused.
+
+* `--key=keyname`
+
+  Use this option to move a specified key.
+
+* file matching options
+
+  The [[git-annex-matching-options]](1)
+  can be used to specify files to move.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

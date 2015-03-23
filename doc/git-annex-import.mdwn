@@ -1,0 +1,69 @@
+# NAME
+
+git-annex import - move and add files from outside git working copy
+
+# SYNOPSIS
+
+git annex import `[path ...]`
+
+# DESCRIPTION
+
+Moves files from somewhere outside the git working copy, and adds them to
+the annex. Individual files to import can be specified.
+If a directory is specified, the entire directory is imported.
+  
+        	git annex import /media/camera/DCIM/*
+  
+By default, importing two files with the same contents from two different
+locations will result in both files being added to the repository.
+(With all checksumming backends, including the default SHA256E,
+only one copy of the data will be stored.)
+
+# OPTIONS
+
+* `--duplicate`
+
+  Do not delete files from the import location.
+
+  This could allow importing the same files repeatedly
+  to different locations in a repository. More likely, it could be used to
+  import the same files to a number of different branches or separate git
+  repositories.
+
+* `--deduplicate`
+
+  Only import files whose content has not been seen before by git-annex.
+
+  Duplicate files will be deleted from the import location.
+
+* `--skip-duplicates`
+
+  Only import files whose content has not been seen before by git-annex,
+  but avoid deleting duplicate files.
+
+* `--clean-duplicates`
+
+  Does not import any files, but any files found in the import location
+  that are duplicates of content in the annex are deleted.
+
+* file matching options
+
+  Many of the [[git-annex-matching-options]](1)
+  can be used to specify files to import.
+
+		git annex import /dir --include='*.png'
+
+# CAVEATS
+
+Note that using `--deduplicate` or `--clean-duplicates` with the WORM
+backend does not look at file content, but filename and mtime.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

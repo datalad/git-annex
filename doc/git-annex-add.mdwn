@@ -1,0 +1,47 @@
+# NAME
+
+git-annex add - adds files to the git annex
+
+# SYNOPSIS
+
+git annex add `[path ...]`
+
+# DESCRIPTION
+
+Adds files in the path to the annex. If no path is specified, adds
+files from the current directory and below.
+
+Normally, files that are already checked into git, or that git has been
+configured to ignore will be silently skipped.
+
+# OPTIONS
+
+* `--include-dotfiles`
+
+  Dotfiles are skipped unless explicitly listed, or unless this option is
+  used.
+
+* `--force`
+
+  Add gitignored files.
+
+* `--backend`
+
+  Specifies which key-value backend to use.
+
+* file matching options
+
+  Many of the [[git-annex-matching-options]](1)
+  can be used to specify files to add.
+
+  For example: `--largerthan=1GB`
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

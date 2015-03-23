@@ -1,0 +1,60 @@
+# NAME
+
+git-annex copy - copy content of files to/from another repository
+
+# SYNOPSIS
+
+git annex copy `[path ...] [--from=remote|--to=remote]`
+
+# DESCRIPTION
+
+Copies the content of files from or to another remote.
+
+# OPTIONS
+
+* `--from=remote`
+
+  Use this option to copy the content of files from the specified
+  remote to the local repository.
+
+* `--to=remote`
+
+  Use this option to copy the content of files from the local repository
+  to the specified remote.
+
+* `--fast`
+
+  Avoid contacting the remote to check if it has every file when copying
+  --to it.
+
+* `--force`
+
+  Force checking the remote for every file when copying --from it.
+
+* `--all`
+
+  Rather than specifying a filename or path to copy, this option can be
+  used to copy all available versions of all files.
+
+* `--unused`
+
+  Operate on files found by last run of git-annex unused.
+
+* `--key=keyname`
+
+  Use this option to move a specified key.
+
+* file matching options
+
+  The [[git-annex-matching-options]](1)
+  can be used to specify files to copy.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

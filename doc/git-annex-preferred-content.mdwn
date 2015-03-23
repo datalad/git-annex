@@ -1,0 +1,45 @@
+# NAME
+
+git-annex-preferred-content - 
+
+# DESCRIPTION
+
+Each repository has a preferred content setting, which specifies content
+that the repository wants to have present. These settings can be configured
+using `git annex vicfg` or `git annex wanted`.
+They are used by the `--auto` option, by `git annex sync --content`,
+and by the git-annex assistant.
+
+Preferred content expressions are similar, but not identical to
+the [[git-annex-matching-options]](1), just without the dashes.
+For example:
+
+	exclude=archive/* and (include=*.mp3 or smallerthan=1mb)
+
+The main differences are that `exclude=` and `include=` always
+match relative to the top of the git repository, and that there is
+no equivilant to `--in`.
+
+For more details about preferred content expressions, see
+See <https://git-annex.branchable.com/preferred_content/>
+
+When a repository is in one of the standard predefined groups, like "backup"
+and "client", setting its preferred content to "standard" will use a
+built-in preferred content expression developed for that group. 
+See <https://git-annex.branchable.com/preferred_content/standard_groups/>
+
+If you have set a groupwanted expression for a group, it will be used
+when a repository in the group has its preferred content set to
+"groupwanted".
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+<http://git-annex.branchable.com/>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

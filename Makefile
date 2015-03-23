@@ -1,4 +1,4 @@
-mans=git-annex.1 git-annex-shell.1
+mans=git-annex.1 $(shell find doc -maxdepth 1 -name git-annex-*.mdwn | sed -e 's/doc\///' -e 's/\.mdwn/\.1/')
 all=git-annex $(mans) docs
 
 CABAL?=cabal # set to "./Setup" if you lack a cabal program
@@ -67,7 +67,9 @@ else
 IKIWIKI=ikiwiki
 endif
 
-docs: $(mans)
+mans: $(mans)
+
+docs: mans
 	$(IKIWIKI) doc html -v --wikiname git-annex --plugin=goodstuff \
 		--no-usedirs --disable-plugin=openid --plugin=sidebar \
 		--underlaydir=/dev/null --disable-plugin=shortcut \

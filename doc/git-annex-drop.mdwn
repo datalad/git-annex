@@ -1,0 +1,45 @@
+# NAME
+
+git-annex drop - indicate content of files not currently wanted
+
+# SYNOPSIS
+
+git annex drop `[path ...]`
+
+# DESCRIPTION
+
+Drops the content of annexed files from this repository, when
+possible.
+
+git-annex will refuse to drop content if it cannot verify it is
+safe to do so.
+
+# OPTIONS
+
+* `--from=remote`
+
+  Rather than dropping the content of files in the local repository,
+  this option can specifiy a remote from which the files'
+  contents should be removed.
+
+* `--force`
+
+  Use this option with care! It bypasses safety checks, and forces
+  git-annex to delete the content of the specified files, even from
+  the last repository that is storing their content. Data loss can
+  result from using this option.
+
+* file matching options
+
+  The [[git-annex-matching-options]](1)
+  can be used to specify files to drop.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

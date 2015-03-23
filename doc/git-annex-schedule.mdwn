@@ -1,0 +1,47 @@
+# NAME
+
+git-annex schedule - get or set scheduled jobs
+
+# SYNOPSIS
+
+git annex schedule `repository [expression]`
+
+# DESCRIPTION
+
+The [[git-annex-assistant]](1) daemon can be configured to run scheduled jobs.
+This is similar to cron and anacron (and you can use them if you prefer),
+but has the advantage of being integrated into git-annex, and so being able
+to e.g., fsck a repository on a removable drive when the drive gets
+connected.
+
+When run with an expression, configures scheduled jobs to run at a
+particular time. This can be used to make the assistant periodically run
+incremental fscks.
+
+When run without an expression, outputs the current scheduled jobs for
+the repository.
+
+# EXPRESSIONS
+
+These actions are available: "fsck self", "fsck UUID" (where UUID
+is the UUID of a remote to fsck). After the action comes the duration
+to allow the action to run, and finally the schedule of when to run it.
+  
+To schedule multiple jobs, separate them with "; ".
+  
+  Some examples:
+  
+          fsck self 30m every day at any time
+          fsck self 1h every month at 3 AM
+          fsck self 1h on day 1 of every month at any time
+          fsck self 1h every week divisible by 2 at any time
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

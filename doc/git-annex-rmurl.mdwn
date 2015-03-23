@@ -1,0 +1,21 @@
+# NAME
+
+git-annex rmurl - record file is not available at url
+
+# SYNOPSIS
+
+git annex rmurl `file url`
+
+# DESCRIPTION
+
+Record that the file is no longer available at the url.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

@@ -22,7 +22,7 @@ import System.Environment
 cmd :: [Command]
 cmd = [noRepo checkAutoStart $ dontCheck repoExists $ withOptions options $
 	notBareRepo $ command "assistant" paramNothing seek SectionCommon
-		"automatically handle changes"]
+		"automatically sync changes"]
 
 options :: [Option]
 options =

@@ -1,0 +1,29 @@
+# NAME
+
+git-annex lock - unco unlock command
+
+# SYNOPSIS
+
+git annex lock `[path ...]`
+
+# DESCRIPTION
+
+Use this to undo an unlock command if you don't want to modify
+the files, or have made modifications you want to discard.
+
+# OPTIONS
+
+* file matching options
+ 
+  The [[git-annex-matching-options]](1)
+  can be used to specify files to lock.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

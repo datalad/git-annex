@@ -1,0 +1,32 @@
+# NAME
+
+git-annex unlock - unlock files for modification
+
+# SYNOPSIS
+
+git annex unlock `[path ...]`
+
+# DESCRIPTION
+
+Normally, the content of annexed files is protected from being changed.
+Unlocking an annexed file allows it to be modified. This replaces the
+symlink for each specified file with a copy of the file's content.
+You can then modify it and `git annex add` (or `git commit`) to inject
+it back into the annex.
+
+# OPTIONS
+
+* file matching options
+ 
+  The [[git-annex-matching-options]](1)
+  can be used to specify files to unlock.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

@@ -1,0 +1,33 @@
+# NAME
+
+git-annex undo - undo last change to a file or directory
+
+# SYNOPSIS
+
+git annex  `[filename|directory] ...`
+
+# DESCRIPTION
+
+When passed a filename, undoes the last change that was made to that
+file.
+  
+When passed a directory, undoes the last change that was made to the
+contents of that directory.
+  
+Running undo a second time will undo the undo, returning the working
+tree to the same state it had before. In order for undoing an undo of
+staged changes, any staged changes are first committed by the
+undo command.
+
+Note that this does not undo get/drop of a file's content; it only
+operates on the file tree committed to git.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

@@ -1,0 +1,164 @@
+# NAME
+
+git-annex-matching-options - specifying files to act on
+
+# DESCRIPTION
+
+Many git-annex commands support using these options to specify which
+files they act on.
+
+Arbitrarily complicated expressions can be built using these options.
+For example:
+
+	--exclude '*.mp3' --and --not -( --in=usbdrive --or --in=archive -)
+
+The above example prevents git-annex from working on mp3 files whose
+file contents are present at either of two repositories.
+
+# OPTIONS
+
+* `--exclude=glob`
+
+  Skips files matching the glob pattern. The glob is matched relative to
+  the current directory. For example:
+
+        	--exclude='*.mp3' --exclude='subdir/*'
+
+  Note that this will not match anything when using --all or --unused.
+
+* `--include=glob`
+
+  Skips files not matching the glob pattern.  (Same as `--not --exclude`.)
+  For example, to include only mp3 and ogg files:
+
+        	--include='*.mp3' --or --include='*.ogg'
+
+  Note that this will not skip anything when using --all or --unused.
+
+* `--in=repository`
+
+  Matches only files that git-annex believes have their contents present
+  in a repository. Note that it does not check the repository to verify
+  that it still has the content.
+
+  The repository should be specified using the name of a configured remote,
+  or the UUID or description of a repository. For the current repository,
+  use `--in=here`
+
+* `--in=repository@{date}`
+
+  Matches files currently in the work tree whose content was present in
+  the repository on the given date.
+
+  The date is specified in the same syntax documented in
+  gitrevisions(7). Note that this uses the reflog, so dates far in the
+  past cannot be queried.
+
+  For example, you might need to run `git annex drop .` to temporarily
+  free up disk space. The next day, you can get back the files you dropped
+  using `git annex get . --in=here@{yesterday}`
+
+* `--copies=number`
+
+  Matches only files that git-annex believes to have the specified number
+  of copies, or more. Note that it does not check remotes to verify that
+  the copies still exist.
+
+* `--copies=trustlevel:number`
+
+  Matches only files that git-annex believes have the specified number of
+  copies, on remotes with the specified trust level. For example,
+  `--copies=trusted:2`
+
+  To match any trust level at or higher than a given level,
+  use 'trustlevel+'. For example, `--copies=semitrusted+:2`
+
+* `--copies=groupname:number`
+
+  Matches only files that git-annex believes have the specified number of
+  copies, on remotes in the specified group. For example,
+  `--copies=archive:2`
+
+* `--lackingcopies=number`
+
+  Matches only files that git-annex believes need the specified number or 
+  more additional copies to be made in order to satisfy their numcopies
+  settings.
+
+* `--approxlackingcopies=number`
+
+  Like lackingcopies, but does not look at .gitattributes annex.numcopies
+  settings. This makes it significantly faster.
+
+* `--inbackend=name`
+
+  Matches only files whose content is stored using the specified key-value
+  backend.
+
+* `--inallgroup=groupname`
+
+  Matches only files that git-annex believes are present in all repositories
+  in the specified group.
+
+* `--smallerthan=size`
+* `--largerthan=size`
+
+  Matches only files whose content is smaller than, or larger than the
+  specified size.
+
+  The size can be specified with any commonly used units, for example,
+  "0.5 gb" or "100 KiloBytes"
+
+* `--metadata field=glob`
+
+  Matches only files that have a metadata field attached with a value that
+  matches the glob. The values of metadata fields are matched case
+  insensitively.
+
+* `--want-get`
+
+  Matches files that the preferred content settings for the repository
+  make it want to get. Note that this will match even files that are
+  already present, unless limited with e.g., `--not --in .`
+  
+  Note that this will not match anything when using --all or --unused.
+
+* `--want-drop`
+
+  Matches files that the preferred content settings for the repository
+  make it want to drop. Note that this will match even files that have
+  already been dropped, unless limited with e.g., `--in .`
+  
+  Note that this will not match anything when using --all or --unused.
+
+* `--not`
+
+  Inverts the next matching option. For example, to only act on
+  files with less than 3 copies, use `--not --copies=3`
+
+* `--and`
+
+  Requires that both the previous and the next matching option matches.
+  The default.
+
+* `--or`
+
+  Requires that either the previous, or the next matching option matches.
+
+* `-(`
+
+  Opens a group of matching options.
+
+* `-)`
+
+  Closes a group of matching options.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

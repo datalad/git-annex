@@ -1,0 +1,18 @@
+# NAME
+
+git-annex unlock - unlock files for modification
+
+# SYNOPSIS
+
+git annex edit `[path ...]`
+
+# DESCRIPTION
+
+This is an alias for the `unlock` command; see [[git-annex-unlock]](1)
+for details.
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

@@ -241,7 +241,7 @@ space and then its schedule, followed by a timestamp.
 There can be multiple events in the schedule, separated by "; ".
 
 The format of the scheduled events is the same described in
-the SCHEDULED JOBS section of the man page.
+[[git-annex-schedule]].
 
 Example:
 

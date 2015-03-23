@@ -1,0 +1,27 @@
+# NAME
+
+git-annex merge - automatically merge changes from remotes
+
+# SYNOPSIS
+
+git annex merge
+
+# DESCRIPTION
+
+This performs the same merging (and merge conflict resolution)
+that is done by the sync command, but without pushing or pulling any
+data.
+
+One way to use this is to put `git annex merge` into a repository's
+post-receive hook. Then any syncs to the repository will update its
+working copy automatically.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

@@ -1,0 +1,47 @@
+# NAME
+
+git-annex assistant - automatically sync changes
+
+# SYNOPSIS
+
+git annex assistant
+
+# DESCRIPTION
+
+Watches for changes to files in the current directory and its subdirectories,
+and automatically syncs them to other remotes.
+
+For more details about the git-annex assistant, see
+<https://git-annex.branchable.com/assistant/>
+
+# OPTIONS
+
+* `--autostart`
+
+  Automatically starts the assistant running in each repository listed
+  in the file `~/.config/git-annex/autostart`
+
+  This is typically started at boot, or when you log in.
+
+* `--startdelay=N`
+
+  Wait N seconds before running the startup scan. This process can
+  be expensive and you may not want to run it immediatly upon login.
+
+* `--foreground`
+
+  Avoid forking to the background.
+
+* `--stop`
+
+  Stop a running daemon.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

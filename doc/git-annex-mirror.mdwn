@@ -1,0 +1,55 @@
+# NAME
+
+git-annex mirror - mirror content of files to/from another repository
+
+# SYNOPSIS
+
+git annex mirror `[path ...] [--to=remote|--from=remote]`
+
+# DESCRIPTION
+
+This causes a destination repository to mirror a source repository.
+
+Each specified file in the source repository is mirrored to the destination
+repository. If a file's content is present in the source repository, it is
+copied to the destination repository. If a file's content is not present in
+the source repository, it will be dropped from the destination repository
+when the numcopies setting allows.
+  
+Note that mirror does not sync the git repository, but only the file
+contents.
+
+# OPTIONS
+
+* `--to=remote`
+
+  Use the local repository as the source repository, and mirror its contents
+  to the remote.
+
+* `--from=remote`
+
+  Use the remote as the source repository, and mirror its contents to the local
+  repository.
+
+* `--all`
+
+  Mirror all objects stored in the git annex, not only objects used by
+  currently existing files. 
+  
+  However, this bypasses checking the .gitattributes annex.numcopies
+  setting when dropping files.
+
+* file matching options
+
+  The [[git-annex-matching-options]](1)
+  can be used to specify files to mirror.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.
