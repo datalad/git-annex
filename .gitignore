@@ -13,8 +13,7 @@ Build/OSXMkLibs
 Build/LinuxMkLibs
 Build/BuildVersion
 git-annex
-git-annex.1
-git-annex-shell.1
+man
 git-union-merge
 git-union-merge.1
 doc/.ikiwiki

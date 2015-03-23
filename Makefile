@@ -1,4 +1,4 @@
-mans=git-annex.1 $(shell find doc -maxdepth 1 -name git-annex-*.mdwn | sed -e 's/doc\///' -e 's/\.mdwn/\.1/')
+mans=$(shell find doc -maxdepth 1 -name git-annex*.mdwn | sed -e 's/^doc/man/' -e 's/\.mdwn/\.1/')
 all=git-annex $(mans) docs
 
 CABAL?=cabal # set to "./Setup" if you lack a cabal program
@@ -24,7 +24,7 @@ git-annex: Build/SysConfig.hs
 	$(CABAL) build
 	ln -sf dist/build/git-annex/git-annex git-annex
 
-%.1: doc/%.mdwn
+man/%.1: doc/%.mdwn
 	./Build/mdwn2man $@ 1 $< > $@
 
 # These are not built normally.
@@ -67,7 +67,10 @@ else
 IKIWIKI=ikiwiki
 endif
 
-mans: $(mans)
+mans: man $(mans)
+
+man:
+	mkdir -p man
 
 docs: mans
 	$(IKIWIKI) doc html -v --wikiname git-annex --plugin=goodstuff \
