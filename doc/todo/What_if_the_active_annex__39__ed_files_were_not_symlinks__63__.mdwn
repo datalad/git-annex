@@ -13,3 +13,14 @@ With all priorly annexed filed symlinked and all your new files symlinked, you t
 Then you do a git annex unsymlink command. And then all your symlinks are deleted and the actual file placed there.
 
 Then you just type git annex symlink again to re-symlink them all.
+
+> I think you are looking for the `unlock` and `add` (or `lock`) commands. Basically, to edit the file in photoshop, you want:
+>
+> <pre>
+> git annex unlock file.psd
+> photoshop file.psd # ...
+> git annex add file.psd # if you are happy with your changes or...
+> git annex lock file.psd # if you want to discard your changes
+> </pre>
+>
+> So basically what you are asking for is already [[done]], in my mind. I still think there are significant [[usability issues|forum/usability:_what_are_those_arrow_things__63__/]] with symlinks, but that's another story. --[[anarcat]]
