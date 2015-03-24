@@ -1,0 +1,39 @@
+# NAME
+
+git-annex unused - look for unused file content
+
+# SYNOPSIS
+
+git annex unused
+
+# DESCRIPTION
+
+Checks the annex for data that does not correspond to any files present
+in any tag or branch, and prints a numbered list of the data.
+
+After running this command, you can use the `--unused` option with many 
+other git-annex commands to operate on all the unused data that was found.
+
+For example, to move all unused data to origin:
+  
+	git annex unused; git annex move --unused --to origin
+
+# OPTIONS
+
+* `--fast`
+
+  Only show unused temp and bad files.
+
+* `--from=remote`
+
+  Check for unused data on a remote.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

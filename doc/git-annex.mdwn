@@ -297,73 +297,37 @@ subdirectories).
 
 * `fsck [path ...]`
 
-  With no parameters, this command checks the whole annex for consistency,
-  and warns about or fixes any problems found. This is a good complement to
-  `git fsck`.
+  Checks the annex consistency, and warns about or fixes any problems found. 
+  This is a good complement to `git fsck`.
 
-  With parameters, only the specified files are checked.
-
-  To check a remote to fsck, specify `--from`.
-
-  To avoid expensive checksum calculations (and expensive transfers when
-  fscking a remote), specify `--fast`.
-
-  To start a new incremental fsck, use the `--incremental` option. Then
-  the next time you fsck, you can instead use the `--more` option 
-  to skip over files that have already been checked, and continue
-  where it left off.
-
-  The `--incremental-schedule` option makes a new incremental fsck be
-  started a configurable time after the last incremental fsck was started.
-  Once the current incremental fsck has completely finished, it causes
-  a new one to start.
-
-  Maybe you'd like to run a fsck for 5 hours at night, picking up each
-  night where it left off. You'd like this to continue until all files
-  have been fscked. And once it's done, you'd like a new fsck pass to start,
-  but no more often than once a month. Then put this in a nightly cron job:
-
-        	git annex fsck --incremental-schedule 30d --time-limit 5h
-
-  To verify data integrity only while disregarding required number of copies,
-  use `--numcopies=1`.
+  See [[git-annex-fsck]](1) for details.
 
 * `unused`
 
   Checks the annex for data that does not correspond to any files present
   in any tag or branch, and prints a numbered list of the data.
-
-  To only show unused temp and bad files, specify `--fast`.
-
-  To check for annexed data on a remote, specify `--from`.
-
-  After running this command, you can use the `--unused` option to
-  operate on all the unused data that was found. For example, to
-  move all unused data to origin:
-
-        	git annex unused; git annex move --unused --to origin
+  
+  See [[git-annex-unused]](1) for details.
 
 * `dropunused [number|range ...]`
 
   Drops the data corresponding to the numbers, as listed by the last
   `git annex unused`
-
-  You can also specify ranges of numbers, such as "1-1000".
-  Or, specify "all" to drop all unused data.
-
-  To drop the data from a remote, specify `--from.`
+  
+  See [[git-annex-dropunused]](1) for details.
 
 * `addunused [number|range ...]`
 
   Adds back files for the content corresponding to the numbers or ranges,
-  as listed by the last `git annex unused`. The files will have names
-  starting with "unused."
+  as listed by the last `git annex unused`.
+  
+  See [[git-annex-addunused]](1) for details.
 
 * `fix [path ...]`
 
   Fixes up symlinks that have become broken to again point to annexed content.
-  This is useful to run if you have been moving the symlinks around,
-  but is done automatically when committing a change with git too.
+
+  See [[git-annex-fix]](1) for details.
 
 * `merge`
 
@@ -374,23 +338,15 @@ subdirectories).
 * `upgrade`
 
   Upgrades the repository to current layout.
+  
+  See [[git-annex-upgrade]](1) for details.
 
 * `forget`
 
   Causes the git-annex branch to be rewritten, throwing away historical
-  data about past locations of files. The resulting branch will use less
-  space, but `git annex log` will not be able to show where
-  files used to be located.
-
-  To also prune references to repositories that have been marked as dead,
-  specify `--drop-dead`.
-
-  When this rewritten branch is merged into other clones of
-  the repository, `git-annex` will automatically perform the same rewriting
-  to their local `git-annex` branches. So the forgetfulness will automatically
-  propagate out from its starting point until all repositories running
-  git-annex have forgotten their old history. (You may need to force
-  git to push the branch to any git repositories not running git-annex.)
+  data about past locations of files.
+  
+  See [[git-annex-forget]](1) for details.
 
 * `repair`
 
@@ -398,30 +354,8 @@ subdirectories).
   detects, but does not itself fix. It's useful if a repository has become
   badly damaged. One way this can happen is if a repository used by git-annex
   is on a removable drive that gets unplugged at the wrong time.
-
-  This command can actually be used inside git repositories that do not
-  use git-annex at all; when used in a repository using git-annex, it
-  does additional repairs of the git-annex branch.
-
-  It works by deleting any corrupt objects from the git repository, and
-  retrieving all missing objects it can from the remotes of the repository.
-
-  If that is not sufficient to fully recover the repository, it can also
-  reset branches back to commits before the corruption happened, delete
-  branches that are no longer available due to the lost data, and remove any
-  missing files from the index. It will only do this if run with the
-  `--force` option, since that rewrites history and throws out missing data.
-  Note that the `--force` option never touches tags, even if they are no
-  longer usable due to missing data.
-
-  After running this command, you will probably want to run `git fsck` to
-  verify it fixed the repository. Note that fsck may still complain about
-  objects referenced by the reflog, or the stash, if they were unable to be
-  recovered. This command does not try to clean up either the reflog or the
-  stash.
-
-  It is also a good idea to run `git annex fsck --fast` after this command,
-  to make sure that the git-annex branch reflects reality.
+  
+  See [[git-annex-repair]](1) for details.
 
 # QUERY COMMANDS
 
@@ -430,41 +364,27 @@ subdirectories).
   Outputs a list of annexed files in the specified path. With no path,
   finds files in the current directory and its subdirectories.
 
-  By default, only lists annexed files whose content is currently present.
-  This can be changed by specifying [[git-annex-matching-options]](1).
-  To list all annexed files, present or not, specify `--include "*"`. To list all
-  annexed files whose content is not present, specify `--not --in=here`
-
-  To output filenames terminated with nulls, for use with xargs -0,
-  specify `--print0`. Or, a custom output formatting can be specified using
-  `--format`. The default output format is the same as `--format='${file}\\n'`
-
-  These variables are available for use in formats: file, key, backend,
-  bytesize, humansize, keyname, hashdirlower, hashdirmixed, mtime (for
-  the mtime field of a WORM key).
+  See [[git-annex-find]](1) for details.
 
 * `whereis [path ...]`
 
   Displays information about where the contents of files are located.
+  
+  See [[git-annex-whereis]](1) for details.
 
 * `list [path ...]`
 
   Displays a table of remotes that contain the contents of the specified
-  files. This is similar to whereis but a more compact display. Only
-  configured remotes are shown by default; specify --allrepos to list
-  all repositories.
+  files. This is similar to whereis but a more compact display.
+  
+  See [[git-annex-list]](1) for details.
 
 * `log [path ...]`
 
   Displays the location log for the specified file or files,
   showing each repository they were added to ("+") and removed from ("-").
 
-  To limit how far back to search for location log changes, the options
-  `--since`, `--after`, `--until`, `--before`, and `--max-count` can be specified.
-  They are passed through to git log. For example, `--since "1 month ago"`
-
-  To generate output suitable for the gource visualization program,
-  specify `--gource`.
+  See [[git-annex-log]](1) for details.
 
 * `info [directory|file|remote|uuid ...]`
 
@@ -474,40 +394,20 @@ subdirectories).
 
   When no item is specified, displays statistics and information
   for the repository as a whole.
-
-  When a directory is specified, the [[git-annex-matching-options]](1)
-  can be used to select the files in the directory that are included
-  in the statistics.
-
-  To only show the data that can be gathered quickly, use `--fast`.
-
-  For example, suppose you want to run "git annex get .", but
-  would first like to see how much disk space that will use.
-  Then run:
-
-        	git annex info --fast . --not --in here
+  
+  See [[git-annex-info]](1) for details.
 
 * `version`
 
   Shows the version of git-annex, as well as repository version information.
+  
+  See [[git-annex-version]](1) for details.
 
 * `map`
 
-  Helps you keep track of your repositories, and the connections between them,
-  by going out and looking at all the ones it can get to, and generating a
-  Graphviz file displaying it all. If the `dot` command is available, it is
-  used to display the file to your screen (using x11 backend). (To disable
-  this display, specify `--fast`)
+  Generate map of repositories.
 
-  This command only connects to hosts that the host it's run on can
-  directly connect to. It does not try to tunnel through intermediate hosts.
-  So it might not show all connections between the repositories in the network.
-
-  Also, if connecting to a host requires a password, you might have to enter
-  it several times as the map is being built.
-
-  Note that this subcommand can be used to graph any git repository; it
-  is not limited to git-annex repositories.
+  See [[git-annex-map]](1) for details.
 
 # METADATA COMMANDS
 

@@ -24,6 +24,10 @@ or transferring them from some kind of key-value store.
   Rather than specifying a filename or path to get, this option can be
   used to get all available versions of all files.
 
+* `--unused`
+
+  Operate on files found by last run of git-annex unused.
+
 * `--key=keyname`
 
   Use this option to get a specified key.

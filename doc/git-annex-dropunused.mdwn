@@ -1,0 +1,39 @@
+# NAME
+
+git-annex dropunused - drop unused file content
+
+# SYNOPSIS
+
+git annex dropunused `[number|range ...]`
+
+# DESCRIPTION
+
+Drops the data corresponding to the numbers, as listed by the last
+git annex unused`
+
+You can also specify ranges of numbers, such as "1-1000".
+Or, specify "all" to drop all unused data.
+
+# OPTIONS
+
+* `--from=remote`
+
+  Rather than dropping the unused files from the local repository,
+  drop them from the remote repository.
+
+* `--force`
+
+  Use this option with care! It bypasses safety checks, and forces
+  git-annex to delete the content of the specified files, even from
+  the last repository that is storing their content. Data loss can
+  result from using this option.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

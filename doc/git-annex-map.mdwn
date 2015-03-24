@@ -1,0 +1,40 @@
+# NAME
+
+git-annex map - generate map of repositories
+
+# SYNOPSIS
+
+git annex map
+
+# DESCRIPTION
+
+Helps you keep track of your repositories, and the connections between them,
+by going out and looking at all the ones it can get to, and generating a
+Graphviz file displaying it all. If the `dot` command is available, it is
+used to display the file to your screen (using x11 backend).
+  
+This command only connects to hosts that the host it's run on can
+directly connect to. It does not try to tunnel through intermediate hosts.
+So it might not show all connections between the repositories in the network
+  
+Also, if connecting to a host requires a password, you might have to enter
+it several times as the map is being built.
+  
+Note that this subcommand can be used to graph any git repository; it
+is not limited to git-annex repositories.
+
+# OPTIONS
+
+* `--fast`
+
+  Disable using `dot` to display the generated Graphviz file.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

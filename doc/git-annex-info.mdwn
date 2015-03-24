@@ -1,0 +1,50 @@
+# NAME
+
+git-annex info - shows information about the specified item or the repository as a whole
+
+# SYNOPSIS
+
+git annex info `[directory|file|remote|uuid ...]`
+
+# DESCRIPTION
+
+Displays statistics and other information for the specified item,
+which can be a directory, or a file, or a remote, or the uuid of a
+repository.
+  
+When no item is specified, displays statistics and information
+for the repository as a whole.
+
+# OPTIONS
+
+* `--fast`
+
+  Only show the data that can be gathered quickly.
+
+* `--json`
+
+  Enable JSON output.
+
+* file matching options
+
+  When a directory is specified, the [[git-annex-matching-options]](1)
+  can be used to select the files in the directory that are included
+  in the statistics.
+
+# EXAMPLES
+
+Suppose you want to run "git annex get .", but
+would first like to see how much disk space that will use.
+Then run:
+  
+	git annex info --fast . --not --in here
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

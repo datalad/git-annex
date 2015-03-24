@@ -1,0 +1,24 @@
+# NAME
+
+git-annex addunused - add back unused files
+
+# SYNOPSIS
+
+git annex addunused `[number|range ...]`
+
+# DESCRIPTION
+
+Adds back files for the content corresponding to the numbers or ranges,
+as listed by the last `git annex unused`. 
+
+The files will have names starting with "unused."
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

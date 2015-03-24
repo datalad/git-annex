@@ -1,0 +1,91 @@
+# NAME
+
+git-annex fsck - check for problems
+
+# SYNOPSIS
+
+git annex fsck `[path ...]`
+
+# DESCRIPTION
+
+With no parameters, this command checks the whole annex for consistency,
+and warns about or fixes any problems found. This is a good complement to
+`git fsck`.
+
+With parameters, only the specified files are checked.
+
+# OPTIONS
+
+* `--from=remote`
+
+  Check a remote, rather than the local repository.
+
+  Note that by default, files will be copied from the remote to check
+  their contents. To avoid this expensive transfer, and only
+  verify that the remote still has the files that are expected to be on it,
+  add the `--fast` option.
+
+* `--fast`
+
+  Avoids expensive checksum calculations (and expensive transfers when
+  fscking a remote).
+
+* `--incremental`
+
+  Start a new incremental fsck pass. An incremental fsck can be interrupted
+  at any time, with eg ctrl-c.
+
+* `--more`
+
+  Continue the last incremental fsck pass, where it left off.
+
+* `--incremental-schedule=time`
+
+  This makes a new incremental fsck be started only a specified
+  time period after the last incremental fsck was started.
+
+  The time is in the form "10d" or "300h".
+
+  Maybe you'd like to run a fsck for 5 hours at night, picking up each
+  night where it left off. You'd like this to continue until all files
+  have been fscked. And once it's done, you'd like a new fsck pass to start,
+  but no more often than once a month. Then put this in a nightly cron job:
+
+	git annex fsck --incremental-schedule 30d --time-limit 5h
+
+* `--numcopies=N`
+
+  Override the normally configured number of copies. 
+
+  To verify data integrity only while disregarding required number of copies,
+  use `--numcopies=1`.
+
+* `--all`
+
+  Normally only the files in the currently checked out branch
+  are fscked. This option causes all versions of all files to be fscked.
+
+* `--unused`
+
+  Operate on files found by last run of git-annex unused.
+
+* `--key=keyname`
+
+  Use this option to fsck a specified key.
+  
+* file matching options
+
+  The [[git-annex-matching-options]](1)
+  can be used to specify files to fsck.
+
+# OPTIONS
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.
