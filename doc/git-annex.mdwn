@@ -653,12 +653,6 @@ may not be explicitly listed on their individual man pages.
   Enable less expensive, but also less thorough versions of some commands.
   What is avoided depends on the command.
 
-* `--auto`
-
-  Enable automatic mode. Commands that get, drop, or move file contents
-  will only do so when needed to help satisfy the setting of numcopies,
-  and preferred content configuration.
-
 * `--quiet`
 
   Avoid the default verbose display of what is done; only show errors

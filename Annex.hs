@@ -100,7 +100,6 @@ data AnnexState = AnnexState
 	, output :: MessageState
 	, force :: Bool
 	, fast :: Bool
-	, auto :: Bool
 	, daemon :: Bool
 	, branchstate :: BranchState
 	, repoqueue :: Maybe Git.Queue.Queue
@@ -146,7 +145,6 @@ newState c r = AnnexState
 	, output = defaultMessageState
 	, force = False
 	, fast = False
-	, auto = False
 	, daemon = False
 	, branchstate = startBranchState
 	, repoqueue = Nothing

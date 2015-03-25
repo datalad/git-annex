@@ -30,8 +30,6 @@ commonOptions =
 		"allow actions that may lose annexed data"
 	, Option ['F'] ["fast"] (NoArg (setfast True))
 		"avoid slow operations"
-	, Option ['a'] ["auto"] (NoArg (setauto True))
-		"automatic mode"
 	, Option ['q'] ["quiet"] (NoArg (Annex.setOutput QuietOutput))
 		"avoid verbose output"
 	, Option ['v'] ["verbose"] (NoArg (Annex.setOutput NormalOutput))
@@ -50,7 +48,6 @@ commonOptions =
   where
 	setforce v = Annex.changeState $ \s -> s { Annex.force = v }
 	setfast v = Annex.changeState $ \s -> s { Annex.fast = v }
-	setauto v = Annex.changeState $ \s -> s { Annex.auto = v }
 	setforcebackend v = Annex.changeState $ \s -> s { Annex.forcebackend = Just v }
 	setdebug = Annex.changeGitConfig $ \c -> c { annexDebug = True }
 	unsetdebug = Annex.changeGitConfig $ \c -> c { annexDebug = False }

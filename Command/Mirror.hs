@@ -14,19 +14,20 @@ import qualified Command.Drop
 import qualified Command.Get
 import qualified Remote
 import Annex.Content
-import qualified Annex
 import Config.NumCopies
 
 cmd :: [Command]
-cmd = [withOptions (fromToOptions ++ annexedMatchingOptions ++ keyOptions) $
-	command "mirror" paramPaths seek
-		SectionCommon "mirror content of files to/from another repository"]
+cmd = [withOptions mirrorOptions $ command "mirror" paramPaths seek
+	SectionCommon "mirror content of files to/from another repository"]
+
+mirrorOptions :: [Option]
+mirrorOptions = fromToOptions ++ annexedMatchingOptions ++ keyOptions
 
 seek :: CommandSeek
 seek ps = do
 	to <- getOptionField toOption Remote.byNameWithUUID
 	from <- getOptionField fromOption Remote.byNameWithUUID
-	withKeyOptions
+	withKeyOptions False
 		(startKey to from Nothing)
 		(withFilesInGit $ whenAnnexed $ start to from)
 		ps
@@ -35,16 +36,13 @@ start :: Maybe Remote -> Maybe Remote -> FilePath -> Key -> CommandStart
 start to from file = startKey to from (Just file)
 
 startKey :: Maybe Remote -> Maybe Remote -> Maybe FilePath -> Key -> CommandStart
-startKey to from afile key = do
-	noAuto
+startKey to from afile key =
 	case (from, to) of
 		(Nothing, Nothing) -> error "specify either --from or --to"
 		(Nothing, Just r) -> mirrorto r
 		(Just r, Nothing) -> mirrorfrom r
 		_ -> error "only one of --from or --to can be specified"
   where
-	noAuto = whenM (Annex.getState Annex.auto) $
-		error "--auto is not supported for mirror"
 	mirrorto r = ifM (inAnnex key)
 		( Command.Move.toStart r False afile key
 		, do

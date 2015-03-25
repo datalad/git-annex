@@ -36,6 +36,10 @@ when a repository in the group has its preferred content set to
 
 [[git-annex]](1)
 
+[[git-annex-vicfg]](1)
+
+[[git-annex-wanted]](1)
+
 # AUTHOR
 
 Joey Hess <id@joeyh.name>

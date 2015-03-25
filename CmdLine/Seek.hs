@@ -173,13 +173,12 @@ withNothing _ _ = error "This command takes no parameters."
  -
  - Otherwise, fall back to a regular CommandSeek action on
  - whatever params were passed. -}
-withKeyOptions :: (Key -> CommandStart) -> CommandSeek -> CommandSeek
-withKeyOptions keyop fallbackop params = do
+withKeyOptions :: Bool -> (Key -> CommandStart) -> CommandSeek -> CommandSeek
+withKeyOptions auto keyop fallbackop params = do
 	bare <- fromRepo Git.repoIsLocalBare
 	allkeys <- Annex.getFlag "all"
 	unused <- Annex.getFlag "unused"
 	specifickey <- Annex.getField "key"
-	auto <- Annex.getState Annex.auto
 	when (auto && bare) $
 		error "Cannot use --auto in a bare repository"
 	case	(allkeys, unused, null params, specifickey) of

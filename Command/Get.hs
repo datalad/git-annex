@@ -21,20 +21,23 @@ cmd = [withOptions getOptions $ command "get" paramPaths seek
 	SectionCommon "make content of annexed files available"]
 
 getOptions :: [Option]
-getOptions = fromOption : annexedMatchingOptions ++ keyOptions
+getOptions = fromOption : annexedMatchingOptions ++ keyOptions ++ [autoOption]
 
 seek :: CommandSeek
 seek ps = do
 	from <- getOptionField fromOption Remote.byNameWithUUID
-	withKeyOptions
+	auto <- getOptionFlag autoOption
+	withKeyOptions auto
 		(startKeys from)
-		(withFilesInGit $ whenAnnexed $ start from)
+		(withFilesInGit $ whenAnnexed $ start auto from)
 		ps
 
-start :: Maybe Remote -> FilePath -> Key -> CommandStart
-start from file key = start' expensivecheck from key (Just file)
+start :: Bool -> Maybe Remote -> FilePath -> Key -> CommandStart
+start auto from file key = start' expensivecheck from key (Just file)
   where
-	expensivecheck = checkAuto (numCopiesCheck file key (<) <||> wantGet False (Just key) (Just file))
+	expensivecheck
+		| auto = numCopiesCheck file key (<) <||> wantGet False (Just key) (Just file)
+		| otherwise = return True
 
 startKeys :: Maybe Remote -> Key -> CommandStart
 startKeys from key = start' (return True) from key Nothing

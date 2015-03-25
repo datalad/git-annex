@@ -69,7 +69,7 @@ seek ps = do
 	from <- getOptionField fsckFromOption Remote.byNameWithUUID
 	u <- maybe getUUID (pure . Remote.uuid) from
 	i <- getIncremental u
-	withKeyOptions
+	withKeyOptions False
 		(\k -> startKey i k =<< getNumCopies)
 		(withFilesInGit $ whenAnnexed $ start from i)
 		ps

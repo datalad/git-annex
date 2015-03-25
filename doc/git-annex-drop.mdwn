@@ -22,6 +22,12 @@ safe to do so.
   this option can specifiy a remote from which the files'
   contents should be removed.
 
+* `--auto`
+
+  Rather than trying to drop all specified files, drop only files that
+  are not preferred content of the repository.
+  See [[git-annex-preferred-content]](1)
+
 * `--force`
 
   Use this option with care! It bypasses safety checks, and forces

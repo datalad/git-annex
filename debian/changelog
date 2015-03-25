@@ -9,6 +9,9 @@ git-annex (5.20150318) UNRELEASED; urgency=medium
     destination backend. Useful in rare cases.
   * Man pages for individual commands now available, and can be
     opened using "git annex help <command>"
+  * --auto is no longer a global option; only get, drop, and copy
+    accept it. (Not a behavior change unless you were passing it to a
+    command that ignored it.)
 
  -- Joey Hess <id@joeyh.name>  Thu, 19 Mar 2015 17:05:32 -0400
 

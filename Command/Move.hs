@@ -28,7 +28,7 @@ seek :: CommandSeek
 seek ps = do
 	to <- getOptionField toOption Remote.byNameWithUUID
 	from <- getOptionField fromOption Remote.byNameWithUUID
-	withKeyOptions
+	withKeyOptions False
 		(startKey to from True)
 		(withFilesInGit $ whenAnnexed $ start to from True)
 		ps
@@ -41,15 +41,11 @@ startKey to from move = start' to from move Nothing
 
 start' :: Maybe Remote -> Maybe Remote -> Bool -> AssociatedFile -> Key -> CommandStart
 start' to from move afile key = do
-	noAuto
 	case (from, to) of
 		(Nothing, Nothing) -> error "specify either --from or --to"
 		(Nothing, Just dest) -> toStart dest move afile key
 		(Just src, Nothing) -> fromStart src move afile key
 		_ -> error "only one of --from or --to can be specified"
-  where
-	noAuto = when move $ whenM (Annex.getState Annex.auto) $ error
-		"--auto is not supported for move"
 
 showMoveAction :: Bool -> Key -> AssociatedFile -> Annex ()
 showMoveAction move = showStart' (if move then "move" else "copy")

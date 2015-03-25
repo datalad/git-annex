@@ -14,6 +14,12 @@ or transferring them from some kind of key-value store.
 
 # OPTIONS
 
+* `--auto`
+
+  Rather than getting all files, get only files that don't yet have
+  the desired number of copies, or that are preferred content of the
+  repository. See [[git-annex-preferred-content]](1)
+
 * `--from=remote`
 
   Normally git-annex will choose which remotes to get the content

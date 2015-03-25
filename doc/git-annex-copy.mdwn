@@ -22,6 +22,12 @@ Copies the content of files from or to another remote.
   Use this option to copy the content of files from the local repository
   to the specified remote.
 
+* `--auto`
+
+  Rather than copying all files, only copy files that don't yet have
+  the desired number of copies, or that are preferred content of the
+  destination repository. See [[git-annex-preferred-content]](1)
+
 * `--fast`
 
   Avoid contacting the remote to check if it has every file when copying

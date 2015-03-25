@@ -23,7 +23,7 @@ cmd = [noCommit $ withOptions (jsonOption : annexedMatchingOptions ++ keyOptions
 seek :: CommandSeek
 seek ps = do
 	m <- remoteMap id
-	withKeyOptions
+	withKeyOptions False
 		(startKeys m)
 		(withFilesInGit $ whenAnnexed $ start m)
 		ps

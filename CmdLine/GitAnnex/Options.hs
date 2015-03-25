@@ -142,3 +142,6 @@ timeLimitOption :: Option
 timeLimitOption = Option ['T'] ["time-limit"]
 	(ReqArg Limit.addTimeLimit paramTime)
 	"stop after the specified amount of time"
+
+autoOption :: Option
+autoOption = flagOption ['a'] "auto" "automatic mode"

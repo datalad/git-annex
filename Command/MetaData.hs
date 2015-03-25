@@ -61,7 +61,7 @@ seek ps = do
 	let seeker = if null modmeta
 		then withFilesInGit
 		else withFilesInGitNonRecursive
-	withKeyOptions
+	withKeyOptions False
 		(startKeys now getfield modmeta)
 		(seeker $ whenAnnexed $ start now getfield modmeta)
 		ps

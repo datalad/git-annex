@@ -17,13 +17,11 @@ module Command (
 	whenAnnexed,
 	ifAnnexed,
 	isBareRepo,
-	checkAuto,
 	module ReExported
 ) where
 
 import Common.Annex
 import qualified Backend
-import qualified Annex
 import qualified Git
 import Types.Command as ReExported
 import Types.Option as ReExported
@@ -79,7 +77,3 @@ ifAnnexed file yes no = maybe no yes =<< Backend.lookupFile file
 
 isBareRepo :: Annex Bool
 isBareRepo = fromRepo Git.repoIsLocalBare
-
-checkAuto :: Annex Bool -> Annex Bool
-checkAuto checker = ifM (Annex.getState Annex.auto)
-	( checker , return True )
