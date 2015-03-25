@@ -39,6 +39,8 @@ contents.
   However, this bypasses checking the .gitattributes annex.numcopies
   setting when dropping files.
 
+  This is the default behavior when running git-annex in a bare repository.
+
 * file matching options
 
   The [[git-annex-matching-options]](1)

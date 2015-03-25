@@ -36,6 +36,8 @@ Copies the content of files from or to another remote.
   Rather than specifying a filename or path to copy, this option can be
   used to copy all available versions of all files.
 
+  This is the default behavior when running git-annex in a bare repository.
+
 * `--unused`
 
   Operate on files found by last run of git-annex unused.

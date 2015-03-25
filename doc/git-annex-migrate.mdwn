@@ -1,0 +1,48 @@
+# NAME
+
+git-annex migrate - switch data to different backend
+
+# SYNOPSIS
+
+git annex migrate `[path ...]`
+
+# DESCRIPTION
+
+Changes the specified annexed files to use the default key-value backend
+(or the one specified with `--backend`). Only files whose content
+is currently available are migrated.
+
+Note that the content is also still available using the old key after
+migration. Use `git annex unused` to find and remove the old key.
+
+Normally, nothing will be done to files already using the new backend.
+However, if a backend changes the information it uses to construct a key,
+this can also be used to migrate files to use the new key format.
+
+When you have multiple repositories that each contain a copy of a file,
+it's best to run migrate in all of them.
+
+# OPTIONS
+
+* `--backend`
+
+  Specify the new key-value backend to use for migrated data.
+
+* `--force`
+
+  Force migration of keys that are already using the new backend.
+
+* file matching options
+ 
+  The [[git-annex-matching-options]](1)
+  can be used to specify files to migrate.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

@@ -17,19 +17,29 @@ finds files in the current directory and its subdirectories.
 
   Output filenames terminated with nulls, for use with `xargs -0`
 
-* `--format=fmt`
+* `--format=value`
 
   Use custom output formatting.
 
-  The default output format is the same as `--format='${file}\\n'`
+  The value is a format string, in which '${var}' is expanded to the
+  value of a variable. To right-justify a variable with whitespace,
+  use '${var;width}' ; to left-justify a variable, use '${var;-width}';
+  to escape unusual characters in a variable, use '${escaped_var}'
 
   These variables are available for use in formats: file, key, backend,
   bytesize, humansize, keyname, hashdirlower, hashdirmixed, mtime (for
   the mtime field of a WORM key).
 
+  Also, '\\n' is a newline, '\\000' is a NULL, etc.
+
+  The default output format is the same as `--format='${file}\\n'`
+
 * `--json`
 
   Output the list of files in JSON format.
+
+  This is intended to be parsed by programs that use
+  git-annex. Each line of output is a JSON object.
 
 * matching options
     

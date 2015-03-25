@@ -1,0 +1,32 @@
+# NAME
+
+git-annex test - run built-in test suite
+
+# SYNOPSIS
+
+git annex test
+
+# DESCRIPTION
+
+This runs git-annex's built-in test suite.
+
+The test suite runs in the `.t` subdirectory of the current directory
+(it refuses to run if `.t` already exists).
+
+It can be useful to run the test suite on different filesystems,
+or to verify your local installation of git-annex.
+
+# OPTIONS
+      
+There are several options, provided by Haskell's tasty test
+framework. Pass --help for details.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

@@ -1,0 +1,34 @@
+# NAME
+
+git-annex remotedaemon - detects when remotes have changed, and fetches from them
+
+# SYNOPSIS
+
+git annex remotedaemon
+
+# DESCRIPTION
+
+This plumbing-level command is used by the assistant to detect
+when remotes have received git pushes, so the changes can be promptly
+fetched and the local repository updated.
+
+This is a better alternative to the [[git-annex-xmppgit]](1)
+hack.
+
+For the remotedaemon to work, the git remote must have
+[[git-annex-shell]](1) installed, with notifychanges support.
+The first version of git-annex-shell that supports it is 5.20140405.
+
+It's normal for this process to be running when the assistant is running.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-assistant]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

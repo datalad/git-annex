@@ -1,0 +1,51 @@
+# NAME
+
+git-annex view - enter a view branch
+
+# SYNOPSIS
+
+git annex view `[tag ...] [field=value ...] [field=glob ...] [!tag ...] [field!=value ...]`
+
+# DESCRIPTION
+
+Uses metadata to build a view branch of the files in the current branch,
+and checks out the view branch. Only files in the current branch whose
+metadata matches all the specified field values and tags will be
+shown in the view.
+
+Multiple values for a metadata field can be specified, either by using
+a glob (`field="*"`) or by listing each wanted value. The resulting view
+will put files in subdirectories according to the value of their fields.
+  
+Once within such a view, you can make additional directories, and
+copy or move files into them. When you commit, the metadata will
+be updated to correspond to your changes.
+  
+There are fields corresponding to the path to the file. So a file
+"foo/bar/baz/file" has fields "/=foo", "foo/=bar", and "foo/bar/=baz".
+These location fields can be used the same as other metadata to construct
+the view.
+  
+For example, `/=podcasts` will only include files from the podcasts
+directory in the view, while `podcasts/=*` will preserve the
+subdirectories of the podcasts directory in the view.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-metadata]](1)
+
+[[git-annex-vpop]](1)
+
+[[git-annex-vfilter]](1)
+
+[[git-annex-vadd]](1)
+
+[[git-annex-vcycle]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

@@ -1,0 +1,28 @@
+# NAME
+
+git-annex dropkey - drops annexed content for specified keys
+
+# SYNOPSIS
+
+git annex dropkey `[key ...]`
+
+# DESCRIPTION
+
+This plumbing-level command drops the annexed data for the specified
+keys from this repository.
+
+This can be used to drop content for arbitrary keys, which do not need
+to have a file in the git repository pointing at them.
+
+Warning: This command does not check that enough other copies of the content
+exist; using it can easily result in data loss.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

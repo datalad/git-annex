@@ -1,0 +1,27 @@
+# NAME
+
+git-annex resolvemerge - resolve merge conflicts
+
+# SYNOPSIS
+
+git annex resolvemerge
+
+# DESCRIPTION
+
+Resolves a conflicted merge, by adding both conflicting versions of the
+file to the tree, using variants of their filename. This is done
+automatically when using `git annex sync` or `git annex merge`.
+
+Note that only merge conflicts that involve an annexed file are resolved.
+Merge conflicts between two files that are not annexed will not be
+automatically resolved.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

@@ -1,0 +1,28 @@
+# NAME
+
+git-annex readpresentkey - read records of where key is present
+
+# SYNOPSIS
+
+git annex readpresentkey `key uuid`
+
+# DESCRIPTION
+
+This plumbing-level command reads git-annex's records about whether
+the specified key's content is present in the remote with the speficied
+uuid.
+  
+It exits 0 if the key is recorded to be present and 1 if not.
+
+Note that this does not do an active check to verify if the key
+is present. To do such a check, use [[checkpresentkey]](1)
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

@@ -1,0 +1,27 @@
+# NAME
+
+git-annex pre-commit - run by git pre-commit hook
+
+# SYNOPSIS
+
+git annex  `[path ...]`
+
+# DESCRIPTION
+
+This is meant to be called from git's pre-commit hook. `git annex init`
+automatically creates a pre-commit hook using this.
+
+Fixes up symlinks that are staged as part of a commit, to ensure they
+point to annexed content. Also handles injecting changes to unlocked
+files into the annex. When in a view, updates metadata to reflect changes
+made to files in the view.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

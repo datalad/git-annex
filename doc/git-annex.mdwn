@@ -411,36 +411,16 @@ subdirectories).
 
 # METADATA COMMANDS
 
-* `metadata [path ...] [-s field=value -s field+=value -s field-=value ...] [-g field]`
+* `metadata [path ...]`
 
-  The content of a file can have any number of metadata fields
+  The content of an annexed file can have any number of metadata fields
   attached to it to describe it. Each metadata field can in turn
   have any number of values.
 
   This command can be used to set metadata, or show the currently set
   metadata.
 
-  To show current metadata, run without any -s parameters. The --json
-  option will enable json output.
-
-  To only get the value(s) of a single field, use -g field.
-  The values will be output one per line, with no other output, so
-  this is suitable for use in a script.
-
-  To set a field's value, removing any old value(s), use -s field=value.
-
-  To add an additional value, use -s field+=value.
-
-  To remove a value, use -s field-=value.
-
-  To set a value, only if the field does not already have a value,
-  use -s field?=value
-
-  To set a tag, use -t tag, and use -u tag to remove a tag.
-
-  For example, to set some tags on a file and also its author:
-
-        	git annex metadata annexscreencast.ogv -t video -t screencast -s author+=Alice
+  See [[git-annex-metadata]](1) for details.
 
 * `view [tag ...] [field=value ...] [field=glob ...] [!tag ...] [field!=value ...]`
 
@@ -449,68 +429,42 @@ subdirectories).
   metadata matches all the specified field values and tags will be
   shown in the view.
 
-  Multiple values for a metadata field can be specified, either by using
-  a glob (`field="*"`) or by listing each wanted value. The resulting view
-  will put files in subdirectories according to the value of their fields.
-
-  Once within such a view, you can make additional directories, and
-  copy or move files into them. When you commit, the metadata will
-  be updated to correspond to your changes.
-
-  There are fields corresponding to the path to the file. So a file
-  "foo/bar/baz/file" has fields "/=foo", "foo/=bar", and "foo/bar/=baz".
-  These location fields can be used the same as other metadata to construct
-  the view.
-
-  For example, `/=podcasts` will only include files from the podcasts
-  directory in the view, while `podcasts/=*` will preserve the
-  subdirectories of the podcasts directory in the view.
+  See [[git-annex-view]](1) for details.
 
 * `vpop [N]`
 
   Switches from the currently active view back to the previous view.
   Or, from the first view back to original branch.
-
-  The optional number tells how many views to pop.
+ 
+  See [[git-annex-vpop]](1) for details.
 
 * `vfilter [tag ...] [field=value ...] [!tag ...] [field!=value ...]`
 
   Filters the current view to only the files that have the
   specified field values and tags.
+  
+  See [[git-annex-vfilter]](1) for details.
 
 * `vadd [field=glob ...] [field=value ...] [tag ...]`
 
   Changes the current view, adding an additional level of directories
   to categorize the files.
-
-  For example, when the view is by author/tag, `vadd year=*` will
-  change it to year/author/tag.
-
-  So will `vadd year=2014 year=2013`, but limiting the years in view
-  to only those two.
+  
+  See [[git-annex-vfilter]](1) for details.
 
 * `vcycle`
 
   When a view involves nested subdirectories, this cycles the order.
-
-  For example, when the view is by year/author/tag, `vcycle` will switch
-  it to author/tag/year.
+  
+  See [[git-annex-vcycle]](1) for details.
 
 # UTILITY COMMANDS
 
 * `migrate [path ...]`
 
-  Changes the specified annexed files to use the default key-value backend
-  (or the one specified with `--backend`). Only files whose content
-  is currently available are migrated.
-
-  Note that the content is also still available using the old key after
-  migration. Use `git annex unused` to find and remove the old key.
-
-  Normally, nothing will be done to files already using the new backend.
-  However, if a backend changes the information it uses to construct a key,
-  this can also be used to migrate files to use the new key format.
-  (To force migration of keys already using the new backend, use --force.)
+  Changes the specified annexed files to use a different key-value backend.
+  
+  See [[git-annex-migrate]](1) for details.
 
 * `reinject src dest`
 
@@ -518,46 +472,26 @@ subdirectories).
   This can be useful if you have obtained the content of a file from
   elsewhere and want to put it in the local annex.
 
-  Automatically runs fsck on dest to check that the expected content was
-  provided.
-
-  Example:
-
-        	git annex reinject /tmp/foo.iso foo.iso
+  See [[git-annex-reinject]](1) for details.
 
 * `unannex [path ...]`
 
   Use this to undo an accidental `git annex add` command. It puts the
   file back how it was before the add.
-
-  Note that for safety, the content of the file remains in the annex,
-  until you use `git annex unused` and `git annex dropunused`.
-
-  This is not the command you should use if you intentionally annexed a
-  file and don't want its contents any more. In that case you should use
-  `git annex drop` instead, and you can also `git rm` the file.
-
-  Normally this does a slow copy of the file. In `--fast` mode, it
-  instead makes a hard link from the file to the content in the annex.
-  But use --fast mode with caution, because editing the file will
-  change the content in the annex.
+  
+  See [[git-annex-unannex]](1) for details.
 
 * `uninit`
 
-  Use this to stop using git annex. It will unannex every file in the
-  repository, and remove all of git-annex's other data, leaving you with a
-  git repository plus the previously annexed files.
+  De-initialize git-annex and clean out repository.
+  
+  See [[git-annex-unannex]](1) for details.
 
 * `reinit uuid|description`
 
-  Normally, initializing a repository generates a new, unique identifier
-  (UUID) for that repository. Occasionally it may be useful to reuse a
-  UUID -- for example, if a repository got deleted, and you're
-  setting it back up.
-
-  Use this with caution; it can be confusing to have two existing
-  repositories with the same UUID. Also, you will probably want to run
-  a fsck.
+  Initialize repository, reusing old UUID.
+  
+  See [[git-annex-reinit]](1) for details.
 
 # PLUMBING COMMANDS
 
@@ -565,115 +499,81 @@ subdirectories).
 
   This is meant to be called from git's pre-commit hook. `git annex init`
   automatically creates a pre-commit hook using this.
-
-  Fixes up symlinks that are staged as part of a commit, to ensure they
-  point to annexed content. Also handles injecting changes to unlocked
-  files into the annex. When in a view, updates metadata to reflect changes
-  made to files in the view.
+  
+  See [[git-annex-pre-commit]](1) for details.
 
 * `lookupkey [file ...]`
 
-  This plumbing-level command looks up the key used for a file in the
-  index. The key is output to stdout. If there is no key (because
-  the file is not present in the index, or is not a git-annex managed file),
-  nothing is output, and it exits nonzero.
+  Looks up key used for file.
+
+  See [[git-annex-lookupkey]](1) for details.
 
 * `examinekey [key ...]`
 
-  This plumbing-level command is given a key, and prints information
-  that can be determined purely by looking at the key.
-
-  To specify what information to print, use `--format`. Or use `--json`
-  to get all available information in JSON format.
-
-  The same variables can be used in the format string as can be used in
-  the format string of git annex find (except there is no file option
-  here).
-
-  For example, the location a key's value is stored (in indirect mode)
-  can be looked up by running:
-
-        	git annex examinekey --format='.git/annex/objects/${hashdirmixed}${key}/${key}'
+  Print information that can be determined purely by looking at the key.
+  
+  See [[git-annex-examinekey]](1) for details.
 
 * `fromkey [key file]`
 
-  This plumbing-level command can be used to manually set up a file
-  in the git repository to link to a specified key.
-
-  Normally, the annex needs to already contain the content object for the
-  key. To override this, use --force.
-
-  If the key and file are not specified on the command line, they are
-  instead read from stdin. Any number of lines can be provided in this
-  mode, each containing a key and filename, sepearated by whitespace.
+  Manually set up a file in the git repository to link to a specified key.
+  
+  See [[git-annex-fromkey]](1) for details.
 
 * `registerurl [key url]`
 
-  This plumbing-level command can be used to register urls where a
-  key can be downloaded from.
-
-  No verification is performed of the url's contents.
-
-  If the key and url are not specified on the command line, they are
-  instead read from stdin. Any number of lines can be provided in this
-  mode, each containing a key and url, sepearated by whitespace.
+  Registers an url for a key.
+  
+  See [[git-annex-registerurl]](1) for details.
 
 * `dropkey [key ...]`
 
-  This plumbing-level command drops the annexed data for the specified
-  keys from this repository.
+  Drops annexed content for specified keys.
+  
+  See [[git-annex-dropkey]](1) for details.
 
-  This can be used to drop content for arbitrary keys, which do not need
-  to have a file in the git repository pointing at them.
+* `transferkey key [--from=remote|--to=remote]`
 
-* `transferkey`
-
-  This plumbing-level command is used to request a single key be
-  transferred. Either the --from or the --to option can be used to specify
-  the remote to use. A --file option can be used to hint at the file
-  associated with the key.
+  Transfers a key from or to a remote.
+  
+  See [[git-annex-transferkey]](1) for details.
 
 * `transferkeys`
+  
+  Used internally by the assistant.
 
-  This plumbing-level command is used by the assistant to transfer data.
-  It is fed instructions about the keys to transfer using an internal
-  stdio protocol, which is intentionally not documented (as it may change
-  at any time).
+  See [[git-annex-transferkey]](1) for details.
 
 * `setpresentkey key uuid [1|0]`
 
   This plumbing-level command changes git-annex's records about whether
   the specified key's content is present in a remote with the specified uuid.
 
+  See [[git-annex-setpresentkey]](1) for details.
+
 * `readpresentkey key uuid`
 
-  This plumbing-level command reads git-annex's records about whether
-  the specified key's content is present in the remote with the speficied
-  uuid.
+  Read records of where key is present.
 
-  It exits 0 if the key is recorded to be present and 1 if not.
+  See [[git-annex-readpresentkey]](1) for details.
 
 * `checkpresentkey key remote`
 
-  This plumbing-level command verifies if the specified key's content
-  is present in the specified remote.
-
-  Exits 0 if the content is verified present, or 1 if it is verified to not
-  be present. If there is a problem checking the remote, the special
-  exit code 100 is used, and an error message is output to stderr.
+  Check if key is present in remote.
+  
+  See [[git-annex-checkpresentkey]](1) for details.
 
 * `rekey [file key ...]`
 
-  This plumbing-level command is similar to migrate, but you specify
-  both the file, and the new key to use for it.
-
-  With `--force`, even files whose content is not currently available will
-  be rekeyed. Use with caution.
+  Change keys used for files.
+  
+  See [[git-annex-rekey]](1) for details.
 
 * `findref [ref]`
 
-  This is similar to the find command, but instead of finding files in the
-  current work tree, it finds files in the specified git ref.
+  Lists files in a git ref.
+  
+  See [[git-annex-findref]](1) for details.
 
 * `proxy -- git cmd [options]`
 
@@ -681,18 +581,7 @@ subdirectories).
   command with a temporary work tree, and updates the working tree to
   reflect any changes staged or committed by the git command.
   
-  For example, to revert the most recent change that was committed
-  to the repository:
-
-    git annex proxy -- git revert HEAD
-
-  To check out a past version of the repository:
-
-    git annex proxy -- git checkout HEAD^^
-
-  To rename a directory:
-
-    git annex proxy -- git mv mydir newname
+  See [[git-annex-proxy]](1) for details.
 
 * `resolvemerge`
 
@@ -700,41 +589,35 @@ subdirectories).
   file to the tree, using variants of their filename. This is done
   automatically when using `git annex sync` or `git annex merge`.
 
-  Note that only merge conflicts that involve an annexed file are resolved.
-  Merge conflicts between two files that are not annexed will not be
-  automatically resolved.
+  See [[git-annex-resolvemerge]](1) for details.
 
 * `diffdriver`
 
-  This is an external git diff driver shim. Normally, when using `git diff`
-  with an external git driver, the symlinks to annexed files are not set up
-  right, so the external git driver cannot read them in order to perform
-  smart diffing of their contents. This command works around the problem,
-  by passing the fixed up files to the real external diff driver.
+  This can be used to make `git diff` use an external diff driver with
+  annexed files.
 
-  To use, just configure git to use "git-annex diffdriver -- cmd params --"
-  as the external diff command, where cmd is the real external diff
-  command you want to use, and params are any extra parameters to pass
-  to it. Note the trailing "--", which is required.
-
-  For example, set `GIT_EXTERNAL_DIFF=git-annex diffdriver -- j-c-diff --`
+  See [[git-annex-diffdriver]](1) for details.
 
 * `remotedaemon`
 
   Detects when network remotes have received git pushes and fetches from them.
 
+  See [[git-annex-remotedaemon]](1) for details.
+
 * `xmppgit`
 
-  This command is used internally to perform git pulls over XMPP.
+  This command is used internally by the assistant to perform git pulls
+  over XMPP.
+  
+  See [[git-annex-xmppgit]](1) for details.
 
 # TESTING COMMANDS
 
 * `test`
 
   This runs git-annex's built-in test suite.
-
-  There are several parameters, provided by Haskell's tasty test framework.
-  Pass --help for details.
+  
+  See [[git-annex-test]](1) for details.
 
 * `testremote remote`
 
@@ -743,22 +626,21 @@ subdirectories).
 
   It's safe to run in an existing repository (the repository contents are
   not altered), although it may perform expensive data transfers.
-
-  To perform a smaller set of tests, use --fast.
-
-  The --size option can be used to tune the size of the generated objects.
-
-  Testing a single remote will use the remote's configuration,
-  automatically varying the chunk sizes, and with simple shared encryption
-  enabled and disabled.
+  
+  See [[git-annex-testremote]](1) for details.
 
 * `fuzztest`
 
   Generates random changes to files in the current repository,
-  for use in testing the assistant. This is dangerous, so it will not
-  do anything unless --forced.
+  for use in testing the assistant.
+  
+  See [[git-annex-fuzztest]](1) for details.
 
-# OPTIONS
+# COMMON OPTIONS
+
+These common options are accepted by all git-annex commands, and
+may not be explicitly listed on their individual man pages.
+(Many commands also accept the [[git-annex-matching-options]](1).)
 
 * `--force`
 
@@ -777,23 +659,6 @@ subdirectories).
   will only do so when needed to help satisfy the setting of numcopies,
   and preferred content configuration.
 
-* `--all`
-
-  Operate on all data that has been stored in the git annex,
-  including old versions of files. This is the default behavior when
-  running git-annex in a bare repository; in a non-bare repository the
-  normal behavior is to only operate on specified files in the working
-  tree.
-
-* `--unused`
-
-  Operate on all data that has been determined to be unused by
-  a previous run of `git-annex unused`.
-
-* `--key=key`
-
-  Operate on only the specified key.
-
 * `--quiet`
 
   Avoid the default verbose display of what is done; only show errors
@@ -803,13 +668,6 @@ subdirectories).
 
   Enable verbose display.
 
-* `--json`
-
-  Rather than the normal output, generate JSON. This is intended to be
-  parsed by programs that use git-annex. Each line of output is a JSON
-  object. Note that JSON output is only usable with some git-annex commands,
-  like info, find, whereis, and metadata.
-
 * `--debug`
 
   Show debug messages.
@@ -817,19 +675,6 @@ subdirectories).
 * `--no-debug`
 
   Disable debug messages.
-
-* `--from=repository`
-
-  Specifies a repository that content will be retrieved from, or that
-  should otherwise be acted on.
-
-  It should be specified using the name of a configured remote.
-
-* `--to=repository`
-
-  Specifies a repository that content will be sent to.
-
-  It should be specified using the name of a configured remote.
 
 * `--numcopies=n`
 
@@ -875,16 +720,6 @@ subdirectories).
   adding a file to the annex, or migrating a file. Once files
   are in the annex, their backend is known and this option is not
   necessary.
-
-* `--format=value`
-
-  Specifies a custom output format. The value is a format string, 
-  in which '${var}' is expanded to the value of a variable. To right-justify
-  a variable with whitespace, use '${var;width}' ; to left-justify
-  a variable, use '${var;-width}'; to escape unusual characters in a variable,
-  use '${escaped_var}'
-
-  Also, '\\n' is a newline, '\\000' is a NULL, etc.
 
 * `--user-agent=value`
 

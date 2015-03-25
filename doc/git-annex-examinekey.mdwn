@@ -1,0 +1,51 @@
+# NAME
+
+git-annex examinekey - prints information from a key
+
+# SYNOPSIS
+
+git annex examinekey `[key ...]`
+
+# DESCRIPTION
+
+This plumbing-level command is given a key, and prints information
+that can be determined purely by looking at the key.
+
+# OPTIONS
+
+* `--format=value`
+
+  Use custom output formatting.
+
+  The value is a format string, in which '${var}' is expanded to the
+  value of a variable. To right-justify a variable with whitespace,
+  use '${var;width}' ; to left-justify a variable, use '${var;-width}';
+  to escape unusual characters in a variable, use '${escaped_var}'
+
+  These variables are available for use in formats: key, backend,
+  bytesize, humansize, keyname, hashdirlower, hashdirmixed, mtime (for
+  the mtime field of a WORM key).
+
+  Also, '\\n' is a newline, '\\000' is a NULL, etc.
+
+* `--json`
+
+  Enable JSON output. This is intended to be parsed by programs that use
+  git-annex. Each line of output is a JSON object.
+
+# EXAMPLES
+
+The location a key's value is stored (in indirect mode)
+can be looked up by running:
+
+	git annex examinekey $KEY --format='.git/annex/objects/${hashdirmixed}${key}/${key}'
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

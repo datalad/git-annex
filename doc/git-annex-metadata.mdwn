@@ -1,0 +1,83 @@
+# NAME
+
+git-annex metadata - sets or gets metadata of a file
+
+# SYNOPSIS
+
+git annex metadata `[path ...]`
+
+# DESCRIPTION
+
+The content of an annexed file can have any number of metadata fields
+attached to it to describe it. Each metadata field can in turn
+have any number of values.
+
+This command can be used to set metadata, or show the currently set
+metadata.
+
+When run without any -s or -t parameters, displays the current metadata.
+
+# OPTIONS
+
+* `-g field`
+
+  Get the value(s) of a single field.
+
+  The values will be output one per line, with no other output, so
+  this is suitable for use in a script.
+
+* `-s field=value`
+
+  Set a field's value, removing any old values.
+
+* `-s field+=value`
+
+  Add an additional value, preserving any old values.
+
+* `-s field-=value`
+
+  Remove a value.
+
+* `-s field?=value`
+
+  Set a value, but only if the field does not already have a value set.
+  
+* `-t tag`
+
+  Set a tag. Note that a tag is just a value of the "tag" field.
+
+* `-u tag`
+
+  Unset a tag.
+
+* `--force`
+
+  By default, `git annex metadata` refuses to recursively set metadata
+  throughout the files in a directory. This option enables such recursive
+  setting.
+
+* file matching options
+ 
+  The [[git-annex-matching-options]](1)
+  can be used to specify files to act on.
+
+* `--json`
+
+  Enable JSON output. This is intended to be parsed by programs that use
+  git-annex. Each line of output is a JSON object.
+
+# EXAMPLES
+
+To set some tags on a file and also its author:
+
+	git annex metadata annexscreencast.ogv -t video -t screencast -s author+=Alice
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

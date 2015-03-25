@@ -1,0 +1,30 @@
+# NAME
+
+git-annex vfilter - filter current view
+
+# SYNOPSIS
+
+git annex vfilter `[tag ...] [field=value ...] [!tag ...] [field!=value ...]`
+
+# DESCRIPTION
+
+Filters the current view to only the files that have the
+specified field values and tags.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-view]](1)
+
+[[git-annex-vpop]](1)
+
+[[git-annex-vadd]](1)
+
+[[git-annex-vcycle]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

@@ -24,7 +24,8 @@ For example:
 
 * `--json`
 
-  Enable JSON output format.
+  Enable JSON output. This is intended to be parsed by programs that use
+  git-annex. Each line of output is a JSON object.
 
 * file matching options
   

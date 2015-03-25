@@ -65,6 +65,8 @@ With parameters, only the specified files are checked.
   Normally only the files in the currently checked out branch
   are fscked. This option causes all versions of all files to be fscked.
 
+  This is the default behavior when running git-annex in a bare repository.
+
 * `--unused`
 
   Operate on files found by last run of git-annex unused.

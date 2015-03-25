@@ -1,0 +1,37 @@
+# NAME
+
+git-annex transferkey - transfers a key from or to a remote
+
+# SYNOPSIS
+
+git annex transferkey `key [--from=remote|--to=remote]`
+
+# DESCRIPTION
+
+This plumbing-level command is used to request a single key be
+transferred.
+
+# OPTIONS
+
+* `--from=remote`
+
+  Download the content of the key from the remote.
+
+* `--to=remote`
+
+  Upload the content of the key to the remote.
+
+* `--file=name`
+
+  Provides a hint about the name of the file associated with the key.
+  (This name is only used in progress displays.)
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.
