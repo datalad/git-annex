@@ -19,7 +19,7 @@ import Data.Time.Clock.POSIX
 cmd :: [Command]
 cmd = [withOptions metaDataOptions $
 	command "metadata" paramPaths seek
-	SectionMetaData "sets metadata of a file"]
+	SectionMetaData "sets or gets metadata of a file"]
 
 metaDataOptions :: [Option]
 metaDataOptions =

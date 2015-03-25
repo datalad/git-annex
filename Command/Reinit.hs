@@ -16,7 +16,7 @@ import qualified Remote
 	
 cmd :: [Command]
 cmd = [dontCheck repoExists $
-	command "reinit" (paramUUID ++ " or " ++ paramDesc) seek SectionUtility ""]
+	command "reinit" (paramUUID ++ "|" ++ paramDesc) seek SectionUtility "initialize repository, reusing old UUID"]
 
 seek :: CommandSeek
 seek = withWords start

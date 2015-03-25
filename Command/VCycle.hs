@@ -16,7 +16,7 @@ import Command.View (checkoutViewBranch)
 
 cmd :: [Command]
 cmd = [notBareRepo $ notDirect $
-	command "vcycle" paramNothing seek SectionUtility
+	command "vcycle" paramNothing seek SectionMetaData
 	"switch view to next layout"]
 
 seek :: CommandSeek

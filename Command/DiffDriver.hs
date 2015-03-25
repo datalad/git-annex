@@ -15,7 +15,7 @@ import Git.Types
 
 cmd :: [Command]
 cmd = [dontCheck repoExists $
-	command "diffdriver" ("[-- cmd --opts]") seek
+	command "diffdriver" ("[-- cmd --]") seek
 		SectionPlumbing "external git diff driver shim"]
 
 seek :: CommandSeek
