@@ -13,11 +13,18 @@ the annex. Individual files to import can be specified.
 If a directory is specified, the entire directory is imported.
   
         	git annex import /media/camera/DCIM/*
-  
-By default, importing two files with the same contents from two different
-locations will result in both files being added to the repository.
-(With all checksumming backends, including the default SHA256E,
-only one copy of the data will be stored.)
+
+When importing files, there's a possibility of importing a duplicate
+of a file that is already known to git-annex -- its content is either
+present in the local repository already, or git-annex knows of anther
+repository that contains it.
+
+By default, importing a duplicate of a known file will result in
+a new filename being added to the repository, so the duplicate file
+is present in the repository twice. (With all checksumming backends,
+including the default SHA256E, only one copy of the data will be stored.)
+
+Several options can be used to adjust handling of duplicate files.
 
 # OPTIONS
 
@@ -32,19 +39,18 @@ only one copy of the data will be stored.)
 
 * `--deduplicate`
 
-  Only import files whose content has not been seen before by git-annex.
-
-  Duplicate files will be deleted from the import location.
+  Only import files that are not duplicates;
+  duplicate files will be deleted from the import location.
 
 * `--skip-duplicates`
 
-  Only import files whose content has not been seen before by git-annex,
-  but avoid deleting duplicate files.
+  Only import files that are not duplicates; and avoid deleting
+  duplicate files from the import location.
 
 * `--clean-duplicates`
 
   Does not import any files, but any files found in the import location
-  that are duplicates of content in the annex are deleted.
+  that are duplicates are deleted.
 
 * file matching options
 
