@@ -114,6 +114,8 @@ segmentXargs l = go l [] 0 []
 		len = length f
 		newlen = accumlen + len
 
-	{- 10k of filenames per command, well under Linux's 20k limit;
-	 - allows room for other parameters etc. -}
+	{- 10k of filenames per command, well under 100k limit
+	 - of Linux (and OSX has a similar limit);
+	 - allows room for other parameters etc. Also allows for
+	 - eg, multibyte characters. -}
 	maxlen = 10240
