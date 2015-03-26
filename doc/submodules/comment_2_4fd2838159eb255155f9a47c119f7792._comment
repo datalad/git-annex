@@ -9,4 +9,7 @@ remember that there is an open issue reported in a comment somewhere?
 And include failure text,
 so I don't have to download some png over dialup, and can git grep for it,
 etc.
+
+Not to mention that I'll have to go back and clean out this thread later,
+so that whatever the bug is won't pollute this page after it's fixed..
 """]]
