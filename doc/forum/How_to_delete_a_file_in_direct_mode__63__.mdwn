@@ -1,0 +1,14 @@
+My use case is that I'm organising my media in a staging area called **uploadme/**.
+
+At this staging area, I add all the media into git-annex and then I go to work pruning, editing & [adding metadata](https://github.com/muennich/sxiv/blob/master/exec/key-handler#L29).
+
+# Pruning
+
+If I find an image I don't like I move it to `/tmp`.
+
+I expected to maybe type `git status` to see the missing file and later confirm that I don't want it. But when I type `git status` I get:
+
+    X1C3:~/media/uploadme$ git status
+    fatal: This operation must be run in a work tree
+
+What should I be doing?
