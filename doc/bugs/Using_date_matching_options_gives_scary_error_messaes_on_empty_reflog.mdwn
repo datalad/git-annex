@@ -31,3 +31,5 @@ git-annex: fd:9: hFlush: resource vanished (Broken pipe)
 
 # End of transcript or log.
 """]]
+
+> [[fixed|done]] --[[Joey]]

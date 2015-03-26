@@ -38,6 +38,7 @@ import Annex.Index
 import qualified Git
 import qualified Git.Command
 import qualified Git.Ref
+import qualified Git.RefLog
 import qualified Git.Sha
 import qualified Git.Branch
 import qualified Git.UnionMerge
@@ -205,7 +206,13 @@ getRaw :: FilePath -> Annex String
 getRaw = getRef fullname
 
 getHistorical :: RefDate -> FilePath -> Annex String
-getHistorical date = getRef (Git.Ref.dateRef fullname date)
+getHistorical date file =
+	-- This check avoids some ugly error messages when the reflog
+	-- is empty.
+	ifM (null <$> inRepo (Git.RefLog.get' [Param "-n1"] fullname))
+		( error ("No reflog for " ++ fromRef fullname)
+		, getRef (Git.Ref.dateRef fullname date) file
+		)
 
 getRef :: Ref -> FilePath -> Annex String
 getRef ref file = withIndex $ decodeBS <$> catFile ref file

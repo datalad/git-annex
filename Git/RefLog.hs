@@ -14,9 +14,14 @@ import Git.Sha
 
 {- Gets the reflog for a given branch. -}
 get :: Branch -> Repo -> IO [Sha]
-get b = mapMaybe extractSha . lines <$$> pipeReadStrict
-	[ Param "log"
-	, Param "-g"
-	, Param "--format=%H"
-	, Param (fromRef b)
-	]
+get = get' []
+
+get' :: [CommandParam] -> Branch -> Repo -> IO [Sha]
+get' ps b = mapMaybe extractSha . lines <$$> pipeReadStrict ps'
+  where
+	ps' = 
+		[ Param "log"
+		, Param "-g"
+		, Param "--format=%H"
+		, Param (fromRef b)
+		] ++ ps
