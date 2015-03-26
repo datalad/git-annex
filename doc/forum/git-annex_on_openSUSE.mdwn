@@ -1,0 +1,20 @@
+I run into some problems install git-annex on openSUSE:
+
+1) cabal install ends up with the failure:
+
+ExitFailure 1
+network-protocol-xmpp-0.4.6 depends on gnuidn-0.2.1 which failed to install.
+
+2) with the tarball the files are not synchronized, only linked
+
+Here the link to the discussion in a suseforum:
+https://forums.opensuse.org/showthread.php/506098-How-to-install-git-annex-on-13-1-2
+
+It would be great to see git-annex in the opensuse repos,
+maybe via the open build service, https://build.opensuse.org
+
+Are there other ways to install git-annex on opensuse successfully?
+
+Thanks in advance
+
+saneP
