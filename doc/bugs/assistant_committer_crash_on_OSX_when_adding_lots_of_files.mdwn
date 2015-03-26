@@ -8,3 +8,15 @@ long)
 </pre>
 
 Probably need to tune the command length limit for !linux. --[[Joey]]
+
+> Investigation suggests this is the problem:
+
+	inRepo (Git.LsFiles.notInRepo False $ map changeFile pending)
+
+> If a lot of new files have been added, the `pending` list can be
+> arbitrarily large, and this passes it to git ls-files as parameters.a
+> 
+> It's not the actual commit that fails; that uses Git.Queue and xargs.
+> --[[Joey]] 
+
+>> [[fixed|done]] --[[Joey]]

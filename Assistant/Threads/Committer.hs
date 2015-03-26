@@ -290,8 +290,12 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 	-- files. The ls-files is run on a batch of files.
 	findnew [] = return ([], noop)
 	findnew pending@(exemplar:_) = do
-		(newfiles, cleanup) <- liftAnnex $
-			inRepo (Git.LsFiles.notInRepo False $ map changeFile pending)
+		let segments = segmentXargs $ map changeFile pending
+		rs <- liftAnnex $ forM segments $ \fs ->
+			inRepo (Git.LsFiles.notInRepo False fs)
+		let (newfiles, cleanup) = foldl'
+			(\(l1, a1) (l2, a2) -> (l1 ++ l2, a1 >> a2))
+			([], return True) rs
 		-- note: timestamp info is lost here
 		let ts = changeTime exemplar
 		return (map (PendingAddChange ts) newfiles, void $ liftIO cleanup)

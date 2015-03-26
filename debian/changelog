@@ -14,6 +14,9 @@ git-annex (5.20150318) UNRELEASED; urgency=medium
     command that ignored it.)
   * Improve error message when --in @date is used and there is no
     reflog for the git-annex branch.
+  * assistant: Committing a whole lot of files at once could overflow
+    command-line length limits and cause the commit to fail. This
+    only happened when using the assistant in an indirect mode repository.
 
  -- Joey Hess <id@joeyh.name>  Thu, 19 Mar 2015 17:05:32 -0400
 
