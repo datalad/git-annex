@@ -3,12 +3,8 @@
  subject="""comment 1"""
  date="2015-03-16T17:47:18Z"
  content="""
-I have not read anything about this yet, but there is another bug report
+I have not read anything about this yet, but there is another post
 which seems to indicate that the S3 interface could be used with git-annex,
 if it were possible to set storageclass=NEARLINE, which it is currently
 not due to a limitation with the aws library git-annex is using.
-
-<>
-
-So, I think I'll close this todo as a dup of that.
-"""]]
+""]]

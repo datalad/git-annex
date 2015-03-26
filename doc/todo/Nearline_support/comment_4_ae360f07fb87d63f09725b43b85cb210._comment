@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-03-26T16:04:01Z"
+ content="""
+This is waiting on support in the AWS library git-annex uses.
+
+<https://github.com/aristidb/aws/issues/155>
+"""]]

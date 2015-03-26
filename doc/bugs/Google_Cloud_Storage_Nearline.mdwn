@@ -20,3 +20,5 @@ Mac OS X, git-annex version: 5.20150219-g52daae5
 
 # End of transcript or log.
 """]]
+
+> This is a dup of [[todo/Nearline_support]] ; [[done]] --[[Joey]]
