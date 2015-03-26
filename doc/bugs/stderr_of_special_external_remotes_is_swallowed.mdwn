@@ -6,3 +6,5 @@ complicates troubleshooting of custom special remotes since annex seems to swall
 
 5.20150302
 
+> I have debugged external special remotes using stdderr, so I 
+> know this is not the case. [[done]] --[[Joey]]
