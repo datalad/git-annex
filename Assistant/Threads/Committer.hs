@@ -285,7 +285,9 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 				return $ r ++ added ++ otherchanges
   where
 	(incomplete, otherchanges) = partition (\c -> isPendingAddChange c || isInProcessAddChange c) cs
-		
+	
+	-- Find files that are actually new, and not unlocked annexed
+	-- files. The ls-files is run on a batch of files.
 	findnew [] = return ([], noop)
 	findnew pending@(exemplar:_) = do
 		(newfiles, cleanup) <- liftAnnex $
