@@ -17,3 +17,5 @@ git-annex version: 5.20141024-g613f396
 
 $ uname -a
 Linux raspberrypi 3.18.5+ #744 PREEMPT Fri Jan 30 18:19:07 GMT 2015 armv6l GNU/Linux
+
+> [[done]]; not a git-annex bug AFAICS. --[[Joey]]
