@@ -1,5 +1,5 @@
 mans=$(shell find doc -maxdepth 1 -name git-annex*.mdwn | sed -e 's/^doc/man/' -e 's/\.mdwn/\.1/')
-all=git-annex $(mans) docs
+all=git-annex mans docs
 
 CABAL?=cabal # set to "./Setup" if you lack a cabal program
 GHC?=ghc
