@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2015-03-27T20:42:21Z"
+ content="""
+I've fixed this; now you'll see:
+
+<pre>
+git annex add *.jpg
+git-annex: *.jpg not found
+</pre>
+"""]]

@@ -41,7 +41,7 @@ mkFile :: FilePath -> CommandParam
 mkFile = File . concatMap go
   where
 	go c
-		| c == '*' = ['\\', c]
+		| c `elem` "*?[]" = ['\\', c]
 		| otherwise = [c]
 
 {- Scans for files that are checked into git at the specified locations. -}
