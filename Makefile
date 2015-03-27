@@ -103,7 +103,7 @@ Build/OSXMkLibs: Build/OSXMkLibs.hs
 Build/LinuxMkLibs: Build/LinuxMkLibs.hs
 	$(GHC) --make $@ -Wall
 
-sdist: clean $(mans)
+sdist: clean mans
 	./Build/make-sdist.sh
 
 # Upload to hackage.
