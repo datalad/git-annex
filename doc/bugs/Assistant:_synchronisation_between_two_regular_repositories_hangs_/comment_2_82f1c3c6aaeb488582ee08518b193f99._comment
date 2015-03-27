@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="clement"
+ subject="Details"
+ date="2015-03-27T10:34:26Z"
+ content="""
+I tried it again with dfifferent usbs and filesystems, and it looks like it only
+happens with VFAT (e.g not ext). Retracing my step, here is what I do:
+
+1. Create a repository on my local machine using git-annex assistant.
+
+2. Create another non-bare repository on a VFAT usb stick and combine the two.
+
+3. Add a file to the local repository
+
+4. I doesn't synchronise and log shows the missing index error.
+
+It also happens the other way around. If I
+
+1. Create a repository on the usb device, and
+
+2. create a paired repository on my machine, I get a straight up
+
+        Internal Server Error
+
+        /mnt/USB/annexdir/.git/index: copyFile: does not exist (No such file or directory)
+
+"""]]
