@@ -5,6 +5,9 @@ git-annex (5.20150328) UNRELEASED; urgency=medium
   * Prevent git-ls-files from double-expanding wildcards when an
     unexpanded wildcard is passed to a git-annex command like add or find.
   * Fix make build target. Thanks, Justin Geibel.
+  * Fix GETURLS in external special remote protocol to strip
+    downloader prefix from logged url info before checking for the
+    specified prefix.
 
  -- Joey Hess <id@joeyh.name>  Fri, 27 Mar 2015 16:04:43 -0400
 

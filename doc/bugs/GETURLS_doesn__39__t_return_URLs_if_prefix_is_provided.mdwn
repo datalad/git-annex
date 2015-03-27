@@ -33,3 +33,5 @@ DATALAD_LOGLEVEL=1 DATALAD_LOGTARGET=stderr tools/testing/make_test_repo archive
 
 # End of transcript or log.
 """]]
+
+> [[fixed|done]] --[[Joey]]

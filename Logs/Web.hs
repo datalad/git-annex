@@ -50,7 +50,9 @@ getUrls key = do
 			else return us
 
 getUrlsWithPrefix :: Key -> String -> Annex [URLString]
-getUrlsWithPrefix key prefix = filter (prefix `isPrefixOf`) <$> getUrls key
+getUrlsWithPrefix key prefix = filter (prefix `isPrefixOf`) 
+	. map (fst . getDownloader)
+	<$> getUrls key
 
 setUrlPresent :: UUID -> Key -> URLString -> Annex ()
 setUrlPresent uuid key url = do
