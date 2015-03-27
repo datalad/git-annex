@@ -3,6 +3,7 @@ I've been trying to get all image files added to git annex with a wildcard, with
 Comands I've tried-
 
 git annex add *.jpg     * This outputs to the screen that it's adding each .jpg it finds, but when I go to commit there are 0 files staged.
+
 git annex add . --include='*.jpg'   * This doesn't return any results.
 
 
