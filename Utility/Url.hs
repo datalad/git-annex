@@ -209,9 +209,6 @@ download' quiet url file uo =
 	case parseURIRelaxed url of
 		Just u
 			| uriScheme u == "file:" -> do
-				-- curl does not create destination file
-				-- for an empty file:// url, so pre-create
-				writeFile file ""
 				curl
 			| otherwise -> ifM (inPath "wget") (wget , curl)
 		_ -> return False
@@ -240,8 +237,12 @@ download' quiet url file uo =
 	 - the remainder to download as the whole file,
 	 - and not indicating how much percent was
 	 - downloaded before the resume. -}
-	curl = go "curl" $ headerparams ++ quietopt "-s" ++
-		[Params "-f -L -C - -# -o"]
+	curl = do
+		-- curl does not create destination file
+		-- if the url happens to be empty, so pre-create.
+		writeFile file ""
+		go "curl" $ headerparams ++ quietopt "-s" ++
+			[Params "-f -L -C - -# -o"]
 	go cmd opts = boolSystem cmd $
 		addUserAgent uo $ reqParams uo++opts++[File file, File url]
 	quietopt s
