@@ -8,11 +8,11 @@ The shell does not expand *.jpg to match files inside subdirectories.
 I suggest you read up on how shell wildcards work, and how to use them
 properly.
 
-There is a bit of a bug here, which is that the shell, when *.jpg does not
-expand to anything, passes the "*.jpg" parameter to git-annex un-expanded,
+There is a bit of a bug here, which is that the shell, when `*.jpg` does not
+expand to anything, passes the `"*.jpg"` parameter to git-annex un-expanded,
 which then passes it off to git ls-files, which then unexpectedly expands
 it to recursively match jpegs in subirectories. Only then does git-annex
-try to add a "*.jpg" file, and when it doesn't exist, it exits with an
+try to add a `*.jpg` file, and when it doesn't exist, it exits with an
 error, leaving the files it did add unstaged in git.
 
 To get out of that situation, just re-run git-annex add and actually list
