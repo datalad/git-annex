@@ -33,7 +33,7 @@ git-union-merge.1: doc/git-union-merge.mdwn
 git-union-merge:
 	$(GHC) --make -threaded $@
 
-install-mans: $(mans)
+install-mans: mans
 	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/man/man1
 	install -m 0644 $(mans) $(DESTDIR)$(PREFIX)/$(SHAREDIR)/man/man1
 
