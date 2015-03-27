@@ -16,3 +16,5 @@ This would allow me to do stuff like this:
     $ find -type l -xtype l -print0 | xargs -0 mv -t ~/files_not_found
 
 Admittedly, to do this now, you just have to stage the symlinks before you fix but there may be other situations where this is useful (and I can't think of anything else you would want 'fix --force' to do)..
+
+> Per my comment, this is not a good idea, so [[done]] --[[Joey]]
