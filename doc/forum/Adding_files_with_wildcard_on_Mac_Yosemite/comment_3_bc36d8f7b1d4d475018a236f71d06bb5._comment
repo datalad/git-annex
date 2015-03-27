@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmFe2gzaJequ06hlza8N1-lFqQfwtFnw68"
+ nickname="Michael"
+ subject="Symlinks added"
+ date="2015-03-27T19:33:07Z"
+ content="""
+Git-annex does replace all jpg files with symlinks when I run the add command from the root directory. It's just when I try to commit and sync that no changes are detected.
+"""]]
