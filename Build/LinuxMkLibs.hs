@@ -69,6 +69,8 @@ installLinkerShim top linker exe = do
 		createSymbolicLink link (top </> exelink)
 	writeFile exe $ unlines
 		[ "#!/bin/sh"
+		, "GIT_ANNEX_PROGRAMPATH=\"$0\""
+		, "export GIT_ANNEX_PROGRAMPATH"
 		, "exec \"$GIT_ANNEX_DIR/" ++ exelink ++ "\" --library-path \"$GIT_ANNEX_LD_LIBRARY_PATH\" \"$GIT_ANNEX_DIR/shimmed/" ++ base ++ "/" ++ base ++ "\" \"$@\""
 		]
 	modifyFileMode exe $ addModes executeModes

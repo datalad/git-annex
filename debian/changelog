@@ -1,3 +1,10 @@
+git-annex (5.20150328) UNRELEASED; urgency=medium
+
+  * Better fix for standalone tarball git-annex sync linker shim bug,
+    that works for "git annex sync" as well as "git-annex sync".
+
+ -- Joey Hess <id@joeyh.name>  Fri, 27 Mar 2015 16:04:43 -0400
+
 git-annex (5.20150327) unstable; urgency=medium
 
   * readpresentkey: New plumbing command for checking location log.
