@@ -15,3 +15,13 @@ When I run `git annex info`, it stops to ask me for "local annex keys":
 What are these "local annex keys"? 
 
 *Edit*: Ah! it wasn't asking me anything, just echoing my keystrokes. It was counting keys stored in the annex, and taking a while. Sorry for the noise!
+
+    [...]
+    local annex keys: 19586
+    local annex size: 33.96 gigabytes
+    annexed files in working tree: 19814
+    size of annexed files in working tree: 35.12 gigabytes
+    bloom filter size: 16 mebibytes (3.9% full)
+    backend usage: 
+            SHA256E: 39400
+
