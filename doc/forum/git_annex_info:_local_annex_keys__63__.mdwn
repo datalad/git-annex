@@ -12,4 +12,6 @@ When I run `git annex info`, it stops to ask me for "local annex keys":
     available local disk space: 36.25 gigabytes (+1 megabyte reserved)
     local annex keys: 
 
-What are these "local annex keys"? The `git-annex` manpage on the `info` doesn't command doesn't say.
+What are these "local annex keys"? 
+
+*Edit*: Ah! it wasn't asking me anything, just echoing my keystrokes. It was counting keys stored in the annex, and taking a while. Sorry for the noise!
