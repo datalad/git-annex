@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="take care and ideas"
+ date="2015-03-30T16:26:05Z"
+ content="""
+we not careful enough with ourselves and with each other... i can only send my warmest support for your self-imposed break, i should probably have done that myself a few times, and never had the lucidity to do it soon enough... so yeah, break time, and enjoy spring! :)
+
+git-annex has grown in leaps and bounds in the last year, and it looks like it's getting more and more the traction it deserves. that means a lot more support requests and yes, a lot more noise in the forums and issue queues. in my experience, having the core devs step away from the support forums isn't necessarily a bad thing: it will leave some room for other people to step up and start cooking up their own answers. i did a very quick analysis of the `doc` subdirectory of the current git repo, and at least a third of the data is injected in the forum:
+
+<pre>
+$ ncdu doc/
+[...]
+   13,0MiB  3 270 [##########] /forum
+   10,4MiB  2 243 [########  ] /bugs
+    4,4MiB    964 [###       ] /design
+    2,2MiB    550 [#         ] /todo
+    1,6MiB    398 [#         ] /devblog
+    1,5MiB    348 [#         ] /tips
+[...]
+ Total disk usage:  38,3MiB  Apparent size:  15,4MiB  Items: 8711
+</pre>
+
+I wonder if moving this out of the wiki (to, say, a mailing list or Stack-exchange like Q&A site) would be helpful? It seems there is a significant amount of FAQ and divergence from topic on the forum posts... trying another tool may be helpful here (but I know how annoying and crazy this sounds at first...).
+"""]]
