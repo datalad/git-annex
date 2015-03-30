@@ -36,12 +36,22 @@ import Data.Char
 
 {- Somewhat unexpectedly, git-ls-files does its own wildcard expansion
  - of files passed to it. To avoid that, and only get back exactly the
- - files we asked for, slash-escape punctuation in the filename. -}
+ - files we asked for, slash-escape wildcards in the filename.
+ -
+ - This should also slash-escape [], since character classes are expanded
+ - too. However, git refuses to recurse into directories containing
+ - slash-escaped characters (apparently a bug). Since it's rare
+ - for a user-supplied "[foo]" to match multiple files, and it's not too
+ - uncommon to use [] in directory names, we compromise by not escaping
+ - them.
+ -
+ - Complained to the git developers about this behavior on 30 Mar 2016.
+ -}
 mkFile :: FilePath -> CommandParam
 mkFile = File . concatMap go
   where
 	go c
-		| c `elem` "*?[]" = ['\\', c]
+		| c `elem` "*?" = ['\\', c]
 		| otherwise = [c]
 
 {- Scans for files that are checked into git at the specified locations. -}
