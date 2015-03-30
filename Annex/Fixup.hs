@@ -27,10 +27,11 @@ import qualified Data.Map as M
 
 fixupRepo :: Repo -> GitConfig -> IO Repo
 fixupRepo r c = do
-	r' <- fixupSubmodule r c
+	let r' = r { gitGlobalOpts = gitGlobalOpts r ++ [Param "--literal-pathspecs"] }
+	r'' <- fixupSubmodule r' c
 	if annexDirect c
-		then fixupDirect r'
-		else return r'
+		then fixupDirect r''
+		else return r''
 
 {- Direct mode repos have core.bare=true, but are not really bare.
  - Fix up the Repo to be a non-bare repo, and arrange for git commands
