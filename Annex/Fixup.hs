@@ -27,11 +27,17 @@ import qualified Data.Map as M
 
 fixupRepo :: Repo -> GitConfig -> IO Repo
 fixupRepo r c = do
-	let r' = r { gitGlobalOpts = gitGlobalOpts r ++ [Param "--literal-pathspecs"] }
+	let r' = disableWildcardExpansion r
 	r'' <- fixupSubmodule r' c
 	if annexDirect c
 		then fixupDirect r''
 		else return r''
+
+{- Disable git's built-in wildcard expansion, which is not wanted
+ - when using it as plumbing by git-annex. -}
+disableWildcardExpansion :: Repo -> Repo
+disableWildcardExpansion r = r 
+	{ gitGlobalOpts = gitGlobalOpts r ++ [Param "--literal-pathspecs"] }
 
 {- Direct mode repos have core.bare=true, but are not really bare.
  - Fix up the Repo to be a non-bare repo, and arrange for git commands
