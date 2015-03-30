@@ -1,0 +1,162 @@
+Suppose I want to have following repositories syncronized on my windows pc:
+
+    D:\Annex (NTFS hard drive)
+    R:\Annex (FAT32 usb flash drive)
+
+What I'm experiencing is that I simply can't do this. Everything ok if both repositories located on the same drive, for example:
+
+    D:\Annex1
+    D:\Annex2
+
+I'm new to git annex, tell me if I'm doing something completely wrong.
+
+### System information:
+
+* windows 8.1
+* git 1.9.4.msysgit.0
+* git-annex 5.20150327-g22c9bbd (official build)
+
+### Short steps for reproduction:
+
+* init repo A on drive C
+* commit some file
+* clone repo A to repo B on drive D
+* add remote to repo B, pointing to repo A
+* add remote to repo A, pointing to repo B
+* execute sync on repo B
+
+### Verbose step by step reproduction:
+
+    C:\>mkdir Annex
+
+    C:\>cd Annex
+
+    C:\Annex>git init
+    Initialized empty Git repository in C:/Annex/.git/
+
+    C:\Annex>git-annex init c
+    init c
+      Detected a filesystem without fifo support.
+
+      Disabling ssh connection caching.
+
+      Detected a crippled filesystem.
+
+      Enabling direct mode.
+    ok
+    (recording state in git...)
+
+    C:\Annex>echo "Hello" > README.txt
+
+    C:\Annex>git-annex add README.txt
+    add README.txt ok
+    (recording state in git...)
+
+    C:\Annex>git-annex sync
+    commit  ok
+
+    C:\>D:
+
+    D:\>mkdir Annex
+
+    D:\>cd Annex
+
+    D:\Annex>cd ..
+
+    D:\>git clone C:\Annex
+    Cloning into 'Annex'...
+    done.
+
+    D:\>cd Annex
+
+    D:\Annex>git-annex init d
+    init d
+      Detected a filesystem without fifo support.
+
+      Disabling ssh connection caching.
+
+      Detected a crippled filesystem.
+    (merging origin/git-annex into git-annex...)
+    (recording state in git...)
+
+      Enabling direct mode.
+    ok
+    (recording state in git...)
+
+    D:\Annex>git remote add c C:\Annex
+
+    D:\Annex>cd ..
+
+    D:\>C:
+
+    C:\>cd Annex
+
+    C:\Annex>git remote add d D:\Annex
+
+    C:\Annex>cd ..
+
+    C:\>D:
+
+    D:\>cd Annex
+
+    D:\Annex>git-annex sync
+    commit  ok
+
+    D:\Annex>git-annex get README.txt
+    get README.txt (not available)
+      Try making some of these repositories available:
+            98a6384c-ede4-4c97-b20d-9e1895e415cd -- c
+    failed
+    git-annex: get: 1 failed
+
+### Notices
+
+Latest sync command should inject annex-uuid to .config file, but it does not. For some reason repository on other drive is unavailable. If I do all of this on the same drive everything works ok. I've also checked case with one bare repository, result is the same.
+
+### Resulting .config files
+
+#### Repo on drive C
+
+    [core]
+        repositoryformatversion = 0
+        filemode = false
+        bare = true
+        logallrefupdates = true
+        symlinks = false
+        ignorecase = true
+        hideDotFiles = dotGitOnly
+    [annex]
+        uuid = 98a6384c-ede4-4c97-b20d-9e1895e415cd
+        sshcaching = false
+        crippledfilesystem = true
+        version = 5
+        direct = true
+    [remote "d"]
+        url = D:\\Annex
+        fetch = +refs/heads/*:refs/remotes/d/*
+
+#### Repo on drive D
+
+    [core]
+        repositoryformatversion = 0
+        filemode = false
+        bare = true
+        logallrefupdates = true
+        symlinks = false
+        ignorecase = true
+        hideDotFiles = dotGitOnly
+    [remote "origin"]
+        url = C:\\Annex
+        fetch = +refs/heads/*:refs/remotes/origin/*
+    [branch "annex/direct/master"]
+        remote = origin
+        merge = refs/heads/annex/direct/master
+    [annex]
+        uuid = 74b81547-ef4b-4bd6-bc6c-38578029ac96
+        sshcaching = false
+        crippledfilesystem = true
+        version = 5
+        direct = true
+    [remote "c"]
+        url = C:\\Annex
+        fetch = +refs/heads/*:refs/remotes/c/*

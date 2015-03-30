@@ -1,0 +1,27 @@
+When I run `git annex info`, it stops to ask me for "local annex keys":
+
+    $ git annex info
+    repository mode: indirect
+    trusted repositories: 0
+    semitrusted repositories: 3
+            00000000-0000-0000-0000-000000000001 -- web
+            1xxxxxx7-6xx1-4xx1-8xx8-5xxxxxxxxxx1 -- here (usbdisk)
+            bxxxxxx6-bxxe-4xx2-bxxe-fxxxxxxxxxxf -- origin (local)
+    untrusted repositories: 0
+    transfers in progress: none
+    available local disk space: 36.25 gigabytes (+1 megabyte reserved)
+    local annex keys: 
+
+What are these "local annex keys"? 
+
+*Edit*: Ah! it wasn't asking me anything, just echoing my keystrokes. It was counting keys stored in the annex, and taking a while. Sorry for the noise!
+
+    [...]
+    local annex keys: 19586
+    local annex size: 33.96 gigabytes
+    annexed files in working tree: 19814
+    size of annexed files in working tree: 35.12 gigabytes
+    bloom filter size: 16 mebibytes (3.9% full)
+    backend usage: 
+            SHA256E: 39400
+

@@ -1,0 +1,10 @@
+`git annex map` generates a diagram roughly like this:
+
+    +------+    +-------+
+    |laptop| -> |usbdisk|
+    |      | <- |       |
+    |      | <- |       |
+    +------+    +-------+
+
+Why are there *two* lines back from the disk to the laptop?
+

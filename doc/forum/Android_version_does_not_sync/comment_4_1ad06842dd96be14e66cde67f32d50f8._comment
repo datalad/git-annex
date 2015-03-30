@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkyMs6WP6rXEnFqQg9oooOjYZzqO1j9_kE"
+ nickname="John"
+ subject="Same problem here"
+ date="2015-03-29T02:30:36Z"
+ content="""
+**Here's the log right from the first start up after creating a repo, and also the warning I get when I open the webapp:**
+
+[2015-03-29 10:18:01 JST] main: starting assistant version 5.20150327-ge414f2d [2015-03-29 10:18:01 JST] 
+Cronner: You should enable consistency checking to protect your data. (scanning...) 
+
+[2015-03-29 10:18:02 JST] Watcher: Performing startup scan (started...) 
+
+Detected a filesystem without fifo support. 
+
+Disabling ssh connection caching. 
+
+Detected a crippled filesystem. (recording state in git...) error: cannot run git-upload-pack '/storage/extSdCard/annex-sync': No such file or directory fatal: unable to fork
+
+
+**Each time I start the webapp, I get this warning:**
+
+Transfer scanner crashed: /storage/sdcard0/annex/.git/index: copyFile does not exist (No such file or directory)
+
+
+"""]]

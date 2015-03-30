@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnVnsqEy82M-MuS2gLri-az83wSQ6lXSrc"
+ nickname="Jean"
+ subject="Not only ignored names"
+ date="2015-03-29T15:24:03Z"
+ content="""
+During a large import, I observed the above repeatedly, not only on ignored names. When I ctrl-c and restart import, it picks up again apparently without issues. 
+"""]]
