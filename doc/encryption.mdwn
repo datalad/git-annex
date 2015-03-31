@@ -89,7 +89,8 @@ that the key has been compromised, it is **insecure** to leave files
 encrypted using that old key, and the user should re-encrypt everything.)
 
 (Because filenames are MAC'ed, a cipher still needs to be
-generated (and encrypted to the given key IDs).)
+generated (and encrypted to the given key IDs). It is only used for MHAC
+encryption of filenames.)
 
 ## MAC algorithm
 
