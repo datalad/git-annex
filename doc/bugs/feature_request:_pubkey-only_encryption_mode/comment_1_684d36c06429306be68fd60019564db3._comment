@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-03-31T19:37:20Z"
+ content="""
+When you use encryption=pubkey, the symmetric key that is used for
+HMAC encryption of filenames is encrypted using your gpg private key.
+The contents of files are also encrypted using your gpg private key
+(not using the symmetric key; that mode is encryption=hybrid).
+
+So, with encryption=pubkey, all that can be done with that symmetric key is
+to HMAC encrypt filenames and try to find results that match the HMACed
+filenames used on the remote. So, if you don't care about filenames
+leaking, you could publish that symmetric key with no bad effects. Its
+security is not important to you based on what you've said.
+
+But again, that symmetric key is encrypted with your gpg private key.
+The only way to decrypt it would be to break your gpg key somehow. In which
+case you have big problems. But not ones caused by the existence of the
+symmetric key.
+
+So, I see no benefit to the suggested mode.
+"""]]
