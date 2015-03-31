@@ -1,0 +1,26 @@
+Turns out that git has a feature I didn't know about; it will expand
+wildcards and other stuff in filenames passed to many git commands. This is
+on top of the shell's expansion.
+
+That led to some broken behavior by `git annex add 'foo.*'`
+and, it could lead to other probably unwanted behavior, like `git annex
+drop 'foo[barred]' dropping a file named `food` in addition to
+`foo[barred]`.
+
+For now, I've disabled this git feature throughout git-annex. If you relied
+on it for something, let me know, I might think about adding it back in
+specific places where it makes sense.
+
+----
+
+Improved `git annex importfeed` to check the itemid of the feed and avoid
+re-downloading a file with the same itemid. Before, it would add duplicate
+files if a feed kept the itemid the same, but changed the url. This was
+easier than expected because annex.genmetadata already caused the itemid
+to be stored in the git-annex metadata. I just had to make it check the
+itemid metadata, and set itemid even when annex.genmetadata isn't set.
+
+----
+
+Also got 4 other bug reports fixed, even though I feel I'm taking it easy
+today. It's good to be relaxed again!
