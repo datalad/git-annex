@@ -1,0 +1,9 @@
+as a followup to [[forum/remote-specific_meta-data/]], now i'm thinking of injecting data in the `git-annex` branch. i'm still a little hesitant because [[forum/optimising_lookupkey/]] mentions that i need to "delete or update `.git/annex/index`" when doing so. yet I also saw in the source code there is a `.git/annex/index.lock` file that is being used to avoid concurrent access to that file - is that something that should be watched out for? how do I manage that lockfile? is it mandatory to stage files into the index at first?
+
+maybe i'm just not familiar enough with how git operates internally myself. i've reviewed this section of the progit book again: http://git-scm.com/book/en/v2/Git-Internals-Git-Objects - and i feel i have again some handle on how to do those things, but it seems like a major hurdle to go through just to change a single setting in one git-annex metadata file... wouldn't `enableremote` be sufficient here? I figured to append custom fields to a remote, i could do:
+
+    git annex enableremote myremoteuuid "$(git cat-file -p git-annex:remote.log | grep myremoteuuid) extratag=true"
+
+Would that work at all? Should i operate directly on the git-annex branch myself instead?
+
+Thanks! --[[anarcat]]
