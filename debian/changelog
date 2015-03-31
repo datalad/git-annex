@@ -10,6 +10,8 @@ git-annex (5.20150328) UNRELEASED; urgency=medium
     guid has been downloaded before, even when the url has changed.
   * importfeed: Always store itemid in metadata; before this was only
     done when annex.genmetadata was set.
+  * Relax debian package dependencies to git >= 1:1.7.7.6 rather
+    than needing >= 1:2.0.
 
  -- Joey Hess <id@joeyh.name>  Fri, 27 Mar 2015 16:04:43 -0400
 
