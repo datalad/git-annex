@@ -21,7 +21,6 @@ module Logs.Web (
 
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Map as M
-import Data.Tuple.Utils
 
 import Common.Annex
 import qualified Annex
@@ -70,7 +69,7 @@ setUrlMissing uuid key url = do
 		logChange key uuid InfoMissing
 
 {- Finds all known urls. -}
-knownUrls :: Annex [URLString]
+knownUrls :: Annex [(Key, URLString)]
 knownUrls = do
 	{- Ensure the git-annex branch's index file is up-to-date and
 	 - any journaled changes are reflected in it, since we're going
@@ -80,10 +79,13 @@ knownUrls = do
 	Annex.Branch.withIndex $ do
 		top <- fromRepo Git.repoPath
 		(l, cleanup) <- inRepo $ Git.LsFiles.stagedDetails [top]
-		r <- mapM (geturls . snd3) $ filter (isUrlLog . fst3) l
+		r <- mapM getkeyurls l
 		void $ liftIO cleanup
 		return $ concat r
   where
+	getkeyurls (f, s, _) = case urlLogFileKey f of
+		Just k -> zip (repeat k) <$> geturls s
+		Nothing -> return []
 	geturls Nothing = return []
 	geturls (Just logsha) = getLog . L.unpack <$> catObject logsha
 

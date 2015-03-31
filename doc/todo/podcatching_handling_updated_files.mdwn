@@ -11,6 +11,8 @@ known items, it could instead build a `Map (Either URlString GUID) Key`.
 
 This would at least prevent the duplication, when the feed has guids.
 
+> [[done]] --[[Joey]]
+
 It would be even nicer if the old file could be updated with the new
 content. But, since files can be moved around, deleted, tagged, etc,
 that only seems practical at all if the file is still in the directory

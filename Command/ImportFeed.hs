@@ -73,7 +73,7 @@ perform opts cache url = do
 	v <- findDownloads url
 	case v of
 		[] -> do
-			feedProblem url "bad feed content"
+			feedProblem url "bad feed content; no enclosures to download"
 			next $ return True
 		l -> do
 			ok <- and <$> mapM (performDownload opts cache) l
@@ -96,21 +96,32 @@ data ToDownload = ToDownload
 
 data DownloadLocation = Enclosure URLString | QuviLink URLString
 
+type ItemId = String
+
 data Cache = Cache
 	{ knownurls :: S.Set URLString
+	, knownitems :: S.Set ItemId
 	, template :: Utility.Format.Format
 	}
 
 getCache :: Maybe String -> Annex Cache
 getCache opttemplate = ifM (Annex.getState Annex.force)
-	( ret S.empty
+	( ret S.empty S.empty
 	, do
 		showSideAction "checking known urls"
-		ret =<< S.fromList <$> knownUrls
+		(is, us) <- unzip <$> (mapM knownItems =<< knownUrls)
+		ret (S.fromList us) (S.fromList (concat is))
 	)
   where
 	tmpl = Utility.Format.gen $ fromMaybe defaultTemplate opttemplate
-	ret s = return $ Cache s tmpl
+	ret us is = return $ Cache us is tmpl
+
+knownItems :: (Key, URLString) -> Annex ([ItemId], URLString)
+knownItems (k, u) = do
+	itemids <- S.toList . S.filter (/= noneValue) . S.map fromMetaValue 
+		. currentMetaDataValues itemIdField 
+		<$> getCurrentMetaData k
+	return (itemids, u)
 
 findDownloads :: URLString -> Annex [ToDownload]
 findDownloads u = go =<< downloadFeed u
@@ -191,11 +202,17 @@ performDownload opts cache todownload = case location todownload of
   where
 	forced = Annex.getState Annex.force
 
-	{- Avoids downloading any urls that are already known to be
+	{- Avoids downloading any items that are already known to be
 	 - associated with a file in the annex, unless forced. -}
 	checkknown url a
-		| S.member url (knownurls cache) = ifM forced (a, return True)
+		| knownitemid || S.member url (knownurls cache)
+			= ifM forced (a, return True)
 		| otherwise = a
+
+	knownitemid = case getItemId (item todownload) of
+		-- only when it's a permalink
+		Just (True, itemid) -> S.member itemid (knownitems cache)
+		_ -> False
 
 	rundownload url extension getter = do
 		dest <- makeunique url (1 :: Integer) $
@@ -211,8 +228,10 @@ performDownload opts cache todownload = case location todownload of
 						checkFeedBroken (feedurl todownload)
 					else do
 						forM_ ks $ \key ->
-							whenM (annexGenMetaData <$> Annex.getGitConfig) $
-								addMetaData key $ extractMetaData todownload
+							ifM (annexGenMetaData <$> Annex.getGitConfig)
+								( addMetaData key $ extractMetaData todownload
+								, addMetaData key $ minimalMetaData todownload
+								)
 						showEndOk
 						return True
 
@@ -275,6 +294,12 @@ extractMetaData i = meta
 	tometa (k, v) = (mkMetaFieldUnchecked k, S.singleton (toMetaValue v))
 	meta = MetaData $ M.fromList $ map tometa $ extractFields i
 
+minimalMetaData :: ToDownload -> MetaData
+minimalMetaData i = case getItemId (item i) of
+	(Nothing) -> emptyMetaData
+	(Just (_, itemid)) -> MetaData $ M.singleton itemIdField 
+		(S.singleton $ toMetaValue itemid)
+
 {- Extract fields from the feed and item, that are both used as metadata,
  - and to generate the filename. -}
 extractFields :: ToDownload -> [(String, String)]
@@ -296,11 +321,17 @@ extractFields i = map (uncurry extractField)
 	feedauthor = getFeedAuthor $ feed i
 	itemauthor = getItemAuthor $ item i
 
+itemIdField :: MetaField
+itemIdField = mkMetaFieldUnchecked "itemid"
+
 extractField :: String -> [Maybe String] -> (String, String)
-extractField k [] = (k, "none")
+extractField k [] = (k, noneValue)
 extractField k (Just v:_)
 	| not (null v) = (k, v)
 extractField k (_:rest) = extractField k rest
+
+noneValue :: String
+noneValue = "none"
 
 {- Called when there is a problem with a feed.
  - Throws an error if the feed is broken, otherwise shows a warning. -}

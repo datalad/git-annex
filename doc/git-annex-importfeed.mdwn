@@ -21,7 +21,7 @@ importing e.g., youtube playlists.
 
 * `--force`
 
-  Force downoading urls it's seen before.
+  Force downoading items it's seen before.
 
 * `--template`
 

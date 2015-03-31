@@ -792,7 +792,8 @@ Here are all the supported configuration settings.
   In particular, it stores year and month metadata, from the file's
   modification date.
 
-  When importfeed is used, it stores additional metadata from the feed.
+  When importfeed is used, it stores additional metadata from the feed,
+  such as the author, title, etc.
 
 * `annex.queuesize`
 
