@@ -64,25 +64,36 @@ seek us = do
 		r <- Remote.claimingUrl u
 		if Remote.uuid r == webUUID || raw
 			then void $ commandAction $ startWeb relaxed optfile pathdepth u
-			else do
-				pathmax <- liftIO $ fileNameLengthLimit "."
-				let deffile = fromMaybe (urlString2file u pathdepth pathmax) optfile
-				res <- tryNonAsync $ maybe
-					(error $ "unable to checkUrl of " ++ Remote.name r)
-					(flip id u)
-					(Remote.checkUrl r)
-				case res of
-					Left e -> void $ commandAction $ do
-						showStart "addurl" u
-						warning (show e)
-						next $ next $ return False
-					Right (UrlContents sz mf) -> do
-						void $ commandAction $
-							startRemote r relaxed (maybe deffile fromSafeFilePath mf) u sz
-					Right (UrlMulti l) ->
-						forM_ l $ \(u', sz, f) ->
-							void $ commandAction $
-								startRemote r relaxed (deffile </> fromSafeFilePath f) u' sz
+			else checkUrl r u optfile relaxed raw pathdepth
+
+checkUrl :: Remote -> URLString -> Maybe FilePath -> Bool -> Bool -> Maybe Int -> Annex ()
+checkUrl r u optfile relaxed raw pathdepth = do
+	pathmax <- liftIO $ fileNameLengthLimit "."
+	let deffile = fromMaybe (urlString2file u pathdepth pathmax) optfile
+	go deffile =<< maybe
+		(error $ "unable to checkUrl of " ++ Remote.name r)
+		(tryNonAsync . flip id u)
+		(Remote.checkUrl r)
+  where
+
+	go _ (Left e) = void $ commandAction $ do
+		showStart "addurl" u
+		warning (show e)
+		next $ next $ return False
+	go deffile (Right (UrlContents sz mf)) = do
+		let f = fromMaybe (maybe deffile fromSafeFilePath mf) optfile
+		void $ commandAction $
+			startRemote r relaxed f u sz
+	go deffile (Right (UrlMulti l))
+		| isNothing optfile =
+			forM_ l $ \(u', sz, f) ->
+				void $ commandAction $
+					startRemote r relaxed (deffile </> fromSafeFilePath f) u' sz
+		| otherwise = error $ unwords
+			[ "That url contains multiple files according to the"
+			, Remote.name r
+			, " remote; cannot add it to a single file."
+			]
 
 startRemote :: Remote -> Bool -> FilePath -> URLString -> Maybe Integer -> CommandStart
 startRemote r relaxed file uri sz = do

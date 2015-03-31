@@ -13,6 +13,11 @@ git-annex (5.20150328) UNRELEASED; urgency=medium
   * Relax debian package dependencies to git >= 1:1.7.7.6 rather
     than needing >= 1:2.0.
   * test: Fix --list-tests
+  * addurl --file: When used with a special remote that claims
+    urls and checks their contents, don't override the user's provided
+    filename with filenames that the special remote suggests. Also,
+    don't allow adding the url if the special remote says it contains
+    multiple files.
 
  -- Joey Hess <id@joeyh.name>  Fri, 27 Mar 2015 16:04:43 -0400
 
