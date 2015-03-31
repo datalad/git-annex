@@ -4,8 +4,8 @@ on top of the shell's expansion.
 
 That led to some broken behavior by `git annex add 'foo.*'`
 and, it could lead to other probably unwanted behavior, like `git annex
-drop 'foo[barred]' dropping a file named `food` in addition to
-`foo[barred]`.
+drop 'foo[barred]'` dropping a file named `food` in addition to
+`foo[barred]`
 
 For now, I've disabled this git feature throughout git-annex. If you relied
 on it for something, let me know, I might think about adding it back in
