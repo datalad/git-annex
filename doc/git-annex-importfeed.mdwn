@@ -9,13 +9,16 @@ git annex importfeed `[url ...]`
 # DESCRIPTION
 
 Imports the contents of podcast feeds. Only downloads files whose
-urls have not already been added to the repository before, so you can
+content has not already been added to the repository before, so you can
 delete, rename, etc the resulting files and repeated runs won't duplicate
 them.
 
 When quvi is installed, links in the feed are tested to see if they
 are on a video hosting site, and the video is downloaded. This allows
 importing e.g., youtube playlists.
+
+To make the import process add metadata to the imported files from the feed,
+`git config annex.genmetadata true`
 
 # OPTIONS
 
