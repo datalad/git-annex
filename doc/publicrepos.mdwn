@@ -18,12 +18,15 @@ the public repositories that you can clone to try out git-annex.
 * [ocharles's papers](https://github.com/ocharles/papers)  
   Lots of CS papers read by [Oliver](http://ocharles.org.uk/blog/).
 
+* [rejuvyesh's papers](https://github.com/rejuvyesh/papers)   
+  Quite a few AI papers read by [rejuvyesh](http://rejuvyVesh.com)
+
 * [MRI brain scan data](http://studyforrest.org/pages/access.html)  
   `git clone http://psydata.ovgu.de/forrest_gump/.git studyforrest`  
   High-resolution, ultra-highfield fMRI dataset on auditory perception.
 
-* [rejuvyesh's papers](https://github.com/rejuvyesh/papers)   
-  Quite a few AI papers read by [rejuvyesh](http://rejuvyesh.com)
+* [gst-integration-testsuites](http://cgit.freedesktop.org/gstreamer/gst-integration-testsuites)  
+  GStreamer integration testsuite media assets management
 
 This is a wiki -- add your own public repository to the list!
 See [[tips/centralized_git_repository_tutorial]].
