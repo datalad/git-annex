@@ -23,3 +23,6 @@ Tests
 [snip all the passing tests]
 All 140 tests passed (305.69s)
 """]]
+
+> [[fixed|done]] although I don't understand why tasty needs the
+> `listingTests` ingredient to come first for it to work. --[[Joey]]

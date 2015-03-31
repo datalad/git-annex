@@ -12,6 +12,7 @@ git-annex (5.20150328) UNRELEASED; urgency=medium
     done when annex.genmetadata was set.
   * Relax debian package dependencies to git >= 1:1.7.7.6 rather
     than needing >= 1:2.0.
+  * test: Fix --list-tests
 
  -- Joey Hess <id@joeyh.name>  Fri, 27 Mar 2015 16:04:43 -0400
 

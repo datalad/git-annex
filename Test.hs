@@ -125,8 +125,8 @@ main ps = do
 
 ingredients :: [Ingredient]
 ingredients =
-	[ rerunningTests [consoleTestReporter]
-	, listingTests
+	[ listingTests
+	, rerunningTests [consoleTestReporter]
 	]
 
 properties :: TestTree
