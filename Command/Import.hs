@@ -15,6 +15,7 @@ import Utility.CopyFile
 import Backend
 import Remote
 import Types.KeySource
+import Types.Key
 
 cmd :: [Command]
 cmd = [withOptions opts $ notBareRepo $ command "import" paramPaths seek
@@ -72,8 +73,8 @@ start mode (srcfile, destfile) =
 		, stop
 		)
   where
-	deletedup = do
-		showNote "duplicate"
+	deletedup k = do
+		showNote $ "duplicate of " ++ key2file k
 		liftIO $ removeFile srcfile
 		next $ return True
 	importfile = do
@@ -95,10 +96,12 @@ start mode (srcfile, destfile) =
 		backend <- chooseBackend destfile
 		let ks = KeySource srcfile srcfile Nothing
 		v <- genKey ks backend
-		isdup <- case v of
-			Just (k, _) -> not . null <$> keyLocations k
-			_ -> return False
-		return $ if isdup then dupa else notdupa
+		case v of
+			Just (k, _) -> ifM (not . null <$> keyLocations k)
+				( return (maybe Nothing (\a -> Just (a k)) dupa)
+				, return notdupa
+				)
+			_ -> return notdupa
 	pickaction = case mode of
 		DeDuplicate -> checkdup (Just deletedup) (Just importfile)
 		CleanDuplicates -> checkdup (Just deletedup) Nothing

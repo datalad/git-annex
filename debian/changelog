@@ -18,6 +18,8 @@ git-annex (5.20150328) UNRELEASED; urgency=medium
     filename with filenames that the special remote suggests. Also,
     don't allow adding the url if the special remote says it contains
     multiple files.
+  * import: --deduplicate and --cleanduplicates now output the keys
+    corresponding to duplicated files they process.
 
  -- Joey Hess <id@joeyh.name>  Fri, 27 Mar 2015 16:04:43 -0400
 
