@@ -1,0 +1,22 @@
+### Please describe the problem.
+
+git-annex fails if there are any "invalid characters" in the filename. That should have been fixed already? In one of my repos I cannot commit anymore:
+
+$ git commit -m u
+git-annex: .git/annex/misctmp/jlog6281: commitBuffer: invalid argument (invalid character)
+
+This logfile is empty by the way. The obvious fix would be to move out of germany and to not listen to german podcasts, but there has to be another solution :).
+
+Because I did not have any particular problems with that in the past, this bug must have been introduced in one of the latest releases I guess.
+
+### What steps will reproduce the problem?
+
+Try
+
+git-annex importfeed --fast http://ulm.ccc.de/dev/radio/podcast-ogg.xml
+
+It will fail at entry "DR14: Verschwörungstheorien"
+
+### What version of git-annex are you using? On what operating system?
+
+5.20150327-g19a1a35 (standalone build) on Fedora 21
