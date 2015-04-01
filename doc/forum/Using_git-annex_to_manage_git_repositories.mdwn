@@ -1,5 +1,5 @@
 I am interested in using git-annex to manage git repositories, and I am wondering if it is possible and if anyone has experience with it?
 
-I have done some searching, and I know that many people have asked for support for a Dropbox-like workflow, where Git repositories are mirrored everywhere.  I also no that no such support seems forthcoming, however this is not my goal.  Rather, I would like to use git-annex to track the location of many repositories.  I keep a lot of repositories and would like to offload them onto other storage devices and keep track of where each repository is stored.
+I have done some searching, and I know that many people have asked for support for a Dropbox-like workflow, where Git repositories are mirrored everywhere.  I also know that no such support seems forthcoming, however this is not my goal.  Rather, I would like to use git-annex to track the location of many repositories.  I keep a lot of repositories and would like to offload them onto other storage devices and keep track of where each repository is stored.
 
 Perhaps entire Git repositories can be added as a single unit for tracking in git-annex?
