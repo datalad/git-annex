@@ -13,7 +13,7 @@ To enable chunking, pass a `chunk=nnMiB` parameter to `git annex
 initremote`, specifying the chunk size. 
 
 Good chunk sizes will depend on the remote, but a good starting place
-is probably `1MiB`. Very large chunks are problimatic, both because
+is probably `1MiB`. Very large chunks are problematic, both because
 git-annex needs to buffer one chunk in memory when uploading, and because
 a larger chunk will make resuming interrupted transfers less efficient.
 On the other hand, when a file is split into a great many chunks,

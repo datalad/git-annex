@@ -26,7 +26,7 @@ For more details about the git-annex assistant, see
 * `--startdelay=N`
 
   Wait N seconds before running the startup scan. This process can
-  be expensive and you may not want to run it immediatly upon login.
+  be expensive and you may not want to run it immediately upon login.
 
 * `--foreground`
 
