@@ -134,6 +134,8 @@ It will probably take just a few hours to code.
 With that change, the server can check for files that not enough clients
 have verified they have recently, and distribute them to more clients.
 
+(This is now implemented.)
+
 Note that bad actors can lie about this verification; it's not a proof they
 still have the file. But, a bad actor could prove they have a file, and
 refuse to give it back if the IA needed to restore the backup, too.

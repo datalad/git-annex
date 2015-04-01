@@ -43,7 +43,7 @@ getUrls key = do
   where
 	go [] = return []
 	go (l:ls) = do
-		us <- currentLog l
+		us <- currentLogInfo l
 		if null us
 			then go ls
 			else return us

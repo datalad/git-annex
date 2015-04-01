@@ -17,8 +17,10 @@ module Logs.Location (
 	LogStatus(..),
 	logStatus,
 	logChange,
+	logChange',
 	loggedLocations,
 	loggedLocationsHistorical,
+	locationLog,
 	loggedKeys,
 	loggedKeysFor,
 ) where
@@ -39,24 +41,32 @@ logStatus key s = do
 
 {- Log a change in the presence of a key's value in a repository. -}
 logChange :: Key -> UUID -> LogStatus -> Annex ()
-logChange key (UUID u) s = do
+logChange = logChange' logNow
+
+logChange' :: (LogStatus -> String -> Annex LogLine) -> Key -> UUID -> LogStatus -> Annex ()
+logChange' mklog key (UUID u) s = do
 	config <- Annex.getGitConfig
-	addLog (locationLogFile config key) =<< logNow s u
-logChange _ NoUUID _ = noop
+	addLog (locationLogFile config key) =<< mklog s u
+logChange' _ _ NoUUID _ = noop
 
 {- Returns a list of repository UUIDs that, according to the log, have
  - the value of a key. -}
 loggedLocations :: Key -> Annex [UUID]
-loggedLocations = getLoggedLocations currentLog
+loggedLocations = getLoggedLocations currentLogInfo
 
 {- Gets the location log on a particular date. -}
 loggedLocationsHistorical :: RefDate -> Key -> Annex [UUID]
-loggedLocationsHistorical = getLoggedLocations . historicalLog
+loggedLocationsHistorical = getLoggedLocations . historicalLogInfo
 
 getLoggedLocations :: (FilePath -> Annex [String]) -> Key -> Annex [UUID]
 getLoggedLocations getter key = do
 	config <- Annex.getGitConfig
-	map toUUID <$> (getter . locationLogFile config) key
+	map toUUID <$> getter (locationLogFile config key)
+
+locationLog :: Key -> Annex [LogLine]
+locationLog key = do
+	config <- Annex.getGitConfig
+	currentLog (locationLogFile config key)
 
 {- Finds all keys that have location log information.
  - (There may be duplicate keys in the list.) -}

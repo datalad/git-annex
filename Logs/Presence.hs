@@ -16,8 +16,10 @@ module Logs.Presence (
 	addLog,
 	readLog,
 	logNow,
+	logThen,
 	currentLog,
-	historicalLog
+	currentLogInfo,
+	historicalLogInfo,
 ) where
 
 import Data.Time.Clock.POSIX
@@ -42,15 +44,21 @@ logNow s i = do
 	now <- liftIO getPOSIXTime
 	return $ LogLine now s i
 
+logThen :: POSIXTime -> LogStatus -> String -> Annex LogLine
+logThen t s i = return $ LogLine t s i
+
 {- Reads a log and returns only the info that is still in effect. -}
-currentLog :: FilePath -> Annex [String]
-currentLog file = map info . filterPresent <$> readLog file
+currentLogInfo :: FilePath -> Annex [String]
+currentLogInfo file = map info <$> currentLog file
+
+currentLog :: FilePath -> Annex [LogLine]
+currentLog file = filterPresent <$> readLog file
 
 {- Reads a historical version of a log and returns the info that was in
  - effect at that time. 
  -
  - The date is formatted as shown in gitrevisions man page.
  -}
-historicalLog :: RefDate -> FilePath -> Annex [String]
-historicalLog refdate file = map info . filterPresent . parseLog
+historicalLogInfo :: RefDate -> FilePath -> Annex [String]
+historicalLogInfo refdate file = map info . filterPresent . parseLog
 	<$> Annex.Branch.getHistorical refdate file

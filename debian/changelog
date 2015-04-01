@@ -20,6 +20,8 @@ git-annex (5.20150328) UNRELEASED; urgency=medium
     multiple files.
   * import: --deduplicate and --cleanduplicates now output the keys
     corresponding to duplicated files they process.
+  * fsck: Added --distributed and --expire options,
+    for distributed fsck.
 
  -- Joey Hess <id@joeyh.name>  Fri, 27 Mar 2015 16:04:43 -0400
 
