@@ -1,0 +1,25 @@
+Added two options to `git annex fsck` that allow for a form of distributed
+fsck.  This is useful in situations where repositiories cannot be trusted to
+continue to exist, and cannot be checked directly, but you'd still like to
+keep track of their status. [[design/iabackup]] is one use case for this.
+
+By running a periodic fsck with the --distributed option,
+the repositories can verify that they still exist and that the
+information about their contents is still accurate. This is done by
+doing an extra update of the location log each time a file is verified by
+fsck to still be in the repository.
+
+The other option looks like --expire="30d somerepo:60d". It checks that
+each specified repository has recorded a distributed fsck within the specified
+time period. If not, the repository is dropped from the location tracking
+log. Of course it can always update that later if it's really still around.
+
+Distributed fsck is not the default because those extra location log updates
+increase the size of the git-annex branch. I did one thing to keep the size
+increase small: An identical line is logged to for each key, including the
+timestamp, so git's delta compression will work as well as is possible. But,
+there's still commit and tree update overhead. 
+
+Probably doesn't make sense to run distributed fscks too often for that and
+other reasons. If the git-annex branch does get too large, there's always
+`git annex forget` ...
