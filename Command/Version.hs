@@ -18,16 +18,28 @@ import qualified Remote
 import qualified Backend
 
 cmd :: [Command]
-cmd = [noCommit $ noRepo startNoRepo $ dontCheck repoExists $
+cmd = [withOptions [rawOption] $
+	noCommit $ noRepo startNoRepo $ dontCheck repoExists $
 	command "version" paramNothing seek SectionQuery "show version info"]
 
+rawOption :: Option
+rawOption = flagOption [] "raw" "output only program version"
+
 seek :: CommandSeek
-seek = withNothing start
+seek = withNothing $ ifM (getOptionFlag rawOption) (startRaw, start)
+
+startRaw :: CommandStart
+startRaw = do
+	liftIO $ do
+		putStr SysConfig.packageversion
+		hFlush stdout
+	stop
 
 start :: CommandStart
 start = do
 	v <- getVersion
 	liftIO $ do
+
 		showPackageVersion
 		info "local repository version" $ fromMaybe "unknown" v
 		info "supported repository version" supportedVersion

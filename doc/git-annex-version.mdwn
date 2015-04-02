@@ -19,6 +19,12 @@ corresponds to the git ref from git-annex's source repository that was
 built. Therefore, "5.20150320-gdd35cf3" is a daily build, and
 "5.20150401" is an April 1st release made a bit later.
 
+# OPTIONS
+
+* `--raw`
+
+  Causes only git-annex's version to be output, and nothing else.
+
 # SEE ALSO
 
 [[git-annex]](1)
