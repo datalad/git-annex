@@ -170,19 +170,17 @@ prop_relPathDirToFile_regressionTest = same_dir_shortcurcuits_at_difference
 				== joinPath ["..", "..", "..", "..", ".git", "annex", "objects", "18", "gk", "SHA256-foo", "SHA256-foo"]
 
 {- Given an original list of paths, and an expanded list derived from it,
- - partitions the expanded list, so that sublist corresponds to one of the
+ - generates a list of lists, where each sublist corresponds to one of the
  - original paths. When the original path is a directory, any items
  - in the expanded list that are contained in that directory will appear in
  - its segment.
- -
- - The expanded list must have the same ordering as the original list.
  -}
 segmentPaths :: [FilePath] -> [FilePath] -> [[FilePath]]
 segmentPaths [] new = [new]
 segmentPaths [_] new = [new] -- optimisation
 segmentPaths (l:ls) new = found : segmentPaths ls rest
   where
-	(found, rest) = break (\p -> not (l `dirContains` p)) new
+	(found, rest)=partition (l `dirContains`) new
 
 {- This assumes that it's cheaper to call segmentPaths on the result,
  - than it would be to run the action separately with each path. In
