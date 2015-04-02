@@ -178,7 +178,7 @@ prop_relPathDirToFile_regressionTest = same_dir_shortcurcuits_at_difference
 segmentPaths :: [FilePath] -> [FilePath] -> [[FilePath]]
 segmentPaths [] new = [new]
 segmentPaths [_] new = [new] -- optimisation
-segmentPaths (l:ls) new = [found] ++ segmentPaths ls rest
+segmentPaths (l:ls) new = found : segmentPaths ls rest
   where
 	(found, rest)=partition (l `dirContains`) new
 
