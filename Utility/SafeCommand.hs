@@ -111,7 +111,7 @@ segmentXargsUnordered l = go l [] 0 []
   where
 	go [] c _ r = (c:r)
 	go (f:fs) c accumlen r
-		| len < maxlen && newlen > maxlen = go (f:fs) [] 0 (c:r)
+		| newlen > maxlen && len < maxlen = go (f:fs) [] 0 (c:r)
 		| otherwise = go fs (f:c) newlen r
 	  where
 		len = length f
