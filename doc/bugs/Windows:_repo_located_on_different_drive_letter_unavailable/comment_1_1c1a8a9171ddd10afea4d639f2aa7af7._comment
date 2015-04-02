@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlc-3pdibcizrdz4WmZooECL0k6AvM1cWc"
+ nickname="Joe"
+ subject="Same problem as another bug"
+ date="2015-04-02T18:16:25Z"
+ content="""
+This is the same thing I saw with the bug at http://git-annex.branchable.com/bugs/Windows:_Annex_can_not_get_files/
+
+I tried to manually add the annex UID to the remote reference, and it would show up as available (and then it could sync the repos), but I still couldn't get it to \"git annex  get\" a file.
+
+--Joe
+"""]]
