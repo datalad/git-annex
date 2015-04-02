@@ -106,6 +106,8 @@ prop_idempotent_shellEscape_multiword s = s == (shellUnEscape . unwords . map sh
 segmentXargsOrdered :: [FilePath] -> [[FilePath]]
 segmentXargsOrdered = reverse . map reverse . segmentXargsUnordered
 
+{- Not preserving data is a little faster, and streams better when
+ - there are a great many filesnames. -}
 segmentXargsUnordered :: [FilePath] -> [[FilePath]]
 segmentXargsUnordered l = go l [] 0 []
   where
