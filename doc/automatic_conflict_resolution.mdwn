@@ -17,7 +17,7 @@ you don't want.
 
 The "AAA" and "BBB" in the above example are essentially arbitrary
 (technically they are the MD5 checksum of the key). The automatic merge
-conflict resoltuion is designed so that if two or more repositories both get
+conflict resolution is designed so that if two or more repositories both get
 a merge conflict, and resolve it, the resolved repositories will not
 themselves conflict. This is why it doesn't use something nicer, like
 perhaps the name of the remote that the file came from.

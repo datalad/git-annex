@@ -1,6 +1,6 @@
 # NAME
 
-git-annex unannex - undo accidential add command
+git-annex unannex - undo accidental add command
 
 # SYNOPSIS
 

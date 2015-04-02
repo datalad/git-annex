@@ -172,7 +172,7 @@ subdirectories).
 
 * `assistant`
 
-  Atomatically sync folders between devices.
+  Automatically sync folders between devices.
 
   See [[git-annex-assistant]](1) for details.
 

@@ -18,11 +18,11 @@ AES encryption:
     use SPEKE (or similar methods like J-PAKE) to generate a shared key.
     Avoids active MITM attacks. Makes pairing harder, especially pairing
     between one's own devices, since the passphrase has to be entered on
-    all devices. Also problimatic when pairing more than 2 devices,
+    all devices. Also problematic when pairing more than 2 devices,
     especially when adding a device to the set later, since there
     would then be multiple different keys in use.
   * Rely on the user's gpg key, and do gpg key verification during XMPP
-    pairing. Problimatic because who wants to put their gpg key on their
+    pairing. Problematic because who wants to put their gpg key on their
     phone? Also, require the users be in the WOT and be gpg literate.
 
 Update: This seems unlikely to be worth doing. [[Telehash]] is better.
