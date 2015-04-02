@@ -22,6 +22,8 @@ git-annex (5.20150328) UNRELEASED; urgency=medium
     corresponding to duplicated files they process.
   * fsck: Added --distributed and --expire options,
     for distributed fsck.
+  * Significantly sped up processing of large numbers of directories
+    passed to a single git-annex command.
 
  -- Joey Hess <id@joeyh.name>  Fri, 27 Mar 2015 16:04:43 -0400
 

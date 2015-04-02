@@ -9,3 +9,7 @@ Feeding git-annex a long list off directories, eg with xargs can have
   git-ls-files results. There is probably an exponential blowup in the time
   relative to the number of parameters. Some of the stuff being done to
   preserve original ordering etc is likely at fault.
+  
+  > I think I've managed to speed this up something like
+  > 1000x or some such. segmentPaths on an utterly insane list of 6 million
+  > files now runs in about 10 seconds. --[[Joey]]
