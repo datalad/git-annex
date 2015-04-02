@@ -290,7 +290,7 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 	-- files. The ls-files is run on a batch of files.
 	findnew [] = return ([], noop)
 	findnew pending@(exemplar:_) = do
-		let segments = segmentXargs $ map changeFile pending
+		let segments = segmentXargsUnordered $ map changeFile pending
 		rs <- liftAnnex $ forM segments $ \fs ->
 			inRepo (Git.LsFiles.notInRepo False fs)
 		let (newfiles, cleanup) = foldl'
@@ -457,7 +457,7 @@ safeToAdd havelsof delayadd pending inprocess = do
 	 -}
 	findopenfiles keysources = ifM crippledFileSystem
 		( liftIO $ do
-			let segments = segmentXargs $ map keyFilename keysources
+			let segments = segmentXargsUnordered $ map keyFilename keysources
 			concat <$> forM segments (\fs -> Lsof.query $ "--" : fs)
 		, do
 			tmpdir <- fromRepo gitAnnexTmpMiscDir
