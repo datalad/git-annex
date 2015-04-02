@@ -170,17 +170,26 @@ prop_relPathDirToFile_regressionTest = same_dir_shortcurcuits_at_difference
 				== joinPath ["..", "..", "..", "..", ".git", "annex", "objects", "18", "gk", "SHA256-foo", "SHA256-foo"]
 
 {- Given an original list of paths, and an expanded list derived from it,
- - generates a list of lists, where each sublist corresponds to one of the
- - original paths. When the original path is a directory, any items
- - in the expanded list that are contained in that directory will appear in
- - its segment.
+ - which may be arbitrarily reordered, generates a list of lists, where
+ - each sublist corresponds to one of the original paths.
+ -
+ - When the original path is a directory, any items in the expanded list
+ - that are contained in that directory will appear in its segment.
+ -
+ - The order of the original list of paths is attempted to be preserved in
+ - the order of the returned segments. However, doing so has a O^NM
+ - growth factor. So, if the original list has more than 100 paths on it,
+ - we stop preserving ordering at that point. Presumably a user passing
+ - that many paths in doesn't care too much about order of the later ones.
  -}
 segmentPaths :: [FilePath] -> [FilePath] -> [[FilePath]]
 segmentPaths [] new = [new]
 segmentPaths [_] new = [new] -- optimisation
 segmentPaths (l:ls) new = found : segmentPaths ls rest
   where
-	(found, rest)=partition (l `dirContains`) new
+	(found, rest) = if length ls < 100
+		then partition (l `dirContains`) new
+		else break (\p -> not (l `dirContains` p)) new
 
 {- This assumes that it's cheaper to call segmentPaths on the result,
  - than it would be to run the action separately with each path. In

@@ -11,3 +11,5 @@ Feeding git-annex a long list off directories, eg with xargs can have
   git-ls-files results. There is probably an exponential blowup in the time
   relative to the number of parameters. Some of the stuff being done to
   preserve original ordering etc is likely at fault.
+
+  > [[fixed|done]] --[[Joey]]

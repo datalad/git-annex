@@ -23,6 +23,8 @@ git-annex (5.20150328) UNRELEASED; urgency=medium
   * fsck: Added --distributed and --expire options,
     for distributed fsck.
   * Fix truncation of parameters that could occur when using xargs git-annex.
+  * Significantly sped up processing of large numbers of directories
+    passed to a single git-annex command.
 
  -- Joey Hess <id@joeyh.name>  Fri, 27 Mar 2015 16:04:43 -0400
 
