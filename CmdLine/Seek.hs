@@ -215,8 +215,8 @@ seekActions gen = do
 
 seekHelper :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> [FilePath] -> Annex [FilePath]
 seekHelper a params = do
-	ll <- inRepo $ \g ->
-		runSegmentPaths (\fs -> Git.Command.leaveZombie <$> a fs g) params
+	ll <- inRepo $ \g -> concat <$> forM (segmentXargsOrdered params)
+		(runSegmentPaths (\fs -> Git.Command.leaveZombie <$> a fs g))
 	forM_ (map fst $ filter (null . snd) $ zip params ll) $ \p ->
 		unlessM (isJust <$> liftIO (catchMaybeIO $ getSymbolicLinkStatus p)) $
 			error $ p ++ " not found"
