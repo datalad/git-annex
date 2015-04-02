@@ -64,10 +64,10 @@ seek us = do
 		r <- Remote.claimingUrl u
 		if Remote.uuid r == webUUID || raw
 			then void $ commandAction $ startWeb relaxed optfile pathdepth u
-			else checkUrl r u optfile relaxed raw pathdepth
+			else checkUrl r u optfile relaxed pathdepth
 
-checkUrl :: Remote -> URLString -> Maybe FilePath -> Bool -> Bool -> Maybe Int -> Annex ()
-checkUrl r u optfile relaxed raw pathdepth = do
+checkUrl :: Remote -> URLString -> Maybe FilePath -> Bool -> Maybe Int -> Annex ()
+checkUrl r u optfile relaxed pathdepth = do
 	pathmax <- liftIO $ fileNameLengthLimit "."
 	let deffile = fromMaybe (urlString2file u pathdepth pathmax) optfile
 	go deffile =<< maybe
