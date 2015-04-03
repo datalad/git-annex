@@ -89,7 +89,7 @@ start mode (srcfile, destfile) =
 		| isDirectory s = notoverwriting "(is a directory)"
 		| otherwise = ifM (Annex.getState Annex.force)
 			( liftIO $ nukeFile destfile
-			, notoverwriting "(use --force to override)"
+			, notoverwriting "(use --force to override, or a duplication option such as --deduplicate to clean up)"
 			)
 	notoverwriting why = error $ "not overwriting existing " ++ destfile ++ " " ++ why
 	checkdup dupa notdupa = do
