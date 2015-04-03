@@ -81,7 +81,7 @@ splitWord = separate isSpace
  - and duplicate stderr to stdout. Return two new handles
  - that are duplicates of the original (stdin, stdout). -}
 dupIoHandles :: IO (Handle, Handle)
-duoIoHandles = do
+dupIoHandles = do
 	readh <- hDuplicate stdin
 	writeh <- hDuplicate stdout
 	nullh <- openFile devNull ReadMode

@@ -19,6 +19,7 @@ import Logs.Web
 import Types.UrlContents
 import Types.CleanupActions
 import Types.Key
+import Messages.Progress
 import Utility.Metered
 import Utility.Tmp
 import Backend.URL
@@ -291,11 +292,12 @@ runAria :: [CommandParam] -> Annex Bool
 runAria ps = liftIO . boolSystem "aria2c" =<< ariaParams ps
 
 -- Parse aria output to find "(n%)" and update the progress meter
--- with it. The output is also output to stdout.
+-- with it.
 ariaProgress :: Maybe Integer -> MeterUpdate -> [CommandParam] -> Annex Bool
 ariaProgress Nothing _ ps = runAria ps
-ariaProgress (Just sz) meter ps =
-	liftIO . commandMeter (parseAriaProgress sz) meter "aria2c"
+ariaProgress (Just sz) meter ps = do
+	h <- mkProgressHandler meter
+	liftIO . commandMeter (parseAriaProgress sz) h "aria2c"
 		=<< ariaParams ps
 
 parseAriaProgress :: Integer -> ProgressParser

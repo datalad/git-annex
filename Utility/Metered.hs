@@ -18,6 +18,7 @@ import Foreign.Storable (Storable(sizeOf))
 import System.Posix.Types
 import Data.Int
 import Data.Bits.Utils
+import Control.Concurrent.Async
 
 {- An action that can be run repeatedly, updating it on the bytes processed.
  -
@@ -146,7 +147,7 @@ defaultChunkSize = 32 * k - chunkOverhead
 	chunkOverhead = 2 * sizeOf (undefined :: Int) -- GHC specific
 
 {- Parses the String looking for a command's progress output, and returns
- - Maybe the number of bytes rsynced so far, and any any remainder of the
+ - Maybe the number of bytes done so far, and any any remainder of the
  - string that could be an incomplete progress output. That remainder
  - should be prepended to future output, and fed back in. This interface
  - allows the command's output to be read in any desired size chunk, or
@@ -154,12 +155,23 @@ defaultChunkSize = 32 * k - chunkOverhead
  -}
 type ProgressParser = String -> (Maybe BytesProcessed, String)
 
+data ProgressHandler = ProgressHandler
+	{ quietMode :: Bool -- don't forward output to stdout
+	, stderrHandler :: Handle -> IO () -- callback to handle stderr
+	, meterUpdate :: MeterUpdate -- the progress meter to update
+	}
+
 {- Runs a command and runs a ProgressParser on its output, in order
- - to update the meter. The command's output is also sent to stdout. -}
-commandMeter :: ProgressParser -> MeterUpdate -> FilePath -> [CommandParam] -> IO Bool
-commandMeter progressparser meterupdate cmd params = liftIO $ catchBoolIO $
-	withHandle StdoutHandle createProcessSuccess p $
-		feedprogress zeroBytesProcessed []
+ - to update a meter.
+ -}
+commandMeter :: ProgressParser -> ProgressHandler -> FilePath -> [CommandParam] -> IO Bool
+commandMeter progressparser progress cmd params = 
+	liftIO $ catchBoolIO $
+		withOEHandles createProcessSuccess p $ \(outh, errh) -> do
+			ep <- async $ (stderrHandler progress) errh
+			op <- async $ feedprogress zeroBytesProcessed [] outh
+			wait ep
+			wait op
   where
 	p = proc cmd (toCommand params)
 
@@ -168,13 +180,14 @@ commandMeter progressparser meterupdate cmd params = liftIO $ catchBoolIO $
 		if S.null b
 			then return True
 			else do
-				S.hPut stdout b
-				hFlush stdout
+				unless (quietMode progress) $ do
+					S.hPut stdout b
+					hFlush stdout
 				let s = w82s (S.unpack b)
 				let (mbytes, buf') = progressparser (buf++s)
 				case mbytes of
 					Nothing -> feedprogress prev buf' h
 					(Just bytes) -> do
 						when (bytes /= prev) $
-							meterupdate bytes
+							(meterUpdate progress) bytes
 						feedprogress bytes buf' h

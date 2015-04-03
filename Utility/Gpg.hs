@@ -142,7 +142,7 @@ pipeLazy params feeder reader = do
 	setup = liftIO . createProcess
 	cleanup p (_, _, _, pid) = liftIO $ forceSuccessProcess p pid
 	go p = do
-		let (to, from) = bothHandles p
+		let (to, from) = ioHandles p
 		liftIO $ void $ forkIO $ do
 			feeder to
 			hClose to

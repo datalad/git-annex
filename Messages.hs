@@ -10,9 +10,6 @@ module Messages (
 	showStart',
 	showNote,
 	showAction,
-	showProgressDots,
-	metered,
-	meteredBytes,
 	showSideAction,
 	doSideAction,
 	doQuietSideAction,
@@ -33,28 +30,25 @@ module Messages (
 	showRaw,
 	setupConsole,
 	enableDebugOutput,
-	disableDebugOutput
+	disableDebugOutput,
 ) where
 
 import Text.JSON
-import Data.Progress.Meter
-import Data.Progress.Tracker
-import Data.Quantity
 import System.Log.Logger
 import System.Log.Formatter
 import System.Log.Handler (setFormatter)
 import System.Log.Handler.Simple
 
-import Common hiding (handle)
+import Common
 import Types
 import Types.Messages
+import Messages.Internal
 import qualified Messages.JSON as JSON
 import Types.Key
 import qualified Annex
-import Utility.Metered
 
 showStart :: String -> FilePath -> Annex ()
-showStart command file = handle (JSON.start command $ Just file) $
+showStart command file = handleMessage (JSON.start command $ Just file) $
 	flushed $ putStr $ command ++ " " ++ file ++ " "
 
 showStart' :: String -> Key -> Maybe FilePath -> Annex ()
@@ -62,41 +56,11 @@ showStart' command key afile = showStart command $
 	fromMaybe (key2file key) afile
 
 showNote :: String -> Annex ()
-showNote s = handle (JSON.note s) $
+showNote s = handleMessage (JSON.note s) $
 	flushed $ putStr $ "(" ++ s ++ ") "
 
 showAction :: String -> Annex ()
 showAction s = showNote $ s ++ "..."
-
-{- Progress dots. -}
-showProgressDots :: Annex ()
-showProgressDots = handle q $
-	flushed $ putStr "."
-
-{- Shows a progress meter while performing a transfer of a key.
- - The action is passed a callback to use to update the meter. -}
-metered :: Maybe MeterUpdate -> Key -> (MeterUpdate -> Annex a) -> Annex a
-metered combinemeterupdate key a = go (keySize key)
-  where
-	go (Just size) = meteredBytes combinemeterupdate size a
-	go _ = a (const noop)
-
-{- Shows a progress meter while performing an action on a given number
- - of bytes. -}
-meteredBytes :: Maybe MeterUpdate -> Integer -> (MeterUpdate -> Annex a) -> Annex a
-meteredBytes combinemeterupdate size a = withOutputType go
-  where
-	go NormalOutput = do
-		progress <- liftIO $ newProgress "" size
-		meter <- liftIO $ newMeter progress "B" 25 (renderNums binaryOpts 1)
-		showOutput
-		r <- a $ \n -> liftIO $ do
-			setP progress $ fromBytesProcessed n
-			displayMeter stdout meter
-			maybe noop (\m -> m n) combinemeterupdate
-		liftIO $ clearMeter stdout meter
-		return r
-	go _ = a (const noop)
 
 showSideAction :: String -> Annex ()
 showSideAction m = Annex.getState Annex.output >>= go
@@ -108,7 +72,7 @@ showSideAction m = Annex.getState Annex.output >>= go
 			Annex.changeState $ \s -> s { Annex.output = st' }
 		| sideActionBlock st == InBlock = return ()
 		| otherwise = p
-	p = handle q $ putStrLn $ "(" ++ m ++ "...)"
+	p = handleMessage q $ putStrLn $ "(" ++ m ++ "...)"
 			
 showStoringStateAction :: Annex ()
 showStoringStateAction = showSideAction "recording state in git"
@@ -130,12 +94,13 @@ doSideAction' b a = do
   where
 	set o = Annex.changeState $ \s -> s {  Annex.output = o }
 
+{- Make way for subsequent output of a command. -}
 showOutput :: Annex ()
-showOutput = handle q $
+showOutput = handleMessage q $
 	putStr "\n"
 
 showLongNote :: String -> Annex ()
-showLongNote s = handle (JSON.note s) $
+showLongNote s = handleMessage (JSON.note s) $
 	putStrLn $ '\n' : indent s
 
 showEndOk :: Annex ()
@@ -145,7 +110,7 @@ showEndFail :: Annex ()
 showEndFail = showEndResult False
 
 showEndResult :: Bool -> Annex ()
-showEndResult ok = handle (JSON.end ok) $ putStrLn msg
+showEndResult ok = handleMessage (JSON.end ok) $ putStrLn msg
   where
 	msg
 		| ok = "ok"
@@ -159,7 +124,7 @@ warning = warning' . indent
 
 warning' :: String -> Annex ()
 warning' w = do
-	handle q $ putStr "\n"
+	handleMessage q $ putStr "\n"
 	liftIO $ do
 		hFlush stdout
 		hPutStrLn stderr w
@@ -175,7 +140,7 @@ indent = intercalate "\n" . map (\l -> "  " ++ l) . lines
 
 {- Shows a JSON fragment only when in json mode. -}
 maybeShowJSON :: JSON a => [(String, a)] -> Annex ()
-maybeShowJSON v = handle (JSON.add v) q
+maybeShowJSON v = handleMessage (JSON.add v) q
 
 {- Shows a complete JSON value, only when in json mode. -}
 showFullJSON :: JSON a => [(String, a)] -> Annex Bool
@@ -190,16 +155,16 @@ showFullJSON v = withOutputType $ liftIO . go
  - This is only needed when showStart and showEndOk is not used. -}
 showCustom :: String -> Annex Bool -> Annex ()
 showCustom command a = do
-	handle (JSON.start command Nothing) q
+	handleMessage (JSON.start command Nothing) q
 	r <- a
-	handle (JSON.end r) q
+	handleMessage (JSON.end r) q
 
 showHeader :: String -> Annex ()
-showHeader h = handle q $
+showHeader h = handleMessage q $
 	flushed $ putStr $ h ++ ": "
 
 showRaw :: String -> Annex ()
-showRaw s = handle q $ putStrLn s
+showRaw s = handleMessage q $ putStrLn s
 
 setupConsole :: IO ()
 setupConsole = do
@@ -218,19 +183,3 @@ enableDebugOutput = updateGlobalLogger rootLoggerName $ setLevel DEBUG
 
 disableDebugOutput :: IO ()
 disableDebugOutput = updateGlobalLogger rootLoggerName $ setLevel NOTICE
-
-handle :: IO () -> IO () -> Annex ()
-handle json normal = withOutputType go
-  where
-	go NormalOutput = liftIO normal
-	go QuietOutput = q
-	go JSONOutput = liftIO $ flushed json
-
-q :: Monad m => m ()
-q = noop
-
-flushed :: IO () -> IO ()
-flushed a = a >> hFlush stdout
-
-withOutputType :: (OutputType -> Annex a) -> Annex a
-withOutputType a = outputType <$> Annex.getState Annex.output >>= a

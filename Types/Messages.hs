@@ -7,7 +7,7 @@
 
 module Types.Messages where
 
-data OutputType = NormalOutput | QuietOutput | JSONOutput
+data OutputType = NormalOutput | QuietOutput | ProgressOutput | JSONOutput
 
 data SideActionBlock = NoBlock | StartBlock | InBlock
 	deriving (Eq)

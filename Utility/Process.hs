@@ -26,6 +26,7 @@ module Utility.Process (
 	processTranscript',
 	withHandle,
 	withIOHandles,
+	withOEHandles,
 	withQuietOutput,
 	createProcess,
 	startInteractiveProcess,
@@ -268,6 +269,20 @@ withIOHandles creator p a = creator p' $ a . ioHandles
 		, std_err = Inherit
 		}
 
+{- Like withHandle, but passes (stdout, stderr) handles to the action. -}
+withOEHandles
+	:: CreateProcessRunner
+	-> CreateProcess
+	-> ((Handle, Handle) -> IO a)
+	-> IO a
+withOEHandles creator p a = creator p' $ a . oeHandles
+  where
+	p' = p
+		{ std_in = Inherit
+		, std_out = CreatePipe
+		, std_err = CreatePipe
+		}
+
 {- Forces the CreateProcessRunner to run quietly;
  - both stdout and stderr are discarded. -}
 withQuietOutput
@@ -306,6 +321,8 @@ stderrHandle _ = error "expected stderrHandle"
 ioHandles :: (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> (Handle, Handle)
 ioHandles (Just hin, Just hout, _, _) = (hin, hout)
 ioHandles _ = error "expected ioHandles"
+oeHandles (_, Just hout, Just herr, _) = (hout, herr)
+oeHandles _ = error "expected oeHandles"
 
 processHandle :: (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> ProcessHandle
 processHandle (_, _, _, pid) = pid
