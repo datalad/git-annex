@@ -16,6 +16,7 @@ import qualified Annex
 import Annex.Content
 import Utility.Tmp
 import Logs
+import Messages.Progress
 
 olddir :: Git.Repo -> FilePath
 olddir g
