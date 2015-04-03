@@ -6,7 +6,7 @@ the public repositories that you can clone to try out git-annex.
   Various downloads of things produced by Joey Hess, including git-annex
   builds and videos.
 
-* debconf-share  
+* debconf-share (currently unavailable via IPv4)  
   `git clone http://annex.debconf.org/debconf-share/.git/`  
   [DebConf](http://debconf.org/) Media, photos, videos, etc.
 
