@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkutSE8_3fFAETmO_E598zja4gKwYXbb8E"
+ nickname="Сергей"
+ subject="Workaround"
+ date="2015-04-03T07:32:38Z"
+ content="""
+As a temporary workaround windows users can create directory junction:
+
+    MKDIR D:\Junctions
+    MKLINK /J D:\Junctions\R R:\
+
+Then you can clone from `D:\Junctions\R\Annex.git` to any directory on drive `D:\`. Whis way repository is available and `git-annex get` works.
+"""]]
