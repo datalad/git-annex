@@ -10,7 +10,7 @@ module Messages (
 	showStart',
 	showNote,
 	showAction,
-	showProgress,
+	showProgressDots,
 	metered,
 	meteredBytes,
 	showSideAction,
@@ -69,8 +69,8 @@ showAction :: String -> Annex ()
 showAction s = showNote $ s ++ "..."
 
 {- Progress dots. -}
-showProgress :: Annex ()
-showProgress = handle q $
+showProgressDots :: Annex ()
+showProgressDots = handle q $
 	flushed $ putStr "."
 
 {- Shows a progress meter while performing a transfer of a key.

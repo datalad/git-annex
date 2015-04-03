@@ -44,7 +44,7 @@ upgrade = do
 	old <- fromRepo olddir
 
 	Annex.Branch.create
-	showProgress
+	showProgressDots
 
 	e <- liftIO $ doesDirectoryExist old
 	when e $ do
@@ -53,12 +53,12 @@ upgrade = do
 		mapM_ (\f -> inject f f) =<< logFiles old
 
 	saveState False
-	showProgress
+	showProgressDots
 
 	when e $ do
 		inRepo $ Git.Command.run [Param "rm", Param "-r", Param "-f", Param "-q", File old]
 		unless bare $ inRepo gitAttributesUnWrite
-	showProgress
+	showProgressDots
 
 	unless bare push
 
