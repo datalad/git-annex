@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-04-03T15:23:48Z"
+ content="""
+To display global progress, git-annex would have to make 2
+passes over all the files to be processed. 
+That is the main reason it does not try to do that.
+"""]]
