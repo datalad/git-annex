@@ -26,6 +26,8 @@ git-annex (5.20150328) UNRELEASED; urgency=medium
   * Significantly sped up processing of large numbers of directories
     passed to a single git-annex command.
   * version: Add --raw
+  * init: Improve fifo test to detect NFS systems that support fifos
+    but not well enough for sshcaching.
 
  -- Joey Hess <id@joeyh.name>  Fri, 27 Mar 2015 16:04:43 -0400
 
