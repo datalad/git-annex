@@ -71,3 +71,8 @@ Pain points:
    This approach is just not as flexible or nice in general.
 
 See also: [[parallel_possibilities]]
+
+> I am looking at using the ascii-progress library for this.
+> It has nice support for multiple progress bars, and is portable.
+> I have filed 7 issues on it, around 4 of which need to get fixed before
+> it's suitable for git-annex to use.. --[[Joey]]
