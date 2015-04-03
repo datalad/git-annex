@@ -87,7 +87,7 @@ readStrict params = do
 pipeStrict :: [CommandParam] -> String -> IO String
 pipeStrict params input = do
 	params' <- stdParams params
-	withBothHandles createProcessSuccess (proc gpgcmd params') $ \(to, from) -> do
+	withIOHandles createProcessSuccess (proc gpgcmd params') $ \(to, from) -> do
 		hSetBinaryMode to True
 		hSetBinaryMode from True
 		hPutStr to input

@@ -25,14 +25,14 @@ module Utility.Process (
 	processTranscript,
 	processTranscript',
 	withHandle,
-	withBothHandles,
+	withIOHandles,
 	withQuietOutput,
 	createProcess,
 	startInteractiveProcess,
 	stdinHandle,
 	stdoutHandle,
 	stderrHandle,
-	bothHandles,
+	ioHandles,
 	processHandle,
 	devNull,
 ) where
@@ -255,12 +255,12 @@ withHandle h creator p a = creator p' $ a . select
 			(stderrHandle, base { std_err = CreatePipe })
 
 {- Like withHandle, but passes (stdin, stdout) handles to the action. -}
-withBothHandles
+withIOHandles
 	:: CreateProcessRunner
 	-> CreateProcess
 	-> ((Handle, Handle) -> IO a)
 	-> IO a
-withBothHandles creator p a = creator p' $ a . bothHandles
+withIOHandles creator p a = creator p' $ a . ioHandles
   where
 	p' = p
 		{ std_in = CreatePipe
@@ -303,9 +303,9 @@ stdoutHandle _ = error "expected stdoutHandle"
 stderrHandle :: HandleExtractor
 stderrHandle (_, _, Just h, _) = h
 stderrHandle _ = error "expected stderrHandle"
-bothHandles :: (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> (Handle, Handle)
-bothHandles (Just hin, Just hout, _, _) = (hin, hout)
-bothHandles _ = error "expected bothHandles"
+ioHandles :: (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> (Handle, Handle)
+ioHandles (Just hin, Just hout, _, _) = (hin, hout)
+ioHandles _ = error "expected ioHandles"
 
 processHandle :: (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> ProcessHandle
 processHandle (_, _, _, pid) = pid

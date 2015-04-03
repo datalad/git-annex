@@ -16,7 +16,7 @@ import Logs.Location
 import Annex.Transfer
 import qualified Remote
 import Types.Key
-import Utility.SimpleProtocol (ioHandles)
+import Utility.SimpleProtocol (dupIoHandles)
 import Git.Types (RemoteName)
 
 data TransferRequest = TransferRequest Direction Remote Key AssociatedFile
@@ -30,7 +30,7 @@ seek = withNothing start
 
 start :: CommandStart
 start = do
-	(readh, writeh) <- liftIO ioHandles
+	(readh, writeh) <- liftIO dupIoHandles
 	runRequests readh writeh runner
 	stop
   where

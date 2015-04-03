@@ -28,7 +28,7 @@ import qualified Data.Map as M
 
 runForeground :: IO ()
 runForeground = do
-	(readh, writeh) <- ioHandles
+	(readh, writeh) <- dupIoHandles
 	ichan <- newTChanIO :: IO (TChan Consumed)
 	ochan <- newTChanIO :: IO (TChan Emitted)
 

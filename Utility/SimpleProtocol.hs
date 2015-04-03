@@ -16,7 +16,7 @@ module Utility.SimpleProtocol (
 	parse1,
 	parse2,
 	parse3,
-	ioHandles,
+	dupIoHandles,
 ) where
 
 import Data.Char
@@ -80,8 +80,8 @@ splitWord = separate isSpace
  - will mess up the protocol. To avoid that, close stdin, and 
  - and duplicate stderr to stdout. Return two new handles
  - that are duplicates of the original (stdin, stdout). -}
-ioHandles :: IO (Handle, Handle)
-ioHandles = do
+dupIoHandles :: IO (Handle, Handle)
+duoIoHandles = do
 	readh <- hDuplicate stdin
 	writeh <- hDuplicate stdout
 	nullh <- openFile devNull ReadMode
