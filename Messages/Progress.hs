@@ -61,8 +61,8 @@ mkProgressHandler meter = ProgressHandler
 	quietmode = withOutputType $ \t -> return $ case t of
 		ProgressOutput -> True
 		_ -> False
-	stderrhandler emitter h = do
-		void $ emitter =<< hGetLine stderr
+	stderrhandler emitter h = unlessM (hIsEOF h) $ do
+		void $ emitter =<< hGetLine h
 		stderrhandler emitter h
 
 {- Generates an IO action that can be used to emit stderr.

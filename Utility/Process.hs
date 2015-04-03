@@ -321,6 +321,7 @@ stderrHandle _ = error "expected stderrHandle"
 ioHandles :: (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> (Handle, Handle)
 ioHandles (Just hin, Just hout, _, _) = (hin, hout)
 ioHandles _ = error "expected ioHandles"
+oeHandles :: (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> (Handle, Handle)
 oeHandles (_, Just hout, Just herr, _) = (hout, herr)
 oeHandles _ = error "expected oeHandles"
 
