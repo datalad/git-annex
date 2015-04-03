@@ -30,7 +30,7 @@ separately so we know the last of each for each repo. This would let
 
 ----
 
-It would even be possible to make regular fsck check for expiry of other
-repos. This would need the expiration values to be stored in the git-annex
-branch. It would not add much overhead, but I don't know if I see any
-reason to do that.
+Hmm, --expire updates all the location logs when it thinks a repo has gone
+missing. Why not just mark it dead? Again, this would save a lot of space!
+It would complicate recovery if a repo had been offline and came back; it
+would need to mark itself as not dead any longer.
