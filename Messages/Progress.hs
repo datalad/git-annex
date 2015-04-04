@@ -70,6 +70,12 @@ mkOutputHandler = OutputHandler
 	<$> commandProgressDisabled
 	<*> mkStderrEmitter
 
+mkStderrRelayer :: Annex (Handle -> IO ())
+mkStderrRelayer = do
+	quiet <- commandProgressDisabled
+	emitter <- mkStderrEmitter
+	return $ \h -> avoidProgress quiet h emitter
+
 {- Generates an IO action that can be used to emit stderr.
  -
  - When a progress meter is displayed, this takes care to avoid

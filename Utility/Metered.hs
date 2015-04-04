@@ -197,10 +197,6 @@ commandMeter progressparser oh meterupdate cmd params = catchBoolIO $
 {- Runs a command, that may display one or more progress meters on
  - either stdout or stderr, and prevents the meters from being displayed.
  -
- - To suppress progress output, while displaying other messages,
- - filter out lines that contain \r (typically used to reset to the
- - beginning of the line when updating a progress display).
- -
  - The other command output is handled as configured by the OutputHandler.
  -}
 demeterCommand :: OutputHandler -> FilePath -> [CommandParam] -> IO Bool
@@ -209,8 +205,8 @@ demeterCommand oh cmd params = demeterCommandEnv oh cmd params Nothing
 demeterCommandEnv :: OutputHandler -> FilePath -> [CommandParam] -> Maybe [(String, String)] -> IO Bool
 demeterCommandEnv oh cmd params environ = catchBoolIO $
 	withOEHandles createProcessSuccess p $ \(outh, errh) -> do
-		ep <- async $ avoidprogress errh $ stderrHandler oh
-		op <- async $ avoidprogress outh $ \l ->
+		ep <- async $ avoidProgress True errh $ stderrHandler oh
+		op <- async $ avoidProgress True outh $ \l ->
 			unless (quietMode oh) $
 				putStrLn l
 		wait ep
@@ -220,8 +216,13 @@ demeterCommandEnv oh cmd params environ = catchBoolIO $
 	p = (proc cmd (toCommand params))
 		{ env = environ }
 
-	avoidprogress h emitter = unlessM (hIsEOF h) $ do
-		s <- hGetLine h
-		unless ('\r' `elem` s) $
-			emitter s
-		avoidprogress h emitter
+{- To suppress progress output, while displaying other messages,
+ - filter out lines that contain \r (typically used to reset to the
+ - beginning of the line when updating a progress display).
+ -}
+avoidProgress :: Bool -> Handle -> (String -> IO ()) -> IO ()
+avoidProgress doavoid h emitter = unlessM (hIsEOF h) $ do
+	s <- hGetLine h
+	unless (doavoid && '\r' `elem` s) $
+		emitter s
+	avoidProgress doavoid h emitter
