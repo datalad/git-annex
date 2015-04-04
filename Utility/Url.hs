@@ -205,7 +205,7 @@ downloadQuiet :: URLString -> FilePath -> UrlOptions -> IO Bool
 downloadQuiet = download' True
 
 download' :: Bool -> URLString -> FilePath -> UrlOptions -> IO Bool
-download' quiet url file uo = 
+download' quiet url file uo = do
 	case parseURIRelaxed url of
 		Just u
 			| uriScheme u == "file:" -> do
@@ -224,7 +224,7 @@ download' quiet url file uo =
 	 -}
 #ifndef __ANDROID__
 	wgetparams = catMaybes
-		[ if Build.SysConfig.wgetquietprogress
+		[ if Build.SysConfig.wgetquietprogress && not quiet
 			then Just $ Params "-q --show-progress"
 			else Nothing
 		, Just $ Params "--clobber -c -O"
