@@ -565,7 +565,7 @@ downloadUrl urls file = go =<< annexWebDownloadCommand <$> Annex.getGitConfig
 			anyM (\u -> a u file uo) urls
 	go (Just basecmd) = anyM (downloadcmd basecmd) urls
 	downloadcmd basecmd url =
-		progressCommand stderr "sh" [Param "-c", Param $ gencmd url basecmd]
+		progressCommand "sh" [Param "-c", Param $ gencmd url basecmd]
 			<&&> liftIO (doesFileExist file)
 	gencmd url = massReplace
 		[ ("%file", shellEscape file)

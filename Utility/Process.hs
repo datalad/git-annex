@@ -28,6 +28,7 @@ module Utility.Process (
 	withIOHandles,
 	withOEHandles,
 	withQuietOutput,
+	feedWithQuietOutput,
 	createProcess,
 	startInteractiveProcess,
 	stdinHandle,
@@ -295,6 +296,21 @@ withQuietOutput creator p = withFile devNull WriteMode $ \nullh -> do
 		, std_err = UseHandle nullh
 		}
 	creator p' $ const $ return ()
+
+{- Stdout and stderr are discarded, while the process is fed stdin
+ - from the handle. -}
+feedWithQuietOutput
+	:: CreateProcessRunner
+	-> CreateProcess
+	-> (Handle -> IO a)
+	-> IO a
+feedWithQuietOutput creator p a = withFile devNull WriteMode $ \nullh -> do
+	let p' = p
+		{ std_in = CreatePipe
+		, std_out = UseHandle nullh
+		, std_err = UseHandle nullh
+		}
+	creator p' $ a . stdinHandle
 
 devNull :: FilePath
 #ifndef mingw32_HOST_OS

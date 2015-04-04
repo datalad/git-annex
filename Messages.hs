@@ -31,6 +31,7 @@ module Messages (
 	setupConsole,
 	enableDebugOutput,
 	disableDebugOutput,
+	commandProgressDisabled,
 ) where
 
 import Text.JSON
@@ -96,8 +97,8 @@ doSideAction' b a = do
 
 {- Make way for subsequent output of a command. -}
 showOutput :: Annex ()
-showOutput = handleMessage q $
-	putStr "\n"
+showOutput = unlessM commandProgressDisabled $
+	handleMessage q $ putStr "\n"
 
 showLongNote :: String -> Annex ()
 showLongNote s = handleMessage (JSON.note s) $
@@ -183,3 +184,12 @@ enableDebugOutput = updateGlobalLogger rootLoggerName $ setLevel DEBUG
 
 disableDebugOutput :: IO ()
 disableDebugOutput = updateGlobalLogger rootLoggerName $ setLevel NOTICE
+
+{- Should commands that normally output progress messages have that
+ - output disabled? -}
+commandProgressDisabled :: Annex Bool
+commandProgressDisabled = withOutputType $ \t -> return $ case t of
+	QuietOutput -> True
+	ProgressOutput -> True
+	JSONOutput -> True
+	NormalOutput -> False

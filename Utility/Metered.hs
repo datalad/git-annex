@@ -1,4 +1,4 @@
-{- Metered IO
+{- Metered IO and actions
  -
  - Copyright 2012-2105 Joey Hess <id@joeyh.name>
  -
@@ -146,6 +146,11 @@ defaultChunkSize = 32 * k - chunkOverhead
 	k = 1024
 	chunkOverhead = 2 * sizeOf (undefined :: Int) -- GHC specific
 
+data OutputHandler = OutputHandler
+	{ quietMode :: Bool
+	, stderrHandler :: String -> IO ()
+	}
+
 {- Parses the String looking for a command's progress output, and returns
  - Maybe the number of bytes done so far, and any any remainder of the
  - string that could be an incomplete progress output. That remainder
@@ -155,23 +160,16 @@ defaultChunkSize = 32 * k - chunkOverhead
  -}
 type ProgressParser = String -> (Maybe BytesProcessed, String)
 
-data ProgressHandler = ProgressHandler
-	{ quietMode :: Bool -- don't forward output to stdout
-	, stderrHandler :: Handle -> IO () -- callback to handle stderr
-	, meterUpdate :: MeterUpdate -- the progress meter to update
-	}
-
 {- Runs a command and runs a ProgressParser on its output, in order
  - to update a meter.
  -}
-commandMeter :: ProgressParser -> ProgressHandler -> FilePath -> [CommandParam] -> IO Bool
-commandMeter progressparser progress cmd params = 
-	liftIO $ catchBoolIO $
-		withOEHandles createProcessSuccess p $ \(outh, errh) -> do
-			ep <- async $ (stderrHandler progress) errh
-			op <- async $ feedprogress zeroBytesProcessed [] outh
-			wait ep
-			wait op
+commandMeter :: ProgressParser -> OutputHandler -> MeterUpdate -> FilePath -> [CommandParam] -> IO Bool
+commandMeter progressparser oh meterupdate cmd params = catchBoolIO $
+	withOEHandles createProcessSuccess p $ \(outh, errh) -> do
+		ep <- async $ handlestderr errh
+		op <- async $ feedprogress zeroBytesProcessed [] outh
+		wait ep
+		wait op
   where
 	p = proc cmd (toCommand params)
 
@@ -180,7 +178,7 @@ commandMeter progressparser progress cmd params =
 		if S.null b
 			then return True
 			else do
-				unless (quietMode progress) $ do
+				unless (quietMode oh) $ do
 					S.hPut stdout b
 					hFlush stdout
 				let s = w82s (S.unpack b)
@@ -189,5 +187,41 @@ commandMeter progressparser progress cmd params =
 					Nothing -> feedprogress prev buf' h
 					(Just bytes) -> do
 						when (bytes /= prev) $
-							(meterUpdate progress) bytes
+							meterupdate bytes
 						feedprogress bytes buf' h
+
+	handlestderr h = unlessM (hIsEOF h) $ do
+		stderrHandler oh =<< hGetLine h
+		handlestderr h
+
+{- Runs a command, that may display one or more progress meters on
+ - either stdout or stderr, and prevents the meters from being displayed.
+ -
+ - To suppress progress output, while displaying other messages,
+ - filter out lines that contain \r (typically used to reset to the
+ - beginning of the line when updating a progress display).
+ -
+ - The other command output is handled as configured by the OutputHandler.
+ -}
+demeterCommand :: OutputHandler -> FilePath -> [CommandParam] -> IO Bool
+demeterCommand oh cmd params = demeterCommandEnv oh cmd params Nothing
+
+demeterCommandEnv :: OutputHandler -> FilePath -> [CommandParam] -> Maybe [(String, String)] -> IO Bool
+demeterCommandEnv oh cmd params environ = catchBoolIO $
+	withOEHandles createProcessSuccess p $ \(outh, errh) -> do
+		ep <- async $ avoidprogress errh $ stderrHandler oh
+		op <- async $ avoidprogress outh $ \l ->
+			unless (quietMode oh) $
+				putStrLn l
+		wait ep
+		wait op
+		return True
+  where
+	p = (proc cmd (toCommand params))
+		{ env = environ }
+
+	avoidprogress h emitter = unlessM (hIsEOF h) $ do
+		s <- hGetLine h
+		unless ('\r' `elem` s) $
+			emitter s
+		avoidprogress h emitter

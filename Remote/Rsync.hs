@@ -287,8 +287,8 @@ rsyncRemote direction o m params = do
 	case m of
 		Nothing -> liftIO $ rsync ps
 		Just meter -> do
-			h <- mkProgressHandler meter
-			liftIO $ rsyncProgress h ps
+			oh <- mkOutputHandler
+			liftIO $ rsyncProgress oh meter ps
   where
 	ps = opts ++ [Params "--progress"] ++ params
 	opts

@@ -106,8 +106,8 @@ rsyncHelper m params = do
 	a <- case m of
 		Nothing -> return $ rsync params
 		Just meter -> do
-			h <- mkProgressHandler meter
-			return $ rsyncProgress h params
+			oh <- mkOutputHandler
+			return $ rsyncProgress oh meter params
 	ifM (liftIO a)
 		( return True
 		, do
