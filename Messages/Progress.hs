@@ -49,19 +49,33 @@ showProgressDots :: Annex ()
 showProgressDots = handleMessage q $
 	flushed $ putStr "."
 
+{- Runs a command, that normally outputs progress to the specified handle.
+ -
+ - In quiet mode, normal output is suppressed. stderr is fed through the
+ - mkStderrEmitter. If the progress is output to stderr, then stderr is
+ - dropped, unless the command fails in which case the last line of output
+ - to stderr will be shown.
+ -}
+progressCommand :: Handle -> FilePath -> [CommandParam] -> Annex Bool
+progressCommand progresshandle cmd params = undefined
+
 mkProgressHandler :: MeterUpdate -> Annex ProgressHandler
 mkProgressHandler meter = ProgressHandler
-	<$> quietmode
+	<$> commandProgressDisabled
 	<*> (stderrhandler <$> mkStderrEmitter)
 	<*> pure meter
   where
-	quietmode = withOutputType $ \t -> return $ case t of
-		QuietOutput -> True
-		ProgressOutput -> True
-		_ -> False
 	stderrhandler emitter h = unlessM (hIsEOF h) $ do
 		void $ emitter =<< hGetLine h
 		stderrhandler emitter h
+
+{- Should commands that normally output progress messages have that
+ - output disabled? -}
+commandProgressDisabled :: Annex Bool
+commandProgressDisabled = withOutputType $ \t -> return $ case t of
+	QuietOutput -> True
+	ProgressOutput -> True
+	_ -> False
 
 {- Generates an IO action that can be used to emit stderr.
  -

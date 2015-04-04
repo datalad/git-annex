@@ -57,6 +57,7 @@ import Annex.Link
 import Annex.Content.Direct
 import Annex.ReplaceFile
 import Utility.LockFile
+import Messages.Progress
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
@@ -555,12 +556,17 @@ saveState nocommit = doSideAction $ do
 downloadUrl :: [Url.URLString] -> FilePath -> Annex Bool
 downloadUrl urls file = go =<< annexWebDownloadCommand <$> Annex.getGitConfig
   where
-	go Nothing = Url.withUrlOptions $ \uo ->
-		anyM (\u -> Url.download u file uo) urls
-	go (Just basecmd) = liftIO $ anyM (downloadcmd basecmd) urls
+	go Nothing = do
+		a <- ifM commandProgressDisabled
+			( return Url.downloadQuiet
+			, return Url.download
+			)
+		Url.withUrlOptions $ \uo ->
+			anyM (\u -> a u file uo) urls
+	go (Just basecmd) = anyM (downloadcmd basecmd) urls
 	downloadcmd basecmd url =
-		boolSystem "sh" [Param "-c", Param $ gencmd url basecmd]
-			<&&> doesFileExist file
+		progressCommand stderr "sh" [Param "-c", Param $ gencmd url basecmd]
+			<&&> liftIO (doesFileExist file)
 	gencmd url = massReplace
 		[ ("%file", shellEscape file)
 		, ("%url", shellEscape url)
