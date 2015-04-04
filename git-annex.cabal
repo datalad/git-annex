@@ -112,7 +112,8 @@ Executable git-annex
    data-default, case-insensitive, http-conduit, http-types,
    cryptohash (>= 0.10.0),
    esqueleto, persistent-sqlite, persistent, persistent-template,
-   monad-logger, resourcet
+   monad-logger, resourcet,
+   ascii-progress
   CC-Options: -Wall
   GHC-Options: -Wall
   Extensions: PackageImports
