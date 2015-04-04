@@ -49,16 +49,6 @@ showProgressDots :: Annex ()
 showProgressDots = handleMessage q $
 	flushed $ putStr "."
 
-{- Runs a command, the output of which is some sort of progress display.
- -
- - Normally, this is displayed to the user.
- -
- - In QuietOutput mode, both the stdout and stderr are discarded,
- - unless the command fails, in which case stderr will be displayed.
- -}
-progressOutput :: FilePath -> [CommandParam] -> Annex Bool
-progressOutput cmd ps = undefined
-
 mkProgressHandler :: MeterUpdate -> Annex ProgressHandler
 mkProgressHandler meter = ProgressHandler
 	<$> quietmode
