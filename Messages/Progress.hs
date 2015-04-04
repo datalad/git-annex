@@ -1,3 +1,10 @@
+{- git-annex progress output
+ -
+ - Copyright 2010-2015 Joey Hess <id@joeyh.name>
+ -
+ - Licensed under the GNU GPL version 3 or higher.
+ -}
+
 module Messages.Progress where
 
 import Common
@@ -59,6 +66,7 @@ mkProgressHandler meter = ProgressHandler
 	<*> pure meter
   where
 	quietmode = withOutputType $ \t -> return $ case t of
+		QuietOutput -> True
 		ProgressOutput -> True
 		_ -> False
 	stderrhandler emitter h = unlessM (hIsEOF h) $ do
