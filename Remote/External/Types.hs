@@ -70,7 +70,7 @@ type ExternalType = String
 data ExternalState = ExternalState
 	{ externalSend :: Handle
 	, externalReceive :: Handle
-	, externalPid :: ProcessHandle
+	, externalShutdown :: IO ()
 	, externalPrepared :: PrepareStatus
 	}
 

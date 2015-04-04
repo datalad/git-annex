@@ -542,7 +542,8 @@ onLocal r a = do
 	cache st = Annex.changeState $ \s -> s
 		{ Annex.remoteannexstate = M.insert (uuid r) st (Annex.remoteannexstate s) }
 	go st a' = do
-		(ret, st') <- liftIO $ Annex.run st $
+		curro <- Annex.getState Annex.output
+		(ret, st') <- liftIO $ Annex.run (st { Annex.output = curro }) $
 			catFileStop `after` a'
 		cache st'
 		return ret

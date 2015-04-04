@@ -17,6 +17,7 @@ import CmdLine.GitAnnexShell.Fields (Field, fieldName)
 import qualified CmdLine.GitAnnexShell.Fields as Fields
 import Types.Key
 import Remote.Helper.Messages
+import Messages.Progress
 import Utility.Metered
 import Utility.Rsync
 import Types.Remote
@@ -100,9 +101,14 @@ dropKey r key = onRemote r (boolSystem, return False) "dropkey"
 	[]
 
 rsyncHelper :: Maybe MeterUpdate -> [CommandParam] -> Annex Bool
-rsyncHelper callback params = do
+rsyncHelper m params = do
 	showOutput -- make way for progress bar
-	ifM (liftIO $ (maybe rsync rsyncProgress callback) params)
+	a <- case m of
+		Nothing -> return $ rsync params
+		Just meter -> do
+			oh <- mkOutputHandler
+			return $ rsyncProgress oh meter params
+	ifM (liftIO a)
 		( return True
 		, do
 			showLongNote "rsync failed -- run git annex again to resume file transfer"

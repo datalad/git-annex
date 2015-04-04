@@ -31,6 +31,7 @@ import Remote.Rsync.RsyncUrl
 import Crypto
 import Utility.Rsync
 import Utility.CopyFile
+import Messages.Progress
 import Utility.Metered
 import Utility.PID
 import Annex.Perms
@@ -281,11 +282,15 @@ showResumable a = ifM a
 	)
 
 rsyncRemote :: Direction -> RsyncOpts -> Maybe MeterUpdate -> [CommandParam] -> Annex Bool
-rsyncRemote direction o callback params = do
+rsyncRemote direction o m params = do
 	showOutput -- make way for progress bar
-	liftIO $ (maybe rsync rsyncProgress callback) $
-		opts ++ [Params "--progress"] ++ params
+	case m of
+		Nothing -> liftIO $ rsync ps
+		Just meter -> do
+			oh <- mkOutputHandler
+			liftIO $ rsyncProgress oh meter ps
   where
+	ps = opts ++ [Params "--progress"] ++ params
 	opts
 		| direction == Download = rsyncDownloadOptions o
 		| otherwise = rsyncUploadOptions o

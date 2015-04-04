@@ -17,6 +17,7 @@ import Config.Cost
 import Annex.UUID
 import Remote.Helper.Special
 import Utility.Env
+import Messages.Progress
 
 import qualified Data.Map as M
 
@@ -113,7 +114,7 @@ runHook hook action k f a = maybe (return False) run =<< lookupHook hook action
   where
 	run command = do
 		showOutput -- make way for hook output
-		ifM (liftIO $ boolSystemEnv "sh" [Param "-c", Param command] =<< hookEnv action k f)
+		ifM (progressCommandEnv "sh" [Param "-c", Param command] =<< liftIO (hookEnv action k f))
 			( a
 			, do
 				warning $ hook ++ " hook exited nonzero!"

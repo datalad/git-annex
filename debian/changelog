@@ -28,6 +28,9 @@ git-annex (5.20150328) UNRELEASED; urgency=medium
   * version: Add --raw
   * init: Improve fifo test to detect NFS systems that support fifos
     but not well enough for sshcaching.
+  * --quiet now suppresses progress displays from eg, rsync.
+    (The option already suppressed git-annex's own built-in progress
+    displays.)
 
  -- Joey Hess <id@joeyh.name>  Fri, 27 Mar 2015 16:04:43 -0400
 

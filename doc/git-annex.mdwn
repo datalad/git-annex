@@ -655,8 +655,7 @@ may not be explicitly listed on their individual man pages.
 
 * `--quiet`
 
-  Avoid the default verbose display of what is done; only show errors
-  and progress displays.
+  Avoid the default verbose display of what is done; only show errors.
 
 * `--verbose`
 

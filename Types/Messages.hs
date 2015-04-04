@@ -7,7 +7,9 @@
 
 module Types.Messages where
 
-data OutputType = NormalOutput | QuietOutput | JSONOutput
+import Data.Default
+
+data OutputType = NormalOutput | QuietOutput | ProgressOutput | JSONOutput
 
 data SideActionBlock = NoBlock | StartBlock | InBlock
 	deriving (Eq)
@@ -17,5 +19,6 @@ data MessageState = MessageState
 	, sideActionBlock :: SideActionBlock
 	}
 
-defaultMessageState :: MessageState
-defaultMessageState = MessageState NormalOutput NoBlock
+instance Default MessageState
+  where
+	def = MessageState NormalOutput NoBlock

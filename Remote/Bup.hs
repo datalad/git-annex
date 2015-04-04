@@ -121,18 +121,22 @@ bup command buprepo params = do
 	showOutput -- make way for bup output
 	liftIO $ boolSystem "bup" $ bupParams command buprepo params
 
-bupSplitParams :: Remote -> BupRepo -> Key -> [CommandParam] -> Annex [CommandParam]
-bupSplitParams r buprepo k src = do
+bupSplitParams :: Remote -> BupRepo -> Key -> [CommandParam] -> [CommandParam]
+bupSplitParams r buprepo k src =
 	let os = map Param $ remoteAnnexBupSplitOptions $ gitconfig r
-	showOutput -- make way for bup output
-	return $ bupParams "split" buprepo 
+	in bupParams "split" buprepo 
 		(os ++ [Param "-q", Param "-n", Param (bupRef k)] ++ src)
 
 store :: Remote -> BupRepo -> Storer
 store r buprepo = byteStorer $ \k b p -> do
-	params <- bupSplitParams r buprepo k []
+	let params = bupSplitParams r buprepo k []
+	showOutput -- make way for bup output
 	let cmd = proc "bup" (toCommand params)
-	liftIO $ withHandle StdinHandle createProcessSuccess cmd $ \h -> do
+	runner <- ifM commandProgressDisabled
+		( return feedWithQuietOutput
+		, return (withHandle StdinHandle)
+		)
+	liftIO $ runner createProcessSuccess cmd $ \h -> do
 		meteredWrite p h b
 		return True
 

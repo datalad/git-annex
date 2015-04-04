@@ -42,6 +42,7 @@ import Remote.Helper.Chunked as X
 import Remote.Helper.Encryptable as X
 import Remote.Helper.Messages
 import Annex.Content
+import Messages.Progress
 import qualified Git
 import qualified Git.Command
 import qualified Git.Construct

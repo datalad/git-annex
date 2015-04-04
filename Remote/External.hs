@@ -17,6 +17,7 @@ import qualified Git
 import Config
 import Remote.Helper.Special
 import Utility.Metered
+import Messages.Progress
 import Logs.Transfer
 import Logs.PreferredContent.Raw
 import Logs.RemoteState
@@ -26,6 +27,7 @@ import Annex.UUID
 import Creds
 
 import Control.Concurrent.STM
+import Control.Concurrent.Async
 import System.Log.Logger (debugM)
 import qualified Data.Map as M
 
@@ -323,21 +325,28 @@ fromExternal lck external extractor a =
 {- Starts an external remote process running, but does not handle checking
  - VERSION, etc. -}
 startExternal :: ExternalType -> Annex ExternalState
-startExternal externaltype = liftIO $ do
-	(Just hin, Just hout, _, pid) <- createProcess $ (proc cmd [])
-		{ std_in = CreatePipe
-		, std_out = CreatePipe
-		, std_err = Inherit
-		}
-	fileEncoding hin
-	fileEncoding hout
-	checkearlytermination =<< getProcessExitCode pid
-	return $ ExternalState
-		{ externalSend = hin
-		, externalReceive = hout
-		, externalPid = pid
-		, externalPrepared = Unprepared
-		}
+startExternal externaltype = do
+	errrelayer <- mkStderrRelayer
+	liftIO $ do
+		(Just hin, Just hout, Just herr, pid) <- createProcess $
+			(proc cmd [])
+				{ std_in = CreatePipe
+				, std_out = CreatePipe
+				, std_err = CreatePipe
+				}
+		fileEncoding hin
+		fileEncoding hout
+		fileEncoding herr
+		stderrelay <- async $ errrelayer herr
+		checkearlytermination =<< getProcessExitCode pid
+		return $ ExternalState
+			{ externalSend = hin
+			, externalReceive = hout
+			, externalShutdown = do
+				cancel stderrelay
+				void $ waitForProcess pid
+			, externalPrepared = Unprepared
+			}
   where
 	cmd = externalRemoteProgram externaltype
 
@@ -357,7 +366,7 @@ stopExternal external = liftIO $ stop =<< atomically (tryReadTMVar v)
 		void $ atomically $ tryTakeTMVar v
 		hClose $ externalSend st
 		hClose $ externalReceive st
-		void $ waitForProcess $ externalPid st
+		externalShutdown st
 	v = externalState external
 
 externalRemoteProgram :: ExternalType -> String

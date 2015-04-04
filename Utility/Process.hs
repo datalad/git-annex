@@ -25,14 +25,16 @@ module Utility.Process (
 	processTranscript,
 	processTranscript',
 	withHandle,
-	withBothHandles,
+	withIOHandles,
+	withOEHandles,
 	withQuietOutput,
+	feedWithQuietOutput,
 	createProcess,
 	startInteractiveProcess,
 	stdinHandle,
 	stdoutHandle,
 	stderrHandle,
-	bothHandles,
+	ioHandles,
 	processHandle,
 	devNull,
 ) where
@@ -255,17 +257,31 @@ withHandle h creator p a = creator p' $ a . select
 			(stderrHandle, base { std_err = CreatePipe })
 
 {- Like withHandle, but passes (stdin, stdout) handles to the action. -}
-withBothHandles
+withIOHandles
 	:: CreateProcessRunner
 	-> CreateProcess
 	-> ((Handle, Handle) -> IO a)
 	-> IO a
-withBothHandles creator p a = creator p' $ a . bothHandles
+withIOHandles creator p a = creator p' $ a . ioHandles
   where
 	p' = p
 		{ std_in = CreatePipe
 		, std_out = CreatePipe
 		, std_err = Inherit
+		}
+
+{- Like withHandle, but passes (stdout, stderr) handles to the action. -}
+withOEHandles
+	:: CreateProcessRunner
+	-> CreateProcess
+	-> ((Handle, Handle) -> IO a)
+	-> IO a
+withOEHandles creator p a = creator p' $ a . oeHandles
+  where
+	p' = p
+		{ std_in = Inherit
+		, std_out = CreatePipe
+		, std_err = CreatePipe
 		}
 
 {- Forces the CreateProcessRunner to run quietly;
@@ -280,6 +296,21 @@ withQuietOutput creator p = withFile devNull WriteMode $ \nullh -> do
 		, std_err = UseHandle nullh
 		}
 	creator p' $ const $ return ()
+
+{- Stdout and stderr are discarded, while the process is fed stdin
+ - from the handle. -}
+feedWithQuietOutput
+	:: CreateProcessRunner
+	-> CreateProcess
+	-> (Handle -> IO a)
+	-> IO a
+feedWithQuietOutput creator p a = withFile devNull WriteMode $ \nullh -> do
+	let p' = p
+		{ std_in = CreatePipe
+		, std_out = UseHandle nullh
+		, std_err = UseHandle nullh
+		}
+	creator p' $ a . stdinHandle
 
 devNull :: FilePath
 #ifndef mingw32_HOST_OS
@@ -303,9 +334,12 @@ stdoutHandle _ = error "expected stdoutHandle"
 stderrHandle :: HandleExtractor
 stderrHandle (_, _, Just h, _) = h
 stderrHandle _ = error "expected stderrHandle"
-bothHandles :: (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> (Handle, Handle)
-bothHandles (Just hin, Just hout, _, _) = (hin, hout)
-bothHandles _ = error "expected bothHandles"
+ioHandles :: (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> (Handle, Handle)
+ioHandles (Just hin, Just hout, _, _) = (hin, hout)
+ioHandles _ = error "expected ioHandles"
+oeHandles :: (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> (Handle, Handle)
+oeHandles (_, Just hout, Just herr, _) = (hout, herr)
+oeHandles _ = error "expected oeHandles"
 
 processHandle :: (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> ProcessHandle
 processHandle (_, _, _, pid) = pid
