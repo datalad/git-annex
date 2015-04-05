@@ -198,6 +198,7 @@ remote_fast_stats r = map (\s -> s r)
 	[ remote_name
 	, remote_description
 	, remote_uuid
+	, remote_trust
 	, remote_cost
 	, remote_type
 	]
@@ -265,6 +266,10 @@ remote_description r = simpleStat "description" $ lift $
 remote_uuid :: Remote -> Stat
 remote_uuid r = simpleStat "uuid" $ pure $
 	fromUUID $ Remote.uuid r
+
+remote_trust :: Remote -> Stat
+remote_trust r = simpleStat "trust" $ lift $
+	showTrustLevel <$> lookupTrust (Remote.uuid r)
 
 remote_cost :: Remote -> Stat
 remote_cost r = simpleStat "cost" $ pure $
