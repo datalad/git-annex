@@ -21,7 +21,7 @@ import Data.Time.Clock.POSIX
 import qualified Data.Map as M
 
 cmd :: [Command]
-cmd = [withOptions [activityOption] $ command "expire" paramExpire seek
+cmd = [withOptions [activityOption, noActOption] $ command "expire" paramExpire seek
 	SectionMaintenance "expire inactive repositories"]
 
 paramExpire :: String
@@ -30,27 +30,33 @@ paramExpire = (paramRepeating $ paramOptional paramRemote ++ ":" ++ paramTime)
 activityOption :: Option
 activityOption = fieldOption [] "activity" "Name" "specify activity"
 
+noActOption :: Option
+noActOption = flagOption [] "no-act" "don't really do anything"
+
 seek :: CommandSeek
 seek ps = do
 	expire <- parseExpire ps
 	wantact <- getOptionField activityOption (pure . parseActivity)
+	noact <- getOptionFlag noActOption
 	actlog <- lastActivities wantact
 	u <- getUUID
 	us <- filter (/= u) . M.keys <$> uuidMap
 	descs <- uuidMap
-	seekActions $ pure $ map (start expire actlog descs) us
+	seekActions $ pure $ map (start expire noact actlog descs) us
 
-start :: Expire -> Log Activity -> M.Map UUID String -> UUID -> CommandStart
-start (Expire expire) actlog descs u =
+start :: Expire -> Bool -> Log Activity -> M.Map UUID String -> UUID -> CommandStart
+start (Expire expire) noact actlog descs u =
 	case lastact of
 		Just ent | notexpired ent -> checktrust (== DeadTrusted) $ do
 			showStart "unexpire" desc
 			showNote =<< whenactive
-			trustSet u SemiTrusted
+			unless noact $
+				trustSet u SemiTrusted
 		_ -> checktrust (/= DeadTrusted) $ do
 			showStart "expire" desc
 			showNote =<< whenactive
-			trustSet u DeadTrusted
+			unless noact $
+				trustSet u DeadTrusted
   where
 	lastact = changed <$> M.lookup u actlog
 	whenactive = case lastact of

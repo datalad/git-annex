@@ -30,6 +30,11 @@ expired.
 
 # OPTIONS
 
+* `--no-act`
+
+  Print out what would be done, but not not actually expite or unexpire
+  any repositories.
+
 * `--activity=Name`
 
   Specify the activity that a repository must have performed to avoid being
