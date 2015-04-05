@@ -34,3 +34,5 @@ Hmm, --expire updates all the location logs when it thinks a repo has gone
 missing. Why not just mark it dead? Again, this would save a lot of space!
 It would complicate recovery if a repo had been offline and came back; it
 would need to mark itself as not dead any longer.
+
+> [[done]] --[[Joey]]
