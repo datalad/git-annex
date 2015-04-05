@@ -1,4 +1,4 @@
-git-annex (5.20150328) UNRELEASED; urgency=medium
+git-annex (5.20150405) UNRELEASED; urgency=medium
 
   * Prevent git-ls-files from double-expanding wildcards when an
     unexpanded wildcard is passed to a git-annex command like add or find.
@@ -20,8 +20,8 @@ git-annex (5.20150328) UNRELEASED; urgency=medium
     multiple files.
   * import: --deduplicate and --cleanduplicates now output the keys
     corresponding to duplicated files they process.
-  * fsck: Added --distributed and --expire options,
-    for distributed fsck.
+  * expire: New command, for expiring inactive repositories.
+  * fsck: Record fsck activity for use by expire command.
   * Fix truncation of parameters that could occur when using xargs git-annex.
   * Significantly sped up processing of large numbers of directories
     passed to a single git-annex command.

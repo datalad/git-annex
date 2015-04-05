@@ -45,6 +45,7 @@ import qualified Command.Describe
 import qualified Command.InitRemote
 import qualified Command.EnableRemote
 import qualified Command.Fsck
+import qualified Command.Expire
 import qualified Command.Repair
 import qualified Command.Unused
 import qualified Command.DropUnused
@@ -169,6 +170,7 @@ cmds = concat
 	, Command.VCycle.cmd
 	, Command.Fix.cmd
 	, Command.Fsck.cmd
+	, Command.Expire.cmd
 	, Command.Repair.cmd
 	, Command.Unused.cmd
 	, Command.DropUnused.cmd

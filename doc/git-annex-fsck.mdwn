@@ -53,44 +53,6 @@ With parameters, only the specified files are checked.
 
 	git annex fsck --incremental-schedule 30d --time-limit 5h
 
-* `--distributed`
-
-  Normally, fsck only fixes the git-annex location logs when an inconsistecy
-  is detected. In distributed mode, each file that is checked will result
-  in a location log update noting the time that it was present.
-
-  This is useful in situations where repositories cannot be trusted to
-  continue to exist. By running a periodic distributed fsck, those
-  repositories can verify that they still exist and that the information
-  about their contents is still accurate.
-
-  This is not the default mode, because each distributed fsck increases
-  the size of the git-annex branch. While it takes care to log identical
-  location tracking lines for all keys, which will delta-compress well,
-  there is still overhead in committing the changes. If this causes
-  the git-annex branch to grow too big, it can be pruned using
-  [[git-annex-forget]](1)
-
-* `--expire="[repository:]time`..."
-
-  This option makes the fsck check for location logs of the specified
-  repository that have not been updated by a distributed fsck within the
-  specified time period. Such stale location logs are then thrown out, so
-  git-annex will no longer think that a repository contains data, if it is
-  not participating in distributed fscking.
-  
-  The repository can be specified using the name of a remote,
-  or the description or uuid of the repository. If a time is specified
-  without a repository, it is used as the default value for all
-  repositories. Note that location logs for the current repository are
-  never expired, since they can be verified directly.
-
-  The time is in the form "60d" or "1y". A time of "never" will disable
-  expiration.
-
-  Note that a remote can always run `fsck` later on to re-update the
-  location log if it was expired in error.
-
 * `--numcopies=N`
 
   Override the normally configured number of copies. 

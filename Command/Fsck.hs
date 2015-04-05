@@ -22,8 +22,8 @@ import Annex.Direct
 import Annex.Perms
 import Annex.Link
 import Logs.Location
-import Logs.Presence
 import Logs.Trust
+import Logs.Activity
 import Config.NumCopies
 import Annex.UUID
 import Utility.DataUnits
@@ -39,7 +39,6 @@ import Data.Time.Clock.POSIX
 import Data.Time
 import System.Posix.Types (EpochTime)
 import System.Locale
-import qualified Data.Map as M
 
 cmd :: [Command]
 cmd = [withOptions fsckOptions $ command "fsck" paramPaths seek
@@ -58,22 +57,12 @@ incrementalScheduleOption :: Option
 incrementalScheduleOption = fieldOption [] "incremental-schedule" paramTime
 	"schedule incremental fscking"
 
-distributedOption :: Option
-distributedOption = flagOption [] "distributed" "distributed fsck mode"
-
-expireOption :: Option
-expireOption = fieldOption [] "expire"
-	(paramRepeating $ paramOptional paramRemote ++ ":" ++ paramTime)
-	"distributed expire mode"
-
 fsckOptions :: [Option]
 fsckOptions = 
 	[ fsckFromOption
 	, startIncrementalOption
 	, moreIncrementalOption
 	, incrementalScheduleOption
-	, distributedOption
-	, expireOption
 	] ++ keyOptions ++ annexedMatchingOptions
 
 seek :: CommandSeek
@@ -81,28 +70,28 @@ seek ps = do
 	from <- getOptionField fsckFromOption Remote.byNameWithUUID
 	u <- maybe getUUID (pure . Remote.uuid) from
 	i <- getIncremental u
-	d <- getDistributed
 	withKeyOptions False
-		(\k -> startKey i d k =<< getNumCopies)
-		(withFilesInGit $ whenAnnexed $ start from i d)
+		(\k -> startKey i k =<< getNumCopies)
+		(withFilesInGit $ whenAnnexed $ start from i)
 		ps
 	withFsckDb i FsckDb.closeDb
+	recordActivity Fsck u
 
-start :: Maybe Remote -> Incremental -> Distributed -> FilePath -> Key -> CommandStart
-start from inc dist file key = do
+start :: Maybe Remote -> Incremental -> FilePath -> Key -> CommandStart
+start from inc file key = do
 	v <- Backend.getBackend file key
 	case v of
 		Nothing -> stop
 		Just backend -> do
 			numcopies <- getFileNumCopies file
 			case from of
-				Nothing -> go $ perform dist key file backend numcopies
-				Just r -> go $ performRemote dist key file backend numcopies r
+				Nothing -> go $ perform key file backend numcopies
+				Just r -> go $ performRemote key file backend numcopies r
   where
 	go = runFsck inc file key
 
-perform :: Distributed -> Key -> FilePath -> Backend -> NumCopies -> Annex Bool
-perform dist key file backend numcopies = check
+perform :: Key -> FilePath -> Backend -> NumCopies -> Annex Bool
+perform key file backend numcopies = check
 	-- order matters
 	[ fixLink key file
 	, verifyLocationLog key file
@@ -110,14 +99,13 @@ perform dist key file backend numcopies = check
 	, verifyDirectMode key file
 	, checkKeySize key
 	, checkBackend backend key (Just file)
-	, checkDistributed dist key Nothing
 	, checkKeyNumCopies key file numcopies
 	]
 
 {- To fsck a remote, the content is retrieved to a tmp file,
  - and checked locally. -}
-performRemote :: Distributed -> Key -> FilePath -> Backend -> NumCopies -> Remote -> Annex Bool
-performRemote dist key file backend numcopies remote =
+performRemote :: Key -> FilePath -> Backend -> NumCopies -> Remote -> Annex Bool
+performRemote key file backend numcopies remote =
 	dispatch =<< Remote.hasKey remote key
   where
 	dispatch (Left err) = do
@@ -136,7 +124,6 @@ performRemote dist key file backend numcopies remote =
 		[ verifyLocationLogRemote key file remote present
 		, checkKeySizeRemote key remote localcopy
 		, checkBackendRemote backend key remote localcopy
-		, checkDistributed dist key (Just $ Remote.uuid remote)
 		, checkKeyNumCopies key file numcopies
 		]
 	withtmp a = do
@@ -157,19 +144,18 @@ performRemote dist key file backend numcopies remote =
 			)
 	dummymeter _ = noop
 
-startKey :: Incremental -> Distributed -> Key -> NumCopies -> CommandStart
-startKey inc dist key numcopies =
+startKey :: Incremental -> Key -> NumCopies -> CommandStart
+startKey inc key numcopies =
 	case Backend.maybeLookupBackendName (Types.Key.keyBackendName key) of
 		Nothing -> stop
 		Just backend -> runFsck inc (key2file key) key $
-			performKey dist key backend numcopies
+			performKey key backend numcopies
 
-performKey :: Distributed -> Key -> Backend -> NumCopies -> Annex Bool
-performKey dist key backend numcopies = check
+performKey :: Key -> Backend -> NumCopies -> Annex Bool
+performKey key backend numcopies = check
 	[ verifyLocationLog key (key2file key)
 	, checkKeySize key
 	, checkBackend backend key Nothing
-	, checkDistributed dist key Nothing
 	, checkKeyNumCopies key (key2file key) numcopies
 	]
 
@@ -513,69 +499,3 @@ getIncremental u = do
 					when (now - realToFrac started >= durationToPOSIXTime delta) $
 						resetStartTime u
 		return True
-
-data Distributed
-	= NonDistributed
-	| Distributed POSIXTime
-	| DistributedExpire POSIXTime (M.Map (Maybe UUID) (Maybe POSIXTime))
-	deriving (Show)
-
-getDistributed :: Annex Distributed
-getDistributed = go =<< getOptionField expireOption parseexpire
-  where
-	go (Just m) = DistributedExpire <$> liftIO getPOSIXTime <*> pure m
-	go Nothing = ifM (getOptionFlag distributedOption)
-		( Distributed <$> liftIO getPOSIXTime
-		, return NonDistributed
-		)
-
-	parseexpire Nothing = return Nothing
-	parseexpire (Just s) = do
-		now <- liftIO getPOSIXTime
-		Just . M.fromList <$> mapM (parseexpire' now) (words s)
-	parseexpire' now s = case separate (== ':') s of
-		(t, []) -> return (Nothing, parsetime now t)
-		(n, t) -> do
-			r <- Remote.nameToUUID n
-			return (Just r, parsetime now t)
-	parsetime _ "never" = Nothing
-	parsetime now s = case parseDuration s of
-		Nothing -> error $ "bad expire time: " ++ s
-		Just d -> Just (now - durationToPOSIXTime d)
-
-checkDistributed :: Distributed -> Key -> Maybe UUID -> Annex Bool
-checkDistributed d k mu = do
-	go d
-	return True
-  where
-	go NonDistributed = noop
-
-	-- This is called after fsck has checked the key's content, so
-	-- if the key is present in the annex now, we just need to update
-	-- the location log with the timestamp of the start of the fsck.
-	--
-	-- Note that reusing this timestamp means that the same log line
-	-- is generated for each key, which keeps the size increase
-	-- of the git-annex branch down.
-	go (Distributed ts) = whenM (inAnnex k) $ do
-		u <- maybe getUUID return mu
-		logChange' (logThen ts) k u InfoPresent
-	
-	-- Get the location log for the key, and expire all entries
-	-- that are older than their uuid's listed expiration date.
-	-- (Except for the local repository.)
-	go (DistributedExpire ts m) = do
-		ls <- locationLog k
-		hereu <- getUUID
-		forM_ ls $ \l -> do
-			let u = toUUID (info l)
-			unless (u == hereu) $
-				case lookupexpire u of
-					Just (Just expiretime)
-						| date l < expiretime ->
-							logChange' (logThen ts) k u InfoMissing
-					_ -> noop
-	  where
-		lookupexpire u = headMaybe $ catMaybes $ 
-			map (`M.lookup` m) [Just u, Nothing]
-

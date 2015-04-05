@@ -16,7 +16,6 @@ module Logs.Presence (
 	addLog,
 	readLog,
 	logNow,
-	logThen,
 	currentLog,
 	currentLogInfo,
 	historicalLogInfo,
@@ -43,9 +42,6 @@ logNow :: LogStatus -> String -> Annex LogLine
 logNow s i = do
 	now <- liftIO getPOSIXTime
 	return $ LogLine now s i
-
-logThen :: POSIXTime -> LogStatus -> String -> Annex LogLine
-logThen t s i = return $ LogLine t s i
 
 {- Reads a log and returns only the info that is still in effect. -}
 currentLogInfo :: FilePath -> Annex [String]

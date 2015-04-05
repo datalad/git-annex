@@ -17,7 +17,6 @@ module Logs.Location (
 	LogStatus(..),
 	logStatus,
 	logChange,
-	logChange',
 	loggedLocations,
 	loggedLocationsHistorical,
 	locationLog,

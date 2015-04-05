@@ -1,0 +1,61 @@
+# NAME
+
+git-annex expire - expire inactive repositories
+
+# SYNOPSIS
+
+git annex expire `[repository:]time ...`
+
+# DESCRIPTION
+
+This command expires repositories that have not performed some activity
+within a specified time period. A repository is expired by marking it as
+dead. De-expiration is also done; if a dead repository performed some
+activity recently, it is marked as semitrusted again.
+
+This can be useful when it's not possible to keep track of the state
+of repositories manually. For example, a distributed network of
+repositories where nobody can directly access all the repositories to
+check their status.
+
+The repository can be specified using the name of a remote,
+or the description or uuid of the repository. 
+
+The time is in the form "60d" or "1y". A time of "never" will disable
+expiration.
+
+If a time is specified without a repository, it is used as the default
+value for all repositories. Note that the current repository is never
+expired.
+
+# OPTIONS
+
+* `--activity=Name`
+
+  Specify the activity that a repository must have performed to avoid being
+  expired. The default is any activity.
+
+  Currently, the only activity that can be performed to avoid expiration
+  is `git annex fsck`. Note that fscking a remote updates the
+  expiration of the remote repository, not the local repository.
+
+  The first version of git-annex that recorded fsck activity was
+  5.20150405.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-fsck]](1)
+
+[[git-annex-schedule]](1)
+
+[[git-annex-dead]](1)
+
+[[git-annex-semitrust]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.
