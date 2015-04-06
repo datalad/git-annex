@@ -90,3 +90,30 @@ server side: 5.20150406-g2a9fbec
 """]]
 
 Update: well that's confusing. it turns out the `unknown command` bit still happens when i use `/bin/sh` as a shell for the gitannex user. i really don't understand what's going on here... :/
+
+After running with `--debug`, i noticed this was happening on the client with any git-annex remote, including one running the same version (`5.20141125`), and it happens after `git-annex` calls `git push` or `git fetch`:
+
+<pre>
+anarcat@desktop008:isuma-annex-test$ git annex --debug sync test3
+[2015-04-06 16:52:36 EDT] read: git ["--git-dir=/srv/scratch/anarcat/isuma-annex-test/.git","--work-tree=/srv/scratch/anarcat/isuma-annex-test","show-ref","git-annex"]
+[2015-04-06 16:52:36 EDT] read: git ["--git-dir=/srv/scratch/anarcat/isuma-annex-test/.git","--work-tree=/srv/scratch/anarcat/isuma-annex-test","show-ref","--hash","refs/heads/git-annex"]
+[2015-04-06 16:52:36 EDT] read: git ["--git-dir=/srv/scratch/anarcat/isuma-annex-test/.git","--work-tree=/srv/scratch/anarcat/isuma-annex-test","log","refs/heads/git-annex..41069ddc0e22abc7ef0dca2aa31b20af9cee6116","-n1","--pretty=%H"]
+[2015-04-06 16:52:36 EDT] read: git ["--git-dir=/srv/scratch/anarcat/isuma-annex-test/.git","--work-tree=/srv/scratch/anarcat/isuma-annex-test","log","refs/heads/git-annex..0ad850f59bdbe2448fa75e415ebfa5cf19cbebcd","-n1","--pretty=%H"]
+[2015-04-06 16:52:36 EDT] read: git ["--git-dir=/srv/scratch/anarcat/isuma-annex-test/.git","--work-tree=/srv/scratch/anarcat/isuma-annex-test","log","refs/heads/git-annex..3476b0db2960fa9c9b00350e692e23dd30cd18c7","-n1","--pretty=%H"]
+[2015-04-06 16:52:36 EDT] read: git ["--git-dir=/srv/scratch/anarcat/isuma-annex-test/.git","--work-tree=/srv/scratch/anarcat/isuma-annex-test","log","refs/heads/git-annex..d5cd95f472e00c51a2d35dedabf85f47cf3ce7fa","-n1","--pretty=%H"]
+[2015-04-06 16:52:36 EDT] read: git ["--git-dir=/srv/scratch/anarcat/isuma-annex-test/.git","--work-tree=/srv/scratch/anarcat/isuma-annex-test","log","refs/heads/git-annex..778ba43445db7deb1bc6543e07145c13d3c3e5e2","-n1","--pretty=%H"]
+[2015-04-06 16:52:36 EDT] chat: git ["--git-dir=/srv/scratch/anarcat/isuma-annex-test/.git","--work-tree=/srv/scratch/anarcat/isuma-annex-test","cat-file","--batch"]
+[2015-04-06 16:52:36 EDT] read: git ["config","--null","--list"]
+commit  [2015-04-06 16:52:36 EDT] read: git ["--git-dir=/srv/scratch/anarcat/isuma-annex-test/.git","--work-tree=/srv/scratch/anarcat/isuma-annex-test","commit","-a","-m","git-annex automatic sync"]
+ok
+[2015-04-06 16:52:36 EDT] read: git ["--git-dir=/srv/scratch/anarcat/isuma-annex-test/.git","--work-tree=/srv/scratch/anarcat/isuma-annex-test","symbolic-ref","HEAD"]
+[2015-04-06 16:52:36 EDT] read: git ["--git-dir=/srv/scratch/anarcat/isuma-annex-test/.git","--work-tree=/srv/scratch/anarcat/isuma-annex-test","show-ref","refs/heads/master"]
+[2015-04-06 16:52:36 EDT] call: git ["--git-dir=/srv/scratch/anarcat/isuma-annex-test/.git","--work-tree=/srv/scratch/anarcat/isuma-annex-test","show-ref","--verify","-q","refs/heads/synced/master"]
+[2015-04-06 16:52:36 EDT] read: git ["--git-dir=/srv/scratch/anarcat/isuma-annex-test/.git","--work-tree=/srv/scratch/anarcat/isuma-annex-test","log","refs/heads/master..refs/heads/synced/master","-n1","--pretty=%H"]
+pull test3
+[2015-04-06 16:52:36 EDT] read: ssh ["-O","stop","-S","anarc.at","-o","ControlMaster=auto","-o","ControlPersist=yes","localhost"]
+[2015-04-06 16:52:36 EDT] call: git ["--git-dir=/srv/scratch/anarcat/isuma-annex-test/.git","--work-tree=/srv/scratch/anarcat/isuma-annex-test","fetch","test3"]
+git-annex: unknown command anarc.at
+</pre>
+
+Turning off `sshcaching` seems to work around the issue. Note that this happens even if the git repo is moved to a non-NFS filesystem, so I have the feeling it's not directly related to [this bugfix](http://source.git-annex.branchable.com/?p=source.git;a=commit;h=bd110516c09d318b298804efc4ee888270f3d601).
