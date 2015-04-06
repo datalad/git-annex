@@ -88,3 +88,5 @@ server side: 5.20150406-g2a9fbec
 
 # End of transcript or log.
 """]]
+
+Update: well that's confusing. it turns out the `unknown command` bit still happens when i use `/bin/sh` as a shell for the gitannex user. i really don't understand what's going on here... :/
