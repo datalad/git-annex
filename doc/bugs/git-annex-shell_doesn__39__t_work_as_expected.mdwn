@@ -1,0 +1,90 @@
+### Please describe the problem.
+
+[[git-annex-shell]] seems to be designed to be put as some users' shells so that git-annex can be safely used from `sshd`.
+
+### What steps will reproduce the problem?
+
+<pre>
+root@cs:/srv/gitannex-test# grep gitannex /etc/passwd
+gitannex:x:999:999:Git annex sandbox:/var/lib/gitannex:/usr/local/bin/git-annex-shell
+</pre>
+
+`/usr/local/bin/git-annex-shell` is a symlink to the standalone git-annex installed in `/opt`.
+
+<pre>
+anarcat@desktop008:isuma-annex-test$ git remote -v
+origin  gitannex@example.com:/srv/gitannex-test (fetch)
+anarcat@desktop008:isuma-annex-test$ git annex sync
+muxserver_listen: link mux listener .git/annex/ssh/gitannex@example.com.bFOddoa2pVKZGHQ2 => .git/annex/ssh/gitannex@example.com: Operation not permitted
+
+  Remote origin does not have git-annex installed; setting annex-ignore
+
+  This could be a problem with the git-annex installation on the remote. Please make sure that git-annex-shell is available in PATH when you ssh into the remote. Once you have fixed the git-annex installation, run: git config remote.origin.annex-ignore false
+commit  ok
+pull origin
+git-annex: unknown command gitannex@cs.isuma.tv
+
+Usage: git-annex command [option ...]
+
+Commonly used commands:
+
+add             [PATH ...]         add files to annex
+[...]
+
+Testing commands:
+
+fuzztest                           generates fuzz test files
+test                               run built-in test suite
+testremote      REMOTE             test transfers to/from a remote
+
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+failed
+push origin
+git-annex: unknown command gitannex@cs.isuma.tv
+
+Usage: git-annex command [option ...]
+
+Commonly used commands:
+
+add             [PATH ...]         add files to annex
+[...]
+Testing commands:
+
+fuzztest                           generates fuzz test files
+test                               run built-in test suite
+testremote      REMOTE             test transfers to/from a remote
+
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+  Pushing to origin failed.
+
+  (non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote's git config)
+failed
+git-annex: sync: 2 failed
+</pre>
+
+Note that moving the repository out of NFS doesn't fix the problem, i still get `git-annex: unknown command gitannex@cs.isuma.tv`.
+
+How am i supposed to use `git-annex-shell`?
+
+### What version of git-annex are you using? On what operating system?
+
+client side: 5.20141125
+
+server side: 5.20150406-g2a9fbec
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
