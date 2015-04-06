@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlZF5AC-FSxwkiay5ZgEYZwUzN69Wa6PTE"
+ nickname="Sunke"
+ subject="filename from metadata?"
+ date="2015-04-06T18:00:25Z"
+ content="""
+Hi everbody,
+is it possible to use a metadata field for the filename in a
+metadata driven view?
+
+I am thinking of the following use case:
+
+git annex metadata --set artist=Led\ Zeppelin --set album=Led\ Zeppelin\ IV --set title=04\ Stairway\ to\ heaven  some/weird/filename.mp3
+git annex view --filename-from title artist=* album=*
+
+result:
+Led Zeppelin/Led Zeppelin IV/04 Stairway to heaven.mp3
+"""]]
