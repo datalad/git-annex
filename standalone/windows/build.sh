@@ -44,7 +44,6 @@ cabal install --only-dependencies || true
 # Detect when the last build was an incremental build and failed, 
 # and try a full build. Done this way because this shell seems a bit
 # broken.
-cabal clean
 if [ -e last-incremental-failed ]; then
 	cabal clean || true
 	# windows breakage..
