@@ -1,8 +1,3 @@
-[[!comment format=mdwn
- username="mac"
- subject="importfeeds with file based rss contents"
- date="2015-04-04T20:42:27Z"
- content="""
 Hi,
 
 I've a script which generates .rss files which reference local files with the file:// scheme. I can import the file:// urls with git annex addurl, but it fails with git annex importfeed:
@@ -31,5 +26,3 @@ Is it possible to use local files in rss format with items which reference local
 
 Cheers,
 Marco
-
-"""]]
