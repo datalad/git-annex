@@ -124,8 +124,8 @@ makeinfos updated version = do
 				signFile f
 	void $ inRepo $ runBool 
 		[ Param "commit"
-		, Param "-m"
 		, Param "-S89C809CB" -- git-annex distribution signing key
+		, Param "-m"
 		, Param $ "updated info files for git-annex " ++ version
 		]
 	void $ inRepo $ runBool
