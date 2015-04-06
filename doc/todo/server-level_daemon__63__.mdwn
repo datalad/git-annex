@@ -184,3 +184,5 @@ Now this is not without problems:
  1. it assumes a gitannex user is created outside of the script
  2. it assumes a gitannex repository is created outside of the script and specified in the `/etc/default/gitannex` file (or added to the autostart file)
  3. it is Debian-specific (a proper init script would be POSIX only and/or a `.service` file)
+
+Maybe using [metainit](https://wiki.debian.org/MetaInit) would be a good idea here? --[[anarcat]]
