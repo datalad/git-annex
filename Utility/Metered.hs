@@ -165,10 +165,10 @@ type ProgressParser = String -> (Maybe BytesProcessed, String)
  -}
 commandMeter :: ProgressParser -> OutputHandler -> MeterUpdate -> FilePath -> [CommandParam] -> IO Bool
 commandMeter progressparser oh meterupdate cmd params = catchBoolIO $
-	withOEHandles createProcessSuccess p $ \(outh, errh) -> do
-		ep <- async $ handlestderr errh
+	withHandle StdoutHandle createProcessSuccess p $ \outh -> do
+		-- ep <- async $ handlestderr errh
 		op <- async $ feedprogress zeroBytesProcessed [] outh
-		wait ep
+		-- wait ep
 		wait op
   where
 	p = proc cmd (toCommand params)
@@ -204,12 +204,12 @@ demeterCommand oh cmd params = demeterCommandEnv oh cmd params Nothing
 
 demeterCommandEnv :: OutputHandler -> FilePath -> [CommandParam] -> Maybe [(String, String)] -> IO Bool
 demeterCommandEnv oh cmd params environ = catchBoolIO $
-	withOEHandles createProcessSuccess p $ \(outh, errh) -> do
-		ep <- async $ avoidProgress True errh $ stderrHandler oh
+	withHandle StdoutHandle createProcessSuccess p $ \outh -> do
+		-- ep <- async $ avoidProgress True errh $ stderrHandler oh
 		op <- async $ avoidProgress True outh $ \l ->
 			unless (quietMode oh) $
 				putStrLn l
-		wait ep
+		-- wait ep
 		wait op
 		return True
   where
