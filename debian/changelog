@@ -1,4 +1,4 @@
-git-annex (5.20150405) UNRELEASED; urgency=medium
+git-annex (5.20150406) unstable; urgency=medium
 
   * Prevent git-ls-files from double-expanding wildcards when an
     unexpanded wildcard is passed to a git-annex command like add or find.
@@ -32,7 +32,7 @@ git-annex (5.20150405) UNRELEASED; urgency=medium
     (The option already suppressed git-annex's own built-in progress
     displays.)
 
- -- Joey Hess <id@joeyh.name>  Fri, 27 Mar 2015 16:04:43 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 06 Apr 2015 12:48:48 -0400
 
 git-annex (5.20150327) unstable; urgency=medium
 
