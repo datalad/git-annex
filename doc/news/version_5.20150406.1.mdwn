@@ -1,0 +1,6 @@
+git-annex 5.20150406.1 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Fixes a bug in the last release that caused rsync and possibly
+     other commands to hang at the end of a file transfer.
+     (--quiet is back to not blocking progress displays until
+     that code can be fixed properly.)"""]]
