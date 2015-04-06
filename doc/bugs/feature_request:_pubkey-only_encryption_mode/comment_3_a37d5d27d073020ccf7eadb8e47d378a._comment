@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-04-06T17:04:34Z"
+ content="""
+I somehow completely misread what you wanted! Thanks, it makes sense now.
+
+I anticipate there would be one problem with this mode; `git annex fsck --from remote` 
+would fail because it would be unable to decrypt the encrypted content
+when run on the client that is only able to encrypt to the public key, but
+lacks the necessary private key to decrypt.
+
+(So would `git annex move --to remote; git annex get --from remote`, but
+presumably that failure is the point of the mode..)
+
+It would be fairly easy to add this, I think. There is already support
+for configuring the MAC algorithm to use to encrypt filenames. Your mode seems
+to just need a "clear" mode that doesn't encrypt filenames at all.
+
+It does add complication to crypto paths, and potential for user
+foot-shooting though.
+
+I'm going to move this feature request from bugs/ to todo/ 
+"""]]
