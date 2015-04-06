@@ -1,11 +1,11 @@
-git-annex (5.20150407) UNRELEASED; urgency=medium
+git-annex (5.20150406.1) unstable; urgency=medium
 
   * Fixes a bug in the last release that caused rsync and possibly
     other commands to hang at the end of a file transfer.
     (--quiet is back to not blocking progress displays until
     that code can be fixed properly.)
 
- -- Joey Hess <id@joeyh.name>  Mon, 06 Apr 2015 17:12:10 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 06 Apr 2015 17:13:13 -0400
 
 git-annex (5.20150406) unstable; urgency=medium
 
