@@ -15,7 +15,7 @@ No verification is performed of the url's contents.
 
 If the key and url are not specified on the command line, they are
 instead read from stdin. Any number of lines can be provided in this
-mode, each containing a key and url, separated by whitespace.
+mode, each containing a key and url, separated by a single space.
 
 # SEE ALSO
 
