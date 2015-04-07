@@ -164,19 +164,15 @@ type ProgressParser = String -> (Maybe BytesProcessed, String)
  - to update a meter.
  -}
 commandMeter :: ProgressParser -> OutputHandler -> MeterUpdate -> FilePath -> [CommandParam] -> IO Bool
-commandMeter progressparser oh meterupdate cmd params = catchBoolIO $
-	withHandle StdoutHandle createProcessSuccess p $ \outh -> do
-		-- ep <- async $ handlestderr errh
-		op <- async $ feedprogress zeroBytesProcessed [] outh
-		-- wait ep
-		wait op
+commandMeter progressparser oh meterupdate cmd params = 
+	outputFilter cmd params Nothing
+		(feedprogress zeroBytesProcessed [])
+		handlestderr
   where
-	p = proc cmd (toCommand params)
-
 	feedprogress prev buf h = do
 		b <- S.hGetSome h 80
 		if S.null b
-			then return True
+			then return ()
 			else do
 				unless (quietMode oh) $ do
 					S.hPut stdout b
@@ -203,18 +199,13 @@ demeterCommand :: OutputHandler -> FilePath -> [CommandParam] -> IO Bool
 demeterCommand oh cmd params = demeterCommandEnv oh cmd params Nothing
 
 demeterCommandEnv :: OutputHandler -> FilePath -> [CommandParam] -> Maybe [(String, String)] -> IO Bool
-demeterCommandEnv oh cmd params environ = catchBoolIO $
-	withHandle StdoutHandle createProcessSuccess p $ \outh -> do
-		-- ep <- async $ avoidProgress True errh $ stderrHandler oh
-		op <- async $ avoidProgress True outh $ \l ->
-			unless (quietMode oh) $
-				putStrLn l
-		-- wait ep
-		wait op
-		return True
+demeterCommandEnv oh cmd params environ = outputFilter cmd params environ
+	(\outh -> avoidProgress True outh stdouthandler)
+	(\errh -> avoidProgress True errh $ stderrHandler oh)
   where
-	p = (proc cmd (toCommand params))
-		{ env = environ }
+	stdouthandler l = 
+		unless (quietMode oh) $
+			putStrLn l
 
 {- To suppress progress output, while displaying other messages,
  - filter out lines that contain \r (typically used to reset to the
@@ -226,3 +217,23 @@ avoidProgress doavoid h emitter = unlessM (hIsEOF h) $ do
 	unless (doavoid && '\r' `elem` s) $
 		emitter s
 	avoidProgress doavoid h emitter
+
+outputFilter
+	:: FilePath
+	-> [CommandParam]
+	-> Maybe [(String, String)]
+	-> (Handle -> IO ())
+	-> (Handle -> IO ())
+	-> IO Bool
+outputFilter cmd params environ outfilter errfilter = catchBoolIO $ do
+	(_, Just outh, Just errh, pid) <- createProcess p
+		{ std_out = CreatePipe
+		, std_err = CreatePipe
+		}
+	void $ async $ tryIO (outfilter outh) >> hClose outh
+	void $ async $ tryIO (errfilter errh) >> hClose errh
+	ret <- checkSuccessProcess pid
+	return ret
+  where
+	p = (proc cmd (toCommand params))
+		{ env = environ }

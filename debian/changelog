@@ -1,3 +1,10 @@
+git-annex (5.20150406.2) UNRELEASED; urgency=medium
+
+  * --quiet now suppresses progress displays from eg, rsync.
+    (Second time's the charm..)
+
+ -- Joey Hess <id@joeyh.name>  Mon, 06 Apr 2015 20:14:20 -0400
+
 git-annex (5.20150406.1) unstable; urgency=medium
 
   * Fixes a bug in the last release that caused rsync and possibly
