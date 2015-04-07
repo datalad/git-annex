@@ -6,6 +6,7 @@ I use git annex assistant in autostart mode on my Documents folder.
 
 I get the following errors in the log file:
 
+[[!format sh """
 fd:37: commitBuffer: invalid argument (invalid character)
 fatal: Work/@Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
 fatal: Work/@Projects/archive/20140515_METOCC_Gr������nsytem������te/MMD_Config/SITE/LegacyNT/mmd/config/Dataintag/Fil-intag/OLDIB/SurfaceWaterTemperature.ini: pathspec magic not supported by this command: 'literal'
@@ -15,7 +16,8 @@ fatal: Work/@Projects/archive/20140515_METOCC_Gr: pathspec magic not supported b
 fatal: Work/@Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
 fatal: Work/@Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
 fatal: Work/@Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/@Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
+fatal: Work/@Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal''
+"""]]
 
 I also notice a lot of zombie git processes in the ps list.
 
@@ -40,72 +42,39 @@ Linux wintermute 3.19.2-1-ARCH #1 SMP PREEMPT Wed Mar 18 16:21:02 CET 2015 x86_6
 
 If I downgrade to a previous version ie. git-annex.linux.5.20150317 the described problem is gone.
 
-I tried to remove the character "@" from my paths, but it did'nt help.
+I tried to remove the character "@" from my paths, but it didn't help.
+
+Looking at the log file below, it doesn't seem to have anything to do with my swedish characters. 
 
 
 [[!format sh """
-fd:36: commitBuffer: invalid argument (invalid character)
-fatal: Work/Projects/archive/20140515_METOCC_Gr������nsytem������te/MMD_Config/SITE/MET-SERVER/Mmd/Config/ProgramStart/Program/PrintFile/pp.txt: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
+[2015-04-07 22:24:14 CEST] main: starting assistant version 5.20150406-gb2814bc
+[2015-04-07 22:24:14 CEST] TransferScanner: Syncing with xxxxxxx.xxxxxxx.xxx_wintermute_Documents 
+p11-kit: couldn't load module: /usr/lib/x86_64-linux-gnu/pkcs11/p11-kit-trust.so: /usr/lib/x86_64-linux-gnu/pkcs11/p11-kit-trust.so: cannot open shared object file: No such file or directory
+(scanning...) [2015-04-07 22:24:15 CEST] Watcher: Performing startup scan
+fatal: Work/archive/firewall-udp-1194-dasu-Viscosity.visc.zip: pathspec magic not supported by this command: 'literal'
+fatal: Work/archive/firewall-udp-1194-dasu-Viscosity.visc.zip: pathspec magic not supported by this command: 'literal'
+fatal: Work/archive/firewall-udp-1194-dasu-Viscosity.visc.zip: pathspec magic not supported by this command: 'literal'
+fatal: Work/archive/firewall-udp-1194-dasu-Viscosity.visc.zip: pathspec magic not supported by this command: 'literal'
+fatal: Work/archive/firewall-udp-1194-dasu-Viscosity.visc.zip: pathspec magic not supported by this command: 'literal'
+fatal: Work/archive/firewall-udp-1194-dasu-Viscosity.visc.zip: pathspec magic not supported by this command: 'literal'
+fatal: Work/archive/firewall-udp-1194-dasu-Viscosity.visc.zip: pathspec magic not supported by this command: 'literal'
+fatal: Work/archive/firewall-udp-1194-dasu-Viscosity.visc.zip: pathspec magic not supported by this command: 'literal'
+fatal: Work/archive/firewall-udp-1194-dasu-Viscosity.visc.zip: pathspec magic not supported by this command: 'literal'
+fatal: Work/archive/firewall-udp-1194-dasu-Viscosity.visc.zip: pathspec magic not supported by this command: 'literal'
+fatal: Work/archive/firewall-udp-1194-dasu-Viscosity.visc.zip: pathspec magic not supported by this command: 'literal'
 
-fd:36: commitBuffer: invalid argument (invalid character)
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr������nsytem������te/MMD_Config/SITE/MET-SERVER/Mmd/Config/ProgramStart/Program/PrintFile/file_id.diz: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
+git cat-file EOF: user error
+fatal: Work/archive/Tidrapportering/Tid.md: pathspec magic not supported by this command: 'literal'
+fatal: Work/archive/Tidrapportering/Tid.md: pathspec magic not supported by this command: 'literal'
+fatal: Work/archive/Tidrapportering/Tid.md: pathspec magic not supported by this command: 'literal'
+fatal: Work/archive/Tidrapportering/Tid.md: pathspec magic not supported by this command: 'literal'
+fatal: Work/archive/Tidrapportering/Tid.md: pathspec magic not supported by this command: 'literal'
+fatal: Work/archive/Tidrapportering/Tid.md: pathspec magic not supported by this command: 'literal'
+fatal: Work/archive/Tidrapportering/Tid.md: pathspec magic not supported by this command: 'literal'
+fatal: Work/archive/Tidrapportering/Tid.md: pathspec magic not supported by this command: 'literal'
+fatal: Work/archive/Tidrapportering/Tid.md: pathspec magic not supported by this command: 'literal'
+fatal: Work/archive/Tidrapportering/Tid.md: pathspec magic not supported by this command: 'literal'
+fatal: Work/archive/Tidrapportering/Tid.md: pathspec magic not supported by this command: 'literal'
 
-fd:39: commitBuffer: invalfatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-id argument (invalid character)
-fatal: Work/Projects/archive/20140515_METOCC_Gr������nsytem������te/MMD_Config/SITE/MET-SERVER/Mmd/Config/ProgramStart/Program/PrintFile/PrFile.hlp: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-
-fd:38: commitBuffer: invalid argument (invalid character)
-fatal: Work/Projects/archive/20140515_METOCC_Gr������nsytem������te/MMD_Config/SITE/MET-SERVER/Mmd/Config/ProgramStart/Program/PrintFile/PrFile32.exe: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-
-fd:40: commitBuffer: invalid argument (invalid character)
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr������nsytem������te/MMD_Config/SITE/MET-SERVER/Mmd/Config/ProgramStart/Program/PrintFile/SETUP.EXE: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
-fatal: Work/Projects/archive/20140515_METOCC_Gr: pathspec magic not supported by this command: 'literal'
 """]]
