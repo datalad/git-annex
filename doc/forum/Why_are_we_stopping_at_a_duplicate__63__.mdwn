@@ -1,9 +1,7 @@
 What does the following mean? I would expect that if we encounter a duplicate while using the `--deduplicate` option, the duplicate file would be removed from the import location and import would continue. Does that mean that the newly encountered `img_0405.jpg` is different from the one previously seen? 
 Could the error message perhaps be improved?
 
-```
-.../usbdisk/annex(master)$ git annex import --deduplicate ../Pictures/
-import Pictures/2008/10/12/img_0405.jpg git-annex: not overwriting existing Pictures/2008/10/12/img_0405.jpg (use --force to override)
-```
+    .../usbdisk/annex(master)$ git annex import --deduplicate ../Pictures/
+    import Pictures/2008/10/12/img_0405.jpg git-annex: not overwriting existing Pictures/2008/10/12/img_0405.jpg (use --force to override)
 
 Many other duplicates are being tidied away.
