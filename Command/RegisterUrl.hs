@@ -34,10 +34,10 @@ start [] = do
 start _ = error "specify a key and an url"
 
 massAdd :: CommandPerform
-massAdd = go True =<< map words . lines <$> liftIO getContents
+massAdd = go True =<< map (separate (== ' ')) . lines <$> liftIO getContents
   where
 	go status [] = next $ return status
-	go status ([keyname,u]:rest) = do
+	go status ((keyname,u):rest) | not (null keyname) && not (null u) = do
 		let key = fromMaybe (error $ "bad key " ++ keyname) $ file2key keyname
 		ok <- perform' key u
 		let !status' = status && ok

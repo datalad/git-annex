@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-04-06T17:01:32Z"
+ content="""
+This is not what git-annex was designed to do, so I don't think it's the
+right tool for the job.
+
+I suggest <http://myrepos.branchable.com/>
+"""]]

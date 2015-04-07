@@ -1,0 +1,14 @@
+### Feature request
+
+It is not possible to put encrypted content in place on remotes with just a
+public GPG key. You always need the private key, even for encryption. I
+guess this is because how the cipher HMAC is used for replacing file names
+with their hashes. However, if that requirement (having secret file names)
+was dropped, I assume a pubkey-only mode could be implemented?
+
+My specific use case is backup archiving. I have my backups packed in
+archive files and want to use git-annex to copy the archives to offsite
+remotes (S3). In that case, I don't care much about hiding file names, but
+would appreciate the increased security of not having the secret key on the
+backup server. It would only be needed if I wanted to verify or restore
+backups.

@@ -75,7 +75,7 @@ Build-Depends:
 	lsof [!kfreebsd-i386 !kfreebsd-amd64 !hurd-any],
 	ikiwiki,
 	perlmagick,
-	git (>= 1:1.7.7.6),
+	git (>= 1:1.8.1),
 	rsync,
 	wget,
 	curl,
@@ -92,7 +92,7 @@ Package: git-annex
 Architecture: any
 Section: utils
 Depends: ${misc:Depends}, ${shlibs:Depends},
-	git (>= 1:1.7.7.6),
+	git (>= 1:1.8.1),
 	rsync,
 	wget,
 	curl,

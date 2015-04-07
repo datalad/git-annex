@@ -1,6 +1,6 @@
 {- git-annex log file names
  -
- - Copyright 2013-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -40,6 +40,7 @@ topLevelUUIDBasedLogs =
 	, preferredContentLog
 	, requiredContentLog
 	, scheduleLog
+	, activityLog
 	, differenceLog
 	]
 
@@ -84,8 +85,12 @@ groupPreferredContentLog = "group-preferred-content.log"
 scheduleLog :: FilePath
 scheduleLog = "schedule.log"
 
+activityLog :: FilePath
+activityLog = "activity.log"
+
 differenceLog :: FilePath
 differenceLog = "difference.log"
+
 
 {- The pathname of the location log file for a given key. -}
 locationLogFile :: GitConfig -> Key -> String

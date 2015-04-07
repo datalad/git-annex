@@ -23,3 +23,5 @@ there's still commit and tree update overhead.
 Probably doesn't make sense to run distributed fscks too often for that and
 other reasons. If the git-annex branch does get too large, there's always
 `git annex forget` ...
+
+**(Update: This was later rethought and works much more efficiently now..)**

@@ -247,6 +247,14 @@ Example:
 
 	42bf2035-0636-461d-a367-49e9dfd361dd fsck self 30m every day at any time; fsck 4b3ebc86-0faf-4892-83c5-ce00cbe30f0a 1h every year at any time timestamp=1385646997.053162s
 
+## `activity.log`
+
+Used to record the times of activities, such as fscks.
+
+Example:
+
+	42bf2035-0636-461d-a367-49e9dfd361dd Fsck timestamp=1422387398.30395s
+
 ## `transitions.log`
 
 Used to record transitions, eg by `git annex forget`

@@ -41,10 +41,10 @@ start _ [] = do
 start _ _ = error "specify a key and a dest file"
 
 massAdd :: CommandPerform
-massAdd = go True =<< map words . lines <$> liftIO getContents
+massAdd = go True =<< map (separate (== ' ')) . lines <$> liftIO getContents
   where
 	go status [] = next $ return status
-	go status ([keyname,f]:rest) = do
+	go status ((keyname,f):rest) | not (null keyname) && not (null f) = do
 		let key = fromMaybe (error $ "bad key " ++ keyname) $ file2key keyname
 		ok <- perform' key f
 		let !status' = status && ok

@@ -1,0 +1,33 @@
+git-annex 5.20150406 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Prevent git-ls-files from double-expanding wildcards when an
+     unexpanded wildcard is passed to a git-annex command like add or find.
+   * Fix make build target. Thanks, Justin Geibel.
+   * Fix GETURLS in external special remote protocol to strip
+     downloader prefix from logged url info before checking for the
+     specified prefix.
+   * importfeed: Avoid downloading a redundant item from a feed whose
+     guid has been downloaded before, even when the url has changed.
+   * importfeed: Always store itemid in metadata; before this was only
+     done when annex.genmetadata was set.
+   * Relax debian package dependencies to git &gt;= 1:1.8.1 rather
+     than needing &gt;= 1:2.0.
+   * test: Fix --list-tests
+   * addurl --file: When used with a special remote that claims
+     urls and checks their contents, don't override the user's provided
+     filename with filenames that the special remote suggests. Also,
+     don't allow adding the url if the special remote says it contains
+     multiple files.
+   * import: --deduplicate and --cleanduplicates now output the keys
+     corresponding to duplicated files they process.
+   * expire: New command, for expiring inactive repositories.
+   * fsck: Record fsck activity for use by expire command.
+   * Fix truncation of parameters that could occur when using xargs git-annex.
+   * Significantly sped up processing of large numbers of directories
+     passed to a single git-annex command.
+   * version: Add --raw
+   * init: Improve fifo test to detect NFS systems that support fifos
+     but not well enough for sshcaching.
+   * --quiet now suppresses progress displays from eg, rsync.
+     (The option already suppressed git-annex's own built-in progress
+     displays.)"""]]

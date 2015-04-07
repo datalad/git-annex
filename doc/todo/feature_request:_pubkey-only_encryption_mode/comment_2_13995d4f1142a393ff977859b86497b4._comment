@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl6rte43qSRK1o2zn7Ww4Z8pgBmJm8gDrc"
+ nickname="Rickard"
+ subject="comment 2"
+ date="2015-04-04T07:34:58Z"
+ content="""
+> The contents of files are also encrypted using your gpg private key
+
+I assume you meant to say gpg *public* key here?
+
+You're correct in that I can publish the symmetric HMAC key unencrypted with no bad effects for me. I've searched the documents but haven't found a way to tell git-annex to use a specific, unencrypted, symmetric key for HMAC, though. Is there a way?
+
+> So, I see no benefit to the suggested mode.
+
+I don't understand the reasoning that made you come to this conclusion.
+
+Let me restate my use case:
+
+With only the public part of a gpg key id available to a user, I would like that user to be able to add files to a git-annex repository. The user should then be able to copy the files encrypted to remotes that support encryption (S3 etc). The user should not be able to fetch or verify files from the encrypted remotes (since she lacks the private gpg key). The remote would be write-only for the user, basically. However, a friend of the user, posessing the private key (and having access to the remote), should be able to use the remote just like a normal git-annex remote.
+
+This is the normal way of using gpg for asymmetric encryption of files. I would find it useful to be able to use git-annex in a similar way. As far as I can understand, only the encrypted HMAC key is stopping me from using git-annex in this way. 
+
+However, there might be other things in git-annex' design that would make it difficult or even impossible to implement this functionality. It could also be the case that there's no benefit to adding this functionality to git-annex because there is some other (simpler) way to achieve the same thing. Both these cases are perfectly acceptable, but I would then be interested in knowing a bit more details.
+"""]]

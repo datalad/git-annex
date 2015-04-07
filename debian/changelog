@@ -1,4 +1,22 @@
-git-annex (5.20150328) UNRELEASED; urgency=medium
+git-annex (5.20150406.2) UNRELEASED; urgency=medium
+
+  * --quiet now suppresses progress displays from eg, rsync.
+    (Second time's the charm..)
+  * fromkey, registerurl: When reading from stdin, allow the
+    filename and url, respectively, to contain whitespace.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 06 Apr 2015 20:14:20 -0400
+
+git-annex (5.20150406.1) unstable; urgency=medium
+
+  * Fixes a bug in the last release that caused rsync and possibly
+    other commands to hang at the end of a file transfer.
+    (--quiet is back to not blocking progress displays until
+    that code can be fixed properly.)
+
+ -- Joey Hess <id@joeyh.name>  Mon, 06 Apr 2015 17:13:13 -0400
+
+git-annex (5.20150406) unstable; urgency=medium
 
   * Prevent git-ls-files from double-expanding wildcards when an
     unexpanded wildcard is passed to a git-annex command like add or find.
@@ -10,7 +28,7 @@ git-annex (5.20150328) UNRELEASED; urgency=medium
     guid has been downloaded before, even when the url has changed.
   * importfeed: Always store itemid in metadata; before this was only
     done when annex.genmetadata was set.
-  * Relax debian package dependencies to git >= 1:1.7.7.6 rather
+  * Relax debian package dependencies to git >= 1:1.8.1 rather
     than needing >= 1:2.0.
   * test: Fix --list-tests
   * addurl --file: When used with a special remote that claims
@@ -20,17 +38,19 @@ git-annex (5.20150328) UNRELEASED; urgency=medium
     multiple files.
   * import: --deduplicate and --cleanduplicates now output the keys
     corresponding to duplicated files they process.
-  * fsck: Added --distributed and --expire options,
-    for distributed fsck.
+  * expire: New command, for expiring inactive repositories.
+  * fsck: Record fsck activity for use by expire command.
   * Fix truncation of parameters that could occur when using xargs git-annex.
   * Significantly sped up processing of large numbers of directories
     passed to a single git-annex command.
   * version: Add --raw
+  * init: Improve fifo test to detect NFS systems that support fifos
+    but not well enough for sshcaching.
   * --quiet now suppresses progress displays from eg, rsync.
     (The option already suppressed git-annex's own built-in progress
     displays.)
 
- -- Joey Hess <id@joeyh.name>  Fri, 27 Mar 2015 16:04:43 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 06 Apr 2015 12:48:48 -0400
 
 git-annex (5.20150327) unstable; urgency=medium
 

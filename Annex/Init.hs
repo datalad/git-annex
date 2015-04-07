@@ -162,13 +162,17 @@ probeFifoSupport = do
 #else
 	tmp <- fromRepo gitAnnexTmpMiscDir
 	let f = tmp </> "gaprobe"
+	let f2 = tmp </> "gaprobe2"
 	createAnnexDirectory tmp
 	liftIO $ do
 		nukeFile f
+		nukeFile f2
 		ms <- tryIO $ do
 			createNamedPipe f ownerReadMode
+			createLink f f2
 			getFileStatus f
 		nukeFile f
+		nukeFile f2
 		return $ either (const False) isNamedPipe ms
 #endif
 

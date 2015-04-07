@@ -302,6 +302,11 @@ subdirectories).
 
   See [[git-annex-fsck]](1) for details.
 
+* `expire [repository:]time ...`
+
+  Expires repositories that have not recently performed an activity
+  (such as a fsck).
+
 * `unused`
 
   Checks the annex for data that does not correspond to any files present
