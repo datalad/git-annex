@@ -4,14 +4,14 @@ When syncing with a remote, I get some files with "unknown backend".
 
 Original:
 
-    16:10 jean@klippie:~/annex(master)$ ls -lh Pictures/2014/06/21/2014-06-21\ 13.52.34.png
+    $ ls -lh Pictures/2014/06/21/2014-06-21\ 13.52.34.png
     lrwxrwxrwx 1 jean jean 214 Jun 21  2014 Pictures/2014/06/21/2014-06-21 13.52.34.png -> ../../../../.git/annex/objects/mx/Ff/SHA256E-s247069--d425c1049778880eb9b9fcab74a82ec86dd22882db9c026f8fc0e9cb6270d022.34.png/SHA256E-s247069--d425c1049778880eb9b9fcab74a82ec86dd22882db9c026f8fc0e9cb6270d022.34.png
 
 This picture and symlink is fine.
 
 Remote (broken symlink):
 
-    16:12 jean@klippie:/media/jean/wdbkk20111104/annex(master)$ ls -lh Pictures/2014/06/21/2014-06-21\ 13.52.34.png
+    $ ls -lh Pictures/2014/06/21/2014-06-21\ 13.52.34.png
     lrwxrwxrwx 1 jean jean 214 Apr  6 12:50 Pictures/2014/06/21/2014-06-21 13.52.34.png -> ./../../.git/annex/objects/mx/Ff/SHA256E-s247069--d425c134ac2f9b0eb9b9fcab74a82ec86dd22882db9c026f8fc0e9cb6270d022.34.pn0.png/SHE-s247069--d425c1049778880eb9b9fcab74a82ec86dd22882db9c09efe84ca9cb6270d022.34.png
 
 In this case the paths differ: there is an extra `.pn0` component, and the final `SHA256E` has changed to `SHE`.
@@ -62,7 +62,8 @@ bloom filter size: 16 mebibytes (3.3% full)
 backend usage:
         SHA256E: 121054
         SHA256: 1
-15:55 jean@klippie:/media/jean/wdbkk20111104/annex(master)$ git annex get --from=laptop
+
+$ git annex get --from=laptop
 
   skipping Pictures/2014/06/21/2014-06-21 13.52.34.png (unknown backend SHE)
 
