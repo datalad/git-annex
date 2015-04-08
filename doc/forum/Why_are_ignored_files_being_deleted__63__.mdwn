@@ -1,0 +1,22 @@
+How do we get into the following situation?
+First we complain about an ignored file (why not just ignore it?),
+and then apparently we delete the ignored file.
+
+    [...]
+    import Pictures/2005/11/16/.IMG_0819.tmpwrite.JPG (duplicate) ok
+    (Recording state in git...)
+    The following paths are ignored by one of your .gitignore files:
+    Pictures/2008/11/27/.img_1315.tmpwrite.jpg
+    Use -f if you really want to add them.
+    fatal: no files added
+    git-annex: user error (xargs ["-0","git","--git-dir=/.../annex/.git","--work-tree=/.../annex","add","--"] exited 123)
+
+    # eek, the file that we complained about has vanished!
+    $ rm ../Pictures/2008/12/27/.img_1315.tmpwrite.jpg
+    rm: cannot remove ‘../Pictures/2008/11/27/.img_1315.tmpwrite.jpg’: No such file or directory
+
+Expected:
+- leave ignored files untouched. Maybe report "Skipped ignored files."
+
+Actual:
+- Stop import, but delete the ignored file as side effect.
