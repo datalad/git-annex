@@ -14,6 +14,10 @@ files from the current directory and below.
 Normally, files that are already checked into git, or that git has been
 configured to ignore will be silently skipped.
 
+If annex.largefiles is configured, and does not match a file that is being
+added, `git annex add` will behave the same as `git add` and add the
+non-large file directly to the git repository, instead of to the annex.
+
 # OPTIONS
 
 * `--include-dotfiles`

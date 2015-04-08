@@ -4,6 +4,10 @@ git-annex (5.20150406.2) UNRELEASED; urgency=medium
     (Second time's the charm..)
   * fromkey, registerurl: When reading from stdin, allow the
     filename and url, respectively, to contain whitespace.
+  * add: If annex.largefiles is set and does not match a file that's being
+    added, the file will be checked into git rather than being added to the
+    annex. Previously, git annex add skipped over such files; this new
+    behavior is more useful in direct mode.
 
  -- Joey Hess <id@joeyh.name>  Mon, 06 Apr 2015 20:14:20 -0400
 
