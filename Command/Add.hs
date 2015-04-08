@@ -65,7 +65,7 @@ seek ps = do
 startSmall :: FilePath -> CommandStart
 startSmall file = do
 	showStart "add" file
-	showNote "non-large file; adding to git directly"
+	showNote "non-large file; adding content to git repository"
 	next $ do
 		params <- forceParams
 		Annex.Queue.addCommand "add" (params++[Param "--"]) [file]
