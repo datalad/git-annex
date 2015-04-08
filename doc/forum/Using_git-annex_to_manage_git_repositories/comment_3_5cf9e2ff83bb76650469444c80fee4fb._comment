@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk_STgv_0fB-y1x_fgzUI10Bg-aajJyMyc"
+ nickname="猫"
+ subject="comment 3"
+ date="2015-04-08T06:30:06Z"
+ content="""
+I'll take a closer look at myrepos, but it doesn't seem to do location tracking, which is the main feature of git-annex that I'm looking for.
+"""]]
