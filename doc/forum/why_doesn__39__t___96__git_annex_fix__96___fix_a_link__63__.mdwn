@@ -1,0 +1,32 @@
+We have the correct symlink:
+
+    $ ls -lh Sita_Sings_the_Blues_480p_2150kbps.mp4 
+    lrwxrwxrwx 1 user user 204 Apr  8 20:22 Sita_Sings_the_Blues_480p_2150kbps.mp4 -> .git/annex/objects/6q/Wz/SHA256E-s1463013630--2a18a317a536d8e2d28e7916a45a007679b7192102a71067de488c9faa6aab45.mp4/SHA256E-s1463013630--2a18a317a536d8e2d28e7916a45a007679b7192102a71067de488c9faa6aab45.mp4
+
+The object is in place:
+
+    $ ls -lh .git/annex/objects/6q/Wz/SHA256E-s1463013630--2a18a317a536d8e2d28e7916a45a007679b7192102a71067de488c9faa6aab45.mp4/SHA256E-s1463013630--2a18a317a536d8e2d28e7916a45a007679b7192102a71067de488c9faa6aab45.mp4
+    -r-------- 1 user user 1,4G Dec 28  2010 .git/annex/objects/6q/Wz/SHA256E-s1463013630--2a18a317a536d8e2d28e7916a45a007679b7192102a71067de488c9faa6aab45.mp4/SHA256E-s1463013630--2a18a317a536d8e2d28e7916a45a007679b7192102a71067de488c9faa6aab45.mp4
+
+Now I move the symlink, which becomes broken:
+
+    $ mv Sita_Sings_the_Blues_480p_2150kbps.mp4 Videos/
+
+I try to fix the symlink:
+
+    $ git annex sync
+    $ git annex fix Videos/Sita_Sings_the_Blues_480p_2150kbps.mp4 
+
+But it stays broken:
+
+    $ ls -lh Videos/Sita_Sings_the_Blues_480p_2150kbps.mp4 
+    lrwxrwxrwx 1 user user 204 Apr  8 20:22 Videos/Sita_Sings_the_Blues_480p_2150kbps.mp4 -> .git/annex/objects/6q/Wz/SHA256E-s1463013630--2a18a317a536d8e2d28e7916a45a007679b7192102a71067de488c9faa6aab45.mp4/SHA256E-s1463013630--2a18a317a536d8e2d28e7916a45a007679b7192102a71067de488c9faa6aab45.mp4
+
+Ah, when I try to `git mv Sita_Sings_the_Blues_480p_2150kbps.mp4 Videos/`, 
+I am warned that the link is not under version control. How did the symlink get 
+made in the first place, if not by git-annex? It should be known, right?
+
+After I `git annex add`, I can `git mv` and then `git annex fix`.
+
+How did I get into the state where I have a symlink pointing at an imported
+object, which is not under version control?
