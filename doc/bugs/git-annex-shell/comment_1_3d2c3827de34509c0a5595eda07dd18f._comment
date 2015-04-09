@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-04-09T17:48:20Z"
+ content="""
+GIT_SSH is set to the full path of the binary, unless
+~/.config/git-annex/program overrides it.
+
+Finding the full path to the binary is not a trivial or error-free
+operation.
+
+Could you please follow up to this bug or close it?
+"""]]
