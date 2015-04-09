@@ -513,6 +513,12 @@ subdirectories).
 
   See [[git-annex-lookupkey]](1) for details.
 
+* `contentlocation [key ..]`
+
+  Looks up location of annexed content for a key.
+
+  See [[git-annex-contentlocation]](1) for details.
+
 * `examinekey [key ...]`
 
   Print information that can be determined purely by looking at the key.

@@ -9,6 +9,7 @@
 
 module Annex.Content (
 	inAnnex,
+	inAnnex',
 	inAnnexSafe,
 	inAnnexCheck,
 	lockContent,
