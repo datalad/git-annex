@@ -347,8 +347,9 @@ getFinishAddDriveR drive = go
 combineRepos :: FilePath -> String -> Handler Remote
 combineRepos dir name = liftAnnex $ do
 	hostname <- fromMaybe "host" <$> liftIO getHostname
-	hostlocation <- fromRepo Git.repoLocation
-	liftIO $ inDir dir $ void $ makeGitRemote hostname hostlocation
+	mylocation <- fromRepo Git.repoLocation
+	mypath <- liftIO $ relPathDirToFile dir mylocation
+	liftIO $ inDir dir $ void $ makeGitRemote hostname mypath
 	addRemote $ makeGitRemote name dir
 
 getEnableDirectoryR :: UUID -> Handler Html
