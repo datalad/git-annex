@@ -1,1 +1,3 @@
 Copying a large file from windows (msysgit 1.9.5.msysgit.1, git-annex 20150406) to a bare repository on debian wheezy (git 1.9.1 git-annex 20141024)  I can only get around 2 MB/s transfer speed.  I tested using normal windows copy (smb) and got around 10 MB/s, while the git-annex copy was still going on.  I tried plain ssh and got 9 MB/s.  So, something to do with git-annex is being slow it seems.  Any ideas on how to remedy this, or is it a known issue?
+
+Note: Problem not seen going from linux to linux... waaaayyy faster (40 MB/s) to put it lightly (10 min vs all day)  The destination server is the same.
