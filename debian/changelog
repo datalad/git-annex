@@ -8,6 +8,8 @@ git-annex (5.20150406.2) UNRELEASED; urgency=medium
     added, the file will be checked into git rather than being added to the
     annex. Previously, git annex add skipped over such files; this new
     behavior is more useful in direct mode.
+  * proxy: Made it work when run in a new repository before initial
+    commit.
 
  -- Joey Hess <id@joeyh.name>  Mon, 06 Apr 2015 20:14:20 -0400
 
