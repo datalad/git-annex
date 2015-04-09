@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2015-04-09T18:31:34Z"
+ content="""
+@Sunke, the reason that views make up their own filenames is to
+avoid the problem of having 2 files in a view that have the same
+name.
+
+In your example, that could happen if you used --set title
+with the same title for 2 separate files.
+
+So, I don't think this can be supported reasonably.
+"""]]
