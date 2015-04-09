@@ -414,6 +414,7 @@ stageJournal jl = withIndex $ do
 	g <- gitRepo
 	let dir = gitAnnexJournalDir g
 	(jlogf, jlogh) <- openjlog
+	liftIO $ fileEncoding jlogh
 	withJournalHandle $ \jh -> do
 		h <- hashObjectStart g
 		Git.UpdateIndex.streamUpdateIndex g
