@@ -1,4 +1,4 @@
-git-annex (5.20150409) UNRELEASED; urgency=medium
+git-annex (5.20150409) unstable; urgency=medium
 
   * This fixes a bug in the assistant introduced by the literal pathspec
     changes in version 5.20150406.
@@ -21,7 +21,7 @@ git-annex (5.20150409) UNRELEASED; urgency=medium
     was set to "." rather than the path to the current repository.
     This was a reversion caused by the relative path changes in 5.20150113.
 
- -- Joey Hess <id@joeyh.name>  Mon, 06 Apr 2015 20:14:20 -0400
+ -- Joey Hess <id@joeyh.name>  Thu, 09 Apr 2015 15:06:38 -0400
 
 git-annex (5.20150406.1) unstable; urgency=medium
 
