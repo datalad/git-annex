@@ -10,6 +10,8 @@ git-annex (5.20150406.2) UNRELEASED; urgency=medium
     behavior is more useful in direct mode.
   * proxy: Made it work when run in a new repository before initial
     commit.
+  * info: Display repository mode: bare when in a bare (non-direct mode)
+    repo.
 
  -- Joey Hess <id@joeyh.name>  Mon, 06 Apr 2015 20:14:20 -0400
 
