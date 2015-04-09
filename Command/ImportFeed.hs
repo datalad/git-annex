@@ -150,9 +150,9 @@ downloadFeed url = do
 	showOutput
 	uo <- Url.getUrlOptions
 	liftIO $ withTmpFile "feed" $ \f h -> do
-		fileEncoding h
+		hClose h
 		ifM (Url.download url f uo)
-			( parseFeedString <$> hGetContentsStrict h
+			( parseFeedString <$> readFileStrictAnyEncoding f
 			, return Nothing
 			)
 
