@@ -48,6 +48,12 @@ Then you can run git-annex on all the feeds:
 
 `xargs git-annex importfeed < feeds`
 
+## recreating lost episodes
+
+If for some reason git-annex refuses to download files you are certain are in the podcast, it is quite possible it is because they have already been downloaded. In any case, you can use `--force` to redownload them:
+
+`git-annex importfeed --force http://example.com/feed`
+
 ## distributed podcatching
 
 A nice benefit of using git-annex as a podcatcher is that you can
