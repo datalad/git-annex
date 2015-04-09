@@ -98,7 +98,7 @@ fatal: Work/archive/Tidrapportering/Tid.md: pathspec magic not supported by this
 >> I tried an older version of git-annex on the same repository, and could not find any "commitBuffer:
 >> invalid argument" in the log.
 >>
->> I would like the take the chance to thank you for the incredible work you are doing with this software/tool! It's an amazing effort!
+>> I would like to take the chance to thank you for the incredible work you are doing with this software/tool! It's an amazing effort!
 >>
 >> -Daniel
 
