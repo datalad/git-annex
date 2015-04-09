@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-04-09T18:26:30Z"
+ content="""
+Not following the instructions to have git put itself into the path seems
+like a sure-fire way to shoot yourself in the foot.
+
+The loop problem is being discussed at
+<http://git-annex.branchable.com/bugs/windows_start_menu_shortcuts_are_missing___34__Start_in__34___parameter/>
+perhaps you'll be able to answer my questions about it there?
+"""]]
