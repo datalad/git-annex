@@ -78,3 +78,19 @@ fatal: Work/archive/Tidrapportering/Tid.md: pathspec magic not supported by this
 fatal: Work/archive/Tidrapportering/Tid.md: pathspec magic not supported by this command: 'literal'
 
 """]]
+
+> I've fixed the pathspec magic problem. [[done]]
+> 
+> Seems like you could possibly have a separate problem WRT the "commitBuffer:
+> invalid argument". When using the older version of git-annex, did you 
+> get that in the log at all?
+>
+> OTOH, the
+> "@Projects/archive/20140515_METOCC_Grï¿½ï¿½ï¿½ï¿½ï¿½ï¿½nsytemï¿½ï¿½ï¿½ï¿½ï¿½ï¿½te" 
+> weirdness in the log could be where the problem chars are coming from
+> too, in which case it was somehow caused by the pathspec magic problem.
+> 
+> I was able to reproduce the pathspec magic problem, but not the encoding
+> looking problem, even when using swedish chars in filenames.
+> 
+> --[[Joey]]

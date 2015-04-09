@@ -31,10 +31,13 @@ type CheckIgnoreHandle = CoProcess.CoProcessHandle
  -
  - The first version of git to support what we need is 1.8.4.
  - Nothing is returned if an older git is installed.
+ -
+ - check-ignore does not support --literal-pathspecs, so remove that
+ - from the gitGlobalOpts if set.
  -}
 checkIgnoreStart :: Repo -> IO (Maybe CheckIgnoreHandle)
 checkIgnoreStart repo = ifM supportedGitVersion
-	( Just <$> (CoProcess.rawMode =<< gitCoProcessStart True params repo)
+	( Just <$> (CoProcess.rawMode =<< gitCoProcessStart True params repo')
 	, return Nothing
 	)
   where
@@ -42,6 +45,9 @@ checkIgnoreStart repo = ifM supportedGitVersion
 		[ Param "check-ignore" 
 		, Params "-z --stdin --verbose --non-matching"
 		]
+	repo' = repo { gitGlobalOpts = filter (not . pathspecs) (gitGlobalOpts repo) }
+	pathspecs (Param "--literal-pathspecs") = True
+	pathspecs _ = False
 
 supportedGitVersion :: IO Bool
 supportedGitVersion = do

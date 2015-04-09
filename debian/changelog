@@ -1,5 +1,7 @@
 git-annex (5.20150406.2) UNRELEASED; urgency=medium
 
+  * This fixes a bug in the assistant introduced by the literal pathspec
+    changes in version 5.20150406.
   * --quiet now suppresses progress displays from eg, rsync.
     (Second time's the charm..)
   * fromkey, registerurl: When reading from stdin, allow the
