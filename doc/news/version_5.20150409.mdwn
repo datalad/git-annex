@@ -1,0 +1,23 @@
+git-annex 5.20150409 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * This fixes a bug in the assistant introduced by the literal pathspec
+     changes in version 5.20150406.
+   * --quiet now suppresses progress displays from eg, rsync.
+     (Second time's the charm..)
+   * fromkey, registerurl: When reading from stdin, allow the
+     filename and url, respectively, to contain whitespace.
+   * add: If annex.largefiles is set and does not match a file that's being
+     added, the file will be checked into git rather than being added to the
+     annex. Previously, git annex add skipped over such files; this new
+     behavior is more useful in direct mode.
+   * proxy: Made it work when run in a new repository before initial
+     commit.
+   * info: Display repository mode: bare when in a bare (non-direct mode)
+     repo.
+   * importfeed: Fix feed download when curl is used.
+   * importfeed: Error out when passed a non-url.
+   * webapp: When adding another local repository, and combining it
+     with the current repository, the new repository's remote path
+     was set to "." rather than the path to the current repository.
+     This was a reversion caused by the relative path changes in 5.20150113.
+   * contentlocationn: New plumbing command."""]]
