@@ -52,7 +52,7 @@ seek ps = do
 	matcher <- largeFilesMatcher
 	let go a = flip a ps $ \file -> ifM (checkFileMatcher matcher file <||> Annex.getState Annex.force)
 		( start file
-		, stop
+		, startSmall file
 		)
 	skipdotfiles <- not <$> Annex.getFlag (optionName includeDotFilesOption)
 	go $ withFilesNotInGit skipdotfiles
@@ -60,6 +60,16 @@ seek ps = do
 		( go withFilesMaybeModified
 		, go withFilesUnlocked
 		)
+
+{- Pass file off to git-add. -}
+startSmall :: FilePath -> CommandStart
+startSmall file = do
+	showStart "add" file
+	showNote "non-large file; adding content to git repository"
+	next $ do
+		params <- forceParams
+		Annex.Queue.addCommand "add" (params++[Param "--"]) [file]
+		next $ return True
 
 {- The add subcommand annexes a file, generating a key for it using a
  - backend, and then moving it into the annex directory and setting up
@@ -260,14 +270,17 @@ addLink :: FilePath -> Key -> Maybe InodeCache -> Annex ()
 addLink file key mcache = ifM (coreSymlinks <$> Annex.getGitConfig)
 	( do
 		_ <- link file key mcache
-		params <- ifM (Annex.getState Annex.force)
-			( return [Param "-f"]
-			, return []
-			)
+		params <- forceParams
 		Annex.Queue.addCommand "add" (params++[Param "--"]) [file]
 	, do
 		l <- link file key mcache
 		addAnnexLink l file
+	)
+
+forceParams :: Annex [CommandParam]
+forceParams = ifM (Annex.getState Annex.force)
+	( return [Param "-f"]
+	, return []
 	)
 
 cleanup :: FilePath -> Key -> Maybe InodeCache -> Bool -> CommandCleanup

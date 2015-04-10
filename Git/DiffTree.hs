@@ -36,12 +36,12 @@ isDiffOf diff f = case getTopFilePath f of
 {- Diffs two tree Refs. -}
 diffTree :: Ref -> Ref -> Repo -> IO ([DiffTreeItem], IO Bool)
 diffTree src dst = getdiff (Param "diff-tree")
-	[Param (fromRef src), Param (fromRef dst)]
+	[Param (fromRef src), Param (fromRef dst), Param "--"]
 
 {- Diffs two tree Refs, recursing into sub-trees -}
 diffTreeRecursive :: Ref -> Ref -> Repo -> IO ([DiffTreeItem], IO Bool)
 diffTreeRecursive src dst = getdiff (Param "diff-tree")
-	[Param "-r", Param (fromRef src), Param (fromRef dst)]
+	[Param "-r", Param (fromRef src), Param (fromRef dst), Param "--"]
 
 {- Diffs between a tree and the index. Does nothing if there is not yet a
  - commit in the repository. -}

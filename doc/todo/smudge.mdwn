@@ -94,10 +94,19 @@ and it slows down *everything*, from `git status` to `git commit`.
 this. <http://marc.info/?l=git&m=131465033512157&w=2> (Update: apparently
 can't be fixed.)
 
+> Update: I tried this again (2015) and it seems that git status and git
+> add avoid re-sending the file content to the clean filter, as long as the
+> file stat has not changed. I'm not sure when git started doing that,
+> but it seems to avoid this problem.
+> --[[Joey]]
+
 #### smudge
 
 The smudge script can also be provided a filename with %f, but it
 cannot directly write to the file or git gets unhappy.
+
+> Still the case in 2015. Means an unnecesary read and pipe of the file
+> even if the content is already locally available on disk. --[[Joey]]
 
 ### dealing with partial content availability
 

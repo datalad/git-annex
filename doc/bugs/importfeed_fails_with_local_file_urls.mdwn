@@ -26,3 +26,10 @@ Is it possible to use local files in rss format with items which reference local
 
 Cheers,
 Marco
+
+> I've fixed it with file:// urls. 
+>
+> Also made it error out on non-url feed inputs, which are not intended to be
+> supported.
+>
+> [[done]] --[[Joey]]

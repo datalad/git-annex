@@ -1,0 +1,27 @@
+# NAME
+
+git-annex contentlocation - looks up content for a key
+
+# SYNOPSIS
+
+git annex contentlocation `[key ...]`
+
+# DESCRIPTION
+
+This plumbing-level command looks up filename used to store the content 
+of a key. The filename is output to stdout. If the key's content is not
+present in the local repository, nothing is output, and it exits nonzero.
+
+Note that in direct mode, the file will typically be in the git work
+tree, and while its content should correspond to the key, the file
+could become modified at any time after git-annex checks it.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

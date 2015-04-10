@@ -1,0 +1,7 @@
+Hi,
+
+I have set up git-annex to sync a folder located on laptop A, USB Key, and laptop B.   After reading the walkthrough, I don't quite understand the proper procedure to keep in sync.  Should I run git-annex sync from within the sync directory on the USB Key on laptop A and then from within the sync folder on the USB Key when plugged into laptop B?  Or do I have to run git-annex sync from within the sync directory on the laptops, then the USB Key?  And/or do I have to run git-annex get on the sync directory on the USB key before syncing to the second laptop?
+
+Also I should not normally be making changes on laptops A and B at the same time, but if that were the case, is there any difference in what I would run to sync the changes?
+
+Thanks!

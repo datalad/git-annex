@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-04-09T18:33:47Z"
+ content="""
+If you want to do with using the webapp, go to the "Repository"
+menu in the upper-left, and select "Add another local repository."
+
+You can then enter the path to your repository, whevever it is, 
+and click on "combine the repositories"
+
+But, like Justin said, this just sets up a git remote, so doing it at
+the command line will work just as well.
+"""]]

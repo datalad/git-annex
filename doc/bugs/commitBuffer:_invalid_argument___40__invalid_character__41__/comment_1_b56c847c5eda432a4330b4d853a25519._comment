@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-04-09T17:49:57Z"
+ content="""
+I cannot reproduce this, I get:
+
+	addurl _dev_radio/DR14__Verschwörungstheorien.ogg ok
+
+Does the _dev_radio/DR14__Verschwörungstheorien.ogg file get created?
+If so, how does it look?
+
+The jlog tells me it's trying to commit the git-annex branch journal.
+Does .git/annex/journal/ contain any files? Any files containing German
+characters?
+
+Do you have any git config settings for git-annex beyone the typical
+annex.uuid?
+
+I noticed one place in the journal commit code where it does seem to
+neglect to use filesystem encoding when dealing with writing filenames to
+the jlog tmpfile. Which could lead to this crash theoretically. I've fixed
+that, but since I couldn't reproduce the problem, I don't know if this will
+fix your problem. Nor do I understand how annex journal log files could
+have these characters in their names. You can try today's upcoming release
+of git-annex to test the fix though.
+"""]]

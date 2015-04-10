@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-04-09T20:30:19Z"
+ content="""
+There's not a lot of places where git-annex could make this slower.
+git-annex copy is just running rsync to the ssh server.
+
+Have you tried benchmarking rsync of a large file to the server w/o
+git-annex? rsync does do considerably more client-side work than does
+scp, in order to support resuming, so that might be it.
+"""]]

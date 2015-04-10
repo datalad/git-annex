@@ -26,7 +26,7 @@ recordActivity :: Activity -> UUID -> Annex ()
 recordActivity act uuid = do
 	ts <- liftIO getPOSIXTime
 	Annex.Branch.change activityLog $
-		showLog id . changeLog ts uuid (show act) . parseLog readish
+		showLog show . changeLog ts uuid act . parseLog readish
 
 lastActivities :: Maybe Activity -> Annex (Log Activity)
 lastActivities wantact = parseLog onlywanted <$> Annex.Branch.get activityLog

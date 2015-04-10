@@ -53,3 +53,11 @@ However, instead of just a list of links we will output a markdown-formatted lis
     end
 
 Very useful.
+
+## Sharing links with time-limited URLs
+
+By using pre-signed URLs it is possible to create limits on how long a URL is valid for retrieving an object. 
+To enable use a private S3 bucket for the remotes and then pre-sign actual URL with the script in [AWS-Tools](https://github.com/gdbtek/aws-tools).
+Example:
+
+    key=`git annex lookupkey "$fname"`;  sign_s3_url.bash --region 'eu-west-1' --bucket 'mybuck' --file-path $key --aws-access-key-id XX --aws-secret-access-key XX --method 'GET' --minute-expire 10

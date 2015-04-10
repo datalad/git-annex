@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-04-09T17:44:01Z"
+ content="""
+The sizes of the files should not affect how fast git-annex status runs. 
+
+But, direct mode certianly does. git-annex has to do significantly more
+work in direct mode to figure out the status of a file. Including querying
+git. In indirect mode, it can just stat the symlink and see if its content
+is present, which is much faster.
+
+(There's probably also some other inneficiencies in Windows.)
+"""]]

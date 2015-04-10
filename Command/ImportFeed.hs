@@ -146,15 +146,17 @@ findDownloads u = go =<< downloadFeed u
 
 {- Feeds change, so a feed download cannot be resumed. -}
 downloadFeed :: URLString -> Annex (Maybe Feed)
-downloadFeed url = do
-	showOutput
-	uo <- Url.getUrlOptions
-	liftIO $ withTmpFile "feed" $ \f h -> do
-		fileEncoding h
-		ifM (Url.download url f uo)
-			( parseFeedString <$> hGetContentsStrict h
-			, return Nothing
-			)
+downloadFeed url
+	| Url.parseURIRelaxed url == Nothing = error "invalid feed url"
+	| otherwise = do
+		showOutput
+		uo <- Url.getUrlOptions
+		liftIO $ withTmpFile "feed" $ \f h -> do
+			hClose h
+			ifM (Url.download url f uo)
+				( parseFeedString <$> readFileStrictAnyEncoding f
+				, return Nothing
+				)
 
 performDownload :: Opts -> Cache -> ToDownload -> Annex Bool
 performDownload opts cache todownload = case location todownload of

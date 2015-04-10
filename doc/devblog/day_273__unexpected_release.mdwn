@@ -1,0 +1,15 @@
+I've had to release git-annex twice this week to fix reversions. On Monday,
+just after I made a planned release, I discovered a bug in it, and had to
+update it with a .1 release. Today's release fixes 2 other reversions
+introduced by recent changes, both only affecting the assistant.
+
+Before making today's release, I did a bunch of other minor bugfixes and
+improvements, including adding a new `contentlocationn` plumbing command.
+This release also changes `git annex add` when annex.largefiles is
+configured, so it will `git add` the non-large files. That is particularly
+useful in direct mode.
+
+I feel that the assistant needs some TLC, so I might devote a week to it in
+the latter part of this month. My current funding doesn't cover work
+on the assistant, but I should have some spare time toward the end of the
+month.

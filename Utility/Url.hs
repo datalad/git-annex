@@ -208,8 +208,7 @@ download' :: Bool -> URLString -> FilePath -> UrlOptions -> IO Bool
 download' quiet url file uo = do
 	case parseURIRelaxed url of
 		Just u
-			| uriScheme u == "file:" -> do
-				curl
+			| uriScheme u == "file:" -> curl
 			| otherwise -> ifM (inPath "wget") (wget , curl)
 		_ -> return False
   where

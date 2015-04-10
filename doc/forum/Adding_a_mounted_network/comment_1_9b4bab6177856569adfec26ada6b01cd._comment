@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmBUR4O9mofxVbpb8JV9mEbVfIYv670uJo"
+ nickname="Justin"
+ subject="comment 1"
+ date="2015-04-09T13:17:41Z"
+ content="""
+It's just a git remote..
+
+    git remote add somerepo /path/to/repo
+    git annex sync
+
+should be all you need.
+"""]]

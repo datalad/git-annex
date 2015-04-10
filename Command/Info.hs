@@ -238,7 +238,12 @@ showStat s = maybe noop calc =<< s
 repository_mode :: Stat
 repository_mode = simpleStat "repository mode" $ lift $
 	ifM isDirect 
-		( return "direct", return "indirect" )
+		( return "direct"
+		, ifM (fromRepo Git.repoIsLocalBare)
+			( return "bare"
+			, return "indirect"
+			)
+		)
 
 remote_list :: TrustLevel -> Stat
 remote_list level = stat n $ nojson $ lift $ do

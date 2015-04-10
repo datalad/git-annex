@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnVnsqEy82M-MuS2gLri-az83wSQ6lXSrc"
+ nickname="Jean"
+ subject="Ignored file imported, in spite of error message"
+ date="2015-04-08T09:08:53Z"
+ content="""
+Today I'm seeing this:
+
+    git-annex: user error (xargs [\"-0\",\"git\",\"--git-dir=/.../annex/.git\",\"--work-tree=/.../annex\",\"add\",\"--\"] exited 123)
+    failed
+    (Recording state in git...)
+    The following paths are ignored by one of your .gitignore files:
+    btsync/DCIM (1)/Camera 1/20150101090842.jpg.tmp
+    Use -f if you really want to add them.
+    fatal: no files added
+
+    git-annex: user error (xargs [\"-0\",\"git\",\"--git-dir=/.../annex/.git\",\"--work-tree=/.../annex\",\"add\",\"--\"] exited 123)
+    failed
+    (Recording state in git...)
+    ^C
+
+This repeats until I kill the import.
+
+Subsequently I see that the ignored file was in fact imported:
+
+    $ ls -lh \"btsync/DCIM (1)/Camera 1/20150101090842.jpg.tmp\"
+    lrwxrwxrwx 1 user user 203 Jan 11 14:11 btsync/DCIM (1)/Camera 1/20150101090842.jpg.tmp -> ../../../.git/annex/objects/0K/GX/SHA256E-s0--e3b0c44298ec1c149aebe4c8996eb92427ae41e4649b934ca495991b7852b855.jpg.tmp/SHA256E-s0--e3b0c44298ec1c149aebe4c8996eb92427ae41e4649b934ca495991b7852b855.jpg.tmp
+
+In this case the original file was not deleted, because I used `import --duplicate`:
+
+    $ ls -lh \"../btsync/DCIM (1)/Camera 1/20150101090842.jpg.tmp\"
+    -rw-rw-r-- 1 user user 0 Jan 11 14:11 ../btsync/DCIM (1)/Camera 1/20150101090842.jpg.tmp
+
+
+"""]]

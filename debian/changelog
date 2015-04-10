@@ -1,11 +1,37 @@
-git-annex (5.20150406.2) UNRELEASED; urgency=medium
+git-annex (5.20150410) UNRELEASED; urgency=medium
 
+  * Fix activity log parsing, which caused the log to not retain
+    activity from other uuids.
+  * Union merge could fall over if there was a file in the repository
+    with the same name as a git ref. Now fixed.
+
+ -- Joey Hess <id@joeyh.name>  Thu, 09 Apr 2015 20:59:43 -0400
+
+git-annex (5.20150409) unstable; urgency=medium
+
+  * This fixes a bug in the assistant introduced by the literal pathspec
+    changes in version 5.20150406.
   * --quiet now suppresses progress displays from eg, rsync.
     (Second time's the charm..)
   * fromkey, registerurl: When reading from stdin, allow the
     filename and url, respectively, to contain whitespace.
+  * add: If annex.largefiles is set and does not match a file that's being
+    added, the file will be checked into git rather than being added to the
+    annex. Previously, git annex add skipped over such files; this new
+    behavior is more useful in direct mode.
+  * proxy: Made it work when run in a new repository before initial
+    commit.
+  * info: Display repository mode: bare when in a bare (non-direct mode)
+    repo.
+  * importfeed: Fix feed download when curl is used.
+  * importfeed: Error out when passed a non-url.
+  * webapp: When adding another local repository, and combining it
+    with the current repository, the new repository's remote path
+    was set to "." rather than the path to the current repository.
+    This was a reversion caused by the relative path changes in 5.20150113.
+  * contentlocationn: New plumbing command.
 
- -- Joey Hess <id@joeyh.name>  Mon, 06 Apr 2015 20:14:20 -0400
+ -- Joey Hess <id@joeyh.name>  Thu, 09 Apr 2015 15:06:38 -0400
 
 git-annex (5.20150406.1) unstable; urgency=medium
 
