@@ -51,7 +51,7 @@ mergeIndex h repo bs = forM_ bs $ \b ->
 
 {- For merging two trees. -}
 mergeTrees :: Ref -> Ref -> CatFileHandle -> Repo -> Streamer
-mergeTrees (Ref x) (Ref y) h = doMerge h $ "diff-tree":diffOpts ++ [x, y]
+mergeTrees (Ref x) (Ref y) h = doMerge h $ "diff-tree":diffOpts ++ [x, y, "--"]
 
 {- For merging a single tree into the index. -}
 mergeTreeIndex :: Ref -> CatFileHandle -> Repo -> Streamer
