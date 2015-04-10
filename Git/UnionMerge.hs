@@ -55,8 +55,8 @@ mergeTrees (Ref x) (Ref y) h = doMerge h $ "diff-tree":diffOpts ++ [x, y]
 
 {- For merging a single tree into the index. -}
 mergeTreeIndex :: Ref -> CatFileHandle -> Repo -> Streamer
-mergeTreeIndex (Ref x) h = doMerge h $
-	"diff-index" : diffOpts ++ ["--cached", x]
+mergeTreeIndex (Ref r) h = doMerge h $
+	"diff-index" : diffOpts ++ ["--cached", r, "--"]
 
 diffOpts :: [String]
 diffOpts = ["--raw", "-z", "-r", "--no-renames", "-l0"]

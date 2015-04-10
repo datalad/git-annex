@@ -1,6 +1,9 @@
 git-annex (5.20150410) UNRELEASED; urgency=medium
 
-  * Fix activity log parsing.
+  * Fix activity log parsing, which caused the log to not retain
+    activity from other uuids.
+  * Union merge could fall over if there was a file in the repository
+    with the same name as a git ref. Now fixed.
 
  -- Joey Hess <id@joeyh.name>  Thu, 09 Apr 2015 20:59:43 -0400
 
