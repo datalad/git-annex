@@ -11,6 +11,7 @@ module CmdLine.Action where
 
 import Common.Annex
 import qualified Annex
+import Annex.Concurrent
 import Types.Command
 import qualified Annex.Queue
 import Messages.Internal
@@ -18,10 +19,7 @@ import Types.Messages
 
 import Control.Concurrent.Async
 import Control.Exception (throwIO)
-import qualified Data.Map as M
 import Data.Either
-
-type CommandActionRunner = CommandStart -> CommandCleanup
 
 {- Runs a command, starting with the check stage, and then
  - the seek stage. Finishes by running the continutation, and 
@@ -55,7 +53,7 @@ commandAction a = withOutputType go
 		ws <- Annex.getState Annex.workers
 		(st, ws') <- if null ws
 			then do
-				st <- newWorkerState
+				st <- dupState
 				return (st, replicate (n-1) (Left st))
 			else do
 				l <- liftIO $ drainTo (n-1) ws
@@ -75,11 +73,7 @@ commandAction a = withOutputType go
 finishCommandActions :: Annex ()
 finishCommandActions = do
 	l <- liftIO . drainTo 0 =<< Annex.getState Annex.workers
-	forM_ (lefts l) $ \st -> do
-		forM_ (M.toList $ Annex.cleanup st) $
-			uncurry Annex.addCleanup
-		Annex.changeState $ \s ->
-			s { Annex.errcounter = Annex.errcounter s + Annex.errcounter st }
+	forM_ (lefts l) mergeState
 
 {- Wait for Asyncs from the list to finish, replacing them with their
  - final AnnexStates, until the list of remaining Asyncs is not larger
@@ -110,22 +104,10 @@ findFreeSlot :: [Either Annex.AnnexState (Async Annex.AnnexState)] -> Annex (Ann
 findFreeSlot = go []
   where
 	go c [] = do
-		st <- newWorkerState
+		st <- dupState
 		return (st, c)
 	go c (Left st:rest) = return (st, c ++ rest)
 	go c (v:rest) = go (v:c) rest
-
-{- From the current Annex state, get a state that is suitable for being
- - used for a worker thread. Avoid sharing eg, open file handles. -}
-newWorkerState :: Annex Annex.AnnexState
-newWorkerState = do
-	st <- Annex.getState id
-	return $ st
-		{ Annex.workers = []
-		, Annex.catfilehandles = M.empty
-		, Annex.checkattrhandle = Nothing
-		, Annex.checkignorehandle = Nothing
-		} 
 
 {- Like commandAction, but without the concurrency. -}
 includeCommandAction :: CommandStart -> CommandCleanup
