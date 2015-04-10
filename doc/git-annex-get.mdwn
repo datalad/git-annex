@@ -25,6 +25,11 @@ or transferring them from some kind of key-value store.
   Normally git-annex will choose which remotes to get the content
   from. Use this option to specify which remote to use.
 
+* `--jobs=N` `-JN`
+
+  Enables parallel download with up to the specified number of jobs
+  running at once. For example: `-J10`
+
 * `--all`
 
   Rather than specifying a filename or path to get, this option can be

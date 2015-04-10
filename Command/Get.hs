@@ -21,7 +21,7 @@ cmd = [withOptions getOptions $ command "get" paramPaths seek
 	SectionCommon "make content of annexed files available"]
 
 getOptions :: [Option]
-getOptions = fromOption : annexedMatchingOptions ++ keyOptions ++ [autoOption]
+getOptions = fromOption : autoOption : jobsOption : annexedMatchingOptions ++ keyOptions
 
 seek :: CommandSeek
 seek ps = do

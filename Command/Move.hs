@@ -22,7 +22,7 @@ cmd = [withOptions moveOptions $ command "move" paramPaths seek
 	SectionCommon "move content of files to/from another repository"]
 
 moveOptions :: [Option]
-moveOptions = fromToOptions ++ keyOptions ++ annexedMatchingOptions
+moveOptions = fromToOptions ++ [jobsOption] ++ keyOptions ++ annexedMatchingOptions
 
 seek :: CommandSeek
 seek ps = do

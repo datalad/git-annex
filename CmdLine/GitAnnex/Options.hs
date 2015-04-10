@@ -138,6 +138,14 @@ jsonOption :: Option
 jsonOption = Option ['j'] ["json"] (NoArg (Annex.setOutput JSONOutput))
 	"enable JSON output"
 
+jobsOption :: Option
+jobsOption = Option ['J'] ["jobs"] (ReqArg set paramNumber)
+	"enable concurrent jobs"
+  where
+	set s = case readish s of
+		Nothing -> error "Bad --jobs number"
+		Just n -> Annex.setOutput (ParallelOutput n)
+
 timeLimitOption :: Option
 timeLimitOption = Option ['T'] ["time-limit"]
 	(ReqArg Limit.addTimeLimit paramTime)

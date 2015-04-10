@@ -4,6 +4,8 @@ git-annex (5.20150410) UNRELEASED; urgency=medium
     activity from other uuids.
   * Union merge could fall over if there was a file in the repository
     with the same name as a git ref. Now fixed.
+  * get, move, copy, mirror: Concurrent downloads and uploads are
+    now supported! For example: git-annex get -J10
 
  -- Joey Hess <id@joeyh.name>  Thu, 09 Apr 2015 20:59:43 -0400
 

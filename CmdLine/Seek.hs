@@ -84,7 +84,7 @@ withFilesInRefs a = mapM_ go
 			case v of
 				Nothing -> noop
 				Just k -> whenM (matcher $ MatchingKey k) $
-					void $ commandAction $ a f k
+					commandAction $ a f k
 
 withPathContents :: ((FilePath, FilePath) -> CommandStart) -> CommandSeek
 withPathContents a params = do

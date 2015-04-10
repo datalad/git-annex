@@ -42,7 +42,7 @@ type Reason = String
  - The runner is used to run commands, and so can be either callCommand
  - or commandAction.
  -}
-handleDropsFrom :: [UUID] -> [Remote] -> Reason -> Bool -> Key -> AssociatedFile -> Maybe Remote -> CommandActionRunner -> Annex ()
+handleDropsFrom :: [UUID] -> [Remote] -> Reason -> Bool -> Key -> AssociatedFile -> Maybe Remote -> (CommandStart -> CommandCleanup) -> Annex ()
 handleDropsFrom locs rs reason fromhere key afile knownpresentremote runner = do
 	fs <- ifM isDirect
 		( do

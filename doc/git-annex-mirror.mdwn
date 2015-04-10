@@ -31,6 +31,11 @@ contents.
   Use the remote as the source repository, and mirror its contents to the local
   repository.
 
+* `--jobs=N` `-JN`
+
+  Enables parallel transfers with up to the specified number of jobs
+  running at once. For example: `-J10`
+
 * `--all`
 
   Mirror all objects stored in the git annex, not only objects used by

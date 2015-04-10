@@ -68,6 +68,7 @@ import Utility.Url
 
 import "mtl" Control.Monad.Reader
 import Control.Concurrent
+import Control.Concurrent.Async
 import qualified Data.Map as M
 import qualified Data.Set as S
 
@@ -133,6 +134,7 @@ data AnnexState = AnnexState
 #endif
 	, existinghooks :: M.Map Git.Hook.Hook Bool
 	, desktopnotify :: DesktopNotify
+	, workers :: [Either AnnexState (Async AnnexState)]
 	}
 
 newState :: GitConfig -> Git.Repo -> AnnexState
@@ -178,6 +180,7 @@ newState c r = AnnexState
 #endif
 	, existinghooks = M.empty
 	, desktopnotify = mempty
+	, workers = []
 	}
 
 {- Makes an Annex state object for the specified git repo.

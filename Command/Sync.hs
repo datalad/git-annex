@@ -389,7 +389,7 @@ syncFile rs f k = do
 	u <- getUUID
 	let locs' = concat [[u | got], putrs, locs]
 
-	-- Using callCommandAction rather than commandAction for drops,
+	-- Using callCommandAction rather than includeCommandAction for drops,
 	-- because a failure to drop does not mean the sync failed.
 	handleDropsFrom locs' rs "unwanted" True k (Just f)
 		Nothing callCommandAction
@@ -403,7 +403,7 @@ syncFile rs f k = do
 		( return [ get have ]
 		, return []
 		)
-	get have = commandAction $ do
+	get have = includeCommandAction $ do
 		showStart "get" f
 		next $ next $ getViaTmp k $ \dest -> getKeyFile' k (Just f) dest have
 
@@ -415,7 +415,7 @@ syncFile rs f k = do
 		, return []
 		)
 	put dest = do
-		ok <- commandAction $ do
+		ok <- includeCommandAction $ do
 			showStart "copy" f
 			Command.Move.toStart' dest False (Just f) k
 		return (ok, if ok then Just (Remote.uuid dest) else Nothing)
