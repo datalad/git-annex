@@ -1,3 +1,9 @@
+git-annex (5.20150410) UNRELEASED; urgency=medium
+
+  * Fix activity log parsing.
+
+ -- Joey Hess <id@joeyh.name>  Thu, 09 Apr 2015 20:59:43 -0400
+
 git-annex (5.20150409) unstable; urgency=medium
 
   * This fixes a bug in the assistant introduced by the literal pathspec
