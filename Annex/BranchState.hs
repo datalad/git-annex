@@ -16,11 +16,9 @@ import qualified Annex
 getState :: Annex BranchState
 getState = Annex.getState Annex.branchstate
 
-setState :: BranchState -> Annex ()
-setState state = Annex.changeState $ \s -> s { Annex.branchstate = state }
-
 changeState :: (BranchState -> BranchState) -> Annex ()
-changeState changer = setState =<< changer <$> getState
+changeState changer = Annex.changeState $ \s -> 
+	s { Annex.branchstate = changer (Annex.branchstate s) }
 
 {- Runs an action to check that the index file exists, if it's not been
  - checked before in this run of git-annex. -}
