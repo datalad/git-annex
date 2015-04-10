@@ -355,7 +355,7 @@ dropKey r key
 
 {- Tries to copy a key's content from a remote's annex to a file. -}
 copyFromRemote :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
-copyFromRemote r key file dest p = metered (Just p) key $
+copyFromRemote r key file dest p = parallelMetered (Just p) key $
 	copyFromRemote' r key file dest
 
 copyFromRemote' :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
@@ -456,7 +456,7 @@ copyFromRemoteCheap r key file
 		liftIO $ catchBoolIO $ createSymbolicLink loc file >> return True
 	| Git.repoIsSsh (repo r) =
 		ifM (Annex.Content.preseedTmp key file)
-			( metered Nothing key $ copyFromRemote' r key Nothing file
+			( parallelMetered Nothing key $ copyFromRemote' r key Nothing file
 			, return False
 			)
 	| otherwise = return False
