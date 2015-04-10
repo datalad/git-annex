@@ -10,7 +10,6 @@ module Command.ContentLocation where
 import Common.Annex
 import Command
 import Annex.Content
-import Types.Key
 
 cmd :: [Command]
 cmd = [noCommit $ noMessages $
