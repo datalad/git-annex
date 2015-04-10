@@ -190,6 +190,6 @@ disableDebugOutput = updateGlobalLogger rootLoggerName $ setLevel NOTICE
 commandProgressDisabled :: Annex Bool
 commandProgressDisabled = withOutputType $ \t -> return $ case t of
 	QuietOutput -> True
-	ProgressOutput -> True
+	ParallelOutput _ -> True
 	JSONOutput -> True
 	NormalOutput -> False

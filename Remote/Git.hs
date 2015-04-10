@@ -52,6 +52,7 @@ import qualified Remote.GCrypt
 import Annex.Path
 import Creds
 import Annex.CatFile
+import Messages.Progress
 
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
@@ -354,9 +355,11 @@ dropKey r key
 
 {- Tries to copy a key's content from a remote's annex to a file. -}
 copyFromRemote :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
-copyFromRemote r key file dest _p = copyFromRemote' r key file dest
-copyFromRemote' :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
-copyFromRemote' r key file dest
+copyFromRemote r key file dest p = metered (Just p) key $
+	copyFromRemote' r key file dest
+
+copyFromRemote' :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
+copyFromRemote' r key file dest meterupdate
 	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) (return False) $ do
 		params <- Ssh.rsyncParams r Download
 		u <- getUUID
@@ -434,7 +437,9 @@ copyFromRemote' r key file dest
 			send bytes
 			forever $
 				send =<< readSV v
-		let feeder = writeSV v . fromBytesProcessed
+		let feeder = \n -> do
+			meterupdate n
+			writeSV v (fromBytesProcessed n)
 		let cleanup = do
 			void $ tryIO $ killThread tid
 			tryNonAsync $
@@ -451,7 +456,7 @@ copyFromRemoteCheap r key file
 		liftIO $ catchBoolIO $ createSymbolicLink loc file >> return True
 	| Git.repoIsSsh (repo r) =
 		ifM (Annex.Content.preseedTmp key file)
-			( copyFromRemote' r key Nothing file
+			( metered Nothing key $ copyFromRemote' r key Nothing file
 			, return False
 			)
 	| otherwise = return False

@@ -26,6 +26,14 @@ metered combinemeterupdate key a = go (keySize key)
 	go (Just size) = meteredBytes combinemeterupdate size a
 	go _ = a (const noop)
 
+{- Use when the progress meter is only desired for parallel
+ - mode; as when a command's own progress output is preferred. -}
+parallelMetered :: Maybe MeterUpdate -> Key -> (MeterUpdate -> Annex a) -> Annex a
+parallelMetered combinemeterupdate key a = withOutputType go
+  where
+	go (ParallelOutput _) = metered combinemeterupdate key a
+	go _ = a (fromMaybe (const noop) combinemeterupdate)
+
 {- Shows a progress meter while performing an action on a given number
  - of bytes. -}
 meteredBytes :: Maybe MeterUpdate -> Integer -> (MeterUpdate -> Annex a) -> Annex a
@@ -99,5 +107,5 @@ mkStderrRelayer = do
 mkStderrEmitter :: Annex (String -> IO ())
 mkStderrEmitter = withOutputType go
   where
-	go ProgressOutput = return $ \s -> hPutStrLn stderr ("E: " ++ s)
+	go (ParallelOutput _) = return $ \s -> hPutStrLn stderr ("E: " ++ s)
 	go _ = return (hPutStrLn stderr)

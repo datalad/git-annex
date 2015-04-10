@@ -17,7 +17,7 @@ handleMessage json normal = withOutputType go
   where
 	go NormalOutput = liftIO normal
 	go QuietOutput = q
-	go ProgressOutput = q
+	go (ParallelOutput _) = q
 	go JSONOutput = liftIO $ flushed json
 
 q :: Monad m => m ()
