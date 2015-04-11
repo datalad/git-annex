@@ -24,10 +24,10 @@ import Types.Remote (RemoteConfig)
 import Data.Either
 import qualified Data.Set as S
 
-checkFileMatcher :: (FileMatcher Annex) -> FilePath -> Annex Bool
+checkFileMatcher :: FileMatcher Annex -> FilePath -> Annex Bool
 checkFileMatcher matcher file = checkMatcher matcher Nothing (Just file) S.empty True
 
-checkMatcher :: (FileMatcher Annex) -> Maybe Key -> AssociatedFile -> AssumeNotPresent -> Bool -> Annex Bool
+checkMatcher :: FileMatcher Annex -> Maybe Key -> AssociatedFile -> AssumeNotPresent -> Bool -> Annex Bool
 checkMatcher matcher mkey afile notpresent d
 	| isEmpty matcher = return d
 	| otherwise = case (mkey, afile) of

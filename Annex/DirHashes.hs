@@ -46,7 +46,7 @@ configHashLevels d config
 	| otherwise = def
 
 branchHashDir :: GitConfig -> Key -> String
-branchHashDir config key = hashDirLower (branchHashLevels config) key
+branchHashDir = hashDirLower . branchHashLevels
 
 {- Two different directory hashes may be used. The mixed case hash
  - came first, and is fine, except for the problem of case-strict

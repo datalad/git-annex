@@ -25,7 +25,7 @@ type GitAnnexVersion = String
 data AutoUpgrade = AskUpgrade | AutoUpgrade | NoAutoUpgrade
 	deriving (Eq)
 
-toAutoUpgrade :: (Maybe String) -> AutoUpgrade
+toAutoUpgrade :: Maybe String -> AutoUpgrade
 toAutoUpgrade Nothing = AskUpgrade
 toAutoUpgrade (Just s)
 	| s == "ask" = AskUpgrade

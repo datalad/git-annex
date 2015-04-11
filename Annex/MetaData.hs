@@ -36,7 +36,7 @@ import Data.Time.Clock.POSIX
  -}
 genMetaData :: Key -> FilePath -> FileStatus -> Annex ()
 genMetaData key file status = do
-	maybe noop (flip copyMetaData key) =<< catKeyFileHEAD file
+	maybe noop (`copyMetaData` key) =<< catKeyFileHEAD file
 	whenM (annexGenMetaData <$> Annex.getGitConfig) $ do
 		curr <- getCurrentMetaData key
 		addMetaData key (dateMetaData mtime curr)
@@ -52,4 +52,4 @@ dateMetaData mtime old = MetaData $ M.fromList $ filter isnew
 	]
   where
 	isnew (f, _) = S.null (currentMetaDataValues f old)
-	(y, m, _d) = toGregorian $ utctDay $ mtime
+	(y, m, _d) = toGregorian $ utctDay mtime

@@ -538,7 +538,7 @@ getKeysPresent keyloc = do
 	 -}
 	getstate direct = do
 		when direct $
-			void $ inodesChanged
+			void inodesChanged
 		Annex.getState id
 
 {- Things to do to record changes to content when shutting down.

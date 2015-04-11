@@ -43,7 +43,7 @@ notifyTransfer direction (Just f) a = do
 			return ok
 		else a NotifyWitness
 #else
-notifyTransfer _ (Just _) a = do a NotifyWitness
+notifyTransfer _ (Just _) a = a NotifyWitness
 #endif
 
 notifyDrop :: Maybe FilePath -> Bool -> Annex ()
