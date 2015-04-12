@@ -11,9 +11,10 @@ module Config.NumCopies (
 	getFileNumCopies,
 	getGlobalFileNumCopies,
 	getNumCopies,
-	numCopiesCheck,
 	deprecatedNumCopies,
-	defaultNumCopies
+	defaultNumCopies,
+	numCopiesCheck,
+	numCopiesCheck',
 ) where
 
 import Common.Annex
@@ -75,6 +76,10 @@ getFileNumCopies' file = maybe getGlobalNumCopies (return . Just) =<< getattr
  - belived to exist, and the configured value. -}
 numCopiesCheck :: FilePath -> Key -> (Int -> Int -> v) -> Annex v
 numCopiesCheck file key vs = do
-	NumCopies needed <- getFileNumCopies file
 	have <- trustExclude UnTrusted =<< Remote.keyLocations key
+	numCopiesCheck' file vs have
+
+numCopiesCheck' :: FilePath -> (Int -> Int -> v) -> [UUID] -> Annex v
+numCopiesCheck' file vs have = do
+	NumCopies needed <- getFileNumCopies file
 	return $ length have `vs` needed
