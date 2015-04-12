@@ -77,7 +77,7 @@ emptyStatInfo = StatInfo Nothing Nothing M.empty Nothing
 type StatState = StateT StatInfo Annex
 
 cmd :: [Command]
-cmd = [noCommit $ dontCheck repoExists $ withOptions (jsonOption : annexedMatchingOptions) $
+cmd = [noCommit $ dontCheck repoExists $ withOptions (jsonOption : bytesOption : annexedMatchingOptions) $
 	command "info" (paramOptional $ paramRepeating paramItem) seek SectionQuery
 	"shows information about the specified item or the repository as a whole"]
 
@@ -291,7 +291,7 @@ local_annex_keys = stat "local annex keys" $ json show $
 
 local_annex_size :: Stat
 local_annex_size = simpleStat "local annex size" $
-	showSizeKeys <$> cachedPresentData
+	lift . showSizeKeys =<< cachedPresentData
 
 remote_annex_keys :: UUID -> Stat
 remote_annex_keys u = stat "remote annex keys" $ json show $
@@ -299,7 +299,7 @@ remote_annex_keys u = stat "remote annex keys" $ json show $
 
 remote_annex_size :: UUID -> Stat
 remote_annex_size u = simpleStat "remote annex size" $
-	showSizeKeys <$> cachedRemoteData u
+	lift . showSizeKeys =<< cachedRemoteData u
 
 known_annex_files :: Stat
 known_annex_files = stat "annexed files in working tree" $ json show $
@@ -307,7 +307,7 @@ known_annex_files = stat "annexed files in working tree" $ json show $
 
 known_annex_size :: Stat
 known_annex_size = simpleStat "size of annexed files in working tree" $
-	showSizeKeys <$> cachedReferencedData
+	lift . showSizeKeys =<< cachedReferencedData
 
 tmp_size :: Stat
 tmp_size = staleSize "temporary object directory size" gitAnnexTmpObjectDir
@@ -316,7 +316,7 @@ bad_data_size :: Stat
 bad_data_size = staleSize "bad keys size" gitAnnexBadDir
 
 key_size :: Key -> Stat
-key_size k = simpleStat "size" $ pure $ showSizeKeys $ foldKeys [k]
+key_size k = simpleStat "size" $ lift $ showSizeKeys $ foldKeys [k]
 
 key_name :: Key -> Stat
 key_name k = simpleStat "key" $ pure $ key2file k
@@ -332,7 +332,8 @@ bloom_info = simpleStat "bloom filter size" $ do
 
 	-- Two bloom filters are used at the same time, so double the size
 	-- of one.
-	size <- roughSize memoryUnits False . (* 2) . fromIntegral . fst <$>
+	sizer <- lift mkSizer
+	size <- sizer memoryUnits False . (* 2) . fromIntegral . fst <$>
 		lift Command.Unused.bloomBitsHashes
 
 	return $ size ++ note
@@ -359,13 +360,14 @@ disk_size = simpleStat "available local disk space" $ lift $
 	calcfree
 		<$> (annexDiskReserve <$> Annex.getGitConfig)
 		<*> inRepo (getDiskFree . gitAnnexDir)
+		<*> mkSizer
   where
-	calcfree reserve (Just have) = unwords
-		[ roughSize storageUnits False $ nonneg $ have - reserve
-		, "(+" ++ roughSize storageUnits False reserve
+	calcfree reserve (Just have) sizer = unwords
+		[ sizer storageUnits False $ nonneg $ have - reserve
+		, "(+" ++ sizer storageUnits False reserve
 		, "reserved)"
 		]			
-	calcfree _ _ = "unknown"
+	calcfree _ _ _ = "unknown"
 
 	nonneg x
 		| x >= 0 = x
@@ -392,15 +394,18 @@ numcopies_stats = stat "numcopies stats" $ nojson $
 
 reposizes_stats :: Stat
 reposizes_stats = stat "repositories containing these files" $ nojson $
-	calc <$> lift uuidDescriptions <*> cachedRepoData
+	calc
+		<$> lift uuidDescriptions
+		<*> lift mkSizer
+		<*> cachedRepoData
   where
-	calc descm = multiLine
+	calc descm sizer = multiLine
 		. format
-		. map (\(u, d) -> line descm u d)
+		. map (\(u, d) -> line descm sizer u d)
 		. sortBy (flip (comparing (sizeKeys . snd))) . M.toList
-	line descm u d = (sz, fromUUID u ++ " -- " ++ desc)
+	line descm sizer u d = (sz, fromUUID u ++ " -- " ++ desc)
 	  where
-		sz = roughSize storageUnits True (sizeKeys d)
+		sz = sizer storageUnits True (sizeKeys d)
 		desc = fromMaybe "" (M.lookup u descm)
 	format l = map (\(c1, c2) -> lpad maxc1 c1 ++ ": " ++ c2 ) l
 	  where
@@ -510,10 +515,12 @@ updateNumCopiesStats file (NumCopiesStats m) locs = do
 	let !ret = NumCopiesStats m'
 	return ret
 
-showSizeKeys :: KeyData -> String
-showSizeKeys d = total ++ missingnote
+showSizeKeys :: KeyData -> Annex String
+showSizeKeys d = do
+	sizer <- mkSizer
+	return $ total sizer ++ missingnote
   where
-	total = roughSize storageUnits False $ sizeKeys d
+	total sizer = sizer storageUnits False $ sizeKeys d
 	missingnote
 		| unknownSizeKeys d == 0 = ""
 		| otherwise = aside $
@@ -527,8 +534,9 @@ staleSize label dirspec = go =<< lift (dirKeys dirspec)
 	go keys = onsize =<< sum <$> keysizes keys
 	onsize 0 = nostat
 	onsize size = stat label $
-		json (++ aside "clean up with git-annex unused") $
-			return $ roughSize storageUnits False size
+		json (++ aside "clean up with git-annex unused") $ do
+			sizer <- lift mkSizer
+			return $ sizer storageUnits False size
 	keysizes keys = do
 		dir <- lift $ fromRepo dirspec
 		liftIO $ forM keys $ \k -> catchDefaultIO 0 $
@@ -539,3 +547,12 @@ aside s = " (" ++ s ++ ")"
 
 multiLine :: [String] -> String
 multiLine = concatMap (\l -> "\n\t" ++ l)
+
+mkSizer :: Annex ([Unit] -> Bool -> ByteSize -> String)
+mkSizer = ifM (getOptionFlag bytesOption)
+	( return (const $ const show)
+	, return roughSize
+	)
+
+bytesOption :: Option
+bytesOption = flagOption [] "bytes" "display file sizes in bytes"
