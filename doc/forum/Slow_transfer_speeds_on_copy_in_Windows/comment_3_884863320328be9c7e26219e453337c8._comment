@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlh1G1u_AMJEyADqlfuzV2cePniocDyK6A"
+ nickname="Adam"
+ subject="comment 3"
+ date="2015-04-13T16:39:15Z"
+ content="""
+Verified to be rsync 3.0.9 that is bundled with git annex which is causing the slowdown.  Updated to cwRsync 3.1.1 and it was fast again.  Problems with my environment, however, made this solution less than optimal.  The ssh that is bundled with cwRsync caused it to look at the wrong location for my home dir.  So, my ssh keys/authorized_keys no longer work.  It seems it doesn't honor $HOME.  There are also two ssh's now after git annex installation, one in the cmd folder and one in the bin folder.  It seems to prefer bin when using the git terminal.  
+"""]]
