@@ -85,8 +85,14 @@ uninstaller = "git-annex-uninstall.exe"
 gitInstallDir :: Exp FilePath
 gitInstallDir = fromString "$PROGRAMFILES\\Git"
 
+-- This intentionall has a different name than git-annex or
+-- git-annex-webapp, since it is itself treated as an executable file.
+-- Also, on XP, the filename is displayed, not the description.
 startMenuItem :: Exp FilePath
-startMenuItem = "$SMPROGRAMS/git-annex.lnk"
+startMenuItem = "$SMPROGRAMS/Git Annex (Webapp).lnk"
+
+oldStartMenuItem :: Exp FilePath
+oldStartMenuItem = "$SMPROGRAMS/git-annex.lnk"
 
 autoStartItem :: Exp FilePath
 autoStartItem = "$SMSTARTUP/git-annex-autostart.lnk"
@@ -125,8 +131,9 @@ makeInstaller gitannex license htmlhelp extrabins launchers = nsis $ do
 		, StartOptions "SW_SHOWNORMAL"
 		, IconFile "$INSTDIR/cmd/git-annex.exe"
 		, IconIndex 2
-		, Description "git-annex webapp"
+		, Description "Git Annex (Webapp)"
 		]
+	delete [RebootOK] $ oldStartMenuItem
 	createShortcut autoStartItem
 		[ Target "wscript.exe"
 		, Parameters "\"$INSTDIR/git-annex-autostart.vbs\""

@@ -10,3 +10,6 @@ git version 1.9.5.msysgit.1. git-annex version: 5.20150317-g237d5b0. Windows 7 P
 ### Please provide any additional information below.
 
 This seems to be fixed by editing the shortcuts and setting the "Start in" parameter to the git installation directory. For me this is "C:\Program Files (x86)\Git".
+
+> I've renamed it. The old git-annex.lnk will be
+> deleted by the installer if it exists.
