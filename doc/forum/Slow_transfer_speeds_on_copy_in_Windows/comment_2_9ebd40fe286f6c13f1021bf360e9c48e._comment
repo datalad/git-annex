@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlh1G1u_AMJEyADqlfuzV2cePniocDyK6A"
+ nickname="Adam"
+ subject="comment 2"
+ date="2015-04-13T14:21:12Z"
+ content="""
+rsync is indeed slow...  The version bundled with msysgit is being used, and I read it has performance issues.  Will try a different version of rsync, perhaps in cygwin.
+"""]]
