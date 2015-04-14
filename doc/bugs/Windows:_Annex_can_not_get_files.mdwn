@@ -158,3 +158,5 @@ ok
 C:\annex1>cd \annex2
 
 """]]
+
+> [[fixed|done]]; a simple path calculation bug. --[[Joey]]
