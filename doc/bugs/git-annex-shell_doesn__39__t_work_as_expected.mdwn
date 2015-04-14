@@ -117,3 +117,5 @@ git-annex: unknown command anarc.at
 </pre>
 
 Turning off `sshcaching` seems to work around the issue. Note that this happens even if the git repo is moved to a non-NFS filesystem, so I have the feeling it's not directly related to [this bugfix](http://source.git-annex.branchable.com/?p=source.git;a=commit;h=bd110516c09d318b298804efc4ee888270f3d601).
+
+> [[done]]
