@@ -157,10 +157,10 @@ specialRemote' :: SpecialRemoteCfg -> RemoteModifier
 specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckpresent baser = encr
   where
 	encr = baser
-		{ storeKey = \k _f p -> cip >>= storeKeyGen k p
-		, retrieveKeyFile = \k _f d p -> cip >>= retrieveKeyFileGen k d p
-		, retrieveKeyFileCheap = \k d -> cip >>= maybe
-			(retrieveKeyFileCheap baser k d)
+		{ storeKey = \k f p -> cip >>= storeKeyGen k f p
+		, retrieveKeyFile = \k f d p -> cip >>= retrieveKeyFileGen k f d p
+		, retrieveKeyFileCheap = \k f d -> cip >>= maybe
+			(retrieveKeyFileCheap baser k f d)
 			-- retrieval of encrypted keys is never cheap
 			(\_ -> return False)
 		, removeKey = \k -> cip >>= removeKeyGen k
@@ -182,10 +182,10 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 	safely a = catchNonAsync a (\e -> warning (show e) >> return False)
 
 	-- chunk, then encrypt, then feed to the storer
-	storeKeyGen k p enc = safely $ preparestorer k $ safely . go
+	storeKeyGen k f p enc = safely $ preparestorer k $ safely . go
 	  where
 		go (Just storer) = sendAnnex k rollback $ \src ->
-			displayprogress p k $ \p' ->
+			displayprogress p k f $ \p' ->
 				storeChunks (uuid baser) chunkconfig k src p'
 					(storechunk enc storer)
 					(checkPresent baser)
@@ -200,10 +200,10 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 					storer (enck k) (ByteContent encb) p
 
 	-- call retrieve-r to get chunks; decrypt them; stream to dest file
-	retrieveKeyFileGen k dest p enc =
+	retrieveKeyFileGen k f dest p enc =
 		safely $ prepareretriever k $ safely . go
 	  where
-		go (Just retriever) = displayprogress p k $ \p' ->
+		go (Just retriever) = displayprogress p k f $ \p' ->
 			retrieveChunks retriever (uuid baser) chunkconfig
 				enck k dest p' (sink dest enc)
 		go Nothing = return False
@@ -223,8 +223,8 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 
 	chunkconfig = chunkConfig cfg
 
-	displayprogress p k a
-		| displayProgress cfg = metered (Just p) k a
+	displayprogress p k f a
+		| displayProgress cfg = metered (Just p) k f a
 		| otherwise = a p
 
 {- Sink callback for retrieveChunks. Stores the file content into the

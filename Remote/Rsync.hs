@@ -191,8 +191,8 @@ retrieve o f k p =
 	unlessM (rsyncRetrieve o k f (Just p)) $
 		error "rsync failed"
 
-retrieveCheap :: RsyncOpts -> Key -> FilePath -> Annex Bool
-retrieveCheap o k f = ifM (preseedTmp k f) ( rsyncRetrieve o k f Nothing , return False )
+retrieveCheap :: RsyncOpts -> Key -> AssociatedFile -> FilePath -> Annex Bool
+retrieveCheap o k _af f = ifM (preseedTmp k f) ( rsyncRetrieve o k f Nothing , return False )
 
 remove :: RsyncOpts -> Remover
 remove o k = do

@@ -148,8 +148,8 @@ retrieve buprepo = byteRetriever $ \k sink -> do
 	liftIO (hClose h >> forceSuccessProcess p pid)
 		`after` (sink =<< liftIO (L.hGetContents h))
 
-retrieveCheap :: BupRepo -> Key -> FilePath -> Annex Bool
-retrieveCheap _ _ _ = return False
+retrieveCheap :: BupRepo -> Key -> AssociatedFile -> FilePath -> Annex Bool
+retrieveCheap _ _ _ _ = return False
 
 {- Cannot revert having stored a key in bup, but at least the data for the
  - key will be used for deltaing data of other keys stored later.

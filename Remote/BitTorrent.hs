@@ -93,8 +93,8 @@ downloadKey key _file dest p =
 				, return False
 				)
 
-downloadKeyCheap :: Key -> FilePath -> Annex Bool
-downloadKeyCheap _ _ = return False
+downloadKeyCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
+downloadKeyCheap _ _ _ = return False
 
 uploadKey :: Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 uploadKey _ _ _ = do

@@ -241,8 +241,8 @@ retrieve h = fileRetriever $ \f k p -> liftIO $ runResourceT $ do
 					S.hPut fh bs
 				sinkprogressfile fh meterupdate sofar'
 
-retrieveCheap :: Key -> FilePath -> Annex Bool
-retrieveCheap _ _ = return False
+retrieveCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
+retrieveCheap _ _ _ = return False
 
 {- Internet Archive doesn't easily allow removing content.
  - While it may remove the file, there are generally other files

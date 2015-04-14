@@ -156,17 +156,17 @@ retrieve d (LegacyChunks _) = Legacy.retrieve locations d
 retrieve d _ = simplyPrepare $ byteRetriever $ \k sink ->
 	sink =<< liftIO (L.readFile =<< getLocation d k)
 
-retrieveCheap :: FilePath -> ChunkConfig -> Key -> FilePath -> Annex Bool
+retrieveCheap :: FilePath -> ChunkConfig -> Key -> AssociatedFile -> FilePath -> Annex Bool
 -- no cheap retrieval possible for chunks
-retrieveCheap _ (UnpaddedChunks _) _ _ = return False
-retrieveCheap _ (LegacyChunks _) _ _ = return False
+retrieveCheap _ (UnpaddedChunks _) _ _ _ = return False
+retrieveCheap _ (LegacyChunks _) _ _ _ = return False
 #ifndef mingw32_HOST_OS
-retrieveCheap d NoChunks k f = liftIO $ catchBoolIO $ do
+retrieveCheap d NoChunks k _af f = liftIO $ catchBoolIO $ do
 	file <- getLocation d k
 	createSymbolicLink file f
 	return True
 #else
-retrieveCheap _ _ _ _ = return False
+retrieveCheap _ _ _ _ _ = return False
 #endif
 
 remove :: FilePath -> Remover

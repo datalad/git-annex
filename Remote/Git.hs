@@ -355,7 +355,7 @@ dropKey r key
 
 {- Tries to copy a key's content from a remote's annex to a file. -}
 copyFromRemote :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
-copyFromRemote r key file dest p = parallelMetered (Just p) key $
+copyFromRemote r key file dest p = parallelMetered (Just p) key file $
 	copyFromRemote' r key file dest
 
 copyFromRemote' :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
@@ -447,26 +447,27 @@ copyFromRemote' r key file dest meterupdate
 					=<< tryTakeMVar pidv
 		bracketIO noop (const cleanup) (const $ a feeder)
 
-copyFromRemoteCheap :: Remote -> Key -> FilePath -> Annex Bool
+copyFromRemoteCheap :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
 #ifndef mingw32_HOST_OS
-copyFromRemoteCheap r key file
+copyFromRemoteCheap r key af file
 	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) (return False) $ do
 		loc <- liftIO $ gitAnnexLocation key (repo r) $
 			fromJust $ remoteGitConfig $ gitconfig r
 		liftIO $ catchBoolIO $ createSymbolicLink loc file >> return True
 	| Git.repoIsSsh (repo r) =
 		ifM (Annex.Content.preseedTmp key file)
-			( parallelMetered Nothing key $ copyFromRemote' r key Nothing file
+			( parallelMetered Nothing key af $
+				copyFromRemote' r key af file
 			, return False
 			)
 	| otherwise = return False
 #else
-copyFromRemoteCheap _ _ _ = return False
+copyFromRemoteCheap _ _ _ _ = return False
 #endif
 
 {- Tries to copy a key's content to a remote's annex. -}
 copyToRemote :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-copyToRemote r key file p = parallelMetered (Just p) key $ copyToRemote' r key file
+copyToRemote r key file p = parallelMetered (Just p) key file $ copyToRemote' r key file
 
 copyToRemote' :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 copyToRemote' r key file p

@@ -142,8 +142,8 @@ retrieve ddarrepo = byteRetriever $ \k sink -> do
 	liftIO (hClose h >> forceSuccessProcess p pid)
 		`after` (sink =<< liftIO (L.hGetContents h))
 
-retrieveCheap :: Key -> FilePath -> Annex Bool
-retrieveCheap _ _ = return False
+retrieveCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
+retrieveCheap _ _ _ = return False
 
 remove :: DdarRepo -> Remover
 remove ddarrepo key = do

@@ -130,8 +130,8 @@ retrieve h = fileRetriever $ \d k _p ->
 	unlessM (runHook h "retrieve" k (Just d) $ return True) $
 		error "failed to retrieve content"
 
-retrieveCheap :: HookName -> Key -> FilePath -> Annex Bool
-retrieveCheap _ _ _ = return False
+retrieveCheap :: HookName -> Key -> AssociatedFile -> FilePath -> Annex Bool
+retrieveCheap _ _ _ _ = return False
 
 remove :: HookName -> Remover
 remove h k = runHook h "remove" k Nothing $ return True

@@ -135,11 +135,11 @@ performRemote key file backend numcopies remote =
 		cleanup
 		cleanup `after` a tmp
 	getfile tmp =
-		ifM (Remote.retrieveKeyFileCheap remote key tmp)
+		ifM (Remote.retrieveKeyFileCheap remote key (Just file) tmp)
 			( return True
 			, ifM (Annex.getState Annex.fast)
 				( return False
-				, Remote.retrieveKeyFile remote key Nothing tmp dummymeter
+				, Remote.retrieveKeyFile remote key (Just file) tmp dummymeter
 				)
 			)
 	dummymeter _ = noop

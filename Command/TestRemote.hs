@@ -171,7 +171,7 @@ testUnavailable st r k =
 			Remote.retrieveKeyFile r k Nothing dest nullMeterUpdate
 	, check (== Right False) "retrieveKeyFileCheap" $
 		getViaTmp k $ \dest ->
-			Remote.retrieveKeyFileCheap r k dest
+			Remote.retrieveKeyFileCheap r k Nothing dest
 	]
   where
 	check checkval desc a = testCase desc $ do

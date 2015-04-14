@@ -162,8 +162,8 @@ retrieve r k sink = go =<< glacierEnv c u
 			showLongNote "Recommend you wait up to 4 hours, and then run this command again."
 		return ok
 
-retrieveCheap :: Remote -> Key -> FilePath -> Annex Bool
-retrieveCheap _ _ _ = return False
+retrieveCheap :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
+retrieveCheap _ _ _ _ = return False
 
 remove :: Remote -> Remover
 remove r k = glacierAction r

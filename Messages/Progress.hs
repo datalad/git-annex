@@ -20,40 +20,38 @@ import Control.Concurrent
 
 {- Shows a progress meter while performing a transfer of a key.
  - The action is passed a callback to use to update the meter. -}
-metered :: Maybe MeterUpdate -> Key -> (MeterUpdate -> Annex a) -> Annex a
-metered combinemeterupdate key a = go (keySize key)
+metered :: Maybe MeterUpdate -> Key -> AssociatedFile -> (MeterUpdate -> Annex a) -> Annex a
+metered combinemeterupdate key af a = case keySize key of
+	Nothing -> nometer
+	Just size -> withOutputType (go $ fromInteger size)
   where
-	go (Just size) = meteredBytes combinemeterupdate size a
-	go _ = a (const noop)
-
-{- Use when the progress meter is only desired for parallel
- - mode; as when a command's own progress output is preferred. -}
-parallelMetered :: Maybe MeterUpdate -> Key -> (MeterUpdate -> Annex a) -> Annex a
-parallelMetered combinemeterupdate key a = withOutputType go
-  where
-	go (ParallelOutput _) = metered combinemeterupdate key a
-	go _ = a (fromMaybe (const noop) combinemeterupdate)
-
-{- Shows a progress meter while performing an action on a given number
- - of bytes. -}
-meteredBytes :: Maybe MeterUpdate -> Integer -> (MeterUpdate -> Annex a) -> Annex a
-meteredBytes combinemeterupdate size a = withOutputType go
-  where
-	go QuietOutput = nometer
-	go JSONOutput = nometer
-	go _ = do
+	go _ QuietOutput = nometer
+	go _ JSONOutput = nometer
+	go size _ = do
 		showOutput
 		liftIO $ putStrLn ""
+
+		let desc = truncatepretty 79 $ fromMaybe (key2file key) af
+
+		result <- liftIO newEmptyMVar
 		pg <- liftIO $ newProgressBar def
 			{ pgWidth = 79
-			, pgFormat = ":percent :bar ETA :eta"
-			, pgTotal = fromInteger size
+			, pgFormat = desc ++ " :percent :bar ETA :eta"
+			, pgTotal = size
+			, pgOnCompletion = do
+				ok <- takeMVar result
+				putStrLn $ desc ++ " " ++
+					if ok then "ok" else "failed"
 			}
 		r <- a $ liftIO . pupdate pg
 
-		-- may not be actually complete if the action failed,
-		-- but this just clears the progress bar
-		liftIO $ complete pg
+		liftIO $ do
+			-- See if the progress bar is complete or not.
+			sofar <- stCompleted <$> getProgressStats pg
+			putMVar result (sofar >= size)
+			-- May not be actually complete if the action failed,
+			-- but this just clears the progress bar.
+			complete pg
 
 		return r
 
@@ -66,6 +64,18 @@ meteredBytes combinemeterupdate size a = withOutputType go
 		maybe noop (\m -> m n) combinemeterupdate
 
 	nometer = a (const noop)
+
+	truncatepretty n s
+		| length s > n = take (n-2) s ++ ".."
+		| otherwise = s
+
+{- Use when the progress meter is only desired for parallel
+ - mode; as when a command's own progress output is preferred. -}
+parallelMetered :: Maybe MeterUpdate -> Key -> AssociatedFile -> (MeterUpdate -> Annex a) -> Annex a
+parallelMetered combinemeterupdate key af a = withOutputType go
+  where
+	go (ParallelOutput _) = metered combinemeterupdate key af a
+	go _ = a (fromMaybe (const noop) combinemeterupdate)
 
 {- Progress dots. -}
 showProgressDots :: Annex ()

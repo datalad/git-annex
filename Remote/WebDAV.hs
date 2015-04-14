@@ -116,8 +116,8 @@ finalizeStore baseurl tmp dest = do
 	maybe noop (void . mkColRecursive) (locationParent dest)
 	moveDAV baseurl tmp dest
 
-retrieveCheap :: Key -> FilePath -> Annex Bool
-retrieveCheap _ _ = return False
+retrieveCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
+retrieveCheap _ _ _ = return False
 
 retrieve :: ChunkConfig -> Maybe DavHandle -> Retriever
 retrieve _ Nothing = error "unable to connect"
