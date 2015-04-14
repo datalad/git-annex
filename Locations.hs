@@ -165,7 +165,7 @@ gitAnnexLink file key r config = do
 		{- This special case is for git submodules on filesystems not
 		 - supporting symlinks; generate link target that will
 		 - work portably. -}
-		| coreSymlinks config == False && needsSubmoduleFixup r =
+		| not (coreSymlinks config) && needsSubmoduleFixup r =
 			fromMaybe whoops $ absNormPathUnix currdir $
 				Git.repoPath r </> ".git"
 		| otherwise = Git.localGitDir r

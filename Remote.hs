@@ -83,7 +83,7 @@ remoteMap' mkv mkk = M.fromList . mapMaybe mk <$> remoteList
 		Nothing -> Nothing
 		Just k -> Just (k, mkv r)
 
-{- Map of UUIDs of remotes and their descriptions.
+{- Map of UUIDs of repositories and their descriptions.
  - The names of Remotes are added to suppliment any description that has
  - been set for a repository.  -}
 uuidDescriptions :: Annex (M.Map UUID String)
@@ -130,8 +130,7 @@ byName' n = go . filter matching <$> remoteList
 byNameOrGroup :: RemoteName -> Annex [Remote]
 byNameOrGroup n = go =<< getConfigMaybe (ConfigKey ("remotes." ++ n))
   where
-	go (Just l) = concatMap maybeToList <$>
-		mapM (byName . Just) (split " " l)
+	go (Just l) = catMaybes <$> mapM (byName . Just) (split " " l)
 	go Nothing = maybeToList <$> byName (Just n)
 
 {- Only matches remote name, not UUID -}
@@ -343,4 +342,4 @@ claimingUrl url = do
 	let web = Prelude.head $ filter (\r -> uuid r == webUUID) rs
 	fromMaybe web <$> firstM checkclaim rs
   where
-	checkclaim = maybe (pure False) (flip id url) . claimUrl
+	checkclaim = maybe (pure False) (`id` url) . claimUrl

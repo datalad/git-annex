@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-04-14T17:28:11Z"
+ content="""
+There is quite a lot of unrelated noise in this bug report. For example,
+when you run "git annex init dir1", you're telling git-annex to refer to
+that repository as "dir1". It should thus be unsuprising when it does in
+whereis etc messages about that repository.
+
+This is a duplicate of
+<http://git-annex.branchable.com/bugs/Windows:_repo_located_on_different_drive_letter_unavailable/>
+"""]]

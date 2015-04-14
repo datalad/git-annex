@@ -1,0 +1,17 @@
+Mostly working on Windows recently. Fixed handling of git
+repos on different drive letters. Fixed crazy start menu loop. Worked around
+stange msysgit version problem.
+
+Added one nice new feature yesterday: `git annex info $dir` now includes a
+table of repositories that are storing files in the directory, with their
+sizes.
+
+	repositories containing these files: 
+		288.98 MB: ca9c5d52-f03a-11df-ac14-6b772ffe59f9 -- archive-5
+		288.98 MB: f1c0ce8d-d848-4d21-988c-dd78eed172e8 -- archive-8
+		 10.48 MB: 587b9ccf-4548-4d6f-9765-27faecc4105f -- darkstar
+		 15.18 kB: 42d47daa-45fd-11e0-9827-9f142c1630b3 -- origin
+
+Nice thing about this feature is it's done for free, with no extra work other
+than a little bit of addition. All the heavy location lookup work was already
+being done to get the numcopies stats.

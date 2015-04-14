@@ -179,13 +179,13 @@ includeCredsInfo c storage info = do
 		Just _ -> do
 			let (uenv, penv) = credPairEnvironment storage
 			ret $ "from environment variables (" ++ unwords [uenv, penv] ++ ")"
-		Nothing -> case (\ck -> M.lookup ck c) =<< credPairRemoteKey storage of
+		Nothing -> case (`M.lookup` c) =<< credPairRemoteKey storage of
 			Nothing -> ifM (existsCacheCredPair storage)
 				( ret "stored locally"
 				, ret "not available"
 				)
 			Just _ -> case extractCipher c of
-				Just (EncryptedCipher _ _ _) -> ret "embedded in git repository (gpg encrypted)"
+				Just (EncryptedCipher {}) -> ret "embedded in git repository (gpg encrypted)"
 				_ -> ret "embedded in git repository (not encrypted)"
   where
 	ret s = return $ ("creds", s) : info

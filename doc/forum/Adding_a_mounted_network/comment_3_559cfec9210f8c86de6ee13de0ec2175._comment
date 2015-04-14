@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="http://lhealy.livejournal.com/"
+ subject="comment 3"
+ date="2015-04-10T15:35:16Z"
+ content="""
+Thanks for both these answers. For the first, one does the repository have to be made first? I.e., do a `git init --bare` first? I discovered the second approach before reading the comment and it worked, but it did not make a bare repository as happens with the \"removable drive\" option in the assistant.
+"""]]

@@ -1,11 +1,19 @@
 git-annex (5.20150410) UNRELEASED; urgency=medium
 
+  * get, move, copy, mirror: Concurrent downloads and uploads are
+    now supported! For example: git-annex get -J10
   * Fix activity log parsing, which caused the log to not retain
     activity from other uuids.
   * Union merge could fall over if there was a file in the repository
     with the same name as a git ref. Now fixed.
-  * get, move, copy, mirror: Concurrent downloads and uploads are
-    now supported! For example: git-annex get -J10
+  * info dir: Added information about repositories that
+    contain files in the specified directory.
+  * info: Added --bytes option.
+  * Windows: Renamed start menu file to avoid loop in some versions
+    of Windows where the menu file is treated as a git-annex program.
+  * bittorrent: Fix handling of magnet links.
+  * Windows: Fixed support of remotes on other drives.
+    (A reversion introduced in version 5.20150113.)
 
  -- Joey Hess <id@joeyh.name>  Thu, 09 Apr 2015 20:59:43 -0400
 

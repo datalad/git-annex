@@ -37,7 +37,7 @@ import qualified Data.Set as S
  - Callers should use Git.Branch.changed first, to make sure that
  - there are changed from the current branch to the branch being merged in.
  -}
-autoMergeFrom :: Git.Ref -> (Maybe Git.Ref) -> Git.Branch.CommitMode -> Annex Bool
+autoMergeFrom :: Git.Ref -> Maybe Git.Ref -> Git.Branch.CommitMode -> Annex Bool
 autoMergeFrom branch currbranch commitmode = do
 	showOutput
 	case currbranch of

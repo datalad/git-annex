@@ -314,7 +314,7 @@ getViewedFileMetaData = getDirMetaData . dirFromViewedFile . takeFileName
  - branch for the view.
  -}
 applyView :: View -> Annex Git.Branch
-applyView view = applyView' viewedFileFromReference getWorkTreeMetaData view
+applyView = applyView' viewedFileFromReference getWorkTreeMetaData
 
 {- Generates a new branch for a View, which must be a more narrow
  - version of the View originally used to generate the currently

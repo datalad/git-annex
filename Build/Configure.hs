@@ -94,12 +94,15 @@ getUpgradeLocation = do
 	return $ Config "upgradelocation" $ MaybeStringConfig e
 
 getGitVersion :: Test
-getGitVersion = do
-	v <- Git.Version.installed
-	let oldestallowed = Git.Version.normalize "1.7.1.0"
-	when (v < oldestallowed) $
-		error $ "installed git version " ++ show v ++ " is too old! (Need " ++ show oldestallowed ++ " or newer)"
-	return $ Config "gitversion" $ StringConfig $ show v
+getGitVersion = go =<< getEnv "FORCE_GIT_VERSION"
+  where
+	go (Just s) = return $ Config "gitversion" $ StringConfig s
+	go Nothing = do
+		v <- Git.Version.installed
+		let oldestallowed = Git.Version.normalize "1.7.1.0"
+		when (v < oldestallowed) $
+			error $ "installed git version " ++ show v ++ " is too old! (Need " ++ show oldestallowed ++ " or newer)"
+		return $ Config "gitversion" $ StringConfig $ show v
 
 checkWgetQuietProgress :: Test
 checkWgetQuietProgress = Config "wgetquietprogress" . BoolConfig

@@ -32,7 +32,7 @@ expired.
 
 * `--no-act`
 
-  Print out what would be done, but not not actually expite or unexpire
+  Print out what would be done, but not not actually expire or unexpire
   any repositories.
 
 * `--activity=Name`

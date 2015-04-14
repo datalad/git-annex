@@ -9,7 +9,7 @@ set -e
 # Path to the Haskell Platform.
 #HP="/c/haskell/2014.2.0.0" # now in the default PATH
 
-PATH="/c/Program Files (x86)/NSIS:/c/msysgit/cmd:$PATH"
+PATH="/c/Program Files (x86)/NSIS:/c/msysgit/cmd:/c/msysgit/bin:$PATH"
 
 # Run a command with the cygwin environment available.
 # However, programs not from cygwin are preferred.
@@ -22,6 +22,12 @@ withcygpreferred () {
 
 # This tells git-annex where to upgrade itself from.
 UPGRADE_LOCATION=http://downloads.kitenet.net/git-annex/windows/current/git-annex-installer.exe
+export UPGRADE_LOCATION
+
+# This can be used to force git-annex to build supporting a particular
+# version of git, instead of the version installed at build time.
+FORCE_GIT_VERSION=1.9.5
+export FORCE_GIT_VERSION
 
 # Uncomment to get rid of cabal installed libraries.
 #rm -rf /c/Users/jenkins/AppData/Roaming/cabal /c/Users/jenkins/AppData/Roaming/ghc

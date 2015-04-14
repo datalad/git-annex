@@ -10,7 +10,7 @@
 module Command.Info where
 
 import "mtl" Control.Monad.State.Strict
-import qualified Data.Map as M
+import qualified Data.Map.Strict as M
 import Text.JSON
 import Data.Tuple
 import Data.Ord
@@ -66,7 +66,7 @@ instance Show Variance where
 data StatInfo = StatInfo
 	{ presentData :: Maybe KeyData
 	, referencedData :: Maybe KeyData
-	, remoteData :: M.Map UUID KeyData
+	, repoData :: M.Map UUID KeyData
 	, numCopiesStats :: Maybe NumCopiesStats
 	}
 
@@ -77,7 +77,7 @@ emptyStatInfo = StatInfo Nothing Nothing M.empty Nothing
 type StatState = StateT StatInfo Annex
 
 cmd :: [Command]
-cmd = [noCommit $ dontCheck repoExists $ withOptions (jsonOption : annexedMatchingOptions) $
+cmd = [noCommit $ dontCheck repoExists $ withOptions (jsonOption : bytesOption : annexedMatchingOptions) $
 	command "info" (paramOptional $ paramRepeating paramItem) seek SectionQuery
 	"shows information about the specified item or the repository as a whole"]
 
@@ -156,9 +156,9 @@ selStats fast_stats slow_stats = do
 global_fast_stats :: [Stat]
 global_fast_stats = 
 	[ repository_mode
-	, remote_list Trusted
-	, remote_list SemiTrusted
-	, remote_list UnTrusted
+	, repo_list Trusted
+	, repo_list SemiTrusted
+	, repo_list UnTrusted
 	, transfer_list
 	, disk_size
 	]
@@ -184,6 +184,7 @@ dir_fast_stats =
 dir_slow_stats :: [FilePath -> Stat]
 dir_slow_stats =
 	[ const numcopies_stats
+	, const reposizes_stats
 	]
 
 file_stats :: FilePath -> Key -> [Stat]
@@ -245,8 +246,8 @@ repository_mode = simpleStat "repository mode" $ lift $
 			)
 		)
 
-remote_list :: TrustLevel -> Stat
-remote_list level = stat n $ nojson $ lift $ do
+repo_list :: TrustLevel -> Stat
+repo_list level = stat n $ nojson $ lift $ do
 	us <- filter (/= NoUUID) . M.keys 
 		<$> (M.union <$> uuidMap <*> remoteMap Remote.name)
 	rs <- fst <$> trustPartition level us
@@ -290,7 +291,7 @@ local_annex_keys = stat "local annex keys" $ json show $
 
 local_annex_size :: Stat
 local_annex_size = simpleStat "local annex size" $
-	showSizeKeys <$> cachedPresentData
+	lift . showSizeKeys =<< cachedPresentData
 
 remote_annex_keys :: UUID -> Stat
 remote_annex_keys u = stat "remote annex keys" $ json show $
@@ -298,7 +299,7 @@ remote_annex_keys u = stat "remote annex keys" $ json show $
 
 remote_annex_size :: UUID -> Stat
 remote_annex_size u = simpleStat "remote annex size" $
-	showSizeKeys <$> cachedRemoteData u
+	lift . showSizeKeys =<< cachedRemoteData u
 
 known_annex_files :: Stat
 known_annex_files = stat "annexed files in working tree" $ json show $
@@ -306,7 +307,7 @@ known_annex_files = stat "annexed files in working tree" $ json show $
 
 known_annex_size :: Stat
 known_annex_size = simpleStat "size of annexed files in working tree" $
-	showSizeKeys <$> cachedReferencedData
+	lift . showSizeKeys =<< cachedReferencedData
 
 tmp_size :: Stat
 tmp_size = staleSize "temporary object directory size" gitAnnexTmpObjectDir
@@ -315,7 +316,7 @@ bad_data_size :: Stat
 bad_data_size = staleSize "bad keys size" gitAnnexBadDir
 
 key_size :: Key -> Stat
-key_size k = simpleStat "size" $ pure $ showSizeKeys $ foldKeys [k]
+key_size k = simpleStat "size" $ lift $ showSizeKeys $ foldKeys [k]
 
 key_name :: Key -> Stat
 key_name k = simpleStat "key" $ pure $ key2file k
@@ -331,7 +332,8 @@ bloom_info = simpleStat "bloom filter size" $ do
 
 	-- Two bloom filters are used at the same time, so double the size
 	-- of one.
-	size <- roughSize memoryUnits False . (* 2) . fromIntegral . fst <$>
+	sizer <- lift mkSizer
+	size <- sizer memoryUnits False . (* 2) . fromIntegral . fst <$>
 		lift Command.Unused.bloomBitsHashes
 
 	return $ size ++ note
@@ -358,13 +360,14 @@ disk_size = simpleStat "available local disk space" $ lift $
 	calcfree
 		<$> (annexDiskReserve <$> Annex.getGitConfig)
 		<*> inRepo (getDiskFree . gitAnnexDir)
+		<*> mkSizer
   where
-	calcfree reserve (Just have) = unwords
-		[ roughSize storageUnits False $ nonneg $ have - reserve
-		, "(+" ++ roughSize storageUnits False reserve
+	calcfree reserve (Just have) sizer = unwords
+		[ sizer storageUnits False $ nonneg $ have - reserve
+		, "(+" ++ sizer storageUnits False reserve
 		, "reserved)"
 		]			
-	calcfree _ _ = "unknown"
+	calcfree _ _ _ = "unknown"
 
 	nonneg x
 		| x >= 0 = x
@@ -389,6 +392,26 @@ numcopies_stats = stat "numcopies stats" $ nojson $
 		. map (\(variance, count) -> show variance ++ ": " ++ show count)
 		. sortBy (flip (comparing snd)) . M.toList
 
+reposizes_stats :: Stat
+reposizes_stats = stat "repositories containing these files" $ nojson $
+	calc
+		<$> lift uuidDescriptions
+		<*> lift mkSizer
+		<*> cachedRepoData
+  where
+	calc descm sizer = multiLine
+		. format
+		. map (\(u, d) -> line descm sizer u d)
+		. sortBy (flip (comparing (sizeKeys . snd))) . M.toList
+	line descm sizer u d = (sz, fromUUID u ++ " -- " ++ desc)
+	  where
+		sz = sizer storageUnits True (sizeKeys d)
+		desc = fromMaybe "" (M.lookup u descm)
+	format l = map (\(c1, c2) -> lpad maxc1 c1 ++ ": " ++ c2 ) l
+	  where
+		maxc1 = maximum (map (length . fst) l)
+	lpad n s = (replicate (n - length s) ' ') ++ s
+
 cachedPresentData :: StatState KeyData
 cachedPresentData = do
 	s <- get
@@ -402,11 +425,11 @@ cachedPresentData = do
 cachedRemoteData :: UUID -> StatState KeyData
 cachedRemoteData u = do
 	s <- get
-	case M.lookup u (remoteData s) of
+	case M.lookup u (repoData s) of
 		Just v -> return v
 		Nothing -> do
 			v <- foldKeys <$> lift (loggedKeysFor u)
-			put s { remoteData = M.insert u v (remoteData s) }
+			put s { repoData = M.insert u v (repoData s) }
 			return v
 
 cachedReferencedData :: StatState KeyData
@@ -424,17 +447,21 @@ cachedReferencedData = do
 cachedNumCopiesStats :: StatState (Maybe NumCopiesStats)
 cachedNumCopiesStats = numCopiesStats <$> get
 
+-- currently only available for directory info
+cachedRepoData :: StatState (M.Map UUID KeyData)
+cachedRepoData = repoData <$> get
+
 getDirStatInfo :: FilePath -> Annex StatInfo
 getDirStatInfo dir = do
 	fast <- Annex.getState Annex.fast
 	matcher <- Limit.getMatcher
-	(presentdata, referenceddata, numcopiesstats) <-
+	(presentdata, referenceddata, numcopiesstats, repodata) <-
 		Command.Unused.withKeysFilesReferencedIn dir initial
 			(update matcher fast)
-	return $ StatInfo (Just presentdata) (Just referenceddata) M.empty (Just numcopiesstats)
+	return $ StatInfo (Just presentdata) (Just referenceddata) repodata (Just numcopiesstats)
   where
-	initial = (emptyKeyData, emptyKeyData, emptyNumCopiesStats)
-	update matcher fast key file vs@(presentdata, referenceddata, numcopiesstats) =
+	initial = (emptyKeyData, emptyKeyData, emptyNumCopiesStats, M.empty)
+	update matcher fast key file vs@(presentdata, referenceddata, numcopiesstats, repodata) =
 		ifM (matcher $ MatchingFile $ FileInfo file file)
 			( do
 				!presentdata' <- ifM (inAnnex key)
@@ -442,10 +469,13 @@ getDirStatInfo dir = do
 					, return presentdata
 					)
 				let !referenceddata' = addKey key referenceddata
-				!numcopiesstats' <- if fast
-					then return numcopiesstats
-					else updateNumCopiesStats key file numcopiesstats
-				return $! (presentdata', referenceddata', numcopiesstats')
+				(!numcopiesstats', !repodata') <- if fast
+					then return (numcopiesstats, repodata)
+					else do
+						locs <- Remote.keyLocations key
+						nc <- updateNumCopiesStats file numcopiesstats locs
+						return (nc, updateRepoData key locs repodata)
+				return $! (presentdata', referenceddata', numcopiesstats', repodata')
 			, return vs
 			)
 
@@ -465,22 +495,32 @@ addKey key (KeyData count size unknownsize backends) =
 	{- All calculations strict to avoid thunks when repeatedly
 	 - applied to many keys. -}
 	!count' = count + 1
-	!backends' = M.insertWith' (+) (keyBackendName key) 1 backends
+	!backends' = M.insertWith (+) (keyBackendName key) 1 backends
 	!size' = maybe size (+ size) ks
 	!unknownsize' = maybe (unknownsize + 1) (const unknownsize) ks
 	ks = keySize key
 
-updateNumCopiesStats :: Key -> FilePath -> NumCopiesStats -> Annex NumCopiesStats
-updateNumCopiesStats key file (NumCopiesStats m) = do
-	!variance <- Variance <$> numCopiesCheck file key (-)
-	let !m' = M.insertWith' (+) variance 1 m
+updateRepoData :: Key -> [UUID] -> M.Map UUID KeyData -> M.Map UUID KeyData
+updateRepoData key locs m = m'
+  where
+	!m' = M.unionWith (\_old new -> new) m $
+		M.fromList $ zip locs (map update locs)
+	update loc = addKey key (fromMaybe emptyKeyData $ M.lookup loc m)
+
+updateNumCopiesStats :: FilePath -> NumCopiesStats -> [UUID] -> Annex NumCopiesStats
+updateNumCopiesStats file (NumCopiesStats m) locs = do
+	have <- trustExclude UnTrusted locs
+	!variance <- Variance <$> numCopiesCheck' file (-) have
+	let !m' = M.insertWith (+) variance 1 m
 	let !ret = NumCopiesStats m'
 	return ret
 
-showSizeKeys :: KeyData -> String
-showSizeKeys d = total ++ missingnote
+showSizeKeys :: KeyData -> Annex String
+showSizeKeys d = do
+	sizer <- mkSizer
+	return $ total sizer ++ missingnote
   where
-	total = roughSize storageUnits False $ sizeKeys d
+	total sizer = sizer storageUnits False $ sizeKeys d
 	missingnote
 		| unknownSizeKeys d == 0 = ""
 		| otherwise = aside $
@@ -494,8 +534,9 @@ staleSize label dirspec = go =<< lift (dirKeys dirspec)
 	go keys = onsize =<< sum <$> keysizes keys
 	onsize 0 = nostat
 	onsize size = stat label $
-		json (++ aside "clean up with git-annex unused") $
-			return $ roughSize storageUnits False size
+		json (++ aside "clean up with git-annex unused") $ do
+			sizer <- lift mkSizer
+			return $ sizer storageUnits False size
 	keysizes keys = do
 		dir <- lift $ fromRepo dirspec
 		liftIO $ forM keys $ \k -> catchDefaultIO 0 $
@@ -506,3 +547,12 @@ aside s = " (" ++ s ++ ")"
 
 multiLine :: [String] -> String
 multiLine = concatMap (\l -> "\n\t" ++ l)
+
+mkSizer :: Annex ([Unit] -> Bool -> ByteSize -> String)
+mkSizer = ifM (getOptionFlag bytesOption)
+	( return (const $ const show)
+	, return roughSize
+	)
+
+bytesOption :: Option
+bytesOption = flagOption [] "bytes" "display file sizes in bytes"

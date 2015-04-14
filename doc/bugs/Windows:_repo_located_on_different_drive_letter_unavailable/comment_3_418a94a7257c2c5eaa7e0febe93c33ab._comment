@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-04-14T17:32:29Z"
+ content="""
+This is partly a bug in uuid discovery; however even after I manually fill
+in the remote's annex-uuid, it cannot get the file.
+"""]]

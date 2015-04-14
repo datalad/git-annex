@@ -257,7 +257,7 @@ annexSentinalFile :: Annex SentinalFile
 annexSentinalFile = do
 	sentinalfile <- fromRepo gitAnnexInodeSentinal
 	sentinalcachefile <- fromRepo gitAnnexInodeSentinalCache
-	return $ SentinalFile
+	return SentinalFile
 		{ sentinalFile = sentinalfile
 		, sentinalCacheFile = sentinalcachefile
 		}

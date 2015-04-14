@@ -138,9 +138,15 @@ relPathDirToFile from to = relPathDirToFileAbs <$> absPath from <*> absPath to
 
 {- This requires the first path to be absolute, and the
  - second path cannot contain ../ or ./
+ -
+ - On Windows, if the paths are on different drives,
+ - a relative path is not possible and the path is simply
+ - returned as-is.
  -}
 relPathDirToFileAbs :: FilePath -> FilePath -> FilePath
-relPathDirToFileAbs from to = join s $ dotdots ++ uncommon
+relPathDirToFileAbs from to
+	| takeDrive from /= takeDrive to = to
+	| otherwise = join s $ dotdots ++ uncommon
   where
 	s = [pathSeparator]
 	pfrom = split s from
@@ -153,6 +159,7 @@ relPathDirToFileAbs from to = join s $ dotdots ++ uncommon
 
 prop_relPathDirToFile_basics :: FilePath -> FilePath -> Bool
 prop_relPathDirToFile_basics from to
+	| null from || null to = True
 	| from == to = null r
 	| otherwise = not (null r)
   where

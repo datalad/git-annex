@@ -13,7 +13,7 @@ in the git repository to link to a specified key.
 
 If the key and file are not specified on the command line, they are
 instead read from stdin. Any number of lines can be provided in this
-mode, each containing a key and filename, sepearated by a single space.
+mode, each containing a key and filename, separated by a single space.
 
 # OPTIONS
 

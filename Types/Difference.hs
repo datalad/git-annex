@@ -62,8 +62,8 @@ readDifferences :: String -> Differences
 readDifferences = maybe UnknownDifferences Differences . readish
 
 getDifferences :: Git.Repo -> Differences
-getDifferences r = Differences $ S.fromList $ catMaybes $
-	map getmaybe [minBound .. maxBound]
+getDifferences r = Differences $ S.fromList $
+	mapMaybe getmaybe [minBound .. maxBound]
   where
 	getmaybe d = case Git.Config.isTrue =<< Git.Config.getMaybe (differenceConfigKey d) r of
 		Just True -> Just d

@@ -26,6 +26,10 @@ for the repository as a whole.
   Enable JSON output. This is intended to be parsed by programs that use
   git-annex. Each line of output is a JSON object.
 
+* `--bytes`
+
+  Show file sizes in bytes, disabling the default nicer units.
+
 * file matching options
 
   When a directory is specified, the [[git-annex-matching-options]](1)

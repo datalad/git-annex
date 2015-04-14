@@ -160,3 +160,5 @@ Latest sync command should inject annex-uuid to .config file, but it does not. F
     [remote "c"]
         url = C:\\Annex
         fetch = +refs/heads/*:refs/remotes/c/*
+
+> [[fixed|done]]; a simple path calculation bug. --[[Joey]]
