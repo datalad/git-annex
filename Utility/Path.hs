@@ -159,6 +159,7 @@ relPathDirToFileAbs from to
 
 prop_relPathDirToFile_basics :: FilePath -> FilePath -> Bool
 prop_relPathDirToFile_basics from to
+	| null from || null to = True
 	| from == to = null r
 	| otherwise = not (null r)
   where
