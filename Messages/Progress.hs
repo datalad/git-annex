@@ -16,6 +16,7 @@ import Types.Messages
 import Types.Key
 
 import System.Console.AsciiProgress
+import qualified System.Console.Terminal.Size as Terminal
 import Control.Concurrent
 
 {- Shows a progress meter while performing a transfer of a key.
@@ -31,11 +32,12 @@ metered combinemeterupdate key af a = case keySize key of
 		showOutput
 		liftIO $ putStrLn ""
 
-		let desc = truncatepretty 79 $ fromMaybe (key2file key) af
+		cols <- liftIO $ maybe 79 Terminal.width <$> Terminal.size
+		let desc = truncatepretty cols $ fromMaybe (key2file key) af
 
 		result <- liftIO newEmptyMVar
 		pg <- liftIO $ newProgressBar def
-			{ pgWidth = 79
+			{ pgWidth = cols
 			, pgFormat = desc ++ " :percent :bar ETA :eta"
 			, pgTotal = size
 			, pgOnCompletion = do

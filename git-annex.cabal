@@ -113,7 +113,7 @@ Executable git-annex
    cryptohash (>= 0.10.0),
    esqueleto, persistent-sqlite, persistent, persistent-template,
    monad-logger, resourcet,
-   ascii-progress (<= 0.2.1.2)
+   ascii-progress (<= 0.2.1.2), terminal-size
   CC-Options: -Wall
   GHC-Options: -Wall
   Extensions: PackageImports
