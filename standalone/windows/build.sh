@@ -26,6 +26,7 @@ UPGRADE_LOCATION=http://downloads.kitenet.net/git-annex/windows/current/git-anne
 # This can be used to force git-annex to build supporting a particular
 # version of git, instead of the version installed at build time.
 FORCE_GIT_VERSION=1.9.5
+cabal clean
 
 # Uncomment to get rid of cabal installed libraries.
 #rm -rf /c/Users/jenkins/AppData/Roaming/cabal /c/Users/jenkins/AppData/Roaming/ghc
