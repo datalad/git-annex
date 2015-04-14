@@ -42,8 +42,7 @@ metered combinemeterupdate key af a = case keySize key of
 			, pgTotal = size
 			, pgOnCompletion = do
 				ok <- takeMVar result
-				putStrLn $ desc ++ " " ++
-					if ok then "ok" else "failed"
+				putStrLn $ desc ++ " " ++ endResult ok
 			}
 		r <- a $ liftIO . pupdate pg
 

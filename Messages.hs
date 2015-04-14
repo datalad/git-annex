@@ -19,6 +19,7 @@ module Messages (
 	showEndOk,
 	showEndFail,
 	showEndResult,
+	endResult,
 	showErr,
 	warning,
 	warningIO,
@@ -111,11 +112,11 @@ showEndFail :: Annex ()
 showEndFail = showEndResult False
 
 showEndResult :: Bool -> Annex ()
-showEndResult ok = handleMessage (JSON.end ok) $ putStrLn msg
-  where
-	msg
-		| ok = "ok"
-		| otherwise = "failed"
+showEndResult ok = handleMessage (JSON.end ok) $ putStrLn $ endResult ok
+
+endResult :: Bool -> String
+endResult True = "ok"
+endResult False = "failed"
 
 showErr :: (Show a) => a -> Annex ()
 showErr e = warning' $ "git-annex: " ++ show e
