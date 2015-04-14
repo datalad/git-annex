@@ -27,6 +27,7 @@ UPGRADE_LOCATION=http://downloads.kitenet.net/git-annex/windows/current/git-anne
 # version of git, instead of the version installed at build time.
 FORCE_GIT_VERSION=1.9.5
 cabal clean
+rm -rf dist dist.old || mv -v dist dist.old
 
 # Uncomment to get rid of cabal installed libraries.
 #rm -rf /c/Users/jenkins/AppData/Roaming/cabal /c/Users/jenkins/AppData/Roaming/ghc
