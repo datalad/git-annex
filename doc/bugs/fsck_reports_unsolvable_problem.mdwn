@@ -16,3 +16,5 @@ According to IRC this "can happen if you annexed a file and then deleted it with
 ### What version of git-annex are you using? On what operating system?
 
 5.20140717 from Ubuntu utopic
+
+[[!tag confirmed]]
