@@ -22,6 +22,7 @@ withcygpreferred () {
 
 # This tells git-annex where to upgrade itself from.
 UPGRADE_LOCATION=http://downloads.kitenet.net/git-annex/windows/current/git-annex-installer.exe
+export UPGRADE_LOCATION
 
 # This can be used to force git-annex to build supporting a particular
 # version of git, instead of the version installed at build time.
