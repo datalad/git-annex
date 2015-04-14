@@ -43,3 +43,5 @@ $
 
 # End of transcript or log.
 """]]
+
+[[!tag moreinfo]]
