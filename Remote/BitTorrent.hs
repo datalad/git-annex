@@ -212,7 +212,7 @@ downloadTorrentFile u = do
 downloadMagnetLink :: URLString -> FilePath -> FilePath -> Annex Bool
 downloadMagnetLink u metadir dest = ifM download
 	( liftIO $ do
-		ts <- filter (".torrent" `isPrefixOf`)
+		ts <- filter (".torrent" `isSuffixOf`)
 			<$> dirContents metadir
 		case ts of
 			(t:[]) -> do

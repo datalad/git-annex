@@ -43,3 +43,7 @@ failed
 git-annex: addurl: 1 failed
 
 """]]
+
+> Looking at the code, it was looking for a file prefixed by ".torrent",
+> but of course that should be suffixed instead. So, [[fixed|done]]
+> --[[Joey]]
