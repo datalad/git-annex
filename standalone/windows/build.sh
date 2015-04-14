@@ -26,6 +26,8 @@ UPGRADE_LOCATION=http://downloads.kitenet.net/git-annex/windows/current/git-anne
 # This can be used to force git-annex to build supporting a particular
 # version of git, instead of the version installed at build time.
 FORCE_GIT_VERSION=1.9.5
+export FORCE_GIT_VERSION
+
 cabal clean
 rm -rf dist dist.old || mv -v dist dist.old
 
