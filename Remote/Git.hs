@@ -466,7 +466,10 @@ copyFromRemoteCheap _ _ _ = return False
 
 {- Tries to copy a key's content to a remote's annex. -}
 copyToRemote :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-copyToRemote r key file p
+copyToRemote r key file p = parallelMetered (Just p) key $ copyToRemote' r key file
+
+copyToRemote' :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
+copyToRemote' r key file p
 	| not $ Git.repoIsUrl (repo r) =
 		guardUsable (repo r) (return False) $ commitOnCleanup r $
 			copylocal =<< Annex.Content.prepSendAnnex key
