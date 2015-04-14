@@ -29,9 +29,6 @@ export UPGRADE_LOCATION
 FORCE_GIT_VERSION=1.9.5
 export FORCE_GIT_VERSION
 
-cabal clean
-rm -rf dist dist.old || mv -v dist dist.old
-
 # Uncomment to get rid of cabal installed libraries.
 #rm -rf /c/Users/jenkins/AppData/Roaming/cabal /c/Users/jenkins/AppData/Roaming/ghc
 
