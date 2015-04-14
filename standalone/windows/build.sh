@@ -13,6 +13,7 @@ PATH="/c/Program Files (x86)/NSIS:/c/msysgit/cmd:/c/msysgit/bin:$PATH"
 
 git --version || true
 which git || true
+/c/msysgit/cmd/git --version || true
 
 # Run a command with the cygwin environment available.
 # However, programs not from cygwin are preferred.
