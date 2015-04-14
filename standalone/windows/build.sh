@@ -11,10 +11,6 @@ set -e
 
 PATH="/c/Program Files (x86)/NSIS:/c/msysgit/cmd:/c/msysgit/bin:$PATH"
 
-git --version || true
-which git || true
-/c/msysgit/cmd/git --version || true
-
 # Run a command with the cygwin environment available.
 # However, programs not from cygwin are preferred.
 withcyg () {
@@ -26,6 +22,10 @@ withcygpreferred () {
 
 # This tells git-annex where to upgrade itself from.
 UPGRADE_LOCATION=http://downloads.kitenet.net/git-annex/windows/current/git-annex-installer.exe
+
+# This can be used to force git-annex to build supporting a particular
+# version of git, instead of the version installed at build time.
+FORCE_GIT_VERSION=1.9.5
 
 # Uncomment to get rid of cabal installed libraries.
 #rm -rf /c/Users/jenkins/AppData/Roaming/cabal /c/Users/jenkins/AppData/Roaming/ghc
