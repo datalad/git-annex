@@ -6,9 +6,11 @@ I've got a git repository, and I just ran git annex init. Then I ran git annex a
 
 ### What steps will reproduce the problem?
 
+[[!format sh """
 git annex init
-git annex addurl https://archive.org/download/emularity_engine_jsmess/messnapple2e.js.gz --file messnapple2e.js.gz
+git annex addurl "https://archive.org/download/emularity_engine_jsmess/messnapple2e.js.gz" --file "messnapple2e.js.gz"
 git annex sync
+"""]]
 
 ### What version of git-annex are you using? On what operating system?
 
