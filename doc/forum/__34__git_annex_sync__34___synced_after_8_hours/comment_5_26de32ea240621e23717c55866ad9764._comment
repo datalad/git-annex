@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 5"
+ date="2015-04-16T21:08:32Z"
+ content="""
+My pleasure, glad it is working for you!
+
+Going forward, you should run *git repack* (without -ad) every now and again to pack new objects into pack files. You can use *git count-objects -v* to find out how many unpacked objects you have.
+"""]]
