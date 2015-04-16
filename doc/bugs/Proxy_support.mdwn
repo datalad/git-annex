@@ -17,3 +17,10 @@ Please provide any additional information below.
 
 I don't use networkmanager if proxy information is obtained from it. There should be a fallback to environment variables.
 [[!tag confirmed]]
+
+> Here's a patch that shows how to enable proxy support for the
+> parts of git-annex that use http-client and http-conduit:
+> <https://github.com/kiwiroy/git-annex/commit/18a3ceda1beb7c356541270f37ae4c0d56ada726>
+> 
+> Other parts of git-annex use wget/curl and should already support
+> the environment variables.
