@@ -1,0 +1,2 @@
+Files only present in remotes show up as broken symlinks. That's great for knowing what files exist, but sometimes I just want to browse the files that are actually present. In this case, the many broken symlinks are just clutter.
+Is there a straightforward way to switch to a view that shows only locally present files?
