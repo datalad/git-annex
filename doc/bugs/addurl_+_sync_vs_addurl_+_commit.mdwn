@@ -14,12 +14,11 @@ git annex sync
 
 ### What version of git-annex are you using? On what operating system?
 
-git-annex version: 5.20150412-g2be4834
-build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA TorrentParser
-key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E MD5E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 MD5 WORM URL
-remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
-local repository version: 5
-supported repository version: 5
-upgrade supported from repository versions: 0 1 2 4
-
+    git-annex version: 5.20150412-g2be4834
+    build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA TorrentParser
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E MD5E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 MD5 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+    local repository version: 5
+    supported repository version: 5
+    upgrade supported from repository versions: 0 1 2 4
 This is on Linux.
