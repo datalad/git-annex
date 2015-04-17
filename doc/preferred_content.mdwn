@@ -44,7 +44,7 @@ options in commands like this:
 
 	git annex get --include='*.mp3' --and -'(' --not --largerthan=100mb -')'
 
-The equivilant preferred content expression looks like this:
+The equivalent preferred content expression looks like this:
 
 	include=*.mp3 and (not largerthan=100mb)
 
@@ -63,7 +63,7 @@ to not retain those files, like this:
 
 ### difference: no "in="
 
-Preferred content expressions have no direct equivilant to `--in`.
+Preferred content expressions have no direct equivalent to `--in`.
 
 Often, it's best to add repositories to groups, and match against
 the groups in a preferred content expression. So rather than
@@ -146,7 +146,7 @@ expression tuned for your needs, and every repository you put in this
 group and make its preferred content be "groupwanted" will use it.
 
 For example, the archive group only wants to archive 1 copy of each file,
-spread amoung every repository in the group.
+spread among every repository in the group.
 Here's how to configure a group named redundantarchive, that instead
 wants to contain 3 copies of each file:
 

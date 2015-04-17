@@ -4,9 +4,9 @@ designed to interoperate with it.
 * The [[git-annex assistant|assistant]] is included in git-annex,
   and extends its use cases into new territory.
 * [gitlab-shell](https://gitlab.com/gitlab-org/gitlab-shell) supports
-  git-annex. So git-annex can be used with repositries served by Gitlab,
+  git-annex. So git-annex can be used with repositories served by GitLab,
   including gitlab.com, or deploy your own.
-  [See Gitlab's announcment](https://about.gitlab.com/2015/02/17/gitlab-annex-solves-the-problem-of-versioning-large-binaries-with-git/)
+  [See GitLab's announcement](https://about.gitlab.com/2015/02/17/gitlab-annex-solves-the-problem-of-versioning-large-binaries-with-git/)
 * Emacs Org mode can auto-commit attached files to git-annex.
 * [git annex darktable integration](https://github.com/xxv/darktable-git-annex)
 * [Magit](http://github.com/magit/magit), an Emacs mode for Git, has
