@@ -92,7 +92,7 @@ Make the ADC directory, and a "ua" subdirectory.
 mkdir -p /usr/local/lib/gitolite/adc/ua
 </pre>
 
-Install the git-annex-shell ADC into the "ua" subdirectory from the gitolie repository.
+Install the git-annex-shell ADC into the "ua" subdirectory from the gitolite repository.
 
 <pre>   
 cd /usr/local/lib/gitolite/adc/ua/

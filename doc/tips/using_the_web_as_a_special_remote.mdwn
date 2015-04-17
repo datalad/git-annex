@@ -81,7 +81,7 @@ it is a video and download the video content for offline viewing.
 Later, in another clone of the repository, you can run `git annex get` on
 the file and it will also be downloaded with the help of quvi. This works
 even if the video host has transcoded or otherwise changed the video
-in the meantime; the assumption is that these video files are equivilant.
+in the meantime; the assumption is that these video files are equivalent.
 
 There is an `annex.quvi-options` configuration setting that can be used
 to pass parameters to quvi. For example, you could set `git config

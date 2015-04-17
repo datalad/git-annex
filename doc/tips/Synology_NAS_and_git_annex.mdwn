@@ -19,7 +19,7 @@ This is known to work with DSM 4.3-3810 Update 1 and git-annex standalone versio
 
 (2) Setup ssh key based authentication with the Synology for each computer you want to sync with it. You want a specific key that is used only by git-annex, for each computer. Again, many good guides online.
 
-(3) In the Synology .ssh/authorized_keys file for your account, add (substituing your username)
+(3) In the Synology .ssh/authorized_keys file for your account, add (substituting your username)
 [[!format sh """
 command="/home/$yourusername/.ssh/git-annex-shell"
 """]]
