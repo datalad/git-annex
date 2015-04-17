@@ -15,5 +15,5 @@ By the time I tied to actually get the content from repo one into repo two (via 
 
 How can I get my stuff back?
 
-Also, why would any software which is meant for backup (or any sane software in general) delete stuff without me actually typing `rm` or `delete` into the terminal and without giving me a big warning message and a confirmation prompt? 
+Also, why would any software which is meant for backup or archiving (or any sane software in general) delete stuff without me actually typing `rm` or `delete` into the terminal and without giving me a big warning message and a confirmation prompt? 
  
