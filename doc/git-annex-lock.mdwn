@@ -1,6 +1,6 @@
 # NAME
 
-git-annex lock - unco unlock command
+git-annex lock - undo unlock command
 
 # SYNOPSIS
 

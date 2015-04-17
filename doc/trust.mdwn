@@ -45,7 +45,7 @@ archival drive, from which you rarely or never remove content. Deciding
 when it makes sense to trust the tracking info is up to you.
 
 One way to handle this is just to use `--force` when a command cannot
-access a remote you trust. Or to use `--trust` to specify a repisitory to
+access a remote you trust. Or to use `--trust` to specify a repository to
 trust temporarily.
 
 To configure a repository as fully and permanently trusted,
@@ -55,5 +55,5 @@ use the `git annex trust` command.
 
 This is used to indicate that you have no trust that the repository
 exists at all. It's appropriate to use when a drive has been lost,
-or a directory irretrevably deleted. It will make git-annex avoid
+or a directory irretrievably deleted. It will make git-annex avoid
 even showing the repository as a place where data might still reside.

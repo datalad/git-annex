@@ -86,7 +86,7 @@ to git-annex-shell are:
 
 * -- fields=val fields=val.. --
 
-  Additional fields may be specified this way, to retain compatability with
+  Additional fields may be specified this way, to retain compatibility with
   past versions of git-annex-shell (that ignore these, but would choke
   on new dashed options).
 
