@@ -31,6 +31,7 @@ import Config
 import Types.Key
 import Types.CleanupActions
 import Utility.HumanTime
+import Utility.CopyFile
 import Git.FilePath
 import Utility.PID
 import qualified Database.Fsck as FsckDb
@@ -273,7 +274,7 @@ checkKeySize key = ifM isDirect
 checkKeySizeRemote :: Key -> Remote -> Maybe FilePath -> Annex Bool
 checkKeySizeRemote _ _ Nothing = return True
 checkKeySizeRemote key remote (Just file) =
-	checkKeySizeOr (badContentRemote remote) key file
+	checkKeySizeOr (badContentRemote remote file) key file
 
 checkKeySizeOr :: (Key -> Annex String) -> Key -> FilePath -> Annex Bool
 checkKeySizeOr bad key file = case Types.Key.keySize key of
@@ -318,7 +319,7 @@ checkBackend backend key mfile = go =<< isDirect
 checkBackendRemote :: Backend -> Key -> Remote -> Maybe FilePath -> Annex Bool
 checkBackendRemote backend key remote = maybe (return True) go
   where
-	go = checkBackendOr (badContentRemote remote) backend key
+	go file = checkBackendOr (badContentRemote remote file) backend key file
 
 checkBackendOr :: (Key -> Annex String) -> Backend -> Key -> FilePath -> Annex Bool
 checkBackendOr bad backend key file =
@@ -380,13 +381,36 @@ badContentDirect file key = do
 	logStatus key InfoMissing
 	return "left in place for you to examine"
 
-badContentRemote :: Remote -> Key -> Annex String
-badContentRemote remote key = do
-	ok <- Remote.removeKey remote key
-	when ok $
+{- Bad content is dropped from the remote. We have downloaded a copy
+ - from the remote to a temp file already (in some cases, it's just a
+ - symlink to a file in the remote). To avoid any further data loss,
+ - that temp file is moved to the bad content directory unless 
+ - the local annex has a copy of the content. -}
+badContentRemote :: Remote -> FilePath -> Key -> Annex String
+badContentRemote remote localcopy key = do
+	bad <- fromRepo gitAnnexBadDir
+	let destbad = bad </> key2file key
+	movedbad <- ifM (inAnnex key <||> liftIO (doesFileExist destbad))
+		( return False
+		, do
+			createAnnexDirectory (parentDir destbad)
+			liftIO $ catchDefaultIO False $
+				ifM (isSymbolicLink <$> getSymbolicLinkStatus localcopy)
+					( copyFileExternal CopyTimeStamps localcopy destbad
+					, do
+						moveFile localcopy destbad
+						return True
+					)
+		)
+
+	dropped <- Remote.removeKey remote key
+	when dropped $
 		Remote.logStatus remote key InfoMissing
-	return $ (if ok then "dropped from " else "failed to drop from ")
-		++ Remote.name remote
+	return $ case (movedbad, dropped) of
+		(True, True) -> "moved from " ++ Remote.name remote ++
+			" to " ++ destbad
+		(False, True) -> "dropped from " ++ Remote.name remote
+		(_, False) -> "failed to drop from" ++ Remote.name remote
 
 runFsck :: Incremental -> FilePath -> Key -> Annex Bool -> CommandStart
 runFsck inc file key a = ifM (needFsck inc key)

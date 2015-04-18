@@ -16,7 +16,12 @@ module Utility.CopyFile (
 import Common
 import qualified Build.SysConfig as SysConfig
 
-data CopyMetaData = CopyTimeStamps | CopyAllMetaData
+data CopyMetaData 
+	-- Copy timestamps when possible, but no other metadata, and
+	-- when copying a symlink, makes a copy of its content.
+	= CopyTimeStamps
+	-- Copy all metadata when possible.
+	| CopyAllMetaData
 	deriving (Eq)
 
 {- The cp command is used, because I hate reinventing the wheel,
