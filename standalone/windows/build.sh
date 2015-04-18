@@ -26,8 +26,8 @@ export UPGRADE_LOCATION
 
 # This can be used to force git-annex to build supporting a particular
 # version of git, instead of the version installed at build time.
-FORCE_GIT_VERSION=1.9.5
-export FORCE_GIT_VERSION
+#FORCE_GIT_VERSION=1.9.5
+#export FORCE_GIT_VERSION
 
 # Uncomment to get rid of cabal installed libraries.
 #rm -rf /c/Users/jenkins/AppData/Roaming/cabal /c/Users/jenkins/AppData/Roaming/ghc
