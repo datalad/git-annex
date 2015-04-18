@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2015-04-18T18:52:20Z"
+ content="""
+It's approximately 1000 times easier for someone who is experiencing a
+problem to paste a tracript into this bug report than it is for me to guess
+what someone might be doing and reproduce their bug (or problem, or mistake
+or oops, or whatever) from basically no information.
+
+This is why I ask for bugs to be filed with either transcripts, or the
+steps that can be used to reproduce them.
+
+I think you'll find that if you post enough information for a bug to be
+reproduced, it'll get fixed quite fast.
+"""]]
