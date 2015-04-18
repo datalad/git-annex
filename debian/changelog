@@ -22,6 +22,7 @@ git-annex (5.20150410) UNRELEASED; urgency=medium
     the bad content in .git/annex/bad/ to avoid further data loss.
   * fsck --from remote: Avoid downloading a key if it would go over
     the annex.diskreserve limit.
+  * required: New command, like wanted, but for required content.
 
  -- Joey Hess <id@joeyh.name>  Thu, 09 Apr 2015 20:59:43 -0400
 

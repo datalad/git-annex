@@ -10,6 +10,13 @@ using `git annex vicfg` or `git annex wanted`.
 They are used by the `--auto` option, by `git annex sync --content`,
 and by the git-annex assistant.
 
+While preferred content expresses a preference, it can be overridden
+by simply using `git annex drop`. On the other hand, required content
+settings are enforced; `git annex drop` will refuse to drop a file if
+doing so would violate its required content settings. A repository's
+required content can be configured using `git annex vicfg` or
+`git annex required`.
+
 Preferred content expressions are similar, but not identical to
 the [[git-annex-matching-options]](1), just without the dashes.
 For example:

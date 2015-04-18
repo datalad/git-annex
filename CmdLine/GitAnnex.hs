@@ -74,6 +74,7 @@ import qualified Command.Dead
 import qualified Command.Group
 import qualified Command.Wanted
 import qualified Command.GroupWanted
+import qualified Command.Required
 import qualified Command.Schedule
 import qualified Command.Ungroup
 import qualified Command.Vicfg
@@ -149,6 +150,7 @@ cmds = concat
 	, Command.Group.cmd
 	, Command.Wanted.cmd
 	, Command.GroupWanted.cmd
+	, Command.Required.cmd
 	, Command.Schedule.cmd
 	, Command.Ungroup.cmd
 	, Command.Vicfg.cmd
