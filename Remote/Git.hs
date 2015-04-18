@@ -445,10 +445,17 @@ copyFromRemote' r key file dest
 copyFromRemoteCheap :: Remote -> Key -> FilePath -> Annex Bool
 #ifndef mingw32_HOST_OS
 copyFromRemoteCheap r key file
-	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) (return False) $ do
-		loc <- liftIO $ gitAnnexLocation key (repo r) $
+	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) (return False) $ liftIO $ do
+		loc <- gitAnnexLocation key (repo r) $
 			fromJust $ remoteGitConfig $ gitconfig r
-		liftIO $ catchBoolIO $ createSymbolicLink loc file >> return True
+		ifM (doesFileExist loc)
+			( do
+				absloc <- absPath loc
+				catchBoolIO $ do
+					createSymbolicLink absloc file
+					return True
+			, return False
+			)
 	| Git.repoIsSsh (repo r) =
 		ifM (Annex.Content.preseedTmp key file)
 			( copyFromRemote' r key Nothing file

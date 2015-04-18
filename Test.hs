@@ -199,6 +199,7 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 	, testCase "fsck (bare)" test_fsck_bare
 	, testCase "fsck (local untrusted)" test_fsck_localuntrusted
 	, testCase "fsck (remote untrusted)" test_fsck_remoteuntrusted
+	, testCase "fsck --from remote" test_fsck_fromremote
 	, testCase "migrate" test_migrate
 	, testCase "migrate (via gitattributes)" test_migrate_via_gitattributes
 	, testCase "unused" test_unused
@@ -612,6 +613,10 @@ test_fsck_remoteuntrusted = intmpclonerepo $ do
 	git_annex "fsck" [] @? "fsck failed with numcopies=2 and 2 copies"
 	git_annex "untrust" ["origin"] @? "untrust of origin failed"
 	fsck_should_fail "content not replicated to enough non-untrusted repositories"
+
+test_fsck_fromremote :: Assertion
+test_fsck_fromremote = intmpclonerepo $ do
+	git_annex "fsck" ["--from", "origin"] @? "fsck --from origin failed"
 
 fsck_should_fail :: String -> Assertion
 fsck_should_fail m = not <$> git_annex "fsck" []

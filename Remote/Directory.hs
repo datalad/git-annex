@@ -162,9 +162,13 @@ retrieveCheap _ (UnpaddedChunks _) _ _ = return False
 retrieveCheap _ (LegacyChunks _) _ _ = return False
 #ifndef mingw32_HOST_OS
 retrieveCheap d NoChunks k f = liftIO $ catchBoolIO $ do
-	file <- getLocation d k
-	createSymbolicLink file f
-	return True
+	file <- absPath =<< getLocation d k
+	ifM (doesFileExist file)
+		( do
+			createSymbolicLink file f
+			return True
+		, return False
+		)
 #else
 retrieveCheap _ _ _ _ = return False
 #endif

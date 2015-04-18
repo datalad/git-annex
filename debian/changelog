@@ -14,6 +14,9 @@ git-annex (5.20150410) UNRELEASED; urgency=medium
     (A reversion introduced in version 5.20150113.)
   * When a key's size is unknown, still check the annex.diskreserve,
     and avoid getting content if the disk is too full.
+  * Fix fsck --from a git remote in a local directory, and from
+    a directory special remote.
+    This was a reversion caused by the relative path changes in 5.20150113.
 
  -- Joey Hess <id@joeyh.name>  Thu, 09 Apr 2015 20:59:43 -0400
 

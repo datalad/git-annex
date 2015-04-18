@@ -76,3 +76,5 @@ See transcript
     lrwxrwxrwx 1 gemma users  197 Apr 18 17:27 fsck24477.SHA256E-s2--0263829989b6fd954f72baaf2fc64bc2e2f01d692d4de72986ea808f6e99813f.txt -> ../corrupt/.git/annex/objects/x7/01/SHA256E-s2--0263829989b6fd954f72baaf2fc64bc2e2f01d692d4de72986ea808f6e99813f.txt/SHA256E-s2--0263829989b6fd954f72baaf2fc64bc2e2f01d692d4de72986ea808f6e99813f.txt
     lrwxrwxrwx 1 gemma users  197 Apr 18 17:27 fsck24477.SHA256E-s2--87428fc522803d31065e7bce3cf03fe475096631e5e07bbd7a0fde60c4cf25c7.txt -> ../corrupt/.git/annex/objects/41/pJ/SHA256E-s2--87428fc522803d31065e7bce3cf03fe475096631e5e07bbd7a0fde60c4cf25c7.txt/SHA256E-s2--87428fc522803d31065e7bce3cf03fe475096631e5e07bbd7a0fde60c4cf25c7.txt
     lrwxrwxrwx 1 gemma users  197 Apr 18 17:27 fsck24477.SHA256E-s2--a3a5e715f0cc574a73c3f9bebb6bc24f32ffd5b67b387244c2c909da779a1478.txt -> ../corrupt/.git/annex/objects/Vw/zz/SHA256E-s2--a3a5e715f0cc574a73c3f9bebb6bc24f32ffd5b67b387244c2c909da779a1478.txt/SHA256E-s2--a3a5e715f0cc574a73c3f9bebb6bc24f32ffd5b67b387244c2c909da779a1478.txt
+
+> reproduced, test cased, fixed, [[done]] --[[Joey]]
