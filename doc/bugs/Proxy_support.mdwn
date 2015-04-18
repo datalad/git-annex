@@ -24,3 +24,19 @@ I don't use networkmanager if proxy information is obtained from it. There shoul
 > 
 > Other parts of git-annex use wget/curl and should already support
 > the environment variables.
+
+>> I had a closer look at this, and it turns out that http-client 
+>> now enables http proxy support by default, when the environment variable
+>> is set. Since version 0.4.7. See `defaultProxy`.
+>> 
+>> git-annex uses http-client for all its http access (either directly
+>> or through layers like http-conduit and DAV).
+>> 
+>> So I don't need to change
+>> git-annex at all; it just needs to be built with a new enough version
+>> of http-client. This will happen for the linux autobuilders once the new
+>> version reaches Debian. I've updated the OSX autobuilder's http-client
+>> so it will already support proxying and anyone can built git-annex
+>> using the new http-client and get proxy support.
+>>
+>> Calling this [[done]] as nothing remains to do in git-annex. --[[Joey]]
