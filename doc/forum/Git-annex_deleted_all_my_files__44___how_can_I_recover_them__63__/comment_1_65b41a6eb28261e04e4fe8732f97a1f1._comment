@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 1"
+ date="2015-04-18T07:16:01Z"
+ content="""
+Are you sure the files are actually deleted? You don't mention using direct mode or anything, so you should be able to reset the git repository to the last commit you did (restoring the symlinks) and be back on track.
+
+Sounds like you missed something either in your description of the problem, or while following the tutorial.
+"""]]
