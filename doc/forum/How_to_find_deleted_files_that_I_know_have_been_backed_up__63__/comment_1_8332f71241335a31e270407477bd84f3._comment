@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-04-18T19:06:27Z"
+ content="""
+Is your titular question a git-annex question, or a generic git question?
+Because I think the answer would be the same in either case. Ie, `git log`
+or `git status` will tell you what changes you've made to the work tree.
+
+If you've deleted files from your git working tree with rm -rf, then
+their content is still stored in the .git directory. This is also true
+when using git-annex (unless you're using direct mode). 
+
+The size of your .git directory might be a clue: If you've deleted
+files from the working tree, you may not have dropped their content
+from git annex. You can use `git annex unused` to find and clean up
+such file contents.
+"""]]
