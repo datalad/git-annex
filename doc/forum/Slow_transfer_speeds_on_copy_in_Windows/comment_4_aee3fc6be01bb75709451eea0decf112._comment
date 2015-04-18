@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-04-18T19:12:19Z"
+ content="""
+Well, git-annex bundles a copy of rsync, and the one that it includes 
+is the one from cygwin.
+
+It sounds like there's a newer version, also from cygwin, that is faster?
+
+I've pinged the git-annex Windows autobuilder admin to see if we can
+upgrade that.
+"""]]
