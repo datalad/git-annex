@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlZ-6dtxJY4cP7shhvV8E6YyuV0Rak8it4"
+ nickname="Giovanni"
+ subject="direct mode: avoid broken symlinks; indirect mode: matching-options in views (not woring)"
+ date="2015-04-18T07:56:32Z"
+ content="""
+I would like to see only locally present files too, for some of my use case (e.g.: movies exported via NFS to a XBMS/Kodi media player)
+
+I'm using git annex (debian) version 5.20141024~bpo70+1
+
+# [direct mode](http://git-annex.branchable.com/direct_mode/)
+
+as far as I understand, in direct mode broken symlinks (or text files placeholders for filesystems not supporting symlinks) are there by [design](
+https://git-annex.branchable.com/design/assistant/desymlink/), in particular in [partial content](
+https://git-annex.branchable.com/design/assistant/partial_content/) use case where \"there needs to be a way for the user to browse files not on the gadget and request they be transferred to it\"
+
+if there are no other reasons to have broken symlinks (or placeholders) I think git-annex should avoid them (at least in direct mode): if a user needs a file not listed by regular filesystem tools she can simply `git-annex find` it and `git-annex get` it: or do I miss something here?
+
+please consider avoiding broken symlinks or placeholders
+
+# indirect mode
+
+in indirect mode we could live with broken symlinks using views; I tried `git annex view /=* --include=\"*\" --in=here` but the resulting tree was not filtered by matching-options
+
+are matching-options intended to work with the view command or not?
+
+"""]]
