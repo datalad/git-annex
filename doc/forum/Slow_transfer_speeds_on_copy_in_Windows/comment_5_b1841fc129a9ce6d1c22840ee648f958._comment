@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2015-04-18T19:26:25Z"
+ content="""
+<https://www.itefix.net/cwrsync>
+
+Hmm, ok, so that's not the cygwin rsync and it has a gui and bundles its
+own ssh that won't behave the same as the one bundled with git-annex.
+
+Maybe at least some of the speed improvements could be had by just
+upgrading the rsync and ssh from cygwin though..
+"""]]
