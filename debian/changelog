@@ -12,6 +12,8 @@ git-annex (5.20150410) UNRELEASED; urgency=medium
   * bittorrent: Fix handling of magnet links.
   * Windows: Fixed support of remotes on other drives.
     (A reversion introduced in version 5.20150113.)
+  * When a key's size is unknown, still check the annex.diskreserve,
+    and avoid getting content if the disk is too full.
 
  -- Joey Hess <id@joeyh.name>  Thu, 09 Apr 2015 20:59:43 -0400
 
