@@ -135,14 +135,16 @@ performRemote key file backend numcopies remote =
 		let cleanup = liftIO $ catchIO (removeFile tmp) (const noop)
 		cleanup
 		cleanup `after` a tmp
-	getfile tmp =
-		ifM (Remote.retrieveKeyFileCheap remote key tmp)
+	getfile tmp = ifM (checkDiskSpace (Just tmp) key 0)
+		( ifM (Remote.retrieveKeyFileCheap remote key tmp)
 			( return True
 			, ifM (Annex.getState Annex.fast)
 				( return False
 				, Remote.retrieveKeyFile remote key Nothing tmp dummymeter
 				)
 			)
+		, return False
+		)
 	dummymeter _ = noop
 
 startKey :: Incremental -> Key -> NumCopies -> CommandStart

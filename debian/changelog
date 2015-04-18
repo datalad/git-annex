@@ -20,6 +20,8 @@ git-annex (5.20150410) UNRELEASED; urgency=medium
   * fsck --from remote: When bad content is found in the remote,
     and the local repo does not have a copy of the content, preserve
     the bad content in .git/annex/bad/ to avoid further data loss.
+  * fsck --from remote: Avoid downloading a key if it would go over
+    the annex.diskreserve limit.
 
  -- Joey Hess <id@joeyh.name>  Thu, 09 Apr 2015 20:59:43 -0400
 
