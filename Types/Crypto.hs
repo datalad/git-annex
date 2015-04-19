@@ -18,6 +18,8 @@ module Types.Crypto (
 ) where
 
 import qualified Data.ByteString.Lazy as L
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 import Data.Digest.Pure.SHA
 
 import Utility.Gpg (KeyIds(..))
@@ -71,3 +73,16 @@ calcMac mac = case mac of
 	HmacSha512 -> showDigest $* hmacSha512
   where
 	($*) g f x y = g $ f x y
+
+-- Check that all the MACs continue to produce the same.
+prop_mac_stable :: Bool
+prop_mac_stable = all (\(mac, result) -> calcMac mac key msg == result)
+	[ (HmacSha1, "46b4ec586117154dacd49d664e5d63fdc88efb51")
+	, (HmacSha224, "4c1f774863acb63b7f6e9daa9b5c543fa0d5eccf61e3ffc3698eacdd")
+	, (HmacSha256, "f9320baf0249169e73850cd6156ded0106e2bb6ad8cab01b7bbbebe6d1065317")
+	, (HmacSha384, "3d10d391bee2364df2c55cf605759373e1b5a4ca9355d8f3fe42970471eca2e422a79271a0e857a69923839015877fc6")
+	, (HmacSha512, "114682914c5d017dfe59fdc804118b56a3a652a0b8870759cf9e792ed7426b08197076bf7d01640b1b0684df79e4b67e37485669e8ce98dbab60445f0db94fce")
+	]
+  where
+	key = L.fromChunks [T.encodeUtf8 $ T.pack "foo"]
+	msg = L.fromChunks [T.encodeUtf8 $ T.pack "bar"]
