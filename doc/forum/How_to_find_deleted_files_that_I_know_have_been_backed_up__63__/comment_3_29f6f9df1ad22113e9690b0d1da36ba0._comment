@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 3"
+ date="2015-04-19T15:51:45Z"
+ content="""
+Have you tried checking out a commit which it was present in and then using whereis?
+
+Not sure if you can do:
+
+    git annex whereis --key $KEY
+
+But if not, may be worth a feature request!
+"""]]
