@@ -196,7 +196,7 @@ maxCommitSize :: Int
 maxCommitSize = 5000
 
 {- Decide if now is a good time to make a commit.
- - Note that the list of changes has an undefined order.
+ - Note that the list of changes has a random order.
  -
  - Current strategy: If there have been 10 changes within the past second,
  - a batch activity is taking place, so wait for later.

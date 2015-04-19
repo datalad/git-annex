@@ -124,7 +124,7 @@ withUmask _ a = a
 #endif
 
 combineModes :: [FileMode] -> FileMode
-combineModes [] = undefined
+combineModes [] = 0
 combineModes [m] = m
 combineModes (m:ms) = foldl unionFileModes m ms
 

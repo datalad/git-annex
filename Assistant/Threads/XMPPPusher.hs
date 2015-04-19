@@ -78,4 +78,5 @@ selectNextPush lastpushedto l = go [] l
 		(Pushing clientid _)
 			| Just clientid /= lastpushedto -> (m, rejected ++ ms)
 		_ -> go (m:rejected) ms
-	go [] [] = undefined
+	go [] [] = error "empty push queue"
+

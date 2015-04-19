@@ -143,10 +143,10 @@ firstRun :: Maybe HostName -> IO ()
 firstRun listenhost = do
 	checkEnvironmentIO
 	{- Without a repository, we cannot have an Annex monad, so cannot
-	 - get a ThreadState. Using undefined is only safe because the
+	 - get a ThreadState. This is only safe because the
 	 - webapp checks its noAnnex field before accessing the
 	 - threadstate. -}
-	let st = undefined
+	let st = error "annex state not available"
 	{- Get a DaemonStatus without running in the Annex monad. -}
 	dstatus <- atomically . newTMVar =<< newDaemonStatus
 	d <- newAssistantData st dstatus

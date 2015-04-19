@@ -54,8 +54,8 @@ instance Storable TimeSpec where
 	-- use the larger alignment of the two types in the struct
 	alignment _ = max sec_alignment nsec_alignment
 	  where
-		sec_alignment = alignment (undefined::CTime)
-		nsec_alignment = alignment (undefined::CLong)
+		sec_alignment = alignment (1::CTime)
+		nsec_alignment = alignment (1::CLong)
 	sizeOf _ = #{size struct timespec}
 	peek ptr = do
 		sec <- #{peek struct timespec, tv_sec} ptr
@@ -92,7 +92,7 @@ touchBoth file atime mtime follow =
  -}
 
 instance Storable TimeSpec where
-	alignment _ = alignment (undefined::CLong)
+	alignment _ = alignment (1::CLong)
 	sizeOf _ = #{size struct timeval}
 	peek ptr = do
 		sec <- #{peek struct timeval, tv_sec} ptr

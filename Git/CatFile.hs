@@ -110,4 +110,4 @@ catTree h treeref = go <$> catObjectDetails h treeref
 	parsemodefile b = 
 		let (modestr, file) = separate (== ' ') (decodeBS b)
 		in (file, readmode modestr)
-	readmode = fst . fromMaybe (0, undefined) . headMaybe . readOct
+	readmode = fromMaybe 0 . fmap fst . headMaybe . readOct

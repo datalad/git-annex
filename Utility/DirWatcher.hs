@@ -57,7 +57,7 @@ eventsCoalesce = False
 #if (WITH_KQUEUE || WITH_FSEVENTS)
 eventsCoalesce = True
 #else
-eventsCoalesce = undefined
+eventsCoalesce = error "eventsCoalesce not defined"
 #endif
 #endif
 
@@ -78,7 +78,7 @@ closingTracked = True
 #if WITH_KQUEUE
 closingTracked = False
 #else
-closingTracked = undefined
+closingTracked = error "closingTracked not defined"
 #endif
 #endif
 
@@ -93,7 +93,7 @@ modifyTracked = True
 #if WITH_KQUEUE
 modifyTracked = False
 #else
-modifyTracked = undefined
+modifyTracked = error "modifyTracked not defined"
 #endif
 #endif
 
@@ -131,7 +131,7 @@ watchDir dir prune scanevents hooks runstartup =
 #else
 type DirWatcherHandle = ()
 watchDir :: FilePath -> Pruner -> Bool -> WatchHooks -> (IO () -> IO ()) -> IO DirWatcherHandle
-watchDir = undefined
+watchDir = error "watchDir not defined"
 #endif
 #endif
 #endif
@@ -150,7 +150,7 @@ stopWatchDir = FSEvents.eventStreamDestroy
 #if WITH_WIN32NOTIFY
 stopWatchDir = Win32Notify.killWatchManager
 #else
-stopWatchDir = undefined
+stopWatchDir = error "stopWatchDir not defined"
 #endif
 #endif
 #endif

@@ -55,7 +55,7 @@ Fscked
  -
  - This may fail, if other fsck processes are currently running using the
  - database. Removing the database in that situation would lead to crashes
- - or undefined behavior.
+ - or unknown behavior.
  -}
 newPass :: UUID -> Annex Bool
 newPass u = isJust <$> tryExclusiveLock (gitAnnexFsckDbLock u) go

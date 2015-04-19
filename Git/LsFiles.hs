@@ -181,12 +181,13 @@ parseUnmerged s
 	| otherwise = case words metadata of
 		(rawblobtype:rawsha:rawstage:_) -> do
 			stage <- readish rawstage :: Maybe Int
-			unless (stage == 2 || stage == 3) $
-				fail undefined -- skip stage 1
-			blobtype <- readBlobType rawblobtype
-			sha <- extractSha rawsha
-			return $ InternalUnmerged (stage == 2) file
-				(Just blobtype) (Just sha)
+			if stage /= 2 && stage /= 3
+				then Nothing
+				else do
+					blobtype <- readBlobType rawblobtype
+					sha <- extractSha rawsha
+					return $ InternalUnmerged (stage == 2) file
+						(Just blobtype) (Just sha)
 		_ -> Nothing
   where
 	(metadata, file) = separate (== '\t') s

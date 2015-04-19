@@ -397,7 +397,7 @@ getGCryptId fast r gc
 	| Git.repoIsLocal r || Git.repoIsLocalUnknown r = extract <$>
 		liftIO (catchMaybeIO $ Git.Config.read r)
 	| not fast = extract . liftM fst <$> getM (eitherToMaybe <$>)
-		[ Ssh.onRemote r (Git.Config.fromPipe r, return (Left undefined)) "configlist" [] []
+		[ Ssh.onRemote r (Git.Config.fromPipe r, return (Left $ error "configlist failed")) "configlist" [] []
 		, getConfigViaRsync r gc
 		]
 	| otherwise = return (Nothing, r)

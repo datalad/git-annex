@@ -111,7 +111,7 @@ moveFile src dest = tryIO (rename src dest) >>= onrename
 			-- But, mv will move into a directory if
 			-- dest is one, which is not desired.
 			whenM (isdir dest) rethrow
-			viaTmp mv dest undefined
+			viaTmp mv dest ""
 	  where
 		rethrow = throwM e
 		mv tmp _ = do

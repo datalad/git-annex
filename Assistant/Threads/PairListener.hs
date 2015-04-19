@@ -31,7 +31,7 @@ pairListenerThread urlrenderer = namedThread "PairListener" $ do
   where
 	{- Note this can crash if there's no network interface,
 	 - or only one like lo that doesn't support multicast. -}
-	getsock = multicastReceiver (multicastAddress $ IPv4Addr undefined) pairingPort
+	getsock = multicastReceiver (multicastAddress IPv4AddrClass) pairingPort
 		
 	go reqs cache sock = liftIO (getmsg sock []) >>= \msg -> case readish msg of
 		Nothing -> go reqs cache sock
