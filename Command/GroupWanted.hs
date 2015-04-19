@@ -8,14 +8,9 @@
 module Command.GroupWanted where
 
 import Common.Annex
-import qualified Annex
 import Command
 import Logs.PreferredContent
-import Types.Messages
-import Types.Group
 import Command.Wanted (performGet, performSet)
-
-import qualified Data.Map as M
 
 cmd :: [Command]
 cmd = [command "groupwanted" (paramPair paramGroup (paramOptional paramExpression)) seek
