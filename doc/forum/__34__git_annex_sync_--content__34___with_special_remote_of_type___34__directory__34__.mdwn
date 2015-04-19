@@ -1,0 +1,17 @@
+Hello, I started using the "wanted" feature of git-annex.
+
+I have (besides others) one local repository ("neon"), and two special remotes "ldk" (rsync) and "storage" (directory).
+
+"wanted" and "group" are configured as (replaced UUIDs with names):
+
+    group "storage" = backup
+    wanted "storage" = standard
+    wanted "neon" = (exclude=pictures/* and exclude=video/*) or present
+
+Now, let's assume there is a file named "video/foo.mp4". It is only present in "ldk". I want it to be present in "storage", too.
+
+When I run "git annex sync --content" on "neon" the file "video/foo.mp4" is neither fetched to be placed in "neon" nor in "storage".
+
+Which command do I have to run to transfer the file "video/foo.mp4" from "ldk" to "storage" when run from "neon".
+
+Previously, I started with "git annex get \`git annex find --not --in storage\`" and then continued with "git annex copy \`git annex find --not --in storage\` --to storage". I was hoping that the wanted feature would simplify this.
