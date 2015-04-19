@@ -1,6 +1,6 @@
 {- git-annex crypto types
  -
- - Copyright 2011-2012 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -17,10 +17,11 @@ module Types.Crypto (
 	calcMac,
 ) where
 
-import qualified Data.ByteString.Lazy as L
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import Data.Digest.Pure.SHA
+import qualified Data.ByteString as B
+import Crypto.Hash
 
 import Utility.Gpg (KeyIds(..))
 
@@ -62,17 +63,17 @@ readMac _ = Nothing
 
 calcMac
 	:: Mac          -- ^ MAC
-	-> L.ByteString -- ^ secret key
-	-> L.ByteString -- ^ message
+	-> B.ByteString -- ^ secret key
+	-> B.ByteString -- ^ message
 	-> String       -- ^ MAC'ed message, in hexadecimal
 calcMac mac = case mac of
-	HmacSha1   -> showDigest $* hmacSha1
-	HmacSha224 -> showDigest $* hmacSha224
-	HmacSha256 -> showDigest $* hmacSha256
-	HmacSha384 -> showDigest $* hmacSha384
-	HmacSha512 -> showDigest $* hmacSha512
+	HmacSha1   -> use SHA1
+	HmacSha224 -> use SHA224
+	HmacSha256 -> use SHA256
+	HmacSha384 -> use SHA384
+	HmacSha512 -> use SHA512
   where
-	($*) g f x y = g $ f x y
+	use alg k m = show (hmacGetDigest (hmacAlg alg k m))
 
 -- Check that all the MACs continue to produce the same.
 prop_mac_stable :: Bool
@@ -84,5 +85,5 @@ prop_mac_stable = all (\(mac, result) -> calcMac mac key msg == result)
 	, (HmacSha512, "114682914c5d017dfe59fdc804118b56a3a652a0b8870759cf9e792ed7426b08197076bf7d01640b1b0684df79e4b67e37485669e8ce98dbab60445f0db94fce")
 	]
   where
-	key = L.fromChunks [T.encodeUtf8 $ T.pack "foo"]
-	msg = L.fromChunks [T.encodeUtf8 $ T.pack "bar"]
+	key = T.encodeUtf8 $ T.pack "foo"
+	msg = T.encodeUtf8 $ T.pack "bar"

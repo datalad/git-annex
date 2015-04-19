@@ -34,7 +34,7 @@ module Crypto (
 ) where
 
 import qualified Data.ByteString.Lazy as L
-import Data.ByteString.Lazy.UTF8 (fromString)
+import Data.ByteString.UTF8 (fromString)
 import Control.Applicative
 import qualified Data.Map as M
 import Control.Monad.IO.Class
