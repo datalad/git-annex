@@ -10,7 +10,6 @@ Build-Depends:
 	libghc-data-default-dev,
 	libghc-hslogger-dev,
 	libghc-pcre-light-dev,
-	libghc-sha-dev,
 	libghc-cryptohash-dev (>= 0.11.0),
 	libghc-dataenc-dev,
 	libghc-utf8-string-dev,

@@ -7,11 +7,12 @@
 
 module Utility.Verifiable where
 
-import Data.Digest.Pure.SHA
-import Data.ByteString.Lazy.UTF8 (fromString)
-import qualified Data.ByteString.Lazy as L
+import Data.ByteString.UTF8 (fromString)
+import qualified Data.ByteString as S
 
-type Secret = L.ByteString
+import Utility.Hash
+
+type Secret = S.ByteString
 type HMACDigest = String
 
 {- A value, verifiable using a HMAC digest and a secret. -}
@@ -28,7 +29,7 @@ verify :: (Eq a, Show a) => Verifiable a -> Secret -> Bool
 verify v secret = v == mkVerifiable (verifiableVal v) secret
 
 calcDigest :: String -> Secret -> HMACDigest
-calcDigest v secret = showDigest $ hmacSha1 secret $ fromString v
+calcDigest v secret = calcMac HmacSha1 secret (fromString v)
 
 {- for quickcheck -}
 prop_verifiable_sane :: String -> String -> Bool

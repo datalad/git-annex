@@ -39,7 +39,7 @@ import Git
 import qualified Data.Text as T
 #ifdef WITH_PAIRING
 import qualified Data.Text.Encoding as T
-import qualified Data.ByteString.Lazy as B
+import qualified Data.ByteString as B
 import Data.Char
 import qualified Control.Exception as E
 import Control.Concurrent
@@ -304,7 +304,7 @@ secretProblem s
 	| otherwise = Nothing
 
 toSecret :: Text -> Secret
-toSecret s = B.fromChunks [T.encodeUtf8 $ T.toLower $ T.filter isAlphaNum s]
+toSecret s = T.encodeUtf8 $ T.toLower $ T.filter isAlphaNum s
 
 {- From Dickens -}
 sampleQuote :: Text
