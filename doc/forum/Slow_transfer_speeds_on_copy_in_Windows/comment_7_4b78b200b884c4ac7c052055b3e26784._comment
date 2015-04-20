@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlh1G1u_AMJEyADqlfuzV2cePniocDyK6A"
+ nickname="Adam"
+ subject="comment 7"
+ date="2015-04-20T17:43:11Z"
+ content="""
+I'm not using cygwin for git-annex.  I'm using msysgit and git's command window.
+"""]]
