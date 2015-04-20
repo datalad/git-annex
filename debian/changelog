@@ -1,4 +1,4 @@
-git-annex (5.20150410) UNRELEASED; urgency=medium
+git-annex (5.20150420) unstable; urgency=medium
 
   * Fix activity log parsing, which caused the log to not retain
     activity from other uuids.
@@ -29,7 +29,7 @@ git-annex (5.20150410) UNRELEASED; urgency=medium
   * Windows: Bundled versions of rsync, wget, ssh, and gpg from
     cygwin all updated. Thanks, Yury V. Zaytsev.
 
- -- Joey Hess <id@joeyh.name>  Thu, 09 Apr 2015 20:59:43 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 20 Apr 2015 14:44:04 -0400
 
 git-annex (5.20150409) unstable; urgency=medium
 
