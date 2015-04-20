@@ -25,6 +25,8 @@ git-annex (5.20150410) UNRELEASED; urgency=medium
   * required: New command, like wanted, but for required content.
   * Removed dependency on haskell SHA library,
     instead using cryptohash >= 0.11.0.
+  * Windows: Bundled versions of rsync, wget, ssh, and gpg from
+    cygwin all updated. Thanks, Yury V. Zaytsev.
 
  -- Joey Hess <id@joeyh.name>  Thu, 09 Apr 2015 20:59:43 -0400
 
