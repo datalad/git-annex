@@ -1,15 +1,16 @@
 #!/bin/bash
 #
 # A little helper script to build a package with standalone git-annex
-# It relies on being run within git-annex Git repository
+# It relies on being run within git-annex's git repository
 #
 set -eu
 
 umask 022
 
-git checkout debian/changelog
+# This is the same method that the configure script uses when git-annex is
+# built from git master.
+ANNEX_VERSION=$(git log -n 1 --format=format:'%ci %h'| sed -e 's/-//g' -e 's/ .* /-g/')
 
-ANNEX_VERSION=$(git describe HEAD)
 ANNEX_NDVERSION=$( echo ${ANNEX_VERSION} | sed -e 's,-,+git,' -e 's,$,-1~ndall+1,')
 
 dch --noconf -v ${ANNEX_NDVERSION} \
