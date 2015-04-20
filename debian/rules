@@ -8,14 +8,11 @@ export RELEASE_BUILD=1
 %:
 	dh $@
 
-#
-# Rules for providing a standalone build of annex.
-#
-
+# Run this target to build git-annex-standalone.deb
 build-standalone:
-	[ -e .git ]
+	test -e .git
 	git checkout debian/changelog
-	quilt pop -a || :
+	quilt pop -a || true
 	QUILT_SERIES=series.standalone-build quilt push -a
 	debian/create-standalone-changelog
 	dpkg-buildpackage -rfakeroot
