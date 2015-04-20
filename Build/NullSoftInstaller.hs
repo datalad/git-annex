@@ -211,6 +211,8 @@ cygwinDlls =
 	, "cygk5crypto-3.dll"
 	, "cygkrb5support-0.dll"
 	, "cyggmp-10.dll"
+	, "cygkrb5-3.dll"
+	, "cygnettle-4.dll"
 	]
 
 -- msysgit opens Program Files/Git/doc/git/html/git-annex.html
