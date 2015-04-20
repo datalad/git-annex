@@ -207,6 +207,8 @@ cygwinDlls =
 	, "cygreadline7.dll"
 	, "cygncursesw-10.dll"
 	, "cygusb0.dll"
+	, "cyghogweed-2.dll"
+	, "cygk5crypto-3.dll"
 	]
 
 -- msysgit opens Program Files/Git/doc/git/html/git-annex.html
