@@ -22,6 +22,9 @@ git-annex (5.20150420) unstable; urgency=medium
   * Removed dependency on haskell SHA library,
     instead using cryptohash >= 0.11.0.
   * Make repo init more robust.
+  * New debian/rules build-standalone target, which generates a
+    git-annex-standalone.deb that should work on many old Debian etc
+    systems. Thanks, Yaroslav Halchenko.
   * Windows: Renamed start menu file to avoid loop in some versions
     of Windows where the menu file is treated as a git-annex program.
   * Windows: Fixed support of remotes on other drives.
