@@ -54,16 +54,10 @@ Last-Update: 2015-04-20
 +debian/git-annex-standalone/usr/lib/git-annex.linux/usr/share/man/man1/git-annex*
 --- a/debian/rules
 +++ b/debian/rules
-@@ -3,7 +3,17 @@
- export CABAL=debian/cabal-wrapper
+@@ -12,6 +12,15 @@ export RELEASE_BUILD=1
+ # Rules for providing a standalone build of annex.
+ #
  
- # Do use the changelog's version number, rather than making one up.
--export RELEASE_BUILD=1
-+export RELEASE_BUILD=0
- 
- %:
- 	dh $@
-+
 +override_dh_auto_build:
 +	make linuxstandalone
 +
@@ -73,3 +67,6 @@ Last-Update: 2015-04-20
 +override_dh_fixperms:
 +	dh_fixperms -Xld-linux
 +
+ build-standalone:
+ 	[ -e .git ]
+ 	git checkout debian/changelog

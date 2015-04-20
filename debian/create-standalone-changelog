@@ -1,0 +1,16 @@
+#!/bin/bash
+#
+# A little helper script to build a package with standalone git-annex
+# It relies on being run within git-annex Git repository
+#
+set -eu
+
+umask 022
+
+git checkout debian/changelog
+
+ANNEX_VERSION=$(git describe HEAD)
+ANNEX_NDVERSION=$( echo ${ANNEX_VERSION} | sed -e 's,-,+git,' -e 's,$,-1~ndall+1,')
+
+dch --noconf -v ${ANNEX_NDVERSION} \
+    --force-bad-version --force-distribution -D neurodebian "Backported fresh snapshot"
