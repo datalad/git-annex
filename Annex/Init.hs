@@ -57,15 +57,15 @@ genDescription Nothing = do
 
 initialize :: Maybe String -> Annex ()
 initialize mdescription = do
+	{- This will make the first commit to git, so ensure git is set up
+	 - properly to allow commits when running it. -}
+	ensureCommit $ Annex.Branch.create
+
 	prepUUID
 	initialize'
 
 	u <- getUUID
-	{- This will make the first commit to git, so ensure git is set up
-	 - properly to allow commits when running it. -}
-	ensureCommit $ do
-		Annex.Branch.create
-		describeUUID u =<< genDescription mdescription
+	describeUUID u =<< genDescription mdescription
 
 -- Everything except for uuid setup.
 initialize' :: Annex ()

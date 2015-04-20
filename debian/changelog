@@ -21,6 +21,7 @@ git-annex (5.20150410) UNRELEASED; urgency=medium
   * required: New command, like wanted, but for required content.
   * Removed dependency on haskell SHA library,
     instead using cryptohash >= 0.11.0.
+  * Make repo init more robust.
   * Windows: Renamed start menu file to avoid loop in some versions
     of Windows where the menu file is treated as a git-annex program.
   * Windows: Fixed support of remotes on other drives.
