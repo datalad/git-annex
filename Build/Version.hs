@@ -67,3 +67,6 @@ cabalSetup cabalfile = do
 		| otherwise = s
 	  where
 		fullfield = field ++ ": "
+
+main :: IO ()
+main = putStr =<< getVersion
