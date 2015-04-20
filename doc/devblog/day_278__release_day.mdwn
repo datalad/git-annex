@@ -1,0 +1,25 @@
+I hope that today's git-annex release will be landing in Debian unstable
+toward the end of the month. And I'm looking forward to some changes that
+have been blocked by wanting to keep git-annex buildable on Debian 7.
+
+Yesterday I got rid of the [SHA](http://hackage.haskell.org/package/SHA/)
+dependency, switching git-annex to use a newer version of cryptohash for
+HMAC generation (which its author Vincent Hanquez kindly added to it when I
+requested it, waay back in 2013). I'm considering using the LambdaCase
+extension to clean up a lot of the code next, and there are 500+ lines of
+old yesod compatability code I can eventually remove.
+
+These changes and others will prevent backporting to the soon to be Debian
+oldstable, but the standalone tarball will still work there. And, the
+git-annex-standalone.deb that can be installed on any version of Debian is
+[now available from the NeuroDebian repository](http://neuro.debian.net/install_pkg.html?p=git-annex-standalone),
+and its build support has been merged into the source tree.
+
+In the run up to the release today, I also dealt with getting the
+Windows build tested and working, now that it's been updated to newer
+versions of rsync, ssh, etc from Cygwin. Had to add several more dlls to
+the installer. That testing also turned up a case where `git-annex init`
+could fail, which got a last-minute fix.
+
+PS, scroll down [this 10 year of git timeline](http://neuro.debian.net/install_pkg.html?p=git-annex-standalone)
+and see what you find!
