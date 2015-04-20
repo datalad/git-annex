@@ -1,0 +1,6 @@
+Given [this tip](https://git-annex.branchable.com/forum/__34__git_annex_sync__34___synced_after_8_hours/#comment-890ca1381d800ac833ccbb8c5db175ea), [this comment](https://git-annex.branchable.com/todo/wishlist:_rsync_efficiency/#comment-870ae805efd35343edefdbed792dac04) and possibly others, it would be nice if git-annex could look at any given repo and make suggestions for improvements. As a second step, it could look at remotes as well. And as a third, maybe even change repo settings and not just make suggestions.
+
+Having a few old repos with terabytes of data on various disks, I would just toss this stanza into my mr templates to eventually optimize all my repos to current best practices.
+
+
+-- Richard
