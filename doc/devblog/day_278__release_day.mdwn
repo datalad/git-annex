@@ -21,5 +21,5 @@ versions of rsync, ssh, etc from Cygwin. Had to add several more dlls to
 the installer. That testing also turned up a case where `git-annex init`
 could fail, which got a last-minute fix.
 
-PS, scroll down [this 10 year of git timeline](http://neuro.debian.net/install_pkg.html?p=git-annex-standalone)
+PS, scroll down [this 10 year of git timeline](https://www.atlassian.com/git/articles/10-years-of-git/)
 and see what you find!
