@@ -10,7 +10,7 @@
 
 import Common.Annex
 import Types.Distribution
-import Build.Version
+import Build.Version (getChangelogVersion)
 import Utility.UserInfo
 import Utility.Url
 import qualified Git.Construct
