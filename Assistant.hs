@@ -57,7 +57,6 @@ import Utility.LogFile
 #ifdef mingw32_HOST_OS
 import Utility.Env
 import Annex.Path
-import Config.Files
 import System.Environment (getArgs)
 #endif
 
