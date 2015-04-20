@@ -195,7 +195,6 @@ cygwinDlls =
 	, "cygkrb5-26.dll"
 	, "cygz.dll"
 	, "cygidn-11.dll"
-	, "libcurl-4.dll"
 	, "cyggnutls-28.dll"
 	, "libcrypto.dll"
 	, "libssl.dll"
