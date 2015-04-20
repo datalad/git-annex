@@ -7,11 +7,7 @@ git-annex (5.20150410) UNRELEASED; urgency=medium
   * info dir: Added information about repositories that
     contain files in the specified directory.
   * info: Added --bytes option.
-  * Windows: Renamed start menu file to avoid loop in some versions
-    of Windows where the menu file is treated as a git-annex program.
   * bittorrent: Fix handling of magnet links.
-  * Windows: Fixed support of remotes on other drives.
-    (A reversion introduced in version 5.20150113.)
   * When a key's size is unknown, still check the annex.diskreserve,
     and avoid getting content if the disk is too full.
   * Fix fsck --from a git remote in a local directory, and from
@@ -25,6 +21,10 @@ git-annex (5.20150410) UNRELEASED; urgency=medium
   * required: New command, like wanted, but for required content.
   * Removed dependency on haskell SHA library,
     instead using cryptohash >= 0.11.0.
+  * Windows: Renamed start menu file to avoid loop in some versions
+    of Windows where the menu file is treated as a git-annex program.
+  * Windows: Fixed support of remotes on other drives.
+    (A reversion introduced in version 5.20150113.)
   * Windows: Bundled versions of rsync, wget, ssh, and gpg from
     cygwin all updated. Thanks, Yury V. Zaytsev.
 
