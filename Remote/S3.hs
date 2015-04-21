@@ -28,6 +28,7 @@ import Control.Monad.Trans.Resource
 import Control.Monad.Catch
 import Data.Conduit
 import Data.IORef
+import System.Log.Logger
 
 import Common.Annex
 import Types.Remote
@@ -149,7 +150,7 @@ s3Setup' u mcreds c = if configIA c then archiveorg else defaulthost
 			writeUUIDFile archiveconfig u
 		use archiveconfig
 
--- Sets up a http connection manager for S3 encdpoint, which allows
+-- Sets up a http connection manager for S3 endpoint, which allows
 -- http connections to be reused across calls to the helper.
 prepareS3 :: Remote -> S3Info -> (S3Handle -> helper) -> Preparer helper
 prepareS3 r info = resourcePrepare $ const $
@@ -388,13 +389,13 @@ sendS3Handle'
 	=> S3Handle
 	-> r
 	-> ResourceT IO a
-sendS3Handle' h = AWS.pureAws (hawscfg h) (hs3cfg h) (hmanager h)
+sendS3Handle' h r = AWS.pureAws (hawscfg h) (hs3cfg h) (hmanager h) r
 
 withS3Handle :: RemoteConfig -> UUID -> S3Info -> (S3Handle -> Annex a) -> Annex a
 withS3Handle c u info a = do
 	creds <- getRemoteCredPairFor "S3" c (AWS.creds u)
 	awscreds <- liftIO $ genCredentials $ fromMaybe nocreds creds
-	let awscfg = AWS.Configuration AWS.Timestamp awscreds (AWS.defaultLog AWS.Error)
+	let awscfg = AWS.Configuration AWS.Timestamp awscreds debugMapper
 	bracketIO (newManager httpcfg) closeManager $ \mgr -> 
 		a $ S3Handle mgr awscfg s3cfg info
   where
@@ -518,3 +519,7 @@ genCredentials (keyid, secret) = AWS.Credentials
 mkLocationConstraint :: AWS.Region -> S3.LocationConstraint
 mkLocationConstraint "US" = S3.locationUsClassic
 mkLocationConstraint r = r
+
+debugMapper :: AWS.Logger
+debugMapper AWS.Debug t = debugM "S3" (T.unpack t)
+debugMapper _ _ = noop

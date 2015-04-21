@@ -1,3 +1,9 @@
+git-annex (5.20150421) UNRELEASED; urgency=medium
+
+  * S3: Enable debug logging when annex.debug or --debug is set.
+
+ -- Joey Hess <id@joeyh.name>  Tue, 21 Apr 2015 15:54:10 -0400
+
 git-annex (5.20150420) unstable; urgency=medium
 
   * Fix activity log parsing, which caused the log to not retain
