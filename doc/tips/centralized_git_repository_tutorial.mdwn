@@ -55,9 +55,9 @@ Feel free to rename the files, etc, using normal git commands:
 	# git mv kitenet.net_~joey_screencasts_git-annex_coding_in_haskell.ogg git-annex_coding_in_haskell.ogg
 	# git commit -m 'better filenames'
 
-Now push your changes back to the central repository. This first time,
-remember to push the git-annex branch, which is used to track the file
-contents.
+Now push your changes back to the central repository. As well as pushing
+the master branch, remember to push the git-annex branch, which is used to
+track the file contents.
 
 	# git push origin master git-annex
 	To git@github.com:joeyh/techtalks.git
@@ -128,7 +128,7 @@ desired.
 After you use git-annex to move files around, remember to push, 
 which will broadcast its updated location information.
 
-	# git push
+	# git push origin master git-annex
 
 ## take it farther
 
