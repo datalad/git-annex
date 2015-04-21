@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-04-21T20:22:25Z"
+ content="""
+Yeah, you need to `git checkout` a tree from before you deleted the files,
+and then you'll be able to use `git annex whereis` in there on the deleted
+files. This will tell you where the files are currently located (not some historical data).
+
+`git annex whereis --key` is indeed an alternative approach, if you know
+the key corresponding to the deleted file. You can see the keys in the git
+diff, if you know where to look.
+
+[[internals]] will let you understand how this all really works.
+"""]]
