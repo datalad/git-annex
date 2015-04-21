@@ -521,5 +521,10 @@ mkLocationConstraint "US" = S3.locationUsClassic
 mkLocationConstraint r = r
 
 debugMapper :: AWS.Logger
-debugMapper AWS.Debug t = debugM "S3" (T.unpack t)
-debugMapper _ _ = noop
+debugMapper level t = forward "S3" (T.unpack t)
+  where
+	forward = case level of
+		AWS.Debug -> debugM
+		AWS.Info -> infoM
+		AWS.Warning -> warningM
+		AWS.Error -> errorM
