@@ -9,7 +9,7 @@ umask 022
 
 # This is the same method that the configure script uses when git-annex is
 # built from git master.
-ANNEX_VERSION=$(runghc Build/Version.hs)
+ANNEX_VERSION=$(runghc Build/BuildVersion.hs)
 
 ANNEX_NDVERSION=$( echo ${ANNEX_VERSION} | sed -e 's,-,+git,' -e 's,$,-1~ndall+1,')
 
