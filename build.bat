@@ -1,1 +1,1 @@
-C:\CYGWIN\BIN\SH.EXE standalone/windows/build-simple.sh
+SH.EXE standalone/windows/build-simple.sh
