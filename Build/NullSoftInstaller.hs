@@ -27,7 +27,7 @@ import Control.Applicative
 import Data.String
 import Data.Maybe
 import Data.Char
-import Data.List (nub)
+import Data.List (nub, isPrefixOf)
 
 import Utility.Tmp
 import Utility.Path
@@ -47,7 +47,7 @@ main = do
 			when (isNothing p) $
 				print ("unable to find in PATH", f)
 			return p
-		dlls <- forM (catMaybes extrabins) findLibs
+		dlls <- forM (catMaybes extrabins) findCygLibs
 		dllpaths <- mapM searchPath (nub (concat dlls))
 		webappscript <- vbsLauncher tmpdir "git-annex-webapp" "git-annex webapp"
 		autostartscript <- vbsLauncher tmpdir "git-annex-autostart" "git annex assistant --autostart"
@@ -189,9 +189,11 @@ htmlHelpText = unlines
 	, "</html"
 	]
 
-findLibs :: FilePath -> IO [FilePath]
-findLibs p = mapMaybe parse . lines <$> readProcess "ldd" [p]
+-- Find cygwin libraries used by the specified executable.
+findCygLibs :: FilePath -> IO [FilePath]
+findCygLibs p = filter iscyg . mapMaybe parse . lines <$> readProcess "ldd" [p]
   where
 	parse l = case words (dropWhile isSpace l) of
 		(dll:"=>":_dllpath:_offset:[]) -> Just dll
 		_ -> Nothing
+	iscyg f = "cyg" `isPrefixOf` f || "lib" `isPrefixOf` f
