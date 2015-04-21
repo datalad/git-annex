@@ -66,6 +66,19 @@ When run without any -s or -t parameters, displays the current metadata.
   Enable JSON output. This is intended to be parsed by programs that use
   git-annex. Each line of output is a JSON object.
 
+* `--all`
+
+  Specify instead of a file to get/set metadata on all known keys.
+
+* `--unused`
+
+  Specify instead of a file to get/set metadata on
+  files found by last run of git-annex unused.
+
+* `--key=keyname`
+
+  Specify instead of a file to get/set metadata of the specified key.
+
 # EXAMPLES
 
 To set some tags on a file and also its author:
