@@ -1,13 +1,13 @@
 The [[walkthrough]] builds up a decentralized git repository setup, but
 git-annex can also be used with a centralized bare repository, just like
 git can. This tutorial shows how to set up a centralized repository hosted on
-GitHub.
+GitHub on GitLab or your own git server.
 
 ## set up the repository, and make a checkout
 
 I've created a repository for technical talk videos, which you can
 [fork on Github](https://github.com/joeyh/techtalks).
-Or make your own repository on GitHub (or elsewhere) now.
+Or make your own repository on GitHub (or GitLab elsewhere) now.
 
 On your laptop, [[install]] git-annex, and clone the repository:
 
@@ -21,12 +21,14 @@ located:
 	init my laptop ok
 
 Let's tell git-annex that GitHub doesn't support running git-annex-shell there.
+
+	# git config remote.origin.annex-ignore true
+
 This means you can't store annexed file *contents* on GitHub; it would
 really be better to host the bare repository on your own server, which
 would not have this limitation. (If you want to do that, check out
-[[using_gitolite_with_git-annex]].)
-
-	# git config remote.origin.annex-ignore true
+[[using_gitolite_with_git-annex]].) Or, you could use GitLab, which
+*does* [support git-annex on their servers](https://about.gitlab.com/2015/02/17/gitlab-annex-solves-the-problem-of-versioning-large-binaries-with-git/).
 
 ## add files to the repository
 
