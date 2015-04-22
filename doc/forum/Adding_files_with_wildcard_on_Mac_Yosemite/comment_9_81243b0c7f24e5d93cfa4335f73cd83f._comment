@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="clacke"
+ subject="Nicer expression"
+ date="2015-04-22T13:22:25Z"
+ content="""
+This is a bit more readable, even avoids the commas and casing of the original line I was using:
+
+find . -name .git -prune -o -print0 | ggrep -izZ -f <(printf '\.%s$\n' jp{,e}g avi mov 3gp mp4 tif pdf doc pps bmp png mp{,e}g wav nef thm key.gz ogg ppt gif m4a) - | xargs -0 git annex add
+
+(`ggrep` necessary on OSX)
+
+(removed comment with faulty overbroad regex)
+"""]]
