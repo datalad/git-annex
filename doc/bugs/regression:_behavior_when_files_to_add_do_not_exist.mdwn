@@ -43,8 +43,8 @@ $ git annex add asdf qwer
 add asdf ok
 git-annex: qwer not found
 
-$ file *
-asdf: symbolic link to `.git/annex/objects/pX/ZJ/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' 
+$ file * | sed -e 's/`.*//'
+asdf: symbolic link to 
 
 $ git status
 On branch master
@@ -86,8 +86,8 @@ add asdf ok
 git-annex: qwer not found
 (Recording state in git...)
 
-$ file *
-asdf: symbolic link to `.git/annex/objects/pX/ZJ/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' 
+$ file * | sed -e 's/`.*//'
+asdf: symbolic link to 
 
 $ git status
 On branch master
