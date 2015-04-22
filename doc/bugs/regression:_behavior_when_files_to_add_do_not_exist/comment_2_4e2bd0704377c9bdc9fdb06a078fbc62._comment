@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-04-22T20:27:29Z"
+ content="""
+This behavior could stand to be improved, but it's easy to deal with: Just
+git annex add the files again, listing only the ones that actually exist,
+and it will proceed where it was interrupted by the error.
+"""]]
