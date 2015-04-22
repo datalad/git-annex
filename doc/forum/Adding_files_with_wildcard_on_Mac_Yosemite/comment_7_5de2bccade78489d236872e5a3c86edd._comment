@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="clacke"
+ subject="Workaround"
+ date="2015-04-22T12:02:01Z"
+ content="""
+This is a workaround for the missing wildcard functionality:
+
+`git annex add . $( echo --include='*'.{JPG,jp{,e}g,AVI,avi,MOV,mov,3GP,3gp,mp4,tif,pdf,PDF,doc,pps,bmp,png,mp{,e}g,MP{,E}G,wav,WAV,nef,NEF,thm,THM,key.gz,ogg,OGG,ppt,GIF,gif,m4a
+}\ --or --include=dummy.qwerasdfzxcv )`
+"""]]
