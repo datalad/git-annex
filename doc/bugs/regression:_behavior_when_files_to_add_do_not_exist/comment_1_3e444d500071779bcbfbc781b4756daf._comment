@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="clacke"
+ subject="Inconsistent between batches of files"
+ date="2015-04-22T12:56:42Z"
+ content="""
+If you add enough files, annex gets past the first `(Recording state in git...)` and then breaks on only the last portion, so some files are added and some are only hashed:
+
+[[!format sh \"\"\"
+$ touch {10000..20240} 20242
+
+$ git annex add {10000..20242}
+[ . . . ]
+add 20240 ok
+(recording state in git...)
+add 20242 ok
+git-annex: 20241 not found
+
+$ file 20240 20242 | sed -e 's/`.*//'
+20240: symbolic link to 
+20242: symbolic link to 
+
+$ git status | tail -n 7
+	new file:   20240
+
+Untracked files:
+  (use \"git add <file>...\" to include in what will be committed)
+
+	20242
+\"\"\"]]
+"""]]
