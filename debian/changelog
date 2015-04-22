@@ -1,7 +1,7 @@
 git-annex (5.20150421) UNRELEASED; urgency=medium
 
   * S3: Enable debug logging when annex.debug or --debug is set.
-  * Dropped support for older versions of yesod and warp than the ones
+  * Dropped support for older versions of yesod, warp, and dbus than the ones
     in Debian Jessie.
 
  -- Joey Hess <id@joeyh.name>  Tue, 21 Apr 2015 15:54:10 -0400

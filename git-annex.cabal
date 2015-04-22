@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 5.20150420
+Version: 5.20150421
 Cabal-Version: >= 1.8
 License: GPL-3
 Maintainer: Joey Hess <id@joeyh.name>
@@ -183,7 +183,7 @@ Executable git-annex
 
   if (os(linux))
     if flag(Dbus)
-      Build-Depends: dbus (>= 0.10.3)
+      Build-Depends: dbus (>= 0.10.7)
       CPP-Options: -DWITH_DBUS
   
     if flag(DesktopNotify)
