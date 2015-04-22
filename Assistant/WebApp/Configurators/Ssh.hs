@@ -86,11 +86,7 @@ mkSshInput s = SshInput
 	, inputPort = sshPort s
 	}
 
-#if MIN_VERSION_yesod(1,2,0)
 sshInputAForm :: Field Handler Text -> SshInput -> AForm Handler SshInput
-#else
-sshInputAForm :: Field WebApp WebApp Text -> SshInput -> AForm WebApp WebApp SshInput
-#endif
 sshInputAForm hostnamefield d = normalize <$> gen
   where
 	gen = SshInput

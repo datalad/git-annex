@@ -94,11 +94,7 @@ fixSockAddr addr = addr
 -- disable buggy sloworis attack prevention code
 webAppSettings :: Settings
 
-#if MIN_VERSION_warp(2,1,0)
 webAppSettings = setTimeout halfhour defaultSettings
-#else
-webAppSettings = defaultSettings { settingsTimeout = halfhour }
-#endif
   where
 	halfhour = 30 * 60
 
@@ -155,11 +151,7 @@ lookupRequestField k req = fromMaybe "" . lookup k $ Wai.requestHeaders req
 
 {- Rather than storing a session key on disk, use a random key
  - that will only be valid for this run of the webapp. -}
-#if MIN_VERSION_yesod(1,2,0)
 webAppSessionBackend :: Yesod.Yesod y => y -> IO (Maybe Yesod.SessionBackend)
-#else
-webAppSessionBackend :: Yesod.Yesod y => y -> IO (Maybe (Yesod.SessionBackend y))
-#endif
 webAppSessionBackend _ = do
 	g <- newGenIO :: IO SystemRandom
 	case genBytes 96 g of
@@ -170,18 +162,8 @@ webAppSessionBackend _ = do
   where
 	timeout = 120 * 60 -- 120 minutes
 	use key =
-#if MIN_VERSION_yesod(1,2,0)
 		Just . Yesod.clientSessionBackend key . fst
 			<$> Yesod.clientSessionDateCacher timeout
-#else
-#if MIN_VERSION_yesod(1,1,7)
-		Just . Yesod.clientSessionBackend2 key . fst
-			<$> Yesod.clientSessionDateCacher timeout
-#else
-		return $ Just $
-			Yesod.clientSessionBackend key timeout
-#endif
-#endif
 
 #ifdef WITH_WEBAPP_SECURE
 type AuthToken = SecureMem
@@ -219,11 +201,7 @@ genAuthToken = do
  - Note that the usual Yesod error page is bypassed on error, to avoid
  - possibly leaking the auth token in urls on that page!
  -}
-#if MIN_VERSION_yesod(1,2,0)
 checkAuthToken :: (Monad m, Yesod.MonadHandler m) => (Yesod.HandlerSite m -> AuthToken) -> m Yesod.AuthResult
-#else
-checkAuthToken :: forall t sub. (t -> AuthToken) -> Yesod.GHandler sub t Yesod.AuthResult
-#endif
 checkAuthToken extractAuthToken = do
 	webapp <- Yesod.getYesod
 	req <- Yesod.getRequest
