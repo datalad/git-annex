@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="clacke"
+ subject="workaround"
+ date="2015-04-22T13:31:10Z"
+ content="""
+This is a workaround to the missing functionality, generating an `--include` expression:
+
+[[!format sh \"\"\"
+git annex add $(printf -- '--include=*.%s --or ' jp{,e}g avi mov 3gp mp4 tif pdf doc pps bmp png mp{,e}g wav nef thm key.gz ogg ppt gif) --include='*.m4a'
+\"\"\"]]
+"""]]
