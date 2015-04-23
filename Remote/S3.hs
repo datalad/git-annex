@@ -28,6 +28,7 @@ import Control.Monad.Trans.Resource
 import Control.Monad.Catch
 import Data.Conduit
 import Data.IORef
+import Data.Bits.Utils
 import System.Log.Logger
 
 import Common.Annex
@@ -89,13 +90,7 @@ gen r u c gc = do
 			, availability = GloballyAvailable
 			, remotetype = remote
 			, mkUnavailable = gen r u (M.insert "host" "!dne!" c) gc
-			, getInfo = includeCredsInfo c (AWS.creds u) $ catMaybes
-				[ Just ("bucket", fromMaybe "unknown" (getBucketName c))
-				, if configIA c
-					then Just ("internet archive item", iaItemUrl $ fromMaybe "unknown" $ getBucketName c)
-					else Nothing
-				, Just ("partsize", maybe "unlimited" (roughSize storageUnits False) (getPartSize c))
-				]
+			, getInfo = includeCredsInfo c (AWS.creds u) (s3Info c)
 			, claimUrl = Nothing
 			, checkUrl = Nothing
 			}
@@ -528,3 +523,17 @@ debugMapper level t = forward "S3" (T.unpack t)
 		AWS.Info -> infoM
 		AWS.Warning -> warningM
 		AWS.Error -> errorM
+
+s3Info :: RemoteConfig -> [(String, String)]
+s3Info c = catMaybes
+	[ Just ("bucket", fromMaybe "unknown" (getBucketName c))
+	, Just ("endpoint", w82s (S.unpack (S3.s3Endpoint s3c)))
+	, Just ("port", show (S3.s3Port s3c))
+	, Just ("storage class", show (getStorageClass c))
+	, if configIA c
+		then Just ("internet archive item", iaItemUrl $ fromMaybe "unknown" $ getBucketName c)
+		else Nothing
+	, Just ("partsize", maybe "unlimited" (roughSize storageUnits False) (getPartSize c))
+	]
+  where
+	s3c = s3Configuration c
