@@ -1,0 +1,66 @@
+Say we have 2 backup drives and want to fill them both evenly with files,
+different files in each drive. Currently, preferred content cannot express
+that entirely:
+
+* One way is to use a-m* and n-z*, but that's unlikely to split filenames evenly. 
+* Or, can let both repos take whatever files, perhaps at random, that the
+  other repo is not know to contain, but then repos will race and both get
+  the same file, or similarly if they are not communicating frequently.
+
+So, let's add a new expression: `balanced_amoung(group)`
+
+This would work by taking the list of uuids of all repositories in the
+group, and sorting them, which yields a list from 0..M-1 repositories.
+
+To decide which repository wants key K, convert K to a number N in some
+stable way and then `N mod M` yields the number of the repository that
+wants it, while all the rest don't.
+
+(Since git-annex keys can be pretty long and not all of them are random
+hashes, let's md5sum the key and then use the md5 as a number.)
+
+This expression is stable as long as the members of the group don't change.
+I think that's stable enough to work as a preferred content expression.
+
+Now, you may want to be able to add a third repo and have the data be
+rebalanced, with some moving to it. And that would happen. However, as this
+scheme stands, it's equally likely that adding repo3 will make repo1 and
+repo2 want to swap files between them. So, we'll want to add some
+precautions to avoid a lof of data moving around in this case:
+
+	((balanced_amoung(backup) and not (copies=backup:1)) or present
+
+So once file lands on a backup drive, it stays there, even if more backup
+drives change the balancing.
+
+-----
+
+Some limitations:
+
+* The item size is not taken into account. One repo could end up with a
+  much larger item or items and so fill up faster. And the other repo
+  wouldn't then notice it was full and take up some slack.
+* With the complicated expression above, adding a new repo when one 
+  is full would not necessarily result in new files going to one of the 2
+  repos that still have space. Some items would end up going to the full
+  repo.
+
+These can be dealt with by noticing when a repo is full and moving some
+of it's files (any will do) to other repos in its group. I don't see a way
+to make preferred content express that movement though; it would need to be
+a manual/scripted process.
+
+-----
+
+What if we have 5 backup repos and want each file to land in 3 of them?
+There's a simple change that can support that:
+`balanced_amoung(group:3)`
+
+This works the same as before, but rather than just `N mod M`, take
+`N+I mod M` where I is [0..2] to get the list of 3 repositories that want a
+key.
+
+This does not really avoid the limitations above, but having more repos
+that want each file will reduce the chances that no repo will be able to
+take a given file. In the [[iabackup]] scenario, new clients will just be
+assigned until all the files reach the desired level or replication.
