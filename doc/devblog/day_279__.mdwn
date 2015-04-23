@@ -1,0 +1,10 @@
+Posted a design for [[balanced_preferred_content]]. This would let
+preferred content expressions assign each file to N repositories out of a
+group, selected using Math. Adding a repository could optionally be
+configured to automatically rebalance the files (not very bandwidth
+efficiently though). I think some have asked for a feature like this
+before, so read the design and see if it would be useful for you.
+
+Spent a while debugging a problem with a S3 remote, which seems to have
+been a misconfiguration in the end. But several improvements came out of
+it to make it easier to debug S3 in the future etc.
