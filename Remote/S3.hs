@@ -98,9 +98,9 @@ gen r u c gc = do
 s3Setup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
 s3Setup mu mcreds c = do
 	u <- maybe (liftIO genUUID) return mu
-	s3Setup' u mcreds c
-s3Setup' :: UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
-s3Setup' u mcreds c = if configIA c then archiveorg else defaulthost
+	s3Setup' (isNothing mu) u mcreds c
+s3Setup' :: Bool -> UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
+s3Setup' new u mcreds c = if configIA c then archiveorg else defaulthost
   where
 	remotename = fromJust (M.lookup "name" c)
 	defbucket = remotename ++ "-" ++ fromUUID u
@@ -120,7 +120,8 @@ s3Setup' u mcreds c = if configIA c then archiveorg else defaulthost
 		(c', encsetup) <- encryptionSetup c
 		c'' <- setRemoteCredPair encsetup c' (AWS.creds u) mcreds
 		let fullconfig = c'' `M.union` defaults
-		genBucket fullconfig u
+		when new $
+			genBucket fullconfig u
 		use fullconfig
 
 	archiveorg = do
