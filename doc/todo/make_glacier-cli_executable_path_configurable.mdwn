@@ -1,4 +1,4 @@
-[glacier-cli](https://github.com/basak/glacier-cli) rather stupidly calls its own command `glacier` rather than `glacier-cli` or something else.  This conflicts with [boto](https://github.com/boto/boto/)'s own `glacier` executable, as noted here:
+[glacier-cli](https://github.com/basak/glacier-cli) calls its own command `glacier` rather than `glacier-cli` or something else.  This conflicts with [boto](https://github.com/boto/boto/)'s own `glacier` executable, as noted here:
 
 * <https://github.com/basak/glacier-cli/issues/30>
 * <https://github.com/basak/glacier-cli/issues/47>
