@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://adamspiers.wordpress.com/"
+ nickname="adamspiers"
+ subject="Good point"
+ date="2015-04-24T15:55:29Z"
+ content="""
+glacier-cli would be a rather silly name to put in `/usr/bin`.  How about `glcr`, as suggested [here](https://github.com/basak/glacier-cli/issues/30#issuecomment-95972840)?
+"""]]
