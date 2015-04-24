@@ -1,0 +1,8 @@
+[glacier-cli](https://github.com/basak/glacier-cli) rather stupidly calls its own command `glacier` rather than `glacier-cli` or something else.  This conflicts with [boto](https://github.com/boto/boto/)'s own `glacier` executable, as noted here:
+
+* <https://github.com/basak/glacier-cli/issues/30>
+* <https://github.com/basak/glacier-cli/issues/47>
+
+Whilst the `glacier-cli` project should resolve this conflict, it would be good if git-annex could be made to use a configurable path for this executable, rather than just assuming that it has been installed as `glacier`.  After all, its installation procedure is simply telling the user to run `ln -s`, so there's no reason why the user couldn't make the target of this command `~/bin/glacier-cli` rather than `~/bin/glacier` - it's really irrelevant what the source file inside the git repo is called.
+
+Of course, [`checkSaneGlacierCommand`](https://github.com/joeyh/git-annex/blob/master/Remote/Glacier.hs#L307) is still very much worth having, for safety.
