@@ -1,4 +1,4 @@
-Posted a design for [[balanced_preferred_content]]. This would let
+Posted a design for [[design/balanced_preferred_content]]. This would let
 preferred content expressions assign each file to N repositories out of a
 group, selected using Math. Adding a repository could optionally be
 configured to automatically rebalance the files (not very bandwidth
