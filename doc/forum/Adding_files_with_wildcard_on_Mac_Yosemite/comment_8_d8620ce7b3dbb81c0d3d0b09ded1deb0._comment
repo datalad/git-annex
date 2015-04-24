@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2015-04-24T17:26:01Z"
+ content="""
+The old behavior was accidental, and was never documented. When you use
+such undocumented behaviors, you're taking the risk of bugfixes breaking
+things. It's not fair to call that a "regression". If I had to worry about
+every bugfix breaking users who relied on the old buggy behavior in some
+way, I could just stop working now.
+
+It might be reasonable to add the "expand wildcards rather than letting the
+shell do it" feature, as an option. Of course, it would need to be tested
+for every git-annex command and problems like the one that caused this bug
+to be noticed in the first place dealt with, for every git-annex command.
+Using --include and --exclude, which already work seems pretty reasonable
+instead.
+"""]]
