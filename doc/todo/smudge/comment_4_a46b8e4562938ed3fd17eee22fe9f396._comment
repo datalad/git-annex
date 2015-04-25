@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="tomekwi"
- subject="How about the other way round?"
- date="2015-04-25T09:12:45Z"
- content="""
-If I understand this right, this feature should allow us to say to *git*: “Hey, from now on whenever I `git add` a `*.png` file, add it to *git-annex* instead!”
-
-How about saying to *git-annex*: “Hey, whenever I `git-annex add` a file which is *not* `*.png`, add it to *git* instead! Or at least leave it unadded so that I can decide later.” Is it possible now? If not, would it be reasonable to add such a feature?
-"""]]
