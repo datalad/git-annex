@@ -6,6 +6,8 @@ git annex will automatically create the file
 
 However the actions created do not work because the variable used is %U (file:/// style URL) which git annex does not understand. All %U should be replaced by %F.
 
+According to http://standards.freedesktop.org/desktop-entry-spec/latest/ar01s06.html
+
 ### What steps will reproduce the problem?
 
 
