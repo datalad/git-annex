@@ -199,7 +199,7 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 				readBytes $ \encb ->
 					storer (enck k) (ByteContent encb) p
 
-	-- call retrieve-r to get chunks; decrypt them; stream to dest file
+	-- call retriever to get chunks; decrypt them; stream to dest file
 	retrieveKeyFileGen k dest p enc =
 		safely $ prepareretriever k $ safely . go
 	  where

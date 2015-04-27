@@ -7,6 +7,7 @@ git-annex (5.20150421) UNRELEASED; urgency=medium
     (endpoint, port, storage class)
   * S3: git annex enableremote will not create a bucket name, which
     failed since the bucket already exists.
+  * Fix bogus failure of fsck --fast.
 
  -- Joey Hess <id@joeyh.name>  Tue, 21 Apr 2015 15:54:10 -0400
 

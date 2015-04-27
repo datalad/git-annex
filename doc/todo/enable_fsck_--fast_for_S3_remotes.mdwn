@@ -25,3 +25,6 @@ failed
 
 
 while ``git annex fsck -f S3remote`` works fine. But, to check for the presence of a file (which is my understanding of what ``--fast`` is for here), it shouldn't be necessary to download the file.
+
+> [[fixed|done]]; it was not supposed to fail at all in this case, and 
+> won't anymore. --[[Joey]]

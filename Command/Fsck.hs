@@ -112,14 +112,15 @@ performRemote key file backend numcopies remote =
 	dispatch (Left err) = do
 		showNote err
 		return False
-	dispatch (Right True) = withtmp $ \tmpfile ->
-		ifM (getfile tmpfile)
-			( go True (Just tmpfile)
-			, do
+	dispatch (Right True) = withtmp $ \tmpfile -> do
+		r <- getfile tmpfile
+		case r of
+			Nothing -> go True Nothing
+			Just True -> go True (Just tmpfile)
+			Just False -> do
 				warning "failed to download file from remote"
 				void $ go True Nothing
 				return False
-			)
 	dispatch (Right False) = go False Nothing
 	go present localcopy = check
 		[ verifyLocationLogRemote key file remote present
@@ -137,13 +138,14 @@ performRemote key file backend numcopies remote =
 		cleanup `after` a tmp
 	getfile tmp = ifM (checkDiskSpace (Just tmp) key 0)
 		( ifM (Remote.retrieveKeyFileCheap remote key tmp)
-			( return True
+			( return (Just True)
 			, ifM (Annex.getState Annex.fast)
-				( return False
-				, Remote.retrieveKeyFile remote key Nothing tmp dummymeter
+				( return Nothing
+				, Just <$>
+					Remote.retrieveKeyFile remote key Nothing tmp dummymeter
 				)
 			)
-		, return False
+		, return (Just False)
 		)
 	dummymeter _ = noop
 
