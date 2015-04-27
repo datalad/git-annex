@@ -5,8 +5,8 @@ git-annex (5.20150421) UNRELEASED; urgency=medium
     in Debian Jessie.
   * S3: git annex info will show additional information about a S3 remote
     (endpoint, port, storage class)
-  * S3: git annex enableremote will not create a bucket name, which
-    failed since the bucket already exists.
+  * S3: Let git annex enableremote be used, without trying to recreate
+    a bucket that should already exist.
   * Fix bogus failure of fsck --fast.
   * S3: Fix incompatability with bucket names used by hS3; the aws library
     cannot handle upper-case bucket names. git-annex now converts them to
