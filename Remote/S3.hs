@@ -129,7 +129,7 @@ s3Setup' new u mcreds c = if configIA c then archiveorg else defaulthost
 		c' <- setRemoteCredPair noEncryptionUsed c (AWS.creds u) mcreds
 		-- Ensure user enters a valid bucket name, since
 		-- this determines the name of the archive.org item.
-		let validbucket = replace " " "-" $ map toLower $
+		let validbucket = replace " " "-" $
 			fromMaybe (error "specify bucket=") $
 				getBucketName c'
 		let archiveconfig = 
@@ -447,7 +447,7 @@ extractS3Info c = do
 		}
 
 getBucketName :: RemoteConfig -> Maybe BucketName
-getBucketName = M.lookup "bucket"
+getBucketName = map toLower <$$> M.lookup "bucket"
 
 getStorageClass :: RemoteConfig -> S3.StorageClass
 getStorageClass c = case M.lookup "storageclass" c of

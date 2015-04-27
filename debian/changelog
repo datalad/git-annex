@@ -8,6 +8,9 @@ git-annex (5.20150421) UNRELEASED; urgency=medium
   * S3: git annex enableremote will not create a bucket name, which
     failed since the bucket already exists.
   * Fix bogus failure of fsck --fast.
+  * S3: Fix incompatability with bucket names used by hS3; the aws library
+    cannot handle upper-case bucket names. git-annex now converts them to
+    lower case automatically.
 
  -- Joey Hess <id@joeyh.name>  Tue, 21 Apr 2015 15:54:10 -0400
 
