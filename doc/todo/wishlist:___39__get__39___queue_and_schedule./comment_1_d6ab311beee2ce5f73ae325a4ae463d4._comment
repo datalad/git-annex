@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="how does the queue get built now?"
+ date="2015-04-28T21:32:36Z"
+ content="""
+how does the queue get created now? is it random or is there some deterministic thing that could be abuse to prioritise some content already (say alphabetical order or some similar hack)?
+
+the scheduling I think i can work around with clunky cron jobs to start/stop the assistant, but the queue I feel is a different beast. would you be available for hire to implement this feature in priority?
+
+thanks!
+"""]]
