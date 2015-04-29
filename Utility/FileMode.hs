@@ -11,7 +11,6 @@ module Utility.FileMode where
 
 import System.IO
 import Control.Monad
-import Control.Exception (bracket)
 import System.PosixCompat.Types
 import Utility.PosixFiles
 #ifndef mingw32_HOST_OS
