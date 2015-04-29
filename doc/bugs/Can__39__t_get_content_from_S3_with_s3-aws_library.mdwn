@@ -55,3 +55,8 @@ fsck IMG_6876.JPG (checking cloud...) (StatusCodeException (Status {statusCode =
 
 # End of transcript or log.
 """]]
+
+> I think I've made all the git-annex improvements that are going to come
+> from this bug report. There's still the open bug on the aws library to better
+> follow these redirects. Anyway, I think it makes sense to call this
+> bug [[done]]. --[[Joey]]
