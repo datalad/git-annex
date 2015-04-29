@@ -145,10 +145,12 @@ installFileManagerHooks program = do
 		, "Name=" ++ command
 		, "Icon=git-annex"
 		, unwords
-			[ "Exec=sh -c 'cd \"$(dirname '%U')\" &&"
+			[ "Exec=sh -c 'cd \"$(dirname \"$1\")\" &&"
 			, program
 			, command
-			, "--notify-start --notify-finish -- %U'"
+			, "--notify-start --notify-finish -- \"$1\"'"
+			, "false" -- this becomes $0 in sh, so unused
+			, "%f"
 			]
 		]
 #else

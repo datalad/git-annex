@@ -15,6 +15,9 @@ git-annex (5.20150421) UNRELEASED; urgency=medium
     (Needs git 1.8.4 or newer.)
   * import: Don't stop entire import when one file fails due to being
     gitignored or conflicting with something in the work tree.
+  * Improve integration with KDE's file manager to work with dolphin
+    version 14.12.3 while still being compatable with 4.14.2.
+    Thanks, silvio.
 
  -- Joey Hess <id@joeyh.name>  Tue, 21 Apr 2015 15:54:10 -0400
 

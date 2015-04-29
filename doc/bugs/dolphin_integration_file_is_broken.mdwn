@@ -32,3 +32,6 @@ or simply
 
 # End of transcript or log.
 """]]
+
+> [[fixed|done]]; confirmed the new version still works on filenames with
+> spaces in them. --[[Joey]]
