@@ -10,6 +10,8 @@ If I kill that parent ssh process, I get this error message in the transcript:
 
 This seems a bit dubious; both my local computer and the remote computer have a ~/.ssh directory.
 
+In order to rule out a problem with my local computer (an ancient install of Git or cygwin/msys or something, we've tried this on fresh computers which have never had git installed; we get exactly the same problem there.
+
 ### What steps will reproduce the problem?
 
 Create or connect to a repository via SSH.
