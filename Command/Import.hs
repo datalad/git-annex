@@ -79,24 +79,32 @@ start mode (srcfile, destfile) =
 		liftIO $ removeFile srcfile
 		next $ return True
 	importfile = do
-		handleexisting =<< liftIO (catchMaybeIO $ getSymbolicLinkStatus destfile)
 		ignored <- not <$> Annex.getState Annex.force <&&> checkIgnored destfile
 		if ignored
-			then error $ "not importing " ++ destfile ++ " which is .gitignored (use --force to override)"
+			then do
+				warning $ "not importing " ++ destfile ++ " which is .gitignored (use --force to override)"
+				stop
 			else do
-				liftIO $ createDirectoryIfMissing True (parentDir destfile)
-				liftIO $ if mode == Duplicate || mode == SkipDuplicates
-					then void $ copyFileExternal CopyAllMetaData srcfile destfile
-					else moveFile srcfile destfile
-				Command.Add.perform destfile
-	handleexisting Nothing = noop
-	handleexisting (Just s)
-		| isDirectory s = notoverwriting "(is a directory)"
-		| otherwise = ifM (Annex.getState Annex.force)
-			( liftIO $ nukeFile destfile
-			, notoverwriting "(use --force to override, or a duplication option such as --deduplicate to clean up)"
-			)
-	notoverwriting why = error $ "not overwriting existing " ++ destfile ++ " " ++ why
+				existing <- liftIO (catchMaybeIO $ getSymbolicLinkStatus destfile)
+				case existing of
+					Nothing -> importfilechecked
+					(Just s)
+						| isDirectory s -> notoverwriting "(is a directory)"
+						| otherwise -> ifM (Annex.getState Annex.force)
+							( do
+								liftIO $ nukeFile destfile
+								importfilechecked
+							, notoverwriting "(use --force to override, or a duplication option such as --deduplicate to clean up)"
+							)
+	importfilechecked = do
+		liftIO $ createDirectoryIfMissing True (parentDir destfile)
+		liftIO $ if mode == Duplicate || mode == SkipDuplicates
+			then void $ copyFileExternal CopyAllMetaData srcfile destfile
+			else moveFile srcfile destfile
+		Command.Add.perform destfile
+	notoverwriting why = do
+		warning $ "not overwriting existing " ++ destfile ++ " " ++ why
+		stop
 	checkdup dupa notdupa = do
 		backend <- chooseBackend destfile
 		let ks = KeySource srcfile srcfile Nothing

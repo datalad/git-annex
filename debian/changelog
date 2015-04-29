@@ -13,6 +13,8 @@ git-annex (5.20150421) UNRELEASED; urgency=medium
     lower case automatically.
   * import: Check for gitignored files before moving them into the tree.
     (Needs git 1.8.4 or newer.)
+  * import: Don't stop entire import when one file fails due to being
+    gitignored or conflicting with something in the work tree.
 
  -- Joey Hess <id@joeyh.name>  Tue, 21 Apr 2015 15:54:10 -0400
 
