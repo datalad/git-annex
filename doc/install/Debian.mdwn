@@ -2,6 +2,10 @@
 
 	sudo apt-get install git-annex
 
+## Debian 8.0 "jessie"
+
+	sudo apt-get install git-annex
+
 ## Debian 7.0 "wheezy":
 
 	sudo apt-get install git-annex
