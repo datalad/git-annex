@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-04-29T17:48:12Z"
+ content="""
+It seems this was also filed as a bug report
+<http://git-annex.branchable.com/bugs/git_annex_import:_ignored_names_fatal/> so I'll deal with it there.
+"""]]
