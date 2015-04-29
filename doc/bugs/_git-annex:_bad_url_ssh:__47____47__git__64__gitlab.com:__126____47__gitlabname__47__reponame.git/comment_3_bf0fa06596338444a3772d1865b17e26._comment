@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-04-29T17:09:07Z"
+ content="""
+This works: ssh://git@gitlab.com/username/reponame.git
+"""]]
