@@ -16,6 +16,7 @@ import Backend
 import Remote
 import Types.KeySource
 import Types.Key
+import Annex.CheckIgnore
 
 cmd :: [Command]
 cmd = [withOptions opts $ notBareRepo $ command "import" paramPaths seek
@@ -79,11 +80,15 @@ start mode (srcfile, destfile) =
 		next $ return True
 	importfile = do
 		handleexisting =<< liftIO (catchMaybeIO $ getSymbolicLinkStatus destfile)
-		liftIO $ createDirectoryIfMissing True (parentDir destfile)
-		liftIO $ if mode == Duplicate || mode == SkipDuplicates
-			then void $ copyFileExternal CopyAllMetaData srcfile destfile
-			else moveFile srcfile destfile
-		Command.Add.perform destfile
+		ignored <- not <$> Annex.getState Annex.force <&&> checkIgnored destfile
+		if ignored
+			then error $ "not importing " ++ destfile ++ " which is .gitignored (use --force to override)"
+			else do
+				liftIO $ createDirectoryIfMissing True (parentDir destfile)
+				liftIO $ if mode == Duplicate || mode == SkipDuplicates
+					then void $ copyFileExternal CopyAllMetaData srcfile destfile
+					else moveFile srcfile destfile
+				Command.Add.perform destfile
 	handleexisting Nothing = noop
 	handleexisting (Just s)
 		| isDirectory s = notoverwriting "(is a directory)"

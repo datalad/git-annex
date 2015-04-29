@@ -36,3 +36,6 @@ Can't the ignored files just be ignored?
 
 # End of transcript or log.
 """]]
+
+> Made git-annex import check for gitignored files before 
+> moving them into the work tree. [[done]] --[[Joey]]

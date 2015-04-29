@@ -11,6 +11,8 @@ git-annex (5.20150421) UNRELEASED; urgency=medium
   * S3: Fix incompatability with bucket names used by hS3; the aws library
     cannot handle upper-case bucket names. git-annex now converts them to
     lower case automatically.
+  * import: Check for gitignored files before moving them into the tree.
+    (Needs git 1.8.4 or newer.)
 
  -- Joey Hess <id@joeyh.name>  Tue, 21 Apr 2015 15:54:10 -0400
 
