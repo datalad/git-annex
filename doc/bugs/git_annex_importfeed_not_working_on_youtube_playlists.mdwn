@@ -29,3 +29,11 @@ For example:
 
 This is on Mac OSX 10.10.3, with git-annex installed via homebrew
 
+> You have to give it an url to a RSS feed containing the playlist.
+> 
+> For example, `git annex importfeed
+> 'http://gdata.youtube.com/feeds/api/playlists/PLz8ZG1e9MPlzefklz1Gv79icjywTXycR-'`
+> still works despite there having been various news stories about youtube
+> removing RSS functionality.
+> 
+> I've added this example to the documentation. [[done]] --[[Joey]]
