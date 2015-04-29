@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-04-29T18:04:52Z"
+ content="""
+`git annex required` was recently added to the CLI.
+"""]]
