@@ -99,7 +99,8 @@ verifyEnoughCopies
 	-> [UUID] -- repos that are trusted or already verified to have it
 	-> [Remote] -- remotes to check to see if they have it
 	-> Annex Bool
-verifyEnoughCopies nolocmsg key need skip = helper [] []
+verifyEnoughCopies nolocmsg key need skip trusted tocheck = 
+	helper [] [] (nub trusted) (nub tocheck)
   where
 	helper bad missing have []
 		| NumCopies (length have) >= need = return True
@@ -140,7 +141,7 @@ knownCopies key = do
 	(remotes, trusteduuids) <- Remote.keyPossibilitiesTrusted key
 	u <- getUUID
 	trusteduuids' <- ifM (inAnnex key <&&> (<= SemiTrusted) <$> lookupTrust u)
-		( pure (nub (u:trusteduuids))
+		( pure (u:trusteduuids)
 		, pure trusteduuids
 		)
 	return (remotes, trusteduuids')

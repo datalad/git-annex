@@ -72,7 +72,7 @@ performLocal key afile numcopies knownpresentremote = lockContent key $ \content
 	(remotes, trusteduuids) <- Remote.keyPossibilitiesTrusted key
 	let trusteduuids' = case knownpresentremote of
 		Nothing -> trusteduuids
-		Just r -> nub (Remote.uuid r:trusteduuids)
+		Just r -> Remote.uuid r:trusteduuids
 	untrusteduuids <- trustGet UnTrusted
 	let tocheck = Remote.remotesWithoutUUID remotes (trusteduuids'++untrusteduuids)
 	u <- getUUID
