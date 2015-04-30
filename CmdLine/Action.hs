@@ -5,8 +5,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE BangPatterns #-}
-
 module CmdLine.Action where
 
 import Common.Annex
@@ -49,10 +47,7 @@ commandAction a = account =<< tryIO go
 		showEndFail
 		incerr
 	incerr = do
-		Annex.changeState $ \s -> 
-			let ! c = Annex.errcounter s + 1 
-			    ! s' = s { Annex.errcounter = c }
-			in s'
+		Annex.incError
 		return False
 
 {- Runs a single command action through the start, perform and cleanup
