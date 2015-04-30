@@ -24,7 +24,7 @@ import Annex.Link
 import Logs.Location
 import Logs.Trust
 import Logs.Activity
-import Config.NumCopies
+import Annex.NumCopies
 import Annex.UUID
 import Utility.DataUnits
 import Config

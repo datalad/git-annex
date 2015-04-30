@@ -14,7 +14,7 @@ import qualified Command.Drop
 import qualified Command.Get
 import qualified Remote
 import Annex.Content
-import Config.NumCopies
+import Annex.NumCopies
 
 cmd :: [Command]
 cmd = [withOptions mirrorOptions $ command "mirror" paramPaths seek

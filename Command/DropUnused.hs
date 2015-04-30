@@ -14,7 +14,7 @@ import qualified Command.Drop
 import qualified Remote
 import qualified Git
 import Command.Unused (withUnusedMaps, UnusedMaps(..), startUnused)
-import Config.NumCopies
+import Annex.NumCopies
 
 cmd :: [Command]
 cmd = [withOptions [Command.Drop.dropFromOption] $

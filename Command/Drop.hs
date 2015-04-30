@@ -15,7 +15,7 @@ import Annex.UUID
 import Logs.Location
 import Logs.Trust
 import Logs.PreferredContent
-import Config.NumCopies
+import Annex.NumCopies
 import Annex.Content
 import Annex.Wanted
 import Annex.Notification
@@ -91,14 +91,9 @@ performRemote key afile numcopies remote = do
 	-- Filter the remote it's being dropped from out of the lists of
 	-- places assumed to have the key, and places to check.
 	-- When the local repo has the key, that's one additional copy,
-	-- as long asthe local repo is not untrusted.
-	(remotes, trusteduuids) <- Remote.keyPossibilitiesTrusted key
-	u <- getUUID
-	trusteduuids' <- ifM (inAnnex key <&&> (<= SemiTrusted) <$> lookupTrust u)
-		( pure (nub (u:trusteduuids))
-		, pure trusteduuids
-		)
-	let have = filter (/= uuid) trusteduuids'
+	-- as long as the local repo is not untrusted.
+	(remotes, trusteduuids) <- knownCopies key
+	let have = filter (/= uuid) trusteduuids
 	untrusteduuids <- trustGet UnTrusted
 	let tocheck = filter (/= remote) $
 		Remote.remotesWithoutUUID remotes (have++untrusteduuids)
@@ -128,45 +123,20 @@ cleanupRemote key remote ok = do
  - --force overrides and always allows dropping.
  -}
 canDrop :: UUID -> Key -> AssociatedFile -> NumCopies -> [UUID] -> [Remote] -> [UUID] -> Annex Bool
-canDrop dropfrom key afile numcopies have check skip = ifM (Annex.getState Annex.force)
-	( return True
-	, checkRequiredContent dropfrom key afile
-		<&&>
-	  findCopies key numcopies skip have check
-	)
-
-findCopies :: Key -> NumCopies -> [UUID] -> [UUID] -> [Remote] -> Annex Bool
-findCopies key need skip = helper [] []
+canDrop dropfrom key afile numcopies have check skip = 
+	ifM (Annex.getState Annex.force)
+		( return True
+			, ifM (checkRequiredContent dropfrom key afile
+				<&&> verifyEnoughCopies nolocmsg key numcopies skip have check
+				)
+				( return True
+				, do
+					hint
+					return False
+				)
+		)
   where
-	helper bad missing have []
-		| NumCopies (length have) >= need = return True
-		| otherwise = notEnoughCopies key need have (skip++missing) bad
-	helper bad missing have (r:rs)
-		| NumCopies (length have) >= need = return True
-		| otherwise = do
-			let u = Remote.uuid r
-			let duplicate = u `elem` have
-			haskey <- Remote.hasKey r key
-			case (duplicate, haskey) of
-				(False, Right True)  -> helper bad missing (u:have) rs
-				(False, Left _)      -> helper (r:bad) missing have rs
-				(False, Right False) -> helper bad (u:missing) have rs
-				_                    -> helper bad missing have rs
-
-notEnoughCopies :: Key -> NumCopies -> [UUID] -> [UUID] -> [Remote] -> Annex Bool
-notEnoughCopies key need have skip bad = do
-	unsafe
-	showLongNote $
-		"Could only verify the existence of " ++
-		show (length have) ++ " out of " ++ show (fromNumCopies need) ++ 
-		" necessary copies"
-	Remote.showTriedRemotes bad
-	Remote.showLocations True key (have++skip)
-		"Rather than dropping this file, try using: git annex move"
-	hint
-	return False
-  where
-	unsafe = showNote "unsafe"
+	nolocmsg = "Rather than dropping this file, try using: git annex move"
 	hint = showLongNote "(Use --force to override this check, or adjust numcopies.)"
 
 checkRequiredContent :: UUID -> Key -> AssociatedFile -> Annex Bool
