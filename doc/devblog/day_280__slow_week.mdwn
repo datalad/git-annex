@@ -1,0 +1,16 @@
+Reduced activity this week (didn't work on the assistant after all),
+but several things got done:
+
+Monday: Fixed `fsck --fast --from remote` to not fail when the remote
+didn't support fast copy mode. And dealt with an incompatability in S3 bucket
+names; the old hS3 library supported upper-case bucket names but the new
+one needs them all in lower case.
+
+Wednesday: Caught up on most recent backlog, made some improvements
+to error handling in `import`, and improved integration with KDE's file
+manager to work with newer versions.
+
+Today: Made `import --deduplicate/--clean-duplicates` actively 
+verify that enough copies of a file exist before deleting it. And,
+thinking about some options for batch mode access to git-annex plumbing,
+to speed up things that use it a lot.
