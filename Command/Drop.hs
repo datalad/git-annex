@@ -93,14 +93,11 @@ performRemote key afile numcopies remote = do
 	-- When the local repo has the key, that's one additional copy,
 	-- as long asthe local repo is not untrusted.
 	(remotes, trusteduuids) <- Remote.keyPossibilitiesTrusted key
-	present <- inAnnex key
 	u <- getUUID
-	trusteduuids' <- if present
-		then ifM ((<= SemiTrusted) <$> lookupTrust u)
-			( pure (u:trusteduuids)
-			, pure trusteduuids
-			)
-		else pure trusteduuids
+	trusteduuids' <- ifM (inAnnex key <&&> (<= SemiTrusted) <$> lookupTrust u)
+		( pure (nub (u:trusteduuids))
+		, pure trusteduuids
+		)
 	let have = filter (/= uuid) trusteduuids'
 	untrusteduuids <- trustGet UnTrusted
 	let tocheck = filter (/= remote) $
