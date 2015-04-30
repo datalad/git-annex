@@ -14,3 +14,5 @@ ExecStop=/usr/bin/git-annex assistant --stop
 [Install]
 WantedBy=default.target
 """]]
+
+> This seems to overlap with [[todo/server-level_daemon__63__/]] in some way... --[[anarcat]]
