@@ -84,7 +84,7 @@ start mode (srcfile, destfile) =
 				liftIO $ removeFile srcfile
 				next $ return True
 			, do
-				warning "could not verify that the content is still present in the annex; not removing from the import location"
+				warning "Could not verify that the content is still present in the annex; not removing from the import location."
 				stop
 			)
 	importfile = do
