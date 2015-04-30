@@ -43,7 +43,7 @@ commandAction a = account =<< tryIO go
 	account (Right True) = return True
 	account (Right False) = incerr
 	account (Left err) = do
-		showErr err
+		toplevelWarning True (show err)
 		showEndFail
 		incerr
 	incerr = do

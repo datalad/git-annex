@@ -21,6 +21,10 @@ git-annex (5.20150421) UNRELEASED; urgency=medium
   * import: Before removing a duplicate file in --deduplicate or
     --clean-duplicates mode, verify that enough copies of its content still
     exist.
+  * Improve behavior when a git-annex command is told to operate
+    on a file that doesn't exist. It will now continue to other
+    files specified after that on the command line, and only error out at
+    the end.
 
  -- Joey Hess <id@joeyh.name>  Tue, 21 Apr 2015 15:54:10 -0400
 

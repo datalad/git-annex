@@ -116,7 +116,10 @@ start file = ifAnnexed file addpresent add
  - Lockdown can fail if a file gets deleted, and Nothing will be returned.
  -}
 lockDown :: FilePath -> Annex (Maybe KeySource)
-lockDown = either (\e -> showErr e >> return Nothing) (return . Just) <=< lockDown'
+lockDown = either 
+		(\e -> warning (show e) >> return Nothing)
+		(return . Just)
+	<=< lockDown'
 
 lockDown' :: FilePath -> Annex (Either IOException KeySource)
 lockDown' file = ifM crippledFileSystem
