@@ -17,6 +17,9 @@ import Remote
 import Types.KeySource
 import Types.Key
 import Annex.CheckIgnore
+import Annex.NumCopies
+import Types.TrustLevel
+import Logs.Trust
 
 cmd :: [Command]
 cmd = [withOptions opts $ notBareRepo $ command "import" paramPaths seek
@@ -76,8 +79,14 @@ start mode (srcfile, destfile) =
   where
 	deletedup k = do
 		showNote $ "duplicate of " ++ key2file k
-		liftIO $ removeFile srcfile
-		next $ return True
+		ifM (verifiedExisting k destfile)
+			( do
+				liftIO $ removeFile srcfile
+				next $ return True
+			, do
+				warning "could not verify that the content is still present in the annex; not removing from the import location"
+				stop
+			)
 	importfile = do
 		ignored <- not <$> Annex.getState Annex.force <&&> checkIgnored destfile
 		if ignored
@@ -120,3 +129,14 @@ start mode (srcfile, destfile) =
 		CleanDuplicates -> checkdup (Just deletedup) Nothing
 		SkipDuplicates -> checkdup Nothing (Just importfile)
 		_ -> return (Just importfile)
+
+verifiedExisting :: Key -> FilePath -> Annex Bool
+verifiedExisting key destfile = do
+	-- Look up the numcopies setting for the file that it would be
+	-- imported to, if it were imported.
+	need <- getFileNumCopies destfile
+
+	(remotes, trusteduuids) <- knownCopies key
+	untrusteduuids <- trustGet UnTrusted
+	let tocheck = Remote.remotesWithoutUUID remotes (trusteduuids++untrusteduuids)
+	verifyEnoughCopies [] key need trusteduuids [] tocheck

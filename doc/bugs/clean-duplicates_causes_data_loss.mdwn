@@ -25,3 +25,6 @@ g-a import --clean-duplicates ~/tmp/importme (containing a, b and c) into 'impor
 ### Please provide any additional information below.
 
 I can provide the script if it is wanted (coded in Perl, couple of non-core dependencies).
+
+> Decided to go ahead and make it check remotes like drop does, so [[done]]
+> --[[Joey]]

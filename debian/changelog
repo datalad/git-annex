@@ -18,6 +18,9 @@ git-annex (5.20150421) UNRELEASED; urgency=medium
   * Improve integration with KDE's file manager to work with dolphin
     version 14.12.3 while still being compatable with 4.14.2.
     Thanks, silvio.
+  * import: Before removing a duplicate file in --deduplicate or
+    --clean-duplicates mode, verify that enough copies of its content still
+    exist.
 
  -- Joey Hess <id@joeyh.name>  Tue, 21 Apr 2015 15:54:10 -0400
 
