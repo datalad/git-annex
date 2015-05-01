@@ -5,6 +5,7 @@ git annex instead of git annex pre-commit.
 
 I'll attach a patch to fix the manpage, below:
 
+[[!format diff """
 From f5fed6ccdcef3bcb8be07691265842d437037dec Mon Sep 17 00:00:00 2001
 From: Felix Gruber <felgru@gmx.de>
 Date: Fri, 1 May 2015 02:05:32 +0200
@@ -29,3 +30,4 @@ index e0f6fdb..bc1e86e 100644
  
 -- 
 2.1.4
+"""]]
