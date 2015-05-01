@@ -22,3 +22,6 @@ git annex sync
     supported repository version: 5
     upgrade supported from repository versions: 0 1 2 4
 This is on Linux.
+
+> In the lack of any followups, I'm confident this was a case of user
+> error, so closing. [[done]] --[[Joey]]
