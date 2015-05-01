@@ -26,6 +26,7 @@ git-annex (5.20150421) UNRELEASED; urgency=medium
     files specified after that on the command line, and only error out at
     the end.
   * assistant: Added --autostop to complement --autostart.
+  * Android: Updated bundled ssh from 6.1p1 to 6.4p1.
 
  -- Joey Hess <id@joeyh.name>  Tue, 21 Apr 2015 15:54:10 -0400
 

@@ -1,4 +1,6 @@
 #define DISABLE_SHADOW 1
+#define HAVE_MBLEN 1
+#define HAVE_USLEEP 1
 #define DISABLE_UTMP 1
 #define DISABLE_UTMPX 1
 #define DISABLE_WTMP 1
@@ -217,7 +219,7 @@
 #define LOCKED_PASSWD_PREFIX "!"
 #define LOGIN_PROGRAM_FALLBACK "/bin/login"
 #define MISSING_FD_MASK 1
-#define MISSING_HOWMANY 1
+#define HAVE_DECL_HOWMANY 0
 #define OPENSSL_HAS_ECC 1
 #define OPENSSL_PRNG_ONLY 1
 #define PACKAGE_BUGREPORT "openssh-unix-dev@mindrot.org"
