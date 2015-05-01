@@ -12,6 +12,8 @@ It doesn't appear that the external protocol is being violated in any way; it oc
 
 `git annex testremote` passes on these remotes too, so it's not catching the issue (though it probably should.)
 
+These implementations used to work fine (~6mo ago? not sure); I haven't been able to get git-annex to build (cabal woes), so I can't bisect it myself.
+
 ### What steps will reproduce the problem?
 
 With https://git-annex.branchable.com/special_remotes/external/example.sh/ installed as "git-annex-remote-externaltest", this script shows the issue:
