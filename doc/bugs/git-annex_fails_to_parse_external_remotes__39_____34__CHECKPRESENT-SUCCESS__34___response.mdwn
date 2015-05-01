@@ -51,3 +51,6 @@ git annex fsck --fast --from ext
 ### What version of git-annex are you using? On what operating system?
 
 git-annex 5.20150420-gb0ebb23, from the linux standalone tarball, on linux.
+
+> Upgrade, this was fixed earlier this week, in [[!commit
+> cfbeb1e7b74aa9759bd62b342e80869de582f10d]]; [[done]] afaik --[[Joey]] 
