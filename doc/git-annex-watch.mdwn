@@ -30,7 +30,7 @@ files that it does not match will instead be added with `git add`.
 
 * `--stop`
 
-  Stop a running daemon.
+  Stop a running daemon in the current repository.
 
 # SEE ALSO
 

@@ -34,7 +34,7 @@ For more details about the git-annex assistant, see
 
 * `--stop`
 
-  Stop a running daemon.
+  Stop a running daemon in the current repository.
 
 # SEE ALSO
 
