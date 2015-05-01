@@ -20,3 +20,5 @@ It will fail at entry "DR14: Verschwörungstheorien"
 ### What version of git-annex are you using? On what operating system?
 
 5.20150327-g19a1a35 (standalone build) on Fedora 21
+
+[[!tag moreinfo]]
