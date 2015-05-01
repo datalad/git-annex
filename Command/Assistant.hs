@@ -20,7 +20,7 @@ import Assistant.Install
 import System.Environment
 
 cmd :: [Command]
-cmd = [noRepo checkAutoStart $ dontCheck repoExists $ withOptions options $
+cmd = [noRepo checkNoRepoOpts $ dontCheck repoExists $ withOptions options $
 	notBareRepo $ command "assistant" paramNothing seek SectionCommon
 		"automatically sync changes"]
 
@@ -30,10 +30,14 @@ options =
 	, Command.Watch.stopOption
 	, autoStartOption
 	, startDelayOption
+	, autoStopOption
 	]
 
 autoStartOption :: Option
 autoStartOption = flagOption [] "autostart" "start in known repositories"
+
+autoStopOption :: Option
+autoStopOption = flagOption [] "autostop" "stop in known repositories"
 
 startDelayOption :: Option
 startDelayOption = fieldOption [] "startdelay" paramNumber "delay before running startup scan"
@@ -43,25 +47,31 @@ seek ps = do
 	stopdaemon <- getOptionFlag Command.Watch.stopOption
 	foreground <- getOptionFlag Command.Watch.foregroundOption
 	autostart <- getOptionFlag autoStartOption
+	autostop <- getOptionFlag autoStopOption
 	startdelay <- getOptionField startDelayOption (pure . maybe Nothing parseDuration)
-	withNothing (start foreground stopdaemon autostart startdelay) ps
+	withNothing (start foreground stopdaemon autostart autostop startdelay) ps
 
-start :: Bool -> Bool -> Bool -> Maybe Duration -> CommandStart
-start foreground stopdaemon autostart startdelay
+start :: Bool -> Bool -> Bool -> Bool -> Maybe Duration -> CommandStart
+start foreground stopdaemon autostart autostop startdelay
 	| autostart = do
 		liftIO $ autoStart startdelay
+		stop
+	| autostop = do
+		liftIO autoStop
 		stop
 	| otherwise = do
 		liftIO ensureInstalled
 		ensureInitialized
 		Command.Watch.start True foreground stopdaemon startdelay
 
-{- Run outside a git repository. Check to see if any parameter is
- - --autostart and enter autostart mode. -}
-checkAutoStart :: CmdParams -> IO ()
-checkAutoStart _ = ifM (elem "--autostart" <$> getArgs)
+{- Run outside a git repository; support autostart and autostop mode. -}
+checkNoRepoOpts :: CmdParams -> IO ()
+checkNoRepoOpts _ = ifM (elem "--autostart" <$> getArgs)
 	( autoStart Nothing
-	, error "Not in a git repository."
+	, ifM (elem "--autostop" <$> getArgs)
+		( autoStop
+		, error "Not in a git repository."
+		)
 	) 
 
 autoStart :: Maybe Duration -> IO ()
@@ -89,3 +99,15 @@ autoStart startdelay = do
 			[ Param "assistant"
 			, Param $ "--startdelay=" ++ fromDuration (fromMaybe (Duration 5) startdelay)
 			]
+
+autoStop :: IO ()
+autoStop = do
+	dirs <- liftIO readAutoStartFile
+	program <- programPath
+	forM_ dirs $ \d -> do
+		putStrLn $ "git-annex autostop in " ++ d
+		setCurrentDirectory d
+		ifM (boolSystem program [Param "assistant", Param "--stop"])
+			( putStrLn "ok"
+			, putStrLn "failed"
+			)

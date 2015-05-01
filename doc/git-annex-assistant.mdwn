@@ -36,6 +36,11 @@ For more details about the git-annex assistant, see
 
   Stop a running daemon in the current repository.
 
+* `--autostop`
+
+  The complement to --autostart; stops all running daemons in the
+  repositories listed in the autostart file.
+
 # SEE ALSO
 
 [[git-annex]](1)

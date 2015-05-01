@@ -16,3 +16,6 @@ WantedBy=default.target
 """]]
 
 > This seems to overlap with [[todo/server-level_daemon__63__/]] in some way... --[[anarcat]]
+
+> Added --autostop and improved the docuemntation for --stop. [[done]]
+> --[[Joey]] 
