@@ -33,10 +33,18 @@ Using Debian GNU/Linux 7.8 (wheezy) on x86_64 with brand new git 2.4.0.
 # If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
 
 $ ./runme
+
+================== git init ==================
 Initialized empty Git repository in /home/sunny/src/git/ga-bug/tmpdirawedsfkn/.git/
+
+================== git annex init ==================
 init  ok
 (recording state in git...)
+
+================== git commit, empty start commit ==================
 [master (root-commit) 6d5d623] Empty startcommit
+
+================== git annex addurl ==================
 addurl README (downloading ftp://ftp.funet.fi/pub/Linux/mirrors/debian/README ...)
 --2015-05-02 03:28:59--  ftp://ftp.funet.fi/pub/Linux/mirrors/debian/README
            => '.git/annex/tmp/URL--ftp&c%%ftp.funet.fi%pub%Linux%mirrors%debian%README'
@@ -55,11 +63,17 @@ Length: 1495 (1.5K) (unauthoritative)
 
 ok
 (recording state in git...)
+
+================== git commit, add README ==================
 [master 264d597] Add README
  1 file changed, 1 insertion(+)
  create mode 120000 README
+
+================== git annex drop --force ==================
 drop README ok
 (recording state in git...)
+
+================== git annex get ==================
 get README (from web...)
 --2015-05-02 03:29:00--  ftp://ftp.funet.fi/pub/Linux/mirrors/debian/README
            => '.git/annex/tmp/SHA256-s1495--8822780b87a880ca9956ac108812557044618859cecb07df488df57e8134e34f'
@@ -79,6 +93,7 @@ Length: 1495 (1.5K) (unauthoritative)
 ok
 (recording state in git...)
 
+================== ls -l ==================
 total 0
 
 README is gone, should not happen
