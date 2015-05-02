@@ -39,3 +39,5 @@ Now `.git` in the new annex is using 487M (this is the total size of mounted dis
     487M	.git/
 
 How big should the target annex be? Is it a multiple of the remote?
+
+As far as I understand, `sync` should get only the metadata, not the file contents. How can this be bigger than the entire source annex?
