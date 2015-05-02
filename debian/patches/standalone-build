@@ -6,7 +6,7 @@ Last-Update: 2015-04-20
 
 --- a/debian/control
 +++ b/debian/control
-@@ -87,11 +87,13 @@ Vcs-Git: git://git.kitenet.net/git-annex
+@@ -89,11 +89,13 @@ Vcs-Git: git://git.kitenet.net/git-annex
  Homepage: http://git-annex.branchable.com/
  XS-Testsuite: autopkgtest
  
@@ -23,7 +23,7 @@ Last-Update: 2015-04-20
  	rsync,
  	wget,
  	curl,
-@@ -110,7 +112,7 @@ Suggests:
+@@ -112,7 +114,7 @@ Suggests:
  	bup,
  	tahoe-lafs,
  	libnss-mdns,
@@ -32,7 +32,7 @@ Last-Update: 2015-04-20
   git-annex allows managing files with git, without checking the file
   contents into git. While that may seem paradoxical, it is useful when
   dealing with files larger than git can currently easily handle, whether due
-@@ -128,3 +130,7 @@ Description: manage files with git, with
+@@ -130,3 +132,7 @@ Description: manage files with git, with
   noticing when files are changed, and automatically committing them
   to git and transferring them to other computers. The git-annex webapp
   makes it easy to set up and use git-annex this way.
@@ -54,9 +54,9 @@ Last-Update: 2015-04-20
 +debian/git-annex-standalone/usr/lib/git-annex.linux/usr/share/man/man1/git-annex*
 --- a/debian/rules
 +++ b/debian/rules
-@@ -12,6 +12,15 @@ export RELEASE_BUILD=1
- # Rules for providing a standalone build of annex.
- #
+@@ -8,6 +8,15 @@ export RELEASE_BUILD=1
+ %:
+ 	dh $@
  
 +override_dh_auto_build:
 +	make linuxstandalone
@@ -67,6 +67,6 @@ Last-Update: 2015-04-20
 +override_dh_fixperms:
 +	dh_fixperms -Xld-linux
 +
+ # Run this target to build git-annex-standalone.deb
  build-standalone:
- 	[ -e .git ]
- 	git checkout debian/changelog
+ 	test -e .git
