@@ -1,0 +1,43 @@
+When I create a new blank annex and try to sync it, I immediately run out of
+space.
+
+This is the original:
+
+    $ git annex info 
+    repository mode: indirect
+    trusted repositories: 0
+    semitrusted repositories: 4
+        00000000-0000-0000-0000-000000000001 -- web
+        ...
+    untrusted repositories: 0
+    transfers in progress: none
+    available local disk space: 50.51 gigabytes (+1 megabyte reserved)
+    local annex keys: 2581
+    local annex size: 135.87 gigabytes
+    annexed files in working tree: 4672
+    size of annexed files in working tree: 231.16 gigabytes
+    bloom filter size: 16 mebibytes (0.5% full)
+    backend usage: 
+        SHA256E: 7253
+
+Then I try to sync on the newly created annex:
+
+    $ git annex sync 
+    commit  ok
+    pull laptop
+    warning: no common commits
+    remote: Counting objects: 28801, done.
+    remote: Compressing objects: 100% (20301/20301), done.
+    fatal: write error: No space left on device22 MiB | 13.30 MiB/s   
+    fatal: index-pack failed
+    failed
+    git-annex: sync: 1 failed
+
+Now `.git` in the new annex is using 487M (this is the total size of mounted disk):
+
+    $ du -sh .git/
+    487M	.git/
+
+How big should the target annex be? Is it a multiple of the remote?
+
+As far as I understand, `sync` should get only the metadata, not the file contents. How can this be bigger than the entire source annex?
