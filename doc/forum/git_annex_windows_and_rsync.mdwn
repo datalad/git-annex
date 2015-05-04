@@ -3,7 +3,6 @@ Issue with getting files from a Linux ssh/rsync repo.
 I have a centralized repo on a small linux VM that I synchronize my workstations with, most are linux machines but one is a windows one.  I installed msysgit and git-annex for windows, and then run the following:
 
 ```
-
 git clone ssh://user@IP.ADDRESS/home/user/annex annex  
 
 cd annex  
@@ -11,7 +10,6 @@ cd annex
 git annex init 'windows'  
 
 git annex copy --from origin  
-
 ```
 
 So basically I am just trying to get a copy of the central repo onto this windows machine for starters and get:
@@ -30,7 +28,6 @@ co  rsync failed -- run git annex again to resume file transfer
 l dafailed
 
 ta stream (code 12) atcopy  
-
 ```
 
 And I get this message for every file.
