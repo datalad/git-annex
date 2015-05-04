@@ -3,22 +3,34 @@ Issue with getting files from a Linux ssh/rsync repo.
 I have a centralized repo on a small linux VM that I synchronize my workstations with, most are linux machines but one is a windows one.  I installed msysgit and git-annex for windows, and then run the following:
 
 ```
+
 git clone ssh://user@IP.ADDRESS/home/user/annex annex  
+
 cd annex  
+
 git annex init 'windows'  
+
 git annex copy --from origin  
+
 ```
 
 So basically I am just trying to get a copy of the central repo onto this windows machine for starters and get:
 
 ```
-rsync: connection unexpectedly closed (0 bytes received so far) [sender]  
-rsync error: error in rsync protocol data stream (code 12) at io.c(226) [sender=3.1.1]  
+rsync: connection unexpectedly closed (0 bytes received so far) [sender]
+ 
+rsync error: error in rsync protocol data stream (code 12) at io.c(226) [sender=3.1.1] 
+ 
 rsync: connection unexpectedly closed (0 bytes received so far) [Receiver]  
+
 rsync error: error in rsync proto  
+
 co  rsync failed -- run git annex again to resume file transfer  
+
 l dafailed
+
 ta stream (code 12) atcopy  
+
 ```
 
 And I get this message for every file.
