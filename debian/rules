@@ -13,7 +13,7 @@ build-standalone:
 	test -e .git
 	git checkout debian/changelog
 	quilt pop -a || true
-	QUILT_SERIES=series.standalone-build quilt push -a
+	QUILT_PATCHES=debian/patches QUILT_SERIES=series.standalone-build quilt push -a
 	debian/create-standalone-changelog
 	dpkg-buildpackage -rfakeroot
 	quilt pop -a
