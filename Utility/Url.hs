@@ -123,10 +123,14 @@ getUrlInfo url uo = case parseURIRelaxed url of
 			| Build.SysConfig.curl -> do
 				output <- catchDefaultIO "" $
 					readProcess "curl" $ toCommand curlparams
+				let len = extractlencurl output
+				let good = found len Nothing
 				case lastMaybe (lines output) of
-					Just ('2':_:_) -> found
-						(extractlencurl output)
-						Nothing
+					Just ('2':_:_) -> good
+					-- don't try to parse ftp status
+					-- codes; if curl got a length,
+					-- it's good
+					_ | "ftp" `isInfixOf` uriScheme u && isJust len -> good
 					_ -> dne
 			| otherwise -> dne
 	Nothing -> dne

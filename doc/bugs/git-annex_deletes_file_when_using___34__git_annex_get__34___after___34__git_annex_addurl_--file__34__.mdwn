@@ -105,3 +105,8 @@ $
 """]]
 
 > workaround in place; [[done]] --[[Joey]]
+
+> Also, fixed it to allow dropping the file if the ftp server seems 
+> to reply with a successful result (it's replying with 350, which is not
+> unambiguously good, but since curl is able to get the right file length,
+> the file is presumably still on the ftp server. --[[Joey]]
