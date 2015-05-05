@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="ka7"
+ subject="comment 7"
+ date="2015-05-05T16:58:42Z"
+ content="""
+is on the \"SMB share\" running something special ? ..like virus-scanner, quota, backup-in-progress
+
+and.. smb like SAMBA or Windows ?
+
+in theory you can do lots of funny stuff to get a smb share: sharing a samba which is a webdav mounted via nfs on a clamFS. (*scary*)
+"""]]
