@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-05-05T18:07:02Z"
+ content="""
+You can use `remote.<name>.annex-trustlevel` as documented in the git-annex
+man page.
+"""]]
