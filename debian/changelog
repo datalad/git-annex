@@ -27,6 +27,8 @@ git-annex (5.20150421) UNRELEASED; urgency=medium
     the end.
   * assistant: Added --autostop to complement --autostart.
   * Android: Updated bundled ssh from 6.1p1 to 6.4p1.
+  * Work around wget bug #784348 which could cause it to clobber git-annex
+    symlinks when downloading from ftp.
 
  -- Joey Hess <id@joeyh.name>  Tue, 21 Apr 2015 15:54:10 -0400
 

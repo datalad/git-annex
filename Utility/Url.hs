@@ -25,14 +25,15 @@ module Utility.Url (
 ) where
 
 import Common
+import Utility.Tmp
+import qualified Build.SysConfig
+
 import Network.URI
 import Network.HTTP.Conduit
 import Network.HTTP.Types
 import qualified Data.CaseInsensitive as CI
 import qualified Data.ByteString as B
 import qualified Data.ByteString.UTF8 as B8
-
-import qualified Build.SysConfig
 
 type URLString = String
 
@@ -242,8 +243,15 @@ download' quiet url file uo = do
 		writeFile file ""
 		go "curl" $ headerparams ++ quietopt "-s" ++
 			[Params "-f -L -C - -# -o"]
-	go cmd opts = boolSystem cmd $
-		addUserAgent uo $ reqParams uo++opts++[File file, File url]
+	
+	{- Run wget in a temp directory because it has been buggy
+	 - and overwritten files in the current directory, even though
+	 - it was asked to write to a file elsewhere. -}
+	go cmd opts = withTmpDir "downloadurl" $ \tmp -> do
+		relfile <- relPathDirToFile tmp file
+		let ps = addUserAgent uo $ reqParams uo++opts++[File relfile, File url]
+		boolSystem' cmd ps $ \p -> p { cwd = Just tmp }
+	
 	quietopt s
 		| quiet = [Param s]
 		| otherwise = []
