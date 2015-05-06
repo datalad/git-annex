@@ -1,9 +1,11 @@
 I import some files that I've seen before somewhere:
 
     $ git annex import --deduplicate .../download
+    ...
     import download/What_is_The_Digital_Fiction_Factory-Conker_Media.pdf (duplicate) ok
+    ...
 
-But the resulting download directory is empty, and `list` doesn't show the file:
+But the resulting download directory is empty, and `list` doesn't show any of the files:
 
     $ git annex list --allrepos What_is_The_Digital_Fiction_Factory-Conker_Media.pdf
     here
