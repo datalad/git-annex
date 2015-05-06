@@ -9,19 +9,20 @@ module Command.ContentLocation where
 
 import Common.Annex
 import Command
+import CmdLine.Batch
 import Annex.Content
 
 cmd :: [Command]
-cmd = [noCommit $ noMessages $
+cmd = [withOptions [batchOption] $ noCommit $ noMessages $
 	command "contentlocation" (paramRepeating paramKey) seek
 		SectionPlumbing "looks up content for a key"]
 
 seek :: CommandSeek
-seek = withKeys start
+seek = batchable withKeys start
 
-start :: Key -> CommandStart
-start k = do
-	liftIO . maybe exitFailure putStrLn
+start :: Batchable Key
+start batchmode k = do
+	maybe (batchBadInput batchmode) (liftIO . putStrLn)
 		=<< inAnnex' (pure True) Nothing check k
 	stop
   where

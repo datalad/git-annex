@@ -13,6 +13,16 @@ index. The key is output to stdout. If there is no key (because
 the file is not present in the index, or is not a git-annex managed file),
 nothing is output, and it exits nonzero.
 
+# OPTIONS
+
+* `--batch`
+
+  Enable batch mode, in which a line containing the filename is read from
+  stdin, the key is output to stdout (with a trailing newline), and repeat.
+
+  Note that is there is no key corresponding to the file, an empty line is
+  output to stdout instead.
+
 # SEE ALSO
 
 [[git-annex]](1)

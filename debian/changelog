@@ -30,6 +30,7 @@ git-annex (5.20150421) UNRELEASED; urgency=medium
   * Work around wget bug #784348 which could cause it to clobber git-annex
     symlinks when downloading from ftp.
   * Support checking ftp urls for file presence.
+  * contentlocation, examinekey, lookupkey: Added --batch mode option.
 
  -- Joey Hess <id@joeyh.name>  Tue, 21 Apr 2015 15:54:10 -0400
 

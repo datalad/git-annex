@@ -16,6 +16,17 @@ Note that in direct mode, the file will typically be in the git work
 tree, and while its content should correspond to the key, the file
 could become modified at any time after git-annex checks it.
 
+# OPTIONS
+
+* `--batch`
+
+  Enable batch mode, in which a line containing the key is read from
+  stdin, the filename to its content is output to stdout (with a trailing
+  newline), and repeat.
+
+  Note that if a key's content is not present, an empty line is output to
+  stdout instead.
+
 # SEE ALSO
 
 [[git-annex]](1)
