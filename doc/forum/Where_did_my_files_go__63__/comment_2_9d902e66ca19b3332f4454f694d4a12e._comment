@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-05-06T18:04:35Z"
+ content="""
+I don't think you're using a recent version of git-annex, the "(duplicate)"
+message has changed to something else a while ago.
+
+Also, that message is only shown if you pass the --deduplicate flag, which
+you don't show in your transcript.
+
+That flag does what it says on the tin: If the file is a duplicate of one
+git-annex has seen before, the file is deleted from the import location.
+(The next version of git-annex does add an additional check that the
+content of the file is present in the annex.)
+"""]]
