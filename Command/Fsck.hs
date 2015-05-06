@@ -76,7 +76,7 @@ seek ps = do
 		(withFilesInGit $ whenAnnexed $ start from i)
 		ps
 	withFsckDb i FsckDb.closeDb
-	recordActivity Fsck u
+	void $ tryIO $ recordActivity Fsck u
 
 start :: Maybe Remote -> Incremental -> FilePath -> Key -> CommandStart
 start from inc file key = do

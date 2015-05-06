@@ -31,6 +31,11 @@ git-annex (5.20150421) UNRELEASED; urgency=medium
     symlinks when downloading from ftp.
   * Support checking ftp urls for file presence.
   * contentlocation, examinekey, lookupkey: Added --batch mode option.
+  * fsck: Ignore error recording the fsck in the activity log,
+    which can happen when running fsck in a read-only repository.
+    Closes: #698559
+    (fsck can still need to write to the repository if it find problems,
+    but a successful fsck can be done read-only)
 
  -- Joey Hess <id@joeyh.name>  Tue, 21 Apr 2015 15:54:10 -0400
 
