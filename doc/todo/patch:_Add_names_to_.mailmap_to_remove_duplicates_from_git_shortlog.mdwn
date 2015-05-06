@@ -139,3 +139,9 @@ index 2dafcea..3013a39 100644
 2.4.0
 
 """]]
+
+> [[merged|done]] --[[Joey]] 
+> 
+> Control.Monad.Catch should be provided by the exceptions package,
+> which there is a dependency on in the cabal file. However, building
+> git-annex on wheezy is not supported anymore. --[[Joey]]
