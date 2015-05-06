@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="madduck"
+ subject="comment 5"
+ date="2015-05-06T14:21:39Z"
+ content="""
+@joeyh, yes, it would overwrite all metadata. The idea would be to export with --json, manipulate, import…
+"""]]
