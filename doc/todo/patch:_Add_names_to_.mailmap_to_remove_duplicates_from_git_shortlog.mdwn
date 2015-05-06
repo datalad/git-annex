@@ -1,0 +1,141 @@
+Hi,
+these three patches sort .mailmap to get consistent ordering, add nine 
+names with proper emails to it, and then there is the third one, which 
+contains all the joeyh changes. I put them in a separate patch in case 
+you have other opinions about that.
+
+I notice you're not a fan of GitHub pull requests, and attachments 
+wasn't allowed here, so I just paste a `cat 000* >all.patch` here, hope 
+that's ok. The branches are also available from 
+<https://github.com/sunny256/git-annex> as the branches "edit-mailmap" 
+(this version) and "edit-mailmap.wip" (the whole process) in case that's 
+easier.
+
+There will be more "useful" patches in the future, have started browsing 
+"Learn you a Haskell for great good", it's awesome. I'll have to get the 
+build working first, though. There is some dependency problem:
+
+[[!format hs """
+
+$ make
+if [ "cabal " = ./Setup ]; then ghc --make Setup; fi
+cabal  configure
+Resolving dependencies...
+
+Utility/Exception.hs:25:18:
+    Could not find module `Control.Monad.Catch'
+    Perhaps you meant
+      Control.Monad.CatchIO (from MonadCatchIO-mtl-0.3.0.4)
+      Control.Monad.Cont (needs flag -package mtl-2.1.1)
+      Control.Monad.State (needs flag -package mtl-2.1.1)
+    Use -v to see a list of the files searched for.
+make: *** [Build/SysConfig.hs] Error 1
+
+"""]]
+
+Mentioning it just in case you have a quick solution. Have tried to fix 
+it by summoning cabal in various ways, but no luck yet. The OS used is 
+Debian GNU/Linux 7.8 (wheezy) on x86_64.
+
+[[!format sh """
+
+From 20317aff9fbb8662aaeda4aa2285f92e728adc58 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=C3=98yvind=20A=2E=20Holm?= <sunny@sunbase.org>
+Date: Sat, 2 May 2015 17:22:48 +0200
+Subject: [PATCH 1/3] Filter .mailmap through "sort -u" for predictability
+
+---
+ .mailmap | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/.mailmap b/.mailmap
+index 275b236..5d51042 100644
+--- a/.mailmap
++++ b/.mailmap
+@@ -1,7 +1,7 @@
+ Joey Hess <id@joeyh.name> http://joey.kitenet.net/ <joey@web>
+-Joey Hess <id@joeyh.name> http://joeyh.name/ <joey@web>
+ Joey Hess <id@joeyh.name> http://joeyh.name/ <http://joeyh.name/@web>
++Joey Hess <id@joeyh.name> http://joeyh.name/ <joey@web>
++Richard Hartmann <richih@debian.org> https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U <Richard@web>
+ Yaroslav Halchenko <debian@onerussian.com>
+ Yaroslav Halchenko <debian@onerussian.com> http://yarikoptic.myopenid.com/ <site-myopenid@web>
+ Yaroslav Halchenko <debian@onerussian.com> https://www.google.com/accounts/o8/id?id=AItOawnx8kHW66N3BqmkVpgtXDlYMvr8TJ5VvfY <Yaroslav@web>
+-Richard Hartmann <richih@debian.org> https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U <Richard@web>
+-- 
+2.4.0
+
+From b216bfdb3ab65f025e46c7fcdc86db3a3440b0af Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=C3=98yvind=20A=2E=20Holm?= <sunny@sunbase.org>
+Date: Mon, 4 May 2015 15:36:41 +0200
+Subject: [PATCH 2/3] .mailmap: Add nine more uncontroversial names
+
+Including only those with a proper email where there is no doubt about
+which is the correct one.
+---
+ .mailmap | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/.mailmap b/.mailmap
+index 5d51042..2dafcea 100644
+--- a/.mailmap
++++ b/.mailmap
+@@ -1,7 +1,20 @@
++Antoine Beaupré <anarcat@koumbit.org> anarcat <anarcat@web>
++Antoine Beaupré <anarcat@koumbit.org> https://id.koumbit.net/anarcat <https://id.koumbit.net/anarcat@web>
++Greg Grossmeier <greg@grossmeier.net> http://grossmeier.net/ <greg@web>
++Jimmy Tang <jtang@tchpc.tcd.ie> jtang <jtang@web>
++Joachim Breitner <mail@joachim-breitner.de> http://www.joachim-breitner.de/ <nomeata@web>
+ Joey Hess <id@joeyh.name> http://joey.kitenet.net/ <joey@web>
+ Joey Hess <id@joeyh.name> http://joeyh.name/ <http://joeyh.name/@web>
+ Joey Hess <id@joeyh.name> http://joeyh.name/ <joey@web>
++Johan Kiviniemi <devel@johan.kiviniemi.name> http://johan.kiviniemi.name/ <Johan@web>
++Johan Kiviniemi <devel@johan.kiviniemi.name> http://johan.kiviniemi.name/ <http://johan.kiviniemi.name/@web>
++Nicolas Pouillard <nicolas.pouillard@gmail.com> http://ertai.myopenid.com/ <npouillard@web>
++Peter Simons <simons@cryp.to> Peter Simons <simons@ubuntu-12.04>
++Peter Simons <simons@cryp.to> http://peter-simons.myopenid.com/ <http://peter-simons.myopenid.com/@web>
++Philipp Kern <pkern@debian.org> http://phil.0x539.de/ <Philipp_Kern@web>
+ Richard Hartmann <richih@debian.org> https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U <Richard@web>
+ Yaroslav Halchenko <debian@onerussian.com>
+ Yaroslav Halchenko <debian@onerussian.com> http://yarikoptic.myopenid.com/ <site-myopenid@web>
+ Yaroslav Halchenko <debian@onerussian.com> https://www.google.com/accounts/o8/id?id=AItOawnx8kHW66N3BqmkVpgtXDlYMvr8TJ5VvfY <Yaroslav@web>
++Øyvind A. Holm <sunny@sunbase.org> http://sunny256.sunbase.org/ <sunny256@web>
++Øyvind A. Holm <sunny@sunbase.org> https://sunny256.wordpress.com/ <sunny256@web>
+-- 
+2.4.0
+
+From b730720bf85217051b0bd6414650f3bfd5928edb Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=C3=98yvind=20A=2E=20Holm?= <sunny@sunbase.org>
+Date: Mon, 4 May 2015 15:46:29 +0200
+Subject: [PATCH 3/3] .mailmap: Add all variations for Joey Hess
+
+---
+ .mailmap | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/.mailmap b/.mailmap
+index 2dafcea..3013a39 100644
+--- a/.mailmap
++++ b/.mailmap
+@@ -3,9 +3,17 @@ Antoine Beaupré <anarcat@koumbit.org> https://id.koumbit.net/anarcat <https://i
+ Greg Grossmeier <greg@grossmeier.net> http://grossmeier.net/ <greg@web>
+ Jimmy Tang <jtang@tchpc.tcd.ie> jtang <jtang@web>
+ Joachim Breitner <mail@joachim-breitner.de> http://www.joachim-breitner.de/ <nomeata@web>
++Joey Hess <id@joeyh.name> Joey Hess <joey@gnu.kitenet.net>
++Joey Hess <id@joeyh.name> Joey Hess <joey@kitenet.net>
++Joey Hess <id@joeyh.name> Joey Hess <joeyh@debian.org>
++Joey Hess <id@joeyh.name> Joey Hess <joeyh@fischer.debian.org>
++Joey Hess <id@joeyh.name> Joey Hess <joeyh@joeyh.name>
++Joey Hess <id@joeyh.name> Joey Hess <joeyh@oberon.tam-lin.net>
++Joey Hess <id@joeyh.name> Joey Hess <joeyh@oberon.underhill.private>
+ Joey Hess <id@joeyh.name> http://joey.kitenet.net/ <joey@web>
+ Joey Hess <id@joeyh.name> http://joeyh.name/ <http://joeyh.name/@web>
+ Joey Hess <id@joeyh.name> http://joeyh.name/ <joey@web>
++Joey Hess <id@joeyh.name> https://www.google.com/accounts/o8/id?id=AItOawmJfIszzreLNvCqzqzvTayA9_9L6gb9RtY <Joey@web>
+ Johan Kiviniemi <devel@johan.kiviniemi.name> http://johan.kiviniemi.name/ <Johan@web>
+ Johan Kiviniemi <devel@johan.kiviniemi.name> http://johan.kiviniemi.name/ <http://johan.kiviniemi.name/@web>
+ Nicolas Pouillard <nicolas.pouillard@gmail.com> http://ertai.myopenid.com/ <npouillard@web>
+-- 
+2.4.0
+
+"""]]

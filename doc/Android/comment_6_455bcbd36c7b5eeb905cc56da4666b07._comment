@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="madduck"
+ subject="Weirdness when run from adb shell"
+ date="2015-05-06T14:28:43Z"
+ content="""
+How is this designed to work in the contact of Androids crap permissions?
+
+    shell@kminilte:/ $ /data/data/ga.androidterm/runshell
+    /system/bin/sh: /data/data/ga.androidterm/runshell: can't execute: Permission denied
+
+    126|shell@kminilte:/ $ /system/bin/sh /data/data/ga.androidterm/runshell
+    Falling back to hardcoded app location; cannot find expected files in /data/app-lib
+
+    shell@kminilte:/sdcard/git-annex.home $ git
+    /system/bin/sh: git: not found
+
+    127|shell@kminilte:/sdcard/git-annex.home $ echo $PATH
+    /data/data/ga.androidterm/bin:/sbin:/vendor/bin:/system/sbin:/system/bin:/system/xbin
+
+    shell@kminilte:/sdcard/git-annex.home $ /data/data/ga.androidterm/bin/git                                                          <
+    /data/data/ga.androidterm/bin/git: Permission denied
+
+    shell@kminilte:/sdcard/git-annex.home $ ls -l /data/data/ga.androidterm/bin -d
+    drwx------ u0_a255  u0_a255           2015-05-05 07:58 bin
+
+    shell@kminilte:/sdcard/git-annex.home $ id
+    uid=2000(shell) gid=2000(shell) groups=1003(graphics),1004(input),1007(log),1011(adb),1015(sdcard_rw),1028(sdcard_r),3001(net_bt_admin),3002(net_bt),3003(inet),3006(net_bw_stats) context=u:r:shell:s0
+
+
+"""]]
