@@ -37,6 +37,10 @@ git-annex (5.20150421) UNRELEASED; urgency=medium
     in Debian Jessie.
   * Switch from the obsolete dataenc library for base64 encoding to sandi.
     (Thanks, Magnus Therning)
+  * Debian's ghc now supports TH on arm! Adjust build dependencies
+    to build the webapp on arm, and enable DAV support on arm. \o/
+  * Adjust some other arch specific build dependencies that are now
+    available on more architectures in Devian unstable.
   * Android: Updated bundled ssh from 6.1p1 to 6.4p1.
   * Windows: Remove cygwin ssh, the newer version of which has stopped
     honoring the setting of HOME. Instead, copy msysgit's ssh into PATH.
