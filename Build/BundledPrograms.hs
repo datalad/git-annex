@@ -35,12 +35,13 @@ bundledPrograms = catMaybes
 #endif
 	, Just "rsync"
 #ifndef darwin_HOST_OS
+#ifndef mingw32_HOST_OS
 	-- OS X has ssh installed by default.
 	-- Linux probably has ssh, but not guaranteed.
-	-- On Windows, msysgit provides ssh, but not in PATH, 
-	-- so we ship our own.
+	-- On Windows, msysgit provides ssh.
 	, Just "ssh"
 	, Just "ssh-keygen"
+#endif
 #endif
 #ifndef mingw32_HOST_OS
 	, Just "sh"

@@ -36,6 +36,8 @@ git-annex (5.20150421) UNRELEASED; urgency=medium
     Closes: #698559
     (fsck can still need to write to the repository if it find problems,
     but a successful fsck can be done read-only)
+  * Windows: Remove cygwin ssh, the newer version of which has stopped
+    honoring the setting of HOME. Instead, copy msysgit's ssh into PATH.
 
  -- Joey Hess <id@joeyh.name>  Tue, 21 Apr 2015 15:54:10 -0400
 

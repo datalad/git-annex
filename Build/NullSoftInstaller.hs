@@ -92,7 +92,7 @@ uninstaller = "git-annex-uninstall.exe"
 gitInstallDir :: Exp FilePath
 gitInstallDir = fromString "$PROGRAMFILES\\Git"
 
--- This intentionall has a different name than git-annex or
+-- This intentionally has a different name than git-annex or
 -- git-annex-webapp, since it is itself treated as an executable file.
 -- Also, on XP, the filename is displayed, not the description.
 startMenuItem :: Exp FilePath
@@ -152,6 +152,9 @@ makeInstaller gitannex license htmlhelp extrabins launchers = nsis $ do
 	section "cmd" [] $ do
 		setOutPath "$INSTDIR\\cmd"
 		mapM_ addfile (gitannex:extrabins)
+		-- copy msysgit's ssh into cmd so it's always in PATH
+		-- (bin is only in PATH from git bash)
+		copyFiles [] "$INSTDIR\\bin\\ssh.exe" "$INSTDIR\\cmd\\ssh.exe"
 	section "meta" [] $ do
 		setOutPath "$INSTDIR\\doc\\git\\html"
 		addfile htmlhelp
