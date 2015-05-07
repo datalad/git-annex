@@ -3,10 +3,6 @@ cygwin. `rsync user@host:file file` opens the ssh connection, but hangs
 up with a protocol error. Apparently it doesn't get even the protocol
 version message from the server.
 
-This must be a missing file from cygwin, because if I run the same rsync
-program from inside /cygwin/usr/bin, it works. strace found a missing
-`charset.alias` file, but installing it didn't solve the problem.
-
 Problem doesn't seem to affect the bundled ssh, just rsync. --[[Joey]]
 
 > Update: Apparently there are two ssh's! msysgit bundles one (did it used
@@ -26,3 +22,17 @@ Problem doesn't seem to affect the bundled ssh, just rsync. --[[Joey]]
 > Using 2 ssh's that try to use config from different places seems like
 > a losing propisition. Need to find an rsync that works with git's ssh.
 > --[[Joey]]
+> 
+> > Update: The git bin/ directory is only in PATH when inside "git bash".
+> > This bug only seems to affect using git-annex that way. The git bash
+> > PATH has `bin` before `cmd`.
+> > 
+> > Also, git seems to work ok using the newer ssh from cygwin.
+> > However, that ssh tries to write to a .ssh/known_hosts
+> > in a cygwin location and so doesn't remember hosts.
+> >
+> > What a mess. You can install any version of Linux and get rsync, ssh,
+> > git that all integrate and work together. Or you can use Windows and
+> > enjoy the pain(TM) --[[Joey]] 
+
+
