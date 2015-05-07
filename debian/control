@@ -82,7 +82,6 @@ Build-Depends:
 	curl,
 	openssh-client,
 	git-remote-gcrypt (>= 0.20130908-6),
-	llvm-3.4 [armel armhf],
 Maintainer: Gergely Nagy <algernon@madhouse-project.org>
 Standards-Version: 3.9.6
 Vcs-Git: git://git.kitenet.net/git-annex
