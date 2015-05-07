@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://hendry.iki.fi/"
+ nickname="Kai Hendry"
+ subject="Two more questions"
+ date="2015-05-07T07:40:41Z"
+ content="""
+How do I undelete in my case then? I.e. not `git checkout ` to find where they are.
+
+`git revert c53dbdd9bd7879d68635a2adc81a7bc59a84c5ea`
+
+
+
+Assuming I make no effort to undelete or recover the files:
+
+The (deleted) files I have copies of on my other two hard drives. Do they detect I've deleted the files and just clean up? How does that process work?
+"""]]
