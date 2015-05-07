@@ -30,3 +30,11 @@ While this is going on, the log has is showing that it's executing the following
 [[!format sh """
 [2015-04-28 22:34:16 Pacific Daylight Time] chat: ssh ["-oNumberOfPasswordPrompts=1","-p","22","db48x@eambar.db48x.net","sh -c 'mkdir -p '\"'\"'annex'\"'\"'&&cd '\"'\"'annex'\"'\"'&&if [ ! -d .git ]; then if [ -x ~/.ssh/git-annex-wrapper ]; then ~/.ssh/git-annex-wrapper git init --bare --shared; else git init --bare --shared; fi && if [ -x ~/.ssh/git-annex-wrapper ]; then ~/.ssh/git-annex-wrapper git config receive.denyNonFastforwards; else git config receive.denyNonFastforwards; fi ;fi&&mkdir -p ~/.ssh&&if [ ! -e ~/.ssh/git-annex-shell ]; then (echo '\"'\"'#!/bin/sh'\"'\"';echo '\"'\"'set -e'\"'\"';echo '\"'\"'if [ \"x$SSH_ORIGINAL_COMMAND\" != \"x\" ]; then'\"'\"';echo '\"'\"'exec git-annex-shell -c \"$SSH_ORIGINAL_COMMAND\"'\"'\"';echo '\"'\"'else'\"'\"';echo '\"'\"'exec git-annex-shell -c \"$@\"'\"'\"';echo '\"'\"'fi'\"'\"') > ~/.ssh/git-annex-shell; fi&&chmod 700 ~/.ssh/git-annex-shell&&touch ~/.ssh/authorized_keys&&chmod 600 ~/.ssh/authorized_keys&&echo '\"'\"'command=\"env GIT_ANNEX_SHELL_DIRECTORY='\"'\"'\"'\"'\"'\"'\"'\"'annex'\"'\"'\"'\"'\"'\"'\"'\"' ~/.ssh/git-annex-shell\",no-agent-forwarding,no-port-forwarding,no-X11-forwarding,no-pty ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDiPFdIMyYCBmc14f9cUZaG36Zw+NziqX9Z+xGl5GAYq16nORxVc+70Bj+A9cHoHLzTMBJnw7G/f7xJNGbKNgKUPKZohT8AQfg8lnyK8qpyzI2dJB3R0vPBMPxZCBm4IOpdB6ad3B6dUiyNtyMn1hza7GVhIFOsHfGG+K3PGtFgwOz/Zj+2zmcZIL/BHObFsba/yhQxbsjLYPI7mmNV9CLb1+XcR0z2okWvxu28lOrcIXDAdEhp1cjjjpBhwTH1F8/gJcJ6ENBa4JiGt/oEKb1b/pXLaMX6dRjc/gYoy7z0Hw7RD73hH+UtPj5TAeKwoNdaVXdqSsVI+3ql+O5PFTxt db48x@caradhras\n'\"'\"' >>~/.ssh/authorized_keys'"]
 """]]
+
+> This sounds like it's all down to the newer ssh from cygwin ignoring HOME
+> and trying to use /home/user which doesn't work very well outside cygwin.
+>
+> Since git-annex has switched to not include that ssh any longer, and
+> instead use the ssh that's bundled with msysgit, I think this bug is
+> closed. [[done]] Upgrading to the latest daily build should fix your
+> system's ssh. Please followup if I'm wrong. --[[Joey]]
