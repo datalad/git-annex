@@ -69,7 +69,7 @@ ghc -fforce-recomp --make Build/NullSoftInstaller.hs
 # it includes the cygwin libs that go with them.
 # Currently need an older version of rsync than the one from cygwin.
 if [ ! -e rsync.exe ]; then
-	wget https://downloads.kitenet.net/git-annex/windows/assets/rsync.exe
+	withcyg wget https://downloads.kitenet.net/git-annex/windows/assets/rsync.exe
 fi
 PATH=".:/c/cygwin/bin:$PATH" withcygpreferred Build/NullSoftInstaller.exe
 
