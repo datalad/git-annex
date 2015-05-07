@@ -35,4 +35,17 @@ Problem doesn't seem to affect the bundled ssh, just rsync. --[[Joey]]
 > > git that all integrate and work together. Or you can use Windows and
 > > enjoy the pain(TM) --[[Joey]] 
 
-
+>>> Possible fixes:
+>>> 
+>>> * Roll the bundled ssh and rsync back to the older versions.
+>>>   (But, this seems like it would leave
+>>>   [[webapp_fails_to_connect_to_ssh_repository___40__windows__41__]]
+>>>   unfixed, unless the old version of ssh didn't have that problem.)
+>>> * Roll the bundled rsync back, drop ssh. Rely on msysgit's bundled ssh,
+>>>   copying it into cmd so it's in PATH. Check: Does this combo work?
+>>> * Hope that msysgit gets updated to include a newer version of ssh
+>>>   which works with the new rsync.
+>>> * Get rsync from somewhere else, perhaps msysgit. (Maybe also get ssh
+>>>   from msysgit?)
+>>> * Keep the new rsync from cygwin, and build ssh from source,
+>>>   patching it to use HOME in preference to getpwent home.
