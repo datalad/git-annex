@@ -1,13 +1,14 @@
 git-annex (5.20150421) UNRELEASED; urgency=medium
 
+  * Improve behavior when a git-annex command is told to operate
+    on a file that doesn't exist. It will now continue to other
+    files specified after that on the command line, and only error out at
+    the end.
   * S3: Enable debug logging when annex.debug or --debug is set.
-  * Dropped support for older versions of yesod, warp, and dbus than the ones
-    in Debian Jessie.
   * S3: git annex info will show additional information about a S3 remote
     (endpoint, port, storage class)
   * S3: Let git annex enableremote be used, without trying to recreate
     a bucket that should already exist.
-  * Fix bogus failure of fsck --fast.
   * S3: Fix incompatability with bucket names used by hS3; the aws library
     cannot handle upper-case bucket names. git-annex now converts them to
     lower case automatically.
@@ -15,33 +16,32 @@ git-annex (5.20150421) UNRELEASED; urgency=medium
     (Needs git 1.8.4 or newer.)
   * import: Don't stop entire import when one file fails due to being
     gitignored or conflicting with something in the work tree.
-  * Improve integration with KDE's file manager to work with dolphin
-    version 14.12.3 while still being compatable with 4.14.2.
-    Thanks, silvio.
   * import: Before removing a duplicate file in --deduplicate or
     --clean-duplicates mode, verify that enough copies of its content still
     exist.
-  * Improve behavior when a git-annex command is told to operate
-    on a file that doesn't exist. It will now continue to other
-    files specified after that on the command line, and only error out at
-    the end.
+  * Improve integration with KDE's file manager to work with dolphin
+    version 14.12.3 while still being compatable with 4.14.2.
+    Thanks, silvio.
   * assistant: Added --autostop to complement --autostart.
-  * Android: Updated bundled ssh from 6.1p1 to 6.4p1.
   * Work around wget bug #784348 which could cause it to clobber git-annex
     symlinks when downloading from ftp.
   * Support checking ftp urls for file presence.
+  * Fix bogus failure of fsck --fast.
   * contentlocation, examinekey, lookupkey: Added --batch mode option.
   * fsck: Ignore error recording the fsck in the activity log,
     which can happen when running fsck in a read-only repository.
     Closes: #698559
     (fsck can still need to write to the repository if it find problems,
     but a successful fsck can be done read-only)
+  * Dropped support for older versions of yesod, warp, and dbus than the ones
+    in Debian Jessie.
+  * Switch from the obsolete dataenc library for base64 encoding to sandi.
+    (Thanks, Magnus Therning)
+  * Android: Updated bundled ssh from 6.1p1 to 6.4p1.
   * Windows: Remove cygwin ssh, the newer version of which has stopped
     honoring the setting of HOME. Instead, copy msysgit's ssh into PATH.
   * Windows: Roll back to an older version of rsync from cygwin.
     The newer version has some dependency on a newer ssh from cygwin.
-  * Switch from the obsolete dataenc library for base64 encoding to sandi.
-    (Thanks, Magnus Therning)
 
  -- Joey Hess <id@joeyh.name>  Tue, 21 Apr 2015 15:54:10 -0400
 
