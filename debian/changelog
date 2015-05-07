@@ -40,6 +40,8 @@ git-annex (5.20150421) UNRELEASED; urgency=medium
     honoring the setting of HOME. Instead, copy msysgit's ssh into PATH.
   * Windows: Roll back to an older version of rsync from cygwin.
     The newer version has some dependency on a newer ssh from cygwin.
+  * Switch from the obsolete dataenc library for base64 encoding to sandi.
+    (Thanks, Magnus Therning)
 
  -- Joey Hess <id@joeyh.name>  Tue, 21 Apr 2015 15:54:10 -0400
 
