@@ -8,3 +8,21 @@ program from inside /cygwin/usr/bin, it works. strace found a missing
 `charset.alias` file, but installing it didn't solve the problem.
 
 Problem doesn't seem to affect the bundled ssh, just rsync. --[[Joey]]
+
+> Update: Apparently there are two ssh's! msysgit bundles one (did it used
+> to in PATH?) and git-annex bundles one from cygwin. msysgit's ends up
+> in Git/bin and git-annex's in Git/cmd.
+> 
+> Seems that cygwin's rsync cannot use git's ssh for whatever reason.
+> 
+> So the workaround is to
+> delete Git/bin/ssh.exe and leave Git/cmd/ssh.exe. Then rsync works.
+> However, this may screw up git's use of ssh or other stuff.
+> 
+> Also, see
+> [[webapp_fails_to_connect_to_ssh_repository___40__windows__41__]]
+> which is the inverse of this bug.
+> 
+> Using 2 ssh's that try to use config from different places seems like
+> a losing propisition. Need to find an rsync that works with git's ssh.
+> --[[Joey]]
