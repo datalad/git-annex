@@ -1,0 +1,43 @@
+I've not been blogging, but have been busy this week. Backlog is down to
+113 messages.
+
+Tuesday: I got a weird bug report where `git annex get` was deleting
+a file. This turned out to be a bug in `wget ftp://...` where it would
+delete a symlink that was not where it had been told to download the fie
+to. I put a workaround in git-annex; wget is now run in a temp
+directory. But this was a legitimate wget bug, and it's now been reported
+to the wget developers and will hopefully get fixed there.
+
+Wednesday: Added a --batch mode for several plumbing commands
+(contentlocation, examinekey, and lookupkey). This avoids startup overhead,
+and so lets a lot of queries be done much faster. The implementation
+should make it easy to add --batch to more plumbing commands as needed,
+and could probably extend to non-plumbing commands too.
+
+Today: The first 5 hours involved an incompatable mess of ssh and rsync
+versions on Windows. A gordian knot of brokenness and depedency hell.
+I finally found a solution which involves downgrading the cygwin rsync
+to an older version, and using msysgit's ssh rather than cygwin's.
+
+Finished up today with more post-Debian-release changes. Landed a patch to
+switch from dataenc to sandi that had been waiting since 2013, and got
+sandi installed on all the git-annex autobuilders. Finished up with some
+prep for a release tomorrow.
+
+----
+
+Finally, Debian has a new enough ghc that it can build template haskell
+on arm! So, whenever a new version of git-annex finally gets into Debian
+(I hope soon), the webapp will be available on arm for those arm laptops.
+Yay!
+
+This also means I have the opportunity to make the standalone arm build
+be done much more simply. Currently it involves qemu and a separate
+companion native mode container that it has to ssh to and build stuff,
+that has to have the same versions of all libraries. It's just enormously
+complicated and touchy. With template haskell building support, all that
+complexity can fall away. 
+
+What I'd really like to do is get a fast-ish arm box with 2gb of ram
+hosted somewhere, and use that to do the builds, in native mode.
+Anyone want to help provide such a box for git-annex arm autobuilds?
