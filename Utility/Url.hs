@@ -252,8 +252,8 @@ download' quiet url file uo = do
 	 - and overwritten files in the current directory, even though
 	 - it was asked to write to a file elsewhere. -}
 	go cmd opts = withTmpDir "downloadurl" $ \tmp -> do
-		relfile <- relPathDirToFile tmp file
-		let ps = addUserAgent uo $ reqParams uo++opts++[File relfile, File url]
+		absfile <- absPath file
+		let ps = addUserAgent uo $ reqParams uo++opts++[File absfile, File url]
 		boolSystem' cmd ps $ \p -> p { cwd = Just tmp }
 	
 	quietopt s
