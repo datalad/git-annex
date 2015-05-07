@@ -38,6 +38,8 @@ git-annex (5.20150421) UNRELEASED; urgency=medium
     but a successful fsck can be done read-only)
   * Windows: Remove cygwin ssh, the newer version of which has stopped
     honoring the setting of HOME. Instead, copy msysgit's ssh into PATH.
+  * Windows: Roll back to an older version of rsync from cygwin.
+    The newer version has some dependency on a newer ssh from cygwin.
 
  -- Joey Hess <id@joeyh.name>  Tue, 21 Apr 2015 15:54:10 -0400
 

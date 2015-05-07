@@ -50,7 +50,7 @@ Problem doesn't seem to affect the bundled ssh, just rsync. --[[Joey]]
 >>>   copying it into cmd so it's in PATH. Check: Does this combo work?
 >>>
 >>>   **This works**! rsync 3.0.9 works ok with msysgit's bundled ssh.
->>>   rsync 3.1.1 is the one that needs a newer ssh.
+>>>   rsync 3.1.1 is the one that needs a newer ssh. **[[done]]**
 >>>
 >>>   Note that this means we're using an old version of rsync
 >>>   from cygwin with libraries from a newer cygwin. That might prove
