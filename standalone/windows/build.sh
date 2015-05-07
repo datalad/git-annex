@@ -71,7 +71,7 @@ ghc -fforce-recomp --make Build/NullSoftInstaller.hs
 if [ ! -e rsync.exe ]; then
 	withcyg wget https://downloads.kitenet.net/git-annex/windows/assets/rsync.exe
 fi
-PATH=".:/c/cygwin/bin:$PATH" withcygpreferred Build/NullSoftInstaller.exe
+PATH=".:/c/cygwin/bin:$PATH" Build/NullSoftInstaller.exe
 
 rm -f last-incremental-failed
 
