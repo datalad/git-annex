@@ -1,0 +1,10 @@
+rsync on windows has been broken by the upgrade to a newer version of
+cygwin. `rsync user@host:file file` opens the ssh connection, but hangs
+up with a protocol error. Apparently it doesn't get even the protocol
+version message from the server.
+
+This must be a missing file from cygwin, because if I run the same rsync
+program from inside /cygwin/usr/bin, it works. strace found a missing
+`charset.alias` file, but installing it didn't solve the problem.
+
+Problem doesn't seem to affect the bundled ssh, just rsync. --[[Joey]]
