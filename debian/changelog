@@ -27,7 +27,6 @@ git-annex (5.20150421) UNRELEASED; urgency=medium
     symlinks when downloading from ftp.
   * Support checking ftp urls for file presence.
   * Fix bogus failure of fsck --fast.
-  * contentlocation, examinekey, lookupkey: Added --batch mode option.
   * fsck: Ignore error recording the fsck in the activity log,
     which can happen when running fsck in a read-only repository.
     Closes: #698559
@@ -41,7 +40,6 @@ git-annex (5.20150421) UNRELEASED; urgency=medium
     to build the webapp on arm, and enable DAV support on arm. \o/
   * Adjust some other arch specific build dependencies that are now
     available on more architectures in Devian unstable.
-  * Android: Updated bundled ssh from 6.1p1 to 6.4p1.
   * Windows: Remove cygwin ssh, the newer version of which has stopped
     honoring the setting of HOME. Instead, copy msysgit's ssh into PATH.
   * Windows: Roll back to an older version of rsync from cygwin.
