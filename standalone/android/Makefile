@@ -30,8 +30,7 @@ $(GIT_ANNEX_ANDROID_SOURCETREE)/openssl/build-stamp:
 
 $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh/build-stamp: openssh.patch openssh.config.h
 	# This is a known-good version that the patch works with.
-	# TODO: Upgrade
-	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh && git reset --hard 0a8617ed5af2f0248d0e9648e26b224e16ada742
+	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh && git reset --hard b82300f4fa6917298a137817afbbd674a066e5da
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh && ./configure --host=arm-linux-androideabi --with-ssl-dir=../openssl --without-openssl-header-check
 	cat openssh.patch | (cd $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh && patch -p1)
 	cp openssh.config.h $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh/config.h
