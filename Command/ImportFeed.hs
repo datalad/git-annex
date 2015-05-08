@@ -196,7 +196,7 @@ performDownload opts cache todownload = case location todownload of
 					Just link -> do
 						let videourl = Quvi.linkUrl link
 						checkknown videourl $
-							rundownload videourl ("." ++ Quvi.linkSuffix link) $ \f ->
+							rundownload videourl ("." ++ fromMaybe "m" (Quvi.linkSuffix link)) $ \f ->
 								maybeToList <$> addUrlFileQuvi (relaxedOpt opts) quviurl videourl f
 #else
 		return False

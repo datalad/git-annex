@@ -30,7 +30,7 @@ data Page = Page
 	} deriving (Show)
 
 data Link = Link
-	{ linkSuffix :: String
+	{ linkSuffix :: Maybe String
 	, linkUrl :: URLString
 	} deriving (Show)
 
@@ -43,7 +43,7 @@ instance FromJSON Page where
 
 instance FromJSON Link where
 	parseJSON (Object v) = Link
-		<$> v .: "file_suffix"
+		<$> v .:? "file_suffix"
 		<*> v .: "url"
 	parseJSON _ = mzero
 
@@ -53,7 +53,7 @@ parseEnum s = Page
 	<$> get "QUVI_MEDIA_PROPERTY_TITLE"
 	<*> ((:[]) <$>
 		( Link
-			<$> get "QUVI_MEDIA_STREAM_PROPERTY_CONTAINER"
+			<$> Just <$> (get "QUVI_MEDIA_STREAM_PROPERTY_CONTAINER")
 			<*> get "QUVI_MEDIA_STREAM_PROPERTY_URL"
 		)
 	    )
