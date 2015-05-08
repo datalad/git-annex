@@ -54,7 +54,7 @@ main = do
 		let htmlhelp = tmpdir </> "git-annex.html"
 		writeFile htmlhelp htmlHelpText
 		writeFile nsifile $ makeInstaller gitannex license htmlhelp
-			(catMaybes (extrabins ++ dllpaths))
+			(wrappers ++ catMaybes (extrabins ++ dllpaths))
 			[ webappscript, autostartscript ]
 		mustSucceed "makensis" [File nsifile]
 	removeFile nsifile -- left behind if makensis fails
@@ -152,9 +152,6 @@ makeInstaller gitannex license htmlhelp extrabins launchers = nsis $ do
 	section "cmd" [] $ do
 		setOutPath "$INSTDIR\\cmd"
 		mapM_ addfile (gitannex:extrabins)
-		-- copy msysgit's ssh into cmd so it's always in PATH
-		-- (bin is only in PATH from git bash)
-		copyFiles [] "$INSTDIR\\bin\\ssh.exe" "$INSTDIR\\cmd\\ssh.exe"
 	section "meta" [] $ do
 		setOutPath "$INSTDIR\\doc\\git\\html"
 		addfile htmlhelp
@@ -200,3 +197,6 @@ findCygLibs p = filter iscyg . mapMaybe parse . lines <$> readProcess "ldd" [p]
 		(dll:"=>":_dllpath:_offset:[]) -> Just dll
 		_ -> Nothing
 	iscyg f = "cyg" `isPrefixOf` f || "lib" `isPrefixOf` f
+
+wrappers :: [FilePath]
+wrappers = ["standalone\\windows\\ssh.cmd"]

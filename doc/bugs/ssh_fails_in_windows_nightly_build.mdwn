@@ -6,3 +6,5 @@ After installing a nightly build from https://qa.nest-initiative.org/view/msysGi
 Version: 5.20150508-g8e96a31
 Build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV DNS Feeds Quvi TDFA TorrentParser
 """]]
+
+> sigh.. [[fixed|done]] now.. --[[Joey]]
