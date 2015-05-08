@@ -1,4 +1,4 @@
-git-annex (5.20150421) UNRELEASED; urgency=medium
+git-annex (5.20150508) unstable; urgency=medium
 
   * Improve behavior when a git-annex command is told to operate
     on a file that doesn't exist. It will now continue to other
@@ -48,7 +48,7 @@ git-annex (5.20150421) UNRELEASED; urgency=medium
   * Windows: Roll back to an older version of rsync from cygwin.
     The newer version has some dependency on a newer ssh from cygwin.
 
- -- Joey Hess <id@joeyh.name>  Tue, 21 Apr 2015 15:54:10 -0400
+ -- Joey Hess <id@joeyh.name>  Fri, 08 May 2015 13:42:30 -0400
 
 git-annex (5.20150420) unstable; urgency=medium
 
