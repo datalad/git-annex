@@ -45,6 +45,8 @@ git-annex (5.20150508) unstable; urgency=medium
     available on more architectures in Devian unstable.
   * Windows: Remove cygwin ssh, the newer version of which has stopped
     honoring the setting of HOME. Instead, copy msysgit's ssh into PATH.
+    Note that setting up a remote ssh server using password authentication
+    is known to be broken in this release on Windows.
   * Windows: Roll back to an older version of rsync from cygwin.
     The newer version has some dependency on a newer ssh from cygwin.
 
