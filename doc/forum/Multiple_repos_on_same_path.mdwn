@@ -1,0 +1,11 @@
+I want to use git-annex to manage some data which I keep at, say, /home/my_user/data .
+I have multiple external storage devices for this repo, such as /run/media/my_user/data1 e
+
+BUT, I also have multiple machines, e.g. my desktop and my laptop. 
+These all have the data under /home/my_user/data, as I like to keep my paths consistent. 
+So, when I connect my external media to these machines, practically they see the same repo path, though these are different repos.
+
+1) Should I try to create multiple repos with the same path, or should I just add one?
+2) Can I expect any major issues from this set-up?
+
+  
