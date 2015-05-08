@@ -199,4 +199,7 @@ findCygLibs p = filter iscyg . mapMaybe parse . lines <$> readProcess "ldd" [p]
 	iscyg f = "cyg" `isPrefixOf` f || "lib" `isPrefixOf` f
 
 wrappers :: [FilePath]
-wrappers = ["standalone\\windows\\ssh.cmd"]
+wrappers = 
+	[ "standalone\\windows\\ssh.cmd"
+	, "standalone\\windows\\ssh-keygen.cmd"
+	]
