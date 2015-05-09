@@ -31,10 +31,10 @@ To schedule multiple jobs, separate them with "; ".
   
   Some examples:
   
-          fsck self 30m every day at any time
-          fsck self 1h every month at 3 AM
-          fsck self 1h on day 1 of every month at any time
-          fsck self 1h every week divisible by 2 at any time
+	fsck self 30m every day at any time
+	fsck self 1h every month at 3 AM
+	fsck self 1h on day 1 of every month at any time
+	fsck self 1h every week divisible by 2 at any time
 
 # SEE ALSO
 
