@@ -27,7 +27,7 @@ import qualified Data.BloomFilter as Bloom
 #endif
 import Data.BloomFilter.Easy (safeSuggestSizing, Bloom)
 import Data.BloomFilter.Hash (Hashable, cheapHashes)
-import Control.Monad.ST.Safe (ST)
+import Control.Monad.ST (ST)
 
 #if MIN_VERSION_bloomfilter(2,0,0)
 
