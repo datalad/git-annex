@@ -1,4 +1,5 @@
 {-# LANGUAGE NamedFieldPuns #-}
+{-# OPTIONS_GHC -fno-warn-tabs #-}
 
 {- cabal setup file -}
 
