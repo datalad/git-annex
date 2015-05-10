@@ -114,7 +114,7 @@ Executable git-annex
    esqueleto, persistent-sqlite, persistent, persistent-template,
    monad-logger, resourcet
   CC-Options: -Wall
-  GHC-Options: -Wall
+  GHC-Options: -Wall -fno-warn-tabs
   Extensions: PackageImports
   -- Some things don't work with the non-threaded RTS.
   GHC-Options: -threaded
