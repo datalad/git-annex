@@ -107,16 +107,22 @@ Flag new-time
 
 Executable git-annex
   Main-Is: git-annex.hs
-  Build-Depends: MissingH, hslogger, directory, filepath,
-   containers (>= 0.5.0.0), utf8-string, mtl (>= 2),
-   bytestring, sandi, process, json,
-   base (>= 4.5 && < 4.9), monad-control, exceptions (>= 0.6), transformers,
-   IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance,
-   SafeSemaphore, uuid, random, dlist, unix-compat, async, stm (>= 2.3),
-   data-default, case-insensitive, http-conduit, http-types,
+  Build-Depends:
+   base (>= 4.5 && < 4.9),
    cryptohash (>= 0.11.0),
-   esqueleto, persistent-sqlite, persistent, persistent-template,
-   monad-logger, resourcet
+   containers (>= 0.5.0.0), 
+   exceptions (>= 0.6),
+   QuickCheck (>= 2.1),
+   stm (>= 2.3),
+   mtl (>= 2),
+   process, data-default, case-insensitive, uuid, random, dlist,
+   unix-compat, SafeSemaphore, async, directory, filepath, IfElse,
+   MissingH, hslogger, monad-logger,
+   utf8-string, bytestring, text, sandi, json,
+   monad-control, transformers,
+   bloomfilter, edit-distance,
+   resourcet, http-conduit, http-types,
+   esqueleto, persistent-sqlite, persistent, persistent-template
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs
   Extensions: PackageImports
@@ -221,6 +227,7 @@ Executable git-annex
      template-haskell, aeson,
      shakespeare
     CPP-Options: -DWITH_WEBAPP
+
   if flag(Webapp) && flag (Webapp-secure)
     Build-Depends: warp-tls (>= 1.4), securemem, byteable
     CPP-Options: -DWITH_WEBAPP_SECURE
