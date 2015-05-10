@@ -13,16 +13,15 @@ module Git.LsTree (
 	parseLsTree
 ) where
 
-import Numeric
-import Control.Applicative
-import System.Posix.Types
-
 import Common
 import Git
 import Git.Command
 import Git.Sha
 import Git.FilePath
 import qualified Git.Filename
+
+import Numeric
+import System.Posix.Types
 
 data TreeItem = TreeItem
 	{ mode :: FileMode

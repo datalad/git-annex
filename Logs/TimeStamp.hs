@@ -14,8 +14,8 @@ import Data.Time
 #if ! MIN_VERSION_time(1,5,0)
 import System.Locale
 #endif
-
-import Common
+import Control.Applicative
+import Prelude
 
 {- Parses how POSIXTime shows itself: "1431286201.113452s"
  - Also handles the format with no fractional seconds. -}

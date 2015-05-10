@@ -20,8 +20,9 @@ import Utility.Exception
 
 import Data.List
 import Data.Char
-import Control.Applicative
 import System.IO
+import Control.Applicative
+import Prelude
 
 externalSHA :: String -> Int -> FilePath -> IO (Either String String)
 externalSHA command shasize file = do
