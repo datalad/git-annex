@@ -54,6 +54,7 @@ import qualified System.Posix.IO
 import Control.Applicative
 #endif
 import Data.Maybe
+import Prelude
 
 import Utility.Misc
 import Utility.Exception

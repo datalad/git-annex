@@ -13,6 +13,7 @@ module Utility.Env where
 import Utility.Exception
 import Control.Applicative
 import Data.Maybe
+import Prelude
 import qualified System.Environment as E
 import qualified System.SetEnv
 #else

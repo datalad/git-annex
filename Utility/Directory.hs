@@ -18,6 +18,7 @@ import Control.Applicative
 import Control.Concurrent
 import System.IO.Unsafe (unsafeInterleaveIO)
 import Data.Maybe
+import Prelude
 
 #ifdef mingw32_HOST_OS
 import qualified System.Win32 as Win32

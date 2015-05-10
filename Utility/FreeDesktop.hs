@@ -39,6 +39,7 @@ import Data.List
 import Data.String.Utils
 import Data.Maybe
 import Control.Applicative
+import Prelude
 
 type DesktopEntry = [(Key, Value)]
 

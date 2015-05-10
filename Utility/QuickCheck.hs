@@ -19,6 +19,7 @@ import System.Posix.Types
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Control.Applicative
+import Prelude
 
 instance (Arbitrary k, Arbitrary v, Eq k, Ord k) => Arbitrary (M.Map k v) where
 	arbitrary = M.fromList <$> arbitrary

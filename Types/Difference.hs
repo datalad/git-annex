@@ -20,9 +20,10 @@ import Utility.PartialPrelude
 import qualified Git
 import qualified Git.Config
 
+import qualified Data.Set as S
 import Data.Maybe
 import Data.Monoid
-import qualified Data.Set as S
+import Prelude
 
 -- Describes differences from the v5 repository format.
 --

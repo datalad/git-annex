@@ -25,6 +25,7 @@ import qualified Database.Handle as H
 import Locations
 import Utility.PosixFiles
 import Utility.Exception
+import Common
 import Annex
 import Types.Key
 import Types.UUID
@@ -33,13 +34,6 @@ import Annex.LockFile
 
 import Database.Persist.TH
 import Database.Esqueleto hiding (Key)
-import Control.Monad
-import Control.Monad.IfElse
-import Control.Monad.IO.Class (liftIO)
-import System.Directory
-import System.FilePath
-import Data.Maybe
-import Control.Applicative
 
 data FsckHandle = FsckHandle H.DbHandle UUID
 

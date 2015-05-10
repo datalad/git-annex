@@ -8,6 +8,7 @@
 module Types.DesktopNotify where
 
 import Data.Monoid
+import Prelude
 
 data DesktopNotify = DesktopNotify
 	{ notifyStart :: Bool

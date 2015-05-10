@@ -14,7 +14,6 @@ import Test.Tasty.Runners
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
 import Test.Tasty.Ingredients.Rerun
-import Data.Monoid
 
 import Options.Applicative hiding (command)
 import qualified Data.Map as M
