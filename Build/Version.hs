@@ -1,5 +1,7 @@
 {- Package version determination, for configure script. -}
 
+{-# OPTIONS_GHC -fno-warn-tabs #-}
+
 module Build.Version where
 
 import Data.Maybe

@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# OPTIONS_GHC -fno-warn-tabs #-}
+
 module Git.Version (
 	installed,
 	older,

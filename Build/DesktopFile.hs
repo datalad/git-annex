@@ -7,6 +7,7 @@
  -}
 
 {-# LANGUAGE CPP #-}
+{-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Build.DesktopFile where
 

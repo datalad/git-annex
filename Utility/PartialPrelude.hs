@@ -5,6 +5,8 @@
  - them being accidentially used.
  -}
 
+{-# OPTIONS_GHC -fno-warn-tabs #-}
+
 module Utility.PartialPrelude where
 
 import qualified Data.Maybe

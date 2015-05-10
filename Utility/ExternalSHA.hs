@@ -8,6 +8,8 @@
  - License: BSD-2-clause
  -}
 
+{-# OPTIONS_GHC -fno-warn-tabs #-}
+
 module Utility.ExternalSHA (externalSHA) where
 
 import Utility.SafeCommand

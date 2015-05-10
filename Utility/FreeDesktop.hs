@@ -10,6 +10,8 @@
  - License: BSD-2-clause
  -}
 
+{-# OPTIONS_GHC -fno-warn-tabs #-}
+
 module Utility.FreeDesktop (
 	DesktopEntry,	
 	genDesktopEntry,

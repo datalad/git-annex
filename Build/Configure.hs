@@ -1,5 +1,7 @@
 {- Checks system configuration and generates SysConfig.hs. -}
 
+{-# OPTIONS_GHC -fno-warn-tabs #-}
+
 module Build.Configure where
 
 import System.Directory
