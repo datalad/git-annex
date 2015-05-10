@@ -176,7 +176,11 @@ parseRaw l = go $ words l
 
 parseTimeStamp :: String -> POSIXTime
 parseTimeStamp = utcTimeToPOSIXSeconds . fromMaybe (error "bad timestamp") .
+#if MIN_VERSION_time(1,5,0)
+	parseTimeM True defaultTimeLocale "%s"
+#else
 	parseTime defaultTimeLocale "%s"
+#endif
 
 showTimeStamp :: TimeZone -> POSIXTime -> String
 showTimeStamp zone = show . utcToLocalTime zone . posixSecondsToUTCTime

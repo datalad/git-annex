@@ -6,7 +6,7 @@
  -}
 
 {-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
-{-# LANGUAGE CPP #-}
+{-# LANGUAGE CPP, FlexibleContexts #-}
 
 module Assistant.WebApp.Configurators.Ssh where
 
@@ -103,7 +103,7 @@ sshInputAForm hostnamefield d = normalize <$> gen
 		, ("existing ssh key", ExistingSshKey)
 		]
 
-	check_username = checkBool (all (`notElem` "/:@ \t") . T.unpack)
+	check_username = checkBool (all (`notElem` ("/:@ \t" :: String)) . T.unpack)
 		bad_username textField
 
 	bad_username = "bad user name" :: Text

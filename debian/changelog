@@ -1,3 +1,9 @@
+git-annex (5.20150509) UNRELEASED; urgency=medium
+
+  * Now builds cleanly using ghc 7.10 (as well as ghc back to 7.6).
+
+ -- Joey Hess <id@joeyh.name>  Sun, 10 May 2015 15:45:48 -0400
+
 git-annex (5.20150508) unstable; urgency=medium
 
   * Improve behavior when a git-annex command is told to operate
