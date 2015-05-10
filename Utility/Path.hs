@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE PackageImports, CPP #-}
+{-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.Path where
 

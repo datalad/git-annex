@@ -1,3 +1,7 @@
 Lazy afternoon spent porting git-anenx to build under ghc 7.10. Required
 rather a lot of changes to build, and even more to build cleanly after the
 AMP transition.
+
+Unfortunately, ghc 7.10 has started warning about every line that uses tab
+for indentation. I had to add additional cruft to turn those warnings off
+everywhere, and cannot say I'm happy about this at all.

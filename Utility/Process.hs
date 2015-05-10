@@ -7,6 +7,7 @@
  -}
 
 {-# LANGUAGE CPP, Rank2Types #-}
+{-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.Process (
 	module X,
