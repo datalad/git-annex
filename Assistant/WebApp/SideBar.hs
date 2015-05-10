@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings, FlexibleContexts #-}
 
 module Assistant.WebApp.SideBar where
 
