@@ -18,4 +18,8 @@ import System.Locale
 import Common
 
 parsePOSIXTime :: String -> Maybe POSIXTime
+#if MIN_VERSION_time(1,5,0)
+parsePOSIXTime s = utcTimeToPOSIXSeconds <$> parseTimeM True defaultTimeLocale "%s%Qs" s
+#else
 parsePOSIXTime s = utcTimeToPOSIXSeconds <$> parseTime defaultTimeLocale "%s%Qs" s
+#endif
