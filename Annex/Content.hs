@@ -500,9 +500,9 @@ getKeysPresent keyloc = do
 	direct <- isDirect
 	dir <- fromRepo gitAnnexObjectDir
 	s <- getstate direct
-	liftIO $ traverse s direct (2 :: Int) dir
+	liftIO $ walk s direct (2 :: Int) dir
   where
-	traverse s direct depth dir = do
+	walk s direct depth dir = do
 		contents <- catchDefaultIO [] (dirContents dir)
 		if depth == 0
 			then do
@@ -510,7 +510,7 @@ getKeysPresent keyloc = do
 				let keys = mapMaybe (fileKey . takeFileName) contents'
 				continue keys []
 			else do
-				let deeper = traverse s direct (depth - 1)
+				let deeper = walk s direct (depth - 1)
 				continue [] (map deeper contents)
 	continue keys [] = return keys
 	continue keys (a:as) = do
