@@ -88,8 +88,8 @@ bestHostName msg = case remoteHostName $ pairMsgData msg of
 	fallback = do
 		let a = pairMsgAddr msg
 		let sockaddr = case a of
-			IPv4Addr addr -> SockAddrInet (PortNum 0) addr
-			IPv6Addr addr -> SockAddrInet6 (PortNum 0) 0 addr 0
+			IPv4Addr addr -> SockAddrInet (fromInteger 0) addr
+			IPv6Addr addr -> SockAddrInet6 (fromInteger 0) 0 addr 0
 		fromMaybe (showAddr a)
 			<$> catchDefaultIO Nothing
 				(fst <$> getNameInfo [] True False sockaddr)
