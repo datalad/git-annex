@@ -1,0 +1,3 @@
+Lazy afternoon spent porting git-anenx to build under ghc 7.10. Required
+rather a lot of changes to build, and even more to build cleanly after the
+AMP transition.
