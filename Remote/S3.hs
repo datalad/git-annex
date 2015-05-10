@@ -483,7 +483,7 @@ iaMunge = (>>= munge)
   where
 	munge c
 		| isAsciiUpper c || isAsciiLower c || isNumber c = [c]
-		| c `elem` "_-.\"" = [c]
+		| c `elem` ("_-.\"" :: String) = [c]
 		| isSpace c = []
 		| otherwise = "&" ++ show (ord c) ++ ";"
 
