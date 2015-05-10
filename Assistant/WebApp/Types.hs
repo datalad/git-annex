@@ -105,7 +105,7 @@ type MkMForm x = MForm Handler (FormResult x, Widget)
 
 type MkAForm x = AForm Handler x
 
-type MkField x = Monad m => RenderMessage (HandlerSite m) FormMessage => Field m x
+type MkField x = forall m. Monad m => RenderMessage (HandlerSite m) FormMessage => Field m x
 
 data RepoSelector = RepoSelector
 	{ onlyCloud :: Bool
