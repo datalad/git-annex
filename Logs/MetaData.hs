@@ -41,12 +41,11 @@ import qualified Annex.Branch
 import qualified Annex
 import Logs
 import Logs.SingleValue
+import Logs.TimeStamp
 
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.Time.Clock.POSIX
-import Data.Time.Format
-import System.Locale
 
 instance SingleValueSerializable MetaData where
 	serialize = Types.MetaData.serialize
@@ -86,7 +85,7 @@ getCurrentMetaData k = do
 		    ts = lastchangedval l
 		in M.map (const ts) m
 	lastchangedval l = S.singleton $ toMetaValue $ showts $ changed l
-	showts = formatTime defaultTimeLocale "%F@%H-%M-%S" . posixSecondsToUTCTime
+	showts = formatPOSIXTime "%F@%H-%M-%S"
 
 {- Adds in some metadata, which can override existing values, or unset
  - them, but otherwise leaves any existing metadata as-is. -}

@@ -16,7 +16,9 @@ import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.Time.Clock
 import Data.Time.Format
+#if ! MIN_VERSION_time(1,5,0)
 import System.Locale
+#endif
 
 import Common.Annex
 import qualified Annex
