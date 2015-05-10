@@ -24,6 +24,7 @@ import Annex.Link
 import Logs.Location
 import Logs.Trust
 import Logs.Activity
+import Logs.TimeStamp
 import Annex.NumCopies
 import Annex.UUID
 import Utility.DataUnits
@@ -37,9 +38,7 @@ import Utility.PID
 import qualified Database.Fsck as FsckDb
 
 import Data.Time.Clock.POSIX
-import Data.Time
 import System.Posix.Types (EpochTime)
-import System.Locale
 
 cmd :: [Command]
 cmd = [withOptions fsckOptions $ command "fsck" paramPaths seek
@@ -476,14 +475,11 @@ getStartTime u = do
 	liftIO $ catchDefaultIO Nothing $ do
 		timestamp <- modificationTime <$> getFileStatus f
 		let fromstatus = Just (realToFrac timestamp)
-		fromfile <- readishTime <$> readFile f
+		fromfile <- parsePOSIXTime <$> readFile f
 		return $ if matchingtimestamp fromfile fromstatus
 			then Just timestamp
 			else Nothing
   where
-	readishTime :: String -> Maybe POSIXTime
-	readishTime s = utcTimeToPOSIXSeconds <$>
-		parseTime defaultTimeLocale "%s%Qs" s
 	matchingtimestamp fromfile fromstatus =
 #ifndef mingw32_HOST_OS
 		fromfile == fromstatus

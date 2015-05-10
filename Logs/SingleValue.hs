@@ -15,11 +15,10 @@ module Logs.SingleValue where
 
 import Common.Annex
 import qualified Annex.Branch
+import Logs.TimeStamp
 
 import qualified Data.Set as S
 import Data.Time.Clock.POSIX
-import Data.Time
-import System.Locale
 
 class SingleValueSerializable v where
 	serialize :: v -> String
@@ -42,7 +41,7 @@ parseLog = S.fromList . mapMaybe parse . lines
   where
 	parse line = do
 		let (ts, s) = splitword line
-		date <- utcTimeToPOSIXSeconds <$> parseTime defaultTimeLocale "%s%Qs" ts
+		date <- parsePOSIXTime ts
 		v <- deserialize s
 		Just (LogEntry date v)
 	splitword = separate (== ' ')

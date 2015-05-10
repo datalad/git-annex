@@ -32,12 +32,12 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.Time.Clock.POSIX
 import Data.Time
-import System.Locale
 
 import Common.Annex
 import qualified Annex
 import Types.Key
 import Utility.Tmp
+import Logs.TimeStamp
 
 -- everything that is stored in the unused log
 type UnusedLog = M.Map Key (Int, Maybe POSIXTime)
@@ -81,7 +81,7 @@ readUnusedLog prefix = do
 		, return M.empty
 		)
   where
-	parse line = case (readish sint, file2key skey, utcTimeToPOSIXSeconds <$> parseTime defaultTimeLocale "%s%Qs" ts) of
+	parse line = case (readish sint, file2key skey, parsePOSIXTime ts) of
 		(Just int, Just key, mtimestamp) -> Just (key, (int, mtimestamp))
 		_ -> Nothing
 	  where

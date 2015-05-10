@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 {- git-annex Map log
  -
  - This is used to store a Map, in a way that can be union merged.
@@ -13,10 +15,9 @@ module Logs.MapLog where
 
 import qualified Data.Map as M
 import Data.Time.Clock.POSIX
-import Data.Time
-import System.Locale
 
 import Common
+import Logs.TimeStamp
 
 data TimeStamp = Unknown | Date POSIXTime
 	deriving (Eq, Ord, Show)
@@ -42,7 +43,7 @@ parseMapLog fieldparser valueparser = M.fromListWith best . mapMaybe parse . lin
 	parse line = do
 		let (ts, rest) = splitword line
 		    (sf, sv) = splitword rest
-		date <- Date . utcTimeToPOSIXSeconds <$> parseTime defaultTimeLocale "%s%Qs" ts
+		date <- Date <$> parsePOSIXTime ts
 		f <- fieldparser sf
 		v <- valueparser sv
 		Just (f, LogEntry date v)

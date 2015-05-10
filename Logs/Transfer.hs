@@ -18,11 +18,10 @@ import Utility.Percentage
 import Utility.QuickCheck
 import Utility.PID
 import Utility.LockFile
+import Logs.TimeStamp
 
 import Data.Time.Clock
 import Data.Time.Clock.POSIX
-import Data.Time
-import System.Locale
 import Control.Concurrent
 
 {- Enough information to uniquely identify a transfer, used as the filename
@@ -275,10 +274,6 @@ readTransferInfo mpid s = TransferInfo
 	bytes = if numbits > 1
 		then Just <$> readish =<< headMaybe (drop 1 bits)
 		else pure Nothing -- not failure
-
-parsePOSIXTime :: String -> Maybe POSIXTime
-parsePOSIXTime s = utcTimeToPOSIXSeconds
-	<$> parseTime defaultTimeLocale "%s%Qs" s
 
 {- The directory holding transfer information files for a given Direction. -}
 transferDir :: Direction -> Git.Repo -> FilePath
