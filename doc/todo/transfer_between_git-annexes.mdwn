@@ -1,0 +1,20 @@
+What do you think of the ability to transfer a file between unrelated annexes? With "migrate" already taken, I would suggest "catapult" (or "teleport")!
+
+    git annex catapult dir1/ $HOME/otherannex/somedir/
+    git annex catapult dir2/thisfile.jpg $HOME/otherannex/somedir/
+
+git-annex would then:
+
+* Get list of present files
+* Copy the file to temporary space in $HOME/otherannex/.git/annex
+* fsck file
+* Move file to $HOME/otherannex/.git/annnex/objects
+* Create symlinks/directories in $HOME/otherannex/somedir/
+* Stage symlinks
+* Drop content and rm symlink
+
+with the usual modifiers (e.g. --fast would skip the fsck, --force to skip non-present files?).
+
+Reason I ask: I have a huge annex from importing the contents of a bunch of random harddrives and will eventually sort the contents into various other annexes I can put files into (personal, general family, specific people). Having git-annex guiding and checking the transfers from the sorting annex to the individual ones would be really nice.
+
+Not having this isn't a showstopper (I can use rsync) so no worries if you don't think it is worth it or think it is but put it on the backburner :) Would just be a nice-to-have.
