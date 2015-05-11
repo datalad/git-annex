@@ -1,8 +1,10 @@
-git-annex (5.20150509) UNRELEASED; urgency=medium
+git-annex (5.20150508.1) unstable; urgency=medium
 
   * Now builds cleanly using ghc 7.10 (as well as ghc back to 7.6).
+  * Imrovements to the git-annex-standalone.deb build process.
+    (Thanks, Yaroslav Halchenko)
 
- -- Joey Hess <id@joeyh.name>  Sun, 10 May 2015 15:45:48 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 11 May 2015 12:08:58 -0400
 
 git-annex (5.20150508) unstable; urgency=medium
 
