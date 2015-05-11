@@ -48,3 +48,8 @@ If you need more info, I'm "kuno" in the #git-annex IRC channel.
 
 # End of transcript or log.
 """]]
+
+> When I follow those steps, I see "uploading bigfile" in repo B,
+> which is indeed the case since repo A is downloading that file from B.
+> 
+> I suspect you're the one who got confused. [[done]] --[[Joey]]
