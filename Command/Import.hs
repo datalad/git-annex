@@ -9,6 +9,7 @@ module Command.Import where
 
 import Common.Annex
 import Command
+import qualified Git
 import qualified Annex
 import qualified Command.Add
 import Utility.CopyFile
@@ -62,6 +63,10 @@ getDuplicateMode = go . catMaybes <$> mapM getflag [minBound..maxBound]
 seek :: CommandSeek
 seek ps = do
 	mode <- getDuplicateMode
+	repopath <- liftIO . absPath =<< fromRepo Git.repoPath
+	inrepops <- liftIO $ filter (dirContains repopath) <$> mapM absPath ps
+	unless (null inrepops) $ do
+		error $ "cannot import files from inside the working tree (use git annex add instead): " ++ unwords inrepops
 	withPathContents (start mode) ps
 
 start :: DuplicateMode -> (FilePath, FilePath) -> CommandStart

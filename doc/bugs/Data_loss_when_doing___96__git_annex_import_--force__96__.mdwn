@@ -57,3 +57,6 @@ drwx------ 55 jkt jkt 8.0K May  8 13:54 ..
 drwxr-xr-x  8 jkt jkt  119 May  8 13:55 .git
 """]]
 ...and the file is gone :(.
+
+> You should use `git annex add` in this case, not import. 
+> I've made import refuse to run in this case. [[done]] --[[Joey]]

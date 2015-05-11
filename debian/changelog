@@ -1,3 +1,10 @@
+git-annex (5.20150508.2) UNRELEASED; urgency=medium
+
+  * import: Refuse to import files that are within the work tree, as that
+    does not make sense and could cause data loss.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 11 May 2015 12:45:06 -0400
+
 git-annex (5.20150508.1) unstable; urgency=medium
 
   * Now builds cleanly using ghc 7.10 (as well as ghc back to 7.6).
