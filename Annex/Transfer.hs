@@ -23,9 +23,7 @@ import Logs.Transfer as X
 import Annex.Notification as X
 import Annex.Perms
 import Utility.Metered
-#ifdef mingw32_HOST_OS
 import Utility.LockFile
-#endif
 
 import Control.Concurrent
 
@@ -70,14 +68,14 @@ runTransfer' ignorelock t file shouldretry transferobserver transferaction = do
 	info <- liftIO $ startTransferInfo file
 	(meter, tfile, metervar) <- mkProgressUpdater t info
 	mode <- annexFileMode
-	(fd, inprogress) <- liftIO $ prep tfile mode info
+	(lck, inprogress) <- liftIO $ prep tfile mode info
 	if inprogress && not ignorelock
 		then do
 			showNote "transfer already in progress"
 			return False
 		else do
 			ok <- retry info metervar $ bracketIO 
-				(return fd)
+				(return lck)
 				(cleanup tfile)
 				(const $ transferaction meter)
 			transferobserver ok t info
@@ -85,25 +83,17 @@ runTransfer' ignorelock t file shouldretry transferobserver transferaction = do
   where
 #ifndef mingw32_HOST_OS
 	prep tfile mode info = do
-		mfd <- catchMaybeIO $
-			openFd (transferLockFile tfile) ReadWrite (Just mode)
-				defaultFileFlags { trunc = True }
-		case mfd of
-			Nothing -> return (Nothing, False)
-			Just fd -> do
-				setFdOption fd CloseOnExec True
-				locked <- catchMaybeIO $
-					setLock fd (WriteLock, AbsoluteSeek, 0, 0)
-				if isNothing locked
-					then do
-						closeFd fd
-						return (Nothing, True)
-					else do
-						void $ tryIO $ writeTransferInfoFile info tfile
-						return (mfd, False)
+		let lck = transferLockFile tfile
+		r <- tryLockExclusive (Just mode) lck
+		case r of
+			Nothing -> return (Nothing, True)
+			Just lockhandle -> do
+					void $ tryIO $ writeTransferInfoFile info tfile
+					return (Just lockhandle, False)
 #else
 	prep tfile _mode info = do
-		v <- catchMaybeIO $ lockExclusive (transferLockFile tfile)
+		let lck = transferLockFile tfile
+		v <- catchMaybeIO $ lockExclusive lck
 		case v of
 			Nothing -> return (Nothing, False)
 			Just Nothing -> return (Nothing, True)
@@ -113,10 +103,11 @@ runTransfer' ignorelock t file shouldretry transferobserver transferaction = do
 #endif
 	cleanup _ Nothing = noop
 	cleanup tfile (Just lockhandle) = do
+		let lck = transferLockFile tfile
 		void $ tryIO $ removeFile tfile
 #ifndef mingw32_HOST_OS
-		void $ tryIO $ removeFile $ transferLockFile tfile
-		closeFd lockhandle
+		void $ tryIO $ removeFile lck
+		dropLock lockhandle
 #else
 		{- Windows cannot delete the lockfile until the lock
 		 - is closed. So it's possible to race with another
@@ -124,7 +115,7 @@ runTransfer' ignorelock t file shouldretry transferobserver transferaction = do
 		 - so ignore failure to remove.
 		 -}
 		dropLock lockhandle
-		void $ tryIO $ removeFile $ transferLockFile tfile
+		void $ tryIO $ removeFile lck
 #endif
 	retry oldinfo metervar run = do
 		v <- tryNonAsync run
