@@ -76,3 +76,6 @@ See also: [[parallel_possibilities]]
 > It has nice support for multiple progress bars, and is portable.
 > I have filed 7 issues on it, around 4 of which need to get fixed before
 > it's suitable for git-annex to use.. --[[Joey]]
+
+>> `git annex get -JN` works now, but lacks any progress display.
+>> Waiting on some updates to ascii-progress. --[[Joey]]
