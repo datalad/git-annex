@@ -74,10 +74,8 @@ runTransfer' ignorelock t file shouldretry transferobserver transferaction = do
 			showNote "transfer already in progress"
 			return False
 		else do
-			ok <- retry info metervar $ bracketIO 
-				(return lck)
-				(cleanup tfile)
-				(const $ transferaction meter)
+			ok <- retry info metervar $ transferaction meter
+			liftIO $ cleanup tfile lck
 			transferobserver ok t info
 			return ok
   where
