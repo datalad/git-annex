@@ -35,6 +35,21 @@ safe to do so.
   the last repository that is storing their content. Data loss can
   result from using this option.
 
+* `--all`
+
+  Rather than specifying a filename or path to drop, this option can be
+  used to drop all available versions of all files.
+
+  This is the default behavior when running git-annex drop in a bare repository.
+
+* `--unused`
+
+  Drop files found by last run of git-annex unused.
+
+* `--key=keyname`
+
+  Use this option to drop a specified key.
+
 * file matching options
 
   The [[git-annex-matching-options]](1)

@@ -27,7 +27,7 @@ cmd = [withOptions (dropOptions) $ command "drop" paramPaths seek
 	SectionCommon "indicate content of files not currently wanted"]
 
 dropOptions :: [Option]
-dropOptions = dropFromOption : annexedMatchingOptions ++ [autoOption]
+dropOptions = dropFromOption : annexedMatchingOptions ++ [autoOption] ++ keyOptions
 
 dropFromOption :: Option
 dropFromOption = fieldOption ['f'] "from" paramRemote "drop content from a remote"
@@ -36,22 +36,31 @@ seek :: CommandSeek
 seek ps = do
 	from <- getOptionField dropFromOption Remote.byNameWithUUID
 	auto <- getOptionFlag autoOption
-	withFilesInGit (whenAnnexed $ start auto from) ps
+	withKeyOptions auto
+		(startKeys auto from)
+		(withFilesInGit $ whenAnnexed $ start auto from)
+		ps
 
 start :: Bool -> Maybe Remote -> FilePath -> Key -> CommandStart
-start auto from file key = checkDropAuto auto from file key $ \numcopies ->
+start auto from file key = start' auto from key (Just file)
+
+start' :: Bool -> Maybe Remote -> Key -> AssociatedFile -> CommandStart
+start' auto from key afile = checkDropAuto auto from afile key $ \numcopies ->
 	stopUnless want $
 		case from of
-			Nothing -> startLocal (Just file) numcopies key Nothing
+			Nothing -> startLocal afile numcopies key Nothing
 			Just remote -> do
 				u <- getUUID
 				if Remote.uuid remote == u
-					then startLocal (Just file) numcopies key Nothing
-					else startRemote (Just file) numcopies key remote
+					then startLocal afile numcopies key Nothing
+					else startRemote afile numcopies key remote
   where
 	want
-		| auto = wantDrop False (Remote.uuid <$> from) (Just key) (Just file)
+		| auto = wantDrop False (Remote.uuid <$> from) (Just key) afile
 		| otherwise = return True
+
+startKeys :: Bool -> Maybe Remote -> Key -> CommandStart
+startKeys auto from key = start' auto from key Nothing
 
 startLocal :: AssociatedFile -> NumCopies -> Key -> Maybe Remote -> CommandStart
 startLocal afile numcopies key knownpresentremote = stopUnless (inAnnex key) $ do
@@ -154,8 +163,8 @@ requiredContent = do
 
 {- In auto mode, only runs the action if there are enough
  - copies on other semitrusted repositories. -}
-checkDropAuto :: Bool -> Maybe Remote -> FilePath -> Key -> (NumCopies -> CommandStart) -> CommandStart
-checkDropAuto auto mremote file key a = go =<< getFileNumCopies file
+checkDropAuto :: Bool -> Maybe Remote -> AssociatedFile -> Key -> (NumCopies -> CommandStart) -> CommandStart
+checkDropAuto auto mremote afile key a = go =<< maybe getNumCopies getFileNumCopies afile
   where
 	go numcopies
 		| auto = do
