@@ -90,6 +90,6 @@ getKeyFile' key afile dest = dispatch
 		| Remote.hasKeyCheap r =
 			either (const False) id <$> Remote.hasKey r key
 		| otherwise = return True
-	docopy r = download (Remote.uuid r) key afile noRetry $ \p -> do
+	docopy r = download (Remote.uuid r) key afile noRetry noObserver $ \p -> do
 		showAction $ "from " ++ Remote.name r
 		Remote.retrieveKeyFile r key afile dest p

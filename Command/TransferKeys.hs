@@ -36,14 +36,17 @@ start = do
   where
 	runner (TransferRequest direction remote key file)
 		| direction == Upload = notifyTransfer direction file $
-			upload (Remote.uuid remote) key file forwardRetry $ \p -> do
+			upload (Remote.uuid remote) key file forwardRetry observer $ \p -> do
 				ok <- Remote.storeKey remote key file p
 				when ok $
 					Remote.logStatus remote key InfoPresent
 				return ok
 		| otherwise = notifyTransfer direction file $
-			download (Remote.uuid remote) key file forwardRetry $ \p ->
+			download (Remote.uuid remote) key file forwardRetry observer $ \p ->
 				getViaTmp key $ \t -> Remote.retrieveKeyFile remote key file t p
+	
+	observer False t info = recordFailedTransfer t info
+	observer True _ _ = noop
 
 runRequests
 	:: Handle

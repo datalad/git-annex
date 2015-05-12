@@ -386,7 +386,7 @@ copyFromRemote' r key file dest meterupdate
 					let go = copier
 #endif
 					runTransfer (Transfer Download u key)
-						file noRetry go
+						file noRetry noObserver go
 						<&&> checksuccess
 	| Git.repoIsSsh (repo r) = feedprogressback $ \feeder -> do
 		direct <- isDirect
@@ -502,7 +502,7 @@ copyToRemote' r key file p
 			( return True
 			, do
 				ensureInitialized
-				runTransfer (Transfer Download u key) file noRetry $ const $
+				runTransfer (Transfer Download u key) file noRetry noObserver $ const $
 					Annex.Content.saveState True `after`
 						Annex.Content.getViaTmpChecked (liftIO checksuccessio) key
 							(\d -> rsyncOrCopyFile params object d p)

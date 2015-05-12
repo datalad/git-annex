@@ -223,7 +223,7 @@ addUrlFileQuvi relaxed quviurl videourl file = do
 				tmp <- fromRepo $ gitAnnexTmpObjectLocation key
 				showOutput
 				ok <- Transfer.notifyTransfer Transfer.Download (Just file) $
-					Transfer.download webUUID key (Just file) Transfer.forwardRetry $ const $ do
+					Transfer.download webUUID key (Just file) Transfer.forwardRetry Transfer.noObserver $ const $ do
 						liftIO $ createDirectoryIfMissing True (parentDir tmp)
 						downloadUrl [videourl] tmp
 				if ok
@@ -297,7 +297,7 @@ downloadWith downloader dummykey u url file =
 			)
   where
 	runtransfer tmp =  Transfer.notifyTransfer Transfer.Download (Just file) $
-		Transfer.download u dummykey (Just file) Transfer.forwardRetry $ \p -> do
+		Transfer.download u dummykey (Just file) Transfer.forwardRetry Transfer.noObserver $ \p -> do
 			liftIO $ createDirectoryIfMissing True (parentDir tmp)
 			downloader tmp p
 

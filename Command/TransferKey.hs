@@ -42,7 +42,7 @@ start to from file key =
 
 toPerform :: Remote -> Key -> AssociatedFile -> CommandPerform
 toPerform remote key file = go Upload file $
-	upload (uuid remote) key file forwardRetry $ \p -> do
+	upload (uuid remote) key file forwardRetry noObserver $ \p -> do
 		ok <- Remote.storeKey remote key file p
 		when ok $
 			Remote.logStatus remote key InfoPresent
@@ -50,7 +50,7 @@ toPerform remote key file = go Upload file $
 
 fromPerform :: Remote -> Key -> AssociatedFile -> CommandPerform
 fromPerform remote key file = go Upload file $
-	download (uuid remote) key file forwardRetry $ \p ->
+	download (uuid remote) key file forwardRetry noObserver $ \p ->
 		getViaTmp key $ \t -> Remote.retrieveKeyFile remote key file t p
 
 go :: Direction -> AssociatedFile -> (NotifyWitness -> Annex Bool) -> CommandPerform

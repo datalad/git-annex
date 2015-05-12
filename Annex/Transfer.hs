@@ -9,6 +9,7 @@
 
 module Annex.Transfer (
 	module X,
+	noObserver,
 	upload,
 	download,
 	runTransfer,
@@ -28,11 +29,18 @@ import Utility.LockFile
 
 import Control.Concurrent
 
-upload :: UUID -> Key -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex Bool) -> NotifyWitness -> Annex Bool
-upload u key f d a _witness = runTransfer (Transfer Upload u key) f d a
+type TransferAction = MeterUpdate -> Annex Bool
 
-download :: UUID -> Key -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex Bool) -> NotifyWitness -> Annex Bool
-download u key f d a _witness = runTransfer (Transfer Download u key) f d a
+type TransferObserver = Bool -> Transfer -> TransferInfo -> Annex ()
+
+noObserver :: TransferObserver
+noObserver _ _ _ = noop
+
+upload :: UUID -> Key -> AssociatedFile -> RetryDecider -> TransferObserver -> TransferAction -> NotifyWitness -> Annex Bool
+upload u key f d o a _witness = runTransfer (Transfer Upload u key) f d o a
+
+download :: UUID -> Key -> AssociatedFile -> RetryDecider -> TransferObserver -> TransferAction -> NotifyWitness -> Annex Bool
+download u key f d o a _witness = runTransfer (Transfer Download u key) f d o a
 
 {- Runs a transfer action. Creates and locks the lock file while the
  - action is running, and stores info in the transfer information
@@ -46,7 +54,7 @@ download u key f d a _witness = runTransfer (Transfer Download u key) f d a
  - An upload can be run from a read-only filesystem, and in this case
  - no transfer information or lock file is used.
  -}
-runTransfer :: Transfer -> Maybe FilePath -> RetryDecider -> (MeterUpdate -> Annex Bool) -> Annex Bool
+runTransfer :: Transfer -> Maybe FilePath -> RetryDecider -> TransferObserver -> TransferAction -> Annex Bool
 runTransfer = runTransfer' False
 
 {- Like runTransfer, but ignores any existing transfer lock file for the
@@ -54,11 +62,11 @@ runTransfer = runTransfer' False
  -
  - Note that this may result in confusing progress meter display in the
  - webapp, if multiple processes are writing to the transfer info file. -}
-alwaysRunTransfer :: Transfer -> Maybe FilePath -> RetryDecider -> (MeterUpdate -> Annex Bool) -> Annex Bool
+alwaysRunTransfer :: Transfer -> Maybe FilePath -> RetryDecider -> TransferObserver -> TransferAction -> Annex Bool
 alwaysRunTransfer = runTransfer' True
 
-runTransfer' :: Bool -> Transfer -> Maybe FilePath -> RetryDecider -> (MeterUpdate -> Annex Bool) -> Annex Bool
-runTransfer' ignorelock t file shouldretry a = do
+runTransfer' :: Bool -> Transfer -> Maybe FilePath -> RetryDecider -> TransferObserver -> TransferAction -> Annex Bool
+runTransfer' ignorelock t file shouldretry transferobserver transferaction = do
 	info <- liftIO $ startTransferInfo file
 	(meter, tfile, metervar) <- mkProgressUpdater t info
 	mode <- annexFileMode
@@ -68,9 +76,11 @@ runTransfer' ignorelock t file shouldretry a = do
 			showNote "transfer already in progress"
 			return False
 		else do
-			ok <- retry info metervar $
-				bracketIO (return fd) (cleanup tfile) (const $ a meter)
-			unless ok $ recordFailedTransfer t info
+			ok <- retry info metervar $ bracketIO 
+				(return fd)
+				(cleanup tfile)
+				(const $ transferaction meter)
+			transferobserver ok t info
 			return ok
   where
 #ifndef mingw32_HOST_OS
