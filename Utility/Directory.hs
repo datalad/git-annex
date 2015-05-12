@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE CPP #-}
+{-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.Directory where
 
@@ -18,6 +19,7 @@ import Control.Applicative
 import Control.Concurrent
 import System.IO.Unsafe (unsafeInterleaveIO)
 import Data.Maybe
+import Prelude
 
 #ifdef mingw32_HOST_OS
 import qualified System.Win32 as Win32
@@ -111,7 +113,7 @@ moveFile src dest = tryIO (rename src dest) >>= onrename
 			-- But, mv will move into a directory if
 			-- dest is one, which is not desired.
 			whenM (isdir dest) rethrow
-			viaTmp mv dest undefined
+			viaTmp mv dest ""
 	  where
 		rethrow = throwM e
 		mv tmp _ = do

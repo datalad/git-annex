@@ -5,15 +5,19 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Command.Log where
 
 import qualified Data.Set as S
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy.Char8 as L
+import Data.Char
 import Data.Time.Clock.POSIX
 import Data.Time
+#if ! MIN_VERSION_time(1,5,0)
 import System.Locale
-import Data.Char
+#endif
 
 import Common.Annex
 import Command
@@ -172,7 +176,11 @@ parseRaw l = go $ words l
 
 parseTimeStamp :: String -> POSIXTime
 parseTimeStamp = utcTimeToPOSIXSeconds . fromMaybe (error "bad timestamp") .
+#if MIN_VERSION_time(1,5,0)
+	parseTimeM True defaultTimeLocale "%s"
+#else
 	parseTime defaultTimeLocale "%s"
+#endif
 
 showTimeStamp :: TimeZone -> POSIXTime -> String
 showTimeStamp zone = show . utcToLocalTime zone . posixSecondsToUTCTime

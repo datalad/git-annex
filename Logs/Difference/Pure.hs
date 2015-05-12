@@ -10,7 +10,6 @@ module Logs.Difference.Pure (
 	parseDifferencesLog,
 ) where
 
-import Data.Monoid
 import qualified Data.Map as M
 
 import Common.Annex

@@ -1,9 +1,9 @@
-Occasionally improvments are made to how git-annex stores its data,
+Occasionally improvements are made to how git-annex stores its data,
 that require an upgrade process to convert repositories made with an older
 version to be used by a newer version. It's annoying, it should happen
 rarely, but sometimes, it's worth it.
 
-There's a committment that git-annex will always support upgrades from all
+There's a commitment that git-annex will always support upgrades from all
 past versions. After all, you may have offline drives from an earlier
 git-annex, and might want to use them with a newer git-annex.
 

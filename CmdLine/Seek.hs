@@ -218,8 +218,9 @@ seekHelper a params = do
 	ll <- inRepo $ \g -> concat <$> forM (segmentXargsOrdered params)
 		(runSegmentPaths (\fs -> Git.Command.leaveZombie <$> a fs g))
 	forM_ (map fst $ filter (null . snd) $ zip params ll) $ \p ->
-		unlessM (isJust <$> liftIO (catchMaybeIO $ getSymbolicLinkStatus p)) $
-			error $ p ++ " not found"
+		unlessM (isJust <$> liftIO (catchMaybeIO $ getSymbolicLinkStatus p)) $ do
+			toplevelWarning False (p ++ " not found")
+			Annex.incError
 	return $ concat ll
 
 notSymlink :: FilePath -> IO Bool

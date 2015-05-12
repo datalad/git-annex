@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-04-30T18:56:31Z"
+ content="""
+Regression or not, it would be useful if git-annex continued past such
+not-existing files to process the rest of the specified files, and only
+set the error flag.
+"""]]

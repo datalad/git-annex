@@ -10,7 +10,7 @@ module Command.NumCopies where
 import Common.Annex
 import qualified Annex
 import Command
-import Config.NumCopies
+import Annex.NumCopies
 import Types.Messages
 
 cmd :: [Command]

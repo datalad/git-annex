@@ -9,6 +9,7 @@ module Command.Import where
 
 import Common.Annex
 import Command
+import qualified Git
 import qualified Annex
 import qualified Command.Add
 import Utility.CopyFile
@@ -16,6 +17,10 @@ import Backend
 import Remote
 import Types.KeySource
 import Types.Key
+import Annex.CheckIgnore
+import Annex.NumCopies
+import Types.TrustLevel
+import Logs.Trust
 
 cmd :: [Command]
 cmd = [withOptions opts $ notBareRepo $ command "import" paramPaths seek
@@ -58,6 +63,10 @@ getDuplicateMode = go . catMaybes <$> mapM getflag [minBound..maxBound]
 seek :: CommandSeek
 seek ps = do
 	mode <- getDuplicateMode
+	repopath <- liftIO . absPath =<< fromRepo Git.repoPath
+	inrepops <- liftIO $ filter (dirContains repopath) <$> mapM absPath ps
+	unless (null inrepops) $ do
+		error $ "cannot import files from inside the working tree (use git annex add instead): " ++ unwords inrepops
 	withPathContents (start mode) ps
 
 start :: DuplicateMode -> (FilePath, FilePath) -> CommandStart
@@ -75,23 +84,41 @@ start mode (srcfile, destfile) =
   where
 	deletedup k = do
 		showNote $ "duplicate of " ++ key2file k
-		liftIO $ removeFile srcfile
-		next $ return True
+		ifM (verifiedExisting k destfile)
+			( do
+				liftIO $ removeFile srcfile
+				next $ return True
+			, do
+				warning "Could not verify that the content is still present in the annex; not removing from the import location."
+				stop
+			)
 	importfile = do
-		handleexisting =<< liftIO (catchMaybeIO $ getSymbolicLinkStatus destfile)
+		ignored <- not <$> Annex.getState Annex.force <&&> checkIgnored destfile
+		if ignored
+			then do
+				warning $ "not importing " ++ destfile ++ " which is .gitignored (use --force to override)"
+				stop
+			else do
+				existing <- liftIO (catchMaybeIO $ getSymbolicLinkStatus destfile)
+				case existing of
+					Nothing -> importfilechecked
+					(Just s)
+						| isDirectory s -> notoverwriting "(is a directory)"
+						| otherwise -> ifM (Annex.getState Annex.force)
+							( do
+								liftIO $ nukeFile destfile
+								importfilechecked
+							, notoverwriting "(use --force to override, or a duplication option such as --deduplicate to clean up)"
+							)
+	importfilechecked = do
 		liftIO $ createDirectoryIfMissing True (parentDir destfile)
 		liftIO $ if mode == Duplicate || mode == SkipDuplicates
 			then void $ copyFileExternal CopyAllMetaData srcfile destfile
 			else moveFile srcfile destfile
 		Command.Add.perform destfile
-	handleexisting Nothing = noop
-	handleexisting (Just s)
-		| isDirectory s = notoverwriting "(is a directory)"
-		| otherwise = ifM (Annex.getState Annex.force)
-			( liftIO $ nukeFile destfile
-			, notoverwriting "(use --force to override, or a duplication option such as --deduplicate to clean up)"
-			)
-	notoverwriting why = error $ "not overwriting existing " ++ destfile ++ " " ++ why
+	notoverwriting why = do
+		warning $ "not overwriting existing " ++ destfile ++ " " ++ why
+		stop
 	checkdup dupa notdupa = do
 		backend <- chooseBackend destfile
 		let ks = KeySource srcfile srcfile Nothing
@@ -107,3 +134,14 @@ start mode (srcfile, destfile) =
 		CleanDuplicates -> checkdup (Just deletedup) Nothing
 		SkipDuplicates -> checkdup Nothing (Just importfile)
 		_ -> return (Just importfile)
+
+verifiedExisting :: Key -> FilePath -> Annex Bool
+verifiedExisting key destfile = do
+	-- Look up the numcopies setting for the file that it would be
+	-- imported to, if it were imported.
+	need <- getFileNumCopies destfile
+
+	(remotes, trusteduuids) <- knownCopies key
+	untrusteduuids <- trustGet UnTrusted
+	let tocheck = Remote.remotesWithoutUUID remotes (trusteduuids++untrusteduuids)
+	verifyEnoughCopies [] key need trusteduuids [] tocheck

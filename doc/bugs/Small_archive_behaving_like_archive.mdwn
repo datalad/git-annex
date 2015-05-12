@@ -31,3 +31,6 @@ Mac OSX 10.8.3 (Build 12D78)
 """]]
 
 [[!tag moreinfo]]
+
+> Since there's a plausible explanation in my comment and no followup,
+> [[done]] --[[Joey]]

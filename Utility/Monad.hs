@@ -5,6 +5,8 @@
  - License: BSD-2-clause
  -}
 
+{-# OPTIONS_GHC -fno-warn-tabs #-}
+
 module Utility.Monad where
 
 import Data.Maybe

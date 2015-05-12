@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-04-29T15:16:31Z"
+ content="""
+According to the git-fetch man page, the syntax to use
+for this kind of url is:
+
+	ssh://[user@]host.xz[:port]/~[user]/path/to/repo.git/
+
+Your url is missing the leading slash before the `~`, and has
+a : with no port specified.
+
+	ssh://git@gitlab.com:~/gitlabname/reponame.git
+
+It is in fact, not a legal url.
+
+Now, git might accept it despite not documenting it as an accepted form,
+but why wander into undefined territory when there are legal ways to write
+this url that work fine?
+
+Does GitLab promote using these malformed urls?
+"""]]

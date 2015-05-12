@@ -15,7 +15,7 @@ When passed a directory, undoes the last change that was made to the
 contents of that directory.
   
 Running undo a second time will undo the undo, returning the working
-tree to the same state it had before. In order for undoing an undo of
+tree to the same state it had before. To support undoing an undo of
 staged changes, any staged changes are first committed by the
 undo command.
 

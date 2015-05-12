@@ -15,11 +15,10 @@
 module Logs.Transitions where
 
 import Data.Time.Clock.POSIX
-import Data.Time
-import System.Locale
 import qualified Data.Set as S
 
 import Common.Annex
+import Logs.TimeStamp
 
 transitionsLog :: FilePath
 transitionsLog = "transitions.log"
@@ -66,12 +65,13 @@ showTransitionLine :: TransitionLine -> String
 showTransitionLine (TransitionLine ts t) = unwords [show t, show ts]
 
 parseTransitionLine :: String -> Maybe TransitionLine
-parseTransitionLine s = TransitionLine <$> pdate ds <*> readish ts
+parseTransitionLine s = TransitionLine
+	<$> parsePOSIXTime ds
+	<*> readish ts
   where
 	ws = words s
 	ts = Prelude.head ws
 	ds = unwords $ Prelude.tail ws
-	pdate = utcTimeToPOSIXSeconds <$$> parseTime defaultTimeLocale "%s%Qs"
 
 combineTransitions :: [Transitions] -> Transitions
 combineTransitions = S.unions

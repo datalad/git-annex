@@ -32,7 +32,6 @@ import Utility.QuickCheck
 import Utility.PartialPrelude
 import Utility.Misc
 
-import Control.Applicative
 import Data.List
 import Data.Time.Clock
 import Data.Time.LocalTime
@@ -41,6 +40,8 @@ import Data.Time.Calendar.WeekDate
 import Data.Time.Calendar.OrdinalDate
 import Data.Tuple.Utils
 import Data.Char
+import Control.Applicative
+import Prelude
 
 {- Some sort of scheduled event. -}
 data Schedule = Schedule Recurrance ScheduledTime

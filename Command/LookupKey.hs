@@ -9,18 +9,20 @@ module Command.LookupKey where
 
 import Common.Annex
 import Command
+import CmdLine.Batch
 import Annex.CatFile
 import Types.Key
 
 cmd :: [Command]
-cmd = [notBareRepo $ noCommit $ noMessages $
+cmd = [withOptions [batchOption] $ notBareRepo $ noCommit $ noMessages $
 	command "lookupkey" (paramRepeating paramFile) seek
 		SectionPlumbing "looks up key used for file"]
 
 seek :: CommandSeek
-seek = withStrings start
+seek = batchable withStrings start
 
-start :: String -> CommandStart
-start file = do
-	liftIO . maybe exitFailure (putStrLn . key2file) =<< catKeyFile file
+start :: Batchable String
+start batchmode file = do
+	maybe (batchBadInput batchmode) (liftIO . putStrLn . key2file)
+		=<< catKeyFile file
 	stop

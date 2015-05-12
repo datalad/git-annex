@@ -140,6 +140,25 @@ linuxstandalone-nobuild: Build/Standalone Build/LinuxMkLibs
 	cd tmp/git-annex.linux && find . -type l >> git-annex.MANIFEST
 	cd tmp && tar czf git-annex-standalone-$(shell dpkg --print-architecture).tar.gz git-annex.linux
 
+# Run this target to build git-annex-standalone*.deb
+debianstandalone: dpkg-buildpackage-F
+# Run this target to build git-annex-standalone*.dsc
+debianstandalone-dsc: dpkg-buildpackage-S
+
+prep-standalone:
+	$(MAKE) undo-standalone
+	QUILT_PATCHES=debian/patches QUILT_SERIES=series.standalone-build quilt push -a
+	debian/create-standalone-changelog
+
+undo-standalone:
+	test -e .git
+	git checkout debian/changelog
+	quilt pop -a || true
+
+dpkg-buildpackage%: prep-standalone
+	umask 022; dpkg-buildpackage -rfakeroot $*
+	$(MAKE) undo-standalone
+
 OSXAPP_DEST=tmp/build-dmg/git-annex.app
 OSXAPP_BASE=$(OSXAPP_DEST)/Contents/MacOS/bundle
 osxapp: Build/Standalone Build/OSXMkLibs

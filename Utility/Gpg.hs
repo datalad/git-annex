@@ -9,14 +9,8 @@
 
 module Utility.Gpg where
 
-import Control.Applicative
-import Control.Concurrent
-import Control.Monad.IO.Class
-import qualified Data.Map as M
-
 import Common
 import qualified Build.SysConfig as SysConfig
-
 #ifndef mingw32_HOST_OS
 import System.Posix.Types
 import qualified System.Posix.IO
@@ -26,6 +20,10 @@ import Utility.Env
 import Utility.Tmp
 #endif
 import Utility.Format (decode_c)
+
+import Control.Concurrent
+import Control.Monad.IO.Class
+import qualified Data.Map as M
 
 type KeyId = String
 

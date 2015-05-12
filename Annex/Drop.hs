@@ -9,7 +9,7 @@ module Annex.Drop where
 
 import Common.Annex
 import Logs.Trust
-import Config.NumCopies
+import Annex.NumCopies
 import Types.Remote (uuid)
 import Types.Key (key2file)
 import qualified Remote

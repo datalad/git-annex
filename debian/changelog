@@ -1,7 +1,80 @@
-git-annex (5.20150410) UNRELEASED; urgency=medium
-
   * get, move, copy, mirror: Concurrent downloads and uploads are
     now supported! For example: git-annex get -J10
+
+git-annex (5.20150508.2) UNRELEASED; urgency=medium
+
+  * import: Refuse to import files that are within the work tree, as that
+    does not make sense and could cause data loss.
+  * drop: Now supports --all, --unused, and --key.
+  * drop: Now defaults to --all when run in a bare repository.
+    (Previously, did nothing when run in a bare repository.)
+
+ -- Joey Hess <id@joeyh.name>  Mon, 11 May 2015 12:45:06 -0400
+
+git-annex (5.20150508.1) unstable; urgency=medium
+
+  * Now builds cleanly using ghc 7.10 (as well as ghc back to 7.6).
+  * Imrovements to the git-annex-standalone.deb build process.
+    (Thanks, Yaroslav Halchenko)
+
+ -- Joey Hess <id@joeyh.name>  Mon, 11 May 2015 12:08:58 -0400
+
+git-annex (5.20150508) unstable; urgency=medium
+
+  * Improve behavior when a git-annex command is told to operate
+    on a file that doesn't exist. It will now continue to other
+    files specified after that on the command line, and only error out at
+    the end.
+  * S3: Enable debug logging when annex.debug or --debug is set.
+  * S3: git annex info will show additional information about a S3 remote
+    (endpoint, port, storage class)
+  * S3: Let git annex enableremote be used, without trying to recreate
+    a bucket that should already exist.
+  * S3: Fix incompatability with bucket names used by hS3; the aws library
+    cannot handle upper-case bucket names. git-annex now converts them to
+    lower case automatically.
+  * import: Check for gitignored files before moving them into the tree.
+    (Needs git 1.8.4 or newer.)
+  * import: Don't stop entire import when one file fails due to being
+    gitignored or conflicting with something in the work tree.
+  * import: Before removing a duplicate file in --deduplicate or
+    --clean-duplicates mode, verify that enough copies of its content still
+    exist.
+  * Improve integration with KDE's file manager to work with dolphin
+    version 14.12.3 while still being compatable with 4.14.2.
+    Thanks, silvio.
+  * assistant: Added --autostop to complement --autostart.
+  * Work around wget bug #784348 which could cause it to clobber git-annex
+    symlinks when downloading from ftp.
+  * Support checking ftp urls for file presence.
+  * Fix bogus failure of fsck --fast.
+  * fsck: Ignore error recording the fsck in the activity log,
+    which can happen when running fsck in a read-only repository.
+    Closes: #698559
+    (fsck can still need to write to the repository if it find problems,
+    but a successful fsck can be done read-only)
+  * Improve quvi 0.4 output parsing to handle cases wher there is no known
+    filename extension. This is currently the case when using quvi with
+    youtube. In this case, the extension ".m" will be used.
+  * Dropped support for older versions of yesod, warp, and dbus than the ones
+    in Debian Jessie.
+  * Switch from the obsolete dataenc library for base64 encoding to sandi.
+    (Thanks, Magnus Therning)
+  * Debian's ghc now supports TH on arm! Adjust build dependencies
+    to build the webapp on arm, and enable DAV support on arm. \o/
+  * Adjust some other arch specific build dependencies that are now
+    available on more architectures in Devian unstable.
+  * Windows: Remove cygwin ssh, the newer version of which has stopped
+    honoring the setting of HOME. Instead, copy msysgit's ssh into PATH.
+    Note that setting up a remote ssh server using password authentication
+    is known to be broken in this release on Windows.
+  * Windows: Roll back to an older version of rsync from cygwin.
+    The newer version has some dependency on a newer ssh from cygwin.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 08 May 2015 13:42:30 -0400
+
+git-annex (5.20150420) unstable; urgency=medium
+
   * Fix activity log parsing, which caused the log to not retain
     activity from other uuids.
   * Union merge could fall over if there was a file in the repository
@@ -9,13 +82,32 @@ git-annex (5.20150410) UNRELEASED; urgency=medium
   * info dir: Added information about repositories that
     contain files in the specified directory.
   * info: Added --bytes option.
+  * bittorrent: Fix handling of magnet links.
+  * When a key's size is unknown, still check the annex.diskreserve,
+    and avoid getting content if the disk is too full.
+  * Fix fsck --from a git remote in a local directory, and from
+    a directory special remote.
+    This was a reversion caused by the relative path changes in 5.20150113.
+  * fsck --from remote: When bad content is found in the remote,
+    and the local repo does not have a copy of the content, preserve
+    the bad content in .git/annex/bad/ to avoid further data loss.
+  * fsck --from remote: Avoid downloading a key if it would go over
+    the annex.diskreserve limit.
+  * required: New command, like wanted, but for required content.
+  * Removed dependency on haskell SHA library,
+    instead using cryptohash >= 0.11.0.
+  * Make repo init more robust.
+  * New debian/rules build-standalone target, which generates a
+    git-annex-standalone.deb that should work on many old Debian etc
+    systems. Thanks, Yaroslav Halchenko.
   * Windows: Renamed start menu file to avoid loop in some versions
     of Windows where the menu file is treated as a git-annex program.
-  * bittorrent: Fix handling of magnet links.
   * Windows: Fixed support of remotes on other drives.
     (A reversion introduced in version 5.20150113.)
+  * Windows: Bundled versions of rsync, wget, ssh, and gpg from
+    cygwin all updated. Thanks, Yury V. Zaytsev.
 
- -- Joey Hess <id@joeyh.name>  Thu, 09 Apr 2015 20:59:43 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 20 Apr 2015 14:44:04 -0400
 
 git-annex (5.20150409) unstable; urgency=medium
 

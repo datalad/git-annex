@@ -1,0 +1,19 @@
+I am trying to follow this guide:
+
+https://git-annex.branchable.com/walkthrough/
+
+I:
+
+* created a repository
+* added a remote
+* added all the files via `git annex add .`
+* commited my changes
+* synced my repositories
+
+
+By the time I tied to actually get the content from repo one into repo two (via `git annex get folder`) I noticed that all of my stuff had been deleted from repo one (and not backed up by git annex anywhere else!).
+
+How can I get my stuff back?
+
+Also, why would any software which is meant for backup or archiving (or any sane software in general) delete stuff without me actually typing `rm` or `delete` into the terminal and without giving me a big warning message and a confirmation prompt? 
+ 

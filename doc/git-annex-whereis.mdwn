@@ -32,6 +32,19 @@ For example:
   The [[git-annex-matching-options]](1)
   can be used to specify files to act on.
 
+* `--key=keyname`
+
+  Show where a particular git-annex key is located.
+
+* `--all`
+
+  Show whereis information for all known keys.
+
+* `--unused`
+
+  Show whereis information for files found by last run of git-annex unused.
+
+
 # SEE ALSO
 
 [[git-annex]](1)

@@ -112,11 +112,7 @@ checkNetMonitor client = do
  -}
 listenNMConnections :: Client -> (Bool -> IO ()) -> IO ()
 listenNMConnections client setconnected =
-#if MIN_VERSION_dbus(0,10,7)
 	void $ addMatch client matcher
-#else
-	listen client matcher
-#endif
 		$ \event -> mapM_ handleevent
 			(map dictionaryItems $ mapMaybe fromVariant $ signalBody event)
   where
@@ -166,11 +162,7 @@ listenWicdConnections client setconnected = do
 		| any (== wicd_disconnected) status = setconnected False
 		| otherwise = noop
 	match matcher a = 
-#if MIN_VERSION_dbus(0,10,7)
 		void $ addMatch client matcher a
-#else
-		listen client matcher a
-#endif
 #endif
 
 handleConnection :: Assistant ()

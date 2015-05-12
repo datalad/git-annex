@@ -8,13 +8,9 @@
 module Command.GroupWanted where
 
 import Common.Annex
-import qualified Annex
 import Command
 import Logs.PreferredContent
-import Types.Messages
-import Types.Group
-
-import qualified Data.Map as M
+import Command.Wanted (performGet, performSet)
 
 cmd :: [Command]
 cmd = [command "groupwanted" (paramPair paramGroup (paramOptional paramExpression)) seek
@@ -24,22 +20,8 @@ seek :: CommandSeek
 seek = withWords start
 
 start :: [String] -> CommandStart
-start (g:[]) = next $ performGet g
+start (g:[]) = next $ performGet groupPreferredContentMapRaw g
 start (g:expr:[]) = do
 	showStart "groupwanted" g
-	next $ performSet g expr
+	next $ performSet groupPreferredContentSet expr g
 start _ = error "Specify a group."
-
-performGet :: Group -> CommandPerform
-performGet g = do
-	Annex.setOutput QuietOutput
-	m <- groupPreferredContentMapRaw
-	liftIO $ putStrLn $ fromMaybe "" $ M.lookup g m
-	next $ return True
-
-performSet :: Group -> String -> CommandPerform
-performSet g expr = case checkPreferredContentExpression expr of
-	Just e -> error $ "Parse error: " ++ e
-	Nothing -> do
-		groupPreferredContentSet g expr
-		next $ return True

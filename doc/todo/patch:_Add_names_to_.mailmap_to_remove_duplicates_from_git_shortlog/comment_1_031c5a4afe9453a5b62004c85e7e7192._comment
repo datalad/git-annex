@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://sunny256.wordpress.com/"
+ nickname="sunny256"
+ subject="Character encoding error"
+ date="2015-05-06T14:53:50Z"
+ content="""
+Hm, seems as there are some character encoding problem there, two names (Antoine Beaupré and mine) in the second patch. The infamous 'Ø' strikes again. Just wanted to mention it so the patch doesn't introduce errors. Maybe it's safest to fetch it from GitHub.
+"""]]

@@ -200,7 +200,7 @@ tryGitConfigRead :: Git.Repo -> Annex Git.Repo
 tryGitConfigRead r 
 	| haveconfig r = return r -- already read
 	| Git.repoIsSsh r = store $ do
-		v <- Ssh.onRemote r (pipedconfig, return (Left undefined)) "configlist" [] []
+		v <- Ssh.onRemote r (pipedconfig, return (Left $ error "configlist failed")) "configlist" [] []
 		case v of
 			Right r'
 				| haveconfig r' -> return r'
@@ -229,9 +229,10 @@ tryGitConfigRead r
 		uo <- Url.getUrlOptions
 		v <- liftIO $ withTmpFile "git-annex.tmp" $ \tmpfile h -> do
 			hClose h
-			ifM (Url.downloadQuiet (Git.repoLocation r ++ "/config") tmpfile uo)
+			let url = Git.repoLocation r ++ "/config"
+			ifM (Url.downloadQuiet url tmpfile uo)
 				( pipedconfig "git" [Param "config", Param "--null", Param "--list", Param "--file", File tmpfile]
-				, return $ Left undefined
+				, return $ Left $ error $ "unable to load config from " ++ url
 				)
 		case v of
 			Left _ -> do
@@ -450,10 +451,17 @@ copyFromRemote' r key file dest meterupdate
 copyFromRemoteCheap :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
 #ifndef mingw32_HOST_OS
 copyFromRemoteCheap r key af file
-	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) (return False) $ do
-		loc <- liftIO $ gitAnnexLocation key (repo r) $
+	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) (return False) $ liftIO $ do
+		loc <- gitAnnexLocation key (repo r) $
 			fromJust $ remoteGitConfig $ gitconfig r
-		liftIO $ catchBoolIO $ createSymbolicLink loc file >> return True
+		ifM (doesFileExist loc)
+			( do
+				absloc <- absPath loc
+				catchBoolIO $ do
+					createSymbolicLink absloc file
+					return True
+			, return False
+			)
 	| Git.repoIsSsh (repo r) =
 		ifM (Annex.Content.preseedTmp key file)
 			( parallelMetered Nothing key af $

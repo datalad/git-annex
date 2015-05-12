@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-05-01T21:36:59Z"
+ content="""
+There was a previous thread about using DVDS:
+<http://git-annex.branchable.com/forum/Managing_a_large_number_of_files_archived_on_many_pieces_of_read-only_medium___40__E.G._DVDs__41__>
+
+If the bluerays are rewritable, I'd probably just slap a Real Filesystem
+(ext2 not isofs) on there and put a regular git-annex repo on it. I'd probably
+run git-annex with the option "-c annex.alwayscommit=false" to prevent it
+making many commits to the repo on the blueray, which would rewrite parts of
+this disk, perhaps too often.
+
+Or, to avoid any rewrites at all (except to directory metadata),
+I might use a directory special remote on the blueray.
+
+I don't see much benefit to using bup over the directory special remote.
+
+If the bluerays are not rewritable, I might try making the git-annex repo
+in a temporary directory on the hard disk, and then generating the ISO
+from that once I've filled it up. Should work fine, I might set "remote.<name>.annex-readonly"
+to true in git repos that had such a disk as a remote to let git-annex
+know to not try to write to it.
+"""]]

@@ -66,7 +66,8 @@ data RemoteA a = Remote {
 	-- (The MeterUpdate does not need to be used if it retrieves
 	-- directly to the file, and not to an intermediate file.)
 	retrieveKeyFile :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> a Bool,
-	-- retrieves a key's contents to a tmp file, if it can be done cheaply
+	-- Retrieves a key's contents to a tmp file, if it can be done cheaply.
+	-- It's ok to create a symlink or hardlink.
 	retrieveKeyFileCheap :: Key -> AssociatedFile -> FilePath -> a Bool,
 	-- removes a key's contents (succeeds if the contents are not present)
 	removeKey :: Key -> a Bool,

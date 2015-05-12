@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, GeneralizedNewtypeDeriving, PackageImports #-}
+{-# LANGUAGE CPP, GeneralizedNewtypeDeriving, PackageImports, BangPatterns #-}
 
 module Annex (
 	Annex,
@@ -32,6 +32,7 @@ module Annex (
 	getRemoteGitConfig,
 	withCurrentState,
 	changeDirectory,
+	incError,
 ) where
 
 import Common
@@ -312,3 +313,9 @@ changeDirectory d = do
 	liftIO $ setCurrentDirectory d
 	r' <- liftIO $ Git.relPath r
 	changeState $ \s -> s { repo = r' }
+
+incError :: Annex ()
+incError = changeState $ \s -> 
+	let ! c = errcounter s + 1 
+	    ! s' = s { errcounter = c }
+	in s'

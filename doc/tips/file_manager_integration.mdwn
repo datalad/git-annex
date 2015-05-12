@@ -24,9 +24,9 @@ Even more recent git-annex comes with built-in integration with Konqueror.
 This is set up by git-annex creating a 
 `~/.kde/share/kde4/services/ServiceMenus/git-annex.desktop file.
 
-## XFCE (Thunar)
+## Xfce (Thunar)
 
-XFCE uses the Thunar file manager, which can also be easily configured to
+Xfce uses the Thunar file manager, which can also be easily configured to
 allow for custom actions. Just go to the "Configure custom actions..." item
 in the "Edit" menu, and create a custom action for get, drop, and undo with the
 following commands:
@@ -72,12 +72,12 @@ This gives me the resulting config on disk, in `.config/Thunar/uca.xml`:
         <video-files/>
     </action>
 
-The complete instructions on how to setup actions is [in the XFCE documentation](http://docs.xfce.org/xfce/thunar/custom-actions).
+The complete instructions on how to setup actions is [in the Xfce documentation](http://docs.xfce.org/xfce/thunar/custom-actions).
 
 ## OS X (Finder)
 
 For OS X, it is possible to get context menus in Finder. Due to how OS X
-deals with sym links, one needs to operate on folders if using indirect
+deals with symlinks, one needs to operate on folders if using indirect
 mode. Direct mode operation has not been tested.
 
 1. Open Automator and create a new Service.

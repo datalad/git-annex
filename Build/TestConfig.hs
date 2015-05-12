@@ -1,5 +1,7 @@
 {- Tests the system and generates Build.SysConfig.hs. -}
 
+{-# OPTIONS_GHC -fno-warn-tabs #-}
+
 module Build.TestConfig where
 
 import Utility.Path

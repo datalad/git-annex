@@ -12,7 +12,7 @@ import Command
 import qualified Command.Move
 import qualified Remote
 import Annex.Wanted
-import Config.NumCopies
+import Annex.NumCopies
 
 cmd :: [Command]
 cmd = [withOptions copyOptions $ command "copy" paramPaths seek

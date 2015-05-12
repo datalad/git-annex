@@ -72,7 +72,7 @@ chunkKeyStream basek chunksize = ChunkKeyStream $ map mk [1..]
 
 nextChunkKeyStream :: ChunkKeyStream -> (Key, ChunkKeyStream)
 nextChunkKeyStream (ChunkKeyStream (k:l)) = (k, ChunkKeyStream l)
-nextChunkKeyStream (ChunkKeyStream []) = undefined -- stream is infinite!
+nextChunkKeyStream (ChunkKeyStream []) = error "expected infinite ChunkKeyStream"
 
 takeChunkKeyStream :: ChunkCount -> ChunkKeyStream -> [Key]
 takeChunkKeyStream n (ChunkKeyStream l) = genericTake n l

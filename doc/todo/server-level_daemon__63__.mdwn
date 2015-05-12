@@ -186,3 +186,18 @@ Now this is not without problems:
  3. it is Debian-specific (a proper init script would be POSIX only and/or a `.service` file)
 
 Maybe using [metainit](https://wiki.debian.org/MetaInit) would be a good idea here? --[[anarcat]]
+
+> This strikes me as a bad idea if the system has regular desktop etc
+> users; the assistant can already start itself when they login and 
+> a separate user has the same problems the separate mpd user seems to;
+> of separating the user from the files that effcetively belong to them.
+> 
+> It's fine if you're doing something more specialized, but that seems
+> like an unusual case and not one that git-annex should cater to.
+> 
+> Anyway, it's about 5 lines to write a systemd service file. I've added
+> `git annex assistant --autostop` that such a service can use if desired.
+> 
+> Since I don't want to include that in git-annex and be stuck supporting
+> it, and it should be easy for users to add if they need it, I think I'm
+> going to call this [[done]]. --[[Joey]] 

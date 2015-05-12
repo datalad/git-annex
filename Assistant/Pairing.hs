@@ -81,6 +81,8 @@ data PairingInProgress = PairingInProgress
 	}
 	deriving (Show)
 
+data AddrClass = IPv4AddrClass | IPv6AddrClass
+
 data SomeAddr = IPv4Addr HostAddress
 {- My Android build of the Network library does not currently have IPV6
  - support. -}

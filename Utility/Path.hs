@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE PackageImports, CPP #-}
+{-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.Path where
 
@@ -16,6 +17,7 @@ import Data.List
 import Data.Maybe
 import Data.Char
 import Control.Applicative
+import Prelude
 
 #ifdef mingw32_HOST_OS
 import qualified System.FilePath.Posix as Posix

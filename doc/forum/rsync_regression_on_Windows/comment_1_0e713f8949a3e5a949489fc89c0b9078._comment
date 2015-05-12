@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-05-07T18:16:07Z"
+ content="""
+[[bugs/rsync_on_windows_broken_by_upgrade]]
+"""]]

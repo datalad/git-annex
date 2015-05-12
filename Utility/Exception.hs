@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.Exception (
 	module X,

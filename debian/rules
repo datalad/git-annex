@@ -2,8 +2,26 @@
 
 export CABAL=debian/cabal-wrapper
 
+STANDALONE_BUILD=$(shell grep -qe '^Package: git-annex-standalone' debian/control \
+                         && echo 1 || echo 0)
+
 # Do use the changelog's version number, rather than making one up.
 export RELEASE_BUILD=1
 
 %:
 	dh $@
+
+
+# Standalone build logic/helpers
+ifeq ($(STANDALONE_BUILD),1)
+
+override_dh_auto_build:
+	make linuxstandalone
+
+override_dh_auto_install:
+	: # nothing to do, we just need to copy the beast, as instructed in debian/install
+
+override_dh_fixperms:
+	dh_fixperms -Xld-linux
+
+endif

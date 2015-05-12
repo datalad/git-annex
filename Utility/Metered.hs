@@ -144,7 +144,7 @@ defaultChunkSize :: Int
 defaultChunkSize = 32 * k - chunkOverhead
   where
 	k = 1024
-	chunkOverhead = 2 * sizeOf (undefined :: Int) -- GHC specific
+	chunkOverhead = 2 * sizeOf (1 :: Int) -- GHC specific
 
 data OutputHandler = OutputHandler
 	{ quietMode :: Bool

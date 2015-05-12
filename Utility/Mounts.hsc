@@ -26,6 +26,7 @@ import Utility.Exception
 import Data.Maybe
 import Control.Applicative
 #endif
+import Prelude
 
 {- This is a stripped down mntent, containing only
  - fields available everywhere. -}

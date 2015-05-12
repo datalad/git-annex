@@ -9,21 +9,22 @@ module Command.ExamineKey where
 
 import Common.Annex
 import Command
+import CmdLine.Batch
 import qualified Utility.Format
 import Command.Find (formatOption, getFormat, showFormatted, keyVars)
 import Types.Key
 
 cmd :: [Command]
-cmd = [noCommit $ noMessages $ withOptions [formatOption, jsonOption] $
+cmd = [noCommit $ noMessages $ withOptions [formatOption, jsonOption, batchOption] $
 	command "examinekey" (paramRepeating paramKey) seek
 	SectionPlumbing "prints information from a key"]
 
 seek :: CommandSeek
 seek ps = do
 	format <- getFormat
-	withKeys (start format) ps
+	batchable withKeys (start format) ps
 
-start :: Maybe Utility.Format.Format -> Key -> CommandStart
-start format key = do
+start :: Maybe Utility.Format.Format -> Batchable Key
+start format _ key = do
 	showFormatted format (key2file key) (keyVars key)
 	stop

@@ -74,3 +74,5 @@ $ git annex get --from=laptop
 
 # End of transcript or log.
 """]]
+
+[[!tag moreinfo]]

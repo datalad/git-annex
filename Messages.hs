@@ -20,7 +20,7 @@ module Messages (
 	showEndFail,
 	showEndResult,
 	endResult,
-	showErr,
+	toplevelWarning,
 	warning,
 	warningIO,
 	indent,
@@ -118,15 +118,16 @@ endResult :: Bool -> String
 endResult True = "ok"
 endResult False = "failed"
 
-showErr :: (Show a) => a -> Annex ()
-showErr e = warning' $ "git-annex: " ++ show e
+toplevelWarning :: Bool -> String -> Annex ()
+toplevelWarning makeway s = warning' makeway ("git-annex: " ++ s)
 
 warning :: String -> Annex ()
-warning = warning' . indent
+warning = warning' True . indent
 
-warning' :: String -> Annex ()
-warning' w = do
-	handleMessage q $ putStr "\n"
+warning' :: Bool -> String -> Annex ()
+warning' makeway w = do
+	when makeway $
+		handleMessage q $ putStr "\n"
 	liftIO $ do
 		hFlush stdout
 		hPutStrLn stderr w

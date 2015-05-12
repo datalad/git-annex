@@ -33,6 +33,11 @@ that can be determined purely by looking at the key.
   Enable JSON output. This is intended to be parsed by programs that use
   git-annex. Each line of output is a JSON object.
 
+* `--batch`
+
+  Enable batch mode, in which a line containing a key is read from stdin,
+  the information about it is output to stdout, and repeat.
+
 # EXAMPLES
 
 The location a key's value is stored (in indirect mode)

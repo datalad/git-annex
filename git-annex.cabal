@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 5.20150409
+Version: 5.20150508.1
 Cabal-Version: >= 1.8
 License: GPL-3
 Maintainer: Joey Hess <id@joeyh.name>
@@ -101,21 +101,31 @@ Flag network-uri
   Description: Get Network.URI from the network-uri package
   Default: True
 
+Flag new-time
+  Description: Build with new version of time and without old-locale
+  Default: True
+
 Executable git-annex
   Main-Is: git-annex.hs
-  Build-Depends: MissingH, hslogger, directory, filepath,
-   containers (>= 0.5.0.0), utf8-string, mtl (>= 2),
-   bytestring, old-locale, time, dataenc, SHA, process, json,
-   base (>= 4.5 && < 4.9), monad-control, exceptions (>= 0.6), transformers,
-   IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance,
-   SafeSemaphore, uuid, random, dlist, unix-compat, async, stm (>= 2.3),
-   data-default, case-insensitive, http-conduit, http-types,
-   cryptohash (>= 0.10.0),
+  Build-Depends:
+   base (>= 4.5 && < 4.9),
+   cryptohash (>= 0.11.0),
+   containers (>= 0.5.0.0), 
+   exceptions (>= 0.6),
+   QuickCheck (>= 2.1),
+   stm (>= 2.3),
+   mtl (>= 2),
+   process, data-default, case-insensitive, uuid, random, dlist,
+   unix-compat, SafeSemaphore, async, directory, filepath, IfElse,
+   MissingH, hslogger, monad-logger,
+   utf8-string, bytestring, text, sandi, json,
+   monad-control, transformers,
+   bloomfilter, edit-distance,
+   resourcet, http-conduit, http-types,
    esqueleto, persistent-sqlite, persistent, persistent-template,
-   monad-logger, resourcet,
    ascii-progress (<= 0.2.1.2), terminal-size
   CC-Options: -Wall
-  GHC-Options: -Wall
+  GHC-Options: -Wall -fno-warn-tabs
   Extensions: PackageImports
   -- Some things don't work with the non-threaded RTS.
   GHC-Options: -threaded
@@ -124,6 +134,11 @@ Executable git-annex
     Build-Depends: network-uri (>= 2.6), network (>= 2.6)
   else
     Build-Depends: network (< 2.6), network (>= 2.0)
+
+  if flag(new-time)
+    Build-Depends: time (>= 1.5)
+  else
+    Build-Depends: time, old-locale
 
   if flag(Production)
     GHC-Options: -O2
@@ -184,7 +199,7 @@ Executable git-annex
 
   if (os(linux))
     if flag(Dbus)
-      Build-Depends: dbus (>= 0.10.3)
+      Build-Depends: dbus (>= 0.10.7)
       CPP-Options: -DWITH_DBUS
   
     if flag(DesktopNotify)
@@ -200,12 +215,20 @@ Executable git-annex
 
   if flag(Webapp)
     Build-Depends:
-     yesod, yesod-default, yesod-static, yesod-form, yesod-core,
-     wai, wai-extra, warp, warp-tls,
+     yesod (>= 1.2.6), 
+     yesod-default (>= 1.2.0),
+     yesod-static (>= 1.2.4),
+     yesod-form (>= 1.3.15),
+     yesod-core (>= 1.2.19),
+     path-pieces (>= 0.1.4),
+     warp (>= 3.0.0.5),
+     warp-tls,
+     wai, wai-extra,
      blaze-builder, crypto-api, hamlet, clientsession,
-     template-haskell, aeson, path-pieces,
+     template-haskell, aeson,
      shakespeare
     CPP-Options: -DWITH_WEBAPP
+
   if flag(Webapp) && flag (Webapp-secure)
     Build-Depends: warp-tls (>= 1.4), securemem, byteable
     CPP-Options: -DWITH_WEBAPP_SECURE

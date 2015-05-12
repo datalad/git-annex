@@ -25,7 +25,7 @@ A daily build is also available, thanks to Yury V. Zaytsev and
 ## building it yourself
 
 To build git-annex from source on Windows, you need to install
-the Haskell Platform, Mingw, and Cygwin. Use Cygwin to install:
+the Haskell Platform and Cygwin. Use Cygwin to install these packages:
 gcc rsync git wget ssh gnupg
 
 Once the prerequisites are installed, run:
@@ -34,6 +34,9 @@ Once the prerequisites are installed, run:
 	git clone git://git-annex.branchable.com/ gitannex
 	cd gitannex
 	build
+
+Note that git from Cygwin is able to clone git-annex's git repository;
+Msysgit cannot due to some characters in filenames.
 
 (To build the git-annex installer, you also need to install the NullSoft
 installer system.)

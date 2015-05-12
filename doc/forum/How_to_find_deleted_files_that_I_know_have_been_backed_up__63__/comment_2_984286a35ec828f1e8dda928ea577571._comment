@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="http://hendry.iki.fi/"
+ nickname="Kai Hendry"
+ subject="git annex unused doesn't help"
+ date="2015-04-19T13:24:50Z"
+ content="""
+This is a git-annex question. I want to find files that are not in my working tree but are on the backups on my two USB hard drives.
+
+
+I see in this commit the images that I deleted: <https://github.com/kaihendry/uploadme/commit/c53dbdd9bd7879d68635a2adc81a7bc59a84c5ea>
+
+How can I simply just get a listing of where the copies are?
+
+For example I deleted IMG_4110.JPG.
+
+But when I run:
+
+    X1C3:~/media/uploadme$ git-annex whereis IMG_4110.JPG
+    git-annex: IMG_4110.JPG not found
+
+I am pretty confident I have a copy of this on my external USB drives.
+
+Also tried another file:
+
+    X1C3:~/media/uploadme$ git-annex whereis IMG_4558.JPG
+    git-annex: IMG_4558.JPG not found
+    X1C3:~/media/uploadme$ git-annex whereis 2014-10-05/IMG_4558.JPG
+    git-annex: 2014-10-05/IMG_4558.JPG not found
+
+So I am still in the dark how to see how git-annex tracks deleted files across my remotes.
+
+
+
+
+"""]]

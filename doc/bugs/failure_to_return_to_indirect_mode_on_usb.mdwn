@@ -17,3 +17,7 @@ git-annex: indirect: 1 failed
 """]]
 
 [[!tag moreinfo]]
+
+> I don't like closing bug reports, but after over a year with no followup,
+> and with the original bug report lacking even an error message, closing
+> it seems like the best course of action. [[done]] --[[Joey]]

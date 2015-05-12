@@ -15,7 +15,7 @@ import qualified Backend
 import Annex.Content
 import Annex.UUID
 import Logs.Trust
-import Config.NumCopies
+import Annex.NumCopies
 import Types.TrustLevel
 import Types.Key
 import Types.Group

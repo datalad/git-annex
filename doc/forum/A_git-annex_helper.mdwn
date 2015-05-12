@@ -1,0 +1,6 @@
+Hi,
+I have developed a [sort-of-a-GUI](http://github.com/atrent/AdMinchiam/tree/master/ga-gui) for git-annex and I'd like you to test it if you have time, see README and [screenshots](http://github.com/atrent/AdMinchiam/blob/master/ga-gui/Screenshots/GitAnnexGUI_020.png), the idea is very simple: visually tag items then generate a script based on editable templates.
+
+The only problem at the moment is the very slow git-annex data acquisition; not my fault, on very large annexes, in terms of number of files, the 'git-annex list' and 'git-annex metadata' commands take AGES...
+
+Thank you

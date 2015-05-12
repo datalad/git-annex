@@ -7,6 +7,7 @@
  -}
 
 {-# LANGUAGE CPP, Rank2Types #-}
+{-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.Process (
 	module X,
@@ -54,6 +55,7 @@ import qualified System.Posix.IO
 import Control.Applicative
 #endif
 import Data.Maybe
+import Prelude
 
 import Utility.Misc
 import Utility.Exception

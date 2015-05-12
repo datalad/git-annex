@@ -178,7 +178,7 @@ startWeb relaxed optfile pathdepth s = go $ fromMaybe bad $ parseURI urlstring
 		pathmax <- liftIO $ fileNameLengthLimit "."
 		let file = flip fromMaybe optfile $
 			truncateFilePath pathmax $ sanitizeFilePath $
-				Quvi.pageTitle page ++ "." ++ Quvi.linkSuffix link
+				Quvi.pageTitle page ++ "." ++ fromMaybe "m" (Quvi.linkSuffix link)
 		showStart "addurl" file
 		next $ performQuvi relaxed urlstring (Quvi.linkUrl link) file
 #else

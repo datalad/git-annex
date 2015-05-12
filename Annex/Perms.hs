@@ -69,14 +69,14 @@ annexFileMode = withShared $ return . go
 {- Creates a directory inside the gitAnnexDir, including any parent
  - directories. Makes directories with appropriate permissions. -}
 createAnnexDirectory :: FilePath -> Annex ()
-createAnnexDirectory dir = traverse dir [] =<< top
+createAnnexDirectory dir = walk dir [] =<< top
   where
 	top = parentDir <$> fromRepo gitAnnexDir
-	traverse d below stop
+	walk d below stop
 		| d `equalFilePath` stop = done
 		| otherwise = ifM (liftIO $ doesDirectoryExist d)
 			( done
-			, traverse (parentDir d) (d:below) stop
+			, walk (parentDir d) (d:below) stop
 			)
 	  where
 		done = forM_ below $ \p -> do

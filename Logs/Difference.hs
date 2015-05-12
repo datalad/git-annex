@@ -12,7 +12,6 @@ module Logs.Difference (
 	module Logs.Difference.Pure
 ) where
 
-import Data.Monoid
 import Data.Time.Clock.POSIX
 import qualified Data.Map as M
 

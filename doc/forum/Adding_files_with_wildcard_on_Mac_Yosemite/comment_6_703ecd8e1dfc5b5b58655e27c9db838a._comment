@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="clacke"
+ subject="regression"
+ date="2015-04-22T11:39:19Z"
+ content="""
+The fix is a regression compared to previous behavior.
+
+Being able to do `git annex add '*'.{JPG,jp{,e}g,AVI,avi,MOV,mov,3GP,3gp,mp4,tif,pdf,PDF,doc,pps,bmp,png,mp{,e}g,MP{,E}G,wav,WAV,nef,NEF,thm,THM,key.gz,ogg,OGG,ppt,GIF,gif,m4a}` in the root of my binary files archive to catch any newly copied files was a real feature. This worked until recently. I was just about to add a bug report stating the same problem as the OP for the OSX homebrew version, but I verified with the latest Linux standalone and there wildcards were completely turned off.
+"""]]

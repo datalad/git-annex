@@ -12,7 +12,7 @@ Does a union merge between two refs, storing the result in the
 specified newref.
 
 The union merge will always succeed, but assumes that files can be merged
-simply by concacenating together lines from all the oldrefs, in any order.
+simply by concatenating together lines from all the oldrefs, in any order.
 So, this is useful only for branches containing log-type data.
 
 Note that this does not touch the checked out working copy. It operates

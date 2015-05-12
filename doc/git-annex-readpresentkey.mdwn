@@ -9,7 +9,7 @@ git annex readpresentkey `key uuid`
 # DESCRIPTION
 
 This plumbing-level command reads git-annex's records about whether
-the specified key's content is present in the remote with the speficied
+the specified key's content is present in the remote with the specified
 uuid.
   
 It exits 0 if the key is recorded to be present and 1 if not.

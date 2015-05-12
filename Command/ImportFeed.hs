@@ -16,7 +16,9 @@ import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.Time.Clock
 import Data.Time.Format
+#if ! MIN_VERSION_time(1,5,0)
 import System.Locale
+#endif
 
 import Common.Annex
 import qualified Annex
@@ -196,7 +198,7 @@ performDownload opts cache todownload = case location todownload of
 					Just link -> do
 						let videourl = Quvi.linkUrl link
 						checkknown videourl $
-							rundownload videourl ("." ++ Quvi.linkSuffix link) $ \f ->
+							rundownload videourl ("." ++ fromMaybe "m" (Quvi.linkSuffix link)) $ \f ->
 								maybeToList <$> addUrlFileQuvi (relaxedOpt opts) quviurl videourl f
 #else
 		return False

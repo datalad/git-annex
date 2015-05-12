@@ -282,7 +282,9 @@ showLocations separateuntrusted key exclude nolocmsg = do
 	let uuidsskipped = filteruuids uuids (u:exclude++uuidswanted)
 	ppuuidswanted <- prettyPrintUUIDs "wanted" uuidswanted
 	ppuuidsskipped <- prettyPrintUUIDs "skipped" uuidsskipped
-	showLongNote $ message ppuuidswanted ppuuidsskipped
+	let msg = message ppuuidswanted ppuuidsskipped
+	unless (null msg) $
+		showLongNote msg
 	ignored <- filter (remoteAnnexIgnore . gitconfig) <$> remoteList
 	unless (null ignored) $
 		showLongNote $ "(Note that these git remotes have annex-ignore set: " ++ unwords (map name ignored) ++ ")"

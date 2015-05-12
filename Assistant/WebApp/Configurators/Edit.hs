@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE CPP, QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module Assistant.WebApp.Configurators.Edit where
 

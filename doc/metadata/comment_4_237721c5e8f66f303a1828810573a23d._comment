@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-05-01T19:38:36Z"
+ content="""
+@madduck, you could file a todo if you want about that.
+
+However, I have my doubts; if the json supposed to include the full set of
+metadata for the file? If so, that seems a potentially expensive interface.
+If not, it would be hard to tell when metadata should be deleted, or when
+multiple values are being set, vs a value being changed. 
+
+The current interface to set metadata deals with these possibilities in a
+compact and sensible way.
+"""]]

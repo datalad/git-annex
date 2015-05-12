@@ -1,18 +1,21 @@
 {- safely running shell commands
  -
- - Copyright 2010-2013 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2015 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
+
+{-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.SafeCommand where
 
 import System.Exit
 import Utility.Process
 import Data.String.Utils
-import Control.Applicative
 import System.FilePath
 import Data.Char
+import Control.Applicative
+import Prelude
 
 {- A type for parameters passed to a shell command. A command can
  - be passed either some Params (multiple parameters can be included,
@@ -44,23 +47,32 @@ toCommand = concatMap unwrap
  - if it succeeded or failed.
  -}
 boolSystem :: FilePath -> [CommandParam] -> IO Bool
-boolSystem command params = boolSystemEnv command params Nothing
+boolSystem command params = boolSystem' command params id
 
-boolSystemEnv :: FilePath -> [CommandParam] -> Maybe [(String, String)] -> IO Bool
-boolSystemEnv command params environ = dispatch <$> safeSystemEnv command params environ
+boolSystem' :: FilePath -> [CommandParam] -> (CreateProcess -> CreateProcess) -> IO Bool
+boolSystem' command params mkprocess = dispatch <$> safeSystem' command params mkprocess
   where
 	dispatch ExitSuccess = True
 	dispatch _ = False
 
+boolSystemEnv :: FilePath -> [CommandParam] -> Maybe [(String, String)] -> IO Bool
+boolSystemEnv command params environ = boolSystem' command params $
+	\p -> p { env = environ }
+
 {- Runs a system command, returning the exit status. -}
 safeSystem :: FilePath -> [CommandParam] -> IO ExitCode
-safeSystem command params = safeSystemEnv command params Nothing
+safeSystem command params = safeSystem' command params id
+
+safeSystem' :: FilePath -> [CommandParam] -> (CreateProcess -> CreateProcess) -> IO ExitCode
+safeSystem' command params mkprocess = do
+	(_, _, _, pid) <- createProcess p
+	waitForProcess pid
+  where
+	p = mkprocess $ proc command (toCommand params)
 
 safeSystemEnv :: FilePath -> [CommandParam] -> Maybe [(String, String)] -> IO ExitCode
-safeSystemEnv command params environ = do
-	(_, _, _, pid) <- createProcess (proc command $ toCommand params)
-		{ env = environ }
-	waitForProcess pid
+safeSystemEnv command params environ = safeSystem' command params $ 
+	\p -> p { env = environ }
 
 {- Wraps a shell command line inside sh -c, allowing it to be run in a
  - login shell that may not support POSIX shell, eg csh. -}

@@ -177,7 +177,7 @@ getSharedConvergenceSecret configdir = go (60 :: Int)
 			v <- catchMaybeIO (readFile f)
 			case v of
 				Just s | "\n" `isSuffixOf` s || "\r" `isSuffixOf` s ->
-					return $ takeWhile (`notElem` "\n\r") s
+					return $ takeWhile (`notElem` ("\n\r" :: String)) s
 				_ -> do
 					threadDelaySeconds (Seconds 1)
 					go (n - 1)

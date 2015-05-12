@@ -8,11 +8,10 @@
 module Logs.Presence.Pure where
 
 import Data.Time.Clock.POSIX
-import Data.Time
-import System.Locale
 import qualified Data.Map as M
 
 import Common.Annex
+import Logs.TimeStamp
 import Utility.QuickCheck
 
 data LogLine = LogLine {
@@ -29,7 +28,7 @@ parseLog :: String -> [LogLine]
 parseLog = mapMaybe parseline . lines
   where
 	parseline l = LogLine
-		<$> (utcTimeToPOSIXSeconds <$> parseTime defaultTimeLocale "%s%Qs" d)
+		<$> parsePOSIXTime d
 		<*> parseStatus s
 		<*> pure rest
 	  where

@@ -264,7 +264,15 @@ subdirectories).
 
 * `groupwanted groupname [expression]`
 
+  Get or set groupwanted expression.
+
   See [[git-annex-groupwanted]](1) for details.
+
+* `required repository [expression]`
+  
+  Get or set required content expression.
+  
+  See [[git-annex-required]](1) for details.
 
 * `schedule repository [expression]`
 

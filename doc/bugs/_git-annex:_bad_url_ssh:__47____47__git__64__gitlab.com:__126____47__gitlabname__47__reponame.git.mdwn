@@ -1,0 +1,33 @@
+### Please describe the problem.
+An encrypted remote is added to a working git annex repository (mind ":~/" in the remote add command). However, after that any git annex command fails. 
+
+### What steps will reproduce the problem?
+    > git remote add encrypted gcrypt::ssh://git@gitlab.com:~/gitlabname/reponame.git
+    > git push encrypted master
+    gcrypt: Repository not found: ssh://git@gitlab.com:~/gitlabname/reponame.git
+    gcrypt: Setting up new repository
+    gcrypt: Remote ID is :id:abcdefghijklmnopqrst
+    Counting objects: 53, done.
+    Compressing objects: 100% (52/52), done.
+    Total 53 (delta 12), reused 0 (delta 0)
+    gcrypt: Encrypting to: --throw-keyids --default-recipient-self
+    gcrypt: Requesting manifest signature
+    ...
+    To gcrypt::ssh://git@gitlab.com:~/gitlabname/reponame.git
+     * [new branch]      master -> master
+    >
+    >  git annex sync
+    git-annex: bad url ssh://git@gitlab.com:~/gitlabname/reponame.git
+
+### What version of git-annex are you using? On what operating system?
+5.20150419-g900e1b6 on Mac OS X
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+- 
+
+# End of transcript or log.
+"""]]

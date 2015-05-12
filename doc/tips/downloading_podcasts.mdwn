@@ -75,6 +75,10 @@ If your git-annex is also built with quvi support, you can also use
 `git annex importfeed` on youtube playlists. It will automatically download
 the videos linked to by the playlist.
 
+For this you need an rss file containing links to the videos.
+For example, this url currently works:
+<http://gdata.youtube.com/feeds/api/playlists/PLz8ZG1e9MPlzefklz1Gv79icjywTXycR->
+
 ## metadata
 
 As well as storing the urls for items imported from a feed, git-annex can

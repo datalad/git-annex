@@ -280,17 +280,19 @@ withTmp key action = do
 {- Checks that there is disk space available to store a given key,
  - in a destination (or the annex) printing a warning if not. -}
 checkDiskSpace :: Maybe FilePath -> Key -> Integer -> Annex Bool
-checkDiskSpace destination key alreadythere = do
-	reserve <- annexDiskReserve <$> Annex.getGitConfig
-	free <- liftIO . getDiskFree =<< dir
-	force <- Annex.getState Annex.force
-	case (free, keySize key) of
-		(Just have, Just need) -> do
-			let ok = (need + reserve <= have + alreadythere) || force
-			unless ok $
-				needmorespace (need + reserve - have - alreadythere)
-			return ok
-		_ -> return True
+checkDiskSpace destination key alreadythere = ifM (Annex.getState Annex.force)
+	( return True
+	, do
+		reserve <- annexDiskReserve <$> Annex.getGitConfig
+		free <- liftIO . getDiskFree =<< dir
+		case (free, fromMaybe 1 (keySize key)) of
+			(Just have, need) -> do
+				let ok = (need + reserve <= have + alreadythere)
+				unless ok $
+					needmorespace (need + reserve - have - alreadythere)
+				return ok
+			_ -> return True
+	)
   where
 	dir = maybe (fromRepo gitAnnexDir) return destination
 	needmorespace n =
@@ -498,9 +500,9 @@ getKeysPresent keyloc = do
 	direct <- isDirect
 	dir <- fromRepo gitAnnexObjectDir
 	s <- getstate direct
-	liftIO $ traverse s direct (2 :: Int) dir
+	liftIO $ walk s direct (2 :: Int) dir
   where
-	traverse s direct depth dir = do
+	walk s direct depth dir = do
 		contents <- catchDefaultIO [] (dirContents dir)
 		if depth == 0
 			then do
@@ -508,7 +510,7 @@ getKeysPresent keyloc = do
 				let keys = mapMaybe (fileKey . takeFileName) contents'
 				continue keys []
 			else do
-				let deeper = traverse s direct (depth - 1)
+				let deeper = walk s direct (depth - 1)
 				continue [] (map deeper contents)
 	continue keys [] = return keys
 	continue keys (a:as) = do

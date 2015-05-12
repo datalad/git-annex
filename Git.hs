@@ -60,7 +60,7 @@ repoLocation Repo { location = Url url } = show url
 repoLocation Repo { location = Local { worktree = Just dir } } = dir
 repoLocation Repo { location = Local { gitdir = dir } } = dir
 repoLocation Repo { location = LocalUnknown dir } = dir
-repoLocation Repo { location = Unknown } = undefined
+repoLocation Repo { location = Unknown } = error "unknown repoLocation"
 
 {- Path to a repository. For non-bare, this is the worktree, for bare, 
  - it's the gitdir, and for URL repositories, is the path on the remote
@@ -70,12 +70,12 @@ repoPath Repo { location = Url u } = unEscapeString $ uriPath u
 repoPath Repo { location = Local { worktree = Just d } } = d
 repoPath Repo { location = Local { gitdir = d } } = d
 repoPath Repo { location = LocalUnknown dir } = dir
-repoPath Repo { location = Unknown } = undefined
+repoPath Repo { location = Unknown } = error "unknown repoPath"
 
 {- Path to a local repository's .git directory. -}
 localGitDir :: Repo -> FilePath
 localGitDir Repo { location = Local { gitdir = d } } = d
-localGitDir _ = undefined
+localGitDir _ = error "unknown localGitDir"
 
 {- Some code needs to vary between URL and normal repos,
  - or bare and non-bare, these functions help with that. -}

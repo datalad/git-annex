@@ -20,7 +20,8 @@ module Remote.Helper.Encryptable (
 ) where
 
 import qualified Data.Map as M
-import qualified "dataenc" Codec.Binary.Base64 as B64
+import qualified "sandi" Codec.Binary.Base64 as B64
+import qualified Data.ByteString as B
 import Data.Bits.Utils
 
 import Common.Annex
@@ -172,12 +173,12 @@ describeEncryption c = case extractCipher c of
 		]
 
 {- Not using Utility.Base64 because these "Strings" are really
- - bags of bytes and that would convert to unicode and not roung-trip
+ - bags of bytes and that would convert to unicode and not round-trip
  - cleanly. -}
 toB64bs :: String -> String
-toB64bs = B64.encode . s2w8
+toB64bs = w82s . B.unpack . B64.encode . B.pack . s2w8
 
 fromB64bs :: String -> String
-fromB64bs s = fromMaybe bad $ w82s <$> B64.decode s
+fromB64bs s = either (const bad) (w82s . B.unpack) (B64.decode $ B.pack $ s2w8 s)
   where
 	bad = error "bad base64 encoded data"

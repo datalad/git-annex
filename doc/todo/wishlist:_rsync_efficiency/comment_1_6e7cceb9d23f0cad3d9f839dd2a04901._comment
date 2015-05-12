@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-04-18T19:21:44Z"
+ content="""
+The `concurrentprogress` branch can already parallelize transfers.
+It's waiting on some progress display improvements for merging.
+
+I imagine this would keep the pipe full more consistently.
+
+Although, ssh caching is perhaps even more important, since
+it avoids a tcp slow start having to be done for each file
+that's transferred. So make sure it's working.
+
+Even with those, I would not expect git-annex to be as efficient
+as pure rsync of a directory. git-annex's more general design mean
+that there are more moving parts..
+"""]]

@@ -2,6 +2,9 @@ Mostly working on Windows recently. Fixed handling of git
 repos on different drive letters. Fixed crazy start menu loop. Worked around
 stange msysgit version problem.
 
+Also some more work on the `concurrentprogress` branch, making the progress
+display prettier.
+
 Added one nice new feature yesterday: `git annex info $dir` now includes a
 table of repositories that are storing files in the directory, with their
 sizes.

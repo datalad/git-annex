@@ -34,8 +34,7 @@ module Crypto (
 ) where
 
 import qualified Data.ByteString.Lazy as L
-import Data.ByteString.Lazy.UTF8 (fromString)
-import Control.Applicative
+import Data.ByteString.UTF8 (fromString)
 import qualified Data.Map as M
 import Control.Monad.IO.Class
 
@@ -93,7 +92,7 @@ genSharedCipher highQuality =
 {- Updates an existing Cipher, re-encrypting it to add or remove keyids,
  - depending on whether the first component is True or False. -}
 updateEncryptedCipher :: [(Bool, String)] -> StorableCipher -> IO StorableCipher
-updateEncryptedCipher _ SharedCipher{} = undefined
+updateEncryptedCipher _ SharedCipher{} = error "Cannot update shared cipher"
 updateEncryptedCipher [] encipher = return encipher
 updateEncryptedCipher newkeys encipher@(EncryptedCipher _ variant (KeyIds ks)) = do
 	dropKeys <- listKeyIds [ k | (False, k) <- newkeys ]

@@ -35,3 +35,9 @@ My particular issue has probably existed through a few version upgrades though.
 
 # End of transcript or log.
 """]]
+
+> Since neither of us can think of a better behavior for `git annex
+> get/copy > --from remote` in this case, I've been reduced to documenting
+> it better. The docs now mention that --from will cause it to silently
+> skip files that are not present in the specified remote. So, [[done]]
+> --[[Joey]]

@@ -16,6 +16,7 @@ import Assistant.Types.NetMessager
 import Utility.NotificationBroadcaster
 import Logs.Transfer
 import Logs.Trust
+import Logs.TimeStamp
 import qualified Remote
 import qualified Types.Remote as Remote
 import qualified Git
@@ -23,8 +24,6 @@ import qualified Git
 import Control.Concurrent.STM
 import System.Posix.Types
 import Data.Time.Clock.POSIX
-import Data.Time
-import System.Locale
 import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.Text as T
@@ -125,21 +124,18 @@ readDaemonStatusFile file = parse <$> newDaemonStatus <*> readFile file
   where
 	parse status = foldr parseline status . lines
 	parseline line status
-		| key == "lastRunning" = parseval readtime $ \v ->
+		| key == "lastRunning" = parseval parsePOSIXTime $ \v ->
 			status { lastRunning = Just v }
 		| key == "scanComplete" = parseval readish $ \v ->
 			status { scanComplete = v }
 		| key == "sanityCheckRunning" = parseval readish $ \v ->
 			status { sanityCheckRunning = v }
-		| key == "lastSanityCheck" = parseval readtime $ \v ->
+		| key == "lastSanityCheck" = parseval parsePOSIXTime $ \v ->
 			status { lastSanityCheck = Just v }
 		| otherwise = status -- unparsable line
 	  where
 		(key, value) = separate (== ':') line
 		parseval parser a = maybe status a (parser value)
-		readtime s = do
-			d <- parseTime defaultTimeLocale "%s%Qs" s
-			Just $ utcTimeToPOSIXSeconds d
 
 {- Checks if a time stamp was made after the daemon was lastRunning.
  -

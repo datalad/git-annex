@@ -8,6 +8,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module Utility.Url (
 	URLString,
@@ -25,14 +26,15 @@ module Utility.Url (
 ) where
 
 import Common
+import Utility.Tmp
+import qualified Build.SysConfig
+
 import Network.URI
 import Network.HTTP.Conduit
 import Network.HTTP.Types
 import qualified Data.CaseInsensitive as CI
 import qualified Data.ByteString as B
 import qualified Data.ByteString.UTF8 as B8
-
-import qualified Build.SysConfig
 
 type URLString = String
 
@@ -122,10 +124,14 @@ getUrlInfo url uo = case parseURIRelaxed url of
 			| Build.SysConfig.curl -> do
 				output <- catchDefaultIO "" $
 					readProcess "curl" $ toCommand curlparams
+				let len = extractlencurl output
+				let good = found len Nothing
 				case lastMaybe (lines output) of
-					Just ('2':_:_) -> found
-						(extractlencurl output)
-						Nothing
+					Just ('2':_:_) -> good
+					-- don't try to parse ftp status
+					-- codes; if curl got a length,
+					-- it's good
+					_ | "ftp" `isInfixOf` uriScheme u && isJust len -> good
 					_ -> dne
 			| otherwise -> dne
 	Nothing -> dne
@@ -242,8 +248,15 @@ download' quiet url file uo = do
 		writeFile file ""
 		go "curl" $ headerparams ++ quietopt "-s" ++
 			[Params "-f -L -C - -# -o"]
-	go cmd opts = boolSystem cmd $
-		addUserAgent uo $ reqParams uo++opts++[File file, File url]
+	
+	{- Run wget in a temp directory because it has been buggy
+	 - and overwritten files in the current directory, even though
+	 - it was asked to write to a file elsewhere. -}
+	go cmd opts = withTmpDir "downloadurl" $ \tmp -> do
+		absfile <- absPath file
+		let ps = addUserAgent uo $ reqParams uo++opts++[File absfile, File url]
+		boolSystem' cmd ps $ \p -> p { cwd = Just tmp }
+	
 	quietopt s
 		| quiet = [Param s]
 		| otherwise = []

@@ -30,12 +30,11 @@ module Logs.UUIDBased (
 
 import qualified Data.Map as M
 import Data.Time.Clock.POSIX
-import Data.Time
-import System.Locale
 
 import Common
 import Types.UUID
 import Logs.MapLog
+import Logs.TimeStamp
 
 type Log v = MapLog UUID v
 
@@ -73,9 +72,9 @@ parseLogWithUUID parser = M.fromListWith best . mapMaybe parse . lines
 		info
 			| ts == Unknown = drop 1 ws
 			| otherwise = drop 1 $ beginning ws
-		pdate s = case parseTime defaultTimeLocale "%s%Qs" s of
+		pdate s = case parsePOSIXTime s of
 			Nothing -> Unknown
-			Just d -> Date $ utcTimeToPOSIXSeconds d
+			Just d -> Date d
 
 showLogNew :: (v -> String) -> Log v -> String
 showLogNew = showMapLog fromUUID

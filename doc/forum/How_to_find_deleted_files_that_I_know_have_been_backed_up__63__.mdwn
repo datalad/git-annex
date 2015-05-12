@@ -1,0 +1,9 @@
+<video src=http://s.natalian.org/2015-04-15/git-annex-issues.mp4></video>
+
+I removed some archived directories perhaps foolishly with `rm -rf`. How do I find the files that I've had deleted?
+
+
+
+I also have an issue where by I want one command to sync between two hardrives and [github](https://github.com/kaihendry/uploadme). Or do I have to: `git-annex move --to {foo,bar}; git-annex drop; git-annex sync`? Basically I want copies everywhere except on my laptop (X1C3).
+
+I also expected my git dir to be much smaller than 1.4GB after dropping everything. Thanks!

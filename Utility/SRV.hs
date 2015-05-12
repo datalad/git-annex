@@ -25,8 +25,9 @@ import Utility.PartialPrelude
 import Network
 import Data.Function
 import Data.List
-import Control.Applicative
 import Data.Maybe
+import Control.Applicative
+import Prelude
 
 #ifdef WITH_ADNS
 import ADNS.Resolver

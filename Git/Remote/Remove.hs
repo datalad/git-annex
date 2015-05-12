@@ -1,4 +1,4 @@
-{- git remote stuff
+{- git remote removal
  -
  - Copyright 2012 Joey Hess <id@joeyh.name>
  -

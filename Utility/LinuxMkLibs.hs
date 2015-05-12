@@ -7,7 +7,12 @@
 
 module Utility.LinuxMkLibs where
 
-import Control.Applicative
+import Utility.PartialPrelude
+import Utility.Directory
+import Utility.Process
+import Utility.Monad
+import Utility.Path
+
 import Data.Maybe
 import System.Directory
 import System.FilePath
@@ -15,12 +20,8 @@ import Data.List.Utils
 import System.Posix.Files
 import Data.Char
 import Control.Monad.IfElse
-
-import Utility.PartialPrelude
-import Utility.Directory
-import Utility.Process
-import Utility.Monad
-import Utility.Path
+import Control.Applicative
+import Prelude
 
 {- Installs a library. If the library is a symlink to another file,
  - install the file it links to, and update the symlink to be relative. -}

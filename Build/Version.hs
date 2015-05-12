@@ -1,5 +1,7 @@
 {- Package version determination, for configure script. -}
 
+{-# OPTIONS_GHC -fno-warn-tabs #-}
+
 module Build.Version where
 
 import Data.Maybe
@@ -18,7 +20,7 @@ type Version = String
 {- Set when making an official release. (Distribution vendors should set
  - this too.) -}
 isReleaseBuild :: IO Bool
-isReleaseBuild = isJust <$> catchMaybeIO (getEnv "RELEASE_BUILD")
+isReleaseBuild = (== Just "1") <$> catchMaybeIO (getEnv "RELEASE_BUILD")
 
 {- Version is usually based on the major version from the changelog, 
  - plus the date of the last commit, plus the git rev of that commit.

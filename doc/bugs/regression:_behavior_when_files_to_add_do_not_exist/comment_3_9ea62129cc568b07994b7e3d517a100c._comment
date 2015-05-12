@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-04-29T18:03:17Z"
+ content="""
+Also, I'm not so sure it's a regression, at least back at version
+5.20141125 it behaved the same way.
+"""]]

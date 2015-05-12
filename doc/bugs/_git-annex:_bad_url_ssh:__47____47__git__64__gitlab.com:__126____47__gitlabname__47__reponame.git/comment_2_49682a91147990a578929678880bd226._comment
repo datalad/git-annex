@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="http://rfhbuk.pip.verisignlabs.com.pip.verisignlabs.com/"
+ nickname="rfhb"
+ subject="comment 2"
+ date="2015-04-29T15:45:34Z"
+ content="""
+Thank you. I was wondering about the URL as flagged above. When I specify the URL as I did, the git commands work but when I change it to ssh://git@gitlab.com:/~/gitlabname/reponame.git, git command fails with 
+
+    > git push encrypted master 
+    gcrypt: Development version -- Repository format MAY CHANGE
+    gcrypt: Repository not found: ssh://git@gitlab.com:/~/gitlabname/reponame.git
+    gcrypt: Setting up new repository
+    gcrypt: Remote ID is :id:xxxxxxxxxxxxxxxxx
+    Counting objects: 3, done.
+    Total 3 (delta 0), reused 0 (delta 0)
+    gcrypt: Encrypting to: --throw-keyids --default-recipient-self
+    gcrypt: Requesting manifest signature
+    .... passphase entered ... 
+    GitLab: No such project       
+    fatal: Could not read from remote repository.
+    Please make sure you have the correct access rights
+    and the repository exists.
+    error: failed to push some refs to 'gcrypt::ssh://git@gitlab.com:/~/gitlabname/reponame.git'
+
+So perhaps I need to investigate how to get gcrypt to work with remote git(lab) repositories. Thanks. 
+"""]]

@@ -20,6 +20,7 @@ while (<>) {
 	s/^[ \n]+//;
 	s/^\t/ /;
 	s/-/\\-/g;
+	s/git\\-annex/git-annex/g;
 	s/^Warning:.*//g;
 	s/^$/.PP\n/;
 	s/^\*\s+(.*)/.IP "$1"/;

@@ -1,7 +1,8 @@
 {- Generates a NullSoft installer program for git-annex on Windows.
  - 
  - To build the installer, git-annex should already be built by cabal,
- - and ssh and rsync, as well as cygwin libraries, already installed.
+ - and ssh and rsync etc, as well as cygwin libraries, already installed
+ - from cygwin.
  -
  - This uses the Haskell nsis package (cabal install nsis)
  - to generate a .nsi file, which is then used to produce
@@ -11,7 +12,7 @@
  - exception of git. The user needs to install git separately,
  - and the installer checks for that.
  -
- - Copyright 2013 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -22,13 +23,17 @@ import Development.NSIS
 import System.Directory
 import System.FilePath
 import Control.Monad
+import Control.Applicative
 import Data.String
 import Data.Maybe
+import Data.Char
+import Data.List (nub, isPrefixOf)
 
 import Utility.Tmp
 import Utility.Path
 import Utility.CopyFile
 import Utility.SafeCommand
+import Utility.Process
 import Build.BundledPrograms
 
 main = do
@@ -37,17 +42,19 @@ main = do
 		mustSucceed "ln" [File "dist/build/git-annex/git-annex.exe", File gitannex]
 		let license = tmpdir </> licensefile
 		mustSucceed "sh" [Param "-c", Param $ "zcat standalone/licences.gz > '" ++ license ++ "'"]
-		extrabins <- forM (cygwinPrograms ++ cygwinDlls) $ \f -> do
+		extrabins <- forM (cygwinPrograms) $ \f -> do
 			p <- searchPath f
 			when (isNothing p) $
 				print ("unable to find in PATH", f)
 			return p
+		dlls <- forM (catMaybes extrabins) findCygLibs
+		dllpaths <- mapM searchPath (nub (concat dlls))
 		webappscript <- vbsLauncher tmpdir "git-annex-webapp" "git-annex webapp"
 		autostartscript <- vbsLauncher tmpdir "git-annex-autostart" "git annex assistant --autostart"
 		let htmlhelp = tmpdir </> "git-annex.html"
 		writeFile htmlhelp htmlHelpText
 		writeFile nsifile $ makeInstaller gitannex license htmlhelp
-			(catMaybes extrabins)
+			(wrappers ++ catMaybes (extrabins ++ dllpaths))
 			[ webappscript, autostartscript ]
 		mustSucceed "makensis" [File nsifile]
 	removeFile nsifile -- left behind if makensis fails
@@ -85,7 +92,7 @@ uninstaller = "git-annex-uninstall.exe"
 gitInstallDir :: Exp FilePath
 gitInstallDir = fromString "$PROGRAMFILES\\Git"
 
--- This intentionall has a different name than git-annex or
+-- This intentionally has a different name than git-annex or
 -- git-annex-webapp, since it is itself treated as an executable file.
 -- Also, on XP, the filename is displayed, not the description.
 startMenuItem :: Exp FilePath
@@ -169,46 +176,6 @@ makeInstaller gitannex license htmlhelp extrabins launchers = nsis $ do
 cygwinPrograms :: [FilePath]
 cygwinPrograms = map (\p -> p ++ ".exe") bundledPrograms
 
--- These are the dlls needed by Cygwin's rsync, ssh, etc.
--- TODO: Use ldd (available in cygwin) to automatically find all
--- needed libs.
-cygwinDlls :: [FilePath]
-cygwinDlls =
-	[ "cygwin1.dll"
-	, "cygasn1-8.dll"
-	, "cygattr-1.dll"
-	, "cygheimbase-1.dll"
-	, "cygroken-18.dll"
-	, "cygcom_err-2.dll"
-	, "cygheimntlm-0.dll"
-	, "cygsqlite3-0.dll"
-	, "cygcrypt-0.dll"
-	, "cyghx509-5.dll"
-	, "cygssp-0.dll"
-	, "cygcrypto-1.0.0.dll"
-	, "cygiconv-2.dll"
-	, "cyggcc_s-1.dll"
-	, "cygintl-8.dll"
-	, "cygwind-0.dll"
-	, "cyggssapi-3.dll"
-	, "cygkrb5-26.dll"
-	, "cygz.dll"
-	, "cygidn-11.dll"
-	, "libcurl-4.dll"
-	, "cyggnutls-26.dll"
-	, "libcrypto.dll"
-	, "libssl.dll"
-	, "cyggcrypt-11.dll"
-	, "cyggpg-error-0.dll"
-	, "cygp11-kit-0.dll"
-	, "cygtasn1-3.dll"
-	, "cygffi-6.dll"
-	, "cygbz2-1.dll"
-	, "cygreadline7.dll"
-	, "cygncursesw-10.dll"
-	, "cygusb0.dll"
-	]
-
 -- msysgit opens Program Files/Git/doc/git/html/git-annex.html
 -- when git annex --help is run.
 htmlHelpText :: String
@@ -220,4 +187,19 @@ htmlHelpText = unlines
 	, "<a href=\"https://git-annex.branchable.com/git-annex/\">read the man page</a>."
 	, "</body>"
 	, "</html"
+	]
+
+-- Find cygwin libraries used by the specified executable.
+findCygLibs :: FilePath -> IO [FilePath]
+findCygLibs p = filter iscyg . mapMaybe parse . lines <$> readProcess "ldd" [p]
+  where
+	parse l = case words (dropWhile isSpace l) of
+		(dll:"=>":_dllpath:_offset:[]) -> Just dll
+		_ -> Nothing
+	iscyg f = "cyg" `isPrefixOf` f || "lib" `isPrefixOf` f
+
+wrappers :: [FilePath]
+wrappers = 
+	[ "standalone\\windows\\ssh.cmd"
+	, "standalone\\windows\\ssh-keygen.cmd"
 	]

@@ -31,3 +31,9 @@ Clones of my repositories lost all track of other repositories they only seem to
 """]]
 
 [[!tag moreinfo]]
+
+> No followup for over a year, and not enough information in the intial
+> report to know if there's a bug at all. It occurs to me that the user
+> might have just forgotten to push the git-annex branch to wherever they
+> later cloned the repo from. `git annex sync` would fix that mistake up.
+> Anyway, [[done]]. --[[Joey]]

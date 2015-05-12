@@ -10,6 +10,8 @@
  - License: BSD-2-clause
  -}
 
+{-# OPTIONS_GHC -fno-warn-tabs #-}
+
 module Utility.FreeDesktop (
 	DesktopEntry,	
 	genDesktopEntry,
@@ -39,6 +41,7 @@ import Data.List
 import Data.String.Utils
 import Data.Maybe
 import Control.Applicative
+import Prelude
 
 type DesktopEntry = [(Key, Value)]
 

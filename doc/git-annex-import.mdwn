@@ -16,8 +16,9 @@ If a directory is specified, the entire directory is imported.
 
 When importing files, there's a possibility of importing a duplicate
 of a file that is already known to git-annex -- its content is either
-present in the local repository already, or git-annex knows of anther
-repository that contains it.
+present in the local repository already, or git-annex knows of another
+repository that contains it, or it was present in the annex before but has
+been removed now.
 
 By default, importing a duplicate of a known file will result in
 a new filename being added to the repository, so the duplicate file
@@ -51,6 +52,12 @@ Several options can be used to adjust handling of duplicate files.
 
   Does not import any files, but any files found in the import location
   that are duplicates are deleted.
+
+* `--force`
+
+  Allow existing files to be overwritten by newly imported files.
+
+  Also, causes .gitignore to not take effect when adding files.
 
 * file matching options
 

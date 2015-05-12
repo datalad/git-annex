@@ -22,7 +22,8 @@ import qualified Data.Map as M
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as B
 import Data.XML.Types
-import qualified "dataenc" Codec.Binary.Base64 as B64
+import qualified "sandi" Codec.Binary.Base64 as B64
+import Data.Bits.Utils
 
 {- Name of the git-annex tag, in our own XML namespace.
  - (Not using a namespace URL to avoid unnecessary bloat.) -}
@@ -212,10 +213,10 @@ encodeExitCode (ExitFailure n) = n
 
 {- Base 64 encoding a ByteString to use as the content of a tag. -}
 encodeTagContent :: ByteString -> [Node]
-encodeTagContent b = [NodeContent $ ContentText $ T.pack $ B64.encode $ B.unpack b]
+encodeTagContent b = [NodeContent $ ContentText $ T.pack $ w82s $ B.unpack $ B64.encode b]
 
 decodeTagContent :: Element -> Maybe ByteString
-decodeTagContent elt = B.pack <$> B64.decode s
+decodeTagContent elt = either (const Nothing) Just (B64.decode $ B.pack $ s2w8 s)
   where
 	s = T.unpack $ T.concat $ elementText elt
 

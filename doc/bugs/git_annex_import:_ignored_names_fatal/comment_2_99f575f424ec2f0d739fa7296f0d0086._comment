@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-04-29T17:35:22Z"
+ content="""
+I cannot reproduce it repeating; the file is actually moved out of the
+import location, so importing again won't do anything with it. You can
+`git annex add --force` the file to bypass the .gitignore.
+
+`git annex import --force` also bypasses the problem entirely.
+"""]]

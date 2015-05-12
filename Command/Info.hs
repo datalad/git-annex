@@ -30,7 +30,7 @@ import Types.Key
 import Logs.UUID
 import Logs.Trust
 import Logs.Location
-import Config.NumCopies
+import Annex.NumCopies
 import Remote
 import Config
 import Utility.Percentage

@@ -16,9 +16,6 @@ PATH="/c/Program Files (x86)/NSIS:/c/msysgit/cmd:/c/msysgit/bin:$PATH"
 withcyg () {
 	PATH="$PATH:/c/cygwin/bin" "$@"
 }
-withcygpreferred () {
-	PATH="/c/cygwin/bin:$PATH" "$@"
-}
 
 # This tells git-annex where to upgrade itself from.
 UPGRADE_LOCATION=http://downloads.kitenet.net/git-annex/windows/current/git-annex-installer.exe
@@ -26,8 +23,8 @@ export UPGRADE_LOCATION
 
 # This can be used to force git-annex to build supporting a particular
 # version of git, instead of the version installed at build time.
-FORCE_GIT_VERSION=1.9.5
-export FORCE_GIT_VERSION
+#FORCE_GIT_VERSION=1.9.5
+#export FORCE_GIT_VERSION
 
 # Uncomment to get rid of cabal installed libraries.
 #rm -rf /c/Users/jenkins/AppData/Roaming/cabal /c/Users/jenkins/AppData/Roaming/ghc
@@ -70,7 +67,12 @@ cabal install nsis
 ghc -fforce-recomp --make Build/NullSoftInstaller.hs
 # Want to include cygwin programs in bundle, not others, since
 # it includes the cygwin libs that go with them.
-withcygpreferred Build/NullSoftInstaller.exe
+# Currently need an older version of rsync than the one from cygwin.
+if [ ! -e rsync.exe ]; then
+	withcyg wget https://downloads.kitenet.net/git-annex/windows/assets/rsync.exe
+	withcyg chmod +x rsync.exe
+fi
+PATH=".:/c/cygwin/bin:$PATH" Build/NullSoftInstaller.exe
 
 rm -f last-incremental-failed
 

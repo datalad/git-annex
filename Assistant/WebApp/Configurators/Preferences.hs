@@ -17,7 +17,7 @@ import qualified Annex
 import qualified Git
 import Config
 import Config.Files
-import Config.NumCopies
+import Annex.NumCopies
 import Utility.DataUnits
 import Git.Config
 import Types.Distribution

@@ -4,10 +4,10 @@
 set -e
 set -x
 
-# Path to the Haskell Platform.
-HP="/c/Program Files/Haskell Platform/2013.2.0.0"
+# Path to the Haskell Platform. (As mingw sh sees it)
+HP="/c/Program Files/Haskell Platform/2014.2.0.0"
 
-PATH="$HP/bin:$HP/lib/extralibs/bin:$PATH"
+PATH="$HP/bin:$HP/mingw/bin:$HP/lib/extralibs/bin:/c/Program Files/Git/cmd:/c/Program Files/NSIS:$PATH"
 
 # Run a command with the cygwin environment available.
 # However, programs not from cygwin are preferred.
@@ -21,8 +21,10 @@ withcygpreferred () {
 # Install haskell dependencies.
 # cabal install is not run in cygwin, because we don't want configure scripts
 # for haskell libraries to link them with the cygwin library.
-cabal update || true
-cabal install --only-dependencies || true
+if ! cabal install --only-dependencies; then
+	cabal update || true
+	cabal install --only-dependencies
+fi
 
 # Build git-annex
 if [ ! -e "dist/setup-config" ]; then

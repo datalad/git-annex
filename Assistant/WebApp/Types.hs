@@ -8,7 +8,6 @@
 {-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses #-}
 {-# LANGUAGE TemplateHaskell, OverloadedStrings, RankNTypes #-}
 {-# LANGUAGE FlexibleInstances, FlexibleContexts, ViewPatterns #-}
-{-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Assistant.WebApp.Types where
@@ -83,58 +82,30 @@ instance Yesod WebApp where
 instance RenderMessage WebApp FormMessage where
 	renderMessage _ _ = defaultFormMessage
 
-#if MIN_VERSION_yesod(1,2,0)
 instance LiftAnnex Handler where
-#else
-instance LiftAnnex (GHandler sub WebApp) where
-#endif
 	liftAnnex a = ifM (noAnnex <$> getYesod)
 		( error "internal liftAnnex"
 		, liftAssistant $ liftAnnex a
 		)
 
-#if MIN_VERSION_yesod(1,2,0)
 instance LiftAnnex (WidgetT WebApp IO) where
-#else
-instance LiftAnnex (GWidget WebApp WebApp) where
-#endif
 	liftAnnex = liftH . liftAnnex
 
 class LiftAssistant m where
 	liftAssistant :: Assistant a -> m a
 
-#if MIN_VERSION_yesod(1,2,0)
 instance LiftAssistant Handler where
-#else
-instance LiftAssistant (GHandler sub WebApp) where
-#endif
 	liftAssistant a = liftIO . flip runAssistant a
 		=<< assistantData <$> getYesod
 
-#if MIN_VERSION_yesod(1,2,0)
 instance LiftAssistant (WidgetT WebApp IO) where
-#else
-instance LiftAssistant (GWidget WebApp WebApp) where
-#endif
 	liftAssistant = liftH . liftAssistant
 
-#if MIN_VERSION_yesod(1,2,0)
 type MkMForm x = MForm Handler (FormResult x, Widget)
-#else
-type MkMForm x = MForm WebApp WebApp (FormResult x, Widget)
-#endif
 
-#if MIN_VERSION_yesod(1,2,0)
 type MkAForm x = AForm Handler x
-#else
-type MkAForm x = AForm WebApp WebApp x
-#endif
 
-#if MIN_VERSION_yesod(1,2,0)
-type MkField x = Monad m => RenderMessage (HandlerSite m) FormMessage => Field m x
-#else
-type MkField x = RenderMessage master FormMessage => Field sub master x
-#endif
+type MkField x = forall m. Monad m => RenderMessage (HandlerSite m) FormMessage => Field m x
 
 data RepoSelector = RepoSelector
 	{ onlyCloud :: Bool
@@ -153,12 +124,6 @@ data RemovableDrive = RemovableDrive
 
 data RepoKey = RepoKey KeyId | NoRepoKey
 	deriving (Read, Show, Eq, Ord)
-
-#if ! MIN_VERSION_path_pieces(0,1,4)
-instance PathPiece Bool where
-	toPathPiece = pack . show
-	fromPathPiece = readish . unpack
-#endif
 
 instance PathPiece RemovableDrive where
 	toPathPiece = pack . show

@@ -28,6 +28,8 @@ import Control.Monad.Trans.Resource
 import Control.Monad.Catch
 import Data.Conduit
 import Data.IORef
+import Data.Bits.Utils
+import System.Log.Logger
 
 import Common.Annex
 import Types.Remote
@@ -88,13 +90,7 @@ gen r u c gc = do
 			, availability = GloballyAvailable
 			, remotetype = remote
 			, mkUnavailable = gen r u (M.insert "host" "!dne!" c) gc
-			, getInfo = includeCredsInfo c (AWS.creds u) $ catMaybes
-				[ Just ("bucket", fromMaybe "unknown" (getBucketName c))
-				, if configIA c
-					then Just ("internet archive item", iaItemUrl $ fromMaybe "unknown" $ getBucketName c)
-					else Nothing
-				, Just ("partsize", maybe "unlimited" (roughSize storageUnits False) (getPartSize c))
-				]
+			, getInfo = includeCredsInfo c (AWS.creds u) (s3Info c)
 			, claimUrl = Nothing
 			, checkUrl = Nothing
 			}
@@ -102,9 +98,9 @@ gen r u c gc = do
 s3Setup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
 s3Setup mu mcreds c = do
 	u <- maybe (liftIO genUUID) return mu
-	s3Setup' u mcreds c
-s3Setup' :: UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
-s3Setup' u mcreds c = if configIA c then archiveorg else defaulthost
+	s3Setup' (isNothing mu) u mcreds c
+s3Setup' :: Bool -> UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
+s3Setup' new u mcreds c = if configIA c then archiveorg else defaulthost
   where
 	remotename = fromJust (M.lookup "name" c)
 	defbucket = remotename ++ "-" ++ fromUUID u
@@ -124,7 +120,8 @@ s3Setup' u mcreds c = if configIA c then archiveorg else defaulthost
 		(c', encsetup) <- encryptionSetup c
 		c'' <- setRemoteCredPair encsetup c' (AWS.creds u) mcreds
 		let fullconfig = c'' `M.union` defaults
-		genBucket fullconfig u
+		when new $
+			genBucket fullconfig u
 		use fullconfig
 
 	archiveorg = do
@@ -132,7 +129,7 @@ s3Setup' u mcreds c = if configIA c then archiveorg else defaulthost
 		c' <- setRemoteCredPair noEncryptionUsed c (AWS.creds u) mcreds
 		-- Ensure user enters a valid bucket name, since
 		-- this determines the name of the archive.org item.
-		let validbucket = replace " " "-" $ map toLower $
+		let validbucket = replace " " "-" $
 			fromMaybe (error "specify bucket=") $
 				getBucketName c'
 		let archiveconfig = 
@@ -149,7 +146,7 @@ s3Setup' u mcreds c = if configIA c then archiveorg else defaulthost
 			writeUUIDFile archiveconfig u
 		use archiveconfig
 
--- Sets up a http connection manager for S3 encdpoint, which allows
+-- Sets up a http connection manager for S3 endpoint, which allows
 -- http connections to be reused across calls to the helper.
 prepareS3 :: Remote -> S3Info -> (S3Handle -> helper) -> Preparer helper
 prepareS3 r info = resourcePrepare $ const $
@@ -388,13 +385,13 @@ sendS3Handle'
 	=> S3Handle
 	-> r
 	-> ResourceT IO a
-sendS3Handle' h = AWS.pureAws (hawscfg h) (hs3cfg h) (hmanager h)
+sendS3Handle' h r = AWS.pureAws (hawscfg h) (hs3cfg h) (hmanager h) r
 
 withS3Handle :: RemoteConfig -> UUID -> S3Info -> (S3Handle -> Annex a) -> Annex a
 withS3Handle c u info a = do
 	creds <- getRemoteCredPairFor "S3" c (AWS.creds u)
 	awscreds <- liftIO $ genCredentials $ fromMaybe nocreds creds
-	let awscfg = AWS.Configuration AWS.Timestamp awscreds (AWS.defaultLog AWS.Error)
+	let awscfg = AWS.Configuration AWS.Timestamp awscreds debugMapper
 	bracketIO (newManager httpcfg) closeManager $ \mgr -> 
 		a $ S3Handle mgr awscfg s3cfg info
   where
@@ -450,7 +447,7 @@ extractS3Info c = do
 		}
 
 getBucketName :: RemoteConfig -> Maybe BucketName
-getBucketName = M.lookup "bucket"
+getBucketName = map toLower <$$> M.lookup "bucket"
 
 getStorageClass :: RemoteConfig -> S3.StorageClass
 getStorageClass c = case M.lookup "storageclass" c of
@@ -486,7 +483,7 @@ iaMunge = (>>= munge)
   where
 	munge c
 		| isAsciiUpper c || isAsciiLower c || isNumber c = [c]
-		| c `elem` "_-.\"" = [c]
+		| c `elem` ("_-.\"" :: String) = [c]
 		| isSpace c = []
 		| otherwise = "&" ++ show (ord c) ++ ";"
 
@@ -518,3 +515,26 @@ genCredentials (keyid, secret) = AWS.Credentials
 mkLocationConstraint :: AWS.Region -> S3.LocationConstraint
 mkLocationConstraint "US" = S3.locationUsClassic
 mkLocationConstraint r = r
+
+debugMapper :: AWS.Logger
+debugMapper level t = forward "S3" (T.unpack t)
+  where
+	forward = case level of
+		AWS.Debug -> debugM
+		AWS.Info -> infoM
+		AWS.Warning -> warningM
+		AWS.Error -> errorM
+
+s3Info :: RemoteConfig -> [(String, String)]
+s3Info c = catMaybes
+	[ Just ("bucket", fromMaybe "unknown" (getBucketName c))
+	, Just ("endpoint", w82s (S.unpack (S3.s3Endpoint s3c)))
+	, Just ("port", show (S3.s3Port s3c))
+	, Just ("storage class", show (getStorageClass c))
+	, if configIA c
+		then Just ("internet archive item", iaItemUrl $ fromMaybe "unknown" $ getBucketName c)
+		else Nothing
+	, Just ("partsize", maybe "unlimited" (roughSize storageUnits False) (getPartSize c))
+	]
+  where
+	s3c = s3Configuration c

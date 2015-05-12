@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="https://sunny256.wordpress.com/"
+ nickname="sunny256"
+ subject="Create symlink in the root directory"
+ date="2015-05-12T13:04:18Z"
+ content="""
+My way of dealing with this is to create a symlink in the root directory that point to the root directory, like
+
+[[!format sh \"\"\"
+$ cd /
+$ sudo ln -sv . compname
+[sudo] password for sunny: hunter2
+'compname' -> '.'
+$ ls -l compname
+lrwxrwxrwx 1 root root 1 May 12 14:52 compname -> .
+$
+\"\"\"]]
+
+where `compname` is the hostname for the computer. Now you can create paths like
+
+[[!format sh \"\"\"
+git remote add comp-a /comp-a/home/my_user/data/repo
+git remote add comp-b /comp-b/home/my_user/data/repo
+\"\"\"]]
+
+This is also useful in other scripts where fetching data from the right directory on the wrong computer is bad. Also, this is a cheap way for a script to determine which computer it's running on:
+
+[[!format sh \"\"\"
+test -L \"/comp-a\" && echo Running on computer comp-a
+\"\"\"]]
+
+"""]]

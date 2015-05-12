@@ -28,3 +28,6 @@ git-annex 5.20140421
 Linux 3.14.3
 
 [[!tag confirmed]]
+
+> I think it's reasonable for whereis to show location tracking information
+> which may be out of date for many reasons, and so, [[done]] --[[Joey]]

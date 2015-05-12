@@ -12,7 +12,7 @@ import Command
 import qualified Remote
 import Annex.Content
 import Annex.Transfer
-import Config.NumCopies
+import Annex.NumCopies
 import Annex.Wanted
 import qualified Command.Move
 
