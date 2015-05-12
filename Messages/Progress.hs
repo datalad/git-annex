@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Messages.Progress where
 
 import Common
@@ -15,9 +17,15 @@ import Types
 import Types.Messages
 import Types.Key
 
+#ifdef WITH_ASCIIPROGRESS
 import System.Console.AsciiProgress
 import qualified System.Console.Terminal.Size as Terminal
 import Control.Concurrent
+#else
+import Data.Progress.Meter
+import Data.Progress.Tracker
+import Data.Quantity
+#endif
 
 {- Shows a progress meter while performing a transfer of a key.
  - The action is passed a callback to use to update the meter. -}
@@ -28,6 +36,7 @@ metered combinemeterupdate key af a = case keySize key of
   where
 	go _ QuietOutput = nometer
 	go _ JSONOutput = nometer
+#ifdef WITH_ASCIIPROGRESS
 	go size _ = do
 		showOutput
 		liftIO $ putStrLn ""
@@ -55,20 +64,42 @@ metered combinemeterupdate key af a = case keySize key of
 			complete pg
 
 		return r
+#else
+	-- Old progress bar code, not suitable for parallel output.
+	go _ (ParallelOutput _) = do
+		r <- nometer
+		liftIO $ putStrLn $ fromMaybe (key2file key) af
+		return r
+	go size NormalOutput = do
+		showOutput
+		progress <- liftIO $ newProgress "" size
+		meter <- liftIO $ newMeter progress "B" 25 (renderNums binaryOpts 1)
+		r <- a $ liftIO . pupdate meter progress
+		liftIO $ clearMeter stdout meter
+		return r
+#endif
 
+#ifdef WITH_ASCIIPROGRESS
 	pupdate pg n = do
 		let i = fromBytesProcessed n
 		sofar <- stCompleted <$> getProgressStats pg
 		when (i > sofar) $
 			tickN pg (i - sofar)
 		threadDelay 100
+#else
+	pupdate meter progress n = do
+		setP progress $ fromBytesProcessed n
+		displayMeter stdout meter
+#endif
 		maybe noop (\m -> m n) combinemeterupdate
 
 	nometer = a (const noop)
 
+#ifdef WITH_ASCIIPROGRESS
 	truncatepretty n s
 		| length s > n = take (n-2) s ++ ".."
 		| otherwise = s
+#endif
 
 {- Use when the progress meter is only desired for parallel
  - mode; as when a command's own progress output is preferred. -}

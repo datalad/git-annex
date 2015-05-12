@@ -1,6 +1,3 @@
-  * get, move, copy, mirror: Concurrent downloads and uploads are
-    now supported! For example: git-annex get -J10
-
 git-annex (5.20150508.2) UNRELEASED; urgency=medium
 
   * import: Refuse to import files that are within the work tree, as that
@@ -8,6 +5,11 @@ git-annex (5.20150508.2) UNRELEASED; urgency=medium
   * drop: Now supports --all, --unused, and --key.
   * drop: Now defaults to --all when run in a bare repository.
     (Previously, did nothing when run in a bare repository.)
+  * get, move, copy, mirror: Concurrent transfers are now supported!
+    For example: git-annex get -J10
+    However, progress bars are not yet displayed for concurrent transfers,
+    pending an updated version of the ascii-progress library.
+  * --quiet now makes progress output by rsync, wget, etc be quiet too.
 
  -- Joey Hess <id@joeyh.name>  Mon, 11 May 2015 12:45:06 -0400
 

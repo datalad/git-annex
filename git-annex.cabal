@@ -93,6 +93,10 @@ Flag DesktopNotify
 Flag TorrentParser
   Description: Use haskell torrent library to parse torrent files
 
+Flag AsciiProgress
+  Description: Use ascii-progress library (experimental)
+  Default: False
+
 Flag EKG
   Description: Enable use of EKG to monitor git-annex as it runs (at http://localhost:4242/)
   Default: False
@@ -122,8 +126,7 @@ Executable git-annex
    monad-control, transformers,
    bloomfilter, edit-distance,
    resourcet, http-conduit, http-types,
-   esqueleto, persistent-sqlite, persistent, persistent-template,
-   ascii-progress (<= 0.2.1.2), terminal-size
+   esqueleto, persistent-sqlite, persistent, persistent-template
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs
   Extensions: PackageImports
@@ -260,6 +263,10 @@ Executable git-annex
   if flag(TorrentParser)
     Build-Depends: torrent (>= 10000.0.0)
     CPP-Options: -DWITH_TORRENTPARSER
+
+  if flag(AsciiProgress)
+    Build-Depends: ascii-progress (<= 0.2.1.2), terminal-size
+    CPP-Options: -DWITH_ASCIIPROGRESS
 
   if flag(EKG)
     Build-Depends: ekg
