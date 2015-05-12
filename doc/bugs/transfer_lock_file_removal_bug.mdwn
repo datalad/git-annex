@@ -1,0 +1,35 @@
+There's a race that can result in 2 concurrent downloads
+of the same key. This can happen because the transfer lock files get
+deleted after a transfer completes.
+
+Scenario:
+
+1. first process creates lock file, takes lock, starts download
+2. second process opens existing lock file
+3. first process finishes/fails download, so deletes lock file, and then
+   drops lock
+4. second process takes lock (exclusive, non-blocking) of deleted file!
+5. third process sees no lock file, so creates a new one, takes lock,
+   starts download
+
+Worst-case, this might result in data loss, if the two concurrent
+downloaders confuse one-another. Perhaps the second one overwrites the file
+the first was downloading, and then the first, thinking it's written the
+file, moves it into the object directory.
+
+Note that the window between 4-5 can be as long as it takes for a
+file to download. However, the window between 2-4 is very narrow indeed,
+since the second process is not blocking on the lock.
+So, this is very unlikely to happen.
+
+But, it could. Can it be prevented?
+
+Yes: The second process, after taking the lock, can check that
+the lock file exists, and has the same dev and fileno as the fd it has
+locked. If the lock file doesn't exist, or is different, then the
+second process can give up.
+
+Oh BTW, this race cannot happen on windows, since on windows, an open lock
+file cannot be deleted by another process.
+
+> [[fixed|done]]

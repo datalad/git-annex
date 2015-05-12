@@ -87,9 +87,12 @@ runTransfer' ignorelock t file shouldretry transferobserver transferaction = do
 		r <- tryLockExclusive (Just mode) lck
 		case r of
 			Nothing -> return (Nothing, True)
-			Just lockhandle -> do
+			Just lockhandle -> ifM (checkSaneLock lck lockhandle)
+				( do
 					void $ tryIO $ writeTransferInfoFile info tfile
 					return (Just lockhandle, False)
+				, return (Nothing, True)
+				)
 #else
 	prep tfile _mode info = do
 		let lck = transferLockFile tfile

@@ -16,6 +16,7 @@ module Utility.LockFile.Posix (
 	checkLocked,
 	getLockStatus,
 	dropLock,
+	checkSaneLock,
 ) where
 
 import Utility.Exception
@@ -97,3 +98,17 @@ getLockStatus' lockfile = go =<< catchMaybeIO open
 
 dropLock :: LockHandle -> IO ()
 dropLock (LockHandle fd) = closeFd fd
+
+-- Checks that the lock file still exists, and is the same file that was
+-- locked to get the LockHandle.
+--
+-- This check is useful if the lock file might get deleted by something
+-- else.
+checkSaneLock :: LockFile -> LockHandle -> IO Bool
+checkSaneLock lockfile (LockHandle fd) =
+	go =<< catchMaybeIO (getFileStatus lockfile)
+  where
+	go Nothing = return False
+	go (Just st) = do
+		fdst <- getFdStatus fd
+		return $ deviceID fdst == deviceID st && fileID fdst == fileID st
