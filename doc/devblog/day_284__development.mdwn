@@ -1,0 +1,25 @@
+Implemented `git annex drop --all`. This also added for free drop with
+`--unused` and `--key`, which overlap with `git annexdropunused` and
+`git annex dropkey`.
+
+The `concurrentprogress` branch had gone too long without being merged, and
+had a lot of merge conflicts. I resolved those, and went ahead and merged
+it into master. However, since the ascii-progress library is not ready yet,
+I made it a build flag, and it will build without it by default. So, `git
+annex get -J5` can be used now, but no progress bars will display yet.
+
+When doing concurrent downloads, either with the new -J or by hand by
+running multiple processes, there was a bug in the diskreserve
+checking code. It didn't consider the disk space that was in the process of
+being used by other concurrent downloads, so would let more downloads
+start up than there was space for.
+
+I was able to fix this pretty easily, thanks to the transfer log files.
+Those were originally added just to let the webapp display transfers, but
+proved very helpful here!
+
+Finally, made .git/annex/transfer/failed/ files stop accumulating when the
+assistant is not being used. Looked into also cleaning up stale
+.git/annex/transfer/{upload,download}/ files (from interrupted transfers).
+But, since those are used as lock files, it's difficult to remove them
+in a concurrency safe way.
