@@ -118,9 +118,16 @@ tmpDir d k = addTrailingPathSeparator $ d </> "tmp" </> keyFile k
 {- Check if there is enough free disk space in the remote's directory to
  - store the key. Note that the unencrypted key size is checked. -}
 prepareStore :: FilePath -> ChunkConfig -> Preparer Storer
-prepareStore d chunkconfig = checkPrepare
-	(\k -> checkDiskSpace (Just d) k 0)
+prepareStore d chunkconfig = checkPrepare checker
 	(byteStorer $ store d chunkconfig)
+  where
+	checker k = do
+		annexdir <- fromRepo gitAnnexObjectDir
+		samefilesystem <- liftIO $ catchDefaultIO False $ 
+			(\a b -> deviceID a == deviceID b)
+				<$> getFileStatus d
+				<*> getFileStatus annexdir
+		checkDiskSpace (Just d) k 0 samefilesystem
 
 store :: FilePath -> ChunkConfig -> Key -> L.ByteString -> MeterUpdate -> Annex Bool
 store d chunkconfig k b p = liftIO $ do

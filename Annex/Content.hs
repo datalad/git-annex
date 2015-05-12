@@ -41,6 +41,7 @@ import System.IO.Unsafe (unsafeInterleaveIO)
 
 import Common.Annex
 import Logs.Location
+import Logs.Transfer
 import qualified Git
 import qualified Annex
 import qualified Annex.Queue
@@ -239,7 +240,7 @@ prepGetViaTmpChecked key unabletoget getkey = do
 	alreadythere <- liftIO $ if e
 		then getFileSize tmp
 		else return 0
-	ifM (checkDiskSpace Nothing key alreadythere)
+	ifM (checkDiskSpace Nothing key alreadythere True)
 		( do
 			-- The tmp file may not have been left writable
 			when e $ thawContent tmp
@@ -278,18 +279,34 @@ withTmp key action = do
 	return res
 
 {- Checks that there is disk space available to store a given key,
- - in a destination (or the annex) printing a warning if not. -}
-checkDiskSpace :: Maybe FilePath -> Key -> Integer -> Annex Bool
-checkDiskSpace destination key alreadythere = ifM (Annex.getState Annex.force)
+ - in a destination (or the annex) printing a warning if not. 
+ -
+ - If the destination is on the same filesystem as the annex,
+ - checks for any other running downloads, removing the amount of data still
+ - to be downloaded from the free space. This way, we avoid overcommitting
+ - when doing concurrent downloads.
+ -}
+checkDiskSpace :: Maybe FilePath -> Key -> Integer -> Bool -> Annex Bool
+checkDiskSpace destination key alreadythere samefilesystem = ifM (Annex.getState Annex.force)
 	( return True
 	, do
-		reserve <- annexDiskReserve <$> Annex.getGitConfig
+		-- We can't get inprogress and free at the same
+		-- time, and both can be changing, so there's a
+		-- small race here. Err on the side of caution
+		-- by getting inprogress first, so if it takes
+		-- a while, we'll see any decrease in the free
+		-- disk space.
+		inprogress <- if samefilesystem
+			then sizeOfDownloadsInProgress (/= key)
+			else pure 0
 		free <- liftIO . getDiskFree =<< dir
 		case (free, fromMaybe 1 (keySize key)) of
 			(Just have, need) -> do
-				let ok = (need + reserve <= have + alreadythere)
+				reserve <- annexDiskReserve <$> Annex.getGitConfig
+				let delta = need + reserve - have - alreadythere + inprogress
+				let ok = delta <= 0
 				unless ok $
-					needmorespace (need + reserve - have - alreadythere)
+					needmorespace delta
 				return ok
 			_ -> return True
 	)

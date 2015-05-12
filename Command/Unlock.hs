@@ -43,7 +43,7 @@ start file key = do
 		)
 
 perform :: FilePath -> Key -> CommandPerform
-perform dest key = ifM (checkDiskSpace Nothing key 0)
+perform dest key = ifM (checkDiskSpace Nothing key 0 True)
 	( do
 		src <- calcRepo $ gitAnnexLocation key
 		tmpdest <- fromRepo $ gitAnnexTmpObjectLocation key

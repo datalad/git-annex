@@ -147,15 +147,31 @@ checkTransfer t = do
 
 {- Gets all currently running transfers. -}
 getTransfers :: Annex [(Transfer, TransferInfo)]
-getTransfers = do
+getTransfers = getTransfers' [Download, Upload]
+
+getTransfers' :: [Direction] -> Annex [(Transfer, TransferInfo)]
+getTransfers' dirs = do
 	transfers <- mapMaybe parseTransferFile . concat <$> findfiles
 	infos <- mapM checkTransfer transfers
 	return $ map (\(t, Just i) -> (t, i)) $
 		filter running $ zip transfers infos
   where
 	findfiles = liftIO . mapM dirContentsRecursive
-		=<< mapM (fromRepo . transferDir) [Download, Upload]
+		=<< mapM (fromRepo . transferDir) dirs
 	running (_, i) = isJust i
+
+{- Number of bytes remaining to download from matching downloads that are in
+ - progress. -}
+sizeOfDownloadsInProgress :: (Key -> Bool) -> Annex Integer
+sizeOfDownloadsInProgress match = sum . map remaining . filter wanted
+	<$> getTransfers' [Download]
+  where
+	wanted (t, _) = match (transferKey t)
+	remaining (t, info) =
+		case (keySize (transferKey t), bytesComplete info) of
+			(Just sz, Just done) -> sz - done
+			(Just sz, Nothing) -> sz
+			(Nothing, _) -> 0
 
 {- Gets failed transfers for a given remote UUID. -}
 getFailedTransfers :: UUID -> Annex [(Transfer, TransferInfo)]

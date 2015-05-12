@@ -10,6 +10,8 @@ git-annex (5.20150508.2) UNRELEASED; urgency=medium
     However, progress bars are not yet displayed for concurrent transfers,
     pending an updated version of the ascii-progress library.
   * --quiet now makes progress output by rsync, wget, etc be quiet too.
+  * Take space that will be used by running downloads into account when
+    checking annex.diskreserve.
 
  -- Joey Hess <id@joeyh.name>  Mon, 11 May 2015 12:45:06 -0400
 
