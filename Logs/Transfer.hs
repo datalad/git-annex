@@ -147,11 +147,12 @@ checkTransfer t = do
 
 {- Gets all currently running transfers. -}
 getTransfers :: Annex [(Transfer, TransferInfo)]
-getTransfers = getTransfers' [Download, Upload]
+getTransfers = getTransfers' [Download, Upload] (const True)
 
-getTransfers' :: [Direction] -> Annex [(Transfer, TransferInfo)]
-getTransfers' dirs = do
-	transfers <- mapMaybe parseTransferFile . concat <$> findfiles
+getTransfers' :: [Direction] -> (Key -> Bool) -> Annex [(Transfer, TransferInfo)]
+getTransfers' dirs wanted = do
+	transfers <- filter (wanted . transferKey)
+		<$> mapMaybe parseTransferFile . concat <$> findfiles
 	infos <- mapM checkTransfer transfers
 	return $ map (\(t, Just i) -> (t, i)) $
 		filter running $ zip transfers infos
@@ -163,10 +164,9 @@ getTransfers' dirs = do
 {- Number of bytes remaining to download from matching downloads that are in
  - progress. -}
 sizeOfDownloadsInProgress :: (Key -> Bool) -> Annex Integer
-sizeOfDownloadsInProgress match = sum . map remaining . filter wanted
-	<$> getTransfers' [Download]
+sizeOfDownloadsInProgress wanted = sum . map remaining
+	<$> getTransfers' [Download] wanted
   where
-	wanted (t, _) = match (transferKey t)
 	remaining (t, info) =
 		case (keySize (transferKey t), bytesComplete info) of
 			(Just sz, Just done) -> sz - done
