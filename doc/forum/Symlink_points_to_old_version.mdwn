@@ -1,0 +1,13 @@
+Hello everyone,
+
+I have some PDF documents in a git annex repository. I appended a page to (several) of these PDF documents the following way:
+
+- `git annex edit file.pdf`
+- Append page to file.pdf
+- `git annex add file.pdf`
+- `git commit`
+
+If I now look at file.pdf it will not have the appended page. But if do `git annex edit file.pdf` again I will get the version with the appended page. `git annex add file.pdf` and the page "disappears" again. Anyone got any tips on how to solve this "mystery"?
+
+All the best,
+Per
