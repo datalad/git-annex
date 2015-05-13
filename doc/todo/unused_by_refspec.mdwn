@@ -1,0 +1,27 @@
+Currently `git annex unused` assumes that all branches (including remote
+tracking branches) and tags are "used" and finds only objects not used by
+any of those refs.
+
+That's a reasonable default, but in some cases, we don't care about
+specific refs. Perhaps we don't consider remote tracking branches
+important. Or perhaps we only want objects in HEAD to be considered used.
+
+This could be handled by adding an option to specify a refspec when running
+git-annex unused. Only matching refs would be checked. It's probably worth
+making this be both a command-line option --used-refspec, as well as a
+annex.used-refspec config setting.
+
+git's refspec format is not quite right (since it specifies a local side
+and a remote side for push/pull). But, it can be used as a point of
+departure. Let's allow wildcards as it does, and use leading '+' to add a
+ref, and '-' to remove. Let the user specify multiple such expressions,
+separated by ':'.
+
+	+refs/heads/*:-refs/remotes/*:+refs/tags/*:-refs/tags/old-tag
+
+Note that this needs to be processed by taking all refs matching any '+',
+and then removing any of those that match any '-'
+
+Also, allow use of HEAD, and anything else that `git show-ref` can handle.
+
+--[[Joey]]
