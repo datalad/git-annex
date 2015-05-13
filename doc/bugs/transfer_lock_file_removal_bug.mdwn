@@ -33,3 +33,29 @@ Oh BTW, this race cannot happen on windows, since on windows, an open lock
 file cannot be deleted by another process.
 
 > [[fixed|done]]
+
+Let's also consider if this change will allow for safely expiring stale 
+lock files..
+
+Situation before with expiry would have been buggy (which is why it never
+tried to expire them):
+
+1. first process creates lock file, takes lock, is interrupted (no more
+   lock)
+2. second process wants to delete stale lock file; checks if it's locked;
+   isn't
+3. third process opens existing lock file, prepares to take lock
+4. second process deletes lock file
+5. third process takes lock
+6. third process is now doing a transfer w/o a (visible) lock
+
+But, after this bug fix, the third process checks if it's lock file
+exists after taking the lock. Since the second process deleted it,
+the third process fails with an error "transfer in progress"
+which is perhaps not accurate, but at least it stopped.
+
+For this to work though, the second process needs to actually take
+the lock, in non-blocking mode. If it succeeds, it can keep the lock
+held while deleting the lock file. This ensures that when the third process
+takes the lock, the lock file will already be deleted by the time it checks
+if it's there.

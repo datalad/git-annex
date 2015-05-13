@@ -71,7 +71,7 @@ runTransfer' ignorelock t file shouldretry transferobserver transferaction = do
 	(lck, inprogress) <- liftIO $ prep tfile mode info
 	if inprogress && not ignorelock
 		then do
-			showNote "transfer already in progress"
+			showNote "transfer already in progress, or unable to take transfer lock"
 			return False
 		else do
 			ok <- retry info metervar $ transferaction meter

@@ -16,6 +16,8 @@ git-annex (5.20150508.2) UNRELEASED; urgency=medium
     being used.
   * Fix an unlikely race that could result in two transfers of the same key
     running at once.
+  * Stale transfer lock and info files will be cleaned up automatically
+    when get/unused/info commands are run.
 
  -- Joey Hess <id@joeyh.name>  Mon, 11 May 2015 12:45:06 -0400
 

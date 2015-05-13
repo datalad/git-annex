@@ -123,17 +123,35 @@ startTransferInfo file = TransferInfo
 	<*> pure file
 	<*> pure False
 
-{- If a transfer is still running, returns its TransferInfo. -}
+{- If a transfer is still running, returns its TransferInfo.
+ - 
+ - If no transfer is running, attempts to clean up the stale
+ - lock and info files. This can happen if a transfer process was
+ - interrupted.
+ -}
 checkTransfer :: Transfer -> Annex (Maybe TransferInfo)
 checkTransfer t = do
 	tfile <- fromRepo $ transferFile t
+	let cleanstale = do
+		void $ tryIO $ removeFile tfile
+		void $ tryIO $ removeFile $ transferLockFile tfile
 #ifndef mingw32_HOST_OS
 	liftIO $ do
-		v <- getLockStatus (transferLockFile tfile)
+		let lck = transferLockFile tfile
+		v <- getLockStatus lck
 		case v of
 			Just (pid, _) -> catchDefaultIO Nothing $
 				readTransferInfoFile (Just pid) tfile
-			Nothing -> return Nothing
+			Nothing -> do
+				-- Take a non-blocking lock while deleting
+				-- the stale lock file.
+				r <- tryLockExclusive Nothing lck
+				case r of
+					Just lockhandle -> do
+						cleanstale
+						dropLock lockhandle
+					_ -> noop
+				return Nothing
 #else
 	v <- liftIO $ lockShared $ transferLockFile tfile
 	liftIO $ case v of
@@ -141,7 +159,7 @@ checkTransfer t = do
 			readTransferInfoFile Nothing tfile
 		Just lockhandle -> do
 			dropLock lockhandle
-			void $ tryIO $ removeFile $ transferLockFile tfile
+			cleanstale
 			return Nothing
 #endif
 
