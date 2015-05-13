@@ -23,3 +23,11 @@ assistant is not being used. Looked into also cleaning up stale
 .git/annex/transfer/{upload,download}/ files (from interrupted transfers).
 But, since those are used as lock files, it's difficult to remove them
 in a concurrency safe way.
+
+Update: Unfortunately, I turned out to have stumbled over an apparent bug
+in haskell's implementation of file locking.
+<https://github.com/haskell/unix/issues/44> Had to work around that.
+
+Happily, the workaround also let me implement cleanup of stale transfer
+info files, left behind when a git-annex process was interrupted. So,
+.git/annex/transfer/ will entirely stop accumulating cruft!
