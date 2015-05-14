@@ -18,7 +18,7 @@ git-annex (5.20150508.2) UNRELEASED; urgency=medium
     running at once.
   * Stale transfer lock and info files will be cleaned up automatically
     when get/unused/info commands are run.
-  * unused: Add --used option and annex.used-refspec, which can specify
+  * unused: Add --used-refspec option and annex.used-refspec, which can specify
     a set of refs to consider used, rather than the default of considering
     all refs used.
 
