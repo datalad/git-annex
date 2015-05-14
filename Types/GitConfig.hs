@@ -22,6 +22,7 @@ import Types.Distribution
 import Types.Availability
 import Types.NumCopies
 import Types.Difference
+import Types.RefSpec
 import Utility.HumanTime
 
 {- Main git-annex settings. Each setting corresponds to a git-config key
@@ -59,6 +60,7 @@ data GitConfig = GitConfig
 	, coreSymlinks :: Bool
 	, gcryptId :: Maybe String
 	, annexDifferences :: Differences
+	, annexUsedRefSpec :: Maybe RefSpec
 	}
 
 extractGitConfig :: Git.Repo -> GitConfig
@@ -97,6 +99,8 @@ extractGitConfig r = GitConfig
 	, coreSymlinks = getbool "core.symlinks" True
 	, gcryptId = getmaybe "core.gcrypt-id"
 	, annexDifferences = getDifferences r
+	, annexUsedRefSpec = either (const Nothing) Just . parseRefSpec 
+		=<< getmaybe (annex "used-refspec")
 	}
   where
 	getbool k d = fromMaybe d $ getmaybebool k

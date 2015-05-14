@@ -53,7 +53,9 @@ seek = withNothing start
 {- Finds unused content in the annex. -} 
 start :: CommandStart
 start = do
-	!refspec <- maybe allRefSpec (either error id . parseRefSpec)
+	cfgrefspec <- fromMaybe allRefSpec . annexUsedRefSpec
+		<$> Annex.getGitConfig
+	!refspec <- maybe cfgrefspec (either error id . parseRefSpec)
 		<$> Annex.getField (optionName refSpecOption)
 	from <- Annex.getField (optionName unusedFromOption)
 	let (name, action) = case from of

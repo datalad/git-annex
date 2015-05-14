@@ -36,7 +36,10 @@ For example, to move all unused data to origin:
   is not in the specified refs (and not used by the work tree) will then be
   considered unused.
 
-# REFSPEC
+  The git configuration annex.used-refspec can be used to configure
+  this in a more permanent fashion.
+
+# REFSPEC FORMAT
 
 The refspec format for --used-refspec is a colon-separated list of
 additions and removals of refs. For example:

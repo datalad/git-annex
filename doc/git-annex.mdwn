@@ -813,6 +813,11 @@ Here are all the supported configuration settings.
   When importfeed is used, it stores additional metadata from the feed,
   such as the author, title, etc.
 
+* `annex.used-refspec`
+
+  This controls which refs `git-annex unused` considers to be used.
+  See REFSPEC FORMAT in [[git-annex-unused]](1) for details.
+
 * `annex.queuesize`
 
   git-annex builds a queue of git commands, in order to combine similar
