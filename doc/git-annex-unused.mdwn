@@ -26,7 +26,37 @@ For example, to move all unused data to origin:
 
 * `--from=remote`
 
-  Check for unused data on a remote.
+  Check for unused data that is located on a remote.
+
+* `--used-refspec=+ref:-ref`
+
+  By default, any data that the work tree uses, or that any refs in the git
+  repository point to is considered to be used. If you only want to use
+  some refs, you can use this option to specify the ones to use. Data that
+  is not in the specified refs (and not used by the work tree) will then be
+  considered unused.
+
+# REFSPEC
+
+The refspec format for --used-refspec is a colon-separated list of
+additions and removals of refs. For example:
+
+	+refs/heads/*:+HEAD^:+refs/tags/*:-refs/tags/old-tag
+
+This adds all refs/heads/ refs, as well as the previous version
+of HEAD. It also adds all tags, except for old-tag.
+
+This refspec is processed by starting with an empty set of refs,
+and walking the list in order from left to right.
+
+* Each + using a glob is matched against all relevant refs
+  (a subset of `git show-ref`) and all matching refs are added
+  to the set.
+  For example, "+refs/remotes/*" adds all remote refs.
+* Each + without a glob adds the literal value to the set.
+  For example, "+HEAD^" adds "HEAD^".
+* Each - is matched against the set of refs accumulated so far.
+  Any matching refs are removed from the set.
 
 # SEE ALSO
 

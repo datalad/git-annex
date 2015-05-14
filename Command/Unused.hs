@@ -31,16 +31,21 @@ import qualified Remote
 import qualified Annex.Branch
 import Annex.CatFile
 import Types.Key
+import Types.RefSpec
 import Git.FilePath
 import Logs.View (is_branchView)
 import Utility.Bloom
 
 cmd :: [Command]
-cmd = [withOptions [unusedFromOption] $ command "unused" paramNothing seek
-	SectionMaintenance "look for unused file content"]
+cmd = [withOptions [unusedFromOption, refSpecOption] $
+	command "unused" paramNothing seek
+		SectionMaintenance "look for unused file content"]
 
 unusedFromOption :: Option
 unusedFromOption = fieldOption ['f'] "from" paramRemote "remote to check for unused content"
+
+refSpecOption :: Option
+refSpecOption = fieldOption [] "used-refspec" paramRefSpec "refs to consider used (default: all refs)"
 
 seek :: CommandSeek
 seek = withNothing start
@@ -48,17 +53,19 @@ seek = withNothing start
 {- Finds unused content in the annex. -} 
 start :: CommandStart
 start = do
-	from <- Annex.getField $ optionName unusedFromOption
+	!refspec <- maybe allRefSpec (either error id . parseRefSpec)
+		<$> Annex.getField (optionName refSpecOption)
+	from <- Annex.getField (optionName unusedFromOption)
 	let (name, action) = case from of
-		Nothing -> (".", checkUnused)
-		Just "." -> (".", checkUnused)
-		Just "here" -> (".", checkUnused)
-		Just n -> (n, checkRemoteUnused n)
+		Nothing -> (".", checkUnused refspec)
+		Just "." -> (".", checkUnused refspec)
+		Just "here" -> (".", checkUnused refspec)
+		Just n -> (n, checkRemoteUnused n refspec)
 	showStart "unused" name
 	next action
 
-checkUnused :: CommandPerform
-checkUnused = chain 0
+checkUnused :: RefSpec -> CommandPerform
+checkUnused refspec = chain 0
 	[ check "" unusedMsg $ findunused =<< Annex.getState Annex.fast
 	, check "bad" staleBadMsg $ staleKeysPrune gitAnnexBadDir False
 	, check "tmp" staleTmpMsg $ staleKeysPrune gitAnnexTmpObjectDir True
@@ -71,20 +78,20 @@ checkUnused = chain 0
 		showAction "checking for unused data"
 		-- InAnnex, not InRepository because if a direct mode
 		-- file exists, it is obviously not unused.
-		excludeReferenced =<< getKeysPresent InAnnex
+		excludeReferenced refspec =<< getKeysPresent InAnnex
 	chain _ [] = next $ return True
 	chain v (a:as) = do
 		v' <- a v
 		chain v' as
 
-checkRemoteUnused :: String -> CommandPerform
-checkRemoteUnused name = go =<< fromJust <$> Remote.byNameWithUUID (Just name)
+checkRemoteUnused :: String -> RefSpec -> CommandPerform
+checkRemoteUnused name refspec = go =<< fromJust <$> Remote.byNameWithUUID (Just name)
   where
 	go r = do
 		showAction "checking for unused data"
 		_ <- check "" (remoteUnusedMsg r) (remoteunused r) 0
 		next $ return True
-	remoteunused r = excludeReferenced <=< loggedKeysFor $ Remote.uuid r
+	remoteunused r = excludeReferenced refspec <=< loggedKeysFor $ Remote.uuid r
 
 check :: FilePath -> ([(Int, Key)] -> String) -> Annex [Key] -> Int -> Annex Int
 check file msg a c = do
@@ -145,7 +152,7 @@ dropMsg' s = "\nTo remove unwanted data: git-annex dropunused" ++ s ++ " NUMBER\
  - * Build a bloom filter of all keys referenced by symlinks. This 
  -   is the fastest one to build and will filter out most keys.
  - * If keys remain, build a second bloom filter of keys referenced by
- -   all branches.
+ -   branches maching the RefSpec.
  - * The list is streamed through these bloom filters lazily, so both will
  -   exist at the same time. This means that twice the memory is used,
  -   but they're relatively small, so the added complexity of using a
@@ -157,13 +164,13 @@ dropMsg' s = "\nTo remove unwanted data: git-annex dropunused" ++ s ++ " NUMBER\
  -   Short-circuiting if the first filter filters all the keys handles the
  -   other common case.
  -}
-excludeReferenced :: [Key] -> Annex [Key]
-excludeReferenced ks = runfilter firstlevel ks >>= runfilter secondlevel
+excludeReferenced :: RefSpec -> [Key] -> Annex [Key]
+excludeReferenced refspec ks = runfilter firstlevel ks >>= runfilter secondlevel
   where
 	runfilter _ [] = return [] -- optimisation
 	runfilter a l = bloomFilter show l <$> genBloomFilter show a
 	firstlevel = withKeysReferencedM
-	secondlevel = withKeysReferencedInGit
+	secondlevel = withKeysReferencedInGit refspec
 
 {- Finds items in the first, smaller list, that are not
  - present in the second, larger list.
@@ -258,14 +265,15 @@ withKeysReferenced' mdir initial a = do
 				!v' <- a k f v
 				go v' fs
 
-withKeysReferencedInGit :: (Key -> Annex ()) -> Annex ()
-withKeysReferencedInGit a = do
+withKeysReferencedInGit :: RefSpec -> (Key -> Annex ()) -> Annex ()
+withKeysReferencedInGit refspec a = do
 	current <- inRepo Git.Branch.currentUnsafe
 	shaHead <- maybe (return Nothing) (inRepo . Git.Ref.sha) current
-	showref >>= mapM_ (withKeysReferencedInGitRef a) .
-			relevantrefs (shaHead, current)
+	usedrefs <- applyRefSpec refspec . relevantrefs (shaHead, current)
+		<$> inRepo (Git.Command.pipeReadStrict [Param "show-ref"])
+	forM_ usedrefs $
+		withKeysReferencedInGitRef a
   where
-	showref = inRepo $ Git.Command.pipeReadStrict [Param "show-ref"]
 	relevantrefs headRef = addHead headRef .
 		filter ourbranches .
 		map (separate (== ' ')) .
@@ -293,8 +301,8 @@ withKeysReferencedInGitRef a ref = do
 	showAction $ "checking " ++ Git.Ref.describe ref
 	bare <- isBareRepo
 	(ts,clean) <- inRepo $ if bare
-			then DiffTree.diffIndex ref
-			else DiffTree.diffWorkTree ref
+		then DiffTree.diffIndex ref
+		else DiffTree.diffWorkTree ref
 	let lookAtWorkingTree = not bare && ref == Git.Ref.headRef
 	forM_ ts $ tKey lookAtWorkingTree >=> maybe noop a
 	liftIO $ void clean

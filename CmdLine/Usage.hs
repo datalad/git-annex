@@ -95,6 +95,8 @@ paramFile :: String
 paramFile = "FILE"
 paramRef :: String
 paramRef = "REF"
+paramRefSpec :: String
+paramRefSpec = "REFSPEC"
 paramGroup :: String
 paramGroup = "GROUP"
 paramExpression :: String

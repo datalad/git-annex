@@ -33,4 +33,9 @@ refspec in order.
   the SHAs that the refs point to, so -refs/heads/master does not remove
   +HEAD).
 
+Hmm, unused currently does a separate pass to find files used in the work
+tree. I think it's best to keep that as-is.
+
 --[[Joey]]
+
+> [[done]] --[[Joey]] 
