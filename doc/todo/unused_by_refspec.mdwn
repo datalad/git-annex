@@ -17,11 +17,20 @@ departure. Let's allow wildcards as it does, and use leading '+' to add a
 ref, and '-' to remove. Let the user specify multiple such expressions,
 separated by ':'.
 
-	+refs/heads/*:-refs/remotes/*:+refs/tags/*:-refs/tags/old-tag
+	+refs/heads/*:+HEAD^:+refs/tags/*:-refs/tags/old-tag
 
-Note that this needs to be processed by taking all refs matching any '+',
-and then removing any of those that match any '-'
+This is processed by starting with an empty set of refs, and walking the
+refspec in order. 
 
-Also, allow use of HEAD, and anything else that `git show-ref` can handle.
+* Each + is matched against all known refs (from `git show-ref`), and adds
+  everything it matches to the set. If the + does not contain a wildcard,
+  it is literally added to the set, rather than looking in the known refs.
+  This allows "+refs/heads/*" to match all heads, and "+HEAD"
+  to match HEAD, or even "+sha" to match a given SHA, or "+HEAD^" to match
+  the previous head.
+* Each - is matched against the contents of the set, and removes everything
+  it matches, using a lexographic matching with wildcards (not looking at
+  the SHAs that the refs point to, so -refs/heads/master does not remove
+  +HEAD).
 
 --[[Joey]]
