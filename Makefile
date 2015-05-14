@@ -269,7 +269,7 @@ fast: dist/caballog
 	@$(MAKE) tags >/dev/null 2>&1 &
 
 dist/caballog: git-annex.cabal
-	$(CABAL) configure -f"-Production" -O0
+	$(CABAL) configure -f"-Production" -O0 --enable-executable-dynamic
 	$(CABAL) build -v2 | tee $@
 
 # Hardcoded command line to make hdevtools start up and work.
