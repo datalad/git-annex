@@ -1,0 +1,31 @@
+### Please describe the problem.
+Changing metadata while being in an active view will not update the view.
+
+### What steps will reproduce the problem?
+(inside a repository)
+
+1. Create a file
+
+        $ uuidgen >file
+
+2. switch into a view
+
+       $ git annex view !blah
+       $ ls
+       file
+
+3. changed the metadata the view is based upon
+
+       $ git annex metadata -t blah file
+       $ ls
+       file
+
+   It would be nice/expected that the view gets updated when the metadata changes, hiding 'file' now
+  
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 5.20141024~bpo70+1
+on debian wheezy with backports
+
+### Please provide any additional information below.
