@@ -37,16 +37,14 @@ either][] - so another dead-end.
  [mobile version]: http://meta.stackexchange.com/questions/104458/switch-to-mobile-site-on-standard-browser
  [doesn't support offline access either]: http://meta.stackexchange.com/questions/220036/offline-features-in-stack-exchange-app
 
-Stackexchange runs a [garbled mess of IIS, MSSQL, ASP, Redis and
-Elasticsearch][] so there is probably little hope in integrating into
+Stackexchange runs a [garbled mess][] of IIS, MSSQL, ASP, Redis and
+Elasticsearch so there is probably little hope in integrating into
 something like git. I have asked for the [proverbial pony in this
 stackexchange question][] (yes, it's all very meta), describing the
 use case, but i am not holding my breath for a change.
 
- [garbled mess of IIS, MSSQL, ASP, Redis and Elasticsearch]:
- http://en.wikipedia.org/wiki/Stack_Exchange#Technologies_used
- [proverbial pony in this stackexchange question]:
- http://meta.stackexchange.com/questions/256573/best-way-to-use-stackexchange-sites-offline-or-on-dialup
+ [garbled mess]: http://en.wikipedia.org/wiki/Stack_Exchange#Technologies_used
+ [proverbial pony in this stackexchange question]: http://meta.stackexchange.com/questions/256573/best-way-to-use-stackexchange-sites-offline-or-on-dialup
  
 Askbot
 ======
@@ -102,10 +100,8 @@ discussed by everyone here, in a spirit of consensus building. :)
  [offline tool]: https://github.com/etewiah/offcourse
  [discussion about offline suport in discourse]: https://meta.discourse.org/t/offcourse-a-proof-of-concept-offline-reader-for-discourse/22356
  [discourse]: http://discourse.org/
- [warn against switching existing communities]:
- http://www.discourse.org/faq/#switch
- [officially supported in Docker]:
- https://github.com/discourse/discourse/blob/master/docs/INSTALL.md
+ [warn against switching existing communities]: http://www.discourse.org/faq/#switch
+ [officially supported in Docker]: https://github.com/discourse/discourse/blob/master/docs/INSTALL.md
 
 Mailing lists
 =============
