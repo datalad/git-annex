@@ -1,0 +1,151 @@
+### Please describe the problem.
+Shortly after starting the assistant the local client repository is in an inconsistent state. Just using the cli works fine without destroying the repository.
+
+### What steps will reproduce the problem?
+- Working git annex repository
+
+- Start the Git-Annex Assistant
+> git annex assistant
+
+- Wait a short time and then check the repository state:
+> ➜  annex git:(master) ✗ gst
+> On branch master
+> error: Could not read ea63b58d1252e3432280cdce1282eb02035c926e
+> error: Could not read ea63b58d1252e3432280cdce1282eb02035c926e
+> fatal: Failed to traverse parents of commit 108fa97a989aeabff16738558e1aa636c836598b
+
+- refs/heads/synced/git-annex links to an unknown commit
+> ➜  .git git:(master) cat refs/heads/synced/git-annex
+> be8e6023fbb172b12cec8fdbaa8654194f71c4f5% 
+
+> git show be8e6023fbb172b12cec8fdbaa8654194f71c4f5
+> fatal: unable to read source tree (d2959525362dcadd4dbec96a8f18d80cc689a851)
+
+### What version of git-annex are you using? On what operating system?
+- git-annex version: 5.20150508-gf71c23f
+- Mac OSX 10.10.2
+
+### Please provide any additional information below.
+
+[[!format sh """
+
+[2015-05-15 07:06:32 CEST] main: starting assistant version 5.20150508-gf71c23f
+[2015-05-15 07:06:32 CEST] Cronner: Consistency check in progress
+fsck 2015-05-01 07.56.02.jpg (checksum…)
+ok
+fsck 2015-05-01 09.55.58.jpg (checksum…)
+ok
+fsck 2015-05-14 12.38.24.jpg (checksum…)
+ok
+fsck 2015-05-14 12.39.30.jpg (checksum…)
+ok
+fsck 2015-05-14 12.40.49.jpg (checksum…)
+ok
+fsck 2015-05-14 12.40.53.jpg (checksum…)
+ok
+fsck 2015-05-14 12.43.42.jpg (checksum…)
+ok
+fsck 2015-05-14 12.44.16.jpg (checksum…)
+ok
+fsck 2015-05-14 12.45.11.jpg (checksum…)
+ok
+(recording state in git…)
+[2015-05-15 07:06:39 CEST] TransferScanner: Syncing with nas 
+(scanning…) [2015-05-15 07:06:39 CEST] Watcher: Performing startup scan
+gpg: Unterschrift vom Fr  8 Mai 22:10:28 2015 CEST mittels DSA-Schlüssel ID 89C809CB
+gpg: Unterschrift kann nicht geprüft werden: Öffentlicher Schlüssel nicht gefunden
+(started…) 
+[2015-05-15 07:06:41 CEST] Committer: Committing changes to git
+(recording state in git…)
+[2015-05-15 07:06:41 CEST] Pusher: Syncing with nas 
+
+
+0%            0.0 B/s 0s
+2%          32.0KB/s 47s
+...
+90%         467.6KB/s 0s
+                        
+[2015-05-15 07:06:47 CEST] Transferrer: Uploaded 2015-05-1..38.24.jpg
+
+
+0%            0.0 B/s 0s
+1%          32.0KB/s 54s
+...
+91%         534.5KB/s 0s
+                        
+[2015-05-15 07:06:54 CEST] Transferrer: Uploaded 2015-05-1..45.11.jpg
+
+
+0%            0.0 B/s 0s
+2%        16.0KB/s 1m30s
+…
+90%         440.4KB/s 0s
+                        
+[2015-05-15 07:07:01 CEST] Transferrer: Uploaded 2015-05-1..44.16.jpg
+
+
+0%            0.0 B/s 0s
+1%        16.0KB/s 1m42s
+...
+91%         508.2KB/s 0s
+                        
+[2015-05-15 07:07:07 CEST] Transferrer: Uploaded 2015-05-1..43.42.jpg
+
+
+0%            0.0 B/s 0s
+1%        16.0KB/s 1m40s
+...
+91%         371.6KB/s 0s
+                        
+[2015-05-15 07:07:13 CEST] Transferrer: Uploaded 2015-05-1..40.53.jpg
+
+
+0%            0.0 B/s 0s
+1%          32.0KB/s 50s
+...
+91%         495.1KB/s 0s
+                        
+[2015-05-15 07:07:19 CEST] Transferrer: Uploaded 2015-05-1..40.49.jpg
+
+
+0%            0.0 B/s 0s
+1%          32.0KB/s 53s
+...
+92%         528.2KB/s 0s
+                        
+[2015-05-15 07:07:25 CEST] Transferrer: Uploaded 2015-05-1..39.30.jpg
+ssh: connect to host 1.2.3.43 port 22: Operation timed out
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+fatal: ‚/Volumes/WD1500GB/annex‘ does not appear to be a git repository
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+ssh: connect to host 1.2.3.43 port 22: Operation timed out
+s(recording state in git…)
+fatal: ‚/Volumes/WD1500GB/annex‘ does not appear to be a git repository
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+ssh: connect to host 1.2.3.43 port 22: Operation timed out
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+[2015-05-15 07:08:16 CEST] Cronner: Attempting to repair aether [here]
+Unpacking all pack files.
+ssh: connect to host 1.2.3.43 port 22: Operation timed out
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+ssh: connect to host 1.2.3.36 port 22:sssssh: connect to host 1.2.3.43 port 22: Operation timed out
+fatal: early EOF
+
+
+# End of transcript or log.
+"""]]
