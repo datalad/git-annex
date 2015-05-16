@@ -2,12 +2,6 @@
 
 [[!sidebar content="""
 [[!inline feeds=no template=bare pages=sidebar]]
-
-[[Feeds]]:
-
-<small>
-[[!inline pages="internal(feeds/*)" archive=yes show=8 feeds=no]]
-</small>
 """]]
 
 <table>
