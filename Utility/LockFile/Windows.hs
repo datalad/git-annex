@@ -30,8 +30,8 @@ lockShared = openLock fILE_SHARE_READ
  - a shared or exclusive lock.
  -
  - Note that exclusive locking also prevents the file from being opened for
- - read or write by any other progess. So for advisory locking of a file's
- - content, a different LockFile should be used. -}
+ - read or write by any other process. So for advisory locking of a file's
+ - content, a separate LockFile should be used. -}
 lockExclusive :: LockFile -> IO (Maybe LockHandle)
 lockExclusive = openLock fILE_SHARE_NONE
 
@@ -47,7 +47,7 @@ lockExclusive = openLock fILE_SHARE_NONE
  - much more expensive, so is not done here. Thus, the use of c_CreateFile.
  -
  - Also, passing Nothing for SECURITY_ATTRIBUTES ensures that the lock file
- - is not inheerited by any child process.
+ - is not inherited by any child process.
  -}
 openLock :: ShareMode -> LockFile -> IO (Maybe LockHandle)
 openLock sharemode f = do
