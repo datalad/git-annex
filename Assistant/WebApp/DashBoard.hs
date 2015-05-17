@@ -132,8 +132,9 @@ openFileBrowser = do
 #endif
 	ifM (liftIO $ inPath cmd)
 		( do
-			let run = void $ liftIO $ forkIO $ void $
-				createProcess p
+			let run = void $ liftIO $ forkIO $ do
+				(Nothing, Nothing, Nothing, pid) <- createProcess p
+				void $ waitForProcess pid
 			run
 #ifdef mingw32_HOST_OS
 			{- On windows, if the file browser is not
