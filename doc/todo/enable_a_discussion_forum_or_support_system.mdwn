@@ -1,0 +1,126 @@
+I has been [[discussed|devblog/day_268_stressed_out]]
+[[twice|devblog/day_285__tuning_git-annex_unused_refs]] that the
+current [[forum]] support system is not ideal for providing
+support. It constitutes the [largest part of this wiki][] yet we
+sometimes get duplicated questions and it seems the forum may be a
+barrier to entry for people.
+
+ [largest part of this wiki]: http://git-annex.branchable.com/devblog/day_268_stressed_out/#comment-e0814585df0047e6d4e11515aebe1dec
+
+A few alternatives have been proposed, from a mailing list to using a
+StackExchange site. This post is to discuss the possible
+alternatives. The requirement is that the system may be available
+offline and on low-bandwidth connections yet enable conversations
+better than a simple web forum or mailing list; which may end up being
+the only solution considering the first requirements, but let's give
+it a try. :)
+
+Stack exchange
+==============
+
+i looked up how this works in stackexchange, and it turns out they
+provide [regular dumps][] of the data hosted. unfortunately, it's a
+gigantic zip file and not really designed for low-bandwidth
+use. There's also a [data explorer][] that was promising, until i
+realized that the query engine takes up 154KB, three times the space
+of the regular search engine (~54KB, which I guess is way too much for
+dialup).
+
+ [regular dumps]: http://blog.stackoverflow.com/category/cc-wiki-dump/
+ [data explorer]: http://data.stackexchange.com/
+
+Also: there is a [mobile version][] of all the stackexchange sites,
+which take up around 3KB, but still only works online. There's an app
+for mobile devices as well, but it [doesn't support offline access
+either][] - so another dead-end.
+
+ [mobile version]: http://meta.stackexchange.com/questions/104458/switch-to-mobile-site-on-standard-browser
+ [doesn't support offline access either]: http://meta.stackexchange.com/questions/220036/offline-features-in-stack-exchange-app
+
+Stackexchange runs a [garbled mess][] of IIS, MSSQL, ASP, Redis and
+Elasticsearch so there is probably little hope in integrating into
+something like git. I have asked for the [proverbial pony in this
+stackexchange question][] (yes, it's all very meta), describing the
+use case, but i am not holding my breath for a change.
+
+ [garbled mess]: http://en.wikipedia.org/wiki/Stack_Exchange#Technologies_used
+ [proverbial pony in this stackexchange question]: http://meta.stackexchange.com/questions/256573/best-way-to-use-stackexchange-sites-offline-or-on-dialup
+ 
+Askbot
+======
+
+Besides, SE sites are based on proprietary software, and i am not sure
+we'd want to advocate that here. There are free software alternatives,
+of which i made an [evaluation about 2 years ago][] after which we
+tried Askbot at [Koumbit][]. it never took off: staff didn't seem
+interested in it so much and we never made people aware of it too
+much. plus, it didn't integrate with existing authentication
+mechanisms (which are a little bit of a mess for us)...
+
+But it does seem like an interesting alternative, and has [primitive
+email integration][] where you can ask questions by email, but not
+answer (!). I haven't looked at such support in other software, but i
+suspect it is similarly not a priority as they struggle to monetize
+their free software...
+
+Most of those free software alternatives of Stackexchange are written
+in Python/Django or Ruby/Rails (iirc) with SQL backends, which would
+probably make git integration... also "challenging".
+
+ [evaluation about 2 years ago]: (https://wiki.koumbit.net/FaqService#A.2BAMk-valuation_logicielle)
+ [Koumbit]: http://koumbit.org/
+ [primitive email integration]: http://askbot.org/doc/sending-email-to-askbot.html
+
+Discourse
+=========
+
+From that point of view, maybe [discourse][] could be an interesting
+alternative. It has built-in email support, as it is designed as an
+alternative to mailing lists. With a simple setting, you can
+collaborate directly by email. What is interesting, compared to the
+mailing list model, is that posts can be collaboratively edited to
+(for example) arrive at a collective wisdom by refining an answer (or
+a question). There are also interesting community moderation and
+reputation systems.
+
+There seems to be some [offline tool][] for Discourse, but it's
+unclear to me how it works, as it seems to be a separate (nodejs!)
+application that connects with a discourse plugin. There's a
+[discussion about offline suport in discourse][] in the meta site...
+
+Discourse uses Ruby/Rails and PostgreSQL, and somewhat is only
+[officially supported in Docker][]...
+
+The discourse people do [warn against switching existing
+communities][] to Discourse because of the resulting friction, so it
+is also in that spirit that I open discussion about this here, that
+is, in the hope the change can be acknowledged, supported and
+discussed by everyone here, in a spirit of consensus building. :)
+
+ [offline tool]: https://github.com/etewiah/offcourse
+ [discussion about offline suport in discourse]: https://meta.discourse.org/t/offcourse-a-proof-of-concept-offline-reader-for-discourse/22356
+ [discourse]: http://discourse.org/
+ [warn against switching existing communities]: http://www.discourse.org/faq/#switch
+ [officially supported in Docker]: https://github.com/discourse/discourse/blob/master/docs/INSTALL.md
+
+Mailing lists
+=============
+
+Of course, the forum could simply be moved to a mailing list. The
+would have the advantage of reducing the barrier of entry to the site,
+reduce the load on the wiki, at the cost of adding the additionnal
+"how do i subscribe to a mailing list" barrier of entry, which, oddly
+enough, exists for a lot of mailing lists...
+
+Like it or not, web forums do enable a lot of less technical users to
+participate because they only need their web browser, and crossing
+that boundary can be hard for some people. Mailing lists also do not
+necessarily favor collaboration as much as the other systems...
+
+Web forums
+==========
+
+There's a plethora of "php-bb-like" software out there, i am just
+ignoring them for now, as I am not very familiar with them and they
+have never been too attractive for me, but people are of course free
+to edit this page to add suggestions! :)
