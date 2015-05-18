@@ -8,26 +8,26 @@
 {-# LANGUAGE CPP #-}
 
 module Annex.LockFile (
-	lockFileShared,
+	lockFileCached,
 	unlockFile,
-	getLockPool,
+	getLockCache,
 	withExclusiveLock,
 	tryExclusiveLock,
 ) where
 
 import Common.Annex
 import Annex
-import Types.LockPool
+import Types.LockCache
 import qualified Git
 import Annex.Perms
-import Utility.LockFile
+import Utility.LockPool
 
 import qualified Data.Map as M
 
 {- Create a specified lock file, and takes a shared lock, which is retained
- - in the pool. -}
-lockFileShared :: FilePath -> Annex ()
-lockFileShared file = go =<< fromLockPool file
+ - in the cache. -}
+lockFileCached :: FilePath -> Annex ()
+lockFileCached file = go =<< fromLockCache file
   where
 	go (Just _) = noop -- already locked
 	go Nothing = do
@@ -37,25 +37,25 @@ lockFileShared file = go =<< fromLockPool file
 #else
 		lockhandle <- liftIO $ waitToLock $ lockShared file
 #endif
-		changeLockPool $ M.insert file lockhandle
+		changeLockCache $ M.insert file lockhandle
 
 unlockFile :: FilePath -> Annex ()
-unlockFile file = maybe noop go =<< fromLockPool file
+unlockFile file = maybe noop go =<< fromLockCache file
   where
 	go lockhandle = do
 		liftIO $ dropLock lockhandle
-		changeLockPool $ M.delete file
+		changeLockCache $ M.delete file
 
-getLockPool :: Annex LockPool
-getLockPool = getState lockpool
+getLockCache :: Annex LockCache
+getLockCache = getState lockcache
 
-fromLockPool :: FilePath -> Annex (Maybe LockHandle)
-fromLockPool file = M.lookup file <$> getLockPool
+fromLockCache :: FilePath -> Annex (Maybe LockHandle)
+fromLockCache file = M.lookup file <$> getLockCache
 
-changeLockPool :: (LockPool -> LockPool) -> Annex ()
-changeLockPool a = do
-	m <- getLockPool
-	changeState $ \s -> s { lockpool = a m }
+changeLockCache :: (LockCache -> LockCache) -> Annex ()
+changeLockCache a = do
+	m <- getLockCache
+	changeState $ \s -> s { lockcache = a m }
 
 {- Runs an action with an exclusive lock held. If the lock is already
  - held, blocks until it becomes free. -}

@@ -58,7 +58,7 @@ import Annex.Perms
 import Annex.Link
 import Annex.Content.Direct
 import Annex.ReplaceFile
-import Utility.LockFile
+import Utility.LockPool
 import Messages.Progress
 
 {- Checks if a given key's content is currently present. -}

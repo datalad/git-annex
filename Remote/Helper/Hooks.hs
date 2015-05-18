@@ -16,7 +16,7 @@ import Types.Remote
 import Types.CleanupActions
 import qualified Annex
 import Annex.LockFile
-import Utility.LockFile
+import Utility.LockPool
 #ifndef mingw32_HOST_OS
 import Annex.Perms
 #endif
@@ -47,7 +47,7 @@ runHooks :: Remote -> Maybe String -> Maybe String -> Annex a -> Annex a
 runHooks r starthook stophook a = do
 	dir <- fromRepo gitAnnexRemotesDir
 	let lck = dir </> remoteid ++ ".lck"
-	whenM (notElem lck . M.keys <$> getLockPool) $ do
+	whenM (notElem lck . M.keys <$> getLockCache) $ do
 		liftIO $ createDirectoryIfMissing True dir
 		firstrun lck
 	a
@@ -62,7 +62,7 @@ runHooks r starthook stophook a = do
 		-- of it from running the stophook. If another
 		-- instance is shutting down right now, this
 		-- will block waiting for its exclusive lock to clear.
-		lockFileShared lck
+		lockFileCached lck
 
 		-- The starthook is run even if some other git-annex
 		-- is already running, and ran it before.

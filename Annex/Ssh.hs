@@ -37,7 +37,7 @@ import Types.CleanupActions
 import Annex.Index (addGitEnv)
 #ifndef mingw32_HOST_OS
 import Annex.Perms
-import Utility.LockFile
+import Utility.LockPool
 #endif
 
 {- Generates parameters to ssh to a given host (or user@host) on a given
@@ -126,13 +126,13 @@ prepSocket socketfile = do
 	-- If the lock pool is empty, this is the first ssh of this
 	-- run. There could be stale ssh connections hanging around
 	-- from a previous git-annex run that was interrupted.
-	whenM (not . any isLock . M.keys <$> getLockPool)
+	whenM (not . any isLock . M.keys <$> getLockCache)
 		sshCleanup
 	-- Cleanup at end of this run.
 	Annex.addCleanup SshCachingCleanup sshCleanup
 
 	liftIO $ createDirectoryIfMissing True $ parentDir socketfile
-	lockFileShared $ socket2lock socketfile
+	lockFileCached $ socket2lock socketfile
 
 enumSocketFiles :: Annex [FilePath]
 enumSocketFiles = go =<< sshCacheDir

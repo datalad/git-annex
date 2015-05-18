@@ -57,7 +57,7 @@ import Types.Messages
 import Types.UUID
 import Types.FileMatcher
 import Types.NumCopies
-import Types.LockPool
+import Types.LockCache
 import Types.MetaData
 import Types.DesktopNotify
 import Types.CleanupActions
@@ -120,7 +120,7 @@ data AnnexState = AnnexState
 	, trustmap :: Maybe TrustMap
 	, groupmap :: Maybe GroupMap
 	, ciphers :: M.Map StorableCipher Cipher
-	, lockpool :: LockPool
+	, lockcache :: LockCache
 	, flags :: M.Map String Bool
 	, fields :: M.Map String String
 	, modmeta :: [ModMeta]
@@ -166,7 +166,7 @@ newState c r = AnnexState
 	, trustmap = Nothing
 	, groupmap = Nothing
 	, ciphers = M.empty
-	, lockpool = M.empty
+	, lockcache = M.empty
 	, flags = M.empty
 	, fields = M.empty
 	, modmeta = []

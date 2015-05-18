@@ -23,7 +23,7 @@ import Logs.Transfer as X
 import Annex.Notification as X
 import Annex.Perms
 import Utility.Metered
-import Utility.LockFile
+import Utility.LockPool
 
 import Control.Concurrent
 

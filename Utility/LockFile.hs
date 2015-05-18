@@ -4,6 +4,9 @@
  - This module does *not* attempt to be a portability shim, it just exposes
  - the native locking of the OS.
  -
+ - Posix fcntl locks have some gotchas. So, consider using
+ - Utility.LockPool instead of using this module directly.
+ -
  - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause

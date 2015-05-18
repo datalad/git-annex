@@ -74,7 +74,7 @@ openDb u = do
 		liftIO $ do
 			void $ tryIO $ removeDirectoryRecursive dbdir
 			rename tmpdbdir dbdir
-	lockFileShared =<< fromRepo (gitAnnexFsckDbLock u)
+	lockFileCached =<< fromRepo (gitAnnexFsckDbLock u)
 	h <- liftIO $ H.openDb db "fscked"
 	return $ FsckHandle h u
 

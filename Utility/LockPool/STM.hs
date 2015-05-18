@@ -80,16 +80,15 @@ tryTakeLock pool file mode =
 --
 -- Note that the lock pool is left empty while the checker action is run.
 -- This allows checker actions that open/close files, and so would be in
--- danger of conflicting with existing locks. Since the lock pool is
--- kept empty, anything that attempts to take a lock will block,
--- avoiding that race.
+-- danger of conflicting with locks created at the same time this is
+-- running. With the lock pool empty, anything that attempts
+-- to take a lock will block, avoiding that race.
 getLockStatus :: LockPool -> LockFile -> IO v -> IO (Maybe v) -> IO (Maybe v)
 getLockStatus pool file getdefault checker = do
 	v <- atomically $ do
 		m <- takeTMVar pool
 		let threadlocked = case M.lookup file m of
-			Just (LockStatus _ n)
-				| n > 0 -> True
+			Just (LockStatus _ n) | n > 0 -> True
 			_ -> False
 		if threadlocked
 			then do

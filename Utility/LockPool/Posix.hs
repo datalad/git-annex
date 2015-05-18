@@ -18,11 +18,9 @@ module Utility.LockPool.Posix (
 
 import qualified Utility.LockFile.Posix as F
 import qualified Utility.LockPool.STM as P
-import Utility.LockPool.STM (LockPool, LockFile, LockMode(..))
+import Utility.LockPool.STM (LockFile, LockMode(..))
 import Utility.LockPool.LockHandle
-import Utility.Monad
 
-import Control.Concurrent.STM
 import System.IO
 import System.Posix
 import Data.Maybe

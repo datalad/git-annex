@@ -1,16 +1,16 @@
-{- git-annex lock pool data types
+{- git-annex lock cache data types
  - 
  - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Types.LockPool (
-	LockPool,
+module Types.LockCache (
+	LockCache,
 	LockHandle
 ) where
 
 import qualified Data.Map as M
-import Utility.LockFile
+import Utility.LockPool
 
-type LockPool = M.Map FilePath LockHandle
+type LockCache = M.Map FilePath LockHandle

@@ -17,7 +17,7 @@ import Utility.Metered
 import Utility.Percentage
 import Utility.QuickCheck
 import Utility.PID
-import Utility.LockFile
+import Utility.LockPool
 import Logs.TimeStamp
 
 import Data.Time.Clock
