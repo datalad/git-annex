@@ -22,7 +22,7 @@ type LockFile = FilePath
 type LockHandle = HANDLE
 
 {- Tries to lock a file with a shared lock, which allows other processes to
- - also lock it shared. Fails is the file is exclusively locked. -}
+ - also lock it shared. Fails if the file is exclusively locked. -}
 lockShared :: LockFile -> IO (Maybe LockHandle)
 lockShared = openLock fILE_SHARE_READ
 

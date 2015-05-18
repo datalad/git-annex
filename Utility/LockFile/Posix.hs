@@ -12,7 +12,6 @@ module Utility.LockFile.Posix (
 	tryLockExclusive,
 	createLockFile,
 	openExistingLockFile,
-	isLocked,
 	checkLocked,
 	getLockStatus,
 	dropLock,
@@ -73,28 +72,23 @@ openLockFile filemode lockfile = do
 	setFdOption l CloseOnExec True
 	return l
 
--- Check if a file is locked, either exclusively, or with shared lock.
--- When the file doesn't exist, it's considered not locked.
-isLocked :: LockFile -> IO Bool
-isLocked = fromMaybe False <$$> checkLocked
-
 -- Returns Nothing when the file doesn't exist, for cases where
 -- that is different from it not being locked.
 checkLocked :: LockFile -> IO (Maybe Bool)
 checkLocked = maybe Nothing (Just . isJust) <$$> getLockStatus'
 
-getLockStatus :: LockFile -> IO (Maybe (ProcessID, FileLock))
+getLockStatus :: LockFile -> IO (Maybe ProcessID)
 getLockStatus = fromMaybe Nothing <$$> getLockStatus'
 
-getLockStatus' :: LockFile -> IO (Maybe (Maybe (ProcessID, FileLock)))
+getLockStatus' :: LockFile -> IO (Maybe (Maybe ProcessID))
 getLockStatus' lockfile = go =<< catchMaybeIO open
   where
 	open = openFd lockfile ReadOnly Nothing defaultFileFlags
 	go Nothing = return Nothing
 	go (Just h) = do
-		ret <- getLock h (ReadLock, AbsoluteSeek, 0, 0)
+		v <- getLock h (ReadLock, AbsoluteSeek, 0, 0)
 		closeFd h
-		return (Just ret)
+		return (Just (fmap fst v))
 
 dropLock :: LockHandle -> IO ()
 dropLock (LockHandle fd) = closeFd fd
