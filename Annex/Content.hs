@@ -182,11 +182,11 @@ lockContent key a = do
 #ifndef mingw32_HOST_OS
 	{- Since content files are stored with the write bit disabled, have
 	 - to fiddle with permissions to open for an exclusive lock. -}
-	lock contentfile Nothing = trylock $ liftIO $
-		withModifiedFileMode contentfile
-			(`unionFileModes` ownerWriteMode) $
-			maybe alreadylocked return
-				=<< tryLockExclusive Nothing contentfile
+	lock contentfile Nothing = trylock $ bracket_
+		(thawContent contentfile)
+		(freezeContent contentfile)
+		(maybe alreadylocked return 
+			=<< liftIO (tryLockExclusive Nothing contentfile))
 	lock _ (Just lockfile) = trylock $ do
 		mode <- annexFileMode
 		maybe alreadylocked return 
