@@ -38,6 +38,10 @@ first "/~/" or "/~user/" is expanded to the specified home directory.
   This checks if all specified keys are present in the annex, 
   and exits zero if so.
 
+  Exits 1 if the key is certianly not present in the annex.
+  Exits 100 if it's unable to tell (perhaps the key is in the process of
+  being removed from the annex).
+
 * dropkey directory [key ...]
 
   This drops the annexed data for the specified keys.
