@@ -94,7 +94,7 @@ inAnnex' isgood bad check key = withObjectLoc key checkindirect checkdirect
 {- A safer check; the key's content must not only be present, but
  - is not in the process of being removed. -}
 inAnnexSafe :: Key -> Annex (Maybe Bool)
-inAnnexSafe key = inAnnex' (fromMaybe False) (Just False) go key
+inAnnexSafe key = inAnnex' (fromMaybe True) (Just False) go key
   where
 	is_locked = Nothing
 	is_unlocked = Just True
