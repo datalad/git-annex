@@ -150,10 +150,14 @@ inAnnexSafe key = inAnnex' (fromMaybe False) (Just False) go key
  - file from the content, since locking the actual content file
  - would interfere with the user's use of it. -}
 contentLockFile :: Key -> Annex (Maybe FilePath)
+#ifndef mingw32_HOST_OS
 contentLockFile key = ifM isDirect
 	( Just <$> calcRepo (gitAnnexContentLock key)
 	, return Nothing
 	)
+#else
+contentLockFile key = Just <$> calcRepo (gitAnnexContentLock key)
+#endif
 
 newtype ContentLock = ContentLock Key
 
@@ -164,43 +168,40 @@ lockContent :: Key -> (ContentLock -> Annex a) -> Annex a
 lockContent key a = do
 	contentfile <- calcRepo $ gitAnnexLocation key
 	lockfile <- contentLockFile key
-	maybe noop setuplockfile lockfile
 	bracket
 		(lock contentfile lockfile)
 		(unlock lockfile)
-		(const $ a $ ContentLock key)
+		(const $ a $ ContentLock key )
   where
 	alreadylocked = error "content is locked"
-	setuplockfile lockfile = modifyContent lockfile $
-		void $ liftIO $ tryIO $
-			writeFile lockfile ""
+	failedtolock e = error $ "failed to lock content: " ++ show e
+	trylock locker = locker `catchIO` failedtolock
 	cleanuplockfile lockfile = modifyContent lockfile $
 		void $ liftIO $ tryIO $
 			nukeFile lockfile
 #ifndef mingw32_HOST_OS
-	lock contentfile Nothing = liftIO $
-		opencontentforlock contentfile >>= dolock
-	lock _ (Just lockfile) = do
-		mode <- annexFileMode
-		liftIO $ createLockFile mode lockfile >>= dolock . Just
 	{- Since content files are stored with the write bit disabled, have
 	 - to fiddle with permissions to open for an exclusive lock. -}
-	opencontentforlock f = catchDefaultIO Nothing $ 
-		withModifiedFileMode f
-			(`unionFileModes` ownerWriteMode)
-			(openExistingLockFile f)
-	dolock Nothing = return Nothing
-	dolock (Just fd) = do
-		v <- tryIO $ setLock fd (WriteLock, AbsoluteSeek, 0, 0)
-		case v of
-			Left _ -> alreadylocked
-			Right _ -> return $ Just fd
-	unlock mlockfile mfd = do
+	lock contentfile Nothing = trylock $ liftIO $
+		withModifiedFileMode contentfile
+			(`unionFileModes` ownerWriteMode) $
+			maybe alreadylocked return
+				=<< tryLockExclusive Nothing contentfile
+	lock _ (Just lockfile) = trylock $ do
+		mode <- annexFileMode
+		maybe alreadylocked return 
+			=<< modifyContent lockfile
+				(liftIO $ tryLockExclusive (Just mode) lockfile)
+	unlock mlockfile lck = do
 		maybe noop cleanuplockfile mlockfile
-		liftIO $ maybe noop closeFd mfd
+		liftIO $ dropLock lck
 #else
-	lock _ (Just lockfile) = liftIO $
+	lock _ (Just lockfile) = do
+		modifyContent lockfile $
+			void $ liftIO $ tryIO $
+				writeFile lockfile ""
 		maybe alreadylocked (return . Just) =<< lockExclusive lockfile
+	-- never reached; windows always uses a separate lock file
 	lock _ Nothing = return Nothing
 	unlock mlockfile mlockhandle = do
 		liftIO $ maybe noop dropLock mlockhandle

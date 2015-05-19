@@ -10,8 +10,6 @@ module Utility.LockFile.Posix (
 	lockShared,
 	lockExclusive,
 	tryLockExclusive,
-	createLockFile,
-	openExistingLockFile,
 	checkLocked,
 	getLockStatus,
 	dropLock,
@@ -55,15 +53,6 @@ lock lockreq mode lockfile = do
 	l <- openLockFile mode lockfile
 	waitToSetLock l (lockreq, AbsoluteSeek, 0, 0)
 	return (LockHandle l)
-
--- Create and opens lock file; does not lock it.
-createLockFile :: FileMode -> LockFile -> IO Fd
-createLockFile filemode = openLockFile (Just filemode)
-
--- Opens an existing lock file; does not lock it, and if it does not exist,
--- returns Nothing.
-openExistingLockFile :: LockFile -> IO (Maybe Fd)
-openExistingLockFile = catchMaybeIO . openLockFile Nothing
 
 -- Close on exec flag is set so child processes do not inherit the lock.
 openLockFile :: Maybe FileMode -> LockFile -> IO Fd
