@@ -34,11 +34,17 @@ First, install everything git-annex needs to build:
 Now you can build git-annex by running either `make` or `cabal build`
 inside the source tree.
 
-## minimal build with cabal
+## minimal build with cabal and stackage
 
 This can be done anywhere, and builds git-annex without some optional features
 that require harder-to-install C libraries. This is plenty to let you get started with
 git-annex, but it does not include the assistant or webapp.
+
+Be warned that this involves building a lot of Haskell libraries from
+source, and so it has a lot of moving parts, and it's not uncommon for it
+to be broken from time to time. A nice way to avoid such breakage is to
+[configure cabal to use the Stackage repository](http://www.stackage.org/),
+which is a more stable and consistent version of the Hackage repository.
 
 Inside the source tree, run:
 
@@ -48,16 +54,14 @@ Inside the source tree, run:
 	PATH=$HOME/bin:$PATH
 	cabal install --bindir=$HOME/bin
 
-Be warned that this involves building a lot of Haskell libraries from
-source, and so it has a lot of moving parts, and it's not uncommon for it
-to be broken from time to time.
-
-## full build with cabal
+## full build with cabal and stackage
 
 To build with all features enabled, including the assistant and webapp,
 you will need to install several C libraries and their headers,
 including libgnutls, libgsasl, libxml2, and zlib. How to do that for
 your OS is beyond the scope of this page. 
+
+Using [Stackage](http://www.stackage.org/) is again a good idea here!
 
 Once the C libraries are installed, run inside the source tree:
 
