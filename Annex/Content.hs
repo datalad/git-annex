@@ -614,39 +614,39 @@ preseedTmp key file = go =<< inAnnex key
  - allow reading it, per core.sharedRepository setting. -}
 freezeContent :: FilePath -> Annex ()
 freezeContent file = unlessM crippledFileSystem $
-	liftIO . go =<< fromRepo getSharedRepository
+	withShared go
   where
-	go GroupShared = modifyFileMode file $
+	go GroupShared = liftIO $ modifyFileMode file $
 		removeModes writeModes .
 		addModes [ownerReadMode, groupReadMode]
-	go AllShared = modifyFileMode file $
+	go AllShared = liftIO $ modifyFileMode file $
 		removeModes writeModes .
 		addModes readModes
-	go _ = modifyFileMode file $
+	go _ = liftIO $ modifyFileMode file $
 		removeModes writeModes .
 		addModes [ownerReadMode]
 
 {- Adjusts read mode of annexed file per core.sharedRepository setting. -}
 chmodContent :: FilePath -> Annex ()
 chmodContent file = unlessM crippledFileSystem $
-	liftIO . go =<< fromRepo getSharedRepository
+	withShared go
   where
-	go GroupShared = modifyFileMode file $
+	go GroupShared = liftIO $ modifyFileMode file $
 		addModes [ownerReadMode, groupReadMode]
-	go AllShared = modifyFileMode file $
+	go AllShared = liftIO $ modifyFileMode file $
 		addModes readModes
-	go _ = modifyFileMode file $
+	go _ = liftIO $ modifyFileMode file $
 		addModes [ownerReadMode]
 
 {- Allows writing to an annexed file that freezeContent was called on
  - before. -}
 thawContent :: FilePath -> Annex ()
 thawContent file = unlessM crippledFileSystem $
-	liftIO . go =<< fromRepo getSharedRepository
+	withShared go
   where
-	go GroupShared = groupWriteRead file
-	go AllShared = groupWriteRead file
-	go _ = allowWrite file
+	go GroupShared = liftIO $ groupWriteRead file
+	go AllShared = liftIO $ groupWriteRead file
+	go _ = liftIO $ allowWrite file
 
 {- Finds files directly inside a directory like gitAnnexBadDir 
  - (not in subdirectories) and returns the corresponding keys. -}

@@ -15,6 +15,7 @@ module Annex.Perms (
 	freezeContentDir,
 	thawContentDir,
 	modifyContent,
+	withShared,
 ) where
 
 import Common.Annex
@@ -26,12 +27,7 @@ import Config
 import System.Posix.Types
 
 withShared :: (SharedRepository -> Annex a) -> Annex a
-withShared a = maybe startup a =<< Annex.getState Annex.shared
-  where
-	startup = do
-		shared <- fromRepo getSharedRepository
-		Annex.changeState $ \s -> s { Annex.shared = Just shared }
-		a shared
+withShared a = a =<< coreSharedRepository <$> Annex.getGitConfig
 
 setAnnexFilePerm :: FilePath -> Annex ()
 setAnnexFilePerm = setAnnexPerm False
@@ -90,12 +86,12 @@ createAnnexDirectory dir = walk dir [] =<< top
  -}
 freezeContentDir :: FilePath -> Annex ()
 freezeContentDir file = unlessM crippledFileSystem $
-	liftIO . go =<< fromRepo getSharedRepository
+	withShared go
   where
 	dir = parentDir file
-	go GroupShared = groupWriteRead dir
-	go AllShared = groupWriteRead dir
-	go _ = preventWrite dir
+	go GroupShared = liftIO $ groupWriteRead dir
+	go AllShared = liftIO $ groupWriteRead dir
+	go _ = liftIO $ preventWrite dir
 
 thawContentDir :: FilePath -> Annex ()
 thawContentDir file = unlessM crippledFileSystem $

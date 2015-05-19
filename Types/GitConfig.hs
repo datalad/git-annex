@@ -16,6 +16,7 @@ import Common
 import qualified Git
 import qualified Git.Config
 import qualified Git.Construct
+import Git.SharedRepository
 import Utility.DataUnits
 import Config.Cost
 import Types.Distribution
@@ -58,6 +59,7 @@ data GitConfig = GitConfig
 	, annexStartupScan :: Bool
 	, annexHardLink :: Bool
 	, coreSymlinks :: Bool
+	, coreSharedRepository :: SharedRepository
 	, gcryptId :: Maybe String
 	, annexDifferences :: Differences
 	, annexUsedRefSpec :: Maybe RefSpec
@@ -97,6 +99,7 @@ extractGitConfig r = GitConfig
 	, annexStartupScan = getbool (annex "startupscan") True
 	, annexHardLink = getbool (annex "hardlink") False
 	, coreSymlinks = getbool "core.symlinks" True
+	, coreSharedRepository = getSharedRepository r
 	, gcryptId = getmaybe "core.gcrypt-id"
 	, annexDifferences = getDifferences r
 	, annexUsedRefSpec = either (const Nothing) Just . parseRefSpec 

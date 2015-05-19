@@ -42,7 +42,6 @@ import Annex.Fixup
 import Git.CatFile
 import Git.CheckAttr
 import Git.CheckIgnore
-import Git.SharedRepository
 import qualified Git.Hook
 import qualified Git.Queue
 import Types.Key
@@ -115,7 +114,6 @@ data AnnexState = AnnexState
 	, uuidmap :: Maybe UUIDMap
 	, preferredcontentmap :: Maybe (FileMatcherMap Annex)
 	, requiredcontentmap :: Maybe (FileMatcherMap Annex)
-	, shared :: Maybe SharedRepository
 	, forcetrust :: TrustMap
 	, trustmap :: Maybe TrustMap
 	, groupmap :: Maybe GroupMap
@@ -161,7 +159,6 @@ newState c r = AnnexState
 	, uuidmap = Nothing
 	, preferredcontentmap = Nothing
 	, requiredcontentmap = Nothing
-	, shared = Nothing
 	, forcetrust = M.empty
 	, trustmap = Nothing
 	, groupmap = Nothing
