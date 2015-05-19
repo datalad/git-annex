@@ -1,0 +1,44 @@
+There's something rotten in POSIX fctnl locking. It's not composable,
+or thread-safe.
+
+The most obvious problem with it is that if you have 2 threads, and they
+both try to take an exclusive lock of the same file (each opening it
+separately) ... They'll both succeed. Unlike 2 separate processes,
+where only one can take the lock.
+
+Then the really crazy bit: If a process has a lock file open and fcntl
+locked, and then the same process opens the lock file again, for any
+reason, closing the new FD will release the lock that was set
+using the other FD.
+
+So, that's a massive gotcha if you're writing complex multithreaded code.
+Or generally for composition of code. Of course, C programmers deal with
+this kind of thing all the time, but in the clean world of Haskell, this is
+a glaring problem. We don't expect to need to worry about this kind of
+unrelated side effect that breaks composition and thread safety.
+
+After noticing this problem affected git-anenx in at least one place,
+I have to assume there could be more. And I don't want to need to worry
+about this problem forever. So, I have been working today on a clean fix
+that I can cleanly switch all my lock-related code to use.
+
+One reasonable approach would be to avoid fcntl locking, and use flock.
+But, flock works even less well on NFS than fcntl, and git-annex relies on
+some fcntl locking features. On Linux, there's an "open file description
+locks" feature that fixes POSIX fnctl locking to not have this horrible
+wart, but that's not portable.
+
+Instead, my approach is to keep track of which files the process has
+locked. If it tries to do something with a lockfile that it already has
+locked, it avoids opening the same file again, instead implements its own
+in-process locking behavior. I use STM to do that in a thread-safe manner.
+
+I should probably break out git-annex's lock file handling code as a
+library. Eventually.. This was about as much fun as a root canal, and I'm
+having a real one tomorrow. :-/
+
+----
+
+git-annex is now included in [Stackage](http://www.stackage.org/)!
+
+Daniel Kahn Gillmor is doing some work on reproducible builds of git-annex.
