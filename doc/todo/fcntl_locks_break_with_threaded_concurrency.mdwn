@@ -25,3 +25,5 @@ A more generic approach is to use Annex.LockFile for everything,
 and make it check its lock pool via STM for other threads holding a lock.
 (Currently, the pool is only used for shared locks.)
 --[[Joey]] 
+
+> [[fixed|done]] via LockPools. --[[Joey]]
