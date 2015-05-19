@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Marco"
+ subject="A possible solution"
+ date="2015-05-19T11:03:22Z"
+ content="""
+While searching for the problem I found this:
+
+http://feeding.cloud.geek.nz/posts/error-while-running-git-gc/
+> git reflog expire --all --stale-fix
+
+I can't verify this because I nuked the broken repository after recreating it.
+"""]]

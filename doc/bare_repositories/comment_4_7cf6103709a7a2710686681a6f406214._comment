@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/bBy7WkgQicYHIiiyj.Vm0TcMbxi2quzbPFef#6f9f7"
+ nickname="Frederik Vanrenterghem"
+ subject="Convert bare repository to normal"
+ date="2015-05-19T09:17:15Z"
+ content="""
+Just wondering what the right steps are to convert a bare repository to a normal one? The comment above from 2.5 years ago includes the creation of a .git directory, which actually already exists. Have things changed in the mean time?
+"""]]
