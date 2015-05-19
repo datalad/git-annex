@@ -1,0 +1,60 @@
+### Please describe the problem.
+
+May be I was simply wrong to assume that if I disable all sync'ing for all the repos, assistant wouldn't try to contact those remote hosts. But it still does
+
+In the logs, since no time stamp per each line, hard to say either recent ones just continuation of previous entries, or new ones:
+
+[[
+
+[2015-05-18 10:29:39 EDT] Watcher: Performing startup scan
+(started...) ssh: connect to host vagus.cns.dartmouth.edu port 22: No route to host^M
+ssh: connect to host vagus.cns.dartmouth.edu port 22: No route to host^M
+ssh: connect to host vagus.cns.dartmouth.edu port 22: No route to host^M
+ssh: connect to host vagus.cns.dartmouth.edu port 22: No route to host^M
+ssh: connect to host vagus.cns.dartmouth.edu port 22: No route to host^M
+ssh: connect to host vagus.cns.dartmouth.edu port 22: No route to host^M
+...
+]]
+
+and in another
+
+[[
+fsck xppaut_6.11b+1.dfsg.orig.tar.gz ok
+fsck xserver-xorg-input-synaptics_1.6.2+git44-ge28575b.orig.tar.gz ok
+fsck xserver-xorg-video-intel_2.99.917.orig.tar.gz (checksum...)
+ok
+(recording state in git...)
+  ** No known copies exist of python-mne_0.8.3+dfsg.orig.tar.gz
+git-annex: fsck: 1 failed
+
+(process:3954): Gtk-WARNING **: Locale not supported by C library.
+    Using the fallback 'C' locale.
+Write failed: Broken pipe^M
+
+(process:20140): Gtk-WARNING **: Locale not supported by C library.
+    Using the fallback 'C' locale.
+
+(process:20178): Gtk-WARNING **: Locale not supported by C library.
+    Using the fallback 'C' locale.
+git-annex: Daemon is already running.
+
+(process:29035): Gtk-WARNING **: Locale not supported by C library.
+    Using the fallback 'C' locale.
+
+(process:29184): Gtk-WARNING **: Locale not supported by C library.
+    Using the fallback 'C' locale.
+
+(process:30127): Gtk-WARNING **: Locale not supported by C library.
+    Using the fallback 'C' locale.
+
+(process:30817): Gtk-WARNING **: Locale not supported by C library.
+    Using the fallback 'C' locale.
+Write failed: Broken pipe^M
+]]
+
+that host (vagus) is RIP (need to remove from syncs)
+btw which are falling into daemon.log.1 not .log
+
+### What version of git-annex are you using? On what operating system?
+
+5.20150509+gitga10e45d-1~ndall+1
