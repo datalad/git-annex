@@ -73,7 +73,7 @@ man:
 	mkdir -p man
 
 docs: mans
-	$(IKIWIKI) doc html -v --wikiname git-annex --plugin=goodstuff \
+	TZ=UTC $(IKIWIKI) doc html -v --wikiname git-annex --plugin=goodstuff \
 		--no-usedirs --disable-plugin=openid --plugin=sidebar \
 		--underlaydir=/dev/null --disable-plugin=shortcut \
 		--disable-plugin=smiley \

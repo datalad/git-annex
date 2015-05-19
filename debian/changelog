@@ -24,6 +24,7 @@ git-annex (5.20150508.2) UNRELEASED; urgency=medium
   * webapp: Fix zombie xdg-open process left when opening file browser.
     Closes: #785498
   * Safer posix fctnl locking implementation, using lock pools and STM.
+  * Build documentation with TZ=UTC for reproducible builds. See #785736.
 
  -- Joey Hess <id@joeyh.name>  Mon, 11 May 2015 12:45:06 -0400
 
