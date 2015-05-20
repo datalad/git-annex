@@ -12,11 +12,13 @@ module Utility.LockPool.Posix (
 	tryLockExclusive,
 	checkLocked,
 	getLockStatus,
+	LockStatus(..),
 	dropLock,
 	checkSaneLock,
 ) where
 
 import qualified Utility.LockFile.Posix as F
+import Utility.LockFile.Posix (LockStatus(..))
 import qualified Utility.LockPool.STM as P
 import Utility.LockPool.STM (LockFile, LockMode(..))
 import Utility.LockPool.LockHandle
@@ -46,11 +48,13 @@ tryLockExclusive mode file = tryMakeLockHandle
 -- Returns Nothing when the file doesn't exist, for cases where
 -- that is different from it not being locked.
 checkLocked :: LockFile -> IO (Maybe Bool)
-checkLocked file = P.getLockStatus P.lockPool file (pure True)
+checkLocked file = P.getLockStatus P.lockPool file
+	(pure (Just True))
 	(F.checkLocked file)
 
-getLockStatus :: LockFile -> IO (Maybe ProcessID)
-getLockStatus file = P.getLockStatus P.lockPool file getProcessID
+getLockStatus :: LockFile -> IO LockStatus
+getLockStatus file = P.getLockStatus P.lockPool file
+	(StatusLockedBy <$> getProcessID)
 	(F.getLockStatus file)
 
 checkSaneLock :: LockFile -> LockHandle -> IO Bool

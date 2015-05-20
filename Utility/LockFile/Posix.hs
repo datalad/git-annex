@@ -12,6 +12,7 @@ module Utility.LockFile.Posix (
 	tryLockExclusive,
 	checkLocked,
 	getLockStatus,
+	LockStatus(..),
 	dropLock,
 	checkSaneLock,
 ) where
@@ -66,8 +67,16 @@ openLockFile filemode lockfile = do
 checkLocked :: LockFile -> IO (Maybe Bool)
 checkLocked = maybe Nothing (Just . isJust) <$$> getLockStatus'
 
-getLockStatus :: LockFile -> IO (Maybe ProcessID)
-getLockStatus = fromMaybe Nothing <$$> getLockStatus'
+data LockStatus = StatusUnLocked | StatusLockedBy ProcessID | StatusNoLockFile
+	deriving (Eq)
+
+getLockStatus :: LockFile -> IO LockStatus
+getLockStatus lockfile = do
+	v <- getLockStatus' lockfile
+	return $ case v of
+		Nothing -> StatusNoLockFile
+		Just Nothing -> StatusUnLocked
+		Just (Just pid) -> StatusLockedBy pid
 
 getLockStatus' :: LockFile -> IO (Maybe (Maybe ProcessID))
 getLockStatus' lockfile = go =<< catchMaybeIO open

@@ -81,7 +81,7 @@ tryTakeLock pool file mode =
 -- danger of conflicting with locks created at the same time this is
 -- running. With the lock pool empty, anything that attempts
 -- to take a lock will block, avoiding that race.
-getLockStatus :: LockPool -> LockFile -> IO v -> IO (Maybe v) -> IO (Maybe v)
+getLockStatus :: LockPool -> LockFile -> IO v -> IO v -> IO v
 getLockStatus pool file getdefault checker = do
 	v <- atomically $ do
 		m <- takeTMVar pool
@@ -94,7 +94,7 @@ getLockStatus pool file getdefault checker = do
 				return Nothing
 			else return $ Just $ atomically $ putTMVar pool m
 	case v of
-		Nothing -> Just <$> getdefault
+		Nothing -> getdefault
 		Just restore -> bracket_ (return ()) restore checker
 
 -- Only runs action to close underlying lock file when this is the last

@@ -140,9 +140,10 @@ checkTransfer t = do
 		let lck = transferLockFile tfile
 		v <- getLockStatus lck
 		case v of
-			Just pid -> catchDefaultIO Nothing $
+			StatusLockedBy pid -> catchDefaultIO Nothing $
 				readTransferInfoFile (Just pid) tfile
-			Nothing -> do
+			StatusNoLockFile -> return Nothing
+			StatusUnLocked -> do
 				-- Take a non-blocking lock while deleting
 				-- the stale lock file.
 				r <- tryLockExclusive Nothing lck
