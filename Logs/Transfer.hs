@@ -145,13 +145,15 @@ checkTransfer t = do
 			StatusNoLockFile -> return Nothing
 			StatusUnLocked -> do
 				-- Take a non-blocking lock while deleting
-				-- the stale lock file.
-				r <- tryLockExclusive Nothing lck
-				case r of
-					Just lockhandle -> do
-						cleanstale
-						dropLock lockhandle
-					_ -> noop
+				-- the stale lock file. Ignore failure
+				-- due to permissions problems, races, etc.
+				void $ tryIO $ do
+					r <- tryLockExclusive Nothing lck
+					case r of
+						Just lockhandle -> do
+							cleanstale
+							dropLock lockhandle
+						_ -> noop
 				return Nothing
 #else
 	v <- liftIO $ lockShared $ transferLockFile tfile
