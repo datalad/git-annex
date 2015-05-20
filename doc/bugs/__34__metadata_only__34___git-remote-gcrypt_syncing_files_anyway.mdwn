@@ -1,0 +1,69 @@
+### Please describe the problem.
+The git-annex assistant queues files for transfer to gcrypt git (not SSH) remotes, which shouldn't happen. `git-annex sync gcrypt` doesn't.  
+I think the problem might be that the assistant triggers a content sync, despite showing "metadata only", and that sync --content circumvents gcrypt.
+
+I have a gcrypt remote set up with github, but I can reprodue this issue using a directory as the destination as well.
+
+When I set up the remote and sync it, it works as it should:
+
+    ~/annex (git)-[annex/direct/master] % git remote add gcrypt gcrypt::/tmp/test
+    ~/annex (git)-[annex/direct/master] % git-annex sync gcrypt
+    commit  (recording state in git...)
+    ok
+    pull gcrypt
+    gcrypt: Development version -- Repository format MAY CHANGE
+    gcrypt: Repository not found: /tmp/test
+    ok
+    push gcrypt
+    gcrypt: Development version -- Repository format MAY CHANGE
+    gcrypt: Repository not found: /tmp/test
+    gcrypt: Setting up new repository
+    gcrypt: Remote ID is :id:thetwentycharacterid
+    Counting objects: 469459, done.
+    Compressing objects: 100% (122643/122643), done.
+    Total 469459 (delta 342415), reused 468156 (delta 341616)
+    gcrypt: Encrypting to:  -r fngerprintremoved
+    gcrypt: Requesting manifest signature
+    To gcrypt::/tmp/test
+     * [new branch]      git-annex -> synced/git-annex
+     * [new branch]      annex/direct/master -> synced/master
+    ok
+
+But when I launch the assistant/webapp, it starts queuing and syncing file contents, even though the remote is listed as "metadata only".
+
+After letting the assistant run for a minute:
+
+    ~ % ls /tmp/test/annex/objects/
+    000  043  091  0ed  130  18e  1d8  21c  26c  2b2  2f4  334  371  3ad  3e3  439  471  4b4  525  565  5c3  61b  691  724  788  ...
+
+*And the files aren't encrypted!*
+
+    find /tmp/test/annex/objects/ -type f -exec file {} \; | head -n10
+    /tmp/test/annex/objects/247/100/SHA256E-s5310--06c62006efde5abd7d03dbb15e3725982c80c0eaffde90e3b566fab26d810d6d.opf/SHA256E-s5310--06c62006efde5abd7d03dbb15e3725982c80c0eaffde90e3b566fab26d810d6d.opf: XML 1.0 document text
+    /tmp/test/annex/objects/5f8/851/SHA256E-s36705--a3b71efc462876709de6c95a7b21218fe437fe45ed39cf5da2709be546c360bc.jpg/SHA256E-s36705--a3b71efc462876709de6c95a7b21218fe437fe45ed39cf5da2709be546c360bc.jpg: JPEG image data, JFIF standard 1.01, aspect ratio, density 1x1, segment length 16, baseline, precision 8, 310x500, frames 3
+    /tmp/test/annex/objects/f09/b22/SHA256E-s358928--7e7680e24baf28a82b94cf9931d73a8353ae5c009d81cb4d8c6e313bdc0b22e0/SHA256E-s358928--7e7680e24baf28a82b94cf9931d73a8353ae5c009d81cb4d8c6e313bdc0b22e0: EPUB document
+    /tmp/test/annex/objects/512/38c/SHA256E-s4246--f7dda72a07aa9f11e329e180c873ba1edd45ac80aa270e379ac52e09302ccfa0.opf/SHA256E-s4246--f7dda72a07aa9f11e329e180c873ba1edd45ac80aa270e379ac52e09302ccfa0.opf: XML 1.0 document text
+    /tmp/test/annex/objects/079/b2d/SHA256E-s496807--d5ba2b9a564a199ea33da246d70f43c8f531c53745130c4ae82ac8b5b5180684.epub/SHA256E-s496807--d5ba2b9a564a199ea33da246d70f43c8f531c53745130c4ae82ac8b5b5180684.epub: EPUB document
+    /tmp/test/annex/objects/6e3/e05/SHA256E-s5145--07a4770b8d1c10e46834b895484c20fca7f7e0850a51f8eb1f7c91f175ab2f8a.opf/SHA256E-s5145--07a4770b8d1c10e46834b895484c20fca7f7e0850a51f8eb1f7c91f175ab2f8a.opf: XML 1.0 document text
+    /tmp/test/annex/objects/b65/708/SHA256E-s271061--dc839391472cf5f08edc2807f7dd016a1ce4f5e3113a964882585fd6dcc51ce2.epub/SHA256E-s271061--dc839391472cf5f08edc2807f7dd016a1ce4f5e3113a964882585fd6dcc51ce2.epub: EPUB document
+    /tmp/test/annex/objects/9a4/9d3/SHA256E-s38917--5a1a770c758f2f9b254ad7f2f6b6e33b87f14486322d04b5d25b09569772b9e1.jpg/SHA256E-s38917--5a1a770c758f2f9b254ad7f2f6b6e33b87f14486322d04b5d25b09569772b9e1.jpg: JPEG image data, JFIF standard 1.01, aspect ratio, density 1x1, segment length 16, baseline, precision 8, 305x500, frames 3
+    /tmp/test/annex/objects/4ec/b23/SHA256E-s307073--cbdef5840ad0addde500d2bfbb5e916c71dea6394f647f6663771abdb05a1776/SHA256E-s307073--cbdef5840ad0addde500d2bfbb5e916c71dea6394f647f6663771abdb05a1776: EPUB document
+    /tmp/test/annex/objects/074/106/SHA256E-s307165--9a379564df17b9e1a0b7a2221e81180db447a05a9f1123b52fe2a618462a922e.epub/SHA256E-s307165--9a379564df17b9e1a0b7a2221e81180db447a05a9f1123b52fe2a618462a922e.epub: EPUB document
+
+The above files are part of my Calibre library.
+
+For my github repo, the assistant still shows files queuing but they don't actually show up in the repo. I think it's trying to sync using SSH but failing.
+
+### What steps will reproduce the problem?
+1. Create a git-remote-gcrypt remote on a git server or in a local directory
+2. Open the git-annex webapp, ensuring that syncing is enabled
+
+### What version of git-annex are you using? On what operating system?
+
+    ~ % git-annex version
+    git-annex version: 5.20150519-g87f28bb
+    build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 Inotify DBus DesktopNotify DNS Feeds Quvi TDFA TorrentParser
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E MD5E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 MD5 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web bittorrent glacier ddar hook external
+
+I'm running Arch Linux
