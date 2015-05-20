@@ -115,7 +115,13 @@ enough, exists for a lot of mailing lists...
 Like it or not, web forums do enable a lot of less technical users to
 participate because they only need their web browser, and crossing
 that boundary can be hard for some people. Mailing lists also do not
-necessarily favor collaboration as much as the other systems...
+necessarily favor collaboration as much as the other systems, because
+they are articulated more towards discussion, as opposed to establishing
+common knowledge.
+
+A good option may be Mailman 3 which, with the new web interface, allows
+forum-like functionalities. Mailman 2 also used to have a usenet interface,
+not sure what became of that in Mailman 3.
 
 Web forums
 ==========
