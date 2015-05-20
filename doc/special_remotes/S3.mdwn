@@ -59,7 +59,6 @@ the S3 remote.
   This is not enabled by default, since other S3 implementations may
   not support multipart uploads or have different limits,
   but can be enabled or changed at any time.
-  time.
 
 * `fileprefix` - By default, git-annex places files in a tree rooted at the
   top of the S3 bucket. When this is set, it's prefixed to the filenames
