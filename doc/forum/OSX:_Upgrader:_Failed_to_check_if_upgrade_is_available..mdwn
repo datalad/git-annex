@@ -1,0 +1,36 @@
+I noticed this in my log file...
+
+<pre>
+[2015-05-21 18:10:02 CDT] main: starting assistant version 5.20150508-gf71c23f
+(started...) gpg: keyring `/Applications/git-annex.app/Contents/MacOS/trustedkeys.gpg' created
+...
+[2015-05-21 18:10:02 CDT] Upgrader: Checking if an upgrade is available.
+...
+[2015-05-21 18:10:02 CDT] call: curl ["-s","-f","-L","-C","-","-#","-o","/var/folders/zk/tk15c40n6h1bjl94ntk5md8h0000gn/T/git-annex.tmp.0/info.sig","http://downloads.kitenet.net/git-annex/OSX/current/10.10_Yosemite/git-annex.dmg.info.sig","--user-agent","git-annex/5.20150419-g900e1b6"]
+[2015-05-21 18:10:03 CDT] call: gpg ["--no-default-keyring","--no-auto-check-trustdb","--no-options","--homedir","/var/folders/zk/tk15c40n6h1bjl94ntk5md8h0000gn/T/git-annex-gpg.tmp.0","--keyring","/Applications/git-annex.app/Contents/MacOS/trustedkeys.gpg","--verify","/var/folders/zk/tk15c40n6h1bjl94ntk5md8h0000gn/T/git-annex.tmp.0/info.sig"]
+gpg: Signature made Fri May  8 15:10:28 2015 CDT using DSA key ID 89C809CB
+gpg: Can't check signature: public key not found
+[2015-05-21 18:10:03 CDT] Upgrader: Failed to check if upgrade is available.
+</pre>
+
+So I copied trustedkeys.gpg from the bundle folder to the MacOS folder, replacing the newly created trustedkeys.gpg and now I get this... which is better... ;-)
+
+<pre>
+[2015-05-21 18:17:24 CDT] main: starting assistant version 5.20150508-gf71c23f
+...
+[2015-05-21 18:17:25 CDT] Upgrader: Checking if an upgrade is available.
+...
+[2015-05-21 18:17:25 CDT] call: curl ["-s","-f","-L","-C","-","-#","-o","/var/folders/zk/tk15c40n6h1bjl94ntk5md8h0000gn/T/git-annex.tmp.0/info","http://downloads.kitenet.net/git-annex/OSX/current/10.10_Yosemite/git-annex.dmg.info","--user-agent","git-annex/5.20150508-gf71c23f"]
+...
+[2015-05-21 18:17:25 CDT] call: curl ["-s","-f","-L","-C","-","-#","-o","/var/folders/zk/tk15c40n6h1bjl94ntk5md8h0000gn/T/git-annex.tmp.0/info.sig","http://downloads.kitenet.net/git-annex/OSX/current/10.10_Yosemite/git-annex.dmg.info.sig","--user-agent","git-annex/5.20150508-gf71c23f"]
+[2015-05-21 18:17:25 CDT] call: gpg ["--no-default-keyring","--no-auto-check-trustdb","--no-options","--homedir","/var/folders/zk/tk15c40n6h1bjl94ntk5md8h0000gn/T/git-annex-gpg.tmp.0","--keyring","/Applications/git-annex.app/Contents/MacOS/trustedkeys.gpg","--verify","/var/folders/zk/tk15c40n6h1bjl94ntk5md8h0000gn/T/git-annex.tmp.0/info.sig"]
+gpg: Signature made Fri May  8 15:10:28 2015 CDT using DSA key ID 89C809CB
+gpg: /var/folders/zk/tk15c40n6h1bjl94ntk5md8h0000gn/T/git-annex-gpg.tmp.0/trustdb.gpg: trustdb created
+gpg: Good signature from "git-annex distribution signing key (for Joey Hess) <id@joeyh.name>"
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 4005 5C6A FD2D 526B 2961  E78F 5EE1 DBA7 89C8 09CB
+[2015-05-21 18:17:25 CDT] Upgrader: No new version found.
+</pre>
+
+FYI
