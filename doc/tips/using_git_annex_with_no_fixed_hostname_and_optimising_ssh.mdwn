@@ -28,7 +28,7 @@ For the laptop it is easy:
 
     git remote add desktop ssh://desktop/~/annex 
 
-However for the desktop to add an ever changing laptops hostname it's a little tricky.  We make use of remote SSH tunnels to do this.  Essentially we have the laptop (which always knows it's own name and address and knows the address of the desktop) create a tunnel starting on an arbitrary port at the desktop and heads back to the laptop on it's own SSH server port (22).
+However for the desktop to add an ever changing laptops hostname it's a little tricky.  We make use of remote SSH tunnels to do this.  Essentially we have the laptop (which always knows its own name and address and knows the address of the desktop) create a tunnel starting on an arbitrary port at the desktop and heads back to the laptop on its own SSH server port (22).
 
 To do this make part of your laptop's SSH config look like this:
 
