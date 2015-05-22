@@ -200,7 +200,8 @@ lockContent key a = do
 		modifyContent lockfile $
 			void $ liftIO $ tryIO $
 				writeFile lockfile ""
-		maybe alreadylocked (return . Just) =<< lockExclusive lockfile
+		maybe alreadylocked (return . Just)
+			=<< liftIO (lockExclusive lockfile)
 	-- never reached; windows always uses a separate lock file
 	lock _ Nothing = return Nothing
 	unlock mlockfile mlockhandle = do
