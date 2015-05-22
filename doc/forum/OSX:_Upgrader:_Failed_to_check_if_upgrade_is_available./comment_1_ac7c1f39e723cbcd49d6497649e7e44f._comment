@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-05-22T17:35:11Z"
+ content="""
+Aha, this is a path propel to the trustedkeys.gpg file, it's in bundle/
+in the OSX app, and git-annex tells gpg to look in the parent directory
+instead.
+
+Fixed in git. Unfortunately I can't fix old versions of git-annex so
+OSX users will need to manually upgrade to version 5.20150522 to get this
+fix.
+"""]]
