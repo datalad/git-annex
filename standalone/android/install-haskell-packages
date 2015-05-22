@@ -112,6 +112,7 @@ EOF
 	patched yesod-persistent
 	patched yesod-form
 	patched crypto-numbers
+	patched clock
 	patched yesod-auth
 	patched yesod
 	patched shakespeare-text
