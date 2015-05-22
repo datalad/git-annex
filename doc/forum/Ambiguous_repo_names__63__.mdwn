@@ -1,0 +1,8 @@
+The output of `git annex info` includes this:
+
+ 	34xx3351-xx14-4039-6xxx-xxx9x5xxxxxx -- wx550 (wx312)
+ 	9x9x07xx-x6x9-464x-7x5x-x3xx42xx7x70 -- wx550
+
+What does this mean? Do I have two different repos both named wx550?
+What is wx312? 
+
