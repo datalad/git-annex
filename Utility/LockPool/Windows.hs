@@ -30,7 +30,7 @@ import Prelude
 lockShared :: LockFile -> IO (Maybe LockHandle)
 lockShared file = tryMakeLockHandle
 	(P.tryTakeLock P.lockPool file LockShared)
-	(F.lockShared mode file)
+	(F.lockShared file)
 
 {- Tries to take an exclusive lock on a file. Fails if another process has
  - a shared or exclusive lock.
