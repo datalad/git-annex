@@ -1,4 +1,4 @@
-git-annex (5.20150508.2) UNRELEASED; urgency=medium
+git-annex (5.20150522) unstable; urgency=medium
 
   * import: Refuse to import files that are within the work tree, as that
     does not make sense and could cause data loss.
@@ -10,7 +10,7 @@ git-annex (5.20150508.2) UNRELEASED; urgency=medium
     However, progress bars are not yet displayed for concurrent transfers,
     pending an updated version of the ascii-progress library.
   * --quiet now makes progress output by rsync, wget, etc be quiet too.
-  * Take space that will be used by running downloads into account when
+  * Take space that will be used by other running downloads into account when
     checking annex.diskreserve.
   * Avoid accumulating transfer failure log files unless the assistant is
     being used.
@@ -18,9 +18,9 @@ git-annex (5.20150508.2) UNRELEASED; urgency=medium
     running at once.
   * Stale transfer lock and info files will be cleaned up automatically
     when get/unused/info commands are run.
-  * unused: Add --used-refspec option and annex.used-refspec, which can specify
-    a set of refs to consider used, rather than the default of considering
-    all refs used.
+  * unused: Add --used-refspec option and annex.used-refspec, which can
+    specify a set of refs to consider used, rather than the default of
+    considering all refs used.
   * webapp: Fix zombie xdg-open process left when opening file browser.
     Closes: #785498
   * Safer posix fctnl locking implementation, using lock pools and STM.
@@ -29,7 +29,7 @@ git-annex (5.20150508.2) UNRELEASED; urgency=medium
     upgrade code will find it. Fixes OSX upgrade going forward, but
     older versions won't upgrade themselves due to this problem.
 
- -- Joey Hess <id@joeyh.name>  Mon, 11 May 2015 12:45:06 -0400
+ -- Joey Hess <id@joeyh.name>  Fri, 22 May 2015 14:20:18 -0400
 
 git-annex (5.20150508.1) unstable; urgency=medium
 
