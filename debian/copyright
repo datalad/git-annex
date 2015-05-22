@@ -104,7 +104,7 @@ License: MIT or GPL-2
 
 Files: static/*/bootstrap* static/*/glyphicons-halflings*
 Copyright: 2012-2014 Twitter, Inc.
-License: MIT
+License: MIT-twitter
   Copyright (c) 2011-2014 Twitter, Inc
   .
   Permission is hereby granted, free of charge, to any person obtaining a copy
