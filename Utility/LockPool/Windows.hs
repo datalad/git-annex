@@ -45,5 +45,5 @@ lockExclusive file = tryMakeLockHandle
 
 {- If the initial lock fails, this is a BUSY wait, and does not
  - guarentee FIFO order of waiters. In other news, Windows is a POS. -}
-waitToLock :: IO (Maybe LockHandle) -> IO LockHandle
+waitToLock :: IO (Maybe lockhandle) -> IO lockhandle
 waitToLock = F.waitToLock
