@@ -174,7 +174,7 @@ osxapp: Build/Standalone Build/OSXMkLibs
 	ln -sf git-annex "$(OSXAPP_BASE)/git-annex-shell"
 	gzcat standalone/licences.gz > $(OSXAPP_BASE)/LICENSE
 	cp $(OSXAPP_BASE)/LICENSE tmp/build-dmg/LICENSE.txt
-	cp standalone/trustedkeys.gpg $(OSXAPP_DEST)
+	cp standalone/trustedkeys.gpg $(OSXAPP_DEST)/Contents/MacOS
 
 	./Build/Standalone $(OSXAPP_BASE)
 
