@@ -207,7 +207,7 @@ no-th-webapp-stage1: Build/EvilSplicer
 # and not overwritten.)
 	cp -uR tmp/splices/* tmp/no-th-tree || true
 # Some additional dependencies needed by the expanded splices.
-	sed -i 's/^  Build-Depends: /  Build-Depends: yesod-routes, yesod-core, shakespeare-css, shakespeare-js, shakespeare, blaze-markup, file-embed, wai-app-static, unordered-containers, /' tmp/no-th-tree/git-annex.cabal
+	sed -i 's/^  Build-Depends: */  Build-Depends: yesod-routes, yesod-core, shakespeare-css, shakespeare-js, shakespeare, blaze-markup, file-embed, wai-app-static, unordered-containers, /' tmp/no-th-tree/git-annex.cabal
 # Avoid warnings due to sometimes unused imports added for the splices.
 	sed -i 's/GHC-Options: \(.*\)-Wall/GHC-Options: \1-Wall -fno-warn-unused-imports /i' tmp/no-th-tree/git-annex.cabal
 	sed -i 's/Extensions: /Extensions: MagicHash /i' tmp/no-th-tree/git-annex.cabal
@@ -237,7 +237,7 @@ android: Build/EvilSplicer
 # and not overwritten.)
 	cp -uR tmp/splices/* tmp/androidtree || true
 # Some additional dependencies needed by the expanded splices.
-	sed -i 's/^  Build-Depends: /  Build-Depends: yesod-routes, yesod-core, shakespeare-css, shakespeare-js, shakespeare, blaze-markup, file-embed, wai-app-static, unordered-containers, /' tmp/androidtree/git-annex.cabal
+	sed -i 's/^  Build-Depends: */  Build-Depends: yesod-routes, yesod-core, shakespeare-css, shakespeare-js, shakespeare, blaze-markup, file-embed, wai-app-static, unordered-containers, /' tmp/androidtree/git-annex.cabal
 # Avoid warnings due to sometimes unused imports added for the splices.
 	sed -i 's/GHC-Options: \(.*\)-Wall/GHC-Options: \1-Wall -fno-warn-unused-imports /i' tmp/androidtree/git-annex.cabal
 	sed -i 's/Extensions: /Extensions: MagicHash /i' tmp/androidtree/git-annex.cabal
