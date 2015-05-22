@@ -43,5 +43,16 @@ while (<>) {
 		$_=".IP\n";
 	}
 
+	if ($inNAME) {
+		# make lexgrog happy
+		s/^git-annex /git-annex-/;
+	}
+	if ($_ eq ".SH NAME\n") {
+		$inNAME=1;
+	}
+	else {
+		$inNAME=0;
+	}
+
 	print $_;
 }
