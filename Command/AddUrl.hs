@@ -115,7 +115,7 @@ performRemote r relaxed uri file sz = ifAnnexed file adduri geturi
 
 downloadRemoteFile :: Remote -> Bool -> URLString -> FilePath -> Maybe Integer -> Annex (Maybe Key)
 downloadRemoteFile r relaxed uri file sz = do
-	urlkey <- Backend.URL.fromUrl uri sz
+	let urlkey = Backend.URL.fromUrl uri sz
 	liftIO $ createDirectoryIfMissing True (parentDir file)
 	ifM (Annex.getState Annex.fast <||> pure relaxed)
 		( do
@@ -206,7 +206,7 @@ performQuvi relaxed pageurl videourl file = ifAnnexed file addurl geturl
 #ifdef WITH_QUVI
 addUrlFileQuvi :: Bool -> URLString -> URLString -> FilePath -> Annex (Maybe Key)
 addUrlFileQuvi relaxed quviurl videourl file = do
-	key <- Backend.URL.fromUrl quviurl Nothing
+	let key = Backend.URL.fromUrl quviurl Nothing
 	ifM (pure relaxed <||> Annex.getState Annex.fast)
 		( do
 			cleanup webUUID quviurl file key Nothing
@@ -264,7 +264,7 @@ addUrlFile relaxed url urlinfo file = do
 
 downloadWeb :: URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
 downloadWeb url urlinfo file = do
-	dummykey <- addSizeUrlKey urlinfo <$> Backend.URL.fromUrl url Nothing
+	let dummykey = addSizeUrlKey urlinfo $ Backend.URL.fromUrl url Nothing
 	let downloader f _ = do
 		showOutput
 		downloadUrl [url] f
@@ -321,7 +321,7 @@ cleanup u url file key mtmp = do
 nodownload :: URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
 nodownload url urlinfo file
 	| Url.urlExists urlinfo = do
-		key <- Backend.URL.fromUrl url (Url.urlSize urlinfo)
+		let key = Backend.URL.fromUrl url (Url.urlSize urlinfo)
 		cleanup webUUID url file key Nothing
 		return (Just key)
 	| otherwise = do

@@ -15,6 +15,12 @@ If the key and file are not specified on the command line, they are
 instead read from stdin. Any number of lines can be provided in this
 mode, each containing a key and filename, separated by a single space.
 
+Normally the key is a git-annex formatted key. However, to make it easier
+to use this to add urls, if the key cannot be parsed as a key, and is a
+valid url, an URL key is constructed from the url. Note that this does not
+register the url as a location of the key; use [[git-annex-registerurl]](1)
+to do that.
+
 # OPTIONS
 
 * `--force`

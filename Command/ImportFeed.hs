@@ -370,4 +370,4 @@ clearFeedProblem :: URLString -> Annex ()
 clearFeedProblem url = void $ liftIO . tryIO . removeFile =<< feedState url
 
 feedState :: URLString -> Annex FilePath
-feedState url = fromRepo . gitAnnexFeedState =<< fromUrl url Nothing
+feedState url = fromRepo $ gitAnnexFeedState $ fromUrl url Nothing

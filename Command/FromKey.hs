@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <id@joeyh.name>
+ - Copyright 2010, 2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -15,6 +15,9 @@ import qualified Annex.Queue
 import Annex.Content
 import Types.Key
 import qualified Annex
+import qualified Backend.URL
+
+import Network.URI
 
 cmd :: [Command]
 cmd = [notDirect $ notBareRepo $
@@ -28,7 +31,7 @@ seek ps = do
 
 start :: Bool -> [String] -> CommandStart
 start force (keyname:file:[]) = do
-	let key = fromMaybe (error "bad key") $ file2key keyname
+	let key = mkKey keyname
 	unless force $ do
 		inbackend <- inAnnex key
 		unless inbackend $ error $
@@ -45,11 +48,18 @@ massAdd = go True =<< map (separate (== ' ')) . lines <$> liftIO getContents
   where
 	go status [] = next $ return status
 	go status ((keyname,f):rest) | not (null keyname) && not (null f) = do
-		let key = fromMaybe (error $ "bad key " ++ keyname) $ file2key keyname
+		let key = mkKey keyname
 		ok <- perform' key f
 		let !status' = status && ok
 		go status' rest
 	go _ _ = error "Expected pairs of key and file on stdin, but got something else."
+
+mkKey :: String -> Key
+mkKey s = case file2key s of
+	Just k -> k
+	Nothing -> case parseURI s of
+		Just _u -> Backend.URL.fromUrl s Nothing
+		Nothing -> error $ "bad key " ++ s
 
 perform :: Key -> FilePath -> CommandPerform
 perform key file = do

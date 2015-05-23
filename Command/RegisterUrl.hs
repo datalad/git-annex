@@ -11,9 +11,9 @@ module Command.RegisterUrl where
 
 import Common.Annex
 import Command
-import Types.Key
 import Logs.Web
 import Annex.UUID
+import Command.FromKey (mkKey)
 
 cmd :: [Command]
 cmd = [notDirect $ notBareRepo $
@@ -25,7 +25,7 @@ seek = withWords start
 
 start :: [String] -> CommandStart
 start (keyname:url:[]) = do
-	let key = fromMaybe (error "bad key") $ file2key keyname
+	let key = mkKey keyname
 	showStart "registerurl" url
 	next $ perform key url
 start [] = do
@@ -38,7 +38,7 @@ massAdd = go True =<< map (separate (== ' ')) . lines <$> liftIO getContents
   where
 	go status [] = next $ return status
 	go status ((keyname,u):rest) | not (null keyname) && not (null u) = do
-		let key = fromMaybe (error $ "bad key " ++ keyname) $ file2key keyname
+		let key = mkKey keyname
 		ok <- perform' key u
 		let !status' = status && ok
 		go status' rest

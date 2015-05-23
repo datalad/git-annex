@@ -31,8 +31,8 @@ backend = Backend
 	}
 
 {- Every unique url has a corresponding key. -}
-fromUrl :: String -> Maybe Integer -> Annex Key
-fromUrl url size = return $ stubKey
+fromUrl :: String -> Maybe Integer -> Key
+fromUrl url size = stubKey
 	{ keyName = genKeyName url
 	, keyBackendName = "URL"
 	, keySize = size

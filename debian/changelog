@@ -1,3 +1,10 @@
+git-annex (5.20150523) UNRELEASED; urgency=medium
+
+  * fromkey, registerurl: Allow urls to be specified instead of keys,
+    and generate URL keys.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 22 May 2015 22:23:32 -0400
+
 git-annex (5.20150522) unstable; urgency=medium
 
   * import: Refuse to import files that are within the work tree, as that

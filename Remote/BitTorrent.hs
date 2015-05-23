@@ -155,7 +155,7 @@ torrentUrlNum u
 
 {- A Key corresponding to the URL of a torrent file. -}
 torrentUrlKey :: URLString -> Annex Key
-torrentUrlKey u = fromUrl (fst $ torrentUrlNum u) Nothing
+torrentUrlKey u = return $ fromUrl (fst $ torrentUrlNum u) Nothing
 
 {- Temporary directory used to download a torrent. -}
 tmpTorrentDir :: URLString -> Annex FilePath
