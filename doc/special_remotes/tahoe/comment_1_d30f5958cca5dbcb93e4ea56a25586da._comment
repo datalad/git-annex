@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="junk@5e3eeba2290e8a3fcf938d9f93b0dfa2565dc7b1"
+ nickname="junk"
+ subject="Tahoe-LAFS helper: multiple FURLs for the same grid"
+ date="2015-05-24T13:48:33Z"
+ content="""
+Hi,
+
+I would like to uses git-annex in combination with Tahoe-LAFS. The grid will consist of private Servers connected though slow DSL-Lines. Thus I would like to use the Tahoe-LAFS helper feature (like a Tahoe-LAFS upload proxy):
+
+https://tahoe-lafs.org/trac/tahoe-lafs/browser/trunk/docs/helper.rst 
+
+This will result in a different FURL for each location pointing to the same Tahoe-LAFS grid. 
+
+How can I setup two git-annex clients to use two different FURLs for the same remote (the same Tahoe-LAFS grid)?
+
+Thank you very much for your help!
+
+Oliver
+"""]]
