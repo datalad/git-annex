@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="clacke"
+ subject="comment 4"
+ date="2015-05-24T17:41:17Z"
+ content="""
+Hm, not so sure that \"rebooted, did not help\" was actually true. I take that back.
+
+Now I saw a stray `git-annex-shell recv-key` process mentioning that file. I killed it and now everything seems fine. I will keep this in mind for next time, to see if I can verify that this was actually the cause of the message, but maybe it's a clue.
+"""]]

@@ -1,0 +1,43 @@
+### What steps will reproduce the problem?
+
+1. Create a fresh annex repo.  Create a dummy test file and add it to the annex.
+2. `git init --bare` in an empty directory on a remote machine.
+3. `git initremote testremote type=gcrypt encryption=hybrid gitrepo=ssh://machine/the/remote/machine/dir keyid=my_key_id`
+4. `git annex sync testremote --content`
+5. Unplug network/switch off WiFi.
+6. `git annex sync testremote --content`, which fails due to the broken network.
+7. Reconnect network, check that can ssh to remote host.
+8. `git annex sync testremote --content`
+
+gcrypt issues warning `gcrypt: WARNING: Remote ID has changed!`
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex 5.20141125 on Debian Wheezy 32-bit.
+
+### Please provide any additional information below.
+
+This is essentially a gcrypt bug, so I don't know if you want to fix it, and I know that the gcrypt author is inactive.
+
+My diagnosis is that when running `git annex sync testremote --content` when the network is disconnected, git can't SSH to the remote and gcrypt makes the mistake of regenerating the remote ID and setting up a new remote.  So when the network comes back online, the local record of the remote's gcrypt ID is just wrong.  gcrypt ought not to "set up a new repository" when there is a network failure.
+
+    gcrypt: Development version -- Repository format MAY CHANGE
+    gcrypt: Repository not found: ssh://url-here
+    gcrypt: Setting up new repository
+    gcrypt: Remote ID is :id:agVyn7wBG/JGwN9LW5Qn
+    Counting objects: 22, done.
+    Compressing objects: 100% (17/17), done.
+    Total 22 (delta 4), reused 0 (delta 0)
+    gcrypt: Encrypting to:  -r my_key_id_here
+    gcrypt: Requesting manifest signature
+    ssh: Could not resolve hostname my_remote_host_here: No such file or directory
+    fatal: Could not read from remote repository.
+    
+    Please make sure you have the correct access rights
+    and the repository exists.
+    error: failed to push some refs to 'gcrypt::ssh://url-here
+    
+      Pushing to testremote failed.
+    
+      (non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote's git config)
+    failed
