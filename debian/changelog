@@ -35,6 +35,7 @@ git-annex (5.20150522) unstable; urgency=medium
   * OSX: Corrected the location of trustedkeys.gpg, so the built-in
     upgrade code will find it. Fixes OSX upgrade going forward, but
     older versions won't upgrade themselves due to this problem.
+  * Remove dependency on obsolete hamlet package. Closes: #786659
 
  -- Joey Hess <id@joeyh.name>  Fri, 22 May 2015 14:20:18 -0400
 
