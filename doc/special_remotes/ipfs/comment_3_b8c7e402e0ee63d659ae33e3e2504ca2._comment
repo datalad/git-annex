@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="rob.syme@92895c98b16fd7a88bed5f10913c522ebfd76c31"
+ nickname="rob.syme"
+ subject="Finding IPFS hash"
+ date="2015-05-26T05:08:38Z"
+ content="""
+I see now that git-annex only reports the ipfs hash when the remote is unencrypted. It the ipfs hash not reported for encrypted ipfs remotes for security reasons?
+"""]]
