@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-05-26T23:24:41Z"
+ content="""
+I hacked `process` to set both `DETACHED_PROCESS` and `CREATE_NO_WINDOW`,
+and this solved it!
+
+However, this will need changes to `process` (or a lot of code duplication).
+
+Filed feature request: <https://github.com/haskell/process/issues/32>
+"""]]
