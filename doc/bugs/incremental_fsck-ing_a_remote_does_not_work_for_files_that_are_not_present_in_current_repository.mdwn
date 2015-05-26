@@ -101,3 +101,5 @@ ok
 giovanni@amalgama:/tmp/test (master)$ git annex fsck --from test --more
 giovanni@amalgama:/tmp/test (master)$
 """]]
+
+> [[done]] --[[Joey]]
