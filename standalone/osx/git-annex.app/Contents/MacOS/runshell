@@ -38,9 +38,9 @@ if [ ! -e "$HOME/.ssh/git-annex-shell" ]; then
 			echo "#!/bin/sh"
 			echo "set -e"
 			echo "if [ \"x\$SSH_ORIGINAL_COMMAND\" != \"x\" ]; then"
-			echo "exec $base/runshell git-annex-shell -c \"\$SSH_ORIGINAL_COMMAND\""
+			echo "exec '$base/runshell' git-annex-shell -c \"\$SSH_ORIGINAL_COMMAND\""
 			echo "else"
-			echo "exec $base/runshell git-annex-shell -c \"\$@\""
+			echo "exec '$base/runshell' git-annex-shell -c \"\$@\""
 			echo "fi"
 		) > "$HOME/.ssh/git-annex-shell"
 		chmod +x "$HOME/.ssh/git-annex-shell"
@@ -53,7 +53,7 @@ if [ ! -e "$HOME/.ssh/git-annex-wrapper" ]; then
 	(
 		echo "#!/bin/sh"
 		echo "set -e"
-		echo "exec $base/runshell \"\$@\""
+		echo "exec '$base/runshell' \"\$@\""
 	) > "$HOME/.ssh/git-annex-wrapper"
 	chmod +x "$HOME/.ssh/git-annex-wrapper"
 fi
@@ -62,12 +62,12 @@ fi
 # system binaries.
 ORIG_PATH="$PATH"
 export ORIG_PATH
-PATH=$bundle:$PATH
+PATH="$bundle:$PATH"
 export PATH
 
 ORIG_GIT_EXEC_PATH="$GIT_EXEC_PATH"
 export ORIG_GIT_EXEC_PATH
-GIT_EXEC_PATH=$bundle
+GIT_EXEC_PATH="$bundle"
 export GIT_EXEC_PATH
 
 ORIG_GIT_TEMPLATE_DIR="$GIT_TEMPLATE_DIR"

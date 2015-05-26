@@ -36,9 +36,9 @@ if [ ! -e "$HOME/.ssh/git-annex-shell" ]; then
 			echo "#!/bin/sh"
 			echo "set -e"
 			echo "if [ \"x\$SSH_ORIGINAL_COMMAND\" != \"x\" ]; then"
-			echo "exec $base/runshell git-annex-shell -c \"\$SSH_ORIGINAL_COMMAND\""
+			echo "exec '$base/runshell' git-annex-shell -c \"\$SSH_ORIGINAL_COMMAND\""
 			echo "else"
-			echo "exec $base/runshell git-annex-shell -c \"\$@\""
+			echo "exec '$base/runshell' git-annex-shell -c \"\$@\""
 			echo "fi"
 		) > "$HOME/.ssh/git-annex-shell"
 		chmod +x "$HOME/.ssh/git-annex-shell"
@@ -51,7 +51,7 @@ if [ ! -e "$HOME/.ssh/git-annex-wrapper" ]; then
 	(
 		echo "#!/bin/sh"
 		echo "set -e"
-		echo "exec $base/runshell \"\$@\""
+		echo "exec '$base/runshell' \"\$@\""
 	) > "$HOME/.ssh/git-annex-wrapper"
 	chmod +x "$HOME/.ssh/git-annex-wrapper"
 fi
@@ -60,11 +60,11 @@ fi
 # system binaries.
 ORIG_PATH="$PATH"
 export ORIG_PATH
-PATH=$base/bin:$PATH
+PATH="$base/bin:$PATH"
 export PATH
 
 # This is used by the shim wrapper around each binary.
-for lib in $(cat $base/libdirs); do
+for lib in $(cat "$base/libdirs"); do
 	GIT_ANNEX_LD_LIBRARY_PATH="$base/$lib:$GIT_ANNEX_LD_LIBRARY_PATH"
 done
 export GIT_ANNEX_LD_LIBRARY_PATH
@@ -73,7 +73,7 @@ export GIT_ANNEX_DIR
 
 ORIG_GCONV_PATH="$GCONV_PATH"
 export ORIG_GCONV_PATH
-GCONV_PATH=$base/$(cat $base/gconvdir)
+GCONV_PATH="$base/$(cat "$base/gconvdir")"
 export GCONV_PATH
 
 # workaround for https://ghc.haskell.org/trac/ghc/ticket/7695
@@ -82,7 +82,7 @@ export LOCPATH
 
 ORIG_GIT_EXEC_PATH="$GIT_EXEC_PATH"
 export ORIG_GIT_EXEC_PATH
-GIT_EXEC_PATH=$base/git-core
+GIT_EXEC_PATH="$base/git-core"
 export GIT_EXEC_PATH
 
 ORIG_GIT_TEMPLATE_DIR="$GIT_TEMPLATE_DIR"
