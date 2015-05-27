@@ -67,10 +67,9 @@ Example:
 Assuming all files in the current directory are available on S3, this will register the public S3 url for the file in git-annex, making it available for everyone *through git-annex*:
 
 <pre>
-bucket=yourbucketname
-find * -type l | while read file ; do
+git annex find --in public-s3 | while read file ; do
   key=$(git annex lookupkey $file)
-  echo $key https://$bucket.s3.amazonaws.com/$key
+  echo $key https://public-annex.s3.amazonaws.com/$key
 done | git annex registerurl
 </pre>
 
