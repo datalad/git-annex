@@ -12,3 +12,7 @@ git-annex: sha1sum parse error
 ### What version of git-annex are you using? On what operating system?
 git-annex 5.20150508
 linux 4.0.4
+
+> [[fixed|done]]; IO errors are now detected and the file moved to bad/;
+> the fsck also continues past that failure now, so if a disk has
+> a lot of damanged files, it will find them all. --[[Joey]] 

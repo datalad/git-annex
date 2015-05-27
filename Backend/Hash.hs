@@ -95,16 +95,17 @@ selectExtension f
 
 {- A key's checksum is checked during fsck. -}
 checkKeyChecksum :: Hash -> Key -> FilePath -> Annex Bool
-checkKeyChecksum hash key file = do
-	fast <- Annex.getState Annex.fast
-	mstat <- liftIO $ catchMaybeIO $ getFileStatus file
-	case (mstat, fast) of
-		(Just stat, False) -> do
-			filesize <- liftIO $ getFileSize' file stat
-			showSideAction "checksum"
-			check <$> hashFile hash file filesize
-		_ -> return True
+checkKeyChecksum hash key file = go `catchHardwareFault` hwfault
   where
+	go = do
+		fast <- Annex.getState Annex.fast
+		mstat <- liftIO $ catchMaybeIO $ getFileStatus file
+		case (mstat, fast) of
+			(Just stat, False) -> do
+				filesize <- liftIO $ getFileSize' file stat
+				showSideAction "checksum"
+				check <$> hashFile hash file filesize
+			_ -> return True
 	expected = keyHash key
 	check s
 		| s == expected = True
@@ -113,6 +114,10 @@ checkKeyChecksum hash key file = do
 		 - fixed. -}
 		| '\\' : s == expected = True
 		| otherwise = False
+
+	hwfault e = do
+		warning $ "hardware fault: " ++ show e
+		return False
 
 keyHash :: Key -> String
 keyHash key = dropExtensions (keyName key)
