@@ -227,9 +227,9 @@ Executable git-annex
      warp (>= 3.0.0.5),
      warp-tls,
      wai, wai-extra,
-     blaze-builder, crypto-api, clientsession,
+     blaze-builder, crypto-api, hamlet, clientsession,
      template-haskell, aeson,
-     shakespeare (>= 2.0.0)
+     shakespeare
     CPP-Options: -DWITH_WEBAPP
 
   if flag(Webapp) && flag (Webapp-secure)
