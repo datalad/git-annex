@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-05-27T19:02:30Z"
+ content="""
+@rob.syme, the reason that does not work when using encryption
+is that git-annex internally generates an encrypted key, and stores
+that on IPFS. The ipfs special remote records the IPFS address
+that can be used for a key, but it's recorded on the encrypted
+key, which is not the one you're querying with whereis.
+
+This is a general problem with git-annex; ipfs is probably the
+first special remote that exposes the problem.
+
+Anyway, I'm not sure what benefit knowing the IPFS address of a file
+encrypted by git-annex is. You need to use git-annex to decrypt it, in
+general. You might be able to use your gpg key to decrypt it, if the
+special remote was set up using pubkey encryption, but that's not going to
+help anyone else you give the IPFS address to access the encrypted data..
+
+Does your use case involve pinning the IPFS address, or something like
+that?
+"""]]
