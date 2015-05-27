@@ -26,16 +26,16 @@ import Prelude
 
 externalSHA :: String -> Int -> FilePath -> IO (Either String String)
 externalSHA command shasize file = do
-	ls <- lines <$> catchDefaultIO "" (readsha (toCommand [File file]))
-	return $ sanitycheck =<< parse ls
+	v <- tryNonAsync $ readsha $ toCommand [File file]
+	return $ case v of
+		Right s -> sanitycheck =<< parse (lines s)
+		Left _ -> Left (command ++ " failed")
   where
-	{- sha commands output the filename, so need to set fileEncoding -}
-	readsha args =
-		withHandle StdoutHandle (createProcessChecked checkSuccessProcess) p $ \h -> do
-			fileEncoding h
-			output  <- hGetContentsStrict h
-			hClose h
-			return output
+	readsha args = withHandle StdoutHandle createProcessSuccess p $ \h -> do
+		fileEncoding h
+		output  <- hGetContentsStrict h
+		hClose h
+		return output
 	  where
 		p = (proc command args) { std_out = CreatePipe }
 
