@@ -146,17 +146,25 @@ trivialMigrate oldkey newbackend afile
 	| otherwise = Nothing
 
 hashFile :: Hash -> FilePath -> Integer -> Annex String
-hashFile hash file filesize = liftIO $ go hash
+hashFile hash file filesize = go hash
   where
 	go (SHAHash hashsize) = case shaHasher hashsize filesize of
-		Left sha -> sha <$> L.readFile file
-		Right command ->
-			either error return 
-				=<< externalSHA command hashsize file
-	go (SkeinHash hashsize) = skeinHasher hashsize <$> L.readFile file
-	go MD5Hash = md5Hasher <$> L.readFile file
+		Left sha -> use sha
+		Right (external, internal) -> do
+			v <- liftIO $ externalSHA external hashsize file
+			case v of
+				Right r -> return r
+				Left e -> do
+					warning e
+					-- fall back to internal since
+					-- external command failed
+					use internal
+	go (SkeinHash hashsize) = use (skeinHasher hashsize)
+	go MD5Hash = use md5Hasher
+	
+	use hasher = liftIO $ hasher <$> L.readFile file
 
-shaHasher :: HashSize -> Integer -> Either (L.ByteString -> String) String
+shaHasher :: HashSize -> Integer -> Either (L.ByteString -> String) (String, L.ByteString -> String)
 shaHasher hashsize filesize
 	| hashsize == 1 = use SysConfig.sha1 sha1
 	| hashsize == 256 = use SysConfig.sha256 sha256
@@ -173,7 +181,7 @@ shaHasher hashsize filesize
 		 - and system. So there is no point forking an external
 		 - process unless the file is large. -}
 		| filesize < 1048576 = use Nothing hasher
-		| otherwise = Right c
+		| otherwise = Right (c, show . hasher)
 
 skeinHasher :: HashSize -> (L.ByteString -> String)
 skeinHasher hashsize 
