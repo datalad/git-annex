@@ -10,6 +10,6 @@ What I've found is that your suggestion of `git revert` is nice because it would
 
 So annex, thorough as it is, creates a `$filename.variant-local.$ext` file after the auto conflict resolution to preserve the original. `git revert` is neater, history wise, because there is no conflict as git knows exactly what's changing and from whence it came, rather than just some new file content showing up from who knows where with `git checkout`. 
 
-The issue it seems is that git revert works on a commit basis, while git checkout can operate on files. If I'm correct in this it would be good to know if annex uses one commit per file, for sure, every time? If this is the case, there would be no problem using the better in most every other way `git revert`.
+The issue it seems is that `git revert` works on a commit basis, while `git checkout` can operate on files. If I'm correct in this it would be good to know if annex uses one commit per file, for sure, every time? If this is the case, there would be no problem using the better in most every other way `git revert`.
 
 Though, I'm still not clear how to use the "depth" referencing with git revert rather than hashes, any suggestions?
