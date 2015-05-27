@@ -17,16 +17,15 @@ import Data.Char
 import Control.Applicative
 import Prelude
 
-{- A type for parameters passed to a shell command. A command can
- - be passed either some Params (multiple parameters can be included,
- - whitespace-separated, or a single Param (for when parameters contain
- - whitespace), or a File.
- -}
-data CommandParam = Params String | Param String | File FilePath
+-- | Parameters that can be passed to a shell command.
+data CommandParam
+	= Params String -- ^ Contains multiple parameters, separated by whitespace
+	| Param String -- ^ A single parameter
+	| File FilePath -- ^ The name of a file
 	deriving (Eq, Show, Ord)
 
-{- Used to pass a list of CommandParams to a function that runs
- - a command and expects Strings. -}
+-- | Used to pass a list of CommandParams to a function that runs
+-- a command and expects Strings. -}
 toCommand :: [CommandParam] -> [String]
 toCommand = concatMap unwrap
   where
@@ -43,9 +42,10 @@ toCommand = concatMap unwrap
 	-- path separator on Windows.
 	pathseps = pathSeparator:"./"
 
-{- Run a system command, and returns True or False
- - if it succeeded or failed.
- -}
+-- | Run a system command, and returns True or False if it succeeded or failed.
+--
+-- This and other command running functions in this module log the commands
+-- run at debug level, using System.Log.Logger.
 boolSystem :: FilePath -> [CommandParam] -> IO Bool
 boolSystem command params = boolSystem' command params id
 
@@ -59,7 +59,7 @@ boolSystemEnv :: FilePath -> [CommandParam] -> Maybe [(String, String)] -> IO Bo
 boolSystemEnv command params environ = boolSystem' command params $
 	\p -> p { env = environ }
 
-{- Runs a system command, returning the exit status. -}
+-- | Runs a system command, returning the exit status.
 safeSystem :: FilePath -> [CommandParam] -> IO ExitCode
 safeSystem command params = safeSystem' command params id
 
@@ -74,23 +74,22 @@ safeSystemEnv :: FilePath -> [CommandParam] -> Maybe [(String, String)] -> IO Ex
 safeSystemEnv command params environ = safeSystem' command params $ 
 	\p -> p { env = environ }
 
-{- Wraps a shell command line inside sh -c, allowing it to be run in a
- - login shell that may not support POSIX shell, eg csh. -}
+-- | Wraps a shell command line inside sh -c, allowing it to be run in a
+-- login shell that may not support POSIX shell, eg csh.
 shellWrap :: String -> String
 shellWrap cmdline = "sh -c " ++ shellEscape cmdline
 
-{- Escapes a filename or other parameter to be safely able to be exposed to
- - the shell.
- -
- - This method works for POSIX shells, as well as other shells like csh.
- -}
+-- | Escapes a filename or other parameter to be safely able to be exposed to
+-- the shell.
+--
+-- This method works for POSIX shells, as well as other shells like csh.
 shellEscape :: String -> String
 shellEscape f = "'" ++ escaped ++ "'"
   where
 	-- replace ' with '"'"'
 	escaped = join "'\"'\"'" $ split "'" f
 
-{- Unescapes a set of shellEscaped words or filenames. -}
+-- | Unescapes a set of shellEscaped words or filenames.
 shellUnEscape :: String -> [String]
 shellUnEscape [] = []
 shellUnEscape s = word : shellUnEscape rest
@@ -107,19 +106,19 @@ shellUnEscape s = word : shellUnEscape rest
 		| c == q = findword w cs
 		| otherwise = inquote q (w++[c]) cs
 
-{- For quickcheck. -}
+-- | For quickcheck.
 prop_idempotent_shellEscape :: String -> Bool
 prop_idempotent_shellEscape s = [s] == (shellUnEscape . shellEscape) s
 prop_idempotent_shellEscape_multiword :: [String] -> Bool
 prop_idempotent_shellEscape_multiword s = s == (shellUnEscape . unwords . map shellEscape) s
 
-{- Segments a list of filenames into groups that are all below the maximum
- - command-line length limit. -}
+-- | Segments a list of filenames into groups that are all below the maximum
+--  command-line length limit.
 segmentXargsOrdered :: [FilePath] -> [[FilePath]]
 segmentXargsOrdered = reverse . map reverse . segmentXargsUnordered
 
-{- Not preserving data is a little faster, and streams better when
- - there are a great many filesnames. -}
+-- | Not preserving order is a little faster, and streams better when
+-- there are a great many filenames.
 segmentXargsUnordered :: [FilePath] -> [[FilePath]]
 segmentXargsUnordered l = go l [] 0 []
   where
