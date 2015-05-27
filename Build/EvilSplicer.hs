@@ -616,7 +616,7 @@ mangleCode = flip_colon
 	let_do = parsecAndReplace $ do
 		void $ string "= do { let "
 		x <- many $ noneOf "=\r\n"
-		ws <- many1 $ oneOf " \t\r\n"
+		_ <- many1 $ oneOf " \t\r\n"
 		void $ string "= "
 		return $ "= do { " ++ x ++ " <- return $ "
 
