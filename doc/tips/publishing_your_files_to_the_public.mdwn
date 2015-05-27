@@ -61,3 +61,17 @@ To enable use a private S3 bucket for the remotes and then pre-sign actual URL w
 Example:
 
     key=`git annex lookupkey "$fname"`;  sign_s3_url.bash --region 'eu-west-1' --bucket 'mybuck' --file-path $key --aws-access-key-id XX --aws-secret-access-key XX --method 'GET' --minute-expire 10
+
+## Adding the S3 URL as a source
+
+Assuming all files in the current directory are available on S3, this will register the public S3 url for the file in git-annex, making it available for everyone *through git-annex*:
+
+<pre>
+bucket=yourbucketname
+find * -type l | while read file ; do
+  key=$(git annex lookupkey $file)
+  echo $key https://$bucket.s3.amazonaws.com/$key
+done | git annex registerurl
+</pre>
+
+`registerurl` was introduced in `5.20150317`. There's a todo open to ensure we don't have to do this by hand: [[todo/credentials-less access to s3]].
