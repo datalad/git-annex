@@ -1,4 +1,4 @@
-Thanks for correcting that, and thanks for the `git-revert` suggestion!
+[Thanks Joey for correcting the docs on `git annex undo --depth`, and thanks for the `git-revert` suggestion as a replacement!](http://git-annex.branchable.com/direct_mode/#comment-b6dcfc80842008e7f9f5b8f612b27867)
 
 **Context: Creating an OSX GUI for assistant managed direct mode repos to help with restoring old file versions.**
 
