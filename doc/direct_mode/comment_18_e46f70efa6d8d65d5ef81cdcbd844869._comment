@@ -6,5 +6,8 @@
 This page mentioned a --depth option, but no, it was never implemented.
 I have updated this page.
 
+If you need something simpler than the basic undo, you can use `git annex
+proxy` to run eg, a `git revert`.
+
 (Deleted a forum thread that duplicated the previous comment.)
 """]]
