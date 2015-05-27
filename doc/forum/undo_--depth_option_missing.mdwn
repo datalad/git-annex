@@ -1,3 +1,0 @@
-Well I just spent 4 hours building a OSX GUI around git annex undo --depth and it responds with "git-annex: unrecognized option '--depth'"... lol Please tell me that option exists somewhere other than the documentation... lol
-
-Should I abandon my efforts or does it really exist (I couldn't find it in the source)?

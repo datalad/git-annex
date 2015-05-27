@@ -112,9 +112,6 @@ dutifully committed it and you realise your mistake, you can try:
 
     git annex undo file
 
-to revert the last change to `file`. Note that you can use the `--depth`
-flag to revert earlier versions of the file.
-
 ## forcing git to use the work tree in direct mode
 
 This is for experts only. You can lose data doing this, or check enormous
