@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="mitzip"
+ subject="comment 19"
+ date="2015-05-27T20:20:11Z"
+ content="""
+Thanks for correcting that, and thanks for the git-revert suggestion!
+
+I have a question about the usage of git-revert for my purposes. I'm wanting to bring back a version of a file at a certain commit (not the whole commit) and I found this in the git docs...
+
+>Note: git revert is used to record some new commits to reverse the effect of some earlier commits (often only a faulty one). If you want to throw away all uncommitted changes in your working directory, you should see git-reset[1], particularly the --hard option. If you want to extract specific files as they were in another commit, you should see git-checkout[1], specifically the git checkout <commit> -- <filename> syntax. Take care with these alternatives as both will discard uncommitted changes in your working directory.
+
+That being said, should I still use `git revert` instead of `git checkout` because `git revert` will take care of making the new commit for me?
+"""]]
