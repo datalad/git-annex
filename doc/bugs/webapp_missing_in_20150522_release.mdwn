@@ -32,3 +32,6 @@ Arch linux
 
 # End of transcript or log.
 """]]
+
+> Unfortunate I didn't notice this. I've fixed it in git and will make a
+> release tomorrow. [[done]] --[[Joey]] 

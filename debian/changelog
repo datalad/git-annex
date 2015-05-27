@@ -5,6 +5,9 @@ git-annex (5.20150523) UNRELEASED; urgency=medium
   * Linux standalone, OSX app: Improve runshell script to always quote
     shell vars, so that it will work when eg, untarred into a directory
     path with spaces in its name.
+  * Revert removal dependency on obsolete hamlet package, since the
+    autobuilders are not ready for this change yet and it prevented them
+    from building the webapp. Reopens: #786659
 
  -- Joey Hess <id@joeyh.name>  Fri, 22 May 2015 22:23:32 -0400
 
