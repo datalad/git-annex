@@ -11,7 +11,7 @@ Setup a shared git repository:
     git init shared ; cd shared # you can also do this on an existing git annex repo
     git config core.sharedrepository group
     chmod g+rwX -R .
-    chown -R :media .
+    chgrp -R group .
 
 The idea here is to use the new (since [[news/version 4.20130909]]) support for git's `sharedRepository` configuration and restrict access to a specific group (instead of the default, a single user). You can also this to make the files accessible to all users on the system:
 
