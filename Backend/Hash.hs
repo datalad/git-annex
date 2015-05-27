@@ -173,15 +173,16 @@ shaHasher hashsize filesize
 	| hashsize == 512 = use SysConfig.sha512 sha512
 	| otherwise = error $ "unsupported sha size " ++ show hashsize
   where
-	use Nothing hasher = Left $ show . hasher
+	use Nothing hasher = Left $ usehasher hasher
 	use (Just c) hasher
 		{- Use builtin, but slightly slower hashing for
 		 - smallish files. Cryptohash benchmarks 90 to 101%
 		 - faster than external hashers, depending on the hash
 		 - and system. So there is no point forking an external
 		 - process unless the file is large. -}
-		| filesize < 1048576 = use Nothing hasher
-		| otherwise = Right (c, show . hasher)
+		| filesize < 1048576 = Left $ usehasher hasher
+		| otherwise = Right (c, usehasher hasher)
+	usehasher hasher = show . hasher
 
 skeinHasher :: HashSize -> (L.ByteString -> String)
 skeinHasher hashsize 
