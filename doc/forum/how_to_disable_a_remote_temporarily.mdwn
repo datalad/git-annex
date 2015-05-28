@@ -1,0 +1,9 @@
+In our quest to find dumb replacements for [[todo/wishlist:___39__get__39___queue_and_schedule]], we have setup a cronjob that would start and stop the assistant during certain time windows, to ensure that it would not download during prime bandwidth time.
+
+But that isn't exactly what we're looking for: we would like the assistant to continue doing its usual thing of adding and removing files, and even syncing the git branches. Just not get/move files around.
+
+One way I thought of doing this was to disable a remote locally. [[git-annex-dead]] of course comes to mind, but that applies to all repositories, so it's not an option. If the remote was in git, i could just `git remote rm origin` and `git remote add origin` and be done with it, but this is the *web* remote, so it doesn't even show up in `git remote -v`.
+
+So how do i disable a [[special remotes]]?
+
+Thanks! --[[anarcat]]
