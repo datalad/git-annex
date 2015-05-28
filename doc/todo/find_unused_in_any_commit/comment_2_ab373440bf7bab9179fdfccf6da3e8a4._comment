@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="eigengrau"
+ subject="comment 2"
+ date="2015-05-28T13:44:32Z"
+ content="""
+This would be absolutely awesome, because it would pruning away old data based on cut-offs. One could squash all history beyond some cut-off point. Or, probably better, one could preserve git history, but supply “git annex fsck” with a cut-off switch that specifies a date or time interval. All data referred to in commits older than the specified interval is then considered unused.
+"""]]

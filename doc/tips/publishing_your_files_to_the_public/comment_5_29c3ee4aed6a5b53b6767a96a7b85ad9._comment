@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ subject="comment 5"
+ date="2015-05-27T21:50:10Z"
+ content="""
+[registerurl](http://source.git-annex.branchable.com/?p=source.git;a=blobdiff;f=doc/git-annex.mdwn;h=c33633e03378b0125a3feb5d1a9fa61ce9bfa9cc;hp=3af9bbb8c1d2e84506f3db80ad7253a7cd8de1d4;hb=abfe3c09b2caac0827a2196076c9bd9185451b9f;hpb=b24bb6b435ddc91510163c7b22db2ba52703724c) may provide a faster version of the above. i've also creted a [[feature request|todo/credentials-less_access_to_s3]] to make this easier with s3 (so that we don't have to setup urls for each individual file). --[[anarcat]]
+"""]]
