@@ -28,3 +28,5 @@ git annex queue rm 20 (removes job 20 from queue)
 * User IP/Remote IP (solved by VPN - outside scope of git-annex, unless someone writes a plugin)
 
 * Access times (obscured by a queue and scheduling)
+
+Note, there is a [[git-annex-schedule]] command now, but it only does `fsck`.
