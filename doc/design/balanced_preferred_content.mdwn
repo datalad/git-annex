@@ -64,3 +64,17 @@ This does not really avoid the limitations above, but having more repos
 that want each file will reduce the chances that no repo will be able to
 take a given file. In the [[iabackup]] scenario, new clients will just be
 assigned until all the files reach the desired level or replication.
+
+However.. Imagine there are 9 repos, all full, and some files have not
+reached desired level of replication. Seems like adding 1 more repo will make
+only 3 in 10 files be wanted by that new repo. Even if the repo has space
+for all the files, it won't be sufficient, and more repos would need to be
+added.
+
+One way to avoid this problem would be if the preferred content was only
+used for the initial distribution of files to a repo. If the repo has
+gotten all the files it wants, it could make a second pass and
+opportunisticly get files it doesn't want but that it has space for
+and that don't have enough copies yet.
+Although this gets back to the original problem of multiple repos racing
+downloads and files getting more than the desired number of copies.
