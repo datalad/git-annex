@@ -1,0 +1,38 @@
+the [[git-annex]] manpage is still pretty long. i wonder if work shouldn't be done to shorten it further.
+
+what i'm thinking of is that this entry, for example, takes up three lines where it could take two, reducing the size by 30% since most commands have only one line explaining it:
+
+<pre>
+ * undo `[filename|directory] ...`
+
+   Undo last change to a file or directory.
+
+   See [[git-annex-undo]](1) for details.
+</pre>
+
+the `git(1)` manpage resolves this by putting the reference in the first line:
+
+<pre>
+       git-init(1)
+           Create an empty Git repository or reinitialize an existing one.
+</pre>
+
+So i would think there are two options here:
+
+1. do like git, but preserving the usage:
+
+<pre>
+ * [[git-annex-undo]](1) `[filename|directory]`
+
+   Undo last change to a file or directory.
+</pre>
+
+2. Put the reference on the same line:
+
+<pre>
+ * undo `[filename|directory] ...`
+
+   Undo last change to a file or directory. See [[git-annex-undo]](1) for details.
+</pre>
+
+Opinions? --[[anarcat]]
