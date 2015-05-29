@@ -84,7 +84,7 @@ With parameters, only the specified files are checked.
 
 # SEE ALSO
 
-[[git-annex]](1)
+[[git-annex]](1), [[git-annex-repair]](1)
 
 # AUTHOR
 
