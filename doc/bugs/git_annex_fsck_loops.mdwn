@@ -87,3 +87,5 @@ failed
 """]]
 
 --[[anarcat]]
+
+Ah damnit, i confused [[git-annex-fsck]] and [[git-annex-repair]]... :/ Mabe one should run the other when it fails? :) sorry for the noise, [[done]].
