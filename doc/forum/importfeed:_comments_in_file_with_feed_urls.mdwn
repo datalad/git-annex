@@ -1,0 +1,5 @@
+Hi,
+
+how can I use comments in the file containing the feed urls.
+
+The hash symbol # causes a bad feed exception.
