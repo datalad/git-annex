@@ -51,6 +51,12 @@ Moves the content of files from or to another remote.
 
 [[git-annex]](1)
 
+[[git-annex-get]](1)
+
+[[git-annex-copy]](1)
+
+[[git-annex-drop]](1)
+
 # AUTHOR
 
 Joey Hess <id@joeyh.name>

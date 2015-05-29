@@ -22,6 +22,12 @@ A repository can be in multiple groups at the same time.
 
 [[git-annex]](1)
 
+[[git-annex-ungroup]](1)
+
+[[git-annex-preferred-content]](1)
+
+[[git-annex-wanted]](1)
+
 # AUTHOR
 
 Joey Hess <id@joeyh.name>

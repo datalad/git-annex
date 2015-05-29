@@ -18,6 +18,12 @@ description, or their UUID. To trust the current repository, use "here".
 
 [[git-annex]](1)
 
+[[git-annex-semitrust]](1)
+
+[[git-annex-untrust]](1)
+
+[[git-annex-dead]](1)
+
 # AUTHOR
 
 Joey Hess <id@joeyh.name>

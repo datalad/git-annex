@@ -46,7 +46,9 @@ to make sure that the git-annex branch reflects reality.
 
 # SEE ALSO
 
-[[git-annex]](1), [[gi-annex-fsck]](1)
+[[git-annex]](1)
+
+[[git-annex-fsck]](1)
 
 # AUTHOR
 

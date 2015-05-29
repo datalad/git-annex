@@ -47,7 +47,10 @@ by running "git annex sync" on the remote.
   By default, this tries to get each annexed file that the local repository 
   does not yet have, and then copies each file to every remote that it is
   syncing with. This behavior can be overridden by configuring the preferred
-  content of a repository. See [git-annex-preferred-content](1)
+  content of a repository. See [[git-annex-preferred-content]](1).
+
+  To make two repositories have the same set of fies, you should use
+  [[git-annex-mirror]](1) instead of this flag.
 
 * `--message=msg`
 
@@ -56,6 +59,10 @@ by running "git annex sync" on the remote.
 # SEE ALSO
 
 [[git-annex]](1)
+
+[[git-annex-preferred-content]](1)
+
+[[git-annex-mirror]](1)
 
 # AUTHOR
 

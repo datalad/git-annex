@@ -11,9 +11,6 @@ git annex assistant
 Watches for changes to files in the current directory and its subdirectories,
 and automatically syncs them to other remotes.
 
-For more details about the git-annex assistant, see
-<https://git-annex.branchable.com/assistant/>
-
 # OPTIONS
 
 * `--autostart`
@@ -44,6 +41,13 @@ For more details about the git-annex assistant, see
 # SEE ALSO
 
 [[git-annex]](1)
+
+[[git-annex-watch]](1)
+
+[[git-annex-schedule]](1)
+
+For more details about the git-annex assistant, see
+<https://git-annex.branchable.com/assistant/>
 
 # AUTHOR
 
