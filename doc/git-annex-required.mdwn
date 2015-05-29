@@ -9,7 +9,7 @@ git annex required `repository [expression]`
 # DESCRIPTION
 
 When run with an expression, configures the content that is required
-to be held in the archive. See [[git-annex-preferred-content]](1)
+to be held in the archive.
 
 For example:
 
@@ -18,9 +18,19 @@ For example:
 Without an expression, displays the current required content setting
 of the repository.
 
+While [[git-annex-wanted]] is just a preference,
+[[git-annex-required]] designates content that should really not be
+removed. For example a file that is `wanted` can be removed with `git
+annex drop`, but if that file is `required`, it would need to be
+removed with `git annex drop --force`.
+
 # SEE ALSO
 
 [[git-annex]](1)
+
+[[git-annex-wanted]](1)
+
+[[git-annex-preferred-content]](1)
 
 # AUTHOR
 
