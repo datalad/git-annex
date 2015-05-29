@@ -315,6 +315,8 @@ subdirectories).
   Expires repositories that have not recently performed an activity
   (such as a fsck).
 
+  See [[git-annex-expire]](1) for details.
+
 * `unused`
 
   Checks the annex for data that does not correspond to any files present
@@ -498,7 +500,7 @@ subdirectories).
 
   De-initialize git-annex and clean out repository.
   
-  See [[git-annex-unannex]](1) for details.
+  See [[git-annex-uninit]](1) for details.
 
 * `reinit uuid|description`
 
