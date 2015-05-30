@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-05-30T15:36:45Z"
+ content="""
+I don't like the "git-init" approach; git-init used to be in PATH,
+but no longer is, so the git man page is really a bit broken now.
+And of course, git-annex-undo is not actually a filename.
+
+The second approach doesn't shorten it much and makes it harder
+to skip over the boilerplate in the links when reading since it's moved
+into the same paragraph as the description and will appear at differing
+positions depending on the description length.
+
+I'd rather make the command name be a hyperlink. However,
+it's difficult to reconcile this with the limitations of man
+pages.
+
+Maybe aim for something like this in the man page display,
+although I don't know if it can be accomplished:
+
+	undo [filename|directory] ...                            git-annex-undo(1)
+	  Undo last change to a file or directory.
+"""]]
