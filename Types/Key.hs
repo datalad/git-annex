@@ -16,6 +16,7 @@ module Types.Key (
 	nonChunkKey,
 	chunkKeyOffset,
 	isChunkKey,
+	isKeyPrefix,
 
 	prop_idempotent_key_encode,
 	prop_idempotent_key_decode
@@ -65,6 +66,10 @@ chunkKeyOffset k = (*)
 
 isChunkKey :: Key -> Bool
 isChunkKey k = isJust (keyChunkSize k) && isJust (keyChunkNum k)
+
+-- Checks if a string looks like at least the start of a key.
+isKeyPrefix :: String -> Bool
+isKeyPrefix s = [fieldSep, fieldSep] `isInfixOf` s
 
 fieldSep :: Char
 fieldSep = '-'

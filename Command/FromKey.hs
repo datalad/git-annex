@@ -54,12 +54,20 @@ massAdd = go True =<< map (separate (== ' ')) . lines <$> liftIO getContents
 		go status' rest
 	go _ _ = error "Expected pairs of key and file on stdin, but got something else."
 
+-- From user input to a Key.
+-- User can input either a serialized key, or an url.
+--
+-- In some cases, an input can be parsed as both a key and as an uri.
+-- For example, "WORM--a:a" parses as an uri. To disambiguate, check
+-- the uri scheme, to see if it looks like the prefix of a key. This relies
+-- on key backend names never containing a ':'.
 mkKey :: String -> Key
-mkKey s = case file2key s of
-	Just k -> k
-	Nothing -> case parseURI s of
-		Just _u -> Backend.URL.fromUrl s Nothing
-		Nothing -> error $ "bad key " ++ s
+mkKey s = case parseURI s of
+	Just u | not (isKeyPrefix (uriScheme u)) ->
+		Backend.URL.fromUrl s Nothing
+	_ -> case file2key s of
+		Just k -> k
+		Nothing -> error $ "bad key/url " ++ s
 
 perform :: Key -> FilePath -> CommandPerform
 perform key file = do

@@ -1,3 +1,10 @@
+git-annex (5.20150529) UNRELEASED; urgency=medium
+
+  * fromkey, registerurl: Improve handling of urls that happen to also
+    be parsable as strange keys.
+
+ -- Joey Hess <id@joeyh.name>  Sat, 30 May 2015 02:07:18 -0400
+
 git-annex (5.20150528) unstable; urgency=medium
 
   * fromkey, registerurl: Allow urls to be specified instead of keys,
