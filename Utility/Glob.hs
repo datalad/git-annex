@@ -20,8 +20,8 @@ module Utility.Glob (
 import System.Path.WildMatch
 
 #ifdef WITH_TDFA
-import Text.Regex.TDFA
-import Text.Regex.TDFA.String
+import "regex-tdfa" Text.Regex.TDFA
+import "regex-tdfa" Text.Regex.TDFA.String
 #else
 import Text.Regex
 import Data.Maybe
