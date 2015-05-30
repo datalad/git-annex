@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-05-30T15:49:41Z"
+ content="""
+Well, this seems to work:
+
+	git annex importfeed --fast http://www.starshipsofa.com/feed/#award-winning-science-fiction-podcast
+
+But that limits you to url formatted comments. Instead, you could make
+the list of feeds into a shell script.
+
+	#!/bin/sh
+	# award winning science fiction podcast
+	git annex importfeed http://www.starshipsofa.com/feed/
+
+Or, you could strip out comments from the list of feeds before passing it to
+git-annex:
+
+	sed 's/#.*//' feeds | xargs git-annex importfeed
+
+How you do it is really up to you..
+"""]]
