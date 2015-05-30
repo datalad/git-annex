@@ -20,7 +20,7 @@ nothing is output, and it exits nonzero.
   Enable batch mode, in which a line containing the filename is read from
   stdin, the key is output to stdout (with a trailing newline), and repeat.
 
-  Note that is there is no key corresponding to the file, an empty line is
+  Note that if there is no key corresponding to the file, an empty line is
   output to stdout instead.
 
 # SEE ALSO
