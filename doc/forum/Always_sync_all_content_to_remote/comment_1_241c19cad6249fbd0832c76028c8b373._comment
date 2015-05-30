@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-05-30T15:33:13Z"
+ content="""
+The configuration you describe sounds right and should work.
+
+Are you sure that the laptop had seen the changed configuration from the
+server when `git annex sync --content` didn't send files to the server?
+Ie, did you try running it a second time?
+"""]]
