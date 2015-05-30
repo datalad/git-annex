@@ -49,7 +49,7 @@ by running "git annex sync" on the remote.
   syncing with. This behavior can be overridden by configuring the preferred
   content of a repository. See [[git-annex-preferred-content]](1).
 
-  To make two repositories have the same set of fies, you should use
+  To make two repositories have the same set of files, you should use
   [[git-annex-mirror]](1) instead of this flag.
 
 * `--message=msg`

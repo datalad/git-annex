@@ -41,6 +41,6 @@ The following tuning parameters are available:
   Use just one level of hash directories in the git-annex branch,
   instead of the default two levels.
 
-Note that git-annex will automatically propigate these setting to
+Note that git-annex will automatically propagate these settings to
 `.git/config` for tuned repositories. You should never directly change
 these settings in `.git/config`

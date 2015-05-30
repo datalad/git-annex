@@ -1,0 +1,1 @@
+Is it possible to download youtube videos in mp4 format by default with importfeed. Without any options git annex often downloads the webm format.  

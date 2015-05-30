@@ -19,7 +19,7 @@ safe to do so.
 * `--from=remote`
 
   Rather than dropping the content of files in the local repository,
-  this option can specifiy a remote from which the files'
+  this option can specify a remote from which the files'
   contents should be removed.
 
 * `--auto`

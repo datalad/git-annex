@@ -24,7 +24,7 @@ To make the import process add metadata to the imported files from the feed,
 
 * `--force`
 
-  Force downoading items it's seen before.
+  Force downloading items it's seen before.
 
 * `--template`
 
