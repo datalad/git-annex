@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-05-30T15:27:57Z"
+ content="""
+git-annex uses quvi for these downloads. If quvi has a command-line 
+option to make it prefer mp4, you can pass it using the annex.quvi-options
+git configuration setting. Or maybe it has a config file. I don't
+know how to configure quvi to do that, but if it's possible to, you should
+be able to get git-annex to run it with that configuration.
+"""]]
