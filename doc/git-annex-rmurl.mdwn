@@ -14,6 +14,8 @@ Record that the file is no longer available at the url.
 
 [[git-annex]](1)
 
+[[git-annex-addurl]](1)
+
 # AUTHOR
 
 Joey Hess <id@joeyh.name>

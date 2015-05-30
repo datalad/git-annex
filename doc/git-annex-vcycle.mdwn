@@ -17,6 +17,8 @@ it to author/tag/year.
 
 [[git-annex]](1)
 
+[[git-annex-metadata]](1)
+
 [[git-annex-view]](1)
 
 [[git-annex-vpop]](1)

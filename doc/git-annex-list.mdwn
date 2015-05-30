@@ -27,6 +27,10 @@ files. This is similar to `git annex whereis` but a more compact display.
 
 [[git-annex]](1)
 
+[[git-annex-find]](1)
+
+[[git-annex-whereis]](1)
+
 # AUTHOR
 
 Joey Hess <id@joeyh.name>

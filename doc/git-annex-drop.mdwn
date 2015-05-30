@@ -59,6 +59,12 @@ safe to do so.
 
 [[git-annex]](1)
 
+[[git-annex-get]](1)
+
+[[git-annex-move]](1)
+
+[[git-annex-copy]](1)
+
 # AUTHOR
 
 Joey Hess <id@joeyh.name>

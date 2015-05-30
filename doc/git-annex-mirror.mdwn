@@ -17,7 +17,7 @@ the source repository, it will be dropped from the destination repository
 when the numcopies setting allows.
   
 Note that mirror does not sync the git repository, but only the file
-contents.
+contents. Use [[git-annex-sync]](1) for that.
 
 # OPTIONS
 
@@ -54,6 +54,8 @@ contents.
 # SEE ALSO
 
 [[git-annex]](1)
+
+[[git-annex-sync]](1)
 
 # AUTHOR
 

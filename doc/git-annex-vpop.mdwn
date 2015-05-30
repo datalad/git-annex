@@ -17,6 +17,8 @@ The optional number tells how many views to pop.
 
 [[git-annex]](1)
 
+[[git-annex-metadata]](1)
+
 [[git-annex-view]](1)
 
 [[git-annex-vfilter]](1)

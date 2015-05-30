@@ -41,6 +41,8 @@ it's best to run migrate in all of them.
 
 [[git-annex]](1)
 
+[[git-annex-upgrade]](1)
+
 # AUTHOR
 
 Joey Hess <id@joeyh.name>

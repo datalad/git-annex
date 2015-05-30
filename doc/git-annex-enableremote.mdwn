@@ -49,6 +49,8 @@ make little sense except in cases like the revoked key example above.
 
 [[git-annex]](1)
 
+[[git-annex-initremote]](1)
+
 # AUTHOR
 
 Joey Hess <id@joeyh.name>

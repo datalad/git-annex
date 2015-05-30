@@ -1,0 +1,113 @@
+I am on a direct remote. I just deleted a directory, and would like to commit that change.
+
+After I run `git annex sync` I see a line which says `commit`, and that is all. I tried to wait it out a few hours, but nothing. Why does git annex hang?
+
+Here is the output of `strace git annex sync`:
+
+```
+chymera@zenbookhost /run/media/chymera/data3 $ strace git annex sync
+execve("/usr/bin/git", ["git", "annex", "sync"], [/* 78 vars */]) = 0
+brk(0)                                  = 0x1afa000
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f17d12c4000
+access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
+open("/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=207886, ...}) = 0
+mmap(NULL, 207886, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f17d1291000
+close(3)                                = 0
+open("/lib64/libpcre.so.1", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0P\27\0\0\0\0\0\0"..., 832) = 832
+fstat(3, {st_mode=S_IFREG|0755, st_size=452672, ...}) = 0
+mmap(NULL, 2548328, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f17d0e36000
+mprotect(0x7f17d0ea4000, 2093056, PROT_NONE) = 0
+mmap(0x7f17d10a3000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x6d000) = 0x7f17d10a3000
+close(3)                                = 0
+open("/lib64/libz.so.1", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0`#\0\0\0\0\0\0"..., 832) = 832
+fstat(3, {st_mode=S_IFREG|0755, st_size=88456, ...}) = 0
+mmap(NULL, 2183720, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f17d0c20000
+mprotect(0x7f17d0c35000, 2093056, PROT_NONE) = 0
+mmap(0x7f17d0e34000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x14000) = 0x7f17d0e34000
+close(3)                                = 0
+open("/lib64/libpthread.so.0", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0@p\0\0\0\0\0\0"..., 832) = 832
+fstat(3, {st_mode=S_IFREG|0755, st_size=125536, ...}) = 0
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f17d1290000
+mmap(NULL, 2204816, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f17d0a05000
+mprotect(0x7f17d0a1b000, 2093056, PROT_NONE) = 0
+mmap(0x7f17d0c1a000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x15000) = 0x7f17d0c1a000
+mmap(0x7f17d0c1c000, 13456, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f17d0c1c000
+close(3)                                = 0
+open("/lib64/librt.so.1", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0`#\0\0\0\0\0\0"..., 832) = 832
+fstat(3, {st_mode=S_IFREG|0755, st_size=31536, ...}) = 0
+mmap(NULL, 2128920, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f17d07fd000
+mprotect(0x7f17d0804000, 2093056, PROT_NONE) = 0
+mmap(0x7f17d0a03000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x6000) = 0x7f17d0a03000
+close(3)                                = 0
+open("/lib64/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\300\33\2\0\0\0\0\0"..., 832) = 832
+fstat(3, {st_mode=S_IFREG|0755, st_size=1660320, ...}) = 0
+mmap(NULL, 3766680, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f17d0465000
+mprotect(0x7f17d05f3000, 2097152, PROT_NONE) = 0
+mmap(0x7f17d07f3000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x18e000) = 0x7f17d07f3000
+mmap(0x7f17d07f9000, 14744, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f17d07f9000
+close(3)                                = 0
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f17d128f000
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f17d128e000
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f17d128d000
+arch_prctl(ARCH_SET_FS, 0x7f17d128e700) = 0
+mprotect(0x7f17d07f3000, 16384, PROT_READ) = 0
+mprotect(0x7f17d0c1a000, 4096, PROT_READ) = 0
+mprotect(0x7f17d0a03000, 4096, PROT_READ) = 0
+mprotect(0x7f17d0e34000, 4096, PROT_READ) = 0
+mprotect(0x7f17d10a3000, 4096, PROT_READ) = 0
+mprotect(0x79b000, 4096, PROT_READ)     = 0
+mprotect(0x7f17d12c5000, 4096, PROT_READ) = 0
+munmap(0x7f17d1291000, 207886)          = 0
+set_tid_address(0x7f17d128e9d0)         = 2218
+set_robust_list(0x7f17d128e9e0, 24)     = 0
+rt_sigaction(SIGRTMIN, {0x7f17d0a0bb10, [], SA_RESTORER|SA_SIGINFO, 0x7f17d0a14d20}, NULL, 8) = 0
+rt_sigaction(SIGRT_1, {0x7f17d0a0bba0, [], SA_RESTORER|SA_RESTART|SA_SIGINFO, 0x7f17d0a14d20}, NULL, 8) = 0
+rt_sigprocmask(SIG_UNBLOCK, [RTMIN RT_1], NULL, 8) = 0
+getrlimit(RLIMIT_STACK, {rlim_cur=8192*1024, rlim_max=RLIM64_INFINITY}) = 0
+open("/dev/null", O_RDWR)               = 3
+close(3)                                = 0
+rt_sigprocmask(SIG_UNBLOCK, [PIPE], NULL, 8) = 0
+rt_sigaction(SIGPIPE, {SIG_DFL, [PIPE], SA_RESTORER|SA_RESTART, 0x7f17d0499ee0}, {SIG_DFL, [], 0}, 8) = 0
+brk(0)                                  = 0x1afa000
+brk(0x1b1b000)                          = 0x1b1b000
+open("/usr/lib64/locale/locale-archive", O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=106086208, ...}) = 0
+mmap(NULL, 106086208, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f17c9f39000
+close(3)                                = 0
+stat(".git", {st_mode=S_IFDIR|0755, st_size=4096, ...}) = 0
+access("/etc/gitconfig", R_OK)          = -1 ENOENT (No such file or directory)
+access("/home/chymera/.config/git/config", R_OK) = -1 ENOENT (No such file or directory)
+access("/home/chymera/.gitconfig", R_OK) = 0
+open("/home/chymera/.gitconfig", O_RDONLY) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=147, ...}) = 0
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f17d12c3000
+read(3, "[user]\n\temail = h.chr@mail.ru\n\tn"..., 4096) = 147
+read(3, "", 4096)                       = 0
+close(3)                                = 0
+munmap(0x7f17d12c3000, 4096)            = 0
+access(".git/config", R_OK)             = 0
+open(".git/config", O_RDONLY)           = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=335, ...}) = 0
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f17d12c3000
+read(3, "[core]\n\trepositoryformatversion "..., 4096) = 335
+read(3, "", 4096)                       = 0
+close(3)                                = 0
+munmap(0x7f17d12c3000, 4096)            = 0
+pipe([3, 4])                            = 0
+clone(child_stack=0, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7f17d128e9d0) = 2219
+rt_sigaction(SIGINT, {0x4f4d70, [INT], SA_RESTORER|SA_RESTART, 0x7f17d0499ee0}, {SIG_DFL, [], 0}, 8) = 0
+rt_sigaction(SIGHUP, {0x4f4d70, [HUP], SA_RESTORER|SA_RESTART, 0x7f17d0499ee0}, {SIG_DFL, [], 0}, 8) = 0
+rt_sigaction(SIGTERM, {0x4f4d70, [TERM], SA_RESTORER|SA_RESTART, 0x7f17d0499ee0}, {SIG_DFL, [], 0}, 8) = 0
+rt_sigaction(SIGQUIT, {0x4f4d70, [QUIT], SA_RESTORER|SA_RESTART, 0x7f17d0499ee0}, {SIG_DFL, [], 0}, 8) = 0
+rt_sigaction(SIGPIPE, {0x4f4d70, [PIPE], SA_RESTORER|SA_RESTART, 0x7f17d0499ee0}, {SIG_DFL, [PIPE], SA_RESTORER|SA_RESTART, 0x7f17d0499ee0}, 8) = 0
+close(4)                                = 0
+read(3, "", 1)                          = 0
+close(3)                                = 0
+wait4(2219, commit  
+```

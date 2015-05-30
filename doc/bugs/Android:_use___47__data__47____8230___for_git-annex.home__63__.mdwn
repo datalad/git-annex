@@ -1,0 +1,6 @@
+### Please describe the problem.
+I’ve only just set up git-annex on my Android system, so I might be confused; but from what I could find on this site, the Android build only supports passwordless SSH key files, which must be deployed in /sdcard/git-annex.home/.ssh (I also found something about git-annex generating keys by itself, but the web app didn’t refer to something like that, so I take it this feature is gone now). What perplexed me about this is that /sdcard on Android is a VFAT file-system, and is set up so that any user or application may read it (with a permissions mask for the sdcard group), which isn’t ideal for a passwordless key. From what I could gather, there’s also a place in the virtual file-system under /data that is intended to house private, per-application data. Should git-annex use this location as its home instead?
+
+### What version of git-annex are you using? On what operating system?
+git-annex 5.20150522-g260b59e
+Android 4.4.4
