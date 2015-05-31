@@ -138,7 +138,7 @@ linuxstandalone-nobuild: Build/Standalone Build/LinuxMkLibs
 
 	cd tmp/git-annex.linux && find . -type f > git-annex.MANIFEST
 	cd tmp/git-annex.linux && find . -type l >> git-annex.MANIFEST
-	cd tmp && tar czf git-annex-standalone-$(shell dpkg --print-architecture).tar.gz git-annex.linux
+	cd tmp && tar c git-annex.linux | gzip -9 --rsyncable > git-annex-standalone-$(shell dpkg --print-architecture).tar.gz
 
 # Run this target to build git-annex-standalone*.deb
 debianstandalone: dpkg-buildpackage-F
