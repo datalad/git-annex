@@ -26,7 +26,7 @@ That makes pairing a little more difficult that it needs to.
 
  [public shares are not supported]: https://forum.syncthing.net/t/implementing-public-shares/1186
 
-[[!toc]]
+[[!toc levels=2]]
 
 Possible implementations
 ========================
