@@ -29,7 +29,18 @@ Another thing, this would be completely trackerless. You just use remote groups 
 
 This was originally posted [[as a forum post|forum/Wishlist:_Bittorrent-like_transfers]] by [[users/GLITTAH]].
 
-Update: note how [[design/assistant/telehash/]] may be able to answer this specific use case.
+Update: there are multiple projects trying to solve this problem space outside of git-annex, which git-annex should reuse.
+
+ * [[design/assistant/telehash/]] support is still not complete, as the upstream spec and implementation (particularly Haskell bits), need to mature
+ * [[special_remotes/ipfs/]] is now a special remote that does respond to some of the requirements (but [duplicates files around](https://github.com/ipfs/go-ipfs/issues/875) even more and is [kind of](https://github.com/ipfs/go-ipfs/issues/872) [slow](https://github.com/ipfs/go-ipfs/issues/898))
+ * [Maidsafe](http://maidsafe.net/) is another option, which provides storage and uses crypto-currency incentives
+ * [Storj](http://storj.io/) is similar
+ * [camlistore](https://camlistore.org/) is yet another option
+ * [syncthing](https://syncthing.net/) looks like a btsync replacement, and could also be interesting
+ * [gittorrent](http://blog.printf.net/articles/2015/05/29/announcing-gittorrent-a-decentralized-github/) allows for decentralised sharing of the git objects, which could replace pairing between repositories, except it [doesn't support push yet](https://github.com/cjb/GitTorrent/issues/3)
+ * [gitocalypse](https://github.com/SeekingFor/gitocalypse) is similar to gittorrent, except it uses Freenet and HG (Mercurial?!) instead of the bittorrent DHT
+
+joeyh's approach for now is to [[wait and see what will emerge|devblog/day_219__catching_up_and_looking_back/]], but of course people are welcome to implement their own [[special_remotes]] to fix this problem!
 
 Using an external client (addurl torrent support)
 =================================================
