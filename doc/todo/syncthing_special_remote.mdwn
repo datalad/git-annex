@@ -1,0 +1,108 @@
+Among all possible [[todo/Bittorrent-like_features]] implementations,
+i think [Syncthing][] is one of the most interesting ones.
+
+First off, it is already [packaged for Debian][] with an [ITP
+underway][]. Second, it seems to use a fairly simple protocol, the
+[Block Exchange Protocol][]. It doesn't try to do everything under the
+sun and keeps things simple: NAT transversal, reuse TLS primitives and
+TCP, etc. It also seems to scale pretty well, if we are to believe the
+[usage statistics][].
+
+ [Syncthing]: https://syncthing.net/
+ [packaged for Debian]: http://apt.syncthing.net/
+ [ITP underway]: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=749887
+ [Block Exchange Protocol]: https://github.com/syncthing/specs/blob/master/BEPv1.md
+ [usage statistics]: https://data.syncthing.net/
+
+It does require the syncthing daemon to be running in order to
+transfer files so it could have similar problems than the
+[[special_remotes/ipfs]] remote which is that files get locally copied
+between the git-annex repository and the special remote.
+
+Furthermore, one of the main problems with this remote is that [public
+shares are not supported][], that is, in order to share with another
+remote, both remotes need to explicitely add each other, in syncthing!
+That makes pairing a little more difficult that it needs to.
+
+ [public shares are not supported]: https://forum.syncthing.net/t/implementing-public-shares/1186
+
+[[!toc levels=2]]
+
+Possible implementations
+========================
+
+I can think of a few different ways of implementing such a remote:
+
+ 1. share the `.git/annex/objects` directory through syncthing
+ 2. copy objects to the `~/Sync` directory (or elsewhere)
+ 3. interoperate with syncthing through the API
+ 4. reimplement the [Block Exchange Protocol][] natively
+
+Sharing the objects
+-------------------
+
+This is the easiest, but maybe the most dangerous: start syncthing and
+expose the `.git/annex/objects` directory to other peers.
+
+This of course has the downside that syncthing could technically start
+destroying objects without git-annex's knowledge, which is really
+bad. Hopefully, the readonly permissions on files could keep that from
+happening, but it still seems pretty unsafe.
+
+There is a way to mark a folder as "master" which makes it ignore
+changes from other nodes, but then that breaks the peer to peer nature
+of the protocol, which is hardly what we want. Marking the repo as
+untrusted would also be an important requirement here.
+
+Copying objects
+---------------
+
+Copying objects is the safest and easiest way to implement this. Add a
+new key? You just copy it to the sync directory. Remove a key? Just
+remove the file, and syncthing picks up the change.
+
+The main problem with this approach is of course the duplication of
+data, doubling the disk usage of all objects stored in the syncthing
+remote locally.
+
+There's also the problem that we do not reflect the fact that the
+git-annex objects are (potentially) in multiple syncthing remotes, and
+thus changing the number of copies. Even worse, once a file is dropped
+on one syncthing remote, it gets dropped everywhere. The solution for
+this of course is simply treat syncthing as a single copy of the
+objects. Note that this also applies to the shared objects method
+above.
+
+This can be easily implemented with the [[special_remotes/directory]]
+special remote:
+
+    git annex initremote syncthing type=directory directory=$HOME/Sync/ encryption=none
+    git annex describe syncthing "default syncthing directory"
+    git annex untrust syncthing
+
+Note that the last step isn't necessary if the syncthing folder is
+marked as "master".
+
+Communicate with the API
+------------------------
+
+Another way would be to talk directly to the [REST API][] (there's
+also a separate [event API][] for GUIs). Currently, this doesn't seem
+to hold much promise because the APIs are mostly read-only and don't
+allow adding objects at all, for example.
+
+ [REST API]: http://docs.syncthing.net/dev/rest.html
+ [event API]: http://docs.syncthing.net/dev/events.html
+
+Reimplement the protocol
+------------------------
+
+This would involve writing a syncthing client using the
+[Block Exchange Protocol][] specification. This would allow more
+complete control over the distribution of objects and so on,
+respecting git-annex's wanted/required content policies while at the
+same time sharing the data with other syncthing endpoints. It would
+also allow for tracking the number of copies of the objects and so on.
+
+Of course, this is a major undertaking and probably the hardest
+approach, but also the one potentially giving the most benefits.
