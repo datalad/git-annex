@@ -5,15 +5,17 @@ First off, it is already [packaged for Debian][] with an [ITP
 underway][]. Second, it seems to use a fairly simple protocol, the
 [Block Exchange Protocol][]. It doesn't try to do everything under the
 sun and keeps things simple: NAT transversal, reuse TLS primitives and
-TCP, etc.
+TCP, etc. It also seems to scale pretty well, if we are to believe the
+[usage statistics][].
 
  [Syncthing]: https://syncthing.net/
  [packaged for Debian]: http://apt.syncthing.net/
  [ITP underway]: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=749887
  [Block Exchange Protocol]: https://github.com/syncthing/specs/blob/master/BEPv1.md
+ [usage statistics]: https://data.syncthing.net/
 
 It does require the syncthing daemon to be running in order to
-transfer files so it would have similar problems than the
+transfer files so it could have similar problems than the
 [[special_remotes/ipfs]] remote which is that files get locally copied
 between the git-annex repository and the special remote.
 
