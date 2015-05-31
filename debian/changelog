@@ -2,6 +2,8 @@ git-annex (5.20150529) UNRELEASED; urgency=medium
 
   * fromkey, registerurl: Improve handling of urls that happen to also
     be parsable as strange keys.
+  * sync, remotedaemon: Pass configured ssh-options even when
+    annex.sshcaching is disabled.
 
  -- Joey Hess <id@joeyh.name>  Sat, 30 May 2015 02:07:18 -0400
 

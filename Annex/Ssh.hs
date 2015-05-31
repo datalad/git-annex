@@ -271,19 +271,22 @@ sshOptionsTo remote gc g
 		Just host -> do
 			(msockfile, _) <- sshCachingInfo (host, Git.Url.port remote)
 			case msockfile of
-				Nothing -> return g
+				Nothing -> use []
 				Just sockfile -> do
-					command <- liftIO programPath
 					prepSocket sockfile
-					let val = toSshOptionsEnv $ concat
-						[ sshConnectionCachingParams sockfile
-						, map Param (remoteAnnexSshOptions gc)
-						]
-					liftIO $ do
-						g' <- addGitEnv g sshOptionsEnv val
-						addGitEnv g' "GIT_SSH" command
+					use (sshConnectionCachingParams sockfile)
   where
 	uncached = return g
+
+	use opts = do
+		let val = toSshOptionsEnv $ concat
+			[ opts
+			, map Param (remoteAnnexSshOptions gc)
+			]
+		command <- liftIO programPath
+		liftIO $ do
+			g' <- addGitEnv g sshOptionsEnv val
+			addGitEnv g' "GIT_SSH" command
 
 runSshOptions :: [String] -> String -> IO ()
 runSshOptions args s = do
