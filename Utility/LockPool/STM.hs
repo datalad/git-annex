@@ -20,9 +20,10 @@ module Utility.LockPool.STM (
 import System.IO.Unsafe (unsafePerformIO)
 import qualified Data.Map.Strict as M
 import Control.Concurrent.STM
-import Control.Applicative
 import Control.Exception
 import Control.Monad
+import Control.Applicative
+import Prelude
 
 type LockFile = FilePath
 
