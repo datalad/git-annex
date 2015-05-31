@@ -36,6 +36,7 @@ Update: there are multiple projects trying to solve this problem space outside o
  * [Maidsafe](http://maidsafe.net/) is another option, which provides storage and uses crypto-currency incentives
  * [Storj](http://storj.io/) is similar
  * [camlistore](https://camlistore.org/) is yet another option
+ * [syncthing](https://syncthing.net/) looks like a btsync replacement, and could also be interesting
  * [gittorrent](http://blog.printf.net/articles/2015/05/29/announcing-gittorrent-a-decentralized-github/) allows for decentralised sharing of the git objects, which could replace pairing between repositories, except it [doesn't support push yet](https://github.com/cjb/GitTorrent/issues/3)
  * [gitocalypse](https://github.com/SeekingFor/gitocalypse) is similar to gittorrent, except it uses Freenet and HG (Mercurial?!) instead of the bittorrent DHT
 
