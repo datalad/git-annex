@@ -1,7 +1,7 @@
 #!/bin/bash
 # Bootstraps from an empty cabal (plus apt-get build-dep git-annex)
-# to all the necessary haskell packages being installed, with the
-# necessary patches to work on architectures that lack template haskell.
+# to all the necessary haskell packages being installed.
+# Some packages are patched for wider portability.
 #
 # The cabal.config is used to pin the haskell packages to the last
 # versions that have been gotten working. To update, delete the
@@ -58,8 +58,6 @@ patched () {
 installgitannexdeps () {
 	pushd ../..
 	ln -sf standalone/linux/cabal.config
-	echo "cabal install QuickCheck -f-templateHaskell"
-	cabal install -j1 QuickCheck -f-templateHaskell
 	echo cabal install --only-dependencies "$@"
 	cabal install -j1 --only-dependencies "$@"
 	rm -f cabal.config
@@ -72,31 +70,6 @@ install_pkgs () {
 	cd tmp
 
 	patched network
-	patched wai-app-static
-	patched vector
-	patched aeson
-	patched shakespeare
-	patched yesod-routes
-	patched monad-logger
-	patched skein
-	patched shakespeare-js
-	patched hamlet
-	patched yesod-core
-	patched persistent
-	patched persistent-template
-	patched file-embed
-	patched process-conduit
-	patched yesod-static
-	patched yesod-persistent
-	patched yesod-form
-	patched yesod-auth
-	patched yesod
-	patched generic-deriving
-	patched profunctors
-	patched reflection
-	patched lens
-	patched xml-hamlet
-	patched DAV
 
 	cd ..
 
