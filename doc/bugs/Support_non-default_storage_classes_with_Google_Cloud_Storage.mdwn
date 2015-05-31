@@ -1,0 +1,89 @@
+### Please describe the problem.
+
+The S3 remote does not support Google Cloud Storage buckets with the Durable Reduced Availability or Nearline storage classes.  These are less-expensive alternatives to the Standard storage class, which would otherwise be a good fit for git-annex.
+
+### What steps will reproduce the problem?
+
+1. `git annex initremote cloud type=S3 encryption=none host=storage.googleapis.com bucket=storage-class-test storageclass=NEARLINE`
+2. Observe that the bucket is created with Standard storage class.
+
+or,
+
+1. Use Cloud Storage web interface to create the `storage-class-test` bucket with Nearline storage class.
+2. `git annex -d initremote cloud type=S3 encryption=none host=storage.googleapis.com bucket=storage-class-test storageclass=NEARLINE`
+2. Observe failure shown below.
+
+### What version of git-annex are you using? On what operating system?
+
+5.20150528, Fedora 22
+
+### Please provide any additional information below.
+
+Google Cloud Storage applies the storage class per-bucket rather than per-object.  As a result there are two separate problems:
+
+1. If git-annex creates the bucket, there is no way to get it to pass the `StorageClass` XML element in the PUT Bucket operation (see e.g. [here](https://cloud.google.com/storage/docs/nearline#create), the "XML API" tab).
+2. If the bucket is manually created by the user, subsequent PUT Object operations explicitly pass an `x-amz-storage-class` of `STANDARD` (or `REDUCED_REDUNDANCY`).  Since this is incompatible with the storage class of the bucket, Google Cloud Storage returns `InvalidArgument`.
+
+Example of the second problem:
+
+[[!format sh """
+$ git annex -d initremote cloud type=S3 encryption=none host=storage.googleapis.com bucket=storage-class-test storageclass=NEARLINE 
+[2015-05-31 17:38:21 EDT] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2015-05-31 17:38:21 EDT] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2015-05-31 17:38:21 EDT] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..417a5e8880eb22fa5288056f4f4e5d998e64a3e6","-n1","--pretty=%H"]
+[2015-05-31 17:38:21 EDT] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+initremote cloud (checking bucket...) [2015-05-31 17:38:21 EDT] String to sign: "GET\n\n\nSun, 31 May 2015 21:38:21 GMT\n/storage-class-test/annex-uuid"
+[2015-05-31 17:38:21 EDT] Host: "storage-class-test.storage.googleapis.com"
+[2015-05-31 17:38:21 EDT] Path: "/annex-uuid"
+[2015-05-31 17:38:21 EDT] Query string: ""
+[2015-05-31 17:38:21 EDT] Response status: Status {statusCode = 404, statusMessage = "Not Found"}
+[2015-05-31 17:38:21 EDT] Response header 'Content-Type': 'application/xml; charset=UTF-8'
+[2015-05-31 17:38:21 EDT] Response header 'Content-Length': '127'
+[2015-05-31 17:38:21 EDT] Response header 'Date': 'Sun, 31 May 2015 21:38:21 GMT'
+[2015-05-31 17:38:21 EDT] Response header 'Expires': 'Sun, 31 May 2015 21:38:21 GMT'
+[2015-05-31 17:38:21 EDT] Response header 'Cache-Control': 'private, max-age=0'
+[2015-05-31 17:38:21 EDT] Response header 'Server': 'UploadServer ("Built on May 21 2015 09:31:47 (1432225907)")'
+[2015-05-31 17:38:21 EDT] Response header 'Alternate-Protocol': '80:quic,p=0'
+[2015-05-31 17:38:21 EDT] Response metadata: S3: request ID=<none>, x-amz-id-2=<none>
+[2015-05-31 17:38:21 EDT] String to sign: "GET\n\n\nSun, 31 May 2015 21:38:21 GMT\n/storage-class-test/"
+[2015-05-31 17:38:21 EDT] Host: "storage-class-test.storage.googleapis.com"
+[2015-05-31 17:38:21 EDT] Path: "/"
+[2015-05-31 17:38:21 EDT] Query string: ""
+[2015-05-31 17:38:22 EDT] Response status: Status {statusCode = 200, statusMessage = "OK"}
+[2015-05-31 17:38:22 EDT] Response header 'x-goog-metageneration': '1'
+[2015-05-31 17:38:22 EDT] Response header 'Content-Type': 'application/xml; charset=UTF-8'
+[2015-05-31 17:38:22 EDT] Response header 'Content-Length': '219'
+[2015-05-31 17:38:22 EDT] Response header 'Date': 'Sun, 31 May 2015 21:38:21 GMT'
+[2015-05-31 17:38:22 EDT] Response header 'Expires': 'Sun, 31 May 2015 21:38:21 GMT'
+[2015-05-31 17:38:22 EDT] Response header 'Cache-Control': 'private, max-age=0'
+[2015-05-31 17:38:22 EDT] Response header 'Server': 'UploadServer ("Built on May 21 2015 09:31:47 (1432225907)")'
+[2015-05-31 17:38:22 EDT] Response header 'Alternate-Protocol': '80:quic,p=0'
+[2015-05-31 17:38:22 EDT] Response metadata: S3: request ID=<none>, x-amz-id-2=<none>
+[2015-05-31 17:38:22 EDT] String to sign: "GET\n\n\nSun, 31 May 2015 21:38:22 GMT\n/storage-class-test/annex-uuid"
+[2015-05-31 17:38:22 EDT] Host: "storage-class-test.storage.googleapis.com"
+[2015-05-31 17:38:22 EDT] Path: "/annex-uuid"
+[2015-05-31 17:38:22 EDT] Query string: ""
+[2015-05-31 17:38:22 EDT] Response status: Status {statusCode = 404, statusMessage = "Not Found"}
+[2015-05-31 17:38:22 EDT] Response header 'Content-Type': 'application/xml; charset=UTF-8'
+[2015-05-31 17:38:22 EDT] Response header 'Content-Length': '127'
+[2015-05-31 17:38:22 EDT] Response header 'Date': 'Sun, 31 May 2015 21:38:22 GMT'
+[2015-05-31 17:38:22 EDT] Response header 'Expires': 'Sun, 31 May 2015 21:38:22 GMT'
+[2015-05-31 17:38:22 EDT] Response header 'Cache-Control': 'private, max-age=0'
+[2015-05-31 17:38:22 EDT] Response header 'Server': 'UploadServer ("Built on May 21 2015 09:31:47 (1432225907)")'
+[2015-05-31 17:38:22 EDT] Response header 'Alternate-Protocol': '80:quic,p=0'
+[2015-05-31 17:38:22 EDT] Response metadata: S3: request ID=<none>, x-amz-id-2=<none>
+[2015-05-31 17:38:22 EDT] String to sign: "PUT\n\n\nSun, 31 May 2015 21:38:22 GMT\nx-amz-storage-class:STANDARD\n/storage-class-test/annex-uuid"
+[2015-05-31 17:38:22 EDT] Host: "storage-class-test.storage.googleapis.com"
+[2015-05-31 17:38:22 EDT] Path: "/annex-uuid"
+[2015-05-31 17:38:22 EDT] Query string: ""
+[2015-05-31 17:38:22 EDT] Body: "6eb85d96-8f9b-456a-819c-1724d12d2ffd"
+[2015-05-31 17:38:22 EDT] Response status: Status {statusCode = 400, statusMessage = "Bad Request"}
+[2015-05-31 17:38:22 EDT] Response header 'Content-Type': 'application/xml; charset=UTF-8'
+[2015-05-31 17:38:22 EDT] Response header 'Content-Length': '117'
+[2015-05-31 17:38:22 EDT] Response header 'Vary': 'Origin'
+[2015-05-31 17:38:22 EDT] Response header 'Date': 'Sun, 31 May 2015 21:38:22 GMT'
+[2015-05-31 17:38:22 EDT] Response header 'Server': 'UploadServer ("Built on May 21 2015 09:31:47 (1432225907)")'
+[2015-05-31 17:38:22 EDT] Response header 'Alternate-Protocol': '80:quic,p=0'
+[2015-05-31 17:38:22 EDT] Response metadata: S3: request ID=<none>, x-amz-id-2=<none>
+git-annex: S3Error {s3StatusCode = Status {statusCode = 400, statusMessage = "Bad Request"}, s3ErrorCode = "InvalidArgument", s3ErrorMessage = "Invalid argument.", s3ErrorResource = Nothing, s3ErrorHostId = Nothing, s3ErrorAccessKeyId = Nothing, s3ErrorStringToSign = Nothing}
+"""]]
