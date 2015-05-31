@@ -29,7 +29,11 @@ Another thing, this would be completely trackerless. You just use remote groups 
 
 This was originally posted [[as a forum post|forum/Wishlist:_Bittorrent-like_transfers]] by [[users/GLITTAH]].
 
-Update: note how [[design/assistant/telehash/]] may be able to answer this specific use case.
+Update: there are multiple alternative solutions for this:
+
+ * [[design/assistant/telehash/]] support is still not complete, but could answer part of the requirements above
+ * [[special_remotes/ipfs/]] is now a special remote that does respond to some of the requirements (but [duplicates files around](https://github.com/ipfs/go-ipfs/issues/875) even more and is [kind of](https://github.com/ipfs/go-ipfs/issues/872) [slow](https://github.com/ipfs/go-ipfs/issues/898))
+ * however, it looks like there are multiple projects trying to address the same problem space here. on top of telehash and ipfs, there's also [Maidsafe](http://maidsafe.net/) and [camlistore](Maidsafe) that are other options. joeyh's approach for now is to [[wait and see what will emerge|devblog/day_219__catching_up_and_looking_back/]]
 
 Using an external client (addurl torrent support)
 =================================================
