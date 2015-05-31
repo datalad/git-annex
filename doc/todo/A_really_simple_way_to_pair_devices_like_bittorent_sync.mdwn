@@ -7,3 +7,5 @@ It would be just great to have some means to sync files without cloud just the t
 Anyway thanks for hearing. I'm looking forward to know more about git-annex. Thank you for that sw. =-<>-=
 
 > [[design/assistant/telehash]] --[[Joey]] 
+
+> > telehash has been mostly put aside for now, but there are interesting alternatives, including an [[special_remotes/ipfs]] special remote available. see [[todo/Bittorrent-like_features]] for followup on the discussion. so i'm marking this as a [[duplicate|done]]. --[[anarcat]]
