@@ -71,6 +71,16 @@ this of course is simply treat syncthing as a single copy of the
 objects. Note that this also applies to the shared objects method
 above.
 
+This can be easily implemented with the [[special_remotes/directory]]
+special remote:
+
+    git annex initremote syncthing type=directory directory=$HOME/Sync/ encryption=none
+    git annex describe syncthing "default syncthing directory"
+    git annex untrust syncthing
+
+Note that the last step isn't necessary if the syncthing folder is
+marked as "master".
+
 Communicate with the API
 ------------------------
 
