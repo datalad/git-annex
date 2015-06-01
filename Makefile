@@ -93,15 +93,15 @@ clean:
 	find . -name \*.hi -exec rm {} \;
 
 Build/InstallDesktopFile: Build/InstallDesktopFile.hs
-	$(GHC) --make $@ -Wall
+	$(GHC) --make $@ -Wall -fno-warn-tabs
 Build/EvilSplicer: Build/EvilSplicer.hs
-	$(GHC) --make $@ -Wall
+	$(GHC) --make $@ -Wall -fno-warn-tabs
 Build/Standalone: Build/Standalone.hs Build/SysConfig.hs
-	$(GHC) --make $@ -Wall
+	$(GHC) --make $@ -Wall -fno-warn-tabs
 Build/OSXMkLibs: Build/OSXMkLibs.hs
-	$(GHC) --make $@ -Wall
+	$(GHC) --make $@ -Wall -fno-warn-tabs
 Build/LinuxMkLibs: Build/LinuxMkLibs.hs
-	$(GHC) --make $@ -Wall
+	$(GHC) --make $@ -Wall -fno-warn-tabs
 
 sdist: clean mans
 	./Build/make-sdist.sh
