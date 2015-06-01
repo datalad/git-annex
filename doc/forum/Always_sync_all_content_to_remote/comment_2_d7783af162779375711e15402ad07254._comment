@@ -1,0 +1,53 @@
+[[!comment format=mdwn
+ username="wsha.code+ga@b38779424f41c5701bbe5937340be43ff1474b2d"
+ nickname="wsha.code+ga"
+ subject="comment 2"
+ date="2015-06-01T19:41:33Z"
+ content="""
+In order to be specific, I started over from scratch and issued the following commands on the server and laptop (blocks of commands are labeled with these headings indicating where they were executed, comments on what happens are enclosed with <>):
+
+laptop
+------
+<start in a folder with some files>
+git init
+git annex init
+git annex add .
+git commit -m 'first'
+git remote add server user@server:/path/to/server
+git annex group . manual
+git annex wanted . standard
+
+server
+------
+<start in an empty folder named server>
+git init
+git annex init
+git annex group . backup
+git annex wanted . standard
+
+laptop
+------
+git annex sync --content
+<messages indicating files copied to server appear>
+<new branches git-annex -> server/git-annex, git-annex -> synced/git-annex, master -> synced/master created>
+
+server
+------
+git annex sync --content
+<commit ok displayed; no files appear in working tree; looking inside .git/annex/objects shows that the laptop contents are present>
+
+server
+------
+<test a second local repo>
+mkdir ../server2
+cd ../server2
+git init
+git annex init
+git remote add server ../server
+git annex sync --content
+<All of the content is sync'ed into the working tree>
+
+If possible, I want all of the symlinks to appear and be updated on the server after the second laptop block or at least the second server block. Is this possible without using the second repo on the server? Also, when I sync on the laptop, I want it to push everything to the server, but not pull everything back.
+
+So far, I have been issuing all of the laptop commands via the runshell shell on the laptop and I have added the git-annex directory to path on the server. On both the laptop and the server, I am using a version of Linux without a prepackaged version of git annex. Is it problematic for me to add the git-annex.linux directory from the prebuilt Linux tarball to the end of my path? I haven't noticed any issues so far. I'd prefer not to supersede the system git on my path. On the server, I tried symlink'ing everything from the git-annex.linux directory into my path but I got the error \"bash: git-annex-shell: command not found\" when I tried \"git annex copy . --to server\" on the laptop (I was hoping to try symlinking everything but the git command if that had worked). I tried copying just the git-annex-shell binary into a directory on my path, but I got the same error.
+"""]]
