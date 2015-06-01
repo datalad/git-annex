@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="wsha.code+ga@b38779424f41c5701bbe5937340be43ff1474b2d"
+ nickname="wsha.code+ga"
+ subject="comment 3"
+ date="2015-06-01T21:41:51Z"
+ content="""
+Sorry, please ignore the last paragraph of the last post. I think I have straightened out my issues with symlinks after more trial and error (and using .zshenv). My remaining question along those lines is just this: if I symlink git-annex and git-annex-shell onto my path, will git annex function normally? By that, I mean do those executables know how to look up their location and find the other libraries in the same directory, so it doesn't matter that the other files in that directory are not on my path?
+"""]]
