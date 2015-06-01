@@ -26,11 +26,14 @@ linux systems.
 
 ## autobuilds
 
-A daily build is also available, thanks to Mesar Hameed and the University
+An hourly autobuild is also available, thanks to Mesar Hameed and the University
 of Bath CS department.
 
 * x86-32: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/i386/git-annex-standalone-i386.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/i386/))
 * x86-64: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/amd64/git-annex-standalone-amd64.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/amd64/))
+
+The arm autobuilder runs daily, and is hosted at [WetKnee Books](http://www.wetknee.com/).
+
 * arm: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/armel/git-annex-standalone-armel.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/armel/))
 
 ## technical details
