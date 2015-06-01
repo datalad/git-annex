@@ -19,25 +19,23 @@ import Prelude
 
 -- | Parameters that can be passed to a shell command.
 data CommandParam
-	= Params String -- ^ Contains multiple parameters, separated by whitespace
-	| Param String -- ^ A single parameter
+	= Param String -- ^ A parameter
 	| File FilePath -- ^ The name of a file
 	deriving (Eq, Show, Ord)
 
 -- | Used to pass a list of CommandParams to a function that runs
 -- a command and expects Strings. -}
 toCommand :: [CommandParam] -> [String]
-toCommand = concatMap unwrap
+toCommand = map unwrap
   where
-	unwrap (Param s) = [s]
-	unwrap (Params s) = filter (not . null) (split " " s)
+	unwrap (Param s) = s
 	-- Files that start with a non-alphanumeric that is not a path
 	-- separator are modified to avoid the command interpreting them as
 	-- options or other special constructs.
 	unwrap (File s@(h:_))
-		| isAlphaNum h || h `elem` pathseps = [s]
-		| otherwise = ["./" ++ s]
-	unwrap (File s) = [s]
+		| isAlphaNum h || h `elem` pathseps = s
+		| otherwise = "./" ++ s
+	unwrap (File s) = s
 	-- '/' is explicitly included because it's an alternative
 	-- path separator on Windows.
 	pathseps = pathSeparator:"./"

@@ -60,17 +60,20 @@ stdParams params = do
 
 {- Usual options for symmetric / public-key encryption. -}
 stdEncryptionParams :: Bool -> [CommandParam]
-stdEncryptionParams symmetric =
-	[ enc symmetric
-	, Param "--force-mdc"
+stdEncryptionParams symmetric = enc symmetric ++
+	[ Param "--force-mdc"
 	, Param "--no-textmode"
 	]
   where
-	enc True = Param "--symmetric"
+	enc True = [ Param "--symmetric" ]
 	-- Force gpg to only encrypt to the specified recipients, not
 	-- configured defaults. Recipients are assumed to be specified in
 	-- elsewhere.
-	enc False = Params "--encrypt --no-encrypt-to --no-default-recipient"
+	enc False =
+		[ Param "--encrypt"
+		, Param "--no-encrypt-to"
+		, Param "--no-default-recipient"
+		]
 
 {- Runs gpg with some params and returns its stdout, strictly. -}
 readStrict :: [CommandParam] -> IO String
@@ -152,7 +155,7 @@ pipeLazy params feeder reader = do
 findPubKeys :: String -> IO KeyIds
 findPubKeys for = KeyIds . parse . lines <$> readStrict params
   where
-	params = [Params "--with-colons --list-public-keys", Param for]
+	params = [Param "--with-colons", Param "--list-public-keys", Param for]
 	parse = mapMaybe (keyIdField . split ":")
 	keyIdField ("pub":_:_:_:f:_) = Just f
 	keyIdField _ = Nothing
@@ -165,7 +168,7 @@ secretKeys :: IO (M.Map KeyId UserId)
 secretKeys = catchDefaultIO M.empty makemap
   where
 	makemap = M.fromList . parse . lines <$> readStrict params
-	params = [Params "--with-colons --list-secret-keys --fixed-list-mode"]
+	params = [Param "--with-colons", Param "--list-secret-keys", Param "--fixed-list-mode"]
 	parse = extract [] Nothing . map (split ":")
 	extract c (Just keyid) (("uid":_:_:_:_:_:_:_:_:userid:_):rest) =
 		extract ((keyid, decode_c userid):c) Nothing rest
@@ -215,13 +218,14 @@ genSecretKey keytype passphrase userid keysize =
  - It is armored, to avoid newlines, since gpg only reads ciphers up to the
  - first newline. -}
 genRandom :: Bool -> Size -> IO String
-genRandom highQuality size = checksize <$> readStrict
-	[ Params params
-	, Param $ show randomquality
-	, Param $ show size
-	]
+genRandom highQuality size = checksize <$> readStrict params
   where
-	params = "--gen-random --armor"
+	params = 
+		[ Param "--gen-random"
+		, Param "--armor"
+		, Param $ show randomquality
+		, Param $ show size
+		]
 
 	-- See http://www.gnupg.org/documentation/manuals/gcrypt/Quality-of-random-numbers.html
 	-- for the meaning of random quality levels.
@@ -242,7 +246,7 @@ genRandom highQuality size = checksize <$> readStrict
 			else shortread len
 
 	shortread got = error $ unwords
-		[ "Not enough bytes returned from gpg", params
+		[ "Not enough bytes returned from gpg", show params
 		, "(got", show got, "; expected", show expectedlength, ")"
 		]
 
@@ -335,8 +339,8 @@ testHarness a = do
 		dir <- mktmpdir $ base </> "gpgtmpXXXXXX"
 		setEnv var dir True
 		-- For some reason, recent gpg needs a trustdb to be set up.
-		_ <- pipeStrict [Params "--trust-model auto --update-trustdb"] []
-		_ <- pipeStrict [Params "--import -q"] $ unlines
+		_ <- pipeStrict [Param "--trust-model auto", Param "--update-trustdb"] []
+		_ <- pipeStrict [Param "--import", Param "-q"] $ unlines
 			[testSecretKey, testKey]
 		return dir
 		
@@ -356,13 +360,13 @@ checkEncryptionFile :: FilePath -> Maybe KeyIds -> IO Bool
 checkEncryptionFile filename keys =
 	checkGpgPackets keys =<< readStrict params
   where
-	params = [Params "--list-packets --list-only", File filename]
+	params = [Param "--list-packets", Param "--list-only", File filename]
 
 checkEncryptionStream :: String -> Maybe KeyIds -> IO Bool
 checkEncryptionStream stream keys =
 	checkGpgPackets keys =<< pipeStrict params stream
   where
-	params = [Params "--list-packets --list-only"]
+	params = [Param "--list-packets", Param "--list-only"]
 
 {- Parses an OpenPGP packet list, and checks whether data is
  - symmetrically encrypted (keys is Nothing), or encrypted to some

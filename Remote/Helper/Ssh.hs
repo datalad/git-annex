@@ -95,7 +95,7 @@ inAnnex r k = do
 {- Removes a key from a remote. -}
 dropKey :: Git.Repo -> Key -> Annex Bool
 dropKey r key = onRemote r (boolSystem, return False) "dropkey"
-	[ Params "--quiet --force"
+	[ Param "--quiet", Param "--force"
 	, Param $ key2file key
 	]
 	[]

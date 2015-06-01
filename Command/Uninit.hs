@@ -37,7 +37,7 @@ check = do
   where
 	current_branch = Git.Ref . Prelude.head . lines <$> revhead
 	revhead = inRepo $ Git.Command.pipeReadStrict
-		[Params "rev-parse --abbrev-ref HEAD"]
+		[Param "rev-parse", Param "--abbrev-ref", Param "HEAD"]
 
 seek :: CommandSeek
 seek ps = do

@@ -89,7 +89,9 @@ resolveMerge us them = do
 	unlessM isDirect $ do
 		(deleted, cleanup2) <- inRepo (LsFiles.deleted [top])
 		unless (null deleted) $
-			Annex.Queue.addCommand "rm" [Params "--quiet -f --"] deleted
+			Annex.Queue.addCommand "rm"
+				[Param "--quiet", Param "-f", Param "--"]
+				deleted
 		void $ liftIO cleanup2
 
 	when merged $ do
@@ -173,7 +175,8 @@ resolveMerge' (Just us) them u = do
 		
 	resolveby a = do
 		{- Remove conflicted file from index so merge can be resolved. -}
-		Annex.Queue.addCommand "rm" [Params "--quiet -f --cached --"] [file]
+		Annex.Queue.addCommand "rm"
+			[Param "--quiet", Param "-f", Param "--cached", Param "--"] [file]
 		void a
 		return (Just file)
 

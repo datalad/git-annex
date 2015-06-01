@@ -30,7 +30,8 @@ checkAttrStart attrs repo = do
   where
 	params =
 		[ Param "check-attr" 
-		, Params "-z --stdin"
+		, Param "-z"
+		, Param "--stdin"
 		] ++ map Param attrs ++
 		[ Param "--" ]
 

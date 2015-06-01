@@ -172,10 +172,9 @@ store o k src meterupdate = withRsyncScratchDir $ \tmp -> do
 	ps <- sendParams
 	if ok
 		then showResumable $ rsyncRemote Upload o (Just meterupdate) $ ps ++
-			[ Param "--recursive"
-			, partialParams
+			Param "--recursive" : partialParams ++
 			-- tmp/ to send contents of tmp dir
-			, File $ addTrailingPathSeparator tmp
+			[ File $ addTrailingPathSeparator tmp
 			, Param $ rsyncUrl o
 			]
 		else return False
@@ -204,9 +203,9 @@ remove o k = do
 		rsync $ rsyncOptions o ++ ps ++
 			map (\s -> Param $ "--include=" ++ s) includes ++
 			[ Param "--exclude=*" -- exclude everything else
-			, Params "--quiet --delete --recursive"
-			, partialParams
-			, Param $ addTrailingPathSeparator dummy
+			, Param "--quiet", Param "--delete", Param "--recursive"
+			] ++ partialParams ++ 
+			[ Param $ addTrailingPathSeparator dummy
 			, Param $ rsyncUrl o
 			]
   where
@@ -237,8 +236,8 @@ checkKey r o k = do
 {- Rsync params to enable resumes of sending files safely,
  - ensure that files are only moved into place once complete
  -}
-partialParams :: CommandParam
-partialParams = Params "--partial --partial-dir=.rsync-partial"
+partialParams :: [CommandParam]
+partialParams = [Param "--partial", Param "--partial-dir=.rsync-partial"]
 
 {- When sending files from crippled filesystems, the permissions can be all
  - messed up, and it's better to use the default permissions on the
@@ -290,7 +289,7 @@ rsyncRemote direction o m params = do
 			oh <- mkOutputHandler
 			liftIO $ rsyncProgress oh meter ps
   where
-	ps = opts ++ [Params "--progress"] ++ params
+	ps = opts ++ Param "--progress" : params
 	opts
 		| direction == Download = rsyncDownloadOptions o
 		| otherwise = rsyncUploadOptions o

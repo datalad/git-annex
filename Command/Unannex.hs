@@ -72,7 +72,14 @@ start file key = stopUnless (inAnnex key) $ do
 performIndirect :: FilePath -> Key -> CommandPerform
 performIndirect file key = do
 	liftIO $ removeFile file
-	inRepo $ Git.Command.run [Params "rm --cached --force --quiet --", File file]
+	inRepo $ Git.Command.run
+		[ Param "rm"
+		, Param "--cached"
+		, Param "--force"
+		, Param "--quiet"
+		, Param "--"
+		, File file
+		]
 	next $ cleanupIndirect file key
 
 cleanupIndirect :: FilePath -> Key -> CommandCleanup
@@ -108,7 +115,14 @@ cleanupIndirect file key = do
 performDirect :: FilePath -> Key -> CommandPerform
 performDirect file key = do
 	-- --force is needed when the file is not committed
-	inRepo $ Git.Command.run [Params "rm --cached --force --quiet --", File file]
+	inRepo $ Git.Command.run
+		[ Param "rm"
+		, Param "--cached"
+		, Param "--force"
+		, Param "--quiet"
+		, Param "--"
+		, File file
+		]
 	next $ cleanupDirect file key
 
 {- The direct mode file is not touched during unannex, so the content

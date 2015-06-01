@@ -202,7 +202,7 @@ add bigfilematcher file = ifM (liftAnnex $ checkFileMatcher bigfilematcher file)
 	( pendingAddChange file
 	, do
 		liftAnnex $ Annex.Queue.addCommand "add"
-			[Params "--force --"] [file]
+			[Param "--force", Param "--"] [file]
 		madeChange file AddFileChange
 	)
 

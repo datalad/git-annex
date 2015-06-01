@@ -228,14 +228,14 @@ download' quiet url file uo = do
 	 - a less cluttered download display.
 	 -}
 #ifndef __ANDROID__
-	wgetparams = catMaybes
+	wgetparams = concat
 		[ if Build.SysConfig.wgetquietprogress && not quiet
-			then Just $ Params "-q --show-progress"
-			else Nothing
-		, Just $ Params "--clobber -c -O"
+			then [Param "-q", Param "--show-progress"]
+			else []
+		, [ Param "--clobber", Param "-c", Param "-O"]
 		]
 #else
-	wgetparams = [Params "-c -O"]
+	wgetparams = [Param "-c", Param "-O"]
 #endif
 	{- Uses the -# progress display, because the normal
 	 - one is very confusing when resuming, showing
@@ -247,7 +247,7 @@ download' quiet url file uo = do
 		-- if the url happens to be empty, so pre-create.
 		writeFile file ""
 		go "curl" $ headerparams ++ quietopt "-s" ++
-			[Params "-f -L -C - -# -o"]
+			[Param "-f", Param "-L", Param "-C", Param "-", Param "-#", Param "-o"]
 	
 	{- Run wget in a temp directory because it has been buggy
 	 - and overwritten files in the current directory, even though

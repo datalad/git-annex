@@ -92,7 +92,8 @@ bestSocketPath abssocketfile = do
 sshConnectionCachingParams :: FilePath -> [CommandParam]
 sshConnectionCachingParams socketfile = 
 	[ Param "-S", Param socketfile
-	, Params "-o ControlMaster=auto -o ControlPersist=yes"
+	, Param "-o", Param "ControlMaster=auto"
+	, Param "-o", Param "ControlPersist=yes"
 	]
 
 {- ssh connection caching creates sockets, so will not work on a
@@ -180,8 +181,8 @@ forceStopSsh socketfile = do
 	void $ liftIO $ catchMaybeIO $
 		withQuietOutput createProcessSuccess $
 			(proc "ssh" $ toCommand $
-				[ Params "-O stop"
-				] ++ params ++ [Param "localhost"])
+				[ Param "-O", Param "stop" ] ++ 
+				params ++ [Param "localhost"])
 				{ cwd = Just dir }
 	liftIO $ nukeFile socketfile
 

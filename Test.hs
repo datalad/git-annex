@@ -261,7 +261,7 @@ test_add = inmainrepo $ do
 		, do
 			writeFile ingitfile $ content ingitfile
 			boolSystem "git" [Param "add", File ingitfile] @? "git add failed"
-			boolSystem "git" [Params "commit -q -m commit"] @? "git commit failed"
+			boolSystem "git" [Param "commit", Param "-q", Param "-m", Param "commit"] @? "git commit failed"
 			git_annex "add" [ingitfile] @? "add ingitfile should be no-op"
 			unannexed ingitfile
 		)
@@ -314,7 +314,7 @@ test_unannex_withcopy = intmpclonerepo $ do
 test_drop_noremote :: Assertion
 test_drop_noremote = intmpclonerepo $ do
 	git_annex "get" [annexedfile] @? "get failed"
-	boolSystem "git" [Params "remote rm origin"]
+	boolSystem "git" [Param "remote", Param "rm", Param "origin"]
 		@? "git remote rm origin failed"
 	not <$> git_annex "drop" [annexedfile] @? "drop wrongly succeeded with no known copy of file"
 	annexed_present annexedfile
@@ -503,7 +503,7 @@ test_edit' precommit = intmpclonerepoInDirect $ do
 	if precommit
 		then git_annex "pre-commit" []
 			@? "pre-commit failed"
-		else boolSystem "git" [Params "commit -q -m contentchanged"]
+		else boolSystem "git" [Param "commit", Param "-q", Param "-m", Param "contentchanged"]
 			@? "git commit of edited file failed"
 	runchecks [checklink, checkunwritable] annexedfile
 	c <- readFile annexedfile
@@ -515,7 +515,7 @@ test_partial_commit = intmpclonerepoInDirect $ do
 	git_annex "get" [annexedfile] @? "get of file failed"
 	annexed_present annexedfile
 	git_annex "unlock" [annexedfile] @? "unlock failed"
-	not <$> boolSystem "git" [Params "commit -q -m test", File annexedfile]
+	not <$> boolSystem "git" [Param "commit", Param "-q", Param "-m", Param "test", File annexedfile]
 		@? "partial commit of unlocked file not blocked by pre-commit hook"
 
 test_fix :: Assertion
@@ -675,15 +675,15 @@ test_unused = intmpclonerepoInDirect $ do
 	git_annex "get" [annexedfile] @? "get of file failed"
 	git_annex "get" [sha1annexedfile] @? "get of file failed"
 	checkunused [] "after get"
-	boolSystem "git" [Params "rm -fq", File annexedfile] @? "git rm failed"
+	boolSystem "git" [Param "rm", Param "-fq", File annexedfile] @? "git rm failed"
 	checkunused [] "after rm"
-	boolSystem "git" [Params "commit -q -m foo"] @? "git commit failed"
+	boolSystem "git" [Param "commit", Param "-q", Param "-m", Param "foo"] @? "git commit failed"
 	checkunused [] "after commit"
 	-- unused checks origin/master; once it's gone it is really unused
-	boolSystem "git" [Params "remote rm origin"] @? "git remote rm origin failed"
+	boolSystem "git" [Param "remote", Param "rm", Param "origin"] @? "git remote rm origin failed"
 	checkunused [annexedfilekey] "after origin branches are gone"
-	boolSystem "git" [Params "rm -fq", File sha1annexedfile] @? "git rm failed"
-	boolSystem "git" [Params "commit -q -m foo"] @? "git commit failed"
+	boolSystem "git" [Param "rm", Param "-fq", File sha1annexedfile] @? "git rm failed"
+	boolSystem "git" [Param "commit", Param "-q", Param "-m", Param "foo"] @? "git commit failed"
 	checkunused [annexedfilekey, sha1annexedfilekey] "after rm sha1annexedfile"
 
 	-- good opportunity to test dropkey also
@@ -702,7 +702,7 @@ test_unused = intmpclonerepoInDirect $ do
 	git_annex "add" ["unusedfile"] @? "add of unusedfile failed"
 	unusedfilekey <- annexeval $ findkey "unusedfile"
 	renameFile "unusedfile" "unusedunstagedfile"
-	boolSystem "git" [Params "rm -qf", File "unusedfile"] @? "git rm failed"
+	boolSystem "git" [Param "rm", Param "-qf", File "unusedfile"] @? "git rm failed"
 	checkunused [] "with unstaged link"
 	removeFile "unusedunstagedfile"
 	checkunused [unusedfilekey] "with unstaged link deleted"
@@ -714,7 +714,7 @@ test_unused = intmpclonerepoInDirect $ do
 	boolSystem "git" [Param "add", File "unusedfile"] @? "git add failed"
 	unusedfilekey' <- annexeval $ findkey "unusedfile"
 	checkunused [] "with staged deleted link"
-	boolSystem "git" [Params "rm -qf", File "unusedfile"] @? "git rm failed"
+	boolSystem "git" [Param "rm", Param "-qf", File "unusedfile"] @? "git rm failed"
 	checkunused [unusedfilekey'] "with staged link deleted"
 
 	-- unused used to miss symlinks that were deleted or modified
@@ -799,13 +799,13 @@ test_union_merge_regression =
 			withtmpclonerepo False $ \r3 -> do
 				forM_ [r1, r2, r3] $ \r -> indir r $ do
 					when (r /= r1) $
-						boolSystem "git" [Params "remote add r1", File ("../../" ++ r1)] @? "remote add"
+						boolSystem "git" [Param "remote", Param "add", Param "r1", File ("../../" ++ r1)] @? "remote add"
 					when (r /= r2) $
-						boolSystem "git" [Params "remote add r2", File ("../../" ++ r2)] @? "remote add"
+						boolSystem "git" [Param "remote", Param "add", Param "r2", File ("../../" ++ r2)] @? "remote add"
 					when (r /= r3) $
-						boolSystem "git" [Params "remote add r3", File ("../../" ++ r3)] @? "remote add"
+						boolSystem "git" [Param "remote", Param "add", Param "r3", File ("../../" ++ r3)] @? "remote add"
 					git_annex "get" [annexedfile] @? "get failed"
-					boolSystem "git" [Params "remote rm origin"] @? "remote rm"
+					boolSystem "git" [Param "remote", Param "rm", Param "origin"] @? "remote rm"
 				forM_ [r3, r2, r1] $ \r -> indir r $
 					git_annex "sync" [] @? "sync failed"
 				forM_ [r3, r2] $ \r -> indir r $
@@ -995,7 +995,7 @@ test_nonannexed_file_conflict_resolution = do
 				indir r2 $ do
 					disconnectOrigin
 					writeFile conflictor nonannexed_content
-					boolSystem "git" [Params "add", File conflictor] @? "git add conflictor failed"
+					boolSystem "git" [Param "add", File conflictor] @? "git add conflictor failed"
 					git_annex "sync" [] @? "sync failed in r2"
 				pair r1 r2
 				let l = if inr1 then [r1, r2] else [r2, r1]
@@ -1046,7 +1046,7 @@ test_nonannexed_symlink_conflict_resolution = do
 				indir r2 $ do
 					disconnectOrigin
 					createSymbolicLink symlinktarget "conflictor"
-					boolSystem "git" [Params "add", File conflictor] @? "git add conflictor failed"
+					boolSystem "git" [Param "add", File conflictor] @? "git add conflictor failed"
 					git_annex "sync" [] @? "sync failed in r2"
 				pair r1 r2
 				let l = if inr1 then [r1, r2] else [r2, r1]
@@ -1154,9 +1154,9 @@ test_conflict_resolution_symlink_bit =
 pair :: FilePath -> FilePath -> Assertion
 pair r1 r2 = forM_ [r1, r2] $ \r -> indir r $ do
 	when (r /= r1) $
-		boolSystem "git" [Params "remote add r1", File ("../../" ++ r1)] @? "remote add"
+		boolSystem "git" [Param "remote", Param "add", Param "r1", File ("../../" ++ r1)] @? "remote add"
 	when (r /= r2) $
-		boolSystem "git" [Params "remote add r2", File ("../../" ++ r2)] @? "remote add"
+		boolSystem "git" [Param "remote", Param "add", Param "r2", File ("../../" ++ r2)] @? "remote add"
 
 test_map :: Assertion
 test_map = intmpclonerepo $ do
@@ -1176,7 +1176,7 @@ test_uninit = intmpclonerepo $ do
 
 test_uninit_inbranch :: Assertion
 test_uninit_inbranch = intmpclonerepoInDirect $ do
-	boolSystem "git" [Params "checkout git-annex"] @? "git checkout git-annex"
+	boolSystem "git" [Param "checkout", Param "git-annex"] @? "git checkout git-annex"
 	not <$> git_annex "uninit" [] @? "uninit failed to fail when git-annex branch was checked out"
 
 test_upgrade :: Assertion
@@ -1448,7 +1448,7 @@ withtmpclonerepo bare a = do
 	bracket (clonerepo mainrepodir dir bare) cleanup a
 
 disconnectOrigin :: Assertion
-disconnectOrigin = boolSystem "git" [Params "remote rm origin"] @? "remote rm"
+disconnectOrigin = boolSystem "git" [Param "remote", Param "rm", Param "origin"] @? "remote rm"
 
 withgitrepo :: (FilePath -> Assertion) -> Assertion
 withgitrepo = bracket (setuprepo mainrepodir) return
@@ -1469,7 +1469,7 @@ setuprepo :: FilePath -> IO FilePath
 setuprepo dir = do
 	cleanup dir
 	ensuretmpdir
-	boolSystem "git" [Params "init -q", File dir] @? "git init failed"
+	boolSystem "git" [Param "init", Param "-q", File dir] @? "git init failed"
 	configrepo dir
 	return dir
 
@@ -1479,7 +1479,7 @@ clonerepo old new bare = do
 	cleanup new
 	ensuretmpdir
 	let b = if bare then " --bare" else ""
-	boolSystem "git" [Params ("clone -q" ++ b), File old, File new] @? "git clone failed"
+	boolSystem "git" [Param "clone", Param "-q", Param b, File old, File new] @? "git clone failed"
 	configrepo new
 	indir new $
 		git_annex "init" ["-q", new] @? "git annex init failed"
@@ -1491,10 +1491,10 @@ clonerepo old new bare = do
 configrepo :: FilePath -> IO ()
 configrepo dir = indir dir $ do
 	-- ensure git is set up to let commits happen
-	boolSystem "git" [Params "config user.name", Param "Test User"] @? "git config failed"
-	boolSystem "git" [Params "config user.email test@example.com"] @? "git config failed"
+	boolSystem "git" [Param "config", Param "user.name", Param "Test User"] @? "git config failed"
+	boolSystem "git" [Param "config", Param "user.email", Param "test@example.com"] @? "git config failed"
 	-- avoid signed commits by test suite
-	boolSystem "git" [Params "config commit.gpgsign false"] @? "git config failed"
+	boolSystem "git" [Param "config", Param "commit.gpgsign", Param "false"] @? "git config failed"
 
 handleforcedirect :: IO ()
 handleforcedirect = whenM ((==) "1" <$> Utility.Env.getEnvDefault "FORCEDIRECT" "") $

@@ -78,7 +78,13 @@ getdiff command params repo = do
 	(diff, cleanup) <- pipeNullSplit ps repo
 	return (parseDiffRaw diff, cleanup)
   where
-	ps = command : Params "-z --raw --no-renames -l0" : params
+	ps = 
+		command :
+		Param "-z" :
+		Param "--raw" :
+		Param "--no-renames" :
+		Param "-l0" :
+		params
 
 {- Parses --raw output used by diff-tree and git-log. -}
 parseDiffRaw :: [String] -> [DiffTreeItem]

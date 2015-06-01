@@ -167,7 +167,7 @@ remove buprepo k = do
 		| otherwise = void $ liftIO $ catchMaybeIO $ do
 			r' <- Git.Config.read r
 			boolSystem "git" $ Git.Command.gitCommandLine params r'
-	params = [ Params "branch -q -D", Param (bupRef k) ]
+	params = [ Param "branch", Param "-q", Param "-D", Param (bupRef k) ]
 
 {- Bup does not provide a way to tell if a given dataset is present
  - in a bup repository. One way it to check if the git repository has
@@ -182,7 +182,9 @@ checkKey r bupr k
 		Git.Command.gitCommandLine params bupr
   where
 	params = 
-		[ Params "show-ref --quiet --verify"
+		[ Param "show-ref"
+		, Param "--quiet"
+		, Param "--verify"
 		, Param $ "refs/heads/" ++ bupRef k
 		]
 
@@ -194,7 +196,7 @@ storeBupUUID u buprepo = do
 		then do
 			showAction "storing uuid"
 			unlessM (onBupRemote r boolSystem "git"
-				[Params $ "config annex.uuid " ++ v]) $
+				[Param "config", Param "annex.uuid", Param v]) $
 					error "ssh failed"
 		else liftIO $ do
 			r' <- Git.Config.read r

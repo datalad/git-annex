@@ -35,14 +35,23 @@ import System.Posix.Types
 
 {- Scans for files that are checked into git at the specified locations. -}
 inRepo :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)
-inRepo l = pipeNullSplit $ Params "ls-files --cached -z --" : map File l
+inRepo l = pipeNullSplit $ 
+	Param "ls-files" :
+	Param "--cached" :
+	Param "-z" :
+	Param "--" :
+	map File l
 
 {- Scans for files at the specified locations that are not checked into git. -}
 notInRepo :: Bool -> [FilePath] -> Repo -> IO ([FilePath], IO Bool)
 notInRepo include_ignored l repo = pipeNullSplit params repo
   where
-	params = [Params "ls-files --others"] ++ exclude ++
-		[Params "-z --"] ++ map File l
+	params = concat
+		[ [ Param "ls-files", Param "--others"]
+		, exclude
+		, [ Param "-z", Param "--" ]
+		, map File l
+		]
 	exclude
 		| include_ignored = []
 		| otherwise = [Param "--exclude-standard"]
@@ -50,28 +59,51 @@ notInRepo include_ignored l repo = pipeNullSplit params repo
 {- Finds all files in the specified locations, whether checked into git or
  - not. -}
 allFiles :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)
-allFiles l = pipeNullSplit $ Params "ls-files --cached --others -z --" : map File l
+allFiles l = pipeNullSplit $
+	Param "ls-files" :
+	Param "--cached" :
+	Param "--others" :
+	Param "-z" :
+	Param "--" :
+	map File l
 
 {- Returns a list of files in the specified locations that have been
  - deleted. -}
 deleted :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)
 deleted l repo = pipeNullSplit params repo
   where
-	params = [Params "ls-files --deleted -z --"] ++ map File l
+	params =
+		Param "ls-files" :
+		Param "--deleted" :
+		Param "-z" :
+		Param "--" :
+		map File l
 
 {- Returns a list of files in the specified locations that have been
  - modified. -}
 modified :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)
 modified l repo = pipeNullSplit params repo
   where
-	params = [Params "ls-files --modified -z --"] ++ map File l
+	params = 
+		Param "ls-files" :
+		Param "--modified" :
+		Param "-z" :
+		Param "--" :
+		map File l
 
 {- Files that have been modified or are not checked into git (and are not
  - ignored). -}
 modifiedOthers :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)
 modifiedOthers l repo = pipeNullSplit params repo
   where
-	params = [Params "ls-files --modified --others --exclude-standard -z --"] ++ map File l
+	params = 
+		Param "ls-files" :
+		Param "--modified" :
+		Param "--others" :
+		Param "--exclude-standard" :
+		Param "-z" :
+		Param "--" :
+		map File l
 
 {- Returns a list of all files that are staged for commit. -}
 staged :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)
@@ -85,7 +117,7 @@ stagedNotDeleted = staged' [Param "--diff-filter=ACMRT"]
 staged' :: [CommandParam] -> [FilePath] -> Repo -> IO ([FilePath], IO Bool)
 staged' ps l = pipeNullSplit $ prefix ++ ps ++ suffix
   where
-	prefix = [Params "diff --cached --name-only -z"]
+	prefix = [Param "diff", Param "--cached", Param "--name-only", Param "-z"]
 	suffix = Param "--" : map File l
 
 type StagedDetails = (FilePath, Maybe Sha, Maybe FileMode)
@@ -93,7 +125,7 @@ type StagedDetails = (FilePath, Maybe Sha, Maybe FileMode)
 {- Returns details about files that are staged in the index,
  - as well as files not yet in git. Skips ignored files. -}
 stagedOthersDetails :: [FilePath] -> Repo -> IO ([StagedDetails], IO Bool)
-stagedOthersDetails = stagedDetails' [Params "--others --exclude-standard"]
+stagedOthersDetails = stagedDetails' [Param "--others", Param "--exclude-standard"]
 
 {- Returns details about all files that are staged in the index. -}
 stagedDetails :: [FilePath] -> Repo -> IO ([StagedDetails], IO Bool)
@@ -106,7 +138,7 @@ stagedDetails' ps l repo = do
 	(ls, cleanup) <- pipeNullSplit params repo
 	return (map parse ls, cleanup)
   where
-	params = Params "ls-files --stage -z" : ps ++ 
+	params = Param "ls-files" : Param "--stage" : Param "-z" : ps ++ 
 		Param "--" : map File l
 	parse s
 		| null file = (s, Nothing, Nothing)
@@ -135,7 +167,12 @@ typeChanged' ps l repo = do
 	currdir <- getCurrentDirectory
 	return (map (\f -> relPathDirToFileAbs currdir $ top </> f) fs, cleanup)
   where
-	prefix = [Params "diff --name-only --diff-filter=T -z"]
+	prefix = 
+		[ Param "diff"
+		, Param "--name-only"
+		, Param "--diff-filter=T"
+		, Param "-z"
+		]
 	suffix = Param "--" : (if null l then [File "."] else map File l)
 
 {- A item in conflict has two possible values.
@@ -166,7 +203,12 @@ unmerged l repo = do
 	(fs, cleanup) <- pipeNullSplit params repo
 	return (reduceUnmerged [] $ catMaybes $ map parseUnmerged fs, cleanup)
   where
-	params = Params "ls-files --unmerged -z --" : map File l
+	params = 
+		Param "ls-files" :
+		Param "--unmerged" :
+		Param "-z" :
+		Param "--" :
+		map File l
 
 data InternalUnmerged = InternalUnmerged
 	{ isus :: Bool

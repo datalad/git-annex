@@ -69,7 +69,11 @@ getGCryptRemoteName :: UUID -> String -> Annex RemoteName
 getGCryptRemoteName u repoloc = do
 	tmpremote <- uniqueRemoteName "tmpgcryptremote" 0 <$> gitRepo
 	void $ inRepo $ Git.Command.runBool
-		[Params "remote add", Param tmpremote, Param $ Git.GCrypt.urlPrefix ++ repoloc]
+		[ Param "remote"
+		, Param "add"
+		, Param tmpremote
+		, Param $ Git.GCrypt.urlPrefix ++ repoloc
+		]
 	mname <- ifM (inRepo $ Git.Command.runBool [Param "fetch", Param tmpremote])
 		( do
 			void Annex.Branch.forceUpdate

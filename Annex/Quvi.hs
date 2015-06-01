@@ -14,11 +14,11 @@ import qualified Annex
 import Utility.Quvi
 import Utility.Url
 
-withQuviOptions :: forall a. Query a -> [QuviParam] -> URLString -> Annex a
+withQuviOptions :: forall a. Query a -> [QuviParams] -> URLString -> Annex a
 withQuviOptions a ps url = do
 	v <- quviVersion
 	opts <- map Param . annexQuviOptions <$> Annex.getGitConfig
-	liftIO $ a v (map (\mkp -> mkp v) ps++opts) url
+	liftIO $ a v (concatMap (\mkp -> mkp v) ps ++ opts) url
 
 quviSupported :: URLString -> Annex Bool
 quviSupported u = liftIO . flip supported u =<< quviVersion

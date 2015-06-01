@@ -43,7 +43,10 @@ checkIgnoreStart repo = ifM supportedGitVersion
   where
 	params =
 		[ Param "check-ignore" 
-		, Params "-z --stdin --verbose --non-matching"
+		, Param "-z"
+		, Param "--stdin"
+		, Param "--verbose"
+		, Param "--non-matching"
 		]
 	repo' = repo { gitGlobalOpts = filter (not . pathspecs) (gitGlobalOpts repo) }
 	pathspecs (Param "--literal-pathspecs") = True

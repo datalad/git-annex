@@ -148,7 +148,11 @@ getLog key os = do
 	config <- Annex.getGitConfig
 	let logfile = p </> locationLogFile config key
 	inRepo $ pipeNullSplitZombie $
-		[ Params "log -z --pretty=format:%ct --raw --abbrev=40"
+		[ Param "log"
+		, Param "-z"
+		, Param "--pretty=format:%ct"
+		, Param "-raw"
+		, Param "--abbrev=40"
 		, Param "--remove-empty"
 		] ++ os ++
 		[ Param $ Git.fromRef Annex.Branch.fullname

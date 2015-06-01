@@ -175,7 +175,7 @@ gCryptSetup mu _ c = go $ M.lookup "gitrepo" c
 	go (Just gitrepo) = do
 		(c', _encsetup) <- encryptionSetup c
 		inRepo $ Git.Command.run 
-			[ Params "remote add"
+			[ Param "remote", Param "add"
 			, Param remotename
 			, Param $ Git.GCrypt.urlPrefix ++ gitrepo
 			]
@@ -251,7 +251,7 @@ setupRepo gcryptid r
 			void $ Git.Config.changeFile tmpconfig coreGCryptId gcryptid
 			void $ Git.Config.changeFile tmpconfig denyNonFastForwards (Git.Config.boolConfig False)
 		ok <- liftIO $ rsync $ rsynctransport ++
-			[ Params "--recursive"
+			[ Param "--recursive"
 			, Param $ tmp ++ "/"
 			, Param rsyncurl
 			]

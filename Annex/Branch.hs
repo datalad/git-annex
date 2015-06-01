@@ -315,7 +315,10 @@ files = do
  - and without updating the branch. -}
 branchFiles :: Annex [FilePath]
 branchFiles = withIndex $ inRepo $ Git.Command.pipeNullSplitZombie
-	[ Params "ls-tree --name-only -r -z"
+	[ Param "ls-tree"
+	, Param "--name-only"
+	, Param "-r"
+	, Param "-z"
 	, Param $ fromRef fullname
 	]
 

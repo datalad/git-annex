@@ -130,11 +130,13 @@ makeinfos updated version = do
 		]
 	void $ inRepo $ runBool
 		[ Param "annex"
-		, Params "move --to website"
+		, Param "move"
+		, Param "--to"
+		, Param "website"
 		]
 	void $ inRepo $ runBool
 		[ Param "annex"
-		, Params "sync"
+		, Param "sync"
 		]
 	
 	-- Check for out of date info files.

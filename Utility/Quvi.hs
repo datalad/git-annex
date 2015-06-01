@@ -108,7 +108,8 @@ check v ps url = maybe False (not . null . pageLinks) <$> query v ps url
 supported :: QuviVersion -> URLString -> IO Bool
 supported NoQuvi _ = return False
 supported Quvi04 url = boolSystem "quvi"
-		[ Params "--verbosity mute --support"
+		[ Param "--verbosity mute"
+		, Param "--support"
 		, Param url
 		]
 {- Use quvi-info to see if the url's domain is supported.
@@ -134,18 +135,18 @@ listdomains Quvi09 = concatMap (split ",")
 		(toCommand [Param "info", Param "-p", Param "domains"])
 listdomains _ = return []
 
-type QuviParam = QuviVersion -> CommandParam
+type QuviParams = QuviVersion -> [CommandParam]
 
 {- Disables progress, but not information output. -}
-quiet :: QuviParam
+quiet :: QuviParams
 -- Cannot use quiet as it now disables informational output.
 -- No way to disable progress.
-quiet Quvi09 = Params "--verbosity verbose"
-quiet Quvi04 = Params "--verbosity quiet"
-quiet NoQuvi = Params ""
+quiet Quvi09 = [Param "--verbosity", Param "verbose"]
+quiet Quvi04 = [Param "--verbosity", Param "quiet"]
+quiet NoQuvi = []
 
 {- Only return http results, not streaming protocols. -}
-httponly :: QuviParam
+httponly :: QuviParams
 -- No way to do it with 0.9?
-httponly Quvi04 = Params "-c http"
-httponly _ = Params "" -- No way to do it with 0.9?
+httponly Quvi04 = [Param "-c", Param "http"]
+httponly _ = [] -- No way to do it with 0.9?

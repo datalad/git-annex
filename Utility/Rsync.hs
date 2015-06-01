@@ -44,7 +44,8 @@ rsyncServerParams =
 	-- allow resuming of transfers of big files
 	, Param "--inplace"
 	-- other options rsync normally uses in server mode
-	, Params "-e.Lsf ."
+	, Param "-e.Lsf"
+	, Param "."
 	]
 
 rsyncUseDestinationPermissions :: CommandParam
