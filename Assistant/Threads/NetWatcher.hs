@@ -65,6 +65,7 @@ dbusThread = do
 			callback <- asIO1 connchange
 			liftIO $ do
 				listenNMConnections client callback
+				listenNDConnections client callback
 				listenWicdConnections client callback
 		, do
 			liftAnnex $
@@ -88,7 +89,7 @@ dbusThread = do
  - are any we can use to monitor network connections. -}
 checkNetMonitor :: Client -> Assistant Bool
 checkNetMonitor client = do
-	running <- liftIO $ filter (`elem` [networkmanager, wicd])
+	running <- liftIO $ filter (`elem` manager_addresses)
 		<$> listServiceNames client
 	case running of
 		[] -> return False
@@ -99,8 +100,36 @@ checkNetMonitor client = do
 				]
 			return True
   where
+	manager_addresses = [networkmanager, networkd, wicd]
 	networkmanager = "org.freedesktop.NetworkManager"
+	networkd = "org.freedesktop.network1"
 	wicd = "org.wicd.daemon"
+
+{- Listens for systemd-networkd connections and diconnections.
+ -
+ - Connection example (once fully connected):
+ - [Variant {"OperationalState": Variant "routable"}]
+ -
+ - Disconnection example:
+ - [Variant {"OperationalState": Variant _}]
+ -}
+listenNDConnections :: Client -> (Bool -> IO ()) -> IO ()
+listenNDConnections client setconnected =
+	void $ addMatch client matcher
+		$ \event -> mapM_ handleevent
+			(map dictionaryItems $ mapMaybe fromVariant $ signalBody event)
+  where
+	matcher = matchAny
+		{ matchInterface = Just "org.freedesktop.DBus.Properties"
+		, matchMember = Just "PropertiesChanged"
+		}
+	operational_state_key = toVariant ("OperationalState" :: String)
+	routable = toVariant $ toVariant ("routable" :: String)
+	handleevent m = case lookup operational_state_key m of
+				Just state -> if state == routable
+					then setconnected True
+					else setconnected False
+				Nothing -> noop
 
 {- Listens for NetworkManager connections and diconnections.
  -
