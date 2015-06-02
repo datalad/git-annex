@@ -9,7 +9,6 @@
 
 module Command.Unused where
 
-import qualified Data.Set as S
 import Control.Monad.ST
 import qualified Data.Map as M
 
@@ -18,7 +17,6 @@ import Command
 import Logs.Unused
 import Annex.Content
 import Logs.Location
-import Logs.Transfer
 import qualified Annex
 import qualified Git
 import qualified Git.Command
@@ -174,18 +172,6 @@ excludeReferenced refspec ks = runfilter firstlevel ks >>= runfilter secondlevel
 	firstlevel = withKeysReferencedM
 	secondlevel = withKeysReferencedInGit refspec
 
-{- Finds items in the first, smaller list, that are not
- - present in the second, larger list.
- - 
- - Constructing a single set, of the list that tends to be
- - smaller, appears more efficient in both memory and CPU
- - than constructing and taking the S.difference of two sets. -}
-exclude :: Ord a => [a] -> [a] -> [a]
-exclude [] _ = [] -- optimisation
-exclude smaller larger = S.toList $ remove larger $ S.fromList smaller
-  where
-	remove a b = foldl (flip S.delete) b a
-
 {- A bloom filter capable of holding half a million keys with a
  - false positive rate of 1 in 1000 uses around 8 mb of memory,
  - so will easily fit on even my lowest memory systems.
@@ -312,28 +298,6 @@ withKeysReferencedInGitRef a ref = do
 	tKey True = Backend.lookupFile . getTopFilePath . DiffTree.file
 	tKey False = fileKey . takeFileName . decodeBS <$$>
 		catFile ref . getTopFilePath . DiffTree.file
-
-{- Looks in the specified directory for bad/tmp keys, and returns a list
- - of those that might still have value, or might be stale and removable.
- - 
- - Also, stale keys that can be proven to have no value are deleted.
- -}
-staleKeysPrune :: (Git.Repo -> FilePath) -> Bool -> Annex [Key]
-staleKeysPrune dirspec nottransferred = do
-	contents <- dirKeys dirspec
-	
-	dups <- filterM inAnnex contents
-	let stale = contents `exclude` dups
-
-	dir <- fromRepo dirspec
-	liftIO $ forM_ dups $ \t -> removeFile $ dir </> keyFile t
-
-	if nottransferred
-		then do
-			inprogress <- S.fromList . map (transferKey . fst)
-				<$> getTransfers
-			return $ filter (`S.notMember` inprogress) stale
-		else return stale
 
 data UnusedMaps = UnusedMaps
 	{ unusedMap :: UnusedMap

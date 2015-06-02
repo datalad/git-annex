@@ -4,3 +4,5 @@ download.
 
 `git annex get --incomplete` could do this. (With or without --from to
 specify which remote to get from.) --[[Joey]]
+
+> [[done]] --[[Joey]]

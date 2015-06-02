@@ -32,6 +32,19 @@ or transferring them from some kind of key-value store.
   Enables parallel download with up to the specified number of jobs
   running at once. For example: `-J10`
 
+* `--incomplete`
+
+  Resume any incomplete downloads of files that were started and
+  interrupted at some point previously. Useful to pick up where you left
+  off ... when you don't quite remember where that was.
+
+  These incomplete files are the same ones that are
+  listed as unused temp files by [[git-annex-unused]](1).
+
+  Note that the git-annex key will be displayed when downloading,
+  as git-annex does not know the associated file, and the associated file
+  may not even be in the current git working directory.
+
 * `--all`
 
   Rather than specifying a filename or path to get, this option can be

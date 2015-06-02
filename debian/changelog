@@ -8,6 +8,7 @@ git-annex (5.20150529) UNRELEASED; urgency=medium
     changes to network connections, as was already done with
     network-manager and wicd.
     Thanks to Sebastian Reuße for the patches.
+  * get --incomplete: New option to resume any interrupted downloads.
 
  -- Joey Hess <id@joeyh.name>  Sat, 30 May 2015 02:07:18 -0400
 

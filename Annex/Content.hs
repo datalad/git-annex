@@ -35,9 +35,11 @@ module Annex.Content (
 	thawContent,
 	dirKeys,
 	withObjectLoc,
+	staleKeysPrune,
 ) where
 
 import System.IO.Unsafe (unsafeInterleaveIO)
+import qualified Data.Set as S
 
 import Common.Annex
 import Logs.Location
@@ -663,3 +665,37 @@ dirKeys dirspec = do
 		, return []
 		)
 
+{- Looks in the specified directory for bad/tmp keys, and returns a list
+ - of those that might still have value, or might be stale and removable.
+ - 
+ - Also, stale keys that can be proven to have no value
+ - (ie, their content is already present) are deleted.
+ -}
+staleKeysPrune :: (Git.Repo -> FilePath) -> Bool -> Annex [Key]
+staleKeysPrune dirspec nottransferred = do
+	contents <- dirKeys dirspec
+	
+	dups <- filterM inAnnex contents
+	let stale = contents `exclude` dups
+
+	dir <- fromRepo dirspec
+	liftIO $ forM_ dups $ \t -> removeFile $ dir </> keyFile t
+
+	if nottransferred
+		then do
+			inprogress <- S.fromList . map (transferKey . fst)
+				<$> getTransfers
+			return $ filter (`S.notMember` inprogress) stale
+		else return stale
+
+{- Finds items in the first, smaller list, that are not
+ - present in the second, larger list.
+ - 
+ - Constructing a single set, of the list that tends to be
+ - smaller, appears more efficient in both memory and CPU
+ - than constructing and taking the S.difference of two sets. -}
+exclude :: Ord a => [a] -> [a] -> [a]
+exclude [] _ = [] -- optimisation
+exclude smaller larger = S.toList $ remove larger $ S.fromList smaller
+  where
+	remove a b = foldl (flip S.delete) b a

@@ -62,6 +62,9 @@ keyOptions =
 		"operate on specified key"
 	]
 
+incompleteOption :: Option
+incompleteOption = flagOption [] "incomplete" "resume previous downloads"
+
 -- Options to match properties of annexed files.
 annexedMatchingOptions :: [Option]
 annexedMatchingOptions = concat

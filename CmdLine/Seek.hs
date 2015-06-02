@@ -27,6 +27,7 @@ import CmdLine.Action
 import Logs.Location
 import Logs.Unused
 import Annex.CatFile
+import Annex.Content
 
 withFilesInGit :: (FilePath -> CommandStart) -> CommandSeek
 withFilesInGit a params = seekActions $ prepFiltered a $
@@ -163,42 +164,42 @@ withNothing :: CommandStart -> CommandSeek
 withNothing a [] = seekActions $ return [a]
 withNothing _ _ = error "This command takes no parameters."
 
-{- If --all is specified, or in a bare repo, runs an action on all
- - known keys.
+{- Handles the --all, --unused, --key, and --incomplete options,
+ - which specify particular keys to run an action on.
  -
- - If --unused is specified, runs an action on all keys found by
- - the last git annex unused scan.
+ - In a bare repo, --all is the default.
  -
- - If --key is specified, operates only on that key.
- -
- - Otherwise, fall back to a regular CommandSeek action on
+ - Otherwise falls back to a regular CommandSeek action on
  - whatever params were passed. -}
 withKeyOptions :: Bool -> (Key -> CommandStart) -> CommandSeek -> CommandSeek
 withKeyOptions auto keyop fallbackop params = do
 	bare <- fromRepo Git.repoIsLocalBare
 	allkeys <- Annex.getFlag "all"
 	unused <- Annex.getFlag "unused"
+	incomplete <- Annex.getFlag "incomplete"
 	specifickey <- Annex.getField "key"
 	when (auto && bare) $
 		error "Cannot use --auto in a bare repository"
-	case	(allkeys, unused, null params, specifickey) of
-		(False  , False , True       , Nothing)
+	case	(allkeys, unused, incomplete, null params, specifickey) of
+		(False  , False , False     , True       , Nothing)
 			| bare -> go auto loggedKeys
 			| otherwise -> fallbackop params
-		(False  , False , _          , Nothing) -> fallbackop params
-		(True   , False , True       , Nothing) -> go auto loggedKeys
-		(False  , True  , True       , Nothing) -> go auto unusedKeys'
-		(False  , False , True       , Just ks) -> case file2key ks of
+		(False  , False , False     , _          , Nothing) -> fallbackop params
+		(True   , False , False     , True       , Nothing) -> go auto loggedKeys
+		(False  , True  , False     , True       , Nothing) -> go auto unusedKeys'
+		(False  , False , True      , True       , Nothing) -> go auto incompletekeys
+		(False  , False , False     , True       , Just ks) -> case file2key ks of
 			Nothing -> error "Invalid key"
 			Just k -> go auto $ return [k]
-		_ -> error "Can only specify one of file names, --all, --unused, or --key"
+		_ -> error "Can only specify one of file names, --all, --unused, --key, or --incomplete"
   where
-	go True _ = error "Cannot use --auto with --all or --unused or --key"
+	go True _ = error "Cannot use --auto with --all or --unused or --key or --incomplete"
 	go False a = do
 		matcher <- Limit.getMatcher
 		seekActions $ map (process matcher) <$> a
 	process matcher k = ifM (matcher $ MatchingKey k)
 		( keyop k , return Nothing)
+	incompletekeys = staleKeysPrune gitAnnexTmpObjectDir True
 
 prepFiltered :: (FilePath -> CommandStart) -> Annex [FilePath] -> Annex [CommandStart]
 prepFiltered a fs = do
