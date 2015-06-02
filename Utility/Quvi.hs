@@ -108,7 +108,7 @@ check v ps url = maybe False (not . null . pageLinks) <$> query v ps url
 supported :: QuviVersion -> URLString -> IO Bool
 supported NoQuvi _ = return False
 supported Quvi04 url = boolSystem "quvi"
-		[ Param "--verbosity mute"
+		[ Param "--verbosity", Param "mute"
 		, Param "--support"
 		, Param url
 		]
