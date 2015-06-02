@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-06-02T19:01:53Z"
+ content="""
+@junk, I think the thing for you to do is avoid setting embedcreds=yes.
+So, git-annex won't store the furl (or the shared-convergence-secret)
+in the git repository.
+
+Instead, you can set TAHOE_FURL in the environment each time
+you use `git annex initremote` to set up your tahoe remote in a git-anex
+repository. (Also pass shared-convergence-secret=  if you have one.)
+
+Or, you could bypass git-annex's automated setup of tahoe, and set it up
+yourself, however works for you. The automated setup is targeted at users
+who want to get tahoe working with git-annex but don't have complicated
+needs, so maybe it's best for you to just bypass it. The way to do 
+that is to set the git config `remote.<name>.tahoe`, to point to a tahoe
+coniguration directory. You can do this before running `git annex
+initremote`, and it *should* just use that directory. I have not tested
+this and may have gone too far in making git-annex automate tahoe setup,
+and too hard to use a manual tahoe setup -- please file a bug report if
+that doesn't work.
+"""]]
