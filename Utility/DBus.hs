@@ -22,14 +22,8 @@ type ServiceName = String
 
 listServiceNames :: Client -> IO [ServiceName]
 listServiceNames client = do
-	active <- do
-		reply <- callDBus client "ListNames" []
-		return $ fromVariant =<< headMaybe (methodReturnBody reply)
-	activatable <- do
-		reply <- callDBus client "ListActivatableNames" []
-		return $ fromVariant =<< headMaybe (methodReturnBody reply)
-	let service_names = fromMaybe [] active ++ fromMaybe [] activatable
-	return service_names
+	reply <- callDBus client "ListNames" []
+	return $ fromMaybe [] $ fromVariant =<< headMaybe (methodReturnBody reply)
 
 callDBus :: Client -> MemberName -> [Variant] -> IO MethodReturn
 callDBus client name params = call_ client $
