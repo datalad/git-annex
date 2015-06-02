@@ -4,6 +4,10 @@ git-annex (5.20150529) UNRELEASED; urgency=medium
     be parsable as strange keys.
   * sync, remotedaemon: Pass configured ssh-options even when
     annex.sshcaching is disabled.
+  * assistant: Consume systemd-networkd dbus events to learn about
+    changes to network connections, as was already done with
+    network-manager and wicd.
+    Thanks to Sebastian Reuße for the patches.
 
  -- Joey Hess <id@joeyh.name>  Sat, 30 May 2015 02:07:18 -0400
 
