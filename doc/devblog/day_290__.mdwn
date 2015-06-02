@@ -1,0 +1,23 @@
+Worked thru some backlog. Currently stands at 152 messages.
+
+Merged work from Sebastian Reuße to teach the assistant to listen for
+systemd-networkd dbus events when the network connection changes.
+
+Added `git annex get --incomplete`, which can be used to resume whatever it 
+was you were downloading earlier and interrupted, that you've forgotten
+about. ;)
+
+----
+
+The [Isuma Media Players project](http://isuma-media-players.readthedocs.org/en/latest/index.html)
+is using git-annex to "create a two-way, distributed content distribution
+network for communities with poor connexions to the internet".
+My understanding is this involves places [waaay up North](http://www.isuma.tv/did).
+
+Reading over their [design docs](http://isuma-media-players.readthedocs.org/en/latest/design.html)
+is quite interesting, both to see how they've leveraged things
+like git-annex metadata and preferred content expressions and the assistant,
+and areas where git-annex falls short.
+
+Between DataLad, Isuma, Baobáxia, IA.BAK, and more, there are a lot of
+projects being built on top of git-annex now!
