@@ -1,0 +1,11 @@
+I am trying a setup to move files from/to work using a usb key that also has a acopy of the whole repository (if I have to access it from somewhere else without git-annex).
+
+At home there's a direct client repository, the usb is an indirect incrementalbackup and at work I have a indirect backup and a direct client repositories.
+
+
+What I am trying to obtain is to have a lightweight repository at home that doesn't hold backups, and the usb key to also move the unused files from home to work as a backup.
+I am trying to make the assistant do it for me and as far as I could read the assistant should periodically move unused files out of repositories of the group client to the (incremental)backup ones.
+
+
+Having the assistant running on home repository and the two work repositories should do the trick? considering that the usb key doesn't spend much time connected to a computer I have no idea how the assistant would do the periodcal move.
+Also i hope i got it right but files from incrementalbackup should be moved to backup repositories when they can be synchronized, but again, I don't know if a 5 minutes mount with the assistant running on the backup repository will actually do it.
