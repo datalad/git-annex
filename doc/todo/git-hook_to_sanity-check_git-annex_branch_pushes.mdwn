@@ -1,0 +1,36 @@
+IA.BAK and another project both need a way to let untrusted clients push
+git-annex branch changes to a central server. It's desired to only
+let a client make non-malicious pushes; a malicious client could screw
+up a lot of info in the branch.
+
+I propose adding a git-annex command that can be used in a git pre-receive
+hook to do this. --[[Joey]]
+
+There are two levels of checking it seems such a command could do:
+
+1. Only allow certian files to be changed. For example, maye clients are only
+   expected to change location tracking files, and the activity.log
+   file, but not others like trust.log.
+
+2. Only allow moidiciations of data about a specific UUID. The UUID
+   would be provided to the command (and could be determined based on a
+   per-client ssh key or etc).
+
+  The changes to the branch would be checked, so this needs centralized
+  knowledge about the format of each file on the branch. I think this
+  mostly exists already in Logs.hs.
+
+Of these the second seems more likely to be useful, but the first would
+be by far the easier to add. So, do both?
+
+This might be too limiting for some situations:
+
+* If someone has 2 clients, that are talking with one-another,
+  then a push would include changes involving the UUIDs of both clients.
+  The command could be given multiple UUIDs to allow, to allow
+  for these kinds of setups.
+
+* A client might add a special remote somewhere, but this would need
+  changes to remote.log, which the first level of checking would not allow.
+  And, it would add another UUID, which the second level of checking would
+  need to be configured to allow.
