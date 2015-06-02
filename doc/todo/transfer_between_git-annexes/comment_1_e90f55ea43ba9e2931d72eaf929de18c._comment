@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-06-02T17:46:24Z"
+ content="""
+This feels like it's too particular to your use case, and not general
+enough to put in git-annex.
+
+But, I think it should be possible to accomplish each of those steps using
+git-annex commands, so you could write a shell script to do it.
+"""]]
