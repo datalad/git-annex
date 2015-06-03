@@ -1478,8 +1478,14 @@ clonerepo :: FilePath -> FilePath -> Bool -> IO FilePath
 clonerepo old new bare = do
 	cleanup new
 	ensuretmpdir
-	let b = if bare then " --bare" else ""
-	boolSystem "git" [Param "clone", Param "-q", Param b, File old, File new] @? "git clone failed"
+	let cloneparams = catMaybes
+		[ Just $ Param "clone"
+		, Just $ Param "-q"
+		, if bare then Just (Param "--bare") else Nothing
+		, Just $ File old
+		, Just $ File new
+		]
+	boolSystem "git" cloneparams @? "git clone failed"
 	configrepo new
 	indir new $
 		git_annex "init" ["-q", new] @? "git annex init failed"
