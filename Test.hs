@@ -18,6 +18,7 @@ import Test.Tasty.Ingredients.Rerun
 import Options.Applicative hiding (command)
 import qualified Data.Map as M
 import qualified Text.JSON
+import Data.Either
 
 import Common
 
@@ -71,6 +72,7 @@ import qualified Utility.Scheduled
 import qualified Utility.HumanTime
 import qualified Utility.ThreadScheduler
 import qualified Utility.Base64
+import qualified Utility.Tmp
 import qualified Command.Uninit
 import qualified CmdLine.GitAnnex as GitAnnex
 #ifndef mingw32_HOST_OS
@@ -179,6 +181,7 @@ unitTests :: String -> TestTree
 unitTests note = testGroup ("Unit Tests " ++ note)
 	[ testCase "add sha1dup" test_add_sha1dup
 	, testCase "add extras" test_add_extras
+	, testCase "import" test_import
 	, testCase "reinject" test_reinject
 	, testCase "unannex (no copy)" test_unannex_nocopy
 	, testCase "unannex (with copy)" test_unannex_withcopy
@@ -279,6 +282,52 @@ test_add_extras = intmpclonerepo $ do
 	git_annex "add" [wormannexedfile, "--backend=WORM"] @? "add with WORM failed"
 	annexed_present wormannexedfile
 	checkbackend wormannexedfile backendWORM
+
+test_import :: Assertion
+test_import = intmpclonerepo $ Utility.Tmp.withTmpDir "importtest" $ \importdir -> do
+	(toimport1, importf1, imported1) <- mktoimport importdir "import1"
+	git_annex "import" [toimport1] @? "import failed"
+	annexed_present imported1
+	checkdoesnotexist importf1
+
+	(toimport2, importf2, imported2) <- mktoimport importdir "import2"
+	git_annex "import" [toimport2] @? "import of duplicate failed"
+	annexed_present imported2
+	checkdoesnotexist importf2
+
+	(toimport3, importf3, imported3) <- mktoimport importdir "import3"
+	git_annex "import" ["--skip-duplicates", toimport3]
+		@? "import of duplicate with --skip-duplicates failed"
+	checkdoesnotexist imported3
+	checkexists importf3
+	git_annex "import" ["--clean-duplicates", toimport3]
+		@? "import of duplicate with --clean-duplicates failed"
+	checkdoesnotexist imported3
+	checkdoesnotexist importf3
+	
+	(toimport4, importf4, imported4) <- mktoimport importdir "import4"
+	git_annex "import" ["--deduplicate", toimport4] @? "import --deduplicate failed"
+	checkdoesnotexist imported4
+	checkdoesnotexist importf4
+	
+	(toimport5, importf5, imported5) <- mktoimport importdir "import5"
+	git_annex "import" ["--duplicate", toimport5] @? "import --duplicate failed"
+	annexed_present imported5
+	checkexists importf5
+	
+	git_annex "drop" ["--force", imported1, imported2, imported5] @? "drop failed"
+	annexed_notpresent imported2
+	(toimportdup, importfdup, importeddup) <- mktoimport importdir "importdup"
+	git_annex "import" ["--clean-duplicates", toimportdup] 
+		@? "import of missing duplicate with --clean-duplicates failed"
+	checkdoesnotexist importeddup
+	checkexists importfdup
+  where
+	mktoimport importdir subdir = do
+		createDirectory (importdir </> subdir)
+		let importf = subdir </> "f"
+		writeFile (importdir </> importf) (content importf)
+		return (importdir </> subdir, importdir </> importf, importf)
 
 test_reinject :: Assertion
 test_reinject = intmpclonerepoInDirect $ do
@@ -1542,6 +1591,16 @@ checkregularfile f = do
 	isRegularFile s @? f ++ " is not a normal file"
 	return ()
 
+checkdoesnotexist :: FilePath -> Assertion
+checkdoesnotexist f = 
+	(isLeft <$> Utility.Exception.tryIO (getSymbolicLinkStatus f))
+		@? f ++ " exists unexpectedly"
+
+checkexists :: FilePath -> Assertion
+checkexists f = 
+	(isRight <$> Utility.Exception.tryIO (getSymbolicLinkStatus f))
+		@? f ++ " does not exist"
+
 checkcontent :: FilePath -> Assertion
 checkcontent f = do
 	c <- Utility.Exception.catchDefaultIO "could not read file" $ readFile f
@@ -1693,6 +1752,7 @@ content f
 	| f == sha1annexedfile ="sha1 annexed file content"
 	| f == sha1annexedfiledup = content sha1annexedfile
 	| f == wormannexedfile = "worm annexed file content"
+	| "import" `isPrefixOf` f = "imported content"
 	| otherwise = "unknown file " ++ f
 
 changecontent :: FilePath -> IO ()
