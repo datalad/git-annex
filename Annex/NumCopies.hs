@@ -95,7 +95,7 @@ verifyEnoughCopies
 	:: String -- message to print when there are no known locations
 	-> Key
 	-> NumCopies
-	-> [UUID] -- repos to skip (generally untrusted remotes)
+	-> [UUID] -- repos to skip considering (generally untrusted remotes)
 	-> [UUID] -- repos that are trusted or already verified to have it
 	-> [Remote] -- remotes to check to see if they have it
 	-> Annex Bool

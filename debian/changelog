@@ -9,6 +9,9 @@ git-annex (5.20150529) UNRELEASED; urgency=medium
     network-manager and wicd.
     Thanks to Sebastian Reuße for the patches.
   * get --incomplete: New option to resume any interrupted downloads.
+  * import --clean-duplicates: Fix bug that didn't count local or trusted
+    repo's copy of a file as one of the necessary copies to allow removing
+    it from the import location.
 
  -- Joey Hess <id@joeyh.name>  Sat, 30 May 2015 02:07:18 -0400
 
