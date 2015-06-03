@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-06-03T17:35:38Z"
+ content="""
+You have two repositories with a description of "wx550".
+You can set the description to anything you want using `git annex
+describe`.
+
+One of the repositories is configured as a remote of the local repositry.
+This means that the local repository can access it. The name of that
+remote is "wx312".
+"""]]
