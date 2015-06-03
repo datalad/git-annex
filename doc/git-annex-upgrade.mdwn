@@ -27,6 +27,10 @@ allow archives to be taken offline for years and later used.
 
 [[git-annex-migrate]](1)
 
+Upgrades procedures and history: <http://git-annex.branchable.com/upgrades>
+
+News and release notes: <http://git-annex.branchable.com/news/>
+
 # AUTHOR
 
 Joey Hess <id@joeyh.name>
