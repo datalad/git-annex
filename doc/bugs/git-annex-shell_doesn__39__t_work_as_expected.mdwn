@@ -71,7 +71,7 @@ git-annex: sync: 2 failed
 
 Note that moving the repository out of NFS doesn't fix the problem, i still get `git-annex: unknown command gitannex@cs.isuma.tv`.
 
-How am i supposed to use `git-annex-shell`?
+How am i supposed to use `git-annex-shell`? -- [[anarcat]]
 
 ### What version of git-annex are you using? On what operating system?
 
