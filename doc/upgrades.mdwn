@@ -1,4 +1,4 @@
-[[!toc levels=2]]
+[[!toc levels=3]]
 
 # Software upgrades
 
@@ -50,7 +50,7 @@ Involved moving the .git-annex/ directory into a separate git-annex branch.
 After this upgrade, you should make sure you include the git-annex branch
 when git pushing and pulling.
 
-### tips for this upgrade
+#### tips for this upgrade
 
 This upgrade is easier (and faster!) than the previous upgrades.
 You don't need to upgrade every repository at once; it's sufficient
@@ -79,7 +79,7 @@ and that information will be used by git-annex for disk free space checking.
 To ensure that information is available for all your annexed files, see
 [[upgrades/SHA_size]].
 
-### tips for this upgrade
+#### tips for this upgrade
 
 This upgrade can tend to take a while, if you have a lot of files.
 
