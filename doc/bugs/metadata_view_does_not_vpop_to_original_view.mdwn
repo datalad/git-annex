@@ -1,0 +1,41 @@
+### Please describe the problem.
+
+I added some metadata to my music repository and tried a metadata-driven view. 
+
+    git annex view composer=* performer=
+
+When I wanted to return to the original list of directories and files, that fails. I now only see a list of directories that contain files which are actually on my laptop, and the generated views.
+
+When I did git annex vpop, I got the following:
+
+    frederik@freo:~/Music$ git annex vpop
+    vpop 1 
+    error: Your local changes to the following files would be overwritten by checkout:
+      Mozart, Wolfgang Amadeus/Academy of St. Martin in the Fields/01. Wolfgang Amadeus Mozart - Serenade No. 10 in B-flat major, KV 361 _Gran Partita_ - Ia. Largo_%Wolfgang Amadeus Mozart - Serenade No. 10 in B-flat major, KV 361 _Gran Partita_ (Academy of St. Martin in the Fields feat. conductor - Sir Neville Marriner)%.flac
+        Mozart, Wolfgang Amadeus/Academy of St. Martin in the Fields/02. Wolfgang Amadeus Mozart - Serenade No. 10 in B-flat major, KV 361 _Gran Partita_ - Ib. Allegro molto_%Wolfgang Amadeus Mozart - Serenade No. 10 in B-flat major, KV 361 _Gran Partita_ (Academy of St. Martin in the Fields feat. conductor - Sir Neville Marriner)%.flac
+
+I had not actually altered any of these files. I merely cd'd into the directory and did an ls to see what it looked like.
+
+The view is also not generated correctly, as re-running 
+
+    git annex view composer=* performer=
+
+gives me a list of directories with several directories that should not be present in the view.
+
+So far, I'm unable to go back to the original state.
+
+
+
+### What version of git-annex are you using? On what operating system?
+
+Debian/Jessie
+
+git-annex version: 5.20141125
+build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA CryptoHash
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository version: 5
+upgrade supported from repository versions: 0 1 2 4
+
+
