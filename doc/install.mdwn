@@ -30,5 +30,5 @@ it [[from source|fromsource]].
 
 ## See also
 
-
-[[autobuild overview|builds]]
+ * [[autobuild overview|builds]]
+ * [[upgrades]]
