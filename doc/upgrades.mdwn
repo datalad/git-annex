@@ -28,9 +28,9 @@ already have git conflicts in your repository or between repositories.
 Upgrading a repository with conflicts is not recommended; resolve the
 conflicts first before upgrading git-annex.
 
-## Upgrade events, so far
+The upgrade events, so far:
 
-### v4 -> v5 (git-annex version 5.x)
+## v4 -> v5 (git-annex version 5.x)
 
 The upgrade from v4 to v5 is handled
 automatically, and only affects [[direct mode]] repositories.
@@ -38,19 +38,19 @@ automatically, and only affects [[direct mode]] repositories.
 This upgrade involves changing direct mode repositories to operate with
 core.bare=true.
 
-### v3 -> v4 (git-annex version 4.x)
+## v3 -> v4 (git-annex version 4.x)
 
 v4 was only used for [[direct_mode]], to ensure that a version of git-annex
 that understands direct mode was used with a direct mode repository. 
 
-### v2 -> v3 (git-annex version 3.x)
+## v2 -> v3 (git-annex version 3.x)
 
 Involved moving the .git-annex/ directory into a separate git-annex branch.
 
 After this upgrade, you should make sure you include the git-annex branch
 when git pushing and pulling.
 
-#### tips for this upgrade
+### tips for this upgrade
 
 This upgrade is easier (and faster!) than the previous upgrades.
 You don't need to upgrade every repository at once; it's sufficient
@@ -64,7 +64,7 @@ Example upgrade process:
 	git commit -m "upgrade v2 to v3"
 	git gc
 
-### v1 -> v2 (git-annex version 0.20110316)
+## v1 -> v2 (git-annex version 0.20110316)
 
 Involved adding hashing to .git/annex/ and changing the names of all keys.
 Symlinks changed.
@@ -79,7 +79,7 @@ and that information will be used by git-annex for disk free space checking.
 To ensure that information is available for all your annexed files, see
 [[upgrades/SHA_size]].
 
-#### tips for this upgrade
+### tips for this upgrade
 
 This upgrade can tend to take a while, if you have a lot of files.
 
@@ -106,7 +106,7 @@ Example upgrade process:
 	git annex upgrade
 	...
 
-### v0 -> v1 (git-annex version 0.04)
+## v0 -> v1 (git-annex version 0.04)
 
 Involved a reorganisation of the layout of .git/annex/. Symlinks changed.
 
