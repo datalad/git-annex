@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 5"
+ date="2015-06-04T09:05:18Z"
+ content="""
+I can at least reproduce the error.
+
+http://stackoverflow.com/questions/6571435/limit-on-file-name-length-in-bash
+
+    mkdir /tmp/pathtest
+    cd /tmp/pathtest
+    mkdir 'Händel, Georg Friedrich/Oregon Bach Festival Choir & Orchestra/'
+    mkdir: created directory ‘Händel, Georg Friedrich’
+    mkdir: created directory ‘Händel, Georg Friedrich/Oregon Bach Festival Choir & Orchestra/’
+    touch 'Händel, Georg Friedrich/Oregon Bach Festival Choir & Orchestra/09. George Frideric Handel - O Thou That Tellest Good Tidings to Zion--Air (Alto)_\%George Frideric Handel - The Messiah (feat. Oregon Bach Festival Choir & Orchestra -Rilling) (Disc 1 of 2)\%_%Händel, Georg Friedrich%Oregon Bach Festival Choir & Orchestra%.flac'
+    touch: cannot touch ‘Händel, Georg Friedrich/Oregon Bach Festival Choir & Orchestra/09. George Frideric Handel - O Thou That Tellest Good Tidings to Zion--Air (Alto)_\\%George Frideric Handel - The Messiah (feat. Oregon Bach Festival Choir & Orchestra -Rilling) (Disc 1 of 2)\\%_%Händel, Georg Friedrich%Oregon Bach Festival Choir & Orchestra%.flac’: File name too long
+
+In my case, I cannot create the file because the filename is 262 bytes long, and either ext3 or bash have a filename limit of 255 bytes.
+
+You may have to delete it using its inode or the \"rsync --delete with empty directory\" trick to get rid of it. Odd how git-annex managed to create it in the first place though..
+
+"""]]
