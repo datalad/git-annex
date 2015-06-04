@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="antoinerennuit@80298c0c96ad71d132735d4e1efff7db9e2ced38"
+ nickname="antoinerennuit"
+ subject="How to install newer version for Ubuntu"
+ date="2015-06-04T22:50:38Z"
+ content="""
+Hello, it seems I am hitting the same problem. Now my server is a very new version (because I use a synology NAS and your install guide shows how to use the latest tar.gz). Now I certainly need to update my client (Ubuntu 14.04) which ships with version 20140412 (installed via apt-get install). I have no idea on how to install a newer version for Ubuntu. I could not find a ppa nor guidelines. Any help on this? Thanks ;)
+"""]]
