@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 7"
+ date="2015-06-04T12:18:20Z"
+ content="""
+If I were in this situation, I would clone the broken repo, check the symlinks look correct in the clone, 'git annex reinit' it with the broken repos UUID, move .git/annex/objects to the clone, fsck and replace the broken one with the clone (just move the broken one aside if you want to keep it around).
+
+I don't think you can lose any data this way. Though any files you added while in the view (which you shouldn't do anyway) will be present in the annex, but have no symlink (they will show up in 'unused').
+"""]]
