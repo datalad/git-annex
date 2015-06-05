@@ -62,7 +62,7 @@ git annex find --in public-s3 | while read file ; do
 done | git annex registerurl
 </pre>
 
-`registerurl` was introduced in `5.20150317`. There's a todo open to ensure we don't have to do this by hand: [[todo/credentials-less access to s3]].
+`registerurl` was introduced in `5.20150317`.
 
 ## Manually configuring a public get policy
 
