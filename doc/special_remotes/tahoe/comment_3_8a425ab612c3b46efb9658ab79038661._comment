@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="junk@5e3eeba2290e8a3fcf938d9f93b0dfa2565dc7b1"
+ nickname="junk"
+ subject="Tahoe-LAFS helper: multiple FURLs for the same grid"
+ date="2015-06-05T09:19:19Z"
+ content="""
+Hi Joey,
+
+thank you very much for your reply! 
+
+I've continued to wrap my head around this because it does not seem to be the intended way to do it in git-annex and also the helper is still in development (it only works for uploads so far). Right now I've figured out that I could also add two rsync-remote with the same uuid and have csync2 sync the two servers. This way I could use which ever remote is closest to upload and download my files and csync will make sure that the files end up on all remotes. So in my case this would achieve the same as the Tahoe-LAFS solution but use more of git-annexes fetures then of Tahoe-LAFS. Also I will be able to easily delete files from the git.
+
+I'll keep you posted on how it went.
+
+Best regards,
+
+Oliver
+"""]]

@@ -1,0 +1,10 @@
+I hang out in #git-annex on OFTC (come and chat/ask for help).
+
+[Getting mentioned by Joey](http://git-annex.branchable.com/devblog/day_277__thanks/) is definitely a (if not **the**) highlight of my involvement in the git-annex community. That really made my month!
+
+Things that I am (or plan to) work on related to git-annex (in some way):
+* FUSE filesystem for dynamic get/drop of content
+* FUSE filesystem for metadata change/views (like tagsistant)
+* Patchset for ikiwiki which allows it to be used with perlbrew libs
+* Support for modifying git-annex metadata in my file sorting app
+* Support for git-annex in my VR environment
