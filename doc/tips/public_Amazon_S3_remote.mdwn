@@ -17,11 +17,15 @@ Now, create the remote:
 	# git annex initremote pubs3 type=S3 encryption=none public=yes
 	initremote pubs3 (checking bucket) (creating bucket in US) ok
 
-In the above example, no encryption was used, but it will also work
-if you enable eg, encryption=shared. It's also ok to enable chunking.
-
 The public=yes is the crtical part; this lets the public read the contents
 of the bucket.
+
+In the above example, no encryption was used, but it will also work
+if you enable encryption=shared. Then files will be encrypted on S3, and
+anyone with a clone of the git repository will be able to download and
+decrypt them.
+
+It's also ok to enable chunking when setting up the remote.
 
 Now, copy some files to the remote, in the usual way, and push your
 git repository to someplace where someone else can access it.
