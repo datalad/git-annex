@@ -45,6 +45,9 @@ import Annex.UUID
 import Logs.Web
 import Utility.Metered
 import Utility.DataUnits
+import Annex.Content
+import Annex.Url (withUrlOptions)
+import Utility.Url (checkBoth)
 
 type BucketName = String
 
@@ -64,7 +67,7 @@ gen r u c gc = do
   where
 	new cst info = Just $ specialRemote c
 		(prepareS3Handle this $ store this info)
-		(prepareS3HandleMaybe this $ retrieve info)
+		(prepareS3HandleMaybe this $ retrieve this info)
 		(prepareS3Handle this $ remove info)
 		(prepareS3HandleMaybe this $ checkKey this info)
 		this
@@ -90,7 +93,7 @@ gen r u c gc = do
 			, availability = GloballyAvailable
 			, remotetype = remote
 			, mkUnavailable = gen r u (M.insert "host" "!dne!" c) gc
-			, getInfo = includeCredsInfo c (AWS.creds u) (s3Info c)
+			, getInfo = includeCredsInfo c (AWS.creds u) (s3Info c info)
 			, claimUrl = Nothing
 			, checkUrl = Nothing
 			}
@@ -158,7 +161,7 @@ prepareS3HandleMaybe r = resourcePrepare $ const $
 	withS3HandleMaybe (config r) (uuid r)
 
 store :: Remote -> S3Info -> S3Handle -> Storer
-store r info h = fileStorer $ \k f p -> do
+store _r info h = fileStorer $ \k f p -> do
 	case partSize info of
 		Just partsz | partsz > 0 -> do
 			fsz <- liftIO $ getFileSize f
@@ -168,15 +171,15 @@ store r info h = fileStorer $ \k f p -> do
 		_ -> singlepartupload k f p	
 	-- Store public URL to item in Internet Archive.
 	when (isIA info && not (isChunkKey k)) $
-		setUrlPresent webUUID k (iaKeyUrl r k)
+		setUrlPresent webUUID k (iaPublicKeyUrl info k)
 	return True
   where
 	singlepartupload k f p = do
 		rbody <- liftIO $ httpBodyStorer f p
-		void $ sendS3Handle h $ putObject info (bucketObject info k) rbody
+		void $ sendS3Handle h $ putObject info (T.pack $ bucketObject info k) rbody
 	multipartupload fsz partsz k f p = do
 #if MIN_VERSION_aws(0,10,6)
-		let object = bucketObject info k
+		let object = T.pack (bucketObject info k)
 
 		let startreq = (S3.postInitiateMultipartUpload (bucket info) object)
 				{ S3.imuStorageClass = Just (storageClass info)
@@ -222,10 +225,10 @@ store r info h = fileStorer $ \k f p -> do
 {- Implemented as a fileRetriever, that uses conduit to stream the chunks
  - out to the file. Would be better to implement a byteRetriever, but
  - that is difficult. -}
-retrieve :: S3Info -> Maybe S3Handle -> Retriever
-retrieve info (Just h) = fileRetriever $ \f k p -> liftIO $ runResourceT $ do
+retrieve :: Remote -> S3Info -> Maybe S3Handle -> Retriever
+retrieve _ info (Just h) = fileRetriever $ \f k p -> liftIO $ runResourceT $ do
 	(fr, fh) <- allocate (openFile f WriteMode) hClose
-	let req = S3.getObject (bucket info) (bucketObject info k)
+	let req = S3.getObject (bucket info) (T.pack $ bucketObject info k)
 	S3.GetObjectResponse { S3.gorResponse = rsp } <- sendS3Handle' h req
 	responseBody rsp $$+- sinkprogressfile fh p zeroBytesProcessed
 	release fr
@@ -240,7 +243,13 @@ retrieve info (Just h) = fileRetriever $ \f k p -> liftIO $ runResourceT $ do
 					void $ meterupdate sofar'
 					S.hPut fh bs
 				sinkprogressfile fh meterupdate sofar'
-retrieve _info Nothing = error "TODO"
+retrieve r info Nothing = case getpublicurl info of
+	Nothing -> \_ _ _ -> do
+		warnMissingCredPairFor "S3" (AWS.creds $ uuid r)
+		return False
+	Just geturl -> fileRetriever $ \f k _p ->
+		unlessM (downloadUrl [geturl k] f) $
+			error "failed to download content"
 
 retrieveCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False
@@ -255,7 +264,7 @@ remove info h k
 		return False
 	| otherwise = do
 		res <- tryNonAsync $ sendS3Handle h $
-			S3.DeleteObject (bucketObject info k) (bucket info)
+			S3.DeleteObject (T.pack $ bucketObject info k) (bucket info)
 		return $ either (const False) (const True) res
 
 checkKey :: Remote -> S3Info -> Maybe S3Handle -> CheckPresent
@@ -271,7 +280,7 @@ checkKey r info (Just h) k = do
 #endif
   where
 	go = sendS3Handle h $
-		S3.headObject (bucket info) (bucketObject info k)
+		S3.headObject (bucket info) (T.pack $ bucketObject info k)
 
 #if ! MIN_VERSION_aws(0,10,0)
 	{- Catch exception headObject returns when an object is not present
@@ -285,7 +294,14 @@ checkKey r info (Just h) k = do
 			| AWS.headerErrorMessage e == "ETag missing" = Just ()
 			| otherwise = Nothing
 #endif
-checkKey _r _info Nothing _k = error "TODO"
+
+checkKey r info Nothing k = case getpublicurl info of
+	Nothing -> do
+		warnMissingCredPairFor "S3" (AWS.creds $ uuid r)
+		error "No S3 credentials configured"
+	Just geturl -> do
+		showAction $ "checking " ++ name r
+		withUrlOptions $ checkBoth (geturl k) (keySize k)
 
 {- Generate the bucket if it does not already exist, including creating the
  - UUID file within the bucket.
@@ -385,11 +401,13 @@ withS3Handle :: RemoteConfig -> UUID -> (S3Handle -> Annex a) -> Annex a
 withS3Handle c u a = do
 	withS3HandleMaybe c u $ \mh -> case mh of
 		Just h -> a h
-		Nothing -> error "No S3 credentials configured"
+		Nothing -> do
+			warnMissingCredPairFor "S3" (AWS.creds u)
+			error "No S3 credentials configured"
 
 withS3HandleMaybe :: RemoteConfig -> UUID -> (Maybe S3Handle -> Annex a) -> Annex a
 withS3HandleMaybe c u a = do
-	mcreds <- getRemoteCredPairFor "S3" c (AWS.creds u)
+	mcreds <- getRemoteCredPair c (AWS.creds u)
 	case mcreds of
 		Just creds -> do
 			awscreds <- liftIO $ genCredentials creds
@@ -427,11 +445,12 @@ tryS3 a = (Right <$> a) `catch` (pure . Left)
 data S3Info = S3Info
 	{ bucket :: S3.Bucket
 	, storageClass :: S3.StorageClass
-	, bucketObject :: Key -> T.Text
+	, bucketObject :: Key -> String
 	, metaHeaders :: [(T.Text, T.Text)]
 	, partSize :: Maybe Integer
 	, isIA :: Bool
-	, acl :: Maybe S3.CannedAcl
+	, public :: Bool
+	, getpublicurl :: Maybe (Key -> URLString)
 	}
 
 extractS3Info :: RemoteConfig -> Annex S3Info
@@ -440,17 +459,27 @@ extractS3Info c = do
 		(error "S3 bucket not configured")
 		(return . T.pack)
 		(getBucketName c)
-	return $ S3Info
+	let info = S3Info
 		{ bucket = b
 		, storageClass = getStorageClass c
-		, bucketObject = T.pack . getBucketObject c
+		, bucketObject = getBucketObject c
 		, metaHeaders = getMetaHeaders c
 		, partSize = getPartSize c
 		, isIA = configIA c
-		, acl = case M.lookup "public" c of
-			Just "yes" -> Just S3.AclPublicRead
-			_ -> Nothing
+		, public = case M.lookup "public" c of
+			Just "yes" -> True
+			_ -> False
+		, getpublicurl = case M.lookup "publicurl" c of
+			Just u -> Just $ genericPublicKeyUrl info u
+			Nothing -> case M.lookup "host" c of
+				Just h
+					| h == AWS.s3DefaultHost ->
+						Just $ awsPublicKeyUrl info
+					| isIAHost h ->
+						Just $ iaPublicKeyUrl info
+				_ -> Nothing
 		}
+	return info
 
 putObject :: S3Info -> T.Text -> RequestBody -> S3.PutObject
 putObject info file rbody = (S3.putObject (bucket info) file rbody)
@@ -459,6 +488,11 @@ putObject info file rbody = (S3.putObject (bucket info) file rbody)
 	, S3.poAutoMakeBucket = isIA info
 	, S3.poAcl = acl info
 	}
+
+acl :: S3Info -> Maybe S3.CannedAcl
+acl info
+	| public info = Just S3.AclPublicRead
+	| otherwise = Nothing
 
 getBucketName :: RemoteConfig -> Maybe BucketName
 getBucketName = map toLower <$$> M.lookup "bucket"
@@ -514,10 +548,16 @@ isIAHost h = ".archive.org" `isSuffixOf` map toLower h
 iaItemUrl :: BucketName -> URLString
 iaItemUrl b = "http://archive.org/details/" ++ b
 
-iaKeyUrl :: Remote -> Key -> URLString
-iaKeyUrl r k = "http://archive.org/download/" ++ b ++ "/" ++ getBucketObject (config r) k
-  where
-	b = fromMaybe "" $ getBucketName $ config r
+iaPublicKeyUrl :: S3Info -> Key -> URLString
+iaPublicKeyUrl info = genericPublicKeyUrl info $
+	"http://archive.org/download/" ++ T.unpack (bucket info) ++ "/" 
+
+awsPublicKeyUrl :: S3Info -> Key -> URLString
+awsPublicKeyUrl info = genericPublicKeyUrl info $ 
+	"https://" ++ T.unpack (bucket info) ++ ".s3.amazonaws.com/" 
+
+genericPublicKeyUrl :: S3Info -> URLString -> Key -> URLString
+genericPublicKeyUrl info baseurl k = baseurl ++ bucketObject info k
 
 genCredentials :: CredPair -> IO AWS.Credentials
 genCredentials (keyid, secret) = AWS.Credentials
@@ -539,8 +579,8 @@ debugMapper level t = forward "S3" (T.unpack t)
 		AWS.Warning -> warningM
 		AWS.Error -> errorM
 
-s3Info :: RemoteConfig -> [(String, String)]
-s3Info c = catMaybes
+s3Info :: RemoteConfig -> S3Info -> [(String, String)]
+s3Info c info = catMaybes
 	[ Just ("bucket", fromMaybe "unknown" (getBucketName c))
 	, Just ("endpoint", w82s (S.unpack (S3.s3Endpoint s3c)))
 	, Just ("port", show (S3.s3Port s3c))
@@ -549,6 +589,7 @@ s3Info c = catMaybes
 		then Just ("internet archive item", iaItemUrl $ fromMaybe "unknown" $ getBucketName c)
 		else Nothing
 	, Just ("partsize", maybe "unlimited" (roughSize storageUnits False) (getPartSize c))
+	, Just ("public", if public info then "yes" else "no")
 	]
   where
 	s3c = s3Configuration c

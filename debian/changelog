@@ -14,6 +14,7 @@ git-annex (5.20150529) UNRELEASED; urgency=medium
     it from the import location.
   * S3: Special remotes can be configured with public=yes to allow
     the public to access the bucket's content.
+  * S3: Publically accessible buckets can be used without creds.
 
  -- Joey Hess <id@joeyh.name>  Sat, 30 May 2015 02:07:18 -0400
 

@@ -50,8 +50,12 @@ the S3 remote.
 
 * `public` - Set to "yes" to allow public read access to files sent
   to the S3 remote. This is accomplished by setting an ACL when each 
-  file is uploaded to the remote. So, it can be changed but changes
-  will only affect subseqent uploads.
+  file is uploaded to the remote. So, changes to this setting will
+  only affect subseqent uploads.
+
+* `publicurl` - Configure the URL that is used to download files
+  from the bucket when they are available publically.
+  (This is automatically configured for Amazon S3 and the Internet Archive.)
 
 * `partsize` - Amazon S3 only accepts uploads up to a certian file size,
   and storing larger files requires a multipart upload process.

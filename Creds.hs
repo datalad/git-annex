@@ -9,8 +9,9 @@ module Creds (
 	module Types.Creds,
 	CredPairStorage(..),
 	setRemoteCredPair,
-	getRemoteCredPairFor,
 	getRemoteCredPair,
+	getRemoteCredPairFor,
+	warnMissingCredPairFor,
 	getEnvCredPair,
 	writeCacheCreds,
 	readCacheCreds,
@@ -74,18 +75,6 @@ setRemoteCredPair _ c storage (Just creds)
 {- Gets a remote's credpair, from the environment if set, otherwise
  - from the cache in gitAnnexCredsDir, or failing that, from the
  - value in RemoteConfig. -}
-getRemoteCredPairFor :: String -> RemoteConfig -> CredPairStorage -> Annex (Maybe CredPair)
-getRemoteCredPairFor this c storage = maybe missing (return . Just) =<< getRemoteCredPair c storage
-  where
-	(loginvar, passwordvar) = credPairEnvironment storage
-	missing = do
-		warning $ unwords
-			[ "Set both", loginvar
-			, "and", passwordvar
-			, "to use", this
-			]
-		return Nothing
-
 getRemoteCredPair :: RemoteConfig -> CredPairStorage -> Annex (Maybe CredPair)
 getRemoteCredPair c storage = maybe fromcache (return . Just) =<< fromenv
   where
@@ -121,6 +110,23 @@ getRemoteCredPair c storage = maybe fromcache (return . Just) =<< fromenv
 
 			return $ Just credpair
 		_ -> error "bad creds"
+
+getRemoteCredPairFor :: String -> RemoteConfig -> CredPairStorage -> Annex (Maybe CredPair)
+getRemoteCredPairFor this c storage = go =<< getRemoteCredPair c storage
+  where
+	go Nothing = do
+		warnMissingCredPairFor this storage
+		return Nothing
+	go (Just credpair) = return $ Just credpair
+
+warnMissingCredPairFor :: String -> CredPairStorage -> Annex ()
+warnMissingCredPairFor this storage = warning $ unwords
+	[ "Set both", loginvar
+	, "and", passwordvar
+	, "to use", this
+	]
+  where
+	(loginvar, passwordvar) = credPairEnvironment storage
 
 {- Gets a CredPair from the environment. -}
 getEnvCredPair :: CredPairStorage -> IO (Maybe CredPair)
