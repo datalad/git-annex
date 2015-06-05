@@ -127,7 +127,7 @@ Executable git-annex
    bloomfilter, edit-distance,
    resourcet, http-conduit, http-types,
    esqueleto, persistent-sqlite, persistent, persistent-template
-  CC-Options: -Wall
+  CC-Options: -Wall -fPIC
   GHC-Options: -Wall -fno-warn-tabs
   Extensions: PackageImports
   -- Some things don't work with the non-threaded RTS.
