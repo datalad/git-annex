@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-06-05T17:28:52Z"
+ content="""
+Based on
+<http://docs.aws.amazon.com/AmazonS3/latest/dev/WebsiteEndpoints.html>
+and my testing, S3 does not default to allowing public access to buckets. So, 
+this seems like something that it makes sense for the user to
+manually configure when setting up a s3 remote.
+"""]]
