@@ -1,0 +1,16 @@
+Now git-annex can be used to set up a public S3 remote. If you've cloned a
+repository that knows about such a remote, you can use the S3 remote
+without needing any S3 credentials. Read-only of course.
+
+This tip shows how to do it: [[tips/public_Amazon_S3_remote]]
+
+That will work for at least AWS S3, and for the Internet Archive's S3.
+It may work for other S3 services, that can be configured to publish
+their files over unauthenticated http. There's a `publicurl` configuration
+setting to allow specifying the url when using a service that git-annex
+doesn't know the url for.
+
+Actually, there was a hack for the IA before, that added the public url to
+an item when it was uploaded to the IA. While that hack is now not
+necessary, I've left it in place for now, to avoid breaking anything that
+depended on it.
