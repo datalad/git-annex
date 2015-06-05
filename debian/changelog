@@ -12,6 +12,8 @@ git-annex (5.20150529) UNRELEASED; urgency=medium
   * import --clean-duplicates: Fix bug that didn't count local or trusted
     repo's copy of a file as one of the necessary copies to allow removing
     it from the import location.
+  * S3: Special remotes can be configured with public=yes to allow
+    the public to access the bucket's content.
 
  -- Joey Hess <id@joeyh.name>  Sat, 30 May 2015 02:07:18 -0400
 

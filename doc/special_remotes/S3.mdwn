@@ -48,6 +48,11 @@ the S3 remote.
   so by default, a bucket name is chosen based on the remote name
   and UUID. This can be specified to pick a bucket name.
 
+* `public` - Set to "yes" to allow public read access to files sent
+  to the S3 remote. This is accomplished by setting an ACL when each 
+  file is uploaded to the remote. So, it can be changed but changes
+  will only affect subseqent uploads.
+
 * `partsize` - Amazon S3 only accepts uploads up to a certian file size,
   and storing larger files requires a multipart upload process.
 

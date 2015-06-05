@@ -2,36 +2,25 @@
 
 (In this example, I'll assume you'll be creating a bucket in S3 named **public-annex** and a special remote in git-annex, which will store its files in the previous bucket, named **public-s3**, but change these names if you are going to do the thing for real)
 
-First, in the AWS dashboard, go to (or create) the bucket you will use at S3 and add a public get policy to it:
+Set up your special [S3](http://git-annex.branchable.com/special_remotes/S3/) remote with (at least) these options:
 
-    {
-      "Version": "2008-10-17",
-      "Statement": [
-        {
-          "Sid": "AllowPublicRead",
-          "Effect": "Allow",
-          "Principal": {
-            "AWS": "*"
-          },
-          "Action": "s3:GetObject",
-          "Resource": "arn:aws:s3:::public-annex/*"
-        }
-      ]
-    }
+    git annex initremote public-s3 type=s3 encryption=none bucket=public-annex chunk=0 public=yes
 
-Then set up your special [S3](http://git-annex.branchable.com/special_remotes/S3/) remote with (at least) these options:
+This way git-annex will upload the files to this repo, (when you call `git
+annex copy [FILES...] --to public-s3`) without encrypting them and without
+chunking them. And, thanks to the public=yes, they will be
+accessible by anyone with the link.
 
-    git annex initremote public-s3 type=s3 encryption=none bucket=public-annex chunk=0
-
-This way git-annex will upload the files to this repo, (when you call `git annex copy [FILES...] --to public-s3`) without encrypting them and without chunking them, and, because of the policy of the bucket, they will be accessible by anyone with the link.
+(Note that public=yes was added in git-annex version 5.20150605.
+If you have an older version, it will be silently ignored, and you
+will instead need to use the AWS dashboard to configure a public get policy
+for the bucket.)
 
 Following the example, the files will be accessible at `http://public-annex.s3.amazonaws.com/KEY` where `KEY` is the file key created by git-annex and which you can discover running
 
     git annex lookupkey FILEPATH
 
 This way you can share a link to each file you have at your S3 remote.
-
-___________________
 
 ## Sharing all links in a folder
 
@@ -74,3 +63,26 @@ done | git annex registerurl
 </pre>
 
 `registerurl` was introduced in `5.20150317`. There's a todo open to ensure we don't have to do this by hand: [[todo/credentials-less access to s3]].
+
+## Manually configuring a public get policy
+
+Here is how to manually configure a public get policy
+for a bucket, in the AWS dashboard.
+
+    {
+      "Version": "2008-10-17",
+      "Statement": [
+        {
+          "Sid": "AllowPublicRead",
+          "Effect": "Allow",
+          "Principal": {
+            "AWS": "*"
+          },
+          "Action": "s3:GetObject",
+          "Resource": "arn:aws:s3:::public-annex/*"
+        }
+      ]
+    }
+
+This should not be necessary if using a new enough version
+of git-annex, which can instead be configured with public=yet.

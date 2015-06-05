@@ -308,12 +308,13 @@ genBucket c u = do
 			Right _ -> noop
 			Left _ -> do
 				showAction $ "creating bucket in " ++ datacenter
-				void $ sendS3Handle h $
-					S3.PutBucket (bucket info) Nothing $
-						mkLocationConstraint $
-							T.pack datacenter
+				void $ sendS3Handle h $ S3.PutBucket
+					(bucket info)
+					(acl info)
+					locconstraint
 		writeUUIDFile c u info h
 	
+	locconstraint = mkLocationConstraint $ T.pack datacenter
 	datacenter = fromJust $ M.lookup "datacenter" c
 
 {- Writes the UUID to an annex-uuid file within the bucket.
@@ -430,6 +431,7 @@ data S3Info = S3Info
 	, metaHeaders :: [(T.Text, T.Text)]
 	, partSize :: Maybe Integer
 	, isIA :: Bool
+	, acl :: Maybe S3.CannedAcl
 	}
 
 extractS3Info :: RemoteConfig -> Annex S3Info
@@ -445,6 +447,9 @@ extractS3Info c = do
 		, metaHeaders = getMetaHeaders c
 		, partSize = getPartSize c
 		, isIA = configIA c
+		, acl = case M.lookup "public" c of
+			Just "yes" -> Just S3.AclPublicRead
+			_ -> Nothing
 		}
 
 putObject :: S3Info -> T.Text -> RequestBody -> S3.PutObject
@@ -452,6 +457,7 @@ putObject info file rbody = (S3.putObject (bucket info) file rbody)
 	{ S3.poStorageClass = Just (storageClass info)
 	, S3.poMetadata = metaHeaders info
 	, S3.poAutoMakeBucket = isIA info
+	, S3.poAcl = acl info
 	}
 
 getBucketName :: RemoteConfig -> Maybe BucketName
