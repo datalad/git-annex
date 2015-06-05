@@ -2,6 +2,9 @@ Here's how to create a Amazon [[S3 special remote|special_remotes/S3]] that
 can be read by anyone who gets a clone of your git-annex repository,
 without them needing Amazon AWS credentials.
 
+Note: Bear in mind that Amazon will charge the owner of the bucket
+for public downloads from that bucket.
+
 ## create remote
 
 First, export your Amazon AWS credentials:
