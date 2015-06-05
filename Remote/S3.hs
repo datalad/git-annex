@@ -82,7 +82,7 @@ gen r u c gc = do
 			, removeKey = removeKeyDummy
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
-			, whereisKey = Nothing
+			, whereisKey = Just (getWebUrls info)
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
 			, config = c
@@ -593,3 +593,9 @@ s3Info c info = catMaybes
 	]
   where
 	s3c = s3Configuration c
+
+getWebUrls :: S3Info -> Key -> Annex [URLString]
+getWebUrls info k = case (public info, getpublicurl info) of
+	(True, Just geturl) -> return [geturl k]
+	_ -> return []
+
