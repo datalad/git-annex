@@ -5,7 +5,7 @@ without them needing Amazon AWS credentials.
 Note: Bear in mind that Amazon will charge the owner of the bucket
 for public downloads from that bucket.
 
-## create remote
+## create public remote
 
 First, export your Amazon AWS credentials:
 
@@ -43,6 +43,11 @@ In the checkout, enable the S3 remote:
 	enableremote pubs3 ok
 
 Now, git-annex can be used as usual to download files from that remote.
+
+## sharing urls
+
+You can also share urls to files stored in a public S3 remote to people
+who are not using git-annex. To find the url, use `git annex whereis`.
 
 ----
 
