@@ -1,0 +1,5 @@
+I am currently trying to transfer git-annex managed files to my server.
+
+I am getting them with `git annex /path`. However, these are very many small files, and git annex seems to take a tiny break in between them, so the process takes considerably longer than uploading a single file of the same size would.
+
+Do you have any suggestions for improving my transfer speed in this case?
