@@ -15,6 +15,7 @@ git-annex (5.20150529) UNRELEASED; urgency=medium
   * S3: Special remotes can be configured with public=yes to allow
     the public to access the bucket's content.
   * S3: Publically accessible buckets can be used without creds.
+  * Re-remove dependency on obsolete hamlet package. Closes: #786659
 
  -- Joey Hess <id@joeyh.name>  Sat, 30 May 2015 02:07:18 -0400
 
