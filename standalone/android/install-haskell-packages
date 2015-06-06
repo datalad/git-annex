@@ -107,7 +107,6 @@ EOF
 	patched shakespeare-css
 	patched shakespeare-js
 	patched yesod-routes
-	patched hamlet
 	patched yesod-core
 	patched yesod-persistent
 	patched yesod-form
