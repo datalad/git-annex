@@ -24,7 +24,6 @@
  -}
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-{-# LANGUAGE CPP #-}
 
 module Logs.MetaData (
 	getCurrentMetaData,
@@ -157,11 +156,7 @@ simplifyLog s = case sl of
 			else s
 	_ -> s
   where
-#if MIN_VERSION_containers(0,5,0)
 	sl = S.toDescList s
-#else
-	sl = reverse (S.toAscList s)
-#endif
 
 	go c _ [] = c
 	go c newer (l:ls)
