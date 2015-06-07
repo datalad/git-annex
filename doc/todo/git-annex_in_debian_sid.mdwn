@@ -1,0 +1,3 @@
+git-annex in debian sid is still at version 5.20141125: [https://tracker.debian.org/pkg/git-annex](https://tracker.debian.org/pkg/git-annex)
+
+Any chance  that it gets updated soon?
