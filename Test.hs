@@ -18,7 +18,6 @@ import Test.Tasty.Ingredients.Rerun
 import Options.Applicative hiding (command)
 import qualified Data.Map as M
 import qualified Text.JSON
-import Data.Either
 
 import Common
 
@@ -1593,12 +1592,12 @@ checkregularfile f = do
 
 checkdoesnotexist :: FilePath -> Assertion
 checkdoesnotexist f = 
-	(isLeft <$> Utility.Exception.tryIO (getSymbolicLinkStatus f))
+	(either (const True) (const False) <$> Utility.Exception.tryIO (getSymbolicLinkStatus f))
 		@? f ++ " exists unexpectedly"
 
 checkexists :: FilePath -> Assertion
 checkexists f = 
-	(isRight <$> Utility.Exception.tryIO (getSymbolicLinkStatus f))
+	(either (const False) (const True) <$> Utility.Exception.tryIO (getSymbolicLinkStatus f))
 		@? f ++ " does not exist"
 
 checkcontent :: FilePath -> Assertion
