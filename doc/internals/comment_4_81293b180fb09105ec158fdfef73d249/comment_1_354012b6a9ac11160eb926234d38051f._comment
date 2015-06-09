@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-06-09T20:25:03Z"
+ content="""
+It's ok to put files in .git/annex/tmp if they're formatted as git-annex
+key filenames. Of course, you should avoid overwriting the content of files
+already there.
+
+Files not formatted as keys should be kept out of .git/annex/tmp; it's ok
+to put them in .git/annex/misctmp.
+"""]]
