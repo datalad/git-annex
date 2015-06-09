@@ -22,3 +22,13 @@ Add files while changing one.
 
 # End of transcript or log.
 """]]
+
+> I don't know if I would call this a bug, since you can just re-run the
+> command to pick up where it left off. 
+> 
+> However, `git annex add` was actually changed in 
+> [[!commit efb37e7c789921f3f8705d8a5d42d41d9343a00d]] to not
+> stop when it fails to add one file, and continue adding the rest.
+> So, this is already [[done]]. You just need to get a 
+> version of git-annex from this April, rather than April 2014..
+> --[[Joey]]
