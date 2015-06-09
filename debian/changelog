@@ -16,10 +16,11 @@ git-annex (5.20150529) UNRELEASED; urgency=medium
     the public to access the bucket's content.
   * S3: Publically accessible buckets can be used without creds.
   * Re-remove dependency on obsolete hamlet package. Closes: #786659
-  * fsck: Ignore keys that are known to be dead when running in --all mode
-    or a in a bare repo. Otherwise, still reports files with lost contents,
-    even if the content is dead.
   * dead --key: Can be used to mark a key as dead.
+  * fsck: Ignore keys that are known to be dead when running in
+    --all/--unused/--key mode or a in a bare repo.
+    Otherwise, still reports files with lost contents, even if the content
+    is dead.
 
  -- Joey Hess <id@joeyh.name>  Sat, 30 May 2015 02:07:18 -0400
 
