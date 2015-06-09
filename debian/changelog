@@ -21,6 +21,8 @@ git-annex (5.20150529) UNRELEASED; urgency=medium
     --all/--unused/--key mode or a in a bare repo. Closes: #753888
     Otherwise, still reports files with lost contents, even if the content
     is dead.
+  * tahoe: Use ~/.tahoe-git-annex/ rather than ~/.tahoe/git-annex/
+    to avoid old versions of tahoe create-client choking.
 
  -- Joey Hess <id@joeyh.name>  Sat, 30 May 2015 02:07:18 -0400
 

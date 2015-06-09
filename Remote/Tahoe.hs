@@ -9,7 +9,7 @@
  - configuration, when embedcreds is enabled.
  -
  - Using those creds, git-annex sets up a tahoe configuration directory in
- - ~/.tahoe/git-annex/UUID/
+ - ~/.tahoe-git-annex/UUID/
  -
  - Tahoe has its own encryption, so git-annex's encryption is not used.
  -
@@ -141,7 +141,7 @@ checkKey u hdl k = go =<< getCapability u k
 defaultTahoeConfigDir :: UUID -> IO TahoeConfigDir
 defaultTahoeConfigDir u = do
 	h <- myHomeDir 
-	return $ h </> ".tahoe" </> "git-annex" </> fromUUID u
+	return $ h </> ".tahoe-git-annex" </> fromUUID u
 
 tahoeConfigure :: TahoeConfigDir -> IntroducerFurl -> Maybe SharedConvergenceSecret -> IO SharedConvergenceSecret
 tahoeConfigure configdir furl mscs = do

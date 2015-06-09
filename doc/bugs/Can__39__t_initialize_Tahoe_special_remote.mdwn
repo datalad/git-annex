@@ -29,3 +29,12 @@ git-annex: tahoe create-client failed
 
 # End of transcript or log.
 """]]
+
+> So this was caused by an old version of tahoe-lafs. Might as
+> well support older versions if we can easily, I suppose.
+> 
+> I have gone ahead and changed git-annex to use ~/.tahoe-git-annex/
+> instead of ~/.tahoe/git-annex/ when setting up new remotes.
+> Existing remote's configs will be unchanged. 
+> 
+> So, [[fixed|done]] --[[Joey]]
