@@ -8,7 +8,7 @@
  - Repositories record their UUID and the date when they --get or --drop
  - a value.
  - 
- - Copyright 2010-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -19,7 +19,8 @@ module Logs.Location (
 	logChange,
 	loggedLocations,
 	loggedLocationsHistorical,
-	locationLog,
+	checkDead,
+	setDead,
 	loggedKeys,
 	loggedKeysFor,
 ) where
@@ -62,10 +63,18 @@ getLoggedLocations getter key = do
 	config <- Annex.getGitConfig
 	map toUUID <$> getter (locationLogFile config key)
 
-locationLog :: Key -> Annex [LogLine]
-locationLog key = do
+{- For a key to be dead, all locations that have location status for the key
+ - must have InfoDead set. -}
+checkDead :: Key -> Annex Bool
+checkDead key = do
 	config <- Annex.getGitConfig
-	currentLog (locationLogFile config key)
+	ls <- compactLog <$> readLog (locationLogFile config key)
+	return $ all (\l -> status l == InfoDead) ls
+
+{- Updates the log to say that a key is dead. This changes all logged lines
+ - for the key, in any location, to be InfoDead. -}
+setDead :: Key -> Annex ()
+setDead key = undefined
 
 {- Finds all keys that have location log information.
  - (There may be duplicate keys in the list.) -}

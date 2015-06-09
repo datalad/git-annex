@@ -99,7 +99,7 @@ perform key file backend numcopies = check
 	, verifyDirectMode key file
 	, checkKeySize key
 	, checkBackend backend key (Just file)
-	, checkKeyNumCopies key file numcopies
+	, checkKeyNumCopies key (Just file) numcopies
 	]
 
 {- To fsck a remote, the content is retrieved to a tmp file,
@@ -125,7 +125,7 @@ performRemote key file backend numcopies remote =
 		[ verifyLocationLogRemote key file remote present
 		, checkKeySizeRemote key remote localcopy
 		, checkBackendRemote backend key remote localcopy
-		, checkKeyNumCopies key file numcopies
+		, checkKeyNumCopies key (Just file) numcopies
 		]
 	withtmp a = do
 		pid <- liftIO getPID
@@ -160,7 +160,7 @@ performKey key backend numcopies = check
 	[ verifyLocationLog key (key2file key)
 	, checkKeySize key
 	, checkBackend backend key Nothing
-	, checkKeyNumCopies key (key2file key) numcopies
+	, checkKeyNumCopies key Nothing numcopies
 	]
 
 check :: [Annex Bool] -> Annex Bool
@@ -343,15 +343,21 @@ checkBackendOr' bad backend key file postcheck =
 				, return True
 				)
 
-checkKeyNumCopies :: Key -> String -> NumCopies -> Annex Bool
-checkKeyNumCopies key file numcopies = do
+checkKeyNumCopies :: Key -> AssociatedFile -> NumCopies -> Annex Bool
+checkKeyNumCopies key afile numcopies = do
+	let file = fromMaybe (key2file key) afile
 	(untrustedlocations, safelocations) <- trustPartition UnTrusted =<< Remote.keyLocations key
 	let present = NumCopies (length safelocations)
 	if present < numcopies
-		then do
-			ppuuids <- Remote.prettyPrintUUIDs "untrusted" untrustedlocations
-			warning $ missingNote file present numcopies ppuuids
-			return False
+		then ifM (pure (isNothing afile) <&&> checkDead key)
+			( do
+				showLongNote $ "This key is dead, skipping."
+				return True
+			, do
+				ppuuids <- Remote.prettyPrintUUIDs "untrusted" untrustedlocations
+				warning $ missingNote file present numcopies ppuuids
+				return False
+			)
 		else return True
 
 missingNote :: String -> NumCopies -> NumCopies -> String -> String
