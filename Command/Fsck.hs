@@ -356,6 +356,8 @@ checkKeyNumCopies key afile numcopies = do
 			, do
 				ppuuids <- Remote.prettyPrintUUIDs "untrusted" untrustedlocations
 				warning $ missingNote file present numcopies ppuuids
+				when (fromNumCopies present == 0 && isNothing afile) $
+					showLongNote "(Avoid this check by running: git annex dead --key )"
 				return False
 			)
 		else return True
