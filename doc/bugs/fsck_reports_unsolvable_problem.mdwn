@@ -18,3 +18,10 @@ According to IRC this "can happen if you annexed a file and then deleted it with
 5.20140717 from Ubuntu utopic
 
 [[!tag confirmed]]
+
+> [[done]] -- fsck --all or in a bare repo will skip over keys that have
+> been marked dead, which can be done with `git annex dead --key`.
+> 
+> Might go further later, and make `git annex drop --force`, when removing
+> the last copy of a key, mark it as dead. But maybe that is too DWIM.
+> --[[Joey]]
