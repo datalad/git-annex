@@ -30,19 +30,20 @@ Turns out that putting eg 'X' there doesn't break any old versions of
 git-annex; they ignore the unparsable line, and the result is the same as a
 '0' line; the key is not present in the specified location.
 
-So, if there's an 'X', it means the key is thought to be dead; it's not
-present in that location, and fsck should ignore when its content is
-entirely missing. 
+So, if there's an 'X', it means the key is thought to be dead at that
+location; it's not present in that location, and fsck should avoid warning
+when a key is dead in all locations. (A key that somehow had no locations
+listed at all but still had a location log would also meet that crieria,
+but that currently can't happen.)
 
-It would, probably, also make sense for fsck to detect when a key has
-location indication for both dead and present, and convert the 
-'X' to an '0', since the content has stopped being entirely missing.
-(Eg, when a previously unknown remote that has the content becomes available.)
+If a key is dead in one location and alive in another location, it's still
+alive. A key that was thought to be dead everywhere can come back alive,
+eg, when a previously unknown remote that has the content is merged in.
 
 As to the UI for this, it could be added to `git annex forget` or a new
 command. It would also be possible for `drop --force` to automatically set
 the dead flag when it removed the last copy of a key. Seems like, if the
-user has requested a forced drop of the lat copy, they don't need fsck
+user has requested a forced drop of the last copy, they don't need fsck
 telling them about it later.
 
 I think that only fsck --all (or in a bare repo) should ignore dead keys
