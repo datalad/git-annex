@@ -18,7 +18,7 @@ git-annex (5.20150529) UNRELEASED; urgency=medium
   * Re-remove dependency on obsolete hamlet package. Closes: #786659
   * dead --key: Can be used to mark a key as dead.
   * fsck: Ignore keys that are known to be dead when running in
-    --all/--unused/--key mode or a in a bare repo.
+    --all/--unused/--key mode or a in a bare repo. Closes: #753888
     Otherwise, still reports files with lost contents, even if the content
     is dead.
 
