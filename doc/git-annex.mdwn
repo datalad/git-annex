@@ -238,12 +238,6 @@ subdirectories).
   
   See [[git-annex-semitrust]](1) for details.
 
-* `dead [repository ...]`
-
-  Indicates that the repository has been irretrievably lost.
-  
-  See [[git-annex-dead]](1) for details.
-
 * `group repository groupname`
 
   Add a repository to a group.
@@ -355,6 +349,12 @@ subdirectories).
   Upgrades the repository to current layout.
   
   See [[git-annex-upgrade]](1) for details.
+
+* `dead [repository ...] [--key key]`
+
+  Indicates that a repository or a single key has been irretrievably lost.
+  
+  See [[git-annex-dead]](1) for details.
 
 * `forget`
 

@@ -58,9 +58,12 @@ keyOptions =
 		"operate on all versions of all files"
 	, Option ['U'] ["unused"] (NoArg (Annex.setFlag "unused"))
 		"operate on files found by last run of git-annex unused"
-	, Option [] ["key"] (ReqArg (Annex.setField "key") paramKey)
-		"operate on specified key"
+	, keyOption
 	]
+
+keyOption :: Option
+keyOption = Option [] ["key"] (ReqArg (Annex.setField "key") paramKey)
+		"operate on specified key"
 
 incompleteOption :: Option
 incompleteOption = flagOption [] "incomplete" "resume previous downloads"

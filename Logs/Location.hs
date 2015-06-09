@@ -33,6 +33,8 @@ import Annex.UUID
 import Git.Types (RefDate)
 import qualified Annex
 
+import Data.Time.Clock
+
 {- Log a change in the presence of a key's value in current repository. -}
 logStatus :: Key -> LogStatus -> Annex ()
 logStatus key s = do
@@ -71,10 +73,27 @@ checkDead key = do
 	ls <- compactLog <$> readLog (locationLogFile config key)
 	return $ all (\l -> status l == InfoDead) ls
 
-{- Updates the log to say that a key is dead. This changes all logged lines
- - for the key, in any location, to be InfoDead. -}
+{- Updates the log to say that a key is dead. 
+ - 
+ - Changes all logged lines for the key, in any location, that are
+ - currently InfoMissing, to be InfoDead.
+ -}
 setDead :: Key -> Annex ()
-setDead key = undefined
+setDead key = do
+	config <- Annex.getGitConfig
+	let logfile = locationLogFile config key
+	ls <- compactLog <$> readLog logfile
+	mapM_ (go logfile) (filter (\l -> status l == InfoMissing) ls)
+  where
+	go logfile l = addLog logfile $ setDead' l
+
+{- Note that the timestamp in the log is updated minimally, so that this
+ - can be overruled by other location log changes. -}
+setDead' :: LogLine -> LogLine
+setDead' l = l
+	{ status = InfoDead
+	, date = date l + realToFrac (picosecondsToDiffTime 1)
+	}
 
 {- Finds all keys that have location log information.
  - (There may be duplicate keys in the list.) -}

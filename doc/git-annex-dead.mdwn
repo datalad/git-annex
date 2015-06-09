@@ -1,18 +1,25 @@
 # NAME
 
-git-annex trust - hide a lost repository
+git-annex dead - hide a lost repository or key
 
 # SYNOPSIS
 
-git annex dead `[repository ...]`
+git annex dead `[repository ...] [--key key]`
 
 # DESCRIPTION
 
-Indicates that the repository has been irretrievably lost.
-(To undo, use semitrust.)
+This command exists to deal with situations where data has been lost,
+and you know it has, and you want to stop being reminded of that fact.
 
+When a repository is specified, indicates that the repository has
+been irretrievably lost, so it will not be listed in eg, `git annex info`.
 Repositories can be specified using their remote name, their
-description, or their UUID.
+description, or their UUID. (To undo, use `git-annex semitrust`.)
+
+When a key is specified, indicates that the content of that key has been
+irretrievably lost. This prevents `git annex fsck --all` from complaining
+about it. (To undo, add the key's content back to the repository,
+by using eg, `git-annex reinject`.)
 
 # SEE ALSO
 
@@ -25,6 +32,10 @@ description, or their UUID.
 [[git-annex-untrust]](1)
 
 [[git-annex-expire]](1)
+
+[[git-annex-fsck]](1)
+
+[[git-annex-reinject]](1)
 
 # AUTHOR
 

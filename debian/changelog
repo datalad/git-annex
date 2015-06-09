@@ -19,6 +19,7 @@ git-annex (5.20150529) UNRELEASED; urgency=medium
   * fsck: Ignore keys that are known to be dead when running in --all mode
     or a in a bare repo. Otherwise, still reports files with lost contents,
     even if the content is dead.
+  * dead --key: Can be used to mark a key as dead.
 
  -- Joey Hess <id@joeyh.name>  Sat, 30 May 2015 02:07:18 -0400
 
