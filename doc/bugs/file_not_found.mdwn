@@ -24,3 +24,7 @@ Manually opening the file at `.git/annex/webapp.html` does however show the corr
 Launching web browser on file://.git/annex/webapp.html
 The file /annex/webapp.html does not exist.
 """]]
+
+> This is an old version of git-annex and there was known breakage around
+> that time from the relative path conversion, since fixed, which IIRC
+> would manifest this way. [[done]] --[[Joey]]
