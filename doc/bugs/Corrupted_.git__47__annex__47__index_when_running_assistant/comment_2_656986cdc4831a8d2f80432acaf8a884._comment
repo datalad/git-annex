@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-06-09T19:34:57Z"
+ content="""
+So, thanks for providing me the index file, but the relevant problem
+seems to be that your index file refers to a git object that failed to make
+it to disk.
+
+The most likely cause of this would be a crash before disk buffers got
+flushed, or something like that.
+
+It's perfectly fine to remove your .git/annex/index if this happens. You
+must have lost some information that was being committed to the git-annex
+branch, so you might want to run `git annex fsck` to make sure everything 
+gets updated.
+
+I'd expect `git-annex repair` to detect this problem (and fix it the same
+way you did).
+
+It's possible that the assistant's code for detecting when there are
+problems doesn't work well enough for it to have
+automatically detected and fixed this problem. Which is why I'm leaving
+this bug open for now.
+"""]]
