@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ subject=".git/annex/tmp third-party use?"
+ date="2015-06-09T20:21:39Z"
+ content="""
+can `.git/annex/tmp` be used by third party software to import stuff in git-annex? the idea here would be to accept uploads from a web form in `.git/annex/tmp` then move it into place in the proper location once the upload is complete (then do a git-annex-add or let the assistant import it). --[[anarcat]]
+"""]]
