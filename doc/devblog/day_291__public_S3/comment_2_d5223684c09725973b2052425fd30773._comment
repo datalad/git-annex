@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-06-09T19:16:11Z"
+ content="""
+Dude, I'm no DD. 
+
+git-annex is backportable to stable in its current state, if/when
+a new version finally gets uploaded to unstable.
+"""]]
