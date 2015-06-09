@@ -53,12 +53,16 @@ It is safe to delete these files.
 
 ### `.git/annex/ssh/`
 
-ssh connection caching files are written in here.
+ssh connection caching files are written in here. It is safe to delete
+these files.
 
 ### `.git/annex/index`
 
 This is a git index file which git-annex uses to stage files
-when preparing commits to the git-annex branch. 
+when preparing commits to the git-annex branch.
+
+It's pretty safe to delete this file if git-annex is not currently running.
+It will be re-created as necessary.
 
 ### `.git/annex/journal/`
 
