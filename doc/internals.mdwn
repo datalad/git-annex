@@ -171,8 +171,8 @@ for file contents. These are placed in two levels of subdirectories
 for hashing. See [[hashing]] for details.
 
 The name of the key is the filename, and the content
-consists of a timestamp, either 1 (present) or 0 (not present), and
-the UUID of the repository that has or lacks the file content.
+consists of a timestamp, either 1 (present) or 0 (not present) or X (dead),
+and the UUID of the repository that has or lacks the file content.
 
 Example:
 

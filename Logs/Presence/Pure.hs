@@ -20,7 +20,7 @@ data LogLine = LogLine {
 	info :: String
 } deriving (Eq, Show)
 
-data LogStatus = InfoPresent | InfoMissing
+data LogStatus = InfoPresent | InfoMissing | InfoDead
 	deriving (Eq, Show, Bounded, Enum)
 
 {- Parses a log file. Unparseable lines are ignored. -}
@@ -38,6 +38,7 @@ parseLog = mapMaybe parseline . lines
 parseStatus :: String -> Maybe LogStatus
 parseStatus "1" = Just InfoPresent
 parseStatus "0" = Just InfoMissing
+parseStatus "X" = Just InfoDead
 parseStatus _ = Nothing
 
 {- Generates a log file. -}
@@ -47,6 +48,7 @@ showLog = unlines . map genline
 	genline (LogLine d s i) = unwords [show d, genstatus s, i]
 	genstatus InfoPresent = "1"
 	genstatus InfoMissing = "0"
+	genstatus InfoDead = "X"
 
 {- Given a log, returns only the info that is are still in effect. -}
 getLog :: String -> [String]
