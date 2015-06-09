@@ -75,8 +75,8 @@ man:
 docs: mans
 	TZ=UTC $(IKIWIKI) doc html -v --wikiname git-annex --plugin=goodstuff \
 		--no-usedirs --disable-plugin=openid --plugin=sidebar \
-		--underlaydir=/dev/null --disable-plugin=shortcut \
-		--disable-plugin=smiley \
+		--underlaydir=/dev/null --set deterministic=1 \
+		--disable-plugin=shortcut --disable-plugin=smiley \
 		--plugin=comments --set comments_pagespec="*" \
 		--exclude='news/.*' --exclude='design/assistant/blog/*' \
 		--exclude='bugs/*' --exclude='todo/*' --exclude='forum/*' \
