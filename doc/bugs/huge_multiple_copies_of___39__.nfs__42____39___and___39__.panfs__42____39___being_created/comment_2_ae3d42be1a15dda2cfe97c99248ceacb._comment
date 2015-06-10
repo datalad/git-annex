@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ subject="comment 2"
+ date="2015-06-10T18:30:21Z"
+ content="""
+i am not sure I understand how this is such a problem... those lockfiles are transient - they will eventually go away. do they take up too much space? or what is the problem exactly?
+"""]]
