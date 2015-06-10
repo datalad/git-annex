@@ -1,0 +1,35 @@
+Indirect mode repos can be cloned over http, and just work. But, direct
+mode repos don't currently work; while git can clone them ok, git-annex get
+doesn't know where to get the file contents from.
+
+To support this, git-annex would have to check if the remote is in direct
+mode, and when it is, it would need to download the direct mode mapping
+file, to find out which file has the content of a key. Then, after
+downloading the a file, it would need to make sure to checksum it, since
+nothing prevents a direct mode file from being modified at the same time
+it's downloaded.
+
+All seems doable. However.. [[design/caching_database]] wants to switch the
+direct mode mapping files from simple flat text files to a sqlite database.
+Which would complicate this a lot. Can sqlite databases be accessed over
+http, or would the whole, possibly large database need to be downloaded?
+If so, what to do when the database changes? Re-downloading a possibly
+large db is not good.
+
+---
+
+Alternatively, the direct mode mapping files of the remote could be
+bypassed. Instead, look at what the remote HEAD branch is, and look at that
+branch locally. Create local direct mode mappings for the remote HEAD
+branch, and use them when downloading.
+
+This approach would mean that, if the remote's HEAD changes and we haven't
+noticed, we might download the wrong file (that has eg, been moved).
+checksumming would detect this, but it does make it more fragile.
+
+Also, creating the direct mode mappings for a remote HEAD would currently
+be pretty slow. Probably implementing the caching database for direct mode
+mappings would lead to faster code. So, this feature seems best blocked on
+the direct mode database either way!
+
+--[[Joey]]
