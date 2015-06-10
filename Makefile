@@ -155,6 +155,9 @@ undo-standalone:
 	git checkout debian/changelog
 	quilt pop -a || true
 
+commit-standalone:
+	QUILT_PATCHES=debian/patches QUILT_SERIES=series.standalone-build  quilt refresh
+
 dpkg-buildpackage%: prep-standalone
 	umask 022; dpkg-buildpackage -rfakeroot $*
 	$(MAKE) undo-standalone
