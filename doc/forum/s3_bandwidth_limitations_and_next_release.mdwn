@@ -1,0 +1,7 @@
+Is there a way to set bandwidth limits for [[special_remotes/s3]]?
+
+From what i can see in the [[todo/credentials-less_access_to_s3]] patch, the `downloadUrl` function is used, does that mean that the `annex.web-download-command` is used? If that's the case, it's great because it means we can use the `--bwlimit` parameter in `wget` to limit transfers.
+
+But what about uploads? Are there limits there as well?
+
+I'll also abuse this forum to see if/when it will be possible to have a shiny new release to ship that amazing new feature? There seems to be sufficient stuff piled up in the unreleased changelog to warrant a release, no? :) --[[anarcat]]
