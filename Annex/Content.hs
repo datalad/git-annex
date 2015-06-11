@@ -521,11 +521,12 @@ getKeysPresent keyloc = do
 	direct <- isDirect
 	dir <- fromRepo gitAnnexObjectDir
 	s <- getstate direct
-	liftIO $ walk s direct (2 :: Int) dir
+	depth <- gitAnnexLocationDepth <$> Annex.getGitConfig
+	liftIO $ walk s direct depth dir
   where
 	walk s direct depth dir = do
 		contents <- catchDefaultIO [] (dirContents dir)
-		if depth == 0
+		if depth < 2
 			then do
 				contents' <- filterM (present s direct) contents
 				let keys = mapMaybe (fileKey . takeFileName) contents'

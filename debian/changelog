@@ -25,6 +25,9 @@ git-annex (5.20150529) UNRELEASED; urgency=medium
     to avoid old versions of tahoe create-client choking.
   * Build documentation with deterministic=1 for reproducible builds.
     (A new ikiwiki feature.) Closes: #785736
+  * Fix bug that prevented enumerating locally present objects in repos
+    tuned with annex.tune.objecthash1=true.
+    Fixes: unused, object count in info, unannex.
 
  -- Joey Hess <id@joeyh.name>  Sat, 30 May 2015 02:07:18 -0400
 
