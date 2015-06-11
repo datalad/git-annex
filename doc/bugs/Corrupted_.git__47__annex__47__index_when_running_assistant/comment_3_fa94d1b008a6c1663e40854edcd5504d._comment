@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="eigengrau"
+ subject="comment 3"
+ date="2015-06-11T15:12:23Z"
+ content="""
+Thanks! FWIW I didn’t have any hard kernel lockups recently. I figure git replaces the index file atomically, and only after all objects have been written to the store? I guess a userland crash couldn’t be the cause either, in that case?
+
+What happens when you manually run git gc at an inopportune moment, seeing that it probably doesn’t know about the secondary index? In the logs, I saw mention of locks on individual refs. Is the whole repository also locked down when git-annex commits something, or could it happen that a manual git gc prunes away objects added by git-annex before it had a chance to write the tree and commit it to a ref?
+"""]]
