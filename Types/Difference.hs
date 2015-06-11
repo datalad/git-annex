@@ -9,6 +9,7 @@ module Types.Difference (
 	Difference(..),
 	Differences(..),
 	readDifferences,
+	showDifferences,
 	getDifferences,
 	differenceConfigKey,
 	differenceConfigVal,
@@ -20,10 +21,10 @@ import Utility.PartialPrelude
 import qualified Git
 import qualified Git.Config
 
-import qualified Data.Set as S
 import Data.Maybe
 import Data.Monoid
 import Prelude
+import qualified Data.Set as S
 
 -- Describes differences from the v5 repository format.
 --
@@ -31,7 +32,7 @@ import Prelude
 -- would break compatability.
 --
 -- Not breaking compatability is why a list of Differences is used, rather
--- than a sum type. With a sum type, adding a new field for some future
+-- than a record type. With a record type, adding a new field for some future
 -- difference would serialize to a value that an older version could not
 -- parse, even if that new field was not used. With the Differences list,
 -- old versions can still parse it, unless the new Difference constructor 
@@ -44,26 +45,45 @@ data Difference
 	= ObjectHashLower
 	| OneLevelObjectHash
 	| OneLevelBranchHash
-	deriving (Show, Read, Ord, Eq, Enum, Bounded)
+	deriving (Show, Read, Eq, Ord, Enum, Bounded)
 
+-- This type is used internally for efficient checking for differences,
+-- but converted to S.Set Difference for serialization.
 data Differences
-	= Differences (S.Set Difference)
+	= Differences
+		{ objectHashLower :: Bool
+		, oneLevelObjectHash :: Bool
+		, oneLevelBranchHash :: Bool
+		}
 	| UnknownDifferences
 
+-- UnknownDifferences cannot be equal
 instance Eq Differences where
-	Differences a == Differences b = a == b
-	_ == _ = False -- UnknownDifferences cannot be equal
+	UnknownDifferences == _ = False
+	_ == UnknownDifferences = False
+	a == b = all (\f -> f a == f b)
+		[ objectHashLower
+		, oneLevelObjectHash
+		, oneLevelBranchHash
+		]
 
 instance Monoid Differences where
-	mempty = Differences S.empty
-	mappend (Differences a) (Differences b) = Differences (S.union a b)
+	mempty = Differences False False False
+	mappend a@(Differences {}) b@(Differences {}) = a
+		{ objectHashLower = objectHashLower a || objectHashLower b
+		, oneLevelObjectHash = oneLevelObjectHash a || oneLevelObjectHash b
+		, oneLevelBranchHash = oneLevelBranchHash a || oneLevelBranchHash b
+		}
 	mappend _ _ = UnknownDifferences
 
 readDifferences :: String -> Differences
-readDifferences = maybe UnknownDifferences Differences . readish
+readDifferences = maybe UnknownDifferences mkDifferences . readish
+
+showDifferences :: Differences -> String
+showDifferences = show . S.fromList . listDifferences
 
 getDifferences :: Git.Repo -> Differences
-getDifferences r = Differences $ S.fromList $
+getDifferences r = mkDifferences $ S.fromList $
 	mapMaybe getmaybe [minBound .. maxBound]
   where
 	getmaybe d = case Git.Config.isTrue =<< Git.Config.getMaybe (differenceConfigKey d) r of
@@ -82,9 +102,25 @@ tunable :: String -> String
 tunable k = "annex.tune." ++ k
 
 hasDifference :: Difference -> Differences -> Bool
-hasDifference d (Differences s) = S.member d s
 hasDifference _ UnknownDifferences = False
+hasDifference ObjectHashLower ds = objectHashLower ds
+hasDifference OneLevelObjectHash ds = oneLevelObjectHash ds
+hasDifference OneLevelBranchHash ds = oneLevelBranchHash ds
 
 listDifferences :: Differences -> [Difference]
-listDifferences (Differences s) = S.toList s
+listDifferences d@(Differences {}) = map snd $
+	filter (\(f, _) -> f d)
+		[ (objectHashLower, ObjectHashLower)
+		, (oneLevelObjectHash, OneLevelObjectHash)
+		, (oneLevelBranchHash, OneLevelBranchHash)
+		]
 listDifferences UnknownDifferences = []
+
+mkDifferences :: S.Set Difference -> Differences
+mkDifferences s = Differences
+	{ objectHashLower = check ObjectHashLower
+	, oneLevelObjectHash = check OneLevelObjectHash
+	, oneLevelBranchHash = check OneLevelBranchHash
+	}
+  where
+	check f = f `S.member` s

@@ -23,10 +23,10 @@ import Logs.UUIDBased
 import Logs.Difference.Pure
 
 recordDifferences :: Differences -> UUID -> Annex ()
-recordDifferences (Differences differences) uuid = do
+recordDifferences ds@(Differences {}) uuid = do
 	ts <- liftIO getPOSIXTime
 	Annex.Branch.change differenceLog $
-		showLog id . changeLog ts uuid (show differences) . parseLog Just
+		showLog id . changeLog ts uuid (showDifferences ds) . parseLog Just
 recordDifferences UnknownDifferences _ = return ()
 
 -- Map of UUIDs that have Differences recorded.
