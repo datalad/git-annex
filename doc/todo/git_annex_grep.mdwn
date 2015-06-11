@@ -6,3 +6,4 @@ inability to quickly grep locally present files
 
 run "git annex grep"
 
+> i don't understand this request. just running `grep` will grep all the locally present files: sure there will be warnings, but you can use `2>/dev/null` to silence those. as for the suggested solution in comment, that greps for the filenames. please clarify the feature request here or this is [[invalid|done]]. --[[anarcat]]
