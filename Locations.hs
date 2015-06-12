@@ -144,13 +144,11 @@ gitAnnexLocation' key r config crippled checker gitdir
 	 - Repositories on filesystems that are crippled also use
 	 - hashDirLower, since they do not use symlinks and it's
 	 - more portable.
-	 -
-	 - ObjectHashLower can also be set to force it.
 	 -}
-	| Git.repoIsLocalBare r 
-		|| crippled 
-		|| hasDifference ObjectHashLower (annexDifferences config) =
-			check $ map inrepo $ annexLocations config key
+	| Git.repoIsLocalBare r || crippled =
+		check $ map inrepo $ annexLocations config key
+	| hasDifference ObjectHashLower (annexDifferences config) =
+		return $ inrepo $ annexLocation config key hashDirLower
 	{- Non-bare repositories only use hashDirMixed, so
 	 - don't need to do any work to check if the file is
 	 - present. -}
