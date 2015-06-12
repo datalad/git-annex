@@ -1,0 +1,73 @@
+Hi
+
+When trying to do "make" in Linux x64_64, the process fails with an out-of-memory error. "top" shows that memory consumption reached 16GB during build.
+
+Grateful for any recommendations.
+
+Ciaron
+
+    which: no ikiwiki in <snip>
+    if [ "cabal " = ./Setup ]; then ghc --make Setup; fi
+    cabal  configure
+    Resolving dependencies...
+    [ 1 of 31] Compiling Utility.FileSize ( Utility/FileSize.hs, dist/setup/Utility/FileSize.o )
+    [ 2 of 31] Compiling Utility.PosixFiles ( Utility/PosixFiles.hs, dist/setup/Utility/PosixFiles.o )
+    [ 3 of 31] Compiling Utility.FileSystemEncoding ( Utility/FileSystemEncoding.hs, dist/setup/Utility/FileSystemEncoding.o )
+    [ 4 of 31] Compiling Utility.Applicative ( Utility/Applicative.hs, dist/setup/Utility/Applicative.o )
+    [ 5 of 31] Compiling Utility.Data     ( Utility/Data.hs, dist/setup/Utility/Data.o )
+    [ 6 of 31] Compiling Utility.Monad    ( Utility/Monad.hs, dist/setup/Utility/Monad.o )
+    [ 7 of 31] Compiling Utility.Exception ( Utility/Exception.hs, dist/setup/Utility/Exception.o )
+    [ 8 of 31] Compiling Utility.Misc     ( Utility/Misc.hs, dist/setup/Utility/Misc.o )
+    [ 9 of 31] Compiling Utility.Tmp      ( Utility/Tmp.hs, dist/setup/Utility/Tmp.o )
+    [10 of 31] Compiling Utility.Env      ( Utility/Env.hs, dist/setup/Utility/Env.o )
+    [11 of 31] Compiling Utility.UserInfo ( Utility/UserInfo.hs, dist/setup/Utility/UserInfo.o )
+    [12 of 31] Compiling Utility.Path     ( Utility/Path.hs, dist/setup/Utility/Path.o )
+    [13 of 31] Compiling Utility.OSX      ( Utility/OSX.hs, dist/setup/Utility/OSX.o )
+    [14 of 31] Compiling Utility.Process  ( Utility/Process.hs, dist/setup/Utility/Process.o )
+    [15 of 31] Compiling Utility.SafeCommand ( Utility/SafeCommand.hs, dist/setup/Utility/SafeCommand.o )
+    [16 of 31] Compiling Utility.Directory ( Utility/Directory.hs, dist/setup/Utility/Directory.o )
+    [17 of 31] Compiling Utility.ExternalSHA ( Utility/ExternalSHA.hs, dist/setup/Utility/ExternalSHA.o )
+    [18 of 31] Compiling Utility.Network  ( Utility/Network.hs, dist/setup/Utility/Network.o )
+    [19 of 31] Compiling Utility.PartialPrelude ( Utility/PartialPrelude.hs, dist/setup/Utility/PartialPrelude.o )
+    [20 of 31] Compiling Common           ( Common.hs, dist/setup/Common.o )
+    [21 of 31] Compiling Utility.DottedVersion ( Utility/DottedVersion.hs, dist/setup/Utility/DottedVersion.o )
+    [22 of 31] Compiling Git.Version      ( Git/Version.hs, dist/setup/Git/Version.o )
+    [23 of 31] Compiling Utility.FreeDesktop ( Utility/FreeDesktop.hs, dist/setup/Utility/FreeDesktop.o )
+    [24 of 31] Compiling Config.Files     ( Config/Files.hs, dist/setup/Config/Files.o )
+    [25 of 31] Compiling Assistant.Install.AutoStart ( Assistant/Install/AutoStart.hs, dist/setup/Assistant/Install/AutoStart.o )
+    [26 of 31] Compiling Assistant.Install.Menu ( Assistant/Install/Menu.hs, dist/setup/Assistant/Install/Menu.o )
+    [27 of 31] Compiling Build.Version    ( Build/Version.hs, dist/setup/Build/Version.o )
+    [28 of 31] Compiling Build.TestConfig ( Build/TestConfig.hs, dist/setup/Build/TestConfig.o )
+    [29 of 31] Compiling Build.Configure  ( Build/Configure.hs, dist/setup/Build/Configure.o )
+    [30 of 31] Compiling Build.DesktopFile ( Build/DesktopFile.hs, dist/setup/Build/DesktopFile.o )
+    [31 of 31] Compiling Main             ( dist/setup/setup.hs, dist/setup/Main.o )
+    Linking ./dist/setup/setup ...
+      checking version... 5.20150612-gf176464
+      checking UPGRADE_LOCATION... not available
+      checking git... yes
+      checking git version... 1.7.9
+      checking cp -a... yes
+      checking cp -p... yes
+      checking cp --preserve=timestamps... yes
+      checking cp --reflink=auto... no
+      checking xargs -0... yes
+      checking rsync... yes
+      checking curl... yes
+      checking wget... yes
+      checking wget supports -q --show-progress... no
+      checking bup... no
+      checking nice... yes
+      checking ionice... yes
+      checking nocache... no
+      checking gpg... gpg
+      checking lsof... lsof
+      checking git-remote-gcrypt... not available
+      checking ssh connection caching... no
+      checking sha1... sha1sum
+      checking sha256... sha256sum
+      checking sha512... sha512sum
+      checking sha224... sha224sum
+      checking sha384... sha384sum
+    Configuring git-annex-5.20150528...
+
+
