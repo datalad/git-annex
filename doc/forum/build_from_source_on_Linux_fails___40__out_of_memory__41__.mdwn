@@ -69,5 +69,6 @@ Ciaron
       checking sha224... sha224sum
       checking sha384... sha384sum
     Configuring git-annex-5.20150528...
-
+    setup: out of memory (requested 1048576 bytes)
+    make: *** [Build/SysConfig.hs] Error 1
 
