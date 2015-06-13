@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="tomekwi"
+ subject="direct mode within a directory?"
+ date="2015-06-13T13:03:33Z"
+ content="""
+Hi, is it possible to enable direct mode only on a single directory?
+
+I can’t use symlinks on a part of my repo because of interoperability with http://tagspaces.org . And I don’t want to have all of my repo in direct mode.
+"""]]
