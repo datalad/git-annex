@@ -1,6 +1,7 @@
 #!/usr/bin/make -f
 
-export CABAL=debian/cabal-wrapper
+# Avoid using cabal, as it writes to $HOME
+export CABAL=./Setup
 
 STANDALONE_BUILD=$(shell grep -qe '^Package: git-annex-standalone' debian/control \
                          && echo 1 || echo 0)

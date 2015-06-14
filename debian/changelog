@@ -30,6 +30,7 @@ git-annex (5.20150529) UNRELEASED; urgency=medium
     Fixes: unused, object count in info, unannex.
   * Improve url parsing to handle some urls containing illegal []
     characters in their paths.
+  * debian/cabal-wrapper: Removed this hack which should not be needed anymore.
 
  -- Joey Hess <id@joeyh.name>  Sat, 30 May 2015 02:07:18 -0400
 
