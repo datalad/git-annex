@@ -73,7 +73,8 @@ man:
 	mkdir -p man
 
 docs: mans
-	TZ=UTC $(IKIWIKI) doc html -v --wikiname git-annex --plugin=goodstuff \
+	LC_ALL=C TZ=UTC $(IKIWIKI) doc html -v --wikiname git-annex \
+		--plugin=goodstuff \
 		--no-usedirs --disable-plugin=openid --plugin=sidebar \
 		--underlaydir=/dev/null --set deterministic=1 \
 		--disable-plugin=shortcut --disable-plugin=smiley \
