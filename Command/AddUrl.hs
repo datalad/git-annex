@@ -139,7 +139,7 @@ startWeb relaxed optfile pathdepth s = go $ fromMaybe bad $ parseURI urlstring
   where
 	(urlstring, downloader) = getDownloader s
 	bad = fromMaybe (error $ "bad url " ++ urlstring) $
-		parseURI $ escapeURIString isUnescapedInURI urlstring
+		Url.parseURIRelaxed $ urlstring
 	go url = case downloader of
 		QuviDownloader -> usequvi
 		_ -> 
