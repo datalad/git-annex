@@ -263,14 +263,22 @@ download' quiet url file uo = do
 
 {- Allows for spaces and other stuff in urls, properly escaping them. -}
 parseURIRelaxed :: URLString -> Maybe URI
-parseURIRelaxed s = maybe (go escapemore) Just $ go isAllowedInURI
+parseURIRelaxed s = maybe (parseURIRelaxed' s) Just $
+	parseURI $ escapeURIString isAllowedInURI s
+
+{- Some characters like '[' are allowed in eg, the address of
+ - an uri, but cannot appear unescaped further along in the uri.
+ - This handles that, expensively, by successively escaping each character
+ - from the back of the url until the url parses.
+ -}
+parseURIRelaxed' :: URLString -> Maybe URI
+parseURIRelaxed' s = go [] (reverse s)
   where
-	go f = parseURI $ escapeURIString f s
-	{- Some characters like '[' are allowed in eg, the address of
-	 - an uri, but cannot appear unescaped elsewhere in the uri.
-	 - If parsing fails with those characters unescaped, fall back
-	 - to escaping them too.
-	 -}
+	go back [] = parseURI back
+	go back (c:cs) = case parseURI (escapeURIString isAllowedInURI (reverse (c:cs)) ++ back) of
+		Just u -> Just u
+		Nothing -> go (escapeURIChar escapemore c ++ back) cs
+
 	escapemore '[' = False
 	escapemore ']' = False
 	escapemore c = isAllowedInURI c
