@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-06-15T17:56:45Z"
+ content="""
+The reason is that `git annex sync --content` only syncs files in the
+current work tree.
+<http://git-annex.branchable.com/todo/wishlist:_--all_option_for_sync/>
+"""]]
