@@ -398,12 +398,11 @@ sendS3Handle'
 sendS3Handle' h r = AWS.pureAws (hawscfg h) (hs3cfg h) (hmanager h) r
 
 withS3Handle :: RemoteConfig -> UUID -> (S3Handle -> Annex a) -> Annex a
-withS3Handle c u a = do
-	withS3HandleMaybe c u $ \mh -> case mh of
-		Just h -> a h
-		Nothing -> do
-			warnMissingCredPairFor "S3" (AWS.creds u)
-			error "No S3 credentials configured"
+withS3Handle c u a = withS3HandleMaybe c u $ \mh -> case mh of
+	Just h -> a h
+	Nothing -> do
+		warnMissingCredPairFor "S3" (AWS.creds u)
+		error "No S3 credentials configured"
 
 withS3HandleMaybe :: RemoteConfig -> UUID -> (Maybe S3Handle -> Annex a) -> Annex a
 withS3HandleMaybe c u a = do
