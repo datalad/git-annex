@@ -29,3 +29,5 @@ git ls-tree -r git-annex | grep WORM
 git-annex 5.20150508
 Linux 4.0.4
 
+> This can now be dealt with by providing the key to `git annex dead
+> --key`   [[done]] --[[Joey]] 
