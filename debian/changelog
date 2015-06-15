@@ -22,7 +22,8 @@ git-annex (5.20150529) UNRELEASED; urgency=medium
     Otherwise, still reports files with lost contents, even if the content
     is dead.
   * tahoe: Use ~/.tahoe-git-annex/ rather than ~/.tahoe/git-annex/
-    to avoid old versions of tahoe create-client choking.
+    when setting up a tahoe special remote to avoid old versions of
+    tahoe create-client choking.
   * Build documentation with deterministic=1 for reproducible builds.
     (A new ikiwiki feature.) Closes: #785736
   * Fix bug that prevented enumerating locally present objects in repos
