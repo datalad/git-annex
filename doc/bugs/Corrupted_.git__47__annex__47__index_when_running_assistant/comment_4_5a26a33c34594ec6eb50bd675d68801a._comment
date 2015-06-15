@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-06-15T18:05:38Z"
+ content="""
+git does update the index file atomically (via `rename(2)`) but
+that doesn't necessarily mean that the filesystem writes all
+the data to disk before there is a problem.
+
+That's a good point about `git gc` and the index; it does look
+at the regular git index. But, `git gc` seems unlikely to cause any problem,
+even if .git/annex/index  pointed to a newer object that the git-annex branch
+hadn't yet been updated to refer to; since `git gc` defaults to only
+pruning objects that are 2 weeks old. The time that an object would
+normally be in .git/annex/index without getting flushed in a commit
+is normally measured in seconds to minutes.
+"""]]
