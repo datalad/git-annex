@@ -8,6 +8,8 @@ Then subsequent transfers seem to fail with:
 
     InternalIOException send: resource vanished (Connection reset by peer)
 
+Workaround: restart the assistant.
+
 ### What steps will reproduce the problem?
 
 It's unclear. The assistant is trying to sync a lot of stuff to S3 right now, as files are regularly added into the repository and the assistant migrates them all there. The repository is setup as a "source" repository to make sure it doesn't keep files and send them all to s3.
