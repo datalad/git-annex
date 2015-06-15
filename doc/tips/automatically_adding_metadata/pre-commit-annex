@@ -52,6 +52,7 @@ IFS="
 
 process () {
 	if [ -e "$f" ]; then
+		echo "adding metadata for $f"
 		for l in $(extract "$f" | egrep "$want"); do
 			field="${l%% - *}"
 			value="${l#* - }"
