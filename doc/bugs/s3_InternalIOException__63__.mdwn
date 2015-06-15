@@ -1,0 +1,26 @@
+### Please describe the problem.
+
+I got the following errors from the assistant, in `.git/annex/daemon.log`:
+
+    InternalIOException send: resource vanished (Broken pipe)
+
+Then subsequent transfers seem to fail with:
+
+    InternalIOException send: resource vanished (Connection reset by peer)
+
+### What steps will reproduce the problem?
+
+It's unclear. The assistant is trying to sync a lot of stuff to S3 right now, as files are regularly added into the repository and the assistant migrates them all there. The repository is setup as a "source" repository to make sure it doesn't keep files and send them all to s3.
+
+### What version of git-annex are you using? On what operating system?
+
+standalone tarball `5.20150508-g883d57f` on Ubuntu Precise.
+
+### Please provide any additional information below.
+
+here are the two latest log files, but all previous logfiles available are similar...
+
+http://paste.ubuntu.com/11721025/
+http://paste.ubuntu.com/11721028/
+
+-- [[anarcat]]
