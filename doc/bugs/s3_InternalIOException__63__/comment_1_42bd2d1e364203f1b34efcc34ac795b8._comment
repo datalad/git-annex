@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-06-15T18:57:07Z"
+ content="""
+Are you sure that it was subsequent transfers of other keys that failed,
+and not subsequent transfers of chunks of the same key?
+
+The latter seems more likely. There is a cached connection to S3 that is
+reused when uploading chunks of a key. But, each transfer of a key
+currently runs using its own individual connection. Difficulties with
+connections that close or are left running too long are why the S3 remote
+doesn't yet reuse connections.
+"""]]
