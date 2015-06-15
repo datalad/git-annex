@@ -31,3 +31,14 @@ supported repository version: 5
 upgrade supported from repository versions: 0 1 2 4
 """ ]]
 
+> Please upgrade to the current version of git-annex before filing bug
+> reports.
+>
+> I don't know when this was fixed/changed, but sometime in the past 13
+> months since the version you have, it was:
+>
+
+	joey@darkstar:~/tmp/x>git annex unlock `pwd`/me
+	unlock me (copying...) ok
+
+> [[done]] --[[Joey]] 
