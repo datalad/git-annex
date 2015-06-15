@@ -4,32 +4,42 @@ I have setup a remote git-annex repository (ssh into some machine in our local n
 
 When these client_repos change and do a "git annex sync <common_repo> --content", all the files from their laptops are successfully synchronised.  The problem arises when:
 
-(1) CLIENT_A creates somefile.csv
-(2) CLIENT_A commits somefile.csv
-    i.e. git annex add somefile.csv
-          git commit -a -m "uploaded somefile.csv"
-(3) CLIENT_A modifies somefile.csv
-(4) CLIENT_A commits modified somefile.csv
-    i.e. git add somefile.csv
-         git commit -a -m "updated somefile.csv"
-(5) CLIENT_A synchronises with common_repo
-    i.e. git annex sync <common_repo> --content
+<ol>
+  <li>CLIENT_A creates somefile.csv</li>
+  <li>CLIENT_A commits somefile.csv
+    <br/>i.e.:
+    <br/>&nbsp;&nbsp;&nbsp;&nbsp;git annex add somefile.csv
+    <br/>&nbsp;&nbsp;&nbsp;&nbsp;git commit -a -m "uploaded somefile.csv"
+  </li>
+  <li>CLIENT_A modifies somefile.csv</li>
+  <li> CLIENT_A commits modified somefile.csv
+     <br/>i.e.:
+     <br/>&nbsp;&nbsp;&nbsp;&nbsp;git add somefile.csv
+     <br/>&nbsp;&nbsp;&nbsp;&nbsp;git commit -a -m "updated somefile.csv"
+  </li>
+  <li>CLIENT_A synchronises with common_repo
+     <br/>i.e.: git annex sync <common_repo> --content
+  </li>
+</ol>
 
 If I check the .git/annex/objects of common_repo, I can't seem to find a copy of the unmodified somefile.csv.  It only has a copy of the latest somefile.csv.
 
 This is problematic if one client tries to checkout a revision of the project that uses the original somefile.csv.
 
 I learned that I can change the preferred content of git-annex.  So, the appropriate preset for common_repo seemed to be "backup".  After running the commands in common_repo:
-    git annex wanted . standard
-    git annex group . backup
+<blockquote>
+git annex wanted . standard<br/>
+git annex group . backup
+</blockquote>
 
 I've done another test of the scenario above, and common_repo is still missing the previous revision of the file!!  The preferred file content of common_repo should be "include=* or unused".  In my case, the previous version of somefile.csv will probably fall in the "unused" category.  But I still cannot find it.
 
 A workaround is using two commands from the client(s):
-    git annex copy --to <common_repo> --all
-    git annex sync <common_repo> --content
+<blockquote>
+git annex copy --to <common_repo> --all<br/>
+git annex sync <common_repo> --content
+</blockquote>
 
 But I can imagine my users forgetting to run 'copy' and my repo will go to shit over time.
 
 Any ideas why I can't synchronise 'unused' files?
-
