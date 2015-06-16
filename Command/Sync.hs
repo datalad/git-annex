@@ -375,11 +375,11 @@ seekSyncContent rs = do
 	liftIO $ not <$> isEmptyMVar mvar
   where
 	go mvar f = ifAnnexed f
-		(\v -> void (liftIO (tryPutMVar mvar ())) >> syncFile rs f v)
+		(\v -> void (liftIO (tryPutMVar mvar ())) >> syncFile rs (Just f) v)
 		noop
 
-syncFile :: [Remote] -> FilePath -> Key -> Annex ()
-syncFile rs f k = do
+syncFile :: [Remote] -> AssociatedFile -> Key -> Annex ()
+syncFile rs af k = do
 	locs <- loggedLocations k
 	let (have, lack) = partition (\r -> Remote.uuid r `elem` locs) rs
 
@@ -391,31 +391,31 @@ syncFile rs f k = do
 
 	-- Using callCommandAction rather than includeCommandAction for drops,
 	-- because a failure to drop does not mean the sync failed.
-	handleDropsFrom locs' rs "unwanted" True k (Just f)
+	handleDropsFrom locs' rs "unwanted" True k af
 		Nothing callCommandAction
   where
 	wantget have = allM id 
 		[ pure (not $ null have)
 		, not <$> inAnnex k
-		, wantGet True (Just k) (Just f)
+		, wantGet True (Just k) af
 		]
 	handleget have = ifM (wantget have)
 		( return [ get have ]
 		, return []
 		)
 	get have = includeCommandAction $ do
-		showStart "get" f
-		next $ next $ getViaTmp k $ \dest -> getKeyFile' k (Just f) dest have
+		showStart' "get" k af
+		next $ next $ getViaTmp k $ \dest -> getKeyFile' k af dest have
 
 	wantput r
 		| Remote.readonly r || remoteAnnexReadOnly (Remote.gitconfig r) = return False
-		| otherwise = wantSend True (Just k) (Just f) (Remote.uuid r)
+		| otherwise = wantSend True (Just k) af (Remote.uuid r)
 	handleput lack = ifM (inAnnex k)
 		( map put <$> filterM wantput lack
 		, return []
 		)
 	put dest = do
 		ok <- includeCommandAction $ do
-			showStart "copy" f
-			Command.Move.toStart' dest False (Just f) k
+			showStart' "copy" k af
+			Command.Move.toStart' dest False af k
 		return (ok, if ok then Just (Remote.uuid dest) else Nothing)
