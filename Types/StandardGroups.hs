@@ -85,7 +85,7 @@ standardPreferredContent TransferGroup = lastResort $
 	"not (inallgroup=client and copies=client:2) and (" ++ standardPreferredContent ClientGroup ++ ")"
 standardPreferredContent BackupGroup = "include=* or unused"
 standardPreferredContent IncrementalBackupGroup = lastResort
-	"(include=* or unused) and (not copies=incrementalbackup:1)"
+	"(include=* or unused) and (not copies=backup:1) and (not copies=incrementalbackup:1)"
 standardPreferredContent SmallArchiveGroup = lastResort $
 	"(include=*/archive/* or include=archive/*) and (" ++ standardPreferredContent FullArchiveGroup ++ ")"
 standardPreferredContent FullArchiveGroup = lastResort notArchived

@@ -37,6 +37,9 @@ git-annex (5.20150616) UNRELEASED; urgency=medium
   * sync: Add support for --all and --unused.
   * Added new "anything" preferred content expression, which matches all
     versions of all files.
+  * Fix incremental backup standard preferred content expression to match
+    its documentation, which says it does not want files that have reached
+    a backup repository.
 
  -- Joey Hess <id@joeyh.name>  Sat, 30 May 2015 02:07:18 -0400
 
