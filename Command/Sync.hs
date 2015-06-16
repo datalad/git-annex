@@ -379,7 +379,10 @@ newer remote b = do
 seekSyncContent :: [Remote] -> Annex Bool
 seekSyncContent rs = do
 	mvar <- liftIO newEmptyMVar
-	bloom <- genBloomFilter (seekworktree mvar [])
+	bloom <- ifM (Annex.getFlag "all")
+		( Just <$> genBloomFilter (seekworktree mvar [])
+		, seekworktree mvar [] (const noop) >> pure Nothing
+		)
 	withKeyOptions' False (seekkeys mvar bloom) (const noop) []
 	liftIO $ not <$> isEmptyMVar mvar
   where
@@ -391,7 +394,7 @@ seekSyncContent rs = do
 		void $ liftIO $ tryPutMVar mvar ()
 		syncFile ebloom rs af k
 
-syncFile :: Either (Bloom Key) (Key -> Annex ()) -> [Remote] -> AssociatedFile -> Key -> Annex ()
+syncFile :: Either (Maybe (Bloom Key)) (Key -> Annex ()) -> [Remote] -> AssociatedFile -> Key -> Annex ()
 syncFile ebloom rs af k = do
 	locs <- loggedLocations k
 	let (have, lack) = partition (\r -> Remote.uuid r `elem` locs) rs
@@ -411,7 +414,8 @@ syncFile ebloom rs af k = do
 	-- When there's a false positive in the bloom filter, the result
 	-- is keeping a key that preferred content doesn't really want.
 	seenbloom <- case ebloom of
-		Left bloom -> pure (elemB k bloom)
+		Left Nothing -> pure False
+		Left (Just bloom) -> pure (elemB k bloom)
 		Right bloomfeeder -> bloomfeeder k >> return False
 	unless seenbloom $
 		-- Using callCommandAction rather than
