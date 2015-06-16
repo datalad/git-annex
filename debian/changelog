@@ -44,6 +44,10 @@ git-annex (5.20150616) UNRELEASED; urgency=medium
   * Fix incremental backup standard preferred content expression to match
     its documentation, which says it does not want files that have reached
     a backup repository.
+  * Increased the default annex.bloomaccuracy from 1000 to 10000000.
+    This makes git annex unused use up to 16 mb more memory than it did
+    before, but the massive increase in accuracy makes this worthwhile
+    for all but the smallest systems.
 
  -- Joey Hess <id@joeyh.name>  Sat, 30 May 2015 02:07:18 -0400
 

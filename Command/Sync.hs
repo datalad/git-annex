@@ -45,6 +45,7 @@ import Annex.UUID
 import Logs.UUID
 import Annex.AutoMerge
 import Annex.Ssh
+import Utility.Bloom
 
 import Control.Concurrent.MVar
 import qualified Data.Map as M

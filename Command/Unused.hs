@@ -9,7 +9,6 @@
 
 module Command.Unused where
 
-import Control.Monad.ST
 import qualified Data.Map as M
 
 import Common.Annex
@@ -32,7 +31,7 @@ import Types.Key
 import Types.RefSpec
 import Git.FilePath
 import Logs.View (is_branchView)
-import Utility.Bloom
+import Annex.BloomFilter
 
 cmd :: [Command]
 cmd = [withOptions [unusedFromOption, refSpecOption] $
@@ -171,46 +170,6 @@ excludeReferenced refspec ks = runfilter firstlevel ks >>= runfilter secondlevel
 	runfilter a l = bloomFilter show l <$> genBloomFilter show a
 	firstlevel = withKeysReferencedM
 	secondlevel = withKeysReferencedInGit refspec
-
-{- A bloom filter capable of holding half a million keys with a
- - false positive rate of 1 in 1000 uses around 8 mb of memory,
- - so will easily fit on even my lowest memory systems.
- -}
-bloomCapacity :: Annex Int
-bloomCapacity = fromMaybe 500000 . annexBloomCapacity <$> Annex.getGitConfig
-bloomAccuracy :: Annex Int
-bloomAccuracy = fromMaybe 1000 . annexBloomAccuracy <$> Annex.getGitConfig
-bloomBitsHashes :: Annex (Int, Int)
-bloomBitsHashes = do
-	capacity <- bloomCapacity
-	accuracy <- bloomAccuracy
-	case safeSuggestSizing capacity (1 / fromIntegral accuracy) of
-		Left e -> do
-			warning $ "bloomfilter " ++ e ++ "; falling back to sane value"
-			-- precaulculated value for 500000 (1/1000)
-			return (8388608,10)
-		Right v -> return v
-
-{- Creates a bloom filter, and runs an action, such as withKeysReferenced,
- - to populate it.
- -
- - The action is passed a callback that it can use to feed values into the
- - bloom filter. 
- -
- - Once the action completes, the mutable filter is frozen
- - for later use.
- -}
-genBloomFilter :: Hashable t => (v -> t) -> ((v -> Annex ()) -> Annex b) -> Annex (Bloom t)
-genBloomFilter convert populate = do
-	(numbits, numhashes) <- bloomBitsHashes
-	bloom <- lift $ newMB (cheapHashes numhashes) numbits
-	_ <- populate $ \v -> lift $ insertMB bloom (convert v)
-	lift $ unsafeFreezeMB bloom
-  where
-	lift = liftIO . stToIO
-
-bloomFilter :: Hashable t => (v -> t) -> [v] -> Bloom t -> [v]
-bloomFilter convert l bloom = filter (\k -> convert k `notElemB` bloom) l
 
 {- Given an initial value, folds it with each key referenced by
  - symlinks in the git repo. -}

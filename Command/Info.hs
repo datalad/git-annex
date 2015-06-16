@@ -16,7 +16,6 @@ import Data.Tuple
 import Data.Ord
 
 import Common.Annex
-import qualified Command.Unused
 import qualified Git
 import qualified Annex
 import qualified Remote
@@ -39,6 +38,8 @@ import Types.TrustLevel
 import Types.FileMatcher
 import qualified Limit
 import Messages.JSON (DualDisp(..))
+import Annex.BloomFilter
+import qualified Command.Unused
 
 -- a named computation that produces a statistic
 type Stat = StatState (Maybe (String, StatState String))
@@ -330,17 +331,17 @@ key_name k = simpleStat "key" $ pure $ key2file k
 bloom_info :: Stat
 bloom_info = simpleStat "bloom filter size" $ do
 	localkeys <- countKeys <$> cachedPresentData
-	capacity <- fromIntegral <$> lift Command.Unused.bloomCapacity
+	capacity <- fromIntegral <$> lift bloomCapacity
 	let note = aside $
 		if localkeys >= capacity
 		then "appears too small for this repository; adjust annex.bloomcapacity"
 		else showPercentage 1 (percentage capacity localkeys) ++ " full"
 
-	-- Two bloom filters are used at the same time, so double the size
-	-- of one.
+	-- Two bloom filters are used at the same time when running
+	-- git-annex unused, so double the size of one.
 	sizer <- lift mkSizer
 	size <- sizer memoryUnits False . (* 2) . fromIntegral . fst <$>
-		lift Command.Unused.bloomBitsHashes
+		lift bloomBitsHashes
 
 	return $ size ++ note
 
