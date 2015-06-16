@@ -32,6 +32,8 @@ git-annex (5.20150529) UNRELEASED; urgency=medium
   * Improve url parsing to handle some urls containing illegal []
     characters in their paths.
   * debian/cabal-wrapper: Removed this hack which should not be needed anymore.
+  * info: Added json output for "backend usage", "numcopies stats",
+    "repositories containing these files", and "transfers in progress".
 
  -- Joey Hess <id@joeyh.name>  Sat, 30 May 2015 02:07:18 -0400
 

@@ -31,6 +31,7 @@ module Remote (
 	byNameWithUUID,
 	byCost,
 	prettyPrintUUIDs,
+	prettyPrintUUIDsWith,
 	prettyListUUIDs,
 	prettyUUID,
 	remoteFromUUID,
@@ -168,19 +169,29 @@ nameToUUID' n = byName' n >>= go
 
 {- Pretty-prints a list of UUIDs of remotes, for human display.
  -
- - When JSON is enabled, also generates a machine-readable description
+ - When JSON is enabled, also outputs a machine-readable description
  - of the UUIDs. -}
 prettyPrintUUIDs :: String -> [UUID] -> Annex String
-prettyPrintUUIDs desc uuids = do
+prettyPrintUUIDs desc uuids = prettyPrintUUIDsWith Nothing desc $
+	zip uuids (repeat (Nothing :: Maybe String))
+
+{- An optional field can be included in the list of UUIDs. -}
+prettyPrintUUIDsWith
+	:: (JSON v, Show v) 
+	=> Maybe String 
+	-> String 
+	-> [(UUID, Maybe v)] 
+	-> Annex String
+prettyPrintUUIDsWith optfield desc uuids = do
 	hereu <- getUUID
 	m <- uuidDescriptions
 	maybeShowJSON [(desc, map (jsonify m hereu) uuids)]
 	return $ unwords $ map (\u -> "\t" ++ prettify m hereu u ++ "\n") uuids
   where
 	finddescription m u = M.findWithDefault "" u m
-	prettify m hereu u
-		| not (null d) = fromUUID u ++ " -- " ++ d
-		| otherwise = fromUUID u
+	prettify m hereu (u, optval)
+		| not (null d) = addoptval $ fromUUID u ++ " -- " ++ d
+		| otherwise = addoptval $ fromUUID u
 	  where
 		ishere = hereu == u
 		n = finddescription m u
@@ -188,10 +199,16 @@ prettyPrintUUIDs desc uuids = do
 			| null n && ishere = "here"
 			| ishere = addName n "here"
 			| otherwise = n
-	jsonify m hereu u = toJSObject
-		[ ("uuid", toJSON $ fromUUID u)
-		, ("description", toJSON $ finddescription m u)
-		, ("here", toJSON $ hereu == u)
+		addoptval s = case optval of
+			Nothing -> s
+			Just val -> show val ++ ": " ++ s
+	jsonify m hereu (u, optval) = toJSObject $ catMaybes
+		[ Just ("uuid", toJSON $ fromUUID u)
+		, Just ("description", toJSON $ finddescription m u)
+		, Just ("here", toJSON $ hereu == u)
+		, case (optfield, optval) of
+			(Just field, Just val) -> Just (field, showJSON val)
+			_ -> Nothing
 		]
 
 {- List of remote names and/or descriptions, for human display.  -}

@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE BangPatterns, DeriveDataTypeable #-}
 
 module Command.Info where
 
@@ -38,6 +38,7 @@ import Logs.Transfer
 import Types.TrustLevel
 import Types.FileMatcher
 import qualified Limit
+import Messages.JSON (DualDisp(..))
 
 -- a named computation that produces a statistic
 type Stat = StatState (Maybe (String, StatState String))
@@ -59,8 +60,8 @@ newtype Variance = Variance Int
 
 instance Show Variance where
 	show (Variance n)
-		| n >= 0 = "numcopies +" ++ show n
-		| otherwise = "numcopies " ++ show n
+		| n >= 0 = "+" ++ show n
+		| otherwise = show n
 
 -- cached info that multiple Stats use
 data StatInfo = StatInfo
@@ -221,10 +222,10 @@ nostat :: Stat
 nostat = return Nothing
 
 json :: JSON j => (j -> String) -> StatState j -> String -> StatState String
-json serialize a desc = do
+json fmt a desc = do
 	j <- a
 	lift $ maybeShowJSON [(desc, j)]
-	return $ serialize j
+	return $ fmt j
 
 nojson :: StatState String -> String -> StatState String
 nojson a _ = a
@@ -251,11 +252,16 @@ repo_list level = stat n $ nojson $ lift $ do
 	us <- filter (/= NoUUID) . M.keys 
 		<$> (M.union <$> uuidMap <*> remoteMap Remote.name)
 	rs <- fst <$> trustPartition level us
-	s <- prettyPrintUUIDs n rs
-	return $ if null s then "0" else show (length rs) ++ "\n" ++ beginning s
+	countRepoList (length rs)
+		-- This also handles json display.
+		<$> prettyPrintUUIDs n rs
   where
 	n = showTrustLevel level ++ " repositories"
-	
+
+countRepoList :: Int -> String -> String
+countRepoList _ [] = "0"
+countRepoList n s = show n ++ "\n" ++ beginning s
+
 dir_name :: FilePath -> Stat
 dir_name dir = simpleStat "directory" $ pure dir
 
@@ -339,20 +345,28 @@ bloom_info = simpleStat "bloom filter size" $ do
 	return $ size ++ note
 
 transfer_list :: Stat
-transfer_list = stat "transfers in progress" $ nojson $ lift $ do
+transfer_list = stat desc $ nojson $ lift $ do
 	uuidmap <- Remote.remoteMap id
 	ts <- getTransfers
+	maybeShowJSON [(desc, map (uncurry jsonify) ts)]
 	return $ if null ts
 		then "none"
 		else multiLine $
 			map (uncurry $ line uuidmap) $ sort ts
   where
+	desc = "transfers in progress"
 	line uuidmap t i = unwords
 		[ showLcDirection (transferDirection t) ++ "ing"
 		, fromMaybe (key2file $ transferKey t) (associatedFile i)
 		, if transferDirection t == Upload then "to" else "from"
 		, maybe (fromUUID $ transferUUID t) Remote.name $
 			M.lookup (transferUUID t) uuidmap
+		]
+	jsonify t i = toJSObject
+		[ ("transfer", showLcDirection (transferDirection t))
+		, ("key", key2file (transferKey t))
+		, ("file", fromMaybe "" (associatedFile i))
+		, ("remote", fromUUID (transferUUID t))
 		]
 
 disk_size :: Stat
@@ -374,42 +388,41 @@ disk_size = simpleStat "available local disk space" $ lift $
 		| otherwise = 0
 
 backend_usage :: Stat
-backend_usage = stat "backend usage" $ nojson $
+backend_usage = stat "backend usage" $ json fmt $
 	calc
 		<$> (backendsKeys <$> cachedReferencedData)
 		<*> (backendsKeys <$> cachedPresentData)
   where
-	calc x y = multiLine $
-		map (\(n, b) -> b ++ ": " ++ show n) $
-		sortBy (flip compare) $ map swap $ M.toList $
-		M.unionWith (+) x y
+	calc x y = sort $ M.toList $ M.unionWith (+) x y
+	fmt = multiLine . map (\(n, b) -> b ++ ": " ++ show n) . map swap
 
 numcopies_stats :: Stat
-numcopies_stats = stat "numcopies stats" $ nojson $
+numcopies_stats = stat "numcopies stats" $ json fmt $
 	calc <$> (maybe M.empty numCopiesVarianceMap <$> cachedNumCopiesStats)
   where
-	calc = multiLine
-		. map (\(variance, count) -> show variance ++ ": " ++ show count)
-		. sortBy (flip (comparing snd)) . M.toList
+	calc = map (\(variance, count) -> (show variance, count)) 
+		. sortBy (flip (comparing snd))
+		. M.toList
+	fmt = multiLine . map (\(variance, count) -> "numcopies " ++ variance ++ ": " ++ show count)
 
 reposizes_stats :: Stat
-reposizes_stats = stat "repositories containing these files" $ nojson $
-	calc
-		<$> lift uuidDescriptions
-		<*> lift mkSizer
-		<*> cachedRepoData
+reposizes_stats = stat desc $ nojson $ do
+	sizer <- lift mkSizer
+	l <- map (\(u, kd) -> (u, sizer storageUnits True (sizeKeys kd)))
+		. sortBy (flip (comparing (sizeKeys . snd)))
+		. M.toList
+		<$> cachedRepoData
+	let maxlen = maximum (map (length . snd) l)
+	-- This also handles json display.
+	s <- lift $ prettyPrintUUIDsWith (Just "size") desc $
+		map (\(u, sz) -> (u, Just $ mkdisp sz maxlen)) l
+	return $ countRepoList (length l) s
   where
-	calc descm sizer = multiLine
-		. format
-		. map (\(u, d) -> line descm sizer u d)
-		. sortBy (flip (comparing (sizeKeys . snd))) . M.toList
-	line descm sizer u d = (sz, fromUUID u ++ " -- " ++ desc)
-	  where
-		sz = sizer storageUnits True (sizeKeys d)
-		desc = fromMaybe "" (M.lookup u descm)
-	format l = map (\(c1, c2) -> lpad maxc1 c1 ++ ": " ++ c2 ) l
-	  where
-		maxc1 = maximum (map (length . fst) l)
+	desc = "repositories containing these files"
+	mkdisp sz maxlen = DualDisp
+		{ dispNormal = lpad maxlen sz
+		, dispJson = sz
+		}
 	lpad n s = (replicate (n - length s) ' ') ++ s
 
 cachedPresentData :: StatState KeyData

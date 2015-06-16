@@ -26,3 +26,7 @@ transfers in progress:
 """]]
 
 [[anarcat]]
+
+> JSON output has to be implemented on a case by case basis for stat
+> displays; I've now added it to this and more. [[done]]
+> --[[Joey]]

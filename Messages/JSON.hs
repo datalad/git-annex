@@ -10,7 +10,8 @@ module Messages.JSON (
 	end,
 	note,
 	add,
-	complete
+	complete,
+	DualDisp(..),
 ) where
 
 import Text.JSON
@@ -35,3 +36,16 @@ add v = putStr $ Stream.add v
 
 complete :: JSON a => [(String, a)] -> IO ()
 complete v = putStr $ Stream.start v ++ Stream.end
+
+-- A value that can be displayed either normally, or as JSON.
+data DualDisp = DualDisp
+	{ dispNormal :: String
+	, dispJson :: String
+	}
+
+instance JSON DualDisp where
+	showJSON = JSString . toJSString . dispJson
+	readJSON _ = Error "stub"
+
+instance Show DualDisp where
+	show = dispNormal
