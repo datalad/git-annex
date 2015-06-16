@@ -55,7 +55,9 @@ from the command line options to keep in mind:
 
 While --include and --exclude match files relative to the current
 directory, preferred content expressions always match files relative to the
-top of the git repository. Perhaps you put files into `archive` directories
+top of the git repository. 
+
+For example, suppose you put files into `archive` directories
 when you're done with them. Then you could configure your laptop to prefer
 to not retain those files, like this:
 
@@ -179,10 +181,13 @@ content expression won't match anything.
 
 So when is `unused` useful in a preferred content expression?
 
-The git-annex assistant periodically scans for unused files, and
-moves them to some repository whose preferred content expression
-matches "unused". (Or, if annex.expireunused is set, it may just delete
-them.)
+* The git-annex assistant periodically scans for unused files, and
+  moves them to some repository whose preferred content expression
+  matches "unused". (Or, if annex.expireunused is set, it may just delete
+  them.)
+* Using `git annex sync --content --all` will operate on all files,
+  including unused ones, and take `unused` in preferred content expressions
+  into account.
 
 ## upgrades
 
