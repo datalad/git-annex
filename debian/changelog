@@ -34,7 +34,8 @@ git-annex (5.20150616) UNRELEASED; urgency=medium
   * debian/cabal-wrapper: Removed this hack which should not be needed anymore.
   * info: Added json output for "backend usage", "numcopies stats",
     "repositories containing these files", and "transfers in progress".
-  * sync: Add support for --all and --unused.
+  * Now supports git annex sync --all --content to sync all versions of all
+    files with all repos that want them.
   * Added new "anything" preferred content expression, which matches all
     versions of all files.
   * Standard preferred content for client, backup, incremental backup,
