@@ -18,3 +18,5 @@ Please add an `--all` option to the `sync` command
 Thanks
 
 Andrew
+
+> Implemented; [[done]]. --[[Joey]]

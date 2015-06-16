@@ -53,13 +53,15 @@ gitAnnexOptions = commonOptions ++
 
 -- Options for matching on annexed keys, rather than work tree files.
 keyOptions :: [Option]
-keyOptions = 
-	[ Option ['A'] ["all"] (NoArg (Annex.setFlag "all"))
-		"operate on all versions of all files"
-	, Option ['U'] ["unused"] (NoArg (Annex.setFlag "unused"))
-		"operate on files found by last run of git-annex unused"
-	, keyOption
-	]
+keyOptions = [ allOption, unusedOption, keyOption]
+
+allOption :: Option
+allOption = Option ['A'] ["all"] (NoArg (Annex.setFlag "all"))
+	"operate on all versions of all files"
+
+unusedOption :: Option
+unusedOption = Option ['U'] ["unused"] (NoArg (Annex.setFlag "unused"))
+	"operate on files found by last run of git-annex unused"
 
 keyOption :: Option
 keyOption = Option [] ["key"] (ReqArg (Annex.setField "key") paramKey)

@@ -21,6 +21,9 @@ those branches on the remote repositories. You can use standard git
 commands to do each of those steps by hand, or if you don't want to
 worry about the details, you can use sync.
 
+The content of annexed objects is not synced by default, but the --content
+option (see below) can make that also be synchronized.
+
 Merge conflicts are automatically handled by sync. When two conflicting
 versions of a file have been committed, both will be added to the tree,
 under different filenames. For example, file "foo" would be replaced
@@ -31,8 +34,11 @@ tree with changes made to the local repository. However, those changes
 are pushed to the remote, so they can be merged into its working tree
 by running "git annex sync" on the remote.
 
-
 # OPTIONS
+
+* `--message=msg`
+
+  Use this option to specify a commit message.
 
 * `--fast`
 
@@ -41,28 +47,35 @@ by running "git annex sync" on the remote.
 * `--content`
 
   Normally, syncing does not transfer the contents of annexed files.
-  This option causes the file contents to also be uploaded and downloaded
-  as necessary.  
+  This option causes the content of files in the work tree
+  to also be uploaded and downloaded as necessary.  
 
-  By default, this tries to get each annexed file that the local repository 
-  does not yet have, and then copies each file to every remote that it is
-  syncing with. This behavior can be overridden by configuring the preferred
-  content of a repository. See [[git-annex-preferred-content]](1).
+  By default, this tries to get each annexed file in the work tree
+  that the local repository  does not yet have, and then copies each
+  file in the work tree to every remote that it is syncing with.
+  This behavior can be overridden by configuring the preferred content
+  of a repository. See [[git-annex-preferred-content]](1).
 
-  To make two repositories have the same set of files, you should use
-  [[git-annex-mirror]](1) instead of this flag.
+* `--all`
 
-* `--message=msg`
+  This option, when combined with `--content`, makes all available versions
+  of all files be synced, when preferred content settings allow.
 
-  Use this option to specify a commit message.
+  Note that preferred content settings that use `include=` or `exclude=`
+  will only match the version of files currently in the work tree, but not
+  past versions of files.
+
+* `--unused`
+
+  This option, when combined with `--content`, makes files 
+  found by last run of git-annex unused be synced, when preferred content
+  settings allow.
 
 # SEE ALSO
 
 [[git-annex]](1)
 
 [[git-annex-preferred-content]](1)
-
-[[git-annex-mirror]](1)
 
 # AUTHOR
 

@@ -58,6 +58,8 @@ syncOptions :: [Option]
 syncOptions =
 	[ contentOption
 	, messageOption
+	, allOption
+	, unusedOption
 	]
 
 contentOption :: Option
@@ -371,12 +373,19 @@ newer remote b = do
 seekSyncContent :: [Remote] -> Annex Bool
 seekSyncContent rs = do
 	mvar <- liftIO newEmptyMVar
-	mapM_ (go mvar) =<< seekHelper LsFiles.inRepo []
+	-- Always start with the work tree; this ensures that preferred
+	-- content expressions that match files match, even when in --all
+	-- mode.
+	seekworktree mvar []
+	withKeyOptions' False (seekkeys mvar) (const noop) []
 	liftIO $ not <$> isEmptyMVar mvar
   where
-	go mvar f = ifAnnexed f
-		(\v -> void (liftIO (tryPutMVar mvar ())) >> syncFile rs (Just f) v)
-		noop
+	seekworktree mvar = seekHelper LsFiles.inRepo >=>
+		mapM_ (\f -> ifAnnexed f (go mvar (Just f)) noop)
+	seekkeys mvar getkeys = mapM_ (go mvar Nothing) =<< getkeys
+	go mvar af k = do
+		void $ liftIO $ tryPutMVar mvar ()
+		syncFile rs af k
 
 syncFile :: [Remote] -> AssociatedFile -> Key -> Annex ()
 syncFile rs af k = do

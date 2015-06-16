@@ -4,7 +4,7 @@
  - the values a user passes to a command, and prepare actions operating
  - on them.
  -
- - Copyright 2010-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -172,7 +172,17 @@ withNothing _ _ = error "This command takes no parameters."
  - Otherwise falls back to a regular CommandSeek action on
  - whatever params were passed. -}
 withKeyOptions :: Bool -> (Key -> CommandStart) -> CommandSeek -> CommandSeek
-withKeyOptions auto keyop fallbackop params = do
+withKeyOptions auto keyop = withKeyOptions' auto $ \getkeys -> do
+	matcher <- Limit.getMatcher
+	seekActions $ map (process matcher) <$> getkeys
+  where
+	process matcher k = ifM (matcher $ MatchingKey k)
+		( keyop k
+		, return Nothing
+		)
+
+withKeyOptions' :: Bool -> (Annex [Key] -> Annex ()) -> CommandSeek -> CommandSeek
+withKeyOptions' auto keyop fallbackop params = do
 	bare <- fromRepo Git.repoIsLocalBare
 	allkeys <- Annex.getFlag "all"
 	unused <- Annex.getFlag "unused"
@@ -194,11 +204,7 @@ withKeyOptions auto keyop fallbackop params = do
 		_ -> error "Can only specify one of file names, --all, --unused, --key, or --incomplete"
   where
 	go True _ = error "Cannot use --auto with --all or --unused or --key or --incomplete"
-	go False a = do
-		matcher <- Limit.getMatcher
-		seekActions $ map (process matcher) <$> a
-	process matcher k = ifM (matcher $ MatchingKey k)
-		( keyop k , return Nothing)
+	go False getkeys = keyop getkeys
 	incompletekeys = staleKeysPrune gitAnnexTmpObjectDir True
 
 prepFiltered :: (FilePath -> CommandStart) -> Annex [FilePath] -> Annex [CommandStart]
