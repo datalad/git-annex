@@ -61,7 +61,6 @@ syncOptions =
 	[ contentOption
 	, messageOption
 	, allOption
-	, unusedOption
 	]
 
 contentOption :: Option

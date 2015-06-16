@@ -65,12 +65,6 @@ by running "git annex sync" on the remote.
   will only match the version of files currently in the work tree, but not
   past versions of files.
 
-* `--unused`
-
-  This option, when combined with `--content`, makes files 
-  found by last run of git-annex unused be synced, when preferred content
-  settings allow.
-
 # SEE ALSO
 
 [[git-annex]](1)
