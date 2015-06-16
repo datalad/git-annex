@@ -80,19 +80,19 @@ specialRemoteOnly _ = False
 {- See doc/preferred_content.mdwn for explanations of these expressions. -}
 standardPreferredContent :: StandardGroup -> PreferredContentExpression
 standardPreferredContent ClientGroup = lastResort $
-	"((exclude=*/archive/* and exclude=archive/*) or (" ++ notArchived ++ ")) and not unused"
+	"include=* and ((exclude=*/archive/* and exclude=archive/*) or (" ++ notArchived ++ "))"
 standardPreferredContent TransferGroup = lastResort $
 	"not (inallgroup=client and copies=client:2) and (" ++ standardPreferredContent ClientGroup ++ ")"
-standardPreferredContent BackupGroup = "include=* or unused"
+standardPreferredContent BackupGroup = "anything"
 standardPreferredContent IncrementalBackupGroup = lastResort
-	"(include=* or unused) and (not copies=backup:1) and (not copies=incrementalbackup:1)"
+	"(not copies=backup:1) and (not copies=incrementalbackup:1)"
 standardPreferredContent SmallArchiveGroup = lastResort $
 	"(include=*/archive/* or include=archive/*) and (" ++ standardPreferredContent FullArchiveGroup ++ ")"
 standardPreferredContent FullArchiveGroup = lastResort notArchived
 standardPreferredContent SourceGroup = "not (copies=1)"
 standardPreferredContent ManualGroup = "present and (" ++ standardPreferredContent ClientGroup ++ ")"
 standardPreferredContent PublicGroup = "inpreferreddir"
-standardPreferredContent UnwantedGroup = "exclude=*"
+standardPreferredContent UnwantedGroup = "not anything"
 
 notArchived :: String
 notArchived = "not (copies=archive:1 or copies=smallarchive:1)"

@@ -37,6 +37,9 @@ git-annex (5.20150616) UNRELEASED; urgency=medium
   * sync: Add support for --all and --unused.
   * Added new "anything" preferred content expression, which matches all
     versions of all files.
+  * Standard preferred content for client, backup, incremental backup,
+    and unwanted groups have been adjusted to work better when used
+    with git annex sync --all --content.
   * Fix incremental backup standard preferred content expression to match
     its documentation, which says it does not want files that have reached
     a backup repository.

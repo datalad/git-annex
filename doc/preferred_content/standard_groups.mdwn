@@ -19,10 +19,10 @@ The following standard groups are available:
 
 ### client
 
-All content is wanted, unless it's for a file in a "archive" directory,
-which has reached an archive repository, or is unused.
+All content in the current working tree is wanted, unless it's for a
+file in a "archive" directory, which has reached an archive repository.
 
-`(((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1))) and not unused) or approxlackingcopies=1`
+`(include=* and ((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1)))) or approxlackingcopies=1`
 
 ### transfer
 
@@ -49,14 +49,14 @@ will be added later.
 
 All content is wanted. Even content of old/deleted files.
 
-`include=* or unused`
+`anything`
 
 ### incremental backup
 
 Only wants content that's not already backed up to another backup
 or incremental backup repository.
 
-`((include=* or unused) and (not copies=backup:1) and (not copies=incrementalbackup:1)) or approxlackingcopies=1`
+`((not copies=backup:1) and (not copies=incrementalbackup:1)) or approxlackingcopies=1`
 
 ### small archive
 
@@ -123,4 +123,4 @@ Use for repositories that you don't want to exist. This will result
 in any content on them being moved away to other repositories. (Works
 best when the unwanted repository is also marked as untrusted or dead.)
 
-`exclude=*`
+`not anything`
