@@ -40,14 +40,14 @@ bloomBitsHashes = do
  - Once the action completes, the mutable filter is frozen
  - for later use.
  -}
-genBloomFilter :: Hashable t => (v -> t) -> ((v -> Annex ()) -> Annex b) -> Annex (Bloom t)
-genBloomFilter convert populate = do
+genBloomFilter :: Hashable v => ((v -> Annex ()) -> Annex b) -> Annex (Bloom v)
+genBloomFilter populate = do
 	(numbits, numhashes) <- bloomBitsHashes
 	bloom <- lift $ newMB (cheapHashes numhashes) numbits
-	_ <- populate $ \v -> lift $ insertMB bloom (convert v)
+	_ <- populate $ \v -> lift $ insertMB bloom v
 	lift $ unsafeFreezeMB bloom
   where
 	lift = liftIO . stToIO
 
-bloomFilter :: Hashable t => (v -> t) -> [v] -> Bloom t -> [v]
-bloomFilter convert l bloom = filter (\k -> convert k `notElemB` bloom) l
+bloomFilter :: Hashable v => [v] -> Bloom v -> [v]
+bloomFilter l bloom = filter (\v -> v `notElemB` bloom) l

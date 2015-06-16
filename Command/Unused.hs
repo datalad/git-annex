@@ -167,7 +167,7 @@ excludeReferenced :: RefSpec -> [Key] -> Annex [Key]
 excludeReferenced refspec ks = runfilter firstlevel ks >>= runfilter secondlevel
   where
 	runfilter _ [] = return [] -- optimisation
-	runfilter a l = bloomFilter show l <$> genBloomFilter show a
+	runfilter a l = bloomFilter l <$> genBloomFilter a
 	firstlevel = withKeysReferencedM
 	secondlevel = withKeysReferencedInGit refspec
 

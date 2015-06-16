@@ -26,6 +26,7 @@ import System.Posix.Types
 
 import Common
 import Utility.QuickCheck
+import Utility.Bloom
 
 {- A Key has a unique name, which is derived from a particular backend,
  - and may contain other optional metadata. -}
@@ -129,6 +130,10 @@ instance Arbitrary Key where
 		<*> arbitrary
 		<*> ((abs <$>) <$> arbitrary) -- chunksize cannot be negative
 		<*> ((succ . abs <$>) <$> arbitrary) -- chunknum cannot be 0 or negative
+
+instance Hashable Key where
+	hashIO32 = hashIO32 . show
+	hashIO64 = hashIO64 . show
 
 prop_idempotent_key_encode :: Key -> Bool
 prop_idempotent_key_encode k = Just k == (file2key . key2file) k
