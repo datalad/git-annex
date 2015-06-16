@@ -1,4 +1,4 @@
-git-annex (5.20150529) UNRELEASED; urgency=medium
+git-annex (5.20150616) UNRELEASED; urgency=medium
 
   * fromkey, registerurl: Improve handling of urls that happen to also
     be parsable as strange keys.
@@ -35,6 +35,8 @@ git-annex (5.20150529) UNRELEASED; urgency=medium
   * info: Added json output for "backend usage", "numcopies stats",
     "repositories containing these files", and "transfers in progress".
   * sync: Add support for --all and --unused.
+  * Added new "anything" preferred content expression, which matches all
+    versions of all files.
 
  -- Joey Hess <id@joeyh.name>  Sat, 30 May 2015 02:07:18 -0400
 

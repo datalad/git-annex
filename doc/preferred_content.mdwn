@@ -174,9 +174,10 @@ The --unused option makes git-annex operate on every key that `git annex
 unused` has determined to be unused. The corresponding `unused` keyword
 in a preferred content expression also matches those keys. 
 
-However, the latter doesn't make git-annex consider those keys. So
-when git-annex is only checking preferred content expressions against files
-in the repository (which are obviously used), `unused` in a preferred
+However, using `unused` in a preferred content expression 
+doesn't make git-annex consider those keys. So when git-annex is
+only checking preferred content expressions against files in the
+repository (which are obviously used), `unused` in a preferred
 content expression won't match anything.
 
 So when is `unused` useful in a preferred content expression?
@@ -188,6 +189,11 @@ So when is `unused` useful in a preferred content expression?
 * Using `git annex sync --content --all` will operate on all files,
   including unused ones, and take `unused` in preferred content expressions
   into account.
+
+### difference: anything
+
+The "anything" keyword can be used in a preferred content expression
+to match any version of any file.
 
 ## upgrades
 
@@ -205,6 +211,7 @@ it assumes all files that are currently present are preferred content.
 Here are recent changes to preferred content expressions, and the version
 they were added in.
 
+* "anything" 5.20150616
 * "standard" 5.20140314  
   (only when used in a more complicated expression; "standard" by
   itself has been supported for a long time)

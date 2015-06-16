@@ -193,6 +193,10 @@ limitUnused :: MatchFiles Annex
 limitUnused _ (MatchingFile _) = return False
 limitUnused _ (MatchingKey k) = S.member k <$> unusedKeys
 
+{- Limit that matches any version of any file. -}
+limitAnything :: MatchFiles Annex
+limitAnything _ _ = return True
+
 {- Adds a limit to skip files not believed to be present in all
  - repositories in the specified group. -}
 addInAllGroup :: String -> Annex ()
