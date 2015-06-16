@@ -132,8 +132,8 @@ instance Arbitrary Key where
 		<*> ((succ . abs <$>) <$> arbitrary) -- chunknum cannot be 0 or negative
 
 instance Hashable Key where
-	hashIO32 = hashIO32 . show
-	hashIO64 = hashIO64 . show
+	hashIO32 = hashIO32 . key2file
+	hashIO64 = hashIO64 . key2file
 
 prop_idempotent_key_encode :: Key -> Bool
 prop_idempotent_key_encode k = Just k == (file2key . key2file) k

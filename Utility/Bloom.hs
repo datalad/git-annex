@@ -12,6 +12,7 @@ module Utility.Bloom (
 	safeSuggestSizing,
 	Hashable(..),
 	cheapHashes,
+	elemB,
 	notElemB,
 
 	newMB,
@@ -34,6 +35,9 @@ import Control.Monad.ST (ST)
 notElemB :: a -> Bloom a -> Bool
 notElemB = Bloom.notElem
 
+elemB :: a -> Bloom a -> Bool
+elemB = Bloom.elem
+
 newMB :: (a -> [Bloom.Hash]) -> Int -> ST s (MBloom.MBloom s a)
 newMB = MBloom.new
 
@@ -47,6 +51,9 @@ unsafeFreezeMB = Bloom.unsafeFreeze
 
 notElemB :: a -> Bloom a -> Bool
 notElemB = Bloom.notElemB
+
+elemB :: a -> Bloom a -> Bool
+elemB = Bloom.elem
 
 newMB :: (a -> [Bloom.Hash]) -> Int -> ST s (Bloom.MBloom s a)
 newMB = Bloom.newMB

@@ -45,6 +45,7 @@ import Annex.UUID
 import Logs.UUID
 import Annex.AutoMerge
 import Annex.Ssh
+import Annex.BloomFilter
 import Utility.Bloom
 
 import Control.Concurrent.MVar
@@ -358,7 +359,12 @@ newer remote b = do
 		, return True
 		)
 
-{- If it's preferred content, and we don't have it, get it from one of the
+{- Without --all, only looks at files in the work tree. With --all,
+ - makes 2 passes, first looking at the work tree and then all keys.
+ - This ensures that preferred content expressions that match on
+ - filenames work, even when in --all mode.
+ -
+ - If it's preferred content, and we don't have it, get it from one of the
  - listed remotes (preferring the cheaper earlier ones).
  -
  - Send it to each remote that doesn't have it, and for which it's
@@ -374,22 +380,20 @@ newer remote b = do
 seekSyncContent :: [Remote] -> Annex Bool
 seekSyncContent rs = do
 	mvar <- liftIO newEmptyMVar
-	-- Always start with the work tree; this ensures that preferred
-	-- content expressions that match files match, even when in --all
-	-- mode.
-	seekworktree mvar []
-	withKeyOptions' False (seekkeys mvar) (const noop) []
+	bloom <- genBloomFilter (seekworktree mvar [])
+	withKeyOptions' False (seekkeys mvar bloom) (const noop) []
 	liftIO $ not <$> isEmptyMVar mvar
   where
-	seekworktree mvar = seekHelper LsFiles.inRepo >=>
-		mapM_ (\f -> ifAnnexed f (go mvar (Just f)) noop)
-	seekkeys mvar getkeys = mapM_ (go mvar Nothing) =<< getkeys
-	go mvar af k = do
+	seekworktree mvar l bloomfeeder = seekHelper LsFiles.inRepo l >>=
+		mapM_ (\f -> ifAnnexed f (go (Right bloomfeeder) mvar (Just f)) noop)
+	seekkeys mvar bloom getkeys =
+		mapM_ (go (Left bloom) mvar Nothing) =<< getkeys
+	go ebloom mvar af k = do
 		void $ liftIO $ tryPutMVar mvar ()
-		syncFile rs af k
+		syncFile ebloom rs af k
 
-syncFile :: [Remote] -> AssociatedFile -> Key -> Annex ()
-syncFile rs af k = do
+syncFile :: Either (Bloom Key) (Key -> Annex ()) -> [Remote] -> AssociatedFile -> Key -> Annex ()
+syncFile ebloom rs af k = do
 	locs <- loggedLocations k
 	let (have, lack) = partition (\r -> Remote.uuid r `elem` locs) rs
 
@@ -399,10 +403,24 @@ syncFile rs af k = do
 	u <- getUUID
 	let locs' = concat [[u | got], putrs, locs]
 
-	-- Using callCommandAction rather than includeCommandAction for drops,
-	-- because a failure to drop does not mean the sync failed.
-	handleDropsFrom locs' rs "unwanted" True k af
-		Nothing callCommandAction
+	-- A bloom filter is populated with all the keys in the first pass.
+	-- On the second pass, avoid dropping keys that were seen in the
+	-- first pass, which would happen otherwise when preferred content
+	-- matches on the filename, which is not available in the second
+	-- pass.
+	--
+	-- When there's a false positive in the bloom filter, the result
+	-- is keeping a key that preferred content doesn't really want.
+	seenbloom <- case ebloom of
+		Left bloom -> pure (elemB k bloom)
+		Right bloomfeeder -> bloomfeeder k >> return False
+	unless seenbloom $
+		-- Using callCommandAction rather than
+		-- includeCommandAction for drops,
+		-- because a failure to drop does not mean
+		-- the sync failed.
+		handleDropsFrom locs' rs "unwanted" True k af
+			Nothing callCommandAction
   where
 	wantget have = allM id 
 		[ pure (not $ null have)
