@@ -1,0 +1,26 @@
+Well, not the literal last `push`, but I've caught up on as much backlog as
+I can (142 messages remain) and spent today developing a few final features
+before tomorrow's release.
+
+Some of the newer things displayed by `git annex info` were not included in
+the --json mode output. The json includes everything now.
+
+`git annex sync --all --content` will make it consider all known annexed
+objects, not only those in the current work tree. By default that syncs all
+versions of all files, but of course preferred content can tune what
+repositories want.
+
+To make that work well with preferred content settings like
+"include=*.mp3", it makes two passes. The first pass is over the work tree,
+so preferred content expressions that match files by name will work. The
+second pass is over all known keys, and preferred content expressions
+that don't care about the filename can match those keys. 
+
+Two passes feels a bit like a hack, but it's a lot better than `--all`
+making nothing be synced when the a preferred content expression matches
+against filenames... I actually had to resort to bloom filters to make the
+two passes work.
+
+This new feature led to some
+[slightly tricky follow-on changes](http://source.git-annex.branchable.com/?p=source.git;a=commit;h=8268f7951e9c70760379bd084425b48df99250d6)
+to the [[preferred_content/standard_groups]] preferred content expressions.
