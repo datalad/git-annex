@@ -8,11 +8,11 @@ hook to do this. --[[Joey]]
 
 There are two levels of checking it seems such a command could do:
 
-1. Only allow certian files to be changed. For example, maye clients are only
+1. Only allow certain files to be changed. For example, maybe clients are only
    expected to change location tracking files, and the activity.log
    file, but not others like trust.log.
 
-2. Only allow moidiciations of data about a specific UUID. The UUID
+2. Only allow modifications of data about a specific UUID. The UUID
    would be provided to the command (and could be determined based on a
    per-client ssh key or etc).
 
@@ -34,3 +34,8 @@ This might be too limiting for some situations:
   changes to remote.log, which the first level of checking would not allow.
   And, it would add another UUID, which the second level of checking would
   need to be configured to allow.
+
+Python implementation
+---------------------
+
+I started doing an implementation of this in Python here. For technical reasons the git repo is not publicly available, but here's a [dump](http://paste.debian.net/232563/) of the code. I went through what seems to be a rather convoluted process with libgit there because I wanted to have some proper unit tests and generating git commands by hand in a shell script is rather painful.Also, it currently adopts a "blocking" approach, ie. it blocks known problems, but maybe it should be based on an "allow" approach, that is: only allow certain things to go through. So far it only forbids removals and changes to trust.log.  A bunch of stuff is still missing like parameters (to allow changing the list of protected files) and checking the log tracking info. Feedback welcome. --[[anarcat]]
