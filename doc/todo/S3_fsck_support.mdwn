@@ -1,0 +1,55 @@
+I have (i think?) noticed that the s3 remote doesn't really do an fsck:
+
+http://source.git-annex.branchable.com/?p=source.git;a=blob;f=Remote/S3.hs;hb=HEAD#l86
+
+Besides, unless S3 does something magic and amazingly fast, the checksum is just too slow for it to be really operational:
+
+<pre>
+$ time git annex fsck -f s3 video/original/quartet_for_deafblind_h264kbs18000_24.mov
+fsck video/original/quartet_for_deafblind_h264kbs18000_24.mov (checking s3...) ok
+(recording state in git...)
+
+real    0m1.188s
+user    0m0.444s
+sys     0m0.324s
+$ time git annex fsck video/original/quartet_for_deafblind_h264kbs18000_24.mov
+fsck video/original/quartet_for_deafblind_h264kbs18000_24.mov (checksum...)
+ok
+(recording state in git...)
+
+real    3m14.478s
+user    1m55.679s
+sys     0m8.325s
+</pre>
+
+1s is barely the time for git-annex to do an HTTP request to amazon, and what is returned doesn't seem to have a checksum of any kind:
+
+<pre>
+fsck video/original/quartet_for_deafblind_h264kbs18000_24.mov (checking s3...) [2015-06-16 00:31:46 UTC] String to sign: "HEAD\n\n\nTue, 16 Jun 2015 00:31:46 GMT\n/isuma-files/SHA256E-s11855411701--ba268f1c401321db08d4cb149d73a51a10f02968687cb41f06051943b4720465.mov"
+[2015-06-16 00:31:46 UTC] Host: "isuma-files.s3.amazonaws.com"
+[2015-06-16 00:31:46 UTC] Response header 'x-amz-request-id': '9BF7B64EB5A619F3'
+[2015-06-16 00:31:46 UTC] Response header 'x-amz-id-2': '84ZO7IZ0dqJeEghADjt7hTGKGqGAWwbwwaCFVft3ama+oDOVJrvpiFjqn8EY3Z0R'
+[2015-06-16 00:31:46 UTC] Response header 'Content-Type': 'application/xml'
+[2015-06-16 00:31:46 UTC] Response header 'Transfer-Encoding': 'chunked'
+[2015-06-16 00:31:46 UTC] Response header 'Date': 'Tue, 16 Jun 2015 00:32:10 GMT'
+[2015-06-16 00:31:46 UTC] Response header 'Server': 'AmazonS3'
+[2015-06-16 00:31:46 UTC] Response metadata: S3: request ID=<none>, x-amz-id-2=<none>
+ok
+</pre>
+
+did i miss something? are there fsck checks for s3 remotes?
+
+if not, i think it would be useful to leverage the "md5summing" functionality that the S3 API provides. there are two relevant stackoverflow responses here:
+
+http://stackoverflow.com/questions/1775816/how-to-get-the-md5sum-of-a-file-on-amazons-s3
+http://stackoverflow.com/questions/8618218/amazon-s3-checksum
+
+... to paraphrase: when a file is `PUT` on S3, one can provide a `Content-MD5` header that S3 will check against the uploaded file content for corruption, when doing the upload. then there is some talk about how the `ETag` header *may* hold the MD5, but that seems inconclusive. There's a specific API call for getting the MD5 sum:
+
+https://docs.aws.amazon.com/AWSAndroidSDK/latest/javadoc/com/amazonaws/services/s3/model/ObjectMetadata.html#getContentMD5()
+
+the android client also happens to check with that API on downloads:
+
+https://github.com/aws/aws-sdk-android/blob/4de3a3146d66d9ab5684eb5e71d5a2cef9f4dec9/aws-android-sdk-s3/src/main/java/com/amazonaws/services/s3/AmazonS3Client.java#L1302
+
+now of course MD5 is a pile of dung nowadays, but having that checksum beats not having any checksum at all. *and* it is at no cost on the client side... --[[anarcat]]

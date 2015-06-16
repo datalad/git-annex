@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="comment 3"
+ date="2015-06-15T20:02:56Z"
+ content="""
+okay, after disabling chunking, it still doesn't work.
+
+it seems that it's completely stuck: i haven't seen the assistant transfer any new files yet. using `git annex move` seems to work:
+
+<pre>
+www-data@ip-10-87-135-88:/persistent/media$ git annex move --to s3
+move video/mp4_sd/-_cineastas_indigenas_ntsc_-_eng_0.mov.mp4 (checking s3...) ok
+</pre>
+"""]]
