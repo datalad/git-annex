@@ -363,17 +363,6 @@ newer remote b = do
  - This ensures that preferred content expressions that match on
  - filenames work, even when in --all mode.
  -
- - If it's preferred content, and we don't have it, get it from one of the
- - listed remotes (preferring the cheaper earlier ones).
- -
- - Send it to each remote that doesn't have it, and for which it's
- - preferred content.
- -
- - Drop it locally if it's not preferred content (honoring numcopies).
- - 
- - Drop it from each remote that has it, where it's not preferred content
- - (honoring numcopies).
- -
  - If any file movements were generated, returns true.
  -}
 seekSyncContent :: [Remote] -> Annex Bool
@@ -394,6 +383,17 @@ seekSyncContent rs = do
 		void $ liftIO $ tryPutMVar mvar ()
 		syncFile ebloom rs af k
 
+{- If it's preferred content, and we don't have it, get it from one of the
+ - listed remotes (preferring the cheaper earlier ones).
+ -
+ - Send it to each remote that doesn't have it, and for which it's
+ - preferred content.
+ -
+ - Drop it locally if it's not preferred content (honoring numcopies).
+ - 
+ - Drop it from each remote that has it, where it's not preferred content
+ - (honoring numcopies).
+ -}
 syncFile :: Either (Maybe (Bloom Key)) (Key -> Annex ()) -> [Remote] -> AssociatedFile -> Key -> Annex ()
 syncFile ebloom rs af k = do
 	locs <- loggedLocations k
