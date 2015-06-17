@@ -87,7 +87,7 @@ below to get the full story.
   `copies=trusted:2`
 
   To match any trust level at or higher than a given level,
-  use 'trustlevel+'. For example, `--copies=semitrusted+:2`
+  use `trustlevel+`. For example, `--copies=semitrusted+:2`
 
 * `copies=groupname:number`
 
