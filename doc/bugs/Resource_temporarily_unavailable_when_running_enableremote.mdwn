@@ -1,0 +1,21 @@
+### Please describe the problem.
+
+enableremote gives this weird error when trying to change settings on the s3 remote:
+
+<pre>
+$ git annex enableremote s3
+enableremote s3
+git-annex: .git/annex/creds/SOME-LONG-HASH-I-AM-NOT-SURE-SHOULD-BE-PUBLIC: openFile: resource exhausted (Resource temporarily unavailable)
+failed
+git-annex: enableremote: 1 failed
+</pre>
+
+### What steps will reproduce the problem?
+
+Unclear. I tried to update to the latest neurodebian packages to make use of the new [[tips/public_Amazon_S3_remote]] but it seems something is going wrong here.
+
+The git-annex repository is on a "persistent amazon volume" (EBS, presumably?) so there may be something fishy with the filesystem there... 
+
+### What version of git-annex are you using? On what operating system?
+
+5.20150610+gitg608172f-1~ndall+1 on Ubuntu precise, in amazon EC2. --[[anarcat]]
