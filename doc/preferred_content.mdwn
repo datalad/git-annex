@@ -13,6 +13,23 @@ Each repository can have its own settings, and other repositories will
 try to honor those settings when interacting with it.
 (So there's no local `.git/config` for preferred content settings.)
 
+The idea is that you write an expression that files are matched against.
+If a file matches, the repository wants to store its content.
+If it doesn't, the repository wants to drop its content
+(if there are enough copies elsewhere to allow removing it).
+
+## finding preferred content
+
+To check at the command line which files are matched by preferred content
+settings, you can use the --want-get and --want-drop options.
+
+For example, `git annex find --want-get --not --in .` will find all the
+files that `git annex get --auto` will want to get, and `git annex find
+--want-drop --in .` will find all the files that `git annex drop --auto`
+will want to drop.
+
+## writing expressions
+
 [[!template id=note text="""
 ### [[quickstart|standard_groups]]
 
@@ -25,18 +42,6 @@ and simply setting its preferred content to "standard" to match whatever
 is standard for that group. See [[standard_groups]] for a list.
 """]]
 
-The idea is that you write an expression that files are matched against.
-If a file matches, the repository wants to store its content.
-If it doesn't, the repository wants to drop its content
-(if there are enough copies elsewhere to allow removing it).
-
-To check at the command line which files are matched by preferred content
-settings, you can use the --want-get and --want-drop options.
-
-For example, `git annex find --want-get --not --in .` will find all the
-files that `git annex get --auto` will want to get, and `git annex find
---want-drop --in .` will find all the files that `git annex drop --auto`
-will want to drop.
 
 The expressions are very similar to the matching options documented
 on the [[git-annex-matching-options]] man page.
@@ -51,8 +56,6 @@ The equivalent preferred content expression looks like this:
 So, just remove the dashes, basically. But, there are some differences
 between the command line options and expressions, so see the documentation
 below to get the full story.
-
-## expressions
 
 * `include=glob` and `exclude=glob`
 
