@@ -43,6 +43,7 @@ import qualified Logs.Remote
 import qualified Logs.Unused
 import qualified Logs.Transfer
 import qualified Logs.Presence
+import qualified Logs.PreferredContent
 import qualified Types.MetaData
 import qualified Remote
 import qualified Types.Key
@@ -79,12 +80,9 @@ import qualified Remote.Helper.Encryptable
 import qualified Types.Crypto
 import qualified Utility.Gpg
 #endif
-import qualified Messages
-import qualified Logs.PreferredContent
 
 main :: [String] -> IO ()
 main ps = do
-	Messages.enableDebugOutput
 	let tests = testGroup "Tests"
 		-- Test both direct and indirect mode.
 		-- Windows is only going to use direct mode,
