@@ -1,4 +1,4 @@
-git-annex (5.20150617) UNRELEASED; urgency=medium
+git-annex (5.20150617) unstable; urgency=medium
 
   * Now supports git annex sync --all --content to sync all versions of all
     files with all repos that want them.
@@ -49,7 +49,7 @@ git-annex (5.20150617) UNRELEASED; urgency=medium
   * Re-remove dependency on obsolete hamlet package. Closes: #786659
   * debian/cabal-wrapper: Removed this hack which should not be needed anymore.
 
- -- Joey Hess <id@joeyh.name>  Sat, 30 May 2015 02:07:18 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 17 Jun 2015 13:50:35 -0400
 
 git-annex (5.20150528) unstable; urgency=medium
 
