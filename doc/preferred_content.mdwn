@@ -148,8 +148,7 @@ below to get the full story.
   This leaves it up to you to use git-annex manually
   to move content around. You can use this to avoid preferred content
   settings from affecting a subdirectory. For example:
-
-	auto/* or (include=ad-hoc/* and present)
+  `auto/* or (include=ad-hoc/* and present)`
 
   Note that `not present` is a very bad thing to put in a preferred content 
   expression. It'll make it want to get content that's not present, and
