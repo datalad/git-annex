@@ -1,5 +1,12 @@
 git-annex (5.20150616) UNRELEASED; urgency=medium
 
+  * Now supports git annex sync --all --content to sync all versions of all
+    files with all repos that want them.
+  * Added new "anything" preferred content expression, which matches all
+    versions of all files.
+  * Standard preferred content for client, backup, incremental backup,
+    and unwanted groups have been adjusted to work better when used
+    with git annex sync --all --content.
   * fromkey, registerurl: Improve handling of urls that happen to also
     be parsable as strange keys.
   * sync, remotedaemon: Pass configured ssh-options even when
@@ -9,38 +16,27 @@ git-annex (5.20150616) UNRELEASED; urgency=medium
     network-manager and wicd.
     Thanks to Sebastian Reuße for the patches.
   * get --incomplete: New option to resume any interrupted downloads.
-  * import --clean-duplicates: Fix bug that didn't count local or trusted
-    repo's copy of a file as one of the necessary copies to allow removing
-    it from the import location.
-  * S3: Special remotes can be configured with public=yes to allow
-    the public to access the bucket's content.
-  * S3: Publically accessible buckets can be used without creds.
-  * Re-remove dependency on obsolete hamlet package. Closes: #786659
   * dead --key: Can be used to mark a key as dead.
   * fsck: Ignore keys that are known to be dead when running in
     --all/--unused/--key mode or a in a bare repo. Closes: #753888
     Otherwise, still reports files with lost contents, even if the content
     is dead.
+  * S3: Special remotes can be configured with public=yes to allow
+    the public to access the bucket's content.
+  * S3: Publically accessible buckets can be used without creds.
+  * import --clean-duplicates: Fix bug that didn't count local or trusted
+    repo's copy of a file as one of the necessary copies to allow removing
+    it from the import location.
   * tahoe: Use ~/.tahoe-git-annex/ rather than ~/.tahoe/git-annex/
     when setting up a tahoe special remote to avoid old versions of
     tahoe create-client choking.
-  * Build documentation with deterministic=1 for reproducible builds.
-    (A new ikiwiki feature.) Closes: #785736
   * Fix bug that prevented enumerating locally present objects in repos
     tuned with annex.tune.objecthash1=true.
     Fixes: unused, object count in info, unannex.
   * Improve url parsing to handle some urls containing illegal []
     characters in their paths.
-  * debian/cabal-wrapper: Removed this hack which should not be needed anymore.
   * info: Added json output for "backend usage", "numcopies stats",
     "repositories containing these files", and "transfers in progress".
-  * Now supports git annex sync --all --content to sync all versions of all
-    files with all repos that want them.
-  * Added new "anything" preferred content expression, which matches all
-    versions of all files.
-  * Standard preferred content for client, backup, incremental backup,
-    and unwanted groups have been adjusted to work better when used
-    with git annex sync --all --content.
   * Fix incremental backup standard preferred content expression to match
     its documentation, which says it does not want files that have reached
     a backup repository.
@@ -48,6 +44,10 @@ git-annex (5.20150616) UNRELEASED; urgency=medium
     This makes git annex unused use up to 16 mb more memory than it did
     before, but the massive increase in accuracy makes this worthwhile
     for all but the smallest systems.
+  * Build documentation with deterministic=1 for reproducible builds.
+    (A new ikiwiki feature.) Closes: #785736
+  * Re-remove dependency on obsolete hamlet package. Closes: #786659
+  * debian/cabal-wrapper: Removed this hack which should not be needed anymore.
 
  -- Joey Hess <id@joeyh.name>  Sat, 30 May 2015 02:07:18 -0400
 
