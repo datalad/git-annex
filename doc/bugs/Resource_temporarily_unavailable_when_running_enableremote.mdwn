@@ -19,3 +19,5 @@ The git-annex repository is on a "persistent amazon volume" (EBS, presumably?) s
 ### What version of git-annex are you using? On what operating system?
 
 5.20150610+gitg608172f-1~ndall+1 on Ubuntu precise, in amazon EC2. --[[anarcat]]
+
+A workaround is to run this on a different machine. I suspect some amazon foul play at hand... so this could be invalid. :(
