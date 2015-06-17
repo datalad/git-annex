@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="possible large directory scaling..."
+ date="2015-06-17T12:36:36Z"
+ content="""
+awesome tips page, thanks!
+
+i was wondering ... i seem to recall newer changes to ext4 that made it more scalable with large directories, the `dir_index` flag i think. did you try that and, if so, what was the effect? --[[anarcat]]
+"""]]
