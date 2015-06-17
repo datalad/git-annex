@@ -114,6 +114,8 @@ publically accessed. Only files in a directory with a particular name
 will be published. (The directory can be located anywhere in the
 repository.)
 
+`inpreferreddir`
+
 The name of the directory can be configured using
 `git annex enableremote $remote preferreddir=$dirname`
 
