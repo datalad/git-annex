@@ -64,9 +64,7 @@ below to get the full story.
 
   For example, suppose you put files into `archive` directories
   when you're done with them. Then you could configure your laptop to prefer
-  to not retain those files, like this:
-
-  	exclude=*/archive/*
+  to not retain those files, like this: `exclude=*/archive/*`
 
 * `copies=number`
 
