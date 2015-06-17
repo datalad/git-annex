@@ -20,6 +20,7 @@ module Logs.PreferredContent (
 	setStandardGroup,
 	defaultStandardGroup,
 	preferredRequiredMapsLoad,
+	prop_standardGroups_parse,
 ) where
 
 import qualified Data.Map as M
@@ -151,3 +152,8 @@ defaultStandardGroup u g =
   where
 	hasgroup = not . S.null <$> lookupGroups u
 	haspc = isJust . M.lookup u <$> preferredContentMap
+
+prop_standardGroups_parse :: Bool
+prop_standardGroups_parse = 
+	all (isNothing . checkPreferredContentExpression . standardPreferredContent)
+		[ minBound .. maxBound]

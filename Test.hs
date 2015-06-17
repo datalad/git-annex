@@ -80,6 +80,7 @@ import qualified Types.Crypto
 import qualified Utility.Gpg
 #endif
 import qualified Messages
+import qualified Logs.PreferredContent
 
 main :: [String] -> IO ()
 main ps = do
@@ -166,6 +167,7 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
 	, testProperty "prop_view_roundtrips" Annex.View.prop_view_roundtrips
 	, testProperty "prop_viewedFile_rountrips" Annex.View.ViewedFile.prop_viewedFile_roundtrips
 	, testProperty "prop_b64_roundtrips" Utility.Base64.prop_b64_roundtrips
+	, testProperty "prop_standardGroups_parse" Logs.PreferredContent.prop_standardGroups_parse
 	]
 
 {- These tests set up the test environment, but also test some basic parts
