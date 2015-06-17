@@ -62,7 +62,7 @@ tags:
 # If ikiwiki is available, build static html docs suitable for being
 # shipped in the software package.
 ifeq ($(shell which ikiwiki),)
-IKIWIKI=@echo "** ikiwiki not found, skipping building docs" >&2; true
+IKIWIKI=echo "** ikiwiki not found, skipping building docs" >&2; true
 else
 IKIWIKI=ikiwiki
 endif
