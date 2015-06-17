@@ -139,7 +139,7 @@ below to get the full story.
 
   To match a tag "done", use `metadata=tag=done`
 
-  To match author metadata, use `metadata=author=* Smith"
+  To match author metadata, use `metadata=author=* Smith`
 
 * `present`
 
