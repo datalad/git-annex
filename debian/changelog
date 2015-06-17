@@ -1,4 +1,4 @@
-git-annex (5.20150616) UNRELEASED; urgency=medium
+git-annex (5.20150617) UNRELEASED; urgency=medium
 
   * Now supports git annex sync --all --content to sync all versions of all
     files with all repos that want them.
