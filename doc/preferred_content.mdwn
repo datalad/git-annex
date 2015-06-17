@@ -150,9 +150,11 @@ below to get the full story.
   settings from affecting a subdirectory. For example:
   `auto/* or (include=ad-hoc/* and present)`
 
-  Note that `not present` is a very bad thing to put in a preferred content 
+  [[!template id=note text="""**Warning**
+  `not present` is a very bad thing to put in a preferred content 
   expression. It'll make it want to get content that's not present, and
   drop content that is present! Don't go there..
+  ]]
 
 * `inpreferreddir`
 
