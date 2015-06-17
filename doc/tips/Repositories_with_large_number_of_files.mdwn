@@ -1,0 +1,48 @@
+Just as git does not scale well with large files, it can also become painful to work with when you have a large *number* of files. Below are things I have found to minimise the pain.
+
+# Using version 4 index files
+
+During operations which affect the index, git writes an entirely new index out to index.lck and then replaces .git/index with it. With a large number of files, this index file can be quite large and take several seconds to write every time you manipulate the index!
+
+This can be mitigated by changing it to version 4 which uses path compression to reduce the filesize:
+
+    git update-index --index-version 4
+
+*NOTE: The git documentation warns that this version may not be supported by other git implementations like JGit and libgit2.*
+
+Personally, I saw a reduction from 516MB to 206MB (*40% of original size*) and got a much more responsive git!
+
+It may also be worth doing the same to git-annex's index:
+
+    GIT_INDEX_FILE=.git/annex/index git update-index --index-version 4
+
+Though I didn't gain as much here with 89MB to 86MB (96% of original size).
+
+# Packing
+
+As I have gc disabled:
+
+    git config gc.auto 0
+
+so I control when it is run, I ended up with a lot of loose objects which also cause slowness in git. Using
+
+    git count-objects
+
+to tell me how many loose objects I have, when I reach a threshold (~25000), I pack those loose objects and clean things up:
+
+    git repack -d
+    git gc
+    git prune
+
+# File count per directory
+
+If it takes a long time to list the files in a directory, naturally, git(-annex) will be affected by this bottleneck.
+
+You can avoid this by keeping the number of files in a directory to between 5000 and 20000 (depends on the filesystem and its settings).
+
+[fpart](http://contribs.martymac.org/fpart/) can be a very useful tool to achieve this.
+
+## Topics discussing this sort of usage
+
+* [[forum/Handling_a_large_number_of_files]]
+* [[forum/__34__git_annex_sync__34___synced_after_8_hours]]
