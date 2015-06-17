@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 1"
+ date="2015-06-17T07:51:53Z"
+ content="""
+I've posted a few tips on this site about dealing with large (file count) repositories.. I should probably collate them into a single post in tips (and I shall go so!).
+
+In terms of directories containing hundreds of thousands of files, my research indicates that the slowness stems from how the filesystem (at least, for ext3) fetches the listing, as it requires multiple \"trips\" to query it (it only returns 32KB of metadata at a time or something like that).
+
+So you can really speed it up by partitioning your files in such a way that a directory listing returns quickly. Personally, I use fpart and 5000 files per directory, but I think you can go up to about 20000.
+
+If you do 'find', and it takes a really long time to *start* printing paths, you have too many files :)
+"""]]
