@@ -232,7 +232,7 @@ below to get the full story.
     into account.
   2. The git-annex assistant periodically scans for unused files, and
     moves them to some repository whose preferred content expression
-    matches "unused". (Or, if annex.expireunused is set, it may just delete
+    says it wants them. (Or, if annex.expireunused is set, it may just delete
     them.)
 
 * `anything`
