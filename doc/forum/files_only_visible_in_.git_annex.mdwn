@@ -1,0 +1,15 @@
+Dear all, 
+
+I'm a beginner in using git annex and got the following strange situation:
+
+On my PC I have stored all the data and put them to git annex (don' know the standard nomenclature used here, but I guess its called setting up a repository)
+
+On my Laptop I have now also git-annex and can have access to my stored data by git-annex get (so far so good thats git-annex)
+
+Now comes the strange thing: 
+On my laptop, I can see all the links to my data (where it shows me a path like ../../.git/annex/objects/...) but at my PC, where all the data should have been stored, the folder is empty. When I follow the link which is shown on the laptop, on my PC, I get access to the data. Some somehow, the data is still on my PC but not stored in its original folders but in .git/annex/objects/...
+
+How can I get back my original folder from the .git/annex/objects on my PC?
+
+Thank you very much for your help
+Stefan
