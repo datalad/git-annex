@@ -1,0 +1,51 @@
+[[!comment format=mdwn
+ username="graviton31415@3f1790ceea563b1bc76c318c7bfd6d4e817ecc5d"
+ nickname="graviton31415"
+ subject="comment 2"
+ date="2015-06-18T05:08:47Z"
+ content="""
+on my PC (where the data should be): git annex info gives:
+
+repository mode: indirect
+trusted repositories: 0
+semitrusted repositories: 2
+	00000000-0000-0000-0000-000000000001 -- web
+ 	e1664284-234f-4be1-8623-3fec7f406b57 -- here (Documents at myPC)
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 138.66 gigabytes (+1 megabyte reserved)
+local annex keys: 1616
+local annex size: 1.98 gigabytes
+annexed files in working tree: 125
+size of annexed files in working tree: 350.37 megabytes
+bloom filter size: 16 mebibytes (0.3% full)
+backend usage: 
+	SHA256E: 1741
+
+
+
+on my Laptop I get:
+
+repository mode: indirect
+trusted repositories: 0
+semitrusted repositories: 3
+	00000000-0000-0000-0000-000000000001 -- web
+ 	77106ecf-d208-4366-b70c-64def14c62bb -- here
+ 	e1664284-234f-4be1-8623-3fec7f406b57 -- origin (Documents at myPC)
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 207.67 gigabytes (+1 megabyte reserved)
+local annex keys: 7
+local annex size: 181.68 megabytes
+annexed files in working tree: 1567
+size of annexed files in working tree: 1.83 gigabytes
+bloom filter size: 16 mebibytes (0% full)
+backend usage: 
+	SHA256E: 1574
+
+
+On both systems, I'm using Ubuntu 14.04
+
+Thank you for your help,
+Stefan
+"""]]
