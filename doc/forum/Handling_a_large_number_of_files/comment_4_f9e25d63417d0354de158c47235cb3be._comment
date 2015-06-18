@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 4"
+ date="2015-06-18T14:03:08Z"
+ content="""
+From what I have gleaned about dir_index, it speeds up finding particular files in a directory, but slows down enumeration of directory contents. It could very well end up as 6 of one, half a dozen of another as git-annex does a bit of both.
+
+So yeah, I've benchmarked this a little (just with a loopback ext3 partitions, dropping caches each time, so *caveat emptor*) and my findings match the above.
+
+Without dir_index, enumerating 102400 files takes 56% more time than 125 files (0.69 seconds vs 1.08 seconds), but with dir_index, it takes 715% more time (0.6 vs. 4.86). However, the initial creation of the files was much faster with dir_index than without (though I wasn't timing that bit).
+
+The results I've gotten so far show that (with dir_index):
+min time: Increases after 64000 files
+max time: Increases after 128000 files
+mean time: Increases after 16000 files
+
+Pretty easy to see where the 20000 files number may have come from.
+
+I'll post the numbers after I have run this longer one (100 iterations) in case anyone is interested. My conclusion is that dir_index being enabled and 16000 files per directory is optimal.
+"""]]
