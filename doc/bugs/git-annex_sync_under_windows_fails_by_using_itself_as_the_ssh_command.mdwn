@@ -7,6 +7,12 @@ It appears that git-annex sync invokes the git-annex executable with parameters 
 
 git config.sshcaching is false.
 
+
+Thanks,
+
+Johannes
+
+
 ### What steps will reproduce the problem?
 
 I tried setting up the repository many different ways, using git bash, cmd.exe or cygwin bash and always get the same error after git annex sync.
