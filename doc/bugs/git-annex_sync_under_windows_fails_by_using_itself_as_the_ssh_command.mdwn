@@ -12,6 +12,17 @@ Thanks,
 
 Johannes
 
+PS:
+
+I found that after reverting commit a6d54e49a0676e1c8e4b3202b29c7725f45fa784 the git fetch command will work, but git push origin will fail:
+
+push origin [2015-06-21 00:25:32 ric] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","push","origin","+git-annex:synced/git-annex","annex/direct/master:synced/master"]
+Bad port ''
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
 
 ### What steps will reproduce the problem?
 
