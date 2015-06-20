@@ -3,6 +3,7 @@ Hello,
 first of all thank you very much for Git-annex: I think it is a great tool to keep files in sync. The feature I like most is the possibility of setting multiple remote servers and execute syncs in a decentralized fashion; this is great for me since I have multiple computers spreaded around but not all of them are always up and almost none is "99.99% guaranteed" and I need high availability.
 
 Getting to the poing: I set up git-annex manually on my computers (most remote are only accessible via ssh tunnels) and I am using it in direct mode, with the assistant running in background on every node. From time to time I open the webapp to check if everything looks fine. Finally, I set a couple of nodes (with plenty of storage) as 'full backup' even if I don't really understand what that setting is really for.
+
 My question is: in my setup, where do deleted files and older versions go? If I ever need one in the future where should I look for it?
 
 Thanks a million!
