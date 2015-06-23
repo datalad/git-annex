@@ -1,4 +1,4 @@
-so i know about the various discussions around a `du` that follows git-annex symlinks (e.g. [[forum/__34__du__34___equivalent_on_an_annex__63__/]] or [[forum/gadu_-_git-annex_disk_usage/]]. this is not about that. :)
+so i know about the various discussions around a `du` that follows git-annex symlinks (e.g. [[forum/__34__du__34___equivalent_on_an_annex__63__/]] or [[forum/gadu_-_git-annex_disk_usage/]]. this is not about that, or at least not directly. :)
 
 i believe there's a distinct use-case for a simpler `du` subcommand that will calculate the disk space used locally (in case of the default `--in here`) but could also use the tracking log to determine the space usage in *other* locations. this would be especially useful on remotes that we don't have shell access to, s3 comes to mind. i thought that `git annex info` could output that, but it seems it doesn't:
 
@@ -34,6 +34,7 @@ bloom filter size: 16 mebibytes (0% full)
 backend usage:
 </pre>
 
-you can see the advantage of having a separate du command above: first off, it would give directly the information we're looking for. it could also work on remote repositories, use the powerful pattern matching, and so on...
+just to be clear here, the problem isn't as much providing `du-like output`, which `git annex info $path` does pretty well. the problem is that it doesn't work on remote servers, at least that is what i observed above.
 
-thanks! [[anarcat]]
+i still think it would be nice to have a `du` command, just because it's a command "WTF" situation users seem to get stuck into.. but this issue is only about having this work on remote repositories. thanks! -- [[anarcat]]
+
