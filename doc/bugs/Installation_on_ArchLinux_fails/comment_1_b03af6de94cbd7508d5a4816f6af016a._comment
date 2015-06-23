@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="tspam+git-annex@93d4c46eaee63fe6c1a54cbf0fda9df37392a80d"
+ nickname="tspam+git-annex"
+ subject="comment 1"
+ date="2015-06-23T21:19:43Z"
+ content="""
+As a workaround, I could install it via pacman -S git-annex after adding the haskell-core repo (see https://wiki.archlinux.org/index.php/ArchHaskell)
+"""]]
