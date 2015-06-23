@@ -1239,6 +1239,14 @@ Also note that when using views, only the toplevel .gitattributes file is
 preserved in the view, so other settings in other files won't have any
 effect.
 
+# EXIT STATUS
+
+git-annex, when called as a git subcommand, may return exit codes 0 or 1
+for success or failures, or, more rarely, 127 or 128 for certain very
+specific failures.  git-annex itself should return 0 on success and 1 on
+failure, unless the `--time-limit=time` option is hit, in which case it
+returns with exit code 101.
+
 # FILES
 
 These files are used by git-annex:
