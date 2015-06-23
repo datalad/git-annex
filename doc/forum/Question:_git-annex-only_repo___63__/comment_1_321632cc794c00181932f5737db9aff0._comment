@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Marco"
+ subject="Yes"
+ date="2015-06-23T12:12:52Z"
+ content="""
+Yes, you can do this. Simply set up a git annex repo and you are ready to go.
+If you have the assistant running in the background it will take care of committing and distributing the files around.
+"""]]
