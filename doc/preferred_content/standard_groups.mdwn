@@ -51,21 +51,21 @@ All content is wanted. Even content of old/deleted files.
 
 `anything`
 
-### incremental backup
+### incrementalbackup
 
 Only wants content that's not already backed up to another backup
 or incremental backup repository.
 
 `((not copies=backup:1) and (not copies=incrementalbackup:1)) or approxlackingcopies=1`
 
-### small archive
+### smallarchive
 
 Only wants content that's located in an "archive" directory, and
 only if it's not already been archived somewhere else.
 
 `((include=*/archive/* or include=archive/*) and not (copies=archive:1 or copies=smallarchive:1)) or approxlackingcopies=1`
 
-### full archive
+### archive
 
 All content is wanted, unless it's already been archived somewhere else.
 
