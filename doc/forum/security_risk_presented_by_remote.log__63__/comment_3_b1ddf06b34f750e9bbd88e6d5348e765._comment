@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="comment 3"
+ date="2015-06-24T01:17:23Z"
+ content="""
+> I read the encryption page but I just want to know if I'm understanding it correctly.
+
+I think you are understanding this correctly... let's see..
+
+> Let's say I initiated my remote with this command:
+>
+>     git annex initremote myremote type=S3 chunk=256MiB keyid=XXXXXXXX bucket=mybucket
+>
+> And then, I handed out my remote.log file to people publicly. Does that expose any security hole at all?
+
+It won't expose your S3 credentials, if that's what your are asking. Those are stored in `.git/annex/creds/` and not in the git-annex branch. You can see the content of `remote.log` yourself with:
+
+    git cat-file -p git-annex:remote.log
+
+... if that helps you at all..
+
+>  Or is 100% of the information in remote.log secured using gpg?
+
+Well, it *would* expose the bucket name and the GPG key id (\"XXXXXXXX\") that you set there. The remote.log, itself, is *not* encrypted with gpg, from what I understand. Or to put it another way, the `remote.log` is not actually sent to the S3 remote there, and if you put the git repo publicly, then its content will be publicly readable. To protect against that, you would need a [[special_remotes/gcrypt]] remote.
+
+> I would believe that people couldn't decrypt my file contents, but could they get into my bucket or my S3 account?
+
+Not unless they have the S3 credentials, no. Furthermore, if the bucket is not publicly readable (see [[tips/public_Amazon_S3_remote/]] for that), they won't be able to get the file contents either. And *even* if it is public, they would get the *encrypted* content which they couldn't decrypt without the private key associated with the keyid you supplied.
+"""]]
