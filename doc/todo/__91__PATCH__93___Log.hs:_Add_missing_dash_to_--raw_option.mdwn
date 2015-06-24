@@ -1,0 +1,33 @@
+This commit is also available in the "log-raw-missing-dash" branch at <https://github.com/sunny256/git-annex.git>.
+
+[[!format hs """
+From 5e00265dae057e1846d5a256f450c8a1e1803c97 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=C3=98yvind=20A=2E=20Holm?= <sunny@sunbase.org>
+Date: Wed, 24 Jun 2015 17:07:37 +0200
+Subject: [PATCH] Log.hs: Add missing dash to --raw option
+
+After commit eb33569f ("remove Params constructor from
+Utility.SafeCommand", 2015-06-01), git-annex aborted with the error
+message "fatal: unrecognized argument: -raw" when executing "git annex
+log".
+---
+ Command/Log.hs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Command/Log.hs b/Command/Log.hs
+index 9ee7f85..495c43c 100644
+--- a/Command/Log.hs
++++ b/Command/Log.hs
+@@ -151,7 +151,7 @@ getLog key os = do
+ 		[ Param "log"
+ 		, Param "-z"
+ 		, Param "--pretty=format:%ct"
+-		, Param "-raw"
++		, Param "--raw"
+ 		, Param "--abbrev=40"
+ 		, Param "--remove-empty"
+ 		] ++ os ++
+-- 
+2.4.4.408.g16da57c
+
+"""]]
