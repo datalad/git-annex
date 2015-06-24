@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="boustanihani@93604388a6a2b8df16f3e34157232801a67c1021"
+ nickname="boustanihani"
+ subject="comment 4"
+ date="2015-06-24T10:14:18Z"
+ content="""
+Thanks I'll take a look at git-annex assistant, all new to me :)
+
+Never mind about track, I thought git-annex is similar to git-lfs where you should manually call \"track...\" on files whose content should not be added to git...
+"""]]
