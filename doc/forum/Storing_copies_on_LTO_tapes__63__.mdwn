@@ -1,6 +1,6 @@
 I'm looking for a way to count/track annex data copied to LTO tapes.
 
-In my use case I'm splitting many terabytes of data to separate repositories on several hard drives, backing them up on tapes, and keeping track of all this with remotes in a central repository (with lots of dropped content). All good with the HDs, but I'm at a loss about how to handle copies stored on tapes.
+In my use case I'm splitting many terabytes of data to separate repositories on several hard drives, backing them up on tapes, and keeping track of all this with remotes in a central repository (with lots of dropped content). All good with the HDs, but I'm at a loss about how to handle the copies on tapes.
 
 Three alternatives I've come up with so far:
 
