@@ -1,0 +1,31 @@
+Hi,
+I'm working on a game project (Unity3D) which I want to use git-annex for all those binary assets,
+
+but I still want to be able to commit normal code files in git,
+
+is there a way to do that?
+
+below is what I tried (but failed) to do.
+
+Thanks.
+
+Chris
+
+
+
+    C:\Users\Chris\Projects\testing>git annex init "testing"
+    init testing
+      Detected a filesystem without fifo support.
+    
+      Disabling ssh connection caching.
+    
+      Detected a crippled filesystem.
+    
+      Enabling direct mode.
+    ok
+    (recording state in git...)
+    
+    C:\Users\Chris\Projects\testing>echo test > testing.txt
+    
+    C:\Users\Chris\Projects\testing>git add testing.txt
+    fatal: This operation must be run in a work tree
