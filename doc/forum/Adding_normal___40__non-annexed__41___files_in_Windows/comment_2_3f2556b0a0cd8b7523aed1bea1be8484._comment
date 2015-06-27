@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="chris.forum.email@596f849a9d27c1f0bcdd653d1d2dc992f21ce603"
+ nickname="chris.forum.email"
+ subject="comment 2"
+ date="2015-06-27T11:23:05Z"
+ content="""
+if I use `git annex proxy` I can't see the changes:
+
+    C:\Users\Chris\Projects\testing>git annex proxy -- git status
+    On branch annex/direct/master
+    nothing to commit, working directory clean
+
+and I noticed that I'm on a branch called `annex/direct/master`, not the `master` I'd expect...
+
+if I use `git -c core.bare=false`, I get the normal output:
+
+    C:\Users\Chris\Projects\testing>git -c core.bare=false status
+    On branch annex/direct/master
+    Untracked files:
+      (use \"git add <file>...\" to include in what will be committed)
+    
+            test.txt
+    
+    nothing added to commit but untracked files present (use \"git add\" to track)
+
+but I'm still on a \"wrong\" branch? what is this `annex/direct/master` branch and am I supposed to commit and push this branch?
+
+Thanks, Chris
+"""]]
