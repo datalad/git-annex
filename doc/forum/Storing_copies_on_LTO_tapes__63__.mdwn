@@ -6,8 +6,8 @@ Three alternatives I've come up with so far:
 
 1. Simply tar the repositories from the HDs to the tapes. Problem: no way to notify git annex of the existence of these manual copies. Or is there?
 2. Remote (special or normal) on LTFS (linear posix compatible file system on top of tape). Problems:
-    1. **git annex get**ing a dropped directory from there would cause files to be accessed in random order, right? Or is the retrieve guaranteed to happen in the same order as the files in the directory were written by **git annex copy**?
+    1. `git annex get`ing a dropped directory from there would cause files to be accessed in random order, right? Or is the retrieve guaranteed to happen in the same order as the files in the directory were written by `git annex copy`?
     2. LTFS has a big block size (512KB) => wasted space when lots of small files. (Not a major problem, though.)
-3. Write a special (read-only) remote hook for *tar*. Problem: **get** would make one *RETRIEVE* request per file, leading to random access again, while the only effective way would be to get a list of all files to be retrieved, and then returning them in the order they turn up from the tar package (or even ingest the whole tar file to .git/annex/).
+3. Write a special (read-only) remote hook for `tar`. Problem: `git annex get` would make one hook *RETRIEVE* request per file, leading to random access again, while the only effective way would be to get a list of all files to be retrieved, and then returning them in the order they turn up from the tar package (or even ingest the whole tar file to .git/annex/).
 
 Thoughts?
