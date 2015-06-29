@@ -1,0 +1,54 @@
+### Please describe the problem.
+
+I use git annex on my phone on an encfs directory on a debian root put on a sdcard.
+
+After an interruption, it may happens that git-annex (or git?) changes the
+content of a file in the .git directory by a content in a file from the working
+directory.
+
+[[!format sh """
+$ cat .git/config
+../../../.git/annex/objects/f8/gZ/SHA256E-s1455016--03aaa9bcccada56b6615d9e333b8ada2dd6d1fb14c4aacfac87271939377f537.JPG/SHA256E-s1455016--03aaa9bcccada56b6615d9e333b8ada2dd6d1fb14c4aacfac87271939377f537.JPG
+$ cat .git/refs/remotes/master
+../../../../.git/annex/objects/29/wQ/SHA256E-s2533743--ec986bdbe37257bb5a940469d1e1b64a6016902736ed87315bab5856de322f42.JPG/SHA256E-s2533743--ec986bdbe37257bb5a940469d1e1b64a6016902736ed87315bab5856de322f42.JPG
+"""]]
+
+I only experienced this behavior two or three times since I have been using git-annex (3 years ago).
+
+Everything else works fine and fsck indicates no problem with the sdcard.
+
+This is a strange behavior that is a pain to solve, but today, I experienced something
+even stranger.
+
+Instead of writing the content into the .git/ directory. It was put in the encoded file in the crypt directory, with the path correctly encoded.
+
+[[!format sh """
+$ cat repo/.git/config
+cat: repo/.git/config: Input/output error
+$ encfsctl encode crypt_repo/ .git/config
+CqJBnbpfTEgKPAnmc8Sbo/IA-gS5lOzCF65DW9C7l-3MYU/OKritNqY4ewLnzQ,R2dtBXzW
+$ cat crypt_repo/CqJBnbpfTEgKPAnmc8Sbo/IA-gS5lOzCF65DW9C7l-3MYU/OKritNqY4ewLnzQ,R2dtBXzW
+../../../RSYdwqZh7kgnn3RSbEEx86ax/60jj4hZ60tqcDwSiXy-hHpD9/ebwg,0lJ7hi2iBbgF7HBfdqC/-muvnOVFmMIkfUtJAVyMGRUs/lRm4UHX0Dj2lW6IsCnnBBBSX/O9l1191uPE0a2D-FXhrOEG5,uWeGZHyJccAsw64vy16H3iTcRrxY-75YdRnnMzL27zpC5j0UUVnTaU0TBg0ze-xWCLpoJHZha48Uu8NaekYpn9C5QSSmUV08aZERdCdCfS3/GSOJ0Txna5LM9CLDD6Pw8x5pZ7D5YKFdNb-yx4APrKVm,EXauZiDQoXo6qOuVCMUI4KJB9kdnprlZ4Bw7h7w2jogW7Q1GDpqKVSgk7VYLuk5D7CpdaslquWbg0Ci5e9k9T7
+$ encfs decode ../../../RSYdwqZh7kgnn3RSbEEx86ax/60jj4hZ60tqcDwSiXy-hHpD9/ebwg,0lJ7hi2iBbgF7HBfdqC/-muvnOVFmMIkfUtJAVyMGRUs/lRm4UHX0Dj2lW6IsCnnBBBSX/O9l1191uPE0a2D-FXhrOEG5,uWeGZHyJccAsw64vy16H3iTcRrxY-75YdRnnMzL27zpC5j0UUVnTaU0TBg0ze-xWCLpoJHZha48Uu8NaekYpn9C5QSSmUV08aZERdCdCfS3/GSOJ0
+../../../.git/annex/objects/f8/gZ/SHA256E-s1455016--03aaa9bcccada56b6615d9e333b8ada2dd6d1fb14c4aacfac87271939377f537.JPG/SHA256E-s1455016--03aaa9bcccada56b6615d9e333b8ada2dd6d1fb14c4aacfac87271939377f537.JPG
+"""]]
+
+### What steps will reproduce the problem?
+Interruption of a git annex command, I guess an add or an import command.
+
+### What version of git-annex are you using? On what operating system?
+
+Android 4.3 Cyanogenmod/Samsung Galaxy S3, chrooted debian.
+
+[[!format sh """
+$ git annex version
+git-annex version: 5.20141125
+build flags: Assistant Pairing Testsuite S3 Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA CryptoHash
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+remote types: git gcrypt S3 bup directory rsync web tahoe glacier ddar hook external
+$ cat /etc/debian_version
+8.0
+"""]]
+
+### Please provide any additional information below.
+If you ask for additional information, I will gladly provide it.
