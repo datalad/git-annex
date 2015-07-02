@@ -8,10 +8,6 @@
 # versions that have been gotten working. To update, delete the
 # cabal.config, run this script with an empty cabal and fix up the broken
 # patches, and then use cabal freeze to generate a new cabal.config.
-#
-# This only installs haskell packages for ghc-android. The host ghc
-# also needs to have all the git-annex build deps installed, in similar
-# versions. Those are installed from Debian packages using apt.
 
 set -e
 
@@ -130,11 +126,13 @@ EOF
 	installgitannexdeps -fAndroid -f-Pairing
 }
 
-# native cabal needs its own update
-cabal update
-
-PATH=$HOME/.ghc/$(cat abiversion)/bin:$HOME/.ghc/$(cat abiversion)/arm-linux-androideabi/bin:$PATH
 setupcabal
-cabal update
 
+# Install packages for host ghc.
+cabal update
+installgitannexdeps
+
+# Install packages for cross ghc, with patches as necessary.
+PATH=$HOME/.ghc/$(cat abiversion)/bin:$HOME/.ghc/$(cat abiversion)/arm-linux-androideabi/bin:$PATH
+cabal update
 install_pkgs
