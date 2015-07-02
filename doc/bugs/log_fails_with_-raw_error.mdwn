@@ -43,3 +43,5 @@ upgrade supported from repository versions: 0 1 2 4
 """]]
 
 --[[anarcat]]
+
+> Fixed to use --raw, and added a test case. [[done]] --[[Joey]]

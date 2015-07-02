@@ -1,3 +1,9 @@
+git-annex (5.20150618) UNRELEASED; urgency=medium
+
+  * log: Fix reversion introduced in version 5.20150528 that broke this command.
+
+ -- Joey Hess <id@joeyh.name>  Thu, 02 Jul 2015 12:31:14 -0400
+
 git-annex (5.20150617) unstable; urgency=medium
 
   * Now supports git annex sync --all --content to sync all versions of all

@@ -180,6 +180,7 @@ unitTests :: String -> TestTree
 unitTests note = testGroup ("Unit Tests " ++ note)
 	[ testCase "add sha1dup" test_add_sha1dup
 	, testCase "add extras" test_add_extras
+	, testCase "log" test_log
 	, testCase "import" test_import
 	, testCase "reinject" test_reinject
 	, testCase "unannex (no copy)" test_unannex_nocopy
@@ -281,6 +282,10 @@ test_add_extras = intmpclonerepo $ do
 	git_annex "add" [wormannexedfile, "--backend=WORM"] @? "add with WORM failed"
 	annexed_present wormannexedfile
 	checkbackend wormannexedfile backendWORM
+
+test_log :: Assertion
+test_log = intmpclonerepo $ do
+	git_annex "log" [annexedfile] @? "log failed"
 
 test_import :: Assertion
 test_import = intmpclonerepo $ Utility.Tmp.withTmpDir "importtest" $ \importdir -> do

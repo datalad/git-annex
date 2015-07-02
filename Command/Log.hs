@@ -151,7 +151,7 @@ getLog key os = do
 		[ Param "log"
 		, Param "-z"
 		, Param "--pretty=format:%ct"
-		, Param "-raw"
+		, Param "--raw"
 		, Param "--abbrev=40"
 		, Param "--remove-empty"
 		] ++ os ++
