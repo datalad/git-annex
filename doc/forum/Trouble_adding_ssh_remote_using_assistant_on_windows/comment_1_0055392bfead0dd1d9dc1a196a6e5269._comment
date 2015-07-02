@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-07-02T20:53:54Z"
+ content="""
+This particular feature is unfortunately currently broken on Windows.
+
+I have developed a fix, but am waiting on it getting into a library I use.
+See [[bugs/windows_ssh_webapp_password_entry_broken]].
+
+As a workaround, if you can manually set up a passwordless ssh key on
+Windows, and configure the remote server to let you log in using that key,
+the webapp can then be used to add a repository on the server.
+"""]]
