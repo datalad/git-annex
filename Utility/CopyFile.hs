@@ -42,7 +42,7 @@ copyFileExternal meta src dest = do
 			, Param "--preserve=timestamps")
 		]
 #else
-	params = []
+	params = if allmeta then [] else []
 #endif
 	allmeta = meta == CopyAllMetaData
 
