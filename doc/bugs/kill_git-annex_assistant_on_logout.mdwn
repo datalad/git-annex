@@ -1,0 +1,3 @@
+When you logout of any x session git-annex does not get killed.
+This means that if you login again git-annex will still try to use the ssh-agent from the last session which doesn't run anymore.
+This leads to countless password queries unless you use a passwordless key.

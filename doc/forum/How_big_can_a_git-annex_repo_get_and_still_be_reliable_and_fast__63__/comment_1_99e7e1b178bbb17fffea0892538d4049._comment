@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 1"
+ date="2015-06-30T07:17:48Z"
+ content="""
+It can actually get really big and still be okay to use, if you follow the [tips page for annexs with lots of files](/tips/Repositories with large number of files).
+
+Mine is still reasonably responsive at 10 million files! Iterating over it all (git annex info, deduping) is really painful though, but it'd be like that without git-annex..
+"""]]

@@ -1,0 +1,11 @@
+One of my users created a git annex repository a while ago and has since left the lab, and I think they messed it up badly.
+
+It looks like all of the data is present in the annex directory, but there are no files in main directory, other than the .git folder. The master branch seems to be gone, and the only branch left is called git-annex.
+
+git log gives the error "fatal: bad default revision 'HEAD'" when I first do git log, because the branch that I am on doesn't exist (the master branch). Changing to the git-annex branch works, but then I can't go back to the master branch because it doesn't exist.
+
+git annex unannex doesn't seem to do anything. Is there any way to get the data back following this kind of mess up?
+
+Thanks for your help
+
+-Mike

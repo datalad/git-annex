@@ -1,0 +1,8 @@
+As title says, how big can a git-annex repo be?
+
+My use case is this:
+I have a few external hard disks (like 2TB, 3TB etc) and each of them have a bunch of files. Ideally I would like to keep all of the data organized in a _single_ git annex repo. However, there are probably a handful of really big files and a LARGE number of really small files, and I doubt its a good idea to put all of them in together.
+
+What should be my biggest concern? I assume file size is not a problem, and I should either tar/zip smaller files into much bigger ones and annex that, or split it up into multiple small annex repositories.
+
+Any suggestions? What do the rest of you with similar amounts of data do?
