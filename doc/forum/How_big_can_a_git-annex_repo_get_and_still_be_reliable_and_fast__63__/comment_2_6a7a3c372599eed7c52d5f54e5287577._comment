@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-07-02T20:44:09Z"
+ content="""
+Depending on the total size of the small files, you might consider a mixed
+repo, with the small files checked into git normally, and the larger files
+annexed. 
+
+The advantage is that you then don't need to use git-annex commands to
+manage the many small files. This will probably be faster, for except you
+won't need to `git annex get` a ton of small files, which will avoid a lot
+of overhead.
+
+Of course, if you have gigabytes of small files, that will result
+in a git repo gigabytes in size, and you will start to run into some of the
+scalability problems that git-annex addresses.
+"""]]
