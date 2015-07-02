@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-07-02T16:43:03Z"
+ content="""
+Not knowing how S3's backend is implemented, I have to assume that, in
+order to get the advertised number of 9's of reliability, it involves some
+replication of data, as well as some method to detect if a bit has flipped
+or a drive has died, and recover.
+
+This is requesting that git-annex ask S3 for a md5sum, and compare it
+against a md5sum that it, presumably, keeps track of locally. If the two
+are different, git-annex could tell that S3 has lost data. But, git-annex is
+in a much worse position to tell if S3 has lost data then S3 itself is.
+It seems very unlikely that this extra checking would ever detect a problem
+that S3 didn't itself detect and fix (or in the 0.00001% case, 
+fail to fix and delete the lost file?)
+
+Bit flips during transfer seem more likely than that. `poContentMD5` could
+help guard against those.
+"""]]
