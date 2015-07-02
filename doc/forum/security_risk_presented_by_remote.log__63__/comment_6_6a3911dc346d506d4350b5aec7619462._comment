@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2015-07-02T20:23:48Z"
+ content="""
+There are two cases there s3creds= can be in the remote.log.
+
+If you enabled gpg encryption, it stores the S3 creds there, encrypted with
+the gpg key you told it to use. So you can share the repo to users who don't
+have the gpg key, and they cannot access the S3 login credentials.
+
+If you didn't use gpg encryption, and you manually set `embedcreds=yes`
+then the s3creds= will contain the un-encrypted creds. 
+And like the docs for embedcreds says, you then need to be careful who
+you give the git repo to, since they can then access those S3 credentials.
+This is not a default configuration.
+
+(There was also the [[upgrades/insecure_embedded_creds]] bug in 2014.
+But, git-annex will detect repos with that problem and warns very verbosely
+about it.)
+"""]]
