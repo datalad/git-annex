@@ -4,6 +4,8 @@ git-annex (5.20150618) UNRELEASED; urgency=medium
   * assistant --autostart: First any daemons that are already running,
     which might be left over from a previous login session and so unable to
     use the ssh agent of a new login session.
+  * assistant: Fix local pairing to not include newline in ssh pubkey,
+    which is rejected on the other end for security reasons.
 
  -- Joey Hess <id@joeyh.name>  Thu, 02 Jul 2015 12:31:14 -0400
 
