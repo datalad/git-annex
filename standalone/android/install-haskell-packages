@@ -89,7 +89,6 @@ EOF
 	# patched entropy # needed for newer version, not current pinned version
 	patched vector
 	patched stm-chans
-	patched persistent
 	patched profunctors
 	patched skein
 	patched lens
