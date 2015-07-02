@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""another approach"""
+ date="2015-07-02T22:25:25Z"
+ content="""
+You could make a special remote that streams the whole tar file from the
+tape, and uses `git annex setkey` to add each file from the tarball to the
+annex.
+
+Done this way, the first file that `git annex get` processed would actually
+cause *every* file to be gotten from the tape. As it continued on to
+subsequent files, the `git annex get` would see their content was already
+present and skip them.
+
+Of course, the downside is it works on a whole tape at a time, so if you
+don't want to load the whole tape into the filesystem, you wouldn't want to
+use this approach.
+"""]]
