@@ -31,3 +31,7 @@ index 9ee7f85..495c43c 100644
 2.4.4.408.g16da57c
 
 """]]
+
+> Thanks for the patch! Someone else reported a bug about it and I already
+> patched it when I noticed this, so you missed getting in the commit log..
+> this time! ;) [[done]] --[[Joey]]
