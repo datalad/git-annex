@@ -25,8 +25,9 @@ import qualified Data.Text as T
 setupAuthorizedKeys :: PairMsg -> FilePath -> IO ()
 setupAuthorizedKeys msg repodir = case validateSshPubKey $ remoteSshPubKey $ pairMsgData msg of
 	Left err -> error err
-	Right pubkey -> 
-		unlessM (liftIO $ addAuthorizedKeys True repodir pubkey) $
+	Right pubkey -> do
+		absdir <- absPath repodir
+		unlessM (liftIO $ addAuthorizedKeys True absdir pubkey) $
 			error "failed setting up ssh authorized keys"
 
 {- When local pairing is complete, this is used to set up the remote for

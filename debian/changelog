@@ -6,6 +6,9 @@ git-annex (5.20150618) UNRELEASED; urgency=medium
     use the ssh agent of a new login session.
   * assistant: Fix local pairing to not include newline in ssh pubkey,
     which is rejected on the other end for security reasons.
+  * assistant: Fix ANNEX_SHELL_DIR written to ~/.ssh/authorized_keys 
+    in local pairing to be the absolute path to the repository, not "."
+    This was a reversion caused by the relative path changes in 5.20150113.
 
  -- Joey Hess <id@joeyh.name>  Thu, 02 Jul 2015 12:31:14 -0400
 
