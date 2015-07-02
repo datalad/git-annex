@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-07-02T21:00:00Z"
+ content="""
+All your solutions are reasonable, but you're right that none of them
+avoid random-access. And git-annex is generally not built in a way that
+makes it easy to avoid random-access.
+
+But, I think it's tractable with a special remote.
+
+Consider a special remote that has two retrieval modes.
+In one mode, it always fails to retrieve keys, but keeps a list. In the
+second mode, it starts up by going through its list, retreives everything
+in order to a temporary directory, and then when asked to retrieve a key,
+just moves it from the temp dir into place. This is somewhat similar to how
+Amazon Glacier works, and like git-annex's glacier support, it would result
+in the first `git-annex get` failing, and a second `git annex get` being
+needed to finish the retrival.
+
+That could be improved.. Make the special remote fail to retrive keys,
+and keep a list. On shutdown, it then sorts the list, retrieves the keys
+in order, and runs `git annex setkey` to move the content into the annex.
+Still a little bit weird, because `git annex get` would seem to fail
+and then pause at the end for a long time, after which the files would
+actually end up being present. (Also, I er, removed `git annex setkey` in
+2011, because it didn't seem very useful, but this is in fact a use case
+for it, so I can bring it back if you get that far.)
+"""]]
