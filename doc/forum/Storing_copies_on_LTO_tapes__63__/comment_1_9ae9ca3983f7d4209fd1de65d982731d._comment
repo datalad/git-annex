@@ -23,7 +23,9 @@ and keep a list. On shutdown, it then sorts the list, retrieves the keys
 in order, and runs `git annex setkey` to move the content into the annex.
 Still a little bit weird, because `git annex get` would seem to fail
 and then pause at the end for a long time, after which the files would
-actually end up being present. (Also, I er, removed `git annex setkey` in
+actually end up being present. 
+
+(Also, I er, removed `git annex setkey` in
 2011, because it didn't seem very useful, but this is in fact a use case
-for it, so I can bring it back if you get that far.)
+for it, so I've added it back now.)
 """]]
