@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-07-02T20:01:42Z"
+ content="""
+This totally makes sense to want, but it's rather difficult to implement since
+multiple git-annex repos can all be uploading content to the same special
+remote, while disconnected from each other.
+"""]]
