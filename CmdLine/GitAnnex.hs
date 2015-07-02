@@ -26,6 +26,7 @@ import qualified Command.ContentLocation
 import qualified Command.ExamineKey
 import qualified Command.FromKey
 import qualified Command.RegisterUrl
+import qualified Command.SetKey
 import qualified Command.DropKey
 import qualified Command.TransferKey
 import qualified Command.TransferKeys
@@ -159,6 +160,7 @@ cmds = concat
 	, Command.ExamineKey.cmd
 	, Command.FromKey.cmd
 	, Command.RegisterUrl.cmd
+	, Command.SetKey.cmd
 	, Command.DropKey.cmd
 	, Command.TransferKey.cmd
 	, Command.TransferKeys.cmd

@@ -547,6 +547,13 @@ subdirectories).
   
   See [[git-annex-registerurl]](1) for details.
 
+* `setkey key file`
+
+  Moves a file into the annex as the content of a key.
+  
+  See [[git-annex-setkey]](1) for details.
+
+
 * `dropkey [key ...]`
 
   Drops annexed content for specified keys.
