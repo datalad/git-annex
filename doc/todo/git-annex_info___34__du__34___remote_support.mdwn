@@ -38,3 +38,4 @@ just to be clear here, the problem isn't as much providing `du-like output`, whi
 
 i still think it would be nice to have a `du` command, just because it's a command "WTF" situation users seem to get stuck into.. but this issue is only about having this work on remote repositories. thanks! -- [[anarcat]]
 
+> Fixed via time machine. [[done]] --[[Joey]]
