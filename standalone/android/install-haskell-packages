@@ -86,7 +86,7 @@ EOF
 	patched iproute
 	patched primitive
 	patched socks
-	# patched entropy # needed for newer version, not current pinned version
+	patched entropy
 	patched vector
 	patched stm-chans
 	patched profunctors
