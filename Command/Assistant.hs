@@ -91,6 +91,12 @@ autoStart startdelay = do
   where
 	go haveionice program dir = do
 		setCurrentDirectory dir
+		-- First stop any old daemon running in this directory, which
+		-- might be a leftover from an old login session. Such a
+		-- leftover might be left in an environment where it is
+		-- unavble to use the ssh agent or other login session
+		-- resources.
+		void $ boolSystem program [Param "assistant", Param "--stop"]
 		if haveionice
 			then boolSystem "ionice" (Param "-c3" : Param program : baseparams)
 			else boolSystem program baseparams

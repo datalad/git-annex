@@ -1,6 +1,9 @@
 git-annex (5.20150618) UNRELEASED; urgency=medium
 
   * log: Fix reversion introduced in version 5.20150528 that broke this command.
+  * assistant --autostart: First any daemons that are already running,
+    which might be left over from a previous login session and so unable to
+    use the ssh agent of a new login session.
 
  -- Joey Hess <id@joeyh.name>  Thu, 02 Jul 2015 12:31:14 -0400
 
