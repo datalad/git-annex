@@ -97,19 +97,14 @@ EOF
 	patched persistent-template
 	patched system-filepath
 	patched optparse-applicative
+	patched warp
 	patched wai-app-static
 	patched shakespeare
-	patched shakespeare-css
-	patched shakespeare-js
-	patched yesod-routes
 	patched yesod-core
-	patched yesod-persistent
 	patched yesod-form
-	patched crypto-numbers
 	patched clock
 	patched yesod-auth
 	patched yesod
-	patched shakespeare-text
 	patched process-conduit
 	patched DAV
 	patched yesod-static
@@ -117,7 +112,6 @@ EOF
 	patched dns
 	patched gnutls
 	patched unbounded-delays
-	patched gnuidn
 	patched network-protocol-xmpp
 
 	cd ..
