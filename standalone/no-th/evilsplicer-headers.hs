@@ -23,7 +23,7 @@ import qualified Text.Css
 import qualified "blaze-markup" Text.Blaze.Internal
 import qualified Yesod.Core.Widget
 import qualified Yesod.Routes.TH.Types
-import qualified Yesod.Routes.Dispatch
+import qualified Yesod.Core.Dispatch
 import qualified WaiAppStatic.Storage.Embedded
 import qualified WaiAppStatic.Storage.Embedded.Runtime
 import qualified Data.FileEmbed
