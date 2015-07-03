@@ -29,3 +29,11 @@ v5.20150617~g031b85a
 
 # End of transcript or log.
 """]]
+
+> I've reverted to the previous release, which included the webapp, afaik.
+> 
+> Unfortunately, the android autobuilder remains broken after I spent 12
+> hours fighting with it. Unsure when that will be resolved and a newer
+> release will be able to be made. 
+> 
+> Anyhow, the immediate bug is [[done]] --[[Joey]]
