@@ -25,6 +25,12 @@ To rename a directory:
 
 	git annex proxy -- git mv mydir newname
 
+To commit the changes to a specific file, first use git annex add to
+stage the changes in the index, and then proxy a commit:
+
+	git annex add myfile
+	git annex proxy -- git commit myfile -m foo
+
 # SEE ALSO
 
 [[git-annex]](1)
