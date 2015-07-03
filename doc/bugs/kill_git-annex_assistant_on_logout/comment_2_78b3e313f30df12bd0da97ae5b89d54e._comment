@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="silvio"
+ subject="comment 2"
+ date="2015-07-03T17:01:11Z"
+ content="""
+I think the process that is spawned is actually killed at logout. I tried this with sleep. I don't know about child processes. The problem is that git-annex assistant --autostart (I think) double forks and quits. This means desktop environments have no way of finding those processes. Maybe you can make an option to not fork or make a wrapper that will forward SIG 15 to the daemons.
+"""]]
