@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="james@2468840dc8f314e837e1fde99a5fb1b884fa993a"
+ nickname="james"
+ subject="enable s3 remote on clone"
+ date="2015-07-03T14:46:49Z"
+ content="""
+Hi,
+I am trying to enable access to my s3 area from a clone. I am running into this issue:
+
+~~~
+$ git annex enableremote mys3 
+enableremote mys3 (encryption update) (hybrid cipher with gpg key EA1CF14BD8467AFB) (gpg) gpg: decryption failed: secret key not available
+
+git-annex: user error (gpg [\"--batch\",\"--no-tty\",\"--use-agent\",\"--quiet\",\"--trust-model\",\"always\",\"--decrypt\"] exited 2)
+failed
+git-annex: enableremote: 1 failed
+~~~
+
+
+My gpg key is available :
+
+~~~
+$ gpg -K EA1CF14BD8467AFB
+sec   4096R/D8467AFB 2010-10-25
+uid                  James Richardson (email) <james@jamestechnotes.com>
+uid                  James Richardson <james.richardson.jr@gmail.com>
+uid       [ revoked] James Richardson (list) <jr@jamesr.biz>
+uid       [ revoked] James Richardson (James Richardson) <james@jamesr.biz>
+ssb   4096R/F90CF7F0 2010-10-25
+ssb   4096R/005D609B 2010-10-26
+~~~
+
+I would expect this to pop up a dialog asking me for my passphrase, as it will when I run the gpg command from a term.
+
+Any ideas?
+
+"""]]
