@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="tomekwi"
+ subject="--all seems to do nothing"
+ date="2015-07-03T05:14:37Z"
+ content="""
+Hi,
+
+I want to back up all my files including previous versions on an external drive. I’ve tried these two commands – both of them exited instantly without producing any output:
+
+    $ git-annex copy --all --to=external-drive
+    $ git-annex copy --unused --to=external-drive
+"""]]
