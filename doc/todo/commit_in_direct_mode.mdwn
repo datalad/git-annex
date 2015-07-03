@@ -7,3 +7,6 @@ When moving around files on a larger scale, the ability to commit specific subse
 
 Thanks,
 Richard
+
+> I've documented in the git-annex-proxy man page how to use it to do
+> per-file commits. [[done]] --[[Joey]]
