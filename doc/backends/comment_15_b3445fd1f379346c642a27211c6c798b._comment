@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 15"
+ date="2015-07-05T14:54:18Z"
+ content="""
+It's not explicit, but 'git annex info $FILE' tells you the key, which has the backend as its first component:
+
+    ## git annex info CG\ Cookie/Compositing\ in\ Blender/01_CompositingInBlender_SourceFiles.zip 
+    file: CG Cookie/Compositing in Blender/01_CompositingInBlender_SourceFiles.zip
+    size: 744.51 megabytes
+    key: SHA256E-s744506832--08d2daced60b5eb6509044d5eefca82e7a6899350f49adc0083014229739515e.zip
+
+I don't think there are any situations where the first component of the key isn't the backend, but don't hold me to that, please :)
+"""]]
