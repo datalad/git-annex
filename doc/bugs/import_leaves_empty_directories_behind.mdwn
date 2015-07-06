@@ -16,3 +16,5 @@ git annex import /tmp/foo
 ### What version of git-annex are you using? On what operating system?
 
 5.20141125
+
+> [[done]] per my earlier comment --[[Joey]]
