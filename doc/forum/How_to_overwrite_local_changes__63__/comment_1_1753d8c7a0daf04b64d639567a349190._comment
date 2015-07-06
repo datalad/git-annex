@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-07-06T18:51:43Z"
+ content="""
+Sorry that nobody answered your question until now..
+
+These .variant files preserve both versions of the files that were
+committed in the two different repositories. If you can identify which
+variant you don't want, you can just delete that one, and rename the other
+.variant file back to the original file name.
+
+There's no really great way to tell which variant is which. 
+I'd look at the contents of the variants of the file, unless there are
+too many files to look at.
+
+Another approach is to look at the git log, find the commit that merged
+the unwanted changed (and created these variant files), and `git revert` that
+merge, and the earlier commit that was made accidentially.
+"""]]
