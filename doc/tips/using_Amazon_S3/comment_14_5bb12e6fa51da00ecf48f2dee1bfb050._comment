@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 14"""
+ date="2015-07-06T17:42:28Z"
+ content="""
+@james, since your keyring apparenty contains your secret key, the problem
+may be in the configuration of your gpg agent or pinentry program. If the agent 
+is unable to use pinentry for some reason, gpg will complain that the
+secret key is unavailable since it is unable to get the passphrase to
+unlock it.
+
+I had a similar problem with gpg2 the other day:
+<http://bugs.debian.org/791379>
+"""]]
