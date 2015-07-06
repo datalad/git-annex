@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-07-06T17:46:16Z"
+ content="""
+Adding a -u option, and perhaps also one to only add new files, would be
+pretty easy to do. Of course you can feed git-ls-files output to git annex
+add to accompish the same thing. Does it help with the same use case where
+adding unlocked files is slower than desirable?
+"""]]
