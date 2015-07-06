@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="explicit arguments?"
+ date="2015-07-06T16:01:47Z"
+ content="""
+just a suggestion (yet to comprehend full idea here):  might be worth making it less magical, e.g. expanding \"add\" with two options:
+
+-u (similar to git) would check only known to git files
+-a would also automatically add new files
+
+So I could just \"git annex add -au .\" to commit all the changes in files which happened to be created or modified, without penalty of checksumming all the files.
+"""]]
