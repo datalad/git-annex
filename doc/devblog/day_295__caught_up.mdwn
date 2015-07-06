@@ -1,0 +1,8 @@
+Now caught up on nearly all of my backlog of messages, 
+and indeed am getting to some messages that have been waiting for months.
+Backlog is down to 113! Couple of bugfixes resulted, and many questions answered.
+
+Think I'll spend a couple more days dealing with the older part of the
+backlog. Then, when that reaches diminishing returns, I'll move on to some
+big change. I have been thinking about [[design/caching_database]] on and
+off..
