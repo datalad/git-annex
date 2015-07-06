@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2015-07-06T22:13:24Z"
+ content="""
+If using git-annex sync or git-annex merge to do the merging, it will
+automatically resolve the merge conflict and put both conflicting versions
+of the file in the tree under different filenames.
+
+Of course, you can also use regular git commands to pull and merge your
+master branch; then you'd get a regular git merge conflict.
+"""]]
