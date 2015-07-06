@@ -37,3 +37,7 @@ fatal: unrecognized argument: -raw
 
 # End of transcript or log.
 """]]
+
+> `git annex log`, was broken in the last release, and has since been
+> fixed (in git). The git-annex branxh is still being committed, as you can
+> see with `git log`. [[done]] --[[Joey]]
