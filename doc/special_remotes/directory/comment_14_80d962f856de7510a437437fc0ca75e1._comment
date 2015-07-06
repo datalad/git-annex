@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 14"""
+ date="2015-07-06T19:00:43Z"
+ content="""
+@dmitry, it just so happens that directory special remotes honor the
+annex.diskreserve configuration setting. This normally only applies to
+the local git repository, and not to remotes, but since directory
+special remotes are local annex.diskreserve is also checked for them.
+
+There's no currently a way to have a different diskreserve setting for
+a directory special remote than is used for the local git repository.
+"""]]
