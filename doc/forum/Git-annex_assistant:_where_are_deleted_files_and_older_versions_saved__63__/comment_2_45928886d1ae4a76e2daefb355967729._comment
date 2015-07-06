@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-07-06T19:03:57Z"
+ content="""
+While Marco is right about backup repositories, note that the assistant can
+only move the content of deleted/old versions of files to a backup repository 
+if that repository is set up as a remote of the repository where the
+assistant is running.
+
+So, it's quite possible to have some backup repositories that are not well
+enough connected for deleted/old files to reach them. The deleted/old files
+will then be kept in whatever repositories happen to contain them.
+
+Where are the deleted files stored? Underneath .git/annex/objects/
+
+Also, the webapp has a configuration page to control what to do with unused
+files, and can be configured to delete them periodically if you'd prefer.
+"""]]
