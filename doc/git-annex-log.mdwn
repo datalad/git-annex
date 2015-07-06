@@ -29,11 +29,11 @@ showing each repository they were added to ("+") and removed from ("-").
   The [[git-annex-matching-options]](1)
   can be used to specify files to act on.
 
-# OPTIONS
-
 # SEE ALSO
 
 [[git-annex]](1)
+
+[[git-annex-forget]](1)
 
 # AUTHOR
 
