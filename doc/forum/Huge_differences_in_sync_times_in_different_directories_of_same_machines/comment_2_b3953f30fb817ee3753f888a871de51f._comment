@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-07-06T20:07:08Z"
+ content="""
+I think there might be some bug where the assistant does not notice that
+the synced/master branch has been updated, and doesn't immediately merge it
+into the local master branch. This seems to be borne out by your log.
+
+[[bugs/assistant_sometimes_does_not_merge_changes_from_remote]] might be
+related.
+"""]]
