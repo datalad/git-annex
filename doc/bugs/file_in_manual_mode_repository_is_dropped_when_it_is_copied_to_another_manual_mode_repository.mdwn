@@ -33,3 +33,8 @@ upgrade supported from repository versions: 0 1 2 4
 It should be the same version everywhere.
 
 Please ask me if you need more information.
+
+> According to the bug reporter,
+> [[Assistant_drops_files_from_remote_repos_that_it_shouldn__39__t]]
+> is a report of this same problem. So, let's close this report
+> as a duplicate. [[done]] --[[Joey]]
