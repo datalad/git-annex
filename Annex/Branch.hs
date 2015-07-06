@@ -43,6 +43,7 @@ import qualified Git.Sha
 import qualified Git.Branch
 import qualified Git.UnionMerge
 import qualified Git.UpdateIndex
+import Git.LsTree (lsTreeParams)
 import Git.HashObject
 import Git.Types
 import Git.FilePath
@@ -314,14 +315,8 @@ files = do
 {- Files in the branch, not including any from journalled changes,
  - and without updating the branch. -}
 branchFiles :: Annex [FilePath]
-branchFiles = withIndex $ inRepo $ Git.Command.pipeNullSplitZombie
-	[ Param "ls-tree"
-	, Param "--full-tree"
-	, Param "--name-only"
-	, Param "-r"
-	, Param "-z"
-	, Param $ fromRef fullname
-	]
+branchFiles = withIndex $ inRepo $ Git.Command.pipeNullSplitZombie $
+	lsTreeParams fullname [Param "--name-only"]
 
 {- Populates the branch's index file with the current branch contents.
  - 

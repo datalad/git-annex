@@ -34,16 +34,17 @@ data TreeItem = TreeItem
  - with lazy output. -}
 lsTree :: Ref -> Repo -> IO [TreeItem]
 lsTree t repo = map parseLsTree
-	<$> pipeNullSplitZombie (lsTreeParams t) repo
+	<$> pipeNullSplitZombie (lsTreeParams t []) repo
 
-lsTreeParams :: Ref -> [CommandParam]
-lsTreeParams t =
+lsTreeParams :: Ref -> [CommandParam] -> [CommandParam]
+lsTreeParams r ps =
 	[ Param "ls-tree"
 	, Param "--full-tree"
 	, Param "-z"
 	, Param "-r"
-	, Param "--"
-	, File $ fromRef t
+	] ++ ps ++
+	[ Param "--"
+	, File $ fromRef r
 	]
 
 {- Lists specified files in a tree. -}
