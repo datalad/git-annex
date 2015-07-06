@@ -43,3 +43,5 @@ git-annex: user error (git ["config","--null","--list"] exited 128)
 failed
 git-annex: direct: 1 failed
 """]]
+
+> [[done]] per my comment --[[Joey]]
