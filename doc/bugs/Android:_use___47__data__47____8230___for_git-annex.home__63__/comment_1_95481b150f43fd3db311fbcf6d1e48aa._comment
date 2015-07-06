@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-07-06T18:23:57Z"
+ content="""
+I think that /data is locked down such that apps generally cannot write to
+it, but please correct me if I'm wrong.
+"""]]
