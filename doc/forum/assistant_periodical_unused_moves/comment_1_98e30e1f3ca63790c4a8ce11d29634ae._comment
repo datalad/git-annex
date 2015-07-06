@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-07-06T19:36:22Z"
+ content="""
+The assistant checks once per day for unused files, and tries to
+transfer them to remotes at that point. Exactly when this runs varies,
+just once per day sometime. It shouldn't much matter when it runs;
+if the drive is not connected at the time, the transfers will fail 
+and be remembered to be retried later next time it gets connected.
+
+The webapp will detect if too many unused files are piling up
+and will display a message about it.
+"""]]
