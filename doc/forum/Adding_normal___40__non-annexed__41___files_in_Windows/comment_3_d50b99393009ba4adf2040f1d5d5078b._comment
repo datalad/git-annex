@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-07-06T18:41:35Z"
+ content="""
+One nice way to do this is to use the annex.largefiles configuration
+setting. With a recent version of git-anne (5.20150409 or newer),
+adding a file that doesn't match annex.largefiles will cause it to be
+checked into git, rather than annexed.
+
+So, for example, `git -c annex.largefiles='exclude=*' annex add foo`
+will temporarily configure it to not annex any files, and add file foo to
+git. Or you can set annex.largefiles more permanantly to match specific
+file extensions.
+
+As to the annex/direct/master branch, this branch will get merged into the
+master branch on a push, so don't worry about it.
+
+(The `-c core.bare=false` approach will also work, just run regular git
+commands to add the file and commit. But, it's best to avoid this approach,
+because it's very easy to shoot yourself in the foot, by eg using
+`git commit -a` with it, which will check *all* file contents into git.)
+"""]]
