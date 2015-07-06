@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-07-06T20:01:45Z"
+ content="""
+git-annex undo first appeared in version 5.20141203 of git-annex.
+"""]]
