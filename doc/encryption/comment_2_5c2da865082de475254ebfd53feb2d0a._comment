@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-07-06T19:57:12Z"
+ content="""
+@Giovanni, git is complaining that there is already a remote named
+"myremote" enabled in the current repository. Perhaps you have reused this
+name for a different remote.
+
+(This seems to have nothing to do with the page the comment was posted to, which 
+is a bit annoying. Please post questions in the forum and not attached to
+random other pages.)
+"""]]
