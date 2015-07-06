@@ -1,0 +1,23 @@
+When using git annex unlock, followed by git annex add, it currently
+checksums files, even if the file has not changed.
+
+Direct mode has a better approach for this: The inode cache can pretty
+reliably detect if a file has been modified. So, `unlock` could note
+a file's inode cache info, and then `add` could check if a file's inode
+cache is unchanged, and rather than re-checksum it, just perform a fast 
+`lock`.
+
+Question: How would `add` know what key's inode cache to look at? Seems it
+would need to either check the git branch (as direct mode does, but this is
+rather slow and would slow down `add` in the more common case of adding
+lots of new files), or use a yet-unimplemented [[design/caching_database]].
+Or, the inode cache could be stored in a map with the work tree filename,
+but that diverges from how direct mode uses inode caches.
+
+Observation: Using the inode cache info to detect changes is not perfect;
+if a file is modified without changing its size or mtime, the inode cache
+won't be able to tell it's changed. This is unlikely, but possible. In
+direct mode, the worst that can happen in this case is probably that a
+modified file doesn't get added and committed. But, using the inode cache
+for unlocked files would result in any such modified versions being thrown
+away when the file is added, which is much more data lossy..
