@@ -12,6 +12,10 @@ git-annex (5.20150618) UNRELEASED; urgency=medium
   * Brought back the setkey plumbing command that was removed in 2011, since
     we found a use case for it. Note that the command's syntax was changed
     for consistency.
+  * bugfix: Pass --full-tree when using git ls-files to get a list of files
+    on the git-annex branch, so it works when run in a subdirectory.
+    This bug affected git-annex unused, and potentially also transitions
+    running code and other things.
 
  -- Joey Hess <id@joeyh.name>  Thu, 02 Jul 2015 12:31:14 -0400
 

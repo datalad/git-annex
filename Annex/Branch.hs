@@ -316,6 +316,7 @@ files = do
 branchFiles :: Annex [FilePath]
 branchFiles = withIndex $ inRepo $ Git.Command.pipeNullSplitZombie
 	[ Param "ls-tree"
+	, Param "--full-tree"
 	, Param "--name-only"
 	, Param "-r"
 	, Param "-z"

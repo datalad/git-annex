@@ -27,3 +27,5 @@ arch linux x86_64
 ### Please provide any additional information below.
 
 The S3 remote is encrypted with the default "hybrid" method
+
+> [[fixed|done]] --[[Joey]]
