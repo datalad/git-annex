@@ -1,0 +1,30 @@
+Hi everyone,
+
+
+I've had a bad git-annex day and I left some musings on my first use of it. There's a question though at the end if you don't need to read that.
+
+
+today I've spend some time trying to deal with a failing SHA256E backend. Or more precise, I'm patienting a refurbished Athlon board[*] without case and that seems to give a lot of errors. I've put up some shielding at the SDRAM which helped a lot on the checksumming, but now its the network department is having a hard time. 
+
+This is basicly an effort to recover an old 1.5TB USB NTFS disks with bit rot, a failed ext4 and recover collections from other aging USB/desktop disks. There is some new hardware on the way, to restore another (proper) box with some ECC memory. That should fix my problems, I think. I've never dealt with a problem like this before. Before git-annex I would have been using rsync -azc or mostly -azu, but I've never had problems like this before. 
+
+It has me pondering a bit though. To help git-annex i've done manual rsync -azc transfers, with some although a very low success--I wonder if its the lack of casing, lack of ground, or simply the non-ecc that is the cause. But that is not really the question.
+
+rsync does not at first glance have an option to configure the amount of retries, but -azc does try and gives a checksum failure another try before giving up. I had never seen rsync do that before even though I've been using it for a decade. I guess that shows how rare this problem should be, but its still creeping me a bit. I've never had checksummed media file collections, so I really cant be sure about integrity, can I?
+
+The behaviour of the SHA256E backend is a bit hysterical in this environment. Running a full annex fsck always results in some bad files. The bigger the file the harder it is to get a checksum match. I guess if I wanted to continue I should wrap the fsck step in a shell script that can reinject and fsck again and does do not needless re-checks in one run. It should figure it out in the end with a bit of more time.
+
+My other reaction would be to throw more checksums at it, from simple to complex. Something between filesize and sha256. I guess the whole would then have some different modes of retries and behaviours of failure maybe. Or levels of trust in the integrity. Maybe using simpler checksums would make the situation more bearable, since the problem is not disk-related iow. if the file is there and has checked out ok, then the re-fsck itself and bad memory/shielding are the culprits. 
+
+tldr;
+
+git-annex has no retry at all. I have seen it can take a -i <keyfile> somewhere. For robustness, it would be nice if there was a rsync -c mode. It would confirm the object was transferred correctly too. My workflow is to 'annex fsck' at the remote after copying files there. Is it correct to presume that using 'annex move' in my case, would have made the sending repo dropping files even though the remote still has only corrupted copies?
+
+I'm new to git-annex but been wanting something like git annex for a long time. Made some attempts myself, and too pondered how to use venerable GIT but never figured something out. What I'm saying though is I may want to dig around to see what I can do with Haskell. 
+
+I'm thinking a backend with some more checksums, maybe then some option to fsck to request only partial check of the key. Has something like a faster/less-thorough fsck using smaller checksums ever come up? And might this be a way to go at this? What do you think.
+
+
+
+
+[*] Asus M2A7A-AM SE w/ AMD Athlon 64 X2 5200+ Dual Core 2.7 
