@@ -16,6 +16,8 @@ git-annex (5.20150618) UNRELEASED; urgency=medium
     on the git-annex branch, so it works when run in a subdirectory.
     This bug affected git-annex unused, and potentially also transitions
     running code and other things.
+  * Support git's undocumented core.sharedRepository=2 value, which
+    is equivilant to "world".
 
  -- Joey Hess <id@joeyh.name>  Thu, 02 Jul 2015 12:31:14 -0400
 

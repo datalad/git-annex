@@ -19,6 +19,7 @@ getSharedRepository :: Repo -> SharedRepository
 getSharedRepository r =
 	case map toLower $ Git.Config.get "core.sharedrepository" "" r of
 		"1" -> GroupShared
+		"2" -> AllShared
 		"group" -> GroupShared
 		"true" -> GroupShared
 		"all" -> AllShared

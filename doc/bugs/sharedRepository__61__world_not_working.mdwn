@@ -30,3 +30,8 @@ git annex sync
 ### What version of git-annex are you using? On what operating system?
 git-annex 5.20150508
 Linux 4.0.4
+
+> The problem turned out to be sharedRepository=2 which is not documented,
+> so git-annex didn't support it, and left the incoming file permissions
+> as-is. I've added support for this magic value, so it will work the same
+> as "world" now. [[done]] --[[Joey]]
