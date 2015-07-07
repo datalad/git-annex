@@ -194,10 +194,10 @@ mergeLocal (Just branch) = go =<< needmerge
 	syncbranch = syncBranch branch
 	needmerge = ifM isBareRepo
 		( return False
-		, do
-			unlessM (inRepo $ Git.Ref.exists syncbranch) $
-				inRepo $ updateBranch syncbranch
-			inRepo $ Git.Branch.changed branch syncbranch
+		, ifM (inRepo $ Git.Ref.exists syncbranch)
+			( inRepo $ Git.Branch.changed branch syncbranch
+			, return False
+			)
 		)
 	go False = stop
 	go True = do
@@ -254,7 +254,8 @@ mergeRemote remote b = ifM isBareRepo
 		Nothing -> do
 			branch <- inRepo Git.Branch.currentUnsafe
 			and <$> mapM (merge Nothing) (branchlist branch)
-		Just thisbranch ->
+		Just thisbranch -> do
+			inRepo $ updateBranch $ syncBranch thisbranch
 			and <$> (mapM (merge (Just thisbranch)) =<< tomerge (branchlist b))
 	)
   where

@@ -22,6 +22,7 @@ git-annex (5.20150618) UNRELEASED; urgency=medium
   * On linux, pass --as-needed to linker to avoid linking with unused
     shared libraries including libyaml.
   * import: Fix failure of cross-device import on Windows.
+  * merge: Avoid creating the synced/master branch.
 
  -- Joey Hess <id@joeyh.name>  Thu, 02 Jul 2015 12:31:14 -0400
 
