@@ -133,6 +133,11 @@ Executable git-annex
   -- Some things don't work with the non-threaded RTS.
   GHC-Options: -threaded
 
+  -- Avoid linking with unused dynamic libaries.
+  -- (Only tested on Linux).
+  if os(Linux)
+    GHC-Options: -optl-Wl,--as-needed
+
   if flag(network-uri)
     Build-Depends: network-uri (>= 2.6), network (>= 2.6)
   else

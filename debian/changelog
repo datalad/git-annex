@@ -18,6 +18,8 @@ git-annex (5.20150618) UNRELEASED; urgency=medium
     running code and other things.
   * Support git's undocumented core.sharedRepository=2 value, which
     is equivilant to "world".
+  * On linux, pass --as-needed to linker to avoid linking with unused
+    shared libraries including libyaml.
 
  -- Joey Hess <id@joeyh.name>  Thu, 02 Jul 2015 12:31:14 -0400
 
