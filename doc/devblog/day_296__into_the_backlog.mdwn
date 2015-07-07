@@ -1,0 +1,16 @@
+Mostly spent today getting to older messages in the backlog. This did
+result in a few fixes, but with 97 old messages left, I can feel the
+diminishing returns setting in, to try to understand old bug reports that
+are often unclear or lacking necessary info to reproduce them.
+
+By the way, if you feel your bug report or question has gotten lost in my
+backlog, the best thing to do is post an update to it, and help me
+reproduce it, or clarify it.
+
+Moved on to looking through [[todo]], which was a more productive
+way to find useful things to work on. 
+
+Best change made today is that `git annex unused` can now be configured to
+look at the reflog. So, old versions of files are considered still used
+until the reflog expires. If you've wanted a way to only delete (or move
+away) unused files after they get to a certian age, this is a way to do that ...
