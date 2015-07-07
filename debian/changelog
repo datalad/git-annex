@@ -23,6 +23,8 @@ git-annex (5.20150618) UNRELEASED; urgency=medium
     shared libraries including libyaml.
   * import: Fix failure of cross-device import on Windows.
   * merge: Avoid creating the synced/master branch.
+  * add: Stage symlinks the same as git add would, even if they are not a
+    link to annexed content.
 
  -- Joey Hess <id@joeyh.name>  Thu, 02 Jul 2015 12:31:14 -0400
 

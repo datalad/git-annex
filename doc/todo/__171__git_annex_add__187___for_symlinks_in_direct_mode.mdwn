@@ -6,3 +6,5 @@ Is there already a good way of adding symlinks in direct mode? If not, I would f
 
 Best regards,
 T.
+
+> [[fixed|done]] --[[Joey]]

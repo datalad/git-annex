@@ -18,6 +18,9 @@ If annex.largefiles is configured, and does not match a file that is being
 added, `git annex add` will behave the same as `git add` and add the
 non-large file directly to the git repository, instead of to the annex.
 
+This command can also be used to add symbolic links, both symlinks to
+annexed content, and other symlinks.
+
 # OPTIONS
 
 * `--include-dotfiles`

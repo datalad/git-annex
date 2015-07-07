@@ -66,10 +66,13 @@ startSmall :: FilePath -> CommandStart
 startSmall file = do
 	showStart "add" file
 	showNote "non-large file; adding content to git repository"
-	next $ do
-		params <- forceParams
-		Annex.Queue.addCommand "add" (params++[Param "--"]) [file]
-		next $ return True
+	next $ performAdd file
+
+performAdd :: FilePath -> CommandPerform
+performAdd file = do
+	params <- forceParams
+	Annex.Queue.addCommand "add" (params++[Param "--"]) [file]
+	next $ return True
 
 {- The add subcommand annexes a file, generating a key for it using a
  - backend, and then moving it into the annex directory and setting up
@@ -81,11 +84,13 @@ start file = ifAnnexed file addpresent add
 		ms <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus file
 		case ms of
 			Nothing -> stop
-			Just s
-				| isSymbolicLink s || not (isRegularFile s) -> stop
+			Just s 
+				| not (isRegularFile s) && not (isSymbolicLink s) -> stop
 				| otherwise -> do
 					showStart "add" file
-					next $ perform file
+					next $ if isSymbolicLink s
+						then performAdd file
+						else perform file
 	addpresent key = ifM isDirect
 		( do
 			ms <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus file
