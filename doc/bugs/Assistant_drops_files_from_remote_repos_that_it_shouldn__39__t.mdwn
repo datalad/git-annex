@@ -35,3 +35,5 @@ I guess that rule 'present' works in local repo context while 'drop' acts on rem
 ### What version of git-annex are you using? On what operating system?
 
 I'm using latest version in Debian Jessie (5.20141024) on amd64 and armhf. I've also reproduced the bug with manually compiled 5.20141105-g8d8b248 on amd64.
+
+[[!tag moreinfo]]
