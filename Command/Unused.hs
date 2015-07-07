@@ -244,7 +244,7 @@ withKeysReferencedInGit refspec a = do
 		_ -> nubRefs refs
 
 {- Runs an action on keys referenced in the given Git reference which
- - differ from those referenced in the index. -}
+ - differ from those referenced in the work tree. -}
 withKeysReferencedInGitRef :: (Key -> Annex ()) -> Git.Ref -> Annex ()
 withKeysReferencedInGitRef a ref = do
 	showAction $ "checking " ++ Git.Ref.describe ref
