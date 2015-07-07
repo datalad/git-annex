@@ -31,13 +31,14 @@ mkKey = fromMaybe (error "bad key") . file2key
 
 perform :: FilePath -> Key -> CommandPerform
 perform file key = do
-	-- the file might be on a different filesystem, so mv is used
+	-- the file might be on a different filesystem, so moveFile is used
 	-- rather than simply calling moveAnnex; disk space is also
 	-- checked this way.
 	ok <- getViaTmp key $ \dest ->
 		if dest /= file
-			then liftIO $
-				boolSystem "mv" [File file, File dest]
+			then liftIO $ catchBoolIO $ do
+				moveFile file dest
+				return True
 		else return True
 	if ok
 		then next $ cleanup key

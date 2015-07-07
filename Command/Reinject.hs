@@ -50,11 +50,13 @@ perform src dest key = do
 				)
   where
 	-- the file might be on a different filesystem,
-	-- so mv is used rather than simply calling
+	-- so moveFile is used rather than simply calling
 	-- moveToObjectDir; disk space is also
 	-- checked this way.
 	move = getViaTmp key $ \tmp ->
-		liftIO $ boolSystem "mv" [File src, File tmp]
+		liftIO $ catchBoolIO $ do
+			moveFile src tmp
+			return True
 	reject = const $ return "wrong file?"
 
 cleanup :: Key -> CommandCleanup
