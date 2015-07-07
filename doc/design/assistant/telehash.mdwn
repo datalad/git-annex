@@ -1,7 +1,8 @@
 [Telehash](http://telehash.org/) for secure P2P communication between
 git-annex (assistant) repositories.
 
-Or something similar like [Snow](http://www.trustiosity.com/snow/).
+Or something similar like [Snow](http://www.trustiosity.com/snow/)
+or [cjdns](https://github.com/cjdelisle/cjdns) or tor or i2p.
 
 ## telehash implementation status
 
@@ -28,6 +29,26 @@ Or something similar like [Snow](http://www.trustiosity.com/snow/).
   and the reliabilty of that network is not known. I notice it has only 1
   pre-seeded peer in the source tree for the DHT, and that peer was not up
   when I tried it.
+
+## cjdns status
+
+* Has a network with "hundreds of active nodes"
+* Is not pure P2P; there's a network that does routing
+  of packets. This may be a good thing, or not.
+* Seems to require manual configuration of a "friend"
+  node that's already on the network, with address and password to connect
+  to it, so if you can't find someone you know to connect to their node,
+  you can't use it. Urk.
+
+## tor status
+
+* Awesome.
+* Easy to install, use; very well known.
+* There's been some [haskell packages developed recently](http://www.leonmergen.com/haskell/privacy/2015/05/30/on-anonymous-networking-in-haskell-announcing-tor-and-i2p-for-haskell.html) 
+  to communicate with tor and set up onion addresses for a service.
+  Could be used to make git-annex run as a hidden service.
+
+## i2p status
 
 ## implementation basics
 
