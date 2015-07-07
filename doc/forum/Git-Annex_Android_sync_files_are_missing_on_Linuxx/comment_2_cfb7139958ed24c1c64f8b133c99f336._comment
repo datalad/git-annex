@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-07-07T18:56:51Z"
+ content="""
+Sounds like the Android repository is not uploading the file contents to
+someplace where the Linux repository can download them from. So the first
+step is to look at what remotes the Android repository is configured to
+use, and see if it's successfully sending files to those. And then check if
+the Linux repository is able to get files from those same remotes.
+"""]]
