@@ -1,6 +1,8 @@
 [Telehash](http://telehash.org/) for secure P2P communication between
 git-annex (assistant) repositories.
 
+Or something similar like [Snow](http://www.trustiosity.com/snow/).
+
 ## telehash implementation status
 
 * node.js version seems almost complete
@@ -8,19 +10,35 @@ git-annex (assistant) repositories.
 * No pure haskell implementation of telehash v2. There was one of
   telehash v1 (even that seems incomplete). I have pinged its author
   to see if he anticipates updating it.
-* Rapid development, situation may change in a month or 2.
+* Rapid development, situation may change in a month or 2. (2014)  
+  Not seeing many commits now (2015)
 * Is it secure? A security review should be done by competant people
   (not Joey). See <https://github.com/telehash/telehash.org/issues/23>
 * **Haskell version** 
   <https://github.com/alanz/htelehash/tree/v2/src/TeleHash>
-  Development on v2 in haskell is just starting up!
+  May support v2; v3 support seems not started yet, and not in active
+  development at the moment, although there has been work on it a year ago.
+* Not very convinced this is going to be usable anytime soon, so would like
+  to find something that is. (2015)
+
+## snow status
+
+* Seems ready to use?
+* NAT punching works per docs; relies on a DHT network for hole punching,
+  and the reliabilty of that network is not known. I notice it has only 1
+  pre-seeded peer in the source tree for the DHT, and that peer was not up
+  when I tried it.
 
 ## implementation basics
 
 * Add a telehash.log that maps between uuid and telehash address.
+  Or let's generalize it a bit; since things like snow work close enough
+  to the same. Make it address.log and map between uuid and (networktype, address)
 * On startup, assistant creates a new telehash keypair if not already
   present; stores this locally and generates a telehash address from it,
-  stored in telehash.log.
+  stored in address.log.
+  (Or, if using snow, uses dns to look up the encryption public key address
+  of the local snow server, and stores that in address.log.)
 * Use telehash for notifications of changes to the repository
 * Do git push over telehash. (Pretty easy, may need rate limiting in
   situations involving relays.)
@@ -28,17 +46,19 @@ git-annex (assistant) repositories.
   XMPP being an unreliable transport, requiring a separate XMPP account per
   repo, and XMPP not being end-to-end encrypted)
 
-## telehash address discovery
+## address discovery
+
+The address is a public key, so won't want to type that in. Need discovery.
 
 * Easy way is any set of repos that are already connected can communicate
-  them via telehash.log.
-* Local pairing can be used for telehash address discovery. Could be made
+  them via address.log.
+* Local pairing can be used for address discovery. Could be made
   to work without ssh (with content transfer over telehash discussed
   below).
-* XMPP pairing can also be used for telehash address discovery. (Note that
+* XMPP pairing can also be used for address discovery. (Note that
   MITM attacks are possible.) Is it worth keeping XMPP in git-annex just
   for this?
-* Telehash addresses of repositories can be communicated out of band (eg,
+* Addresses of repositories can be communicated out of band (eg,
   via an OTR session or gpg signed mail), and pasted into the webapp to
   initiate a repository pairing that then proceeds entirely over telehash.
   Once both sides do this, the pairing can proceed automatically.
@@ -46,16 +66,18 @@ git-annex (assistant) repositories.
 ## content transfer over telehash
 
 * In some circumstances, it would be ok to do annexed content transfer
-  over telehash.  
+  over telehash. 
   Need to check if there are MTU problems with large data bodies in
   telehash messages.  
   Probably not when a bridge is being used, due to required rate
   limiting in bridging over telehash. Cloud transfer remotes still needed for
-  those situations.
+  those situations.  
+  (And it should be fine to do it over snow, maybe more so.)  
 * On a LAN, telehash can be used to determine the current local IP address
   of another computer on the LAN. The 2 could then determine if either uses
   ssh and if so use regular git-annex-shell for transfers. Or could do
-  annexed content transfer directly over telehash.
+  annexed content transfer directly over telehash.  
+  (Snow does not provide this feature AFAIK.)
 
 ## generic git-remote-telehash
 
@@ -66,7 +88,7 @@ encryption.
 
 ## separate daemon?
 
-See [[git-remote-daemon]] for a design.
+See [[git-remote-daemon]] for its design.
 
 Advantages:
 
