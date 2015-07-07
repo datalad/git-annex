@@ -14,3 +14,5 @@ As just discussed on IRC (#vcs-home/OFTC), this could be implemented in various 
 
 
 Thanks for git-annex!
+
+> [[done]]; use new git feature instead. --[[Joey]]
