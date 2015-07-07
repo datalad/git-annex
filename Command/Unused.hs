@@ -21,6 +21,7 @@ import qualified Git
 import qualified Git.Command
 import qualified Git.Ref
 import qualified Git.Branch
+import qualified Git.RefLog
 import qualified Git.LsFiles as LsFiles
 import qualified Git.DiffTree as DiffTree
 import qualified Backend
@@ -216,8 +217,9 @@ withKeysReferencedInGit :: RefSpec -> (Key -> Annex ()) -> Annex ()
 withKeysReferencedInGit refspec a = do
 	current <- inRepo Git.Branch.currentUnsafe
 	shaHead <- maybe (return Nothing) (inRepo . Git.Ref.sha) current
-	usedrefs <- applyRefSpec refspec . relevantrefs (shaHead, current)
+	rs <- relevantrefs (shaHead, current)
 		<$> inRepo (Git.Command.pipeReadStrict [Param "show-ref"])
+	usedrefs <- applyRefSpec refspec rs (inRepo Git.RefLog.getAll)
 	forM_ usedrefs $
 		withKeysReferencedInGitRef a
   where

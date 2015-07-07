@@ -60,6 +60,11 @@ and walking the list in order from left to right.
   For example, "+HEAD^" adds "HEAD^".
 * Each - is matched against the set of refs accumulated so far.
   Any matching refs are removed from the set.
+* "reflog" adds all the refs from the reflog. This will make past versions
+  of files not be considered to be unused until the ref expires from the
+  reflog (by default for 90 days). Note that this may make git-annex unused
+  take some time to complete, it if needs to check every ref from the
+  reflog.
 
 # SEE ALSO
 

@@ -27,6 +27,10 @@ git-annex (5.20150618) UNRELEASED; urgency=medium
     link to annexed content.
   * sync: When annex.autocommit=false, avoid making any commit of local
     changes, while still merging with remote to the extent possible.
+  * unused: --used-refspec can now be configured to look at refs in the
+    reflog. This provides a way to not consider old versions of files to be
+    unused after they have reached a specified age, when the old refs in
+    the reflog expire.
 
  -- Joey Hess <id@joeyh.name>  Thu, 02 Jul 2015 12:31:14 -0400
 

@@ -15,7 +15,11 @@ import Data.Either
 
 type RefSpec = [RefSpecPart]
 
-data RefSpecPart = AddRef Ref | AddMatching Glob | RemoveMatching Glob
+data RefSpecPart
+	= AddRef Ref
+	| AddMatching Glob
+	| AddRefLog
+	| RemoveMatching Glob
 
 allRefSpec :: RefSpec
 allRefSpec = [AddMatching $ compileGlob "*" CaseSensative]
@@ -30,15 +34,19 @@ parseRefSpec v = case partitionEithers (map mk $ split ":" v) of
 			Right $ AddMatching $ compileGlob s CaseSensative
 		| otherwise = Right $ AddRef $ Ref s
 	mk ('-':s) = Right $ RemoveMatching $ compileGlob s CaseSensative
+	mk "reflog" = Right AddRefLog
 	mk s = Left $ "bad refspec item \"" ++ s ++ "\" (expected + or - prefix)"
 
-applyRefSpec :: RefSpec -> [Ref] -> [Ref]
-applyRefSpec refspec rs = go [] refspec
+applyRefSpec :: Monad m => RefSpec -> [Ref] -> m [Sha] -> m [Ref]
+applyRefSpec refspec rs getreflog = go [] refspec
   where
-	go c [] = reverse c
+	go c [] = return (reverse c)
 	go c (AddRef r : rest) = go (r:c) rest
 	go c (AddMatching g : rest) =
 		let add = filter (matchGlob g . fromRef) rs
 		in go (add ++ c) rest
+	go c (AddRefLog : rest) = do
+		reflog <- getreflog
+		go (reflog ++ c) rest
 	go c (RemoveMatching g : rest) = 
 		go (filter (not . matchGlob g . fromRef) c) rest

@@ -11,3 +11,7 @@ I would like to not drop all unused files.
 > However, I think that many users expect git annex unused to be able to
 > immediately find and remove a file after it's been deleted. So this
 > probably needs to be a configurable behavior. --[[Joey]]
+
+>> Implemented this,  `git annex unused --used-refspec=+refs/heads/*:reflog`
+>> will consider all head refs as used (the default), plus consider all
+>> refs in the reflog as used. [[done]] --[[Joey]]
