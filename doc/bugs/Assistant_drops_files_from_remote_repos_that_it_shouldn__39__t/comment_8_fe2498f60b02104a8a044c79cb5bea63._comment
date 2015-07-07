@@ -1,0 +1,66 @@
+[[!comment format=mdwn
+ username="etesial@f4797a6d725e971a2d41f3cbcf174991da178c29"
+ nickname="etesial"
+ subject="comment 8"
+ date="2015-07-07T14:45:32Z"
+ content="""
+Hi Joey, I've failed to reproduce it now on Debian's 5.20141105-g8d8b248 and have already deleted dirs from previous setup. Maybe I'll try again later if I get some ideas what to tune.
+
+This time I've written a script to setup repos for better reproducibility and while result is negative, I think it'll still may be useful to post it here:
+
+    #!/bin/bash
+
+    set -x
+    set -e
+
+    DIRS=(\"/home/butler/annex_test/data\"
+	\"/home/butler/annex_test/data\"
+	\"/home/butler/annex_test/data\")
+
+    NAMES=(\"antiferno\" \"axe\" \"deadbird\")
+
+    URIS=(\"ssh://antiferno//${DIRS[0]}\"
+	\"ssh://axe//${DIRS[1]}\"
+	\"ssh://deadbird//${DIRS[2]}\")
+
+    MODES=(\"manual\" \"backup\" \"manual\")
+
+
+    function init {
+	git init \"$1\"
+    }
+
+    function git_add_remote {
+	git --git-dir=\"$1/.git\" --work-tree=\"$1\" remote add \"$2\" \"$3\"
+    }
+
+    function annex_init {
+	git --git-dir=\"$1/.git\" --work-tree=\"$1\" annex init \"annex at $2\"
+    }
+
+    function annex_set_mode {
+	git --git-dir=\"$1/.git\" --work-tree=\"$1\" annex wanted . standard
+	git --git-dir=\"$1/.git\" --work-tree=\"$1\" annex group . \"$2\"
+    }
+
+    function add_initial_file {
+	path=\"$1/file_$2\"
+	echo \"File from $2\" >\"$path\"
+	git --git-dir=\"$1/.git\" --work-tree=\"$1\" annex add \"$path\"
+	git --git-dir=\"$1/.git\" --work-tree=\"$1\" commit -m \"First file on $2\"
+    }
+
+    function setup {
+	init \"${DIRS[$1]}\"
+	annex_init \"${DIRS[$1]}\" \"${NAMES[$1]}\"
+	git_add_remote \"${DIRS[$1]}\" \"${NAMES[$2]}\" \"${URIS[$2]}\"
+	git_add_remote \"${DIRS[$1]}\" \"${NAMES[$3]}\" \"${URIS[$3]}\"
+	annex_set_mode \"${DIRS[$1]}\" \"${MODES[$1]}\"
+	add_initial_file \"${DIRS[$1]}\" \"${NAMES[$1]}\"
+    }
+
+    if [ \"$1\" == \"${NAMES[0]}\" ]; then setup 0 1 2; fi
+    if [ \"$1\" == \"${NAMES[1]}\" ]; then setup 1 2 0; fi
+    if [ \"$1\" == \"${NAMES[2]}\" ]; then setup 2 0 1; fi
+
+"""]]
