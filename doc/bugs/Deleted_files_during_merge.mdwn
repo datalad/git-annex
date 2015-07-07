@@ -2128,3 +2128,11 @@ rsync error: unexplained error (code 255) at io.c(226) [sender=3.1.1]
 
 # End of transcript or log.
 """]]
+
+> This seems very like the problem described in
+> [[git_annex_still_deleting_content_when_merging]]. Without a way to
+> reproduce it, I can't tell for sure, but the circumstances of both seem
+> the same. I'm going to close this as a duplicate, and have updated the
+> other bug report to point to it as more evidence of the bug. [[done]]
+
+[[!meta title="Assistant deleted modified file during merge"]]

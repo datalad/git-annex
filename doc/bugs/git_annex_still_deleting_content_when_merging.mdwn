@@ -86,3 +86,12 @@ From ssh://git-annex-asus.local-USER-A_22_sincro/~/sincro
 
 # End of transcript or log.
 """]]
+
+> [[Deleted_files_during_merge]] seems like much the same problem.
+> In both that bug report and this one, the file that gets deleted on B was
+> earlier modifed on A. There is a small difference, in that in this bug
+> report, A made 2 commits, first deleting the file and then adding back a
+> new version. In the other bug report, A made just 1 commit, changing the
+> file. --[[Joey]]
+
+[[!meta title="Assistant deleted file when merging"]]
