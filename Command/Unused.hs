@@ -219,7 +219,7 @@ withKeysReferencedInGit refspec a = do
 	shaHead <- maybe (return Nothing) (inRepo . Git.Ref.sha) current
 	rs <- relevantrefs (shaHead, current)
 		<$> inRepo (Git.Command.pipeReadStrict [Param "show-ref"])
-	usedrefs <- applyRefSpec refspec rs (inRepo Git.RefLog.getAll)
+	usedrefs <- applyRefSpec refspec rs (getreflog rs)
 	forM_ usedrefs $
 		withKeysReferencedInGitRef a
   where
@@ -242,6 +242,7 @@ withKeysReferencedInGit refspec a = do
 				Git.Ref.headRef
 				: nubRefs (filter ((/= x) . fst) refs)
 		_ -> nubRefs refs
+	getreflog rs = inRepo $ Git.RefLog.getMulti rs
 
 {- Runs an action on keys referenced in the given Git reference which
  - differ from those referenced in the work tree. -}

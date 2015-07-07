@@ -210,7 +210,7 @@ getHistorical :: RefDate -> FilePath -> Annex String
 getHistorical date file =
 	-- This check avoids some ugly error messages when the reflog
 	-- is empty.
-	ifM (null <$> inRepo (Git.RefLog.get' [Param "-n1"] (Just fullname)))
+	ifM (null <$> inRepo (Git.RefLog.get' [Param (fromRef fullname), Param "-n1"]))
 		( error ("No reflog for " ++ fromRef fullname)
 		, getRef (Git.Ref.dateRef fullname date) file
 		)
