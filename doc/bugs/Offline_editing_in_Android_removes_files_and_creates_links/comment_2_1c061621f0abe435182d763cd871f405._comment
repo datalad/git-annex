@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-07-07T19:26:27Z"
+ content="""
+These links are what is put in place if the content of a file has not yet
+reached the local repository. On a more featureful system than Android,
+it's a broken symlink, which is nicer than a link target.
+
+So, unless the content has reached the local repository, this is normal.
+
+There's a feature request somewhere, which I am having trouble finding,
+that only files whose content is present be shown. I'm inclined to merge
+this bug with that.
+"""]]
