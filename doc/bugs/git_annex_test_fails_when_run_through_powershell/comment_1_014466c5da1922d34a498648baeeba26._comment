@@ -3,15 +3,7 @@
  subject="""comment 1"""
  date="2015-07-07T17:23:51Z"
  content="""
-Is the "mv" error message part of the output around the failing addurl
-test, or the failing import test? Not clear from your paste.
-
 The "cannot move" message is not an error message from an external "mv"
 command. This error comes from Win32.moveFileEx, which fails on cross-device
 renames.
-
-Of course, import is supposed to work across devices, and the code
-calls `moveFile`, which is supposed to catch rename errors and fall
-back to an external mv command. Seems that fallback is not working on
-Windows.
 """]]
