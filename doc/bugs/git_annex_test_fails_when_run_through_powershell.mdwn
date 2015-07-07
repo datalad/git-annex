@@ -1,0 +1,28 @@
+### Please describe the problem.
+
+When running "git annex test" in a Powershell window, two tests fail (listed in additional details). I am assuming it is because it is using powershell internal commands instead of msys utilities, at least in the case of the "mv" failure. Specifying "mv.exe" instead of just "mv" on Windows should work.
+
+### What steps will reproduce the problem?
+
+Run "git annex test" from the powershell prompt. Two tests fail. All tests pass when run through cmd.
+
+### What version of git-annex are you using? On what operating system?
+
+Windows 7 Enterprise SP1
+Powershell version 4.0
+git version 1.9.5.msysgit.1
+git annex I *think* is 5.20150617, but I don't know for sure.
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+addurl failed on file:///ws/wcs-project-new/.t/tmprepo5/myurl
+
+"mv": cannot move `C:\\Users\\duffrw\\LOCALS~1\\Temp\\importtest.0\\import1\\f' to `import1\\f12956.tmp'
+git-annex: MoveFileEx "C:\\Users\\duffrw\\LOCALS~1\\Temp\\importtest.0\\import1\\f" "import1\\f": unsupported operation (The system cannot move the file to a different disk drive.)
+
+# End of transcript or log.
+"""]]
