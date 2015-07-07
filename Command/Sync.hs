@@ -151,24 +151,29 @@ syncRemotes rs = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
 	fastest = fromMaybe [] . headMaybe . Remote.byCost
 
 commit :: CommandStart
-commit = next $ next $ do
-	commitmessage <- maybe commitMsg return
-		=<< Annex.getField (optionName messageOption)
-	showStart "commit" ""
-	Annex.Branch.commit "update"
-	ifM isDirect
-		( do
-			void stageDirect
-			void preCommitDirect
-			commitStaged Git.Branch.ManualCommit commitmessage
-		, do
-			inRepo $ Git.Branch.commitQuiet Git.Branch.ManualCommit
-				[ Param "-a"
-				, Param "-m"
-				, Param commitmessage
-				]
-			return True
-		)
+commit = ifM (annexAutoCommit <$> Annex.getGitConfig)
+	( go
+	, stop
+	)
+  where
+	go = next $ next $ do
+		commitmessage <- maybe commitMsg return
+			=<< Annex.getField (optionName messageOption)
+		showStart "commit" ""
+		Annex.Branch.commit "update"
+		ifM isDirect
+			( do
+				void stageDirect
+				void preCommitDirect
+				commitStaged Git.Branch.ManualCommit commitmessage
+			, do
+				inRepo $ Git.Branch.commitQuiet Git.Branch.ManualCommit
+					[ Param "-a"
+					, Param "-m"
+					, Param commitmessage
+					]
+				return True
+			)
 
 commitMsg :: Annex String
 commitMsg = do

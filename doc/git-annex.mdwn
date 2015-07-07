@@ -929,8 +929,8 @@ Here are all the supported configuration settings.
 
 * `annex.autocommit`
 
-  Set to false to prevent the git-annex assistant from automatically
-  committing changes to files in the repository.
+  Set to false to prevent the git-annex assistant and git-annex sync
+  from automatically committing changes to files in the repository.
 
 * `annex.startupscan`
 

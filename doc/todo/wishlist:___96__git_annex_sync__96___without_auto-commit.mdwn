@@ -3,3 +3,6 @@ I would like to have way, ideally a per-repo-cloud setting which syncs around au
 I often have quite complex additions with a mix of `git add` and `git annex add` in various stages of completion; running `git annex sync` regularly to see what state the other repos are in should not autocommit if possible.
 
 Richard
+
+> [[done]]; extended the annex.autocommit that previously only controlled the
+> assistant to also control `git annex sync`. --[[Joey]]
