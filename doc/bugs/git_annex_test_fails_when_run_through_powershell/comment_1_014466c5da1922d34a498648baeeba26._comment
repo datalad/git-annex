@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-07-07T17:23:51Z"
+ content="""
+Could you paste more of the output, in particular you only pasted where it
+says that the addurl test failed, but didn't show any error message there
+might have been for that test.
+
+The "cannot move" message is not an error message from an external "mv"
+command. This error comes from Win32.moveFileEx, which fails on cross-device
+renames.
+
+Of course, import is supposed to work across devices, and the code
+calls `moveFile`, which is supposed to catch rename errors and fall
+back to an external mv command. Seems that fallback is not working on
+Windows.
+"""]]
