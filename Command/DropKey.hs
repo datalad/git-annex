@@ -14,9 +14,11 @@ import Logs.Location
 import Annex.Content
 
 cmd :: Command
-cmd = noCommit $ command "dropkey" (paramRepeating paramKey)
-	SectionPlumbing "drops annexed content for specified keys"
-	(commandParser seek)
+cmd = noCommit $ 
+	command "dropkey" SectionPlumbing
+		"drops annexed content for specified keys"
+		(paramRepeating paramKey)
+		(withParams seek)
 
 seek :: CmdParams -> CommandSeek
 seek = withKeys start

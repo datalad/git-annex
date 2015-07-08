@@ -15,10 +15,12 @@ import qualified Remote
 
 cmd :: Command
 cmd = notBareRepo $
-	command "rmurl" (paramPair paramFile paramUrl) seek
-		SectionCommon "record file is not available at url"
+	command "rmurl" SectionCommon 
+		"record file is not available at url"
+		(paramPair paramFile paramUrl)
+		(withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withPairs start
 
 start :: (FilePath, String) -> CommandStart

@@ -18,8 +18,9 @@ import Data.Time.Clock.POSIX
 
 cmd :: Command
 cmd = withOptions metaDataOptions $
-	command "metadata" paramPaths seek
-	SectionMetaData "sets or gets metadata of a file"
+	command "metadata"
+		SectionMetaData "sets or gets metadata of a file"
+		paramPaths (withParams seek)	
 
 metaDataOptions :: [Option]
 metaDataOptions =
@@ -52,7 +53,7 @@ untagOption = Option ['u'] ["untag"] (ReqArg mkmod "TAG") "remove a tag"
   where
 	mkmod = storeModMeta . AddMeta tagMetaField . mkMetaValue (CurrentlySet False)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = do
 	modmeta <- Annex.getState Annex.modmeta
 	getfield <- getOptionField getOption $ \ms ->

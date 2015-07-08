@@ -21,9 +21,9 @@ import qualified Types.Backend
 import qualified Backend
 
 cmd :: Command
-cmd = noCommit $ command "recvkey" paramKey
-	SectionPlumbing "runs rsync in server mode to receive content"
-	(commandParser seek)
+cmd = noCommit $ command "recvkey" SectionPlumbing 
+	"runs rsync in server mode to receive content"
+	paramKey (withParams seek)
 
 seek :: CmdParams -> CommandSeek
 seek = withKeys start

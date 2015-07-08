@@ -12,10 +12,11 @@ import qualified Command.Find as Find
 
 cmd :: Command
 cmd = withOptions nonWorkTreeMatchingOptions $ Find.mkCommand $ 
-	command "findref" paramRef seek SectionPlumbing
+	command "findref" SectionPlumbing
 		"lists files in a git ref"
+		paramRef (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek refs = do
 	format <- Find.getFormat
 	Find.start format `withFilesInRefs` refs

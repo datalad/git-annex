@@ -53,8 +53,9 @@ import qualified Data.Map as M
 
 cmd :: Command
 cmd = withOptions syncOptions $
-	command "sync" (paramRepeating paramRemote)
-	seek SectionCommon "synchronize local repository with remotes"
+	command "sync" SectionCommon 
+		"synchronize local repository with remotes"
+		(paramRepeating paramRemote) (withParams seek)
 
 syncOptions :: [Option]
 syncOptions =
@@ -69,7 +70,7 @@ contentOption = flagOption [] "content" "also transfer file contents"
 messageOption :: Option
 messageOption = fieldOption ['m'] "message" "MSG" "specify commit message"
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek rs = do
 	prepMerge
 

@@ -12,9 +12,11 @@ import Command
 import Annex.Content
 
 cmd :: Command
-cmd = noCommit $ command "inannex" (paramRepeating paramKey)
-	SectionPlumbing "checks if keys are present in the annex"
-	(commandParser seek)
+cmd = noCommit $ 
+	command "inannex" SectionPlumbing 
+		"checks if keys are present in the annex"
+		(paramRepeating paramKey)
+		(withParams seek)
 
 seek :: CmdParams -> CommandSeek
 seek = withKeys start

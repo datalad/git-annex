@@ -16,9 +16,10 @@ import qualified Git.Config
 import Remote.GCrypt (coreGCryptId)
 
 cmd :: Command
-cmd = noCommit $ command "configlist" paramNothing
-	SectionPlumbing "outputs relevant git configuration"
-	(commandParser seek)
+cmd = noCommit $ 
+	command "configlist" SectionPlumbing 
+		"outputs relevant git configuration"
+		paramNothing (withParams seek)
 
 seek :: CmdParams -> CommandSeek
 seek = withNothing start

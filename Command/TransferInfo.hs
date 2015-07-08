@@ -16,9 +16,10 @@ import qualified CmdLine.GitAnnexShell.Fields as Fields
 import Utility.Metered
 
 cmd :: Command
-cmd = noCommit $ command "transferinfo" paramKey SectionPlumbing
-	"updates sender on number of bytes of content received"
-	(commandParser seek)
+cmd = noCommit $ 
+	command "transferinfo" SectionPlumbing
+		"updates sender on number of bytes of content received"
+		paramKey (withParams seek)
 
 seek :: CmdParams -> CommandSeek
 seek = withWords start

@@ -18,9 +18,11 @@ import Annex.Version
 
 cmd :: Command
 cmd = noCommit $ dontCheck repoExists $
-	command "repair" paramNothing seek SectionMaintenance "recover broken git repository"
+	command "repair" SectionMaintenance 
+		"recover broken git repository"
+		paramNothing (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withNothing start
 
 start :: CommandStart

@@ -21,8 +21,9 @@ import System.Environment
 
 cmd :: Command
 cmd = noRepo checkNoRepoOpts $ dontCheck repoExists $ withOptions options $
-	notBareRepo $ command "assistant" paramNothing seek SectionCommon
+	notBareRepo $ command "assistant" SectionCommon
 		"automatically sync changes"
+		paramNothing (withParams seek)
 
 options :: [Option]
 options =
@@ -42,7 +43,7 @@ autoStopOption = flagOption [] "autostop" "stop in known repositories"
 startDelayOption :: Option
 startDelayOption = fieldOption [] "startdelay" paramNumber "delay before running startup scan"
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = do
 	stopdaemon <- getOptionFlag Command.Watch.stopOption
 	foreground <- getOptionFlag Command.Watch.foregroundOption

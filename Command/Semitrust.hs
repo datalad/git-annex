@@ -12,8 +12,9 @@ import Types.TrustLevel
 import Command.Trust (trustCommand)
 
 cmd :: Command
-cmd = command "semitrust" (paramRepeating paramRemote) seek
-	SectionSetup "return repository to default trust level"
+cmd = command "semitrust" SectionSetup 
+	"return repository to default trust level"
+	(paramRepeating paramRemote) (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = trustCommand "semitrust" SemiTrusted

@@ -13,10 +13,11 @@ import Messages
 
 cmd :: Command
 cmd = noRepo startIO $ dontCheck repoExists $
-	command "test" paramNothing seek SectionTesting
+	command "test" SectionTesting
 		"run built-in test suite"
+		paramNothing (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 {- We don't actually run the test suite here because of a dependency loop.

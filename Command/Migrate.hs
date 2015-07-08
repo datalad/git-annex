@@ -20,10 +20,11 @@ import qualified Annex
 
 cmd :: Command
 cmd = notDirect $ withOptions annexedMatchingOptions $
-	command "migrate" paramPaths seek
-		SectionUtility "switch data to different backend"
+	command "migrate" SectionUtility 
+		"switch data to different backend"
+		paramPaths (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withFilesInGit $ whenAnnexed start
 
 start :: FilePath -> Key -> CommandStart

@@ -16,10 +16,11 @@ import Types.Key
 
 cmd :: Command
 cmd = noCommit $ noMessages $ withOptions [formatOption, jsonOption, batchOption] $
-	command "examinekey" (paramRepeating paramKey) seek
-	SectionPlumbing "prints information from a key"
+	command "examinekey" SectionPlumbing 
+		"prints information from a key"
+		(paramRepeating paramKey) (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = do
 	format <- getFormat
 	batchable withKeys (start format) ps

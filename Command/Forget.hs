@@ -16,8 +16,10 @@ import qualified Annex
 import Data.Time.Clock.POSIX
 
 cmd :: Command
-cmd = withOptions forgetOptions $ command "forget" paramNothing seek
-		SectionMaintenance "prune git-annex branch history"
+cmd = withOptions forgetOptions $ 
+	command "forget" SectionMaintenance 
+		"prune git-annex branch history"
+		paramNothing (withParams seek)
 
 forgetOptions :: [Option]
 forgetOptions = [dropDeadOption]
@@ -25,7 +27,7 @@ forgetOptions = [dropDeadOption]
 dropDeadOption :: Option
 dropDeadOption = flagOption [] "drop-dead" "drop references to dead repositories"
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = do
 	dropdead <- getOptionFlag dropDeadOption
 	withNothing (start dropdead) ps

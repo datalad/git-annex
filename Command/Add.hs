@@ -36,8 +36,8 @@ import Control.Exception (IOException)
 
 cmd :: Command
 cmd = notBareRepo $ withOptions addOptions $
-	command "add" paramPaths SectionCommon "add files to annex"
-		(commandParser seek)
+	command "add" SectionCommon "add files to annex"
+		paramPaths (withParams seek)
 
 addOptions :: [Option]
 addOptions = includeDotFilesOption : fileMatchingOptions
@@ -71,8 +71,8 @@ startSmall file = do
 
 performAdd :: FilePath -> CommandPerform
 performAdd file = do
-	params <- forceParams
-	Annex.Queue.addCommand "add" (params++[Param "--"]) [file]
+	ps <- forceParams
+	Annex.Queue.addCommand "add" (ps++[Param "--"]) [file]
 	next $ return True
 
 {- The add subcommand annexes a file, generating a key for it using a
@@ -279,8 +279,8 @@ addLink :: FilePath -> Key -> Maybe InodeCache -> Annex ()
 addLink file key mcache = ifM (coreSymlinks <$> Annex.getGitConfig)
 	( do
 		_ <- link file key mcache
-		params <- forceParams
-		Annex.Queue.addCommand "add" (params++[Param "--"]) [file]
+		ps <- forceParams
+		Annex.Queue.addCommand "add" (ps++[Param "--"]) [file]
 	, do
 		l <- link file key mcache
 		addAnnexLink l file

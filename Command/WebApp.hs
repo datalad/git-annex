@@ -40,13 +40,14 @@ import System.Environment (getArgs)
 cmd :: Command
 cmd = withOptions [listenOption] $
 	noCommit $ noRepo startNoRepo $ dontCheck repoExists $ notBareRepo $
-	command "webapp" paramNothing seek SectionCommon "launch webapp"
+	command "webapp" SectionCommon "launch webapp"
+		paramNothing (withParams seek)
 
 listenOption :: Option
 listenOption = fieldOption [] "listen" paramAddress
 	"accept connections to this address"
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = do
 	listenhost <- getOptionField listenOption return
 	withNothing (start listenhost) ps

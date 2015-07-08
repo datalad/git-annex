@@ -18,14 +18,14 @@ import Remote (keyLocations)
 
 cmd :: Command
 cmd = withOptions [keyOption] $ 
-	command "dead" (paramRepeating paramRemote) seek
-		SectionSetup "hide a lost repository or key"
+	command "dead" SectionSetup "hide a lost repository or key"
+		(paramRepeating paramRemote) (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = maybe (trustCommand "dead" DeadTrusted ps) (flip seekKey ps)
 	=<< Annex.getField "key"
 
-seekKey :: String -> CommandSeek
+seekKey :: String -> CmdParams -> CommandSeek
 seekKey ks = case file2key ks of
 	Nothing -> error "Invalid key"
 	Just key -> withNothing (startKey key)

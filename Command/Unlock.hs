@@ -20,10 +20,10 @@ editcmd :: Command
 editcmd = mkcmd "edit" "same as unlock"
 
 mkcmd :: String -> String -> Command
-mkcmd n = notDirect . withOptions annexedMatchingOptions 
-	. command n paramPaths seek SectionCommon
+mkcmd n d = notDirect $ withOptions annexedMatchingOptions $
+	command n SectionCommon d paramPaths (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withFilesInGit $ whenAnnexed start
 
 {- The unlock subcommand replaces the symlink with a copy of the file's

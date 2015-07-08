@@ -39,8 +39,8 @@ import qualified Utility.Quvi as Quvi
 
 cmd :: Command
 cmd = notBareRepo $ withOptions [fileOption, pathdepthOption, relaxedOption, rawOption] $
-	command "addurl" (paramRepeating paramUrl) seek
-		SectionCommon "add urls to annex"
+	command "addurl" SectionCommon "add urls to annex"
+		(paramRepeating paramUrl) (withParams seek)
 
 fileOption :: Option
 fileOption = fieldOption [] "file" paramFile "specify what file the url is added to"
@@ -54,7 +54,7 @@ relaxedOption = flagOption [] "relaxed" "skip size check"
 rawOption :: Option
 rawOption = flagOption [] "raw" "disable special handling for torrents, quvi, etc"
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek us = do
 	optfile <- getOptionField fileOption return
 	relaxed <- getOptionFlag relaxedOption

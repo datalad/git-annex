@@ -36,9 +36,9 @@ import Annex.BloomFilter
 
 cmd :: Command
 cmd = withOptions [unusedFromOption, refSpecOption] $
-	command "unused" paramNothing
-		SectionMaintenance "look for unused file content"
-		(commandParser seek)
+	command "unused" SectionMaintenance 
+		"look for unused file content"
+		paramNothing (withParams seek)
 
 unusedFromOption :: Option
 unusedFromOption = fieldOption ['f'] "from" paramRemote "remote to check for unused content"
@@ -268,7 +268,7 @@ data UnusedMaps = UnusedMaps
 	, unusedTmpMap :: UnusedMap
 	}
 
-withUnusedMaps :: (UnusedMaps -> Int -> CommandStart) -> CommandSeek
+withUnusedMaps :: (UnusedMaps -> Int -> CommandStart) -> CmdParams -> CommandSeek
 withUnusedMaps a params = do
 	unused <- readUnusedMap ""
 	unusedbad <- readUnusedMap "bad"

@@ -38,13 +38,14 @@ import qualified Data.Map as M
 
 cmd :: Command
 cmd = withOptions [sizeOption] $
-		command "testremote" paramRemote seek SectionTesting
-			"test transfers to/from a remote"
+	command "testremote" SectionTesting
+		"test transfers to/from a remote"
+		paramRemote (withParams seek)
 
 sizeOption :: Option
 sizeOption = fieldOption [] "size" paramSize "base key size (default 1MiB)"
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = do
 	basesz <- fromInteger . fromMaybe (1024 * 1024)
 		<$> getOptionField sizeOption (pure . getsize)

@@ -21,10 +21,11 @@ import Network.URI
 
 cmd :: Command
 cmd = notDirect $ notBareRepo $
-	command "fromkey" (paramPair paramKey paramPath) seek
-		SectionPlumbing "adds a file using a specific key"
+	command "fromkey" SectionPlumbing "adds a file using a specific key"
+		(paramPair paramKey paramPath)
+		(withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = do
 	force <- Annex.getState Annex.force
 	withWords (start force) ps

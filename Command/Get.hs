@@ -17,14 +17,16 @@ import Annex.Wanted
 import qualified Command.Move
 
 cmd :: Command
-cmd = withOptions getOptions $ command "get" paramPaths seek
-	SectionCommon "make content of annexed files available"
+cmd = withOptions getOptions $ 
+	command "get" SectionCommon 
+		"make content of annexed files available"
+		paramPaths (withParams seek)
 
 getOptions :: [Option]
 getOptions = fromOption : autoOption : jobsOption : annexedMatchingOptions
 	++ incompleteOption : keyOptions
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = do
 	from <- getOptionField fromOption Remote.byNameWithUUID
 	auto <- getOptionFlag autoOption

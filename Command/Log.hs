@@ -40,7 +40,8 @@ type Outputter = Bool -> POSIXTime -> [UUID] -> Annex ()
 
 cmd :: Command
 cmd = withOptions options $
-	command "log" paramPaths seek SectionQuery "shows location log"
+	command "log" SectionQuery "shows location log"
+		paramPaths (withParams seek)
 
 options :: [Option]
 options = passthruOptions ++ [gourceOption] ++ annexedMatchingOptions
@@ -56,7 +57,7 @@ passthruOptions = map odate ["since", "after", "until", "before"] ++
 gourceOption :: Option
 gourceOption = flagOption [] "gource" "format output for gource"
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = do
 	m <- Remote.uuidDescriptions
 	zone <- liftIO getCurrentTimeZone

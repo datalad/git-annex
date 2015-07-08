@@ -17,13 +17,15 @@ import Annex.Content
 import Annex.NumCopies
 
 cmd :: Command
-cmd = withOptions mirrorOptions $ command "mirror" paramPaths seek
-	SectionCommon "mirror content of files to/from another repository"
+cmd = withOptions mirrorOptions $ 
+	command "mirror" SectionCommon 
+		"mirror content of files to/from another repository"
+		paramPaths (withParams seek)
 
 mirrorOptions :: [Option]
 mirrorOptions = fromToOptions ++ [jobsOption] ++ annexedMatchingOptions ++ keyOptions
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = do
 	to <- getOptionField toOption Remote.byNameWithUUID
 	from <- getOptionField fromOption Remote.byNameWithUUID

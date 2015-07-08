@@ -15,9 +15,9 @@ import qualified Git
 
 cmd :: Command
 cmd = dontCheck repoExists $ noCommit $
-	command "gcryptsetup" paramValue
-		SectionPlumbing "sets up gcrypt repository"
-		(commandParser seek)
+	command "gcryptsetup" SectionPlumbing 
+		"sets up gcrypt repository"
+		paramValue (withParams seek)
 
 seek :: CmdParams -> CommandSeek
 seek = withStrings start

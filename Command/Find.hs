@@ -21,7 +21,8 @@ import Types.Key
 
 cmd :: Command
 cmd = withOptions annexedMatchingOptions $ mkCommand $
-	command "find" paramPaths seek SectionQuery "lists available files"
+	command "find" SectionQuery "lists available files"
+		paramPaths (withParams seek)
 
 mkCommand :: Command -> Command
 mkCommand = noCommit . noMessages . withOptions [formatOption, print0Option, jsonOption]
@@ -38,7 +39,7 @@ print0Option = Option [] ["print0"] (NoArg set)
   where
 	set = Annex.setField (optionName formatOption) "${file}\0"
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = do
 	format <- getFormat
 	withFilesInGit (whenAnnexed $ start format) ps

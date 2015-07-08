@@ -22,10 +22,10 @@ import Git.Types (RemoteName)
 data TransferRequest = TransferRequest Direction Remote Key AssociatedFile
 
 cmd :: Command
-cmd = command "transferkeys" paramNothing seek
-	SectionPlumbing "transfers keys"
+cmd = command "transferkeys" SectionPlumbing "transfers keys"
+	paramNothing (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withNothing start
 
 start :: CommandStart

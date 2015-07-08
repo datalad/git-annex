@@ -23,9 +23,10 @@ import System.Console.GetOpt
 
 cmd :: Command
 cmd = noCommit $ noRepo startNoRepo $ dontCheck repoExists $
-	command "help" "COMMAND" seek SectionCommon "display help"
+	command "help" SectionCommon "display help"
+		"COMMAND" (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 start :: [String] -> CommandStart
@@ -47,7 +48,7 @@ showCommonOptions = putStrLn $ usageInfo "Common options:" gitAnnexOptions
 showGeneralHelp :: IO ()
 showGeneralHelp = putStrLn $ unlines
 	[ "The most frequently used git-annex commands are:"
-	, unlines $ map cmdline $ concat
+	, unlines $ map cmdline $
 		[ Command.Init.cmd
 		, Command.Add.cmd
 		, Command.Drop.cmd

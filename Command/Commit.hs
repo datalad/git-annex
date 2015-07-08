@@ -13,9 +13,9 @@ import qualified Annex.Branch
 import qualified Git
 
 cmd :: Command
-cmd = command "commit" paramNothing
-	SectionPlumbing "commits any staged changes to the git-annex branch"
-	(commandParser seek)
+cmd = command "commit" SectionPlumbing 
+	"commits any staged changes to the git-annex branch"
+	paramNothing (withParams seek)
 
 seek :: CmdParams -> CommandSeek
 seek = withNothing start

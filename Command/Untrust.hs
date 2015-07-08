@@ -12,8 +12,8 @@ import Types.TrustLevel
 import Command.Trust (trustCommand)
 
 cmd :: Command
-cmd = command "untrust" (paramRepeating paramRemote) seek
-	SectionSetup "do not trust a repository"
+cmd = command "untrust" SectionSetup "do not trust a repository"
+	(paramRepeating paramRemote) (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = trustCommand "untrust" UnTrusted

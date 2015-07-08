@@ -25,13 +25,14 @@ import Git.Types (RemoteName)
 
 cmd :: Command
 cmd = noCommit $ withOptions (allrepos : annexedMatchingOptions) $
-	command "list" paramPaths seek
-		SectionQuery "show which remotes contain files"
+	command "list" SectionQuery 
+		"show which remotes contain files"
+		paramPaths (withParams seek)
 
 allrepos :: Option
 allrepos = flagOption [] "allrepos" "show all repositories, not only remotes"
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = do
 	list <- getList
 	printHeader list

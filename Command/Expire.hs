@@ -21,8 +21,10 @@ import Data.Time.Clock.POSIX
 import qualified Data.Map as M
 
 cmd :: Command
-cmd = withOptions [activityOption, noActOption] $ command "expire" paramExpire seek
-	SectionMaintenance "expire inactive repositories"
+cmd = withOptions [activityOption, noActOption] $ 
+	command "expire" SectionMaintenance
+		"expire inactive repositories"
+		paramExpire (withParams seek)
 
 paramExpire :: String
 paramExpire = (paramRepeating $ paramOptional paramRemote ++ ":" ++ paramTime)
@@ -33,7 +35,7 @@ activityOption = fieldOption [] "activity" "Name" "specify activity"
 noActOption :: Option
 noActOption = flagOption [] "no-act" "don't really do anything"
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = do
 	expire <- parseExpire ps
 	wantact <- getOptionField activityOption (pure . parseActivity)

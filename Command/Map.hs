@@ -27,10 +27,11 @@ data Link = Link Git.Repo Git.Repo
 
 cmd :: Command
 cmd = dontCheck repoExists $
-	command "map" paramNothing seek SectionQuery
+	command "map" SectionQuery
 		"generate map of repositories"
+		paramNothing (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withNothing start
 
 start :: CommandStart

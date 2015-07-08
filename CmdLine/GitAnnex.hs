@@ -16,7 +16,6 @@ import Utility.Env
 import Annex.Ssh
 
 import qualified Command.Add
-{-
 import qualified Command.Unannex
 import qualified Command.Drop
 import qualified Command.Move
@@ -117,12 +116,10 @@ import qualified Command.TestRemote
 #ifdef WITH_EKG
 import System.Remote.Monitoring
 #endif
--}
 
 cmds :: [Command]
 cmds = 
 	[ Command.Add.cmd
-{-
 	, Command.Get.cmd
 	, Command.Drop.cmd
 	, Command.Move.cmd
@@ -221,7 +218,6 @@ cmds =
 	, Command.FuzzTest.cmd
 	, Command.TestRemote.cmd
 #endif
--}
 	]
 
 header :: String

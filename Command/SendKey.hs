@@ -17,9 +17,10 @@ import qualified CmdLine.GitAnnexShell.Fields as Fields
 import Utility.Metered
 
 cmd :: Command
-cmd = noCommit $ command "sendkey" paramKey
-	SectionPlumbing "runs rsync in server mode to send content"
-	(commandParser seek)
+cmd = noCommit $ 
+	command "sendkey" SectionPlumbing 
+		"runs rsync in server mode to send content"
+		paramKey (withParams seek)
 
 seek :: CmdParams -> CommandSeek
 seek = withKeys start

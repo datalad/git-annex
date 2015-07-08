@@ -15,10 +15,11 @@ import Types.Key
 
 cmd :: Command
 cmd = withOptions [batchOption] $ notBareRepo $ noCommit $ noMessages $
-	command "lookupkey" (paramRepeating paramFile) seek
-		SectionPlumbing "looks up key used for file"
+	command "lookupkey" SectionPlumbing 
+		"looks up key used for file"
+		(paramRepeating paramFile) (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = batchable withStrings start
 
 start :: Batchable String

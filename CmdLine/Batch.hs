@@ -20,7 +20,7 @@ type Batchable t = BatchMode -> t -> CommandStart
 -- In batch mode, one line at a time is read, parsed, and a reply output to
 -- stdout. In non batch mode, the command's parameters are parsed and
 -- a reply output for each.
-batchable :: ((t -> CommandStart) -> CommandSeek) -> Batchable t -> CommandSeek
+batchable :: ((t -> CommandStart) -> CmdParams -> CommandSeek) -> Batchable t -> CmdParams -> CommandSeek
 batchable seeker starter params = ifM (getOptionFlag batchOption)
 	( batchloop
 	, seeker (starter NoBatch) params

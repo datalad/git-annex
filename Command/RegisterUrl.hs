@@ -17,10 +17,12 @@ import Command.FromKey (mkKey)
 
 cmd :: Command
 cmd = notDirect $ notBareRepo $
-	command "registerurl" (paramPair paramKey paramUrl) seek
+	command "registerurl"
 		SectionPlumbing "registers an url for a key"
+		(paramPair paramKey paramUrl)
+		(withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 start :: [String] -> CommandStart

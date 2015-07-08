@@ -16,9 +16,10 @@ import qualified Remote
 import Types.Remote
 
 cmd :: Command
-cmd = withOptions transferKeyOptions $
-	noCommit $ command "transferkey" paramKey seek SectionPlumbing
+cmd = withOptions transferKeyOptions $ noCommit $
+	command "transferkey" SectionPlumbing
 		"transfers a key from or to a remote"
+		paramKey (withParams seek)
 
 transferKeyOptions :: [Option]
 transferKeyOptions = fileOption : fromToOptions
@@ -26,7 +27,7 @@ transferKeyOptions = fileOption : fromToOptions
 fileOption :: Option
 fileOption = fieldOption [] "file" paramFile "the associated file"
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = do
 	to <- getOptionField toOption Remote.byNameWithUUID
 	from <- getOptionField fromOption Remote.byNameWithUUID

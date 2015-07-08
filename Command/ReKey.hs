@@ -19,11 +19,13 @@ import Utility.CopyFile
 import qualified Remote
 
 cmd :: Command
-cmd = notDirect $ command "rekey"
-	(paramRepeating $ paramPair paramPath paramKey)
-	seek SectionPlumbing "change keys used for files"
+cmd = notDirect $ 
+	command "rekey" SectionPlumbing
+		"change keys used for files"
+		(paramRepeating $ paramPair paramPath paramKey)
+		(withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withPairs start
 
 start :: (FilePath, String) -> CommandStart

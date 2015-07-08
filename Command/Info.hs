@@ -80,10 +80,11 @@ type StatState = StateT StatInfo Annex
 
 cmd :: Command
 cmd = noCommit $ dontCheck repoExists $ withOptions (jsonOption : bytesOption : annexedMatchingOptions) $
-	command "info" (paramRepeating paramItem) seek SectionQuery
-	"shows information about the specified item or the repository as a whole"
+	command "info" SectionQuery
+		"shows  information about the specified item or the repository as a whole"
+		(paramRepeating paramItem) (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 start :: [String] -> CommandStart

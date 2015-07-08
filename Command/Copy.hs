@@ -15,13 +15,15 @@ import Annex.Wanted
 import Annex.NumCopies
 
 cmd :: Command
-cmd = withOptions copyOptions $ command "copy" paramPaths seek
-	SectionCommon "copy content of files to/from another repository"
+cmd = withOptions copyOptions $
+	command "copy" SectionCommon
+		"copy content of files to/from another repository"
+		paramPaths (withParams seek)
 
 copyOptions :: [Option]
 copyOptions = Command.Move.moveOptions ++ [autoOption]
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = do
 	to <- getOptionField toOption Remote.byNameWithUUID
 	from <- getOptionField fromOption Remote.byNameWithUUID

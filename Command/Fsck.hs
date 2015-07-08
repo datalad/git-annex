@@ -41,8 +41,9 @@ import Data.Time.Clock.POSIX
 import System.Posix.Types (EpochTime)
 
 cmd :: Command
-cmd = withOptions fsckOptions $ command "fsck" paramPaths seek
-	SectionMaintenance "check for problems"
+cmd = withOptions fsckOptions $ 
+	command "fsck" SectionMaintenance "check for problems"
+		paramPaths (withParams seek)
 
 fsckFromOption :: Option
 fsckFromOption = fieldOption ['f'] "from" paramRemote "check remote"
@@ -65,7 +66,7 @@ fsckOptions =
 	, incrementalScheduleOption
 	] ++ keyOptions ++ annexedMatchingOptions
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = do
 	from <- getOptionField fsckFromOption Remote.byNameWithUUID
 	u <- maybe getUUID (pure . Remote.uuid) from

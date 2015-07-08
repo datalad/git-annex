@@ -24,10 +24,10 @@ import qualified Command.Add
 
 cmd :: Command
 cmd = notBareRepo $ noDaemonRunning $
-	command "indirect" paramNothing seek
-		SectionSetup "switch repository to indirect mode"
+	command "indirect" SectionSetup "switch repository to indirect mode"
+		paramNothing (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withNothing start
 
 start :: CommandStart

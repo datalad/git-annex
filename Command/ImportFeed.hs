@@ -45,13 +45,13 @@ import Annex.MetaData
 
 cmd :: Command
 cmd = notBareRepo $ withOptions [templateOption, relaxedOption, rawOption] $
-	command "importfeed" (paramRepeating paramUrl) seek
-		SectionCommon "import files from podcast feeds"
+	command "importfeed" SectionCommon "import files from podcast feeds"
+		(paramRepeating paramUrl) (withParams seek)
 
 templateOption :: Option
 templateOption = fieldOption [] "template" paramFormat "template for filenames"
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = do
 	tmpl <- getOptionField templateOption return
 	relaxed <- getOptionFlag relaxedOption

@@ -14,10 +14,11 @@ import qualified Git.Branch
 import Command.Sync (prepMerge, mergeLocal)
 
 cmd :: Command
-cmd = command "merge" paramNothing seek SectionMaintenance
+cmd = command "merge" SectionMaintenance
 	"automatically merge changes from remotes"
+	paramNothing (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = do
 	withNothing mergeBranch ps
 	withNothing mergeSynced ps

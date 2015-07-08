@@ -20,12 +20,13 @@ import qualified Backend
 cmd :: Command
 cmd = withOptions [rawOption] $
 	noCommit $ noRepo startNoRepo $ dontCheck repoExists $
-	command "version" paramNothing seek SectionQuery "show version info"
+	command "version" SectionQuery "show version info"
+		paramNothing (withParams seek)
 
 rawOption :: Option
 rawOption = flagOption [] "raw" "output only program version"
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withNothing $ ifM (getOptionFlag rawOption) (startRaw, start)
 
 startRaw :: CommandStart

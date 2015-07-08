@@ -21,10 +21,12 @@ import Test.QuickCheck
 import Control.Concurrent
 
 cmd :: Command
-cmd = notBareRepo $ command "fuzztest" paramNothing seek SectionTesting
-	"generates fuzz test files"
+cmd = notBareRepo $
+	command "fuzztest" SectionTesting
+		"generates fuzz test files"
+		paramNothing (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withNothing start
 
 start :: CommandStart

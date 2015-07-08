@@ -15,10 +15,11 @@ import Git.Types
 
 cmd :: Command
 cmd = dontCheck repoExists $
-	command "diffdriver" ("[-- cmd --]") seek
-		SectionPlumbing "external git diff driver shim"
+	command "diffdriver" SectionPlumbing 
+		"external git diff driver shim"
+		("-- cmd --") (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 start :: [String] -> CommandStart

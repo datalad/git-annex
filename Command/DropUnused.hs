@@ -18,10 +18,11 @@ import Annex.NumCopies
 
 cmd :: Command
 cmd = withOptions [Command.Drop.dropFromOption] $
-	command "dropunused" (paramRepeating paramNumRange)
-		seek SectionMaintenance "drop unused file content"
+	command "dropunused" SectionMaintenance
+		"drop unused file content"
+		(paramRepeating paramNumRange) (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = do
 	numcopies <- getNumCopies
 	withUnusedMaps (start numcopies) ps

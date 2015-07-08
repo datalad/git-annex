@@ -24,9 +24,9 @@ import Command.PreCommit (lockPreCommitHook)
 
 cmd :: Command
 cmd = withOptions annexedMatchingOptions $
-	command "unannex" paramPaths SectionUtility
+	command "unannex" SectionUtility
 		"undo accidential add command"
-		(commandParser seek)
+		paramPaths (withParams seek)
 
 seek :: CmdParams -> CommandSeek
 seek = wrapUnannex . (withFilesInGit $ whenAnnexed start)

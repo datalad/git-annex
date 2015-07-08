@@ -22,9 +22,10 @@ import System.IO.HVFS
 import System.IO.HVFS.Utils
 
 cmd :: Command
-cmd = addCheck check $ command "uninit" paramPaths
-	SectionUtility "de-initialize git-annex and clean out repository"
-	(commandParser seek)
+cmd = addCheck check $ 
+	command "uninit" SectionUtility
+		"de-initialize git-annex and clean out repository"
+		paramPaths (withParams seek)
 
 check :: Annex ()
 check = do

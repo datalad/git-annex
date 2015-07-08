@@ -28,7 +28,7 @@ cmd'
 	-> Annex (M.Map UUID PreferredContentExpression)
 	-> (UUID -> PreferredContentExpression -> Annex ())
 	-> Command
-cmd' name desc getter setter = command name pdesc seek SectionSetup desc
+cmd' name desc getter setter = command name SectionSetup desc pdesc (withParams seek)
   where
 	pdesc = paramPair paramRemote (paramOptional paramExpression)
 

@@ -17,10 +17,11 @@ import Logs.Web
 
 cmd :: Command
 cmd = noCommit $ withOptions (jsonOption : annexedMatchingOptions ++ keyOptions) $
-	command "whereis" paramPaths seek SectionQuery
+	command "whereis" SectionQuery
 		"lists repositories that have file content"
+		paramPaths (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = do
 	m <- remoteMap id
 	withKeyOptions False

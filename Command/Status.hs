@@ -18,10 +18,11 @@ import qualified Git
 
 cmd :: Command
 cmd = notBareRepo $ noCommit $ noMessages $ withOptions [jsonOption] $
-	command "status" paramPaths seek SectionCommon
+	command "status" SectionCommon
 		"show the working tree status"
+		paramPaths (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 start :: [FilePath] -> CommandStart

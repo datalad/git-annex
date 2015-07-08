@@ -23,8 +23,10 @@ import Types.TrustLevel
 import Logs.Trust
 
 cmd :: Command
-cmd = withOptions opts $ notBareRepo $ command "import" paramPaths seek
-	SectionCommon "move and add files from outside git working copy"
+cmd = withOptions opts $ notBareRepo $
+	command "import" SectionCommon 
+		"move and add files from outside git working copy"
+		paramPaths (withParams seek)
 
 opts :: [Option]
 opts = duplicateModeOptions ++ fileMatchingOptions
@@ -60,7 +62,7 @@ getDuplicateMode = go . catMaybes <$> mapM getflag [minBound..maxBound]
 	go ms = error $ "cannot combine " ++
 		unwords (map (optionParam . fromJust . associatedOption) ms)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = do
 	mode <- getDuplicateMode
 	repopath <- liftIO . absPath =<< fromRepo Git.repoPath

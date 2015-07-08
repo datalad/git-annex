@@ -18,13 +18,15 @@ import Annex.Transfer
 import Logs.Presence
 
 cmd :: Command
-cmd = withOptions moveOptions $ command "move" paramPaths seek
-	SectionCommon "move content of files to/from another repository"
+cmd = withOptions moveOptions $ 
+	command "move" SectionCommon
+		"move content of files to/from another repository"
+		paramPaths (withParams seek)
 
 moveOptions :: [Option]
 moveOptions = fromToOptions ++ [jobsOption] ++ keyOptions ++ annexedMatchingOptions
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = do
 	to <- getOptionField toOption Remote.byNameWithUUID
 	from <- getOptionField fromOption Remote.byNameWithUUID

@@ -15,10 +15,13 @@ import Annex
 import Types.Messages
 
 cmd :: Command
-cmd = noCommit $ command "checkpresentkey" (paramPair paramKey paramRemote) seek
-	SectionPlumbing "check if key is present in remote"
+cmd = noCommit $ 
+	command "checkpresentkey" SectionPlumbing
+		"check if key is present in remote"
+		(paramPair paramKey paramRemote)
+		(withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 start :: [String] -> CommandStart
