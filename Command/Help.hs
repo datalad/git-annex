@@ -19,8 +19,6 @@ import qualified Command.Sync
 import qualified Command.Whereis
 import qualified Command.Fsck
 
-import System.Console.GetOpt
-
 cmd :: Command
 cmd = noCommit $ dontCheck repoExists $
 	noRepo (parseparams startNoRepo) $ 
@@ -41,12 +39,8 @@ startNoRepo :: CmdParams -> IO ()
 startNoRepo = start'
 
 start' :: [String] -> IO ()
-start' ["options"] = showCommonOptions
 start' [c] = showGitHelp c
 start' _ = showGeneralHelp
-
-showCommonOptions :: IO ()
-showCommonOptions = putStrLn $ usageInfo "Common options:" gitAnnexOptions
 
 showGeneralHelp :: IO ()
 showGeneralHelp = putStrLn $ unlines
@@ -64,7 +58,6 @@ showGeneralHelp = putStrLn $ unlines
 		]
 	, "Run 'git-annex' for a complete command list."
 	, "Run 'git-annex help command' for help on a specific command."
-	, "Run `git annex help options' for a list of common options."
 	]
   where
 	cmdline c = "\t" ++ cmdname c ++ "\t" ++ cmddesc c
