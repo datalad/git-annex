@@ -31,6 +31,7 @@ git-annex (5.20150618) UNRELEASED; urgency=medium
     reflog. This provides a way to not consider old versions of files to be
     unused after they have reached a specified age, when the old refs in
     the reflog expire.
+  * Removed support for optparse-applicative versions older than 0.10.
 
  -- Joey Hess <id@joeyh.name>  Thu, 02 Jul 2015 12:31:14 -0400
 
