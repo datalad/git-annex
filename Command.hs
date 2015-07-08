@@ -36,13 +36,17 @@ import CmdLine.GitAnnex.Options as ReExported
 import qualified Options.Applicative as O
 
 {- Generates a normal Command -}
-command :: String -> String -> CommandSection -> String -> CommandParser -> Command
-command = Command [] Nothing commonChecks False False
+command :: String -> String -> CommandSection -> String -> (Command -> CommandParser) -> Command
+command name paramdesc section desc parser = c
+  where
+	c = Command [] Nothing commonChecks False False name paramdesc section desc (parser c)
 
 {- Simple CommandParser generator, for when the CommandSeek wants all
  - non-option parameters. -}
-commandParser :: (CmdParams -> CommandSeek) -> CommandParser
-commandParser mkseek = mkseek <$> O.many (O.argument O.str O.idm)
+commandParser :: (CmdParams -> CommandSeek) -> Command -> CommandParser
+commandParser mkseek c = mkseek <$> O.many cmdparams
+  where
+	cmdparams = O.argument O.str (O.metavar (cmdparamdesc c))
 
 {- Indicates that a command doesn't need to commit any changes to
  - the git-annex branch. -}

@@ -53,7 +53,7 @@ import qualified Data.Map as M
 
 cmd :: Command
 cmd = withOptions syncOptions $
-	command "sync" (paramOptional (paramRepeating paramRemote))
+	command "sync" (paramRepeating paramRemote)
 	seek SectionCommon "synchronize local repository with remotes"
 
 syncOptions :: [Option]

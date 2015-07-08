@@ -58,7 +58,7 @@ commandUsage cmd = unlines
 
 {- Descriptions of params used in usage messages. -}
 paramPaths :: String
-paramPaths = paramOptional $ paramRepeating paramPath -- most often used
+paramPaths = paramRepeating paramPath -- most often used
 paramPath :: String
 paramPath = "PATH"
 paramKey :: String
@@ -114,6 +114,6 @@ paramNothing = ""
 paramRepeating :: String -> String
 paramRepeating s = s ++ " ..."
 paramOptional :: String -> String
-paramOptional s = "[" ++ s ++ "]"
+paramOptional s = s
 paramPair :: String -> String -> String
 paramPair a b = a ++ " " ++ b

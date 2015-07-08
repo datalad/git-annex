@@ -18,7 +18,7 @@ import Command.View (checkoutViewBranch)
 
 cmd :: Command
 cmd = notBareRepo $ notDirect $
-	command "vpop" (paramOptional paramNumber) seek SectionMetaData
+	command "vpop" paramNumber seek SectionMetaData
 	"switch back to previous view"
 
 seek :: CommandSeek

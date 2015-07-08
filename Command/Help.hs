@@ -23,7 +23,7 @@ import System.Console.GetOpt
 
 cmd :: Command
 cmd = noCommit $ noRepo startNoRepo $ dontCheck repoExists $
-	command "help" (paramOptional "COMMAND") seek SectionCommon "display help"
+	command "help" "COMMAND" seek SectionCommon "display help"
 
 seek :: CommandSeek
 seek = withWords start
