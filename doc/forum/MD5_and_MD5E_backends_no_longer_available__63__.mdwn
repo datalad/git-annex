@@ -1,0 +1,5 @@
+I set the backend to MD5E with git config, but when I try to import files I get this error:
+
+    git-annex: unknown backend MD5E
+
+MD5 doesn't work either. Have these been removed as backend options? They are listed [here](http://git-annex.branchable.com/backends/).
