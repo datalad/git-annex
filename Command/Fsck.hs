@@ -34,6 +34,7 @@ import Types.CleanupActions
 import Utility.HumanTime
 import Utility.CopyFile
 import Git.FilePath
+import Git.Types (RemoteName)
 import Utility.PID
 import qualified Database.Fsck as FsckDb
 
@@ -42,15 +43,17 @@ import System.Posix.Types (EpochTime)
 import Options.Applicative hiding (command)
 
 cmd :: Command
-cmd = command "fsck" SectionMaintenance "check for problems"
+cmd = command "fsck" SectionMaintenance
+	"find and fix problems"
 	paramPaths (seek <$$> optParser)
 
 data FsckOptions = FsckOptions
 	{ fsckFiles :: CmdParams
-	, fsckFromOption :: Maybe String
+	, fsckFromOption :: Maybe RemoteName
 	, startIncrementalOption :: Bool
 	, moreIncrementalOption :: Bool
 	, incrementalScheduleOption :: Maybe Duration
+	, keyOptions :: KeyOptions
 	}
 
 optParser :: CmdParamsDesc -> Parser FsckOptions
@@ -77,15 +80,16 @@ optParser desc = FsckOptions
 		<> metavar paramTime
 		<> help "schedule incremental fscking"
 		))
+	<*> parseKeyOptions False
 
--- TODO: keyOptions, annexedMatchingOptions
+-- TODO: annexedMatchingOptions
 
 seek :: FsckOptions -> CommandSeek
 seek o = do
 	from <- Remote.byNameWithUUID (fsckFromOption o)
 	u <- maybe getUUID (pure . Remote.uuid) from
 	i <- getIncremental u o
-	withKeyOptions False
+	withKeyOptions (keyOptions o) False
 		(\k -> startKey i k =<< getNumCopies)
 		(withFilesInGit $ whenAnnexed $ start from i)
 		(fsckFiles o)

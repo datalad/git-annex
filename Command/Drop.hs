@@ -19,50 +19,68 @@ import Annex.NumCopies
 import Annex.Content
 import Annex.Wanted
 import Annex.Notification
+import Git.Types (RemoteName)
 
 import qualified Data.Set as S
+import Options.Applicative hiding (command)
 
 cmd :: Command
-cmd = withOptions (dropOptions) $ 
-	command "drop" SectionCommon
-		"indicate content of files not currently wanted"
-		paramPaths (withParams seek)
+cmd = command "drop" SectionCommon
+	"indicate content of files not currently wanted"
+	paramPaths (seek <$$> optParser)
 
-dropOptions :: [Option]
-dropOptions = dropFromOption : annexedMatchingOptions ++ [autoOption] ++ keyOptions
+data DropOptions = DropOptions
+	{ dropFiles :: CmdParams
+	, dropFrom :: Maybe RemoteName
+	, autoMode :: Bool
+	, keyOptions :: KeyOptions
+	}
 
-dropFromOption :: Option
-dropFromOption = fieldOption ['f'] "from" paramRemote "drop content from a remote"
+-- TODO: annexedMatchingOptions
 
-seek :: CmdParams -> CommandSeek
-seek ps = do
-	from <- getOptionField dropFromOption Remote.byNameWithUUID
-	auto <- getOptionFlag autoOption
-	withKeyOptions auto
-		(startKeys auto from)
-		(withFilesInGit $ whenAnnexed $ start auto from)
-		ps
+optParser :: CmdParamsDesc -> Parser DropOptions
+optParser desc = DropOptions
+	<$> cmdParams desc
+	<*> parseDropFromOption
+	<*> parseAutoOption
+	<*> parseKeyOptions False
 
-start :: Bool -> Maybe Remote -> FilePath -> Key -> CommandStart
-start auto from file key = start' auto from key (Just file)
+parseDropFromOption :: Parser (Maybe RemoteName)
+parseDropFromOption = finalOpt $ strOption
+        ( long "from"
+        <> short 'f'
+	<> metavar paramRemote
+        <> help "drop content from a remote"
+	)
 
-start' :: Bool -> Maybe Remote -> Key -> AssociatedFile -> CommandStart
-start' auto from key afile = checkDropAuto auto from afile key $ \numcopies ->
-	stopUnless want $
-		case from of
-			Nothing -> startLocal afile numcopies key Nothing
-			Just remote -> do
-				u <- getUUID
-				if Remote.uuid remote == u
-					then startLocal afile numcopies key Nothing
-					else startRemote afile numcopies key remote
-  where
-	want
-		| auto = wantDrop False (Remote.uuid <$> from) (Just key) afile
-		| otherwise = return True
+seek :: DropOptions -> CommandSeek
+seek o = withKeyOptions (keyOptions o) (autoMode o)
+	(startKeys o)
+	(withFilesInGit $ whenAnnexed $ start o)
+	(dropFiles o)
 
-startKeys :: Bool -> Maybe Remote -> Key -> CommandStart
-startKeys auto from key = start' auto from key Nothing
+start :: DropOptions -> FilePath -> Key -> CommandStart
+start o file key = start' o key (Just file)
+
+start' :: DropOptions -> Key -> AssociatedFile -> CommandStart
+start' o key afile = do
+	from <- Remote.byNameWithUUID (dropFrom o)
+	checkDropAuto (autoMode o) from afile key $ \numcopies ->
+		stopUnless (want from) $
+			case from of
+				Nothing -> startLocal afile numcopies key Nothing
+				Just remote -> do
+					u <- getUUID
+					if Remote.uuid remote == u
+						then startLocal afile numcopies key Nothing
+						else startRemote afile numcopies key remote
+	  where
+		want from
+			| autoMode o = wantDrop False (Remote.uuid <$> from) (Just key) afile
+			| otherwise = return True
+
+startKeys :: DropOptions -> Key -> CommandStart
+startKeys o key = start' o key Nothing
 
 startLocal :: AssociatedFile -> NumCopies -> Key -> Maybe Remote -> CommandStart
 startLocal afile numcopies key knownpresentremote = stopUnless (inAnnex key) $ do
@@ -166,10 +184,10 @@ requiredContent = do
 {- In auto mode, only runs the action if there are enough
  - copies on other semitrusted repositories. -}
 checkDropAuto :: Bool -> Maybe Remote -> AssociatedFile -> Key -> (NumCopies -> CommandStart) -> CommandStart
-checkDropAuto auto mremote afile key a = go =<< maybe getNumCopies getFileNumCopies afile
+checkDropAuto automode mremote afile key a = go =<< maybe getNumCopies getFileNumCopies afile
   where
 	go numcopies
-		| auto = do
+		| automode = do
 			locs <- Remote.keyLocations key
 			uuid <- getUUID
 			let remoteuuid = fromMaybe uuid $ Remote.uuid <$> mremote

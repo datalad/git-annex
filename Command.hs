@@ -8,8 +8,6 @@
 module Command (
 	command,
 	withParams,
-	cmdParams,
-	finalOpt,
 	noRepo,
 	noCommit,
 	noMessages,
@@ -46,16 +44,6 @@ command name section desc paramdesc mkparser =
 {- Simple option parser that takes all non-option params as-is. -}
 withParams :: (CmdParams -> v) -> CmdParamsDesc -> O.Parser v
 withParams mkseek paramdesc = mkseek <$> cmdParams paramdesc
-
-{- Parser that accepts all non-option params. -}
-cmdParams :: CmdParamsDesc -> O.Parser CmdParams
-cmdParams paramdesc = O.many (O.argument O.str (O.metavar paramdesc))
-
-{- Makes an option parser that is normally required be optional;
- - its switch can be given zero or more times, and the last one
- - given will be used. -}
-finalOpt :: O.Parser a -> O.Parser (Maybe a)
-finalOpt = lastMaybe <$$> O.many
 
 {- Indicates that a command doesn't need to commit any changes to
  - the git-annex branch. -}
