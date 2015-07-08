@@ -13,10 +13,10 @@ module CmdLine (
 	shutdown
 ) where
 
+import qualified Options.Applicative as O
 import qualified Control.Exception as E
 import qualified Data.Map as M
 import Control.Exception (throw)
-import qualified Options.Applicative as O
 #ifndef mingw32_HOST_OS
 import System.Posix.Signals
 #endif
@@ -41,11 +41,9 @@ dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
 		state <- Annex.new g
 		Annex.eval state $ do
 			checkEnvironment
-			when fuzzy $
-				inRepo $ autocorrect . Just
 			forM_ fields $ uncurry Annex.setField
-			(cmd, seek) <- liftIO $
-				O.handleParseResult (parseCmd (name:args) allcmds cmdparser)
+			(cmd, seek) <- parsewith cmdparser
+				(\a -> inRepo $ a . Just)
 			when (cmdnomessages cmd) $ 
 				Annex.setOutput QuietOutput
 			-- TODO: propigate global options to annex state (how?)
@@ -55,21 +53,29 @@ dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
 			performCommandAction cmd seek $
 				shutdown $ cmdnocommit cmd
 	go (Left norepo) = do
-		when fuzzy $
-			autocorrect =<< Git.Config.global
-		let norepoparser = fromMaybe (throw norepo) . cmdnorepo
-		(_cmd, a) <- O.handleParseResult (parseCmd (name:args) allcmds norepoparser)
+		(_, a) <- parsewith
+			(fromMaybe (throw norepo) . cmdnorepo)
+			(\a -> a =<< Git.Config.global)
 		a
 
-	autocorrect = Git.AutoCorrect.prepare inputcmdname cmdname cmds
-	err msg = msg ++ "\n\n" ++ usage header allcmds
-	(fuzzy, cmds, inputcmdname, args) = findCmd fuzzyok allargs allcmds err
-	name
-		| fuzzy = case cmds of
-			[c] -> cmdname c
-			_ -> inputcmdname
-		| otherwise = inputcmdname
-
+	parsewith getparser ingitrepo = 
+		case parseCmd allargs allcmds getparser of
+			O.Failure _ -> do
+				-- parse failed, so fall back to
+				-- fuzzy matching, or to showing usage
+				when fuzzy $
+					ingitrepo autocorrect
+				liftIO (O.handleParseResult (parseCmd (name:args) allcmds getparser))
+			res -> liftIO (O.handleParseResult res)
+	  where
+		autocorrect = Git.AutoCorrect.prepare inputcmdname cmdname cmds
+		err msg = msg ++ "\n\n" ++ usage header allcmds
+		(fuzzy, cmds, inputcmdname, args) = findCmd fuzzyok allargs allcmds err
+		name
+			| fuzzy = case cmds of
+				(c:_) -> cmdname c
+				_ -> inputcmdname
+			| otherwise = inputcmdname
 
 {- Parses command line, selecting one of the commands from the list. -}
 parseCmd :: CmdParams -> [Command] -> (Command -> O.Parser v) -> O.ParserResult (Command, v)
