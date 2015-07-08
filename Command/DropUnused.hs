@@ -16,10 +16,10 @@ import qualified Git
 import Command.Unused (withUnusedMaps, UnusedMaps(..), startUnused)
 import Annex.NumCopies
 
-cmd :: [Command]
-cmd = [withOptions [Command.Drop.dropFromOption] $
+cmd :: Command
+cmd = withOptions [Command.Drop.dropFromOption] $
 	command "dropunused" (paramRepeating paramNumRange)
-		seek SectionMaintenance "drop unused file content"]
+		seek SectionMaintenance "drop unused file content"
 
 seek :: CommandSeek
 seek ps = do

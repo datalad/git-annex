@@ -17,9 +17,9 @@ import Types.Messages
 
 import qualified Data.Set as S
 
-cmd :: [Command]
-cmd = [command "schedule" (paramPair paramRemote (paramOptional paramExpression)) seek
-	SectionSetup "get or set scheduled jobs"]
+cmd :: Command
+cmd = command "schedule" (paramPair paramRemote (paramOptional paramExpression)) seek
+	SectionSetup "get or set scheduled jobs"
 
 seek :: CommandSeek
 seek = withWords start

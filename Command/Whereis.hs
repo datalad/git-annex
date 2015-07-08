@@ -15,10 +15,10 @@ import Remote
 import Logs.Trust
 import Logs.Web
 
-cmd :: [Command]
-cmd = [noCommit $ withOptions (jsonOption : annexedMatchingOptions ++ keyOptions) $
+cmd :: Command
+cmd = noCommit $ withOptions (jsonOption : annexedMatchingOptions ++ keyOptions) $
 	command "whereis" paramPaths seek SectionQuery
-		"lists repositories that have file content"]
+		"lists repositories that have file content"
 
 seek :: CommandSeek
 seek ps = do

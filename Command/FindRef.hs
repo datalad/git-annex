@@ -10,10 +10,10 @@ module Command.FindRef where
 import Command
 import qualified Command.Find as Find
 
-cmd :: [Command]
-cmd = [withOptions nonWorkTreeMatchingOptions $ Find.mkCommand $ 
+cmd :: Command
+cmd = withOptions nonWorkTreeMatchingOptions $ Find.mkCommand $ 
 	command "findref" paramRef seek SectionPlumbing
-		"lists files in a git ref"]
+		"lists files in a git ref"
 
 seek :: CommandSeek
 seek refs = do

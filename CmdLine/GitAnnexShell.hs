@@ -16,7 +16,6 @@ import qualified Git.Config
 import CmdLine
 import Command
 import Annex.UUID
-import Annex (setField)
 import CmdLine.GitAnnexShell.Fields
 import Utility.UserInfo
 import Remote.GCrypt (getGCryptUUID)
@@ -34,7 +33,7 @@ import qualified Command.NotifyChanges
 import qualified Command.GCryptSetup
 
 cmds_readonly :: [Command]
-cmds_readonly = concat
+cmds_readonly =
 	[ gitAnnexShellCheck Command.ConfigList.cmd
 	, gitAnnexShellCheck Command.InAnnex.cmd
 	, gitAnnexShellCheck Command.SendKey.cmd
@@ -43,7 +42,7 @@ cmds_readonly = concat
 	]
 
 cmds_notreadonly :: [Command]
-cmds_notreadonly = concat
+cmds_notreadonly =
 	[ gitAnnexShellCheck Command.RecvKey.cmd
 	, gitAnnexShellCheck Command.DropKey.cmd
 	, gitAnnexShellCheck Command.Commit.cmd
@@ -100,12 +99,10 @@ builtin cmd dir params = do
 	checkNotReadOnly cmd
 	checkDirectory $ Just dir
 	let (params', fieldparams, opts) = partitionParams params
-	    fields = filter checkField $ parseFields fieldparams
-	    cmds' = map (newcmd $ unwords opts) cmds
-	dispatch False (cmd : params') cmds' options fields header mkrepo
+	    rsyncopts = ("RsyncOptions", unwords opts)
+	    fields = rsyncopts : filter checkField (parseFields fieldparams)
+	dispatch False (cmd : params') cmds options fields header mkrepo
   where
-	addrsyncopts opts seek k = setField "RsyncOptions" opts >> seek k
-	newcmd opts c = c { cmdseek = addrsyncopts opts (cmdseek c) }
 	mkrepo = do
 		r <- Git.Construct.repoAbsPath dir >>= Git.Construct.fromAbsPath
 		Git.Config.read r
@@ -200,8 +197,8 @@ checkEnv var = do
 
 {- Modifies a Command to check that it is run in either a git-annex
  - repository, or a repository with a gcrypt-id set. -}
-gitAnnexShellCheck :: [Command] -> [Command]
-gitAnnexShellCheck = map $ addCheck okforshell . dontCheck repoExists
+gitAnnexShellCheck :: Command -> Command
+gitAnnexShellCheck = addCheck okforshell . dontCheck repoExists
   where
 	okforshell = unlessM (isInitialized <||> isJust . gcryptId <$> Annex.getGitConfig) $
 		error "Not a git-annex or gcrypt repository."

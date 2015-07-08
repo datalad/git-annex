@@ -29,11 +29,11 @@ import Logs.Unused
 import Annex.CatFile
 import Annex.Content
 
-withFilesInGit :: (FilePath -> CommandStart) -> CommandSeek
+withFilesInGit :: (FilePath -> CommandStart) -> CmdParams -> CommandSeek
 withFilesInGit a params = seekActions $ prepFiltered a $
 	seekHelper LsFiles.inRepo params
 
-withFilesInGitNonRecursive :: (FilePath -> CommandStart) -> CommandSeek
+withFilesInGitNonRecursive :: (FilePath -> CommandStart) -> CmdParams -> CommandSeek
 withFilesInGitNonRecursive a params = ifM (Annex.getState Annex.force)
 	( withFilesInGit a params
 	, if null params
@@ -54,7 +54,7 @@ withFilesInGitNonRecursive a params = ifM (Annex.getState Annex.force)
 			_ -> needforce
 	needforce = error "Not recursively setting metadata. Use --force to do that."
 
-withFilesNotInGit :: Bool -> (FilePath -> CommandStart) -> CommandSeek
+withFilesNotInGit :: Bool -> (FilePath -> CommandStart) -> CmdParams -> CommandSeek
 withFilesNotInGit skipdotfiles a params
 	| skipdotfiles = do
 		{- dotfiles are not acted on unless explicitly listed -}
@@ -73,7 +73,7 @@ withFilesNotInGit skipdotfiles a params
 	go l = seekActions $ prepFiltered a $
 		return $ concat $ segmentPaths params l
 
-withFilesInRefs :: (FilePath -> Key -> CommandStart) -> CommandSeek
+withFilesInRefs :: (FilePath -> Key -> CommandStart) -> CmdParams -> CommandSeek
 withFilesInRefs a = mapM_ go
   where
 	go r = do	
@@ -87,7 +87,7 @@ withFilesInRefs a = mapM_ go
 				Just k -> whenM (matcher $ MatchingKey k) $
 					commandAction $ a f k
 
-withPathContents :: ((FilePath, FilePath) -> CommandStart) -> CommandSeek
+withPathContents :: ((FilePath, FilePath) -> CommandStart) -> CmdParams -> CommandSeek
 withPathContents a params = do
 	matcher <- Limit.getMatcher
 	seekActions $ map a <$> (filterM (checkmatch matcher) =<< ps)
@@ -103,27 +103,27 @@ withPathContents a params = do
 		, matchFile = relf
 		}
 
-withWords :: ([String] -> CommandStart) -> CommandSeek
+withWords :: ([String] -> CommandStart) -> CmdParams -> CommandSeek
 withWords a params = seekActions $ return [a params]
 
-withStrings :: (String -> CommandStart) -> CommandSeek
+withStrings :: (String -> CommandStart) -> CmdParams -> CommandSeek
 withStrings a params = seekActions $ return $ map a params
 
-withPairs :: ((String, String) -> CommandStart) -> CommandSeek
+withPairs :: ((String, String) -> CommandStart) -> CmdParams -> CommandSeek
 withPairs a params = seekActions $ return $ map a $ pairs [] params
   where
 	pairs c [] = reverse c
 	pairs c (x:y:xs) = pairs ((x,y):c) xs
 	pairs _ _ = error "expected pairs"
 
-withFilesToBeCommitted :: (String -> CommandStart) -> CommandSeek
+withFilesToBeCommitted :: (String -> CommandStart) -> CmdParams -> CommandSeek
 withFilesToBeCommitted a params = seekActions $ prepFiltered a $
 	seekHelper LsFiles.stagedNotDeleted params
 
-withFilesUnlocked :: (FilePath -> CommandStart) -> CommandSeek
+withFilesUnlocked :: (FilePath -> CommandStart) -> CmdParams -> CommandSeek
 withFilesUnlocked = withFilesUnlocked' LsFiles.typeChanged
 
-withFilesUnlockedToBeCommitted :: (FilePath -> CommandStart) -> CommandSeek
+withFilesUnlockedToBeCommitted :: (FilePath -> CommandStart) -> CmdParams -> CommandSeek
 withFilesUnlockedToBeCommitted = withFilesUnlocked' LsFiles.typeChangedStaged
 
 {- Unlocked files have changed type from a symlink to a regular file.
@@ -131,7 +131,7 @@ withFilesUnlockedToBeCommitted = withFilesUnlocked' LsFiles.typeChangedStaged
  - Furthermore, unlocked files used to be a git-annex symlink,
  - not some other sort of symlink.
  -}
-withFilesUnlocked' :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> (FilePath -> CommandStart) -> CommandSeek
+withFilesUnlocked' :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> (FilePath -> CommandStart) -> CmdParams -> CommandSeek
 withFilesUnlocked' typechanged a params = seekActions $
 	prepFiltered a unlockedfiles
   where
@@ -142,11 +142,11 @@ isUnlocked f = liftIO (notSymlink f) <&&>
 	(isJust <$> catKeyFile f <||> isJust <$> catKeyFileHEAD f)
 
 {- Finds files that may be modified. -}
-withFilesMaybeModified :: (FilePath -> CommandStart) -> CommandSeek
+withFilesMaybeModified :: (FilePath -> CommandStart) -> CmdParams -> CommandSeek
 withFilesMaybeModified a params = seekActions $
 	prepFiltered a $ seekHelper LsFiles.modified params
 
-withKeys :: (Key -> CommandStart) -> CommandSeek
+withKeys :: (Key -> CommandStart) -> CmdParams -> CommandSeek
 withKeys a params = seekActions $ return $ map (a . parse) params
   where
 	parse p = fromMaybe (error "bad key") $ file2key p
@@ -160,7 +160,7 @@ getOptionField option converter = converter <=< Annex.getField $ optionName opti
 getOptionFlag :: Option -> Annex Bool
 getOptionFlag option = Annex.getFlag (optionName option)
 
-withNothing :: CommandStart -> CommandSeek
+withNothing :: CommandStart -> CmdParams -> CommandSeek
 withNothing a [] = seekActions $ return [a]
 withNothing _ _ = error "This command takes no parameters."
 
@@ -171,7 +171,7 @@ withNothing _ _ = error "This command takes no parameters."
  -
  - Otherwise falls back to a regular CommandSeek action on
  - whatever params were passed. -}
-withKeyOptions :: Bool -> (Key -> CommandStart) -> CommandSeek -> CommandSeek
+withKeyOptions :: Bool -> (Key -> CommandStart) -> (CmdParams -> CommandSeek) -> CmdParams -> CommandSeek
 withKeyOptions auto keyop = withKeyOptions' auto $ \getkeys -> do
 	matcher <- Limit.getMatcher
 	seekActions $ map (process matcher) <$> getkeys
@@ -181,7 +181,7 @@ withKeyOptions auto keyop = withKeyOptions' auto $ \getkeys -> do
 		, return Nothing
 		)
 
-withKeyOptions' :: Bool -> (Annex [Key] -> Annex ()) -> CommandSeek -> CommandSeek
+withKeyOptions' :: Bool -> (Annex [Key] -> Annex ()) -> (CmdParams -> CommandSeek) -> CmdParams -> CommandSeek
 withKeyOptions' auto keyop fallbackop params = do
 	bare <- fromRepo Git.repoIsLocalBare
 	allkeys <- Annex.getFlag "all"

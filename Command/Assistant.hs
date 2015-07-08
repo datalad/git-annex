@@ -19,10 +19,10 @@ import Assistant.Install
 
 import System.Environment
 
-cmd :: [Command]
-cmd = [noRepo checkNoRepoOpts $ dontCheck repoExists $ withOptions options $
+cmd :: Command
+cmd = noRepo checkNoRepoOpts $ dontCheck repoExists $ withOptions options $
 	notBareRepo $ command "assistant" paramNothing seek SectionCommon
-		"automatically sync changes"]
+		"automatically sync changes"
 
 options :: [Option]
 options =

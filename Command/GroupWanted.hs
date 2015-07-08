@@ -12,9 +12,9 @@ import Command
 import Logs.PreferredContent
 import Command.Wanted (performGet, performSet)
 
-cmd :: [Command]
-cmd = [command "groupwanted" (paramPair paramGroup (paramOptional paramExpression)) seek
-	SectionSetup "get or set groupwanted expression"]
+cmd :: Command
+cmd = command "groupwanted" (paramPair paramGroup (paramOptional paramExpression)) seek
+	SectionSetup "get or set groupwanted expression"
 
 seek :: CommandSeek
 seek = withWords start

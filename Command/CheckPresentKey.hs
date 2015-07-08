@@ -14,9 +14,9 @@ import qualified Remote
 import Annex
 import Types.Messages
 
-cmd :: [Command]
-cmd = [noCommit $ command "checkpresentkey" (paramPair paramKey paramRemote) seek
-	SectionPlumbing "check if key is present in remote"] 
+cmd :: Command
+cmd = noCommit $ command "checkpresentkey" (paramPair paramKey paramRemote) seek
+	SectionPlumbing "check if key is present in remote"
 
 seek :: CommandSeek
 seek = withWords start

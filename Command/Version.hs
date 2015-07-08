@@ -17,10 +17,10 @@ import qualified Types.Remote as R
 import qualified Remote
 import qualified Backend
 
-cmd :: [Command]
-cmd = [withOptions [rawOption] $
+cmd :: Command
+cmd = withOptions [rawOption] $
 	noCommit $ noRepo startNoRepo $ dontCheck repoExists $
-	command "version" paramNothing seek SectionQuery "show version info"]
+	command "version" paramNothing seek SectionQuery "show version info"
 
 rawOption :: Option
 rawOption = flagOption [] "raw" "output only program version"

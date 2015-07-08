@@ -34,9 +34,10 @@ import Utility.Tmp
 
 import Control.Exception (IOException)
 
-cmd :: [Command]
-cmd = [notBareRepo $ withOptions addOptions $
-	command "add" paramPaths seek SectionCommon "add files to annex"]
+cmd :: Command
+cmd = notBareRepo $ withOptions addOptions $
+	command "add" paramPaths SectionCommon "add files to annex"
+		(commandParser seek)
 
 addOptions :: [Option]
 addOptions = includeDotFilesOption : fileMatchingOptions
@@ -47,7 +48,7 @@ includeDotFilesOption = flagOption [] "include-dotfiles" "don't skip dotfiles"
 {- Add acts on both files not checked into git yet, and unlocked files.
  -
  - In direct mode, it acts on any files that have changed. -}
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = do
 	matcher <- largeFilesMatcher
 	let go a = flip a ps $ \file -> ifM (checkFileMatcher matcher file <||> Annex.getState Annex.force)

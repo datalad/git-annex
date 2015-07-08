@@ -12,9 +12,9 @@ import Assistant
 import Command
 import Utility.HumanTime
 
-cmd :: [Command]
-cmd = [notBareRepo $ withOptions [foregroundOption, stopOption] $ 
-	command "watch" paramNothing seek SectionCommon "watch for changes and autocommit"]
+cmd :: Command
+cmd = notBareRepo $ withOptions [foregroundOption, stopOption] $ 
+	command "watch" paramNothing seek SectionCommon "watch for changes and autocommit"
 
 seek :: CommandSeek
 seek ps = do

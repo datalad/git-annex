@@ -36,10 +36,10 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
 
-cmd :: [Command]
-cmd = [ withOptions [sizeOption] $
+cmd :: Command
+cmd = withOptions [sizeOption] $
 		command "testremote" paramRemote seek SectionTesting
-			"test transfers to/from a remote"]
+			"test transfers to/from a remote"
 
 sizeOption :: Option
 sizeOption = fieldOption [] "size" paramSize "base key size (default 1MiB)"

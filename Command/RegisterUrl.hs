@@ -15,10 +15,10 @@ import Logs.Web
 import Annex.UUID
 import Command.FromKey (mkKey)
 
-cmd :: [Command]
-cmd = [notDirect $ notBareRepo $
+cmd :: Command
+cmd = notDirect $ notBareRepo $
 	command "registerurl" (paramPair paramKey paramUrl) seek
-		SectionPlumbing "registers an url for a key"]
+		SectionPlumbing "registers an url for a key"
 
 seek :: CommandSeek
 seek = withWords start

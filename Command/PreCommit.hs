@@ -28,11 +28,12 @@ import qualified Git.LsFiles as Git
 
 import qualified Data.Set as S
 
-cmd :: [Command]
-cmd = [command "pre-commit" paramPaths seek SectionPlumbing
-	"run by git pre-commit hook"]
+cmd :: Command
+cmd = command "pre-commit" paramPaths SectionPlumbing
+	"run by git pre-commit hook"
+	(commandParser seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = lockPreCommitHook $ ifM isDirect
 	( do
 		-- update direct mode mappings for committed files

@@ -7,6 +7,7 @@
 
 module Command (
 	command,
+	commandParser,
 	noRepo,
 	noCommit,
 	noMessages,
@@ -32,9 +33,16 @@ import CmdLine.Action as ReExported
 import CmdLine.Option as ReExported
 import CmdLine.GitAnnex.Options as ReExported
 
-{- Generates a normal command -}
-command :: String -> String -> CommandSeek -> CommandSection -> String -> Command
+import qualified Options.Applicative as O
+
+{- Generates a normal Command -}
+command :: String -> String -> CommandSection -> String -> CommandParser -> Command
 command = Command [] Nothing commonChecks False False
+
+{- Simple CommandParser generator, for when the CommandSeek wants all
+ - non-option parameters. -}
+commandParser :: (CmdParams -> CommandSeek) -> CommandParser
+commandParser mkseek = mkseek <$> O.many (O.argument O.str O.idm)
 
 {- Indicates that a command doesn't need to commit any changes to
  - the git-annex branch. -}

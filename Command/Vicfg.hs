@@ -29,9 +29,9 @@ import Types.StandardGroups
 import Types.ScheduledActivity
 import Remote
 
-cmd :: [Command]
-cmd = [command "vicfg" paramNothing seek
-	SectionSetup "edit git-annex's configuration"]
+cmd :: Command
+cmd = command "vicfg" paramNothing seek
+	SectionSetup "edit git-annex's configuration"
 
 seek :: CommandSeek
 seek = withNothing start

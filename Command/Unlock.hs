@@ -13,14 +13,15 @@ import Annex.Content
 import Annex.CatFile
 import Utility.CopyFile
 
-cmd :: [Command]
-cmd =
-	[ c "unlock" "unlock files for modification"
-	, c "edit" "same as unlock"
-	]
-  where
-	c n = notDirect . withOptions annexedMatchingOptions 
-		. command n paramPaths seek SectionCommon
+cmd :: Command
+cmd = mkcmd "unlock" "unlock files for modification"
+
+editcmd :: Command
+editcmd = mkcmd "edit" "same as unlock"
+
+mkcmd :: String -> String -> Command
+mkcmd n = notDirect . withOptions annexedMatchingOptions 
+	. command n paramPaths seek SectionCommon
 
 seek :: CommandSeek
 seek = withFilesInGit $ whenAnnexed start

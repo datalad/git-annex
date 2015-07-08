@@ -11,10 +11,10 @@ import Common
 import Command
 import Messages
 
-cmd :: [Command]
-cmd = [ noRepo startIO $ dontCheck repoExists $
+cmd :: Command
+cmd = noRepo startIO $ dontCheck repoExists $
 	command "test" paramNothing seek SectionTesting
-		"run built-in test suite"]
+		"run built-in test suite"
 
 seek :: CommandSeek
 seek = withWords start

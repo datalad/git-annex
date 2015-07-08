@@ -34,10 +34,11 @@ import Git.FilePath
 import Logs.View (is_branchView)
 import Annex.BloomFilter
 
-cmd :: [Command]
-cmd = [withOptions [unusedFromOption, refSpecOption] $
-	command "unused" paramNothing seek
-		SectionMaintenance "look for unused file content"]
+cmd :: Command
+cmd = withOptions [unusedFromOption, refSpecOption] $
+	command "unused" paramNothing
+		SectionMaintenance "look for unused file content"
+		(commandParser seek)
 
 unusedFromOption :: Option
 unusedFromOption = fieldOption ['f'] "from" paramRemote "remote to check for unused content"
@@ -45,7 +46,7 @@ unusedFromOption = fieldOption ['f'] "from" paramRemote "remote to check for unu
 refSpecOption :: Option
 refSpecOption = fieldOption [] "used-refspec" paramRefSpec "refs to consider used (default: all refs)"
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withNothing start
 
 {- Finds unused content in the annex. -} 

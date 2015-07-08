@@ -20,9 +20,9 @@ import Utility.HumanTime
 import Data.Time.Clock.POSIX
 import qualified Data.Map as M
 
-cmd :: [Command]
-cmd = [withOptions [activityOption, noActOption] $ command "expire" paramExpire seek
-	SectionMaintenance "expire inactive repositories"]
+cmd :: Command
+cmd = withOptions [activityOption, noActOption] $ command "expire" paramExpire seek
+	SectionMaintenance "expire inactive repositories"
 
 paramExpire :: String
 paramExpire = (paramRepeating $ paramOptional paramRemote ++ ":" ++ paramTime)

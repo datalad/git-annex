@@ -1,6 +1,6 @@
 {- git-annex command line parsing and dispatch
  -
- - Copyright 2010-2012 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,7 +16,7 @@ module CmdLine (
 import qualified Control.Exception as E
 import qualified Data.Map as M
 import Control.Exception (throw)
-import System.Console.GetOpt
+import qualified Options.Applicative as O
 #ifndef mingw32_HOST_OS
 import System.Posix.Signals
 #endif
@@ -35,6 +35,41 @@ import Types.Messages
 dispatch :: Bool -> CmdParams -> [Command] -> [Option] -> [(String, String)] -> String -> IO Git.Repo -> IO ()
 dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
 	setupConsole
+	go =<< (E.try getgitrepo :: IO (Either E.SomeException Git.Repo))
+  where
+	go (Right g) = do
+		state <- Annex.new g
+		Annex.eval state $ do
+			checkEnvironment
+			when fuzzy $
+				inRepo $ autocorrect . Just
+			forM_ fields $ uncurry Annex.setField
+			(cmd, seek) <- liftIO $
+				O.handleParseResult (parseCmd (name:args) allcmds)
+			when (cmdnomessages cmd) $ 
+				Annex.setOutput QuietOutput
+			-- TODO: propigate global options to annex state (how?)
+			whenM (annexDebug <$> Annex.getGitConfig) $
+				liftIO enableDebugOutput
+			startup
+			performCommandAction cmd seek $
+				shutdown $ cmdnocommit cmd
+	go (Left e) = do
+		when fuzzy $
+			autocorrect =<< Git.Config.global
+		-- a <- O.handleParseResult (parseCmd (name:args) allcmds)
+		error "TODO"
+
+	autocorrect = Git.AutoCorrect.prepare inputcmdname cmdname cmds
+	err msg = msg ++ "\n\n" ++ usage header allcmds
+	(fuzzy, cmds, inputcmdname, args) = findCmd fuzzyok allargs allcmds err
+	name
+		| fuzzy = case cmds of
+			[c] -> cmdname c
+			_ -> inputcmdname
+		| otherwise = inputcmdname
+
+#if 0
 	case getOptCmd args cmd commonoptions of
 		Right (flags, params) -> go flags params
 			=<< (E.try getgitrepo :: IO (Either E.SomeException Git.Repo))
@@ -59,10 +94,19 @@ dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
 		when fuzzy $
 			autocorrect =<< Git.Config.global
 		maybe (throw e) (\a -> a params) (cmdnorepo cmd)
-	err msg = msg ++ "\n\n" ++ usage header allcmds
 	cmd = Prelude.head cmds
-	(fuzzy, cmds, name, args) = findCmd fuzzyok allargs allcmds err
-	autocorrect = Git.AutoCorrect.prepare name cmdname cmds
+#endif
+
+{- Parses command line and selects a command to run and gets the
+ - seek action for the command. -}
+parseCmd :: CmdParams -> [Command] -> O.ParserResult (Command, CommandSeek)
+parseCmd allargs allcmds = O.execParserPure (O.prefs O.idm) pinfo allargs
+  where
+	pinfo = O.info (O.subparser $ mconcat $ map mkcommand allcmds) O.idm
+	mkcommand c = O.command (cmdname c) (O.info (mkparser c) O.idm)
+	mkparser c = (,)
+		<$> pure c
+		<*> cmdparser c
 
 {- Parses command line params far enough to find the Command to run, and
  - returns the remaining params.
@@ -83,18 +127,6 @@ findCmd fuzzyok argv cmds err
 	inexactcmds = case name of
 		Nothing -> []
 		Just n -> Git.AutoCorrect.fuzzymatches n cmdname cmds
-
-{- Parses command line options, and returns actions to run to configure flags
- - and the remaining parameters for the command. -}
-getOptCmd :: CmdParams -> Command -> [Option] -> Either String ([Annex ()], CmdParams)
-getOptCmd argv cmd commonoptions = check $
-	getOpt Permute (commonoptions ++ cmdoptions cmd) argv
-  where
-	check (flags, rest, []) = Right (flags, rest)
-	check (_, _, errs) = Left $ unlines
-		[ concat errs
-		, commandUsage cmd
-		]
 
 {- Actions to perform each time ran. -}
 startup :: Annex ()

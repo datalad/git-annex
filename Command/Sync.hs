@@ -51,10 +51,10 @@ import Utility.Bloom
 import Control.Concurrent.MVar
 import qualified Data.Map as M
 
-cmd :: [Command]
-cmd = [withOptions syncOptions $
+cmd :: Command
+cmd = withOptions syncOptions $
 	command "sync" (paramOptional (paramRepeating paramRemote))
-	seek SectionCommon "synchronize local repository with remotes"]
+	seek SectionCommon "synchronize local repository with remotes"
 
 syncOptions :: [Option]
 syncOptions =

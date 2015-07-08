@@ -12,10 +12,10 @@ import Command
 import CmdLine.Batch
 import Annex.Content
 
-cmd :: [Command]
-cmd = [withOptions [batchOption] $ noCommit $ noMessages $
+cmd :: Command
+cmd = withOptions [batchOption] $ noCommit $ noMessages $
 	command "contentlocation" (paramRepeating paramKey) seek
-		SectionPlumbing "looks up content for a key"]
+		SectionPlumbing "looks up content for a key"
 
 seek :: CommandSeek
 seek = batchable withKeys start

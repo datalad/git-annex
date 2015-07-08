@@ -16,9 +16,9 @@ import qualified Remote
 import Annex.Content
 import Annex.NumCopies
 
-cmd :: [Command]
-cmd = [withOptions mirrorOptions $ command "mirror" paramPaths seek
-	SectionCommon "mirror content of files to/from another repository"]
+cmd :: Command
+cmd = withOptions mirrorOptions $ command "mirror" paramPaths seek
+	SectionCommon "mirror content of files to/from another repository"
 
 mirrorOptions :: [Option]
 mirrorOptions = fromToOptions ++ [jobsOption] ++ annexedMatchingOptions ++ keyOptions

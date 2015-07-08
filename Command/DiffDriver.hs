@@ -13,10 +13,10 @@ import Annex.Content
 import Annex.Link
 import Git.Types
 
-cmd :: [Command]
-cmd = [dontCheck repoExists $
+cmd :: Command
+cmd = dontCheck repoExists $
 	command "diffdriver" ("[-- cmd --]") seek
-		SectionPlumbing "external git diff driver shim"]
+		SectionPlumbing "external git diff driver shim"
 
 seek :: CommandSeek
 seek = withWords start

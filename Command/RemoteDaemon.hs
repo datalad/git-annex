@@ -11,9 +11,9 @@ import Common.Annex
 import Command
 import RemoteDaemon.Core
 
-cmd :: [Command]
-cmd = [noCommit $ command "remotedaemon" paramNothing seek SectionPlumbing
-	"detects when remotes have changed, and fetches from them"]
+cmd :: Command
+cmd = noCommit $ command "remotedaemon" paramNothing seek SectionPlumbing
+	"detects when remotes have changed, and fetches from them"
 
 seek :: CommandSeek
 seek = withNothing start

@@ -16,10 +16,10 @@ import Command.Trust (trustCommand)
 import Logs.Location
 import Remote (keyLocations)
 
-cmd :: [Command]
-cmd = [withOptions [keyOption] $ 
+cmd :: Command
+cmd = withOptions [keyOption] $ 
 	command "dead" (paramRepeating paramRemote) seek
-		SectionSetup "hide a lost repository or key"]
+		SectionSetup "hide a lost repository or key"
 
 seek :: CommandSeek
 seek ps = maybe (trustCommand "dead" DeadTrusted ps) (flip seekKey ps)

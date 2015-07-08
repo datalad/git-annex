@@ -14,9 +14,9 @@ import qualified Remote
 import Annex.Wanted
 import Annex.NumCopies
 
-cmd :: [Command]
-cmd = [withOptions copyOptions $ command "copy" paramPaths seek
-	SectionCommon "copy content of files to/from another repository"]
+cmd :: Command
+cmd = withOptions copyOptions $ command "copy" paramPaths seek
+	SectionCommon "copy content of files to/from another repository"
 
 copyOptions :: [Option]
 copyOptions = Command.Move.moveOptions ++ [autoOption]

@@ -16,9 +16,9 @@ import Logs.Group
 
 import qualified Data.Set as S
 
-cmd :: [Command]
-cmd = [command "trust" (paramRepeating paramRemote) seek
-	SectionSetup "trust a repository"]
+cmd :: Command
+cmd = command "trust" (paramRepeating paramRemote) seek
+	SectionSetup "trust a repository"
 
 seek :: CommandSeek
 seek = trustCommand "trust" Trusted

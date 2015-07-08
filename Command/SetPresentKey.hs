@@ -13,9 +13,9 @@ import Logs.Location
 import Logs.Presence.Pure
 import Types.Key
 
-cmd :: [Command]
-cmd = [noCommit $ command "setpresentkey" (paramPair paramKey (paramPair paramUUID "[1|0]")) seek
-	SectionPlumbing "change records of where key is present"] 
+cmd :: Command
+cmd = noCommit $ command "setpresentkey" (paramPair paramKey (paramPair paramUUID "[1|0]")) seek
+	SectionPlumbing "change records of where key is present"
 
 seek :: CommandSeek
 seek = withWords start

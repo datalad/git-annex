@@ -13,10 +13,10 @@ import Logs.Web
 import Annex.UUID
 import qualified Remote
 
-cmd :: [Command]
-cmd = [notBareRepo $
+cmd :: Command
+cmd = notBareRepo $
 	command "rmurl" (paramPair paramFile paramUrl) seek
-		SectionCommon "record file is not available at url"]
+		SectionCommon "record file is not available at url"
 
 seek :: CommandSeek
 seek = withPairs start

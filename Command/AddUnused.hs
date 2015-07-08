@@ -14,9 +14,9 @@ import qualified Command.Add
 import Command.Unused (withUnusedMaps, UnusedMaps(..), startUnused)
 import Types.Key
 
-cmd :: [Command]
-cmd = [notDirect $ command "addunused" (paramRepeating paramNumRange)
-	seek SectionMaintenance "add back unused files"]
+cmd :: Command
+cmd = notDirect $ command "addunused" (paramRepeating paramNumRange)
+	seek SectionMaintenance "add back unused files"
 
 seek :: CommandSeek
 seek = withUnusedMaps start

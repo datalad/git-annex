@@ -15,9 +15,9 @@ import qualified Annex
 
 import Data.Time.Clock.POSIX
 
-cmd :: [Command]
-cmd = [withOptions forgetOptions $ command "forget" paramNothing seek
-		SectionMaintenance "prune git-annex branch history"]
+cmd :: Command
+cmd = withOptions forgetOptions $ command "forget" paramNothing seek
+		SectionMaintenance "prune git-annex branch history"
 
 forgetOptions :: [Option]
 forgetOptions = [dropDeadOption]

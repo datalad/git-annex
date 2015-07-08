@@ -13,9 +13,9 @@ import qualified Annex.Branch
 import qualified Git.Branch
 import Command.Sync (prepMerge, mergeLocal)
 
-cmd :: [Command]
-cmd = [command "merge" paramNothing seek SectionMaintenance
-	"automatically merge changes from remotes"]
+cmd :: Command
+cmd = command "merge" paramNothing seek SectionMaintenance
+	"automatically merge changes from remotes"
 
 seek :: CommandSeek
 seek ps = do

@@ -18,10 +18,10 @@ import Logs.Location
 import Utility.CopyFile
 import qualified Remote
 
-cmd :: [Command]
-cmd = [notDirect $ command "rekey"
+cmd :: Command
+cmd = notDirect $ command "rekey"
 	(paramOptional $ paramRepeating $ paramPair paramPath paramKey)
-	seek SectionPlumbing "change keys used for files"]
+	seek SectionPlumbing "change keys used for files"
 
 seek :: CommandSeek
 seek = withPairs start

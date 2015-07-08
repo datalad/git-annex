@@ -21,9 +21,10 @@ import Utility.FileMode
 import System.IO.HVFS
 import System.IO.HVFS.Utils
 
-cmd :: [Command]
-cmd = [addCheck check $ command "uninit" paramPaths seek 
-	SectionUtility "de-initialize git-annex and clean out repository"]
+cmd :: Command
+cmd = addCheck check $ command "uninit" paramPaths
+	SectionUtility "de-initialize git-annex and clean out repository"
+	(commandParser seek)
 
 check :: Annex ()
 check = do
@@ -39,7 +40,7 @@ check = do
 	revhead = inRepo $ Git.Command.pipeReadStrict
 		[Param "rev-parse", Param "--abbrev-ref", Param "HEAD"]
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = do
 	withFilesNotInGit False (whenAnnexed startCheckIncomplete) ps
 	Annex.changeState $ \s -> s { Annex.fast = True }

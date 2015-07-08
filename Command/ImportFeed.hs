@@ -43,10 +43,10 @@ import Types.MetaData
 import Logs.MetaData
 import Annex.MetaData
 
-cmd :: [Command]
-cmd = [notBareRepo $ withOptions [templateOption, relaxedOption, rawOption] $
+cmd :: Command
+cmd = notBareRepo $ withOptions [templateOption, relaxedOption, rawOption] $
 	command "importfeed" (paramRepeating paramUrl) seek
-		SectionCommon "import files from podcast feeds"]
+		SectionCommon "import files from podcast feeds"
 
 templateOption :: Option
 templateOption = fieldOption [] "template" paramFormat "template for filenames"

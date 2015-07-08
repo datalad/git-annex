@@ -19,10 +19,10 @@ import qualified Backend.URL
 
 import Network.URI
 
-cmd :: [Command]
-cmd = [notDirect $ notBareRepo $
+cmd :: Command
+cmd = notDirect $ notBareRepo $
 	command "fromkey" (paramPair paramKey paramPath) seek
-		SectionPlumbing "adds a file using a specific key"]
+		SectionPlumbing "adds a file using a specific key"
 
 seek :: CommandSeek
 seek ps = do

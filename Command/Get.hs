@@ -16,9 +16,9 @@ import Annex.NumCopies
 import Annex.Wanted
 import qualified Command.Move
 
-cmd :: [Command]
-cmd = [withOptions getOptions $ command "get" paramPaths seek
-	SectionCommon "make content of annexed files available"]
+cmd :: Command
+cmd = withOptions getOptions $ command "get" paramPaths seek
+	SectionCommon "make content of annexed files available"
 
 getOptions :: [Option]
 getOptions = fromOption : autoOption : jobsOption : annexedMatchingOptions

@@ -37,10 +37,10 @@ import Control.Concurrent.STM
 import Network.Socket (HostName)
 import System.Environment (getArgs)
 
-cmd :: [Command]
-cmd = [ withOptions [listenOption] $
+cmd :: Command
+cmd = withOptions [listenOption] $
 	noCommit $ noRepo startNoRepo $ dontCheck repoExists $ notBareRepo $
-	command "webapp" paramNothing seek SectionCommon "launch webapp"]
+	command "webapp" paramNothing seek SectionCommon "launch webapp"
 
 listenOption :: Option
 listenOption = fieldOption [] "listen" paramAddress

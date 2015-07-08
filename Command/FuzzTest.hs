@@ -20,9 +20,9 @@ import System.Random (getStdRandom, random, randomR)
 import Test.QuickCheck
 import Control.Concurrent
 
-cmd :: [Command]
-cmd = [ notBareRepo $ command "fuzztest" paramNothing seek SectionTesting
-	"generates fuzz test files"]
+cmd :: Command
+cmd = notBareRepo $ command "fuzztest" paramNothing seek SectionTesting
+	"generates fuzz test files"
 
 seek :: CommandSeek
 seek = withNothing start

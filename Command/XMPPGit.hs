@@ -11,10 +11,10 @@ import Common.Annex
 import Command
 import Assistant.XMPP.Git
 
-cmd :: [Command]
-cmd = [noCommit $ noRepo startNoRepo $ dontCheck repoExists $
+cmd :: Command
+cmd = noCommit $ noRepo startNoRepo $ dontCheck repoExists $
 	command "xmppgit" paramNothing seek
-		SectionPlumbing "git to XMPP relay"]
+		SectionPlumbing "git to XMPP relay"
 
 seek :: CommandSeek
 seek = withWords start

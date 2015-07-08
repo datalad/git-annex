@@ -22,11 +22,11 @@ import Data.Either
 {- Runs a command, starting with the check stage, and then
  - the seek stage. Finishes by running the continutation, and 
  - then showing a count of any failures. -}
-performCommandAction :: Command -> CmdParams -> Annex () -> Annex ()
-performCommandAction Command { cmdseek = seek, cmdcheck = c, cmdname = name } params cont = do
+performCommandAction :: Command -> CommandSeek -> Annex () -> Annex ()
+performCommandAction Command { cmdcheck = c, cmdname = name } seek cont = do
 	mapM_ runCheck c
 	Annex.changeState $ \s -> s { Annex.errcounter = 0 }
-	seek params
+	seek
 	finishCommandActions
 	cont
 	showerrcount =<< Annex.getState Annex.errcounter

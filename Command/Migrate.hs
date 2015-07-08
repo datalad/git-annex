@@ -18,10 +18,10 @@ import qualified Command.ReKey
 import qualified Command.Fsck
 import qualified Annex
 
-cmd :: [Command]
-cmd = [notDirect $ withOptions annexedMatchingOptions $
+cmd :: Command
+cmd = notDirect $ withOptions annexedMatchingOptions $
 	command "migrate" paramPaths seek
-		SectionUtility "switch data to different backend"]
+		SectionUtility "switch data to different backend"
 
 seek :: CommandSeek
 seek = withFilesInGit $ whenAnnexed start

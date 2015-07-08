@@ -19,11 +19,12 @@ import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Concurrent.STM
 
-cmd :: [Command]
-cmd = [noCommit $ command "notifychanges" paramNothing seek SectionPlumbing
-	"sends notification when git refs are changed"]
+cmd :: Command
+cmd = noCommit $ command "notifychanges" paramNothing SectionPlumbing
+	"sends notification when git refs are changed"
+	(commandParser seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withNothing start
 
 start :: CommandStart

@@ -40,9 +40,9 @@ import qualified Database.Fsck as FsckDb
 import Data.Time.Clock.POSIX
 import System.Posix.Types (EpochTime)
 
-cmd :: [Command]
-cmd = [withOptions fsckOptions $ command "fsck" paramPaths seek
-	SectionMaintenance "check for problems"]
+cmd :: Command
+cmd = withOptions fsckOptions $ command "fsck" paramPaths seek
+	SectionMaintenance "check for problems"
 
 fsckFromOption :: Option
 fsckFromOption = fieldOption ['f'] "from" paramRemote "check remote"

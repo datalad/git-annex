@@ -13,10 +13,10 @@ import CmdLine.Batch
 import Annex.CatFile
 import Types.Key
 
-cmd :: [Command]
-cmd = [withOptions [batchOption] $ notBareRepo $ noCommit $ noMessages $
+cmd :: Command
+cmd = withOptions [batchOption] $ notBareRepo $ noCommit $ noMessages $
 	command "lookupkey" (paramRepeating paramFile) seek
-		SectionPlumbing "looks up key used for file"]
+		SectionPlumbing "looks up key used for file"
 
 seek :: CommandSeek
 seek = batchable withStrings start

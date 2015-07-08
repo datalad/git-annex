@@ -12,10 +12,10 @@ import Command
 import qualified Annex.Queue
 import qualified Annex
 	
-cmd :: [Command]
-cmd = [notDirect $ withOptions annexedMatchingOptions $
+cmd :: Command
+cmd = notDirect $ withOptions annexedMatchingOptions $
 	command "lock" paramPaths seek SectionCommon
-	"undo unlock command"]
+	"undo unlock command"
 
 seek :: CommandSeek
 seek ps = do

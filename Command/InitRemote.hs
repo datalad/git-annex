@@ -19,10 +19,10 @@ import Logs.Trust
 
 import Data.Ord
 
-cmd :: [Command]
-cmd = [command "initremote"
+cmd :: Command
+cmd = command "initremote"
 	(paramPair paramName $ paramOptional $ paramRepeating paramKeyValue)
-	seek SectionSetup "creates a special (non-git) remote"]
+	seek SectionSetup "creates a special (non-git) remote"
 
 seek :: CommandSeek
 seek = withWords start

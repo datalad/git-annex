@@ -78,10 +78,10 @@ emptyStatInfo = StatInfo Nothing Nothing M.empty Nothing
 -- a state monad for running Stats in
 type StatState = StateT StatInfo Annex
 
-cmd :: [Command]
-cmd = [noCommit $ dontCheck repoExists $ withOptions (jsonOption : bytesOption : annexedMatchingOptions) $
+cmd :: Command
+cmd = noCommit $ dontCheck repoExists $ withOptions (jsonOption : bytesOption : annexedMatchingOptions) $
 	command "info" (paramOptional $ paramRepeating paramItem) seek SectionQuery
-	"shows information about the specified item or the repository as a whole"]
+	"shows information about the specified item or the repository as a whole"
 
 seek :: CommandSeek
 seek = withWords start
