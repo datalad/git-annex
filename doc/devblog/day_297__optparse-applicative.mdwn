@@ -1,0 +1,25 @@
+Now working on converting git-annex to use
+[optparse-applicative](https://github.com/pcapriotti/optparse-applicative)
+for its command line parsing. I've wanted to do this for a long time, 
+because the current code for options is generally horrible, runs in
+IO, and is not at all type safe, while optparse-applicative has wonderful
+composable parsers and lets each subcommand have its own data type
+repesenting all its options.
+
+What pushed me over the edge is that optparse-applicative has automatic
+bash completion!
+
+	# source <(git-annex --bash-completion-script `which git-annex`)
+	# git-annex fsck -
+	--all                   --key                   -S
+	--from                  --more                  -U
+
+Since nobody has managed to write a full bash completion for git-annex
+before, let alone keep it up-to-date with changes to the code, automating
+the problem away is a really nice win. :)
+
+The conversion is a rather huge undertaking; the diff is already over 3000
+lines large after 8 hours of work, and I'm maybe 1/3rd done, with
+the groundwork laid (except for global options still todo) and a few
+subcommands  converted. This won't land for this week's release; it'll
+need a lot of testing before it'll be ready for any release.
