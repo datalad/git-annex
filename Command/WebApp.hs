@@ -39,9 +39,10 @@ import System.Environment (getArgs)
 
 cmd :: Command
 cmd = withOptions [listenOption] $
-	noCommit $ noRepo startNoRepo $ dontCheck repoExists $ notBareRepo $
-	command "webapp" SectionCommon "launch webapp"
-		paramNothing (withParams seek)
+	noCommit $ dontCheck repoExists $ notBareRepo $
+	noRepo (withParams startNoRepo) $
+		command "webapp" SectionCommon "launch webapp"
+			paramNothing (withParams seek)
 
 listenOption :: Option
 listenOption = fieldOption [] "listen" paramAddress

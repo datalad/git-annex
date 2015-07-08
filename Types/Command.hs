@@ -39,7 +39,6 @@ type CommandCleanup = Annex Bool
 {- A command is defined by specifying these things. -}
 data Command = Command
 	{ cmdoptions :: [Option]     -- command-specific options
-	, cmdnorepo :: Maybe (CmdParams -> IO ()) -- an action to run when not in a repo
 	, cmdcheck :: [CommandCheck] -- check stage
 	, cmdnocommit :: Bool        -- don't commit journalled state changes
 	, cmdnomessages :: Bool      -- don't output normal messages
@@ -48,6 +47,7 @@ data Command = Command
 	, cmdsection :: CommandSection
 	, cmddesc :: String          -- description of command for usage
 	, cmdparser :: CommandParser -- command line parser
+	, cmdnorepo :: Maybe (Parser (IO ())) -- used when not in a repo
 	}
 
 {- Command-line parameters, after the command is selected and options

@@ -7,6 +7,7 @@
 
 module Command (
 	command,
+	withParams,
 	noRepo,
 	noCommit,
 	noMessages,
@@ -32,11 +33,19 @@ import CmdLine.Action as ReExported
 import CmdLine.Option as ReExported
 import CmdLine.GitAnnex.Options as ReExported
 
+import qualified Options.Applicative as O
+
 {- Generates a normal Command -}
 command :: String -> CommandSection -> String -> String -> (String -> CommandParser) -> Command
 command name section desc paramdesc mkparser =
-	Command [] Nothing commonChecks False False name paramdesc 
-		section desc (mkparser paramdesc)
+	Command [] commonChecks False False name paramdesc 
+		section desc (mkparser paramdesc) Nothing
+
+{- Option parser that takes all non-option params as-is. -}
+withParams :: (CmdParams -> v) -> String -> O.Parser v
+withParams mkseek paramdesc = mkseek <$> O.many cmdparams
+  where
+	cmdparams = O.argument O.str (O.metavar paramdesc)
 
 {- Indicates that a command doesn't need to commit any changes to
  - the git-annex branch. -}
@@ -50,8 +59,8 @@ noMessages c = c { cmdnomessages = True }
 
 {- Adds a fallback action to a command, that will be run if it's used
  - outside a git repository. -}
-noRepo :: (CmdParams -> IO ()) -> Command -> Command
-noRepo a c = c { cmdnorepo = Just a }
+noRepo :: (String -> O.Parser (IO ())) -> Command -> Command
+noRepo a c = c { cmdnorepo = Just (a (cmdparamdesc c)) }
 
 {- Adds options to a command. -}
 withOptions :: [Option] -> Command -> Command

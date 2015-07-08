@@ -22,9 +22,12 @@ import qualified Command.Fsck
 import System.Console.GetOpt
 
 cmd :: Command
-cmd = noCommit $ noRepo startNoRepo $ dontCheck repoExists $
-	command "help" SectionCommon "display help"
-		"COMMAND" (withParams seek)
+cmd = noCommit $ dontCheck repoExists $
+	noRepo (parseparams startNoRepo) $ 
+		command "help" SectionCommon "display help"
+			"COMMAND" (parseparams seek)
+  where
+	parseparams = withParams
 
 seek :: CmdParams -> CommandSeek
 seek = withWords start

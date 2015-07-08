@@ -12,9 +12,12 @@ import Command
 import Assistant.XMPP.Git
 
 cmd :: Command
-cmd = noCommit $ noRepo startNoRepo $ dontCheck repoExists $
-	command "xmppgit" SectionPlumbing "git to XMPP relay"
-		paramNothing (withParams seek)
+cmd = noCommit $ dontCheck repoExists $
+	noRepo (parseparams startNoRepo) $ 
+		command "xmppgit" SectionPlumbing "git to XMPP relay"
+			paramNothing (parseparams seek)
+  where
+	parseparams = withParams
 
 seek :: CmdParams -> CommandSeek
 seek = withWords start

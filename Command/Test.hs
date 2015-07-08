@@ -12,10 +12,12 @@ import Command
 import Messages
 
 cmd :: Command
-cmd = noRepo startIO $ dontCheck repoExists $
+cmd = noRepo (parseparams startIO) $ dontCheck repoExists $
 	command "test" SectionTesting
 		"run built-in test suite"
-		paramNothing (withParams seek)
+		paramNothing (parseparams seek)
+  where
+	parseparams = withParams
 
 seek :: CmdParams -> CommandSeek
 seek = withWords start

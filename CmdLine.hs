@@ -45,7 +45,7 @@ dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
 				inRepo $ autocorrect . Just
 			forM_ fields $ uncurry Annex.setField
 			(cmd, seek) <- liftIO $
-				O.handleParseResult (parseCmd (name:args) allcmds)
+				O.handleParseResult (parseCmd (name:args) allcmds cmdparser)
 			when (cmdnomessages cmd) $ 
 				Annex.setOutput QuietOutput
 			-- TODO: propigate global options to annex state (how?)
@@ -54,11 +54,12 @@ dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
 			startup
 			performCommandAction cmd seek $
 				shutdown $ cmdnocommit cmd
-	go (Left e) = do
+	go (Left norepo) = do
 		when fuzzy $
 			autocorrect =<< Git.Config.global
-		-- a <- O.handleParseResult (parseCmd (name:args) allcmds)
-		error "TODO"
+		let norepoparser = fromMaybe (throw norepo) . cmdnorepo
+		(_cmd, a) <- O.handleParseResult (parseCmd (name:args) allcmds norepoparser)
+		a
 
 	autocorrect = Git.AutoCorrect.prepare inputcmdname cmdname cmds
 	err msg = msg ++ "\n\n" ++ usage header allcmds
@@ -69,44 +70,16 @@ dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
 			_ -> inputcmdname
 		| otherwise = inputcmdname
 
-#if 0
-	case getOptCmd args cmd commonoptions of
-		Right (flags, params) -> go flags params
-			=<< (E.try getgitrepo :: IO (Either E.SomeException Git.Repo))
-		Left parseerr -> error parseerr
-  where
-	go flags params (Right g) = do
-		state <- Annex.new g
-		Annex.eval state $ do
-			checkEnvironment
-			when fuzzy $
-				inRepo $ autocorrect . Just
-			forM_ fields $ uncurry Annex.setField
-			when (cmdnomessages cmd) $ 
-				Annex.setOutput QuietOutput
-			sequence_ flags
-			whenM (annexDebug <$> Annex.getGitConfig) $
-				liftIO enableDebugOutput
-			startup
-			performCommandAction cmd params $
-				shutdown $ cmdnocommit cmd
-	go _flags params (Left e) = do
-		when fuzzy $
-			autocorrect =<< Git.Config.global
-		maybe (throw e) (\a -> a params) (cmdnorepo cmd)
-	cmd = Prelude.head cmds
-#endif
 
-{- Parses command line and selects a command to run and gets the
- - seek action for the command. -}
-parseCmd :: CmdParams -> [Command] -> O.ParserResult (Command, CommandSeek)
-parseCmd allargs allcmds = O.execParserPure (O.prefs O.idm) pinfo allargs
+{- Parses command line, selecting one of the commands from the list. -}
+parseCmd :: CmdParams -> [Command] -> (Command -> O.Parser v) -> O.ParserResult (Command, v)
+parseCmd allargs allcmds getparser = O.execParserPure (O.prefs O.idm) pinfo allargs
   where
 	pinfo = O.info (O.subparser $ mconcat $ map mkcommand allcmds) O.idm
 	mkcommand c = O.command (cmdname c) (O.info (mkparser c) O.idm)
 	mkparser c = (,)
 		<$> pure c
-		<*> cmdparser c
+		<*> getparser c
 
 {- Parses command line params far enough to find the Command to run, and
  - returns the remaining params.

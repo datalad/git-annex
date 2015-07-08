@@ -11,7 +11,6 @@ import Common.Annex
 import Types.Command
 
 import System.Console.GetOpt
-import qualified Options.Applicative as O
 
 usageMessage :: String -> String
 usageMessage s = "Usage: " ++ s
@@ -55,13 +54,6 @@ commandUsage cmd = unlines
 		, cmdparamdesc cmd
 		, "[option ...]"
 		]
-
-{- Simple CommandParser generator, for when the CommandSeek wants all
- - non-option parameters. -}
-withParams :: (CmdParams -> CommandSeek) -> String -> CommandParser
-withParams mkseek paramdesc = mkseek <$> O.many cmdparams
-  where
-	cmdparams = O.argument O.str (O.metavar paramdesc)
 
 {- Descriptions of params used in usage messages. -}
 paramPaths :: String

@@ -18,10 +18,12 @@ import qualified Remote
 import qualified Backend
 
 cmd :: Command
-cmd = withOptions [rawOption] $
-	noCommit $ noRepo startNoRepo $ dontCheck repoExists $
-	command "version" SectionQuery "show version info"
-		paramNothing (withParams seek)
+cmd = withOptions [rawOption] $ dontCheck repoExists $ noCommit $ 
+	noRepo (parseparams startNoRepo) $ 
+		command "version" SectionQuery "show version info"
+			paramNothing (parseparams seek)
+  where
+	parseparams = withParams
 
 rawOption :: Option
 rawOption = flagOption [] "raw" "output only program version"
