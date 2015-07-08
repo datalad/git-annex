@@ -15,12 +15,12 @@ import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
 import Test.Tasty.Ingredients.Rerun
 
-import Options.Applicative hiding (command)
 import qualified Data.Map as M
 import qualified Text.JSON
 
 import Common
 
+import qualified Utility.SubTasty
 import qualified Utility.SafeCommand
 import qualified Annex
 import qualified Annex.UUID
@@ -83,11 +83,7 @@ import qualified Utility.Gpg
 
 main :: [String] -> IO ()
 main ps = do
-	-- Can't use tasty's defaultMain because one of the command line
-	-- parameters is "test".
-	let pinfo = info (helper <*> suiteOptionParser ingredients tests)
-		( fullDesc <> header "Builtin test suite" )
-	opts <- parseOpts (prefs idm) pinfo ps
+	opts <- Utility.SubTasty.parseOpts "test" ingredients tests ("test":ps)
 	case tryIngredients ingredients opts tests of
 		Nothing -> error "No tests found!?"
 		Just act -> ifM act
@@ -97,13 +93,6 @@ main ps = do
 				putStrLn "   with utilities, such as git, installed on this system.)"
 				exitFailure
 			)
-  where
-	parseOpts pprefs pinfo args =
-		case execParserPure pprefs pinfo args of
-			(Options.Applicative.Failure failure) -> do
-				let (msg, _exit) = renderFailure failure "git-annex test"
-				error msg
-			v -> handleParseResult v
 
 ingredients :: [Ingredient]
 ingredients =
