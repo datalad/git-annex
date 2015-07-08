@@ -43,7 +43,7 @@ data Command = Command
 	, cmdnocommit :: Bool        -- don't commit journalled state changes
 	, cmdnomessages :: Bool      -- don't output normal messages
 	, cmdname :: String
-	, cmdparamdesc :: String     -- description of params for usage
+	, cmdparamdesc :: CmdParamsDesc -- description of params for usage
 	, cmdsection :: CommandSection
 	, cmddesc :: String          -- description of command for usage
 	, cmdparser :: CommandParser -- command line parser
@@ -53,6 +53,8 @@ data Command = Command
 {- Command-line parameters, after the command is selected and options
  - are parsed. -}
 type CmdParams = [String]
+
+type CmdParamsDesc = String
 
 {- CommandCheck functions can be compared using their unique id. -}
 instance Eq CommandCheck where

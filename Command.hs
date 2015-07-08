@@ -1,6 +1,6 @@
 {- git-annex command infrastructure
  -
- - Copyright 2010-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -8,6 +8,8 @@
 module Command (
 	command,
 	withParams,
+	cmdParams,
+	finalOpt,
 	noRepo,
 	noCommit,
 	noMessages,
@@ -36,16 +38,24 @@ import CmdLine.GitAnnex.Options as ReExported
 import qualified Options.Applicative as O
 
 {- Generates a normal Command -}
-command :: String -> CommandSection -> String -> String -> (String -> CommandParser) -> Command
+command :: String -> CommandSection -> String -> CmdParamsDesc -> (CmdParamsDesc -> CommandParser) -> Command
 command name section desc paramdesc mkparser =
 	Command [] commonChecks False False name paramdesc 
 		section desc (mkparser paramdesc) Nothing
 
-{- Option parser that takes all non-option params as-is. -}
-withParams :: (CmdParams -> v) -> String -> O.Parser v
-withParams mkseek paramdesc = mkseek <$> O.many cmdparams
-  where
-	cmdparams = O.argument O.str (O.metavar paramdesc)
+{- Simple option parser that takes all non-option params as-is. -}
+withParams :: (CmdParams -> v) -> CmdParamsDesc -> O.Parser v
+withParams mkseek paramdesc = mkseek <$> cmdParams paramdesc
+
+{- Parser that accepts all non-option params. -}
+cmdParams :: CmdParamsDesc -> O.Parser CmdParams
+cmdParams paramdesc = O.many (O.argument O.str (O.metavar paramdesc))
+
+{- Makes an option parser that is normally required be optional;
+ - its switch can be given zero or more times, and the last one
+ - given will be used. -}
+finalOpt :: O.Parser a -> O.Parser (Maybe a)
+finalOpt = lastMaybe <$$> O.many
 
 {- Indicates that a command doesn't need to commit any changes to
  - the git-annex branch. -}
