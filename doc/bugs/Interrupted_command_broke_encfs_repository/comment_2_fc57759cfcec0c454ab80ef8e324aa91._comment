@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="konubinix"
+ subject="Thank you for your answer"
+ date="2015-07-08T19:33:35Z"
+ content="""
+The filesystem I use is ext4. I don't think the ext4 module of the linux kernel
+present on my version of Android would be much different of the one on my
+computer.
+
+Therefore I guess I shall investigate in encfs. It is a pity there is no
+alternative allowing to keep a directory encrypted without requiring
+administrative privileges.
+
+Thank you again.
+"""]]
