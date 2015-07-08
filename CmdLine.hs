@@ -75,13 +75,10 @@ dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
 parseCmd :: CmdParams -> [Command] -> (Command -> O.Parser v) -> O.ParserResult (Command, v)
 parseCmd allargs allcmds getparser = O.execParserPure (O.prefs O.idm) pinfo allargs
   where
-	pinfo = O.info (O.subparser $ mconcat $ map mkcommand allcmds)
-		( O.fullDesc
-		<> O.progDesc "hiya"
-		<> O.header "ook - aaa"
-		)
+	pinfo = O.info (O.helper <*> subcmds) O.fullDesc
+	subcmds = O.subparser $ mconcat $ map mkcommand allcmds
 	mkcommand c = O.command (cmdname c) $ O.info (mkparser c) 
-		(O.fullDesc <> O.progDesc (cmddesc c))
+		(O.fullDesc <> O.header (cmddesc c))
 	mkparser c = (,)
 		<$> pure c
 		<*> getparser c

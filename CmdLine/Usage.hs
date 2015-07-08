@@ -10,8 +10,6 @@ module CmdLine.Usage where
 import Common.Annex
 import Types.Command
 
-import System.Console.GetOpt
-
 usageMessage :: String -> String
 usageMessage s = "Usage: " ++ s
 
@@ -40,20 +38,6 @@ usage header cmds = unlines $ usageMessage header : concatMap go [minBound..]
 	descpad = pad $ longest cmdparamdesc + 2
 	longest f = foldl max 0 $ map (length . f) cmds
 	scmds = sort cmds
-
-{- Usage message for a single command. -}
-commandUsage :: Command -> String
-commandUsage cmd = unlines
-	[ usageInfo header (cmdoptions cmd)
-	, "To see additional options common to all commands, run: git annex help options"
-	]
-  where
-	header = usageMessage $ unwords
-		[ "git-annex"
-		, cmdname cmd
-		, cmdparamdesc cmd
-		, "[option ...]"
-		]
 
 {- Descriptions of params used in usage messages. -}
 paramPaths :: String
