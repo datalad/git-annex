@@ -83,19 +83,6 @@ import qualified Utility.Gpg
 
 main :: [String] -> IO ()
 main ps = do
-	let tests = testGroup "Tests"
-		-- Test both direct and indirect mode.
-		-- Windows is only going to use direct mode,
-		-- so don't test twice.
-		[ properties
-#ifndef mingw32_HOST_OS
-		, withTestEnv True $ unitTests "(direct)"
-		, withTestEnv False $ unitTests "(indirect)"
-#else
-		, withTestEnv False $ unitTests ""
-#endif
-		]
-
 	-- Can't use tasty's defaultMain because one of the command line
 	-- parameters is "test".
 	let pinfo = info (helper <*> suiteOptionParser ingredients tests)
@@ -123,6 +110,20 @@ ingredients =
 	[ listingTests
 	, rerunningTests [consoleTestReporter]
 	]
+
+tests :: TestTree
+tests = testGroup "Tests"
+	-- Test both direct and indirect mode.
+	-- Windows is only going to use direct mode, so don't test twice.
+	[ properties
+#ifndef mingw32_HOST_OS
+	, withTestEnv True $ unitTests "(direct)"
+	, withTestEnv False $ unitTests "(indirect)"
+#else
+	, withTestEnv False $ unitTests ""
+#endif
+	]
+
 
 properties :: TestTree
 properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
