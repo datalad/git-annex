@@ -71,23 +71,20 @@ parseKeyOptions allowincomplete = KeyOptions
 
 parseAllKeysOption :: Parser Bool
 parseAllKeysOption = switch
-	( long "all"
-	<> short 'A'
+	( long "all" <> short 'A'
 	<> help "operate on all versions of all files"
 	)
 
 parseUnusedKeysOption :: Parser Bool
 parseUnusedKeysOption = switch
-	( long "unused"
-	<> short 'U'
+	( long "unused" <> short 'U'
 	<> help "operate on files found by last run of git-annex unused"
 	)
 
 parseSpecificKeyOption :: Parser (Maybe Key)
 parseSpecificKeyOption = optional $ option (str >>= parseKey)
-	( long "key"
+	( long "key" <> metavar paramKey
 	<> help "operate on specified key"
-	<> metavar paramKey
 	)
 
 parseKey :: Monad m => String -> m Key
@@ -193,8 +190,7 @@ autoOption = flagOption ['a'] "auto" "automatic mode"
 
 parseAutoOption :: Parser Bool
 parseAutoOption = switch
-	( long "auto"
-	<> short 'a'
+	( long "auto" <> short 'a'
 	<> help "automatic mode"
 	)
 

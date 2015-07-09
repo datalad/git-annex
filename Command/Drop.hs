@@ -47,10 +47,8 @@ optParser desc = DropOptions
 
 parseDropFromOption :: Parser (Maybe RemoteName)
 parseDropFromOption = optional $ strOption
-        ( long "from"
-        <> short 'f'
-	<> metavar paramRemote
-        <> help "drop content from a remote"
+	( long "from" <> short 'f' <> metavar paramRemote
+	<> help "drop content from a remote"
 	)
 
 seek :: DropOptions -> CommandSeek

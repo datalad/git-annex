@@ -17,6 +17,8 @@ import Annex.Ssh
 
 import qualified Command.Add
 import qualified Command.Unannex
+import qualified Command.Fsck
+{-
 import qualified Command.Drop
 import qualified Command.Move
 import qualified Command.Copy
@@ -46,7 +48,6 @@ import qualified Command.Init
 import qualified Command.Describe
 import qualified Command.InitRemote
 import qualified Command.EnableRemote
-import qualified Command.Fsck
 import qualified Command.Expire
 import qualified Command.Repair
 import qualified Command.Unused
@@ -116,10 +117,13 @@ import qualified Command.TestRemote
 #ifdef WITH_EKG
 import System.Remote.Monitoring
 #endif
+-}
 
 cmds :: [Command]
 cmds = 
 	[ Command.Add.cmd
+	, Command.Fsck.cmd
+{-
 	, Command.Get.cmd
 	, Command.Drop.cmd
 	, Command.Move.cmd
@@ -176,7 +180,6 @@ cmds =
 	, Command.VPop.cmd
 	, Command.VCycle.cmd
 	, Command.Fix.cmd
-	, Command.Fsck.cmd
 	, Command.Expire.cmd
 	, Command.Repair.cmd
 	, Command.Unused.cmd
@@ -218,6 +221,7 @@ cmds =
 	, Command.FuzzTest.cmd
 	, Command.TestRemote.cmd
 #endif
+-}
 	]
 
 header :: String

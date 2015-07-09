@@ -60,24 +60,19 @@ optParser :: CmdParamsDesc -> Parser FsckOptions
 optParser desc = FsckOptions
 	<$> cmdParams desc
 	<*> optional (strOption 
-		( long "from"
-		<> short 'f'
-		<> metavar paramRemote
+		( long "from" <> short 'f' <> metavar paramRemote 
 		<> help "check remote"
 		))
 	<*> switch
-		( long "incremental"
-		<> short 'S'
+		( long "incremental" <> short 'S'
 		<> help "start an incremental fsck"
 		)
 	<*> switch
-		( long "more"
-		<> short 'm'
+		( long "more" <> short 'm'
 		<> help "continue an incremental fsck"
 		)
 	<*> optional (option (str >>= parseDuration)
-		( long "incremental-schedule"
-		<> metavar paramTime
+		( long "incremental-schedule" <> metavar paramTime
 		<> help "schedule incremental fscking"
 		))
 	<*> parseKeyOptions False
