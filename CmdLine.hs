@@ -82,9 +82,9 @@ parseCmd :: CmdParams -> [Command] -> (Command -> O.Parser v) -> O.ParserResult 
 parseCmd allargs allcmds getparser = O.execParserPure (O.prefs O.idm) pinfo allargs
   where
 	pinfo = O.info (O.helper <*> subcmds) O.fullDesc
-	subcmds = O.subparser $ mconcat $ map mkcommand allcmds
+	subcmds = O.hsubparser $ mconcat $ map mkcommand allcmds
 	mkcommand c = O.command (cmdname c) $ O.info (mkparser c) 
-		(O.fullDesc <> O.header (cmddesc c))
+		(O.fullDesc <> O.header (cmddesc c) <> O.progDesc (cmddesc c))
 	mkparser c = (,)
 		<$> pure c
 		<*> getparser c
