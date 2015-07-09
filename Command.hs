@@ -32,6 +32,7 @@ import CmdLine.Usage as ReExported
 import CmdLine.Action as ReExported
 import CmdLine.Option as ReExported
 import CmdLine.GitAnnex.Options as ReExported
+import Options.Applicative as ReExported hiding (command)
 
 import qualified Options.Applicative as O
 

@@ -15,15 +15,14 @@ import Command
 import Utility.Env
 import Annex.Ssh
 
+import qualified Command.Help
 import qualified Command.Add
 import qualified Command.Unannex
-import qualified Command.Fsck
-{-
-import qualified Command.Help
 import qualified Command.Drop
 import qualified Command.Move
 import qualified Command.Copy
 import qualified Command.Get
+import qualified Command.Fsck
 import qualified Command.LookupKey
 import qualified Command.ContentLocation
 import qualified Command.ExamineKey
@@ -117,18 +116,16 @@ import qualified Command.TestRemote
 #ifdef WITH_EKG
 import System.Remote.Monitoring
 #endif
--}
 
 cmds :: [Command]
 cmds = 
-	[ Command.Add.cmd
-	, Command.Fsck.cmd
-{-
-	, Command.Help.cmd
+	[ Command.Help.cmd
+	, Command.Add.cmd
 	, Command.Get.cmd
 	, Command.Drop.cmd
 	, Command.Move.cmd
 	, Command.Copy.cmd
+	, Command.Fsck.cmd
 	, Command.Unlock.cmd
 	, Command.Unlock.editcmd
 	, Command.Lock.cmd
@@ -221,7 +218,6 @@ cmds =
 	, Command.FuzzTest.cmd
 	, Command.TestRemote.cmd
 #endif
--}
 	]
 
 run :: [String] -> IO ()

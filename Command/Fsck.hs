@@ -40,7 +40,6 @@ import qualified Database.Fsck as FsckDb
 
 import Data.Time.Clock.POSIX
 import System.Posix.Types (EpochTime)
-import Options.Applicative hiding (command)
 
 cmd :: Command
 cmd = command "fsck" SectionMaintenance

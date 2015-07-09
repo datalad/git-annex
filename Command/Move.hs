@@ -18,36 +18,47 @@ import Annex.Transfer
 import Logs.Presence
 
 cmd :: Command
-cmd = withOptions moveOptions $ 
-	command "move" SectionCommon
-		"move content of files to/from another repository"
-		paramPaths (withParams seek)
+cmd = command "move" SectionCommon
+	"move content of files to/from another repository"
+	paramPaths ((seek <=< finishParse) <$$> optParser)
 
-moveOptions :: [Option]
-moveOptions = fromToOptions ++ [jobsOption] ++ keyOptions ++ annexedMatchingOptions
+data MoveOptions = MoveOptions
+	{ moveFiles :: CmdParams
+	, fromToOptions :: FromToOptions
+	, keyOptions :: Maybe KeyOptions
+	}
 
-seek :: CmdParams -> CommandSeek
-seek ps = do
-	to <- getOptionField toOption Remote.byNameWithUUID
-	from <- getOptionField fromOption Remote.byNameWithUUID
-	withKeyOptions False
-		(startKey to from True)
-		(withFilesInGit $ whenAnnexed $ start to from True)
-		ps
+-- TODO: jobsOption, annexedMatchingOptions
 
-start :: Maybe Remote -> Maybe Remote -> Bool -> FilePath -> Key -> CommandStart
-start to from move = start' to from move . Just
+optParser :: CmdParamsDesc -> Parser MoveOptions
+optParser desc = MoveOptions
+	<$> cmdParams desc
+	<*> parseFromToOptions
+	<*> optional (parseKeyOptions False)
 
-startKey :: Maybe Remote -> Maybe Remote -> Bool -> Key -> CommandStart
-startKey to from move = start' to from move Nothing
+instance DeferredParseClass MoveOptions where
+	finishParse v = MoveOptions
+		<$> pure (moveFiles v)
+		<*> finishParse (fromToOptions v)
+		<*> pure (keyOptions v)
 
-start' :: Maybe Remote -> Maybe Remote -> Bool -> AssociatedFile -> Key -> CommandStart
-start' to from move afile key = do
-	case (from, to) of
-		(Nothing, Nothing) -> error "specify either --from or --to"
-		(Nothing, Just dest) -> toStart dest move afile key
-		(Just src, Nothing) -> fromStart src move afile key
-		_ -> error "only one of --from or --to can be specified"
+seek :: MoveOptions -> CommandSeek
+seek o = withKeyOptions (keyOptions o) False
+	(startKey o True)
+	(withFilesInGit $ whenAnnexed $ start o True)
+	(moveFiles o)
+
+start :: MoveOptions -> Bool -> FilePath -> Key -> CommandStart
+start o move = start' o move . Just
+
+startKey :: MoveOptions -> Bool -> Key -> CommandStart
+startKey o move = start' o move Nothing
+
+start' :: MoveOptions -> Bool -> AssociatedFile -> Key -> CommandStart
+start' o move afile key = 
+	case fromToOptions o of
+		FromRemote src -> fromStart move afile key =<< getParsed src
+		ToRemote dest -> toStart move afile key =<< getParsed dest
 
 showMoveAction :: Bool -> Key -> AssociatedFile -> Annex ()
 showMoveAction move = showStart' (if move then "move" else "copy")
@@ -61,8 +72,8 @@ showMoveAction move = showStart' (if move then "move" else "copy")
  - A file's content can be moved even if there are insufficient copies to
  - allow it to be dropped.
  -}
-toStart :: Remote -> Bool -> AssociatedFile -> Key -> CommandStart
-toStart dest move afile key = do
+toStart :: Bool -> AssociatedFile -> Key -> Remote -> CommandStart
+toStart move afile key dest = do
 	u <- getUUID
 	ishere <- inAnnex key
 	if not ishere || u == Remote.uuid dest
@@ -124,8 +135,8 @@ toPerform dest move key afile fastcheck isthere =
  - If the current repository already has the content, it is still removed
  - from the remote.
  -}
-fromStart :: Remote -> Bool -> AssociatedFile -> Key -> CommandStart
-fromStart src move afile key
+fromStart :: Bool -> AssociatedFile -> Key -> Remote -> CommandStart
+fromStart move afile key src
 	| move = go
 	| otherwise = stopUnless (not <$> inAnnex key) go
   where

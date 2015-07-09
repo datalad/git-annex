@@ -19,10 +19,8 @@ import Annex.NumCopies
 import Annex.Content
 import Annex.Wanted
 import Annex.Notification
-import Git.Types (RemoteName)
 
 import qualified Data.Set as S
-import Options.Applicative hiding (command)
 
 cmd :: Command
 cmd = command "drop" SectionCommon
@@ -31,9 +29,9 @@ cmd = command "drop" SectionCommon
 
 data DropOptions = DropOptions
 	{ dropFiles :: CmdParams
-	, dropFrom :: Maybe RemoteName
+	, dropFrom :: Maybe (DeferredParse Remote)
 	, autoMode :: Bool
-	, keyOptions :: KeyOptions
+	, keyOptions :: Maybe KeyOptions
 	}
 
 -- TODO: annexedMatchingOptions
@@ -41,12 +39,12 @@ data DropOptions = DropOptions
 optParser :: CmdParamsDesc -> Parser DropOptions
 optParser desc = DropOptions
 	<$> cmdParams desc
-	<*> parseDropFromOption
+	<*> optional parseDropFromOption
 	<*> parseAutoOption
-	<*> parseKeyOptions False
+	<*> optional (parseKeyOptions False)
 
-parseDropFromOption :: Parser (Maybe RemoteName)
-parseDropFromOption = optional $ strOption
+parseDropFromOption :: Parser (DeferredParse Remote)
+parseDropFromOption = parseRemoteOption $ strOption
 	( long "from" <> short 'f' <> metavar paramRemote
 	<> help "drop content from a remote"
 	)
@@ -62,7 +60,7 @@ start o file key = start' o key (Just file)
 
 start' :: DropOptions -> Key -> AssociatedFile -> CommandStart
 start' o key afile = do
-	from <- Remote.byNameWithUUID (dropFrom o)
+	from <- maybe (pure Nothing) (Just <$$> getParsed) (dropFrom o)
 	checkDropAuto (autoMode o) from afile key $ \numcopies ->
 		stopUnless (want from) $
 			case from of

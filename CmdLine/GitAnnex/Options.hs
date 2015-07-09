@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE FlexibleInstances #-}
+
 module CmdLine.GitAnnex.Options where
 
 import System.Console.GetOpt
@@ -53,6 +55,54 @@ gitAnnexOptions = commonOptions ++
 	setgitconfig v = inRepo (Git.Config.store v)
 		>>= pure . (\r -> r { gitGlobalOpts = gitGlobalOpts r ++ [Param "-c", Param v] })
 		>>= Annex.changeGitRepo
+
+-- Some values cannot be fully parsed without performing an action.
+-- The action may be expensive, so it's best to call finishParse on such a
+-- value before using getParsed repeatedly.
+data DeferredParse a = DeferredParse (Annex a) | ReadyParse a
+
+class DeferredParseClass a where
+	finishParse :: a -> Annex a
+
+getParsed :: DeferredParse a -> Annex a
+getParsed (DeferredParse a) = a
+getParsed (ReadyParse a) = pure a
+
+instance DeferredParseClass (DeferredParse a) where
+	finishParse (DeferredParse a) = ReadyParse <$> a
+	finishParse (ReadyParse a) = pure (ReadyParse a)
+
+instance DeferredParseClass (Maybe (DeferredParse a)) where
+	finishParse Nothing = pure Nothing
+	finishParse (Just v) = Just <$> finishParse v
+
+parseRemoteOption :: Parser RemoteName -> Parser (DeferredParse Remote)
+parseRemoteOption p = DeferredParse . (fromJust <$$> Remote.byNameWithUUID) . Just <$> p
+
+data FromToOptions
+	= FromRemote (DeferredParse Remote)
+	| ToRemote (DeferredParse Remote)
+
+instance DeferredParseClass FromToOptions where
+	finishParse (FromRemote v) = FromRemote <$> finishParse v
+	finishParse (ToRemote v) = ToRemote <$> finishParse v
+
+parseFromToOptions :: Parser FromToOptions
+parseFromToOptions = 
+	(FromRemote <$> parseFromOption) 
+	<|> (ToRemote <$> parseToOption)
+
+parseFromOption :: Parser (DeferredParse Remote)
+parseFromOption = parseRemoteOption $ strOption
+	( long "from" <> short 'f' <> metavar paramRemote
+	<> help "source remote"
+	)
+
+parseToOption :: Parser (DeferredParse Remote)
+parseToOption = parseRemoteOption $ strOption
+	( long "to" <> short 't' <> metavar paramRemote
+	<> help "destination remote"
+	)
 
 -- Options for acting on keys, rather than work tree files.
 data KeyOptions
@@ -149,15 +199,6 @@ combiningOptions =
   where
 	longopt o = Option [] [o] $ NoArg $ Limit.addToken o
 	shortopt o = Option o [] $ NoArg $ Limit.addToken o
-
-fromOption :: Option
-fromOption = fieldOption ['f'] "from" paramRemote "source remote"
-
-toOption :: Option
-toOption = fieldOption ['t'] "to" paramRemote "destination remote"
-
-fromToOptions :: [Option]
-fromToOptions = [fromOption, toOption]
 
 jsonOption :: Option
 jsonOption = Option ['j'] ["json"] (NoArg (Annex.setOutput JSONOutput))
