@@ -14,6 +14,7 @@ module CmdLine (
 ) where
 
 import qualified Options.Applicative as O
+import qualified Options.Applicative.Help as H
 import qualified Control.Exception as E
 import qualified Data.Map as M
 import Control.Exception (throw)
@@ -32,8 +33,8 @@ import Command
 import Types.Messages
 
 {- Runs the passed command line. -}
-dispatch :: Bool -> CmdParams -> [Command] -> [Option] -> [(String, String)] -> String -> IO Git.Repo -> IO ()
-dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
+dispatch :: Bool -> CmdParams -> [Command] -> [Option] -> [(String, String)] -> IO Git.Repo -> String -> String -> IO ()
+dispatch fuzzyok allargs allcmds commonoptions fields getgitrepo progname progdesc = do
 	setupConsole
 	go =<< (E.try getgitrepo :: IO (Either E.SomeException Git.Repo))
   where
@@ -59,46 +60,52 @@ dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
 		a
 
 	parsewith getparser ingitrepo = 
-		case parseCmd allargs allcmds getparser of
+		case parseCmd progname progdesc allargs allcmds getparser of
 			O.Failure _ -> do
 				-- parse failed, so fall back to
 				-- fuzzy matching, or to showing usage
 				when fuzzy $
 					ingitrepo autocorrect
-				liftIO (O.handleParseResult (parseCmd (name:args) allcmds getparser))
+				liftIO (O.handleParseResult (parseCmd progname progdesc correctedargs allcmds getparser))
 			res -> liftIO (O.handleParseResult res)
 	  where
-		autocorrect = Git.AutoCorrect.prepare inputcmdname cmdname cmds
-		err msg = msg ++ "\n\n" ++ usage header allcmds
-		(fuzzy, cmds, inputcmdname, args) = findCmd fuzzyok allargs allcmds err
+		autocorrect = Git.AutoCorrect.prepare (fromJust inputcmdname) cmdname cmds
+		(fuzzy, cmds, inputcmdname, args) = findCmd fuzzyok allargs allcmds
 		name
 			| fuzzy = case cmds of
-				(c:_) -> cmdname c
+				(c:_) -> Just (cmdname c)
 				_ -> inputcmdname
 			| otherwise = inputcmdname
+		correctedargs = case name of
+			Nothing -> allargs
+			Just n -> n:args
 
 {- Parses command line, selecting one of the commands from the list. -}
-parseCmd :: CmdParams -> [Command] -> (Command -> O.Parser v) -> O.ParserResult (Command, v)
-parseCmd allargs allcmds getparser = O.execParserPure (O.prefs O.idm) pinfo allargs
+parseCmd :: String -> String -> CmdParams -> [Command] -> (Command -> O.Parser v) -> O.ParserResult (Command, v)
+parseCmd progname progdesc allargs allcmds getparser = O.execParserPure (O.prefs O.idm) pinfo allargs
   where
-	pinfo = O.info (O.helper <*> subcmds) O.fullDesc
+	pinfo = O.info (O.helper <*> subcmds) (O.progDescDoc (Just intro))
 	subcmds = O.hsubparser $ mconcat $ map mkcommand allcmds
-	mkcommand c = O.command (cmdname c) $ O.info (mkparser c) 
-		(O.fullDesc <> O.header (cmddesc c) <> O.progDesc (cmddesc c))
+	mkcommand c = O.command (cmdname c) $ O.info (mkparser c) $ O.fullDesc 
+		<> O.header (synopsis (progname ++ " " ++ cmdname c) (cmddesc c))
+		<> O.footer ("For details, run: " ++ progname ++ " help " ++ cmdname c)
 	mkparser c = (,)
 		<$> pure c
 		<*> getparser c
+	synopsis n d = n ++ " - " ++ d
+	intro = mconcat $ concatMap (\l -> [H.text l, H.line])
+		(synopsis progname progdesc : commandList allcmds)
 
 {- Parses command line params far enough to find the Command to run, and
  - returns the remaining params.
  - Does fuzzy matching if necessary, which may result in multiple Commands. -}
-findCmd :: Bool -> CmdParams -> [Command] -> (String -> String) -> (Bool, [Command], String, CmdParams)
-findCmd fuzzyok argv cmds err
-	| isNothing name = error $ err "missing command"
-	| not (null exactcmds) = (False, exactcmds, fromJust name, args)
-	| fuzzyok && not (null inexactcmds) = (True, inexactcmds, fromJust name, args)
-	| otherwise = error $ err $ "unknown command " ++ fromJust name
+findCmd :: Bool -> CmdParams -> [Command] -> (Bool, [Command], Maybe String, CmdParams)
+findCmd fuzzyok argv cmds
+	| not (null exactcmds) = ret (False, exactcmds)
+	| fuzzyok && not (null inexactcmds) = ret (True, inexactcmds)
+	| otherwise = ret (False, [])
   where
+	ret (fuzzy, matches) = (fuzzy, matches, name, args)
 	(name, args) = findname argv []
 	findname [] c = (Nothing, reverse c)
 	findname (a:as) c

@@ -101,7 +101,9 @@ builtin cmd dir params = do
 	let (params', fieldparams, opts) = partitionParams params
 	    rsyncopts = ("RsyncOptions", unwords opts)
 	    fields = rsyncopts : filter checkField (parseFields fieldparams)
-	dispatch False (cmd : params') cmds options fields header mkrepo
+	dispatch False (cmd : params') cmds options fields mkrepo
+		"git-annex-shell"
+		"Restricted login shell for git-annex only SSH access"
   where
 	mkrepo = do
 		r <- Git.Construct.repoAbsPath dir >>= Git.Construct.fromAbsPath

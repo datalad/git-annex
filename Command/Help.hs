@@ -56,8 +56,8 @@ showGeneralHelp = putStrLn $ unlines
 		, Command.Whereis.cmd
 		, Command.Fsck.cmd
 		]
-	, "Run 'git-annex' for a complete command list."
-	, "Run 'git-annex help command' for help on a specific command."
+	, "For a complete command list, run: git-annex"
+	, "For help on a specific command, run: git-annex help COMMAND"
 	]
   where
 	cmdline c = "\t" ++ cmdname c ++ "\t" ++ cmddesc c

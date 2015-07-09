@@ -13,9 +13,12 @@ import Types.Command
 usageMessage :: String -> String
 usageMessage s = "Usage: " ++ s
 
-{- Usage message with lists of commands by section. -}
 usage :: String -> [Command] -> String
-usage header cmds = unlines $ usageMessage header : concatMap go [minBound..]
+usage header cmds = unlines $ usageMessage header : commandList cmds
+
+{- Commands listed by section, with breif usage and description. -}
+commandList :: [Command] -> [String]
+commandList cmds = concatMap go [minBound..]
   where
 	go section
 		| null cs = []
@@ -38,6 +41,7 @@ usage header cmds = unlines $ usageMessage header : concatMap go [minBound..]
 	descpad = pad $ longest cmdparamdesc + 2
 	longest f = foldl max 0 $ map (length . f) cmds
 	scmds = sort cmds
+
 
 {- Descriptions of params used in usage messages. -}
 paramPaths :: String

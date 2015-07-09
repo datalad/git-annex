@@ -19,6 +19,7 @@ import qualified Command.Add
 import qualified Command.Unannex
 import qualified Command.Fsck
 {-
+import qualified Command.Help
 import qualified Command.Drop
 import qualified Command.Move
 import qualified Command.Copy
@@ -97,7 +98,6 @@ import qualified Command.Proxy
 import qualified Command.DiffDriver
 import qualified Command.Undo
 import qualified Command.Version
-import qualified Command.Help
 #ifdef WITH_ASSISTANT
 import qualified Command.Watch
 import qualified Command.Assistant
@@ -124,6 +124,7 @@ cmds =
 	[ Command.Add.cmd
 	, Command.Fsck.cmd
 {-
+	, Command.Help.cmd
 	, Command.Get.cmd
 	, Command.Drop.cmd
 	, Command.Move.cmd
@@ -204,7 +205,6 @@ cmds =
 	, Command.DiffDriver.cmd
 	, Command.Undo.cmd
 	, Command.Version.cmd
-	, Command.Help.cmd
 #ifdef WITH_ASSISTANT
 	, Command.Watch.cmd
 	, Command.Assistant.cmd
@@ -224,9 +224,6 @@ cmds =
 -}
 	]
 
-header :: String
-header = "git-annex command [option ...]"
-
 run :: [String] -> IO ()
 run args = do
 #ifdef WITH_EKG
@@ -234,7 +231,9 @@ run args = do
 #endif
 	go envmodes
   where
-	go [] = dispatch True args cmds gitAnnexOptions [] header Git.CurrentRepo.get
+	go [] = dispatch True args cmds gitAnnexOptions [] Git.CurrentRepo.get
+		"git-annex"
+		"manage files with git, without checking their contents in"
 	go ((v, a):rest) = maybe (go rest) a =<< getEnv v
 	envmodes =
 		[ (sshOptionsEnv, runSshOptions args)
