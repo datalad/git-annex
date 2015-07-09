@@ -24,7 +24,7 @@ import qualified Data.Set as S
 
 cmd :: Command
 cmd = command "drop" SectionCommon
-	"indicate content of files not currently wanted"
+	"remove content of files from repository"
 	paramPaths (seek <$$> optParser)
 
 data DropOptions = DropOptions

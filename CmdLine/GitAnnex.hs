@@ -15,7 +15,7 @@ import Command
 import Utility.Env
 import Annex.Ssh
 
-import qualified Command.Help
+--import qualified Command.Help
 import qualified Command.Add
 import qualified Command.Unannex
 import qualified Command.Drop
@@ -25,7 +25,7 @@ import qualified Command.Get
 import qualified Command.Fsck
 import qualified Command.LookupKey
 import qualified Command.ContentLocation
-import qualified Command.ExamineKey
+--import qualified Command.ExamineKey
 import qualified Command.FromKey
 import qualified Command.RegisterUrl
 import qualified Command.SetKey
@@ -56,15 +56,15 @@ import qualified Command.AddUnused
 import qualified Command.Unlock
 import qualified Command.Lock
 import qualified Command.PreCommit
-import qualified Command.Find
-import qualified Command.FindRef
-import qualified Command.Whereis
+--import qualified Command.Find
+--import qualified Command.FindRef
+--import qualified Command.Whereis
 --import qualified Command.List
 import qualified Command.Log
 import qualified Command.Merge
 import qualified Command.ResolveMerge
-import qualified Command.Info
-import qualified Command.Status
+--import qualified Command.Info
+--import qualified Command.Status
 import qualified Command.Migrate
 import qualified Command.Uninit
 import qualified Command.Reinit
@@ -95,7 +95,7 @@ import qualified Command.Upgrade
 import qualified Command.Forget
 import qualified Command.Proxy
 import qualified Command.DiffDriver
-import qualified Command.Undo
+--import qualified Command.Undo
 import qualified Command.Version
 #ifdef WITH_ASSISTANT
 import qualified Command.Watch
@@ -119,8 +119,8 @@ import System.Remote.Monitoring
 
 cmds :: [Command]
 cmds = 
-	[ Command.Help.cmd
-	, Command.Add.cmd
+--	[ Command.Help.cmd
+	[ Command.Add.cmd
 	, Command.Get.cmd
 	, Command.Drop.cmd
 	, Command.Move.cmd
@@ -160,7 +160,7 @@ cmds =
 --	, Command.Vicfg.cmd
 	, Command.LookupKey.cmd
 	, Command.ContentLocation.cmd
-	, Command.ExamineKey.cmd
+--	, Command.ExamineKey.cmd
 	, Command.FromKey.cmd
 	, Command.RegisterUrl.cmd
 	, Command.SetKey.cmd
@@ -183,15 +183,15 @@ cmds =
 --	, Command.Unused.cmd
 --	, Command.DropUnused.cmd
 	, Command.AddUnused.cmd
-	, Command.Find.cmd
-	, Command.FindRef.cmd
-	, Command.Whereis.cmd
+--	, Command.Find.cmd
+--	, Command.FindRef.cmd
+--	, Command.Whereis.cmd
 --	, Command.List.cmd
 	, Command.Log.cmd
 	, Command.Merge.cmd
 	, Command.ResolveMerge.cmd
-	, Command.Info.cmd
-	, Command.Status.cmd
+--	, Command.Info.cmd
+--	, Command.Status.cmd
 	, Command.Migrate.cmd
 	, Command.Map.cmd
 	, Command.Direct.cmd
@@ -200,7 +200,7 @@ cmds =
 	, Command.Forget.cmd
 	, Command.Proxy.cmd
 	, Command.DiffDriver.cmd
-	, Command.Undo.cmd
+--	, Command.Undo.cmd
 	, Command.Version.cmd
 #ifdef WITH_ASSISTANT
 	, Command.Watch.cmd

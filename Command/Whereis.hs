@@ -21,6 +21,14 @@ cmd = noCommit $ withOptions (jsonOption : annexedMatchingOptions ++ keyOptions)
 		"lists repositories that have file content"
 		paramPaths (withParams seek)
 
+data WhereisOptions = WhereisOptions
+	{ whereisFiles :: CmdParams
+	, jsonOption :: GlobalSetter
+	, keyOptions :: Maybe KeyOptions
+	}
+
+-- TODO: annexedMatchingOptions
+
 seek :: CmdParams -> CommandSeek
 seek ps = do
 	m <- remoteMap id

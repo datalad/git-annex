@@ -99,11 +99,7 @@ parseKeyOptions allowincomplete = if allowincomplete
 			)
 	else base
   where
-	base =
-		flag' WantAllKeys
-			( long "all" <> short 'A'
-			<> help "operate on all versions of all files"
-			)
+	base = parseAllOption
 		<|> flag' WantUnusedKeys
 			( long "unused" <> short 'U'
 			<> help "operate on files found by last run of git-annex unused"
@@ -113,6 +109,12 @@ parseKeyOptions allowincomplete = if allowincomplete
 			<> help "operate on specified key"
 			))
 
+parseAllOption :: Parser KeyOptions
+parseAllOption = flag' WantAllKeys
+	( long "all" <> short 'A'
+	<> help "operate on all versions of all files"
+	)
+
 parseKey :: Monad m => String -> m Key
 parseKey = maybe (fail "invalid key") return . file2key
 
@@ -121,13 +123,13 @@ annexedMatchingOptions :: [Option]
 annexedMatchingOptions = concat
 	[ nonWorkTreeMatchingOptions'
 	, fileMatchingOptions'
-	, combiningOptions
-	, [timeLimitOption]
+	-- , combiningOptions
+	-- , [timeLimitOption]
 	]
 
 -- Matching options that don't need to examine work tree files.
 nonWorkTreeMatchingOptions :: [Option]
-nonWorkTreeMatchingOptions = nonWorkTreeMatchingOptions' ++ combiningOptions
+nonWorkTreeMatchingOptions = nonWorkTreeMatchingOptions' -- ++ combiningOptions
 
 nonWorkTreeMatchingOptions' :: [Option]
 nonWorkTreeMatchingOptions' = 
@@ -153,7 +155,7 @@ nonWorkTreeMatchingOptions' =
 
 -- Options to match files which may not yet be annexed.
 fileMatchingOptions :: [Option]
-fileMatchingOptions = fileMatchingOptions' ++ combiningOptions
+fileMatchingOptions = fileMatchingOptions' -- ++ combiningOptions
 
 fileMatchingOptions' :: [Option]
 fileMatchingOptions' =
@@ -167,37 +169,37 @@ fileMatchingOptions' =
 		"match files smaller than a size"
 	]
 
-combiningOptions :: [Option]
-combiningOptions =
-	[ longopt "not" "negate next option"
-	, longopt "and" "both previous and next option must match"
-	, longopt "or" "either previous or next option must match"
-	, shortopt "(" "open group of options"
-	, shortopt ")" "close group of options"
-	]
+parseCombiningOptions :: Parser [GlobalSetter]
+parseCombiningOptions = 
+	many $ longopt "not" "negate next option"
+		<|> longopt "and" "both previous and next option must match"
+		<|> longopt "or" "either previous or next option must match"
+		<|> shortopt '(' "open group of options"
+		<|> shortopt ')' "close group of options"
   where
-	longopt o = Option [] [o] $ NoArg $ Limit.addToken o
-	shortopt o = Option o [] $ NoArg $ Limit.addToken o
+	longopt o h = globalOpt (Limit.addToken o) $ switch
+		( long o <> help h )
+	shortopt o h = globalOpt (Limit.addToken [o]) $ switch
+		( short o <> help h)
 
-jsonOption :: Option
-jsonOption = Option ['j'] ["json"] (NoArg (Annex.setOutput JSONOutput))
-	"enable JSON output"
+parseJsonOption :: Parser GlobalSetter
+parseJsonOption = globalOpt (Annex.setOutput JSONOutput) $ switch
+	( long "json" <> short 'j'
+	<> help "enable JSON output"
+	)
 
-jobsOption :: Option
-jobsOption = Option ['J'] ["jobs"] (ReqArg set paramNumber)
-	"enable concurrent jobs"
-  where
-	set s = case readish s of
-		Nothing -> error "Bad --jobs number"
-		Just n -> Annex.setOutput (ParallelOutput n)
+parseJobsOption :: Parser GlobalSetter
+parseJobsOption = globalSetter (Annex.setOutput . ParallelOutput) $ 
+	option auto
+		( long "jobs" <> short 'J' <> metavar paramNumber
+		<> help "enable concurrent jobs"
+		)
 
-timeLimitOption :: Option
-timeLimitOption = Option ['T'] ["time-limit"]
-	(ReqArg Limit.addTimeLimit paramTime)
-	"stop after the specified amount of time"
-
-autoOption :: Option
-autoOption = flagOption ['a'] "auto" "automatic mode"
+parseTimeLimitOption :: Parser GlobalSetter
+parseTimeLimitOption = globalSetter Limit.addTimeLimit $ strOption
+	( long "time-limit" <> short 'T' <> metavar paramTime
+	<> help "stop after the specified amount of time"
+	)
 
 parseAutoOption :: Parser Bool
 parseAutoOption = switch

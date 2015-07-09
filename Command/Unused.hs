@@ -57,13 +57,13 @@ start = do
 	!refspec <- maybe cfgrefspec (either error id . parseRefSpec)
 		<$> Annex.getField (optionName refSpecOption)
 	from <- Annex.getField (optionName unusedFromOption)
-	let (name, action) = case from of
+	let (name, perform) = case from of
 		Nothing -> (".", checkUnused refspec)
 		Just "." -> (".", checkUnused refspec)
 		Just "here" -> (".", checkUnused refspec)
 		Just n -> (n, checkRemoteUnused n refspec)
 	showStart "unused" name
-	next action
+	next perform
 
 checkUnused :: RefSpec -> CommandPerform
 checkUnused refspec = chain 0
@@ -127,11 +127,11 @@ unusedMsg u = unusedMsg' u
 	["Some annexed data is no longer used by any files:"]
 	[dropMsg Nothing]
 unusedMsg' :: [(Int, Key)] -> [String] -> [String] -> String
-unusedMsg' u header trailer = unlines $
-	header ++
+unusedMsg' u mheader mtrailer = unlines $
+	mheader ++
 	table u ++
 	["(To see where data was previously used, try: git log --stat -S'KEY')"] ++
-	trailer
+	mtrailer
 
 remoteUnusedMsg :: Remote -> [(Int, Key)] -> String
 remoteUnusedMsg r u = unusedMsg' u

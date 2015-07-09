@@ -73,9 +73,6 @@ options = commonOptions ++
 	unexpected expected s = error $
 		"expected repository UUID " ++ expected ++ " but found " ++ s
 
-header :: String
-header = "git-annex-shell [-c] command [parameters ...] [option ...]"
-
 run :: [String] -> IO ()
 run [] = failure
 -- skip leading -c options, passed by eg, ssh
@@ -142,14 +139,16 @@ parseFields = map (separate (== '='))
 {- Only allow known fields to be set, ignore others.
  - Make sure that field values make sense. -}
 checkField :: (String, String) -> Bool
-checkField (field, value)
-	| field == fieldName remoteUUID = fieldCheck remoteUUID value
-	| field == fieldName associatedFile = fieldCheck associatedFile value
-	| field == fieldName direct = fieldCheck direct value
+checkField (field, val)
+	| field == fieldName remoteUUID = fieldCheck remoteUUID val
+	| field == fieldName associatedFile = fieldCheck associatedFile val
+	| field == fieldName direct = fieldCheck direct val
 	| otherwise = False
 
 failure :: IO ()
-failure = error $ "bad parameters\n\n" ++ usage header cmds
+failure = error $ "bad parameters\n\n" ++ usage h cmds
+  where
+	h = "git-annex-shell [-c] command [parameters ...] [option ...]"
 
 checkNotLimited :: IO ()
 checkNotLimited = checkEnv "GIT_ANNEX_SHELL_LIMITED"
