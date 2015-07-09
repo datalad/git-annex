@@ -50,11 +50,14 @@ cmd = command "fsck" SectionMaintenance
 data FsckOptions = FsckOptions
 	{ fsckFiles :: CmdParams
 	, fsckFromOption :: Maybe RemoteName
-	, startIncrementalOption :: Bool
-	, moreIncrementalOption :: Bool
-	, incrementalScheduleOption :: Maybe Duration
+	, incrementalOpt :: Maybe IncrementalOpt
 	, keyOptions :: KeyOptions
 	}
+
+data IncrementalOpt
+	= StartIncrementalO
+	| MoreIncrementalO
+	| ScheduleIncrementalO Duration
 
 optParser :: CmdParamsDesc -> Parser FsckOptions
 optParser desc = FsckOptions
@@ -63,19 +66,22 @@ optParser desc = FsckOptions
 		( long "from" <> short 'f' <> metavar paramRemote 
 		<> help "check remote"
 		))
-	<*> switch
-		( long "incremental" <> short 'S'
-		<> help "start an incremental fsck"
-		)
-	<*> switch
-		( long "more" <> short 'm'
-		<> help "continue an incremental fsck"
-		)
-	<*> optional (option (str >>= parseDuration)
-		( long "incremental-schedule" <> metavar paramTime
-		<> help "schedule incremental fscking"
-		))
+	<*> optional parseincremental
 	<*> parseKeyOptions False
+  where
+	parseincremental =
+		flag' StartIncrementalO
+			( long "incremental" <> short 'S'
+			<> help "start an incremental fsck"
+			)
+		<|> flag' MoreIncrementalO
+			( long "more" <> short 'm'
+			<> help "continue an incremental fsck"
+			)
+		<|> (ScheduleIncrementalO <$> option (str >>= parseDuration)
+			( long "incremental-schedule" <> metavar paramTime
+			<> help "schedule incremental fscking"
+			))
 
 -- TODO: annexedMatchingOptions
 
@@ -83,7 +89,7 @@ seek :: FsckOptions -> CommandSeek
 seek o = do
 	from <- Remote.byNameWithUUID (fsckFromOption o)
 	u <- maybe getUUID (pure . Remote.uuid) from
-	i <- getIncremental u o
+	i <- prepIncremental u (incrementalOpt o)
 	withKeyOptions (keyOptions o) False
 		(\k -> startKey i k =<< getNumCopies)
 		(withFilesInGit $ whenAnnexed $ start from i)
@@ -511,33 +517,26 @@ getStartTime u = do
 
 data Incremental = StartIncremental FsckDb.FsckHandle | ContIncremental FsckDb.FsckHandle | NonIncremental
 
-getIncremental :: UUID -> FsckOptions -> Annex Incremental
-getIncremental u  o = do
-	i <- maybe (return False) checkschedule (incrementalScheduleOption o)
-	case (i, startIncrementalOption o, moreIncrementalOption o) of
-		(False, False, False) -> return NonIncremental
-		(False, True, False) -> startIncremental
-		(False ,False, True) -> contIncremental
-		(True, False, False) ->
-			maybe startIncremental (const contIncremental)
-				=<< getStartTime u
-		_ -> error "Specify only one of --incremental, --more, or --incremental-schedule"
-  where
-	startIncremental = do
-		recordStartTime u
-		ifM (FsckDb.newPass u)
-			( StartIncremental <$> FsckDb.openDb u
-			, error "Cannot start a new --incremental fsck pass; another fsck process is already running."
-			)
-	contIncremental = ContIncremental <$> FsckDb.openDb u
-
-	checkschedule delta = do
-		Annex.addCleanup FsckCleanup $ do
-			v <- getStartTime u
-			case v of
-				Nothing -> noop
-				Just started -> do
-					now <- liftIO getPOSIXTime
-					when (now - realToFrac started >= durationToPOSIXTime delta) $
-						resetStartTime u
-		return True
+prepIncremental :: UUID -> Maybe IncrementalOpt -> Annex Incremental
+prepIncremental _ Nothing = pure NonIncremental
+prepIncremental u (Just StartIncrementalO) = do
+	recordStartTime u
+	ifM (FsckDb.newPass u)
+		( StartIncremental <$> FsckDb.openDb u
+		, error "Cannot start a new --incremental fsck pass; another fsck process is already running."
+		)
+prepIncremental u (Just MoreIncrementalO) =
+	ContIncremental <$> FsckDb.openDb u
+prepIncremental u (Just (ScheduleIncrementalO delta)) = do
+	Annex.addCleanup FsckCleanup $ do
+		v <- getStartTime u
+		case v of
+			Nothing -> noop
+			Just started -> do
+				now <- liftIO getPOSIXTime
+				when (now - realToFrac started >= durationToPOSIXTime delta) $
+					resetStartTime u
+	started <- getStartTime u
+	prepIncremental u $ Just $ case started of
+		Nothing -> StartIncrementalO
+		Just _ -> MoreIncrementalO
