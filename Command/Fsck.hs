@@ -51,7 +51,7 @@ data FsckOptions = FsckOptions
 	{ fsckFiles :: CmdParams
 	, fsckFromOption :: Maybe RemoteName
 	, incrementalOpt :: Maybe IncrementalOpt
-	, keyOptions :: KeyOptions
+	, keyOptions :: Maybe KeyOptions
 	}
 
 data IncrementalOpt
@@ -67,7 +67,7 @@ optParser desc = FsckOptions
 		<> help "check remote"
 		))
 	<*> optional parseincremental
-	<*> parseKeyOptions False
+	<*> optional (parseKeyOptions False)
   where
 	parseincremental =
 		flag' StartIncrementalO

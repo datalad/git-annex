@@ -172,7 +172,7 @@ withNothing _ _ = error "This command takes no parameters."
  -
  - Otherwise falls back to a regular CommandSeek action on
  - whatever params were passed. -}
-withKeyOptions :: KeyOptions -> Bool -> (Key -> CommandStart) -> (CmdParams -> CommandSeek) -> CmdParams -> CommandSeek
+withKeyOptions :: Maybe KeyOptions -> Bool -> (Key -> CommandStart) -> (CmdParams -> CommandSeek) -> CmdParams -> CommandSeek
 withKeyOptions ko auto keyaction = withKeyOptions' ko auto $ \getkeys -> do
 	matcher <- Limit.getMatcher
 	seekActions $ map (process matcher) <$> getkeys
@@ -182,25 +182,21 @@ withKeyOptions ko auto keyaction = withKeyOptions' ko auto $ \getkeys -> do
 		, return Nothing
 		)
 
-withKeyOptions' :: KeyOptions -> Bool -> (Annex [Key] -> Annex ()) -> (CmdParams -> CommandSeek) -> CmdParams -> CommandSeek
+withKeyOptions' :: Maybe KeyOptions -> Bool -> (Annex [Key] -> Annex ()) -> (CmdParams -> CommandSeek) -> CmdParams -> CommandSeek
 withKeyOptions' ko auto keyaction fallbackaction params = do
 	bare <- fromRepo Git.repoIsLocalBare
-	let allkeys = wantAllKeys ko
-	let unused = wantUnusedKeys ko
-	let incomplete = wantIncompleteKeys ko
-	let specifickey = wantSpecificKey ko
 	when (auto && bare) $
 		error "Cannot use --auto in a bare repository"
-	case	(allkeys, unused, incomplete, null params, specifickey) of
-		(False  , False , False     , True       , Nothing)
+	case (null params, ko) of
+		(True, Nothing)
 			| bare -> go auto loggedKeys
 			| otherwise -> fallbackaction params
-		(False  , False , False     , _          , Nothing) -> fallbackaction params
-		(True   , False , False     , True       , Nothing) -> go auto loggedKeys
-		(False  , True  , False     , True       , Nothing) -> go auto unusedKeys'
-		(False  , False , True      , True       , Nothing) -> go auto incompletekeys
-		(False  , False , False     , True       , Just k) -> go auto $ return [k]
-		_ -> error "Can only specify one of file names, --all, --unused, --key, or --incomplete"
+		(False, Nothing) -> fallbackaction params
+		(True, Just WantAllKeys) -> go auto loggedKeys
+		(True, Just WantUnusedKeys) -> go auto unusedKeys'
+		(True, Just (WantSpecificKey k)) -> go auto $ return [k]
+		(True, Just WantIncompleteKeys) -> go auto incompletekeys
+		(False, Just _) -> error "Can only specify one of file names, --all, --unused, --key, or --incomplete"
   where
 	go True _ = error "Cannot use --auto with --all or --unused or --key or --incomplete"
 	go False getkeys = keyaction getkeys

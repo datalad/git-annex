@@ -55,46 +55,37 @@ gitAnnexOptions = commonOptions ++
 		>>= Annex.changeGitRepo
 
 -- Options for acting on keys, rather than work tree files.
-data KeyOptions = KeyOptions
-	{ wantAllKeys :: Bool
-	, wantUnusedKeys :: Bool
-	, wantIncompleteKeys :: Bool
-	, wantSpecificKey :: Maybe Key
-	}
+data KeyOptions
+	= WantAllKeys
+	| WantUnusedKeys
+	| WantSpecificKey Key
+	| WantIncompleteKeys
 
 parseKeyOptions :: Bool -> Parser KeyOptions
-parseKeyOptions allowincomplete = KeyOptions
-	<$> parseAllKeysOption
-	<*> parseUnusedKeysOption
-	<*> (if allowincomplete then parseIncompleteOption else pure False)
-	<*> parseSpecificKeyOption
-
-parseAllKeysOption :: Parser Bool
-parseAllKeysOption = switch
-	( long "all" <> short 'A'
-	<> help "operate on all versions of all files"
-	)
-
-parseUnusedKeysOption :: Parser Bool
-parseUnusedKeysOption = switch
-	( long "unused" <> short 'U'
-	<> help "operate on files found by last run of git-annex unused"
-	)
-
-parseSpecificKeyOption :: Parser (Maybe Key)
-parseSpecificKeyOption = optional $ option (str >>= parseKey)
-	( long "key" <> metavar paramKey
-	<> help "operate on specified key"
-	)
+parseKeyOptions allowincomplete = if allowincomplete
+	then base
+		<|> flag' WantIncompleteKeys
+			( long "incomplete"
+			<> help "resume previous downloads"
+			)
+	else base
+  where
+	base =
+		flag' WantAllKeys
+			( long "all" <> short 'A'
+			<> help "operate on all versions of all files"
+			)
+		<|> flag' WantUnusedKeys
+			( long "unused" <> short 'U'
+			<> help "operate on files found by last run of git-annex unused"
+			)
+		<|> (WantSpecificKey <$> option (str >>= parseKey)
+			( long "key" <> metavar paramKey
+			<> help "operate on specified key"
+			))
 
 parseKey :: Monad m => String -> m Key
 parseKey = maybe (fail "invalid key") return . file2key
-
-parseIncompleteOption :: Parser Bool
-parseIncompleteOption = switch
-	( long "incomplete"
-	<> help "resume previous downloads"
-	)
 
 -- Options to match properties of annexed files.
 annexedMatchingOptions :: [Option]
