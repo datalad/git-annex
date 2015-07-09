@@ -27,6 +27,7 @@ import qualified Backend
 import qualified Git
 import Types.Command as ReExported
 import Types.Option as ReExported
+import Types.DeferredParse as ReExported
 import CmdLine.Seek as ReExported
 import Checks as ReExported
 import CmdLine.Usage as ReExported
