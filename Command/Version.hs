@@ -44,9 +44,9 @@ start = do
 	liftIO $ do
 
 		showPackageVersion
-		info "local repository version" $ fromMaybe "unknown" v
-		info "supported repository version" supportedVersion
-		info "upgrade supported from repository versions" $
+		vinfo "local repository version" $ fromMaybe "unknown" v
+		vinfo "supported repository version" supportedVersion
+		vinfo "upgrade supported from repository versions" $
 			unwords upgradableVersions
 	stop
 
@@ -55,10 +55,10 @@ startNoRepo _ = showPackageVersion
 
 showPackageVersion :: IO ()
 showPackageVersion = do
-	info "git-annex version" SysConfig.packageversion
-	info "build flags" $ unwords buildFlags
-	info "key/value backends" $ unwords $ map B.name Backend.list
-	info "remote types" $ unwords $ map R.typename Remote.remoteTypes
+	vinfo "git-annex version" SysConfig.packageversion
+	vinfo "build flags" $ unwords buildFlags
+	vinfo "key/value backends" $ unwords $ map B.name Backend.list
+	vinfo "remote types" $ unwords $ map R.typename Remote.remoteTypes
 
-info :: String -> String -> IO ()
-info k v = putStrLn $ k ++ ": " ++ v
+vinfo :: String -> String -> IO ()
+vinfo k v = putStrLn $ k ++ ": " ++ v

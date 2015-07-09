@@ -8,6 +8,7 @@
 module Command (
 	command,
 	withParams,
+	(<--<),
 	noRepo,
 	noCommit,
 	noMessages,
@@ -45,6 +46,17 @@ command name section desc paramdesc mkparser =
 {- Simple option parser that takes all non-option params as-is. -}
 withParams :: (CmdParams -> v) -> CmdParamsDesc -> O.Parser v
 withParams mkseek paramdesc = mkseek <$> cmdParams paramdesc
+
+{- Uses the supplied option parser, which yields a deferred parse,
+ - and calls finishParse on the result before passing it to the
+ - CommandSeek constructor. -}
+(<--<) :: DeferredParseClass a
+	=> (a -> CommandSeek) 
+	-> (CmdParamsDesc -> Parser a)
+	-> CmdParamsDesc
+	-> Parser CommandSeek
+(<--<) mkseek optparser paramsdesc = 
+	(mkseek <=< finishParse) <$> optparser paramsdesc
 
 {- Indicates that a command doesn't need to commit any changes to
  - the git-annex branch. -}

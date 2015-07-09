@@ -34,7 +34,6 @@ import Types.CleanupActions
 import Utility.HumanTime
 import Utility.CopyFile
 import Git.FilePath
-import Git.Types (RemoteName)
 import Utility.PID
 import qualified Database.Fsck as FsckDb
 
@@ -48,10 +47,12 @@ cmd = command "fsck" SectionMaintenance
 
 data FsckOptions = FsckOptions
 	{ fsckFiles :: CmdParams
-	, fsckFromOption :: Maybe RemoteName
+	, fsckFromOption :: Maybe (DeferredParse Remote)
 	, incrementalOpt :: Maybe IncrementalOpt
 	, keyOptions :: Maybe KeyOptions
 	}
+
+-- TODO: annexedMatchingOptions
 
 data IncrementalOpt
 	= StartIncrementalO
@@ -61,7 +62,7 @@ data IncrementalOpt
 optParser :: CmdParamsDesc -> Parser FsckOptions
 optParser desc = FsckOptions
 	<$> cmdParams desc
-	<*> optional (strOption 
+	<*> optional (parseRemoteOption $ strOption 
 		( long "from" <> short 'f' <> metavar paramRemote 
 		<> help "check remote"
 		))
@@ -82,11 +83,9 @@ optParser desc = FsckOptions
 			<> help "schedule incremental fscking"
 			))
 
--- TODO: annexedMatchingOptions
-
 seek :: FsckOptions -> CommandSeek
 seek o = do
-	from <- Remote.byNameWithUUID (fsckFromOption o)
+	from <- maybe (pure Nothing) (Just <$$> getParsed) (fsckFromOption o)
 	u <- maybe getUUID (pure . Remote.uuid) from
 	i <- prepIncremental u (incrementalOpt o)
 	withKeyOptions (keyOptions o) False

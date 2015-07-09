@@ -36,7 +36,7 @@ import qualified Command.SetPresentKey
 import qualified Command.ReadPresentKey
 import qualified Command.CheckPresentKey
 import qualified Command.ReKey
-import qualified Command.MetaData
+--import qualified Command.MetaData
 import qualified Command.View
 import qualified Command.VAdd
 import qualified Command.VFilter
@@ -50,8 +50,8 @@ import qualified Command.InitRemote
 import qualified Command.EnableRemote
 import qualified Command.Expire
 import qualified Command.Repair
-import qualified Command.Unused
-import qualified Command.DropUnused
+--import qualified Command.Unused
+--import qualified Command.DropUnused
 import qualified Command.AddUnused
 import qualified Command.Unlock
 import qualified Command.Lock
@@ -59,7 +59,7 @@ import qualified Command.PreCommit
 import qualified Command.Find
 import qualified Command.FindRef
 import qualified Command.Whereis
-import qualified Command.List
+--import qualified Command.List
 import qualified Command.Log
 import qualified Command.Merge
 import qualified Command.ResolveMerge
@@ -72,16 +72,16 @@ import qualified Command.NumCopies
 import qualified Command.Trust
 import qualified Command.Untrust
 import qualified Command.Semitrust
-import qualified Command.Dead
+--import qualified Command.Dead
 import qualified Command.Group
 import qualified Command.Wanted
 import qualified Command.GroupWanted
 import qualified Command.Required
 import qualified Command.Schedule
 import qualified Command.Ungroup
-import qualified Command.Vicfg
+--import qualified Command.Vicfg
 import qualified Command.Sync
-import qualified Command.Mirror
+--import qualified Command.Mirror
 import qualified Command.AddUrl
 #ifdef WITH_FEED
 import qualified Command.ImportFeed
@@ -130,7 +130,7 @@ cmds =
 	, Command.Unlock.editcmd
 	, Command.Lock.cmd
 	, Command.Sync.cmd
-	, Command.Mirror.cmd
+--	, Command.Mirror.cmd
 	, Command.AddUrl.cmd
 #ifdef WITH_FEED
 	, Command.ImportFeed.cmd
@@ -150,14 +150,14 @@ cmds =
 	, Command.Trust.cmd
 	, Command.Untrust.cmd
 	, Command.Semitrust.cmd
-	, Command.Dead.cmd
+--	, Command.Dead.cmd
 	, Command.Group.cmd
 	, Command.Wanted.cmd
 	, Command.GroupWanted.cmd
 	, Command.Required.cmd
 	, Command.Schedule.cmd
 	, Command.Ungroup.cmd
-	, Command.Vicfg.cmd
+--	, Command.Vicfg.cmd
 	, Command.LookupKey.cmd
 	, Command.ContentLocation.cmd
 	, Command.ExamineKey.cmd
@@ -171,7 +171,7 @@ cmds =
 	, Command.ReadPresentKey.cmd
 	, Command.CheckPresentKey.cmd
 	, Command.ReKey.cmd
-	, Command.MetaData.cmd
+--	, Command.MetaData.cmd
 	, Command.View.cmd
 	, Command.VAdd.cmd
 	, Command.VFilter.cmd
@@ -180,13 +180,13 @@ cmds =
 	, Command.Fix.cmd
 	, Command.Expire.cmd
 	, Command.Repair.cmd
-	, Command.Unused.cmd
-	, Command.DropUnused.cmd
+--	, Command.Unused.cmd
+--	, Command.DropUnused.cmd
 	, Command.AddUnused.cmd
 	, Command.Find.cmd
 	, Command.FindRef.cmd
 	, Command.Whereis.cmd
-	, Command.List.cmd
+--	, Command.List.cmd
 	, Command.Log.cmd
 	, Command.Merge.cmd
 	, Command.ResolveMerge.cmd

@@ -135,8 +135,8 @@ fileInfo file k = showCustom (unwords ["info", file]) $ do
 
 remoteInfo :: Remote -> Annex ()
 remoteInfo r = showCustom (unwords ["info", Remote.name r]) $ do
-	info <- map (\(k, v) -> simpleStat k (pure v)) <$> Remote.getInfo r
-	l <- selStats (remote_fast_stats r ++ info) (uuid_slow_stats (Remote.uuid r))
+	i <- map (\(k, v) -> simpleStat k (pure v)) <$> Remote.getInfo r
+	l <- selStats (remote_fast_stats r ++ i) (uuid_slow_stats (Remote.uuid r))
 	evalStateT (mapM_ showStat l) emptyStatInfo
 	return True
 

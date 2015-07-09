@@ -45,7 +45,7 @@ start = do
 			download (Remote.uuid remote) key file forwardRetry observer $ \p ->
 				getViaTmp key $ \t -> Remote.retrieveKeyFile remote key file t p
 	
-	observer False t info = recordFailedTransfer t info
+	observer False t tinfo = recordFailedTransfer t tinfo
 	observer True _ _ = noop
 
 runRequests
@@ -80,14 +80,14 @@ runRequests readh writeh a = do
 		hFlush writeh
 
 sendRequest :: Transfer -> TransferInfo -> Handle -> IO ()
-sendRequest t info h = do
+sendRequest t tinfo h = do
 	hPutStr h $ intercalate fieldSep
 		[ serialize (transferDirection t)
 		, maybe (serialize (fromUUID (transferUUID t)))
 			(serialize . Remote.name)
-			(transferRemote info)
+			(transferRemote tinfo)
 		, serialize (transferKey t)
-		, serialize (associatedFile info)
+		, serialize (associatedFile tinfo)
 		, "" -- adds a trailing null
 		]
 	hFlush h

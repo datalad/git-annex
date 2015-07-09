@@ -17,7 +17,7 @@ import Annex.NumCopies
 cmd :: Command
 cmd = command "copy" SectionCommon
 	"copy content of files to/from another repository"
-	paramPaths ((seek <=< finishParse) <$$> optParser)
+	paramPaths (seek <--< optParser)
 
 data CopyOptions = CopyOptions
 	{ moveOptions :: Command.Move.MoveOptions

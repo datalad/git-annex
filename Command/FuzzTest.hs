@@ -55,9 +55,9 @@ guardTest = unlessM (fromMaybe False . Git.Config.isTrue <$> getConfig key "") $
 
 fuzz :: Handle -> Annex ()
 fuzz logh = do
-	action <- genFuzzAction
-	record logh $ flip Started action
-	result <- tryNonAsync $ runFuzzAction action
+	fuzzer <- genFuzzAction
+	record logh $ flip Started fuzzer
+	result <- tryNonAsync $ runFuzzAction fuzzer
 	record logh $ flip Finished $
 		either (const False) (const True) result
 

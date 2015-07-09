@@ -20,7 +20,7 @@ import Logs.Presence
 cmd :: Command
 cmd = command "move" SectionCommon
 	"move content of files to/from another repository"
-	paramPaths ((seek <=< finishParse) <$$> optParser)
+	paramPaths (seek <--< optParser)
 
 data MoveOptions = MoveOptions
 	{ moveFiles :: CmdParams
