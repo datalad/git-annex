@@ -46,7 +46,7 @@ optParser desc = DropOptions
 	<*> parseKeyOptions False
 
 parseDropFromOption :: Parser (Maybe RemoteName)
-parseDropFromOption = finalOpt $ strOption
+parseDropFromOption = optional $ strOption
         ( long "from"
         <> short 'f'
 	<> metavar paramRemote

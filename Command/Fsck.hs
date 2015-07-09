@@ -59,7 +59,7 @@ data FsckOptions = FsckOptions
 optParser :: CmdParamsDesc -> Parser FsckOptions
 optParser desc = FsckOptions
 	<$> cmdParams desc
-	<*> finalOpt (strOption 
+	<*> optional (strOption 
 		( long "from"
 		<> short 'f'
 		<> metavar paramRemote
@@ -75,7 +75,7 @@ optParser desc = FsckOptions
 		<> short 'm'
 		<> help "continue an incremental fsck"
 		)
-	<*> finalOpt (option (str >>= parseDuration)
+	<*> optional (option (str >>= parseDuration)
 		( long "incremental-schedule"
 		<> metavar paramTime
 		<> help "schedule incremental fscking"

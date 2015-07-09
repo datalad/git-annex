@@ -84,7 +84,7 @@ parseUnusedKeysOption = switch
 	)
 
 parseSpecificKeyOption :: Parser (Maybe Key)
-parseSpecificKeyOption = finalOpt $ option (str >>= parseKey)
+parseSpecificKeyOption = optional $ option (str >>= parseKey)
 	( long "key"
 	<> help "operate on specified key"
 	<> metavar paramKey
@@ -201,9 +201,3 @@ parseAutoOption = switch
 {- Parser that accepts all non-option params. -}
 cmdParams :: CmdParamsDesc -> Parser CmdParams
 cmdParams paramdesc = many (argument str (metavar paramdesc))
-
-{- Makes an option parser that is normally required be optional;
- -  - its switch can be given zero or more times, and the last one
- -   - given will be used. -}
-finalOpt :: Parser a -> Parser (Maybe a)
-finalOpt = lastMaybe <$$> many
