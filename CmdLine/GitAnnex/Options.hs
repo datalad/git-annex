@@ -200,4 +200,8 @@ parseAutoOption = switch
 
 {- Parser that accepts all non-option params. -}
 cmdParams :: CmdParamsDesc -> Parser CmdParams
-cmdParams paramdesc = many (argument str (metavar paramdesc))
+cmdParams paramdesc = many $ argument str
+	( metavar paramdesc
+	-- Let bash completion complete files
+	<> action "file"
+	)
