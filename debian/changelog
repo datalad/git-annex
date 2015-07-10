@@ -1,3 +1,10 @@
+  * Switched option parsing to use optparse-applicative. This was a very large
+    and invasive change, and may have caused some minor behavior changes to
+    edge cases of option parsing.
+  * Bash completion code is built-in to git-annex, and can be enabled by
+    running: source <(git-annex --bash-completion-script git-annex)
+  * version --raw now works when run outside a git repository.
+
 git-annex (5.20150618) UNRELEASED; urgency=medium
 
   * log: Fix reversion introduced in version 5.20150528 that broke this command.
