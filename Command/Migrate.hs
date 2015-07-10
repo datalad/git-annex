@@ -19,7 +19,7 @@ import qualified Command.Fsck
 import qualified Annex
 
 cmd :: Command
-cmd = notDirect $ withOptions annexedMatchingOptions $
+cmd = notDirect $ withGlobalOptions annexedMatchingOptions $
 	command "migrate" SectionUtility 
 		"switch data to different backend"
 		paramPaths (withParams seek)

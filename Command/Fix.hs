@@ -19,7 +19,7 @@ import Utility.Touch
 #endif
 
 cmd :: Command
-cmd = notDirect $ noCommit $ withOptions annexedMatchingOptions $
+cmd = notDirect $ noCommit $ withGlobalOptions annexedMatchingOptions $
 	command "fix" SectionMaintenance
 		"fix up symlinks to point to annexed content"
 		paramPaths (withParams seek)

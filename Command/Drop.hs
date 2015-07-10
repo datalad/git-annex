@@ -23,9 +23,10 @@ import Annex.Notification
 import qualified Data.Set as S
 
 cmd :: Command
-cmd = command "drop" SectionCommon
-	"remove content of files from repository"
-	paramPaths (seek <$$> optParser)
+cmd = withGlobalOptions annexedMatchingOptions $
+	command "drop" SectionCommon
+		"remove content of files from repository"
+		paramPaths (seek <$$> optParser)
 
 data DropOptions = DropOptions
 	{ dropFiles :: CmdParams
@@ -33,8 +34,6 @@ data DropOptions = DropOptions
 	, autoMode :: Bool
 	, keyOptions :: Maybe KeyOptions
 	}
-
--- TODO: annexedMatchingOptions
 
 optParser :: CmdParamsDesc -> Parser DropOptions
 optParser desc = DropOptions

@@ -39,3 +39,4 @@ instance DeferredParseClass [DeferredParse a] where
 
 -- Use when the Annex action modifies Annex state.
 type GlobalSetter = DeferredParse ()
+type GlobalOption = Parser GlobalSetter

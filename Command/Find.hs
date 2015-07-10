@@ -19,7 +19,7 @@ import Utility.DataUnits
 import Types.Key
 
 cmd :: Command
-cmd = withOptions annexedMatchingOptions $ mkCommand $
+cmd = withGlobalOptions annexedMatchingOptions $ mkCommand $
 	command "find" SectionQuery "lists available files"
 		paramPaths (seek <$$> optParser)
 

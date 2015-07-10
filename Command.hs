@@ -83,12 +83,12 @@ withOptions o c = c { cmdoptions = cmdoptions c ++ o }
 {- Adds global options to a command's option parser, and modifies its seek
  - option to first run actions for them.
  -}
-withGlobalOptions :: [Parser GlobalSetter] -> Command -> Command
+withGlobalOptions :: [GlobalOption] -> Command -> Command
 withGlobalOptions os c = c { cmdparser = apply <$> mixin (cmdparser c) }
   where
 	mixin p = (,) 
 		<$> p
-		<*> combineGlobalSetters os
+		<*> combineGlobalOptions os
 	apply (seek, globalsetters) = do
 		void $ getParsed globalsetters
 		seek

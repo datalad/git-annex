@@ -16,7 +16,7 @@ import Logs.Trust
 import Logs.Web
 
 cmd :: Command
-cmd = noCommit $ withOptions (jsonOption : annexedMatchingOptions ++ keyOptions) $
+cmd = noCommit $ withGlobalOptions (jsonOption : annexedMatchingOptions) $
 	command "whereis" SectionQuery
 		"lists repositories that have file content"
 		paramPaths (withParams seek)
@@ -26,8 +26,6 @@ data WhereisOptions = WhereisOptions
 	, jsonOption :: GlobalSetter
 	, keyOptions :: Maybe KeyOptions
 	}
-
--- TODO: annexedMatchingOptions
 
 seek :: CmdParams -> CommandSeek
 seek ps = do

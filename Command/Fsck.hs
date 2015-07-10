@@ -41,9 +41,10 @@ import Data.Time.Clock.POSIX
 import System.Posix.Types (EpochTime)
 
 cmd :: Command
-cmd = command "fsck" SectionMaintenance
-	"find and fix problems"
-	paramPaths (seek <$$> optParser)
+cmd = withGlobalOptions annexedMatchingOptions $
+	command "fsck" SectionMaintenance
+		"find and fix problems"
+		paramPaths (seek <$$> optParser)
 
 data FsckOptions = FsckOptions
 	{ fsckFiles :: CmdParams
@@ -51,8 +52,6 @@ data FsckOptions = FsckOptions
 	, incrementalOpt :: Maybe IncrementalOpt
 	, keyOptions :: Maybe KeyOptions
 	}
-
--- TODO: annexedMatchingOptions
 
 data IncrementalOpt
 	= StartIncrementalO

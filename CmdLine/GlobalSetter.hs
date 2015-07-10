@@ -13,12 +13,12 @@ import Annex
 
 import Options.Applicative
 
-globalFlag :: Annex () -> Mod FlagFields GlobalSetter -> Parser GlobalSetter
+globalFlag :: Annex () -> Mod FlagFields GlobalSetter -> GlobalOption
 globalFlag setter = flag' (DeferredParse setter) 
 
-globalSetter :: (v -> Annex ()) -> Parser v -> Parser GlobalSetter
+globalSetter :: (v -> Annex ()) -> Parser v -> GlobalOption
 globalSetter setter parser = DeferredParse . setter <$> parser
 
-combineGlobalSetters :: [Parser GlobalSetter] -> Parser GlobalSetter
-combineGlobalSetters l = DeferredParse . sequence_ . map getParsed
+combineGlobalOptions :: [GlobalOption] -> Parser GlobalSetter
+combineGlobalOptions l = DeferredParse . sequence_ . map getParsed
 	<$> many (foldl1 (<|>) l)

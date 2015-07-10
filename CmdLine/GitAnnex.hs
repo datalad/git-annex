@@ -60,7 +60,7 @@ import qualified Command.Find
 --import qualified Command.FindRef
 --import qualified Command.Whereis
 --import qualified Command.List
-import qualified Command.Log
+--import qualified Command.Log
 import qualified Command.Merge
 import qualified Command.ResolveMerge
 --import qualified Command.Info
@@ -87,7 +87,7 @@ import qualified Command.AddUrl
 import qualified Command.ImportFeed
 #endif
 import qualified Command.RmUrl
-import qualified Command.Import
+--import qualified Command.Import
 import qualified Command.Map
 import qualified Command.Direct
 import qualified Command.Indirect
@@ -136,7 +136,7 @@ cmds =
 	, Command.ImportFeed.cmd
 #endif
 	, Command.RmUrl.cmd
-	, Command.Import.cmd
+--	, Command.Import.cmd
 	, Command.Init.cmd
 	, Command.Describe.cmd
 	, Command.InitRemote.cmd
@@ -187,7 +187,7 @@ cmds =
 --	, Command.FindRef.cmd
 --	, Command.Whereis.cmd
 --	, Command.List.cmd
-	, Command.Log.cmd
+--	, Command.Log.cmd
 	, Command.Merge.cmd
 	, Command.ResolveMerge.cmd
 --	, Command.Info.cmd

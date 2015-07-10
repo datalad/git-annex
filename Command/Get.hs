@@ -17,9 +17,10 @@ import Annex.Wanted
 import qualified Command.Move
 
 cmd :: Command
-cmd = command "get" SectionCommon 
-	"make content of annexed files available"
-	paramPaths (seek <$$> optParser)
+cmd = withGlobalOptions (jobsOption : annexedMatchingOptions) $ 
+	command "get" SectionCommon 
+		"make content of annexed files available"
+		paramPaths (seek <$$> optParser)
 
 data GetOptions = GetOptions
 	{ getFiles :: CmdParams
@@ -34,8 +35,6 @@ optParser desc = GetOptions
 	<*> optional parseFromOption
 	<*> parseAutoOption
 	<*> optional (parseKeyOptions True)
-
--- TODO: jobsOption, annexedMatchingOptions
 
 seek :: GetOptions -> CommandSeek
 seek o = do

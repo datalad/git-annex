@@ -28,7 +28,7 @@ cmd = withOptions opts $ notBareRepo $
 		"move and add files from outside git working copy"
 		paramPaths (withParams seek)
 
-opts :: [Option]
+opts :: [GlobalOption]
 opts = duplicateModeOptions ++ fileMatchingOptions
 
 data DuplicateMode = Default | Duplicate | DeDuplicate | CleanDuplicates | SkipDuplicates

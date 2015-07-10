@@ -54,7 +54,7 @@ cmds = map adddirparam $ cmds_readonly ++ cmds_notreadonly
   where
 	adddirparam c = c { cmdparamdesc = "DIRECTORY " ++ cmdparamdesc c }
 
-globalOptions :: [Parser GlobalSetter]
+globalOptions :: [GlobalOption]
 globalOptions = 
 	globalSetter checkUUID (strOption
 		( long "uuid" <> metavar paramUUID

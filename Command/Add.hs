@@ -35,28 +35,34 @@ import Utility.Tmp
 import Control.Exception (IOException)
 
 cmd :: Command
-cmd = notBareRepo $ withOptions addOptions $
+cmd = notBareRepo $ withGlobalOptions fileMatchingOptions $
 	command "add" SectionCommon "add files to annex"
-		paramPaths (withParams seek)
+		paramPaths (seek <$$> optParser)
 
-addOptions :: [Option]
-addOptions = includeDotFilesOption : fileMatchingOptions
+data AddOptions = AddOptions
+	{ addThese :: CmdParams
+	, includeDotFiles :: Bool
+	}
 
-includeDotFilesOption :: Option
-includeDotFilesOption = flagOption [] "include-dotfiles" "don't skip dotfiles"
+optParser :: CmdParamsDesc -> Parser AddOptions
+optParser desc = AddOptions
+	<$> cmdParams desc
+	<*> switch
+		( long "include-dotfiles"
+		<> help "don't skip dotfiles"
+		)
 
 {- Add acts on both files not checked into git yet, and unlocked files.
  -
  - In direct mode, it acts on any files that have changed. -}
-seek :: CmdParams -> CommandSeek
-seek ps = do
+seek :: AddOptions -> CommandSeek
+seek o = do
 	matcher <- largeFilesMatcher
-	let go a = flip a ps $ \file -> ifM (checkFileMatcher matcher file <||> Annex.getState Annex.force)
+	let go a = flip a (addThese o) $ \file -> ifM (checkFileMatcher matcher file <||> Annex.getState Annex.force)
 		( start file
 		, startSmall file
 		)
-	skipdotfiles <- not <$> Annex.getFlag (optionName includeDotFilesOption)
-	go $ withFilesNotInGit skipdotfiles
+	go $ withFilesNotInGit (not $ includeDotFiles o)
 	ifM isDirect
 		( go withFilesMaybeModified
 		, go withFilesUnlocked

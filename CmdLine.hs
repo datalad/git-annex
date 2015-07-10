@@ -33,7 +33,7 @@ import Command
 import Types.Messages
 
 {- Runs the passed command line. -}
-dispatch :: Bool -> CmdParams -> [Command] -> [Parser GlobalSetter] -> [(String, String)] -> IO Git.Repo -> String -> String -> IO ()
+dispatch :: Bool -> CmdParams -> [Command] -> [GlobalOption] -> [(String, String)] -> IO Git.Repo -> String -> String -> IO ()
 dispatch fuzzyok allargs allcmds globaloptions fields getgitrepo progname progdesc = do
 	setupConsole
 	go =<< (E.try getgitrepo :: IO (Either E.SomeException Git.Repo))
@@ -81,7 +81,7 @@ dispatch fuzzyok allargs allcmds globaloptions fields getgitrepo progname progde
 			Just n -> n:args
 
 {- Parses command line, selecting one of the commands from the list. -}
-parseCmd :: String -> String -> [Parser GlobalSetter] -> CmdParams -> [Command] -> (Command -> O.Parser v) -> O.ParserResult (Command, v, GlobalSetter)
+parseCmd :: String -> String -> [GlobalOption] -> CmdParams -> [Command] -> (Command -> O.Parser v) -> O.ParserResult (Command, v, GlobalSetter)
 parseCmd progname progdesc globaloptions allargs allcmds getparser = 
 	O.execParserPure (O.prefs O.idm) pinfo allargs
   where
@@ -93,7 +93,7 @@ parseCmd progname progdesc globaloptions allargs allcmds getparser =
 	mkparser c = (,,) 
 		<$> pure c
 		<*> getparser c
-		<*> combineGlobalSetters globaloptions
+		<*> combineGlobalOptions globaloptions
 	synopsis n d = n ++ " - " ++ d
 	intro = mconcat $ concatMap (\l -> [H.text l, H.line])
 		(synopsis progname progdesc : commandList allcmds)

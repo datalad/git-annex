@@ -13,7 +13,7 @@ import qualified Annex.Queue
 import qualified Annex
 	
 cmd :: Command
-cmd = notDirect $ withOptions annexedMatchingOptions $
+cmd = notDirect $ withGlobalOptions annexedMatchingOptions $
 	command "lock" SectionCommon
 		"undo unlock command"
 		paramPaths (withParams seek)

@@ -39,11 +39,11 @@ data RefChange = RefChange
 type Outputter = Bool -> POSIXTime -> [UUID] -> Annex ()
 
 cmd :: Command
-cmd = withOptions options $
+cmd = withGlobalOptions options $
 	command "log" SectionQuery "shows location log"
 		paramPaths (withParams seek)
 
-options :: [Option]
+options :: [GlobalOption]
 options = passthruOptions ++ [gourceOption] ++ annexedMatchingOptions
 
 passthruOptions :: [Option]

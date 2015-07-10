@@ -7,7 +7,6 @@
 
 module CmdLine.GitAnnex.Options where
 
-import System.Console.GetOpt
 import Options.Applicative
 
 import Common.Annex
@@ -30,7 +29,7 @@ import CmdLine.GlobalSetter
 
 -- Global options that are accepted by all git-annex sub-commands,
 -- although not always used.
-gitAnnexGlobalOptions :: [Parser GlobalSetter]
+gitAnnexGlobalOptions :: [GlobalOption]
 gitAnnexGlobalOptions = commonGlobalOptions ++
 	[ globalSetter setnumcopies $ option auto
 		( long "numcopies" <> short 'N' <> metavar paramNumber
@@ -85,6 +84,20 @@ gitAnnexGlobalOptions = commonGlobalOptions ++
 		>>= pure . (\r -> r { gitGlobalOpts = gitGlobalOpts r ++ [Param "-c", Param v] })
 		>>= Annex.changeGitRepo
 	setdesktopnotify v = Annex.changeState $ \s -> s { Annex.desktopnotify = Annex.desktopnotify s <> v }
+
+{- Parser that accepts all non-option params. -}
+cmdParams :: CmdParamsDesc -> Parser CmdParams
+cmdParams paramdesc = many $ argument str
+	( metavar paramdesc
+	-- Let bash completion complete files
+	<> action "file"
+	)
+
+parseAutoOption :: Parser Bool
+parseAutoOption = switch
+	( long "auto" <> short 'a'
+	<> help "automatic mode"
+	)
 
 parseRemoteOption :: Parser RemoteName -> Parser (DeferredParse Remote)
 parseRemoteOption p = DeferredParse . (fromJust <$$> Remote.byNameWithUUID) . Just <$> p
@@ -150,96 +163,125 @@ parseKey :: Monad m => String -> m Key
 parseKey = maybe (fail "invalid key") return . file2key
 
 -- Options to match properties of annexed files.
-annexedMatchingOptions :: [Option]
+annexedMatchingOptions :: [GlobalOption]
 annexedMatchingOptions = concat
 	[ nonWorkTreeMatchingOptions'
 	, fileMatchingOptions'
-	-- , combiningOptions
-	-- , [timeLimitOption]
+	, combiningOptions
+	, [timeLimitOption]
 	]
 
 -- Matching options that don't need to examine work tree files.
-nonWorkTreeMatchingOptions :: [Option]
-nonWorkTreeMatchingOptions = nonWorkTreeMatchingOptions' -- ++ combiningOptions
+nonWorkTreeMatchingOptions :: [GlobalOption]
+nonWorkTreeMatchingOptions = nonWorkTreeMatchingOptions' ++ combiningOptions
 
-nonWorkTreeMatchingOptions' :: [Option]
+nonWorkTreeMatchingOptions' :: [GlobalOption]
 nonWorkTreeMatchingOptions' = 
-	[ Option ['i'] ["in"] (ReqArg Limit.addIn paramRemote)
-		"match files present in a remote"
-	, Option ['C'] ["copies"] (ReqArg Limit.addCopies paramNumber)
-		"skip files with fewer copies"
-	, Option [] ["lackingcopies"] (ReqArg (Limit.addLackingCopies False) paramNumber)
-		"match files that need more copies"
-	, Option [] ["approxlackingcopies"] (ReqArg (Limit.addLackingCopies True) paramNumber)
-		"match files that need more copies (faster)"
-	, Option ['B'] ["inbackend"] (ReqArg Limit.addInBackend paramName)
-		"match files using a key-value backend"
-	, Option [] ["inallgroup"] (ReqArg Limit.addInAllGroup paramGroup)
-		"match files present in all remotes in a group"
-	, Option [] ["metadata"] (ReqArg Limit.addMetaData "FIELD=VALUE")
-		"match files with attached metadata"
-	, Option [] ["want-get"] (NoArg Limit.Wanted.addWantGet)
-		"match files the repository wants to get"
-	, Option [] ["want-drop"] (NoArg Limit.Wanted.addWantDrop)
-		"match files the repository wants to drop"
+	[ globalSetter Limit.addIn $ strOption
+		( long "in" <> short 'i' <> metavar paramRemote
+		<> help "match files present in a remote"
+		<> hidden
+		)
+	, globalSetter Limit.addCopies $ strOption
+		( long "copies" <> short 'C' <> metavar paramRemote
+		<> help "skip files with fewer copies"
+		<> hidden
+		)
+	, globalSetter (Limit.addLackingCopies False) $ strOption
+		( long "lackingcopies" <> metavar paramNumber
+		<> help "match files that need more copies"
+		<> hidden
+		)
+	, globalSetter (Limit.addLackingCopies True) $ strOption
+		( long "approxlackingcopies" <> metavar paramNumber
+		<> help "match files that need more copies (faster)"
+		<> hidden
+		)
+	, globalSetter Limit.addInBackend $ strOption
+		( long "inbackend" <> short 'B' <> metavar paramName
+		<> help "match files using a key-value backend"
+		<> hidden
+		)
+	, globalSetter Limit.addInAllGroup $ strOption
+		( long "inallgroup" <> metavar paramGroup
+		<> help "match files present in all remotes in a group"
+		<> hidden
+		)
+	, globalSetter Limit.addMetaData $ strOption
+		( long "metadata" <> metavar "FIELD=VALUE"
+		<> help "match files with attached metadata"
+		<> hidden
+		)
+	, globalFlag Limit.Wanted.addWantGet
+		( long "want-get"
+		<> help "match files the repository wants to get"
+		<> hidden
+		)
+	, globalFlag Limit.Wanted.addWantDrop
+		( long "want-drop"
+		<> help "match files the repository wants to drop"
+		<> hidden
+		)
 	]
 
 -- Options to match files which may not yet be annexed.
-fileMatchingOptions :: [Option]
-fileMatchingOptions = fileMatchingOptions' -- ++ combiningOptions
+fileMatchingOptions :: [GlobalOption]
+fileMatchingOptions = fileMatchingOptions' ++ combiningOptions
 
-fileMatchingOptions' :: [Option]
+fileMatchingOptions' :: [GlobalOption]
 fileMatchingOptions' =
-	[ Option ['x'] ["exclude"] (ReqArg Limit.addExclude paramGlob)
-		"skip files matching the glob pattern"
-	, Option ['I'] ["include"] (ReqArg Limit.addInclude paramGlob)
-		"limit to files matching the glob pattern"
-	, Option [] ["largerthan"] (ReqArg Limit.addLargerThan paramSize)
-		"match files larger than a size"
-	, Option [] ["smallerthan"] (ReqArg Limit.addSmallerThan paramSize)
-		"match files smaller than a size"
+	[ globalSetter Limit.addExclude $ strOption
+		( long "exclude" <> short 'x' <> metavar paramGlob
+		<> help "skip files matching the glob pattern"
+		<> hidden
+		)
+	, globalSetter Limit.addInclude $ strOption
+		( long "include" <> short 'I' <> metavar paramGlob
+		<> help "limit to files matching the glob pattern"
+		<> hidden
+		)
+	, globalSetter Limit.addLargerThan $ strOption
+		( long "largerthan" <> metavar paramSize
+		<> help "match files larger than a size"
+		<> hidden
+		)
+	, globalSetter Limit.addSmallerThan $ strOption
+		( long "smallerthan" <> metavar paramSize
+		<> help "match files smaller than a size"
+		<> hidden
+		)
 	]
 
-combiningOptions :: Parser [GlobalSetter]
+combiningOptions :: [GlobalOption]
 combiningOptions = 
-	many $ longopt "not" "negate next option"
-		<|> longopt "and" "both previous and next option must match"
-		<|> longopt "or" "either previous or next option must match"
-		<|> shortopt '(' "open group of options"
-		<|> shortopt ')' "close group of options"
+	[ longopt "not" "negate next option"
+	, longopt "and" "both previous and next option must match"
+	, longopt "or" "either previous or next option must match"
+	, shortopt '(' "open group of options"
+	, shortopt ')' "close group of options"
+	]
   where
-	longopt o h = globalFlag (Limit.addToken o) ( long o <> help h )
-	shortopt o h = globalFlag (Limit.addToken [o]) ( short o <> help h)
+	longopt o h = globalFlag (Limit.addToken o) ( long o <> help h <> hidden )
+	shortopt o h = globalFlag (Limit.addToken [o]) ( short o <> help h <> hidden )
 
-jsonOption :: Parser GlobalSetter
+jsonOption :: GlobalOption
 jsonOption = globalFlag (Annex.setOutput JSONOutput)
 	( long "json" <> short 'j'
 	<> help "enable JSON output"
+	<> hidden
 	)
 
-parseJobsOption :: Parser GlobalSetter
-parseJobsOption = globalSetter (Annex.setOutput . ParallelOutput) $ 
+jobsOption :: GlobalOption
+jobsOption = globalSetter (Annex.setOutput . ParallelOutput) $ 
 	option auto
 		( long "jobs" <> short 'J' <> metavar paramNumber
 		<> help "enable concurrent jobs"
+		<> hidden
 		)
 
-parseTimeLimitOption :: Parser GlobalSetter
-parseTimeLimitOption = globalSetter Limit.addTimeLimit $ strOption
+timeLimitOption :: GlobalOption
+timeLimitOption = globalSetter Limit.addTimeLimit $ strOption
 	( long "time-limit" <> short 'T' <> metavar paramTime
 	<> help "stop after the specified amount of time"
-	)
-
-parseAutoOption :: Parser Bool
-parseAutoOption = switch
-	( long "auto" <> short 'a'
-	<> help "automatic mode"
-	)
-
-{- Parser that accepts all non-option params. -}
-cmdParams :: CmdParamsDesc -> Parser CmdParams
-cmdParams paramdesc = many $ argument str
-	( metavar paramdesc
-	-- Let bash completion complete files
-	<> action "file"
+	<> hidden
 	)

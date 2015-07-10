@@ -26,7 +26,7 @@ import Types.Messages
 import Types.DeferredParse
 
 -- Global options accepted by both git-annex and git-annex-shell sub-commands.
-commonGlobalOptions :: [Parser GlobalSetter]
+commonGlobalOptions :: [GlobalOption]
 commonGlobalOptions =
 	[ globalFlag (setforce True)
 		( long "force" 

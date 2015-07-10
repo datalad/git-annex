@@ -18,17 +18,16 @@ import Annex.Transfer
 import Logs.Presence
 
 cmd :: Command
-cmd = command "move" SectionCommon
-	"move content of files to/from another repository"
-	paramPaths (seek <--< optParser)
+cmd = withGlobalOptions (jobsOption : annexedMatchingOptions) $
+	command "move" SectionCommon
+		"move content of files to/from another repository"
+		paramPaths (seek <--< optParser)
 
 data MoveOptions = MoveOptions
 	{ moveFiles :: CmdParams
 	, fromToOptions :: FromToOptions
 	, keyOptions :: Maybe KeyOptions
 	}
-
--- TODO: jobsOption, annexedMatchingOptions
 
 optParser :: CmdParamsDesc -> Parser MoveOptions
 optParser desc = MoveOptions
