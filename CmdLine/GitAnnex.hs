@@ -48,7 +48,7 @@ import qualified Command.Init
 import qualified Command.Describe
 import qualified Command.InitRemote
 import qualified Command.EnableRemote
---import qualified Command.Expire
+import qualified Command.Expire
 import qualified Command.Repair
 import qualified Command.Unused
 import qualified Command.DropUnused
@@ -178,7 +178,7 @@ cmds =
 	, Command.VPop.cmd
 	, Command.VCycle.cmd
 	, Command.Fix.cmd
---	, Command.Expire.cmd
+	, Command.Expire.cmd
 	, Command.Repair.cmd
 	, Command.Unused.cmd
 	, Command.DropUnused.cmd
