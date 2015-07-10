@@ -49,22 +49,25 @@ additions and removals of refs. For example:
 This adds all refs/heads/ refs, as well as the previous version
 of HEAD. It also adds all tags, except for old-tag.
 
-This refspec is processed by starting with an empty set of refs,
+The refspec is processed by starting with an empty set of refs,
 and walking the list in order from left to right.
 
-* Each + using a glob is matched against all relevant refs
-  (a subset of `git show-ref`) and all matching refs are added
-  to the set.
-  For example, "+refs/remotes/*" adds all remote refs.
-* Each + without a glob adds the literal value to the set.
-  For example, "+HEAD^" adds "HEAD^".
-* Each - is matched against the set of refs accumulated so far.
-  Any matching refs are removed from the set.
-* "reflog" adds all the refs from the reflog. This will make past versions
-  of files not be considered to be unused until the ref expires from the
-  reflog (by default for 90 days). Note that this may make git-annex unused
-  take some time to complete, it if needs to check every ref from the
-  reflog.
+Each + using a glob is matched against all relevant refs
+(a subset of `git show-ref`) and all matching refs are added
+to the set.
+For example, "+refs/remotes/*" adds all remote refs.
+
+Each + without a glob adds the literal value to the set.
+For example, "+HEAD^" adds "HEAD^".
+
+Each - is matched against the set of refs accumulated so far.
+Any matching refs are removed from the set.
+
+"reflog" adds all the refs from the reflog. This will make past versions
+of files not be considered to be unused until the ref expires from the
+reflog (by default for 90 days). Note that this may make git-annex unused
+take some time to complete, it if needs to check every ref from the
+reflog.
 
 # SEE ALSO
 

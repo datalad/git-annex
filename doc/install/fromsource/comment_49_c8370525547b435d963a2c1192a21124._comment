@@ -1,0 +1,93 @@
+[[!comment format=mdwn
+ username="dave@2ab82f485adf7e2ce787066e35f5f9789bff430b"
+ nickname="dave"
+ subject="apt-get build-dep fails"
+ date="2015-07-09T00:07:32Z"
+ content="""
+    hobbes@namagiri:~/src$ sudo apt-get build-dep git-annex
+    Reading package lists... Done
+    Building dependency tree       
+    Reading state information... Done
+    E: Build-Depends dependency for git-annex cannot be satisfied because the package libghc-hamlet-dev cannot be found
+
+Hmm, deprecated in favor of libghc-shakespear-dev, according to http://hackage.haskell.org/package/hamlet ...
+
+    hobbes@namagiri:~/src/apt-get-source-git-annex$ grep -iR build-depends.*hamlet|tr , \\n
+    git-annex_5.20141125.dsc:Build-Depends: debhelper (>= 9)
+     ghc (>= 7.4)
+     cabal-install
+     libghc-mtl-dev (>= 2.1.1)
+     libghc-missingh-dev
+     libghc-data-default-dev
+     libghc-hslogger-dev
+     libghc-pcre-light-dev
+     libghc-sha-dev
+     libghc-cryptohash-dev
+     libghc-dataenc-dev
+     libghc-utf8-string-dev
+     libghc-hs3-dev (>= 0.5.6)
+     libghc-dav-dev (>= 1.0) [amd64 i386 kfreebsd-amd64 kfreebsd-i386 powerpc]
+     libghc-quickcheck2-dev
+     libghc-monad-control-dev (>= 0.3)
+     libghc-exceptions-dev (>= 0.6)
+     libghc-transformers-dev
+     libghc-unix-compat-dev
+     libghc-dlist-dev
+     libghc-uuid-dev
+     libghc-json-dev
+     libghc-aeson-dev
+     libghc-ifelse-dev
+     libghc-bloomfilter-dev
+     libghc-edit-distance-dev
+     libghc-hinotify-dev [linux-any]
+     libghc-stm-dev (>= 2.3)
+     libghc-dbus-dev (>= 0.10.3) [linux-any]
+     libghc-fdo-notify-dev (>= 0.3) [linux-any]
+     libghc-yesod-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc]
+     libghc-yesod-static-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc]
+     libghc-yesod-default-dev [i386 amd64 kfreebsd-amd64 powerpc]
+     libghc-hamlet-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc]
+     libghc-shakespeare-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc]
+     libghc-clientsession-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc]
+     libghc-warp-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc]
+     libghc-warp-tls-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc]
+     libghc-wai-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc]
+     libghc-wai-extra-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc]
+     libghc-securemem-dev
+     libghc-byteable-dev
+     libghc-dns-dev
+     libghc-case-insensitive-dev
+     libghc-http-types-dev
+     libghc-http-conduit-dev
+     libghc-blaze-builder-dev
+     libghc-crypto-api-dev
+     libghc-network-multicast-dev
+     libghc-network-info-dev [linux-any kfreebsd-any]
+     libghc-safesemaphore-dev
+     libghc-network-protocol-xmpp-dev (>= 0.4.3-1+b1)
+     libghc-gnutls-dev (>= 0.1.4)
+     libghc-xml-types-dev
+     libghc-async-dev
+     libghc-feed-dev (>= 0.3.9.2)
+     libghc-regex-tdfa-dev [!mipsel !s390]
+     libghc-regex-compat-dev [mipsel s390]
+     libghc-tasty-dev (>= 0.7) [!sparc]
+     libghc-tasty-hunit-dev [!sparc]
+     libghc-tasty-quickcheck-dev [!sparc]
+     libghc-tasty-rerun-dev [!sparc]
+     libghc-optparse-applicative-dev [!sparc]
+     lsof [!kfreebsd-i386 !kfreebsd-amd64 !hurd-any]
+     ikiwiki
+     perlmagick
+     git (>= 1:2.0)
+     rsync
+     wget
+     curl
+     openssh-client
+     git-remote-gcrypt (>= 0.20130908-6)
+     llvm-3.4 [armel armhf]
+    
+I think that's the bug, right there: *git-annex_5.20141125.dsc*.
+
+I hope this helps.
+"""]]

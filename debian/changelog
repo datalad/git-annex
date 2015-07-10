@@ -5,10 +5,18 @@
     running: source <(git-annex --bash-completion-script git-annex)
   * version --raw now works when run outside a git repository.
 
-git-annex (5.20150618) UNRELEASED; urgency=medium
+git-annex (5.20150710) unstable; urgency=medium
 
+  * add: Stage symlinks the same as git add would, even if they are not a
+    link to annexed content.
+  * sync: When annex.autocommit=false, avoid making any commit of local
+    changes, while still merging with remote to the extent possible.
+  * unused: --used-refspec can now be configured to look at refs in the
+    reflog. This provides a way to not consider old versions of files to be
+    unused after they have reached a specified age, when the old refs in
+    the reflog expire.
   * log: Fix reversion introduced in version 5.20150528 that broke this command.
-  * assistant --autostart: First any daemons that are already running,
+  * assistant --autostart: First stop any daemons that are already running,
     which might be left over from a previous login session and so unable to
     use the ssh agent of a new login session.
   * assistant: Fix local pairing to not include newline in ssh pubkey,
@@ -24,23 +32,15 @@ git-annex (5.20150618) UNRELEASED; urgency=medium
     This bug affected git-annex unused, and potentially also transitions
     running code and other things.
   * Support git's undocumented core.sharedRepository=2 value, which
-    is equivilant to "world", and is set when a repo was created using
+    is equivalent to "world", and is set when a repo was created using
     git init --shared=world.
-  * On linux, pass --as-needed to linker to avoid linking with unused
-    shared libraries including libyaml.
+  * When building on linux, pass --as-needed to linker to avoid linking
+    with unused shared libraries including libyaml.
   * import: Fix failure of cross-device import on Windows.
   * merge: Avoid creating the synced/master branch.
-  * add: Stage symlinks the same as git add would, even if they are not a
-    link to annexed content.
-  * sync: When annex.autocommit=false, avoid making any commit of local
-    changes, while still merging with remote to the extent possible.
-  * unused: --used-refspec can now be configured to look at refs in the
-    reflog. This provides a way to not consider old versions of files to be
-    unused after they have reached a specified age, when the old refs in
-    the reflog expire.
   * Removed support for optparse-applicative versions older than 0.10.
 
- -- Joey Hess <id@joeyh.name>  Thu, 02 Jul 2015 12:31:14 -0400
+ -- Joey Hess <id@joeyh.name>  Fri, 10 Jul 2015 16:36:42 -0400
 
 git-annex (5.20150617) unstable; urgency=medium
 

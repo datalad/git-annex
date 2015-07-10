@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="acous"
+ subject="comment 2"
+ date="2015-07-07T22:25:40Z"
+ content="""
+Thanks, that did the trick. Am I right to assume that git-remote-gcrypt is not compatible with windows? I have cygwin set up which I could try to install it into, but I expect git-annex-assistant only has access to stuff available from the standard command prompt.
+"""]]
