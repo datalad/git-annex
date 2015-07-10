@@ -227,7 +227,7 @@ run args = do
 #endif
 	go envmodes
   where
-	go [] = dispatch True args cmds gitAnnexOptions [] Git.CurrentRepo.get
+	go [] = dispatch True args cmds gitAnnexGlobalOptions [] Git.CurrentRepo.get
 		"git-annex"
 		"manage files with git, without checking their contents in"
 	go ((v, a):rest) = maybe (go rest) a =<< getEnv v

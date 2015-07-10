@@ -33,8 +33,8 @@ import Command
 import Types.Messages
 
 {- Runs the passed command line. -}
-dispatch :: Bool -> CmdParams -> [Command] -> [Option] -> [(String, String)] -> IO Git.Repo -> String -> String -> IO ()
-dispatch fuzzyok allargs allcmds commonoptions fields getgitrepo progname progdesc = do
+dispatch :: Bool -> CmdParams -> [Command] -> Parser GlobalSetter -> [(String, String)] -> IO Git.Repo -> String -> String -> IO ()
+dispatch fuzzyok allargs allcmds globaloptions fields getgitrepo progname progdesc = do
 	setupConsole
 	go =<< (E.try getgitrepo :: IO (Either E.SomeException Git.Repo))
   where

@@ -8,7 +8,6 @@
 module CmdLine.GitAnnexShell where
 
 import System.Environment
-import System.Console.GetOpt
 
 import Common.Annex
 import qualified Git.Construct
@@ -54,9 +53,13 @@ cmds = map adddirparam $ cmds_readonly ++ cmds_notreadonly
   where
 	adddirparam c = c { cmdparamdesc = "DIRECTORY " ++ cmdparamdesc c }
 
-options :: [OptDescr (Annex ())]
-options = commonOptions ++
-	[ Option [] ["uuid"] (ReqArg checkUUID paramUUID) "local repository uuid"
+options :: Parser GlobalSetter
+options = globalSetters
+	[ commonGlobalOptions
+	, globalSetter checkUUID $ strOption
+		( long "uuid" <> metavar paramUUID
+		<> help "local repository uuid"
+		)
 	]
   where
 	checkUUID expected = getUUID >>= check

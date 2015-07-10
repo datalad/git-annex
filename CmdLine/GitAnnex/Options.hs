@@ -19,6 +19,7 @@ import Types.Messages
 import Types.Key
 import Types.Command
 import Types.DeferredParse
+import Types.DesktopNotify
 import qualified Annex
 import qualified Remote
 import qualified Limit
@@ -26,34 +27,55 @@ import qualified Limit.Wanted
 import CmdLine.Option
 import CmdLine.Usage
 
--- Options that are accepted by all git-annex sub-commands,
+-- Global options that are accepted by all git-annex sub-commands,
 -- although not always used.
-gitAnnexOptions :: [Option]
-gitAnnexOptions = commonOptions ++
-	[ Option ['N'] ["numcopies"] (ReqArg setnumcopies paramNumber)
-		"override default number of copies"
-	, Option [] ["trust"] (trustArg Trusted)
-		"override trust setting"
-	, Option [] ["semitrust"] (trustArg SemiTrusted)
-		"override trust setting back to default"
-	, Option [] ["untrust"] (trustArg UnTrusted)
-		"override trust setting to untrusted"
-	, Option ['c'] ["config"] (ReqArg setgitconfig "NAME=VALUE")
-		"override git configuration setting"
-	, Option [] ["user-agent"] (ReqArg setuseragent paramName)
-		"override default User-Agent"
-	, Option [] ["trust-glacier"] (NoArg (Annex.setFlag "trustglacier"))
-		"Trust Amazon Glacier inventory"
+gitAnnexGlobalOptions :: Parser GlobalSetter
+gitAnnexGlobalOptions = globalSetters
+	[ commonGlobalOptions
+	, globalSetter setnumcopies $ option auto
+		( long "numcopies" <> short 'N' <> metavar paramNumber
+		<> help "override default number of copies"
+		)
+	, globalSetter (Remote.forceTrust Trusted) $ strOption
+		( long "trust" <> metavar paramRemote
+		<> help "override trust setting"
+		)
+	, globalSetter (Remote.forceTrust SemiTrusted) $ strOption
+		( long "semitrust" <> metavar paramRemote
+		<> help "override trust setting back to default"
+		)
+	, globalSetter (Remote.forceTrust UnTrusted) $ strOption
+		( long "untrust" <> metavar paramRemote
+		<> help "override trust setting to untrusted"
+		)
+	, globalSetter setgitconfig $ strOption
+		( long "config" <> short 'c' <> metavar "NAME=VALUE"
+		<> help "override git configuration setting"
+		)
+	, globalSetter setuseragent $ strOption
+		( long "user-agent" <> metavar paramName
+		<> help "override default User-Agent"
+		)
+	, globalFlag (Annex.setFlag "trustglacier")
+		( long "trust-glacier"
+		<> help "Trust Amazon Glacier inventory"
+		)
+	, globalFlag (setdesktopnotify mkNotifyFinish)
+		( long "notify-finish"
+		<> help "show desktop notification after transfer finishes"
+		)
+	, globalFlag (setdesktopnotify mkNotifyStart)
+		( long "notify-start"
+		<> help "show desktop notification after transfer completes"
+		)
 	]
   where
-	trustArg t = ReqArg (Remote.forceTrust t) paramRemote
-	setnumcopies v = maybe noop
-		(\n -> Annex.changeState $ \s -> s { Annex.forcenumcopies = Just $ NumCopies n })
-		(readish v)
+	setnumcopies n = Annex.changeState $ \s -> s { Annex.forcenumcopies = Just $ NumCopies n }
 	setuseragent v = Annex.changeState $ \s -> s { Annex.useragent = Just v }
 	setgitconfig v = inRepo (Git.Config.store v)
 		>>= pure . (\r -> r { gitGlobalOpts = gitGlobalOpts r ++ [Param "-c", Param v] })
 		>>= Annex.changeGitRepo
+	setdesktopnotify v = Annex.changeState $ \s -> s { Annex.desktopnotify = Annex.desktopnotify s <> v }
 
 parseRemoteOption :: Parser RemoteName -> Parser (DeferredParse Remote)
 parseRemoteOption p = DeferredParse . (fromJust <$$> Remote.byNameWithUUID) . Just <$> p
@@ -177,13 +199,11 @@ parseCombiningOptions =
 		<|> shortopt '(' "open group of options"
 		<|> shortopt ')' "close group of options"
   where
-	longopt o h = globalOpt (Limit.addToken o) $ switch
-		( long o <> help h )
-	shortopt o h = globalOpt (Limit.addToken [o]) $ switch
-		( short o <> help h)
+	longopt o h = globalFlag (Limit.addToken o) ( long o <> help h )
+	shortopt o h = globalFlag (Limit.addToken [o]) ( short o <> help h)
 
 parseJsonOption :: Parser GlobalSetter
-parseJsonOption = globalOpt (Annex.setOutput JSONOutput) $ switch
+parseJsonOption = globalFlag (Annex.setOutput JSONOutput)
 	( long "json" <> short 'j'
 	<> help "enable JSON output"
 	)

@@ -12,7 +12,7 @@ module Types.DeferredParse where
 import Annex
 import Common
 
-import Options.Applicative.Types
+import Options.Applicative
 
 -- Some values cannot be fully parsed without performing an action.
 -- The action may be expensive, so it's best to call finishParse on such a
@@ -40,11 +40,12 @@ instance DeferredParseClass [DeferredParse a] where
 -- Use when the Annex action modifies Annex state.
 type GlobalSetter = DeferredParse ()
 
-globalOpt :: Annex () -> Parser Bool -> Parser GlobalSetter
-globalOpt setter parser = go <$> parser
-  where
-	go False = ReadyParse ()
-	go True = DeferredParse setter
+globalFlag :: Annex () -> Mod FlagFields GlobalSetter -> Parser GlobalSetter
+globalFlag setter = flag' (DeferredParse setter) 
 
 globalSetter :: (v -> Annex ()) -> Parser v -> Parser GlobalSetter
 globalSetter setter parser = DeferredParse . setter <$> parser
+
+globalSetters :: [Parser GlobalSetter] -> Parser GlobalSetter
+globalSetters l = DeferredParse . sequence_ . map getParsed
+	<$> many (foldl1 (<|>) l)
