@@ -5,18 +5,9 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module CmdLine.Option (
-	commonGlobalOptions,
-	flagOption,
-	fieldOption,
-	optionName,
-	optionParam,
-	ArgDescr(..),
-	OptDescr(..),
-) where
+module CmdLine.Option where
 
 import Options.Applicative
-import System.Console.GetOpt
 
 import Common.Annex
 import CmdLine.Usage
@@ -70,20 +61,3 @@ commonGlobalOptions =
 	setforcebackend v = Annex.changeState $ \s -> s { Annex.forcebackend = Just v }
 	setdebug = Annex.changeGitConfig $ \c -> c { annexDebug = True }
 	unsetdebug = Annex.changeGitConfig $ \c -> c { annexDebug = False }
-
-{- An option that sets a flag. -}
-flagOption :: String -> String -> String -> Option
-flagOption shortv opt description = 
-	Option shortv [opt] (NoArg (Annex.setFlag opt)) description
-
-{- An option that sets a field. -}
-fieldOption :: String -> String -> String -> String -> Option
-fieldOption shortv opt paramdesc description = 
-	Option shortv [opt] (ReqArg (Annex.setField opt) paramdesc) description
-
-{- The flag or field name used for an option. -}
-optionName :: Option -> String
-optionName (Option _ o _ _) = Prelude.head o
-
-optionParam :: Option -> String
-optionParam o = "--" ++ optionName o

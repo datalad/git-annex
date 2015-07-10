@@ -50,7 +50,7 @@ import qualified Command.InitRemote
 import qualified Command.EnableRemote
 --import qualified Command.Expire
 import qualified Command.Repair
---import qualified Command.Unused
+import qualified Command.Unused
 --import qualified Command.DropUnused
 import qualified Command.AddUnused
 import qualified Command.Unlock
@@ -180,7 +180,7 @@ cmds =
 	, Command.Fix.cmd
 --	, Command.Expire.cmd
 	, Command.Repair.cmd
---	, Command.Unused.cmd
+	, Command.Unused.cmd
 --	, Command.DropUnused.cmd
 	, Command.AddUnused.cmd
 	, Command.Find.cmd

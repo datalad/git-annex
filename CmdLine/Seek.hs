@@ -22,7 +22,6 @@ import qualified Git.LsFiles as LsFiles
 import qualified Git.LsTree as LsTree
 import Git.FilePath
 import qualified Limit
-import CmdLine.Option
 import CmdLine.GitAnnex.Options
 import CmdLine.Action
 import Logs.Location
@@ -151,15 +150,6 @@ withKeys :: (Key -> CommandStart) -> CmdParams -> CommandSeek
 withKeys a params = seekActions $ return $ map (a . parse) params
   where
 	parse p = fromMaybe (error "bad key") $ file2key p
-
-{- Gets the value of a field options, which is fed into
- - a conversion function.
- -}
-getOptionField :: Option -> (Maybe String -> Annex a) -> Annex a
-getOptionField option converter = converter <=< Annex.getField $ optionName option
-
-getOptionFlag :: Option -> Annex Bool
-getOptionFlag option = Annex.getFlag (optionName option)
 
 withNothing :: CommandStart -> CmdParams -> CommandSeek
 withNothing a [] = seekActions $ return [a]
