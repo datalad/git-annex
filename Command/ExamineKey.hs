@@ -11,7 +11,7 @@ import Common.Annex
 import Command
 import CmdLine.Batch
 import qualified Utility.Format
-import Command.Find (formatOption, getFormat, showFormatted, keyVars)
+import Command.Find (FindOptions(..), showFormatted, keyVars)
 import Types.Key
 
 cmd :: Command

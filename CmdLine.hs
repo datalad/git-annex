@@ -31,7 +31,6 @@ import Annex.Content
 import Annex.Environment
 import Command
 import Types.Messages
-import CmdLine.GlobalSetter
 
 {- Runs the passed command line. -}
 dispatch :: Bool -> CmdParams -> [Command] -> [Parser GlobalSetter] -> [(String, String)] -> IO Git.Repo -> String -> String -> IO ()

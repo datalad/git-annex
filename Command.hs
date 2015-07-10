@@ -13,6 +13,7 @@ module Command (
 	noCommit,
 	noMessages,
 	withOptions,
+	withGlobalOptions,
 	next,
 	stop,
 	stopUnless,
@@ -33,6 +34,7 @@ import Checks as ReExported
 import CmdLine.Usage as ReExported
 import CmdLine.Action as ReExported
 import CmdLine.Option as ReExported
+import CmdLine.GlobalSetter as ReExported
 import CmdLine.GitAnnex.Options as ReExported
 import Options.Applicative as ReExported hiding (command)
 
@@ -77,6 +79,19 @@ noRepo a c = c { cmdnorepo = Just (a (cmdparamdesc c)) }
 {- Adds options to a command. -}
 withOptions :: [Option] -> Command -> Command
 withOptions o c = c { cmdoptions = cmdoptions c ++ o }
+
+{- Adds global options to a command's option parser, and modifies its seek
+ - option to first run actions for them.
+ -}
+withGlobalOptions :: [Parser GlobalSetter] -> Command -> Command
+withGlobalOptions os c = c { cmdparser = apply <$> mixin (cmdparser c) }
+  where
+	mixin p = (,) 
+		<$> p
+		<*> combineGlobalSetters os
+	apply (seek, globalsetters) = do
+		void $ getParsed globalsetters
+		seek
 
 {- For start and perform stages to indicate what step to run next. -}
 next :: a -> Annex (Maybe a)

@@ -200,8 +200,8 @@ fileMatchingOptions' =
 		"match files smaller than a size"
 	]
 
-parseCombiningOptions :: Parser [GlobalSetter]
-parseCombiningOptions = 
+combiningOptions :: Parser [GlobalSetter]
+combiningOptions = 
 	many $ longopt "not" "negate next option"
 		<|> longopt "and" "both previous and next option must match"
 		<|> longopt "or" "either previous or next option must match"
@@ -211,8 +211,8 @@ parseCombiningOptions =
 	longopt o h = globalFlag (Limit.addToken o) ( long o <> help h )
 	shortopt o h = globalFlag (Limit.addToken [o]) ( short o <> help h)
 
-parseJsonOption :: Parser GlobalSetter
-parseJsonOption = globalFlag (Annex.setOutput JSONOutput)
+jsonOption :: Parser GlobalSetter
+jsonOption = globalFlag (Annex.setOutput JSONOutput)
 	( long "json" <> short 'j'
 	<> help "enable JSON output"
 	)
