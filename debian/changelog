@@ -25,7 +25,7 @@ git-annex (5.20150710) unstable; urgency=medium
     This bug affected git-annex unused, and potentially also transitions
     running code and other things.
   * Support git's undocumented core.sharedRepository=2 value, which
-    is equivilant to "world", and is set when a repo was created using
+    is equivalent to "world", and is set when a repo was created using
     git init --shared=world.
   * When building on linux, pass --as-needed to linker to avoid linking
     with unused shared libraries including libyaml.
