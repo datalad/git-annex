@@ -15,7 +15,7 @@ import Command
 import Utility.Env
 import Annex.Ssh
 
---import qualified Command.Help
+import qualified Command.Help
 import qualified Command.Add
 import qualified Command.Unannex
 import qualified Command.Drop
@@ -58,7 +58,7 @@ import qualified Command.Lock
 import qualified Command.PreCommit
 import qualified Command.Find
 --import qualified Command.FindRef
---import qualified Command.Whereis
+import qualified Command.Whereis
 --import qualified Command.List
 --import qualified Command.Log
 import qualified Command.Merge
@@ -119,8 +119,8 @@ import System.Remote.Monitoring
 
 cmds :: [Command]
 cmds = 
---	[ Command.Help.cmd
-	[ Command.Add.cmd
+	[ Command.Help.cmd
+	, Command.Add.cmd
 	, Command.Get.cmd
 	, Command.Drop.cmd
 	, Command.Move.cmd
@@ -185,7 +185,7 @@ cmds =
 	, Command.AddUnused.cmd
 	, Command.Find.cmd
 --	, Command.FindRef.cmd
---	, Command.Whereis.cmd
+	, Command.Whereis.cmd
 --	, Command.List.cmd
 --	, Command.Log.cmd
 	, Command.Merge.cmd

@@ -19,21 +19,25 @@ cmd :: Command
 cmd = noCommit $ withGlobalOptions (jsonOption : annexedMatchingOptions) $
 	command "whereis" SectionQuery
 		"lists repositories that have file content"
-		paramPaths (withParams seek)
+		paramPaths (seek <$$> optParser)
 
 data WhereisOptions = WhereisOptions
 	{ whereisFiles :: CmdParams
-	, jsonOption :: GlobalSetter
 	, keyOptions :: Maybe KeyOptions
 	}
 
-seek :: CmdParams -> CommandSeek
-seek ps = do
+optParser :: CmdParamsDesc -> Parser WhereisOptions
+optParser desc = WhereisOptions
+	<$> cmdParams desc
+	<*> optional (parseKeyOptions False)
+
+seek :: WhereisOptions -> CommandSeek
+seek o = do
 	m <- remoteMap id
-	withKeyOptions False
+	withKeyOptions (keyOptions o) False
 		(startKeys m)
 		(withFilesInGit $ whenAnnexed $ start m)
-		ps
+		(whereisFiles o)
 
 start :: M.Map UUID Remote -> FilePath -> Key -> CommandStart
 start remotemap file key = start' remotemap key (Just file)
