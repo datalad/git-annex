@@ -23,8 +23,8 @@ import qualified Command.Move
 import qualified Command.Copy
 import qualified Command.Get
 import qualified Command.Fsck
-import qualified Command.LookupKey
-import qualified Command.ContentLocation
+--import qualified Command.LookupKey
+--import qualified Command.ContentLocation
 --import qualified Command.ExamineKey
 import qualified Command.FromKey
 import qualified Command.RegisterUrl
@@ -48,7 +48,7 @@ import qualified Command.Init
 import qualified Command.Describe
 import qualified Command.InitRemote
 import qualified Command.EnableRemote
-import qualified Command.Expire
+--import qualified Command.Expire
 import qualified Command.Repair
 --import qualified Command.Unused
 --import qualified Command.DropUnused
@@ -82,9 +82,9 @@ import qualified Command.Ungroup
 --import qualified Command.Vicfg
 import qualified Command.Sync
 --import qualified Command.Mirror
-import qualified Command.AddUrl
+--import qualified Command.AddUrl
 #ifdef WITH_FEED
-import qualified Command.ImportFeed
+--import qualified Command.ImportFeed
 #endif
 import qualified Command.RmUrl
 --import qualified Command.Import
@@ -92,16 +92,16 @@ import qualified Command.Map
 import qualified Command.Direct
 import qualified Command.Indirect
 import qualified Command.Upgrade
-import qualified Command.Forget
+--import qualified Command.Forget
 import qualified Command.Proxy
 import qualified Command.DiffDriver
 --import qualified Command.Undo
 import qualified Command.Version
 #ifdef WITH_ASSISTANT
-import qualified Command.Watch
-import qualified Command.Assistant
+--import qualified Command.Watch
+--import qualified Command.Assistant
 #ifdef WITH_WEBAPP
-import qualified Command.WebApp
+--import qualified Command.WebApp
 #endif
 #ifdef WITH_XMPP
 import qualified Command.XMPPGit
@@ -111,7 +111,7 @@ import qualified Command.RemoteDaemon
 import qualified Command.Test
 #ifdef WITH_TESTSUITE
 import qualified Command.FuzzTest
-import qualified Command.TestRemote
+--import qualified Command.TestRemote
 #endif
 #ifdef WITH_EKG
 import System.Remote.Monitoring
@@ -131,9 +131,9 @@ cmds =
 	, Command.Lock.cmd
 	, Command.Sync.cmd
 --	, Command.Mirror.cmd
-	, Command.AddUrl.cmd
+--	, Command.AddUrl.cmd
 #ifdef WITH_FEED
-	, Command.ImportFeed.cmd
+--	, Command.ImportFeed.cmd
 #endif
 	, Command.RmUrl.cmd
 --	, Command.Import.cmd
@@ -158,8 +158,8 @@ cmds =
 	, Command.Schedule.cmd
 	, Command.Ungroup.cmd
 --	, Command.Vicfg.cmd
-	, Command.LookupKey.cmd
-	, Command.ContentLocation.cmd
+--	, Command.LookupKey.cmd
+--	, Command.ContentLocation.cmd
 --	, Command.ExamineKey.cmd
 	, Command.FromKey.cmd
 	, Command.RegisterUrl.cmd
@@ -178,7 +178,7 @@ cmds =
 	, Command.VPop.cmd
 	, Command.VCycle.cmd
 	, Command.Fix.cmd
-	, Command.Expire.cmd
+--	, Command.Expire.cmd
 	, Command.Repair.cmd
 --	, Command.Unused.cmd
 --	, Command.DropUnused.cmd
@@ -197,16 +197,16 @@ cmds =
 	, Command.Direct.cmd
 	, Command.Indirect.cmd
 	, Command.Upgrade.cmd
-	, Command.Forget.cmd
+--	, Command.Forget.cmd
 	, Command.Proxy.cmd
 	, Command.DiffDriver.cmd
 --	, Command.Undo.cmd
 	, Command.Version.cmd
 #ifdef WITH_ASSISTANT
-	, Command.Watch.cmd
-	, Command.Assistant.cmd
+--	, Command.Watch.cmd
+--	, Command.Assistant.cmd
 #ifdef WITH_WEBAPP
-	, Command.WebApp.cmd
+--	, Command.WebApp.cmd
 #endif
 #ifdef WITH_XMPP
 	, Command.XMPPGit.cmd
@@ -216,7 +216,7 @@ cmds =
 	, Command.Test.cmd
 #ifdef WITH_TESTSUITE
 	, Command.FuzzTest.cmd
-	, Command.TestRemote.cmd
+--	, Command.TestRemote.cmd
 #endif
 	]
 

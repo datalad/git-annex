@@ -12,7 +12,6 @@ module Command (
 	noRepo,
 	noCommit,
 	noMessages,
-	withOptions,
 	withGlobalOptions,
 	next,
 	stop,
@@ -43,7 +42,7 @@ import qualified Options.Applicative as O
 {- Generates a normal Command -}
 command :: String -> CommandSection -> String -> CmdParamsDesc -> (CmdParamsDesc -> CommandParser) -> Command
 command name section desc paramdesc mkparser =
-	Command [] commonChecks False False name paramdesc 
+	Command commonChecks False False name paramdesc 
 		section desc (mkparser paramdesc) Nothing
 
 {- Simple option parser that takes all non-option params as-is. -}
@@ -75,10 +74,6 @@ noMessages c = c { cmdnomessages = True }
  - outside a git repository. -}
 noRepo :: (String -> O.Parser (IO ())) -> Command -> Command
 noRepo a c = c { cmdnorepo = Just (a (cmdparamdesc c)) }
-
-{- Adds options to a command. -}
-withOptions :: [Option] -> Command -> Command
-withOptions o c = c { cmdoptions = cmdoptions c ++ o }
 
 {- Adds global options to a command's option parser, and modifies its seek
  - option to first run actions for them.

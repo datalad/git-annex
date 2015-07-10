@@ -38,8 +38,7 @@ type CommandCleanup = Annex Bool
 
 {- A command is defined by specifying these things. -}
 data Command = Command
-	{ cmdoptions :: [Option]     -- command-specific options
-	, cmdcheck :: [CommandCheck] -- check stage
+	{ cmdcheck :: [CommandCheck] -- check stage
 	, cmdnocommit :: Bool        -- don't commit journalled state changes
 	, cmdnomessages :: Bool      -- don't output normal messages
 	, cmdname :: String
