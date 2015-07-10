@@ -51,7 +51,7 @@ import qualified Command.EnableRemote
 --import qualified Command.Expire
 import qualified Command.Repair
 import qualified Command.Unused
---import qualified Command.DropUnused
+import qualified Command.DropUnused
 import qualified Command.AddUnused
 import qualified Command.Unlock
 import qualified Command.Lock
@@ -181,7 +181,7 @@ cmds =
 --	, Command.Expire.cmd
 	, Command.Repair.cmd
 	, Command.Unused.cmd
---	, Command.DropUnused.cmd
+	, Command.DropUnused.cmd
 	, Command.AddUnused.cmd
 	, Command.Find.cmd
 --	, Command.FindRef.cmd
