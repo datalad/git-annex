@@ -39,13 +39,3 @@ instance DeferredParseClass [DeferredParse a] where
 
 -- Use when the Annex action modifies Annex state.
 type GlobalSetter = DeferredParse ()
-
-globalFlag :: Annex () -> Mod FlagFields GlobalSetter -> Parser GlobalSetter
-globalFlag setter = flag' (DeferredParse setter) 
-
-globalSetter :: (v -> Annex ()) -> Parser v -> Parser GlobalSetter
-globalSetter setter parser = DeferredParse . setter <$> parser
-
-combineGlobalSetters :: [Parser GlobalSetter] -> Parser GlobalSetter
-combineGlobalSetters l = DeferredParse . sequence_ . map getParsed
-	<$> many (foldl1 (<|>) l)

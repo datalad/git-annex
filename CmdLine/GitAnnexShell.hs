@@ -13,6 +13,7 @@ import Common.Annex
 import qualified Git.Construct
 import qualified Git.Config
 import CmdLine
+import CmdLine.GlobalSetter
 import Command
 import Annex.UUID
 import CmdLine.GitAnnexShell.Fields

@@ -26,6 +26,7 @@ import qualified Limit
 import qualified Limit.Wanted
 import CmdLine.Option
 import CmdLine.Usage
+import CmdLine.GlobalSetter
 
 -- Global options that are accepted by all git-annex sub-commands,
 -- although not always used.
@@ -34,38 +35,47 @@ gitAnnexGlobalOptions = commonGlobalOptions ++
 	[ globalSetter setnumcopies $ option auto
 		( long "numcopies" <> short 'N' <> metavar paramNumber
 		<> help "override default number of copies"
+		<> hidden
 		)
 	, globalSetter (Remote.forceTrust Trusted) $ strOption
 		( long "trust" <> metavar paramRemote
 		<> help "override trust setting"
+		<> hidden
 		)
 	, globalSetter (Remote.forceTrust SemiTrusted) $ strOption
 		( long "semitrust" <> metavar paramRemote
 		<> help "override trust setting back to default"
+		<> hidden
 		)
 	, globalSetter (Remote.forceTrust UnTrusted) $ strOption
 		( long "untrust" <> metavar paramRemote
 		<> help "override trust setting to untrusted"
+		<> hidden
 		)
 	, globalSetter setgitconfig $ strOption
 		( long "config" <> short 'c' <> metavar "NAME=VALUE"
 		<> help "override git configuration setting"
+		<> hidden
 		)
 	, globalSetter setuseragent $ strOption
 		( long "user-agent" <> metavar paramName
 		<> help "override default User-Agent"
+		<> hidden
 		)
 	, globalFlag (Annex.setFlag "trustglacier")
 		( long "trust-glacier"
 		<> help "Trust Amazon Glacier inventory"
+		<> hidden
 		)
 	, globalFlag (setdesktopnotify mkNotifyFinish)
 		( long "notify-finish"
 		<> help "show desktop notification after transfer finishes"
+		<> hidden
 		)
 	, globalFlag (setdesktopnotify mkNotifyStart)
 		( long "notify-start"
 		<> help "show desktop notification after transfer completes"
+		<> hidden
 		)
 	]
   where

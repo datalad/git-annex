@@ -31,6 +31,7 @@ import Annex.Content
 import Annex.Environment
 import Command
 import Types.Messages
+import CmdLine.GlobalSetter
 
 {- Runs the passed command line. -}
 dispatch :: Bool -> CmdParams -> [Command] -> [Parser GlobalSetter] -> [(String, String)] -> IO Git.Repo -> String -> String -> IO ()
@@ -43,7 +44,7 @@ dispatch fuzzyok allargs allcmds globaloptions fields getgitrepo progname progde
 		Annex.eval state $ do
 			checkEnvironment
 			forM_ fields $ uncurry Annex.setField
-			((cmd, seek), globalconfig) <- parsewith cmdparser
+			(cmd, seek, globalconfig) <- parsewith cmdparser
 				(\a -> inRepo $ a . Just)
 			when (cmdnomessages cmd) $ 
 				Annex.setOutput QuietOutput
@@ -54,7 +55,7 @@ dispatch fuzzyok allargs allcmds globaloptions fields getgitrepo progname progde
 			performCommandAction cmd seek $
 				shutdown $ cmdnocommit cmd
 	go (Left norepo) = do
-		((_, a), _) <- parsewith
+		(_, a, _globalconfig) <- parsewith
 			(fromMaybe (throw norepo) . cmdnorepo)
 			(\a -> a =<< Git.Config.global)
 		a
@@ -81,20 +82,19 @@ dispatch fuzzyok allargs allcmds globaloptions fields getgitrepo progname progde
 			Just n -> n:args
 
 {- Parses command line, selecting one of the commands from the list. -}
-parseCmd :: String -> String -> [Parser GlobalSetter] -> CmdParams -> [Command] -> (Command -> O.Parser v) -> O.ParserResult ((Command, v), GlobalSetter)
+parseCmd :: String -> String -> [Parser GlobalSetter] -> CmdParams -> [Command] -> (Command -> O.Parser v) -> O.ParserResult (Command, v, GlobalSetter)
 parseCmd progname progdesc globaloptions allargs allcmds getparser = 
 	O.execParserPure (O.prefs O.idm) pinfo allargs
   where
-	pinfo = O.info
-		(O.helper <*> ((,) <$> subcmds <*> combineGlobalSetters globaloptions))
-		(O.progDescDoc (Just intro))
+	pinfo = O.info (O.helper <*> subcmds) (O.progDescDoc (Just intro))
 	subcmds = O.hsubparser $ mconcat $ map mkcommand allcmds
 	mkcommand c = O.command (cmdname c) $ O.info (mkparser c) $ O.fullDesc 
 		<> O.header (synopsis (progname ++ " " ++ cmdname c) (cmddesc c))
 		<> O.footer ("For details, run: " ++ progname ++ " help " ++ cmdname c)
-	mkparser c = (,)
+	mkparser c = (,,) 
 		<$> pure c
 		<*> getparser c
+		<*> combineGlobalSetters globaloptions
 	synopsis n d = n ++ " - " ++ d
 	intro = mconcat $ concatMap (\l -> [H.text l, H.line])
 		(synopsis progname progdesc : commandList allcmds)
