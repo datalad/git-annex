@@ -53,14 +53,13 @@ cmds = map adddirparam $ cmds_readonly ++ cmds_notreadonly
   where
 	adddirparam c = c { cmdparamdesc = "DIRECTORY " ++ cmdparamdesc c }
 
-options :: Parser GlobalSetter
-options = globalSetters
-	[ commonGlobalOptions
-	, globalSetter checkUUID $ strOption
+globalOptions :: [Parser GlobalSetter]
+globalOptions = 
+	globalSetter checkUUID (strOption
 		( long "uuid" <> metavar paramUUID
 		<> help "local repository uuid"
-		)
-	]
+		))
+	: commonGlobalOptions
   where
 	checkUUID expected = getUUID >>= check
 	  where
@@ -101,7 +100,7 @@ builtin cmd dir params = do
 	let (params', fieldparams, opts) = partitionParams params
 	    rsyncopts = ("RsyncOptions", unwords opts)
 	    fields = rsyncopts : filter checkField (parseFields fieldparams)
-	dispatch False (cmd : params') cmds options fields mkrepo
+	dispatch False (cmd : params') cmds globalOptions fields mkrepo
 		"git-annex-shell"
 		"Restricted login shell for git-annex only SSH access"
   where

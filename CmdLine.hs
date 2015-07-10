@@ -33,7 +33,7 @@ import Command
 import Types.Messages
 
 {- Runs the passed command line. -}
-dispatch :: Bool -> CmdParams -> [Command] -> Parser GlobalSetter -> [(String, String)] -> IO Git.Repo -> String -> String -> IO ()
+dispatch :: Bool -> CmdParams -> [Command] -> [Parser GlobalSetter] -> [(String, String)] -> IO Git.Repo -> String -> String -> IO ()
 dispatch fuzzyok allargs allcmds globaloptions fields getgitrepo progname progdesc = do
 	setupConsole
 	go =<< (E.try getgitrepo :: IO (Either E.SomeException Git.Repo))
@@ -43,30 +43,30 @@ dispatch fuzzyok allargs allcmds globaloptions fields getgitrepo progname progde
 		Annex.eval state $ do
 			checkEnvironment
 			forM_ fields $ uncurry Annex.setField
-			(cmd, seek) <- parsewith cmdparser
+			((cmd, seek), globalconfig) <- parsewith cmdparser
 				(\a -> inRepo $ a . Just)
 			when (cmdnomessages cmd) $ 
 				Annex.setOutput QuietOutput
-			-- TODO: propigate global options to annex state (how?)
+			getParsed globalconfig
 			whenM (annexDebug <$> Annex.getGitConfig) $
 				liftIO enableDebugOutput
 			startup
 			performCommandAction cmd seek $
 				shutdown $ cmdnocommit cmd
 	go (Left norepo) = do
-		(_, a) <- parsewith
+		((_, a), _) <- parsewith
 			(fromMaybe (throw norepo) . cmdnorepo)
 			(\a -> a =<< Git.Config.global)
 		a
 
 	parsewith getparser ingitrepo = 
-		case parseCmd progname progdesc allargs allcmds getparser of
+		case parseCmd progname progdesc globaloptions allargs allcmds getparser of
 			O.Failure _ -> do
 				-- parse failed, so fall back to
 				-- fuzzy matching, or to showing usage
 				when fuzzy $
 					ingitrepo autocorrect
-				liftIO (O.handleParseResult (parseCmd progname progdesc correctedargs allcmds getparser))
+				liftIO (O.handleParseResult (parseCmd progname progdesc globaloptions correctedargs allcmds getparser))
 			res -> liftIO (O.handleParseResult res)
 	  where
 		autocorrect = Git.AutoCorrect.prepare (fromJust inputcmdname) cmdname cmds
@@ -81,10 +81,13 @@ dispatch fuzzyok allargs allcmds globaloptions fields getgitrepo progname progde
 			Just n -> n:args
 
 {- Parses command line, selecting one of the commands from the list. -}
-parseCmd :: String -> String -> CmdParams -> [Command] -> (Command -> O.Parser v) -> O.ParserResult (Command, v)
-parseCmd progname progdesc allargs allcmds getparser = O.execParserPure (O.prefs O.idm) pinfo allargs
+parseCmd :: String -> String -> [Parser GlobalSetter] -> CmdParams -> [Command] -> (Command -> O.Parser v) -> O.ParserResult ((Command, v), GlobalSetter)
+parseCmd progname progdesc globaloptions allargs allcmds getparser = 
+	O.execParserPure (O.prefs O.idm) pinfo allargs
   where
-	pinfo = O.info (O.helper <*> subcmds) (O.progDescDoc (Just intro))
+	pinfo = O.info
+		(O.helper <*> ((,) <$> subcmds <*> combineGlobalSetters globaloptions))
+		(O.progDescDoc (Just intro))
 	subcmds = O.hsubparser $ mconcat $ map mkcommand allcmds
 	mkcommand c = O.command (cmdname c) $ O.info (mkparser c) $ O.fullDesc 
 		<> O.header (synopsis (progname ++ " " ++ cmdname c) (cmddesc c))

@@ -29,10 +29,9 @@ import CmdLine.Usage
 
 -- Global options that are accepted by all git-annex sub-commands,
 -- although not always used.
-gitAnnexGlobalOptions :: Parser GlobalSetter
-gitAnnexGlobalOptions = globalSetters
-	[ commonGlobalOptions
-	, globalSetter setnumcopies $ option auto
+gitAnnexGlobalOptions :: [Parser GlobalSetter]
+gitAnnexGlobalOptions = commonGlobalOptions ++
+	[ globalSetter setnumcopies $ option auto
 		( long "numcopies" <> short 'N' <> metavar paramNumber
 		<> help "override default number of copies"
 		)

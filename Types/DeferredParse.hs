@@ -46,6 +46,6 @@ globalFlag setter = flag' (DeferredParse setter)
 globalSetter :: (v -> Annex ()) -> Parser v -> Parser GlobalSetter
 globalSetter setter parser = DeferredParse . setter <$> parser
 
-globalSetters :: [Parser GlobalSetter] -> Parser GlobalSetter
-globalSetters l = DeferredParse . sequence_ . map getParsed
+combineGlobalSetters :: [Parser GlobalSetter] -> Parser GlobalSetter
+combineGlobalSetters l = DeferredParse . sequence_ . map getParsed
 	<$> many (foldl1 (<|>) l)

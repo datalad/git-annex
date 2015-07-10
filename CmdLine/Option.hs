@@ -25,8 +25,8 @@ import Types.Messages
 import Types.DeferredParse
 
 -- Global options accepted by both git-annex and git-annex-shell sub-commands.
-commonGlobalOptions :: Parser GlobalSetter
-commonGlobalOptions = globalSetters
+commonGlobalOptions :: [Parser GlobalSetter]
+commonGlobalOptions =
 	[ globalFlag (setforce True)
 		( long "force" 
 		<> help "allow actions that may lose annexed data"
