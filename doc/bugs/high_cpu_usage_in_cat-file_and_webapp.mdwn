@@ -1,0 +1,314 @@
+### Please describe the problem.
+
+I've been running git-annex in the background for a few weeks now (my laptop is at home, occasionally gets suspended, but not for the past few days), and this morning (around 9:30am), I noticed I could hear its fan. Looking at CPU usage in htop, "git-annex webapp" was using ~18% and "git --git-dir=/home/flowblok/annex/.git --work-tree=/home/flowblok/annex -c core.bare=false cat-file --batch" was using ~46%.
+
+The repository is in direct mode.
+It has one remote which it copies to over the network with "annex-rsync-upload-options = --bwlimit 10".
+The last fsck ran at 4am, and finished (with one failure, which I can easily recover from) by 4:30am (I guess I should find out why it didn't notify me in any way).
+
+### What steps will reproduce the problem?
+
+Not a clue!
+Though hopefully I've given enough information below for you to figure out what went wrong: let me know if you need anything else.
+
+### What version of git-annex are you using? On what operating system?
+
+Debian Jessie
+
+$ uname -a
+Linux moash 3.16.0-4-amd64 #1 SMP Debian 3.16.7-ckt9-3~deb8u1 (2015-04-24) x86_64 GNU/Linux
+
+$ git-annex version
+git-annex version: 5.20141125
+build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA CryptoHash
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier ddar hook external
+
+### Please provide any additional information below.
+
+[[!format sh """
+# strace -p $PIDOF_GIT_CATFILE
+open("/home/flowblok/annex/.git/objects/04/13fe78e4f9b37348b5fd03cbe5eabdbcaec068", O_RDONLY|O_NOATIME) = 3
+fstat(3, {st_mode=S_IFREG|0400, st_size=683, ...}) = 0
+mmap(NULL, 683, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f9ead5a0000
+close(3)                                = 0
+munmap(0x7f9ead5a0000, 683)             = 0
+open("/home/flowblok/annex/.git/objects/c0/4c0a1d5b43f82c50cf095e42d28d74f0cfc494", O_RDONLY|O_NOATIME) = 3
+fstat(3, {st_mode=S_IFREG|0400, st_size=132, ...}) = 0
+mmap(NULL, 132, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f9ead5a0000
+close(3)                                = 0
+munmap(0x7f9ead5a0000, 132)             = 0
+brk(0x1b5b000)                          = 0x1b5b000
+open("/home/flowblok/annex/.git/objects/25/21eb645b1fcac7b6b55551114fe2d69e095896", O_RDONLY|O_NOATIME) = 3
+fstat(3, {st_mode=S_IFREG|0400, st_size=70, ...}) = 0
+mmap(NULL, 70, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f9ead5a0000
+close(3)                                = 0
+munmap(0x7f9ead5a0000, 70)              = 0
+write(1, "2521eb645b1fcac7b6b55551114fe2d6"..., 49) = 49
+open("/home/flowblok/annex/.git/objects/25/21eb645b1fcac7b6b55551114fe2d69e095896", O_RDONLY|O_NOATIME) = 3
+fstat(3, {st_mode=S_IFREG|0400, st_size=70, ...}) = 0
+mmap(NULL, 70, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f9ead5a0000
+close(3)                                = 0
+munmap(0x7f9ead5a0000, 70)              = 0
+open("/home/flowblok/annex/.git/objects/25/21eb645b1fcac7b6b55551114fe2d69e095896", O_RDONLY|O_NOATIME) = 3
+fstat(3, {st_mode=S_IFREG|0400, st_size=70, ...}) = 0
+mmap(NULL, 70, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f9ead5a0000
+close(3)                                = 0
+write(1, "1435997202.486434s 0 5c33e13f-ed"..., 58) = 58
+munmap(0x7f9ead5a0000, 70)              = 0
+write(1, "\n", 1)                       = 1
+read(0, "refs/heads/git-annex:eec/e95/SHA"..., 4096) = 116
+lstat("/home/flowblok/annex/.git/refs/heads/git-annex", {st_mode=S_IFREG|0600, st_size=41, ...}) = 0
+open("/home/flowblok/annex/.git/refs/heads/git-annex", O_RDONLY) = 3
+read(3, "f9d2dc8d54151d01a27c7989a1fc7983"..., 255) = 41
+read(3, "", 214)                        = 0
+close(3)                                = 0
+lstat("/home/flowblok/annex/.git/refs/refs/heads/git-annex", 0x7ffc82e9e580) = -1 ENOENT (No such file or directory)
+stat("/home/flowblok/annex/.git/packed-refs", {st_mode=S_IFREG|0600, st_size=1049, ...}) = 0
+lstat("/home/flowblok/annex/.git/refs/tags/refs/heads/git-annex", 0x7ffc82e9e580) = -1 ENOENT (No such file or directory)
+stat("/home/flowblok/annex/.git/packed-refs", {st_mode=S_IFREG|0600, st_size=1049, ...}) = 0
+lstat("/home/flowblok/annex/.git/refs/heads/refs/heads/git-annex", 0x7ffc82e9e580) = -1 ENOENT (No such file or directory)
+stat("/home/flowblok/annex/.git/packed-refs", {st_mode=S_IFREG|0600, st_size=1049, ...}) = 0
+lstat("/home/flowblok/annex/.git/refs/remotes/refs/heads/git-annex", 0x7ffc82e9e580) = -1 ENOENT (No such file or directory)
+stat("/home/flowblok/annex/.git/packed-refs", {st_mode=S_IFREG|0600, st_size=1049, ...}) = 0
+lstat("/home/flowblok/annex/.git/refs/remotes/refs/heads/git-annex/HEAD", 0x7ffc82e9e580) = -1 ENOENT (No such file or directory)
+stat("/home/flowblok/annex/.git/packed-refs", {st_mode=S_IFREG|0600, st_size=1049, ...}) = 0
+open("/home/flowblok/annex/.git/objects/f9/d2dc8d54151d01a27c7989a1fc798320034a69", O_RDONLY|O_NOATIME) = 3
+fstat(3, {st_mode=S_IFREG|0400, st_size=207, ...}) = 0
+mmap(NULL, 207, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f9ead5a0000
+close(3)                                = 0
+munmap(0x7f9ead5a0000, 207)             = 0
+open("/home/flowblok/annex/.git/objects/65/dd2889161d7002f1d5f94587ab9bd0746d6f61", O_RDONLY|O_NOATIME) = 3
+fstat(3, {st_mode=S_IFREG|0400, st_size=98827, ...}) = 0
+mmap(NULL, 98827, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f9ea4c03000
+close(3)                                = 0
+brk(0x1b81000)                          = 0x1b81000
+munmap(0x7f9ea4c03000, 98827)           = 0
+open("/home/flowblok/annex/.git/objects/d7/bc8b27aad64c59effa77eae026778582761fae", O_RDONLY|O_NOATIME) = 3
+fstat(3, {st_mode=S_IFREG|0400, st_size=550, ...}) = 0
+mmap(NULL, 550, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f9ead5a0000
+close(3)                                = 0
+munmap(0x7f9ead5a0000, 550)             = 0
+open("/home/flowblok/annex/.git/objects/d8/00f4d59828022b9ee556b6f3758832da6bfb71", O_RDONLY|O_NOATIME) = 3
+fstat(3, {st_mode=S_IFREG|0400, st_size=131, ...}) = 0
+mmap(NULL, 131, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f9ead5a0000
+close(3)                                = 0
+munmap(0x7f9ead5a0000, 131)             = 0
+brk(0x1b5b000)                          = 0x1b5b000
+open("/home/flowblok/annex/.git/objects/ac/9ee326d36283143f9b3b38687870df6a888938", O_RDONLY|O_NOATIME) = 3
+fstat(3, {st_mode=S_IFREG|0400, st_size=71, ...}) = 0
+mmap(NULL, 71, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f9ead5a0000
+close(3)                                = 0
+munmap(0x7f9ead5a0000, 71)              = 0
+write(1, "ac9ee326d36283143f9b3b38687870df"..., 49) = 49
+open("/home/flowblok/annex/.git/objects/ac/9ee326d36283143f9b3b38687870df6a888938", O_RDONLY|O_NOATIME) = 3
+fstat(3, {st_mode=S_IFREG|0400, st_size=71, ...}) = 0
+mmap(NULL, 71, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f9ead5a0000
+close(3)                                = 0
+munmap(0x7f9ead5a0000, 71)              = 0
+open("/home/flowblok/annex/.git/objects/ac/9ee326d36283143f9b3b38687870df6a888938", O_RDONLY|O_NOATIME) = 3
+fstat(3, {st_mode=S_IFREG|0400, st_size=71, ...}) = 0
+mmap(NULL, 71, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f9ead5a0000
+close(3)                                = 0
+write(1, "1435997292.091244s 0 5c33e13f-ed"..., 58) = 58
+munmap(0x7f9ead5a0000, 71)              = 0
+write(1, "\n", 1)                       = 1
+read(0, "refs/heads/git-annex:c54/719/SHA"..., 4096) = 116
+lstat("/home/flowblok/annex/.git/refs/heads/git-annex", {st_mode=S_IFREG|0600, st_size=41, ...}) = 0
+open("/home/flowblok/annex/.git/refs/heads/git-annex", O_RDONLY) = 3
+read(3, "f9d2dc8d54151d01a27c7989a1fc7983"..., 255) = 41
+read(3, "", 214)                        = 0
+close(3)                                = 0
+lstat("/home/flowblok/annex/.git/refs/refs/heads/git-annex", 0x7ffc82e9e580) = -1 ENOENT (No such file or directory)
+stat("/home/flowblok/annex/.git/packed-refs", {st_mode=S_IFREG|0600, st_size=1049, ...}) = 0
+lstat("/home/flowblok/annex/.git/refs/tags/refs/heads/git-annex", 0x7ffc82e9e580) = -1 ENOENT (No such file or directory)
+stat("/home/flowblok/annex/.git/packed-refs", {st_mode=S_IFREG|0600, st_size=1049, ...}) = 0
+lstat("/home/flowblok/annex/.git/refs/heads/refs/heads/git-annex", 0x7ffc82e9e580) = -1 ENOENT (No such file or directory)
+stat("/home/flowblok/annex/.git/packed-refs", {st_mode=S_IFREG|0600, st_size=1049, ...}) = 0
+lstat("/home/flowblok/annex/.git/refs/remotes/refs/heads/git-annex", 0x7ffc82e9e580) = -1 ENOENT (No such file or directory)
+stat("/home/flowblok/annex/.git/packed-refs", {st_mode=S_IFREG|0600, st_size=1049, ...}) = 0
+lstat("/home/flowblok/annex/.git/refs/remotes/refs/heads/git-annex/HEAD", 0x7ffc82e9e580) = -1 ENOENT (No such file or directory)
+stat("/home/flowblok/annex/.git/packed-refs", {st_mode=S_IFREG|0600, st_size=1049, ...}) = 0
+open("/home/flowblok/annex/.git/objects/f9/d2dc8d54151d01a27c7989a1fc798320034a69", O_RDONLY|O_NOATIME) = 3
+fstat(3, {st_mode=S_IFREG|0400, st_size=207, ...}) = 0
+mmap(NULL, 207, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f9ead5a0000
+close(3)                                = 0
+munmap(0x7f9ead5a0000, 207)             = 0
+open("/home/flowblok/annex/.git/objects/65/dd2889161d7002f1d5f94587ab9bd0746d6f61", O_RDONLY|O_NOATIME) = 3
+fstat(3, {st_mode=S_IFREG|0400, st_size=98827, ...}) = 0
+mmap(NULL, 98827, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f9ea4c03000
+close(3)                                = 0
+brk(0x1b81000)                          = 0x1b81000
+munmap(0x7f9ea4c03000, 98827)           = 0
+open("/home/flowblok/annex/.git/objects/04/13fe78e4f9b37348b5fd03cbe5eabdbcaec068", O_RDONLY|O_NOATIME) = 3
+fstat(3, {st_mode=S_IFREG|0400, st_size=683, ...}) = 0
+mmap(NULL, 683, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f9ead5a0000
+close(3)                                = 0
+munmap(0x7f9ead5a0000, 683)             = 0
+open("/home/flowblok/annex/.git/objects/c0/4c0a1d5b43f82c50cf095e42d28d74f0cfc494", O_RDONLY|O_NOATIME) = 3
+fstat(3, {st_mode=S_IFREG|0400, st_size=132, ...}) = 0
+mmap(NULL, 132, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f9ead5a0000
+close(3)                                = 0
+munmap(0x7f9ead5a0000, 132)             = 0
+brk(0x1b5b000)                          = 0x1b5b000
+open("/home/flowblok/annex/.git/objects/25/21eb645b1fcac7b6b55551114fe2d69e095896", O_RDONLY|O_NOATIME) = 3
+fstat(3, {st_mode=S_IFREG|0400, st_size=70, ...}) = 0
+mmap(NULL, 70, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f9ead5a0000
+close(3)                                = 0
+munmap(0x7f9ead5a0000, 70)              = 0
+write(1, "2521eb645b1fcac7b6b55551114fe2d6"..., 49) = 49
+open("/home/flowblok/annex/.git/objects/25/21eb645b1fcac7b6b55551114fe2d69e095896", O_RDONLY|O_NOATIME) = 3
+fstat(3, {st_mode=S_IFREG|0400, st_size=70, ...}) = 0
+mmap(NULL, 70, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f9ead5a0000
+close(3)                                = 0
+munmap(0x7f9ead5a0000, 70)              = 0
+open("/home/flowblok/annex/.git/objects/25/21eb645b1fcac7b6b55551114fe2d69e095896", O_RDONLY|O_NOATIME) = 3
+fstat(3, {st_mode=S_IFREG|0400, st_size=70, ...}) = 0
+mmap(NULL, 70, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f9ead5a0000
+close(3)                                = 0
+write(1, "1435997202.486434s 0 5c33e13f-ed"..., 58) = 58
+munmap(0x7f9ead5a0000, 70)              = 0
+write(1, "\n", 1)                       = 1
+read(0, "refs/heads/git-annex:eec/e95/SHA"..., 4096) = 116
+lstat("/home/flowblok/annex/.git/refs/heads/git-annex", {st_mode=S_IFREG|0600, st_size=41, ...}) = 0
+open("/home/flowblok/annex/.git/refs/heads/git-annex", O_RDONLY) = 3
+read(3, "f9d2dc8d54151d01a27c7989a1fc7983"..., 255) = 41
+read(3, "", 214)                        = 0
+close(3)                                = 0
+lstat("/home/flowblok/annex/.git/refs/refs/heads/git-annex", 0x7ffc82e9e580) = -1 ENOENT (No such file or directory)
+stat("/home/flowblok/annex/.git/packed-refs", {st_mode=S_IFREG|0600, st_size=1049, ...}) = 0
+lstat("/home/flowblok/annex/.git/refs/tags/refs/heads/git-annex", 0x7ffc82e9e580) = -1 ENOENT (No such file or directory)
+stat("/home/flowblok/annex/.git/packed-refs", {st_mode=S_IFREG|0600, st_size=1049, ...}) = 0
+lstat("/home/flowblok/annex/.git/refs/heads/refs/heads/git-annex", 0x7ffc82e9e580) = -1 ENOENT (No such file or directory)
+stat("/home/flowblok/annex/.git/packed-refs", {st_mode=S_IFREG|0600, st_size=1049, ...}) = 0
+lstat("/home/flowblok/annex/.git/refs/remotes/refs/heads/git-annex", 0x7ffc82e9e580) = -1 ENOENT (No such file or directory)
+stat("/home/flowblok/annex/.git/packed-refs", {st_mode=S_IFREG|0600, st_size=1049, ...}) = 0
+lstat("/home/flowblok/annex/.git/refs/remotes/refs/heads/git-annex/HEAD", 0x7ffc82e9e580) = -1 ENOENT (No such file or directory)
+stat("/home/flowblok/annex/.git/packed-refs", {st_mode=S_IFREG|0600, st_size=1049, ...}) = 0
+open("/home/flowblok/annex/.git/objects/f9/d2dc8d54151d01a27c7989a1fc798320034a69", O_RDONLY|O_NOATIME) = 3
+fstat(3, {st_mode=S_IFREG|0400, st_size=207, ...}) = 0
+mmap(NULL, 207, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f9ead5a0000
+close(3)                                = 0
+munmap(0x7f9ead5a0000, 207)             = 0
+open("/home/flowblok/annex/.git/objects/65/dd2889161d7002f1d5f94587ab9bd0746d6f61", O_RDONLY|O_NOATIME) = 3
+fstat(3, {st_mode=S_IFREG|0400, st_size=98827, ...}) = 0
+mmap(NULL, 98827, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f9ea4c03000
+close(3)                                = 0
+brk(0x1b81000)                          = 0x1b81000
+munmap(0x7f9ea4c03000, 98827)           = 0
+open("/home/flowblok/annex/.git/objects/d7/bc8b27aad64c59effa77eae026778582761fae", O_RDONLY|O_NOATIME) = 3
+fstat(3, {st_mode=S_IFREG|0400, st_size=550, ...}) = 0
+mmap(NULL, 550, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f9ead5a0000
+close(3)                                = 0
+munmap(0x7f9ead5a0000, 550)             = 0
+open("/home/flowblok/annex/.git/objects/d8/00f4d59828022b9ee556b6f3758832da6bfb71", O_RDONLY|O_NOATIME) = 3
+fstat(3, {st_mode=S_IFREG|0400, st_size=131, ...}) = 0
+mmap(NULL, 131, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f9ead5a0000
+close(3)                                = 0
+munmap(0x7f9ead5a0000, 131)             = 0
+brk(0x1b5b000)                          = 0x1b5b000
+open("/home/flowblok/annex/.git/objects/ac/9ee326d36283143f9b3b38687870df6a888938", O_RDONLY|O_NOATIME) = 3
+fstat(3, {st_mode=S_IFREG|0400, st_size=71, ...}) = 0
+mmap(NULL, 71, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f9ead5a0000
+close(3)                                = 0
+munmap(0x7f9ead5a0000, 71)              = 0
+write(1, "ac9ee326d36283143f9b3b38687870df"..., 49) = 49
+open("/home/flowblok/annex/.git/objects/ac/9ee326d36283143f9b3b38687870df6a888938", O_RDONLY|O_NOATIME) = 3
+fstat(3, {st_mode=S_IFREG|0400, st_size=71, ...}) = 0
+mmap(NULL, 71, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f9ead5a0000
+close(3)                                = 0
+munmap(0x7f9ead5a0000, 71)              = 0
+open("/home/flowblok/annex/.git/objects/ac/9ee326d36283143f9b3b38687870df6a888938", O_RDONLY|O_NOATIME) = 3
+fstat(3, {st_mode=S_IFREG|0400, st_size=71, ...}) = 0
+mmap(NULL, 71, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f9ead5a0000
+close(3)                                = 0
+write(1, "1435997292.091244s 0 5c33e13f-ed"..., 58) = 58
+munmap(0x7f9ead5a0000, 71)              = 0
+write(1, "\n", 1)                       = 1
+read(0, "refs/heads/git-annex:c54/719/SHA"..., 4096) = 116
+lstat("/home/flowblok/annex/.git/refs/heads/git-annex", {st_mode=S_IFREG|0600, st_size=41, ...}) = 0
+open("/home/flowblok/annex/.git/refs/heads/git-annex", O_RDONLY) = 3
+read(3, "f9d2dc8d54151d01a27c7989a1fc7983"..., 255) = 41
+read(3, "", 214)                        = 0
+close(3)                                = 0
+lstat("/home/flowblok/annex/.git/refs/refs/heads/git-annex", 0x7ffc82e9e580) = -1 ENOENT (No such file or directory)
+stat("/home/flowblok/annex/.git/packed-refs", {st_mode=S_IFREG|0600, st_size=1049, ...}) = 0
+lstat("/home/flowblok/annex/.git/refs/tags/refs/heads/git-annex", 0x7ffc82e9e580) = -1 ENOENT (No such file or directory)
+stat("/home/flowblok/annex/.git/packed-refs", {st_mode=S_IFREG|0600, st_size=1049, ...}) = 0
+lstat("/home/flowblok/annex/.git/refs/heads/refs/heads/git-annex", 0x7ffc82e9e580) = -1 ENOENT (No such file or directory)
+stat("/home/flowblok/annex/.git/packed-refs", {st_mode=S_IFREG|0600, st_size=1049, ...}) = 0
+lstat("/home/flowblok/annex/.git/refs/remotes/refs/heads/git-annex", 0x7ffc82e9e580) = -1 ENOENT (No such file or directory)
+stat("/home/flowblok/annex/.git/packed-refs", {st_mode=S_IFREG|0600, st_size=1049, ...}) = 0
+lstat("/home/flowblok/annex/.git/refs/remotes/refs/heads/git-annex/HEAD", 0x7ffc82e9e580) = -1 ENOENT (No such file or directory)
+stat("/home/flowblok/annex/.git/packed-refs", {st_mode=S_IFREG|0600, st_size=1049, ...}) = 0
+open("/home/flowblok/annex/.git/objects/f9/d2dc8d54151d01a27c7989a1fc798320034a69", O_RDONLY|O_NOATIME) = 3
+fstat(3, {st_mode=S_IFREG|0400, st_size=207, ...}) = 0
+mmap(NULL, 207, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f9ead5a0000
+close(3)                                = 0
+munmap(0x7f9ead5a0000, 207)             = 0
+open("/home/flowblok/annex/.git/objects/65/dd2889161d7002f1d5f94587ab9bd0746d6f61", O_RDONLY|O_NOATIME) = 3
+fstat(3, {st_mode=S_IFREG|0400, st_size=98827, ...}) = 0
+mmap(NULL, 98827, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f9ea4c03000
+close(3)                                = 0
+brk(0x1b81000)                          = 0x1b81000
+munmap(0x7f9ea4c03000, 98827)           = 0
+# (truncated, since it just repeats over and over for a total of 613759 lines)
+
+# strace -p $PIDOF_GITANNEX_WEBAPP
+futex(0x417c1dc, FUTEX_WAIT_PRIVATE, 65, NULL) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+--- SIGVTALRM {si_signo=SIGVTALRM, si_code=SI_TIMER, si_timerid=0, si_overrun=0, si_value={int=0, ptr=0}} ---
+rt_sigreturn()                          = 202
+futex(0x417c1dc, FUTEX_WAIT_PRIVATE, 65, NULL) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+--- SIGVTALRM {si_signo=SIGVTALRM, si_code=SI_TIMER, si_timerid=0, si_overrun=0, si_value={int=0, ptr=0}} ---
+rt_sigreturn()                          = 202
+futex(0x417c1dc, FUTEX_WAIT_PRIVATE, 65, NULL) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+--- SIGVTALRM {si_signo=SIGVTALRM, si_code=SI_TIMER, si_timerid=0, si_overrun=0, si_value={int=0, ptr=0}} ---
+rt_sigreturn()                          = 202
+futex(0x417c1dc, FUTEX_WAIT_PRIVATE, 65, NULL) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+--- SIGVTALRM {si_signo=SIGVTALRM, si_code=SI_TIMER, si_timerid=0, si_overrun=0, si_value={int=0, ptr=0}} ---
+rt_sigreturn()                          = 202
+futex(0x417c1dc, FUTEX_WAIT_PRIVATE, 65, NULL) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+--- SIGVTALRM {si_signo=SIGVTALRM, si_code=SI_TIMER, si_timerid=0, si_overrun=0, si_value={int=0, ptr=0}} ---
+rt_sigreturn()                          = 202
+futex(0x417c1dc, FUTEX_WAIT_PRIVATE, 65, NULL) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+--- SIGVTALRM {si_signo=SIGVTALRM, si_code=SI_TIMER, si_timerid=0, si_overrun=0, si_value={int=0, ptr=0}} ---
+rt_sigreturn()                          = 202
+futex(0x417c1dc, FUTEX_WAIT_PRIVATE, 65, NULL) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+--- SIGVTALRM {si_signo=SIGVTALRM, si_code=SI_TIMER, si_timerid=0, si_overrun=0, si_value={int=0, ptr=0}} ---
+rt_sigreturn()                          = 202
+futex(0x417c1dc, FUTEX_WAIT_PRIVATE, 65, NULL) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+--- SIGVTALRM {si_signo=SIGVTALRM, si_code=SI_TIMER, si_timerid=0, si_overrun=0, si_value={int=0, ptr=0}} ---
+rt_sigreturn()                          = 202
+futex(0x417c1dc, FUTEX_WAIT_PRIVATE, 65, NULL) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+--- SIGVTALRM {si_signo=SIGVTALRM, si_code=SI_TIMER, si_timerid=0, si_overrun=0, si_value={int=0, ptr=0}} ---
+rt_sigreturn()                          = 202
+futex(0x417c1dc, FUTEX_WAIT_PRIVATE, 65, NULL) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+--- SIGVTALRM {si_signo=SIGVTALRM, si_code=SI_TIMER, si_timerid=0, si_overrun=0, si_value={int=0, ptr=0}} ---
+rt_sigreturn()                          = 202
+futex(0x417c1dc, FUTEX_WAIT_PRIVATE, 65, NULL) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+futex(0x417c1dc, FUTEX_WAIT_PRIVATE, 65, NULL) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+--- SIGVTALRM {si_signo=SIGVTALRM, si_code=SI_TIMER, si_timerid=0, si_overrun=0, si_value={int=0, ptr=0}} ---
+rt_sigreturn()                          = 202
+futex(0x417c1dc, FUTEX_WAIT_PRIVATE, 65, NULL) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+--- SIGVTALRM {si_signo=SIGVTALRM, si_code=SI_TIMER, si_timerid=0, si_overrun=0, si_value={int=0, ptr=0}} ---
+rt_sigreturn()                          = 202
+futex(0x417c1dc, FUTEX_WAIT_PRIVATE, 65, NULL) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+--- SIGVTALRM {si_signo=SIGVTALRM, si_code=SI_TIMER, si_timerid=0, si_overrun=0, si_value={int=0, ptr=0}} ---
+rt_sigreturn()                          = 202
+futex(0x417c1dc, FUTEX_WAIT_PRIVATE, 65, NULL) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+--- SIGVTALRM {si_signo=SIGVTALRM, si_code=SI_TIMER, si_timerid=0, si_overrun=0, si_value={int=0, ptr=0}} ---
+rt_sigreturn()                          = 202
+futex(0x417c1dc, FUTEX_WAIT_PRIVATE, 65, NULL) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+--- SIGVTALRM {si_signo=SIGVTALRM, si_code=SI_TIMER, si_timerid=0, si_overrun=0, si_value={int=0, ptr=0}} ---
+rt_sigreturn()                          = 202
+futex(0x417c1dc, FUTEX_WAIT_PRIVATE, 65, NULL) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+--- SIGVTALRM {si_signo=SIGVTALRM, si_code=SI_TIMER, si_timerid=0, si_overrun=0, si_value={int=0, ptr=0}} ---
+rt_sigreturn()                          = 202
+futex(0x417c1dc, FUTEX_WAIT_PRIVATE, 65, NULL) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+--- SIGVTALRM {si_signo=SIGVTALRM, si_code=SI_TIMER, si_timerid=0, si_overrun=0, si_value={int=0, ptr=0}} ---
+rt_sigreturn()                          = 202
+futex(0x417c1dc, FUTEX_WAIT_PRIVATE, 65, NULL) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+--- SIGVTALRM {si_signo=SIGVTALRM, si_code=SI_TIMER, si_timerid=0, si_overrun=0, si_value={int=0, ptr=0}} ---
+rt_sigreturn()                          = 202
+# (ands lots more of the same)
+"""]]
