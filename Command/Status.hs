@@ -17,7 +17,7 @@ import qualified Git.Ref
 import qualified Git
 
 cmd :: Command
-cmd = notBareRepo $ noCommit $ noMessages $ withOptions [jsonOption] $
+cmd = notBareRepo $ noCommit $ noMessages $ withGlobalOptions [jsonOption] $
 	command "status" SectionCommon
 		"show the working tree status"
 		paramPaths (withParams seek)

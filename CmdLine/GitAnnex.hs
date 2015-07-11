@@ -64,7 +64,7 @@ import qualified Command.List
 import qualified Command.Merge
 import qualified Command.ResolveMerge
 import qualified Command.Info
---import qualified Command.Status
+import qualified Command.Status
 import qualified Command.Migrate
 import qualified Command.Uninit
 import qualified Command.Reinit
@@ -191,7 +191,7 @@ cmds =
 	, Command.Merge.cmd
 	, Command.ResolveMerge.cmd
 	, Command.Info.cmd
---	, Command.Status.cmd
+	, Command.Status.cmd
 	, Command.Migrate.cmd
 	, Command.Map.cmd
 	, Command.Direct.cmd
