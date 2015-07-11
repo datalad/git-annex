@@ -57,7 +57,7 @@ import qualified Command.Unlock
 import qualified Command.Lock
 import qualified Command.PreCommit
 import qualified Command.Find
---import qualified Command.FindRef
+import qualified Command.FindRef
 import qualified Command.Whereis
 --import qualified Command.List
 --import qualified Command.Log
@@ -184,7 +184,7 @@ cmds =
 	, Command.DropUnused.cmd
 	, Command.AddUnused.cmd
 	, Command.Find.cmd
---	, Command.FindRef.cmd
+	, Command.FindRef.cmd
 	, Command.Whereis.cmd
 --	, Command.List.cmd
 --	, Command.Log.cmd

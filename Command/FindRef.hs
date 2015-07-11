@@ -7,16 +7,15 @@
 
 module Command.FindRef where
 
+import Common.Annex
 import Command
 import qualified Command.Find as Find
 
 cmd :: Command
-cmd = withOptions nonWorkTreeMatchingOptions $ Find.mkCommand $ 
+cmd = withGlobalOptions nonWorkTreeMatchingOptions $ Find.mkCommand $ 
 	command "findref" SectionPlumbing
 		"lists files in a git ref"
-		paramRef (withParams seek)
+		paramRef (seek <$$> Find.optParser)
 
-seek :: CmdParams -> CommandSeek
-seek refs = do
-	format <- Find.getFormat
-	Find.start format `withFilesInRefs` refs
+seek :: Find.FindOptions -> CommandSeek
+seek o = Find.start o `withFilesInRefs` Find.findThese o

@@ -48,14 +48,14 @@ parseFormatOption =
 		)
 
 seek :: FindOptions -> CommandSeek
-seek o = withFilesInGit (whenAnnexed $ start (formatOption o)) (findThese o)
+seek o = withFilesInGit (whenAnnexed $ start o) (findThese o)
 
-start :: Maybe Utility.Format.Format -> FilePath -> Key -> CommandStart
-start format file key = do
+start :: FindOptions -> FilePath -> Key -> CommandStart
+start o file key = do
 	-- only files inAnnex are shown, unless the user has requested
 	-- others via a limit
 	whenM (limited <||> inAnnex key) $
-		showFormatted format file $ ("file", file) : keyVars key
+		showFormatted (formatOption o) file $ ("file", file) : keyVars key
 	stop
 
 showFormatted :: Maybe Utility.Format.Format -> String -> [(String, String)] -> Annex ()
