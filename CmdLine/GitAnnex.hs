@@ -63,7 +63,7 @@ import qualified Command.List
 --import qualified Command.Log
 import qualified Command.Merge
 import qualified Command.ResolveMerge
---import qualified Command.Info
+import qualified Command.Info
 --import qualified Command.Status
 import qualified Command.Migrate
 import qualified Command.Uninit
@@ -190,7 +190,7 @@ cmds =
 --	, Command.Log.cmd
 	, Command.Merge.cmd
 	, Command.ResolveMerge.cmd
---	, Command.Info.cmd
+	, Command.Info.cmd
 --	, Command.Status.cmd
 	, Command.Migrate.cmd
 	, Command.Map.cmd
