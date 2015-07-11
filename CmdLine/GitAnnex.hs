@@ -59,7 +59,7 @@ import qualified Command.PreCommit
 import qualified Command.Find
 import qualified Command.FindRef
 import qualified Command.Whereis
---import qualified Command.List
+import qualified Command.List
 --import qualified Command.Log
 import qualified Command.Merge
 import qualified Command.ResolveMerge
@@ -186,7 +186,7 @@ cmds =
 	, Command.Find.cmd
 	, Command.FindRef.cmd
 	, Command.Whereis.cmd
---	, Command.List.cmd
+	, Command.List.cmd
 --	, Command.Log.cmd
 	, Command.Merge.cmd
 	, Command.ResolveMerge.cmd
