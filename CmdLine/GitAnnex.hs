@@ -79,7 +79,7 @@ import qualified Command.GroupWanted
 import qualified Command.Required
 import qualified Command.Schedule
 import qualified Command.Ungroup
---import qualified Command.Vicfg
+import qualified Command.Vicfg
 import qualified Command.Sync
 --import qualified Command.Mirror
 --import qualified Command.AddUrl
@@ -157,7 +157,7 @@ cmds =
 	, Command.Required.cmd
 	, Command.Schedule.cmd
 	, Command.Ungroup.cmd
---	, Command.Vicfg.cmd
+	, Command.Vicfg.cmd
 --	, Command.LookupKey.cmd
 --	, Command.ContentLocation.cmd
 --	, Command.ExamineKey.cmd
