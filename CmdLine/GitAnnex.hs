@@ -92,10 +92,10 @@ import qualified Command.Map
 import qualified Command.Direct
 import qualified Command.Indirect
 import qualified Command.Upgrade
---import qualified Command.Forget
+import qualified Command.Forget
 import qualified Command.Proxy
 import qualified Command.DiffDriver
---import qualified Command.Undo
+import qualified Command.Undo
 import qualified Command.Version
 #ifdef WITH_ASSISTANT
 --import qualified Command.Watch
@@ -111,7 +111,7 @@ import qualified Command.RemoteDaemon
 import qualified Command.Test
 #ifdef WITH_TESTSUITE
 import qualified Command.FuzzTest
---import qualified Command.TestRemote
+import qualified Command.TestRemote
 #endif
 #ifdef WITH_EKG
 import System.Remote.Monitoring
@@ -197,10 +197,10 @@ cmds =
 	, Command.Direct.cmd
 	, Command.Indirect.cmd
 	, Command.Upgrade.cmd
---	, Command.Forget.cmd
+	, Command.Forget.cmd
 	, Command.Proxy.cmd
 	, Command.DiffDriver.cmd
---	, Command.Undo.cmd
+	, Command.Undo.cmd
 	, Command.Version.cmd
 #ifdef WITH_ASSISTANT
 --	, Command.Watch.cmd
@@ -216,7 +216,7 @@ cmds =
 	, Command.Test.cmd
 #ifdef WITH_TESTSUITE
 	, Command.FuzzTest.cmd
---	, Command.TestRemote.cmd
+	, Command.TestRemote.cmd
 #endif
 	]
 
