@@ -14,16 +14,17 @@ import Annex.CatFile
 import Types.Key
 
 cmd :: Command
-cmd = withOptions [batchOption] $ notBareRepo $ noCommit $ noMessages $
+cmd = notBareRepo $ noCommit $ noMessages $
 	command "lookupkey" SectionPlumbing 
 		"looks up key used for file"
-		(paramRepeating paramFile) (withParams seek)
+		(paramRepeating paramFile)
+		(batchable run (pure ()))
 
-seek :: CmdParams -> CommandSeek
-seek = batchable withStrings start
-
-start :: Batchable String
-start batchmode file = do
-	maybe (batchBadInput batchmode) (liftIO . putStrLn . key2file)
-		=<< catKeyFile file
-	stop
+run :: () -> String -> Annex Bool
+run _ file = do
+	mk <- catKeyFile file
+	case mk of
+		Just k  -> do
+			liftIO $ putStrLn $ key2file k
+			return True
+		Nothing -> return False

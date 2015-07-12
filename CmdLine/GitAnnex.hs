@@ -23,9 +23,9 @@ import qualified Command.Move
 import qualified Command.Copy
 import qualified Command.Get
 import qualified Command.Fsck
---import qualified Command.LookupKey
---import qualified Command.ContentLocation
---import qualified Command.ExamineKey
+import qualified Command.LookupKey
+import qualified Command.ContentLocation
+import qualified Command.ExamineKey
 import qualified Command.FromKey
 import qualified Command.RegisterUrl
 import qualified Command.SetKey
@@ -158,9 +158,9 @@ cmds =
 	, Command.Schedule.cmd
 	, Command.Ungroup.cmd
 	, Command.Vicfg.cmd
---	, Command.LookupKey.cmd
---	, Command.ContentLocation.cmd
---	, Command.ExamineKey.cmd
+	, Command.LookupKey.cmd
+	, Command.ContentLocation.cmd
+	, Command.ExamineKey.cmd
 	, Command.FromKey.cmd
 	, Command.RegisterUrl.cmd
 	, Command.SetKey.cmd

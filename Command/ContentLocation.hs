@@ -11,21 +11,20 @@ import Common.Annex
 import Command
 import CmdLine.Batch
 import Annex.Content
+import Types.Key
 
 cmd :: Command
-cmd = withOptions [batchOption] $ noCommit $ noMessages $
+cmd = noCommit $ noMessages $
 	command "contentlocation" SectionPlumbing 
 		"looks up content for a key"
-		(paramRepeating paramKey) (withParams seek)
+		(paramRepeating paramKey)
+		(batchable run (pure ()))
 
-seek :: CmdParams -> CommandSeek
-seek = batchable withKeys start
-
-start :: Batchable Key
-start batchmode k = do
-	maybe (batchBadInput batchmode) (liftIO . putStrLn)
+run :: () -> String -> Annex Bool
+run _ p = do
+	let k = fromMaybe (error "bad key") $ file2key p
+	maybe (return False) (\f -> liftIO (putStrLn f) >> return True)
 		=<< inAnnex' (pure True) Nothing check k
-	stop
   where
 	check f = ifM (liftIO (doesFileExist f))
 		( return (Just f)
