@@ -57,7 +57,6 @@ import Types.UUID
 import Types.FileMatcher
 import Types.NumCopies
 import Types.LockCache
-import Types.MetaData
 import Types.DesktopNotify
 import Types.CleanupActions
 #ifdef WITH_QUVI
@@ -121,7 +120,6 @@ data AnnexState = AnnexState
 	, lockcache :: LockCache
 	, flags :: M.Map String Bool
 	, fields :: M.Map String String
-	, modmeta :: [ModMeta]
 	, cleanup :: M.Map CleanupAction (Annex ())
 	, sentinalstatus :: Maybe SentinalStatus
 	, useragent :: Maybe String
@@ -166,7 +164,6 @@ newState c r = AnnexState
 	, lockcache = M.empty
 	, flags = M.empty
 	, fields = M.empty
-	, modmeta = []
 	, cleanup = M.empty
 	, sentinalstatus = Nothing
 	, useragent = Nothing

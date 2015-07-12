@@ -36,7 +36,7 @@ import qualified Command.SetPresentKey
 import qualified Command.ReadPresentKey
 import qualified Command.CheckPresentKey
 import qualified Command.ReKey
---import qualified Command.MetaData
+import qualified Command.MetaData
 import qualified Command.View
 import qualified Command.VAdd
 import qualified Command.VFilter
@@ -171,7 +171,7 @@ cmds =
 	, Command.ReadPresentKey.cmd
 	, Command.CheckPresentKey.cmd
 	, Command.ReKey.cmd
---	, Command.MetaData.cmd
+	, Command.MetaData.cmd
 	, Command.View.cmd
 	, Command.VAdd.cmd
 	, Command.VFilter.cmd
