@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="04448cae@7f89c9ec07b399265c20ea79b979d2afa5f75fa8"
+ nickname="04448cae"
+ subject="GPG Key"
+ date="2015-07-12T03:23:07Z"
+ content="""
+According to https://git-annex.branchable.com/install/verifying_downloads/ we should expect GPG key, C910D9222512E3C7 Joey Hess <id@joeyh.name> for this Windows installer file, but git-annex-installer.exe returns \"Signed on 2015-07-10 14:56 by id@joeyh.name (Key ID: 0x89C809CB). The validity of the signature cannot be verified.\" That key is on the keyserver http://pgp.surfnet.nl:11371/pks/lookup?op=vindex&fingerprint=on&search=0x89C809CB but doesn't match the verify page. Is this file legit, or the page in need of update? Thanks!
+"""]]
