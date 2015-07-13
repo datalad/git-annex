@@ -72,7 +72,7 @@ import qualified Command.NumCopies
 import qualified Command.Trust
 import qualified Command.Untrust
 import qualified Command.Semitrust
---import qualified Command.Dead
+import qualified Command.Dead
 import qualified Command.Group
 import qualified Command.Wanted
 import qualified Command.GroupWanted
@@ -150,7 +150,7 @@ cmds =
 	, Command.Trust.cmd
 	, Command.Untrust.cmd
 	, Command.Semitrust.cmd
---	, Command.Dead.cmd
+	, Command.Dead.cmd
 	, Command.Group.cmd
 	, Command.Wanted.cmd
 	, Command.GroupWanted.cmd
