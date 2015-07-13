@@ -60,7 +60,7 @@ import qualified Command.Find
 import qualified Command.FindRef
 import qualified Command.Whereis
 import qualified Command.List
---import qualified Command.Log
+import qualified Command.Log
 import qualified Command.Merge
 import qualified Command.ResolveMerge
 import qualified Command.Info
@@ -187,7 +187,7 @@ cmds =
 	, Command.FindRef.cmd
 	, Command.Whereis.cmd
 	, Command.List.cmd
---	, Command.Log.cmd
+	, Command.Log.cmd
 	, Command.Merge.cmd
 	, Command.ResolveMerge.cmd
 	, Command.Info.cmd
