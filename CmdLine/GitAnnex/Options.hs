@@ -73,7 +73,7 @@ gitAnnexGlobalOptions = commonGlobalOptions ++
 		)
 	, globalFlag (setdesktopnotify mkNotifyStart)
 		( long "notify-start"
-		<> help "show desktop notification after transfer completes"
+		<> help "show desktop notification after transfer starts"
 		<> hidden
 		)
 	]
