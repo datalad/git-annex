@@ -1,0 +1,6 @@
+I have some repositories where I want to manually control what files are added (autocommit=false), but would like to have the assistant/webapp automatically sync commits and transfer files.
+However it seems that the assistant is not notified if I manually do a commit.
+
+The only solution right now seems to frequently restart the assistant since the startup scan will transfer files if required or run git annex get/copy manually.
+
+Is there another possibility?
