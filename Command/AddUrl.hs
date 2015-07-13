@@ -61,14 +61,20 @@ optParser desc = AddUrlOptions
 		( long "pathdepth" <> metavar paramNumber
 		<> help "path components to use in filename"
 		))
-	<*> switch
-		( long "relaxed"
-		<> help "skip size check"
-		)
-	<*> switch
-		( long "raw"
-		<> help "disable special handling for torrents, quvi, etc"
-		)
+	<*> parseRelaxedOption
+	<*> parseRawOption
+
+parseRelaxedOption :: Parser Bool
+parseRelaxedOption = switch
+	( long "relaxed"
+	<> help "skip size check"
+	)
+
+parseRawOption :: Parser Bool
+parseRawOption = switch
+	( long "raw"
+	<> help "disable special handling for torrents, quvi, etc"
+	)
 
 seek :: AddUrlOptions -> CommandSeek
 seek o = forM_ (addUrls o) $ \u -> do

@@ -84,7 +84,7 @@ import qualified Command.Sync
 import qualified Command.Mirror
 import qualified Command.AddUrl
 #ifdef WITH_FEED
---import qualified Command.ImportFeed
+import qualified Command.ImportFeed
 #endif
 import qualified Command.RmUrl
 --import qualified Command.Import
@@ -133,7 +133,7 @@ cmds =
 	, Command.Mirror.cmd
 	, Command.AddUrl.cmd
 #ifdef WITH_FEED
---	, Command.ImportFeed.cmd
+	, Command.ImportFeed.cmd
 #endif
 	, Command.RmUrl.cmd
 --	, Command.Import.cmd
