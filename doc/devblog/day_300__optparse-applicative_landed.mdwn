@@ -1,0 +1,3 @@
+Worked through the rest of the changes this weekend and morning, and the
+optparse-applicative branch has landed in master,
+including bash completion support.
