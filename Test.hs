@@ -1,6 +1,6 @@
 {- git-annex test suite
  -
- - Copyright 2010-2013 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -9,7 +9,22 @@
 
 module Test where
 
+import Options.Applicative.Types
+
+#ifndef WITH_TESTSUITE
+
+import Options.Applicative (pure)
+
+optParser :: Parser ()
+optParser = pure ()
+
+runner :: Maybe (() -> IO ())
+runner = Nothing
+
+#else
+
 import Test.Tasty
+import Test.Tasty.Options
 import Test.Tasty.Runners
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
@@ -20,7 +35,6 @@ import qualified Text.JSON
 
 import Common
 
-import qualified Utility.SubTasty
 import qualified Utility.SafeCommand
 import qualified Annex
 import qualified Annex.UUID
@@ -81,18 +95,19 @@ import qualified Types.Crypto
 import qualified Utility.Gpg
 #endif
 
-main :: [String] -> IO ()
-main ps = do
-	opts <- Utility.SubTasty.parseOpts "test" ingredients tests ("test":ps)
-	case tryIngredients ingredients opts tests of
-		Nothing -> error "No tests found!?"
-		Just act -> ifM act
-			( exitSuccess
-			, do
-				putStrLn "  (This could be due to a bug in git-annex, or an incompatability"
-				putStrLn "   with utilities, such as git, installed on this system.)"
-				exitFailure
-			)
+optParser :: Parser OptionSet
+optParser = suiteOptionParser ingredients tests
+
+runner :: Maybe (OptionSet -> IO ())
+runner = Just $ \opts -> case tryIngredients ingredients opts tests of
+	Nothing -> error "No tests found!?"
+	Just act -> ifM act
+		( exitSuccess
+		, do
+			putStrLn "  (This could be due to a bug in git-annex, or an incompatability"
+			putStrLn "   with utilities, such as git, installed on this system.)"
+			exitFailure
+		)
 
 ingredients :: [Ingredient]
 ingredients =
@@ -1419,12 +1434,12 @@ test_addurl = intmpclonerepo $ do
 git_annex :: String -> [String] -> IO Bool
 git_annex command params = do
 	-- catch all errors, including normally fatal errors
-	r <- try run::IO (Either SomeException ())
+	r <- try run ::IO (Either SomeException ())
 	case r of
 		Right _ -> return True
 		Left _ -> return False
   where
-	run = GitAnnex.run (command:"-q":params)
+	run = GitAnnex.run optParser Nothing (command:"-q":params)
 
 {- Runs git-annex and returns its output. -}
 git_annex_output :: String -> [String] -> IO String
@@ -1762,3 +1777,5 @@ backendWORM = backend_ "WORM"
 
 backend_ :: String -> Types.Backend
 backend_ = Backend.lookupBackendName
+
+#endif

@@ -1,6 +1,6 @@
 {- git-annex main program
  -
- - Copyright 2010-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -14,6 +14,7 @@ import CmdLine
 import Command
 import Utility.Env
 import Annex.Ssh
+import Types.Test
 
 import qualified Command.Help
 import qualified Command.Add
@@ -117,8 +118,8 @@ import qualified Command.TestRemote
 import System.Remote.Monitoring
 #endif
 
-cmds :: [Command]
-cmds = 
+cmds :: Parser TestOptions -> Maybe TestRunner -> [Command]
+cmds testoptparser testrunner = 
 	[ Command.Help.cmd
 	, Command.Add.cmd
 	, Command.Get.cmd
@@ -213,21 +214,23 @@ cmds =
 #endif
 	, Command.RemoteDaemon.cmd
 #endif
-	, Command.Test.cmd
+	, Command.Test.cmd testoptparser testrunner
 #ifdef WITH_TESTSUITE
 	, Command.FuzzTest.cmd
 	, Command.TestRemote.cmd
 #endif
 	]
 
-run :: [String] -> IO ()
-run args = do
+run :: Parser TestOptions -> Maybe TestRunner -> [String] -> IO ()
+run testoptparser testrunner args = do
 #ifdef WITH_EKG
 	_ <- forkServer "localhost" 4242
 #endif
 	go envmodes
   where
-	go [] = dispatch True args cmds gitAnnexGlobalOptions [] Git.CurrentRepo.get
+	go [] = dispatch True args 
+		(cmds testoptparser testrunner)
+		gitAnnexGlobalOptions [] Git.CurrentRepo.get
 		"git-annex"
 		"manage files with git, without checking their contents in"
 	go ((v, a):rest) = maybe (go rest) a =<< getEnv v

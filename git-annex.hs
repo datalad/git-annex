@@ -13,9 +13,7 @@ import Network.Socket (withSocketsDo)
 
 import qualified CmdLine.GitAnnex
 import qualified CmdLine.GitAnnexShell
-#ifdef WITH_TESTSUITE
 import qualified Test
-#endif
 
 #ifdef mingw32_HOST_OS
 import Utility.UserInfo
@@ -37,14 +35,7 @@ main = withSocketsDo $ do
 #else
 			gitannex ps
 #endif
-	gitannex ps = 
-#ifdef WITH_TESTSUITE
-		case ps of
-			("test":ps') -> Test.main ps'
-			_ -> CmdLine.GitAnnex.run ps
-#else
-		CmdLine.GitAnnex.run ps
-#endif
+	gitannex = CmdLine.GitAnnex.run Test.optParser Test.runner
 	isshell n = takeFileName n == "git-annex-shell"
 
 #ifdef mingw32_HOST_OS
