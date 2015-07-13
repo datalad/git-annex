@@ -22,7 +22,7 @@ cmd = noCommit $ dontCheck repoExists $
 seek :: CmdParams -> CommandSeek
 seek = withWords start
 
-start :: [String] -> CommandStart
+start :: CmdParams -> CommandStart
 start _ = do
 	liftIO gitRemoteHelper
 	liftIO xmppGitRelay

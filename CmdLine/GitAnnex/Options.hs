@@ -285,3 +285,19 @@ timeLimitOption = globalSetter Limit.addTimeLimit $ strOption
 	<> help "stop after the specified amount of time"
 	<> hidden
 	)
+
+data DaemonOptions = DaemonOptions
+	{ foregroundDaemonOption :: Bool
+	, stopDaemonOption :: Bool
+	}
+
+parseDaemonOptions :: Parser DaemonOptions
+parseDaemonOptions = DaemonOptions
+	<$> switch
+		( long "foreground"
+		<> help "do not daemonize"
+		)
+	<*> switch
+		( long "stop"
+		<> help "stop daemon"
+		)

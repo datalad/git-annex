@@ -98,8 +98,8 @@ import qualified Command.DiffDriver
 import qualified Command.Undo
 import qualified Command.Version
 #ifdef WITH_ASSISTANT
---import qualified Command.Watch
---import qualified Command.Assistant
+import qualified Command.Watch
+import qualified Command.Assistant
 #ifdef WITH_WEBAPP
 --import qualified Command.WebApp
 #endif
@@ -203,8 +203,8 @@ cmds =
 	, Command.Undo.cmd
 	, Command.Version.cmd
 #ifdef WITH_ASSISTANT
---	, Command.Watch.cmd
---	, Command.Assistant.cmd
+	, Command.Watch.cmd
+	, Command.Assistant.cmd
 #ifdef WITH_WEBAPP
 --	, Command.WebApp.cmd
 #endif
