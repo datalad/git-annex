@@ -82,7 +82,7 @@ import qualified Command.Ungroup
 import qualified Command.Vicfg
 import qualified Command.Sync
 import qualified Command.Mirror
---import qualified Command.AddUrl
+import qualified Command.AddUrl
 #ifdef WITH_FEED
 --import qualified Command.ImportFeed
 #endif
@@ -131,7 +131,7 @@ cmds =
 	, Command.Lock.cmd
 	, Command.Sync.cmd
 	, Command.Mirror.cmd
---	, Command.AddUrl.cmd
+	, Command.AddUrl.cmd
 #ifdef WITH_FEED
 --	, Command.ImportFeed.cmd
 #endif
