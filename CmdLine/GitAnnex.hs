@@ -101,7 +101,7 @@ import qualified Command.Version
 import qualified Command.Watch
 import qualified Command.Assistant
 #ifdef WITH_WEBAPP
---import qualified Command.WebApp
+import qualified Command.WebApp
 #endif
 #ifdef WITH_XMPP
 import qualified Command.XMPPGit
@@ -206,7 +206,7 @@ cmds =
 	, Command.Watch.cmd
 	, Command.Assistant.cmd
 #ifdef WITH_WEBAPP
---	, Command.WebApp.cmd
+	, Command.WebApp.cmd
 #endif
 #ifdef WITH_XMPP
 	, Command.XMPPGit.cmd
