@@ -14,11 +14,12 @@ import Annex.Content
 import qualified Command.Fsck
 import qualified Backend
 
-cmd :: [Command]
-cmd = [command "reinject" (paramPair "SRC" "DEST") seek
-	SectionUtility "sets content of annexed file"]
+cmd :: Command
+cmd = command "reinject" SectionUtility 
+	"sets content of annexed file"
+	(paramPair "SRC" "DEST") (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 start :: [FilePath] -> CommandStart

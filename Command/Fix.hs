@@ -18,12 +18,13 @@ import Utility.Touch
 #endif
 #endif
 
-cmd :: [Command]
-cmd = [notDirect $ noCommit $ withOptions annexedMatchingOptions $
-	command "fix" paramPaths seek
-		SectionMaintenance "fix up symlinks to point to annexed content"]
+cmd :: Command
+cmd = notDirect $ noCommit $ withGlobalOptions annexedMatchingOptions $
+	command "fix" SectionMaintenance
+		"fix up symlinks to point to annexed content"
+		paramPaths (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withFilesInGit $ whenAnnexed start
 
 {- Fixes the symlink to an annexed file. -}

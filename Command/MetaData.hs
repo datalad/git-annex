@@ -8,7 +8,6 @@
 module Command.MetaData where
 
 import Common.Annex
-import qualified Annex
 import Command
 import Annex.MetaData
 import Logs.MetaData
@@ -16,71 +15,70 @@ import Logs.MetaData
 import qualified Data.Set as S
 import Data.Time.Clock.POSIX
 
-cmd :: [Command]
-cmd = [withOptions metaDataOptions $
-	command "metadata" paramPaths seek
-	SectionMetaData "sets or gets metadata of a file"]
+cmd :: Command
+cmd = withGlobalOptions ([jsonOption] ++ annexedMatchingOptions) $ 
+	command "metadata" SectionMetaData
+		"sets or gets metadata of a file"
+		paramPaths (seek <$$> optParser)
 
-metaDataOptions :: [Option]
-metaDataOptions =
-	[ setOption
-	, tagOption
-	, untagOption
-	, getOption
-	, jsonOption
-	] ++ keyOptions ++ annexedMatchingOptions
+data MetaDataOptions = MetaDataOptions
+	{ forFiles :: CmdParams
+	, getSet :: GetSet
+	, keyOptions :: Maybe KeyOptions
+	}
 
-storeModMeta :: ModMeta -> Annex ()
-storeModMeta modmeta = Annex.changeState $
-	\s -> s { Annex.modmeta = modmeta:Annex.modmeta s }
+data GetSet = Get MetaField | Set [ModMeta]
 
-setOption :: Option
-setOption = Option ['s'] ["set"] (ReqArg mkmod "FIELD[+-]=VALUE") "set metadata"
+optParser :: CmdParamsDesc -> Parser MetaDataOptions
+optParser desc = MetaDataOptions
+	<$> cmdParams desc
+	<*> ((Get <$> getopt) <|> (Set <$> many modopts))
+	<*> optional (parseKeyOptions False)
   where
-	mkmod = either error storeModMeta . parseModMeta
+	getopt = option (eitherReader mkMetaField)
+		( long "get" <> short 'g' <> metavar paramField
+		<> help "get single metadata field"
+		)
+	modopts = option (eitherReader parseModMeta)
+		( long "set" <> short 's' <> metavar "FIELD[+-]=VALUE"
+		<> help "set or unset metadata value"
+		)
+		<|> (AddMeta tagMetaField . toMetaValue <$> strOption
+			( long "tag" <> short 't' <> metavar "TAG"
+			<> help "set a tag"
+			))
+		<|> (AddMeta tagMetaField . mkMetaValue (CurrentlySet False) <$> strOption
+			( long "untag" <> short 'u' <> metavar "TAG"
+			<> help "remove a tag"
+			))
 
-getOption :: Option
-getOption = fieldOption ['g'] "get" paramField "get single metadata field"
-
-tagOption :: Option
-tagOption = Option ['t'] ["tag"] (ReqArg mkmod "TAG") "set a tag"
-  where
-	mkmod = storeModMeta . AddMeta tagMetaField . toMetaValue
-
-untagOption :: Option
-untagOption = Option ['u'] ["untag"] (ReqArg mkmod "TAG") "remove a tag"
-  where
-	mkmod = storeModMeta . AddMeta tagMetaField . mkMetaValue (CurrentlySet False)
-
-seek :: CommandSeek
-seek ps = do
-	modmeta <- Annex.getState Annex.modmeta
-	getfield <- getOptionField getOption $ \ms ->
-		return $ either error id . mkMetaField <$> ms
+seek :: MetaDataOptions -> CommandSeek
+seek o = do
 	now <- liftIO getPOSIXTime
-	let seeker = if null modmeta
-		then withFilesInGit
-		else withFilesInGitNonRecursive
-	withKeyOptions False
-		(startKeys now getfield modmeta)
-		(seeker $ whenAnnexed $ start now getfield modmeta)
-		ps
+	let seeker = case getSet o of
+		Get _ -> withFilesInGit
+		Set _ -> withFilesInGitNonRecursive
+	withKeyOptions (keyOptions o) False
+		(startKeys now o)
+		(seeker $ whenAnnexed $ start now o)
+		(forFiles o)
 
-start :: POSIXTime -> Maybe MetaField -> [ModMeta] -> FilePath -> Key -> CommandStart
-start now f ms file = start' (Just file) now f ms
+start :: POSIXTime -> MetaDataOptions -> FilePath -> Key -> CommandStart
+start now o file = start' (Just file) now o
 
-startKeys :: POSIXTime -> Maybe MetaField -> [ModMeta] -> Key -> CommandStart
+startKeys :: POSIXTime -> MetaDataOptions -> Key -> CommandStart
 startKeys = start' Nothing
 
-start' :: AssociatedFile -> POSIXTime -> Maybe MetaField -> [ModMeta] -> Key -> CommandStart
-start' afile now Nothing ms k = do
-	showStart' "metadata" k afile
-	next $ perform now ms k
-start' _ _ (Just f) _ k = do
-	l <- S.toList . currentMetaDataValues f <$> getCurrentMetaData k
-	liftIO $ forM_ l $
-		putStrLn . fromMetaValue
-	stop
+start' :: AssociatedFile -> POSIXTime -> MetaDataOptions -> Key -> CommandStart
+start' afile now o k = case getSet o of
+	Set ms -> do
+		showStart' "metadata" k afile
+		next $ perform now ms k
+	Get f -> do
+		l <- S.toList . currentMetaDataValues f <$> getCurrentMetaData k
+		liftIO $ forM_ l $
+			putStrLn . fromMetaValue
+		stop
 
 perform :: POSIXTime -> [ModMeta] -> Key -> CommandPerform
 perform _ [] k = next $ cleanup k

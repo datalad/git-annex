@@ -11,15 +11,18 @@ import Common.Annex
 import Command
 import Assistant.XMPP.Git
 
-cmd :: [Command]
-cmd = [noCommit $ noRepo startNoRepo $ dontCheck repoExists $
-	command "xmppgit" paramNothing seek
-		SectionPlumbing "git to XMPP relay"]
+cmd :: Command
+cmd = noCommit $ dontCheck repoExists $
+	noRepo (parseparams startNoRepo) $ 
+		command "xmppgit" SectionPlumbing "git to XMPP relay"
+			paramNothing (parseparams seek)
+  where
+	parseparams = withParams
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withWords start
 
-start :: [String] -> CommandStart
+start :: CmdParams -> CommandStart
 start _ = do
 	liftIO gitRemoteHelper
 	liftIO xmppGitRelay

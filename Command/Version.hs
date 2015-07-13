@@ -17,45 +17,54 @@ import qualified Types.Remote as R
 import qualified Remote
 import qualified Backend
 
-cmd :: [Command]
-cmd = [withOptions [rawOption] $
-	noCommit $ noRepo startNoRepo $ dontCheck repoExists $
-	command "version" paramNothing seek SectionQuery "show version info"]
+cmd :: Command
+cmd = dontCheck repoExists $ noCommit $ 
+	noRepo (seekNoRepo <$$> optParser) $ 
+		command "version" SectionQuery "show version info"
+			paramNothing (seek <$$> optParser)
 
-rawOption :: Option
-rawOption = flagOption [] "raw" "output only program version"
+data VersionOptions = VersionOptions
+	{ rawOption :: Bool
+	}
 
-seek :: CommandSeek
-seek = withNothing $ ifM (getOptionFlag rawOption) (startRaw, start)
+optParser :: CmdParamsDesc -> Parser VersionOptions
+optParser _ = VersionOptions
+	<$> switch
+		( long "raw"
+		<> help "output only program version"
+		)
 
-startRaw :: CommandStart
-startRaw = do
-	liftIO $ do
-		putStr SysConfig.packageversion
-		hFlush stdout
-	stop
+seek :: VersionOptions -> CommandSeek
+seek o
+	| rawOption o = liftIO showRawVersion
+	| otherwise = showVersion
 
-start :: CommandStart
-start = do
+seekNoRepo :: VersionOptions -> IO ()
+seekNoRepo o
+	| rawOption o = showRawVersion
+	| otherwise = showPackageVersion
+
+showVersion :: Annex ()
+showVersion = do
 	v <- getVersion
 	liftIO $ do
-
 		showPackageVersion
-		info "local repository version" $ fromMaybe "unknown" v
-		info "supported repository version" supportedVersion
-		info "upgrade supported from repository versions" $
+		vinfo "local repository version" $ fromMaybe "unknown" v
+		vinfo "supported repository version" supportedVersion
+		vinfo "upgrade supported from repository versions" $
 			unwords upgradableVersions
-	stop
-
-startNoRepo :: CmdParams -> IO ()
-startNoRepo _ = showPackageVersion
 
 showPackageVersion :: IO ()
 showPackageVersion = do
-	info "git-annex version" SysConfig.packageversion
-	info "build flags" $ unwords buildFlags
-	info "key/value backends" $ unwords $ map B.name Backend.list
-	info "remote types" $ unwords $ map R.typename Remote.remoteTypes
+	vinfo "git-annex version" SysConfig.packageversion
+	vinfo "build flags" $ unwords buildFlags
+	vinfo "key/value backends" $ unwords $ map B.name Backend.list
+	vinfo "remote types" $ unwords $ map R.typename Remote.remoteTypes
 
-info :: String -> String -> IO ()
-info k v = putStrLn $ k ++ ": " ++ v
+showRawVersion :: IO ()
+showRawVersion = do
+	putStr SysConfig.packageversion
+	hFlush stdout -- no newline, so flush
+
+vinfo :: String -> String -> IO ()
+vinfo k v = putStrLn $ k ++ ": " ++ v

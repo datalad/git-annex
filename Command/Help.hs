@@ -19,13 +19,15 @@ import qualified Command.Sync
 import qualified Command.Whereis
 import qualified Command.Fsck
 
-import System.Console.GetOpt
+cmd :: Command
+cmd = noCommit $ dontCheck repoExists $
+	noRepo (parseparams startNoRepo) $ 
+		command "help" SectionCommon "display help"
+			"COMMAND" (parseparams seek)
+  where
+	parseparams = withParams
 
-cmd :: [Command]
-cmd = [noCommit $ noRepo startNoRepo $ dontCheck repoExists $
-	command "help" (paramOptional "COMMAND") seek SectionCommon "display help"]
-
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 start :: [String] -> CommandStart
@@ -37,17 +39,13 @@ startNoRepo :: CmdParams -> IO ()
 startNoRepo = start'
 
 start' :: [String] -> IO ()
-start' ["options"] = showCommonOptions
 start' [c] = showGitHelp c
 start' _ = showGeneralHelp
-
-showCommonOptions :: IO ()
-showCommonOptions = putStrLn $ usageInfo "Common options:" gitAnnexOptions
 
 showGeneralHelp :: IO ()
 showGeneralHelp = putStrLn $ unlines
 	[ "The most frequently used git-annex commands are:"
-	, unlines $ map cmdline $ concat
+	, unlines $ map cmdline $
 		[ Command.Init.cmd
 		, Command.Add.cmd
 		, Command.Drop.cmd
@@ -58,9 +56,8 @@ showGeneralHelp = putStrLn $ unlines
 		, Command.Whereis.cmd
 		, Command.Fsck.cmd
 		]
-	, "Run 'git-annex' for a complete command list."
-	, "Run 'git-annex help command' for help on a specific command."
-	, "Run `git annex help options' for a list of common options."
+	, "For a complete command list, run: git-annex"
+	, "For help on a specific command, run: git-annex help COMMAND"
 	]
   where
 	cmdline c = "\t" ++ cmdname c ++ "\t" ++ cmddesc c

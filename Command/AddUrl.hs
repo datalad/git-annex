@@ -37,34 +37,51 @@ import Annex.Quvi
 import qualified Utility.Quvi as Quvi
 #endif
 
-cmd :: [Command]
-cmd = [notBareRepo $ withOptions [fileOption, pathdepthOption, relaxedOption, rawOption] $
-	command "addurl" (paramRepeating paramUrl) seek
-		SectionCommon "add urls to annex"]
+cmd :: Command
+cmd = notBareRepo $
+	command "addurl" SectionCommon "add urls to annex"
+		(paramRepeating paramUrl) (seek <$$> optParser)
 
-fileOption :: Option
-fileOption = fieldOption [] "file" paramFile "specify what file the url is added to"
+data AddUrlOptions = AddUrlOptions
+	{ addUrls :: CmdParams
+	, fileOption :: Maybe FilePath
+	, pathdepthOption :: Maybe Int
+	, relaxedOption :: Bool
+	, rawOption :: Bool
+	}
 
-pathdepthOption :: Option
-pathdepthOption = fieldOption [] "pathdepth" paramNumber "path components to use in filename"
+optParser :: CmdParamsDesc -> Parser AddUrlOptions
+optParser desc = AddUrlOptions
+	<$> cmdParams desc
+	<*> optional (strOption
+		( long "file" <> metavar paramFile
+		<> help "specify what file the url is added to"
+		))
+	<*> optional (option auto
+		( long "pathdepth" <> metavar paramNumber
+		<> help "path components to use in filename"
+		))
+	<*> parseRelaxedOption
+	<*> parseRawOption
 
-relaxedOption :: Option
-relaxedOption = flagOption [] "relaxed" "skip size check"
+parseRelaxedOption :: Parser Bool
+parseRelaxedOption = switch
+	( long "relaxed"
+	<> help "skip size check"
+	)
 
-rawOption :: Option
-rawOption = flagOption [] "raw" "disable special handling for torrents, quvi, etc"
+parseRawOption :: Parser Bool
+parseRawOption = switch
+	( long "raw"
+	<> help "disable special handling for torrents, quvi, etc"
+	)
 
-seek :: CommandSeek
-seek us = do
-	optfile <- getOptionField fileOption return
-	relaxed <- getOptionFlag relaxedOption
-	raw <- getOptionFlag rawOption
-	pathdepth <- getOptionField pathdepthOption (return . maybe Nothing readish)
-	forM_ us $ \u -> do
-		r <- Remote.claimingUrl u
-		if Remote.uuid r == webUUID || raw
-			then void $ commandAction $ startWeb relaxed optfile pathdepth u
-			else checkUrl r u optfile relaxed pathdepth
+seek :: AddUrlOptions -> CommandSeek
+seek o = forM_ (addUrls o) $ \u -> do
+	r <- Remote.claimingUrl u
+	if Remote.uuid r == webUUID || rawOption o
+		then void $ commandAction $ startWeb (relaxedOption o) (fileOption o) (pathdepthOption o) u
+		else checkUrl r u (fileOption o) (relaxedOption o) (pathdepthOption o)
 
 checkUrl :: Remote -> URLString -> Maybe FilePath -> Bool -> Maybe Int -> Annex ()
 checkUrl r u optfile relaxed pathdepth = do

@@ -13,11 +13,14 @@ import qualified Annex
 import Logs.Location
 import Annex.Content
 
-cmd :: [Command]
-cmd = [noCommit $ command "dropkey" (paramRepeating paramKey) seek
-	SectionPlumbing "drops annexed content for specified keys"] 
+cmd :: Command
+cmd = noCommit $ 
+	command "dropkey" SectionPlumbing
+		"drops annexed content for specified keys"
+		(paramRepeating paramKey)
+		(withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withKeys start
 
 start :: Key -> CommandStart

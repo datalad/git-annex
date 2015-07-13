@@ -12,12 +12,13 @@ import Command
 import qualified Annex.Queue
 import qualified Annex
 	
-cmd :: [Command]
-cmd = [notDirect $ withOptions annexedMatchingOptions $
-	command "lock" paramPaths seek SectionCommon
-	"undo unlock command"]
+cmd :: Command
+cmd = notDirect $ withGlobalOptions annexedMatchingOptions $
+	command "lock" SectionCommon
+		"undo unlock command"
+		paramPaths (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = do
 	withFilesUnlocked start ps
 	withFilesUnlockedToBeCommitted start ps

@@ -16,41 +16,49 @@ import qualified Remote
 import Annex.Content
 import Annex.NumCopies
 
-cmd :: [Command]
-cmd = [withOptions mirrorOptions $ command "mirror" paramPaths seek
-	SectionCommon "mirror content of files to/from another repository"]
+cmd :: Command
+cmd = withGlobalOptions ([jobsOption] ++ annexedMatchingOptions) $
+	command "mirror" SectionCommon 
+		"mirror content of files to/from another repository"
+		paramPaths (seek <--< optParser)
 
-mirrorOptions :: [Option]
-mirrorOptions = fromToOptions ++ [jobsOption] ++ annexedMatchingOptions ++ keyOptions
+data MirrorOptions = MirrorOptions
+	{ mirrorFiles :: CmdParams
+	, fromToOptions :: FromToOptions
+	, keyOptions :: Maybe KeyOptions
+	}
 
-seek :: CommandSeek
-seek ps = do
-	to <- getOptionField toOption Remote.byNameWithUUID
-	from <- getOptionField fromOption Remote.byNameWithUUID
-	withKeyOptions False
-		(startKey to from Nothing)
-		(withFilesInGit $ whenAnnexed $ start to from)
-		ps
+optParser :: CmdParamsDesc -> Parser MirrorOptions
+optParser desc = MirrorOptions
+	<$> cmdParams desc
+	<*> parseFromToOptions
+	<*> optional (parseKeyOptions False)
 
-start :: Maybe Remote -> Maybe Remote -> FilePath -> Key -> CommandStart
-start to from file = startKey to from (Just file)
+instance DeferredParseClass MirrorOptions where
+	finishParse v = MirrorOptions
+		<$> pure (mirrorFiles v)
+		<*> finishParse (fromToOptions v)
+		<*> pure (keyOptions v)
 
-startKey :: Maybe Remote -> Maybe Remote -> Maybe FilePath -> Key -> CommandStart
-startKey to from afile key =
-	case (from, to) of
-		(Nothing, Nothing) -> error "specify either --from or --to"
-		(Nothing, Just r) -> mirrorto r
-		(Just r, Nothing) -> mirrorfrom r
-		_ -> error "only one of --from or --to can be specified"
-  where
-	mirrorto r = ifM (inAnnex key)
-		( Command.Move.toStart r False afile key
+seek :: MirrorOptions -> CommandSeek
+seek o = withKeyOptions (keyOptions o) False
+	(startKey o Nothing)
+	(withFilesInGit $ whenAnnexed $ start o)
+	(mirrorFiles o)
+
+start :: MirrorOptions -> FilePath -> Key -> CommandStart
+start o file = startKey o (Just file)
+
+startKey :: MirrorOptions -> Maybe FilePath -> Key -> CommandStart
+startKey o afile key = case fromToOptions o of
+	ToRemote r -> ifM (inAnnex key)
+		( Command.Move.toStart False afile key =<< getParsed r
 		, do
 			numcopies <- getnumcopies
-			Command.Drop.startRemote afile numcopies key r
+			Command.Drop.startRemote afile numcopies key =<< getParsed r
 		)
-	mirrorfrom r = do
-		haskey <- Remote.hasKey r key
+	FromRemote r -> do
+		haskey <- flip Remote.hasKey key =<< getParsed r
 		case haskey of
 			Left _ -> stop
 			Right True -> Command.Get.start' (return True) Nothing key afile
@@ -60,4 +68,5 @@ startKey to from afile key =
 					Command.Drop.startLocal afile numcopies key Nothing
 				, stop
 				)
+  where
 	getnumcopies = maybe getNumCopies getFileNumCopies afile

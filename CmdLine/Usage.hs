@@ -1,6 +1,6 @@
 {- git-annex usage messages
  -
- - Copyright 2010-2011 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -8,17 +8,17 @@
 module CmdLine.Usage where
 
 import Common.Annex
-
 import Types.Command
-
-import System.Console.GetOpt
 
 usageMessage :: String -> String
 usageMessage s = "Usage: " ++ s
 
-{- Usage message with lists of commands by section. -}
 usage :: String -> [Command] -> String
-usage header cmds = unlines $ usageMessage header : concatMap go [minBound..]
+usage header cmds = unlines $ usageMessage header : commandList cmds
+
+{- Commands listed by section, with breif usage and description. -}
+commandList :: [Command] -> [String]
+commandList cmds = concatMap go [minBound..]
   where
 	go section
 		| null cs = []
@@ -42,23 +42,10 @@ usage header cmds = unlines $ usageMessage header : concatMap go [minBound..]
 	longest f = foldl max 0 $ map (length . f) cmds
 	scmds = sort cmds
 
-{- Usage message for a single command. -}
-commandUsage :: Command -> String
-commandUsage cmd = unlines
-	[ usageInfo header (cmdoptions cmd)
-	, "To see additional options common to all commands, run: git annex help options"
-	]
-  where
-	header = usageMessage $ unwords
-		[ "git-annex"
-		, cmdname cmd
-		, cmdparamdesc cmd
-		, "[option ...]"
-		]
 
 {- Descriptions of params used in usage messages. -}
 paramPaths :: String
-paramPaths = paramOptional $ paramRepeating paramPath -- most often used
+paramPaths = paramRepeating paramPath -- most often used
 paramPath :: String
 paramPath = "PATH"
 paramKey :: String
@@ -114,6 +101,6 @@ paramNothing = ""
 paramRepeating :: String -> String
 paramRepeating s = s ++ " ..."
 paramOptional :: String -> String
-paramOptional s = "[" ++ s ++ "]"
+paramOptional s = s
 paramPair :: String -> String -> String
 paramPair a b = a ++ " " ++ b

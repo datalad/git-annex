@@ -22,52 +22,51 @@ import Annex.NumCopies
 import Types.TrustLevel
 import Logs.Trust
 
-cmd :: [Command]
-cmd = [withOptions opts $ notBareRepo $ command "import" paramPaths seek
-	SectionCommon "move and add files from outside git working copy"]
-
-opts :: [Option]
-opts = duplicateModeOptions ++ fileMatchingOptions
+cmd :: Command
+cmd = withGlobalOptions fileMatchingOptions $ notBareRepo $
+	command "import" SectionCommon 
+		"move and add files from outside git working copy"
+		paramPaths (seek <$$> optParser)
 
 data DuplicateMode = Default | Duplicate | DeDuplicate | CleanDuplicates | SkipDuplicates
-	deriving (Eq, Enum, Bounded)
+	deriving (Eq)
 
-associatedOption :: DuplicateMode -> Maybe Option
-associatedOption Default = Nothing
-associatedOption Duplicate = Just $
-	flagOption [] "duplicate" "do not delete source files"
-associatedOption DeDuplicate = Just $
-	flagOption [] "deduplicate" "delete source files whose content was imported before"
-associatedOption CleanDuplicates = Just $
-	flagOption [] "clean-duplicates" "delete duplicate source files (import nothing)"
-associatedOption SkipDuplicates = Just $
-	flagOption [] "skip-duplicates" "import only new files"
+data ImportOptions = ImportOptions
+	{ importFiles :: CmdParams
+	, duplicateMode :: DuplicateMode
+	}
 
-duplicateModeOptions :: [Option]
-duplicateModeOptions = mapMaybe associatedOption [minBound..maxBound]
+optParser :: CmdParamsDesc -> Parser ImportOptions
+optParser desc = ImportOptions
+	<$> cmdParams desc
+	<*> (fromMaybe Default <$> optional duplicateModeParser)
 
-getDuplicateMode :: Annex DuplicateMode
-getDuplicateMode = go . catMaybes <$> mapM getflag [minBound..maxBound]
-  where
-	getflag m = case associatedOption m of
-		Nothing -> return Nothing
-		Just o -> ifM (Annex.getFlag (optionName o))
-			( return (Just m)
-			, return Nothing
-			)
-	go [] = Default
-	go [m] = m
-	go ms = error $ "cannot combine " ++
-		unwords (map (optionParam . fromJust . associatedOption) ms)
+duplicateModeParser :: Parser DuplicateMode
+duplicateModeParser = 
+	flag' Duplicate
+		( long "duplicate" 
+		<> help "do not delete source files"
+		)
+	<|> flag' DeDuplicate
+		( long "deduplicate"
+		<> help "delete source files whose content was imported before"
+		)
+	<|> flag' CleanDuplicates
+		( long "clean-duplicates"
+		<> help "delete duplicate source files (import nothing)"
+		)
+	<|> flag' SkipDuplicates
+		( long "skip-duplicates"
+		<> help "import only new files"
+		)
 
-seek :: CommandSeek
-seek ps = do
-	mode <- getDuplicateMode
+seek :: ImportOptions -> CommandSeek
+seek o = do
 	repopath <- liftIO . absPath =<< fromRepo Git.repoPath
-	inrepops <- liftIO $ filter (dirContains repopath) <$> mapM absPath ps
+	inrepops <- liftIO $ filter (dirContains repopath) <$> mapM absPath (importFiles o)
 	unless (null inrepops) $ do
 		error $ "cannot import files from inside the working tree (use git annex add instead): " ++ unwords inrepops
-	withPathContents (start mode) ps
+	withPathContents (start (duplicateMode o)) (importFiles o)
 
 start :: DuplicateMode -> (FilePath, FilePath) -> CommandStart
 start mode (srcfile, destfile) =

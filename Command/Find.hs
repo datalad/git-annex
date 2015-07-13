@@ -14,41 +14,48 @@ import Common.Annex
 import Command
 import Annex.Content
 import Limit
-import qualified Annex
 import qualified Utility.Format
 import Utility.DataUnits
 import Types.Key
 
-cmd :: [Command]
-cmd = [withOptions annexedMatchingOptions $ mkCommand $
-	command "find" paramPaths seek SectionQuery "lists available files"]
+cmd :: Command
+cmd = withGlobalOptions annexedMatchingOptions $ mkCommand $
+	command "find" SectionQuery "lists available files"
+		paramPaths (seek <$$> optParser)
 
 mkCommand :: Command -> Command
-mkCommand = noCommit . noMessages . withOptions [formatOption, print0Option, jsonOption]
+mkCommand = noCommit . noMessages . withGlobalOptions [jsonOption]
 
-formatOption :: Option
-formatOption = fieldOption [] "format" paramFormat "control format of output"
+data FindOptions = FindOptions
+	{ findThese :: CmdParams
+	, formatOption :: Maybe Utility.Format.Format
+	}
 
-getFormat :: Annex (Maybe Utility.Format.Format)
-getFormat = getOptionField formatOption $ return . fmap Utility.Format.gen
+optParser :: CmdParamsDesc -> Parser FindOptions
+optParser desc = FindOptions
+	<$> cmdParams desc
+	<*> optional parseFormatOption
 
-print0Option :: Option
-print0Option = Option [] ["print0"] (NoArg set)
-	"terminate output with null"
-  where
-	set = Annex.setField (optionName formatOption) "${file}\0"
+parseFormatOption :: Parser Utility.Format.Format
+parseFormatOption = 
+	option (Utility.Format.gen <$> str)
+		( long "format" <> metavar paramFormat
+		<> help "control format of output"
+		)
+	<|> flag' (Utility.Format.gen "${file}\0")
+		( long "print0"
+		<> help "output filenames terminated with nulls"
+		)
 
-seek :: CommandSeek
-seek ps = do
-	format <- getFormat
-	withFilesInGit (whenAnnexed $ start format) ps
+seek :: FindOptions -> CommandSeek
+seek o = withFilesInGit (whenAnnexed $ start o) (findThese o)
 
-start :: Maybe Utility.Format.Format -> FilePath -> Key -> CommandStart
-start format file key = do
+start :: FindOptions -> FilePath -> Key -> CommandStart
+start o file key = do
 	-- only files inAnnex are shown, unless the user has requested
 	-- others via a limit
 	whenM (limited <||> inAnnex key) $
-		showFormatted format file $ ("file", file) : keyVars key
+		showFormatted (formatOption o) file $ ("file", file) : keyVars key
 	stop
 
 showFormatted :: Maybe Utility.Format.Format -> String -> [(String, String)] -> Annex ()

@@ -15,12 +15,12 @@ import qualified Git.Branch
 import Config
 import Annex.Direct
 
-cmd :: [Command]
-cmd = [notBareRepo $ noDaemonRunning $
-	command "direct" paramNothing seek
-		SectionSetup "switch repository to direct mode"]
+cmd :: Command
+cmd = notBareRepo $ noDaemonRunning $
+	command "direct" SectionSetup "switch repository to direct mode"
+		paramNothing (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withNothing start
 
 start :: CommandStart

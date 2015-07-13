@@ -38,52 +38,62 @@ data RefChange = RefChange
 
 type Outputter = Bool -> POSIXTime -> [UUID] -> Annex ()
 
-cmd :: [Command]
-cmd = [withOptions options $
-	command "log" paramPaths seek SectionQuery "shows location log"]
+cmd :: Command
+cmd = withGlobalOptions annexedMatchingOptions $
+	command "log" SectionQuery "shows location log"
+		paramPaths (seek <$$> optParser)
 
-options :: [Option]
-options = passthruOptions ++ [gourceOption] ++ annexedMatchingOptions
+data LogOptions = LogOptions
+	{ logFiles :: CmdParams
+	, gourceOption :: Bool
+	, passthruOptions :: [CommandParam]
+	}
 
-passthruOptions :: [Option]
-passthruOptions = map odate ["since", "after", "until", "before"] ++
-	[ fieldOption ['n'] "max-count" paramNumber
-		"limit number of logs displayed"
-	]
+optParser :: CmdParamsDesc -> Parser LogOptions
+optParser desc = LogOptions
+	<$> cmdParams desc
+	<*> switch
+		( long "gource"
+		<> help "format output for gource"
+		)
+	<*> (concat <$> many passthru)
   where
-	odate n = fieldOption [] n paramDate $ "show log " ++ n ++ " date"
+	passthru :: Parser [CommandParam]
+	passthru = datepassthru "since"
+		<|> datepassthru "after"
+		<|> datepassthru "until"
+		<|> datepassthru "before"
+		<|> (mkpassthru "max-count" <$> strOption
+			( long "max-count" <> metavar paramNumber
+			<> help "limit number of logs displayed"
+			))
+	datepassthru n = mkpassthru n <$> strOption
+		( long n <> metavar paramDate
+		<> help ("show log " ++ n ++ " date")
+		)
+	mkpassthru n v = [Param ("--" ++ n), Param v]
 
-gourceOption :: Option
-gourceOption = flagOption [] "gource" "format output for gource"
-
-seek :: CommandSeek
-seek ps = do
+seek :: LogOptions -> CommandSeek
+seek o = do
 	m <- Remote.uuidDescriptions
 	zone <- liftIO getCurrentTimeZone
-	os <- concat <$> mapM getoption passthruOptions
-	gource <- getOptionFlag gourceOption
-	withFilesInGit (whenAnnexed $ start m zone os gource) ps
-  where
-	getoption o = maybe [] (use o) <$>
-		Annex.getField (optionName o)
-	use o v = [Param ("--" ++ optionName o), Param v]
+	withFilesInGit (whenAnnexed $ start m zone o) (logFiles o)
 
 start
 	:: M.Map UUID String
 	-> TimeZone
-	-> [CommandParam]
-	-> Bool
+	-> LogOptions
 	-> FilePath
 	-> Key
 	-> CommandStart
-start m zone os gource file key = do
-	showLog output =<< readLog <$> getLog key os
+start m zone o file key = do
+	showLog output =<< readLog <$> getLog key (passthruOptions o)
 	-- getLog produces a zombie; reap it
 	liftIO reapZombies
 	stop
   where
 	output
-		| gource = gourceOutput lookupdescription file
+		| (gourceOption o) = gourceOutput lookupdescription file
 		| otherwise = normalOutput lookupdescription file zone
 	lookupdescription u = fromMaybe (fromUUID u) $ M.lookup u m
 

@@ -29,11 +29,11 @@ import Types.StandardGroups
 import Types.ScheduledActivity
 import Remote
 
-cmd :: [Command]
-cmd = [command "vicfg" paramNothing seek
-	SectionSetup "edit git-annex's configuration"]
+cmd :: Command
+cmd = command "vicfg" SectionSetup "edit git-annex's configuration"
+	paramNothing (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withNothing start
 
 start :: CommandStart
@@ -175,7 +175,7 @@ genCfg cfg descs = unlines $ intercalate [""]
 		(\(s, g) -> gline g s)
 		(\g -> gline g "")
 	  where
-		gline g value = [ unwords ["groupwanted", g, "=", value] ]
+		gline g val = [ unwords ["groupwanted", g, "=", val] ]
 		allgroups = S.unions $ stdgroups : M.elems (cfgGroupMap cfg)
 		stdgroups = S.fromList $ map fromStandardGroup [minBound..maxBound]
 
@@ -198,9 +198,9 @@ genCfg cfg descs = unlines $ intercalate [""]
 		(\(l, u) -> line "schedule" u $ fromScheduledActivities l)
 		(\u -> line "schedule" u "")
 
-	line setting u value =
+	line setting u val =
 		[ com $ "(for " ++ fromMaybe "" (M.lookup u descs) ++ ")"
-		, unwords [setting, fromUUID u, "=", value]
+		, unwords [setting, fromUUID u, "=", val]
 		]
 	
 settings :: Ord v => Cfg -> M.Map UUID String -> (Cfg -> M.Map UUID v) -> [String] -> ((v, UUID) -> [String]) -> (UUID -> [String]) -> [String]
@@ -235,42 +235,42 @@ parseCfg defcfg = go [] defcfg . lines
 		| null l = Right cfg
 		| "#" `isPrefixOf` l = Right cfg
 		| null setting || null f = Left "missing field"
-		| otherwise = parsed cfg f setting value'
+		| otherwise = parsed cfg f setting val'
 	  where
 		(setting, rest) = separate isSpace l
-		(r, value) = separate (== '=') rest
-		value' = trimspace value
+		(r, val) = separate (== '=') rest
+		val' = trimspace val
 		f = reverse $ trimspace $ reverse $ trimspace r
 		trimspace = dropWhile isSpace
 
-	parsed cfg f setting value
-		| setting == "trust" = case readTrustLevel value of
-			Nothing -> badval "trust value" value
+	parsed cfg f setting val
+		| setting == "trust" = case readTrustLevel val of
+			Nothing -> badval "trust value" val
 			Just t ->
 				let m = M.insert u t (cfgTrustMap cfg)
 				in Right $ cfg { cfgTrustMap = m }
 		| setting == "group" =
-			let m = M.insert u (S.fromList $ words value) (cfgGroupMap cfg)
+			let m = M.insert u (S.fromList $ words val) (cfgGroupMap cfg)
 			in Right $ cfg { cfgGroupMap = m }
 		| setting == "wanted" = 
-			case checkPreferredContentExpression value of
+			case checkPreferredContentExpression val of
 				Just e -> Left e
 				Nothing ->
-					let m = M.insert u value (cfgPreferredContentMap cfg)
+					let m = M.insert u val (cfgPreferredContentMap cfg)
 					in Right $ cfg { cfgPreferredContentMap = m }
 		| setting == "required" = 
-			case checkPreferredContentExpression value of
+			case checkPreferredContentExpression val of
 				Just e -> Left e
 				Nothing ->
-					let m = M.insert u value (cfgRequiredContentMap cfg)
+					let m = M.insert u val (cfgRequiredContentMap cfg)
 					in Right $ cfg { cfgRequiredContentMap = m }
 		| setting == "groupwanted" =
-			case checkPreferredContentExpression value of
+			case checkPreferredContentExpression val of
 				Just e -> Left e
 				Nothing ->
-					let m = M.insert f value (cfgGroupPreferredContentMap cfg)
+					let m = M.insert f val (cfgGroupPreferredContentMap cfg)
 					in Right $ cfg { cfgGroupPreferredContentMap = m }
-		| setting == "schedule" = case parseScheduledActivities value of
+		| setting == "schedule" = case parseScheduledActivities val of
 			Left e -> Left e
 			Right l -> 
 				let m = M.insert u l (cfgScheduleMap cfg)

@@ -45,7 +45,7 @@ while (<>) {
 
 	if ($inNAME) {
 		# make lexgrog happy
-		s/^git-annex /git-annex-/;
+		s/^git-annex (\w)/git-annex-$1/;
 	}
 	if ($_ eq ".SH NAME\n") {
 		$inNAME=1;

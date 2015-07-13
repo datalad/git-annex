@@ -12,11 +12,12 @@ import Command
 import Annex.View
 import Command.View (paramView, checkoutViewBranch)
 
-cmd :: [Command]
-cmd = [notBareRepo $ notDirect $
-	command "vfilter" paramView seek SectionMetaData "filter current view"]
+cmd :: Command
+cmd = notBareRepo $ notDirect $
+	command "vfilter" SectionMetaData "filter current view"
+		paramView (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 start :: [String] -> CommandStart

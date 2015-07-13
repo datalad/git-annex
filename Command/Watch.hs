@@ -12,25 +12,18 @@ import Assistant
 import Command
 import Utility.HumanTime
 
-cmd :: [Command]
-cmd = [notBareRepo $ withOptions [foregroundOption, stopOption] $ 
-	command "watch" paramNothing seek SectionCommon "watch for changes and autocommit"]
+cmd :: Command
+cmd = notBareRepo $
+	command "watch" SectionCommon 
+		"watch for changes and autocommit"
+		paramNothing (seek <$$> const parseDaemonOptions)
 
-seek :: CommandSeek
-seek ps = do
-	stopdaemon <- getOptionFlag stopOption
-	foreground <- getOptionFlag foregroundOption
-	withNothing (start False foreground stopdaemon Nothing) ps
+seek :: DaemonOptions -> CommandSeek
+seek o = commandAction $ start False o Nothing
 
-foregroundOption :: Option
-foregroundOption = flagOption [] "foreground" "do not daemonize"
-
-stopOption :: Option
-stopOption = flagOption [] "stop" "stop daemon"
-
-start :: Bool -> Bool -> Bool -> Maybe Duration -> CommandStart
-start assistant foreground stopdaemon startdelay = do
-	if stopdaemon
+start :: Bool -> DaemonOptions -> Maybe Duration -> CommandStart
+start assistant o startdelay = do
+	if stopDaemonOption o
 		then stopDaemon
-		else startDaemon assistant foreground startdelay Nothing Nothing Nothing -- does not return
+		else startDaemon assistant (foregroundDaemonOption o) startdelay Nothing Nothing Nothing -- does not return
 	stop

@@ -13,12 +13,13 @@ import Annex.UUID
 import qualified Remote.GCrypt
 import qualified Git
 
-cmd :: [Command]
-cmd = [dontCheck repoExists $ noCommit $
-	command "gcryptsetup" paramValue seek
-		SectionPlumbing "sets up gcrypt repository"]
+cmd :: Command
+cmd = dontCheck repoExists $ noCommit $
+	command "gcryptsetup" SectionPlumbing 
+		"sets up gcrypt repository"
+		paramValue (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withStrings start
 
 start :: String -> CommandStart

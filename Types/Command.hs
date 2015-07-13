@@ -1,6 +1,6 @@
 {- git-annex command data types
  -
- - Copyright 2010-2011 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -8,46 +8,52 @@
 module Types.Command where
 
 import Data.Ord
+import Options.Applicative.Types (Parser)
 
 import Types
 
 {- A command runs in these stages.
  -
- - a. The check stage runs checks, that error out if
+ - a. The parser stage parses the command line and generates a CommandSeek
+ -    action. -}
+type CommandParser = Parser CommandSeek
+{- b. The check stage runs checks, that error out if
  -    anything prevents the command from running. -}
 data CommandCheck = CommandCheck { idCheck :: Int, runCheck :: Annex () }
-{- b. The seek stage takes the parameters passed to the command,
- -    looks through the repo to find the ones that are relevant
- -    to that command (ie, new files to add), and runs commandAction
- -    to handle all necessary actions. -}
-type CommandSeek = [String] -> Annex ()
-{- c. The start stage is run before anything is printed about the
+{- c. The seek stage is passed input from the parser, looks through
+ -    the repo to find things to act on (ie, new files to add), and
+ -    runs commandAction to handle all necessary actions. -}
+type CommandSeek = Annex ()
+{- d. The start stage is run before anything is printed about the
  -    command, is passed some input, and can early abort it
  -    if the input does not make sense. It should run quickly and
  -    should not modify Annex state. -}
 type CommandStart = Annex (Maybe CommandPerform)
-{- d. The perform stage is run after a message is printed about the command
+{- e. The perform stage is run after a message is printed about the command
  -    being run, and it should be where the bulk of the work happens. -}
 type CommandPerform = Annex (Maybe CommandCleanup)
-{- e. The cleanup stage is run only if the perform stage succeeds, and it
+{- f. The cleanup stage is run only if the perform stage succeeds, and it
  -    returns the overall success/fail of the command. -}
 type CommandCleanup = Annex Bool
 
 {- A command is defined by specifying these things. -}
 data Command = Command
-	{ cmdoptions :: [Option]     -- command-specific options
-	, cmdnorepo :: Maybe (CmdParams -> IO ()) -- an action to run when not in a repo
-	, cmdcheck :: [CommandCheck] -- check stage
+	{ cmdcheck :: [CommandCheck] -- check stage
 	, cmdnocommit :: Bool        -- don't commit journalled state changes
 	, cmdnomessages :: Bool      -- don't output normal messages
 	, cmdname :: String
-	, cmdparamdesc :: String     -- description of params for usage
-	, cmdseek :: CommandSeek
+	, cmdparamdesc :: CmdParamsDesc -- description of params for usage
 	, cmdsection :: CommandSection
 	, cmddesc :: String          -- description of command for usage
+	, cmdparser :: CommandParser -- command line parser
+	, cmdnorepo :: Maybe (Parser (IO ())) -- used when not in a repo
 	}
 
+{- Command-line parameters, after the command is selected and options
+ - are parsed. -}
 type CmdParams = [String]
+
+type CmdParamsDesc = String
 
 {- CommandCheck functions can be compared using their unique id. -}
 instance Eq CommandCheck where

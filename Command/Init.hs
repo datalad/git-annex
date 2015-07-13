@@ -11,11 +11,12 @@ import Common.Annex
 import Command
 import Annex.Init
 	
-cmd :: [Command]
-cmd = [dontCheck repoExists $
-	command "init" paramDesc seek SectionSetup "initialize git-annex"]
+cmd :: Command
+cmd = dontCheck repoExists $
+	command "init" SectionSetup "initialize git-annex"
+		paramDesc (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 start :: [String] -> CommandStart

@@ -11,7 +11,7 @@ import Command
 import Logs.PreferredContent
 import qualified Command.Wanted
 
-cmd :: [Command]
+cmd :: Command
 cmd = Command.Wanted.cmd' "required" "get or set required content expression"
 	requiredContentMapRaw
 	requiredContentSet

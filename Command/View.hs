@@ -17,18 +17,19 @@ import Types.View
 import Annex.View
 import Logs.View
 
-cmd :: [Command]
-cmd = [notBareRepo $ notDirect $
-	command "view" paramView seek SectionMetaData "enter a view branch"]
+cmd :: Command
+cmd = notBareRepo $ notDirect $
+	command "view" SectionMetaData "enter a view branch"
+		paramView (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 start :: [String] -> CommandStart
 start [] = error "Specify metadata to include in view"
-start params = do
+start ps = do
 	showStart "view" ""
-	view <- mkView params
+	view <- mkView ps
 	go view  =<< currentView
   where
 	go view Nothing = next $ perform view
@@ -45,11 +46,11 @@ paramView :: String
 paramView = paramRepeating "FIELD=VALUE"
 
 mkView :: [String] -> Annex View
-mkView params = go =<< inRepo Git.Branch.current
+mkView ps = go =<< inRepo Git.Branch.current
   where
 	go Nothing = error "not on any branch!"
 	go (Just b) = return $ fst $ refineView (View b []) $
-		map parseViewParam $ reverse params
+		map parseViewParam $ reverse ps
 
 checkoutViewBranch :: View -> (View -> Annex Git.Branch) -> CommandCleanup
 checkoutViewBranch view mkbranch = do

@@ -27,6 +27,7 @@ import Messages
 import Types.Messages
 import Remote.Helper.Chunked
 import Locations
+import Git.Types
 
 import Test.Tasty
 import Test.Tasty.Runners
@@ -36,25 +37,30 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
 
-cmd :: [Command]
-cmd = [ withOptions [sizeOption] $
-		command "testremote" paramRemote seek SectionTesting
-			"test transfers to/from a remote"]
+cmd :: Command
+cmd = command "testremote" SectionTesting
+	"test transfers to/from a remote"
+	paramRemote (seek <$$> optParser)
 
-sizeOption :: Option
-sizeOption = fieldOption [] "size" paramSize "base key size (default 1MiB)"
+data TestRemoteOptions = TestRemoteOptions
+	{ testRemote :: RemoteName
+	, sizeOption :: ByteSize
+	}
 
-seek :: CommandSeek
-seek ps = do
-	basesz <- fromInteger . fromMaybe (1024 * 1024)
-		<$> getOptionField sizeOption (pure . getsize)
-	withWords (start basesz) ps
-  where
-	getsize v = v >>= readSize dataUnits
+optParser :: CmdParamsDesc -> Parser TestRemoteOptions
+optParser desc = TestRemoteOptions
+	<$> argument str ( metavar desc )
+	<*> option (str >>= maybe (fail "parse error") return . readSize dataUnits)
+		( long "size" <> metavar paramSize
+		<> value (1024 * 1024)
+		<> help "base key size (default 1MiB)"
+		)
 
-start :: Int -> [String] -> CommandStart
-start basesz ws = do
-	let name = unwords ws
+seek :: TestRemoteOptions -> CommandSeek
+seek o = commandAction $ start (fromInteger $ sizeOption o) (testRemote o) 
+
+start :: Int -> RemoteName -> CommandStart
+start basesz name = do
 	showStart "testremote" name
 	r <- either error id <$> Remote.byName' name
 	showSideAction "generating test keys"

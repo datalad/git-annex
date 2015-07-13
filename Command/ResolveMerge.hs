@@ -14,11 +14,12 @@ import Git.Sha
 import qualified Git.Branch
 import Annex.AutoMerge
 
-cmd :: [Command]
-cmd = [command "resolvemerge" paramNothing seek SectionPlumbing
-	"resolve merge conflicts"]
+cmd :: Command
+cmd = command "resolvemerge" SectionPlumbing
+	"resolve merge conflicts"
+	paramNothing (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withNothing start
 
 start :: CommandStart
