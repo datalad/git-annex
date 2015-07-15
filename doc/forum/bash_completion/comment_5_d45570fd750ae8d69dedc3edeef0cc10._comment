@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2015-07-15T15:44:11Z"
+ content="""
+I've recently added built-in bash completion to git-annex, which is output
+by the `--bash-completion-script` option. It knows about all sub-commands,
+and all options, and will automatically always be up-to-date with the
+argument parser!
+
+Currently, it only works for completing "git-annex", not "git annex".
+Supporting the latter would probably require some hacks to git's own bash
+completion code, or possibly a smart way to hook into it.. Help with that
+would be appreciated.
+"""]]
