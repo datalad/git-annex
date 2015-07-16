@@ -184,12 +184,14 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 	-- chunk, then encrypt, then feed to the storer
 	storeKeyGen k f p enc = safely $ preparestorer k $ safely . go
 	  where
-		go (Just storer) = sendAnnex k rollback $ \src ->
+		go (Just storer) = preparecheckpresent k $ safely . go' storer
+		go Nothing = return False
+		go' storer (Just checker) = sendAnnex k rollback $ \src ->
 			displayprogress p k f $ \p' ->
 				storeChunks (uuid baser) chunkconfig k src p'
 					(storechunk enc storer)
-					(checkPresent baser)
-		go Nothing = return False
+					checker
+		go' _ Nothing = return False
 		rollback = void $ removeKey encr k
 
 	storechunk Nothing storer k content p = storer k content p

@@ -3,6 +3,8 @@ git-annex (5.20150714) UNRELEASED; urgency=medium
   * Improve bash completion code so that "git annex" will also tab
     complete. However, git's bash completion script needs a patch,
     which I've submitted, for this to work prefectly.
+  * Fix bug that prevented uploads to remotes using new-style chunking
+    from resuming after the last successfully uploaded chunk.
 
  -- Joey Hess <id@joeyh.name>  Thu, 16 Jul 2015 14:55:07 -0400
 
