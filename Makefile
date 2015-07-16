@@ -49,7 +49,7 @@ install: build install-docs Build/InstallDesktopFile
 	ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-annex-shell
 	./Build/InstallDesktopFile $(PREFIX)/bin/git-annex || true
 	install -d $(DESTDIR)$(PREFIX)/share/bash-completion/completions
-	./git-annex --bash-completion-script git-annex > $(DESTDIR)$(PREFIX)/share/bash-completion/completions/git-annex
+	install -m 0644 bash-completion.bash $(DESTDIR)$(PREFIX)/share/bash-completion/completions/git-annex
 
 test: git-annex
 	./git-annex test
