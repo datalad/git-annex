@@ -31,3 +31,6 @@ Linux (Ubuntu 13.10)
 """]]
 
 [[!tag confirmed]]
+
+> `git annex sync --content --all` was added in version 5.20150617.
+> [[done]] --[[Joey]]
