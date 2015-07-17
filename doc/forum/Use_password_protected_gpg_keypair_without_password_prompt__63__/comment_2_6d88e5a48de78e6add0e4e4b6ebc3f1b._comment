@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="sfowijowa"
+ subject="comment 2"
+ date="2015-07-17T18:20:06Z"
+ content="""
+Hi, I am using the \"--passphrase-file\" option outside git-annex to sign the files that have to be backed up:
+\"gpg --batch --passphrase-file /home/user/.gnupg/pass.txt --no-tty --yes --detach-sign /tmp/root.tar.gz\" Unfortunately, I couldn't find a way to pass this option to gpg with git-annex. In duplicity, for example, you can pass gpg options with \"dupclitiy --gpg-options '--passphrase-file /home/user/.gnupg/pass.txt'\" Best regards
+"""]]
