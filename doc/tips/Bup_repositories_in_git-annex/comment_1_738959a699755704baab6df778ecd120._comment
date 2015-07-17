@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="sfowijowa"
+ subject="bup.bloom must be unlocked"
+ date="2015-07-17T17:45:24Z"
+ content="""
+Hi, Thanks for the help :) I didn't exlude any files. Therefore \"$BUP_REPO/objects/pack/bup.bloom\" gets added by git-annex. This file has to be unlocked beforehand for bup to be running correctly. Best regards
+"""]]
