@@ -1,12 +1,10 @@
-There are four non non-official packages for git-annex in the Arch Linux User Repository. Any of these may be installed manually per [AUR guidelines](https://wiki.archlinux.org/index.php/AUR_User_Guidelines#Installing_packages) or using a wrapper such as [`yaourt`](https://wiki.archlinux.org/index.php/yaourt) shown below.
+There are at least four non non-official packages for git-annex in the Arch Linux User Repository. Any of these may be installed manually per [AUR guidelines](https://wiki.archlinux.org/index.php/AUR_User_Guidelines#Installing_packages) or using a wrapper such as [`yaourt`](https://wiki.archlinux.org/index.php/yaourt) shown below.
 
 1. The simplest method is to use the [git-annex-bin](https://aur.archlinux.org/packages/git-annex-bin/) package based on the [prebuilt Linux tarballs](http://downloads.kitenet.net/git-annex/linux/current/). This package includes many of the binary shims from the pre-built package. Although common Linux system utilities have been stripped in favor of normal dependencies, the pre-configured Haskell libraries included out of the box make this an easy install. The disadvantage is the resulting installation is a bit on the heavy side at nearly 100M.
 
        $ yaourt -Sy git-annex-bin
 
-2. A more traditional source package is available at [git-annex](https://aur.archlinux.org/packages/git-annex/). This depends on a large number of Haskell packages available from a third party repository or through Cabal. You must either enable a 3rd party repo that has the dependencies or have a working Cabal installation. Unless you know what you are doing this is a bit problematic and some intervention may be required to get this option to work. The state of available dependency versions also varies so this may not work at all times.
-
-       $ yaourt -Sy git-annex
+2. A git-annex package is available in the haskell-core AUR <https://wiki.archlinux.org/index.php/ArchHaskell>
 
 3. A development package is available at [git-annex-git](https://aur.archlinux.org/packages/git-annex-git/) that functions similarly to the source package but builds directly from the HEAD of the git repository rather that the last official release.
 

@@ -31,3 +31,6 @@ Both git-annex and git-annex-git fail with
     error: target not found: haskell-hs3
 
 as these packages are not available on AUR.
+
+> I have updated the arch documentation to replace the failing package with
+> the haskell-core one. [[done]] --[[Joey]]
