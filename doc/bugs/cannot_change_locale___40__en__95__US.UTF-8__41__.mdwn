@@ -1,0 +1,30 @@
+### Please describe the problem.
+
+All git annex commands run successfully but are prefixed by an annoying error message:
+
+"/bin/sh: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)"
+
+
+### What steps will reproduce the problem?
+
+`git annex init` or just about any git annex command.
+
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 5.20150710-g8fd7052 on arch linux 4.0.7-2.
+
+### Please provide any additional information below.
+
+# locale -a 
+C
+en_US
+en_US.iso88591
+en_US.utf8
+hebrew
+he_IL
+he_IL.iso88598
+he_IL.utf8
+POSIX
+
+
