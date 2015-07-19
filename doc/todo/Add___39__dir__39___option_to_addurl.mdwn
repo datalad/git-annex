@@ -1,0 +1,1 @@
+Is it possible to add a '--dir' option to addurl (or some other mechanic) to make git annex create the symlinks in the specified directory?
