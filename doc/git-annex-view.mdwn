@@ -19,7 +19,8 @@ will put files in subdirectories according to the value of their fields.
   
 Once within such a view, you can make additional directories, and
 copy or move files into them. When you commit, the metadata will
-be updated to correspond to your changes.
+be updated to correspond to your changes. Deleting files and committing
+also updates the metadata.
   
 There are fields corresponding to the path to the file. So a file
 "foo/bar/baz/file" has fields "/=foo", "foo/=bar", and "foo/bar/=baz".
