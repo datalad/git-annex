@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-07-20T16:30:10Z"
+ content="""
+I gave you one way in my previous comment; you can put any gpg option in
+~/.gnupg/gpg.conf, just leave off the leading dashes.
+
+Another way is the annex.gnupg-options git configuration setting,
+see git-annex's man page.
+"""]]
