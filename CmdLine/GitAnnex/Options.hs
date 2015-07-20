@@ -89,8 +89,6 @@ gitAnnexGlobalOptions = commonGlobalOptions ++
 cmdParams :: CmdParamsDesc -> Parser CmdParams
 cmdParams paramdesc = many $ argument str
 	( metavar paramdesc
-	-- Let bash completion complete files
-	<> action "file"
 	)
 
 parseAutoOption :: Parser Bool
