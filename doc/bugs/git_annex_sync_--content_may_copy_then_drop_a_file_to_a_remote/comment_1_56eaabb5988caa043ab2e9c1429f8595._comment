@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-07-20T18:07:04Z"
+ content="""
+A good bug report that I didn't get to for far too long..
+
+I reproduced this fairly easily; both remotes set to be 
+in the archive group and both set to use the "standard" preferred content
+expression.
+
+	joey@darkstar:~/tmp/bench/local>git annex sync --content
+	commit  ok
+	copy file copy file (to hubic3...) 
+	ok                      
+	copy file copy file (to hubic2...) 
+	ok                      
+	drop hubic3 file ok
+
+It wants to drop the file from hubic3 once it's present on hubic2,
+since archive remotes only want files not on other archive remotes.
+
+So, why does it send the file to hubic2, given that it's already in hubic3?
+
+If I manually copy the file to one of the remotes, sync --content won't
+send it to the other. So, I suspect it's getting a list of remotes that
+want the file first, and then copying the file to all of them.
+
+Aha, indeed:
+
+	map put <$> filterM wantput lack
+
+Fixed by making it check if each remote wants the file inside the loop,
+rather than checking when getting the list of remotes to loop over.
+"""]]

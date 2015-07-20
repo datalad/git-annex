@@ -414,7 +414,7 @@ syncFile ebloom rs af k = do
 	let (have, lack) = partition (\r -> Remote.uuid r `elem` locs) rs
 
 	got <- anyM id =<< handleget have
-	putrs <- catMaybes . snd . unzip <$> (sequence =<< handleput lack)
+	putrs <- handleput lack
 
 	u <- getUUID
 	let locs' = concat [[u | got], putrs, locs]
@@ -455,12 +455,14 @@ syncFile ebloom rs af k = do
 	wantput r
 		| Remote.readonly r || remoteAnnexReadOnly (Remote.gitconfig r) = return False
 		| otherwise = wantSend True (Just k) af (Remote.uuid r)
-	handleput lack = ifM (inAnnex k)
-		( map put <$> filterM wantput lack
+	handleput lack = catMaybes <$> ifM (inAnnex k)
+		( forM lack $ \r ->
+			ifM (wantput r <&&> put r)
+				( return (Just (Remote.uuid r))
+				, return Nothing
+				)
 		, return []
 		)
-	put dest = do
-		ok <- includeCommandAction $ do
-			showStart' "copy" k af
-			Command.Move.toStart' dest False af k
-		return (ok, if ok then Just (Remote.uuid dest) else Nothing)
+	put dest = includeCommandAction $ do
+		showStart' "copy" k af
+		Command.Move.toStart' dest False af k
