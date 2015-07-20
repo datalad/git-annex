@@ -5,11 +5,6 @@ git-annex (5.20150714) UNRELEASED; urgency=medium
     which I've submitted, for this to work prefectly.
   * Fix bug that prevented uploads to remotes using new-style chunking
     from resuming after the last successfully uploaded chunk.
-
- -- Joey Hess <id@joeyh.name>  Thu, 16 Jul 2015 14:55:07 -0400
-
-git-annex (5.20150713) unstable; urgency=medium
-
   * Switched option parsing to use optparse-applicative. This was a very large
     and invasive change, and may have caused some minor behavior changes to
     edge cases of option parsing. (For example, the metadata command no
