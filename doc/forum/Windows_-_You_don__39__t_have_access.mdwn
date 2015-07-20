@@ -1,0 +1,42 @@
+git version: 1.9.5.msysgit.1
+git-annex version: 5.20150710-g8fd7052
+
+I have a repo up on GitLab. I have annex’d files in that repo. On a Linux server I can “git annex sync” and then “git annex get” just fine. On Windows when I try to run “git annex sync” I get:
+
+GitLab: You don't have access
+
+  Remote origin does not have git-annex installed; setting annex-ignore
+
+  This could be a problem with the git-annex installation on the remote. Please make sure that git-a
+nnex-shell is available in PATH when you ssh into the remote. Once you have fixed the git-annex inst
+allation, run: git config remote.origin.annex-ignore false
+commit  ok
+pull origin
+git-annex.exe: unknown command git@gitlab.server.com
+…
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+failed
+git-annex: sync: 1 failed
+
+I have access to the repo however. I can git pull/push…whatever. It’s just annex that is having problems with access and I’m not sure why. Here is my git config:
+
+[core]
+        repositoryformatversion = 0
+        filemode = false
+        bare = false
+        logallrefupdates = true
+        symlinks = false
+        ignorecase = true
+        hideDotFiles = dotGitOnly
+[remote "origin"]
+        url = git@gitlab.company.com:repo.git
+        fetch = +refs/heads/*:refs/remotes/origin/*
+        annex-ignore = false
+[annex]
+        uuid = 2noa1e70-9f88-4did-843c-3f8sdf3495990
+        sshcaching = false
+        crippledfilesystem = true
+        version = 5
