@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="fusionx86@2cab672ef75a8502e153ceb90177dde38985dba9"
+ nickname="fusionx86"
+ subject="comment 2"
+ date="2015-07-20T18:59:29Z"
+ content="""
+GitLab is working fine with annex. I'm able to annex sync and sync --content on Linux and OSX without any problems. It's just Windows client I'm struggling with. I'll look at the bug you linked and post back with anything interesting.
+"""]]
