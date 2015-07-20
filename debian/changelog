@@ -20,6 +20,11 @@ git-annex (5.20150714) UNRELEASED; urgency=medium
   * sync --content: Fix bug that caused files to be uploaded to eg,
     more archive remotes than wanted copies, only to later be dropped
     to satisfy the preferred content settings.
+  * importfeed: Improve detection of known items whose url has changed,
+    and avoid adding redundant files. Where before this only looked at
+    permalinks in rss feeds, it now also looks at guids.
+  * importfeed: Look at not only permalinks, but now also guids
+    to identify previously downloaded files.
 
  -- Joey Hess <id@joeyh.name>  Fri, 10 Jul 2015 16:36:42 -0400
 

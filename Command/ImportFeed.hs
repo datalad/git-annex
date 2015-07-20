@@ -219,8 +219,7 @@ performDownload opts cache todownload = case location todownload of
 		| otherwise = a
 
 	knownitemid = case getItemId (item todownload) of
-		-- only when it's a permalink
-		Just (True, itemid) -> S.member itemid (knownitems cache)
+		Just (_, itemid) -> S.member itemid (knownitems cache)
 		_ -> False
 
 	rundownload url extension getter = do
