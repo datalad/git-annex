@@ -1,0 +1,75 @@
+There are multiple issues that have been reported that are related to using git-annex on networked file systems. We're generally talking about NFS, which we'll cover here, but this may also be the case on SMB filesystems.
+
+Locking issues
+==============
+
+Here is the prior art here:
+
+* [[devblog/day_27__locking_fun/]]
+* [[devblog/day_286-287__rotten_locks/]]
+* [[forum/Can__39__t_init_git_annex/]]
+* [[bugs/git-annex_merge_stalls/]]
+
+All of those issues but the first are related to locking on NFS filesystems, which is [notoriously bad](https://en.wikipedia.org/wiki/File_locking#Problems). However, the problems with it are not insurmountable and git-annex can actually be used, even if unreliably, on NFS filesystems.
+
+The problem I mainly hit with NFS filesystems is with unreliable locking. If you have similar platforms (both running Linux for example, NFS locking doesn't work in BSD systems), locking *should* work, but sometimes fails without reason. This problem and the solution is well described in [this stackoverflow answer](http://serverfault.com/a/455080), taken from [this excellent blog](http://sophiedogg.com/lockd-and-statd-nfs-errors/). Basically, you need to restart a bunch of NFS daemon that get stuck on the server side and then locking works again. This generally fixed it for me:
+
+<pre>
+service nfs-kernel-server stop
+service rpcbind stop
+service nfs-common stop
+service rpcbind start
+service nfs-common start
+service nfs-kernel-server start
+</pre>
+
+This needs to be run as root on the server side. Having a simple test script to see if locking works is also useful, i use the following:
+
+<pre>
+#! /usr/bin/perl -w
+
+use Fcntl qw(LOCK_SH LOCK_EX LOCK_UN);
+
+$child = fork();
+open(TESTLCK, ">testlock");
+
+if ($child == 0) { # in child
+	print "locking exclusively\n";
+	flock(TESTLCK, LOCK_EX) || die "failed to lock exclusively: $!";
+	print "holding exclusively lock for 3 seconds\n";
+	sleep 3;
+	flock(TESTLCK, LOCK_UN) || die "failed to unlock exclusively: $!";
+	print "done locking exclusively\n";
+} else { # in parent
+	print "locking shared\n";
+	flock(TESTLCK, LOCK_SH) || die "failed to lock shared: $!";
+	print "holding shared lock for 3 seconds\n";
+	sleep 3;
+	flock(TESTLCK, LOCK_UN) || die "failed to unlock shared: $!";
+	print "done locking shared, waiting for child to finish\n";
+	wait;
+}
+</pre>
+
+Also note that the [NFS FAQ](http://nfs.sourceforge.net/) (currently offline, thanks to Sourceforge, see [this archive](https://archive.is/QMMO)) also has interesting snippets about NFS locking. In short: it's a mess, but it can be worked around! -- [[anarcat]]
+
+Socket issues
+=============
+
+Another thing that may fail is the "ssh caching code". Examples:
+
+* [[forum/git_annex_sync_dies___40__sometimes__41__/]]
+* [[forum/NTFS_usb_on_linux_unable_to_connect_to_ssh_remote/]]
+* [[todo/git-annex_ignores_GIT__95__SSH/]]
+* [[bugs/git-annex-shell_doesn__39__t_work_as_expected/]]
+
+As you can see, this affects way more than NFS, which often just works there. But it can be that the SSH client can't create a socket for the SSH multiplexing that git-annex uses. Normally, git-annex should detect that and fallback properly, but sometimes this fails, especially with older versions of git-annex. A workaround is to disable the feature:
+
+    git config annex.sshcaching false
+
+The tradeoff is that syncs are faster, but it works. -- [[anarcat]]
+
+Stray files issue
+=================
+
+This is a completely different issue, but could be related to file locking: [[bugs/huge_multiple_copies_of___39__.nfs__42____39___and___39__.panfs__42____39___being_created/]]. Basically, tons of files are left behind by git-annex when it is ran on an NFS server. It is yet unclear how this problem happens and how to resolve it. But it has been reproduced and could affect you, so until it is resolved, it is still an open issue here... -- [[anarcat]]
