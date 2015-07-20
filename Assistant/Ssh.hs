@@ -28,27 +28,36 @@ data SshData = SshData
 	, sshPort :: Int
 	, needsPubKey :: Bool
 	, sshCapabilities :: [SshServerCapability]
+	, sshRepoUrl :: Maybe String
 	}
 	deriving (Read, Show, Eq)
 
-data SshServerCapability = GitAnnexShellCapable | GitCapable | RsyncCapable
+data SshServerCapability
+	= GitAnnexShellCapable -- server has git-annex-shell installed
+	| GitCapable -- server has git installed
+	| RsyncCapable -- server supports raw rsync access (not only via git-annex-shell)
+	| PushCapable -- repo on server is set up already, and ready to accept pushes
 	deriving (Read, Show, Eq)
 
 hasCapability :: SshData -> SshServerCapability -> Bool
 hasCapability d c = c `elem` sshCapabilities d
 
+addCapability :: SshData -> SshServerCapability -> SshData
+addCapability d c = d { sshCapabilities = c : sshCapabilities d }
+
 onlyCapability :: SshData -> SshServerCapability -> Bool
 onlyCapability d c = all (== c) (sshCapabilities d)
 
+type SshPubKey = String
+type SshPrivKey = String
+
 data SshKeyPair = SshKeyPair
-	{ sshPubKey :: String
-	, sshPrivKey :: String
+	{ sshPubKey :: SshPubKey
+	, sshPrivKey :: SshPrivKey
 	}
 
 instance Show SshKeyPair where
 	show = sshPubKey
-
-type SshPubKey = String
 
 {- ssh -ofoo=bar command-line option -}
 sshOpt :: String -> String -> String
@@ -60,10 +69,12 @@ genSshHost host user = maybe "" (\v -> T.unpack v ++ "@") user ++ T.unpack host
 
 {- Generates a ssh or rsync url from a SshData. -}
 genSshUrl :: SshData -> String
-genSshUrl sshdata = addtrailingslash $ T.unpack $ T.concat $
-	if (onlyCapability sshdata RsyncCapable)
-		then [u, h, T.pack ":", sshDirectory sshdata]
-		else [T.pack "ssh://", u, h, d]
+genSshUrl sshdata = case sshRepoUrl sshdata of
+	Just repourl -> repourl
+	Nothing -> addtrailingslash $ T.unpack $ T.concat $
+		if (onlyCapability sshdata RsyncCapable)
+			then [u, h, T.pack ":", sshDirectory sshdata]
+			else [T.pack "ssh://", u, h, d]
   where
 	u = maybe (T.pack "") (\v -> T.concat [v, T.pack "@"]) $ sshUserName sshdata
 	h = sshHostName sshdata
@@ -90,6 +101,7 @@ parseSshUrl u
 		, sshPort = 22
 		, needsPubKey = True
 		, sshCapabilities = []
+		, sshRepoUrl = Nothing
 		}
 	  where
 		(user, host) = if '@' `elem` userhost
@@ -222,24 +234,44 @@ genSshKeyPair = withTmpDir "git-annex-keygen" $ \dir -> do
  - when git-annex and git try to access the remote, if its
  - host key has changed.
  -}
-setupSshKeyPair :: SshKeyPair -> SshData -> IO SshData
-setupSshKeyPair sshkeypair sshdata = do
+installSshKeyPair :: SshKeyPair -> SshData -> IO SshData
+installSshKeyPair sshkeypair sshdata = do
 	sshdir <- sshDir
-	createDirectoryIfMissing True $ parentDir $ sshdir </> sshprivkeyfile
+	createDirectoryIfMissing True $ parentDir $ sshdir </> sshPrivKeyFile sshdata
 
-	unlessM (doesFileExist $ sshdir </> sshprivkeyfile) $
-		writeFileProtected (sshdir </> sshprivkeyfile) (sshPrivKey sshkeypair)
-	unlessM (doesFileExist $ sshdir </> sshpubkeyfile) $
-		writeFile (sshdir </> sshpubkeyfile) (sshPubKey sshkeypair)
+	unlessM (doesFileExist $ sshdir </> sshPrivKeyFile sshdata) $
+		writeFileProtected (sshdir </> sshPrivKeyFile sshdata) (sshPrivKey sshkeypair)
+	unlessM (doesFileExist $ sshdir </> sshPubKeyFile sshdata) $
+		writeFile (sshdir </> sshPubKeyFile sshdata) (sshPubKey sshkeypair)
 
 	setSshConfig sshdata
-		[ ("IdentityFile", "~/.ssh/" ++ sshprivkeyfile)
+		[ ("IdentityFile", "~/.ssh/" ++ sshPrivKeyFile sshdata)
 		, ("IdentitiesOnly", "yes")
 		, ("StrictHostKeyChecking", "yes")
 		]
-  where
-	sshprivkeyfile = "git-annex" </> "key." ++ mangleSshHostName sshdata
-	sshpubkeyfile = sshprivkeyfile ++ ".pub"
+
+sshPrivKeyFile :: SshData -> FilePath
+sshPrivKeyFile sshdata = "git-annex" </> "key." ++ mangleSshHostName sshdata
+
+sshPubKeyFile :: SshData -> FilePath
+sshPubKeyFile sshdata = sshPrivKeyFile sshdata ++ ".pub"
+
+{- Generates an installs a new ssh key pair if one is not already
+ - installed. Returns the modified SshData that will use the key pair,
+ - and the key pair. -}
+setupSshKeyPair :: SshData -> IO (SshData, SshKeyPair)
+setupSshKeyPair sshdata = do
+	sshdir <- sshDir
+	mprivkey <- catchMaybeIO $ readFile (sshdir </> sshPrivKeyFile sshdata)
+	mpubkey <- catchMaybeIO $ readFile (sshdir </> sshPubKeyFile sshdata)
+	keypair <- case (mprivkey, mpubkey) of
+		(Just privkey, Just pubkey) -> return $ SshKeyPair
+			{ sshPubKey = pubkey
+			, sshPrivKey = privkey
+			}
+		_ -> genSshKeyPair
+	sshdata' <- installSshKeyPair keypair sshdata
+	return (sshdata', keypair)
 
 {- Fixes git-annex ssh key pairs configured in .ssh/config 
  - by old versions to set IdentitiesOnly.
