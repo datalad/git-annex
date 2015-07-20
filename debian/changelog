@@ -1,8 +1,5 @@
 git-annex (5.20150714) UNRELEASED; urgency=medium
 
-  * Improve bash completion code so that "git annex" will also tab
-    complete. However, git's bash completion script needs a patch,
-    which I've submitted, for this to work prefectly.
   * Fix bug that prevented uploads to remotes using new-style chunking
     from resuming after the last successfully uploaded chunk.
   * Switched option parsing to use optparse-applicative. This was a very large
@@ -12,6 +9,9 @@ git-annex (5.20150714) UNRELEASED; urgency=medium
     worked.)
   * Bash completion code is built-in to git-annex, and can be enabled by
     running: source <(git-annex --bash-completion-script git-annex)
+  * As well as tab completing "git-annex" commands, "git annex" will also tab
+    complete. However, git's bash completion script needs a patch,
+    which I've submitted, for this to work prefectly.
   * Debian package (and any other packages built using make install)
     now includes bash completion.
   * version --raw now works when run outside a git repository.
