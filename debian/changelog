@@ -312,7 +312,7 @@ git-annex (5.20150406) unstable; urgency=medium
     downloader prefix from logged url info before checking for the
     specified prefix.
   * importfeed: Avoid downloading a redundant item from a feed whose
-    guid has been downloaded before, even when the url has changed.
+    permalink has been seen before, even when the url has changed.
   * importfeed: Always store itemid in metadata; before this was only
     done when annex.genmetadata was set.
   * Relax debian package dependencies to git >= 1:1.8.1 rather
