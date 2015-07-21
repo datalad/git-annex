@@ -48,12 +48,21 @@ be used to get better filenames.
 
 * `--pathdepth=N`
 
-  This causes a shorter filename to be used. For example,
-   `--pathdepth=1` will use "dir/subdir/bigfile",
-   while `--pathdepth=3` will use "bigfile". 
+  Rather than basing the filename on the whole url, this causes a path to
+  be constructed, starting at the specified depth within the path of the
+  url.
+
+  For example, adding the url http://www.example.com/dir/subdir/bigfile
+  with `--pathdepth=1` will use "dir/subdir/bigfile",
+  while `--pathdepth=3` will use "bigfile". 
 
   It can also be negative; `--pathdepth=-2` will use the last
   two parts of the url.
+
+* `--prefix=foo` `--suffix=bar`
+
+  Use to adjust the filenames that are created by addurl. For example,
+  `--suffix=.mp3` can be used to add an extension to the file.
 
 # SEE ALSO
 

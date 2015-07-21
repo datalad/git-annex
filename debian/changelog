@@ -17,6 +17,8 @@ git-annex (5.20150714) UNRELEASED; urgency=medium
   * version --raw now works when run outside a git repository.
   * assistant --startdelay now works when run outside a git repository.
   * dead now accepts multiple --key options.
+  * addurl now accepts --prefix and --suffix options to adjust the
+    filenames used.
   * sync --content: Fix bug that caused files to be uploaded to eg,
     more archive remotes than wanted copies, only to later be dropped
     to satisfy the preferred content settings.
