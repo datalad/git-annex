@@ -34,7 +34,7 @@ To make the import process add metadata to the imported files from the feed,
   
   Other available variables for templates: feedauthor, itemauthor, itemsummary, itemdescription, itemrights, itemid, itempubdate, title, author
 
-* `--relaxed`, `--fast`, `--raw`, `--template`
+* `--relaxed`, `--fast`, `--raw`
 
   These options behave the same as when using [[git-annex-addurl]](1).
 
