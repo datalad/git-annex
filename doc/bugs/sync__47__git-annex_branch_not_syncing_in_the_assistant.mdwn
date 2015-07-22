@@ -1,0 +1,49 @@
+### Please describe the problem.
+
+It seems that the `synced/git-annex` branch (which I am a little confused about in the first place), doesn't get synced automatically by the assistant.
+
+I was expecting the assistant to regularly do the equivalent of `git annex sync`. However, after a client pushed changes to the `git-annex` branch, I had to manually do a `git annex sync` for the changes of the `synced/git-annex` branch to be merged down into the local `git-annex`.
+
+### What steps will reproduce the problem?
+
+I have 3 machines in this setup (to simplify: there are more, but those are sufficient). Let's call them foo, bar and quux. foo and quuex are connected to bar through password-less SSH connexions.
+
+foo commits a file to git-annex. the assistant syncs that to bar in the `synced/git-annex` branch.
+
+quux syncs with bar, and seems to ignore the `synced/git-annex` branch.
+
+git-annex sync on quux syncs the `synced/git-annex` branch into the local `git-annex`, working around the issue.
+
+### What version of git-annex are you using? On what operating system?
+
+foo is 5.20150610+gitg608172f-1~ndall+1 on Debian 7.8 (wheezy).
+
+bar and quux are 5.20150409+git126-ga29f683-1~ndall+1 and 5.20150610+gitg608172f-1~ndall+1 (respectively) on Ubuntu 12.04 (precise) .
+
+### Please provide any additional information below.
+
+I guess a more general question is how and how often do those branches get merged by the assistant... it's still unclear to me how this works.
+
+[[!format sh """
+$ sudo -u www-data -H git annex sync
+(merging origin/synced/git-annex into git-annex...)
+(recording state in git...)
+commit  ok
+pull origin
+Auto packing the repository in background for optimum performance.
+See "git help gc" for manual housekeeping.
+
+Already up-to-date.
+ok
+push origin
+Counting objects: 373637, done.
+# End of transcript or log.
+"""]]
+
+This was started at 20:23 UTC. Note that the sync had run previously under the assistant:
+
+<pre>
+[2015-07-22 20:09:06 UTC] RemoteControl: Syncing with origin
+</pre>
+
+Available, as usual, for further debugging. :) -- [[anarcat]]
