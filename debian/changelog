@@ -1,5 +1,6 @@
-git-annex (5.20150710) unstable; urgency=medium
+git-annex (5.20150710-1) unstable; urgency=medium
 
+  [ Joey Hess ]
   * add: Stage symlinks the same as git add would, even if they are not a
     link to annexed content.
   * sync: When annex.autocommit=false, avoid making any commit of local
@@ -33,7 +34,12 @@ git-annex (5.20150710) unstable; urgency=medium
   * merge: Avoid creating the synced/master branch.
   * Removed support for optparse-applicative versions older than 0.10.
 
- -- Joey Hess <id@joeyh.name>  Fri, 10 Jul 2015 16:36:42 -0400
+  [ Richard Hartmann ]
+  * Switch to dpkg-source 3.0 (quilt) format, just so we have any non-native
+    format
+  * Switched Maintainer to Richard Hartmann
+
+ -- Richard Hartmann <richih@debian.org>  Wed, 22 Jul 2015 23:49:46 +0200
 
 git-annex (5.20150617) unstable; urgency=medium
 
