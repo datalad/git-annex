@@ -4,12 +4,12 @@ git-annex can also be used with a centralized git repository.
 We have separate tutorials depending on where the centralized git
 repository is hosted.
 
-* [[centralized_git_repository_tutorial/on_GitHub]] --
+* [[centralized_git_repository_tutorial/On_GitHub]] --
   However, GitHub does not currently let git-annex
   store the contents of large files there. So, things get a little more
   complicated when using it.
 
-* [[centralized_git_repository_tutorial/on_GitLab]] -- 
+* [[centralized_git_repository_tutorial/On_GitLab]] -- 
   This service is similar to GitHub, but supports
   git-annex.
 
