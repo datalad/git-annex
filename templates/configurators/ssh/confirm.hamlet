@@ -35,16 +35,17 @@
               Make an unencrypted git repository on the server
           <p style="text-align: center">
             -or-
-        <h3>
-          Simple shared encryption
-        <p>
-          This allows everyone who has a clone of this repository to #
-          decrypt the files stored on #{sshHostName sshdata}. That makes #
-          it good for sharing. And it's easy to set up and use.
-        <p>
-          <a .btn .btn-default href="@{MakeSshRsyncR sshdata}" onclick="$('#setupmodal').modal('show');">
-            <span .glyphicon .glyphicon-lock>
-            \ Use shared encryption
+        $if hasCapability sshdata RsyncCapable
+          <h3>
+            Simple shared encryption
+          <p>
+            This allows everyone who has a clone of this repository to #
+            decrypt the files stored on #{sshHostName sshdata}. That makes #
+            it good for sharing. And it's easy to set up and use.
+          <p>
+            <a .btn .btn-default href="@{MakeSshRsyncR sshdata}" onclick="$('#setupmodal').modal('show');">
+              <span .glyphicon .glyphicon-lock>
+              \ Use shared encryption
         $if hasCapability sshdata GitCapable
           <p style="text-align: center">
             -or-
