@@ -4,14 +4,15 @@ git-annex can also be used with a centralized git repository.
 We have separate tutorials depending on where the centralized git
 repository is hosted.
 
-* You can use GitHub. However, GitHub does not currently let git-annex
+* [[centralized_git_repository_tutorial/on_GitHub]] --
+  However, GitHub does not currently let git-annex
   store the contents of large files there. So, things get a little more
-  complicated. See [[centralized_git_repository_tutorial/on_GitHub]]
-  for a tutorial for using git-annex with GitHub.
+  complicated when using it.
 
-* You can use GitLab. This service is similar to GitHub, but supports
-  git-annex. See [[centralized_git_repository_tutorial/on_GitLab]]
+* [[centralized_git_repository_tutorial/on_GitLab]] -- 
+  This service is similar to GitHub, but supports
+  git-annex.
 
-* You can use your own git server, which can be any unix system with
-  ssh and git and git-annex installed. A VPS, a home server, etc.
-  See [[[[centralized_git_repository_tutorial/on_your_own_server]].
+* [[centralized_git_repository_tutorial/On_your_own_server]] --
+  use any unix system with ssh and git and git-annex installed.
+  A VPS, a home server, etc.
