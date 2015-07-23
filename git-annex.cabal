@@ -105,10 +105,6 @@ Flag network-uri
   Description: Get Network.URI from the network-uri package
   Default: True
 
-Flag new-time
-  Description: Build with new version of time and without old-locale
-  Default: True
-
 Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends:
@@ -127,7 +123,8 @@ Executable git-annex
    monad-control, transformers,
    bloomfilter, edit-distance,
    resourcet, http-conduit, http-types,
-   esqueleto, persistent-sqlite, persistent, persistent-template
+   esqueleto, persistent-sqlite, persistent, persistent-template,
+   time, old-locale
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs
   Extensions: PackageImports
@@ -143,11 +140,6 @@ Executable git-annex
     Build-Depends: network-uri (>= 2.6), network (>= 2.6)
   else
     Build-Depends: network (< 2.6), network (>= 2.0)
-
-  if flag(new-time)
-    Build-Depends: time (>= 1.5)
-  else
-    Build-Depends: time, old-locale
 
   if flag(Production)
     GHC-Options: -O2

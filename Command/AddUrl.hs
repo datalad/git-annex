@@ -46,6 +46,8 @@ data AddUrlOptions = AddUrlOptions
 	{ addUrls :: CmdParams
 	, fileOption :: Maybe FilePath
 	, pathdepthOption :: Maybe Int
+	, prefixOption :: Maybe String
+	, suffixOption :: Maybe String
 	, relaxedOption :: Bool
 	, rawOption :: Bool
 	}
@@ -59,7 +61,15 @@ optParser desc = AddUrlOptions
 		))
 	<*> optional (option auto
 		( long "pathdepth" <> metavar paramNumber
-		<> help "path components to use in filename"
+		<> help "number of url path components to use in filename"
+		))
+	<*> optional (strOption
+		( long "prefix" <> metavar paramValue
+		<> help "add a prefix to the filename"
+		))
+	<*> optional (strOption
+		( long "suffix" <> metavar paramValue
+		<> help "add a suffix to the filename"
 		))
 	<*> parseRelaxedOption
 	<*> parseRawOption
@@ -80,13 +90,13 @@ seek :: AddUrlOptions -> CommandSeek
 seek o = forM_ (addUrls o) $ \u -> do
 	r <- Remote.claimingUrl u
 	if Remote.uuid r == webUUID || rawOption o
-		then void $ commandAction $ startWeb (relaxedOption o) (fileOption o) (pathdepthOption o) u
-		else checkUrl r u (fileOption o) (relaxedOption o) (pathdepthOption o)
+		then void $ commandAction $ startWeb o u
+		else checkUrl r o u
 
-checkUrl :: Remote -> URLString -> Maybe FilePath -> Bool -> Maybe Int -> Annex ()
-checkUrl r u optfile relaxed pathdepth = do
+checkUrl :: Remote -> AddUrlOptions -> URLString -> Annex ()
+checkUrl r o u = do
 	pathmax <- liftIO $ fileNameLengthLimit "."
-	let deffile = fromMaybe (urlString2file u pathdepth pathmax) optfile
+	let deffile = fromMaybe (urlString2file u (pathdepthOption o) pathmax) (fileOption o)
 	go deffile =<< maybe
 		(error $ "unable to checkUrl of " ++ Remote.name r)
 		(tryNonAsync . flip id u)
@@ -98,14 +108,15 @@ checkUrl r u optfile relaxed pathdepth = do
 		warning (show e)
 		next $ next $ return False
 	go deffile (Right (UrlContents sz mf)) = do
-		let f = fromMaybe (maybe deffile fromSafeFilePath mf) optfile
+		let f = adjustFile o (fromMaybe (maybe deffile fromSafeFilePath mf) (fileOption o))
 		void $ commandAction $
-			startRemote r relaxed f u sz
+			startRemote r (relaxedOption o) f u sz
 	go deffile (Right (UrlMulti l))
-		| isNothing optfile =
-			forM_ l $ \(u', sz, f) ->
+		| isNothing (fileOption o) =
+			forM_ l $ \(u', sz, f) -> do
+				let f' = adjustFile o (deffile </> fromSafeFilePath f)
 				void $ commandAction $
-					startRemote r relaxed (deffile </> fromSafeFilePath f) u' sz
+					startRemote r (relaxedOption o) f' u' sz
 		| otherwise = error $ unwords
 			[ "That url contains multiple files according to the"
 			, Remote.name r
@@ -151,8 +162,8 @@ downloadRemoteFile r relaxed uri file sz = do
   where
 	loguri = setDownloader uri OtherDownloader
 
-startWeb :: Bool -> Maybe FilePath -> Maybe Int -> String -> CommandStart
-startWeb relaxed optfile pathdepth s = go $ fromMaybe bad $ parseURI urlstring
+startWeb :: AddUrlOptions -> String -> CommandStart
+startWeb o s = go $ fromMaybe bad $ parseURI urlstring
   where
 	(urlstring, downloader) = getDownloader s
 	bad = fromMaybe (error $ "bad url " ++ urlstring) $
@@ -170,22 +181,22 @@ startWeb relaxed optfile pathdepth s = go $ fromMaybe bad $ parseURI urlstring
 #endif
 	regulardownload url = do
 		pathmax <- liftIO $ fileNameLengthLimit "."
-		urlinfo <- if relaxed
+		urlinfo <- if relaxedOption o
 			then pure $ Url.UrlInfo True Nothing Nothing
 			else Url.withUrlOptions (Url.getUrlInfo urlstring)
-		file <- case optfile of
+		file <- adjustFile o <$> case fileOption o of
 			Just f -> pure f
 			Nothing -> case Url.urlSuggestedFile urlinfo of
-				Nothing -> pure $ url2file url pathdepth pathmax
+				Nothing -> pure $ url2file url (pathdepthOption o) pathmax
 				Just sf -> do
 					let f = truncateFilePath pathmax $
 						sanitizeFilePath sf
 					ifM (liftIO $ doesFileExist f <||> doesDirectoryExist f)
-						( pure $ url2file url pathdepth pathmax
+						( pure $ url2file url (pathdepthOption o) pathmax
 						, pure f
 						)
 		showStart "addurl" file
-		next $ performWeb relaxed urlstring file urlinfo
+		next $ performWeb (relaxedOption o) urlstring file urlinfo
 #ifdef WITH_QUVI
 	badquvi = error $ "quvi does not know how to download url " ++ urlstring
 	usequvi = do
@@ -193,11 +204,11 @@ startWeb relaxed optfile pathdepth s = go $ fromMaybe bad $ parseURI urlstring
 			<$> withQuviOptions Quvi.forceQuery [Quvi.quiet, Quvi.httponly] urlstring
 		let link = fromMaybe badquvi $ headMaybe $ Quvi.pageLinks page
 		pathmax <- liftIO $ fileNameLengthLimit "."
-		let file = flip fromMaybe optfile $
+		let file = adjustFile o $ flip fromMaybe (fileOption o) $
 			truncateFilePath pathmax $ sanitizeFilePath $
 				Quvi.pageTitle page ++ "." ++ fromMaybe "m" (Quvi.linkSuffix link)
 		showStart "addurl" file
-		next $ performQuvi relaxed urlstring (Quvi.linkUrl link) file
+		next $ performQuvi (relaxedOption o) urlstring (Quvi.linkUrl link) file
 #else
 	usequvi = error "not built with quvi support"
 #endif
@@ -367,3 +378,9 @@ urlString2file :: URLString -> Maybe Int -> Int -> FilePath
 urlString2file s pathdepth pathmax = case Url.parseURIRelaxed s of
 	Nothing -> error $ "bad uri " ++ s
 	Just u -> url2file u pathdepth pathmax
+
+adjustFile :: AddUrlOptions -> FilePath -> FilePath
+adjustFile o = addprefix . addsuffix
+  where
+	addprefix f = maybe f (++ f) (prefixOption o)
+	addsuffix f = maybe f (f ++) (suffixOption o)
