@@ -1,7 +1,7 @@
 git-annex (5.20150710-2) unstable; urgency=medium
 
   [ Richard Hartmann ]
-  * Joey Hess had fixed 786659. Closes #786659
+  * Joey Hess had fixed 786659. Closes: #786659
 
  -- Richard Hartmann <richih@debian.org>  Thu, 23 Jul 2015 01:05:44 +0200
 
