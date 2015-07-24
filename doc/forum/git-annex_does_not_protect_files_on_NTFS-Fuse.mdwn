@@ -1,0 +1,8 @@
+I've read that git-annex probes the host filesystem to determine whether it has the necessary features for an indirect annex. Indirect annexes are supposed to protect annexed files from accidental editing:
+
+    # echo oops > my_cool_big_file
+    bash: my_cool_big_file: Permission denied
+
+I have an NTFS drive to share files between my Windows and Linux systems (dual boot). On Linux fuse sets the file permissions to rwx for the user and nothing for the rest, and this cannot be changed. Files in the annex can be modified as in the above example.
+
+If git-annex detects whether a fs can handle indirect annexes or not, I suggest checking for this case if possible.
