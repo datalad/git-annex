@@ -30,12 +30,15 @@ import Annex.UUID
 import Utility.DataUnits
 import Config
 import Types.Key
-import Types.CleanupActions
 import Utility.HumanTime
 import Utility.CopyFile
 import Git.FilePath
 import Utility.PID
+
+#ifdef WITH_DATABASE
 import qualified Database.Fsck as FsckDb
+import Types.CleanupActions
+#endif
 
 import Data.Time.Clock.POSIX
 import System.Posix.Types (EpochTime)
@@ -91,7 +94,7 @@ seek o = do
 		(\k -> startKey i k =<< getNumCopies)
 		(withFilesInGit $ whenAnnexed $ start from i)
 		(fsckFiles o)
-	withFsckDb i FsckDb.closeDb
+	cleanupIncremental i
 	void $ tryIO $ recordActivity Fsck u
 
 start :: Maybe Remote -> Incremental -> FilePath -> Key -> CommandStart
@@ -454,16 +457,24 @@ runFsck inc file key a = ifM (needFsck inc key)
 
 {- Check if a key needs to be fscked, with support for incremental fscks. -}
 needFsck :: Incremental -> Key -> Annex Bool
+#ifdef WITH_DATABASE
 needFsck (ContIncremental h) key = liftIO $ not <$> FsckDb.inDb h key
+#endif
 needFsck _ _ = return True
 
+#ifdef WITH_DATABASE
 withFsckDb :: Incremental -> (FsckDb.FsckHandle -> Annex ()) -> Annex ()
 withFsckDb (ContIncremental h) a = a h
 withFsckDb (StartIncremental h) a = a h
 withFsckDb NonIncremental _ = noop
+#endif
 
 recordFsckTime :: Incremental -> Key -> Annex ()
+#ifdef WITH_DATABASE
 recordFsckTime inc key = withFsckDb inc $ \h -> liftIO $ FsckDb.addDb h key
+#else
+recordFsckTime _ _ = return ()
+#endif
 
 {- Records the start time of an incremental fsck.
  -
@@ -512,10 +523,16 @@ getStartTime u = do
 		fromfile >= fromstatus
 #endif
 
-data Incremental = StartIncremental FsckDb.FsckHandle | ContIncremental FsckDb.FsckHandle | NonIncremental
+data Incremental
+	= NonIncremental
+#ifdef WITH_DATABASE
+	| StartIncremental FsckDb.FsckHandle 
+	| ContIncremental FsckDb.FsckHandle 
+#endif
 
 prepIncremental :: UUID -> Maybe IncrementalOpt -> Annex Incremental
 prepIncremental _ Nothing = pure NonIncremental
+#ifdef WITH_DATABASE
 prepIncremental u (Just StartIncrementalO) = do
 	recordStartTime u
 	ifM (FsckDb.newPass u)
@@ -537,3 +554,13 @@ prepIncremental u (Just (ScheduleIncrementalO delta)) = do
 	prepIncremental u $ Just $ case started of
 		Nothing -> StartIncrementalO
 		Just _ -> MoreIncrementalO
+#else
+prepIncremental _ _ = error "This git-annex was not built with database support; incremental fsck not supported"
+#endif
+
+cleanupIncremental :: Incremental -> Annex ()
+#ifdef WITH_DATABASE
+cleanupIncremental i = withFsckDb i FsckDb.closeDb
+#else
+cleanupIncremental _ = return ()
+#endif

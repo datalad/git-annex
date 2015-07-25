@@ -30,6 +30,8 @@ git-annex (5.20150714) UNRELEASED; urgency=medium
   * Adjust debian build deps: The webapp can now build on arm64, s390x
     and hurd-i386. WebDAV support is also available on those architectures.
   * Debian package now maintained by Richard Hartmann.
+  * Support building without persistent database on for systems that
+    lack TH. This removes support for incremental fsck.
 
  -- Joey Hess <id@joeyh.name>  Fri, 10 Jul 2015 16:36:42 -0400
 
