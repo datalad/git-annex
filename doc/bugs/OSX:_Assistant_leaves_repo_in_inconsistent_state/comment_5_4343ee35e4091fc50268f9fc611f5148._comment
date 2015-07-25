@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Marco"
+ subject="How to debug?"
+ date="2015-07-25T18:10:08Z"
+ content="""
+I want to give the two assistants one more try with the newest version.
+
+But I want the assistant not to try a repair once a failure is detected. I want to check the state of the repository to get a clue what goes wrong.
+As I understood the code there is no configuration to prevent the repair. Am I wrong? If not I could try to introduce one if it makes sense.
+"""]]
