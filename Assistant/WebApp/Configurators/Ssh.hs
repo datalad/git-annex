@@ -502,7 +502,16 @@ prepSsh needsinit sshdata a
 
 prepSsh' :: Bool -> SshData -> SshData -> Maybe SshKeyPair -> (SshData -> Handler Html) -> Handler Html
 prepSsh' needsinit origsshdata sshdata keypair a
-	| hasCapability sshdata PushCapable = a sshdata
+	| hasCapability sshdata PushCapable = do
+		{- To ensure the repository is initialized, try to push the
+		 - git-annex branch to it. Then git-annex-shell will see
+		 - the branch and auto-initialize. -}
+		void $ liftAnnex $ inRepo $ Git.Command.runBool
+			[ Param "push"
+			, Param (genSshUrl sshdata)
+			, Param (fromRef Annex.Branch.name)
+			]
+		a sshdata
 	| otherwise = sshSetup (mkSshInput origsshdata)
 		 [ "-p", show (sshPort origsshdata)
 		 , genSshHost (sshHostName origsshdata) (sshUserName origsshdata)
