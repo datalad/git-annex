@@ -98,7 +98,7 @@ below to get the full story.
   copies, on remotes in the specified group. For example,
   `copies=archive:2`
 
-  Preferred content expressions have no equivilant to the `--in`
+  Preferred content expressions have no equivalent to the `--in`
   option, but groups can accomplish similar things. You can add
   repositories to groups, and match against the groups in a
   preferred content expression. So rather than `--in=usbdrive`,

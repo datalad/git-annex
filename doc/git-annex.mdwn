@@ -1059,7 +1059,7 @@ Here are all the supported configuration settings.
 * `remote.<name>.annex-rsync-options`
 
   Options to use when using rsync
-  to or from this remote. For example, to force ipv6, and limit
+  to or from this remote. For example, to force IPv6, and limit
   the bandwidth to 100Kbyte/s, set it to `-6 --bwlimit 100`
 
 * `remote.<name>.annex-rsync-upload-options`
@@ -1110,7 +1110,7 @@ Here are all the supported configuration settings.
 * `annex.web-options`
 
   Options to pass when running wget or curl.
-  For example, to force ipv4 only, set it to "-4"
+  For example, to force IPv4 only, set it to "-4"
 
 * `annex.quvi-options`
 

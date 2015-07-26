@@ -15,7 +15,7 @@ them.
 
 When quvi is installed, links in the feed are tested to see if they
 are on a video hosting site, and the video is downloaded. This allows
-importing e.g., youtube playlists.
+importing e.g., YouTube playlists.
 
 To make the import process add metadata to the imported files from the feed,
 `git config annex.genmetadata true`
