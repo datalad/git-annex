@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="git-annex@53a027ebda399714df9272a135f22ac774f3c9f1"
+ nickname="git-annex"
+ subject="small correction to the above"
+ date="2015-07-26T10:33:28Z"
+ content="""
+i can not start the webapp via the menu (firefox opens but cant connect to the webapp) but if i do git annex webapp manually in the terminal it works as expected
+"""]]
