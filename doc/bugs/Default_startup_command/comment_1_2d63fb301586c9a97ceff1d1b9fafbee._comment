@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="git-annex@53a027ebda399714df9272a135f22ac774f3c9f1"
+ nickname="git-annex"
+ subject="i can second this"
+ date="2015-07-26T10:29:32Z"
+ content="""
+I have the same behaviour on CM11 4.4.4 on a Moto G as well.
+When i installed git annex i would be greeted by the same message, but then could start the webapp from the menu successfully.
+i then proceeded to setup my repo, which synced flawlessly, if i had started the webapp as stated above.
+however my files were never automatically synced when just starting the app (terminal window).
+
+Therefore i resorted to \"cd\" to my repo and \"git annex add *\" and \"git annex sync --content\" every time i wanted to sync.
+
+i tried changing the startup command to \"git annex assistant --autostart\", \"git annex assistant --autostart --foreground\", \"cd ../DCIM;git annex sync --content\", \"echo test\" but nothing seems to start (not quite sure how to check for that).
+
+for my shell i had the default/data/data/ga.androidterm/lib/lib.start.so and /data/data/ga.androidterm/runshell if that makes any difference?
+
+not sure if that's related
+when trying to manually invoke \"git annex --assistant [--foreground]\" i get:
+
+    git annex autostart in /sdcard/DCIM
+    usage: ionice <pid> [none|rt|be|idle] [prio]
+    failed
+
+and back to prompt. Not sure if this is CM(11) only?
+
+my git annex version is: 5.20150527-gfc92f13 for android 4.3 and 4.4. if you need more information i'll be happy to provide it, to get this out of the way :D
+
+"""]]
