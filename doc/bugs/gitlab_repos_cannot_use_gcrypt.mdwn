@@ -10,3 +10,13 @@ gcryptsetup fails with "gcryptsetup refusing to run; this repository already has
 This does not happen when I try the same setup on a self-hosted repo.
 Unsure what is causing git-annex-shell to behave this way on gitlab.
 --[[Joey]]
+
+> Here's a minimal way to reproduce this problem:
+>
+> 1. Make a new, empty repository on gitlab.com.
+> 2. Run command: ssh git@gitlab.com git-annex-shell 'gcryptsetup' '/~/username/reponame.git' ':id:dummy'
+> 
+> Leads to the failure as described above. But, the repo is new and empty
+> and has not had any opportunity to get a git-annex uuid set..
+> 
+> I wonder what version of git-annex gitlab.com is running? --[[Joey]]
