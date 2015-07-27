@@ -325,11 +325,16 @@ setSshConfig sshdata config = do
 				(settings ++ config)
 		setSshConfigMode configfile
 
-	return $ sshdata { sshHostName = T.pack mangledhost }
+	return $ sshdata
+		{ sshHostName = T.pack mangledhost
+		, sshRepoUrl = replace orighost mangledhost
+			<$> sshRepoUrl sshdata
+		}
   where
+	orighost = T.unpack $ sshHostName sshdata
 	mangledhost = mangleSshHostName sshdata
 	settings =
-		[ ("Hostname", T.unpack $ sshHostName sshdata)
+		[ ("Hostname", orighost)
 		, ("Port", show $ sshPort sshdata)
 		]
 

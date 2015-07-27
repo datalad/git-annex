@@ -708,17 +708,20 @@ parseGitLabUrl (GitLabUrl t) =
 testGitLabUrl :: GitLabUrl -> Annex (ServerStatus, Maybe SshData, UUID)
 testGitLabUrl glu = case parseGitLabUrl glu of
 	Nothing -> return (UnusableServer badGitLabUrl, Nothing, NoUUID)
-	Just sshdata -> do
+	Just sshdata -> 
+		checkor sshdata $ do
+			(sshdata', keypair) <- liftIO $ setupSshKeyPair sshdata
+			checkor sshdata' $ 
+				return (ServerNeedsPubKey (sshPubKey keypair), Just sshdata', NoUUID)
+  where
+	checkor sshdata ora = do
 		u <- probeuuid sshdata
 		if u /= NoUUID
 			then return (UsableServer (sshCapabilities sshdata), Just sshdata, u)
 			else ifM (verifysshworks sshdata)
 				( return (UsableServer (sshCapabilities sshdata), Just sshdata, NoUUID)
-				, do
-					(sshdata', keypair) <- liftIO $ setupSshKeyPair sshdata
-					return (ServerNeedsPubKey (sshPubKey keypair), Just sshdata', NoUUID)
+				, ora
 				)
-  where
 	probeuuid sshdata = do
 		r <- inRepo $ Git.Construct.fromRemoteLocation (fromJust $ sshRepoUrl sshdata)
 		getUncachedUUID . either (const r) fst <$>
