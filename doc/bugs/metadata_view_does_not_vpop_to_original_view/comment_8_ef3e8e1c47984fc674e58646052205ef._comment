@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="frederik@ffbea6a549cb3f460d110386c0f634c1ddc6a68a"
+ nickname="frederik"
+ subject="Any more info needed"
+ date="2015-07-27T13:47:11Z"
+ content="""
+Hi Joey, while I was able to recover from the issue mentioned above, I have yet to try using the metadata views again out of uncertainty about the root cause of the problem I encountered. Is there anything more I could provide to determine what caused this problem and how to avoid it next time I try?
+"""]]
