@@ -1,3 +1,9 @@
+git-annex (5.20150727-1) unstable; urgency=medium
+
+  * Package 5.20150727
+
+ -- Richard Hartmann <richih@debian.org>  Wed, 29 Jul 2015 00:44:11 +0200
+
 git-annex (5.20150727) unstable; urgency=medium
 
   * Fix bug that prevented uploads to remotes using new-style chunking
