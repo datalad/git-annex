@@ -46,9 +46,9 @@
             <a .btn .btn-default href="@{MakeSshRsyncR sshdata}" onclick="$('#setupmodal').modal('show');">
               <span .glyphicon .glyphicon-lock>
               \ Use shared encryption
-        $if hasCapability sshdata GitCapable
           <p style="text-align: center">
             -or-
+        $if hasCapability sshdata GitCapable
           <h3>
             Encrypt with GnuPG key
           <p>
