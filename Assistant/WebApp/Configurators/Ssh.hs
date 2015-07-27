@@ -1,6 +1,6 @@
 {- git-annex assistant webapp configurator for ssh-based remotes
  -
- - Copyright 2012-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -21,8 +21,13 @@ import Types.StandardGroups
 import Utility.UserInfo
 import Utility.Gpg
 import Types.Remote (RemoteConfig)
-import Git.Types (RemoteName)
+import Git.Types (RemoteName, fromRef)
 import qualified Remote.GCrypt as GCrypt
+import qualified Git.Construct
+import qualified Git.Config
+import qualified Git.Command
+import qualified Remote.Helper.Ssh
+import qualified Annex.Branch
 import Annex.UUID
 import Logs.UUID
 import Assistant.RemoteControl
@@ -74,6 +79,7 @@ mkSshData s = SshData
 	, sshPort = inputPort s
 	, needsPubKey = False
 	, sshCapabilities = [] -- untested
+	, sshRepoUrl = Nothing
 	}
 
 mkSshInput :: SshData -> SshInput
@@ -137,6 +143,7 @@ sshInputAForm hostnamefield d = normalize <$> gen
 data ServerStatus
 	= UntestedServer
 	| UnusableServer Text -- reason why it's not usable
+	| ServerNeedsPubKey SshPubKey
 	| UsableServer [SshServerCapability]
 	deriving (Eq)
 
@@ -486,8 +493,7 @@ combineExistingGCrypt sshdata u = do
 prepSsh :: Bool -> SshData -> (SshData -> Handler Html) -> Handler Html
 prepSsh needsinit sshdata a
 	| needsPubKey sshdata = do
-		keypair <- liftIO genSshKeyPair
-		sshdata' <- liftIO $ setupSshKeyPair keypair sshdata
+		(sshdata', keypair) <- liftIO $ setupSshKeyPair sshdata
 		prepSsh' needsinit sshdata sshdata' (Just keypair) a
 	| sshPort sshdata /= 22 = do
 		sshdata' <- liftIO $ setSshConfig sshdata []
@@ -495,11 +501,23 @@ prepSsh needsinit sshdata a
 	| otherwise = prepSsh' needsinit sshdata sshdata Nothing a
 
 prepSsh' :: Bool -> SshData -> SshData -> Maybe SshKeyPair -> (SshData -> Handler Html) -> Handler Html
-prepSsh' needsinit origsshdata sshdata keypair a = sshSetup (mkSshInput origsshdata)
-	 [ "-p", show (sshPort origsshdata)
-	 , genSshHost (sshHostName origsshdata) (sshUserName origsshdata)
-	 , remoteCommand
-	 ] Nothing (a sshdata)
+prepSsh' needsinit origsshdata sshdata keypair a
+	| hasCapability sshdata PushCapable = do
+		{- To ensure the repository is initialized, try to push the
+		 - git-annex branch to it. Then git-annex-shell will see
+		 - the branch and auto-initialize. -}
+		when needsinit $ do
+			void $ liftAnnex $ inRepo $ Git.Command.runBool
+				[ Param "push"
+				, Param (genSshUrl sshdata)
+				, Param (fromRef Annex.Branch.name)
+				]
+		a sshdata
+	| otherwise = sshSetup (mkSshInput origsshdata)
+		 [ "-p", show (sshPort origsshdata)
+		 , genSshHost (sshHostName origsshdata) (sshUserName origsshdata)
+		 , remoteCommand
+		 ] Nothing (a sshdata)
   where
 	remotedir = T.unpack $ sshDirectory sshdata
 	remoteCommand = shellWrap $ intercalate "&&" $ catMaybes
@@ -628,8 +646,7 @@ enableRsyncNetGCrypt sshinput reponame =
 prepRsyncNet :: SshInput -> String -> (SshData -> Handler Html) -> Handler Html
 prepRsyncNet sshinput reponame a = do
 	knownhost <- liftIO $ maybe (return False) knownHost (inputHostname sshinput)
-	keypair <- liftIO genSshKeyPair
-	sshdata <- liftIO $ setupSshKeyPair keypair $
+	(sshdata, keypair) <- liftIO $ setupSshKeyPair $
 		(mkSshData sshinput)
 			{ sshRepoName = reponame 
 			, needsPubKey = True
@@ -654,3 +671,89 @@ prepRsyncNet sshinput reponame a = do
 isRsyncNet :: Maybe Text -> Bool
 isRsyncNet Nothing = False
 isRsyncNet (Just host) = ".rsync.net" `T.isSuffixOf` T.toLower host
+
+data GitLabUrl = GitLabUrl Text
+
+badGitLabUrl :: Text
+badGitLabUrl = "Bad SSH clone url. Expected something like: git@gitlab.com:yourlogin/annex.git"
+
+parseGitLabUrl :: GitLabUrl -> Maybe SshData
+parseGitLabUrl (GitLabUrl t) = 
+	let (u, r) = separate (== '@') (T.unpack t)
+	    (h, p) = separate (== ':') r
+	in if null u || null h || null p
+		then Nothing
+		else Just $ SshData
+			{ sshHostName = T.pack h
+			, sshUserName = Just (T.pack u)
+			, sshDirectory = T.pack p
+			, sshRepoName = genSshRepoName h p
+			, sshPort = 22
+			, needsPubKey = False
+			, sshCapabilities = 
+				[ GitAnnexShellCapable
+				, GitCapable
+				, PushCapable
+				]
+			, sshRepoUrl = Just (T.unpack t)
+			}
+
+{- Try to ssh into the gitlab server, verify we can access the repository,
+ - and get the uuid of the repository, if it already has one.
+ -
+ - A repository on gitlab won't be initialized as a git-annex repo 
+ - unless a git-annex branch was already pushed to it. So, if
+ - git-annex-shell fails to work that's probably why; verify if
+ - the server is letting us ssh in by running git send-pack
+ - (in dry run mode). -}
+testGitLabUrl :: GitLabUrl -> Annex (ServerStatus, Maybe SshData, UUID)
+testGitLabUrl glu = case parseGitLabUrl glu of
+	Nothing -> return (UnusableServer badGitLabUrl, Nothing, NoUUID)
+	Just sshdata -> 
+		checkor sshdata $ do
+			(sshdata', keypair) <- liftIO $ setupSshKeyPair sshdata
+			checkor sshdata' $ 
+				return (ServerNeedsPubKey (sshPubKey keypair), Just sshdata', NoUUID)
+  where
+	checkor sshdata ora = do
+		u <- probeuuid sshdata
+		if u /= NoUUID
+			then return (UsableServer (sshCapabilities sshdata), Just sshdata, u)
+			else ifM (verifysshworks sshdata)
+				( return (UsableServer (sshCapabilities sshdata), Just sshdata, NoUUID)
+				, ora
+				)
+	probeuuid sshdata = do
+		r <- inRepo $ Git.Construct.fromRemoteLocation (fromJust $ sshRepoUrl sshdata)
+		getUncachedUUID . either (const r) fst <$>
+			Remote.Helper.Ssh.onRemote r (Git.Config.fromPipe r, return (Left $ error "configlist failed")) "configlist" [] []
+	verifysshworks sshdata = inRepo $ Git.Command.runBool
+		[ Param "send-pack"
+		, Param (fromJust $ sshRepoUrl sshdata)
+		, Param "--dry-run"
+		, Param "--force"
+		, Param (fromRef Annex.Branch.name)
+		]
+
+gitLabUrlAForm :: AForm Handler GitLabUrl
+gitLabUrlAForm = GitLabUrl <$> areq check_input (bfs "SSH clone url") Nothing
+  where
+	check_input = checkBool (isJust . parseGitLabUrl . GitLabUrl)
+		badGitLabUrl textField
+
+getAddGitLabR :: Handler Html
+getAddGitLabR = postAddGitLabR
+postAddGitLabR :: Handler Html
+postAddGitLabR = sshConfigurator $ do
+	((result, form), enctype) <- liftH $
+		runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout gitLabUrlAForm
+	case result of
+		FormSuccess gitlaburl -> do
+			(status, msshdata, u) <- liftAnnex $ testGitLabUrl gitlaburl
+			case (status, msshdata) of
+				(UsableServer _, Just sshdata) ->
+					liftH $ redirect $ ConfirmSshR sshdata u
+				_ -> showform form enctype status
+		_ -> showform form enctype UntestedServer
+  where
+	showform form enctype status = $(widgetFile "configurators/gitlab.com/add")

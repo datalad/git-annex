@@ -1,0 +1,47 @@
+<div .col-sm-9>
+  <div .content-box>
+    <h2>
+      Adding a GitLab.com repository
+    <p>
+      <a href="http://gitlab.com/">
+        GitLab.com #
+      provides free public and private git repositories, and supports #
+      git-annex.
+    <p>
+      $case status
+        $of UnusableServer msg
+          <div .alert .alert-danger>
+            <span .glyphicon .glyphicon-warning-sign>
+            \ #{msg}
+        $of ServerNeedsPubKey pubkey
+          <div .alert>
+            <span .glyphicon .glyphicon-warning-sign>
+            \ You need to configure GitLab to accept a SSH public key.
+            <p>
+              Open a tab to #
+                <a href="https://gitlab.com/profile/keys/new" target="_blank">
+                  https://gitlab.com/profile/keys/new
+              and copy and paste this public key into it:
+              <pre>
+                #{pubkey}
+            <p>
+              Once you have added the key to GitLab, come back to this page #
+              to finish setting up the repository.
+        $of _
+          <p>
+            You can sign up for an account on #
+            <a href="http://gitlab.com/">
+              GitLab.com #
+            and create a git repository that you want to use with git-annex, #
+            or find an existing git-annex repository to share with.
+          <p>
+           Copy the GitLab repository's SSH clone url into the form below.
+      <form method="post" .form-horizontal enctype=#{enctype}>
+        <fieldset>
+          ^{form}
+          ^{webAppFormAuthToken}
+          <div .form-group>
+            <div .col-sm-10 .col-sm-offset-2>
+              <button .btn .btn-primary type=submit onclick="$('#setupmodal').modal('show');">
+                Use this gitlab.com repository
+^{sshTestModal}

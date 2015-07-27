@@ -27,6 +27,7 @@ git-annex (5.20150714) UNRELEASED; urgency=medium
     permalinks in rss feeds, it now also looks at guids.
   * importfeed: Look at not only permalinks, but now also guids
     to identify previously downloaded files.
+  * Webapp: Now features easy setup of git-annex repositories on gitlab.com.
   * Adjust debian build deps: The webapp can now build on arm64, s390x
     and hurd-i386. WebDAV support is also available on those architectures.
   * Debian package now maintained by Richard Hartmann.
