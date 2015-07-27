@@ -1,4 +1,4 @@
-git-annex (5.20150714) UNRELEASED; urgency=medium
+git-annex (5.20150727) unstable; urgency=medium
 
   * Fix bug that prevented uploads to remotes using new-style chunking
     from resuming after the last successfully uploaded chunk.
@@ -34,7 +34,7 @@ git-annex (5.20150714) UNRELEASED; urgency=medium
   * Support building without persistent database on for systems that
     lack TH. This removes support for incremental fsck.
 
- -- Joey Hess <id@joeyh.name>  Fri, 10 Jul 2015 16:36:42 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 27 Jul 2015 12:24:49 -0400
 
 git-annex (5.20150710) unstable; urgency=medium
 
