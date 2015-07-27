@@ -1,0 +1,3 @@
+If I lose all my git-annex repositories is it possible to restore the content of a repo from a special remote in which encryption was enabled? I know git-annex isn't designed to be a backup solution but more for the archive and/or nomad use case. I do like the idea of being able to restore the files from an S3 special remote though. I imagine part of the answer to this question has to do with what type of encryption is used (hybrid and shared key rely on information stored in the repo but pubkey doesn't rely on the repo at all) and would probably be easier if there were an option to disable hashing the filenames of the files (less secure, but maybe ok in some cases).
+
+Thoughts?
