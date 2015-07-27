@@ -1,3 +1,9 @@
+git-annex (5.20150728) UNRELEASED; urgency=medium
+
+  * webapp: Support enabling known gitlab.com remotes.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 27 Jul 2015 15:57:07 -0400
+
 git-annex (5.20150727) unstable; urgency=medium
 
   * Fix bug that prevented uploads to remotes using new-style chunking

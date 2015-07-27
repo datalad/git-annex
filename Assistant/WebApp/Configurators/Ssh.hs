@@ -212,23 +212,26 @@ postEnableSshGitRemoteR = enableSshRemote getsshinput enableRsyncNet enablesshgi
  - to prompt for its password.
  -}
 enableSshRemote :: (RemoteConfig -> Maybe SshData) -> (SshInput -> RemoteName -> Handler Html) -> (SshData -> UUID -> Handler Html) -> UUID -> Handler Html
-enableSshRemote getsshinput rsyncnetsetup genericsetup u = do
+enableSshRemote getsshdata rsyncnetsetup genericsetup u = do
 	m <- fromMaybe M.empty . M.lookup u <$> liftAnnex readRemoteLog
-	case (mkSshInput . unmangle <$> getsshinput m, M.lookup "name" m) of
-		(Just sshinput, Just reponame) -> sshConfigurator $ do
-			((result, form), enctype) <- liftH $
-				runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $ sshInputAForm textField sshinput
-			case result of
-				FormSuccess sshinput'
-					| isRsyncNet (inputHostname sshinput') ->
-						void $ liftH $ rsyncnetsetup sshinput' reponame
-					| otherwise -> do
-						s <- liftAssistant $ testServer sshinput'
-						case s of
-							Left status -> showform form enctype status
-							Right (sshdata, _u) -> void $ liftH $ genericsetup
-								( sshdata { sshRepoName = reponame } ) u
-				_ -> showform form enctype UntestedServer
+	case (unmangle <$> getsshdata m, M.lookup "name" m) of
+		(Just sshdata, Just reponame)
+			| isGitLab sshdata -> enableGitLab sshdata
+			| otherwise -> sshConfigurator $ do
+				((result, form), enctype) <- liftH $
+					runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $
+						sshInputAForm textField $ mkSshInput sshdata
+				case result of
+					FormSuccess sshinput
+						| isRsyncNet (inputHostname sshinput) ->
+							void $ liftH $ rsyncnetsetup sshinput reponame
+						| otherwise -> do
+							s <- liftAssistant $ testServer sshinput
+							case s of
+								Left status -> showform form enctype status
+								Right (sshdata', _u) -> void $ liftH $ genericsetup
+									( sshdata' { sshRepoName = reponame } ) u
+					_ -> showform form enctype UntestedServer
 		_ -> redirect AddSshR
   where
 	unmangle sshdata = sshdata
@@ -672,7 +675,7 @@ isRsyncNet :: Maybe Text -> Bool
 isRsyncNet Nothing = False
 isRsyncNet (Just host) = ".rsync.net" `T.isSuffixOf` T.toLower host
 
-data GitLabUrl = GitLabUrl Text
+data GitLabUrl = GitLabUrl { unGitLabUrl :: Text }
 
 badGitLabUrl :: Text
 badGitLabUrl = "Bad SSH clone url. Expected something like: git@gitlab.com:yourlogin/annex.git"
@@ -697,6 +700,18 @@ parseGitLabUrl (GitLabUrl t) =
 				]
 			, sshRepoUrl = Just (T.unpack t)
 			}
+
+isGitLab :: SshData -> Bool
+isGitLab d = T.pack "gitlab.com" `T.isSuffixOf` (T.toLower (sshHostName d))
+
+toGitLabUrl :: SshData -> GitLabUrl
+toGitLabUrl d = GitLabUrl $ T.concat
+	[ fromMaybe (T.pack "git") (sshUserName d)
+	, T.pack "@"
+	, sshHostName d
+	, T.pack ":"
+	, sshDirectory d
+	]
 
 {- Try to ssh into the gitlab server, verify we can access the repository,
  - and get the uuid of the repository, if it already has one.
@@ -735,8 +750,8 @@ testGitLabUrl glu = case parseGitLabUrl glu of
 		, Param (fromRef Annex.Branch.name)
 		]
 
-gitLabUrlAForm :: AForm Handler GitLabUrl
-gitLabUrlAForm = GitLabUrl <$> areq check_input (bfs "SSH clone url") Nothing
+gitLabUrlAForm :: Maybe GitLabUrl -> AForm Handler GitLabUrl
+gitLabUrlAForm defval = GitLabUrl <$> areq check_input (bfs "SSH clone url") (unGitLabUrl <$> defval)
   where
 	check_input = checkBool (isJust . parseGitLabUrl . GitLabUrl)
 		badGitLabUrl textField
@@ -744,9 +759,13 @@ gitLabUrlAForm = GitLabUrl <$> areq check_input (bfs "SSH clone url") Nothing
 getAddGitLabR :: Handler Html
 getAddGitLabR = postAddGitLabR
 postAddGitLabR :: Handler Html
-postAddGitLabR = sshConfigurator $ do
+postAddGitLabR = promptGitLab Nothing
+
+promptGitLab :: Maybe GitLabUrl -> Handler Html
+promptGitLab defval = sshConfigurator $ do
 	((result, form), enctype) <- liftH $
-		runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout gitLabUrlAForm
+		runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $
+			gitLabUrlAForm defval
 	case result of
 		FormSuccess gitlaburl -> do
 			(status, msshdata, u) <- liftAnnex $ testGitLabUrl gitlaburl
@@ -757,3 +776,6 @@ postAddGitLabR = sshConfigurator $ do
 		_ -> showform form enctype UntestedServer
   where
 	showform form enctype status = $(widgetFile "configurators/gitlab.com/add")
+
+enableGitLab :: SshData -> Handler Html
+enableGitLab = promptGitLab . Just . toGitLabUrl
