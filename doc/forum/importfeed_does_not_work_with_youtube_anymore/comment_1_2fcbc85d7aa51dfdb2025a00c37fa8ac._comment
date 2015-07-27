@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-07-15T15:48:44Z"
+ content="""
+There's no API involved; git-annex importfeed consumes RSS feeds. Google no
+longer supports such reasonable technology.
+"""]]

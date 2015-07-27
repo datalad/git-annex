@@ -23,3 +23,6 @@ xargs doesn't actually work so well because every once in a while, youtube will 
     curl -s http://pyvideo.org/category/65/pycon-us-2015/rss | xmllint --xpath '//enclosure/@url' - | sed 's/url="/\n/g;s/"//' | while read url ; do git annex addurl --fast $url ; done
 
 but it's pretty ugly! --[[anarcat]]
+
+> Per my comments, I don't think this is a bug in git-annex, but in the
+> feeds. So [[done]] --[[Joey]] 

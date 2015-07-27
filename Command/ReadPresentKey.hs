@@ -12,11 +12,14 @@ import Command
 import Logs.Location
 import Types.Key
 
-cmd :: [Command]
-cmd = [noCommit $ command "readpresentkey" (paramPair paramKey paramUUID) seek
-	SectionPlumbing "read records of where key is present"] 
+cmd :: Command
+cmd = noCommit $ 
+	command "readpresentkey" SectionPlumbing
+		"read records of where key is present"
+		(paramPair paramKey paramUUID)
+		(withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 start :: [String] -> CommandStart

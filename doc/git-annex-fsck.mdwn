@@ -1,6 +1,6 @@
 # NAME
 
-git-annex fsck - check for problems
+git-annex fsck - find and fix problems
 
 # SYNOPSIS
 

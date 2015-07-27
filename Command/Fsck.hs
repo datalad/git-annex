@@ -30,51 +30,71 @@ import Annex.UUID
 import Utility.DataUnits
 import Config
 import Types.Key
-import Types.CleanupActions
 import Utility.HumanTime
 import Utility.CopyFile
 import Git.FilePath
 import Utility.PID
+
+#ifdef WITH_DATABASE
 import qualified Database.Fsck as FsckDb
+import Types.CleanupActions
+#endif
 
 import Data.Time.Clock.POSIX
 import System.Posix.Types (EpochTime)
 
-cmd :: [Command]
-cmd = [withOptions fsckOptions $ command "fsck" paramPaths seek
-	SectionMaintenance "check for problems"]
+cmd :: Command
+cmd = withGlobalOptions annexedMatchingOptions $
+	command "fsck" SectionMaintenance
+		"find and fix problems"
+		paramPaths (seek <$$> optParser)
 
-fsckFromOption :: Option
-fsckFromOption = fieldOption ['f'] "from" paramRemote "check remote"
+data FsckOptions = FsckOptions
+	{ fsckFiles :: CmdParams
+	, fsckFromOption :: Maybe (DeferredParse Remote)
+	, incrementalOpt :: Maybe IncrementalOpt
+	, keyOptions :: Maybe KeyOptions
+	}
 
-startIncrementalOption :: Option
-startIncrementalOption = flagOption ['S'] "incremental" "start an incremental fsck"
+data IncrementalOpt
+	= StartIncrementalO
+	| MoreIncrementalO
+	| ScheduleIncrementalO Duration
 
-moreIncrementalOption :: Option
-moreIncrementalOption = flagOption ['m'] "more" "continue an incremental fsck"
+optParser :: CmdParamsDesc -> Parser FsckOptions
+optParser desc = FsckOptions
+	<$> cmdParams desc
+	<*> optional (parseRemoteOption $ strOption 
+		( long "from" <> short 'f' <> metavar paramRemote 
+		<> help "check remote"
+		))
+	<*> optional parseincremental
+	<*> optional (parseKeyOptions False)
+  where
+	parseincremental =
+		flag' StartIncrementalO
+			( long "incremental" <> short 'S'
+			<> help "start an incremental fsck"
+			)
+		<|> flag' MoreIncrementalO
+			( long "more" <> short 'm'
+			<> help "continue an incremental fsck"
+			)
+		<|> (ScheduleIncrementalO <$> option (str >>= parseDuration)
+			( long "incremental-schedule" <> metavar paramTime
+			<> help "schedule incremental fscking"
+			))
 
-incrementalScheduleOption :: Option
-incrementalScheduleOption = fieldOption [] "incremental-schedule" paramTime
-	"schedule incremental fscking"
-
-fsckOptions :: [Option]
-fsckOptions = 
-	[ fsckFromOption
-	, startIncrementalOption
-	, moreIncrementalOption
-	, incrementalScheduleOption
-	] ++ keyOptions ++ annexedMatchingOptions
-
-seek :: CommandSeek
-seek ps = do
-	from <- getOptionField fsckFromOption Remote.byNameWithUUID
+seek :: FsckOptions -> CommandSeek
+seek o = do
+	from <- maybe (pure Nothing) (Just <$$> getParsed) (fsckFromOption o)
 	u <- maybe getUUID (pure . Remote.uuid) from
-	i <- getIncremental u
-	withKeyOptions False
+	i <- prepIncremental u (incrementalOpt o)
+	withKeyOptions (keyOptions o) False
 		(\k -> startKey i k =<< getNumCopies)
 		(withFilesInGit $ whenAnnexed $ start from i)
-		ps
-	withFsckDb i FsckDb.closeDb
+		(fsckFiles o)
+	cleanupIncremental i
 	void $ tryIO $ recordActivity Fsck u
 
 start :: Maybe Remote -> Incremental -> FilePath -> Key -> CommandStart
@@ -437,16 +457,24 @@ runFsck inc file key a = ifM (needFsck inc key)
 
 {- Check if a key needs to be fscked, with support for incremental fscks. -}
 needFsck :: Incremental -> Key -> Annex Bool
+#ifdef WITH_DATABASE
 needFsck (ContIncremental h) key = liftIO $ not <$> FsckDb.inDb h key
+#endif
 needFsck _ _ = return True
 
+#ifdef WITH_DATABASE
 withFsckDb :: Incremental -> (FsckDb.FsckHandle -> Annex ()) -> Annex ()
 withFsckDb (ContIncremental h) a = a h
 withFsckDb (StartIncremental h) a = a h
 withFsckDb NonIncremental _ = noop
+#endif
 
 recordFsckTime :: Incremental -> Key -> Annex ()
+#ifdef WITH_DATABASE
 recordFsckTime inc key = withFsckDb inc $ \h -> liftIO $ FsckDb.addDb h key
+#else
+recordFsckTime _ _ = return ()
+#endif
 
 {- Records the start time of an incremental fsck.
  -
@@ -495,39 +523,44 @@ getStartTime u = do
 		fromfile >= fromstatus
 #endif
 
-data Incremental = StartIncremental FsckDb.FsckHandle | ContIncremental FsckDb.FsckHandle | NonIncremental
+data Incremental
+	= NonIncremental
+#ifdef WITH_DATABASE
+	| StartIncremental FsckDb.FsckHandle 
+	| ContIncremental FsckDb.FsckHandle 
+#endif
 
-getIncremental :: UUID -> Annex Incremental
-getIncremental u = do
-	i <- maybe (return False) (checkschedule . parseDuration)
-		=<< Annex.getField (optionName incrementalScheduleOption)
-	starti <- getOptionFlag startIncrementalOption
-	morei <- getOptionFlag moreIncrementalOption
-	case (i, starti, morei) of
-		(False, False, False) -> return NonIncremental
-		(False, True, False) -> startIncremental
-		(False ,False, True) -> contIncremental
-		(True, False, False) ->
-			maybe startIncremental (const contIncremental)
-				=<< getStartTime u
-		_ -> error "Specify only one of --incremental, --more, or --incremental-schedule"
-  where
-	startIncremental = do
-		recordStartTime u
-		ifM (FsckDb.newPass u)
-			( StartIncremental <$> FsckDb.openDb u
-			, error "Cannot start a new --incremental fsck pass; another fsck process is already running."
-			)
-	contIncremental = ContIncremental <$> FsckDb.openDb u
+prepIncremental :: UUID -> Maybe IncrementalOpt -> Annex Incremental
+prepIncremental _ Nothing = pure NonIncremental
+#ifdef WITH_DATABASE
+prepIncremental u (Just StartIncrementalO) = do
+	recordStartTime u
+	ifM (FsckDb.newPass u)
+		( StartIncremental <$> FsckDb.openDb u
+		, error "Cannot start a new --incremental fsck pass; another fsck process is already running."
+		)
+prepIncremental u (Just MoreIncrementalO) =
+	ContIncremental <$> FsckDb.openDb u
+prepIncremental u (Just (ScheduleIncrementalO delta)) = do
+	Annex.addCleanup FsckCleanup $ do
+		v <- getStartTime u
+		case v of
+			Nothing -> noop
+			Just started -> do
+				now <- liftIO getPOSIXTime
+				when (now - realToFrac started >= durationToPOSIXTime delta) $
+					resetStartTime u
+	started <- getStartTime u
+	prepIncremental u $ Just $ case started of
+		Nothing -> StartIncrementalO
+		Just _ -> MoreIncrementalO
+#else
+prepIncremental _ _ = error "This git-annex was not built with database support; incremental fsck not supported"
+#endif
 
-	checkschedule Nothing = error "bad --incremental-schedule value"
-	checkschedule (Just delta) = do
-		Annex.addCleanup FsckCleanup $ do
-			v <- getStartTime u
-			case v of
-				Nothing -> noop
-				Just started -> do
-					now <- liftIO getPOSIXTime
-					when (now - realToFrac started >= durationToPOSIXTime delta) $
-						resetStartTime u
-		return True
+cleanupIncremental :: Incremental -> Annex ()
+#ifdef WITH_DATABASE
+cleanupIncremental i = withFsckDb i FsckDb.closeDb
+#else
+cleanupIncremental _ = return ()
+#endif

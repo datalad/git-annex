@@ -15,7 +15,7 @@ them.
 
 When quvi is installed, links in the feed are tested to see if they
 are on a video hosting site, and the video is downloaded. This allows
-importing e.g., youtube playlists.
+importing e.g., YouTube playlists.
 
 To make the import process add metadata to the imported files from the feed,
 `git config annex.genmetadata true`
@@ -34,7 +34,7 @@ To make the import process add metadata to the imported files from the feed,
   
   Other available variables for templates: feedauthor, itemauthor, itemsummary, itemdescription, itemrights, itemid, itempubdate, title, author
 
-* `--relaxed`, `--fast`, `--raw`, `--template`
+* `--relaxed`, `--fast`, `--raw`
 
   These options behave the same as when using [[git-annex-addurl]](1).
 

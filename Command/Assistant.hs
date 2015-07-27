@@ -1,6 +1,6 @@
 {- git-annex assistant
  -
- - Copyright 2012 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -17,65 +17,60 @@ import qualified Build.SysConfig
 import Utility.HumanTime
 import Assistant.Install
 
-import System.Environment
+cmd :: Command
+cmd = dontCheck repoExists $ notBareRepo $
+	noRepo (startNoRepo <$$> optParser) $
+		command "assistant" SectionCommon
+			"automatically sync changes"
+			paramNothing (seek <$$> optParser)
 
-cmd :: [Command]
-cmd = [noRepo checkNoRepoOpts $ dontCheck repoExists $ withOptions options $
-	notBareRepo $ command "assistant" paramNothing seek SectionCommon
-		"automatically sync changes"]
+data AssistantOptions = AssistantOptions
+	{ daemonOptions :: DaemonOptions
+	, autoStartOption :: Bool
+	, startDelayOption :: Maybe Duration
+	, autoStopOption :: Bool
+	}
 
-options :: [Option]
-options =
-	[ Command.Watch.foregroundOption
-	, Command.Watch.stopOption
-	, autoStartOption
-	, startDelayOption
-	, autoStopOption
-	]
+optParser :: CmdParamsDesc -> Parser AssistantOptions
+optParser _ = AssistantOptions
+	<$> parseDaemonOptions
+	<*> switch
+		( long "autostart"
+		<> help "start in known repositories"
+		)
+	<*> optional (option (str >>= parseDuration)
+		( long "startdelay" <> metavar paramNumber
+		<> help "delay before running startup scan"
+		))
+	<*> switch
+		( long "autostop"
+		<> help "stop in known repositories"
+		)
 
-autoStartOption :: Option
-autoStartOption = flagOption [] "autostart" "start in known repositories"
+seek :: AssistantOptions -> CommandSeek
+seek = commandAction . start
 
-autoStopOption :: Option
-autoStopOption = flagOption [] "autostop" "stop in known repositories"
-
-startDelayOption :: Option
-startDelayOption = fieldOption [] "startdelay" paramNumber "delay before running startup scan"
-
-seek :: CommandSeek
-seek ps = do
-	stopdaemon <- getOptionFlag Command.Watch.stopOption
-	foreground <- getOptionFlag Command.Watch.foregroundOption
-	autostart <- getOptionFlag autoStartOption
-	autostop <- getOptionFlag autoStopOption
-	startdelay <- getOptionField startDelayOption (pure . maybe Nothing parseDuration)
-	withNothing (start foreground stopdaemon autostart autostop startdelay) ps
-
-start :: Bool -> Bool -> Bool -> Bool -> Maybe Duration -> CommandStart
-start foreground stopdaemon autostart autostop startdelay
-	| autostart = do
-		liftIO $ autoStart startdelay
+start :: AssistantOptions -> CommandStart
+start o
+	| autoStartOption o = do
+		liftIO $ autoStart o
 		stop
-	| autostop = do
+	| autoStopOption o = do
 		liftIO autoStop
 		stop
 	| otherwise = do
 		liftIO ensureInstalled
 		ensureInitialized
-		Command.Watch.start True foreground stopdaemon startdelay
+		Command.Watch.start True (daemonOptions o) (startDelayOption o)
 
-{- Run outside a git repository; support autostart and autostop mode. -}
-checkNoRepoOpts :: CmdParams -> IO ()
-checkNoRepoOpts _ = ifM (elem "--autostart" <$> getArgs)
-	( autoStart Nothing
-	, ifM (elem "--autostop" <$> getArgs)
-		( autoStop
-		, error "Not in a git repository."
-		)
-	) 
+startNoRepo :: AssistantOptions -> IO ()
+startNoRepo o
+	| autoStartOption o = autoStart o
+	| autoStopOption o = autoStop
+	| otherwise = error "Not in a git repository."
 
-autoStart :: Maybe Duration -> IO ()
-autoStart startdelay = do
+autoStart :: AssistantOptions -> IO ()
+autoStart o = do
 	dirs <- liftIO readAutoStartFile
 	when (null dirs) $ do
 		f <- autoStartFile
@@ -103,7 +98,7 @@ autoStart startdelay = do
 	  where
 		baseparams =
 			[ Param "assistant"
-			, Param $ "--startdelay=" ++ fromDuration (fromMaybe (Duration 5) startdelay)
+			, Param $ "--startdelay=" ++ fromDuration (fromMaybe (Duration 5) (startDelayOption o))
 			]
 
 autoStop :: IO ()

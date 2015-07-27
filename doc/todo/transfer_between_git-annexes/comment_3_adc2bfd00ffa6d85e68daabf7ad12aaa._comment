@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-07-15T15:50:35Z"
+ content="""
+You can avoid the git-annex branch commits by passing -c
+annex.alwayscommit=false to git-annex commands. At the end, run `git annex
+merge` to commit all the changes in one go.
+
+The git-annex branch changes are temporarily stored in .git/anenx/journal/
+files if you wanted to delete them for rollback.
+"""]]

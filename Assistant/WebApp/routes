@@ -61,6 +61,7 @@
 /config/repository/add/cloud/IA AddIAR GET POST
 /config/repository/add/cloud/glacier AddGlacierR GET POST
 /config/repository/add/cloud/box.com AddBoxComR GET POST
+/config/repository/add/cloud/gitlab.com AddGitLabR GET POST
 
 /config/repository/pair/local/start StartLocalPairR GET POST
 /config/repository/pair/local/running/#SecretReminder RunningLocalPairR GET

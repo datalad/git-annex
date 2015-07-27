@@ -14,11 +14,14 @@ import Annex.UUID
 import Types.UUID
 import qualified Remote
 	
-cmd :: [Command]
-cmd = [dontCheck repoExists $
-	command "reinit" (paramUUID ++ "|" ++ paramDesc) seek SectionUtility "initialize repository, reusing old UUID"]
+cmd :: Command
+cmd = dontCheck repoExists $
+	command "reinit" SectionUtility 
+		"initialize repository, reusing old UUID"
+		(paramUUID ++ "|" ++ paramDesc)
+		(withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 start :: [String] -> CommandStart

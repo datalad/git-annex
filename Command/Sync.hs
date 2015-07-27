@@ -51,26 +51,33 @@ import Utility.Bloom
 import Control.Concurrent.MVar
 import qualified Data.Map as M
 
-cmd :: [Command]
-cmd = [withOptions syncOptions $
-	command "sync" (paramOptional (paramRepeating paramRemote))
-	seek SectionCommon "synchronize local repository with remotes"]
+cmd :: Command
+cmd = command "sync" SectionCommon 
+	"synchronize local repository with remotes"
+	(paramRepeating paramRemote) (seek <$$> optParser)
 
-syncOptions :: [Option]
-syncOptions =
-	[ contentOption
-	, messageOption
-	, allOption
-	]
+data SyncOptions  = SyncOptions
+	{ syncWith :: CmdParams
+	, contentOption :: Bool
+	, messageOption :: Maybe String
+	, keyOptions :: Maybe KeyOptions
+	}
 
-contentOption :: Option
-contentOption = flagOption [] "content" "also transfer file contents"
+optParser :: CmdParamsDesc -> Parser SyncOptions
+optParser desc = SyncOptions
+	<$> cmdParams desc
+	<*> switch
+		( long "content"
+		<> help "also transfer file contents"
+		)
+	<*> optional (strOption
+		( long "message" <> short 'm' <> metavar "MSG"
+		<> help "commit message"
+		))
+	<*> optional parseAllOption
 
-messageOption :: Option
-messageOption = fieldOption ['m'] "message" "MSG" "specify commit message"
-
-seek :: CommandSeek
-seek rs = do
+seek :: SyncOptions -> CommandSeek
+seek o = do
 	prepMerge
 
 	-- There may not be a branch checked out until after the commit,
@@ -89,20 +96,20 @@ seek rs = do
 		)
 	let withbranch a = a =<< getbranch
 
-	remotes <- syncRemotes rs
+	remotes <- syncRemotes (syncWith o)
 	let gitremotes = filter Remote.gitSyncableRemote remotes
 	let dataremotes = filter (not . remoteAnnexIgnore . Remote.gitconfig) remotes
 
 	-- Syncing involves many actions, any of which can independently
 	-- fail, without preventing the others from running.
 	seekActions $ return $ concat
-		[ [ commit ]
+		[ [ commit o ]
 		, [ withbranch mergeLocal ]
 		, map (withbranch . pullRemote) gitremotes
 		,  [ mergeAnnex ]
 		]
-	whenM (Annex.getFlag $ optionName contentOption) $
-		whenM (seekSyncContent dataremotes) $
+	when (contentOption o) $
+		whenM (seekSyncContent o dataremotes) $
 			-- Transferring content can take a while,
 			-- and other changes can be pushed to the git-annex
 			-- branch on the remotes in the meantime, so pull
@@ -150,15 +157,14 @@ syncRemotes rs = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
 	
 	fastest = fromMaybe [] . headMaybe . Remote.byCost
 
-commit :: CommandStart
-commit = ifM (annexAutoCommit <$> Annex.getGitConfig)
+commit :: SyncOptions -> CommandStart
+commit o = ifM (annexAutoCommit <$> Annex.getGitConfig)
 	( go
 	, stop
 	)
   where
 	go = next $ next $ do
-		commitmessage <- maybe commitMsg return
-			=<< Annex.getField (optionName messageOption)
+		commitmessage <- maybe commitMsg return (messageOption o)
 		showStart "commit" ""
 		Annex.Branch.commit "update"
 		ifM isDirect
@@ -371,14 +377,16 @@ newer remote b = do
  -
  - If any file movements were generated, returns true.
  -}
-seekSyncContent :: [Remote] -> Annex Bool
-seekSyncContent rs = do
+seekSyncContent :: SyncOptions -> [Remote] -> Annex Bool
+seekSyncContent o rs = do
 	mvar <- liftIO newEmptyMVar
-	bloom <- ifM (Annex.getFlag "all")
-		( Just <$> genBloomFilter (seekworktree mvar [])
-		, seekworktree mvar [] (const noop) >> pure Nothing
-		)
-	withKeyOptions' False (seekkeys mvar bloom) (const noop) []
+	bloom <- case keyOptions o of
+		Just WantAllKeys -> Just <$> genBloomFilter (seekworktree mvar [])
+		_ -> seekworktree mvar [] (const noop) >> pure Nothing
+	withKeyOptions' (keyOptions o) False
+		(seekkeys mvar bloom) 
+		(const noop)
+		[]
 	liftIO $ not <$> isEmptyMVar mvar
   where
 	seekworktree mvar l bloomfeeder = seekHelper LsFiles.inRepo l >>=
@@ -406,7 +414,7 @@ syncFile ebloom rs af k = do
 	let (have, lack) = partition (\r -> Remote.uuid r `elem` locs) rs
 
 	got <- anyM id =<< handleget have
-	putrs <- catMaybes . snd . unzip <$> (sequence =<< handleput lack)
+	putrs <- handleput lack
 
 	u <- getUUID
 	let locs' = concat [[u | got], putrs, locs]
@@ -447,12 +455,14 @@ syncFile ebloom rs af k = do
 	wantput r
 		| Remote.readonly r || remoteAnnexReadOnly (Remote.gitconfig r) = return False
 		| otherwise = wantSend True (Just k) af (Remote.uuid r)
-	handleput lack = ifM (inAnnex k)
-		( map put <$> filterM wantput lack
+	handleput lack = catMaybes <$> ifM (inAnnex k)
+		( forM lack $ \r ->
+			ifM (wantput r <&&> put r)
+				( return (Just (Remote.uuid r))
+				, return Nothing
+				)
 		, return []
 		)
-	put dest = do
-		ok <- includeCommandAction $ do
-			showStart' "copy" k af
-			Command.Move.toStart' dest False af k
-		return (ok, if ok then Just (Remote.uuid dest) else Nothing)
+	put dest = includeCommandAction $ do
+		showStart' "copy" k af
+		Command.Move.toStart' dest False af k

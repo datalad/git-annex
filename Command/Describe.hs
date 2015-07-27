@@ -12,11 +12,13 @@ import Command
 import qualified Remote
 import Logs.UUID
 
-cmd :: [Command]
-cmd = [command "describe" (paramPair paramRemote paramDesc) seek
-	SectionSetup "change description of a repository"]
+cmd :: Command
+cmd = command "describe" SectionSetup
+	"change description of a repository"
+	(paramPair paramRemote paramDesc)
+	(withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 start :: [String] -> CommandStart

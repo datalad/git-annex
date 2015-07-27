@@ -1,4 +1,4 @@
-{- git-annex options
+{- git-annex command-line option parsing
  -
  - Copyright 2010-2015 Joey Hess <id@joeyh.name>
  -
@@ -7,7 +7,7 @@
 
 module CmdLine.GitAnnex.Options where
 
-import System.Console.GetOpt
+import Options.Applicative
 
 import Common.Annex
 import qualified Git.Config
@@ -15,63 +15,153 @@ import Git.Types
 import Types.TrustLevel
 import Types.NumCopies
 import Types.Messages
+import Types.Key
+import Types.Command
+import Types.DeferredParse
+import Types.DesktopNotify
 import qualified Annex
 import qualified Remote
 import qualified Limit
 import qualified Limit.Wanted
 import CmdLine.Option
 import CmdLine.Usage
+import CmdLine.GlobalSetter
 
--- Options that are accepted by all git-annex sub-commands,
+-- Global options that are accepted by all git-annex sub-commands,
 -- although not always used.
-gitAnnexOptions :: [Option]
-gitAnnexOptions = commonOptions ++
-	[ Option ['N'] ["numcopies"] (ReqArg setnumcopies paramNumber)
-		"override default number of copies"
-	, Option [] ["trust"] (trustArg Trusted)
-		"override trust setting"
-	, Option [] ["semitrust"] (trustArg SemiTrusted)
-		"override trust setting back to default"
-	, Option [] ["untrust"] (trustArg UnTrusted)
-		"override trust setting to untrusted"
-	, Option ['c'] ["config"] (ReqArg setgitconfig "NAME=VALUE")
-		"override git configuration setting"
-	, Option [] ["user-agent"] (ReqArg setuseragent paramName)
-		"override default User-Agent"
-	, Option [] ["trust-glacier"] (NoArg (Annex.setFlag "trustglacier"))
-		"Trust Amazon Glacier inventory"
+gitAnnexGlobalOptions :: [GlobalOption]
+gitAnnexGlobalOptions = commonGlobalOptions ++
+	[ globalSetter setnumcopies $ option auto
+		( long "numcopies" <> short 'N' <> metavar paramNumber
+		<> help "override default number of copies"
+		<> hidden
+		)
+	, globalSetter (Remote.forceTrust Trusted) $ strOption
+		( long "trust" <> metavar paramRemote
+		<> help "override trust setting"
+		<> hidden
+		)
+	, globalSetter (Remote.forceTrust SemiTrusted) $ strOption
+		( long "semitrust" <> metavar paramRemote
+		<> help "override trust setting back to default"
+		<> hidden
+		)
+	, globalSetter (Remote.forceTrust UnTrusted) $ strOption
+		( long "untrust" <> metavar paramRemote
+		<> help "override trust setting to untrusted"
+		<> hidden
+		)
+	, globalSetter setgitconfig $ strOption
+		( long "config" <> short 'c' <> metavar "NAME=VALUE"
+		<> help "override git configuration setting"
+		<> hidden
+		)
+	, globalSetter setuseragent $ strOption
+		( long "user-agent" <> metavar paramName
+		<> help "override default User-Agent"
+		<> hidden
+		)
+	, globalFlag (Annex.setFlag "trustglacier")
+		( long "trust-glacier"
+		<> help "Trust Amazon Glacier inventory"
+		<> hidden
+		)
+	, globalFlag (setdesktopnotify mkNotifyFinish)
+		( long "notify-finish"
+		<> help "show desktop notification after transfer finishes"
+		<> hidden
+		)
+	, globalFlag (setdesktopnotify mkNotifyStart)
+		( long "notify-start"
+		<> help "show desktop notification after transfer starts"
+		<> hidden
+		)
 	]
   where
-	trustArg t = ReqArg (Remote.forceTrust t) paramRemote
-	setnumcopies v = maybe noop
-		(\n -> Annex.changeState $ \s -> s { Annex.forcenumcopies = Just $ NumCopies n })
-		(readish v)
+	setnumcopies n = Annex.changeState $ \s -> s { Annex.forcenumcopies = Just $ NumCopies n }
 	setuseragent v = Annex.changeState $ \s -> s { Annex.useragent = Just v }
 	setgitconfig v = inRepo (Git.Config.store v)
 		>>= pure . (\r -> r { gitGlobalOpts = gitGlobalOpts r ++ [Param "-c", Param v] })
 		>>= Annex.changeGitRepo
+	setdesktopnotify v = Annex.changeState $ \s -> s { Annex.desktopnotify = Annex.desktopnotify s <> v }
 
--- Options for matching on annexed keys, rather than work tree files.
-keyOptions :: [Option]
-keyOptions = [ allOption, unusedOption, keyOption]
+{- Parser that accepts all non-option params. -}
+cmdParams :: CmdParamsDesc -> Parser CmdParams
+cmdParams paramdesc = many $ argument str
+	( metavar paramdesc
+	)
 
-allOption :: Option
-allOption = Option ['A'] ["all"] (NoArg (Annex.setFlag "all"))
-	"operate on all versions of all files"
+parseAutoOption :: Parser Bool
+parseAutoOption = switch
+	( long "auto" <> short 'a'
+	<> help "automatic mode"
+	)
 
-unusedOption :: Option
-unusedOption = Option ['U'] ["unused"] (NoArg (Annex.setFlag "unused"))
-	"operate on files found by last run of git-annex unused"
+parseRemoteOption :: Parser RemoteName -> Parser (DeferredParse Remote)
+parseRemoteOption p = DeferredParse . (fromJust <$$> Remote.byNameWithUUID) . Just <$> p
 
-keyOption :: Option
-keyOption = Option [] ["key"] (ReqArg (Annex.setField "key") paramKey)
-		"operate on specified key"
+data FromToOptions
+	= FromRemote (DeferredParse Remote)
+	| ToRemote (DeferredParse Remote)
 
-incompleteOption :: Option
-incompleteOption = flagOption [] "incomplete" "resume previous downloads"
+instance DeferredParseClass FromToOptions where
+	finishParse (FromRemote v) = FromRemote <$> finishParse v
+	finishParse (ToRemote v) = ToRemote <$> finishParse v
+
+parseFromToOptions :: Parser FromToOptions
+parseFromToOptions = 
+	(FromRemote <$> parseFromOption) 
+	<|> (ToRemote <$> parseToOption)
+
+parseFromOption :: Parser (DeferredParse Remote)
+parseFromOption = parseRemoteOption $ strOption
+	( long "from" <> short 'f' <> metavar paramRemote
+	<> help "source remote"
+	)
+
+parseToOption :: Parser (DeferredParse Remote)
+parseToOption = parseRemoteOption $ strOption
+	( long "to" <> short 't' <> metavar paramRemote
+	<> help "destination remote"
+	)
+
+-- Options for acting on keys, rather than work tree files.
+data KeyOptions
+	= WantAllKeys
+	| WantUnusedKeys
+	| WantSpecificKey Key
+	| WantIncompleteKeys
+
+parseKeyOptions :: Bool -> Parser KeyOptions
+parseKeyOptions allowincomplete = if allowincomplete
+	then base
+		<|> flag' WantIncompleteKeys
+			( long "incomplete"
+			<> help "resume previous downloads"
+			)
+	else base
+  where
+	base = parseAllOption
+		<|> flag' WantUnusedKeys
+			( long "unused" <> short 'U'
+			<> help "operate on files found by last run of git-annex unused"
+			)
+		<|> (WantSpecificKey <$> option (str >>= parseKey)
+			( long "key" <> metavar paramKey
+			<> help "operate on specified key"
+			))
+
+parseAllOption :: Parser KeyOptions
+parseAllOption = flag' WantAllKeys
+	( long "all" <> short 'A'
+	<> help "operate on all versions of all files"
+	)
+
+parseKey :: Monad m => String -> m Key
+parseKey = maybe (fail "invalid key") return . file2key
 
 -- Options to match properties of annexed files.
-annexedMatchingOptions :: [Option]
+annexedMatchingOptions :: [GlobalOption]
 annexedMatchingOptions = concat
 	[ nonWorkTreeMatchingOptions'
 	, fileMatchingOptions'
@@ -80,84 +170,132 @@ annexedMatchingOptions = concat
 	]
 
 -- Matching options that don't need to examine work tree files.
-nonWorkTreeMatchingOptions :: [Option]
+nonWorkTreeMatchingOptions :: [GlobalOption]
 nonWorkTreeMatchingOptions = nonWorkTreeMatchingOptions' ++ combiningOptions
 
-nonWorkTreeMatchingOptions' :: [Option]
+nonWorkTreeMatchingOptions' :: [GlobalOption]
 nonWorkTreeMatchingOptions' = 
-	[ Option ['i'] ["in"] (ReqArg Limit.addIn paramRemote)
-		"match files present in a remote"
-	, Option ['C'] ["copies"] (ReqArg Limit.addCopies paramNumber)
-		"skip files with fewer copies"
-	, Option [] ["lackingcopies"] (ReqArg (Limit.addLackingCopies False) paramNumber)
-		"match files that need more copies"
-	, Option [] ["approxlackingcopies"] (ReqArg (Limit.addLackingCopies True) paramNumber)
-		"match files that need more copies (faster)"
-	, Option ['B'] ["inbackend"] (ReqArg Limit.addInBackend paramName)
-		"match files using a key-value backend"
-	, Option [] ["inallgroup"] (ReqArg Limit.addInAllGroup paramGroup)
-		"match files present in all remotes in a group"
-	, Option [] ["metadata"] (ReqArg Limit.addMetaData "FIELD=VALUE")
-		"match files with attached metadata"
-	, Option [] ["want-get"] (NoArg Limit.Wanted.addWantGet)
-		"match files the repository wants to get"
-	, Option [] ["want-drop"] (NoArg Limit.Wanted.addWantDrop)
-		"match files the repository wants to drop"
+	[ globalSetter Limit.addIn $ strOption
+		( long "in" <> short 'i' <> metavar paramRemote
+		<> help "match files present in a remote"
+		<> hidden
+		)
+	, globalSetter Limit.addCopies $ strOption
+		( long "copies" <> short 'C' <> metavar paramRemote
+		<> help "skip files with fewer copies"
+		<> hidden
+		)
+	, globalSetter (Limit.addLackingCopies False) $ strOption
+		( long "lackingcopies" <> metavar paramNumber
+		<> help "match files that need more copies"
+		<> hidden
+		)
+	, globalSetter (Limit.addLackingCopies True) $ strOption
+		( long "approxlackingcopies" <> metavar paramNumber
+		<> help "match files that need more copies (faster)"
+		<> hidden
+		)
+	, globalSetter Limit.addInBackend $ strOption
+		( long "inbackend" <> short 'B' <> metavar paramName
+		<> help "match files using a key-value backend"
+		<> hidden
+		)
+	, globalSetter Limit.addInAllGroup $ strOption
+		( long "inallgroup" <> metavar paramGroup
+		<> help "match files present in all remotes in a group"
+		<> hidden
+		)
+	, globalSetter Limit.addMetaData $ strOption
+		( long "metadata" <> metavar "FIELD=VALUE"
+		<> help "match files with attached metadata"
+		<> hidden
+		)
+	, globalFlag Limit.Wanted.addWantGet
+		( long "want-get"
+		<> help "match files the repository wants to get"
+		<> hidden
+		)
+	, globalFlag Limit.Wanted.addWantDrop
+		( long "want-drop"
+		<> help "match files the repository wants to drop"
+		<> hidden
+		)
 	]
 
 -- Options to match files which may not yet be annexed.
-fileMatchingOptions :: [Option]
+fileMatchingOptions :: [GlobalOption]
 fileMatchingOptions = fileMatchingOptions' ++ combiningOptions
 
-fileMatchingOptions' :: [Option]
+fileMatchingOptions' :: [GlobalOption]
 fileMatchingOptions' =
-	[ Option ['x'] ["exclude"] (ReqArg Limit.addExclude paramGlob)
-		"skip files matching the glob pattern"
-	, Option ['I'] ["include"] (ReqArg Limit.addInclude paramGlob)
-		"limit to files matching the glob pattern"
-	, Option [] ["largerthan"] (ReqArg Limit.addLargerThan paramSize)
-		"match files larger than a size"
-	, Option [] ["smallerthan"] (ReqArg Limit.addSmallerThan paramSize)
-		"match files smaller than a size"
+	[ globalSetter Limit.addExclude $ strOption
+		( long "exclude" <> short 'x' <> metavar paramGlob
+		<> help "skip files matching the glob pattern"
+		<> hidden
+		)
+	, globalSetter Limit.addInclude $ strOption
+		( long "include" <> short 'I' <> metavar paramGlob
+		<> help "limit to files matching the glob pattern"
+		<> hidden
+		)
+	, globalSetter Limit.addLargerThan $ strOption
+		( long "largerthan" <> metavar paramSize
+		<> help "match files larger than a size"
+		<> hidden
+		)
+	, globalSetter Limit.addSmallerThan $ strOption
+		( long "smallerthan" <> metavar paramSize
+		<> help "match files smaller than a size"
+		<> hidden
+		)
 	]
 
-combiningOptions :: [Option]
-combiningOptions =
+combiningOptions :: [GlobalOption]
+combiningOptions = 
 	[ longopt "not" "negate next option"
 	, longopt "and" "both previous and next option must match"
 	, longopt "or" "either previous or next option must match"
-	, shortopt "(" "open group of options"
-	, shortopt ")" "close group of options"
+	, shortopt '(' "open group of options"
+	, shortopt ')' "close group of options"
 	]
   where
-	longopt o = Option [] [o] $ NoArg $ Limit.addToken o
-	shortopt o = Option o [] $ NoArg $ Limit.addToken o
+	longopt o h = globalFlag (Limit.addToken o) ( long o <> help h <> hidden )
+	shortopt o h = globalFlag (Limit.addToken [o]) ( short o <> help h <> hidden )
 
-fromOption :: Option
-fromOption = fieldOption ['f'] "from" paramRemote "source remote"
+jsonOption :: GlobalOption
+jsonOption = globalFlag (Annex.setOutput JSONOutput)
+	( long "json" <> short 'j'
+	<> help "enable JSON output"
+	<> hidden
+	)
 
-toOption :: Option
-toOption = fieldOption ['t'] "to" paramRemote "destination remote"
+jobsOption :: GlobalOption
+jobsOption = globalSetter (Annex.setOutput . ParallelOutput) $ 
+	option auto
+		( long "jobs" <> short 'J' <> metavar paramNumber
+		<> help "enable concurrent jobs"
+		<> hidden
+		)
 
-fromToOptions :: [Option]
-fromToOptions = [fromOption, toOption]
+timeLimitOption :: GlobalOption
+timeLimitOption = globalSetter Limit.addTimeLimit $ strOption
+	( long "time-limit" <> short 'T' <> metavar paramTime
+	<> help "stop after the specified amount of time"
+	<> hidden
+	)
 
-jsonOption :: Option
-jsonOption = Option ['j'] ["json"] (NoArg (Annex.setOutput JSONOutput))
-	"enable JSON output"
+data DaemonOptions = DaemonOptions
+	{ foregroundDaemonOption :: Bool
+	, stopDaemonOption :: Bool
+	}
 
-jobsOption :: Option
-jobsOption = Option ['J'] ["jobs"] (ReqArg set paramNumber)
-	"enable concurrent jobs"
-  where
-	set s = case readish s of
-		Nothing -> error "Bad --jobs number"
-		Just n -> Annex.setOutput (ParallelOutput n)
-
-timeLimitOption :: Option
-timeLimitOption = Option ['T'] ["time-limit"]
-	(ReqArg Limit.addTimeLimit paramTime)
-	"stop after the specified amount of time"
-
-autoOption :: Option
-autoOption = flagOption ['a'] "auto" "automatic mode"
+parseDaemonOptions :: Parser DaemonOptions
+parseDaemonOptions = DaemonOptions
+	<$> switch
+		( long "foreground"
+		<> help "do not daemonize"
+		)
+	<*> switch
+		( long "stop"
+		<> help "stop daemon"
+		)

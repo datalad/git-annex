@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-07-20T17:35:42Z"
+ content="""
+Sorry didn't get to this until now.
+
+It would probably help to pass the --debug option to git-annex sync,
+and paste the output up to the point where it hangs.
+"""]]

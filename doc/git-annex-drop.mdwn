@@ -1,6 +1,6 @@
 # NAME
 
-git-annex drop - indicate content of files not currently wanted
+git-annex drop - remove content of files from repository
 
 # SYNOPSIS
 

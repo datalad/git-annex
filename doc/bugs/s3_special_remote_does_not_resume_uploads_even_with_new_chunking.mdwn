@@ -86,3 +86,5 @@ This is consistent with the behavior of letting it sit there for an hour and upl
     [2015-06-23 15:31:37 PDT] Path: "/GPGHMACSHA1--2222222222"
     [2015-06-23 15:31:37 PDT] Query string: ""
     0%       350.1KB/s 5h40m^C
+
+> [[fixed|done]] --[[Joey]] 

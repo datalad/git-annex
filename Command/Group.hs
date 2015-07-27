@@ -15,11 +15,11 @@ import Types.Group
 
 import qualified Data.Set as S
 
-cmd :: [Command]
-cmd = [command "group" (paramPair paramRemote paramDesc) seek
-	SectionSetup "add a repository to a group"]
+cmd :: Command
+cmd = command "group" SectionSetup "add a repository to a group"
+	(paramPair paramRemote paramDesc) (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 start :: [String] -> CommandStart

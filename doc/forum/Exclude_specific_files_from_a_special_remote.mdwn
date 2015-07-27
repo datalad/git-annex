@@ -1,0 +1,3 @@
+I have a special remote configured to/from which I can copy files correctly.
+I would like to be prevent some annexed files to be copied to this remote, automatically (in other words, without excluding them manually on the command line)
+How can this be done?

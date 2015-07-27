@@ -14,33 +14,44 @@ import qualified Remote
 import Annex.Wanted
 import Annex.NumCopies
 
-cmd :: [Command]
-cmd = [withOptions copyOptions $ command "copy" paramPaths seek
-	SectionCommon "copy content of files to/from another repository"]
+cmd :: Command
+cmd = command "copy" SectionCommon
+	"copy content of files to/from another repository"
+	paramPaths (seek <--< optParser)
 
-copyOptions :: [Option]
-copyOptions = Command.Move.moveOptions ++ [autoOption]
+data CopyOptions = CopyOptions
+	{ moveOptions :: Command.Move.MoveOptions
+	, autoMode :: Bool
+	}
 
-seek :: CommandSeek
-seek ps = do
-	to <- getOptionField toOption Remote.byNameWithUUID
-	from <- getOptionField fromOption Remote.byNameWithUUID
-	auto <- getOptionFlag autoOption
-	withKeyOptions auto
-		(Command.Move.startKey to from False)
-		(withFilesInGit $ whenAnnexed $ start auto to from)
-		ps
+optParser :: CmdParamsDesc -> Parser CopyOptions
+optParser desc = CopyOptions
+	<$> Command.Move.optParser desc
+	<*> parseAutoOption
+
+instance DeferredParseClass CopyOptions where
+	finishParse v = CopyOptions
+		<$> finishParse (moveOptions v)
+		<*> pure (autoMode v)
+
+seek :: CopyOptions -> CommandSeek
+seek o = withKeyOptions (Command.Move.keyOptions $ moveOptions o) (autoMode o)
+	(Command.Move.startKey (moveOptions o) False)
+	(withFilesInGit $ whenAnnexed $ start o)
+	(Command.Move.moveFiles $ moveOptions o)
 
 {- A copy is just a move that does not delete the source file.
  - However, auto mode avoids unnecessary copies, and avoids getting or
  - sending non-preferred content. -}
-start :: Bool -> Maybe Remote -> Maybe Remote -> FilePath -> Key -> CommandStart
-start auto to from file key = stopUnless shouldCopy $ 
-	Command.Move.start to from False file key
+start :: CopyOptions -> FilePath -> Key -> CommandStart
+start o file key = stopUnless shouldCopy $ 
+	Command.Move.start (moveOptions o) False file key
   where
 	shouldCopy
-		| auto = want <||> numCopiesCheck file key (<)
+		| autoMode o = want <||> numCopiesCheck file key (<)
 		| otherwise = return True
-	want = case to of
-		Nothing -> wantGet False (Just key) (Just file)
-		Just r -> wantSend False (Just key) (Just file) (Remote.uuid r)
+	want = case Command.Move.fromToOptions (moveOptions o) of
+		ToRemote _ -> 
+			wantGet False (Just key) (Just file)
+		FromRemote dest -> (Remote.uuid <$> getParsed dest) >>=
+			wantSend False (Just key) (Just file)

@@ -16,14 +16,14 @@ import Logs.Group
 
 import qualified Data.Set as S
 
-cmd :: [Command]
-cmd = [command "trust" (paramRepeating paramRemote) seek
-	SectionSetup "trust a repository"]
+cmd :: Command
+cmd = command "trust" SectionSetup "trust a repository"
+	(paramRepeating paramRemote) (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = trustCommand "trust" Trusted
 
-trustCommand :: String -> TrustLevel -> CommandSeek
+trustCommand :: String -> TrustLevel -> CmdParams -> CommandSeek
 trustCommand c level = withWords start
   where
 	start ws = do

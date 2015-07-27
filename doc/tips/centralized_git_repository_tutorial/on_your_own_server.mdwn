@@ -1,0 +1,88 @@
+This tutorial shows how to set up a centralized git repository
+hosted on your own git server, which can be any unix system with
+ssh and git and git-annex installed. A VPS, a home server, etc.
+
+This sets up a very simple git server. More complex setups are possible.
+See for example [[using_gitolite_with_git-annex]].
+
+## set up the server
+
+On the server, you'll want to [[install]] git, and git-annex, if you haven't
+already.
+
+	server# sudo apt-get install git git-annex
+
+Decide where to put the repository on the server, and create a bare git repo
+there. In your home directory is a simple choice:
+
+	server# cd
+	server# git init annex.git --bare --shared
+
+That's the server setup done!
+
+## make a checkout
+
+Now on your laptop, clone the git repository from the server:
+
+	laptop# git clone ssh://example.com/~/annex.git
+	Cloning into 'annex'...
+	warning: You appear to have cloned an empty repository.
+	Checking connectivity... done.
+
+	
+Tell git-annex to use the repository, and describe where this clone is
+located:
+
+
+	laptop# cd annex
+	laptop# git annex init 'my laptop'
+	init my laptop ok
+
+## add files to the repository
+
+Add some files, obtained however.
+
+	# git annex add *.mp4
+	add Haskell_Amuse_Bouche-b9OVqxmI.mp4 (checksum) ok
+	(Recording state in git...)
+	# git commit -m "added a video. I have not watched it yet but it sounds interesting"
+
+Feel free to rename the files, etc, using normal git commands:
+
+	# git mv Haskell_Amuse_Bouche-b9OVqxmI.mp4 Haskell_Amuse_Bouche.mp4
+	# git commit -m 'better filenames'
+
+Now push your changes back to the central repository on your server. As
+well as pushing the master branch, remember to push the git-annex branch,
+which is used to track the file contents.
+
+	# git push origin master git-annex
+	To git@github.com:joeyh/techtalks.git
+	 * [new branch]      master -> master
+	 * [new branch]      git-annex -> git-annex
+
+That push went fast, because it didn't upload large videos to the server.
+
+So, to finish up, tell git-annex to sync all the data in the repository
+to your server:
+
+	# git annex sync --content
+	...
+
+## make more checkouts
+
+So far you have a central repository on your server, and a checkout on a laptop.
+Let's make another checkout elsewhere. Clone the central repository as before.
+
+	elsewhere# git clone ssh://example.com/~/annex.git
+	elsewhere# cd annex
+
+Notice that your clone does not have the contents of any of the files yet.
+If you run `ls`, you'll see broken symlinks. It's easy to download them from
+your server either by running `git annex sync --content`, or by asking
+git-annex to download individual files:
+
+	# git annex get Haskell_Amuse_Bouche.mp4
+	get Haskell_Amuse_Bouche.mp4 (from origin...)
+	12877824   2%  255.11kB/s    00:00
+	ok

@@ -15,27 +15,31 @@ import qualified Annex
 
 import Data.Time.Clock.POSIX
 
-cmd :: [Command]
-cmd = [withOptions forgetOptions $ command "forget" paramNothing seek
-		SectionMaintenance "prune git-annex branch history"]
+cmd :: Command
+cmd = command "forget" SectionMaintenance 
+	"prune git-annex branch history"
+	paramNothing (seek <$$> optParser)
 
-forgetOptions :: [Option]
-forgetOptions = [dropDeadOption]
+data ForgetOptions = ForgetOptions
+	{ dropDead :: Bool
+	}
 
-dropDeadOption :: Option
-dropDeadOption = flagOption [] "drop-dead" "drop references to dead repositories"
+optParser :: CmdParamsDesc -> Parser ForgetOptions
+optParser _ = ForgetOptions
+	<$> switch
+		( long "drop-dead"
+		<> help "drop references to dead repositories"
+		)
 
-seek :: CommandSeek
-seek ps = do
-	dropdead <- getOptionFlag dropDeadOption
-	withNothing (start dropdead) ps
+seek :: ForgetOptions -> CommandSeek
+seek = commandAction . start
 
-start :: Bool -> CommandStart
-start dropdead = do
+start :: ForgetOptions -> CommandStart
+start o = do
 	showStart "forget" "git-annex"
 	now <- liftIO getPOSIXTime
 	let basets = addTransition now ForgetGitHistory noTransitions
-	let ts = if dropdead
+	let ts = if dropDead o
 		then addTransition now ForgetDeadRemotes basets
 		else basets
 	next $ perform ts =<< Annex.getState Annex.force

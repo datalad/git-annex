@@ -20,29 +20,40 @@ import Utility.HumanTime
 import Data.Time.Clock.POSIX
 import qualified Data.Map as M
 
-cmd :: [Command]
-cmd = [withOptions [activityOption, noActOption] $ command "expire" paramExpire seek
-	SectionMaintenance "expire inactive repositories"]
+cmd :: Command
+cmd = command "expire" SectionMaintenance
+	"expire inactive repositories"
+	paramExpire (seek <$$> optParser)
 
 paramExpire :: String
 paramExpire = (paramRepeating $ paramOptional paramRemote ++ ":" ++ paramTime)
 
-activityOption :: Option
-activityOption = fieldOption [] "activity" "Name" "specify activity"
+data ExpireOptions = ExpireOptions
+	{ expireParams :: CmdParams
+	, activityOption :: Maybe Activity
+	, noActOption :: Bool
+	}
 
-noActOption :: Option
-noActOption = flagOption [] "no-act" "don't really do anything"
+optParser :: CmdParamsDesc -> Parser ExpireOptions
+optParser desc = ExpireOptions
+	<$> cmdParams desc
+	<*> optional (option (str >>= parseActivity)
+		( long "activity" <> metavar paramName
+		<> help "specify activity that prevents expiry"
+		))
+	<*> switch
+		( long "no-act"
+		<> help "don't really do anything"
+		)
 
-seek :: CommandSeek
-seek ps = do
-	expire <- parseExpire ps
-	wantact <- getOptionField activityOption (pure . parseActivity)
-	noact <- getOptionFlag noActOption
-	actlog <- lastActivities wantact
+seek :: ExpireOptions -> CommandSeek
+seek o = do
+	expire <- parseExpire (expireParams o)
+	actlog <- lastActivities (activityOption o)
 	u <- getUUID
 	us <- filter (/= u) . M.keys <$> uuidMap
 	descs <- uuidMap
-	seekActions $ pure $ map (start expire noact actlog descs) us
+	seekActions $ pure $ map (start expire (noActOption o) actlog descs) us
 
 start :: Expire -> Bool -> Log Activity -> M.Map UUID String -> UUID -> CommandStart
 start (Expire expire) noact actlog descs u =
@@ -97,10 +108,9 @@ parseExpire ps = do
 		Nothing -> error $ "bad expire time: " ++ s
 		Just d -> Just (now - durationToPOSIXTime d)
 
-parseActivity :: Maybe String -> Maybe Activity
-parseActivity Nothing = Nothing
-parseActivity (Just s) = case readish s of
-	Nothing -> error $ "Unknown activity. Choose from: " ++ 
+parseActivity :: Monad m => String -> m Activity
+parseActivity s = case readish s of
+	Nothing -> fail $ "Unknown activity. Choose from: " ++ 
 		unwords (map show [minBound..maxBound :: Activity])
-	Just v -> Just v
+	Just v -> return v
 

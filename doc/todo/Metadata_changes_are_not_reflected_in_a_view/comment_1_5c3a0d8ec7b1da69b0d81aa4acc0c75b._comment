@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-07-20T17:45:13Z"
+ content="""
+This might be worth adding. But, one of the ways views can be used
+is to use file operations to adjust the metadata that is being viewed.
+
+So, when you delete a file from a view, and git commit, git-annex
+will remove the metadata that had made the file be in the view.
+
+And, if you copy or move a file in a view to a different subdirectory,
+and add and git commit the change, the metadata will be updated to
+update the metadata to reflect the files new location.
+
+As such, I see this as a wishlist todo item at best, and will move it from
+the bugs list to the todo list.
+"""]]

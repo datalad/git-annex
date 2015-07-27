@@ -70,79 +70,94 @@ data StatInfo = StatInfo
 	, referencedData :: Maybe KeyData
 	, repoData :: M.Map UUID KeyData
 	, numCopiesStats :: Maybe NumCopiesStats
+	, infoOptions :: InfoOptions
 	}
 
-emptyStatInfo :: StatInfo
+emptyStatInfo :: InfoOptions -> StatInfo
 emptyStatInfo = StatInfo Nothing Nothing M.empty Nothing
 
 -- a state monad for running Stats in
 type StatState = StateT StatInfo Annex
 
-cmd :: [Command]
-cmd = [noCommit $ dontCheck repoExists $ withOptions (jsonOption : bytesOption : annexedMatchingOptions) $
-	command "info" (paramOptional $ paramRepeating paramItem) seek SectionQuery
-	"shows information about the specified item or the repository as a whole"]
+cmd :: Command
+cmd = noCommit $ dontCheck repoExists $ withGlobalOptions (jsonOption : annexedMatchingOptions) $
+	command "info" SectionQuery
+		"shows  information about the specified item or the repository as a whole"
+		(paramRepeating paramItem) (seek <$$> optParser)
 
-seek :: CommandSeek
-seek = withWords start
+data InfoOptions = InfoOptions
+	{ infoFor :: CmdParams
+	, bytesOption :: Bool
+	}
 
-start :: [String] -> CommandStart
-start [] = do
-	globalInfo
+optParser :: CmdParamsDesc -> Parser InfoOptions
+optParser desc = InfoOptions
+	<$> cmdParams desc
+	<*> switch
+		( long "bytes"
+		<> help "display file sizes in bytes"
+		)
+
+seek :: InfoOptions -> CommandSeek
+seek o = withWords (start o) (infoFor o)
+
+start :: InfoOptions -> [String] -> CommandStart
+start o [] = do
+	globalInfo o
 	stop
-start ps = do
-	mapM_ itemInfo ps
+start o ps = do
+	mapM_ (itemInfo o) ps
 	stop
 
-globalInfo :: Annex ()
-globalInfo = do
+globalInfo :: InfoOptions -> Annex ()
+globalInfo o = do
 	stats <- selStats global_fast_stats global_slow_stats
 	showCustom "info" $ do
-		evalStateT (mapM_ showStat stats) emptyStatInfo
+		evalStateT (mapM_ showStat stats) (emptyStatInfo o)
 		return True
 
-itemInfo :: String -> Annex ()
-itemInfo p = ifM (isdir p)
-	( dirInfo p
+itemInfo :: InfoOptions -> String -> Annex ()
+itemInfo o p = ifM (isdir p)
+	( dirInfo o p
 	, do
 		v <- Remote.byName' p
 		case v of
-			Right r -> remoteInfo r
+			Right r -> remoteInfo o r
 			Left _ -> do
 				v' <- Remote.nameToUUID' p
 				case v' of
-					Right u -> uuidInfo u
-					Left _ -> maybe noinfo (fileInfo p)
+					Right u -> uuidInfo o u
+					Left _ -> maybe noinfo (fileInfo o p)
 						=<< isAnnexLink p
 	)
   where
 	isdir = liftIO . catchBoolIO . (isDirectory <$$> getFileStatus)
 	noinfo = error $ p ++ " is not a directory or an annexed file or a remote or a uuid"
 
-dirInfo :: FilePath -> Annex ()
-dirInfo dir = showCustom (unwords ["info", dir]) $ do
+dirInfo :: InfoOptions -> FilePath -> Annex ()
+dirInfo o dir = showCustom (unwords ["info", dir]) $ do
 	stats <- selStats (tostats dir_fast_stats) (tostats dir_slow_stats)
-	evalStateT (mapM_ showStat stats) =<< getDirStatInfo dir
+	evalStateT (mapM_ showStat stats) =<< getDirStatInfo o dir
 	return True
   where
 	tostats = map (\s -> s dir)
 
-fileInfo :: FilePath -> Key -> Annex ()
-fileInfo file k = showCustom (unwords ["info", file]) $ do
-	evalStateT (mapM_ showStat (file_stats file k)) emptyStatInfo
+fileInfo :: InfoOptions -> FilePath -> Key -> Annex ()
+fileInfo o file k = showCustom (unwords ["info", file]) $ do
+	evalStateT (mapM_ showStat (file_stats file k)) (emptyStatInfo o)
 	return True
 
-remoteInfo :: Remote -> Annex ()
-remoteInfo r = showCustom (unwords ["info", Remote.name r]) $ do
-	info <- map (\(k, v) -> simpleStat k (pure v)) <$> Remote.getInfo r
-	l <- selStats (remote_fast_stats r ++ info) (uuid_slow_stats (Remote.uuid r))
-	evalStateT (mapM_ showStat l) emptyStatInfo
+remoteInfo :: InfoOptions -> Remote -> Annex ()
+remoteInfo o r = showCustom (unwords ["info", Remote.name r]) $ do
+	i <- map (\(k, v) -> simpleStat k (pure v)) <$> Remote.getInfo r
+	l <- selStats (remote_fast_stats r ++ i) (uuid_slow_stats (Remote.uuid r))
+	evalStateT (mapM_ showStat l) (emptyStatInfo o)
 	return True
 
-uuidInfo :: UUID -> Annex ()
-uuidInfo u = showCustom (unwords ["info", fromUUID u]) $ do
+uuidInfo :: InfoOptions -> UUID -> Annex ()
+uuidInfo o u = showCustom (unwords ["info", fromUUID u]) $ do
 	l <- selStats [] ((uuid_slow_stats u))
-	evalStateT (mapM_ showStat l) emptyStatInfo
+	evalStateT (mapM_ showStat l) (emptyStatInfo o)
 	return True
 
 selStats :: [Stat] -> [Stat] -> Annex [Stat]
@@ -298,7 +313,7 @@ local_annex_keys = stat "local annex keys" $ json show $
 
 local_annex_size :: Stat
 local_annex_size = simpleStat "local annex size" $
-	lift . showSizeKeys =<< cachedPresentData
+	showSizeKeys =<< cachedPresentData
 
 remote_annex_keys :: UUID -> Stat
 remote_annex_keys u = stat "remote annex keys" $ json show $
@@ -306,7 +321,7 @@ remote_annex_keys u = stat "remote annex keys" $ json show $
 
 remote_annex_size :: UUID -> Stat
 remote_annex_size u = simpleStat "remote annex size" $
-	lift . showSizeKeys =<< cachedRemoteData u
+	showSizeKeys =<< cachedRemoteData u
 
 known_annex_files :: Stat
 known_annex_files = stat "annexed files in working tree" $ json show $
@@ -314,7 +329,7 @@ known_annex_files = stat "annexed files in working tree" $ json show $
 
 known_annex_size :: Stat
 known_annex_size = simpleStat "size of annexed files in working tree" $
-	lift . showSizeKeys =<< cachedReferencedData
+	showSizeKeys =<< cachedReferencedData
 
 tmp_size :: Stat
 tmp_size = staleSize "temporary object directory size" gitAnnexTmpObjectDir
@@ -323,7 +338,7 @@ bad_data_size :: Stat
 bad_data_size = staleSize "bad keys size" gitAnnexBadDir
 
 key_size :: Key -> Stat
-key_size k = simpleStat "size" $ lift $ showSizeKeys $ foldKeys [k]
+key_size k = simpleStat "size" $ showSizeKeys $ foldKeys [k]
 
 key_name :: Key -> Stat
 key_name k = simpleStat "key" $ pure $ key2file k
@@ -339,7 +354,7 @@ bloom_info = simpleStat "bloom filter size" $ do
 
 	-- Two bloom filters are used at the same time when running
 	-- git-annex unused, so double the size of one.
-	sizer <- lift mkSizer
+	sizer <- mkSizer
 	size <- sizer memoryUnits False . (* 2) . fromIntegral . fst <$>
 		lift bloomBitsHashes
 
@@ -371,10 +386,10 @@ transfer_list = stat desc $ nojson $ lift $ do
 		]
 
 disk_size :: Stat
-disk_size = simpleStat "available local disk space" $ lift $
+disk_size = simpleStat "available local disk space" $
 	calcfree
-		<$> (annexDiskReserve <$> Annex.getGitConfig)
-		<*> inRepo (getDiskFree . gitAnnexDir)
+		<$> (lift $ annexDiskReserve <$> Annex.getGitConfig)
+		<*> (lift $ inRepo $ getDiskFree . gitAnnexDir)
 		<*> mkSizer
   where
 	calcfree reserve (Just have) sizer = unwords
@@ -408,7 +423,7 @@ numcopies_stats = stat "numcopies stats" $ json fmt $
 
 reposizes_stats :: Stat
 reposizes_stats = stat desc $ nojson $ do
-	sizer <- lift mkSizer
+	sizer <- mkSizer
 	l <- map (\(u, kd) -> (u, sizer storageUnits True (sizeKeys kd)))
 		. sortBy (flip (comparing (sizeKeys . snd)))
 		. M.toList
@@ -465,14 +480,14 @@ cachedNumCopiesStats = numCopiesStats <$> get
 cachedRepoData :: StatState (M.Map UUID KeyData)
 cachedRepoData = repoData <$> get
 
-getDirStatInfo :: FilePath -> Annex StatInfo
-getDirStatInfo dir = do
+getDirStatInfo :: InfoOptions -> FilePath -> Annex StatInfo
+getDirStatInfo o dir = do
 	fast <- Annex.getState Annex.fast
 	matcher <- Limit.getMatcher
 	(presentdata, referenceddata, numcopiesstats, repodata) <-
 		Command.Unused.withKeysFilesReferencedIn dir initial
 			(update matcher fast)
-	return $ StatInfo (Just presentdata) (Just referenceddata) repodata (Just numcopiesstats)
+	return $ StatInfo (Just presentdata) (Just referenceddata) repodata (Just numcopiesstats) o
   where
 	initial = (emptyKeyData, emptyKeyData, emptyNumCopiesStats, M.empty)
 	update matcher fast key file vs@(presentdata, referenceddata, numcopiesstats, repodata) =
@@ -529,7 +544,7 @@ updateNumCopiesStats file (NumCopiesStats m) locs = do
 	let !ret = NumCopiesStats m'
 	return ret
 
-showSizeKeys :: KeyData -> Annex String
+showSizeKeys :: KeyData -> StatState String
 showSizeKeys d = do
 	sizer <- mkSizer
 	return $ total sizer ++ missingnote
@@ -549,7 +564,7 @@ staleSize label dirspec = go =<< lift (dirKeys dirspec)
 	onsize 0 = nostat
 	onsize size = stat label $
 		json (++ aside "clean up with git-annex unused") $ do
-			sizer <- lift mkSizer
+			sizer <- mkSizer
 			return $ sizer storageUnits False size
 	keysizes keys = do
 		dir <- lift $ fromRepo dirspec
@@ -562,11 +577,8 @@ aside s = " (" ++ s ++ ")"
 multiLine :: [String] -> String
 multiLine = concatMap (\l -> "\n\t" ++ l)
 
-mkSizer :: Annex ([Unit] -> Bool -> ByteSize -> String)
-mkSizer = ifM (getOptionFlag bytesOption)
+mkSizer :: StatState ([Unit] -> Bool -> ByteSize -> String)
+mkSizer = ifM (bytesOption . infoOptions <$> get)
 	( return (const $ const show)
 	, return roughSize
 	)
-
-bytesOption :: Option
-bytesOption = flagOption [] "bytes" "display file sizes in bytes"

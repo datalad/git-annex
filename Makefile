@@ -12,9 +12,7 @@ ifdef VIM
 all=fast
 endif
 
-build: build-stamp
-build-stamp: $(all)
-	touch $@
+build: $(all)
 
 Build/SysConfig.hs: configure.hs Build/TestConfig.hs Build/Configure.hs
 	if [ "$(CABAL)" = ./Setup ]; then ghc --make Setup; fi
@@ -48,6 +46,8 @@ install: build install-docs Build/InstallDesktopFile
 	install git-annex $(DESTDIR)$(PREFIX)/bin
 	ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-annex-shell
 	./Build/InstallDesktopFile $(PREFIX)/bin/git-annex || true
+	install -d $(DESTDIR)$(PREFIX)/share/bash-completion/completions
+	install -m 0644 bash-completion.bash $(DESTDIR)$(PREFIX)/share/bash-completion/completions/git-annex
 
 test: git-annex
 	./git-annex test
@@ -85,7 +85,7 @@ docs: mans
 
 clean:
 	rm -rf tmp dist git-annex $(mans) configure  *.tix .hpc \
-		doc/.ikiwiki html dist tags Build/SysConfig.hs build-stamp \
+		doc/.ikiwiki html dist tags Build/SysConfig.hs \
 		Setup Build/InstallDesktopFile Build/EvilSplicer \
 		Build/Standalone Build/OSXMkLibs Build/LinuxMkLibs \
 		Build/DistributionUpdate Build/BuildVersion \
@@ -262,4 +262,4 @@ distributionupdate:
 	ghc -Wall --make Build/DistributionUpdate -XPackageImports -optP-include -optPdist/build/autogen/cabal_macros.h
 	./Build/DistributionUpdate
 
-.PHONY: git-annex git-union-merge git-recover-repository tags build-stamp
+.PHONY: git-annex git-union-merge tags

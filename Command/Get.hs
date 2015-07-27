@@ -16,28 +16,39 @@ import Annex.NumCopies
 import Annex.Wanted
 import qualified Command.Move
 
-cmd :: [Command]
-cmd = [withOptions getOptions $ command "get" paramPaths seek
-	SectionCommon "make content of annexed files available"]
+cmd :: Command
+cmd = withGlobalOptions (jobsOption : annexedMatchingOptions) $ 
+	command "get" SectionCommon 
+		"make content of annexed files available"
+		paramPaths (seek <$$> optParser)
 
-getOptions :: [Option]
-getOptions = fromOption : autoOption : jobsOption : annexedMatchingOptions
-	++ incompleteOption : keyOptions
+data GetOptions = GetOptions
+	{ getFiles :: CmdParams
+	, getFrom :: Maybe (DeferredParse Remote)
+	, autoMode :: Bool
+	, keyOptions :: Maybe KeyOptions
+	}
 
-seek :: CommandSeek
-seek ps = do
-	from <- getOptionField fromOption Remote.byNameWithUUID
-	auto <- getOptionFlag autoOption
-	withKeyOptions auto
+optParser :: CmdParamsDesc -> Parser GetOptions
+optParser desc = GetOptions
+	<$> cmdParams desc
+	<*> optional parseFromOption
+	<*> parseAutoOption
+	<*> optional (parseKeyOptions True)
+
+seek :: GetOptions -> CommandSeek
+seek o = do
+	from <- maybe (pure Nothing) (Just <$$> getParsed) (getFrom o)
+	withKeyOptions (keyOptions o) (autoMode o)
 		(startKeys from)
-		(withFilesInGit $ whenAnnexed $ start auto from)
-		ps
+		(withFilesInGit $ whenAnnexed $ start o from)
+		(getFiles o)
 
-start :: Bool -> Maybe Remote -> FilePath -> Key -> CommandStart
-start auto from file key = start' expensivecheck from key (Just file)
+start :: GetOptions -> Maybe Remote -> FilePath -> Key -> CommandStart
+start o from file key = start' expensivecheck from key (Just file)
   where
 	expensivecheck
-		| auto = numCopiesCheck file key (<) <||> wantGet False (Just key) (Just file)
+		| autoMode o = numCopiesCheck file key (<) <||> wantGet False (Just key) (Just file)
 		| otherwise = return True
 
 startKeys :: Maybe Remote -> Key -> CommandStart

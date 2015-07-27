@@ -1,0 +1,20 @@
+Ubuntu is available on multiple phones, and as they are running Ubuntu, git-annex can be installed.
+
+## Installation
+
+Use phablet-config writable-image to make the image writable.
+
+Then install git-annex using apt (apt install git-annex).
+
+## Issues
+
+The Debian package does not include the webapp:
+git-annex version: 5.20141125
+build flags: Assistant Pairing Testsuite S3 Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA CryptoHash
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+remote types: git gcrypt S3 bup directory rsync web tahoe glacier ddar hook external
+
+### Application Compatibility
+
+I have had difficulties getting the Music app to play music in a git-annex repository.
+

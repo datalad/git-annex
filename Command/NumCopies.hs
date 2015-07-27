@@ -13,11 +13,12 @@ import Command
 import Annex.NumCopies
 import Types.Messages
 
-cmd :: [Command]
-cmd = [command "numcopies" paramNumber seek
-	SectionSetup "configure desired number of copies"]
+cmd :: Command
+cmd = command "numcopies" SectionSetup 
+	"configure desired number of copies"
+	paramNumber (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 start :: [String] -> CommandStart

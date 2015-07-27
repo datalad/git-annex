@@ -21,12 +21,13 @@ import qualified Git.Command as Git
 import qualified Git.Branch
 import qualified Command.Sync
 
-cmd :: [Command]
-cmd = [notBareRepo $
-	command "undo" paramPaths seek
-		SectionCommon "undo last change to a file or directory"]
+cmd :: Command
+cmd = notBareRepo $
+	command "undo" SectionCommon 
+		"undo last change to a file or directory"
+		paramPaths (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = do
 	-- Safety first; avoid any undo that would touch files that are not
 	-- in the index.

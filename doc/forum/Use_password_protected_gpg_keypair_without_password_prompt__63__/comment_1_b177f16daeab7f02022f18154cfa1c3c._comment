@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-07-15T15:55:31Z"
+ content="""
+Any method that can be used to provide a passphrase to gpg should work. 
+
+For example, gpg-agent can cache the passphrase.
+
+Or, you could use gpg's passphrase-file option to make it read the
+passphrase from a file. This could be put in ~/.gnupg/gpg.conf.
+Although this configuration is probably no more secure than just removing
+the passphrase from the gpg key..
+"""]]

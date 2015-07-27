@@ -34,7 +34,7 @@ setupAuthorizedKeys msg repodir = case validateSshPubKey $ remoteSshPubKey $ pai
  - the host we paired with. -}
 finishedLocalPairing :: PairMsg -> SshKeyPair -> Assistant ()
 finishedLocalPairing msg keypair = do
-	sshdata <- liftIO $ setupSshKeyPair keypair =<< pairMsgToSshData msg
+	sshdata <- liftIO $ installSshKeyPair keypair =<< pairMsgToSshData msg
 	{- Ensure that we know the ssh host key for the host we paired with.
 	 - If we don't, ssh over to get it. -}
 	liftIO $ unlessM (knownHost $ sshHostName sshdata) $
@@ -69,6 +69,7 @@ pairMsgToSshData msg = do
 		, sshPort = 22
 		, needsPubKey = True
 		, sshCapabilities = [GitAnnexShellCapable, GitCapable, RsyncCapable]
+		, sshRepoUrl = Nothing
 		}
 
 {- Finds the best hostname to use for the host that sent the PairMsg.

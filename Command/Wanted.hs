@@ -17,7 +17,7 @@ import Types.StandardGroups
 
 import qualified Data.Map as M
 
-cmd :: [Command]
+cmd :: Command
 cmd = cmd' "wanted" "get or set preferred content expression" 
 	preferredContentMapRaw
 	preferredContentSet
@@ -27,8 +27,8 @@ cmd'
 	-> String
 	-> Annex (M.Map UUID PreferredContentExpression)
 	-> (UUID -> PreferredContentExpression -> Annex ())
-	-> [Command]
-cmd' name desc getter setter = [command name pdesc seek SectionSetup desc]
+	-> Command
+cmd' name desc getter setter = command name SectionSetup desc pdesc (withParams seek)
   where
 	pdesc = paramPair paramRemote (paramOptional paramExpression)
 

@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-07-17T15:41:53Z"
+ content="""
+I don't feel that migration is an important enough feature to complicate
+the rest of git-annex with special handling of multiple keys that point to
+the same content.
+
+You could have used `mv` in your use case to move the repo to the new drive
+while preseving hard links.
+
+What might be useful is for `git annex migrate` to write a list of the old keys
+someplace. These could then be dropped when the user wants to get rid of them,
+with mixing them up with other unused files. Although if you care about old
+versions of files and don't want to drop them as unused, it seems to me you'd
+also want to be able to access the old keys from before the migration.
+"""]]

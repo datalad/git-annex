@@ -30,8 +30,8 @@ the public repositories that you can clone to try out git-annex.
 
 * [ccc-media-annex](https://github.com/ntnn/ccc-media-annex)  
   `git clone https://github.com/ntnn/ccc-media-annex`  
-  git-annex repository using [the CDN](http://media.ccc.de/) of the german [CCC](http://www.ccc.de/).  
-  Contains a lot of talks (mostly in german) held on events from the CCC as well as other stuff.
+  git-annex repository using [the CDN](http://media.ccc.de/) of the German [CCC](http://www.ccc.de/).  
+  Contains a lot of talks (mostly in German) held on events from the CCC as well as other stuff.
 
 This is a wiki -- add your own public repository to the list!
 See [[tips/centralized_git_repository_tutorial]].

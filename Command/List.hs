@@ -20,28 +20,37 @@ import Remote
 import Logs.Trust
 import Logs.UUID
 import Annex.UUID
-import qualified Annex
 import Git.Types (RemoteName)
 
-cmd :: [Command]
-cmd = [noCommit $ withOptions (allrepos : annexedMatchingOptions) $
-	command "list" paramPaths seek
-		SectionQuery "show which remotes contain files"]
+cmd :: Command
+cmd = noCommit $ withGlobalOptions annexedMatchingOptions $
+	command "list" SectionQuery 
+		"show which remotes contain files"
+		paramPaths (seek <$$> optParser)
 
-allrepos :: Option
-allrepos = flagOption [] "allrepos" "show all repositories, not only remotes"
+data ListOptions = ListOptions
+	{ listThese :: CmdParams
+	, allRepos :: Bool
+	}
 
-seek :: CommandSeek
-seek ps = do
-	list <- getList
+optParser :: CmdParamsDesc -> Parser ListOptions
+optParser desc = ListOptions
+	<$> cmdParams desc
+	<*> switch
+		( long "allrepos"
+		<> help "show all repositories, not only remotes"
+		)
+
+seek :: ListOptions -> CommandSeek
+seek o = do
+	list <- getList o
 	printHeader list
-	withFilesInGit (whenAnnexed $ start list) ps
+	withFilesInGit (whenAnnexed $ start list) (listThese o)
 
-getList :: Annex [(UUID, RemoteName, TrustLevel)]
-getList = ifM (Annex.getFlag $ optionName allrepos)
-	( nubBy ((==) `on` fst3) <$> ((++) <$> getRemotes <*> getAllUUIDs)
-	, getRemotes
-	)
+getList :: ListOptions -> Annex [(UUID, RemoteName, TrustLevel)]
+getList o
+	| allRepos o = nubBy ((==) `on` fst3) <$> ((++) <$> getRemotes <*> getAllUUIDs)
+	| otherwise = getRemotes
   where
 	getRemotes = do
 		rs <- remoteList
@@ -59,7 +68,7 @@ getList = ifM (Annex.getFlag $ optionName allrepos)
 			filter (\t -> thd3 t /= DeadTrusted) rs3
 
 printHeader :: [(UUID, RemoteName, TrustLevel)] -> Annex ()
-printHeader l = liftIO $ putStrLn $ header $ map (\(_, n, t) -> (n, t)) l
+printHeader l = liftIO $ putStrLn $ lheader $ map (\(_, n, t) -> (n, t)) l
 
 start :: [(UUID, RemoteName, TrustLevel)] -> FilePath -> Key -> CommandStart
 start l file key = do
@@ -69,8 +78,8 @@ start l file key = do
 
 type Present = Bool
 
-header :: [(RemoteName, TrustLevel)] -> String
-header remotes = unlines (zipWith formatheader [0..] remotes) ++ pipes (length remotes)
+lheader :: [(RemoteName, TrustLevel)] -> String
+lheader remotes = unlines (zipWith formatheader [0..] remotes) ++ pipes (length remotes)
   where
 	formatheader n (remotename, trustlevel) = pipes n ++ remotename ++ trust trustlevel
 	pipes = flip replicate '|'

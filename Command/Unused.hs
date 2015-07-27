@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2012 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -31,38 +31,47 @@ import Annex.CatFile
 import Types.Key
 import Types.RefSpec
 import Git.FilePath
+import Git.Types
 import Logs.View (is_branchView)
 import Annex.BloomFilter
 
-cmd :: [Command]
-cmd = [withOptions [unusedFromOption, refSpecOption] $
-	command "unused" paramNothing seek
-		SectionMaintenance "look for unused file content"]
+cmd :: Command
+cmd = -- withGlobalOptions [unusedFromOption, refSpecOption] $
+	command "unused" SectionMaintenance 
+		"look for unused file content"
+		paramNothing (seek <$$> optParser)
 
-unusedFromOption :: Option
-unusedFromOption = fieldOption ['f'] "from" paramRemote "remote to check for unused content"
+data UnusedOptions = UnusedOptions
+	{ fromRemote :: Maybe RemoteName
+	, refSpecOption :: Maybe RefSpec
+	}
 
-refSpecOption :: Option
-refSpecOption = fieldOption [] "used-refspec" paramRefSpec "refs to consider used (default: all refs)"
+optParser :: CmdParamsDesc -> Parser UnusedOptions
+optParser _ = UnusedOptions
+	<$> optional (strOption
+		( long "from" <> short 'f' <> metavar paramRemote
+		<> help "remote to check for unused content"
+		))
+	<*> optional (option (eitherReader parseRefSpec)
+		( long "unused-refspec" <> metavar paramRefSpec
+		<> help "refs to consider used (default: all branches)"
+		))
 
-seek :: CommandSeek
-seek = withNothing start
+seek :: UnusedOptions -> CommandSeek
+seek = commandAction . start
 
-{- Finds unused content in the annex. -} 
-start :: CommandStart
-start = do
+start :: UnusedOptions -> CommandStart
+start o = do
 	cfgrefspec <- fromMaybe allRefSpec . annexUsedRefSpec
 		<$> Annex.getGitConfig
-	!refspec <- maybe cfgrefspec (either error id . parseRefSpec)
-		<$> Annex.getField (optionName refSpecOption)
-	from <- Annex.getField (optionName unusedFromOption)
-	let (name, action) = case from of
+	let refspec = fromMaybe cfgrefspec (refSpecOption o)
+	let (name, perform) = case fromRemote o of
 		Nothing -> (".", checkUnused refspec)
 		Just "." -> (".", checkUnused refspec)
 		Just "here" -> (".", checkUnused refspec)
 		Just n -> (n, checkRemoteUnused n refspec)
 	showStart "unused" name
-	next action
+	next perform
 
 checkUnused :: RefSpec -> CommandPerform
 checkUnused refspec = chain 0
@@ -126,11 +135,11 @@ unusedMsg u = unusedMsg' u
 	["Some annexed data is no longer used by any files:"]
 	[dropMsg Nothing]
 unusedMsg' :: [(Int, Key)] -> [String] -> [String] -> String
-unusedMsg' u header trailer = unlines $
-	header ++
+unusedMsg' u mheader mtrailer = unlines $
+	mheader ++
 	table u ++
 	["(To see where data was previously used, try: git log --stat -S'KEY')"] ++
-	trailer
+	mtrailer
 
 remoteUnusedMsg :: Remote -> [(Int, Key)] -> String
 remoteUnusedMsg r u = unusedMsg' u
@@ -267,7 +276,7 @@ data UnusedMaps = UnusedMaps
 	, unusedTmpMap :: UnusedMap
 	}
 
-withUnusedMaps :: (UnusedMaps -> Int -> CommandStart) -> CommandSeek
+withUnusedMaps :: (UnusedMaps -> Int -> CommandStart) -> CmdParams -> CommandSeek
 withUnusedMaps a params = do
 	unused <- readUnusedMap ""
 	unusedbad <- readUnusedMap "bad"

@@ -4,7 +4,6 @@ Setup
 *.o
 tmp
 test
-build-stamp
 Build/SysConfig.hs
 Build/InstallDesktopFile
 Build/EvilSplicer

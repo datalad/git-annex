@@ -17,12 +17,13 @@ import qualified Git.Sha
 import qualified Git.Ref
 import qualified Git.Branch
 
-cmd :: [Command]
-cmd = [notBareRepo $
-	command "proxy" ("-- git command") seek
-		SectionPlumbing "safely bypass direct mode guard"]
+cmd :: Command
+cmd = notBareRepo $
+	command "proxy" SectionPlumbing 
+		"safely bypass direct mode guard"
+		("-- git command") (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 start :: [String] -> CommandStart

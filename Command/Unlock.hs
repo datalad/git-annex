@@ -13,16 +13,17 @@ import Annex.Content
 import Annex.CatFile
 import Utility.CopyFile
 
-cmd :: [Command]
-cmd =
-	[ c "unlock" "unlock files for modification"
-	, c "edit" "same as unlock"
-	]
-  where
-	c n = notDirect . withOptions annexedMatchingOptions 
-		. command n paramPaths seek SectionCommon
+cmd :: Command
+cmd = mkcmd "unlock" "unlock files for modification"
 
-seek :: CommandSeek
+editcmd :: Command
+editcmd = mkcmd "edit" "same as unlock"
+
+mkcmd :: String -> String -> Command
+mkcmd n d = notDirect $ withGlobalOptions annexedMatchingOptions $
+	command n SectionCommon d paramPaths (withParams seek)
+
+seek :: CmdParams -> CommandSeek
 seek = withFilesInGit $ whenAnnexed start
 
 {- The unlock subcommand replaces the symlink with a copy of the file's

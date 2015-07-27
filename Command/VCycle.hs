@@ -14,12 +14,13 @@ import Types.View
 import Logs.View
 import Command.View (checkoutViewBranch)
 
-cmd :: [Command]
-cmd = [notBareRepo $ notDirect $
-	command "vcycle" paramNothing seek SectionMetaData
-	"switch view to next layout"]
+cmd :: Command
+cmd = notBareRepo $ notDirect $
+	command "vcycle" SectionMetaData
+		"switch view to next layout"
+		paramNothing (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withNothing start
 
 start ::CommandStart

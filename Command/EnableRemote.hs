@@ -15,12 +15,13 @@ import qualified Command.InitRemote as InitRemote
 
 import qualified Data.Map as M
 
-cmd :: [Command]
-cmd = [command "enableremote"
+cmd :: Command
+cmd = command "enableremote" SectionSetup
+	"enables use of an existing special remote"
 	(paramPair paramName $ paramOptional $ paramRepeating paramKeyValue)
-	seek SectionSetup "enables use of an existing special remote"]
+	(withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 start :: [String] -> CommandStart

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-07-16T17:36:07Z"
+ content="""
+The most likely reason for the assistant to use CPU like this is when it's running
+the expensive transfer scan to find files that need to be copied from/to
+remotes. That has to consider every file in your repository's work
+tree, and uses git cat-file to extract information from the git
+repository to see where the file is currently located. This is normally
+only done when the assistant starts up.
+
+.git/annex/daemon.log will show when the expensive transfer scan starts and
+finishes. Look for "starting scan" and "finished scan" lines. Or, open the
+webapp and look to see what activities it says it's performing.
+"""]]

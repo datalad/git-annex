@@ -11,12 +11,12 @@ import Common.Annex
 import Command
 import Upgrade
 
-cmd :: [Command]
-cmd = [dontCheck repoExists $ -- because an old version may not seem to exist
-	command "upgrade" paramNothing seek
-		SectionMaintenance "upgrade repository layout"]
+cmd :: Command
+cmd = dontCheck repoExists $ -- because an old version may not seem to exist
+	command "upgrade" SectionMaintenance "upgrade repository layout"
+		paramNothing (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withNothing start
 
 start :: CommandStart

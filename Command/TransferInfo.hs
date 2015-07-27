@@ -15,11 +15,13 @@ import Types.Key
 import qualified CmdLine.GitAnnexShell.Fields as Fields
 import Utility.Metered
 
-cmd :: [Command]
-cmd = [noCommit $ command "transferinfo" paramKey seek SectionPlumbing
-	"updates sender on number of bytes of content received"]
+cmd :: Command
+cmd = noCommit $ 
+	command "transferinfo" SectionPlumbing
+		"updates sender on number of bytes of content received"
+		paramKey (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 {- Security:
@@ -47,8 +49,8 @@ start (k:[]) = do
 				, transferUUID = u
 				, transferKey = key
 				}
-			info <- liftIO $ startTransferInfo file
-			(update, tfile, _) <- mkProgressUpdater t info
+			tinfo <- liftIO $ startTransferInfo file
+			(update, tfile, _) <- mkProgressUpdater t tinfo
 			liftIO $ mapM_ void
 				[ tryIO $ forever $ do
 					bytes <- readUpdate

@@ -9,26 +9,29 @@ module Command.Dead where
 
 import Command
 import Common.Annex
-import qualified Annex
 import Types.TrustLevel
 import Types.Key
 import Command.Trust (trustCommand)
 import Logs.Location
 import Remote (keyLocations)
+import Git.Types
 
-cmd :: [Command]
-cmd = [withOptions [keyOption] $ 
-	command "dead" (paramRepeating paramRemote) seek
-		SectionSetup "hide a lost repository or key"]
+cmd :: Command
+cmd = command "dead" SectionSetup "hide a lost repository or key"
+	(paramRepeating paramRemote) (seek <$$> optParser)
 
-seek :: CommandSeek
-seek ps = maybe (trustCommand "dead" DeadTrusted ps) (flip seekKey ps)
-	=<< Annex.getField "key"
+data DeadOptions = DeadRemotes [RemoteName] | DeadKeys [Key]
 
-seekKey :: String -> CommandSeek
-seekKey ks = case file2key ks of
-	Nothing -> error "Invalid key"
-	Just key -> withNothing (startKey key)
+optParser :: CmdParamsDesc -> Parser DeadOptions
+optParser desc = (DeadRemotes <$> cmdParams desc)
+	<|> (DeadKeys <$> many (option (str >>= parseKey)
+		( long "key" <> metavar paramKey
+		<> help "keys whose content has been irretrievably lost"
+		)))
+
+seek :: DeadOptions -> CommandSeek
+seek (DeadRemotes rs) = trustCommand "dead" DeadTrusted rs
+seek (DeadKeys ks) = seekActions $ pure $ map startKey ks
 
 startKey :: Key -> CommandStart
 startKey key = do

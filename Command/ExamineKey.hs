@@ -11,20 +11,18 @@ import Common.Annex
 import Command
 import CmdLine.Batch
 import qualified Utility.Format
-import Command.Find (formatOption, getFormat, showFormatted, keyVars)
+import Command.Find (parseFormatOption, showFormatted, keyVars)
 import Types.Key
 
-cmd :: [Command]
-cmd = [noCommit $ noMessages $ withOptions [formatOption, jsonOption, batchOption] $
-	command "examinekey" (paramRepeating paramKey) seek
-	SectionPlumbing "prints information from a key"]
+cmd :: Command
+cmd = noCommit $ noMessages $ withGlobalOptions [jsonOption] $
+	command "examinekey" SectionPlumbing 
+		"prints information from a key"
+		(paramRepeating paramKey)
+		(batchable run (optional parseFormatOption))
 
-seek :: CommandSeek
-seek ps = do
-	format <- getFormat
-	batchable withKeys (start format) ps
-
-start :: Maybe Utility.Format.Format -> Batchable Key
-start format _ key = do
-	showFormatted format (key2file key) (keyVars key)
-	stop
+run :: Maybe Utility.Format.Format -> String -> Annex Bool
+run format p = do
+	let k = fromMaybe (error "bad key") $ file2key p
+	showFormatted format (key2file k) (keyVars k)
+	return True

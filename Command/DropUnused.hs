@@ -9,34 +9,42 @@ module Command.DropUnused where
 
 import Common.Annex
 import Command
-import qualified Annex
 import qualified Command.Drop
 import qualified Remote
 import qualified Git
 import Command.Unused (withUnusedMaps, UnusedMaps(..), startUnused)
 import Annex.NumCopies
 
-cmd :: [Command]
-cmd = [withOptions [Command.Drop.dropFromOption] $
-	command "dropunused" (paramRepeating paramNumRange)
-		seek SectionMaintenance "drop unused file content"]
+cmd :: Command
+cmd = command "dropunused" SectionMaintenance
+	"drop unused file content"
+	(paramRepeating paramNumRange) (seek <$$> optParser)
 
-seek :: CommandSeek
-seek ps = do
+data DropUnusedOptions = DropUnusedOptions
+	{ rangesToDrop :: CmdParams
+	, dropFrom :: Maybe (DeferredParse Remote)
+	}
+
+optParser :: CmdParamsDesc -> Parser DropUnusedOptions
+optParser desc = DropUnusedOptions
+	<$> cmdParams desc
+	<*> optional (Command.Drop.parseDropFromOption)
+
+seek :: DropUnusedOptions -> CommandSeek
+seek o = do
 	numcopies <- getNumCopies
-	withUnusedMaps (start numcopies) ps
+	from <- maybe (pure Nothing) (Just <$$> getParsed) (dropFrom o)
+	withUnusedMaps (start from numcopies) (rangesToDrop o)
 
-start :: NumCopies -> UnusedMaps -> Int -> CommandStart
-start numcopies = startUnused "dropunused" (perform numcopies) (performOther gitAnnexBadLocation) (performOther gitAnnexTmpObjectLocation)
+start :: Maybe Remote -> NumCopies -> UnusedMaps -> Int -> CommandStart
+start from numcopies = startUnused "dropunused" (perform from numcopies) (performOther gitAnnexBadLocation) (performOther gitAnnexTmpObjectLocation)
 
-perform :: NumCopies -> Key -> CommandPerform
-perform numcopies key = maybe droplocal dropremote =<< Remote.byNameWithUUID =<< from
-  where
-	dropremote r = do
+perform :: Maybe Remote -> NumCopies -> Key -> CommandPerform
+perform from numcopies key = case from of
+	Just r -> do
 		showAction $ "from " ++ Remote.name r
 		Command.Drop.performRemote key Nothing numcopies r
-	droplocal = Command.Drop.performLocal key Nothing numcopies Nothing
-	from = Annex.getField $ optionName Command.Drop.dropFromOption
+	Nothing -> Command.Drop.performLocal key Nothing numcopies Nothing
 
 performOther :: (Key -> Git.Repo -> FilePath) -> Key -> CommandPerform
 performOther filespec key = do

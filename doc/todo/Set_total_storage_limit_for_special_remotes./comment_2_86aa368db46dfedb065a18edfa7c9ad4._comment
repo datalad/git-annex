@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="mawillcockson"
+ subject="comment 2"
+ date="2015-07-18T19:13:03Z"
+ content="""
+Perhaps server-side [git hooks](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks)?
+
+Maybe a git hook script that uses [inotify](https://en.wikipedia.org/wiki/Inotify) for inode size notifications.
+
+I would have no idea how to implement this, though.
+"""]]

@@ -13,11 +13,12 @@ import Logs.Location
 import Annex.Content
 import Types.Key
 
-cmd :: [Command]
-cmd = [command "setkey" (paramPair paramKey paramPath) seek
-	SectionPlumbing "sets annexed content for a key"]
+cmd :: Command
+cmd = command "setkey" SectionPlumbing "sets annexed content for a key"
+	(paramPair paramKey paramPath)
+	(withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 start :: [String] -> CommandStart

@@ -1,0 +1,12 @@
+It's not possible to use gcrypt with gitlab repos, despite the webapp
+currently offering this as an option. The resulting remote works as far as
+pushes go, but fails with an error "Failed to connect to remote to set it
+up."
+
+It seems that the gitlab repo is somehow in a state where git-annex-shell
+configlist reports it's not yet a git-annex repo, but git-annex-shell
+gcryptsetup fails with "gcryptsetup refusing to run; this repository already has a git-annex uuid!"
+
+This does not happen when I try the same setup on a self-hosted repo.
+Unsure what is causing git-annex-shell to behave this way on gitlab.
+--[[Joey]]

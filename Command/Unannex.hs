@@ -22,12 +22,13 @@ import qualified Git.DiffTree as DiffTree
 import Utility.CopyFile
 import Command.PreCommit (lockPreCommitHook)
 
-cmd :: [Command]
-cmd = [withOptions annexedMatchingOptions $
-	command "unannex" paramPaths seek SectionUtility
-		"undo accidential add command"]
+cmd :: Command
+cmd = withGlobalOptions annexedMatchingOptions $
+	command "unannex" SectionUtility
+		"undo accidential add command"
+		paramPaths (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = wrapUnannex . (withFilesInGit $ whenAnnexed start)
 
 wrapUnannex :: Annex a -> Annex a

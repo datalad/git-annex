@@ -1,0 +1,9 @@
+Day 3 of the optparse-applicative conversion.  
+116 files changed, 1607 insertions(+), 1135 deletions(-)  
+At this point, everything is done except for around 20 sub-commands.
+Probably takes 15 minutes work for each. Will finish plowing through
+it in the evenings.
+
+Meanwhile, made the release of version 5.20150710. The Android build for
+this version is not available yet, since I broke the autobuilder last week
+and haven't fixed it yet.

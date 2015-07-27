@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 5.20150710
+Version: 5.20150727
 Cabal-Version: >= 1.8
 License: GPL-3
 Maintainer: Joey Hess <id@joeyh.name>
@@ -105,14 +105,15 @@ Flag network-uri
   Description: Get Network.URI from the network-uri package
   Default: True
 
-Flag new-time
-  Description: Build with new version of time and without old-locale
+Flag Database
+  Description: Enable building with persistent for database use (disable to build on platforms not supporting TH)
   Default: True
 
 Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends:
    base (>= 4.5 && < 4.9),
+   optparse-applicative (>= 0.10), 
    cryptohash (>= 0.11.0),
    containers (>= 0.5.0.0), 
    exceptions (>= 0.6),
@@ -126,7 +127,7 @@ Executable git-annex
    monad-control, transformers,
    bloomfilter, edit-distance,
    resourcet, http-conduit, http-types,
-   esqueleto, persistent-sqlite, persistent, persistent-template
+   time, old-locale
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs
   Extensions: PackageImports
@@ -142,11 +143,6 @@ Executable git-annex
     Build-Depends: network-uri (>= 2.6), network (>= 2.6)
   else
     Build-Depends: network (< 2.6), network (>= 2.0)
-
-  if flag(new-time)
-    Build-Depends: time (>= 1.5)
-  else
-    Build-Depends: time, old-locale
 
   if flag(Production)
     GHC-Options: -O2
@@ -164,7 +160,7 @@ Executable git-annex
 
   if flag(TestSuite)
     Build-Depends: tasty (>= 0.7), tasty-hunit, tasty-quickcheck, tasty-rerun,
-     optparse-applicative (>= 0.10), crypto-api
+     crypto-api
     CPP-Options: -DWITH_TESTSUITE
 
   if flag(TDFA)
@@ -268,6 +264,10 @@ Executable git-annex
   if flag(TorrentParser)
     Build-Depends: torrent (>= 10000.0.0)
     CPP-Options: -DWITH_TORRENTPARSER
+
+  if flag(Database)
+    Build-Depends: esqueleto, persistent-sqlite, persistent, persistent-template
+    CPP-Options: -DWITH_DATABASE
 
   if flag(AsciiProgress)
     Build-Depends: ascii-progress (<= 0.2.1.2), terminal-size

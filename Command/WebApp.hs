@@ -34,33 +34,37 @@ import Annex.Version
 
 import Control.Concurrent
 import Control.Concurrent.STM
-import Network.Socket (HostName)
-import System.Environment (getArgs)
 
-cmd :: [Command]
-cmd = [ withOptions [listenOption] $
-	noCommit $ noRepo startNoRepo $ dontCheck repoExists $ notBareRepo $
-	command "webapp" paramNothing seek SectionCommon "launch webapp"]
+cmd :: Command
+cmd = noCommit $ dontCheck repoExists $ notBareRepo $
+	noRepo (startNoRepo <$$> optParser) $
+		command "webapp" SectionCommon "launch webapp"
+			paramNothing (seek <$$> optParser)
 
-listenOption :: Option
-listenOption = fieldOption [] "listen" paramAddress
-	"accept connections to this address"
+data WebAppOptions = WebAppOptions
+	{ listenAddress :: Maybe String
+	}
 
-seek :: CommandSeek
-seek ps = do
-	listenhost <- getOptionField listenOption return
-	withNothing (start listenhost) ps
+optParser :: CmdParamsDesc -> Parser WebAppOptions
+optParser _ = WebAppOptions
+	<$> optional (strOption
+		( long "listen" <> metavar paramAddress
+		<> help "accept connections to this address"
+		))
 
-start :: Maybe HostName -> CommandStart
+seek :: WebAppOptions -> CommandSeek
+seek = commandAction . start
+
+start :: WebAppOptions -> CommandStart
 start = start' True
 
-start' :: Bool -> Maybe HostName -> CommandStart
-start' allowauto listenhost = do
+start' :: Bool -> WebAppOptions -> CommandStart
+start' allowauto o = do
 	liftIO ensureInstalled
 	ifM isInitialized 
 		( maybe notinitialized (go <=< needsUpgrade) =<< getVersion
 		, if allowauto
-			then liftIO $ startNoRepo []
+			then liftIO $ startNoRepo o
 			else notinitialized
 		)
 	stop
@@ -68,22 +72,22 @@ start' allowauto listenhost = do
 	go cannotrun = do
 		browser <- fromRepo webBrowser
 		f <- liftIO . absPath =<< fromRepo gitAnnexHtmlShim
-		listenhost' <- if isJust listenhost
-			then pure listenhost
+		listenAddress' <- if isJust (listenAddress o)
+			then pure (listenAddress o)
 			else annexListen <$> Annex.getGitConfig
 		ifM (checkpid <&&> checkshim f)
-			( if isJust listenhost
+			( if isJust (listenAddress o)
 				then error "The assistant is already running, so --listen cannot be used."
 				else do
 					url <- liftIO . readFile
 						=<< fromRepo gitAnnexUrlFile
-					liftIO $ if isJust listenhost'
+					liftIO $ if isJust listenAddress'
 						then putStrLn url
 						else liftIO $ openBrowser browser f url Nothing Nothing
 			, do
-				startDaemon True True Nothing cannotrun listenhost' $ Just $ 
+				startDaemon True True Nothing cannotrun listenAddress' $ Just $ 
 					\origout origerr url htmlshim ->
-						if isJust listenhost'
+						if isJust listenAddress'
 							then maybe noop (`hPutStrLn` url) origout
 							else openBrowser browser htmlshim url origout origerr
 			)
@@ -94,34 +98,27 @@ start' allowauto listenhost = do
 	notinitialized = do
 		g <- Annex.gitRepo
 		liftIO $ cannotStartIn (Git.repoLocation g) "repository has not been initialized by git-annex"
-		liftIO $ firstRun listenhost
+		liftIO $ firstRun o
 
 {- When run without a repo, start the first available listed repository in
  - the autostart file. If none, it's our first time being run! -}
-startNoRepo :: CmdParams -> IO ()
-startNoRepo _ = do
-	-- FIXME should be able to reuse regular getopt, but 
-	-- it currently runs in the Annex monad.
-	args <- getArgs
-	let listenhost = headMaybe $ map (snd . separate (== '=')) $ 
-		filter ("--listen=" `isPrefixOf`) args
-
-	go listenhost =<< liftIO (filterM doesDirectoryExist =<< readAutoStartFile)
+startNoRepo :: WebAppOptions -> IO ()
+startNoRepo o = go =<< liftIO (filterM doesDirectoryExist =<< readAutoStartFile)
   where
-	go listenhost [] = firstRun listenhost
-	go listenhost (d:ds) = do
+	go [] = firstRun o
+	go (d:ds) = do
 		v <- tryNonAsync $ do
 			setCurrentDirectory d
 			Annex.new =<< Git.CurrentRepo.get
 		case v of
 			Left e -> do
 				cannotStartIn d (show e)
-				go listenhost ds
+				go ds
 			Right state -> void $ Annex.eval state $ do
 				whenM (fromRepo Git.repoIsLocalBare) $
 					error $ d ++ " is a bare git repository, cannot run the webapp in it"
 				callCommandAction $
-					start' False listenhost
+					start' False o
 
 cannotStartIn :: FilePath -> String -> IO ()
 cannotStartIn d reason = warningIO $ "unable to start webapp in repository " ++ d ++ ": " ++ reason
@@ -139,8 +136,8 @@ cannotStartIn d reason = warningIO $ "unable to start webapp in repository " ++ 
  - Note that it's important that mainthread never terminates! Much
  - of this complication is due to needing to keep the mainthread running.
  -}
-firstRun :: Maybe HostName -> IO ()
-firstRun listenhost = do
+firstRun :: WebAppOptions -> IO ()
+firstRun o = do
 	checkEnvironmentIO
 	{- Without a repository, we cannot have an Annex monad, so cannot
 	 - get a ThreadState. This is only safe because the
@@ -157,7 +154,7 @@ firstRun listenhost = do
 		startNamedThread urlrenderer $
 			webAppThread d urlrenderer True Nothing
 				(callback signaler)
-				listenhost
+				(listenAddress o)
 				(callback mainthread)
 		waitNamedThreads
   where
@@ -165,7 +162,7 @@ firstRun listenhost = do
 		putMVar v ""
 		takeMVar v
 	mainthread v url htmlshim
-		| isJust listenhost = do
+		| isJust (listenAddress o)= do
 			putStrLn url
 			hFlush stdout
 			go
@@ -179,7 +176,7 @@ firstRun listenhost = do
 			_wait <- takeMVar v
 			state <- Annex.new =<< Git.CurrentRepo.get
 			Annex.eval state $
-				startDaemon True True Nothing Nothing listenhost $ Just $
+				startDaemon True True Nothing Nothing (listenAddress o) $ Just $
 					sendurlback v
 	sendurlback v _origout _origerr url _htmlshim = do
 		recordUrl url

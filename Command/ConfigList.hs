@@ -15,11 +15,13 @@ import qualified Annex.Branch
 import qualified Git.Config
 import Remote.GCrypt (coreGCryptId)
 
-cmd :: [Command]
-cmd = [noCommit $ command "configlist" paramNothing seek
-	SectionPlumbing "outputs relevant git configuration"]
+cmd :: Command
+cmd = noCommit $ 
+	command "configlist" SectionPlumbing 
+		"outputs relevant git configuration"
+		paramNothing (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withNothing start
 
 start :: CommandStart

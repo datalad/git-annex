@@ -30,7 +30,7 @@ import Types.UrlContents
 import Logs.Web
 import qualified Utility.Format
 import Utility.Tmp
-import Command.AddUrl (addUrlFile, downloadRemoteFile, relaxedOption, rawOption)
+import Command.AddUrl (addUrlFile, downloadRemoteFile, parseRelaxedOption, parseRawOption)
 import Annex.Perms
 import Annex.UUID
 import Backend.URL (fromUrl)
@@ -43,34 +43,39 @@ import Types.MetaData
 import Logs.MetaData
 import Annex.MetaData
 
-cmd :: [Command]
-cmd = [notBareRepo $ withOptions [templateOption, relaxedOption, rawOption] $
-	command "importfeed" (paramRepeating paramUrl) seek
-		SectionCommon "import files from podcast feeds"]
+cmd :: Command
+cmd = notBareRepo $
+	command "importfeed" SectionCommon "import files from podcast feeds"
+		(paramRepeating paramUrl) (seek <$$> optParser)
 
-templateOption :: Option
-templateOption = fieldOption [] "template" paramFormat "template for filenames"
-
-seek :: CommandSeek
-seek ps = do
-	tmpl <- getOptionField templateOption return
-	relaxed <- getOptionFlag relaxedOption
-	raw <- getOptionFlag rawOption
-	let opts = Opts { relaxedOpt = relaxed, rawOpt = raw }
-	cache <- getCache tmpl
-	withStrings (start opts cache) ps
-
-data Opts = Opts
-	{ relaxedOpt :: Bool
-	, rawOpt :: Bool
+data ImportFeedOptions = ImportFeedOptions
+	{ feedUrls :: CmdParams
+	, templateOption :: Maybe String
+	, relaxedOption :: Bool
+	, rawOption :: Bool
 	}
 
-start :: Opts -> Cache -> URLString -> CommandStart
+optParser :: CmdParamsDesc -> Parser ImportFeedOptions
+optParser desc = ImportFeedOptions
+	<$> cmdParams desc
+	<*> optional (strOption
+		( long "template" <> metavar paramFormat
+		<> help "template for filenames"
+		))
+	<*> parseRelaxedOption
+	<*> parseRawOption
+
+seek :: ImportFeedOptions -> CommandSeek
+seek o = do
+	cache <- getCache (templateOption o)
+	withStrings (start o cache) (feedUrls o)
+
+start :: ImportFeedOptions -> Cache -> URLString -> CommandStart
 start opts cache url = do
 	showStart "importfeed" url
 	next $ perform opts cache url
 
-perform :: Opts -> Cache -> URLString -> CommandPerform
+perform :: ImportFeedOptions -> Cache -> URLString -> CommandPerform
 perform opts cache url = do
 	v <- findDownloads url
 	case v of
@@ -160,15 +165,15 @@ downloadFeed url
 				, return Nothing
 				)
 
-performDownload :: Opts -> Cache -> ToDownload -> Annex Bool
+performDownload :: ImportFeedOptions -> Cache -> ToDownload -> Annex Bool
 performDownload opts cache todownload = case location todownload of
 	Enclosure url -> checkknown url $
 		rundownload url (takeExtension url) $ \f -> do
 			r <- Remote.claimingUrl url
-			if Remote.uuid r == webUUID || rawOpt opts
+			if Remote.uuid r == webUUID || rawOption opts
 				then do
 					urlinfo <- Url.withUrlOptions (Url.getUrlInfo url)
-					maybeToList <$> addUrlFile (relaxedOpt opts) url urlinfo f
+					maybeToList <$> addUrlFile (relaxedOption opts) url urlinfo f
 				else do
 					res <- tryNonAsync $ maybe
 						(error $ "unable to checkUrl of " ++ Remote.name r)
@@ -178,10 +183,10 @@ performDownload opts cache todownload = case location todownload of
 						Left _ -> return []
 						Right (UrlContents sz _) ->
 							maybeToList <$>
-								downloadRemoteFile r (relaxedOpt opts) url f sz
+								downloadRemoteFile r (relaxedOption opts) url f sz
 						Right (UrlMulti l) -> do
 							kl <- forM l $ \(url', sz, subf) ->
-								downloadRemoteFile r (relaxedOpt opts) url' (f </> fromSafeFilePath subf) sz
+								downloadRemoteFile r (relaxedOption opts) url' (f </> fromSafeFilePath subf) sz
 							return $ if all isJust kl
 								then catMaybes kl
 								else []
@@ -199,7 +204,7 @@ performDownload opts cache todownload = case location todownload of
 						let videourl = Quvi.linkUrl link
 						checkknown videourl $
 							rundownload videourl ("." ++ fromMaybe "m" (Quvi.linkSuffix link)) $ \f ->
-								maybeToList <$> addUrlFileQuvi (relaxedOpt opts) quviurl videourl f
+								maybeToList <$> addUrlFileQuvi (relaxedOption opts) quviurl videourl f
 #else
 		return False
 #endif
@@ -214,8 +219,7 @@ performDownload opts cache todownload = case location todownload of
 		| otherwise = a
 
 	knownitemid = case getItemId (item todownload) of
-		-- only when it's a permalink
-		Just (True, itemid) -> S.member itemid (knownitems cache)
+		Just (_, itemid) -> S.member itemid (knownitems cache)
 		_ -> False
 
 	rundownload url extension getter = do
