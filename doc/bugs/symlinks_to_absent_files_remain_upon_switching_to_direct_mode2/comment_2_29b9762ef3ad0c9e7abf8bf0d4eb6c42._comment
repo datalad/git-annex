@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="3 modes (at user level of visibility) -> 2 modes"
+ date="2015-07-28T20:51:02Z"
+ content="""
+I am now not quite sure why I thought that in direct mode, regardless of OS we had somewhat consistent user experience across OSes:  files either had content fetched by annex (thus not empty) or empty files, such as it is now on crippled filesystems.  But really we have 3 modes now, depending on underlying files system (and not even user's decision) in direct mode we might have broken symlinks or empty files.  Why bother with broken symlinks? just for performance reasons of not needing to rewrite them as empty files?
+"""]]
