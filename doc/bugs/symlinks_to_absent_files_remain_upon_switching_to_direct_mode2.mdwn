@@ -1,0 +1,90 @@
+### Please describe the problem.
+
+subject + what was described  in https://git-annex.branchable.com/forum/some_symlinks_left_in_direct_mode/ some time ago I guess
+
+### What steps will reproduce the problem?
+
+clone git annex repo, switch immediately to direct mode and observe files being left as dangling symlinks, get some content -- they get into normal files, drop them -- broken symlinks again.  I thought (and I believe that it was like that) that in direct mode -- no symlinks to .git/annex regardless of the state (present/absent).
+
+full example /transcript is below
+
+### What version of git-annex are you using? On what operating system?
+
+Debian sid 5.20150710-2
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+$> git clone git://github.com/datalad/testrepo--basic--r1
+Cloning into 'testrepo--basic--r1'...
+remote: Counting objects: 23, done.
+remote: Total 23 (delta 0), reused 0 (delta 0), pack-reused 23
+Receiving objects: 100% (23/23), done.
+Resolving deltas: 100% (3/3), done.
+Checking connectivity... done.
+2 22606.....................................:Tue 28 Jul 2015 04:11:23 PM EDT:.
+hopa:/tmp
+$> cd testrepo--basic--r1
+INFO.txt  test-annex.dat@  test.dat
+2 22607.....................................:Tue 28 Jul 2015 04:11:30 PM EDT:.
+(git)hopa:/tmp/testrepo--basic--r1[master]
+$> ls -l
+total 12
+-rw------- 1 yoh yoh  53 Jul 28 16:11 INFO.txt
+lrwxrwxrwx 1 yoh yoh 186 Jul 28 16:11 test-annex.dat -> .git/annex/objects/zk/71/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b.dat/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b.dat
+-rw------- 1 yoh yoh   4 Jul 28 16:11 test.dat
+2 22608.....................................:Tue 28 Jul 2015 04:11:31 PM EDT:.
+(git)hopa:/tmp/testrepo--basic--r1[master]
+$> git annex direct
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+commit  
+(recording state in git...)
+On branch master
+Your branch is up-to-date with 'origin/master'.
+nothing to commit, working directory clean
+ok
+direct  ok
+2 22609.....................................:Tue 28 Jul 2015 04:11:36 PM EDT:.
+(git)hopa:/tmp/testrepo--basic--r1[master]
+$> ls -l 
+total 12
+-rw------- 1 yoh yoh  53 Jul 28 16:11 INFO.txt
+lrwxrwxrwx 1 yoh yoh 186 Jul 28 16:11 test-annex.dat -> .git/annex/objects/zk/71/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b.dat/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b.dat
+-rw------- 1 yoh yoh   4 Jul 28 16:11 test.dat
+2 22610.....................................:Tue 28 Jul 2015 04:11:38 PM EDT:.
+(git)hopa:/tmp/testrepo--basic--r1[master]
+$> git annex get test-annex.dat
+get test-annex.dat (from web...) 
+/tmp/testrepo--basic--r1/.git/annex/tmp/SHA256E-s4--1 100%[===========================================================================================================================>]       4  --.-KB/s   in 0s     
+ok
+(recording state in git...)
+2 22611.....................................:Tue 28 Jul 2015 04:11:45 PM EDT:.
+(git)hopa:/tmp/testrepo--basic--r1[master]
+$> ls -lta
+total 12
+drwxrwxrwt 126 root root 4020 Jul 28 16:11 ../
+drwx------   3 yoh  yoh   120 Jul 28 16:11 ./
+-rw-------   1 yoh  yoh     4 Jul 28 16:11 test-annex.dat
+drwx------   9 yoh  yoh   300 Jul 28 16:11 .git/
+-rw-------   1 yoh  yoh    53 Jul 28 16:11 INFO.txt
+-rw-------   1 yoh  yoh     4 Jul 28 16:11 test.dat
+2 22612.....................................:Tue 28 Jul 2015 04:11:49 PM EDT:.
+(git)hopa:/tmp/testrepo--basic--r1[master]
+$> git annex drop test-annex.dat
+drop test-annex.dat (checking https://raw.githubusercontent.com/datalad/testrepo--basic--r1/master/test.dat...) ok
+(recording state in git...)
+2 22613.....................................:Tue 28 Jul 2015 04:11:57 PM EDT:.
+(git)hopa:/tmp/testrepo--basic--r1[master]
+$> ls -l 
+total 12
+-rw------- 1 yoh yoh  53 Jul 28 16:11 INFO.txt
+lrwxrwxrwx 1 yoh yoh 186 Jul 28 16:11 test-annex.dat -> .git/annex/objects/zk/71/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b.dat/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b.dat
+-rw------- 1 yoh yoh   4 Jul 28 16:11 test.dat
+
+
+# End of transcript or log.
+"""]]
