@@ -1,3 +1,9 @@
+git-annex (5.20150727-2) unstable; urgency=medium
+
+  * Remove lintian from gbp.conf for now.
+
+ -- Richard Hartmann <richih@debian.org>  Wed, 29 Jul 2015 21:05:31 +0200
+
 git-annex (5.20150727-1) unstable; urgency=medium
 
   * Package 5.20150727
