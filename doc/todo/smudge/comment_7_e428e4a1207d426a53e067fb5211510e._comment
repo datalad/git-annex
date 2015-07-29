@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="torarnv@6179ecd599a0e00709a67306f015e46307a66eb6"
+ nickname="torarnv"
+ subject="Git 2.5 allows smudge filters to not read all of stdin"
+ date="2015-07-29T10:35:07Z"
+ content="""
+It seems git 2.5 allows smudge filters to not read all of stdin:
+
+https://github.com/git/git/blob/master/Documentation/RelNotes/2.5.0.txt
+
+\"
+ * Filter scripts were run with SIGPIPE disabled on the Git side,
+   expecting that they may not read what Git feeds them to filter.
+   We however treated a filter that does not read its input fully
+   before exiting as an error.  We no longer do and ignore EPIPE
+   when writing to feed the filter scripts.
+
+   This changes semantics, but arguably in a good way.  If a filter
+   can produce its output without fully consuming its input using
+   whatever magic, we now let it do so, instead of diagnosing it
+   as a programming error.\"
+"""]]
