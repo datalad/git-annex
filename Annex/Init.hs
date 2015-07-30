@@ -128,6 +128,7 @@ probeCrippledFileSystem = do
 	createAnnexDirectory tmp
 	liftIO $ writeFile f ""
 	uncrippled <- liftIO $ probe f
+	void $ liftIO $ tryIO $ allowWrite f
 	liftIO $ removeFile f
 	return $ not uncrippled
   where
@@ -137,8 +138,9 @@ probeCrippledFileSystem = do
 		createSymbolicLink f f2
 		nukeFile f2
 		preventWrite f
-		allowWrite f
-		return True
+		-- Should be unable to write to the file, but some crippled
+		-- filesystems ignore write bit removals.
+		not <$> catchBoolIO (writeFile f "2" >> return True)
 #endif
 
 checkCrippledFileSystem :: Annex ()

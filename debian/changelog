@@ -6,6 +6,9 @@ git-annex (5.20150728) UNRELEASED; urgency=medium
   * The last release accidentially removed a number of options from the
     copy command. (-J, file matching options, etc). These have been added
     back.
+  * init: Detect when the filesystem is crippled such that it ignores
+    attempts to remove the write bit from a file, and enable direct mode.
+    Seen with eg, NTFS fuse on linux.
 
  -- Joey Hess <id@joeyh.name>  Mon, 27 Jul 2015 15:57:07 -0400
 
