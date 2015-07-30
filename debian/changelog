@@ -1,6 +1,8 @@
 git-annex (5.20150728) UNRELEASED; urgency=medium
 
   * webapp: Support enabling known gitlab.com remotes.
+  * Fix rsync special remote to work when -Jn is used for concurrent
+    uploads.
 
  -- Joey Hess <id@joeyh.name>  Mon, 27 Jul 2015 15:57:07 -0400
 
