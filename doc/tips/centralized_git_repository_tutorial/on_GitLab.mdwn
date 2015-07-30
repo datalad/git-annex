@@ -5,7 +5,7 @@ Since GitLab has [added support for git-annex on their servers](https://about.gi
 you can store your large files on GitLab, quite easily.
 
 Note that as I'm writing this, GitLab is providing this service for free,
-and I don't know how much data they're willing to host for free.
+and will store up to 10 gb per project.
 
 ## create the repository
 

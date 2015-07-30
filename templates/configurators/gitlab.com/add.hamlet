@@ -6,7 +6,10 @@
       <a href="http://gitlab.com/">
         GitLab.com #
       provides free public and private git repositories, and supports #
-      git-annex.
+      git-annex. While the amount of data that can be stored there is limited #
+      (<a href="https://about.gitlab.com/gitlab-com/">to 10 gb currently</a>), #
+      it's enough for smaller repositories, #
+      or as a transfer point between larger repositories.
     <p>
       $case status
         $of UnusableServer msg
