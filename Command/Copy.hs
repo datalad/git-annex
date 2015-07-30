@@ -15,9 +15,10 @@ import Annex.Wanted
 import Annex.NumCopies
 
 cmd :: Command
-cmd = command "copy" SectionCommon
-	"copy content of files to/from another repository"
-	paramPaths (seek <--< optParser)
+cmd = withGlobalOptions (jobsOption : annexedMatchingOptions) $
+	command "copy" SectionCommon
+		"copy content of files to/from another repository"
+		paramPaths (seek <--< optParser)
 
 data CopyOptions = CopyOptions
 	{ moveOptions :: Command.Move.MoveOptions

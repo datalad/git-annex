@@ -3,6 +3,9 @@ git-annex (5.20150728) UNRELEASED; urgency=medium
   * webapp: Support enabling known gitlab.com remotes.
   * Fix rsync special remote to work when -Jn is used for concurrent
     uploads.
+  * The last release accidentially removed a number of options from the
+    copy command. (-J, file matching options, etc). These have been added
+    back.
 
  -- Joey Hess <id@joeyh.name>  Mon, 27 Jul 2015 15:57:07 -0400
 
