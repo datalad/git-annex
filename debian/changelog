@@ -1,3 +1,14 @@
+git-annex (5.20150732) UNRELEASED; urgency=medium
+
+  * Perform a clean shutdown when --time-limit is reached.
+    This includes running queued git commands, and cleanup actions normally
+    run when a command is finished.
+  * fsck: Commit incremental fsck database when --time-limit is reached.
+    Previously, some of the last files fscked did not make it into the
+    database when using --time-limit.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 31 Jul 2015 12:31:39 -0400
+
 git-annex (5.20150731) unstable; urgency=medium
 
   * webapp: Support enabling known gitlab.com remotes.
