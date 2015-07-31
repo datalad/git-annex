@@ -1,0 +1,11 @@
+Made a release this morning, mostly because the release earlier this week
+turns out to have accidentially removed several options from `git annex copy`.
+
+Spent some time this afternoon improving how git-annex shuts down when
+--time-limit is used. This used to be a quick and dirty shutdown, similar
+to if git-annex were ctrl-c'd, but I reworked things so it does a clean
+shutdown, including running any buffered git commands. 
+This made incremental fsck with --time-limit resume much better, since
+it saves the incremental fsck database on shutdown. Also tuned when the
+database gets checkpointed during an incremental fsck, to resume better after
+it's interrupted.
