@@ -33,8 +33,6 @@ import Utility.Rsync
 import Utility.CopyFile
 import Messages.Progress
 import Utility.Metered
-import Utility.PID
-import Annex.Perms
 import Logs.Transfer
 import Types.Creds
 import Types.Key (isChunkKey)
