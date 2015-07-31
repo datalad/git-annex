@@ -23,17 +23,17 @@ main = defaultMainWithHooks simpleUserHooks
 	{ preConf = \_ _ -> do
 		Configure.run Configure.tests
 		return (Nothing, [])	
-	, postInst = myPostInst
+	, postCopy = myPostCopy
 	}
 
-myPostInst :: Args -> InstallFlags -> PackageDescription -> LocalBuildInfo -> IO ()
-myPostInst _ (InstallFlags { installVerbosity }) pkg lbi = do
+myPostCopy :: Args -> CopyFlags -> PackageDescription -> LocalBuildInfo -> IO ()
+myPostCopy _ (CopyFlags { copyVerbosity }) pkg lbi = do
 	installGitAnnexShell dest verbosity pkg lbi
 	installManpages      dest verbosity pkg lbi
 	installDesktopFile   dest verbosity pkg lbi
   where
 	dest      = NoCopyDest
-	verbosity = fromFlag installVerbosity
+	verbosity = fromFlag copyVerbosity
 
 installGitAnnexShell :: CopyDest -> Verbosity -> PackageDescription -> LocalBuildInfo -> IO ()
 installGitAnnexShell copyDest verbosity pkg lbi =
