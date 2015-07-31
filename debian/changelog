@@ -9,6 +9,8 @@ git-annex (5.20150728) UNRELEASED; urgency=medium
   * init: Detect when the filesystem is crippled such that it ignores
     attempts to remove the write bit from a file, and enable direct mode.
     Seen with eg, NTFS fuse on linux.
+  * Fix man page installation by cabal install; all the new man pages are
+    now installed.
 
  -- Joey Hess <id@joeyh.name>  Mon, 27 Jul 2015 15:57:07 -0400
 
