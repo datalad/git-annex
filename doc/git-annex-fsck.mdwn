@@ -37,7 +37,12 @@ With parameters, only the specified files are checked.
 
 * `--more`
 
-  Continue the last incremental fsck pass, where it left off.
+  Resume the last incremental fsck pass, where it left off.
+
+  Resuming may redundantly check some files that were checked
+  before. Any files that fsck found problems with before will be re-checked
+  on resume. Also, checkpoints are made every 1000 files or every 5 minutes
+  during a fsck, and it resumes from the last checkpoint.
 
 * `--incremental-schedule=time`
 
