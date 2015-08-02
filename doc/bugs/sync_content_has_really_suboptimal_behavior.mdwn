@@ -35,6 +35,9 @@ drop SMALLARCHIVE SOMEFILE (checking BACKUP...) ok
 > 
 > [[done]] --[[Joey]]
 
+>> Oh, sorry about the noise then. I assumed the version I was running was the latest since it was pretty recent.
+>> Thanks. -- [[filippo]]
+
 Note: it's extremely and unnecessarily hard to report a bug. There are no
 links leading to instructions or anything on the home page. The "bugs" link
 leads to a list of pages with no instructions. Please at least add
@@ -43,3 +46,5 @@ edit URL.
 
 > Eh? The first thing on the bugs page is a form to add a new post to the
 > list of bugs. --[[Joey]]
+
+>> I'm an idiot. I mistook that for a search box. -- [[filippo]]
