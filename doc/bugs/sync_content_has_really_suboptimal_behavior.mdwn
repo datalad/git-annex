@@ -26,4 +26,20 @@ ok
 drop SMALLARCHIVE SOMEFILE (checking BACKUP...) ok
 """ ]]
 
-Note: it's extremely and unnecessarily hard to report a bug. There are no links leading to instructions or anything on the home page. The "bugs" link leads to a list of pages with no instructions. Please at least add explanation to the bugs page. I had to edit an existing bug and change the edit URL.
+> Indeed, but this was fixed in version 5.20150727.
+> From the changelog:
+>>
+>>   * sync --content: Fix bug that caused files to be uploaded to eg,
+>>    more archive remotes than wanted copies, only to later be dropped
+>>    to satisfy the preferred content settings.
+> 
+> [[done]] --[[Joey]]
+
+Note: it's extremely and unnecessarily hard to report a bug. There are no
+links leading to instructions or anything on the home page. The "bugs" link
+leads to a list of pages with no instructions. Please at least add
+explanation to the bugs page. I had to edit an existing bug and change the
+edit URL.
+
+> Eh? The first thing on the bugs page is a form to add a new post to the
+> list of bugs. --[[Joey]]
