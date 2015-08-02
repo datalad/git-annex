@@ -1,4 +1,4 @@
 This is git-annex's todo list. Link items to [[todo/done]] when done. A more complete [[design/roadmap/]] is also available.
 
 [[!inline pages="./todo/* and !./todo/done and !link(done) 
-and !*/Discussion" actions=yes postform=yes show=0 archive=yes]]
+and !*/Discussion" actions=yes postform=yes postformtext="Add a new todo titled:" show=0 archive=yes]]
