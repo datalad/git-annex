@@ -113,7 +113,7 @@ Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends:
    base (>= 4.5 && < 4.9),
-   optparse-applicative (>= 0.10), 
+   optparse-applicative (>= 0.11.0), 
    cryptohash (>= 0.11.0),
    containers (>= 0.5.0.0), 
    exceptions (>= 0.6),

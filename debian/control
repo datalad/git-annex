@@ -69,7 +69,7 @@ Build-Depends:
 	libghc-tasty-hunit-dev,
 	libghc-tasty-quickcheck-dev,
 	libghc-tasty-rerun-dev,
-	libghc-optparse-applicative-dev (>= 0.10),
+	libghc-optparse-applicative-dev (>= 0.11.0),
 	lsof [linux-any],
 	ikiwiki,
 	perlmagick,
