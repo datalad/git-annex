@@ -1,15 +1,16 @@
-From 04a1230cf4d740d37ab427165eef4b4db2a3898f Mon Sep 17 00:00:00 2001
-From: dummy <dummy@example.com>
-Date: Fri, 3 Jul 2015 02:20:42 +0000
-Subject: [PATCH] build without v1 uuid which needs network-info
+From 87283f9b6f992a7f0e36c7b1bafc288bf2bf106a Mon Sep 17 00:00:00 2001
+From: androidbuilder <androidbuilder@example.com>
+Date: Mon, 11 Nov 2013 02:46:27 +0000
+Subject: [PATCH] build without v1 uuid which needs network-ino
 
 ---
- Data/UUID/Util.hs | 11 -----------
- uuid.cabal        |  2 --
- 2 files changed, 13 deletions(-)
+ Data/UUID/Util.hs |   11 -----------
+ Data/UUID/V1.hs   |    2 --
+ uuid.cabal        |    2 --
+ 3 files changed, 15 deletions(-)
 
 diff --git a/Data/UUID/Util.hs b/Data/UUID/Util.hs
-index 8817f51..0d43b01 100644
+index 581391a..399e508 100644
 --- a/Data/UUID/Util.hs
 +++ b/Data/UUID/Util.hs
 @@ -3,7 +3,6 @@ module Data.UUID.Util (
@@ -23,37 +24,49 @@ index 8817f51..0d43b01 100644
 @@ -13,7 +12,6 @@ import Data.Word
  import Data.Word.Util
  import Data.Bits
- import Data.UUID.Types.Internal
+ import Data.UUID.Internal
 -import Network.Info
  import Data.Int (Int64)
  
  version :: UUID -> Int
-@@ -42,12 +40,3 @@ extractTime uuid =
- 
+@@ -43,12 +41,3 @@ extractTime uuid =
  timeAndVersionToTime :: Word16 -> Word16
  timeAndVersionToTime tv = tv .&. 0x0FFF
--
+ 
 -extractMac :: UUID -> Maybe MAC
--extractMac uuid =
+-extractMac uuid = 
 -  if version uuid == 1
--  then Just $
+-  then Just $ 
 -       MAC (node_0 unpacked) (node_1 unpacked) (node_2 unpacked) (node_3 unpacked) (node_4 unpacked) (node_5 unpacked)
 -  else Nothing
 -  where
 -    unpacked = unpack uuid
+-
+diff --git a/Data/UUID/V1.hs b/Data/UUID/V1.hs
+index 067e729..ca4c235 100644
+--- a/Data/UUID/V1.hs
++++ b/Data/UUID/V1.hs
+@@ -37,8 +37,6 @@ import System.IO.Unsafe
+ 
+ import qualified System.Random as R
+ 
+-import Network.Info
+-
+ import Data.UUID.Builder
+ import Data.UUID.Internal
+ 
 diff --git a/uuid.cabal b/uuid.cabal
-index 2fa548b..9d86fd2 100644
+index 0a53059..57b1b86 100644
 --- a/uuid.cabal
 +++ b/uuid.cabal
-@@ -30,7 +30,6 @@ Library
-                 binary >= 0.4 && < 0.8,
-                 bytestring >= 0.9 && < 0.11,
+@@ -32,14 +32,12 @@ Library
                  cryptohash >= 0.7 && < 0.12,
+                 deepseq == 1.3.*,
+                 hashable (>= 1.1.1.0 && < 1.2.0) || (>= 1.2.1 && < 1.3),
 -                network-info == 0.2.*,
-                 random >= 1.0.1 && < 1.2,
-                 time >= 1.1 && < 1.6,
-                 uuid-types >= 1.0 && < 2
-@@ -38,7 +37,6 @@ Library
+                 random >= 1.0.1 && < 1.1,
+                 time >= 1.1 && < 1.5
+ 
   Exposed-Modules:
     Data.UUID
     Data.UUID.Util
@@ -62,5 +75,5 @@ index 2fa548b..9d86fd2 100644
     Data.UUID.V4
     Data.UUID.V5
 -- 
-2.1.4
+1.7.10.4
 

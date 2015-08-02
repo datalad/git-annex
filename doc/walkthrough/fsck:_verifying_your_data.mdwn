@@ -14,3 +14,23 @@ you're using sha1 and don't want to spend a long time checksumming everything.
 
 	# git annex fsck my_cool_big_file
 	fsck my_cool_big_file (checksum...) ok
+
+If you have a large repo, you may want to check it in smaller steps. You may
+start and continue an aborted or time-limited check.
+
+	# git annex fsck -S <optional-directory> --time-limit=1m
+	fsck some_file (checksum...) ok
+	fsck my_cool_big_file (checksum...) ok
+	
+	  Time limit (1m) reached!
+
+	# git annex fsck -m <optional-directory>
+	fsck my_other_big_file (checksum...) ok
+	...
+
+Use `-S` or `--incremental` to start the incremental check. Use `-m` 
+or `--more` to continue the started check and continue where it left 
+off. Note that saving the progress of `fsck` is performed after every 
+1000 files or 5 minutes or when `--time-limit` occours. There may be 
+files that will be checked again when `git-annex` exists abnormally 
+eg. Ctrl+C and the check is restarted.

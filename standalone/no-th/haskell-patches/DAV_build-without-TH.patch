@@ -1,6 +1,6 @@
-From 6d4a7c63d737c9215ee55996715250c89f14c398 Mon Sep 17 00:00:00 2001
+From e54cfacbb9fb24f75d3d93cd8ee6da67b161574f Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Fri, 3 Jul 2015 01:36:31 +0000
+Date: Thu, 16 Oct 2014 02:51:28 +0000
 Subject: [PATCH] remove TH
 
 ---
@@ -10,7 +10,7 @@ Subject: [PATCH] remove TH
  3 files changed, 306 insertions(+), 46 deletions(-)
 
 diff --git a/DAV.cabal b/DAV.cabal
-index f78c2e5..1ec4d80 100644
+index 95fffd8..5669c51 100644
 --- a/DAV.cabal
 +++ b/DAV.cabal
 @@ -47,33 +47,7 @@ library
@@ -27,7 +27,7 @@ index f78c2e5..1ec4d80 100644
 -                     , containers
 -                     , data-default
 -                     , either >= 4.3
--                     , errors < 2.0
+-                     , errors
 -                     , exceptions
 -                     , http-client >= 0.2
 -                     , http-client-tls >= 0.2
@@ -49,7 +49,7 @@ index f78c2e5..1ec4d80 100644
  source-repository head
    type:     git
 diff --git a/Network/Protocol/HTTP/DAV.hs b/Network/Protocol/HTTP/DAV.hs
-index 5d5d6fd..7265d42 100644
+index 4c6d68f..55979b6 100644
 --- a/Network/Protocol/HTTP/DAV.hs
 +++ b/Network/Protocol/HTTP/DAV.hs
 @@ -82,6 +82,7 @@ import Network.HTTP.Types (hContentType, Method, Status, RequestHeaders, unautho
@@ -416,5 +416,5 @@ index 0ecd476..1653bf6 100644
 +     Data.Functor.<$> (_f_a3k7 __userAgent'_a3kg))
 +{-# INLINE userAgent #-}
 -- 
-2.1.4
+2.1.1
 

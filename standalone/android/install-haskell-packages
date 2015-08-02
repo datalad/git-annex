@@ -55,7 +55,7 @@ patched () {
 	if [ -e config.guess ]; then
 		cp /usr/share/misc/config.guess .
 	fi
-	cabal install # --reinstall --force-reinstalls
+	cabal install # --force-reinstalls --reinstall
 	rm -f cabal.config
 
 	rm -rf $pkg*
@@ -65,7 +65,7 @@ patched () {
 installgitannexdeps () {
 	pushd ../..
 	ln -sf standalone/android/cabal.config
-	cabal install --only-dependencies "$@"
+	cabal install --only-dependencies "$@" # --force-reinstalls --reinstall
 	rm -f cabal.config
 	popd
 }
@@ -86,9 +86,9 @@ EOF
 	patched iproute
 	patched primitive
 	patched socks
-	patched entropy
 	patched vector
 	patched stm-chans
+	patched persistent
 	patched profunctors
 	patched skein
 	patched lens
@@ -97,32 +97,35 @@ EOF
 	patched persistent-template
 	patched system-filepath
 	patched optparse-applicative
-	patched warp
 	patched wai-app-static
+	patched yesod-routes
 	patched shakespeare
 	patched yesod-core
+	patched yesod-persistent
 	patched yesod-form
+	patched crypto-numbers
 	patched clock
 	patched yesod-auth
 	patched yesod
 	patched process-conduit
 	patched DAV
 	patched yesod-static
-	patched uuid
 	patched dns
 	patched gnutls
 	patched unbounded-delays
+	patched gnuidn
 	patched network-protocol-xmpp
+	patched uuid
 
 	cd ..
 
 	installgitannexdeps -fAndroid -f-Pairing
 }
 
+cabal update
 setupcabal
 
 # Install packages for host ghc.
-cabal update
 installgitannexdeps
 
 # Install packages for cross ghc, with patches as necessary.
