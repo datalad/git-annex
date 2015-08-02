@@ -8,10 +8,6 @@
 # versions that have been gotten working. To update, delete the
 # cabal.config, run this script with an empty cabal and fix up the broken
 # patches, and then use cabal freeze to generate a new cabal.config.
-#
-# This only installs haskell packages for ghc-android. The host ghc
-# also needs to have all the git-annex build deps installed, in similar
-# versions. Those are installed from Debian packages using apt.
 
 set -e
 
@@ -59,7 +55,7 @@ patched () {
 	if [ -e config.guess ]; then
 		cp /usr/share/misc/config.guess .
 	fi
-	cabal install # --reinstall --force-reinstalls
+	cabal install # --force-reinstalls --reinstall
 	rm -f cabal.config
 
 	rm -rf $pkg*
@@ -69,7 +65,7 @@ patched () {
 installgitannexdeps () {
 	pushd ../..
 	ln -sf standalone/android/cabal.config
-	cabal install --only-dependencies "$@"
+	cabal install --only-dependencies "$@" # --force-reinstalls --reinstall
 	rm -f cabal.config
 	popd
 }
@@ -90,7 +86,6 @@ EOF
 	patched iproute
 	patched primitive
 	patched socks
-	# patched entropy # needed for newer version, not current pinned version
 	patched vector
 	patched stm-chans
 	patched persistent
@@ -103,10 +98,8 @@ EOF
 	patched system-filepath
 	patched optparse-applicative
 	patched wai-app-static
-	patched shakespeare
-	patched shakespeare-css
-	patched shakespeare-js
 	patched yesod-routes
+	patched shakespeare
 	patched yesod-core
 	patched yesod-persistent
 	patched yesod-form
@@ -114,27 +107,28 @@ EOF
 	patched clock
 	patched yesod-auth
 	patched yesod
-	patched shakespeare-text
 	patched process-conduit
 	patched DAV
 	patched yesod-static
-	patched uuid
 	patched dns
 	patched gnutls
 	patched unbounded-delays
 	patched gnuidn
 	patched network-protocol-xmpp
+	patched uuid
 
 	cd ..
 
 	installgitannexdeps -fAndroid -f-Pairing
 }
 
-# native cabal needs its own update
 cabal update
-
-PATH=$HOME/.ghc/$(cat abiversion)/bin:$HOME/.ghc/$(cat abiversion)/arm-linux-androideabi/bin:$PATH
 setupcabal
-cabal update
 
+# Install packages for host ghc.
+installgitannexdeps
+
+# Install packages for cross ghc, with patches as necessary.
+PATH=$HOME/.ghc/$(cat abiversion)/bin:$HOME/.ghc/$(cat abiversion)/arm-linux-androideabi/bin:$PATH
+cabal update
 install_pkgs
