@@ -1,0 +1,153 @@
+From dca2a30ca06865bf66cd25cc14b06f5d28190231 Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Thu, 16 Oct 2014 02:46:57 +0000
+Subject: [PATCH] remove TH
+
+---
+ Text/Shakespeare/Text.hs | 125 +++++------------------------------------------
+ 1 file changed, 11 insertions(+), 114 deletions(-)
+
+diff --git a/Text/Shakespeare/Text.hs b/Text/Shakespeare/Text.hs
+index 6865a5a..e25a8be 100644
+--- a/Text/Shakespeare/Text.hs
++++ b/Text/Shakespeare/Text.hs
+@@ -7,18 +7,18 @@ module Text.Shakespeare.Text
+     ( TextUrl
+     , ToText (..)
+     , renderTextUrl
+-    , stext
+-    , text
+-    , textFile
+-    , textFileDebug
+-    , textFileReload
+-    , st -- | strict text
+-    , lt -- | lazy text, same as stext :)
++    --, stext
++    --, text
++    --, textFile
++    --, textFileDebug
++    --, textFileReload
++    --, st -- | strict text
++    --, lt -- | lazy text, same as stext :)
+     -- * Yesod code generation
+-    , codegen
+-    , codegenSt
+-    , codegenFile
+-    , codegenFileReload
++    --, codegen
++    --, codegenSt
++    --, codegenFile
++    --, codegenFileReload
+     ) where
+ 
+ import Language.Haskell.TH.Quote (QuasiQuoter (..))
+@@ -45,106 +45,3 @@ instance ToText Int32 where toText = toText . show
+ instance ToText Int64 where toText = toText . show
+ instance ToText Int   where toText = toText . show
+ 
+-settings :: Q ShakespeareSettings
+-settings = do
+-  toTExp <- [|toText|]
+-  wrapExp <- [|id|]
+-  unWrapExp <- [|id|]
+-  return $ defaultShakespeareSettings { toBuilder = toTExp
+-  , wrap = wrapExp
+-  , unwrap = unWrapExp
+-  }
+-
+-
+-stext, lt, st, text :: QuasiQuoter
+-stext = 
+-  QuasiQuoter { quoteExp = \s -> do
+-    rs <- settings
+-    render <- [|toLazyText|]
+-    rendered <- shakespeareFromString rs { justVarInterpolation = True } s
+-    return (render `AppE` rendered)
+-    }
+-lt = stext
+-
+-st = 
+-  QuasiQuoter { quoteExp = \s -> do
+-    rs <- settings
+-    render <- [|TL.toStrict . toLazyText|]
+-    rendered <- shakespeareFromString rs { justVarInterpolation = True } s
+-    return (render `AppE` rendered)
+-    }
+-
+-text = QuasiQuoter { quoteExp = \s -> do
+-    rs <- settings
+-    quoteExp (shakespeare rs) $ filter (/='\r') s
+-    }
+-
+-
+-textFile :: FilePath -> Q Exp
+-textFile fp = do
+-    rs <- settings
+-    shakespeareFile rs fp
+-
+-
+-textFileDebug :: FilePath -> Q Exp
+-textFileDebug = textFileReload
+-{-# DEPRECATED textFileDebug "Please use textFileReload instead" #-}
+-
+-textFileReload :: FilePath -> Q Exp
+-textFileReload fp = do
+-    rs <- settings
+-    shakespeareFileReload rs fp
+-
+--- | codegen is designed for generating Yesod code, including templates
+--- So it uses different interpolation characters that won't clash with templates.
+-codegenSettings :: Q ShakespeareSettings
+-codegenSettings = do
+-  toTExp <- [|toText|]
+-  wrapExp <- [|id|]
+-  unWrapExp <- [|id|]
+-  return $ defaultShakespeareSettings { toBuilder = toTExp
+-  , wrap = wrapExp
+-  , unwrap = unWrapExp
+-  , varChar = '~'
+-  , urlChar = '*'
+-  , intChar = '&'
+-  , justVarInterpolation = True -- always!
+-  }
+-
+--- | codegen is designed for generating Yesod code, including templates
+--- So it uses different interpolation characters that won't clash with templates.
+--- You can use the normal text quasiquoters to generate code
+-codegen :: QuasiQuoter
+-codegen =
+-  QuasiQuoter { quoteExp = \s -> do
+-    rs <- codegenSettings
+-    render <- [|toLazyText|]
+-    rendered <- shakespeareFromString rs { justVarInterpolation = True } s
+-    return (render `AppE` rendered)
+-    }
+-
+--- | Generates strict Text
+--- codegen is designed for generating Yesod code, including templates
+--- So it uses different interpolation characters that won't clash with templates.
+-codegenSt :: QuasiQuoter
+-codegenSt =
+-  QuasiQuoter { quoteExp = \s -> do
+-    rs <- codegenSettings
+-    render <- [|TL.toStrict . toLazyText|]
+-    rendered <- shakespeareFromString rs { justVarInterpolation = True } s
+-    return (render `AppE` rendered)
+-    }
+-
+-codegenFileReload :: FilePath -> Q Exp
+-codegenFileReload fp = do
+-    rs <- codegenSettings
+-    render <- [|TL.toStrict . toLazyText|]
+-    rendered <- shakespeareFileReload rs{ justVarInterpolation = True } fp
+-    return (render `AppE` rendered)
+-
+-codegenFile :: FilePath -> Q Exp
+-codegenFile fp = do
+-    rs <- codegenSettings
+-    render <- [|TL.toStrict . toLazyText|]
+-    rendered <- shakespeareFile rs{ justVarInterpolation = True } fp
+-    return (render `AppE` rendered)
+-- 
+2.1.1
+

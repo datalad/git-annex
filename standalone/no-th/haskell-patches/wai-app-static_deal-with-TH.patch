@@ -1,8 +1,12 @@
-From a020dd27eda45263db6ac887df4a94efb6ca86db Mon Sep 17 00:00:00 2001
+From 3aef808eee43c973ae1fbf6e8769d89b7f0d355b Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Thu, 2 Jul 2015 21:36:02 +0000
+Date: Tue, 10 Jun 2014 14:47:42 +0000
 Subject: [PATCH] deal with TH
 
+Export modules referenced by it.
+
+Should not need these icons in git-annex, so not worth using the Evil
+Splicer.
 ---
  Network/Wai/Application/Static.hs | 4 ----
  WaiAppStatic/Storage/Embedded.hs  | 8 ++++----
@@ -10,10 +14,10 @@ Subject: [PATCH] deal with TH
  3 files changed, 5 insertions(+), 11 deletions(-)
 
 diff --git a/Network/Wai/Application/Static.hs b/Network/Wai/Application/Static.hs
-index 228582d..7d72bb0 100644
+index db2b835..b2c1aec 100644
 --- a/Network/Wai/Application/Static.hs
 +++ b/Network/Wai/Application/Static.hs
-@@ -34,8 +34,6 @@ import Control.Monad.IO.Class (liftIO)
+@@ -33,8 +33,6 @@ import Control.Monad.IO.Class (liftIO)
  
  import Blaze.ByteString.Builder (toByteString)
  
@@ -22,10 +26,10 @@ index 228582d..7d72bb0 100644
  import Data.Text (Text)
  import qualified Data.Text as T
  
-@@ -218,8 +216,6 @@ staticAppPieces _ _ req sendResponse
+@@ -198,8 +196,6 @@ staticAppPieces _ _ req sendResponse
          H.status405
          [("Content-Type", "text/plain")]
-         "Only GET or HEAD is supported"
+         "Only GET is supported"
 -staticAppPieces _ [".hidden", "folder.png"] _ sendResponse = sendResponse $ W.responseLBS H.status200 [("Content-Type", "image/png")] $ L.fromChunks [$(embedFile "images/folder.png")]
 -staticAppPieces _ [".hidden", "haskell.png"] _ sendResponse = sendResponse $ W.responseLBS H.status200 [("Content-Type", "image/png")] $ L.fromChunks [$(embedFile "images/haskell.png")]
  staticAppPieces ss rawPieces req sendResponse = liftIO $ do
@@ -51,10 +55,10 @@ index daa6e50..9873d4e 100644
 -import WaiAppStatic.Storage.Embedded.TH
 +--import WaiAppStatic.Storage.Embedded.TH
 diff --git a/wai-app-static.cabal b/wai-app-static.cabal
-index 4cca237..3fbfcee 100644
+index ef6f898..9a59d71 100644
 --- a/wai-app-static.cabal
 +++ b/wai-app-static.cabal
-@@ -35,7 +35,6 @@ library
+@@ -33,7 +33,6 @@ library
                     , containers                >= 0.2
                     , time                      >= 1.1.4
                     , old-locale                >= 1.0.0.2
@@ -62,7 +66,7 @@ index 4cca237..3fbfcee 100644
                     , text                      >= 0.7
                     , blaze-builder             >= 0.2.1.4
                     , base64-bytestring         >= 0.1
-@@ -63,9 +62,8 @@ library
+@@ -61,9 +60,8 @@ library
                       WaiAppStatic.Listing
                       WaiAppStatic.Types
                       WaiAppStatic.CmdLine
@@ -74,5 +78,5 @@ index 4cca237..3fbfcee 100644
      extensions:     CPP
  
 -- 
-2.1.4
+2.0.0
 

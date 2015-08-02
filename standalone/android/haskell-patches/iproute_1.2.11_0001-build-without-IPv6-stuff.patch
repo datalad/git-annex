@@ -1,31 +1,31 @@
-From b2b88224426fe6c7c72ebdec2946fd1ddbacbfaf Mon Sep 17 00:00:00 2001
-From: dummy <dummy@example.com>
-Date: Thu, 2 Jul 2015 20:42:50 +0000
+From 7beec2e707d59f9573aa2dc7c57bd2a62f16b480 Mon Sep 17 00:00:00 2001
+From: Joey Hess <joey@kitenet.net>
+Date: Wed, 15 May 2013 19:06:03 -0400
 Subject: [PATCH] build without IPv6 stuff
 
 ---
- Data/IP.hs      | 2 +-
- Data/IP/Addr.hs | 3 +++
+ Data/IP.hs      |    2 +-
+ Data/IP/Addr.hs |    3 +++
  2 files changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/Data/IP.hs b/Data/IP.hs
-index 306a488..e3f252e 100644
+index cffef93..ea486c9 100644
 --- a/Data/IP.hs
 +++ b/Data/IP.hs
 @@ -6,7 +6,7 @@ module Data.IP (
    -- ** IP data
      IP (..)
    , IPv4, toIPv4, fromIPv4, fromHostAddress, toHostAddress
--  , IPv6, toIPv6, toIPv6b, fromIPv6, fromIPv6b, fromHostAddress6, toHostAddress6
-+  , IPv6, toIPv6, toIPv6b, fromIPv6, fromIPv6b -- , fromHostAddress6, toHostAddress6
+-  , IPv6, toIPv6, fromIPv6, fromHostAddress6, toHostAddress6
++  , IPv6, toIPv6, fromIPv6 -- , fromHostAddress6, toHostAddress6
    -- ** IP range data
    , IPRange (..)
    , AddrRange (addr, mask, mlen)
 diff --git a/Data/IP/Addr.hs b/Data/IP/Addr.hs
-index 8d4131e..868a572 100644
+index faaf0c7..5b556fb 100644
 --- a/Data/IP/Addr.hs
 +++ b/Data/IP/Addr.hs
-@@ -376,6 +376,7 @@ toHostAddress (IP4 addr4)
+@@ -312,6 +312,7 @@ toHostAddress (IP4 addr4)
    | byteOrder == LittleEndian = fixByteOrder addr4
    | otherwise                 = addr4
  
@@ -33,7 +33,7 @@ index 8d4131e..868a572 100644
  -- | The 'fromHostAddress6' function converts 'HostAddress6' to 'IPv6'.
  fromHostAddress6 :: HostAddress6 -> IPv6
  fromHostAddress6 = IP6
-@@ -384,6 +385,8 @@ fromHostAddress6 = IP6
+@@ -320,6 +321,8 @@ fromHostAddress6 = IP6
  toHostAddress6 :: IPv6 -> HostAddress6
  toHostAddress6 (IP6 addr6) = addr6
  
@@ -43,5 +43,5 @@ index 8d4131e..868a572 100644
  fixByteOrder s = d1 .|. d2 .|. d3 .|. d4
    where
 -- 
-2.1.4
+1.7.10.4
 

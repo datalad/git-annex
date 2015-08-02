@@ -1,6 +1,6 @@
-From 21af25e922b00171c07f951a235ff7d7edbbd2be Mon Sep 17 00:00:00 2001
+From 478fc7ae42030c1345e75727e54e1f8f895d3e22 Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Thu, 2 Jul 2015 20:14:40 +0000
+Date: Wed, 15 Oct 2014 15:16:21 +0000
 Subject: [PATCH] avoid accept4
 
 ---
@@ -8,19 +8,19 @@ Subject: [PATCH] avoid accept4
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/Network/Socket.hsc b/Network/Socket.hsc
-index 6553bfc..802a7e9 100644
+index 2fe62ee..94db7a4 100644
 --- a/Network/Socket.hsc
 +++ b/Network/Socket.hsc
-@@ -489,7 +489,7 @@ accept sock@(MkSocket s family stype protocol status) = do
-                 return new_sock
+@@ -511,7 +511,7 @@ accept sock@(MkSocket s family stype protocol status) = do
  #else
       with (fromIntegral sz) $ \ ptr_len -> do
+      new_sock <-
 -# ifdef HAVE_ACCEPT4
 +#if 0
-      new_sock <- throwSocketErrorIfMinus1RetryMayBlock "accept"
+                  throwSocketErrorIfMinus1RetryMayBlock "accept"
                          (threadWaitRead (fromIntegral s))
                          (c_accept4 s sockaddr ptr_len (#const SOCK_NONBLOCK))
-@@ -1565,7 +1565,7 @@ foreign import CALLCONV SAFE_ON_WIN "connect"
+@@ -1602,7 +1602,7 @@ foreign import CALLCONV SAFE_ON_WIN "connect"
    c_connect :: CInt -> Ptr SockAddr -> CInt{-CSockLen???-} -> IO CInt
  foreign import CALLCONV unsafe "accept"
    c_accept :: CInt -> Ptr SockAddr -> Ptr CInt{-CSockLen???-} -> IO CInt
@@ -30,5 +30,5 @@ index 6553bfc..802a7e9 100644
    c_accept4 :: CInt -> Ptr SockAddr -> Ptr CInt{-CSockLen???-} -> CInt -> IO CInt
  #endif
 -- 
-2.1.4
+2.1.1
 

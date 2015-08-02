@@ -1,6 +1,6 @@
-From bec7dac77cc7fbe9a620c371d7c2cdbcf234eac6 Mon Sep 17 00:00:00 2001
+From f1feea61dcba0b16afed5ce8dd5d2433fe505461 Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Fri, 3 Jul 2015 00:39:53 +0000
+Date: Thu, 16 Oct 2014 02:15:23 +0000
 Subject: [PATCH] hack TH
 
 ---
@@ -15,7 +15,7 @@ Subject: [PATCH] hack TH
  8 files changed, 213 insertions(+), 288 deletions(-)
 
 diff --git a/Yesod/Core.hs b/Yesod/Core.hs
-index f7436e6..2fa62cc 100644
+index 9b29317..7c0792d 100644
 --- a/Yesod/Core.hs
 +++ b/Yesod/Core.hs
 @@ -31,16 +31,16 @@ module Yesod.Core
@@ -45,7 +45,7 @@ index f7436e6..2fa62cc 100644
        -- * Sessions
      , SessionBackend (..)
      , customizeSessionCookies
-@@ -90,17 +90,15 @@ module Yesod.Core
+@@ -87,17 +87,15 @@ module Yesod.Core
      , readIntegral
        -- * Shakespeare
        -- ** Hamlet
@@ -68,10 +68,10 @@ index f7436e6..2fa62cc 100644
      , renderCssUrl
      ) where
 diff --git a/Yesod/Core/Class/Yesod.hs b/Yesod/Core/Class/Yesod.hs
-index c2e707a..b594353 100644
+index 8631d27..c40eb10 100644
 --- a/Yesod/Core/Class/Yesod.hs
 +++ b/Yesod/Core/Class/Yesod.hs
-@@ -5,11 +5,15 @@
+@@ -5,18 +5,22 @@
  {-# LANGUAGE CPP               #-}
  module Yesod.Core.Class.Yesod where
  
@@ -88,16 +88,15 @@ index c2e707a..b594353 100644
  
  import           Blaze.ByteString.Builder           (Builder)
  import           Blaze.ByteString.Builder.Char.Utf8 (fromText)
-@@ -18,7 +22,7 @@ import           Control.Exception                  (bracket)
+ import           Control.Arrow                      ((***), second)
  import           Control.Monad                      (forM, when, void)
  import           Control.Monad.IO.Class             (MonadIO (liftIO))
- import           Control.Monad.Logger               (LogLevel (LevelInfo, LevelOther),
--                                                     LogSource)
-+                                                     LogSource, Loc)
- import           Control.Monad.Trans.Resource       (InternalState, createInternalState, closeInternalState)
+-import           Control.Monad.Logger               (LogLevel (LevelInfo, LevelOther),
++import           Control.Monad.Logger               (Loc, LogLevel (LevelInfo, LevelOther),
+                                                      LogSource)
  import qualified Data.ByteString.Char8              as S8
  import qualified Data.ByteString.Lazy               as L
-@@ -35,7 +39,6 @@ import qualified Data.Text.Encoding.Error           as TEE
+@@ -33,7 +37,6 @@ import qualified Data.Text.Encoding.Error           as TEE
  import           Data.Text.Lazy.Builder             (toLazyText)
  import           Data.Text.Lazy.Encoding            (encodeUtf8)
  import           Data.Word                          (Word64)
@@ -105,7 +104,7 @@ index c2e707a..b594353 100644
  import           Network.HTTP.Types                 (encodePath)
  import qualified Network.Wai                        as W
  import           Data.Default                       (def)
-@@ -87,18 +90,26 @@ class RenderRoute site => Yesod site where
+@@ -94,18 +97,26 @@ class RenderRoute site => Yesod site where
      defaultLayout w = do
          p <- widgetToPageContent w
          mmsg <- getMessage
@@ -144,7 +143,7 @@ index c2e707a..b594353 100644
  
      -- | Override the rendering function for a particular URL. One use case for
      -- this is to offload static hosting to a different domain name to avoid
-@@ -410,45 +421,103 @@ widgetToPageContent w = do
+@@ -374,45 +385,103 @@ widgetToPageContent w = do
      -- modernizr should be at the end of the <head> http://www.modernizr.com/docs/#installing
      -- the asynchronous loader means your page doesn't have to wait for all the js to load
      let (mcomplete, asyncScripts) = asyncHelper render scripts jscript jsLoc
@@ -287,7 +286,7 @@ index c2e707a..b594353 100644
  
      return $ PageContent title headAll $
          case jsLoader master of
-@@ -478,10 +547,13 @@ defaultErrorHandler NotFound = selectRep $ do
+@@ -442,10 +511,13 @@ defaultErrorHandler NotFound = selectRep $ do
          r <- waiRequest
          let path' = TE.decodeUtf8With TEE.lenientDecode $ W.rawPathInfo r
          setTitle "Not Found"
@@ -305,7 +304,7 @@ index c2e707a..b594353 100644
      provideRep $ return $ object ["message" .= ("Not Found" :: Text)]
  
  -- For API requests.
-@@ -491,10 +563,11 @@ defaultErrorHandler NotFound = selectRep $ do
+@@ -455,10 +527,11 @@ defaultErrorHandler NotFound = selectRep $ do
  defaultErrorHandler NotAuthenticated = selectRep $ do
      provideRep $ defaultLayout $ do
          setTitle "Not logged in"
@@ -321,7 +320,7 @@ index c2e707a..b594353 100644
  
      provideRep $ do
          -- 401 *MUST* include a WWW-Authenticate header
-@@ -516,10 +589,13 @@ defaultErrorHandler NotAuthenticated = selectRep $ do
+@@ -480,10 +553,13 @@ defaultErrorHandler NotAuthenticated = selectRep $ do
  defaultErrorHandler (PermissionDenied msg) = selectRep $ do
      provideRep $ defaultLayout $ do
          setTitle "Permission Denied"
@@ -339,7 +338,7 @@ index c2e707a..b594353 100644
      provideRep $
          return $ object $ [
            "message" .= ("Permission Denied. " <> msg)
-@@ -528,30 +604,42 @@ defaultErrorHandler (PermissionDenied msg) = selectRep $ do
+@@ -492,30 +568,42 @@ defaultErrorHandler (PermissionDenied msg) = selectRep $ do
  defaultErrorHandler (InvalidArgs ia) = selectRep $ do
      provideRep $ defaultLayout $ do
          setTitle "Invalid Arguments"
@@ -397,7 +396,7 @@ index c2e707a..b594353 100644
      provideRep $ return $ object ["message" .= ("Bad method" :: Text), "method" .= TE.decodeUtf8With TEE.lenientDecode m]
  
  asyncHelper :: (url -> [x] -> Text)
-@@ -718,8 +806,4 @@ loadClientSession key getCachedDate sessionName req = load
+@@ -682,8 +770,4 @@ loadClientSession key getCachedDate sessionName req = load
  -- turn the TH Loc loaction information into a human readable string
  -- leaving out the loc_end parameter
  fileLocationToString :: Loc -> String
@@ -408,7 +407,7 @@ index c2e707a..b594353 100644
 -    char = show . snd . loc_start
 +fileLocationToString loc = "unknown"
 diff --git a/Yesod/Core/Dispatch.hs b/Yesod/Core/Dispatch.hs
-index 7e43f74..625a901 100644
+index e0d1f0e..cc23fdd 100644
 --- a/Yesod/Core/Dispatch.hs
 +++ b/Yesod/Core/Dispatch.hs
 @@ -1,4 +1,3 @@
@@ -445,9 +444,9 @@ index 7e43f74..625a901 100644
      , PathMultiPiece (..)
      , Texts
        -- * Convert to WAI
-@@ -141,13 +140,6 @@ toWaiAppLogger logger site = do
+@@ -135,13 +134,6 @@ toWaiAppLogger logger site = do
+                 , yreSite = site
                  , yreSessionBackend = sb
-                 , yreGen = gen
                  }
 -    messageLoggerSource
 -        site
@@ -459,10 +458,10 @@ index 7e43f74..625a901 100644
      middleware <- mkDefaultMiddlewares logger
      return $ middleware $ toWaiAppYre yre
  
-@@ -167,14 +159,7 @@ warp port site = do
-         Network.Wai.Handler.Warp.setPort port $
-         Network.Wai.Handler.Warp.setServerName serverValue $
-         Network.Wai.Handler.Warp.setOnException (\_ e ->
+@@ -170,14 +162,7 @@ warp port site = do
+                 ]
+             -}
+             , Network.Wai.Handler.Warp.settingsOnException = const $ \e ->
 -                when (shouldLog' e) $
 -                messageLoggerSource
 -                    site
@@ -470,12 +469,12 @@ index 7e43f74..625a901 100644
 -                    $(qLocation >>= liftLoc)
 -                    "yesod-core"
 -                    LevelError
--                    (toLogStr $ "Exception from Warp: " ++ show e)) $
-+                when (shouldLog' e) $ error (show e)) $
-         Network.Wai.Handler.Warp.defaultSettings)
+-                    (toLogStr $ "Exception from Warp: " ++ show e)
++                when (shouldLog' e) $ error (show e)
+             }
    where
-     shouldLog' = Network.Wai.Handler.Warp.defaultShouldDisplayException
-@@ -208,7 +193,6 @@ defaultMiddlewaresNoLogging = acceptOverride . autohead . gzip def . methodOverr
+     shouldLog' =
+@@ -211,7 +196,6 @@ defaultMiddlewaresNoLogging = acceptOverride . autohead . gzip def . methodOverr
  -- | Deprecated synonym for 'warp'.
  warpDebug :: YesodDispatch site => Int -> site -> IO ()
  warpDebug = warp
@@ -484,10 +483,10 @@ index 7e43f74..625a901 100644
  -- | Runs your application using default middlewares (i.e., via 'toWaiApp'). It
  -- reads port information from the PORT environment variable, as used by tools
 diff --git a/Yesod/Core/Handler.hs b/Yesod/Core/Handler.hs
-index 19f4152..c97fb24 100644
+index d2b196b..13cac17 100644
 --- a/Yesod/Core/Handler.hs
 +++ b/Yesod/Core/Handler.hs
-@@ -178,7 +178,7 @@ import           Data.Text.Encoding            (decodeUtf8With, encodeUtf8)
+@@ -174,7 +174,7 @@ import           Data.Text.Encoding            (decodeUtf8With, encodeUtf8)
  import           Data.Text.Encoding.Error      (lenientDecode)
  import qualified Data.Text.Lazy                as TL
  import qualified Text.Blaze.Html.Renderer.Text as RenderText
@@ -496,7 +495,7 @@ index 19f4152..c97fb24 100644
  
  import qualified Data.ByteString               as S
  import qualified Data.ByteString.Lazy          as L
-@@ -206,6 +206,7 @@ import Control.Exception (throwIO)
+@@ -203,6 +203,7 @@ import Control.Exception (throwIO)
  import Blaze.ByteString.Builder (Builder)
  import Safe (headMay)
  import Data.CaseInsensitive (CI)
@@ -504,7 +503,7 @@ index 19f4152..c97fb24 100644
  import qualified Data.Conduit.List as CL
  import Control.Monad (unless)
  import           Control.Monad.Trans.Resource  (MonadResource, InternalState, runResourceT, withInternalState, getInternalState, liftResourceT, resourceForkIO
-@@ -848,19 +849,15 @@ redirectToPost :: (MonadHandler m, RedirectUrl (HandlerSite m) url)
+@@ -855,19 +856,15 @@ redirectToPost :: (MonadHandler m, RedirectUrl (HandlerSite m) url)
                 -> m a
  redirectToPost url = do
      urlText <- toTextUrl url
@@ -534,7 +533,7 @@ index 19f4152..c97fb24 100644
  -- | Wraps the 'Content' generated by 'hamletToContent' in a 'RepHtml'.
  hamletToRepHtml :: MonadHandler m => HtmlUrl (Route (HandlerSite m)) -> m Html
 diff --git a/Yesod/Core/Internal/Run.hs b/Yesod/Core/Internal/Run.hs
-index 651c11c..46e1d2a 100644
+index 311f208..63f666f 100644
 --- a/Yesod/Core/Internal/Run.hs
 +++ b/Yesod/Core/Internal/Run.hs
 @@ -16,7 +16,7 @@ import           Control.Exception.Lifted     (catch)
@@ -544,18 +543,18 @@ index 651c11c..46e1d2a 100644
 -import           Control.Monad.Logger         (LogLevel (LevelError), LogSource,
 +import           Control.Monad.Logger         (Loc, LogLevel (LevelError), LogSource,
                                                 liftLoc)
- import           Control.Monad.Trans.Resource (runResourceT, withInternalState, runInternalState)
+ import           Control.Monad.Trans.Resource (runResourceT, withInternalState, runInternalState, createInternalState, closeInternalState)
  import qualified Data.ByteString              as S
-@@ -32,7 +32,7 @@ import           Data.Text.Encoding           (encodeUtf8)
+@@ -31,7 +31,7 @@ import qualified Data.Text                    as T
+ import           Data.Text.Encoding           (encodeUtf8)
  import           Data.Text.Encoding           (decodeUtf8With)
  import           Data.Text.Encoding.Error     (lenientDecode)
- import           Data.Time                    (getCurrentTime, addUTCTime)
 -import           Language.Haskell.TH.Syntax   (Loc, qLocation)
 +import           Language.Haskell.TH.Syntax   (qLocation)
  import qualified Network.HTTP.Types           as H
  import           Network.Wai
- import           Network.Wai.Internal
-@@ -160,8 +160,6 @@ safeEh :: (Loc -> LogSource -> LogLevel -> LogStr -> IO ())
+ #if MIN_VERSION_wai(2, 0, 0)
+@@ -158,8 +158,6 @@ safeEh :: (Loc -> LogSource -> LogLevel -> LogStr -> IO ())
         -> ErrorResponse
         -> YesodApp
  safeEh log' er req = do
@@ -684,26 +683,26 @@ index 7e84c1c..a273c29 100644
 -                ]
 -    return $ LetE [fun] (VarE helper)
 diff --git a/Yesod/Core/Types.hs b/Yesod/Core/Types.hs
-index 5fa5c3d..1646d54 100644
+index 388dfe3..b3fce0f 100644
 --- a/Yesod/Core/Types.hs
 +++ b/Yesod/Core/Types.hs
-@@ -19,6 +19,7 @@ import           Control.Monad.Base                 (MonadBase (liftBase))
- import           Control.Monad.Catch                (MonadCatch (..))
+@@ -21,6 +21,7 @@ import           Control.Monad.Catch                (MonadCatch (..))
  import           Control.Monad.Catch                (MonadMask (..))
+ #endif
  import           Control.Monad.IO.Class             (MonadIO (liftIO))
 +import qualified Control.Monad.Logger
  import           Control.Monad.Logger               (LogLevel, LogSource,
                                                       MonadLogger (..))
  import           Control.Monad.Trans.Control        (MonadBaseControl (..))
-@@ -179,7 +180,7 @@ data RunHandlerEnv site = RunHandlerEnv
+@@ -191,7 +192,7 @@ data RunHandlerEnv site = RunHandlerEnv
      , rheRoute    :: !(Maybe (Route site))
      , rheSite     :: !site
      , rheUpload   :: !(RequestBodyLength -> FileUpload)
 -    , rheLog      :: !(Loc -> LogSource -> LogLevel -> LogStr -> IO ())
 +    , rheLog      :: !(Control.Monad.Logger.Loc -> LogSource -> LogLevel -> LogStr -> IO ())
      , rheOnError  :: !(ErrorResponse -> YesodApp)
-     , rheGetMaxExpires :: IO Text
        -- ^ How to respond when an error is thrown internally.
+       --
 diff --git a/Yesod/Core/Widget.hs b/Yesod/Core/Widget.hs
 index 481199e..8489fbe 100644
 --- a/Yesod/Core/Widget.hs
@@ -765,5 +764,5 @@ index 481199e..8489fbe 100644
  ihamletToRepHtml :: (MonadHandler m, RenderMessage (HandlerSite m) message)
                   => HtmlUrlI18n message (Route (HandlerSite m))
 -- 
-2.1.4
+2.1.1
 
