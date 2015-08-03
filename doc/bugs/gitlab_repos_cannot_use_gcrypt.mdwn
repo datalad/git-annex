@@ -20,3 +20,14 @@ Unsure what is causing git-annex-shell to behave this way on gitlab.
 > and has not had any opportunity to get a git-annex uuid set..
 > 
 > I wonder what version of git-annex gitlab.com is running? --[[Joey]]
+
+>> gitlab tells me their version is 5.20140412ubuntu1. 
+>> I tried installing git-annex-shell from 5.20140412, but
+>> was not able to reproduce the problem using it. This makes me think the
+>> problem is somehow in gitlab's git-annex-shell integration code.
+>>
+>> Update: Root-caused and filed a bug:
+>> <https://gitlab.com/gitlab-org/gitlab-shell/issues/24
+>>
+>> This will need to be fixed on the gitlab side, so closing it here.
+>> [[done]] --[[Joey]]
