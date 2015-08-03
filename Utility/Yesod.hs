@@ -17,7 +17,7 @@ module Utility.Yesod
 	, widgetFile
 	, hamletTemplate
 #endif
-#if ! MIN_VERSION_yesod(1,4,0)
+#if ! MIN_VERSION_yesod_core(1,2,20)
 	, withUrlRenderer
 #endif
 	) where
