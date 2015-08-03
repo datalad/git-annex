@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-08-03T15:28:00Z"
+ content="""
+I've developed a patch to hinotify that fixes the problem. Hopefully it will
+be accepted upstream soon. Verified that with it, the assistant can add
+these files even when run in LANG=C.
+
+The debug logger still shows the error message, but it's not actually fatal,
+and I'm inclined to not do anything about it since it only shows up when
+debugging is enabled. Actually, I'm not sure what to do about it; it's
+writing to stderr, which has fileEncoding set on it, so I don't understand
+why it's having the problem -- when git-annex writes filenames to stderr it
+works ok, but when System.Log.Handler.Simple does, it fails like this
+weird.
+"""]]
