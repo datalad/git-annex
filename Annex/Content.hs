@@ -176,8 +176,6 @@ lockContent key a = do
 		(const $ a $ ContentLock key )
   where
 	alreadylocked = error "content is locked"
-	failedtolock e = error $ "failed to lock content: " ++ show e
-	trylock locker = locker `catchIO` failedtolock
 	cleanuplockfile lockfile = modifyContent lockfile $
 		void $ liftIO $ tryIO $
 			nukeFile lockfile
@@ -197,6 +195,9 @@ lockContent key a = do
 	unlock mlockfile lck = do
 		maybe noop cleanuplockfile mlockfile
 		liftIO $ dropLock lck
+	
+	failedtolock e = error $ "failed to lock content: " ++ show e
+	trylock locker = locker `catchIO` failedtolock
 #else
 	lock _ (Just lockfile) = do
 		modifyContent lockfile $

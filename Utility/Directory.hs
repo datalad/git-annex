@@ -13,7 +13,6 @@ module Utility.Directory where
 import System.IO.Error
 import System.Directory
 import Control.Monad
-import Control.Monad.IfElse
 import System.FilePath
 import Control.Applicative
 import Control.Concurrent
@@ -25,10 +24,11 @@ import Prelude
 import qualified System.Win32 as Win32
 #else
 import qualified System.Posix as Posix
+import Utility.SafeCommand
+import Control.Monad.IfElse
 #endif
 
 import Utility.PosixFiles
-import Utility.SafeCommand
 import Utility.Tmp
 import Utility.Exception
 import Utility.Monad
@@ -126,7 +126,7 @@ moveFile src dest = tryIO (rename src dest) >>= onrename
 #else
 			r <- tryIO $ copyFile src tmp
 			let (ok, e') = case r of
-				Left e' -> (False, e')
+				Left err -> (False, err)
 				Right _ -> (True, e)
 #endif
 			unless ok $ do
