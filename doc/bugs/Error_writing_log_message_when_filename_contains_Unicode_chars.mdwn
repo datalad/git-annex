@@ -1,0 +1,23 @@
+### Please describe the problem.
+I’ve noticed that daemon.log will sometimes contain error messages arising from logging a file name during transfer. Additionally, I’ve occasionally noticed that certain files get «stuck» after being added to the objects store, i. e., they will never be committed by the assistant and have to be staged manually; it appears there is a correlation between files where the logger errors out and files getting stuck.
+
+I can reproduce this using the en-dash (U+2013).
+
+### What steps will reproduce the problem?
+1. Create a file named «Behold – the majestic en-dash» in a repository where the assistant is running.
+2. Observe file has not been added by the assistant and daemon.log contains no message pertaining to new file.
+3. Restart assistant.
+4. Observe in daemon.log that the logger has errored out with «hPutChar: invalid argument» and gives the Unicode replacement character thrice for each en-dash.
+5. Observe that file is added to object store, but the symlink is not staged or committed by the assistant.
+
+### What version of git-annex are you using? On what operating system?
+git-annex 5.20150731
+Linux 4.0.9
+
+### Please provide any additional information below.
+[[!format sh """
+# After restarting the assistant.
+[2015-07-28 14:24:58 CEST] Committer: Adding 978Error writing log message: <stderr>: hPutChar: invalid argument (invalid character) (original message: [2015-07-28 14:24:58 CEST] Committer: Adding 978\65533\65533\655330\65533\65533..1\65533\65533\655330.pdf)
+[2015-07-28 14:24:59 CEST] Transferrer: Uploaded 978Error writing log message: <stderr>: hPutChar: invalid argument (invalid character) (original message: [2015-07-28 14:24:59 CEST] Transferrer: Uploaded 978\65533\65533\655330\65533\65533..1\65533\65533\655330.pdf)
+"""]]
+
