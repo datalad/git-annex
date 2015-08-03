@@ -102,8 +102,7 @@ watchDir i dir ignored scanevents hooks
 					| Files.isSymbolicLink s -> 
 						when (hashook addSymlinkHook) $
 							runhook addSymlinkHook f ms
-					| Files.isRegularFile s -> do
-						print ("ADDED")
+					| Files.isRegularFile s ->
 						when (hashook addHook) $
 							runhook addHook f ms
 				_ -> noop
