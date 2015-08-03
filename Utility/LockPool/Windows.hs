@@ -18,9 +18,6 @@ import qualified Utility.LockPool.STM as P
 import Utility.LockPool.LockHandle
 import Utility.LockPool.STM (LockFile, LockMode(..))
 
-import System.IO
-import Data.Maybe
-
 {- Tries to lock a file with a shared lock, which allows other processes to
  - also lock it shared. Fails if the file is exclusively locked. -}
 lockShared :: LockFile -> IO (Maybe LockHandle)
