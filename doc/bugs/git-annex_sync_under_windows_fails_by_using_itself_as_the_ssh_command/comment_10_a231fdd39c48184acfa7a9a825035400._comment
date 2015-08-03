@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="zedr0nre@e1b86776f21c5f6a6e064c6ab8da039b54915b7d"
+ nickname="zedr0nre"
+ subject="comment 10"
+ date="2015-08-03T23:15:39Z"
+ content="""
+Here's a workaround i found for now - inspired by [http://superuser.com/questions/232373/how-to-tell-git-which-private-key-to-use](http://superuser.com/questions/232373/how-to-tell-git-which-private-key-to-use)
+
+so when cloning from ssh before syncing use
+
+`git clone 'ext:ssh server.com %S /path/to/repository.git ' `
+
+instead of
+
+`git clone ssh://server.com/path/to/repository.git`
+
+That allows git annex sync to work for me
+"""]]
