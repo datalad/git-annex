@@ -16,14 +16,10 @@ module Utility.LockPool.Windows (
 import qualified Utility.LockFile.Windows as F
 import qualified Utility.LockPool.STM as P
 import Utility.LockPool.LockHandle
-import Utility.LockPool.STM (LockPool, LockFile, LockMode(..))
-import Utility.Monad
+import Utility.LockPool.STM (LockFile, LockMode(..))
 
-import Control.Concurrent.STM
 import System.IO
 import Data.Maybe
-import Control.Applicative
-import Prelude
 
 {- Tries to lock a file with a shared lock, which allows other processes to
  - also lock it shared. Fails if the file is exclusively locked. -}
