@@ -17,6 +17,9 @@ module Utility.Yesod
 	, widgetFile
 	, hamletTemplate
 #endif
+#if ! MIN_VERSION_yesod(1,4,0)
+	, withUrlRenderer
+#endif
 	) where
 
 import Yesod as Y
