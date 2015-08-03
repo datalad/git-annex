@@ -1,0 +1,11 @@
+Work today has started in the git-annex bug tracker, but the real bugs were
+elsewhere. Got a patch into hinotify to fix its handling of filenames
+received from inotify events when used in a non-unicode locale. Tracked
+down why gitlab's git-annex-shell fails to initialize gcrypt repositories,
+and filed a bug on gitlab-shell.
+
+Yesterday, I got the Android autobuilder fixed. I had started upgrading it
+to new versions of yesod etc, 2 months ago, and something in those new
+versions led to character encoding problems that broke the template haskell
+splicing. Had to throw away the work done for that upgrade, but at least
+it's building again, at last.
