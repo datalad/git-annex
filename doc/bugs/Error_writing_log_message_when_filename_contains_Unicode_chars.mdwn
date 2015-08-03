@@ -21,3 +21,5 @@ Linux 4.0.9
 [2015-07-28 14:24:59 CEST] Transferrer: Uploaded 978Error writing log message: <stderr>: hPutChar: invalid argument (invalid character) (original message: [2015-07-28 14:24:59 CEST] Transferrer: Uploaded 978\65533\65533\655330\65533\65533..1\65533\65533\655330.pdf)
 """]]
 
+> Closing this because the main bug is fixed in hinotify git and will
+> percolate to the git-annex builds eventually. [[done]] --[[Joey]]

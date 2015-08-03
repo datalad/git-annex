@@ -4,7 +4,8 @@
  date="2015-08-03T15:28:00Z"
  content="""
 I've developed a patch to hinotify that fixes the problem. Hopefully it will
-be accepted upstream soon. Verified that with it, the assistant can add
+be accepted upstream soon. (Update: It's merged and will be in the next
+release of hinotify.) Verified that with it, the assistant can add
 these files even when run in LANG=C.
 
 The debug logger still shows the error message, but it's not actually fatal,
