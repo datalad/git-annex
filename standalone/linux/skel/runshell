@@ -26,6 +26,22 @@ cd "$base"
 base="$(pwd)"
 cd "$orig"
 
+# --library-path won't work if $base contains : or ;
+# Detect this problem, and work around it by using a temp directory.
+if echo "$base" | grep -q '[:;]'; then
+	tbase=$(mktemp -d -p /tmp annexshimXXXXXXXXX 2>/dev/null || true)
+	if [ -z "$tbase" ]; then
+		tbase="/tmp/annexshim.$$"
+		mkdir "$tbase"
+	fi
+	ln -s "$base" "$tbase/link"
+	base="$tbase/link"
+	cleanuptbase () {
+		rm -rf "$tbase"
+	}
+	trap cleanuptbase EXIT
+fi
+
 # Install shim that's used to run git-annex-shell from ssh authorized_keys.
 # The assistant also does this when run, but the user may not be using the
 # assistant.
@@ -63,7 +79,7 @@ export ORIG_PATH
 PATH="$base/bin:$PATH"
 export PATH
 
-# This is used by the shim wrapper around each binary.
+# These env vars are used by the shim wrapper around each binary.
 for lib in $(cat "$base/libdirs"); do
 	GIT_ANNEX_LD_LIBRARY_PATH="$base/$lib:$GIT_ANNEX_LD_LIBRARY_PATH"
 done
@@ -103,7 +119,12 @@ export GIT_ANNEX_STANDLONE_ENV
 if [ "$1" ]; then
 	cmd="$1"
 	shift 1
-	exec "$cmd" "$@"
+	if [ -z "$tbase" ]; then
+		exec "$cmd" "$@"
+	else
+		# allow EXIT trap to cleanup
+		"$cmd" "$@"
+	fi
 else
 	sh
 fi

@@ -39,3 +39,10 @@ git-annex: get: 1 failed
 
 # End of transcript or log.
 """]]
+
+> Actually, this bug is fixable. And I have! I made it detect the problem
+> path, and then fall back to making a directory in /tmp, symlinking the
+> git-annex.linux directory into it, and using that as its base directory.
+> 
+> Of course, that's a suboptimal configuration, but better than having some
+> configurations where it doesn't work. --[[Joey]]
