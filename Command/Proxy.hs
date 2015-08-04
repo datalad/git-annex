@@ -41,7 +41,8 @@ start (c:ps) = liftIO . exitWith =<< ifM isDirect
   where
 	go tmp = do
 		oldref <- fromMaybe Git.Sha.emptyTree
-			<$> inRepo Git.Ref.headSha
+			<$> (inRepo . maybe Git.Ref.headSha Git.Ref.sha
+				=<< inRepo Git.Branch.currentUnsafe)
 		
 		setuptmpworktree tmp
 		exitcode <- proxy tmp
