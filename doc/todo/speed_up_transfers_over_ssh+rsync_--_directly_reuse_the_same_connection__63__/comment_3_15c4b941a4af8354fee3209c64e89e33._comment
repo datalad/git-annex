@@ -1,0 +1,56 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-08-04T16:07:23Z"
+ content="""
+I don't know how you used ts to get that output, but it does not appear to
+be accurate. Here's `git annex get | ts "%b %d %H:%M:%.s"`:
+
+	Aug 04 12:10:1438704612.238164 get bob (from origin...) 
+	Aug 04 12:10:1438704612.238336 SHA256E-s30--7c3722f359d8cfbc594e5dec6d7f096bf4e88adbfb786548a607708d32ef49bb
+	             30 100%   29.30kB/s    0:00:00 (xfr#1, to-chk=0/1)
+	Aug 04 12:10:1438704612.597912 ok
+	Aug 04 12:10:1438704612.642574 get bob2 (from origin...) 
+	Aug 04 12:10:1438704612.642653 SHA256E-s30--22fdcad0fba3537a7a0bc2b824f805fdd2d2c032b6450352cb8d099d03c8d796
+	             30 100%   29.30kB/s    0:00:00 (xfr#1, to-chk=0/1)
+	Aug 04 12:10:1438704613.001088 ok
+	Aug 04 12:10:1438704613.043018 get bob3 (from origin...) 
+	Aug 04 12:10:1438704613.043105 SHA256E-s30--9f0e99611fe904e173fb1c81d57ba9f01a111afdf222a7763844c7b893af86ff
+	             30 100%   29.30kB/s    0:00:00 (xfr#1, to-chk=0/1)
+	Aug 04 12:10:1438704613.393817 ok
+	Aug 04 12:10:1438704613.421080 get bob5 (from origin...) 
+	Aug 04 12:10:1438704613.421198 SHA256E-s30--7b851aa7791136f783271c109c287614bf2c0e9014d0fab50b1bf32f4ad4678e
+	             30 100%   29.30kB/s    0:00:00 (xfr#1, to-chk=0/1)
+	Aug 04 12:10:1438704613.769410 ok
+	Aug 04 12:10:1438704613.800044 get bob6 (from origin...) 
+	Aug 04 12:10:1438704613.800133 SHA256E-s33--a165803131075f75132f632a6f295b12910f84a5d1776b60d1d998b96a6f20d5
+	             33 100%   32.23kB/s    0:00:00 (xfr#1, to-chk=0/1)
+	Aug 04 12:10:1438704614.148597 ok
+	Aug 04 12:10:1438704614.200786 get bob7 (from origin...) 
+	Aug 04 12:10:1438704614.200881 SHA256E-s30--8b5b0b239b465a407ca98c8dc82a0081ee5ced4f7402854dc9afac75b65b5b51
+	             30 100%   29.30kB/s    0:00:00 (xfr#1, to-chk=0/1)
+	Aug 04 12:10:1438704614.560315 ok
+	Aug 04 12:10:1438704614.602174 get bob8 (from origin...) 
+	Aug 04 12:10:1438704614.602255 SHA256E-s30--70657536d54051bd020f984f866b017d5919b7705bf08ffa2786c0dd14f90280
+	             30 100%   29.30kB/s    0:00:00 (xfr#1, to-chk=0/1)
+	Aug 04 12:10:1438704614.961264 ok
+
+Note that this shows up to 3 files sent per second. The output you pasted shows not 1 file/s, but 2 or almost 3.
+
+There are no 1s (or other) sleeps. This is quite likely simply the overhead of
+git-annex needing to query git to work out what remote each file is located on,
+coupled with the overhead of needing to start a new git-annex-shell and rsync
+processes.
+
+Using -J4 or so will speed this up quite a lot.
+
+Without -J4:
+
+	0.22user 0.09system 0:04.84elapsed 6%CPU (0avgtext+0avgdata 33644maxresident)k
+	0inputs+832outputs (0major+16191minor)pagefaults 0swaps
+
+With -J4:
+
+	0.34user 0.06system 0:01.35elapsed 30%CPU (0avgtext+0avgdata 35996maxresident)k
+	0inputs+752outputs (0major+17451minor)pagefaults 0swaps
+"""]]
