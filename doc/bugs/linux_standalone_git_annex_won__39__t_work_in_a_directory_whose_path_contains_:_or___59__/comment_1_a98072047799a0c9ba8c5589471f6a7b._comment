@@ -6,5 +6,6 @@
 Nice analysis.
 
 I can't see any way to avoid this problem. So, seems like a "don't do that
-then" situation.
+then" situation. And indeed, it makes sense to detect it and fail in a
+comprehansible way.
 """]]
