@@ -11,6 +11,10 @@ git-annex (5.20150732) UNRELEASED; urgency=medium
     commits were made every 1000 files fscked.
   * Tighten dependency on optparse-applicative to 0.11.0.
   * Added back debian/cabal-wrapper, since it still seems needed after all.
+  * proxy: Fix proxy git commit of non-annexed files in direct mode. 
+  * proxy: If a non-proxied git command, such as git revert
+    would normally fail because of unstaged files in the work tree,
+    make the proxied command fail the same way.
 
  -- Joey Hess <id@joeyh.name>  Fri, 31 Jul 2015 12:31:39 -0400
 

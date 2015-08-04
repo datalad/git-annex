@@ -230,7 +230,7 @@ mergeDirectCommit allowff old branch commitmode = do
 
 mergeDirectCleanup :: FilePath -> Git.Ref -> Annex ()
 mergeDirectCleanup d oldref = do
-	updateWorkTree d oldref
+	updateWorkTree d oldref False
 	liftIO $ removeDirectoryRecursive d
 
 {- Updates the direct mode work tree to reflect the changes staged in the
@@ -247,8 +247,8 @@ mergeDirectCleanup d oldref = do
  - order, but we cannot add the directory until the file with the
  - same name is removed.)
  -}
-updateWorkTree :: FilePath -> Git.Ref -> Annex ()
-updateWorkTree d oldref = do
+updateWorkTree :: FilePath -> Git.Ref -> Bool -> Annex ()
+updateWorkTree d oldref force = do
 	(items, cleanup) <- inRepo $ DiffTree.diffIndex oldref
 	makeabs <- flip fromTopFilePath <$> gitRepo
 	let fsitems = zip (map (makeabs . DiffTree.file) items) items
@@ -281,7 +281,7 @@ updateWorkTree d oldref = do
 	 - Otherwise, create the symlink and then if possible, replace it
 	 - with the content. -}
 	movein item makeabs k f = unlessM (goodContent k f) $ do
-		preserveUnannexed item makeabs f oldref
+		unless force $ preserveUnannexed item makeabs f oldref
 		l <- calcRepo $ gitAnnexLink f k
 		replaceFile f $ makeAnnexLink l
 		toDirect k f
@@ -289,7 +289,7 @@ updateWorkTree d oldref = do
 	{- Any new, modified, or renamed files were written to the temp
 	 - directory by the merge, and are moved to the real work tree. -}
 	movein_raw item makeabs f = do
-		preserveUnannexed item makeabs f oldref
+		unless force $ preserveUnannexed item makeabs f oldref
 		liftIO $ do
 			createDirectoryIfMissing True $ parentDir f
 			void $ tryIO $ rename (d </> getTopFilePath (DiffTree.file item)) f

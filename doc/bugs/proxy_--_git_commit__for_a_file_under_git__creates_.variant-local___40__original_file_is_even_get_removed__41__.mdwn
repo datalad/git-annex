@@ -108,3 +108,30 @@ Date:   Tue Jul 28 17:20:29 2015 -0400
 
 # End of transcript or log.
 """]]
+
+> Ok, this is [[fixed|done]].
+> 
+> What was going on is, proxy was reusing mergeDirectCleanup
+> since it's in a similar situation to cleaning up after a direct mode
+> merge. But, a direct mode merge can pull in changes to files that exist
+> in the local work tree (and may or may not be in the index), but are
+> not committed to git locally yet. So, it has to
+> detect those and move them aside (to ".varient-local"). The code to do
+> that is what was failing in this reuse of mergeDirectCleanup.
+> 
+> So, I made that code path not run when using proxy. And for commits,
+> that's good enough. If there's a file in the work tree that's
+> not added to git, then a proxied commit can't affect it, so that code
+> path is not needed in this case.
+> 
+> Come to think, other proxied actions might affect such a file. For
+> example a proxied revert could revert the deletion of a file with the
+> same name, that's in the work tree. In this case, should the proxyed revert
+> fail because there's a file in the work tree that will be overwritten by
+> the revert? Would be good if it did, because git revert will normally fail
+> in this situation.
+> 
+> The only way to make a proxied revert, etc exactly match a
+> non-proxied revert is to arrange for all files that are in the work
+> tree and not checked into git to be present in the temp work tree when
+> the proxied command is run. Which I've now done. --[[Joey]]
