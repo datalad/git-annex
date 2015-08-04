@@ -287,10 +287,10 @@ sshOptionsTo remote gc g
 		if null sshopts
 			then unchanged
 			else do
-				let val = toSshOptionsEnv sshopts
 				command <- liftIO programPath
 				liftIO $ do
-					g' <- addGitEnv g sshOptionsEnv val
+					g' <- addGitEnv g sshOptionsEnv
+						(toSshOptionsEnv sshopts)
 					addGitEnv g' "GIT_SSH" command
 
 runSshOptions :: [String] -> String -> IO ()
