@@ -30,8 +30,8 @@ import qualified "MissingH" System.Path as MissingH
 import Utility.Monad
 import Utility.UserInfo
 
-{- Simplifies a path, removing any ".." or ".", and removing the trailing
- - path separator.
+{- Simplifies a path, removing any "." component, collapsing "dir/..", 
+ - and removing the trailing path separator.
  -
  - On Windows, preserves whichever style of path separator might be used in
  - the input FilePaths. This is done because some programs in Windows
@@ -50,7 +50,8 @@ simplifyPath path = dropTrailingPathSeparator $
 
 	norm c [] = reverse c
 	norm c (p:ps)
-		| p' == ".." = norm (drop 1 c) ps
+		| p' == ".." && not (null c) && dropTrailingPathSeparator (c !! 0) /= ".." = 
+			norm (drop 1 c) ps
 		| p' == "." = norm c ps
 		| otherwise = norm (p:c) ps
 	  where

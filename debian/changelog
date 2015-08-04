@@ -16,6 +16,7 @@ git-annex (5.20150732) UNRELEASED; urgency=medium
     would normally fail because of unstaged files in the work tree,
     make the proxied command fail the same way.
   * proxy: Fix removal of files deleted by the proxied command.
+  * proxy: Fix behavior when run in subdirectory of git repo.
 
  -- Joey Hess <id@joeyh.name>  Fri, 31 Jul 2015 12:31:39 -0400
 
