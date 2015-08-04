@@ -13,8 +13,4 @@ set -e
 HOME=$(mktemp -d)
 export HOME
 
-# Temporary workaround for #763078
-PATH=/usr/lib/llvm-3.4/bin:$PATH
-export PATH
-
 cabal "$@"
