@@ -1,3 +1,9 @@
+git-annex (5.20150731-1) unstable; urgency=medium
+
+  * Package 5.20150731
+
+ -- Richard Hartmann <richih@debian.org>  Tue, 04 Aug 2015 23:41:14 +0200
+
 git-annex (5.20150731) unstable; urgency=medium
 
   * webapp: Support enabling known gitlab.com remotes.
