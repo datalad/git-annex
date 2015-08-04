@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="threadshuffle"
+ subject="comment 12"
+ date="2015-08-04T19:56:06Z"
+ content="""
+I did a quick test just after seeing the last comment using the build from here: <a href=\"https://downloads.kitenet.net/git-annex/autobuild/windows/\">https://downloads.kitenet.net/git-annex/autobuild/windows/</a> and it seems it's not working. I'll try the new git version as stated somewhere above later to see if that works. I'm still getting this (followed by the big help text)
+<pre>C:\Users\me\gatest>git annex sync
+commit  ok
+pull origin
+Invalid argument `me@192.168.78.140'
+</pre>
+"""]]
