@@ -280,14 +280,14 @@ sshOptionsTo remote gc g
 	unchanged = return g
 
 	use opts = do
-		let sshopts = 
+		let sshopts = concat
 			[ opts
 			, map Param (remoteAnnexSshOptions gc)
 			]
 		if null sshopts
 			then unchanged
 			else do
-				let val = toSshOptionsEnv (concat sshopts)
+				let val = toSshOptionsEnv sshopts
 				command <- liftIO programPath
 				liftIO $ do
 					g' <- addGitEnv g sshOptionsEnv val
