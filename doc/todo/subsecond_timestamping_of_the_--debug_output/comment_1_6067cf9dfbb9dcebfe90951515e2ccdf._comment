@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-08-04T19:32:38Z"
+ content="""
+This would require changes to the MissingH library, which is what provides
+the debug logger.
+"""]]
