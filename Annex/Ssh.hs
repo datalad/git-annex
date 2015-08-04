@@ -268,7 +268,7 @@ sshOptionsTo :: Git.Repo -> RemoteGitConfig -> Git.Repo -> Annex Git.Repo
 sshOptionsTo remote gc g 
 	| not (Git.repoIsUrl remote) || Git.repoIsHttp remote = unchanged
 	| otherwise = case Git.Url.hostuser remote of
-		Nothing -> uncached
+		Nothing -> unchanged
 		Just host -> do
 			(msockfile, _) <- sshCachingInfo (host, Git.Url.port remote)
 			case msockfile of
