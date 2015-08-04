@@ -1,0 +1,41 @@
+### Please describe the problem.
+
+The shim for the standalone version of git annex invokes the dynamic linker with --library-path set appropriatly.  glibc's parsing of library-path treats : and ; as seperaters and has no quoting syntax for those characters.  Also path items have to be absolute paths so you can't avoid having the whole path.
+
+As a result if you install the standalone version in a directory whose path includes either of those characters it will produce a library-path that's interpreted incorrectly leading to it looking for the libraries in the wrong place and potentially eventually using the system's installed versions if they are available.
+
+### What steps will reproduce the problem?
+
+1. Find a system with as few libraries installed as possible.  libnettle.so.6 is an easy one to avoid.
+2. create a directory called 'test;test'
+3. install git annex standalone in 'test;test'
+4. use the standalone git annex to do a 'git annex get'
+5. there will be an error saying it can't find libnettle.so.6
+
+### What version of git-annex are you using? On what operating system?
+
+This bug applies to any version.  with a ':' it will probably occur on any unix, with a ';' it will occur on at least Linux and Solaris.
+
+### Please provide any additional information below.
+
+This bug can't be fixed.  It's unlikely to trip people up but might with a bad combination of label-based drive mounting and odd drive labels.  The worst case would be incompatable libraries on the system install which could lead to data corruption.
+
+I recommend that the git annex shim should check for ':' or ';' in the path and exit non-zero if they are found.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+jdamery-iabak@oklina:/mnt/iabak-ext;/IA.BAK/shard9$ PATH=../git-annex.linux/:$PATH git annex get prelinger_library/11annualreport00unitrich/11annualreport00unitrich_raw_jp2.zip
+get prelinger_library/11annualreport00unitrich/11annualreport00unitrich_raw_jp2.zip (from web...)
+/mnt/iabak-ext;/IA.BAK/git-annex.linux/shimmed/wget/wget: error while loading shared libraries: libnettle.so.6: cannot open shared object file: No such file or directory
+
+  Unable to access these remotes: web
+
+  Try making some of these repositories available:
+        00000000-0000-0000-0000-000000000001 -- web
+failed
+git-annex: get: 1 failed
+
+# End of transcript or log.
+"""]]

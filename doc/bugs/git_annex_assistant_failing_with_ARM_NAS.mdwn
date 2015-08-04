@@ -1,0 +1,29 @@
+I'm trying to use a Synology NAS (ARM architecture, DiskStation 214+) as a remote repository for my laptop, but I'm failing to get a convenient configuration to work.
+
+I already set-up git-annex on the NAS following the explanations found [here](http://git-annex.branchable.com/tips/Synology_NAS_and_git_annex/). I installed version **5.20150714-g8695533**.
+
+On my laptop I have the version provided with Ubuntu 14.04: **5.20140412ubuntu1**.
+
+If calling git annex from my laptop's command line and doing everything manually (git remote add, copy file to the dir, git annex add, git commit, git push, git annex copy), then it works properly.
+
+But when trying with the assistant I get this error:
+
+```
+fatal: unrecognized command 'sh -c 'mkdir -p '"'"'annex'"'"'&&cd '"'"'annex'"'"'&&if [ ! -d .git ]; then git init --bare --shared && git config receive.denyNonFastforwards false; fi&&git annex init''
+git-annex-shell: git-shell failed
+```
+
+This is the content of daemon.log:
+[[!format sh """
+[2015-08-04 00:51:41 CEST] main: starting assistant version 5.20140412ubuntu1
+[2015-08-04 00:51:41 CEST] Cronner: You should enable consistency checking to protect your data. 
+(Recording state in git...)
+(scanning...) [2015-08-04 00:51:41 CEST] Watcher: Performing startup scan
+(started...) [2015-08-04 00:52:41 CEST] Cronner: Consistency check in progress
+[2015-08-04 00:59:12 CEST] read: ssh-keygen ["-F","git-annex-trusted"]
+[2015-08-04 00:59:12 CEST] read: ssh ["-oNumberOfPasswordPrompts=0","-oStrictHostKeyChecking=no","-n","-p","22","git-annex@git-annex-trusted","sh -c 'echo git-annex-probe loggedin;if which git-annex-shell; then echo git-annex-probe git-annex-shell; fi;if which git; then echo git-annex-probe git; fi;if which rsync; then echo git-annex-probe rsync; fi;if which ~/.ssh/git-annex-shell; then echo git-annex-probe ~/.ssh/git-annex-shell; fi;cd '\"'\"'annex'\"'\"' && git config --list'"]
+[2015-08-04 00:59:13 CEST] read: gpg ["--batch","--no-tty","--use-agent","--quiet","--trust-model","always","--with-colons","--list-secret-keys","--fixed-list-mode"]
+[2015-08-04 00:59:15 CEST] read: ssh ["-p","22","git-annex@git-annex-trusted","sh -c 'mkdir -p '\"'\"'annex'\"'\"'&&cd '\"'\"'annex'\"'\"'&&if [ ! -d .git ]; then git init --bare --shared && git config receive.denyNonFastforwards false; fi&&git annex init'"]
+"""]]
+
+Is there any problem with the version provided by Ubuntu that is producing this strange behavior?
