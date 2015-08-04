@@ -5,8 +5,6 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
-
 module Assistant.Gpg where
 
 import Utility.Gpg
