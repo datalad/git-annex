@@ -1,0 +1,56 @@
+[[!comment format=sh
+ username="siflfran@3babe1b188962ba45b5d4649e721ac59ead57b7c"
+ nickname="siflfran"
+ subject="comment 2"
+ date="2015-07-29T06:57:00Z"
+ content="""
+Running configure with -v3 does not give much additional info:
+
+% runhaskell Setup.hs configure --verbose=3 --prefix=/usr
+  checking version...fatal: Not a git repository (or any parent up to mount point /tmp)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+ 5.20150617
+  checking UPGRADE_LOCATION... not available
+  checking git... yes
+  checking git version... 2.4.6
+  checking cp -a... yes
+  checking cp -p... yes
+  checking cp --preserve=timestamps... yes
+  checking cp --reflink=auto... yes
+  checking xargs -0... yes
+  checking rsync... yes
+  checking curl... yes
+  checking wget... yes
+  checking wget supports -q --show-progress... yes
+  checking bup... no
+  checking nice... yes
+  checking ionice... yes
+  checking nocache... no
+  checking gpg... gpg
+  checking lsof... not available
+  checking git-remote-gcrypt... not available
+  checking ssh connection caching... yes
+  checking sha1... sha1sum
+  checking sha256... sha256sum
+  checking sha512... sha512sum
+  checking sha224... sha224sum
+  checking sha384... sha384sum
+Configuring git-annex-5.20150617...
+creating dist
+Searching for ghc in path.
+Found ghc at /usr/bin/ghc
+(\"/usr/bin/ghc\",[\"--numeric-version\"])
+/usr/bin/ghc is version 7.10.1
+looking for tool ghc-pkg near compiler in /usr/bin
+found ghc-pkg in /usr/bin/ghc-pkg
+(\"/usr/bin/ghc-pkg\",[\"--version\"])
+/usr/bin/ghc-pkg is version 7.10.1
+(\"/usr/bin/ghc\",[\"--supported-languages\"])
+(\"/usr/bin/ghc\",[\"--info\"])
+Reading installed packages...
+(\"/usr/bin/ghc-pkg\",[\"dump\",\"--global\",\"-v0\"])
+(\"/usr/bin/ghc\",[\"--print-libdir\"])
+Killed
+
+Any suggestions?
+"""]]

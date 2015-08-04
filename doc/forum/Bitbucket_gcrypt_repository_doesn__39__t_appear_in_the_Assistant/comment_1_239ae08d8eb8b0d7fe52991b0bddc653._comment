@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-07-30T18:07:13Z"
+ content="""
+I think this is due to the format of the url. The webapp only supports
+gcrypt repos that are using ssh uris, or are on local drives.
+
+I think, though that this might only prevent the assistant from displaying the
+repo in the list of repos. I think it might still sync with it?
+"""]]

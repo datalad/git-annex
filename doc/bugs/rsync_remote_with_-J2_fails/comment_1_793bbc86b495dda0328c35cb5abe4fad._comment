@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-07-30T17:18:24Z"
+ content="""
+The -J1 is a red herring; there's no progress output for -J modes, so the
+whole transfer runs quietly there.
+
+The -J2 failure is because the rsync special remote implementation uses a
+local scratch directory which is supposed to be empty. But, since it uses
+the pid of the process to create the directory name, concurrently transfers
+will use the same scratch directory and so interfere with one-another.
+"""]]

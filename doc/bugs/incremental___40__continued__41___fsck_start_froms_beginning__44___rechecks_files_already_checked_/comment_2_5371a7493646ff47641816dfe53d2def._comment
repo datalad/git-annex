@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="parhuzamos"
+ subject="comment 2"
+ date="2015-07-31T08:38:11Z"
+ content="""
+Thanks for the clarification, so it's by design. 
+
+I recommend commiting to the database when `--time-limit` is reached, if specified at all. What do you think? 
+
+(And thank you for all the hard work on git-annex, it's my favorite tool/app.) 
+
+
+"""]]

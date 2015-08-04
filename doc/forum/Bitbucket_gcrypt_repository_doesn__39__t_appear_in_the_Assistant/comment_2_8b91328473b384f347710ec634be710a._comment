@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Agenta"
+ subject="comment 2"
+ date="2015-07-31T08:34:26Z"
+ content="""
+Unfortunately the Assistant doesn't sync to the https gcrypt repository at all! E.g. if I add a file, the file gets added to the other repositories (the Assistant syncs it in the background) but it doesn't get added to Bitbucket (https gcrypt).
+I know that because Bitbucket tells me when the latest change has been made; I can see that no change is reported unless I perform 'git-annex sync' manually.
+"""]]

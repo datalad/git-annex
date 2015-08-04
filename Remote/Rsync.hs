@@ -39,6 +39,7 @@ import Logs.Transfer
 import Types.Creds
 import Types.Key (isChunkKey)
 import Annex.DirHashes
+import Utility.Tmp
 
 import qualified Data.Map as M
 
@@ -252,16 +253,8 @@ sendParams = ifM crippledFileSystem
  - up trees for rsync. -}
 withRsyncScratchDir :: (FilePath -> Annex a) -> Annex a
 withRsyncScratchDir a = do
-	p <- liftIO getPID
 	t <- fromRepo gitAnnexTmpObjectDir
-	createAnnexDirectory t
-	let tmp = t </> "rsynctmp" </> show p
-	nuke tmp
-	liftIO $ createDirectoryIfMissing True tmp
-	nuke tmp `after` a tmp
-  where
-	nuke d = liftIO $ whenM (doesDirectoryExist d) $
-		removeDirectoryRecursive d
+	withTmpDirIn t "rsynctmp" a
 
 rsyncRetrieve :: RsyncOpts -> Key -> FilePath -> Maybe MeterUpdate -> Annex Bool
 rsyncRetrieve o k dest meterupdate =

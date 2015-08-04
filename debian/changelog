@@ -1,3 +1,19 @@
+git-annex (5.20150731) unstable; urgency=medium
+
+  * webapp: Support enabling known gitlab.com remotes.
+  * Fix rsync special remote to work when -Jn is used for concurrent
+    uploads.
+  * The last release accidentially removed a number of options from the
+    copy command. (-J, file matching options, etc). These have been added
+    back.
+  * init: Detect when the filesystem is crippled such that it ignores
+    attempts to remove the write bit from a file, and enable direct mode.
+    Seen with eg, NTFS fuse on linux.
+  * Fix man page installation by cabal install; all the new man pages are
+    now installed.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 31 Jul 2015 11:34:36 -0400
+
 git-annex (5.20150727-2) unstable; urgency=medium
 
   * Remove lintian from gbp.conf for now.

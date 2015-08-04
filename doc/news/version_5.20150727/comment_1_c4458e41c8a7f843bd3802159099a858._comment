@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="bugfix?"
+ date="2015-07-28T14:01:46Z"
+ content="""
+> Fix bug that prevented uploads to remotes using new-style chunking from resuming after the last successfully uploaded chunk.
+
+Is this related to [[bugs/s3_InternalIOException__63__/]] - should that bug be marked as fixed? Can't wait to test the new release, thanks! --[[anarcat]]
+"""]]

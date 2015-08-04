@@ -1,0 +1,246 @@
+[[!comment format=sh
+ username="siflfran@3babe1b188962ba45b5d4649e721ac59ead57b7c"
+ nickname="siflfran"
+ subject="comment 3"
+ date="2015-07-29T15:49:19Z"
+ content="""
+I gave it another try on a different system and it actually seems to succeed:
+
+ % runhaskell Setup.hs configure --prefix=/usr --verbose=3
+  checking version...fatal: Not a git repository (or any parent up to mount point /tmp)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+ 5.20150710
+  checking UPGRADE_LOCATION... not available
+  checking git... yes
+  checking git version... 2.5.0
+  checking cp -a... yes
+  checking cp -p... yes
+  checking cp --preserve=timestamps... yes
+  checking cp --reflink=auto... yes
+  checking xargs -0... yes
+  checking rsync... yes
+  checking curl... yes
+  checking wget... yes
+  checking wget supports -q --show-progress... yes
+  checking bup... no
+  checking nice... yes
+  checking ionice... yes
+  checking nocache... no
+  checking gpg... gpg
+  checking lsof... lsof
+  checking git-remote-gcrypt... not available
+  checking ssh connection caching... yes
+  checking sha1... sha1sum
+  checking sha256... sha256sum
+  checking sha512... sha512sum
+  checking sha224... sha224sum
+  checking sha384... sha384sum
+Configuring git-annex-5.20150710...
+creating dist
+Searching for ghc in path.
+Found ghc at /usr/bin/ghc
+(\"/usr/bin/ghc\",[\"--numeric-version\"])
+/usr/bin/ghc is version 7.8.4
+looking for tool ghc-pkg near compiler in /usr/bin
+found ghc-pkg in /usr/bin/ghc-pkg
+(\"/usr/bin/ghc-pkg\",[\"--version\"])
+/usr/bin/ghc-pkg is version 7.8.4
+(\"/usr/bin/ghc\",[\"--supported-languages\"])
+(\"/usr/bin/ghc\",[\"--info\"])
+Reading installed packages...
+(\"/usr/bin/ghc-pkg\",[\"dump\",\"--global\",\"-v0\"])
+(\"/usr/bin/ghc\",[\"--print-libdir\"])
+Flags chosen: new-time=False, network-uri=True, ekg=False,
+asciiprogress=False, torrentparser=False, desktopnotify=False, tahoe=True,
+quvi=True, feed=True, tdfa=True, testsuite=True, androidsplice=False,
+android=False, production=True, dns=True, xmpp=True, pairing=True,
+webapp-secure=True, webapp=True, assistant=True, dbus=True, inotify=True,
+webdav=False, s3=True
+Dependency IfElse -any: using IfElse-0.85
+Dependency MissingH -any: using MissingH-1.3.0.1
+Dependency QuickCheck >=2.1: using QuickCheck-2.8.1
+Dependency SafeSemaphore -any: using SafeSemaphore-0.10.1
+Dependency aeson -any: using aeson-0.9.0.1
+Dependency async -any: using async-2.0.2
+Dependency aws >=0.9.2: using aws-0.12.1
+Dependency base >=4.5 && <4.9: using base-4.7.0.2
+Dependency blaze-builder -any: using blaze-builder-0.4.0.1
+Dependency bloomfilter -any: using bloomfilter-2.0.1.0
+Dependency byteable -any: using byteable-0.1.1
+Dependency bytestring -any: using bytestring-0.10.4.0
+Dependency case-insensitive -any: using case-insensitive-1.2.0.4
+Dependency clientsession -any: using clientsession-0.9.1.1
+Dependency conduit -any: using conduit-1.2.5
+Dependency conduit-extra -any: using conduit-extra-1.1.9.1
+Dependency containers >=0.5.0.0: using containers-0.5.5.1
+Dependency crypto-api -any: using crypto-api-0.13.2
+Dependency cryptohash >=0.11.0: using cryptohash-0.11.6
+Dependency data-default -any: using data-default-0.5.3
+Dependency dbus >=0.10.7: using dbus-0.10.10
+Dependency directory -any: using directory-1.2.1.0
+Dependency dlist -any: using dlist-0.7.1.1
+Dependency dns -any: using dns-2.0.0
+Dependency edit-distance -any: using edit-distance-0.2.2.1
+Dependency esqueleto -any: using esqueleto-2.1.3
+Dependency exceptions >=0.6: using exceptions-0.8.0.2
+Dependency feed >=0.3.4: using feed-0.3.9.7
+Dependency filepath -any: using filepath-1.3.0.2
+Dependency gnutls >=0.1.4: using gnutls-0.1.6
+Dependency hinotify -any: using hinotify-0.3.7
+Dependency hslogger -any: using hslogger-1.2.9
+Dependency http-client -any: using http-client-0.4.18.1
+Dependency http-conduit -any: using http-conduit-2.1.7.1
+Dependency http-types -any: using http-types-0.8.6
+Dependency json -any: using json-0.9.1
+Dependency monad-control -any: using monad-control-1.0.0.4
+Dependency monad-logger -any: using monad-logger-0.3.13.2
+Dependency mtl >=2: using mtl-2.2.1
+Dependency network >=2.6: using network-2.6.2.1
+Dependency network-info -any: using network-info-0.2.0.7
+Dependency network-multicast -any: using network-multicast-0.0.11
+Dependency network-protocol-xmpp -any: using network-protocol-xmpp-0.4.8
+Dependency network-uri >=2.6: using network-uri-2.6.0.3
+Dependency old-locale -any: using old-locale-1.0.0.6
+Dependency optparse-applicative >=0.10: using optparse-applicative-0.11.0.2
+Dependency path-pieces >=0.1.4: using path-pieces-0.2.0
+Dependency persistent -any: using persistent-2.1.6
+Dependency persistent-sqlite -any: using persistent-sqlite-2.1.4.2
+Dependency persistent-template -any: using persistent-template-2.1.3.4
+Dependency process -any: using process-1.2.0.0
+Dependency random -any: using random-1.1
+Dependency regex-tdfa -any: using regex-tdfa-1.2.0
+Dependency resourcet -any: using resourcet-1.1.5
+Dependency sandi -any: using sandi-0.3.5
+Dependency securemem -any: using securemem-0.1.9
+Dependency shakespeare >=2.0.0: using shakespeare-2.0.5
+Dependency stm >=2.3: using stm-2.4.4
+Dependency tasty >=0.7: using tasty-0.10.1.2
+Dependency tasty-hunit -any: using tasty-hunit-0.9.2
+Dependency tasty-quickcheck -any: using tasty-quickcheck-0.8.3.2
+Dependency tasty-rerun -any: using tasty-rerun-1.1.4
+Dependency template-haskell -any: using template-haskell-2.9.0.0
+Dependency text -any: using text-1.2.1.1
+Dependency time -any: using time-1.4.2
+Dependency transformers -any: using transformers-0.4.3.0
+Dependency unix -any: using unix-2.7.0.1
+Dependency unix-compat -any: using unix-compat-0.4.1.4
+Dependency utf8-string -any: using utf8-string-1
+Dependency uuid -any: using uuid-1.3.10
+Dependency wai -any: using wai-3.0.3.0
+Dependency wai-extra -any: using wai-extra-3.0.10
+Dependency warp >=3.0.0.5: using warp-3.0.13.1
+Dependency warp-tls >=1.4: using warp-tls-3.0.4.2
+Dependency xml-types -any: using xml-types-0.3.6
+Dependency yesod >=1.2.6: using yesod-1.4.1.5
+Dependency yesod-core >=1.2.19: using yesod-core-1.4.12
+Dependency yesod-default >=1.2.0: using yesod-default-1.2.0
+Dependency yesod-form >=1.3.15: using yesod-form-1.4.4.1
+Dependency yesod-static >=1.2.4: using yesod-static-1.5.0.1
+Searching for alex in path.
+Found alex at /usr/bin/alex
+(\"/usr/bin/alex\",[\"--version\"])
+/usr/bin/alex is version 3.1.4
+Searching for ar in path.
+Found ar at /usr/bin/ar
+Searching for c2hs in path.
+Found c2hs at /usr/bin/c2hs
+(\"/usr/bin/c2hs\",[\"--numeric-version\"])
+/usr/bin/c2hs is version 0.25.2
+Searching for cpphs in path.
+Cannot find cpphs on the path
+Searching for gcc in path.
+Found gcc at /usr/bin/gcc
+(\"/usr/bin/gcc\",[\"-dumpversion\"])
+/usr/bin/gcc is version 4.9.3
+Searching for ghcjs in path.
+Cannot find ghcjs on the path
+Searching for ghcjs-pkg in path.
+Cannot find ghcjs-pkg on the path
+Searching for greencard in path.
+Cannot find greencard on the path
+Searching for haddock in path.
+Cannot find haddock on the path
+Searching for happy in path.
+Found happy at /usr/bin/happy
+(\"/usr/bin/happy\",[\"--version\"])
+/usr/bin/happy is version 1.19.5
+Searching for hmake in path.
+Cannot find hmake on the path
+Searching for hpc in path.
+Found hpc at /usr/bin/hpc
+(\"/usr/bin/hpc\",[\"version\"])
+/usr/bin/hpc is version 0.67
+looking for tool hsc2hs near compiler in /usr/bin
+found hsc2hs in /usr/bin/hsc2hs
+(\"/usr/bin/hsc2hs\",[\"--version\"])
+/usr/bin/hsc2hs is version 0.67
+Searching for HsColour in path.
+Found HsColour at /usr/bin/HsColour
+(\"/usr/bin/HsColour\",[\"-version\"])
+/usr/bin/HsColour is version 1.22
+Searching for jhc in path.
+Cannot find jhc on the path
+Searching for ld in path.
+Found ld at /usr/bin/ld
+Environment: [(\"ANT_HOME\",\"/usr/share/ant\"),(\"AWT_TOOLKIT\",\"MToolkit\"),(\"BLOCKSIZE\",\"K\"),(\"CASROOT\",\"/usr/lib64/opencascade-6.9.0/ros/lin\"),(\"CCACHE_NOCOMPRESS\",\"yes\"),(\"COLORFGBG\",\"default;default\"),(\"COLORTERM\",\"yes\"),(\"CONFIG_PROTECT\",\"/usr/share/gnupg/qualified.txt /usr/share/config /usr/lib64/libreoffice/program/sofficerc\"),(\"CONFIG_PROTECT_MASK\",\"/etc/gentoo-release /etc/sandbox.d /etc/fonts/fonts.conf /etc/gconf /etc/terminfo /etc/dconf /etc/ca-certificates.conf /etc/texmf/web2c /etc/texmf/language.dat.d /etc/texmf/language.def.d /etc/texmf/updmap.d /etc/revdep-rebuild\"),(\"CSF_EXCEPTION_PROMPT\",\"1\"),(\"CSF_GraphicShr\",\"/usr/lib64/opencascade-6.9.0/ros/lin/lib64/libTKOpenGl.so\"),(\"CSF_IGESDefaults\",\"/usr/lib64/opencascade-6.9.0/ros/lin/src/XSTEPResource\"),(\"CSF_LANGUAGE\",\"us\"),(\"CSF_MDTVFontDirectory\",\"/usr/lib64/opencascade-6.9.0/ros/lin/src/FontMFT\"),(\"CSF_MDTVTexturesDirectory\",\"/usr/lib64/opencascade-6.9.0/ros/lin/src/Textures\"),(\"CSF_MIGRATION_TYPES\",\"/usr/lib64/opencascade-6.9.0/ros/lin/src/StdResource/MigrationSheet.txt\"),(\"CSF_PluginDefaults\",\"/usr/lib64/opencascade-6.9.0/ros/lin/src/StdResource\"),(\"CSF_SHMessage\",\"/usr/lib64/opencascade-6.9.0/ros/lin/src/SHMessage\"),(\"CSF_STEPDefaults\",\"/usr/lib64/opencascade-6.9.0/ros/lin/src/XSTEPResource\"),(\"CSF_StandardDefaults\",\"/usr/lib64/opencascade-6.9.0/ros/lin/src/StdResource\"),(\"CSF_StandardLiteDefaults\",\"/usr/lib64/opencascade-6.9.0/ros/lin/src/StdResource\"),(\"CSF_UnitsDefinition\",\"/usr/lib64/opencascade-6.9.0/ros/lin/src/UnitsAPI/Units.dat\"),(\"CSF_UnitsLexicon\",\"/usr/lib64/opencascade-6.9.0/ros/lin/src/UnitsAPI/Lexi_Expr.dat\"),(\"CSF_XCAFDefaults\",\"/usr/lib64/opencascade-6.9.0/ros/lin/src/StdResource\"),(\"CSF_XSMessage\",\"/usr/lib64/opencascade-6.9.0/ros/lin/src/XSMessage\"),(\"CSF_XmlOcafResource\",\"/usr/lib64/opencascade-6.9.0/ros/lin/src/XmlOcafResource\"),(\"CVS_RSH\",\"ssh\"),(\"DBUS_SESSION_BUS_ADDRESS\",\"unix:abstract=/tmp/dbus-KC1dHno8Ok,guid=22396e1b611ef7c98854252555b76fe7\"),(\"DEBEMAIL\",\"Florian.Franzmann@cs.fau.de\"),(\"DEBFULLNAME\",\"Florian Franzmann\"),(\"DIFF_TOOL\",\"kdiff3\"),(\"DISPLAY\",\":0\"),(\"EDITOR\",\"vim\"),(\"EMAIL\",\"Florian Franzmann <Florian.Franzmann@fau.de>\"),(\"EVENT_NOEPOLL\",\"1\"),(\"FLTK_DOCDIR\",\"/usr/share/doc/fltk-1.3.3-r3/html\"),(\"GCC_COLORS\",\"error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01\"),(\"GCC_SPECS\",\"\"),(\"GIT_AUTHOR_EMAIL\",\"Florian.Franzmann@fau.de\"),(\"GREP_COLOR\",\"1;31\"),(\"GSETTINGS_BACKEND\",\"dconf\"),(\"GTK_MODULES\",\"canberra-gtk-module\"),(\"GUILE_LOAD_PATH\",\"/usr/share/guile/1.8\"),(\"HACKPAGER\",\"less\"),(\"HG\",\"/usr/bin/hg\"),(\"HOME\",\"/home/franzman\"),(\"INFINALITY_FT_AUTOHINT_HORIZONTAL_STEM_DARKEN_STRENGTH\",\"10\"),(\"INFINALITY_FT_AUTOHINT_INCREASE_GLYPH_HEIGHTS\",\"true\"),(\"INFINALITY_FT_AUTOHINT_SNAP_STEM_HEIGHT\",\"100\"),(\"INFINALITY_FT_AUTOHINT_VERTICAL_STEM_DARKEN_STRENGTH\",\"25\"),(\"INFINALITY_FT_BOLD_EMBOLDEN_X_VALUE\",\"0\"),(\"INFINALITY_FT_BOLD_EMBOLDEN_Y_VALUE\",\"0\"),(\"INFINALITY_FT_BRIGHTNESS\",\"0\"),(\"INFINALITY_FT_CHROMEOS_STYLE_SHARPENING_STRENGTH\",\"0\"),(\"INFINALITY_FT_CONTRAST\",\"0\"),(\"INFINALITY_FT_FILTER_PARAMS\",\"11 22 38 22 11\"),(\"INFINALITY_FT_FRINGE_FILTER_STRENGTH\",\"0\"),(\"INFINALITY_FT_GAMMA_CORRECTION\",\"0 100\"),(\"INFINALITY_FT_GLOBAL_EMBOLDEN_X_VALUE\",\"0\"),(\"INFINALITY_FT_GLOBAL_EMBOLDEN_Y_VALUE\",\"0\"),(\"INFINALITY_FT_GRAYSCALE_FILTER_STRENGTH\",\"0\"),(\"INFINALITY_FT_STEM_ALIGNMENT_STRENGTH\",\"25\"),(\"INFINALITY_FT_STEM_FITTING_STRENGTH\",\"25\"),(\"INFINALITY_FT_STEM_SNAPPING_SLIDING_SCALE\",\"40\"),(\"INFINALITY_FT_USE_KNOWN_SETTINGS_ON_SELECTED_FONTS\",\"true\"),(\"INFINALITY_FT_USE_VARIOUS_TWEAKS\",\"true\"),(\"INFINALITY_FT_WINDOWS_STYLE_SHARPENING_STRENGTH\",\"5\"),(\"INFOPATH\",\"/usr/share/info:/usr/share/gcc-data/x86_64-pc-linux-gnu/4.9.3/info:/usr/share/binutils-data/x86_64-pc-linux-gnu/2.25.1/info\"),(\"ITCL_LIBRARY\",\"/usr/lib64/itcl4.0\"),(\"ITK_LIBRARY\",\"/usr/lib64/itk4.0\"),(\"JAVAC\",\"/etc/java-config-2/current-system-vm/bin/javac\"),(\"JAVA_HOME\",\"/etc/java-config-2/current-system-vm\"),(\"JDK_HOME\",\"/etc/java-config-2/current-system-vm\"),(\"LADSPA_PATH\",\"/usr/lib/ladspa\"),(\"LANG\",\"en_US.utf8\"),(\"LC_COLLATE\",\"de_DE.utf8\"),(\"LC_CTYPE\",\"de_DE.utf8\"),(\"LC_MESSAGES\",\"\"),(\"LC_MONETARY\",\"de_DE.utf8\"),(\"LC_NUMERIC\",\"de_DE.utf8\"),(\"LC_TIME\",\"de_DE.utf8\"),(\"LESS\",\" -R \"),(\"LESSOPEN\",\"| /usr/bin/src-hilite-lesspipe.sh %s\"),(\"LESS_TERMCAP_mb\",\"\ESC[01;31m\"),(\"LESS_TERMCAP_md\",\"\ESC[01;31m\"),(\"LESS_TERMCAP_me\",\"\ESC[0m\"),(\"LESS_TERMCAP_se\",\"\ESC[0m\"),(\"LESS_TERMCAP_so\",\"\ESC[01;44;33m\"),(\"LESS_TERMCAP_ue\",\"\ESC[0m\"),(\"LESS_TERMCAP_us\",\"\ESC[01;32m\"),(\"LIBXCB_ALLOW_SLOPPY_LOCK\",\"yes\"),(\"LOGNAME\",\"franzman\"),(\"LSCOLORS\",\"Gxfxcxdxbxegedabagacad\"),(\"MAIL\",\"/var/mail/franzman\"),(\"MAKE_NJOBS\",\"4\"),(\"MANPATH\",\"/etc/java-config-2/current-system-vm/man:/usr/local/share/man:/usr/share/man:/usr/share/gcc-data/x86_64-pc-linux-gnu/4.9.3/man:/usr/share/binutils-data/x86_64-pc-linux-gnu/2.25.1/man:/etc/java-config-2/current-system-vm/man/\"),(\"MINICOM\",\"-c on -o -w\"),(\"MMGT_CLEAR\",\"1\"),(\"OPENCL_PROFILE\",\"mesa\"),(\"OPENGL_PROFILE\",\"xorg-x11\"),(\"PAGER\",\"less\"),(\"PATH\",\"/home/franzman/bin:/usr/local/bin:/usr/bin:/bin:/opt/bin\"),(\"PERL5LIB\",\"/home/franzman/perl5/lib/perl5\"),(\"PERL_LOCAL_LIB_ROOT\",\"/home/franzman/perl5\"),(\"PERL_MB_OPT\",\"--install_base \\"/home/franzman/perl5\\"\"),(\"PERL_MM_OPT\",\"INSTALL_BASE=/home/franzman/perl5\"),(\"PRELINK_PATH_MASK\",\"/usr/lib64/libfreebl3.so:/usr/lib64/libnssdbm3.so:/usr/lib64/libsoftokn3.so\"),(\"PWD\",\"/tmp/git-annex-5.20150710\"),(\"QT_GRAPHICSSYSTEM\",\"raster\"),(\"QT_PLUGIN_PATH\",\"/usr/lib64/kde4/plugins\"),(\"R_HOME\",\"/usr/lib64/R\"),(\"SHELL\",\"/bin/zsh\"),(\"SHLVL\",\"3\"),(\"SP_BASE\",\"/home/franzman/repos/sp-korrektur-ss15/V_SP/ueb\"),(\"TCLHOME\",\"/usr/bin\"),(\"TCLLIBPATH\",\"/usr/lib64\"),(\"TCL_LIBRARY\",\"/usr/lib64/tcl8.6\"),(\"TERM\",\"rxvt-unicode-256color\"),(\"TESTBASE\",\"/home/franzman/repos/sp-korrektur-ss15/V_SP/ueb/aufgaben/clash/testcase\"),(\"TEXEDIT\",\"vim\"),(\"TEXINPUTS\",\"/usr/lib64/ocaml/ocamldoc:\"),(\"TIX_LIBRARY\",\"/usr/lib64/tix8.4\"),(\"TK_LIBRARY\",\"/usr/lib64/tk8.6\"),(\"UBUNTU_MENUPROXY\",\"1\"),(\"USER\",\"franzman\"),(\"WHOIS_OPTIONS\",\"-H\"),(\"WINDOWID\",\"35651708\"),(\"WINDOWPATH\",\"7\"),(\"XDG_CONFIG_DIRS\",\"/etc/xdg\"),(\"XDG_DATA_DIRS\",\"/usr/local/share:/usr/share\"),(\"_JAVA_AWT_WM_NONREPARENTING\",\"1\")]
+(\"/usr/bin/ghc\",[\"-c\",\"/tmp/16120.c\",\"-o\",\"/tmp/16120.o\"])
+(\"/usr/bin/ld\",[\"-x\",\"-r\",\"/tmp/16120.o\",\"-o\",\"/tmp/16121.o\"])
+Searching for lhc in path.
+Cannot find lhc on the path
+Searching for lhc-pkg in path.
+Cannot find lhc-pkg on the path
+Searching for pkg-config in path.
+Found pkg-config at /usr/bin/pkg-config
+(\"/usr/bin/pkg-config\",[\"--version\"])
+/usr/bin/pkg-config is version 0.28
+Searching for strip in path.
+Found strip at /usr/bin/strip
+(\"/usr/bin/strip\",[\"--version\"])
+/usr/bin/strip is version 2.25
+Searching for tar in path.
+Found tar at /bin/tar
+(\"/bin/tar\",[\"--help\"])
+Searching for uhc in path.
+Cannot find uhc on the path
+Using Cabal-1.22.4.0 compiled by ghc-7.8
+Using compiler: ghc-7.8.4
+Using install prefix: /usr
+Binaries installed in: /usr/bin
+Libraries installed in: /usr/lib/x86_64-linux-ghc-7.8.4/git-annex-5.20150710
+Private binaries installed in: /usr/libexec
+Data files installed in:
+/usr/share/x86_64-linux-ghc-7.8.4/git-annex-5.20150710
+Documentation installed in:
+/usr/share/doc/x86_64-linux-ghc-7.8.4/git-annex-5.20150710
+Configuration files installed in: /usr/etc
+Using alex version 3.1.4 found on system at: /usr/bin/alex
+Using ar found on system at: /usr/bin/ar
+Using c2hs version 0.25.2 found on system at: /usr/bin/c2hs
+No cpphs found
+Using gcc version 4.9.3 found on system at: /usr/bin/gcc
+Using ghc version 7.8.4 found on system at: /usr/bin/ghc
+Using ghc-pkg version 7.8.4 found on system at: /usr/bin/ghc-pkg
+No ghcjs found
+No ghcjs-pkg found
+No greencard found
+No haddock found
+Using happy version 1.19.5 found on system at: /usr/bin/happy
+Using haskell-suite found on system at: haskell-suite-dummy-location
+Using haskell-suite-pkg found on system at: haskell-suite-pkg-dummy-location
+No hmake found
+Using hpc version 0.67 found on system at: /usr/bin/hpc
+Using hsc2hs version 0.67 found on system at: /usr/bin/hsc2hs
+Using hscolour version 1.22 found on system at: /usr/bin/HsColour
+No jhc found
+Using ld found on system at: /usr/bin/ld
+No lhc found
+No lhc-pkg found
+Using pkg-config version 0.28 found on system at: /usr/bin/pkg-config
+Using strip version 2.25 found on system at: /usr/bin/strip
+Using tar found on system at: /bin/tar
+No uhc found
+(\"/usr/bin/gcc\",[\"/tmp/16120.c\",\"-o\",\"/tmp/16120\",\"-D__GLASGOW_HASKELL__=708\",\"-Dlinux_BUILD_OS=1\",\"-Dx86_64_BUILD_ARCH=1\",\"-Dlinux_HOST_OS=1\",\"-Dx86_64_HOST_ARCH=1\",\"-Idist/build/autogen\",\"-IUtility\",\"-I.\",\"-DWITH_CLIBS\",\"-DWITH_TESTSUITE\",\"-DWITH_TDFA\",\"-DWITH_S3\",\"-DWITH_ASSISTANT\",\"-DWITH_INOTIFY\",\"-DWITH_DBUS\",\"-DWITH_WEBAPP\",\"-DWITH_WEBAPP_SECURE\",\"-DWITH_PAIRING\",\"-DWITH_XMPP\",\"-DWITH_DNS\",\"-DWITH_FEED\",\"-DWITH_QUVI\",\"-DWITH_TAHOE\",\"-Wall\",\"-I/usr/lib64/unix-compat-0.4.1.4/ghc-7.8.4/include\",\"-I/usr/include/libxml2\",\"-I/usr/lib64/bloomfilter-2.0.1.0/ghc-7.8.4/include\",\"-I/usr/lib64/vector-0.10.12.3/ghc-7.8.4/include\",\"-I/usr/lib64/primitive-0.5.4.0/ghc-7.8.4/include\",\"-I/usr/lib64/ghc-7.8.4/old-time-1.1.0.2/include\",\"-I/usr/lib64/ghc-7.8.4/process-1.2.0.0/include\",\"-I/usr/lib64/network-2.6.2.1/ghc-7.8.4/include\",\"-I/usr/lib64/ghc-7.8.4/directory-1.2.1.0/include\",\"-I/usr/lib64/ghc-7.8.4/unix-2.7.0.1/include\",\"-I/usr/lib64/ghc-7.8.4/bytestring-0.10.4.0/include\",\"-I/usr/lib64/ghc-7.8.4/time-1.4.2/include\",\"-I/usr/lib64/ghc-7.8.4/base-4.7.0.2/include\",\"-I/usr/lib64/ghc-7.8.4/integer-gmp-0.5.1.0/include\",\"-I/usr/lib64/ghc-7.8.4/include\",\"-I/usr/lib64/libffi-3.2.1/include\",\"-Wall\",\"-L/usr/lib64/yesod-static-1.5.0.1/ghc-7.8.4\",\"-L/usr/lib64/yesod-default-1.2.0/ghc-7.8.4\",\"-L/usr/lib64/yesod-1.4.1.5/ghc-7.8.4\",\"-L/usr/lib64/yesod-auth-1.4.6/ghc-7.8.4\",\"-L/usr/lib64/yesod-form-1.4.4.1/ghc-7.8.4\",\"-L/usr/lib64/yesod-persistent-1.4.0.3/ghc-7.8.4\",\"-L/usr/lib64/yesod-core-1.4.12/ghc-7.8.4\",\"-L/usr/lib64/yaml-0.8.12/ghc-7.8.4\",\"-L/usr/lib64/xss-sanitize-0.3.5.5/ghc-7.8.4\",\"-L/usr/lib64/warp-tls-3.0.4.2/ghc-7.8.4\",\"-L/usr/lib64/wai-app-static-3.1.1/ghc-7.8.4\",\"-L/usr/lib64/warp-3.0.13.1/ghc-7.8.4\",\"-L/usr/lib64/wai-extra-3.0.10/ghc-7.8.4\",\"-L/usr/lib64/word8-0.1.2/ghc-7.8.4\",\"-L/usr/lib64/wai-logger-2.2.4.1/ghc-7.8.4\",\"-L/usr/lib64/wai-3.0.3.0/ghc-7.8.4\",\"-L/usr/lib64/vault-0.3.0.4/ghc-7.8.4\",\"-L/usr/lib64/uuid-1.3.10/ghc-7.8.4\",\"-L/usr/lib64/uuid-types-1.0.1/ghc-7.8.4\",\"-L/usr/lib64/unix-time-0.3.5/ghc-7.8.4\",\"-L/usr/lib64/unix-compat-0.4.1.4/ghc-7.8.4\",\"-L/usr/lib64/tasty-rerun-1.1.4/ghc-7.8.4\",\"-L/usr/lib64/tasty-quickcheck-0.8.3.2/ghc-7.8.4\",\"-L/usr/lib64/tasty-hunit-0.9.2/ghc-7.8.4\",\"-L/usr/lib64/tasty-0.10.1.2/ghc-7.8.4\",\"-L/usr/lib64/unbounded-delays-0.1.0.9/ghc-7.8.4\",\"-L/usr/lib64/tagsoup-0.13.3/ghc-7.8.4\",\"-L/usr/lib64/stringsearch-0.3.6.6/ghc-7.8.4\",\"-L/usr/lib64/split-0.2.2/ghc-7.8.4\",\"-L/usr/lib64/simple-sendfile-0.2.21/ghc-7.8.4\",\"-L/usr/lib64/shakespeare-2.0.5/ghc-7.8.4\",\"-L/usr/lib64/sandi-0.3.5/ghc-7.8.4\",\"-L/usr/lib64/regex-tdfa-rc-1.1.8.3/ghc-7.8.4\",\"-L/usr/lib64/regex-tdfa-1.2.0/ghc-7.8.4\",\"-L/usr/lib64/reducers-3.10.3.2/ghc-7.8.4\",\"-L/usr/lib64/semigroupoids-5.0.0.2/ghc-7.8.4\",\"-L/usr/lib64/persistent-template-2.1.3.4/ghc-7.8.4\",\"-L/usr/lib64/persistent-sqlite-2.1.4.2/ghc-7.8.4\",\"-L/usr/lib64/optparse-applicative-0.11.0.2/ghc-7.8.4\",\"-L/usr/lib64/nonce-1.0.2/ghc-7.8.4\",\"-L/usr/lib64/network-protocol-xmpp-0.4.8/ghc-7.8.4\",\"-L/usr/lib64/network-multicast-0.0.11/ghc-7.8.4\",\"-L/usr/lib64/network-info-0.2.0.7/ghc-7.8.4\",\"-L/usr/lib64/mwc-random-0.13.3.2/ghc-7.8.4\",\"-L/usr/lib64/mime-mail-0.4.9/ghc-7.8.4\",\"-L/usr/lib64/json-0.9.1/ghc-7.8.4\",\"-L/usr/lib64/http-date-0.0.6.1/ghc-7.8.4\",\"-L/usr/lib64/hjsmin-0.1.4.7/ghc-7.8.4\",\"-L/usr/lib64/language-javascript-0.5.13.4/ghc-7.8.4\",\"-L/usr/lib64/hinotify-0.3.7/ghc-7.8.4\",\"-L/usr/lib64/gsasl-0.3.6/ghc-7.8.4\",\"-L/usr/lib64/gnutls-0.1.6/ghc-7.8.4\",\"-L/usr/lib64/monads-tf-0.1.0.2/ghc-7.8.4\",\"-L/usr/lib64/gnuidn-0.2.1/ghc-7.8.4\",\"-L/usr/lib64/fingertree-0.1.1.0/ghc-7.8.4\",\"-L/usr/lib64/file-embed-0.0.8.2/ghc-7.8.4\",\"-L/usr/lib64/feed-0.3.9.7/ghc-7.8.4\",\"-L/usr/lib64/xml-1.3.14/ghc-7.8.4\",\"-L/usr/lib64/time-locale-compat-0.1.1.0/ghc-7.8.4\",\"-L/usr/lib64/esqueleto-2.1.3/ghc-7.8.4\",\"-L/usr/lib64/persistent-2.1.6/ghc-7.8.4\",\"-L/usr/lib64/silently-1.2.5/ghc-7.8.4\",\"-L/usr/lib64/resource-pool-0.2.3.2/ghc-7.8.4\",\"-L/usr/lib64/path-pieces-0.2.0/ghc-7.8.4\",\"-L/usr/lib64/monad-logger-0.3.13.2/ghc-7.8.4\",\"-L/usr/lib64/stm-chans-3.0.0.4/ghc-7.8.4\",\"-L/usr/lib64/monad-loops-0.4.3/ghc-7.8.4\",\"-L/usr/lib64/fast-logger-2.4.0/ghc-7.8.4\",\"-L/usr/lib64/enclosed-exceptions-1.0.1.1/ghc-7.8.4\",\"-L/usr/lib64/email-validate-2.0.1/ghc-7.8.4\",\"-L/usr/lib64/edit-distance-0.2.2.1/ghc-7.8.4\",\"-L/usr/lib64/easy-file-0.2.1/ghc-7.8.4\",\"-L/usr/lib64/dns-2.0.0/ghc-7.8.4\",\"-L/usr/lib64/iproute-1.5.0/ghc-7.8.4\",\"-L/usr/lib64/dbus-0.10.10/ghc-7.8.4\",\"-L/usr/lib64/libxml-sax-0.7.5/ghc-7.8.4\",\"-L/usr/lib64/css-text-0.1.2.1/ghc-7.8.4\",\"-L/usr/lib64/cryptohash-conduit-0.1.1/ghc-7.8.4\",\"-L/usr/lib64/comonad-4.2.7.2/ghc-7.8.4\",\"-L/usr/lib64/distributive-0.4.4/ghc-7.8.4\",\"-L/usr/lib64/contravariant-1.3.1.1/ghc-7.8.4\",\"-L/usr/lib64/clientsession-0.9.1.1/ghc-7.8.4\",\"-L/usr/lib64/skein-1.0.9.3/ghc-7.8.4\",\"-L/usr/lib64/setenv-0.1.1.3/ghc-7.8.4\",\"-L/usr/lib64/crypto-api-0.13.2/ghc-7.8.4\",\"-L/usr/lib64/entropy-0.3.7/ghc-7.8.4\",\"-L/usr/lib64/cprng-aes-0.6.1/ghc-7.8.4\",\"-L/usr/lib64/byteorder-1.0.4/ghc-7.8.4\",\"-L/usr/lib64/bloomfilter-2.0.1.0/ghc-7.8.4\",\"-L/usr/lib64/bifunctors-5/ghc-7.8.4\",\"-L/usr/lib64/base-orphans-0.3.2/ghc-7.8.4\",\"-L/usr/lib64/aws-0.12.1/ghc-7.8.4\",\"-L/usr/lib64/utf8-string-1/ghc-7.8.4\",\"-L/usr/lib64/tagged-0.8.1/ghc-7.8.4\",\"-L/usr/lib64/safe-0.3.9/ghc-7.8.4\",\"-L/usr/lib64/base16-bytestring-0.1.1.6/ghc-7.8.4\",\"-L/usr/lib64/auto-update-0.1.2.2/ghc-7.8.4\",\"-L/usr/lib64/authenticate-1.3.2.11/ghc-7.8.4\",\"-L/usr/lib64/tagstream-conduit-0.5.5.3/ghc-7.8.4\",\"-L/usr/lib64/xml-conduit-1.3.1/ghc-7.8.4\",\"-L/usr/lib64/xml-types-0.3.6/ghc-7.8.4\",\"-L/usr/lib64/blaze-html-0.8.0.2/ghc-7.8.4\",\"-L/usr/lib64/blaze-markup-0.7.0.2/ghc-7.8.4\",\"-L/usr/lib64/data-default-0.5.3/ghc-7.8.4\",\"-L/usr/lib64/data-default-instances-old-locale-0.0.1/ghc-7.8.4\",\"-L/usr/lib64/data-default-instances-dlist-0.0.1/ghc-7.8.4\",\"-L/usr/lib64/data-default-instances-containers-0.0.1/ghc-7.8.4\",\"-L/usr/lib64/data-default-instances-base-0.0.1/ghc-7.8.4\",\"-L/usr/lib64/conduit-extra-1.1.9.1/ghc-7.8.4\",\"-L/usr/lib64/http-conduit-2.1.7.1/ghc-7.8.4\",\"-L/usr/lib64/http-client-tls-0.2.2/ghc-7.8.4\",\"-L/usr/lib64/connection-0.2.4/ghc-7.8.4\",\"-L/usr/lib64/x509-system-1.5.0/ghc-7.8.4\",\"-L/usr/lib64/tls-1.2.18/ghc-7.8.4\",\"-L/usr/lib64/x509-validation-1.5.2/ghc-7.8.4\",\"-L/usr/lib64/x509-store-1.5.0/ghc-7.8.4\",\"-L/usr/lib64/x509-1.5.1/ghc-7.8.4\",\"-L/usr/lib64/pem-0.2.2/ghc-7.8.4\",\"-L/usr/lib64/crypto-pubkey-0.2.8/ghc-7.8.4\",\"-L/usr/lib64/cryptohash-0.11.6/ghc-7.8.4\",\"-L/usr/lib64/crypto-pubkey-types-0.4.3/ghc-7.8.4\",\"-L/usr/lib64/crypto-numbers-0.2.7/ghc-7.8.4\",\"-L/usr/lib64/cipher-rc4-0.1.4/ghc-7.8.4\",\"-L/usr/lib64/cipher-des-0.0.6/ghc-7.8.4\",\"-L/usr/lib64/cipher-aes-0.2.11/ghc-7.8.4\",\"-L/usr/lib64/crypto-cipher-types-0.0.9/ghc-7.8.4\",\"-L/usr/lib64/socks-0.5.4/ghc-7.8.4\",\"-L/usr/lib64/cereal-0.4.1.1/ghc-7.8.4\",\"-L/usr/lib64/crypto-random-0.0.9/ghc-7.8.4\",\"-L/usr/lib64/securemem-0.1.9/ghc-7.8.4\",\"-L/usr/lib64/memory-0.7/ghc-7.8.4\",\"-L/usr/lib64/byteable-0.1.1/ghc-7.8.4\",\"-L/usr/lib64/http-client-0.4.18.1/ghc-7.8.4\",\"-L/usr/lib64/streaming-commons-0.1.12.1/ghc-7.8.4\",\"-L/usr/lib64/zlib-0.5.4.2/ghc-7.8.4\",\"-L/usr/lib64/network-uri-2.6.0.3/ghc-7.8.4\",\"-L/usr/lib64/mime-types-0.1.0.6/ghc-7.8.4\",\"-L/usr/lib64/http-types-0.8.6/ghc-7.8.4\",\"-L/usr/lib64/cookie-0.4.1.6/ghc-7.8.4\",\"-L/usr/lib64/data-default-class-0.0.1/ghc-7.8.4\",\"-L/usr/lib64/base64-bytestring-1.0.0.1/ghc-7.8.4\",\"-L/usr/lib64/conduit-1.2.5/ghc-7.8.4\",\"-L/usr/lib64/void-0.7/ghc-7.8.4\",\"-L/usr/lib64/semigroups-0.16.2.2/ghc-7.8.4\",\"-L/usr/lib64/nats-1/ghc-7.8.4\",\"-L/usr/lib64/resourcet-1.1.5/ghc-7.8.4\",\"-L/usr/lib64/mmorph-1.0.4/ghc-7.8.4\",\"-L/usr/lib64/lifted-base-0.2.3.6/ghc-7.8.4\",\"-L/usr/lib64/monad-control-1.0.0.4/ghc-7.8.4\",\"-L/usr/lib64/transformers-base-0.4.4/ghc-7.8.4\",\"-L/usr/lib64/exceptions-0.8.0.2/ghc-7.8.4\",\"-L/usr/lib64/transformers-compat-0.4.0.4/ghc-7.8.4\",\"-L/usr/lib64/case-insensitive-1.2.0.4/ghc-7.8.4\",\"-L/usr/lib64/blaze-builder-0.4.0.1/ghc-7.8.4\",\"-L/usr/lib64/async-2.0.2/ghc-7.8.4\",\"-L/usr/lib64/asn1-parse-0.9.1/ghc-7.8.4\",\"-L/usr/lib64/asn1-encoding-0.9.0/ghc-7.8.4\",\"-L/usr/lib64/asn1-types-0.3.0/ghc-7.8.4\",\"-L/usr/lib64/hourglass-0.2.9/ghc-7.8.4\",\"-L/usr/lib64/appar-0.1.4/ghc-7.8.4\",\"-L/usr/lib64/ansi-wl-pprint-0.6.7.2/ghc-7.8.4\",\"-L/usr/lib64/ansi-terminal-0.6.2.1/ghc-7.8.4\",\"-L/usr/lib64/aeson-0.9.0.1/ghc-7.8.4\",\"-L/usr/lib64/vector-0.10.12.3/ghc-7.8.4\",\"-L/usr/lib64/unordered-containers-0.2.5.1/ghc-7.8.4\",\"-L/usr/lib64/syb-0.4.4/ghc-7.8.4\",\"-L/usr/lib64/dlist-0.7.1.1/ghc-7.8.4\",\"-L/usr/lib64/attoparsec-0.13.0.1/ghc-7.8.4\",\"-L/usr/lib64/scientific-0.3.3.8/ghc-7.8.4\",\"-L/usr/lib64/hashable-1.2.3.3/ghc-7.8.4\",\"-L/usr/lib64/statevar-1.1.0.0/ghc-7.8.4\",\"-L/usr/lib64/safesemaphore-0.10.1/ghc-7.8.4\",\"-L/usr/lib64/stm-2.4.4/ghc-7.8.4\",\"-L/usr/lib64/quickcheck-2.8.1/ghc-7.8.4\",\"-L/usr/lib64/tf-random-0.5/ghc-7.8.4\",\"-L/usr/lib64/primitive-0.5.4.0/ghc-7.8.4\",\"-L/usr/lib64/ghc-7.8.4/template-haskell-2.9.0.0\",\"-L/usr/lib64/ghc-7.8.4/pretty-1.1.1.1\",\"-L/usr/lib64/missingh-1.3.0.1/ghc-7.8.4\",\"-L/usr/lib64/regex-compat-0.95.1/ghc-7.8.4\",\"-L/usr/lib64/regex-posix-0.95.2/ghc-7.8.4\",\"-L/usr/lib64/regex-base-0.93.2/ghc-7.8.4\",\"-L/usr/lib64/random-1.1/ghc-7.8.4\",\"-L/usr/lib64/parsec-3.1.9/ghc-7.8.4\",\"-L/usr/lib64/text-1.2.1.1/ghc-7.8.4\",\"-L/usr/lib64/ghc-7.8.4/binary-0.7.4.0\",\"-L/usr/lib64/ghc-7.8.4/old-time-1.1.0.2\",\"-L/usr/lib64/hslogger-1.2.9/ghc-7.8.4\",\"-L/usr/lib64/ghc-7.8.4/process-1.2.0.0\",\"-L/usr/lib64/network-2.6.2.1/ghc-7.8.4\",\"-L/usr/lib64/ghc-7.8.4/directory-1.2.1.0\",\"-L/usr/lib64/ghc-7.8.4/unix-2.7.0.1\",\"-L/usr/lib64/ghc-7.8.4/bytestring-0.10.4.0\",\"-L/usr/lib64/ghc-7.8.4/time-1.4.2\",\"-L/usr/lib64/ghc-7.8.4/old-locale-1.0.0.6\",\"-L/usr/lib64/ghc-7.8.4/filepath-1.3.0.2\",\"-L/usr/lib64/ghc-7.8.4/containers-0.5.5.1\",\"-L/usr/lib64/ifelse-0.85/ghc-7.8.4\",\"-L/usr/lib64/mtl-2.2.1/ghc-7.8.4\",\"-L/usr/lib64/ghc-7.8.4/transformers-0.4.3.0\",\"-L/usr/lib64/hunit-1.2.5.2/ghc-7.8.4\",\"-L/usr/lib64/ghc-7.8.4/deepseq-1.3.0.2\",\"-L/usr/lib64/ghc-7.8.4/array-0.5.0.0\",\"-L/usr/lib64/ghc-7.8.4/base-4.7.0.2\",\"-L/usr/lib64/ghc-7.8.4/integer-gmp-0.5.1.0\",\"-L/usr/lib64/ghc-7.8.4/ghc-prim-0.3.1.0\",\"-L/usr/lib64/ghc-7.8.4/rts-1.0\"])
+runhaskell Setup.hs configure --prefix=/usr --verbose=3  220,76s user 51,62s system 46% cpu 9:44,37 total
+
+configure needs way over 10GB of RAM so something seems to be broken here.
+"""]]

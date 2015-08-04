@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-07-30T17:54:11Z"
+ content="""
+Good idea. Also, putting an indirect mode repo on a NTFS filesystem would
+probably yield confusing results when trying to use it on windows..
+
+I've put a check for this in with the other crippled FS checks that init
+does.
+"""]]

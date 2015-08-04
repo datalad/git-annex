@@ -1,0 +1,37 @@
+Hello everyone,
+
+my problem is: I have added a Bitbucket gcrypt repository (to be used for metadata only); it works via git-annex sync but the Assistant ignores it completely. I can check from the Bitbucket webpage that the remote repository never gets updated by the Assistant, it only does when i run 'git-annex sync' manually.
+
+## Adding the repository:
+
+    git remote add bitbucket gcrypt::https://bitbucket.org/omissis/basic.git
+
+## Syncing to it is ok:
+
+    $ git-annex sync
+    commit  ok
+    pull bitbucket 
+    gcrypt: Development version -- Repository format MAY CHANGE
+    gcrypt: Decrypting manifest
+    [...]
+    ok
+    push bitbucket 
+    gcrypt: Development version -- Repository format MAY CHANGE
+    gcrypt: Decrypting manifest
+    [...]
+    ok
+
+## But it doesn't appear at all in the Assistant webapp!
+
+Even if I do "restart daemon".
+
+BTW, adding a local gcrypt repo works fine and it gets synced normally by the Assistant  (after creating a bare Git repo):
+
+    git remote add enc gcrypt::/tmp/enc
+
+My Git-annex version:
+
+    $ git-annex version
+    git-annex version: 5.20140412ubuntu1
+
+Anybody has any idea? My use case is that I have a computer behind a very restrictive firewall (only http and https are allowed) and I don't know how to sync it otherwise. I would like to avoid XMPP. Thanks!

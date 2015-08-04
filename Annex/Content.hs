@@ -611,7 +611,10 @@ preseedTmp key file = go =<< inAnnex key
 		( return True
 		, do
 			s <- calcRepo $ gitAnnexLocation key
-			liftIO $ copyFileExternal CopyTimeStamps s file
+			liftIO $ ifM (doesFileExist s)
+				( copyFileExternal CopyTimeStamps s file
+				, return False
+				)
 		)
 
 {- Blocks writing to an annexed file, and modifies file permissions to

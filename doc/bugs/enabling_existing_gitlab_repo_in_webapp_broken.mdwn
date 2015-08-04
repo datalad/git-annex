@@ -4,3 +4,5 @@ work.
 This is a SMOP; it needs to detect that the repo is on gitlab and use a
 custom enabling process and no the generic one, which doesn't work.
 --[[Joey]]
+
+> [[fixed|done]] --[[Joey]]
