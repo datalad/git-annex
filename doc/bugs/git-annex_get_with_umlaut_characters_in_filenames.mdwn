@@ -45,3 +45,15 @@ failed
 """]]
 
 the *tba* repository is accessible since all the other files were synced correctly.
+
+Git status reports untracked files which look like they were renamed.
+
+[[!format sh """
+$ git status
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	"Ant\303\263nio Varia\303\247\303\265es/"
+	"B Fachada/B Fachada/01 sozinho no r\303\263que.mp3"
+	"B Fachada/B Fachada/03 D\303\241 mais m\303\272sica \303\240 b\303\263fia.mp3"
+"""]]
