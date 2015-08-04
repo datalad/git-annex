@@ -10,6 +10,7 @@ git-annex (5.20150732) UNRELEASED; urgency=medium
     fscked, or every 5 minutes, whichever comes first. Previously,
     commits were made every 1000 files fscked.
   * Tighten dependency on optparse-applicative to 0.11.0.
+  * Added back debian/cabal-wrapper, since it still seems needed after all.
 
  -- Joey Hess <id@joeyh.name>  Fri, 31 Jul 2015 12:31:39 -0400
 
