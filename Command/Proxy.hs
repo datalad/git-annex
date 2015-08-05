@@ -13,7 +13,6 @@ import Config
 import Utility.Tmp
 import Utility.Env
 import Annex.Direct
-import qualified Annex
 import qualified Git
 import qualified Git.Sha
 import qualified Git.Ref
