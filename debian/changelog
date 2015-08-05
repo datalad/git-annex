@@ -28,6 +28,8 @@ git-annex (5.20150732) UNRELEASED; urgency=medium
     to manually be pushed before using git-annex sync. Note that this
     involved changes to git-annex-shell, so if the remote is using an old
     version, the manual push is still needed.
+  * git-annex-shell: Don't let configlist auto-init repository when in
+    readonly mode.
 
  -- Joey Hess <id@joeyh.name>  Fri, 31 Jul 2015 12:31:39 -0400
 
