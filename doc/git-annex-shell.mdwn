@@ -69,12 +69,12 @@ first "/~/" or "/~user/" is expanded to the specified home directory.
   This commits any staged changes to the git-annex branch.
   It also runs the annex-content hook.
 
-* notifychanges
+* notifychanges directory
 
   This is used by `git-annex remotedaemon` to be notified when
   refs in the remote repository are changed.
 
-* gcryptsetup gcryptid
+* gcryptsetup directory gcryptid
 
   Sets up a repository as a gcrypt repository.
 
