@@ -14,9 +14,10 @@ import Annex.Init
 import qualified Annex.Branch
 import qualified Git.Config
 import Remote.GCrypt (coreGCryptId)
+import qualified CmdLine.GitAnnexShell.Fields as Fields
 
 cmd :: Command
-cmd = noCommit $ 
+cmd = noCommit $ dontCheck repoExists $
 	command "configlist" SectionPlumbing 
 		"outputs relevant git configuration"
 		paramNothing (withParams seek)
@@ -34,13 +35,14 @@ start = do
 	showConfig k v = liftIO $ putStrLn $ k ++ "=" ++ v
 
 {- The repository may not yet have a UUID; automatically initialize it
- - when there's a git-annex branch available. -}
+ - when there's a git-annex branch available or if the autoinit field was
+ - set. -}
 findOrGenUUID :: Annex UUID
 findOrGenUUID = do
 	u <- getUUID
 	if u /= NoUUID
 		then return u
-		else ifM Annex.Branch.hasSibling
+		else ifM (Annex.Branch.hasSibling <||> (isJust <$> Fields.getField Fields.autoInit))
 			( do
 				initialize Nothing
 				getUUID

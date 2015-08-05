@@ -20,6 +20,7 @@ module Remote (
 
 	remoteTypes,
 	remoteList,
+	remoteList',
 	gitSyncableRemote,
 	remoteMap,
 	remoteMap',

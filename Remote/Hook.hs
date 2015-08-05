@@ -27,7 +27,7 @@ type HookName = String
 remote :: RemoteType
 remote = RemoteType {
 	typename = "hook",
-	enumerate = findSpecialRemotes "hooktype",
+	enumerate = const (findSpecialRemotes "hooktype"),
 	generate = gen,
 	setup = hookSetup
 }

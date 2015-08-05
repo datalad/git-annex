@@ -34,7 +34,7 @@ import qualified Command.GCryptSetup
 
 cmds_readonly :: [Command]
 cmds_readonly =
-	[ gitAnnexShellCheck Command.ConfigList.cmd
+	[ Command.ConfigList.cmd
 	, gitAnnexShellCheck Command.InAnnex.cmd
 	, gitAnnexShellCheck Command.SendKey.cmd
 	, gitAnnexShellCheck Command.TransferInfo.cmd
@@ -146,6 +146,7 @@ checkField (field, val)
 	| field == fieldName remoteUUID = fieldCheck remoteUUID val
 	| field == fieldName associatedFile = fieldCheck associatedFile val
 	| field == fieldName direct = fieldCheck direct val
+	| field == fieldName autoInit = fieldCheck autoInit val
 	| otherwise = False
 
 failure :: IO ()

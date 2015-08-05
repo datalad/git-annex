@@ -44,7 +44,7 @@ import qualified Data.Map as M
 remote :: RemoteType
 remote = RemoteType {
 	typename = "rsync",
-	enumerate = findSpecialRemotes "rsyncurl",
+	enumerate = const (findSpecialRemotes "rsyncurl"),
 	generate = gen,
 	setup = rsyncSetup
 }

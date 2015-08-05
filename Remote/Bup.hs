@@ -36,7 +36,7 @@ type BupRepo = String
 remote :: RemoteType
 remote = RemoteType {
 	typename = "bup",
-	enumerate = findSpecialRemotes "buprepo",
+	enumerate = const (findSpecialRemotes "buprepo"),
 	generate = gen,
 	setup = bupSetup
 }

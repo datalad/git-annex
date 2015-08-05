@@ -53,7 +53,7 @@ type Capability = String
 remote :: RemoteType
 remote = RemoteType {
 	typename = "tahoe",
-	enumerate = findSpecialRemotes "tahoe",
+	enumerate = const (findSpecialRemotes "tahoe"),
 	generate = gen,
 	setup = tahoeSetup
 }

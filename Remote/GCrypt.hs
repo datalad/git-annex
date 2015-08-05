@@ -54,7 +54,7 @@ remote = RemoteType {
 	typename = "gcrypt",
 	-- Remote.Git takes care of enumerating gcrypt remotes too,
 	-- and will call our gen on them.
-	enumerate = return [],
+	enumerate = const (return []),
 	generate = gen,
 	setup = gCryptSetup
 }

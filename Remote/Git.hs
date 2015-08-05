@@ -67,11 +67,11 @@ remote = RemoteType {
 	setup = gitSetup
 }
 
-list :: Annex [Git.Repo]
-list = do
+list :: Bool -> Annex [Git.Repo]
+list autoinit = do
 	c <- fromRepo Git.config
 	rs <- mapM (tweakurl c) =<< fromRepo Git.remotes
-	mapM configRead rs
+	mapM (configRead autoinit) rs
   where
 	annexurl n = "remote." ++ n ++ ".annexurl"
 	tweakurl c r = do
@@ -116,14 +116,14 @@ gitSetup (Just u) _ c = do
  -
  - Conversely, the config of an URL remote is only read when there is no
  - cached UUID value. -}
-configRead :: Git.Repo -> Annex Git.Repo
-configRead r = do
+configRead :: Bool -> Git.Repo -> Annex Git.Repo
+configRead autoinit r = do
 	gc <- Annex.getRemoteGitConfig r
 	u <- getRepoUUID r
 	case (repoCheap r, remoteAnnexIgnore gc, u) of
 		(_, True, _) -> return r
-		(True, _, _) -> tryGitConfigRead r
-		(False, _, NoUUID) -> tryGitConfigRead r
+		(True, _, _) -> tryGitConfigRead autoinit r
+		(False, _, NoUUID) -> tryGitConfigRead autoinit r
 		_ -> return r
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
@@ -196,11 +196,12 @@ repoAvail r
 
 {- Tries to read the config for a specified remote, updates state, and
  - returns the updated repo. -}
-tryGitConfigRead :: Git.Repo -> Annex Git.Repo
-tryGitConfigRead r 
+tryGitConfigRead :: Bool -> Git.Repo -> Annex Git.Repo
+tryGitConfigRead autoinit r 
 	| haveconfig r = return r -- already read
 	| Git.repoIsSsh r = store $ do
-		v <- Ssh.onRemote r (pipedconfig, return (Left $ error "configlist failed")) "configlist" [] []
+		liftIO $ print autoinit
+		v <- Ssh.onRemote r (pipedconfig, return (Left $ error "configlist failed")) "configlist" [] configlistfields
 		case v of
 			Right r'
 				| haveconfig r' -> return r'
@@ -302,6 +303,10 @@ tryGitConfigRead r
 			Annex.BranchState.disableUpdate
 			void $ tryNonAsync $ ensureInitialized
 			Annex.getState Annex.repo
+		
+	configlistfields = if autoinit
+		then [(Fields.autoInit, "1")]
+		else []
 
 {- Checks if a given remote has the content for a key in its annex. -}
 inAnnex :: Remote -> Key -> Annex Bool

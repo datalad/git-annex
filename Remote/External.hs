@@ -34,7 +34,7 @@ import qualified Data.Map as M
 remote :: RemoteType
 remote = RemoteType {
 	typename = "external",
-	enumerate = findSpecialRemotes "externaltype",
+	enumerate = const (findSpecialRemotes "externaltype"),
 	generate = gen,
 	setup = externalSetup
 }

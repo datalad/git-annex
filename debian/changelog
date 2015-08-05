@@ -22,6 +22,12 @@ git-annex (5.20150732) UNRELEASED; urgency=medium
   * Linux standalone: Work around problem that prevented it from working
     properly if unpacked into a directory that contains ":" or ";" in its
     name.
+  * Simplify setup process for a ssh remote. Now it suffices to run git
+    remote add, followed by git-annex sync. Now the remote is automatically
+    initialized for use by git-annex, where before the git-annex branch had
+    to manually be pushed before using git-annex sync. Note that this
+    involved changes to git-annex-shell, so if the remote is using an old
+    version, the manual push is still needed.
 
  -- Joey Hess <id@joeyh.name>  Fri, 31 Jul 2015 12:31:39 -0400
 

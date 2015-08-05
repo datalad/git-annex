@@ -34,3 +34,6 @@ associatedFile = Field "associatedfile" $ \f ->
 
 direct :: Field
 direct = Field "direct" $ \f -> f == "1"
+
+autoInit :: Field
+autoInit = Field "autoinit" $ \f -> f == "1"

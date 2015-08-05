@@ -33,7 +33,7 @@ import Utility.Metered
 remote :: RemoteType
 remote = RemoteType {
 	typename = "directory",
-	enumerate = findSpecialRemotes "directory",
+	enumerate = const (findSpecialRemotes "directory"),
 	generate = gen,
 	setup = directorySetup
 }

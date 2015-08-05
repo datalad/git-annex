@@ -72,14 +72,19 @@ remoteList :: Annex [Remote]
 remoteList = do
 	rs <- Annex.getState Annex.remotes
 	if null rs
-		then do
-			m <- readRemoteLog
-			rs' <- concat <$> mapM (process m) remoteTypes
-			Annex.changeState $ \s -> s { Annex.remotes = rs' }
-			return rs'
+		then remoteList' False
 		else return rs
+
+remoteList' :: Bool -> Annex [Remote]
+remoteList' autoinit = do
+	m <- readRemoteLog
+	rs <- concat <$> mapM (process m) remoteTypes
+	Annex.changeState $ \s -> s { Annex.remotes = rs }
+	return rs
   where
-	process m t = enumerate t >>= mapM (remoteGen m t) >>= return . catMaybes
+	process m t = enumerate t autoinit 
+		>>= mapM (remoteGen m t) 
+		>>= return . catMaybes
 
 {- Forces the remoteList to be re-generated, re-reading the git config. -}
 remoteListRefresh :: Annex [Remote]
@@ -109,7 +114,7 @@ updateRemote remote = do
   where
 	updaterepo r
 		| Git.repoIsLocal r || Git.repoIsLocalUnknown r =
-			Remote.Git.configRead r
+			Remote.Git.configRead False r
 		| otherwise = return r
 
 {- Checks if a remote is syncable using git. -}
