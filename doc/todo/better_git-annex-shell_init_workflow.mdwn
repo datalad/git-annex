@@ -6,3 +6,7 @@ to get the remore uuid, fail, and set annex-ignore.
 
 This should be improved.. It ought to be possible to add a new remote and
 have git-annex sync do everything needed.
+
+> [[done]]; the remote needs git-annex-shell 5.20150805 installed, and so
+> does the user, and then `git-annex sync` will automatically handle
+> initialization of the remote. --[[Joey]]
