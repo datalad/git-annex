@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="my bad"
+ date="2015-08-05T02:33:46Z"
+ content="""
+indeed my use of ts timestamp was somewhat incorrect ;), I have used ts \"%b %d %H:%M:%S.%s\"
+
+\" This is quite likely simply the overhead of git-annex needing to query git to work out what remote each file is located on\" -- unlikely since CPU utilization is close to none.
+
+\"coupled with the overhead of needing to start a new git-annex-shell and rsync processes\" -- that is the likely major part of the overhead here 
+
+-J is indeed of notable help BUT overall disproportionate to mitigate the overhead at large.  I seem can successfully raise it to -J 4. With -J 6 I already start getting \"E: channel 22: open failed: administratively prohibited: open failed\" from time to time (not sure if it is benign or results in that particular transfer not succeeding). Not quite sure on the exact reason for it, i.e. why server side refuses to open a new channel -- I guess because of the same issue of too quickly following requests for new connections (i.e. \"the overhead\").
+  
+Why transfer requests could not be queued up and batched for execution within the same ssh invocation?  Keys are unique, so could be received within the same tmp/ in a batch transfer and then sorted into their corresponding hash subdirs.   Bundled with -J to possibly even split among multiple source remotes from which different content could be available from it could lead to greatly improved transfer rates.  Or would it be a major undertaking?
+"""]]
