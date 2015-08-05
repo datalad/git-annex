@@ -31,3 +31,6 @@ access, if available. There is a annex-cost setting you can configure in
 Also, note that you need full shell access for this to work -- 
 git-annex needs to be able to ssh in and run commands. Or at least,
 your shell needs to be able to run the [[git-annex-shell]] command.
+
+For details on setting up ssh remotes, see the
+[[tips/centralized_git_repository_tutorial]].
