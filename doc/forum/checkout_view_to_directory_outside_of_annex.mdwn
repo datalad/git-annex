@@ -1,0 +1,23 @@
+i am working on a project where i need to copy many subsets of files stored in a single annex repo to separate folders outside of the annex repo.
+
+to select the subset, i'm using `git annex metadata --set <tag> <path>`.
+
+what i would like to do, ideally, is to leverage `git annex view` to directly check out the files to a specific directory outside of the annex repo.
+
+the use case is basically the "Copying objects" strategy of the [syncthing special remote discussion](http://git-annex.branchable.com/todo/syncthing_special_remote/), although rather than having the 'directory' special remote contain files in that remote's specific layout, i would like them to be checked out simply with their original file names.
+
+say i have these files in my main annex repo:
+
+    a.pdf (metadata: topic=haskell)
+    b.pdf (metadata: topic=haskell)
+    c.pdf (metadata: topic=iojs)
+    d.pdf (metadata: topic=python)
+    e.pdf (metadata: topic=haskell)
+
+if i issue `git annex view topic=haskell`, i have the files i want in my annex' root:
+
+    a.pdf
+    b.pdf
+    e.pdf
+
+obviously i could then simply run `rsync --exclude .git -aL --delete . ../other/dir`, which is totally fine, but maybe i'm just blindly missing something obvious and i could simply use something like `git annex --work-tree=../other/dir view topic=haskell` and see `a.pdf`, `b.pdf` and `e.pdf` appear in the target directory (i don't need any metadata in that directory, so only the plain files and no .git folder for a remote is fine).
