@@ -1,8 +1,8 @@
-i am working on a project where i need to copy many subsets of files stored in a single annex repo to separate folders outside of the annex repo.
+i am working on a project where i need to copy many subsets of files stored in a single annex repo to separate folders outside of the annex repo (each subset to a separate folder).
 
-to select the subset, i'm using `git annex metadata --set <tag> <path>`.
+to select each subset, i'm using `git annex metadata --set <tag>=<value> <path>`.
 
-what i would like to do, ideally, is to leverage `git annex view` to directly check out the files to a specific directory outside of the annex repo.
+what i would like to do, ideally, is to leverage each `git annex view <tag>=<value>` invocation to directly check out the view's files to a specific directory outside of the annex repo.
 
 the use case is basically the "Copying objects" strategy of the [syncthing special remote discussion](http://git-annex.branchable.com/todo/syncthing_special_remote/), although rather than having the 'directory' special remote contain files in that remote's specific layout, i would like them to be checked out simply with their original file names.
 
