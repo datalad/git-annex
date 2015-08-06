@@ -10,24 +10,29 @@ can use different ones for different files.
   verifying that the file content is right, and can avoid duplicates of
   files with the same content. Its need to generate checksums
   can make it slower for large files. 
-* `SHA256` -- Does not include the file extension in the key, which can
-  lead to better deduplication but can confuse some programs.
-* `WORM` ("Write Once, Read Many") This assumes that any file with
-  the same filename, size, and modification time has the same content.
-  This is the least expensive backend, recommended for really large
-  files or slow systems.
+* `SHA256` -- SHA-2 hash that does not include the file extension in the
+  key, which can lead to better deduplication but can confuse some programs.
 * `SHA512`, `SHA512E` -- Best SHA-2 hash, for the very paranoid.
-* `SHA1`, `SHA1E`, `MD5`, `MD5E` -- Smaller hashes than `SHA256`
-   for those who want a checksum but are not concerned about security.
-* `SHA384`, `SHA384E`, `SHA224`, `SHA224E` -- Hashes for people who like
-  unusual sizes.
+* `SHA384`, `SHA384E`, `SHA224`, `SHA224E` -- SHA-2 hashes for
+  people who like unusual sizes.
+* `SHA3_512`, `SHA_512E`, `SHA3_384`, `SHA3_384E`, `SHA3_256`, `SHA3_256E`, `SHA3_224`, `SHA3_224E`
+  -- SHA-3 hashes, for bleeding edge fun.
 * `SKEIN512`, `SKEIN512E`, `SKEIN256`, `SKEIN256E`
   -- [Skein hash](http://en.wikipedia.org/wiki/Skein_hash),
   a well-regarded SHA3 hash competition finalist.
+* `SHA1`, `SHA1E`, `MD5`, `MD5E` -- Smaller hashes than `SHA256`
+   for those who want a checksum but are not concerned about security.
+* `WORM` ("Write Once, Read Many") -- This assumes that any file with
+  the same filename, size, and modification time has the same content.
+  This is the least expensive backend, recommended for really large
+  files or slow systems.
+* `URL` -- This is a key that is generated from the url to a file.
+  It's generated when using eg, `git annex addurl --fast`, when the file
+  content is not available for hashing.
 
-Note that the SHA512, SKEIN512 and SHA384 generate long paths,
+Note that the various 512 and 384 length hashes result in long paths,
 which are known to not work on Windows. If interoperability on Windows is a
-concern, avoid those backends.
+concern, avoid those.
 
 The `annex.backends` git-config setting can be used to list the backends
 git-annex should use. The first one listed will be used by default when

@@ -270,7 +270,7 @@ bup2GitRemote r
 bupRef :: Key -> String
 bupRef k
 	| Git.Ref.legal True shown = shown
-	| otherwise = "git-annex-" ++ show (sha256 (fromString shown))
+	| otherwise = "git-annex-" ++ show (sha2_256 (fromString shown))
   where
 	shown = key2file k
 

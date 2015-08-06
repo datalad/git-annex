@@ -30,6 +30,8 @@ git-annex (5.20150732) UNRELEASED; urgency=medium
     version, the manual push is still needed.
   * git-annex-shell: Don't let configlist auto-init repository when in
     readonly mode.
+  * Added support for SHA3 hashed keys (in 8 varieties), when git-annex is
+    built using the cryptonite library.
 
  -- Joey Hess <id@joeyh.name>  Fri, 31 Jul 2015 12:31:39 -0400
 
