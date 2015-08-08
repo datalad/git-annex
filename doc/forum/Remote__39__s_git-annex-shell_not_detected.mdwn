@@ -1,0 +1,18 @@
+When doing `git annex get fname` in a repo A with 2 remotes on LAN (B and C), it says they don't have git annex installed so it sets the `annex-ignore` flag. However, they do have it, and I can `annex-get` files from C to B. Versions of git and git-annex vary between the machines. Any idea what could be causing it?
+
+
+A:
+
+* Ubuntu. 
+* git 1.9.1
+* git-annex 5.20140412ubuntu1
+
+B: 
+* Fedora 22
+* git 2.3.2 (installed through Nix package manager, so its in a nonstandard path)
+* git-annex 5.20140717 (installed normally, in /usr/bin)
+
+C: 
+* Fedora 22
+* git 2.3.2 (installed through Nix package manager, so its in a nonstandard path)
+* git-annex 5.20150219 (installed through Nix
