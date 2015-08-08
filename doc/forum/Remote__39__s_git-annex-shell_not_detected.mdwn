@@ -8,11 +8,13 @@ A:
 * git-annex 5.20140412ubuntu1
 
 B: 
+
 * Fedora 22
 * git 2.3.2 (installed through Nix package manager, so its in a nonstandard path)
 * git-annex 5.20140717 (installed normally, in /usr/bin)
 
 C: 
+
 * Fedora 22
 * git 2.3.2 (installed through Nix package manager, so its in a nonstandard path)
 * git-annex 5.20150219 (installed through Nix
