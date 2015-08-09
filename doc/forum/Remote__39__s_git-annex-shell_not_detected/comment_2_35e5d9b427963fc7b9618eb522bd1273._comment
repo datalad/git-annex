@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-08-09T21:20:05Z"
+ content="""
+Another way to deal with the problem is to find the location where
+git-annex-shell is installed on the remote system's Nix store, and
+configure the git remote for that system to use that location, by setting
+`remote.<name>.annex-shell` in its git configuration.
+"""]]

@@ -8,3 +8,22 @@ When including it in a NixOS configuration.nix file, the name of the reference t
 
 The build status of the package within Nix can be seen on the [Hydra Build
 Farm](http://hydra.nixos.org/job/nixpkgs/trunk/gitAndTools.gitAnnex).
+
+----
+
+If git-annex is installed using Nix on a non-NixOS system, note that
+git-annex-shell will not be available in PATH if git-annex tries to ssh
+into the system and run it. This is because bash is typically built
+without the flag `-DSSH_SOURCE_BASHRC`, and so the .bashrc that sets up the
+PATH to include Nix-installed packages is not read.
+
+This is not a problem when using NixOS, because it does build bash with
+that flag. Nor is this a problem when using git-annex locally.
+But, if you're setting up a server that will be used as a git
+remote, you'll need to find a way to get git-annex-shell
+into the PATH, or otherwise deal with this.
+
+Another way to deal with the problem is to find the location where
+git-annex-shell is installed on the remote system, and configure the git
+remote for that system to use that location, by setting
+`remote.<name>.annex-shell` in its git configuration.
