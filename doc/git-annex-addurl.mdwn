@@ -1,0 +1,81 @@
+# NAME
+
+git-annex addurl - add urls to annex
+
+# SYNOPSIS
+
+git annex addurl `[url ...]`
+
+# DESCRIPTION
+
+Downloads each url to its own file, which is added to the annex.
+
+When `quvi` is installed, urls are automatically tested to see if they
+point to a video hosting site, and the video is downloaded instead.
+  
+Urls to torrent files (including magnet links) will cause the content of
+the torrent to be downloaded, using `aria2c`.
+
+Normally the filename is based on the full url, so will look like
+"www.example.com_dir_subdir_bigfile". In some cases, addurl is able to
+come up with a better filename based on other information. Options can also
+be used to get better filenames.
+
+# OPTIONS
+
+* `--fast`
+
+  Avoid immediately downloading the url.
+
+* `--relaxed`
+
+  Avoid storing the size of the url's content, and accept whatever
+  content is there at a future point. (Implies `--fast`.)
+
+* `--raw`
+
+  Prevent special handling of urls by quvi, bittorrent, and other
+  special remotes. This will for example, make addurl
+  download the .torrent file and not the contents it points to.
+
+* `--file=name`
+
+  Use with a filename that does not yet exist to add a new file
+  with the specified name and the content downloaded from the url.
+
+  If the file already exists, addurl will record that it can be downloaded
+  from the specified url(s).
+
+* `--pathdepth=N`
+
+  Rather than basing the filename on the whole url, this causes a path to
+  be constructed, starting at the specified depth within the path of the
+  url.
+
+  For example, adding the url http://www.example.com/dir/subdir/bigfile
+  with `--pathdepth=1` will use "dir/subdir/bigfile",
+  while `--pathdepth=3` will use "bigfile". 
+
+  It can also be negative; `--pathdepth=-2` will use the last
+  two parts of the url.
+
+* `--prefix=foo` `--suffix=bar`
+
+  Use to adjust the filenames that are created by addurl. For example,
+  `--suffix=.mp3` can be used to add an extension to the file.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-rmurl]](1)
+
+[[git-annex-registerurl]](1)
+
+[[git-annex-importfeed]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.
