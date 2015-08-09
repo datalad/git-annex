@@ -1,0 +1,143 @@
+### Please describe the problem.
+
+In the external special remote protocol, SETURLPRESENT (and SETURIPRESENT) doesn't seem to work.  My expectation is that it will add a public URL for a file, as with `git annex addurl`, so that clones can retrieve it without enabling the special remote.  Instead, the specified URL doesn't show up under `git annex whereis` and isn't used when fetching the file in a clone.  Am I misunderstanding how SETURLPRESENT is supposed to work?
+
+### What steps will reproduce the problem?
+
+See transcript below.  I'm seeing this with [gcsannex](https://github.com/bgilbert/gcsannex), my external special remote.
+
+### What version of git-annex are you using? On what operating system?
+
+5.20150809-ga52b65a on Fedora 22 x86_64.
+
+### Please provide any additional information below.
+
+[[!format sh """
+# First, set up git-annex repository
+
+$ mkdir t
+$ cd t
+$ git init
+Initialized empty Git repository in /home/bgilbert/tmp/t/.git/
+$ git annex init
+init  ok
+(recording state in git...)
+$ cp ~/sample.jpg .
+$ git annex add sample.jpg
+add sample.jpg ok
+(recording state in git...)
+$ git commit -m 'sample'
+[master (root-commit) 692e208] sample
+ 1 file changed, 1 insertion(+)
+ create mode 120000 sample.jpg
+$ GOOGLE_APPLICATION_CREDENTIALS=../credentials.json git annex initremote test1 type=external externaltype=gcs encryption=none project=my-project public=yes
+initremote test1 ok
+(recording state in git...)
+
+
+# Copy file to special remote.  Note the SETURLPRESENT.
+
+$ git annex whereis sample.jpg
+whereis sample.jpg (1 copy) 
+  	d2ed9d95-3005-40cc-a743-227c38e0242a -- bgilbert@trumpeter:~/tmp/t [here]
+ok
+$ git annex copy -t test1 sample.jpg --debug
+[2015-08-09 19:20:28 EDT] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2015-08-09 19:20:28 EDT] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2015-08-09 19:20:28 EDT] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..a2e464a88d86394ef071cdc1af3f36856b91b0e1","-n1","--pretty=%H"]
+[2015-08-09 19:20:28 EDT] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2015-08-09 19:20:28 EDT] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--cached","-z","--","sample.jpg"]
+copy sample.jpg [2015-08-09 19:20:28 EDT] chat: git-annex-remote-gcs []
+[2015-08-09 19:20:28 EDT] git-annex-remote-gcs --> VERSION 1
+[2015-08-09 19:20:28 EDT] git-annex-remote-gcs <-- PREPARE
+[2015-08-09 19:20:28 EDT] git-annex-remote-gcs --> GETUUID
+[2015-08-09 19:20:28 EDT] git-annex-remote-gcs <-- VALUE e49a874a-5480-4e48-aa51-c6e34ee5991c
+[2015-08-09 19:20:28 EDT] git-annex-remote-gcs --> GETCONFIG project
+[2015-08-09 19:20:28 EDT] git-annex-remote-gcs <-- VALUE my-project
+[2015-08-09 19:20:28 EDT] git-annex-remote-gcs --> GETCONFIG location
+[2015-08-09 19:20:28 EDT] git-annex-remote-gcs <-- VALUE 
+[2015-08-09 19:20:28 EDT] git-annex-remote-gcs --> GETCONFIG storageclass
+[2015-08-09 19:20:28 EDT] git-annex-remote-gcs <-- VALUE 
+[2015-08-09 19:20:28 EDT] git-annex-remote-gcs --> GETCONFIG name
+[2015-08-09 19:20:28 EDT] git-annex-remote-gcs <-- VALUE test1
+[2015-08-09 19:20:28 EDT] git-annex-remote-gcs --> GETCONFIG bucket
+[2015-08-09 19:20:28 EDT] git-annex-remote-gcs <-- VALUE 
+[2015-08-09 19:20:28 EDT] git-annex-remote-gcs --> GETCONFIG public
+[2015-08-09 19:20:28 EDT] git-annex-remote-gcs <-- VALUE yes
+[2015-08-09 19:20:28 EDT] git-annex-remote-gcs --> GETCONFIG fileprefix
+[2015-08-09 19:20:28 EDT] git-annex-remote-gcs <-- VALUE 
+[2015-08-09 19:20:28 EDT] git-annex-remote-gcs --> GETCONFIG encryption
+[2015-08-09 19:20:28 EDT] git-annex-remote-gcs <-- VALUE none
+[2015-08-09 19:20:28 EDT] git-annex-remote-gcs --> GETCREDS e49a874a-5480-4e48-aa51-c6e34ee5991c-creds-v1
+[2015-08-09 19:20:28 EDT] git-annex-remote-gcs <-- CREDS [elided]
+[2015-08-09 19:20:29 EDT] git-annex-remote-gcs --> PREPARE-SUCCESS
+[2015-08-09 19:20:29 EDT] git-annex-remote-gcs <-- CHECKPRESENT SHA256E-s380682--"0494a188e8cb9feda674b983dc294b7992512fe56fadd040708d22b388d3c38d".jpg
+[2015-08-09 19:20:30 EDT] git-annex-remote-gcs --> SETURLMISSING SHA256E-s380682--"0494a188e8cb9feda674b983dc294b7992512fe56fadd040708d22b388d3c38d".jpg https://storage-download.googleapis.com/test1-e49a874a-5480-4e48-aa51-c6e34ee5991c/SHA256E-s380682--"0494a188e8cb9feda674b983dc294b7992512fe56fadd040708d22b388d3c38d".jpg
+[2015-08-09 19:20:30 EDT] git-annex-remote-gcs --> CHECKPRESENT-FAILURE SHA256E-s380682--"0494a188e8cb9feda674b983dc294b7992512fe56fadd040708d22b388d3c38d".jpg
+(to test1...) 
+[2015-08-09 19:20:30 EDT] git-annex-remote-gcs <-- TRANSFER STORE SHA256E-s380682--"0494a188e8cb9feda674b983dc294b7992512fe56fadd040708d22b388d3c38d".jpg .git/annex/objects/K2/7X/SHA256E-s380682--"0494a188e8cb9feda674b983dc294b7992512fe56fadd040708d22b388d3c38d".jpg/SHA256E-s380682--"0494a188e8cb9feda674b983dc294b7992512fe56fadd040708d22b388d3c38d".jpg
+[2015-08-09 19:20:32 EDT] git-annex-remote-gcs --> SETURLPRESENT SHA256E-s380682--"0494a188e8cb9feda674b983dc294b7992512fe56fadd040708d22b388d3c38d".jpg https://storage-download.googleapis.com/test1-e49a874a-5480-4e48-aa51-c6e34ee5991c/SHA256E-s380682--"0494a188e8cb9feda674b983dc294b7992512fe56fadd040708d22b388d3c38d".jpg
+[2015-08-09 19:20:32 EDT] git-annex-remote-gcs --> TRANSFER-SUCCESS STORE SHA256E-s380682--"0494a188e8cb9feda674b983dc294b7992512fe56fadd040708d22b388d3c38d".jpg
+ok                      
+[2015-08-09 19:20:32 EDT] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","hash-object","-w","--stdin-paths","--no-filters"]
+[2015-08-09 19:20:32 EDT] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-index","-z","--index-info"]
+[2015-08-09 19:20:32 EDT] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+(recording state in git...)
+[2015-08-09 19:20:32 EDT] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","write-tree"]
+[2015-08-09 19:20:32 EDT] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","commit-tree","ed61e5bed8cac36eef5e3feb72c0e4165947c746","--no-gpg-sign","-p","refs/heads/git-annex"]
+[2015-08-09 19:20:32 EDT] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","refs/heads/git-annex","6885483c56c1fc394b4ca518c6c5377147d4931c"]
+
+
+# The URL is not shown in whereis, but does exist (HEAD returns 200).
+
+$ git annex whereis sample.jpg
+whereis sample.jpg (2 copies) 
+  	d2ed9d95-3005-40cc-a743-227c38e0242a -- bgilbert@trumpeter:~/tmp/t [here]
+   	e49a874a-5480-4e48-aa51-c6e34ee5991c -- [test1]
+ok
+$ curl -I 'https://storage-download.googleapis.com/test1-e49a874a-5480-4e48-aa51-c6e34ee5991c/SHA256E-s380682--"0494a188e8cb9feda674b983dc294b7992512fe56fadd040708d22b388d3c38d".jpg' | head -n 1
+HTTP/1.1 200 OK
+
+
+# If I drop the file from this repository, make a new clone, and then
+# try to get the file in the clone without enabling the test1 remote,
+# git-annex does not fetch from the URL.
+
+$ git annex drop sample.jpg
+drop sample.jpg ok
+(recording state in git...)
+$ cd ..
+$ git clone t t2
+Cloning into 't2'...
+done.
+$ cd t2
+$ git annex init
+init  (merging origin/git-annex into git-annex...)
+(recording state in git...)
+ok
+(recording state in git...)
+$ git annex sync
+commit  ok
+pull origin 
+ok
+push origin 
+Counting objects: 6, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (5/5), done.
+Writing objects: 100% (6/6), 699 bytes | 0 bytes/s, done.
+Total 6 (delta 2), reused 0 (delta 0)
+To /home/bgilbert/tmp/t
+ * [new branch]      git-annex -> synced/git-annex
+ * [new branch]      master -> synced/master
+ok
+$ git annex whereis sample.jpg
+whereis sample.jpg (1 copy) 
+  	e49a874a-5480-4e48-aa51-c6e34ee5991c -- test1
+ok
+$ git annex get sample.jpg
+get sample.jpg (not available) 
+  Try making some of these repositories available:
+  	e49a874a-5480-4e48-aa51-c6e34ee5991c -- test1
+failed
+git-annex: get: 1 failed
+"""]]
