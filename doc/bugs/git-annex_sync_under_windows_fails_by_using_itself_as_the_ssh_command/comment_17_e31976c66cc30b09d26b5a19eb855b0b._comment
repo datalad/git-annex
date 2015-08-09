@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="threadshuffle"
+ subject="comment 17"
+ date="2015-08-09T10:00:48Z"
+ content="""
+OK, sorry for the bad question. Got it figured out that i needed to add a specific remote in order for it to appear in the list. So all git annex repos need to know about all other git annex repos
+"""]]
