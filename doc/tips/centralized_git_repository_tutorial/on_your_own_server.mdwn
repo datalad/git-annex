@@ -8,9 +8,15 @@ See for example [[using_gitolite_with_git-annex]].
 ## set up the server
 
 On the server, you'll want to [[install]] git, and git-annex, if you haven't
-already.
+already. If possible, install it using your distribution's package manager:
 
 	server# sudo apt-get install git git-annex
+
+Note that git-annex-shell needs to be located somewhere in the PATH, so
+that a client can successfully run "ssh yourserver git-annex-shell".
+Installing git-annex using a package manager will take care of this for
+you. But if you're not root or otherwise can't install git-annex that way,
+you may need to do more work; see [[get_git-annex-shell_into_PATH]].
 
 Decide where to put the repository on the server, and create a bare git repo
 there. In your home directory is a simple choice:

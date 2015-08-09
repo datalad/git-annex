@@ -1,0 +1,55 @@
+The [[git-annex-shell]] program is a part of git-annex that is used when
+accessing a git-annex repository on a remote server. The client runs
+something like "ssh server git-annex-shell". For this to work,
+git-annex-shell needs to be installed in PATH.
+
+If you install git-annex on your server as root, using a distribution's
+package manager, like apt-get, or otherwise installing it into /usr/bin, or
+/usr/local/bin, then git-annex-shell will be in PATH, and you'll not have
+any trouble (and can stop reading here).
+
+But, if you need to install git-annex on a server without being root,
+it can be tricky to get it into PATH. The bash shell doesn't source all of
+its config files when ssh uses it to run a non-interactive command like
+git-annex-shell, so even if git-annex-shell seems to be in PATH when you're
+logged onto the server, "ssh server git-annex-shell" won't find it.
+
+	bash: git-annex-shell: command not found; failed; exit code 127
+
+----
+
+In some systems (when it's compiled with `SSH_SOURCE_BASHRC` set), bash will
+load your `~/.bashrc` (but not your `~/.bash_profile`). So you can add to
+PATH in the .bashrc.
+
+Note that many .bashrc files start with something like this: 
+
+	# If not running interactively, don't do anything
+	[ -z "$PS1" ] && return
+
+So, make sure to make any PATH changes before such a guard. For example:
+
+	PATH=$HOME/bin/:$PATH
+
+	# If not running interactively, don't do anything else
+	[ -z "$PS1" ] && return
+
+----
+
+In some systems, bash won't load *any* config files at all.
+A few ways to deal with that:
+
+* Move or symlink git-annex-shell into a directory like
+  /usr/bin, that is in the default PATH.
+
+* If you're not root, ask the system administrator to please install
+  git-annex system-wide.
+
+* As a last resort, you can configure the git repository that's using
+  the server to know where git-annex shell is installed, by configuring
+  `remote.<name>.annex-shell`
+
+  For example, if git-annex-shell is installed in ~/bin/git-annex-shell
+  on the server, and the git remote named "annoyingserver" uses the server:
+
+	git config remote.annoyingserver.annex-shell /home/me/bin/git-annex-shell
