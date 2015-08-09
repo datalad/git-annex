@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 2"
+ date="2015-08-09T03:04:31Z"
+ content="""
+ indeed  pull/merge ( ie sync)  would often  be  needed.  but the same  in regular git  workflow -  we  can't push if remote has new  changes.  so we know that we need to \" git  pull\" ( or alternative merge dance).   my  whining here is pretty much about  dichotomy  between  regular git command  and  accompanying  annex commands  for simple typical workflows - i  need to  educate people  much more  beyond \" in your typical use case,  when you all collaborate  on this repo,  just use git annex add  to place big files under annex control,  and then git annex push  to push all your  changes\".   then if  annex push  checked  first that push   of annex  branch can't happen  and that annex  merge is due,  and let user know  to run it first -  they will do,  and things will remain clear.  now there is a  lot of annex  uniquely named commands  which do not \" correlate\"  with git ones   even for simple  use cases, which makes  adoption harder imho.
+"""]]
