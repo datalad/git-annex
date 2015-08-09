@@ -27,13 +27,13 @@ main = defaultMainWithHooks simpleUserHooks
 	}
 
 myPostCopy :: Args -> CopyFlags -> PackageDescription -> LocalBuildInfo -> IO ()
-myPostCopy _ (CopyFlags { copyVerbosity }) pkg lbi = do
+myPostCopy _ flags pkg lbi = do
 	installGitAnnexShell dest verbosity pkg lbi
 	installManpages      dest verbosity pkg lbi
 	installDesktopFile   dest verbosity pkg lbi
   where
-	dest      = NoCopyDest
-	verbosity = fromFlag copyVerbosity
+	dest      = fromFlag $ copyDest flags
+	verbosity = fromFlag $ copyVerbosity flags
 
 installGitAnnexShell :: CopyDest -> Verbosity -> PackageDescription -> LocalBuildInfo -> IO ()
 installGitAnnexShell copyDest verbosity pkg lbi =
@@ -62,7 +62,9 @@ installManpages copyDest verbosity pkg lbi =
 	srcManDir   = "man"
 
 installDesktopFile :: CopyDest -> Verbosity -> PackageDescription -> LocalBuildInfo -> IO ()
-installDesktopFile copyDest _verbosity pkg lbi =
-	DesktopFile.install $ dstBinDir </> "git-annex"
+installDesktopFile copyDest _verbosity pkg lbi
+	| progfile copyDest == progfile NoCopyDest =
+		DesktopFile.install (progfile copyDest)
+	| otherwise = return ()
   where
-	dstBinDir = bindir $ absoluteInstallDirs pkg lbi copyDest
+	progfile cd = bindir (absoluteInstallDirs pkg lbi cd) </> "git-annex"

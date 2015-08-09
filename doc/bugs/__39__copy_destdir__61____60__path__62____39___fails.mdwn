@@ -44,3 +44,13 @@ Index: habs/git-annex/src/git-annex-5.20150731/Setup.hs
 ~~~
 
 As you see I commented out installation of desktop files completely for the moment.  I don't really need them, and they require larger changes to be correct.
+
+> So, by "fails", you mean it installs to ~/.cabal instead of the speficied
+> location.
+> 
+> And, the issue with the desktop file installation is that it's not inside
+> ~/.cabal at all.
+> 
+> I've applied your patch, thanks. And dealt with the desktop file by
+> making it not install it anywhere, unless it's installing to the regular
+> ~/.cabal location. [[done]] --[[Joey]]
