@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="bgilbert@a0c64716cf22216de5eeb15a5ca4f009164c8fb3"
+ nickname="bgilbert"
+ subject="External special remote"
+ date="2015-08-09T22:59:16Z"
+ content="""
+I've written [an external special remote](https://github.com/bgilbert/gcsannex) for Google Cloud Storage using Google's Python bindings to the native JSON API.  The special remote supports all storage classes, including Nearline, and doesn't require Interoperable Access to be enabled.  Feedback welcome.
+"""]]
