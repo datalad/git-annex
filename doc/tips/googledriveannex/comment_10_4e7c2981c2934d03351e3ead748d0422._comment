@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2015-08-11T17:22:48Z"
+ content="""
+I have not heard from TobiasTheViking in a while, unfortunately.
+
+Whether this could be supported in git-anenx depends on whether a haskell
+API comes available.
+
+Google Cloud Storage might be a better option; it is supported in git-annex
+via the S3 remote, as well as having an actively maintained external
+special remote.
+"""]]
