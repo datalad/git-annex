@@ -34,8 +34,8 @@ git-annex (5.20150732) UNRELEASED; urgency=medium
     built using the cryptonite library.
   * Improve Setup.hs file so that cabal copy --destdir works.
     Thanks, Magnus Therning.
-  * metadata: Fix reversion introduced in 5.20150727 that caused display
-    of metadata to not work.
+  * metadata: Fix reversion introduced in 5.20150727 that caused recursive
+    display of metadata to not work.
   * Fix setting/setting/viewing metadata that contains unicode or other
     special characters, when in a non-unicode locale.
 
