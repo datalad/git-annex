@@ -10,3 +10,5 @@ http://techcrunch.com/2015/03/26/amazon-goes-after-dropbox-google-microsoft-with
 > suppose. --[[Joey]]
 
 > > Don't know if there's such a thing... there seems to be SDKs for android and IOS, but nothing more. It seems like it's a REST API: https://developer.amazon.com/public/apis/experience/cloud-drive/... --[[anarcat]]
+
+>> requested it be added to amazonka <https://github.com/brendanhay/amazonka/issues/168> --[[Joey]]
