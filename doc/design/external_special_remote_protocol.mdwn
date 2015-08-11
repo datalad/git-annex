@@ -274,7 +274,9 @@ in control.
   Gets any state that has been stored for the key.  
   (git-annex replies with VALUE followed by the state.)
 * `SETURLPRESENT Key Url`  
-  Records an URL where the Key can be downloaded from.
+  Records an URL where the Key can be downloaded from.  
+  Note that this does not make git-annex think that the url is present on
+  the web special remote.
 * `SETURLMISSING Key Url`  
   Records that the key can no longer be downloaded from the specified
   URL.
