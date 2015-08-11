@@ -45,7 +45,6 @@ fromTaggedBranch b = case split "/" $ Git.fromRef b of
 	("refs":"synced":u:_base) ->
 		Just (toUUID u, Nothing)
 	_ -> Nothing
-  where
 
 taggedPush :: UUID -> Maybe String -> Git.Ref -> Remote -> Git.Repo -> IO Bool
 taggedPush u info branch remote = Git.Command.runBool

@@ -36,6 +36,8 @@ git-annex (5.20150732) UNRELEASED; urgency=medium
     Thanks, Magnus Therning.
   * metadata: Fix reversion introduced in 5.20150727 that caused display
     of metadata to not work.
+  * Fix setting/setting/viewing metadata that contains unicode or other
+    special characters, when in a non-unicode locale.
 
  -- Joey Hess <id@joeyh.name>  Fri, 31 Jul 2015 12:31:39 -0400
 

@@ -13,6 +13,7 @@ module Utility.FileSystemEncoding (
 	withFilePath,
 	md5FilePath,
 	decodeBS,
+	encodeBS,
 	decodeW8,
 	encodeW8,
 	encodeW8NUL,
@@ -81,11 +82,19 @@ md5FilePath = MD5.Str . _encodeFilePath
 {- Decodes a ByteString into a FilePath, applying the filesystem encoding. -}
 decodeBS :: L.ByteString -> FilePath
 #ifndef mingw32_HOST_OS
-decodeBS = encodeW8 . L.unpack
+decodeBS = encodeW8NUL . L.unpack
 #else
 {- On Windows, we assume that the ByteString is utf-8, since Windows
  - only uses unicode for filenames. -}
 decodeBS = L8.toString
+#endif
+
+{- Encodes a FilePath into a ByteString, applying the filesystem encoding. -}
+encodeBS :: FilePath -> L.ByteString
+#ifndef mingw32_HOST_OS
+encodeBS = L.pack . decodeW8NUL
+#else
+encodeBS = L8.fromString
 #endif
 
 {- Converts a [Word8] to a FilePath, encoding using the filesystem encoding.
