@@ -31,7 +31,8 @@ fromB64 = fromMaybe bad . fromB64Maybe
 	bad = error "bad base64 encoded data"
 
 -- Only ascii strings are tested, because an arbitrary string may contain
--- characters not encoded using the FileSystemEncoding.
+-- characters not encoded using the FileSystemEncoding, which would thus
+-- not roundtrip, as fromB64 always generates an output encoded that way.
 prop_b64_roundtrips :: String -> Bool
 prop_b64_roundtrips s
 	| all (isAscii) s = s == fromB64 (toB64 s)

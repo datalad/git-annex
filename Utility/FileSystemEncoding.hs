@@ -35,6 +35,8 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.UTF8 as L8
 #endif
 
+import Utility.Exception
+
 {- Sets a Handle to use the filesystem encoding. This causes data
  - written or read from it to be encoded/decoded the same
  - as ghc 7.4 does to filenames etc. This special encoding
@@ -70,14 +72,14 @@ withFilePath fp f = Encoding.getFileSystemEncoding
  - effects.
  -
  - If the FilePath contains a value that is not legal in the filesystem
- - encoding, this may throw an exception. For example, "\226" is not valid
- - in the C locale, but is in utf locales.
+ - encoding, rather than thowing an exception, it will be returned as-is.
  -}
 {-# NOINLINE _encodeFilePath #-}
 _encodeFilePath :: FilePath -> String
 _encodeFilePath fp = unsafePerformIO $ do
 	enc <- Encoding.getFileSystemEncoding
-	GHC.withCString enc fp $ GHC.peekCString Encoding.char8
+	GHC.withCString enc fp (GHC.peekCString Encoding.char8)
+		`catchNonAsync` (\_ -> return fp)
 
 {- Encodes a FilePath into a Md5.Str, applying the filesystem encoding. -}
 md5FilePath :: FilePath -> MD5.Str
