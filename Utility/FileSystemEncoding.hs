@@ -68,6 +68,10 @@ withFilePath fp f = Encoding.getFileSystemEncoding
  - only allows doing this conversion with CStrings, and the CString buffer
  - is allocated, used, and deallocated within the call, with no side
  - effects.
+ -
+ - If the FilePath contains a value that is not legal in the filesystem
+ - encoding, this may throw an exception. For example, "\226" is not valid
+ - in the C locale, but is in utf locales.
  -}
 {-# NOINLINE _encodeFilePath #-}
 _encodeFilePath :: FilePath -> String
