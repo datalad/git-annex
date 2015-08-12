@@ -1,3 +1,9 @@
+git-annex (5.20150813) UNRELEASED; urgency=medium
+
+  * --debug log messages are now timestamped with fractional seconds.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 12 Aug 2015 14:31:01 -0400
+
 git-annex (5.20150812) unstable; urgency=medium
 
   * Added support for SHA3 hashed keys (in 8 varieties), when git-annex is
