@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="bgilbert@a0c64716cf22216de5eeb15a5ca4f009164c8fb3"
+ nickname="bgilbert"
+ subject="comment 2"
+ date="2015-08-12T04:51:53Z"
+ content="""
+Well, gcsannex didn't exist until last weekend.  I hope people find it useful.
+
+You're correct about what is happening, and I agree that the public URL shouldn't appear to be another copy of the file.  I was hoping to avoid requiring `enableremote` in a clone, but I see that the S3 remote [does also](https://git-annex.branchable.com/tips/public_Amazon_S3_remote/).
+
+I'll look at supporting unauthenticated reads through gcsannex directly.  I'll add support for `whereisKey` if you decide to expose it; AFAICS it's only used in the output of `git annex whereis`, which is convenient but doesn't seem to be critical.
+"""]]
