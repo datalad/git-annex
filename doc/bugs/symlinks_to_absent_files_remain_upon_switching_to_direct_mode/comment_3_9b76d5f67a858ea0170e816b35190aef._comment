@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-08-13T20:45:36Z"
+ content="""
+Broken symlinks are really much preferable to files that don't have the
+content the user expects. Anyway, git-annex is just inheriting how git
+deals with symlinks on filesystems that don't support them.
+
+Previous discussion:
+<http://git-annex.branchable.com/bugs/symlinks_to_absent_files_remain_upon_switching_to_direct_mode/>
+"""]]
