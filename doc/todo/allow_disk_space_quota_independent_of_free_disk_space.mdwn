@@ -1,0 +1,7 @@
+Feature Request. Instead of (or perhaps in addition to) setting
+`annex.diskreserve`, I'd like to be able to tell git-annex "use up to 2TB
+of disk space".
+
+> This would need changes for git-annex to keep a running total of the
+> space it's using, which becomes a little hairy in light of concurrency,
+> possibly manual changes to the object store, etc. --[[Joey]]
