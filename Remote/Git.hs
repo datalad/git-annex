@@ -200,7 +200,6 @@ tryGitConfigRead :: Bool -> Git.Repo -> Annex Git.Repo
 tryGitConfigRead autoinit r 
 	| haveconfig r = return r -- already read
 	| Git.repoIsSsh r = store $ do
-		liftIO $ print autoinit
 		v <- Ssh.onRemote r (pipedconfig, return (Left $ error "configlist failed")) "configlist" [] configlistfields
 		case v of
 			Right r'
