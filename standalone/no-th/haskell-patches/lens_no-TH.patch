@@ -1,20 +1,20 @@
-From 88ff2174944daf90530a33ee06e2e3f667089b6a Mon Sep 17 00:00:00 2001
+From 10c9ade98b3ac2054947f411d77db2eb28896b9f Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Fri, 3 Jul 2015 02:06:43 +0000
-Subject: [PATCH] remove TH
+Date: Thu, 16 Oct 2014 01:43:10 +0000
+Subject: [PATCH] avoid TH
 
 ---
- lens.cabal                          | 16 +---------------
- src/Control/Lens.hs                 |  6 ++----
+ lens.cabal                          | 17 +----------------
+ src/Control/Lens.hs                 |  8 ++------
  src/Control/Lens/Cons.hs            |  2 --
  src/Control/Lens/Internal/Fold.hs   |  2 --
  src/Control/Lens/Operators.hs       |  2 +-
  src/Control/Lens/Prism.hs           |  2 --
  src/Control/Monad/Primitive/Lens.hs |  1 -
- 7 files changed, 4 insertions(+), 27 deletions(-)
+ 7 files changed, 4 insertions(+), 30 deletions(-)
 
 diff --git a/lens.cabal b/lens.cabal
-index c7f6009..ab206c5 100644
+index 5388301..d7b02b9 100644
 --- a/lens.cabal
 +++ b/lens.cabal
 @@ -10,7 +10,7 @@ stability:     provisional
@@ -26,7 +26,15 @@ index c7f6009..ab206c5 100644
  -- build-tools:   cpphs
  tested-with:   GHC == 7.4.1, GHC == 7.4.2, GHC == 7.6.3, GHC == 7.8.1, GHC == 7.8.2
  synopsis:      Lenses, Folds and Traversals
-@@ -230,8 +230,6 @@ library
+@@ -217,7 +217,6 @@ library
+     Control.Exception.Lens
+     Control.Lens
+     Control.Lens.Action
+-    Control.Lens.At
+     Control.Lens.Combinators
+     Control.Lens.Cons
+     Control.Lens.Each
+@@ -234,8 +233,6 @@ library
      Control.Lens.Internal.Context
      Control.Lens.Internal.Deque
      Control.Lens.Internal.Exception
@@ -35,7 +43,7 @@ index c7f6009..ab206c5 100644
      Control.Lens.Internal.Fold
      Control.Lens.Internal.Getter
      Control.Lens.Internal.Indexed
-@@ -243,25 +241,21 @@ library
+@@ -247,25 +244,21 @@ library
      Control.Lens.Internal.Reflection
      Control.Lens.Internal.Review
      Control.Lens.Internal.Setter
@@ -61,7 +69,7 @@ index c7f6009..ab206c5 100644
      Control.Monad.Primitive.Lens
      Control.Parallel.Strategies.Lens
      Control.Seq.Lens
-@@ -287,12 +281,8 @@ library
+@@ -291,12 +284,8 @@ library
      Data.Typeable.Lens
      Data.Vector.Lens
      Data.Vector.Generic.Lens
@@ -74,7 +82,7 @@ index c7f6009..ab206c5 100644
      Numeric.Lens
  
    other-modules:
-@@ -395,7 +385,6 @@ test-suite doctests
+@@ -403,7 +392,6 @@ test-suite doctests
        deepseq,
        doctest        >= 0.9.1,
        filepath,
@@ -82,7 +90,7 @@ index c7f6009..ab206c5 100644
        mtl,
        nats,
        parallel,
-@@ -433,7 +422,6 @@ benchmark plated
+@@ -441,7 +429,6 @@ benchmark plated
      comonad,
      criterion,
      deepseq,
@@ -90,7 +98,7 @@ index c7f6009..ab206c5 100644
      lens,
      transformers
  
-@@ -468,7 +456,6 @@ benchmark unsafe
+@@ -476,7 +463,6 @@ benchmark unsafe
      comonads-fd,
      criterion,
      deepseq,
@@ -98,7 +106,7 @@ index c7f6009..ab206c5 100644
      lens,
      transformers
  
-@@ -485,6 +472,5 @@ benchmark zipper
+@@ -493,6 +479,5 @@ benchmark zipper
      comonads-fd,
      criterion,
      deepseq,
@@ -106,10 +114,18 @@ index c7f6009..ab206c5 100644
      lens,
      transformers
 diff --git a/src/Control/Lens.hs b/src/Control/Lens.hs
-index d879c58..3d6015b 100644
+index 7e15267..433f1fc 100644
 --- a/src/Control/Lens.hs
 +++ b/src/Control/Lens.hs
-@@ -56,12 +56,11 @@ module Control.Lens
+@@ -41,7 +41,6 @@
+ ----------------------------------------------------------------------------
+ module Control.Lens
+   ( module Control.Lens.Action
+-  , module Control.Lens.At
+   , module Control.Lens.Cons
+   , module Control.Lens.Each
+   , module Control.Lens.Empty
+@@ -53,12 +52,11 @@ module Control.Lens
    , module Control.Lens.Lens
    , module Control.Lens.Level
    , module Control.Lens.Loupe
@@ -123,7 +139,15 @@ index d879c58..3d6015b 100644
    , module Control.Lens.TH
  #endif
    , module Control.Lens.Traversal
-@@ -83,12 +82,11 @@ import Control.Lens.Iso
+@@ -69,7 +67,6 @@ module Control.Lens
+   ) where
+ 
+ import Control.Lens.Action
+-import Control.Lens.At
+ import Control.Lens.Cons
+ import Control.Lens.Each
+ import Control.Lens.Empty
+@@ -81,12 +78,11 @@ import Control.Lens.Iso
  import Control.Lens.Lens
  import Control.Lens.Level
  import Control.Lens.Loupe
@@ -138,12 +162,12 @@ index d879c58..3d6015b 100644
  #endif
  import Control.Lens.Traversal
 diff --git a/src/Control/Lens/Cons.hs b/src/Control/Lens/Cons.hs
-index 7b35db4..269f307 100644
+index a80e9c8..7d27b80 100644
 --- a/src/Control/Lens/Cons.hs
 +++ b/src/Control/Lens/Cons.hs
-@@ -56,8 +56,6 @@ import qualified Data.Vector.Unboxed as Unbox
+@@ -55,8 +55,6 @@ import           Data.Vector.Unboxed (Unbox)
+ import qualified Data.Vector.Unboxed as Unbox
  import           Data.Word
- import           Prelude
  
 -{-# ANN module "HLint: ignore Eta reduce" #-}
 -
@@ -151,12 +175,12 @@ index 7b35db4..269f307 100644
  -- >>> :set -XNoOverloadedStrings
  -- >>> import Control.Lens
 diff --git a/src/Control/Lens/Internal/Fold.hs b/src/Control/Lens/Internal/Fold.hs
-index 4bbde21..16295f4 100644
+index ab09c6b..43aa905 100644
 --- a/src/Control/Lens/Internal/Fold.hs
 +++ b/src/Control/Lens/Internal/Fold.hs
-@@ -35,8 +35,6 @@ import Data.Semigroup hiding (Min, getMin, Max, getMax)
+@@ -37,8 +37,6 @@ import Data.Maybe
+ import Data.Semigroup hiding (Min, getMin, Max, getMax)
  import Data.Reflection
- import Prelude
  
 -{-# ANN module "HLint: ignore Avoid lambda" #-}
 -
@@ -164,10 +188,10 @@ index 4bbde21..16295f4 100644
  -- Folding
  ------------------------------------------------------------------------------
 diff --git a/src/Control/Lens/Operators.hs b/src/Control/Lens/Operators.hs
-index 302f68e..1625fe5 100644
+index 9992e63..631e8e6 100644
 --- a/src/Control/Lens/Operators.hs
 +++ b/src/Control/Lens/Operators.hs
-@@ -104,7 +104,7 @@ module Control.Lens.Operators
+@@ -111,7 +111,7 @@ module Control.Lens.Operators
    , (<#~)
    , (<#=)
    -- * "Control.Lens.Plated"
@@ -177,12 +201,12 @@ index 302f68e..1625fe5 100644
    , ( # )
    -- * "Control.Lens.Setter"
 diff --git a/src/Control/Lens/Prism.hs b/src/Control/Lens/Prism.hs
-index 36152d6..3af6bd3 100644
+index b75c870..c6c6596 100644
 --- a/src/Control/Lens/Prism.hs
 +++ b/src/Control/Lens/Prism.hs
-@@ -62,8 +62,6 @@ import Data.Profunctor.Unsafe
+@@ -61,8 +61,6 @@ import Unsafe.Coerce
+ import Data.Profunctor.Unsafe
  #endif
- import Prelude
  
 -{-# ANN module "HLint: ignore Use camelCase" #-}
 -
@@ -190,17 +214,17 @@ index 36152d6..3af6bd3 100644
  -- >>> :set -XNoOverloadedStrings
  -- >>> import Control.Lens
 diff --git a/src/Control/Monad/Primitive/Lens.hs b/src/Control/Monad/Primitive/Lens.hs
-index 8f1ec94..482764a 100644
+index ee942c6..2f37134 100644
 --- a/src/Control/Monad/Primitive/Lens.hs
 +++ b/src/Control/Monad/Primitive/Lens.hs
-@@ -26,7 +26,6 @@ import Control.Lens
- import Control.Monad.Primitive
+@@ -20,7 +20,6 @@ import Control.Lens
+ import Control.Monad.Primitive (PrimMonad(..))
  import GHC.Prim (State#)
  
 -{-# ANN module "HLint: ignore Unused LANGUAGE pragma" #-}
  
- #if MIN_VERSION_primitive(0,6,0)
- prim :: PrimBase m => Iso' (m a) (State# (PrimState m) -> (# State# (PrimState m), a #))
+ prim :: (PrimMonad m) => Iso' (m a) (State# (PrimState m) -> (# State# (PrimState m), a #))
+ prim = iso internal primitive
 -- 
-2.1.4
+2.1.1
 

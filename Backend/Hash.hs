@@ -1,9 +1,11 @@
-{- git-tnnex hashing backends
+{- git-annex hashing backends
  -
- - Copyright 2011-2013 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
+
+{-# LANGUAGE CPP #-}
 
 module Backend.Hash (
 	backends,
@@ -22,21 +24,30 @@ import qualified Build.SysConfig as SysConfig
 import qualified Data.ByteString.Lazy as L
 import Data.Char
 
-data Hash = SHAHash HashSize | SkeinHash HashSize | MD5Hash
+data Hash
+	= MD5Hash
+	| SHA1Hash
+	| SHA2Hash HashSize
+	| SHA3Hash HashSize
+	| SkeinHash HashSize
 type HashSize = Int
 
 {- Order is slightly significant; want SHA256 first, and more general
  - sizes earlier. -}
 hashes :: [Hash]
 hashes = concat 
-	[ map SHAHash [256, 1, 512, 224, 384]
+	[ map SHA2Hash [256, 512, 224, 384]
+#ifdef WITH_CRYPTONITE
+	, map SHA3Hash [256, 512, 224, 384]
+#endif
 	, map SkeinHash [256, 512]
+	, [SHA1Hash]
 	, [MD5Hash]
 	]
 
 {- The SHA256E backend is the default, so genBackendE comes first. -}
 backends :: [Backend]
-backends = map genBackendE hashes ++ map genBackend hashes
+backends = concatMap (\h -> [genBackendE h, genBackend h]) hashes
 
 genBackend :: Hash -> Backend
 genBackend hash = Backend
@@ -55,9 +66,11 @@ genBackendE hash = (genBackend hash)
 	}
 
 hashName :: Hash -> String
-hashName (SHAHash size) = "SHA" ++ show size
-hashName (SkeinHash size) = "SKEIN" ++ show size
 hashName MD5Hash = "MD5"
+hashName SHA1Hash = "SHA1"
+hashName (SHA2Hash size) = "SHA" ++ show size
+hashName (SHA3Hash size) = "SHA3_" ++ show size
+hashName (SkeinHash size) = "SKEIN" ++ show size
 
 hashNameE :: Hash -> String
 hashNameE hash = hashName hash ++ "E"
@@ -153,7 +166,15 @@ trivialMigrate oldkey newbackend afile
 hashFile :: Hash -> FilePath -> Integer -> Annex String
 hashFile hash file filesize = go hash
   where
-	go (SHAHash hashsize) = case shaHasher hashsize filesize of
+	go MD5Hash = use md5Hasher
+	go SHA1Hash = usehasher 1
+	go (SHA2Hash hashsize) = usehasher hashsize
+	go (SHA3Hash hashsize) = use (sha3Hasher hashsize)
+	go (SkeinHash hashsize) = use (skeinHasher hashsize)
+	
+	use hasher = liftIO $ hasher <$> L.readFile file
+	
+	usehasher hashsize = case shaHasher hashsize filesize of
 		Left sha -> use sha
 		Right (external, internal) -> do
 			v <- liftIO $ externalSHA external hashsize file
@@ -164,19 +185,15 @@ hashFile hash file filesize = go hash
 					-- fall back to internal since
 					-- external command failed
 					use internal
-	go (SkeinHash hashsize) = use (skeinHasher hashsize)
-	go MD5Hash = use md5Hasher
-	
-	use hasher = liftIO $ hasher <$> L.readFile file
 
 shaHasher :: HashSize -> Integer -> Either (L.ByteString -> String) (String, L.ByteString -> String)
 shaHasher hashsize filesize
 	| hashsize == 1 = use SysConfig.sha1 sha1
-	| hashsize == 256 = use SysConfig.sha256 sha256
-	| hashsize == 224 = use SysConfig.sha224 sha224
-	| hashsize == 384 = use SysConfig.sha384 sha384
-	| hashsize == 512 = use SysConfig.sha512 sha512
-	| otherwise = error $ "unsupported sha size " ++ show hashsize
+	| hashsize == 256 = use SysConfig.sha256 sha2_256
+	| hashsize == 224 = use SysConfig.sha224 sha2_224
+	| hashsize == 384 = use SysConfig.sha384 sha2_384
+	| hashsize == 512 = use SysConfig.sha512 sha2_512
+	| otherwise = error $ "unsupported SHA size " ++ show hashsize
   where
 	use Nothing hasher = Left $ usehasher hasher
 	use (Just c) hasher
@@ -189,11 +206,21 @@ shaHasher hashsize filesize
 		| otherwise = Right (c, usehasher hasher)
 	usehasher hasher = show . hasher
 
+sha3Hasher :: HashSize -> (L.ByteString -> String)
+sha3Hasher hashsize
+#ifdef WITH_CRYPTONITE
+	| hashsize == 256 = show . sha3_256
+	| hashsize == 224 = show . sha3_224
+	| hashsize == 384 = show . sha3_384
+	| hashsize == 512 = show . sha3_512
+#endif
+	| otherwise = error $ "unsupported SHA3 size " ++ show hashsize
+
 skeinHasher :: HashSize -> (L.ByteString -> String)
 skeinHasher hashsize 
 	| hashsize == 256 = show . skein256
 	| hashsize == 512 = show . skein512
-	| otherwise = error $ "unsupported skein size " ++ show hashsize
+	| otherwise = error $ "unsupported SKEIN size " ++ show hashsize
 
 md5Hasher :: L.ByteString -> String
 md5Hasher = show . md5
@@ -207,7 +234,7 @@ md5Hasher = show . md5
  -}
 testKeyBackend :: Backend
 testKeyBackend = 
-	let b = genBackendE (SHAHash 256)
+	let b = genBackendE (SHA2Hash 256)
 	in b { getKey = (fmap addE) <$$> getKey b } 
   where
 	addE k = k { keyName = keyName k ++ longext }

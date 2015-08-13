@@ -54,7 +54,7 @@ type BucketName = String
 remote :: RemoteType
 remote = RemoteType {
 	typename = "S3",
-	enumerate = findSpecialRemotes "s3",
+	enumerate = const (findSpecialRemotes "s3"),
 	generate = gen,
 	setup = s3Setup
 }

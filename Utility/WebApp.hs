@@ -185,7 +185,7 @@ fromAuthToken = TE.decodeLatin1 . toBytes
 fromAuthToken = id
 #endif
 
-{- Generates a random sha512 string, encapsulated in a SecureMem,
+{- Generates a random sha2_512 string, encapsulated in a SecureMem,
  - suitable to be used for an authentication secret. -}
 genAuthToken :: IO AuthToken
 genAuthToken = do
@@ -193,7 +193,7 @@ genAuthToken = do
 	return $
 		case genBytes 512 g of
 			Left e -> error $ "failed to generate auth token: " ++ show e
-			Right (s, _) -> toAuthToken $ T.pack $ show $ sha512 $ L.fromChunks [s]
+			Right (s, _) -> toAuthToken $ T.pack $ show $ sha2_512 $ L.fromChunks [s]
 
 {- A Yesod isAuthorized method, which checks the auth cgi parameter
  - against a token extracted from the Yesod application.

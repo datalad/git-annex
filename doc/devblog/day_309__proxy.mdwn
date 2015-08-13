@@ -1,0 +1,5 @@
+Ended up sending most of today working on `git annex proxy`. It had a lot
+of buggy edge cases, which are all cleaned up now.
+
+Spent another couple hours catching up on recent traffic and fixing a
+couple other misc bugs.

@@ -1,0 +1,50 @@
+### Please describe the problem.
+
+In a client, backup, smallarchive setup, new non-archive files will be copied to backup, copied to smallarchive, then dropped from smallarchive.
+
+### What steps will reproduce the problem?
+
+Create three repos, assign them groups client, backup, smallarchive.
+
+Add files to the client, not in the archive folder.
+
+Run sync --content
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 5.20150710
+
+### Please provide any additional information below.
+
+[[!format sh """
+copy SOMEFILE copy SOMEFILE (checking BACKUP...) (to BACKUP...)
+SHA256E-s309049--00bb4f52d3d9af507eaf8c837ce29ad133cf1964c0f8fbf586906b1e5676f0af.pdf
+        309,049 100%   87.83MB/s    0:00:00 (xfr#1, to-chk=0/1)
+ok
+copy SOMEFILE copy SOMEFILE (checking SMALLARCHIVE...) (to SMALLARCHIVE...)
+ok
+drop SMALLARCHIVE SOMEFILE (checking BACKUP...) ok
+""" ]]
+
+> Indeed, but this was fixed in version 5.20150727.
+> From the changelog:
+>>
+>>   * sync --content: Fix bug that caused files to be uploaded to eg,
+>>    more archive remotes than wanted copies, only to later be dropped
+>>    to satisfy the preferred content settings.
+> 
+> [[done]] --[[Joey]]
+
+>> Oh, sorry about the noise then. I assumed the version I was running was the latest since it was pretty recent.
+>> Thanks. -- [[filippo]]
+
+Note: it's extremely and unnecessarily hard to report a bug. There are no
+links leading to instructions or anything on the home page. The "bugs" link
+leads to a list of pages with no instructions. Please at least add
+explanation to the bugs page. I had to edit an existing bug and change the
+edit URL.
+
+> Eh? The first thing on the bugs page is a form to add a new post to the
+> list of bugs. --[[Joey]]
+
+>> I'm an idiot. I mistook that for a search box. -- [[filippo]]

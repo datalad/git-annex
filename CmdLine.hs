@@ -5,29 +5,22 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module CmdLine (
 	dispatch,
 	usage,
-	shutdown
 ) where
 
 import qualified Options.Applicative as O
 import qualified Options.Applicative.Help as H
 import qualified Control.Exception as E
-import qualified Data.Map as M
 import Control.Exception (throw)
-#ifndef mingw32_HOST_OS
-import System.Posix.Signals
-#endif
 
 import Common.Annex
 import qualified Annex
 import qualified Git
 import qualified Git.AutoCorrect
 import qualified Git.Config
-import Annex.Content
+import Annex.Action
 import Annex.Environment
 import Command
 import Types.Messages
@@ -117,19 +110,3 @@ findCmd fuzzyok argv cmds
 	inexactcmds = case name of
 		Nothing -> []
 		Just n -> Git.AutoCorrect.fuzzymatches n cmdname cmds
-
-{- Actions to perform each time ran. -}
-startup :: Annex ()
-startup =
-#ifndef mingw32_HOST_OS
-	liftIO $ void $ installHandler sigINT Default Nothing
-#else
-	return ()
-#endif
-
-{- Cleanup actions. -}
-shutdown :: Bool -> Annex ()
-shutdown nocommit = do
-	saveState nocommit
-	sequence_ =<< M.elems <$> Annex.getState Annex.cleanup
-	liftIO reapZombies -- zombies from long-running git processes

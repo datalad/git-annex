@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2015-08-04T20:03:51Z"
+ content="""
+Windows build didn't actually get updated until now. 
+
+And only the autobuild is updated, not the last release build of course.
+"""]]

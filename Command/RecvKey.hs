@@ -9,8 +9,8 @@ module Command.RecvKey where
 
 import Common.Annex
 import Command
-import CmdLine
 import Annex.Content
+import Annex.Action
 import Annex
 import Utility.Rsync
 import Logs.Transfer

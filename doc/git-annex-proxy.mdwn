@@ -31,6 +31,14 @@ stage the changes in the index, and then proxy a commit:
 	git annex add myfile
 	git annex proxy -- git commit myfile -m foo
 
+The temporary work tree that the git command is run in is set up by
+checking out all files that are in the index, and copying (or hard linking)
+any unstaged files from the real work tree. Since the git command is run
+using this temporary work tree, it won't see eg, local modifications to
+files. So, it probably is not useful to proxy a command like "git add".
+However, you can use the proxy with any git command you like, as long as
+you think about how it will interact with the temporary work tree.
+
 # SEE ALSO
 
 [[git-annex]](1)

@@ -31,7 +31,7 @@ type Archive = FilePath
 remote :: RemoteType
 remote = RemoteType {
 	typename = "glacier",
-	enumerate = findSpecialRemotes "glacier",
+	enumerate = const (findSpecialRemotes "glacier"),
 	generate = gen,
 	setup = glacierSetup
 }

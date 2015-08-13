@@ -13,6 +13,7 @@ import qualified Utility.Matcher
 import qualified Remote
 import qualified Backend
 import Annex.Content
+import Annex.Action
 import Annex.UUID
 import Logs.Trust
 import Annex.NumCopies
@@ -271,6 +272,7 @@ addTimeLimit s = do
 		if now > cutoff
 			then do
 				warning $ "Time limit (" ++ s ++ ") reached!"
+				shutdown True
 				liftIO $ exitWith $ ExitFailure 101
 			else return True
 

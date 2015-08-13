@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-08-04T20:19:22Z"
+ content="""
+`git annex sync --content` does what you want, only it also does a pull and
+a merge from remotes.
+
+I don't know that wanting to only push, w/o pull and merge, is common
+enough to make a separate command for it.
+
+There's also the problem that to push the git-annex branch, it really
+makes sense to first pull/merge from the remote. Otherwise, the push
+is not likely to work as well. And too, it makes sense to update the
+git-annex branch from remotes in order to know what files that have, so
+that info can be better used to decide which files to send to them --
+especially when preferred content might make some file not be sent to all
+remotes, depending on which other remotes contain the file.
+"""]]

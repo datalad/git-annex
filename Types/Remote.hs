@@ -40,7 +40,8 @@ data RemoteTypeA a = RemoteType {
 	-- human visible type name
 	typename :: String,
 	-- enumerates remotes of this type
-	enumerate :: a [Git.Repo],
+	-- The Bool is True if automatic initialization of remotes is desired
+	enumerate :: Bool -> a [Git.Repo],
 	-- generates a remote of this type
 	generate :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> a (Maybe (RemoteA a)),
 	-- initializes or changes a remote

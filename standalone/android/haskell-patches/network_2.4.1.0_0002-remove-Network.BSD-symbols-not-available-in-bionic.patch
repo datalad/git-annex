@@ -1,17 +1,17 @@
-From 508b4701c1610d9772564b97a74b5fa01dab48e2 Mon Sep 17 00:00:00 2001
-From: dummy <dummy@example.com>
-Date: Thu, 2 Jul 2015 20:12:59 +0000
+From 7861b133bb269b50fcf709291449cb0473818902 Mon Sep 17 00:00:00 2001
+From: Joey Hess <joey@kitenet.net>
+Date: Sun, 29 Dec 2013 21:29:23 +0000
 Subject: [PATCH] remove Network.BSD symbols not available in bionic
 
 ---
- Network/BSD.hsc | 100 --------------------------------------------------------
- 1 file changed, 100 deletions(-)
+ Network/BSD.hsc |   98 -------------------------------------------------------
+ 1 file changed, 98 deletions(-)
 
 diff --git a/Network/BSD.hsc b/Network/BSD.hsc
-index b5e9a26..f085f2a 100644
+index d6dae85..27910f4 100644
 --- a/Network/BSD.hsc
 +++ b/Network/BSD.hsc
-@@ -27,15 +27,6 @@ module Network.BSD
+@@ -30,15 +30,6 @@ module Network.BSD
      , getHostByAddr
      , hostAddress
  
@@ -27,7 +27,7 @@ index b5e9a26..f085f2a 100644
      -- * Service names
      , ServiceEntry(..)
      , ServiceName
-@@ -61,14 +52,6 @@ module Network.BSD
+@@ -64,14 +55,6 @@ module Network.BSD
      , getProtocolNumber
      , defaultProtocol
  
@@ -42,7 +42,7 @@ index b5e9a26..f085f2a 100644
      -- * Port numbers
      , PortNumber
  
-@@ -80,11 +63,7 @@ module Network.BSD
+@@ -83,11 +66,7 @@ module Network.BSD
  #if !defined(cygwin32_HOST_OS) && !defined(mingw32_HOST_OS) && !defined(_WIN32)
      , getNetworkByName
      , getNetworkByAddr
@@ -52,9 +52,9 @@ index b5e9a26..f085f2a 100644
 -    , getNetworkEntry
 -    , endNetworkEntry
  #endif
+     ) where
  
- #if defined(HAVE_IF_NAMETOINDEX)
-@@ -298,31 +277,6 @@ getProtocolNumber proto = do
+@@ -303,31 +282,6 @@ getProtocolNumber proto = do
   (ProtocolEntry _ _ num) <- getProtocolByName proto
   return num
  
@@ -62,18 +62,18 @@ index b5e9a26..f085f2a 100644
 -getProtocolEntry :: IO ProtocolEntry    -- Next Protocol Entry from DB
 -getProtocolEntry = withLock $ do
 - ent <- throwNoSuchThingIfNull "getProtocolEntry" "no such protocol entry"
--                $ c_getprotoent
+-                $ trySysCall c_getprotoent
 - peek ent
 -
 -foreign import ccall unsafe  "getprotoent" c_getprotoent :: IO (Ptr ProtocolEntry)
 -
 -setProtocolEntry :: Bool -> IO ()       -- Keep DB Open ?
--setProtocolEntry flg = withLock $ c_setprotoent (fromBool flg)
+-setProtocolEntry flg = withLock $ trySysCall $ c_setprotoent (fromBool flg)
 -
 -foreign import ccall unsafe "setprotoent" c_setprotoent :: CInt -> IO ()
 -
 -endProtocolEntry :: IO ()
--endProtocolEntry = withLock $ c_endprotoent
+-endProtocolEntry = withLock $ trySysCall $ c_endprotoent
 -
 -foreign import ccall unsafe "endprotoent" c_endprotoent :: IO ()
 -
@@ -86,7 +86,7 @@ index b5e9a26..f085f2a 100644
  -- ---------------------------------------------------------------------------
  -- Host lookups
  
-@@ -397,31 +351,6 @@ getHostByAddr family addr = do
+@@ -402,31 +356,6 @@ getHostByAddr family addr = do
  foreign import CALLCONV safe "gethostbyaddr"
     c_gethostbyaddr :: Ptr HostAddress -> CInt -> CInt -> IO (Ptr HostEntry)
  
@@ -94,13 +94,13 @@ index b5e9a26..f085f2a 100644
 -getHostEntry :: IO HostEntry
 -getHostEntry = withLock $ do
 - throwNoSuchThingIfNull         "getHostEntry" "unable to retrieve host entry"
--   $ c_gethostent
+-   $ trySysCall $ c_gethostent
 - >>= peek
 -
 -foreign import ccall unsafe "gethostent" c_gethostent :: IO (Ptr HostEntry)
 -
 -setHostEntry :: Bool -> IO ()
--setHostEntry flg = withLock $ c_sethostent (fromBool flg)
+-setHostEntry flg = withLock $ trySysCall $ c_sethostent (fromBool flg)
 -
 -foreign import ccall unsafe "sethostent" c_sethostent :: CInt -> IO ()
 -
@@ -118,14 +118,14 @@ index b5e9a26..f085f2a 100644
  -- ---------------------------------------------------------------------------
  -- Accessing network information
  
-@@ -483,35 +412,6 @@ getNetworkByAddr addr family = withLock $ do
+@@ -488,33 +417,6 @@ getNetworkByAddr addr family = withLock $ do
  foreign import ccall unsafe "getnetbyaddr"
     c_getnetbyaddr  :: NetworkAddr -> CInt -> IO (Ptr NetworkEntry)
  
 -getNetworkEntry :: IO NetworkEntry
 -getNetworkEntry = withLock $ do
 - throwNoSuchThingIfNull "getNetworkEntry" "no more network entries"
--          $ c_getnetent
+-          $ trySysCall $ c_getnetent
 - >>= peek
 -
 -foreign import ccall unsafe "getnetent" c_getnetent :: IO (Ptr NetworkEntry)
@@ -134,13 +134,13 @@ index b5e9a26..f085f2a 100644
 --- whether a connection is maintained open between various
 --- networkEntry calls
 -setNetworkEntry :: Bool -> IO ()
--setNetworkEntry flg = withLock $ c_setnetent (fromBool flg)
+-setNetworkEntry flg = withLock $ trySysCall $ c_setnetent (fromBool flg)
 -
 -foreign import ccall unsafe "setnetent" c_setnetent :: CInt -> IO ()
 -
 --- | Close the connection to the network name database.
 -endNetworkEntry :: IO ()
--endNetworkEntry = withLock $ c_endnetent
+-endNetworkEntry = withLock $ trySysCall $ c_endnetent
 -
 -foreign import ccall unsafe "endnetent" c_endnetent :: IO ()
 -
@@ -149,11 +149,9 @@ index b5e9a26..f085f2a 100644
 -getNetworkEntries stayOpen = do
 -  setNetworkEntry stayOpen
 -  getEntries (getNetworkEntry) (endNetworkEntry)
--#endif
--
- -- ---------------------------------------------------------------------------
- -- Interface names
+ #endif
  
+ -- Mutex for name service lockdown
 -- 
-2.1.4
+1.7.10.4
 

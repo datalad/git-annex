@@ -27,12 +27,12 @@ data MetaDataOptions = MetaDataOptions
 	, keyOptions :: Maybe KeyOptions
 	}
 
-data GetSet = Get MetaField | Set [ModMeta]
+data GetSet = Get MetaField | GetAll | Set [ModMeta]
 
 optParser :: CmdParamsDesc -> Parser MetaDataOptions
 optParser desc = MetaDataOptions
 	<$> cmdParams desc
-	<*> ((Get <$> getopt) <|> (Set <$> many modopts))
+	<*> ((Get <$> getopt) <|> (Set <$> some modopts) <|> pure GetAll)
 	<*> optional (parseKeyOptions False)
   where
 	getopt = option (eitherReader mkMetaField)
@@ -57,7 +57,9 @@ seek o = do
 	now <- liftIO getPOSIXTime
 	let seeker = case getSet o of
 		Get _ -> withFilesInGit
+		GetAll -> withFilesInGit
 		Set _ -> withFilesInGitNonRecursive
+			"Not recursively setting metadata. Use --force to do that."
 	withKeyOptions (keyOptions o) False
 		(startKeys now o)
 		(seeker $ whenAnnexed $ start now o)
@@ -71,23 +73,24 @@ startKeys = start' Nothing
 
 start' :: AssociatedFile -> POSIXTime -> MetaDataOptions -> Key -> CommandStart
 start' afile now o k = case getSet o of
-	Set ms -> do
-		showStart' "metadata" k afile
-		next $ perform now ms k
 	Get f -> do
 		l <- S.toList . currentMetaDataValues f <$> getCurrentMetaData k
 		liftIO $ forM_ l $
 			putStrLn . fromMetaValue
 		stop
+	_ -> do
+		showStart' "metadata" k afile
+		next $ perform now o k
 
-perform :: POSIXTime -> [ModMeta] -> Key -> CommandPerform
-perform _ [] k = next $ cleanup k
-perform now ms k = do
-	oldm <- getCurrentMetaData k
-	let m = combineMetaData $ map (modMeta oldm) ms
-	addMetaData' k m now
-	next $ cleanup k
-	
+perform :: POSIXTime -> MetaDataOptions -> Key -> CommandPerform
+perform now o k = case getSet o of
+	Set ms -> do
+		oldm <- getCurrentMetaData k
+		let m = combineMetaData $ map (modMeta oldm) ms
+		addMetaData' k m now
+		next $ cleanup k
+	_ -> next $ cleanup k
+
 cleanup :: Key -> CommandCleanup
 cleanup k = do
 	l <- map unwrapmeta . fromMetaData <$> getCurrentMetaData k

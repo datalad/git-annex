@@ -34,6 +34,7 @@ import Annex.LockFile
 
 import Database.Persist.TH
 import Database.Esqueleto hiding (Key)
+import Data.Time.Clock
 
 data FsckHandle = FsckHandle H.DbHandle UUID
 
@@ -84,10 +85,17 @@ closeDb (FsckHandle h u) = do
 	unlockFile =<< fromRepo (gitAnnexFsckDbLock u)
 
 addDb :: FsckHandle -> Key -> IO ()
-addDb (FsckHandle h _) k = H.queueDb h 1000 $ 
+addDb (FsckHandle h _) k = H.queueDb h checkcommit $ 
 	void $ insertUnique $ Fscked sk
   where
 	sk = toSKey k
+
+	-- commit queue after 1000 files or 5 minutes, whichever comes first
+	checkcommit sz lastcommittime
+		| sz > 1000 = return True
+		| otherwise = do
+			now <- getCurrentTime
+			return $ diffUTCTime lastcommittime now > 300
 
 inDb :: FsckHandle -> Key -> IO Bool
 inDb (FsckHandle h _) = H.queryDb h . inDb' . toSKey

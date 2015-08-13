@@ -137,19 +137,24 @@ remoteBranch :: Remote -> Git.Ref -> Git.Ref
 remoteBranch remote = Git.Ref.underBase $ "refs/remotes/" ++ Remote.name remote
 
 syncRemotes :: [String] -> Annex [Remote]
-syncRemotes rs = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
+syncRemotes ps = do
+	-- Get remote list first, doing automatic initialization
+	-- of remotes when possible.
+	syncRemotes' ps =<< Remote.remoteList' True
+
+syncRemotes' :: [String] -> [Remote] -> Annex [Remote]
+syncRemotes' ps remotelist = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
   where
-	pickfast = (++) <$> listed <*> (filterM good =<< fastest <$> available)
+	pickfast = (++) <$> listed <*> (filterM good (fastest available))
 	
 	wanted
-		| null rs = filterM good =<< concat . Remote.byCost <$> available
+		| null ps = filterM good (concat $ Remote.byCost available)
 		| otherwise = listed
 	
-	listed = concat <$> mapM Remote.byNameOrGroup rs
+	listed = concat <$> mapM Remote.byNameOrGroup ps
 	
 	available = filter (remoteAnnexSync . Remote.gitconfig)
-		. filter (not . Remote.isXMPPRemote)
-		<$> Remote.remoteList
+		$ filter (not . Remote.isXMPPRemote) remotelist
 	
 	good r
 		| Remote.gitSyncableRemote r = Remote.Git.repoAvail $ Remote.repo r

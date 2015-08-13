@@ -270,10 +270,16 @@ instance Arbitrary MetaData where
 		legal k _v = legalField $ fromMetaField k
 
 instance Arbitrary MetaValue where
-	arbitrary = MetaValue <$> arbitrary <*> arbitrary
+	arbitrary = MetaValue 
+		<$> arbitrary
+		-- Avoid non-ascii metavalues because fully arbitrary
+		-- strings may not be encoded using the filesystem
+		-- encoding, which is norally applied to all input.
+		<*> arbitrary `suchThat` all isAscii
 
 instance Arbitrary MetaField where
-	arbitrary = MetaField . CI.mk <$> arbitrary `suchThat` legalField 
+	arbitrary = MetaField . CI.mk 
+		<$> arbitrary `suchThat` legalField 
 
 prop_metadata_sane :: MetaData -> MetaField -> MetaValue -> Bool
 prop_metadata_sane m f v = and

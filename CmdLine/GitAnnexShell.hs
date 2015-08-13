@@ -7,8 +7,6 @@
 
 module CmdLine.GitAnnexShell where
 
-import System.Environment
-
 import Common.Annex
 import qualified Git.Construct
 import qualified Git.Config
@@ -16,11 +14,9 @@ import CmdLine
 import CmdLine.GlobalSetter
 import Command
 import Annex.UUID
+import CmdLine.GitAnnexShell.Checks
 import CmdLine.GitAnnexShell.Fields
-import Utility.UserInfo
 import Remote.GCrypt (getGCryptUUID)
-import qualified Annex
-import Annex.Init
 
 import qualified Command.ConfigList
 import qualified Command.InAnnex
@@ -34,7 +30,7 @@ import qualified Command.GCryptSetup
 
 cmds_readonly :: [Command]
 cmds_readonly =
-	[ gitAnnexShellCheck Command.ConfigList.cmd
+	[ Command.ConfigList.cmd
 	, gitAnnexShellCheck Command.InAnnex.cmd
 	, gitAnnexShellCheck Command.SendKey.cmd
 	, gitAnnexShellCheck Command.TransferInfo.cmd
@@ -96,7 +92,8 @@ builtins = map cmdname cmds
 
 builtin :: String -> String -> [String] -> IO ()
 builtin cmd dir params = do
-	checkNotReadOnly cmd
+	unless (cmd `elem` map cmdname cmds_readonly)
+		checkNotReadOnly
 	checkDirectory $ Just dir
 	let (params', fieldparams, opts) = partitionParams params
 	    rsyncopts = ("RsyncOptions", unwords opts)
@@ -146,63 +143,10 @@ checkField (field, val)
 	| field == fieldName remoteUUID = fieldCheck remoteUUID val
 	| field == fieldName associatedFile = fieldCheck associatedFile val
 	| field == fieldName direct = fieldCheck direct val
+	| field == fieldName autoInit = fieldCheck autoInit val
 	| otherwise = False
 
 failure :: IO ()
 failure = error $ "bad parameters\n\n" ++ usage h cmds
   where
 	h = "git-annex-shell [-c] command [parameters ...] [option ...]"
-
-checkNotLimited :: IO ()
-checkNotLimited = checkEnv "GIT_ANNEX_SHELL_LIMITED"
-
-checkNotReadOnly :: String -> IO ()
-checkNotReadOnly cmd
-	| cmd `elem` map cmdname cmds_readonly = noop
-	| otherwise = checkEnv "GIT_ANNEX_SHELL_READONLY"
-
-checkDirectory :: Maybe FilePath -> IO ()
-checkDirectory mdir = do
-	v <- catchMaybeIO $ getEnv "GIT_ANNEX_SHELL_DIRECTORY"
-	case (v, mdir) of
-		(Nothing, _) -> noop
-		(Just d, Nothing) -> req d Nothing
-		(Just d, Just dir)
-			|  d `equalFilePath` dir -> noop
-			| otherwise -> do
-				home <- myHomeDir
-				d' <- canondir home d
-				dir' <- canondir home dir
-				if d' `equalFilePath` dir'
-					then noop
-					else req d' (Just dir')
-  where
-	req d mdir' = error $ unwords 
-		[ "Only allowed to access"
-		, d
-		, maybe "and could not determine directory from command line" ("not " ++) mdir'
-		]
-
-	{- A directory may start with ~/ or in some cases, even /~/,
-	 - or could just be relative to home, or of course could
-	 - be absolute. -}
-	canondir home d
-		| "~/" `isPrefixOf` d = return d
-		| "/~/" `isPrefixOf` d = return $ drop 1 d
-		| otherwise = relHome $ absPathFrom home d
-
-checkEnv :: String -> IO ()
-checkEnv var = do
-	v <- catchMaybeIO $ getEnv var
-	case v of
-		Nothing -> noop
-		Just "" -> noop
-		Just _ -> error $ "Action blocked by " ++ var
-
-{- Modifies a Command to check that it is run in either a git-annex
- - repository, or a repository with a gcrypt-id set. -}
-gitAnnexShellCheck :: Command -> Command
-gitAnnexShellCheck = addCheck okforshell . dontCheck repoExists
-  where
-	okforshell = unlessM (isInitialized <||> isJust . gcryptId <$> Annex.getGitConfig) $
-		error "Not a git-annex or gcrypt repository."

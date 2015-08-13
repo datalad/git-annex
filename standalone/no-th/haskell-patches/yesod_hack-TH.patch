@@ -1,13 +1,13 @@
-From 86e7cf433fcd3386893556d690748781f46d3f03 Mon Sep 17 00:00:00 2001
+From 59091cd37958fee79b9e346fe3118d5ed7d0104b Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Fri, 3 Jul 2015 01:33:03 +0000
+Date: Thu, 16 Oct 2014 02:36:37 +0000
 Subject: [PATCH] hack TH
 
 ---
  Yesod.hs              | 19 ++++++++++++--
- Yesod/Default/Main.hs | 28 +--------------------
- Yesod/Default/Util.hs | 68 ++-------------------------------------------------
- 3 files changed, 20 insertions(+), 95 deletions(-)
+ Yesod/Default/Main.hs | 31 +----------------------
+ Yesod/Default/Util.hs | 69 ++-------------------------------------------------
+ 3 files changed, 20 insertions(+), 99 deletions(-)
 
 diff --git a/Yesod.hs b/Yesod.hs
 index b367144..fbe309c 100644
@@ -41,7 +41,7 @@ index b367144..fbe309c 100644
 +insert = undefined
 +
 diff --git a/Yesod/Default/Main.hs b/Yesod/Default/Main.hs
-index 2694825..5a5fbb9 100644
+index 565ed35..bf46642 100644
 --- a/Yesod/Default/Main.hs
 +++ b/Yesod/Default/Main.hs
 @@ -1,10 +1,8 @@
@@ -64,7 +64,7 @@ index 2694825..5a5fbb9 100644
  import System.Log.FastLogger (LogStr, toLogStr)
  import Language.Haskell.TH.Syntax (qLocation)
  
-@@ -56,30 +54,6 @@ defaultMain load getApp = do
+@@ -55,33 +53,6 @@ defaultMain load getApp = do
  
  type LogFunc = Loc -> LogSource -> LogLevel -> LogStr -> IO ()
  
@@ -79,24 +79,27 @@ index 2694825..5a5fbb9 100644
 -defaultMainLog load getApp = do
 -    config <- load
 -    (app, logFunc) <- getApp config
--    runSettings 
--        ( setPort (appPort config)
--        $ setHost (appHost config)
--        $ setOnException (const $ \e -> when (shouldLog' e) $ logFunc
+-    runSettings defaultSettings
+-        { settingsPort = appPort config
+-        , settingsHost = appHost config
+-        , settingsOnException = const $ \e -> when (shouldLog' e) $ logFunc
 -            $(qLocation >>= liftLoc)
 -            "yesod"
 -            LevelError
--            (toLogStr $ "Exception from Warp: " ++ show e))
--        $ defaultSettings
--        ) app
+-            (toLogStr $ "Exception from Warp: " ++ show e)
+-        } app
 -  where
--    shouldLog' = Warp.defaultShouldDisplayException
--
+-    shouldLog' =
+-#if MIN_VERSION_warp(2,1,3)
+-        Warp.defaultShouldDisplayException
+-#else
+-        const True
+-#endif
+ 
  -- | Run your application continously, listening for SIGINT and exiting
  --   when received
- --
 diff --git a/Yesod/Default/Util.hs b/Yesod/Default/Util.hs
-index 488312a..5476b54 100644
+index a10358e..0547424 100644
 --- a/Yesod/Default/Util.hs
 +++ b/Yesod/Default/Util.hs
 @@ -5,10 +5,9 @@
@@ -122,7 +125,7 @@ index 488312a..5476b54 100644
  import Text.Hamlet (HamletSettings, defaultHamletSettings)
  import Data.Maybe (catMaybes)
  import Data.Default (Default (def))
-@@ -69,68 +65,8 @@ data TemplateLanguage = TemplateLanguage
+@@ -69,68 +65,7 @@ data TemplateLanguage = TemplateLanguage
      , tlReload :: FilePath -> Q Exp
      }
  
@@ -140,7 +143,7 @@ index 488312a..5476b54 100644
      { wfsLanguages :: HamletSettings -> [TemplateLanguage]
      , wfsHamletSettings :: HamletSettings
      }
- 
+-
 -instance Default WidgetFileSettings where
 -    def = WidgetFileSettings defaultTemplateLanguages defaultHamletSettings
 -
@@ -159,7 +162,7 @@ index 488312a..5476b54 100644
 -            , func
 -            , " on "
 -            , show file
--            , ", but no templates were found."
+-            , ", but no template were found."
 -            ]
 -        exps -> return $ DoE $ map NoBindS exps
 -  where
@@ -192,5 +195,5 @@ index 488312a..5476b54 100644
 -                else return $ Just ex
 -        else return Nothing
 -- 
-2.1.4
+2.1.1
 

@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2015-08-11T17:27:23Z"
+ content="""
+AFAIK, it's not possible to run multiple separate rsync transfers over a single
+connection; rsync closes the connection after a transfer is complete (and
+the rsync protocol is nowhere documented, and has only one implementation
+so there's no way to avoid this behavior). 
+
+So, rsync would need to be told a whole list of files to transfer in one go,
+which poses many difficulties, including for git-annex's progress display,
+and for needing to queue up a set of files when eg `git annex get` is picking
+which ones to get.
+
+I'd want to see a lot more measurements of where bottlenecks are in
+the current system, before seriously considering such a thing.
+"""]]

@@ -36,7 +36,7 @@ import Remote.WebDAV.DavLocation
 remote :: RemoteType
 remote = RemoteType {
 	typename = "webdav",
-	enumerate = findSpecialRemotes "webdav",
+	enumerate = const (findSpecialRemotes "webdav"),
 	generate = gen,
 	setup = webdavSetup
 }

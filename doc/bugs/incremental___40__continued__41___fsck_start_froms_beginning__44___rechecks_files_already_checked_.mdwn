@@ -21,3 +21,14 @@ Also tried with `docker/ubuntu:latest` using a clean install from https://downlo
 git-annex: 5.20150522-gb199d65 
 Linux: 3.16.0-43-generic #58-Ubuntu SMP Fri Jun 19 11:04:02 UTC 2015 x86_64 x86_64 x86_64 GNU/Linux 
 
+> I've adjusted the timing of the fsck checkpoints used in resumes some.
+> Now it makes one every 5 minutes, or every 1000 files, whichever comes
+> first. I could make this tunable, but I don't think it's worth adding the
+> complexity; this heuristic should work pretty well.
+> 
+> Another approach would be to catch sigint and commit the fsck database
+> then, as is now done when --time-limit interrupts a fsck run.
+> But, I am leery of complicating git-annex with signal handling,
+> so I've not done that currently.
+> 
+> Also, documented this in fsck's man page. [[done]] --[[Joey]] 

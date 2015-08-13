@@ -33,8 +33,6 @@ import Utility.Rsync
 import Utility.CopyFile
 import Messages.Progress
 import Utility.Metered
-import Utility.PID
-import Annex.Perms
 import Logs.Transfer
 import Types.Creds
 import Types.Key (isChunkKey)
@@ -46,7 +44,7 @@ import qualified Data.Map as M
 remote :: RemoteType
 remote = RemoteType {
 	typename = "rsync",
-	enumerate = findSpecialRemotes "rsyncurl",
+	enumerate = const (findSpecialRemotes "rsyncurl"),
 	generate = gen,
 	setup = rsyncSetup
 }

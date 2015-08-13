@@ -36,8 +36,8 @@ remote = RemoteType {
 -- There is only one web remote, and it always exists.
 -- (If the web should cease to exist, remove this module and redistribute
 -- a new release to the survivors by carrier pigeon.)
-list :: Annex [Git.Repo]
-list = do
+list :: Bool -> Annex [Git.Repo]
+list _autoinit = do
 	r <- liftIO $ Git.Construct.remoteNamed "web" (pure Git.Construct.fromUnknown)
 	return [r]
 

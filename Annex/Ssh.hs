@@ -266,9 +266,9 @@ inRepoWithSshOptionsTo remote gc a =
  - to set GIT_SSH=git-annex, and sets sshOptionsEnv. -}
 sshOptionsTo :: Git.Repo -> RemoteGitConfig -> Git.Repo -> Annex Git.Repo
 sshOptionsTo remote gc g 
-	| not (Git.repoIsUrl remote) || Git.repoIsHttp remote = uncached
+	| not (Git.repoIsUrl remote) || Git.repoIsHttp remote = unchanged
 	| otherwise = case Git.Url.hostuser remote of
-		Nothing -> uncached
+		Nothing -> unchanged
 		Just host -> do
 			(msockfile, _) <- sshCachingInfo (host, Git.Url.port remote)
 			case msockfile of
@@ -277,17 +277,21 @@ sshOptionsTo remote gc g
 					prepSocket sockfile
 					use (sshConnectionCachingParams sockfile)
   where
-	uncached = return g
+	unchanged = return g
 
 	use opts = do
-		let val = toSshOptionsEnv $ concat
+		let sshopts = concat
 			[ opts
 			, map Param (remoteAnnexSshOptions gc)
 			]
-		command <- liftIO programPath
-		liftIO $ do
-			g' <- addGitEnv g sshOptionsEnv val
-			addGitEnv g' "GIT_SSH" command
+		if null sshopts
+			then unchanged
+			else do
+				command <- liftIO programPath
+				liftIO $ do
+					g' <- addGitEnv g sshOptionsEnv
+						(toSshOptionsEnv sshopts)
+					addGitEnv g' "GIT_SSH" command
 
 runSshOptions :: [String] -> String -> IO ()
 runSshOptions args s = do

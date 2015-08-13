@@ -1,0 +1,48 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-08-11T16:14:22Z"
+ content="""
+This is the first I've heard of your gcsannex. Thanks for working on it.
+
+I am pretty sure that the url is being recorded in the git-annex branch,
+and that if you look at the history of the branch, you'll see that. The
+reason whereis doesn't show it, and `git annex get` doesn't use it is that
+the location tracking info doesn't list the web as one of the locations of
+the key.
+
+Looking at the code, SETURLPRESENT causes the url to be recorded, and the
+location tracking info for the special remote (not the web) is updated to
+say it has the key.
+
+IIRC, my original use case for this was things like *.torrent urls, where
+it makes sense for the bittorrent special remote to add an url to the
+torrent, but we don't want the torrent to be downloaded as if it were the
+content of the file. However.. I don't know if any external special remotes
+actually use SETURLPRESENT this way. The SETUR*I*PRESENT varient seems to
+be the one really used, and/or CLAIMURL.
+
+So, SETURLPRESENT is feeling a bit like an unused appendix that doesn't do
+quite you want. And could be changed to do what you want quite easily -- by
+making it set the location tracking for the web. But, it's hard for me to
+tell if the current behavior is really unused. I suppose you could work
+around this by having your external special remote run "git annex
+setpresentkey" with the uuid used for the web
+(00000000-0000-0000-0000-000000000001).
+
+On the third hand, does it really make sense for a key, upon being uploaded
+to google drive, to appear to be in two remotes; both google drive and the
+web? If the web is not untrusted, it will count as another copy of the
+file, when there's not really another copy as such (google drive redundancy
+aside).
+
+What I did in the similar case of uploading a file to a public S3
+bucket is to not make that file be present in the web remote, and indeed
+not record the url in the git-annex branch at all. Instead, the S3 remote
+uses the `whereisKey` interface to add the url to the `whereis` output, and
+if the S3 API keys are not available, it will download files from the public
+url, instead of using the S3 protocol. An external special remote could also
+take this approach, although the internal `whereisKey` interface is not
+currently exposed. If you want to go this route, I'll see about adding
+that and any other necessary missing bits.
+"""]]

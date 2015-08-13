@@ -31,7 +31,7 @@ data DdarRepo = DdarRepo
 remote :: RemoteType
 remote = RemoteType {
 	typename = "ddar",
-	enumerate = findSpecialRemotes "ddarrepo",
+	enumerate = const (findSpecialRemotes "ddarrepo"),
 	generate = gen,
 	setup = ddarSetup
 }

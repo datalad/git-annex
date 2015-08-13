@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-08-04T20:09:36Z"
+ content="""
+The assistant's automation for setting up a remote ssh server is what looks
+to be failing. It seems that this NAS has a problem with ssh being used to
+run a sh -c command. Probably the NAS's shell is not POSIX compliant
+in some way.
+
+The best thing to do in this situation is to set up the git remote
+on the NAS manually. Once it's set up, the assistant should be able to use
+it.
+"""]]

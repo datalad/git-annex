@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="zedr0nre@e1b86776f21c5f6a6e064c6ab8da039b54915b7d"
+ nickname="zedr0nre"
+ subject="comment 9"
+ date="2015-08-03T22:46:30Z"
+ content="""
+By default on windows in direct mode sshcaching is disabled but it seems like in [5.2010617](https://git-annex.branchable.com/news/version_5.20150617/) there was this change:
+
+`sync, remotedaemon: Pass configured ssh-options even when annex.sshcaching is disabled.`
+
+which might explain why GIT_SSH is still set up and points to git-annex instead of ssh?
+"""]]

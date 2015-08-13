@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-08-11T17:37:05Z"
+ content="""
+I tend to be uncomfortable with wrapping many git commands into git-annex
+commands with the same name. All the regular git commands can be used
+in a git-annex repository, and I don't want to get users thinking they need
+to look for git-annex commands instead when the git commands work perfectly
+well.
+
+`git annex copy` is fundamentally different than `git push`, so the user
+needs to learn about the complication of needing to copy the contents
+around separately. Perhaps even copying content to different (special)
+remotes than where git pushes to. `git annex sync --content` is there for
+users who want to keep two repos in sync and don't want to be concerned with the details.
+`git annex push` would seem to be for users who want to know about the details,
+but not all of them. Seems like a losing and/or confusing choice.
+"""]]

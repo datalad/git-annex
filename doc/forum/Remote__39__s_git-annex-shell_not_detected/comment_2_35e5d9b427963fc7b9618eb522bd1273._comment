@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-08-09T21:20:05Z"
+ content="""
+I've added [[tips/get_git-annex-shell_into_PATH]] explaining this problem
+and solutions in detail.
+"""]]

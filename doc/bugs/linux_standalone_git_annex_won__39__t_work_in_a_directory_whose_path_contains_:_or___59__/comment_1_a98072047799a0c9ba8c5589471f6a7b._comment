@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-08-04T19:34:34Z"
+ content="""
+Nice analysis.
+
+I can't see any way to avoid this problem. So, seems like a "don't do that
+then" situation. And indeed, it makes sense to detect it and fail in a
+comprehansible way.
+"""]]

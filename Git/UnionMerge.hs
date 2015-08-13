@@ -93,7 +93,7 @@ mergeFile info file h repo = case filter (/= nullSha) [Ref asha, Ref bsha] of
 	-- FileSystemEncoding for this is a hack, but ensures there
 	-- are no decoding errors. Note that this works because
 	-- hashObject sets fileEncoding on its write handle.
-	getcontents s = lines . encodeW8 . L.unpack <$> catObject h s
+	getcontents s = lines . encodeW8NUL . L.unpack <$> catObject h s
 
 {- Calculates a union merge between a list of refs, with contents.
  -

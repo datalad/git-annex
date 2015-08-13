@@ -1,6 +1,6 @@
-From e5072d9b721cc25fa1017df97d71bf926a78d4e5 Mon Sep 17 00:00:00 2001
+From 087f1ae5e17f0e6d7c9f6b4092a5bb5bb6f5bf60 Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Fri, 3 Jul 2015 02:24:19 +0000
+Date: Thu, 16 Oct 2014 02:59:11 +0000
 Subject: [PATCH] port
 
 ---
@@ -9,48 +9,48 @@ Subject: [PATCH] port
  2 files changed, 9 insertions(+), 5 deletions(-)
 
 diff --git a/Network/DNS/Resolver.hs b/Network/DNS/Resolver.hs
-index 31f6373..6487c7b 100644
+index 5721e03..c4400d1 100644
 --- a/Network/DNS/Resolver.hs
 +++ b/Network/DNS/Resolver.hs
-@@ -18,7 +18,7 @@ module Network.DNS.Resolver (
-   , fromDNSFormat
+@@ -19,7 +19,7 @@ module Network.DNS.Resolver (
    ) where
  
+ import Control.Applicative ((<$>), (<*>), pure)
 -import Control.Exception (bracket)
 +import Control.Exception (bracket, catch, IOException)
+ import qualified Data.ByteString.Char8 as BS
  import Data.Char (isSpace)
  import Data.List (isPrefixOf)
- import Data.Maybe (fromMaybe)
-@@ -32,6 +32,7 @@ import Network.Socket (AddrInfoFlag(..), AddrInfo(..), SockAddr(..), PortNumber(
+@@ -32,6 +32,7 @@ import Network.Socket (AddrInfoFlag(..), AddrInfo(..), defaultHints, getAddrInfo
  import Prelude hiding (lookup)
  import System.Random (getStdRandom, randomR)
  import System.Timeout (timeout)
 +import System.Process
  
- #if __GLASGOW_HASKELL__ < 709
- import Control.Applicative ((<$>), (<*>), pure)
-@@ -136,10 +137,12 @@ makeResolvSeed conf = ResolvSeed <$> addr
+ #if mingw32_HOST_OS == 1
+ import Network.Socket (send)
+@@ -130,10 +131,12 @@ makeResolvSeed conf = ResolvSeed <$> addr
+   where
      addr = case resolvInfo conf of
-         RCHostName numhost -> makeAddrInfo numhost Nothing
-         RCHostPort numhost mport -> makeAddrInfo numhost $ Just mport
--        RCFilePath file -> toAddr <$> readFile file >>= \i -> makeAddrInfo i Nothing
+         RCHostName numhost -> makeAddrInfo numhost
+-        RCFilePath file -> toAddr <$> readFile file >>= makeAddrInfo
 -    toAddr cs = let l:_ = filter ("nameserver" `isPrefixOf`) $ lines cs
 -                in extract l
 -    extract = reverse . dropWhile isSpace . reverse . dropWhile isSpace . drop 11
 +        RCFilePath file -> do
 +		-- Android has no /etc/resolv.conf; use getprop command.
 +		ls <- catch (lines <$> readProcess "getprop" ["net.dns1"] []) (const (return []) :: IOException -> IO [String])
-+		flip makeAddrInfo Nothing $ case ls of
++		makeAddrInfo $ case ls of
 +			[] -> "8.8.8.8" -- google public dns as a fallback only
 +			(l:_) -> l
  
- makeAddrInfo :: HostName -> Maybe PortNumber -> IO AddrInfo
- makeAddrInfo addr mport = do
+ makeAddrInfo :: HostName -> IO AddrInfo
+ makeAddrInfo addr = do
 diff --git a/dns.cabal b/dns.cabal
-index 0745754..8cf4b67 100644
+index ceaf5f4..cd15e61 100644
 --- a/dns.cabal
 +++ b/dns.cabal
-@@ -39,6 +39,7 @@ Library
+@@ -37,6 +37,7 @@ Library
                        , network >= 2.3
                        , random
                        , resourcet
@@ -59,5 +59,5 @@ index 0745754..8cf4b67 100644
      Build-Depends:      base >= 4 && < 5
                        , attoparsec
 -- 
-2.1.4
+2.1.1
 

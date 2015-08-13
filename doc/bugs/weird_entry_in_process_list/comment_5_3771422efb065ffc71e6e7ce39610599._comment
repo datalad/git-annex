@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="thanks"
+ date="2015-08-12T00:22:31Z"
+ content="""
+thanks for the URL for the GHC bug report, hopefully that can be worked out eventually - but i'm not holding my breath... :)
+
+as for standalone, builds for the distribution i am interested in (debian and ubuntu, mainly) are too out of date for my needs. Debian wheezy has a backport from october 2014 and jessie doesn't have a recent backport either, having only a version from november available. Ubuntu packages are also [pretty old](https://launchpad.net/ubuntu/+source/git-annex) as well, with 3.201204 in the Precise LTS and 5.2014 in Trusty LTS... Package uploads only started resuming in Debian unstable something like a month ago (which is a welcome change).
+
+Basically, because we require 5.20150610 for the public amazon S3 support, we are stuck using the neurodebian standalone builds, so we are stuck with this bug. My feeling is that git-annex is still under rapid development, and the older versions become stale quite quickly. I know this can only stabilise over time, but this makes the standalone builds a must for my projects right now...
+
+but i understand why the C hack isn't considered at this point, thanks for looking into this again so quickly.
+"""]]

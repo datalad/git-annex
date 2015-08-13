@@ -1,0 +1,41 @@
+From aae3ace106cf26c931cc94c96fb6fbfe83f950f2 Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Wed, 15 Oct 2014 17:05:37 +0000
+Subject: [PATCH] avoid TH
+
+---
+ Database/Persist/Sql/Raw.hs | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/Database/Persist/Sql/Raw.hs b/Database/Persist/Sql/Raw.hs
+index 3ac2ca9..bcc2011 100644
+--- a/Database/Persist/Sql/Raw.hs
++++ b/Database/Persist/Sql/Raw.hs
+@@ -11,7 +11,7 @@ import Data.IORef (writeIORef, readIORef, newIORef)
+ import Control.Exception (throwIO)
+ import Control.Monad (when, liftM)
+ import Data.Text (Text, pack)
+-import Control.Monad.Logger (logDebugS)
++--import Control.Monad.Logger (logDebugS)
+ import Data.Int (Int64)
+ import Control.Monad.Trans.Class (lift)
+ import qualified Data.Text as T
+@@ -23,7 +23,6 @@ rawQuery :: (MonadSqlPersist m, MonadResource m)
+          -> [PersistValue]
+          -> Source m [PersistValue]
+ rawQuery sql vals = do
+-    lift $ $logDebugS (pack "SQL") $ pack $ show sql ++ " " ++ show vals
+     conn <- lift askSqlConn
+     bracketP
+         (getStmtConn conn sql)
+@@ -35,7 +34,6 @@ rawExecute x y = liftM (const ()) $ rawExecuteCount x y
+ 
+ rawExecuteCount :: MonadSqlPersist m => Text -> [PersistValue] -> m Int64
+ rawExecuteCount sql vals = do
+-    $logDebugS (pack "SQL") $ pack $ show sql ++ " " ++ show vals
+     stmt <- getStmt sql
+     res <- liftIO $ stmtExecute stmt vals
+     liftIO $ stmtReset stmt
+-- 
+2.1.1
+

@@ -36,7 +36,7 @@ type BupRepo = String
 remote :: RemoteType
 remote = RemoteType {
 	typename = "bup",
-	enumerate = findSpecialRemotes "buprepo",
+	enumerate = const (findSpecialRemotes "buprepo"),
 	generate = gen,
 	setup = bupSetup
 }
@@ -270,7 +270,7 @@ bup2GitRemote r
 bupRef :: Key -> String
 bupRef k
 	| Git.Ref.legal True shown = shown
-	| otherwise = "git-annex-" ++ show (sha256 (fromString shown))
+	| otherwise = "git-annex-" ++ show (sha2_256 (fromString shown))
   where
 	shown = key2file k
 

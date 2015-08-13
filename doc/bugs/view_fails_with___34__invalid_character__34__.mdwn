@@ -28,3 +28,29 @@ local repository version: 5
 supported repository version: 5
 upgrade supported from repository versions: 0 1 2 4
 """]]
+
+> I'm assuming the setlocale part of this is a misconfigured system locale;
+> as also seen by an arch linux user in
+> <http://git-annex.branchable.com/bugs/cannot_change_locale___40__en__95__US.UTF-8__41__/>
+> 
+> So, disregarding that part of the bug report, we still have the actual
+> failure. 
+> 
+> With LANG=C, setting and getting metadata like "Rondò Veneziano" fails,
+> as does generating views of that metadata.
+> 
+> In all cases, it's an IO encoding failure, "commitBuffer: invalid argument (invalid character)"
+> 
+> This only occurs when there's a space in the metadata; in this case the
+
+> value is base64ed. While the 'ò' comes back out as "\242", which is the right
+> character, it's not encoded using the filesystem encoding. This means that
+> the IO layer can't handle it, when not in a unicode locale. Instead, it
+> needs to come back out as "\56515\56498".
+> 
+> Apparently this is a reversion; it worked in an earlier version of
+> git-annex. Commits such as 9b93278e8abe1163d53fbf56909d0fe6d7de69e9
+> or the conversion to Sandi may have caused the reversion, unsure.
+> 
+> Fix is to apply the filesystem encoding when decoding base64ed values.
+> [[done]] --[[Joey]]
