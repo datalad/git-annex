@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2015-08-13T18:27:35Z"
+ content="""
+I've made --debug be passed along to git-annex-shell, so here's a more
+detailed view:
+
+	[2015-08-13 15:29:05.183231] read: rsync ["--progress","--inplace","--perms","-e","'ssh' '-S' '.git/annex/ssh/localhost' '-o' 'ControlMaster=auto' '-o' 'ControlPersist=yes' '-T' 'localhost' 'git-annex-shell ''sendkey'' ''/home/joey/tmp/r'' ''--debug'' ''SHA256E-s30--6b1bd2aa19d658de59c3a5a1eb239cefb87bdfa0f9b64d1a670d88c211972c0d'' --uuid ba2a51f9-f356-40a7-9600-2ac4193c7d58 ''--'' ''remoteuuid=72078ee3-1150-45f0-b00e-53e971921982'' ''direct='' ''associatedfile=ook2'' ''--'''","--","dummy:",".git/annex/tmp/SHA256E-s30--6b1bd2aa19d658de59c3a5a1eb239cefb87bdfa0f9b64d1a670d88c211972c0d"]
+	[2015-08-13 15:29:05.219572] transfer start
+	[2015-08-13 15:29:05.221625] call: rsync ["--server","-t","--inplace","-e.Lsf",".","--sender","tmp/r/.git/annex/objects/wX/k9/SHA256E-s30--6b1bd2aa19d658de59c3a5a1eb239cefb87bdfa0f9b64d1a670d88c211972c0d/SHA256E-s30--6b1bd2aa19d658de59c3a5a1eb239cefb87bdfa0f9b64d1a670d88c211972c0d"]
+	[2015-08-13 15:29:05.226709] process done ExitSuccess # rsync server
+	[2015-08-13 15:29:05.22709] transfer done
+	[2015-08-13 15:29:05.247464] process done ExitSuccess # rsync client
+
+1. 0.036341s -- starting local rsync, ssh connection (using mux), and git-annex-shell startup to the point it parses parameters and can start
+   printing debug messages
+2. 0.002053s -- time git-annex-shell spends starting transfer (locking file, etc)
+3. 0.005084s -- actual file transfer time (including rsync server startup)
+4. 0.000381s -- git-annex-shell shutdown time
+5. 0.020374s -- time from when git-annex-shell exits until the local rsync exits.  
+   This must consist of rsync writing the file, the ssh connection shutdown, and rsync shutdown. 
+   I don't know in what porportions, except that writing the file is only a very small part of it.
+
+So, over 25000 files, I'd estimate the newly optimised git-annex to take
+around 28 minutes here (unoptimized would have taken 171 minutes).
+The rough time breakdown is:
+
+* 15 minutes is needed to start the rsync clients, ssh connections, git-annex-shell processes
+* 9 minutes more overhead seems to be involved in shutting down those 
+  connections
+* 1 minute is used by git-annex-shell to do locking, etc
+* 2 minutes is used by git-annex to find files to transfer, update location logs, etc
+* 1 minute is used by rsync server to start running and send the files (assuming very small files and fast network)
+"""]]
