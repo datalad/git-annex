@@ -1,0 +1,79 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""measure twice, cut once"""
+ date="2015-08-13T17:22:17Z"
+ content="""
+Debug output has been enhanced with fractional seconds and also shows when
+a command exits so the time spent in a command can be determined.
+
+	[2015-08-13 13:54:29.578099] process done ExitSuccess
+	ok
+	get ook8 (from origin...) 
+	[2015-08-13 13:54:29.588827] read: rsync ["--progress","--inplace","--perms","-e","'ssh' '-S' '.git/annex/ssh/localhost' '-o' 'ControlMaster=auto' '-o' 'ControlPersist=yes' '-T' 'localhost' 'git-annex-shell ''sendkey'' ''/home/joey/tmp/r'' ''SHA256E-s30--fc394d2854169d3a85b7ffda59f30b797e915fd98368c30d11588df7a20ee128'' --uuid ba2a51f9-f356-40a7-9600-2ac4193c7d58 ''--'' ''remoteuuid=72078ee3-1150-45f0-b00e-53e971921982'' ''direct='' ''associatedfile=ook8'' ''--'''","--","dummy:",".git/annex/tmp/SHA256E-s30--fc394d2854169d3a85b7ffda59f30b797e915fd98368c30d11588df7a20ee128"]
+	SHA256E-s30--fc394d2854169d3a85b7ffda59f30b797e915fd98368c30d11588df7a20ee128
+	             30 100%   29.30kB/s    0:00:00 (xfr#1, to-chk=0/1)
+	[2015-08-13 13:54:29.635771] transferinfo starting up
+	[2015-08-13 13:54:29.636097] feed: ssh ["-S",".git/annex/ssh/localhost","-o","ControlMaster=auto","-o","ControlPersist=yes","-T","localhost","git-annex-shell 'transferinfo' '/home/joey/tmp/r' 'SHA256E-s30--fc394d2854169d3a85b7ffda59f30b797e915fd98368c30d11588df7a20ee128' --uuid ba2a51f9-f356-40a7-9600-2ac4193c7d58 '--' 'remoteuuid=72078ee3-1150-45f0-b00e-53e971921982' 'associatedfile=ook8' '--'"]
+	[2015-08-13 13:54:29.656803] process done ExitSuccess
+	[2015-08-13 13:54:29.657487] transferinfo shutting down
+	[2015-08-13 13:54:29.987744] process done ExitSuccess
+	ok
+
+Here we can see:
+
+1. 0.409645s -- total time spent on this one file (12 files took 4.124s overall)
+2. 0.010728s -- is spent in between finishing one file and
+   starting the transfer of the next. This includes updating location
+   tracking, figuring out what the next file that needs transfer is 
+   (in this case the very next one in the work tree), and other bookkeeping.
+3. 0.067976s -- The rsync transfer of one (small) file, including ssh and
+   git-annex-shell overhead. It would be good to get this part broken down
+   in more detail.
+4. 0.330941 -- This is pure overhead involved in shutting down the
+   transferinfo process. Yikes!
+
+So, that transferinfo is the unexpected meat of the time. Since all
+that does it open another ssh connection back to the remote and tell git-annex-shell
+the progress of the download, for git-annex status or the assistant to display,
+that's really not a justifyable overhead.
+
+Here it is without the transferinfo being done:
+
+	[2015-08-13 13:49:26.860914] process done ExitSuccess
+	ok
+	get ook8 (from origin...) 
+	[2015-08-13 13:49:26.865482] read: rsync ["--progress","--inplace","--perms","-e","'ssh' '-S' '.git/annex/ssh/localhost' '-o' 'ControlMaster=auto' '-o' 'ControlPersist=yes' '-T' 'localhost' 'git-annex-shell ''sendkey'' ''/home/joey/tmp/r'' ''SHA256E-s30--fc394d2854169d3a85b7ffda59f30b797e915fd98368c30d11588df7a20ee128'' --uuid ba2a51f9-f356-40a7-9600-2ac4193c7d58 ''--'' ''remoteuuid=72078ee3-1150-45f0-b00e-53e971921982'' ''direct='' ''associatedfile=ook8'' ''--'''","--","dummy:",".git/annex/tmp/SHA256E-s30--fc394d2854169d3a85b7ffda59f30b797e915fd98368c30d11588df7a20ee128"]
+	SHA256E-s30--fc394d2854169d3a85b7ffda59f30b797e915fd98368c30d11588df7a20ee128
+	             30 100%   29.30kB/s    0:00:00 (xfr#1, to-chk=0/1)
+	[2015-08-13 13:49:26.926932] process done ExitSuccess
+	ok
+
+1. 0.066018s -- massive improvement! (12 files took 0.885s overall)
+2. 0.004568s -- Weird that this is half what it was before. I have made enough
+   measurements that I'm pretty sure it is, consistently lower though. Maybe
+   this time reduced because avoiding the transferinfo means less threads and/or
+   less garbage collection time.
+3. 0.061450s -- Much as before, so the concurrent ssh connection made
+   for transferinfo doesn't slow down the rsync appreciably.
+
+So, I made it spin off a new thread to do the transferinfo cleanup.
+This one word change to the code performs almost as well as eliminating
+transferinfo entirely did!
+
+	[2015-08-13 14:11:10.275867] process done ExitSuccess
+	[2015-08-13 14:11:10.276359] transferinfo shutting down
+	ok
+	get ook8 (from origin...) 
+	[2015-08-13 14:11:10.282027] read: rsync ["--progress","--inplace","--perms","-e","'ssh' '-S' '.git/annex/ssh/localhost' '-o' 'ControlMaster=auto' '-o' 'ControlPersist=yes' '-T' 'localhost' 'git-annex-shell ''sendkey'' ''/home/joey/tmp/r'' ''SHA256E-s30--fc394d2854169d3a85b7ffda59f30b797e915fd98368c30d11588df7a20ee128'' --uuid ba2a51f9-f356-40a7-9600-2ac4193c7d58 ''--'' ''remoteuuid=72078ee3-1150-45f0-b00e-53e971921982'' ''direct='' ''associatedfile=ook8'' ''--'''","--","dummy:",".git/annex/tmp/SHA256E-s30--fc394d2854169d3a85b7ffda59f30b797e915fd98368c30d11588df7a20ee128"]
+	SHA256E-s30--fc394d2854169d3a85b7ffda59f30b797e915fd98368c30d11588df7a20ee128
+	             30 100%   29.30kB/s    0:00:00 (xfr#1, to-chk=0/1)
+	[2015-08-13 14:11:10.324395] transferinfo starting up
+	[2015-08-13 14:11:10.324624] feed: ssh ["-S",".git/annex/ssh/localhost","-o","ControlMaster=auto","-o","ControlPersist=yes","-T","localhost","git-annex-shell 'transferinfo' '/home/joey/tmp/r' 'SHA256E-s30--fc394d2854169d3a85b7ffda59f30b797e915fd98368c30d11588df7a20ee128' --uuid ba2a51f9-f356-40a7-9600-2ac4193c7d58 '--' 'remoteuuid=72078ee3-1150-45f0-b00e-53e971921982' 'associatedfile=ook8' '--'"]
+	[2015-08-13 14:11:10.34482] process done ExitSuccess
+
+1. 0.068953s -- nearly as good as eliminating transferinfo (12 files took 0.925s overall)
+2. 0.006160 -- little bit higher, perhaps this is thread or GC overhead
+3. 0.062793 -- much as before (possibly slowed a tiny bit by the extra ssh traffic)
+
+Now, with -J4, all 12 files transfer in 0.661s.
+"""]]

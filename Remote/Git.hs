@@ -58,6 +58,7 @@ import Control.Concurrent
 import Control.Concurrent.MSampleVar
 import qualified Data.Map as M
 import Network.URI
+import System.Log.Logger
 
 remote :: RemoteType
 remote = RemoteType {
@@ -445,9 +446,14 @@ copyFromRemote' r key file dest meterupdate
 		let feeder = \n -> do
 			meterupdate n
 			writeSV v (fromBytesProcessed n)
-		let cleanup = do
+
+		-- It can easily take 0.3 seconds to clean up after
+		-- the transferinfo, and all that's involved is shutting
+		-- down the process and associated thread cleanly. So,
+		-- do it in the background.
+		let cleanup = forkIO $ do
 			void $ tryIO $ killThread tid
-			tryNonAsync $
+			void $ tryNonAsync $
 				maybe noop (void . waitForProcess)
 					=<< tryTakeMVar pidv
 		bracketIO noop (const cleanup) (const $ a feeder)
