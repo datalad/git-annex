@@ -58,7 +58,6 @@ import Control.Concurrent
 import Control.Concurrent.MSampleVar
 import qualified Data.Map as M
 import Network.URI
-import System.Log.Logger
 
 remote :: RemoteType
 remote = RemoteType {

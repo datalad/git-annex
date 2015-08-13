@@ -16,6 +16,8 @@ import Annex.Transfer
 import qualified CmdLine.GitAnnexShell.Fields as Fields
 import Utility.Metered
 
+import System.Log.Logger
+
 cmd :: Command
 cmd = noCommit $ 
 	command "sendkey" SectionPlumbing 
@@ -44,10 +46,12 @@ start key = do
 
 fieldTransfer :: Direction -> Key -> (MeterUpdate -> Annex Bool) -> CommandStart
 fieldTransfer direction key a = do
+	liftIO $ debugM "fieldTransfer" "transfer start"
 	afile <- Fields.getField Fields.associatedFile
 	ok <- maybe (a $ const noop)
 		(\u -> runner (Transfer direction (toUUID u) key) afile noRetry noObserver a)
 		=<< Fields.getField Fields.remoteUUID
+	liftIO $ debugM "fieldTransfer" "transfer done"
 	liftIO $ exitBool ok
   where
 	{- Allow the key to be sent to the remote even if there seems to be
