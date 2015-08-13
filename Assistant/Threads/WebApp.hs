@@ -49,7 +49,6 @@ import Network.Socket (SockAddr, HostName)
 import Data.Text (pack, unpack)
 import qualified Network.Wai.Handler.WarpTLS as TLS
 import Network.Wai.Middleware.RequestLogger
-import System.Log.Logger
 
 mkYesodDispatch "WebApp" $(parseRoutesFile "Assistant/WebApp/routes")
 
@@ -138,9 +137,3 @@ getTlsSettings = do
 #else
 	return Nothing
 #endif
-
-{- Checks if debugging is actually enabled. -}
-debugEnabled :: IO Bool
-debugEnabled = do
-	l <- getRootLogger
-	return $ getLevel l <= Just DEBUG

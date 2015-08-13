@@ -32,6 +32,7 @@ module Messages (
 	setupConsole,
 	enableDebugOutput,
 	disableDebugOutput,
+	debugEnabled,
 	commandProgressDisabled,
 ) where
 
@@ -190,6 +191,12 @@ enableDebugOutput = updateGlobalLogger rootLoggerName $ setLevel DEBUG
 
 disableDebugOutput :: IO ()
 disableDebugOutput = updateGlobalLogger rootLoggerName $ setLevel NOTICE
+
+{- Checks if debugging is enabled. -}
+debugEnabled :: IO Bool
+debugEnabled = do
+	l <- getRootLogger
+	return $ getLevel l <= Just DEBUG
 
 {- Should commands that normally output progress messages have that
  - output disabled? -}

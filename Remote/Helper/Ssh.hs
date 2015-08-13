@@ -38,22 +38,30 @@ toRepo r gc sshcmd = do
  - repository. -}
 git_annex_shell :: Git.Repo -> String -> [CommandParam] -> [(Field, String)] -> Annex (Maybe (FilePath, [CommandParam]))
 git_annex_shell r command params fields
-	| not $ Git.repoIsUrl r = return $ Just (shellcmd, shellopts ++ fieldopts)
+	| not $ Git.repoIsUrl r = do
+		shellopts <- getshellopts
+		return $ Just (shellcmd, shellopts ++ fieldopts)
 	| Git.repoIsSsh r = do
 		gc <- Annex.getRemoteGitConfig r
 		u <- getRepoUUID r
-		sshparams <- toRepo r gc [Param $ sshcmd u gc]
+		shellopts <- getshellopts
+		let sshcmd = unwords $
+			fromMaybe shellcmd (remoteAnnexShell gc)
+				: map shellEscape (toCommand shellopts) ++
+			uuidcheck u ++
+			map shellEscape (toCommand fieldopts)
+		sshparams <- toRepo r gc [Param sshcmd]
 		return $ Just ("ssh", sshparams)
 	| otherwise = return Nothing
   where
 	dir = Git.repoPath r
 	shellcmd = "git-annex-shell"
-	shellopts = Param command : File dir : params
-	sshcmd u gc = unwords $
-		fromMaybe shellcmd (remoteAnnexShell gc)
-			: map shellEscape (toCommand shellopts) ++
-		uuidcheck u ++
-		map shellEscape (toCommand fieldopts)
+	getshellopts = do
+		debug <- liftIO debugEnabled
+		let params' = if debug
+			then Param "--debug" : params
+			else params
+		return (Param command : File dir : params')
 	uuidcheck NoUUID = []
 	uuidcheck (UUID u) = ["--uuid", u]
 	fieldopts

@@ -30,7 +30,7 @@ data PrefsForm = PrefsForm
 	, numCopies :: Int
 	, autoStart :: Bool
 	, autoUpgrade :: AutoUpgrade
-	, debugEnabled :: Bool
+	, enableDebug :: Bool
 	}
 
 prefsAForm :: PrefsForm -> MkAForm PrefsForm
@@ -44,7 +44,7 @@ prefsAForm d = PrefsForm
 	<*> areq (selectFieldList autoUpgradeChoices)
 		(bfs autoUpgradeLabel) (Just $ autoUpgrade d)
 	<*> areq (checkBoxField `withNote` debugnote)
-		"Enable debug logging" (Just $ debugEnabled d)
+		"Enable debug logging" (Just $ enableDebug d)
   where
 	diskreservenote = [whamlet|<br>Avoid downloading files from other repositories when there is too little free disk space.|]
 	numcopiesnote = [whamlet|<br>Only drop a file after verifying that other repositories contain this many copies.|]
@@ -98,8 +98,8 @@ storePrefs p = do
 		liftIO $ if autoStart p
 			then addAutoStartFile here
 			else removeAutoStartFile here
-	setConfig (annexConfig "debug") (boolConfig $ debugEnabled p)
-	liftIO $ if debugEnabled p
+	setConfig (annexConfig "debug") (boolConfig $ enableDebug p)
+	liftIO $ if enableDebug p
 		then enableDebugOutput 
 		else disableDebugOutput
 

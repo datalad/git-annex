@@ -3,6 +3,7 @@ git-annex (5.20150813) UNRELEASED; urgency=medium
   * --debug log messages are now timestamped with fractional seconds.
   * Sped up downloads of files from ssh remotes, reducing the
     non-data-transfer overhead 6x.
+  * --debug is passed along to git-annex-shell when git-annex is in debug mode.
 
  -- Joey Hess <id@joeyh.name>  Wed, 12 Aug 2015 14:31:01 -0400
 
