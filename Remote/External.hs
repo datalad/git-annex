@@ -60,7 +60,7 @@ gen r u c gc = do
 			, removeKey = removeKeyDummy
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
-			, whereisKey = Nothing
+			, whereisKey = Just $ whereis external
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
 			, config = c
@@ -143,6 +143,13 @@ checkKey external k = either error id <$> go
 			CHECKPRESENT_UNKNOWN k' errmsg
 				| k' == k -> Just $ return $ Left errmsg
 			_ -> Nothing
+
+whereis :: External -> Key -> Annex [String]
+whereis external k = handleRequest external (WHEREIS k) Nothing $ \resp -> case resp of
+	WHEREIS_SUCCESS s -> Just $ return [s]
+	WHEREIS_FAILURE -> Just $ return []
+	UNSUPPORTED_REQUEST -> Just $ return []
+	_ -> Nothing
 
 safely :: Annex Bool -> Annex Bool
 safely a = go =<< tryNonAsync a
