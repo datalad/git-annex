@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-08-13T23:50:58Z"
+ content="""
+Thinking some more, getting the external special remote program installed
+may be the real pain point here.
+
+I could easily add support for enableremote with readonly=yes, and have it
+not use the external program at all, just hit the urls previously registered
+with SETURLPRESENT.
+
+The git-annex branch would bloat some if a remote works this way, but if
+the urls consist mostly of some fixed strings, and the key, then git should
+pack those pretty efficiently.
+"""]]
