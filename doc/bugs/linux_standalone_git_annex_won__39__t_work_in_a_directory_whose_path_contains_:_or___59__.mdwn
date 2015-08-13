@@ -45,4 +45,4 @@ git-annex: get: 1 failed
 > git-annex.linux directory into it, and using that as its base directory.
 > 
 > Of course, that's a suboptimal configuration, but better than having some
-> configurations where it doesn't work. --[[Joey]]
+> configurations where it doesn't work. [[done]] --[[Joey]]
