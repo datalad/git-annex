@@ -1,3 +1,9 @@
+git-annex (5.20150812-1) unstable; urgency=medium
+
+  * Package 5.20150812-1
+
+ -- Richard Hartmann <richih@debian.org>  Thu, 13 Aug 2015 20:47:58 +0200
+
 git-annex (5.20150812) unstable; urgency=medium
 
   * Added support for SHA3 hashed keys (in 8 varieties), when git-annex is
