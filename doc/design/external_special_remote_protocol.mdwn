@@ -291,7 +291,11 @@ in control.
 * `SETURLPRESENT Key Url`  
   Records an URL where the Key can be downloaded from.  
   Note that this does not make git-annex think that the url is present on
-  the web special remote.
+  the web special remote.  
+  Keep in mind that this stores the url in the git-annex branch. This can
+  result in bloat to the branch if the url is large and/or does not delta
+  pack well with other information (such as the names of keys) already
+  stored in the branch.
 * `SETURLMISSING Key Url`  
   Records that the key can no longer be downloaded from the specified
   URL.
@@ -338,6 +342,26 @@ Note that the external special remote program may be left running for
 quite a long time, especially when the git-annex assistant is using it.
 The assistant will detect when the system connects to a network, and will
 start a new process the next time it needs to use a remote.
+
+## readonly mode
+
+Some storage services allow downloading the content of a file using a
+regular http connection, with no authentication. An external special remote
+for such a storage service can support a readonly mode of operation.
+
+It works like this:
+
+* When a key's content is stored on the remote, use SETURLPRESENT to
+  tell git-annex the public url from which it can be downloaded.
+* When a key's content is removed from the remote, use SETURLMISSING.
+* Document that this external special remote can be used in readonly mode.
+
+  The user doesn't even need to install your external special remote
+  program to use such a remote! All they need to do is run:
+  `git annex enableremote $remotename readonly=true`
+
+* The readonly=true parameter makes git-annex download content from the
+  urls recorded earlier by SETURLPRESENT.
 
 ## TODO
 
