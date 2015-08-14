@@ -31,9 +31,11 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.ByteString as S
-import Crypto.Hash
 #ifdef WITH_CRYPTONITE
-import Crypto.MAC.HMAC
+import "cryptonite" Crypto.MAC.HMAC
+import "cryptonite" Crypto.Hash
+#else
+import "cryptohash" Crypto.Hash
 #endif
 
 sha1 :: L.ByteString -> Digest SHA1
