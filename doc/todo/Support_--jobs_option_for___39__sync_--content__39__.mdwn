@@ -1,1 +1,14 @@
-As the subject says.  I mostly use `git annex sync --content` to transfer files between repositories, as its easier than running `git annex sync`, a bunch of `git annex copy`s and then a `git annex get` to make sure I have all the files I should have.  It would be good if the shortcut could also work in parallel.
+As the subject says.  I mostly use `git annex sync --content` to transfer
+files between repositories, as its easier than running `git annex sync`, a
+bunch of `git annex copy`s and then a `git annex get` to make sure I have
+all the files I should have.  It would be good if the shortcut could also
+work in parallel.
+
+> It also can be faster to push concurrent. OTOH, concurrent pulls
+> can lead to the same git objects being downloaded redundantly, so best to
+> avoid those I think.
+> 
+> I've implemented this. It suffers from the same
+> lack of support for displaying progress when running it parallel as
+> documented on [[parallel_get]]. Other than that wart, this is [[done]].
+> --[[Joey]]

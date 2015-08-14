@@ -65,6 +65,16 @@ by running "git annex sync" on the remote.
   will only match the version of files currently in the work tree, but not
   past versions of files.
 
+* `--jobs=N` `-JN`
+
+  Enables parallel syncing with up to the specified number of jobs
+  running at once. For example: `-J10`
+
+  When there are multiple git remotes, pushes will be made to them in
+  parallel. Pulls are not done in parallel because that tends to be
+  less efficient. When --content is synced, the files are processed
+  in parallel as well.
+
 # SEE ALSO
 
 [[git-annex]](1)

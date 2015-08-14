@@ -5,6 +5,9 @@ git-annex (5.20150813) UNRELEASED; urgency=medium
     non-data-transfer overhead 6x.
   * --debug is passed along to git-annex-shell when git-annex is in debug mode.
   * Added WHEREIS to external special remote protocol.
+  * sync: Support --jobs
+  * sync --content: Avoid unnecessary second pull from remotes when 
+    no file transfers are made.
 
  -- Joey Hess <id@joeyh.name>  Wed, 12 Aug 2015 14:31:01 -0400
 
