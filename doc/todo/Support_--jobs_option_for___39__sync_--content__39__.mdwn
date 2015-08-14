@@ -1,0 +1,1 @@
+As the subject says.  I mostly use `git annex sync --content` to transfer files between repositories, as its easier than running `git annex sync`, a bunch of `git annex copy`s and then a `git annex get` to make sure I have all the files I should have.  It would be good if the shortcut could also work in parallel.
