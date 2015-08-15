@@ -4,10 +4,10 @@ Calling "git annex importfeed --relaxed" on a url of a BBC podcast
 fails just like a "git annex addurl --fast" (and not relaxed) on the
 url of a show:
 
-addurl open.live.bbc.co.uk_mediaselector_5_redir_version_2.0_mediaset_audio_nondrm_download_proto_http_vpid_p02y8kfc.mp3 
-  unable to access url: http://open.live.bbc.co.uk/mediaselector/5/redir/version/2.0/mediaset/audio-nondrm-download/proto/http/vpid/p02y8kfc.mp3
-failed
-git-annex: addurl: 1 failed
+    addurl open.live.bbc.co.uk_mediaselector_5_redir_version_2.0_mediaset_audio_nondrm_download_proto_http_vpid_p02y8kfc.mp3 
+      unable to access url: http://open.live.bbc.co.uk/mediaselector/5/redir/version/2.0/mediaset/audio-nondrm-download/proto/http/vpid/p02y8kfc.mp3
+    failed
+    git-annex: addurl: 1 failed
 
 I suppose that is because HEAD on that same URL returns 403 Forbidden
 (addurl without fast works just fine).
@@ -19,16 +19,16 @@ I suppose that is because HEAD on that same URL returns 403 Forbidden
 
 I ran into this bug trying to importfeed various BBC podcasts. For instance:
 
-$ git annex importfeed --relaxed 'http://www.bbc.co.uk/programmes/p02pc9x6/episodes/downloads.rss'
-(checking known urls...)
-importfeed http://www.bbc.co.uk/programmes/p02pc9x6/episodes/downloads.rss 
-/tmp/feed3947                   100%[=======================================================>]   8,39K  --.-KB/s   en 0,007s 
-addurl Comedy_of_the_Week/In_and_Out_of_the_Kitchen__Episode_1__The_Supplement.mp3 
-  unable to access url: http://open.live.bbc.co.uk/mediaselector/5/redir/version/2.0/mediaset/audio-nondrm-download/proto/http/vpid/p02yy1hn.mp3
-failed
+    $ git annex importfeed --relaxed 'http://www.bbc.co.uk/programmes/p02pc9x6/episodes/downloads.rss'
+    (checking known urls...)
+    importfeed http://www.bbc.co.uk/programmes/p02pc9x6/episodes/downloads.rss 
+    /tmp/feed3947                   100%[=======================================================>]   8,39K  --.-KB/s   en 0,007s 
+    addurl Comedy_of_the_Week/In_and_Out_of_the_Kitchen__Episode_1__The_Supplement.mp3 
+      unable to access url: http://open.live.bbc.co.uk/mediaselector/5/redir/version/2.0/mediaset/audio-nondrm-download/proto/http/vpid/p02yy1hn.mp3
+    failed
 
-  warning: problem downloading item
-ok
+      warning: problem downloading item
+    ok
 
 
 ### What version of git-annex are you using? On what operating system?
