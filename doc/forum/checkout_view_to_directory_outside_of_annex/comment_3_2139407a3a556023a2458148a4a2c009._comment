@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="konubinix"
+ subject="git-new-workdir"
+ date="2015-08-15T12:48:30Z"
+ content="""
+I am not sure whether it would help, but to show views of my git-annex repositories without messing with the current working directory, I generally use git-new-workdir
+https://github.com/git/git/blob/master/contrib/workdir/git-new-workdir
+
+It allows to checkout a separate branch in another directory. The new directory's .git directory contains symbolic links to the parent one, making sure that changes in the new work dir are propagated to the parent one.
+
+Hope that helps.
+"""]]
