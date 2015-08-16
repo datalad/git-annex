@@ -1,0 +1,11 @@
+Hi
+
+Is there any (built-in or otherwise) way to search git-annex metadata and file content?  Ideally I think something that knows about git-annex would be helpful because of files moving around / going away due to metadata driven views, dangling symlinks etc.
+
+I'm imagining:
+
+* Something based on Lucene (solr/elasticsearch) or Xapian for fast searches
+* Probably ideally using git-annex metadata to track which files move where on disk
+* Maybe use of inotify to let it know when git annex has moved file content around or added/removed it from a working tree
+
+Thanks everybody, and Joey for making git annex and being an inspiration
