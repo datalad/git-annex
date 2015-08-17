@@ -7,7 +7,7 @@
 
 {-# LANGUAGE CPP #-}
 
-module Remote.Web (remote) where
+module Remote.Web (remote, getWebUrls) where
 
 import Common.Annex
 import Types.Remote
@@ -54,7 +54,7 @@ gen r _ c gc =
 		, removeKey = dropKey
 		, checkPresent = checkKey
 		, checkPresentCheap = False
-		, whereisKey = Just getWebUrls
+		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing
 		, config = c
