@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
+
 module Config where
 
 import Common.Annex
@@ -14,6 +16,7 @@ import qualified Git.Command
 import qualified Annex
 import Config.Cost
 import Types.Availability
+import Git.Types
 
 type UnqualifiedConfigKey = String
 data ConfigKey = ConfigKey String
@@ -41,10 +44,19 @@ reloadConfig = Annex.changeGitRepo =<< inRepo Git.Config.reRead
 unsetConfig :: ConfigKey -> Annex ()
 unsetConfig (ConfigKey key) = void $ inRepo $ Git.Config.unset key
 
+class RemoteNameable r where
+	getRemoteName :: r -> RemoteName
+
+instance RemoteNameable Git.Repo where
+	getRemoteName r = fromMaybe "" (Git.remoteName r)
+
+instance RemoteNameable RemoteName where
+	 getRemoteName = id
+
 {- A per-remote config setting in git config. -}
-remoteConfig :: Git.Repo -> UnqualifiedConfigKey -> ConfigKey
+remoteConfig :: RemoteNameable r => r -> UnqualifiedConfigKey -> ConfigKey
 remoteConfig r key = ConfigKey $
-	"remote." ++ fromMaybe "" (Git.remoteName r) ++ ".annex-" ++ key
+	"remote." ++ getRemoteName r ++ ".annex-" ++ key
 
 {- A global annex setting in git config. -}
 annexConfig :: UnqualifiedConfigKey -> ConfigKey
