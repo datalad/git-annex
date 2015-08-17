@@ -11,6 +11,8 @@ git-annex (5.20150813) UNRELEASED; urgency=medium
   * External special remotes can now be built that can be used in readonly
     mode, where git-annex downloads content from the remote using regular
     http.
+  * Avoid building the assistant on the hurd, since an inotify equivilant
+    is not yet implemented in git-annex for the hurd.
 
  -- Joey Hess <id@joeyh.name>  Wed, 12 Aug 2015 14:31:01 -0400
 
