@@ -11,6 +11,7 @@ module Remote.Web (remote) where
 
 import Common.Annex
 import Types.Remote
+import Remote.Helper.Messages
 import qualified Git
 import qualified Git.Construct
 import Annex.Content
@@ -112,7 +113,7 @@ checkKey key = do
 checkKey' :: Key -> [URLString] -> Annex (Either String Bool)
 checkKey' key us = firsthit us (Right False) $ \u -> do
 	let (u', downloader) = getDownloader u
-	showAction $ "checking " ++ u'
+	showChecking u'
 	case downloader of
 		QuviDownloader ->
 #ifdef WITH_QUVI

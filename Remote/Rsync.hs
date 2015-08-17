@@ -27,6 +27,7 @@ import Annex.Content
 import Annex.UUID
 import Annex.Ssh
 import Remote.Helper.Special
+import Remote.Helper.Messages
 import Remote.Rsync.RsyncUrl
 import Crypto
 import Utility.Rsync
@@ -222,7 +223,7 @@ remove o k = do
 
 checkKey :: Git.Repo -> RsyncOpts -> CheckPresent
 checkKey r o k = do
-	showAction $ "checking " ++ Git.repoDescribe r
+	showChecking r
 	-- note: Does not currently differentiate between rsync failing
 	-- to connect, and the file not being present.
 	untilTrue (rsyncUrls o k) $ \u -> 

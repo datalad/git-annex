@@ -25,6 +25,7 @@ import qualified Git
 import Config
 import Config.Cost
 import Remote.Helper.Special
+import Remote.Helper.Messages
 import Remote.Helper.Http
 import qualified Remote.Helper.Chunked.Legacy as Legacy
 import Creds
@@ -147,7 +148,7 @@ remove (Just dav) k = liftIO $ do
 checkKey :: Remote -> ChunkConfig -> Maybe DavHandle -> CheckPresent
 checkKey r _ Nothing _ = error $ name r ++ " not configured"
 checkKey r chunkconfig (Just dav) k = do
-	showAction $ "checking " ++ name r
+	showChecking r
 	case chunkconfig of
 		LegacyChunks _ -> checkKeyLegacyChunked dav k
 		_ -> do
