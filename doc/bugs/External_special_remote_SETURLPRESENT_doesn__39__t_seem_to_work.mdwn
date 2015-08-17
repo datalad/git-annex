@@ -141,3 +141,5 @@ get sample.jpg (not available)
 failed
 git-annex: get: 1 failed
 """]]
+
+> [[fixed|done]] --[[Joey]] 
