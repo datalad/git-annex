@@ -57,3 +57,4 @@
   files, and both try to solve them in similar ways (standin files using
   mostly hashes of the real content).
   
+See also the [[related_software]] page for software that git-annex *is* similar to.
