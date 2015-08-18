@@ -36,3 +36,5 @@ designed to interoperate with it.
 
 * [git-annex-watcher](https://github.com/rubiojr/git-annex-watcher)
   is a status icon for your desktop.
+
+See also [[not]] for software that is *not* related to git-annex, but similar.
