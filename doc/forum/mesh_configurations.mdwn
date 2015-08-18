@@ -172,4 +172,10 @@ XX__ foo
 X___ quux
 </pre>
 
-why don't the files get copied over to the backup repo by the assistant? --[[anarcat]]
+why don't the files get copied over to the backup repo by the assistant?
+
+i somewhat understand that files don't get sent from `a` to `b`, but why doesn't the assistant copy the files from `b` to `c`?
+
+i have tried using `required` instead of `wanted` and it doesn't work much better.
+
+tested with `5.20150610+gitg608172f-1~ndall+1` (prod) and `5.20141125` (the above test). --[[anarcat]]
