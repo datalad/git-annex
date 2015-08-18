@@ -14,6 +14,16 @@
   too slow, or its strict mirroring of everything to both places too
   limiting, then git-annex could be a useful alternative.
 
+* git-annex is also not a folder mirroring system like [syncthing](https://syncthing.net/) 
+  (although [syncthing could be supported as a special remote](todo/syncthing_special_remote/))
+  or [gut](https://github.com/tillberg/gut), but it can be used to sync
+  files such a way, with certain limitations (for example, it doesn't
+  like syncing `.git` directories so much).
+
+* git-annex is also not a distributed file system like Bittorrent or [ipfs](http://ipfs.io)
+  but both are supported as special remotes with more work in making 
+  [[git-annex more distributed underway|todo/Bittorrent-like_features/]].
+  
 * git-annex is more than just a workaround for git scalability 
   limitations that might eventually be fixed by efforts like
   [git-bigfiles](http://caca.zoy.org/wiki/git-bigfiles). In particular,
@@ -56,5 +66,5 @@
   Although mercurial and git have some of the same problems around large
   files, and both try to solve them in similar ways (standin files using
   mostly hashes of the real content).
-  
+
 See also the [[related_software]] page for software that git-annex *is* similar to.
