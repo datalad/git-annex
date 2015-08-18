@@ -1,0 +1,175 @@
+I have a setup where a *source* repository `a` is connected to a *source* repository `b` (through SSH) which is then connected to  *backup* repository `c` (on amazon S3). I was expecting a file added on `a` to be moved to `c` *through* `b`, but that doesn't seem to be happening...
+
+I tried to reproduce with this basic setup:
+
+<pre>
+[1009]anarcat@angela:g-a$ git init a
+Dépôt Git vide initialisé dans /home/anarcat/test/g-a/a/.git/
+[1010]anarcat@angela:g-a$ git init b
+Dépôt Git vide initialisé dans /home/anarcat/test/g-a/b/.git/
+[1011]anarcat@angela:g-a$ git init c
+Dépôt Git vide initialisé dans /home/anarcat/test/g-a/c/.git/
+[1012]anarcat@angela:g-a$ cd a/
+[1013]anarcat@angela:a$ git annex init
+init  ok
+(Recording state in git...)
+[1014]anarcat@angela:a$ git annex group . source
+group . ok
+(Recording state in git...)
+[1015]anarcat@angela:a$ git annex wanted . groupwanted
+wanted . ok
+(Recording state in git...)
+[1036]anarcat@angela:a$ git remote add origin ../b
+[1016]anarcat@angela:a$ cd ../b
+[1025]anarcat@angela:b$ git annex init
+init  ok
+(Recording state in git...)
+[1026]anarcat@angela:b$ git annex group . source
+group . ok
+(Recording state in git...)
+[1027]anarcat@angela:b$ git annex wanted . groupwanted
+wanted . ok
+(Recording state in git...)
+[1038]anarcat@angela:b$ git remote add origin ../c
+[1019]anarcat@angela:b$ cd ../c
+[1021]anarcat@angela:c$ git annex init
+init  ok
+(Recording state in git...)
+[1022]anarcat@angela:c$ git annex group . backup
+group . ok
+(Recording state in git...)
+[1023]anarcat@angela:c$ git annex wanted . groupwanted
+wanted . ok
+(Recording state in git...)
+anarcat@angela:c$ cd ../a
+[1041]anarcat@angela:a$ git annex sync
+commit  ok
+pull origin
+warning: no common commits
+remote: Décompte des objets: 11, fait.
+remote: Compression des objets: 100% (9/9), fait.
+remote: Total 11 (delta 1), reused 0 (delta 0)
+Dépaquetage des objets: 100% (11/11), fait.
+Depuis ../b
+ * [nouvelle branche] git-annex  -> origin/git-annex
+
+merge: refs/remotes/origin/master - not something we can merge
+
+merge: refs/remotes/origin/synced/master - not something we can merge
+failed
+(merging origin/git-annex into git-annex...)
+(Recording state in git...)
+(Recording state in git...)
+git-annex: sync: 1 failed
+[1042]anarcat@angela:a1$ cd ../b
+[1043]anarcat@angela:b$ git annex sync
+commit  ok
+pull origin
+warning: no common commits
+remote: Décompte des objets: 11, fait.
+remote: Compression des objets: 100% (9/9), fait.
+remote: Total 11 (delta 1), reused 0 (delta 0)
+Dépaquetage des objets: 100% (11/11), fait.
+Depuis ../c
+ * [nouvelle branche] git-annex  -> origin/git-annex
+
+merge: refs/remotes/origin/master - not something we can merge
+
+merge: refs/remotes/origin/synced/master - not something we can merge
+failed
+(merging origin/git-annex into git-annex...)
+(Recording state in git...)
+(Recording state in git...)
+git-annex: sync: 1 failed
+[1063]anarcat@angela:b$ touch bar
+[1064]anarcat@angela:b$ ls
+bar
+[1065]anarcat@angela:b$ ls -al
+total 16K
+drwxr-xr-x 3 anarcat anarcat 4096 aoû 18 14:41 .
+drwxr-xr-x 5 anarcat anarcat 4096 aoû 18 14:33 ..
+lrwxrwxrwx 1 anarcat anarcat  178 aoû 18 14:41 bar -> .git/annex/objects/pX/ZJ/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+drwxr-xr-x 9 anarcat anarcat 4096 aoû 18 14:41 .git
+[1066]anarcat@angela:b$ git annex sync
+commit  ok
+pull origin
+ok
+push origin
+Décompte des objets: 26, fait.
+Delta compression using up to 2 threads.
+Compression des objets: 100% (22/22), fait.
+Écriture des objets: 100% (26/26), 2.47 KiB | 0 bytes/s, fait.
+Total 26 (delta 5), reused 0 (delta 0)
+To ../c
+ * [new branch]      git-annex -> synced/git-annex
+ * [new branch]      master -> synced/master
+ok
+[1067]anarcat@angela:b$ cd ../a
+[1068]anarcat@angela:a$ git annex sync
+commit  ok
+pull origin
+remote: Décompte des objets: 8, fait.
+remote: Compression des objets: 100% (6/6), fait.
+remote: Total 8 (delta 1), reused 0 (delta 0)
+Dépaquetage des objets: 100% (8/8), fait.
+Depuis ../b
+   5d3090f..9e345e6  git-annex  -> origin/git-annex
+ * [nouvelle branche] master     -> origin/master
+ * [nouvelle branche] synced/master -> origin/synced/master
+
+Merge made by the 'recursive' strategy.
+ bar | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 120000 bar
+
+Already up-to-date.
+ok
+(merging origin/git-annex into git-annex...)
+(Recording state in git...)
+(Recording state in git...)
+push origin
+Décompte des objets: 41, fait.
+Delta compression using up to 2 threads.
+Compression des objets: 100% (36/36), fait.
+Écriture des objets: 100% (41/41), 3.50 KiB | 0 bytes/s, fait.
+Total 41 (delta 20), reused 0 (delta 0)
+To ../b
+   6019ab8..368ca15  master -> synced/master
+ * [new branch]      git-annex -> synced/git-annex
+ok
+[1069]anarcat@angela:a$ touch quu^C
+[1069]anarcat@angela:a130$ echo foo > quux
+[1070]anarcat@angela:a$ cd ../b
+[1071]anarcat@angela:b$ ls
+bar  foo
+[1072]anarcat@angela:b$ cd ..
+[1073]anarcat@angela:g-a$ cd a
+[1074]anarcat@angela:a$ git annex list
+here
+|origin
+||web
+|||
+XX_ bar
+XX_ foo
+X__ quux
+[1075]anarcat@angela:a$ git annex list --help
+git-annex: unrecognized option `--help'
+
+Usage: git-annex list [PATH ...] [option ...]
+    --allrepos  show all repositories, not only remotes
+
+To see additional options common to all commands, run: git annex help options
+
+
+[1076]anarcat@angela:a1$ git annex list --allrepos
+here-
+|origin
+||web
+|||anarcat@angela:~/test/g-a/c
+||||
+XX__ bar
+XX__ foo
+X___ quux
+</pre>
+
+why don't the files get copied over to the backup repo by the assistant? --[[anarcat]]
