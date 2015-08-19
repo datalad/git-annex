@@ -1,0 +1,29 @@
+### Please describe the problem.
+
+If I addurl file pointing to file:///C:/... it seems to work just fine, but then refuses to drop it stating that can't verify its presence.
+
+Please see two screenshots (sorry for not cut/paste here since it was already was painful -- debugging under Virtualbox in remote vnc through debconf internet which for some reason drops for me quite often):
+
+http://www.onerussian.com/tmp/gkrellShoot_08-19-15_220150.png
+http://www.onerussian.com/tmp/gkrellShoot_08-19-15_184052.png
+
+as screenshot shows, apparently wget is clueless about file:// targets on windows (while curl does fine) -- may be related ;-)
+
+### What steps will reproduce the problem?
+
+addurl some file:///C:/ under windows pointing to existing file, and then try to drop that annexed file
+
+### What version of git-annex are you using? On what operating system?
+
+windows
+20150805 or so
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
