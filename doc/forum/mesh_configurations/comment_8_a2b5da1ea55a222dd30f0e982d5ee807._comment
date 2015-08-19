@@ -189,7 +189,7 @@ ____X otherfile
 ____X somefile
 </pre>
 
-how long does it take for the assistant to start syncs like this? are those timers user-accessible somehow? this problem sure looks like [[bugs/sync__47__git-annex_branch_not_syncing_in_the_assistant]] - but maybe i'm confused there as well.
+how long does it take for the assistant to start syncs like this? are those timers user-accessible somehow? this problem sure looks like [[bugs/sync/git-annex_branch_not_syncing_in_the_assistant]] - but maybe i'm confused there as well.
 
 anyways, it does seem like content actually does gets synced around properly by the assistant. i'll try to deploy the new preferred content expression in production and report back here.
 
