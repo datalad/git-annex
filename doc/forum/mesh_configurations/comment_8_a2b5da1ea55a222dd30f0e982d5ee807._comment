@@ -1,0 +1,197 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="works with sync --content, but the assistant is slow to pickup tracking info"
+ date="2015-08-19T20:29:46Z"
+ content="""
+well, this is not exactly the topology i have here.
+
+you setup a topology like this:
+
+    A <- B <-> C
+
+`X <- Y` means `X is a remote of Y`.
+
+My topology is:
+
+    A -> B -> C
+
+So B can't directly manage objects from A. It can *receive* objects from it, but that's it.
+
+So here's a clearer transcript of the session, using the same semantics you have been using for the different repos, but with the remotes setup differently, as I describe above:
+
+<pre>
+[1113]anarcat@desktop008:bench$ git init B
+Initialized empty Git repository in /home/anarcat/test/bench/B/.git/
+[1114]anarcat@desktop008:bench$ cd B/
+[1115]anarcat@desktop008:B$ git annex init
+init  ok
+(recording state in git...)
+[1116]anarcat@desktop008:B$ date > somefile
+[1117]anarcat@desktop008:B$ git annex add
+add somefile ok
+(recording state in git...)
+[1118]anarcat@desktop008:B$ git commit -madded
+[master (root-commit) d2f6177] added
+ 1 file changed, 1 insertion(+)
+ create mode 120000 somefile
+[1119]anarcat@desktop008:B$ git annex wanted . \"not inallgroup=backup\"
+wanted . ok
+(recording state in git...)
+[1138]anarcat@desktop008:B$ git remote add C ../C # actually did that later
+[1120]anarcat@desktop008:B$ cd ../
+[1121]anarcat@desktop008:bench$ git clone -o B B A
+Cloning into 'A'...
+done.
+[1122]anarcat@desktop008:bench$ git clone B C
+Cloning into 'C'...
+done.
+[1123]anarcat@desktop008:bench$ cd A
+[1124]anarcat@desktop008:A$ git annex wanted . standard
+(merging B/git-annex into git-annex...)
+(recording state in git...)
+wanted . ok
+(recording state in git...)
+[1125]anarcat@desktop008:A$ git annex group . source
+group . ok
+(recording state in git...)
+[1126]anarcat@desktop008:A$ cd ../C
+[1127]anarcat@desktop008:C$ git annex wanted . standard
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+wanted . ok
+(recording state in git...)
+[1128]anarcat@desktop008:C$ git annex group . backup
+group . ok
+(recording state in git...)
+[1142]anarcat@desktop008:C$ git remote rm origin # because this is S3 in production, and can't do anything on its own
+</pre>
+
+And of course now, it actually works fine, with `sync --content`:
+
+<pre>
+[1144]anarcat@desktop008:A$ git annex sync --content
+commit  ok
+pull B
+remote: Counting objects: 20, done.
+remote: Compressing objects: 100% (18/18), done.
+remote: Total 20 (delta 8), reused 0 (delta 0)
+Unpacking objects: 100% (20/20), done.
+From /home/anarcat/test/bench/B
+   d2f6177..b625a42  master     -> B/master
+   0432685..2061cf9  git-annex  -> B/git-annex
+ok
+(merging B/git-annex into git-annex...)
+copy otherfile copy otherfile (to B...) ok
+drop otherfile ok
+pull B
+ok
+(recording state in git...)
+push B
+Counting objects: 8, done.
+Delta compression using up to 2 threads.
+Compressing objects: 100% (6/6), done.
+Writing objects: 100% (8/8), 720 bytes | 0 bytes/s, done.
+Total 8 (delta 3), reused 0 (delta 0)
+To /home/anarcat/test/bench/B
+   0432685..e0fccbd  git-annex -> synced/git-annex
+ok
+[1145]anarcat@desktop008:A$ cd ../B
+[1146]anarcat@desktop008:B$ git annex sync --content
+commit  ok
+pull C
+remote: Counting objects: 5, done.
+remote: Compressing objects: 100% (4/4), done.
+remote: Total 5 (delta 2), reused 0 (delta 0)
+Unpacking objects: 100% (5/5), done.
+From ../C
+   2061cf9..1d0a3d5  git-annex  -> C/git-annex
+ok
+(merging C/git-annex into git-annex...)
+(recording state in git...)
+copy otherfile copy otherfile (to C...) ok
+drop otherfile ok
+pull C
+ok
+(recording state in git...)
+push C
+Counting objects: 20, done.
+Delta compression using up to 2 threads.
+Compressing objects: 100% (16/16), done.
+Writing objects: 100% (20/20), 1.55 KiB | 0 bytes/s, done.
+Total 20 (delta 10), reused 0 (delta 0)
+To ../C
+   2061cf9..86a892f  git-annex -> synced/git-annex
+ok
+[1147]anarcat@desktop008:B$ git annex list
+here
+|C
+||web
+|||bittorrent
+||||
+_X__ otherfile
+_X__ somefile
+</pre>
+
+Now, that's all great for `sync --content` - but what about the assistant?
+
+<pre>
+[1150]anarcat@desktop008:B$ git annex assistant
+[1151]anarcat@desktop008:B$ cd ../A
+[1152]anarcat@desktop008:A$ git annex assistant
+[1154]anarcat@desktop008:A$ date > foo
+[1157]anarcat@desktop008:A$ git annex list --allrepos
+here
+|B
+||web
+|||bittorrent
+||||anarcat@desktop008:~/test/bench/C
+|||||
+_X___ foo
+____X otherfile
+____X somefile
+[1158]anarcat@desktop008:A$ sleep 600; git annex list --allrepos
+here
+|B
+||web
+|||bittorrent
+||||anarcat@desktop008:~/test/bench/C
+|||||
+_X___ foo
+____X otherfile
+____X somefile
+</pre>
+
+so from `A`'s perspective, it looks like the file didn't migrate properly. *but* it actually did!
+
+<pre>
+[1159]anarcat@desktop008:A$ cd ../B
+[1160]anarcat@desktop008:B$ git annex list --allrepos
+here
+|C
+||web
+|||bittorrent
+||||anarcat@desktop008:~/test/bench/A
+|||||
+_X___ foo
+_X___ otherfile
+_X___ somefile
+[1161]anarcat@desktop008:B$ cd -
+/home/anarcat/test/bench/A
+[1162]anarcat@desktop008:A$ git annex list --allrepos
+here
+|B
+||web
+|||bittorrent
+||||anarcat@desktop008:~/test/bench/C
+|||||
+_X___ foo
+____X otherfile
+____X somefile
+</pre>
+
+how long does it take for the assistant to start syncs like this? are those timers user-accessible somehow? this problem sure looks like [[bugs/sync__47__git-annex_branch_not_syncing_in_the_assistant]] - but maybe i'm confused there as well.
+
+anyways, it does seem like content actually does gets synced around properly by the assistant. i'll try to deploy the new preferred content expression in production and report back here.
+
+and sorry for the noisy pastes and hand-holding, but i was thoroughly confused by this one. i thought i had a good grasp on preferred content and all that, but it seems i was wrong... :(
+"""]]
