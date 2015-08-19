@@ -138,8 +138,10 @@ probeCrippledFileSystem = do
 		createSymbolicLink f f2
 		nukeFile f2
 		preventWrite f
-		-- Should be unable to write to the file, but some crippled
+		-- Should be unable to write to the file, unless
+		-- running as root, but some crippled
 		-- filesystems ignore write bit removals.
+		unlessM 
 		not <$> catchBoolIO (writeFile f "2" >> return True)
 #endif
 

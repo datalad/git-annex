@@ -34,3 +34,5 @@ I ran into this bug trying to importfeed various BBC podcasts. For instance:
 ### What version of git-annex are you using? On what operating system?
 
 git-annex version: 5.20150731-1 on a quite up-to-date debian unstable.
+
+> Thanks for a nice test case. [[fixed|done]] --[[Joey]]

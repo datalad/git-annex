@@ -172,7 +172,9 @@ performDownload opts cache todownload = case location todownload of
 			r <- Remote.claimingUrl url
 			if Remote.uuid r == webUUID || rawOption opts
 				then do
-					urlinfo <- Url.withUrlOptions (Url.getUrlInfo url)
+					urlinfo <- if relaxedOption opts
+						then pure Url.assumeUrlExists
+						else Url.withUrlOptions (Url.getUrlInfo url)
 					maybeToList <$> addUrlFile (relaxedOption opts) url urlinfo f
 				else do
 					res <- tryNonAsync $ maybe
