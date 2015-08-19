@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-08-19T17:04:30Z"
+ content="""
+Your transcript doesn't show the assistant running. It's not clear that, in
+your live deployment, any files ever got to repo B for the assistant there
+to deal with.
+
+Repos such as B need a preferred content expression like the one I gave. It
+doesn't matter a whole lot what group is used for them; overriding the
+groupwanted for the transfer group to use that expression would be one way
+to do it.
+"""]]
