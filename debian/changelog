@@ -15,6 +15,11 @@ git-annex (5.20150813) UNRELEASED; urgency=medium
     is not yet implemented in git-annex for the hurd.
   * importfeed --relaxed: Avoid hitting the urls of items in the feed.
   * Fix reversion in init when ran as root, introduced in version 5.20150731.
+  * Makefile: Pass LDFLAGS, CFLAGS, and CPPFLAGS through ghc and on to
+    ld, cc, and cpp.
+  * As a result of the Makefile changes, the Debian package is built
+    with various hardening options. Although their benefit to a largely
+    haskell program is unknown.
 
  -- Joey Hess <id@joeyh.name>  Wed, 12 Aug 2015 14:31:01 -0400
 

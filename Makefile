@@ -16,7 +16,7 @@ build: $(all)
 
 Build/SysConfig.hs: configure.hs Build/TestConfig.hs Build/Configure.hs
 	if [ "$(CABAL)" = ./Setup ]; then ghc --make Setup; fi
-	$(CABAL) configure
+	$(CABAL) configure --ghc-options="$(shell Build/collect-ghc-options.sh)"
 
 git-annex: Build/SysConfig.hs
 	$(CABAL) build
