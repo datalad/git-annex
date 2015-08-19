@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-08-19T16:22:31Z"
+ content="""
+Actually, it does detect a crippled FS when run as root here. I guess you
+had some version confusion going on, since this problem was introduced in a
+recent release. Fixing..
+"""]]

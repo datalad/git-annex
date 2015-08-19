@@ -40,6 +40,7 @@ import Upgrade
 import Utility.UserInfo
 import Utility.FileMode
 import Annex.Perms
+import System.Posix.User
 #endif
 
 genDescription :: Maybe String -> Annex String
@@ -141,8 +142,10 @@ probeCrippledFileSystem = do
 		-- Should be unable to write to the file, unless
 		-- running as root, but some crippled
 		-- filesystems ignore write bit removals.
-		unlessM 
-		not <$> catchBoolIO (writeFile f "2" >> return True)
+		ifM ((== 0) <$> getRealUserID)
+			( return True
+			, not <$> catchBoolIO (writeFile f "2" >> return True)
+			)
 #endif
 
 checkCrippledFileSystem :: Annex ()
