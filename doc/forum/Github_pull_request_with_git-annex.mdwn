@@ -1,0 +1,11 @@
+I would like to use git annex with github. Here what I did:
+
+1. Create github directory "a". Added all the special remote and git annex files. Pushed them to the "a" using "git annex sync."
+2. Fork the repository on gihub to "b". Clone it and enable remote and I could pull annexed files.
+3. Added repository "a" as "upstream" tracking remote to "b".
+3. Created a second special remote for "b". Added new git annex files to it. Used "git annex sync origin" to push the changed files to the forked repository "b".
+4. Now I would like to create a pull request. What are branches I should create pull request for?  a:synced/git-annex vs b:synced/git-annex? Or, a:synced/git-annex vs b:git-annex? Do I need to create separate pull request for the "master"?
+
+Thanks for the help.
+
+ 
