@@ -81,7 +81,7 @@ docs: mans
 		--plugin=comments --set comments_pagespec="*" \
 		--exclude='news/.*' --exclude='design/assistant/blog/*' \
 		--exclude='bugs/*' --exclude='todo/*' --exclude='forum/*' \
-		--exclude='users/*' --exclude='devblog/*'
+		--exclude='users/*' --exclude='devblog/*' --exclude='thanks'
 
 clean:
 	rm -rf tmp dist git-annex $(mans) configure  *.tix .hpc \
