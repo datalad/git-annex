@@ -26,3 +26,5 @@ git-annex: MoveFileEx "C:\\Users\\duffrw\\LOCALS~1\\Temp\\importtest.0\\import1\
 
 # End of transcript or log.
 """]]
+
+[[!tag moreinfo]]
