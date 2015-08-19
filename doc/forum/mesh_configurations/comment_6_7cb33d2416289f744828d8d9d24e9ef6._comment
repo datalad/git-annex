@@ -1,0 +1,117 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="comment 6"
+ date="2015-08-19T18:13:22Z"
+ content="""
+right, i thought as well that the assistant wouldn't pickup some stuff...
+
+but `sync --content` doesn't behave as expected either:
+
+<pre>
+[1081]anarcat@desktop008:b$ git annex list --allrepos
+here
+|origin
+||web
+|||bittorrent
+||||anarcat@desktop008:~/test/g-a/a
+|||||
+XX__X bar
+XX__X foo
+X___X quuex
+XX__X test
+[1082]anarcat@desktop008:b$ git annex sync --content
+commit  ok
+pull origin
+remote: Counting objects: 6, done.
+remote: Compressing objects: 100% (5/5), done.
+remote: Total 6 (delta 3), reused 0 (delta 0)
+Unpacking objects: 100% (6/6), done.
+From ../c
+   29d3b7b..6afbb52  git-annex  -> origin/git-annex
+ok
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+(recovering from race...)
+drop bar ok
+drop foo ok
+drop test ok
+pull origin
+ok
+(recording state in git...)
+push origin
+Counting objects: 18, done.
+Delta compression using up to 2 threads.
+Compressing objects: 100% (14/14), done.
+Writing objects: 100% (18/18), 1.47 KiB | 0 bytes/s, done.
+Total 18 (delta 11), reused 0 (delta 0)
+To ../c
+   873a124..8390704  git-annex -> synced/git-annex
+ok
+[1083]anarcat@desktop008:b$ git annex list --allrepos
+here
+|origin
+||web
+|||bittorrent
+||||anarcat@desktop008:~/test/g-a/a
+|||||
+_X__X bar
+_X__X foo
+X___X quuex
+_X__X test
+[1084]anarcat@desktop008:b$ git annex list --allrepos
+here
+|origin
+||web
+|||bittorrent
+||||anarcat@desktop008:~/test/g-a/a
+|||||
+_X__X bar
+_X__X foo
+X___X quuex
+_X__X test
+[1084]anarcat@desktop008:b$ git annex wanted .
+not inallgroup=backup
+[1085]anarcat@desktop008:b$ cd ../a
+[1086]anarcat@desktop008:a$ git annex list --allrepos
+here
+|origin
+||web
+|||bittorrent
+||||
+XX__ bar
+XX__ foo
+XX__ quuex
+XX__ test
+[1087]anarcat@desktop008:a$ git annex sync --content
+commit  ok
+pull origin
+remote: Counting objects: 114, done.
+remote: Compressing objects: 100% (94/94), done.
+remote: Total 114 (delta 54), reused 0 (delta 0)
+Receiving objects: 100% (114/114), 9.20 KiB | 0 bytes/s, done.
+Resolving deltas: 100% (54/54), completed with 6 local objects.
+From ../b
+   de5f95e..158c3cc  git-annex  -> origin/git-annex
+ok
+(merging origin/git-annex into git-annex...)
+pull origin
+ok
+[1088]anarcat@desktop008:a$ git annex list --allrepos
+here
+|origin
+||web
+|||bittorrent
+||||anarcat@desktop008:~/test/g-a/c
+|||||
+X___X bar
+X___X foo
+XX___ quuex
+X___X test
+[1089]anarcat@desktop008:a$ git annex wanted .
+groupwanted
+[1090]anarcat@desktop008:a$ git annex group .
+source
+</pre>
+
+files are still not removed from `a` and a few of them were dropped from `b`, but not all of them. but worse, one file still isn't sent to the backup server `c` at all.
+"""]]
