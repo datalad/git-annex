@@ -11,7 +11,7 @@ git-annex (5.20150813) UNRELEASED; urgency=medium
   * External special remotes can now be built that can be used in readonly
     mode, where git-annex downloads content from the remote using regular
     http.
-  * Avoid building the assistant on the hurd, since an inotify equivilant
+  * Avoid building the assistant on the hurd, since an inotify equivalent
     is not yet implemented in git-annex for the hurd.
   * importfeed --relaxed: Avoid hitting the urls of items in the feed.
   * Fix reversion in init when ran as root, introduced in version 5.20150731.
