@@ -162,18 +162,21 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 			(\_ -> return False)
 		, removeKey = \k -> cip >>= removeKeyGen k
 		, checkPresent = \k -> cip >>= checkPresentGen k
-		, cost = maybe
-			(cost baser)
-			(const $ cost baser + encryptedRemoteCostAdj)
-			(extractCipher c)
+		, cost = if isencrypted
+			then cost baser + encryptedRemoteCostAdj
+			else cost baser
 		, getInfo = do
 			l <- getInfo baser
 			return $ l ++
 				[ ("encryption", describeEncryption c)
 				, ("chunking", describeChunkConfig (chunkConfig cfg))
 				]
+		, whereisKey = if noChunks (chunkConfig cfg) && not isencrypted
+			then whereisKey baser
+			else Nothing
 		}
 	cip = cipherKey c
+	isencrypted = isJust (extractCipher c)
 	gpgopts = getGpgEncParams encr
 
 	safely a = catchNonAsync a (\e -> warning (show e) >> return False)

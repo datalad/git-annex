@@ -8,6 +8,7 @@
 module Remote.Helper.Chunked (
 	ChunkSize,
 	ChunkConfig(..),
+	noChunks,
 	describeChunkConfig,
 	getChunkConfig,
 	storeChunks,
