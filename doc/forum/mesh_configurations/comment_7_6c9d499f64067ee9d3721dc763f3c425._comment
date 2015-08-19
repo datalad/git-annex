@@ -1,0 +1,123 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2015-08-19T18:51:42Z"
+ content="""
+I'm afraid I don't have time to continue to read and try to debug
+transcripts of this being set up incorrectly in various ways. 
+
+So, here's a transcript of the configuration I described, which seems to be
+working as I'd expect it to work:
+
+	joey@darkstar:~/tmp>mkdir bench
+	joey@darkstar:~/tmp>cd bench
+	joey@darkstar:~/tmp/bench>git init A
+	Initialized empty Git repository in /home/joey/tmp/bench/A/.git/
+	joey@darkstar:~/tmp/bench>cd A
+	joey@darkstar:~/tmp/bench/A>git annex init
+	init  ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/bench/A>git annex wanted . standard
+	wanted . ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/bench/A>git annex group . source
+	group . ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/bench/A>date > somefile
+	joey@darkstar:~/tmp/bench/A>git annex add
+	add somefile ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/bench/A>git commit -m added
+	[master (root-commit) 4a322e1] added
+	 1 file changed, 1 insertion(+)
+	 create mode 120000 somefile
+	joey@darkstar:~/tmp/bench/A>cd ..
+	joey@darkstar:~/tmp/bench>git clone A B
+	Cloning into 'B'...
+	done.
+	joey@darkstar:~/tmp/bench>cd B
+	joey@darkstar:~/tmp/bench/B>git annex wanted . "not inallgroup=backup"
+	(merging origin/git-annex into git-annex...)
+	(recording state in git...)
+	wanted . ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/bench/B>cd ..
+	joey@darkstar:~/tmp/bench>git clone B C
+	Cloning into 'C'...
+	done.
+	joey@darkstar:~/tmp/bench>cd C
+	joey@darkstar:~/tmp/bench/C>git annex group . backup
+	(merging origin/git-annex into git-annex...)
+	(recording state in git...)
+	group . ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/bench/C>git annex wanted . standard
+	wanted . ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/bench/C>cd ..
+	joey@darkstar:~/tmp/bench>cd B
+	joey@darkstar:~/tmp/bench/B>git remote add A ../A
+	joey@darkstar:~/tmp/bench/B>git remote add C ../C
+
+Now observe sync moving the file from A thru B to C:
+
+	joey@darkstar:~/tmp/bench/B>git annex sync --content
+	commit  ok
+	pull origin 
+	ok
+	pull C 
+	remote: Counting objects: 10, done.
+	remote: Compressing objects: 100% (9/9), done.
+	remote: Total 10 (delta 3), reused 0 (delta 0)
+	Unpacking objects: 100% (10/10), done.
+	From ../C
+	 * [new branch]      git-annex  -> C/git-annex
+	 * [new branch]      master     -> C/master
+	ok
+	pull A 
+	From ../A
+	 * [new branch]      git-annex  -> A/git-annex
+	 * [new branch]      master     -> A/master
+	ok
+	(merging C/git-annex into git-annex...)
+	get somefile (from origin...) ok
+	copy somefile copy somefile (to C...) ok
+	drop somefile ok
+	drop origin somefile ok
+	pull origin 
+	ok
+	pull C 
+	ok
+	pull A 
+	ok
+	(recording state in git...)
+	push origin 
+	Counting objects: 21, done.
+	Delta compression using up to 4 threads.
+	Compressing objects: 100% (19/19), done.
+	Writing objects: 100% (21/21), 2.19 KiB | 0 bytes/s, done.
+	Total 21 (delta 7), reused 0 (delta 0)
+	To /home/joey/tmp/bench/A
+	 * [new branch]      git-annex -> synced/git-annex
+	 * [new branch]      master -> synced/master
+	ok
+	push C 
+	Counting objects: 5, done.
+	Delta compression using up to 4 threads.
+	Compressing objects: 100% (4/4), done.
+	Writing objects: 100% (5/5), 474 bytes | 0 bytes/s, done.
+	Total 5 (delta 2), reused 0 (delta 0)
+	To ../C
+	 * [new branch]      git-annex -> synced/git-annex
+	 * [new branch]      master -> synced/master
+	ok
+	push A 
+	Everything up-to-date
+	ok
+	joey@darkstar:~/tmp/bench/B>git annex whereis
+	whereis somefile (1 copy) 
+	  	65092dc3-ea1e-4267-89b7-5fcb8df2c6ae -- joey@darkstar:~/tmp/bench/C [C]
+	ok
+
+Er, the 'A' remote in 'B' was unnecessary since A is origin. But otherwise, I think that's what you asked for.. HTH.
+"""]]
