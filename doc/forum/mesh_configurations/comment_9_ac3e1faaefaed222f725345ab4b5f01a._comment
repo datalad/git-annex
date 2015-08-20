@@ -1,0 +1,89 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="a bit more info and solutions"
+ date="2015-08-20T14:09:54Z"
+ content="""
+so short version here: thanks for your help and i figured it, there were problems with the S3 credentials perms not respecting `sharedRepository`, multiple group support confusion, bare/non-bare, groupwanted vs standard confusion and so on... now the files are migrating properly in production. hurray! i believe documentation could be improved, and i have questions about timeouts, below.
+
+so one thing that was definitely broken in production was that, on the central server, the S3 credentials were accessible only to the user that ran the \"enable s3\" command (that is `anarcat`). it was *not* accessible to the user actually running the assistant (the `git-annex` sandbox account), which made it simply impossible for the assistant to upload files to s3. so maybe one problem here is that the `.git/annex/creds` file do not respect the `core.sharedRepository = group` setting i have there...
+
+another problem in production, of course, was the *transfer* preferred group setting. once changed to `not inallgroup=backup`, things were better... but it was still keeping too many files. the problem then was that the repo was originally set to the *source* group (PEBKAC here again, sorry) and then it was *added* to the *standard* group, with the `git annex group . standard` command. i didn't expect that: i expected the group command to *change* the group, not to add to it. the documentation ([[git-annex-group]]) is clear enough, however, so this is yet another PEBKAC.
+
+Another possible problem is that the central server (`b`) is not a bare git repository. I am not sure why it was setup that way... maybe i was worried about bare repo suport and past experiences, or concerns about being able to actually interact with the files directly on the central server. i had to do `git co -b master synced/master` to eventually see the files locally, and this helped a little in diagnosing all of this.
+
+A problem remained after that though: files are *still* not removed from `A` in my tests in production. i don't understand why: `A` is setup as a source repository:
+
+<pre>
+antoine@ip-10-88-150-10:/mnt/media$ git annex group .
+sourcethis 
+antoine@ip-10-88-150-10:/mnt/media$ git annex wanted .
+groupwanted
+</pre>
+
+yet some files have more than one copy:
+
+<pre>
+antoine@ip-10-88-150-10:/mnt/media$ git annex list test
+here
+|origin
+||s3
+|||web (untrusted)
+||||bittorrent
+|||||
+X_X__ test/motd
+__X__ test/test1
+__X__ test/test2
+__X__ test/test3
+</pre>
+
+Indeed, it doesn't sem to want to drop that local file:
+
+<pre>
+antoine@ip-10-88-150-10:/mnt/media$ git annex list --want-drop test
+here
+|origin
+||s3
+|||web (untrusted)
+||||bittorrent
+|||||
+__X__ test/test1
+__X__ test/test2
+__X__ test/test3
+</pre>
+
+It turns out that I had documentation wrong again about that as well: i was using *groupwanted* as a `wanted` expression, but the groups were standard groups, so git-annex was just failing to use the proper content expression. setting the `wanted` expression back to standard (yes, again as you showed, sorry about that) fixed the problem:
+
+<pre>
+antoine@ip-10-88-150-10:/mnt/media$ sudo -u www-data -H git annex wanted . standard
+wanted . ok
+(recording state in git...)
+antoine@ip-10-88-150-10:/mnt/media$ git annex list --want-drop test
+here
+|origin
+||s3
+|||web (untrusted)
+||||bittorrent
+|||||
+X_X__ test/motd
+__X__ test/test1
+__X__ test/test2
+__X__ test/test3
+antoine@ip-10-88-150-10:/mnt/media$ sudo -u www-data -H git annex drop --auto test
+drop test/motd ok
+(recording state in git...)
+</pre>
+
+hurray!
+
+again, i apologise for all the hand holding here... as a software developper myself, i understand how frustrating it can be to try to make users come out of their cave of ignorance and see the light of day...
+
+but i do feel there could be more work done to clarify how all of this works. i will certainly try to give a few kicks in the [[preferred content]] section and maybe this forum post will be helpful for future endeavors... or maybe just write up a new tips page about such hairy setups?
+
+the questions that remain here for me are:
+
+* how long does the assistant wait before refreshing the wanted content expressions
+* how long it waits before triggering syncs
+* are those timeouts configurable
+
+thanks so much for helping us through this, it's really appreciated!
+"""]]
