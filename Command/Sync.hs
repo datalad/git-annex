@@ -47,6 +47,7 @@ import Annex.AutoMerge
 import Annex.Ssh
 import Annex.BloomFilter
 import Utility.Bloom
+import Utility.OptParse
 
 import Control.Concurrent.MVar
 import qualified Data.Map as M
@@ -67,9 +68,8 @@ data SyncOptions  = SyncOptions
 optParser :: CmdParamsDesc -> Parser SyncOptions
 optParser desc = SyncOptions
 	<$> cmdParams desc
-	<*> switch
-		( long "content"
-		<> help "also transfer file contents"
+	<*> invertableSwitch "content" False
+		( help "also transfer file contents" 
 		)
 	<*> optional (strOption
 		( long "message" <> short 'm' <> metavar "MSG"
