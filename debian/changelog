@@ -22,6 +22,8 @@ git-annex (5.20150813) UNRELEASED; urgency=medium
     haskell program is unknown.
   * Reorder declaration to fix build with yesod-core > 1.4.13.
     Thanks, Michael Alan Dorman.
+  * Fix building without quvi and without database.
+    Thanks, Ben Boeckel.
 
  -- Joey Hess <id@joeyh.name>  Wed, 12 Aug 2015 14:31:01 -0400
 
