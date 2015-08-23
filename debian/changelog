@@ -20,6 +20,8 @@ git-annex (5.20150813) UNRELEASED; urgency=medium
   * As a result of the Makefile changes, the Debian package is built
     with various hardening options. Although their benefit to a largely
     haskell program is unknown.
+  * Reorder declaration to fix build with yesod-core > 1.4.13.
+    Thanks, Michael Alan Dorman.
 
  -- Joey Hess <id@joeyh.name>  Wed, 12 Aug 2015 14:31:01 -0400
 

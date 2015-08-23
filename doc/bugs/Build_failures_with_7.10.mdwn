@@ -23,3 +23,5 @@ Assistant/WebApp/Types.hs:39:1: ‘WebApp’ is not in scope at a reify
 If I'm reading things correctly (you can do some diffing of the inputs from [the page for the build](http://hydra.cryp.to/build/1099681)), I'm going to guess that it was the upgrade to yesod-1.4.14.
 
 I'll continue to look into it, but it would seem to touch on TH and Yesod stuff with which I am largely unfamiliar.
+
+> Fixed with mdorman's patch, [[done]] (will push a release in a day or 2) --[[Joey]]
