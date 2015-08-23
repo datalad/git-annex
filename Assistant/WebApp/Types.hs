@@ -36,8 +36,6 @@ publicFiles "static"
 staticRoutes :: Static
 staticRoutes = $(embed "static")
 
-mkYesodData "WebApp" $(parseRoutesFile "Assistant/WebApp/routes")
-
 data WebApp = WebApp
 	{ assistantData :: AssistantData
 	, authToken :: AuthToken
@@ -48,6 +46,8 @@ data WebApp = WebApp
 	, noAnnex :: Bool
 	, listenHost ::Maybe HostName
 	}
+
+mkYesodData "WebApp" $(parseRoutesFile "Assistant/WebApp/routes")
 
 instance Yesod WebApp where
 	{- Require an auth token be set when accessing any (non-static) route -}
