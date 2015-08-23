@@ -148,7 +148,7 @@ findDownloads u = go =<< downloadFeed u
 			)
 		Nothing -> return Nothing
 #else
-	mkquvi = return Nothing
+	mkquvi _ _ = return Nothing
 #endif
 
 {- Feeds change, so a feed download cannot be resumed. -}
