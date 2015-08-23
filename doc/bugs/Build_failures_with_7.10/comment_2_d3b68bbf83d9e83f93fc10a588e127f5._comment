@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="mdorman@ddbe259e8f6e03351350a04515c67f7957abf736"
+ nickname="mdorman"
+ subject="Fix for this issue"
+ date="2015-08-23T17:26:34Z"
+ content="""
+[My yesod-core-fix branch](https://github.com/mdorman/git-annex/tree/yesod-core-fix) has as its HEAD the (super-simplistic) fix for this issue.
+"""]]
