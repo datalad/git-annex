@@ -1,0 +1,63 @@
+Hello,
+
+I have two git annex repos, AA and BB in direct mode. Both have edited a binary file before syncing
+
+```
+~/Desktop/BB (git)-[annex/direct/master] % git annex sync
+commit  ok
+pull origin 
+remote: Counting objects: 21, done.
+remote: Compressing objects: 100% (17/17), done.
+remote: Total 21 (delta 3), reused 0 (delta 0)
+Unpacking objects: 100% (21/21), done.
+From /home/florian/Desktop/AA
+   d55cfa2..b86e708  annex/direct/master -> origin/annex/direct/master
+   83ff4c6..5cfbd34  git-annex  -> origin/git-annex
+   d7b79e8..b86e708  master     -> origin/master
+   d7b79e8..b86e708  synced/master -> origin/synced/master
+
+Auto-merging bin2
+CONFLICT (content): Merge conflict in bin2
+Auto-merging bin1
+CONFLICT (content): Merge conflict in bin1
+Automatic merge failed; fix conflicts and then commit the result.
+bin2: needs merge
+bin1: needs merge
+(recording state in git...)
+
+  Merge conflict was automatically resolved; you may want to examine the result.
+
+ok
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+push origin 
+Counting objects: 31, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (25/25), done.
+Writing objects: 100% (31/31), 3.04 KiB | 0 bytes/s, done.
+Total 31 (delta 6), reused 0 (delta 0)
+To /home/florian/Desktop/AA
+   83ff4c6..7df9834  git-annex -> synced/git-annex
+   b86e708..59a1240  annex/direct/master -> synced/master
+ok
+
+```
+florian@horus ~/Desktop/BB (git)-[annex/direct/master] % git annex get .
+get bin1.variant-c4b6 (from origin...) ok
+get bin2.variant-f16a (from origin...) ok
+(recording state in git...)
+florian@horus ~/Desktop/BB (git)-[annex/direct/master] % ll
+insgesamt 5824
+-rw-r----- 1 florian florian 2863795 24. Aug 21:32 bin1.variant-1696
+-rw-r----- 1 florian florian 2841749 24. Aug 21:30 bin1.variant-c4b6
+-rw-r----- 1 florian florian  125612 24. Aug 21:32 bin2.variant-0efa
+-rw-r----- 1 florian florian  126067 24. Aug 21:31 bin2.variant-f16a
+
+```
+How can I resolve this conflict now? Is there a way to tell which bin1 / bin2 is from AA, which from BB? Is there a way to tell git annex to completely take the data from AA or BB?
+
+This case might appear somehow artifical but I was caught in that various times when syncing my music database. Actually I didn't care which version of the database it took, but I was unable to produce a coherent data set, so that the database files only come from one sync partner.
+
+Thanks,
+Florian
+
