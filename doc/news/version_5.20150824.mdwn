@@ -1,0 +1,26 @@
+git-annex 5.20150824 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Sped up downloads of files from ssh remotes, reducing the
+     non-data-transfer overhead 6x.
+   * sync: Support --jobs
+   * sync --content: Avoid unnecessary second pull from remotes when
+     no file transfers are made.
+   * External special remotes can now be built that can be used in readonly
+     mode, where git-annex downloads content from the remote using regular
+     http.
+   * Added WHEREIS to external special remote protocol.
+   * importfeed --relaxed: Avoid hitting the urls of items in the feed.
+   * Fix reversion in init when ran as root, introduced in version 5.20150731.
+   * Reorder declaration to fix build with yesod-core &gt; 1.4.13.
+     Thanks, Michael Alan Dorman.
+   * Fix building without quvi and without database.
+     Thanks, Ben Boeckel.
+   * Avoid building the assistant on the hurd, since an inotify equivalent
+     is not yet implemented in git-annex for the hurd.
+   * --debug log messages are now timestamped with fractional seconds.
+   * --debug is passed along to git-annex-shell when git-annex is in debug mode.
+   * Makefile: Pass LDFLAGS, CFLAGS, and CPPFLAGS through ghc and on to
+     ld, cc, and cpp.
+   * As a result of the Makefile changes, the Debian package is built
+     with various hardening options. Although their benefit to a largely
+     haskell program is unknown."""]]
