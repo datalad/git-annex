@@ -40,6 +40,7 @@ To /home/florian/Desktop/AA
    83ff4c6..7df9834  git-annex -> synced/git-annex
    b86e708..59a1240  annex/direct/master -> synced/master
 ok
+```
 
 ```
 florian@horus ~/Desktop/BB (git)-[annex/direct/master] % git annex get .
@@ -57,6 +58,8 @@ insgesamt 5824
 How can I resolve this conflict now? Is there a way to tell which bin1 / bin2 is from AA, which from BB? Is there a way to tell git annex to completely take the data from AA or BB?
 
 This case might appear somehow artifical but I was caught in that various times when syncing my music database. Actually I didn't care which version of the database it took, but I was unable to produce a coherent data set, so that the database files only come from one sync partner.
+
+I did the git annex get after syncing, becaue usually I sync using --content.
 
 Thanks,
 Florian
