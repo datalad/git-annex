@@ -156,10 +156,12 @@ Executable git-annex
   -- Parallel builds only when not building for production,
   -- because ghc is known to not yield reproducible builds this way.
   if flag(Production)
+    GHC-Options: -O2
     if ! flag(Android)
-      GHC-Options: -O2 -j1
+      GHC-Options: -j1
   else
-    GHC-Options: -j
+    if ! flag(Android)
+      GHC-Options: -j
 
   if (os(windows))
     Build-Depends: Win32, Win32-extras, unix-compat (>= 0.4.1.3), setenv
