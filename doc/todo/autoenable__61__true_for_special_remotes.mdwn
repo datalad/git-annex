@@ -1,0 +1,3 @@
+Just passing along from https://github.com/datalad/datalad/issues/77#issuecomment-134688459
+
+joey:  I do think there could be a use case for configuring a special remote with autoenable=true and have git-annex init try to enable all such remotes.
