@@ -26,4 +26,5 @@ git-annex 5.20150824 released with [[!toggle text="these changes"]]
      haskell program is unknown."""]]
 
 Note: The x86-64 bit linux standalone tarball shipped with this version had
-a broken version of ssh that crashed on startup.
+a broken version of ssh that crashed on startup. The tarball has been
+updated to fix this problem.
