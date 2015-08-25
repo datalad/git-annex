@@ -24,3 +24,6 @@ git-annex 5.20150824 released with [[!toggle text="these changes"]]
    * As a result of the Makefile changes, the Debian package is built
      with various hardening options. Although their benefit to a largely
      haskell program is unknown."""]]
+
+Note: The x86-64 bit linux standalone tarball shipped with this version had
+a broken version of ssh that crashed on startup.
