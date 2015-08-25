@@ -1,0 +1,9 @@
+in [[forum/remote-specific_meta-data/]], we have learned how to insert our own remote-specific metadata, in remote.log. now, we need a way to remove that data. for some reason, injecting commits in the `git-annex` branch doesn't quite work, because other assistants will overwrite that merge thanks to the [[git-union-merge]] driver.
+
+so far, i have found that it *can* be possible to work around this problem by repeatedly doing commits on the git-annex branch and running `git-annex sync` by hand after. it stumbles and flips around for a while, but eventually does it. it does create nice sparkles in gitk: 
+
+![a tangled mess in gitk](http://i.imgur.com/PD4ne50.png)]
+
+What is the proper way of removing entries from `remote.log`? How about propagating changes to the `synced/git-annex` branch? I can generate commits on `git-annex` using the git-annex index, and on the `git-annex` branch. But how should those changes be propagated to other branches?
+
+Thanks! --[[anarcat]]
