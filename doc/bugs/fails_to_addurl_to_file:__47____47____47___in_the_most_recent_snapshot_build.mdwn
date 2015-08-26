@@ -1,0 +1,122 @@
+### Please describe the problem.
+
+datalad tests started to fail whenever I upgraded to todays fresh snapshot build.  But the reason is somewhat bizzar since addurl works (with the same output in --debug for curl invocation) if I downgrade to the snapshot build from few days back.  And I don't see any obviously related changes in the git log since prev snapshot :-/
+
+### What version of git-annex are you using? On what operating system?
+
+5.20150826+gitg87972f5-1~ndall+1  custom standalone build on (neuro)debian
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+$> git-annex addurl --file=test-annex.dat --debug 'file:///tmp/datalad_temp_testrepo_NKOjKp/test.dat'
+[2015-08-26 10:45:06.289638] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2015-08-26 10:45:06.291676] process done ExitSuccess
+[2015-08-26 10:45:06.291908] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2015-08-26 10:45:06.293961] process done ExitSuccess
+[2015-08-26 10:45:06.294297] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..8a3167950d25c6626db5c31c334b024f43d132d8","-n1","--pretty=%H"]
+[2015-08-26 10:45:06.296672] process done ExitSuccess
+[2015-08-26 10:45:06.297441] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2015-08-26 10:45:06.300078] read: quvi ["--version"]
+[2015-08-26 10:45:06.303888] process done ExitSuccess
+[2015-08-26 10:45:06.304279] call: quvi ["--verbosity","mute","--support","file:///tmp/datalad_temp_testrepo_NKOjKp/test.dat"]
+[2015-08-26 10:45:06.31382] process done ExitFailure 65
+addurl test-annex.dat (downloading file:///tmp/datalad_temp_testrepo_NKOjKp/test.dat ...) 
+[2015-08-26 10:45:06.314824] call: curl ["-f","-L","-C","-","-#","-o","/tmp/datalad_temp_testrepo_NKOjKp/.git/annex/tmp/URL-s4--file&c%%%tmp%datalad_temp_testrepo_NKOjKp%test.dat","file:///tmp/datalad_temp_testrepo_NKOjKp/test.dat","--user-agent","git-annex/5.20150826+gitg87972f5-1~ndall+1"]
+[2015-08-26 10:45:06.319563] process done ExitFailure (-11)
+failed
+git-annex: addurl: 1 failed
+
+
+$> acpolicy git-annex-standalone                                                                     
+git-annex-standalone:
+  Installed: 5.20150826+gitg87972f5-1~ndall+1
+  Candidate: 5.20150826+gitg87972f5-1~ndall+1
+  Version table:
+ *** 5.20150826+gitg87972f5-1~ndall+1 0
+        100 /var/lib/dpkg/status
+     5.20150819+gitgc587698-1~ndall+1 0
+        500 http://neuro.debian.net/debian/ stretch/main amd64 Packages
+
+# downgrading to previous snapshot
+
+$> sudo apt-get install git-annex-standalone=5.20150819+gitgc587698-1~ndall+1
+[sudo] password for yoh: 
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+The following packages were automatically installed and are no longer required:
+  gir1.2-gtop-2.0 gir1.2-vte-2.90 gstreamer0.10-plugins-ugly icu-devtools libb-hooks-endofscope-perl libbit-vector-perl libcamel-1.2-49 libcarp-clan-perl libcmis-0.4-4
+  libconstantine-java libdate-calc-perl libdate-calc-xs-perl libdirac-encoder0 libdvbpsi9 libebackend-1.2-7 libebook-1.2-14 libebook-contacts-1.2-0 libecal-1.2-16
+  libedata-book-1.2-20 libedata-cal-1.2-23 libedataserver-1.2-18 libegl1-mesa-drivers libelfg0 libgdata19 libgdict-1.0-6 libghc-adjunctions-dev libghc-base-unicode-symbols-dev
+  libghc-errors-dev libghc-failure-dev libghc-idna-dev libghc-kan-extensions-dev libghc-keys-dev libghc-pointed-dev libghc-publicsuffixlist-dev libghc-punycode-dev
+  libghc-ranges-dev libghc-stringprep-dev libghc-text-icu-dev libgit2-21 libglew1.11 libglew1.9 libgnutls26 libgphoto2-port10 libgsoap5 libgtkhtml-4.0-0 libgtkhtml-4.0-common
+  libgtkhtml-editor-4.0-0 libgtop2-7 libicu-dev libinput5 libisl10 libjaffl-java libjim0.75 libkscreen1 libmediaart-1.0-0 libmodello-java libnamespace-clean-perl libopenobex1
+  libopenvg1-mesa liborcus-0.8-0 libplexus-digest-java libplist2 libqcustomplot1.2 libqscintilla2-11 librhythmbox-core8 librygel-core-2.4-2 librygel-renderer-2.4-2
+  librygel-renderer-gst-2.4-2 librygel-server-2.4-2 libssh-4 libsub-identify-perl libvariable-magic-perl libvncclient0 libvncserver0 libvpx1 libwps-0.3-3 libx264-142 libx265-43
+  obex-data-server publicsuffix
+Use 'apt-get autoremove' to remove them.
+Suggested packages:
+  bup tahoe-lafs
+The following packages will be DOWNGRADED:
+  git-annex-standalone
+0 upgraded, 0 newly installed, 1 downgraded, 0 to remove and 888 not upgraded.
+Need to get 0 B/23.9 MB of archives.
+After this operation, 13.3 kB disk space will be freed.
+Do you want to continue? [Y/n] 
+dpkg: warning: downgrading git-annex-standalone from 5.20150826+gitg87972f5-1~ndall+1 to 5.20150819+gitgc587698-1~ndall+1
+(Reading database ... 513649 files and directories currently installed.)
+Preparing to unpack .../git-annex-standalone_5.20150819+gitgc587698-1~ndall+1_amd64.deb ...
+Unpacking git-annex-standalone (5.20150819+gitgc587698-1~ndall+1) over (5.20150826+gitg87972f5-1~ndall+1) ...
+Processing triggers for man-db (2.7.0.2-5) ...
+Setting up git-annex-standalone (5.20150819+gitgc587698-1~ndall+1) ...
+Processing triggers for libc-bin (2.19-18) ...
+
+
+hopa:/tmp/datalad_temp_testrepo_NKOjKp
+$> git-annex addurl --file=test-annex.dat --debug 'file:///tmp/datalad_temp_testrepo_NKOjKp/test.dat'
+[2015-08-26 10:45:43.856957] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2015-08-26 10:45:43.859253] process done ExitSuccess
+[2015-08-26 10:45:43.859507] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2015-08-26 10:45:43.861503] process done ExitSuccess
+[2015-08-26 10:45:43.861842] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..8a3167950d25c6626db5c31c334b024f43d132d8","-n1","--pretty=%H"]
+[2015-08-26 10:45:43.864027] process done ExitSuccess
+[2015-08-26 10:45:43.864822] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2015-08-26 10:45:43.867559] read: quvi ["--version"]
+[2015-08-26 10:45:43.871844] process done ExitSuccess
+[2015-08-26 10:45:43.872416] call: quvi ["--verbosity","mute","--support","file:///tmp/datalad_temp_testrepo_NKOjKp/test.dat"]
+[2015-08-26 10:45:43.88296] process done ExitFailure 65
+addurl test-annex.dat (downloading file:///tmp/datalad_temp_testrepo_NKOjKp/test.dat ...) 
+[2015-08-26 10:45:43.883939] call: curl ["-f","-L","-C","-","-#","-o","/tmp/datalad_temp_testrepo_NKOjKp/.git/annex/tmp/URL-s4--file&c%%%tmp%datalad_temp_testrepo_NKOjKp%test.dat","file:///tmp/datalad_temp_testrepo_NKOjKp/test.dat","--user-agent","git-annex/5.20150819+gitgc587698-1~ndall+1"]
+######################################################################## 100.0%
+[2015-08-26 10:45:43.889054] process done ExitSuccess
+[2015-08-26 10:45:43.889446] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","check-attr","-z","--stdin","annex.backend","annex.numcopies","--"]
+[2015-08-26 10:45:43.89022] read: git ["--version"]
+[2015-08-26 10:45:43.891664] process done ExitSuccess
+ok
+(recording state in git...)
+[2015-08-26 10:45:43.896364] feed: xargs ["-0","git","--git-dir=.git","--work-tree=.","--literal-pathspecs","add","--"]
+[2015-08-26 10:45:43.899267] process done ExitSuccess
+[2015-08-26 10:45:43.899949] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","hash-object","-w","--stdin-paths","--no-filters"]
+[2015-08-26 10:45:43.901383] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-index","-z","--index-info"]
+[2015-08-26 10:45:43.905978] process done ExitSuccess
+[2015-08-26 10:45:43.906404] process done ExitSuccess
+[2015-08-26 10:45:43.906633] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2015-08-26 10:45:43.908796] process done ExitSuccess
+[2015-08-26 10:45:43.909363] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","write-tree"]
+[2015-08-26 10:45:43.912179] process done ExitSuccess
+[2015-08-26 10:45:43.912423] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","commit-tree","0ece4d39e673b48c886ccfded0bb4c588596e6d6","--no-gpg-sign","-p","refs/heads/git-annex"]
+[2015-08-26 10:45:43.915128] process done ExitSuccess
+[2015-08-26 10:45:43.915362] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","refs/heads/git-annex","0f17facd87dbca08de5bc4d9c29bc7004557d4cf"]
+[2015-08-26 10:45:43.9179] process done ExitSuccess
+
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
