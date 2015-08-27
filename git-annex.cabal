@@ -153,8 +153,6 @@ Executable git-annex
     Build-Depends: cryptohash (>= 0.11.0)
 
   -- Fully optimize for production.
-  -- Parallel builds only when not building for production,
-  -- because ghc is known to not yield reproducible builds this way.
   if flag(Production)
     GHC-Options: -O2
 
