@@ -26,8 +26,8 @@ On windows, fails getting files with the following error : "rsync: Failed to exe
 
 ### What version of git-annex are you using? On what operating system?
 
-Git for windows, from http://git-scm.com/downloads (referenced from https://git-annex.branchable.com/install/Windows/), i.e. Git 2.5.0
-Git annex gotten from https://downloads.kitenet.net/git-annex/windows/current/ as of 2015-08-19 08:43 (GitAnnexDistribution {distributionUrl = "https://downloads.kitenet.net/git-annex/windows/current/git-annex-installer.exe", distributionKey = Key {keyName = "76e06059fe0146d228578a1eef42d92f94f4d89b5b00798f317083f90a73e006.exe", keyBackendName = "SHA256E", keySize = Just 24420678, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}, distributionVersion = "5.20150819", distributionReleasedate = 2015-08-24 21:24:56.240184 UTC, distributionUrgentUpgrade = Nothing})
+* Git for windows, from http://git-scm.com/downloads (referenced from https://git-annex.branchable.com/install/Windows/), i.e. Git 2.5.0
+* Git annex gotten from https://downloads.kitenet.net/git-annex/windows/current/ as of 2015-08-19 08:43 (GitAnnexDistribution {distributionUrl = "https://downloads.kitenet.net/git-annex/windows/current/git-annex-installer.exe", distributionKey = Key {keyName = "76e06059fe0146d228578a1eef42d92f94f4d89b5b00798f317083f90a73e006.exe", keyBackendName = "SHA256E", keySize = Just 24420678, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}, distributionVersion = "5.20150819", distributionReleasedate = 2015-08-24 21:24:56.240184 UTC, distributionUrgentUpgrade = Nothing})
 
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
