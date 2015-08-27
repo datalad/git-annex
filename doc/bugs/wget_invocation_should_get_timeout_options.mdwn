@@ -1,0 +1,14 @@
+### Please describe the problem.
+
+Currently if download stalls the whole 'annex get' stalls -- I have been watching the terminal with 0% for an hour now ;)
+
+You could test that on http://github.com/datalad/mlbooks  annex, just get
+G.James_D.Witten_T.Hastie_R.Tibshirani-An_Introduction_to_Statistical_Learning_with_Applications_in_R.pdf
+
+original url for the file is http://www-bcf.usc.edu/~gareth/ISL/ISLR%20Fourth%20Printing.pdf
+and wgetting works for me on some boxes but not on the other, forgot why so
+
+### What version of git-annex are you using? On what operating system?
+
+5.20150706+gitgefc3bcd-1~ndall+1 and tried in clean debian sid docker with  5.20150812-2
+

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="OlivierBerger"
+ subject="git 2.5 for windows seems the culprit whereas mysygit 1.9 works"
+ date="2015-08-27T15:02:14Z"
+ content="""
+I've removed Git for windows 2.5, and installed the latest msysgit 1.9, and it seems that this works much better.
+
+However, I have to invoke git-annex from the command-line through its full path with :
+    \"C:\Program Files\Git\cmd\git-annex.exe\" get .
+
+I guess this gives hope :-)
+"""]]

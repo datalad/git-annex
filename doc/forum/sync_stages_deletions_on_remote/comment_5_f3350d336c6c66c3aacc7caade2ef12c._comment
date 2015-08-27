@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="edward"
+ subject="Same problem"
+ date="2015-08-27T09:24:38Z"
+ content="""
+I think I'm having the same problem. See my comments on [[bugs/git annex sync deleted a bunch of files (not expected)]]
+
+I've run `git annex sync` or `git annex webapp` on the laptop annex, then `git annex sync` on the external drive. I'm pretty sure some of the syncs have been interrupted. Does it help to see the .git/config from the external drive?
+
+    [core]
+    	repositoryformatversion = 0
+    	filemode = true
+    	bare = false
+    	logallrefupdates = true
+    [remote \"origin\"]
+    	url = /home/edward/annex
+    	fetch = +refs/heads/*:refs/remotes/origin/*
+    	annex-uuid = 38d109c9-7f5f-47cd-b15a-7b2beac22c64
+    [branch \"master\"]
+    	remote = origin
+    	merge = refs/heads/master
+    [annex]
+    	uuid = 822dec0f-a0d3-42f6-b0dc-a47b6bf91944
+    	version = 5
+    [remote \"x230\"]
+    	url = /home/edward/annex
+    	fetch = +refs/heads/*:refs/remotes/x230/*
+    	annex-uuid = 38d109c9-7f5f-47cd-b15a-7b2beac22c64
+
+Observations about my config, I have `bare = false`, which is correct. Do you think it is a problem that I have two remotes, `\"origin\"` and `\"x230\"` pointing at the same location?
+"""]]

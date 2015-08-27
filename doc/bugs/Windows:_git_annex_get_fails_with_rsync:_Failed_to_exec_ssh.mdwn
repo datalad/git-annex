@@ -1,0 +1,36 @@
+### Please describe the problem.
+
+On windows, fails getting files with the following error : "rsync: Failed to exec ssh: No such file or directory". The server runs gitolite. I've tested from a Linux client, and it works.
+
+    $ git annex get big\ file
+    get big file (from origin...) rsync: Failed to exec ssh: No such file or directory (2)
+    rsync error: error in IPC code (code 14) at /home/lapo/package/rsync-3.0.9-1/src/rsync-3.0.9/pipe.c(84) [Receiver=3.0.9]
+    rsync: connection unexpectedly closed (0 bytes received so far) [Receiver]
+    rsync error: error in IPC code (code 14) at /home/lapo/package/rsync-3.0.9-1/src/rsync-3.0.9/io.c(605) [Receiver=3.0.9]
+    
+    
+      rsync failed -- run git annex again to resume file transfer
+    
+      Unable to access these remotes: origin
+    
+      Try making some of these repositories available:
+            dc8840b6-c0ec-4166-adcc-f821f3ee0216 -- olivier@myhost:~/git/whatever/testing
+            f8ef7445-2ccc-4871-a95a-7e4325fc763d -- gitolite3@aserver:~/repositories/testing.git [origin]
+    failed
+    git-annex: get: 1 failed
+
+
+### What steps will reproduce the problem?
+
+'git clone' from a repo containing a big file, then git annex init locally, then git get for the file contained in the repo
+
+### What version of git-annex are you using? On what operating system?
+
+* Git for windows, from http://git-scm.com/downloads (referenced from https://git-annex.branchable.com/install/Windows/), i.e. Git 2.5.0
+* Git annex gotten from https://downloads.kitenet.net/git-annex/windows/current/ as of 2015-08-19 08:43 (GitAnnexDistribution {distributionUrl = "https://downloads.kitenet.net/git-annex/windows/current/git-annex-installer.exe", distributionKey = Key {keyName = "76e06059fe0146d228578a1eef42d92f94f4d89b5b00798f317083f90a73e006.exe", keyBackendName = "SHA256E", keySize = Just 24420678, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}, distributionVersion = "5.20150819", distributionReleasedate = 2015-08-24 21:24:56.240184 UTC, distributionUrgentUpgrade = Nothing})
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes :-) Only on linux so far and trying on windows now :-/
+
