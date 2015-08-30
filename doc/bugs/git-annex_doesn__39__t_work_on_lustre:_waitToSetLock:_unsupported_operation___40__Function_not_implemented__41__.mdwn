@@ -1,0 +1,12 @@
+### Please describe the problem.
+
+Attempt to add files to annex leads to
+
+     git-annex: waitToSetLock: unsupported operation (Function not implemented)
+
+Here is the log from  git annex test : <http://www.onerussian.com/tmp/git_annex_test_lustre.txt>
+
+### What version of git-annex are you using? On what operating system?
+
+5.20150731-g41f79f2  OS probably CentOS (I am just channeling the report -- don't shoot the messanger)
+
