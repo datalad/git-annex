@@ -79,7 +79,7 @@ subdirs.
 
 # other uses for metadata
 
-Uses are not limited to view branches.
+Users are not limited to view branches.
 
 `git annex checkoutmeta year=2014 talk` in a subdir of master could create the
 same tree of files filter would. The user can then commit that if desired.
@@ -177,7 +177,7 @@ So, possible approaches:
 * Metadata should be copied to the new key when adding a modified version
   of a file. **done**
 
-* Filesystems that are not case sensative (including case preserving OSX)
+* Filesystems that are not case sensitive (including case preserving OSX)
   will cause problems if view branches try to use different cases for 
   2 directories representing a metadata field.
   
