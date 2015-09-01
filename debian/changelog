@@ -1,3 +1,9 @@
+git-annex (5.20150825) UNRELEASED; urgency=medium
+
+  * Fix Windows build to work with ghc 7.10.
+
+ -- Joey Hess <id@joeyh.name>  Tue, 01 Sep 2015 14:46:18 -0700
+
 git-annex (5.20150824) unstable; urgency=medium
 
   * Sped up downloads of files from ssh remotes, reducing the

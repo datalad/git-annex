@@ -11,5 +11,18 @@ module Utility.WinProcess where
 
 import Utility.PID
 
-foreign import ccall unsafe "terminatepid"
-	terminatePID :: PID -> IO ()
+import System.Win32.Process
+import Control.Exception (bracket)
+import Control.Monad
+
+terminatePID :: PID -> IO ()
+terminatePID p = bracket 
+	(openProcess pROCESS_TERMINATE False p)
+	(void . c_closeProcess)
+	(\h -> void $ c_TerminateProcess h 1)
+
+foreign import ccall unsafe "windows.h TerminateProcess"
+	c_TerminateProcess :: ProcessHandle -> Int -> IO Int
+
+foreign import ccall unsafe "windows.h CloseHandle"
+	c_closeProcess :: ProcessHandle -> IO Bool

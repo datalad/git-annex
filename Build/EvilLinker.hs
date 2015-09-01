@@ -95,18 +95,12 @@ parseCollect2 = do
 	path <- manyTill anyChar (try $ string ldcmd)
 	void $ char ' '
 	params <- restOfLine
-	return $ CmdParams (path ++ ldcmd) (skipHack $ escapeDosPaths params) Nothing
+	return $ CmdParams (path ++ ldcmd) (escapeDosPaths params) Nothing
   where
 	ldcmd = "ld.exe"
 	versionline = do
 		void $ string "collect2 version"
 		restOfLine
-
-{- For unknown reasons, asking the linker to link this in fails,
- - with error about multiple definitions of a symbol from the library.
- - This is a horrible hack. -}
-skipHack :: String -> String
-skipHack = replace "dist/build/git-annex/git-annex-tmp/Utility/winprocess.o" ""
 
 {- Input contains something like 
  - c:/program files/haskell platform/foo -LC:/Program Files/Haskell Platform/ -L...
