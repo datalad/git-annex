@@ -1,0 +1,3 @@
+I'm trying to sync my unencrypted local repo to an encrypted remote located on an external drive. I'm using Debian 8.1. When I run `git-annex sync encrypted-remote` I get prompted in my shell for the password. I'm not sure why, as other places pinentry-gtk2 pops up. This is annoying because my gpg key isn't getting cached, so I have to enter my long password several times. 
+
+How can I make git-annex/git-remote-gcrypt use pinentry-gtk2?

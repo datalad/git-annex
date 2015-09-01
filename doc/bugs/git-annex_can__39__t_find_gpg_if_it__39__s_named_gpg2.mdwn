@@ -1,0 +1,19 @@
+### Please describe the problem.
+
+git-annex requires a `gpg -> gpg2` alias, which is dangerous for other software to misuse.
+
+### What steps will reproduce the problem?
+
+Run any gpg-requiring operation on a machine that has only gpg2 installed and no gpg alias.
+
+    gpg: createProcess: runInteractiveProcess: exec: does not exist (No such file or directory)
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 5.20150710
+
+OS X, gpg2 installed with brew
+
+### Have you had any luck using git-annex before?
+
+git-annex took some time to get in the mentality and configure, but now it's a beautiful perfectly oiled file management system. Thanks!
