@@ -38,10 +38,6 @@ rm -f git-annex-installer.exe
 # for haskell libraries to link them with the cygwin library.
 cabal update || true
 
-# This workaround is still needed, it seems.
-#cabal install transformers-compat -fthree
-#cabal install DAV-1.0
-
 cabal install --only-dependencies || true
 
 # Detect when the last build was an incremental build and failed, 
