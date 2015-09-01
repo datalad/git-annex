@@ -4,10 +4,7 @@
 set -e
 set -x
 
-# Path to the Haskell Platform. (As mingw sh sees it)
-HP="/c/Program Files/Haskell Platform/2014.2.0.0"
-
-PATH="$HP/bin:$HP/mingw/bin:$HP/lib/extralibs/bin:/c/Program Files/Git/cmd:/c/Program Files/NSIS:$PATH"
+PATH="/c/Program Files/Git/cmd:/c/Program Files/NSIS:$PATH"
 
 # Run a command with the cygwin environment available.
 # However, programs not from cygwin are preferred.
