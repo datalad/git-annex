@@ -54,13 +54,13 @@ touch last-incremental-failed
 withcyg cabal configure
 if ! withcyg cabal build; then
 	rm -f Build/EvilLinker.exe
-	ghc --make Build/EvilLinker
+	ghc --make Build/EvilLinker -fno-warn-tabs
 	Build/EvilLinker
 fi
 
 # Build the installer
 cabal install nsis
-ghc -fforce-recomp --make Build/NullSoftInstaller.hs
+ghc -fforce-recomp --make Build/NullSoftInstaller.hs -fno-warn-tabs
 # Want to include cygwin programs in bundle, not others, since
 # it includes the cygwin libs that go with them.
 # Currently need an older version of rsync than the one from cygwin.

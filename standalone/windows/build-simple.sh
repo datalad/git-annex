@@ -28,13 +28,13 @@ if [ ! -e "dist/setup-config" ]; then
 	withcyg cabal configure
 fi
 if ! withcyg cabal build; then
-	ghc --make Build/EvilLinker
+	ghc --make Build/EvilLinker -fno-warn-tabs
 	withcyg Build/EvilLinker
 fi
 
 # Build the installer
 cabal install nsis
-ghc --make Build/NullSoftInstaller.hs
+ghc --make Build/NullSoftInstaller.hs -fno-warn-tabs
 PATH="$PATH:/cygdrive/c/Program Files/NSIS"
 # Want to include cygwin programs in bundle, not others, since
 # it includes the cygwin libs that go with them.
