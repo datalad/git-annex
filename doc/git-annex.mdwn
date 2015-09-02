@@ -793,7 +793,7 @@ Here are all the supported configuration settings.
   to be large enough to need to be added to the annex. By default,
   all files are added to the annex.
 
-  The value is a preferred content expression. See PREFERRED CONTENT
+  The value is a preferred content expression. See [[git-annex-preferred-content]](1)
   for details.
 
   Example:
