@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 3"
+ date="2015-09-02T18:54:23Z"
+ content="""
+Of course root can delete anything no matter what git-annex does with directory permissions. This does not mean the FS is crippled; it's just an ability of the root user. I don't see any problem with the examples given above.
+"""]]
