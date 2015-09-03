@@ -21,6 +21,7 @@ import Data.List
 
 import Utility.Monad
 import Utility.Process hiding (env)
+import qualified Utility.Process
 import Utility.Env
 
 data CmdParams = CmdParams
@@ -126,7 +127,7 @@ getOutput c ps environ = do
 	putStrLn $ unwords [c, show ps]
 	systemenviron <- getEnvironment
 	let environ' = fromMaybe [] environ ++ systemenviron
-	out@(_, ok) <- processTranscript' c ps (Just environ') Nothing
+	out@(_, ok) <- processTranscript' (\p -> p { Utility.Process.env = Just environ' }) c ps Nothing
 	putStrLn $ unwords [c, "finished", show ok]
 	return out
 
