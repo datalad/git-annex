@@ -1,0 +1,29 @@
+When git-annex is updating the git-annex branch, it currently
+uses a separate index file. This adds overhead and complexity to the code.
+Especially when there are many files, the index file gets large and writing
+it gets slow.
+
+It might be an improvement to use `git mktree --batch` to inject a
+tree object into git, without using the index file. `git hash-object`
+is already used to add the files to git. All that would be needed is to
+generate an updated tree containing the new file(s), and then update each
+parent tree up to the root tree. This new tree can then be committed using
+`git commit-tree`
+
+The only thing I can see that might make this slow at all is reading the old
+tree contents, in order to update it. This would need a `git ls-tree` for
+each tree; it does not have a batch mode, so 4 processes would need to be
+spawned when generating a tree that changes 1 file. For any repo that's not
+very small, that's probably still faster than rewriting the index file.
+
+Notes:
+
+* The union merge code currently uses the index. No particular reason
+  it needs to; that's just how the code is written, and it might be a large
+  rewrite to change it.
+* A new git-annex branch can be pushed into the repository at any time.
+  The current code uses the index to detect when this happens, and
+  union merges the new branch head into the index. Would need something
+  like a `GIT_ANNEX_HEAD` ref to do the same if the index is removed.
+
+Thanks to sm for indirectly suggesting this. --[[Joey]] 
