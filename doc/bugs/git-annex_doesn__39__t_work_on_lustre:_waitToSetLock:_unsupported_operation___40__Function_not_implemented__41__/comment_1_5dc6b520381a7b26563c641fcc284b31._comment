@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="FWIW: possibly useful"
+ date="2015-09-04T13:26:19Z"
+ content="""
+https://github.com/marcindulak/vagrant-lustre-tutorial
+to get env with lustre deployment.  yet to figure out user management(see [https://github.com/marcindulak/vagrant-lustre-tutorial/issues/2]) since issue didn't replicate under root, so I guess it is a question of some permissions
+"""]]
