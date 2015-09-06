@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="lealanko"
+ subject="comment 5"
+ date="2015-09-06T13:26:49Z"
+ content="""
+> you can \"git clone --shared\" and this will set up a clone of a repository in which git-annex will use hardlinks
+
+Copying files from the shared origin repository to the clone will create a hardlink, yes. But copying a file from the clone to the origin will still create a physical copy, even though the situation is quite comparable. Could hardlink support be added in this direction as well?
+"""]]
