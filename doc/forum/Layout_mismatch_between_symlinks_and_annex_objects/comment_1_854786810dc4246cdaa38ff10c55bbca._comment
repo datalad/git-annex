@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="lealanko"
+ subject="comment 1"
+ date="2015-09-06T13:11:44Z"
+ content="""
+I think I figured it out: the repository was originally [[bare|bare repositories]], and I converted it to non-bare manually. But that doesn't work, because bare annex repositories use [[a different directory layout|internals/hashing]].
+
+I can understand why the hex-based layout is preferred (it's more portable), but deliberate incompatibility with the symlinks isn't very nice. I wish there was a way to upgrade the entire repository to a format that used the hex paths for symlinks, so bare and non-bare repositories used the same layout.
+"""]]
