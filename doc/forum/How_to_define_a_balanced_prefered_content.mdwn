@@ -1,0 +1,5 @@
+I have 6 drives attached to my box and I am trying to split them in to 2 groups I would like to have 2 balanced groups [1] so each file lands on two of these disks. So assuming i have disks A B C D E F, I want to create two balanced groups A B C and D E F. But I can not figure out how to defined rules using  balanced_amoung(group) expression in vicfg. The only place it allows me to use the expression is the group section but how do i define a group that uses a balanced group.
+
+
+
+[1] https://git-annex.branchable.com/design/balanced_preferred_content/
