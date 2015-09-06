@@ -1,0 +1,14 @@
+I have an old repository, and I'm not sure what I have done with it, but it seems to be broken in an interesting fashion.
+
+    $ ls -l pix/image001.jpg 
+    lrwxrwxrwx 1 la la 187 Sep  5 11:31 pix/image001.jpg -> ../.git/annex/objects/G7/J7/SHA256-s99372--0458b0b72b394a719b72032971b880a8dfafa65e8048ec6fc6c861fc3ea5e702/SHA256-s99372--0458b0b72b394a719b72032971b880a8dfafa65e8048ec6fc6c861fc3ea5e702
+    $ ls -lL pix/image001.jpg 
+    ls: cannot access pix/image001.jpg: No such file or directory
+    $ find .git/annex/objects/ -type f -name '*0458b0b72*'
+    .git/annex/objects/477/75c/SHA256-s99372--0458b0b72b394a719b72032971b880a8dfafa65e8048ec6fc6c861fc3ea5e702/SHA256-s99372--0458b0b72b394a719b72032971b880a8dfafa65e8048ec6fc6c861fc3ea5e702
+    $ git config annex.version
+    5
+
+So the symlinks use a layout where index directories have two-letter names, but the actual layout in the annex uses directory names with three hexadecimal digits.
+
+Is there some straightforward way to fix this or do I need to figure the index format and hack up a script to convert the annex repository?
