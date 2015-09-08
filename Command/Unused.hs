@@ -53,7 +53,7 @@ optParser _ = UnusedOptions
 		<> help "remote to check for unused content"
 		))
 	<*> optional (option (eitherReader parseRefSpec)
-		( long "unused-refspec" <> metavar paramRefSpec
+		( long "used-refspec" <> metavar paramRefSpec
 		<> help "refs to consider used (default: all branches)"
 		))
 
