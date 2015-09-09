@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-09-09T18:03:27Z"
+ content="""
+Well, if any operation that gets a file stalls for some reason, then yes,
+everything stalls.
+
+wget has various options like --read-timeout, but I don't see how git-annex
+could guess at sane defaults to use for those. If there are sane defaults
+for those options, wget probably already implements them. Indeed,
+it seems it already defaults --read-timeout to 900 seconds.
+
+You can of course pass such options if you want to.
+
+So, I'm not clear what's being asked for here, or how it's a bug in
+git-annex at all.
+"""]]
