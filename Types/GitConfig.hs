@@ -25,6 +25,7 @@ import Types.NumCopies
 import Types.Difference
 import Types.RefSpec
 import Utility.HumanTime
+import Utility.Gpg (GpgCmd, mkGpgCmd)
 
 {- Main git-annex settings. Each setting corresponds to a git-config key
  - such as annex.foo -}
@@ -58,11 +59,12 @@ data GitConfig = GitConfig
 	, annexListen :: Maybe String
 	, annexStartupScan :: Bool
 	, annexHardLink :: Bool
+	, annexDifferences :: Differences
+	, annexUsedRefSpec :: Maybe RefSpec
 	, coreSymlinks :: Bool
 	, coreSharedRepository :: SharedRepository
 	, gcryptId :: Maybe String
-	, annexDifferences :: Differences
-	, annexUsedRefSpec :: Maybe RefSpec
+	, gpgCmd :: GpgCmd
 	}
 
 extractGitConfig :: Git.Repo -> GitConfig
@@ -98,12 +100,13 @@ extractGitConfig r = GitConfig
 	, annexListen = getmaybe (annex "listen")
 	, annexStartupScan = getbool (annex "startupscan") True
 	, annexHardLink = getbool (annex "hardlink") False
-	, coreSymlinks = getbool "core.symlinks" True
-	, coreSharedRepository = getSharedRepository r
-	, gcryptId = getmaybe "core.gcrypt-id"
 	, annexDifferences = getDifferences r
 	, annexUsedRefSpec = either (const Nothing) Just . parseRefSpec 
 		=<< getmaybe (annex "used-refspec")
+	, coreSymlinks = getbool "core.symlinks" True
+	, coreSharedRepository = getSharedRepository r
+	, gcryptId = getmaybe "core.gcrypt-id"
+	, gpgCmd = mkGpgCmd (getmaybe "gpg.program")
 	}
   where
 	getbool k d = fromMaybe d $ getmaybebool k

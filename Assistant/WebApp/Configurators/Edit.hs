@@ -260,7 +260,8 @@ getRepoEncryption (Just _) (Just c) = case extractCipher c of
 	(Just (SharedCipher _)) ->
 		[whamlet|encrypted: encryption key stored in git repository|]
 	(Just (EncryptedCipher _ _ (KeyIds { keyIds = ks }))) -> do
-		knownkeys <- liftIO secretKeys
+		cmd <- liftAnnex $ gpgCmd <$> Annex.getGitConfig
+		knownkeys <- liftIO (secretKeys cmd)
 		[whamlet|
 encrypted using gpg key:
 <ul style="list-style: none">

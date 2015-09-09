@@ -23,6 +23,7 @@ import Utility.Gpg
 import Types.Remote (RemoteConfig)
 import Git.Types (RemoteName, fromRef)
 import qualified Remote.GCrypt as GCrypt
+import qualified Annex
 import qualified Git.Construct
 import qualified Git.Config
 import qualified Git.Command
@@ -422,8 +423,9 @@ getConfirmSshR sshdata u
 	| otherwise = handleexisting =<< (M.lookup u <$> liftAnnex uuidMap)
   where
 	handlenew = sshConfigurator $ do
+		cmd <- liftAnnex $ gpgCmd <$> Annex.getGitConfig
 		secretkeys <- sortBy (comparing snd) . M.toList
-			<$> liftIO secretKeys
+			<$> liftIO (secretKeys cmd)
 		$(widgetFile "configurators/ssh/confirm")
 	handleexisting Nothing = sshConfigurator $
 		-- Not a UUID we know, so prompt about combining.
@@ -608,8 +610,9 @@ postAddRsyncNetR = do
 		
 		prepRsyncNet sshinput reponame $ \sshdata -> inpage $ 
 			checkExistingGCrypt sshdata $ do
+				cmd <- liftAnnex $ gpgCmd <$> Annex.getGitConfig
 				secretkeys <- sortBy (comparing snd) . M.toList
-					<$> liftIO secretKeys
+					<$> liftIO (secretKeys cmd)
 				$(widgetFile "configurators/rsync.net/encrypt")
 
 getMakeRsyncNetSharedR :: SshData -> Handler Html

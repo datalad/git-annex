@@ -50,22 +50,24 @@ encryptionAlreadySetup = EncryptionIsSetup
  - updated to be accessible to an additional encryption key. Or the user
  - could opt to use a shared cipher, which is stored unencrypted. -}
 encryptionSetup :: RemoteConfig -> Annex (RemoteConfig, EncryptionIsSetup)
-encryptionSetup c = maybe genCipher updateCipher $ extractCipher c
+encryptionSetup c = do
+	cmd <- gpgCmd <$> Annex.getGitConfig
+	maybe (genCipher cmd) (updateCipher cmd) (extractCipher c)
   where
 	-- The type of encryption
 	encryption = M.lookup "encryption" c
 	-- Generate a new cipher, depending on the chosen encryption scheme
-	genCipher = case encryption of
+	genCipher cmd = case encryption of
 		_ | M.member "cipher" c || M.member "cipherkeys" c -> cannotchange
 		Just "none" -> return (c, NoEncryption)
-		Just "shared" -> use "encryption setup" . genSharedCipher
+		Just "shared" -> use "encryption setup" . genSharedCipher cmd
 			=<< highRandomQuality
 		-- hybrid encryption is the default when a keyid is
 		-- specified but no encryption
 		_ | maybe (M.member "keyid" c) (== "hybrid") encryption ->
-			use "encryption setup" . genEncryptedCipher key Hybrid
+			use "encryption setup" . genEncryptedCipher cmd key Hybrid
 				=<< highRandomQuality
-		Just "pubkey" -> use "encryption setup" . genEncryptedCipher key PubKey
+		Just "pubkey" -> use "encryption setup" . genEncryptedCipher cmd key PubKey
 				=<< highRandomQuality
 		_ -> error $ "Specify " ++ intercalate " or "
 			(map ("encryption=" ++)
@@ -76,11 +78,11 @@ encryptionSetup c = maybe genCipher updateCipher $ extractCipher c
 		maybe [] (\k -> [(False,k)]) (M.lookup "keyid-" c)
 	cannotchange = error "Cannot set encryption type of existing remotes."
 	-- Update an existing cipher if possible.
-	updateCipher v = case v of
+	updateCipher cmd v = case v of
 		SharedCipher _ | maybe True (== "shared") encryption -> return (c', EncryptionIsSetup)
 		EncryptedCipher _ variant _
 			| maybe True (== if variant == Hybrid then "hybrid" else "pubkey") encryption ->
-				use "encryption update" $ updateEncryptedCipher newkeys v
+				use "encryption update" $ updateEncryptedCipher cmd newkeys v
 		_ -> cannotchange
 	use m a = do
 		showNote m
@@ -111,7 +113,8 @@ remoteCipher' c = go $ extractCipher c
 		case M.lookup encipher cache of
 			Just cipher -> return $ Just (cipher, encipher)
 			Nothing -> do
-				cipher <- liftIO $ decryptCipher encipher
+				cmd <- gpgCmd <$> Annex.getGitConfig
+				cipher <- liftIO $ decryptCipher cmd encipher
 				Annex.changeState (\s -> s { Annex.ciphers = M.insert encipher cipher cache })
 				return $ Just (cipher, encipher)
 

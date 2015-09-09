@@ -1347,9 +1347,11 @@ test_crypto = do
 	testscheme "hybrid"
 	testscheme "pubkey"
   where
-	testscheme scheme = intmpclonerepo $ whenM (Utility.Path.inPath Utility.Gpg.gpgcmd) $ do
-		Utility.Gpg.testTestHarness @? "test harness self-test failed"
-		Utility.Gpg.testHarness $ do
+	gpgcmd = Utility.Gpg.mkGpgCmd Nothing
+	testscheme scheme = intmpclonerepo $ whenM (Utility.Path.inPath (Utility.Gpg.unGpgCmd gpgcmd)) $ do
+		Utility.Gpg.testTestHarness gpgcmd 
+			@? "test harness self-test failed"
+		Utility.Gpg.testHarness gpgcmd $ do
 			createDirectory "dir"
 			let a cmd = git_annex cmd $
 				[ "foo"
@@ -1397,16 +1399,16 @@ test_crypto = do
 		keysMatch (Utility.Gpg.KeyIds ks') =
 			maybe False (\(Utility.Gpg.KeyIds ks2) ->
 					sort (nub ks2) == sort (nub ks')) ks
-		checkCipher encipher = Utility.Gpg.checkEncryptionStream encipher . Just
+		checkCipher encipher = Utility.Gpg.checkEncryptionStream gpgcmd encipher . Just
 		checkScheme Types.Crypto.Hybrid = scheme == "hybrid"
 		checkScheme Types.Crypto.PubKey = scheme == "pubkey"
 		checkKeys cip mvariant = do
-			cipher <- Crypto.decryptCipher cip
+			cipher <- Crypto.decryptCipher gpgcmd cip
 			files <- filterM doesFileExist $
 				map ("dir" </>) $ concatMap (key2files cipher) keys
 			return (not $ null files) <&&> allM (checkFile mvariant) files
 		checkFile mvariant filename =
-			Utility.Gpg.checkEncryptionFile filename $
+			Utility.Gpg.checkEncryptionFile gpgcmd filename $
 				if mvariant == Just Types.Crypto.PubKey then ks else Nothing
 		key2files cipher = Locations.keyPaths .
 			Crypto.encryptKey Types.Crypto.HmacSha1 cipher

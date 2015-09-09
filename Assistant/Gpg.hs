@@ -14,9 +14,9 @@ import Types.Remote (RemoteConfigKey)
 import qualified Data.Map as M
 
 {- Generates a gpg user id that is not used by any existing secret key -}
-newUserId :: IO UserId
-newUserId = do
-	oldkeys <- secretKeys
+newUserId :: GpgCmd -> IO UserId
+newUserId cmd = do
+	oldkeys <- secretKeys cmd
 	username <- myUserName
 	let basekeyname = username ++ "'s git-annex encryption key"
 	return $ Prelude.head $ filter (\n -> M.null $ M.filter (== n) oldkeys)

@@ -317,12 +317,13 @@ usingDistribution = isJust <$> getEnv "GIT_ANNEX_STANDLONE_ENV"
 downloadDistributionInfo :: Assistant (Maybe GitAnnexDistribution)
 downloadDistributionInfo = do
 	uo <- liftAnnex Url.getUrlOptions
+	gpgcmd <- liftAnnex $ gpgCmd <$> Annex.getGitConfig
 	liftIO $ withTmpDir "git-annex.tmp" $ \tmpdir -> do
 		let infof = tmpdir </> "info"
 		let sigf = infof ++ ".sig"
 		ifM (Url.downloadQuiet distributionInfoUrl infof uo
 			<&&> Url.downloadQuiet distributionInfoSigUrl sigf uo
-			<&&> verifyDistributionSig sigf)
+			<&&> verifyDistributionSig gpgcmd sigf)
 			( readish <$> readFileStrict infof
 			, return Nothing
 			)
@@ -340,13 +341,13 @@ distributionInfoSigUrl = distributionInfoUrl ++ ".sig"
  - The gpg keyring used to verify the signature is located in
  - trustedkeys.gpg, next to the git-annex program.
  -}
-verifyDistributionSig :: FilePath -> IO Bool
-verifyDistributionSig sig = do
+verifyDistributionSig :: GpgCmd -> FilePath -> IO Bool
+verifyDistributionSig gpgcmd sig = do
 	p <- readProgramFile
 	if isAbsolute p
 		then withUmask 0o0077 $ withTmpDir "git-annex-gpg.tmp" $ \gpgtmp -> do
 			let trustedkeys = takeDirectory p </> "trustedkeys.gpg"
-			boolSystem gpgcmd
+			boolGpgCmd gpgcmd
 				[ Param "--no-default-keyring"
 				, Param "--no-auto-check-trustdb"
 				, Param "--no-options"

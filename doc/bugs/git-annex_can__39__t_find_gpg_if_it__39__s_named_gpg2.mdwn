@@ -17,3 +17,5 @@ OS X, gpg2 installed with brew
 ### Have you had any luck using git-annex before?
 
 git-annex took some time to get in the mentality and configure, but now it's a beautiful perfectly oiled file management system. Thanks!
+
+>  git.program support now implemented, [[done]] --[[Joey]]

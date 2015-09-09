@@ -20,6 +20,7 @@ import Control.Exception
 import Data.Default
 
 import Common.Annex
+import qualified Annex
 import Types.Remote
 import Types.GitConfig
 import Types.Crypto
@@ -300,7 +301,8 @@ setGcryptEncryption c remotename = do
 		Just (EncryptedCipher _ _ (KeyIds { keyIds = ks})) -> do
 			setConfig participants (unwords ks)
 			let signingkey = ConfigKey $ Git.GCrypt.remoteSigningKey remotename
-			skeys <- M.keys <$> liftIO secretKeys
+			cmd <- gpgCmd <$> Annex.getGitConfig
+			skeys <- M.keys <$> liftIO (secretKeys cmd)
 			case filter (`elem` ks) skeys of
 				[] -> noop
 				(k:_) -> setConfig signingkey k

@@ -9,6 +9,9 @@ git-annex (5.20150825) UNRELEASED; urgency=medium
     can be displayed for commands that require a git repo, etc.
   * fsck: Work around bug in persistent that broke display of
     problematically encoded filenames on stderr when using --incremental.
+  * When gpg.program is configured, it's used to get the command to run
+    for gpg. Useful on systems that have only a gpg2 command or want to
+    use it instead of the gpg command.
 
  -- Joey Hess <id@joeyh.name>  Tue, 01 Sep 2015 14:46:18 -0700
 
