@@ -79,7 +79,7 @@ subdirs.
 
 # other uses for metadata
 
-Users are not limited to view branches.
+Uses are not limited to view branches.
 
 `git annex checkoutmeta year=2014 talk` in a subdir of master could create the
 same tree of files filter would. The user can then commit that if desired.
