@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 4"
+ date="2015-09-09T22:44:47Z"
+ content="""
+I thought I have earned some trust ;)  I did quite a few up/down upgrades, so it was from about 3-4 trials and thus 100% replicable among them... even though no changes to curl calls, may be bundled curl was different (bundled builds) etc, or some changes to annex environment. dunno (might be handy if git annex version reported versions of bundled stuff... wouldn't it? ;))
+unfortunately for that very reason I didn't upload 0826 version to neurodebian so can't very easily replicate atm.  Thus I will build a new one and will confirm or disconfirm eventually
+"""]]
