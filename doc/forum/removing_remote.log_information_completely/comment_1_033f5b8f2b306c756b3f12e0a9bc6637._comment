@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-09-09T19:57:26Z"
+ content="""
+There's no guaranteed way to remove lines from log files on the git-annex
+branch. A union merge can always result in a removed line being added back later.
+
+The thing to do is to add a new line, that has a newer timestamp and
+omits the information you want to remove with new information.
+
+When reading the remote.log, git-annex will look for the line for a remote
+that has the newest timestamp, and use it in preference to older lines.
+"""]]
