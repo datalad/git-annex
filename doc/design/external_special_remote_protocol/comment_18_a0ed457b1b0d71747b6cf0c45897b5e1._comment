@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""re: Stream encoding"""
+ date="2015-09-09T20:44:38Z"
+ content="""
+@sjvdwalt, git-annex does not specify or expect any character encoding to be used
+for this protocol. A robust external special remote shouldn't assume any
+particular character encoding, either.
+
+Lines will be terminated with '\n' (0xA), and words in lines are
+delimited by an ascii space (0x20). The keywords in the protocol are ascii
+too of course. Any values can contain an arbitrary sequence of bytes that may
+or may not be able to be decoded using the current character encoding.
+
+IIRC, character encodings like UTF8 that encode a character to multiple
+bytes avoid ever using 0x0 to 0xFF when doing so. So, every ascii space and
+newline are unambiguously such, and it's safe to split on them even though
+no encoding is specified.
+"""]]
