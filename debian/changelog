@@ -1,6 +1,7 @@
 git-annex (5.20150825) UNRELEASED; urgency=medium
 
   * Fix Windows build to work with ghc 7.10.
+  * init: Fix reversion in detection of repo made with git clone --shared
 
  -- Joey Hess <id@joeyh.name>  Tue, 01 Sep 2015 14:46:18 -0700
 

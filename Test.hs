@@ -181,6 +181,7 @@ unitTests :: String -> TestTree
 unitTests note = testGroup ("Unit Tests " ++ note)
 	[ testCase "add sha1dup" test_add_sha1dup
 	, testCase "add extras" test_add_extras
+	, testCase "shared clone" test_shared_clone
 	, testCase "log" test_log
 	, testCase "import" test_import
 	, testCase "reinject" test_reinject
@@ -283,6 +284,18 @@ test_add_extras = intmpclonerepo $ do
 	git_annex "add" [wormannexedfile, "--backend=WORM"] @? "add with WORM failed"
 	annexed_present wormannexedfile
 	checkbackend wormannexedfile backendWORM
+
+test_shared_clone :: Assertion
+test_shared_clone = intmpsharedclonerepo $ do
+	v <- catchMaybeIO $ Utility.Process.readProcess "git" 
+		[ "config"
+		, "--bool"
+		, "--get"
+		, "annex.hardlink"
+		]
+	print v
+	v == Just "true\n"
+		@? "shared clone of repo did not get annex.hardlink set"
 
 test_log :: Assertion
 test_log = intmpclonerepo $ do
@@ -848,9 +861,9 @@ test_sync = intmpclonerepo $ do
 test_union_merge_regression :: Assertion
 test_union_merge_regression =
 	{- We need 3 repos to see this bug. -}
-	withtmpclonerepo False $ \r1 ->
-		withtmpclonerepo False $ \r2 ->
-			withtmpclonerepo False $ \r3 -> do
+	withtmpclonerepo $ \r1 ->
+		withtmpclonerepo $ \r2 ->
+			withtmpclonerepo $ \r3 -> do
 				forM_ [r1, r2, r3] $ \r -> indir r $ do
 					when (r /= r1) $
 						boolSystem "git" [Param "remote", Param "add", Param "r1", File ("../../" ++ r1)] @? "remote add"
@@ -875,8 +888,8 @@ test_union_merge_regression =
 {- Regression test for the automatic conflict resolution bug fixed
  - in f4ba19f2b8a76a1676da7bb5850baa40d9c388e2. -}
 test_conflict_resolution_movein_regression :: Assertion
-test_conflict_resolution_movein_regression = withtmpclonerepo False $ \r1 -> 
-	withtmpclonerepo False $ \r2 -> do
+test_conflict_resolution_movein_regression = withtmpclonerepo $ \r1 -> 
+	withtmpclonerepo $ \r2 -> do
 		let rname r = if r == r1 then "r1" else "r2"
 		forM_ [r1, r2] $ \r -> indir r $ do
 			{- Get all files, see check below. -}
@@ -910,8 +923,8 @@ test_conflict_resolution_movein_regression = withtmpclonerepo False $ \r1 ->
  - file. -}
 test_conflict_resolution :: Assertion
 test_conflict_resolution = 
-	withtmpclonerepo False $ \r1 ->
-		withtmpclonerepo False $ \r2 -> do
+	withtmpclonerepo $ \r1 ->
+		withtmpclonerepo $ \r2 -> do
 			indir r1 $ do
 				disconnectOrigin
 				writeFile conflictor "conflictor1"
@@ -948,8 +961,8 @@ test_mixed_conflict_resolution = do
 	check True
 	check False
   where
-	check inr1 = withtmpclonerepo False $ \r1 ->
-		withtmpclonerepo False $ \r2 -> do
+	check inr1 = withtmpclonerepo $ \r1 ->
+		withtmpclonerepo $ \r2 -> do
 			indir r1 $ do
 				disconnectOrigin
 				writeFile conflictor "conflictor"
@@ -990,8 +1003,8 @@ test_remove_conflict_resolution = do
 	check True
 	check False
   where
-	check inr1 = withtmpclonerepo False $ \r1 ->
-		withtmpclonerepo False $ \r2 -> do
+	check inr1 = withtmpclonerepo $ \r1 ->
+		withtmpclonerepo $ \r2 -> do
 			indir r1 $ do
 				disconnectOrigin
 				writeFile conflictor "conflictor"
@@ -1038,8 +1051,8 @@ test_nonannexed_file_conflict_resolution = do
 	check True True
 	check False True
   where
-	check inr1 switchdirect = withtmpclonerepo False $ \r1 ->
-		withtmpclonerepo False $ \r2 ->
+	check inr1 switchdirect = withtmpclonerepo $ \r1 ->
+		withtmpclonerepo $ \r2 ->
 			whenM (isInDirect r1 <&&> isInDirect r2) $ do
 				indir r1 $ do
 					disconnectOrigin
@@ -1088,8 +1101,8 @@ test_nonannexed_symlink_conflict_resolution = do
 	check True True
 	check False True
   where
-	check inr1 switchdirect = withtmpclonerepo False $ \r1 ->
-		withtmpclonerepo False $ \r2 ->
+	check inr1 switchdirect = withtmpclonerepo $ \r1 ->
+		withtmpclonerepo $ \r2 ->
 			whenM (checkRepo (Types.coreSymlinks <$> Annex.getGitConfig) r1
 			       <&&> isInDirect r1 <&&> isInDirect r2) $ do
 				indir r1 $ do
@@ -1139,8 +1152,8 @@ test_uncommitted_conflict_resolution = do
 	check conflictor
 	check (conflictor </> "file")
   where
-	check remoteconflictor = withtmpclonerepo False $ \r1 ->
-		withtmpclonerepo False $ \r2 -> do
+	check remoteconflictor = withtmpclonerepo $ \r1 ->
+		withtmpclonerepo $ \r2 -> do
 			indir r1 $ do
 				disconnectOrigin
 				createDirectoryIfMissing True (parentDir remoteconflictor)
@@ -1177,9 +1190,9 @@ test_uncommitted_conflict_resolution = do
  -}
 test_conflict_resolution_symlink_bit :: Assertion
 test_conflict_resolution_symlink_bit =
-	withtmpclonerepo False $ \r1 ->
-		withtmpclonerepo False $ \r2 ->
-			withtmpclonerepo False $ \r3 -> do
+	withtmpclonerepo $ \r1 ->
+		withtmpclonerepo $ \r2 ->
+			withtmpclonerepo $ \r3 -> do
 				indir r1 $ do
 					writeFile conflictor "conflictor"
 					git_annex "add" [conflictor] @? "add conflicter failed"
@@ -1472,7 +1485,7 @@ inmainrepo :: Assertion -> Assertion
 inmainrepo = indir mainrepodir
 
 intmpclonerepo :: Assertion -> Assertion
-intmpclonerepo a = withtmpclonerepo False $ \r -> indir r a
+intmpclonerepo a = withtmpclonerepo $ \r -> indir r a
 
 intmpclonerepoInDirect :: Assertion -> Assertion
 intmpclonerepoInDirect a = intmpclonerepo $
@@ -1494,12 +1507,20 @@ isInDirect :: FilePath -> IO Bool
 isInDirect = checkRepo (not <$> Config.isDirect)
 
 intmpbareclonerepo :: Assertion -> Assertion
-intmpbareclonerepo a = withtmpclonerepo True $ \r -> indir r a
+intmpbareclonerepo a = withtmpclonerepo' (newCloneRepoConfig { bareClone = True } ) $
+	\r -> indir r a
 
-withtmpclonerepo :: Bool -> (FilePath -> Assertion) -> Assertion
-withtmpclonerepo bare a = do
+intmpsharedclonerepo :: Assertion -> Assertion
+intmpsharedclonerepo a = withtmpclonerepo' (newCloneRepoConfig { sharedClone = True } ) $
+	\r -> indir r a
+
+withtmpclonerepo :: (FilePath -> Assertion) -> Assertion
+withtmpclonerepo = withtmpclonerepo' newCloneRepoConfig
+
+withtmpclonerepo' :: CloneRepoConfig -> (FilePath -> Assertion) -> Assertion
+withtmpclonerepo' cfg a = do
 	dir <- tmprepodir
-	bracket (clonerepo mainrepodir dir bare) cleanup a
+	bracket (clonerepo mainrepodir dir cfg) cleanup a
 
 disconnectOrigin :: Assertion
 disconnectOrigin = boolSystem "git" [Param "remote", Param "rm", Param "origin"] @? "remote rm"
@@ -1527,15 +1548,27 @@ setuprepo dir = do
 	configrepo dir
 	return dir
 
+data CloneRepoConfig = CloneRepoConfig
+	{ bareClone :: Bool
+	, sharedClone :: Bool
+	}
+
+newCloneRepoConfig :: CloneRepoConfig
+newCloneRepoConfig = CloneRepoConfig
+	{ bareClone = False
+	, sharedClone = False
+	}
+
 -- clones are always done as local clones; we cannot test ssh clones
-clonerepo :: FilePath -> FilePath -> Bool -> IO FilePath
-clonerepo old new bare = do
+clonerepo :: FilePath -> FilePath -> CloneRepoConfig -> IO FilePath
+clonerepo old new cfg = do
 	cleanup new
 	ensuretmpdir
 	let cloneparams = catMaybes
 		[ Just $ Param "clone"
 		, Just $ Param "-q"
-		, if bare then Just (Param "--bare") else Nothing
+		, if bareClone cfg then Just (Param "--bare") else Nothing
+		, if sharedClone cfg then Just (Param "--shared") else Nothing
 		, Just $ File old
 		, Just $ File new
 		]
@@ -1543,7 +1576,7 @@ clonerepo old new bare = do
 	configrepo new
 	indir new $
 		git_annex "init" ["-q", new] @? "git annex init failed"
-	unless bare $
+	unless (bareClone cfg) $
 		indir new $
 			handleforcedirect
 	return new

@@ -22,3 +22,6 @@ I haven't really debugged this, but it seems that `git annex init` nowadays does
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Sure, it's a great tool!
+
+> Seems that bit rotted at some point. I've fixed it, and put in a test
+> case. [[done]] --[[Joey]]
