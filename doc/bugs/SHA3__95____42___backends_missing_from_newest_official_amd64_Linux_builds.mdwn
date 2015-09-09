@@ -49,3 +49,7 @@ Newest official builds from downloads.kitenet.net . Debian GNU/Linux all the way
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Oh, yes. It rules. :) One of the most important programs I use because I have all my valuable stuff in it. My files have never been safer.
+
+> Yeah, debian unstable got too unstable and I had to move those
+> autobuilders to testing, which didh't have the necessary library.
+> They're back on unstable now, so [[done]] --[[Joey]]
