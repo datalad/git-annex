@@ -30,6 +30,7 @@ module Messages (
 	showHeader,
 	showRaw,
 	setupConsole,
+	setConsoleEncoding,
 	enableDebugOutput,
 	disableDebugOutput,
 	debugEnabled,
@@ -176,9 +177,12 @@ setupConsole = do
 		<$> streamHandler stderr DEBUG
 		<*> pure preciseLogFormatter
 	updateGlobalLogger rootLoggerName (setLevel NOTICE . setHandlers [s])
-	{- This avoids ghc's output layer crashing on
-	 - invalid encoded characters in
-	 - filenames when printing them out. -}
+	setConsoleEncoding
+
+{- This avoids ghc's output layer crashing on invalid encoded characters in
+ - filenames when printing them out. -}
+setConsoleEncoding :: IO ()
+setConsoleEncoding = do
 	fileEncoding stdout
 	fileEncoding stderr
 
