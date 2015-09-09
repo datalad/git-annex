@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-09-09T16:19:06Z"
+ content="""
+This is a POSIX fcntl lock failing on that filesystem.
+
+git-annex really needs these locks for safe concurrency, including guarding
+against situations where data could be lost.
+
+I wonder if flock locks would be more portable?
+"""]]
