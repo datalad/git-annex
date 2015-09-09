@@ -20,7 +20,7 @@ There is still some trust involved here. A semitrusted repository is
 depended on to retain a copy of the file content; possibly the only
 [[copy|copies]].
 
-(Being semitrusted is the default. The [[git-annex-semitrust]] command
+(Being semitrusted is the default. The [[git-annex semitrust|git-annex-semitrust]] command
 restores a repository to this default, when it has been overridden.
 The `--semitrust` option can temporarily restore a repository to this
 default.)
@@ -34,7 +34,7 @@ This is a good choice for eg, portable drives that could get lost. Or,
 if a disk is known to be dying, you can set it to untrusted and let
 `git annex fsck` warn about data that needs to be copied off it.
 
-To configure a repository as untrusted, use the [[git-annex-untrust]]
+To configure a repository as untrusted, use the [[git-annex untrust|git-annex-untrust]]
 command.
 
 ## trusted
