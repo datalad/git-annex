@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-09-09T18:47:17Z"
+ content="""
+This error message is a `git push` error message.
+I've never seen this error before.. 
+
+<http://www.markhneedham.com/blog/2013/06/13/git-having-a-branchtag-with-the-same-name-error-dst-refspec-matches-more-than-one/>
+Shows one way to get into this situation, where a repository somehow has
+a tag with the same name as the branch that is being pushed.
+
+<https://lostechies.com/jasonmeridth/2010/02/27/refspec-matches-more-than-one/>>
+Similarly shows it being a conflict between a tag and a branch;
+this time the tag exists in the local repository.
+
+I guess you've run into some problem like this. If there's an easy way to
+reproduce the problem using just git-annex commands, and not manaul tag
+creation etc, please file a bug report with details.
+"""]]
