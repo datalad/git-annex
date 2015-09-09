@@ -13,6 +13,7 @@ detailed instructions             | quick install
 &nbsp;&nbsp;[[ArchLinux]]         | `yaourt -Sy git-annex-bin`
 &nbsp;&nbsp;[[NixOS]]             | `nix-env -i git-annex`
 &nbsp;&nbsp;[[Gentoo]]            | `emerge git-annex`
+&nbsp;&nbsp;[[Void]]            | `xbps-install git-annex`
 &nbsp;&nbsp;[[ScientificLinux5]]  |
 &nbsp;&nbsp;[[openSUSE]]          | 
 &nbsp;&nbsp;[[Docker]]            | 

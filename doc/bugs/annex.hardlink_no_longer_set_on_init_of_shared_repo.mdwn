@@ -1,0 +1,24 @@
+### Please describe the problem.
+
+In an earlier git-annex version (5.20141125, at least on debian), `git clone --shared` followed by `git annex init` used to set annex.hardlink to true and mark the repository as untrusted. It no longer does that.
+
+### What steps will reproduce the problem?
+
+(Assuming "foo" is a pre-existing repo with an annex)
+
+    git clone --shared foo foo.shared
+    cd foo.shared
+    git annex init
+    git config annex.hardlink
+
+### What version of git-annex are you using? On what operating system?
+
+5.20150824, Debian Jessie. Tried both the debian unstable package and direct cabal build.
+
+### Please provide any additional information below.
+
+I haven't really debugged this, but it seems that `git annex init` nowadays does some syncing (i.e. commits, i.e. objects) that it didn't used to. The hard link check tests that the current repository has alternates, but doesn't have local objects. It might be that the newly created local objects prevent the hard link check from passing. Perhaps the hard link test should only check the presence of alternates?
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Sure, it's a great tool!
