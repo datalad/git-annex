@@ -36,8 +36,9 @@ dispatch fuzzyok allargs allcmds globaloptions fields getgitrepo progname progde
 		Annex.eval state $ do
 			checkEnvironment
 			forM_ fields $ uncurry Annex.setField
-			(cmd, seek, globalconfig) <- parsewith cmdparser
+			(cmd, seek, globalconfig) <- parsewith False cmdparser
 				(\a -> inRepo $ a . Just)
+				(liftIO . O.handleParseResult)
 			when (cmdnomessages cmd) $ 
 				Annex.setOutput QuietOutput
 			getParsed globalconfig
@@ -47,20 +48,30 @@ dispatch fuzzyok allargs allcmds globaloptions fields getgitrepo progname progde
 			performCommandAction cmd seek $
 				shutdown $ cmdnocommit cmd
 	go (Left norepo) = do
-		(_, a, _globalconfig) <- parsewith
-			(fromMaybe (throw norepo) . cmdnorepo)
-			(\a -> a =<< Git.Config.global)
-		a
+		let ingitrepo = \a -> a =<< Git.Config.global
+		-- Parse command line with full cmdparser first,
+		-- so that help can be displayed for bad parses
+		-- even when not run in a repo.
+		res <- parsewith False cmdparser ingitrepo return
+		case res of
+			Failure _ -> void (O.handleParseResult res)
+			_ -> do
+				-- Parse command line in norepo mode.
+				(_, a, _globalconfig) <- parsewith True
+					(fromMaybe (throw norepo) . cmdnorepo)
+					ingitrepo
+					O.handleParseResult
+				a
 
-	parsewith getparser ingitrepo = 
+	parsewith secondrun getparser ingitrepo handleresult =
 		case parseCmd progname progdesc globaloptions allargs allcmds getparser of
 			O.Failure _ -> do
 				-- parse failed, so fall back to
 				-- fuzzy matching, or to showing usage
-				when fuzzy $
+				when (fuzzy && not secondrun) $
 					ingitrepo autocorrect
-				liftIO (O.handleParseResult (parseCmd progname progdesc globaloptions correctedargs allcmds getparser))
-			res -> liftIO (O.handleParseResult res)
+				handleresult (parseCmd progname progdesc globaloptions correctedargs allcmds getparser)
+			res -> handleresult res
 	  where
 		autocorrect = Git.AutoCorrect.prepare (fromJust inputcmdname) cmdname cmds
 		(fuzzy, cmds, inputcmdname, args) = findCmd fuzzyok allargs allcmds

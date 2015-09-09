@@ -22,3 +22,4 @@ remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glac
 
 YES -- lots of luck ;)
 
+> [[fixed|done]] --[[Joey]]

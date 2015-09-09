@@ -5,6 +5,8 @@ git-annex (5.20150825) UNRELEASED; urgency=medium
   * info: Support querying info of individual files in direct mode.
   * unused: Fix reversion in 5.20150727 that broke parsing of the
     --unused-refspec option. Thanks, Øyvind A. Holm.
+  * Make full option parsing be done when not in a git repo, so --help
+    can be displayed for commands that require a git repo, etc.
 
  -- Joey Hess <id@joeyh.name>  Tue, 01 Sep 2015 14:46:18 -0700
 
