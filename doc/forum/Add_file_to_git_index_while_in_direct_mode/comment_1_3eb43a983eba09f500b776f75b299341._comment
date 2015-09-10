@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-09-10T22:02:19Z"
+ content="""
+In what way does setting annex.largefiles and using git annex add not work
+as well as you'd like?
+"""]]
