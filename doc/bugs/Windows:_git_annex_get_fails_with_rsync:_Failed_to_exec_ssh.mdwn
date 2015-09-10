@@ -34,3 +34,4 @@ On windows, fails getting files with the following error : "rsync: Failed to exe
 
 Yes :-) Only on linux so far and trying on windows now :-/
 
+> [[fixed|done]] in the daily build now. --[[Joey]]
