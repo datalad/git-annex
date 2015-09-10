@@ -11,7 +11,7 @@
 @rem Get the absolute path to the parent directory, which is assumed to be the
 @rem Git installation root.
 @for /F "delims=" %%I in ("%~dp0..") do @set git_install_root=%%~fI
-@set PATH=!git_install_root!\bin;!git_install_root!\mingw\bin;!PATH!
+@set PATH=!git_install_root!\bin;!git_install_root!\usr\bin;!git_install_root!\mingw\bin;!PATH!
 
 ssh %*
 @goto end
@@ -20,7 +20,7 @@ ssh %*
 @rem The above script again with immediate expansion, in case delayed expansion
 @rem is unavailable.
 @for /F "delims=" %%I in ("%~dp0..") do @set git_install_root=%%~fI
-@set PATH=%git_install_root%\bin;%git_install_root%\mingw\bin;%PATH%
+@set PATH=%git_install_root%\bin;%git_install_root%\usr\bin;%git_install_root%\mingw\bin;%PATH%
 
 @if not exist "%HOME%" @set HOME=%HOMEDRIVE%%HOMEPATH%
 @if not exist "%HOME%" @set HOME=%USERPROFILE%
