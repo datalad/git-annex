@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnmF_9CAtfqdZkC4e-_dCX-rK5bqh4RWkw"
+ nickname="Carl"
+ subject="comment 2"
+ date="2015-09-10T16:04:32Z"
+ content="""
+I think you are right. I did try it out on the mac and Thought that I could see the same problems there. Today I tried to reproduce it, but it seems to be working correctly. (I have only tested it properly on a special remote, with --from,  and not on the repo itself, since I by misstake did start a job that fsck-ed all files with a new due date in 30 days. 
+
+Please close the bug.
+"""]]
