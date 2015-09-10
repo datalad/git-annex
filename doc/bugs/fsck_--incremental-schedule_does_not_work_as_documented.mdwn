@@ -69,3 +69,5 @@ ok
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I manage all my important personal documents since about two or three years, spreading them out over home servers, cloud providers and off site usb-drives in foreign countries, making sure that there are always at least 4 copies available. (if my flat burns the same day that box.com goes bankrupt ...)
+
+> [[done]] per comments --[[Joey]]
