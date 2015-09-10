@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-09-10T16:51:10Z"
+ content="""
+Nice to see there's finally an up-to-date version of git for windows.
+
+However, it's not too surprising, since this is an entirely different build
+from the msysgit that git-annex has been made to work with, that it doesn't
+quite work with git-annex. This stuff is *extremely* fiddly on windows.
+
+Seems that the new git for windows ships ssh in Program Files/git/usr/bin.
+Since that's not in PATH, rsync can't find it. I tried a few things, but
+can't find a way yet that makes rsync find it.
+"""]]
