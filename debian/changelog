@@ -12,6 +12,8 @@ git-annex (5.20150825) UNRELEASED; urgency=medium
   * When gpg.program is configured, it's used to get the command to run
     for gpg. Useful on systems that have only a gpg2 command or want to
     use it instead of the gpg command.
+  * Windows: Switched to using git for Windows, rather than msysgit.
+    Using msysgit with git-annex is no longer supported.
 
  -- Joey Hess <id@joeyh.name>  Tue, 01 Sep 2015 14:46:18 -0700
 

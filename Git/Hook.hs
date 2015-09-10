@@ -81,7 +81,7 @@ runHook h r = do
 #ifndef mingw32_HOST_OS
 	findcmd = defcmd
 #else
-	{- Like msysgit, parse the first line of the hook file,
+	{- Like git for windows, parse the first line of the hook file,
 	 - look for "#!", and dispatch the interpreter on the file. -}
 	findcmd f = do
 		l <- headMaybe . lines <$> catchDefaultIO "" (readFile f)

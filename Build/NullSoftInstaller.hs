@@ -1,7 +1,7 @@
 {- Generates a NullSoft installer program for git-annex on Windows.
  - 
  - To build the installer, git-annex should already be built by cabal,
- - and ssh and rsync etc, as well as cygwin libraries, already installed
+ - and the necessary utility programs already installed
  - from cygwin.
  -
  - This uses the Haskell nsis package (cabal install nsis)
@@ -9,8 +9,9 @@
  - git-annex-installer.exe
  - 
  - The installer includes git-annex, and utilities it uses, with the
- - exception of git. The user needs to install git separately,
- - and the installer checks for that.
+ - exception of git and some utilities that are bundled with git.
+ - The user needs to install git separately, and the installer checks
+ - for that.
  -
  - Copyright 2013-2015 Joey Hess <id@joeyh.name>
  -
@@ -34,6 +35,7 @@ import Utility.Path
 import Utility.CopyFile
 import Utility.SafeCommand
 import Utility.Process
+import Utility.Exception
 import Build.BundledPrograms
 
 main = do
@@ -42,7 +44,7 @@ main = do
 		mustSucceed "ln" [File "dist/build/git-annex/git-annex.exe", File gitannex]
 		let license = tmpdir </> licensefile
 		mustSucceed "sh" [Param "-c", Param $ "zcat standalone/licences.gz > '" ++ license ++ "'"]
-		extrabins <- forM (cygwinPrograms) $ \f -> do
+		extrabins <- forM (winPrograms) $ \f -> do
 			p <- searchPath f
 			when (isNothing p) $
 				print ("unable to find in PATH", f)
@@ -54,7 +56,7 @@ main = do
 		let htmlhelp = tmpdir </> "git-annex.html"
 		writeFile htmlhelp htmlHelpText
 		writeFile nsifile $ makeInstaller gitannex license htmlhelp
-			(wrappers ++ catMaybes (extrabins ++ dllpaths))
+			(catMaybes (extrabins ++ dllpaths))
 			[ webappscript, autostartscript ]
 		mustSucceed "makensis" [File nsifile]
 	removeFile nsifile -- left behind if makensis fails
@@ -173,10 +175,10 @@ makeInstaller gitannex license htmlhelp extrabins launchers = nsis $ do
 	addfile f = file [] (str f)
 	removefilesFrom d = mapM_ (\f -> delete [RebootOK] $ fromString $ d ++ "/" ++ takeFileName f)
 
-cygwinPrograms :: [FilePath]
-cygwinPrograms = map (\p -> p ++ ".exe") bundledPrograms
+winPrograms :: [FilePath]
+winPrograms = map (\p -> p ++ ".exe") bundledPrograms
 
--- msysgit opens Program Files/Git/doc/git/html/git-annex.html
+-- git opens Program Files/Git/doc/git/html/git-annex.html
 -- when git annex --help is run.
 htmlHelpText :: String
 htmlHelpText = unlines
@@ -191,15 +193,10 @@ htmlHelpText = unlines
 
 -- Find cygwin libraries used by the specified executable.
 findCygLibs :: FilePath -> IO [FilePath]
-findCygLibs p = filter iscyg . mapMaybe parse . lines <$> readProcess "ldd" [p]
+findCygLibs p = filter iscyg . mapMaybe parse . lines 
+	<$> catchDefaultIO "" (readProcess "ldd" [p])
   where
 	parse l = case words (dropWhile isSpace l) of
 		(dll:"=>":_dllpath:_offset:[]) -> Just dll
 		_ -> Nothing
 	iscyg f = "cyg" `isPrefixOf` f || "lib" `isPrefixOf` f
-
-wrappers :: [FilePath]
-wrappers = 
-	[ "standalone\\windows\\ssh.cmd"
-	, "standalone\\windows\\ssh-keygen.cmd"
-	]

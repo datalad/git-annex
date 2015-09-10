@@ -63,8 +63,11 @@ cabal install nsis
 ghc -fforce-recomp --make Build/NullSoftInstaller.hs -fno-warn-tabs
 # Want to include cygwin programs in bundle, not others, since
 # it includes the cygwin libs that go with them.
-# Currently need an older version of rsync than the one from cygwin.
-if [ ! -e rsync.exe ]; then
+# Currently need an different version of rsync than the one from cygwin.
+# This rsync build originally comes from https://msys2.github.io/,
+# and it works with the ssh bundled with git for windows.
+if [ ! -e rsync.exe ] || [ "$(sha1sum rsync.exe)" != "85cb7a4d16d274fcf8069b39042965ad26abd6aa" ]; then
+	rm -f rsync.exe || true
 	withcyg wget https://downloads.kitenet.net/git-annex/windows/assets/rsync.exe
 	withcyg chmod +x rsync.exe
 fi
