@@ -1,17 +1,17 @@
 I have the following vicfg,
 
-group UUID1 = PodA
-group UUID2 = PodA
-group UUID3 = PodA
-group UUID4 = PodB
+    group UUID1 = PodA
+    group UUID2 = PodA
+    group UUID3 = PodA
+    group UUID4 = PodB
 
-wanted UUID1 = groupwanted
-wanted UUID2 = groupwanted
-wanted UUID3 = groupwanted
-wanted UUID4 = groupwanted
+    wanted UUID1 = groupwanted
+    wanted UUID2 = groupwanted
+    wanted UUID3 = groupwanted
+    wanted UUID4 = groupwanted
 
-groupwanted PodA = present and not copies=PodA:1
-groupwanted PodB = present and not copies=PodB:1
+    groupwanted PodA = present and not copies=PodA:1
+    groupwanted PodB = present and not copies=PodB:1
 
 at this point repos 1 2 3 combined has 1 copy of each file and repo 4 has full copy of all files. (used to move files around manually before grouping repos). 
 
