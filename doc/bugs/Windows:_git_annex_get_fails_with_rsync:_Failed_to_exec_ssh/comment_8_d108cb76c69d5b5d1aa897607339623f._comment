@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="olivier.berger@bb28df880236e55a6bfeca92cc3de8ec424f2eba"
+ nickname="olivier.berger"
+ subject="Maybe Git 2.5 must be installed only as 32 bit ?"
+ date="2015-09-11T15:42:18Z"
+ content="""
+It seems to me the problem actually lies in that I installed the 64 bits version of Git 2.5, as I've tried to install everything on c:\ and the problem still isn't solved. But I think that the fact that the installer complains about Git not in Program Files(x86) is linked to 32/64 bits mismatch.
+
+Once I'm installing Git 2.5 32 bits (even if my system runs Windows 7 64 bits), things are back to normal.
+
+Hope this helps.
+"""]]
