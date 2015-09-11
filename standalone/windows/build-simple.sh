@@ -35,7 +35,4 @@ fi
 # Build the installer
 cabal install nsis
 ghc --make Build/NullSoftInstaller.hs -fno-warn-tabs
-PATH="$PATH:/cygdrive/c/Program Files/NSIS"
-# Want to include cygwin programs in bundle, not others, since
-# it includes the cygwin libs that go with them.
-withcygpreferred Build/NullSoftInstaller.exe
+PATH="$PATH:/cygdrive/c/Program Files/NSIS" Build/NullSoftInstaller.exe
