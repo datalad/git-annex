@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="olivier.berger@bb28df880236e55a6bfeca92cc3de8ec424f2eba"
+ nickname="olivier.berger"
+ subject="Not completely fixed if git not installed on C:"
+ date="2015-09-11T15:31:25Z"
+ content="""
+Hi.
+
+I have the situation where my C: is too full, so I'm installing Git 2.5 on E: in E:\Program files\ instead of C:\Program files\
+
+Then while installing git-annex, I'll install it in the same E:\Program files\git\ 
+
+But then, the installer complains that git couldn't be found in c:, and whenever rsyncs are attempted, they fail with :
+rsync failed -- run git annex again to resume file transfer
+
+I think there's probably some weirdness about the paths.
+
+I hope this is easy to reproduce and fix.
+
+Thanks in advance.
+"""]]
