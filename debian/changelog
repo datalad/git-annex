@@ -14,8 +14,9 @@ git-annex (5.20150825) UNRELEASED; urgency=medium
     use it instead of the gpg command.
   * Windows: Switched to using git for Windows, rather than msysgit.
     Using msysgit with git-annex is no longer supported.
-  * Windows: When the user neglects to tell the git installer to add git to
-    PATH, git-annex will now work from within the git bash shell.
+  * Windows: Even when the user neglects to tell the git installer to
+    add git to PATH, git-annex will still work from within the git bash
+    shell, and the webapp can be used too.
 
  -- Joey Hess <id@joeyh.name>  Tue, 01 Sep 2015 14:46:18 -0700
 

@@ -64,12 +64,13 @@ main = do
 			False -> error $ cmd ++ " failed"
 
 {- Generates a .vbs launcher which runs a command without any visible DOS
- - box. -}
+ - box. It expects to be passed the directory where git-annex is installed. -}
 vbsLauncher :: FilePath -> String -> String -> IO String
 vbsLauncher tmpdir basename cmd = do
 	let f = tmpdir </> basename ++ ".vbs"
 	writeFile f $ unlines
 		[ "Set objshell=CreateObject(\"Wscript.Shell\")"
+		, "objShell.CurrentDirectory = Wscript.Arguments.item(0)"
 		, "objShell.Run(\"" ++ cmd ++ "\"), 0, False"
 		]
 	return f
@@ -131,7 +132,7 @@ makeInstaller gitannex gitannexcmd license htmlhelp extrabins launchers = nsis $
 	Development.NSIS.createDirectory "$SMPROGRAMS"
 	createShortcut startMenuItem
 		[ Target "wscript.exe"
-		, Parameters "\"$INSTDIR/git-annex-webapp.vbs\""
+		, Parameters "\"$INSTDIR/cmd/git-annex-webapp.vbs\" \"$INSTDIR/cmd\""
 		, StartOptions "SW_SHOWNORMAL"
 		, IconFile "$INSTDIR/usr/bin/git-annex.exe"
 		, IconIndex 2
@@ -140,7 +141,7 @@ makeInstaller gitannex gitannexcmd license htmlhelp extrabins launchers = nsis $
 	delete [RebootOK] $ oldStartMenuItem
 	createShortcut autoStartItem
 		[ Target "wscript.exe"
-		, Parameters "\"$INSTDIR/git-annex-autostart.vbs\""
+		, Parameters "\"$INSTDIR/cmd/git-annex-autostart.vbs\" \"$INSTDIR/cmd\""
 		, StartOptions "SW_SHOWNORMAL"
 		, IconFile "$INSTDIR/usr/bin/git-annex.exe"
 		, IconIndex 2
@@ -169,19 +170,16 @@ makeInstaller gitannex gitannexcmd license htmlhelp extrabins launchers = nsis $
 		addfile htmlhelp
 		setOutPath "$INSTDIR"
 		addfile license
+		setOutPath "$INSTDIR\\cmd"
 		mapM_ addfile launchers
 		writeUninstaller $ str uninstaller
 	uninstall $ do
 		delete [RebootOK] $ startMenuItem
 		delete [RebootOK] $ autoStartItem
 		removefilesFrom "$INSTDIR/usr/bin" (gitannex:extrabins)
-		removefilesFrom "$INSTDIR/cmd" gitannexcmd
-		removefilesFrom "$INSTDIR\\doc\\git\\html" [htmlhelp]
-		removefilesFrom "$INSTDIR" $
-			launchers ++
-			[ license
-			, uninstaller
-			]
+		removefilesFrom "$INSTDIR/cmd" (gitannexcmd:launchers)
+		removefilesFrom "$INSTDIR\\mingw32\\share\\doc\\git-doc" [htmlhelp]
+		removefilesFrom "$INSTDIR" [license, uninstaller]
   where
 	addfile f = file [] (str f)
 	removefilesFrom d = mapM_ (\f -> delete [RebootOK] $ fromString $ d ++ "/" ++ takeFileName f)
