@@ -45,7 +45,6 @@ bundledPrograms = catMaybes
 #ifndef mingw32_HOST_OS
 	, Just "sh"
 #endif
-	, ifset SysConfig.curl "curl"
 #ifndef darwin_HOST_OS
 	-- wget on OSX has been problimatic, looking for certs in the wrong
 	-- places. Don't ship it, use curl or the OSX's own wget if it has
@@ -56,6 +55,7 @@ bundledPrograms = catMaybes
 	, SysConfig.gcrypt
 #ifndef mingw32_HOST_OS
 	-- All these utilities are included in git for Windows
+	, ifset SysConfig.curl "curl"
 	, SysConfig.gpg
 	, SysConfig.sha1
 	, SysConfig.sha256
