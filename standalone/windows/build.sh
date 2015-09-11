@@ -76,7 +76,7 @@ fi
 # Build the installer
 cabal install nsis
 ghc -fforce-recomp --make Build/NullSoftInstaller.hs -fno-warn-tabs
-Build/NullSoftInstaller.exe
+PATH=".:/c/cygwin/bin:$PATH" Build/NullSoftInstaller.exe
 
 rm -f last-incremental-failed
 
