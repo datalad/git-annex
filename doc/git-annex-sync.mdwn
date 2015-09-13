@@ -36,21 +36,33 @@ by running "git annex sync" on the remote.
 
 # OPTIONS
 
-* `--message=msg`
-
-  Use this option to specify a commit message.
-
 * `--fast`
 
   Only sync with the remotes with the lowest annex-cost value configured.
 
-* `--content`
+* `--commit`, `--no-commit`
+
+  A commit is done by default. Use --no-cmmit to avoid committing local changes.
+
+* `--message=msg`
+
+  Use this option to specify a commit message.
+
+* `--pull`, `--no-pull`
+
+  By default, git pulls from remotes. Use --no-pull to disable.
+
+* `--push`, `--no-push` 
+
+  By default, git pushes to remotes. Use --no-push to disable.
+
+* `--content`, `--no-content`
 
   Normally, syncing does not transfer the contents of annexed files.
-  This option causes the content of files in the work tree
+  The --content option causes the content of files in the work tree
   to also be uploaded and downloaded as necessary.  
 
-  By default, this tries to get each annexed file in the work tree
+  Normally this tries to get each annexed file in the work tree
   that the local repository  does not yet have, and then copies each
   file in the work tree to every remote that it is syncing with.
   This behavior can be overridden by configuring the preferred content

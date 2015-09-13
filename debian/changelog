@@ -17,6 +17,9 @@ git-annex (5.20150825) UNRELEASED; urgency=medium
   * Windows: Even when the user neglects to tell the git installer to
     add git to PATH, git-annex will still work from within the git bash
     shell, and the webapp can be used too.
+  * sync: Add --no-commit, --no-pull, --no-push options to turn off parts of
+    the sync process, as well as supporting --commit, --pull, --push, and
+    --no-content options to specify the (current) default behavior.
 
  -- Joey Hess <id@joeyh.name>  Tue, 01 Sep 2015 14:46:18 -0700
 
