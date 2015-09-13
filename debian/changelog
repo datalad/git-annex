@@ -1,3 +1,9 @@
+git-annex (5.20150824-1) unstable; urgency=medium
+
+  * Package 5.20150824-1
+
+ -- Richard Hartmann <richih@debian.org>  Sun, 13 Sep 2015 22:02:06 +0200
+
 git-annex (5.20150824) unstable; urgency=medium
 
   * Sped up downloads of files from ssh remotes, reducing the
