@@ -1,0 +1,39 @@
+Creating a gcrypt remote on a remote bare repository fails: it tries to modify the config file in the wrong path:
+
+(problem is in last line)
+
+```
+$ git annex initremote qech type=gcrypt encryption=hybrid gitrepo=~/astro.git keyid=0BA74AC5B9494715
+initremote qech (encryption setup) (hybrid cipher with gpg key 0BA74AC5B9494715) gcrypt: Development version -- Repository format MAY CHANGE
+gcrypt: Decrypting manifest
+gpg: Signature made Son 13 Sep 2015 19:37:16 CEST using RSA key ID B9494715
+gpg: Good signature from "Arian Sanusi <arian@sanusi.ch>"
+gpg:                 aka "Arian Sanusi <arian@sanusi.de>"
+gpg:                 aka "Arian Sanusi <asanusi@student.ethz.ch>"
+gpg:                 aka "Arian Sanusi <arian@guave.org>"
+gpg:                 aka "Arian Sanusi <asanusi@ethz.ch>"
+gpg:                 aka "Arian Sanusi <arian@semioptimal.net>"
+gcrypt: Remote ID is :id:1+DP8KgrbsvpSycQ5QKO
+Von gcrypt::/home/arian-debian-ssd/astro
+ * [neuer Branch]    git-annex  -> qech/git-annex
+gcrypt: Development version -- Repository format MAY CHANGE
+gcrypt: Decrypting manifest
+gpg: Signature made Son 13 Sep 2015 19:37:16 CEST using RSA key ID B9494715
+gpg: Good signature from "Arian Sanusi <arian@sanusi.ch>"
+gpg:                 aka "Arian Sanusi <arian@sanusi.de>"
+gpg:                 aka "Arian Sanusi <asanusi@student.ethz.ch>"
+gpg:                 aka "Arian Sanusi <arian@guave.org>"
+gpg:                 aka "Arian Sanusi <asanusi@ethz.ch>"
+gpg:                 aka "Arian Sanusi <arian@semioptimal.net>"
+Everything up-to-date
+error: could not lock config file /home/arian-debian-ssd/astro.git/.git/config: Datei oder Verzeichnis nicht gefunden
+git-annex: git [Param "config",Param "core.gcrypt-id",Param ":id:1+DP8KgrbsvpSycQ5QKO"] failed
+```
+
+debian stretch *pre gcc5* on amd64 here:
+
+```
+i  git                 1:2.5.1-1    amd64
+ii  git-annex           5.20150812-2 amd64
+ii  git-remote-gcrypt   0.20130908-7 all
+```
