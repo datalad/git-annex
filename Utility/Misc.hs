@@ -136,7 +136,7 @@ hGetSomeString h sz = do
  - if this reap gets there first. -}
 reapZombies :: IO ()
 #ifndef mingw32_HOST_OS
-reapZombies = do
+reapZombies =
 	-- throws an exception when there are no child processes
 	catchDefaultIO Nothing (getAnyProcessStatus False True)
 		>>= maybe (return ()) (const reapZombies)

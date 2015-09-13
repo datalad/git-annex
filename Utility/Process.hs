@@ -172,7 +172,7 @@ createBackgroundProcess p a = a =<< createProcess p
 -- returns a transcript combining its stdout and stderr, and
 -- whether it succeeded or failed.
 processTranscript :: String -> [String] -> (Maybe String) -> IO (String, Bool)
-processTranscript cmd opts input = processTranscript' cmd opts Nothing input
+processTranscript cmd opts = processTranscript' cmd opts Nothing
 
 processTranscript' :: String -> [String] -> Maybe [(String, String)] -> (Maybe String) -> IO (String, Bool)
 processTranscript' cmd opts environ input = do
@@ -378,11 +378,10 @@ createProcess p = do
 
 -- | Debugging trace for a CreateProcess.
 debugProcess :: CreateProcess -> IO ()
-debugProcess p = do
-	debugM "Utility.Process" $ unwords
-		[ action ++ ":"
-		, showCmd p
-		]
+debugProcess p = debugM "Utility.Process" $ unwords
+	[ action ++ ":"
+	, showCmd p
+	]
   where
 	action
 		| piped (std_in p) && piped (std_out p) = "chat"

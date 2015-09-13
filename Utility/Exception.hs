@@ -39,10 +39,7 @@ catchBoolIO = catchDefaultIO False
 
 {- Catches IO errors and returns a Maybe -}
 catchMaybeIO :: MonadCatch m => m a -> m (Maybe a)
-catchMaybeIO a = do
-	catchDefaultIO Nothing $ do
-		v <- a
-		return (Just v)
+catchMaybeIO a = catchDefaultIO Nothing $ a >>= (return . Just)
 
 {- Catches IO errors and returns a default value. -}
 catchDefaultIO :: MonadCatch m => a -> m a -> m a

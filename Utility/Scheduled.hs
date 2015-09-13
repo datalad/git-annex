@@ -286,7 +286,7 @@ fromScheduledTime AnyTime = "any time"
 fromScheduledTime (SpecificTime h m) = 
 	show h' ++ (if m > 0 then ":" ++ pad 2 (show m) else "") ++ " " ++ ampm
   where
-	pad n s = take (n - length s) (repeat '0') ++ s
+	pad n s = replicate (n - length s) '0' ++ s
 	(h', ampm)
 		| h == 0 = (12, "AM")
 		| h < 12 = (h, "AM")
