@@ -120,3 +120,4 @@ ok
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 
+> I see that #796899 is fixed in debian unstable, so [[done]] --[[Joey]]
