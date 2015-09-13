@@ -18,6 +18,7 @@ import qualified Git
 import Config
 import Config.Cost
 import Remote.Helper.Special
+import Remote.Helper.Messages
 import qualified Remote.Helper.AWS as AWS
 import Creds
 import Utility.Metered
@@ -176,7 +177,7 @@ remove r k = glacierAction r
 
 checkKey :: Remote -> CheckPresent
 checkKey r k = do
-	showAction $ "checking " ++ name r
+	showChecking r
 	go =<< glacierEnv (config r) (uuid r)
   where
 	go Nothing = error "cannot check glacier"

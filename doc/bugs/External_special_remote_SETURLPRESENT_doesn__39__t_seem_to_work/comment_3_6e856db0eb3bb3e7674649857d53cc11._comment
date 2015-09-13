@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-08-13T20:47:28Z"
+ content="""
+Needing enableremote is a trifle annoying, but I don't see a way to avoid
+it and it's symmetric with needing to add a git remote to a repo before
+accessing it. And of course, the user has to install your external special
+remote's implementation too. Which is perhaps more annoying in this use case
+where the file is only being retrieved with a dumb http call in the end.
+
+Instead of the current approach, I could have had special remotes
+use SETURLPRESENT to record the public urls for keys. Then git-annex
+would have something that notices if a special remote is not enabled, but
+supports public urls, and perhaps auto-enables the special remote in
+readonly mode, not using the normal implementation of the special remote,
+but a standin implementation that just uses the public urls. That seems a
+little complicated, especially with the auto-enabling, and it bloats the
+git-annex branch with public urls. IIRC those are the reasons I decided not
+to go that route.
+
+I've added WHEREIS to the protocol. It is only used for `whereis`
+display.
+"""]]

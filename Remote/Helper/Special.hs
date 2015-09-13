@@ -36,6 +36,7 @@ import Common.Annex
 import Types.StoreRetrieve
 import Types.Remote
 import Crypto
+import Config
 import Config.Cost
 import Utility.Metered
 import Remote.Helper.Chunked as X
@@ -44,7 +45,6 @@ import Remote.Helper.Messages
 import Annex.Content
 import Messages.Progress
 import qualified Git
-import qualified Git.Command
 import qualified Git.Construct
 
 import qualified Data.ByteString.Lazy as L
@@ -66,13 +66,10 @@ findSpecialRemotes s = do
 {- Sets up configuration for a special remote in .git/config. -}
 gitConfigSpecialRemote :: UUID -> RemoteConfig -> String -> String -> Annex ()
 gitConfigSpecialRemote u c k v = do
-	set ("annex-"++k) v
-	set ("annex-uuid") (fromUUID u)
+	setConfig (remoteConfig remotename k) v
+	setConfig (remoteConfig remotename "uuid") (fromUUID u)
   where
-	set a b = inRepo $ Git.Command.run
-		[Param "config", Param (configsetting a), Param b]
 	remotename = fromJust (M.lookup "name" c)
-	configsetting s = "remote." ++ remotename ++ "." ++ s
 
 -- Use when nothing needs to be done to prepare a helper.
 simplyPrepare :: helper -> Preparer helper
@@ -165,18 +162,21 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 			(\_ -> return False)
 		, removeKey = \k -> cip >>= removeKeyGen k
 		, checkPresent = \k -> cip >>= checkPresentGen k
-		, cost = maybe
-			(cost baser)
-			(const $ cost baser + encryptedRemoteCostAdj)
-			(extractCipher c)
+		, cost = if isencrypted
+			then cost baser + encryptedRemoteCostAdj
+			else cost baser
 		, getInfo = do
 			l <- getInfo baser
 			return $ l ++
 				[ ("encryption", describeEncryption c)
 				, ("chunking", describeChunkConfig (chunkConfig cfg))
 				]
+		, whereisKey = if noChunks (chunkConfig cfg) && not isencrypted
+			then whereisKey baser
+			else Nothing
 		}
 	cip = cipherKey c
+	isencrypted = isJust (extractCipher c)
 	gpgopts = getGpgEncParams encr
 
 	safely a = catchNonAsync a (\e -> warning (show e) >> return False)

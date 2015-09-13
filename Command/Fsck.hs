@@ -519,10 +519,10 @@ getStartTime u = do
 
 data Incremental
 	= NonIncremental
+	| ScheduleIncremental Duration UUID Incremental
 #ifdef WITH_DATABASE
 	| StartIncremental FsckDb.FsckHandle 
 	| ContIncremental FsckDb.FsckHandle
-	| ScheduleIncremental Duration UUID Incremental
 #endif
 
 prepIncremental :: UUID -> Maybe IncrementalOpt -> Annex Incremental

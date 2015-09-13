@@ -1,6 +1,6 @@
 {- External special remote interface.
  -
- - Copyright 2013 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -13,9 +13,13 @@ import Common.Annex
 import Types.Remote
 import Types.CleanupActions
 import Types.UrlContents
+import Types.Key
 import qualified Git
 import Config
+import Git.Config (isTrue, boolConfig)
 import Remote.Helper.Special
+import Remote.Helper.ReadOnly
+import Remote.Helper.Messages
 import Utility.Metered
 import Messages.Progress
 import Logs.Transfer
@@ -23,6 +27,8 @@ import Logs.PreferredContent.Raw
 import Logs.RemoteState
 import Logs.Web
 import Config.Cost
+import Annex.Content
+import Annex.Url
 import Annex.UUID
 import Creds
 
@@ -40,17 +46,34 @@ remote = RemoteType {
 }
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-gen r u c gc = do
-	external <- newExternal externaltype u c
-	Annex.addCleanup (RemoteCleanup u) $ stopExternal external
-	cst <- getCost external r gc
-	avail <- getAvailability external r gc
-	return $ Just $ specialRemote c
-		(simplyPrepare $ store external)
-		(simplyPrepare $ retrieve external)
-		(simplyPrepare $ remove external)
-		(simplyPrepare $ checkKey external)
-		Remote
+gen r u c gc
+	-- readonly mode only downloads urls; does not use external program
+	| remoteAnnexReadOnly gc = do
+		cst <- remoteCost gc expensiveRemoteCost
+		mk cst GloballyAvailable
+			readonlyStorer
+			retrieveUrl
+			readonlyRemoveKey
+			(checkKeyUrl r)
+			Nothing
+			Nothing
+			Nothing
+	| otherwise = do
+		external <- newExternal externaltype u c
+		Annex.addCleanup (RemoteCleanup u) $ stopExternal external
+		cst <- getCost external r gc
+		avail <- getAvailability external r gc
+		mk cst avail
+			(store external)
+			(retrieve external)
+			(remove external)
+			(checkKey external)
+			(Just (whereis external))
+			(Just (claimurl external))
+			(Just (checkurl external))
+  where
+	mk cst avail tostore toretrieve toremove tocheckkey towhereis toclaimurl tocheckurl = do
+		let rmt = Remote
 			{ uuid = u
 			, cost = cst
 			, name = Git.repoDescribe r
@@ -60,7 +83,7 @@ gen r u c gc = do
 			, removeKey = removeKeyDummy
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
-			, whereisKey = Nothing
+			, whereisKey = towhereis
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
 			, config = c
@@ -73,10 +96,15 @@ gen r u c gc = do
 			, mkUnavailable = gen r u c $
 				gc { remoteAnnexExternalType = Just "!dne!" }
 			, getInfo = return [("externaltype", externaltype)]
-			, claimUrl = Just (claimurl external)
-			, checkUrl = Just (checkurl external)
+			, claimUrl = toclaimurl
+			, checkUrl = tocheckurl
 			}
-  where
+		return $ Just $ specialRemote c
+			(simplyPrepare tostore)
+			(simplyPrepare toretrieve)
+			(simplyPrepare toremove)
+			(simplyPrepare tocheckkey)
+			rmt
 	externaltype = fromMaybe (error "missing externaltype") (remoteAnnexExternalType gc)
 
 externalSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
@@ -86,12 +114,17 @@ externalSetup mu _ c = do
 		M.lookup "externaltype" c
 	(c', _encsetup) <- encryptionSetup c
 
-	external <- newExternal externaltype u c'
-	handleRequest external INITREMOTE Nothing $ \resp -> case resp of
-		INITREMOTE_SUCCESS -> Just noop
-		INITREMOTE_FAILURE errmsg -> Just $ error errmsg
-		_ -> Nothing
-	c'' <- liftIO $ atomically $ readTMVar $ externalConfig external
+	c'' <- case M.lookup "readonly" c of
+		Just v | isTrue v == Just True -> do
+			setConfig (remoteConfig (fromJust (M.lookup "name" c)) "readonly") (boolConfig True)
+			return c'
+		_ -> do
+			external <- newExternal externaltype u c'
+			handleRequest external INITREMOTE Nothing $ \resp -> case resp of
+				INITREMOTE_SUCCESS -> Just noop
+				INITREMOTE_FAILURE errmsg -> Just $ error errmsg
+				_ -> Nothing
+			liftIO $ atomically $ readTMVar $ externalConfig external
 
 	gitConfigSpecialRemote u c'' "externaltype" externaltype
 	return (c'', u)
@@ -143,6 +176,13 @@ checkKey external k = either error id <$> go
 			CHECKPRESENT_UNKNOWN k' errmsg
 				| k' == k -> Just $ return $ Left errmsg
 			_ -> Nothing
+
+whereis :: External -> Key -> Annex [String]
+whereis external k = handleRequest external (WHEREIS k) Nothing $ \resp -> case resp of
+	WHEREIS_SUCCESS s -> Just $ return [s]
+	WHEREIS_FAILURE -> Just $ return []
+	UNSUPPORTED_REQUEST -> Just $ return []
+	_ -> Nothing
 
 safely :: Annex Bool -> Annex Bool
 safely a = go =<< tryNonAsync a
@@ -460,3 +500,20 @@ checkurl external url =
 		_ -> Nothing
   where
 	mkmulti (u, s, f) = (u, s, mkSafeFilePath f)
+
+retrieveUrl :: Retriever
+retrieveUrl = fileRetriever $ \f k _p -> do
+	us <- getWebUrls k
+	unlessM (downloadUrl us f) $
+		error "failed to download content"
+
+checkKeyUrl :: Git.Repo -> CheckPresent
+checkKeyUrl r k = do
+	showChecking r
+	us <- getWebUrls k
+	anyM (\u -> withUrlOptions $ checkBoth u (keySize k)) us
+
+getWebUrls :: Key -> Annex [URLString]
+getWebUrls key = filter supported <$> getUrls key
+  where
+	supported u = snd (getDownloader u) == WebDownloader

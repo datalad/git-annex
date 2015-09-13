@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-08-20T14:58:32Z"
+ content="""
+The error message about the transfer lock file is probably relevant, and
+seems to be coming from git-annex-shell on the clusterhost server.
+
+Since this code has recently been changed and partly rewritten,
+you ought to try upgrading git-annex on clusterhost to a more recent
+version.
+
+If that doesn't help, check if the specified lock file exists,
+and if its parent directory exists. It's possible that the directory it's
+trying to put the lock file in doesn't exist and this is causing the
+problem. If so, manually creating the directory would solve it.
+
+The other possibility seems to be that it's trying to open a lock file for
+read that doesn't exist. But I don't see how that can happen, at least
+not with the current code which catches any such exception.
+
+Stracing git-annex-shell would help narrow this down. 
+The git-annex-shell command that's failing is something like this:
+
+git-annex-shell sendkey ../chymera/data SHA256E-s814245--9dc6f1287ba683cae030e04ba7f94a73e566ce392c2d032f171094ddc342fa60.jpg
+"""]]

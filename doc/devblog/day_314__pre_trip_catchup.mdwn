@@ -1,0 +1,13 @@
+Did some work on Friday and Monday to let external special remotes be used
+in a readonly mode. This lets files that are stored in the remote be
+downloaded by git-annex without the user needing to install the 
+external special remote program. For this to work, the external special
+remote just has to tell git-annex the urls to use. This was developed in
+collaboration with Benjamin Gilbert, who is developing
+[gcsannex](https://github.com/bgilbert/gcsannex), a Google Cloud Storage
+special remote.
+
+Today, got caught up with recent traffic, including fixing a couple of
+bugs. The backlog remains in the low 90's, which is a good place to be as I
+prepare for my August vacation week in the SF Bay Area, followed by a week
+for ICFP and the Haskell Symposium in Vancouver.

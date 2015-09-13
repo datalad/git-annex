@@ -24,6 +24,10 @@ removed. For example a file that is `wanted` can be removed with `git
 annex drop`, but if that file is `required`, it would need to be
 removed with `git annex drop --force`.
 
+# NOTES
+
+The `required` command was added in git-annex 5.20150420.
+
 # SEE ALSO
 
 [[git-annex]](1)

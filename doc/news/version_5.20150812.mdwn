@@ -1,0 +1,40 @@
+git-annex 5.20150812 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Added support for SHA3 hashed keys (in 8 varieties), when git-annex is
+     built using the cryptonite library.
+   * metadata: Fix reversion introduced in 5.20150727 that caused recursive
+     display of metadata to not work.
+   * Windows: Fix bug that caused git-annex sync to fail due to missing
+     environment variable.
+   * Fix setting/setting/viewing metadata that contains unicode or other
+     special characters, when in a non-unicode locale.
+   * Simplify setup process for a ssh remote. Now it suffices to run git
+     remote add, followed by git-annex sync. Now the remote is automatically
+     initialized for use by git-annex, where before the git-annex branch had
+     to manually be pushed before using git-annex sync. Note that this
+     involved changes to git-annex-shell, so if the remote is using an old
+     version, the manual push is still needed.
+   * git-annex-shell: Don't let configlist auto-init repository when in
+     readonly mode.
+   * Perform a clean shutdown when --time-limit is reached.
+     This includes running queued git commands, and cleanup actions normally
+     run when a command is finished.
+   * fsck: Commit incremental fsck database when --time-limit is reached.
+     Previously, some of the last files fscked did not make it into the
+     database when using --time-limit.
+   * fsck: Commit incremental fsck database after every 1000 files
+     fscked, or every 5 minutes, whichever comes first. Previously,
+     commits were made every 1000 files fscked.
+   * Linux standalone: Work around problem that prevented it from working
+     properly if unpacked into a directory that contains ":" or ";" in its
+     name.
+   * proxy: Fix proxy git commit of non-annexed files in direct mode.
+   * proxy: If a non-proxied git command, such as git revert
+     would normally fail because of unstaged files in the work tree,
+     make the proxied command fail the same way.
+   * proxy: Fix removal of files deleted by the proxied command.
+   * proxy: Fix behavior when run in subdirectory of git repo.
+   * Improve Setup.hs file so that cabal copy --destdir works.
+     Thanks, Magnus Therning.
+   * Tighten dependency on optparse-applicative to 0.11.0.
+   * Added back debian/cabal-wrapper, since it still seems needed after all."""]]

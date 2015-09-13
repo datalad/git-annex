@@ -20,6 +20,7 @@ module Utility.Url (
 	exists,
 	UrlInfo(..),
 	getUrlInfo,
+	assumeUrlExists,
 	download,
 	downloadQuiet,
 	parseURIRelaxed
@@ -103,6 +104,9 @@ data UrlInfo = UrlInfo
 	, urlSize :: Maybe Integer
 	, urlSuggestedFile :: Maybe FilePath
 	}
+
+assumeUrlExists :: UrlInfo
+assumeUrlExists = UrlInfo True Nothing Nothing
 
 {- Checks that an url exists and could be successfully downloaded,
  - also returning its size and suggested filename if available. -}

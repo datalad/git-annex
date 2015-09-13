@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="bgilbert@a0c64716cf22216de5eeb15a5ca4f009164c8fb3"
+ nickname="bgilbert"
+ subject="comment 6"
+ date="2015-08-18T06:13:28Z"
+ content="""
+`readonly` seems to work in my early tests.  Thanks for doing that.
+
+For consistency, shouldn't it be `readonly=yes` rather than `readonly=true`?
+"""]]

@@ -16,6 +16,7 @@ import Config
 import Config.Cost
 import Annex.UUID
 import Remote.Helper.Special
+import Remote.Helper.Messages
 import Utility.Env
 import Messages.Progress
 
@@ -138,7 +139,7 @@ remove h k = runHook h "remove" k Nothing $ return True
 
 checkKey :: Git.Repo -> HookName -> CheckPresent
 checkKey r h k = do
-	showAction $ "checking " ++ Git.repoDescribe r
+	showChecking r
 	v <- lookupHook h action
 	liftIO $ check v
   where

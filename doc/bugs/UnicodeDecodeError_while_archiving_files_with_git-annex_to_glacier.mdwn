@@ -1,0 +1,43 @@
+I'll just started using git-annex and now I'm trying archiving to glacier. Unfortunately if I put a simple 2mb pdf with the name 'test.txt' into the archive folder, I get the following error:
+
+[[!format sh """
+Traceback (most recent call last):
+  File "/usr/local/bin/glacier", line 9, in <module>
+    load_entry_point('glacier-cli==0.1.0', 'console_scripts', 'glacier-cli')()
+  File "build/bdist.macosx-10.11-x86_64/egg/glacier.py", line 732, in entry_point
+  File "build/bdist.macosx-10.11-x86_64/egg/glacier.py", line 718, in main
+  File "build/bdist.macosx-10.11-x86_64/egg/glacier.py", line 500, in archive_upload
+  File "/Users/markus/.virtualenvs/glacier-cli/lib/python2.7/site-packages/boto-2.38.0-py2.7.egg/boto/glacier/vault.py", line 178, in create_archive_from_file
+    writer.close()
+  File "/Users/markus/.virtualenvs/glacier-cli/lib/python2.7/site-packages/boto-2.38.0-py2.7.egg/boto/glacier/writer.py", line 228, in close
+    self.partitioner.flush()
+  File "/Users/markus/.virtualenvs/glacier-cli/lib/python2.7/site-packages/boto-2.38.0-py2.7.egg/boto/glacier/writer.py", line 79, in flush
+    self._send_part()
+  File "/Users/markus/.virtualenvs/glacier-cli/lib/python2.7/site-packages/boto-2.38.0-py2.7.egg/boto/glacier/writer.py", line 75, in _send_part
+    self.send_fn(part)
+  File "/Users/markus/.virtualenvs/glacier-cli/lib/python2.7/site-packages/boto-2.38.0-py2.7.egg/boto/glacier/writer.py", line 222, in _upload_part
+    self.uploader.upload_part(self.next_part_index, part_data)
+  File "/Users/markus/.virtualenvs/glacier-cli/lib/python2.7/site-packages/boto-2.38.0-py2.7.egg/boto/glacier/writer.py", line 129, in upload_part
+    content_range, part_data)
+  File "/Users/markus/.virtualenvs/glacier-cli/lib/python2.7/site-packages/boto-2.38.0-py2.7.egg/boto/glacier/layer1.py", line 1279, in upload_part
+    response_headers=response_headers)
+  File "/Users/markus/.virtualenvs/glacier-cli/lib/python2.7/site-packages/boto-2.38.0-py2.7.egg/boto/glacier/layer1.py", line 114, in make_request
+    data=data)
+  File "/Users/markus/.virtualenvs/glacier-cli/lib/python2.7/site-packages/boto-2.38.0-py2.7.egg/boto/connection.py", line 1071, in make_request
+    retry_handler=retry_handler)
+  File "/Users/markus/.virtualenvs/glacier-cli/lib/python2.7/site-packages/boto-2.38.0-py2.7.egg/boto/connection.py", line 943, in _mexe
+    request.body, request.headers)
+  File "/usr/local/Cellar/python/2.7.10_2/Frameworks/Python.framework/Versions/2.7/lib/python2.7/httplib.py", line 1053, in request
+    self._send_request(method, url, body, headers)
+  File "/usr/local/Cellar/python/2.7.10_2/Frameworks/Python.framework/Versions/2.7/lib/python2.7/httplib.py", line 1093, in _send_request
+    self.endheaders(body)
+  File "/usr/local/Cellar/python/2.7.10_2/Frameworks/Python.framework/Versions/2.7/lib/python2.7/httplib.py", line 1049, in endheaders
+    self._send_output(message_body)
+  File "/usr/local/Cellar/python/2.7.10_2/Frameworks/Python.framework/Versions/2.7/lib/python2.7/httplib.py", line 891, in _send_output
+    msg += message_body
+UnicodeDecodeError: 'ascii' codec can't decode byte 0x8c in position 0: ordinal not in range(128)
+"""]]
+
+I also filled a bugreport here: https://github.com/basak/glacier-cli/issues/61
+
+I'm using git-annex from homebrew and the most recent version of glacier-cli.

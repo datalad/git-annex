@@ -97,6 +97,7 @@ data Request
 	| TRANSFER Direction Key FilePath
 	| CHECKPRESENT Key
 	| REMOVE Key
+	| WHEREIS Key
 	deriving (Show)
 
 -- Does PREPARE need to have been sent before this request?
@@ -120,6 +121,7 @@ instance Proto.Sendable Request where
 		]
 	formatMessage (CHECKPRESENT key) = [ "CHECKPRESENT", Proto.serialize key ]
 	formatMessage (REMOVE key) = [ "REMOVE", Proto.serialize key ]
+	formatMessage (WHEREIS key) = [ "WHEREIS", Proto.serialize key ]
 
 -- Responses the external remote can make to requests.
 data Response
@@ -141,6 +143,8 @@ data Response
 	| CHECKURL_CONTENTS Size FilePath
 	| CHECKURL_MULTI [(URLString, Size, FilePath)]
 	| CHECKURL_FAILURE ErrorMsg
+	| WHEREIS_SUCCESS String
+	| WHEREIS_FAILURE
 	| UNSUPPORTED_REQUEST
 	deriving (Show)
 
@@ -163,6 +167,8 @@ instance Proto.Receivable Response where
 	parseCommand "CHECKURL-CONTENTS" = Proto.parse2 CHECKURL_CONTENTS
 	parseCommand "CHECKURL-MULTI" = Proto.parse1 CHECKURL_MULTI
 	parseCommand "CHECKURL-FAILURE" = Proto.parse1 CHECKURL_FAILURE
+	parseCommand "WHEREIS-SUCCESS" = Just . WHEREIS_SUCCESS
+	parseCommand "WHEREIS-FAILURE" = Proto.parse0 WHEREIS_FAILURE
 	parseCommand "UNSUPPORTED-REQUEST" = Proto.parse0 UNSUPPORTED_REQUEST
 	parseCommand _ = Proto.parseFail
 

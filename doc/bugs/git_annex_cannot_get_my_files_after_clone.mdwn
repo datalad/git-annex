@@ -1,0 +1,36 @@
+### Please describe the problem.
+
+git annex cannot get me my file contents from my remotes
+
+### What steps will reproduce the problem?
+
+```
+git clone myserver:/path/to/repo
+cd repo
+git annex get
+```
+
+### What version of git-annex are you using? On what operating system?
+Using git-annex-5.20150327 on gentoo linux
+
+### Please provide any additional information below.
+
+The error messages I get egenrally look like:
+
+```
+get 2att/photos-glasgow/male/patrik.jpg (from clusterhost...) 
+git-annex: ../chymera/data/.git/annex/transfer/upload/b8415264-4b9a-40ca-b450-7e57507cdc06/lck.SHA256E-s814245--9dc6f1287ba683cae030e04ba7f94a73e566ce392c2d032f171094ddc342fa60.jpg: openFd: does not exist (No such file or directory)
+git-annex-shell: sendkey: 1 failed
+protocol version mismatch -- is your shell clean?
+(see the rsync man page for an explanation)
+rsync error: protocol incompatibility (code 2) at compat.c(176) [Receiver=3.1.1]
+
+  rsync failed -- run git annex again to resume file transfer
+
+  Unable to access these remotes: clusterhost
+
+  Try making some of these repositories available:
+  	809074b6-e079-4ea1-b2f8-2d7840deda7d -- zenbookhost
+   	a1ed6786-8b93-4a14-b00d-877b741e34da -- [clusterhost]
+failed
+```

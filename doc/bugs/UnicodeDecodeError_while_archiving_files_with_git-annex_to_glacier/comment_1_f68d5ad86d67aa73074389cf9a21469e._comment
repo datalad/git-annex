@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-08-14T18:07:10Z"
+ content="""
+Doesn't seem likely that this is a bug in git-annex.
+git-annex is clearly operating on the file just fine until it passes
+it off to glacier-cli.
+
+I suggest you pass --debug to git-annex, and see what glacier-cli command
+it's running. That will probably be useful information for the glacier-cli
+developers, to reproduce the problem without involving git-annex.
+
+One possibility that comes to mind, given
+<https://github.com/basak/glacier-cli/issues/16> is that your git-annex
+repository might be in a path with some characters that glacier-cli doesn't
+like in its name. If git-annex passes the full path to the file to
+glacier-cli, it might then run into this problem. I'm not sure ATM if
+git-annex does pass the full path to the file; it seems like a relative
+path would avoid such a problem. The --debug output should answer this
+too..
+"""]]

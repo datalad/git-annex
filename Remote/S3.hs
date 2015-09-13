@@ -39,6 +39,7 @@ import Config
 import Config.Cost
 import Remote.Helper.Special
 import Remote.Helper.Http
+import Remote.Helper.Messages
 import qualified Remote.Helper.AWS as AWS
 import Creds
 import Annex.UUID
@@ -269,7 +270,7 @@ remove info h k
 
 checkKey :: Remote -> S3Info -> Maybe S3Handle -> CheckPresent
 checkKey r info (Just h) k = do
-	showAction $ "checking " ++ name r
+	showChecking r
 #if MIN_VERSION_aws(0,10,0)
 	rsp <- go
 	return (isJust $ S3.horMetadata rsp)
@@ -300,7 +301,7 @@ checkKey r info Nothing k = case getpublicurl info of
 		warnMissingCredPairFor "S3" (AWS.creds $ uuid r)
 		error "No S3 credentials configured"
 	Just geturl -> do
-		showAction $ "checking " ++ name r
+		showChecking r
 		withUrlOptions $ checkBoth (geturl k) (keySize k)
 
 {- Generate the bucket if it does not already exist, including creating the

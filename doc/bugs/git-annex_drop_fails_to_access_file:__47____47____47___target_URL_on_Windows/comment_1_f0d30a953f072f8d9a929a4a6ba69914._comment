@@ -1,0 +1,48 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="seems just ignore errors while adding urls to &quot;unsupported&quot; urls"
+ date="2015-08-19T21:59:09Z"
+ content="""
+actually situation is somewhat similar on linux as well in a sense that annex manages to addurl a file using e.g. file:///./data   url (not sure even if legit) without puking but contains wrong content (empty):
+
+[[!format  sh \"\"\"
+
+% mkdir XXX
+% cd XXX
+% git init; git annex init
+Initialized empty Git repository in /tmp/XXX/.git/
+init  ok
+(recording state in git...)
+% echo 123 > data
+% git annex addurl --file=annexed file:///./data
+addurl annexed (downloading file:///./data ...) 
+
+ok
+(recording state in git...)
+% cat annexed 
+% git annex drop annexed
+drop annexed (checking file:///./data...) (unsafe) 
+  Could only verify the existence of 0 out of 1 necessary copies
+
+  Rather than dropping this file, try using: git annex move
+
+  (Use --force to override this check, or adjust numcopies.)
+failed
+git-annex: drop: 1 failed
+% git annex addurl --file=annexedfull file://$PWD/data
+addurl annexedfull (downloading file:///tmp/XXX/data ...) 
+######################################################################## 100.0%
+ok
+(recording state in git...)
+% cat annexedfull
+123
+% git annex drop annexedfull                          
+drop annexedfull (checking file:///tmp/XXX/data...) ok
+(recording state in git...)
+% annex version
+zsh: command not found: annex
+% git annex version
+git-annex version: 5.20150812-2
+
+\"\"\"]]
+"""]]

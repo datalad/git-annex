@@ -14,6 +14,7 @@ import Command
 import Remote
 import Logs.Trust
 import Logs.Web
+import Remote.Web (getWebUrls)
 
 cmd :: Command
 cmd = noCommit $ withGlobalOptions (jsonOption : annexedMatchingOptions) $
@@ -60,6 +61,11 @@ perform remotemap key = do
 	unless (null safelocations) $ showLongNote pp
 	pp' <- prettyPrintUUIDs "untrusted" untrustedlocations
 	unless (null untrustedlocations) $ showLongNote $ untrustedheader ++ pp'
+
+	-- Since other remotes than the web remote can set urls
+	-- where a key can be downloaded, get and show all such urls
+	-- as a special case.
+	showRemote "web" =<< getWebUrls key
 	forM_ (mapMaybe (`M.lookup` remotemap) locations) $
 		performRemote key
 	if null safelocations then stop else next $ return True
@@ -73,8 +79,7 @@ performRemote key remote = do
 	ls <- (++)
 		<$> askremote
 		<*> claimedurls
-	unless (null ls) $ showLongNote $ unlines $
-		map (\l -> name remote ++ ": " ++ l) ls
+	showRemote (name remote) ls
   where
 	askremote = maybe (pure []) (flip id key) (whereisKey remote)
 	claimedurls = do
@@ -83,3 +88,9 @@ performRemote key remote = do
 			. map getDownloader
 			<$> getUrls key
 		filterM (\u -> (==) <$> pure remote <*> claimingUrl u) us
+
+showRemote :: String -> [String] -> Annex ()
+showRemote n ls
+	| null ls = return ()
+	| otherwise = showLongNote $ unlines $
+		map (\l -> n ++ ": " ++ l) ls

@@ -1,0 +1,123 @@
+### Please describe the problem.
+
+I've added a backup USB Drive and a small archive USB drive and created a archive folder in the root of my ~/annex folder.
+
+If I move a file into the ~/annex folder and then move the same file into the ~/annex/archive folder the file gets uploaded to the small archive USB drive, but not dropped from my ~/annex/archive folder.
+
+[[!format sh """
+[2015-08-14 19:03:47 CEST] Committer: Adding git-annex..iving.ogv
+ok
+(recording state in git...)
+(recording state in git...)
+(recording state in git...)
+add /Users/markus/annex/git-annex-assistant-archiving.ogv [2015-08-14 19:03:47 CEST] Committer: Committing changes to git
+[2015-08-14 19:03:47 CEST] Pusher: Syncing with annexbackup, annexarchive
+
+git-annex-assistant-archiving.ogv
+To /Volumes/annex-archive/annex-archive0
+   6ef9226..6c87a7d  git-annex -> synced/git-annex
+   b8855cc..bc20ee2  annex/direct/master -> synced/master
+To /Volumes/annex-backup/annex-backup
+   6ef9226..6c87a7d  git-annex -> synced/git-annex
+   b8855cc..bc20ee2  annex/direct/master -> synced/master
+    15428954 100%   20.71MB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 15430948 bytes  received 42 bytes  10287326.67 bytes/sec
+total size is 15428954  speedup is 1.00
+[2015-08-14 19:03:48 CEST] Transferrer: Uploaded git-annex..iving.ogv
+[2015-08-14 19:03:49 CEST] Pusher: Syncing with annexbackup, annexarchive
+To /Volumes/annex-backup/annex-backup
+   6c87a7d..d24edd5  git-annex -> synced/git-annex
+To /Volumes/annex-archive/annex-archive
+   6c87a7d..d24edd5  git-annex -> synced/git-annex
+[2015-08-14 19:04:23 CEST] Committer: Adding git-annex..iving.ogv
+ok
+(recording state in git...)
+(recording state in git...)
+(recording state in git...)
+add /Users/markus/annex/archive/git-annex-assistant-archiving.ogv [2015-08-14 19:04:23 CEST] Committer: Committing changes to git
+[2015-08-14 19:04:23 CEST] Pusher: Syncing with annexbackup, annexarchive
+
+git-annex-assistant-archiving.ogv
+To /Volumes/annex-backup/annex-backup:00
+   d24edd5..507be0c  git-annex -> synced/git-annex
+   bc20ee2..8fea81a  annex/direct/master -> synced/master
+To /Volumes/annex-archive/annex-archive
+   d24edd5..507be0c  git-annex -> synced/git-annex
+   bc20ee2..8fea81a  annex/direct/master -> synced/master
+    15428954 100%   30.72MB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 15430948 bytes  received 42 bytes  30861980.00 bytes/sec
+total size is 15428954  speedup is 1.00
+[2015-08-14 19:04:23 CEST] Transferrer: Uploaded git-annex..iving.ogv
+[2015-08-14 19:04:25 CEST] Pusher: Syncing with annexbackup, annexarchive
+To /Volumes/annex-archive/annex-archive
+   507be0c..ba58f77  git-annex -> synced/git-annex
+To /Volumes/annex-backup/annex-backup
+   507be0c..ba58f77  git-annex -> synced/git-annex
+"""]]
+
+If I directly move a file e.g. from ~/Downloads to ~/annex/archive the file gets uploaded to the small archive USB drive and then dropped from my drive (as expected).
+
+[[!format sh """
+[2015-08-14 19:04:25 CEST] Pusher: Syncing with annexbackup, annexarchive
+To /Volumes/annex-archive/annex-archive
+   507be0c..ba58f77  git-annex -> synced/git-annex
+To /Volumes/annex-backup/annex-backup
+   507be0c..ba58f77  git-annex -> synced/git-annex
+[2015-08-14 19:09:44 CEST] Committer: Adding Oracle_VM..x-extpack
+ok
+(recording state in git...)
+(recording state in git...)
+(recording state in git...)
+add /Users/markus/annex/archive/Oracle_VM_VirtualBox_Extension_Pack-5.0.0-101573.vbox-extpack [2015-08-14 19:09:44 CEST] Committer: Committing changes to git
+[2015-08-14 19:09:44 CEST] Pusher: Syncing with annexbackup, annexarchive
+
+Oracle_VM_VirtualBox_Extension_Pack-5.0.0-101573.vbox-extpack
+To /Volumes/annex-backup/annex-backup:00
+   ba58f77..73eed9e  git-annex -> synced/git-annex
+   8fea81a..68526f7  annex/direct/master -> synced/master
+To /Volumes/annex-archive/annex-archive
+   ba58f77..73eed9e  git-annex -> synced/git-annex
+   8fea81a..68526f7  annex/direct/master -> synced/master
+    18028050 100%   25.65MB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 18030392 bytes  received 42 bytes  12020289.33 bytes/sec
+total size is 18028050  speedup is 1.00
+[2015-08-14 19:09:45 CEST] Transferrer: Uploaded Oracle_VM..x-extpack
+ok
+(recording state in git...)
+(recording state in git...)
+drop /Users/markus/annex/archive/Oracle_VM_VirtualBox_Extension_Pack-5.0.0-101573.vbox-extpack [2015-08-14 19:09:47 CEST] Pusher: Syncing with annexbackup, annexarchive
+To /Volumes/annex-backup/annex-backup
+   73eed9e..93dc4a3  git-annex -> synced/git-annex
+To /Volumes/annex-archive/annex-archive
+   73eed9e..93dc4a3  git-annex -> synced/git-annex
+"""]]
+
+But if I move the file-link from ~/annex/archive to ~/annex the file stays a link and don't get transferred back to my drive.
+
+[[!format sh """
+[2015-08-14 19:12:39 CEST] Committer: Committing changes to git
+[2015-08-14 19:12:39 CEST] Pusher: Syncing with annexbackup, annexarchive
+To /Volumes/annex-backup/annex-backup
+   68526f7..082e0d8  annex/direct/master -> synced/master
+To /Volumes/annex-archive/annex-archive
+   68526f7..082e0d8  annex/direct/master -> synced/master
+"""]] 
+
+
+### What version of git-annex are you using? On what operating system?
+
+Im using MacOSX 10.11 Beta (15A243d) with the most resend MacOSX App.
+ 
+[[!format sh """
+$ /Applications/git-annex.app/Contents/MacOS/git-annex version
+git-annex version: 5.20150812-ga6f7b36
+build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV FsEvents XMPP DNS Feeds Quvi TDFA TorrentParser Database
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository version: 5
+upgrade supported from repository versions: 0 1 2 4
+"""]]

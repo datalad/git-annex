@@ -1,0 +1,63 @@
+[[!comment format=mdwn
+ username="forbesmyester@2cec261fa984ee168bdbad63665c58953963c10e"
+ nickname="forbesmyester"
+ subject="Not sure what is wrong... looks like `glacier` might be called wrongly."
+ date="2015-08-18T07:42:38Z"
+ content="""
+Have done a full setup as much as I can, with all the GPG / AWS stuff but it keeps doing non stop...
+
+    copy 201/2011/05/20/P1010044.RW2 (checking familypictures-glacier...) [2015-08-18 08:37:05 BST] read: glacier [\"--region=us-east-1\",\"archive\",\"checkpresent\",\"familypictures\",\"--quiet\",\"GPGHMACSHA1--[SOME_HASH]\"]
+    (to familypictures-glacier...) 
+    [2015-08-18 08:37:05 BST] feed: glacier [\"--region=us-east-1\",\"archive\",\"upload\",\"--name\",\"GPGHMACSHA1--[SOME_HASH]\",\"familypictures\",\"-\"]
+    [2015-08-18 08:37:05 BST] chat: gpg [\"--quiet\",\"--trust-model\",\"always\",\"--batch\",\"--passphrase-fd\",\"40\",\"--symmetric\",\"--force-mdc\",\"--no-textmode\"]
+    0%            0.0 B/s 0s
+    glacier <command> [args]
+    
+        Commands
+            vaults    - Operations with vaults
+            jobs      - Operations with jobs
+            upload    - Upload files to a vault. If the vault doesn't exits, it is
+                        created
+    
+        Common args:
+            --access_key - Your AWS Access Key ID.  If not supplied, boto will
+                           use the value of the environment variable
+                           AWS_ACCESS_KEY_ID
+            --secret_key - Your AWS Secret Access Key.  If not supplied, boto
+                           will use the value of the environment variable
+                           AWS_SECRET_ACCESS_KEY
+            --region     - AWS region to use. Possible values: us-east-1, us-west-1,
+                           us-west-2, ap-northeast-1, eu-west-1.
+                           Default: us-east-1
+    
+        Vaults operations:
+    
+            List vaults:
+                glacier vaults 
+    
+        Jobs operations:
+    
+            List jobs:
+                glacier jobs <vault name>
+    
+        Uploading files:
+    
+            glacier upload <vault name> <files>
+    
+            Examples : 
+                glacier upload pics *.jpg
+                glacier upload pics a.jpg b.jpg
+    
+    gpg: [stdout]: write error: Broken pipe
+    gpg: DBG: deflate: iobuf_write failed
+    gpg: build_packet failed: file write error
+    gpg: [stdout]: write error: Broken pipe
+    gpg: iobuf_flush failed on close: file write error
+    gpg: [stdout]: write error: Broken pipe
+    gpg: iobuf_flush failed on close: file write error
+    gpg: symmetric encryption of `[stdin]' failed: file write error
+    git-annex: fd:46: hPutBuf: resource vanished (Broken pipe)
+    failed
+    
+
+"""]]

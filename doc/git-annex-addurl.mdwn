@@ -25,7 +25,8 @@ be used to get better filenames.
 
 * `--fast`
 
-  Avoid immediately downloading the url.
+  Avoid immediately downloading the url. The url is still checked
+  (via HEAD) to verify that it exists, and to get its size if possible.
 
 * `--relaxed`
 

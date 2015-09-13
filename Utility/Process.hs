@@ -31,6 +31,7 @@ module Utility.Process (
 	withQuietOutput,
 	feedWithQuietOutput,
 	createProcess,
+	waitForProcess,
 	startInteractiveProcess,
 	stdinHandle,
 	stdoutHandle,
@@ -42,7 +43,7 @@ module Utility.Process (
 
 import qualified System.Process
 import qualified System.Process as X hiding (CreateProcess(..), createProcess, runInteractiveProcess, readProcess, readProcessWithExitCode, system, rawSystem, runInteractiveCommand, runProcess)
-import System.Process hiding (createProcess, readProcess)
+import System.Process hiding (createProcess, readProcess, waitForProcess)
 import System.Exit
 import System.IO
 import System.Log.Logger
@@ -345,22 +346,6 @@ oeHandles _ = error "expected oeHandles"
 processHandle :: (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> ProcessHandle
 processHandle (_, _, _, pid) = pid
 
--- | Debugging trace for a CreateProcess.
-debugProcess :: CreateProcess -> IO ()
-debugProcess p = do
-	debugM "Utility.Process" $ unwords
-		[ action ++ ":"
-		, showCmd p
-		]
-  where
-	action
-		| piped (std_in p) && piped (std_out p) = "chat"
-		| piped (std_in p)                      = "feed"
-		| piped (std_out p)                     = "read"
-		| otherwise                             = "call"
-	piped Inherit = False
-	piped _ = True
-
 -- | Shows the command that a CreateProcess will run.
 showCmd :: CreateProcess -> String
 showCmd = go . cmdspec
@@ -385,9 +370,31 @@ startInteractiveProcess cmd args environ = do
 	(Just from, Just to, _, pid) <- createProcess p
 	return (pid, to, from)
 
--- | Wrapper around 'System.Process.createProcess' from System.Process,
--- that does debug logging.
+-- | Wrapper around 'System.Process.createProcess' that does debug logging.
 createProcess :: CreateProcess -> IO (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle)
 createProcess p = do
 	debugProcess p
 	System.Process.createProcess p
+
+-- | Debugging trace for a CreateProcess.
+debugProcess :: CreateProcess -> IO ()
+debugProcess p = do
+	debugM "Utility.Process" $ unwords
+		[ action ++ ":"
+		, showCmd p
+		]
+  where
+	action
+		| piped (std_in p) && piped (std_out p) = "chat"
+		| piped (std_in p)                      = "feed"
+		| piped (std_out p)                     = "read"
+		| otherwise                             = "call"
+	piped Inherit = False
+	piped _ = True
+
+-- | Wrapper around 'System.Process.waitForProcess' that does debug logging.
+waitForProcess ::  ProcessHandle -> IO ExitCode
+waitForProcess h = do
+	r <- System.Process.waitForProcess h
+	debugM "Utility.Process" ("process done " ++ show r)
+	return r

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2015-08-19T17:54:36Z"
+ content="""
+You have B configured as a regular transfer repo, so it only wants to drop
+files once they have reached some client repos. Settings its preferred
+content to "not inallgroup=backup" should fix that.
+
+Also, the assistant can notice some configuration changes that are made
+while it's running, but maybe not all of them, and maybe it won't rescan
+files to transfer right away after such a change is made. I'd use `git
+annex sync --content` to test such changes, and save the assistant for once
+I have a working setup.
+"""]]

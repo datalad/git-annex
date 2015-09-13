@@ -133,6 +133,15 @@ replying with `UNSUPPORTED-REQUEST` is acceptable.
   Asks the remote to check if the url's content can currently be downloaded
   (without downloading it). The remote replies with one of `CHECKURL-FAILURE`,
   `CHECKURL-CONTENTS`, or `CHECKURL-MULTI`.
+* `WHEREIS Key`
+  Asks the remote to provide any information it can about ways to access
+  the content of a key stored in it, such as eg, public urls.
+  This will be displayed to the user by eg, `git annex whereis`. The remote
+  replies with `WHEREIS-SUCCESS` or `WHEREIS-FAILURE`.  
+  Note that users expect `git annex whereis` to run fast, without eg,
+  network access.  
+  This is not needed when `SETURIPRESENT` is used, since such uris are
+  automatically displayed by `git annex whereis`.  
 
 More optional requests may be added, without changing the protocol version,
 so if an unknown request is seen, reply with `UNSUPPORTED-REQUEST`.
@@ -193,6 +202,12 @@ while it's handling a request.
   can contain spaces.
 * `CHECKURL-FAILURE`  
   Indicates that the requested url could not be accessed.
+* `WHEREIS-SUCCESS String`  
+  Indicates a location of a key. Typically an url, the string can
+  be anything that it makes sense to display to the user about content
+  stored in the special remote.
+* `WHEREIS-FAILURE`  
+  Indicates that no location is known for a key.
 * `UNSUPPORTED-REQUEST`  
   Indicates that the special remote does not know how to handle a request.
 
@@ -276,16 +291,18 @@ in control.
 * `SETURLPRESENT Key Url`  
   Records an URL where the Key can be downloaded from.  
   Note that this does not make git-annex think that the url is present on
-  the web special remote.
+  the web special remote.  
+  Keep in mind that this stores the url in the git-annex branch. This can
+  result in bloat to the branch if the url is large and/or does not delta
+  pack well with other information (such as the names of keys) already
+  stored in the branch.
 * `SETURLMISSING Key Url`  
   Records that the key can no longer be downloaded from the specified
   URL.
 * `SETURIPRESENT Key Uri`  
-  Records a special URI where the Key can be downloaded from.  
+  Records an URI where the Key can be downloaded from.  
   For example, "ipfs:ADDRESS" is used for the ipfs special remote;
-  its CLAIMURL handler checks for such URIS and claims them. Setting
-  it present as an URI makes `git annex whereis` display the URI
-  as belonging to the special remote.
+  its CLAIMURL handler checks for such URIS and claims them.
 * `SETURIMISSING Key Uri`  
   Records that the key can no longer be downloaded from the specified
   URI.
@@ -325,6 +342,26 @@ Note that the external special remote program may be left running for
 quite a long time, especially when the git-annex assistant is using it.
 The assistant will detect when the system connects to a network, and will
 start a new process the next time it needs to use a remote.
+
+## readonly mode
+
+Some storage services allow downloading the content of a file using a
+regular http connection, with no authentication. An external special remote
+for such a storage service can support a readonly mode of operation.
+
+It works like this:
+
+* When a key's content is stored on the remote, use SETURLPRESENT to
+  tell git-annex the public url from which it can be downloaded.
+* When a key's content is removed from the remote, use SETURLMISSING.
+* Document that this external special remote can be used in readonly mode.
+
+  The user doesn't even need to install your external special remote
+  program to use such a remote! All they need to do is run:
+  `git annex enableremote $remotename readonly=true`
+
+* The readonly=true parameter makes git-annex download content from the
+  urls recorded earlier by SETURLPRESENT.
 
 ## TODO
 

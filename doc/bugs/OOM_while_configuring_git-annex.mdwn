@@ -44,3 +44,5 @@ Currently, 5.20141203. Newest snapshot requires deps not yet packaged in Fedora.
   checking sha224... sha224sum
   checking sha384...Setup: out of memory (requested 1048576 bytes)
 """]]
+
+> forwarded to cabal && [[done]] per my comment --[[Joey]]

@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-08-19T18:17:17Z"
+ content="""
+Your pull request should be for the branch you changed. In this case, the
+`master` branch. This is the same as adding files to a regular git
+repository and making a pull request for that.
+
+The changes that git-annex makes to the `git-annex branch` can either be
+ignored by the person who merges your pull request, or they could opt to
+fetch your git-annex branch and let git-annex auto-merge it for them. A
+manual review and pull request of the `git-annex` branch is not likely to be
+productive. Whether they need to merge your `git-annex` branch into their
+`git-annex` branch depends on whether git-annex's information about eg,
+locations of file contents needs to be passed along with your pull
+request.
+
+Note that GitHub does not support using git-annex to upload the content of
+annexed files to it. (GitLab does support this.) This GitHub limitation
+may cause problems with this kind of workflow.
+"""]]

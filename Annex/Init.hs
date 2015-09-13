@@ -40,6 +40,7 @@ import Upgrade
 import Utility.UserInfo
 import Utility.FileMode
 import Annex.Perms
+import System.Posix.User
 #endif
 
 genDescription :: Maybe String -> Annex String
@@ -138,9 +139,13 @@ probeCrippledFileSystem = do
 		createSymbolicLink f f2
 		nukeFile f2
 		preventWrite f
-		-- Should be unable to write to the file, but some crippled
+		-- Should be unable to write to the file, unless
+		-- running as root, but some crippled
 		-- filesystems ignore write bit removals.
-		not <$> catchBoolIO (writeFile f "2" >> return True)
+		ifM ((== 0) <$> getRealUserID)
+			( return True
+			, not <$> catchBoolIO (writeFile f "2" >> return True)
+			)
 #endif
 
 checkCrippledFileSystem :: Annex ()

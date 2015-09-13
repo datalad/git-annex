@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="edward"
+ subject="Same problem, git revert worked, sort of"
+ date="2015-08-13T11:18:42Z"
+ content="""
+I had a similar problem. I ran `git annex sync` twice, once on the laptop, then on the external drive, lots of git annex symlinks disappeared from the laptop, the symlinks are still present on external drive checkout directory, but git says they were deleted, when I run `git status` it lists them as untracked files. I followed the advice and ran `git log --stat` to find the commit that removed the files. The commit message is \"git-annex in big portable USB drive\". I'm pretty sure that this is a commit from `git annex sync`.
+
+Running `git revert` worked on the laptop, but it fails external drive, it says \"error: The following untracked working tree files would be overwritten by merge\" and starts listing the missing symlinks.
+
+Both annex checkouts are set to indirect mode. The laptop preferred content is manual, the external drive is backup. I've run the assistant in the past, but not recently. I'm running Debian git-annex 5.20150727-2. Let me know if you need any more information.
+"""]]

@@ -47,14 +47,16 @@ import Annex.AutoMerge
 import Annex.Ssh
 import Annex.BloomFilter
 import Utility.Bloom
+import Utility.OptParse
 
 import Control.Concurrent.MVar
 import qualified Data.Map as M
 
 cmd :: Command
-cmd = command "sync" SectionCommon 
-	"synchronize local repository with remotes"
-	(paramRepeating paramRemote) (seek <$$> optParser)
+cmd = withGlobalOptions [jobsOption] $
+	command "sync" SectionCommon 
+		"synchronize local repository with remotes"
+		(paramRepeating paramRemote) (seek <$$> optParser)
 
 data SyncOptions  = SyncOptions
 	{ syncWith :: CmdParams
@@ -66,9 +68,8 @@ data SyncOptions  = SyncOptions
 optParser :: CmdParamsDesc -> Parser SyncOptions
 optParser desc = SyncOptions
 	<$> cmdParams desc
-	<*> switch
-		( long "content"
-		<> help "also transfer file contents"
+	<*> invertableSwitch "content" False
+		( help "also transfer file contents" 
 		)
 	<*> optional (strOption
 		( long "message" <> short 'm' <> metavar "MSG"
@@ -102,7 +103,8 @@ seek o = do
 
 	-- Syncing involves many actions, any of which can independently
 	-- fail, without preventing the others from running.
-	seekActions $ return $ concat
+	-- These actions cannot be run concurrently.
+	mapM_ includeCommandAction $ concat
 		[ [ commit o ]
 		, [ withbranch mergeLocal ]
 		, map (withbranch . pullRemote) gitremotes
@@ -115,14 +117,14 @@ seek o = do
 			-- branch on the remotes in the meantime, so pull
 			-- and merge again to avoid our push overwriting
 			-- those changes.
-			seekActions $ return $ concat
+			mapM_ includeCommandAction $ concat
 				[ map (withbranch . pullRemote) gitremotes
 				, [ commitAnnex, mergeAnnex ]
 				]
-	seekActions $ return $ concat
-		[ [ withbranch pushLocal ]
-		, map (withbranch . pushRemote) gitremotes
-		]
+	
+	void $ includeCommandAction $ withbranch pushLocal
+	-- Pushes to remotes can run concurrently.
+	mapM_ (commandAction . withbranch . pushRemote) gitremotes
 
 {- Merging may delete the current directory, so go to the top
  - of the repo. This also means that sync always acts on all files in the
@@ -380,7 +382,9 @@ newer remote b = do
  - This ensures that preferred content expressions that match on
  - filenames work, even when in --all mode.
  -
- - If any file movements were generated, returns true.
+ - Returns true if any file transfers were made.
+ -
+ - When concurrency is enabled, files are processed concurrently.
  -}
 seekSyncContent :: SyncOptions -> [Remote] -> Annex Bool
 seekSyncContent o rs = do
@@ -392,15 +396,17 @@ seekSyncContent o rs = do
 		(seekkeys mvar bloom) 
 		(const noop)
 		[]
+	finishCommandActions
 	liftIO $ not <$> isEmptyMVar mvar
   where
 	seekworktree mvar l bloomfeeder = seekHelper LsFiles.inRepo l >>=
 		mapM_ (\f -> ifAnnexed f (go (Right bloomfeeder) mvar (Just f)) noop)
 	seekkeys mvar bloom getkeys =
 		mapM_ (go (Left bloom) mvar Nothing) =<< getkeys
-	go ebloom mvar af k = do
-		void $ liftIO $ tryPutMVar mvar ()
-		syncFile ebloom rs af k
+	go ebloom mvar af k = commandAction $ do
+		whenM (syncFile ebloom rs af k) $
+			void $ liftIO $ tryPutMVar mvar ()
+		return Nothing
 
 {- If it's preferred content, and we don't have it, get it from one of the
  - listed remotes (preferring the cheaper earlier ones).
@@ -412,8 +418,10 @@ seekSyncContent o rs = do
  - 
  - Drop it from each remote that has it, where it's not preferred content
  - (honoring numcopies).
+ -
+ - Returns True if any file transfers were made.
  -}
-syncFile :: Either (Maybe (Bloom Key)) (Key -> Annex ()) -> [Remote] -> AssociatedFile -> Key -> Annex ()
+syncFile :: Either (Maybe (Bloom Key)) (Key -> Annex ()) -> [Remote] -> AssociatedFile -> Key -> Annex Bool
 syncFile ebloom rs af k = do
 	locs <- loggedLocations k
 	let (have, lack) = partition (\r -> Remote.uuid r `elem` locs) rs
@@ -443,6 +451,8 @@ syncFile ebloom rs af k = do
 		-- the sync failed.
 		handleDropsFrom locs' rs "unwanted" True k af
 			Nothing callCommandAction
+	
+	return (got || not (null putrs))
   where
 	wantget have = allM id 
 		[ pure (not $ null have)

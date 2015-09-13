@@ -32,6 +32,7 @@ module Messages (
 	setupConsole,
 	enableDebugOutput,
 	disableDebugOutput,
+	debugEnabled,
 	commandProgressDisabled,
 ) where
 
@@ -173,7 +174,7 @@ setupConsole :: IO ()
 setupConsole = do
 	s <- setFormatter
 		<$> streamHandler stderr DEBUG
-		<*> pure (simpleLogFormatter "[$time] $msg")
+		<*> pure preciseLogFormatter
 	updateGlobalLogger rootLoggerName (setLevel NOTICE . setHandlers [s])
 	{- This avoids ghc's output layer crashing on
 	 - invalid encoded characters in
@@ -181,11 +182,21 @@ setupConsole = do
 	fileEncoding stdout
 	fileEncoding stderr
 
+{- Log formatter with precision into fractions of a second. -}
+preciseLogFormatter :: LogFormatter a
+preciseLogFormatter = tfLogFormatter "%F %X%Q" "[$time] $msg"
+
 enableDebugOutput :: IO ()
 enableDebugOutput = updateGlobalLogger rootLoggerName $ setLevel DEBUG
 
 disableDebugOutput :: IO ()
 disableDebugOutput = updateGlobalLogger rootLoggerName $ setLevel NOTICE
+
+{- Checks if debugging is enabled. -}
+debugEnabled :: IO Bool
+debugEnabled = do
+	l <- getRootLogger
+	return $ getLevel l <= Just DEBUG
 
 {- Should commands that normally output progress messages have that
  - output disabled? -}

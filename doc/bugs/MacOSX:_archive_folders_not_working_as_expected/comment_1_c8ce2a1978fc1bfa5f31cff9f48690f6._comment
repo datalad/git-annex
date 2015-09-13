@@ -1,0 +1,57 @@
+[[!comment format=mdwn
+ username="mhubig"
+ subject="comment 1"
+ date="2015-08-17T11:42:18Z"
+ content="""
+Here's some more infos from running git-annex with debug:
+
+Moving a 'symlinked' file from `~/annex/archive` to `~/annex`. I expected that the file get's automagically pulled from the archive drive and the symlink is replaced with the real file.
+but what happens is this:
+
+[[!format sh \"\"\"
+[2015-08-17 13:29:48 CEST] Watcher: file deleted /Users/markus/annex/archive/Crisi\'s Trail und Stubenfelsen Jam.gpx
+[2015-08-17 13:29:48 CEST] Committer: committing 1 changes
+[2015-08-17 13:29:48 CEST] Committer: Committing changes to git
+(recording state in git...)
+[2015-08-17 13:29:48 CEST] feed: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"update-index\",\"-z\",\"--index-info\"]
+[2015-08-17 13:29:48 CEST] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+[2015-08-17 13:29:48 CEST] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"--hash\",\"refs/heads/annex/direct/master\"]
+[2015-08-17 13:29:48 CEST] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"write-tree\"]
+[2015-08-17 13:29:48 CEST] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"rev-parse\",\"df537468c185961a9785d9288d00b0bc5f628a28:\"]
+[2015-08-17 13:29:48 CEST] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"commit-tree\",\"be3e4a4a4477d6a1aad9fcbd333b43d84295e9b6\",\"--no-gpg-sign\",\"-p\",\"df537468c185961a9785d9288d00b0bc5f628a28\"]
+[2015-08-17 13:29:48 CEST] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"update-ref\",\"refs/heads/annex/direct/master\",\"3436556450500cf342154e9b03bfd1825402f5eb\"]
+[2015-08-17 13:29:48 CEST] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+[2015-08-17 13:29:48 CEST] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"refs/heads/annex/direct/master\"]
+[2015-08-17 13:29:48 CEST] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"branch\",\"-f\",\"synced/master\"]
+[2015-08-17 13:29:48 CEST] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"branch\",\"-f\",\"master\"]
+[2015-08-17 13:29:48 CEST] Pusher: Syncing with annexbackup, annexarchive
+[2015-08-17 13:29:48 CEST] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+[2015-08-17 13:29:48 CEST] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"refs/heads/annex/direct/master\"]
+[2015-08-17 13:29:48 CEST] Pusher: pushing to [Remote { name =\"annexbackup\" },Remote { name =\"annexarchive\" }]
+[2015-08-17 13:29:48 CEST] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"push\",\"annexbackup\",\"+git-annex:synced/git-annex\",\"annex/direct/master:synced/master\"]
+[2015-08-17 13:29:48 CEST] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"push\",\"annexarchive\",\"+git-annex:synced/git-annex\",\"annex/direct/master:synced/master\"]
+To /Volumes/annex-archive/annex-archive
+   df53746..3436556  annex/direct/master -> synced/master
+[2015-08-17 13:29:48 CEST] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"push\",\"annexarchive\",\"git-annex\",\"master\"]
+To /Volumes/annex-backup/annex-backup
+   464ebc5..2413398  git-annex -> synced/git-annex
+   df53746..3436556  annex/direct/master -> synced/master
+[2015-08-17 13:29:48 CEST] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"push\",\"annexbackup\",\"git-annex\",\"master\"]
+[2015-08-17 13:29:49 CEST] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+[2015-08-17 13:29:49 CEST] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"refs/heads/annex/direct/master\"]
+[2015-08-17 13:29:49 CEST] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"log\",\"refs/heads/annex/direct/master..refs/heads/synced/master\",\"-n1\",\"--pretty=%H\"]
+[2015-08-17 13:29:49 CEST] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+[2015-08-17 13:29:49 CEST] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"refs/heads/annex/direct/master\"]
+[2015-08-17 13:29:49 CEST] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"log\",\"refs/heads/annex/direct/master..refs/remotes/annexarchive/synced/master\",\"-n1\",\"--pretty=%H\"]
+[2015-08-17 13:29:49 CEST] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"git-annex\"]
+[2015-08-17 13:29:49 CEST] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2015-08-17 13:29:49 CEST] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"log\",\"refs/heads/git-annex..24133980364c5ae86e939c214deea1b6ab63135c\",\"-n1\",\"--pretty=%H\"]
+[2015-08-17 13:29:49 CEST] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"log\",\"refs/heads/git-annex..d42c35efe8b1333930587a41aec8744aa0e90ae3\",\"-n1\",\"--pretty=%H\"]
+[2015-08-17 13:29:49 CEST] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"log\",\"refs/heads/git-annex..796db681152a16121be271668d5f79c845e24b8c\",\"-n1\",\"--pretty=%H\"]
+[2015-08-17 13:29:49 CEST] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"ls-tree\",\"--full-tree\",\"-z\",\"--\",\"refs/heads/git-annex\",\"uuid.log\",\"remote.log\",\"trust.log\",\"group.log\",\"numcopies.log\",\"schedule.log\",\"preferred-content.log\",\"required-content.log\",\"group-preferred-content.log\"]
+[2015-08-17 13:29:49 CEST] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+[2015-08-17 13:29:49 CEST] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"refs/heads/annex/direct/master\"]
+[2015-08-17 13:29:49 CEST] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"log\",\"refs/heads/annex/direct/master..refs/remotes/annexbackup/synced/master\",\"-n1\",\"--pretty=%H\"]
+\"\"\"]]
+ 
+"""]]

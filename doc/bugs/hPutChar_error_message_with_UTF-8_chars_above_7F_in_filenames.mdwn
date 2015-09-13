@@ -1,0 +1,78 @@
+### Please describe the problem.
+
+When using `--incremental` together with `git annex fsck`, the error 
+message "hPutChar: invalid argument (invalid character)" appears in the 
+"Only X of Y trustworthy copies exist" message when the filename 
+contains an UTF-8 character above U+007F. The only locale in which this 
+doesn't happen is "C.UTF-8".
+
+### What steps will reproduce the problem?
+
+- Create and add a file with an UTF-8 character in the file name above U+007F to git-annex
+- Set `numcopies` high enough so `git annex fsck` will produce a warning about missing copies
+- Execute `git annex fsck --incremental`
+
+I've created two test scripts on 
+<https://gist.github.com/sunny256/ebf4d055f5500b257ed8> that demonstrate 
+this error:
+
+- `git clone https://gist.github.com/ebf4d055f5500b257ed8.git`
+- `cd ebf4d055f5500b257ed8`
+- `./runme`
+
+You can specify a locale to `runme` as `$1` to experiment with different 
+locales.
+
+There's also a `test-all-locales` script that executes `./runme` with 
+all defined locales on the computer. Both scripts return 1 if the error 
+message appears, if it's gone, 0 is returned.
+
+### What version of git-annex are you using? On what operating system?
+
+Newest git-annex amd64 (5.20150812) from `downloads.kitenet.net`.
+
+### Please provide any additional information below.
+
+The `runme` script contains more information about this issue.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+Here are two excerpts of the test output using the "C" and 
+"C.UTF-8" locale:
+
+$ ./runme C
+[snip]
+================== git annex --incremental fsck ==================
+fsck U00D8_Ø.txt (checksum...)
+
+  Only 1 of 2 trustworthy copies exist of U00D8_
+git-annex: <stderr>: hPutChar: invalid argument (invalid character)
+failed
+fsck ascii_only.txt (checksum...)
+
+  Only 1 of 2 trustworthy copies exist of ascii_only.txt
+  Back it up with git-annex copy.
+failed
+(recording state in git...)
+git-annex: fsck: 2 failed
+
+$ ./runme C.UTF-8
+[snip]
+================== git annex --incremental fsck ==================
+fsck U00D8_Ø.txt (checksum...)
+
+  Only 1 of 2 trustworthy copies exist of U00D8_Ø.txt
+  Back it up with git-annex copy.
+failed
+fsck ascii_only.txt (checksum...)
+
+  Only 1 of 2 trustworthy copies exist of ascii_only.txt
+  Back it up with git-annex copy.
+failed
+(recording state in git...)
+git-annex: fsck: 2 failed
+
+# End of transcript or log.
+"""]]

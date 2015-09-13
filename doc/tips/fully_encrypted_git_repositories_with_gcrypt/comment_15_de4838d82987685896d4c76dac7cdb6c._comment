@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="tanen"
+ subject="comment 15"
+ date="2015-08-23T20:34:20Z"
+ content="""
+I just created the same setup again that I attempted 1-2 years ago, with the latest self-contained git-annex build. Two clients, one SSH server, using gcrypt. Setup worked flawless now (although the process of having to manually export the generated GPG key and import it into all clients is still very awkward); changes made on a client are immediately detected and synced with the server. However, the changes made on client A are never automatically propagated to client B. They are picked up when I restart the annex assistant on client B, but never automatically.
+
+Is this a bug or simply not supported? I read about XMPP being deprecated in favor of notifications via the annex-shell, but I couldn't find a post detailing these changes.
+"""]]

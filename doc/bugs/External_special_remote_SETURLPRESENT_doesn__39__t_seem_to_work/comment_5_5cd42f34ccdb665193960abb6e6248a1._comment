@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2015-08-17T15:36:49Z"
+ content="""
+I've gone ahead and implemented my last comment, see
+<http://git-annex.branchable.com/design/external_special_remote_protocol/#index9h2>
+"""]]

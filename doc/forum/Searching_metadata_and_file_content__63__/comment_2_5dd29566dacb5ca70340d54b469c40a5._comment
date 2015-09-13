@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="konubinix"
+ subject="link to the files"
+ date="2015-08-18T13:37:12Z"
+ content="""
+The previous comment did not display the files correctly.
+
+[link the script to dump the tags](https://raw.githubusercontent.com/Konubinix/Devel/master/bin/konix_git-annex_dump_tags.sh)
+
+[link the fields file](https://raw.githubusercontent.com/Konubinix/Devel/master/config/recoll/fields)
+
+"""]]

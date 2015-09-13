@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 5.20150812
+Version: 5.20150824
 Cabal-Version: >= 1.8
 License: GPL-3
 Maintainer: Joey Hess <id@joeyh.name>
@@ -152,6 +152,9 @@ Executable git-annex
   else
     Build-Depends: cryptohash (>= 0.11.0)
 
+  -- Fully optimize for production.
+  -- Parallel builds only when not building for production,
+  -- because ghc is known to not yield reproducible builds this way.
   if flag(Production)
     GHC-Options: -O2
 
@@ -185,7 +188,7 @@ Executable git-annex
     Build-Depends: DAV (>= 1.0), http-client
     CPP-Options: -DWITH_WEBDAV
 
-  if flag(Assistant) && ! os(solaris)
+  if flag(Assistant) && ! os(solaris) && ! os(gnu)
     CPP-Options: -DWITH_ASSISTANT
 
   if flag(Assistant)
@@ -206,8 +209,9 @@ Executable git-annex
               Build-Depends: hinotify
               CPP-Options: -DWITH_INOTIFY
             else
-              CPP-Options: -DWITH_KQUEUE
-              C-Sources: Utility/libkqueue.c
+              if ! os(gnu)
+                CPP-Options: -DWITH_KQUEUE
+                C-Sources: Utility/libkqueue.c
 
   if (os(linux))
     if flag(Dbus)

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="bgilbert@a0c64716cf22216de5eeb15a5ca4f009164c8fb3"
+ nickname="bgilbert"
+ subject="comment 7"
+ date="2015-08-19T05:49:12Z"
+ content="""
+It seems that with encrypted remotes, `WHEREIS` passes the non-HMAC version of the `Key`.  Thus, the URL returned by the external special remote won't actually point to the remote object.  I'm not sure whether it's even useful to display URLs for encrypted files, but the current situation seems actively misleading.
+"""]]

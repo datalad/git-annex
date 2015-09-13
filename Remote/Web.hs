@@ -7,10 +7,11 @@
 
 {-# LANGUAGE CPP #-}
 
-module Remote.Web (remote) where
+module Remote.Web (remote, getWebUrls) where
 
 import Common.Annex
 import Types.Remote
+import Remote.Helper.Messages
 import qualified Git
 import qualified Git.Construct
 import Annex.Content
@@ -53,7 +54,7 @@ gen r _ c gc =
 		, removeKey = dropKey
 		, checkPresent = checkKey
 		, checkPresentCheap = False
-		, whereisKey = Just getWebUrls
+		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing
 		, config = c
@@ -112,7 +113,7 @@ checkKey key = do
 checkKey' :: Key -> [URLString] -> Annex (Either String Bool)
 checkKey' key us = firsthit us (Right False) $ \u -> do
 	let (u', downloader) = getDownloader u
-	showAction $ "checking " ++ u'
+	showChecking u'
 	case downloader of
 		QuviDownloader ->
 #ifdef WITH_QUVI
