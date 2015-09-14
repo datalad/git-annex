@@ -8,7 +8,7 @@
 module Annex.SpecialRemote where
 
 import Common.Annex
-import Remote (remoteTypes)
+import Remote (remoteTypes, remoteMap)
 import Types.Remote (RemoteConfig, RemoteConfigKey, typename, setup)
 import Logs.Remote
 import Logs.Trust
@@ -70,10 +70,11 @@ autoEnableKey = "autoenable"
 
 autoEnable :: Annex ()
 autoEnable = do
-	remotemap <- M.filter wanted <$> readRemoteLog
-	forM_ (M.toList remotemap) $ \(u, c) ->
+	remotemap <- M.filter configured <$> readRemoteLog
+	enabled <- remoteMap id
+	forM_ (M.toList remotemap) $ \(u, c) -> unless (u `M.member` enabled) $ do
 		case (M.lookup nameKey c, findType c) of
-			(Just name, Right t) -> unlessM ((== DeadTrusted) <$> lookupTrust u) $ do
+			(Just name, Right t) -> whenM (canenable u) $ do
 				showSideAction $ "Auto enabling special remote " ++ name
 				res <- tryNonAsync $ setup t (Just u) Nothing c
 				case res of
@@ -81,5 +82,6 @@ autoEnable = do
 					Right _ -> return ()
 			_ -> return ()
   where
-	wanted rc = fromMaybe False $
+	configured rc = fromMaybe False $
 		Git.Config.isTrue =<< M.lookup autoEnableKey rc
+	canenable u = (/= DeadTrusted) <$> lookupTrust u
