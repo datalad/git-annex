@@ -875,8 +875,8 @@ Here are all the supported configuration settings.
 
 * `annex.hardlink`
 
-  Set this to `true` to make file contents be hard linked into the
-  repository when possible, instead of a more expensive copy.
+  Set this to `true` to make file contents be hard linked between the
+  repository and its remotes when possible, instead of a more expensive copy.
 
   Use with caution -- This can invalidate numcopies counting, since
   with hard links, fewer copies of a file can exist. So, it is a good

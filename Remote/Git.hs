@@ -368,9 +368,7 @@ copyFromRemote' r key file dest meterupdate
 	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) (return False) $ do
 		params <- Ssh.rsyncParams r Download
 		u <- getUUID
-#ifndef mingw32_HOST_OS
-		hardlink <- annexHardLink <$> Annex.getGitConfig
-#endif
+		hardlink <- wantHardLink
 		-- run copy from perspective of remote
 		onLocal r $ do
 			ensureInitialized
@@ -378,19 +376,9 @@ copyFromRemote' r key file dest meterupdate
 			case v of
 				Nothing -> return False
 				Just (object, checksuccess) -> do
-					let copier = rsyncOrCopyFile params object dest
-#ifndef mingw32_HOST_OS
-					let linker = createLink object dest >> return True
-					go <- ifM (pure hardlink <&&> not <$> isDirect)
-						( return $ \m -> liftIO (catchBoolIO linker)
-							<||> copier m
-						, return copier
-						)
-#else
-					let go = copier
-#endif
+					copier <- mkCopier hardlink params object dest
 					runTransfer (Transfer Download u key)
-						file noRetry noObserver go
+						file noRetry noObserver copier
 						<&&> checksuccess
 	| Git.repoIsSsh (repo r) = feedprogressback $ \feeder -> do
 		direct <- isDirect
@@ -506,6 +494,7 @@ copyToRemote' r key file p
 		checksuccessio <- Annex.withCurrentState checksuccess
 		params <- Ssh.rsyncParams r Upload
 		u <- getUUID
+		hardlink <- wantHardLink
 		-- run copy from perspective of remote
 		onLocal r $ ifM (Annex.Content.inAnnex key)
 			( return True
@@ -514,7 +503,7 @@ copyToRemote' r key file p
 				runTransfer (Transfer Download u key) file noRetry noObserver $ const $
 					Annex.Content.saveState True `after`
 						Annex.Content.getViaTmpChecked (liftIO checksuccessio) key
-							(\d -> rsyncOrCopyFile params object d p)
+							(\dest -> mkCopier hardlink params object dest >>= \a -> a p)
 			)
 
 fsckOnRemote :: Git.Repo -> [CommandParam] -> Annex (IO Bool)
@@ -622,3 +611,23 @@ commitOnCleanup r a = go `after` a
 				withQuietOutput createProcessSuccess $
 					proc shellcmd $
 						toCommand shellparams
+
+wantHardLink :: Annex Bool
+wantHardLink = (annexHardLink <$> Annex.getGitConfig) <&&> (not <$> isDirect)
+
+-- If either the remote or local repository wants to use hard links,
+-- the copier will do so, falling back to copying.
+mkCopier :: Bool -> [CommandParam] -> FilePath -> FilePath -> Annex (MeterUpdate -> Annex Bool)
+mkCopier remotewanthardlink rsyncparams object dest = do
+	let copier = rsyncOrCopyFile rsyncparams object dest
+#ifndef mingw32_HOST_OS
+	localwanthardlink <- wantHardLink
+	let linker = createLink object dest >> return True
+	ifM (pure (remotewanthardlink || localwanthardlink) <&&> not <$> isDirect)
+		( return $ \m -> liftIO (catchBoolIO linker)
+			<||> copier m
+		, return copier
+		)
+#else
+	return copier
+#endif
