@@ -10,6 +10,7 @@ module Command.Init where
 import Common.Annex
 import Command
 import Annex.Init
+import qualified Annex.SpecialRemote
 	
 cmd :: Command
 cmd = dontCheck repoExists $
@@ -29,4 +30,5 @@ start ws = do
 perform :: String -> CommandPerform
 perform description = do
 	initialize $ if null description then Nothing else Just description
+	Annex.SpecialRemote.autoEnable
 	next $ return True

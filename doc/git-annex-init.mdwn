@@ -16,6 +16,14 @@ It's useful, but not mandatory, to initialize each new clone
 of a repository with its own description. If you don't provide one,
 one will be generated using the username, hostname and the path.
 
+If any special remotes were configured with autoenable=true,
+this will also attempt to enable them. See [[git-annex-initremote]](1).
+To disable this, re-enable a remote with "autoenable=false", or
+mark it as dead (see [[git-annex-dead]](1)).
+
+This command is entirely safe, although usually pointless, to run inside an
+already initialized git-annex repository.
+
 # SEE ALSO
 
 [[git-annex]](1)

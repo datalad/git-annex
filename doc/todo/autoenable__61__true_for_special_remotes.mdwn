@@ -1,3 +1,20 @@
 Just passing along from https://github.com/datalad/datalad/issues/77#issuecomment-134688459
 
 joey:  I do think there could be a use case for configuring a special remote with autoenable=true and have git-annex init try to enable all such remotes.
+
+> [[done]], I made both `git init` and `git annex reinit` auto-enable
+> such special remotes. For now, the assistant does not (could change).
+> 
+> There was also the question of what to do when git-annex auto-inits
+> in a clone of a repository. It wouldn't do for a command like
+> `git annex find`'s output to include any messages that might be shown while
+> auto-enabling special remotes as a result of an auto-init.
+> Since I can't guarantee enabling special remotes will be quiet, I've not
+> tried to auto-enable special remotes in this case. 
+> 
+> I think I'd have to
+> exec a git-annex init process with stdout sent to stderr to implement
+> this in a safe way, and due to calls to ensureInitialized in Remote.Git,
+> which can auto-init a local remote, that gets particularly tricky. Best, I
+> feel, to wait and see if anyone needs that.
+--[[Joey]]
