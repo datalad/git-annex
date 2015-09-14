@@ -73,7 +73,7 @@ autoEnable = do
 	remotemap <- M.filter wanted <$> readRemoteLog
 	forM_ (M.toList remotemap) $ \(u, c) ->
 		case (M.lookup nameKey c, findType c) of
-			(Just name, Right t) -> do
+			(Just name, Right t) -> unlessM ((== DeadTrusted) <$> lookupTrust u) $ do
 				showSideAction $ "Auto enabling special remote " ++ name
 				res <- tryNonAsync $ setup t (Just u) Nothing c
 				case res of
