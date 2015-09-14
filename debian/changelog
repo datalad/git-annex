@@ -22,6 +22,8 @@ git-annex (5.20150825) UNRELEASED; urgency=medium
     --no-content options to specify the (current) default behavior.
   * annex.hardlink extended to also try to use hard links when copying from
     the repository to a remote.
+  * Improve bash completion, so it completes names of remotes and backends
+    in appropriate places.
 
  -- Joey Hess <id@joeyh.name>  Tue, 01 Sep 2015 14:46:18 -0700
 

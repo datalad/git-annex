@@ -70,7 +70,10 @@ data SyncOptions  = SyncOptions
 
 optParser :: CmdParamsDesc -> Parser SyncOptions
 optParser desc = SyncOptions
-	<$> cmdParams desc
+	<$> (many $ argument str
+		( metavar desc
+		<> completeRemotes
+		))
 	<*> invertableSwitch "commit" True
 		( help "avoid git commit" 
 		)

@@ -67,6 +67,7 @@ optParser desc = FsckOptions
 	<*> optional (parseRemoteOption $ strOption 
 		( long "from" <> short 'f' <> metavar paramRemote 
 		<> help "check remote"
+		<> completeRemotes
 		))
 	<*> optional parseincremental
 	<*> optional (parseKeyOptions False)
