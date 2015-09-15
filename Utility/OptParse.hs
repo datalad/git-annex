@@ -9,6 +9,7 @@ module Utility.OptParse where
 
 import Options.Applicative
 import Data.Monoid
+import Prelude -- Fix redundant import warning
 
 -- | A switch that can be enabled using --foo and disabled using --no-foo.
 --
