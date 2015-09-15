@@ -144,7 +144,7 @@ isEmpty MAny = True
 isEmpty _ = False
 
 {- Combines two matchers, yielding a matcher that will match anything
- - both do. -}
+ - both do. But, if one matcher contains no limits, yield the other one. -}
 combineMatchers :: Matcher a -> Matcher a -> Matcher a
 combineMatchers a b 
 	| isEmpty a = b
