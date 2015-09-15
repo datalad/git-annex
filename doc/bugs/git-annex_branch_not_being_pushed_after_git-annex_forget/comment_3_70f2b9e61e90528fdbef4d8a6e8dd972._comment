@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-09-15T17:34:15Z"
+ content="""
+What git-annex command? 
+
+`git-annex sync` should already deal with this, AFAICS. It forces the push
+to the remote's synced/git-annex branch.
+
+Some remote's may have receive.denyNonFastForwards set, which will prevent
+even a forced push. git-annex sync prints out some hints if this happens.
+"""]]
