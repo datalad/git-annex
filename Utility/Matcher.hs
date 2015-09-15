@@ -27,6 +27,7 @@ module Utility.Matcher (
 	matchM,
 	matchMrun,
 	isEmpty,
+	combineMatchers,
 
 	prop_matcher_sane
 ) where
@@ -141,6 +142,14 @@ matchMrun m run = go m
 isEmpty :: Matcher a -> Bool
 isEmpty MAny = True
 isEmpty _ = False
+
+{- Combines two matchers, yielding a matcher that will match anything
+ - both do. -}
+combineMatchers :: Matcher a -> Matcher a -> Matcher a
+combineMatchers a b 
+	| isEmpty a = b
+	| isEmpty b = a
+	| otherwise = a `MOr` b
 
 prop_matcher_sane :: Bool
 prop_matcher_sane = all (\m -> match dummy m ()) $ map generate

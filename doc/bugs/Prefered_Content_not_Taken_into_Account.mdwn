@@ -360,3 +360,5 @@ On Ubuntu 14.04. All repos are on external USB drives on the same machine except
 
 
 [1] https://git-annex.branchable.com/forum/git-annex_does_not_respect_preferred_content_settings/
+
+> [[fixed|done]] --[[Joey]]

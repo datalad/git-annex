@@ -26,6 +26,10 @@ git-annex (5.20150825) UNRELEASED; urgency=medium
     in appropriate places.
   * Special remotes configured with autoenable=true will be automatically
     enabled when git-annex init is run.
+  * Fix bug in combination of preferred and required content settings.
+    When one was set to the empty string and the other set to some expression,
+    this bug caused all files to be wanted, instead of only files matching
+    the expression.
 
  -- Joey Hess <id@joeyh.name>  Tue, 01 Sep 2015 14:46:18 -0700
 
