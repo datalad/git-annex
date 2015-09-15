@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Jonan"
+ subject="comment 2"
+ date="2015-09-15T16:13:20Z"
+ content="""
+Ok, sorry, must have miss that info.
+
+Couldn't git-annex take care of the `push -f`?
+"""]]
