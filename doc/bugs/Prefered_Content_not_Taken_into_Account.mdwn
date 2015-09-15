@@ -1,0 +1,362 @@
+### Please describe the problem.
+
+This is a follow up to the question [1]. I've created 4 repos with the following vicfg.
+
+[[!format sh """
+# git-annex configuration
+# 
+# Changes saved to this file will be recorded in the git-annex branch.
+# 
+# Lines in this file have the format:
+#   setting field = value
+
+# Repository trust configuration
+# (Valid trust levels: trusted semitrusted untrusted dead)
+# (for web)
+#trust 00000000-0000-0000-0000-000000000001 = semitrusted
+# (for bittorrent)
+#trust 00000000-0000-0000-0000-000000000002 = semitrusted
+# (for repo2)
+#trust 2837f3d7-7c58-4177-8877-620213cf5146 = semitrusted
+# (for repo3)
+#trust b3cbb656-e797-45ba-bf43-08523d463146 = semitrusted
+# (for repo1)
+#trust e7673de4-d465-4557-be8f-b1400acf923e = semitrusted
+
+# Repository groups
+# (Standard groups: client transfer backup incrementalbackup smallarchive archive source manual public unwanted)
+# (Separate group names with spaces)
+# (for repo3)
+group b3cbb656-e797-45ba-bf43-08523d463146 = PodA
+# (for repo1)
+group e7673de4-d465-4557-be8f-b1400acf923e = PodA
+# (for repo2)
+group 2837f3d7-7c58-4177-8877-620213cf5146 = PodB
+# (for web)
+#group 00000000-0000-0000-0000-000000000001 = 
+# (for bittorrent)
+#group 00000000-0000-0000-0000-000000000002 = 
+
+# Repository preferred contents
+# (Set to "standard" to use a repository's group's preferred contents)
+# (for repo2)
+wanted 2837f3d7-7c58-4177-8877-620213cf5146 = groupwanted
+# (for repo1)
+wanted e7673de4-d465-4557-be8f-b1400acf923e = groupwanted
+# (for web)
+#wanted 00000000-0000-0000-0000-000000000001 = 
+# (for bittorrent)
+#wanted 00000000-0000-0000-0000-000000000002 = 
+# (for repo3)
+#wanted b3cbb656-e797-45ba-bf43-08523d463146 = 
+
+# Group preferred contents
+# (Used by repositories with "groupwanted" in their preferred contents)
+groupwanted PodA = not copies=PodA:1
+groupwanted PodB = not copies=PodB:1
+#groupwanted archive = 
+#groupwanted backup = 
+#groupwanted client = 
+#groupwanted incrementalbackup = 
+#groupwanted manual = 
+#groupwanted public = 
+#groupwanted smallarchive = 
+#groupwanted source = 
+#groupwanted transfer = 
+#groupwanted unwanted = 
+
+# Standard preferred contents
+# (Used by wanted or groupwanted expressions containing "standard")
+# (For reference only; built-in and cannot be changed!)
+# standard client = (include=* and ((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1)))) or approxlackingcopies=1
+# standard transfer = (not (inallgroup=client and copies=client:2) and ((include=* and ((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1)))) or approxlackingcopies=1)) or approxlackingcopies=1
+# standard backup = anything
+# standard incrementalbackup = ((not copies=backup:1) and (not copies=incrementalbackup:1)) or approxlackingcopies=1
+# standard smallarchive = ((include=*/archive/* or include=archive/*) and ((not (copies=archive:1 or copies=smallarchive:1)) or approxlackingcopies=1)) or approxlackingcopies=1
+# standard archive = (not (copies=archive:1 or copies=smallarchive:1)) or approxlackingcopies=1
+# standard source = not (copies=1)
+# standard manual = present and ((include=* and ((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1)))) or approxlackingcopies=1)
+# standard public = inpreferreddir
+# standard unwanted = not anything
+
+# Repository required contents
+# (for web)
+#required 00000000-0000-0000-0000-000000000001 = 
+# (for bittorrent)
+#required 00000000-0000-0000-0000-000000000002 = 
+# (for repo2)
+#required 2837f3d7-7c58-4177-8877-620213cf5146 = 
+# (for repo3)
+#required b3cbb656-e797-45ba-bf43-08523d463146 = 
+# (for repo1)
+#required e7673de4-d465-4557-be8f-b1400acf923e = 
+
+# Scheduled activities
+# (Separate multiple activities with "; ")
+# (for web)
+#schedule 00000000-0000-0000-0000-000000000001 = 
+# (for bittorrent)
+#schedule 00000000-0000-0000-0000-000000000002 = 
+# (for repo2)
+#schedule 2837f3d7-7c58-4177-8877-620213cf5146 = 
+# (for repo3)
+#schedule b3cbb656-e797-45ba-bf43-08523d463146 = 
+# (for repo1)
+#schedule e7673de4-d465-4557-be8f-b1400acf923e = 
+"""]]
+
+This works as expected each file lands in 1 on of the repos on the group, not both. My original repo one with the problem has the following vicfg.
+
+[[!format sh """
+# git-annex configuration
+# 
+# Changes saved to this file will be recorded in the git-annex branch.
+# 
+# Lines in this file have the format:
+#   setting field = value
+
+# Repository trust configuration
+# (Valid trust levels: trusted semitrusted untrusted dead)
+# (for buse [origin])
+trust bff7238e-bd92-4929-88a8-c59c1a1dcf03 = semitrusted
+# (for web)
+trust 00000000-0000-0000-0000-000000000001 = untrusted
+# (for bittorrent)
+trust 00000000-0000-0000-0000-000000000002 = untrusted
+# (for )
+trust 03b19bdc-8497-4234-9ef6-c80d78e309f8 = dead
+# (for )
+trust 0b1a34ce-a8e3-4002-b46a-83e96626305f = dead
+# (for )
+trust 1459a238-6f60-4b43-8459-f7055b49e3c5 = dead
+# (for )
+trust 14738d0f-2f50-4f93-a8e4-c29870d02ba1 = dead
+# (for )
+trust 1512a830-7789-4bc8-a4a0-4c51eedd1109 = dead
+# (for )
+trust 174d69cb-9b97-44df-9f15-aea00f66a61c = dead
+# (for )
+trust 1ade7f29-2ad0-4ab0-a816-de55ffde389e = dead
+# (for )
+trust 1ba9d14b-deae-46e6-b451-dbf0fa8aa934 = dead
+# (for )
+trust 1dda84ca-4e8c-49b4-b673-35ec2b11557b = dead
+# (for )
+trust 29aad234-82e6-45c9-9822-b650290c2264 = dead
+# (for )
+trust 2be091a2-e721-4a86-a759-c5df7a41a61d = dead
+# (for )
+trust 3540b01a-03f0-4a58-8ea1-7ca80002a22d = dead
+# (for )
+trust 39b4d431-9d55-432d-a801-eaf4cf643de1 = dead
+# (for )
+trust 3a443e72-e8e0-11e2-b7db-8feb865236d4 = dead
+# (for )
+trust 42023cde-e95f-483c-8389-54b823aed789 = dead
+# (for )
+trust 54a819c1-65a3-44e9-86c3-0eb602223ee8 = dead
+# (for )
+trust 68846c04-912d-4bfc-80f3-3b8ec1e7a3c7 = dead
+# (for )
+trust 69b10f7e-0214-4fd0-8138-ff4717d1f39f = dead
+# (for )
+trust 7b236779-a961-4e72-abfc-56b764e53a9c = dead
+# (for )
+trust 7cde3feb-3876-4c2a-a772-d4541eac8614 = dead
+# (for )
+trust 8f3e7b2b-f8de-4114-bcdd-2ef3ed932c18 = dead
+# (for )
+trust a3bd1546-e8df-11e2-bc54-a7edbf29f5da = dead
+# (for )
+trust aa830256-4c63-44e3-9a3f-33b377de79d5 = dead
+# (for )
+trust ad46e36b-df9c-4d45-9af1-58d17e798afa = dead
+# (for )
+trust b5464382-b5f8-4ec3-b36d-a378b1202497 = dead
+# (for )
+trust b6317827-97d3-44bd-8197-91cae0b56a19 = dead
+# (for )
+trust bbb5dd98-f09d-11e2-a57b-d7185df9eef1 = dead
+# (for )
+trust c6dfb856-a0cc-4e79-acbd-3600f4bce158 = dead
+# (for )
+trust ccb11b54-ecc8-11e2-ad6c-af6445c8eedc = dead
+# (for )
+trust cdbf33bc-17bc-49e3-b0d1-afa653a2c1f7 = dead
+# (for )
+trust d8cf3fb5-4e8e-4732-b566-dab6f2d9dc4c = dead
+# (for )
+trust e160a8ef-3b3d-4f0e-88eb-9ceba11b2f57 = dead
+# (for )
+trust e39439a0-1486-55a0-ada3-c9785c08d650 = dead
+# (for )
+trust e8bcb64b-17df-4d79-a5b6-9d444e4afa51 = dead
+# (for )
+trust eae76b0e-ada9-4c5e-b9e3-db5998324e70 = dead
+# (for )
+trust ec71b4bd-1b7b-408c-906f-91c4168fd89f = dead
+# (for )
+trust f936015b-d62b-4899-a3f0-8d91efb385b5 = dead
+# (for damla)
+#trust 132503d4-dcde-4790-aabb-ee5ba539a3a0 = semitrusted
+# (for ozge)
+#trust 1e1d0c4e-b1da-465f-9140-7128a7e3ee13 = semitrusted
+# (for mini)
+#trust 7deafa14-8add-4316-984f-9b24eb713770 = semitrusted
+# (for irem)
+#trust aabc3536-a423-42b6-a234-5f110607296e = semitrusted
+# (for yesim)
+#trust ba3593c0-ddf1-4433-9916-aa25d1a52895 = semitrusted
+# (for hubic)
+#trust f980f309-0ebd-41c8-9303-73aff6409365 = semitrusted
+
+# Repository groups
+# (Standard groups: client transfer backup incrementalbackup smallarchive archive source manual public unwanted)
+# (Separate group names with spaces)
+# (for damla)
+group 132503d4-dcde-4790-aabb-ee5ba539a3a0 = PodA
+# (for ozge)
+group 1e1d0c4e-b1da-465f-9140-7128a7e3ee13 = PodA
+# (for irem)
+group aabc3536-a423-42b6-a234-5f110607296e = PodA
+# (for yesim)
+group ba3593c0-ddf1-4433-9916-aa25d1a52895 = PodA
+# (for buse [origin])
+group bff7238e-bd92-4929-88a8-c59c1a1dcf03 = PodA
+# (for hubic)
+group f980f309-0ebd-41c8-9303-73aff6409365 = PodB
+# (for mini)
+group 7deafa14-8add-4316-984f-9b24eb713770 = manual
+# (for web)
+#group 00000000-0000-0000-0000-000000000001 = 
+# (for bittorrent)
+#group 00000000-0000-0000-0000-000000000002 = 
+
+# Repository preferred contents
+# (Set to "standard" to use a repository's group's preferred contents)
+# (for damla)
+wanted 132503d4-dcde-4790-aabb-ee5ba539a3a0 = groupwanted
+# (for ozge)
+wanted 1e1d0c4e-b1da-465f-9140-7128a7e3ee13 = groupwanted
+# (for irem)
+wanted aabc3536-a423-42b6-a234-5f110607296e = groupwanted
+# (for yesim)
+wanted ba3593c0-ddf1-4433-9916-aa25d1a52895 = groupwanted
+# (for buse [origin])
+wanted bff7238e-bd92-4929-88a8-c59c1a1dcf03 = groupwanted
+# (for hubic)
+wanted f980f309-0ebd-41c8-9303-73aff6409365 = groupwanted
+# (for mini)
+wanted 7deafa14-8add-4316-984f-9b24eb713770 = standard
+# (for web)
+#wanted 00000000-0000-0000-0000-000000000001 = 
+# (for bittorrent)
+#wanted 00000000-0000-0000-0000-000000000002 = 
+
+# Group preferred contents
+# (Used by repositories with "groupwanted" in their preferred contents)
+groupwanted storagePodA = 
+groupwanted storagePodB = 
+groupwanted PodA = not copies=PodA:1
+groupwanted PodB = not copies=PodB:1
+#groupwanted archive = 
+#groupwanted backup = 
+#groupwanted client = 
+#groupwanted incrementalbackup = 
+#groupwanted manual = 
+#groupwanted public = 
+#groupwanted smallarchive = 
+#groupwanted source = 
+#groupwanted transfer = 
+#groupwanted unwanted = 
+
+# Standard preferred contents
+# (Used by wanted or groupwanted expressions containing "standard")
+# (For reference only; built-in and cannot be changed!)
+# standard client = (include=* and ((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1)))) or approxlackingcopies=1
+# standard transfer = (not (inallgroup=client and copies=client:2) and ((include=* and ((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1)))) or approxlackingcopies=1)) or approxlackingcopies=1
+# standard backup = anything
+# standard incrementalbackup = ((not copies=backup:1) and (not copies=incrementalbackup:1)) or approxlackingcopies=1
+# standard smallarchive = ((include=*/archive/* or include=archive/*) and ((not (copies=archive:1 or copies=smallarchive:1)) or approxlackingcopies=1)) or approxlackingcopies=1
+# standard archive = (not (copies=archive:1 or copies=smallarchive:1)) or approxlackingcopies=1
+# standard source = not (copies=1)
+# standard manual = present and ((include=* and ((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1)))) or approxlackingcopies=1)
+# standard public = inpreferreddir
+# standard unwanted = not anything
+
+# Repository required contents
+# (for damla)
+required 132503d4-dcde-4790-aabb-ee5ba539a3a0 = 
+# (for ozge)
+required 1e1d0c4e-b1da-465f-9140-7128a7e3ee13 = 
+# (for irem)
+required aabc3536-a423-42b6-a234-5f110607296e = 
+# (for yesim)
+required ba3593c0-ddf1-4433-9916-aa25d1a52895 = 
+# (for buse [origin])
+required bff7238e-bd92-4929-88a8-c59c1a1dcf03 = 
+# (for web)
+#required 00000000-0000-0000-0000-000000000001 = 
+# (for bittorrent)
+#required 00000000-0000-0000-0000-000000000002 = 
+# (for mini)
+#required 7deafa14-8add-4316-984f-9b24eb713770 = 
+# (for hubic)
+#required f980f309-0ebd-41c8-9303-73aff6409365 = 
+
+# Scheduled activities
+# (Separate multiple activities with "; ")
+# (for web)
+#schedule 00000000-0000-0000-0000-000000000001 = 
+# (for bittorrent)
+#schedule 00000000-0000-0000-0000-000000000002 = 
+# (for damla)
+#schedule 132503d4-dcde-4790-aabb-ee5ba539a3a0 = 
+# (for ozge)
+#schedule 1e1d0c4e-b1da-465f-9140-7128a7e3ee13 = 
+# (for mini)
+#schedule 7deafa14-8add-4316-984f-9b24eb713770 = 
+# (for irem)
+#schedule aabc3536-a423-42b6-a234-5f110607296e = 
+# (for yesim)
+#schedule ba3593c0-ddf1-4433-9916-aa25d1a52895 = 
+# (for buse [origin])
+#schedule bff7238e-bd92-4929-88a8-c59c1a1dcf03 = 
+# (for hubic)
+#schedule f980f309-0ebd-41c8-9303-73aff6409365 = 
+
+"""]]
+
+With this settings all the repos tries get all of the files files that are present in other groups. Is there a way to debug this problem and tell why git-annex is trying to get the files? According to the settings it should not. I've also tried deleting all history this is a big (around 7 TB) old repo I thought maybe something got messed up along the way but it did not fix it.
+
+### What steps will reproduce the problem?
+
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+git-annex version: 5.20150825-g7826f84
+build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA Database                                                                                                     
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SKEIN256E SKEIN256 SKEIN512E SKEIN512
+ SHA1E SHA1 MD5E MD5 WORM URL                                                                                       
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external local repository version: 5
+supported repository version: 5
+upgrade supported from repository versions: 0 1 2 4
+"""]]
+
+On Ubuntu 14.04. All repos are on external USB drives on the same machine except the one called "mini".
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
+[1] https://git-annex.branchable.com/forum/git-annex_does_not_respect_preferred_content_settings/
