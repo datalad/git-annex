@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-09-15T15:56:46Z"
+ content="""
+"You may need to force git to push the branch to any git repositories not
+running git-annex." -- git-annex-forget man page
+
+I guess bitbucket doesn't accept pushes that replace an existing branch
+with one with a disconnected history. git push --force should sort it out.
+
+I'm not clear how this is a bug. Is there some change needed in the 
+documentation or perhaps in git-annex sync?
+"""]]
