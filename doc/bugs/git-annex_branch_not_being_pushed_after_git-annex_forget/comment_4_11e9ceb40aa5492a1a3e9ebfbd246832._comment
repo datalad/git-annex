@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="Jonan"
+ subject="comment 4"
+ date="2015-09-16T11:15:11Z"
+ content="""
+Yes, the `synced/git-annex` branch is being pushed correctly, it's the `git-annex` branch the one giving trouble.
+"""]]
