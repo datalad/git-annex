@@ -1,3 +1,10 @@
+git-annex (5.20150917) UNRELEASED; urgency=medium
+
+  * info: Don't allow use in a non-git-annex repository, since it
+    uses the git-annex branch and would create it if it were missing.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 16 Sep 2015 12:23:33 -0400
+
 git-annex (5.20150916) unstable; urgency=medium
 
   * Fix Windows build to work with ghc 7.10.
