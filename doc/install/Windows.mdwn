@@ -1,8 +1,8 @@
 git-annex now does Windows!
 
-* First, [install msysgit](http://git-scm.com/downloads) (msysgit 1.9 is needed)  
-  _Be sure to tell the installer to add git to the PATH._  
-  That is, select "Use Git from the Windows Command Prompt"
+* First, [install git for Windows](http://git-scm.com/downloads)  
+  Get the 32 bit version not the 64 bit version.  
+  (Note that msysgit is no longer supported.)
 * Then, [install git-annex](https://downloads.kitenet.net/git-annex/windows/current/)
 
 This port is now in reasonably good shape for command-line use of
@@ -19,8 +19,6 @@ important thing is that it should end with "All tests passed".
 
 A daily build is also available, thanks to Yury V. Zaytsev and
 [NEST](http://nest-initiative.org/).
-
-This daily build now needs git for windows, not msysgit.
 
 * [download](https://downloads.kitenet.net/git-annex/autobuild/windows/) ([build logs](https://qa.nest-initiative.org/view/msysGit/job/msysgit-git-annex-assistant-test/))
 
