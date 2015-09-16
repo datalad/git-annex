@@ -43,6 +43,7 @@ for using git-annex with various services:
 * [hubiC](https://github.com/Schnouki/git-annex-remote-hubic)
 * [pCloud](https://github.com/tochev/git-annex-remote-pcloud)
 * [[ipfs]]
+* [Ceph](https://github.com/mhameed/git-annex-remote-ceph)
 
 Want to add support for something else? [[Write your own!|external]]
 
