@@ -81,3 +81,7 @@ repositories containing these files: 0
 
 
 yes -- with every day it grows on/in me! ;)
+
+> Oddly, I noticed this earlier today, and fixed it. Only git annex info
+> was affected; for some reason it was marked to let it run outside a
+> git-annex repo. [[done]] --[[Joey]]
