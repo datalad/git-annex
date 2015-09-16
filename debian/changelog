@@ -1,4 +1,4 @@
-git-annex (5.20150825) UNRELEASED; urgency=medium
+git-annex (5.20150916) unstable; urgency=medium
 
   * Fix Windows build to work with ghc 7.10.
   * init: Fix reversion in detection of repo made with git clone --shared
@@ -31,7 +31,7 @@ git-annex (5.20150825) UNRELEASED; urgency=medium
     this bug caused all files to be wanted, instead of only files matching
     the expression.
 
- -- Joey Hess <id@joeyh.name>  Tue, 01 Sep 2015 14:46:18 -0700
+ -- Joey Hess <id@joeyh.name>  Wed, 16 Sep 2015 10:31:24 -0400
 
 git-annex (5.20150824) unstable; urgency=medium
 
