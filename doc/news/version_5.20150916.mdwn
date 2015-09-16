@@ -1,0 +1,32 @@
+git-annex 5.20150916 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Fix Windows build to work with ghc 7.10.
+   * init: Fix reversion in detection of repo made with git clone --shared
+   * info: Support querying info of individual files in direct mode.
+   * unused: Fix reversion in 5.20150727 that broke parsing of the
+     --unused-refspec option. Thanks, Øyvind A. Holm.
+   * Make full option parsing be done when not in a git repo, so --help
+     can be displayed for commands that require a git repo, etc.
+   * fsck: Work around bug in persistent that broke display of
+     problematically encoded filenames on stderr when using --incremental.
+   * When gpg.program is configured, it's used to get the command to run
+     for gpg. Useful on systems that have only a gpg2 command or want to
+     use it instead of the gpg command.
+   * Windows: Switched to using git for Windows, rather than msysgit.
+     Using msysgit with git-annex is no longer supported.
+   * Windows: Even when the user neglects to tell the git installer to
+     add git to PATH, git-annex will still work from within the git bash
+     shell, and the webapp can be used too.
+   * sync: Add --no-commit, --no-pull, --no-push options to turn off parts of
+     the sync process, as well as supporting --commit, --pull, --push, and
+     --no-content options to specify the (current) default behavior.
+   * annex.hardlink extended to also try to use hard links when copying from
+     the repository to a remote.
+   * Improve bash completion, so it completes names of remotes and backends
+     in appropriate places.
+   * Special remotes configured with autoenable=true will be automatically
+     enabled when git-annex init is run.
+   * Fix bug in combination of preferred and required content settings.
+     When one was set to the empty string and the other set to some expression,
+     this bug caused all files to be wanted, instead of only files matching
+     the expression."""]]
