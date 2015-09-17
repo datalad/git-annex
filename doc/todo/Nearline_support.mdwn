@@ -2,3 +2,11 @@ This has been described as Google's [[special_remotes/glacier]].
 
 * [Announcement](http://googlecloudplatform.blogspot.in/2015/03/introducing-Google-Cloud-Storage-Nearline-near-online-data-at-an-offline-price.html)
 * <https://cloud.google.com/storage/docs/nearline-storage>
+
+> This is a dup of
+> [[bugs/Support_non-default_storage_classes_with_Google_Cloud_Storage]],
+> which has more useful info, so [[closing|done]].
+> 
+> However, that about using its S3 compatability API. There's an external
+> special remote just for nearline, which may be a better choice due to
+> using the native API, and already works. --[[Joey]]
