@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-09-17T21:09:24Z"
+ content="""
+It's now possible to use storageclass=NEARLINE, when git-annex is built
+with aws-0.13.0. So, the approach of manually creating the bucket with the
+desired storage class should work now.
+
+I'm unsure if the first method, of letting git-annex create the bucket,
+will work now. Can you test? It may work now too with
+storageclass=NEARLINE. While no storage class is currently specified when
+creating the bucket (that's not in the S3 api at all); but once the bucket
+exists, with whatever storage class is default, git-annex will specify
+NEARLINE when storing objects in it. Seems a good chance this will work,
+and it'd be easier than extending the aws library with google-specific
+features.
+"""]]

@@ -499,8 +499,8 @@ getBucketName = map toLower <$$> M.lookup "bucket"
 
 getStorageClass :: RemoteConfig -> S3.StorageClass
 getStorageClass c = case M.lookup "storageclass" c of
-	Just "REDUCED_REDUNDANCY" -> S3.ReducedRedundancy
-	_ -> S3.Standard
+	Just s -> S3.OtherStorageClass (T.pack s)
+	Nothing -> S3.Standard
 
 getPartSize :: RemoteConfig -> Maybe Integer
 getPartSize c = readSize dataUnits =<< M.lookup "partsize" c
