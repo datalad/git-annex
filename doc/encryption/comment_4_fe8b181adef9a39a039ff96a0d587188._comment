@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""listing gpg keys"""
+ date="2015-09-17T17:01:38Z"
+ content="""
+Run "git annex info specialremote" and it will describe the encryption
+settings of the remote, including gpg keys where applicable.
+
+Needs a fairly recent git-annex. `git show git-annex:remote.log` can
+also be used.
+"""]]
