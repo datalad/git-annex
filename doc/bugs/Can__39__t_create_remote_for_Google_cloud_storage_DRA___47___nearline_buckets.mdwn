@@ -40,3 +40,5 @@ initremote test (checking bucket...) git-annex: S3Error {s3StatusCode = Status {
 
 # End of transcript or log.
 """]]
+
+> [[dup|done]] of [[todo/Nearline_support]] --[[Joey]]
