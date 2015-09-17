@@ -1,0 +1,8 @@
+### Please describe the problem.
+
+decided to upgrade git-annex in our test virtualbox windows... upon upgrade (just running installer again with the default location for git), annex is not longer available:  http://www.onerussian.com/tmp/gkrellShoot_09-17-15_105547.png
+Replicated on another similar instance 
+
+### What steps will reproduce the problem?
+
+download exe from  https://downloads.kitenet.net/git-annex/windows/current/  (btw  I think I noted it reduced in size noteably)
