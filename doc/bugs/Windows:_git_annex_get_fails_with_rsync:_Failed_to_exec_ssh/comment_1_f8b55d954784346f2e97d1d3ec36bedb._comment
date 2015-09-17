@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="OlivierBerger"
+ subject="Using --debug gives this"
+ date="2015-08-27T14:26:54Z"
+ content="""
+Here's a transcript of the --debug output (edited to mask file name and servername)
+
+[[!format sh \"\"\"
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+$ git annex get big\ file --debug
+[2015-08-27 16:21:36.8295694] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"ls-files\",\"--cached\",\"-z\",\"--\",\"big file\"]
+get big file [2015-08-27 16:21:36.8495982] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"git-annex\"]
+[2015-08-27 16:21:36.8796414] process done ExitSuccess
+[2015-08-27 16:21:36.8796414] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2015-08-27 16:21:36.8996702] process done ExitSuccess
+[2015-08-27 16:21:36.8996702] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"log\",\"refs/heads/git-annex..f98a471b32f963a0bf816800d766690d53ef150d\",\"-n1\",\"--pretty=%H\"]
+[2015-08-27 16:21:36.919699] process done ExitSuccess
+[2015-08-27 16:21:36.9297134] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"log\",\"refs/heads/git-annex..15e7ab1f3b70629db852f8565bf988b25af02ec6\",\"-n1\",\"--pretty=%H\"]
+[2015-08-27 16:21:36.9497422] process done ExitSuccess
+[2015-08-27 16:21:36.9497422] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"log\",\"refs/heads/git-annex..1e04e80b99361e5b516d3a266bbc7b1d1478dff5\",\"-n1\",\"--pretty=%H\"]
+[2015-08-27 16:21:36.9897998] process done ExitSuccess
+[2015-08-27 16:21:36.9897998] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"cat-file\",\"--batch\"]
+(from origin...) [2015-08-27 16:21:37.0098286] read: rsync [\"--progress\",\"--inplace\",\"-e\",\"'ssh' '-T' 'gitolite3@server' 'git-annex-shell ''sendkey'' ''/~/testing'' ''--debug'' ''SHA256E-s264620717--23e70aae588a049d52909cd68067cf2885429ae557f52e3f2d6033260c3ad9ea.mp4'' --uuid f8ef7445-2ccc-4871-a95a-7e4325fc763d ''--'' ''remoteuuid=8fb9f88a-1105-4278-aa85-7b5c78a0e0e5'' ''direct=1'' ''associatedfile=big file'' ''--'''\",\"--\",\"dummy:\",\".git/annex/tmp/SHA256E-s264620717--23e70aae588a049d52909cd68067cf2885429ae557f52e3f2d6033260c3ad9ea.mp4\"]
+rsync: Failed to exec ssh: No such file or directory (2)
+rsync error: error in IPC code (code 14) at /home/lapo/package/rsync-3.0.9-1/src/rsync-3.0.9/pipe.c(84) [Receiver=3.0.9]
+rsync: writefd_unbuffered failed to write 4 bytes to socket [Receiver]: Broken pipe (32)
+rsync error: error in IPC code (code 14) at /home/lapo/package/rsync-3.0.9-1/src/rsync-3.0.9/io.c(1532) [Receiver=3.0.9]
+[2015-08-27 16:21:37.0799294] process done ExitFailure 14
+
+
+# End of transcript or log.
+\"\"\"]]
+"""]]

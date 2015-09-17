@@ -1,0 +1,54 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="I don't think it is fixed -- doesn't detect as crippled when ran as root (under sudo or su) with 5.20150826+gitg87972f5-1~ndall+1"
+ date="2015-09-02T17:12:48Z"
+ content="""
+[[!format  bash \"\"\"
+$> git annex version
+git-annex version: 5.20150826+gitg87972f5-1~ndall+1
+build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA Database
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository version: 5
+upgrade supported from repository versions: 0 1 2 4
+\"\"\"]]
+
+so if running as non-root, I can't indeed remove the file and annex doesn't detect it as crippled:
+
+[[!format  bash \"\"\"
+$> bash -c \"rm -rf /tmp/123; mkdir /tmp/123; cd /tmp/123; git init; git annex init; echo 123 > 1.dat; git annex add 1.dat; git commit -m 'initial'; ls -l /tmp/123 ;readlink -f /tmp/123/1.dat | xargs rm; rm -rf /tmp/123; ls -l /tmp/123\"                                                     
+rm: cannot remove ‘/tmp/123/.git/annex/objects/zk/71/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b.dat/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b.dat’: Permission denied
+mkdir: cannot create directory ‘/tmp/123’: File exists
+Initialized empty Git repository in /tmp/123/.git/
+init  ok
+(recording state in git...)
+add 1.dat ok
+(recording state in git...)
+[master (root-commit) b94089e] initial
+ 1 file changed, 1 insertion(+)
+ create mode 120000 1.dat
+total 4
+lrwxrwxrwx 1 yoh yoh 186 Sep  2 13:06 1.dat -> .git/annex/objects/zk/71/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b.dat/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b.dat
+rm: cannot remove ‘/tmp/123/.git/annex/objects/zk/71/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b.dat/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b.dat’: Permission denied
+rm: cannot remove ‘/tmp/123/.git/annex/objects/zk/71/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b.dat/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b.dat’: Permission denied
+total 0
+\"\"\"]]
+
+if ran under sudo or even straight root (via su) I can remove the file, and entire directory, and annex didn't detect it as crippled
+
+[[!format  bash \"\"\"
+$> sudo -E bash -c \"rm -rf /tmp/123; mkdir /tmp/123; cd /tmp/123; git init; git annex init; echo 123 > 1.dat; git annex add 1.dat; git commit -m 'initial'; ls -l /tmp/123 ;readlink -f /tmp/123/1.dat | xargs rm; rm -rf /tmp/123; ls -l /tmp/123\" 
+Initialized empty Git repository in /tmp/123/.git/
+init  ok
+(recording state in git...)
+add 1.dat ok
+(recording state in git...)
+[master (root-commit) 44f142c] initial
+ 1 file changed, 1 insertion(+)
+ create mode 120000 1.dat
+total 4
+lrwxrwxrwx 1 root root 186 Sep  2 13:06 1.dat -> .git/annex/objects/zk/71/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b.dat/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b.dat
+ls: cannot access /tmp/123: No such file or directory
+\"\"\"]]
+"""]]

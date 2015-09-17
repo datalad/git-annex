@@ -69,13 +69,6 @@ seems unreliable/broken on Windows.
   has to connect twice to the remote system over ssh per file, which
   is much slower than on systems supporting connection caching.
 * glacier-cli is not easily available (probably)
-* user feedback: "Git on windows installer provides openssh 4.6. git-annex installer
-  provides openssh 6.2 . This seems to create problems regarding how
-  `known_hosts` file path is setup. Setting `GIT_SSH=` to the git-annex
-  openssh version fixes the problem."  
-  However, I don't know how to determine what that location is after
-  it's been installed. Maybe look for ssh.exe in same directory as
-  git-annex.exe? --[[Joey]]
 
 ## stuff needing testing
 

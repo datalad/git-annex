@@ -1,0 +1,29 @@
+### Please describe the problem.
+
+Git annex assistant on Windows 7 won't handle files with 2 dots in the filename
+
+### What steps will reproduce the problem?
+
+Create a file like "3.2 Restriction et projection.mp4" which is in a directory synced by Assistant.
+
+The file is unmanaged.
+
+Renaming it to "3-2 Restriction et projection.mp4", and there it goes : synced with the remote repo.
+
+### What version of git-annex are you using? On what operating system?
+
+Latext git-annex on Win 7
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+

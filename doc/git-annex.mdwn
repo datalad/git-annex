@@ -793,7 +793,7 @@ Here are all the supported configuration settings.
   to be large enough to need to be added to the annex. By default,
   all files are added to the annex.
 
-  The value is a preferred content expression. See PREFERRED CONTENT
+  The value is a preferred content expression. See [[git-annex-preferred-content]](1)
   for details.
 
   Example:
@@ -875,8 +875,8 @@ Here are all the supported configuration settings.
 
 * `annex.hardlink`
 
-  Set this to `true` to make file contents be hard linked into the
-  repository when possible, instead of a more expensive copy.
+  Set this to `true` to make file contents be hard linked between the
+  repository and its remotes when possible, instead of a more expensive copy.
 
   Use with caution -- This can invalidate numcopies counting, since
   with hard links, fewer copies of a file can exist. So, it is a good

@@ -38,10 +38,6 @@ rm -f git-annex-installer.exe
 # for haskell libraries to link them with the cygwin library.
 cabal update || true
 
-# This workaround is still needed, it seems.
-#cabal install transformers-compat -fthree
-#cabal install DAV-1.0
-
 cabal install --only-dependencies || true
 
 # Detect when the last build was an incremental build and failed, 
@@ -58,20 +54,28 @@ touch last-incremental-failed
 withcyg cabal configure
 if ! withcyg cabal build; then
 	rm -f Build/EvilLinker.exe
-	ghc --make Build/EvilLinker
+	ghc --make Build/EvilLinker -fno-warn-tabs
 	Build/EvilLinker
+fi
+
+# Get extra programs to bundle with git-annex.
+# These are msys2 programs, from https://msys2.github.io/.
+# Since git for windows uses msys2, and includes its libraries,
+# these programs will work well with it.
+if [ ! -e rsync.exe ] || [ "$(sha1sum rsync.exe)" != "85cb7a4d16d274fcf8069b39042965ad26abd6aa" ]; then
+	rm -f rsync.exe || true
+	withcyg wget https://downloads.kitenet.net/git-annex/windows/assets/rsync.exe
+	withcyg chmod +x rsync.exe
+fi
+if [ ! -e wget.exe ] || [ "$(sha1sum wget.exe)" != "044380729200d5762965b10123a4f134806b01cf" ]; then
+	rm -f wget.exe || true
+	withcyg wget https://downloads.kitenet.net/git-annex/windows/assets/wget.exe
+	withcyg chmod +x wget.exe
 fi
 
 # Build the installer
 cabal install nsis
-ghc -fforce-recomp --make Build/NullSoftInstaller.hs
-# Want to include cygwin programs in bundle, not others, since
-# it includes the cygwin libs that go with them.
-# Currently need an older version of rsync than the one from cygwin.
-if [ ! -e rsync.exe ]; then
-	withcyg wget https://downloads.kitenet.net/git-annex/windows/assets/rsync.exe
-	withcyg chmod +x rsync.exe
-fi
+ghc -fforce-recomp --make Build/NullSoftInstaller.hs -fno-warn-tabs
 PATH=".:/c/cygwin/bin:$PATH" Build/NullSoftInstaller.exe
 
 rm -f last-incremental-failed

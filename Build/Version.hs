@@ -4,7 +4,6 @@
 
 module Build.Version where
 
-import Data.Maybe
 import Control.Applicative
 import Data.List
 import System.Environment

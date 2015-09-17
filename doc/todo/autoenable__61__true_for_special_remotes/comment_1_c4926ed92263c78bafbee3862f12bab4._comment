@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 1"
+ date="2015-08-25T18:25:44Z"
+ content="""
+There are going to be many configurations where auto-enable of a special remote fails. Ie, when creds are needed. While some of these could be detected and skipped, I sort of like the simplicity of having it try to enable everything.
+
+Maybe a command is also needed to autoenable remotes after the first git-annex init? Since it's actually ok to re-run git-annex init in an initalized repo, I suppose it could just be run again.
+"""]]

@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-09-10T18:10:52Z"
+ content="""
+Here's a request that rsync be added to git for windows. It seems like it
+would be pretty easy for them to add. But I don't know if they will;
+the bug is currently closed wontfix.
+<https://github.com/git-for-windows/git/issues/347>
+
+I was finally able to get rsync working with git for windows and git-annex
+as follows:
+
+* Delete the rsync.exe that git-annex-installer.exe installs in Git/cmd
+* Install <https://msys2.github.io/>
+* In the msys2 shell, "pacman sync rsync"
+* Copy /msys32/usr/bin/rsync.exe to /Program Files/Git/usr/bin/
+
+So, I could include that rsync.exe in the git-annex for windows. However, since
+there are 2 versions of rsync.exe, one which works with git for windows,
+and one that works with msysgit, I might not be able to get a git-annex
+build for windows that works with both of those versions of git at once.
+
+If I do switch to only supporting git for windows, I could also drop some
+bundled programs from git-annex-installer.exe. These programs are all
+bundled with git for windows too:
+
+* cp
+* gpg
+* shaNsum
+
+Leaving only, I think, wget and curl and rsync to be bundled with
+git-annex.
+"""]]

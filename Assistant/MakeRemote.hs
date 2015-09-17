@@ -16,7 +16,7 @@ import qualified Remote.Rsync as Rsync
 import qualified Remote.GCrypt as GCrypt
 import qualified Git
 import qualified Git.Command
-import qualified Command.InitRemote
+import qualified Annex.SpecialRemote
 import Logs.UUID
 import Logs.Remote
 import Git.Remote
@@ -46,10 +46,10 @@ addRemote a = do
 {- Inits a rsync special remote, and returns its name. -}
 makeRsyncRemote :: RemoteName -> String -> Annex String
 makeRsyncRemote name location = makeRemote name location $ const $ void $
-	go =<< Command.InitRemote.findExisting name
+	go =<< Annex.SpecialRemote.findExisting name
   where
 	go Nothing = setupSpecialRemote name Rsync.remote config Nothing
-		(Nothing, Command.InitRemote.newConfig name)
+		(Nothing, Annex.SpecialRemote.newConfig name)
 	go (Just (u, c)) = setupSpecialRemote name Rsync.remote config Nothing
 		(Just u, c)
 	config = M.fromList
@@ -78,16 +78,16 @@ initSpecialRemote name remotetype mcreds config = go 0
 	go :: Int -> Annex RemoteName
 	go n = do
 		let fullname = if n == 0  then name else name ++ show n
-		r <- Command.InitRemote.findExisting fullname
+		r <- Annex.SpecialRemote.findExisting fullname
 		case r of
 			Nothing -> setupSpecialRemote fullname remotetype config mcreds
-				(Nothing, Command.InitRemote.newConfig fullname)
+				(Nothing, Annex.SpecialRemote.newConfig fullname)
 			Just _ -> go (n + 1)
 
 {- Enables an existing special remote. -}
 enableSpecialRemote :: SpecialRemoteMaker
 enableSpecialRemote name remotetype mcreds config = do
-	r <- Command.InitRemote.findExisting name
+	r <- Annex.SpecialRemote.findExisting name
 	case r of
 		Nothing -> error $ "Cannot find a special remote named " ++ name
 		Just (u, c) -> setupSpecialRemote' False name remotetype config mcreds (Just u, c)

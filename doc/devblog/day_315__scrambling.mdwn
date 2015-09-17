@@ -1,0 +1,5 @@
+Today was a scramble to get caught up after weeks away. Got the message
+backlog down from over 160 to 123. Fixed two reversions, worked around a
+[strange bug](https://github.com/yesodweb/persistent/issues/474),
+and implemented support for the `gpg.program` configuration, and made
+several smaller improvements.

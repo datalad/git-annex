@@ -11,7 +11,7 @@ import Common.Annex
 import Command
 import qualified Logs.Remote
 import qualified Types.Remote as R
-import qualified Command.InitRemote as InitRemote
+import qualified Annex.SpecialRemote
 
 import qualified Data.Map as M
 
@@ -26,21 +26,20 @@ seek = withWords start
 
 start :: [String] -> CommandStart
 start [] = unknownNameError "Specify the name of the special remote to enable."
-start (name:ws) = go =<< InitRemote.findExisting name
+start (name:ws) = go =<< Annex.SpecialRemote.findExisting name
   where
 	config = Logs.Remote.keyValToConfig ws
 	
 	go Nothing = unknownNameError "Unknown special remote name."
 	go (Just (u, c)) = do
 		let fullconfig = config `M.union` c	
-		t <- InitRemote.findType fullconfig
-
+		t <- either error return (Annex.SpecialRemote.findType fullconfig)
 		showStart "enableremote" name
 		next $ perform t u fullconfig
 
 unknownNameError :: String -> Annex a
 unknownNameError prefix = do
-	names <- InitRemote.remoteNames
+	names <- Annex.SpecialRemote.remoteNames
 	error $ prefix ++ "\n" ++
 		if null names
 			then "(No special remotes are currently known; perhaps use initremote instead?)"

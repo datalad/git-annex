@@ -58,12 +58,18 @@ genDescription Nothing = do
 
 initialize :: Maybe String -> Annex ()
 initialize mdescription = do
+	{- Has to come before any commits are made as the shared
+	 - clone heuristic expects no local objects. -}
+	sharedclone <- checkSharedClone
+
 	{- This will make the first commit to git, so ensure git is set up
 	 - properly to allow commits when running it. -}
 	ensureCommit $ Annex.Branch.create
 
 	prepUUID
 	initialize'
+	
+	initSharedClone sharedclone
 
 	u <- getUUID
 	describeUUID u =<< genDescription mdescription
@@ -87,7 +93,6 @@ initialize' = do
 			switchHEADBack
 		)
 	createInodeSentinalFile
-	checkSharedClone
 
 uninitialize :: Annex ()
 uninitialize = do
@@ -198,8 +203,12 @@ enableDirectMode = unlessM isDirect $ do
 		maybe noop (`toDirect` f) =<< isAnnexLink f
 	void $ liftIO clean
 
-checkSharedClone :: Annex ()
-checkSharedClone = whenM (inRepo Git.Objects.isSharedClone) $ do
+checkSharedClone :: Annex Bool
+checkSharedClone = inRepo Git.Objects.isSharedClone
+
+initSharedClone :: Bool -> Annex ()
+initSharedClone False = return ()
+initSharedClone True = do
 	showSideAction "Repository was cloned with --shared; setting annex.hardlink=true and making repository untrusted."
 	u <- getUUID
 	trustSet u UnTrusted

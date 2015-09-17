@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 5"
+ date="2015-09-02T21:05:09Z"
+ content="""
+Accidentially detecting a cripped FS when ran as root was a bug, which is why this bug report was filed. After reproducing it, I fixed it, in [[!commit c242e248e8ef350f7ab2474583b3f3d197c4ce4d]]
+"""]]

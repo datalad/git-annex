@@ -1,23 +1,24 @@
 {- Generates a NullSoft installer program for git-annex on Windows.
- - 
- - To build the installer, git-annex should already be built by cabal,
- - and ssh and rsync etc, as well as cygwin libraries, already installed
- - from cygwin.
  -
  - This uses the Haskell nsis package (cabal install nsis)
  - to generate a .nsi file, which is then used to produce
  - git-annex-installer.exe
  - 
  - The installer includes git-annex, and utilities it uses, with the
- - exception of git. The user needs to install git separately,
- - and the installer checks for that.
+ - exception of git and some utilities that are bundled with git.
+ - The user needs to install git separately, and the installer checks
+ - for that.
+ - 
+ - To build the installer, git-annex should already be built by cabal,
+ - and the necessary utility programs (rsync and wget) already installed
+ - in PATH from msys32.
  -
  - Copyright 2013-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, FlexibleContexts #-}
 
 import Development.NSIS
 import System.Directory
@@ -34,6 +35,7 @@ import Utility.Path
 import Utility.CopyFile
 import Utility.SafeCommand
 import Utility.Process
+import Utility.Exception
 import Build.BundledPrograms
 
 main = do
@@ -42,19 +44,14 @@ main = do
 		mustSucceed "ln" [File "dist/build/git-annex/git-annex.exe", File gitannex]
 		let license = tmpdir </> licensefile
 		mustSucceed "sh" [Param "-c", Param $ "zcat standalone/licences.gz > '" ++ license ++ "'"]
-		extrabins <- forM (cygwinPrograms) $ \f -> do
-			p <- searchPath f
-			when (isNothing p) $
-				print ("unable to find in PATH", f)
-			return p
-		dlls <- forM (catMaybes extrabins) findCygLibs
-		dllpaths <- mapM searchPath (nub (concat dlls))
-		webappscript <- vbsLauncher tmpdir "git-annex-webapp" "git-annex webapp"
+		webappscript <- vbsLauncher tmpdir "git-annex-webapp" "git annex webapp"
 		autostartscript <- vbsLauncher tmpdir "git-annex-autostart" "git annex assistant --autostart"
 		let htmlhelp = tmpdir </> "git-annex.html"
 		writeFile htmlhelp htmlHelpText
-		writeFile nsifile $ makeInstaller gitannex license htmlhelp
-			(wrappers ++ catMaybes (extrabins ++ dllpaths))
+		let gitannexcmd = tmpdir </> "git-annex.cmd"
+		writeFile gitannexcmd "git annex %*"
+		writeFile nsifile $ makeInstaller
+			gitannex gitannexcmd license htmlhelp winPrograms
 			[ webappscript, autostartscript ]
 		mustSucceed "makensis" [File nsifile]
 	removeFile nsifile -- left behind if makensis fails
@@ -67,12 +64,13 @@ main = do
 			False -> error $ cmd ++ " failed"
 
 {- Generates a .vbs launcher which runs a command without any visible DOS
- - box. -}
+ - box. It expects to be passed the directory where git-annex is installed. -}
 vbsLauncher :: FilePath -> String -> String -> IO String
 vbsLauncher tmpdir basename cmd = do
 	let f = tmpdir </> basename ++ ".vbs"
 	writeFile f $ unlines
 		[ "Set objshell=CreateObject(\"Wscript.Shell\")"
+		, "objShell.CurrentDirectory = Wscript.Arguments.item(0)"
 		, "objShell.Run(\"" ++ cmd ++ "\"), 0, False"
 		]
 	return f
@@ -113,8 +111,8 @@ needGit = strConcat
 	, fromString "You can install git from http:////git-scm.com//"
 	]
 
-makeInstaller :: FilePath -> FilePath -> FilePath -> [FilePath] -> [FilePath] -> String
-makeInstaller gitannex license htmlhelp extrabins launchers = nsis $ do
+makeInstaller :: FilePath -> FilePath -> FilePath -> FilePath -> [FilePath] -> [FilePath] -> String
+makeInstaller gitannex gitannexcmd license htmlhelp extrabins launchers = nsis $ do
 	name "git-annex"
 	outFile $ str installer
 	{- Installing into the same directory as git avoids needing to modify
@@ -134,50 +132,61 @@ makeInstaller gitannex license htmlhelp extrabins launchers = nsis $ do
 	Development.NSIS.createDirectory "$SMPROGRAMS"
 	createShortcut startMenuItem
 		[ Target "wscript.exe"
-		, Parameters "\"$INSTDIR/git-annex-webapp.vbs\""
+		, Parameters "\"$INSTDIR/cmd/git-annex-webapp.vbs\" \"$INSTDIR/cmd\""
 		, StartOptions "SW_SHOWNORMAL"
-		, IconFile "$INSTDIR/cmd/git-annex.exe"
+		, IconFile "$INSTDIR/usr/bin/git-annex.exe"
 		, IconIndex 2
 		, Description "Git Annex (Webapp)"
 		]
 	delete [RebootOK] $ oldStartMenuItem
 	createShortcut autoStartItem
 		[ Target "wscript.exe"
-		, Parameters "\"$INSTDIR/git-annex-autostart.vbs\""
+		, Parameters "\"$INSTDIR/cmd/git-annex-autostart.vbs\" \"$INSTDIR/cmd\""
 		, StartOptions "SW_SHOWNORMAL"
-		, IconFile "$INSTDIR/cmd/git-annex.exe"
+		, IconFile "$INSTDIR/usr/bin/git-annex.exe"
 		, IconIndex 2
 		, Description "git-annex autostart"
 		]
 	section "cmd" [] $ do
-		setOutPath "$INSTDIR\\cmd"
+		-- Remove old files no longer installed in the cmd
+		-- directory.
+		removefilesFrom "$INSTDIR/cmd" (gitannex:extrabins)
+		-- Install everything to the same location git puts its
+		-- bins. This makes "git annex" work in the git bash
+		-- shell, since git expects to find the git-annex binary
+		-- there.
+		setOutPath "$INSTDIR\\usr\\bin"
 		mapM_ addfile (gitannex:extrabins)
+		-- This little wrapper is installed in the cmd directory,
+		-- so that "git-annex" works (as well as "git annex"),
+		-- when only that directory is in PATH (ie, in a ms-dos
+		-- prompt window).
+		setOutPath "$INSTDIR\\cmd"
+		addfile gitannexcmd
 	section "meta" [] $ do
-		setOutPath "$INSTDIR\\doc\\git\\html"
+		-- git opens this file when git annex --help is run.
+		-- (Program Files/Git/mingw32/share/doc/git-doc/git-annex.html)
+		setOutPath "$INSTDIR\\mingw32\\share\\doc\\git-doc"
 		addfile htmlhelp
 		setOutPath "$INSTDIR"
 		addfile license
+		setOutPath "$INSTDIR\\cmd"
 		mapM_ addfile launchers
 		writeUninstaller $ str uninstaller
 	uninstall $ do
 		delete [RebootOK] $ startMenuItem
 		delete [RebootOK] $ autoStartItem
-		removefilesFrom "$INSTDIR/cmd" (gitannex:extrabins)
-		removefilesFrom "$INSTDIR\\doc\\git\\html" [htmlhelp]
-		removefilesFrom "$INSTDIR" $
-			launchers ++
-			[ license
-			, uninstaller
-			]
+		removefilesFrom "$INSTDIR/usr/bin" (gitannex:extrabins)
+		removefilesFrom "$INSTDIR/cmd" (gitannexcmd:launchers)
+		removefilesFrom "$INSTDIR\\mingw32\\share\\doc\\git-doc" [htmlhelp]
+		removefilesFrom "$INSTDIR" [license, uninstaller]
   where
 	addfile f = file [] (str f)
 	removefilesFrom d = mapM_ (\f -> delete [RebootOK] $ fromString $ d ++ "/" ++ takeFileName f)
 
-cygwinPrograms :: [FilePath]
-cygwinPrograms = map (\p -> p ++ ".exe") bundledPrograms
+winPrograms :: [FilePath]
+winPrograms = map (\p -> p ++ ".exe") bundledPrograms
 
--- msysgit opens Program Files/Git/doc/git/html/git-annex.html
--- when git annex --help is run.
 htmlHelpText :: String
 htmlHelpText = unlines
 	[ "<html>"
@@ -187,19 +196,4 @@ htmlHelpText = unlines
 	, "<a href=\"https://git-annex.branchable.com/git-annex/\">read the man page</a>."
 	, "</body>"
 	, "</html"
-	]
-
--- Find cygwin libraries used by the specified executable.
-findCygLibs :: FilePath -> IO [FilePath]
-findCygLibs p = filter iscyg . mapMaybe parse . lines <$> readProcess "ldd" [p]
-  where
-	parse l = case words (dropWhile isSpace l) of
-		(dll:"=>":_dllpath:_offset:[]) -> Just dll
-		_ -> Nothing
-	iscyg f = "cyg" `isPrefixOf` f || "lib" `isPrefixOf` f
-
-wrappers :: [FilePath]
-wrappers = 
-	[ "standalone\\windows\\ssh.cmd"
-	, "standalone\\windows\\ssh-keygen.cmd"
 	]

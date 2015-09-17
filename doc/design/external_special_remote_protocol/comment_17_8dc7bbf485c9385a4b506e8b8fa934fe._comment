@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="WHEREIS -- is it better to just report failure to avoid duplicates?"
+ date="2015-08-26T14:22:49Z"
+ content="""
+I wonder how should I utilize this new API (WHEREIS) in my case:  it seems just to lead to duplication of whereis information in my case of a special remote to support extracting of content from archives. If I make it to reply with the same url (which is not \"public\" per se, i.e. can't be used by annex directly) I just get it duplicated:
+
+    $> git annex whereis simple.txt
+    whereis simple.txt (1 copy) 
+      	82025765-5cac-4571-91ed-637620ec6fc7 -- [annexed-archives]
+    
+      annexed-archives: dl+archive:SHA256E-s173--5df2eeab61ea7d6479533d4e6b07c6bcfae46e040cad8cb1fc579f9f18c90790.tar.gz/a/d/%20%22%27%3Ba%26b%26cd%20%60%7C%20
+      annexed-archives: dl+archive:SHA256E-s173--5df2eeab61ea7d6479533d4e6b07c6bcfae46e040cad8cb1fc579f9f18c90790.tar.gz/a/d/%20%22%27%3Ba%26b%26cd%20%60%7C%20
+    ok
+
+if I \"explain\" it a bit, also somewhat duplicate:
+
+    annexed-archives: file a/d/%20%22%27%3Ba%26b%26cd%20%60%7C%20 within archive SHA256E-s173--5df2eeab61ea7d6479533d4e6b07c6bcfae46e040cad8cb1fc579f9f18c90790.tar.gz
+    annexed-archives: dl+archive:SHA256E-s173--5df2eeab61ea7d6479533d4e6b07c6bcfae46e040cad8cb1fc579f9f18c90790.tar.gz/a/d/%20%22%27%3Ba%26b%26cd%20%60%7C%20
+
+But if I just reply with \"WHEREIS-FAILURE\" it becomes more sensible (no duplicates), but I feel that then better documentation for this feature get adjusted to describe
+that it is only to complement information already known to annex, and not really to \"provide any information about ways to access the content of a key stored in it\".  Or have I missed the point? ;)
+"""]]

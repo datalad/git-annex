@@ -20,7 +20,7 @@ bundledPrograms :: [FilePath]
 bundledPrograms = catMaybes
 	[ Nothing
 #ifndef mingw32_HOST_OS
-	-- git is not included in the windows bundle; msysgit is used
+	-- git is not included in the windows bundle; git for windows is used
 	, Just "git"
 	-- Not strictly needed in PATH by git-annex, but called
 	-- by git when it sshes to a remote.
@@ -28,7 +28,6 @@ bundledPrograms = catMaybes
 	, Just "git-receive-pack"
 	, Just "git-shell"
 #endif
-	, Just "cp"
 #ifndef mingw32_HOST_OS
 	-- using xargs on windows led to problems, so it's not used there
 	, Just "xargs"
@@ -38,7 +37,7 @@ bundledPrograms = catMaybes
 #ifndef mingw32_HOST_OS
 	-- OS X has ssh installed by default.
 	-- Linux probably has ssh, but not guaranteed.
-	-- On Windows, msysgit provides ssh.
+	-- On Windows, git provides ssh.
 	, Just "ssh"
 	, Just "ssh-keygen"
 #endif
@@ -46,22 +45,25 @@ bundledPrograms = catMaybes
 #ifndef mingw32_HOST_OS
 	, Just "sh"
 #endif
-	, SysConfig.gpg
-	, ifset SysConfig.curl "curl"
 #ifndef darwin_HOST_OS
 	-- wget on OSX has been problimatic, looking for certs in the wrong
 	-- places. Don't ship it, use curl or the OSX's own wget if it has
 	-- one.
 	, ifset SysConfig.wget "wget"
 #endif
-	, ifset SysConfig.bup "bup"
 	, SysConfig.lsof
 	, SysConfig.gcrypt
+#ifndef mingw32_HOST_OS
+	-- All these utilities are included in git for Windows
+	, ifset SysConfig.curl "curl"
+	, SysConfig.gpg
 	, SysConfig.sha1
 	, SysConfig.sha256
 	, SysConfig.sha512
 	, SysConfig.sha224
 	, SysConfig.sha384
+	, Just "cp"
+#endif
 #ifdef linux_HOST_OS
 	-- used to unpack the tarball when upgrading
 	, Just "gunzip"

@@ -16,6 +16,7 @@ import Assistant.WebApp.MakeRemote
 import Assistant.Sync
 import Assistant.Restart
 import Annex.MakeRepo
+import qualified Annex
 import qualified Git
 import qualified Git.Config
 import qualified Git.Command
@@ -269,8 +270,9 @@ getConfirmAddDriveR drive = ifM (liftIO $ probeRepoExists dir)
   where
 	dir = removableDriveRepository drive
 	newrepo = do
+		cmd <- liftAnnex $ gpgCmd <$> Annex.getGitConfig
 		secretkeys <- sortBy (comparing snd) . M.toList
-			<$> liftIO secretKeys
+			<$> liftIO (secretKeys cmd)
 		page "Encrypt repository?" (Just Configuration) $
 			$(widgetFile "configurators/adddrive/encrypt")
 	knownrepo = getFinishAddDriveR drive NoRepoKey

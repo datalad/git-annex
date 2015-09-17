@@ -17,6 +17,9 @@ Use this with caution; it can be confusing to have two existing
 repositories with the same UUID. Also, you will probably want to run
 a fsck.
 
+Like `git annex init`, this attempts to enable any special remotes
+that are configured with autoenable=true.
+
 # SEE ALSO
 
 [[git-annex]](1)

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="sjvdwalt@3d195104d8f45061da99fe7f0a97d69dfc49bb5d"
+ nickname="sjvdwalt"
+ subject="Stream encoding"
+ date="2015-08-25T00:36:24Z"
+ content="""
+What encoding is used for the stdin/stdout streams used to communicate with remotes?
+"""]]

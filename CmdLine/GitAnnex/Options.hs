@@ -8,9 +8,11 @@
 module CmdLine.GitAnnex.Options where
 
 import Options.Applicative
+import Options.Applicative.Builder.Internal
 
 import Common.Annex
 import qualified Git.Config
+import qualified Git.Construct
 import Git.Types
 import Types.TrustLevel
 import Types.NumCopies
@@ -26,6 +28,8 @@ import qualified Limit.Wanted
 import CmdLine.Option
 import CmdLine.Usage
 import CmdLine.GlobalSetter
+import qualified Backend
+import qualified Types.Backend as Backend
 
 -- Global options that are accepted by all git-annex sub-commands,
 -- although not always used.
@@ -40,16 +44,19 @@ gitAnnexGlobalOptions = commonGlobalOptions ++
 		( long "trust" <> metavar paramRemote
 		<> help "override trust setting"
 		<> hidden
+		<> completeRemotes
 		)
 	, globalSetter (Remote.forceTrust SemiTrusted) $ strOption
 		( long "semitrust" <> metavar paramRemote
 		<> help "override trust setting back to default"
 		<> hidden
+		<> completeRemotes
 		)
 	, globalSetter (Remote.forceTrust UnTrusted) $ strOption
 		( long "untrust" <> metavar paramRemote
 		<> help "override trust setting to untrusted"
 		<> hidden
+		<> completeRemotes
 		)
 	, globalSetter setgitconfig $ strOption
 		( long "config" <> short 'c' <> metavar "NAME=VALUE"
@@ -98,7 +105,9 @@ parseAutoOption = switch
 	)
 
 parseRemoteOption :: Parser RemoteName -> Parser (DeferredParse Remote)
-parseRemoteOption p = DeferredParse . (fromJust <$$> Remote.byNameWithUUID) . Just <$> p
+parseRemoteOption p = DeferredParse 
+	. (fromJust <$$> Remote.byNameWithUUID)
+	. Just <$> p
 
 data FromToOptions
 	= FromRemote (DeferredParse Remote)
@@ -117,12 +126,14 @@ parseFromOption :: Parser (DeferredParse Remote)
 parseFromOption = parseRemoteOption $ strOption
 	( long "from" <> short 'f' <> metavar paramRemote
 	<> help "source remote"
+	<> completeRemotes
 	)
 
 parseToOption :: Parser (DeferredParse Remote)
 parseToOption = parseRemoteOption $ strOption
 	( long "to" <> short 't' <> metavar paramRemote
 	<> help "destination remote"
+	<> completeRemotes
 	)
 
 -- Options for acting on keys, rather than work tree files.
@@ -179,6 +190,7 @@ nonWorkTreeMatchingOptions' =
 		( long "in" <> short 'i' <> metavar paramRemote
 		<> help "match files present in a remote"
 		<> hidden
+		<> completeRemotes
 		)
 	, globalSetter Limit.addCopies $ strOption
 		( long "copies" <> short 'C' <> metavar paramRemote
@@ -199,6 +211,7 @@ nonWorkTreeMatchingOptions' =
 		( long "inbackend" <> short 'B' <> metavar paramName
 		<> help "match files using a key-value backend"
 		<> hidden
+		<> completeBackends
 		)
 	, globalSetter Limit.addInAllGroup $ strOption
 		( long "inallgroup" <> metavar paramGroup
@@ -299,3 +312,13 @@ parseDaemonOptions = DaemonOptions
 		( long "stop"
 		<> help "stop daemon"
 		)
+completeRemotes :: HasCompleter f => Mod f a
+completeRemotes = completer $ mkCompleter $ \input -> do
+	r <- maybe (pure Nothing) (Just <$$> Git.Config.read)
+		=<< Git.Construct.fromCwd
+	return $ filter (input `isPrefixOf`) 
+		(maybe [] (mapMaybe remoteName . remotes) r)
+		
+		
+completeBackends :: HasCompleter f => Mod f a
+completeBackends = completeWith (map Backend.name Backend.list)

@@ -12,6 +12,7 @@ module Assistant.WebApp.Gpg where
 import Assistant.WebApp.Common
 import Assistant.Gpg
 import Utility.Gpg
+import qualified Annex
 import qualified Git.Command
 import qualified Git.Remote.Remove
 import qualified Git.Construct
@@ -50,9 +51,10 @@ whenGcryptInstalled a = ifM (liftIO isGcryptInstalled)
 
 withNewSecretKey :: (KeyId -> Handler Html) -> Handler Html
 withNewSecretKey use = do
-	userid <- liftIO newUserId
-	liftIO $ genSecretKey RSA "" userid maxRecommendedKeySize
-	results <- M.keys . M.filter (== userid) <$> liftIO secretKeys
+	cmd <- liftAnnex $ gpgCmd <$> Annex.getGitConfig
+	userid <- liftIO $ newUserId cmd
+	liftIO $ genSecretKey cmd RSA "" userid maxRecommendedKeySize
+	results <- M.keys . M.filter (== userid) <$> liftIO (secretKeys cmd)
 	case results of
 		[] -> error "Failed to generate gpg key!"
 		(key:_) -> use key

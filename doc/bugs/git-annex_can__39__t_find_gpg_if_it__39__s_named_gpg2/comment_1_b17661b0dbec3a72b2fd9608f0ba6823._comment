@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-09-09T21:12:01Z"
+ content="""
+git-annex should work ok with gpg version 2; there was one minor
+incompatability vs gpg version 1, but it was ironed out in 2013.
+
+If you build it from source, and have only gpg2 in PATH, and not gpg, it
+will build a git-annex that runs gpg2.
+
+You're using OSX.. the git-annex.app for OSX bundles its own gpg command,
+and git-annex will use that one. I guess the brew build is built to use
+gpg, and not gpg2. Would it then make sense for the brew package of
+git-annex to depend on the package that contains gpg?
+
+I don't really think it makes sense for git-annex to probe
+around at runtime to find which of gpg and gpg2 is in PATH and pick which
+one to use.
+
+I suppose I could make git-annex look at git config gpg.program and use
+that program when it's set. This would mirror the behavior of git.
+"""]]

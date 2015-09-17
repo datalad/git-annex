@@ -46,6 +46,7 @@ parseDropFromOption :: Parser (DeferredParse Remote)
 parseDropFromOption = parseRemoteOption $ strOption
 	( long "from" <> short 'f' <> metavar paramRemote
 	<> help "drop content from a remote"
+	<> completeRemotes
 	)
 
 seek :: DropOptions -> CommandSeek

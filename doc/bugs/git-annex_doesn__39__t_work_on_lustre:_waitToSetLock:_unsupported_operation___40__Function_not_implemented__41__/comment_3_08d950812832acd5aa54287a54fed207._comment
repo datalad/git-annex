@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 3"
+ date="2015-09-10T18:44:25Z"
+ content="""
+so far I have failed to replicate this issue on a luster under virtualbox following aforementioned instructions (if you would like, there is a screen available under datalad@smaug to which I believe you should have access to).  I guess I will wait for issues associated with standalone builds to get resolved (ref: http://git-annex.branchable.com/bugs/fails_to_addurl_to_file:__47____47____47___in_the_most_recent_snapshot_build/#comment-424388b7369d9f4889afaa56381e4e38) before attempting more tests there.  Meanwhile I will seek more information on the problematic lustre  setup (versions etc)
+"""]]

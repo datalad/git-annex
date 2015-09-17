@@ -36,6 +36,12 @@ encryption=pubkey, content in the special remote is directly encrypted
 to the specified GPG keys, and additional ones cannot easily be given
 access.
 
+If you anticipate using the new special remote in other clones of the
+repository, you can pass "autoenable=true". Then when [[git-annex-init]](1)
+is run in a new clone, it will attempt to enable the special remote. Of
+course, this works best when the special remote does not need anything
+special to be done to get it enabled.
+
 # OPTIONS
 
 * `--fast`

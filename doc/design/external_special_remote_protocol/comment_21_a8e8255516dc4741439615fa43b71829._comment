@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 21"""
+ date="2015-09-10T16:33:10Z"
+ content="""
+As the documentation says, it's fine to not implement WHEREIS if you don't
+need it.
+"""]]

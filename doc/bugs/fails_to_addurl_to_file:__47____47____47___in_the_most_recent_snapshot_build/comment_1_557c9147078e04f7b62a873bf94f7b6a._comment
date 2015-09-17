@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-09-09T16:25:05Z"
+ content="""
+The -11 exit status is pretty unusual. Being negative suggests that curl
+died of a signal (and so the high bit was set to indicate that). 
+
+I guess that signal would probably be a SIGSEGV.
+
+Perhaps this is an intermittent memory problem and git-annex version is not
+relevant. I also see no changes in how git-annex calls curl.
+"""]]

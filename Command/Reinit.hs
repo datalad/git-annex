@@ -13,6 +13,7 @@ import Annex.Init
 import Annex.UUID
 import Types.UUID
 import qualified Remote
+import qualified Annex.SpecialRemote
 	
 cmd :: Command
 cmd = dontCheck repoExists $
@@ -38,4 +39,5 @@ perform s = do
 		else Remote.nameToUUID s
 	storeUUID u
 	initialize'
+	Annex.SpecialRemote.autoEnable
 	next $ return True

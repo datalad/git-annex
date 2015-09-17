@@ -1,0 +1,7 @@
+I have a question about remotes behavior on external drives.
+
+Say I have two machines A and B each with a git annex repository at `~/repo`, and an external drive C with the same repository at `/repo`.
+
+I can add C remotes for A and B at, for example, `/media/hdd/repo`, but I'm not certain how it works for C.
+
+Do I stick C into A and add a remote A at path `~/repo`, then stick C into B and add a remote B with the same path `~/repo`?  Does git annex handle this sanely?

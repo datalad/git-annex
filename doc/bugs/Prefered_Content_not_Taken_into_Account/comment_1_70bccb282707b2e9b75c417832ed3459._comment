@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-09-15T16:04:28Z"
+ content="""
+I find it's not useful to split a conversation between multiple different
+pages, so this bug is a bit counterproductive. 
+
+But, you made up for that by posting the whole vicfg, which I was somehow
+able to notice, amoungst all the noise, has this unusual bit:
+
+	required 132503d4-dcde-4790-aabb-ee5ba539a3a0 =
+	# (for ozge)
+	required 1e1d0c4e-b1da-465f-9140-7128a7e3ee13 =
+	# (for irem)
+	required aabc3536-a423-42b6-a234-5f110607296e =
+	# (for yesim)
+	required ba3593c0-ddf1-4433-9916-aa25d1a52895 =
+	# (for buse [origin])
+	required bff7238e-bd92-4929-88a8-c59c1a1dcf03 =
+
+So, required content has been set to "". It turns out that when this is done,
+git-annex thinks that all files are preferred! This is because of a bug
+when combining the required content and preferred content expressions.
+
+I reproduced this; `git annex get --auto` was not getting a file,
+which was already known to be in another PodA repository. Then I ran `git annex required . ""`
+and `git annex get --auto` started getting all files.
+
+You can't unset a required content setting back to being commented out.
+A reasonable workaround is to set those to "groupwanted" too. Or get the
+next git-annex release.
+"""]]

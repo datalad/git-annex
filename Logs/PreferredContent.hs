@@ -77,8 +77,9 @@ preferredRequiredMapsLoad = do
 		<$> Annex.Branch.get l
 	pc <- genmap preferredContentLog =<< groupPreferredContentMapRaw
 	rc <- genmap requiredContentLog M.empty
-	-- Required content is implicitly also preferred content, so OR
-	let m = M.unionWith MOr pc rc
+	-- Required content is implicitly also preferred content, so
+	-- combine.
+	let m = M.unionWith combineMatchers pc rc
 	Annex.changeState $ \s -> s
 		{ Annex.preferredcontentmap = Just m
 		, Annex.requiredcontentmap = Just rc

@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-09-09T20:14:01Z"
+ content="""
+It only fails with --incremental, and the only difference
+is that the fsck database is opened and written that way.
+
+Somehow, opening the database causes the encoding of the stderr handle to get
+reset from the fileEncoding git-annex normally applies at startup to 
+the defaut, which crashes on filenames that don't use the locale's
+encoding.
+
+What a strange side effect especially to find in haskell code!
+It's some kind of bug in persistent that this happens.
+I've filed a bug: <https://github.com/yesodweb/persistent/issues/474>
+
+I put in a workaround; I have it reset the encoding of the file handles
+after opening the db.
+"""]]

@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="edward"
+ subject="I've ended up with lots of staged deletes"
+ date="2015-08-27T08:29:55Z"
+ content="""
+I have the same problem with another annex. I ran the webapp using `git annex webapp` in the annex on my laptop hard drive. It seemed to update and sync with the annex on my external USB drive, but now when I run `git status` in the annex directory on the drive it has staged lots of deletes. I don't understand what is going on here. Both annexes are in indirect mode.
+
+    On branch master
+    Your branch is behind 'origin/master' by 61 commits, and can be fast-forwarded.
+      (use \"git pull\" to update your local branch)
+    Changes to be committed:
+      (use \"git reset HEAD <file>...\" to unstage)
+    
+            deleted:    4angle_tech_ltd/032-570247_20150312-074413_30313.pdf
+            deleted:    4angle_tech_ltd/032-570247_20150312_09486613.pdf
+            deleted:    android/RUU_PRIMO_U_ICS_40A_HTC_Europe_2.22.401.1_Radio_20.76.30.0835U_3831.19.00.120_release_273801_signed.exe
+            deleted:    article/Fukuyama-End-of-history-article.pdf
+            deleted:    article/The Selling of the Avocado - Health - The Atlantic.html
+
+The symlinks and the data are still on the disk, as is the data that the symlinks point to.
+
+    $ ls 4angle_tech_ltd -l
+    total 8
+    lrwxrwxrwx 1 edward edward 197 Mar 15 08:39 032-570247_20150312-074413_30313.pdf -> ../.git/annex/objects/qM/mj/SHA256E-s21598--efb39974c5253d8059f0fe991c1b76aba8455d8439eefd6cd8943503f85109c0.pdf/SHA256E-s21598--efb39974c5253d8059f0fe991c1b76aba8455d8439eefd6cd8943503f85109c0.pdf
+    lrwxrwxrwx 1 edward edward 197 Mar 15 08:39 032-570247_20150312_09486613.pdf -> ../.git/annex/objects/JX/XP/SHA256E-s93692--8e88ca5071bc2155acfe16a41c9c6b756fecc6515cfb7907105dd1a83e73f57a.pdf/SHA256E-s93692--8e88ca5071bc2155acfe16a41c9c6b756fecc6515cfb7907105dd1a83e73f57a.pdf
+    $ 
+"""]]

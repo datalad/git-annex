@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/FHnTlSBo1eCGJRwueeKeB6.RCaPbGMPr5jxx8A--#ce0d8"
+ nickname="Hamza"
+ subject="comment 2"
+ date="2015-09-11T20:46:00Z"
+ content="""
+joey thanks for the reply, I've updated the expression to \"not copies=PodA:1\" but running \"git annex get --auto\" still wants to get all files that are already present in other repos in PodA. Say I have file asd.txt present in PodA repo 2 and PodB repo 4 content is already there. running get on repo 1 still gets the file in repo 1. 
+"""]]

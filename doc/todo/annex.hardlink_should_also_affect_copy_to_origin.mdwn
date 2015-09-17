@@ -1,0 +1,7 @@
+When a repo has annex.hardlink set, objects are hard-linked into the
+repository when eg `git annex copy --from origin`. This should also
+be done when copying files --to origin (or other remotes on the same
+filesystem). This way, a quick shared clone can be used to add/modify
+files, and cheaply send the changes back to the parent repo. --[[Joey]]
+
+> [[done]] --[[Joey]]

@@ -134,7 +134,7 @@ replying with `UNSUPPORTED-REQUEST` is acceptable.
   (without downloading it). The remote replies with one of `CHECKURL-FAILURE`,
   `CHECKURL-CONTENTS`, or `CHECKURL-MULTI`.
 * `WHEREIS Key`
-  Asks the remote to provide any information it can about ways to access
+  Asks the remote to provide additional information about ways to access
   the content of a key stored in it, such as eg, public urls.
   This will be displayed to the user by eg, `git annex whereis`. The remote
   replies with `WHEREIS-SUCCESS` or `WHEREIS-FAILURE`.  

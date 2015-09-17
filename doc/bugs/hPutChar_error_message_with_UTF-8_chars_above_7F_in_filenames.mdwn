@@ -76,3 +76,5 @@ git-annex: fsck: 2 failed
 
 # End of transcript or log.
 """]]
+
+> [[fixed|done]] --[[Joey]]

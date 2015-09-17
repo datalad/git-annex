@@ -24,7 +24,6 @@ import Command
 import Utility.DataUnits
 import Utility.DiskFree
 import Annex.Content
-import Annex.Link
 import Types.Key
 import Logs.UUID
 import Logs.Trust
@@ -127,8 +126,7 @@ itemInfo o p = ifM (isdir p)
 				v' <- Remote.nameToUUID' p
 				case v' of
 					Right u -> uuidInfo o u
-					Left _ -> maybe noinfo (fileInfo o p)
-						=<< isAnnexLink p
+					Left _ -> ifAnnexed p (fileInfo o p) noinfo
 	)
   where
 	isdir = liftIO . catchBoolIO . (isDirectory <$$> getFileStatus)

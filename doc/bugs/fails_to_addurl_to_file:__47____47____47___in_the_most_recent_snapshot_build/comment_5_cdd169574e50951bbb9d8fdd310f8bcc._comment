@@ -1,0 +1,46 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="problems with bundling???"
+ date="2015-09-10T03:50:45Z"
+ content="""
+built yet another one, locally (not a clean sid but rather a cocktail env) with curl being capable of fetching (see below) using file:/// but annex failing and me not clear on how to invoke bundled curl correctly (or as demonstrated may be it behaving incorrectly?)... then downgraded again and bundled curl succeeded.  So it seems that there is an issue with how things are bundled -- was there any change in that may be?
+
+[[!format sh \"\"\"
+$> rm -f test-annex.dat; git-annex addurl --file=test-annex.dat --debug file:///tmp/rsa_corr_replications.ipynb 
+[2015-09-09 23:32:19.809948] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+[2015-09-09 23:32:19.812163] process done ExitSuccess
+[2015-09-09 23:32:19.812421] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2015-09-09 23:32:19.814543] process done ExitSuccess
+[2015-09-09 23:32:19.815095] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..c9fb15c861335973c224ff734f998ce6535f3bcd\",\"-n1\",\"--pretty=%H\"]
+[2015-09-09 23:32:19.817959] process done ExitSuccess
+[2015-09-09 23:32:19.818955] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2015-09-09 23:32:19.822038] read: quvi [\"--version\"]
+[2015-09-09 23:32:19.826119] process done ExitSuccess
+[2015-09-09 23:32:19.826358] call: quvi [\"--verbosity\",\"mute\",\"--support\",\"file:///tmp/rsa_corr_replications.ipynb\"]
+[2015-09-09 23:32:19.836989] process done ExitFailure 65
+addurl test-annex.dat (downloading file:///tmp/rsa_corr_replications.ipynb ...) 
+[2015-09-09 23:32:19.83797] call: curl [\"-f\",\"-L\",\"-C\",\"-\",\"-#\",\"-o\",\"/tmp/xxx/.git/annex/tmp/URL-s31741--file&c%%%tmp%rsa_corr_replications.ipynb\",\"file:///tmp/rsa_corr_replications.ipynb\",\"--user-agent\",\"git-annex/5.20150910+gitg3c17756-1~ndall+1\"]
+[2015-09-09 23:32:19.843001] process done ExitFailure (-11)
+failed
+git-annex: addurl: 1 failed
+
+$> curl \"-f\" \"-L\" \"-C\" \"-\" \"-#\" \"-o\" \"/tmp/xxx/.git/annex/tmp/URL-s31741--file&c%%%tmp%rsa_corr_replications.ipynb\" \"file:///tmp/rsa_corr_replications.ipynb\" \"--user-agent\" \"git-annex/5.20150910+gitg3c17756-1~ndall+1\"
+######################################################################## 100.0%
+
+$> rm \"/tmp/xxx/.git/annex/tmp/URL-s31741--file&c%%%tmp%rsa_corr_replications.ipynb\"
+
+
+$> GIT_ANNEX_LD_LIBRARY_PATH=/usr/lib/git-annex.linux/lib/x86_64-linux-gnu/ GIT_ANNEX_DIR=/usr/lib/git-annex.linux/ /usr/lib/git-annex.linux/bin/curl \"-f\" \"-L\" \"-C\" \"-\" \"-#\" \"-o\" \"/tmp/xxx/.git/annex/tmp/URL-s31741--file&c%%%tmp%rsa_corr_replications.ipynb\" \"file:///tmp/rsa_corr_replications.ipynb\" \"--user-agent\" \"git-annex/5.20150910+gitg3c17756-1~ndall+1\"                              
+[1]    23559 segmentation fault  GIT_ANNEX_LD_LIBRARY_PATH=/usr/lib/git-annex.linux/lib/x86_64-linux-gnu/ =   
+\"\"\"]]
+
+exit code in the last calls was 139 ... and after downgrading back to 5.20150819+gitgc587698-1~ndall+1  curl is happily running in the last form:
+
+[[!format sh \"\"\"
+
+$> GIT_ANNEX_LD_LIBRARY_PATH=/usr/lib/git-annex.linux/lib/x86_64-linux-gnu/ GIT_ANNEX_DIR=/usr/lib/git-annex.linux/ /usr/lib/git-annex.linux/bin/curl \"-f\" \"-L\" \"-C\" \"-\" \"-#\" \"-o\" \"/tmp/xxx/.git/annex/tmp/URL-s31741--file&c%%%tmp%rsa_corr_replications.ipynb\" \"file:///tmp/rsa_corr_replications.ipynb\" \"--user-agent\" \"git-annex/5.20150910+gitg3c17756-1~ndall+1\"
+################################################################# 100.0%
+\"\"\"]]
+
+here is the built package if you care to try yourself:  [http://www.onerussian.com/tmp/git-annex-standalone_5.20150910+gitg3c17756-1~ndall+1_amd64.deb] with signed changes [http://www.onerussian.com/tmp/git-annex_5.20150910+gitg3c17756-1~ndall+1_amd64.changes]
+"""]]

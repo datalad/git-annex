@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-09-09T18:34:29Z"
+ content="""
+It's hard to add this kind of thing to the preferred content expressions.
+
+First, it would be quite slow to check if a given key
+was present in some file in a given branch. There's no index for that
+information.
+
+Second, even if that were implemented, there's no guarantee at all that
+different repositories have the same git branches. If repo Foo wants files in
+branch B, and repo Bar sees that, and has no branch B, or a different
+version of branch B, how is it supposed to know which files to send to
+repo Foo?
+
+So, I can see the use case, but I don't see how preferred content can
+support it.
+"""]]

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-09-10T23:19:26Z"
+ content="""
+The *daily* build for windows is now targeting git for windows, including
+the fixed rsync. Seems to work, so I'll close this bug; more testing would
+be good.
+"""]]

@@ -31,6 +31,7 @@ import Types.Key
 import Types.UUID
 import Annex.Perms
 import Annex.LockFile
+import Messages
 
 import Database.Persist.TH
 import Database.Esqueleto hiding (Key)
@@ -77,6 +78,10 @@ openDb u = do
 			rename tmpdbdir dbdir
 	lockFileCached =<< fromRepo (gitAnnexFsckDbLock u)
 	h <- liftIO $ H.openDb db "fscked"
+
+	-- work around https://github.com/yesodweb/persistent/issues/474
+	liftIO setConsoleEncoding
+
 	return $ FsckHandle h u
 
 closeDb :: FsckHandle -> Annex ()

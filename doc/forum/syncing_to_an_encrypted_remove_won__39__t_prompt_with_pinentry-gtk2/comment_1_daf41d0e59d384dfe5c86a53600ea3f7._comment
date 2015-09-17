@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://openid.stackexchange.com/user/e65e6d0e-58ba-41de-84cc-1f2ba54cf574"
+ nickname="Mica"
+ subject="needed a gpg.conif"
+ date="2015-09-16T04:20:53Z"
+ content="""
+Not sure why Debian stable didn't give me a default gpg.config, but it didn't. Copying one from an old installation worked.
+"""]]

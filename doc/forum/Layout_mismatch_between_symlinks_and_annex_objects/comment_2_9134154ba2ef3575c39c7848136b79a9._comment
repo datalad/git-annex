@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-09-09T18:18:17Z"
+ content="""
+I wish this incompatability didn't exist either, but the transition to use
+consistently 3 letter hash directories would be too much to ask of all the
+users. And there are ways to convert a bare to non-bare that don't have
+this problem, like making a clone and using `git annex move --all --from
+origin`
+
+There's an easy way to finish your conversion from bare to non-bare.
+Just move .git/annex/objects to old-objects, and run `git annex add
+old-objects --backend=SHA256`. That will rename all the files into the right places for a
+non-bare repository, so your existing symlinks will work. You can then
+`rm -rf old-objects` to clean up.
+
+Note that method assumes that SHA256 is the backend of everything in that
+repo. If not, it gets a bit trickier; you'd need to use `git-annex
+setkey'
+"""]]

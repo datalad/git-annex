@@ -1,0 +1,55 @@
+### Please describe the problem.
+
+All the new wonderful SHA3&#95;&#42; backends are gone from the Linux AMD64 build of 5.20150825-g7826f84. They exist in the i386 version (5.20150824-g8529cb2), though. It's probably compiled without Cryptonite support or something.
+
+### What steps will reproduce the problem?
+
+Everything involving any of the SHA3&#95;&#42; backends result in an "unknown backend SHA3&#95;&#42;" error with the amd64 build (5.20150825-g7826f84). The i386 version (5.20150824-g8529cb2) works.
+
+    wget https://github.com/sunny256/utils/raw/master/tests/ga-fsck-size-files/annex-backends.tar.gz
+    tar xzf annex-backends.tar.gz
+    cd annex-backends
+    git annex fsck
+
+results in
+
+    [snip]
+    fsck SHA384.txt (checksum...)
+    ok
+    fsck SHA384E.txt (checksum...)
+    ok
+
+      skipping SHA3_224.txt (unknown backend SHA3_224)
+
+      skipping SHA3_224E.txt (unknown backend SHA3_224E)
+
+      skipping SHA3_256.txt (unknown backend SHA3_256)
+
+      skipping SHA3_256E.txt (unknown backend SHA3_256E)
+
+      skipping SHA3_384.txt (unknown backend SHA3_384)
+
+      skipping SHA3_384E.txt (unknown backend SHA3_384E)
+
+      skipping SHA3_512.txt (unknown backend SHA3_512)
+
+      skipping SHA3_512E.txt (unknown backend SHA3_512E)
+    fsck SHA512.txt (checksum...)
+    ok
+    fsck SHA512E.txt (checksum...)
+    ok
+    [snip]
+    fsck WORM.txt ok
+    (recording state in git...)
+
+### What version of git-annex are you using? On what operating system?
+
+Newest official builds from downloads.kitenet.net . Debian GNU/Linux all the way.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Oh, yes. It rules. :) One of the most important programs I use because I have all my valuable stuff in it. My files have never been safer.
+
+> Yeah, debian unstable got too unstable and I had to move those
+> autobuilders to testing, which didh't have the necessary library.
+> They're back on unstable now, so [[done]] --[[Joey]]

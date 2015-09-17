@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-09-09T22:18:28Z"
+ content="""
+Well, I've verified that `ExitFailure -11` does mean the called program
+segfaulted. I don't see how git-annex could cause curl to segfault.
+
+How would you quantify the experimental error of your upgrade/downgrade experiment? ;)
+"""]]

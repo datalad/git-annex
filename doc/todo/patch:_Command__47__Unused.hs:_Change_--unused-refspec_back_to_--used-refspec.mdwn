@@ -1,0 +1,35 @@
+This patch is also available from the "used-refspec-fix" branch at <https://github.com/sunny256/git-annex/>.
+
+[[!format hs """
+
+From e47e743327e519eaa07817c610b08b0e6844ca8e Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=C3=98yvind=20A=2E=20Holm?= <sunny@sunbase.org>
+Date: Tue, 8 Sep 2015 14:29:25 +0200
+Subject: [PATCH] Command/Unused.hs: Change --unused-refspec back to
+ --used-refspec
+
+Fix typo in commit 160d4b9 ("convert Unused, and remove some dead code
+for old style option parsing", 2015-07-10), the "git-annex unused
+--used-refspec" option was incorrectly changed to --unused-refspec.
+---
+ Command/Unused.hs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Command/Unused.hs b/Command/Unused.hs
+index a383d56..4756cda 100644
+--- a/Command/Unused.hs
++++ b/Command/Unused.hs
+@@ -53,7 +53,7 @@ optParser _ = UnusedOptions
+ 		<> help "remote to check for unused content"
+ 		))
+ 	<*> optional (option (eitherReader parseRefSpec)
+-		( long "unused-refspec" <> metavar paramRefSpec
++		( long "used-refspec" <> metavar paramRefSpec
+ 		<> help "refs to consider used (default: all branches)"
+ 		))
+ 
+-- 
+2.6.0.rc0.24.gec371ff
+"""]]
+
+> applied, thanks! [[done]] --[[Joey]]

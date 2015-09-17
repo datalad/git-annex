@@ -20,6 +20,7 @@ module Creds (
 ) where
 
 import Common.Annex
+import qualified Annex
 import Types.Creds
 import Annex.Perms
 import Utility.FileMode
@@ -65,7 +66,8 @@ setRemoteCredPair _ c storage (Just creds)
 		return c
 
 	storeconfig key (Just cipher) = do
-		s <- liftIO $ encrypt (getGpgEncParams c) cipher
+		cmd <- gpgCmd <$> Annex.getGitConfig
+		s <- liftIO $ encrypt cmd (getGpgEncParams c) cipher
 			(feedBytes $ L.pack $ encodeCredPair creds)
 			(readBytes $ return . L.unpack)
 		return $ M.insert key (toB64 s) c
@@ -91,7 +93,8 @@ getRemoteCredPair c storage = maybe fromcache (return . Just) =<< fromenv
 					fromcreds $ fromB64 bcreds
 		Nothing -> return Nothing
 	fromenccreds enccreds cipher storablecipher = do
-		mcreds <- liftIO $ catchMaybeIO $ decrypt cipher
+		cmd <- gpgCmd <$> Annex.getGitConfig
+		mcreds <- liftIO $ catchMaybeIO $ decrypt cmd cipher
 			(feedBytes $ L.pack $ fromB64 enccreds)
 			(readBytes $ return . L.unpack)
 		case mcreds of

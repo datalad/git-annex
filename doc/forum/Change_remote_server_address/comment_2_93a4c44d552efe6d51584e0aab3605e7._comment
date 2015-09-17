@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="hasard@aa44fbf6c0a991a7b76fb8a118cc0b274f528de1"
+ nickname="hasard"
+ subject="like dropbox, with your own cloud "
+ date="2015-08-26T17:49:16Z"
+ content="""
+just to be complete: during setup some useful assistant may have created rsa keys so that the assistant can access remote hosts without password and following the update of .git/config you probably will need to update .ssh/config as well.
+ 
+Like many things with git annex and the assistant, its just \"like dropbox with your own cloud\", but you need first to become expert in editing .git/config and .ssh/config. 
+"""]]

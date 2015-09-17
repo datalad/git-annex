@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-09-09T17:58:09Z"
+ content="""
+Until version 5.201508125, --time-limit didn't cause a clean shutdown,
+and so the fsck database didn't get updated with the last files it checked.
+This could result in up to 1000 files being checked over again the next
+time the incremental fsck was run.
+
+I can't reproduce the problem you describe with the current version.
+And your transcript seems to be showing the old version, which was known to
+have this problem. Only reason I'm not closing this bug immediately
+is you seem to have a new enough version on your mac to avoid the problem..
+but it's not clear to me if you're experiencing the problem on the mac.
+"""]]

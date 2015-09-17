@@ -33,6 +33,7 @@ module Remote.Helper.Special (
 ) where
 
 import Common.Annex
+import qualified Annex
 import Types.StoreRetrieve
 import Types.Remote
 import Crypto
@@ -195,9 +196,10 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 		rollback = void $ removeKey encr k
 
 	storechunk Nothing storer k content p = storer k content p
-	storechunk (Just (cipher, enck)) storer k content p =
+	storechunk (Just (cipher, enck)) storer k content p = do
+		cmd <- gpgCmd <$> Annex.getGitConfig
 		withBytes content $ \b ->
-			encrypt gpgopts cipher (feedBytes b) $
+			encrypt cmd gpgopts cipher (feedBytes b) $
 				readBytes $ \encb ->
 					storer (enck k) (ByteContent encb) p
 
@@ -251,12 +253,14 @@ sink dest enc mh mp content = do
 		(Nothing, Nothing, FileContent f)
 			| f == dest -> noop
 			| otherwise -> liftIO $ moveFile f dest
-		(Just (cipher, _), _, ByteContent b) ->
-			decrypt cipher (feedBytes b) $
+		(Just (cipher, _), _, ByteContent b) -> do
+			cmd <- gpgCmd <$> Annex.getGitConfig
+			decrypt cmd cipher (feedBytes b) $
 				readBytes write
 		(Just (cipher, _), _, FileContent f) -> do
+			cmd <- gpgCmd <$> Annex.getGitConfig
 			withBytes content $ \b ->
-				decrypt cipher (feedBytes b) $
+				decrypt cmd cipher (feedBytes b) $
 					readBytes write
 			liftIO $ nukeFile f
 		(Nothing, _, FileContent f) -> do

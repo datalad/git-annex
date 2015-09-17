@@ -60,21 +60,36 @@ cmd = withGlobalOptions [jobsOption] $
 
 data SyncOptions  = SyncOptions
 	{ syncWith :: CmdParams
-	, contentOption :: Bool
+	, commitOption :: Bool
 	, messageOption :: Maybe String
+	, pullOption :: Bool
+	, pushOption :: Bool
+	, contentOption :: Bool
 	, keyOptions :: Maybe KeyOptions
 	}
 
 optParser :: CmdParamsDesc -> Parser SyncOptions
 optParser desc = SyncOptions
-	<$> cmdParams desc
-	<*> invertableSwitch "content" False
-		( help "also transfer file contents" 
+	<$> (many $ argument str
+		( metavar desc
+		<> completeRemotes
+		))
+	<*> invertableSwitch "commit" True
+		( help "avoid git commit" 
 		)
 	<*> optional (strOption
 		( long "message" <> short 'm' <> metavar "MSG"
 		<> help "commit message"
 		))
+	<*> invertableSwitch "pull" True
+		( help "avoid git pulls from remotes" 
+		)
+	<*> invertableSwitch "push" True
+		( help "avoid git pushes to remotes" 
+		)
+	<*> invertableSwitch "content" False
+		( help "also transfer file contents" 
+		)
 	<*> optional parseAllOption
 
 seek :: SyncOptions -> CommandSeek
@@ -107,7 +122,7 @@ seek o = do
 	mapM_ includeCommandAction $ concat
 		[ [ commit o ]
 		, [ withbranch mergeLocal ]
-		, map (withbranch . pullRemote) gitremotes
+		, map (withbranch . pullRemote o) gitremotes
 		,  [ mergeAnnex ]
 		]
 	when (contentOption o) $
@@ -118,13 +133,13 @@ seek o = do
 			-- and merge again to avoid our push overwriting
 			-- those changes.
 			mapM_ includeCommandAction $ concat
-				[ map (withbranch . pullRemote) gitremotes
+				[ map (withbranch . pullRemote o) gitremotes
 				, [ commitAnnex, mergeAnnex ]
 				]
 	
 	void $ includeCommandAction $ withbranch pushLocal
 	-- Pushes to remotes can run concurrently.
-	mapM_ (commandAction . withbranch . pushRemote) gitremotes
+	mapM_ (commandAction . withbranch . pushRemote o) gitremotes
 
 {- Merging may delete the current directory, so go to the top
  - of the repo. This also means that sync always acts on all files in the
@@ -165,28 +180,26 @@ syncRemotes' ps remotelist = ifM (Annex.getState Annex.fast) ( nub <$> pickfast 
 	fastest = fromMaybe [] . headMaybe . Remote.byCost
 
 commit :: SyncOptions -> CommandStart
-commit o = ifM (annexAutoCommit <$> Annex.getGitConfig)
-	( go
-	, stop
-	)
+commit o = stopUnless shouldcommit $ next $ next $ do
+	commitmessage <- maybe commitMsg return (messageOption o)
+	showStart "commit" ""
+	Annex.Branch.commit "update"
+	ifM isDirect
+		( do
+			void stageDirect
+			void preCommitDirect
+			commitStaged Git.Branch.ManualCommit commitmessage
+		, do
+			inRepo $ Git.Branch.commitQuiet Git.Branch.ManualCommit
+				[ Param "-a"
+				, Param "-m"
+				, Param commitmessage
+				]
+			return True
+		)
   where
-	go = next $ next $ do
-		commitmessage <- maybe commitMsg return (messageOption o)
-		showStart "commit" ""
-		Annex.Branch.commit "update"
-		ifM isDirect
-			( do
-				void stageDirect
-				void preCommitDirect
-				commitStaged Git.Branch.ManualCommit commitmessage
-			, do
-				inRepo $ Git.Branch.commitQuiet Git.Branch.ManualCommit
-					[ Param "-a"
-					, Param "-m"
-					, Param commitmessage
-					]
-				return True
-			)
+	shouldcommit = pure (commitOption o)
+		<&&> (annexAutoCommit <$> Annex.getGitConfig)
 
 commitMsg :: Annex String
 commitMsg = do
@@ -248,8 +261,8 @@ updateBranch syncbranch g =
 		, Param $ Git.fromRef $ Git.Ref.base syncbranch
 		] g
 
-pullRemote :: Remote -> Maybe Git.Ref -> CommandStart
-pullRemote remote branch = do
+pullRemote :: SyncOptions -> Remote -> Maybe Git.Ref -> CommandStart
+pullRemote o remote branch = stopUnless (pure $ pullOption o) $ do
 	showStart "pull" (Remote.name remote)
 	next $ do
 		showOutput
@@ -282,24 +295,22 @@ mergeRemote remote b = ifM isBareRepo
 	branchlist Nothing = []
 	branchlist (Just branch) = [branch, syncBranch branch]
 
-pushRemote :: Remote -> Maybe Git.Ref -> CommandStart
-pushRemote _remote Nothing = stop
-pushRemote remote (Just branch) = go =<< needpush
+pushRemote :: SyncOptions -> Remote -> Maybe Git.Ref -> CommandStart
+pushRemote _o _remote Nothing = stop
+pushRemote o remote (Just branch) = stopUnless (pure (pushOption o) <&&> needpush) $ do
+	showStart "push" (Remote.name remote)
+	next $ next $ do
+		showOutput
+		ok <- inRepoWithSshOptionsTo (Remote.repo remote) (Remote.gitconfig remote) $
+			pushBranch remote branch
+		unless ok $ do
+			warning $ unwords [ "Pushing to " ++ Remote.name remote ++ " failed." ]
+			showLongNote "(non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote's git config)"
+		return ok
   where
 	needpush
 		| remoteAnnexReadOnly (Remote.gitconfig remote) = return False
 		| otherwise = anyM (newer remote) [syncBranch branch, Annex.Branch.name]
-	go False = stop
-	go True = do
-		showStart "push" (Remote.name remote)
-		next $ next $ do
-			showOutput
-			ok <- inRepoWithSshOptionsTo (Remote.repo remote) (Remote.gitconfig remote) $
-				pushBranch remote branch
-			unless ok $ do
-				warning $ unwords [ "Pushing to " ++ Remote.name remote ++ " failed." ]
-				showLongNote "(non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote's git config)"
-			return ok
 
 {- Pushes a regular branch like master to a remote. Also pushes the git-annex
  - branch.

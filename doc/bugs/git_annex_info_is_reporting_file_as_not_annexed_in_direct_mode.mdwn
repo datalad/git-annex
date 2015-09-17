@@ -1,0 +1,38 @@
+### Please describe the problem.
+
+I was thinking to answer Emanuele's question in forum (http://git-annex.branchable.com/forum/test_whether_a_file_is_already_annexed/) but realized that 'info' is not the way :-/ (whereis could be used I guess)
+
+### What version of git-annex are you using? On what operating system?
+
+5.20150826+gitg87972f5-1~ndall+1
+
+### Please provide any additional information below.
+
+[[!format sh """
+
+$> git annex indirect     
+commit  ok
+indirect 1.dat ok
+indirect  ok
+ok
+
+$> git annex info 1.dat
+file: 1.dat
+size: 4 bytes
+key: SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b.dat
+
+$> git annex direct    
+commit  
+On branch master
+nothing to commit, working directory clean
+ok
+direct 1.dat ok
+direct  ok
+
+$> git annex info 1.dat
+git-annex: 1.dat is not a directory or an annexed file or a remote or a uuid
+
+
+"""]]
+
+> [[fixed|done]] --[[Joey]]
