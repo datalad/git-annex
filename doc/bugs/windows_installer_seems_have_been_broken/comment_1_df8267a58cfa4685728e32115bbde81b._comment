@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-09-18T16:25:34Z"
+ content="""
+Git for Windows is now needed; support for msysgit has been dropped
+as both can't be supported in the same package. This is documented
+in the changelog and the install/Windows page.
+"""]]

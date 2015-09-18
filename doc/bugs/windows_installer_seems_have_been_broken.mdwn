@@ -6,3 +6,5 @@ Replicated on another similar instance
 ### What steps will reproduce the problem?
 
 download exe from  https://downloads.kitenet.net/git-annex/windows/current/  (btw  I think I noted it reduced in size noteably)
+
+> [[done]] per my comment --[[Joey]]
