@@ -1,0 +1,1 @@
+Does `git-annex` support retrieving files from S3 if the remote objects have been moved to the "Standard-Infrequent Access" storage class via a AWS lifecyle rule?
