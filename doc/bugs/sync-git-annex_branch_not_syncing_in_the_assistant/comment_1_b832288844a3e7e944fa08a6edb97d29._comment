@@ -7,7 +7,7 @@ The assistant merges the synced/git-annex branch whenever it detects (via
 inotify) that a change has been made to that git ref. 
 
 I can't reproduce a problem from the information you've given. With
-foo -- bar -- quux, and assistants running on foo and quux, any file
+`foo -> bar <- quux`, and assistants running on foo and quux, any file
 written to foo more or less immediately syncs to quux, and the git-annex
 branch is merged.
 

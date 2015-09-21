@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-09-21T19:21:30Z"
+ content="""
+Note that I'm assuming that bar is a remote of both foo and of quux.
+That seems like a reasonable reading of what you described, and is a
+reasonable configuration, but perhaps you were trying to describe some
+other configuration. 
+
+In [[forum/mesh_configurations]] you seem to instead
+describe a chain of remotes, where bar is a remote of foo, and quux is a
+remote of bar: `foo -> bar -> quux`. In this configuration, running the assistant on 
+foo and quux, but not on bar, would not result in changes made on quux
+ever getting to foo, because quux has no way to push objects to bar. So, I
+don't think that's the configuration you meant either. But lack of clarity
+in bug report makes it hard to know.
+"""]]
