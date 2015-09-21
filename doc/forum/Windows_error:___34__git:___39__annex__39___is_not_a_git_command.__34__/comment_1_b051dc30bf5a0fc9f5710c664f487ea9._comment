@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-09-21T16:39:54Z"
+ content="""
+Please make sure you have Git For Windows, and the current version
+5.20150916 
+of git-annex installed. msysgit is no longer supported, and any
+older version of git-annex won't work with Git For Windows.
+
+Since you mention git-annex.exe in the cmd directory, I guess
+you probably have an old version installed. The current version
+does not put that file there.
+"""]]
