@@ -41,3 +41,5 @@ My diagnosis is that when running `git annex sync testremote --content` when the
     
       (non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote's git config)
     failed
+
+> fowarded, so [[closing|done]] --[[Joey]]
