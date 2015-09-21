@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://mathstuf.id.fedoraproject.org/"
+ nickname="mathstuf"
+ subject="comment 2"
+ date="2015-09-21T18:27:07Z"
+ content="""
+Ah, should have been more specific, sorry. It adds a space to the end of the \"Host\" line (the following are just global settings like turning off ssh-agent forwarding, and disabling insecure ciphers and such).
+"""]]
