@@ -15,6 +15,7 @@ import Utility.FileMode
 import Data.Char
 import Data.Ord
 import Data.Either
+import System.Directory
 
 data SshConfig
 	= GlobalConfig SshSetting
@@ -117,8 +118,11 @@ changeUserSshConfig modifier = do
 	whenM (doesFileExist configfile) $ do
 		c <- readFileStrict configfile
 		let c' = modifier c
-		when (c /= c') $
-			viaTmp writeSshConfig configfile c'
+		when (c /= c') $ do
+			-- If it's a symlink, replace the file it
+			-- points to.
+			f <- catchDefaultIO configfile (canonicalizePath configfile)
+			viaTmp writeSshConfig f c'
 
 writeSshConfig :: FilePath -> String -> IO ()
 writeSshConfig f s = do
