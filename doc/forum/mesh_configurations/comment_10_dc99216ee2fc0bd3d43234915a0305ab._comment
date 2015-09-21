@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2015-09-21T18:44:20Z"
+ content="""
+I'm not comfortable making core.sharedrepository settings affect creds
+files. You don't normally want to give out S3 creds to other users in a
+unix group. And in the "everybody" case, it certianly seems entirely wrong
+to make the creds files world-readable. Willing to live with a little
+inconsistency here in order to not blow user's bank accounts off. It would
+be good to document it somewhere.
+
+Your paste seems to show A as being in the "sourcethis" group, not the
+"source" group. I don't know what that means.
+
+The assistant should notice config changes to the git-annex branch within
+60 seconds of them being received. Syncs happen when changes are detected,
+or every 30 minutes.
+"""]]
