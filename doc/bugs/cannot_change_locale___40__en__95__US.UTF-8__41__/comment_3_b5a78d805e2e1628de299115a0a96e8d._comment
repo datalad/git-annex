@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-09-21T16:02:24Z"
+ content="""
+So, I actually see something a little similar when using runshell 
+in the standalone bundle:
+
+	joey@darkstar:~/tmp/a/git-annex.linux>./runshell 
+	$ bash
+	locale: Cannot set LC_CTYPE to default locale: No such file or directory
+	locale: Cannot set LC_MESSAGES to default locale: No such file or directory
+
+This is due to it setting LOCPATH=/dev/null,
+so it won't even try to use the system's locale files. 
+(Whether they would be compatable with the libc in the bundle is another question.)
+
+So, `unset LOCPATH` may work around the problem. If you don't run into
+the bug that is set to prevent, <https://ghc.haskell.org/trac/ghc/ticket/7695>.
+
+This setting could be revisited once the standalone builds are built using
+ghc 7.10, which fixed that bug.
+"""]]

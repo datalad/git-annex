@@ -26,7 +26,3 @@ he_IL
 he_IL.iso88598
 he_IL.utf8
 POSIX
-
-> Closing since I've seen nothing to indicate this is anything other than a
-> misconfigured OS that doesn't have the requested locale available.
-> [[done]] --[[Joey]]
