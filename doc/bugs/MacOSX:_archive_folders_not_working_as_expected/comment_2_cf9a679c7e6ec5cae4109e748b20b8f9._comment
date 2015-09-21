@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-09-21T19:29:26Z"
+ content="""
+If this is OSX specific, which it seems to be (I've tested archive folders
+working as expected plenty on Linux), it might have to do with the
+assistant not seeing an event for the file being added when it's renamed
+to/from the archive folder. In the --debug log, it looks like the file
+got deleted but never added back.
+
+If this is the case, `git annex status` should show the file as not being
+checked into git.
+"""]]
