@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://mathstuf.id.fedoraproject.org/"
+ nickname="mathstuf"
+ subject="comment 4"
+ date="2015-09-21T21:24:26Z"
+ content="""
+Ah, indeed. ssh_config(5) basically says that \"*\" should be used to have the meaning I intended. Looking at the history of the file in my dotfiles repo has it coming from almost 4 years ago. I either copied some bogus stanza from online or misread the docs at that time. Feel free to close :) .
+"""]]
