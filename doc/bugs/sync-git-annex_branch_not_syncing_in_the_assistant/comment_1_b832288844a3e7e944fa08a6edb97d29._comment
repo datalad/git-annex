@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-09-21T19:08:28Z"
+ content="""
+The assistant merges the synced/git-annex branch whenever it detects (via
+inotify) that a change has been made to that git ref. 
+
+I can't reproduce a problem from the information you've given. With
+foo -- bar -- quux, and assistants running on foo and quux, any file
+written to foo more or less immediately syncs to quux, and the git-annex
+branch is merged.
+
+Even when I stop the assistant running on foo, and manually run
+`git push bar git-annex:synced/git-annex`, quux immediately notices that
+bar has received that synced/git-annex, and fetches and merges it into its
+own git-annex branch.
+"""]]
