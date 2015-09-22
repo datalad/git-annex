@@ -15,7 +15,6 @@ import Utility.FileMode
 import Data.Char
 import Data.Ord
 import Data.Either
-import System.Directory
 
 data SshConfig
 	= GlobalConfig SshSetting
