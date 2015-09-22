@@ -500,6 +500,9 @@ getBucketName = map toLower <$$> M.lookup "bucket"
 getStorageClass :: RemoteConfig -> S3.StorageClass
 getStorageClass c = case M.lookup "storageclass" c of
 	Just "REDUCED_REDUNDANCY" -> S3.ReducedRedundancy
+#if MIN_VERSION_aws(0,13,0)
+	Just s -> S3.OtherStorageClass (T.pack s)
+#endif
 	_ -> S3.Standard
 
 getPartSize :: RemoteConfig -> Maybe Integer

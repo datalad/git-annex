@@ -41,11 +41,12 @@ glacierConfigurator a = do
   where
 	needglaciercli = $(widgetFile "configurators/needglaciercli")
 
-data StorageClass = StandardRedundancy | ReducedRedundancy
+data StorageClass = StandardRedundancy | StandardInfrequentAccess | ReducedRedundancy
 	deriving (Eq, Enum, Bounded)
 
 instance Show StorageClass where
 	show StandardRedundancy = "STANDARD" 
+	show StandardInfrequentAccess = "STANDARD_IA"
 	show ReducedRedundancy = "REDUCED_REDUNDANCY"
 
 data AWSInput = AWSInput
@@ -75,6 +76,9 @@ s3InputAForm defcreds = AWSInput
 	storageclasses :: [(Text, StorageClass)]
 	storageclasses =
 		[ ("Standard redundancy", StandardRedundancy)
+#if MIN_VERSION_aws(0,13,0)
+		, ("Infrequent access (cheaper for backups and archives)", StandardInfrequentAccess)
+#endif
 		, ("Reduced redundancy (costs less)", ReducedRedundancy)
 		]
 
