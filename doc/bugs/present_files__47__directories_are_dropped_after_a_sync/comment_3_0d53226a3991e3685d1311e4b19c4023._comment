@@ -1,0 +1,55 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""complications"""
+ date="2015-09-22T18:34:43Z"
+ content="""
+* The "look at incoming merges, and queue downloads of newer versions of
+  present files" approach needs to do something about the case where
+  it's not able to successfully download a newer version immediately.
+  
+  If it let the merge proceed, the file would end up not being present
+  anymore, and so a later sync wouldn't know it had been present.
+  
+  Failing to get the contents of all changed files could just make the
+  sync fail before it merges, keeping the tree at the earlier version.
+  This might be desirable.
+
+  But, implementing that means changing sync to download file contents
+  before merging, rather than the current merge-first. I'm sure a lot of
+  people *won't* want that. (Ie, I certianly don't.) So, this seems to need
+  to be a new mode for syncing. 
+  
+  (Such a mode is probably generally useful, aside from this use case.)
+
+* If this was implemented, then when a file is modified, the content
+  of the new file would be present. git-annex already makes it so that,
+  when a file is moved, the content of the file is still present. But,
+  what if a file were first moved and then modified? If that happened in
+  multiple commits, they could be examined in turn (with additional
+  complication and slowdown) to conclude that the content is wanted. But if
+  that happened in a single commit, there's no way to tell that from
+  deleting the old file and adding a new file, whose content would not be
+  automatically wanted.
+
+* The bug report wants git-annex to somehow detect when the user has
+  manually gotten an entire directory tree and start getting new files in
+  that directory too, which seems pretty infeasible. How is git-annex
+  supposed to guess whether you want new files in a directory tree,
+  or just the files that are currently there? What if some files
+  are duplicated amoung 2 directory trees, and one tree ends up complete
+  while the other one doesn't? This seems like a request for mindreading
+  ponies.
+
+* There are many preferred content expressions that fully specify what
+  files are wanted, without using the "present" token. AFAICS,
+  there's no reason to do any of this work when the preferred content
+  expression doesn't include "present".
+
+TBH, I am not at all sure this is implementable anywhere near sanely.
+If I were you, I'd use preferred content to specify the files I want,
+which avoids these complexities and works great. Using metadata to tag
+files and making all tagged files be wanted in the preferred content
+expression is one nice way to go. And metadata is copied over when adding
+a new version of a file, so this tagging approach works across file
+modifications.
+"""]]
