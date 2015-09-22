@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-09-22T15:56:37Z"
+ content="""
+Unable to reproduce this on Windows XP.
+
+Is there anything in .git/annex/daemon.log that might help with debugging?
+"""]]
