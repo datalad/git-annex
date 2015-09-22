@@ -21,3 +21,5 @@ Using the `git status` command directly will show the added files
 ### What version of git-annex are you using? On what operating system?
 
 git-annex version: 5.20141024-g613f396
+
+> [[done]] --[[Joey]]
