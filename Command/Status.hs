@@ -82,7 +82,6 @@ statusIndirect f = ifM (liftIO $ isJust <$> catchMaybeIO (getFileStatus f))
 	( checkNew f
 	, return DeletedFile
 	)
-  where
 
 checkNew :: FilePath -> Annex Status
 checkNew f = ifM (isJust <$> catObjectDetails (Git.Ref.fileRef f))
