@@ -8,6 +8,8 @@ git-annex (5.20150917) UNRELEASED; urgency=medium
     In particular, storageclass=STANDARD_IA to use Amazon's
     new Infrequently Accessed storage, and storageclass=NEARLINE
     to use Google's NearLine storage.
+  * Improve ~/.ssh/config modification code to not add trailing spaces
+    to lines it cannot parse.
 
  -- Joey Hess <id@joeyh.name>  Wed, 16 Sep 2015 12:23:33 -0400
 

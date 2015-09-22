@@ -13,3 +13,5 @@ git-annex-5.20140717-8.fc24.x86_64
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Has worked wonders for syncing keepass files between devices; just now setting up assistant to do things automatically though :) .
+
+> [[fixed|done]] --[[Joey]]
