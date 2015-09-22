@@ -12,3 +12,6 @@ the whole commit history if there were no more objects to check. Still,
 gonna be slooow. Another optimisation would be to get only the objects
 changed by the commit, and not look at the whole tree as it appeared on
 each commit. --[[Joey]]
+
+> Closing, --used-refspec allows doing this kind of thing.
+> (It can indeed make it slow!) [[done]] --[[Joey]]
