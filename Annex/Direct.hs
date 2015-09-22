@@ -153,7 +153,7 @@ addDirect file cache = do
  -
  - A lock file is used to avoid races with any other caller of mergeDirect.
  - 
- - To avoid other git processes from making change to the index while our
+ - To avoid other git processes from making changes to the index while our
  - merge is in progress, the index lock file is used as the temp index
  - file. This is the same as what git does when updating the index
  - normally.
@@ -162,7 +162,8 @@ mergeDirect :: Maybe Git.Ref -> Maybe Git.Ref -> Git.Branch -> Annex Bool -> Git
 mergeDirect startbranch oldref branch resolvemerge commitmode = exclusively $ do
 	reali <- liftIO . absPath =<< fromRepo indexFile
 	tmpi <- liftIO . absPath =<< fromRepo indexFileLock
-	liftIO $ copyFile reali tmpi
+	liftIO $ whenM (doesFileExist reali) $
+		copyFile reali tmpi
 
 	d <- fromRepo gitAnnexMergeDir
 	liftIO $ do
@@ -178,7 +179,8 @@ mergeDirect startbranch oldref branch resolvemerge commitmode = exclusively $ do
 		mergeDirectCleanup d (fromMaybe Git.Sha.emptyTree oldref)
 		mergeDirectCommit merged startbranch branch commitmode
 
-		liftIO $ rename tmpi reali
+		liftIO $ whenM (doesFileExist tmpi) $
+			rename tmpi reali
 
 		return r
   where

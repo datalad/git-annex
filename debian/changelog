@@ -10,6 +10,9 @@ git-annex (5.20150917) UNRELEASED; urgency=medium
     to use Google's NearLine storage.
   * Improve ~/.ssh/config modification code to not add trailing spaces
     to lines it cannot parse.
+  * Fix a crash at direct mode merge time when .git/index doesn't exist
+    yet. Triggered by eg, git-annex sync --no-commit in a fresh clone of
+    a repository.
 
  -- Joey Hess <id@joeyh.name>  Wed, 16 Sep 2015 12:23:33 -0400
 

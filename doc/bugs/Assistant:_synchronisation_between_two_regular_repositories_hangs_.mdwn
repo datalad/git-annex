@@ -26,3 +26,5 @@ Also note that the second repository is on a FAT32 usb stick
 
 # End of transcript or log.
 """]]
+
+> [[fixed|done]] --[[Joey]]
