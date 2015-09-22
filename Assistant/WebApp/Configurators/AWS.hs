@@ -76,7 +76,9 @@ s3InputAForm defcreds = AWSInput
 	storageclasses :: [(Text, StorageClass)]
 	storageclasses =
 		[ ("Standard redundancy", StandardRedundancy)
+#if MIN_VERSION_aws(0,13,0)
 		, ("Infrequent access (cheaper for backups and archives)", StandardInfrequentAccess)
+#endif
 		, ("Reduced redundancy (costs less)", ReducedRedundancy)
 		]
 

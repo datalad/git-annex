@@ -2,10 +2,9 @@ git-annex (5.20150917) UNRELEASED; urgency=medium
 
   * info: Don't allow use in a non-git-annex repository, since it
     uses the git-annex branch and would create it if it were missing.
-  * S3: Added support for storageclass=STANDARD_IA to use Amazon's
-    new Infrequently Accessed storage.
-    (Needs aws-0.13.0.)
-  * S3: Use aws-0.13.0, which allows using storageclass=NEARLINE
+  * S3: When built with aws-0.13.0, supports using more storage classes.
+    In particular, storageclass=STANDARD_IA to use Amazon's
+    new Infrequently Accessed storage, and storageclass=NEARLINE
     to use Google's NearLine storage.
 
  -- Joey Hess <id@joeyh.name>  Wed, 16 Sep 2015 12:23:33 -0400
