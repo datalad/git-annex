@@ -1,0 +1,13 @@
+I've mostly been chewing through old and new bug reports and support
+requests that past several days. The backlog is waaay low now -- only 82
+messages! Just in time for me to go on another trip, to Louisville on
+Thursday.
+
+Amazon S3 added an "Infrequent Access" storage class last week, and I got a
+patch into the haskell-aws library to support that, as well as partially
+supporting Google Nearline. That patch was accepted today, and git-annex is
+ready to use the new version of the library as soon as it's released.
+
+At the end of today, I found myself rewriting `git annex status` to parse
+and adjust the output of `git status --short`. This new method makes it
+much more capable than before, including displaying Added files.
