@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-09-22T16:08:29Z"
+ content="""
+There's no difference between an unannexed file and a new file,
+other than some old versions of the unannexed file in past revs of the git
+history. 
+
+So, this cannot be implemented. If it were, deleting an annexed
+file and then putting a new file in its place with the same filename
+(and perhaps content) would appear identical to the assistant as unannexing
+a file, and it would not add it. But we absolutely want to add the
+file back in that case.
+
+Suggest that, if you want the assistant to not add files for a while, 
+you temporarily stop it.
+"""]]

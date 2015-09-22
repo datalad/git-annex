@@ -2,3 +2,5 @@
 When using “git annex unlock”, the assistant is clever enough not to immediately re-add the corresponding files. When using “git annex unannex”, however, the assistant goes on to re-add the files right away. It would be convenient if this case were also handled likewise.
 
 git-annex 5.20150508
+
+> [[done]]; cannot be implemented. --[[Joey]]
