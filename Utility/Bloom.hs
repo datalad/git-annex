@@ -53,7 +53,7 @@ notElemB :: a -> Bloom a -> Bool
 notElemB = Bloom.notElemB
 
 elemB :: a -> Bloom a -> Bool
-elemB = Bloom.elem
+elemB = Bloom.elemB
 
 newMB :: (a -> [Bloom.Hash]) -> Int -> ST s (Bloom.MBloom s a)
 newMB = Bloom.newMB
