@@ -12,6 +12,9 @@
 <h2>Linux armel</h2>
 <iframe width=1024 height=20em scrolling=no frameborder=0 marginheight=0 marginwidth=0 src="https://downloads.kitenet.net/git-annex/autobuild/armel/build-version">
 </iframe>
+<h2>Linux i386-ancient</h2>
+<iframe width=1024 height=20em scrolling=no frameborder=0 marginheight=0 marginwidth=0 src="https://downloads.kitenet.net/git-annex/autobuild/i386-ancient/build-version">
+</iframe>
 <h2>Android</h2>
 <iframe width=1024 height=20em scrolling=no frameborder=0 marginheight=0 marginwidth=0 src="https://downloads.kitenet.net/git-annex/autobuild/android/4.3/build-version">
 </iframe>
@@ -33,6 +36,9 @@
 </iframe>
 <h2>Linux armel</h2>
 <iframe width=1024 scrolling=no frameborder=0 marginheight=0 marginwidth=0 src="https://downloads.kitenet.net/git-annex/autobuild/armel/">
+</iframe>
+<h2>Linux i386-ancient</h2>
+<iframe width=1024 scrolling=no frameborder=0 marginheight=0 marginwidth=0 src="https://downloads.kitenet.net/git-annex/autobuild/i386-ancient/">
 </iframe>
 <h2>Android</h2>
 <iframe width=1024 scrolling=no frameborder=0 marginheight=0 marginwidth=0 src="https://downloads.kitenet.net/git-annex/autobuild/android/">
