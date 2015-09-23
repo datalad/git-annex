@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 2"
+ date="2015-09-23T16:36:08Z"
+ content="""
+Shouldn't it be possible reasonably easily to create env which would just use stock haskell-platform?  that one should provide all recent libraries you would need? and then just do that on e.g. debian stable
+"""]]
