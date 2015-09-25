@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://mathstuf.id.fedoraproject.org/"
+ nickname="mathstuf"
+ subject="comment 6"
+ date="2015-09-25T05:42:22Z"
+ content="""
+Interesting. It certainly wasn't having any effect with no tokens at least, but I guess it also wasn't choking on the syntax either. Anyways, now that I have \"*\" in there properly, SSH'ing to /old/ hosts fails. And by old, I mean a Debian Etch VM :) .
+"""]]
