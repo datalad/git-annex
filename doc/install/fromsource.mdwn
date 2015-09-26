@@ -42,7 +42,7 @@ and avoids build failures due to fast-changing haskell libraries.
 First, [install stack](https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md)
 It will be part of the Haskell Platform soon. On Debian unstable/testing:
 
-	sudo apt-get install haskell-stack
+	sudo apt-get install haskell-stack zlib1g-dev
 
 Use stack to install all dependencies and git-annex:
 
@@ -53,7 +53,8 @@ Move git-annex into some directory that is in your PATH:
 
 	mv ~/.local/bin/git-annex ~/bin # or /usr/local/bin/ or whatever
 
-Note that this build produces a git-annex without XMPP support.
+Note that this build produces a git-annex without XMPP and DBUS support.
+These optional features are only used by the webapp.
 
 ## minimal build from source with cabal
 

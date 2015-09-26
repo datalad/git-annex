@@ -15,7 +15,7 @@ flags:
     xmpp: false
     network-uri: true
     s3: true
-    dbus: true
+    dbus: false
     testsuite: true
     webdav: true
     torrentparser: true
