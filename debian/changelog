@@ -14,6 +14,7 @@ git-annex (5.20150917) UNRELEASED; urgency=medium
     yet. Triggered by eg, git-annex sync --no-commit in a fresh clone of
     a repository.
   * status: Show added but not yet committed files.
+  * Added stack.yaml to support easy builds from source with stack.
 
  -- Joey Hess <id@joeyh.name>  Wed, 16 Sep 2015 12:23:33 -0400
 
