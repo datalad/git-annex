@@ -1,0 +1,25 @@
+I'd like to eventually remove XMPP support from git-annex. --[[Joey]] 
+
+The XMPP feature makes git-annex harder to build (needs a lot of C
+libraries), and is increasingly rarely used.
+
+For over a year, git-annex-shell has been able to notify clients when a
+change lands in a git repo on a ssh server. This notification is the main
+thing XMPP support was used for. Even users without a ssh server of their
+own don't need XMPP for this; the feature is supported by GitLab.com.
+
+The only other advantages to keeping XMPP support are:
+
+* Supports peer-to-peer git push over XMPP. Except, this hack has never
+  worked very reliably, and exposes the git repo to the XMPP server,
+  and needing an XMPP server is not a pure p2p solution anyway.
+* Friend discovery and easy sharing of git repo to friends.
+
+It would be nice if there were a pure P2P replacement for XMPP, like
+telehash. But, can't wait on that forever..
+
+XMPP support is already disabled by default in some builds of git-annex,
+notably the stack build. It's never worked on Windows.
+
+Next step is probably to default the flag to false by default,
+except for in a few builds like the Debian package and standalone builds.
