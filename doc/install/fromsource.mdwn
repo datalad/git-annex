@@ -54,7 +54,10 @@ Move git-annex into some directory that is in your PATH:
 	mv ~/.local/bin/git-annex ~/bin # or /usr/local/bin/ or whatever
 
 Note that this build produces a git-annex without XMPP and DBUS support.
-These optional features are only used by the webapp.
+These optional features are only used by the webapp, and require
+installing additional C libraries. To try to build with these features
+enabled, pass extra parameters when running stack: 
+`--flag git-annex:XMPP --flag git-annex:DBUS`
 
 ## minimal build from source with cabal
 
