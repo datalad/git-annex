@@ -1,0 +1,7 @@
+I've setup a server using gitolite3 to host repositories for our users. All these repos share the same disk (2.5 Tb ;-). They're mainly used as backup of all contents.
+
+I'd like to monitor disk usage (possibly with statistics related to git-annex specificities) for these repos.
+
+Would anyone suggest a solution (web based maybe), for easily monitoring the growth of the repos storage ?
+
+Thanks in advance.
