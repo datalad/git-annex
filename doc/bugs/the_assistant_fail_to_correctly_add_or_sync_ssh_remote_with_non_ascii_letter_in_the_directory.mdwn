@@ -1,0 +1,40 @@
+### Please describe the problem.
+I've tried to setup a remote using assistant, but it failed to correctly sync apparently because there is a "è" in the directory
+
+### What steps will reproduce the problem?
+run the webapp
+use "Add another directory"
+then Remote Server
+add host name, user name password and directory as "Bibliothèque calibre" (to a repository that already exists)
+
+the remote is added as metadata only and the assistant will try to upload every file to it every time it is restarted.
+
+if a symlink is created named "calibre library", and is used instead, there is no problem.
+
+### What version of git-annex are you using? On what operating system?
+it is git-annex version: 5.20150916-1 on debian/sid
+
+### Please provide any additional information below.
+
+the log is full of:
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+ssh: Could not resolve hostname git-annex-toubib.lot-of-stuff.info-moi_22_biblioth%c3%a8que.20calibre: Name or service not known
+ssh: Could not resolve hostname git-annex-volesprit.lot-of-stuff.info-moi_22_biblioth%c3%a8que.20calibre: Name or service not known
+ssh: Could not resolve hostname git-annex-toubib.lot-of-stuff.info-moi_22_biblioth%c3%a8que.20calibre: Name or service not known
+ssh: Could not resolve hostname git-annex-volesprit.lot-of-stuff.info-moi_22_biblioth%c3%a8que.20calibre: Name or service not known
+ssh: Could not resolve hostname git-annex-toubib.lot-of-stuff.info-moi_22_biblioth%c3%a8que.20calibre: Name or service not known
+sssh: Could not resolve hostname git-annex-toubib.lot-of-stuff.info-moi_22_biblioth%c3%a8que.20calibre: Name or service not known
+ssh: Could not resolve hostname git-annex-volesprit.lot-of-stuff.info-moi_22_biblioth%c3%a8que.20calibre: Name or service not known
+ssh: Could not resolve hostname git-annex-toubib.lot-of-stuff.info-moi_22_biblioth%c3%a8que.20calibre: Name or service not known
+ssh: Could not resolve hostname git-annex-volesprit.lot-of-stuff.info-moi_22_biblioth%c3%a8que.20calibre: Name or service not known
+ssh: Could not resolve hostname git-annex-toubib.lot-of-stuff.info-moi_22_biblioth%c3%a8que.2ssh: Could not resolve hostname git-annex-volesprit.lot-of-stuff.info-m
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Adding remote that use only ascii letter work realy well with the webapp. 
