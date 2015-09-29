@@ -1,0 +1,84 @@
+[[!comment format=mdwn
+ username="bgilbert@a0c64716cf22216de5eeb15a5ca4f009164c8fb3"
+ nickname="bgilbert"
+ subject="comment 2"
+ date="2015-09-27T01:00:46Z"
+ content="""
+It does work now with manually-created buckets.  It still doesn't work when the bucket is created automatically:
+
+    $ git annex -d initremote nearline type=S3 encryption=none host=storage.googleapis.com storageclass=NEARLINE
+    [2015-09-26 19:21:43.877399] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+    [2015-09-26 19:21:43.888972] process done ExitSuccess
+    [2015-09-26 19:21:43.889496] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2015-09-26 19:21:43.894184] process done ExitSuccess
+    [2015-09-26 19:21:43.895521] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..113c78849a7fcb8c834e03feac3c492aaa58d8e5\",\"-n1\",\"--pretty=%H\"]
+    [2015-09-26 19:21:43.901039] process done ExitSuccess
+    [2015-09-26 19:21:43.902895] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+    initremote nearline (checking bucket...) [2015-09-26 19:21:43.912757] String to sign: \"GET\n\n\nSat, 26 Sep 2015 23:21:43 GMT\n/nearline-38b55d4f-fe3f-4b7a-a4b2-ad22d29ad460/annex-uuid\"
+    [2015-09-26 19:21:43.914566] Host: \"nearline-38b55d4f-fe3f-4b7a-a4b2-ad22d29ad460.storage.googleapis.com\"
+    [2015-09-26 19:21:43.916021] Path: \"/annex-uuid\"
+    [2015-09-26 19:21:43.916716] Query string: \"\"
+    [2015-09-26 19:21:44.161168] Response status: Status {statusCode = 404, statusMessage = \"Not Found\"}
+    [2015-09-26 19:21:44.162829] Response header 'X-GUploader-UploadID': '[...]'
+    [2015-09-26 19:21:44.165422] Response header 'Content-Type': 'application/xml; charset=UTF-8'
+    [2015-09-26 19:21:44.16679] Response header 'Content-Length': '133'
+    [2015-09-26 19:21:44.167806] Response header 'Date': 'Sat, 26 Sep 2015 23:21:44 GMT'
+    [2015-09-26 19:21:44.169038] Response header 'Expires': 'Sat, 26 Sep 2015 23:21:44 GMT'
+    [2015-09-26 19:21:44.170508] Response header 'Cache-Control': 'private, max-age=0'
+    [2015-09-26 19:21:44.171829] Response header 'Server': 'UploadServer'
+    [2015-09-26 19:21:44.172773] Response metadata: S3: request ID=<none>, x-amz-id-2=<none>
+    [2015-09-26 19:21:44.173874] String to sign: \"GET\n\n\nSat, 26 Sep 2015 23:21:44 GMT\n/nearline-38b55d4f-fe3f-4b7a-a4b2-ad22d29ad460/\"
+    [2015-09-26 19:21:44.175243] Host: \"nearline-38b55d4f-fe3f-4b7a-a4b2-ad22d29ad460.storage.googleapis.com\"
+    [2015-09-26 19:21:44.176297] Path: \"/\"
+    [2015-09-26 19:21:44.176719] Query string: \"\"
+    [2015-09-26 19:21:44.316739] Response status: Status {statusCode = 404, statusMessage = \"Not Found\"}
+    [2015-09-26 19:21:44.318835] Response header 'X-GUploader-UploadID': '[...]'
+    [2015-09-26 19:21:44.322411] Response header 'Content-Type': 'application/xml; charset=UTF-8'
+    [2015-09-26 19:21:44.324451] Response header 'Content-Length': '133'
+    [2015-09-26 19:21:44.326001] Response header 'Date': 'Sat, 26 Sep 2015 23:21:44 GMT'
+    [2015-09-26 19:21:44.327709] Response header 'Expires': 'Sat, 26 Sep 2015 23:21:44 GMT'
+    [2015-09-26 19:21:44.329293] Response header 'Cache-Control': 'private, max-age=0'
+    [2015-09-26 19:21:44.331073] Response header 'Server': 'UploadServer'
+    [2015-09-26 19:21:44.332693] Response metadata: S3: request ID=<none>, x-amz-id-2=<none>
+    (creating bucket in US...) [2015-09-26 19:21:44.334384] String to sign: \"PUT\n\n\nSat, 26 Sep 2015 23:21:44 GMT\n/nearline-38b55d4f-fe3f-4b7a-a4b2-ad22d29ad460/\"
+    [2015-09-26 19:21:44.336832] Host: \"nearline-38b55d4f-fe3f-4b7a-a4b2-ad22d29ad460.storage.googleapis.com\"
+    [2015-09-26 19:21:44.338583] Path: \"/\"
+    [2015-09-26 19:21:44.339326] Query string: \"\"
+    [2015-09-26 19:21:50.024323] Response status: Status {statusCode = 200, statusMessage = \"OK\"}
+    [2015-09-26 19:21:50.02519] Response header 'X-GUploader-UploadID': '[...]'
+    [2015-09-26 19:21:50.026329] Response header 'x-goog-metageneration': '1'
+    [2015-09-26 19:21:50.026902] Response header 'Vary': 'Origin'
+    [2015-09-26 19:21:50.027376] Response header 'Content-Length': '0'
+    [2015-09-26 19:21:50.027993] Response header 'Date': 'Sat, 26 Sep 2015 23:21:49 GMT'
+    [2015-09-26 19:21:50.028587] Response header 'Server': 'UploadServer'
+    [2015-09-26 19:21:50.029113] Response header 'Content-Type': 'text/html; charset=UTF-8'
+    [2015-09-26 19:21:50.029772] Response metadata: S3: request ID=<none>, x-amz-id-2=<none>
+    [2015-09-26 19:21:50.030493] String to sign: \"GET\n\n\nSat, 26 Sep 2015 23:21:50 GMT\n/nearline-38b55d4f-fe3f-4b7a-a4b2-ad22d29ad460/annex-uuid\"
+    [2015-09-26 19:21:50.031606] Host: \"nearline-38b55d4f-fe3f-4b7a-a4b2-ad22d29ad460.storage.googleapis.com\"
+    [2015-09-26 19:21:50.032369] Path: \"/annex-uuid\"
+    [2015-09-26 19:21:50.032786] Query string: \"\"
+    [2015-09-26 19:21:50.280518] Response status: Status {statusCode = 404, statusMessage = \"Not Found\"}
+    [2015-09-26 19:21:50.280995] Response header 'X-GUploader-UploadID': '[...]'
+    [2015-09-26 19:21:50.281575] Response header 'Content-Type': 'application/xml; charset=UTF-8'
+    [2015-09-26 19:21:50.28201] Response header 'Content-Length': '127'
+    [2015-09-26 19:21:50.282269] Response header 'Date': 'Sat, 26 Sep 2015 23:21:50 GMT'
+    [2015-09-26 19:21:50.282555] Response header 'Expires': 'Sat, 26 Sep 2015 23:21:50 GMT'
+    [2015-09-26 19:21:50.282919] Response header 'Cache-Control': 'private, max-age=0'
+    [2015-09-26 19:21:50.283199] Response header 'Server': 'UploadServer'
+    [2015-09-26 19:21:50.283585] Response metadata: S3: request ID=<none>, x-amz-id-2=<none>
+    [2015-09-26 19:21:50.283998] String to sign: \"PUT\n\n\nSat, 26 Sep 2015 23:21:50 GMT\nx-amz-storage-class:NEARLINE\n/nearline-38b55d4f-fe3f-4b7a-a4b2-ad22d29ad460/annex-uuid\"
+    [2015-09-26 19:21:50.284663] Host: \"nearline-38b55d4f-fe3f-4b7a-a4b2-ad22d29ad460.storage.googleapis.com\"
+    [2015-09-26 19:21:50.28504] Path: \"/annex-uuid\"
+    [2015-09-26 19:21:50.285233] Query string: \"\"
+    [2015-09-26 19:21:50.285421] Body: \"38b55d4f-fe3f-4b7a-a4b2-ad22d29ad460\"
+    [2015-09-26 19:21:50.431435] Response status: Status {statusCode = 400, statusMessage = \"Bad Request\"}
+    [2015-09-26 19:21:50.431926] Response header 'X-GUploader-UploadID': '[...]'
+    [2015-09-26 19:21:50.432473] Response header 'Content-Type': 'application/xml; charset=UTF-8'
+    [2015-09-26 19:21:50.432797] Response header 'Content-Length': '117'
+    [2015-09-26 19:21:50.433033] Response header 'Vary': 'Origin'
+    [2015-09-26 19:21:50.433301] Response header 'Date': 'Sat, 26 Sep 2015 23:21:50 GMT'
+    [2015-09-26 19:21:50.433581] Response header 'Server': 'UploadServer'
+    [2015-09-26 19:21:50.433961] Response metadata: S3: request ID=<none>, x-amz-id-2=<none>
+    git-annex: S3Error {s3StatusCode = Status {statusCode = 400, statusMessage = \"Bad Request\"}, s3ErrorCode = \"InvalidArgument\", s3ErrorMessage = \"Invalid argument.\", s3ErrorResource = Nothing, s3ErrorHostId = Nothing, s3ErrorAccessKeyId = Nothing, s3ErrorStringToSign = Nothing, s3ErrorBucket = Nothing, s3ErrorEndpointRaw = Nothing, s3ErrorEndpoint = Nothing}
+
+"""]]

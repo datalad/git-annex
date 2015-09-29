@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="kalle@bdf75651b439b088e51f28f10f5a46ffcd2a704d"
+ nickname="kalle"
+ subject="importfeed template"
+ date="2015-09-28T19:52:16Z"
+ content="""
+You can use the `--template` flag and prefix the filename with the date. See [[/tips/downloading_podcasts]]. If you need very accurate modification times that won't work but should work in this case?
+"""]]

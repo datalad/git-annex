@@ -1,0 +1,38 @@
+### Please describe the problem.
+
+When I start Git Annex then there are several warnings. The app renders my phone basically unusable (two time my phone rebooted and several time I had to remove the battery because the phone didn't respond).
+
+It seems Git Annex uses all the available memory (one warning is that git-annex has text relocations and that this wastes memory.
+
+I've attached a screen shot of the error messages.
+
+
+### What steps will reproduce the problem?
+
+Starting Git Annex on my phone
+
+
+### What version of git-annex are you using? On what operating system?
+
+Git Annex: 5.20150927-gb506fb2
+Android: 5.0.2
+
+
+### Please provide any additional information below.
+
+My phone is low-end (it has only ~512MB memory for example) - but normally everything works more or less okay.
+
+If I use Chrome as the browser and start the webapp then Git Annex gets (it seems) killed quite often. It seems because there is not enough memory.
+
+If I use a browser with a small memory footprint then the webapp works only barely better - very unresponsive (but at least Git Annex isn't killed).
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Sorry, no, I'm just starting out with Git Annex :)
+
+But Git Annex looks amazing - exactly what I need! ;)
+
+Can I somehow help to find the problem?
+
+I'd really love to use Git Annex on my phone.
