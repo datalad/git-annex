@@ -1,4 +1,4 @@
-git-annex (5.20150917) UNRELEASED; urgency=medium
+git-annex (5.20150930) unstable; urgency=medium
 
   * Added new linux standalone "ancient" build to support kernels
     like 2.6.32.
@@ -18,7 +18,7 @@ git-annex (5.20150917) UNRELEASED; urgency=medium
   * status: Show added but not yet committed files.
   * Added stack.yaml to support easy builds from source with stack.
 
- -- Joey Hess <id@joeyh.name>  Wed, 16 Sep 2015 12:23:33 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 30 Sep 2015 14:31:52 -0400
 
 git-annex (5.20150916) unstable; urgency=medium
 
