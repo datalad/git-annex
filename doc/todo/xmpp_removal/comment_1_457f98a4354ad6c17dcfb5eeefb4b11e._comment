@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="dxld@02c834b220f9ffc0410d37263aa29d9373cc455b"
+ nickname="dxld"
+ subject="Fully p2p alternative to XMPP"
+ date="2015-10-01T17:22:44Z"
+ content="""
+It looks like no one else has suggested this yet so I guess I'll have to: [Tox](https://tox.chat/)
+
+Tox is pretty easy to build on all platforms (GNU/Linux, Mac and WinDOS). All the protocol relevant bits are implemented as a single C library (libtoxcore). It supports bulk file transfers and handles all the NAT hole punching nastiness internally AFAIK.
+
+Thoughts?
+
+"""]]
