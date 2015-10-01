@@ -22,7 +22,7 @@ backend :: Backend
 backend = Backend
 	{ name = "URL"
 	, getKey = const $ return Nothing
-	, fsckKey = Nothing
+	, verifyKeyContent = Nothing
 	, canUpgradeKey = Nothing
 	, fastMigrate = Nothing
 	-- The content of an url can change at any time, so URL keys are

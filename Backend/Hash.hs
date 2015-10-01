@@ -53,7 +53,7 @@ genBackend :: Hash -> Backend
 genBackend hash = Backend
 	{ name = hashName hash
 	, getKey = keyValue hash
-	, fsckKey = Just $ checkKeyChecksum hash
+	, verifyKeyContent = Just $ checkKeyChecksum hash
 	, canUpgradeKey = Just needsUpgrade
 	, fastMigrate = Just trivialMigrate
 	, isStableKey = const True

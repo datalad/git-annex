@@ -14,7 +14,7 @@ import qualified Remote
 import qualified Types.Remote as Remote
 import Types
 import Types.Key (key2file, keyBackendName, keySize)
-import Types.Backend (getKey, fsckKey)
+import Types.Backend (getKey, verifyKeyContent)
 import Types.KeySource
 import Annex.Content
 import Backend
@@ -156,9 +156,9 @@ test st r k =
 		(== Right b) <$> Remote.hasKey r k
 	fsck = case maybeLookupBackendName (keyBackendName k) of
 		Nothing -> return True
-		Just b -> case fsckKey b of
+		Just b -> case verifyKeyContent b of
 			Nothing -> return True
-			Just fscker -> fscker k (key2file k)
+			Just verifier -> verifier k (key2file k)
 	get = getViaTmp k $ \dest ->
 		Remote.retrieveKeyFile r k Nothing dest nullMeterUpdate
 	store = Remote.storeKey r k Nothing nullMeterUpdate

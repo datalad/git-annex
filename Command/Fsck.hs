@@ -349,12 +349,15 @@ checkBackendOr :: (Key -> Annex String) -> Backend -> Key -> FilePath -> Annex B
 checkBackendOr bad backend key file =
 	checkBackendOr' bad backend key file (return True)
 
+-- The postcheck action is run after the content is verified,
+-- in order to detect situations where the file is changed while being
+-- verified (particularly in direct mode).
 checkBackendOr' :: (Key -> Annex String) -> Backend -> Key -> FilePath -> Annex Bool -> Annex Bool
 checkBackendOr' bad backend key file postcheck =
-	case Types.Backend.fsckKey backend of
+	case Types.Backend.verifyKeyContent backend of
 		Nothing -> return True
-		Just a -> do
-			ok <- a key file
+		Just verifier -> do
+			ok <- verifier key file
 			ifM postcheck
 				( do
 					unless ok $ do

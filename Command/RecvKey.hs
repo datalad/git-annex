@@ -70,13 +70,13 @@ start key = fieldTransfer Download key $ \_p ->
 				Nothing -> do
 					warning "recvkey: received key from direct mode repository using unknown backend; cannot check; discarding"
 					return False
-				Just backend -> maybe (return True) runfsck
-					(Types.Backend.fsckKey backend)
+				Just backend -> maybe (return True) runverify
+					(Types.Backend.verifyKeyContent backend)
 			else do
 				warning "recvkey: received key with wrong size; discarding"
 				return False
 	  where
-		runfsck check = ifM (check key tmp)
+		runverify check = ifM (check key tmp)
 			( return True
 			, do
 				warning "recvkey: received key from direct mode repository seems to have changed as it was transferred; discarding"

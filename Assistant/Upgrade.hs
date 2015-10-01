@@ -104,7 +104,7 @@ startDistributionDownload d = go =<< liftIO . newVersionLocation d =<< liftIO ol
 {- Called once the download is done.
  - Passed an action that can be used to clean up the downloaded file.
  -
- - Fsck the key to verify the download.
+ - Verifies the content of the downloaded key.
  -}
 distributionDownloadComplete :: GitAnnexDistribution -> FilePath -> Assistant () -> Transfer -> Assistant ()
 distributionDownloadComplete d dest cleanup t 
@@ -117,9 +117,9 @@ distributionDownloadComplete d dest cleanup t
 	k = distributionKey d
 	fsckit f = case Backend.maybeLookupBackendName (Types.Key.keyBackendName k) of
 		Nothing -> return $ Just f
-		Just b -> case Types.Backend.fsckKey b of
+		Just b -> case Types.Backend.verifyKeyContent b of
 			Nothing -> return $ Just f
-			Just a -> ifM (a k f)
+			Just verifier -> ifM (verifier k f)
 				( return $ Just f
 				, return Nothing
 				)
