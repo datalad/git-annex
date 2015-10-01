@@ -61,6 +61,7 @@ data GitConfig = GitConfig
 	, annexHardLink :: Bool
 	, annexDifferences :: Differences
 	, annexUsedRefSpec :: Maybe RefSpec
+	, annexVerify :: Bool
 	, coreSymlinks :: Bool
 	, coreSharedRepository :: SharedRepository
 	, gcryptId :: Maybe String
@@ -103,6 +104,7 @@ extractGitConfig r = GitConfig
 	, annexDifferences = getDifferences r
 	, annexUsedRefSpec = either (const Nothing) Just . parseRefSpec 
 		=<< getmaybe (annex "used-refspec")
+	, annexVerify = getbool (annex "verify") True
 	, coreSymlinks = getbool "core.symlinks" True
 	, coreSharedRepository = getSharedRepository r
 	, gcryptId = getmaybe "core.gcrypt-id"
@@ -129,6 +131,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexIgnore :: Bool
 	, remoteAnnexSync :: Bool
 	, remoteAnnexReadOnly :: Bool
+	, remoteAnnexVerify :: Bool
 	, remoteAnnexTrustLevel :: Maybe String
 	, remoteAnnexStartCommand :: Maybe String
 	, remoteAnnexStopCommand :: Maybe String
@@ -164,6 +167,7 @@ extractRemoteGitConfig r remotename = RemoteGitConfig
 	, remoteAnnexIgnore = getbool "ignore" False
 	, remoteAnnexSync = getbool "sync" True
 	, remoteAnnexReadOnly = getbool "readonly" False
+	, remoteAnnexVerify = getbool "verify" True
 	, remoteAnnexTrustLevel = notempty $ getmaybe "trustlevel"
 	, remoteAnnexStartCommand = notempty $ getmaybe "start-command"
 	, remoteAnnexStopCommand = notempty $ getmaybe "stop-command"

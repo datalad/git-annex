@@ -11,8 +11,6 @@ import Common.Annex
 import Command
 import Logs.Location
 import Annex.Content
-import qualified Command.Fsck
-import qualified Backend
 
 cmd :: Command
 cmd = command "reinject" SectionUtility 
@@ -36,29 +34,19 @@ start (src:dest:[])
 start _ = error "specify a src file and a dest file"
 
 perform :: FilePath -> FilePath -> Key -> CommandPerform
-perform src dest key = do
-	{- Check the content before accepting it. -}
-	v <- Backend.getBackend dest key
-	case v of
-		Nothing -> stop
-		Just backend ->
-			ifM (Command.Fsck.checkKeySizeOr reject key src
-				<&&> Command.Fsck.checkBackendOr reject backend key src)
-				( do
-					unlessM move $ error "mv failed!"
-					next $ cleanup key
-				, error "not reinjecting"
-				)
+perform src _dest key = ifM move
+	( next $ cleanup key
+	, error "failed"
+	)
   where
-	-- the file might be on a different filesystem,
+	-- The file might be on a different filesystem,
 	-- so moveFile is used rather than simply calling
-	-- moveToObjectDir; disk space is also
-	-- checked this way.
-	move = getViaTmp key $ \tmp ->
+	-- moveToObjectDir; disk space is also checked this way,
+	-- and the file's content is verified to match the key.
+	move = getViaTmp DefaultVerify key $ \tmp ->
 		liftIO $ catchBoolIO $ do
 			moveFile src tmp
 			return True
-	reject = const $ return "wrong file?"
 
 cleanup :: Key -> CommandCleanup
 cleanup key = do

@@ -159,7 +159,7 @@ test st r k =
 		Just b -> case verifyKeyContent b of
 			Nothing -> return True
 			Just verifier -> verifier k (key2file k)
-	get = getViaTmp k $ \dest ->
+	get = getViaTmp (RemoteVerify r) k $ \dest ->
 		Remote.retrieveKeyFile r k Nothing dest nullMeterUpdate
 	store = Remote.storeKey r k Nothing nullMeterUpdate
 	remove = Remote.removeKey r k
@@ -173,10 +173,10 @@ testUnavailable st r k =
 	, check (`notElem` [Right True, Right False]) "checkPresent" $
 		Remote.checkPresent r k
 	, check (== Right False) "retrieveKeyFile" $
-		getViaTmp k $ \dest ->
+		getViaTmp (RemoteVerify r) k $ \dest ->
 			Remote.retrieveKeyFile r k Nothing dest nullMeterUpdate
 	, check (== Right False) "retrieveKeyFileCheap" $
-		getViaTmp k $ \dest ->
+		getViaTmp (RemoteVerify r) k $ \dest ->
 			Remote.retrieveKeyFileCheap r k Nothing dest
 	]
   where

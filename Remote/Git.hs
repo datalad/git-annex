@@ -502,7 +502,7 @@ copyToRemote' r key file p
 				ensureInitialized
 				runTransfer (Transfer Download u key) file noRetry noObserver $ const $
 					Annex.Content.saveState True `after`
-						Annex.Content.getViaTmp key
+						Annex.Content.getViaTmp (Annex.Content.RemoteVerify r) key
 							(\dest -> mkCopier hardlink params object dest >>= \a -> a p <&&> liftIO checksuccessio)
 			)
 

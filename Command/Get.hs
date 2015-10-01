@@ -68,17 +68,16 @@ start' expensivecheck from key afile = stopUnless (not <$> inAnnex key) $
 		next a
 
 perform :: Key -> AssociatedFile -> CommandPerform
-perform key afile = stopUnless (getViaTmp key $ getKeyFile key afile) $
+perform key afile = stopUnless (getKey key afile) $
 	next $ return True -- no cleanup needed
 
 {- Try to find a copy of the file in one of the remotes,
  - and copy it to here. -}
-getKeyFile :: Key -> AssociatedFile -> FilePath -> Annex Bool
-getKeyFile key afile dest = getKeyFile' key afile dest
-	=<< Remote.keyPossibilities key
+getKey :: Key -> AssociatedFile -> Annex Bool
+getKey key afile = getKey' key afile =<< Remote.keyPossibilities key
 
-getKeyFile' :: Key -> AssociatedFile -> FilePath -> [Remote] -> Annex Bool
-getKeyFile' key afile dest = dispatch
+getKey' :: Key -> AssociatedFile -> [Remote] -> Annex Bool
+getKey' key afile = dispatch
   where
 	dispatch [] = do
 		showNote "not available"
@@ -102,6 +101,9 @@ getKeyFile' key afile dest = dispatch
 		| Remote.hasKeyCheap r =
 			either (const False) id <$> Remote.hasKey r key
 		| otherwise = return True
-	docopy r = download (Remote.uuid r) key afile noRetry noObserver $ \p -> do
-		showAction $ "from " ++ Remote.name r
-		Remote.retrieveKeyFile r key afile dest p
+	docopy r witness = getViaTmp (RemoteVerify r) key $ \dest ->
+		download (Remote.uuid r) key afile noRetry noObserver 
+			(\p -> do
+				showAction $ "from " ++ Remote.name r
+				Remote.retrieveKeyFile r key afile dest p
+			) witness

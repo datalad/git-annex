@@ -1026,6 +1026,12 @@ Here are all the supported configuration settings.
   This both prevents git-annex sync from pushing changes, and prevents
   storing or removing files from read-only remote.
 
+* `remote.<name>.annex-verify`, `annex.verify`
+
+  By default, git-annex will verify the checksums of objects downloaded
+  from remotes. If you trust a remote and don't want the overhead
+  of these checksums, you can set this to `false`.
+
 * `remote.<name>.annexUrl`
 
   Can be used to specify a different url than the regular `remote.<name>.url`

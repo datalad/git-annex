@@ -166,7 +166,8 @@ fromPerform src move key afile = ifM (inAnnex key)
 	go = notifyTransfer Download afile $ 
 		download (Remote.uuid src) key afile noRetry noObserver $ \p -> do
 			showAction $ "from " ++ Remote.name src
-			getViaTmp key $ \t -> Remote.retrieveKeyFile src key afile t p
+			getViaTmp (RemoteVerify src) key $ \t ->
+				Remote.retrieveKeyFile src key afile t p
 	dispatch _ False = stop -- failed
 	dispatch False True = next $ return True -- copy complete
 	dispatch True True = do -- finish moving

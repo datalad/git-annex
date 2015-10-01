@@ -37,7 +37,7 @@ import qualified Remote.Git
 import Config
 import Annex.Wanted
 import Annex.Content
-import Command.Get (getKeyFile')
+import Command.Get (getKey')
 import qualified Command.Move
 import Logs.Location
 import Annex.Drop
@@ -476,7 +476,7 @@ syncFile ebloom rs af k = do
 		)
 	get have = includeCommandAction $ do
 		showStart' "get" k af
-		next $ next $ getViaTmp k $ \dest -> getKeyFile' k af dest have
+		next $ next $ getKey' k af have
 
 	wantput r
 		| Remote.readonly r || remoteAnnexReadOnly (Remote.gitconfig r) = return False

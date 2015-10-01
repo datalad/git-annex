@@ -1,3 +1,17 @@
+git-annex (5.20150931) UNRELEASED; urgency=medium
+
+  * Do verification of checksums of annex objects downloaded from remotes.
+  * When annex objects are received into git repositories from other git
+    repos, their checksums are verified then too.
+  * To get the old, faster, behavior of not verifying checksums, set
+    annex.verify=false, or remote.<name>.annex-verify=false.
+  * setkey, rekey: These commands also now verify that the provided file
+    matches the key, unless annex.verify=false.
+  * reinject: Already verified content; this can now be disabled by
+    setting annex.verify=false.
+
+ -- Joey Hess <id@joeyh.name>  Thu, 01 Oct 2015 12:42:56 -0400
+
 git-annex (5.20150930) unstable; urgency=medium
 
   * Added new linux standalone "ancient" build to support kernels
