@@ -247,7 +247,7 @@ addUrlFileQuvi relaxed quviurl videourl file = do
 			 - it later. -}
 			urlinfo <- Url.withUrlOptions (Url.getUrlInfo videourl)
 			let sizedkey = addSizeUrlKey urlinfo key
-			prepGetViaTmpChecked sizedkey Nothing $ do
+			checkDiskSpaceToGet sizedkey Nothing $ do
 				tmp <- fromRepo $ gitAnnexTmpObjectLocation key
 				showOutput
 				ok <- Transfer.notifyTransfer Transfer.Download (Just file) $
@@ -305,7 +305,7 @@ downloadWeb url urlinfo file = do
  - stable. -}
 downloadWith :: (FilePath -> MeterUpdate -> Annex Bool) -> Key -> UUID -> URLString -> FilePath -> Annex (Maybe Key)
 downloadWith downloader dummykey u url file =
-	prepGetViaTmpChecked dummykey Nothing $ do
+	checkDiskSpaceToGet dummykey Nothing $ do
 		tmp <- fromRepo $ gitAnnexTmpObjectLocation dummykey
 		ifM (runtransfer tmp)
 			( do

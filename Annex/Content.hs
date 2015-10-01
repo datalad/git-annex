@@ -14,8 +14,8 @@ module Annex.Content (
 	inAnnexCheck,
 	lockContent,
 	getViaTmp,
-	getViaTmpUnchecked,
-	prepGetViaTmpChecked,
+	getViaTmp',
+	checkDiskSpaceToGet,
 	prepTmp,
 	withTmp,
 	checkDiskSpace,
@@ -211,18 +211,17 @@ lockContent key a = do
 		maybe noop cleanuplockfile mlockfile
 #endif
 
-{- Runs an action, passing it a temporary filename to get,
- - and if the action succeeds, verifies the file matches the key and 
- - moves the file into the annex as a key's content. -}
+{- Runs an action, passing it the temp file to get,
+ - and if the action succeeds, verifies the file matches
+ - the key and moves the file into the annex as a key's content. -}
 getViaTmp :: Key -> (FilePath -> Annex Bool) -> Annex Bool
-getViaTmp key action = prepGetViaTmpChecked key False $
-	getViaTmpUnchecked key action
+getViaTmp key action = checkDiskSpaceToGet key False $ getViaTmp' key action
 
 {- Like getViaTmp, but does not check that there is enough disk space
  - for the incoming key. For use when the key content is already on disk
  - and not being copied into place. -}
-getViaTmpUnchecked :: Key -> (FilePath -> Annex Bool) -> Annex Bool
-getViaTmpUnchecked key action = do
+getViaTmp' :: Key -> (FilePath -> Annex Bool) -> Annex Bool
+getViaTmp' key action = do
 	tmpfile <- prepTmp key
 	ifM (action tmpfile)
 		( do
@@ -234,16 +233,16 @@ getViaTmpUnchecked key action = do
 		, return False
 		)
 
-{- Prepares to download a key via a tmp file, and checks that there is
- - enough free disk space.
+{- Checks if there is enough free disk space to download a key
+ - to its temp file.
  -
  - When the temp file already exists, count the space it is using as
  - free, since the download will overwrite it or resume.
  -
  - Wen there's enough free space, runs the download action.
  -}
-prepGetViaTmpChecked :: Key -> a -> Annex a -> Annex a
-prepGetViaTmpChecked key unabletoget getkey = do
+checkDiskSpaceToGet :: Key -> a -> Annex a -> Annex a
+checkDiskSpaceToGet key unabletoget getkey = do
 	tmp <- fromRepo $ gitAnnexTmpObjectLocation key
 
 	e <- liftIO $ doesFileExist tmp
