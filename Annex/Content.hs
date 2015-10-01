@@ -14,7 +14,6 @@ module Annex.Content (
 	inAnnexCheck,
 	lockContent,
 	getViaTmp,
-	getViaTmpChecked,
 	getViaTmpUnchecked,
 	prepGetViaTmpChecked,
 	prepTmp,
@@ -213,21 +212,27 @@ lockContent key a = do
 #endif
 
 {- Runs an action, passing it a temporary filename to get,
- - and if the action succeeds, moves the temp file into 
- - the annex as a key's content. -}
+ - and if the action succeeds, verifies the file matches the key and 
+ - moves the file into the annex as a key's content. -}
 getViaTmp :: Key -> (FilePath -> Annex Bool) -> Annex Bool
-getViaTmp = getViaTmpChecked (return True)
+getViaTmp key action = prepGetViaTmpChecked key False $
+	getViaTmpUnchecked key action
 
 {- Like getViaTmp, but does not check that there is enough disk space
  - for the incoming key. For use when the key content is already on disk
  - and not being copied into place. -}
 getViaTmpUnchecked :: Key -> (FilePath -> Annex Bool) -> Annex Bool
-getViaTmpUnchecked = finishGetViaTmp (return True)
-
-getViaTmpChecked :: Annex Bool -> Key -> (FilePath -> Annex Bool) -> Annex Bool
-getViaTmpChecked check key action = 
-	prepGetViaTmpChecked key False $
-		finishGetViaTmp check key action
+getViaTmpUnchecked key action = do
+	tmpfile <- prepTmp key
+	ifM (action tmpfile)
+		( do
+			moveAnnex key tmpfile
+			logStatus key InfoPresent
+			return True
+		-- the tmp file is left behind, in case caller wants
+		-- to resume its transfer
+		, return False
+		)
 
 {- Prepares to download a key via a tmp file, and checks that there is
  - enough free disk space.
@@ -251,19 +256,6 @@ prepGetViaTmpChecked key unabletoget getkey = do
 			when e $ thawContent tmp
 			getkey
 		, return unabletoget
-		)
-
-finishGetViaTmp :: Annex Bool -> Key -> (FilePath -> Annex Bool) -> Annex Bool
-finishGetViaTmp check key action = do
-	tmpfile <- prepTmp key
-	ifM (action tmpfile <&&> check)
-		( do
-			moveAnnex key tmpfile
-			logStatus key InfoPresent
-			return True
-		-- the tmp file is left behind, in case caller wants
-		-- to resume its transfer
-		, return False
 		)
 
 prepTmp :: Key -> Annex FilePath

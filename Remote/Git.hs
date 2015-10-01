@@ -502,8 +502,8 @@ copyToRemote' r key file p
 				ensureInitialized
 				runTransfer (Transfer Download u key) file noRetry noObserver $ const $
 					Annex.Content.saveState True `after`
-						Annex.Content.getViaTmpChecked (liftIO checksuccessio) key
-							(\dest -> mkCopier hardlink params object dest >>= \a -> a p)
+						Annex.Content.getViaTmp key
+							(\dest -> mkCopier hardlink params object dest >>= \a -> a p <&&> liftIO checksuccessio)
 			)
 
 fsckOnRemote :: Git.Repo -> [CommandParam] -> Annex (IO Bool)
