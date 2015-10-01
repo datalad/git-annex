@@ -21,7 +21,7 @@ import qualified Data.ByteString as S
 import qualified Data.Map as M
 import Data.Char
 import Network.Socket (HostName)
-import Network.HTTP.Conduit (Manager, newManager, closeManager)
+import Network.HTTP.Conduit (Manager, newManager)
 import Network.HTTP.Client (defaultManagerSettings, managerResponseTimeout, responseStatus, responseBody, RequestBody(..))
 import Network.HTTP.Types
 import Control.Monad.Trans.Resource
@@ -48,7 +48,7 @@ import Utility.Metered
 import Utility.DataUnits
 import Annex.Content
 import Annex.Url (withUrlOptions)
-import Utility.Url (checkBoth)
+import Utility.Url (checkBoth, closeManager)
 
 type BucketName = String
 
