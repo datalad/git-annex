@@ -326,3 +326,5 @@ git-annex-5.20150930
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Building without Assistant and Webapps flags work.
+
+> Fixed building without S3. [[done]] --[[Joey]]

@@ -9,6 +9,7 @@ git-annex (5.20150931) UNRELEASED; urgency=medium
     matches the key, unless annex.verify=false.
   * reinject: Already verified content; this can now be disabled by
     setting annex.verify=false.
+  * Allow building with S3 disabled again.
 
  -- Joey Hess <id@joeyh.name>  Thu, 01 Oct 2015 12:42:56 -0400
 
