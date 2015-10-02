@@ -13,6 +13,8 @@ module Types.Remote
 	, RemoteTypeA(..)
 	, RemoteA(..)
 	, Availability(..)
+	, Verification(..)
+	, unVerified
 	)
 	where
 
@@ -64,9 +66,9 @@ data RemoteA a = Remote {
 	-- all of its contents have been transferred.
 	storeKey :: Key -> AssociatedFile -> MeterUpdate -> a Bool,
 	-- Retrieves a key's contents to a file.
-	-- (The MeterUpdate does not need to be used if it retrieves
-	-- directly to the file, and not to an intermediate file.)
-	retrieveKeyFile :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> a Bool,
+	-- (The MeterUpdate does not need to be used if it writes
+	-- sequentially to the file.)
+	retrieveKeyFile :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> a (Bool, Verification),
 	-- Retrieves a key's contents to a tmp file, if it can be done cheaply.
 	-- It's ok to create a symlink or hardlink.
 	retrieveKeyFileCheap :: Key -> AssociatedFile -> FilePath -> a Bool,
@@ -122,3 +124,12 @@ instance Eq (RemoteA a) where
 
 instance Ord (RemoteA a) where
 	compare = comparing uuid
+
+-- Use Verified when the content of a key is verified as part of a
+-- transfer, and so a separate verification step is not needed.
+data Verification = UnVerified | Verified
+
+unVerified :: Monad m => m Bool -> m (Bool, Verification)
+unVerified a = do
+	ok <- a
+	return (ok, UnVerified)

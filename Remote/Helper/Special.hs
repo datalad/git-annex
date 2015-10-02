@@ -122,8 +122,8 @@ byteRetriever a k _m callback = a k (callback . ByteContent)
  -}
 storeKeyDummy :: Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 storeKeyDummy _ _ _ = return False
-retreiveKeyFileDummy :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
-retreiveKeyFileDummy _ _ _ _ = return False
+retreiveKeyFileDummy :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
+retreiveKeyFileDummy _ _ _ _ = unVerified (return False)
 removeKeyDummy :: Key -> Annex Bool
 removeKeyDummy _ = return False
 checkPresentDummy :: Key -> Annex Bool
@@ -156,7 +156,7 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
   where
 	encr = baser
 		{ storeKey = \k f p -> cip >>= storeKeyGen k f p
-		, retrieveKeyFile = \k f d p -> cip >>= retrieveKeyFileGen k f d p
+		, retrieveKeyFile = \k f d p -> cip >>= unVerified . retrieveKeyFileGen k f d p
 		, retrieveKeyFileCheap = \k f d -> cip >>= maybe
 			(retrieveKeyFileCheap baser k f d)
 			-- retrieval of encrypted keys is never cheap

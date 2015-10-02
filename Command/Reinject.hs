@@ -43,7 +43,7 @@ perform src _dest key = ifM move
 	-- so moveFile is used rather than simply calling
 	-- moveToObjectDir; disk space is also checked this way,
 	-- and the file's content is verified to match the key.
-	move = getViaTmp DefaultVerify key $ \tmp ->
+	move = getViaTmp DefaultVerify key $ \tmp -> unVerified $
 		liftIO $ catchBoolIO $ do
 			moveFile src tmp
 			return True

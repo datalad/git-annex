@@ -40,7 +40,7 @@ start key = fieldTransfer Download key $ \_p -> do
 		, return False
 		)
   where
-	go tmp = do
+	go tmp = unVerified $ do
 		opts <- filterRsyncSafeOptions . maybe [] words
 			<$> getField "RsyncOptions"
 		liftIO $ rsyncServerReceive (map Param opts) tmp

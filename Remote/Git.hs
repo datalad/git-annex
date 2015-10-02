@@ -359,13 +359,13 @@ dropKey r key
 	| otherwise = commitOnCleanup r $ Ssh.dropKey (repo r) key
 
 {- Tries to copy a key's content from a remote's annex to a file. -}
-copyFromRemote :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
+copyFromRemote :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
 copyFromRemote r key file dest p = parallelMetered (Just p) key file $
 	copyFromRemote' r key file dest
 
-copyFromRemote' :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
+copyFromRemote' :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
 copyFromRemote' r key file dest meterupdate
-	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) (return False) $ do
+	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) (unVerified (return False)) $ do
 		params <- Ssh.rsyncParams r Download
 		u <- getUUID
 		hardlink <- wantHardLink
@@ -374,18 +374,17 @@ copyFromRemote' r key file dest meterupdate
 			ensureInitialized
 			v <- Annex.Content.prepSendAnnex key
 			case v of
-				Nothing -> return False
+				Nothing -> return (False, UnVerified)
 				Just (object, checksuccess) -> do
 					copier <- mkCopier hardlink params
 					runTransfer (Transfer Download u key)
 						file noRetry noObserver 
-						(callCopier copier object dest)
-						<&&> checksuccess
-	| Git.repoIsSsh (repo r) = feedprogressback $ \feeder -> do
+						(\p -> copier object dest p checksuccess)
+	| Git.repoIsSsh (repo r) = unVerified $ feedprogressback $ \feeder -> do
 		direct <- isDirect
 		Ssh.rsyncHelper (Just feeder) 
 			=<< Ssh.rsyncParamsRemote direct r Download key dest file
-	| Git.repoIsHttp (repo r) = Annex.Content.downloadUrl (keyUrls r key) dest
+	| Git.repoIsHttp (repo r) = unVerified $ Annex.Content.downloadUrl (keyUrls r key) dest
 	| otherwise = error "copying from non-ssh, non-http remote not supported"
   where
 	{- Feed local rsync's progress info back to the remote,
@@ -462,8 +461,8 @@ copyFromRemoteCheap r key af file
 			)
 	| Git.repoIsSsh (repo r) =
 		ifM (Annex.Content.preseedTmp key file)
-			( parallelMetered Nothing key af $
-				copyFromRemote' r key af file
+			( fst <$> parallelMetered Nothing key af
+				(copyFromRemote' r key af file)
 			, return False
 			)
 	| otherwise = return False
@@ -502,13 +501,11 @@ copyToRemote' r key file p
 			, do
 				ensureInitialized
 				copier <- mkCopier hardlink params
-				let verify = if isHardLinker copier
-					then Annex.Content.NoVerify
-					else Annex.Content.RemoteVerify r
+				let verify = Annex.Content.RemoteVerify r
 				runTransfer (Transfer Download u key) file noRetry noObserver $ const $
 					Annex.Content.saveState True `after`
 						Annex.Content.getViaTmp verify key
-							(\dest -> callCopier copier object dest p <&&> liftIO checksuccessio)
+							(\dest -> copier object dest p (liftIO checksuccessio))
 			)
 
 fsckOnRemote :: Git.Repo -> [CommandParam] -> Annex (IO Bool)
@@ -620,32 +617,34 @@ commitOnCleanup r a = go `after` a
 wantHardLink :: Annex Bool
 wantHardLink = (annexHardLink <$> Annex.getGitConfig) <&&> (not <$> isDirect)
 
-data Copier
-	= Copier (FilePath -> FilePath -> MeterUpdate -> Annex Bool) 
-	| HardLinker (FilePath -> FilePath -> MeterUpdate -> Annex Bool)
-
-isHardLinker :: Copier -> Bool
-isHardLinker (Copier _) = False
-isHardLinker (HardLinker _) = True
-
-callCopier :: Copier -> FilePath -> FilePath -> MeterUpdate -> Annex Bool
-callCopier (Copier a) = a
-callCopier (HardLinker a) = a
-
+-- Copies from src to dest, updating a meter. If the copy finishes
+-- successfully, calls a final check action, which must also success, or
+-- returns false.
+--
 -- If either the remote or local repository wants to use hard links,
--- the copier will do so, falling back to copying.
+-- the copier will do so (falling back to copying if a hard link cannot be
+-- made).
+--
+-- When a hard link is created, returns Verified; the repo being linked
+-- from is implicitly trusted, so no expensive verification needs to be
+-- done.
+type Copier = FilePath -> FilePath -> MeterUpdate -> Annex Bool -> Annex (Bool, Verification)
+
 mkCopier :: Bool -> [CommandParam] -> Annex Copier
 mkCopier remotewanthardlink rsyncparams = do
-	let copier = rsyncOrCopyFile rsyncparams
+	let copier = \src dest p check -> unVerified $
+		rsyncOrCopyFile rsyncparams src dest p <&&> check
 #ifndef mingw32_HOST_OS
 	localwanthardlink <- wantHardLink
-	let linker = \object dest -> createLink object dest >> return True
+	let linker = \src dest -> createLink src dest >> return True
 	ifM (pure (remotewanthardlink || localwanthardlink) <&&> not <$> isDirect)
-		( return $ HardLinker $ \object dest p ->
-			liftIO (catchBoolIO (linker object dest))
-				<||> copier object dest p
-		, return $ Copier copier
+		( return $ \src dest p check ->
+			ifM (liftIO (catchBoolIO (linker src dest)))
+				( return (True, Verified)
+				, copier src dest p check
+				)
+		, return copier
 		)
 #else
-	return $ Copier copier
+	return copier
 #endif

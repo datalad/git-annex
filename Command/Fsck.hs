@@ -161,7 +161,7 @@ performRemote key file backend numcopies remote =
 			( return (Just True)
 			, ifM (Annex.getState Annex.fast)
 				( return Nothing
-				, Just <$>
+				, Just . fst <$>
 					Remote.retrieveKeyFile remote key Nothing tmp dummymeter
 				)
 			)

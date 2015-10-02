@@ -76,8 +76,8 @@ gen r _ c gc =
 		, checkUrl = Just checkTorrentUrl
 		}
 
-downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
-downloadKey key _file dest p = 
+downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
+downloadKey key _file dest p = unVerified $
 	get . map (torrentUrlNum . fst . getDownloader) =<< getBitTorrentUrls key
   where
 	get [] = do

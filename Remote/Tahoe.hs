@@ -116,8 +116,8 @@ store u hdl k _f _p = sendAnnex k noop $ \src ->
 		(return False)
 		(\cap -> storeCapability u k cap >> return True)
 
-retrieve :: UUID -> TahoeHandle -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
-retrieve u hdl k _f d _p = go =<< getCapability u k
+retrieve :: UUID -> TahoeHandle -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
+retrieve u hdl k _f d _p = unVerified $ go =<< getCapability u k
   where
 	go Nothing = return False
 	go (Just cap) = liftIO $ requestTahoe hdl "get" [Param cap, File d]

@@ -16,7 +16,8 @@ module Annex.Content (
 	getViaTmp,
 	getViaTmp',
 	checkDiskSpaceToGet,
-	Verify(..),
+	VerifyConfig(..),
+	Types.Remote.unVerified,
 	prepTmp,
 	withTmp,
 	checkDiskSpace,
@@ -218,18 +219,19 @@ lockContent key a = do
 {- Runs an action, passing it the temp file to get,
  - and if the action succeeds, verifies the file matches
  - the key and moves the file into the annex as a key's content. -}
-getViaTmp :: Verify -> Key -> (FilePath -> Annex Bool) -> Annex Bool
+getViaTmp :: VerifyConfig -> Key -> (FilePath -> Annex (Bool, Types.Remote.Verification)) -> Annex Bool
 getViaTmp v key action = checkDiskSpaceToGet key False $
 	getViaTmp' v key action
 
 {- Like getViaTmp, but does not check that there is enough disk space
  - for the incoming key. For use when the key content is already on disk
  - and not being copied into place. -}
-getViaTmp' :: Verify -> Key -> (FilePath -> Annex Bool) -> Annex Bool
+getViaTmp' :: VerifyConfig -> Key -> (FilePath -> Annex (Bool, Types.Remote.Verification)) -> Annex Bool
 getViaTmp' v key action = do
 	tmpfile <- prepTmp key
-	ifM (action tmpfile)
-		( ifM (verifyKeyContent v key tmpfile)
+	(ok, verification) <- action tmpfile
+	if ok
+		then ifM (verifyKeyContent v verification key tmpfile)
 			( do
 				moveAnnex key tmpfile
 				logStatus key InfoPresent
@@ -241,8 +243,7 @@ getViaTmp' v key action = do
 			)
 		-- On transfer failure, the tmp file is left behind, in case
 		-- caller wants to resume its transfer
-		, return False
-		)
+		else return False
 
 {- Verifies that a file is the expected content of a key.
  - Configuration can prevent verification, for either a
@@ -253,8 +254,9 @@ getViaTmp' v key action = do
  - When the key's backend allows verifying the content (eg via checksum),
  - it is checked. 
  -}
-verifyKeyContent :: Verify -> Key -> FilePath -> Annex Bool
-verifyKeyContent v k f = ifM (shouldVerify v)
+verifyKeyContent :: VerifyConfig -> Types.Remote.Verification -> Key -> FilePath -> Annex Bool
+verifyKeyContent _ Types.Remote.Verified _ _ = return True
+verifyKeyContent v Types.Remote.UnVerified k f = ifM (shouldVerify v)
 	( verifysize <&&> verifycontent
 	, return True
 	)
@@ -268,9 +270,9 @@ verifyKeyContent v k f = ifM (shouldVerify v)
 		Nothing -> return True
 		Just verifier -> verifier k f
 
-data Verify = AlwaysVerify | NoVerify | RemoteVerify Remote | DefaultVerify
+data VerifyConfig = AlwaysVerify | NoVerify | RemoteVerify Remote | DefaultVerify
 
-shouldVerify :: Verify -> Annex Bool
+shouldVerify :: VerifyConfig -> Annex Bool
 shouldVerify AlwaysVerify = return True
 shouldVerify NoVerify = return False
 shouldVerify DefaultVerify = annexVerify <$> Annex.getGitConfig

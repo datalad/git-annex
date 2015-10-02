@@ -176,7 +176,7 @@ testUnavailable st r k =
 		getViaTmp (RemoteVerify r) k $ \dest ->
 			Remote.retrieveKeyFile r k Nothing dest nullMeterUpdate
 	, check (== Right False) "retrieveKeyFileCheap" $
-		getViaTmp (RemoteVerify r) k $ \dest ->
+		getViaTmp (RemoteVerify r) k $ \dest -> unVerified $
 			Remote.retrieveKeyFileCheap r k Nothing dest
 	]
   where

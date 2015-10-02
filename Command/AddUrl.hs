@@ -154,7 +154,7 @@ downloadRemoteFile r relaxed uri file sz = do
 			-- so that the remote knows what url it
 			-- should use to download it.
 			setTempUrl urlkey loguri
-			let downloader = Remote.retrieveKeyFile r urlkey (Just file)
+			let downloader = \dest p -> fst <$> Remote.retrieveKeyFile r urlkey (Just file) dest p
 			ret <- downloadWith downloader urlkey (Remote.uuid r) loguri file
 			removeTempUrl urlkey
 			return ret

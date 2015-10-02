@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
+{-# LANGUAGE CPP, FlexibleInstances #-}
 
 module Annex.Transfer (
 	module X,
@@ -24,20 +24,31 @@ import Annex.Notification as X
 import Annex.Perms
 import Utility.Metered
 import Utility.LockPool
+import Types.Remote (Verification(..))
 
 import Control.Concurrent
 
-type TransferAction = MeterUpdate -> Annex Bool
-
 type TransferObserver = Bool -> Transfer -> TransferInfo -> Annex ()
+
+class Observable a where
+	observeBool :: a -> Bool
+	observeFailure :: a
+
+instance Observable Bool where
+	observeBool = id
+	observeFailure = False
+
+instance Observable (Bool, Verification) where
+	observeBool = fst
+	observeFailure = (False, UnVerified)
 
 noObserver :: TransferObserver
 noObserver _ _ _ = noop
 
-upload :: UUID -> Key -> AssociatedFile -> RetryDecider -> TransferObserver -> TransferAction -> NotifyWitness -> Annex Bool
+upload :: Observable v => UUID -> Key -> AssociatedFile -> RetryDecider -> TransferObserver -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
 upload u key f d o a _witness = runTransfer (Transfer Upload u key) f d o a
 
-download :: UUID -> Key -> AssociatedFile -> RetryDecider -> TransferObserver -> TransferAction -> NotifyWitness -> Annex Bool
+download :: Observable v => UUID -> Key -> AssociatedFile -> RetryDecider -> TransferObserver -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
 download u key f d o a _witness = runTransfer (Transfer Download u key) f d o a
 
 {- Runs a transfer action. Creates and locks the lock file while the
@@ -52,7 +63,7 @@ download u key f d o a _witness = runTransfer (Transfer Download u key) f d o a
  - An upload can be run from a read-only filesystem, and in this case
  - no transfer information or lock file is used.
  -}
-runTransfer :: Transfer -> Maybe FilePath -> RetryDecider -> TransferObserver -> TransferAction -> Annex Bool
+runTransfer :: Observable v => Transfer -> Maybe FilePath -> RetryDecider -> TransferObserver -> (MeterUpdate -> Annex v) -> Annex v
 runTransfer = runTransfer' False
 
 {- Like runTransfer, but ignores any existing transfer lock file for the
@@ -60,10 +71,10 @@ runTransfer = runTransfer' False
  -
  - Note that this may result in confusing progress meter display in the
  - webapp, if multiple processes are writing to the transfer info file. -}
-alwaysRunTransfer :: Transfer -> Maybe FilePath -> RetryDecider -> TransferObserver -> TransferAction -> Annex Bool
+alwaysRunTransfer :: Observable v => Transfer -> Maybe FilePath -> RetryDecider -> TransferObserver -> (MeterUpdate -> Annex v) -> Annex v
 alwaysRunTransfer = runTransfer' True
 
-runTransfer' :: Bool -> Transfer -> Maybe FilePath -> RetryDecider -> TransferObserver -> TransferAction -> Annex Bool
+runTransfer' :: Observable v => Bool -> Transfer -> Maybe FilePath -> RetryDecider -> TransferObserver -> (MeterUpdate -> Annex v) -> Annex v
 runTransfer' ignorelock t file shouldretry transferobserver transferaction = do
 	info <- liftIO $ startTransferInfo file
 	(meter, tfile, metervar) <- mkProgressUpdater t info
@@ -72,12 +83,12 @@ runTransfer' ignorelock t file shouldretry transferobserver transferaction = do
 	if inprogress && not ignorelock
 		then do
 			showNote "transfer already in progress, or unable to take transfer lock"
-			return False
+			return observeFailure
 		else do
-			ok <- retry info metervar $ transferaction meter
+			v <- retry info metervar $ transferaction meter
 			liftIO $ cleanup tfile lck
-			transferobserver ok t info
-			return ok
+			transferobserver (observeBool v) t info
+			return v
   where
 #ifndef mingw32_HOST_OS
 	prep tfile mode info = do
@@ -128,7 +139,7 @@ runTransfer' ignorelock t file shouldretry transferobserver transferaction = do
 				let newinfo = oldinfo { bytesComplete = Just b }
 				if shouldretry oldinfo newinfo
 					then retry newinfo metervar run
-					else return False
+					else return observeFailure
 	getbytescomplete metervar
 		| transferDirection t == Upload =
 			liftIO $ readMVar metervar
