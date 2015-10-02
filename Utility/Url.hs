@@ -176,7 +176,12 @@ getUrlInfo url uo = case parseURIRelaxed url of
 		filter (\p -> fst p == h) . responseHeaders
 
 	existsconduit req = do
-		mgr <- newManager tlsManagerSettings
+		mgr <- newManager
+#if MIN_VERSION_http_conduit(2,1,7)
+			tlsManagerSettings
+#else
+			conduitManagerSettings
+#endif
 		let req' = headRequest (applyRequest uo req)
 		ret <- runResourceT $ do
 			resp <- http req' mgr
