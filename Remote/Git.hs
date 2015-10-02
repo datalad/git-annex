@@ -376,9 +376,10 @@ copyFromRemote' r key file dest meterupdate
 			case v of
 				Nothing -> return False
 				Just (object, checksuccess) -> do
-					copier <- mkCopier hardlink params object dest
+					copier <- mkCopier hardlink params
 					runTransfer (Transfer Download u key)
-						file noRetry noObserver copier
+						file noRetry noObserver 
+						(callCopier copier object dest)
 						<&&> checksuccess
 	| Git.repoIsSsh (repo r) = feedprogressback $ \feeder -> do
 		direct <- isDirect
@@ -500,10 +501,14 @@ copyToRemote' r key file p
 			( return True
 			, do
 				ensureInitialized
+				copier <- mkCopier hardlink params
+				let verify = if isHardLinker copier
+					then Annex.Content.NoVerify
+					else Annex.Content.RemoteVerify r
 				runTransfer (Transfer Download u key) file noRetry noObserver $ const $
 					Annex.Content.saveState True `after`
-						Annex.Content.getViaTmp (Annex.Content.RemoteVerify r) key
-							(\dest -> mkCopier hardlink params object dest >>= \a -> a p <&&> liftIO checksuccessio)
+						Annex.Content.getViaTmp verify key
+							(\dest -> callCopier copier object dest p <&&> liftIO checksuccessio)
 			)
 
 fsckOnRemote :: Git.Repo -> [CommandParam] -> Annex (IO Bool)
@@ -615,19 +620,32 @@ commitOnCleanup r a = go `after` a
 wantHardLink :: Annex Bool
 wantHardLink = (annexHardLink <$> Annex.getGitConfig) <&&> (not <$> isDirect)
 
+data Copier
+	= Copier (FilePath -> FilePath -> MeterUpdate -> Annex Bool) 
+	| HardLinker (FilePath -> FilePath -> MeterUpdate -> Annex Bool)
+
+isHardLinker :: Copier -> Bool
+isHardLinker (Copier _) = False
+isHardLinker (HardLinker _) = True
+
+callCopier :: Copier -> FilePath -> FilePath -> MeterUpdate -> Annex Bool
+callCopier (Copier a) = a
+callCopier (HardLinker a) = a
+
 -- If either the remote or local repository wants to use hard links,
 -- the copier will do so, falling back to copying.
-mkCopier :: Bool -> [CommandParam] -> FilePath -> FilePath -> Annex (MeterUpdate -> Annex Bool)
-mkCopier remotewanthardlink rsyncparams object dest = do
-	let copier = rsyncOrCopyFile rsyncparams object dest
+mkCopier :: Bool -> [CommandParam] -> Annex Copier
+mkCopier remotewanthardlink rsyncparams = do
+	let copier = rsyncOrCopyFile rsyncparams
 #ifndef mingw32_HOST_OS
 	localwanthardlink <- wantHardLink
-	let linker = createLink object dest >> return True
+	let linker = \object dest -> createLink object dest >> return True
 	ifM (pure (remotewanthardlink || localwanthardlink) <&&> not <$> isDirect)
-		( return $ \m -> liftIO (catchBoolIO linker)
-			<||> copier m
-		, return copier
+		( return $ HardLinker $ \object dest p ->
+			liftIO (catchBoolIO (linker object dest))
+				<||> copier object dest p
+		, return $ Copier copier
 		)
 #else
-	return copier
+	return $ Copier copier
 #endif

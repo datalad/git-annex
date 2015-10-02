@@ -268,10 +268,11 @@ verifyKeyContent v k f = verifysize <&&> verifycontent
 		, return True
 		)
 
-data Verify = AlwaysVerify | RemoteVerify Remote | DefaultVerify
+data Verify = AlwaysVerify | NoVerify | RemoteVerify Remote | DefaultVerify
 
 shouldVerify :: Verify -> Annex Bool
 shouldVerify AlwaysVerify = return True
+shouldVerify NoVerify = return False
 shouldVerify DefaultVerify = annexVerify <$> Annex.getGitConfig
 shouldVerify (RemoteVerify r) = shouldVerify DefaultVerify
 	<&&> pure (remoteAnnexVerify (Types.Remote.gitconfig r))
