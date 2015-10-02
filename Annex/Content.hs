@@ -245,28 +245,28 @@ getViaTmp' v key action = do
 		)
 
 {- Verifies that a file is the expected content of a key.
+ - Configuration can prevent verification, for either a
+ - particular remote or always.
  -
  - Most keys have a known size, and if so, the file size is checked.
- - This is not expensive, so is always done.
  -
  - When the key's backend allows verifying the content (eg via checksum),
- - it is checked. This is an expensive check, so configuration can prevent
- - it, for either a particular remote or always.
+ - it is checked. 
  -}
 verifyKeyContent :: Verify -> Key -> FilePath -> Annex Bool
-verifyKeyContent v k f = verifysize <&&> verifycontent
+verifyKeyContent v k f = ifM (shouldVerify v)
+	( verifysize <&&> verifycontent
+	, return True
+	)
   where
 	verifysize = case Types.Key.keySize k of
 		Nothing -> return True
 		Just size -> do
 			size' <- liftIO $ catchDefaultIO 0 $ getFileSize f
 			return (size' == size)
-	verifycontent = ifM (shouldVerify v)
-		( case Types.Backend.verifyKeyContent =<< Backend.maybeLookupBackendName (Types.Key.keyBackendName k) of
-			Nothing -> return True
-			Just verifier -> verifier k f
-		, return True
-		)
+	verifycontent = case Types.Backend.verifyKeyContent =<< Backend.maybeLookupBackendName (Types.Key.keyBackendName k) of
+		Nothing -> return True
+		Just verifier -> verifier k f
 
 data Verify = AlwaysVerify | NoVerify | RemoteVerify Remote | DefaultVerify
 
