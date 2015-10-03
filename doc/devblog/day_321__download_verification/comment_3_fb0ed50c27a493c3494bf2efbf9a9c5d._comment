@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="encryptio"
+ subject="comment 3"
+ date="2015-10-03T21:09:31Z"
+ content="""
+Nice! I actually had been doing `git annex get $file && git annex fsck $file` in all my scripts already because I had run into an issue where a bad file got replicated everywhere, and the only good copy I had was `drop`ped before I realized. This would have caught it. Thanks!
+"""]]
