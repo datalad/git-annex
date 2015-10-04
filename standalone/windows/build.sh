@@ -38,8 +38,6 @@ rm -f git-annex-installer.exe
 # for haskell libraries to link them with the cygwin library.
 cabal update || true
 
-cabal install warp-3.1.3.1
-
 cabal install --only-dependencies || true
 
 # Detect when the last build was an incremental build and failed, 
