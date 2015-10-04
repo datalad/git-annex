@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="sunny256"
+ subject="Yay, man!"
+ date="2015-10-04T23:28:43Z"
+ content="""
+I love this! Especially since I've noticed some read errors on my laptop disk now and then. Not when using git-annex, I've never lost a file with it, but when doing other things. I've been hoping for this, as I've used computers with memory corruption years ago, and in cases like that, all bets are off and you'll only hope that the file copy goes well. I've grown quite paranoid after that computer, and have enabled everything in git (setting `fetch.fsckObjects`, `receive.fsckObjects` and `transfer.fsckObjects` to `true`) to catch potential errors as a result of bad disk, memory corruption or transfer errors over the network. I'd rather wait a bit longer while copying or especially moving files than waiting for that single corrupted bit in the only copy of a 4 gig file. Thanks!
+"""]]
