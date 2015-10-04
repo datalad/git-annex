@@ -6,7 +6,7 @@ So after more than a year I think I am slowly beginning grasping git-annex. I'd 
 
 	*3.* Can I get some feedback if git-annex is a solution for my scenario?
 
-*I have 1 Macbook, 1 NAS (Freenas runing freeBSD) and access to S3 and box.com as well as a few external HDs.*
+*I have 1 Macbook, 1 NAS (Freenas running freeBSD) and access to S3 and box.com as well as a few external HDs.*
 My current setup involves a lot of manual copying, (very careful usage of) rsync and basically ends up me having a copy/backup of everything on the NAS and the files I currently work with on my Macbook.
 
 
