@@ -18,7 +18,7 @@ My current setup involves a lot of manual copying, (very careful usage of) rsync
 	- S3 and box.com can be used however needed.
 
 	*4.* DOCUMENTS
-So I case I am travelling without Macbook, I use another PC or my Android phone to connect to my router at home via VPN then access a share on my NAS, work on a file, print it, save it back so whenever my MACbook is online again, it syncs the latest version.
+So in case I am travelling without Macbook, I use another PC or my Android phone to connect to my router at home via VPN then access a share on my NAS, work on a file, print it, save it back so whenever my MACbook is online again, it syncs the latest version.
 To achieve this with got-annex I guess I need the repository on the NAS to be a client repo, right? But the problem I see is that if I move a sub-folder from Docs into Archive, i.e. a folder of manuals I don't need on my MACbook all the time, it also gets moved out of the client repo on the NAS into an archive repo so how would I access it remotely if necessary?
 Also, talking about archiving, doesn't this get messy if you have a complicated folder structure inside a repo? How would you put stuff back from archives exactly where it was? 
 Sorry if this sounds a bit silly but I rely on a very precise folder system, everything is properly placed where I know it will be so if I now drag/drop all sorts of files/folders into archive I'll never figure out what's what again.
