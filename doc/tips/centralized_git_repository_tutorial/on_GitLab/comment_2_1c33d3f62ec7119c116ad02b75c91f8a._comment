@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="ovidiu@66ace8a8d99ce938b0538ffa0f26d30db02a9626"
+ nickname="ovidiu"
+ subject="comment 2"
+ date="2015-10-03T21:27:46Z"
+ content="""
+I managed to overcome that hurdle but now gitlab shows as \"just a git repository\" and I don't seem to be able to do the conversion \"Upgrade Repository\" - nothing in the logs, any ideas?
+"""]]

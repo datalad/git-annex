@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="ovidiu@66ace8a8d99ce938b0538ffa0f26d30db02a9626"
+ nickname="ovidiu"
+ subject="Need advice on using gitlab with the assistant"
+ date="2015-10-03T21:03:45Z"
+ content="""
+There is a GUI and I followed it but when upgrading it to a full git-annex repository I get:
+
+remote: GitLab: You are not allowed to force push code to a protected branch on this project.        
+To git@git-annex-gitlab.com-git_22_pacuraru.2Fgitannex.2Egit:pacuraru/gitannex.git
+ ! [remote rejected] refs/gcrypt/gitception+ -> master (pre-receive hook declined)
+error: failed to push some refs to 'git@git-annex-gitlab.com-git_22_pacuraru.2Fgitannex.2Egit:pacuraru/gitannex.git'
+error: failed to push some refs to 'gcrypt::git@git-annex-gitlab.com-git_22_pacuraru.2Fgitannex.2Egit:pacuraru/gitannex.git'
+[2015-10-03 23:01:30.409376] main: Syncing with gitlab.com_pacuraru_gitannex.git 
+"""]]

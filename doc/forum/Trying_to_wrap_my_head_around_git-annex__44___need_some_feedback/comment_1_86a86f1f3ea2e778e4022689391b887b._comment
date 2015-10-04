@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnmF_9CAtfqdZkC4e-_dCX-rK5bqh4RWkw"
+ nickname="Carl"
+ subject="comment 1"
+ date="2015-10-04T17:58:48Z"
+ content="""
+I think it can be a good fit. Let me try to answer some of your questions in the order that seems most reasonable to me
+
+*8* It is not a strict requirement to hav different repos for the different things, but I guess it might simplify things. Plus You can start with one of them and when that is properly set up continue with the next one.
+
+*5* your music solution seems simple enough. Numcopies=2 and everything should work. 
+
+*1*, *4*, *9* There is nothing magic with client remotes. It is just a group, that has some default rules. You can create your own groups and also change their rules. For my documents, I have two custom groups, \"offsite\" and \"cloud\". I have set up rules so that files prefer to be in one offsite remote and one cloud remote. However until I had possibility to plug my computer into an off site disc and sync it all files want to be in two cloud remotes. 
+
+*4*, *6* I personally do not run the assistant, but do everything on the command line. For me the setup where old things that I will probably never access again lies in an archive folder, if I do need it I can get the file back wit a simple \"git annex get $filename\". For my documents tree I only add files and folder or move folders into an archive folder. (Also note that archive folders can be located anywhere in your file tree, and that you can have arbitrarily many
+"""]]
