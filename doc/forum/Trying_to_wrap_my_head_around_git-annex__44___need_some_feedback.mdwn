@@ -1,0 +1,39 @@
+So after more than a year I think I am slowly beginning grasping git-annex. I'd like to put all my questions and ideas into this one thread, maybe you guys can help me sort things out. I'll number everything so you're more than welcome to chime in with regards to a particular item only. Happy to get links to read up stuff, don't hesitate to just paste a link if you think it is useful.
+
+	*1.* Right or wrong: I can only "work" with files in "CLIENT" repositories, not with backup, archive or anything else?
+
+	*2.* How does the copying or synching work? Is it comparable to rsync? How good is it at solving conflicts?
+
+	*3.* Can I get some feedback if git-annex is a solution for my scenario?
+
+*I have 1 Macbook, 1 NAS (Freenas runing freeBSD) and access to S3 and box.com as well as a few external HDs.*
+My current setup involves a lot of manual copying, (very careful usage of) rsync and basically ends up me having a copy/backup of everything on the NAS and the files I currently work with on my Macbook.
+
+
+*Ideally I'd want to achieve something like this:*
+
+	- Have all files on the NAS
+	- Only have current work files on my Macbook
+	- Use external HDs only when necessary or transferign stuff
+	- S3 and box.com can be used however needed.
+
+	*4.* DOCUMENTS
+So I case I am travelling without Macbook, I use another PC or my Android phone to connect to my router at home via VPN then access a share on my NAS, work on a file, print it, save it back so whenever my MACbook is online again, it syncs the latest version.
+To achieve this with got-annex I guess I need the repository on the NAS to be a client repo, right? But the problem I see is that if I move a sub-folder from Docs into Archive, i.e. a folder of manuals I don't need on my MACbook all the time, it also gets moved out of the client repo on the NAS into an archive repo so how would I access it remotely if necessary?
+Also, talking about archiving, doesn't this get messy if you have a complicated folder structure inside a repo? How would you put stuff back from archives exactly where it was? 
+Sorry if this sounds a bit silly but I rely on a very precise folder system, everything is properly placed where I know it will be so if I now drag/drop all sorts of files/folders into archive I'll never figure out what's what again.
+
+	*5.* MUSIC
+This should be fairly easy, all my music is on my NAS and on my macbook, whenever I add music to my macbook it'll automatically sync to the NAS.
+
+	*6.* PICTURES
+This is where it gets complicated.
+I have a folder: Pictures with subfolders for each year, aka 2010, 2011 ... 2015 and inside is a sub folder for each photographed event. Now these pics get too big for my macbook so I'd like all images to be on my NAS, available for access, and to be able to simply archive say 2014. Now the question is if later I remember I need access to a particular event in 2014, can I browse that folder and un-archive that particular folder?
+
+	*7.* Also, say I'd like to be able to take a folder/sub-folder of images with me for external editing on a HD, and when coming back with them I'd like them to be synced back when I plug the HD back in, what type of repository would i have to set this HD to?
+
+	*8.* Obviously I'd need to setup a different repository for each Documents, Pictures, Music with their own settings, right?
+
+        *9.* At the moment it is not possible to have separate number of minimum number of copies per repository?
+
+So, what do you think, is git-annex suitable for my needs? Partially at least?
