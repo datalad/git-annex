@@ -366,12 +366,6 @@ sshErr sshinput msg
  - Depending on the SshInput, avoids using a password, or uses a
  - cached password. ssh is coaxed to use git-annex as SSH_ASKPASS
  - to get the password.
- -
- - Note that ssh will only use SSH_ASKPASS when DISPLAY is set and there
- - is no controlling terminal. On Unix, that is set up when the assistant
- - starts, by calling createSession. On Windows, all of stdin, stdout, and
- - stderr must be disconnected from the terminal. This is accomplished
- - by always providing input on stdin.
  -}
 sshAuthTranscript :: SshInput -> [String] -> (Maybe String) -> Assistant (String, Bool)
 sshAuthTranscript sshinput opts input = case inputAuthMethod sshinput of
@@ -384,8 +378,20 @@ sshAuthTranscript sshinput opts input = case inputAuthMethod sshinput of
 	login = getLogin sshinput
 	geti f = maybe "" T.unpack (f sshinput)
 
-	go extraopts environ = processTranscript' "ssh" (extraopts ++ opts) environ $
-		Just (fromMaybe "" input)
+	go extraopts environ = processTranscript' 
+		(askPass environ) "ssh" (extraopts ++ opts)
+		-- Always provide stdin, even when empty.
+		(Just (fromMaybe "" input))
+
+ 	{- ssh will only use SSH_ASKPASS when DISPLAY is set and there
+	 - is no controlling terminal. -}
+	askPass environ p = p
+		{ env = environ
+#if MIN_VERSION_process(1,3,0)
+		, detach_console = True
+		, new_session = True
+#endif
+		}
 
 	setupAskPass = do
 		program <- liftIO programPath
@@ -399,10 +405,6 @@ sshAuthTranscript sshinput opts input = case inputAuthMethod sshinput of
 				let environ' = addEntries
 					[ ("SSH_ASKPASS", program)
 					, (sshAskPassEnv, passfile)
-					-- ssh does not use SSH_ASKPASS
-					-- unless DISPLAY is set, and
-					-- there is no controlling
-					-- terminal.
 					, ("DISPLAY", ":0")
 					] environ
 				go [passwordprompts 1] (Just environ')
