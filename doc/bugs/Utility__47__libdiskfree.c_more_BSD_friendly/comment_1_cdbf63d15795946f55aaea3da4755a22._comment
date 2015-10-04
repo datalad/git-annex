@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="jirib@503223f0610c6c66f4e6dc738a5a0b2648c290b1"
+ nickname="jirib"
+ subject="no statfs64 on OpenBSD"
+ date="2015-10-04T13:47:30Z"
+ content="""
+there's no statfs64 on OpenBSD, maybe following similar diff from conky fs part could help:
+
+http://cvsweb.openbsd.org/cgi-bin/cvsweb/ports/sysutils/conky/patches/patch-src_fs_c?rev=1.3&content-type=text/x-cvsweb-markup
+"""]]
