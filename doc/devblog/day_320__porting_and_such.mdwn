@@ -1,6 +1,6 @@
 Lots of porting work ongoing recently:
 
-* I've been working with [Goeke](http://goeke.net/) on building git-annex
+* I've been working with [Goeke](http://www.goeke.net/) on building git-annex
   on Solaris/SmartOS. Who knows, this may lead to a binary distribution
   in some way, but to start with I got the disk free space code ported
   to Solaris, and have seen git-annex work there.
