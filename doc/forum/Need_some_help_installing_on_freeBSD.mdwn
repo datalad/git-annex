@@ -1,7 +1,7 @@
 Hi there,
 
-*I'm trying to install git-annex on my NAS which is freeNAS running freeBSD. 
-I've created a jail for it and installed via: pkg install hs-git-annex*
+**I'm trying to install git-annex on my NAS which is freeNAS running freeBSD. 
+I've created a jail for it and installed via: pkg install hs-git-annex**
 
 I've seen on this page: http://www.freshports.org/devel/hs-git-annex/ that there are Configuration Options. 
 I assume to use those I'd have to have compiled it myself from the ports like this: 
@@ -10,7 +10,7 @@ To install the port: cd /usr/ports/devel/hs-git-annex/ && make install clean
 So in this case of using the pkg, how can I check the way git-annex was compiled? 
 Anyone else ever used it on freeBSD and can give some input please? 
 
-*Figured out how to see this info:*
+**Figured out how to see this info:**
 
 git-annex version
 git-annex version: 5.20150727
@@ -18,11 +18,11 @@ build flags: Assistant Webapp Webapp-secure Pairing S3 WebDAV Kqueue XMPP DNS Fe
 key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E MD5E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 MD5 WORM URL
 remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
 
-*So apparently box.com isn't supported in this build?*
+**So apparently box.com isn't supported in this build?**
 
 I installed via a web terminal, not via a normal ssh connection so when I came back the installation with all dependencies was finished but I couldn't scroll back to see all warning, only caught this last part of the screen; anyone got any idea if git-annex is supposed to run fine on FreeBSD 9.3-RELEASE-p26 amd64? 
 
-*part of the text I caught:*
+**part of the text I caught:**
   IN_CLOSE_WRITE                                                               
                                                                                 
 Symbolic Link notifications:                                                    
