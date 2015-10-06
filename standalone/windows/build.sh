@@ -62,16 +62,24 @@ fi
 # These are msys2 programs, from https://msys2.github.io/.
 # Since git for windows uses msys2, and includes its libraries,
 # these programs will work well with it.
-if [ ! -e rsync.exe ] || [ "$(sha1sum rsync.exe)" != "85cb7a4d16d274fcf8069b39042965ad26abd6aa" ]; then
-	rm -f rsync.exe || true
-	withcyg wget https://downloads.kitenet.net/git-annex/windows/assets/rsync.exe
-	withcyg chmod +x rsync.exe
-fi
-if [ ! -e wget.exe ] || [ "$(sha1sum wget.exe)" != "044380729200d5762965b10123a4f134806b01cf" ]; then
-	rm -f wget.exe || true
-	withcyg wget https://downloads.kitenet.net/git-annex/windows/assets/wget.exe
-	withcyg chmod +x wget.exe
-fi
+getextra () {
+	extrap="$1"
+	extrasha="$2"
+	curextrasha="$(withcyg sha1sum $extrap)"
+	if [ ! -e "$extrap" ] || [ "$curextrasha" != "$extrasha" ]; then
+		rm -f "$extrap" || true
+		withcyg wget https://downloads.kitenet.net/git-annex/windows/assets/$extrap
+		curextrasha="$(withcyg sha1sum $extrap)"
+		if [ "$curextrasha" != "$extrasha" ]; then
+			rm -f "$extrap"
+			echo "CHECKSUM FAILURE" >&2
+			exit 1
+		fi
+		withcyg chmod +x $extrap
+	fi
+}
+getextra rsync.exe 85cb7a4d16d274fcf8069b39042965ad26abd6aa
+getextra wget.exe 044380729200d5762965b10123a4f134806b01cf
 
 # Build the installer
 cabal install nsis
