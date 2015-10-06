@@ -65,11 +65,11 @@ fi
 getextra () {
 	extrap="$1"
 	extrasha="$2"
-	curextrasha="$(withcyg sha1sum $extrap)"
+	curextrasha="$(withcyg sha1sum $extrap | sed 's/ .*//')"
 	if [ ! -e "$extrap" ] || [ "$curextrasha" != "$extrasha" ]; then
 		rm -f "$extrap" || true
 		withcyg wget https://downloads.kitenet.net/git-annex/windows/assets/$extrap
-		curextrasha="$(withcyg sha1sum $extrap)"
+		curextrasha="$(withcyg sha1sum $extrap | sed 's/ .*//')"
 		if [ "$curextrasha" != "$extrasha" ]; then
 			rm -f "$extrap"
 			echo "CHECKSUM FAILURE" >&2
