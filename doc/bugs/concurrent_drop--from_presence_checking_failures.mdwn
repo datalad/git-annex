@@ -1,0 +1,139 @@
+Concurrent dropping of a file has problems when drop --from is
+used. (Also when the assistant or sync --content decided to drop from a
+remote.)
+
+First, let's remember how it works in the case where we're just dropping
+from 2 repos concurrently. git-annex uses locking to detect and prevent
+data loss:
+
+<pre>
+Two repos, each with a file:
+
+A (has)
+B (has)
+
+A wants from drop from A         B wants to drop from B
+A locks it                       B locks it
+A checks if B has it             B checks if A has it
+  (does, but locked, so fails)     (does, but locked, so fails)
+A fails to drop it               B fails to drop it
+
+The two processes are racing, so there are other orderings to
+consider, for example:
+
+A wants from drop from A        B wants to drop from B
+A locks it                     
+A checks if B has it (succeeds)
+A drops it from A		B locks it 
+                                B checks if A has it (fails)
+				B fails to drop it
+
+Which is also ok.
+
+A wants from drop from A        B wants to drop from B
+A locks it                     
+A checks if B has it (succeeds)
+                                B locks it           
+                                B checks if A has it
+				  (does, but locked, so fails)
+A drops it                      B fails to drop it
+
+Yay, still ok.
+</pre>
+
+Locking works in those cases to prevent concurrent dropping of a file.
+
+But, when drop --from is used, the locking doesn't work:
+
+<pre>
+Two repos, each with a file:
+
+A (has)
+B (has)
+
+A wants to drop from B                  B wants to drop from A
+A checks to see if A has it (succeeds)  B checks to see if B has it (succeeds)
+A tells B to drop it                    B tells A to drop it
+B locks it, drops it                    A locks it, drops it
+
+No more copies remain!
+</pre>
+
+Verified this one in the wild (adding an appropriate sleep to force the
+race).
+
+Best fix here seems to be for A to lock the content on A
+as part of its check of numcopies, and keep it locked
+while it's asking B to drop it. Then when B tells A to drop it,
+it'll be locked and that'll fail (and vice-versa).
+
+<pre>
+Three repos; C might be a special remote, so w/o its own locking:
+
+A       C (has)
+B (has)
+
+A wants to drop from C         B wants to drop from B
+                               B locks it
+A checks if B has it           B checks if C has it (does)
+ (does, but locked, so fails)  B drops it
+
+Copy remains in C. But, what if the race goes the other way?
+
+A wants to drop from C          B wants to drop from B
+A checks if B has it (succeeds)
+A drops it from C               B locks it
+                                B checks if C has it (does not)
+
+So ok, but then:
+
+A wants to drop from C          B wants to drop from B
+A checks if B has it (succeeds)
+                                B locks it
+                                B checks if C has it (does)
+A drops it from C               B drops it from B
+
+No more copies remain!
+</pre>
+
+To fix this, seems that A should not just check if B has it, but lock
+the content on B and keep it locked while A is dropping from C.
+This would prevent B dropping the content from itself while A is in the
+process of dropping from C.
+
+That would mean replacing the call to `git-annex-shell inannex`
+with a new command that locks the content.
+
+Note that this is analgous to the fix above; in both cases
+the change is from checking if content is in a location, to locking it in
+that location while performing a drop from another location.
+
+<pre>
+4 repos; C and D might be special remotes, so w/o their own locking:
+
+A      C (has)
+B      D (has)
+
+B wants to drop from C        A wants to drop from D
+B checks if D has it (does)   A checks if C has it (does)
+B drops from C                A drops from D
+
+No more copies remain!
+</pre>
+
+How do we get locking in this case?
+
+Adding locking to C and D is not a general option, because special remotes
+are dumb key/value stores; they may have no locking operations.
+
+What could be done is, change from checking if the remote has content, to
+trying to lock it there. If the remote doesn't support locking, it can't
+be guaranteed to have a copy. 
+
+So, drop --from would no longer be supported in these configurations.
+To drop the content from C, B would have to --force the drop, or move the
+content from C to B, and then drop it from B.
+
+Need to consider whether this might cause currently working topologies
+with the assistant/sync --content to no longer work. Eg, might content
+pile up in a transfer remote?
