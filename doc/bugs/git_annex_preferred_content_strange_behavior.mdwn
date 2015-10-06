@@ -49,3 +49,5 @@ git annex copy --to b --auto # now, it copies the file to b. Why ??
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Definitely! git-annex is a wonderful tool that I have been using every day to manage all my files for 2 years now. Thank you for this excellent software.
+
+> [[fixed|done]] --[[Joey]]

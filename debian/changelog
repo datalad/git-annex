@@ -13,6 +13,9 @@ git-annex (5.20150931) UNRELEASED; urgency=medium
   * Ported disk free space checking code to work on Solaris.
   * Windows webapp: Fix support for entering password when setting
     up a ssh remote.
+  * copy --auto was checking the wrong repo's preferred content.
+    (--from was checking what --to should, and vice-versa.)
+    Fixed this bug, which was introduced in version 5.20150727.
 
  -- Joey Hess <id@joeyh.name>  Thu, 01 Oct 2015 12:42:56 -0400
 
