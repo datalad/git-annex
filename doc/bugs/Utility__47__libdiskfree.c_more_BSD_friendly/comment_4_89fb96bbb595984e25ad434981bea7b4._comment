@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-10-06T19:22:33Z"
+ content="""
+It's good to not let issue A get blocked by unrelated issue B, and in this
+case, easy to disentangle them!
+
+cabal configure -f-XMPP
+"""]]
