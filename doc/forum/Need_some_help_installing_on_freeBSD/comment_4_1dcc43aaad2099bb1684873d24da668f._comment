@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-10-06T20:07:43Z"
+ content="""
+To start the assistant, use "git annex assistant". You
+can then run "git annex webapp" as desired to open the webapp,
+communicating with the assistant if it was already running.
+"""]]
