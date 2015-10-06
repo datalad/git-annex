@@ -12,6 +12,11 @@ when one remote wants standard.
 - In "a", run git annex wanted here standard
 - In "a", try git annex copy --to b. Now, it wants to copy the file to "b" without any obvious (to me) reason
 
+It may be useful to emphasis the fact that git-annex wanted to copy a file to "b" while we did not change the preferred content of "b".
+
+I tried with the version 5.20141125 and the problem does not occur. It occurs
+though with the versions, 5.20150731-1, 5.20150916-1 and 5.20150930-g40fdbe9.
+
 ### What version of git-annex are you using? On what operating system?
 
     $ git annex version
