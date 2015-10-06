@@ -1,0 +1,65 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2015-10-06T16:34:18Z"
+ content="""
+I have an account on the system now.
+
+As expected, it's an fcntl lock failing:
+
+	fcntl64(7, 0xe /* F_??? */, 0xf7680510) = -1 ENOSYS (Function not implemented)
+
+git-annex init also uses such a lock, so also fails. A standalone C program
+that I built on the system used fcntl(), rather than fcntl64() for locking,
+and also failed.
+
+	fcntl(3, F_SETLKW, {type=F_WRLCK, whence=SEEK_SET, start=0, len=10}) = -1 ENOSYS (Function not implemented)
+
+flock() locking also fails on this filesystem as does lockf(),
+all with ENOSYS. So, I think there's no usable file locking at all.
+
+I notice this system has an old kernel (2.6.32), and lustre 1.8.9.
+
+<http://comments.gmane.org/gmane.comp.file-systems.lustre.user/3429>  
+This thread says that fnctl locking works back to lustre 1.2 or earlier,
+but is not enabled by default and needs a -o flock mount option.
+
+So, I think that would be the first thing to try! 
+
+(Some thoughts on other options below.)
+
+----
+
+The only option on the git-annex side would be to add an option to totally
+disable use of locks, which would make it rather unsafe to use.
+Or to use only dotlocks (file existence level locks).
+
+Dotlocks are problimatic. Some of the uses git-annex makes of locking,
+like using both shared and exclusive locks on a file to let multiple
+concurrent readers, would be very hard to emulate with dotlocks. Also,
+dotlocks go stale when processes die, and git-annex uses lots of different
+locks in different places, which would be problimatic to clean up in such
+a situation.
+
+I think that it might make sense, if git-annex has to fall back to dotlocks,
+to keep the use down to a single top-level dotlock, and only let one git-annex
+process run at a time. Instead of trying to replicate the full suite of
+fcntl lock file uses with dotlocks.
+
+(Note that this approach would not allow using the assistant, as it
+execs helper git-annex processes to transfer files etc. Otherwise, git-annex
+should basically work. Even git annex get -JN would work ok, since git-annex
+uses inter-thread locking which will work fine here.)
+
+----
+
+Of course, this assumes that a distributed filesystem, like lustre,
+is consistent enough to support the atomic operations needed to use
+even simple dotlocks. It might be that git-annex on 2 nodes could
+race and both think they successfully took the dotlock, and there
+are situations where git-annex could then lose data.
+
+According to <https://en.wikipedia.org/wiki/Lustre_%28file_system%29#Locking>,
+"Access and modification of a Lustre file is completely cache coherent among all of the clients",
+so I guess it'd work well enough.
+"""]]
