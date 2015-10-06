@@ -39,7 +39,7 @@ startGet = next $ next $ do
 	Annex.setOutput QuietOutput
 	v <- getGlobalNumCopies
 	case v of
-		Just n -> liftIO $ print $ fromNumCopies n
+		Just n -> liftIO $ putStrLn $ show $ fromNumCopies n
 		Nothing -> do
 			liftIO $ putStrLn "global numcopies is not set"
 			old <- deprecatedNumCopies
