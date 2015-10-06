@@ -1,0 +1,46 @@
+### Please describe the problem.
+
+With a version above 5.20141125, git annex wants all remotes to get all files
+when one remote wants standard.
+
+### What steps will reproduce the problem?
+
+- Create repo "a" and "b"
+- Add "b" as a remote of "a"
+- Add a file in "a"
+- In "a", try git annex copy --to b. Nothing happens: this is the excepted behaviour
+- In "a", run git annex wanted here standard
+- In "a", try git annex copy --to b. Now, it wants to copy the file to "b" without any obvious (to me) reason
+
+### What version of git-annex are you using? On what operating system?
+
+    $ git annex version
+    git-annex version: 5.20150930-g40fdbe9
+    build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA Database
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+    local repository version: 5
+    supported repository version: 5
+    upgrade supported from repository versions: 0 1 2 4
+
+### Please provide any additional information below.
+
+[[!format sh """
+mkdir a
+cd a
+git init
+git annex init
+echo a > a
+git annex add
+git commit -m "first commit"
+git clone . ../b
+git remote add b file://$(pwd)/../b
+git annex sync b
+git annex copy --to b --auto # nothing happens, this is normal
+git annex wanted here standard
+git annex copy --to b --auto # now, it copies the file to b. Why ??
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Definitely! git-annex is a wonderful tool that I have been using every day to manage all my files for 2 years now. Thank you for this excellent software.
