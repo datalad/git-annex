@@ -57,8 +57,13 @@ checkMap getmap mu notpresent mkey afile d = do
 	u <- maybe getUUID return mu
 	m <- getmap
 	case M.lookup u m of
-		Nothing -> return d
-		Just matcher -> checkMatcher matcher mkey afile notpresent d
+		Nothing -> do
+			liftIO $ print ("default for", u, d)
+			return d
+		Just matcher -> do
+			r <- checkMatcher matcher mkey afile notpresent d
+			liftIO $ print ("checking for ", u, r)
+			return r
 
 preferredContentMap :: Annex (FileMatcherMap Annex)
 preferredContentMap = maybe (fst <$> preferredRequiredMapsLoad) return
