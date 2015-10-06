@@ -11,8 +11,11 @@ Let's start by adding a USB drive as a remote.
 	# git remote add usbdrive /media/usb/annex
 
 This is all standard ad-hoc distributed git repository setup.
-The only git-annex specific part is telling it the name
-of the new repository created on the USB drive.
+
+The only git-annex specific part is telling it a description
+of the new repository created on the USB drive. This is optional, but
+giving the repository a description helps when git-annex talks about it
+later.
 
 Notice that both repos are set up as remotes of one another. This lets
 either get annexed files from the other. You'll want to do that even
