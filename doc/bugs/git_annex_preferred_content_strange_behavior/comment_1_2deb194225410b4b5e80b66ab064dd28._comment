@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-10-06T20:30:39Z"
+ content="""
+Interesting, I reproduce this.
+
+I'd actually have expected the first copy to also
+succeed; since B has no preferred content set it should want everything by
+default.
+
+I'm guessing that the weirdness of changing the behavior
+comes from git-annex switching from the state where there
+is no preferred content log to the state where there is one.
+
+Seems it follows that it's using different defaults when there is
+a preferred content log vs when there's not.
+
+Will need to dig into this.
+"""]]
