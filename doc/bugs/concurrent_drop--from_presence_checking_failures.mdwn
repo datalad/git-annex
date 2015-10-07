@@ -2,6 +2,10 @@ Concurrent dropping of a file has problems when drop --from is
 used. (Also when the assistant or sync --content decided to drop from a
 remote.)
 
+[[!toc]]
+
+# refresher
+
 First, let's remember how it works in the case where we're just dropping
 from 2 repos concurrently. git-annex uses locking to detect and prevent
 data loss:
@@ -43,6 +47,8 @@ Yay, still ok.
 
 Locking works in those cases to prevent concurrent dropping of a file.
 
+# the bug
+
 But, when drop --from is used, the locking doesn't work:
 
 <pre>
@@ -66,6 +72,8 @@ Best fix here seems to be for A to lock the content on A
 as part of its check of numcopies, and keep it locked
 while it's asking B to drop it. Then when B tells A to drop it,
 it'll be locked and that'll fail (and vice-versa).
+
+# the bug part 2
 
 <pre>
 Three repos; C might be a special remote, so w/o its own locking:
@@ -108,6 +116,8 @@ Note that this is analgous to the fix above; in both cases
 the change is from checking if content is in a location, to locking it in
 that location while performing a drop from another location.
 
+# the bug part 3 (where it gets really nasty)
+
 <pre>
 4 repos; C and D might be special remotes, so w/o their own locking:
 
@@ -126,13 +136,18 @@ How do we get locking in this case?
 Adding locking to C and D is not a general option, because special remotes
 are dumb key/value stores; they may have no locking operations.
 
+## a solution: require locking
+
 What could be done is, change from checking if the remote has content, to
 trying to lock it there. If the remote doesn't support locking, it can't
-be guaranteed to have a copy. 
+be guaranteed to have a copy. Require N locked copies for a drop to
+succeed.
 
 So, drop --from would no longer be supported in these configurations.
 To drop the content from C, B would have to --force the drop, or move the
 content from C to B, and then drop it from B.
+
+### impact when using assistant/sync --content
 
 Need to consider whether this might cause currently working topologies
 with the assistant/sync --content to no longer work. Eg, might content
@@ -162,3 +177,26 @@ pile up in a transfer remote?
 > and then later C, and only then be removed from A.
 > If moves were used, the object moves from A to B, and so there's only
 > 1 copy instead of the 2 as before, in the interim until C gets connected.
+
+## a solution: require (minimal) locking
+
+Instead of requiring N locked copies of content when dropping,
+require only 1 locked copy. Check that content is on the other N-1
+remotes w/o requiring locking (but use it if the remote supports locking).
+
+This seems likely to behave similarly to using moves to work around the
+limitations of the earlier solution, and should be easier to implement in
+the assistant/sync --content, as well as less impactful on the manual user.
+
+Unlike using moves, it does not decrease robustness, most of the time;
+barring the kind of race this bug is about, numcopies behaves as desired.
+When there is a race, some of the non-locked copies might be removed,
+dipping below numcopies, but the 1 locked copy remains, so the data is not
+entirely lost.
+
+Dipping below desired numcopies in an unusual race condition, and then
+doing extra work later to recover may be good enough.
+
+Note that this solution will still result in drop --from failing in some
+situations where it works now; manual users still need to switch their
+workflows to using moves in such situations.
