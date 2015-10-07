@@ -71,6 +71,7 @@ Build-Depends:
 	libghc-tasty-quickcheck-dev,
 	libghc-tasty-rerun-dev,
 	libghc-optparse-applicative-dev (>= 0.11.0),
+	libghc-torrent-dev,
 	lsof [linux-any],
 	ikiwiki,
 	perlmagick,
@@ -103,7 +104,6 @@ Recommends:
 	git-remote-gcrypt (>= 0.20130908-6),
 	nocache,
 	aria2,
-	bittornado | bittorrent,
 Suggests:
 	graphviz,
 	bup,
