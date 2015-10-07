@@ -137,3 +137,28 @@ content from C to B, and then drop it from B.
 Need to consider whether this might cause currently working topologies
 with the assistant/sync --content to no longer work. Eg, might content
 pile up in a transfer remote?
+
+> The assistant checks after any transfer of an object if it should drop
+> it from anywhere. So, it gets/puts, and later drops.
+> Similarly, for sync --content, it first gets, then puts, and finally drops.
+
+> When dropping an object from remotes(s) + local, in `handleDropsFrom`,
+> it drops from local first. So, this would cause content pile-up unless
+> changed.
+> 
+> Also, when numcopies > 1, a toplogy like
+> `A(transfer) -- B(client) -- specials(backup)` would never be able to drop
+> the file from A, because the specials don't support locking and it can't
+> guarantee the content will remain on them.
+> 
+> One solution might be to make sync --content/the assistant generate
+> move operations, which can then ignore numcopies (like `move` does).
+> So, move from A to B and then copy to the specials. 
+> 
+> Using moves does lead to a decrease in robustness. For example, in
+> the topology `A(transfer) -- B(client) -- C (backup)`, with numcopies=2,
+> and C intermittently connected, the current
+> behavior with sync --content/assistant is for an object to reach B
+> and then later C, and only then be removed from A.
+> If moves were used, the object moves from A to B, and so there's only
+> 1 copy instead of the 2 as before, in the interim until C gets connected.
