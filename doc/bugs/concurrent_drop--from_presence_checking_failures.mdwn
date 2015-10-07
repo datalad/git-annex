@@ -136,7 +136,7 @@ How do we get locking in this case?
 Adding locking to C and D is not a general option, because special remotes
 are dumb key/value stores; they may have no locking operations.
 
-## a solution: require locking
+## a solution: remote locking
 
 What could be done is, change from checking if the remote has content, to
 trying to lock it there. If the remote doesn't support locking, it can't
@@ -178,7 +178,7 @@ pile up in a transfer remote?
 > If moves were used, the object moves from A to B, and so there's only
 > 1 copy instead of the 2 as before, in the interim until C gets connected.
 
-## a solution: require (minimal) locking
+## a solution: minimal remote locking
 
 Instead of requiring N locked copies of content when dropping,
 require only 1 locked copy. Check that content is on the other N-1
