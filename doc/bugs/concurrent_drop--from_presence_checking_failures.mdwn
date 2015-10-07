@@ -180,23 +180,162 @@ pile up in a transfer remote?
 
 ## a solution: minimal remote locking
 
+This avoids needing to special case moves, and has 2 parts.
+
+### to drop from remote
+
 Instead of requiring N locked copies of content when dropping,
-require only 1 locked copy. Check that content is on the other N-1
+require only 1 locked copy (either the local copy, or a git remote that
+can be locked remotely). Check that content is on the other N-1
 remotes w/o requiring locking (but use it if the remote supports locking).
 
-This seems likely to behave similarly to using moves to work around the
-limitations of the earlier solution, and should be easier to implement in
-the assistant/sync --content, as well as less impactful on the manual user.
-
-Unlike using moves, it does not decrease robustness, most of the time;
+Unlike using moves, this does not decrease robustness, most of the time;
 barring the kind of race this bug is about, numcopies behaves as desired.
 When there is a race, some of the non-locked copies might be removed,
-dipping below numcopies, but the 1 locked copy remains, so the data is not
-entirely lost.
+dipping below numcopies, but the 1 locked copy remains, so the data is
+never entirely lost.
 
 Dipping below desired numcopies in an unusual race condition, and then
 doing extra work later to recover may be good enough.
 
-Note that this solution will still result in drop --from failing in some
-situations where it works now; manual users still need to switch their
-workflows to using moves in such situations.
+### to drop from local repo
+
+When dropping an object from the local repo, lock it for drop,
+and then verify that N remotes have a copy 
+(without requiring locking on special remotes).
+
+So, this is done exactly as git-annex already does it.
+
+Like dropping from a remote, this can dip below numcopies in a race
+condition involving special remotes. 
+
+But, it's crucial that, despite the lack of locking of 
+content on special remotes, which may be the last copy,
+the last copy never be removed in a race. Is this the case?
+
+We can prove that the last copy is never removed 
+by considering shapes of networks.
+
+1. Networks only connected by single special
+   remotes, and not by git-git repo connections. Such networks are
+   essentially a collection of disconnected smaller networks, each 
+   of the form `R--S`
+2. Like 1, but with more special remotes. `S1--R--S2` etc.
+3. More complicated (and less unusal) are networks with git-git
+   repo connections, and no cycles.
+   These can have arbitrary special remotes connected in too.
+4. Finally, there can be a cycle of git-git connections.
+
+The overall network may be larger and more complicated, but we need only
+concern ourselves with the subset that has a particular object
+or is directly connected to that subset; the rest is not relevant.
+
+So, if we can prove local repo dropping is safe in each of these cases,
+it follows it's safe for arbitrarily complicated networks.
+
+Case 1:
+
+<pre>
+2 essentially disconnected networks, R1--S and R2--S
+
+R1 (has)   S (has)
+R1
+
+R1 wants to drop its local copy     R2 wants to move from S
+R1 locks its copy for drop          R2 copies from S
+R1 checks that S has a copy         R2 locks its copy
+R1 drops its local copy             R2 drops from S
+
+R1 expected S to have the copy, and due to a race with R2,
+S no longer had the copy it expected. But, this is not actually
+a problem, because the copy moved to R2 and so still exists. 
+
+So, this is ok!
+<pre>
+
+Case 2:
+
+<pre>
+2 essentially disconnected networks, S1--R1--S2 and S1--R2--S2
+
+R1(has)        S1 (has)
+R2(has)        S2 (has)
+
+R1 wants to move from S1 to S2    R2 wants to move from S2 to S1
+R1 locks its copy                 R2 locks its copy
+R1 checks that S2 has a copy      R2 checks that S1 has a copy
+R1 drops from S1                  R2 drops from S2
+
+R1 and R2 end up each with a copy still, so this is ok,
+despite S1 and S2 lacking a copy.
+
+If R1/R2 had not had a local copy, they could not have done a remote drop.
+</pre>
+
+(Adding more special remotes shouldn't change how this works.)
+
+Case 3:
+
+<pre>
+3 repos; B has A and C as remotes; A has C as remote; C is special remote.
+
+A (has)      C (has)
+B
+
+B wants to drop from C        A wants to drop from A
+B locks it on A
+B drops from C                A locks it on A for drop
+                                (fails; locked by B)
+B drops from C                A keeps its copy
+
+ok!
+
+or, racing the other way
+
+B wants to drop from C        A wants to drop from A
+                              A locks it on A for drop
+B locks it on A
+   (fails; locked by A)
+C keeps its copy              A drops its copy
+
+ok!
+</pre>
+
+Case 4:
+
+But, what if we have a cycle? The above case 3 also works if B and A are in a
+cycle, but what about a larger cycle?
+
+Well, a cycle necessarily involves only git repos, not special remotes.
+Any special remote can't be part of a cycle, because a special remote
+does not have remotes itself.
+
+As the remotes in the cycle are not special remotes, locking is done
+of content on remotes when dropping it from local or another remote.
+This locking ensures that even with a cycle, we're ok. For example:
+
+<pre>
+4 repos; D is special remote w/o its own locking, and the rest are git
+repos. A has remotes B,D; B has remotes C,D; C has remotes A,D
+
+A (has) D
+B (has)
+C (has)
+
+A wants to drop from A     B wants to drop from B     C wants to drop from C
+A locks it on A for drop   B locks it on B for drop   C locks it on C for drop
+A locks it on B            B locks it on C            C locks it on A
+  (fails; locked by B)      (fails; locked by C)       (fails; locked by A)
+
+Which is fine! But, check races..
+
+A wants to drop from A     B wants to drop from B     C wants to drop from C
+A locks it on A for drop                              C locks it on C for drop
+A locks it on B (succeeds)                            C locks it on A
+                           B locks it on B for drop       (fails; locked by A)
+                               (fails; locked by A)
+A drops                    B keeps                    C keeps
+
+It can race other ways, but they all work out the same way essentially,
+due to the locking.
+</pre>
