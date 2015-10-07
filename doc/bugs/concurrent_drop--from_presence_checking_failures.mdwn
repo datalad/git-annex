@@ -28,9 +28,9 @@ consider, for example:
 A wants from drop from A        B wants to drop from B
 A locks it                     
 A checks if B has it (succeeds)
-A drops it from A		B locks it 
+A drops it from A               B locks it 
                                 B checks if A has it (fails)
-				B fails to drop it
+                                B fails to drop it
 
 Which is also ok.
 
@@ -39,7 +39,7 @@ A locks it
 A checks if B has it (succeeds)
                                 B locks it           
                                 B checks if A has it
-				  (does, but locked, so fails)
+                                  (does, but locked, so fails)
 A drops it                      B fails to drop it
 
 Yay, still ok.
