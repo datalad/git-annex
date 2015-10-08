@@ -9,6 +9,7 @@ module Utility.LockPool.Posix (
 	LockHandle,
 	lockShared,
 	lockExclusive,
+	tryLockShared,
 	tryLockExclusive,
 	checkLocked,
 	getLockStatus,
@@ -35,11 +36,19 @@ lockShared mode file = makeLockHandle
 	(P.waitTakeLock P.lockPool file LockShared)
 	(F.lockShared mode file)
 
+-- Takes an exclusive lock, blocking until the lock is available.
 lockExclusive :: Maybe FileMode -> LockFile -> IO LockHandle
 lockExclusive mode file = makeLockHandle
 	(P.waitTakeLock P.lockPool file LockExclusive)
 	(F.lockExclusive mode file)
 
+-- Tries to take a shared lock, but does not block.
+tryLockShared :: Maybe FileMode -> LockFile -> IO (Maybe LockHandle)
+tryLockShared mode file = tryMakeLockHandle
+	(P.tryTakeLock P.lockPool file LockShared)
+	(F.tryLockShared mode file)
+
+-- Tries to take an exclusive lock, but does not block.
 tryLockExclusive :: Maybe FileMode -> LockFile -> IO (Maybe LockHandle)
 tryLockExclusive mode file = tryMakeLockHandle
 	(P.tryTakeLock P.lockPool file LockExclusive)
