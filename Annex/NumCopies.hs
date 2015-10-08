@@ -113,7 +113,7 @@ verifyEnoughCopies nolocmsg key need skip preverified tocheck =
 		| otherwise = do
 			haskey <- Remote.hasKey r key
 			case haskey of
-				Right True  -> helper bad missing (VerifiedCopy u:have) rs
+				Right True  -> helper bad missing (mkVerifiedCopy RecentlyVerifiedCopy u : have) rs
 				Left _      -> helper (r:bad) missing have rs
 				Right False -> helper bad (u:missing) have rs
 	   where

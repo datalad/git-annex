@@ -143,4 +143,4 @@ verifiedExisting key destfile = do
 	(remotes, trusteduuids) <- knownCopies key
 	untrusteduuids <- trustGet UnTrusted
 	let tocheck = Remote.remotesWithoutUUID remotes (trusteduuids++untrusteduuids)
-	verifyEnoughCopies [] key need [] (map TrustedCopy trusteduuids) tocheck
+	verifyEnoughCopies [] key need [] (map (mkVerifiedCopy TrustedCopy) trusteduuids) tocheck

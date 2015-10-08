@@ -161,7 +161,7 @@ genTransfer t info = case transferRemote info of
 					("object uploaded to " ++ show remote)
 					True (transferKey t)
 					(associatedFile info)
-					[VerifiedCopy (Remote.uuid remote)]
+					[mkVerifiedCopy RecentlyVerifiedCopy remote]
 			void recordCommit
 		, whenM (liftAnnex $ isNothing <$> checkTransfer t) $
 			void $ removeTransfer t

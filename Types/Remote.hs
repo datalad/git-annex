@@ -131,6 +131,9 @@ instance Eq (RemoteA a) where
 instance Ord (RemoteA a) where
 	compare = comparing uuid
 
+instance ToUUID (RemoteA a) where
+	toUUID = uuid
+
 -- Use Verified when the content of a key is verified as part of a
 -- transfer, and so a separate verification step is not needed.
 data Verification = UnVerified | Verified

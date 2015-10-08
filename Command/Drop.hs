@@ -95,7 +95,7 @@ startRemote afile numcopies key remote = do
 performLocal :: Key -> AssociatedFile -> NumCopies -> [VerifiedCopy] -> CommandPerform
 performLocal key afile numcopies preverified = lockContentExclusive key $ \contentlock -> do
 	(remotes, trusteduuids) <- Remote.keyPossibilitiesTrusted key
-	let preverified' = preverified ++ map TrustedCopy trusteduuids
+	let preverified' = preverified ++ map (mkVerifiedCopy TrustedCopy) trusteduuids
 	untrusteduuids <- trustGet UnTrusted
 	let tocheck = Remote.remotesWithoutUUID remotes (map toUUID preverified'++untrusteduuids)
 	u <- getUUID
@@ -117,10 +117,11 @@ performRemote key afile numcopies remote = do
 	-- as long as the local repo is not untrusted.
 	(remotes, trusteduuids) <- knownCopies key
 	let trusted = filter (/= uuid) trusteduuids
+	let preverified = map (mkVerifiedCopy TrustedCopy) trusted
 	untrusteduuids <- trustGet UnTrusted
 	let tocheck = filter (/= remote) $
 		Remote.remotesWithoutUUID remotes (trusted++untrusteduuids)
-	stopUnless (canDrop uuid key afile numcopies [uuid] (map TrustedCopy trusted) tocheck) $ do
+	stopUnless (canDrop uuid key afile numcopies [uuid] preverified tocheck) $ do
 		ok <- Remote.removeKey remote key
 		next $ cleanupRemote key remote ok
   where

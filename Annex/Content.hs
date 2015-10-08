@@ -183,7 +183,10 @@ contentLockFile key = Just <$> calcRepo (gitAnnexContentLock key)
 lockContentShared :: Key -> (VerifiedCopy -> Annex a) -> Annex a
 lockContentShared key a = lockContentUsing lock key $ do
 	u <- getUUID
-	a (VerifiedCopyLock u (return ()))
+	bracketIO 
+		(invalidatableVerifiedCopy VerifiedCopyLock u) 
+		invalidateVerifiedCopy
+		a
   where
 #ifndef mingw32_HOST_OS
 	lock contentfile Nothing = liftIO $ tryLockShared Nothing contentfile

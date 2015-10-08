@@ -24,6 +24,9 @@ fromUUID NoUUID = ""
 class ToUUID a where
 	toUUID :: a -> UUID
 
+instance ToUUID UUID where
+	toUUID = id
+
 instance ToUUID String where
 	toUUID [] = NoUUID
 	toUUID s = UUID s
