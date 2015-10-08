@@ -30,14 +30,13 @@ fromNumCopies (NumCopies n) = n
 
 -- A verification that a copy of a key exists in a repository.
 data VerifiedCopy
-	{- Use when a repository cannot be accessed, but it's
-	 - a trusted repository, which is on record as containing a key
-	 - and is presumably not going to lose its copy. 
-	 - This is the weakest level of verification. -}
-	= TrustedCopy V
 	{- Represents a recent verification that a copy of an
 	 - object exists in a repository with the given UUID. -}
-	| RecentlyVerifiedCopy V
+	= RecentlyVerifiedCopy V
+	{- Use when a repository cannot be accessed, but it's
+	 - a trusted repository, which is on record as containing a key
+	 - and is presumably not going to lose its copy. -}
+	| TrustedCopy V
  	{- The strongest proof of the existence of a copy.
 	 - Until its associated action is called to unlock it,
 	 - the copy is locked in the repository and is guaranteed
@@ -72,9 +71,9 @@ instance Show V where
 strongestVerifiedCopy :: VerifiedCopy -> VerifiedCopy -> VerifiedCopy
 strongestVerifiedCopy a@(VerifiedCopyLock _) _ = a
 strongestVerifiedCopy _ b@(VerifiedCopyLock _) = b
+strongestVerifiedCopy a@(TrustedCopy _) _ = a
+strongestVerifiedCopy _ b@(TrustedCopy _) = b
 strongestVerifiedCopy a@(RecentlyVerifiedCopy _) _ = a
-strongestVerifiedCopy _ b@(RecentlyVerifiedCopy _) = b
-strongestVerifiedCopy a@(TrustedCopy _) _  = a
 
 -- Retains stronger verifications over weaker for the same uuid.
 deDupVerifiedCopies :: [VerifiedCopy] -> [VerifiedCopy]
