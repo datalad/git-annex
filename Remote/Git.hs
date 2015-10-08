@@ -142,6 +142,7 @@ gen r u c gc
 			, retrieveKeyFile = copyFromRemote new
 			, retrieveKeyFileCheap = copyFromRemoteCheap new
 			, removeKey = dropKey new
+			, lockContent = Nothing
 			, checkPresent = inAnnex new
 			, checkPresentCheap = repoCheap r
 			, whereisKey = Nothing

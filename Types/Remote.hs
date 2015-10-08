@@ -7,6 +7,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE RankNTypes #-}
+
 module Types.Remote
 	( RemoteConfigKey
 	, RemoteConfig
@@ -72,8 +74,12 @@ data RemoteA a = Remote {
 	-- Retrieves a key's contents to a tmp file, if it can be done cheaply.
 	-- It's ok to create a symlink or hardlink.
 	retrieveKeyFileCheap :: Key -> AssociatedFile -> FilePath -> a Bool,
-	-- removes a key's contents (succeeds if the contents are not present)
+	-- Removes a key's contents (succeeds if the contents are not present)
 	removeKey :: Key -> a Bool,
+	-- Uses locking to prevent removal of a key's contents,
+	-- and runs the passed action while it's locked.
+	-- This is optional; remotes do not have to support locking.
+	lockContent :: forall r. Maybe (Key -> a r -> a r),
 	-- Checks if a key is present in the remote.
 	-- Throws an exception if the remote cannot be accessed.
 	checkPresent :: Key -> a Bool,

@@ -57,6 +57,7 @@ gen r u c gc = do
 		, retrieveKeyFile = retreiveKeyFileDummy
 		, retrieveKeyFileCheap = retrieveCheap
 		, removeKey = removeKeyDummy
+		, lockContent = Nothing
 		, checkPresent = checkPresentDummy
 		, checkPresentCheap = ddarLocal ddarrepo
 		, whereisKey = Nothing

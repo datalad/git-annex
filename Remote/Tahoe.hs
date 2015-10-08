@@ -72,6 +72,7 @@ gen r u c gc = do
 		, retrieveKeyFile = retrieve u hdl
 		, retrieveKeyFileCheap = \_ _ _ -> return False
 		, removeKey = remove
+		, lockContent = Nothing
 		, checkPresent = checkKey u hdl
 		, checkPresentCheap = False
 		, whereisKey = Nothing

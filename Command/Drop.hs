@@ -91,7 +91,7 @@ startRemote afile numcopies key remote = do
 -- Note that lockContentExclusive is called before checking if the key is
 -- present on enough remotes to allow removal. This avoids a scenario where two
 -- or more remotes are trying to remove a key at the same time, and each
--- see the key is present on the other.
+-- sees the key is present on the other.
 performLocal :: Key -> AssociatedFile -> NumCopies -> Maybe Remote -> CommandPerform
 performLocal key afile numcopies knownpresentremote = lockContentExclusive key $ \contentlock -> do
 	(remotes, trusteduuids) <- Remote.keyPossibilitiesTrusted key

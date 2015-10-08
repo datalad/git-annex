@@ -55,6 +55,7 @@ gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
 			, retrieveKeyFile = retreiveKeyFileDummy
 			, retrieveKeyFileCheap = retrieveCheap this
 			, removeKey = removeKeyDummy
+			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
 			, whereisKey = Nothing
