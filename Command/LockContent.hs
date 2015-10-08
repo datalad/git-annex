@@ -27,7 +27,7 @@ seek = withWords start
 -- dropping the lock.
 start :: [String] -> CommandStart
 start [ks] = do
-	ok <- lockContentShared k locksuccess
+	ok <- lockContentShared k (const locksuccess)
 		`catchNonAsync` (const $ return False)
 	liftIO $ if ok
 		then exitSuccess

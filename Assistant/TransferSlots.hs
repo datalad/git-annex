@@ -30,6 +30,7 @@ import Annex.Content
 import Annex.Wanted
 import Annex.Path
 import Utility.Batch
+import Types.NumCopies
 
 import qualified Data.Map as M 
 import qualified Control.Exception as E
@@ -160,7 +161,7 @@ genTransfer t info = case transferRemote info of
 					("object uploaded to " ++ show remote)
 					True (transferKey t)
 					(associatedFile info)
-					(Just remote)
+					[VerifiedCopy (Remote.uuid remote)]
 			void recordCommit
 		, whenM (liftAnnex $ isNothing <$> checkTransfer t) $
 			void $ removeTransfer t
@@ -225,7 +226,7 @@ finishedTransfer t (Just info)
   where
 	dodrops fromhere = handleDrops
 		("drop wanted after " ++ describeTransfer t info)
-		fromhere (transferKey t) (associatedFile info) Nothing
+		fromhere (transferKey t) (associatedFile info) []
 finishedTransfer _ _ = noop
 
 {- Pause a running transfer. -}

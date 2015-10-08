@@ -96,11 +96,11 @@ verifyEnoughCopies
 	-> Key
 	-> NumCopies
 	-> [UUID] -- repos to skip considering (generally untrusted remotes)
-	-> [UUID] -- repos that are trusted or already verified to have it
+	-> [VerifiedCopy] -- already known verifications
 	-> [Remote] -- remotes to check to see if they have it
 	-> Annex Bool
-verifyEnoughCopies nolocmsg key need skip trusted tocheck = 
-	helper [] [] (nub trusted) (nub tocheck)
+verifyEnoughCopies nolocmsg key need skip preverified tocheck = 
+	helper [] [] (deDupVerifiedCopies preverified) (nub tocheck)
   where
 	helper bad missing have []
 		| NumCopies (length have) >= need = return True
@@ -109,17 +109,17 @@ verifyEnoughCopies nolocmsg key need skip trusted tocheck =
 			return False
 	helper bad missing have (r:rs)
 		| NumCopies (length have) >= need = return True
+		| any (== u) (map toUUID have) = helper bad missing have rs
 		| otherwise = do
-			let u = Remote.uuid r
-			let duplicate = u `elem` have
 			haskey <- Remote.hasKey r key
-			case (duplicate, haskey) of
-				(False, Right True)  -> helper bad missing (u:have) rs
-				(False, Left _)      -> helper (r:bad) missing have rs
-				(False, Right False) -> helper bad (u:missing) have rs
-				_                    -> helper bad missing have rs
+			case haskey of
+				Right True  -> helper bad missing (VerifiedCopy u:have) rs
+				Left _      -> helper (r:bad) missing have rs
+				Right False -> helper bad (u:missing) have rs
+	   where
+		u = Remote.uuid r
 
-notEnoughCopies :: Key -> NumCopies -> [UUID] -> [UUID] -> [Remote] -> String -> Annex ()
+notEnoughCopies :: Key -> NumCopies -> [VerifiedCopy] -> [UUID] -> [Remote] -> String -> Annex ()
 notEnoughCopies key need have skip bad nolocmsg = do
 	showNote "unsafe"
 	showLongNote $
@@ -127,7 +127,7 @@ notEnoughCopies key need have skip bad nolocmsg = do
 		show (length have) ++ " out of " ++ show (fromNumCopies need) ++ 
 		" necessary copies"
 	Remote.showTriedRemotes bad
-	Remote.showLocations True key (have++skip) nolocmsg
+	Remote.showLocations True key (map toUUID have++skip) nolocmsg
 
 {- Cost ordered lists of remotes that the location log indicates
  - may have a key.

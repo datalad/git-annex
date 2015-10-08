@@ -65,7 +65,7 @@ startKey o afile key = case fromToOptions o of
 			Right False -> ifM (inAnnex key)
 				( do
 					numcopies <- getnumcopies
-					Command.Drop.startLocal afile numcopies key Nothing
+					Command.Drop.startLocal afile numcopies key []
 				, stop
 				)
   where

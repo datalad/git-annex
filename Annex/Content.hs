@@ -67,6 +67,8 @@ import Messages.Progress
 import qualified Types.Remote
 import qualified Types.Backend
 import qualified Backend
+import Types.NumCopies
+import Annex.UUID
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
@@ -178,8 +180,10 @@ contentLockFile key = Just <$> calcRepo (gitAnnexContentLock key)
  - Note that, in direct mode, nothing prevents the user from directly
  - editing or removing the content, even while it's locked by this.
  -}
-lockContentShared :: Key -> Annex a -> Annex a
-lockContentShared = lockContentUsing lock
+lockContentShared :: Key -> (VerifiedCopy -> Annex a) -> Annex a
+lockContentShared key a = lockContentUsing lock key $ do
+	u <- getUUID
+	a (VerifiedCopyLock u (return ()))
   where
 #ifndef mingw32_HOST_OS
 	lock contentfile Nothing = liftIO $ tryLockShared Nothing contentfile
@@ -195,7 +199,7 @@ newtype ContentLockExclusive = ContentLockExclusive Key
  -}
 lockContentExclusive :: Key -> (ContentLockExclusive -> Annex a) -> Annex a
 lockContentExclusive key a = lockContentUsing lock key $ 
-	a $ ContentLockExclusive key
+	a (ContentLockExclusive key)
   where
 #ifndef mingw32_HOST_OS
 	{- Since content files are stored with the write bit disabled, have
@@ -238,7 +242,7 @@ lockContentUsing locker key a = do
 	bracket
 		(lock contentfile lockfile)
 		(unlock lockfile)
-		(const $ a)
+		(const a)
   where
 	alreadylocked = error "content is locked"
 	failedtolock e = error $ "failed to lock content: " ++ show e

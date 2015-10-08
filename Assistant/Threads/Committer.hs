@@ -479,7 +479,7 @@ checkChangeContent change@(Change { changeInfo = i }) =
 			void $ if present
 				then queueTransfers "new file created" Next k (Just f) Upload
 				else queueTransfers "new or renamed file wanted" Next k (Just f) Download
-			handleDrops "file renamed" present k (Just f) Nothing
+			handleDrops "file renamed" present k (Just f) []
   where
 	f = changeFile change
 checkChangeContent _ = noop

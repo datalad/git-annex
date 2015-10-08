@@ -64,11 +64,11 @@ start' o key afile = do
 	checkDropAuto (autoMode o) from afile key $ \numcopies ->
 		stopUnless (want from) $
 			case from of
-				Nothing -> startLocal afile numcopies key Nothing
+				Nothing -> startLocal afile numcopies key []
 				Just remote -> do
 					u <- getUUID
 					if Remote.uuid remote == u
-						then startLocal afile numcopies key Nothing
+						then startLocal afile numcopies key []
 						else startRemote afile numcopies key remote
 	  where
 		want from
@@ -78,10 +78,10 @@ start' o key afile = do
 startKeys :: DropOptions -> Key -> CommandStart
 startKeys o key = start' o key Nothing
 
-startLocal :: AssociatedFile -> NumCopies -> Key -> Maybe Remote -> CommandStart
-startLocal afile numcopies key knownpresentremote = stopUnless (inAnnex key) $ do
+startLocal :: AssociatedFile -> NumCopies -> Key -> [VerifiedCopy] -> CommandStart
+startLocal afile numcopies key preverified = stopUnless (inAnnex key) $ do
 	showStart' "drop" key afile
-	next $ performLocal key afile numcopies knownpresentremote
+	next $ performLocal key afile numcopies preverified
 
 startRemote :: AssociatedFile -> NumCopies -> Key -> Remote -> CommandStart
 startRemote afile numcopies key remote = do
@@ -92,16 +92,14 @@ startRemote afile numcopies key remote = do
 -- present on enough remotes to allow removal. This avoids a scenario where two
 -- or more remotes are trying to remove a key at the same time, and each
 -- sees the key is present on the other.
-performLocal :: Key -> AssociatedFile -> NumCopies -> Maybe Remote -> CommandPerform
-performLocal key afile numcopies knownpresentremote = lockContentExclusive key $ \contentlock -> do
+performLocal :: Key -> AssociatedFile -> NumCopies -> [VerifiedCopy] -> CommandPerform
+performLocal key afile numcopies preverified = lockContentExclusive key $ \contentlock -> do
 	(remotes, trusteduuids) <- Remote.keyPossibilitiesTrusted key
-	let trusteduuids' = case knownpresentremote of
-		Nothing -> trusteduuids
-		Just r -> Remote.uuid r:trusteduuids
+	let preverified' = preverified ++ map TrustedCopy trusteduuids
 	untrusteduuids <- trustGet UnTrusted
-	let tocheck = Remote.remotesWithoutUUID remotes (trusteduuids'++untrusteduuids)
+	let tocheck = Remote.remotesWithoutUUID remotes (map toUUID preverified'++untrusteduuids)
 	u <- getUUID
-	ifM (canDrop u key afile numcopies trusteduuids' tocheck [])
+	ifM (canDrop u key afile numcopies [] preverified' tocheck)
 		( do
 			removeAnnex contentlock
 			notifyDrop afile True
@@ -118,11 +116,11 @@ performRemote key afile numcopies remote = do
 	-- When the local repo has the key, that's one additional copy,
 	-- as long as the local repo is not untrusted.
 	(remotes, trusteduuids) <- knownCopies key
-	let have = filter (/= uuid) trusteduuids
+	let trusted = filter (/= uuid) trusteduuids
 	untrusteduuids <- trustGet UnTrusted
 	let tocheck = filter (/= remote) $
-		Remote.remotesWithoutUUID remotes (have++untrusteduuids)
-	stopUnless (canDrop uuid key afile numcopies have tocheck [uuid]) $ do
+		Remote.remotesWithoutUUID remotes (trusted++untrusteduuids)
+	stopUnless (canDrop uuid key afile numcopies [uuid] (map TrustedCopy trusted) tocheck) $ do
 		ok <- Remote.removeKey remote key
 		next $ cleanupRemote key remote ok
   where
@@ -140,19 +138,18 @@ cleanupRemote key remote ok = do
 	return ok
 
 {- Checks specified remotes to verify that enough copies of a key exist to
- - allow it to be safely removed (with no data loss). Can be provided with
- - some locations where the key is known/assumed to be present.
+ - allow it to be safely removed (with no data loss).
  -
  - Also checks if it's required content, and refuses to drop if so.
  -
  - --force overrides and always allows dropping.
  -}
-canDrop :: UUID -> Key -> AssociatedFile -> NumCopies -> [UUID] -> [Remote] -> [UUID] -> Annex Bool
-canDrop dropfrom key afile numcopies have check skip = 
+canDrop :: UUID -> Key -> AssociatedFile -> NumCopies -> [UUID] -> [VerifiedCopy] -> [Remote] -> Annex Bool
+canDrop dropfrom key afile numcopies skip preverified check = 
 	ifM (Annex.getState Annex.force)
 		( return True
 			, ifM (checkRequiredContent dropfrom key afile
-				<&&> verifyEnoughCopies nolocmsg key numcopies skip have check
+				<&&> verifyEnoughCopies nolocmsg key numcopies skip preverified check
 				)
 				( return True
 				, do

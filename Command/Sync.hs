@@ -460,8 +460,8 @@ syncFile ebloom rs af k = do
 		-- includeCommandAction for drops,
 		-- because a failure to drop does not mean
 		-- the sync failed.
-		handleDropsFrom locs' rs "unwanted" True k af
-			Nothing callCommandAction
+		handleDropsFrom locs' rs "unwanted" True k af []
+			callCommandAction
 	
 	return (got || not (null putrs))
   where
