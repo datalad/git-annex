@@ -108,7 +108,11 @@ verifyEnoughCopies nolocmsg key need skip preverified tocheck =
 			notEnoughCopies key need have (skip++missing) bad nolocmsg
 			return False
 	helper bad missing have (r:rs)
-		| NumCopies (length have) >= need = return True
+		| verifiedEnoughCopies need have = do
+			stillhave <- liftIO $ filterM checkVerifiedCopy have
+			if verifiedEnoughCopies need stillhave
+				then return True
+				else helper bad missing stillhave (r:rs)
 		| any (== u) (map toUUID have) = helper bad missing have rs
 		| otherwise = do
 			haskey <- Remote.hasKey r key
@@ -118,6 +122,26 @@ verifyEnoughCopies nolocmsg key need skip preverified tocheck =
 				Right False -> helper bad (u:missing) have rs
 	   where
 		u = Remote.uuid r
+
+{- Check whether enough verification has been done of copies to allow
+ - dropping content safely.
+ -
+ - Unless numcopies is 0, at least one VerifiedCopyLock is required.
+ - This prevents races between concurrent drops from dropping the last
+ - copy, no matter what.
+ -
+ - The other N-1 copies can be less strong verifications. While those
+ - are subject to concurrent drop races, and so could be dropped
+ - all at once, causing numcopies to be violated, this is the best that can
+ - be done without requiring all special remotes to support locking.
+ -}
+verifiedEnoughCopies :: NumCopies -> [VerifiedCopy] -> Bool
+verifiedEnoughCopies (NumCopies n) l
+	| n == 0 = True
+	| otherwise = length l >= n && any islock l
+  where
+	islock (VerifiedCopyLock _) = True
+	islock _ = False
 
 notEnoughCopies :: Key -> NumCopies -> [VerifiedCopy] -> [UUID] -> [Remote] -> String -> Annex ()
 notEnoughCopies key need have skip bad nolocmsg = do
