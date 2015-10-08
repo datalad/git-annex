@@ -77,7 +77,11 @@ getFileNumCopies' file = maybe getGlobalNumCopies (return . Just) =<< getattr
 
 {- Checks if numcopies are satisfied for a file by running a comparison
  - between the number of (not untrusted) copies that are
- - belived to exist, and the configured value. -}
+ - belived to exist, and the configured value.
+ -
+ - This is good enough for everything except dropping the file, which
+ - requires active verification of the copies.
+ -}
 numCopiesCheck :: FilePath -> Key -> (Int -> Int -> v) -> Annex v
 numCopiesCheck file key vs = do
 	have <- trustExclude UnTrusted =<< Remote.keyLocations key
@@ -89,14 +93,14 @@ numCopiesCheck' file vs have = do
 	return $ length have `vs` needed
 
 {- Verifies that enough copies of a key exist amoung the listed remotes,
- - priting an informative message if not.
+ - printing an informative message if not.
  -}
 verifyEnoughCopies 
 	:: String -- message to print when there are no known locations
 	-> Key
 	-> NumCopies
 	-> [UUID] -- repos to skip considering (generally untrusted remotes)
-	-> [VerifiedCopy] -- already known verifications
+	-> [VerifiedCopy] -- copies already verified to exist
 	-> [Remote] -- remotes to check to see if they have it
 	-> Annex Bool
 verifyEnoughCopies nolocmsg key need skip preverified tocheck = 
@@ -113,15 +117,13 @@ verifyEnoughCopies nolocmsg key need skip preverified tocheck =
 			if verifiedEnoughCopies need stillhave
 				then return True
 				else helper bad missing stillhave (r:rs)
-		| any (== u) (map toUUID have) = helper bad missing have rs
+		| any isFullVerification have = helper bad missing have rs
 		| otherwise = do
 			haskey <- Remote.hasKey r key
 			case haskey of
-				Right True  -> helper bad missing (mkVerifiedCopy RecentlyVerifiedCopy u : have) rs
+				Right True  -> helper bad missing (mkVerifiedCopy RecentlyVerifiedCopy r : have) rs
 				Left _      -> helper (r:bad) missing have rs
-				Right False -> helper bad (u:missing) have rs
-	   where
-		u = Remote.uuid r
+				Right False -> helper bad (Remote.uuid r:missing) have rs
 
 {- Check whether enough verification has been done of copies to allow
  - dropping content safely.
@@ -138,10 +140,11 @@ verifyEnoughCopies nolocmsg key need skip preverified tocheck =
 verifiedEnoughCopies :: NumCopies -> [VerifiedCopy] -> Bool
 verifiedEnoughCopies (NumCopies n) l
 	| n == 0 = True
-	| otherwise = length l >= n && any islock l
-  where
-	islock (VerifiedCopyLock _) = True
-	islock _ = False
+	| otherwise = length (deDupVerifiedCopies l) >= n && any isFullVerification l
+
+isFullVerification :: VerifiedCopy -> Bool
+isFullVerification (VerifiedCopyLock _) = True
+isFullVerification _ = False
 
 notEnoughCopies :: Key -> NumCopies -> [VerifiedCopy] -> [UUID] -> [Remote] -> String -> Annex ()
 notEnoughCopies key need have skip bad nolocmsg = do
