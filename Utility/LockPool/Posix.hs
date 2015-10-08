@@ -6,6 +6,7 @@
  -}
 
 module Utility.LockPool.Posix (
+	P.LockFile,
 	LockHandle,
 	lockShared,
 	lockExclusive,
