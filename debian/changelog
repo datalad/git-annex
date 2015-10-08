@@ -20,6 +20,8 @@ git-annex (5.20150931) UNRELEASED; urgency=medium
     and stop recommending bittornado | bittorrent.
   * Debian: Remove dependency on transformers library, as it is now
     included in ghc.
+  * git-annex-shell: Added lockcontent command, to prevent dropping of
+    key's content.
 
  -- Joey Hess <id@joeyh.name>  Thu, 01 Oct 2015 12:42:56 -0400
 
