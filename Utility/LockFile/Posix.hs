@@ -39,7 +39,7 @@ lockExclusive = lock WriteLock
 -- Tries to take an exclusive lock, but does not block.
 tryLockExclusive :: Maybe FileMode -> LockFile -> IO (Maybe LockHandle)
 tryLockExclusive mode lockfile = do
-	l <- openLockFile mode lockfile
+	l <- openLockFile WriteLock mode lockfile
 	v <- tryIO $ setLock l (WriteLock, AbsoluteSeek, 0, 0)
 	case v of
 		Left _ -> do
@@ -51,16 +51,20 @@ tryLockExclusive mode lockfile = do
 -- If it's Nothing then this only succeeds when the lock file already exists.
 lock :: LockRequest -> Maybe FileMode -> LockFile -> IO LockHandle
 lock lockreq mode lockfile = do
-	l <- openLockFile mode lockfile
+	l <- openLockFile lockreq mode lockfile
 	waitToSetLock l (lockreq, AbsoluteSeek, 0, 0)
 	return (LockHandle l)
 
 -- Close on exec flag is set so child processes do not inherit the lock.
-openLockFile :: Maybe FileMode -> LockFile -> IO Fd
-openLockFile filemode lockfile = do
-	l <- openFd lockfile ReadWrite filemode defaultFileFlags
+openLockFile :: LockRequest -> Maybe FileMode -> LockFile -> IO Fd
+openLockFile lockreq filemode lockfile = do
+	l <- openFd lockfile openfor filemode defaultFileFlags
 	setFdOption l CloseOnExec True
 	return l
+  where
+	openfor = case lockreq of
+		ReadLock -> ReadOnly
+		_ -> ReadWrite
 
 -- Returns Nothing when the file doesn't exist, for cases where
 -- that is different from it not being locked.
@@ -81,7 +85,7 @@ getLockStatus lockfile = do
 getLockStatus' :: LockFile -> IO (Maybe (Maybe ProcessID))
 getLockStatus' lockfile = go =<< catchMaybeIO open
   where
-	open = openFd lockfile ReadOnly Nothing defaultFileFlags
+	open = openLockFile ReadLock Nothing lockfile
 	go Nothing = return Nothing
 	go (Just h) = do
 		v <- getLock h (ReadLock, AbsoluteSeek, 0, 0)
