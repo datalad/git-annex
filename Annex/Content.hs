@@ -192,8 +192,6 @@ newtype ContentLockExclusive = ContentLockExclusive Key
 
 {- Exclusively locks content, while performing an action that
  - might remove it.
- -
- - (If the content is not present, no locking is done.)
  -}
 lockContentExclusive :: Key -> (ContentLockExclusive -> Annex a) -> Annex a
 lockContentExclusive key a = lockContentUsing lock key $ 
