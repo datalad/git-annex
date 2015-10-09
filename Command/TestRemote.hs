@@ -120,7 +120,7 @@ test st r k =
 	, check "storeKey when already present" store
 	, present True
 	, check "retrieveKeyFile" $ do
-		lockContentExclusive k removeAnnex
+		lockContentForRemoval k removeAnnex
 		get
 	, check "fsck downloaded object" fsck
 	, check "retrieveKeyFile resume from 33%" $ do
@@ -130,20 +130,20 @@ test st r k =
 			sz <- hFileSize h
 			L.hGet h $ fromInteger $ sz `div` 3
 		liftIO $ L.writeFile tmp partial
-		lockContentExclusive k removeAnnex
+		lockContentForRemoval k removeAnnex
 		get
 	, check "fsck downloaded object" fsck
 	, check "retrieveKeyFile resume from 0" $ do
 		tmp <- prepTmp k
 		liftIO $ writeFile tmp ""
-		lockContentExclusive k removeAnnex
+		lockContentForRemoval k removeAnnex
 		get
 	, check "fsck downloaded object" fsck
 	, check "retrieveKeyFile resume from end" $ do
 		loc <- Annex.calcRepo (gitAnnexLocation k)
 		tmp <- prepTmp k
 		void $ liftIO $ copyFileExternal CopyAllMetaData loc tmp
-		lockContentExclusive k removeAnnex
+		lockContentForRemoval k removeAnnex
 		get
 	, check "fsck downloaded object" fsck
 	, check "removeKey when present" remove
@@ -189,7 +189,7 @@ testUnavailable st r k =
 cleanup :: [Remote] -> [Key] -> Bool -> CommandCleanup
 cleanup rs ks ok = do
 	forM_ rs $ \r -> forM_ ks (Remote.removeKey r)
-	forM_ ks $ \k -> lockContentExclusive k removeAnnex
+	forM_ ks $ \k -> lockContentForRemoval k removeAnnex
 	return ok
 
 chunkSizes :: Int -> Bool -> [Int]

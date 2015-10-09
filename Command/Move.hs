@@ -123,7 +123,7 @@ toPerform dest move key afile fastcheck isthere =
 			finish
   where
 	finish
-		| move = lockContentExclusive key $ \contentlock -> do
+		| move = lockContentForRemoval key $ \contentlock -> do
 			removeAnnex contentlock
 			next $ Command.Drop.cleanupLocal key
 		| otherwise = next $ return True

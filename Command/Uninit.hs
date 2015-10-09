@@ -105,7 +105,7 @@ removeUnannexed = go []
 	go c [] = return c
 	go c (k:ks) = ifM (inAnnexCheck k $ liftIO . enoughlinks)
 		( do
-			lockContentExclusive k removeAnnex
+			lockContentForRemoval k removeAnnex
 			go c ks
 		, go (k:c) ks
 		)

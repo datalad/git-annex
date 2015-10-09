@@ -104,12 +104,13 @@ data UnVerifiedCopy = UnVerifiedRemote Remote | UnVerifiedHere
 	deriving (Ord, Eq)
 
 {- Verifies that enough copies of a key exist amoung the listed remotes,
- - running an action with a proof if so, and printing an informative
- - message if not.
+ - to safely drop it, running an action with a proof if so, and
+ - printing an informative message if not.
  -}
 verifyEnoughCopiesToDrop
 	:: String -- message to print when there are no known locations
 	-> Key
+	-> Maybe ContentRemovalLock
 	-> NumCopies
 	-> [UUID] -- repos to skip considering (generally untrusted remotes)
 	-> [VerifiedCopy] -- copies already verified to exist
@@ -117,19 +118,19 @@ verifyEnoughCopiesToDrop
 	-> (SafeDropProof -> Annex a) -- action to perform to drop
 	-> Annex a -- action to perform when unable to drop
 	-> Annex a
-verifyEnoughCopiesToDrop nolocmsg key need skip preverified tocheck dropaction nodropaction = 
+verifyEnoughCopiesToDrop nolocmsg key removallock need skip preverified tocheck dropaction nodropaction = 
 	helper [] [] preverified (nub tocheck)
   where
 	helper bad missing have [] = do
-		p <- liftIO $ mkSafeDropProof need have
+		p <- liftIO $ mkSafeDropProof need have removallock
 		case p of
 			Right proof -> dropaction proof
 			Left stillhave -> do
 				notEnoughCopies key need stillhave (skip++missing) bad nolocmsg
 				nodropaction
 	helper bad missing have (c:cs)
-		| isSafeDrop need have = do
-			p <- liftIO $ mkSafeDropProof need have
+		| isSafeDrop need have removallock = do
+			p <- liftIO $ mkSafeDropProof need have removallock
 			case p of
 				Right proof -> dropaction proof
 				Left stillhave -> helper bad missing stillhave (c:cs)

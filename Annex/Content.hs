@@ -13,7 +13,8 @@ module Annex.Content (
 	inAnnexSafe,
 	inAnnexCheck,
 	lockContentShared,
-	lockContentExclusive,
+	lockContentForRemoval,
+	ContentRemovalLock,
 	getViaTmp,
 	getViaTmp',
 	checkDiskSpaceToGet,
@@ -192,14 +193,12 @@ lockContentShared key a = lockContentUsing lock key $ do
 	lock = winLocker lockShared
 #endif
 
-newtype ContentLockExclusive = ContentLockExclusive Key
-
 {- Exclusively locks content, while performing an action that
  - might remove it.
  -}
-lockContentExclusive :: Key -> (ContentLockExclusive -> Annex a) -> Annex a
-lockContentExclusive key a = lockContentUsing lock key $ 
-	a (ContentLockExclusive key)
+lockContentForRemoval :: Key -> (ContentRemovalLock -> Annex a) -> Annex a
+lockContentForRemoval key a = lockContentUsing lock key $ 
+	a (ContentRemovalLock key)
   where
 #ifndef mingw32_HOST_OS
 	{- Since content files are stored with the write bit disabled, have
@@ -547,8 +546,8 @@ cleanObjectLoc key cleaner = do
  - In direct mode, deletes the associated files or files, and replaces
  - them with symlinks.
  -}
-removeAnnex :: ContentLockExclusive -> Annex ()
-removeAnnex (ContentLockExclusive key) = withObjectLoc key remove removedirect
+removeAnnex :: ContentRemovalLock -> Annex ()
+removeAnnex (ContentRemovalLock key) = withObjectLoc key remove removedirect
   where
 	remove file = cleanObjectLoc key $ do
 		secureErase file

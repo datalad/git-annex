@@ -31,7 +31,7 @@ start key = stopUnless (inAnnex key) $ do
 	next $ perform key
 
 perform :: Key -> CommandPerform
-perform key = lockContentExclusive key $ \contentlock -> do
+perform key = lockContentForRemoval key $ \contentlock -> do
 	removeAnnex contentlock
 	next $ cleanup key
 

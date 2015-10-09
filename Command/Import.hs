@@ -139,5 +139,5 @@ verifyExisting key destfile (yes, no) = do
 	need <- getFileNumCopies destfile
 
 	(tocheck, preverified) <- verifiableCopies key []
-	verifyEnoughCopiesToDrop [] key need [] preverified tocheck
+	verifyEnoughCopiesToDrop [] key Nothing need [] preverified tocheck
 		(const yes) no

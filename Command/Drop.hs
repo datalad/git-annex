@@ -91,15 +91,11 @@ startRemote afile numcopies key remote = do
 	showStart' ("drop " ++ Remote.name remote) key afile
 	next $ performRemote key afile numcopies remote
 
--- Note that lockContentExclusive is called before checking if the key is
--- present on enough remotes to allow removal. This avoids a scenario where two
--- or more remotes are trying to remove a key at the same time, and each
--- sees the key is present on the other.
 performLocal :: Key -> AssociatedFile -> NumCopies -> [VerifiedCopy] -> CommandPerform
-performLocal key afile numcopies preverified = lockContentExclusive key $ \contentlock -> do
+performLocal key afile numcopies preverified = lockContentForRemoval key $ \contentlock -> do
 	u <- getUUID
 	(tocheck, verified) <- verifiableCopies key [u]
-	doDrop u key afile numcopies [] (preverified ++ verified) tocheck
+	doDrop u (Just contentlock) key afile numcopies [] (preverified ++ verified) tocheck
 		( \proof -> do
 			liftIO $ debugM "drop" $ unwords
 				[ "Dropping from here"
@@ -121,7 +117,7 @@ performRemote key afile numcopies remote = do
 	-- When the local repo has the key, that's one additional copy,
 	-- as long as the local repo is not untrusted.
 	(tocheck, verified) <- verifiableCopies key [uuid]
-	doDrop uuid key afile numcopies [uuid] verified tocheck
+	doDrop uuid Nothing key afile numcopies [uuid] verified tocheck
 		( \proof -> do 
 			liftIO $ debugM "drop" $ unwords
 				[ "Dropping from remote"
@@ -159,6 +155,7 @@ cleanupRemote key remote ok = do
  -}
 doDrop
 	:: UUID
+	-> Maybe ContentRemovalLock
 	-> Key
 	-> AssociatedFile
 	-> NumCopies
@@ -167,11 +164,12 @@ doDrop
 	-> [UnVerifiedCopy]
 	-> (Maybe SafeDropProof -> CommandPerform, CommandPerform)
 	-> CommandPerform
-doDrop dropfrom key afile numcopies skip preverified check (dropaction, nodropaction) = 
+doDrop dropfrom contentlock key afile numcopies skip preverified check (dropaction, nodropaction) = 
 	ifM (Annex.getState Annex.force)
 		( dropaction Nothing
 		, ifM (checkRequiredContent dropfrom key afile)
-			( verifyEnoughCopiesToDrop nolocmsg key numcopies
+			( verifyEnoughCopiesToDrop nolocmsg key 
+				contentlock numcopies
 				skip preverified check
 					(dropaction . Just)
 					(forcehint nodropaction)
