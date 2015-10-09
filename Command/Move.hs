@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2013 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,6 +16,9 @@ import qualified Remote
 import Annex.UUID
 import Annex.Transfer
 import Logs.Presence
+import Annex.NumCopies
+
+import System.Log.Logger (debugM)
 
 cmd :: Command
 cmd = withGlobalOptions (jobsOption : annexedMatchingOptions) $
@@ -170,6 +173,18 @@ fromPerform src move key afile = ifM (inAnnex key)
 				Remote.retrieveKeyFile src key afile t p
 	dispatch _ False = stop -- failed
 	dispatch False True = next $ return True -- copy complete
-	dispatch True True = do -- finish moving
+	-- Finish by dropping from remote, taking care to verify that
+	-- the copy here has not been lost somehow. 
+	-- (NumCopies is 1 since we're moving.)
+	dispatch True True = verifyEnoughCopiesToDrop "" key Nothing
+		(NumCopies 1) [] [] [UnVerifiedHere] dropremote faileddropremote
+	dropremote proof = do
+		liftIO $ debugM "drop" $ unwords
+			[ "Dropping from remote"
+			, show src
+			, "proof:"
+			, show proof
+			]
 		ok <- Remote.removeKey src key
 		next $ Command.Drop.cleanupRemote key src ok
+	faileddropremote = error "Unable to drop from remote."

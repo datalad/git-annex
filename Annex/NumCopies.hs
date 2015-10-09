@@ -19,7 +19,7 @@ module Annex.NumCopies (
 	numCopiesCheck',
 	verifyEnoughCopiesToDrop,
 	verifiableCopies,
-	UnVerifiedCopy,
+	UnVerifiedCopy(..),
 ) where
 
 import Common.Annex
@@ -115,7 +115,7 @@ verifyEnoughCopiesToDrop
 	-> [UUID] -- repos to skip considering (generally untrusted remotes)
 	-> [VerifiedCopy] -- copies already verified to exist
 	-> [UnVerifiedCopy] -- places to check to see if they have copies
-	-> (SafeDropProof -> Annex a) -- action to perform to drop
+	-> (SafeDropProof -> Annex a) -- action to perform the drop
 	-> Annex a -- action to perform when unable to drop
 	-> Annex a
 verifyEnoughCopiesToDrop nolocmsg key removallock need skip preverified tocheck dropaction nodropaction = 

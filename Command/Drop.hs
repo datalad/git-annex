@@ -120,7 +120,7 @@ performRemote key afile numcopies remote = do
 			liftIO $ debugM "drop" $ unwords
 				[ "Dropping from remote"
 				, show remote
-				, "proof: "
+				, "proof:"
 				, show proof
 				]
 			ok <- Remote.removeKey remote key

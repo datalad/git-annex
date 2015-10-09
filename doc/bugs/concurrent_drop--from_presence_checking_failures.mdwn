@@ -346,3 +346,22 @@ A drops                    B keeps                    C keeps
 It can race other ways, but they all work out the same way essentially,
 due to the locking.
 </pre>
+
+# the bug, with moves
+
+`git annex move --from remote` is the same as a copy followed by drop --from,
+so the same bug can occur then.
+
+But, the implementation differs from Command.Drop, so will also
+need some changes.
+
+Command.Move.toPerform already locks local content for removal before
+removing it, of course. So, that will interoperate fine with
+concurrent drops/moves. Seems fine as-is.
+
+Command.Move.fromPerform simply needs to lock the local content
+in place before dropping it from the remote. This satisfies the need
+for 1 locked copy when dropping from a remote, and so is sufficent to
+fix the bug.
+
+> done
