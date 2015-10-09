@@ -369,8 +369,12 @@ lockKey r key callback
 			-- Lock content from perspective of remote,
 			-- and then run the callback in the original
 			-- annex monad, not the remote's.
-			onLocal r $ Annex.Content.lockContentShared key $ 
-				liftIO . inorigrepo . callback
+			onLocal r $ 
+				Annex.Content.lockContentShared key $ \vc ->
+					ifM (Annex.Content.inAnnex key)
+						( liftIO $ inorigrepo $ callback vc
+						, failedlock
+						)
 	| Git.repoIsSsh (repo r) = do
 		showLocking r
 		Just (cmd, params) <- Ssh.git_annex_shell (repo r) "lockcontent"
