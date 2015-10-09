@@ -140,9 +140,6 @@ verifyExisting key destfile (yes, no) = do
 	-- imported to, if it were imported.
 	need <- getFileNumCopies destfile
 
-	(remotes, trusteduuids) <- knownCopies key
-	untrusteduuids <- trustGet UnTrusted
-	let tocheck = Remote.remotesWithoutUUID remotes (trusteduuids++untrusteduuids)
-	let preverified = map (mkVerifiedCopy TrustedCopy) trusteduuids
+	(tocheck, preverified) <- verifiableCopies key []
 	verifyEnoughCopiesToDrop [] key need [] preverified tocheck
 		(const yes) no

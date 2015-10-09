@@ -97,12 +97,9 @@ startRemote afile numcopies key remote = do
 -- sees the key is present on the other.
 performLocal :: Key -> AssociatedFile -> NumCopies -> [VerifiedCopy] -> CommandPerform
 performLocal key afile numcopies preverified = lockContentExclusive key $ \contentlock -> do
-	(remotes, trusteduuids) <- Remote.keyPossibilitiesTrusted key
-	let preverified' = preverified ++ map (mkVerifiedCopy TrustedCopy) trusteduuids
-	untrusteduuids <- trustGet UnTrusted
-	let tocheck = Remote.remotesWithoutUUID remotes (map toUUID preverified'++untrusteduuids)
 	u <- getUUID
-	doDrop u key afile numcopies [] preverified' tocheck
+	(tocheck, verified) <- verifiableCopies key [u]
+	doDrop u key afile numcopies [] (preverified ++ verified) tocheck
 		( \proof -> do
 			liftIO $ debugM "drop" $ unwords
 				[ "Dropping from here"
@@ -123,13 +120,8 @@ performRemote key afile numcopies remote = do
 	-- places assumed to have the key, and places to check.
 	-- When the local repo has the key, that's one additional copy,
 	-- as long as the local repo is not untrusted.
-	(remotes, trusteduuids) <- knownCopies key
-	let trusted = filter (/= uuid) trusteduuids
-	let preverified = map (mkVerifiedCopy TrustedCopy) trusted
-	untrusteduuids <- trustGet UnTrusted
-	let tocheck = filter (/= remote) $
-		Remote.remotesWithoutUUID remotes (trusted++untrusteduuids)
-	doDrop uuid key afile numcopies [uuid] preverified tocheck
+	(tocheck, verified) <- verifiableCopies key [uuid]
+	doDrop uuid key afile numcopies [uuid] verified tocheck
 		( \proof -> do 
 			liftIO $ debugM "drop" $ unwords
 				[ "Dropping from remote"
@@ -165,7 +157,16 @@ cleanupRemote key remote ok = do
  -
  - --force overrides and always allows dropping.
  -}
-doDrop :: UUID -> Key -> AssociatedFile -> NumCopies -> [UUID] -> [VerifiedCopy] -> [Remote] -> (Maybe SafeDropProof -> CommandPerform, CommandPerform) -> CommandPerform
+doDrop
+	:: UUID
+	-> Key
+	-> AssociatedFile
+	-> NumCopies
+	-> [UUID]
+	-> [VerifiedCopy]
+	-> [UnVerifiedCopy]
+	-> (Maybe SafeDropProof -> CommandPerform, CommandPerform)
+	-> CommandPerform
 doDrop dropfrom key afile numcopies skip preverified check (dropaction, nodropaction) = 
 	ifM (Annex.getState Annex.force)
 		( dropaction Nothing

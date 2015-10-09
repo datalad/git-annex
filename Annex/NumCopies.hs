@@ -18,7 +18,8 @@ module Annex.NumCopies (
 	numCopiesCheck,
 	numCopiesCheck',
 	verifyEnoughCopiesToDrop,
-	knownCopies,
+	verifiableCopies,
+	UnVerifiedCopy,
 ) where
 
 import Common.Annex
@@ -29,8 +30,8 @@ import Logs.Trust
 import Annex.CheckAttr
 import qualified Remote
 import qualified Types.Remote as Remote
-import Annex.UUID
 import Annex.Content
+import Annex.UUID
 
 import Control.Exception
 import qualified Control.Monad.Catch as M
@@ -99,6 +100,9 @@ numCopiesCheck' file vs have = do
 	NumCopies needed <- getFileNumCopies file
 	return $ length have `vs` needed
 
+data UnVerifiedCopy = UnVerifiedRemote Remote | UnVerifiedHere
+	deriving (Ord, Eq)
+
 {- Verifies that enough copies of a key exist amoung the listed remotes,
  - running an action with a proof if so, and printing an informative
  - message if not.
@@ -109,7 +113,7 @@ verifyEnoughCopiesToDrop
 	-> NumCopies
 	-> [UUID] -- repos to skip considering (generally untrusted remotes)
 	-> [VerifiedCopy] -- copies already verified to exist
-	-> [Remote] -- remotes to check to see if they have copies
+	-> [UnVerifiedCopy] -- places to check to see if they have copies
 	-> (SafeDropProof -> Annex a) -- action to perform to drop
 	-> Annex a -- action to perform when unable to drop
 	-> Annex a
@@ -123,45 +127,45 @@ verifyEnoughCopiesToDrop nolocmsg key need skip preverified tocheck dropaction n
 			Left stillhave -> do
 				notEnoughCopies key need stillhave (skip++missing) bad nolocmsg
 				nodropaction
-	helper bad missing have (r:rs)
+	helper bad missing have (c:cs)
 		| isSafeDrop need have = do
 			p <- liftIO $ mkSafeDropProof need have
 			case p of
 				Right proof -> dropaction proof
-				Left stillhave -> helper bad missing stillhave (r:rs)
-		| otherwise = case Remote.lockContent r of
-			Just lockcontent -> do
-				-- The remote's lockContent will throw
-				-- an exception if it is unable to lock,
-				-- in which case the fallback should be
-				-- run. 
-				--
-				-- On the other hand, the callback passed
-				-- to the lockContent could itself throw an
-				-- exception (ie, the eventual drop
-				-- action fails), and in this case we don't
-				-- want to use the fallback since part
-				-- of the drop action may have already been
-				-- performed. 
-				--
-				-- Differentiate between these two sorts
-				-- of exceptions by using DropException.
-				let a = lockcontent key $ \vc ->
-					helper bad missing (vc : have) rs
-						`catchNonAsync` (throw . DropException)
-				a `M.catches`
-					[ M.Handler (\ (e :: AsyncException) -> throwM e)
-					, M.Handler (\ (DropException e') -> throwM e')
-					, M.Handler (\ (_e :: SomeException) -> fallback)
-					]
-			Nothing -> fallback
-		  where
-			fallback = do
+				Left stillhave -> helper bad missing stillhave (c:cs)
+		| otherwise = case c of
+			UnVerifiedHere -> lockContentShared key contverified
+			UnVerifiedRemote r -> checkremote r contverified $ do
 				haskey <- Remote.hasKey r key
 				case haskey of
-					Right True  -> helper bad missing (mkVerifiedCopy RecentlyVerifiedCopy r : have) rs
-					Left _      -> helper (r:bad) missing have rs
-					Right False -> helper bad (Remote.uuid r:missing) have rs
+					Right True  -> helper bad missing (mkVerifiedCopy RecentlyVerifiedCopy r : have) cs
+					Left _      -> helper (r:bad) missing have cs
+					Right False -> helper bad (Remote.uuid r:missing) have cs
+		  where
+			contverified vc = helper bad missing (vc : have) cs
+
+	checkremote r cont fallback = case Remote.lockContent r of
+		Just lockcontent -> do
+			-- The remote's lockContent will throw an exception
+			-- when it is unable to lock, in which case the
+			-- fallback should be run. 
+			--
+			-- On the other hand, the continuation could itself
+			-- throw an exception (ie, the eventual drop action
+			-- fails), and in this case we don't want to run the
+			-- fallback since part of the drop action may have
+			-- already been performed.
+			--
+			-- Differentiate between these two sorts
+			-- of exceptions by using DropException.
+			let a = lockcontent key $ \v -> 
+				cont v `catchNonAsync` (throw . DropException)
+			a `M.catches`
+				[ M.Handler (\ (e :: AsyncException) -> throwM e)
+				, M.Handler (\ (DropException e') -> throwM e')
+				, M.Handler (\ (_e :: SomeException) -> fallback)
+				]
+		Nothing -> fallback
 
 data DropException = DropException SomeException
 	deriving (Typeable, Show)
@@ -178,19 +182,31 @@ notEnoughCopies key need have skip bad nolocmsg = do
 	Remote.showTriedRemotes bad
 	Remote.showLocations True key (map toUUID have++skip) nolocmsg
 
-{- Cost ordered lists of remotes that the location log indicates
- - may have a key.
+{- Finds locations of a key that can be used to get VerifiedCopies,
+ - in order to allow dropping the key.
  -
- - Also returns a list of UUIDs that are trusted to have the key
- - (some may not have configured remotes). If the current repository
- - currently has the key, and is not untrusted, it is included in this list.
+ - Provide a list of UUIDs that the key is being dropped from.
+ - The returned lists will exclude any of those UUIDs.
+ -
+ - The return lists also exclude any repositories that are untrusted,
+ - since those should not be used for verification.
+ -
+ - The UnVerifiedCopy list is cost ordered.
+ - The VerifiedCopy list contains repositories that are trusted to
+ - contain the key.
  -}
-knownCopies :: Key -> Annex ([Remote], [UUID])
-knownCopies key = do
-	(remotes, trusteduuids) <- Remote.keyPossibilitiesTrusted key
+verifiableCopies :: Key -> [UUID] -> Annex ([UnVerifiedCopy], [VerifiedCopy])
+verifiableCopies key exclude = do
+	locs <- Remote.keyLocations key
+	(remotes, trusteduuids) <- Remote.remoteLocations locs
+		=<< trustGet Trusted
+	untrusteduuids <- trustGet UnTrusted
+	let exclude' = exclude ++ untrusteduuids
+	let remotes' = Remote.remotesWithoutUUID remotes (exclude' ++ trusteduuids)
+	let verified = map (mkVerifiedCopy TrustedCopy) $
+		filter (`notElem` exclude') trusteduuids
 	u <- getUUID
-	trusteduuids' <- ifM (inAnnex key <&&> (<= SemiTrusted) <$> lookupTrust u)
-		( pure (u:trusteduuids)
-		, pure trusteduuids
-		)
-	return (remotes, trusteduuids')
+	let herec = if u `elem` locs && u `notElem` exclude'
+		then [UnVerifiedHere]
+		else []
+	return (herec ++ map UnVerifiedRemote remotes', verified)
