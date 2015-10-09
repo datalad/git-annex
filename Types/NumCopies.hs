@@ -31,7 +31,7 @@ import Control.Monad.IO.Class (MonadIO)
 import Control.Monad
 
 newtype NumCopies = NumCopies Int
-	deriving (Ord, Eq)
+	deriving (Ord, Eq, Show)
 
 fromNumCopies :: NumCopies -> Int
 fromNumCopies (NumCopies n) = n
@@ -138,6 +138,7 @@ fullVerification (RecentlyVerifiedCopy _) = False
 
 -- A proof that it's currently safe to drop an object.
 data SafeDropProof = SafeDropProof NumCopies [VerifiedCopy]
+	deriving (Show)
 
 -- Make sure that none of the VerifiedCopies have become invalidated
 -- before constructing proof.

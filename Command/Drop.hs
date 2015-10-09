@@ -20,6 +20,9 @@ import Annex.Content
 import Annex.Wanted
 import Annex.Notification
 
+import Utility.ThreadScheduler
+
+import System.Log.Logger (debugM)
 import qualified Data.Set as S
 
 cmd :: Command
@@ -100,7 +103,12 @@ performLocal key afile numcopies preverified = lockContentExclusive key $ \conte
 	let tocheck = Remote.remotesWithoutUUID remotes (map toUUID preverified'++untrusteduuids)
 	u <- getUUID
 	doDrop u key afile numcopies [] preverified' tocheck
-		( do
+		( \proof -> do
+			liftIO $ debugM "drop" $ unwords
+				[ "Dropping from here"
+				, "proof: "
+				, show proof
+				]
 			removeAnnex contentlock
 			notifyDrop afile True
 			next $ cleanupLocal key
@@ -122,7 +130,15 @@ performRemote key afile numcopies remote = do
 	let tocheck = filter (/= remote) $
 		Remote.remotesWithoutUUID remotes (trusted++untrusteduuids)
 	doDrop uuid key afile numcopies [uuid] preverified tocheck
-		( do 
+		( \proof -> do 
+			liftIO $ debugM "drop" $ unwords
+				[ "Dropping from remote"
+				, show remote
+				, "proof: "
+				, show proof
+				]
+			liftIO $ print "waiting to drop.."
+			liftIO $ threadDelaySeconds (Seconds 10)
 			ok <- Remote.removeKey remote key
 			next $ cleanupRemote key remote ok
 		, stop
@@ -149,13 +165,15 @@ cleanupRemote key remote ok = do
  -
  - --force overrides and always allows dropping.
  -}
-doDrop :: UUID -> Key -> AssociatedFile -> NumCopies -> [UUID] -> [VerifiedCopy] -> [Remote] -> (CommandPerform, CommandPerform) -> CommandPerform
+doDrop :: UUID -> Key -> AssociatedFile -> NumCopies -> [UUID] -> [VerifiedCopy] -> [Remote] -> (Maybe SafeDropProof -> CommandPerform, CommandPerform) -> CommandPerform
 doDrop dropfrom key afile numcopies skip preverified check (dropaction, nodropaction) = 
 	ifM (Annex.getState Annex.force)
-		( dropaction
+		( dropaction Nothing
 		, ifM (checkRequiredContent dropfrom key afile)
 			( verifyEnoughCopiesToDrop nolocmsg key numcopies
-				skip preverified check (const dropaction) (forcehint nodropaction)
+				skip preverified check
+					(dropaction . Just)
+					(forcehint nodropaction)
 			, stop
 			)
 		)
