@@ -49,7 +49,7 @@ data VerifiedCopy
 	 - Until its associated action is called to unlock it,
 	 - the copy is locked in the repository and is guaranteed
 	 - not to be dropped by any git-annex process. -}
-	| VerifiedCopyLock V
+	| LockedCopy V
 	deriving (Show)
 
 data V = V
@@ -67,7 +67,7 @@ instance ToUUID VerifiedCopy where
 toV :: VerifiedCopy -> V
 toV (TrustedCopy v) = v
 toV (RecentlyVerifiedCopy v) = v
-toV (VerifiedCopyLock v) = v
+toV (LockedCopy v) = v
 
 -- Checks that it's still valid.
 checkVerifiedCopy :: VerifiedCopy -> IO Bool
@@ -77,8 +77,8 @@ invalidateVerifiedCopy :: VerifiedCopy -> IO ()
 invalidateVerifiedCopy = _invalidateVerifiedCopy . toV
 
 strongestVerifiedCopy :: VerifiedCopy -> VerifiedCopy -> VerifiedCopy
-strongestVerifiedCopy a@(VerifiedCopyLock _) _ = a
-strongestVerifiedCopy _ b@(VerifiedCopyLock _) = b
+strongestVerifiedCopy a@(LockedCopy _) _ = a
+strongestVerifiedCopy _ b@(LockedCopy _) = b
 strongestVerifiedCopy a@(TrustedCopy _) _ = a
 strongestVerifiedCopy _ b@(TrustedCopy _) = b
 strongestVerifiedCopy a@(RecentlyVerifiedCopy _) _ = a
@@ -116,8 +116,8 @@ withVerifiedCopy mk u = bracketIO setup cleanup
 {- Check whether enough verification has been done of copies to allow
  - dropping content safely.
  -
- - Unless numcopies is 0, at least one VerifiedCopyLock or TrustedCopy
- - is required. A VerifiedCopyLock prevents races between concurrent
+ - Unless numcopies is 0, at least one LockedCopy or TrustedCopy
+ - is required. A LockedCopy prevents races between concurrent
  - drops from dropping the last copy, no matter what.
  -
  - The other N-1 copies can be less strong verifications, like
@@ -132,7 +132,7 @@ isSafeDrop (NumCopies n) l
 	| otherwise = length (deDupVerifiedCopies l) >= n && any fullVerification l
 
 fullVerification :: VerifiedCopy -> Bool
-fullVerification (VerifiedCopyLock _) = True
+fullVerification (LockedCopy _) = True
 fullVerification (TrustedCopy _) = True
 fullVerification (RecentlyVerifiedCopy _) = False
 

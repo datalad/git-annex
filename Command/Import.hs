@@ -19,8 +19,6 @@ import Types.KeySource
 import Types.Key
 import Annex.CheckIgnore
 import Annex.NumCopies
-import Types.TrustLevel
-import Logs.Trust
 
 cmd :: Command
 cmd = withGlobalOptions fileMatchingOptions $ notBareRepo $
