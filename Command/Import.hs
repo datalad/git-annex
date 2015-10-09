@@ -83,7 +83,7 @@ start mode (srcfile, destfile) =
   where
 	deletedup k = do
 		showNote $ "duplicate of " ++ key2file k
-		ifM (verifiedExisting k destfile)
+		verifyExisting k destfile
 			( do
 				liftIO $ removeFile srcfile
 				next $ return True
@@ -134,8 +134,8 @@ start mode (srcfile, destfile) =
 		SkipDuplicates -> checkdup Nothing (Just importfile)
 		_ -> return (Just importfile)
 
-verifiedExisting :: Key -> FilePath -> Annex Bool
-verifiedExisting key destfile = do
+verifyExisting :: Key -> FilePath -> (CommandPerform, CommandPerform) -> CommandPerform
+verifyExisting key destfile (yes, no) = do
 	-- Look up the numcopies setting for the file that it would be
 	-- imported to, if it were imported.
 	need <- getFileNumCopies destfile
@@ -143,4 +143,6 @@ verifiedExisting key destfile = do
 	(remotes, trusteduuids) <- knownCopies key
 	untrusteduuids <- trustGet UnTrusted
 	let tocheck = Remote.remotesWithoutUUID remotes (trusteduuids++untrusteduuids)
-	verifyEnoughCopies [] key need [] (map (mkVerifiedCopy TrustedCopy) trusteduuids) tocheck
+	let preverified = map (mkVerifiedCopy TrustedCopy) trusteduuids
+	verifyEnoughCopiesToDrop [] key need [] preverified tocheck
+		(const yes) no

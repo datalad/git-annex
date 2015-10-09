@@ -99,12 +99,12 @@ performLocal key afile numcopies preverified = lockContentExclusive key $ \conte
 	untrusteduuids <- trustGet UnTrusted
 	let tocheck = Remote.remotesWithoutUUID remotes (map toUUID preverified'++untrusteduuids)
 	u <- getUUID
-	ifM (canDrop u key afile numcopies [] preverified' tocheck)
+	doDrop u key afile numcopies [] preverified' tocheck
 		( do
 			removeAnnex contentlock
 			notifyDrop afile True
 			next $ cleanupLocal key
-		, do
+		, do 
 			notifyDrop afile False
 			stop
 		)
@@ -121,9 +121,12 @@ performRemote key afile numcopies remote = do
 	untrusteduuids <- trustGet UnTrusted
 	let tocheck = filter (/= remote) $
 		Remote.remotesWithoutUUID remotes (trusted++untrusteduuids)
-	stopUnless (canDrop uuid key afile numcopies [uuid] preverified tocheck) $ do
-		ok <- Remote.removeKey remote key
-		next $ cleanupRemote key remote ok
+	doDrop uuid key afile numcopies [uuid] preverified tocheck
+		( do 
+			ok <- Remote.removeKey remote key
+			next $ cleanupRemote key remote ok
+		, stop
+		)
   where
 	uuid = Remote.uuid remote
 
@@ -138,29 +141,29 @@ cleanupRemote key remote ok = do
 		Remote.logStatus remote key InfoMissing
 	return ok
 
-{- Checks specified remotes to verify that enough copies of a key exist to
- - allow it to be safely removed (with no data loss).
+{- Before running the dropaction, checks specified remotes to
+ - verify that enough copies of a key exist to allow it to be
+ - safely removed (with no data loss).
  -
  - Also checks if it's required content, and refuses to drop if so.
  -
  - --force overrides and always allows dropping.
  -}
-canDrop :: UUID -> Key -> AssociatedFile -> NumCopies -> [UUID] -> [VerifiedCopy] -> [Remote] -> Annex Bool
-canDrop dropfrom key afile numcopies skip preverified check = 
+doDrop :: UUID -> Key -> AssociatedFile -> NumCopies -> [UUID] -> [VerifiedCopy] -> [Remote] -> (CommandPerform, CommandPerform) -> CommandPerform
+doDrop dropfrom key afile numcopies skip preverified check (dropaction, nodropaction) = 
 	ifM (Annex.getState Annex.force)
-		( return True
-			, ifM (checkRequiredContent dropfrom key afile
-				<&&> verifyEnoughCopies nolocmsg key numcopies skip preverified check
-				)
-				( return True
-				, do
-					hint
-					return False
-				)
+		( dropaction
+		, ifM (checkRequiredContent dropfrom key afile)
+			( verifyEnoughCopiesToDrop nolocmsg key numcopies
+				skip preverified check (const dropaction) (forcehint nodropaction)
+			, stop
+			)
 		)
   where
 	nolocmsg = "Rather than dropping this file, try using: git annex move"
-	hint = showLongNote "(Use --force to override this check, or adjust numcopies.)"
+	forcehint a = do
+		showLongNote "(Use --force to override this check, or adjust numcopies.)"
+		a
 
 checkRequiredContent :: UUID -> Key -> AssociatedFile -> Annex Bool
 checkRequiredContent u k afile =

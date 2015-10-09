@@ -15,7 +15,7 @@ module Annex.NumCopies (
 	defaultNumCopies,
 	numCopiesCheck,
 	numCopiesCheck',
-	verifyEnoughCopies,
+	verifyEnoughCopiesToDrop,
 	knownCopies,
 ) where
 
@@ -93,60 +93,41 @@ numCopiesCheck' file vs have = do
 	return $ length have `vs` needed
 
 {- Verifies that enough copies of a key exist amoung the listed remotes,
- - printing an informative message if not.
+ - running an action with a proof if so, and printing an informative
+ - message if not.
  -}
-verifyEnoughCopies 
+verifyEnoughCopiesToDrop
 	:: String -- message to print when there are no known locations
 	-> Key
 	-> NumCopies
 	-> [UUID] -- repos to skip considering (generally untrusted remotes)
 	-> [VerifiedCopy] -- copies already verified to exist
-	-> [Remote] -- remotes to check to see if they have it
-	-> Annex Bool
-verifyEnoughCopies nolocmsg key need skip preverified tocheck = 
+	-> [Remote] -- remotes to check to see if they have copies
+	-> (SafeDropProof -> Annex a) -- action to perform to drop
+	-> Annex a -- action to perform when unable to drop
+	-> Annex a
+verifyEnoughCopiesToDrop nolocmsg key need skip preverified tocheck dropaction nodropaction = 
 	helper [] [] preverified (nub tocheck)
   where
-	helper bad missing have []
-		| NumCopies (length have) >= need = return True
-		| otherwise = do
-			notEnoughCopies key need have (skip++missing) bad nolocmsg
-			return False
+	helper bad missing have [] = do
+		p <- liftIO $ mkSafeDropProof need have
+		case p of
+			Right proof -> dropaction proof
+			Left stillhave -> do
+				notEnoughCopies key need stillhave (skip++missing) bad nolocmsg
+				nodropaction
 	helper bad missing have (r:rs)
-		| verifiedEnoughCopies need have = do
-			stillhave <- liftIO $ filterM checkVerifiedCopy have
-			if verifiedEnoughCopies need stillhave
-				then return True
-				else helper bad missing stillhave (r:rs)
-		| any safeVerification have = helper bad missing have rs
+		| isSafeDrop need have = do
+			p <- liftIO $ mkSafeDropProof need have
+			case p of
+				Right proof -> dropaction proof
+				Left stillhave -> helper bad missing stillhave (r:rs)
 		| otherwise = do
 			haskey <- Remote.hasKey r key
 			case haskey of
 				Right True  -> helper bad missing (mkVerifiedCopy RecentlyVerifiedCopy r : have) rs
 				Left _      -> helper (r:bad) missing have rs
 				Right False -> helper bad (Remote.uuid r:missing) have rs
-
-{- Check whether enough verification has been done of copies to allow
- - dropping content safely.
- -
- - Unless numcopies is 0, at least one VerifiedCopyLock or TrustedCopy
- - is required. A VerifiedCopyLock prevents races between concurrent
- - drops from dropping the last copy, no matter what.
- -
- - The other N-1 copies can be less strong verifications, like
- - RecentlyVerifiedCopy. While those are subject to concurrent drop races,
- - and so could be dropped all at once, causing numcopies to be violated,
- - this is the best that can be done without requiring all special remotes
- - to support locking.
- -}
-verifiedEnoughCopies :: NumCopies -> [VerifiedCopy] -> Bool
-verifiedEnoughCopies (NumCopies n) l
-	| n == 0 = True
-	| otherwise = length (deDupVerifiedCopies l) >= n && any safeVerification l
-
-safeVerification :: VerifiedCopy -> Bool
-safeVerification (VerifiedCopyLock _) = True
-safeVerification (TrustedCopy _) = True
-safeVerification (RecentlyVerifiedCopy _) = False
 
 notEnoughCopies :: Key -> NumCopies -> [VerifiedCopy] -> [UUID] -> [Remote] -> String -> Annex ()
 notEnoughCopies key need have skip bad nolocmsg = do

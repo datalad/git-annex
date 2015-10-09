@@ -16,6 +16,9 @@ module Types.NumCopies (
 	mkVerifiedCopy,
 	invalidatableVerifiedCopy,
 	withVerifiedCopy,
+	isSafeDrop,
+	SafeDropProof,
+	mkSafeDropProof,
 ) where
 
 import Types.UUID
@@ -25,6 +28,7 @@ import qualified Data.Map as M
 import Control.Concurrent.MVar
 import Control.Monad.Catch (MonadMask)
 import Control.Monad.IO.Class (MonadIO)
+import Control.Monad
 
 newtype NumCopies = NumCopies Int
 	deriving (Ord, Eq)
@@ -108,3 +112,38 @@ withVerifiedCopy mk u = bracketIO setup cleanup
   where
 	setup = invalidatableVerifiedCopy mk u
 	cleanup = invalidateVerifiedCopy
+
+{- Check whether enough verification has been done of copies to allow
+ - dropping content safely.
+ -
+ - Unless numcopies is 0, at least one VerifiedCopyLock or TrustedCopy
+ - is required. A VerifiedCopyLock prevents races between concurrent
+ - drops from dropping the last copy, no matter what.
+ -
+ - The other N-1 copies can be less strong verifications, like
+ - RecentlyVerifiedCopy. While those are subject to concurrent drop races,
+ - and so could be dropped all at once, causing numcopies to be violated,
+ - this is the best that can be done without requiring all special remotes
+ - to support locking.
+ -}
+isSafeDrop :: NumCopies -> [VerifiedCopy] -> Bool
+isSafeDrop (NumCopies n) l
+	| n == 0 = True
+	| otherwise = length (deDupVerifiedCopies l) >= n && any fullVerification l
+
+fullVerification :: VerifiedCopy -> Bool
+fullVerification (VerifiedCopyLock _) = True
+fullVerification (TrustedCopy _) = True
+fullVerification (RecentlyVerifiedCopy _) = False
+
+-- A proof that it's currently safe to drop an object.
+data SafeDropProof = SafeDropProof NumCopies [VerifiedCopy]
+
+-- Make sure that none of the VerifiedCopies have become invalidated
+-- before constructing proof.
+mkSafeDropProof :: NumCopies -> [VerifiedCopy] -> IO (Either [VerifiedCopy] SafeDropProof)
+mkSafeDropProof need have = do
+	stillhave <- filterM checkVerifiedCopy have
+	return $ if isSafeDrop need stillhave
+		then Right (SafeDropProof need stillhave)
+		else Left stillhave
