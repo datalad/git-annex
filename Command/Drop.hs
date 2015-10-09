@@ -20,8 +20,6 @@ import Annex.Content
 import Annex.Wanted
 import Annex.Notification
 
-import Utility.ThreadScheduler
-
 import System.Log.Logger (debugM)
 import qualified Data.Set as S
 
@@ -99,7 +97,7 @@ performLocal key afile numcopies preverified = lockContentForRemoval key $ \cont
 		( \proof -> do
 			liftIO $ debugM "drop" $ unwords
 				[ "Dropping from here"
-				, "proof: "
+				, "proof:"
 				, show proof
 				]
 			removeAnnex contentlock
@@ -125,8 +123,6 @@ performRemote key afile numcopies remote = do
 				, "proof: "
 				, show proof
 				]
-			liftIO $ print "waiting to drop.."
-			liftIO $ threadDelaySeconds (Seconds 10)
 			ok <- Remote.removeKey remote key
 			next $ cleanupRemote key remote ok
 		, stop

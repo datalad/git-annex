@@ -73,6 +73,8 @@ as part of its check of numcopies, and keep it locked
 while it's asking B to drop it. Then when B tells A to drop it,
 it'll be locked and that'll fail (and vice-versa).
 
+> Done, and verified the fix works in this situation.
+
 # the bug part 2
 
 <pre>
@@ -115,6 +117,8 @@ with a new command that locks the content.
 Note that this is analgous to the fix above; in both cases
 the change is from checking if content is in a location, to locking it in
 that location while performing a drop from another location.
+
+> Done, and verified the fix works in this situation.
 
 # the bug part 3 (where it gets really nasty)
 
@@ -197,6 +201,9 @@ never entirely lost.
 
 Dipping below desired numcopies in an unusual race condition, and then
 doing extra work later to recover may be good enough.
+
+> Implemented, and I've now verified this solves the case above.
+> Indeed, neither drop succeeds, because no copy can be locked.
 
 ### to drop from local repo
 
