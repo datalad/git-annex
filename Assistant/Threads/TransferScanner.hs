@@ -157,7 +157,7 @@ expensiveScan urlrenderer rs = batch <~> do
 		present <- liftAnnex $ inAnnex key
 		liftAnnex $ handleDropsFrom locs syncrs
 			"expensive scan found too many copies of object"
-			present key (Just f) Nothing callCommandAction
+			present key (Just f) [] callCommandAction
 		liftAnnex $ do
 			let slocs = S.fromList locs
 			let use a = return $ mapMaybe (a key slocs) syncrs

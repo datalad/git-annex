@@ -53,9 +53,11 @@ import Annex.Path
 import Creds
 import Annex.CatFile
 import Messages.Progress
+import Types.NumCopies
 
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
+import Control.Concurrent.Async
 import qualified Data.Map as M
 import Network.URI
 
@@ -142,6 +144,7 @@ gen r u c gc
 			, retrieveKeyFile = copyFromRemote new
 			, retrieveKeyFileCheap = copyFromRemoteCheap new
 			, removeKey = dropKey new
+			, lockContent = Just (lockKey new)
 			, checkPresent = inAnnex new
 			, checkPresentCheap = repoCheap r
 			, whereisKey = Nothing
@@ -350,13 +353,71 @@ dropKey r key
 			commitOnCleanup r $ onLocal r $ do
 				ensureInitialized
 				whenM (Annex.Content.inAnnex key) $ do
-					Annex.Content.lockContent key
+					Annex.Content.lockContentForRemoval key
 						Annex.Content.removeAnnex
 					logStatus key InfoMissing
 					Annex.Content.saveState True
 				return True
 	| Git.repoIsHttp (repo r) = error "dropping from http remote not supported"
 	| otherwise = commitOnCleanup r $ Ssh.dropKey (repo r) key
+
+lockKey :: Remote -> Key -> (VerifiedCopy -> Annex r) -> Annex r
+lockKey r key callback
+	| not $ Git.repoIsUrl (repo r) =
+		guardUsable (repo r) failedlock $ do
+			inorigrepo <- Annex.makeRunner
+			-- Lock content from perspective of remote,
+			-- and then run the callback in the original
+			-- annex monad, not the remote's.
+			onLocal r $ 
+				Annex.Content.lockContentShared key $ \vc ->
+					ifM (Annex.Content.inAnnex key)
+						( liftIO $ inorigrepo $ callback vc
+						, failedlock
+						)
+	| Git.repoIsSsh (repo r) = do
+		showLocking r
+		Just (cmd, params) <- Ssh.git_annex_shell (repo r) "lockcontent"
+			[Param $ key2file key] []
+		(Just hin, Just hout, Nothing, p) <- liftIO $ 
+			withFile devNull WriteMode $ \nullh ->
+				createProcess $
+					 (proc cmd (toCommand params))
+						{ std_in = CreatePipe
+						, std_out = CreatePipe
+						, std_err = UseHandle nullh
+						}
+		-- Wait for either the process to exit, or for it to
+		-- indicate the content is locked.
+		v <- liftIO $ race 
+			(waitForProcess p)
+			(hGetLine hout)
+		let signaldone = void $ tryNonAsync $ liftIO $ do
+			hPutStrLn hout ""
+			hFlush hout
+			hClose hin
+			hClose hout
+			void $ waitForProcess p
+		let checkexited = not . isJust <$> getProcessExitCode p
+		case v of
+			Left _exited -> do
+				showNote "lockcontent failed"
+				liftIO $ do
+					hClose hin
+					hClose hout
+				failedlock
+			Right l 
+				| l == Ssh.contentLockedMarker -> bracket_
+					noop
+					signaldone 
+					(withVerifiedCopy LockedCopy r checkexited callback)
+				| otherwise -> do
+					showNote "lockcontent failed"
+					signaldone
+					failedlock
+	| otherwise = failedlock
+  where
+	failedlock = error "can't lock content"
 
 {- Tries to copy a key's content from a remote's annex to a file. -}
 copyFromRemote :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)

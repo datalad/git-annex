@@ -1,5 +1,19 @@
 git-annex (5.20150931) UNRELEASED; urgency=medium
 
+  * Fix a longstanding bug, where dropping a file from a remote
+    could race with other drops of the same file, and result in
+    all copies of its content being lost.
+  * git-annex-shell: Added lockcontent command, to prevent dropping of
+    a key's content. This is necessary due to the above bugfix.
+  * In some cases, the above bugfix changes what git-annex allows to be dropped:
+    - When a file is present in several special remotes,
+      but not in any accessible git repositories, dropping it from one of
+      the special remotes will now fail. Instead, the file has to be
+      moved from one of the special remotes to the git repository, and can
+      then safely be dropped from the git repository.
+    - If a git remote has too old a version of git-annex-shell installed,
+      git-annex won't trust it to hold onto a copy of a file when dropping
+      that file from some other remote.
   * Do verification of checksums of annex objects downloaded from remotes.
   * When annex objects are received into git repositories from other git
     repos, their checksums are verified then too.
@@ -20,7 +34,7 @@ git-annex (5.20150931) UNRELEASED; urgency=medium
     and stop recommending bittornado | bittorrent.
   * Debian: Remove dependency on transformers library, as it is now
     included in ghc.
-
+    
  -- Joey Hess <id@joeyh.name>  Thu, 01 Oct 2015 12:42:56 -0400
 
 git-annex (5.20150930) unstable; urgency=medium

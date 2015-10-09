@@ -81,6 +81,7 @@ gen r u c gc = do
 			, retrieveKeyFile = retreiveKeyFileDummy
 			, retrieveKeyFileCheap = retrieveCheap
 			, removeKey = removeKeyDummy
+			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
 			, whereisKey = Just (getWebUrls info)

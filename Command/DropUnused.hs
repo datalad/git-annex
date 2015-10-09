@@ -44,7 +44,7 @@ perform from numcopies key = case from of
 	Just r -> do
 		showAction $ "from " ++ Remote.name r
 		Command.Drop.performRemote key Nothing numcopies r
-	Nothing -> Command.Drop.performLocal key Nothing numcopies Nothing
+	Nothing -> Command.Drop.performLocal key Nothing numcopies []
 
 performOther :: (Key -> Git.Repo -> FilePath) -> Key -> CommandPerform
 performOther filespec key = do

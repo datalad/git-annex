@@ -19,8 +19,6 @@ import Types.KeySource
 import Types.Key
 import Annex.CheckIgnore
 import Annex.NumCopies
-import Types.TrustLevel
-import Logs.Trust
 
 cmd :: Command
 cmd = withGlobalOptions fileMatchingOptions $ notBareRepo $
@@ -83,7 +81,7 @@ start mode (srcfile, destfile) =
   where
 	deletedup k = do
 		showNote $ "duplicate of " ++ key2file k
-		ifM (verifiedExisting k destfile)
+		verifyExisting k destfile
 			( do
 				liftIO $ removeFile srcfile
 				next $ return True
@@ -134,13 +132,12 @@ start mode (srcfile, destfile) =
 		SkipDuplicates -> checkdup Nothing (Just importfile)
 		_ -> return (Just importfile)
 
-verifiedExisting :: Key -> FilePath -> Annex Bool
-verifiedExisting key destfile = do
+verifyExisting :: Key -> FilePath -> (CommandPerform, CommandPerform) -> CommandPerform
+verifyExisting key destfile (yes, no) = do
 	-- Look up the numcopies setting for the file that it would be
 	-- imported to, if it were imported.
 	need <- getFileNumCopies destfile
 
-	(remotes, trusteduuids) <- knownCopies key
-	untrusteduuids <- trustGet UnTrusted
-	let tocheck = Remote.remotesWithoutUUID remotes (trusteduuids++untrusteduuids)
-	verifyEnoughCopies [] key need [] trusteduuids tocheck
+	(tocheck, preverified) <- verifiableCopies key []
+	verifyEnoughCopiesToDrop [] key Nothing need [] preverified tocheck
+		(const yes) no

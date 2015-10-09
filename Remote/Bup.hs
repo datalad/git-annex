@@ -58,6 +58,7 @@ gen r u c gc = do
 		, retrieveKeyFile = retreiveKeyFileDummy
 		, retrieveKeyFileCheap = retrieveCheap buprepo
 		, removeKey = removeKeyDummy
+		, lockContent = Nothing
 		, checkPresent = checkPresentDummy
 		, checkPresentCheap = bupLocal buprepo
 		, whereisKey = Nothing

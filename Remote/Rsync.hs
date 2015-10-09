@@ -70,6 +70,7 @@ gen r u c gc = do
 			, retrieveKeyFile = retreiveKeyFileDummy
 			, retrieveKeyFileCheap = retrieveCheap o
 			, removeKey = removeKeyDummy
+			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
 			, whereisKey = Nothing

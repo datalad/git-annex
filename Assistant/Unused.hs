@@ -77,7 +77,7 @@ expireUnused duration = do
 	forM_ oldkeys $ \k -> do
 		debug ["removing old unused key", key2file k]
 		liftAnnex $ do
-			lockContent k removeAnnex
+			lockContentForRemoval k removeAnnex
 			logStatus k InfoMissing
   where
 	boundry = durationToPOSIXTime <$> duration

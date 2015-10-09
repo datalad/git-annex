@@ -6,6 +6,7 @@
  -}
 
 module Utility.LockPool.Windows (
+	P.LockFile,
 	LockHandle,
 	lockShared,
 	lockExclusive,

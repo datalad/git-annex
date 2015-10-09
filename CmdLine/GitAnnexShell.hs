@@ -20,6 +20,7 @@ import Remote.GCrypt (getGCryptUUID)
 
 import qualified Command.ConfigList
 import qualified Command.InAnnex
+import qualified Command.LockContent
 import qualified Command.DropKey
 import qualified Command.RecvKey
 import qualified Command.SendKey
@@ -32,6 +33,7 @@ cmds_readonly :: [Command]
 cmds_readonly =
 	[ Command.ConfigList.cmd
 	, gitAnnexShellCheck Command.InAnnex.cmd
+	, gitAnnexShellCheck Command.LockContent.cmd
 	, gitAnnexShellCheck Command.SendKey.cmd
 	, gitAnnexShellCheck Command.TransferInfo.cmd
 	, gitAnnexShellCheck Command.NotifyChanges.cmd

@@ -40,7 +40,7 @@ module Remote (
 	remotesWithoutUUID,
 	keyLocations,
 	keyPossibilities,
-	keyPossibilitiesTrusted,
+	remoteLocations,
 	nameToUUID,
 	nameToUUID',
 	showTriedRemotes,
@@ -260,33 +260,26 @@ keyLocations key = trustExclude DeadTrusted =<< loggedLocations key
  - may have a key.
  -}
 keyPossibilities :: Key -> Annex [Remote]
-keyPossibilities key = fst <$> keyPossibilities' key []
-
-{- Cost ordered lists of remotes that the location log indicates
- - may have a key.
- -
- - Also returns a list of UUIDs that are trusted to have the key
- - (some may not have configured remotes).
- -}
-keyPossibilitiesTrusted :: Key -> Annex ([Remote], [UUID])
-keyPossibilitiesTrusted key = keyPossibilities' key =<< trustGet Trusted
-
-keyPossibilities' :: Key -> [UUID] -> Annex ([Remote], [UUID])
-keyPossibilities' key trusted = do
+keyPossibilities key = do
 	u <- getUUID
-
 	-- uuids of all remotes that are recorded to have the key
-	validuuids <- filter (/= u) <$> keyLocations key
+	locations <- filter (/= u) <$> keyLocations key
+	fst <$> remoteLocations locations []
 
-	-- note that validuuids is assumed to not have dups
-	let validtrusteduuids = validuuids `intersect` trusted
+{- Given a list of locations of a key, and a list of all
+ - trusted repositories, generates a cost-ordered list of
+ - remotes that contain the key, and a list of trusted locations of the key.
+ -}
+remoteLocations :: [UUID] -> [UUID] -> Annex ([Remote], [UUID])
+remoteLocations locations trusted = do
+	let validtrustedlocations = nub locations `intersect` trusted
 
 	-- remotes that match uuids that have the key
 	allremotes <- filter (not . remoteAnnexIgnore . gitconfig)
 		<$> remoteList
-	let validremotes = remotesWithUUID allremotes validuuids
+	let validremotes = remotesWithUUID allremotes locations
 
-	return (sortBy (comparing cost) validremotes, validtrusteduuids)
+	return (sortBy (comparing cost) validremotes, validtrustedlocations)
 
 {- Displays known locations of a key. -}
 showLocations :: Bool -> Key -> [UUID] -> String -> Annex ()

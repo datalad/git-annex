@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE ScopedTypeVariables, DeriveDataTypeable #-}
+
 module Annex.NumCopies (
 	module Types.NumCopies,
 	module Logs.NumCopies,
@@ -15,8 +17,9 @@ module Annex.NumCopies (
 	defaultNumCopies,
 	numCopiesCheck,
 	numCopiesCheck',
-	verifyEnoughCopies,
-	knownCopies,
+	verifyEnoughCopiesToDrop,
+	verifiableCopies,
+	UnVerifiedCopy(..),
 ) where
 
 import Common.Annex
@@ -26,8 +29,13 @@ import Logs.NumCopies
 import Logs.Trust
 import Annex.CheckAttr
 import qualified Remote
-import Annex.UUID
+import qualified Types.Remote as Remote
 import Annex.Content
+import Annex.UUID
+
+import Control.Exception
+import qualified Control.Monad.Catch as M
+import Data.Typeable
 
 defaultNumCopies :: NumCopies
 defaultNumCopies = NumCopies 1
@@ -77,7 +85,11 @@ getFileNumCopies' file = maybe getGlobalNumCopies (return . Just) =<< getattr
 
 {- Checks if numcopies are satisfied for a file by running a comparison
  - between the number of (not untrusted) copies that are
- - belived to exist, and the configured value. -}
+ - belived to exist, and the configured value.
+ -
+ - This is good enough for everything except dropping the file, which
+ - requires active verification of the copies.
+ -}
 numCopiesCheck :: FilePath -> Key -> (Int -> Int -> v) -> Annex v
 numCopiesCheck file key vs = do
 	have <- trustExclude UnTrusted =<< Remote.keyLocations key
@@ -88,60 +100,118 @@ numCopiesCheck' file vs have = do
 	NumCopies needed <- getFileNumCopies file
 	return $ length have `vs` needed
 
+data UnVerifiedCopy = UnVerifiedRemote Remote | UnVerifiedHere
+	deriving (Ord, Eq)
+
 {- Verifies that enough copies of a key exist amoung the listed remotes,
- - priting an informative message if not.
+ - to safely drop it, running an action with a proof if so, and
+ - printing an informative message if not.
  -}
-verifyEnoughCopies 
+verifyEnoughCopiesToDrop
 	:: String -- message to print when there are no known locations
 	-> Key
+	-> Maybe ContentRemovalLock
 	-> NumCopies
 	-> [UUID] -- repos to skip considering (generally untrusted remotes)
-	-> [UUID] -- repos that are trusted or already verified to have it
-	-> [Remote] -- remotes to check to see if they have it
-	-> Annex Bool
-verifyEnoughCopies nolocmsg key need skip trusted tocheck = 
-	helper [] [] (nub trusted) (nub tocheck)
+	-> [VerifiedCopy] -- copies already verified to exist
+	-> [UnVerifiedCopy] -- places to check to see if they have copies
+	-> (SafeDropProof -> Annex a) -- action to perform the drop
+	-> Annex a -- action to perform when unable to drop
+	-> Annex a
+verifyEnoughCopiesToDrop nolocmsg key removallock need skip preverified tocheck dropaction nodropaction = 
+	helper [] [] preverified (nub tocheck)
   where
-	helper bad missing have []
-		| NumCopies (length have) >= need = return True
-		| otherwise = do
-			notEnoughCopies key need have (skip++missing) bad nolocmsg
-			return False
-	helper bad missing have (r:rs)
-		| NumCopies (length have) >= need = return True
-		| otherwise = do
-			let u = Remote.uuid r
-			let duplicate = u `elem` have
-			haskey <- Remote.hasKey r key
-			case (duplicate, haskey) of
-				(False, Right True)  -> helper bad missing (u:have) rs
-				(False, Left _)      -> helper (r:bad) missing have rs
-				(False, Right False) -> helper bad (u:missing) have rs
-				_                    -> helper bad missing have rs
+	helper bad missing have [] = do
+		p <- liftIO $ mkSafeDropProof need have removallock
+		case p of
+			Right proof -> dropaction proof
+			Left stillhave -> do
+				notEnoughCopies key need stillhave (skip++missing) bad nolocmsg
+				nodropaction
+	helper bad missing have (c:cs)
+		| isSafeDrop need have removallock = do
+			p <- liftIO $ mkSafeDropProof need have removallock
+			case p of
+				Right proof -> dropaction proof
+				Left stillhave -> helper bad missing stillhave (c:cs)
+		| otherwise = case c of
+			UnVerifiedHere -> lockContentShared key contverified
+			UnVerifiedRemote r -> checkremote r contverified $ do
+				haskey <- Remote.hasKey r key
+				case haskey of
+					Right True  -> helper bad missing (mkVerifiedCopy RecentlyVerifiedCopy r : have) cs
+					Left _      -> helper (r:bad) missing have cs
+					Right False -> helper bad (Remote.uuid r:missing) have cs
+		  where
+			contverified vc = helper bad missing (vc : have) cs
 
-notEnoughCopies :: Key -> NumCopies -> [UUID] -> [UUID] -> [Remote] -> String -> Annex ()
+	checkremote r cont fallback = case Remote.lockContent r of
+		Just lockcontent -> do
+			-- The remote's lockContent will throw an exception
+			-- when it is unable to lock, in which case the
+			-- fallback should be run. 
+			--
+			-- On the other hand, the continuation could itself
+			-- throw an exception (ie, the eventual drop action
+			-- fails), and in this case we don't want to run the
+			-- fallback since part of the drop action may have
+			-- already been performed.
+			--
+			-- Differentiate between these two sorts
+			-- of exceptions by using DropException.
+			let a = lockcontent key $ \v -> 
+				cont v `catchNonAsync` (throw . DropException)
+			a `M.catches`
+				[ M.Handler (\ (e :: AsyncException) -> throwM e)
+				, M.Handler (\ (DropException e') -> throwM e')
+				, M.Handler (\ (_e :: SomeException) -> fallback)
+				]
+		Nothing -> fallback
+
+data DropException = DropException SomeException
+	deriving (Typeable, Show)
+
+instance Exception DropException
+
+notEnoughCopies :: Key -> NumCopies -> [VerifiedCopy] -> [UUID] -> [Remote] -> String -> Annex ()
 notEnoughCopies key need have skip bad nolocmsg = do
 	showNote "unsafe"
-	showLongNote $
-		"Could only verify the existence of " ++
-		show (length have) ++ " out of " ++ show (fromNumCopies need) ++ 
-		" necessary copies"
+	if length have < fromNumCopies need
+		then showLongNote $
+			"Could only verify the existence of " ++
+			show (length have) ++ " out of " ++ show (fromNumCopies need) ++ 
+			" necessary copies"
+		else do
+			showLongNote "Unable to lock down 1 copy of file that is required to safely drop it."
+			showLongNote "(This could have happened because of a concurrent drop, or because a remote has too old a version of git-annex-shell installed.)"
 	Remote.showTriedRemotes bad
-	Remote.showLocations True key (have++skip) nolocmsg
+	Remote.showLocations True key (map toUUID have++skip) nolocmsg
 
-{- Cost ordered lists of remotes that the location log indicates
- - may have a key.
+{- Finds locations of a key that can be used to get VerifiedCopies,
+ - in order to allow dropping the key.
  -
- - Also returns a list of UUIDs that are trusted to have the key
- - (some may not have configured remotes). If the current repository
- - currently has the key, and is not untrusted, it is included in this list.
+ - Provide a list of UUIDs that the key is being dropped from.
+ - The returned lists will exclude any of those UUIDs.
+ -
+ - The return lists also exclude any repositories that are untrusted,
+ - since those should not be used for verification.
+ -
+ - The UnVerifiedCopy list is cost ordered.
+ - The VerifiedCopy list contains repositories that are trusted to
+ - contain the key.
  -}
-knownCopies :: Key -> Annex ([Remote], [UUID])
-knownCopies key = do
-	(remotes, trusteduuids) <- Remote.keyPossibilitiesTrusted key
+verifiableCopies :: Key -> [UUID] -> Annex ([UnVerifiedCopy], [VerifiedCopy])
+verifiableCopies key exclude = do
+	locs <- Remote.keyLocations key
+	(remotes, trusteduuids) <- Remote.remoteLocations locs
+		=<< trustGet Trusted
+	untrusteduuids <- trustGet UnTrusted
+	let exclude' = exclude ++ untrusteduuids
+	let remotes' = Remote.remotesWithoutUUID remotes (exclude' ++ trusteduuids)
+	let verified = map (mkVerifiedCopy TrustedCopy) $
+		filter (`notElem` exclude') trusteduuids
 	u <- getUUID
-	trusteduuids' <- ifM (inAnnex key <&&> (<= SemiTrusted) <$> lookupTrust u)
-		( pure (u:trusteduuids)
-		, pure trusteduuids
-		)
-	return (remotes, trusteduuids')
+	let herec = if u `elem` locs && u `notElem` exclude'
+		then [UnVerifiedHere]
+		else []
+	return (herec ++ map UnVerifiedRemote remotes', verified)

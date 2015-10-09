@@ -12,7 +12,9 @@ module Annex.Content (
 	inAnnex',
 	inAnnexSafe,
 	inAnnexCheck,
-	lockContent,
+	lockContentShared,
+	lockContentForRemoval,
+	ContentRemovalLock,
 	getViaTmp,
 	getViaTmp',
 	checkDiskSpaceToGet,
@@ -66,6 +68,8 @@ import Messages.Progress
 import qualified Types.Remote
 import qualified Types.Backend
 import qualified Backend
+import Types.NumCopies
+import Annex.UUID
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
@@ -165,56 +169,101 @@ contentLockFile key = ifM isDirect
 contentLockFile key = Just <$> calcRepo (gitAnnexContentLock key)
 #endif
 
-newtype ContentLock = ContentLock Key
-
-{- Content is exclusively locked while running an action that might remove
- - it. (If the content is not present, no locking is done.)
+{- Prevents the content from being removed while the action is running.
+ - Uses a shared lock.
+ -
+ - Does not actually check if the content is present. Use inAnnex for that.
+ - However, since the contentLockFile is the content file in indirect mode,
+ - if the content is not present, locking it will fail.
+ -
+ - If locking fails, throws an exception rather than running the action.
+ -
+ - Note that, in direct mode, nothing prevents the user from directly
+ - editing or removing the content, even while it's locked by this.
  -}
-lockContent :: Key -> (ContentLock -> Annex a) -> Annex a
-lockContent key a = do
+lockContentShared :: Key -> (VerifiedCopy -> Annex a) -> Annex a
+lockContentShared key a = lockContentUsing lock key $ do
+	u <- getUUID
+	withVerifiedCopy LockedCopy u (return True) a
+  where
+#ifndef mingw32_HOST_OS
+	lock contentfile Nothing = liftIO $ tryLockShared Nothing contentfile
+	lock _ (Just lockfile) = posixLocker tryLockShared lockfile
+#else
+	lock = winLocker lockShared
+#endif
+
+{- Exclusively locks content, while performing an action that
+ - might remove it.
+ -}
+lockContentForRemoval :: Key -> (ContentRemovalLock -> Annex a) -> Annex a
+lockContentForRemoval key a = lockContentUsing lock key $ 
+	a (ContentRemovalLock key)
+  where
+#ifndef mingw32_HOST_OS
+	{- Since content files are stored with the write bit disabled, have
+	 - to fiddle with permissions to open for an exclusive lock. -}
+	lock contentfile Nothing = bracket_
+		(thawContent contentfile)
+		(freezeContent contentfile)
+		(liftIO $ tryLockExclusive Nothing contentfile)
+	lock _ (Just lockfile) = posixLocker tryLockExclusive lockfile
+#else
+	lock = winLocker lockExclusive
+#endif
+
+{- Passed the object content file, and maybe a separate lock file to use,
+ - when the content file itself should not be locked. -}
+type ContentLocker = FilePath -> Maybe LockFile -> Annex (Maybe LockHandle)
+
+#ifndef mingw32_HOST_OS
+posixLocker :: (Maybe FileMode -> LockFile -> IO (Maybe LockHandle)) -> LockFile -> Annex (Maybe LockHandle)
+posixLocker takelock lockfile = do
+	mode <- annexFileMode
+	modifyContent lockfile $
+		liftIO $ takelock (Just mode) lockfile
+	
+#else
+winLocker :: (LockFile -> IO (Maybe LockHandle)) -> ContentLocker
+winLocker takelock _ (Just lockfile) = do
+	modifyContent lockfile $
+		void $ liftIO $ tryIO $
+			writeFile lockfile ""
+	liftIO $ takelock lockfile
+-- never reached; windows always uses a separate lock file
+winLocker _ _ Nothing = return Nothing
+#endif
+
+lockContentUsing :: ContentLocker -> Key -> Annex a -> Annex a
+lockContentUsing locker key a = do
 	contentfile <- calcRepo $ gitAnnexLocation key
 	lockfile <- contentLockFile key
 	bracket
 		(lock contentfile lockfile)
 		(unlock lockfile)
-		(const $ a $ ContentLock key )
+		(const a)
   where
 	alreadylocked = error "content is locked"
-	cleanuplockfile lockfile = modifyContent lockfile $
-		void $ liftIO $ tryIO $
-			nukeFile lockfile
-#ifndef mingw32_HOST_OS
-	{- Since content files are stored with the write bit disabled, have
-	 - to fiddle with permissions to open for an exclusive lock. -}
-	lock contentfile Nothing = trylock $ bracket_
-		(thawContent contentfile)
-		(freezeContent contentfile)
+	failedtolock e = error $ "failed to lock content: " ++ show e
+
+	lock contentfile lockfile =
 		(maybe alreadylocked return 
-			=<< liftIO (tryLockExclusive Nothing contentfile))
-	lock _ (Just lockfile) = trylock $ do
-		mode <- annexFileMode
-		maybe alreadylocked return 
-			=<< modifyContent lockfile
-				(liftIO $ tryLockExclusive (Just mode) lockfile)
+			=<< locker contentfile lockfile)
+		`catchIO` failedtolock
+
+#ifndef mingw32_HOST_OS
 	unlock mlockfile lck = do
 		maybe noop cleanuplockfile mlockfile
 		liftIO $ dropLock lck
-	
-	failedtolock e = error $ "failed to lock content: " ++ show e
-	trylock locker = locker `catchIO` failedtolock
 #else
-	lock _ (Just lockfile) = do
-		modifyContent lockfile $
-			void $ liftIO $ tryIO $
-				writeFile lockfile ""
-		maybe alreadylocked (return . Just)
-			=<< liftIO (lockExclusive lockfile)
-	-- never reached; windows always uses a separate lock file
-	lock _ Nothing = return Nothing
 	unlock mlockfile mlockhandle = do
 		liftIO $ maybe noop dropLock mlockhandle
 		maybe noop cleanuplockfile mlockfile
 #endif
+
+	cleanuplockfile lockfile = modifyContent lockfile $
+		void $ liftIO $ tryIO $
+			nukeFile lockfile
 
 {- Runs an action, passing it the temp file to get,
  - and if the action succeeds, verifies the file matches
@@ -497,8 +546,8 @@ cleanObjectLoc key cleaner = do
  - In direct mode, deletes the associated files or files, and replaces
  - them with symlinks.
  -}
-removeAnnex :: ContentLock -> Annex ()
-removeAnnex (ContentLock key) = withObjectLoc key remove removedirect
+removeAnnex :: ContentRemovalLock -> Annex ()
+removeAnnex (ContentRemovalLock key) = withObjectLoc key remove removedirect
   where
 	remove file = cleanObjectLoc key $ do
 		secureErase file

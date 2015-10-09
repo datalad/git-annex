@@ -58,6 +58,7 @@ gen r _ c gc =
 		, retrieveKeyFile = downloadKey
 		, retrieveKeyFileCheap = downloadKeyCheap
 		, removeKey = dropKey
+		, lockContent = Nothing
 		, checkPresent = checkKey
 		, checkPresentCheap = False
 		, whereisKey = Nothing

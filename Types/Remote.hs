@@ -7,6 +7,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE RankNTypes #-}
+
 module Types.Remote
 	( RemoteConfigKey
 	, RemoteConfig
@@ -28,6 +30,7 @@ import Types.GitConfig
 import Types.Availability
 import Types.Creds
 import Types.UrlContents
+import Types.NumCopies
 import Config.Cost
 import Utility.Metered
 import Git.Types
@@ -72,8 +75,14 @@ data RemoteA a = Remote {
 	-- Retrieves a key's contents to a tmp file, if it can be done cheaply.
 	-- It's ok to create a symlink or hardlink.
 	retrieveKeyFileCheap :: Key -> AssociatedFile -> FilePath -> a Bool,
-	-- removes a key's contents (succeeds if the contents are not present)
+	-- Removes a key's contents (succeeds if the contents are not present)
 	removeKey :: Key -> a Bool,
+	-- Uses locking to prevent removal of a key's contents,
+	-- thus producing a VerifiedCopy, which is passed to the callback.
+	-- If unable to lock, does not run the callback, and throws an
+	-- error.
+	-- This is optional; remotes do not have to support locking.
+	lockContent :: forall r. Maybe (Key -> (VerifiedCopy -> a r) -> a r),
 	-- Checks if a key is present in the remote.
 	-- Throws an exception if the remote cannot be accessed.
 	checkPresent :: Key -> a Bool,
@@ -124,6 +133,9 @@ instance Eq (RemoteA a) where
 
 instance Ord (RemoteA a) where
 	compare = comparing uuid
+
+instance ToUUID (RemoteA a) where
+	toUUID = uuid
 
 -- Use Verified when the content of a key is verified as part of a
 -- transfer, and so a separate verification step is not needed.
