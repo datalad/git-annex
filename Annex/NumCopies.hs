@@ -26,6 +26,7 @@ import Logs.NumCopies
 import Logs.Trust
 import Annex.CheckAttr
 import qualified Remote
+import qualified Types.Remote as Remote
 import Annex.UUID
 import Annex.Content
 
@@ -122,12 +123,18 @@ verifyEnoughCopiesToDrop nolocmsg key need skip preverified tocheck dropaction n
 			case p of
 				Right proof -> dropaction proof
 				Left stillhave -> helper bad missing stillhave (r:rs)
-		| otherwise = do
-			haskey <- Remote.hasKey r key
-			case haskey of
-				Right True  -> helper bad missing (mkVerifiedCopy RecentlyVerifiedCopy r : have) rs
-				Left _      -> helper (r:bad) missing have rs
-				Right False -> helper bad (Remote.uuid r:missing) have rs
+		| otherwise = case Remote.lockContent r of
+			Nothing -> fallback
+			Just lockcontent -> lockcontent key $ \v -> case v of
+				Nothing -> fallback
+				Just vc -> helper bad missing (vc : have) rs
+		  where
+			fallback = do
+				haskey <- Remote.hasKey r key
+				case haskey of
+					Right True  -> helper bad missing (mkVerifiedCopy RecentlyVerifiedCopy r : have) rs
+					Left _      -> helper (r:bad) missing have rs
+					Right False -> helper bad (Remote.uuid r:missing) have rs
 
 notEnoughCopies :: Key -> NumCopies -> [VerifiedCopy] -> [UUID] -> [Remote] -> String -> Annex ()
 notEnoughCopies key need have skip bad nolocmsg = do

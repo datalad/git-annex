@@ -30,6 +30,7 @@ import Types.GitConfig
 import Types.Availability
 import Types.Creds
 import Types.UrlContents
+import Types.NumCopies
 import Config.Cost
 import Utility.Metered
 import Git.Types
@@ -77,9 +78,10 @@ data RemoteA a = Remote {
 	-- Removes a key's contents (succeeds if the contents are not present)
 	removeKey :: Key -> a Bool,
 	-- Uses locking to prevent removal of a key's contents,
-	-- and runs the passed action while it's locked.
+	-- thus producing a VerifiedCopy.
+	-- The action must be run whether or not the locking succeeds.
 	-- This is optional; remotes do not have to support locking.
-	lockContent :: forall r. Maybe (Key -> a r -> a r),
+	lockContent :: forall r. Maybe (Key -> (Maybe VerifiedCopy -> a r) -> a r),
 	-- Checks if a key is present in the remote.
 	-- Throws an exception if the remote cannot be accessed.
 	checkPresent :: Key -> a Bool,
