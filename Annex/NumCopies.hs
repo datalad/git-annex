@@ -175,10 +175,14 @@ instance Exception DropException
 notEnoughCopies :: Key -> NumCopies -> [VerifiedCopy] -> [UUID] -> [Remote] -> String -> Annex ()
 notEnoughCopies key need have skip bad nolocmsg = do
 	showNote "unsafe"
-	showLongNote $
-		"Could only verify the existence of " ++
-		show (length have) ++ " out of " ++ show (fromNumCopies need) ++ 
-		" necessary copies"
+	if length have < fromNumCopies need
+		then showLongNote $
+			"Could only verify the existence of " ++
+			show (length have) ++ " out of " ++ show (fromNumCopies need) ++ 
+			" necessary copies"
+		else do
+			showLongNote "Unable to lock down 1 copy of file that is required to safely drop it."
+			showLongNote "(This could have happened because of a concurrent drop, or because a remote has too old a version of git-annex-shell installed.)"
 	Remote.showTriedRemotes bad
 	Remote.showLocations True key (map toUUID have++skip) nolocmsg
 
