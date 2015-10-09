@@ -260,7 +260,7 @@ S no longer had the copy it expected. But, this is not actually
 a problem, because the copy moved to R2 and so still exists. 
 
 So, this is ok!
-<pre>
+</pre>
 
 Case 2:
 
