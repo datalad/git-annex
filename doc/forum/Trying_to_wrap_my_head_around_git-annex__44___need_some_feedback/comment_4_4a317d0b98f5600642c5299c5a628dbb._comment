@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnmF_9CAtfqdZkC4e-_dCX-rK5bqh4RWkw"
+ nickname="Carl"
+ subject="comment 4"
+ date="2015-10-09T08:45:45Z"
+ content="""
+As I understand your question, you will move some files into an \"archive-folder\" The client repo in your mac will then check if it allowed to drop the file. It seem that it will as there are enough copies on S3 et al. After syncing the file structure on the git repo will be updated on your NAS, as it is a client it will also check if it allowed to drop, and as enough copies are available it will. 
+
+If this is not what you want, then you do not want to have your NAS as a client. My setup is not dissimilar from yours, and my home server (corresponding to your NAS) is in the backup group. It thus wants to hold on to everything.
+"""]]
