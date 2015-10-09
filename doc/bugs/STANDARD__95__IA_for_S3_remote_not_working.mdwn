@@ -1,0 +1,60 @@
+### Please describe the problem.
+
+Cannot set S3 remote to use Infrequently accessed.
+
+### What steps will reproduce the problem?
+
+git annex enableremote <remote> storageclass=STANDARD_IA
+
+### What version of git-annex are you using? On what operating system?
+
+5.20150930 on Arch Linux
+
+### Please provide any additional information below.
+
+[[!format sh """
+
+# Trying with RR
+$ git annex enableremote amazon storageclass=REDUCED_REDUNDANCY
+enableremote amazon (encryption update) (hybrid cipher with gpg key XXX) ok
+(recording state in git...)
+
+$ git annex info amazon                                        
+remote: amazon
+description: [amazon]
+uuid: XXX
+trust: semitrusted
+cost: 250.0
+type: S3
+creds: embedded in git repository (gpg encrypted)
+bucket: XXX
+endpoint: s3.amazonaws.com
+port: 80
+storage class: ReducedRedundancy
+# snip
+
+# Trying with IA
+$ git annex enableremote amazon storageclass=STANDARD_IA       
+enableremote amazon (encryption update) (hybrid cipher with gpg key XXX) ok
+(recording state in git...)
+
+$ git annex info amazon                                 
+remote: amazon
+description: [amazon]
+uuid: XXX
+trust: semitrusted
+cost: 250.0
+type: S3
+creds: embedded in git repository (gpg encrypted)
+bucket: XXX
+endpoint: s3.amazonaws.com
+port: 80
+storage class: Standard
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I've had great experiences using git annex normally, but the special remotes tend
+to get dicey, like here.

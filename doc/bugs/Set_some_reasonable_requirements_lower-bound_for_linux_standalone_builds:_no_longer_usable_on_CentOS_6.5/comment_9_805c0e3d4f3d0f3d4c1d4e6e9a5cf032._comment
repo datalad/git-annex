@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="ah -- the 32bit build I guess"
+ date="2015-10-08T17:50:50Z"
+ content="""
+ah -- now I saw  the https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-i386-ancient.tar.gz which is I guess as ancient as it could get ;)  unfortunately \"was built without its test suite; not testing\" so can't test but let's see how it performs ;) 
+"""]]

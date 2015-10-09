@@ -1,0 +1,11 @@
+It took me some trial and error to get `git-annex diffdriver` to work close to the way I wanted (basically, the same way `git diff` works in a normal git repository with `color.ui` set to `always` with `git config`, so I thought I'd put my notes here for others:
+
+* Install `colordiff` (I couldn't figure out what `git`'s actual default diff program was or if it was possible to use it outside of `git diff`, so I went with this.
+* Create a wrapper script to pass to `git-annex diffdriver`. `LANG=C` was to avoid a warning produced by `perl` when it runs `colordiff`. `exit 0` is needed because `colordiff`/`diff` has a non-zero exit status when the files it is passed are not identical and `git` expects the external diff program to exit with status 0:
+
+        #!/usr/bin/env bash                                                             
+        LANG=C colordiff -c "$1" "$2"                                                   
+        exit 0
+
+* Put the wrapper script somewhere on `PATH`, make it executable, and name it something like `git-annex-diff-wrapper`.
+* Configure the repo to use the wrapper: `git config diff.external "git-annex diffdriver -- git-annex-diff-wrapper --"`
