@@ -361,10 +361,15 @@ dropKey r key
 	| otherwise = commitOnCleanup r $ Ssh.dropKey (repo r) key
 
 lockKey :: Remote -> Key -> (VerifiedCopy -> Annex r) -> Annex r
-lockKey r key a
+lockKey r key callback
 	| not $ Git.repoIsUrl (repo r) =
-		guardUsable (repo r) cantlock $
-			onLocal r $ Annex.Content.lockContentShared key a
+		guardUsable (repo r) cantlock $ do
+			inorigrepo <- Annex.makeRunner
+			-- Lock content from perspective of remote,
+			-- and then run the callback in the original
+			-- annex monad, not the remote's.
+			onLocal r $ Annex.Content.lockContentShared key $ 
+				liftIO . inorigrepo . callback
 	| Git.repoIsHttp (repo r) = cantlock
 	| otherwise = error "TODO"
   where
