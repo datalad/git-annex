@@ -57,6 +57,7 @@ import Types.NumCopies
 
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
+import Control.Concurrent.Async
 import qualified Data.Map as M
 import Network.URI
 
@@ -370,8 +371,41 @@ lockKey r key callback
 			-- annex monad, not the remote's.
 			onLocal r $ Annex.Content.lockContentShared key $ 
 				liftIO . inorigrepo . callback
-	| Git.repoIsHttp (repo r) = cantlock
-	| otherwise = error "TODO"
+	| Git.repoIsSsh (repo r) = do
+		Just (cmd, params) <- Ssh.git_annex_shell (repo r) "lockcontent"
+			[Param $ key2file key] []
+		(Just hin, Just hout, Nothing, p) <- liftIO $ createProcess $
+			 (proc cmd (toCommand params))
+				{ std_in = CreatePipe
+				, std_out = CreatePipe
+				}
+		-- Wait for either the process to exit, or for it to
+		-- indicate the content is locked.
+		v <- liftIO $ race 
+			(waitForProcess p)
+			(hGetLine hout)
+		let signaldone = void $ tryNonAsync $ liftIO $ do
+			hPutStrLn hout ""
+			hFlush hout
+			hClose hin
+			hClose hout
+			void $ waitForProcess p
+		let checkexited = not . isJust <$> getProcessExitCode p
+		case v of
+			Left _exited -> do
+				liftIO $ do
+					hClose hin
+					hClose hout
+				cantlock
+			Right l 
+				| l == Ssh.contentLockedMarker -> bracket_
+					noop
+					signaldone 
+					(withVerifiedCopy LockedCopy r checkexited callback)
+				| otherwise -> do
+					signaldone
+					cantlock
+	| otherwise = cantlock
   where
 	cantlock = error "can't lock content"
 

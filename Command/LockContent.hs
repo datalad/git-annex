@@ -11,6 +11,7 @@ import Common.Annex
 import Command
 import Annex.Content
 import Types.Key
+import Remote.Helper.Ssh (contentLockedMarker)
 
 cmd :: Command
 cmd = noCommit $ 
@@ -36,7 +37,7 @@ start [ks] = do
 	k = fromMaybe (error "bad key") (file2key ks)
 	locksuccess = ifM (inAnnex k)
 		( liftIO $ do
-			putStrLn "OK"
+			putStrLn contentLockedMarker
 			hFlush stdout
 			_ <- getLine
 			return True

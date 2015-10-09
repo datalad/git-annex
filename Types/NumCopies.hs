@@ -25,6 +25,7 @@ module Types.NumCopies (
 import Types.UUID
 import Types.Key
 import Utility.Exception (bracketIO)
+import Utility.Monad
 
 import qualified Data.Map as M
 import Control.Concurrent.MVar
@@ -98,14 +99,14 @@ deDupVerifiedCopies l = M.elems $
 mkVerifiedCopy :: ToUUID u => (V -> VerifiedCopy) -> u -> VerifiedCopy
 mkVerifiedCopy mk u = mk $ V (toUUID u) (return True) (return ())
 
-invalidatableVerifiedCopy :: ToUUID u => (V -> VerifiedCopy) -> u -> IO VerifiedCopy
-invalidatableVerifiedCopy mk u = do
+invalidatableVerifiedCopy :: ToUUID u => (V -> VerifiedCopy) -> u -> IO Bool -> IO VerifiedCopy
+invalidatableVerifiedCopy mk u check = do
 	v <- newEmptyMVar
 	let invalidate = do
 		_ <- tryPutMVar v ()
 		return ()
-	let check = isEmptyMVar v
-	return $ mk $ V (toUUID u) check invalidate
+	let check' = isEmptyMVar v <&&> check
+	return $ mk $ V (toUUID u) check' invalidate
 
 -- Constructs a VerifiedCopy, and runs the action, ensuring that the
 -- verified copy is invalidated when the action returns, or on error.
@@ -113,11 +114,12 @@ withVerifiedCopy
 	:: (Monad m, MonadMask m, MonadIO m, ToUUID u)
 	=> (V -> VerifiedCopy)
 	-> u
+	-> IO Bool
 	-> (VerifiedCopy -> m a)
 	-> m a
-withVerifiedCopy mk u = bracketIO setup cleanup
+withVerifiedCopy mk u check = bracketIO setup cleanup
   where
-	setup = invalidatableVerifiedCopy mk u
+	setup = invalidatableVerifiedCopy mk u check
 	cleanup = invalidateVerifiedCopy
 
 {- Check whether enough verification has been done of copies to allow
