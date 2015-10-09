@@ -13,20 +13,23 @@ import Common.Annex
 import qualified Git
 import qualified Types.Remote as Remote
 
-class Checkable a where
-	descCheckable :: a -> String
+class Describable a where
+	describe :: a -> String
 
-instance Checkable Git.Repo where
-	descCheckable = Git.repoDescribe
+instance Describable Git.Repo where
+	describe = Git.repoDescribe
 
-instance Checkable (Remote.RemoteA a) where
-	descCheckable = Remote.name
+instance Describable (Remote.RemoteA a) where
+	describe = Remote.name
 
-instance Checkable String where
-	descCheckable = id
+instance Describable String where
+	describe = id
 
-showChecking :: Checkable a => a -> Annex ()
-showChecking v = showAction $ "checking " ++ descCheckable v
+showChecking :: Describable a => a -> Annex ()
+showChecking v = showAction $ "checking " ++ describe v
 
-cantCheck :: Checkable a => a -> e
-cantCheck v = error $ "unable to check " ++ descCheckable v
+cantCheck :: Describable a => a -> e
+cantCheck v = error $ "unable to check " ++ describe v
+
+showLocking :: Describable a => a -> Annex ()
+showLocking v = showAction $ "locking " ++ describe v

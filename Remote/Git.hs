@@ -364,7 +364,7 @@ dropKey r key
 lockKey :: Remote -> Key -> (VerifiedCopy -> Annex r) -> Annex r
 lockKey r key callback
 	| not $ Git.repoIsUrl (repo r) =
-		guardUsable (repo r) cantlock $ do
+		guardUsable (repo r) failedlock $ do
 			inorigrepo <- Annex.makeRunner
 			-- Lock content from perspective of remote,
 			-- and then run the callback in the original
@@ -372,13 +372,17 @@ lockKey r key callback
 			onLocal r $ Annex.Content.lockContentShared key $ 
 				liftIO . inorigrepo . callback
 	| Git.repoIsSsh (repo r) = do
+		showLocking r
 		Just (cmd, params) <- Ssh.git_annex_shell (repo r) "lockcontent"
 			[Param $ key2file key] []
-		(Just hin, Just hout, Nothing, p) <- liftIO $ createProcess $
-			 (proc cmd (toCommand params))
-				{ std_in = CreatePipe
-				, std_out = CreatePipe
-				}
+		(Just hin, Just hout, Nothing, p) <- liftIO $ 
+			withFile devNull WriteMode $ \nullh ->
+				createProcess $
+					 (proc cmd (toCommand params))
+						{ std_in = CreatePipe
+						, std_out = CreatePipe
+						, std_err = UseHandle nullh
+						}
 		-- Wait for either the process to exit, or for it to
 		-- indicate the content is locked.
 		v <- liftIO $ race 
@@ -393,21 +397,23 @@ lockKey r key callback
 		let checkexited = not . isJust <$> getProcessExitCode p
 		case v of
 			Left _exited -> do
+				showNote "lockcontent failed"
 				liftIO $ do
 					hClose hin
 					hClose hout
-				cantlock
+				failedlock
 			Right l 
 				| l == Ssh.contentLockedMarker -> bracket_
 					noop
 					signaldone 
 					(withVerifiedCopy LockedCopy r checkexited callback)
 				| otherwise -> do
+					showNote "lockcontent failed"
 					signaldone
-					cantlock
-	| otherwise = cantlock
+					failedlock
+	| otherwise = failedlock
   where
-	cantlock = error "can't lock content"
+	failedlock = error "can't lock content"
 
 {- Tries to copy a key's content from a remote's annex to a file. -}
 copyFromRemote :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
