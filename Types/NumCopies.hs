@@ -15,12 +15,16 @@ module Types.NumCopies (
 	deDupVerifiedCopies,
 	mkVerifiedCopy,
 	invalidatableVerifiedCopy,
+	withVerifiedCopy,
 ) where
 
 import Types.UUID
+import Utility.Exception (bracketIO)
 
 import qualified Data.Map as M
 import Control.Concurrent.MVar
+import Control.Monad.Catch (MonadMask)
+import Control.Monad.IO.Class (MonadIO)
 
 newtype NumCopies = NumCopies Int
 	deriving (Ord, Eq)
@@ -44,6 +48,15 @@ data VerifiedCopy
 	| VerifiedCopyLock V
 	deriving (Show)
 
+data V = V
+	{ _getUUID :: UUID
+	, _checkVerifiedCopy :: IO Bool
+	, _invalidateVerifiedCopy :: IO ()
+	}
+
+instance Show V where
+	show v = show (_getUUID v)
+
 instance ToUUID VerifiedCopy where
 	toUUID = _getUUID . toV
 	
@@ -58,15 +71,6 @@ checkVerifiedCopy = _checkVerifiedCopy . toV
 
 invalidateVerifiedCopy :: VerifiedCopy -> IO ()
 invalidateVerifiedCopy = _invalidateVerifiedCopy . toV
-
-data V = V
-	{ _getUUID :: UUID
-	, _checkVerifiedCopy :: IO Bool
-	, _invalidateVerifiedCopy :: IO ()
-	}
-
-instance Show V where
-	show v = show (_getUUID v)
 
 strongestVerifiedCopy :: VerifiedCopy -> VerifiedCopy -> VerifiedCopy
 strongestVerifiedCopy a@(VerifiedCopyLock _) _ = a
@@ -91,3 +95,16 @@ invalidatableVerifiedCopy mk u = do
 		return ()
 	let check = isEmptyMVar v
 	return $ mk $ V (toUUID u) check invalidate
+
+-- Constructs a VerifiedCopy, and runs the action, ensuring that the
+-- verified copy is invalidated when the action returns, or on error.
+withVerifiedCopy 
+	:: (Monad m, MonadMask m, MonadIO m, ToUUID u)
+	=> (V -> VerifiedCopy)
+	-> u
+	-> (VerifiedCopy -> m a)
+	-> m a
+withVerifiedCopy mk u = bracketIO setup cleanup
+  where
+	setup = invalidatableVerifiedCopy mk u
+	cleanup = invalidateVerifiedCopy
