@@ -2,6 +2,8 @@ Concurrent dropping of a file has problems when drop --from is
 used. (Also when the assistant or sync --content decided to drop from a
 remote.)
 
+> Now [[fixed|done]] --[[Joey]]
+
 [[!toc]]
 
 # refresher
