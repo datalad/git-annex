@@ -1,6 +1,6 @@
 {- git-annex numcopies types
  -
- - Copyright 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}

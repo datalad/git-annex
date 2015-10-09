@@ -78,10 +78,11 @@ data RemoteA a = Remote {
 	-- Removes a key's contents (succeeds if the contents are not present)
 	removeKey :: Key -> a Bool,
 	-- Uses locking to prevent removal of a key's contents,
-	-- thus producing a VerifiedCopy.
-	-- The action must be run whether or not the locking succeeds.
+	-- thus producing a VerifiedCopy, which is passed to the callback.
+	-- If unable to lock, does not run the callback, and throws an
+	-- error.
 	-- This is optional; remotes do not have to support locking.
-	lockContent :: forall r. Maybe (Key -> (Maybe VerifiedCopy -> a r) -> a r),
+	lockContent :: forall r. Maybe (Key -> (VerifiedCopy -> a r) -> a r),
 	-- Checks if a key is present in the remote.
 	-- Throws an exception if the remote cannot be accessed.
 	checkPresent :: Key -> a Bool,

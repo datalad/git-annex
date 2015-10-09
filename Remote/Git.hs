@@ -53,6 +53,7 @@ import Annex.Path
 import Creds
 import Annex.CatFile
 import Messages.Progress
+import Types.NumCopies
 
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
@@ -142,7 +143,7 @@ gen r u c gc
 			, retrieveKeyFile = copyFromRemote new
 			, retrieveKeyFileCheap = copyFromRemoteCheap new
 			, removeKey = dropKey new
-			, lockContent = Nothing
+			, lockContent = Just (lockKey new)
 			, checkPresent = inAnnex new
 			, checkPresentCheap = repoCheap r
 			, whereisKey = Nothing
@@ -358,6 +359,16 @@ dropKey r key
 				return True
 	| Git.repoIsHttp (repo r) = error "dropping from http remote not supported"
 	| otherwise = commitOnCleanup r $ Ssh.dropKey (repo r) key
+
+lockKey :: Remote -> Key -> (VerifiedCopy -> Annex r) -> Annex r
+lockKey r key a
+	| not $ Git.repoIsUrl (repo r) =
+		guardUsable (repo r) cantlock $
+			onLocal r $ Annex.Content.lockContentShared key a
+	| Git.repoIsHttp (repo r) = cantlock
+	| otherwise = error "TODO"
+  where
+	cantlock = error "can't lock content"
 
 {- Tries to copy a key's content from a remote's annex to a file. -}
 copyFromRemote :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)

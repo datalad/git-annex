@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE ScopedTypeVariables, DeriveDataTypeable #-}
+
 module Annex.NumCopies (
 	module Types.NumCopies,
 	module Logs.NumCopies,
@@ -29,6 +31,10 @@ import qualified Remote
 import qualified Types.Remote as Remote
 import Annex.UUID
 import Annex.Content
+
+import Control.Exception
+import qualified Control.Monad.Catch as M
+import Data.Typeable
 
 defaultNumCopies :: NumCopies
 defaultNumCopies = NumCopies 1
@@ -124,10 +130,31 @@ verifyEnoughCopiesToDrop nolocmsg key need skip preverified tocheck dropaction n
 				Right proof -> dropaction proof
 				Left stillhave -> helper bad missing stillhave (r:rs)
 		| otherwise = case Remote.lockContent r of
+			Just lockcontent -> do
+				-- The remote's lockContent will throw
+				-- an exception if it is unable to lock,
+				-- in which case the fallback should be
+				-- run. 
+				--
+				-- On the other hand, the callback passed
+				-- to the lockContent could itself throw an
+				-- exception (ie, the eventual drop
+				-- action fails), and in this case we don't
+				-- want to use the fallback since part
+				-- of the drop action may have already been
+				-- performed. 
+				--
+				-- Differentiate between these two sorts
+				-- of exceptions by using DropException.
+				let a = lockcontent key $ \vc ->
+					helper bad missing (vc : have) rs
+						`catchNonAsync` (throw . DropException)
+				a `M.catches`
+					[ M.Handler (\ (e :: AsyncException) -> throwM e)
+					, M.Handler (\ (DropException e') -> throwM e')
+					, M.Handler (\ (_e :: SomeException) -> fallback)
+					]
 			Nothing -> fallback
-			Just lockcontent -> lockcontent key $ \v -> case v of
-				Nothing -> fallback
-				Just vc -> helper bad missing (vc : have) rs
 		  where
 			fallback = do
 				haskey <- Remote.hasKey r key
@@ -135,6 +162,11 @@ verifyEnoughCopiesToDrop nolocmsg key need skip preverified tocheck dropaction n
 					Right True  -> helper bad missing (mkVerifiedCopy RecentlyVerifiedCopy r : have) rs
 					Left _      -> helper (r:bad) missing have rs
 					Right False -> helper bad (Remote.uuid r:missing) have rs
+
+data DropException = DropException SomeException
+	deriving (Typeable, Show)
+
+instance Exception DropException
 
 notEnoughCopies :: Key -> NumCopies -> [VerifiedCopy] -> [UUID] -> [Remote] -> String -> Annex ()
 notEnoughCopies key need have skip bad nolocmsg = do
