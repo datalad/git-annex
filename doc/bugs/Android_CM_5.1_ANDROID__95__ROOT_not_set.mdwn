@@ -1,0 +1,38 @@
+### Please describe the problem.
+
+Downloaded git-annex (version for android 5.0) from the website. Upon opening the app for the first time and setting up a repository at /sdcard/annex, the terminal gave out the error.
+
+### What version of git-annex are you using? On what operating system?
+
+Nexus 4 running Cyanogenmod 12.1 (Android 5.1) build 20151007 and 20150901
+
+### Please provide any additional information below.
+Output to the terminal window:
+[[!format sh """
+WARNING: linker: git-annex has text relocations. This is wating memory and prevents security hardening. Please fix.
+__bionic_open_tzdata_path: ANDROID_ROOT not set!
+__bionic_open_tzdata_path: ANDROID_ROOT not set!
+__bionic_open_tzdata_path: ANDROID_ROOT not set!
+__bionic_open_tzdata_path: ANDROID_ROOT not set!
+__bionic_open_tzdata_path: ANDROID_ROOT not set!
+
+Detected a filesystem without fifo support.
+
+Disabling ssh connection caching.
+
+Detected a crippled filesystem.
+
+Enabling direct mode.
+fatal: ../../../../sdcard/annex: '../../../../sdcard/annex' is outside of repository
+(recording state in git...)
+__bionic_open_tzdata_path: ANDROID_ROOT not set!
+__bionic_open_tzdata_path: ANDROID_ROOT not set!
+__bionic_open_tzdata_path: ANDROID_ROOT not set!
+__bionic_open_tzdata_path: ANDROID_ROOT not set!
+__bionic_open_tzdata_path: ANDROID_ROOT not set!
+"""]]
+I can add remote repositories and they show up nicely in the webapp, but no files are ever downloaded.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I have a couple of repositories atm, one with my music, another that backs up our family pictures for the family and uses Amazon S3 as a backup.
