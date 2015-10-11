@@ -185,7 +185,7 @@ toDavPass = B8.fromString
  -}
 testDav :: URLString -> Maybe CredPair -> Annex ()
 testDav url (Just (u, p)) = do
-	showSideAction "testing WebDAV server"
+	showAction "testing WebDAV server"
 	test $ liftIO $ evalDAVT url $ do
 		prepDAV user pass
 		makeParentDirs

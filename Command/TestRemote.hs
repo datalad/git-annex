@@ -63,7 +63,7 @@ start :: Int -> RemoteName -> CommandStart
 start basesz name = do
 	showStart "testremote" name
 	r <- either error id <$> Remote.byName' name
-	showSideAction "generating test keys"
+	showAction "generating test keys"
 	fast <- Annex.getState Annex.fast
 	ks <- mapM randKey (keySizes basesz fast)
 	rs <- catMaybes <$> mapM (adjustChunkSize r) (chunkSizes basesz fast)

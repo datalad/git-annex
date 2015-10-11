@@ -116,7 +116,7 @@ checkKeyChecksum hash key file = go `catchHardwareFault` hwfault
 		case (mstat, fast) of
 			(Just stat, False) -> do
 				filesize <- liftIO $ getFileSize' file stat
-				showSideAction "checksum"
+				showAction "checksum"
 				check <$> hashFile hash file filesize
 			_ -> return True
 	expected = keyHash key
