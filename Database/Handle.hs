@@ -137,7 +137,8 @@ queryDb (DbHandle _ jobs _) a = do
 	res <- newEmptyMVar
 	putMVar jobs $ QueryJob $
 		liftIO . putMVar res =<< tryNonAsync a
-	either throwIO return =<< takeMVar res
+	(either throwIO return =<< takeMVar res)
+		`catchNonAsync` (const $ error "sqlite query crashed")
 
 closeDb :: DbHandle -> IO ()
 closeDb h@(DbHandle worker jobs _) = do
