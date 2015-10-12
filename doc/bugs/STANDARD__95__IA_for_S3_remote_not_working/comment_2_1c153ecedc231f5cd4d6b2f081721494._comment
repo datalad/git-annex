@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-10-12T17:08:06Z"
+ content="""
+The feature is supported in git-annex, but it needs a version of the aws
+library that has not seen a stable release yet.
+"""]]
