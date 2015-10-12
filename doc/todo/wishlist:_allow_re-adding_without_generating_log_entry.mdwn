@@ -1,0 +1,9 @@
+I keep a database file in git-annex so it stays synced across several machines. My wrapper when accessing it is basically
+
+    git annex sync --content
+    git annex unlock $database
+    [access database]
+    git annex add $database
+    git annex sync --content
+
+This works fine except it creates an entry in the log for the database file even if that stays unchanged. I would like an option that just returns to the state before `git annex unlock` if the file has not been changed. Maybe `git annex add --restore-unchanged`?

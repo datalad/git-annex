@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="dah"
+ subject="comment 4"
+ date="2015-10-10T19:02:56Z"
+ content="""
+
+But how would I configure git-annex assistant in this case?
+
+My plan was to somehow add the information about the repos etc. using the command line interface and then just start the assistant using 'git annex assistant --autostart' as the terminal startup command.
+
+Would that work?
+
+By the way, is there any documentation about how to use the assistant without the web interface?
+
+I could only find information about how to configure the assistant using the web app.
+
+Thanks for your help!
+
+
+"""]]
