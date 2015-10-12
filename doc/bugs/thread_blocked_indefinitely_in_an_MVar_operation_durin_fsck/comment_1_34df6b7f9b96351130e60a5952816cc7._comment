@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-10-12T16:49:11Z"
+ content="""
+Seems your guess is right:
+
+	joey@darkstar:~/tmp/b4/b>sudo chown root.root -R .git/annex/fsck/4625a6de-d8f5-4036-83a5-6e202ad346da/
+	joey@darkstar:~/tmp/b4/b>git annex fsck --incremental-schedule 182d
+	
+	sqlite worker thread crashed: SQLite3 returned ErrorCan'tOpen while attempting to perform prepare "SELECT null from fscked limit 1": unable to open database file
+	git-annex: thread blocked indefinitely in an MVar operation
+
+So, fix the owner/permissions (or delete .git/annex/fsck) and you should be good to go.
+
+Cleaned up the error message about the MVar, which is something of a red herring.
+
+BTW, I double-checked, and core.sharedRepository is honored to set the mode
+of the fsck database file, so can be used to share a repo amoung multiple users.
+"""]]
