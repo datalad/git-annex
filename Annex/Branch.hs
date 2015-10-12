@@ -18,6 +18,7 @@ module Annex.Branch (
 	get,
 	getHistorical,
 	change,
+	maybeChange,
 	commit,
 	forceCommit,
 	files,
@@ -224,7 +225,15 @@ getRef ref file = withIndex $ decodeBS <$> catFile ref file
  - modifes the current content of the file on the branch.
  -}
 change :: FilePath -> (String -> String) -> Annex ()
-change file a = lockJournal $ \jl -> a <$> getLocal file >>= set jl file
+change file f = lockJournal $ \jl -> f <$> getLocal file >>= set jl file
+
+{- Applies a function which can modify the content of a file, or not. -}
+maybeChange :: FilePath -> (String -> Maybe String) -> Annex ()
+maybeChange file f = lockJournal $ \jl -> do
+	v <- getLocal file
+	case f v of
+		Just v' | v' /= v -> set jl file v'
+		_ -> noop
 
 {- Records new content of a file into the journal -}
 set :: JournalLocked -> FilePath -> String -> Annex ()

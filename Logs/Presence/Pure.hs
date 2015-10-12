@@ -61,20 +61,38 @@ filterPresent = filter (\l -> InfoPresent == status l) . compactLog
 {- Compacts a set of logs, returning a subset that contains the current
  - status. -}
 compactLog :: [LogLine] -> [LogLine]
-compactLog = M.elems . foldr mapLog M.empty
+compactLog = mapLog . logMap
 
 type LogMap = M.Map String LogLine
 
-{- Inserts a log into a map of logs, if the log has better (ie, newer)
- - information than the other logs in the map -}
-mapLog :: LogLine -> LogMap -> LogMap
-mapLog l m
-	| better = M.insert i l m
-	| otherwise = m
+mapLog :: LogMap -> [LogLine]
+mapLog = M.elems
+
+logMap :: [LogLine] -> LogMap
+logMap = foldr insertNewerLogLine M.empty
+
+insertBetter :: (LogLine -> Bool) -> LogLine -> LogMap -> Maybe LogMap
+insertBetter betterthan l m
+	| better = Just (M.insert i l m)
+	| otherwise = Nothing
   where
-	better = maybe True newer $ M.lookup i m
-	newer l' = date l' <= date l
+	better = maybe True betterthan (M.lookup i m)
 	i = info l
+
+{- Inserts a log into a map of logs, if the log has newer
+ - information than the other logs in the map for the same info. -}
+insertNewerLogLine :: LogLine -> LogMap -> LogMap
+insertNewerLogLine l m = fromMaybe m $ insertBetter newer l m
+  where
+	newer l' = date l' <= date l
+
+{- Inserts the log unless there's already one in the map with
+ - the same status for its info, in which case there's no need to
+ - change anything, to avoid log churn. -}
+insertNewStatus :: LogLine -> LogMap -> Maybe LogMap
+insertNewStatus l m  = insertBetter diffstatus l m
+  where
+	diffstatus l' = status l' /= status l
 
 instance Arbitrary LogLine where
 	arbitrary = LogLine
