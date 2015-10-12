@@ -8,30 +8,8 @@
 {-# LANGUAGE CPP #-}
 
 module Utility.FileMode (
+	module Utility.FileMode,
 	FileMode,
-	modifyFileMode,
-	addModes,
-	removeModes,
-	writeModes,
-	readModes,
-	executeModes,
-	otherGroupModes,
-	preventWrite,
-	allowWrite,
-	allowRead,
-	groupSharedModes,
-	groupWriteRead,
-	checkMode,
-	isSymLink,
-	isExecutable,
-	noUmask,
-	withUmask,
-	combineModes,
-	isSticky,
-	stickyMode,
-	setSticky,
-	writeFileProtected,
-	writeFileProtected'
 ) where
 
 import System.IO
