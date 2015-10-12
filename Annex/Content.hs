@@ -256,8 +256,9 @@ lockContentUsing locker key a = do
 		maybe noop cleanuplockfile mlockfile
 		liftIO $ dropLock lck
 #else
-	unlock mlockfile mlockhandle = do
-		liftIO $ maybe noop dropLock mlockhandle
+	unlock mlockfile lck = do
+		-- Can't delete a locked file on Windows
+		liftIO $ dropLock lck
 		maybe noop cleanuplockfile mlockfile
 #endif
 
