@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-10-12T18:52:42Z"
+ content="""
+You seem to be talking about using https to access a git repository.
+
+git-annex is not generally able to use https as a transport -- ie, it
+can maybe download files from a git repository over https, if
+the repository is set up just right. But it can't upload file to that
+repository, nor can it promptly notice when changes are synced to that
+repository from elsewhere.
+
+So, there's not much that the assistant can do with such a repository.
+
+You'll be better off using ssh for your git-annex repositories.
+"""]]
