@@ -41,9 +41,9 @@ rare race condition occurs.
 
 So, I've been implementing that all of yesterday and today. Getting it
 right involves building up 4 different kinds of evidence, which can be
-used to make sure that the last copy of a file can't possibly be being
+used to make sure that the last copy of a file can't possibly end up being
 dropped, no matter what other concurrent drops could be happening.
 I ended up with a very clean and robust implementation of this, and
-a 2 thousand line diff.
+a 2,000 line diff.
 
 Whew!
