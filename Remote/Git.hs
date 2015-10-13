@@ -707,5 +707,5 @@ mkCopier remotewanthardlink rsyncparams = do
 		, return copier
 		)
 #else
-	return copier
+	return $ if remotewanthardlink then copier else copier
 #endif

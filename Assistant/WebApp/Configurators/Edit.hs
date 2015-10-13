@@ -19,8 +19,8 @@ import Assistant.ScanRemotes
 import Assistant.Sync
 import Assistant.Alert
 import qualified Assistant.WebApp.Configurators.AWS as AWS
-import qualified Assistant.WebApp.Configurators.IA as IA
 #ifdef WITH_S3
+import qualified Assistant.WebApp.Configurators.IA as IA
 import qualified Remote.S3 as S3
 #endif
 import qualified Remote

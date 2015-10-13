@@ -11,8 +11,6 @@ module Git.FileMode where
 
 import Utility.FileMode
 
-import System.PosixCompat.Types
-
 symLinkMode :: FileMode
 symLinkMode = 40960
 
