@@ -280,7 +280,7 @@ $ git annex sync
 git-annex: /media/anarcat/Nokia N900/.sounds/mp3-clone/.git/annex/objects/cec/e45/SHA256E-s3547512--6d0b48b144ba58cf649134c7b4d6597f4e0c5f319302f1c109d0967f22af607a.mp3: createDirectory: resource exhausted (No space left on device)
 </pre>
 
-... and leaves the repo in an inconsistent state again.
+... and leaves the repo in an inconsistent state again. Also note that the above took over 2 hours of wall clock time before failing.
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
