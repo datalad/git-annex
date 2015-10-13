@@ -265,6 +265,23 @@ et réessayer l'extraction avec 'git checkout -f HEAD'
 
 Besides, `clone` creates actually seems to create and transfer all the files and setup direct mode (!?), which takes up too much space on this external drive...
 
+Interestingly, i have managed to clone the repo by cleaning up a lot of space and fixing the above errors. Interestingly, the git clone is only 2GB while the original repo is closer to 110GB. There's nevertheless a bunch of files checked out, and obviously, enabling git-annex on the repo gives the predictable:
+
+<pre>
+$ git annex sync
+
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+
+  Enabling direct mode.
+git-annex: /media/anarcat/Nokia N900/.sounds/mp3-clone/.git/annex/objects/cec/e45/SHA256E-s3547512--6d0b48b144ba58cf649134c7b4d6597f4e0c5f319302f1c109d0967f22af607a.mp3: createDirectory: resource exhausted (No space left on device)
+</pre>
+
+... and leaves the repo in an inconsistent state again.
+
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Git-annex has been my bread and butter for a few months in the past
