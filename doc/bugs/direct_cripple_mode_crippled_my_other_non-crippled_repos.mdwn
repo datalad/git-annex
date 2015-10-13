@@ -15,8 +15,26 @@ What's going on?
 
 It seems the problem is because i setup my remote repo from scratch,
 because doing a checkout fails, because the crippled filesystem
-doesn't support files with colons (':'), question marks ('?') or
-double quotes ('"') in them.
+doesn't support files with:
+
+* colons (`:`)
+* question marks (`?`)
+* backslashes (`\`)
+* double quotes (`"`)
+* stars (`*`)
+* irregular encoding (i.e. non-UTF8)
+
+I have found the following tools to be useful to cleanup the filesystem:
+
+* [convmv](http://tracker.debian.org/convmv) can massively re-encode filenames and may also be able to fix all the issues above, but i didn't test that
+* [rename](http://tracker.debian.org/rename) can massively rename files according to certain patterns, I have used:
+
+    rename 's/\?//' *
+    rename 's/://' *
+    rename 's/\\//' *
+    rename 's/"//' *
+    rename 's/*//' *
+    git add -A .
 
 Similar issues:
 
@@ -244,6 +262,8 @@ warning: Le clone a réussi, mais l'extraction a échoué.
 Vous pouvez inspecter ce qui a été extrait avec 'git status'
 et réessayer l'extraction avec 'git checkout -f HEAD'
 </pre>
+
+Besides, `clone` creates actually seems to create and transfer all the files and setup direct mode (!?), which takes up too much space on this external drive...
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
