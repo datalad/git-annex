@@ -1,0 +1,7 @@
+Hello, I'd like some help fixing a mistake I made setting up an S3 remote.
+
+I created an S3 remote A, then at some later time accidentally created an S3 remote B with the same settings as A, and moved some files over to B.
+
+I have fixed it by removing/marking as dead B, but I am missing some files now.
+
+I believe that all of these files exist in A since it is the same bucket as B, but git annex doesn't know that they are in A.  Is there a way to somehow "reinject" or refresh git annex so it knows that the files are there?  I'm using chunking as well, so I don't know how to download all the chunks and use git annex's reinject command.
