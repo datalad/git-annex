@@ -18,6 +18,16 @@ because doing a checkout fails, because the crippled filesystem
 doesn't support files with colons (':'), question marks ('?') or
 double quotes ('"') in them.
 
+Similar issues:
+
+* windows bugs:
+  * [[bugs/Can__39__t_clone_on_Windows_because_some_filenames_have_a_colon_in_them/]]
+  * [[bugs/Windows:_can__39__t_clone_repository/]]
+* more general feature request:
+  [[forum/Wishlist:_rename_files__47__dirs_w__47___special_characters_if_filesystem_is_FAT/]]
+
+The above issue specifically request that files with "special" characters be supported in vFAT or even Windows, but here is a different issue: I am worried about potential data loss and lack of anti-foot-shooting device in case a user adds an external hard drive or USB key that are widely formatted as vFAT and then triggers destruction of all files (after garbage collection).
+
 ### What steps will reproduce the problem?
 
 <pre>
@@ -37,14 +47,6 @@ I didn't expect that to fail: a test run here doesn't delete files on /srv/mp3..
 5.20141125, debian jessie.
 
 ### Please provide any additional information below.
-
-Similar issues:
-
-* windows bugs:
-  * [[bugs/Can__39__t_clone_on_Windows_because_some_filenames_have_a_colon_in_them/]]
-  * [[bugs/Windows:_can__39__t_clone_repository/]]
-* more general feature request:
-  [[forum/Wishlist:_rename_files__47__dirs_w__47___special_characters_if_filesystem_is_FAT/]]
 
 Complete trace:
 
