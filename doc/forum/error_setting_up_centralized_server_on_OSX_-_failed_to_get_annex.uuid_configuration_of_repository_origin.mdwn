@@ -1,6 +1,6 @@
 I'm attempting to set up a centralized git repository to use with git-annex as specified on https://git-annex.branchable.com/tips/centralized_git_repository_tutorial/on_your_own_server/
 
-I'm using macbooks as clients and servers. They are all running git-annex version 5.20150916 installed through homebrew. The server is running 10.10 Yosemite and the clients are running 10.9 Mavericks. There is a symlink on the server in /usr/bin/git-annex and /usr/bin/git-annex-shell to /usr/local/bin/git-annex and /usr/local/bin/git-annex-shell, which then symlinks to the latest version in homebrew's directories. I did this because I was previously facing an error where git-annex was not found on the server (it would not work if you ran <code>ssh tom@server git-annex</code>).
+I'm using macbooks as clients and servers. They are all running git-annex version 5.20150916 installed through homebrew. The server is running 10.10 Yosemite and the clients are running 10.9 Mavericks. There is a symlink on the server in ```/usr/bin/git-annex``` and ```/usr/bin/git-annex-shell``` to ```/usr/local/bin/git-annex``` and ```/usr/local/bin/git-annex-shell```, which then symlinks to the latest version in homebrew's directories. I did this because I was previously facing an error where git-annex was not found on the server (it would not work if you ran <code>ssh tom@server git-annex</code>).
 
 I'm currently at the step after cloning and cding into the repository on the client. When I attempt to run <code>git annex init 'Tom Macbook'</code>, I get the following error:
 
