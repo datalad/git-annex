@@ -4,15 +4,15 @@ I'm using macbooks as clients and servers. They are all running git-annex versio
 
 I'm currently at the step after cloning and cding into the repository on the client. When I attempt to run <code>git annex init 'Tom Macbook'</code>, I get the following error:
 <code>
-git annex init 'Tom Macbook'
-init Tom Macbook 
-Failed to get annex.uuid configuration of repository origin
-
-Instead, got: "annex.uuid=\ncore.gcrypt-id=\n"
-
-This is unexpected; please check the network transport!
-ok
-(recording state in git...)
+    git annex init 'Tom Macbook'
+    init Tom Macbook 
+    Failed to get annex.uuid configuration of repository origin
+    
+    Instead, got: "annex.uuid=\ncore.gcrypt-id=\n"
+    
+    This is unexpected; please check the network transport!
+    ok
+    (recording state in git...)
 </code>
 
 I'm really stumped here. Any suggestions? Thanks. Let me know if I can provide any further info. 
