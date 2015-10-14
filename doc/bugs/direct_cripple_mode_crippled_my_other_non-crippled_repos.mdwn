@@ -15,8 +15,26 @@ What's going on?
 
 It seems the problem is because i setup my remote repo from scratch,
 because doing a checkout fails, because the crippled filesystem
-doesn't support files with colons (':'), question marks ('?') or
-double quotes ('"') in them.
+doesn't support files with:
+
+* colons (`:`)
+* question marks (`?`)
+* backslashes (`\`)
+* double quotes (`"`)
+* stars (`*`)
+* irregular encoding (i.e. non-UTF8)
+
+I have found the following tools to be useful to cleanup the filesystem:
+
+* [convmv](http://tracker.debian.org/convmv) can massively re-encode filenames and may also be able to fix all the issues above, but i didn't test that
+* [rename](http://tracker.debian.org/rename) can massively rename files according to certain patterns, I have used:
+
+    rename 's/\?//' *
+    rename 's/://' *
+    rename 's/\\//' *
+    rename 's/"//' *
+    rename 's/*//' *
+    git add -A .
 
 Similar issues:
 
@@ -244,6 +262,25 @@ warning: Le clone a réussi, mais l'extraction a échoué.
 Vous pouvez inspecter ce qui a été extrait avec 'git status'
 et réessayer l'extraction avec 'git checkout -f HEAD'
 </pre>
+
+Besides, `clone` creates actually seems to create and transfer all the files and setup direct mode (!?), which takes up too much space on this external drive...
+
+Interestingly, i have managed to clone the repo by cleaning up a lot of space and fixing the above errors. Interestingly, the git clone is only 2GB while the original repo is closer to 110GB. There's nevertheless a bunch of files checked out, and obviously, enabling git-annex on the repo gives the predictable:
+
+<pre>
+$ git annex sync
+
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+
+  Enabling direct mode.
+git-annex: /media/anarcat/Nokia N900/.sounds/mp3-clone/.git/annex/objects/cec/e45/SHA256E-s3547512--6d0b48b144ba58cf649134c7b4d6597f4e0c5f319302f1c109d0967f22af607a.mp3: createDirectory: resource exhausted (No space left on device)
+</pre>
+
+... and leaves the repo in an inconsistent state again. Also note that the above took over 2 hours of wall clock time before failing.
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
