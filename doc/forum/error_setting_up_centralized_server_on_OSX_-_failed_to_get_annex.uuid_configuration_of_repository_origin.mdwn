@@ -13,6 +13,6 @@ Instead, got: "annex.uuid=\ncore.gcrypt-id=\n"
 This is unexpected; please check the network transport!
 ok
 (recording state in git...)
-<code>
+</code>
 
 I'm really stumped here. Any suggestions? Thanks. Let me know if I can provide any further info. 
