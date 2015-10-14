@@ -2,11 +2,24 @@
 
 # Software upgrades
 
-Upgrading the code base of git-annex will be done differently depending on your [[install]] method. For most distribution-based packages, it is handled by the package management software.
+Upgrading the code base of git-annex will be done differently depending on
+your [[install]] method. For most distribution-based packages, it is
+handled by the package management software.
 
-For the standalone distribution, the [[git-annex-webapp]](1) will ask the user for confirmation when it detects a new version. Once that is confirmed, or if `annex.autoupgrade` is enabled (see the [[git-annex]](1) manpage) the assistant will start the upgrade. The upgrade process is fairly simple: the assistant will move the `git-annex.linux` directory out of the way and replace it with the new version, then re-execute itself. It therefore needs write access to the parent directory of the `git-annex.linux` directory.
+For the standalone distribution, the [[git-annex-webapp]](1) will ask the
+user for confirmation when it detects a new version. Once that is
+confirmed, or if `annex.autoupgrade` is enabled (see the [[git-annex]](1)
+manpage) the assistant will start the upgrade. The upgrade process is
+fairly simple: the assistant will move the `git-annex.linux` directory out
+of the way and replace it with the new version, then re-execute itself. It
+therefore needs write access to the parent directory of the
+`git-annex.linux` directory.
 
-Note that "upgrading" from a distribution-based package to the [[install/Linux_standalone/]] version may cause weird problems, as an unexpected version of git-annex (e.g. the old one from packages) may be ran, see [[bugs/git-annex-shell_doesn__39__t_work_as_expected/]] for a full discussion.
+Note that "upgrading" from a distribution-based package to the
+[[install/Linux_standalone/]] version may cause weird problems, as an
+unexpected version of git-annex (e.g. the old one from packages) may be
+ran, see [[bugs/git-annex-shell_doesn__39__t_work_as_expected/]] for a full
+discussion.
 
 # Repository upgrades
 
