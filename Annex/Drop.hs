@@ -30,7 +30,10 @@ type Reason = String
  - The UUIDs are ones where the content is believed to be present.
  - The Remote list can include other remotes that do not have the content;
  - only ones that match the UUIDs will be dropped from.
- - If allowed to drop fromhere, that drop will be tried first.
+ -
+ - If allowed to drop fromhere, that drop will be done last. This is done
+ - because local drops do not need any LockedCopy evidence, and so dropping
+ - from local last allows the content to be removed from more remotes.
  -
  - A VerifiedCopy can be provided as an optimisation when eg, a key
  - has just been uploaded to a remote.
@@ -52,8 +55,8 @@ handleDropsFrom locs rs reason fromhere key afile preverified runner = do
 		, return $ maybeToList afile
 		)
 	n <- getcopies fs
-	if fromhere && checkcopies n Nothing
-		then go fs rs =<< dropl fs n
+	void $ if fromhere && checkcopies n Nothing
+		then go fs rs n >>= dropl fs
 		else go fs rs n
   where
 	getcopies fs = do
@@ -78,12 +81,12 @@ handleDropsFrom locs rs reason fromhere key afile preverified runner = do
 		| S.member u untrusted = v
 		| otherwise = decrcopies v Nothing
 
-	go _ [] _ = noop
+	go _ [] n = pure n
 	go fs (r:rest) n
 		| uuid r `S.notMember` slocs = go fs rest n
 		| checkcopies n (Just $ Remote.uuid r) =
 			dropr fs r n >>= go fs rest
-		| otherwise = noop
+		| otherwise = pure n
 
 	checkdrop fs n u a
 		| null fs = check $ -- no associated files; unused content

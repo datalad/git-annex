@@ -14,6 +14,9 @@ git-annex (5.20150931) UNRELEASED; urgency=medium
     - If a git remote has too old a version of git-annex-shell installed,
       git-annex won't trust it to hold onto a copy of a file when dropping
       that file from some other remote.
+  * Changed drop ordering when using git annex sync --content or the
+    assistant, to drop from remotes first and from the local repo last.
+    This works better with the behavior changes to drop in many cases.
   * Do verification of checksums of annex objects downloaded from remotes.
   * When annex objects are received into git repositories from other git
     repos, their checksums are verified then too.
@@ -36,6 +39,7 @@ git-annex (5.20150931) UNRELEASED; urgency=medium
     and stop recommending bittornado | bittorrent.
   * Debian: Remove dependency on transformers library, as it is now
     included in ghc.
+  * 
 
  -- Joey Hess <id@joeyh.name>  Thu, 01 Oct 2015 12:42:56 -0400
 

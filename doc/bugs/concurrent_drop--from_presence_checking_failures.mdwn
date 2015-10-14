@@ -367,3 +367,32 @@ for 1 locked copy when dropping from a remote, and so is sufficent to
 fix the bug.
 
 > done
+
+# drop ordering
+
+Consider the network: `T -- C --- (B1,B2)`
+
+When numcopies is 2, a file could start on T, get copied to C, and then on
+the B1 and B2. At which point, it can be dropped from C and T (if
+unwanted).
+
+Currently, the assistant and sync --content drop from the local repo 1st,
+and then from remotes. Before the changes to fix this bug, that worked;
+the content got removed from T and then from C, using the copies on B1 and
+B2 as evidence. Now though, if B1 and B2 are special remotes, once the copy
+is dropped from C, there is no locked copy available on (B1,B2), so the
+subsequent drop from T fails.
+
+Changing the drop order lets C lock its own copy in order to
+drop from T. then the local drop from C proceeds successfully without locking,
+as local drops don't need locking.
+
+Course, there is a behavior change here.. Before, if B2 didn't exist,
+the content would reach B2 and then be dropped from C, and then with only 2
+copies, it could not also be dropped from T. If the drop order changes, the
+content is instead dropped from T and left on C.
+
+The new behavior seems better when T is a transfer remote, but perhaps not in
+other cases.
+
+> implemented
