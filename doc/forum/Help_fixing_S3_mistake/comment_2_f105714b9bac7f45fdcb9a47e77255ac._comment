@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-10-15T18:30:27Z"
+ content="""
+Depends.. If one or both special remotes used encryption then no,
+one can't see the encrypted files that were put in the other one.
+
+If neither used encryption, and they're otherwise configured the same,
+then you can just use `git annex fsck --from A`. This will check files
+to see if their content is located on remote A, and if so, and git-annex
+had thought the file was only located on remote B, it will update the location
+tracking log to reflect the reality that the file is present on A.
+
+If either remote used encryption, then A can't see files that were added
+to B. So instead, you need this approach , which involves data transfer:
+
+	git annex enableremote B
+	git annex copy --from B
+	git annex copy --to A
+	git annex drop --from B
+	git annex dead B # if it wasn't already dead
+	git remote remove B
+"""]]
