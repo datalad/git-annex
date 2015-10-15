@@ -142,7 +142,7 @@ byNameOnly n = headMaybe . filter matching <$> remoteList
 	matching r = n == name r
 
 noRemoteUUIDMsg :: Remote -> String
-noRemoteUUIDMsg r = "cannot determine uuid for " ++ name r
+noRemoteUUIDMsg r = "cannot determine uuid for " ++ name r ++ " (perhaps you need to run \"git annex sync\"?)"
 
 {- Looks up a remote by name (or by UUID, or even by description),
  - and returns its UUID. Finds even repositories that are not
