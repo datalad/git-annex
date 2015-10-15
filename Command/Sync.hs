@@ -153,11 +153,10 @@ syncBranch = Git.Ref.under "refs/heads/synced" . fromDirectBranch
 remoteBranch :: Remote -> Git.Ref -> Git.Ref
 remoteBranch remote = Git.Ref.underBase $ "refs/remotes/" ++ Remote.name remote
 
+-- Do automatic initialization of remotes when possible when getting remote
+-- list.
 syncRemotes :: [String] -> Annex [Remote]
-syncRemotes ps = do
-	-- Get remote list first, doing automatic initialization
-	-- of remotes when possible.
-	syncRemotes' ps =<< Remote.remoteList' True
+syncRemotes ps = syncRemotes' ps =<< Remote.remoteList' True
 
 syncRemotes' :: [String] -> [Remote] -> Annex [Remote]
 syncRemotes' ps remotelist = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
