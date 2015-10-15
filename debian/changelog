@@ -36,6 +36,12 @@ git-annex (5.20150931) UNRELEASED; urgency=medium
   * Avoid unncessary write to the location log when a file is unlocked
     and then added back with unchanged content.
   * S3: Fix support for using https.
+  * sync, merge, assistant: When git merge failed for a reason other
+    than a conflicted merge, such as a crippled filesystem not allowing
+    particular characters in filenames, git-annex would make a merge commit
+    that could omit such files or otherwise be bad. Fixed by aborting the
+    whole merge process when git merge fails for any reason other than a
+    merge conflict.
   * Debian: Add torrent library to build-depends as it's packaged now,
     and stop recommending bittornado | bittorrent.
   * Debian: Remove dependency on transformers library, as it is now

@@ -173,16 +173,18 @@ mergeDirect startbranch oldref branch resolvemerge commitmode = exclusively $ do
 
 	withIndexFile tmpi $ do
 		merged <- stageMerge d branch commitmode
-		r <- if merged
+		ok <- if merged
 			then return True
 			else resolvemerge
-		mergeDirectCleanup d (fromMaybe Git.Sha.emptyTree oldref)
-		mergeDirectCommit merged startbranch branch commitmode
+		if ok
+			then do
+				mergeDirectCleanup d (fromMaybe Git.Sha.emptyTree oldref)
+				mergeDirectCommit merged startbranch branch commitmode
+				liftIO $ whenM (doesFileExist tmpi) $
+					rename tmpi reali
+			else liftIO $ nukeFile tmpi
 
-		liftIO $ whenM (doesFileExist tmpi) $
-			rename tmpi reali
-
-		return r
+		return ok
   where
 	exclusively = withExclusiveLock gitAnnexMergeLock
 
