@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-10-15T20:23:23Z"
+ content="""
+There's now support for creating buckets this way in
+my fork, <https://github.com/joeyh/aws>
+
+I have not been able to test it, since I don't have the necessary account,
+and don't want to give google my bank account/CC number on top of all the
+other info they have gathered, which seems to be needed to sign up for one.
+
+If you check out my fork, `cabal confgure -fExamples; cabal build`
+will create a test program in
+`dist/build/PutBucketNearLine/PutBucketNearLine` ; it expects the usual
+env vars for S3 creds, and you need to pass it the name of the bucket to
+create.
+
+If that works, and creates a usable nearline bucket, we can probably get it
+merged into mainline aws and then get support in git-annex.
+"""]]
