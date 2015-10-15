@@ -22,7 +22,7 @@ import qualified Data.Map as M
 import Data.Char
 import Network.Socket (HostName)
 import Network.HTTP.Conduit (Manager, newManager)
-import Network.HTTP.Client (defaultManagerSettings, managerResponseTimeout, responseStatus, responseBody, RequestBody(..))
+import Network.HTTP.Client (managerResponseTimeout, responseStatus, responseBody, RequestBody(..))
 import Network.HTTP.Types
 import Control.Monad.Trans.Resource
 import Control.Monad.Catch
@@ -48,7 +48,7 @@ import Utility.Metered
 import Utility.DataUnits
 import Annex.Content
 import Annex.Url (withUrlOptions)
-import Utility.Url (checkBoth, closeManager)
+import Utility.Url (checkBoth, managerSettings, closeManager)
 
 type BucketName = String
 
@@ -418,7 +418,7 @@ withS3HandleMaybe c u a = do
 		Nothing -> a Nothing
   where
 	s3cfg = s3Configuration c
-	httpcfg = defaultManagerSettings
+	httpcfg = managerSettings
 		{ managerResponseTimeout = Nothing }
 
 s3Configuration :: RemoteConfig -> S3.S3Configuration AWS.NormalQuery

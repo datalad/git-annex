@@ -35,11 +35,11 @@ git-annex (5.20150931) UNRELEASED; urgency=medium
     Fixed this bug, which was introduced in version 5.20150727.
   * Avoid unncessary write to the location log when a file is unlocked
     and then added back with unchanged content.
+  * S3: Fix support for using https.
   * Debian: Add torrent library to build-depends as it's packaged now,
     and stop recommending bittornado | bittorrent.
   * Debian: Remove dependency on transformers library, as it is now
     included in ghc.
-  * 
 
  -- Joey Hess <id@joeyh.name>  Thu, 01 Oct 2015 12:42:56 -0400
 
