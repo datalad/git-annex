@@ -1,0 +1,16 @@
+Feeling kind of ready to cut the next release of git-annex, but am giving
+the recent large changes just a little time to soak in and make sure
+they're ok.
+
+Yesterday, changed the order that `git annex sync --content` and the
+assistant do drops. When dropping from the local repo and also some
+remotes, it now makes more sense to drop from the remotes first, and only
+then the local repo. There are scenaries where that order lets content be
+dropped from all the places that it should be, while the reverse order
+doesn't.
+
+Today, caught up on recent bug reports, including fixing a bad merge
+commit that was made when git merge failed due to filenames not supported by
+a crippled filesystem, and cleaning up a network transport warning that was
+displayed incorrectly. Also developed a patch to the `aws` library to
+support google nearline when creating buckets.
