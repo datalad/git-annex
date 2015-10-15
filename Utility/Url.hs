@@ -12,6 +12,7 @@
 
 module Utility.Url (
 	closeManager,
+	managerSettings,
 	URLString,
 	UserAgent,
 	UrlOptions,
@@ -46,6 +47,13 @@ import Network.HTTP.Client (closeManager)
 #else
 closeManager :: Manager -> IO ()
 closeManager _ = return ()
+#endif
+
+managerSettings :: ManagerSettings
+#if MIN_VERSION_http_conduit(2,1,7)
+managerSettings = tlsManagerSettings
+#else
+managerSettings = conduitManagerSettings
 #endif
 
 type URLString = String
@@ -176,12 +184,7 @@ getUrlInfo url uo = case parseURIRelaxed url of
 		filter (\p -> fst p == h) . responseHeaders
 
 	existsconduit req = do
-		mgr <- newManager
-#if MIN_VERSION_http_conduit(2,1,7)
-			tlsManagerSettings
-#else
-			conduitManagerSettings
-#endif
+		mgr <- newManager managerSettings
 		let req' = headRequest (applyRequest uo req)
 		ret <- runResourceT $ do
 			resp <- http req' mgr
