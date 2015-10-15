@@ -56,3 +56,7 @@ aur/git-annex-bin 4.20131002-1
 """]]
 
 [[!tag moreinfo]]
+
+> [[done]]; never heard back with any useful information, and 
+> there was a bug that could have caused this that got fixed soon after it
+> was reported. --[[Joey]]
