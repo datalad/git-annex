@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 2"
+ date="2015-10-15T10:59:59Z"
+ content="""
+*migrate* takes the *--force* option (introduced 5.20150327), allowing you to migrate files to the backend they are already using, but using the new extension. It was actually added for this use case!
+
+This may still incur a hash of the file though as, I believe, *migrate* will check the file at the old key is valid. You will also end up with 2 versions of the file in .git/annex/objects though (you can clean it up with *unused*).
+"""]]
