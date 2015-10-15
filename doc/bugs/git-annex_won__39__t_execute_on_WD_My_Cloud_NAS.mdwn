@@ -12,17 +12,24 @@ I've managed to get it to work as special remote via rsync. But, it's nowhere ne
 FYI, git 2.6.1 is already installed on the NAS.
 
 I can ssh into the NAS no problem. Only user sshd is allowed to ssh, but that's ok. Furthermore, the which command is missing, which prevented webapp lunched on my Mac from creating an rsync remote. Overcame that hurdle by "faking" it:
-    echo \#\!\/bin\/sh > /usr/bin/which
-    echo command \-v \$\@ >> /usr/bin/which
-    chmod +x /usr/bin/which
+[[!format sh """
+    > echo \#\!\/bin\/sh > /usr/bin/which
+    > echo command \-v \$\@ >> /usr/bin/which
+    > chmod +x /usr/bin/which
+"""]]
 
 I've downloaded the latest arm build. After untaring and running runshell successfully, I can't get through the next step, which is running git annex. It results in the following error:
+[[!format sh """
     > git annex
     /mnt/HD/HD_a2/git-annex/shimmed/git-annex/git-annex: error while loading shared libraries: /mnt/HD/HD_a2/git-annex/shimmed/git-annex/git-annex: ELF load command alignment not page-aligned
     fatal: 'annex' appears to be a git command, but we were not able to execute it. Maybe git-annex is broken?
+"""]]
 
-same goes for runshell git-annex-shell -c git annex:
+same goes for
+[[!format sh """
+    > runshell git-annex-shell -c git annex:
     /mnt/HD/HD_a2/Nas_Prog/git-annex/shimmed/git-annex-shell/git-annex-shell: error while loading shared libraries: /mnt/HD/HD_a2/Nas_Prog/git-annex/shimmed/git-annex-shell/git-annex-shell: ELF load command alignment not page-aligned
+"""]]
 
 and pretty much any of the git-annex binaries.
 
