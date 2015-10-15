@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-10-15T19:47:20Z"
+ content="""
+Your log shows it's passing x-amz-storage-class:NEARLINE in the object PUT
+request, so at least that works.
+
+I've filed a bug on aws to get PutBucket extended to allow specifying a
+StorageClass: <https://github.com/aristidb/aws/issues/182>
+"""]]
