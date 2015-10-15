@@ -42,6 +42,8 @@ git-annex (5.20150931) UNRELEASED; urgency=medium
     that could omit such files or otherwise be bad. Fixed by aborting the
     whole merge process when git merge fails for any reason other than a
     merge conflict.
+  * Avoid displaying network transport warning when a ssh remote
+    does not yet have an annex.uuid set.
   * Debian: Add torrent library to build-depends as it's packaged now,
     and stop recommending bittornado | bittorrent.
   * Debian: Remove dependency on transformers library, as it is now

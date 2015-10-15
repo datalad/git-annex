@@ -221,7 +221,7 @@ tryGitConfigRead autoinit r
 		v <- Git.Config.fromPipe r cmd params
 		case v of
 			Right (r', val) -> do
-				when (getUncachedUUID r' == NoUUID && not (null val)) $ do
+				unless (isUUIDConfigured r' || null val) $ do
 					warningIO $ "Failed to get annex.uuid configuration of repository " ++ Git.repoDescribe r
 					warningIO $ "Instead, got: " ++ show val
 					warningIO $ "This is unexpected; please check the network transport!"
