@@ -295,3 +295,5 @@ git-annex will work well on crippled filesystems, regardless of my
 dataset, which maybe an inaccurate assumption.
 
 Thanks for all your hard work! --[[anarcat]]
+
+> [[fixed|done]]
