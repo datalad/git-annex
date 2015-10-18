@@ -1,3 +1,9 @@
+git-annex (5.20150930-1) unstable; urgency=medium
+
+  * 
+
+ -- Richard Hartmann <richih@debian.org>  Sun, 18 Oct 2015 20:39:03 +0200
+
 git-annex (5.20150930) unstable; urgency=medium
 
   * Added new linux standalone "ancient" build to support kernels
