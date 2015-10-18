@@ -1,0 +1,31 @@
+flags:
+  git-annex:
+    asciiprogress: false
+    tahoe: true
+    tdfa: true
+    inotify: true
+    feed: true
+    database: true
+    webapp-secure: true
+    production: true
+    ekg: false
+    assistant: true
+    pairing: true
+    cryptonite: true
+    xmpp: false
+    network-uri: true
+    s3: true
+    dbus: false
+    testsuite: true
+    webdav: true
+    torrentparser: true
+    android: false
+    androidsplice: false
+    quvi: true
+    dns: true
+    desktopnotify: true
+    webapp: true
+packages:
+- '.'
+extra-deps: []
+resolver: lts-3.7

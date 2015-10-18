@@ -1,6 +1,9 @@
 ### Please describe the problem.
 
-The S3 remote does not support Google Cloud Storage buckets with the Durable Reduced Availability or Nearline storage classes.  These are less-expensive alternatives to the Standard storage class, which would otherwise be a good fit for git-annex.
+The S3 remote does not support Google Cloud Storage buckets with the
+Durable Reduced Availability or Nearline storage classes.  These are
+less-expensive alternatives to the Standard storage class, which would
+otherwise be a good fit for git-annex.
 
 ### What steps will reproduce the problem?
 
@@ -87,5 +90,3 @@ initremote cloud (checking bucket...) [2015-05-31 17:38:21 EDT] String to sign: 
 [2015-05-31 17:38:22 EDT] Response metadata: S3: request ID=<none>, x-amz-id-2=<none>
 git-annex: S3Error {s3StatusCode = Status {statusCode = 400, statusMessage = "Bad Request"}, s3ErrorCode = "InvalidArgument", s3ErrorMessage = "Invalid argument.", s3ErrorResource = Nothing, s3ErrorHostId = Nothing, s3ErrorAccessKeyId = Nothing, s3ErrorStringToSign = Nothing}
 """]]
-
-> This is a dup of [[todo/Nearline_support]] ; [[done]] --[[Joey]]

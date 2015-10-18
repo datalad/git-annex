@@ -60,9 +60,6 @@
                       <a href="@{SyncNowRepositoryR $ asUUID repoid}">
                         <span .glyphicon .glyphicon-refresh>
                         \ Sync now
-                      <a href="@{DisableRepositoryR $ asUUID repoid}">
-                        <span .glyphicon .glyphicon-minus>
-                        \ Disable
                       <a href="@{DeleteRepositoryR $ asUUID repoid}">
                         <span .glyphicon .glyphicon-trash>
                         \ Delete

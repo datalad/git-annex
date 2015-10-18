@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-09-21T16:42:29Z"
+ content="""
+A way to do this pretty cleanly is described here:
+<http://git-annex.branchable.com/tips/setup_a_public_repository_on_a_web_site/>
+
+The annex-content hook is not meant to be run when a regular git push
+is made to the repository. That would be unnecessarily redundant with
+existing git hooks.
+
+I'd expect it to be pretty safe to edit files in such a repository,
+but you have to keep in mind that if changes are pushed into it at the same
+time as an edit is occuring, you can get into various situations with the
+hooks etc.
+"""]]

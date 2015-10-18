@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-09-18T16:56:42Z"
+ content="""
+So, the missing bit of data needed to reproduce this is that
+~/astro.git didn't exist at all before this initremote call.
+
+If you `git init --bare ~/astro.git` first, it works fine.
+
+The documentation says, of gitrepo:
+
+	This repository should be either empty, or an existing gcrypt repositry.
+
+So, I don't know if this is really a bug, you're not doing what the
+documentation says to do.
+
+I suppose git-annex initremote could create a bare repository when none exists
+in this case, but it would then have to parse the gitrepo parameter, normalize
+it, use the approptiate protocol (file, ssh, rsync) to check if it exists or
+create it, etc, instead of simply passing it to gcrypt.
+
+(What is actually going on here is, gcrypt supports remotes that are not git repositories at all.
+When the repo doesn't exist, it assumes such a remote is wanted and makes one.
+But, git-annex does not support working with that kind of gcrypt remote.)
+"""]]

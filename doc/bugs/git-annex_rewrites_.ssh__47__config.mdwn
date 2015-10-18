@@ -1,0 +1,17 @@
+### Please describe the problem.
+Running git annex assistant, my .ssh/config file is rewritten. First, it is a symlink, but then git-annex makes it into an actual file. Second, it adds a trailing whitespace to a generic host block:
+
+    Host
+        ForwardAgent no
+        ...
+
+### What steps will reproduce the problem?
+For the symlink, just make .ssh/config a symlink to the real thing. Have a generic host block will add trailing whitespace. Starting git annex assistant will rewrite .ssh/config.
+
+### What version of git-annex are you using? On what operating system?
+git-annex-5.20140717-8.fc24.x86_64
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+Has worked wonders for syncing keepass files between devices; just now setting up assistant to do things automatically though :) .
+
+> [[fixed|done]] --[[Joey]]

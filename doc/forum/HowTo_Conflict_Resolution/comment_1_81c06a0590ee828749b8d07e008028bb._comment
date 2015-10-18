@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-09-21T16:49:43Z"
+ content="""
+The "variant" names are based on a short hash of the key
+of the file, so there's no way to get from such a name back to the
+repository that the file was added to.
+
+What you can do is, look at the `git log --stat`, and find
+the two conflicting commits, and use git to either revert back to one of
+the two, or reset back to before the automatic merge and manually
+merge the two. 
+
+(Of course, this all works best when the repository is
+in indirect mode and you can use any git commands you like to slice and
+dice it. When the repo is direct mode, you might be able to run those
+same git commands via `git annex proxy`)
+"""]]

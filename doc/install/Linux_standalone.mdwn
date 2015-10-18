@@ -7,6 +7,7 @@ dependencies and is self-contained.
 
 * x86-32: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-i386.tar.gz)
 * x86-64: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz)
+* x86-32, for ancient kernels: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-i386-ancient.tar.gz)
 * arm: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-armel.tar.gz)
 
 To use, just unpack the tarball, `cd git-annex.linux` and run `./runshell`
@@ -24,6 +25,10 @@ linux systems.
 * [[tips/Synology_NAS_and_git_annex]]
 * [[forum_thread|forum/new_linux_arm_tarball_build]]
 
+The build for ancient kernels is for use with Linux kernel versions
+such as 2.6.32. It is missing some features, like SHA3 support and
+the webapp. It will work on both 32 and 64 bit systems.
+
 ## autobuilds
 
 An hourly autobuild is also available, thanks to Mesar Hameed and the University
@@ -31,6 +36,7 @@ of Bath CS department.
 
 * x86-32: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/i386/git-annex-standalone-i386.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/i386/))
 * x86-64: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/amd64/git-annex-standalone-amd64.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/amd64/))
+* x86-32, for ancient kernels: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/i386-ancient/git-annex-standalone-i386-ancient.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/i386-ancient/))
 
 The arm autobuilder runs daily, and is hosted at [WetKnee Books](http://www.wetknee.com/).
 

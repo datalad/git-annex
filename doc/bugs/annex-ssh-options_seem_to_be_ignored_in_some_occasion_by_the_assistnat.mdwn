@@ -1,0 +1,47 @@
+### Please describe the problem.
+When assistant sync with some remote, it will call git that will call ssh without annex-sync
+
+### What steps will reproduce the problem?
+I've remote that have:
+
+    [remote "shukrat"]
+      [...]
+      annex-ignore = true
+      annex-ssh-options = -i /home/moi/.ssh/git-annex/some-key
+
+When I run `git annex sync shukrat` in the repository, it will sync it using the key, but when I ask the assistant to sync it, it will use some otherkey and so it will ask for my passphrase.
+
+
+### What version of git-annex are you using? On what operating system?
+
+    % git annex version 
+    git-annex version: 5.20150916-1
+    build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA Database
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5    WORM URL
+    remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+    local repository version: 5
+    supported repository version: 5
+    upgrade supported from repository versions: 0 1 2 4
+
+on debian/sid
+
+### Please provide any additional information below.
+
+when the assistant is syncing, I've:
+
+    $ pstree -p | grep ssh-ask
+           |-git(27589)---ssh(27590)---ssh-askpass(27617)
+    $ ps -f -p 275900
+    UID        PID  PPID  C STIME TTY          TIME CMD
+    moi      27590 27589  0 14:10 ?        00:00:00 ssh user-data@shukrat git-receive-pack '/home/user-data/git-repos/Images.git/
+
+log from .git/annex/daemon.log:
+
+    [2015-09-27 14:09:55.844597] main: Syncing with shukrat 
+    Pass a valid window to KWallet::Wallet::openWallet().
+    Pass a valid window to KWallet::Wallet::openWallet().
+    Everything up-to-date
+
+
+
+

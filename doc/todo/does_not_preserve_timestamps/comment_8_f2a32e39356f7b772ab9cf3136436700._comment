@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="graboluk@f6de53961ab0f884e203f602f65eb5cdc0fb7513"
+ nickname="graboluk"
+ subject="timestamps are wrong as of 5.20150731"
+ date="2015-09-26T18:31:46Z"
+ content="""
+I confirm this issue is still present in the debian testing version 5.20150731. This really makes git-annex quite unusable for me, as part of my setup is that my server downloads various podcasts (think news videos from euronews, german tagesschau, some youtube podcasts), which then get distributed to my other computers. This way I don't have to use youtube etc., which makes a huge difference in terms of speed (my main home  computer is from 2006 and it plays all hte videos just fine, but a website likie youtube.com is too much for it). At a speed of single shortcut I see a list of newest podcasts and I can choose one without bothering to open the webbrowser.
+
+The point is that I really like to have all those podcasts to be sorted by their modified date, for rather obvious reasons. (with dropbox it works fine.) 
+"""]]

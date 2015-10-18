@@ -1,0 +1,6 @@
+Made the release this morning, first one in 3 weeks. A fair lot of good
+stuff in there.
+
+Just in time for the release, git-annex has support for
+[Ceph](http://ceph.com/). Thanks to Mesar Hameed for building 
+[the external special remote](https://github.com/mhameed/git-annex-remote-ceph)!

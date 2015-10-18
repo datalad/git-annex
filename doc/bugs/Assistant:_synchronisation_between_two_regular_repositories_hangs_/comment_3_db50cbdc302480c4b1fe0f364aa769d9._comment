@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-09-22T16:25:15Z"
+ content="""
+Ok, that seems clear enough, and there's only 1 place where git-annex
+copies .git/index; in `mergeDirect`. Indeed, if .git/index doesn't exist
+yet when that is called, it'll crash. And, a freshly created git repo
+starts off without a .git/index until changes start to be staged.
+
+However, I can't reproduce the crash with a current version of git-annex,
+and this bug report is about a version nearly a year old now. AFAICS,
+the sync (or the assistant) will make a commit before merging, and that
+commit results in the index file being created, as a side effect.
+Also, I can't see anything that VFAT could have to do with this.
+
+Hmm, I did manage to reproduce the crash using the new --no-commit flag to
+git-annex sync. Will fix on that basis.
+"""]]

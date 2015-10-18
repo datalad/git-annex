@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-09-21T17:09:16Z"
+ content="""
+Analysis seems to make sense. Note that this happens only when gcrypt is
+doing a push, not a pull, so there needs to be a local change made for the
+sync to try to push out for the bug to occur. Reproduced by adding a file
+and then syncing.
+
+It seems that gcrypt recovers fairly well; after setting the local
+remote.foo.gcrypt-id to a new value, when the network comes back, it
+re-sets it back to the real value next time a pull is made. Does this
+bug result in any problem other than noise in the log?
+
+Anyway, it's certianly a gcrypt bug, and I don't see what git-annex can do
+about it. Opened a bug there: <https://github.com/bluss/git-remote-gcrypt/issues/20>
+
+Doesn't seem that this would be too hard to fix in gcrypt..
+"""]]

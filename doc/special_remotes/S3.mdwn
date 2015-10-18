@@ -37,9 +37,19 @@ the S3 remote.
   "us-west-1", "us-west-2", "ap-southeast-1", "ap-southeast-2", and
   "sa-east-1".
 
-* `storageclass` - Default is "STANDARD". If you have configured git-annex
-  to preserve multiple [[copies]], consider setting this to "REDUCED_REDUNDANCY"
-  to save money.
+* `storageclass` - Default is "STANDARD".  
+  Consult S3 provider documentation for pricing details and available
+  storage classes.
+
+  When using Amazon S3, if you have configured git-annex to preserve
+  multiple [[copies]], consider setting this to "REDUCED_REDUNDANCY"
+  to save money. Or, if the remote will be used for backup or archival,
+  and so its files are Infrequently Accessed, "STANDARD_IA" is also a
+  good choice to save money.
+
+  Note that changing the storage class of an existing S3 remote will
+  affect new objects sent to the remote, but not objects already
+  stored there.
 
 * `host` and `port` - Specify in order to use a different, S3 compatable
   service.

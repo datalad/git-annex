@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2015-09-18T16:27:37Z"
+ content="""
+For all git-annex knows, the remote repository may be actively making
+changes to its own git-annex branch. So, forcing pushes of it could lose
+data, and are not a good idea, and so not done, whereas synced/git-annex
+is force pushed.
+
+If git-annex is indeed being run in the remote repository, it will eventually
+try to merge the newly pushed synced/git-annex with its local git-annex
+branch, notice the forget operation has started, and automatically handle
+updating its git-annex branch appropriatly to be a child of the new
+synced/git-annex branch. At that point, pushes of the git-annex branch will
+work again.
+
+Since your remote is on a hosting service that doesn't use git-annex, that
+doesn't happen, and you'll need to force push to get that branch to update.
+(Although it's somewhat optional to do so; other clients using that remote
+with git-annex sync will pull down the synced/git-annex branch and keep
+working fine even if you never force push the git-annex branch.)
+
+Clearly all this is pretty complicated, but I don't see a good way to improve
+the behavior, unless there's some way to detect that the remote repository
+is not running git-annex, and so assume it's safe to auto-force-push that
+branch. I suppose it could check to see if the remote repository has an
+annex.uuid set, and if not, assume it's not using git-annex. But, if this
+assumption turns out to be wrong (due to a race, or a problem communicating
+the annex.uuid, etc), data loss could result.
+
+Maybe a better fix would be to improve the note about this on git-annex
+forget's man page, and perhaps also make git-annex sync print some helpful
+message when it detects this situation.
+"""]]

@@ -1,0 +1,6 @@
+Hi, I'm trying to use git annex through git bash on windows, I've installed git (32 bit) and git annex yet I get the error mentioned above.
+
+I've already had a search and have tried sorting out my windows environment paths as well as moving git annex .exe files from cmd to bin, neither of which have fixed the issue. Any ideas?
+
+Thanks
+Joe

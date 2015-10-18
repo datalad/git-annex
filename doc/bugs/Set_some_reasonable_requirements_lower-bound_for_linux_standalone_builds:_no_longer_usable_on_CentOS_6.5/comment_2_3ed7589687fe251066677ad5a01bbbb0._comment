@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-09-23T17:04:38Z"
+ content="""
+Actually, git-annex doesn't currently build on debian stable because it
+needs a newer version of optparse-applicative. The new version builds just
+fine on stable, so could easily be backported. I could probably get
+git-annex building with the old version of optparse-applicative, with
+sufficient ifdef pain, but a backport would be a nicer solution.
+"""]]

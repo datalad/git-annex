@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-09-17T13:31:34Z"
+ content="""
+For those not wanting to run their own web server, using Amazon S3 with
+git-annex can work well; it can be configured to let the public download
+files over http. See [[public_Amazon_S3_remote]].
+"""]]

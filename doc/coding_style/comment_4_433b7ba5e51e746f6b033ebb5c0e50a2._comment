@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""man page style"""
+ date="2015-09-29T15:20:10Z"
+ content="""
+Well, I don't always word-wrap paras when re-editing them, and several
+people have had their hands on the man page and may have different wrapping
+settings. 
+
+My suggestion would be, if you need to re-wrap, or generally make
+whitespace changes, do it in a separate commit from other changes. 
+Similarly, make spelling corrections in a separate commit from any
+substance changes.
+
+Note that you can push man page commits directly to this site via git://
+protocol, so it's not going to use my time as long as there's a reasonable
+commit message.
+
+Use backticks around any command name or fragment of a command line. 
+Use quotes around program output, or other values that are not command
+names or switch names.
+"""]]

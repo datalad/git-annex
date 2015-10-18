@@ -1,3 +1,25 @@
+git-annex (5.20150930) unstable; urgency=medium
+
+  * Added new linux standalone "ancient" build to support kernels
+    like 2.6.32.
+  * info: Don't allow use in a non-git-annex repository, since it
+    uses the git-annex branch and would create it if it were missing.
+  * assistant: When updating ~/.ssh/config, preserve any symlinks.
+  * webapp: Remove the "disable remote" feature from the UI.
+  * S3: When built with aws-0.13.0, supports using more storage classes.
+    In particular, storageclass=STANDARD_IA to use Amazon's
+    new Infrequently Accessed storage, and storageclass=NEARLINE
+    to use Google's NearLine storage.
+  * Improve ~/.ssh/config modification code to not add trailing spaces
+    to lines it cannot parse.
+  * Fix a crash at direct mode merge time when .git/index doesn't exist
+    yet. Triggered by eg, git-annex sync --no-commit in a fresh clone of
+    a repository.
+  * status: Show added but not yet committed files.
+  * Added stack.yaml to support easy builds from source with stack.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 30 Sep 2015 14:31:52 -0400
+
 git-annex (5.20150916-1) unstable; urgency=medium
 
   * Package 5.20150916-1

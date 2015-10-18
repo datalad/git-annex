@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-09-23T17:14:14Z"
+ content="""
+It might be possible to use stackage to get a build of all libraries from
+the base haskell platform that are not too far out of date and don't break
+too often. There is currently no way to upgrade such a build to get newer
+version of libraries except for throwing the whole build tree away and
+building all libraries again. So, it would be a lot of CPU on an ongoing basis,
+or a source of unfixed security bugs. 
+
+And, I think it would not be entirely non-fragile. It's not exactly unheard
+of for a new version of a haskell library to accidentially break
+compatability with the old version of ghc which is generally unused in the
+haskell community outside of debian stable. Or, to need a newer version of
+some C library headers than is in stable, or ...
+"""]]

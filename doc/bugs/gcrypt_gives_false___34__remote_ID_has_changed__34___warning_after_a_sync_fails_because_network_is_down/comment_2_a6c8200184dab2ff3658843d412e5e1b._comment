@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="spwhitton"
+ subject="comment 2"
+ date="2015-09-21T21:22:22Z"
+ content="""
+I am not aware of any problems other than the noise, but I think it's significant noise because it's marked with 'WARNING' in block capitals and this makes the user worry that something might have gone wrong with their precious git-annex data, and there's no indication it can be automatically recovered from.
+
+Would you accept a patch to your fork of git-remote-gcrypt, since the original author is inactive?
+"""]]

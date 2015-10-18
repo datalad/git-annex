@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-09-22T19:33:09Z"
+ content="""
+@dfiorentino um, are you sure you have Git For Windows installed, and not the old
+msysgit? What does git --version say?
+
+(You don't download Git For Windows from where you said you downloaded it,
+so I think you're confused about something.)
+"""]]

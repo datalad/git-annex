@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="graboluk@f6de53961ab0f884e203f602f65eb5cdc0fb7513"
+ nickname="graboluk"
+ subject="very annoying for new users"
+ date="2015-09-25T17:06:45Z"
+ content="""
+Hi, I'd just spent better part of a day trying to figure out why git-annex keeps crashing. I've set up everything as in the instructional video for git-annex assistant, and proceeded to add my document directory with 3000 files (latex projects, etc). git-latex started to complain about unrecognized response from git. I tried many times again, to make long story short, turns out one of my files had newline in its name (I don't even know how it happened)  
+
+This was extremely annoying because the message which the assistant was giving me was always about some other file, the name of the offending file did not appear. So I've spent a day trying to figure out a minimal offending example (there were more obvious potential culprits - like the fact that I have many read-only dirs and so on...)
+
+Also, it's not a great first impression considering I'm trying to migrate from dropbox, which hasn't had any problems.
+
+Anyway, it's a great project. Is there a way to donate? (if it replaces dropbox for me for a month of my usual workflow I'd be very happy to donate!)
+
+"""]]

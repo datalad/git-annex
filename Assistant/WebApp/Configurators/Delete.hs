@@ -47,11 +47,6 @@ handleXMPPRemoval uuid nonxmpp = do
 		then deletionPage $ $(widgetFile "configurators/delete/xmpp")
 		else nonxmpp
 
-getDisableRepositoryR :: UUID -> Handler Html
-getDisableRepositoryR uuid = notCurrentRepo uuid $ handleXMPPRemoval uuid $ do
-	void $ liftAssistant $ disableRemote uuid
-	redirect DashboardR
-
 getDeleteRepositoryR :: UUID -> Handler Html
 getDeleteRepositoryR uuid = notCurrentRepo uuid $ handleXMPPRemoval uuid $ do
 	deletionPage $ do

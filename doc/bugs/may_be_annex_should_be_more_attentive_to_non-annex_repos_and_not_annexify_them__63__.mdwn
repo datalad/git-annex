@@ -1,0 +1,87 @@
+### Please describe the problem.
+
+git annex info (and may be other commands) would "initiate" git-annex branch (and may be smth else?) even if a given repository has nothing to do with annex (well -- tested in git-annex code repo itself, which is not annexed).  Even if I specify file pointing to somewhere else. For that actually annex also would initiate git-annex branch even though underlying git call would fail due to outside repo.
+
+I expect e.g. 'annex info' to fail and return some non-0 code since ran within non-annexed repo (no remote git-annex branch, nothing).
+
+### What steps will reproduce the problem?
+
+run  git annex info   in non-annexed repo
+
+### What version of git-annex are you using? On what operating system?
+
+5.20150819+gitgc587698-1~ndall+1
+
+### Please provide any additional information below.
+
+[[!format sh """
+
+% git branch   
+  bf-standalone-correct-changelog
+  bf-standalone-for-style
+  debian-jessie
+  debian-standalone
+  enh-me-mailmap
+  fixups
+* master
+  neurodebian-custom
+  tuneups
+
+% pwd
+/home/yoh/proj/git-annex
+
+% git annex version
+git-annex version: 5.20150819+gitgc587698-1~ndall+1
+build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA Database
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: unknown
+supported repository version: 5
+upgrade supported from repository versions: 0 1 2 4
+
+% git branch | grep git-annex
+
+% git annex info
+repository mode: indirect
+trusted repositories: 0
+semitrusted repositories: 2
+	00000000-0000-0000-0000-000000000001 -- web
+ 	00000000-0000-0000-0000-000000000002 -- bittorrent
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 225.96 gigabytes (+1 megabyte reserved)
+local annex keys: 0
+local annex size: 0 bytes
+annexed files in working tree: 0
+size of annexed files in working tree: 0 bytes
+bloom filter size: 32 mebibytes (0% full)
+backend usage: 
+
+% git branch | grep git-annex
+  git-annex
+
+% git branch -D git-annex
+Deleted branch git-annex (was e9424d2).
+
+% git annex info /home/yoh/.tmp/datalad_temp_clone_url_EbPVvm/
+fatal: /home/yoh/.tmp/datalad_temp_clone_url_EbPVvm/: '/home/yoh/.tmp/datalad_temp_clone_url_EbPVvm/' is outside repository
+directory: /home/yoh/.tmp/datalad_temp_clone_url_EbPVvm/
+local annex keys: 0
+local annex size: 0 bytes
+annexed files in working tree: 0
+size of annexed files in working tree: 0 bytes
+numcopies stats: 
+repositories containing these files: 0
+
+% git branch | grep git-annex
+  git-annex
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
+yes -- with every day it grows on/in me! ;)
+
+> Oddly, I noticed this earlier today, and fixed it. Only git annex info
+> was affected; for some reason it was marked to let it run outside a
+> git-annex repo. [[done]] --[[Joey]]

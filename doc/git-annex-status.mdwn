@@ -9,8 +9,10 @@ git annex status `[path ...]`
 # DESCRIPTION
 
 Similar to `git status --short`, this command displays the status of the files
-in the working tree. Shows files that are not checked into git, files that have
-been deleted, and files that have been modified.
+in the working tree. 
+
+Show files that are not checked into git (?), deleted (D),
+modified (M), added but not committed (A), and type changed/unlocked (T).
 
 Particularly useful in direct mode.
 

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="stoile@3a237e0cf1bb7ab671df438ff759e0448189419d"
+ nickname="stoile"
+ subject="This might still be a git-annex bug"
+ date="2015-09-21T15:09:08Z"
+ content="""
+I get this problem when running the pre-built linux binaries of git annex. So this might still be a git annex bug: My local environment provides the LC:ALL setting and git-annex sh does not have the locale.
+"""]]

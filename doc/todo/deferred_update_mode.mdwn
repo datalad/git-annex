@@ -1,0 +1,28 @@
+`git annex sync` and the assistant do a merge of new revs, and then
+download the content of files. However, this means that broken links can
+show up, when a file has changed, or a new file was added. In some
+workflows, the user would prefer not to ever see such broken links
+(or at least never for files that are in the repo's preferred content).
+
+So, how about a new mode, that defers updating the work tree until
+the content of everything wanted is available?
+
+This could be a annex.merge=downloadfirst setting; it would make sync/assistant
+look at the diff between HEAD and the new rev, and try to get all annexed files
+added in that diff, before merging it. 
+
+Of course, it could take a long time to get to see a new work tree.
+Might have to download a lot of content.
+
+What to do if it fails to download a file's content? Could either
+abort, leaving the current work tree as-is, or could go ahead and merge,
+letting broken links show up in this case. I kind of prefer the abort
+option. But, if the content never reaches any remote, or has gone missing
+entirely, that would make sync never succeed. That could be surprising
+behavior.
+
+Probably best to let the user pick either behavior, so
+annex.merge=trydownloadfirst and annex.merge=reqdownloadfirst
+
+Let `git annex merge` be used to force a merge, even when content is not
+available.

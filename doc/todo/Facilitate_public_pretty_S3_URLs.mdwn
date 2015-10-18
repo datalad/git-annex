@@ -14,3 +14,7 @@ Adding all the objects into git-annex, IIUC currently would require me:
 The ideal solution in my mind is for git-annex to track the contents of S3 as they are now, preserving the URLs and tracking the checksums in a separate index file.
 
 Thank you!
+
+> I don't think this is something git-annex can usefully do.
+> Instead, see
+> <http://git-annex.branchable.com/tips/public_Amazon_S3_remote/>. [[done]] --[[Joey]]

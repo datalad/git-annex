@@ -18,7 +18,7 @@ Now, create the remote:
 	initremote pubs3 (checking bucket) (creating bucket in US) ok
 
 The public=yes is the crtical part; this lets the public read the contents
-of the bucket.
+of the bucket. (This feature needs git-annex 5.20150617 or newer.)
 
 In the above example, no encryption was used, but it will also work
 if you enable encryption=shared. Then files will be encrypted on S3, and

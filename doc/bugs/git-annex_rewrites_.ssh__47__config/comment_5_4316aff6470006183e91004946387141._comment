@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2015-09-22T16:03:42Z"
+ content="""
+Well, it does seem legal to do that -- man page says a pattern can be 0 or
+more characters, and you have 0.
+
+I've put in a fix in the generator to avoid adding whitespace in this
+case.
+"""]]
