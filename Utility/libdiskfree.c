@@ -7,14 +7,6 @@
 
 /* Include appropriate headers for the OS, and define what will be used to
  * check the free space. */
-#if defined(__APPLE__)
-# define _DARWIN_FEATURE_64_BIT_INODE 1
-# include <sys/param.h>
-# include <sys/mount.h>
-# define STATCALL statfs
-# define STATSTRUCT statfs64
-# define BSIZE f_bsize
-#else
 #if defined (__FreeBSD__)
 # include <sys/param.h>
 # include <sys/mount.h>
@@ -26,8 +18,8 @@
 # warning free space checking code not available for Android
 # define UNKNOWN
 #else
-#if defined (__linux__) || defined (__FreeBSD_kernel__) || (defined (__SVR4) && defined (__sun))
-/* Linux or Debian kFreeBSD or Solaris */
+#if defined (__linux__) || defined (__APPLE__) || defined (__FreeBSD_kernel__) || (defined (__SVR4) && defined (__sun))
+/* Linux or OSX or Debian kFreeBSD or Solaris */
 /* This is a POSIX standard, so might also work elsewhere too. */
 # include <sys/statvfs.h>
 # define STATCALL statvfs
@@ -36,7 +28,6 @@
 #else
 # warning free space checking code not available for this OS
 # define UNKNOWN
-#endif
 #endif
 #endif
 #endif
