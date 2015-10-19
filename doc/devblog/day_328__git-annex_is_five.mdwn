@@ -1,0 +1,15 @@
+The first release of git-annex was 5 years ago.
+
+There have been a total of 187 releases, growing to 50k lines of haskell
+code developed by 28 contributors (and another 10 or so external special
+remote contributors). Approximately 2000 people have posted questions,
+answers, bugs, todos, etc to this website, with 18900 posts in total.
+
+I've been funded for 3 of the 5 years to work on git-annex, with support
+from [[1451 individuals and 6 organizations|thanks]].
+
+Released a new version today with rather more significant changes than usual
+(see recent devblog entries).
+
+The [2015 git-annex user survey](http://git-annex-survey.branchable.com/polls/2015/)
+is now live.
