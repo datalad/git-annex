@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-10-06T21:28:43Z"
+ content="""
+Indeed, the logic got switched to opposite it should during the
+optparse-applicative transition.
+"""]]

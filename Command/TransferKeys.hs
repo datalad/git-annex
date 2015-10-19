@@ -43,7 +43,8 @@ start = do
 				return ok
 		| otherwise = notifyTransfer direction file $
 			download (Remote.uuid remote) key file forwardRetry observer $ \p ->
-				getViaTmp key $ \t -> Remote.retrieveKeyFile remote key file t p
+				getViaTmp (RemoteVerify remote) key $ \t -> 
+					Remote.retrieveKeyFile remote key file t p
 	
 	observer False t tinfo = recordFailedTransfer t tinfo
 	observer True _ _ = noop

@@ -1,0 +1,49 @@
+Well, I've spent all week making `git annex drop --from` safe.
+
+On Tuesday I got a sinking feeling in my stomach, as I realized that
+there was hole in git-annex's armor to prevent concurrent drops from
+violating numcopies or even losing the last copy of a file.
+[[The bug involved an unlikely race condition|bugs/concurrent_drop--from_presence_checking_failures]],
+and for all I know it's never happened in real life, but still this is not
+good.
+
+Since this is a potential data loss bug, expect a release pretty soon 
+with the fix. And, there are 2 things to keep in mind about the fix:
+
+1. If a ssh remote is using an old version of git-annex, a drop may fail.
+   Solution will be to just upgrade the git-annex on the remote to the
+   fixed version.
+2. When a file is present in several special remotes, but not in any
+   accessible git repositories, dropping it from one of the special
+   remotes will now fail, where before it was allowed.
+
+   Instead, the file has to be moved from one of the special remotes to
+   the git repository, and can then safely be dropped from the git repository.
+
+   This is a worrysome behavior change, but unavoidable.
+
+Solving this clearly called for more locking, to prevent concurrency
+problems. But, at first I couldn't find a solution that would allow
+dropping content that was only located on special remotes. I didn't want to
+make special remotes need to involve locking; that would be a nightmare to
+implement, and probably some existing special remotes don't have any
+way to do locking anyway.
+
+Happily, after thinking about it all through Wednesday, I found a solution,
+that while imperfect (see above) is probably the best one feasible. If my
+analysis is correct (and it seems so, although I'd like to write a more
+formal proof than the ad-hoc one I have so far), no locking is needed on
+special remotes, as long as the locking is done just right on the git repos
+and remotes. While this is not able to guarantee that numcopies is always
+preserved, it is able to guarantee that the last copy of a file is never
+removed. And, numcopies *will* always be preserved except for when this
+rare race condition occurs.
+
+So, I've been implementing that all of yesterday and today. Getting it
+right involves building up 4 different kinds of evidence, which can be
+used to make sure that the last copy of a file can't possibly end up being
+dropped, no matter what other concurrent drops could be happening.
+I ended up with a very clean and robust implementation of this, and
+a 2,000 line diff.
+
+Whew!

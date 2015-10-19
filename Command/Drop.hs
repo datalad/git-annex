@@ -20,6 +20,7 @@ import Annex.Content
 import Annex.Wanted
 import Annex.Notification
 
+import System.Log.Logger (debugM)
 import qualified Data.Set as S
 
 cmd :: Command
@@ -64,11 +65,11 @@ start' o key afile = do
 	checkDropAuto (autoMode o) from afile key $ \numcopies ->
 		stopUnless (want from) $
 			case from of
-				Nothing -> startLocal afile numcopies key Nothing
+				Nothing -> startLocal afile numcopies key []
 				Just remote -> do
 					u <- getUUID
 					if Remote.uuid remote == u
-						then startLocal afile numcopies key Nothing
+						then startLocal afile numcopies key []
 						else startRemote afile numcopies key remote
 	  where
 		want from
@@ -78,35 +79,31 @@ start' o key afile = do
 startKeys :: DropOptions -> Key -> CommandStart
 startKeys o key = start' o key Nothing
 
-startLocal :: AssociatedFile -> NumCopies -> Key -> Maybe Remote -> CommandStart
-startLocal afile numcopies key knownpresentremote = stopUnless (inAnnex key) $ do
+startLocal :: AssociatedFile -> NumCopies -> Key -> [VerifiedCopy] -> CommandStart
+startLocal afile numcopies key preverified = stopUnless (inAnnex key) $ do
 	showStart' "drop" key afile
-	next $ performLocal key afile numcopies knownpresentremote
+	next $ performLocal key afile numcopies preverified
 
 startRemote :: AssociatedFile -> NumCopies -> Key -> Remote -> CommandStart
 startRemote afile numcopies key remote = do
 	showStart' ("drop " ++ Remote.name remote) key afile
 	next $ performRemote key afile numcopies remote
 
--- Note that lockContent is called before checking if the key is present
--- on enough remotes to allow removal. This avoids a scenario where two
--- or more remotes are trying to remove a key at the same time, and each
--- see the key is present on the other.
-performLocal :: Key -> AssociatedFile -> NumCopies -> Maybe Remote -> CommandPerform
-performLocal key afile numcopies knownpresentremote = lockContent key $ \contentlock -> do
-	(remotes, trusteduuids) <- Remote.keyPossibilitiesTrusted key
-	let trusteduuids' = case knownpresentremote of
-		Nothing -> trusteduuids
-		Just r -> Remote.uuid r:trusteduuids
-	untrusteduuids <- trustGet UnTrusted
-	let tocheck = Remote.remotesWithoutUUID remotes (trusteduuids'++untrusteduuids)
+performLocal :: Key -> AssociatedFile -> NumCopies -> [VerifiedCopy] -> CommandPerform
+performLocal key afile numcopies preverified = lockContentForRemoval key $ \contentlock -> do
 	u <- getUUID
-	ifM (canDrop u key afile numcopies trusteduuids' tocheck [])
-		( do
+	(tocheck, verified) <- verifiableCopies key [u]
+	doDrop u (Just contentlock) key afile numcopies [] (preverified ++ verified) tocheck
+		( \proof -> do
+			liftIO $ debugM "drop" $ unwords
+				[ "Dropping from here"
+				, "proof:"
+				, show proof
+				]
 			removeAnnex contentlock
 			notifyDrop afile True
 			next $ cleanupLocal key
-		, do
+		, do 
 			notifyDrop afile False
 			stop
 		)
@@ -117,14 +114,19 @@ performRemote key afile numcopies remote = do
 	-- places assumed to have the key, and places to check.
 	-- When the local repo has the key, that's one additional copy,
 	-- as long as the local repo is not untrusted.
-	(remotes, trusteduuids) <- knownCopies key
-	let have = filter (/= uuid) trusteduuids
-	untrusteduuids <- trustGet UnTrusted
-	let tocheck = filter (/= remote) $
-		Remote.remotesWithoutUUID remotes (have++untrusteduuids)
-	stopUnless (canDrop uuid key afile numcopies have tocheck [uuid]) $ do
-		ok <- Remote.removeKey remote key
-		next $ cleanupRemote key remote ok
+	(tocheck, verified) <- verifiableCopies key [uuid]
+	doDrop uuid Nothing key afile numcopies [uuid] verified tocheck
+		( \proof -> do 
+			liftIO $ debugM "drop" $ unwords
+				[ "Dropping from remote"
+				, show remote
+				, "proof:"
+				, show proof
+				]
+			ok <- Remote.removeKey remote key
+			next $ cleanupRemote key remote ok
+		, stop
+		)
   where
 	uuid = Remote.uuid remote
 
@@ -139,30 +141,42 @@ cleanupRemote key remote ok = do
 		Remote.logStatus remote key InfoMissing
 	return ok
 
-{- Checks specified remotes to verify that enough copies of a key exist to
- - allow it to be safely removed (with no data loss). Can be provided with
- - some locations where the key is known/assumed to be present.
+{- Before running the dropaction, checks specified remotes to
+ - verify that enough copies of a key exist to allow it to be
+ - safely removed (with no data loss).
  -
  - Also checks if it's required content, and refuses to drop if so.
  -
  - --force overrides and always allows dropping.
  -}
-canDrop :: UUID -> Key -> AssociatedFile -> NumCopies -> [UUID] -> [Remote] -> [UUID] -> Annex Bool
-canDrop dropfrom key afile numcopies have check skip = 
+doDrop
+	:: UUID
+	-> Maybe ContentRemovalLock
+	-> Key
+	-> AssociatedFile
+	-> NumCopies
+	-> [UUID]
+	-> [VerifiedCopy]
+	-> [UnVerifiedCopy]
+	-> (Maybe SafeDropProof -> CommandPerform, CommandPerform)
+	-> CommandPerform
+doDrop dropfrom contentlock key afile numcopies skip preverified check (dropaction, nodropaction) = 
 	ifM (Annex.getState Annex.force)
-		( return True
-			, ifM (checkRequiredContent dropfrom key afile
-				<&&> verifyEnoughCopies nolocmsg key numcopies skip have check
-				)
-				( return True
-				, do
-					hint
-					return False
-				)
+		( dropaction Nothing
+		, ifM (checkRequiredContent dropfrom key afile)
+			( verifyEnoughCopiesToDrop nolocmsg key 
+				contentlock numcopies
+				skip preverified check
+					(dropaction . Just)
+					(forcehint nodropaction)
+			, stop
+			)
 		)
   where
 	nolocmsg = "Rather than dropping this file, try using: git annex move"
-	hint = showLongNote "(Use --force to override this check, or adjust numcopies.)"
+	forcehint a = do
+		showLongNote "(Use --force to override this check, or adjust numcopies.)"
+		a
 
 checkRequiredContent :: UUID -> Key -> AssociatedFile -> Annex Bool
 checkRequiredContent u k afile =

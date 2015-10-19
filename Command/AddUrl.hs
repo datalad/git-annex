@@ -154,7 +154,7 @@ downloadRemoteFile r relaxed uri file sz = do
 			-- so that the remote knows what url it
 			-- should use to download it.
 			setTempUrl urlkey loguri
-			let downloader = Remote.retrieveKeyFile r urlkey (Just file)
+			let downloader = \dest p -> fst <$> Remote.retrieveKeyFile r urlkey (Just file) dest p
 			ret <- downloadWith downloader urlkey (Remote.uuid r) loguri file
 			removeTempUrl urlkey
 			return ret
@@ -247,7 +247,7 @@ addUrlFileQuvi relaxed quviurl videourl file = do
 			 - it later. -}
 			urlinfo <- Url.withUrlOptions (Url.getUrlInfo videourl)
 			let sizedkey = addSizeUrlKey urlinfo key
-			prepGetViaTmpChecked sizedkey Nothing $ do
+			checkDiskSpaceToGet sizedkey Nothing $ do
 				tmp <- fromRepo $ gitAnnexTmpObjectLocation key
 				showOutput
 				ok <- Transfer.notifyTransfer Transfer.Download (Just file) $
@@ -305,7 +305,7 @@ downloadWeb url urlinfo file = do
  - stable. -}
 downloadWith :: (FilePath -> MeterUpdate -> Annex Bool) -> Key -> UUID -> URLString -> FilePath -> Annex (Maybe Key)
 downloadWith downloader dummykey u url file =
-	prepGetViaTmpChecked dummykey Nothing $ do
+	checkDiskSpaceToGet dummykey Nothing $ do
 		tmp <- fromRepo $ gitAnnexTmpObjectLocation dummykey
 		ifM (runtransfer tmp)
 			( do

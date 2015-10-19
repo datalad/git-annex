@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-10-06T21:10:44Z"
+ content="""
+Intriguingly, debugging shows it's checking the preferred content of
+the repo it's in, rather than of the repo it's copying to!
+
+And indeed, git-annex sync --content doesn't copy the file to B.
+So, this bug is in `git-annex copy --to --auto`, and not in preferred
+content handling in general.
+"""]]

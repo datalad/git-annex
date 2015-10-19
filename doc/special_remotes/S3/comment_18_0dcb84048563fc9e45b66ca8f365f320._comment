@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="darkfeline"
+ subject="Sharing S3 bucket between repos"
+ date="2015-10-09T01:16:25Z"
+ content="""
+What are the implications of sharing an S3 remote/bucket between two repositories with using fileprefix?  Can this be used to \"deduplicate\" files shared between repositories?
+"""]]

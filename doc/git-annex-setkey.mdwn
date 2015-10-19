@@ -11,8 +11,7 @@ git annex setkey key file
 This plumbing-level command makes the content of the specified key
 be set to the specified file. The file is moved into the annex.
 
-No checking is done that the file contains the expected contents of the key.
-So it's generally a better idea to use [[git-annex-reinject]](1) instead of
+It's generally a better idea to use [[git-annex-reinject]](1) instead of
 this command.
 
 # SEE ALSO

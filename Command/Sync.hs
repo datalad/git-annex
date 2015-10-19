@@ -37,7 +37,7 @@ import qualified Remote.Git
 import Config
 import Annex.Wanted
 import Annex.Content
-import Command.Get (getKeyFile')
+import Command.Get (getKey')
 import qualified Command.Move
 import Logs.Location
 import Annex.Drop
@@ -153,11 +153,10 @@ syncBranch = Git.Ref.under "refs/heads/synced" . fromDirectBranch
 remoteBranch :: Remote -> Git.Ref -> Git.Ref
 remoteBranch remote = Git.Ref.underBase $ "refs/remotes/" ++ Remote.name remote
 
+-- Do automatic initialization of remotes when possible when getting remote
+-- list.
 syncRemotes :: [String] -> Annex [Remote]
-syncRemotes ps = do
-	-- Get remote list first, doing automatic initialization
-	-- of remotes when possible.
-	syncRemotes' ps =<< Remote.remoteList' True
+syncRemotes ps = syncRemotes' ps =<< Remote.remoteList' True
 
 syncRemotes' :: [String] -> [Remote] -> Annex [Remote]
 syncRemotes' ps remotelist = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
@@ -460,8 +459,8 @@ syncFile ebloom rs af k = do
 		-- includeCommandAction for drops,
 		-- because a failure to drop does not mean
 		-- the sync failed.
-		handleDropsFrom locs' rs "unwanted" True k af
-			Nothing callCommandAction
+		handleDropsFrom locs' rs "unwanted" True k af []
+			callCommandAction
 	
 	return (got || not (null putrs))
   where
@@ -476,7 +475,7 @@ syncFile ebloom rs af k = do
 		)
 	get have = includeCommandAction $ do
 		showStart' "get" k af
-		next $ next $ getViaTmp k $ \dest -> getKeyFile' k af dest have
+		next $ next $ getKey' k af have
 
 	wantput r
 		| Remote.readonly r || remoteAnnexReadOnly (Remote.gitconfig r) = return False

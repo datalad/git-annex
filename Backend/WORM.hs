@@ -21,7 +21,7 @@ backend :: Backend
 backend = Backend
 	{ name = "WORM"
 	, getKey = keyValue
-	, fsckKey = Nothing
+	, verifyKeyContent = Nothing
 	, canUpgradeKey = Nothing
 	, fastMigrate = Nothing
 	, isStableKey = const True

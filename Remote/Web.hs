@@ -52,6 +52,7 @@ gen r _ c gc =
 		, retrieveKeyFile = downloadKey
 		, retrieveKeyFileCheap = downloadKeyCheap
 		, removeKey = dropKey
+		, lockContent = Nothing
 		, checkPresent = checkKey
 		, checkPresentCheap = False
 		, whereisKey = Nothing
@@ -70,8 +71,8 @@ gen r _ c gc =
 		, checkUrl = Nothing
 		}
 
-downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
-downloadKey key _file dest _p = get =<< getWebUrls key
+downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
+downloadKey key _file dest _p = unVerified $ get =<< getWebUrls key
   where
 	get [] = do
 		warning "no known url"

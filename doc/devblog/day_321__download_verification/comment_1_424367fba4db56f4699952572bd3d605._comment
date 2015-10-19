@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="spwhitton"
+ subject="comment 1"
+ date="2015-10-02T04:13:07Z"
+ content="""
+It might be nice to set `annex.verify-threshold` to verify all files below a certain size.  This could default to 500MB.
+"""]]

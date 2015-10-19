@@ -15,8 +15,8 @@ import Types.KeySource
 data BackendA a = Backend
 	{ name :: String
 	, getKey :: KeySource -> a (Maybe Key) 
-	-- Checks the content of a key.
-	, fsckKey :: Maybe (Key -> FilePath -> a Bool)
+	-- Verifies the content of a key.
+	, verifyKeyContent :: Maybe (Key -> FilePath -> a Bool)
 	-- Checks if a key can be upgraded to a better form.
 	, canUpgradeKey :: Maybe (Key -> Bool)
 	-- Checks if there is a fast way to migrate a key to a different

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-10-12T17:37:59Z"
+ content="""
+Ok, I found a way to implement it with no added overhead in the common
+case!
+"""]]

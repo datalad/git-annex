@@ -1,0 +1,36 @@
+### Please describe the problem.
+I try to fsck my movies repo, but run in to a failure message. Running the same command on another repo on the same computer works (both being run with sudo and the same user.)
+
+### What steps will reproduce the problem?
+    $ sudo -u time_machine_carl git annex fsck --incremental-schedule 182d --time-limit 1h 
+
+    sqlite worker thread crashed: SQLite3 returned ErrorCan'tOpen while attempting to perform prepare "SELECT null from fscked limit 1": unable to open database file
+    git-annex: thread blocked indefinitely in an MVar operation
+
+I guess I might just have created a fsck database using another user and this db is somehow locked?
+
+### What version of git-annex are you using? On what operating system?
+
+    $ git annex version
+    git-annex version: 5.20150731-1
+    build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA Database
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E MD5E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 MD5 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+    
+It runs on Raspbian Testing
+    $ uname -a
+    Linux pi 4.1.6+ #810 PREEMPT Tue Aug 18 15:19:58 BST 2015 armv6l GNU/Linux
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+Of course, The movie archive seems to be filling up nicely I just have some problems automating the checks.
+
+> [[done]]

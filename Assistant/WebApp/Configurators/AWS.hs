@@ -13,12 +13,12 @@ import Assistant.WebApp.Common
 import Assistant.WebApp.MakeRemote
 #ifdef WITH_S3
 import qualified Remote.S3 as S3
-#endif
-import qualified Remote.Glacier as Glacier
-import qualified Remote.Helper.AWS as AWS
 import Logs.Remote
 import qualified Remote
 import qualified Types.Remote as Remote
+#endif
+import qualified Remote.Glacier as Glacier
+import qualified Remote.Helper.AWS as AWS
 import Types.Remote (RemoteConfig)
 import Types.StandardGroups
 import Creds
@@ -76,8 +76,10 @@ s3InputAForm defcreds = AWSInput
 	storageclasses :: [(Text, StorageClass)]
 	storageclasses =
 		[ ("Standard redundancy", StandardRedundancy)
+#ifdef WITH_S3
 #if MIN_VERSION_aws(0,13,0)
 		, ("Infrequent access (cheaper for backups and archives)", StandardInfrequentAccess)
+#endif
 #endif
 		, ("Reduced redundancy (costs less)", ReducedRedundancy)
 		]

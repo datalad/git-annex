@@ -1,0 +1,81 @@
+### Please describe the problem.
+
+There exist more BSD systems than FreeBSD. Thus I propose diff for Utility/libdiskfree.c.
+
+Based on pkgsrc patching guidelines https://www.netbsd.org/docs/pkgsrc/components.html#components.patches.guidelines
+I tried to cook a diff even I'm not C developer.
+
+
+### What steps will reproduce the problem?
+
+Add support for more OS for disk free check.
+
+### What version of git-annex are you using? On what operating system?
+git-annex-5.20150930
+
+
+### Please provide any additional information below.
+
+The diff probably needs check, improvement...
+
+[[!format sh """
+--- libdiskfree.c.orig	Sun Oct  4 15:18:07 2015
++++ libdiskfree.c	Sun Oct  4 15:23:23 2015
+@@ -7,35 +7,30 @@
+ 
+ /* Include appropriate headers for the OS, and define what will be used to
+  * check the free space. */
+-#if defined(__APPLE__)
+-# define _DARWIN_FEATURE_64_BIT_INODE 1
+-# include <sys/param.h>
+-# include <sys/mount.h>
+-# define STATCALL statfs
+-# define STATSTRUCT statfs64
+-#else
+-#if defined (__FreeBSD__)
+-# include <sys/param.h>
+-# include <sys/mount.h>
+-# define STATCALL statfs /* statfs64 not yet tested on a real FreeBSD machine */
+-# define STATSTRUCT statfs
+-#else
+-#if defined __ANDROID__
+-# warning free space checking code not available for Android
+-# define UNKNOWN
+-#else
+ #if defined (__linux__) || defined (__FreeBSD_kernel__)
+ /* Linux or Debian kFreeBSD */
+ /* This is a POSIX standard, so might also work elsewhere too. */
+ # include <sys/statvfs.h>
+ # define STATCALL statvfs
+ # define STATSTRUCT statvfs
+-#else
+-# warning free space checking code not available for this OS
++#endif
++
++#if defined __ANDROID__
++# warning free space checking code not available for Android
+ # define UNKNOWN
+ #endif
++
++#if defined (HAVE_SYS_PARAM_H) && defined (HAVE_SYS_MOUNT_H)
++#if defined(__APPLE__)
++# define _DARWIN_FEATURE_64_BIT_INODE 1
+ #endif
+-#endif
++# include <sys/param.h>
++# include <sys/mount.h>
++# define STATCALL statfs /* statfs64 not yet tested on a real FreeBSD machine */
++# define STATSTRUCT statfs64
++#else
++# warning free space checking code not available for this OS
++# define UNKNOWN
+ #endif
+ 
+ #include <errno.h>
+
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Not tested this "feature" yet, I got another issue which blocks me for now.
+

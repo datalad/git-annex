@@ -77,7 +77,7 @@ splitWord = separate isSpace
 
 {- When a program speaks a simple protocol over stdio, any other output
  - to stdout (or anything that attempts to read from stdin)
- - will mess up the protocol. To avoid that, close stdin, and 
+ - will mess up the protocol. To avoid that, close stdin,
  - and duplicate stderr to stdout. Return two new handles
  - that are duplicates of the original (stdin, stdout). -}
 dupIoHandles :: IO (Handle, Handle)

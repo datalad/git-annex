@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="darkfeline"
+ subject="comment 1"
+ date="2015-10-09T02:25:57Z"
+ content="""
+I should have [searched the forums first](https://git-annex.branchable.com/forum/Is_S3___34__Standard-Infrequent_Access__34___storage_class_supported__63__/).
+
+It looks like the feature has not been merged yet, despite appearing in the documentation on the S3 page.
+"""]]

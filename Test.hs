@@ -487,14 +487,19 @@ test_copy = intmpclonerepo $ do
 test_preferred_content :: Assertion
 test_preferred_content = intmpclonerepo $ do
 	annexed_notpresent annexedfile
-	-- get --auto only looks at numcopies when preferred content is not
+	-- get/copy --auto looks only at numcopies when preferred content is not
 	-- set, and with 1 copy existing, does not get the file.
 	git_annex "get" ["--auto", annexedfile] @? "get --auto of file failed with default preferred content"
+	annexed_notpresent annexedfile
+	git_annex "copy" ["--from", "origin", "--auto", annexedfile] @? "copy --auto --from of file failed with default preferred content"
 	annexed_notpresent annexedfile
 
 	git_annex "wanted" [".", "standard"] @? "set expression to standard failed"
 	git_annex "group" [".", "client"] @? "set group to standard failed"
 	git_annex "get" ["--auto", annexedfile] @? "get --auto of file failed for client"
+	annexed_present annexedfile
+	git_annex "drop" [annexedfile] @? "drop of file failed"
+	git_annex "copy" ["--from", "origin", "--auto", annexedfile] @? "copy --auto --from of file failed for client"
 	annexed_present annexedfile
 	git_annex "ungroup" [".", "client"] @? "ungroup failed"
 
@@ -505,8 +510,10 @@ test_preferred_content = intmpclonerepo $ do
 	annexed_present annexedfile
 	git_annex "drop" [annexedfile] @? "drop of file failed"
 	annexed_notpresent annexedfile
-	-- get --auto with manual does not get the file
+	-- copy/get --auto with manual does not get the file
 	git_annex "get" ["--auto", annexedfile] @? "get --auto of file failed with manual preferred content"
+	annexed_notpresent annexedfile
+	git_annex "copy" ["--from", "origin", "--auto", annexedfile] @? "copy --auto --from of file failed with manual preferred content"
 	annexed_notpresent annexedfile
 	git_annex "ungroup" [".", "client"] @? "ungroup failed"
 	

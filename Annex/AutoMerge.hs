@@ -77,6 +77,10 @@ autoMergeFrom branch currbranch commitmode = do
  - In direct mode, the work tree is not touched here; files are staged to
  - the index, and written to the gitAnnexMergeDir, for later handling by
  - the direct mode merge code.
+ -
+ - Returns false when there are no merge conflicts to resolve.
+ - A git merge can fail for other reasons, and this allows detecting
+ - such failures.
  -}
 resolveMerge :: Maybe Git.Ref -> Git.Ref -> Annex Bool
 resolveMerge us them = do

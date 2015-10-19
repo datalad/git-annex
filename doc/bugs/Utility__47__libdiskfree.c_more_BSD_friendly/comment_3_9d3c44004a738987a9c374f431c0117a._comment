@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="jirib@503223f0610c6c66f4e6dc738a5a0b2648c290b1"
+ nickname="jirib"
+ subject="statfs64"
+ date="2015-10-05T09:58:10Z"
+ content="""
+Sorry, my mistake, I was checking latest release and it had statfs64 there but I see master doesn't have it.
+
+I'll report if it works on OpenBSD when I will pass 'xmpp' issue :)
+"""]]

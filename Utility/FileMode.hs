@@ -7,7 +7,10 @@
 
 {-# LANGUAGE CPP #-}
 
-module Utility.FileMode where
+module Utility.FileMode (
+	module Utility.FileMode,
+	FileMode,
+) where
 
 import System.IO
 import Control.Monad

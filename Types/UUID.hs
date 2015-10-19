@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
+
 module Types.UUID where
 
 import qualified Data.Map as M
@@ -19,9 +21,15 @@ fromUUID :: UUID -> String
 fromUUID (UUID u) = u
 fromUUID NoUUID = ""
 
-toUUID :: String -> UUID
-toUUID [] = NoUUID
-toUUID s = UUID s
+class ToUUID a where
+	toUUID :: a -> UUID
+
+instance ToUUID UUID where
+	toUUID = id
+
+instance ToUUID String where
+	toUUID [] = NoUUID
+	toUUID s = UUID s
 
 isUUID :: String -> Bool
 isUUID = isJust . U.fromString

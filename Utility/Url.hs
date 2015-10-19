@@ -11,6 +11,8 @@
 {-# LANGUAGE FlexibleContexts #-}
 
 module Utility.Url (
+	closeManager,
+	managerSettings,
 	URLString,
 	UserAgent,
 	UrlOptions,
@@ -31,11 +33,28 @@ import Utility.Tmp
 import qualified Build.SysConfig
 
 import Network.URI
-import Network.HTTP.Conduit
 import Network.HTTP.Types
 import qualified Data.CaseInsensitive as CI
 import qualified Data.ByteString as B
 import qualified Data.ByteString.UTF8 as B8
+import Control.Monad.Trans.Resource
+import Network.HTTP.Conduit hiding (closeManager)
+
+-- closeManager is needed with older versions of http-client,
+-- but not new versions, which warn about using it. Urgh.
+#if ! MIN_VERSION_http_client(0,4,18)
+import Network.HTTP.Client (closeManager)
+#else
+closeManager :: Manager -> IO ()
+closeManager _ = return ()
+#endif
+
+managerSettings :: ManagerSettings
+#if MIN_VERSION_http_conduit(2,1,7)
+managerSettings = tlsManagerSettings
+#else
+managerSettings = conduitManagerSettings
+#endif
 
 type URLString = String
 
@@ -164,16 +183,18 @@ getUrlInfo url uo = case parseURIRelaxed url of
 	firstheader h = headMaybe . map snd .
 		filter (\p -> fst p == h) . responseHeaders
 
-	existsconduit req = withManager $ \mgr -> do
+	existsconduit req = do
+		mgr <- newManager managerSettings
 		let req' = headRequest (applyRequest uo req)
-		resp <- http req' mgr
-		-- forces processing the response before the
-		-- manager is closed
-		ret <- liftIO $ if responseStatus resp == ok200
-			then found
-				(extractlen resp)
-				(extractfilename resp)
-			else dne
+		ret <- runResourceT $ do
+			resp <- http req' mgr
+			-- forces processing the response before the
+			-- manager is closed
+			liftIO $ if responseStatus resp == ok200
+				then found
+					(extractlen resp)
+					(extractfilename resp)
+				else dne
 		liftIO $ closeManager mgr
 		return ret
 

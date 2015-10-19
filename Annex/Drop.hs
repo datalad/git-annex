@@ -30,11 +30,13 @@ type Reason = String
  - The UUIDs are ones where the content is believed to be present.
  - The Remote list can include other remotes that do not have the content;
  - only ones that match the UUIDs will be dropped from.
- - If allowed to drop fromhere, that drop will be tried first.
  -
- - A remote can be specified that is known to have the key. This can be
- - used an an optimisation when eg, a key has just been uploaded to a
- - remote.
+ - If allowed to drop fromhere, that drop will be done last. This is done
+ - because local drops do not need any LockedCopy evidence, and so dropping
+ - from local last allows the content to be removed from more remotes.
+ -
+ - A VerifiedCopy can be provided as an optimisation when eg, a key
+ - has just been uploaded to a remote.
  -
  - In direct mode, all associated files are checked, and only if all
  - of them are unwanted are they dropped.
@@ -42,8 +44,8 @@ type Reason = String
  - The runner is used to run commands, and so can be either callCommand
  - or commandAction.
  -}
-handleDropsFrom :: [UUID] -> [Remote] -> Reason -> Bool -> Key -> AssociatedFile -> Maybe Remote -> (CommandStart -> CommandCleanup) -> Annex ()
-handleDropsFrom locs rs reason fromhere key afile knownpresentremote runner = do
+handleDropsFrom :: [UUID] -> [Remote] -> Reason -> Bool -> Key -> AssociatedFile -> [VerifiedCopy] -> (CommandStart -> CommandCleanup) -> Annex ()
+handleDropsFrom locs rs reason fromhere key afile preverified runner = do
 	fs <- ifM isDirect
 		( do
 			l <- associatedFilesRelative key
@@ -53,8 +55,8 @@ handleDropsFrom locs rs reason fromhere key afile knownpresentremote runner = do
 		, return $ maybeToList afile
 		)
 	n <- getcopies fs
-	if fromhere && checkcopies n Nothing
-		then go fs rs =<< dropl fs n
+	void $ if fromhere && checkcopies n Nothing
+		then go fs rs n >>= dropl fs
 		else go fs rs n
   where
 	getcopies fs = do
@@ -79,12 +81,12 @@ handleDropsFrom locs rs reason fromhere key afile knownpresentremote runner = do
 		| S.member u untrusted = v
 		| otherwise = decrcopies v Nothing
 
-	go _ [] _ = noop
+	go _ [] n = pure n
 	go fs (r:rest) n
 		| uuid r `S.notMember` slocs = go fs rest n
 		| checkcopies n (Just $ Remote.uuid r) =
 			dropr fs r n >>= go fs rest
-		| otherwise = noop
+		| otherwise = pure n
 
 	checkdrop fs n u a
 		| null fs = check $ -- no associated files; unused content
@@ -112,7 +114,7 @@ handleDropsFrom locs rs reason fromhere key afile knownpresentremote runner = do
 			)
 
 	dropl fs n = checkdrop fs n Nothing $ \numcopies ->
-		Command.Drop.startLocal afile numcopies key knownpresentremote
+		Command.Drop.startLocal afile numcopies key preverified
 
 	dropr fs r n  = checkdrop fs n (Just $ Remote.uuid r) $ \numcopies ->
 		Command.Drop.startRemote afile numcopies key r

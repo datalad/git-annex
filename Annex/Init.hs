@@ -209,7 +209,7 @@ checkSharedClone = inRepo Git.Objects.isSharedClone
 initSharedClone :: Bool -> Annex ()
 initSharedClone False = return ()
 initSharedClone True = do
-	showSideAction "Repository was cloned with --shared; setting annex.hardlink=true and making repository untrusted."
+	showLongNote "Repository was cloned with --shared; setting annex.hardlink=true and making repository untrusted."
 	u <- getUUID
 	trustSet u UnTrusted
 	setConfig (annexConfig "hardlink") (Git.Config.boolConfig True)

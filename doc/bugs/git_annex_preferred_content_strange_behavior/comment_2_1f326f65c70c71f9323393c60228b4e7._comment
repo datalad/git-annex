@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-10-06T21:01:35Z"
+ content="""
+On closer thoughtk the behavior with no preferred content set, 
+of copy --auto not copying anything is actually the desired behavior.
+Since --auto also checks numcopies, when no preferred content is set
+it should only want to copy files if needed to satisfy numcopies.
+
+So, the wrong behavior is when it suddently starts copying everything,
+indeed.
+"""]]

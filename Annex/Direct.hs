@@ -173,16 +173,19 @@ mergeDirect startbranch oldref branch resolvemerge commitmode = exclusively $ do
 
 	withIndexFile tmpi $ do
 		merged <- stageMerge d branch commitmode
-		r <- if merged
+		ok <- if merged
 			then return True
 			else resolvemerge
-		mergeDirectCleanup d (fromMaybe Git.Sha.emptyTree oldref)
-		mergeDirectCommit merged startbranch branch commitmode
-
-		liftIO $ whenM (doesFileExist tmpi) $
-			rename tmpi reali
-
-		return r
+		if ok
+			then do
+				mergeDirectCleanup d (fromMaybe Git.Sha.emptyTree oldref)
+				mergeDirectCommit merged startbranch branch commitmode
+				liftIO $ whenM (doesFileExist tmpi) $
+					rename tmpi reali
+			else do
+				liftIO $ nukeFile tmpi
+		liftIO $ removeDirectoryRecursive d
+		return ok
   where
 	exclusively = withExclusiveLock gitAnnexMergeLock
 
@@ -231,9 +234,7 @@ mergeDirectCommit allowff old branch commitmode = do
 	canff = maybe (return False) (\o -> inRepo $ Git.Branch.fastForwardable o branch) old
 
 mergeDirectCleanup :: FilePath -> Git.Ref -> Annex ()
-mergeDirectCleanup d oldref = do
-	updateWorkTree d oldref False
-	liftIO $ removeDirectoryRecursive d
+mergeDirectCleanup d oldref = updateWorkTree d oldref False
 
 {- Updates the direct mode work tree to reflect the changes staged in the
  - index by a git command, that was run in a temporary work tree.

@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="dah"
+ subject="comment 2"
+ date="2015-10-04T18:25:29Z"
+ content="""
+I think the CPU of my phone is not good enough to be usable with a web browser on my phone.
+
+I can use Git Annex without the WebApp without phone stability problems. But if I start the WebApp then nothing works (it seems 100% of my CPU is used - but it could also be that the CPU monitor app did freeze).
+
+Websites like Google and Wikipedia work without problems but I had another website that made my phone unusable and forced me to restart my phone.
+
+I think therefore my phone is the problem and not Git Annex.
+
+So, the best way for me to use Git Annex on my phone is probably the cammand line interface.
+
+Besides the text relocations warning there was another message that said \"Falling back to hardcoded app location: cannot find expected files in $path\".
+
+Is this a problem or does everything work properly?
+
+
+"""]]

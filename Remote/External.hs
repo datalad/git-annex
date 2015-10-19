@@ -81,6 +81,7 @@ gen r u c gc
 			, retrieveKeyFile = retreiveKeyFileDummy
 			, retrieveKeyFileCheap = \_ _ _ -> return False
 			, removeKey = removeKeyDummy
+			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
 			, whereisKey = towhereis

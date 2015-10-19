@@ -12,11 +12,14 @@ module Annex.Content (
 	inAnnex',
 	inAnnexSafe,
 	inAnnexCheck,
-	lockContent,
+	lockContentShared,
+	lockContentForRemoval,
+	ContentRemovalLock,
 	getViaTmp,
-	getViaTmpChecked,
-	getViaTmpUnchecked,
-	prepGetViaTmpChecked,
+	getViaTmp',
+	checkDiskSpaceToGet,
+	VerifyConfig(..),
+	Types.Remote.unVerified,
 	prepTmp,
 	withTmp,
 	checkDiskSpace,
@@ -62,6 +65,11 @@ import Annex.Content.Direct
 import Annex.ReplaceFile
 import Utility.LockPool
 import Messages.Progress
+import qualified Types.Remote
+import qualified Types.Backend
+import qualified Backend
+import Types.NumCopies
+import Annex.UUID
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
@@ -161,84 +169,176 @@ contentLockFile key = ifM isDirect
 contentLockFile key = Just <$> calcRepo (gitAnnexContentLock key)
 #endif
 
-newtype ContentLock = ContentLock Key
-
-{- Content is exclusively locked while running an action that might remove
- - it. (If the content is not present, no locking is done.)
+{- Prevents the content from being removed while the action is running.
+ - Uses a shared lock.
+ -
+ - Does not actually check if the content is present. Use inAnnex for that.
+ - However, since the contentLockFile is the content file in indirect mode,
+ - if the content is not present, locking it will fail.
+ -
+ - If locking fails, throws an exception rather than running the action.
+ -
+ - Note that, in direct mode, nothing prevents the user from directly
+ - editing or removing the content, even while it's locked by this.
  -}
-lockContent :: Key -> (ContentLock -> Annex a) -> Annex a
-lockContent key a = do
+lockContentShared :: Key -> (VerifiedCopy -> Annex a) -> Annex a
+lockContentShared key a = lockContentUsing lock key $ do
+	u <- getUUID
+	withVerifiedCopy LockedCopy u (return True) a
+  where
+#ifndef mingw32_HOST_OS
+	lock contentfile Nothing = liftIO $ tryLockShared Nothing contentfile
+	lock _ (Just lockfile) = posixLocker tryLockShared lockfile
+#else
+	lock = winLocker lockShared
+#endif
+
+{- Exclusively locks content, while performing an action that
+ - might remove it.
+ -}
+lockContentForRemoval :: Key -> (ContentRemovalLock -> Annex a) -> Annex a
+lockContentForRemoval key a = lockContentUsing lock key $ 
+	a (ContentRemovalLock key)
+  where
+#ifndef mingw32_HOST_OS
+	{- Since content files are stored with the write bit disabled, have
+	 - to fiddle with permissions to open for an exclusive lock. -}
+	lock contentfile Nothing = bracket_
+		(thawContent contentfile)
+		(freezeContent contentfile)
+		(liftIO $ tryLockExclusive Nothing contentfile)
+	lock _ (Just lockfile) = posixLocker tryLockExclusive lockfile
+#else
+	lock = winLocker lockExclusive
+#endif
+
+{- Passed the object content file, and maybe a separate lock file to use,
+ - when the content file itself should not be locked. -}
+type ContentLocker = FilePath -> Maybe LockFile -> Annex (Maybe LockHandle)
+
+#ifndef mingw32_HOST_OS
+posixLocker :: (Maybe FileMode -> LockFile -> IO (Maybe LockHandle)) -> LockFile -> Annex (Maybe LockHandle)
+posixLocker takelock lockfile = do
+	mode <- annexFileMode
+	modifyContent lockfile $
+		liftIO $ takelock (Just mode) lockfile
+	
+#else
+winLocker :: (LockFile -> IO (Maybe LockHandle)) -> ContentLocker
+winLocker takelock _ (Just lockfile) = do
+	modifyContent lockfile $
+		void $ liftIO $ tryIO $
+			writeFile lockfile ""
+	liftIO $ takelock lockfile
+-- never reached; windows always uses a separate lock file
+winLocker _ _ Nothing = return Nothing
+#endif
+
+lockContentUsing :: ContentLocker -> Key -> Annex a -> Annex a
+lockContentUsing locker key a = do
 	contentfile <- calcRepo $ gitAnnexLocation key
 	lockfile <- contentLockFile key
 	bracket
 		(lock contentfile lockfile)
 		(unlock lockfile)
-		(const $ a $ ContentLock key )
+		(const a)
   where
 	alreadylocked = error "content is locked"
-	cleanuplockfile lockfile = modifyContent lockfile $
-		void $ liftIO $ tryIO $
-			nukeFile lockfile
-#ifndef mingw32_HOST_OS
-	{- Since content files are stored with the write bit disabled, have
-	 - to fiddle with permissions to open for an exclusive lock. -}
-	lock contentfile Nothing = trylock $ bracket_
-		(thawContent contentfile)
-		(freezeContent contentfile)
+	failedtolock e = error $ "failed to lock content: " ++ show e
+
+	lock contentfile lockfile =
 		(maybe alreadylocked return 
-			=<< liftIO (tryLockExclusive Nothing contentfile))
-	lock _ (Just lockfile) = trylock $ do
-		mode <- annexFileMode
-		maybe alreadylocked return 
-			=<< modifyContent lockfile
-				(liftIO $ tryLockExclusive (Just mode) lockfile)
+			=<< locker contentfile lockfile)
+		`catchIO` failedtolock
+
+#ifndef mingw32_HOST_OS
 	unlock mlockfile lck = do
 		maybe noop cleanuplockfile mlockfile
 		liftIO $ dropLock lck
-	
-	failedtolock e = error $ "failed to lock content: " ++ show e
-	trylock locker = locker `catchIO` failedtolock
 #else
-	lock _ (Just lockfile) = do
-		modifyContent lockfile $
-			void $ liftIO $ tryIO $
-				writeFile lockfile ""
-		maybe alreadylocked (return . Just)
-			=<< liftIO (lockExclusive lockfile)
-	-- never reached; windows always uses a separate lock file
-	lock _ Nothing = return Nothing
-	unlock mlockfile mlockhandle = do
-		liftIO $ maybe noop dropLock mlockhandle
+	unlock mlockfile lck = do
+		-- Can't delete a locked file on Windows
+		liftIO $ dropLock lck
 		maybe noop cleanuplockfile mlockfile
 #endif
 
-{- Runs an action, passing it a temporary filename to get,
- - and if the action succeeds, moves the temp file into 
- - the annex as a key's content. -}
-getViaTmp :: Key -> (FilePath -> Annex Bool) -> Annex Bool
-getViaTmp = getViaTmpChecked (return True)
+	cleanuplockfile lockfile = modifyContent lockfile $
+		void $ liftIO $ tryIO $
+			nukeFile lockfile
+
+{- Runs an action, passing it the temp file to get,
+ - and if the action succeeds, verifies the file matches
+ - the key and moves the file into the annex as a key's content. -}
+getViaTmp :: VerifyConfig -> Key -> (FilePath -> Annex (Bool, Types.Remote.Verification)) -> Annex Bool
+getViaTmp v key action = checkDiskSpaceToGet key False $
+	getViaTmp' v key action
 
 {- Like getViaTmp, but does not check that there is enough disk space
  - for the incoming key. For use when the key content is already on disk
  - and not being copied into place. -}
-getViaTmpUnchecked :: Key -> (FilePath -> Annex Bool) -> Annex Bool
-getViaTmpUnchecked = finishGetViaTmp (return True)
+getViaTmp' :: VerifyConfig -> Key -> (FilePath -> Annex (Bool, Types.Remote.Verification)) -> Annex Bool
+getViaTmp' v key action = do
+	tmpfile <- prepTmp key
+	(ok, verification) <- action tmpfile
+	if ok
+		then ifM (verifyKeyContent v verification key tmpfile)
+			( do
+				moveAnnex key tmpfile
+				logStatus key InfoPresent
+				return True
+			, do
+				warning "verification of content failed"
+				liftIO $ nukeFile tmpfile
+				return False
+			)
+		-- On transfer failure, the tmp file is left behind, in case
+		-- caller wants to resume its transfer
+		else return False
 
-getViaTmpChecked :: Annex Bool -> Key -> (FilePath -> Annex Bool) -> Annex Bool
-getViaTmpChecked check key action = 
-	prepGetViaTmpChecked key False $
-		finishGetViaTmp check key action
+{- Verifies that a file is the expected content of a key.
+ - Configuration can prevent verification, for either a
+ - particular remote or always.
+ -
+ - Most keys have a known size, and if so, the file size is checked.
+ -
+ - When the key's backend allows verifying the content (eg via checksum),
+ - it is checked. 
+ -}
+verifyKeyContent :: VerifyConfig -> Types.Remote.Verification -> Key -> FilePath -> Annex Bool
+verifyKeyContent _ Types.Remote.Verified _ _ = return True
+verifyKeyContent v Types.Remote.UnVerified k f = ifM (shouldVerify v)
+	( verifysize <&&> verifycontent
+	, return True
+	)
+  where
+	verifysize = case Types.Key.keySize k of
+		Nothing -> return True
+		Just size -> do
+			size' <- liftIO $ catchDefaultIO 0 $ getFileSize f
+			return (size' == size)
+	verifycontent = case Types.Backend.verifyKeyContent =<< Backend.maybeLookupBackendName (Types.Key.keyBackendName k) of
+		Nothing -> return True
+		Just verifier -> verifier k f
 
-{- Prepares to download a key via a tmp file, and checks that there is
- - enough free disk space.
+data VerifyConfig = AlwaysVerify | NoVerify | RemoteVerify Remote | DefaultVerify
+
+shouldVerify :: VerifyConfig -> Annex Bool
+shouldVerify AlwaysVerify = return True
+shouldVerify NoVerify = return False
+shouldVerify DefaultVerify = annexVerify <$> Annex.getGitConfig
+shouldVerify (RemoteVerify r) = shouldVerify DefaultVerify
+	<&&> pure (remoteAnnexVerify (Types.Remote.gitconfig r))
+
+{- Checks if there is enough free disk space to download a key
+ - to its temp file.
  -
  - When the temp file already exists, count the space it is using as
  - free, since the download will overwrite it or resume.
  -
  - Wen there's enough free space, runs the download action.
  -}
-prepGetViaTmpChecked :: Key -> a -> Annex a -> Annex a
-prepGetViaTmpChecked key unabletoget getkey = do
+checkDiskSpaceToGet :: Key -> a -> Annex a -> Annex a
+checkDiskSpaceToGet key unabletoget getkey = do
 	tmp <- fromRepo $ gitAnnexTmpObjectLocation key
 
 	e <- liftIO $ doesFileExist tmp
@@ -251,19 +351,6 @@ prepGetViaTmpChecked key unabletoget getkey = do
 			when e $ thawContent tmp
 			getkey
 		, return unabletoget
-		)
-
-finishGetViaTmp :: Annex Bool -> Key -> (FilePath -> Annex Bool) -> Annex Bool
-finishGetViaTmp check key action = do
-	tmpfile <- prepTmp key
-	ifM (action tmpfile <&&> check)
-		( do
-			moveAnnex key tmpfile
-			logStatus key InfoPresent
-			return True
-		-- the tmp file is left behind, in case caller wants
-		-- to resume its transfer
-		, return False
 		)
 
 prepTmp :: Key -> Annex FilePath
@@ -460,8 +547,8 @@ cleanObjectLoc key cleaner = do
  - In direct mode, deletes the associated files or files, and replaces
  - them with symlinks.
  -}
-removeAnnex :: ContentLock -> Annex ()
-removeAnnex (ContentLock key) = withObjectLoc key remove removedirect
+removeAnnex :: ContentRemovalLock -> Annex ()
+removeAnnex (ContentRemovalLock key) = withObjectLoc key remove removedirect
   where
 	remove file = cleanObjectLoc key $ do
 		secureErase file

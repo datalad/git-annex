@@ -2,17 +2,17 @@
 
 * [[design/caching_database]] for metadata views, direct mode mappings
 * [[assistant/deltas]]
-* [[assistant/gpgkeys]]
-* [[assistant/telehash]]
+* [[assistant/gpgkeys]] management for the assistant
+* [[assistant/telehash]] or similar
 * [[design/requests_routing]]
-* [[design/v6]]
-
-## now
-
-* Feb 2015 user-driven features and polishing, [[design/caching_database]] part 1
+* [[design/v6]] repo format
+* [[todo/deferred_update_mode]]
+* [[use smudge and clean filters|todo/smudge]] like Git LFS
 
 ## the rearview
 
+* Mar-Oct 2015 busy busy busy, too busy to update!
+* Feb 2015 user-driven features and polishing, [[design/caching_database]] part 1
 * Jan 2015 Android 5, relative paths, workload [[tuning]]
 * Dec 2014 [[todo/extensible_addurl]], bittorrent special remote
 * Nov 2014 direct mode proxy, undo command, diffdriver

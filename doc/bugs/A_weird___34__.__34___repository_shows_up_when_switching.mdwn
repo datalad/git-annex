@@ -1,0 +1,25 @@
+### Please describe the problem.
+When switching between my 2 repositories I now see a "." repository, see screenshot: http://screencast.com/t/0wxugJ9P 
+If I chose to switch to it, I get this error: http://screencast.com/t/5mndGNlhh8oN
+
+### What steps will reproduce the problem?
+Not sure if this is a real bug, maybe I screwed up?
+
+### What version of git-annex are you using? On what operating system?
+Version: 5.20150929-g7010007 
+Build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV FsEvents XMPP DNS Feeds Quvi TDFA TorrentParser Database
+MAC OSX 10.10.5
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+there is nothing relevant to this error in there unfortunately.
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+

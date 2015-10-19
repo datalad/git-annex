@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""analysis"""
+ date="2015-10-15T17:30:12Z"
+ content="""
+git merge fails because it cannot write to these filenames.
+
+git-annex assumes that, if git merge failed, there was a merge conflict, so
+the automatic merge conflict resolution code is run. There are probably no
+unmerged files in this case. So, the automatic merge conflict resolution
+finds nothing to do, probably. 
+
+However, since the automatic merge conflict resolution code ran, it now
+assumes the merge has been dealt with, and proceeds to clean up, including
+making a merge commit. 
+
+The merge commit is where the file "removal" happens. It should bail out
+before that point.
+
+The best fix would be to detect that git merge has crashed early and skip
+all the merge conflict resolution etc. How? git merge uses the same
+exit status for this kind of crash as it does for an unresolved merge
+conflict.
+
+It could notice that there are no merge conflicts to be found, and so know
+the merge failed for some other reason. However, what if there are both
+merge conflicts and illegal filenames? Testing that situation, git merge
+seems to always crash on creating the illegal files, before it updates
+git state to reflect any merge conflicts. So, this approach seems to work.
+
+(It could also look for .git/MERGE_HEAD, which is written after a
+conflicted merge.)
+
+----
+
+Note that mentions of repo size etc later in this bug report don't seem to
+be related to this problem.
+"""]]

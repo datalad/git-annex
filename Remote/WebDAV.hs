@@ -60,6 +60,7 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			, retrieveKeyFile = retreiveKeyFileDummy
 			, retrieveKeyFileCheap = retrieveCheap
 			, removeKey = removeKeyDummy
+			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
 			, whereisKey = Nothing
@@ -184,7 +185,7 @@ toDavPass = B8.fromString
  -}
 testDav :: URLString -> Maybe CredPair -> Annex ()
 testDav url (Just (u, p)) = do
-	showSideAction "testing WebDAV server"
+	showAction "testing WebDAV server"
 	test $ liftIO $ evalDAVT url $ do
 		prepDAV user pass
 		makeParentDirs

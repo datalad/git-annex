@@ -1,3 +1,59 @@
+git-annex (5.20151019) unstable; urgency=medium
+
+  * Fix a longstanding, but unlikely to occur bug, where dropping
+    a file from a remote could race with other drops of the same file,
+    and result in all copies of its content being lost.
+  * git-annex-shell: Added lockcontent command, to prevent dropping of
+    a key's content. This is necessary due to the above bugfix.
+  * In some cases, the above bugfix changes what git-annex allows you to
+    drop:
+    - When a file is present in several special remotes,
+      but not in any accessible git repositories, dropping it from one of
+      the special remotes will now fail. Instead, the file has to be
+      moved from one of the special remotes to the git repository, and can
+      then safely be dropped from the git repository.
+    - If a git remote has too old a version of git-annex-shell installed,
+      git-annex won't trust it to hold onto a copy of a file when dropping
+      that file from the local git repository.
+  * Changed drop ordering when using git annex sync --content or the
+    assistant, to drop from remotes first and from the local repo last.
+    This works better with the behavior changes to drop in many cases.
+  * Do verification of checksums of annex objects downloaded from remotes.
+  * When annex objects are received into git repositories from other git
+    repos, their checksums are verified then too.
+  * To get the old, faster, behavior of not verifying checksums, set
+    annex.verify=false, or remote.<name>.annex-verify=false.
+  * setkey, rekey: These commands also now verify that the provided file
+    matches the expected checksum of the key, unless annex.verify=false.
+  * reinject: Already verified content; this can now be disabled by
+    setting annex.verify=false.
+  * sync, merge, assistant: When git merge failed for a reason other
+    than a conflicted merge, such as a crippled filesystem not allowing
+    particular characters in filenames, git-annex would make a merge commit
+    that could omit such files or otherwise be bad. Fixed by aborting the
+    whole merge process when git merge fails for any reason other than a
+    merge conflict.
+  * Allow building with S3 disabled again.
+  * Ported disk free space checking code to work on Solaris.
+  * Windows webapp: Fix support for entering password when setting
+    up a ssh remote.
+  * copy --auto was checking the wrong repo's preferred content.
+    (--from was checking what --to should, and vice-versa.)
+    Fixed this bug, which was introduced in version 5.20150727.
+  * Avoid unncessary write to the location log when a file is unlocked
+    and then added back with unchanged content.
+  * S3: Fix support for using https.
+  * Avoid displaying network transport warning when a ssh remote
+    does not yet have an annex.uuid set.
+  * Debian: Add torrent library to build-depends as it's packaged now,
+    and stop recommending bittornado | bittorrent.
+  * Debian: Remove build dependency on transformers library, as it is now
+    included in ghc.
+  * Debian: Remote menu file, since a desktop file is provided and
+    lintian says there can be only one.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 19 Oct 2015 13:59:01 -0400
+
 git-annex (5.20150930-1) unstable; urgency=medium
 
   * 

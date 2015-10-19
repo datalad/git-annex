@@ -24,8 +24,6 @@ import Git.SharedRepository
 import qualified Annex
 import Config
 
-import System.Posix.Types
-
 withShared :: (SharedRepository -> Annex a) -> Annex a
 withShared a = a =<< coreSharedRepository <$> Annex.getGitConfig
 

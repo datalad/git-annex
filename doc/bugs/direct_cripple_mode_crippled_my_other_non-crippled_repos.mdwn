@@ -1,0 +1,299 @@
+### Please describe the problem.
+
+I am trying to setup a repo on my external music player, a Nokia N900
+device. It appears as a `vfat` filesystem from the outside, so
+git-annex see it as a "crippled filesystem" and sets up direct mode
+appropriately.
+
+The problem is that for some weird reason, the checkout somewhat fails
+and i'm left with a basically emptied repo. The next `sync` commits
+the removal of all files, and happily pushes that to the other repos,
+pretty much irreversibly, unless i start fiddling with the git
+history.
+
+What's going on?
+
+It seems the problem is because i setup my remote repo from scratch,
+because doing a checkout fails, because the crippled filesystem
+doesn't support files with:
+
+* colons (`:`)
+* question marks (`?`)
+* backslashes (`\`)
+* double quotes (`"`)
+* stars (`*`)
+* irregular encoding (i.e. non-UTF8)
+
+I have found the following tools to be useful to cleanup the filesystem:
+
+* [convmv](http://tracker.debian.org/convmv) can massively re-encode filenames and may also be able to fix all the issues above, but i didn't test that
+* [rename](http://tracker.debian.org/rename) can massively rename files according to certain patterns, I have used:
+
+    rename 's/\?//' *
+    rename 's/://' *
+    rename 's/\\//' *
+    rename 's/"//' *
+    rename 's/*//' *
+    git add -A .
+
+Similar issues:
+
+* windows bugs:
+  * [[bugs/Can__39__t_clone_on_Windows_because_some_filenames_have_a_colon_in_them/]]
+  * [[bugs/Windows:_can__39__t_clone_repository/]]
+* more general feature request:
+  [[forum/Wishlist:_rename_files__47__dirs_w__47___special_characters_if_filesystem_is_FAT/]]
+
+The above issue specifically request that files with "special" characters be supported in vFAT or even Windows, but here is a different issue: I am worried about potential data loss and lack of anti-foot-shooting device in case a user adds an external hard drive or USB key that are widely formatted as vFAT and then triggers destruction of all files (after garbage collection).
+
+### What steps will reproduce the problem?
+
+<pre>
+git init nokia-n900/repo
+cd nokia-n900/repo
+git annex init
+git remote add /srv/mp3
+git annex sync # sets up a synced/master branch with no files on the remote repo
+cd /srv/mp3
+git annex sync # commits the removal of all files
+</pre>
+
+I didn't expect that to fail: a test run here doesn't delete files on /srv/mp3...
+
+### What version of git-annex are you using? On what operating system?
+
+5.20141125, debian jessie.
+
+### Please provide any additional information below.
+
+Complete trace:
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+[986]anarcat@marcos:~130$ cd /media/anarcat/Nokia\ N900/.sounds/
+
+[1026]anarcat@marcos:.sounds130$ git init mp3-test
+Dépôt Git vide initialisé dans /media/anarcat/Nokia N900/.sounds/mp3-test/.git/
+[1027]anarcat@marcos:.sounds$ cd mp3-test
+[1028]anarcat@marcos:mp3-test$ git annex init
+init
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+
+  Enabling direct mode.
+ok
+(Recording state in git...)
+[1029]anarcat@marcos:mp3-test$ git remote add origin /srv/mp3
+[1030]anarcat@marcos:mp3-test$ git annex sync
+commit  ok
+pull origin
+warning: no common commits
+remote: Décompte des objets: 721895, fait.
+remote: Compression des objets: 100% (194286/194286), fait.
+remote: Total 721895 (delta 565247), reused 660087 (delta 526635)
+Réception d'objets: 100% (721895/721895), 53.76 MiB | 5.45 MiB/s, fait.
+Résolution des deltas: 100% (565247/565247), fait.
+Depuis /srv/mp3
+ * [nouvelle branche] git-annex  -> origin/git-annex
+ * [nouvelle branche] master     -> origin/master
+ * [nouvelle branche] synced/git-annex -> origin/synced/git-annex
+ * [nouvelle branche] synced/master -> origin/synced/master
+
+error: unable to create file Dri/Dirty Rotten LP/04 -  Why?.mp3 (Argument invalide)
+error: unable to create file Dri/Dirty Rotten LP/07 -  Who Am I?.mp3 (Argument invalide)
+error: unable to create file Dysrhythmia/Barriers and Passages/10 - Will the Spirit Prevail?.ogg (Argument invalide)
+error: unable to create file Ella Fitzgerald/Pure Ella/Ella Fitzgerald - Pure Ella - 06 - How Long Has This Been Going On?.ogg (Argument invalide)
+error: unable to create file Ella Fitzgerald/Pure Ella/Ella Fitzgerald - Pure Ella - 10 - What Is There to Say?.ogg (Argument invalide)
+error: unable to create file Ella Fitzgerald/Pure Ella/Ella Fitzgerald - Pure Ella - 19 - Baby, What Else Can I Do?.ogg (Argument invalide)
+error: unable to create file Ella Fitzgerald/The Best of The Song Books/Ella Fitzgerald - The Best of The Song Books - 14 - Why Was I Born? (Jan 6, 1963 in L.A.).ogg (Argument invalide)
+error: unable to create file Fantomas/Fantomas/01 - Book 1: Page 1.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/02 - Book 1: Page 2.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/03 - Book 1: Page 3.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/04 - Book 1: Page 4.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/05 - Book 1: Page 5.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/06 - Book 1: Page 6.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/07 - Book 1: Page 7.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/08 - Book 1: Page 8.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/09 - Book 1: Page 9.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/10 - Book 1: Page 10.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/11 - Book 1: Page 11.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/12 - Book 1: Page 12.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/13 - Book 1: Page 13.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/14 - Book 1: Page 14.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/15 - Book 1: Page 15.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/16 - Book 1: Page 16.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/17 - Book 1: Page 17.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/18 - Book 1: Page 18.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/19 - Book 1: Page 19.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/20 - Book 1: Page 20.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/21 - Book 1: Page 21.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/22 - Book 1: Page 22.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/23 - Book 1: Page 23.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/24 - Book 1: Page 24.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/25 - Book 1: Page 25.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/26 - Book 1: Page 26.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/27 - Book 1: Page 27.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/28 - Book 1: Page 28.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/29 - Book 1: Page 29.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/30 - Book 1: Page 30.mp3 (Argument invalide)
+error: unable to create file Fantomas/The Director's Cut/11 - Henry: Portrait Of A Serial Ki.mp3 (Argument invalide)
+error: unable to create file Fantomas/The Director's Cut/15 - Twin Peaks: Fire Walk With Me.mp3 (Argument invalide)
+error: unable to create file Fantomas/The Director's Cut/Fant�mas - The Director's Cut.m3u (Argument invalide)
+error: unable to create file Francois Perusse/Parodie "La Fureur".mp3 (Argument invalide)
+error: unable to create file Frank zappa/Fillmore East, June 1971/Frank Zappa & The Mothers Of Invention - Fillmore East, June 1971 - 03 - What Kind Of Girl Do You Think We Are?.ogg (Argument invalide)
+error: unable to create file Frank zappa/Fillmore East, June 1971/Frank Zappa & The Mothers Of Invention - Fillmore East, June 1971 - 07 - Do You Like My New Car?.ogg (Argument invalide)
+fatal: cannot create directory at 'Frank zappa/Joe's Garage: Acts I, II & III': Argument invalide
+failed
+(merging origin/git-annex into git-annex...)
+(Recording state in git...)
+push origin
+Décompte des objets: 6, fait.
+Delta compression using up to 2 threads.
+Compression des objets: 100% (5/5), fait.
+Écriture des objets: 100% (6/6), 700 bytes | 0 bytes/s, fait.
+Total 6 (delta 2), reused 1 (delta 0)
+To /srv/mp3
+   26fc58f..63cfaf8  git-annex -> synced/git-annex
+   76ec411..8458b14  annex/direct/master -> synced/master
+ok
+git-annex: sync: 1 failed
+[1052]anarcat@marcos:annex$ git annex sync
+commit  ok
+pull origin
+ok
+push origin
+Everything up-to-date
+ok
+# End of transcript or log.
+"""]]
+
+Now on the remote repo, it destroys everything:
+
+<pre>
+$ cd /srv/mp3
+$ git annex sync
+[ backlog lost, because of the sheer number of files deleted ]
+$ git diff --stat 91fda32 | tail -1
+ 21923 files changed, 21923 deletions(-)
+$ # 91fda32 is the last known good commit on the master branch there
+</pre>
+
+Boom! Doing the following restores some sanity:
+
+<pre>
+$ git reset --hard 91fda32
+$ git branch -D synced/master
+$ git annex sync
+</pre>
+
+On the direct repo, now sync doesn't destroy anything, but then again,
+there are no files either. Eventually, after enough `sync` commands,
+the destruction will return...
+
+A clone also fails similarly, which is why i was trying with the
+"clean init" approach:
+
+<pre>
+[1032]anarcat@marcos:.sounds$ git clone /srv/mp3 mp3-clone
+Clonage dans 'mp3-clone'...
+fait.
+error: unable to create file Dri/Dirty Rotten LP/04 -  Why?.mp3 (Argument invalide)
+error: unable to create file Dri/Dirty Rotten LP/07 -  Who Am I?.mp3 (Argument invalide)
+error: unable to create file Dysrhythmia/Barriers and Passages/10 - Will the Spirit Prevail?.ogg (Argument invalide)
+error: unable to create file Ella Fitzgerald/Pure Ella/Ella Fitzgerald - Pure Ella - 06 - How Long Has This Been Going On?.ogg (Argument invalide)
+error: unable to create file Ella Fitzgerald/Pure Ella/Ella Fitzgerald - Pure Ella - 10 - What Is There to Say?.ogg (Argument invalide)
+error: unable to create file Ella Fitzgerald/Pure Ella/Ella Fitzgerald - Pure Ella - 19 - Baby, What Else Can I Do?.ogg (Argument invalide)
+error: unable to create file Ella Fitzgerald/The Best of The Song Books/Ella Fitzgerald - The Best of The Song Books - 14 - Why Was I Born? (Jan 6, 1963 in L.A.).ogg (Argument invalide)
+Extraction des fichiers:  24% (5433/21923)
+[...]
+[1036]anarcat@marcos:.sounds130$ git clone /srv/mp3 mp3-clone
+Clonage dans 'mp3-clone'...
+fait.
+error: unable to create file Dri/Dirty Rotten LP/04 -  Why?.mp3 (Argument invalide)
+error: unable to create file Dri/Dirty Rotten LP/07 -  Who Am I?.mp3 (Argument invalide)
+error: unable to create file Dysrhythmia/Barriers and Passages/10 - Will the Spirit Prevail?.ogg (Argument invalide)
+error: unable to create file Ella Fitzgerald/Pure Ella/Ella Fitzgerald - Pure Ella - 06 - How Long Has This Been Going On?.ogg (Argument invalide)
+error: unable to create file Ella Fitzgerald/Pure Ella/Ella Fitzgerald - Pure Ella - 10 - What Is There to Say?.ogg (Argument invalide)
+error: unable to create file Ella Fitzgerald/Pure Ella/Ella Fitzgerald - Pure Ella - 19 - Baby, What Else Can I Do?.ogg (Argument invalide)
+error: unable to create file Ella Fitzgerald/The Best of The Song Books/Ella Fitzgerald - The Best of The Song Books - 14 - Why Was I Born? (Jan 6, 1963 in L.A.).ogg (Argument invalide)
+error: unable to create file Fantomas/Fantomas/01 - Book 1: Page 1.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/02 - Book 1: Page 2.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/03 - Book 1: Page 3.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/04 - Book 1: Page 4.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/05 - Book 1: Page 5.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/06 - Book 1: Page 6.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/07 - Book 1: Page 7.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/08 - Book 1: Page 8.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/09 - Book 1: Page 9.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/10 - Book 1: Page 10.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/11 - Book 1: Page 11.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/12 - Book 1: Page 12.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/13 - Book 1: Page 13.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/14 - Book 1: Page 14.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/15 - Book 1: Page 15.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/16 - Book 1: Page 16.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/17 - Book 1: Page 17.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/18 - Book 1: Page 18.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/19 - Book 1: Page 19.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/20 - Book 1: Page 20.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/21 - Book 1: Page 21.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/22 - Book 1: Page 22.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/23 - Book 1: Page 23.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/24 - Book 1: Page 24.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/25 - Book 1: Page 25.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/26 - Book 1: Page 26.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/27 - Book 1: Page 27.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/28 - Book 1: Page 28.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/29 - Book 1: Page 29.mp3 (Argument invalide)
+error: unable to create file Fantomas/Fantomas/30 - Book 1: Page 30.mp3 (Argument invalide)
+error: unable to create file Fantomas/The Director's Cut/11 - Henry: Portrait Of A Serial Ki.mp3 (Argument invalide)
+error: unable to create file Fantomas/The Director's Cut/15 - Twin Peaks: Fire Walk With Me.mp3 (Argument invalide)
+error: unable to create file Fantomas/The Director's Cut/Fant�mas - The Director's Cut.m3u (Argument invalide)
+error: unable to create file Francois Perusse/Parodie "La Fureur".mp3 (Argument invalide)
+error: unable to create file Frank zappa/Fillmore East, June 1971/Frank Zappa & The Mothers Of Invention - Fillmore East, June 1971 - 03 - What Kind Of Girl Do You Think We Are?.ogg (Argument invalide)
+error: unable to create file Frank zappa/Fillmore East, June 1971/Frank Zappa & The Mothers Of Invention - Fillmore East, June 1971 - 07 - Do You Like My New Car?.ogg (Argument invalide)
+fatal: cannot create directory at 'Frank zappa/Joe's Garage: Acts I, II & III': Argument invalide
+warning: Le clone a réussi, mais l'extraction a échoué.
+Vous pouvez inspecter ce qui a été extrait avec 'git status'
+et réessayer l'extraction avec 'git checkout -f HEAD'
+</pre>
+
+Besides, `clone` creates actually seems to create and transfer all the files and setup direct mode (!?), which takes up too much space on this external drive...
+
+Interestingly, i have managed to clone the repo by cleaning up a lot of space and fixing the above errors. Interestingly, the git clone is only 2GB while the original repo is closer to 110GB. There's nevertheless a bunch of files checked out, and obviously, enabling git-annex on the repo gives the predictable:
+
+<pre>
+$ git annex sync
+
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+
+  Enabling direct mode.
+git-annex: /media/anarcat/Nokia N900/.sounds/mp3-clone/.git/annex/objects/cec/e45/SHA256E-s3547512--6d0b48b144ba58cf649134c7b4d6597f4e0c5f319302f1c109d0967f22af607a.mp3: createDirectory: resource exhausted (No space left on device)
+</pre>
+
+... and leaves the repo in an inconsistent state again. Also note that the above took over 2 hours of wall clock time before failing.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Git-annex has been my bread and butter for a few months in the past
+year. I absolutely love it and it generally makes my life much easier
+when dealing with large files. Direct mode sometimes drives me nuts,
+but it certainly is more the fault to the damn crippled filesystems
+than git-annex's fault for sure. :)
+
+Arguably, the above problems are partly due to me assuming that
+git-annex will work well on crippled filesystems, regardless of my
+dataset, which maybe an inaccurate assumption.
+
+Thanks for all your hard work! --[[anarcat]]
+
+> [[fixed|done]]

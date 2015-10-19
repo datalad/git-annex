@@ -53,7 +53,7 @@ genBackend :: Hash -> Backend
 genBackend hash = Backend
 	{ name = hashName hash
 	, getKey = keyValue hash
-	, fsckKey = Just $ checkKeyChecksum hash
+	, verifyKeyContent = Just $ checkKeyChecksum hash
 	, canUpgradeKey = Just needsUpgrade
 	, fastMigrate = Just trivialMigrate
 	, isStableKey = const True
@@ -116,7 +116,7 @@ checkKeyChecksum hash key file = go `catchHardwareFault` hwfault
 		case (mstat, fast) of
 			(Just stat, False) -> do
 				filesize <- liftIO $ getFileSize' file stat
-				showSideAction "checksum"
+				showAction "checksum"
 				check <$> hashFile hash file filesize
 			_ -> return True
 	expected = keyHash key

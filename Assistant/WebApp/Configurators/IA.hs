@@ -15,15 +15,15 @@ import qualified Assistant.WebApp.Configurators.AWS as AWS
 import qualified Remote.S3 as S3
 import qualified Remote.Helper.AWS as AWS
 import Assistant.WebApp.MakeRemote
-#endif
 import qualified Remote
 import qualified Types.Remote as Remote
 import Types.StandardGroups
-import Types.Remote (RemoteConfig)
 import Logs.Remote
+import Assistant.Gpg
+#endif
+import Types.Remote (RemoteConfig)
 import qualified Annex.Url as Url
 import Creds
-import Assistant.Gpg
 
 import qualified Data.Text as T
 import qualified Data.Map as M

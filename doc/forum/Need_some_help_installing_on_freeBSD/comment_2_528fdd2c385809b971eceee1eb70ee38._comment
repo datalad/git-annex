@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="ovidiu@66ace8a8d99ce938b0538ffa0f26d30db02a9626"
+ nickname="ovidiu"
+ subject="comment 2"
+ date="2015-10-05T19:07:51Z"
+ content="""
+oh, and once I closed the webapp, I saw on the console that it needed more info:
+
+git config --global user.email \"you@example.com\"
+git config --global user.name \"Your Name\"
+"""]]

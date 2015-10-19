@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="ptspts@d0db5f2b8c4e6befae8899f31c117d093913f43e"
+ nickname="ptspts"
+ subject="renaming oesn't work as expected when changing the extension"
+ date="2015-10-15T08:54:08Z"
+ content="""
+I tried to rename a `.gif` file to `.jpg`:
+
+    $ git annex version
+    git-annex version: 5.20140127
+    build flags: S3 DBus Feeds Quvi TDFA CryptoHash
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web tahoe glacier hook external
+    local repository version: 5
+    supported repository version: 5
+    upgrade supported from repository versions: 0 1 2 4
+    $ find .git/annex/objects -type f
+    .git/annex/objects/JW/wq/SHA256E-s231374848--01ca5e0bb09d068f15ccbf9b064b72f573198bd7516ff8edc72e455a09bf9bd4.gif/SHA256E-s231374848--01ca5e0bb09d068f15ccbf9b064b72f573198bd7516ff8edc72e455a09bf9bd4.gif
+    $ git mv foo.gif foo.jpg
+    $ git commit -a -m renamed
+    ...
+    $ git annex fsck
+    ...
+    $ find .git/annex/objects -type f
+    .git/annex/objects/JW/wq/SHA256E-s231374848--01ca5e0bb09d068f15ccbf9b064b72f573198bd7516ff8edc72e455a09bf9bd4.gif/SHA256E-s231374848--01ca5e0bb09d068f15ccbf9b064b72f573198bd7516ff8edc72e455a09bf9bd4.gif
+    $ ls -l foo.jpg
+    lrwxrwxrwx 1 pts pts 202 Oct 15 10:36 foo.jpg -> .git/annex/objects/JW/wq/SHA256E-s231374848--01ca5e0bb09d068f15ccbf9b064b72f573198bd7516ff8edc72e455a09bf9bd4.gif/SHA256E-s231374848--01ca5e0bb09d068f15ccbf9b064b72f573198bd7516ff8edc72e455a09bf9bd4.gif
+
+I would expect that the last extension printed is .jpg, rather than .gif. How do I make git-annex fix that, preferably without calling `git annex fsck`, which is very slow, because it rehashes the file?
+
+"""]]

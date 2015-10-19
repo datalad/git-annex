@@ -14,8 +14,8 @@ which should be an already annexed file whose content is not present.
 This can be useful if you have obtained the content of a file from
 elsewhere and want to put it in the local annex.
 
-Automatically runs fsck on dest to check that the expected content was
-provided.
+Verifies that the src file's content matches with the content that the dest
+file is expected to have, and refuses to reinject it otherwise.
 
 Example:
 

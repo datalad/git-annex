@@ -53,9 +53,11 @@ import Annex.Path
 import Creds
 import Annex.CatFile
 import Messages.Progress
+import Types.NumCopies
 
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
+import Control.Concurrent.Async
 import qualified Data.Map as M
 import Network.URI
 
@@ -142,6 +144,7 @@ gen r u c gc
 			, retrieveKeyFile = copyFromRemote new
 			, retrieveKeyFileCheap = copyFromRemoteCheap new
 			, removeKey = dropKey new
+			, lockContent = Just (lockKey new)
 			, checkPresent = inAnnex new
 			, checkPresentCheap = repoCheap r
 			, whereisKey = Nothing
@@ -218,7 +221,7 @@ tryGitConfigRead autoinit r
 		v <- Git.Config.fromPipe r cmd params
 		case v of
 			Right (r', val) -> do
-				when (getUncachedUUID r' == NoUUID && not (null val)) $ do
+				unless (isUUIDConfigured r' || null val) $ do
 					warningIO $ "Failed to get annex.uuid configuration of repository " ++ Git.repoDescribe r
 					warningIO $ "Instead, got: " ++ show val
 					warningIO $ "This is unexpected; please check the network transport!"
@@ -350,7 +353,7 @@ dropKey r key
 			commitOnCleanup r $ onLocal r $ do
 				ensureInitialized
 				whenM (Annex.Content.inAnnex key) $ do
-					Annex.Content.lockContent key
+					Annex.Content.lockContentForRemoval key
 						Annex.Content.removeAnnex
 					logStatus key InfoMissing
 					Annex.Content.saveState True
@@ -358,14 +361,72 @@ dropKey r key
 	| Git.repoIsHttp (repo r) = error "dropping from http remote not supported"
 	| otherwise = commitOnCleanup r $ Ssh.dropKey (repo r) key
 
+lockKey :: Remote -> Key -> (VerifiedCopy -> Annex r) -> Annex r
+lockKey r key callback
+	| not $ Git.repoIsUrl (repo r) =
+		guardUsable (repo r) failedlock $ do
+			inorigrepo <- Annex.makeRunner
+			-- Lock content from perspective of remote,
+			-- and then run the callback in the original
+			-- annex monad, not the remote's.
+			onLocal r $ 
+				Annex.Content.lockContentShared key $ \vc ->
+					ifM (Annex.Content.inAnnex key)
+						( liftIO $ inorigrepo $ callback vc
+						, failedlock
+						)
+	| Git.repoIsSsh (repo r) = do
+		showLocking r
+		Just (cmd, params) <- Ssh.git_annex_shell (repo r) "lockcontent"
+			[Param $ key2file key] []
+		(Just hin, Just hout, Nothing, p) <- liftIO $ 
+			withFile devNull WriteMode $ \nullh ->
+				createProcess $
+					 (proc cmd (toCommand params))
+						{ std_in = CreatePipe
+						, std_out = CreatePipe
+						, std_err = UseHandle nullh
+						}
+		-- Wait for either the process to exit, or for it to
+		-- indicate the content is locked.
+		v <- liftIO $ race 
+			(waitForProcess p)
+			(hGetLine hout)
+		let signaldone = void $ tryNonAsync $ liftIO $ do
+			hPutStrLn hout ""
+			hFlush hout
+			hClose hin
+			hClose hout
+			void $ waitForProcess p
+		let checkexited = not . isJust <$> getProcessExitCode p
+		case v of
+			Left _exited -> do
+				showNote "lockcontent failed"
+				liftIO $ do
+					hClose hin
+					hClose hout
+				failedlock
+			Right l 
+				| l == Ssh.contentLockedMarker -> bracket_
+					noop
+					signaldone 
+					(withVerifiedCopy LockedCopy r checkexited callback)
+				| otherwise -> do
+					showNote "lockcontent failed"
+					signaldone
+					failedlock
+	| otherwise = failedlock
+  where
+	failedlock = error "can't lock content"
+
 {- Tries to copy a key's content from a remote's annex to a file. -}
-copyFromRemote :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
+copyFromRemote :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
 copyFromRemote r key file dest p = parallelMetered (Just p) key file $
 	copyFromRemote' r key file dest
 
-copyFromRemote' :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
+copyFromRemote' :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
 copyFromRemote' r key file dest meterupdate
-	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) (return False) $ do
+	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) (unVerified (return False)) $ do
 		params <- Ssh.rsyncParams r Download
 		u <- getUUID
 		hardlink <- wantHardLink
@@ -374,17 +435,17 @@ copyFromRemote' r key file dest meterupdate
 			ensureInitialized
 			v <- Annex.Content.prepSendAnnex key
 			case v of
-				Nothing -> return False
+				Nothing -> return (False, UnVerified)
 				Just (object, checksuccess) -> do
-					copier <- mkCopier hardlink params object dest
+					copier <- mkCopier hardlink params
 					runTransfer (Transfer Download u key)
-						file noRetry noObserver copier
-						<&&> checksuccess
-	| Git.repoIsSsh (repo r) = feedprogressback $ \feeder -> do
+						file noRetry noObserver 
+						(\p -> copier object dest p checksuccess)
+	| Git.repoIsSsh (repo r) = unVerified $ feedprogressback $ \feeder -> do
 		direct <- isDirect
 		Ssh.rsyncHelper (Just feeder) 
 			=<< Ssh.rsyncParamsRemote direct r Download key dest file
-	| Git.repoIsHttp (repo r) = Annex.Content.downloadUrl (keyUrls r key) dest
+	| Git.repoIsHttp (repo r) = unVerified $ Annex.Content.downloadUrl (keyUrls r key) dest
 	| otherwise = error "copying from non-ssh, non-http remote not supported"
   where
 	{- Feed local rsync's progress info back to the remote,
@@ -461,8 +522,8 @@ copyFromRemoteCheap r key af file
 			)
 	| Git.repoIsSsh (repo r) =
 		ifM (Annex.Content.preseedTmp key file)
-			( parallelMetered Nothing key af $
-				copyFromRemote' r key af file
+			( fst <$> parallelMetered Nothing key af
+				(copyFromRemote' r key af file)
 			, return False
 			)
 	| otherwise = return False
@@ -500,10 +561,12 @@ copyToRemote' r key file p
 			( return True
 			, do
 				ensureInitialized
+				copier <- mkCopier hardlink params
+				let verify = Annex.Content.RemoteVerify r
 				runTransfer (Transfer Download u key) file noRetry noObserver $ const $
 					Annex.Content.saveState True `after`
-						Annex.Content.getViaTmpChecked (liftIO checksuccessio) key
-							(\dest -> mkCopier hardlink params object dest >>= \a -> a p)
+						Annex.Content.getViaTmp verify key
+							(\dest -> copier object dest p (liftIO checksuccessio))
 			)
 
 fsckOnRemote :: Git.Repo -> [CommandParam] -> Annex (IO Bool)
@@ -615,19 +678,34 @@ commitOnCleanup r a = go `after` a
 wantHardLink :: Annex Bool
 wantHardLink = (annexHardLink <$> Annex.getGitConfig) <&&> (not <$> isDirect)
 
+-- Copies from src to dest, updating a meter. If the copy finishes
+-- successfully, calls a final check action, which must also success, or
+-- returns false.
+--
 -- If either the remote or local repository wants to use hard links,
--- the copier will do so, falling back to copying.
-mkCopier :: Bool -> [CommandParam] -> FilePath -> FilePath -> Annex (MeterUpdate -> Annex Bool)
-mkCopier remotewanthardlink rsyncparams object dest = do
-	let copier = rsyncOrCopyFile rsyncparams object dest
+-- the copier will do so (falling back to copying if a hard link cannot be
+-- made).
+--
+-- When a hard link is created, returns Verified; the repo being linked
+-- from is implicitly trusted, so no expensive verification needs to be
+-- done.
+type Copier = FilePath -> FilePath -> MeterUpdate -> Annex Bool -> Annex (Bool, Verification)
+
+mkCopier :: Bool -> [CommandParam] -> Annex Copier
+mkCopier remotewanthardlink rsyncparams = do
+	let copier = \src dest p check -> unVerified $
+		rsyncOrCopyFile rsyncparams src dest p <&&> check
 #ifndef mingw32_HOST_OS
 	localwanthardlink <- wantHardLink
-	let linker = createLink object dest >> return True
+	let linker = \src dest -> createLink src dest >> return True
 	ifM (pure (remotewanthardlink || localwanthardlink) <&&> not <$> isDirect)
-		( return $ \m -> liftIO (catchBoolIO linker)
-			<||> copier m
+		( return $ \src dest p check ->
+			ifM (liftIO (catchBoolIO (linker src dest)))
+				( return (True, Verified)
+				, copier src dest p check
+				)
 		, return copier
 		)
 #else
-	return copier
+	return $ if remotewanthardlink then copier else copier
 #endif

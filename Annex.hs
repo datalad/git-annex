@@ -13,6 +13,7 @@ module Annex (
 	new,
 	run,
 	eval,
+	makeRunner,
 	getState,
 	changeState,
 	withState,
@@ -202,6 +203,13 @@ eval :: AnnexState -> Annex a -> IO a
 eval s a = do
 	mvar <- newMVar s
 	runReaderT (runAnnex a) mvar
+
+{- Makes a runner action, that allows diving into IO and from inside
+ - the IO action, running an Annex action. -}
+makeRunner :: Annex (Annex a -> IO a)
+makeRunner = do
+	mvar <- ask
+	return $ \a -> runReaderT (runAnnex a) mvar
 
 getState :: (AnnexState -> v) -> Annex v
 getState selector = do

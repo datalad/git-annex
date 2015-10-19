@@ -191,7 +191,7 @@ dailyCheck urlrenderer = do
 	void $ liftAnnex $ setUnusedKeys unused
 	forM_ unused $ \k -> do
 		unlessM (queueTransfers "unused" Later k Nothing Upload) $
-			handleDrops "unused" True k Nothing Nothing
+			handleDrops "unused" True k Nothing []
 
 	return True
   where

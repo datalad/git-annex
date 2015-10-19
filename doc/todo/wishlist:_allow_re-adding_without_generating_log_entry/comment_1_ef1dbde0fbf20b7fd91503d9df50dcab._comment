@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-10-12T17:17:12Z"
+ content="""
+I want to think a little bit about why the location log is updated in this
+case before thinking about adding an option. It might make sense to just
+not update the location log when it already says the file is present and
+only the timestamp is being changed.
+
+I can think of 2 reasons not to do it:
+
+1. If it has to query the current state of the log, that might slow down
+   `git annex add` in the common case, just for this less common case.
+
+   But, updating the log necessarily involves reading it in and outputting
+   an updated one, so that could probably be finessed.
+
+   (Or, git annex add makes a separate pass to add unlocked files anyway,
+   so it could only do the query in that case.)
+
+2. There might be good reasons to want to update the timestamp in the log,
+   since it's just verified that the content is still present. Maybe.
+
+   But then, fsck doesn't update the timestamps when it does the same kind
+   of verification. And, the only thing that updates a given repo's entry
+   in the log is that repo, or another repo that is sending or dropping
+   content from that repo. 
+   
+   There don't seem to be any reasons of
+   distributed consistency to need to worry about updating the timestamp
+   just to reflect current facts.
+"""]]

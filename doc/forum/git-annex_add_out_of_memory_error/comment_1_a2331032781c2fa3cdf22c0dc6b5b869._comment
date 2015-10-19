@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-10-06T19:31:44Z"
+ content="""
+This message about "getdelim" comes from git, not git-annex. It seems
+git hash-object is what's running out of memory, and probably
+when it's processing its input from stdin.
+
+That's pretty strange. git-annex just passes some filenames to git
+hash-object. Unless the system is for some reason very low on memory,
+it shouldn't choke on such a small input as a filename.
+
+This seems likely to be a git bug, so what version of git? Perhaps
+try a newer one..
+
+(Re: P.S.: It's normal for files in .git/annex/objects to not
+have write access.)
+"""]]

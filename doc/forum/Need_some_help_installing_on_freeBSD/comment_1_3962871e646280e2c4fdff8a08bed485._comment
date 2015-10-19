@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="ovidiu@66ace8a8d99ce938b0538ffa0f26d30db02a9626"
+ nickname="ovidiu"
+ subject="comment 1"
+ date="2015-10-05T18:53:20Z"
+ content="""
+it also seems like the git annex webapp command needs lsof, had to install it separately.
+
+I then figured out one has to start the webapp with a listen command to prevent it from opening a browser.
+*git annex webapp --listen=internal_IP*
+
+Not sure how this option will work: Start the git-annex assistant at boot or on login. - as I assume I get a different auth URL with every start?
+Any help available to get *git annex webapp --listen=internal_IP* to auto-start with every reboot?
+"""]]

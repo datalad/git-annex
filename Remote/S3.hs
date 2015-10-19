@@ -21,8 +21,8 @@ import qualified Data.ByteString as S
 import qualified Data.Map as M
 import Data.Char
 import Network.Socket (HostName)
-import Network.HTTP.Conduit (Manager, newManager, closeManager)
-import Network.HTTP.Client (defaultManagerSettings, managerResponseTimeout, responseStatus, responseBody, RequestBody(..))
+import Network.HTTP.Conduit (Manager, newManager)
+import Network.HTTP.Client (managerResponseTimeout, responseStatus, responseBody, RequestBody(..))
 import Network.HTTP.Types
 import Control.Monad.Trans.Resource
 import Control.Monad.Catch
@@ -48,7 +48,7 @@ import Utility.Metered
 import Utility.DataUnits
 import Annex.Content
 import Annex.Url (withUrlOptions)
-import Utility.Url (checkBoth)
+import Utility.Url (checkBoth, managerSettings, closeManager)
 
 type BucketName = String
 
@@ -81,6 +81,7 @@ gen r u c gc = do
 			, retrieveKeyFile = retreiveKeyFileDummy
 			, retrieveKeyFileCheap = retrieveCheap
 			, removeKey = removeKeyDummy
+			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
 			, whereisKey = Just (getWebUrls info)
@@ -417,7 +418,7 @@ withS3HandleMaybe c u a = do
 		Nothing -> a Nothing
   where
 	s3cfg = s3Configuration c
-	httpcfg = defaultManagerSettings
+	httpcfg = managerSettings
 		{ managerResponseTimeout = Nothing }
 
 s3Configuration :: RemoteConfig -> S3.S3Configuration AWS.NormalQuery

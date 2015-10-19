@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-10-04T19:13:59Z"
+ content="""
+Happy to support all BSD varients that tested patches can be made for.
+
+I can't apply this patch as-is for several reasons:
+
+* You say you've not tested it yet.
+* I recently modified the file to add support for Solaris, and your patch conflicts with that modification.
+* Your patch in passing changes the FreeBSD support to use the
+  statfs64 structure. AFAIK that has not been tested.
+* I think you also broke Android by moving it below the Linux tests.
+  The linux tests will probably fire on android, but the linux code
+  doesn't work with the android libc.
+
+Your patch would be better if it clearly added support for an OS
+(or standard) without touching and breaking existing code that
+supports other OSes.
+
+Thanks!
+"""]]

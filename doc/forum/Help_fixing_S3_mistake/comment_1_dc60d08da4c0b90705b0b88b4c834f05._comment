@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="darkfeline"
+ subject="comment 1"
+ date="2015-10-13T05:24:25Z"
+ content="""
+A and B have different UUIDs, and they point to the same S3 bucket (I realize I may have done something bad here).
+
+I still have the UUID for B (but not attached to a remote); is it possible to merge git annex's knowledge of B into A, or otherwise re-initialize B?
+"""]]

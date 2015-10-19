@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Agenta"
+ subject="not easy to access history"
+ date="2015-10-02T13:16:30Z"
+ content="""
+Another limitation is that it is not easy to access files history and to recover previous versions of a file. I have \"solved\" that by taking a snapshot of my repo every night with bup:
+https://github.com/bup/bup
+"""]]

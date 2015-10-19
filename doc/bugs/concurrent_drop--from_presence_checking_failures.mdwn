@@ -1,0 +1,398 @@
+Concurrent dropping of a file has problems when drop --from is
+used. (Also when the assistant or sync --content decided to drop from a
+remote.)
+
+> Now [[fixed|done]] --[[Joey]]
+
+[[!toc]]
+
+# refresher
+
+First, let's remember how it works in the case where we're just dropping
+from 2 repos concurrently. git-annex uses locking to detect and prevent
+data loss:
+
+<pre>
+Two repos, each with a file:
+
+A (has)
+B (has)
+
+A wants from drop from A         B wants to drop from B
+A locks it                       B locks it
+A checks if B has it             B checks if A has it
+  (does, but locked, so fails)     (does, but locked, so fails)
+A fails to drop it               B fails to drop it
+
+The two processes are racing, so there are other orderings to
+consider, for example:
+
+A wants from drop from A        B wants to drop from B
+A locks it                     
+A checks if B has it (succeeds)
+A drops it from A               B locks it 
+                                B checks if A has it (fails)
+                                B fails to drop it
+
+Which is also ok.
+
+A wants from drop from A        B wants to drop from B
+A locks it                     
+A checks if B has it (succeeds)
+                                B locks it           
+                                B checks if A has it
+                                  (does, but locked, so fails)
+A drops it                      B fails to drop it
+
+Yay, still ok.
+</pre>
+
+Locking works in those cases to prevent concurrent dropping of a file.
+
+# the bug
+
+But, when drop --from is used, the locking doesn't work:
+
+<pre>
+Two repos, each with a file:
+
+A (has)
+B (has)
+
+A wants to drop from B                  B wants to drop from A
+A checks to see if A has it (succeeds)  B checks to see if B has it (succeeds)
+A tells B to drop it                    B tells A to drop it
+B locks it, drops it                    A locks it, drops it
+
+No more copies remain!
+</pre>
+
+Verified this one in the wild (adding an appropriate sleep to force the
+race).
+
+Best fix here seems to be for A to lock the content on A
+as part of its check of numcopies, and keep it locked
+while it's asking B to drop it. Then when B tells A to drop it,
+it'll be locked and that'll fail (and vice-versa).
+
+> Done, and verified the fix works in this situation.
+
+# the bug part 2
+
+<pre>
+Three repos; C might be a special remote, so w/o its own locking:
+
+A       C (has)
+B (has)
+
+A wants to drop from C         B wants to drop from B
+                               B locks it
+A checks if B has it           B checks if C has it (does)
+ (does, but locked, so fails)  B drops it
+
+Copy remains in C. But, what if the race goes the other way?
+
+A wants to drop from C          B wants to drop from B
+A checks if B has it (succeeds)
+A drops it from C               B locks it
+                                B checks if C has it (does not)
+
+So ok, but then:
+
+A wants to drop from C          B wants to drop from B
+A checks if B has it (succeeds)
+                                B locks it
+                                B checks if C has it (does)
+A drops it from C               B drops it from B
+
+No more copies remain!
+</pre>
+
+To fix this, seems that A should not just check if B has it, but lock
+the content on B and keep it locked while A is dropping from C.
+This would prevent B dropping the content from itself while A is in the
+process of dropping from C.
+
+That would mean replacing the call to `git-annex-shell inannex`
+with a new command that locks the content.
+
+Note that this is analgous to the fix above; in both cases
+the change is from checking if content is in a location, to locking it in
+that location while performing a drop from another location.
+
+> Done, and verified the fix works in this situation.
+
+# the bug part 3 (where it gets really nasty)
+
+<pre>
+4 repos; C and D might be special remotes, so w/o their own locking:
+
+A      C (has)
+B      D (has)
+
+B wants to drop from C        A wants to drop from D
+B checks if D has it (does)   A checks if C has it (does)
+B drops from C                A drops from D
+
+No more copies remain!
+</pre>
+
+How do we get locking in this case?
+
+Adding locking to C and D is not a general option, because special remotes
+are dumb key/value stores; they may have no locking operations.
+
+## a solution: remote locking
+
+What could be done is, change from checking if the remote has content, to
+trying to lock it there. If the remote doesn't support locking, it can't
+be guaranteed to have a copy. Require N locked copies for a drop to
+succeed.
+
+So, drop --from would no longer be supported in these configurations.
+To drop the content from C, B would have to --force the drop, or move the
+content from C to B, and then drop it from B.
+
+### impact when using assistant/sync --content
+
+Need to consider whether this might cause currently working topologies
+with the assistant/sync --content to no longer work. Eg, might content
+pile up in a transfer remote?
+
+> The assistant checks after any transfer of an object if it should drop
+> it from anywhere. So, it gets/puts, and later drops.
+> Similarly, for sync --content, it first gets, then puts, and finally drops.
+
+> When dropping an object from remotes(s) + local, in `handleDropsFrom`,
+> it drops from local first. So, this would cause content pile-up unless
+> changed.
+> 
+> Also, when numcopies > 1, a toplogy like
+> `A(transfer) -- B(client) -- specials(backup)` would never be able to drop
+> the file from A, because the specials don't support locking and it can't
+> guarantee the content will remain on them.
+> 
+> One solution might be to make sync --content/the assistant generate
+> move operations, which can then ignore numcopies (like `move` does).
+> So, move from A to B and then copy to the specials. 
+> 
+> Using moves does lead to a decrease in robustness. For example, in
+> the topology `A(transfer) -- B(client) -- C (backup)`, with numcopies=2,
+> and C intermittently connected, the current
+> behavior with sync --content/assistant is for an object to reach B
+> and then later C, and only then be removed from A.
+> If moves were used, the object moves from A to B, and so there's only
+> 1 copy instead of the 2 as before, in the interim until C gets connected.
+
+## a solution: minimal remote locking
+
+This avoids needing to special case moves, and has 2 parts.
+
+### to drop from remote
+
+Instead of requiring N locked copies of content when dropping,
+require only 1 locked copy (either the local copy, or a git remote that
+can be locked remotely). Check that content is on the other N-1
+remotes w/o requiring locking (but use it if the remote supports locking).
+
+Unlike using moves, this does not decrease robustness, most of the time;
+barring the kind of race this bug is about, numcopies behaves as desired.
+When there is a race, some of the non-locked copies might be removed,
+dipping below numcopies, but the 1 locked copy remains, so the data is
+never entirely lost.
+
+Dipping below desired numcopies in an unusual race condition, and then
+doing extra work later to recover may be good enough.
+
+> Implemented, and I've now verified this solves the case above.
+> Indeed, neither drop succeeds, because no copy can be locked.
+
+### to drop from local repo
+
+When dropping an object from the local repo, lock it for drop,
+and then verify that N remotes have a copy 
+(without requiring locking on special remotes).
+
+So, this is done exactly as git-annex already does it.
+
+Like dropping from a remote, this can dip below numcopies in a race
+condition involving special remotes. 
+
+But, it's crucial that, despite the lack of locking of 
+content on special remotes, which may be the last copy,
+the last copy never be removed in a race. Is this the case?
+
+We can prove that the last copy is never removed 
+by considering shapes of networks.
+
+1. Networks only connected by single special
+   remotes, and not by git-git repo connections. Such networks are
+   essentially a collection of disconnected smaller networks, each 
+   of the form `R--S`
+2. Like 1, but with more special remotes. `S1--R--S2` etc.
+3. More complicated (and less unusal) are networks with git-git
+   repo connections, and no cycles.
+   These can have arbitrary special remotes connected in too.
+4. Finally, there can be a cycle of git-git connections.
+
+The overall network may be larger and more complicated, but we need only
+concern ourselves with the subset that has a particular object
+or is directly connected to that subset; the rest is not relevant.
+
+So, if we can prove local repo dropping is safe in each of these cases,
+it follows it's safe for arbitrarily complicated networks.
+
+Case 1:
+
+<pre>
+2 essentially disconnected networks, R1--S and R2--S
+
+R1 (has)   S (has)
+R1
+
+R1 wants to drop its local copy     R2 wants to move from S
+R1 locks its copy for drop          R2 copies from S
+R1 checks that S has a copy         R2 locks its copy
+R1 drops its local copy             R2 drops from S
+
+R1 expected S to have the copy, and due to a race with R2,
+S no longer had the copy it expected. But, this is not actually
+a problem, because the copy moved to R2 and so still exists. 
+
+So, this is ok!
+</pre>
+
+Case 2:
+
+<pre>
+2 essentially disconnected networks, S1--R1--S2 and S1--R2--S2
+
+R1(has)        S1 (has)
+R2(has)        S2 (has)
+
+R1 wants to move from S1 to S2    R2 wants to move from S2 to S1
+R1 locks its copy                 R2 locks its copy
+R1 checks that S2 has a copy      R2 checks that S1 has a copy
+R1 drops from S1                  R2 drops from S2
+
+R1 and R2 end up each with a copy still, so this is ok,
+despite S1 and S2 lacking a copy.
+
+If R1/R2 had not had a local copy, they could not have done a remote drop.
+</pre>
+
+(Adding more special remotes shouldn't change how this works.)
+
+Case 3:
+
+<pre>
+3 repos; B has A and C as remotes; A has C as remote; C is special remote.
+
+A (has)      C (has)
+B
+
+B wants to drop from C        A wants to drop from A
+B locks it on A
+B drops from C                A locks it on A for drop
+                                (fails; locked by B)
+B drops from C                A keeps its copy
+
+ok!
+
+or, racing the other way
+
+B wants to drop from C        A wants to drop from A
+                              A locks it on A for drop
+B locks it on A
+   (fails; locked by A)
+C keeps its copy              A drops its copy
+
+ok!
+</pre>
+
+Case 4:
+
+But, what if we have a cycle? The above case 3 also works if B and A are in a
+cycle, but what about a larger cycle?
+
+Well, a cycle necessarily involves only git repos, not special remotes.
+Any special remote can't be part of a cycle, because a special remote
+does not have remotes itself.
+
+As the remotes in the cycle are not special remotes, locking is done
+of content on remotes when dropping it from local or another remote.
+This locking ensures that even with a cycle, we're ok. For example:
+
+<pre>
+4 repos; D is special remote w/o its own locking, and the rest are git
+repos. A has remotes B,D; B has remotes C,D; C has remotes A,D
+
+A (has) D
+B (has)
+C (has)
+
+A wants to drop from A     B wants to drop from B     C wants to drop from C
+A locks it on A for drop   B locks it on B for drop   C locks it on C for drop
+A locks it on B            B locks it on C            C locks it on A
+  (fails; locked by B)      (fails; locked by C)       (fails; locked by A)
+
+Which is fine! But, check races..
+
+A wants to drop from A     B wants to drop from B     C wants to drop from C
+A locks it on A for drop                              C locks it on C for drop
+A locks it on B (succeeds)                            C locks it on A
+                           B locks it on B for drop       (fails; locked by A)
+                               (fails; locked by A)
+A drops                    B keeps                    C keeps
+
+It can race other ways, but they all work out the same way essentially,
+due to the locking.
+</pre>
+
+# the bug, with moves
+
+`git annex move --from remote` is the same as a copy followed by drop --from,
+so the same bug can occur then.
+
+But, the implementation differs from Command.Drop, so will also
+need some changes.
+
+Command.Move.toPerform already locks local content for removal before
+removing it, of course. So, that will interoperate fine with
+concurrent drops/moves. Seems fine as-is.
+
+Command.Move.fromPerform simply needs to lock the local content
+in place before dropping it from the remote. This satisfies the need
+for 1 locked copy when dropping from a remote, and so is sufficent to
+fix the bug.
+
+> done
+
+# drop ordering
+
+Consider the network: `T -- C --- (B1,B2)`
+
+When numcopies is 2, a file could start on T, get copied to C, and then on
+the B1 and B2. At which point, it can be dropped from C and T (if
+unwanted).
+
+Currently, the assistant and sync --content drop from the local repo 1st,
+and then from remotes. Before the changes to fix this bug, that worked;
+the content got removed from T and then from C, using the copies on B1 and
+B2 as evidence. Now though, if B1 and B2 are special remotes, once the copy
+is dropped from C, there is no locked copy available on (B1,B2), so the
+subsequent drop from T fails.
+
+Changing the drop order lets C lock its own copy in order to
+drop from T. then the local drop from C proceeds successfully without locking,
+as local drops don't need locking.
+
+Course, there is a behavior change here.. Before, if B2 didn't exist,
+the content would reach B2 and then be dropped from C, and then with only 2
+copies, it could not also be dropped from T. If the drop order changes, the
+content is instead dropped from T and left on C.
+
+The new behavior seems better when T is a transfer remote, but perhaps not in
+other cases.
+
+> implemented

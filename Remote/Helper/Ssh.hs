@@ -173,3 +173,8 @@ rsyncParams r direction = do
 		| direction == Download = remoteAnnexRsyncDownloadOptions gc
 		| otherwise = remoteAnnexRsyncUploadOptions gc
 	gc = gitconfig r
+
+-- Used by git-annex-shell lockcontent to indicate the content is
+-- successfully locked.
+contentLockedMarker :: String
+contentLockedMarker = "OK"

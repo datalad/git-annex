@@ -13,23 +13,26 @@
 # include <sys/mount.h>
 # define STATCALL statfs
 # define STATSTRUCT statfs64
+# define BSIZE f_bsize
 #else
 #if defined (__FreeBSD__)
 # include <sys/param.h>
 # include <sys/mount.h>
 # define STATCALL statfs /* statfs64 not yet tested on a real FreeBSD machine */
 # define STATSTRUCT statfs
+# define BSIZE f_bsize
 #else
 #if defined __ANDROID__
 # warning free space checking code not available for Android
 # define UNKNOWN
 #else
-#if defined (__linux__) || defined (__FreeBSD_kernel__)
-/* Linux or Debian kFreeBSD */
+#if defined (__linux__) || defined (__FreeBSD_kernel__) || (defined (__SVR4) && defined (__sun))
+/* Linux or Debian kFreeBSD or Solaris */
 /* This is a POSIX standard, so might also work elsewhere too. */
 # include <sys/statvfs.h>
 # define STATCALL statvfs
 # define STATSTRUCT statvfs
+# define BSIZE f_frsize
 #else
 # warning free space checking code not available for this OS
 # define UNKNOWN
@@ -65,7 +68,7 @@ unsigned long long int get(const char *path, int req) {
 			v = 0;
 	}
 
-	blocksize = buf.f_bsize;
+	blocksize = buf.BSIZE;
 	return v * blocksize;
 #endif
 }

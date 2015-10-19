@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="jephte.clain@f0da2444b164953b596ac5e3e38da30b8c04e5e3"
+ nickname="jephte.clain"
+ subject="comment 4"
+ date="2015-10-03T09:11:02Z"
+ content="""
+ohh... I see. I have a script that download the latest release and did not notice the new files.
+
+Can you make an \"ancient kernel\" release for amd64? I don't have any computers with 32bits kernels. thanks in advance
+
+"""]]

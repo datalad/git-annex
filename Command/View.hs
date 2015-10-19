@@ -39,7 +39,7 @@ start ps = do
 
 perform :: View -> CommandPerform
 perform view = do
-	showSideAction "searching"
+	showAction "searching"
 	next $ checkoutViewBranch view applyView
 
 paramView :: String

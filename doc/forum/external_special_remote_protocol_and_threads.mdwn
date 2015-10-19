@@ -1,0 +1,3 @@
+As the sync command just got a -J option I have started to use threads to transfer new files to multiple remotes in parallel. A question that arises is if I still can assume that only one instance of the special remote will be started. I tend to store quite some state in the special remote program that I use to connect to a cloud server, and running two instances in parallel might run in to all sorts of fun behavior.
+
+That said, I am of course aware that if I run multiple git annex commands I would run into these problems.

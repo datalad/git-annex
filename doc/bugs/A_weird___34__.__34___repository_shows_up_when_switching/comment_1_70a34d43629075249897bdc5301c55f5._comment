@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="ovidiu@66ace8a8d99ce938b0538ffa0f26d30db02a9626"
+ nickname="ovidiu"
+ subject="comment 1"
+ date="2015-10-03T19:03:17Z"
+ content="""
+trying to delete the test-repository I had created I get: 
+http://screencast.com/t/AhSiNXESvm 
+trying again I get: 
+http://screencast.com/t/hpFZL0mL
+
+but in the end it got deleted. kinda. not sure. :-( one deleted successfully one simply hangs.
+still nothing in the logs.
+"""]]

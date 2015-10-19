@@ -14,7 +14,7 @@ import qualified Remote
 import qualified Types.Remote as Remote
 import Types
 import Types.Key (key2file, keyBackendName, keySize)
-import Types.Backend (getKey, fsckKey)
+import Types.Backend (getKey, verifyKeyContent)
 import Types.KeySource
 import Annex.Content
 import Backend
@@ -63,7 +63,7 @@ start :: Int -> RemoteName -> CommandStart
 start basesz name = do
 	showStart "testremote" name
 	r <- either error id <$> Remote.byName' name
-	showSideAction "generating test keys"
+	showAction "generating test keys"
 	fast <- Annex.getState Annex.fast
 	ks <- mapM randKey (keySizes basesz fast)
 	rs <- catMaybes <$> mapM (adjustChunkSize r) (chunkSizes basesz fast)
@@ -120,7 +120,7 @@ test st r k =
 	, check "storeKey when already present" store
 	, present True
 	, check "retrieveKeyFile" $ do
-		lockContent k removeAnnex
+		lockContentForRemoval k removeAnnex
 		get
 	, check "fsck downloaded object" fsck
 	, check "retrieveKeyFile resume from 33%" $ do
@@ -130,20 +130,20 @@ test st r k =
 			sz <- hFileSize h
 			L.hGet h $ fromInteger $ sz `div` 3
 		liftIO $ L.writeFile tmp partial
-		lockContent k removeAnnex
+		lockContentForRemoval k removeAnnex
 		get
 	, check "fsck downloaded object" fsck
 	, check "retrieveKeyFile resume from 0" $ do
 		tmp <- prepTmp k
 		liftIO $ writeFile tmp ""
-		lockContent k removeAnnex
+		lockContentForRemoval k removeAnnex
 		get
 	, check "fsck downloaded object" fsck
 	, check "retrieveKeyFile resume from end" $ do
 		loc <- Annex.calcRepo (gitAnnexLocation k)
 		tmp <- prepTmp k
 		void $ liftIO $ copyFileExternal CopyAllMetaData loc tmp
-		lockContent k removeAnnex
+		lockContentForRemoval k removeAnnex
 		get
 	, check "fsck downloaded object" fsck
 	, check "removeKey when present" remove
@@ -156,10 +156,10 @@ test st r k =
 		(== Right b) <$> Remote.hasKey r k
 	fsck = case maybeLookupBackendName (keyBackendName k) of
 		Nothing -> return True
-		Just b -> case fsckKey b of
+		Just b -> case verifyKeyContent b of
 			Nothing -> return True
-			Just fscker -> fscker k (key2file k)
-	get = getViaTmp k $ \dest ->
+			Just verifier -> verifier k (key2file k)
+	get = getViaTmp (RemoteVerify r) k $ \dest ->
 		Remote.retrieveKeyFile r k Nothing dest nullMeterUpdate
 	store = Remote.storeKey r k Nothing nullMeterUpdate
 	remove = Remote.removeKey r k
@@ -173,10 +173,10 @@ testUnavailable st r k =
 	, check (`notElem` [Right True, Right False]) "checkPresent" $
 		Remote.checkPresent r k
 	, check (== Right False) "retrieveKeyFile" $
-		getViaTmp k $ \dest ->
+		getViaTmp (RemoteVerify r) k $ \dest ->
 			Remote.retrieveKeyFile r k Nothing dest nullMeterUpdate
 	, check (== Right False) "retrieveKeyFileCheap" $
-		getViaTmp k $ \dest ->
+		getViaTmp (RemoteVerify r) k $ \dest -> unVerified $
 			Remote.retrieveKeyFileCheap r k Nothing dest
 	]
   where
@@ -189,7 +189,7 @@ testUnavailable st r k =
 cleanup :: [Remote] -> [Key] -> Bool -> CommandCleanup
 cleanup rs ks ok = do
 	forM_ rs $ \r -> forM_ ks (Remote.removeKey r)
-	forM_ ks $ \k -> lockContent k removeAnnex
+	forM_ ks $ \k -> lockContentForRemoval k removeAnnex
 	return ok
 
 chunkSizes :: Int -> Bool -> [Int]

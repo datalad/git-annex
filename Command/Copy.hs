@@ -52,7 +52,7 @@ start o file key = stopUnless shouldCopy $
 		| autoMode o = want <||> numCopiesCheck file key (<)
 		| otherwise = return True
 	want = case Command.Move.fromToOptions (moveOptions o) of
-		ToRemote _ -> 
-			wantGet False (Just key) (Just file)
-		FromRemote dest -> (Remote.uuid <$> getParsed dest) >>=
+		ToRemote dest -> (Remote.uuid <$> getParsed dest) >>=
 			wantSend False (Just key) (Just file)
+		FromRemote _ ->
+			wantGet False (Just key) (Just file)

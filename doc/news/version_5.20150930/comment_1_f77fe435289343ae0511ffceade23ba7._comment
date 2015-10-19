@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="jephte.clain@f0da2444b164953b596ac5e3e38da30b8c04e5e3"
+ nickname="jephte.clain"
+ subject="thanks"
+ date="2015-10-01T04:25:02Z"
+ content="""
+hello,
+
+thanks, this version works on debian squeeze lts, unlike the previous. this is very good news, and a fine piece of software!
+
+I wonder: why do you depend on a minimum kernel version? for example, I have a NAS with a very old 2.6.16 embedded linux kernel which cannot be updated, and because of this, I'm stuck with an ancient git-annex version.
+
+"""]]

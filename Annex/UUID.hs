@@ -15,6 +15,7 @@ module Annex.UUID (
 	getUUID,
 	getRepoUUID,
 	getUncachedUUID,
+	isUUIDConfigured,
 	prepUUID,
 	genUUID,
 	genUUIDInNameSpace,
@@ -81,6 +82,13 @@ removeRepoUUID = unsetConfig configkey
 
 getUncachedUUID :: Git.Repo -> UUID
 getUncachedUUID = toUUID . Git.Config.get key ""
+  where
+	(ConfigKey key) = configkey
+
+-- Does the repo's config have a key for the UUID?
+-- True even when the key has no value.
+isUUIDConfigured :: Git.Repo -> Bool
+isUUIDConfigured = isJust . Git.Config.getMaybe key 
   where
 	(ConfigKey key) = configkey
 
