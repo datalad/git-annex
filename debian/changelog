@@ -1,3 +1,9 @@
+git-annex (5.20151019-1) unstable; urgency=medium
+
+  * Package 5.20151019-1
+
+ -- Richard Hartmann <richih@debian.org>  Mon, 19 Oct 2015 21:54:57 +0200
+
 git-annex (5.20151019) unstable; urgency=medium
 
   * Fix a longstanding, but unlikely to occur bug, where dropping
@@ -56,7 +62,7 @@ git-annex (5.20151019) unstable; urgency=medium
 
 git-annex (5.20150930-1) unstable; urgency=medium
 
-  * 
+  * Package 5.20150930-1
 
  -- Richard Hartmann <richih@debian.org>  Sun, 18 Oct 2015 20:39:03 +0200
 
