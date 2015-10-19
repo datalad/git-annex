@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="ovidiu@66ace8a8d99ce938b0538ffa0f26d30db02a9626"
+ nickname="ovidiu"
+ subject="comment 1"
+ date="2015-10-19T07:09:53Z"
+ content="""
+Also found this in the logs:
+
+> swap_pager_getswapspace(16): failed
+> swap_pager_getswapspace(6): failed
+> pid 85783 (lsof), uid 1001, was killed: out of swap space
+
+And I didn't do anything except create 2 repos, connect them, no files inside, still testing...
+"""]]
