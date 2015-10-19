@@ -1,2 +1,0 @@
-?package(git-annex):needs="X11" section="Applications/Network/File Transfer" \
-	title="git-annex assistant" command="git-annex webapp"
