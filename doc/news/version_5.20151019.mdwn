@@ -49,5 +49,5 @@ git-annex 5.20151019 released with [[!toggle text="these changes"]]
      and stop recommending bittornado | bittorrent.
    * Debian: Remove build dependency on transformers library, as it is now
      included in ghc.
-   * Debian: Remote menu file, since a desktop file is provided and
+   * Debian: Remove menu file, since a desktop file is provided and
      lintian says there can be only one."""]]
