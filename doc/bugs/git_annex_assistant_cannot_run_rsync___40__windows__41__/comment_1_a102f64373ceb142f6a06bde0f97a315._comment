@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="db48x"
+ subject="oops"
+ date="2015-10-21T20:11:31Z"
+ content="""
+After some experimentation, I've discovered that this is because I had installed the 64-bit version of Git for Windows. The install page does suggest getting the 32-bit version, but not why; perhaps it should state that the 64-bit version won't work.
+"""]]
