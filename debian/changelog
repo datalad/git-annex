@@ -1,6 +1,8 @@
 git-annex (5.20151020) UNRELEASED; urgency=medium
 
   * Use statvfs on OSX.
+  * Symlink timestamp preservation code uses functions
+    from unix-2.7.0 when available, which should be more portable.
 
  -- Joey Hess <id@joeyh.name>  Mon, 19 Oct 2015 17:00:21 -0400
 

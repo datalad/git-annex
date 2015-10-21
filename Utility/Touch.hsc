@@ -5,13 +5,33 @@
  - License: BSD-2-clause
  -}
 
-{-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE ForeignFunctionInterface, CPP #-}
 
 module Utility.Touch (
 	TimeSpec(..),
 	touchBoth,
 	touch
 ) where
+
+#if MIN_VERSION_unix(2,7,0)
+
+import System.Posix.Files
+import System.Posix.Types
+
+newtype TimeSpec = TimeSpec EpochTime
+
+{- Changes the access and modification times of an existing file.
+   Can follow symlinks, or not. Throws IO error on failure. -}
+touchBoth :: FilePath -> TimeSpec -> TimeSpec -> Bool -> IO ()
+touchBoth file (TimeSpec atime) (TimeSpec mtime) follow
+	| follow = setFileTimes file atime mtime
+	| otherwise = setSymbolicLinkTimesHiRes file (realToFrac atime) (realToFrac mtime)
+
+touch :: FilePath -> TimeSpec -> Bool -> IO ()
+touch file mtime = touchBoth file mtime mtime
+
+#else
+{- Compatability interface for old version of unix, to be removed eventally. -}
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -35,8 +55,6 @@ import Foreign.C
 
 newtype TimeSpec = TimeSpec CTime
 
-{- Changes the access and modification times of an existing file.
-   Can follow symlinks, or not. Throws IO error on failure. -}
 touchBoth :: FilePath -> TimeSpec -> TimeSpec -> Bool -> IO ()
 
 touch :: FilePath -> TimeSpec -> Bool -> IO ()
@@ -122,4 +140,6 @@ touchBoth file atime mtime follow =
 #warning "utimensat and lutimes not available; building without symlink timestamp preservation support"
 touchBoth _ _ _ _ = return ()
 #endif
+#endif
+
 #endif
