@@ -6,6 +6,9 @@ git-annex (5.20151020) UNRELEASED; urgency=medium
   * enableremote: List uuids and descriptions of remotes that can be
     enabled, and accept either the uuid or the description in leu if the
     name.
+  * Catch up with current git behavior when both repo and repo.git exist;
+    it seems it now prefers repo in this case, although historically it may
+    have preferred repo.git.
 
  -- Joey Hess <id@joeyh.name>  Mon, 19 Oct 2015 17:00:21 -0400
 

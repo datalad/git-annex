@@ -58,24 +58,29 @@ fromPath dir = fromAbsPath =<< absPath dir
  - specified. -}
 fromAbsPath :: FilePath -> IO Repo
 fromAbsPath dir
-	| absoluteGitPath dir = ifM (doesDirectoryExist dir') ( ret dir' , hunt )
+	| absoluteGitPath dir = hunt
 	| otherwise =
 		error $ "internal error, " ++ dir ++ " is not absolute"
   where
 	ret = pure . newFrom . LocalUnknown
-	{- Git always looks for "dir.git" in preference to
-	 - to "dir", even if dir ends in a "/". -}
 	canondir = dropTrailingPathSeparator dir
-	dir' = canondir ++ ".git"
 	{- When dir == "foo/.git", git looks for "foo/.git/.git",
 	 - and failing that, uses "foo" as the repository. -}
 	hunt
 		| (pathSeparator:".git") `isSuffixOf` canondir =
 			ifM (doesDirectoryExist $ dir </> ".git")
 				( ret dir
-				, ret $ takeDirectory canondir
+				, ret (takeDirectory canondir)
 				)
-		| otherwise = ret dir
+		| otherwise = ifM (doesDirectoryExist dir)
+			( ret dir
+			-- git falls back to dir.git when dir doesn't
+			-- exist, as long as dir didn't end with a
+			-- path separator
+			, if dir == canondir
+				then ret (dir ++ ".git")
+				else ret dir
+			)
 
 {- Remote Repo constructor. Throws exception on invalid url.
  -
