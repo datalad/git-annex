@@ -3,6 +3,9 @@ git-annex (5.20151020) UNRELEASED; urgency=medium
   * Use statvfs on OSX.
   * Symlink timestamp preservation code uses functions
     from unix-2.7.0 when available, which should be more portable.
+  * enableremote: List uuids and descriptions of remotes that can be
+    enabled, and accept either the uuid or the description in leu if the
+    name.
 
  -- Joey Hess <id@joeyh.name>  Mon, 19 Oct 2015 17:00:21 -0400
 

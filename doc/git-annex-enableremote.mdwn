@@ -4,7 +4,7 @@ git-annex enableremote - enables use of an existing special remote
 
 # SYNOPSIS
 
-git annex enableremote `name [param=value ...]`
+git annex enableremote `name|uuid|desc [param=value ...]`
 
 # DESCRIPTION
 
@@ -15,7 +15,8 @@ originally created with the initremote command.
 The name of the remote is the same name used when originally
 creating that remote with `git annex initremote`. Run 
 `git annex enableremote` without any name to get a list of
-special remote names.
+special remote names. Or you can specify the uuid or description of the
+remote.
   
 Some special remotes may need parameters to be specified every time they are
 enabled. For example, the directory special remote requires a directory=
