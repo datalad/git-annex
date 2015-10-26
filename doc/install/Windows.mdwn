@@ -1,7 +1,7 @@
 git-annex now does Windows!
 
 * First, [install git for Windows](http://git-scm.com/downloads)  
-  Get the 32 bit version not the 64 bit version.  
+  Important: **Get the 32 bit version not the 64 bit version.**  
   (Note that msysgit is no longer supported.)
 * Then, [install git-annex](https://downloads.kitenet.net/git-annex/windows/current/)
 

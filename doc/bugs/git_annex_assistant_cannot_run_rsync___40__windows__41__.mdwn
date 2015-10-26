@@ -16,3 +16,7 @@ Presumably it's crashing.
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Not on windows so far :)
+
+> The page doesn't suggest getting the 32 bit version, it just says to get
+> it. Implication should be that's the version that works. I've noted that
+> this is an important requirement now. [[done]] --[[Joey]]
