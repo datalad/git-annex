@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2015-10-26T17:31:54Z"
+ content="""
+Since this information about remotes is stored in your git repository, I
+don't see how the repository could lose it. I mean, you might have to look
+in the history if you've changed some value, like the chunking setting
+from what it's supposed to be, in order to find the historical value, but
+like anything checked into a git repository, it's there until you throw the
+repository away or git-filter-branch the information out of existence.
+"""]]
