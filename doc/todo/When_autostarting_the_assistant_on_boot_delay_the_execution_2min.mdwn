@@ -1,0 +1,2 @@
+I think the assistant should have a delay before starting so it doesn't impact on the system boot performance.
+I know this can be configured per user (I have it set to 5min), but I think 2min is a sane default.
