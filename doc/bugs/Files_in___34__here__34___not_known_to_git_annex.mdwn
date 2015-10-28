@@ -1,0 +1,50 @@
+### Please describe the problem.
+
+Not sure how I created this mess. But here, I have my git annex repository:
+
+    $ cat .git/config 
+    [annex]
+    	uuid = 206e9fb3-0c68-4c45-a3d7-dad1d9425d28
+    	version = 5
+
+And judging from this, I would expect the file to be present:
+
+    $ git annex log Movies/Bad\ Taste\ -\ Englisch.avi 
+    - 2015-10-28 20:51:42 Movies/Bad Taste - Englisch.avi | f53b3f8a-0f04-11e1-93ae-136c6986c818 -- jeff-media [kent]
+    + 2014-10-13 00:12:50 Movies/Bad Taste - Englisch.avi | 206e9fb3-0c68-4c45-a3d7-dad1d9425d28 -- 1T
+    + 2011-12-24 13:38:23 Movies/Bad Taste - Englisch.avi | 9dd8c662-296d-11e1-b28a-f3c66fd5e263 -- 500G
+    - 2011-12-18 14:59:38 Movies/Bad Taste - Englisch.avi | 9dd8c662-296d-11e1-b28a-f3c66fd5e263 -- 500G
+    + 2011-12-18 12:48:17 Movies/Bad Taste - Englisch.avi | 9dd8c662-296d-11e1-b28a-f3c66fd5e263 -- 500G
+    + 2011-11-14 22:15:57 Movies/Bad Taste - Englisch.avi | f53b3f8a-0f04-11e1-93ae-136c6986c818 -- jeff-media [kent]
+    $ ls -l Movies/Bad\ Taste\ -\ Englisch.avi
+    lrwxrwxrwx 1 jojo jojo 135 Okt  7  2014 Movies/Bad Taste - Englisch.avi -> ../.git/annex/objects/Wx/P0/WORM-s723351552-m1100368371--Bad Taste - Englisch.avi/WORM-s723351552-m1100368371--Bad Taste - Englisch.avi
+    $ ls -shL Movies/Bad\ Taste\ -\ Englisch.avi
+    690M Movies/Bad Taste - Englisch.avi
+
+But git annex seems to be very confused:
+
+    $ git annex whereis Movies/Bad\ Taste\ -\ Englisch.avi 
+    whereis Movies/Bad Taste - Englisch.avi (0 copies) failed
+    git-annex: whereis: 1 failed
+    $ git annex list Movies/Bad\ Taste\ -\ Englisch.avi 
+    here
+    |kent-direct
+    ||kent
+    |||web
+    ||||bittorrent
+    |||||
+    _____ Movies/Bad Taste - Englisch.avi
+    $ git annex fsck  Movies/Bad\ Taste\ -\ Englisch.avi 
+    fsck Movies/Bad Taste - Englisch.avi (fixing location log) 
+      ** No known copies exist of Movies/Bad Taste - Englisch.avi
+    failed
+    (recording state in git...)
+    git-annex: fsck: 1 failed
+
+The `fsck` call does not change anything about the problem.
+
+File system is ext4.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 5.20151019-1, Debian unstable.
