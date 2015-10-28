@@ -1,0 +1,5 @@
+My life with git-annex
+
+Todos: 
+[[!inline pages="todo/* and !todo/done and !link(todo/done) and
+link(users/parhuzamos)" sort=mtime feeds=no actions=yes archive=yes show=0]]
