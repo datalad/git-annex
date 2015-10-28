@@ -1,0 +1,14 @@
+### Please describe the problem.
+
+Currently if I using standalone annex builds mere 'annex init' immediately rushes to generate .ssh/git-annex-{shell,wrapper} helpers.  I would really prefer to keep ~/.ssh untouched by any magic from the tools which presumably unrelated to ssh.  Moreover it leads to failures such as 
+
+/usr/lib/git-annex.linux/runshell: 67: /usr/lib/git-annex.linux/runshell: cannot create /.ssh/git-annex-wrapper: Directory nonexistent
+
+happen if HOME was overridden (e.g. for testing etc) and I have no intent to use annex as an assistant etc.
+
+Originally described in http://git-annex.branchable.com/devblog/day_155__missing_bits/ as a solution to overcome problems with assistant's server operation from standalone builds.  Why those couldn't be installed alongside with git-annex wrapper? (actually there is also git-annex-shell at least in the Debian standalone packages)
+
+
+### What version of git-annex are you using? On what operating system?
+
+5.20150916+gitg79661ef-1~ndall+1
