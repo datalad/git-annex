@@ -1,0 +1,4 @@
+I'm interested in using git-annex on a freebsd system and an OSX system. 
+I have previously had problems with manually rsyncing due to the fact that apparently different types of UTF-8 are used namely:  UTF-8 NFC & UTF-8 NFD so one option is to use  rsync -a --iconv=utf-8-mac,utf-8 localdir/ mynas:remotedir/ or alternatively, I can mount the files on the NAS via a cifs share and rsync to it...
+
+just curios how git-annex deals with this issue or if i will run into issues due to filenames containing special characters?

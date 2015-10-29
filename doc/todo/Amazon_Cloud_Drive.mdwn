@@ -4,7 +4,7 @@ It's just became unlimited for a fair price: $60/year ( https://www.amazon.com/c
 
 http://techcrunch.com/2015/03/26/amazon-goes-after-dropbox-google-microsoft-with-unlimited-cloud-drive-storage/
 
--- bence
+-- bence aka [[parhuzamos]] 
 
 > Not yet, but I just need to investigate haskell api bindings for it, I
 > suppose. --[[Joey]]
