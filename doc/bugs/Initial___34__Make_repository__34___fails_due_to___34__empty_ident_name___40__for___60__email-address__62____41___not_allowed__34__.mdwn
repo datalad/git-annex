@@ -1,0 +1,43 @@
+### Please describe the problem.
+
+During an initial run of "git annex webapp", it gets stuck at the "Make repository" stage. Entering a directory and pressing "Make repository" takes the user back to the same page repeatedly, preventing them from advancing.
+
+### What steps will reproduce the problem?
+
+Download https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-i386.tar.gz from 2015-10-19 (sha1: 3b30de86d6790fdf80de90b2f54967de8345fe98 ) on an Ubuntu Trusty Tahr server, untar, run git-annex-webapp, attempt to make a Repository in ~/annex. "Make repository" fails to advance.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex-standalone-i386.tar.gz downloaded on 2015-10-19 (sha1: 3b30de86d6790fdf80de90b2f54967de8345fe98), on Ubuntu Trusty Tahr (14.04.3).
+
+### Please provide any additional information below.
+
+The following is printed to the console (no daemon.log is generated):
+
+[[!format sh """
+~/src/git-annex.linux$ ./git-annex-webapp 
+Launching web browser on file:///tmp/webapp8296.html
+
+
+*** Please tell me who you are.
+
+Run
+
+  git config --global user.email "you@example.com"
+  git config --global user.name "Your Name"
+
+to set your account's default identity.
+Omit --global to set the identity only in this repository.
+
+fatal: empty ident name (for <k@home.everets.org>) not allowed
+(recording state in git...)
+
+
+# End of transcript or log.
+"""]]
+
+Manually running the "git config --global user.name" will allow the process to proceed. It will just be confusing to users who launched the webapp via a menu item.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Works well using the debian testing package on a debian laptop!
