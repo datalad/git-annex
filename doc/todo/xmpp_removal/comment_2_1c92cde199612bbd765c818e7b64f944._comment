@@ -1,0 +1,46 @@
+[[!comment format=mdwn
+ username="Gastlag"
+ subject="Is xmpp the problem ?"
+ date="2015-10-30T10:42:06Z"
+ content="""
+Hello, 
+
+I was wondering why assistant \"is increasingly rarely used\" ?
+if you look the different item of the survey http://git-annex-survey.branchable.com/polls/2015/, yes 53% of people said \"I use the assistant, but without XMPP\"
+
+And \"missing ports\" :
+
+ - \"I'm good -- git-annex runs on my OSes of choice! (43%)\"
+   - \"Windows (13%)\"
+   - Android (6%)
+
+But if you look other anwsers you see
+
+ - \"using with\" :
+   - by myself (59%)
+   - by myself so far but I hope to get others using my repository (28%)
+
+And :
+
+  - \"Pick the operating system which you use git-annex on the most.\" :
+    - \"Linux (78%)\"
+    - \"OSX (13%)\"
+
+
+Further more \"blocking problems\" :
+
+  - too hard to install (4%)
+  - too hard to use (7%)
+  - not good enough documentation (16%)
+  - The only use for the assistant would be in combination with a good, native, fully automagic Android version which includes some sort of native UI (16%)
+  - I use the command line, and **find it difficult to show others** how to use the git-annex assistant (12%)
+  - The lack of selective file sync (ie, git annex get and git annex drop) is what prevents me from using the Assistant (5%)
+
+And \"focus\" : 
+
+  -  make it easier for nontechnical users (25%) 
+
+I think remove xmpp is a bad idea because as you say it's enable \"Friend discovery and easy sharing of git repo to friends.\" and there is already a lot of people who use xmpp and XMPP address are user friendly because close to email adress. And the main problem seems to be that git-annex assistant still too hard to use and not usable on the platform where users are : windows.
+
+The main problem is that git-annex is still not ready for users. It have too reach other people than \"hardcore linux users\" to be a social tool and remove xmpp may not be the good solution.
+"""]]

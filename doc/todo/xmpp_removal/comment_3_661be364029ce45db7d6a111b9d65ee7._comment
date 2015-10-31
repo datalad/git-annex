@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ subject="re tox"
+ date="2015-10-30T15:37:09Z"
+ content="""
+i am not sure the proper replacement for XMPP is tox. First off, Debian privacy folks have [expressed concerns about the actual security of Tox](http://lists.alioth.debian.org/pipermail/pkg-privacy-maintainers/Week-of-Mon-20150928/000046.html), which is not a big requirement here, but nevertheless is a question worth adressing. [Pond](https://pond.imperialviolet.org/) and [Ricochet](http://ricochet.im/) are interesting alternatives that are being packaged in Debian (the latter which just entered unstable).
+
+Furthermore, it seems that XMPP is really a \"patch\", a workaround for NAT issues and, in general, how to share git-annex repositories with users in arbitrary locations. This problem space is more similar to [[todo/Bittorrent-like_features/#index1h1]] than XMPP. Using tox libraries may enable git-annex to share git metadata around, but would it allow git-annex to download actual files from other users through tox? How stable is tox? Last I checked, [tox core don't actually want to make any releases](https://github.com/irungentoo/toxcore/issues/1353), which makes it a much less attractive option because the API can change all the time...
+
+I have nevertheless added the three tools to [[todo/Bittorrent-like_features/]].
+
+Anyways, it seems that XMPP is rarely used and could be removed if it makes maintenance easier: i have never found a good use case for it, personnally: you can usually find a space for a private git repo fairly easily... the problem is sharing the big files! --[[anarcat]]
+"""]]
