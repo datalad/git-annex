@@ -1,4 +1,4 @@
-Things have been relatively quite on git-annex this week. I've been
+Things have been relatively quiet on git-annex this week. I've been
 distracted with other projects. But, a library that I developed for
 [propellor](http://propellor.branchable.com/) to help with 
 [concurrent console output](http://joeyh.name/blog/entry/concurrent_output_library/)
