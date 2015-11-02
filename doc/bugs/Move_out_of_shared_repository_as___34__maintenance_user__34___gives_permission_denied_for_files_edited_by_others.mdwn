@@ -1,0 +1,249 @@
+### Please describe the problem.
+
+For shared repositories git annex refuses to move file out of repository (git annex move --to) if user triggering the move is not the owner of the file.
+
+### What steps will reproduce the problem?
+
+ * Init two shared repositories and create a file
+ * Modify that file in repo1 as user u1
+ * Move the file to repo2 as "repository maintenance" user u2
+     - this gives permission denied error
+
+Alternatively -- mabye better understandable usecase(repository maintainer moves unused files to backup):
+
+ * Init two shared repositories and create a file
+ * Modify that file in repo1 as user u1
+ * Modify that file in repo1 a second time (regardless which user) -- this makes the version edited by u1 unused
+ * Display unused files as repository maintenance user u2  
+     - this gives permission denied error
+ * Move unused files to repo2 as "repository maintenance" user u2 
+     - this gives permission denied error
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+stefan@atom-linux:/tmp/git-annex-test/a$ git --version
+git version 2.6.2
+stefan@atom-linux:/tmp/git-annex-test/a$ git annex version
+git-annex version: 5.20150610+gitg608172f-1~ndall+1
+build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E MD5E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository version: 5
+upgrade supported from repository versions: 0 1 2 4
+stefan@atom-linux:/tmp/git-annex-test/a$ uname -a
+Linux atom-linux 3.13.0-66-generic #108-Ubuntu SMP Wed Oct 7 15:21:40 UTC 2015 i686 i686 i686 GNU/Linux
+"""]]
+
+### Please provide any additional information below.
+
+[[!format sh """
+
+# init two shared repositories and create a file "file.txt"
+
+stefan@atom-linux:/tmp/git-annex-test$ mkdir a
+stefan@atom-linux:/tmp/git-annex-test$ mkdir b
+stefan@atom-linux:/tmp/git-annex-test$ sudo chown :fileadmin-data *
+stefan@atom-linux:/tmp/git-annex-test$ sudo chmod g+s *
+stefan@atom-linux:/tmp/git-annex-test$ cd a
+stefan@atom-linux:/tmp/git-annex-test/a$ git init --shared .
+Initialized empty shared Git repository in /tmp/git-annex-test/a/.git/
+stefan@atom-linux:/tmp/git-annex-test/a$ git config core.sharedrepository group
+stefan@atom-linux:/tmp/git-annex-test/a$ echo "test" >> file.txt
+stefan@atom-linux:/tmp/git-annex-test/a$ ls -al
+total 16
+drwxrwsr-x 3 stefan fileadmin-data 4096 Nov  1 16:41 .
+drwxrwxr-x 4 stefan stefan         4096 Nov  1 16:39 ..
+-rw-rw-r-- 1 stefan fileadmin-data    5 Nov  1 16:41 file.txt
+drwxrwsr-x 7 stefan fileadmin-data 4096 Nov  1 16:40 .git
+stefan@atom-linux:/tmp/git-annex-test/a$ git annex init
+init  ok
+(recording state in git...)
+stefan@atom-linux:/tmp/git-annex-test/a$ git annex add file.txt
+add file.txt ok
+(recording state in git...)
+stefan@atom-linux:/tmp/git-annex-test/a$ git commit -m "new file"
+[master (root-commit) 7aeaa5f] new file
+ 1 file changed, 1 insertion(+)
+ create mode 120000 file.txt
+stefan@atom-linux:/tmp/git-annex-test/a$ cd ..
+stefan@atom-linux:/tmp/git-annex-test$ cd b
+stefan@atom-linux:/tmp/git-annex-test/b$ git clone -o a ssh://127.0.0.1/tmp/git-annex-test/a .
+Cloning into '.'...
+remote: Counting objects: 13, done.
+remote: Compressing objects: 100% (9/9), done.
+remote: Total 13 (delta 0), reused 0 (delta 0)
+Receiving objects: 100% (13/13), done.
+Checking connectivity... done.
+stefan@atom-linux:/tmp/git-annex-test/b$ git config core.sharedrepository group
+stefan@atom-linux:/tmp/git-annex-test/b$ git annex init "B"
+init B (merging a/git-annex into git-annex...)
+(recording state in git...)
+ok
+(recording state in git...)
+stefan@atom-linux:/tmp/git-annex-test/b$ cd ..
+stefan@atom-linux:/tmp/git-annex-test$ cd a
+stefan@atom-linux:/tmp/git-annex-test/a$ git remote add b ssh://127.0.0.1/tmp/git-annex-test/b
+stefan@atom-linux:/tmp/git-annex-test/a$ git annex sync
+commit  ok
+pull b
+remote: Counting objects: 6, done.
+remote: Compressing objects: 100% (5/5), done.
+remote: Total 6 (delta 0), reused 1 (delta 0)
+Unpacking objects: 100% (6/6), done.
+From ssh://127.0.0.1/tmp/git-annex-test/b
+ * [new branch]      git-annex  -> b/git-annex
+ * [new branch]      master     -> b/master
+ok
+(merging b/git-annex into git-annex...)
+push b
+Total 0 (delta 0), reused 0 (delta 0)
+To ssh://127.0.0.1/tmp/git-annex-test/b
+ * [new branch]      git-annex -> synced/git-annex
+ * [new branch]      master -> synced/master
+ok
+stefan@atom-linux:/tmp/git-annex-test/a$ git annex move file.txt --to b
+move file.txt (checking b...) (to b...)
+SHA256E-s5--f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2.txt
+              5 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+ok
+(recording state in git...)
+
+## ok, everything fine so far - we have a file "file.txt" which was created in a and moved to b successfully. 
+## Now we go to a different user account and modify "file.txt"
+## -------------------------------------- userswitch
+
+unison@atom-linux:/tmp/git-annex-test/a$ git annex get file.txt
+get file.txt (from b...)
+SHA256E-s5--f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2.txt
+              5 100%    4.88kB/s    0:00:00 (xfr#1, to-chk=0/1)
+ok
+(recording state in git...)
+unison@atom-linux:/tmp/git-annex-test/a$ git annex unlock file.txt
+unlock file.txt (copying...) ok
+unison@atom-linux:/tmp/git-annex-test/a$ ls -al
+total 16
+drwxrwsr-x 3 stefan fileadmin-data 4096 Nov  1 16:48 .
+drwxrwxr-x 4 stefan stefan         4096 Nov  1 16:39 ..
+-rw-rw-r-- 1 unison fileadmin-data    5 Nov  1 16:47 file.txt
+drwxrwsr-x 9 stefan fileadmin-data 4096 Nov  1 16:44 .git
+unison@atom-linux:/tmp/git-annex-test/a$ echo "a change by unison user" >> file.txt
+unison@atom-linux:/tmp/git-annex-test/a$ git annex add .
+add file.txt ok
+(recording state in git...)
+unison@atom-linux:/tmp/git-annex-test/a$ git commit -m "unison change"
+[master 37bd55d] unison change
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+## now the original user / repository maintainer wants to move the file 
+## out to b which gives an permission denied error for setFileMode
+## git annex does copy it to b, but not remove it from a
+## -------------------------------------- userswitch
+
+stefan@atom-linux:/tmp/git-annex-test/a$ ls -al
+total 16
+drwxrwsr-x 3 stefan fileadmin-data 4096 Nov  1 16:48 .
+drwxrwxr-x 4 stefan stefan         4096 Nov  1 16:39 ..
+lrwxrwxrwx 1 unison fileadmin-data  188 Nov  1 16:48 file.txt -> .git/annex/objects/8x/7w/SHA256E-s29--6aec68aad4745c6eb7babaa5f66fb727e896ec47414edfd4fec8136a1db8484e.tx
+t/SHA256E-s29--6aec68aad4745c6eb7babaa5f66fb727e896ec47414edfd4fec8136a1db8484e.txt
+drwxrwsr-x 9 stefan fileadmin-data 4096 Nov  1 16:48 .git
+stefan@atom-linux:/tmp/git-annex-test/a$ git annex move file.txt --to b
+move file.txt (checking b...) (to b...)
+SHA256E-s29--6aec68aad4745c6eb7babaa5f66fb727e896ec47414edfd4fec8136a1db8484e.txt
+             29 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+git-annex: failed to lock content: .git/annex/objects/8x/7w/SHA256E-s29--6aec68aad4745c6eb7babaa5f66fb727e896ec47414edfd4fec8136a1db8484e.txt/SHA256E-s29--6aec68aad4745c6
+eb7babaa5f66fb727e896ec47414edfd4fec8136a1db8484e.txt: setFileMode: permission denied (Operation not permitted)
+
+# which makes sense - the file is owned by other user:
+stefan@atom-linux:/tmp/git-annex-test/a$ ls -al .git/annex/objects/8x/7w/SHA256E-s29--6aec68aad4745c6eb7babaa5f66fb727e896ec47414edfd4fec8136a1db8484e.txt/SHA256E-s29--6
+aec68aad4745c6eb7babaa5f66fb727e896ec47414edfd4fec8136a1db8484e.txt
+-r--r--r-- 1 unison fileadmin-data 29 Nov  1 16:48 .git/annex/objects/8x/7w/SHA256E-s29--6aec68aad4745c6eb7babaa5f66fb727e896ec47414edfd4fec8136a1db8484e.txt/SHA256E-s29-
+-6aec68aad4745c6eb7babaa5f66fb727e896ec47414edfd4fec8136a1db8484e.txt
+
+## the last editor of the file can move it, though:
+## -------------------------------------- userswitch
+unison@atom-linux:/tmp/git-annex-test/a$ git annex move file.txt --to b
+move file.txt (checking b...) ok
+(recording state in git...)
+
+## continued - for second usecase...
+## edit file two more times as unison user:
+
+unison@atom-linux:/tmp/git-annex-test/a$ git annex unlock file.txt
+unlock file.txt (copying...) ok
+unison@atom-linux:/tmp/git-annex-test/a$ echo "another unison modification" >> file.txt
+unison@atom-linux:/tmp/git-annex-test/a$ ls
+file.txt
+unison@atom-linux:/tmp/git-annex-test/a$ git annex add
+add file.txt ok
+(recording state in git...)
+unison@atom-linux:/tmp/git-annex-test/a$ git commit -m "another unison change"
+[master df85491] another unison change
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+unison@atom-linux:/tmp/git-annex-test/a$ git annex unlock file.txt
+unlock file.txt (copying...) ok
+(recording state in git...)
+unison@atom-linux:/tmp/git-annex-test/a$ echo "changes once more" >> file.txt
+unison@atom-linux:/tmp/git-annex-test/a$ git annex add .
+add file.txt ok
+(recording state in git...)
+unison@atom-linux:/tmp/git-annex-test/a$ git commit -m "1 more"
+[master 099a2c7] 1 more
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+ 
+unison@atom-linux:/tmp/git-annex-test/a$ git annex unused
+unused . (checking for unused data...) (checking b/master...) (checking master...)
+  Some annexed data is no longer used by any files:
+    NUMBER  KEY
+    1       SHA256E-s29--6aec68aad4745c6eb7babaa5f66fb727e896ec47414edfd4fec8136a1db8484e.txt
+    2       SHA256E-s57--dc131ed3874c3b51a6801c43f5d5c0706a9aea58134459eeddf3436626adc89f.txt
+  (To see where data was previously used, try: git log --stat -S'KEY')
+
+  To remove unwanted data: git-annex dropunused NUMBER
+
+ok
+
+## switch to repository maintenance user and list unused:
+## -------------------------------------- userswitch
+
+stefan@atom-linux:/tmp/git-annex-test/a$ git annex unused --debug
+unused . (checking for unused data...) [2015-11-01 17:35:09 CET] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--cached","--others","-z","
+--","."]
+[2015-11-01 17:35:09 CET] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2015-11-01 17:35:09 CET] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/master"]
+[2015-11-01 17:35:09 CET] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref"]
+(checking b/master...) [2015-11-01 17:35:09 CET] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--head"]
+[2015-11-01 17:35:09 CET] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--head"]
+[2015-11-01 17:35:09 CET] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","diff-index","-z","--raw","--no-renames","-l0","refs/remotes/b/master","--"]
+[2015-11-01 17:35:09 CET] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+(checking master...) [2015-11-01 17:35:09 CET] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--head"]
+[2015-11-01 17:35:09 CET] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--head"]
+[2015-11-01 17:35:09 CET] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","diff-index","-z","--raw","--no-renames","-l0","refs/heads/master","--"]
+
+  Some annexed data is no longer used by any files:
+    NUMBER  KEY
+    1       SHA256E-s29--6aec68aad4745c6eb7babaa5f66fb727e896ec47414edfd4fec8136a1db8484e.txt
+    2       SHA256E-s57--dc131ed3874c3b51a6801c43f5d5c0706a9aea58134459eeddf3436626adc89f.txt
+  (To see where data was previously used, try: git log --stat -S'KEY')
+
+  To remove unwanted data: git-annex dropunused NUMBER
+
+
+git-annex: .git/annex/unused: openFile: permission denied (Permission denied)
+failed
+git-annex: unused: 1 failed
+
+
+stefan@atom-linux:/tmp/git-annex-test/a$ git annex move --unused --to b
+git-annex: .git/annex/unused: openFile: permission denied (Permission denied)
+stefan@atom-linux:/tmp/git-annex-test/a$ git annex move --debug --unused --to b
+[2015-11-01 17:38:48 CET] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2015-11-01 17:38:48 CET] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2015-11-01 17:38:48 CET] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..4cdcc1b4550b2737e018d382022f3ce3e1dcb029","-n1","
+--pretty=%H"]
+[2015-11-01 17:38:48 CET] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+git-annex: .git/annex/unused: openFile: permission denied (Permission denied)
+
+# End of transcript or log.
+"""]]
