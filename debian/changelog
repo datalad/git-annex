@@ -1,4 +1,4 @@
-git-annex (5.20151020) UNRELEASED; urgency=medium
+git-annex (5.20151102) unstable; urgency=medium
 
   * Use statvfs on OSX.
   * Symlink timestamp preservation code uses functions
@@ -13,7 +13,7 @@ git-annex (5.20151020) UNRELEASED; urgency=medium
   * When built with aws-0.13.0, the S3 special remote can be used to create
     google nearline buckets, by setting storageclass=NEARLINE.
 
- -- Joey Hess <id@joeyh.name>  Mon, 19 Oct 2015 17:00:21 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 02 Nov 2015 12:41:20 -0400
 
 git-annex (5.20151019) unstable; urgency=medium
 
