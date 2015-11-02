@@ -330,10 +330,20 @@ genBucket c u = do
 					(bucket info)
 					(acl info)
 					locconstraint
+#if MIN_VERSION_aws(0,13,0)
+					storageclass
+#endif
 		writeUUIDFile c u info h
 	
 	locconstraint = mkLocationConstraint $ T.pack datacenter
 	datacenter = fromJust $ M.lookup "datacenter" c
+#if MIN_VERSION_aws(0,13,0)
+	-- "NEARLINE" as a storage class when creating a bucket is a
+	-- nonstandard extension of Google Cloud Storage.
+	storageclass = case getStorageClass c of
+		sc@(S3.OtherStorageClass "NEARLINE") -> Just sc
+		_ -> Nothing
+#endif
 
 {- Writes the UUID to an annex-uuid file within the bucket.
  -

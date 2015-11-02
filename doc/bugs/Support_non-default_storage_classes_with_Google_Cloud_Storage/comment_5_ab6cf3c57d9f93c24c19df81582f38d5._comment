@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2015-11-02T14:55:54Z"
+ content="""
+aws-0.13.0 was released with the ncessary support. git-annex will now pass
+the NEARLINE storage class when creating a bucket.
+
+Note that most builds of git-annex are not yet made with that version of
+aws, but it will trickle out to the build systems with time.
+"""]]

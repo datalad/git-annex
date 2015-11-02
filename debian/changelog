@@ -9,6 +9,9 @@ git-annex (5.20151020) UNRELEASED; urgency=medium
   * Catch up with current git behavior when both repo and repo.git exist;
     it seems it now prefers repo in this case, although historically it may
     have preferred repo.git.
+  * Fix failure to build with aws-0.13.0.
+  * When built with aws-0.13.0, the S3 special remote can be used to create
+    google nearline buckets, by setting storageclass=NEARLINE.
 
  -- Joey Hess <id@joeyh.name>  Mon, 19 Oct 2015 17:00:21 -0400
 

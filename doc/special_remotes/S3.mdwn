@@ -43,9 +43,14 @@ the S3 remote.
 
   When using Amazon S3, if you have configured git-annex to preserve
   multiple [[copies]], consider setting this to "REDUCED_REDUNDANCY"
-  to save money. Or, if the remote will be used for backup or archival,
+  to save money. 
+  
+  Or, if the remote will be used for backup or archival,
   and so its files are Infrequently Accessed, "STANDARD_IA" is also a
-  good choice to save money.
+  good choice to save money. (Requires a git-annex built with aws-0.13.0)
+
+  When using Google Cloud Storage, to make a nearline bucket, set this to
+  "NEARLINE". (Requires a git-annex built with aws-0.13.0)
 
   Note that changing the storage class of an existing S3 remote will
   affect new objects sent to the remote, but not objects already
