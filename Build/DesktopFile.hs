@@ -79,3 +79,9 @@ install command = do
 			createDirectoryIfMissing True (parentDir programfile)
 			writeFile programfile command
 		)
+
+installUser :: FilePath -> IO ()
+installUser command = ifM systemwideInstall
+	( install command
+	, return ()
+	)

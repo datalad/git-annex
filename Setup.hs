@@ -64,7 +64,7 @@ installManpages copyDest verbosity pkg lbi =
 installDesktopFile :: CopyDest -> Verbosity -> PackageDescription -> LocalBuildInfo -> IO ()
 installDesktopFile copyDest _verbosity pkg lbi
 	| progfile copyDest == progfile NoCopyDest =
-		DesktopFile.install (progfile copyDest)
+		DesktopFile.installUser (progfile copyDest)
 	| otherwise = return ()
   where
 	progfile cd = bindir (absoluteInstallDirs pkg lbi cd) </> "git-annex"
