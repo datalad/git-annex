@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 2"
+ date="2015-11-03T16:34:39Z"
+ content="""
+Thank you Joey.  I guess my ignorance was in the fact that shell removes those 's if the argument itself is not wrapped:
+
+
+    $> /tmp/1.py git annex add -c annex.largefiles='exclude=*.txt' README2.txt 
+    arg: '/tmp/1.py'
+    arg: 'git'
+    arg: 'annex'
+    arg: 'add'
+    arg: '-c'
+    arg: 'annex.largefiles=exclude=*.txt'
+    arg: 'README2.txt'
+
+Consider it resolve for nowbeing ;) Cheers
+"""]]
