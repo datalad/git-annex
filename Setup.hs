@@ -14,6 +14,7 @@ import Control.Applicative
 import Control.Monad
 import System.Directory
 import Data.List
+import Control.Exception
 
 import qualified Build.DesktopFile as DesktopFile
 import qualified Build.Configure as Configure
@@ -64,7 +65,11 @@ installManpages copyDest verbosity pkg lbi =
 installDesktopFile :: CopyDest -> Verbosity -> PackageDescription -> LocalBuildInfo -> IO ()
 installDesktopFile copyDest _verbosity pkg lbi
 	| progfile copyDest == progfile NoCopyDest =
-		DesktopFile.installUser (progfile copyDest)
+		let dest = progfile copyDest
+		in DesktopFile.installUser dest
+			`catch` installerror dest
 	| otherwise = return ()
   where
 	progfile cd = bindir (absoluteInstallDirs pkg lbi cd) </> "git-annex"
+	installerror :: FilePath -> SomeException -> IO ()
+	installerror dest e = putStrLn ("installation of desktop intrgration files in " ++ dest ++ " did not succeed (" ++ show e ++ "); skipping (set DESTDIR to install these files to a different location)")
