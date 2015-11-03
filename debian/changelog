@@ -1,4 +1,4 @@
-git-annex (5.20151103) UNRELEASED; urgency=medium
+git-annex (5.20151102.1) unstable; urgency=medium
 
   * Avoid installing desktop file and program file if cabal install
     git-annex is run as root, since that is not a systemwide install,
@@ -6,7 +6,7 @@ git-annex (5.20151103) UNRELEASED; urgency=medium
   * When cabal install is run with the desktop file location not writable,
     display a warning, but continue successfully.
 
- -- Joey Hess <id@joeyh.name>  Tue, 03 Nov 2015 10:36:43 -0400
+ -- Joey Hess <id@joeyh.name>  Tue, 03 Nov 2015 12:08:38 -0400
 
 git-annex (5.20151102) unstable; urgency=medium
 
