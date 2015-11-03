@@ -65,11 +65,10 @@ installManpages copyDest verbosity pkg lbi =
 installDesktopFile :: CopyDest -> Verbosity -> PackageDescription -> LocalBuildInfo -> IO ()
 installDesktopFile copyDest _verbosity pkg lbi
 	| progfile copyDest == progfile NoCopyDest =
-		let dest = progfile copyDest
-		in DesktopFile.installUser dest
-			`catch` installerror dest
+		DesktopFile.installUser (progfile copyDest)
+			`catch` installerror
 	| otherwise = return ()
   where
 	progfile cd = bindir (absoluteInstallDirs pkg lbi cd) </> "git-annex"
-	installerror :: FilePath -> SomeException -> IO ()
-	installerror dest e = putStrLn ("installation of desktop intrgration files in " ++ dest ++ " did not succeed (" ++ show e ++ "); skipping (set DESTDIR to install these files to a different location)")
+	installerror :: SomeException -> IO ()
+	installerror e = putStrLn ("Warning: Installation of desktop integration files did not succeed (" ++ show e ++ "); skipping.")
