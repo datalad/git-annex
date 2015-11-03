@@ -82,6 +82,6 @@ install command = do
 
 installUser :: FilePath -> IO ()
 installUser command = ifM systemwideInstall
-	( install command
-	, return ()
+	( return ()
+	, install command
 	)
