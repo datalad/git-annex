@@ -62,11 +62,8 @@ concurrentMessage iserror msg _ = go =<< consoleRegion <$> Annex.getState Annex.
   where
 	go Nothing
 		| iserror = liftIO $ Console.errorConcurrent msg
-		| otherwise = do
-			liftIO $ Console.outputConcurrent ("REGION MESSAGE NO REGION" ++ show msg)
-			liftIO $ Console.outputConcurrent msg
+		| otherwise = liftIO $ Console.outputConcurrent msg
 	go (Just r) = do
-		liftIO $ Console.outputConcurrent ("REGION MESSAGE " ++ show msg)
 		-- Can't display the error to stdout while
 		-- console regions are in use, so set the errflag
 		-- to get it to display to stderr later.
