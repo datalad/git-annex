@@ -55,6 +55,12 @@ safe to do so.
   The [[git-annex-matching-options]](1)
   can be used to specify files to drop.
 
+* `--jobs=N` `-JN`
+
+  Runs multiple drop jobs in parallel. This is particularly useful
+  when git-annex has to contact remotes to check if it can drop files.
+  For example: `-J4`  
+
 # SEE ALSO
 
 [[git-annex]](1)
