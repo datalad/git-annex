@@ -41,10 +41,11 @@ instance DeferredParseClass MirrorOptions where
 		<*> pure (keyOptions v)
 
 seek :: MirrorOptions -> CommandSeek
-seek o = withKeyOptions (keyOptions o) False
-	(startKey o Nothing)
-	(withFilesInGit $ whenAnnexed $ start o)
-	(mirrorFiles o)
+seek o = allowConcurrentOutput $ 
+	withKeyOptions (keyOptions o) False
+		(startKey o Nothing)
+		(withFilesInGit $ whenAnnexed $ start o)
+		(mirrorFiles o)
 
 start :: MirrorOptions -> FilePath -> Key -> CommandStart
 start o file = startKey o (Just file)

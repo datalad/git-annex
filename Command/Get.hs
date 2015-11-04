@@ -37,7 +37,7 @@ optParser desc = GetOptions
 	<*> optional (parseKeyOptions True)
 
 seek :: GetOptions -> CommandSeek
-seek o = do
+seek o = allowConcurrentOutput $ do
 	from <- maybe (pure Nothing) (Just <$$> getParsed) (getFrom o)
 	withKeyOptions (keyOptions o) (autoMode o)
 		(startKeys from)

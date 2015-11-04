@@ -65,9 +65,6 @@ import Utility.Quvi (QuviVersion)
 #endif
 import Utility.InodeCache
 import Utility.Url
-#ifdef WITH_CONCURRENTOUTPUT
-import System.Console.Regions (ConsoleRegion)
-#endif
 
 import "mtl" Control.Monad.Reader
 import Control.Concurrent
@@ -136,10 +133,7 @@ data AnnexState = AnnexState
 	, existinghooks :: M.Map Git.Hook.Hook Bool
 	, desktopnotify :: DesktopNotify
 	, workers :: [Either AnnexState (Async AnnexState)]
-#ifdef WITH_CONCURRENTOUTPUT
-	, consoleregion :: Maybe ConsoleRegion
-	, consoleregionerrflag :: Bool
-#endif
+	, concurrentjobs :: Maybe Int
 	}
 
 newState :: GitConfig -> Git.Repo -> AnnexState
@@ -184,10 +178,7 @@ newState c r = AnnexState
 	, existinghooks = M.empty
 	, desktopnotify = mempty
 	, workers = []
-#ifdef WITH_CONCURRENTOUTPUT
-	, consoleregion = Nothing
-	, consoleregionerrflag = True
-#endif
+	, concurrentjobs = Nothing
 	}
 
 {- Makes an Annex state object for the specified git repo.

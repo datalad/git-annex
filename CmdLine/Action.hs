@@ -56,7 +56,8 @@ commandAction a = withOutputType go
 			else do
 				l <- liftIO $ drainTo (n-1) ws
 				findFreeSlot l
-		w <- liftIO $ async $ snd <$> Annex.run st run
+		w <- liftIO $ async
+			$ snd <$> Annex.run st (inOwnConsoleRegion run)
 		Annex.changeState $ \s -> s { Annex.workers = Right w:ws' }
 	go _  =	run
 	run = void $ includeCommandAction a

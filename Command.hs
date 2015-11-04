@@ -19,6 +19,7 @@ module Command (
 	whenAnnexed,
 	ifAnnexed,
 	isBareRepo,
+	allowConcurrentOutput,
 	module ReExported
 ) where
 
@@ -36,6 +37,7 @@ import CmdLine.Option as ReExported
 import CmdLine.GlobalSetter as ReExported
 import CmdLine.GitAnnex.Options as ReExported
 import Options.Applicative as ReExported hiding (command)
+import Messages.Internal (allowConcurrentOutput)
 
 import qualified Options.Applicative as O
 

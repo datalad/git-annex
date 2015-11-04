@@ -65,10 +65,7 @@ metered combinemeterupdate key af a = case keySize key of
 		return r
 #else
 	-- Old progress bar code, not suitable for concurrent output.
-	go _ (ConcurrentOutput _) = do
-		r <- nometer
-		liftIO $ putStrLn $ fromMaybe (key2file key) af
-		return r
+	go _ (ConcurrentOutput _) = nometer
 	go size NormalOutput = do
 		showOutput
 		progress <- liftIO $ newProgress "" size

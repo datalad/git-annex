@@ -93,7 +93,7 @@ optParser desc = SyncOptions
 	<*> optional parseAllOption
 
 seek :: SyncOptions -> CommandSeek
-seek o = do
+seek o = allowConcurrentOutput $ do
 	prepMerge
 
 	-- There may not be a branch checked out until after the commit,

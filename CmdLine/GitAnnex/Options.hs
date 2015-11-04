@@ -282,13 +282,17 @@ jsonOption = globalFlag (Annex.setOutput JSONOutput)
 	<> hidden
 	)
 
+-- Note that a command that adds this option should wrap its seek
+-- action in `allowConcurrentOutput`.
 jobsOption :: GlobalOption
-jobsOption = globalSetter (Annex.setOutput . ConcurrentOutput) $ 
+jobsOption = globalSetter set $ 
 	option auto
 		( long "jobs" <> short 'J' <> metavar paramNumber
 		<> help "enable concurrent jobs"
 		<> hidden
 		)
+  where
+	set n = Annex.changeState $ \s -> s { Annex.concurrentjobs = Just n }
 
 timeLimitOption :: GlobalOption
 timeLimitOption = globalSetter Limit.addTimeLimit $ strOption

@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-{- git-annex output messages, including concurrent output
+{- git-annex output messages, including concurrent output to display regions
  -
  - Copyright 2010-2015 Joey Hess <id@joeyh.name>
  -
@@ -58,35 +58,38 @@ flushed a = a >> hFlush stdout
  -}
 concurrentMessage :: Bool -> String -> Annex () -> Annex ()
 #ifdef WITH_CONCURRENTOUTPUT
-concurrentMessage iserror msg _ = go =<< Annex.getState Annex.consoleregion
+concurrentMessage iserror msg _ = go =<< consoleRegion <$> Annex.getState Annex.output
   where
 	go Nothing
 		| iserror = liftIO $ Console.errorConcurrent msg
-		| otherwise = liftIO $ Console.outputConcurrent msg
+		| otherwise = do
+			liftIO $ Console.outputConcurrent ("REGION MESSAGE NO REGION" ++ show msg)
+			liftIO $ Console.outputConcurrent msg
 	go (Just r) = do
+		liftIO $ Console.outputConcurrent ("REGION MESSAGE " ++ show msg)
 		-- Can't display the error to stdout while
 		-- console regions are in use, so set the errflag
 		-- to get it to display to stderr later.
-		when iserror $
-			Annex.changeState $ \s -> s { Annex.consoleregionerrflag = True }
+		when iserror $ do
+			Annex.changeState $ \s ->
+				s { Annex.output = (Annex.output s) { consoleRegionErrFlag = True } }
 		liftIO $ Regions.appendConsoleRegion r msg
 #else
 concurrentMessage _ _ fallback = fallback
 #endif
 
-{- Enable concurrent output when that has been requested.
- -
- - This should only be run once per git-annex lifetime, with
- - everything that might generate messages run inside it.
- -}
-withConcurrentOutput :: Annex a -> Annex a
+{- Do concurrent output when that has been requested. -}
+allowConcurrentOutput :: Annex a -> Annex a
 #ifdef WITH_CONCURRENTOUTPUT
-withConcurrentOutput a = withOutputType go
+allowConcurrentOutput a = go =<< Annex.getState Annex.concurrentjobs
   where
-	go (ConcurrentOutput _) = Console.withConcurrentOutput a
-	go _ = a
+	go (Just n) = Regions.displayConsoleRegions $ bracket_
+		(Annex.setOutput (ConcurrentOutput n))
+		(Annex.setOutput NormalOutput)
+		a
+	go Nothing = a
 #else
-withConcurrentOutput = id
+allowConcurrentOutput = id
 #endif
 
 {- Runs an action in its own dedicated region of the console.
@@ -103,11 +106,12 @@ inOwnConsoleRegion a = Regions.withConsoleRegion Regions.Linear $ \r -> do
 	setregion (Just r)
 	a `finally` removeregion r
   where
-	setregion v = Annex.changeState $ \s -> s { Annex.consoleregion = v }
+	setregion r = Annex.changeState $ \s -> s { Annex.output = (Annex.output s) { consoleRegion = r } }
 	removeregion r = do
-		errflag <- Annex.getState Annex.consoleregionerrflag
+		errflag <- consoleRegionErrFlag <$> Annex.getState Annex.output
 		let h = if errflag then Console.StdErr else Console.StdOut
-		Annex.changeState $ \s -> s { Annex.consoleregionerrflag = False }
+		Annex.changeState $ \s ->
+			s { Annex.output = (Annex.output s) { consoleRegionErrFlag = False } }
 		setregion Nothing
 		liftIO $ atomically $ do
 			t <- Regions.getConsoleRegion r
