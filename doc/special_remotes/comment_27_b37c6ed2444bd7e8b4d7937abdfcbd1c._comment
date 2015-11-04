@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="alex@7ca398785b94de08e4386b708f32ff9f1af381c7"
+ nickname="alex"
+ subject="backblaze support"
+ date="2015-11-04T19:58:34Z"
+ content="""
+Backblaze B2 with unlimited storage at $.005/GB/mo seems to be a great option for a special remote.
+Is it feasible to add support for it?
+I'd love to contribute financially.
+
+https://www.backblaze.com/b2
+
+"""]]
