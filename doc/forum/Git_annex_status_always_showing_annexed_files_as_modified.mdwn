@@ -18,4 +18,15 @@ M ..\15-11-03/rc-test-2 (2015 Nov 03).csv
 M ..\15-11-03/wash-absorption.png
 ```
 
+Edit: I should add that this repo is untrusted. Doing sync on it just ends up pulling from remotes, not pushing anywhere:
+```
+λ git annex sync
+commit  (recording state in git...)
+ok
+pull origin
+ok
+pull github
+ok
+```
+
 How would I check if this is a problem with my installation or a bug in git annex?
