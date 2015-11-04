@@ -52,16 +52,15 @@ import Types.Key
 import qualified Annex
 
 showStart :: String -> FilePath -> Annex ()
-showStart command file = handleMessage (JSON.start command $ Just file) $
-	flushed $ putStr $ command ++ " " ++ file ++ " "
+showStart command file = outputMessage (JSON.start command $ Just file) $
+	command ++ " " ++ file ++ " "
 
 showStart' :: String -> Key -> Maybe FilePath -> Annex ()
 showStart' command key afile = showStart command $
 	fromMaybe (key2file key) afile
 
 showNote :: String -> Annex ()
-showNote s = handleMessage (JSON.note s) $
-	flushed $ putStr $ "(" ++ s ++ ") "
+showNote s = outputMessage (JSON.note s) $ "(" ++ s ++ ") "
 
 showAction :: String -> Annex ()
 showAction s = showNote $ s ++ "..."
@@ -76,7 +75,7 @@ showSideAction m = Annex.getState Annex.output >>= go
 			Annex.changeState $ \s -> s { Annex.output = st' }
 		| sideActionBlock st == InBlock = return ()
 		| otherwise = p
-	p = handleMessage q $ putStrLn $ "(" ++ m ++ "...)"
+	p = outputMessage q $ "(" ++ m ++ "...)\n"
 			
 showStoringStateAction :: Annex ()
 showStoringStateAction = showSideAction "recording state in git"
@@ -101,11 +100,10 @@ doSideAction' b a = do
 {- Make way for subsequent output of a command. -}
 showOutput :: Annex ()
 showOutput = unlessM commandProgressDisabled $
-	handleMessage q $ putStr "\n"
+	outputMessage q "\n"
 
 showLongNote :: String -> Annex ()
-showLongNote s = handleMessage (JSON.note s) $
-	putStrLn $ '\n' : indent s
+showLongNote s = outputMessage (JSON.note s) ('\n' : indent s ++ "\n")
 
 showEndOk :: Annex ()
 showEndOk = showEndResult True
@@ -114,7 +112,7 @@ showEndFail :: Annex ()
 showEndFail = showEndResult False
 
 showEndResult :: Bool -> Annex ()
-showEndResult ok = handleMessage (JSON.end ok) $ putStrLn $ endResult ok
+showEndResult ok = outputMessage (JSON.end ok) $ endResult ok ++ "\n"
 
 endResult :: Bool -> String
 endResult True = "ok"
@@ -129,11 +127,10 @@ warning = warning' True . indent
 warning' :: Bool -> String -> Annex ()
 warning' makeway w = do
 	when makeway $
-		handleMessage q $ putStr "\n"
-	liftIO $ do
-		hFlush stdout
-		hPutStrLn stderr w
+		outputMessage q "\n"
+	outputError (w ++ "\n")
 
+{- Not concurrent output safe. -}
 warningIO :: String -> IO ()
 warningIO w = do
 	putStr "\n"
@@ -145,7 +142,10 @@ indent = intercalate "\n" . map (\l -> "  " ++ l) . lines
 
 {- Shows a JSON fragment only when in json mode. -}
 maybeShowJSON :: JSON a => [(String, a)] -> Annex ()
-maybeShowJSON v = handleMessage (JSON.add v) q
+maybeShowJSON v = withOutputType $ liftIO . go
+  where
+	go JSONOutput = JSON.add v
+	go _ = return ()
 
 {- Shows a complete JSON value, only when in json mode. -}
 showFullJSON :: JSON a => [(String, a)] -> Annex Bool
@@ -157,19 +157,19 @@ showFullJSON v = withOutputType $ liftIO . go
 {- Performs an action that outputs nonstandard/customized output, and
  - in JSON mode wraps its output in JSON.start and JSON.end, so it's
  - a complete JSON document.
- - This is only needed when showStart and showEndOk is not used. -}
+ - This is only needed when showStart and showEndOk is not used.
+ -}
 showCustom :: String -> Annex Bool -> Annex ()
 showCustom command a = do
-	handleMessage (JSON.start command Nothing) q
+	outputMessage (JSON.start command Nothing) ""
 	r <- a
-	handleMessage (JSON.end r) q
+	outputMessage (JSON.end r) ""
 
 showHeader :: String -> Annex ()
-showHeader h = handleMessage q $
-	flushed $ putStr $ h ++ ": "
+showHeader h = outputMessage q $ (h ++ ": ")
 
 showRaw :: String -> Annex ()
-showRaw s = handleMessage q $ putStrLn s
+showRaw = outputMessage q
 
 setupConsole :: IO ()
 setupConsole = do
@@ -207,6 +207,6 @@ debugEnabled = do
 commandProgressDisabled :: Annex Bool
 commandProgressDisabled = withOutputType $ \t -> return $ case t of
 	QuietOutput -> True
-	ParallelOutput _ -> True
 	JSONOutput -> True
 	NormalOutput -> False
+	ConcurrentOutput _ -> True

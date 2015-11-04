@@ -24,6 +24,7 @@ import Annex.Action
 import Annex.Environment
 import Command
 import Types.Messages
+import Messages.Concurrent
 
 {- Runs the passed command line. -}
 dispatch :: Bool -> CmdParams -> [Command] -> [GlobalOption] -> [(String, String)] -> IO Git.Repo -> String -> String -> IO ()
@@ -45,8 +46,9 @@ dispatch fuzzyok allargs allcmds globaloptions fields getgitrepo progname progde
 			whenM (annexDebug <$> Annex.getGitConfig) $
 				liftIO enableDebugOutput
 			startup
-			performCommandAction cmd seek $
-				shutdown $ cmdnocommit cmd
+			withConcurrentOutput $
+				performCommandAction cmd seek $
+					shutdown $ cmdnocommit cmd
 	go (Left norepo) = do
 		let ingitrepo = \a -> a =<< Git.Config.global
 		-- Parse command line with full cmdparser first,

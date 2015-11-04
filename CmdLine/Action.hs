@@ -47,7 +47,7 @@ performCommandAction Command { cmdcheck = c, cmdname = name } seek cont = do
 commandAction :: CommandStart -> Annex ()
 commandAction a = withOutputType go 
   where
-	go (ParallelOutput n) = do
+	go (ConcurrentOutput n) = do
 		ws <- Annex.getState Annex.workers
 		(st, ws') <- if null ws
 			then do

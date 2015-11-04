@@ -9,7 +9,7 @@ module Types.Messages where
 
 import Data.Default
 
-data OutputType = NormalOutput | QuietOutput | ParallelOutput Int | JSONOutput
+data OutputType = NormalOutput | QuietOutput | ConcurrentOutput Int | JSONOutput
 
 data SideActionBlock = NoBlock | StartBlock | InBlock
 	deriving (Eq)

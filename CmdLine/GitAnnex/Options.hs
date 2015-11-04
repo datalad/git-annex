@@ -283,7 +283,7 @@ jsonOption = globalFlag (Annex.setOutput JSONOutput)
 	)
 
 jobsOption :: GlobalOption
-jobsOption = globalSetter (Annex.setOutput . ParallelOutput) $ 
+jobsOption = globalSetter (Annex.setOutput . ConcurrentOutput) $ 
 	option auto
 		( long "jobs" <> short 'J' <> metavar paramNumber
 		<> help "enable concurrent jobs"

@@ -17,15 +17,14 @@ import Types
 import Types.Messages
 import Types.Key
 
-#ifdef WITH_ASCIIPROGRESS
-import System.Console.AsciiProgress
-import qualified System.Console.Terminal.Size as Terminal
+#ifdef WITH_CONCURRENTOUTPUT
+import System.Console.Concurrent
+import System.Console.Regions
 import Control.Concurrent
-#else
+#endif
 import Data.Progress.Meter
 import Data.Progress.Tracker
 import Data.Quantity
-#endif
 
 {- Shows a progress meter while performing a transfer of a key.
  - The action is passed a callback to use to update the meter. -}
@@ -36,7 +35,7 @@ metered combinemeterupdate key af a = case keySize key of
   where
 	go _ QuietOutput = nometer
 	go _ JSONOutput = nometer
-#ifdef WITH_ASCIIPROGRESS
+#if 0
 	go size _ = do
 		showOutput
 		liftIO $ putStrLn ""
@@ -65,8 +64,8 @@ metered combinemeterupdate key af a = case keySize key of
 
 		return r
 #else
-	-- Old progress bar code, not suitable for parallel output.
-	go _ (ParallelOutput _) = do
+	-- Old progress bar code, not suitable for concurrent output.
+	go _ (ConcurrentOutput _) = do
 		r <- nometer
 		liftIO $ putStrLn $ fromMaybe (key2file key) af
 		return r
@@ -79,7 +78,7 @@ metered combinemeterupdate key af a = case keySize key of
 		return r
 #endif
 
-#ifdef WITH_ASCIIPROGRESS
+#if 0
 	pupdate pg n = do
 		let i = fromBytesProcessed n
 		sofar <- stCompleted <$> getProgressStats pg
@@ -95,24 +94,17 @@ metered combinemeterupdate key af a = case keySize key of
 
 	nometer = a (const noop)
 
-#ifdef WITH_ASCIIPROGRESS
-	truncatepretty n s
-		| length s > n = take (n-2) s ++ ".."
-		| otherwise = s
-#endif
-
-{- Use when the progress meter is only desired for parallel
- - mode; as when a command's own progress output is preferred. -}
-parallelMetered :: Maybe MeterUpdate -> Key -> AssociatedFile -> (MeterUpdate -> Annex a) -> Annex a
-parallelMetered combinemeterupdate key af a = withOutputType go
+{- Use when the progress meter is only desired for concurrent
+ - output; as when a command's own progress output is preferred. -}
+concurrentMetered :: Maybe MeterUpdate -> Key -> AssociatedFile -> (MeterUpdate -> Annex a) -> Annex a
+concurrentMetered combinemeterupdate key af a = withOutputType go
   where
-	go (ParallelOutput _) = metered combinemeterupdate key af a
+	go (ConcurrentOutput _) = metered combinemeterupdate key af a
 	go _ = a (fromMaybe (const noop) combinemeterupdate)
 
 {- Progress dots. -}
 showProgressDots :: Annex ()
-showProgressDots = handleMessage q $
-	flushed $ putStr "."
+showProgressDots = outputMessage q "."
 
 {- Runs a command, that may output progress to either stdout or
  - stderr, as well as other messages.
@@ -149,5 +141,7 @@ mkStderrRelayer = do
 mkStderrEmitter :: Annex (String -> IO ())
 mkStderrEmitter = withOutputType go
   where
-	go (ParallelOutput _) = return $ \s -> hPutStrLn stderr ("E: " ++ s)
+#ifdef WITH_CONCURRENTOUTPUT
+	go (ConcurrentOutput _) = return errorConcurrent
+#endif
 	go _ = return (hPutStrLn stderr)

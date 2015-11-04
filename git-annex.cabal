@@ -93,8 +93,8 @@ Flag DesktopNotify
 Flag TorrentParser
   Description: Use haskell torrent library to parse torrent files
 
-Flag AsciiProgress
-  Description: Use ascii-progress library (experimental)
+Flag ConcurrentOutput
+  Description: Use concurrent-output library
   Default: False
 
 Flag EKG
@@ -278,9 +278,9 @@ Executable git-annex
     Build-Depends: esqueleto, persistent-sqlite, persistent, persistent-template
     CPP-Options: -DWITH_DATABASE
 
-  if flag(AsciiProgress)
-    Build-Depends: ascii-progress (<= 0.2.1.2), terminal-size
-    CPP-Options: -DWITH_ASCIIPROGRESS
+  if flag(ConcurrentOutput)
+    Build-Depends: concurrent-output (>= 1.4.1)
+    CPP-Options: -DWITH_CONCURRENTOUTPUT
 
   if flag(EKG)
     Build-Depends: ekg
