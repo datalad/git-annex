@@ -44,7 +44,7 @@ import Data.Time.Clock.POSIX
 import System.Posix.Types (EpochTime)
 
 cmd :: Command
-cmd = withGlobalOptions annexedMatchingOptions $
+cmd = withGlobalOptions (jobsOption : annexedMatchingOptions) $
 	command "fsck" SectionMaintenance
 		"find and fix problems"
 		paramPaths (seek <$$> optParser)
@@ -87,7 +87,7 @@ optParser desc = FsckOptions
 			))
 
 seek :: FsckOptions -> CommandSeek
-seek o = do
+seek o = allowConcurrentOutput $ do
 	from <- maybe (pure Nothing) (Just <$$> getParsed) (fsckFromOption o)
 	u <- maybe getUUID (pure . Remote.uuid) from
 	i <- prepIncremental u (incrementalOpt o)

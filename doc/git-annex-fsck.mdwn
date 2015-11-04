@@ -85,6 +85,10 @@ With parameters, only the specified files are checked.
   The [[git-annex-matching-options]](1)
   can be used to specify files to fsck.
 
+* `--jobs=N` `-JN`
+
+  Runs multiple fsck jobs in parallel. For example: `-J4`
+
 # OPTIONS
 
 # SEE ALSO
