@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-11-04T21:00:02Z"
+ content="""
+Now, many git-annex commands support -Jn, the output is not a jumbled mess
+thanks to the concurrent-output library.
+
+At this point all I see that needs doing is:
+
+* Maybe support -Jn in more commands. Just needs changing a few lines of
+  code and testing each.
+
+* It would be nice to be able to run cleanup actions in the "background",
+  after a command has otherwise succeeded, even when -Jn is not used.
+  In particular, when getting files, their checksum is verified after
+  download. That would nicely parellize with the next file being
+  downloaded.
+
+  This could be implemented also using concurrent-output, but it would then
+  have to drive the display even when -J is not used. I'm not yet sure
+  enough about it to use it by default.
+"""]]
