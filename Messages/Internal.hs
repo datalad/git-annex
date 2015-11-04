@@ -18,8 +18,8 @@ import Types.Messages
 #ifdef WITH_CONCURRENTOUTPUT
 import qualified System.Console.Concurrent as Console
 import qualified System.Console.Regions as Regions
-import Data.String
 import Control.Concurrent.STM
+import qualified Data.Text as T
 #endif
 
 withOutputType :: (OutputType -> Annex a) -> Annex a
@@ -95,16 +95,18 @@ allowConcurrentOutput = id
  - the value of the region is displayed in the scrolling area above
  - any other active regions.
  -
- - When not at a console, a region is not displayed until the end.
+ - When not at a console, a region is not displayed until the action is
+ - complete.
  -}
 inOwnConsoleRegion :: Annex a -> Annex a
 #ifdef WITH_CONCURRENTOUTPUT
-inOwnConsoleRegion a = Regions.withConsoleRegion Regions.Linear $ \r -> do
-	setregion (Just r)
-	a `finally` removeregion r
+inOwnConsoleRegion a = bracket mkregion rmregion go
   where
-	setregion r = Annex.changeState $ \s -> s { Annex.output = (Annex.output s) { consoleRegion = r } }
-	removeregion r = do
+	go r = do
+		setregion (Just r)
+		a
+	mkregion = Regions.openConsoleRegion Regions.Linear
+	rmregion r = do
 		errflag <- consoleRegionErrFlag <$> Annex.getState Annex.output
 		let h = if errflag then Console.StdErr else Console.StdOut
 		Annex.changeState $ \s ->
@@ -112,9 +114,10 @@ inOwnConsoleRegion a = Regions.withConsoleRegion Regions.Linear $ \r -> do
 		setregion Nothing
 		liftIO $ atomically $ do
 			t <- Regions.getConsoleRegion r
+			unless (T.null t) $
+				Console.bufferOutputSTM h t
 			Regions.closeConsoleRegion r
-			Console.bufferOutputSTM h $
-				Console.toOutput (t <> fromString "\n")
+	setregion r = Annex.changeState $ \s -> s { Annex.output = (Annex.output s) { consoleRegion = r } }
 #else
 inOwnConsoleRegion = id
 #endif
