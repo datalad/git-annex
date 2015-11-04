@@ -19,6 +19,7 @@ M ..\15-11-03/wash-absorption.png
 ```
 
 Edit: I should add that this repo is untrusted. Doing sync on it just ends up pulling from remotes, not pushing anywhere:
+
 ```
 λ git annex sync
 commit  (recording state in git...)
