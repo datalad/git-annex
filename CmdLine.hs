@@ -24,7 +24,7 @@ import Annex.Action
 import Annex.Environment
 import Command
 import Types.Messages
-import Messages.Concurrent
+import Messages.Internal
 
 {- Runs the passed command line. -}
 dispatch :: Bool -> CmdParams -> [Command] -> [GlobalOption] -> [(String, String)] -> IO Git.Repo -> String -> String -> IO ()

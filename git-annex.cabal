@@ -279,7 +279,7 @@ Executable git-annex
     CPP-Options: -DWITH_DATABASE
 
   if flag(ConcurrentOutput)
-    Build-Depends: concurrent-output (>= 1.4.1)
+    Build-Depends: concurrent-output (>= 1.5)
     CPP-Options: -DWITH_CONCURRENTOUTPUT
 
   if flag(EKG)

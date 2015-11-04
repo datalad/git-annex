@@ -51,7 +51,7 @@ dupState = do
 		}
 
 {- Merges the passed AnnexState into the current Annex state.
- - Also shuts closes various handles in it. -}
+ - Also closes various handles in it. -}
 mergeState :: AnnexState -> Annex ()
 mergeState st = do
 	st' <- liftIO $ snd <$> run st closehandles
