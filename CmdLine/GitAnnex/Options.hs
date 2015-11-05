@@ -9,6 +9,7 @@ module CmdLine.GitAnnex.Options where
 
 import Options.Applicative
 import Options.Applicative.Builder.Internal
+import Control.Concurrent
 
 import Common.Annex
 import qualified Git.Config
@@ -292,7 +293,11 @@ jobsOption = globalSetter set $
 		<> hidden
 		)
   where
-	set n = Annex.changeState $ \s -> s { Annex.concurrentjobs = Just n }
+	set n = do
+		Annex.changeState $ \s -> s { Annex.concurrentjobs = Just n }
+		c <- liftIO getNumCapabilities
+		when (n > c) $
+			liftIO $ setNumCapabilities n
 
 timeLimitOption :: GlobalOption
 timeLimitOption = globalSetter Limit.addTimeLimit $ strOption
