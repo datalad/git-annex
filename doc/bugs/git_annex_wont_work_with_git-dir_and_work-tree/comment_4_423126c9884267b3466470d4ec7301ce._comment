@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="gmazzurco89@89ed4f74a057a9c71b2a00000fdb201a88f81bcd"
+ nickname="gmazzurco89"
+ subject="comment 4"
+ date="2015-11-05T07:28:02Z"
+ content="""
+The \"scripty stuff\" may be a simple find or grep on the annexed dir, that doesn't actually involve git-annex, but those simple and usual commands are fooled by the content of .git, because of that it would be nice to have git-annex-{assistant, webapp, ...} work in this setup, it is not only a matter of scripts, other applications may have unexpected behavior in presence of .git -_-
+
+To make the usage of other apps more complicated doesn't seems an objective of git-annex-webapp, am I wrong?
+"""]]
