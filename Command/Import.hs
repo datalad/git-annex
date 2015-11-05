@@ -21,7 +21,7 @@ import Annex.CheckIgnore
 import Annex.NumCopies
 
 cmd :: Command
-cmd = withGlobalOptions (jobsOption : fileMatchingOptions) $ notBareRepo $
+cmd = withGlobalOptions fileMatchingOptions $ notBareRepo $
 	command "import" SectionCommon 
 		"move and add files from outside git working copy"
 		paramPaths (seek <$$> optParser)
@@ -59,7 +59,7 @@ duplicateModeParser =
 		)
 
 seek :: ImportOptions -> CommandSeek
-seek o = allowConcurrentOutput $ do
+seek o = do
 	repopath <- liftIO . absPath =<< fromRepo Git.repoPath
 	inrepops <- liftIO $ filter (dirContains repopath) <$> mapM absPath (importFiles o)
 	unless (null inrepops) $ do
