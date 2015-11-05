@@ -43,6 +43,11 @@ annexed content, and other symlinks.
 
   For example: `--largerthan=1GB`
 
+* `--jobs=N` `-JN`
+
+  Adds multiple files in parallel. This may be faster.
+  For example: `-J4`  
+
 # SEE ALSO
 
 [[git-annex]](1)

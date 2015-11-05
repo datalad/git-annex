@@ -38,7 +38,7 @@ import qualified Utility.Quvi as Quvi
 #endif
 
 cmd :: Command
-cmd = notBareRepo $
+cmd = notBareRepo $ withGlobalOptions [jobsOption] $
 	command "addurl" SectionCommon "add urls to annex"
 		(paramRepeating paramUrl) (seek <$$> optParser)
 
@@ -87,11 +87,12 @@ parseRawOption = switch
 	)
 
 seek :: AddUrlOptions -> CommandSeek
-seek o = forM_ (addUrls o) $ \u -> do
-	r <- Remote.claimingUrl u
-	if Remote.uuid r == webUUID || rawOption o
-		then void $ commandAction $ startWeb o u
-		else checkUrl r o u
+seek o = allowConcurrentOutput $
+	forM_ (addUrls o) $ \u -> do
+		r <- Remote.claimingUrl u
+		if Remote.uuid r == webUUID || rawOption o
+			then void $ commandAction $ startWeb o u
+			else checkUrl r o u
 
 checkUrl :: Remote -> AddUrlOptions -> URLString -> Annex ()
 checkUrl r o u = do

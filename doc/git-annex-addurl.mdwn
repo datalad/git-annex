@@ -65,6 +65,11 @@ be used to get better filenames.
   Use to adjust the filenames that are created by addurl. For example,
   `--suffix=.mp3` can be used to add an extension to the file.
 
+* `--jobs=N` `-JN`
+
+  Enables parallel downloads when multiple urls are being added.
+  For example: `-J4`  
+
 # SEE ALSO
 
 [[git-annex]](1)

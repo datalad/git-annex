@@ -2,7 +2,8 @@ git-annex (5.20151102.2) UNRELEASED; urgency=medium
 
   * Use concurrent-output library when configured with -fConcurrentOutput.
     This allows nicely displayed messages when using the -J flag.
-  * Additional commands now suppport the -J flag: fsck, drop
+  * Additional commands now suppport the -J flag: 
+    fsck, drop, add, addurl, import
 
  -- Joey Hess <id@joeyh.name>  Wed, 04 Nov 2015 12:50:20 -0400
 

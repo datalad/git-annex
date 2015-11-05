@@ -35,7 +35,7 @@ import Utility.Tmp
 import Control.Exception (IOException)
 
 cmd :: Command
-cmd = notBareRepo $ withGlobalOptions fileMatchingOptions $
+cmd = notBareRepo $ withGlobalOptions (jobsOption : fileMatchingOptions) $
 	command "add" SectionCommon "add files to annex"
 		paramPaths (seek <$$> optParser)
 
@@ -56,7 +56,7 @@ optParser desc = AddOptions
  -
  - In direct mode, it acts on any files that have changed. -}
 seek :: AddOptions -> CommandSeek
-seek o = do
+seek o = allowConcurrentOutput $ do
 	matcher <- largeFilesMatcher
 	let go a = flip a (addThese o) $ \file -> ifM (checkFileMatcher matcher file <||> Annex.getState Annex.force)
 		( start file
