@@ -128,7 +128,7 @@ Executable git-annex
    utf8-string, bytestring, text, sandi, json,
    monad-control, transformers,
    bloomfilter, edit-distance,
-   resourcet, http-conduit, http-types,
+   resourcet, http-conduit, http-client, http-types,
    time, old-locale
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs
@@ -179,11 +179,11 @@ Executable git-annex
     Build-Depends: regex-compat
 
   if flag(S3)
-    Build-Depends: conduit, conduit-extra, aws (>= 0.9.2), http-client
+    Build-Depends: conduit, conduit-extra, aws (>= 0.9.2)
     CPP-Options: -DWITH_S3
 
   if flag(WebDAV)
-    Build-Depends: DAV (>= 1.0), http-client
+    Build-Depends: DAV (>= 1.0)
     CPP-Options: -DWITH_WEBDAV
 
   if flag(Assistant) && ! os(solaris)
