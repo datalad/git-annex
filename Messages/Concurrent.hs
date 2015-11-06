@@ -98,7 +98,13 @@ inOwnConsoleRegion a = do
 inOwnConsoleRegion = id
 #endif
 
+{- The progress region is displayed inline with the current console region. -}
 #ifdef WITH_CONCURRENTOUTPUT
+withProgressRegion :: (Regions.ConsoleRegion -> Annex a) -> Annex a
+withProgressRegion a = do
+	parent <- consoleRegion <$> Annex.getState Annex.output
+	Regions.withConsoleRegion (maybe Regions.Linear Regions.InLine parent) a
+
 instance Regions.LiftRegion Annex where
 	liftRegion = liftIO . atomically
 #endif

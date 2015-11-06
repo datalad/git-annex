@@ -6,6 +6,8 @@ git-annex (5.20151102.2) UNRELEASED; urgency=medium
     fsck, drop, add, addurl, import
   * import: Avoid very ugly error messages when the directory files
     are imported to is not a directort, but perhaps an annexed file.
+  * Concurrent progress bars are now displayed when using -J with a command
+    that moves file contents around.
 
  -- Joey Hess <id@joeyh.name>  Wed, 04 Nov 2015 12:50:20 -0400
 

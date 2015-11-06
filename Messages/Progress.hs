@@ -18,10 +18,11 @@ import Types.Messages
 import Types.Key
 
 #ifdef WITH_CONCURRENTOUTPUT
-import System.Console.Concurrent
-import System.Console.Regions
-import Control.Concurrent
+import Messages.Concurrent
+import qualified System.Console.Regions as Regions
+import qualified System.Console.Concurrent as Console
 #endif
+
 import Data.Progress.Meter
 import Data.Progress.Tracker
 import Data.Quantity
@@ -29,65 +30,37 @@ import Data.Quantity
 {- Shows a progress meter while performing a transfer of a key.
  - The action is passed a callback to use to update the meter. -}
 metered :: Maybe MeterUpdate -> Key -> AssociatedFile -> (MeterUpdate -> Annex a) -> Annex a
-metered combinemeterupdate key af a = case keySize key of
+metered combinemeterupdate key _af a = case keySize key of
 	Nothing -> nometer
 	Just size -> withOutputType (go $ fromInteger size)
   where
 	go _ QuietOutput = nometer
 	go _ JSONOutput = nometer
-#if 0
-	go size _ = do
-		showOutput
-		liftIO $ putStrLn ""
-
-		cols <- liftIO $ maybe 79 Terminal.width <$> Terminal.size
-		let desc = truncatepretty cols $ fromMaybe (key2file key) af
-
-		result <- liftIO newEmptyMVar
-		pg <- liftIO $ newProgressBar def
-			{ pgWidth = cols
-			, pgFormat = desc ++ " :percent :bar ETA :eta"
-			, pgTotal = size
-			, pgOnCompletion = do
-				ok <- takeMVar result
-				putStrLn $ desc ++ " " ++ endResult ok
-			}
-		r <- a $ liftIO . pupdate pg
-
-		liftIO $ do
-			-- See if the progress bar is complete or not.
-			sofar <- stCompleted <$> getProgressStats pg
-			putMVar result (sofar >= size)
-			-- May not be actually complete if the action failed,
-			-- but this just clears the progress bar.
-			complete pg
-
-		return r
-#else
-	-- Old progress bar code, not suitable for concurrent output.
-	go _ (ConcurrentOutput _) = nometer
 	go size NormalOutput = do
 		showOutput
-		progress <- liftIO $ newProgress "" size
-		meter <- liftIO $ newMeter progress "B" 25 (renderNums binaryOpts 1)
-		r <- a $ liftIO . pupdate meter progress
+		(progress, meter) <- mkmeter size
+		r <- a $ \n -> liftIO $ do
+			setP progress $ fromBytesProcessed n
+			displayMeter stdout meter
+			maybe noop (\m -> m n) combinemeterupdate
 		liftIO $ clearMeter stdout meter
 		return r
+#if WITH_CONCURRENTOUTPUT
+	go size (ConcurrentOutput _) = withProgressRegion $ \r -> do
+		(progress, meter) <- mkmeter size
+		a $ \n -> liftIO $ do
+			setP progress $ fromBytesProcessed n
+			s <- renderMeter meter
+			Regions.setConsoleRegion r ("\n" ++ s)
+			maybe noop (\m -> m n) combinemeterupdate
+#else
+	go _ (ConcurrentOutput _) = nometer
 #endif
 
-#if 0
-	pupdate pg n = do
-		let i = fromBytesProcessed n
-		sofar <- stCompleted <$> getProgressStats pg
-		when (i > sofar) $
-			tickN pg (i - sofar)
-		threadDelay 100
-#else
-	pupdate meter progress n = do
-		setP progress $ fromBytesProcessed n
-		displayMeter stdout meter
-#endif
-		maybe noop (\m -> m n) combinemeterupdate
+	mkmeter size = do
+		progress <- liftIO $ newProgress "" size
+		meter <- liftIO $ newMeter progress "B" 25 (renderNums binaryOpts 1)
+		return (progress, meter)
 
 	nometer = a (const noop)
 
@@ -139,6 +112,6 @@ mkStderrEmitter :: Annex (String -> IO ())
 mkStderrEmitter = withOutputType go
   where
 #ifdef WITH_CONCURRENTOUTPUT
-	go (ConcurrentOutput _) = return errorConcurrent
+	go (ConcurrentOutput _) = return Console.errorConcurrent
 #endif
 	go _ = return (hPutStrLn stderr)
