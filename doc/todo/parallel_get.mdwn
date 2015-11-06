@@ -79,3 +79,5 @@ See also: [[parallel_possibilities]]
 
 >> `git annex get -JN` works now, but lacks any progress display.
 >> Waiting on some updates to ascii-progress. --[[Joey]]
+
+>>> Wrote concurrent-output; [[done]] --[[Joey]]
