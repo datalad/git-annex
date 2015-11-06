@@ -8,6 +8,8 @@ git-annex (5.20151102.2) UNRELEASED; urgency=medium
     are imported to is not a directort, but perhaps an annexed file.
   * Concurrent progress bars are now displayed when using -J with a command
     that moves file contents around.
+  * Fix race that could result in an annexed file's symlink not being
+    created, when eg, running concurrent git-annex adds.
 
  -- Joey Hess <id@joeyh.name>  Wed, 04 Nov 2015 12:50:20 -0400
 
