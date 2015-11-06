@@ -10,6 +10,10 @@ git-annex (5.20151102.2) UNRELEASED; urgency=medium
     that moves file contents around.
   * Fix race that could result in an annexed file's symlink not being
     created, when eg, running concurrent git-annex adds.
+  * add: Fix error recovery rollback to not move the injested file content
+    out of the annex back to the file, because other files may point to
+    that same content. Instead, copy the injected file content out to
+    recover.
 
  -- Joey Hess <id@joeyh.name>  Wed, 04 Nov 2015 12:50:20 -0400
 

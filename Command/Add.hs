@@ -31,6 +31,7 @@ import Utility.InodeCache
 import Annex.FileMatcher
 import Annex.ReplaceFile
 import Utility.Tmp
+import Utility.CopyFile
 
 import Control.Exception (IOException)
 
@@ -244,15 +245,13 @@ undo :: FilePath -> Key -> SomeException -> Annex a
 undo file key e = do
 	whenM (inAnnex key) $ do
 		liftIO $ nukeFile file
-		catchNonAsync (fromAnnex key file) tryharder
-		logStatus key InfoMissing
+		-- The key could be used by other files too, so leave the
+		-- content in the annex, and make a copy back to the file.
+		obj <- calcRepo $ gitAnnexLocation key
+		unlessM (liftIO $ copyFileExternal CopyTimeStamps obj file) $
+			warning $ "Unable to restore content of " ++ file ++ "; it should be located in " ++ obj
+		thawContent file
 	throwM e
-  where
-	-- fromAnnex could fail if the file ownership is weird
-	tryharder :: SomeException -> Annex ()
-	tryharder _ = do
-		src <- calcRepo $ gitAnnexLocation key
-		liftIO $ moveFile src file
 
 {- Creates the symlink to the annexed content, returns the link target. -}
 link :: FilePath -> Key -> Maybe InodeCache -> Annex String

@@ -27,7 +27,6 @@ module Annex.Content (
 	sendAnnex,
 	prepSendAnnex,
 	removeAnnex,
-	fromAnnex,
 	moveBad,
 	KeyLocation(..),
 	getKeysPresent,
@@ -572,13 +571,6 @@ secureErase file = maybe noop go =<< annexSecureEraseCommand <$> Annex.getGitCon
 	go basecmd = void $ liftIO $
 		boolSystem "sh" [Param "-c", Param $ gencmd basecmd]
 	gencmd = massReplace [ ("%file", shellEscape file) ]
-
-{- Moves a key's file out of .git/annex/objects/ -}
-fromAnnex :: Key -> FilePath -> Annex ()
-fromAnnex key dest = cleanObjectLoc key $ do
-	file <- calcRepo $ gitAnnexLocation key
-	thawContent file
-	liftIO $ moveFile file dest
 
 {- Moves a key out of .git/annex/objects/ into .git/annex/bad, and
  - returns the file it was moved to. -}
