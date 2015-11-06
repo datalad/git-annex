@@ -43,7 +43,12 @@ concurrentMessage iserror msg _ = go =<< consoleRegion <$> Annex.getState Annex.
 		when iserror $ do
 			Annex.changeState $ \s ->
 				s { Annex.output = (Annex.output s) { consoleRegionErrFlag = True } }
-		liftIO $ Regions.appendConsoleRegion r msg
+		liftIO $ atomically $ do
+			Regions.appendConsoleRegion r msg
+			rl <- takeTMVar Regions.regionList
+			putTMVar Regions.regionList
+				(if r `elem` rl then rl else r:rl)
+
 #else
 concurrentMessage _ _ fallback = fallback
 #endif
@@ -73,7 +78,10 @@ inOwnConsoleRegion a = do
 			rmregion r
 			return ret
   where
-	mkregion = Regions.openConsoleRegion Regions.Linear
+	-- The region is allocated here, but not displayed until 
+	-- a message is added to it. This avoids unnecessary screen
+	-- updates when a region does not turn out to need to be used.
+	mkregion = Regions.newConsoleRegion Regions.Linear ""
 	setregion r = Annex.changeState $ \s -> s { Annex.output = (Annex.output s) { consoleRegion = r } }
 	rmregion r = do
 		errflag <- consoleRegionErrFlag <$> Annex.getState Annex.output
