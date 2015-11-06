@@ -24,10 +24,19 @@ data SideActionBlock = NoBlock | StartBlock | InBlock
 data MessageState = MessageState
 	{ outputType :: OutputType
 	, sideActionBlock :: SideActionBlock
+#ifdef WITH_CONCURRENTOUTPUT
 	, consoleRegion :: Maybe ConsoleRegion
 	, consoleRegionErrFlag :: Bool
+#endif
 	}
 
 instance Default MessageState
   where
-	def = MessageState NormalOutput NoBlock Nothing False
+	def = MessageState
+		{ outputType = NormalOutput
+		, sideActionBlock = NoBlock
+#ifdef WITH_CONCURRENTOUTPUT
+		, consoleRegion = Nothing
+		, consoleRegionErrFlag = False
+#endif
+		}
