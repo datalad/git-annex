@@ -66,6 +66,11 @@ Several options can be used to adjust handling of duplicate files.
 
 		git annex import /dir --include='*.png'
 
+* `--jobs=N` `-JN`
+
+  Imports multiple files in parallel. This may be faster.
+  For example: `-J4`  
+
 # CAVEATS
 
 Note that using `--deduplicate` or `--clean-duplicates` with the WORM
