@@ -58,3 +58,6 @@ storage class: Standard
 
 I've had great experiences using git annex normally, but the special remotes tend
 to get dicey, like here.
+
+> The `STANDARD_IA` docuemntation now includes the necessary version of the
+> aws library to support this feature. [[done]] --[[Joey]]
