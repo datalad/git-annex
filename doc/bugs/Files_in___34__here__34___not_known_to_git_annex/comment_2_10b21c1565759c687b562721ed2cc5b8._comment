@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://www.joachim-breitner.de/"
+ nickname="nomeata"
+ subject="comment 2"
+ date="2015-11-07T09:02:08Z"
+ content="""
+> I guess those are both marked as dead, since whereis skipps dead repos and doesn't show them.
+
+Well, only `500G` should be marked as dead, not `1T` – that is the repository I am working in!... 
+
+And indeed, `git annex semitrust 1T` solved it.
+
+Maybe at one point I had re-used uuids, because I was copying repositories?
+
+So this might have been an issue with PEBKAC, although maybe git-annex could warn, for examle in `git annex fsck` or in other commands, if the current repository is marked dead, or in `git annex sync` if very much alive looking remotes are marked as dead.
+"""]]
