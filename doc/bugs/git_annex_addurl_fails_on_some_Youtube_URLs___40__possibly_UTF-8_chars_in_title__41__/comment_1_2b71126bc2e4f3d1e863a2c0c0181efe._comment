@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-11-09T15:45:35Z"
+ content="""
+This works fine when LANG is set to a utf-8 capable locale. I reproduced it
+with LANG=C. quvi outputs utf-8 in that configuration, and git-annex,
+following the locale settings, did not know what to do with that. 
+
+Easily fixed, but you'll have better luck in general if you get into a
+utf-8 capable locale.
+"""]]

@@ -14,7 +14,8 @@ import Common
 import Utility.Url
 
 import Data.Aeson
-import Data.ByteString.Lazy.UTF8 (fromString)
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Lazy as BL
 import qualified Data.Map as M
 import Network.URI (uriAuthority, uriRegName)
 import Data.Char
@@ -77,8 +78,8 @@ type Query a = QuviVersion -> [CommandParam] -> URLString -> IO a
 forceQuery :: Query (Maybe Page)
 forceQuery v ps url = query' v ps url `catchNonAsync` onerr
   where
-	onerr _ = ifM (inPath "quvi")
-		( error "quvi failed"
+	onerr e = ifM (inPath "quvi")
+		( error ("quvi failed: " ++ show e)
 		, error "quvi is not installed"
 		)
 
@@ -89,9 +90,11 @@ query v ps url = flip catchNonAsync (const $ return Nothing) (query' v ps url)
 
 query' :: Query (Maybe Page)
 query' Quvi09 ps url = parseEnum
-	<$> readProcess "quvi" (toCommand $ [Param "dump", Param "-p", Param "enum"] ++ ps ++ [Param url])
-query' Quvi04 ps url = decode . fromString
-	<$> readProcess "quvi" (toCommand $ ps ++ [Param url])
+	<$> readQuvi (toCommand $ [Param "dump", Param "-p", Param "enum"] ++ ps ++ [Param url])
+query' Quvi04 ps url = do
+	let p = proc "quvi" (toCommand $ ps ++ [Param url])
+	decode . BL.fromStrict
+		<$> withHandle StdoutHandle createProcessSuccess p B.hGetContents
 query' NoQuvi _ _ = return Nothing
 
 queryLinks :: Query [URLString]
@@ -131,8 +134,7 @@ listdomains :: QuviVersion -> IO [String]
 listdomains Quvi09 = concatMap (split ",") 
 	. concatMap (drop 1 . words) 
 	. filter ("domains: " `isPrefixOf`) . lines
-	<$> readProcess "quvi"
-		(toCommand [Param "info", Param "-p", Param "domains"])
+	<$> readQuvi (toCommand [Param "info", Param "-p", Param "domains"])
 listdomains _ = return []
 
 type QuviParams = QuviVersion -> [CommandParam]
@@ -150,3 +152,14 @@ httponly :: QuviParams
 -- No way to do it with 0.9?
 httponly Quvi04 = [Param "-c", Param "http"]
 httponly _ = [] -- No way to do it with 0.9?
+
+{- Both versions of quvi will output utf-8 encoded data even when
+ - the locale doesn't support it. -}
+readQuvi :: [String] -> IO String
+readQuvi ps = withHandle StdoutHandle createProcessSuccess p $ \h -> do
+	fileEncoding h
+	r <- hGetContentsStrict h
+	hClose h
+	return r
+  where
+	p = proc "quvi" ps

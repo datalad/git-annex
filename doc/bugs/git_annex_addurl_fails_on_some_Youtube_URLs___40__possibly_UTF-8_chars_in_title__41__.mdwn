@@ -68,3 +68,5 @@ on Linux.
 
 I love it. It has motivated me enough to start organizing my files spread on different machines, disks etc. at least a little :-)
 
+> [[fixed|done]]; quvi output is now parsed in a locale-independant manner.
+> --[[Joey]] 
