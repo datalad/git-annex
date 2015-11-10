@@ -16,7 +16,7 @@ export RELEASE_BUILD=1
 ifeq ($(STANDALONE_BUILD),1)
 
 override_dh_auto_build:
-	make linuxstandalone
+	make linuxstandalone GIT_ANNEX_PACKAGE_INSTALL=1
 
 override_dh_auto_install:
 	: # nothing to do, we just need to copy the beast, as instructed in debian/install

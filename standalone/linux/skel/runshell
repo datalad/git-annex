@@ -42,35 +42,41 @@ if echo "$base" | grep -q '[:;]'; then
 	trap cleanuptbase EXIT
 fi
 
-# Install shim that's used to run git-annex-shell from ssh authorized_keys.
-# The assistant also does this when run, but the user may not be using the
-# assistant.
-if [ ! -e "$HOME/.ssh/git-annex-shell" ]; then
-	mkdir "$HOME/.ssh" >/dev/null 2>&1 || true
-	if [ -e "$HOME/.ssh" ]; then
-		(
-			echo "#!/bin/sh"
-			echo "set -e"
-			echo "if [ \"x\$SSH_ORIGINAL_COMMAND\" != \"x\" ]; then"
-			echo "exec '$base/runshell' git-annex-shell -c \"\$SSH_ORIGINAL_COMMAND\""
-			echo "else"
-			echo "exec '$base/runshell' git-annex-shell -c \"\$@\""
-			echo "fi"
-		) > "$HOME/.ssh/git-annex-shell"
-		chmod +x "$HOME/.ssh/git-annex-shell"
+# Set this variable when using this script inside a package of git-annex,
+# which arranges for git-annex, git-annex-shell, and git to all be in the
+# standard PATH.
+GIT_ANNEX_PACKAGE_INSTALL=
+if [ -z "$GIT_ANNEX_PACKAGE_INSTALL" ]; then
+	# Install shim that's used to run git-annex-shell from ssh authorized
+	# keys. The assistant also does this when run, but the user may not
+	# be using the assistant.
+	if [ ! -e "$HOME/.ssh/git-annex-shell" ]; then
+		mkdir "$HOME/.ssh" >/dev/null 2>&1 || true
+		if [ -e "$HOME/.ssh" ]; then
+			(
+				echo "#!/bin/sh"
+				echo "set -e"
+				echo "if [ \"x\$SSH_ORIGINAL_COMMAND\" != \"x\" ]; then"
+				echo "exec '$base/runshell' git-annex-shell -c \"\$SSH_ORIGINAL_COMMAND\""
+				echo "else"
+				echo "exec '$base/runshell' git-annex-shell -c \"\$@\""
+				echo "fi"
+			) > "$HOME/.ssh/git-annex-shell"
+			chmod +x "$HOME/.ssh/git-annex-shell"
+		fi
 	fi
-fi
 
-# And this shim is used by the webapp when adding a remote ssh server.
-if [ ! -e "$HOME/.ssh/git-annex-wrapper" ]; then
-	mkdir "$HOME/.ssh" >/dev/null 2>&1 || true
-	if [ -e "$HOME/.ssh" ]; then
-		(
-			echo "#!/bin/sh"
-			echo "set -e"
-			echo "exec '$base/runshell' \"\$@\""
-		) > "$HOME/.ssh/git-annex-wrapper"
-		chmod +x "$HOME/.ssh/git-annex-wrapper"
+	# And this shim is used by the webapp when adding a remote ssh server.
+	if [ ! -e "$HOME/.ssh/git-annex-wrapper" ]; then
+		mkdir "$HOME/.ssh" >/dev/null 2>&1 || true
+		if [ -e "$HOME/.ssh" ]; then
+			(
+				echo "#!/bin/sh"
+				echo "set -e"
+				echo "exec '$base/runshell' \"\$@\""
+			) > "$HOME/.ssh/git-annex-wrapper"
+			chmod +x "$HOME/.ssh/git-annex-wrapper"
+		fi
 	fi
 fi
 

@@ -118,6 +118,7 @@ linuxstandalone-nobuild: Build/Standalone Build/LinuxMkLibs
 	rm -rf "$(LINUXSTANDALONE_DEST)"
 	mkdir -p tmp
 	cp -R standalone/linux/skel "$(LINUXSTANDALONE_DEST)"
+	sed -i -e 's/^GIT_ANNEX_PACKAGE_INSTALL=/GIT_ANNEX_PACKAGE_INSTALL=$(GIT_ANNEX_PACKAGE_INSTALL)/' "$(LINUXSTANDALONE_DEST)/runshell"
 	
 	install -d "$(LINUXSTANDALONE_DEST)/bin"
 	cp dist/build/git-annex/git-annex "$(LINUXSTANDALONE_DEST)/bin/"

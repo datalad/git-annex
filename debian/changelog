@@ -18,6 +18,8 @@ git-annex (5.20151102.2) UNRELEASED; urgency=medium
     support that; avoid crashing on such invalid encoding.
   * runshell: Avoid failing when $HOME/.ssh does not exist and cannot be
     created.
+  * Make the git-annex-standalone.deb prevent runshell from installing
+    wrappers into $HOME/.ssh
 
  -- Joey Hess <id@joeyh.name>  Wed, 04 Nov 2015 12:50:20 -0400
 
