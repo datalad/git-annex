@@ -41,13 +41,17 @@ install-docs: docs install-mans
 		rsync -a --delete html/ $(DESTDIR)$(PREFIX)/$(SHAREDIR)/doc/git-annex/html/; \
 	fi
 
-install: build install-docs Build/InstallDesktopFile
+install-bins: build
 	install -d $(DESTDIR)$(PREFIX)/bin
 	install git-annex $(DESTDIR)$(PREFIX)/bin
 	ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-annex-shell
+
+install-misc: Build/InstallDesktopFile
 	./Build/InstallDesktopFile $(PREFIX)/bin/git-annex || true
 	install -d $(DESTDIR)$(PREFIX)/share/bash-completion/completions
 	install -m 0644 bash-completion.bash $(DESTDIR)$(PREFIX)/share/bash-completion/completions/git-annex
+
+install: install-bins install-docs install-misc
 
 test: git-annex
 	./git-annex test
