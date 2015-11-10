@@ -1,0 +1,4 @@
+Some work today on improving the standalone linux builds and the
+git-annex-standalone.deb. Also, improved fscks's behavior when asked to
+fsck a dead repo, and fixed some places in the assistant where configured
+ssh-options were not used. Backlog is back down to 95.
