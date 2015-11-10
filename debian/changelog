@@ -22,6 +22,8 @@ git-annex (5.20151102.2) UNRELEASED; urgency=medium
     wrappers into $HOME/.ssh
   * Make git-annex-standalone.deb include the git-annex html documentation,
     desktop file, and base completion file, same as the regular git-annex.deb.
+  * fsck: When fscking a dead repo, avoid incorrect "fixing location log"
+    message.
 
  -- Joey Hess <id@joeyh.name>  Wed, 04 Nov 2015 12:50:20 -0400
 

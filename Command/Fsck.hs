@@ -235,7 +235,7 @@ verifyLocationLogRemote key desc remote present =
 
 verifyLocationLog' :: Key -> String -> Bool -> UUID -> (LogStatus -> Annex ()) -> Annex Bool
 verifyLocationLog' key desc present u updatestatus = do
-	uuids <- Remote.keyLocations key
+	uuids <- loggedLocations key
 	case (present, u `elem` uuids) of
 		(True, False) -> do
 				fix InfoPresent
