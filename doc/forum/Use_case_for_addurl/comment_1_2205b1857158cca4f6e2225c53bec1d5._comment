@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-11-10T18:59:13Z"
+ content="""
+The use case is to be able to `git annex addurl` in one repository
+and `git annex get` in another checkout, without needing to remember 
+the url yourself. Or to use `git annex whereis` to look up the url
+associated with a file.
+
+When --relaxed is used, you're telling git-annex you want to treat
+the current and future content of the url as close enough to the same
+as to not matter. I wouldn't use it if I expected the content of an url to 
+change significantly, and git-annex is not able to help with manageing such
+differences.
+"""]]
