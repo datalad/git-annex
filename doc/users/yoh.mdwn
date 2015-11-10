@@ -1,23 +1,23 @@
 My todos
 ========
 
-[[!inline pages="todo/* and !todo/done and !author(todo/done) and
-author(users/yoh)" sort=mtime feeds=no actions=yes archive=yes show=0]]
+[[!inline pages="todo/* and !todo/done and !link(todo/done) and
+author(yoh)" sort=mtime feeds=no actions=yes archive=yes show=0]]
 
 Done
 ----
 
-[[!inline pages="todo/* and !todo/done and author(todo/done) and
-author(users/you)" feeds=no actions=yes archive=yes show=0]]
+[[!inline pages="todo/* and !todo/done and link(todo/done) and
+author(you)" feeds=no actions=yes archive=yes show=0]]
 
 My bugs
 =======
 
-[[!inline pages="bugs/* and !bugs/done and !author(bugs/done) and
-author(users/you)" sort=mtime feeds=no actions=yes archive=yes show=0  template=buglist]]
+[[!inline pages="bugs/* and !bugs/done and !link(bugs/done) and
+author(you)" sort=mtime feeds=no actions=yes archive=yes show=0  template=buglist]]
 
 Fixed
 -----
 
-[[!inline pages="bugs/* and !bugs/done and author(bugs/done) and
-author(users/yoh)" feeds=no actions=yes archive=yes show=0  template=buglist]]
+[[!inline pages="bugs/* and !bugs/done and link(bugs/done) and
+author(yoh)" feeds=no actions=yes archive=yes show=0  template=buglist]]
