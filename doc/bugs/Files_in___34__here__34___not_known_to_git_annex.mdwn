@@ -48,3 +48,5 @@ File system is ext4.
 ### What version of git-annex are you using? On what operating system?
 
 git-annex version: 5.20151019-1, Debian unstable.
+
+> improved fsck output [[done]] --[[Joey]]

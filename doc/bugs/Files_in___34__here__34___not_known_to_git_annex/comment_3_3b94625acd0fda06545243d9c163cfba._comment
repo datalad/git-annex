@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-11-10T18:06:36Z"
+ content="""
+Aha, there is a bug indeed; fscking a dead repository always claims to
+be "fixing location log", but the location log is fine and doesn't need
+fixing. Fixed that.
+
+As to discovering when you're in a dead repository, there are a lot of
+things that could be done, but most of them seem to add special cases
+that are complicating both to implement and for parsing the resulting
+output (like putting "(dead)" next to the description/name of a
+dead repository). Seems reasonable to have fsck note when the repository
+it's checking is dead, and leave it at that.
+"""]]

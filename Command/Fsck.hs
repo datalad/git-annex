@@ -90,6 +90,7 @@ seek :: FsckOptions -> CommandSeek
 seek o = allowConcurrentOutput $ do
 	from <- maybe (pure Nothing) (Just <$$> getParsed) (fsckFromOption o)
 	u <- maybe getUUID (pure . Remote.uuid) from
+	checkDeadRepo u
 	i <- prepIncremental u (incrementalOpt o)
 	withKeyOptions (keyOptions o) False
 		(\k -> startKey i k =<< getNumCopies)
@@ -97,6 +98,11 @@ seek o = allowConcurrentOutput $ do
 		(fsckFiles o)
 	cleanupIncremental i
 	void $ tryIO $ recordActivity Fsck u
+
+checkDeadRepo :: UUID -> Annex ()
+checkDeadRepo u =
+	whenM ((==) DeadTrusted <$> lookupTrust u) $
+		earlyWarning "Warning: Fscking a repository that is currently marked as dead."
 
 start :: Maybe Remote -> Incremental -> FilePath -> Key -> CommandStart
 start from inc file key = do

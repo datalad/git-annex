@@ -22,6 +22,7 @@ module Messages (
 	endResult,
 	toplevelWarning,
 	warning,
+	earlyWarning,
 	warningIO,
 	indent,
 	maybeShowJSON,
@@ -123,6 +124,9 @@ toplevelWarning makeway s = warning' makeway ("git-annex: " ++ s)
 
 warning :: String -> Annex ()
 warning = warning' True . indent
+
+earlyWarning :: String -> Annex ()
+earlyWarning = warning' False
 
 warning' :: Bool -> String -> Annex ()
 warning' makeway w = do
