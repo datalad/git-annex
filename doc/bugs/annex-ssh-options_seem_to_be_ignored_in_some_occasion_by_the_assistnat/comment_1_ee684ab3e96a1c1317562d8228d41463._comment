@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-11-10T19:56:03Z"
+ content="""
+Ok, I was able to reproduce it, when using the assistant it seems the
+option is not passed when pushing and fetching there.
+"""]]

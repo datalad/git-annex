@@ -28,6 +28,7 @@ import qualified Remote.List as Remote
 import qualified Annex.Branch
 import Annex.UUID
 import Annex.TaggedPush
+import Annex.Ssh
 import qualified Config
 import Git.Config
 import Assistant.NamedThread
@@ -148,7 +149,7 @@ pushToRemotes' now notifypushes remotes = do
 	go _ _ _ _ [] = return [] -- no remotes, so nothing to do
 	go shouldretry (Just branch) g u rs =  do
 		debug ["pushing to", show rs]
-		(succeeded, failed) <- liftIO $ inParallel (push g branch) rs
+		(succeeded, failed) <- parallelPush g rs (push branch)
 		updatemap succeeded []
 		if null failed
 			then do
@@ -172,15 +173,24 @@ pushToRemotes' now notifypushes remotes = do
 
 	fallback branch g u rs = do
 		debug ["fallback pushing to", show rs]
-		(succeeded, failed) <- liftIO $
-			inParallel (\r -> taggedPush u Nothing branch r g) rs
+		(succeeded, failed) <- parallelPush g rs (taggedPush u Nothing branch)
 		updatemap succeeded failed
 		when (notifypushes && (not $ null succeeded)) $
 			sendNetMessage $ NotifyPush $
 				map Remote.uuid succeeded
 		return failed
 		
-	push g branch remote = Command.Sync.pushBranch remote branch g
+	push branch remote = Command.Sync.pushBranch remote branch
+
+parallelPush :: Git.Repo -> [Remote] -> (Remote -> Git.Repo -> IO Bool)-> Assistant ([Remote], [Remote])
+parallelPush g rs a = do
+	rgs <- liftAnnex $ mapM topush rs
+	(succeededrgs, failedrgs) <- liftIO $ inParallel (uncurry a) rgs
+	return (map fst succeededrgs, map fst failedrgs)
+  where
+	topush r = (,)
+		<$> pure r
+		<*> sshOptionsTo (Remote.repo r) (Remote.gitconfig r) g
 
 {- Displays an alert while running an action that syncs with some remotes,
  - and returns any remotes that it failed to sync with.
@@ -221,8 +231,9 @@ manualPull :: Maybe Git.Ref -> [Remote] -> Assistant ([Remote], Bool)
 manualPull currentbranch remotes = do
 	g <- liftAnnex gitRepo
 	let (xmppremotes, normalremotes) = partition Remote.isXMPPRemote remotes
-	failed <- liftIO $ forM normalremotes $ \r ->
-		ifM (Git.Command.runBool [Param "fetch", Param $ Remote.name r] g)
+	failed <- forM normalremotes $ \r -> do
+		g' <- liftAnnex $ sshOptionsTo (Remote.repo r) (Remote.gitconfig r) g
+		ifM (liftIO $ Git.Command.runBool [Param "fetch", Param $ Remote.name r] g')
 			( return Nothing
 			, return $ Just r
 			)
