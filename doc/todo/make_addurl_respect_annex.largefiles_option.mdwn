@@ -1,3 +1,4 @@
 ATM git annex addurl ignores  annex.largefiles option so to automate annexification or direct add to git for a list of files I need manually to download each one of them into a FILE and then "git annex add -c annex.largefiles='exclude=*.txt'  FILE".  But it would have been convenient if I could "addurl" some files directly from urls directly into git, as per largefiles settings.
 
 N.B. I do understand that use-case might be somewhat vague, let me know if I should expand reasoning
+[[!meta author=yoh]]
