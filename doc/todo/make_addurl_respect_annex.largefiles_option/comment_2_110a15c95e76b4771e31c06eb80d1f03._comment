@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 2"
+ date="2015-11-10T19:24:59Z"
+ content="""
+as for import (never used it yet) -- there is no reason not to warrant largefiles since it has all the information, right?
+
+as for addurl -- ideally, I guess, it could just crash iff there is a largefiles setting which relies on size and --relaxed is used (would indeed make little sense).  But in the other cases (I guess of which there is majority) it could as well warrant it, thus making behavior more consistent.
+
+[[!meta author=yoh]]
+"""]]
