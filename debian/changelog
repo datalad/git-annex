@@ -16,6 +16,8 @@ git-annex (5.20151102.2) UNRELEASED; urgency=medium
     recover.
   * quvi may output utf-8 encoded data when the conifigured locale doesn't
     support that; avoid crashing on such invalid encoding.
+  * runshell: Avoid failing when $HOME/.ssh does not exist and cannot be
+    created.
 
  -- Joey Hess <id@joeyh.name>  Wed, 04 Nov 2015 12:50:20 -0400
 

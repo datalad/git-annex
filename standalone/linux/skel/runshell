@@ -64,12 +64,14 @@ fi
 # And this shim is used by the webapp when adding a remote ssh server.
 if [ ! -e "$HOME/.ssh/git-annex-wrapper" ]; then
 	mkdir "$HOME/.ssh" >/dev/null 2>&1 || true
-	(
-		echo "#!/bin/sh"
-		echo "set -e"
-		echo "exec '$base/runshell' \"\$@\""
-	) > "$HOME/.ssh/git-annex-wrapper"
-	chmod +x "$HOME/.ssh/git-annex-wrapper"
+	if [ -e "$HOME/.ssh" ]; then
+		(
+			echo "#!/bin/sh"
+			echo "set -e"
+			echo "exec '$base/runshell' \"\$@\""
+		) > "$HOME/.ssh/git-annex-wrapper"
+		chmod +x "$HOME/.ssh/git-annex-wrapper"
+	fi
 fi
 
 # Put our binaries first, to avoid issues with out of date or incompatable
