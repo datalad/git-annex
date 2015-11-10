@@ -11,11 +11,11 @@
 
 module Messages.Concurrent where
 
-import Common
 import Annex
-import Types.Messages
 
 #ifdef WITH_CONCURRENTOUTPUT
+import Common
+import Types.Messages
 import qualified System.Console.Concurrent as Console
 import qualified System.Console.Regions as Regions
 import Control.Concurrent.STM
