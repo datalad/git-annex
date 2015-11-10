@@ -169,7 +169,7 @@ showHeader :: String -> Annex ()
 showHeader h = outputMessage q $ (h ++ ": ")
 
 showRaw :: String -> Annex ()
-showRaw = outputMessage q
+showRaw s = outputMessage q (s ++ "\n")
 
 setupConsole :: IO ()
 setupConsole = do
