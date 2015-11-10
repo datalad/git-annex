@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-11-10T17:44:35Z"
+ content="""
+I don't think that implicit installation to /usr/local/bin just because
+runshell was run as root makes sense, no. If root wants to install
+git-annex system-wide they have plenty of good options, but the standalone
+tarball is not really one of them.
+
+Another reason to keep the git-annex-shell wrapper in ~/.ssh is because the
+~/.ssh/authorized_keys file that the assistant installs will refer to that
+wrapper. So it makes sense to keep all that related stuff together IMHO.
+"""]]
