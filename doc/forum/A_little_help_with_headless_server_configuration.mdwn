@@ -1,0 +1,2 @@
+Attempting to setup a multiple server file share. I am really not sure how to configure and setup the headless system for sharing? Seems easy enough with the webapp and have my windows system appear to be working not sure how to get my Linux headless systems to sync up as well any help would be greatly appreciated.
+
