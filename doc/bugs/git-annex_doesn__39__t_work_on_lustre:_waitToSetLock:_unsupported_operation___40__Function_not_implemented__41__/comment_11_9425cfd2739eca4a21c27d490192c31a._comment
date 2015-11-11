@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""design"""
+ date="2015-11-11T17:54:24Z"
+ content="""
+* annex.pidlock config setting
+* init can test if regular locks work and if not set annex.pidlock
+* Use .git/annex/lock as the lock file; create with `O_EXCL` and write pid
+  and program name to it. (Should be able to check for stale pid and break
+  old lock.)
+* Adapt Utility.LockPool to use that lock file and lock method when
+  annex.pidlock is set. (How? It's a generic library..)
+* Note that for sanity, whenever Utility.LockPool would create a
+  fine-grained lock file, that should still happen when using
+  annex.pidlock. Just avoid locking it and use the
+  global lock. This prevents any bugs along the lines of some code
+  depending on the fine-grained lock file having been created
+  (in order to delete it etc).
+* (We could possibly assume that, if a lock file is being created,
+  it could be used as a pid lock file, and so use that instead of the
+  single top-level lock file. This assumption might hold, but I don't
+  really want to risk it. If some other code path uses the same lock file
+  but does not allow it to be created, it would not be able to write the
+  pid to it (because it might be eg an annex object file), then the two
+  code paths would end up using different lock files for the same lock,
+  which would be bad.)
+
+This will always be an exclusive lock, and a single lock at that, unlike
+git-annex's usual fine-grained, often shared locks. But, the LockPool
+builds all that stuff at the thread level using STM anyway, so multiple
+threads of the same process can still cooperate with shared locks etc.
+
+Commands that don't need to take any lock (eg, query commands) will
+interoperate as before. But, many commands that can normally run
+concurrently won't be able to when using annex.pidlock, and will
+have to either loop-wait on the lock file, or error out.
+"""]]
