@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ subject="comment 3"
+ date="2015-11-11T14:53:11Z"
+ content="""
+that is so: git annex doesn't \"backup\" very well other git repositories. it's probably possible, but that's not really what git-annex is designed for. git-annex is [[not]] a backup system: it's more like an archival system. so if you want to backup your whole system and keep history, the [[not]] page recommends [[bup]], but i would also recommend [borg](http://borgbackup.readthedocs.org/).
+
+if you have git repos: backup those using your regular backup system, git-annex won't help you there. you can clone the repos using git, use rsync and whatnot. git itself keeps history and unless you royally mess up, git is pretty forgiving.
+
+for large files: create topical git-annex repositories. i have one for \"music\", \"video\", \"podcasts\", and so on. those are managed on a per-repo basis.
+
+so when i do my \"backups\" (which include \"archiving\" as well now), i connect the hard drives in my computer, run the `borg` (or `bup`) backup and then run `git annex sync --content` on all my git-annex repositories. that way new files in the git-annex repositories are synced to the external drive and files not managed by git-annex (yes, including non-git-annex git repos) are backed up as well.
+
+hope that helps
+"""]]
