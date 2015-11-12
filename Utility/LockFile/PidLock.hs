@@ -9,9 +9,11 @@ module Utility.LockFile.PidLock (
 	LockHandle,
 	tryLock,
 	waitLock,
+	dropLock,
 	LockStatus(..),
 	getLockStatus,
-	dropLock,
+	checkLocked,
+	checkSaneLock,
 ) where
 
 import Utility.PartialPrelude
@@ -19,7 +21,6 @@ import Utility.Exception
 import Utility.Applicative
 import Utility.Directory
 import Utility.ThreadScheduler
-import Utility.Tmp
 import Utility.Monad
 import Utility.Path
 import Utility.FileMode
@@ -28,8 +29,6 @@ import qualified Utility.LockFile.Posix as Posix
 
 import System.IO
 import System.Posix
-import System.Posix.IO
-import System.Posix.Process
 import Data.Maybe
 import Data.List
 import Control.Applicative
@@ -38,7 +37,7 @@ import System.FilePath
 
 type LockFile = FilePath
 
-data LockHandle = LockHandle FilePath Handle (Maybe Posix.LockHandle)
+data LockHandle = LockHandle FilePath Fd (Maybe Posix.LockHandle)
 
 data PidLock = PidLock
 	{ lockingPid :: ProcessID
@@ -87,12 +86,12 @@ tryLock lockfile = trySideLock lockfile $ \sidelock -> do
 	(tmp, h) <- openTempFile (takeDirectory lockfile) "locktmp"
 	setFileMode tmp (combineModes readModes)
 	hPutStr h . show =<< mkPidLock
-	hClose h
+	fd <- handleToFd h
 	let failedlock = do
-		hClose h
+		closeFd fd
 		nukeFile tmp
 		return Nothing
-	let tooklock = return $ Just $ LockHandle lockfile h sidelock
+	let tooklock = return $ Just $ LockHandle lockfile fd sidelock
 	ifM (isJust <$> catchMaybeIO (createLink tmp lockfile))
 		( tooklock
 		, do
@@ -122,11 +121,28 @@ waitLock lockfile = go
 	go = maybe (threadDelaySeconds (Seconds 1) >> go) return
 		=<< tryLock lockfile
 
+dropLock :: LockHandle -> IO ()
+dropLock (LockHandle lockfile fd plh) = do
+	closeFd fd
+	nukeFile lockfile
+	maybe noop Posix.dropLock plh
+
 getLockStatus :: LockFile -> IO LockStatus
 getLockStatus = maybe StatusUnLocked (StatusLockedBy . lockingPid) <$$> readPidLock
 
-dropLock :: LockHandle -> IO ()
-dropLock (LockHandle lockfile lockhandle plh) = do
-	hClose lockhandle
-	nukeFile lockfile
-	maybe noop Posix.dropLock plh
+checkLocked :: LockFile -> IO (Maybe Bool)
+checkLocked lockfile = conv <$> getLockStatus lockfile
+  where
+	conv (StatusLockedBy _) = Just True
+	conv _ = Just False
+
+-- Checks that the lock file still exists, and is the same file that was
+-- locked to get the LockHandle.
+checkSaneLock :: LockFile -> LockHandle -> IO Bool
+checkSaneLock lockfile (LockHandle _ fd _) =
+	go =<< catchMaybeIO (getFileStatus lockfile)
+  where
+	go Nothing = return False
+	go (Just st) = do
+		fdst <- getFdStatus fd
+		return $ deviceID fdst == deviceID st && fileID fdst == fileID st
