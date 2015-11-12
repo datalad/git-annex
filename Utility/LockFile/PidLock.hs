@@ -1,0 +1,132 @@
+{- pid-based lock files
+ -
+ - Copyright 2015 Joey Hess <id@joeyh.name>
+ -
+ - License: BSD-2-clause
+ -}
+
+module Utility.LockFile.PidLock (
+	LockHandle,
+	tryLock,
+	waitLock,
+	LockStatus(..),
+	getLockStatus,
+	dropLock,
+) where
+
+import Utility.PartialPrelude
+import Utility.Exception
+import Utility.Applicative
+import Utility.Directory
+import Utility.ThreadScheduler
+import Utility.Tmp
+import Utility.Monad
+import Utility.Path
+import Utility.FileMode
+import Utility.LockFile.LockStatus
+import qualified Utility.LockFile.Posix as Posix
+
+import System.IO
+import System.Posix
+import System.Posix.IO
+import System.Posix.Process
+import Data.Maybe
+import Data.List
+import Control.Applicative
+import Network.BSD
+import System.FilePath
+
+type LockFile = FilePath
+
+data LockHandle = LockHandle FilePath Handle (Maybe Posix.LockHandle)
+
+data PidLock = PidLock
+	{ lockingPid :: ProcessID
+	, lockingHost :: HostName
+	}
+	deriving (Eq, Read, Show)
+
+mkPidLock :: IO PidLock
+mkPidLock = PidLock
+	<$> getProcessID
+	<*> getHostName
+
+readPidLock :: LockFile -> IO (Maybe PidLock)
+readPidLock lockfile = (readish =<<) <$> catchMaybeIO (readFile lockfile)
+
+-- To avoid races when taking over a stale pid lock, a side lock is used.
+-- This is a regular posix exclusive lock. The side lock is put in
+-- /dev/shm. This will work on most any Linux system, even if its whole
+-- root filesystem doesn't support posix locks.
+trySideLock :: LockFile -> (Maybe Posix.LockHandle -> IO a) -> IO a
+trySideLock lockfile a = do
+	f <- absPath lockfile
+	let sidelock = "/dev/shm" </>
+		intercalate "_" (splitDirectories (makeRelative "/" f)) ++ ".lck"
+	mlck <- catchDefaultIO Nothing $ 
+		withUmask nullFileMode $
+			Posix.tryLockExclusive (Just mode) sidelock
+	a mlck
+  where
+	-- Let all users write to the lock file in /dev/shm,
+	-- so that other users can reuse it to take the lock.
+	-- Since /dev/shm is sticky, a user cannot delete another user's
+	-- lock file there, so could not delete a stale lock.
+	mode = combineModes (readModes ++ writeModes)
+
+-- | Tries to take a lock; does not block when the lock is already held.
+--
+-- The method used is atomic even on NFS without needing O_EXCL support.
+--
+-- Note that stale locks are automatically detected and broken.
+-- However, if the lock file is on a networked file system, and was
+-- created on a different host than the current host (determined by hostname),
+-- this can't be done and stale locks may persist.
+tryLock :: LockFile -> IO (Maybe LockHandle)
+tryLock lockfile = trySideLock lockfile $ \sidelock -> do
+	(tmp, h) <- openTempFile (takeDirectory lockfile) "locktmp"
+	setFileMode tmp (combineModes readModes)
+	hPutStr h . show =<< mkPidLock
+	hClose h
+	let failedlock = do
+		hClose h
+		nukeFile tmp
+		return Nothing
+	let tooklock = return $ Just $ LockHandle lockfile h sidelock
+	ifM (isJust <$> catchMaybeIO (createLink tmp lockfile))
+		( tooklock
+		, do
+			v <- readPidLock lockfile
+			hn <- getHostName
+			case v of
+				Just pl | isJust sidelock && hn == lockingHost pl -> do
+					-- Since we have the sidelock,
+					-- and are on the same host that
+					-- the pidlock was take on,
+					-- we know that the pidlock is
+					-- stale, and can take it over.
+					rename tmp lockfile
+					tooklock
+				_ -> failedlock
+		)
+
+-- | Waits as necessary to take a lock.
+--
+-- Uses a 1 second wait-loop.
+--
+-- May wait forever if the lock file is stale and is on a network file
+-- system, or on a system where the side lock cannot be taken.
+waitLock :: LockFile -> IO LockHandle
+waitLock lockfile = go
+  where
+	go = maybe (threadDelaySeconds (Seconds 1) >> go) return
+		=<< tryLock lockfile
+
+getLockStatus :: LockFile -> IO LockStatus
+getLockStatus = maybe StatusUnLocked (StatusLockedBy . lockingPid) <$$> readPidLock
+
+dropLock :: LockHandle -> IO ()
+dropLock (LockHandle lockfile lockhandle plh) = do
+	hClose lockhandle
+	nukeFile lockfile
+	maybe noop Posix.dropLock plh

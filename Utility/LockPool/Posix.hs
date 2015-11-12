@@ -20,7 +20,7 @@ module Utility.LockPool.Posix (
 ) where
 
 import qualified Utility.LockFile.Posix as F
-import Utility.LockFile.Posix (LockStatus(..))
+import Utility.LockFile.LockStatus
 import qualified Utility.LockPool.STM as P
 import Utility.LockPool.STM (LockFile, LockMode(..))
 import Utility.LockPool.LockHandle

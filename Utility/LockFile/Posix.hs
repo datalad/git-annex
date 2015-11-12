@@ -20,6 +20,7 @@ module Utility.LockFile.Posix (
 
 import Utility.Exception
 import Utility.Applicative
+import Utility.LockFile.LockStatus
 
 import System.IO
 import System.Posix
@@ -79,9 +80,6 @@ openLockFile lockreq filemode lockfile = do
 -- that is different from it not being locked.
 checkLocked :: LockFile -> IO (Maybe Bool)
 checkLocked = maybe Nothing (Just . isJust) <$$> getLockStatus'
-
-data LockStatus = StatusUnLocked | StatusLockedBy ProcessID | StatusNoLockFile
-	deriving (Eq)
 
 getLockStatus :: LockFile -> IO LockStatus
 getLockStatus lockfile = do
