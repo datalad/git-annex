@@ -35,25 +35,25 @@ import Prelude
 lockShared :: Maybe FileMode -> LockFile -> IO LockHandle
 lockShared mode file = makeLockHandle
 	(P.waitTakeLock P.lockPool file LockShared)
-	(F.lockShared mode file)
+	(mk <$> F.lockShared mode file)
 
 -- Takes an exclusive lock, blocking until the lock is available.
 lockExclusive :: Maybe FileMode -> LockFile -> IO LockHandle
 lockExclusive mode file = makeLockHandle
 	(P.waitTakeLock P.lockPool file LockExclusive)
-	(F.lockExclusive mode file)
+	(mk <$> F.lockExclusive mode file)
 
 -- Tries to take a shared lock, but does not block.
 tryLockShared :: Maybe FileMode -> LockFile -> IO (Maybe LockHandle)
 tryLockShared mode file = tryMakeLockHandle
 	(P.tryTakeLock P.lockPool file LockShared)
-	(F.tryLockShared mode file)
+	(fmap mk <$> F.tryLockShared mode file)
 
 -- Tries to take an exclusive lock, but does not block.
 tryLockExclusive :: Maybe FileMode -> LockFile -> IO (Maybe LockHandle)
 tryLockExclusive mode file = tryMakeLockHandle
 	(P.tryTakeLock P.lockPool file LockExclusive)
-	(F.tryLockExclusive mode file)
+	(fmap mk <$> F.tryLockExclusive mode file)
 
 -- Returns Nothing when the file doesn't exist, for cases where
 -- that is different from it not being locked.
@@ -68,4 +68,10 @@ getLockStatus file = P.getLockStatus P.lockPool file
 	(F.getLockStatus file)
 
 checkSaneLock :: LockFile -> LockHandle -> IO Bool
-checkSaneLock lockfile (LockHandle _ fh) = F.checkSaneLock lockfile fh
+checkSaneLock lockfile (LockHandle _ flo) = fCheckSaneLock flo lockfile
+
+mk :: F.LockHandle -> FileLockOps
+mk h = FileLockOps
+	{ fDropLock = F.dropLock h
+	, fCheckSaneLock = \f -> F.checkSaneLock f h
+	}

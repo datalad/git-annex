@@ -24,7 +24,7 @@ import Utility.LockPool.STM (LockFile, LockMode(..))
 lockShared :: LockFile -> IO (Maybe LockHandle)
 lockShared file = tryMakeLockHandle
 	(P.tryTakeLock P.lockPool file LockShared)
-	(F.lockShared file)
+	(fmap mk <$> F.lockShared file)
 
 {- Tries to take an exclusive lock on a file. Fails if another process has
  - a shared or exclusive lock.
@@ -35,9 +35,14 @@ lockShared file = tryMakeLockHandle
 lockExclusive :: LockFile -> IO (Maybe LockHandle)
 lockExclusive file = tryMakeLockHandle
 	(P.tryTakeLock P.lockPool file LockExclusive)
-	(F.lockExclusive file)
+	(fmap mk <$> F.lockExclusive file)
 
 {- If the initial lock fails, this is a BUSY wait, and does not
  - guarentee FIFO order of waiters. In other news, Windows is a POS. -}
 waitToLock :: IO (Maybe lockhandle) -> IO lockhandle
 waitToLock = F.waitToLock
+
+mk :: F.LockHandle -> FileLockOps
+mk h = FileLockOps
+	{ fDropLock = F.dropLock h
+	}

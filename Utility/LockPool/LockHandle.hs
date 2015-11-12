@@ -10,33 +10,38 @@
 module Utility.LockPool.LockHandle where
 
 import qualified Utility.LockPool.STM as P
-#ifndef mingw32_HOST_OS
-import qualified Utility.LockFile.Posix as F
-#else
-import qualified Utility.LockFile.Windows as F
-#endif
 
 import Control.Concurrent.STM
 import Control.Exception
 
-data LockHandle = LockHandle P.LockHandle F.LockHandle
+data LockHandle = LockHandle
+	{ poolHandle :: P.LockHandle
+	, fileLockOps :: FileLockOps
+	}
+
+data FileLockOps = FileLockOps
+	{ fDropLock :: IO ()
+#ifndef mingw32_HOST_OS
+	, fCheckSaneLock :: FilePath -> IO Bool
+#endif
+	}
 
 dropLock :: LockHandle -> IO ()
-dropLock (LockHandle ph fh) = P.releaseLock ph (F.dropLock fh)
+dropLock h = P.releaseLock (poolHandle h) (fDropLock (fileLockOps h))
 
 -- Take a lock, by first updating the lock pool, and then taking the file
 -- lock. If taking the file lock fails for any reason, take care to
 -- release the lock in the lock pool.
-makeLockHandle :: STM P.LockHandle -> IO F.LockHandle -> IO LockHandle
+makeLockHandle :: STM P.LockHandle -> IO FileLockOps -> IO LockHandle
 makeLockHandle pa fa = bracketOnError setup cleanup go
   where
 	setup = atomically pa
 	cleanup ph = P.releaseLock ph (return ())
 	go ph = do
-		fh <- fa
-		return $ LockHandle ph fh
+		fo <- fa
+		return $ LockHandle ph fo
 
-tryMakeLockHandle :: STM (Maybe P.LockHandle) -> IO (Maybe F.LockHandle) -> IO (Maybe LockHandle)
+tryMakeLockHandle :: STM (Maybe P.LockHandle) -> IO (Maybe FileLockOps) -> IO (Maybe LockHandle)
 tryMakeLockHandle pa fa = bracketOnError setup cleanup go
   where
 	setup = atomically pa
@@ -44,9 +49,9 @@ tryMakeLockHandle pa fa = bracketOnError setup cleanup go
 	cleanup (Just ph) = P.releaseLock ph (return ())
 	go Nothing = return Nothing
 	go (Just ph) = do
-		mfh <- fa
-		case mfh of
+		mfo <- fa
+		case mfo of
 			Nothing -> do
 				cleanup (Just ph)
 				return Nothing
-			Just fh -> return $ Just $ LockHandle ph fh
+			Just fo -> return $ Just $ LockHandle ph fo
