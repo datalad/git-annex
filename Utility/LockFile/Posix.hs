@@ -16,6 +16,8 @@ module Utility.LockFile.Posix (
 	LockStatus(..),
 	dropLock,
 	checkSaneLock,
+	LockRequest(..),
+	openLockFile,
 ) where
 
 import Utility.Exception

@@ -51,6 +51,7 @@ module Locations (
 	gitAnnexViewLog,
 	gitAnnexIgnoredRefs,
 	gitAnnexPidFile,
+	gitAnnexPidLockFile,
 	gitAnnexDaemonStatusFile,
 	gitAnnexLogFile,
 	gitAnnexFuzzTestLogFile,
@@ -333,6 +334,10 @@ gitAnnexIgnoredRefs r = gitAnnexDir r </> "ignoredrefs"
 {- Pid file for daemon mode. -}
 gitAnnexPidFile :: Git.Repo -> FilePath
 gitAnnexPidFile r = gitAnnexDir r </> "daemon.pid"
+
+{- Pid lock file for pidlock mode -}
+gitAnnexPidLockFile :: Git.Repo -> FilePath
+gitAnnexPidLockFile r = gitAnnexDir r </> "pidlock"
 
 {- Status file for daemon mode. -}
 gitAnnexDaemonStatusFile :: Git.Repo -> FilePath
