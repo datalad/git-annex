@@ -25,6 +25,7 @@ import Utility.Monad
 import Utility.Path
 import Utility.FileMode
 import Utility.LockFile.LockStatus
+import Utility.ThreadScheduler
 import qualified Utility.LockFile.Posix as Posix
 
 import System.IO
@@ -101,7 +102,7 @@ tryLock lockfile = trySideLock lockfile $ \sidelock -> do
 				Just pl | isJust sidelock && hn == lockingHost pl -> do
 					-- Since we have the sidelock,
 					-- and are on the same host that
-					-- the pidlock was take on,
+					-- the pidlock was taken on,
 					-- we know that the pidlock is
 					-- stale, and can take it over.
 					rename tmp lockfile
@@ -113,13 +114,17 @@ tryLock lockfile = trySideLock lockfile $ \sidelock -> do
 --
 -- Uses a 1 second wait-loop.
 --
--- May wait forever if the lock file is stale and is on a network file
+-- May wait untie timeout if the lock file is stale and is on a network file
 -- system, or on a system where the side lock cannot be taken.
-waitLock :: LockFile -> IO LockHandle
-waitLock lockfile = go
+waitLock :: Seconds -> LockFile -> IO LockHandle
+waitLock (Seconds timeout) lockfile = go timeout
   where
-	go = maybe (threadDelaySeconds (Seconds 1) >> go) return
-		=<< tryLock lockfile
+	go n
+		| n > 0 = maybe (threadDelaySeconds (Seconds 1) >> go (pred n)) return
+			=<< tryLock lockfile
+		| otherwise = do
+			hPutStrLn stderr $ show timeout ++ " second timeout exceeded while waiting for pid lock file " ++ lockfile
+			error $ "Gave up waiting for possibly stale pid lock file " ++ lockfile
 
 dropLock :: LockHandle -> IO ()
 dropLock (LockHandle lockfile fd plh) = do

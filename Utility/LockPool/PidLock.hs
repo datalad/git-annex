@@ -22,6 +22,7 @@ import Utility.LockFile.LockStatus
 import qualified Utility.LockPool.STM as P
 import Utility.LockPool.STM (LockFile, LockMode(..))
 import Utility.LockPool.LockHandle
+import Utility.ThreadScheduler
 
 import System.IO
 import System.Posix
@@ -29,13 +30,11 @@ import Data.Maybe
 import Control.Applicative
 import Prelude
 
--- Takes a pid lock, blocking until the lock is available.
---
--- May block forever on stale locks, see PidLock documentation for details.
-waitLock :: LockFile -> IO LockHandle
-waitLock file = makeLockHandle
+-- Takes a pid lock, blocking until the lock is available or the timeout.
+waitLock :: Seconds -> LockFile -> IO LockHandle
+waitLock timeout file = makeLockHandle
 	(P.waitTakeLock P.lockPool file LockExclusive)
-	(mk <$> F.waitLock file)
+	(mk <$> F.waitLock timeout file)
 
 -- Tries to take a pid lock, but does not block.
 tryLock :: LockFile -> IO (Maybe LockHandle)
