@@ -20,6 +20,8 @@ import Utility.PosixFiles
 import System.Posix.Files
 #endif
 import Foreign (complement)
+import Control.Monad.IO.Class (liftIO, MonadIO)
+import Control.Monad.Catch
 
 import Utility.Exception
 
@@ -95,7 +97,7 @@ isExecutable mode = combineModes executeModes `intersectFileModes` mode /= 0
 
 {- Runs an action without that pesky umask influencing it, unless the
  - passed FileMode is the standard one. -}
-noUmask :: FileMode -> IO a -> IO a
+noUmask :: (MonadIO m, MonadMask m) => FileMode -> m a -> m a
 #ifndef mingw32_HOST_OS
 noUmask mode a
 	| mode == stdFileMode = a
@@ -104,12 +106,12 @@ noUmask mode a
 noUmask _ a = a
 #endif
 
-withUmask :: FileMode -> IO a -> IO a
+withUmask :: (MonadIO m, MonadMask m) => FileMode -> m a -> m a
 #ifndef mingw32_HOST_OS
 withUmask umask a = bracket setup cleanup go
   where
-	setup = setFileCreationMask umask
-	cleanup = setFileCreationMask
+	setup = liftIO $ setFileCreationMask umask
+	cleanup = liftIO . setFileCreationMask
 	go _ = a
 #else
 withUmask _ a = a
