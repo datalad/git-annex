@@ -10,6 +10,7 @@
 module Utility.LockPool.LockHandle where
 
 import qualified Utility.LockPool.STM as P
+import Utility.LockPool.STM (LockFile)
 
 import Control.Concurrent.STM
 import Control.Exception
@@ -22,12 +23,17 @@ data LockHandle = LockHandle
 data FileLockOps = FileLockOps
 	{ fDropLock :: IO ()
 #ifndef mingw32_HOST_OS
-	, fCheckSaneLock :: FilePath -> IO Bool
+	, fCheckSaneLock :: LockFile -> IO Bool
 #endif
 	}
 
 dropLock :: LockHandle -> IO ()
 dropLock h = P.releaseLock (poolHandle h) (fDropLock (fileLockOps h))
+
+#ifndef mingw32_HOST_OS
+checkSaneLock :: LockFile -> LockHandle -> IO Bool
+checkSaneLock lockfile (LockHandle _ flo) = fCheckSaneLock flo lockfile
+#endif
 
 -- Take a lock, by first updating the lock pool, and then taking the file
 -- lock. If taking the file lock fails for any reason, take care to

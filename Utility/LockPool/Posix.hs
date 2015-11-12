@@ -67,9 +67,6 @@ getLockStatus file = P.getLockStatus P.lockPool file
 	(StatusLockedBy <$> getProcessID)
 	(F.getLockStatus file)
 
-checkSaneLock :: LockFile -> LockHandle -> IO Bool
-checkSaneLock lockfile (LockHandle _ flo) = fCheckSaneLock flo lockfile
-
 mk :: F.LockHandle -> FileLockOps
 mk h = FileLockOps
 	{ fDropLock = F.dropLock h
