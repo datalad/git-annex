@@ -62,7 +62,7 @@ import Annex.Perms
 import Annex.Link
 import Annex.Content.Direct
 import Annex.ReplaceFile
-import Utility.LockPool
+import Annex.LockPool
 import Messages.Progress
 import qualified Types.Remote
 import qualified Types.Backend
@@ -113,12 +113,12 @@ inAnnexSafe key = inAnnex' (fromMaybe True) (Just False) go key
 		=<< contentLockFile key
 
 #ifndef mingw32_HOST_OS
-	checkindirect contentfile = liftIO $ checkOr is_missing contentfile
+	checkindirect contentfile = checkOr is_missing contentfile
 	{- In direct mode, the content file must exist, but
 	 - the lock file generally won't exist unless a removal is in
 	 - process. -}
-	checkdirect contentfile lockfile = liftIO $
-		ifM (doesFileExist contentfile)
+	checkdirect contentfile lockfile =
+		ifM (liftIO $ doesFileExist contentfile)
 			( checkOr is_unlocked lockfile
 			, return is_missing
 			)
@@ -186,7 +186,7 @@ lockContentShared key a = lockContentUsing lock key $ do
 	withVerifiedCopy LockedCopy u (return True) a
   where
 #ifndef mingw32_HOST_OS
-	lock contentfile Nothing = liftIO $ tryLockShared Nothing contentfile
+	lock contentfile Nothing = tryLockShared Nothing contentfile
 	lock _ (Just lockfile) = posixLocker tryLockShared lockfile
 #else
 	lock = winLocker lockShared
@@ -205,7 +205,7 @@ lockContentForRemoval key a = lockContentUsing lock key $
 	lock contentfile Nothing = bracket_
 		(thawContent contentfile)
 		(freezeContent contentfile)
-		(liftIO $ tryLockExclusive Nothing contentfile)
+		(tryLockExclusive Nothing contentfile)
 	lock _ (Just lockfile) = posixLocker tryLockExclusive lockfile
 #else
 	lock = winLocker lockExclusive
@@ -216,11 +216,11 @@ lockContentForRemoval key a = lockContentUsing lock key $
 type ContentLocker = FilePath -> Maybe LockFile -> Annex (Maybe LockHandle)
 
 #ifndef mingw32_HOST_OS
-posixLocker :: (Maybe FileMode -> LockFile -> IO (Maybe LockHandle)) -> LockFile -> Annex (Maybe LockHandle)
+posixLocker :: (Maybe FileMode -> LockFile -> Annex (Maybe LockHandle)) -> LockFile -> Annex (Maybe LockHandle)
 posixLocker takelock lockfile = do
 	mode <- annexFileMode
 	modifyContent lockfile $
-		liftIO $ takelock (Just mode) lockfile
+		takelock (Just mode) lockfile
 	
 #else
 winLocker :: (LockFile -> IO (Maybe LockHandle)) -> ContentLocker

@@ -23,7 +23,7 @@ import Logs.Transfer as X
 import Annex.Notification as X
 import Annex.Perms
 import Utility.Metered
-import Utility.LockPool
+import Annex.LockPool
 import Types.Remote (Verification(..))
 
 import Control.Concurrent
@@ -79,7 +79,7 @@ runTransfer' ignorelock t file shouldretry transferobserver transferaction = do
 	info <- liftIO $ startTransferInfo file
 	(meter, tfile, metervar) <- mkProgressUpdater t info
 	mode <- annexFileMode
-	(lck, inprogress) <- liftIO $ prep tfile mode info
+	(lck, inprogress) <- prep tfile mode info
 	if inprogress && not ignorelock
 		then do
 			showNote "transfer already in progress, or unable to take transfer lock"
@@ -96,21 +96,23 @@ runTransfer' ignorelock t file shouldretry transferobserver transferaction = do
 		r <- tryLockExclusive (Just mode) lck
 		case r of
 			Nothing -> return (Nothing, True)
-			Just lockhandle -> ifM (checkSaneLock lck lockhandle)
+			Just lockhandle -> ifM (liftIO $ checkSaneLock lck lockhandle)
 				( do
-					void $ tryIO $ writeTransferInfoFile info tfile
+					void $ liftIO $ tryIO $
+						writeTransferInfoFile info tfile
 					return (Just lockhandle, False)
 				, return (Nothing, True)
 				)
 #else
-	prep tfile _mode info = do
+	prep tfile _mode info = liftIO $ do
 		let lck = transferLockFile tfile
 		v <- catchMaybeIO $ lockExclusive lck
 		case v of
 			Nothing -> return (Nothing, False)
 			Just Nothing -> return (Nothing, True)
 			Just (Just lockhandle) -> do
-				void $ tryIO $ writeTransferInfoFile info tfile
+				void $ liftIO $ tryIO $
+					writeTransferInfoFile info tfile
 				return (Just lockhandle, False)
 #endif
 	cleanup _ Nothing = noop

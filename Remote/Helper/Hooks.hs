@@ -16,7 +16,7 @@ import Types.Remote
 import Types.CleanupActions
 import qualified Annex
 import Annex.LockFile
-import Utility.LockPool
+import Annex.LockPool
 #ifndef mingw32_HOST_OS
 import Annex.Perms
 #endif
@@ -83,7 +83,7 @@ runHooks r starthook stophook a = do
 		unlockFile lck
 #ifndef mingw32_HOST_OS
 		mode <- annexFileMode
-		v <- liftIO $ noUmask mode $ tryLockExclusive (Just mode) lck
+		v <- noUmask mode $ tryLockExclusive (Just mode) lck
 #else
 		v <- liftIO $ lockExclusive lck
 #endif

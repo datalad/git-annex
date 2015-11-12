@@ -6,7 +6,19 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Annex.LockPool.PosixOrPid where
+module Annex.LockPool.PosixOrPid (
+	LockFile,
+	LockHandle,
+	lockShared,
+	lockExclusive,
+	tryLockShared,
+	tryLockExclusive,
+	dropLock,
+	checkLocked,
+	LockStatus(..),
+	getLockStatus,
+	checkSaneLock,
+) where
 
 import Common.Annex
 import qualified Annex

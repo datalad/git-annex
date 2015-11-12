@@ -37,7 +37,7 @@ import Types.CleanupActions
 import Annex.Index (addGitEnv)
 #ifndef mingw32_HOST_OS
 import Annex.Perms
-import Utility.LockPool
+import Annex.LockPool
 #endif
 
 {- Generates parameters to ssh to a given host (or user@host) on a given
@@ -159,7 +159,7 @@ sshCleanup = mapM_ cleanup =<< enumSocketFiles
 		let lockfile = socket2lock socketfile
 		unlockFile lockfile
 		mode <- annexFileMode
-		v <- liftIO $ noUmask mode $ tryLockExclusive (Just mode) lockfile
+		v <- noUmask mode $ tryLockExclusive (Just mode) lockfile
 		case v of
 			Nothing -> noop
 			Just lck -> do
