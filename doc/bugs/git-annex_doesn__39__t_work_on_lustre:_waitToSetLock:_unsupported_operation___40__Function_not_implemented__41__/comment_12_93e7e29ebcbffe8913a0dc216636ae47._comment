@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 12"
+ date="2015-11-11T19:28:41Z"
+ content="""
+sounds good to me ;)
+
+\"write pid and program name to it\" -- may be also a hostname so this could be safe in shared/networked environments... I believe emacs does similar, e.g. for 1.txt it creates a symlink
+
+.#1.txt -> yoh\@head1.hydra.dartmouth.edu.28757:1441910040
+
+
+"""]]

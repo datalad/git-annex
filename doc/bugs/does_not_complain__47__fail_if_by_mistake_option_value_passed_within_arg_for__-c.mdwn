@@ -1,0 +1,24 @@
+### Please describe the problem.
+
+spotted that in my script I have "incorrectly" passed both -c and its value within the same single argument ('-c annex....').  But surprisingly annex neither treated it correctly, nor complained that something was incorrectly passed in.  Shouldn't it fail if option is not '-c' but '-c smthelse' or correctly treat the value in such as case?
+
+### What version of git-annex are you using? On what operating system?
+
+5.20151104+gitge9cdce6-1~ndall+1
+
+### Please provide any additional information below.
+
+[[!format sh """
+$> ls -ld svgtune-0.2.0/README.rst
+-rw------- 1 yoh yoh 9 Nov 12 12:03 svgtune-0.2.0/README.rst
+
+$> git-annex add --debug '-c annex.largefiles=exclude=*.rst' svgtune-0.2.0/README.rst 
+add svgtune-0.2.0/README.rst ok
+(recording state in git...)
+
+$> ls -ld svgtune-0.2.0/README.rst                                                   
+lrwxrwxrwx 1 yoh yoh 189 Nov 12 12:03 svgtune-0.2.0/README.rst -> ../.git/annex/objects/32/vx/SHA256E-s9--246c960678ee9a80aa6d2eff2f1df1debd590cb73aa5fed6cb4b13b8018599f5.rst/SHA256E-s9--246c960678ee9a80aa6d2eff2f1df1debd590cb73aa5fed6cb4b13b8018599f5.rst
+"""]]
+
+[[!meta author=yoh]]
+
