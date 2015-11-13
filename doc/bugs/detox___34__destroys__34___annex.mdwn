@@ -1,6 +1,6 @@
 ### Please describe the problem.
 
-I accidentally (my fault!) run detox (batch file renamer to eliminate spaces etc.) on a git-annex dir, alas detox substitutes every "--" with "-", thus "destroying" my annex. Of course the objects are still there, just renamed so that the symlinks are now all broken.
+I accidentally (my fault!) ran detox (batch file renamer to eliminate spaces etc.) on a git-annex dir, alas detox substitutes every "--" with "-", thus "destroying" my annex. Of course the objects are still there, just renamed so that the symlinks are now all broken.
 
 I solved it by copying the objects back from my backup (I have many rsynced backups) since I was too lazy to write a script to rename all the files...
 
