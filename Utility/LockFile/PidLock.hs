@@ -92,7 +92,7 @@ tryLock lockfile = trySideLock lockfile $ \sidelock -> do
 		nukeFile tmp
 		return Nothing
 	let tooklock = return $ Just $ LockHandle lockfile fd sidelock
-	ifM (isJust <$> catchMaybeIO (createLink tmp lockfile))
+	ifM (linkToLock tmp lockfile)
 		( do
 			nukeFile tmp
 			tooklock
@@ -110,6 +110,33 @@ tryLock lockfile = trySideLock lockfile $ \sidelock -> do
 					tooklock
 				_ -> failedlock
 		)
+
+-- Linux man pages recommend linking a pid lock into place,
+-- as the most portable atomic operation that will fail if
+-- it already exists. However, on some network filesystems,
+-- link will return success sometimes despite having failed,
+-- so we have to stat both files to check if it actually worked.
+linkToLock :: FilePath -> FilePath -> IO Bool
+linkToLock src dest = ifM (isJust <$> catchMaybeIO (createLink src dest))
+	( catchDefaultIO False checklink
+	, return False
+	)
+  where
+	checklink = do
+		x <- getSymbolicLinkStatus src
+		y <- getSymbolicLinkStatus dest
+		return $ and
+			[ deviceID x == deviceID y
+			, fileID x == fileID y
+			, fileMode x == fileMode y
+			, linkCount x == linkCount y
+			, fileOwner x == fileOwner y
+			, fileGroup x == fileGroup y
+			, specialDeviceID x == specialDeviceID y
+			, fileSize x == fileSize y
+			, modificationTime x == modificationTime y
+			, isRegularFile x == isRegularFile y
+			]
 
 -- | Waits as necessary to take a lock.
 --
