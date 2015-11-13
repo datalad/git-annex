@@ -132,27 +132,12 @@ tryLock lockfile = trySideLock lockfile $ \sidelock -> do
 -- open(2) suggests that link can sometimes appear to fail
 -- on NFS but have actually succeeded, and the way to find out is to stat
 -- the file and check its link count etc.
---
--- On a Lustre filesystem, link has been observed to incorrectly *succeed*,
--- despite the dest already existing. A subsequent stat of the dest
--- looked like it had been replaced with the src. The process proceeded to
--- run and then deleted the dest, and after the process was done, the
--- original file was observed to still be in place. This is horrible and we
--- can't do anything about such a lying filesystem.
--- At least the side lock file will prevent git-annex's running on the same
--- host from running concurrently even on such a lying filesystem.
 linkToLock :: SideLockHandle -> FilePath -> FilePath -> IO Bool
 linkToLock Nothing _ _ = return False
 linkToLock (Just _) src dest = do
-	-- This might make Lustre notice that a lock file that is already
-	-- there is there?
-	_ <- catchMaybeIO $ readFile dest
 	_ <- tryIO $ createLink src dest
 	ifM (catchBoolIO checklinked)
-		( catchBoolIO $ do
-			srccontent <- readFile src
-			destcontent <- readFile dest
-			return (srccontent == destcontent)
+		( catchBoolIO $ not <$> checkInsaneLustre dest
 		, return False
 		)
   where
@@ -172,6 +157,27 @@ linkToLock (Just _) src dest = do
 			, linkCount x == linkCount y
 			, linkCount x == 2
 			]
+
+-- On a Lustre filesystem, link has been observed to incorrectly *succeed*,
+-- despite the dest already existing. A subsequent stat of the dest
+-- looked like it had been replaced with the src. The process proceeded to
+-- run and then deleted the dest, and after the process was done, the
+-- original file was observed to still be in place.
+--
+-- We can detect this insanity by getting the directory contents after
+-- making the link, and checking to see if 2 copies of the dest file,
+-- with the SAME FILENAME exist.
+checkInsaneLustre :: FilePath -> IO Bool
+checkInsaneLustre dest = do
+	fs <- dirContents (takeDirectory dest)
+	case length (filter (== dest) fs) of
+		1 -> return False -- whew!
+		0 -> return True -- wtf?
+		_ -> do
+			-- Try to clean up the extra copy we made
+			-- that has the same name. Egads.
+			tryIO $ removeFile dest
+			return True
 
 -- | Waits as necessary to take a lock.
 --

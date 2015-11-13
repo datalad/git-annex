@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 14"""
+ date="2015-11-13T20:00:48Z"
+ content="""
+Adding to the crazy Lustre fun, check this out:
+
+	$ ls -l .git/annex/
+	total 56
+	-rw-rw-r--  1 hess root 18387 Nov 13 14:35 index
+	-rw-rw-r--  1 hess root    41 Nov 13 14:35 index.lck
+	drwxrwsr-x  2 hess root 12288 Nov 13 14:35 journal
+	-rw-rw-r--  1 hess root     0 Nov 13 11:48 journal.lck
+	drwxrwsr-x  2 hess root  4096 Nov 13 14:35 misctmp
+	drwxrwsr-x 88 hess root  4096 Nov 13 14:35 objects
+	-r--r--r--  1 hess root    70 Nov 13 14:35 pidlock
+	-r--r--r--  1 hess root    70 Nov 13 14:35 pidlock
+	-rw-rw-r--  1 hess root     0 Nov 13 11:48 sentinal
+	-rw-rw-r--  1 hess root    23 Nov 13 11:48 sentinal.cache
+
+There are 2 pidlock files in that directory listing. 2 files with the same name.
+I deleted one of them, and with no other changes, ls shows only 1 now.
+
+	-r--r--r--  1 hess root    74 Nov 13 14:35 pidlock
+
+Notice that the file stat has changed too.
+
+So, Lustre has clearly thrown POSIX out the window, and then defrenstrated
+sanity for good measure.
+
+On the plus side, this may show how I can detect when rename() fails to
+preserve POSIX semantics..
+"""]]
