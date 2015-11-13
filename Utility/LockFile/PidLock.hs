@@ -93,7 +93,9 @@ tryLock lockfile = trySideLock lockfile $ \sidelock -> do
 		return Nothing
 	let tooklock = return $ Just $ LockHandle lockfile fd sidelock
 	ifM (isJust <$> catchMaybeIO (createLink tmp lockfile))
-		( tooklock
+		( do
+			nukeFile tmp
+			tooklock
 		, do
 			v <- readPidLock lockfile
 			hn <- getHostName
