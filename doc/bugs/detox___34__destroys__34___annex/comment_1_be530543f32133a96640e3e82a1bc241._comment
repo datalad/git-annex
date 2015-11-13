@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-11-13T17:36:29Z"
+ content="""
+git-annex tries to prevent this kind of thing by removing the write bit
+from the the object storage directories. But I suppose that doesn't prevent
+those directories from being renamed themselves (or from it turning on the
+write bit to rename files inside them, if it goes so far). 
+
+In the end, git-annex just can't help you if you feed your drive into a
+indiscriminate shredder. Except helping you have a copy of the data in a
+repository elsewhere. So I don't see how this is a bug in git-annex.
+
+But surely it's a massive bug in detox if it does anything inside .git or any
+VCS directory?
+
+Anyway, the result after running this thing is similar to fsck having put
+all your annexed objects in lost+found with useless names. I'd recover the
+same way, by moving the annexed objects from .git/annex/objects into the
+repository, and running git-annex add on them, so it will pick the same
+hashes as before and will move the objects back into place.
+See [[recover_data_from_lost+found]].
+"""]]
