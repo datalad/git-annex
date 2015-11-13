@@ -39,7 +39,7 @@ import System.Directory
 
 type LockFile = FilePath
 
-data LockHandle = LockHandle FilePath Fd SideLockHandle
+data LockHandle = LockHandle FilePath FileStatus SideLockHandle
 
 type SideLockHandle = Maybe Posix.LockHandle
 
@@ -100,17 +100,17 @@ tryLock lockfile = trySideLock lockfile $ \sidelock -> do
 	setFileMode tmp (combineModes readModes)
 	hPutStr h . show =<< mkPidLock
 	hClose h
+	st <- getFileStatus tmp
 	let failedlock = do
 		nukeFile tmp
 		maybe noop Posix.dropLock sidelock
 		return Nothing
-	let tooklock fd = return $ Just $ LockHandle lockfile fd sidelock
-	mfd <- linkToLock sidelock tmp lockfile
-	case mfd of
-		Just fd -> do
+	let tooklock = return $ Just $ LockHandle lockfile st sidelock
+	ifM (linkToLock sidelock tmp lockfile)
+		( do
 			nukeFile tmp
-			tooklock fd
-		Nothing -> do
+			tooklock
+		, do
 			v <- readPidLock lockfile
 			hn <- getHostName
 			case v of
@@ -121,9 +121,9 @@ tryLock lockfile = trySideLock lockfile $ \sidelock -> do
 					-- we know that the pidlock is
 					-- stale, and can take it over.
 					rename tmp lockfile
-					fd <- openFd lockfile ReadOnly Nothing defaultFileFlags
-					tooklock fd
+					tooklock
 				_ -> failedlock
+		)
 
 -- Linux's open(2) man page recommends linking a pid lock into place,
 -- as the most portable atomic operation that will fail if
@@ -141,21 +141,16 @@ tryLock lockfile = trySideLock lockfile $ \sidelock -> do
 -- can't do anything about such a lying filesystem.
 -- At least the side lock file will prevent git-annex's running on the same
 -- host from running concurrently even on such a lying filesystem.
-linkToLock :: SideLockHandle -> FilePath -> FilePath -> IO (Maybe Fd)
-linkToLock Nothing _ _ = return Nothing
+linkToLock :: SideLockHandle -> FilePath -> FilePath -> IO Bool
+linkToLock Nothing _ _ = return False
 linkToLock (Just _) src dest = do
 	_ <- tryIO $ createLink src dest
-	ifM (catchDefaultIO False checklink)
-		( catchDefaultIO Nothing $ do
+	ifM (catchBoolIO checklink)
+		( catchBoolIO $ do
 			srccontent <- readFile src
-			h <- openFile dest ReadMode
-			destcontent <- hGetContents h
-			if srccontent /= destcontent
-				then do
-					hClose h
-					return Nothing
-				else Just <$> handleToFd h
-		, return Nothing
+			destcontent <- readFile dest
+			return (srccontent == destcontent)
+		, return False
 		)
   where
 	checklink = do
@@ -192,13 +187,12 @@ waitLock (Seconds timeout) lockfile = go timeout
 			error $ "Gave up waiting for possibly stale pid lock file " ++ lockfile
 
 dropLock :: LockHandle -> IO ()
-dropLock (LockHandle lockfile fd sidelock) = do
+dropLock (LockHandle lockfile _ sidelock) = do
 	-- Drop side lock first, at which point the pid lock will be
 	-- considered stale.
 	-- The side lock file cannot be deleted because another process may
 	-- have it open and be waiting to lock it.
 	maybe noop Posix.dropLock sidelock
-	closeFd fd
 	nukeFile lockfile
 
 getLockStatus :: LockFile -> IO LockStatus
@@ -213,10 +207,9 @@ checkLocked lockfile = conv <$> getLockStatus lockfile
 -- Checks that the lock file still exists, and is the same file that was
 -- locked to get the LockHandle.
 checkSaneLock :: LockFile -> LockHandle -> IO Bool
-checkSaneLock lockfile (LockHandle _ fd _) =
+checkSaneLock lockfile (LockHandle _ st _) =
 	go =<< catchMaybeIO (getFileStatus lockfile)
   where
 	go Nothing = return False
-	go (Just st) = do
-		fdst <- getFdStatus fd
-		return $ deviceID fdst == deviceID st && fileID fdst == fileID st
+	go (Just st') = do
+		return $ deviceID st == deviceID st' && fileID st == fileID st'
