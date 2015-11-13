@@ -38,7 +38,9 @@ import Data.Hash.MD5
 
 type LockFile = FilePath
 
-data LockHandle = LockHandle FilePath Fd (Maybe Posix.LockHandle)
+data LockHandle = LockHandle FilePath Fd SideLockHandle
+
+type SideLockHandle = Maybe Posix.LockHandle
 
 data PidLock = PidLock
 	{ lockingPid :: ProcessID
@@ -58,7 +60,7 @@ readPidLock lockfile = (readish =<<) <$> catchMaybeIO (readFile lockfile)
 -- This is a regular posix exclusive lock. The side lock is put in
 -- /dev/shm. This will work on most any Linux system, even if its whole
 -- root filesystem doesn't support posix locks.
-trySideLock :: LockFile -> (Maybe Posix.LockHandle -> IO a) -> IO a
+trySideLock :: LockFile -> (SideLockHandle -> IO a) -> IO a
 trySideLock lockfile a = do
 	sidelock <- sideLockFile lockfile
 	mlck <- catchDefaultIO Nothing $ 
@@ -82,8 +84,6 @@ sideLockFile lockfile = do
 
 -- | Tries to take a lock; does not block when the lock is already held.
 --
--- The method used is atomic even on NFS without needing O_EXCL support.
---
 -- Note that stale locks are automatically detected and broken.
 -- However, if the lock file is on a networked file system, and was
 -- created on a different host than the current host (determined by hostname),
@@ -99,7 +99,7 @@ tryLock lockfile = trySideLock lockfile $ \sidelock -> do
 		nukeFile tmp
 		return Nothing
 	let tooklock = return $ Just $ LockHandle lockfile fd sidelock
-	ifM (linkToLock tmp lockfile)
+	ifM (linkToLock sidelock tmp lockfile)
 		( do
 			nukeFile tmp
 			tooklock
@@ -118,16 +118,27 @@ tryLock lockfile = trySideLock lockfile $ \sidelock -> do
 				_ -> failedlock
 		)
 
--- Linux man pages recommend linking a pid lock into place,
+-- Linux's open(2) man page recommends linking a pid lock into place,
 -- as the most portable atomic operation that will fail if
--- it already exists. However, on some network filesystems,
--- link will return success sometimes despite having failed,
--- so we have to stat both files to check if it actually worked.
-linkToLock :: FilePath -> FilePath -> IO Bool
-linkToLock src dest = ifM (isJust <$> catchMaybeIO (createLink src dest))
-	( catchDefaultIO False checklink
-	, return False
-	)
+-- it already exists. 
+--
+-- open(2) suggests that link can sometimes appear to fail
+-- on NFS but have actually succeeded, and the way to find out is to stat
+-- the file and check its link count etc.
+--
+-- On a Lustre filesystem, link has been observed to incorrectly *succeed*,
+-- despite the dest already existing. A subsequent stat of the dest
+-- looked like it had been replaced with the src. The process proceeded to
+-- run and then deleted the dest, and after the process was done, the
+-- original file was observed to still be in place. This is horrible and we
+-- can't do anything about such a lying filesystem.
+-- At least the side lock file will prevent git-annex's running on the same
+-- host from running concurrently even on such a lying filesystem.
+linkToLock :: SideLockHandle -> FilePath -> FilePath -> IO Bool
+linkToLock Nothing _ _ = return False
+linkToLock (Just _) src dest = do
+	_ <- tryIO $ createLink src dest
+	catchDefaultIO False checklink
   where
 	checklink = do
 		x <- getSymbolicLinkStatus src
@@ -136,13 +147,14 @@ linkToLock src dest = ifM (isJust <$> catchMaybeIO (createLink src dest))
 			[ deviceID x == deviceID y
 			, fileID x == fileID y
 			, fileMode x == fileMode y
-			, linkCount x == linkCount y
 			, fileOwner x == fileOwner y
 			, fileGroup x == fileGroup y
 			, specialDeviceID x == specialDeviceID y
 			, fileSize x == fileSize y
 			, modificationTime x == modificationTime y
 			, isRegularFile x == isRegularFile y
+			, linkCount x == linkCount y
+			, linkCount x == 2
 			]
 
 -- | Waits as necessary to take a lock.
