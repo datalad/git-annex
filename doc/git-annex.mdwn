@@ -976,8 +976,10 @@ Here are all the supported configuration settings.
   To support such situations, you can set annex.pidlock to true, and it
   will fall back to a single top-level pid file lock.
 
-  (Although, often, you'd really be better off fixing your networked
-  filesystem configuration to support POSIX locks..)
+  Although, often, you'd really be better off fixing your networked
+  filesystem configuration to support POSIX locks.. And, some networked
+  filesystems are so inconsistent that one node can't reliably tell when
+  the other node is holding a pid lock. Caveat emptor.
 
 * `annex.pidlocktimeout`
 
