@@ -35,6 +35,7 @@ import Control.Applicative
 import Network.BSD
 import System.FilePath
 import Data.Hash.MD5
+import System.Directory
 
 type LockFile = FilePath
 
@@ -68,10 +69,11 @@ trySideLock lockfile a = do
 			Posix.tryLockExclusive (Just mode) sidelock
 	a mlck
   where
-	-- Let all users write to the lock file in /dev/shm,
+	-- Let all users write to the lock file in /dev/shm or /tmp,
 	-- so that other users can reuse it to take the lock.
-	-- Since /dev/shm is sticky, a user cannot delete another user's
-	-- lock file there, so could not delete a stale lock.
+	-- Since /dev/shm and /tmp are sticky dirs, a user cannot
+	-- delete another user's lock file there, so could not
+	-- delete a stale lock.
 	mode = combineModes (readModes ++ writeModes)
 
 sideLockFile :: LockFile -> IO LockFile
@@ -79,8 +81,12 @@ sideLockFile lockfile = do
 	f <- absPath lockfile
 	let base = intercalate "_" (splitDirectories (makeRelative "/" f))
 	let shortbase = reverse $ take 32 $ reverse base
-	let md5 = if base == shortbase then "" else md5s (Str base)
-	return $ "/dev/shm" </> md5 ++ shortbase ++ ".lck"
+	let md5sum = if base == shortbase then "" else md5s (Str base)
+	dir <- ifM (doesDirectoryExist "/dev/shm")
+		( return "/dev/shm"
+		, return "/tmp"
+		)
+	return $ dir </> md5sum ++ shortbase ++ ".lck"
 
 -- | Tries to take a lock; does not block when the lock is already held.
 --
