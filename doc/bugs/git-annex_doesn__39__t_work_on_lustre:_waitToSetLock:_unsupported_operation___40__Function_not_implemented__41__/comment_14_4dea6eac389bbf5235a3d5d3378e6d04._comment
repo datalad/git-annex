@@ -30,4 +30,9 @@ sanity for good measure.
 
 On the plus side, this may show how I can detect when rename() fails to
 preserve POSIX semantics..
+
+Update: Indeed, I was able to get git-annex to detect the doubled file
+and so know that it can't take the lock.
+
+I can't guarantee anything, but this is enough to close this bug.
 """]]
