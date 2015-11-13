@@ -41,6 +41,7 @@ import Utility.UserInfo
 import Utility.FileMode
 import Annex.Perms
 import System.Posix.User
+import qualified Utility.LockFile.Posix as Posix
 #endif
 
 genDescription :: Maybe String -> Annex String
@@ -74,9 +75,11 @@ initialize mdescription = do
 	u <- getUUID
 	describeUUID u =<< genDescription mdescription
 
--- Everything except for uuid setup.
+-- Everything except for uuid setup, shared clone setup, and initial
+-- description.
 initialize' :: Annex ()
 initialize' = do
+	checkLockSupport
 	checkFifoSupport
 	checkCrippledFileSystem
 	unlessM isBare $
@@ -167,6 +170,24 @@ checkCrippledFileSystem = whenM probeCrippledFileSystem $ do
 		setConfig (ConfigKey "core.symlinks")
 			(Git.Config.boolConfig False)
 
+probeLockSupport :: Annex Bool
+probeLockSupport = do
+#ifdef mingw32_HOST_OS
+	return True
+#else
+	tmp <- fromRepo gitAnnexTmpMiscDir
+	let f = tmp </> "lockprobe"
+	createAnnexDirectory tmp
+	mode <- annexFileMode
+	liftIO $ do
+		nukeFile f
+		ok <- catchBoolIO $ do
+			Posix.dropLock =<< Posix.lockExclusive (Just mode) f
+			return True
+		nukeFile f
+		return ok
+#endif
+
 probeFifoSupport :: Annex Bool
 probeFifoSupport = do
 #ifdef mingw32_HOST_OS
@@ -187,6 +208,12 @@ probeFifoSupport = do
 		nukeFile f2
 		return $ either (const False) isNamedPipe ms
 #endif
+
+checkLockSupport :: Annex ()
+checkLockSupport = unlessM probeLockSupport $ do
+	warning "Detected a filesystem without POSIX fcntl lock support."
+	warning "Enabling annex.pidlock."
+	setConfig (annexConfig "pidlock") (Git.Config.boolConfig True)
 
 checkFifoSupport :: Annex ()
 checkFifoSupport = unlessM probeFifoSupport $ do
