@@ -99,17 +99,18 @@ tryLock lockfile = trySideLock lockfile $ \sidelock -> do
 	(tmp, h) <- openTempFile (takeDirectory lockfile) "locktmp"
 	setFileMode tmp (combineModes readModes)
 	hPutStr h . show =<< mkPidLock
-	fd <- handleToFd h
+	hClose h
 	let failedlock = do
-		closeFd fd
 		nukeFile tmp
+		maybe noop Posix.dropLock sidelock
 		return Nothing
-	let tooklock = return $ Just $ LockHandle lockfile fd sidelock
-	ifM (linkToLock sidelock tmp lockfile)
-		( do
+	let tooklock fd = return $ Just $ LockHandle lockfile fd sidelock
+	mfd <- linkToLock sidelock tmp lockfile
+	case mfd of
+		Just fd -> do
 			nukeFile tmp
-			tooklock
-		, do
+			tooklock fd
+		Nothing -> do
 			v <- readPidLock lockfile
 			hn <- getHostName
 			case v of
@@ -120,9 +121,9 @@ tryLock lockfile = trySideLock lockfile $ \sidelock -> do
 					-- we know that the pidlock is
 					-- stale, and can take it over.
 					rename tmp lockfile
-					tooklock
+					fd <- openFd lockfile ReadOnly Nothing defaultFileFlags
+					tooklock fd
 				_ -> failedlock
-		)
 
 -- Linux's open(2) man page recommends linking a pid lock into place,
 -- as the most portable atomic operation that will fail if
@@ -140,11 +141,22 @@ tryLock lockfile = trySideLock lockfile $ \sidelock -> do
 -- can't do anything about such a lying filesystem.
 -- At least the side lock file will prevent git-annex's running on the same
 -- host from running concurrently even on such a lying filesystem.
-linkToLock :: SideLockHandle -> FilePath -> FilePath -> IO Bool
-linkToLock Nothing _ _ = return False
+linkToLock :: SideLockHandle -> FilePath -> FilePath -> IO (Maybe Fd)
+linkToLock Nothing _ _ = return Nothing
 linkToLock (Just _) src dest = do
 	_ <- tryIO $ createLink src dest
-	catchDefaultIO False checklink
+	ifM (catchDefaultIO False checklink)
+		( catchDefaultIO Nothing $ do
+			srccontent <- readFile src
+			h <- openFile dest ReadMode
+			destcontent <- hGetContents h
+			if srccontent /= destcontent
+				then do
+					hClose h
+					return Nothing
+				else Just <$> handleToFd h
+		, return Nothing
+		)
   where
 	checklink = do
 		x <- getSymbolicLinkStatus src
