@@ -1,6 +1,8 @@
 ### Please describe the problem.
 
-I accidentally (my fault!) ran detox (batch file renamer to eliminate spaces etc.) on a git-annex dir, alas detox substitutes every "--" with "-", thus "destroying" my annex. Of course the objects are still there, just renamed so that the symlinks are now all broken.
+I accidentally (entirely my fault!) ran detox (batch file renamer to eliminate spaces etc.) on a git-annex dir.
+Alas detox substitutes every "--" with "-", thus "destroying" the annex.
+Of course the objects are still there, just renamed so that the symlinks become broken.
 
 I solved it by copying the objects back from my backup (I have many rsynced backups) since I was too lazy to write a script to rename all the files...
 
@@ -29,4 +31,4 @@ Linux
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 
-I currently have about a dozen annexes, local and remote (nfs, git), no other big problem apart from lac of speed when syncing
+I currently have about a dozen annexes, local and remote (nfs, git), no other big problem apart from lack of speed when syncing
