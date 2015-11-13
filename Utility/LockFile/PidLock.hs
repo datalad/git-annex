@@ -20,7 +20,6 @@ import Utility.PartialPrelude
 import Utility.Exception
 import Utility.Applicative
 import Utility.Directory
-import Utility.ThreadScheduler
 import Utility.Monad
 import Utility.Path
 import Utility.FileMode
@@ -127,10 +126,14 @@ waitLock (Seconds timeout) lockfile = go timeout
 			error $ "Gave up waiting for possibly stale pid lock file " ++ lockfile
 
 dropLock :: LockHandle -> IO ()
-dropLock (LockHandle lockfile fd plh) = do
+dropLock (LockHandle lockfile fd sidelock) = do
+	-- Drop side lock first, at which point the pid lock will be
+	-- considered stale.
+	-- The side lock file cannot be deleted because another process may
+	-- have it open and be waiting to lock it.
+	maybe noop Posix.dropLock sidelock
 	closeFd fd
 	nukeFile lockfile
-	maybe noop Posix.dropLock plh
 
 getLockStatus :: LockFile -> IO LockStatus
 getLockStatus = maybe StatusUnLocked (StatusLockedBy . lockingPid) <$$> readPidLock
