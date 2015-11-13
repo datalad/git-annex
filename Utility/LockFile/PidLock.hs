@@ -34,6 +34,7 @@ import Data.List
 import Control.Applicative
 import Network.BSD
 import System.FilePath
+import Data.Hash.MD5
 
 type LockFile = FilePath
 
@@ -59,9 +60,7 @@ readPidLock lockfile = (readish =<<) <$> catchMaybeIO (readFile lockfile)
 -- root filesystem doesn't support posix locks.
 trySideLock :: LockFile -> (Maybe Posix.LockHandle -> IO a) -> IO a
 trySideLock lockfile a = do
-	f <- absPath lockfile
-	let sidelock = "/dev/shm" </>
-		intercalate "_" (splitDirectories (makeRelative "/" f)) ++ ".lck"
+	sidelock <- sideLockFile lockfile
 	mlck <- catchDefaultIO Nothing $ 
 		withUmask nullFileMode $
 			Posix.tryLockExclusive (Just mode) sidelock
@@ -72,6 +71,14 @@ trySideLock lockfile a = do
 	-- Since /dev/shm is sticky, a user cannot delete another user's
 	-- lock file there, so could not delete a stale lock.
 	mode = combineModes (readModes ++ writeModes)
+
+sideLockFile :: LockFile -> IO LockFile
+sideLockFile lockfile = do
+	f <- absPath lockfile
+	let base = intercalate "_" (splitDirectories (makeRelative "/" f))
+	let shortbase = reverse $ take 32 $ reverse base
+	let md5 = if base == shortbase then "" else md5s (Str base)
+	return $ "/dev/shm" </> md5 ++ shortbase ++ ".lck"
 
 -- | Tries to take a lock; does not block when the lock is already held.
 --
