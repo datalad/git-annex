@@ -144,8 +144,11 @@ tryLock lockfile = trySideLock lockfile $ \sidelock -> do
 linkToLock :: SideLockHandle -> FilePath -> FilePath -> IO Bool
 linkToLock Nothing _ _ = return False
 linkToLock (Just _) src dest = do
+	-- This might make Lustre notice that a lock file that is already
+	-- there is there?
+	_ <- catchMaybeIO $ readFile dest
 	_ <- tryIO $ createLink src dest
-	ifM (catchBoolIO checklink)
+	ifM (catchBoolIO checklinked)
 		( catchBoolIO $ do
 			srccontent <- readFile src
 			destcontent <- readFile dest
@@ -153,7 +156,7 @@ linkToLock (Just _) src dest = do
 		, return False
 		)
   where
-	checklink = do
+	checklinked = do
 		x <- getSymbolicLinkStatus src
 		y <- getSymbolicLinkStatus dest
 		return $ and
