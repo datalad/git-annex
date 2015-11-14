@@ -13,7 +13,7 @@ because then the pid in question can be running on a different computer.
 Even if you do figure out that a pid lock is stale, how do you then
 take over a stale pid lock, without racing with anther process that
 also wants to take it over? This was the truely tricky question of the
-day..
+day.
 
 I have a possibly slightly novel approach to solve that: 
 Put a more modern lock file someplace else (eg, /dev/shm)
