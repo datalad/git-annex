@@ -25,8 +25,9 @@ override_dh_auto_install:
 override_dh_fixperms:
 	dh_fixperms -Xld-linux
 
-# Do not add "ldconfig" trigger since of no need, and activate-noawait might not
-# be known to elderly distributions (e.g. squeeze)
+# Do not add "ldconfig" trigger since all libraries in the standalone build
+# are private copies and the trigger activate-noawait trigger may not work
+# on elderly distributions (e.g. squeeze)
 override_dh_makeshlibs:
 	dh_makeshlibs --noscripts
 
