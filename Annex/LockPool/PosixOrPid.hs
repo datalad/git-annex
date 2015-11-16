@@ -24,9 +24,10 @@ import Common.Annex
 import qualified Annex
 import qualified Utility.LockPool.Posix as Posix
 import qualified Utility.LockPool.PidLock as Pid
+import qualified Utility.LockPool.LockHandle as H
+import Utility.LockPool.LockHandle (LockHandle, dropLock)
 import Utility.LockFile.Posix (openLockFile)
 import Utility.LockPool.STM (LockFile)
-import Utility.LockPool.LockHandle
 import Utility.LockFile.LockStatus
 
 import System.Posix
@@ -50,6 +51,10 @@ checkLocked f = Posix.checkLocked f
 getLockStatus :: LockFile -> Annex LockStatus
 getLockStatus f = Posix.getLockStatus f
 	`pidLockCheck` Pid.getLockStatus
+
+checkSaneLock :: LockFile -> LockHandle -> Annex Bool
+checkSaneLock f h = H.checkSaneLock f h
+	`pidLockCheck` flip Pid.checkSaneLock h
 
 pidLockFile :: Annex (Maybe FilePath)
 pidLockFile = ifM (annexPidLock <$> Annex.getGitConfig)

@@ -96,7 +96,7 @@ runTransfer' ignorelock t file shouldretry transferobserver transferaction = do
 		r <- tryLockExclusive (Just mode) lck
 		case r of
 			Nothing -> return (Nothing, True)
-			Just lockhandle -> ifM (liftIO $ checkSaneLock lck lockhandle)
+			Just lockhandle -> ifM (checkSaneLock lck lockhandle)
 				( do
 					void $ liftIO $ tryIO $
 						writeTransferInfoFile info tfile
