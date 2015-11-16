@@ -95,7 +95,6 @@ Flag TorrentParser
 
 Flag ConcurrentOutput
   Description: Use concurrent-output library
-  Default: False
 
 Flag EKG
   Description: Enable use of EKG to monitor git-annex as it runs (at http://localhost:4242/)
