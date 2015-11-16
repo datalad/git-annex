@@ -114,7 +114,8 @@ sideLockFile lockfile = do
 -- this can't be done and stale locks may persist.
 tryLock :: LockFile -> IO (Maybe LockHandle)
 tryLock lockfile = trySideLock lockfile $ \sidelock -> do
-	(tmp, h) <- openTempFile (takeDirectory lockfile) "locktmp"
+	lockfile' <- absPath lockfile
+	(tmp, h) <- openTempFile (takeDirectory lockfile') "locktmp"
 	setFileMode tmp (combineModes readModes)
 	hPutStr h . show =<< mkPidLock
 	hClose h
@@ -122,13 +123,13 @@ tryLock lockfile = trySideLock lockfile $ \sidelock -> do
 	let failedlock = do
 		dropLock $ LockHandle tmp st sidelock
 		return Nothing
-	let tooklock = return $ Just $ LockHandle lockfile st sidelock
-	ifM (linkToLock sidelock tmp lockfile)
+	let tooklock = return $ Just $ LockHandle lockfile' st sidelock
+	ifM (linkToLock sidelock tmp lockfile')
 		( do
 			nukeFile tmp
 			tooklock
 		, do
-			v <- readPidLock lockfile
+			v <- readPidLock lockfile'
 			hn <- getHostName
 			case v of
 				Just pl | isJust sidelock && hn == lockingHost pl -> do
@@ -137,7 +138,7 @@ tryLock lockfile = trySideLock lockfile $ \sidelock -> do
 					-- the pidlock was taken on,
 					-- we know that the pidlock is
 					-- stale, and can take it over.
-					rename tmp lockfile
+					rename tmp lockfile'
 					tooklock
 				_ -> failedlock
 		)
@@ -167,7 +168,6 @@ linkToLock (Just _) src dest = do
 			, fileMode x == fileMode y
 			, fileOwner x == fileOwner y
 			, fileGroup x == fileGroup y
-			, specialDeviceID x == specialDeviceID y
 			, fileSize x == fileSize y
 			, modificationTime x == modificationTime y
 			, isRegularFile x == isRegularFile y
@@ -231,9 +231,9 @@ checkLocked lockfile = conv <$> getLockStatus lockfile
 -- Checks that the lock file still exists, and is the same file that was
 -- locked to get the LockHandle.
 checkSaneLock :: LockFile -> LockHandle -> IO Bool
-checkSaneLock lockfile (LockHandle _ st _) =
+checkSaneLock lockfile (LockHandle f st _) = 
 	go =<< catchMaybeIO (getFileStatus lockfile)
   where
 	go Nothing = return False
-	go (Just st') = do
-		return $ deviceID st == deviceID st' && fileID st == fileID st'
+	go (Just st') = return $
+		deviceID st == deviceID st' && fileID st == fileID st'
