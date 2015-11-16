@@ -29,6 +29,9 @@ type MeterUpdate = (BytesProcessed -> IO ())
 nullMeterUpdate :: MeterUpdate
 nullMeterUpdate _ = return ()
 
+combineMeterUpdate :: MeterUpdate -> MeterUpdate -> MeterUpdate
+combineMeterUpdate a b = \n -> a n >> b n
+
 {- Total number of bytes processed so far. -}
 newtype BytesProcessed = BytesProcessed Integer
 	deriving (Eq, Ord, Show)

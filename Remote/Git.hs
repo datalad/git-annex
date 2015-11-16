@@ -440,10 +440,10 @@ copyFromRemote' r key file dest meterupdate
 					copier <- mkCopier hardlink params
 					runTransfer (Transfer Download u key)
 						file noRetry noObserver 
-						(\p -> copier object dest p checksuccess)
-	| Git.repoIsSsh (repo r) = unVerified $ feedprogressback $ \feeder -> do
+						(\p -> copier object dest (combineMeterUpdate p meterupdate) checksuccess)
+	| Git.repoIsSsh (repo r) = unVerified $ feedprogressback $ \p -> do
 		direct <- isDirect
-		Ssh.rsyncHelper (Just feeder) 
+		Ssh.rsyncHelper (Just (combineMeterUpdate meterupdate p))
 			=<< Ssh.rsyncParamsRemote direct r Download key dest file
 	| Git.repoIsHttp (repo r) = unVerified $ Annex.Content.downloadUrl (keyUrls r key) dest
 	| otherwise = error "copying from non-ssh, non-http remote not supported"
@@ -533,17 +533,19 @@ copyFromRemoteCheap _ _ _ _ = return False
 
 {- Tries to copy a key's content to a remote's annex. -}
 copyToRemote :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-copyToRemote r key file p = concurrentMetered (Just p) key file $ copyToRemote' r key file
+copyToRemote r key file meterupdate = 
+	concurrentMetered (Just meterupdate) key file $
+		copyToRemote' r key file
 
 copyToRemote' :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-copyToRemote' r key file p
+copyToRemote' r key file meterupdate
 	| not $ Git.repoIsUrl (repo r) =
 		guardUsable (repo r) (return False) $ commitOnCleanup r $
 			copylocal =<< Annex.Content.prepSendAnnex key
 	| Git.repoIsSsh (repo r) = commitOnCleanup r $
 		Annex.Content.sendAnnex key noop $ \object -> do
 			direct <- isDirect
-			Ssh.rsyncHelper (Just p)
+			Ssh.rsyncHelper (Just meterupdate)
 				=<< Ssh.rsyncParamsRemote direct r Upload key object file
 	| otherwise = error "copying to non-ssh repo not supported"
   where
@@ -563,10 +565,11 @@ copyToRemote' r key file p
 				ensureInitialized
 				copier <- mkCopier hardlink params
 				let verify = Annex.Content.RemoteVerify r
-				runTransfer (Transfer Download u key) file noRetry noObserver $ const $
-					Annex.Content.saveState True `after`
+				runTransfer (Transfer Download u key) file noRetry noObserver $ \p ->
+					let p' = combineMeterUpdate meterupdate p
+					in Annex.Content.saveState True `after`
 						Annex.Content.getViaTmp verify key
-							(\dest -> copier object dest p (liftIO checksuccessio))
+							(\dest -> copier object dest p' (liftIO checksuccessio))
 			)
 
 fsckOnRemote :: Git.Repo -> [CommandParam] -> Annex (IO Bool)
