@@ -18,8 +18,8 @@ module Types.Key (
 	isChunkKey,
 	isKeyPrefix,
 
-	prop_idempotent_key_encode,
-	prop_idempotent_key_decode
+	prop_isomorphic_key_encode,
+	prop_isomorphic_key_decode
 ) where
 
 import System.Posix.Types
@@ -135,11 +135,11 @@ instance Hashable Key where
 	hashIO32 = hashIO32 . key2file
 	hashIO64 = hashIO64 . key2file
 
-prop_idempotent_key_encode :: Key -> Bool
-prop_idempotent_key_encode k = Just k == (file2key . key2file) k
+prop_isomorphic_key_encode :: Key -> Bool
+prop_isomorphic_key_encode k = Just k == (file2key . key2file) k
 
-prop_idempotent_key_decode :: FilePath -> Bool
-prop_idempotent_key_decode f
+prop_isomorphic_key_decode :: FilePath -> Bool
+prop_isomorphic_key_decode f
 	| normalfieldorder = maybe True (\k -> key2file k == f) (file2key f)
 	| otherwise = True
   where

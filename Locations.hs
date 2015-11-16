@@ -67,7 +67,7 @@ module Locations (
 	hashDirLower,
 	preSanitizeKeyName,
 
-	prop_idempotent_fileKey
+	prop_isomorphic_fileKey
 ) where
 
 import Data.Char
@@ -437,8 +437,8 @@ fileKey file = file2key $
 		replace "&c" ":" $ replace "%" "/" file
 
 {- for quickcheck -}
-prop_idempotent_fileKey :: String -> Bool
-prop_idempotent_fileKey s
+prop_isomorphic_fileKey :: String -> Bool
+prop_isomorphic_fileKey s
 	| null s = True -- it's not legal for a key to have no keyName
 	| otherwise= Just k == fileKey (keyFile k)
   where

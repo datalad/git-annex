@@ -131,14 +131,14 @@ tests = testGroup "Tests"
 
 properties :: TestTree
 properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
-	[ testProperty "prop_idempotent_deencode_git" Git.Filename.prop_idempotent_deencode
-	, testProperty "prop_idempotent_deencode" Utility.Format.prop_idempotent_deencode
-	, testProperty "prop_idempotent_fileKey" Locations.prop_idempotent_fileKey
-	, testProperty "prop_idempotent_key_encode" Types.Key.prop_idempotent_key_encode
-	, testProperty "prop_idempotent_key_decode" Types.Key.prop_idempotent_key_decode
-	, testProperty "prop_idempotent_shellEscape" Utility.SafeCommand.prop_idempotent_shellEscape
-	, testProperty "prop_idempotent_shellEscape_multiword" Utility.SafeCommand.prop_idempotent_shellEscape_multiword
-	, testProperty "prop_idempotent_configEscape" Logs.Remote.prop_idempotent_configEscape
+	[ testProperty "prop_isomorphic_deencode_git" Git.Filename.prop_isomorphic_deencode
+	, testProperty "prop_isomorphic_deencode" Utility.Format.prop_isomorphic_deencode
+	, testProperty "prop_isomorphic_fileKey" Locations.prop_isomorphic_fileKey
+	, testProperty "prop_isomorphic_key_encode" Types.Key.prop_isomorphic_key_encode
+	, testProperty "prop_isomorphic_key_decode" Types.Key.prop_isomorphic_key_decode
+	, testProperty "prop_isomorphic_shellEscape" Utility.SafeCommand.prop_isomorphic_shellEscape
+	, testProperty "prop_isomorphic_shellEscape_multiword" Utility.SafeCommand.prop_isomorphic_shellEscape_multiword
+	, testProperty "prop_isomorphic_configEscape" Logs.Remote.prop_isomorphic_configEscape
 	, testProperty "prop_parse_show_Config" Logs.Remote.prop_parse_show_Config
 	, testProperty "prop_upFrom_basics" Utility.Path.prop_upFrom_basics
 	, testProperty "prop_relPathDirToFile_basics" Utility.Path.prop_relPathDirToFile_basics

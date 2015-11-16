@@ -24,5 +24,5 @@ encode :: FilePath -> String
 encode s = "\"" ++ encode_c s ++ "\""
 
 {- for quickcheck -}
-prop_idempotent_deencode :: String -> Bool
-prop_idempotent_deencode s = s == decode (encode s)
+prop_isomorphic_deencode :: String -> Bool
+prop_isomorphic_deencode s = s == decode (encode s)

@@ -14,7 +14,7 @@ module Logs.Remote (
 	showConfig,
 	parseConfig,
 
-	prop_idempotent_configEscape,
+	prop_isomorphic_configEscape,
 	prop_parse_show_Config,
 ) where
 
@@ -84,8 +84,8 @@ configUnEscape = unescape
 		rest = drop 1 r
 
 {- for quickcheck -}
-prop_idempotent_configEscape :: String -> Bool
-prop_idempotent_configEscape s = s == (configUnEscape . configEscape) s
+prop_isomorphic_configEscape :: String -> Bool
+prop_isomorphic_configEscape s = s == (configUnEscape . configEscape) s
 
 prop_parse_show_Config :: RemoteConfig -> Bool
 prop_parse_show_Config c

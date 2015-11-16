@@ -11,7 +11,7 @@ module Utility.Format (
 	format,
 	decode_c,
 	encode_c,
-	prop_idempotent_deencode
+	prop_isomorphic_deencode
 ) where
 
 import Text.Printf (printf)
@@ -174,5 +174,5 @@ encode_c' p = concatMap echar
 	showoctal i = '\\' : printf "%03o" i
 
 {- for quickcheck -}
-prop_idempotent_deencode :: String -> Bool
-prop_idempotent_deencode s = s == decode_c (encode_c s)
+prop_isomorphic_deencode :: String -> Bool
+prop_isomorphic_deencode s = s == decode_c (encode_c s)
