@@ -23,8 +23,8 @@ git-annex (5.20151102.2) UNRELEASED; urgency=medium
   * Make git-annex-standalone.deb include the git-annex html documentation,
     desktop file, and base completion file, same as the regular git-annex.deb.
   * fsck: When fscking a dead repo, avoid incorrect "fixing location log"
-    message, and display a message, since it's unusual to have access to a
-    dead repo.
+    message, and display a warning about it being dead, since it's unusual
+    to have access to a dead repo.
   * assistant: Pass ssh-options through 3 more git pull/push calls
     that were missed before.
   * Added annex.pidlock and annex.pidlocktimeout configuration to support
