@@ -231,7 +231,7 @@ checkLocked lockfile = conv <$> getLockStatus lockfile
 -- Checks that the lock file still exists, and is the same file that was
 -- locked to get the LockHandle.
 checkSaneLock :: LockFile -> LockHandle -> IO Bool
-checkSaneLock lockfile (LockHandle f st _) = 
+checkSaneLock lockfile (LockHandle _ st _) = 
 	go =<< catchMaybeIO (getFileStatus lockfile)
   where
 	go Nothing = return False
