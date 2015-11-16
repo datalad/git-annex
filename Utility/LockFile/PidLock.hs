@@ -39,9 +39,9 @@ import System.Directory
 
 type LockFile = FilePath
 
-data LockHandle = LockHandle FilePath FileStatus SideLockHandle
+data LockHandle = LockHandle LockFile FileStatus SideLockHandle
 
-type SideLockHandle = Maybe Posix.LockHandle
+type SideLockHandle = Maybe (LockFile, Posix.LockHandle)
 
 data PidLock = PidLock
 	{ lockingPid :: ProcessID
@@ -58,16 +58,21 @@ readPidLock :: LockFile -> IO (Maybe PidLock)
 readPidLock lockfile = (readish =<<) <$> catchMaybeIO (readFile lockfile)
 
 -- To avoid races when taking over a stale pid lock, a side lock is used.
--- This is a regular posix exclusive lock. The side lock is put in
--- /dev/shm. This will work on most any Linux system, even if its whole
--- root filesystem doesn't support posix locks.
+-- This is a regular posix exclusive lock.
 trySideLock :: LockFile -> (SideLockHandle -> IO a) -> IO a
 trySideLock lockfile a = do
 	sidelock <- sideLockFile lockfile
 	mlck <- catchDefaultIO Nothing $ 
 		withUmask nullFileMode $
 			Posix.tryLockExclusive (Just mode) sidelock
-	a mlck
+	-- Check the lock we just took, in case we opened a side lock file
+	-- belonging to another process that will have since deleted it.
+	case mlck of
+		Nothing -> a Nothing
+		Just lck -> ifM (Posix.checkSaneLock sidelock lck)
+			( a (Just (sidelock, lck))
+			, a Nothing
+			)
   where
 	-- Let all users write to the lock file in /dev/shm or /tmp,
 	-- so that other users can reuse it to take the lock.
@@ -76,6 +81,19 @@ trySideLock lockfile a = do
 	-- delete a stale lock.
 	mode = combineModes (readModes ++ writeModes)
 
+dropSideLock :: SideLockHandle -> IO ()
+dropSideLock Nothing = return ()
+dropSideLock (Just (f, h)) = do
+	-- Delete the file first, to ensure that any process that is trying
+	-- to take the side lock will only succeed once the file is
+	-- deleted, and so will be able to immediately see that it's taken
+	-- a stale lock.
+	_ <- tryIO $ removeFile f 
+	Posix.dropLock h
+
+-- The side lock is put in /dev/shm. This will work on most any
+-- Linux system, even if its whole root filesystem doesn't support posix
+-- locks. /tmp is used as a fallback.
 sideLockFile :: LockFile -> IO LockFile
 sideLockFile lockfile = do
 	f <- absPath lockfile
@@ -102,8 +120,7 @@ tryLock lockfile = trySideLock lockfile $ \sidelock -> do
 	hClose h
 	st <- getFileStatus tmp
 	let failedlock = do
-		nukeFile tmp
-		maybe noop Posix.dropLock sidelock
+		dropLock $ LockHandle tmp st sidelock
 		return Nothing
 	let tooklock = return $ Just $ LockHandle lockfile st sidelock
 	ifM (linkToLock sidelock tmp lockfile)
@@ -176,7 +193,7 @@ checkInsaneLustre dest = do
 		_ -> do
 			-- Try to clean up the extra copy we made
 			-- that has the same name. Egads.
-			tryIO $ removeFile dest
+			_ <- tryIO $ removeFile dest
 			return True
 
 -- | Waits as necessary to take a lock.
@@ -199,9 +216,7 @@ dropLock :: LockHandle -> IO ()
 dropLock (LockHandle lockfile _ sidelock) = do
 	-- Drop side lock first, at which point the pid lock will be
 	-- considered stale.
-	-- The side lock file cannot be deleted because another process may
-	-- have it open and be waiting to lock it.
-	maybe noop Posix.dropLock sidelock
+	dropSideLock sidelock
 	nukeFile lockfile
 
 getLockStatus :: LockFile -> IO LockStatus
