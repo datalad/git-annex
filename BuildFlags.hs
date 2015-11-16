@@ -67,6 +67,8 @@ buildFlags = filter (not . null)
 #endif
 #ifdef WITH_CONCURRENTOUTPUT
 	, "ConcurrentOutput"
+#else
+#warning Building without ConcurrentOutput
 #endif
 #ifdef WITH_DNS
 	, "DNS"
