@@ -89,7 +89,7 @@ parentDir = takeDirectory . dropTrailingPathSeparator
 upFrom :: FilePath -> Maybe FilePath
 upFrom dir
 	| length dirs < 2 = Nothing
-	| otherwise = Just $ joinDrive drive (join s $ init dirs)
+	| otherwise = Just $ joinDrive drive (intercalate s $ init dirs)
   where
 	-- on Unix, the drive will be "/" when the dir is absolute, otherwise ""
 	(drive, path) = splitDrive dir
@@ -149,7 +149,7 @@ relPathDirToFile from to = relPathDirToFileAbs <$> absPath from <*> absPath to
 relPathDirToFileAbs :: FilePath -> FilePath -> FilePath
 relPathDirToFileAbs from to
 	| takeDrive from /= takeDrive to = to
-	| otherwise = join s $ dotdots ++ uncommon
+	| otherwise = intercalate s $ dotdots ++ uncommon
   where
 	s = [pathSeparator]
 	pfrom = split s from

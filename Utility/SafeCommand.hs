@@ -14,6 +14,7 @@ import Utility.Process
 import Data.String.Utils
 import System.FilePath
 import Data.Char
+import Data.List
 import Control.Applicative
 import Prelude
 
@@ -85,7 +86,7 @@ shellEscape :: String -> String
 shellEscape f = "'" ++ escaped ++ "'"
   where
 	-- replace ' with '"'"'
-	escaped = join "'\"'\"'" $ split "'" f
+	escaped = intercalate "'\"'\"'" $ split "'" f
 
 -- | Unescapes a set of shellEscaped words or filenames.
 shellUnEscape :: String -> [String]
