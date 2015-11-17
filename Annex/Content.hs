@@ -660,10 +660,8 @@ saveState nocommit = doSideAction $ do
 
 {- Downloads content from any of a list of urls. -}
 downloadUrl :: Key -> MeterUpdate -> [Url.URLString] -> FilePath -> Annex Bool
-downloadUrl k p urls file = 
-	concurrentMetered (Just p) k $ \p' ->
-		watchFileSize file p' $
-			go =<< annexWebDownloadCommand <$> Annex.getGitConfig
+downloadUrl k p urls file = concurrentMeteredFile file (Just p) k $
+	go =<< annexWebDownloadCommand <$> Annex.getGitConfig
   where
 	go Nothing = do
 		a <- ifM commandProgressDisabled

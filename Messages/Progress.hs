@@ -70,7 +70,15 @@ concurrentMetered :: Maybe MeterUpdate -> Key -> (MeterUpdate -> Annex a) -> Ann
 concurrentMetered combinemeterupdate key a = withOutputType go
   where
 	go (ConcurrentOutput _) = metered combinemeterupdate key a
-	go _ = a (fromMaybe (const noop) combinemeterupdate)
+	go _ = a (fromMaybe nullMeterUpdate combinemeterupdate)
+
+{- Poll file size to display meter, but only for concurrent output. -}
+concurrentMeteredFile :: FilePath -> Maybe MeterUpdate -> Key -> Annex a -> Annex a
+concurrentMeteredFile file combinemeterupdate key a = withOutputType go
+  where
+	go (ConcurrentOutput _) = metered combinemeterupdate key $ \p ->
+		watchFileSize file p a
+	go _ = a
 
 {- Progress dots. -}
 showProgressDots :: Annex ()
