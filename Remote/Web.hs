@@ -72,7 +72,7 @@ gen r _ c gc =
 		}
 
 downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
-downloadKey key _file dest _p = unVerified $ get =<< getWebUrls key
+downloadKey key _af dest p = unVerified $ get =<< getWebUrls key
   where
 	get [] = do
 		warning "no known url"
@@ -84,13 +84,13 @@ downloadKey key _file dest _p = unVerified $ get =<< getWebUrls key
 			case downloader of
 				QuviDownloader -> do
 #ifdef WITH_QUVI
-					flip downloadUrl dest
+					flip (downloadUrl key p) dest
 						=<< withQuviOptions Quvi.queryLinks [Quvi.httponly, Quvi.quiet] u'
 #else
 					warning "quvi support needed for this url"
 					return False
 #endif
-				_ -> downloadUrl [u'] dest
+				_ -> downloadUrl key p [u'] dest
 
 downloadKeyCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
 downloadKeyCheap _ _ _ = return False

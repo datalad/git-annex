@@ -56,6 +56,7 @@ import qualified Annex.Url as Url
 import Types.Key
 import Utility.DataUnits
 import Utility.CopyFile
+import Utility.Metered
 import Config
 import Git.SharedRepository
 import Annex.Perms
@@ -658,8 +659,11 @@ saveState nocommit = doSideAction $ do
 			Annex.Branch.commit "update"
 
 {- Downloads content from any of a list of urls. -}
-downloadUrl :: [Url.URLString] -> FilePath -> Annex Bool
-downloadUrl urls file = go =<< annexWebDownloadCommand <$> Annex.getGitConfig
+downloadUrl :: Key -> MeterUpdate -> [Url.URLString] -> FilePath -> Annex Bool
+downloadUrl k p urls file = 
+	concurrentMetered (Just p) k $ \p' ->
+		watchFileSize file p' $
+			go =<< annexWebDownloadCommand <$> Annex.getGitConfig
   where
 	go Nothing = do
 		a <- ifM commandProgressDisabled

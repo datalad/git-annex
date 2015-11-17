@@ -421,7 +421,7 @@ lockKey r key callback
 
 {- Tries to copy a key's content from a remote's annex to a file. -}
 copyFromRemote :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
-copyFromRemote r key file dest p = concurrentMetered (Just p) key file $
+copyFromRemote r key file dest p = concurrentMetered (Just p) key $
 	copyFromRemote' r key file dest
 
 copyFromRemote' :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
@@ -445,7 +445,8 @@ copyFromRemote' r key file dest meterupdate
 		direct <- isDirect
 		Ssh.rsyncHelper (Just (combineMeterUpdate meterupdate p))
 			=<< Ssh.rsyncParamsRemote direct r Download key dest file
-	| Git.repoIsHttp (repo r) = unVerified $ Annex.Content.downloadUrl (keyUrls r key) dest
+	| Git.repoIsHttp (repo r) = unVerified $
+		Annex.Content.downloadUrl key meterupdate (keyUrls r key) dest
 	| otherwise = error "copying from non-ssh, non-http remote not supported"
   where
 	{- Feed local rsync's progress info back to the remote,
@@ -522,7 +523,7 @@ copyFromRemoteCheap r key af file
 			)
 	| Git.repoIsSsh (repo r) =
 		ifM (Annex.Content.preseedTmp key file)
-			( fst <$> concurrentMetered Nothing key af
+			( fst <$> concurrentMetered Nothing key
 				(copyFromRemote' r key af file)
 			, return False
 			)
@@ -534,7 +535,7 @@ copyFromRemoteCheap _ _ _ _ = return False
 {- Tries to copy a key's content to a remote's annex. -}
 copyToRemote :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 copyToRemote r key file meterupdate = 
-	concurrentMetered (Just meterupdate) key file $
+	concurrentMetered (Just meterupdate) key $
 		copyToRemote' r key file
 
 copyToRemote' :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool

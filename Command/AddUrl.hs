@@ -252,9 +252,9 @@ addUrlFileQuvi relaxed quviurl videourl file = do
 				tmp <- fromRepo $ gitAnnexTmpObjectLocation key
 				showOutput
 				ok <- Transfer.notifyTransfer Transfer.Download (Just file) $
-					Transfer.download webUUID key (Just file) Transfer.forwardRetry Transfer.noObserver $ const $ do
+					Transfer.download webUUID key (Just file) Transfer.forwardRetry Transfer.noObserver $ \p -> do
 						liftIO $ createDirectoryIfMissing True (parentDir tmp)
-						downloadUrl [videourl] tmp
+						downloadUrl key p [videourl] tmp
 				if ok
 					then do
 						cleanup webUUID quviurl file key (Just tmp)
@@ -294,9 +294,9 @@ addUrlFile relaxed url urlinfo file = do
 downloadWeb :: URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
 downloadWeb url urlinfo file = do
 	let dummykey = addSizeUrlKey urlinfo $ Backend.URL.fromUrl url Nothing
-	let downloader f _ = do
+	let downloader f p = do
 		showOutput
-		downloadUrl [url] f
+		downloadUrl dummykey p [url] f
 	showAction $ "downloading " ++ url ++ " "
 	downloadWith downloader dummykey webUUID url file
 

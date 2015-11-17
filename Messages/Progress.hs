@@ -29,8 +29,8 @@ import Data.Quantity
 
 {- Shows a progress meter while performing a transfer of a key.
  - The action is passed a callback to use to update the meter. -}
-metered :: Maybe MeterUpdate -> Key -> AssociatedFile -> (MeterUpdate -> Annex a) -> Annex a
-metered combinemeterupdate key _af a = case keySize key of
+metered :: Maybe MeterUpdate -> Key -> (MeterUpdate -> Annex a) -> Annex a
+metered combinemeterupdate key a = case keySize key of
 	Nothing -> nometer
 	Just size -> withOutputType (go $ fromInteger size)
   where
@@ -66,10 +66,10 @@ metered combinemeterupdate key _af a = case keySize key of
 
 {- Use when the progress meter is only desired for concurrent
  - output; as when a command's own progress output is preferred. -}
-concurrentMetered :: Maybe MeterUpdate -> Key -> AssociatedFile -> (MeterUpdate -> Annex a) -> Annex a
-concurrentMetered combinemeterupdate key af a = withOutputType go
+concurrentMetered :: Maybe MeterUpdate -> Key -> (MeterUpdate -> Annex a) -> Annex a
+concurrentMetered combinemeterupdate key a = withOutputType go
   where
-	go (ConcurrentOutput _) = metered combinemeterupdate key af a
+	go (ConcurrentOutput _) = metered combinemeterupdate key a
 	go _ = a (fromMaybe (const noop) combinemeterupdate)
 
 {- Progress dots. -}

@@ -249,8 +249,8 @@ retrieve r info Nothing = case getpublicurl info of
 	Nothing -> \_ _ _ -> do
 		warnMissingCredPairFor "S3" (AWS.creds $ uuid r)
 		return False
-	Just geturl -> fileRetriever $ \f k _p ->
-		unlessM (downloadUrl [geturl k] f) $
+	Just geturl -> fileRetriever $ \f k p ->
+		unlessM (downloadUrl k p [geturl k] f) $
 			error "failed to download content"
 
 retrieveCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool

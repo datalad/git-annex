@@ -3,6 +3,7 @@ git-annex (5.20151117) UNRELEASED; urgency=medium
   * Build with -j1 again to get reproducible build.
   * Display progress meter in -J mode when copying from a local git repo,
     to a local git repo, and from a remote git repo.
+  * Display progress meter in -J mode when downloading from the web.
 
  -- Joey Hess <id@joeyh.name>  Mon, 16 Nov 2015 16:49:34 -0400
 

@@ -503,9 +503,9 @@ checkurl external url =
 	mkmulti (u, s, f) = (u, s, mkSafeFilePath f)
 
 retrieveUrl :: Retriever
-retrieveUrl = fileRetriever $ \f k _p -> do
+retrieveUrl = fileRetriever $ \f k p -> do
 	us <- getWebUrls k
-	unlessM (downloadUrl us f) $
+	unlessM (downloadUrl k p us f) $
 		error "failed to download content"
 
 checkKeyUrl :: Git.Repo -> CheckPresent
