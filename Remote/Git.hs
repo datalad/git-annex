@@ -641,19 +641,8 @@ rsyncOrCopyFile rsyncparams src dest p =
   where
 	sameDeviceIds a b = (==) <$> getDeviceId a <*> getDeviceId b
 	getDeviceId f = deviceID <$> liftIO (getFileStatus $ parentDir f)
-	docopy = liftIO $ bracket
-		(forkIO $ watchfilesize zeroBytesProcessed)
-		(void . tryIO . killThread)
-		(const $ copyFileExternal CopyTimeStamps src dest)
-	watchfilesize oldsz = do
-		threadDelay 500000 -- 0.5 seconds
-		v <- catchMaybeIO $ toBytesProcessed <$> getFileSize dest
-		case v of
-			Just sz
-				| sz /= oldsz -> do
-					p sz
-					watchfilesize sz
-			_ -> watchfilesize oldsz
+	docopy = liftIO $ watchFileSize dest p $
+		copyFileExternal CopyTimeStamps src dest
 #endif
 	dorsync = Ssh.rsyncHelper (Just p) $
 		rsyncparams ++ [File src, File dest]
