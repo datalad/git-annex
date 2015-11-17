@@ -1,0 +1,46 @@
+[[!comment format=mdwn
+ username="juh"
+ subject="My current workflow"
+ date="2015-11-17T14:47:59Z"
+ content="""
+Ok,
+
+here is my current workflow to clarify my problem:
+
+On raspberrypi:
+
+    Adding new podcasts
+    git annex sync
+
+On desktop:
+
+    git annex sync
+    git annex get --want-get
+
+New podcast content from raspberrypi is downloaded.
+
+In backup:
+
+    git annex sync
+    git annex get --want-get
+
+New podcast content from desktop is downloaded.
+
+On desktop:
+
+    git annex drop
+
+Everything on desktop is dropped.
+
+**Now the problem**
+
+Next time I do 
+
+    git annex get --want-get
+
+on **desktop** all files are downloaded again from either backup or raspberrypi.
+
+What can I do to have only content in desktop that is not in the raspberrypi repository or in the backup repository? 
+
+I thought that this is the behaviour of a transfer repository.
+"""]]
