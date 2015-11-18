@@ -369,12 +369,8 @@ startExternal :: ExternalType -> Annex ExternalState
 startExternal externaltype = do
 	errrelayer <- mkStderrRelayer
 	liftIO $ do
-		(Just hin, Just hout, Just herr, pid) <- createProcess $
-			(proc cmd [])
-				{ std_in = CreatePipe
-				, std_out = CreatePipe
-				, std_err = CreatePipe
-				}
+		(Just hin, Just hout, Just herr, pid) <- 
+			createProcess p `catchIO` runerr
 		fileEncoding hin
 		fileEncoding hout
 		fileEncoding herr
@@ -390,6 +386,13 @@ startExternal externaltype = do
 			}
   where
 	cmd = externalRemoteProgram externaltype
+	p = (proc cmd [])
+		{ std_in = CreatePipe
+		, std_out = CreatePipe
+		, std_err = CreatePipe
+		}
+
+	runerr _ = error ("Cannot run " ++ cmd ++ " -- Make sure it's in your PATH and is executable.")
 
 	checkearlytermination Nothing = noop
 	checkearlytermination (Just exitcode) = ifM (inPath cmd)
