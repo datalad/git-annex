@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-11-18T19:14:32Z"
+ content="""
+@ovidiu, this tutorial is about setting up GitLab as a remote using
+git-annex at the command line. The steps given here should work.
+
+You're trying to use GitLab from the git-annex assistant. The first
+version that supported that was version 5.20150731. I guess you might have
+been trying to use an older version. Or encountered some other problem
+which is offtopic to this page. If you have a problem, file a bug report
+with full details about the version of git-annex you used and what you did.
+"""]]
