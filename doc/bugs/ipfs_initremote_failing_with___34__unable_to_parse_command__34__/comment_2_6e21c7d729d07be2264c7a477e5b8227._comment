@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="fiatjaf"
+ subject="I'm sorry"
+ date="2015-11-18T16:42:04Z"
+ content="""
+I'm very sorry for wasting your time.
+I completely forgot to install https://git-annex.branchable.com/special_remotes/external/git-annex-remote-ipfs and just noticed it when trying to run `echo INITREMOTE | git-annex-remote-ipfs`.
+This is a shame.
+
+Installing it made everything work.
+"""]]
