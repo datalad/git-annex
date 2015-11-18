@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Agenta"
+ subject="comment 8"
+ date="2015-11-18T19:19:37Z"
+ content="""
+It is my understanding the Bup deduplicates even \"within\" files, i.e. if a file was modified only the changes are stored, not the entire new version. For my use case that would save a lot of space.
+
+"""]]
