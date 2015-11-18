@@ -699,18 +699,21 @@ preseedTmp key file = go =<< inAnnex key
 				)
 		)
 
-{- Blocks writing to an annexed file, and modifies file permissions to
- - allow reading it, per core.sharedRepository setting. -}
+{- Normally, blocks writing to an annexed file, and modifies file
+ - permissions to allow reading it.
+ -
+ - When core.sharedRepository is set, the write bits are not removed from
+ - the file, but instead the appropriate group write bits are set. This is
+ - necessary to let other users in the group lock the file.
+ -}
 freezeContent :: FilePath -> Annex ()
 freezeContent file = unlessM crippledFileSystem $
 	withShared go
   where
 	go GroupShared = liftIO $ modifyFileMode file $
-		removeModes writeModes .
-		addModes [ownerReadMode, groupReadMode]
+		addModes [ownerReadMode, groupReadMode, ownerWriteMode, groupWriteMode]
 	go AllShared = liftIO $ modifyFileMode file $
-		removeModes writeModes .
-		addModes readModes
+		addModes (readModes ++ writeModes)
 	go _ = liftIO $ modifyFileMode file $
 		removeModes writeModes .
 		addModes [ownerReadMode]

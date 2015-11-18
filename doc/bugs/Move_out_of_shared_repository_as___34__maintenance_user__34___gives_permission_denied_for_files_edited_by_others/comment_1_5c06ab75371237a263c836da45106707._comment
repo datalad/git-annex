@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-11-18T19:35:52Z"
+ content="""
+More simply stated, user A adds a file, which sets its perms to 444, and
+user B can't change those perms to lock the file for removal.
+
+In sharedRepository mode, the object directory's perms are already
+weakened, to eg 775 rather than the default 555, for the same reason;
+another user with shared access can't chmod the object directory to allow
+writing to it. That just needs to be extended from object directory to
+object file to fix this.
+
+But, that means that the object file will be mode 664, rather than
+444, and so git-annex can't prevent accidental direct modifications of the
+content of objects when in sharedRepository mode, like it normally does.
+
+Since that's a belt and suspenders protection, and since the object
+directory permissions weakening already lost a similar protection against
+accidential deletion of object files, shrug, I guess we'll do that.
+
+I do feel that sharedRepository mode rarely ever makes sense to use. It's
+very fiddely to get the permissions set up right and keep them right, and
+there are much better ways to share a centralized repo between users, eg
+use gitolite or a dedicated account that's locked down to only let
+git/git-annex commands be run.
+"""]]
