@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Agenta"
+ subject="comment 6"
+ date="2015-11-18T18:07:51Z"
+ content="""
+Hello joey,
+
+but that doesn't use any kind of data deduplication, am I correct? In my particular use case the indirect backup repo could grow huge so I may be better of avoiding that.
+"""]]
