@@ -46,7 +46,9 @@ start = do
 	liftIO $ writeFile file (drawMap rs umap trusted)
 	next $ next $
 		ifM (Annex.getState Annex.fast)
-			( return True
+			( do
+				showLongNote $ "left map in " ++ file
+				return True
 			, do
 				showLongNote $ "running: dot -Tx11 " ++ file
 				showOutput
