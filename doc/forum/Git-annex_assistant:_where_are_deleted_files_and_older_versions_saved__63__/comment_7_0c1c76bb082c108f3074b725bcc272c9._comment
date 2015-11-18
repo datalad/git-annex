@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2015-11-18T19:09:48Z"
+ content="""
+git-annex automatically deduplicates files. The backup repo will store one
+copy of each version of each file, which may indeed get large depending on
+what you're doing.
+"""]]
