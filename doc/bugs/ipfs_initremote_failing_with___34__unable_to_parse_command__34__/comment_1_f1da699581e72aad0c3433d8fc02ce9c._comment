@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-11-18T16:09:03Z"
+ content="""
+It works here, no problem. And, the ipfs special remote does not actually
+use ipfs at all when initremote is run, so there's no possibility of some
+change in ipfs versions having broken it.
+
+My best guess is something in your shell or environment is making the
+git-annex-remote-ipfs script not work right, and apparently output an extra
+newline. I can reproduce that error message from git-annex if I modify
+git-annex-remote-ipfs to echo a blank link on startup. I can't see any
+way that shell script could output an extra newline normally however.
+
+Passing --debug will cause the protocol output to be dumped, which could
+help debug this. All I'd expect to see in the protocol dump is
+git-annex sending "INITREMOTE" and git-annex-remote-ipfs responding
+with "INITREMOTE-SUCCESS". So another way to see what's going wrong with
+the script's output is this:
+
+	# echo INITREMOTE | git-annex-remote-ipfs 
+	VERSION 1
+	INITREMOTE-SUCCESS
+	#
+
+And if that outputs an extra newline as I hypothesize, this should help
+pinpoint what line of the script is doing that:
+
+	# echo INITREMOTE | sh -x $(which git-annex-remote-ipfs)
+"""]]
