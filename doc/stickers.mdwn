@@ -1,0 +1,17 @@
+Hexagonal sticker design using the [[logo]] with add-on tiles to expand
+the annex.
+
+[[stickers/hex.svg]]
+
+This complies with <https://github.com/terinjokes/StickerConstructorSpec/>
+and so is intended to combine with other hexagonal stickers.
+
+Some of the add-on tiles contain enough white-space to add other art work
+as desired.
+
+It includes some smaller tiles that can bridge between hexagonal and
+square/regtangular stickers, as illustrated in
+<https://github.com/terinjokes/StickerConstructorSpec/issues/13>.
+
+License: Same as git-annex [[logo]]; Joey would appreciate spare 
+git-annex stickers mailed his way, but does not require it. ;)
