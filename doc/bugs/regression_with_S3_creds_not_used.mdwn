@@ -18,6 +18,9 @@ I am having a problem on Windows in which the AWS access credentials are stored 
 # git annex sync --content
 
 ... forbidden messages
+
+# Reset the env vars
+... sync works as normal ...
 ```
 
 Note that this fails *silently* when using the webapp. The app shows percentage of upload, and the uploads "complete" but the log shows:
