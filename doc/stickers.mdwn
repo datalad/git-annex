@@ -2,6 +2,10 @@ Hexagonal sticker design using the [[logo]] with add-on tiles to expand
 the annex.
 
 [[stickers/hex.svg]]
+[download hex.svg](hex.svg)
+
+[[stickers/hexdemos.svg]]
+[download hexdemos.svg](hexdemos.svg)
 
 This complies with <https://github.com/terinjokes/StickerConstructorSpec/>
 and so is intended to combine with other hexagonal stickers.
