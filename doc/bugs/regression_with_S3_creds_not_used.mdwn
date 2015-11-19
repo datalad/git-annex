@@ -1,0 +1,56 @@
+### Please describe the problem.
+
+I am having a problem on Windows in which the AWS access credentials are stored but not used. When I have the ```AWS_ACCESS_KEY_ID``` and ```AWS_SECRET_ACCESS_KEY``` variables are set, everything works correctly. However if I open a new window that doesn't have envs set, git annex sync --content fails with a Forbidden message. Looking in the creds directory, I see plaintext creds stored.
+
+### What steps will reproduce the problem?
+
+```
+# set AWS_ACCESS_KEY_ID=thing1
+# set AWS_SECRET_ACCESS_KEY=thing2
+# git init test
+# cd test
+# git annex init
+# git annex initremote s3cloud type=S3 encryption=pubkey keyid=key embedcreds=yes
+ ... everything works, annex-uuid is created, etc ...
+
+# now open a new window, navigate to proper repo
+
+# git annex sync --content
+
+... forbidden messages
+```
+
+Note that this fails *silently* when using the webapp. The app shows percentage of upload, and the uploads "complete" but the log shows:
+
+```
+  S3Error {s3StatusCode = Status {statusCode = 403, statusMessage = "Forbidden"}, s3ErrorCode = "InvalidAccessKeyId", s3ErrorMessage = "The AWS Access Key Id you provided does not exist in our records.", s3ErrorResource = Nothing, s3ErrorHostId = Just "/MfOhrvmoi1uTsuJDaV2c+3jxqt+/cAC8KBvGkbE+os1BAPAw/bLeNHiUF8kbSJ+2cMuNO+0mzQ=", s3ErrorAccessKeyId = Just "redacted", s3ErrorStringToSign = Nothing, s3ErrorBucket = Nothing, s3ErrorEndpointRaw = Nothing, s3ErrorEndpoint = Nothing}
+```
+
+### What version of git-annex are you using? On what operating system?
+
+I'm on Windows:
+
+```
+git-annex version: 5.20151019-gcc50c00
+build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV DNS Feed
+s Quvi TDFA TorrentParser Database
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384
+SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEI
+N256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glac
+ier ddar hook external
+```
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I have successfully used git annex on linux and mac, and it is great!
