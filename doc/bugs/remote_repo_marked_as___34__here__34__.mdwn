@@ -2,6 +2,8 @@
 
 ``git annex info`` shows a local repo as "not here" (withou the ``[here]`` tag), and shows a remote repo with the ``[here]`` tag.
 
+I had to manually edit `.git/config` to set my local repo's UUID to the correct one.
+
 
 ### What steps will reproduce the problem?
 
