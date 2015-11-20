@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="jhannwong@c9c7a67b5632a4bbc0c959cfeb3d340e02f28565"
+ nickname="jhannwong"
+ subject="Nope, git-annex drop is still not reducing size of .git/annex"
+ date="2015-11-20T13:32:11Z"
+ content="""
+A remote has 200MB of file contents in .git/annex.
+
+A local repo issues a ``git annex drop --from=myremote``.
+
+The remote .git/annex still has 200MB of file contents.
+
+Sometimes it works. I'm guessing it has to do with the order of commands issued.
+"""]]
