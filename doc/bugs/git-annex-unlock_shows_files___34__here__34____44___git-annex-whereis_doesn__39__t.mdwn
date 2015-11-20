@@ -6,6 +6,8 @@ Yet, ``git annex whereis myfolder`` shows those files are *not* in current repo.
 
 Meanwhile, those files also reside in a remote. git-annex-whereis does show there is a copy in that remote.
 
+Note that dropping files in current repo (``git annex drop``) and re-getting (``git annex get``) does download the files from that remote. However, a subsequent ``git annext whereis`` again shows 1 copy --- at that remote only.
+
 
 ### What steps will reproduce the problem?
 
