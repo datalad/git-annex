@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="neocryptek@659edac901ffbc8e541a974f8f18987eeafc63bd"
+ nickname="neocryptek"
+ subject="comment 4"
+ date="2015-11-21T17:52:26Z"
+ content="""
+I've been having the same problem on windows direct repository and now that I think about it, it could have started after daylight savings time (I also had the windows ssh upgrade problems that took a few days to figure out around the same time). No matter what I do I can't get it to stop showing up as modified in the status view. I've tried sync, sync --content, adding them again, etc. My status output is getting huge as everything I've added on windows is showing up there as modified now. I'm not sure if it's affecting the performance of status or sync (status is just generally very slow on windows direct repos with increasing number of files).
+"""]]
