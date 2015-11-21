@@ -2,6 +2,8 @@
 
 `git annex get --from=myremote' show "transfer already in progress, or unable to take transfer lock".
 
+**Likely Problem discovered!** I copied the whole remote repo (was residing on a Linux machine accessed via SMB) and pasted it into my Mac. The problem was resolved. It is likely something to do with the fact that Mac OS filesystem is **case-insensitive**. I discovered this issue when I tried to copy that remote repo with ``cp`` rather than ``tar``ing it first.
+
 
 ### What steps will reproduce the problem?
 
