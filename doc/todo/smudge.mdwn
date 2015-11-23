@@ -101,52 +101,44 @@ The smudge script can also be provided a filename with %f, but it
 cannot directly write to the file or git gets unhappy.
 
 > Still the case in 2015. Means an unnecesary read and pipe of the file
-P> even if the content is already locally available on disk. --[[Joey]]
+> even if the content is already locally available on disk. --[[Joey]]
 
 ### partial checkouts
 
-It's important that git-annex supports partial checkouts of the content of
-a repository. This allows repositories to be checked out when there's not
-available disk space for all files in the repository.
+.. Are very important, otherwise a repo can't scale past the size of the
+smallest client's disk!
 
-The way git-lfs uses smudge/clean filters, which is similar to that
-described above, does not support partial checkouts; it always tries to
-download the contents of all files. Indeed, git-lfs seems to keep 2 copies
-of newly added files; one in the work tree and one in .git/lfs/objects/,
-at least before it sends the latter to the server. This lack of control
-over which data is checked out and duplication of the data limits the
-usefulness of git-lfs on truely large amounts of data.
+It would be nice if the smudge filter could hard link or symlink a work
+tree file to the annex object.
 
-To support partial checkouts, `git annex get` and `git annex drop` need to
-be able to be used.
+But currently, the smudge filter can't modify the work tree file on its own
+-- git always modifies the file after getting the output of the smudge
+filter, and will stumble over any modifications that the smudge filter
+makes. And, it's important that the smudge filter never fail as that will
+leave the repo in a bad state.
 
-To avoid data duplication when adding a new object, the clean filter could
-hard link from the work tree file to the annex object. Although the
-user could change the work tree file w/o breaking the hard link and this
-would corrupt the annexed object. Could remove write permissions to avoid
-that (mostly), but that would lose some of the benefits of smudge/clean as
-the user wouldn't be able to modify annexed files. 
-> This may be one of those things where different tradeoffs meet different
-> user's needs and so a repo could be switched between the two modes as
-> needed.)
+Seems the best that can be done is for the smudge filter to copy from the
+annex object when the object is present. When it's not present, the smudge
+filter should provide a pointer to its content.
 
-The smudge filter can't modify the work tree file on its own -- git always
-modifies the file after getting the output of the smudge filter, and will
-stumble over any modifications that the smudge filter makes. And, it's
-important that the smudge filter never fail as that will leave the repo in
-a bad state.
-
-So, to support partial checkouts and avoid data dupliciation, the smudge
-filter should provide some dummy content, probably including the key of the
-file. (The clean filter should detect when it's operating on that dummy
-content, and provide the same key as it would if the file content was
-present.)
-
-To get the real content, use `git annex get`. (A `post-checkout` hook could
-run that on all files if the user wants that behavior, or a config setting
-could make the smudge filter automatically get file's contents.)
+The clean filter should detect when it's operating on that pointer file.
 
 I've a demo implementation of this technique in the scripts below.
+
+### deduplication
+
+.. Is nice; needing 2 copies of every annexed file is annoying.
+
+Unfortunately, when using smudge/clean, `git merge` does not preserve a
+smudged file in the work tree when renaming it. It instead deletes the old
+file and asks the smudge filter to smudge the new filename.
+
+So, copies need to be maintained in .git/annex/objects, though it's ok
+to use hard links to the work tree files.
+
+Even if hard links are used, smudge needs to output the content of an
+annexed file, which will result in duplication when merging in renames of
+files.
 
 ### design
 
@@ -203,7 +195,8 @@ git-annex clean:
   .git/annex/objects.)
 
   This is done to prevent losing the only copy of a file when eg
-  doing a git checkout of a different branch. But, no attempt is made to 
+  doing a git checkout of a different branch, or merging a commit that
+  renames or deletes a file. But, no attempt is made to 
   protect the object from being modified. If a user wants to
   protect object contents from modification, they should use
   `git annex add`, not `git add`, or they can `git annex lock` after adding,.
@@ -224,7 +217,8 @@ git-annex smudge:
 
   Updates file2key map.
 
-  Outputs the same pointer file content to stdout.
+  When an object is present in the annex, outputs its content to stdout.
+  Otherwise, outputs the file pointer content.
 
 git annex direct/indirect:
 
