@@ -15,6 +15,10 @@ available files, and checksum them, which is too expensive.
 > git to handle this sort of case in an efficient way.. just needs someone
 > to do the work. --[[Joey]] 
 
+>> Update 2015: git status only calls the clean filter for files
+>> that the index says are modified, so this is no longer a problem.
+>> --[[Joey]]
+
 ----
 
 The clean filter is run when files are staged for commit. So a user could copy
@@ -36,35 +40,26 @@ add` files, and just being able to use `git add` or `git commit -a`,
 and have it use git-annex when .gitattributes says to. Also, annexed
 files can be directly modified without having to `git annex unlock`.
 
-### design
+### configuration
 
 In .gitattributes, the user would put something like "* filter=git-annex".
 This way they could control which files are annexed vs added normally.
 
-(git-annex could have further controls to allow eg, passing small files
-through to regular processing. At least .gitattributes is a special case,
-it should never be annexed...)
+It would also be good to allow using this without having to specify
+the files in .gitattributes. Just use "* filter=git-annex" there, and then
+let git-annex decide which files to annex and which to pass through the
+smudge and clean filters as-is. The smudge filter can just read a little of
+its input to see if it's a pointer to an annexed file. The clean filter
+could apply annex.largefiles to decide whether to annex a file's content or
+not.
 
-For files not configured this way, git-annex could continue to use
-its symlink method -- this would preserve backwards compatability,
-and even allow mixing the two methods in a repo as desired.
+For files not configured this way in .gitattributes, git-annex could
+continue to use its symlink method -- this would preserve backwards
+compatability, and even allow mixing the two methods in a repo as desired.
+(But not switching an existing repo between indirect and direct modes;
+the user decides which mode to use when adding files to the repo.)
 
-To find files in the repository that are annexed, git-annex would do
-`ls-files` as now, but would check if found files have the appropriate
-filter, rather than the current symlink checks. To determine the key
-of a file, rather than reading its symlink, git-annex would need to
-look up the git blob associated with the file -- this can be done
-efficiently using the existing code in `Branch.catFile`.
-
-The clean filter would inject the file's content into the annex, and hard
-link from the annex to the file. Avoiding duplication of data.
-
-The smudge filter can't do that, so to avoid duplication of data, it
-might always create an empty file. To get the content, `git annex get`
-could be used (which would hard link it). A `post-checkout` hook might
-be used to set up hard links for all currently available content.
-
-#### clean
+### clean
 
 The trick is doing it efficiently. Since git a2b665d, v1.7.4.1,
 something like this works to provide a filename to the clean script:
@@ -100,26 +95,166 @@ can't be fixed.)
 > but it seems to avoid this problem.
 > --[[Joey]]
 
-#### smudge
+### smudge
 
 The smudge script can also be provided a filename with %f, but it
 cannot directly write to the file or git gets unhappy.
 
 > Still the case in 2015. Means an unnecesary read and pipe of the file
-> even if the content is already locally available on disk. --[[Joey]]
+P> even if the content is already locally available on disk. --[[Joey]]
 
-### dealing with partial content availability
+### partial checkouts
 
-The smudge filter cannot be allowed to fail, that leaves the tree and
-index in a weird state. So if a file's content is requested by calling
-the smudge filter, the trick is to instead provide dummy content,
-indicating it is not available (and perhaps saying to run "git-annex get").
+It's important that git-annex supports partial checkouts of the content of
+a repository. This allows repositories to be checked out when there's not
+available disk space for all files in the repository.
 
-Then, in the clean filter, it has to detect that it's cleaning a file
-with that dummy content, and make sure to provide the same identifier as
-it would if the file content was there. 
+The way git-lfs uses smudge/clean filters, which is similar to that
+described above, does not support partial checkouts; it always tries to
+download the contents of all files. Indeed, git-lfs seems to keep 2 copies
+of newly added files; one in the work tree and one in .git/lfs/objects/,
+at least before it sends the latter to the server. This lack of control
+over which data is checked out and duplication of the data limits the
+usefulness of git-lfs on truely large amounts of data.
+
+To support partial checkouts, `git annex get` and `git annex drop` need to
+be able to be used.
+
+To avoid data duplication when adding a new object, the clean filter could
+hard link from the work tree file to the annex object. Although the
+user could change the work tree file w/o breaking the hard link and this
+would corrupt the annexed object. Could remove write permissions to avoid
+that (mostly), but that would lose some of the benefits of smudge/clean as
+the user wouldn't be able to modify annexed files. 
+> This may be one of those things where different tradeoffs meet different
+> user's needs and so a repo could be switched between the two modes as
+> needed.)
+
+The smudge filter can't modify the work tree file on its own -- git always
+modifies the file after getting the output of the smudge filter, and will
+stumble over any modifications that the smudge filter makes. And, it's
+important that the smudge filter never fail as that will leave the repo in
+a bad state.
+
+So, to support partial checkouts and avoid data dupliciation, the smudge
+filter should provide some dummy content, probably including the key of the
+file. (The clean filter should detect when it's operating on that dummy
+content, and provide the same key as it would if the file content was
+present.)
+
+To get the real content, use `git annex get`. (A `post-checkout` hook could
+run that on all files if the user wants that behavior, or a config setting
+could make the smudge filter automatically get file's contents.)
 
 I've a demo implementation of this technique in the scripts below.
+
+### design
+
+Goal: Get rid of current direct mode, using smudge/clean filters instead to
+cover the same use cases, more flexibly and robustly.
+
+Use case 1:
+
+A user wants to be able to edit files, and git-add, git commit,
+without needing to worry about using git-annex to unlock files, add files,
+etc.
+
+Use case 2:
+
+Using git-annex on a crippled filesystem that does not support symlinks.
+
+Data:
+
+* An annex pointer file has as its first line the git-annex key
+  that it's standing in for. Subsequent lines of the file might
+  be a message saying that the file's content is not currently available.
+  An annex pointer file is checked into the git repository the same way
+  that an annex symlink is checked in.
+* file2key maps are maintained by git-annex, to keep track of
+  what files are pointers at keys.
+
+Configuration: 
+
+* .gitattributes tells git which files to use git-annex's smudge/clean
+  filters with. Typically, all files except for dotfiles:
+
+	* filter=annex
+	.* !filter
+
+* annex.largefiles tells git-annex which files should in fact be put in 
+  the annex. Other files are passed through the smudge/clean as-is and
+  have their contents stored in git.
+
+git-annex clean:
+
+* Run by `git add` (and diff and status, etc), and passed the
+  filename, as well as fed the file content on stdin.
+
+  Look at configuration to decide if this file's content belongs in the
+  annex. If not, output the file content to stdout.
+
+  Generate annex key from filename and content from stdin.
+
+  Hard link .git/annex/objects to the file, if it doesn't already exist.
+  (On platforms not supporting hardlinks, copy the file to
+  .git/annex/objects.)
+
+  This is done to prevent losing the only copy of a file when eg
+  doing a git checkout of a different branch. But, no attempt is made to 
+  protect the object from being modified. If a user wants to
+  protect object contents from modification, they should use
+  `git annex add`, not `git add`, or they can `git annex lock` after adding,.
+
+  There could be a configuration knob to cause a copy to be made to
+  .git/annex/objects -- useful for those crippled filesystems. It might
+  also drop that copy once the object gets uploaded to another repo ...
+  But that gets complicated quickly.
+
+  Update file2key map.
+
+  Output the pointer file content to stdout.
+
+git-annex smudge:
+
+* Run by eg `git checkout` and passed the filename, as well as fed
+  the pointer file content on stdin.
+
+  Updates file2key map.
+
+  Outputs the same pointer file content to stdout.
+
+git annex direct/indirect:
+
+  Previously these commands switched in and out of direct mode.
+  Now they become no-ops.
+
+git annex lock/unlock:
+
+  Makes sense for these to change to switch files between using
+  git-annex symlinks and pointers. So, this provides both a way to
+  transition repositories to using pointers, and a cleaner unlock/lock
+  for repos using symlinks.
+
+  unlock will stage a pointer file, and will copy the content of the object
+  out of .git/annex/objects to the work tree file. (Might want a --hardlink
+  switch.)
+  
+  lock will replace the current work tree file with the symlink, and stage it.
+  Note that multiple work tree files could point to the same object.
+  So, if the link count is > 1, replace the annex object with a copy of
+  itself to break such a hard link. Always finish by locking down the
+  permissions of the annex object.
+
+All other git-annex commands that look at annex symlinks to get keys will
+need fall back to checking if a given work tree file is stored in git as
+pointer file. This can be done by checking the file2key map (or by looking
+it up in the index).
+
+Note that I have not verified if file2key maps can be maintained
+consistently using the smudge/clean filters. Seems likely to work,
+based on when I see smudge/clean filters being run. The file2key
+optimisation may not be needed though, looking at the index 
+might be fast enough.
 
 ----
 
