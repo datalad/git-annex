@@ -1,0 +1,8 @@
+I tried using it once, but I couldn't get it to work for me, so I gave up. I'm hoping that if I describe my desired workflow to people who know more about it I can get a better sense of whether it can help me.
+
+Here's what I have:
+
+* A server, with a directory I have read-only access to; this directory is the one I would like to keep in git-annex. Obviously, I have read-write access to other directories.
+* A laptop, which is sometimes on the same LAN as the server and sometimes not; on this laptop, I would like to be able to easily maintain synced copies of certain subdirectories of the main directory (which is on the server). These copies should (ideally) not need to be in the same directory tree on the laptop.
+
+I don't know if this description is clear enough (I'm doubtful), but I can answer questions.
