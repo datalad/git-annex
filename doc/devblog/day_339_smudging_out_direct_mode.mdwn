@@ -21,6 +21,15 @@ files to free up space, or for configuring a repository to only want to get
 a subset of files in the first place. Some of this could be added to it 
 I suppose.
 
+I also noticed that git-lfs uses twice the disk space, at least when
+initially adding files. It keep a copy of the file in .git/lfs/objects/,
+in addition to the copy in the working tree. That copy seems to be
+necessary due to the way git smudge filters work, to avoid data loss. Of
+course, git-annex manages to avoid that duplication when using symlinks,
+and its direct mode also avoids that duplication (at the cost of some
+robustness). I'd like to keep git-annex's single local copy feature 
+if possible.
+
 ## replacing direct mode
 
 Anyway, as smudge/clean filters stand now, they can't be used to set up
@@ -29,13 +38,7 @@ think up a design that uses smudge/clean filters to cover the same use
 cases that direct mode covers now.
 
 Thanks to the clean filter, adding a file with `git add` would check in a
-small file that points to the git-annex object. When a file has been added
-this way, the file in the work tree remains the only copy of the object
-until you use git-annex to copy it to another repository. So if you modify
-the work tree file, you can lose the old version of the object.
-
-This is analagous to how direct mode works now, and it avoids needing to
-store 2 copies of every file in the local repository.
+small file that points to the git-annex object.
 
 In the same repository, you could also use `git annex add` to check
 in a git-annex symlink, which would protect the object from modification,
@@ -44,7 +47,9 @@ could switch a file between those two modes.
 
 So this allows mixing directly writable annexed files and locked down
 annexed files in the same repository. All regular git commands and all
-git-annex commands can be used on both sorts of files.
+git-annex commands can be used on both sorts of files. Workflows could
+develop where a file starts out unlocked, but once it's done, is locked to
+prevent accidental edits and archived away or published.
 
 That's much more flexible than the current direct mode, and I think it will
 be able to be implemented in a simpler, more scalable, and robust way too.
