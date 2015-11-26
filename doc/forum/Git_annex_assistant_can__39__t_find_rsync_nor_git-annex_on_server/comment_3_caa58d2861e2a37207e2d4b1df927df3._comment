@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="pweemeeuw@86491f921da15d6a4dc6e1878fd42750b33f6963"
+ nickname="pweemeeuw"
+ subject="Comment 3"
+ date="2015-11-26T21:04:13Z"
+ content="""
+Just FYI, to get git-annex on nixos detected, I added the following to $HOME/.ssh/rc (mode rw-------):
+
+    PATH=/home/patrick/bin:/home/patrick/.nix-profile/bin:/run/current-system/sw/bin
+
+And as aliases are not expanded, I also added a 'which' command in my bin directory:
+
+    #!/run/current-system/sw/bin/bash
+    type -P $@
+
+
+"""]]
