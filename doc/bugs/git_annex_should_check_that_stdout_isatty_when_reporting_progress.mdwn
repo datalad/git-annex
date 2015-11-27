@@ -6,15 +6,16 @@ This is problematic mostly when running git-annex with cron.
 
 ### What steps will reproduce the problem?
 
-git annex copy --to myrepo > log
+    git annex copy --to myrepo > log
 
-then look at the content of log.
+then look at the content of `log`.
 
 ### What version of git-annex are you using? On what operating system?
 
-5.20151019
+git annex 5.20151019
 
 Mac OS X 10.10.5
+
 Ubuntu 14.04
 
 ### Please provide any additional information below.
