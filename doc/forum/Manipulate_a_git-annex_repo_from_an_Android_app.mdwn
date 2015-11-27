@@ -1,0 +1,21 @@
+I use the command line almost every hour, I'm familiar with it. But it's a pita on the phone.
+
+I'd like to create an "graphical" Android application that lists/browses the repo's content and allows the user to manipulate the files/directories.
+
+git-annex for Android (5.0) is installed and working fine. I was messing around (on my rooted phone) with the rwx permissions to run the git-annex binary from my app as it's a different user and has no access to those binaries by default. But no success yet: 
+
+```
+shell@jfltexx:/storage/sdcard1/repo $ /data/data/ga.androidterm/lib/lib.git-annex.so list
+
+lib.git-annex.so: git: createProcess: runInteractiveProcess: exec: permission denied (Permission denied)
+```
+
+Question 1: How should I set up the permissions to be able to sucessfully run any git-annex command from my (non-commercial, private) Android app?
+
+Question 2: What if I include all the git-annex binaries in my app as a resource and write them to disk after install and execute them? (Permissions should work.)
+
+
+Use case: family videos are stored in a repo at home. This repo is cloned to my phone's sdcard. I want to browse the repo on my phone and mark some directories to be transferred from home to phone. My app would be a simple frontend for git-annex where you can browse and do some basic stuff: get, drop, manipulate metadata (and of course start playing a video).
+
+Thank you for any ideas,
+Bence
