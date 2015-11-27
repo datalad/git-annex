@@ -10,7 +10,7 @@ shell@jfltexx:/storage/sdcard1/repo $ /data/data/ga.androidterm/lib/lib.git-anne
 lib.git-annex.so: git: createProcess: runInteractiveProcess: exec: permission denied (Permission denied)
 ```
 
-Question 1: How should I set up the permissions to be able to sucessfully run any git-annex command from my (non-commercial, private) Android app?
+Question 1: How should I set up the permissions to be able to successfully run any git-annex command from my (non-commercial, private) Android app?
 
 Question 2: What if I include all the git-annex binaries in my app as a resource and write them to disk after install and execute them? (Permissions should work.)
 
