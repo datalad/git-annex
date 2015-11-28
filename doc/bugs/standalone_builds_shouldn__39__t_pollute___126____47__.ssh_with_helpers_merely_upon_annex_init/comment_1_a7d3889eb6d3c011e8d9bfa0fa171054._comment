@@ -1,0 +1,48 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-11-10T15:36:15Z"
+ content="""
+Well, it's definitely an oversight that it still fails like that when
+~/.ssh can't be created. I fixed that earlier for the ~/.ssh/git-annex-shell
+creation but missed doing the same for the ~/.ssh/git-annex-wrapper
+creation. Now fixed.
+
+----
+
+It might have been better to put these files someplace else like
+~/.config/git-annex (although that's only a standard location on Linux and
+this is also done on OSX) or ~/.ssh/git-annex/ (which the assistant puts
+keys in so I think would be a better choice). Transitioning to a new
+location now would require writing them to both locations long enough for
+all current git-annex assistant users to upgrade. I don't know how long
+that would be. The utility in moving the files down 1 directory level does
+not seem worth the disruption.
+
+I also sympathize with not wanting those when not using the assistant.
+But, this is intended for users who are using the standalone builds to get
+git-annex installed on a server to use with the assistant. People have no
+end of difficulty getting git-annex-shell into PATH (bash actively makes
+this exceedingly difficult by refusing to read any config files for
+noninteractive shells), and so these files avoid a particularly newbie 
+class of users struggling with that problem.
+
+So, the idea is they unpack the tarball somewhere, and run runshell, and
+can see git-annex working on the server, and then the assistant magically
+can talk to that git-annex server without them needing to worry about how.
+This is why runshell is standing in for an installation process.
+
+Adding another, more explicit installation step for this class of users
+is just going to reduce the number who get git-annex installed on servers,
+I fear.
+
+---
+
+But, /usr/lib/git-annex.linux/ .. this is the git-annex-standalone.deb
+isn't it? Since debs are a much better way to get things into PATH
+and get dependencies installed etc, there's certianly no reason for the
+runshell in the standalone deb to do this installation.
+So, I've fixed that..
+
+Enough to close bug?
+"""]]

@@ -105,10 +105,10 @@ shellUnEscape s = word : shellUnEscape rest
 		| otherwise = inquote q (w++[c]) cs
 
 -- | For quickcheck.
-prop_idempotent_shellEscape :: String -> Bool
-prop_idempotent_shellEscape s = [s] == (shellUnEscape . shellEscape) s
-prop_idempotent_shellEscape_multiword :: [String] -> Bool
-prop_idempotent_shellEscape_multiword s = s == (shellUnEscape . unwords . map shellEscape) s
+prop_isomorphic_shellEscape :: String -> Bool
+prop_isomorphic_shellEscape s = [s] == (shellUnEscape . shellEscape) s
+prop_isomorphic_shellEscape_multiword :: [String] -> Bool
+prop_isomorphic_shellEscape_multiword s = s == (shellUnEscape . unwords . map shellEscape) s
 
 -- | Segments a list of filenames into groups that are all below the maximum
 --  command-line length limit.

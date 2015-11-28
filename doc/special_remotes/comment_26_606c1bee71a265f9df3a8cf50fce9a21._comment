@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 26"""
+ date="2015-10-26T17:36:26Z"
+ content="""
+@craig, this can be slightly confusing, since `git-annex enableremote`
+uses the same name that you used when creating the remote in the first
+place, with `git-annex initremote`... which might be different than
+the name used for that remote in some repository or other, and from
+the description shown in `git annex into`.
+
+Since every remote listed by `git annex info` is apparently a regular git
+repo, not a special remote, with the exception of the glacier one, process
+of deduction suggests that the "gitannexpics" special remote is the same as
+the glacier one.
+
+I've made some changes now, so `git annex enableremote` will list the
+uuid and description, along with the name used by enableremote, and
+will accept any one of those things to specify which remote to enable.
+"""]]

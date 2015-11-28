@@ -421,7 +421,7 @@ lockKey r key callback
 
 {- Tries to copy a key's content from a remote's annex to a file. -}
 copyFromRemote :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
-copyFromRemote r key file dest p = parallelMetered (Just p) key file $
+copyFromRemote r key file dest p = concurrentMetered (Just p) key file $
 	copyFromRemote' r key file dest
 
 copyFromRemote' :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
@@ -522,7 +522,7 @@ copyFromRemoteCheap r key af file
 			)
 	| Git.repoIsSsh (repo r) =
 		ifM (Annex.Content.preseedTmp key file)
-			( fst <$> parallelMetered Nothing key af
+			( fst <$> concurrentMetered Nothing key af
 				(copyFromRemote' r key af file)
 			, return False
 			)
@@ -533,7 +533,7 @@ copyFromRemoteCheap _ _ _ _ = return False
 
 {- Tries to copy a key's content to a remote's annex. -}
 copyToRemote :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-copyToRemote r key file p = parallelMetered (Just p) key file $ copyToRemote' r key file
+copyToRemote r key file p = concurrentMetered (Just p) key file $ copyToRemote' r key file
 
 copyToRemote' :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 copyToRemote' r key file p

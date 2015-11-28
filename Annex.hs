@@ -133,6 +133,7 @@ data AnnexState = AnnexState
 	, existinghooks :: M.Map Git.Hook.Hook Bool
 	, desktopnotify :: DesktopNotify
 	, workers :: [Either AnnexState (Async AnnexState)]
+	, concurrentjobs :: Maybe Int
 	}
 
 newState :: GitConfig -> Git.Repo -> AnnexState
@@ -177,6 +178,7 @@ newState c r = AnnexState
 	, existinghooks = M.empty
 	, desktopnotify = mempty
 	, workers = []
+	, concurrentjobs = Nothing
 	}
 
 {- Makes an Annex state object for the specified git repo.

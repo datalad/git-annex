@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module CmdLine.Action where
 
 import Common.Annex
@@ -12,12 +14,17 @@ import qualified Annex
 import Annex.Concurrent
 import Types.Command
 import qualified Annex.Queue
+import Messages.Concurrent
 import Messages.Internal
 import Types.Messages
 
 import Control.Concurrent.Async
 import Control.Exception (throwIO)
 import Data.Either
+
+#ifdef WITH_CONCURRENTOUTPUT
+import qualified System.Console.Regions as Regions
+#endif
 
 {- Runs a command, starting with the check stage, and then
  - the seek stage. Finishes by running the continutation, and 
@@ -47,7 +54,7 @@ performCommandAction Command { cmdcheck = c, cmdname = name } seek cont = do
 commandAction :: CommandStart -> Annex ()
 commandAction a = withOutputType go 
   where
-	go (ParallelOutput n) = do
+	go (ConcurrentOutput n) = do
 		ws <- Annex.getState Annex.workers
 		(st, ws') <- if null ws
 			then do
@@ -56,7 +63,8 @@ commandAction a = withOutputType go
 			else do
 				l <- liftIO $ drainTo (n-1) ws
 				findFreeSlot l
-		w <- liftIO $ async $ snd <$> Annex.run st run
+		w <- liftIO $ async
+			$ snd <$> Annex.run st (inOwnConsoleRegion run)
 		Annex.changeState $ \s -> s { Annex.workers = Right w:ws' }
 	go _  =	run
 	run = void $ includeCommandAction a
@@ -70,7 +78,9 @@ commandAction a = withOutputType go
  -}
 finishCommandActions :: Annex ()
 finishCommandActions = do
-	l <- liftIO . drainTo 0 =<< Annex.getState Annex.workers
+	ws <- Annex.getState Annex.workers
+	Annex.changeState $ \s -> s { Annex.workers = [] }
+	l <- liftIO $ drainTo 0 ws
 	forM_ (lefts l) mergeState
 
 {- Wait for Asyncs from the list to finish, replacing them with their
@@ -137,3 +147,19 @@ callCommandAction = start
 	skip = return True
 	failure = showEndFail >> return False
 	status r = showEndResult r >> return r
+
+{- Do concurrent output when that has been requested. -}
+allowConcurrentOutput :: Annex a -> Annex a
+#ifdef WITH_CONCURRENTOUTPUT
+allowConcurrentOutput a = go =<< Annex.getState Annex.concurrentjobs
+  where
+	go Nothing = a
+	go (Just n) = Regions.displayConsoleRegions $
+		bracket_ (setup n) cleanup a
+	setup = Annex.setOutput . ConcurrentOutput
+	cleanup = do
+		finishCommandActions
+		Annex.setOutput NormalOutput
+#else
+allowConcurrentOutput = id
+#endif

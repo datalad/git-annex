@@ -1,0 +1,8 @@
+Hi,
+
+
+question. What is exactly the use-case for addurl. To add unique files as if they where never changing resources?
+
+There is a --relaxed flag to enable some leniency in redownloading the file it seems. But how would one go about updating a file from the web, drop it first?
+Or do I have to add pseudo queries or hashes to the URLs to keep them unique and manage any versioning that way perhaps?
+

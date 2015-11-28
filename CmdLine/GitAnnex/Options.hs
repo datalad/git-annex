@@ -9,6 +9,7 @@ module CmdLine.GitAnnex.Options where
 
 import Options.Applicative
 import Options.Applicative.Builder.Internal
+import Control.Concurrent
 
 import Common.Annex
 import qualified Git.Config
@@ -282,13 +283,21 @@ jsonOption = globalFlag (Annex.setOutput JSONOutput)
 	<> hidden
 	)
 
+-- Note that a command that adds this option should wrap its seek
+-- action in `allowConcurrentOutput`.
 jobsOption :: GlobalOption
-jobsOption = globalSetter (Annex.setOutput . ParallelOutput) $ 
+jobsOption = globalSetter set $ 
 	option auto
 		( long "jobs" <> short 'J' <> metavar paramNumber
 		<> help "enable concurrent jobs"
 		<> hidden
 		)
+  where
+	set n = do
+		Annex.changeState $ \s -> s { Annex.concurrentjobs = Just n }
+		c <- liftIO getNumCapabilities
+		when (n > c) $
+			liftIO $ setNumCapabilities n
 
 timeLimitOption :: GlobalOption
 timeLimitOption = globalSetter Limit.addTimeLimit $ strOption

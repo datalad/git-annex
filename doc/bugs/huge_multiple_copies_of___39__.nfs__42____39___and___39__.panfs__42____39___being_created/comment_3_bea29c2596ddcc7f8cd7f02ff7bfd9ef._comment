@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-11-13T19:56:12Z"
+ content="""
+I've just added annex.pidlock to git-annex. Configure that to true, and it
+will use one top-level pid lock file, rather than these posix locks. Might
+work better on NFS.
+
+annex.pidlock is enabled automatically if probing detects that posix locks
+cannot be made at all. However, if the NFS lets posix locks be made, just
+with the poor behavior described here, the probing can't detect that and so
+you'd need to enable it manually.
+"""]]

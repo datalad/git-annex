@@ -44,7 +44,7 @@ import Data.Time.Clock.POSIX
 import System.Posix.Types (EpochTime)
 
 cmd :: Command
-cmd = withGlobalOptions annexedMatchingOptions $
+cmd = withGlobalOptions (jobsOption : annexedMatchingOptions) $
 	command "fsck" SectionMaintenance
 		"find and fix problems"
 		paramPaths (seek <$$> optParser)
@@ -87,9 +87,10 @@ optParser desc = FsckOptions
 			))
 
 seek :: FsckOptions -> CommandSeek
-seek o = do
+seek o = allowConcurrentOutput $ do
 	from <- maybe (pure Nothing) (Just <$$> getParsed) (fsckFromOption o)
 	u <- maybe getUUID (pure . Remote.uuid) from
+	checkDeadRepo u
 	i <- prepIncremental u (incrementalOpt o)
 	withKeyOptions (keyOptions o) False
 		(\k -> startKey i k =<< getNumCopies)
@@ -97,6 +98,11 @@ seek o = do
 		(fsckFiles o)
 	cleanupIncremental i
 	void $ tryIO $ recordActivity Fsck u
+
+checkDeadRepo :: UUID -> Annex ()
+checkDeadRepo u =
+	whenM ((==) DeadTrusted <$> lookupTrust u) $
+		earlyWarning "Warning: Fscking a repository that is currently marked as dead."
 
 start :: Maybe Remote -> Incremental -> FilePath -> Key -> CommandStart
 start from inc file key = do
@@ -235,7 +241,7 @@ verifyLocationLogRemote key desc remote present =
 
 verifyLocationLog' :: Key -> String -> Bool -> UUID -> (LogStatus -> Annex ()) -> Annex Bool
 verifyLocationLog' key desc present u updatestatus = do
-	uuids <- Remote.keyLocations key
+	uuids <- loggedLocations key
 	case (present, u `elem` uuids) of
 		(True, False) -> do
 				fix InfoPresent

@@ -42,10 +42,14 @@ findByName n = filter (matching . snd) . M.toList
 			| n' == n -> True
 			| otherwise -> False
 
-remoteNames :: Annex [RemoteName]
-remoteNames = do
+specialRemoteMap :: Annex (M.Map UUID RemoteName)
+specialRemoteMap = do
 	m <- Logs.Remote.readRemoteLog
-	return $ mapMaybe (M.lookup nameKey . snd) $ M.toList m
+	return $ M.fromList $ mapMaybe go (M.toList m)
+  where
+	go (u, c) = case M.lookup nameKey c of
+		Nothing -> Nothing
+		Just n -> Just (u, n)
 
 {- find the specified remote type -}
 findType :: RemoteConfig -> Either String RemoteType

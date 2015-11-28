@@ -57,8 +57,10 @@ supportedGitVersion = do
 	v <- Git.Version.installed
 	return $ v >= Git.Version.normalize "1.8.4"
 
+{- For some reason, check-ignore --batch always exits nonzero, 
+ - so ignore any error. -}
 checkIgnoreStop :: CheckIgnoreHandle -> IO ()
-checkIgnoreStop = CoProcess.stop
+checkIgnoreStop = void . tryIO . CoProcess.stop
 
 {- Returns True if a file is ignored. -}
 checkIgnored :: CheckIgnoreHandle -> FilePath -> IO Bool

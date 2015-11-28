@@ -1,0 +1,33 @@
+Hi,
+
+Whenever I sync files with windows, it shows the every binary file as modified. I've just cloned "fresh" repo from a linux host and ```git annex get```ed the 15-11-03 folder.
+Running git annex status 15-11-03 shows
+
+```
+M ..\15-11-03/ADL Update 11-03-15.pptx
+M ..\15-11-03/Gaming-Rage-Face.jpg
+M ..\15-11-03/eluted-absorption-spectra.png
+M ..\15-11-03/elution.png
+M ..\15-11-03/prep-diagram.png
+M ..\15-11-03/rc-elution-01 (2015 Nov 03).csv
+M ..\15-11-03/rc-elution-02 (2015 Nov 03).csv
+M ..\15-11-03/rc-elution-03 (2015 Nov 03).csv
+M ..\15-11-03/rc-prep-01.h5
+M ..\15-11-03/rc-test-1 (2015 Nov 03).csv
+M ..\15-11-03/rc-test-2 (2015 Nov 03).csv
+M ..\15-11-03/wash-absorption.png
+```
+
+Edit: I should add that this repo is untrusted. Doing sync on it just ends up pulling from remotes, not pushing anywhere:
+
+```
+λ git annex sync
+commit  (recording state in git...)
+ok
+pull origin
+ok
+pull github
+ok
+```
+
+How would I check if this is a problem with my installation or a bug in git annex?

@@ -21,7 +21,7 @@ import Annex.CheckIgnore
 import Annex.NumCopies
 
 cmd :: Command
-cmd = withGlobalOptions fileMatchingOptions $ notBareRepo $
+cmd = withGlobalOptions (jobsOption : fileMatchingOptions) $ notBareRepo $
 	command "import" SectionCommon 
 		"move and add files from outside git working copy"
 		paramPaths (seek <$$> optParser)
@@ -59,7 +59,7 @@ duplicateModeParser =
 		)
 
 seek :: ImportOptions -> CommandSeek
-seek o = do
+seek o = allowConcurrentOutput $ do
 	repopath <- liftIO . absPath =<< fromRepo Git.repoPath
 	inrepops <- liftIO $ filter (dirContains repopath) <$> mapM absPath (importFiles o)
 	unless (null inrepops) $ do
@@ -89,7 +89,7 @@ start mode (srcfile, destfile) =
 				warning "Could not verify that the content is still present in the annex; not removing from the import location."
 				stop
 			)
-	importfile = do
+	importfile = checkdestdir $ do
 		ignored <- not <$> Annex.getState Annex.force <&&> checkIgnored destfile
 		if ignored
 			then do
@@ -99,14 +99,26 @@ start mode (srcfile, destfile) =
 				existing <- liftIO (catchMaybeIO $ getSymbolicLinkStatus destfile)
 				case existing of
 					Nothing -> importfilechecked
-					(Just s)
+					Just s
 						| isDirectory s -> notoverwriting "(is a directory)"
+						| isSymbolicLink s -> notoverwriting "(is a symlink)"
 						| otherwise -> ifM (Annex.getState Annex.force)
 							( do
 								liftIO $ nukeFile destfile
 								importfilechecked
 							, notoverwriting "(use --force to override, or a duplication option such as --deduplicate to clean up)"
 							)
+	checkdestdir cont = do
+		let destdir = parentDir destfile
+		existing <- liftIO (catchMaybeIO $ getSymbolicLinkStatus destdir)
+		case existing of
+			Nothing -> cont
+			Just s
+				| isDirectory s -> cont
+				| otherwise -> do
+					warning $ "not importing " ++ destfile ++ " because " ++ destdir ++ " is not a directory"
+					stop
+
 	importfilechecked = do
 		liftIO $ createDirectoryIfMissing True (parentDir destfile)
 		liftIO $ if mode == Duplicate || mode == SkipDuplicates

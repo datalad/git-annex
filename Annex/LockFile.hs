@@ -20,7 +20,7 @@ import Annex
 import Types.LockCache
 import qualified Git
 import Annex.Perms
-import Utility.LockPool
+import Annex.LockPool
 
 import qualified Data.Map as M
 
@@ -33,7 +33,7 @@ lockFileCached file = go =<< fromLockCache file
 	go Nothing = do
 #ifndef mingw32_HOST_OS
 		mode <- annexFileMode
-		lockhandle <- liftIO $ noUmask mode $ lockShared (Just mode) file
+		lockhandle <- noUmask mode $ lockShared (Just mode) file
 #else
 		lockhandle <- liftIO $ waitToLock $ lockShared file
 #endif
@@ -64,12 +64,12 @@ withExclusiveLock getlockfile a = do
 	lockfile <- fromRepo getlockfile
 	createAnnexDirectory $ takeDirectory lockfile
 	mode <- annexFileMode
-	bracketIO (lock mode lockfile) dropLock (const a)
+	bracket (lock mode lockfile) (liftIO . dropLock) (const a)
   where
 #ifndef mingw32_HOST_OS
 	lock mode = noUmask mode . lockExclusive (Just mode)
 #else
-	lock _mode = waitToLock . lockExclusive
+	lock _mode = liftIO . waitToLock . lockExclusive
 #endif
 
 {- Tries to take an exclusive lock and run an action. If the lock is
@@ -79,12 +79,12 @@ tryExclusiveLock getlockfile a = do
 	lockfile <- fromRepo getlockfile
 	createAnnexDirectory $ takeDirectory lockfile
 	mode <- annexFileMode
-	bracketIO (lock mode lockfile) unlock go
+	bracket (lock mode lockfile) (liftIO . unlock) go
   where
 #ifndef mingw32_HOST_OS
 	lock mode = noUmask mode . tryLockExclusive (Just mode)
 #else
-	lock _mode = lockExclusive
+	lock _mode = liftIO . lockExclusive
 #endif
 	unlock = maybe noop dropLock
 	go Nothing = return Nothing

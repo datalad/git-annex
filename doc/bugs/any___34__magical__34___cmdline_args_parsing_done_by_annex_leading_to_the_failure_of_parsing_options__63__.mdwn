@@ -1,0 +1,50 @@
+### Please describe the problem.
+
+Might be just my ignorance in how the world spins ;)  But if I enclose the largefiles config option passed to annex within e.g. "" within cmdline while having additional '' in the value (e.g.  -c "annex.largefiles='exclude=*.txt'" ) annex fails (see below).  I thought that those surrounding "s are stripped off by the shell while passing those into the actual command call (and my little python script somewhat confirms it, tried also with bash), but somehow it does affect annex, leading it to  Parse failure: near "'exclude=*.txt'".  It resolves if surrounding 's are removed.
+
+Could someone lead me out of this wilderness??
+
+### What steps will reproduce the problem?
+
+see transcript below
+
+### What version of git-annex are you using? On what operating system?
+
+5.20150916+gitg79661ef-1~ndall+1
+
+### Please provide any additional information below.
+
+[[!format sh """
+
+$> cat /tmp/1.py
+#!/usr/bin/python
+
+import sys
+
+
+for arg in sys.argv:
+  print "arg: %r" % arg
+(git)/home/yoh/datalad/crawl/openfmri/ds000005:[master]
+
+
+$> /tmp/1.py 'git-annex' 'add' '-c' "annex.largefiles='exclude=*.txt'" 'license3.txt'
+arg: '/tmp/1.py'
+arg: 'git-annex'
+arg: 'add'
+arg: '-c'
+arg: "annex.largefiles='exclude=*.txt'"
+arg: 'license3.txt'
+
+*$> 'git-annex' 'add' '-c' "annex.largefiles='exclude=*.txt'" 'license3.txt'
+git-annex: bad annex.largefiles configuration: Parse failure: near "'exclude=*.txt'"
+
+*$> 'git-annex' 'add' '-c' annex.largefiles='exclude=*.txt' 'license3.txt'
+add license3.txt (non-large file; adding content to git repository) ok
+(recording state in git...)
+
+"""]]
+
+
+
+
+> [[done]] per comment --[[Joey]]

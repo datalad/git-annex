@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 13"""
+ date="2015-11-13T18:23:37Z"
+ content="""
+While testing a git-annex that used pid locks, on the Lustre 
+system I've been given access to, I observed something most
+strange:
+
+	link(".git/annex/locktmp12011", ".git/annex/pidlock") = 0
+	lstat64(".git/annex/locktmp12011", {st_mode=S_IFREG|0444, st_size=70, ...}) = 0
+	lstat64(".git/annex/pidlock", {st_mode=S_IFREG|0444, st_size=70, ...}) = 0
+	...
+	unlink(".git/annex/pidlock")            = 0
+
+Seeing that strace, it would make sense that the pidlock file didn't exist,
+since a hard link was successfully made by that name, and link() never,
+ever overwrites an existing file. The stats of the 2 files are of course
+identical since they're hard links. And, since the pidlock is unlinked at
+the end, we'd expect the file to be gone then.
+
+But, none of that has anything to do with the reality. Which was:
+The pidlock file already existed, with size=72, and had existed for some
+hours at the point the strace begins. The link didn't replace it
+at all, and the unlink didn't delete it. When the program exited,
+the pidlock file still existed, with contents unaltered.
+
+All I can guess is happening is that different processes on a Lustre
+filesystem, running on the same host, somehow see inconsistent realities.
+
+I do think that, despite this being completely insane, the locking will
+actually work ok, when all git-annex processes in a given repo on Lustre
+are running *on the same computer*. That because git-annex actually will
+drop a proper lock into a proper filesystem (/dev/shm), and so avoid all
+this Lustre nonsense.
+
+But in general, I can make no warantee express or implied as to the
+suitability of Lustre as a platform to use git-annex. If it's this
+inconsistent, and modifications made to files are somehow silently rolled
+back, anything could happen.
+"""]]

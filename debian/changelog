@@ -1,3 +1,65 @@
+git-annex (5.20151116) unstable; urgency=medium
+
+  * Use concurrent-output library when configured with -fConcurrentOutput.
+    This allows nicely displayed messages when using the -J flag.
+  * Additional commands now support the -J flag: 
+    fsck, drop, add, addurl, import
+  * import: Avoid very ugly error messages when the directory files
+    are imported to is not a directort, but perhaps an annexed file.
+  * Concurrent progress bars are now displayed when using -J with a command
+    that moves file contents around.
+  * Fix race that could result in an annexed file's symlink not being
+    created, when eg, running concurrent git-annex adds.
+  * add: Fix error recovery rollback to not move the injested file content
+    out of the annex back to the file, because other files may point to
+    that same content. Instead, copy the injected file content out to
+    recover.
+  * quvi may output utf-8 encoded data when the conifigured locale doesn't
+    support that; avoid crashing on such invalid encoding.
+  * runshell: Avoid failing when $HOME/.ssh does not exist and cannot be
+    created.
+  * Make the git-annex-standalone.deb prevent runshell from installing
+    wrappers into $HOME/.ssh
+  * Make git-annex-standalone.deb include the git-annex html documentation,
+    desktop file, and base completion file, same as the regular git-annex.deb.
+  * fsck: When fscking a dead repo, avoid incorrect "fixing location log"
+    message, and display a warning about it being dead, since it's unusual
+    to have access to a dead repo.
+  * assistant: Pass ssh-options through 3 more git pull/push calls
+    that were missed before.
+  * Added annex.pidlock and annex.pidlocktimeout configuration to support
+    filesystems where POSIX fcntl locks cannot be used.
+  * init: Automatically enable annex.pidlock when necessary.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 16 Nov 2015 14:17:40 -0400
+
+git-annex (5.20151102.1) unstable; urgency=medium
+
+  * Avoid installing desktop file and program file if cabal install
+    git-annex is run as root, since that is not a systemwide install,
+    but to /root, and so generating a systemwide desktop file is not right.
+  * When cabal install is run with the desktop file location not writable,
+    display a warning, but continue successfully.
+
+ -- Joey Hess <id@joeyh.name>  Tue, 03 Nov 2015 12:08:38 -0400
+
+git-annex (5.20151102) unstable; urgency=medium
+
+  * Use statvfs on OSX.
+  * Symlink timestamp preservation code uses functions
+    from unix-2.7.0 when available, which should be more portable.
+  * enableremote: List uuids and descriptions of remotes that can be
+    enabled, and accept either the uuid or the description in leu if the
+    name.
+  * Catch up with current git behavior when both repo and repo.git exist;
+    it seems it now prefers repo in this case, although historically it may
+    have preferred repo.git.
+  * Fix failure to build with aws-0.13.0.
+  * When built with aws-0.13.0, the S3 special remote can be used to create
+    google nearline buckets, by setting storageclass=NEARLINE.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 02 Nov 2015 12:41:20 -0400
+
 git-annex (5.20151019-1) unstable; urgency=medium
 
   * Package 5.20151019-1
@@ -55,7 +117,7 @@ git-annex (5.20151019) unstable; urgency=medium
     and stop recommending bittornado | bittorrent.
   * Debian: Remove build dependency on transformers library, as it is now
     included in ghc.
-  * Debian: Remote menu file, since a desktop file is provided and
+  * Debian: Remove menu file, since a desktop file is provided and
     lintian says there can be only one.
 
  -- Joey Hess <id@joeyh.name>  Mon, 19 Oct 2015 13:59:01 -0400

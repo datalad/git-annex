@@ -1,0 +1,6 @@
+Got git-annex using concurrent-output today. It works beautifully.
+Since the library is new, git-annex has to be explicitly configured to use
+it, so it'll be a while until this is available in regular builds.
+
+There are no progress bars yet in concurrent output mode, but that will change
+soon.. Probably tomorrow.

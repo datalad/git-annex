@@ -1,0 +1,11 @@
+Today started with getting a release of git-annex out, to deal with a new
+version of the aws library, which broke the build. That also added support
+to the S3 remotes for creating Google Nearline buckets, although only when
+git-annex is built with the newest version of the aws library.
+
+Rest of the day (and most of the past weekend) I've been working on the
+concurrent-output library. Today I finished making it support multi-line
+regions, and color, and even fully optimised its console updates to use
+minimal bandwidth. So, it's got everything git-annex can possibly need
+to display those troublesome concurrent actions. Will be starting to make
+git-annex use it soon!

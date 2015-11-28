@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-11-03T16:14:03Z"
+ content="""
+You have successfully passed the literal value `'exclude=*.txt'` to
+git-annex as the annex.largefiles setting.
+
+Now, git-annex has to parse that value to understand what files you intend
+it to treat as large.
+
+Since its preferred content expression parser for the value has no
+concept of quoting characters, it fails as shown.
+
+There's no magic here, just you providing a value to git-annex that it does
+not understand.
+
+Were you trying to accomplish anything in particular with `'exclude=*.txt'`
+that is different from the behavior with `exclude=*.txt`?
+
+(Eg, perhaps you're really trying to exclude a filename with a space in it,
+like `*.brain scan` and that seems to call for some form of quoting. Adding
+quoting support into git-annex's preferred content expressions would
+complicate the parser a lot though. So, in that case, I'd suggest the
+workaround of using `*.brain?scan`)
+"""]]

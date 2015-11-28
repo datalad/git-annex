@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 5.20151019
+Version: 5.20151116
 Cabal-Version: >= 1.8
 License: GPL-3
 Maintainer: Joey Hess <id@joeyh.name>
@@ -93,9 +93,8 @@ Flag DesktopNotify
 Flag TorrentParser
   Description: Use haskell torrent library to parse torrent files
 
-Flag AsciiProgress
-  Description: Use ascii-progress library (experimental)
-  Default: False
+Flag ConcurrentOutput
+  Description: Use concurrent-output library
 
 Flag EKG
   Description: Enable use of EKG to monitor git-annex as it runs (at http://localhost:4242/)
@@ -128,7 +127,7 @@ Executable git-annex
    utf8-string, bytestring, text, sandi, json,
    monad-control, transformers,
    bloomfilter, edit-distance,
-   resourcet, http-conduit, http-types,
+   resourcet, http-conduit, http-client, http-types,
    time, old-locale
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs
@@ -179,11 +178,11 @@ Executable git-annex
     Build-Depends: regex-compat
 
   if flag(S3)
-    Build-Depends: conduit, conduit-extra, aws (>= 0.9.2), http-client
+    Build-Depends: conduit, conduit-extra, aws (>= 0.9.2)
     CPP-Options: -DWITH_S3
 
   if flag(WebDAV)
-    Build-Depends: DAV (>= 1.0), http-client
+    Build-Depends: DAV (>= 1.0)
     CPP-Options: -DWITH_WEBDAV
 
   if flag(Assistant) && ! os(solaris)
@@ -278,9 +277,9 @@ Executable git-annex
     Build-Depends: esqueleto, persistent-sqlite, persistent, persistent-template
     CPP-Options: -DWITH_DATABASE
 
-  if flag(AsciiProgress)
-    Build-Depends: ascii-progress (<= 0.2.1.2), terminal-size
-    CPP-Options: -DWITH_ASCIIPROGRESS
+  if flag(ConcurrentOutput)
+    Build-Depends: concurrent-output (>= 1.6)
+    CPP-Options: -DWITH_CONCURRENTOUTPUT
 
   if flag(EKG)
     Build-Depends: ekg

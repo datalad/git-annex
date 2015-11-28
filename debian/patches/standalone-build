@@ -60,9 +60,3 @@ Index: git-annex/debian/links
 @@ -0,0 +1,2 @@
 +/usr/lib/git-annex.linux/git-annex /usr/bin/git-annex
 +/usr/lib/git-annex.linux/git-annex-shell /usr/bin/git-annex-shell
-Index: git-annex/debian/manpages
-===================================================================
---- /dev/null
-+++ git-annex/debian/manpages
-@@ -0,0 +1 @@
-+debian/git-annex-standalone/usr/lib/git-annex.linux/usr/share/man/man1/git-annex*

@@ -37,7 +37,7 @@ import Types.CleanupActions
 import Annex.Index (addGitEnv)
 #ifndef mingw32_HOST_OS
 import Annex.Perms
-import Utility.LockPool
+import Annex.LockPool
 #endif
 
 {- Generates parameters to ssh to a given host (or user@host) on a given
@@ -159,7 +159,7 @@ sshCleanup = mapM_ cleanup =<< enumSocketFiles
 		let lockfile = socket2lock socketfile
 		unlockFile lockfile
 		mode <- annexFileMode
-		v <- liftIO $ noUmask mode $ tryLockExclusive (Just mode) lockfile
+		v <- noUmask mode $ tryLockExclusive (Just mode) lockfile
 		case v of
 			Nothing -> noop
 			Just lck -> do
@@ -263,9 +263,10 @@ inRepoWithSshOptionsTo remote gc a =
 
 {- To make any git commands be run with ssh caching enabled,
  - and configured ssh-options alters the local Git.Repo's gitEnv
- - to set GIT_SSH=git-annex, and sets sshOptionsEnv. -}
+ - to set GIT_SSH=git-annex, and set sshOptionsEnv when running git
+ - commands. -}
 sshOptionsTo :: Git.Repo -> RemoteGitConfig -> Git.Repo -> Annex Git.Repo
-sshOptionsTo remote gc g 
+sshOptionsTo remote gc localr
 	| not (Git.repoIsUrl remote) || Git.repoIsHttp remote = unchanged
 	| otherwise = case Git.Url.hostuser remote of
 		Nothing -> unchanged
@@ -277,7 +278,7 @@ sshOptionsTo remote gc g
 					prepSocket sockfile
 					use (sshConnectionCachingParams sockfile)
   where
-	unchanged = return g
+	unchanged = return localr
 
 	use opts = do
 		let sshopts = concat
@@ -289,9 +290,9 @@ sshOptionsTo remote gc g
 			else do
 				command <- liftIO programPath
 				liftIO $ do
-					g' <- addGitEnv g sshOptionsEnv
+					localr' <- addGitEnv localr sshOptionsEnv
 						(toSshOptionsEnv sshopts)
-					addGitEnv g' "GIT_SSH" command
+					addGitEnv localr' "GIT_SSH" command
 
 runSshOptions :: [String] -> String -> IO ()
 runSshOptions args s = do

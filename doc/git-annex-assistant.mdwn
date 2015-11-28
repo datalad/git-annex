@@ -25,6 +25,8 @@ and automatically syncs them to other remotes.
   Wait N seconds before running the startup scan. This process can
   be expensive and you may not want to run it immediately upon login.
 
+  When --autostart is used, defaults to --startdelay=5.
+
 * `--foreground`
 
   Avoid forking to the background.

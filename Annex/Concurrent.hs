@@ -12,6 +12,7 @@ import Annex
 import Annex.CatFile
 import Annex.CheckAttr
 import Annex.CheckIgnore
+import qualified Annex.Queue
 
 import qualified Data.Map as M
 
@@ -51,12 +52,13 @@ dupState = do
 		}
 
 {- Merges the passed AnnexState into the current Annex state.
- - Also shuts closes various handles in it. -}
+ - Also closes various handles in it. -}
 mergeState :: AnnexState -> Annex ()
 mergeState st = do
 	st' <- liftIO $ snd <$> run st closehandles
 	forM_ (M.toList $ Annex.cleanup st') $
 		uncurry addCleanup
+	Annex.Queue.mergeFrom st'
 	changeState $ \s -> s { errcounter = errcounter s + errcounter st' }
   where
 	closehandles = do

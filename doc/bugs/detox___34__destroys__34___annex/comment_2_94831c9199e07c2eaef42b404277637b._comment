@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="atrent"
+ subject="comment 2"
+ date="2015-11-16T07:50:29Z"
+ content="""
+I know it's not a git-annex bug, I'm not blaming, just noting that there may be chances of random renaming... As you say it's more of a detox bug (also rdfind messes hidden dirs). Thanks for pinpointing to \"recover data...\", it's the \"script\" I was searching for.
+"""]]

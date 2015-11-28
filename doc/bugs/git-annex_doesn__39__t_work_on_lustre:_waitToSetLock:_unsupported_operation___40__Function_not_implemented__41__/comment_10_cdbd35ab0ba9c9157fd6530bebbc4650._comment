@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2015-11-10T18:47:36Z"
+ content="""
+I think what yoh meant above was that -o lock (not `sync`) has a heavy
+performance impact. Or at least a perceived one. And thus, lustre clusters
+are not using it even though the feature is available and would probably be
+find for git-annex's use if enabled.
+"""]]

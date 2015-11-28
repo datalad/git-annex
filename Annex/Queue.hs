@@ -5,12 +5,15 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE BangPatterns #-}
+
 module Annex.Queue (
 	addCommand,
 	addUpdateIndex,
 	flush,
 	flushWhenFull,
-	size
+	size,
+	mergeFrom,
 ) where
 
 import Common.Annex
@@ -60,3 +63,12 @@ new = do
 
 store :: Git.Queue.Queue -> Annex ()
 store q = changeState $ \s -> s { repoqueue = Just q }
+
+mergeFrom :: AnnexState -> Annex ()
+mergeFrom st = case repoqueue st of
+	Nothing -> noop
+	Just newq -> do
+		q <- get
+		let !q' = Git.Queue.merge q newq
+		store q'
+		flushWhenFull

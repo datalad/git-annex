@@ -1,0 +1,53 @@
+### Please describe the problem.
+
+I can't create an IPFS external remote.
+
+### What steps will reproduce the problem?
+
+Start IPFS with `ipfs daemon`, run `git annex initremote ipfs type=external externaltype=ipfs encryption=none` (as per https://git-annex.branchable.com/special_remotes/ipfs/)
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+fiatjaf@lachmann ~/D/adv-annex> git annex version
+git-annex version: 5.20140412ubuntu1
+build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA CryptoHash
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier hook external
+local repository version: 5
+supported repository version: 5
+upgrade supported from repository versions: 0 1 2 4
+
+fiatjaf@lachmann ~/D/adv-annex> ipfs version
+ipfs version 0.3.8-dev
+"""]]
+
+### Please provide any additional information below.
+
+[[!format sh """
+fiatjaf@lachmann ~/D/adv-annex> ipfs swarm peers
+/ip4/104.131.131.82/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ
+/ip4/104.236.151.122/tcp/4001/ipfs/QmSoLju6m7xTh3DuokvT3886QRYqxAzb1kShaanJgW36yx
+/ip4/128.199.219.111/tcp/4001/ipfs/QmSoLSafTMBsPKadTEgaXctDQVcqN88CNLHXMkTNwMKPnu
+/ip4/167.114.2.68/tcp/4001/ipfs/QmfY24aJDGyPyUJVyzL1QHPoegmFKuuScoCKrBk9asoTFG
+/ip4/178.62.61.185/tcp/4001/ipfs/QmSoLMeWqB7YGVLJN3pNLQpmmEk35v6wYtsMGLzSr5QBU3
+/ip4/188.40.42.143/tcp/4001/ipfs/QmRg7T93TRuPT2wzyXNiYwin9ukWaNocdgKbRmmtsaxUa1
+/ip4/200.73.112.159/tcp/4001/ipfs/QmUxHvhvQtvdUoGHd83YTJoG7VLL1yWCrcXK7sy62ZEn65
+/ip4/37.252.125.190/tcp/4001/ipfs/QmQvQVoWostg7k1mnxtx787eVDmFPsEfkpUgQx1Ad2ibjc
+/ip4/66.172.11.145/tcp/4001/ipfs/QmSjEaDoVnSQsfieWaX91aTC8ei3kPZE4JfPLLLefYqQRt
+/ip4/92.243.15.110/tcp/4001/ipfs/QmcU5ZFRjkpZjTMwnYeUaG8CFNA1ueX79aayv2VqK1zakR
+fiatjaf@lachmann ~/D/adv-annex> ls * .git/
+final5.mp4
+
+.git/:
+annex/     COMMIT_EDITMSG  description  hooks/  info/  objects/
+branches/  config          HEAD         index   logs/  refs/
+fiatjaf@lachmann ~/D/adv-annex> 
+git annex initremote ipfs type=external externaltype=ipfs encryption=none
+initremote ipfs git-annex: external special remote protocol error, unexpectedly received "" (unable to parse command)
+fiatjaf@lachmann ~/D/adv-annex> 
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes, git-annex works for everything and I use lots of special remotes and normal remotes in different computers.

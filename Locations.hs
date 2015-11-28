@@ -51,6 +51,7 @@ module Locations (
 	gitAnnexViewLog,
 	gitAnnexIgnoredRefs,
 	gitAnnexPidFile,
+	gitAnnexPidLockFile,
 	gitAnnexDaemonStatusFile,
 	gitAnnexLogFile,
 	gitAnnexFuzzTestLogFile,
@@ -66,7 +67,7 @@ module Locations (
 	hashDirLower,
 	preSanitizeKeyName,
 
-	prop_idempotent_fileKey
+	prop_isomorphic_fileKey
 ) where
 
 import Data.Char
@@ -334,6 +335,10 @@ gitAnnexIgnoredRefs r = gitAnnexDir r </> "ignoredrefs"
 gitAnnexPidFile :: Git.Repo -> FilePath
 gitAnnexPidFile r = gitAnnexDir r </> "daemon.pid"
 
+{- Pid lock file for pidlock mode -}
+gitAnnexPidLockFile :: Git.Repo -> FilePath
+gitAnnexPidLockFile r = gitAnnexDir r </> "pidlock"
+
 {- Status file for daemon mode. -}
 gitAnnexDaemonStatusFile :: Git.Repo -> FilePath
 gitAnnexDaemonStatusFile r = gitAnnexDir r </> "daemon.status"
@@ -432,8 +437,8 @@ fileKey file = file2key $
 		replace "&c" ":" $ replace "%" "/" file
 
 {- for quickcheck -}
-prop_idempotent_fileKey :: String -> Bool
-prop_idempotent_fileKey s
+prop_isomorphic_fileKey :: String -> Bool
+prop_isomorphic_fileKey s
 	| null s = True -- it's not legal for a key to have no keyName
 	| otherwise= Just k == fileKey (keyFile k)
   where

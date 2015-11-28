@@ -65,6 +65,9 @@ buildFlags = filter (not . null)
 #else
 #warning Building without XMPP.
 #endif
+#ifdef WITH_CONCURRENTOUTPUT
+	, "ConcurrentOutput"
+#endif
 #ifdef WITH_DNS
 	, "DNS"
 #endif

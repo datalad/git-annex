@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 2"
+ date="2015-11-10T17:24:28Z"
+ content="""
+great (as for .deb)... but wouldn't it make sense for any other linux (and Debian not from .deb) then to install them under e.g. /usr/local/bin if permissions allow?
+
+I will leave it up to you to finalize the decision of completeness and close this report ;) (ab)using ~/.ssh indeed sounds like a quick way out but imho somewhat too dirty.  Imho some canonical location as per XDG or some other common standard (e.g. ~/.var/git-annex/bin ?) where annex could look for its wrappers would imho be better -- or am I missing some picture of ssh looking for scripts under ~/.ssh?
+"""]]

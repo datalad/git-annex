@@ -1,6 +1,6 @@
 {- git-annex configuration
  -
- - Copyright 2012-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -26,6 +26,7 @@ import Types.Difference
 import Types.RefSpec
 import Utility.HumanTime
 import Utility.Gpg (GpgCmd, mkGpgCmd)
+import Utility.ThreadScheduler (Seconds(..))
 
 {- Main git-annex settings. Each setting corresponds to a git-config key
  - such as annex.foo -}
@@ -62,6 +63,8 @@ data GitConfig = GitConfig
 	, annexDifferences :: Differences
 	, annexUsedRefSpec :: Maybe RefSpec
 	, annexVerify :: Bool
+	, annexPidLock :: Bool
+	, annexPidLockTimeout :: Seconds
 	, coreSymlinks :: Bool
 	, coreSharedRepository :: SharedRepository
 	, gcryptId :: Maybe String
@@ -105,6 +108,9 @@ extractGitConfig r = GitConfig
 	, annexUsedRefSpec = either (const Nothing) Just . parseRefSpec 
 		=<< getmaybe (annex "used-refspec")
 	, annexVerify = getbool (annex "verify") True
+	, annexPidLock = getbool (annex "pidlock") False
+	, annexPidLockTimeout = Seconds $ fromMaybe 300 $
+		getmayberead (annex "pidlocktimeout")
 	, coreSymlinks = getbool "core.symlinks" True
 	, coreSharedRepository = getSharedRepository r
 	, gcryptId = getmaybe "core.gcrypt-id"

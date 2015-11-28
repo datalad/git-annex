@@ -36,10 +36,11 @@ instance DeferredParseClass CopyOptions where
 		<*> pure (autoMode v)
 
 seek :: CopyOptions -> CommandSeek
-seek o = withKeyOptions (Command.Move.keyOptions $ moveOptions o) (autoMode o)
-	(Command.Move.startKey (moveOptions o) False)
-	(withFilesInGit $ whenAnnexed $ start o)
-	(Command.Move.moveFiles $ moveOptions o)
+seek o = allowConcurrentOutput $
+	withKeyOptions (Command.Move.keyOptions $ moveOptions o) (autoMode o)
+		(Command.Move.startKey (moveOptions o) False)
+		(withFilesInGit $ whenAnnexed $ start o)
+		(Command.Move.moveFiles $ moveOptions o)
 
 {- A copy is just a move that does not delete the source file.
  - However, auto mode avoids unnecessary copies, and avoids getting or

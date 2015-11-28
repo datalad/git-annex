@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-11-10T19:31:18Z"
+ content="""
+git annex status doesn't checksum files, so it can't be the sha executables
+in PATH.
+
+Instead, git-annex status, when in a direct mode repository like on
+windows, checks the recorded timestamps etc of the files to determine if
+they're modified.
+
+I suppose one possibility is a time zone change or DST change. Did you
+recently "fall back" from DST in your location?
+
+Due to the braindead way Windows deals with timezone changes, 
+the timestamps of files appear to *change* when the timezone has changed.
+git-annex tries to detect this situation and offset to get back a stable
+timestamp that can be used to detect file modifications, but I can't say
+that I've tested this situation very carefully, beyond the one very painful
+day implementing that workaround.
+
+Anyway, running `git annex sync` may result in it noticing that nothing has
+actually changed and get the status display to work better.
+"""]]

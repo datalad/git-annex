@@ -119,16 +119,18 @@ alreadyRunning = error "Daemon is already running."
  - If it's running, returns its pid. -}
 checkDaemon :: FilePath -> IO (Maybe PID)
 #ifndef mingw32_HOST_OS
-checkDaemon pidfile = do
-	v <- catchMaybeIO $
-		openFd pidfile ReadOnly (Just stdFileMode) defaultFileFlags
-	case v of
-		Just fd -> do
-			locked <- getLock fd (ReadLock, AbsoluteSeek, 0, 0)
-			p <- readish <$> readFile pidfile
-			closeFd fd `after` return (check locked p)
-		Nothing -> return Nothing
+checkDaemon pidfile = bracket setup cleanup go
   where
+	setup = catchMaybeIO $
+		openFd pidfile ReadOnly (Just stdFileMode) defaultFileFlags
+	cleanup (Just fd) = closeFd fd
+	cleanup Nothing = return ()
+	go (Just fd) = catchDefaultIO Nothing $ do
+		locked <- getLock fd (ReadLock, AbsoluteSeek, 0, 0)
+		p <- readish <$> readFile pidfile
+		return (check locked p)
+	go Nothing = return Nothing
+
 	check Nothing _ = Nothing
 	check _ Nothing = Nothing
 	check (Just (pid, _)) (Just pid')

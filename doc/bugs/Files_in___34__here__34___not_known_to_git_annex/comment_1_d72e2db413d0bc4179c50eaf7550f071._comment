@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-11-02T15:28:09Z"
+ content="""
+All the output of `git annex log`, `git annex whereis` and `git annex list`
+seems internally consistent. Which makes sense as there are 3 different
+views of the exact same data. Note that while `git annex log` 
+shows 2 repositories "1T" and "500G" that contain the file, I guess those
+are both marked as dead, since whereis skipps dead repos and doesn't
+show them. So, that's all red herrings.
+
+The problem then is that fsck seems to say "fixing location log" but then
+apparently doesn't fix it, since it still complains the file is missing
+despite its contents being present.
+
+I have replicated the situation but I don't reproduce that happening:
+
+	joey@darkstar:~/tmp/r>git annex setpresentkey WORM-s30-m1446479598--Bad\ Taste\ -\ Englisch.avi ebce24f6-3a26-4881-8855-62a0e0d33869 0
+	setpresentkey WORM-s30-m1446479598--Bad Taste - Englisch.avi ok
+	joey@darkstar:~/tmp/r>git annex whereis Movies/Bad\ Taste\ -\ Englisch.avi
+	whereis Movies/Bad Taste - Englisch.avi (0 copies) failed
+	git-annex: whereis: 1 failed
+	joey@darkstar:~/tmp/r>git annex fsck
+	fsck Movies/Bad Taste - Englisch.avi (fixing location log) ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/r>git annex whereis
+	whereis Movies/Bad Taste - Englisch.avi (1 copy) 
+	  	ebce24f6-3a26-4881-8855-62a0e0d33869 -- joey@darkstar:~/tmp/r [here]
+	ok
+
+Please show the commit that fsck makes to the git-annex branch. Ie,
+`git show git-annex` after running fsck. In my example above, that commit included:
+
+	--- a/33f/807/WORM-s30-m1446479598--Bad Taste - Englisch.avi.log	
+	+++ b/33f/807/WORM-s30-m1446479598--Bad Taste - Englisch.avi.log	
+	@@ -1 +1 @@
+	-1446479600.453526s 0 ebce24f6-3a26-4881-8855-62a0e0d33869
+	+1446479680.344119s 1 ebce24f6-3a26-4881-8855-62a0e0d33869
+
+"""]]

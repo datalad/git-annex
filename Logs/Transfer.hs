@@ -17,7 +17,7 @@ import Utility.Metered
 import Utility.Percentage
 import Utility.QuickCheck
 import Utility.PID
-import Utility.LockPool
+import Annex.LockPool
 import Logs.TimeStamp
 
 import Data.Time.Clock
@@ -136,25 +136,24 @@ checkTransfer t = do
 		void $ tryIO $ removeFile tfile
 		void $ tryIO $ removeFile $ transferLockFile tfile
 #ifndef mingw32_HOST_OS
-	liftIO $ do
-		let lck = transferLockFile tfile
-		v <- getLockStatus lck
-		case v of
-			StatusLockedBy pid -> catchDefaultIO Nothing $
-				readTransferInfoFile (Just pid) tfile
-			StatusNoLockFile -> return Nothing
-			StatusUnLocked -> do
-				-- Take a non-blocking lock while deleting
-				-- the stale lock file. Ignore failure
-				-- due to permissions problems, races, etc.
-				void $ tryIO $ do
-					r <- tryLockExclusive Nothing lck
-					case r of
-						Just lockhandle -> do
-							cleanstale
-							dropLock lockhandle
-						_ -> noop
-				return Nothing
+	let lck = transferLockFile tfile
+	v <- getLockStatus lck
+	case v of
+		StatusLockedBy pid -> liftIO $ catchDefaultIO Nothing $
+			readTransferInfoFile (Just pid) tfile
+		StatusNoLockFile -> return Nothing
+		StatusUnLocked -> do
+			-- Take a non-blocking lock while deleting
+			-- the stale lock file. Ignore failure
+			-- due to permissions problems, races, etc.
+			void $ tryIO $ do
+				r <- tryLockExclusive Nothing lck
+				case r of
+					Just lockhandle -> liftIO $ do
+						cleanstale
+						dropLock lockhandle
+					_ -> noop
+			return Nothing
 #else
 	v <- liftIO $ lockShared $ transferLockFile tfile
 	liftIO $ case v of

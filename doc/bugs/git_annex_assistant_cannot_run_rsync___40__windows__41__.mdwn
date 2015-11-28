@@ -1,0 +1,22 @@
+### Please describe the problem.
+
+When the assistant decides to sync the content of a file, it launches rsync. Windows shows an Application Error popup which says this:
+
+    The application was unable to start correctly (0xc000007b).
+
+Presumably it's crashing. 
+
+### What version of git-annex are you using? On what operating system?
+
+    git-annex version: 5.20151019-gcc50c00
+    build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV DNS Feeds Quvi TDFA     TorrentParser Database
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Not on windows so far :)
+
+> The page doesn't suggest getting the 32 bit version, it just says to get
+> it. Implication should be that's the version that works. I've noted that
+> this is an important requirement now. [[done]] --[[Joey]]

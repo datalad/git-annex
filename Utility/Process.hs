@@ -41,9 +41,12 @@ module Utility.Process (
 	devNull,
 ) where
 
-import qualified System.Process
-import qualified System.Process as X hiding (CreateProcess(..), createProcess, runInteractiveProcess, readProcess, readProcessWithExitCode, system, rawSystem, runInteractiveCommand, runProcess)
-import System.Process hiding (createProcess, readProcess, waitForProcess)
+import qualified Utility.Process.Shim
+import qualified Utility.Process.Shim as X hiding (CreateProcess(..), createProcess, runInteractiveProcess, readProcess, readProcessWithExitCode, system, rawSystem, runInteractiveCommand, runProcess)
+import Utility.Process.Shim hiding (createProcess, readProcess, waitForProcess)
+import Utility.Misc
+import Utility.Exception
+
 import System.Exit
 import System.IO
 import System.Log.Logger
@@ -57,9 +60,6 @@ import Control.Applicative
 #endif
 import Data.Maybe
 import Prelude
-
-import Utility.Misc
-import Utility.Exception
 
 type CreateProcessRunner = forall a. CreateProcess -> ((Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> IO a) -> IO a
 
@@ -372,7 +372,7 @@ startInteractiveProcess cmd args environ = do
 createProcess :: CreateProcess -> IO (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle)
 createProcess p = do
 	debugProcess p
-	System.Process.createProcess p
+	Utility.Process.Shim.createProcess p
 
 -- | Debugging trace for a CreateProcess.
 debugProcess :: CreateProcess -> IO ()
@@ -392,6 +392,6 @@ debugProcess p = debugM "Utility.Process" $ unwords
 -- | Wrapper around 'System.Process.waitForProcess' that does debug logging.
 waitForProcess ::  ProcessHandle -> IO ExitCode
 waitForProcess h = do
-	r <- System.Process.waitForProcess h
+	r <- Utility.Process.Shim.waitForProcess h
 	debugM "Utility.Process" ("process done " ++ show r)
 	return r

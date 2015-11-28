@@ -11,6 +11,6 @@ module Types.LockCache (
 ) where
 
 import qualified Data.Map as M
-import Utility.LockPool
+import Utility.LockPool (LockHandle)
 
 type LockCache = M.Map FilePath LockHandle

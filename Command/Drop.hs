@@ -24,7 +24,7 @@ import System.Log.Logger (debugM)
 import qualified Data.Set as S
 
 cmd :: Command
-cmd = withGlobalOptions annexedMatchingOptions $
+cmd = withGlobalOptions (jobsOption : annexedMatchingOptions) $
 	command "drop" SectionCommon
 		"remove content of files from repository"
 		paramPaths (seek <$$> optParser)
@@ -51,10 +51,11 @@ parseDropFromOption = parseRemoteOption $ strOption
 	)
 
 seek :: DropOptions -> CommandSeek
-seek o = withKeyOptions (keyOptions o) (autoMode o)
-	(startKeys o)
-	(withFilesInGit $ whenAnnexed $ start o)
-	(dropFiles o)
+seek o = allowConcurrentOutput $
+	withKeyOptions (keyOptions o) (autoMode o)
+		(startKeys o)
+		(withFilesInGit $ whenAnnexed $ start o)
+		(dropFiles o)
 
 start :: DropOptions -> FilePath -> Key -> CommandStart
 start o file key = start' o key (Just file)

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2015-11-10T15:25:58Z"
+ content="""
+git uses dot-locks (.git/index.lck).
+
+I need to understand why multiple Lustre users seem to have it configured
+in a way that doesn't allow using the locking capabilities that are built
+into it. Maybe there's a good reason they do that; but adding ugly top-level
+dot locking to git-annex without a good reason could be a bad mistake.
+"""]]

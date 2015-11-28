@@ -25,6 +25,7 @@ module Remote (
 	remoteMap,
 	remoteMap',
 	uuidDescriptions,
+	addName,
 	byName,
 	byName',
 	byNameOrGroup,
@@ -32,6 +33,7 @@ module Remote (
 	byNameWithUUID,
 	byCost,
 	prettyPrintUUIDs,
+	prettyPrintUUIDsDescs,
 	prettyPrintUUIDsWith,
 	prettyListUUIDs,
 	prettyUUID,
@@ -168,34 +170,41 @@ nameToUUID' n = byName' n >>= go
 					_ -> Right u
 			_us -> Left "Found multiple repositories with that description"
 
-{- Pretty-prints a list of UUIDs of remotes, for human display.
+{- Pretty-prints a list of UUIDs of remotes, with their descriptions,
+ - for human display.
  -
  - When JSON is enabled, also outputs a machine-readable description
  - of the UUIDs. -}
 prettyPrintUUIDs :: String -> [UUID] -> Annex String
-prettyPrintUUIDs desc uuids = prettyPrintUUIDsWith Nothing desc $
-	zip uuids (repeat (Nothing :: Maybe String))
+prettyPrintUUIDs header uuids = do
+	descm <- uuidDescriptions
+	prettyPrintUUIDsDescs header descm uuids
+
+prettyPrintUUIDsDescs :: String -> M.Map UUID RemoteName -> [UUID] -> Annex String
+prettyPrintUUIDsDescs header descm uuids =
+	prettyPrintUUIDsWith Nothing header descm
+		(zip uuids (repeat (Nothing :: Maybe String)))
 
 {- An optional field can be included in the list of UUIDs. -}
 prettyPrintUUIDsWith
 	:: (JSON v, Show v) 
 	=> Maybe String 
 	-> String 
+	-> M.Map UUID RemoteName
 	-> [(UUID, Maybe v)] 
 	-> Annex String
-prettyPrintUUIDsWith optfield desc uuids = do
+prettyPrintUUIDsWith optfield header descm uuidvals = do
 	hereu <- getUUID
-	m <- uuidDescriptions
-	maybeShowJSON [(desc, map (jsonify m hereu) uuids)]
-	return $ unwords $ map (\u -> "\t" ++ prettify m hereu u ++ "\n") uuids
+	maybeShowJSON [(header, map (jsonify hereu) uuidvals)]
+	return $ unwords $ map (\u -> "\t" ++ prettify hereu u ++ "\n") uuidvals
   where
-	finddescription m u = M.findWithDefault "" u m
-	prettify m hereu (u, optval)
+	finddescription u = M.findWithDefault "" u descm
+	prettify hereu (u, optval)
 		| not (null d) = addoptval $ fromUUID u ++ " -- " ++ d
 		| otherwise = addoptval $ fromUUID u
 	  where
 		ishere = hereu == u
-		n = finddescription m u
+		n = finddescription u
 		d
 			| null n && ishere = "here"
 			| ishere = addName n "here"
@@ -203,9 +212,9 @@ prettyPrintUUIDsWith optfield desc uuids = do
 		addoptval s = case optval of
 			Nothing -> s
 			Just val -> show val ++ ": " ++ s
-	jsonify m hereu (u, optval) = toJSObject $ catMaybes
+	jsonify hereu (u, optval) = toJSObject $ catMaybes
 		[ Just ("uuid", toJSON $ fromUUID u)
-		, Just ("description", toJSON $ finddescription m u)
+		, Just ("description", toJSON $ finddescription u)
 		, Just ("here", toJSON $ hereu == u)
 		, case (optfield, optval) of
 			(Just field, Just val) -> Just (field, showJSON val)

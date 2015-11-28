@@ -1,0 +1,5 @@
+Similar to the yearly git user survey, there is a
+[2015 git-annex user survey](http://git-annex-survey.branchable.com/polls/2015/).
+
+If you use git-annex,
+please take a few minutes to answer the questions!

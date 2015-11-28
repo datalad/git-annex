@@ -1,6 +1,6 @@
-{- git-annex output messages
+{- git-annex output messages, including concurrent output to display regions
  -
- - Copyright 2010-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -8,23 +8,33 @@
 module Messages.Internal where
 
 import Common
-import Types
+import Annex
 import Types.Messages
-import qualified Annex
+import Messages.Concurrent
 
-handleMessage :: IO () -> IO () -> Annex ()
-handleMessage json normal = withOutputType go
+withOutputType :: (OutputType -> Annex a) -> Annex a
+withOutputType a = outputType <$> Annex.getState Annex.output >>= a
+
+outputMessage :: IO () -> String -> Annex ()
+outputMessage json s = withOutputType go
   where
-	go NormalOutput = liftIO normal
+	go NormalOutput = liftIO $
+		flushed $ putStr s
 	go QuietOutput = q
-	go (ParallelOutput _) = q
+	go (ConcurrentOutput _) = concurrentMessage False s q
 	go JSONOutput = liftIO $ flushed json
+
+outputError :: String -> Annex ()
+outputError s = withOutputType go
+  where
+	go (ConcurrentOutput _) = concurrentMessage True s (go NormalOutput)
+	go _ = liftIO $ do
+		hFlush stdout
+		hPutStr stderr s
+		hFlush stderr
 
 q :: Monad m => m ()
 q = noop
 
 flushed :: IO () -> IO ()
 flushed a = a >> hFlush stdout
-
-withOutputType :: (OutputType -> Annex a) -> Annex a
-withOutputType a = outputType <$> Annex.getState Annex.output >>= a

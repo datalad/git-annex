@@ -1,0 +1,6 @@
+Finally concurrent progress bars are working! After all the groundwork,
+it was really easy to add, under a dozen lines of code.
+
+I've found several bugs while testing commands in -Jn mode, and the rest of
+today was spent fixing them. Two of them affected concurrent `git annex
+add`; the worst narrowly avoided being a data loss bug.

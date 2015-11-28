@@ -1,0 +1,72 @@
+### Please describe the problem.
+
+When trying to add certain Youtube downloads to my annex, git annex addurl fails with
+
+[[!format sh """
+$ git annex addurl https://www.youtube.com/watch?v=WZQ4-jXqfSk
+git-annex: quvi failed                                                                                   
+"""]]
+
+quvi get https://www.youtube.com/watch?v=WZQ4-jXqfSk on the other hand works just fine, though.
+
+I have run git annex with --debug and see that the last command executed is
+
+[[!format sh """
+quvi dump -p enum --verbosity verbose  https://www.youtube.com/watch?v=WZQ4-jXqfSk
+"""]]
+
+Looking at its results (and the code), it looks like it parses QUVI_MEDIA_PROPERTY_TITLE. Failures with downloading occur for other URLs which have non-ASCII chars (here: „, “), too, so I assume that's where the bug could be hidden:
+
+[[!format sh """
+quvi dump -p enum --verbosity verbose  https://www.youtube.com/watch?v=WZQ4-jXqfSk
+QUVI_MEDIA_PROPERTY_THUMBNAIL_URL=https://i.ytimg.com/vi/WZQ4-jXqfSk/default.jpg                         
+QUVI_MEDIA_PROPERTY_TITLE=Ganze Folge 1533 „Autsch!“ vom 07.06.
+QUVI_MEDIA_PROPERTY_ID=WZQ4-jXqfSk
+QUVI_MEDIA_PROPERTY_START_TIME_MS=0
+QUVI_MEDIA_PROPERTY_DURATION_MS=1741000
+QUVI_MEDIA_STREAM_PROPERTY_VIDEO_ENCODING=avc1.64001F
+QUVI_MEDIA_STREAM_PROPERTY_AUDIO_ENCODING=mp4a.40.2
+QUVI_MEDIA_STREAM_PROPERTY_CONTAINER=mp4
+QUVI_MEDIA_STREAM_PROPERTY_URL=https://r3---sn-j5caxh5n-hpql.googlevideo.com/videoplayback?expire=1446623026&fexp=9407193,9408211,9408710,9414764,9415983,9416126,9417707,9418868,9420718,9421148,9421166,9421292,9422555,9422596,9423343,9423421,9423663,9423793&mime=video/mp4&key=yt6&sparams=dur,id,initcwndbps,ip,ipbits,itag,lmt,mime,mm,mn,ms,mv,pcm2cms,pl,ratebypass,requiressl,source,upn,expire&lmt=1433927172625764&dur=1740.776&ratebypass=yes&itag=22&ip=187.253.190.149&sver=3&requiressl=yes&ipbits=0&upn=sO29PXrC-rY&pcm2cms=yes&pl=21&mt=1446601281&mv=m&ms=au&source=youtube&signature=D7D98F6C56BEEC231123BB6E676776BE45E9EE7E.7BF9E36C03D7282B955426734E9019BBC8375A03&initcwndbps=570000&mm=31&mn=sn-j5caxh5n-hpql&id=o-APEamB7usIId7MUeY4uUhLxvqYCet4vB9iVfFj2ZyqNI
+QUVI_MEDIA_STREAM_PROPERTY_ID=hd720_mp4_i22_720p
+QUVI_MEDIA_STREAM_PROPERTY_VIDEO_BITRATE_KBIT_S=0
+QUVI_MEDIA_STREAM_PROPERTY_AUDIO_BITRATE_KBIT_S=0
+QUVI_MEDIA_STREAM_PROPERTY_VIDEO_HEIGHT=720
+QUVI_MEDIA_STREAM_PROPERTY_VIDEO_WIDTH=1280
+"""]]
+
+### What steps will reproduce the problem?
+
+See above.
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+$ git annex version
+git-annex version: 5.20150916+gitg79661ef-1~ndall+1
+build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA Database
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository version: 5
+upgrade supported from repository versions: 0 1 2 4
+"""]]
+
+on Linux.
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I love it. It has motivated me enough to start organizing my files spread on different machines, disks etc. at least a little :-)
+
+> [[fixed|done]]; quvi output is now parsed in a locale-independant manner.
+> --[[Joey]] 

@@ -965,6 +965,32 @@ Here are all the supported configuration settings.
   which does not support symbolic links, or hard links, or unix permissions.
   This is automatically probed by "git annex init".
 
+* `annex.pidlock`
+
+  Normally, git-annex uses fine-grained lock files to allow multiple
+  processes to run concurrently without getting in each others' way.
+  That works great, unless you are using git-annex on a filesystem that
+  does not support POSIX fcntl locks. This is sometimes the case when
+  using NFS or Lustre filesystems. 
+  
+  To support such situations, you can set annex.pidlock to true, and it
+  will fall back to a single top-level pid file lock.
+
+  Although, often, you'd really be better off fixing your networked
+  filesystem configuration to support POSIX locks.. And, some networked
+  filesystems are so inconsistent that one node can't reliably tell when
+  the other node is holding a pid lock. Caveat emptor.
+
+* `annex.pidlocktimeout`
+
+  When using pid lock files, it's possible for a stale lock file to get
+  left behind by previous run of git-annex that crashed or was interrupted.
+  This is mostly avoided, but can occur especially when using a network
+  file system.
+
+  git-annex will wait up to this many seconds for the pid lock
+  file to go away, and will then abort if it cannot continue. Default: 300
+
 * `remote.<name>.annex-cost`
 
   When determining which repository to

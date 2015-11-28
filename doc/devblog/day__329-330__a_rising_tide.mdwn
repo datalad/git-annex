@@ -1,0 +1,15 @@
+Things have been relatively quiet on git-annex this week. I've been
+distracted with other projects. But, a library that I developed for
+[propellor](http://propellor.branchable.com/) to help with 
+[concurrent console output](http://joeyh.name/blog/entry/concurrent_output_library/)
+has been rapidly developing into a kind of
+[tiling region manager for the console](http://joeyh.name/blog/entry/a_tiling_region_manager_for_the_console),
+which may be just the thing git-annex needs on the concurrent
+download progress display front.
+
+After seeing it could go that way, and working on it around the clock to
+add features git-annex will need, here's a teaser of its abilities.
+
+<img src="https://joeyh.name/code/concurrent-output/aptdemo.gif">
+
+Probably coming soonish to a `git-annex -J` near you!

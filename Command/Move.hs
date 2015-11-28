@@ -45,10 +45,11 @@ instance DeferredParseClass MoveOptions where
 		<*> pure (keyOptions v)
 
 seek :: MoveOptions -> CommandSeek
-seek o = withKeyOptions (keyOptions o) False
-	(startKey o True)
-	(withFilesInGit $ whenAnnexed $ start o True)
-	(moveFiles o)
+seek o = allowConcurrentOutput $ 
+	withKeyOptions (keyOptions o) False
+		(startKey o True)
+		(withFilesInGit $ whenAnnexed $ start o True)
+		(moveFiles o)
 
 start :: MoveOptions -> Bool -> FilePath -> Key -> CommandStart
 start o move = start' o move . Just

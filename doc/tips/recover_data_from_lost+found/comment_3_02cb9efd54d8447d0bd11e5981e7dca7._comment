@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="atrent"
+ subject="comment 3"
+ date="2015-11-16T09:06:34Z"
+ content="""
+This procedure is also very useful when you accidentally rename files in the object dir.
+
+Such a case occurred to me when I 'detoxed' a git-annex: detox renames files and it substitutes \"--\" with \"-\", thus destroying my annex.
+
+I find git-annex very elegant in this situation: rather than trying to rename back the files (objects) you just re-add them (since content is still there unmodified) recreating the symlink targets!
+
+Kudos!
+"""]]
