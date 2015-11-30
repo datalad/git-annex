@@ -4,6 +4,10 @@
 
 I had to manually edit `.git/config` to set my local repo's UUID to the correct one.
 
+> Well, git-annex can only display information that you've told it. 
+> In this case you seem to have done something wrong with UUIDs, and so it
+> displayed [here] next to the UUID of the local repo, as it's supposed to.
+> There's no bug here I think. [[done]] --[[Joey]]
 
 ### What steps will reproduce the problem?
 
