@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-11-30T20:08:10Z"
+ content="""
+@jhannwong you had [2 repos with the same annex.uuid](http://git-annex.branchable.com/bugs/remote_repo_marked_as___34__here__34__)
+so if you had the same problem, it was a misconfiguration on your part.
+"""]]

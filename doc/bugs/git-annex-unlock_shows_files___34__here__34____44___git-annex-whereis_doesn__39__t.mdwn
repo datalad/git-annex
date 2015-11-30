@@ -8,6 +8,9 @@ Meanwhile, those files also reside in a remote. git-annex-whereis does show ther
 
 Note that dropping files in current repo (``git annex drop``) and re-getting (``git annex get``) does download the files from that remote. However, a subsequent ``git annext whereis`` again shows 1 copy --- at that remote only.
 
+> Because you have 2 repositories with the same annex.uuid, which is not
+> allowed. Fix your misconfigured repo to not have the same annex.uuid and
+> that won't happen. [[done]] --[[Joey]]
 
 ### What steps will reproduce the problem?
 
