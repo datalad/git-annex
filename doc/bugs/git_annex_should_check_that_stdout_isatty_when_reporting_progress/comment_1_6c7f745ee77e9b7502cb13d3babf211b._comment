@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-11-30T19:01:16Z"
+ content="""
+If you have a recent version of git-annex that's built with the
+ConcurrentOutput flag, pass -J1 and it will do what you want. 
+"""]]
