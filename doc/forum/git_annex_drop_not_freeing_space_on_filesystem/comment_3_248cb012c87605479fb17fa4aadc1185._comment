@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-11-30T19:42:47Z"
+ content="""
+git annex drop can only drop files that the local repository knows about.
+Perhaps you forgot to update your local repo (eg with `git annex sync`) so
+it didn't know about the files in the remote and so couldn't drop them.
+
+Of course, git annex drop also will refuse to drop a file from a repository
+if that not preserve the required number of copies of the file. It will
+tell you if this is the case.
+
+You need to post more details. I can assure you that git annex drop drops
+content from a repository.
+"""]]
