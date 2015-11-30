@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="pweemeeuw@86491f921da15d6a4dc6e1878fd42750b33f6963"
+ nickname="pweemeeuw"
+ subject="Got Nixos server configured as a ssh remote (FYI)"
+ date="2015-11-30T16:11:26Z"
+ content="""
+It needed some plumbing, this is what I did:
+
+_~/.ssh/rc_:
+
+    PATH=$HOME/bin:$HOME/.nix-profile/bin:/run/current-system/sw/bin
+
+Since _which_ is an alias (and hence still doesn't work for 'ssh foo which rsync'), I added a shell script _$HOME/bin/which_:
+
+    #!/run/current-system/sw/bin/bash
+    type -P $@
+
+Verified to work (syncs both ways) with a cloned repository on arch linux.
+"""]]
