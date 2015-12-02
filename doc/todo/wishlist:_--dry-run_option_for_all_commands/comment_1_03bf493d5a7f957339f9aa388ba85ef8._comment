@@ -12,4 +12,9 @@ I don't see the benefit to justify this work. `git annex add` is entirely
 predictable; it's very similar to `git add`. Which itself lacks a dry-run
 option. And like `git add`, you can certianly undo the effects of `git
 annex add`.
+
+Matching options can make commands like `git annex find` list the same
+set of files that are acted on by commands like `git annex drop`
+(`git annex find --in here`)
+and `git annex get` (`git annex find --not --in here`).
 """]]
