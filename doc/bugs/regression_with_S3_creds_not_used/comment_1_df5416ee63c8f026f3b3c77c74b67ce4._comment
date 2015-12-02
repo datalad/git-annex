@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-12-02T17:11:47Z"
+ content="""
+I tried reproducing this with the current version of git-annex on windows,
+and didn't see the problem. The creds file was used when the AWS_*
+environment variables were not set.
+
+What was the version of git-annex that was working before this reversion?
+
+Does the creds files corresponding to the uuid of your S3 remote exist?
+Does it contain 2 lines, for the access key and secret key, respectively?
+
+The webapp failure message seems to indicate that git-annex is has found
+creds, but they somehow have the wrong values. Does the s3ErrorAccessKeyId
+that you redacted match the access key that you told git-annex to use?
+(Note that it should be ok to show the s3 access key as long as you don't
+also show what the secret key is AFAIK.)
+"""]]
