@@ -26,8 +26,11 @@ autoStartFile = userConfigFile "autostart"
 readAutoStartFile :: IO [FilePath]
 readAutoStartFile = do
 	f <- autoStartFile
-	nub . map dropTrailingPathSeparator . lines
+	filter valid . nub . map dropTrailingPathSeparator . lines
 		<$> catchDefaultIO "" (readFile f)
+  where
+	-- Ignore any relative paths; some old buggy versions added eg "."
+	valid = isAbsolute
 
 modifyAutoStartFile :: ([FilePath] -> [FilePath]) -> IO ()
 modifyAutoStartFile func = do
@@ -42,12 +45,16 @@ modifyAutoStartFile func = do
  - present, it's moved to the top, so it will be used as the default
  - when opening the webapp. -}
 addAutoStartFile :: FilePath -> IO ()
-addAutoStartFile path = modifyAutoStartFile $ (:) path
+addAutoStartFile path = do
+	path' <- absPath path
+	modifyAutoStartFile $ (:) path'
 
 {- Removes a directory from the autostart file. -}
 removeAutoStartFile :: FilePath -> IO ()
-removeAutoStartFile path = modifyAutoStartFile $
-	filter (not . equalFilePath path)
+removeAutoStartFile path = do
+	path' <- absPath path
+	modifyAutoStartFile $
+		filter (not . equalFilePath path')
 
 {- The path to git-annex is written here; which is useful when cabal
  - has installed it to some awful non-PATH location. -}

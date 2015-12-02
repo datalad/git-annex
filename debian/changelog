@@ -14,6 +14,10 @@ git-annex (5.20151117) UNRELEASED; urgency=medium
   * addurl, importfeed: Changed to honor annex.largefiles settings,
     when the content of the url is downloaded. (Not when using --fast or
     --relaxed.)
+  * webapp: Fix bugs that could result in a relative path such as "."
+    being written to ~/.config/git-annex/autostart, and ignore any such 
+    relative paths in the file.
+    This was a reversion caused by the relative path changes in 5.20150113.
 
  -- Joey Hess <id@joeyh.name>  Mon, 16 Nov 2015 16:49:34 -0400
 
