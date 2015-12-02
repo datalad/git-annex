@@ -73,8 +73,12 @@ seek o = allowConcurrentOutput $ do
 startSmall :: FilePath -> CommandStart
 startSmall file = do
 	showStart "add" file
+	next $ performSmall file
+
+performSmall :: FilePath -> CommandPerform
+performSmall file = do
 	showNote "non-large file; adding content to git repository"
-	next $ performAdd file
+	performAdd file
 
 performAdd :: FilePath -> CommandPerform
 performAdd file = do

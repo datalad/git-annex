@@ -10,6 +10,7 @@ git-annex (5.20151117) UNRELEASED; urgency=medium
     444, since that prevents a user other than the file owner from locking
     them. Instead, a mode such as 664 is used in this case.
   * tahoe: Include tahoe capabilities in whereis display.
+  * import: Changed to honor annex.largefiles settings.
 
  -- Joey Hess <id@joeyh.name>  Mon, 16 Nov 2015 16:49:34 -0400
 

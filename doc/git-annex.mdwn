@@ -801,7 +801,7 @@ Here are all the supported configuration settings.
 
 	annex.largefiles = largerthan=100kb and not (include=*.c or include=*.h)
 
-  This setting is used by `git annex add` and the assistant.
+  This setting is used by `git annex add`, `git annex import` and the assistant.
   It can be useful to temporarily override it via -c at the command line.
   For example:
 
