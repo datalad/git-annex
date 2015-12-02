@@ -789,16 +789,23 @@ Here are all the supported configuration settings.
 
 * `annex.largefiles`
 
-  Allows configuring which files `git annex add` and the assistant consider
-  to be large enough to need to be added to the annex. By default,
-  all files are added to the annex.
+  Allows configuring which files are considered to be large enough to
+  need to be added to the annex. By default, all specified files are added
+  to the annex, but configuring this can cause the small files to be
+  checked into git, without using the annex.
 
   The value is a preferred content expression. See [[git-annex-preferred-content]](1)
   for details.
 
   Example:
 
-        	annex.largefiles = largerthan=100kb and not (include=*.c or include=*.h)
+	annex.largefiles = largerthan=100kb and not (include=*.c or include=*.h)
+
+  This setting is used by `git annex add` and the assistant.
+  It can be useful to temporarily override it via -c at the command line.
+  For example:
+
+  	git annex add -c annex.largefiles='include=*' 99kbfile
 
 * `annex.numcopies`
 
