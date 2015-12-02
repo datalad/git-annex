@@ -129,7 +129,7 @@ start largematcher mode (srcfile, destfile) =
 			else moveFile srcfile destfile
 		ifM (checkFileMatcher largematcher destfile)
 			( Command.Add.perform destfile
-			, Command.Add.performSmall destfile 
+			, next $ Command.Add.addSmall destfile 
 			)
 	notoverwriting why = do
 		warning $ "not overwriting existing " ++ destfile ++ " " ++ why

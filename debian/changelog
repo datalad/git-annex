@@ -11,6 +11,9 @@ git-annex (5.20151117) UNRELEASED; urgency=medium
     them. Instead, a mode such as 664 is used in this case.
   * tahoe: Include tahoe capabilities in whereis display.
   * import: Changed to honor annex.largefiles settings.
+  * addurl, importfeed: Changed to honor annex.largefiles settings,
+    when the content of the url is downloaded. (Not when using --fast or
+    --relaxed.)
 
  -- Joey Hess <id@joeyh.name>  Mon, 16 Nov 2015 16:49:34 -0400
 

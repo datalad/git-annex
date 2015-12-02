@@ -29,6 +29,7 @@ import Types.KeySource
 import Types.UrlContents
 import Config
 import Annex.Content.Direct
+import Annex.FileMatcher
 import Logs.Location
 import Utility.Metered
 import qualified Annex.Transfer as Transfer
@@ -335,17 +336,28 @@ addSizeUrlKey :: Url.UrlInfo -> Key -> Key
 addSizeUrlKey urlinfo key = key { keySize = Url.urlSize urlinfo }
 
 cleanup :: UUID -> URLString -> FilePath -> Key -> Maybe FilePath -> Annex ()
-cleanup u url file key mtmp = do
-	when (isJust mtmp) $
-		logStatus key InfoPresent
-	setUrlPresent u key url
-	Command.Add.addLink file key Nothing
-	whenM isDirect $ do
-		void $ addAssociatedFile key file
-		{- For moveAnnex to work in direct mode, the symlink
-		 - must already exist, so flush the queue. -}
-		Annex.Queue.flush
-	maybe noop (moveAnnex key) mtmp
+cleanup u url file key mtmp = case mtmp of
+	Nothing -> go
+	Just tmp -> do
+		largematcher <- largeFilesMatcher
+		ifM (checkFileMatcher largematcher file)
+			( go
+			, do
+				liftIO $ renameFile tmp file
+				void $ Command.Add.addSmall file
+			)
+  where
+	go = do
+		when (isJust mtmp) $
+			logStatus key InfoPresent
+		setUrlPresent u key url
+		Command.Add.addLink file key Nothing
+		whenM isDirect $ do
+			void $ addAssociatedFile key file
+			{- For moveAnnex to work in direct mode, the symlink
+			 - must already exist, so flush the queue. -}
+			Annex.Queue.flush
+		maybe noop (moveAnnex key) mtmp
 
 nodownload :: URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
 nodownload url urlinfo file
