@@ -28,3 +28,6 @@ Binary version 5.20151116-gbe86081 on Debian Linux unstable (up-to-date from a f
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I couldn't live without git-annex to synchronize my documents over multiple hosts and archives :-)
+
+> [[done]]; this is a docker bug if anything, and I really don't see any
+> way git-annex can solve it. --[[Joey]]
