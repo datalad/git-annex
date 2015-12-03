@@ -14,6 +14,7 @@ import qualified Remote
 import qualified Git
 import Command.Unused (withUnusedMaps, UnusedMaps(..), startUnused)
 import Annex.NumCopies
+import Annex.Content
 
 cmd :: Command
 cmd = command "dropunused" SectionMaintenance
@@ -37,14 +38,20 @@ seek o = do
 	withUnusedMaps (start from numcopies) (rangesToDrop o)
 
 start :: Maybe Remote -> NumCopies -> UnusedMaps -> Int -> CommandStart
-start from numcopies = startUnused "dropunused" (perform from numcopies) (performOther gitAnnexBadLocation) (performOther gitAnnexTmpObjectLocation)
+start from numcopies = startUnused "dropunused"
+	(perform from numcopies)
+	(performOther gitAnnexBadLocation)
+	(performOther gitAnnexTmpObjectLocation)
 
 perform :: Maybe Remote -> NumCopies -> Key -> CommandPerform
 perform from numcopies key = case from of
 	Just r -> do
 		showAction $ "from " ++ Remote.name r
 		Command.Drop.performRemote key Nothing numcopies r
-	Nothing -> Command.Drop.performLocal key Nothing numcopies []
+	Nothing -> ifM (inAnnex key)
+		( Command.Drop.performLocal key Nothing numcopies []
+		, next (return True)
+		)
 
 performOther :: (Key -> Git.Repo -> FilePath) -> Key -> CommandPerform
 performOther filespec key = do

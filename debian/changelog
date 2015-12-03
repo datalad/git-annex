@@ -18,6 +18,8 @@ git-annex (5.20151117) UNRELEASED; urgency=medium
     being written to ~/.config/git-annex/autostart, and ignore any such 
     relative paths in the file.
     This was a reversion caused by the relative path changes in 5.20150113.
+  * dropunused: Make more robust when trying to drop an object that has
+    already been dropped.
 
  -- Joey Hess <id@joeyh.name>  Mon, 16 Nov 2015 16:49:34 -0400
 
