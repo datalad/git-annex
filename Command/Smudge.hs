@@ -14,7 +14,7 @@ import Types.Key
 import qualified Data.ByteString.Lazy as B
 
 cmd :: Command
-cmd = dontCheck repoExists $
+cmd = noCommit $ noMessages $ dontCheck repoExists $
 	command "smudge" SectionPlumbing 
 		"git smudge filter"
 		paramFile (withParams seek)
