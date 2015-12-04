@@ -24,6 +24,7 @@ module Annex.Content (
 	withTmp,
 	checkDiskSpace,
 	moveAnnex,
+	linkAnnex,
 	sendAnnex,
 	prepSendAnnex,
 	removeAnnex,
@@ -469,6 +470,23 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
 				)
 	
 	alreadyhave = liftIO $ removeFile src
+
+{- Hard links a file into .git/annex/objects/, falling back to a copy
+ - if necessary.
+ -
+ - Does not lock down the hard linked object, so that the user can modify
+ - the source file. So, adding an object to the annex this way can
+ - prevent losing the content if the source file is deleted, but does not
+ - guard against modifications.
+ -}
+linkAnnex :: Key -> FilePath -> Annex Bool
+linkAnnex key src = do
+	dest <- calcRepo (gitAnnexLocation key)
+	ifM (liftIO $ doesFileExist dest)
+		( return True
+		, modifyContent dest $
+			liftIO $ createLinkOrCopy src dest
+		)
 
 {- Runs an action to transfer an object's content.
  -
