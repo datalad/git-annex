@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="OlivierBerger"
+ subject="Difficult to tell"
+ date="2015-12-04T10:21:26Z"
+ content="""
+Sorry, Joey, but I don't have the details of the version which crahed on us, and we updated afterwards : no time to try and reproduce fully : really busy producing videos, and anxious to find a solution on backing up videos reliably (which by the way I solved like this : https://www-public.tem-tsp.eu/~berger_o/weblog/2015/11/26/handling-video-files-produced-for-a-mooc-on-windows-with-git-and-git-annex/).
+
+I don't see however how we could have touched the contents of the .git/ : we were only doing Windows explorer actions : dragging files here and there, renaming dirs, saving stuff in Camtasia, but all inside subdirs of the git clone.
+
+Sorry for the poor quality of the report, but we were in a real hurry and had to find solutions without distracting us from the main topic : video editing :-/
+"""]]
