@@ -1,0 +1,24 @@
+I've gotten git-annex working as a smudge/clean filter today in the
+`smudge` branch. It works ok in a local git repository. `git add` lets
+git-annex decide if it wants to annex a file's content, and checking out
+branches and other git commands involving those files works pretty well.
+
+It can sometimes be slow; git's smudge interface necessarily needs to
+copy the content of files around, particularly when checking out files,
+and so it's never going to be as fast as the good old git-annex symlink
+approach. Most of the slow parts are things that can't be done in direct
+mode repos though, like switching branches, so that isn't a regression.
+
+No git-annex commands to manage the annexed content work yet. That
+will need a key to worktree file mapping to be maintained, and implementing
+that mapping and ensuring its always consistent is probably going to be
+the harder part of this.
+
+Also there's the question of how to handle upgrades from direct mode
+repositories. This will be an upgrade from annex.version 5 to 6, and you
+won't want to do it until all computers that have clones of a repository
+have upgraded to git-annex 6.x, since older versions won't be able to work
+with the upgraded repository. So, the repository upgrade will need to be
+run manually initially, and it seems I'll need to keep supporting direct
+mode for v5 repos in a transition period, which will probably be measured
+in years.
