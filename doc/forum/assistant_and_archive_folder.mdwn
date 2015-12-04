@@ -1,0 +1,10 @@
+I have a setup with a windows desktop and a linux laptop with both an annex repository, interconnected via a backup repository in the middle (connected via ssh).
+Both computers are setup as clients and all 3 machines are running the assistant.
+
+Today i tried creating an archive folder and a putting some files in it. To my understanding those files should have been dropped in the 2 machines but kept on the server.. instead I have them copied on each machine. Listing where the files are on both computers shows that both know that themselves and the server have a copy, but they don't know anything about each other.
+
+AFAIK it looks like the bug reported in https://git-annex.branchable.com/forum/question_about_assistant_and___47__archive__47__/
+
+laptop: git-annex version: 5.20151116+gitg5416a1a-1~ndall+1
+server: git-annex version: 5.20151109-g08bb3b1
+windows: the latest build on the website
