@@ -201,22 +201,22 @@ limitAnything _ _ = return True
 {- Adds a limit to skip files not believed to be present in all
  - repositories in the specified group. -}
 addInAllGroup :: String -> Annex ()
-addInAllGroup groupname = do
-	m <- groupMap
-	addLimit $ limitInAllGroup m groupname
+addInAllGroup groupname = addLimit $ limitInAllGroup groupMap groupname
 
-limitInAllGroup :: GroupMap -> MkLimit Annex
-limitInAllGroup m groupname
-	| S.null want = Right $ const $ const $ return True
-	| otherwise = Right $ \notpresent -> checkKey $ check notpresent
-  where
-	want = fromMaybe S.empty $ M.lookup groupname $ uuidsByGroup m
-	check notpresent key
+limitInAllGroup :: Annex GroupMap -> MkLimit Annex
+limitInAllGroup getgroupmap groupname = Right $ \notpresent mi -> do
+	m <- getgroupmap
+	let want = fromMaybe S.empty $ M.lookup groupname $ uuidsByGroup m
+	if S.null want
+		then return True
 		-- optimisation: Check if a wanted uuid is notpresent.
-		| not (S.null (S.intersection want notpresent))	= return False
-		| otherwise = do
-			present <- S.fromList <$> Remote.keyLocations key
-			return $ S.null $ want `S.difference` present
+		else if not (S.null (S.intersection want notpresent))
+			then return False
+			else checkKey (check want) mi
+  where
+	check want key = do
+		present <- S.fromList <$> Remote.keyLocations key
+		return $ S.null $ want `S.difference` present
 
 {- Adds a limit to skip files not using a specified key-value backend. -}
 addInBackend :: String -> Annex ()
