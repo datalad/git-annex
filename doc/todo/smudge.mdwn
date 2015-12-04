@@ -177,8 +177,8 @@ Configuration:
   the annex. Other files are passed through the smudge/clean as-is and
   have their contents stored in git.
 
-* annex.direct is repurposed to configure how the assistant adds files.
-  When set to true, they're added unlocked.
+* annex.direct is repurposed to configure how git-annex adds files.
+  When set to false, it adds symlinks and when true it adds pointer files.
 
 git-annex clean:
 
