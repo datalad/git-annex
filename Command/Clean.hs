@@ -15,11 +15,12 @@ import Annex.FileMatcher
 import Types.KeySource
 import Types.Key
 import Backend
+import Logs.Location
 
 import qualified Data.ByteString.Lazy as B
 
 cmd :: Command
-cmd = dontCheck repoExists $
+cmd = noMessages $ dontCheck repoExists $
 	command "clean" SectionPlumbing 
 		"git clean filter"
 		paramFile (withParams seek)
@@ -57,8 +58,11 @@ ingest file = do
 	-- Hard link (or copy) file content to annex
 	-- to prevent it from being lost when git checks out
 	-- a branch not containing this file.
-	unlessM (linkAnnex k file) $
-		error "Problem adding file to the annex"
+	r <- linkAnnex k file
+	case r of
+		LinkAnnexFailed -> error "Problem adding file to the annex"
+		LinkAnnexOk -> logStatus k InfoPresent
+		LinkAnnexNoop -> noop
 	genMetaData k file
 		=<< liftIO (getFileStatus file)
 	return k

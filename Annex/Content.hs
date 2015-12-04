@@ -25,6 +25,7 @@ module Annex.Content (
 	checkDiskSpace,
 	moveAnnex,
 	linkAnnex,
+	LinkAnnexResult(..),
 	sendAnnex,
 	prepSendAnnex,
 	removeAnnex,
@@ -479,14 +480,19 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
  - prevent losing the content if the source file is deleted, but does not
  - guard against modifications.
  -}
-linkAnnex :: Key -> FilePath -> Annex Bool
+linkAnnex :: Key -> FilePath -> Annex LinkAnnexResult
 linkAnnex key src = do
 	dest <- calcRepo (gitAnnexLocation key)
 	ifM (liftIO $ doesFileExist dest)
-		( return True
+		( return LinkAnnexNoop
 		, modifyContent dest $
-			liftIO $ createLinkOrCopy src dest
+			ifM (liftIO $ createLinkOrCopy src dest)
+				( return LinkAnnexOk
+				, return LinkAnnexFailed
+				)
 		)
+
+data LinkAnnexResult = LinkAnnexOk | LinkAnnexFailed | LinkAnnexNoop
 
 {- Runs an action to transfer an object's content.
  -
