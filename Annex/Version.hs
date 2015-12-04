@@ -37,6 +37,12 @@ versionField = annexConfig "version"
 getVersion :: Annex (Maybe Version)
 getVersion = annexVersion <$> Annex.getGitConfig
 
+versionSupportsDirectMode :: Annex Bool
+versionSupportsDirectMode = go <$> getVersion
+  where
+	go (Just "6") = False
+	go _ = True
+
 setVersion :: Version -> Annex ()
 setVersion = setConfig versionField
 

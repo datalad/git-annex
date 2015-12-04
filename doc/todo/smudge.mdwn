@@ -306,8 +306,6 @@ just look at the repo content in the first place..
 
 annex.version changes to 6
 
-Upgrade should be handled automatically.
-
 On upgrade, update $GIT_DIR/info/attributes with a stock configuration,
 unless it already mentions "filter=annex".
 
