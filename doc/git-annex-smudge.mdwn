@@ -17,8 +17,8 @@ but this is normally set up for you by git-annex init, so you should
 not need to configure it manually:
 
 	[filter "annex"]
-	        clean = git-annex smudge --clean %f
 	        smudge = git-annex smudge %f
+	        clean = git-annex smudge --clean %f
 
 To make git use this filter on all files except for dotfiles, put something
 like the following in the .gitattributes file:

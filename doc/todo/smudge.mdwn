@@ -308,15 +308,17 @@ annex.version changes to 6
 
 Upgrade should be handled automatically.
 
-On upgrade, update .gitattributes with a stock configuration, unless
-it already mentions "filter=annex".
+On upgrade, update $GIT_DIR/info/attributes with a stock configuration,
+unless it already mentions "filter=annex".
 
 Upgrading a direct mode repo needs to switch it out of bare mode, and
 needs to run `git annex unlock` on all files (or reach the same result).
 So will need to stage changes to all annexed files.
 
 When a repo has some clones indirect and some direct, the upgraded repo
-will have all files unlocked, necessarily in all clones.
+will have all files unlocked, necessarily in all clones. This happens
+automatically, because when the direct repos are upgraded that causes the
+files to be unlocked, while the indirect upgrades don't touch the files.
 
 ----
 

@@ -15,14 +15,17 @@ import qualified Annex
 
 type Version = String
 
-supportedVersion :: Version
-supportedVersion = "5"
+currentVersion :: Version
+currentVersion = "6"
+
+supportedVersions :: [Version]
+supportedVersions = ["5", currentVersion]
 
 upgradableVersions :: [Version]
 #ifndef mingw32_HOST_OS
-upgradableVersions = ["0", "1", "2", "4"]
+upgradableVersions = ["0", "1", "2", "4", "5"]
 #else
-upgradableVersions = ["2", "3", "4"]
+upgradableVersions = ["2", "3", "4", "5"]
 #endif
 
 autoUpgradeableVersions :: [Version]
