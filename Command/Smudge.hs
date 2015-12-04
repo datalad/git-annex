@@ -39,8 +39,8 @@ seek :: SmudgeOptions -> CommandSeek
 seek o = commandAction $
 	(if cleanOption o then clean else smudge) (smudgeFile o)
 
--- Smudge filter is fed git file content, and if it's a pointer, should
--- emit the annex object content.
+-- Smudge filter is fed git file content, and if it's a pointer to an
+-- available annex object, should output its content.
 smudge :: FilePath -> CommandStart
 smudge _file = do
 	liftIO $ fileEncoding stdin
@@ -63,9 +63,12 @@ clean file = do
 		( do
 			k <- ingest file
 			liftIO $ emitPointer k
-		, liftIO $ B.hGetContents stdin >>= B.hPut stdout -- cat file
+		, liftIO cat
 		)
 	stop
+
+cat :: IO ()
+cat = B.hGetContents stdin >>= B.hPut stdout
 
 shouldAnnex :: FilePath -> Annex Bool
 shouldAnnex file = do
