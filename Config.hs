@@ -90,3 +90,8 @@ setCrippledFileSystem :: Bool -> Annex ()
 setCrippledFileSystem b = do
 	setConfig (annexConfig "crippledfilesystem") (Git.Config.boolConfig b)
 	Annex.changeGitConfig $ \c -> c { annexCrippledFileSystem = b }
+
+configureSmudgeFilter :: Annex ()
+configureSmudgeFilter = do
+	setConfig (ConfigKey "filter.annex.smudge") "git-annex smudge %f"
+	setConfig (ConfigKey "filter.annex.clean") "git-annex smudge --clean %f"

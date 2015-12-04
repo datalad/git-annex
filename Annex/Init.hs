@@ -85,7 +85,8 @@ initialize' = do
 	unlessM isBare $
 		hookWrite preCommitHook
 	setDifferences
-	setVersion supportedVersion
+	setVersion currentVersion
+	configureSmudgeFilter
 	ifM (crippledFileSystem <&&> not <$> isBare)
 		( do
 			enableDirectMode
