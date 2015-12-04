@@ -11,6 +11,7 @@ import Common.Annex
 import Command
 import Annex.Content
 import Annex.MetaData
+import Annex.FileMatcher
 import Types.KeySource
 import Types.Key
 import Backend
@@ -39,8 +40,9 @@ start [] = error "clean filter run without filename; upgrade git"
 start _ = error "clean filter passed multiple filenames"
 
 shouldAnnex :: FilePath -> Annex Bool
-shouldAnnex _ = return True
--- TODO check annex.largefiles
+shouldAnnex file = do
+	matcher <- largeFilesMatcher
+	checkFileMatcher matcher file
 
 ingest :: FilePath -> Annex Key
 ingest file = do
@@ -54,7 +56,7 @@ ingest file = do
 		<$> genKey source backend
 	-- Hard link (or copy) file content to annex
 	-- to prevent it from being lost when git checks out
-	-- a branch not contaning this file.
+	-- a branch not containing this file.
 	unlessM (linkAnnex k file) $
 		error "Problem adding file to the annex"
 	genMetaData k file
