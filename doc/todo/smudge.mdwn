@@ -306,7 +306,9 @@ just look at the repo content in the first place..
 
 annex.version changes to 6
 
-On upgrade, update $GIT_DIR/info/attributes with a stock configuration,
+git config for filter.annex.smudge and filter.annex.clean is set up.
+
+.gitattributes is updated with a stock configuration,
 unless it already mentions "filter=annex".
 
 Upgrading a direct mode repo needs to switch it out of bare mode, and

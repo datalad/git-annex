@@ -12,23 +12,29 @@ This command lets git-annex be used as a git filter driver which lets
 annexed files in the git repository to be unlocked at all times, instead
 of being symlinks.
 
-The git configuration to use this command as a filter driver is as follows,
-but this is normally set up for you by git-annex init, so you should
-not need to configure it manually:
+When adding a file with `git add`, the annex.largefiles config is
+consulted to decide if a given file should be added to git as-is,
+or if its content are large enough to need to use git-annex. To force a
+file that would normally be added to the annex to be added to git as-is,
+this can be temporarily overridden. For example:
+
+	git -c annex.largefiles='exclude=*' add myfile
+
+The git configuration to use this command as a filter driver is as follows.
+This is normally set up for you by git-annex init, so you should
+not need to configure it manually.
 
 	[filter "annex"]
 	        smudge = git-annex smudge %f
 	        clean = git-annex smudge --clean %f
 
-To make git use this filter on all files except for dotfiles, put something
-like the following in the .gitattributes file:
+To make git use that filter driver, it needs to be configured in
+the .gitattributes file or in `.git/config/attributes`. The latter
+is normally configured when a repository is initialized, with the following
+contents:
 
 	* filter=annex
 	.* !filter
-
-When adding a file with `git add`, the annex.largefiles config is
-consulted to decide if a given file should be added to git as-is,
-or if its content are large enough to need to use git-annex.
 
 # SEE ALSO
 

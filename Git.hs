@@ -28,6 +28,7 @@ module Git (
 	repoPath,
 	localGitDir,
 	attributes,
+	attributesLocal,
 	hookPath,
 	assertLocal,
 	adjustPath,
@@ -125,8 +126,11 @@ assertLocal repo action
 {- Path to a repository's gitattributes file. -}
 attributes :: Repo -> FilePath
 attributes repo
-	| repoIsLocalBare repo = repoPath repo ++ "/info/.gitattributes"
-	| otherwise = repoPath repo ++ "/.gitattributes"
+	| repoIsLocalBare repo = attributesLocal repo
+	| otherwise = repoPath repo </> ".gitattributes"
+
+attributesLocal :: Repo -> FilePath
+attributesLocal repo = localGitDir repo </> "info" </> "attributes"
 
 {- Path to a given hook script in a repository, only if the hook exists
  - and is executable. -}
