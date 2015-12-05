@@ -110,4 +110,4 @@ Note for emacs users: You can put the following snippet into a file called
 	 ;; Warn about spaces used for indentation:
 	 (haskell-mode . ((eval . (highlight-regexp "^ *")))))
 
-Also consider [haskell-tab-indent-mode](https://spwhitton.name/tech/code/haskell-tab-indent/).  The standard indentation modes that come with haskell-mode do not work well with tabs for indentation.  This mode works well for hacking on Propellor.
+Also consider [haskell-tab-indent-mode](https://spwhitton.name/tech/code/haskell-tab-indent/).  The standard indentation modes that come with haskell-mode do not work well with tabs for indentation.  This mode works well for hacking on git-annex.
