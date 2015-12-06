@@ -4,7 +4,7 @@
 
 This is a regression: some entries that trigger the problem where imported just fine three months ago.
 
-This looks suspiciously like [this bug](20151116_tests_fail_on_OS_X).
+This looks suspiciously like [this bug](../20151116_tests_fail_on_OS_X).
 
 
 ### What steps will reproduce the problem?
