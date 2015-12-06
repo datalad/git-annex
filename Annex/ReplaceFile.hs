@@ -27,7 +27,8 @@ replaceFile :: FilePath -> (FilePath -> Annex ()) -> Annex ()
 replaceFile file action = do
 	misctmpdir <- fromRepo gitAnnexTmpMiscDir
 	void $ createAnnexDirectory misctmpdir
-	let basetmp = takeFileName file
+	filemax <- liftIO $ fileNameLengthLimit misctmpdir
+	let basetmp = take (filemax `div` 2) (takeFileName file)
 	withTmpDirIn misctmpdir basetmp $ \tmpdir -> do
 		let tmpfile = tmpdir <> basetmp
 		action tmpfile
