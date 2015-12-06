@@ -36,3 +36,5 @@ FAIL (0.29s)
   (This could be due to a bug in git-annex, or an incompatability
    with utilities, such as git, installed on this system.)
 ```
+
+> [[fixed|done]] --[[Joey]]

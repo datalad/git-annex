@@ -46,3 +46,5 @@ Debian amd64 unstable package 5.20151116-1.
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 That’s just a little hiccup in, up to now, various months of merry use! ;-)
+
+> [[fixed|done]] --[[Joey]]

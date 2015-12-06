@@ -30,7 +30,7 @@ replaceFile file action = do
 	filemax <- liftIO $ fileNameLengthLimit misctmpdir
 	let basetmp = take (filemax `div` 2) (takeFileName file)
 	withTmpDirIn misctmpdir basetmp $ \tmpdir -> do
-		let tmpfile = tmpdir <> basetmp
+		let tmpfile = tmpdir </> basetmp
 		action tmpfile
 		liftIO $ replaceFileFrom tmpfile file
 
