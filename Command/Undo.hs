@@ -72,7 +72,7 @@ perform p = do
 		f <- mkrel di
 		whenM isDirect $
 			maybe noop (`removeDirect` f)
-				=<< catKey (srcsha di) (srcmode di)
+				=<< catKey (srcsha di)
 		liftIO $ nukeFile f
 
 	forM_ adds $ \di -> do
@@ -80,6 +80,6 @@ perform p = do
 		inRepo $ Git.run [Param "checkout", Param "--", File f]
 		whenM isDirect $
 			maybe noop (`toDirect` f)
-				=<< catKey (dstsha di) (dstmode di)
+				=<< catKey (dstsha di)
 
 	next $ liftIO cleanup

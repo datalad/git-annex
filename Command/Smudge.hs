@@ -11,6 +11,7 @@ import Common.Annex
 import Command
 import Types.Key
 import Annex.Content
+import Annex.CatFile
 import Annex.MetaData
 import Annex.FileMatcher
 import Types.KeySource
@@ -100,16 +101,10 @@ ingest file = do
 		=<< liftIO (getFileStatus file)
 	return k
 
+-- Could add a newline and some text explaining this file is a pointer.
+-- parsePointer only looks at the first line.
 emitPointer :: Key -> IO ()
 emitPointer = putStrLn . key2file
-
-parsePointer :: String -> Maybe Key
-parsePointer s
-	| length s' >= maxsz = Nothing -- too long to be a key pointer
-	| otherwise = headMaybe (lines s') >>= file2key
-  where
-	s' = take maxsz s
-	maxsz = 81920
 
 updateAssociatedFiles :: Key -> FilePath -> Annex ()
 updateAssociatedFiles k f = do

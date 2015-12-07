@@ -80,7 +80,7 @@ withFilesInRefs a = mapM_ go
 		l <- inRepo $ LsTree.lsTree (Git.Ref r)
 		forM_ l $ \i -> do
 			let f = getTopFilePath $ LsTree.file i
-			v <- catKey (Git.Ref $ LsTree.sha i) (LsTree.mode i)
+			v <- catKey (Git.Ref $ LsTree.sha i)
 			case v of
 				Nothing -> noop
 				Just k -> whenM (matcher $ MatchingKey k) $

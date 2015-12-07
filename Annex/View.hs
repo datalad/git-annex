@@ -413,13 +413,13 @@ withViewChanges addmeta removemeta = do
 	handleremovals item
 		| DiffTree.srcsha item /= nullSha =
 			handlechange item removemeta
-				=<< catKey (DiffTree.srcsha item) (DiffTree.srcmode item)
+				=<< catKey (DiffTree.srcsha item)
 		| otherwise = noop
 	handleadds makeabs item
 		| DiffTree.dstsha item /= nullSha = 
 			handlechange item addmeta
 				=<< ifM isDirect
-					( catKey (DiffTree.dstsha item) (DiffTree.dstmode item)
+					( catKey (DiffTree.dstsha item)
 					-- optimisation
 					, isAnnexLink $ makeabs $ DiffTree.file item
 					)

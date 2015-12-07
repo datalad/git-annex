@@ -76,7 +76,7 @@ perform = do
 						return Nothing
 				| otherwise -> 
 					maybe noop (fromdirect f)
-						=<< catKey sha mode
+						=<< catKey sha
 			_ -> noop
 	go _ = noop
 
