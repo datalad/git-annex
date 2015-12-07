@@ -249,7 +249,8 @@ The file map needs to map from `Key -> [File]`. `File -> Key`
 seems useful to have, but in practice is not worthwhile.
 
 Drop and get operations need to know what files in the work tree use a
-given key in order to update the work tree.
+given key in order to update the work tree. And, we don't want to
+overwrite a work tree file if it's been modified when dropping or getting.
 
 git-annex commands that look at annex symlinks to get keys to act on will
 need fall back to either consulting the file map, or looking at the staged
@@ -321,6 +322,51 @@ When a repo has some clones indirect and some direct, the upgraded repo
 will have all files unlocked, necessarily in all clones. This happens
 automatically, because when the direct repos are upgraded that causes the
 files to be unlocked, while the indirect upgrades don't touch the files.
+
+#### implementation todo list
+
+* Reconcile staged changes into the associated files database, whenever
+  the database is queried.
+* See if the case where this is not used can be optimised. Eg, if the
+  associated files database doesn't exist at all, we know smudge/clean are
+  not used, so queries for associated files don't need to open the database
+  or do reconciliation, but can simply return none.
+  Also, no need for Backend.lookupFile to catKeyFile in this case
+  (when not in direct mode).
+* Update pointer files when adding the content of a key to the annex
+  (ie, `git annex get`).
+  - Check the associated files database to find associated files for the key.
+  - Check worktree file to ensure it's still a pointer to the key.
+  - Hard-link to annex object.
+* Update pointer files when dropping the content of a key.
+  - Check the associated files database to find associated files for the key.
+  - Verify that worktree files are not modified from the annexed object.
+    How? InodeCache could be maintained, but the smudge filer interface
+    wouldn't let it be updated when smudging a file. May need to take
+    an expensive path:
+    1. stat object file
+    2. stat worktree file
+    3. if same stat, ok else hash worktree file
+    4. stat worktree file again after checking hash; make sure it's
+       unchanged from earlier stat
+* Convert `git annex unlock` to stage a pointer file, and hard link to the
+  annexed object (or write pointer file if annexed object not present).
+  - Also needs to thaw annex object file
+  - Also needs to update associated files db.
+* Convert `git annex lock` to verify that worktree file is not modified
+  (same check used when updating pointer files to the content of a key),
+  and then delete the worktree file and replace with an annex symlink.
+  - Allow --force to override the check and throw away modified content.
+  - Also needs to update associated files db.
+  - Also should check associated files db, and if there are no other
+    unlocked files for the key, freeze its object file.
+* Make v6 upgrade convert direct mode repo to repo with all unlocked
+  files.
+* fsck will need some fixes to handle unlocked files.
+* Make automatic merge conflict resolution work for pointer files.
+  - Should probably automatically handle merge conflicts between annex
+    symlinks and pointer files too. Maybe by always resulting in a pointer
+    file, since the symlinks don't work everwhere.
 
 ----
 
