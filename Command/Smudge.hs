@@ -16,6 +16,7 @@ import Annex.FileMatcher
 import Types.KeySource
 import Backend
 import Logs.Location
+import qualified Database.AssociatedFiles as AssociatedFiles
 
 import qualified Data.ByteString.Lazy as B
 
@@ -42,12 +43,13 @@ seek o = commandAction $
 -- Smudge filter is fed git file content, and if it's a pointer to an
 -- available annex object, should output its content.
 smudge :: FilePath -> CommandStart
-smudge _file = do
+smudge file = do
 	liftIO $ fileEncoding stdin
 	s <- liftIO $ hGetContents stdin
 	case parsePointer s of
 		Nothing -> liftIO $ putStr s
 		Just k -> do
+			updateAssociatedFiles k file
 			content <- calcRepo (gitAnnexLocation k)
 			liftIO $ maybe
 				(putStr s)
@@ -62,6 +64,7 @@ clean file = do
 	ifM (shouldAnnex file)
 		( do
 			k <- ingest file
+			updateAssociatedFiles k file
 			liftIO $ emitPointer k
 		, liftIO cat
 		)
@@ -107,3 +110,10 @@ parsePointer s
   where
 	s' = take maxsz s
 	maxsz = 81920
+
+updateAssociatedFiles :: Key -> FilePath -> Annex ()
+updateAssociatedFiles k f = do
+	h <- AssociatedFiles.openDb
+	liftIO $ do
+		AssociatedFiles.addDb h k f
+		AssociatedFiles.closeDb h
