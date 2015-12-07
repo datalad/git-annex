@@ -288,7 +288,6 @@ fileNameLengthLimit dir = do
 	if l <= 0
 		then return 255
 		else return $ minimum [l, 255]
-  where
 #endif
 
 {- Given a string that we'd like to use as the basis for FilePath, but that

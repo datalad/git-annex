@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-12-06T19:50:59Z"
+ content="""
+I can reproduce this.
+
+	symlink("../.git/annex/objects/fK/9M/URL--http&c%%mvod.lvlt.rtve.es%resour-39e58395b01e2385d46bade56127cfc4/URL--http&c%%mvod.lvlt.rtve.es%resour-39e58395b01e2385d46bade56127cfc4", ".git/annex/misctmp/Documentos_RNE___Coss\303\255o_y_la_Casona_de_Tudanca__refugio_de_la_cultura_espa\303\261ola_entre_las_monta\303\261as_de_Cantabria___28_08_15.mp3.0Documentos_RNE___Coss\303\255o_y_la_Casona_de_Tudanca__refugio_de_la_cultura_espa\303\261ola_entre_las_monta\303\261as_de_Cantabria___28_08_15.mp3") = -1 ENAMETOOLONG (File name too long)
+
+The problem is not the length of the link target, which is only 170
+characters and will work on any OS. The basename of the symlink
+being created is pretty long, 294 characters, and that's the
+cause of the failure.
+
+	joey@darkstar:~>ln -s /dev/null $(perl -e 'print ("a" x 294)')
+	ln: failed to create symbolic link ‘aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa’ -> ‘/dev/null’: File name too long
+
+The limit is 255 characters in a single path component (`pathconf _PC_NAME_MAX`).
+
+So, the issue is caused by the rss feed having a long title for this
+item.
+
+And this used to work; it's a recent reversion. Fixing.
+"""]]

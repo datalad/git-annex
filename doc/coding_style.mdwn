@@ -98,3 +98,16 @@ If you feel that this coding style leads to excessive amounts of horizontal
 or vertical whitespace around your code, making it hard to fit enough of it
 on the screen, consider finding a better abstraction, so the code that
 does fit on the screen is easily understandable. ;)
+
+-----
+
+Note for emacs users: You can put the following snippet into a file called 
+`.dir-locals.el` at root of git-annex's source tree to use tabs for indentation:
+
+	((nil . ((indent-tabs-mode . t)
+	         (tab-width . 8)
+	         (fill-column . 80)))
+	 ;; Warn about spaces used for indentation:
+	 (haskell-mode . ((eval . (highlight-regexp "^ *")))))
+
+Also consider [haskell-tab-indent-mode](https://spwhitton.name/tech/code/haskell-tab-indent/).  The standard indentation modes that come with haskell-mode do not work well with tabs for indentation.  This mode works well for hacking on git-annex.

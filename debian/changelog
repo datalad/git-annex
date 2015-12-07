@@ -1,5 +1,3 @@
-git-annex (6.20151117) UNRELEASED; urgency=medium
-
   * annex.version increased to 6, but version 5 is also still supported.
   * The upgrade to version 6 is not done fully automatically, because
     upgrading a direct mode repository to version 6 will prevent old
@@ -9,6 +7,9 @@ git-annex (6.20151117) UNRELEASED; urgency=medium
   * init: Configure .git/info/attributes to use git-annex as a smudge
     filter. Note that this changes the default behavior of git add in a
     newly initialized repository; it will add files to the annex.
+
+git-annex (5.20151117) UNRELEASED; urgency=medium
+
   * Build with -j1 again to get reproducible build.
   * Display progress meter in -J mode when copying from a local git repo,
     to a local git repo, and from a remote git repo.
@@ -29,6 +30,8 @@ git-annex (6.20151117) UNRELEASED; urgency=medium
     This was a reversion caused by the relative path changes in 5.20150113.
   * dropunused: Make more robust when trying to drop an object that has
     already been dropped.
+  * Fix reversion in handling of long filenames, particularly when using
+    addurl/importfeed, which was introduced in the previous release.
 
  -- Joey Hess <id@joeyh.name>  Mon, 16 Nov 2015 16:49:34 -0400
 
