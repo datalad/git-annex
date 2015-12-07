@@ -59,7 +59,7 @@ newPass u = isJust <$> tryExclusiveLock (gitAnnexFsckDbLock u) go
 	go = liftIO . void . tryIO . removeDirectoryRecursive
 		=<< fromRepo (gitAnnexFsckDbDir u)
 
-{- Opens the database, creating it atomically if it doesn't exist yet. -}
+{- Opens the database, creating it if it doesn't exist yet. -}
 openDb :: UUID -> Annex FsckHandle
 openDb u = do
 	dbdir <- fromRepo (gitAnnexFsckDbDir u)
