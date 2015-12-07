@@ -18,6 +18,7 @@ import Types.KeySource
 import Backend
 import Logs.Location
 import qualified Database.AssociatedFiles as AssociatedFiles
+import Git.FilePath
 
 import qualified Data.ByteString.Lazy as B
 
@@ -104,7 +105,8 @@ ingest file = do
 -- Could add a newline and some text explaining this file is a pointer.
 -- parsePointer only looks at the first line.
 emitPointer :: Key -> IO ()
-emitPointer = putStrLn . key2file
+emitPointer k = putStrLn $ toInternalGitPath $
+	pathSeparator:objectDir </> key2file k
 
 updateAssociatedFiles :: Key -> FilePath -> Annex ()
 updateAssociatedFiles k f = do

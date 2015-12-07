@@ -83,16 +83,8 @@ catFileStop = do
 
 {- From ref to a symlink or a pointer file, get the key. -}
 catKey :: Ref -> Annex (Maybe Key)
-catKey ref = do
-	o <- catObject ref
-	if L.length o > maxsz
-		then return Nothing -- too big
-		else do
-			let l = decodeBS o
-			let l' = fromInternalGitPath l
-			return $ if isLinkToAnnex l'
-				then fileKey $ takeFileName l'
-				else parsePointer l
+catKey ref = parsePointer . fromInternalGitPath . decodeBS . L.take maxsz 
+	<$> catObject ref
   where
 	-- Want to avoid buffering really big files in git into memory.
 	-- 8192 bytes is plenty for a pointer to a key.
@@ -102,7 +94,11 @@ catKey ref = do
 
 {- Only look at the first line of a pointer file. -}
 parsePointer :: String -> Maybe Key
-parsePointer s = headMaybe (lines s) >>= file2key
+parsePointer s = headMaybe (lines s) >>= go
+  where
+	go l
+		| isLinkToAnnex l = file2key $ takeFileName l
+		| otherwise = Nothing
 
 {- Gets a symlink target. -}
 catSymLinkTarget :: Sha -> Annex String
