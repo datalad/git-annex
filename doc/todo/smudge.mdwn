@@ -325,6 +325,9 @@ files to be unlocked, while the indirect upgrades don't touch the files.
 
 #### implementation todo list
 
+* inAnnex check should fail in the case where an annexed objects is unlocked
+  and has had its content changed. Could use an InodeCache for
+  such objects. This parallels how inAnnex checks work for direct mode.
 * Reconcile staged changes into the associated files database, whenever
   the database is queried.
 * See if the case where this is not used can be optimised. Eg, if the
