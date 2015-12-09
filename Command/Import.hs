@@ -19,6 +19,8 @@ import Types.KeySource
 import Types.Key
 import Annex.CheckIgnore
 import Annex.NumCopies
+import Types.FileMatcher
+import Annex.FileMatcher
 
 cmd :: Command
 cmd = withGlobalOptions (jobsOption : fileMatchingOptions) $ notBareRepo $
@@ -64,10 +66,11 @@ seek o = allowConcurrentOutput $ do
 	inrepops <- liftIO $ filter (dirContains repopath) <$> mapM absPath (importFiles o)
 	unless (null inrepops) $ do
 		error $ "cannot import files from inside the working tree (use git annex add instead): " ++ unwords inrepops
-	withPathContents (start (duplicateMode o)) (importFiles o)
+	largematcher <- largeFilesMatcher
+	withPathContents (start largematcher (duplicateMode o)) (importFiles o)
 
-start :: DuplicateMode -> (FilePath, FilePath) -> CommandStart
-start mode (srcfile, destfile) =
+start :: FileMatcher Annex -> DuplicateMode -> (FilePath, FilePath) -> CommandStart
+start largematcher mode (srcfile, destfile) =
 	ifM (liftIO $ isRegularFile <$> getSymbolicLinkStatus srcfile)
 		( do
 			ma <- pickaction
@@ -124,7 +127,10 @@ start mode (srcfile, destfile) =
 		liftIO $ if mode == Duplicate || mode == SkipDuplicates
 			then void $ copyFileExternal CopyAllMetaData srcfile destfile
 			else moveFile srcfile destfile
-		Command.Add.perform destfile
+		ifM (checkFileMatcher largematcher destfile)
+			( Command.Add.perform destfile
+			, next $ Command.Add.addSmall destfile 
+			)
 	notoverwriting why = do
 		warning $ "not overwriting existing " ++ destfile ++ " " ++ why
 		stop

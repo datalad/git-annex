@@ -59,7 +59,7 @@ toString (ListV l)
 	| null l = ""
 	| otherwise = (intercalate ";" $ map (escapesemi . toString) l) ++ ";"
   where
-	escapesemi = join "\\;" . split ";"
+	escapesemi = intercalate "\\;" . split ";"
 
 genDesktopEntry :: String -> String -> Bool -> FilePath -> Maybe String -> [String] -> DesktopEntry
 genDesktopEntry name comment terminal program icon categories = catMaybes

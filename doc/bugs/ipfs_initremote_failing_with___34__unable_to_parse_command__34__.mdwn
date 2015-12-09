@@ -51,3 +51,5 @@ fiatjaf@lachmann ~/D/adv-annex>
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes, git-annex works for everything and I use lots of special remotes and normal remotes in different computers.
+
+> [[done]]

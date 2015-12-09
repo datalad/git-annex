@@ -11,3 +11,11 @@ Variants of the git-annex logo.
 [[logo-old.svg]]
 
 [[logo-old-bw.svg]]
+
+----
+
+	Copyright: 2007 Henrik Nyh <http://henrik.nyh.se/>
+	           2010 Joey Hess <id@joeyh.name>
+		   2013 John Lawrence
+	License: other
+	  Free to modify and redistribute with due credit, and obviously free to use.

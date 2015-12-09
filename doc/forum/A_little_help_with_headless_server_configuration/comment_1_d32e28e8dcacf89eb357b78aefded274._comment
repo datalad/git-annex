@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-11-18T18:03:30Z"
+ content="""
+It's not really clear from that what you want this server 
+(or servers?) to do.
+
+I think if you explain some more we can help better.
+
+I guess you have a repository on Windows using the webapp and you want
+that repository to be synced to one or more servers. The webapp has a
+dialog to Add a Repository on a Remote server. You'll need to install
+git-annex on the server, and tell the webapp the password to use to ssh to
+it, and otherwise that's pretty simple.
+
+That will get you a git repository on the server that will store all the files
+from your Windows repository. Since it's a bare git repository by default,
+all you can do with it is clone it to somewhere else, which can then get
+files from it. That could be another server or another webapp client or
+whatever, depending on what you're trying to accomplish.
+"""]]

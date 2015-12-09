@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2015-11-18T16:22:51Z"
+ content="""
+@rob.syme I think that error message is pretty clear: git-annex-remote-ipfs
+is not present in your PATH or perhaps is not executable.
+
+(Still, the error message could be improved a bit, doing that now.)
+"""]]

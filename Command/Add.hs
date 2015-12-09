@@ -73,14 +73,18 @@ seek o = allowConcurrentOutput $ do
 startSmall :: FilePath -> CommandStart
 startSmall file = do
 	showStart "add" file
-	showNote "non-large file; adding content to git repository"
-	next $ performAdd file
+	next $ next $ addSmall file
 
-performAdd :: FilePath -> CommandPerform
-performAdd file = do
+addSmall :: FilePath -> Annex Bool
+addSmall file = do
+	showNote "non-large file; adding content to git repository"
+	addFile file
+
+addFile :: FilePath -> Annex Bool
+addFile file = do
 	ps <- forceParams
 	Annex.Queue.addCommand "add" (ps++[Param "--"]) [file]
-	next $ return True
+	return True
 
 {- The add subcommand annexes a file, generating a key for it using a
  - backend, and then moving it into the annex directory and setting up
@@ -97,7 +101,7 @@ start file = ifAnnexed file addpresent add
 				| otherwise -> do
 					showStart "add" file
 					next $ if isSymbolicLink s
-						then performAdd file
+						then next $ addFile file
 						else perform file
 	addpresent key = ifM isDirect
 		( do

@@ -13,5 +13,5 @@ import Assistant.WebApp.Page as X
 import Assistant.WebApp.Form as X
 import Assistant.WebApp.Types as X
 import Assistant.WebApp.RepoId as X
-import Utility.Yesod as X hiding (textField, passwordField, insertBy, replace, joinPath, deleteBy, delete, insert, Key, Option)
+import Utility.Yesod as X hiding (textField, passwordField, insertBy, replace, joinPath, deleteBy, delete, insert, Key, Option, PermissionDenied)
 import Data.Text as X (Text)

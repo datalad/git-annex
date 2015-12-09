@@ -23,12 +23,10 @@ module Utility.Scheduled (
 	toRecurrance,
 	toSchedule,
 	parseSchedule,
-	prop_schedule_roundtrips,
 	prop_past_sane,
 ) where
 
 import Utility.Data
-import Utility.QuickCheck
 import Utility.PartialPrelude
 import Utility.Misc
 
@@ -38,6 +36,7 @@ import Data.Time.LocalTime
 import Data.Time.Calendar
 import Data.Time.Calendar.WeekDate
 import Data.Time.Calendar.OrdinalDate
+import Data.Time.Format ()
 import Data.Tuple.Utils
 import Data.Char
 import Control.Applicative
@@ -336,41 +335,6 @@ parseSchedule s = do
 	(rws, tws) = separate (== "at") (words s)
 	recurrance = unwords rws
 	scheduledtime = unwords tws
-
-instance Arbitrary Schedule where
-	arbitrary = Schedule <$> arbitrary <*> arbitrary
-
-instance Arbitrary ScheduledTime where
-	arbitrary = oneof
-		[ pure AnyTime
-		, SpecificTime 
-			<$> choose (0, 23)
-			<*> choose (1, 59)
-		]
-
-instance Arbitrary Recurrance where
-	arbitrary = oneof
-		[ pure Daily
-		, Weekly <$> arbday
-		, Monthly <$> arbday
-		, Yearly <$> arbday
-		, Divisible
-			<$> positive arbitrary
-			<*> oneof -- no nested Divisibles
-				[ pure Daily
-				, Weekly <$> arbday
-				, Monthly <$> arbday
-				, Yearly <$> arbday
-				]
-		]
-	  where
-		arbday = oneof
-			[ Just <$> nonNegative arbitrary
-			, pure Nothing
-			]
-
-prop_schedule_roundtrips :: Schedule -> Bool
-prop_schedule_roundtrips s = toSchedule (fromSchedule s) == Just s
 
 prop_past_sane :: Bool
 prop_past_sane = and

@@ -75,7 +75,7 @@ gen r u c gc = do
 		, lockContent = Nothing
 		, checkPresent = checkKey u hdl
 		, checkPresentCheap = False
-		, whereisKey = Nothing
+		, whereisKey = Just (getWhereisKey u)
 		, remoteFsck = Nothing
 		, repairRepo = Nothing
 		, config = c
@@ -230,6 +230,12 @@ storeCapability u k cap = setRemoteState u k cap
 
 getCapability :: UUID -> Key -> Annex (Maybe Capability)
 getCapability u k = getRemoteState u k
+
+getWhereisKey :: UUID -> Key -> Annex [String]
+getWhereisKey u k = disp <$> getCapability u k
+  where
+	disp Nothing = []
+	disp (Just c) = [c]
 
 {- tahoe put outputs a single line, containing the capability. -}
 parsePut :: String -> Maybe Capability

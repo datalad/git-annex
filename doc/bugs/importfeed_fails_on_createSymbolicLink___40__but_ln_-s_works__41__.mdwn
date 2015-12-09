@@ -1,0 +1,50 @@
+### Please describe the problem.
+
+`git-annex importfeed` fails to import some feed with the error `createSymbolicLink: invalid argument (File name too long)` in a case in which `ln -s` works. The item of the feed is not added, and the importing aborts at this entry.
+
+This is a regression: some entries that trigger the problem where imported just fine three months ago.
+
+This looks suspiciously like [this bug](../20151116_tests_fail_on_OS_X).
+
+
+### What steps will reproduce the problem?
+
+In a freshly `git init`-ed and `git-annex init`-ed repo:
+
+[[!format sh """
+$ git-annex importfeed --relaxed http://www.rtve.es/api/programas/1938/audios.rss
+(checking known urls...) importfeed http://www.rtve.es/api/programas/1938/audios.rss 
+/tmp/feed1907                      100%[================================================================>]  91,96K  31,4KB/s   en 2,9s   
+addurl Documentos_RNE/Documentos_RNE___La_guerra__un_recorrido_por_la_historia_de_la_peor_lacra_de_la_Humanidad___05_1215.mp3 ok
+addurl Documentos_RNE/Documentos_RNE___El_proceso_de_Burgos._El_juicio_contra_ETA_que_arrinconó_al_Franquismo___28_11_15.mp3 ok
+addurl Documentos_RNE/Documentos_RNE___Carmen_Martín_Gaite__la_escritura__como_afición_y_refugio___21_11_15.mp3 ok
+addurl Documentos_RNE/Documentos_RNE___El_crimen_del_Expreso_de_Andalucía___14_11_15.mp3 ok
+addurl Documentos_RNE/Documentos_RNE___La_Belle_Époque._La_Europa_que_bailaba_al_borde_del_abismo___07_11_15.mp3 ok
+addurl Documentos_RNE/Documentos_RNE___Cruz_Roja_Española._Siglo_y_medio_de_labor_humanitaria__de_los_heridos_de_guerra_a_los_excluidos_de_la_crisis___31_10_15.mp3 
+git-annex: ../.git/annex/objects/F7/x3/URL--http&c%%mvod.lvlt.rtve.es%resour-cb7157debded21ea4ab1c330aaa54b42/URL--http&c%%mvod.lvlt.rtve.es%resour-cb7157debded21ea4ab1c330aaa54b42: createSymbolicLink: invalid argument (File name too long)
+failed
+(recording state in git...)
+git-annex: importfeed: 1 failed
+"""]]
+
+Just to make sure, I checked that the link can be created:
+
+[[!format sh """
+$ ln -s '../.git/annex/objects/F7/x3/URL--http&c%%mvod.lvlt.rtve.es%resour-cb7157debded21ea4ab1c330aaa54b42/URL--http&c%%mvod.lvlt.rtve.es%resour-cb7157debded21ea4ab1c330aaa54b42' Documentos_RNE/Documentos_RNE___Cruz_Roja_Española._Siglo_y_medio_de_labor_humanitaria__de_los_heridos_de_guerra_a_los_excluidos_de_la_crisis___31_10_15.mp3
+"""]]
+
+I also checked in ghci that System.Posix.Files.createSymbolicLink succeeds in creating the same link.
+(But I didn’t compile git-annex myself, so I’m not sure that the version of the lib used in the debian package is the same as the one I checked; and I’m not sure whether git-annex uses exactly that function or another with the same name, by the way).
+
+
+### What version of git-annex are you using? On what operating system?
+
+Debian amd64 unstable package 5.20151116-1.
+(I also tried version i386, with the same result).
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+That’s just a little hiccup in, up to now, various months of merry use! ;-)
+
+> [[fixed|done]] --[[Joey]]

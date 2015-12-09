@@ -18,7 +18,9 @@ import Foreign.Storable (Storable(sizeOf))
 import System.Posix.Types
 import Data.Int
 import Data.Bits.Utils
+import Control.Concurrent
 import Control.Concurrent.Async
+import Control.Monad.IO.Class (MonadIO)
 
 {- An action that can be run repeatedly, updating it on the bytes processed.
  -
@@ -28,6 +30,9 @@ type MeterUpdate = (BytesProcessed -> IO ())
 
 nullMeterUpdate :: MeterUpdate
 nullMeterUpdate _ = return ()
+
+combineMeterUpdate :: MeterUpdate -> MeterUpdate -> MeterUpdate
+combineMeterUpdate a b = \n -> a n >> b n
 
 {- Total number of bytes processed so far. -}
 newtype BytesProcessed = BytesProcessed Integer
@@ -145,6 +150,23 @@ defaultChunkSize = 32 * k - chunkOverhead
   where
 	k = 1024
 	chunkOverhead = 2 * sizeOf (1 :: Int) -- GHC specific
+
+{- Runs an action, watching a file as it grows and updating the meter. -}
+watchFileSize :: (MonadIO m, MonadMask m) => FilePath -> MeterUpdate -> m a -> m a
+watchFileSize f p a = bracket 
+	(liftIO $ forkIO $ watcher zeroBytesProcessed)
+	(liftIO . void . tryIO . killThread)
+	(const a)
+  where
+	watcher oldsz = do
+		v <- catchMaybeIO $ toBytesProcessed <$> getFileSize f
+		newsz <- case v of
+			Just sz | sz /= oldsz -> do
+				p sz
+				return sz
+			_ -> return oldsz
+		threadDelay 500000 -- 0.5 seconds
+		watcher newsz
 
 data OutputHandler = OutputHandler
 	{ quietMode :: Bool

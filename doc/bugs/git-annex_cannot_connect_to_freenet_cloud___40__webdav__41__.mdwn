@@ -1,0 +1,36 @@
+### Please describe the problem.
+
+git-annex's WebDAV support does not like (aka it does not work) the WebDAV server of the freenet cloud.
+    
+### What steps will reproduce the problem?
+
+My first attempt was:
+
+    WEBDAV_USERNAME='XXX' WEBDAV_PASSWORD='XXX' git annex initremote webdav type=webdav url='https://webmail.freenet.de/webdav' encryption=none
+    initremote webdav (testing WebDAV server...) 
+    git-annex: WebDAV test failed: StatusCodeException (Status {statusCode = 401, statusMessage = "Unauthorized"}) [("Date","Fri, 04 Dec 2015 12:20:57 GMT"),("Server","Apache/2.2.16 (Debian)"),("WWW-Authenticate","Basic realm=\"MD-Cloud\""),
+    ("Vary","Accept-Encoding"),("Content-Encoding","gzip"),("Content-Length","20"),("Connection","close"),("Content-Type","text/html; charset=iso-8859-15"),("X-Response-Body-Start",""),("X-Request-URL","MKCOL https://webmail.freenet.de:443/webdav/tmp")]
+    (CJ {expose = []}): user error failed
+    git-annex: initremote: 1 failed
+
+Ok this fails (what is the error?). However, it does create a folder "tmp" in the "cloud". A second attempt yields another error:
+
+    WEBDAV_USERNAME='XXX' WEBDAV_PASSWORD='XXX' git annex initremote webdav type=webdav url='https://webmail.freenet.de/webdav' encryption=none
+    initremote webdav (testing WebDAV server...) 
+    git-annex: WebDAV test failed: StatusCodeException (Status {statusCode = 501, statusMessage = "Not Implemented"}) [("Date","Fri, 04 Dec 2015 12:21:22 GMT"),("Server","Apache/2.2.16 (Debian)"),("Content-Length","349"),("Connection","close"),
+    ("Content-Type","application/xml; charset=utf-8"),("X-Response-Body-Start","<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<d:error xmlns:d=\"DAV:\" xmlns:s=\"http://sabredav.org/ns\">\n  <s:exception>Sabre\\DAV\\Exception\\NotImplemented</s:exception>\n  
+    <s:message>This server is not compatible with OS/X finder. Consider using a different WebDAV client or webserver.</s:message>\n  <s:sabredav-version>1.8.6</s:sabredav-version>\n</d:error>\n"),("X-Request-URL","PUT https://webmail.freenet.de:443/webdav
+    /tmp/git-annex-test")] (CJ {expose = []}): user error failed
+    git-annex: initremote: 1 failed
+
+which is I guess the same. The WebDAV server does support writing and locking files. I tried writing using davfs2 and locking-unlocking using cadaver. I guess in the end that it's the server's fault, but it would be great to know what exactly fails at this point :).
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 5.20151116-gbe86081
+
+Gentoo Linux
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+First time trying WebDAV support.

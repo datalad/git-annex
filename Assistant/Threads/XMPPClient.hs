@@ -7,7 +7,7 @@
 
 module Assistant.Threads.XMPPClient where
 
-import Assistant.Common
+import Assistant.Common hiding (ProtocolError)
 import Assistant.XMPP
 import Assistant.XMPP.Client
 import Assistant.NetMessager

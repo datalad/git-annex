@@ -56,6 +56,7 @@ import qualified Annex.Url as Url
 import Types.Key
 import Utility.DataUnits
 import Utility.CopyFile
+import Utility.Metered
 import Config
 import Git.SharedRepository
 import Annex.Perms
@@ -658,8 +659,9 @@ saveState nocommit = doSideAction $ do
 			Annex.Branch.commit "update"
 
 {- Downloads content from any of a list of urls. -}
-downloadUrl :: [Url.URLString] -> FilePath -> Annex Bool
-downloadUrl urls file = go =<< annexWebDownloadCommand <$> Annex.getGitConfig
+downloadUrl :: Key -> MeterUpdate -> [Url.URLString] -> FilePath -> Annex Bool
+downloadUrl k p urls file = concurrentMeteredFile file (Just p) k $
+	go =<< annexWebDownloadCommand <$> Annex.getGitConfig
   where
 	go Nothing = do
 		a <- ifM commandProgressDisabled
@@ -697,18 +699,21 @@ preseedTmp key file = go =<< inAnnex key
 				)
 		)
 
-{- Blocks writing to an annexed file, and modifies file permissions to
- - allow reading it, per core.sharedRepository setting. -}
+{- Normally, blocks writing to an annexed file, and modifies file
+ - permissions to allow reading it.
+ -
+ - When core.sharedRepository is set, the write bits are not removed from
+ - the file, but instead the appropriate group write bits are set. This is
+ - necessary to let other users in the group lock the file.
+ -}
 freezeContent :: FilePath -> Annex ()
 freezeContent file = unlessM crippledFileSystem $
 	withShared go
   where
 	go GroupShared = liftIO $ modifyFileMode file $
-		removeModes writeModes .
-		addModes [ownerReadMode, groupReadMode]
+		addModes [ownerReadMode, groupReadMode, ownerWriteMode, groupWriteMode]
 	go AllShared = liftIO $ modifyFileMode file $
-		removeModes writeModes .
-		addModes readModes
+		addModes (readModes ++ writeModes)
 	go _ = liftIO $ modifyFileMode file $
 		removeModes writeModes .
 		addModes [ownerReadMode]

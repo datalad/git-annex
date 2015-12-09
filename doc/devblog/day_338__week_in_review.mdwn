@@ -1,0 +1,16 @@
+Monday: Some finishing touches on the pid locking support, and released
+5.20151116. After the release I noticed that concurrent downloads didn't
+always include a progress meter, and made the necessary changes to fix
+that.
+
+Wednesday: This was a day of minor bug fixing and responding to questions
+etc. Message backlog got down below 90, not bad.
+
+Thursday: I've been distracted from coding today with an idea of making
+some new stickers. Hexagonal this time, and even better, composable...
+So they can show git-annex getting as big as you want. ;)
+
+[[stickers/hex.svg]]
+
+The design is done, see [[stickers]], and seems to work well, and even
+better is easy to modify. May find time to get these printed at some point.

@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-11-30T19:46:05Z"
+ content="""
+The most likely reason for that error message would be if a transfer
+of the same file was already in progress by another git-annex process.
+
+It might also be the case that if you're trying to access a git-annex
+repository via SMB, the POSIX fcntl locking that git-annex needs to do
+don't work. This is often the case with various network filesystems.
+Solution is to make the url for the git remote be a ssh:// url instead.
+
+I don't know what OSX's case-insensative complication could have to do with
+this, although it certianly seems to be a good way to get completely
+unexpected behavior.
+
+Is there an actual bug here? What are the steps to reproduce
+it?
+"""]]

@@ -18,8 +18,9 @@ Build/SysConfig.hs: configure.hs Build/TestConfig.hs Build/Configure.hs
 	if [ "$(CABAL)" = ./Setup ]; then ghc --make Setup; fi
 	$(CABAL) configure --ghc-options="$(shell Build/collect-ghc-options.sh)"
 
+# -j1 is used for reproducible build
 git-annex: Build/SysConfig.hs
-	$(CABAL) build
+	$(CABAL) build -j1
 	ln -sf dist/build/git-annex/git-annex git-annex
 
 man/%.1: doc/%.mdwn
@@ -242,8 +243,7 @@ androidapp:
 	$(MAKE) -C standalone/android
 
 # We bypass cabal, and only run the main ghc --make command for a
-# fast development built. Note: Does not rebuild C libraries, or link
-# executable.
+# fast development built.
 fast: dist/caballog
 	@$$(grep 'ghc --make' dist/caballog | head -n 1 | sed -e 's/-package-id [^ ]*//g' -e 's/-hide-all-packages//') -O0 -j -dynamic
 	@ln -sf dist/build/git-annex/git-annex git-annex

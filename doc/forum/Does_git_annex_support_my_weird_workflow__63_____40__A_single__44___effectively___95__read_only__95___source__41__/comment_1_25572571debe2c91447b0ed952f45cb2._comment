@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-12-02T18:14:50Z"
+ content="""
+The two problems are: Read-only directory, and wanting a clone that doesn't
+have the same directory structure.
+
+For the read-only directory, you may be able to use a direct mode
+repository. You might need to set `GIT_DIR` in the environment to make
+the .git directory be placed somewhere outside the read-only directory.
+
+As to wanting different directory structure in your clone, it's an added
+complication I'd recommend avoiding. Not that it's impossible, you can move
+files around in the git repository and that could be automated via
+git-filter-branch or the like. But git-annex offers a simpler solution,
+which is to use the same directory structure and only get the contents of
+files in the subdirectories you want.
+"""]]

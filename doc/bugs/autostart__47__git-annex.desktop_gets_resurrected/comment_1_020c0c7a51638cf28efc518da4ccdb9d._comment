@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-11-30T19:51:45Z"
+ content="""
+Well, if your system is crashing, the deletion of the file might not be
+reflected on the disk or something.
+
+It is true that, when git-annex is installed via the standalone tarball, it
+will try to install the autostart file whenever the assistant is started.
+But something has to cause the assistant to start, and if you deleted the
+autostart file, it wasn't that .. so what was it?
+"""]]

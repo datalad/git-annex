@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 4"""
- date="2015-06-02T18:55:12Z"
- content="""
-Put the cabal.config file in the git-annex source tree next to
-git-annex.cabal. Also, you probably need to `cabal clean`.
-"""]]

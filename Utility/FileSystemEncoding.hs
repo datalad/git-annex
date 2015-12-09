@@ -29,6 +29,7 @@ import System.IO.Unsafe
 import qualified Data.Hash.MD5 as MD5
 import Data.Word
 import Data.Bits.Utils
+import Data.List
 import Data.List.Utils
 import qualified Data.ByteString.Lazy as L
 #ifdef mingw32_HOST_OS
@@ -125,12 +126,12 @@ decodeW8 = s2w8 . _encodeFilePath
 
 {- Like encodeW8 and decodeW8, but NULs are passed through unchanged. -}
 encodeW8NUL :: [Word8] -> FilePath
-encodeW8NUL = join nul . map encodeW8 . split (s2w8 nul)
+encodeW8NUL = intercalate nul . map encodeW8 . split (s2w8 nul)
   where
 	nul = ['\NUL']
 
 decodeW8NUL :: FilePath -> [Word8]
-decodeW8NUL = join (s2w8 nul) . map decodeW8 . split nul
+decodeW8NUL = intercalate (s2w8 nul) . map decodeW8 . split nul
   where
 	nul = ['\NUL']
 

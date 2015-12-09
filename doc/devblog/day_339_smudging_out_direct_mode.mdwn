@@ -1,0 +1,61 @@
+I'm considering ways to get rid of direct mode, replacing it with something
+better implemented using [[todo/smudge]] filters.
+
+## git-lfs
+
+I started by trying out git-lfs, to see what I can learn from it. My
+feeling is that git-lfs brings an admirable simplicity to using git with
+large files. For example, it uses a push-hook to automatically
+upload file contents before pushing a branch.
+
+But its simplicity comes at the cost of being centralized. You can't make a
+git-lfs repository locally and clone it onto other drive and have the local
+repositories interoperate to pass file contents around. Everything has to
+go back through a centralized server. I'm willing to pay complexity costs
+for decentralization.
+
+Its simplicity also means that the user doesn't have much control over what
+files are present in their checkout of a repository. git-lfs downloads
+all the files in the work tree. It doesn't have facilities for dropping
+files to free up space, or for configuring a repository to only want to get
+a subset of files in the first place. Some of this could be added to it 
+I suppose.
+
+I also noticed that git-lfs uses twice the disk space, at least when
+initially adding files. It keep a copy of the file in .git/lfs/objects/,
+in addition to the copy in the working tree. That copy seems to be
+necessary due to the way git smudge filters work, to avoid data loss. Of
+course, git-annex manages to avoid that duplication when using symlinks,
+and its direct mode also avoids that duplication (at the cost of some
+robustness). I'd like to keep git-annex's single local copy feature 
+if possible.
+
+## replacing direct mode
+
+Anyway, as smudge/clean filters stand now, they can't be used to set up
+git-annex symlinks; their interface doesn't allow it. But, I was able to
+think up a design that uses smudge/clean filters to cover the same use
+cases that direct mode covers now.
+
+Thanks to the clean filter, adding a file with `git add` would check in a
+small file that points to the git-annex object.
+
+In the same repository, you could also use `git annex add` to check
+in a git-annex symlink, which would protect the object from modification,
+in the good old indirect mode way. `git annex lock` and `git annex unlock` 
+could switch a file between those two modes.
+
+So this allows mixing directly writable annexed files and locked down
+annexed files in the same repository. All regular git commands and all
+git-annex commands can be used on both sorts of files. Workflows could
+develop where a file starts out unlocked, but once it's done, is locked to
+prevent accidental edits and archived away or published.
+
+That's much more flexible than the current direct mode, and I think it will
+be able to be implemented in a simpler, more scalable, and robust way too.
+I can lose the direct mode merge code, and remove hundreds of lines of
+other special cases for direct mode.
+
+The downside, perhaps, is that for a repository to be usable on a crippled
+filesystem, all the files in it will need to be unlocked. A file can't
+easily be unlocked in one checkout and locked in another checkout.

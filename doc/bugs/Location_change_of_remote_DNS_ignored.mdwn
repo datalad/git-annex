@@ -1,0 +1,28 @@
+### Please describe the problem.
+git-annex ignores changing of remote location in .git/config
+
+### What steps will reproduce the problem?
+1. Change Hostname of previously working remote so that the existing remote will no longer work and produce "ssh: connect to host <DNS hostname> port 22: Network is unreachable" errors.
+2. Stop all running git-annex processes.
+3. Edit DNS name in corresponding remote .git/config.
+4. Restart git-annex.
+5. Turns out: git-annex still uses the old remote's DNS name.
+
+### What version of git-annex are you using? On what operating system?
+newest one available.
+5.20151116-gbe86081 
+
+### Please provide any additional information below.
+See following entry in log, occurring plenty often:
+[[!format sh """
+ssh: connect to host some.unreachable.dns.net port 22: Network is unreachable
+rsync: connection unexpec
+  rsync failed -- run git annex again to resume file transfer
+tedly closed (0 bytes received so far) [Receiver]
+rsync error: unexplained error (code 255) at io.c(226) [Receiver=3.1.1]
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+Trust me I love git-annex. Had dreams of something like git-annex for almost 10 years. I instantly got stuck on git-annex when I have read the first few sentences about it. Since then, things in my life have changed in a quite serious manner.
+
+THANKS for your help!

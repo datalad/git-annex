@@ -1,0 +1,38 @@
+### Please describe the problem.
+
+``git annex unlock myfolder`` will unlock all files inside (`find myfolder -type l' returns nothing).
+
+Yet, ``git annex whereis myfolder`` shows those files are *not* in current repo.
+
+Meanwhile, those files also reside in a remote. git-annex-whereis does show there is a copy in that remote.
+
+Note that dropping files in current repo (``git annex drop``) and re-getting (``git annex get``) does download the files from that remote. However, a subsequent ``git annext whereis`` again shows 1 copy --- at that remote only.
+
+> Because you have 2 repositories with the same annex.uuid, which is not
+> allowed. Fix your misconfigured repo to not have the same annex.uuid and
+> that won't happen. [[done]] --[[Joey]]
+
+### What steps will reproduce the problem?
+
+Same as described above.
+
+
+### What version of git-annex are you using? On what operating system?
+
+Lubuntu 15.10
+git annex 5.20151019
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes, git annex is wonderful.

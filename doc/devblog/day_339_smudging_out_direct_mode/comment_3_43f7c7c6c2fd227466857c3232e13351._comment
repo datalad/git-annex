@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="spwhitton"
+ subject="comment 3"
+ date="2015-11-26T01:34:17Z"
+ content="""
+At present it's possible to check (small) files directly into a git branch alongside annexed files.  To do this one uses `git add` rather than `git annex add`.  But if `git add` would add files via the smudge/clean process, how would one check files directly into git?  Would it no longer be possible?
+"""]]

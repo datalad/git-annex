@@ -88,8 +88,9 @@ withTmpDirIn tmpdir template = bracketIO create remove
 		makenewdir (tmpdir </> template) (0 :: Int)
 	makenewdir t n = do
 		let dir = t ++ "." ++ show n
-		either (const $ makenewdir t $ n + 1) (const $ return dir)
-			=<< tryIO (createDirectory dir)
+		catchIOErrorType AlreadyExists (const $ makenewdir t $ n + 1) $ do
+			createDirectory dir
+			return dir
 
 {- It's not safe to use a FilePath of an existing file as the template
  - for openTempFile, because if the FilePath is really long, the tmpfile

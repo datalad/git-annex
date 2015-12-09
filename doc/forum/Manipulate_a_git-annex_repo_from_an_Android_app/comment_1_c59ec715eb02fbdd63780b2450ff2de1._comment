@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-12-02T17:05:03Z"
+ content="""
+Android's security model may not be friendly to code reuse. You might need
+to put both git-annex and your program in the same app.
+
+I know this is something others want too. Maybe you can find or make a file
+manager type app that integrates with git-annex get/drop and could be
+included in the git-annex android app?
+"""]]

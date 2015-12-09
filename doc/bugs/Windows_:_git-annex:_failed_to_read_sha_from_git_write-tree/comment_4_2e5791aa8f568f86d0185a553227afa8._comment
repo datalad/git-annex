@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="OlivierBerger"
+ subject="Again, difficult to tell"
+ date="2015-12-04T12:24:06Z"
+ content="""
+Well, I really don't understand either what may have caused the crashes... but the path issue might be a hint. I think our repo was cloned in a path something like : \"C:\Users\Majdi\git\git-annex.tem-tsp.eu\testscpo\" which already takes around 48 chars.
+"""]]

@@ -118,5 +118,5 @@ postPreferencesR = page "Preferences" (Just Configuration) $ do
 
 inAutoStartFile :: Annex Bool
 inAutoStartFile = do
-	here <- fromRepo Git.repoPath
+	here <- liftIO . absPath =<< fromRepo Git.repoPath
 	any (`equalFilePath` here) <$> liftIO readAutoStartFile

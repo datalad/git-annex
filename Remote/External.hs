@@ -369,12 +369,8 @@ startExternal :: ExternalType -> Annex ExternalState
 startExternal externaltype = do
 	errrelayer <- mkStderrRelayer
 	liftIO $ do
-		(Just hin, Just hout, Just herr, pid) <- createProcess $
-			(proc cmd [])
-				{ std_in = CreatePipe
-				, std_out = CreatePipe
-				, std_err = CreatePipe
-				}
+		(Just hin, Just hout, Just herr, pid) <- 
+			createProcess p `catchIO` runerr
 		fileEncoding hin
 		fileEncoding hout
 		fileEncoding herr
@@ -390,6 +386,13 @@ startExternal externaltype = do
 			}
   where
 	cmd = externalRemoteProgram externaltype
+	p = (proc cmd [])
+		{ std_in = CreatePipe
+		, std_out = CreatePipe
+		, std_err = CreatePipe
+		}
+
+	runerr _ = error ("Cannot run " ++ cmd ++ " -- Make sure it's in your PATH and is executable.")
 
 	checkearlytermination Nothing = noop
 	checkearlytermination (Just exitcode) = ifM (inPath cmd)
@@ -503,9 +506,9 @@ checkurl external url =
 	mkmulti (u, s, f) = (u, s, mkSafeFilePath f)
 
 retrieveUrl :: Retriever
-retrieveUrl = fileRetriever $ \f k _p -> do
+retrieveUrl = fileRetriever $ \f k p -> do
 	us <- getWebUrls k
-	unlessM (downloadUrl us f) $
+	unlessM (downloadUrl k p us f) $
 		error "failed to download content"
 
 checkKeyUrl :: Git.Repo -> CheckPresent

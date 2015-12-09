@@ -15,6 +15,7 @@ import qualified Git
 import qualified Git.Url
 import qualified Git.Config
 import qualified Git.Construct
+import qualified Remote
 import qualified Annex
 import Annex.UUID
 import Logs.UUID
@@ -46,7 +47,9 @@ start = do
 	liftIO $ writeFile file (drawMap rs umap trusted)
 	next $ next $
 		ifM (Annex.getState Annex.fast)
-			( return True
+			( do
+				showLongNote $ "left map in " ++ file
+				return True
 			, do
 				showLongNote $ "running: dot -Tx11 " ++ file
 				showOutput
@@ -164,9 +167,8 @@ absRepo reference r
 {- Checks if two repos are the same. -}
 same :: Git.Repo -> Git.Repo -> Bool
 same a b
-	| both Git.repoIsSsh = matching Git.Url.authority && matching Git.repoPath
-	| both Git.repoIsUrl && neither Git.repoIsSsh = matching show
-	| neither Git.repoIsSsh = matching Git.repoPath
+	| both Git.repoIsUrl = matching Git.Url.scheme && matching Git.Url.authority && matching Git.repoPath
+	| neither Git.repoIsUrl = matching Git.repoPath
 	| otherwise = False
   where
 	matching t = t a == t b
@@ -192,7 +194,13 @@ scan r = do
 tryScan :: Git.Repo -> Annex (Maybe Git.Repo)
 tryScan r
 	| Git.repoIsSsh r = sshscan
-	| Git.repoIsUrl r = return Nothing
+	| Git.repoIsUrl r = case Git.remoteName r of
+		-- Can't scan a non-ssh url, so use any cached uuid for it.
+		Just n -> Just <$> (either
+			(const (pure r))
+			(liftIO . setUUID r . Remote.uuid)
+			=<< Remote.byName' n)
+		Nothing -> return $ Just r
 	| otherwise = liftIO $ safely $ Git.Config.read r
   where
 	pipedconfig pcmd params = liftIO $ safely $

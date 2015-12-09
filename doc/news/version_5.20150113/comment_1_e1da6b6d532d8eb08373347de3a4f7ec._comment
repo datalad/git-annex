@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="anarcat"
- subject="comment 1"
- date="2015-01-13T18:09:52Z"
- content="""
-> * sync: Fix an edge case where syncing in a bare repository would try to merge and so fail.
-
-i think i just saw that bug yesterday, glad to see it fixed so quickly!
-"""]]

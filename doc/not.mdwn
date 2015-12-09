@@ -52,7 +52,7 @@
 
 * Similarly, git-annex is not [git-lfs](https://github.com/github/git-lfs),
   which also uses git smudge filters, and appears to lack git-annex's
-  widely distributed storage.
+  widely distributed storage and partial checkouts.
 
 * git-annex is also not [boar](http://code.google.com/p/boar/),
   although it shares many of its goals and characteristics. Boar implements

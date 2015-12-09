@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-12-02T19:36:14Z"
+ content="""
+Found this in the changelog:
+
+  * webapp: When adding another local repository, and combining it
+    with the current repository, the new repository's remote path
+    was set to "." rather than the path to the current repository.
+    This was a reversion caused by the relative path changes in 5.20150113.
+
+I guess this is a similar problem, although it seems that the "." in your case
+made it into `~/.config/git-annex/autostart`
+
+I found two ways to do that. One is to tell the webapp to make a repository, and
+enter "." as the repository location. The other, which is probably what you
+did, is to go to Configuration -> Preferences and uncheck "Auto start", save
+and then go back and check it. This wrongly puts in a "." instead of the full
+repo path.
+
+I've fixed all code paths to force absolute paths in the autostart file,
+and made any relative paths that got in there be ignored.
+"""]]

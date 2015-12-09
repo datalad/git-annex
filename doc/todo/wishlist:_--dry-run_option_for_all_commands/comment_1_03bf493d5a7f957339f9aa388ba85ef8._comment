@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2014-11-03T16:44:45Z"
+ content="""
+This would add a lot of complexity; it's not like I could switch off
+running all external commands, since many external commands are run to
+query state to decide what to do. And then there's large chunks of code
+that actually do stuff and would have to all be guarded to not run.
+
+I don't see the benefit to justify this work. `git annex add` is entirely
+predictable; it's very similar to `git add`. Which itself lacks a dry-run
+option. And like `git add`, you can certianly undo the effects of `git
+annex add`.
+
+Matching options can make commands like `git annex find` list the same
+set of files that are acted on by commands like `git annex drop`
+(`git annex find --in here`)
+and `git annex get` (`git annex find --not --in here`).
+"""]]

@@ -1,0 +1,40 @@
+Test output on OS X. Btw, the previous version works:
+
+```
+OK (4.87s)
+    map:                                            OK (0.33s)
+    uninit:                                         Deleted branch git-annex (was 9a28b38).
+OK (0.38s)
+    uninit (in git-annex branch):                   Switched to branch 'git-annex'
+OK (0.26s)
+    upgrade:                                        OK (0.21s)
+    whereis:                                        OK (0.61s)
+    hook remote:                                    OK (0.91s)
+    directory remote:                               OK (0.85s)
+    rsync remote:                                   OK (1.40s)
+    bup remote:                                     Reinitialized existing Git repository in /private/var/folders/4j/br7bdhjx4b384_snb2087gt00000gn/T/nix-build-git-annex-5.20151116.drv-0/.bup/
+Initialized empty Git repository in /private/var/folders/4j/br7bdhjx4b384_snb2087gt00000gn/T/nix-build-git-annex-5.20151116.drv-0/git-annex-5.20151116/.t/tmprepo0/dir/
+  content cannot be completely removed from bup remote
+OK (2.62s)
+    crypto:                                         OK (4.16s)
+    preferred content:                              OK (1.97s)
+    add subdirs:                                    Merge made by the 'recursive' strategy.
+ conflictor.variant-cc12 | 1 +
+ conflictor/subfile      | 1 +
+ 2 files changed, 2 insertions(+)
+ create mode 120000 conflictor.variant-cc12
+ create mode 120000 conflictor/subfile
+To /private/var/folders/4j/br7bdhjx4b384_snb2087gt00000gn/T/nix-build-git-annex-5.20151116.drv-0/git-annex-5.20151116/.t/repo
+   e4d3d14..60148c4  git-annex -> synced/git-annex
+   efda76d..f76baae  master -> synced/master
+OK (0.55s)
+    addurl:                                         git-annex: .git/annex/objects/2Q/J8/SHA256E-s3--2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae/SHA256E-s3--2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae: createSymbolicLink: invalid argument (File name too long)
+FAIL (0.29s)
+      addurl failed on file:///private/var/folders/4j/br7bdhjx4b384_snb2087gt00000gn/T/nix-build-git-annex-5.20151116.drv-0/git-annex-5.20151116/.t/tmprepo0/myurl
+
+2 out of 150 tests failed (126.13s)
+  (This could be due to a bug in git-annex, or an incompatability
+   with utilities, such as git, installed on this system.)
+```
+
+> [[fixed|done]] --[[Joey]]

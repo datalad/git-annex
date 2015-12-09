@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-12-02T17:29:25Z"
+ content="""
+It should, in theory, be possible to read [[preferred_content]] and learn
+how to write such an expression. Of course, it is a limited form of
+programming, and so not for everyone. Which is why git-annex ships with
+standard expressions to cover as many common cases as we can think of.
+"""]]

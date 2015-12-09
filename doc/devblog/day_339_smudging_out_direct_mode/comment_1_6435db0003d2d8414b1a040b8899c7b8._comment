@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ subject="niiice"
+ date="2015-11-24T01:07:32Z"
+ content="""
+that would be pretty awesome! thanks so much for looking into what others are doing: it takes great maturity and respect for others, something that is so often missing online...
+
+i hope this can solve a bunch of WTF issues i've had with direct mode, which already improved by leaps and bounds, mind you. :)
+
+speaking of which - would it make sense for git-annex to support lfs remotes out of the box? or is considered builtin to git (ie. if you install git-lfs, you can already have a hybrid lfs/annex repo?)
+"""]]

@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-12-02T16:34:03Z"
+ content="""
+This seems to be the same problem discussed here in the context of
+git-annex <https://github.com/datalad/datalad/issues/132> and here in the
+general context of docker being broken
+<blog.phusion.nl/2015/01/20/docker-and-the-pid-1-zombie-reaping-problem/>.
+
+So, it's a docker problem; since docker containers lack
+any proper init, nothing waits on orphaned processes. While git-annex
+normally waits on all child processes it starts, if a git-annex process
+itself exits for some reason (eg an error) while a child process is
+running, this results in an orphaned process.
+
+It is the responsibility of init to wait on such orphaned processes. So, eg
+systemd-nspawn containers don't have this problem (in addition to their
+many, many other benefits over docker). And if you're stuck running docker
+all it takes to solve the problem is to make the top-level process in the
+container do a `wait()` loop. As is done by eg
+<http://github.com/phusion/baseimage-docker>.
+
+It might be possible for git-annex to have a top-level exception
+handler that waits on any child processes that might be running. However,
+this seems difficult to arrange; when git-annex was talking to a child
+process over a handle, the child process may keep running as long as that
+handle remains open, so the exception handler would block waiting for the
+child process to exit. This kind of difficulty is probably why unix
+delegates this job to init in the first place.
+"""]]
