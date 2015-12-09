@@ -21,7 +21,6 @@ module Database.Handle (
 
 import Utility.Exception
 import Utility.Monad
-import Messages
 
 import Database.Persist.Sqlite
 import qualified Database.Sqlite as Sqlite
@@ -35,6 +34,7 @@ import Control.Monad.Trans.Resource (runResourceT)
 import Control.Monad.Logger (runNoLoggingT)
 import Data.List
 import Data.Time.Clock
+import System.IO
 
 {- A DbHandle is a reference to a worker thread that communicates with
  - the database. It has a MVar which Jobs are submitted to. -}
@@ -79,7 +79,7 @@ type TableName = String
 workerThread :: T.Text -> TableName -> MVar Job -> IO ()
 workerThread db tablename jobs = catchNonAsync (run loop) showerr
   where
-  	showerr e = liftIO $ warningIO $
+  	showerr e = liftIO $ hPutStrLn stderr $
 		"sqlite worker thread crashed: " ++ show e
 	
 	loop = do

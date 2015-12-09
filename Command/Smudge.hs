@@ -102,7 +102,5 @@ emitPointer = putStrLn . formatPointer
 
 updateAssociatedFiles :: Key -> FilePath -> Annex ()
 updateAssociatedFiles k f = do
-	h <- AssociatedFiles.openDb
-	liftIO $ do
-		AssociatedFiles.addDb h k f
-		AssociatedFiles.closeDb h
+	AssociatedFiles.addDb k f
+	AssociatedFiles.flushDb
