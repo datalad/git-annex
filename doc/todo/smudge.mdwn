@@ -330,17 +330,14 @@ files to be unlocked, while the indirect upgrades don't touch the files.
   such objects. This parallels how inAnnex checks work for direct mode.
 * Reconcile staged changes into the associated files database, whenever
   the database is queried.
-* See if the case where this is not used can be optimised. Eg, if the
-  associated files database doesn't exist at all, we know smudge/clean are
-  not used, so queries for associated files don't need to open the database
-  or do reconciliation, but can simply return none.
+* See if the case where the associated files database is not used can be
+  optimised. Eg, if the associated files database doesn't exist at all,
+  we know smudge/clean are not used, so queries for associated files don't
+  need to open the database or do reconciliation, but can simply return none.
   Also, no need for Backend.lookupFile to catKeyFile in this case
   (when not in direct mode).
-* Update pointer files when adding the content of a key to the annex
-  (ie, `git annex get`).
-  - Check the associated files database to find associated files for the key.
-  - Check worktree file to ensure it's still a pointer to the key.
-  - Hard-link to annex object.
+  However, beware over-optimisation breaking the assistant or perhaps other
+  long-lived processes.
 * Update pointer files when dropping the content of a key.
   - Check the associated files database to find associated files for the key.
   - Verify that worktree files are not modified from the annexed object.

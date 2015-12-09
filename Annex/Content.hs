@@ -72,6 +72,7 @@ import qualified Types.Backend
 import qualified Backend
 import Types.NumCopies
 import Annex.UUID
+import qualified Database.AssociatedFiles as AssociatedFiles
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
@@ -414,7 +415,10 @@ checkDiskSpace destination key alreadythere samefilesystem = ifM (Annex.getState
 
 {- Moves a key's content into .git/annex/objects/
  -
- - In direct mode, moves it to the associated file, or files.
+ - When a key has associated pointer files, the object is hard
+ - linked (or copied) to the files, and the object file is left thawed.
+ 
+ - In direct mode, moves the object file to the associated file, or files.
  -
  - What if the key there already has content? This could happen for
  - various reasons; perhaps the same content is being annexed again.
@@ -442,7 +446,10 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
 		( alreadyhave
 		, modifyContent dest $ do
 			liftIO $ moveFile src dest
-			freezeContent dest
+			fs <- AssociatedFiles.getDb key
+			if null fs
+				then freezeContent dest
+				else mapM_ (populateAssociatedFile key dest) fs
 		)
 	storeindirect = storeobject =<< calcRepo (gitAnnexLocation key)
 
@@ -471,6 +478,15 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
 				)
 	
 	alreadyhave = liftIO $ removeFile src
+
+populateAssociatedFile :: Key -> FilePath -> FilePath -> Annex ()
+populateAssociatedFile k obj f = go =<< isPointerFile f
+  where
+	go (Just k') | k == k' = liftIO $ do
+		nukeFile f
+		unlessM (catchBoolIO $ createLinkOrCopy obj f) $
+			writeFile f (formatPointer k)
+	go _ = return ()
 
 {- Hard links a file into .git/annex/objects/, falling back to a copy
  - if necessary.
