@@ -30,6 +30,7 @@ import Config
 import Annex.Content
 import Annex.Link
 import Annex.CatFile
+import Annex.InodeSentinal
 import qualified Annex
 import Utility.InodeCache
 import Annex.Content.Direct

@@ -1,6 +1,6 @@
 {- git-annex file content managing
  -
- - Copyright 2010-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -72,6 +72,7 @@ import qualified Types.Backend
 import qualified Backend
 import Types.NumCopies
 import Annex.UUID
+import Annex.InodeSentinal
 import qualified Database.AssociatedFiles as AssociatedFiles
 
 {- Checks if a given key's content is currently present. -}
@@ -583,6 +584,9 @@ cleanObjectLoc key cleaner = do
 			<=< catchMaybeIO $ removeDirectory dir
 
 {- Removes a key's file from .git/annex/objects/
+ -
+ - When a key has associated pointer files, they are checked for
+ - modifications, and if unmodified, are reset.
  -
  - In direct mode, deletes the associated files or files, and replaces
  - them with symlinks.

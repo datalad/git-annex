@@ -32,9 +32,9 @@ import Annex.UUID
 import Annex.Link
 import Config
 import Annex.Direct
-import Annex.Content.Direct
 import Annex.Environment
 import Annex.Hook
+import Annex.InodeSentinal
 import Upgrade
 #ifndef mingw32_HOST_OS
 import Utility.UserInfo
@@ -96,7 +96,7 @@ initialize' = do
 		, unlessM isBare
 			switchHEADBack
 		)
-	createInodeSentinalFile
+	createInodeSentinalFile False
 
 uninitialize :: Annex ()
 uninitialize = do

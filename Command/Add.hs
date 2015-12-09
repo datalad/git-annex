@@ -32,6 +32,7 @@ import Annex.FileMatcher
 import Annex.ReplaceFile
 import Utility.Tmp
 import Utility.CopyFile
+import Annex.InodeSentinal
 
 import Control.Exception (IOException)
 

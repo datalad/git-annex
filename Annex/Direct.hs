@@ -1,5 +1,8 @@
 {- git-annex direct mode
  -
+ - This is deprecated, and will be removed when direct mode gets removed
+ - from git-annex.
+ -
  - Copyright 2012-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
@@ -36,6 +39,7 @@ import Annex.VariantFile
 import Git.Index
 import Annex.Index
 import Annex.LockFile
+import Annex.InodeSentinal
 
 {- Uses git ls-files to find files that need to be committed, and stages
  - them into the index. Returns True if some changes were staged. -}
