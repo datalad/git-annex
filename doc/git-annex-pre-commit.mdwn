@@ -12,9 +12,13 @@ This is meant to be called from git's pre-commit hook. `git annex init`
 automatically creates a pre-commit hook using this.
 
 Fixes up symlinks that are staged as part of a commit, to ensure they
-point to annexed content. Also handles injecting changes to unlocked
-files into the annex. When in a view, updates metadata to reflect changes
+point to annexed content.
+
+When in a view, updates metadata to reflect changes
 made to files in the view.
+
+When in a repository that has not been upgraded to annex.version 6, 
+also handles injecting changes to unlocked files into the annex. 
 
 # SEE ALSO
 

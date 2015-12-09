@@ -115,7 +115,7 @@ withPairs a params = seekActions $ return $ map a $ pairs [] params
 	pairs c (x:y:xs) = pairs ((x,y):c) xs
 	pairs _ _ = error "expected pairs"
 
-withFilesToBeCommitted :: (String -> CommandStart) -> CmdParams -> CommandSeek
+withFilesToBeCommitted :: (FilePath -> CommandStart) -> CmdParams -> CommandSeek
 withFilesToBeCommitted a params = seekActions $ prepFiltered a $
 	seekHelper LsFiles.stagedNotDeleted params
 

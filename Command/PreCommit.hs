@@ -16,7 +16,9 @@ import qualified Command.Add
 import qualified Command.Fix
 import Annex.Direct
 import Annex.Hook
+import Annex.Link
 import Annex.View
+import Annex.Version
 import Annex.View.ViewedFile
 import Annex.LockFile
 import Logs.View
@@ -49,9 +51,14 @@ seek ps = lockPreCommitHook $ ifM isDirect
 				void $ liftIO cleanup
 			, do
 				-- fix symlinks to files being committed
-				withFilesToBeCommitted (whenAnnexed Command.Fix.start) ps
+				flip withFilesToBeCommitted ps $ \f -> 
+					maybe stop (Command.Fix.start f)
+						=<< isAnnexLink f
 				-- inject unlocked files into the annex
-				withFilesUnlockedToBeCommitted startIndirect ps
+				-- (not needed when repo version uses
+				-- unlocked pointer files)
+				unlessM versionSupportsUnlockedPointers $
+					withFilesUnlockedToBeCommitted startInjectUnlocked ps
 			)
 		runAnnexHook preCommitAnnexHook
 		-- committing changes to a view updates metadata
@@ -64,8 +71,8 @@ seek ps = lockPreCommitHook $ ifM isDirect
 	)
 	
 
-startIndirect :: FilePath -> CommandStart
-startIndirect f = next $ do
+startInjectUnlocked :: FilePath -> CommandStart
+startInjectUnlocked f = next $ do
 	unlessM (callCommandAction $ Command.Add.start f) $
 		error $ "failed to add " ++ f ++ "; canceling commit"
 	next $ return True

@@ -43,6 +43,12 @@ versionSupportsDirectMode = go <$> getVersion
 	go (Just "6") = False
 	go _ = True
 
+versionSupportsUnlockedPointers :: Annex Bool
+versionSupportsUnlockedPointers = go <$> getVersion
+  where
+	go (Just "6") = True
+	go _ = False
+
 setVersion :: Version -> Annex ()
 setVersion = setConfig versionField
 
