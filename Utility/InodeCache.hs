@@ -1,7 +1,7 @@
 {- Caching a file's inode, size, and modification time
  - to see when it's changed.
  -
- - Copyright 2013, 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2014 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}

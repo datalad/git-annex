@@ -328,6 +328,8 @@ files to be unlocked, while the indirect upgrades don't touch the files.
 * inAnnex check should fail in the case where an annexed object is unlocked
   and has had its content changed. Could use an InodeCache for
   such objects. This parallels how inAnnex checks work for direct mode.
+* Also, Annex.Content.prepSendAnnex should check the InodeCache for
+  changes.
 * Reconcile staged changes into the associated files database, whenever
   the database is queried.
 * See if the cases where the associated files database is not used can be
@@ -338,17 +340,6 @@ files to be unlocked, while the indirect upgrades don't touch the files.
   (when not in direct mode).
   However, beware over-optimisation breaking the assistant or perhaps other
   long-lived processes.
-* Update pointer files when dropping the content of a key.
-  - Check the associated files database to find associated files for the key.
-  - Verify that worktree files are not modified from the annexed object.
-    How? InodeCache could be maintained, but the smudge filer interface
-    wouldn't let it be updated when smudging a file. May need to take
-    an expensive path:
-    1. stat object file
-    2. stat worktree file
-    3. if same stat, ok else hash worktree file
-    4. stat worktree file again after checking hash; make sure it's
-       unchanged from earlier stat
 * Convert `git annex unlock` to stage a pointer file, and hard link to the
   annexed object (or write pointer file if annexed object not present).
   - Also needs to thaw annex object file

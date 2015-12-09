@@ -451,7 +451,9 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
 			fs <- Database.Keys.getAssociatedFiles key
 			if null fs
 				then freezeContent dest
-				else mapM_ (populatePointerFile key dest) fs
+				else do
+					mapM_ (populatePointerFile key dest) fs
+					Database.Keys.storeInodeCaches key (dest:fs)
 		)
 	storeindirect = storeobject =<< calcRepo (gitAnnexLocation key)
 
@@ -505,7 +507,9 @@ linkAnnex key src = do
 		( return LinkAnnexNoop
 		, modifyContent dest $
 			ifM (liftIO $ createLinkOrCopy src dest)
-				( return LinkAnnexOk
+				( do
+					Database.Keys.storeInodeCaches key [dest, src]
+					return LinkAnnexOk
 				, return LinkAnnexFailed
 				)
 		)
@@ -601,6 +605,7 @@ removeAnnex (ContentRemovalLock key) = withObjectLoc key remove removedirect
 		removeInodeCache key
 		mapM_ (void . tryIO . resetPointerFile key)
 			=<< Database.Keys.getAssociatedFiles key
+		Database.Keys.removeInodeCaches key
 	removedirect fs = do
 		cache <- recordedInodeCache key
 		removeInodeCache key
@@ -613,8 +618,7 @@ removeAnnex (ContentRemovalLock key) = withObjectLoc key remove removedirect
 {- To safely reset a pointer file, it has to be the unmodified content of
  - the key. The expensive way to tell is to do a verification of its content.
  - The cheaper way is to see if the InodeCache for the key matches the
- - file.
- -}
+ - file. -}
 resetPointerFile :: Key -> FilePath -> Annex ()
 resetPointerFile key f = go =<< geti
   where
@@ -624,10 +628,14 @@ resetPointerFile key f = go =<< geti
 			secureErase f
 			liftIO $ nukeFile f
 			liftIO $ writeFile f (formatPointer key)
-		, noop
+		-- Can't delete the pointer file.
+		-- If it was a hard link to the annex object,
+		-- that object might have been frozen as part of the
+		-- removal process, so thaw it.
+		, thawContent f
 		)
-	cheapcheck fc = maybe (return False) (compareInodeCaches fc)
-		=<< Database.Keys.getInodeCache key
+	cheapcheck fc = anyM (compareInodeCaches fc)
+		=<< Database.Keys.getInodeCaches key
 	expensivecheck fc = ifM (verifyKeyContent AlwaysVerify Types.Remote.UnVerified key f)
 		-- The file could have been modified while it was
 		-- being verified. Detect that.

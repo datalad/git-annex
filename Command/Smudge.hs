@@ -48,7 +48,7 @@ smudge file = do
 	case parseLinkOrPointer b of
 		Nothing -> liftIO $ B.putStr b
 		Just k -> do
-			updateAssociatedFiles k file
+			Database.Keys.addAssociatedFile k file
 			content <- calcRepo (gitAnnexLocation k)
 			liftIO $ B.hPut stdout . fromMaybe b
 				=<< catchMaybeIO (B.readFile content)
@@ -65,7 +65,7 @@ clean file = do
 		else ifM (shouldAnnex file)
 			( do
 				k <- ingest file
-				updateAssociatedFiles k file
+				Database.Keys.addAssociatedFile k file
 				liftIO $ emitPointer k
 			, liftIO $ B.hPut stdout b
 			)
@@ -100,8 +100,3 @@ ingest file = do
 
 emitPointer :: Key -> IO ()
 emitPointer = putStrLn . formatPointer
-
-updateAssociatedFiles :: Key -> FilePath -> Annex ()
-updateAssociatedFiles k f = do
-	Database.Keys.addAssociatedFile k f
-	Database.Keys.flushDb
