@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="wsha.code+ga@b38779424f41c5701bbe5937340be43ff1474b2d"
+ subject="comment 3"
+ date="2015-12-08T09:44:49Z"
+ content="""
+It seems like aws-0.13.0 is released now. Will it be used in the next release of git-annex? I am using the prebuilt binary for 5.20151116 and STANDARD_IA does not work for me.
+
+Is it possible to print out the version numbers of git-annex dependencies (something like `git-annex version --verbose`)?
+"""]]

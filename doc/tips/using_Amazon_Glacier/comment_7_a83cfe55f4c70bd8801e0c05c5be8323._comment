@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="ben"
+ subject="Problems initializing glacier remote"
+ date="2015-12-08T10:39:30Z"
+ content="""
+Hi, when I try to create a glacier remote, the command freezes without further output:
+
+    $ git init
+    $ git annex init
+    $ git annex initremote glacier type=glacier keyid=xxxxxxxx
+    initremote glacier (encryption setup)
+
+I can see the following processes in sleep state:
+
+
+    11438 pts/0    S+     0:00 git --git-dir=/home/b/Documents/annex/.git --work-tree=/home/b/Documents/annex cat-file --batch
+    11440 pts/0    SL+    0:00 gpg2 --batch --no-tty --use-agent --quiet --trust-model always --gen-random --armor 2 512
+
+I'm on fedora 22, git-annex version: 5.20140717. Any suggestions appreciated, thanks!
+
+
+"""]]
