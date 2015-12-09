@@ -602,10 +602,10 @@ removeAnnex (ContentRemovalLock key) = withObjectLoc key remove removedirect
 	remove file = cleanObjectLoc key $ do
 		secureErase file
 		liftIO $ nukeFile file
-		removeInodeCache key
 		mapM_ (void . tryIO . resetPointerFile key)
 			=<< Database.Keys.getAssociatedFiles key
 		Database.Keys.removeInodeCaches key
+		removeInodeCache key
 	removedirect fs = do
 		cache <- recordedInodeCache key
 		removeInodeCache key
