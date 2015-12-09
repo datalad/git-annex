@@ -14,7 +14,6 @@ module Annex.CatFile (
 	catFileHandle,
 	catFileStop,
 	catKey,
-	parsePointer,
 	catKeyFile,
 	catKeyFileHEAD,
 	catSymLinkTarget,
@@ -31,7 +30,7 @@ import qualified Annex
 import Git.Types
 import Git.FilePath
 import qualified Git.Ref
-import Types.Key
+import Annex.Link
 
 catFile :: Git.Branch -> FilePath -> Annex L.ByteString
 catFile branch file = do
@@ -83,22 +82,7 @@ catFileStop = do
 
 {- From ref to a symlink or a pointer file, get the key. -}
 catKey :: Ref -> Annex (Maybe Key)
-catKey ref = parsePointer . fromInternalGitPath . decodeBS . L.take maxsz 
-	<$> catObject ref
-  where
-	-- Want to avoid buffering really big files in git into memory.
-	-- 8192 bytes is plenty for a pointer to a key.
-	-- Pad some more to allow for any pointer files that might have
-	-- lines after the key explaining what the file is used for.
-	maxsz = 81920
-
-{- Only look at the first line of a pointer file. -}
-parsePointer :: String -> Maybe Key
-parsePointer s = headMaybe (lines s) >>= go
-  where
-	go l
-		| isLinkToAnnex l = file2key $ takeFileName l
-		| otherwise = Nothing
+catKey ref = parseLinkOrPointer <$> catObject ref
 
 {- Gets a symlink target. -}
 catSymLinkTarget :: Sha -> Annex String

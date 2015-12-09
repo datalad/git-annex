@@ -9,16 +9,14 @@ module Command.Smudge where
 
 import Common.Annex
 import Command
-import Types.Key
 import Annex.Content
-import Annex.CatFile
+import Annex.Link
 import Annex.MetaData
 import Annex.FileMatcher
 import Types.KeySource
 import Backend
 import Logs.Location
 import qualified Database.AssociatedFiles as AssociatedFiles
-import Git.FilePath
 
 import qualified Data.ByteString.Lazy as B
 
@@ -46,16 +44,13 @@ seek o = commandAction $
 -- available annex object, should output its content.
 smudge :: FilePath -> CommandStart
 smudge file = do
-	liftIO $ fileEncoding stdin
-	s <- liftIO $ hGetContents stdin
-	case parsePointer s of
-		Nothing -> liftIO $ putStr s
+	b <- liftIO $ B.hGetContents stdin
+	case parseLinkOrPointer b of
+		Nothing -> liftIO $ B.putStr b
 		Just k -> do
 			updateAssociatedFiles k file
 			content <- calcRepo (gitAnnexLocation k)
-			liftIO $ maybe
-				(putStr s)
-				(B.hPut stdout)
+			liftIO $ B.hPut stdout . fromMaybe b
 				=<< catchMaybeIO (B.readFile content)
 	stop
 
@@ -102,11 +97,8 @@ ingest file = do
 		=<< liftIO (getFileStatus file)
 	return k
 
--- Could add a newline and some text explaining this file is a pointer.
--- parsePointer only looks at the first line.
 emitPointer :: Key -> IO ()
-emitPointer k = putStrLn $ toInternalGitPath $
-	pathSeparator:objectDir </> key2file k
+emitPointer = putStrLn . formatPointer
 
 updateAssociatedFiles :: Key -> FilePath -> Annex ()
 updateAssociatedFiles k f = do

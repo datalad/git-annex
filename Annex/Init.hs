@@ -29,11 +29,11 @@ import Types.TrustLevel
 import Annex.Version
 import Annex.Difference
 import Annex.UUID
+import Annex.Link
 import Config
 import Annex.Direct
 import Annex.Content.Direct
 import Annex.Environment
-import Backend
 import Annex.Hook
 import Upgrade
 #ifndef mingw32_HOST_OS
