@@ -14,6 +14,15 @@ import qualified Annex
 import Utility.InodeCache
 import Annex.Perms
 
+{- If the inodes have changed, only the size and mtime are compared. -}
+compareInodeCaches :: InodeCache -> InodeCache -> Annex Bool
+compareInodeCaches x y
+	| compareStrong x y = return True
+	| otherwise = ifM inodesChanged
+		( return $ compareWeak x y
+		, return False
+		)
+
 {- Some filesystems get new inodes each time they are mounted.
  - In order to work on such a filesystem, a sentinal file is used to detect
  - when the inodes have changed.

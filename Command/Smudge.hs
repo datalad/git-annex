@@ -16,7 +16,7 @@ import Annex.FileMatcher
 import Types.KeySource
 import Backend
 import Logs.Location
-import qualified Database.AssociatedFiles as AssociatedFiles
+import qualified Database.Keys
 
 import qualified Data.ByteString.Lazy as B
 
@@ -103,5 +103,5 @@ emitPointer = putStrLn . formatPointer
 
 updateAssociatedFiles :: Key -> FilePath -> Annex ()
 updateAssociatedFiles k f = do
-	AssociatedFiles.addDb k f
-	AssociatedFiles.flushDb
+	Database.Keys.addAssociatedFile k f
+	Database.Keys.flushDb

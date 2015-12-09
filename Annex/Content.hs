@@ -73,7 +73,8 @@ import qualified Backend
 import Types.NumCopies
 import Annex.UUID
 import Annex.InodeSentinal
-import qualified Database.AssociatedFiles as AssociatedFiles
+import Utility.InodeCache
+import qualified Database.Keys
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
@@ -447,10 +448,10 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
 		( alreadyhave
 		, modifyContent dest $ do
 			liftIO $ moveFile src dest
-			fs <- AssociatedFiles.getDb key
+			fs <- Database.Keys.getAssociatedFiles key
 			if null fs
 				then freezeContent dest
-				else mapM_ (populateAssociatedFile key dest) fs
+				else mapM_ (populatePointerFile key dest) fs
 		)
 	storeindirect = storeobject =<< calcRepo (gitAnnexLocation key)
 
@@ -480,8 +481,8 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
 	
 	alreadyhave = liftIO $ removeFile src
 
-populateAssociatedFile :: Key -> FilePath -> FilePath -> Annex ()
-populateAssociatedFile k obj f = go =<< isPointerFile f
+populatePointerFile :: Key -> FilePath -> FilePath -> Annex ()
+populatePointerFile k obj f = go =<< isPointerFile f
   where
 	go (Just k') | k == k' = liftIO $ do
 		nukeFile f
@@ -598,6 +599,8 @@ removeAnnex (ContentRemovalLock key) = withObjectLoc key remove removedirect
 		secureErase file
 		liftIO $ nukeFile file
 		removeInodeCache key
+		mapM_ (void . tryIO . resetPointerFile key)
+			=<< Database.Keys.getAssociatedFiles key
 	removedirect fs = do
 		cache <- recordedInodeCache key
 		removeInodeCache key
@@ -606,6 +609,32 @@ removeAnnex (ContentRemovalLock key) = withObjectLoc key remove removedirect
 		l <- calcRepo $ gitAnnexLink f key
 		secureErase f
 		replaceFile f $ makeAnnexLink l
+
+{- To safely reset a pointer file, it has to be the unmodified content of
+ - the key. The expensive way to tell is to do a verification of its content.
+ - The cheaper way is to see if the InodeCache for the key matches the
+ - file.
+ -}
+resetPointerFile :: Key -> FilePath -> Annex ()
+resetPointerFile key f = go =<< geti
+  where
+	go Nothing = noop
+	go (Just fc) = ifM (cheapcheck fc <||> expensivecheck fc)
+		( do
+			secureErase f
+			liftIO $ nukeFile f
+			liftIO $ writeFile f (formatPointer key)
+		, noop
+		)
+	cheapcheck fc = maybe (return False) (compareInodeCaches fc)
+		=<< Database.Keys.getInodeCache key
+	expensivecheck fc = ifM (verifyKeyContent AlwaysVerify Types.Remote.UnVerified key f)
+		-- The file could have been modified while it was
+		-- being verified. Detect that.
+		( geti >>= maybe (return False) (compareInodeCaches fc)
+		, return False
+		)
+	geti = withTSDelta (liftIO . genInodeCache f)
 
 {- Runs the secure erase command if set, otherwise does nothing.
  - File may or may not be deleted at the end; caller is responsible for

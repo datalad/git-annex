@@ -180,15 +180,6 @@ sameFileStatus key f status = do
 		([], Nothing) -> return True
 		_ -> return False
 
-{- If the inodes have changed, only the size and mtime are compared. -}
-compareInodeCaches :: InodeCache -> InodeCache -> Annex Bool
-compareInodeCaches x y
-	| compareStrong x y = return True
-	| otherwise = ifM inodesChanged
-		( return $ compareWeak x y
-		, return False
-		)
-
 elemInodeCaches :: InodeCache -> [InodeCache] -> Annex Bool
 elemInodeCaches _ [] = return False
 elemInodeCaches c (l:ls) = ifM (compareInodeCaches c l)

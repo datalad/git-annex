@@ -13,6 +13,7 @@ import Database.Persist.TH
 import Data.Maybe
 
 import Types.Key
+import Utility.InodeCache
 
 -- A serialized Key
 newtype SKey = SKey String
@@ -22,6 +23,18 @@ toSKey :: Key -> SKey
 toSKey = SKey . key2file
 
 fromSKey :: SKey -> Key
-fromSKey (SKey s) = fromMaybe (error $ "bad serialied key " ++ s) (file2key s)
+fromSKey (SKey s) = fromMaybe (error $ "bad serialied Key " ++ s) (file2key s)
 
 derivePersistField "SKey"
+
+-- A serialized InodeCache
+newtype SInodeCache = I String
+	deriving (Show, Read)
+
+toSInodeCache :: InodeCache -> SInodeCache
+toSInodeCache = I . showInodeCache
+
+fromSInodeCache :: SInodeCache -> InodeCache
+fromSInodeCache (I s) = fromMaybe (error $ "bad serialied InodeCache " ++ s) (readInodeCache s)
+
+derivePersistField "SInodeCache"

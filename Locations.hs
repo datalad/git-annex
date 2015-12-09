@@ -29,8 +29,8 @@ module Locations (
 	gitAnnexBadDir,
 	gitAnnexBadLocation,
 	gitAnnexUnusedLog,
-	gitAnnexAssociatedFilesDb,
-	gitAnnexAssociatedFilesDbLock,
+	gitAnnexKeysDb,
+	gitAnnexKeysDbLock,
 	gitAnnexFsckState,
 	gitAnnexFsckDbDir,
 	gitAnnexFsckDbLock,
@@ -239,13 +239,13 @@ gitAnnexBadLocation key r = gitAnnexBadDir r </> keyFile key
 gitAnnexUnusedLog :: FilePath -> Git.Repo -> FilePath
 gitAnnexUnusedLog prefix r = gitAnnexDir r </> (prefix ++ "unused")
 
-{- .git/annex/map/ contains a database for the associated files map -}
-gitAnnexAssociatedFilesDb :: Git.Repo -> FilePath
-gitAnnexAssociatedFilesDb r = gitAnnexDir r </> "map"
+{- .git/annex/keys/ contains a database of information about keys. -}
+gitAnnexKeysDb :: Git.Repo -> FilePath
+gitAnnexKeysDb r = gitAnnexDir r </> "keys"
 
-{- Lock file for the associated files map database. -}
-gitAnnexAssociatedFilesDbLock :: Git.Repo -> FilePath
-gitAnnexAssociatedFilesDbLock r = gitAnnexAssociatedFilesDb r ++ "lck"
+{- Lock file for the keys database. -}
+gitAnnexKeysDbLock :: Git.Repo -> FilePath
+gitAnnexKeysDbLock r = gitAnnexKeysDb r ++ "lck"
 
 {- .git/annex/fsck/uuid/ is used to store information about incremental
  - fscks. -}

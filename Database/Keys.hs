@@ -1,4 +1,4 @@
-{- Sqlite database used for tracking a key's associated files.
+{- Sqlite database of information about Keys
  -
  - Copyright 2015 Joey Hess <id@joeyh.name>
  -:
@@ -10,19 +10,22 @@
 {-# LANGUAGE MultiParamTypeClasses, GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE RankNTypes #-}
 
-module Database.AssociatedFiles (
+module Database.Keys (
 	DbHandle,
 	openDb,
 	flushDb,
 	closeDb,
-	addDb,
-	getDb,
-	removeDb,
+	addAssociatedFile,
+	getAssociatedFiles,
+	removeAssociatedFile,
+	setInodeCache,
+	getInodeCache,
 	AssociatedId,
+	DataId,
 ) where
 
 import Database.Types
-import Database.AssociatedFiles.Types
+import Database.Keys.Types
 import qualified Database.Handle as H
 import Locations
 import Common hiding (delete)
@@ -31,30 +34,35 @@ import Types.Key
 import Annex.Perms
 import Annex.LockFile
 import Messages
+import Utility.InodeCache
 
 import Database.Persist.TH
 import Database.Esqueleto hiding (Key)
 
-share [mkPersist sqlSettings, mkMigrate "migrateAssociated"] [persistLowerCase|
+share [mkPersist sqlSettings, mkMigrate "migrateKeysDb"] [persistLowerCase|
 Associated
   key SKey
   file FilePath
   KeyFileIndex key file
+Data
+  key SKey
+  inodeCache SInodeCache
+  KeyIndex key
 |]
 
 {- Opens the database, creating it if it doesn't exist yet. -}
 openDb :: Annex DbHandle
-openDb = withExclusiveLock gitAnnexAssociatedFilesDbLock $ do
-	dbdir <- fromRepo gitAnnexAssociatedFilesDb
+openDb = withExclusiveLock gitAnnexKeysDbLock $ do
+	dbdir <- fromRepo gitAnnexKeysDb
 	let db = dbdir </> "db"
 	unlessM (liftIO $ doesFileExist db) $ do
 		liftIO $ do
 			createDirectoryIfMissing True dbdir
 			H.initDb db $ void $
-				runMigrationSilent migrateAssociated
+				runMigrationSilent migrateKeysDb
 		setAnnexDirPerm dbdir
 		setAnnexFilePerm db
-	h <- liftIO $ H.openDb db "associated"
+	h <- liftIO $ H.openDb db "data"
 
 	-- work around https://github.com/yesodweb/persistent/issues/474
 	liftIO setConsoleEncoding
@@ -70,19 +78,19 @@ withDbHandle a = do
 	liftIO $ a h
 
 dbHandle :: Annex DbHandle
-dbHandle = maybe startup return =<< Annex.getState Annex.associatedfilesdbhandle
+dbHandle = maybe startup return =<< Annex.getState Annex.keysdbhandle
   where
 	startup = do
 		h <- openDb
-		Annex.changeState $ \s -> s { Annex.associatedfilesdbhandle = Just h }
+		Annex.changeState $ \s -> s { Annex.keysdbhandle = Just h }
 		return h
 
 {- Flushes any changes made to the database. -}
 flushDb :: Annex ()
 flushDb = withDbHandle H.flushQueueDb
 
-addDb :: Key -> FilePath -> Annex ()
-addDb k f = withDbHandle $ \h -> H.queueDb h (\_ _ -> pure True) $ do
+addAssociatedFile :: Key -> FilePath -> Annex ()
+addAssociatedFile k f = withDbHandle $ \h -> H.queueDb h (\_ _ -> pure True) $ do
 	-- If the same file was associated with a different key before,
 	-- remove that.
 	delete $ from $ \r -> do
@@ -91,21 +99,35 @@ addDb k f = withDbHandle $ \h -> H.queueDb h (\_ _ -> pure True) $ do
   where
 	sk = toSKey k
 
-{- Note that the files returned used to be associated with the key, but
+{- Note that the files returned were once associated with the key, but
  - some of them may not be any longer. -}
-getDb :: Key -> Annex [FilePath]
-getDb k = withDbHandle $ \h -> H.queryDb h $ getDb' $ toSKey k
+getAssociatedFiles :: Key -> Annex [FilePath]
+getAssociatedFiles k = withDbHandle $ \h -> H.queryDb h $
+	getAssociatedFiles' $ toSKey k
 
-getDb' :: SKey -> SqlPersistM [FilePath]
-getDb' sk = do
+getAssociatedFiles' :: SKey -> SqlPersistM [FilePath]
+getAssociatedFiles' sk = do
 	l <- select $ from $ \r -> do
 		where_ (r ^. AssociatedKey ==. val sk)
 		return (r ^. AssociatedFile)
 	return $ map unValue l
 
-removeDb :: Key -> FilePath -> Annex ()
-removeDb k f =  withDbHandle $ \h -> H.queueDb h (\_ _ -> pure True) $
+removeAssociatedFile :: Key -> FilePath -> Annex ()
+removeAssociatedFile k f =  withDbHandle $ \h -> H.queueDb h (\_ _ -> pure True) $
 	delete $ from $ \r -> do
 		where_ (r ^. AssociatedKey ==. val sk &&. r ^. AssociatedFile ==. val f)
+  where
+	sk = toSKey k
+
+setInodeCache :: Key -> InodeCache -> Annex ()
+setInodeCache k i = withDbHandle $ \h -> H.queueDb h (\_ _ -> pure True) $
+	void $ upsert (Data (toSKey k) (toSInodeCache i)) []
+
+getInodeCache :: Key -> Annex (Maybe (InodeCache))
+getInodeCache k = withDbHandle $ \h -> H.queryDb h $ do
+	l <- select $ from $ \r -> do
+		where_ (r ^. DataKey ==. val sk)
+		return (r ^. DataInodeCache)
+	return $ headMaybe $ map (fromSInodeCache . unValue) l
   where
 	sk = toSKey k
