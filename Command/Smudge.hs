@@ -54,21 +54,22 @@ smudge file = do
 				=<< catchMaybeIO (B.readFile content)
 	stop
 
--- Clean filter decides if a file should be stored in the annex, and
--- outputs a pointer to its injested content.
+-- Clean filter is fed file content on stdin, decides if a file
+-- should be stored in the annex, and outputs a pointer to its
+-- injested content.
 clean :: FilePath -> CommandStart
 clean file = do
-	ifM (shouldAnnex file)
-		( do
-			k <- ingest file
-			updateAssociatedFiles k file
-			liftIO $ emitPointer k
-		, liftIO cat
-		)
+	b <- liftIO $ B.hGetContents stdin
+	if isJust (parseLinkOrPointer b)
+		then liftIO $ B.hPut stdout b
+		else ifM (shouldAnnex file)
+			( do
+				k <- ingest file
+				updateAssociatedFiles k file
+				liftIO $ emitPointer k
+			, liftIO $ B.hPut stdout b
+			)
 	stop
-
-cat :: IO ()
-cat = B.hGetContents stdin >>= B.hPut stdout
 
 shouldAnnex :: FilePath -> Annex Bool
 shouldAnnex file = do
