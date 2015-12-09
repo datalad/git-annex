@@ -1,3 +1,4 @@
+git-annex (6.20151225) unstable; urgency=medium
 
   * annex.version increased to 6, but version 5 is also still supported.
   * The upgrade to version 6 is not done fully automatically, because
@@ -8,6 +9,8 @@
   * init: Configure .git/info/attributes to use git-annex as a smudge
     filter. Note that this changes the default behavior of git add in a
     newly initialized repository; it will add files to the annex.
+ 
+ -- Joey Hess <id@joeyh.name>  Tue, 08 Dec 2015 11:14:03 -0400
 
 git-annex (5.20151208) unstable; urgency=medium
 

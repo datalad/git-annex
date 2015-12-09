@@ -63,7 +63,7 @@ import Config
 import Git.SharedRepository
 import Annex.Perms
 import Annex.Link
-import Annex.Content.Direct
+import qualified Annex.Content.Direct as Direct
 import Annex.ReplaceFile
 import Annex.LockPool
 import Messages.Progress
@@ -100,7 +100,7 @@ inAnnex' isgood bad check key = withObjectLoc key checkindirect checkdirect
 	checkdirect (loc:locs) = do
 		r <- check loc
 		if isgood r
-			then ifM (goodContent key loc)
+			then ifM (Direct.goodContent key loc)
 				( return r
 				, checkdirect locs
 				)
@@ -471,12 +471,12 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
 		v <- isAnnexLink f
 		if Just key == v
 			then do
-				updateInodeCache key src
+				Direct.updateInodeCache key src
 				replaceFile f $ liftIO . moveFile src
 				chmodContent f
 				forM_ fs $
-					addContentWhenNotPresent key f
-			else ifM (goodContent key f)
+					Direct.addContentWhenNotPresent key f
+			else ifM (Direct.goodContent key f)
 				( storedirect' alreadyhave fs
 				, storedirect' fallback fs
 				)
@@ -551,10 +551,10 @@ prepSendAnnex key = withObjectLoc key indirect direct
 	indirect f = return $ Just (f, return True)
 	direct [] = return Nothing
 	direct (f:fs) = do
-		cache <- recordedInodeCache key
+		cache <- Direct.recordedInodeCache key
 		-- check that we have a good file
-		ifM (sameInodeCache f cache)
-			( return $ Just (f, sameInodeCache f cache)
+		ifM (Direct.sameInodeCache f cache)
+			( return $ Just (f, Direct.sameInodeCache f cache)
 			, direct fs
 			)
 
@@ -566,7 +566,7 @@ prepSendAnnex key = withObjectLoc key indirect direct
 withObjectLoc :: Key -> (FilePath -> Annex a) -> ([FilePath] -> Annex a) -> Annex a
 withObjectLoc key indirect direct = ifM isDirect
 	( do
-		fs <- associatedFiles key
+		fs <- Direct.associatedFiles key
 		if null fs
 			then goindirect
 			else direct fs
@@ -605,12 +605,12 @@ removeAnnex (ContentRemovalLock key) = withObjectLoc key remove removedirect
 		mapM_ (void . tryIO . resetPointerFile key)
 			=<< Database.Keys.getAssociatedFiles key
 		Database.Keys.removeInodeCaches key
-		removeInodeCache key
+		Direct.removeInodeCache key
 	removedirect fs = do
-		cache <- recordedInodeCache key
-		removeInodeCache key
+		cache <- Direct.recordedInodeCache key
+		Direct.removeInodeCache key
 		mapM_ (resetfile cache) fs
-	resetfile cache f = whenM (sameInodeCache f cache) $ do
+	resetfile cache f = whenM (Direct.sameInodeCache f cache) $ do
 		l <- calcRepo $ gitAnnexLink f key
 		secureErase f
 		replaceFile f $ makeAnnexLink l
@@ -713,7 +713,7 @@ getKeysPresent keyloc = do
 		InRepository -> case fileKey (takeFileName d) of
 			Nothing -> return False
 			Just k -> Annex.eval s $ 
-				anyM (goodContent k) =<< associatedFiles k
+				anyM (Direct.goodContent k) =<< Direct.associatedFiles k
 
 	{- In order to run Annex monad actions within unsafeInterleaveIO,
 	 - the current state is taken and reused. No changes made to this
