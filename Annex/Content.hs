@@ -518,7 +518,7 @@ data LinkAnnexResult = LinkAnnexOk | LinkAnnexFailed | LinkAnnexNoop
 
 {- Runs an action to transfer an object's content.
  -
- - In direct mode, it's possible for the file to change as it's being sent.
+ - In some cases, it's possible for the file to change as it's being sent.
  - If this happens, runs the rollback action and returns False. The
  - rollback action should remove the data that was transferred.
  -}
@@ -538,8 +538,9 @@ sendAnnex key rollback sendobject = go =<< prepSendAnnex key
 {- Returns a file that contains an object's content,
  - and a check to run after the transfer is complete.
  -
- - In direct mode, it's possible for the file to change as it's being sent,
- - and the check detects this case and returns False.
+ - When a file is unlocked (or in direct mode), it's possble for its
+ - content to change as it's being sent. The check detects this case
+ - and returns False.
  -
  - Note that the returned check action is, in some cases, run in the
  - Annex monad of the remote that is receiving the object, rather than
@@ -548,13 +549,26 @@ sendAnnex key rollback sendobject = go =<< prepSendAnnex key
 prepSendAnnex :: Key -> Annex (Maybe (FilePath, Annex Bool))
 prepSendAnnex key = withObjectLoc key indirect direct
   where
-	indirect f = return $ Just (f, return True)
+	indirect f = do
+		cache <- Database.Keys.getInodeCaches key
+		cache' <- if null cache
+			-- Since no inode cache is in the database, this
+			-- object is not currently unlocked. But that could
+			-- change while the transfer is in progress, so
+			-- generate an inode cache for the starting
+			-- content.
+			then maybeToList <$>
+				withTSDelta (liftIO . genInodeCache f)
+			else pure cache
+		return $ if null cache'
+			then Nothing
+			else Just (f, sameInodeCache f cache')
 	direct [] = return Nothing
 	direct (f:fs) = do
 		cache <- Direct.recordedInodeCache key
 		-- check that we have a good file
-		ifM (Direct.sameInodeCache f cache)
-			( return $ Just (f, Direct.sameInodeCache f cache)
+		ifM (sameInodeCache f cache)
+			( return $ Just (f, sameInodeCache f cache)
 			, direct fs
 			)
 
