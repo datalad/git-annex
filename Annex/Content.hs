@@ -84,7 +84,10 @@ inAnnex key = inAnnexCheck key $ liftIO . doesFileExist
 inAnnexCheck :: Key -> (FilePath -> Annex Bool) -> Annex Bool
 inAnnexCheck key check = inAnnex' id False check key
 
-{- Generic inAnnex, handling both indirect and direct mode.
+{- inAnnex that performs an arbitrary check of the key's content.
+ -
+ - When the content is unlocked, it must also be unmodified, or the bad
+ - value will be returned.
  -
  - In direct mode, at least one of the associated files must pass the
  - check. Additionally, the file must be unmodified.
@@ -93,9 +96,17 @@ inAnnex' :: (a -> Bool) -> a -> (FilePath -> Annex a) -> Key -> Annex a
 inAnnex' isgood bad check key = withObjectLoc key checkindirect checkdirect
   where
 	checkindirect loc = do
-		whenM (fromRepo Git.repoIsUrl) $
-			error "inAnnex cannot check remote repo"
-		check loc
+		r <- check loc
+		if isgood r
+			then do
+				cache <- Database.Keys.getInodeCaches key
+				if null cache
+					then return r
+					else ifM (sameInodeCache loc cache)
+						( return r
+						, return bad
+						)
+			else return bad
 	checkdirect [] = return bad
 	checkdirect (loc:locs) = do
 		r <- check loc

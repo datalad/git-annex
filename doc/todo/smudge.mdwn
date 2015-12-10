@@ -325,14 +325,11 @@ files to be unlocked, while the indirect upgrades don't touch the files.
 
 #### implementation todo list
 
-* inAnnex check should fail in the case where an annexed object is unlocked
-  and has had its content changed. Could use an InodeCache for
-  such objects. This parallels how inAnnex checks work for direct mode.
 * Reconcile staged changes into the associated files database, whenever
   the database is queried.
-* See if the cases where the associated files database is not used can be
-  optimised. Eg, if the associated files database doesn't exist at all,
-  we know smudge/clean are not used, so queries for associated files don't
+* See if the cases where the Keys database is not used can be
+  optimised. Eg, if the Keys database doesn't exist at all,
+  we know smudge/clean are not used, so queries don't
   need to open the database or do reconciliation, but can simply return none.
   Also, no need for Backend.lookupFile to catKeyFile in this case
   (when not in direct mode).
