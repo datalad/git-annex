@@ -353,6 +353,11 @@ files to be unlocked, while the indirect upgrades don't touch the files.
   - Should probably automatically handle merge conflicts between annex
     symlinks and pointer files too. Maybe by always resulting in a pointer
     file, since the symlinks don't work everwhere.
+* Crippled filesystem should cause all files to be transparently unlocked.
+  Note that this presents problems when dealing with merge conflicts and
+  when pushing changes committed in such a repo. Ideally, should avoid
+  committing implicit unlocks, or should prevent such commits leaking out
+  in pushes.
 
 ----
 
