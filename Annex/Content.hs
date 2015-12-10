@@ -25,6 +25,7 @@ module Annex.Content (
 	checkDiskSpace,
 	moveAnnex,
 	linkAnnex,
+	linkAnnex',
 	LinkAnnexResult(..),
 	sendAnnex,
 	prepSendAnnex,
@@ -514,15 +515,21 @@ populatePointerFile k obj f = go =<< isPointerFile f
 linkAnnex :: Key -> FilePath -> Annex LinkAnnexResult
 linkAnnex key src = do
 	dest <- calcRepo (gitAnnexLocation key)
+	modifyContent dest $ linkAnnex' key src dest
+
+{- Hard links (or copies) src to dest, one of which should be the
+ - annex object. -}
+linkAnnex' :: Key -> FilePath -> FilePath -> Annex LinkAnnexResult
+linkAnnex' key src dest = 
 	ifM (liftIO $ doesFileExist dest)
 		( return LinkAnnexNoop
-		, modifyContent dest $
-			ifM (liftIO $ createLinkOrCopy src dest)
-				( do
-					Database.Keys.storeInodeCaches key [dest, src]
-					return LinkAnnexOk
-				, return LinkAnnexFailed
-				)
+		, ifM (liftIO $ createLinkOrCopy src dest)
+			( do
+				thawContent dest
+				Database.Keys.storeInodeCaches key [dest, src]
+				return LinkAnnexOk
+			, return LinkAnnexFailed
+			)
 		)
 
 data LinkAnnexResult = LinkAnnexOk | LinkAnnexFailed | LinkAnnexNoop

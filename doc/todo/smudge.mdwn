@@ -325,6 +325,8 @@ files to be unlocked, while the indirect upgrades don't touch the files.
 
 #### implementation todo list
 
+* linkAnnex should check disk reserve when it falls back to copying the
+  file.
 * Reconcile staged changes into the associated files database, whenever
   the database is queried.
 * See if the cases where the Keys database is not used can be
