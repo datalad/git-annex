@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://openid.stackexchange.com/user/27ceb3c5-0762-42b8-8f8a-ed21c284748f"
+ nickname="g"
+ subject="The downside"
+ date="2015-12-10T03:45:09Z"
+ content="""
+If I'm understanding correctly, that one downside (requiring all checkouts to have all files be direct if any filesystems require it) seems to be a fairly major limitation, no? Changing the concept of locked/unlocked files from being a local, per-repo concern to a global one seems like quite a major change.
+
+For instance, would mean that any public repo using git annex for distributing a set of data files would either have to have all files be unlocked, or else no one would be able clone onto a FAT32-formatted external hdd?
+
+
+FWIW, the particular use case I'm concerned about personally is having my annexes on my android device.
+"""]]
