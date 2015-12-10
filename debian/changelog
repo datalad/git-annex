@@ -1,3 +1,9 @@
+git-annex (5.20151209) UNRELEASED; urgency=medium
+
+  * Add S3 features to git-annex version output.
+
+ -- Joey Hess <id@joeyh.name>  Thu, 10 Dec 2015 11:39:34 -0400
+
 git-annex (5.20151208) unstable; urgency=medium
 
   * Build with -j1 again to get reproducible build.
