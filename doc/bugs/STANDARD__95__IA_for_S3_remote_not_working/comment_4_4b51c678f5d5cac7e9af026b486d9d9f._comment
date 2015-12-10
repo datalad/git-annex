@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-12-10T15:23:12Z"
+ content="""
+I've added something to `git annex version` about this today:
+"S3(storageclasses)"
+
+The prebuilt linux builds currently use package versions from Debian 
+unstable, so we have to wait for the aws package to get updated there.
+(I could hand-hack it, but that would make the build break later.)
+
+The Windows and OSX builds have already been updated; the latter only just
+now, so it'll be in the next daily build. Updating the Android build
+environment is a massive pain and I try to only do that bi-anually.
+"""]]
