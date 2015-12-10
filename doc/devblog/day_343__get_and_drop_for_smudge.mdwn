@@ -1,0 +1,26 @@
+Well, another day working on smudge filters, or unlocked files as the
+feature will be known when it's ready. Got both `git annex get` and `git
+annex drop` working for these files today.
+
+Get was the easy part; it just has to hard link or copy the object to the
+work tree file(s) that point to it.
+
+Handling dropping was hard. If the user drops a file, but it's unlocked and
+modified, it shouldn't reset it to the pointer file. For this, I reused the
+InodeCache stuff that was built for direct mode. So the sqlite database
+tracks the InodeCaches of unlocked files, and when a key is dropped it can
+check if the file is modified.
+
+But that's not a complete solution, because when git uses a clean filter,
+it will write the file itself, and git-annex won't have an InodeCache for
+it. To handle this case, git-annex will fall back to verifying the content
+of the file when dropping it if its InodeCache isn't known.
+Bit of a shame to need an expensive checksum to drop an unlocked file;
+maybe the git clean filter interface will eventually be improved to let
+git-annex use it more efficiently.
+
+Anyway, smudged aka unlocked files are working now well enough to be a
+proof of concept. I have several missing safety checks that need to be
+added to get the implementation to be really correct, and quite a lot
+of polishing still to do, including making `unlock`, `lock`, `fsck`,
+and `merge` handle them, and finishing repository upgrade code.

@@ -37,6 +37,12 @@ buildFlags = filter (not . null)
 #endif
 #ifdef WITH_S3
 	, "S3"
+#if MIN_VERSION_aws(0,10,6)
+		++ "(multipartupload)"
+#endif
+#if MIN_VERSION_aws(0,13,0)
+		++ "(storageclasses)"
+#endif
 #else
 #warning Building without S3.
 #endif

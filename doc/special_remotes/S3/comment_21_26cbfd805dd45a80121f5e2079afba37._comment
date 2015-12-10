@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 21"""
+ date="2015-12-10T15:20:43Z"
+ content="""
+@cantora with a recent enough version of git-annex, `git annex info
+$theremotename` will show quite a lot of information about a special
+remote, including encryption details.
+"""]]
