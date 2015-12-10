@@ -110,11 +110,22 @@ hashSymlink' :: Git.HashObject.HashObjectHandle -> LinkTarget -> Annex Sha
 hashSymlink' h linktarget = liftIO $ Git.HashObject.hashBlob h $
 	toInternalGitPath linktarget
 
-{- Stages a symlink to the annex, using a Sha of its target. -}
+{- Stages a symlink to an annexed object, using a Sha of its target. -}
 stageSymlink :: FilePath -> Sha -> Annex ()
 stageSymlink file sha =
 	Annex.Queue.addUpdateIndex =<<
 		inRepo (Git.UpdateIndex.stageSymlink file sha)
+
+{- Injects a pointer file content into git, returning its Sha. -}
+hashPointerFile :: Key -> Annex Sha
+hashPointerFile key = inRepo $ Git.HashObject.hashObject BlobObject $
+	formatPointer key
+
+{- Stages a pointer file, using a Sha of its content -}
+stagePointerFile :: FilePath -> Sha -> Annex ()
+stagePointerFile file sha =
+	Annex.Queue.addUpdateIndex =<<
+		inRepo (Git.UpdateIndex.stageFile sha FileBlob file)
 
 {- Parses a symlink target or a pointer file to a Key.
  - Only looks at the first line, as pointer files can have subsequent
@@ -138,7 +149,8 @@ parseLinkOrPointer' s = headMaybe (lines (fromInternalGitPath s)) >>= go
 		| otherwise = Nothing
 
 formatPointer :: Key -> String
-formatPointer k = toInternalGitPath $ pathSeparator:objectDir </> key2file k
+formatPointer k = 
+	toInternalGitPath (pathSeparator:objectDir </> key2file k) ++ "\n"
 
 {- Checks if a file is a pointer to a key. -}
 isPointerFile :: FilePath -> Annex (Maybe Key)

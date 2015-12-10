@@ -99,4 +99,4 @@ ingest file = do
 	return k
 
 emitPointer :: Key -> IO ()
-emitPointer = putStrLn . formatPointer
+emitPointer = putStr . formatPointer
