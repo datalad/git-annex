@@ -162,14 +162,6 @@ removeInodeCache key = withInodeCacheFile key $ \f ->
 withInodeCacheFile :: Key -> (FilePath -> Annex a) -> Annex a
 withInodeCacheFile key a = a =<< calcRepo (gitAnnexInodeCache key)
 
-{- Checks if a InodeCache matches the current version of a file. -}
-sameInodeCache :: FilePath -> [InodeCache] -> Annex Bool
-sameInodeCache _ [] = return False
-sameInodeCache file old = go =<< withTSDelta (liftIO . genInodeCache file)
-  where
-	go Nothing = return False
-	go (Just curr) = elemInodeCaches curr old
-
 {- Checks if a FileStatus matches the recorded InodeCache of a file. -}
 sameFileStatus :: Key -> FilePath -> FileStatus -> Annex Bool
 sameFileStatus key f status = do
@@ -179,13 +171,6 @@ sameFileStatus key f status = do
 		(_, Just c) -> elemInodeCaches c old
 		([], Nothing) -> return True
 		_ -> return False
-
-elemInodeCaches :: InodeCache -> [InodeCache] -> Annex Bool
-elemInodeCaches _ [] = return False
-elemInodeCaches c (l:ls) = ifM (compareInodeCaches c l)
-	( return True
-	, elemInodeCaches c ls
-	)
 
 compareInodeCachesWith :: Annex InodeComparisonType
 compareInodeCachesWith = ifM inodesChanged ( return Weakly, return Strongly )

@@ -14,7 +14,8 @@ import qualified Annex
 import Utility.InodeCache
 import Annex.Perms
 
-{- If the inodes have changed, only the size and mtime are compared. -}
+{- If the sendinal shows the inodes have changed, only the size and mtime
+ - are compared. -}
 compareInodeCaches :: InodeCache -> InodeCache -> Annex Bool
 compareInodeCaches x y
 	| compareStrong x y = return True
@@ -22,6 +23,22 @@ compareInodeCaches x y
 		( return $ compareWeak x y
 		, return False
 		)
+
+{- Checks if one of the provided old InodeCache matches the current
+ - version of a file. -}
+sameInodeCache :: FilePath -> [InodeCache] -> Annex Bool
+sameInodeCache _ [] = return False
+sameInodeCache file old = go =<< withTSDelta (liftIO . genInodeCache file)
+  where
+	go Nothing = return False
+	go (Just curr) = elemInodeCaches curr old
+
+elemInodeCaches :: InodeCache -> [InodeCache] -> Annex Bool
+elemInodeCaches _ [] = return False
+elemInodeCaches c (l:ls) = ifM (compareInodeCaches c l)
+	( return True
+	, elemInodeCaches c ls
+	)
 
 {- Some filesystems get new inodes each time they are mounted.
  - In order to work on such a filesystem, a sentinal file is used to detect
