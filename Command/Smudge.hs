@@ -86,7 +86,7 @@ ingest file = do
 		}
 	k <- fst . fromMaybe (error "failed to generate a key")
 		<$> genKey source backend
-	-- Hard link (or copy) file content to annex
+	-- Hard link (or copy) file content to annex object
 	-- to prevent it from being lost when git checks out
 	-- a branch not containing this file.
 	r <- linkAnnex k file

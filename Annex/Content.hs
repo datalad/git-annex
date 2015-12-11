@@ -72,11 +72,12 @@ import Messages.Progress
 import qualified Types.Remote
 import qualified Types.Backend
 import qualified Backend
+import qualified Database.Keys
 import Types.NumCopies
 import Annex.UUID
 import Annex.InodeSentinal
 import Utility.InodeCache
-import qualified Database.Keys
+import Utility.PosixFiles
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
@@ -389,7 +390,7 @@ withTmp key action = do
 	return res
 
 {- Checks that there is disk space available to store a given key,
- - in a destination (or the annex) printing a warning if not. 
+ - in a destination directory (or the annex) printing a warning if not. 
  -
  - If the destination is on the same filesystem as the annex,
  - checks for any other running downloads, removing the amount of data still
@@ -397,7 +398,12 @@ withTmp key action = do
  - when doing concurrent downloads.
  -}
 checkDiskSpace :: Maybe FilePath -> Key -> Integer -> Bool -> Annex Bool
-checkDiskSpace destdir key alreadythere samefilesystem = ifM (Annex.getState Annex.force)
+checkDiskSpace destdir key = checkDiskSpace' (fromMaybe 1 (keySize key)) destdir key
+
+{- Allows specifying the size of the key, if it's known, which is useful
+ - as not all keys know their size. -}
+checkDiskSpace' :: Integer -> Maybe FilePath -> Key -> Integer -> Bool -> Annex Bool
+checkDiskSpace' need destdir key alreadythere samefilesystem = ifM (Annex.getState Annex.force)
 	( return True
 	, do
 		-- We can't get inprogress and free at the same
@@ -410,8 +416,8 @@ checkDiskSpace destdir key alreadythere samefilesystem = ifM (Annex.getState Ann
 			then sizeOfDownloadsInProgress (/= key)
 			else pure 0
 		free <- liftIO . getDiskFree =<< dir
-		case (free, fromMaybe 1 (keySize key)) of
-			(Just have, need) -> do
+		case free of
+			Just have -> do
 				reserve <- annexDiskReserve <$> Annex.getGitConfig
 				let delta = need + reserve - have - alreadythere + inprogress
 				let ok = delta <= 0
@@ -499,14 +505,15 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
 populatePointerFile :: Key -> FilePath -> FilePath -> Annex ()
 populatePointerFile k obj f = go =<< isPointerFile f
   where
-	go (Just k') | k == k' = liftIO $ do
-		nukeFile f
-		unlessM (catchBoolIO $ createLinkOrCopy obj f) $
-			writeFile f (formatPointer k)
+	go (Just k') | k == k' = do
+		liftIO $ nukeFile f
+		unlessM (linkAnnex'' k obj f) $
+			liftIO $ writeFile f (formatPointer k)
 	go _ = return ()
 
+
 {- Hard links a file into .git/annex/objects/, falling back to a copy
- - if necessary.
+ - if necessary. Does nothing if the object file already exists.
  -
  - Does not lock down the hard linked object, so that the user can modify
  - the source file. So, adding an object to the annex this way can
@@ -524,7 +531,7 @@ linkAnnex' :: Key -> FilePath -> FilePath -> Annex LinkAnnexResult
 linkAnnex' key src dest = 
 	ifM (liftIO $ doesFileExist dest)
 		( return LinkAnnexNoop
-		, ifM (liftIO $ createLinkOrCopy src dest)
+		, ifM (linkAnnex'' key src dest)
 			( do
 				thawContent dest
 				Database.Keys.storeInodeCaches key [dest, src]
@@ -534,6 +541,27 @@ linkAnnex' key src dest =
 		)
 
 data LinkAnnexResult = LinkAnnexOk | LinkAnnexFailed | LinkAnnexNoop
+
+{- Hard links or copies src to dest. Only uses a hard link if src
+ - is not already hardlinked to elsewhere. Checks disk reserve before
+ - copying, and will fail if not enough space, or if the dest file
+ - already exists. -}
+linkAnnex'' :: Key -> FilePath -> FilePath -> Annex Bool
+linkAnnex'' key src dest = catchBoolIO $ do
+	s <- liftIO $ getFileStatus src
+#ifndef mingw32_HOST_OS
+	if linkCount s > 1
+		then copy s
+		else liftIO (createLink src dest >> return True)
+			`catchIO` const (copy s)
+#else
+	copy s
+#endif
+  where
+	copy s = ifM (checkDiskSpace' (fromIntegral $ fileSize s) (Just $ takeDirectory dest) key 0 True)
+		( liftIO $ copyFileExternal CopyAllMetaData src dest
+		, return False
+		)
 
 {- Runs an action to transfer an object's content.
  -
