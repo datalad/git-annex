@@ -41,6 +41,7 @@ module Annex.Content (
 	dirKeys,
 	withObjectLoc,
 	staleKeysPrune,
+	isUnmodified,
 ) where
 
 import System.IO.Unsafe (unsafeInterleaveIO)
@@ -634,10 +635,21 @@ removeAnnex (ContentRemovalLock key) = withObjectLoc key remove removedirect
 	remove file = cleanObjectLoc key $ do
 		secureErase file
 		liftIO $ nukeFile file
-		mapM_ (void . tryIO . resetPointerFile key)
+		mapM_ (void . tryIO . resetpointer)
 			=<< Database.Keys.getAssociatedFiles key
 		Database.Keys.removeInodeCaches key
 		Direct.removeInodeCache key
+	resetpointer file = ifM (isUnmodified key file)
+		( do
+			secureErase file
+			liftIO $ nukeFile file
+			liftIO $ writeFile file (formatPointer key)	
+		-- Can't delete the pointer file.
+		-- If it was a hard link to the annex object,
+		-- that object might have been frozen as part of the
+		-- removal process, so thaw it.
+		, void $ tryIO $ thawContent file
+		)
 	removedirect fs = do
 		cache <- Direct.recordedInodeCache key
 		Direct.removeInodeCache key
@@ -647,25 +659,16 @@ removeAnnex (ContentRemovalLock key) = withObjectLoc key remove removedirect
 		secureErase f
 		replaceFile f $ makeAnnexLink l
 
-{- To safely reset a pointer file, it has to be the unmodified content of
- - the key. The expensive way to tell is to do a verification of its content.
+{- Check if a file contains the unmodified content of the key.
+ -
+ - The expensive way to tell is to do a verification of its content.
  - The cheaper way is to see if the InodeCache for the key matches the
  - file. -}
-resetPointerFile :: Key -> FilePath -> Annex ()
-resetPointerFile key f = go =<< geti
+isUnmodified :: Key -> FilePath -> Annex Bool
+isUnmodified key f = go =<< geti
   where
-	go Nothing = noop
-	go (Just fc) = ifM (cheapcheck fc <||> expensivecheck fc)
-		( do
-			secureErase f
-			liftIO $ nukeFile f
-			liftIO $ writeFile f (formatPointer key)
-		-- Can't delete the pointer file.
-		-- If it was a hard link to the annex object,
-		-- that object might have been frozen as part of the
-		-- removal process, so thaw it.
-		, thawContent f
-		)
+	go Nothing = return False
+	go (Just fc) = cheapcheck fc <||> expensivecheck fc
 	cheapcheck fc = anyM (compareInodeCaches fc)
 		=<< Database.Keys.getInodeCaches key
 	expensivecheck fc = ifM (verifyKeyContent AlwaysVerify Types.Remote.UnVerified key f)

@@ -233,9 +233,8 @@ git annex lock/unlock:
   transition repositories to using pointers, and a cleaner unlock/lock
   for repos using symlinks.
 
-  unlock will stage a pointer file, and will copy the content of the object
-  out of .git/annex/objects to the work tree file. (Might want a --hardlink
-  switch.)
+  unlock will stage a pointer file, and will link the content of the object
+  from .git/annex/objects to the work tree file.
   
   lock will replace the current work tree file with the symlink, and stage it.
   Note that multiple work tree files could point to the same object.
