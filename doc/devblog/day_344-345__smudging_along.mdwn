@@ -1,0 +1,7 @@
+New special remote alert! Chris Kastorff has made
+[a special remote supporting Backblaze's B2 storage servie](https://github.com/encryptio/git-annex-remote-b2).
+
+And I'm still working on v6 unlocked files. After beating on it for 2 more
+data, all git-annex commands should support them. There is still plenty
+of work to do on testing, upgrading, optimisation, merge conflict resolution,
+and reconciling staged changes.
