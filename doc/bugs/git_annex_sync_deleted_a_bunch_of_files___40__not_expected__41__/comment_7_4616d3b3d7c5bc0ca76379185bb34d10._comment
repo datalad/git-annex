@@ -1,0 +1,50 @@
+[[!comment format=mdwn
+ username="yminus"
+ subject="comment 7"
+ date="2015-12-10T22:25:26Z"
+ content="""
+I have the same problem as the initial reporter.
+
+USB drive is FAT32 in direct mode
+
+laptop is ext4 in indirect mode
+
+nas is ext4 in indirect mode
+
+Syncing nas with laptop and vice versa works with no problems.
+
+But as soon as I sync with USB drive it behaves like all commits on laptop and nas that happened since the last sync are reverted.
+
+I can recover the files on laptop and nas by ```git reset --hard origin/master``` and ```git reset --hard origin/synced/master``` on laptop or nas.
+
+However, I cannot reset master and synced/master on the USB drive (error is \"fatal: This operation must be run in a work tree\").
+
+This is the tree as seen from the on laptop after syncing and resetting as described above:
+
+    *   9bdc037 (n900/synced/master, n900/master) merge refs/heads/synced/master                                                 ### <--- THIS IS THE STATE WHEN SYNCING WITH USB DRIVE all added files are deleted
+    |\
+    | * 1236008 (HEAD -> master, origin/synced/master, origin/master, nas/synced/master, nas/master, synced/master) ADDED FILES  ### <--- THIS IS THE LAST GOOD STATE
+    | * 17c4f54 ADDED FILES
+    | *   364d525 Merge remote-tracking branch 'refs/remotes/origin/master'
+    | |\
+    | | * c18f170 ADDED FILES
+    | | * 9dd5668 ADDED FILES
+    | * | c3280fc ADDED FILES
+    | * | 2babe80 ADDED FILES
+    | * | b964e29 ADDED FILES
+    | * | 03f3bd1 ADDED FILES
+    | * | 010a469 ADDED FILES
+    | * | 8acf199 ADDED FILES
+    | * |   f2477bc Merge remote-tracking branch 'refs/remotes/origin/master'
+    | |\ \
+    | | |/
+    | | * 121ffd1 ADDED FILES
+    * | | dc88b8a (n900/annex/direct/master) git-annex in lars@lars-laptop:/run/media/lars/Nokia N900/.sounds/Musik              ### <--- THIS IS THE CURRENT STATE ON THE USB DRIVE
+    |/ /
+    *
+
+n900 is the USB drive
+nas and origin are both the same
+
+How can I sync my USB drive without loosing my last commits?
+"""]]

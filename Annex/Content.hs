@@ -397,7 +397,7 @@ withTmp key action = do
  - when doing concurrent downloads.
  -}
 checkDiskSpace :: Maybe FilePath -> Key -> Integer -> Bool -> Annex Bool
-checkDiskSpace destination key alreadythere samefilesystem = ifM (Annex.getState Annex.force)
+checkDiskSpace destdir key alreadythere samefilesystem = ifM (Annex.getState Annex.force)
 	( return True
 	, do
 		-- We can't get inprogress and free at the same
@@ -421,7 +421,7 @@ checkDiskSpace destination key alreadythere samefilesystem = ifM (Annex.getState
 			_ -> return True
 	)
   where
-	dir = maybe (fromRepo gitAnnexDir) return destination
+	dir = maybe (fromRepo gitAnnexDir) return destdir
 	needmorespace n =
 		warning $ "not enough free space, need " ++ 
 			roughSize storageUnits True n ++
