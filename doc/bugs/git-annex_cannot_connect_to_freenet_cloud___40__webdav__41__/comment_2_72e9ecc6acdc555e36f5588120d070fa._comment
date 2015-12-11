@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-12-11T15:08:30Z"
+ content="""
+The first failure is git-annex sending MKCOL (make directory basically).
+The server fails with "Unauthorized". You say it also made the directory.
+That's got to be a bug in the server, no? It can't sanely have an authorization
+problem and also go on and do the unathorized action.
+
+The second failure is git-annex sending PUT. This is the most basic
+operation for webdav server to support AFAIK,
+and it fails with "NotImplemented".
+
+It's also kind of telling that the webdav server
+has a message baked into it about not working with the OSX Finder.
+Overall, this seems a very bad webdav server.
+
+If you were able to upload files using a different webdav client,
+I guess that client must have used a command other than PUT, or
+done something else different with the protocol. If you can track down
+details of how the client manage to talk to this strange server, we could
+see about supporting it.
+"""]]
