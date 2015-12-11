@@ -1,6 +1,8 @@
 git-annex (5.20151209) UNRELEASED; urgency=medium
 
   * Add S3 features to git-annex version output.
+  * webdav: When testing the WebDAV server, send a file with content.
+    The empty file it was sending tickled bugs in some php WebDAV server.
 
  -- Joey Hess <id@joeyh.name>  Thu, 10 Dec 2015 11:39:34 -0400
 
