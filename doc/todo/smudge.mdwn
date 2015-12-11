@@ -345,7 +345,6 @@ files to be unlocked, while the indirect upgrades don't touch the files.
   when pushing changes committed in such a repo. Ideally, should avoid
   committing implicit unlocks, or should prevent such commits leaking out
   in pushes.
-* getKeysPresent needs to check if object file is modified
 
 ----
 

@@ -744,9 +744,9 @@ data KeyLocation = InAnnex | InRepository
 
 {- List of keys whose content exists in the specified location.
  
- - InAnnex only lists keys under .git/annex/objects,
- - while InRepository, in direct mode, also finds keys located in the
- - work tree.
+ - InAnnex only lists keys with content in .git/annex/objects,
+ - while InRepository, in direct mode, also finds keys with content
+ - in the work tree.
  -
  - Note that InRepository has to check whether direct mode files
  - have goodContent.
