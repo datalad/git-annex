@@ -27,6 +27,7 @@ module Annex.Content (
 	linkAnnex,
 	linkAnnex',
 	LinkAnnexResult(..),
+	checkedCopyFile,
 	sendAnnex,
 	prepSendAnnex,
 	removeAnnex,
@@ -549,16 +550,25 @@ data LinkAnnexResult = LinkAnnexOk | LinkAnnexFailed | LinkAnnexNoop
 linkAnnex'' :: Key -> FilePath -> FilePath -> Annex Bool
 linkAnnex'' key src dest = catchBoolIO $ do
 	s <- liftIO $ getFileStatus src
+	let copy = checkedCopyFile' key src dest s
 #ifndef mingw32_HOST_OS
 	if linkCount s > 1
-		then copy s
+		then copy
 		else liftIO (createLink src dest >> return True)
-			`catchIO` const (copy s)
+			`catchIO` const copy
 #else
-	copy s
+	copy
 #endif
-  where
-	copy s = ifM (checkDiskSpace' (fromIntegral $ fileSize s) (Just $ takeDirectory dest) key 0 True)
+
+{- Checks disk space before copying. -}
+checkedCopyFile :: Key -> FilePath -> FilePath -> Annex Bool
+checkedCopyFile key src dest = catchBoolIO $
+	checkedCopyFile' key src dest
+		=<< liftIO (getFileStatus src)
+
+checkedCopyFile' :: Key -> FilePath -> FilePath -> FileStatus -> Annex Bool
+checkedCopyFile' key src dest s = catchBoolIO $
+	ifM (checkDiskSpace' (fromIntegral $ fileSize s) (Just $ takeDirectory dest) key 0 True)
 		( liftIO $ copyFileExternal CopyAllMetaData src dest
 		, return False
 		)

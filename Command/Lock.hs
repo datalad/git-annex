@@ -15,9 +15,12 @@ import Annex.Version
 import Annex.Content
 import Annex.Link
 import Annex.InodeSentinal
+import Annex.Perms
+import Annex.ReplaceFile
 import Utility.InodeCache
 import qualified Database.Keys
 import qualified Command.Add
+import Logs.Location
 	
 cmd :: Command
 cmd = notDirect $ withGlobalOptions annexedMatchingOptions $
@@ -34,9 +37,12 @@ seek ps = ifM versionSupportsUnlockedPointers
 	)
 
 startNew :: FilePath -> Key -> CommandStart
-startNew file key = do
-	showStart "lock" file
-	go =<< isPointerFile file
+startNew file key = ifM (isJust <$> isAnnexLink file)
+	( stop
+	, do
+		showStart "lock" file
+		go =<< isPointerFile file
+	)
   where
 	go (Just key')
 		| key' == key = cont False
@@ -53,33 +59,42 @@ startNew file key = do
 
 performNew :: FilePath -> Key -> Bool -> CommandPerform
 performNew file key filemodified = do
-	-- If other files use this same key, and are unlocked, 
-	-- the annex object file might be hard linked to those files.
-	-- It's also possible that the annex object file was
-	-- modified while the file was unlocked. 
-	--
-	-- So, in order to lock the file's content, we need to break all
-	-- hard links to the annex object file, and if it's modified,
-	-- replace it with a copy of the content of one of the associated
-	-- files.
-	--
-	-- When the file being locked is unmodified, the annex object file
-	-- can just be linked to it. (Which might already be the case, but
-	-- do it again to be sure.)
-	--
-	-- When the file being locked is modified, find another associated
-	-- file that is unmodified, and copy it to the annex object file.
-	-- If there are no unmodified associated files, the content of
-	-- the key is lost.
-	--
-	-- If the filesystem doesn't support hard links, none of this
-	-- is a concern.
-	obj <- calcRepo (gitAnnexLocation key)
-
-	freezeContent obj
+	lockdown =<< calcRepo (gitAnnexLocation key)
 	Command.Add.addLink file key
 		=<< withTSDelta (liftIO . genInodeCache file)
 	next $ cleanupNew file key
+  where
+	lockdown obj = do
+		ifM (sameInodeCache obj =<< Database.Keys.getInodeCaches key)
+			( breakhardlink obj
+			, repopulate obj
+			)
+		freezeContent obj
+
+	-- It's ok if the file is hard linked to obj, but if some other
+	-- associated file is, we need to break that link to lock down obj.
+	breakhardlink obj = whenM ((> 1) . linkCount <$> liftIO (getFileStatus obj)) $ do
+		mfc <- withTSDelta (liftIO . genInodeCache file)
+		unlessM (sameInodeCache obj (maybeToList mfc)) $ do
+			modifyContent obj $ replaceFile obj $ \tmp -> do
+				unlessM (checkedCopyFile key obj tmp) $
+					error "unable to lock file; need more free disk space"
+			Database.Keys.storeInodeCaches key [obj]
+
+	-- Try to repopulate obj from an unmodified associated file.
+	repopulate obj
+		| filemodified = modifyContent obj $ do
+			fs <- Database.Keys.getAssociatedFiles key
+			mfile <- firstM (isUnmodified key) fs
+			liftIO $ nukeFile obj
+			case mfile of
+				Just unmodified ->
+					unlessM (checkedCopyFile key unmodified obj)
+						lostcontent
+				Nothing -> lostcontent
+		| otherwise = modifyContent obj $ 
+			liftIO $ renameFile file obj
+	lostcontent = logStatus key InfoMissing
 
 cleanupNew :: FilePath -> Key -> CommandCleanup
 cleanupNew file key = do
