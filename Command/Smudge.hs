@@ -48,10 +48,19 @@ smudge file = do
 	case parseLinkOrPointer b of
 		Nothing -> liftIO $ B.putStr b
 		Just k -> do
+			-- A previous unlocked checkout of the file may have
+			-- led to the annex object getting modified;
+			-- don't provide such modified content as it
+			-- will be confusing. inAnnex will detect
+			-- modifications.
+			ifM (inAnnex k)
+				( do
+					content <- calcRepo (gitAnnexLocation k)
+					liftIO $ B.putStr . fromMaybe b
+						=<< catchMaybeIO (B.readFile content)
+				, liftIO $ B.putStr b
+				)
 			Database.Keys.addAssociatedFile k file
-			content <- calcRepo (gitAnnexLocation k)
-			liftIO $ B.hPut stdout . fromMaybe b
-				=<< catchMaybeIO (B.readFile content)
 	stop
 
 -- Clean filter is fed file content on stdin, decides if a file
