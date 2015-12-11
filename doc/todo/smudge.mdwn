@@ -322,8 +322,9 @@ files to be unlocked, while the indirect upgrades don't touch the files.
 #### implementation todo list
 
 * Dropping a smudged file causes git status to show it as modified, 
-  because the timestamp has changed. Avoid this by preserving timestamp
-  of smudged files when manipulating.
+  because the timestamp has changed. Getting a smudged file can also 
+  cause this. Avoid this by preserving timestamp of smudged files
+  when manipulating.
 * Reconcile staged changes into the associated files database, whenever
   the database is queried.
 * See if the cases where the Keys database is not used can be
@@ -345,6 +346,7 @@ files to be unlocked, while the indirect upgrades don't touch the files.
   when pushing changes committed in such a repo. Ideally, should avoid
   committing implicit unlocks, or should prevent such commits leaking out
   in pushes.
+* Test suite should have a pass that runs with files unlocked.
 
 ----
 
