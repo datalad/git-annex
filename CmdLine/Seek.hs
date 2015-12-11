@@ -125,7 +125,7 @@ withFilesUnlocked = withFilesUnlocked' LsFiles.typeChanged
 withFilesUnlockedToBeCommitted :: (FilePath -> CommandStart) -> CmdParams -> CommandSeek
 withFilesUnlockedToBeCommitted = withFilesUnlocked' LsFiles.typeChangedStaged
 
-{- Unlocked files have changed type from a symlink to a regular file.
+{- Unlocked files before v6 have changed type from a symlink to a regular file.
  -
  - Furthermore, unlocked files used to be a git-annex symlink,
  - not some other sort of symlink.

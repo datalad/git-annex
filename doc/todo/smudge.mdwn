@@ -336,7 +336,6 @@ files to be unlocked, while the indirect upgrades don't touch the files.
   long-lived processes.
 * Make v6 upgrade convert direct mode repo to repo with all unlocked
   files.
-* fsck will need some fixes to handle unlocked files.
 * Make automatic merge conflict resolution work for pointer files.
   - Should probably automatically handle merge conflicts between annex
     symlinks and pointer files too. Maybe by always resulting in a pointer
