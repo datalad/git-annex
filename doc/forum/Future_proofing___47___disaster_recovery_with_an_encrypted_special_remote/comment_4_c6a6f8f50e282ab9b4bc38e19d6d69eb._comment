@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="wsha.code+ga@b38779424f41c5701bbe5937340be43ff1474b2d"
+ subject="comment 4"
+ date="2015-12-14T12:03:58Z"
+ content="""
+Small update: I have gotten the HMAC and decryption steps to work for shared encryption. I didn't figure out what was wrong with my HMAC command above yet, but I was able to reproduce the special remote's keys in Python using the `hmac` and `hashlib` libraries. I was trying to hash the correct string in the comment above (the full key with the `SHA...` prefix and the file extension suffix). For decryption, I used `gpg` on the encrypted file in the special remote and passed it the cipher from `remote.log` with the first 256 bytes removed as the passphrase (in the format returned by `base64.b64decode()` in Python).
+
+I still need to figure out how to decrypt the ciphers for `pubkey` and `hybrid`.
+
+I will try to put together a tip with the steps needed to reproduce special remote keys and to decrypt special remote files using only command line tools after that (assuming I can translate the Python steps back to command line tools; otherwise part of the steps will be in Python).
+"""]]
