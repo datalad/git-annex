@@ -43,7 +43,7 @@ seek ps = lockPreCommitHook $ ifM isDirect
 		withWords startDirect ps
 		runAnnexHook preCommitAnnexHook
 	, do
-		ifM (liftIO Git.haveFalseIndex)
+		ifM (not <$> versionSupportsUnlockedPointers <&&> liftIO Git.haveFalseIndex)
 			( do
 				(fs, cleanup) <- inRepo $ Git.typeChangedStaged ps
 				whenM (anyM isOldUnlocked fs) $
