@@ -299,7 +299,7 @@ verifyDirectMode key file = do
  -}
 checkKeySize :: Key -> KeyStatus -> Annex Bool
 checkKeySize _ KeyUnlocked = return True
-checkKeySize key KeyLocked = do
+checkKeySize key _ = do
 	file <- calcRepo $ gitAnnexLocation key
 	ifM (liftIO $ doesFileExist file)
 		( checkKeySizeOr badContent key file
@@ -596,16 +596,17 @@ withFsckDb NonIncremental _ = noop
 withFsckDb (ScheduleIncremental _ _ i) a = withFsckDb i a
 #endif
 
-data KeyStatus = KeyLocked | KeyUnlocked
+data KeyStatus = KeyLocked | KeyUnlocked | KeyMissing
 
 isKeyUnlocked :: KeyStatus -> Bool
 isKeyUnlocked KeyUnlocked = True
 isKeyUnlocked KeyLocked = False
+isKeyUnlocked KeyMissing = False
 
 getKeyStatus :: Key -> Annex KeyStatus
 getKeyStatus key = ifM isDirect
 	( return KeyUnlocked
-	, do
+	, catchDefaultIO KeyMissing $ do
 		obj <- calcRepo $ gitAnnexLocation key
 		unlocked <- ((> 1) . linkCount <$> liftIO (getFileStatus obj))
 			<&&> (not . null <$> Database.Keys.getAssociatedFiles key)
