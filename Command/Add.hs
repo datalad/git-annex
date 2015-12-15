@@ -66,10 +66,9 @@ seek o = allowConcurrentOutput $ do
 		, startSmall file
 		)
 	go $ withFilesNotInGit (not $ includeDotFiles o)
-	ifM isDirect
+	ifM (versionSupportsUnlockedPointers <||> isDirect)
 		( go withFilesMaybeModified
-		, unlessM versionSupportsUnlockedPointers $
-			go withFilesOldUnlocked
+		, go withFilesOldUnlocked
 		)
 
 {- Pass file off to git-add. -}
