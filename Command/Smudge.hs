@@ -13,6 +13,7 @@ import Annex.Content
 import Annex.Link
 import Annex.MetaData
 import Annex.FileMatcher
+import Annex.InodeSentinal
 import Types.KeySource
 import Backend
 import Logs.Location
@@ -51,7 +52,7 @@ smudge file = do
 			-- A previous unlocked checkout of the file may have
 			-- led to the annex object getting modified;
 			-- don't provide such modified content as it
-			-- will be confusing. inAnnex will detect
+			-- will be confusing. inAnnex will detect such
 			-- modifications.
 			ifM (inAnnex k)
 				( do
@@ -74,11 +75,34 @@ clean file = do
 		else ifM (shouldAnnex file)
 			( do
 				k <- ingest file
+				oldkeys <- filter (/= k)
+					<$> Database.Keys.getAssociatedKey file
+				mapM_ (cleanOldKey file) oldkeys
 				Database.Keys.addAssociatedFile k file
 				liftIO $ emitPointer k
 			, liftIO $ B.hPut stdout b
 			)
 	stop
+
+-- If the file being cleaned was hard linked to the old key's annex object,
+-- modifying the file will have caused the object to have the wrong content.
+-- Clean up from that, making the 
+cleanOldKey :: FilePath -> Key -> Annex ()
+cleanOldKey modifiedfile key = do
+	obj <- calcRepo (gitAnnexLocation key)
+	caches <- Database.Keys.getInodeCaches key
+	unlessM (sameInodeCache obj caches) $ do
+		unlinkAnnex key
+		fs <- filter (/= modifiedfile)
+			<$> Database.Keys.getAssociatedFiles key
+		fs' <- filterM (`sameInodeCache` caches) fs
+		case fs' of
+			-- If linkAnnex fails, the file with the content
+			-- is still present, so no need for any recovery.
+			(f:_) -> void $ linkAnnex key f
+			_ -> lostcontent
+  where
+	lostcontent = logStatus key InfoMissing
 
 shouldAnnex :: FilePath -> Annex Bool
 shouldAnnex file = do
