@@ -11,15 +11,21 @@ git annex add `[path ...]`
 Adds files in the path to the annex. If no path is specified, adds
 files from the current directory and below.
 
-Normally, files that are already checked into git, or that git has been
-configured to ignore will be silently skipped.
+Files that are already checked into git and are unmodified, or that
+git has been configured to ignore will be silently skipped.
 
-If annex.largefiles is configured, and does not match a file that is being
-added, `git annex add` will behave the same as `git add` and add the
-non-large file directly to the git repository, instead of to the annex.
+If annex.largefiles is configured, and does not match a file, `git annex
+add` will behave the same as `git add` and add the non-large file directly
+to the git repository, instead of to the annex.
 
-This command can also be used to add symbolic links, both symlinks to
-annexed content, and other symlinks.
+Large files are added to the annex in locked form, which prevents further
+modification of their content unless unlocked by [[git-annex-unlock]](1).
+To add a file to the annex in unlocked form, `git add` can be used instead 
+(that only works when the repository has annex.version 6 or higher).
+
+Files that are not annexed files (including symbolic links and files
+checked directly into git) will be staged in the index the same as if `git
+add` were used.
 
 # OPTIONS
 
