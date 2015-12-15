@@ -46,7 +46,7 @@ seek ps = lockPreCommitHook $ ifM isDirect
 		ifM (liftIO Git.haveFalseIndex)
 			( do
 				(fs, cleanup) <- inRepo $ Git.typeChangedStaged ps
-				whenM (anyM isUnlocked fs) $
+				whenM (anyM isOldUnlocked fs) $
 					error "Cannot make a partial commit with unlocked annexed files. You should `git annex add` the files you want to commit, and then run git commit."
 				void $ liftIO cleanup
 			, do
@@ -58,7 +58,7 @@ seek ps = lockPreCommitHook $ ifM isDirect
 				-- (not needed when repo version uses
 				-- unlocked pointer files)
 				unlessM versionSupportsUnlockedPointers $
-					withFilesUnlockedToBeCommitted startInjectUnlocked ps
+					withFilesOldUnlockedToBeCommitted startInjectUnlocked ps
 			)
 		runAnnexHook preCommitAnnexHook
 		-- committing changes to a view updates metadata

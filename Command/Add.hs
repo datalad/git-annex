@@ -69,7 +69,7 @@ seek o = allowConcurrentOutput $ do
 	ifM isDirect
 		( go withFilesMaybeModified
 		, unlessM versionSupportsUnlockedPointers $
-			go withFilesUnlocked
+			go withFilesOldUnlocked
 		)
 
 {- Pass file off to git-add. -}

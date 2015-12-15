@@ -32,8 +32,8 @@ seek :: CmdParams -> CommandSeek
 seek ps = ifM versionSupportsUnlockedPointers
 	( withFilesInGit (whenAnnexed startNew) ps
 	, do
-		withFilesUnlocked startOld ps
-		withFilesUnlockedToBeCommitted startOld ps
+		withFilesOldUnlocked startOld ps
+		withFilesOldUnlockedToBeCommitted startOld ps
 	)
 
 startNew :: FilePath -> Key -> CommandStart

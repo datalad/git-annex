@@ -119,25 +119,25 @@ withFilesToBeCommitted :: (FilePath -> CommandStart) -> CmdParams -> CommandSeek
 withFilesToBeCommitted a params = seekActions $ prepFiltered a $
 	seekHelper LsFiles.stagedNotDeleted params
 
-withFilesUnlocked :: (FilePath -> CommandStart) -> CmdParams -> CommandSeek
-withFilesUnlocked = withFilesUnlocked' LsFiles.typeChanged
+withFilesOldUnlocked :: (FilePath -> CommandStart) -> CmdParams -> CommandSeek
+withFilesOldUnlocked = withFilesOldUnlocked' LsFiles.typeChanged
 
-withFilesUnlockedToBeCommitted :: (FilePath -> CommandStart) -> CmdParams -> CommandSeek
-withFilesUnlockedToBeCommitted = withFilesUnlocked' LsFiles.typeChangedStaged
+withFilesOldUnlockedToBeCommitted :: (FilePath -> CommandStart) -> CmdParams -> CommandSeek
+withFilesOldUnlockedToBeCommitted = withFilesOldUnlocked' LsFiles.typeChangedStaged
 
 {- Unlocked files before v6 have changed type from a symlink to a regular file.
  -
  - Furthermore, unlocked files used to be a git-annex symlink,
  - not some other sort of symlink.
  -}
-withFilesUnlocked' :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> (FilePath -> CommandStart) -> CmdParams -> CommandSeek
-withFilesUnlocked' typechanged a params = seekActions $
+withFilesOldUnlocked' :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> (FilePath -> CommandStart) -> CmdParams -> CommandSeek
+withFilesOldUnlocked' typechanged a params = seekActions $
 	prepFiltered a unlockedfiles
   where
-	unlockedfiles = filterM isUnlocked =<< seekHelper typechanged params
+	unlockedfiles = filterM isOldUnlocked =<< seekHelper typechanged params
 
-isUnlocked :: FilePath -> Annex Bool
-isUnlocked f = liftIO (notSymlink f) <&&> 
+isOldUnlocked :: FilePath -> Annex Bool
+isOldUnlocked f = liftIO (notSymlink f) <&&> 
 	(isJust <$> catKeyFile f <||> isJust <$> catKeyFileHEAD f)
 
 {- Finds files that may be modified. -}
