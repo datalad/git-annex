@@ -33,6 +33,7 @@ import Annex.ReplaceFile
 import Utility.Tmp
 import Utility.CopyFile
 import Annex.InodeSentinal
+import Annex.Version
 
 import Control.Exception (IOException)
 
@@ -67,7 +68,8 @@ seek o = allowConcurrentOutput $ do
 	go $ withFilesNotInGit (not $ includeDotFiles o)
 	ifM isDirect
 		( go withFilesMaybeModified
-		, go withFilesUnlocked
+		, unlessM versionSupportsUnlockedPointers $
+			go withFilesUnlocked
 		)
 
 {- Pass file off to git-add. -}
