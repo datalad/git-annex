@@ -41,7 +41,7 @@ upgrade :: Bool -> Annex Bool
 upgrade automatic = do
 	upgraded <- go =<< getVersion
 	when upgraded $
-		setVersion currentVersion
+		setVersion latestVersion
 	return upgraded
   where
 #ifndef mingw32_HOST_OS

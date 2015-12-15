@@ -1,6 +1,6 @@
 git-annex (6.20151225) unstable; urgency=medium
 
-  * annex.version increased to 6, but version 5 is also still supported.
+  * Added v6 repository mode, but v5 is still the default for now.
   * The upgrade to version 6 is not done fully automatically, because
     upgrading a direct mode repository to version 6 will prevent old
     versions of git-annex from working in other clones of that repository.
@@ -12,6 +12,8 @@ git-annex (6.20151225) unstable; urgency=medium
   * unlock, lock: In v6 mode, unlocking a file changes it from a symlink to a
     pointer file, and this change can be committed to the git repository.
   * add: In v6 mode, adds modified files to the annex.
+  * init: --version parameter added to control which supported repository
+    version to use.
  
  -- Joey Hess <id@joeyh.name>  Tue, 08 Dec 2015 11:14:03 -0400
 
