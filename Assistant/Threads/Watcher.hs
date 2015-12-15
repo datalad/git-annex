@@ -28,7 +28,7 @@ import qualified Annex.Queue
 import qualified Git
 import qualified Git.UpdateIndex
 import qualified Git.LsFiles as LsFiles
-import qualified Backend
+import Annex.WorkTree
 import Annex.Direct
 import Annex.Content.Direct
 import Annex.CatFile
@@ -270,7 +270,7 @@ onAddDirect symlinkssupported matcher file fs = do
 onAddSymlink :: Bool -> Handler
 onAddSymlink isdirect file filestatus = unlessIgnored file $ do
 	linktarget <- liftIO (catchMaybeIO $ readSymbolicLink file)
-	kv <- liftAnnex (Backend.lookupFile file)
+	kv <- liftAnnex (lookupFile file)
 	onAddSymlink' linktarget kv isdirect file filestatus
 
 onAddSymlink' :: Maybe String -> Maybe Key -> Bool -> Handler

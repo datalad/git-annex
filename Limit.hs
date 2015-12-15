@@ -11,8 +11,8 @@ import Common.Annex
 import qualified Annex
 import qualified Utility.Matcher
 import qualified Remote
-import qualified Backend
 import Annex.Content
+import Annex.WorkTree
 import Annex.Action
 import Annex.UUID
 import Logs.Trust
@@ -277,7 +277,7 @@ addTimeLimit s = do
 			else return True
 
 lookupFileKey :: FileInfo -> Annex (Maybe Key)
-lookupFileKey = Backend.lookupFile . currFile
+lookupFileKey = lookupFile . currFile
 
 checkKey :: (Key -> Annex Bool) -> MatchInfo -> Annex Bool
 checkKey a (MatchingFile fi) = lookupFileKey fi >>= maybe (return False) a

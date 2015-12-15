@@ -24,7 +24,6 @@ import qualified Git.Branch
 import qualified Git.RefLog
 import qualified Git.LsFiles as LsFiles
 import qualified Git.DiffTree as DiffTree
-import qualified Backend
 import qualified Remote
 import qualified Annex.Branch
 import Annex.CatFile
@@ -215,7 +214,7 @@ withKeysReferenced' mdir initial a = do
 		Just dir -> inRepo $ LsFiles.inRepo [dir]
 	go v [] = return v
 	go v (f:fs) = do
-		x <- Backend.lookupFile f
+		x <- lookupFile f
 		case x of
 			Nothing -> go v fs
 			Just k -> do
@@ -266,7 +265,7 @@ withKeysReferencedInGitRef a ref = do
 	forM_ ts $ tKey lookAtWorkingTree >=> maybe noop a
 	liftIO $ void clean
   where
-	tKey True = Backend.lookupFile . getTopFilePath . DiffTree.file
+	tKey True = lookupFile . getTopFilePath . DiffTree.file
 	tKey False = fileKey . takeFileName . decodeBS <$$>
 		catFile ref . getTopFilePath . DiffTree.file
 

@@ -65,6 +65,7 @@ import qualified Types.Messages
 import qualified Config
 import qualified Config.Cost
 import qualified Crypto
+import qualified Annex.WorkTree
 import qualified Annex.Init
 import qualified Annex.CatFile
 import qualified Annex.View
@@ -810,7 +811,7 @@ test_unused = intmpclonerepoInDirect $ do
 		assertEqual ("unused keys differ " ++ desc)
 			(sort expectedkeys) (sort unusedkeys)
 	findkey f = do
-		r <- Backend.lookupFile f
+		r <- Annex.WorkTree.lookupFile f
 		return $ fromJust r
 
 test_describe :: Assertion
@@ -1380,7 +1381,7 @@ test_crypto = do
 			(c,k) <- annexeval $ do
 				uuid <- Remote.nameToUUID "foo"
 				rs <- Logs.Remote.readRemoteLog
-				Just k <- Backend.lookupFile annexedfile
+				Just k <- Annex.WorkTree.lookupFile annexedfile
 				return (fromJust $ M.lookup uuid rs, k)
 			let key = if scheme `elem` ["hybrid","pubkey"]
 					then Just $ Utility.Gpg.KeyIds [Utility.Gpg.testKeyId]
@@ -1684,7 +1685,7 @@ checkdangling f = ifM (annexeval Config.crippledFileSystem)
 checklocationlog :: FilePath -> Bool -> Assertion
 checklocationlog f expected = do
 	thisuuid <- annexeval Annex.UUID.getUUID
-	r <- annexeval $ Backend.lookupFile f
+	r <- annexeval $ Annex.WorkTree.lookupFile f
 	case r of
 		Just k -> do
 			uuids <- annexeval $ Remote.keyLocations k
@@ -1695,7 +1696,7 @@ checklocationlog f expected = do
 checkbackend :: FilePath -> Types.Backend -> Assertion
 checkbackend file expected = do
 	b <- annexeval $ maybe (return Nothing) (Backend.getBackend file) 
-		=<< Backend.lookupFile file
+		=<< Annex.WorkTree.lookupFile file
 	assertEqual ("backend for " ++ file) (Just expected) b
 
 inlocationlog :: FilePath -> Assertion

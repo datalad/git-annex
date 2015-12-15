@@ -399,7 +399,7 @@ changedDirect oldk f = do
 	whenM (pure (null locs) <&&> not <$> inAnnex oldk) $
 		logStatus oldk InfoMissing
 
-{- Enable/disable direct mode. -}
+{- Git config settings to enable/disable direct mode. -}
 setDirect :: Bool -> Annex ()
 setDirect wantdirect = do
 	if wantdirect

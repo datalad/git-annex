@@ -9,7 +9,6 @@ module Backend (
 	list,
 	orderedList,
 	genKey,
-	lookupFile,
 	getBackend,
 	chooseBackend,
 	lookupBackendName,
@@ -20,8 +19,6 @@ module Backend (
 import Common.Annex
 import qualified Annex
 import Annex.CheckAttr
-import Annex.CatFile
-import Annex.Link
 import Types.Key
 import Types.KeySource
 import qualified Types.Backend as B
@@ -75,21 +72,6 @@ genKey' (b:bs) source = do
 	fixbadchar c
 		| c == '\n' = '_'
 		| otherwise = c
-
-{- Looks up the key corresponding to an annexed file,
- - by examining what the file links to.
- -
- - An unlocked file will not have a link on disk, so fall back to
- - looking for a pointer to a key in git.
- -}
-lookupFile :: FilePath -> Annex (Maybe Key)
-lookupFile file = do
-	mkey <- isAnnexLink file
-	case mkey of
-		Just key -> makeret key
-		Nothing -> maybe (return Nothing) makeret =<< catKeyFile file
-  where
-	makeret = return . Just
 
 getBackend :: FilePath -> Key -> Annex (Maybe Backend)
 getBackend file k = let bname = keyBackendName k in
