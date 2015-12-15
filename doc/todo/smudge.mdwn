@@ -325,6 +325,9 @@ files to be unlocked, while the indirect upgrades don't touch the files.
   because the timestamp has changed. Getting a smudged file can also 
   cause this. Avoid this by preserving timestamp of smudged files
   when manipulating.
+* Clean filter should check if the filename was already in use by an old
+  key. The annex object for it may have been modified due to hard link, and
+  that should be cleaned up when the new version is added.
 * Reconcile staged changes into the associated files database, whenever
   the database is queried.
 * See if the cases where the Keys database is not used can be
