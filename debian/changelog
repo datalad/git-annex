@@ -20,6 +20,7 @@ git-annex (5.20151209) UNRELEASED; urgency=medium
   * webdav: When testing the WebDAV server, send a file with content.
     The empty file it was sending tickled bugs in some php WebDAV server.
   * fsck: Failed to honor annex.diskreserve when checking a remote.
+  * Debian: Build depend on concurrent-output.
 
  -- Joey Hess <id@joeyh.name>  Thu, 10 Dec 2015 11:39:34 -0400
 
