@@ -27,6 +27,7 @@ module Annex.Content (
 	linkAnnex,
 	linkAnnex',
 	LinkAnnexResult(..),
+	unlinkAnnex,
 	checkedCopyFile,
 	sendAnnex,
 	prepSendAnnex,
@@ -512,7 +513,6 @@ populatePointerFile k obj f = go =<< isPointerFile f
 			liftIO $ writeFile f (formatPointer k)
 	go _ = return ()
 
-
 {- Hard links a file into .git/annex/objects/, falling back to a copy
  - if necessary. Does nothing if the object file already exists.
  -
@@ -527,17 +527,22 @@ linkAnnex key src = do
 	modifyContent dest $ linkAnnex' key src dest
 
 {- Hard links (or copies) src to dest, one of which should be the
- - annex object. -}
+ - annex object. Updates inode cache for src and for dest when it's
+ - changed. -}
 linkAnnex' :: Key -> FilePath -> FilePath -> Annex LinkAnnexResult
 linkAnnex' key src dest = 
 	ifM (liftIO $ doesFileExist dest)
-		( return LinkAnnexNoop
+		( do
+			Database.Keys.storeInodeCaches key [src]
+			return LinkAnnexNoop
 		, ifM (linkAnnex'' key src dest)
 			( do
 				thawContent dest
 				Database.Keys.storeInodeCaches key [dest, src]
 				return LinkAnnexOk
-			, return LinkAnnexFailed
+			, do
+				Database.Keys.storeInodeCaches key [src]
+				return LinkAnnexFailed
 			)
 		)
 
@@ -559,6 +564,14 @@ linkAnnex'' key src dest = catchBoolIO $ do
 #else
 	copy
 #endif
+
+{- Removes the annex object file for a key. Lowlevel. -}
+unlinkAnnex :: Key -> Annex ()
+unlinkAnnex key = do
+	obj <- calcRepo $ gitAnnexLocation key
+	modifyContent obj $ do
+		secureErase obj
+		liftIO $ nukeFile obj
 
 {- Checks disk space before copying. -}
 checkedCopyFile :: Key -> FilePath -> FilePath -> Annex Bool
