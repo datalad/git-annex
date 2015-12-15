@@ -321,7 +321,12 @@ files to be unlocked, while the indirect upgrades don't touch the files.
 
 #### implementation todo list
 
-* Test suite should have a pass that runs with files unlocked.
+* Test suite should have passes for:
+  v5 indirect 
+  v5 direct
+  v6 locked
+  v6 unlocked
+  Currently, the test suite fails horribly.
 * assistant: In v6 mode, adds files in unlocked mode, so they can
   continue to be modified. TODO
 * When the webapp creates a repo, it forces it into direct mode. But that

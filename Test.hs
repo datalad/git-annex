@@ -38,6 +38,7 @@ import Common
 import qualified Utility.SafeCommand
 import qualified Annex
 import qualified Annex.UUID
+import qualified Annex.Version
 import qualified Backend
 import qualified Git.CurrentRepo
 import qualified Git.Filename
@@ -118,18 +119,17 @@ ingredients =
 	]
 
 tests :: TestTree
-tests = testGroup "Tests"
-	-- Test both direct and indirect mode.
-	-- Windows is only going to use direct mode, so don't test twice.
-	[ properties
+tests = testGroup "Tests" $ properties :
+	map (\(d, te) -> withTestMode te (unitTests d)) testmodes
+  where
+	testmodes =
+		[ ("v5", TestMode { forceDirect = False, annexVersion = "5" })
+		-- Windows will only use direct mode, so don't test twice.
 #ifndef mingw32_HOST_OS
-	, withTestEnv True $ unitTests "(direct)"
-	, withTestEnv False $ unitTests "(indirect)"
-#else
-	, withTestEnv False $ unitTests ""
+		, ("v5 direct", TestMode { forceDirect = True,  annexVersion = "5" })
+		, ("v6", TestMode { forceDirect = False, annexVersion = "6" })
+		]
 #endif
-	]
-
 
 properties :: TestTree
 properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
@@ -244,7 +244,7 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 test_init :: Assertion
 test_init = innewrepo $ do
 	git_annex "init" [reponame] @? "init failed"
-	handleforcedirect
+	setupTestMode
   where
 	reponame = "test repo"
 
@@ -1506,7 +1506,7 @@ intmpclonerepoInDirect a = intmpclonerepo $
 		)
   where
 	isdirect = annexeval $ do
-		Annex.Init.initialize Nothing
+		Annex.Init.initialize Nothing Nothing
 		Config.isDirect
 
 checkRepo :: Types.Annex a -> FilePath -> IO a
@@ -1589,7 +1589,7 @@ clonerepo old new cfg = do
 		git_annex "init" ["-q", new] @? "git annex init failed"
 	unless (bareClone cfg) $
 		indir new $
-			handleforcedirect
+			setupTestMode
 	return new
 
 configrepo :: FilePath -> IO ()
@@ -1600,10 +1600,6 @@ configrepo dir = indir dir $ do
 	-- avoid signed commits by test suite
 	boolSystem "git" [Param "config", Param "commit.gpgsign", Param "false"] @? "git config failed"
 
-handleforcedirect :: IO ()
-handleforcedirect = whenM ((==) "1" <$> Utility.Env.getEnvDefault "FORCEDIRECT" "") $
-	git_annex "direct" ["-q"] @? "git annex direct failed"
-	
 ensuretmpdir :: IO ()
 ensuretmpdir = do
 	e <- doesDirectoryExist tmpdir
@@ -1722,11 +1718,16 @@ annexed_present = runchecks
 unannexed :: FilePath -> Assertion
 unannexed = runchecks [checkregularfile, checkcontent, checkwritable]
 
-withTestEnv :: Bool -> TestTree -> TestTree
-withTestEnv forcedirect = withResource prepare release . const
+data TestMode = TestMode
+	{ forceDirect :: Bool
+	, annexVersion :: String
+	} deriving (Read, Show)
+
+withTestMode :: TestMode -> TestTree -> TestTree
+withTestMode testmode = withResource prepare release . const
   where
 	prepare = do
-		setTestEnv forcedirect
+		setTestMode testmode
 		case tryIngredients [consoleTestReporter] mempty initTests of
 			Nothing -> error "No tests found!?"
 			Just act -> unlessM act $
@@ -1734,8 +1735,8 @@ withTestEnv forcedirect = withResource prepare release . const
 		return ()
 	release _ = cleanup' True tmpdir
 
-setTestEnv :: Bool -> IO ()
-setTestEnv forcedirect = do
+setTestMode :: TestMode -> IO ()
+setTestMode testmode = do
 	whenM (doesDirectoryExist tmpdir) $
 		error $ "The temporary directory " ++ tmpdir ++ " already exists; cannot run test suite."
 
@@ -1755,8 +1756,19 @@ setTestEnv forcedirect = do
 		, ("GIT_COMMITTER_NAME", "git-annex test")
 		-- force gpg into batch mode for the tests
 		, ("GPG_BATCH", "1")
-		, ("FORCEDIRECT", if forcedirect then "1" else "")
+		, ("TESTMODE", show testmode)
 		]
+
+getTestMode :: IO TestMode
+getTestMode = Prelude.read <$> Utility.Env.getEnvDefault "TESTMODE" ""
+
+setupTestMode :: IO ()
+setupTestMode = do
+	testmode <- getTestMode
+	annexeval $
+		Annex.Version.setVersion (annexVersion testmode)
+	when (forceDirect testmode) $
+		git_annex "direct" ["-q"] @? "git annex direct failed"
 
 changeToTmpDir :: FilePath -> IO ()
 changeToTmpDir t = do
