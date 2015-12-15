@@ -299,15 +299,12 @@ verifyDirectMode key file = do
  -}
 checkKeySize :: Key -> KeyStatus -> Annex Bool
 checkKeySize _ KeyUnlocked = return True
-checkKeySize key KeyLocked = ifM isDirect
-	( return True
-	, do
-		file <- calcRepo $ gitAnnexLocation key
-		ifM (liftIO $ doesFileExist file)
-			( checkKeySizeOr badContent key file
-			, return True
-			)
-	)
+checkKeySize key KeyLocked = do
+	file <- calcRepo $ gitAnnexLocation key
+	ifM (liftIO $ doesFileExist file)
+		( checkKeySizeOr badContent key file
+		, return True
+		)
 
 checkKeySizeRemote :: Key -> Remote -> Maybe FilePath -> Annex Bool
 checkKeySizeRemote _ _ Nothing = return True
@@ -606,8 +603,11 @@ isKeyUnlocked KeyUnlocked = True
 isKeyUnlocked KeyLocked = False
 
 getKeyStatus :: Key -> Annex KeyStatus
-getKeyStatus key = do
-	obj <- calcRepo $ gitAnnexLocation key
-	unlocked <- ((> 1) . linkCount <$> liftIO (getFileStatus obj))
-		<&&> (not . null <$> Database.Keys.getAssociatedFiles key)
-	return $ if unlocked then KeyUnlocked else KeyLocked
+getKeyStatus key = ifM isDirect
+	( return KeyUnlocked
+	, do
+		obj <- calcRepo $ gitAnnexLocation key
+		unlocked <- ((> 1) . linkCount <$> liftIO (getFileStatus obj))
+			<&&> (not . null <$> Database.Keys.getAssociatedFiles key)
+		return $ if unlocked then KeyUnlocked else KeyLocked
+	)
