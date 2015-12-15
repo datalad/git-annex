@@ -17,6 +17,7 @@ module Database.Keys (
 	shutdown,
 	addAssociatedFile,
 	getAssociatedFiles,
+	getAssociatedKey,
 	removeAssociatedFile,
 	storeInodeCaches,
 	addInodeCaches,
@@ -117,6 +118,19 @@ getAssociatedFiles' sk = do
 		where_ (r ^. AssociatedKey ==. val sk)
 		return (r ^. AssociatedFile)
 	return $ map unValue l
+
+{- Gets any keys that are on record as having a particular associated file.
+ - (Should be one or none but the database doesn't enforce that.) -}
+getAssociatedKey :: FilePath -> Annex [Key]
+getAssociatedKey f = withDbHandle $ \h -> H.queryDb h $
+	getAssociatedKey' f
+
+getAssociatedKey' :: FilePath -> SqlPersistM [Key]
+getAssociatedKey' f = do
+	l <- select $ from $ \r -> do
+		where_ (r ^. AssociatedFile ==. val f)
+		return (r ^. AssociatedKey)
+	return $ map (fromSKey . unValue) l
 
 removeAssociatedFile :: Key -> FilePath -> Annex ()
 removeAssociatedFile k f = withDbHandle $ \h -> H.queueDb h (\_ _ -> pure True) $
