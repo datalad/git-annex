@@ -323,8 +323,12 @@ files to be unlocked, while the indirect upgrades don't touch the files.
 
 * Dropping a smudged file causes git status to show it as modified, 
   because the timestamp has changed. Getting a smudged file can also 
-  cause this. Avoid this by preserving timestamp of smudged files
-  when manipulating.
+  cause this. Upgrading a direct mode repo also leaves files in this state.
+  User can use `git add` to clear it up, but better to avoid this,
+  by updating stat info in the index.
+  (May need to use libgit2 to do this, cannot find
+  any plumbing except git-update-index, which is very inneficient for
+  smudged files.)
 * Reconcile staged changes into the associated files database, whenever
   the database is queried.
 * See if the cases where the Keys database is not used can be
@@ -335,8 +339,6 @@ files to be unlocked, while the indirect upgrades don't touch the files.
   (when not in direct mode).
   However, beware over-optimisation breaking the assistant or perhaps other
   long-lived processes.
-* Make v6 upgrade convert direct mode repo to repo with all unlocked
-  files.
 * Make automatic merge conflict resolution work for pointer files.
   - Should probably automatically handle merge conflicts between annex
     symlinks and pointer files too. Maybe by always resulting in a pointer

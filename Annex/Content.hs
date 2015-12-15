@@ -753,13 +753,14 @@ moveBad key = do
 	logStatus key InfoMissing
 	return dest
 
-data KeyLocation = InAnnex | InRepository
+data KeyLocation = InAnnex | InRepository | InAnywhere
 
 {- List of keys whose content exists in the specified location.
  
  - InAnnex only lists keys with content in .git/annex/objects,
  - while InRepository, in direct mode, also finds keys with content
- - in the work tree.
+ - in the work tree. InAnywhere lists all keys that have directories
+ - in .git/annex/objects, whether or not the content is present.
  -
  - Note that InRepository has to check whether direct mode files
  - have goodContent.
@@ -788,6 +789,11 @@ getKeysPresent keyloc = do
 		morekeys <- unsafeInterleaveIO a
 		continue (morekeys++keys) as
 
+	inanywhere = case keyloc of
+		InAnywhere -> True
+		_ -> False
+
+	present _ _ _ | inanywhere = pure True
 	present _ False d = presentInAnnex d
 	present s True d = presentDirect s d <||> presentInAnnex d
 
@@ -800,6 +806,7 @@ getKeysPresent keyloc = do
 			Nothing -> return False
 			Just k -> Annex.eval s $ 
 				anyM (Direct.goodContent k) =<< Direct.associatedFiles k
+		InAnywhere -> return True
 
 	{- In order to run Annex monad actions within unsafeInterleaveIO,
 	 - the current state is taken and reused. No changes made to this
