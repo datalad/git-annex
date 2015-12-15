@@ -321,14 +321,12 @@ files to be unlocked, while the indirect upgrades don't touch the files.
 
 #### implementation todo list
 
-* Dropping a smudged file causes git status to show it as modified, 
-  because the timestamp has changed. Getting a smudged file can also 
-  cause this. Upgrading a direct mode repo also leaves files in this state.
-  User can use `git add` to clear it up, but better to avoid this,
-  by updating stat info in the index.
-  (May need to use libgit2 to do this, cannot find
-  any plumbing except git-update-index, which is very inneficient for
-  smudged files.)
+* Test suite should have a pass that runs with files unlocked.
+* assistant: In v6 mode, adds files in unlocked mode, so they can
+  continue to be modified. TODO
+* When the webapp creates a repo, it forces it into direct mode. But that
+  will fail when annex.version=6. Long-term, the assistant should make v6
+  repos, but short-term, the assistant should make v5 repos in direct mode.
 * Reconcile staged changes into the associated files database, whenever
   the database is queried.
 * See if the cases where the Keys database is not used can be
@@ -348,7 +346,14 @@ files to be unlocked, while the indirect upgrades don't touch the files.
   when pushing changes committed in such a repo. Ideally, should avoid
   committing implicit unlocks, or should prevent such commits leaking out
   in pushes.
-* Test suite should have a pass that runs with files unlocked.
+* Dropping a smudged file causes git status to show it as modified, 
+  because the timestamp has changed. Getting a smudged file can also 
+  cause this. Upgrading a direct mode repo also leaves files in this state.
+  User can use `git add` to clear it up, but better to avoid this,
+  by updating stat info in the index.
+  (May need to use libgit2 to do this, cannot find
+  any plumbing except git-update-index, which is very inneficient for
+  smudged files.)
 
 ----
 
