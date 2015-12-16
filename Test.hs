@@ -243,7 +243,10 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 -- this test case create the main repo
 test_init :: Assertion
 test_init = innewrepo $ do
-	git_annex "init" [reponame] @? "init failed"
+	ver <- annexVersion <$> getTestMode
+	if ver == Annex.Version.defaultVersion
+		then git_annex "init" [reponame] @? "init failed"
+		else git_annex "init" [reponame, "--version", ver] @? "init failed"
 	setupTestMode
   where
 	reponame = "test repo"
@@ -1585,8 +1588,11 @@ clonerepo old new cfg = do
 		]
 	boolSystem "git" cloneparams @? "git clone failed"
 	configrepo new
-	indir new $
-		git_annex "init" ["-q", new] @? "git annex init failed"
+	indir new $ do
+		ver <- annexVersion <$> getTestMode
+		if ver == Annex.Version.defaultVersion
+			then git_annex "init" ["-q", new] @? "git annex init failed"
+			else git_annex "init" ["-q", new, "--version", ver] @? "git annex init failed"
 	unless (bareClone cfg) $
 		indir new $
 			setupTestMode
@@ -1765,8 +1771,6 @@ getTestMode = Prelude.read <$> Utility.Env.getEnvDefault "TESTMODE" ""
 setupTestMode :: IO ()
 setupTestMode = do
 	testmode <- getTestMode
-	annexeval $
-		Annex.Version.setVersion (annexVersion testmode)
 	when (forceDirect testmode) $
 		git_annex "direct" ["-q"] @? "git annex direct failed"
 
