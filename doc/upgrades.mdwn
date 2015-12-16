@@ -63,10 +63,11 @@ must support symbolic links..)
 The behavior of some commands changes in an upgraded repository:
 
 * `git add` will add files to the annex, in unlocked mode, rather than
-   adding them directly to the git repository. To bypass that and add a file
-   directly to git, use:
-   
-	git -c annex.largefiles='exclude=*' add myfile
+   adding them directly to the git repository. To cause some files to be
+   added directly to git, you can configure `annex.largefiles`. For
+   example:
+
+   	git config annex.largefiles "largerthan=100kb and not (include=*.c or include=*.h)"
 
 * `git annex unlock` and `git annex lock` change how the pointer to 
   the annexed content is stored in git.
