@@ -34,6 +34,7 @@ import Utility.Tmp
 import Utility.CopyFile
 import Annex.InodeSentinal
 import Annex.Version
+import qualified Database.Keys
 
 import Control.Exception (IOException)
 
@@ -105,13 +106,22 @@ start file = ifAnnexed file addpresent add
 					next $ if isSymbolicLink s
 						then next $ addFile file
 						else perform file
-	addpresent key = ifM isDirect
+	addpresent key = ifM versionSupportsUnlockedPointers
 		( do
 			ms <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus file
 			case ms of
 				Just s | isSymbolicLink s -> fixup key
-				_ -> ifM (goodContent key file) ( stop , add )
-		, fixup key
+				_ -> ifM (sameInodeCache file =<< Database.Keys.getInodeCaches key)
+						( stop, add )
+		, ifM isDirect
+			( do
+				ms <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus file
+				case ms of
+					Just s | isSymbolicLink s -> fixup key
+					_ -> ifM (goodContent key file)
+						( stop , add )
+			, fixup key
+			)
 		)
 	fixup key = do
 		-- the annexed symlink is present but not yet added to git
