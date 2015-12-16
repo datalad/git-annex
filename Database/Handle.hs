@@ -142,9 +142,9 @@ queryDb (DbHandle _ jobs _) a = do
 
 closeDb :: DbHandle -> IO ()
 closeDb h@(DbHandle worker jobs _) = do
-	flushQueueDb h
 	putMVar jobs CloseJob
 	wait worker
+	flushQueueDb h
 
 type Size = Int
 
