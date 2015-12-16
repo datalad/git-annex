@@ -65,15 +65,16 @@ performNew file key filemodified = do
 	next $ cleanupNew file key
   where
 	lockdown obj = do
-		ifM (sameInodeCache obj =<< Database.Keys.getInodeCaches key)
+		ifM (catchBoolIO $ sameInodeCache obj =<< Database.Keys.getInodeCaches key)
 			( breakhardlink obj
 			, repopulate obj
 			)
-		freezeContent obj
+		whenM (liftIO $ doesFileExist obj) $
+			freezeContent obj
 
 	-- It's ok if the file is hard linked to obj, but if some other
 	-- associated file is, we need to break that link to lock down obj.
-	breakhardlink obj = whenM ((> 1) . linkCount <$> liftIO (getFileStatus obj)) $ do
+	breakhardlink obj = whenM (catchBoolIO $ (> 1) . linkCount <$> liftIO (getFileStatus obj)) $ do
 		mfc <- withTSDelta (liftIO . genInodeCache file)
 		unlessM (sameInodeCache obj (maybeToList mfc)) $ do
 			modifyContent obj $ replaceFile obj $ \tmp -> do
