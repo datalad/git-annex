@@ -123,11 +123,11 @@ tests = testGroup "Tests" $ properties :
 	map (\(d, te) -> withTestMode te (unitTests d)) testmodes
   where
 	testmodes =
-		[ ("v5", TestMode { forceDirect = False, annexVersion = "5" })
+		[ ("v6", TestMode { forceDirect = False, annexVersion = "6" })
+		, ("v5", TestMode { forceDirect = False, annexVersion = "5" })
 		-- Windows will only use direct mode, so don't test twice.
 #ifndef mingw32_HOST_OS
 		, ("v5 direct", TestMode { forceDirect = True,  annexVersion = "5" })
-		, ("v6", TestMode { forceDirect = False, annexVersion = "6" })
 		]
 #endif
 
@@ -298,7 +298,6 @@ test_shared_clone = intmpsharedclonerepo $ do
 		, "--get"
 		, "annex.hardlink"
 		]
-	print v
 	v == Just "true\n"
 		@? "shared clone of repo did not get annex.hardlink set"
 
@@ -538,10 +537,13 @@ test_lock = intmpclonerepoInDirect $ do
 	annexed_notpresent annexedfile
 
 	-- regression test: unlock of newly added, not committed file
-	-- should fail
+	-- should fail in v5 mode. In v6 mode, this is allowed.
 	writeFile "newfile" "foo"
 	git_annex "add" ["newfile"] @? "add new file failed"
-	not <$> git_annex "unlock" ["newfile"] @? "unlock failed to fail on newly added, never committed file"
+	ifM (annexeval Annex.Version.versionSupportsUnlockedPointers)
+		( git_annex "unlock" ["newfile"] @? "unlock failed on newly added, never committed file in v6 repository"
+		, not <$> git_annex "unlock" ["newfile"] @? "unlock failed to fail on newly added, never committed file in v5 repository"
+		)
 
 	git_annex "get" [annexedfile] @? "get of file failed"
 	annexed_present annexedfile
@@ -553,12 +555,21 @@ test_lock = intmpclonerepoInDirect $ do
 	writeFile annexedfile $ content annexedfile ++ "foo"
 	not <$> git_annex "lock" [annexedfile] @? "lock failed to fail without --force"
 	git_annex "lock" ["--force", annexedfile] @? "lock --force failed"
+	-- In v6 mode, the original content of the file is not always
+	-- preserved after modification, so re-get it.
+	git_annex "get" [annexedfile] @? "get of file failed after lock --force"
 	annexed_present annexedfile
 	git_annex "unlock" [annexedfile] @? "unlock failed"		
 	unannexed annexedfile
 	changecontent annexedfile
-	git_annex "add" [annexedfile] @? "add of modified file failed"
-	runchecks [checklink, checkunwritable] annexedfile
+	ifM (annexeval Annex.Version.versionSupportsUnlockedPointers)
+		( do
+			boolSystem "git" [Param "add", Param annexedfile] @? "add of modified file failed"
+			runchecks [checkregularfile, checkwritable] annexedfile
+		, do
+			git_annex "add" [annexedfile] @? "add of modified file failed"
+			runchecks [checklink, checkunwritable] annexedfile
+		)
 	c <- readFile annexedfile
 	assertEqual "content of modified file" c (changedcontent annexedfile)
 	r' <- git_annex "drop" [annexedfile]
@@ -584,7 +595,10 @@ test_edit' precommit = intmpclonerepoInDirect $ do
 			@? "pre-commit failed"
 		else boolSystem "git" [Param "commit", Param "-q", Param "-m", Param "contentchanged"]
 			@? "git commit of edited file failed"
-	runchecks [checklink, checkunwritable] annexedfile
+	ifM (annexeval Annex.Version.versionSupportsUnlockedPointers)
+		( runchecks [checkregularfile, checkwritable] annexedfile
+		, runchecks [checklink, checkunwritable] annexedfile
+		)
 	c <- readFile annexedfile
 	assertEqual "content of modified file" c (changedcontent annexedfile)
 	not <$> git_annex "drop" [annexedfile] @? "drop wrongly succeeded with no known copy of modified file"
@@ -594,8 +608,12 @@ test_partial_commit = intmpclonerepoInDirect $ do
 	git_annex "get" [annexedfile] @? "get of file failed"
 	annexed_present annexedfile
 	git_annex "unlock" [annexedfile] @? "unlock failed"
-	not <$> boolSystem "git" [Param "commit", Param "-q", Param "-m", Param "test", File annexedfile]
-		@? "partial commit of unlocked file not blocked by pre-commit hook"
+	ifM (annexeval Annex.Version.versionSupportsUnlockedPointers)
+		( boolSystem "git" [Param "commit", Param "-q", Param "-m", Param "test", File annexedfile]
+			@? "partial commit of unlocked file should be allowed in v6 repository"
+		, not <$> boolSystem "git" [Param "commit", Param "-q", Param "-m", Param "test", File annexedfile]
+			@? "partial commit of unlocked file not blocked by pre-commit hook"
+		)
 
 test_fix :: Assertion
 test_fix = intmpclonerepoInDirect $ do
@@ -621,9 +639,13 @@ test_direct :: Assertion
 test_direct = intmpclonerepoInDirect $ do
 	git_annex "get" [annexedfile] @? "get of file failed"
 	annexed_present annexedfile
-	git_annex "direct" [] @? "switch to direct mode failed"
-	annexed_present annexedfile
-	git_annex "indirect" [] @? "switch to indirect mode failed"
+	ifM (annexeval Annex.Version.versionSupportsUnlockedPointers)
+		( not <$> git_annex "direct" [] @? "switch to direct mode failed to fail in v6 repository"
+		, do
+			git_annex "direct" [] @? "switch to direct mode failed"
+			annexed_present annexedfile
+			git_annex "indirect" [] @? "switch to indirect mode failed"
+		)
 
 test_trust :: Assertion
 test_trust = intmpclonerepo $ do
@@ -1060,8 +1082,9 @@ test_nonannexed_file_conflict_resolution :: Assertion
 test_nonannexed_file_conflict_resolution = do
 	check True False
 	check False False
-	check True True
-	check False True
+	whenM (annexeval Annex.Version.versionSupportsDirectMode) $ do
+		check True True
+		check False True
   where
 	check inr1 switchdirect = withtmpclonerepo $ \r1 ->
 		withtmpclonerepo $ \r2 ->
@@ -1110,8 +1133,9 @@ test_nonannexed_symlink_conflict_resolution :: Assertion
 test_nonannexed_symlink_conflict_resolution = do
 	check True False
 	check False False
-	check True True
-	check False True
+	whenM (annexeval Annex.Version.versionSupportsDirectMode) $ do
+		check True True
+		check False True
   where
 	check inr1 switchdirect = withtmpclonerepo $ \r1 ->
 		withtmpclonerepo $ \r2 ->
@@ -1669,10 +1693,10 @@ checkunwritable f = unlessM (annexeval Config.isDirect) $ do
 
 checkwritable :: FilePath -> Assertion
 checkwritable f = do
-	r <- tryIO $ writeFile f $ content f
-	case r of
-		Left _ -> assertFailure $ "unable to modify " ++ f
-		Right _ -> return ()
+	s <- getFileStatus f
+	let mode = fileMode s
+	unless (mode == mode `unionFileModes` ownerWriteMode) $
+		assertFailure $ "unable to modify " ++ f
 
 checkdangling :: FilePath -> Assertion
 checkdangling f = ifM (annexeval Config.crippledFileSystem)
@@ -1773,6 +1797,12 @@ setupTestMode = do
 	testmode <- getTestMode
 	when (forceDirect testmode) $
 		git_annex "direct" ["-q"] @? "git annex direct failed"
+	whenM (annexeval Annex.Version.versionSupportsUnlockedPointers) $
+		boolSystem "git"
+			[ Param "config"
+			, Param "annex.largefiles"
+			, Param ("exclude=" ++ ingitfile)
+			] @? "git config annex.largefiles failed"
 
 changeToTmpDir :: FilePath -> IO ()
 changeToTmpDir t = do
@@ -1808,7 +1838,7 @@ sha1annexedfiledup :: String
 sha1annexedfiledup = "sha1foodup"
 
 ingitfile :: String
-ingitfile = "bar"
+ingitfile = "bar.c"
 
 content :: FilePath -> String		
 content f
