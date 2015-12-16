@@ -329,7 +329,13 @@ files to be unlocked, while the indirect upgrades don't touch the files.
   will fail when annex.version=6. Long-term, the assistant should make v6
   repos, but short-term, the assistant should make v5 repos in direct mode.
 * Reconcile staged changes into the associated files database, whenever
-  the database is queried.
+  the database is queried. This is needed to handle eg:
+  	git add largefile
+	git mv largefile othername
+	git annex move othername --to foo
+	# fails to drop content from associated file othername,
+	# because it doesn't know it has that name
+	# git commit clears up this mess
 * A new connection to the Keys database is opened each time.
   It would be more efficient to reuse a connection. 
   However, that needs a way to close the connection, which was a problem.
