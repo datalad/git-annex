@@ -321,12 +321,8 @@ files to be unlocked, while the indirect upgrades don't touch the files.
 
 #### implementation todo list
 
-* Test suite should have passes for:
-  v5 indirect 
-  v5 direct
-  v6 locked
-  v6 unlocked
-  Currently, the test suite fails horribly.
+* Still a few test suite failues for v6 with locked files.
+* Test suite should make pass for v6 with unlocked files.
 * assistant: In v6 mode, adds files in unlocked mode, so they can
   continue to be modified. TODO
 * When the webapp creates a repo, it forces it into direct mode. But that
@@ -334,6 +330,10 @@ files to be unlocked, while the indirect upgrades don't touch the files.
   repos, but short-term, the assistant should make v5 repos in direct mode.
 * Reconcile staged changes into the associated files database, whenever
   the database is queried.
+* A new connection to the Keys database is opened each time.
+  It would be more efficient to reuse a connection. 
+  However, that needs a way to close the connection, which was a problem.
+  See 38a23928e9d45b56d6836a4eac703862d63cf93c for details.
 * See if the cases where the Keys database is not used can be
   optimised. Eg, if the Keys database doesn't exist at all,
   we know smudge/clean are not used, so queries don't
