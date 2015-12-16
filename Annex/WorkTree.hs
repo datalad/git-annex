@@ -10,6 +10,8 @@ module Annex.WorkTree where
 import Common.Annex
 import Annex.Link
 import Annex.CatFile
+import Annex.Version
+import Config
 
 {- Looks up the key corresponding to an annexed file,
  - by examining what the file links to.
@@ -22,7 +24,10 @@ lookupFile file = do
 	mkey <- isAnnexLink file
 	case mkey of
 		Just key -> makeret key
-		Nothing -> maybe (return Nothing) makeret =<< catKeyFile file
+		Nothing -> ifM (versionSupportsUnlockedPointers <||> isDirect)
+			( maybe (return Nothing) makeret =<< catKeyFile file
+			, return Nothing 
+			)
   where
 	makeret = return . Just
 
