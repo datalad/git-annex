@@ -27,12 +27,24 @@ import Utility.Exception
 
 {- Applies a conversion function to a file's mode. -}
 modifyFileMode :: FilePath -> (FileMode -> FileMode) -> IO ()
-modifyFileMode f convert = do
+modifyFileMode f convert = void $ modifyFileMode' f convert
+
+modifyFileMode' :: FilePath -> (FileMode -> FileMode) -> IO FileMode
+modifyFileMode' f convert = do
 	s <- getFileStatus f
 	let old = fileMode s
 	let new = convert old
 	when (new /= old) $
 		setFileMode f new
+	return old
+
+{- Runs an action after changing a file's mode, then restores the old mode. -}
+withModifiedFileMode :: FilePath -> (FileMode -> FileMode) -> IO a -> IO a
+withModifiedFileMode file convert a = bracket setup cleanup go
+  where
+	setup = modifyFileMode' file convert
+	cleanup oldmode = modifyFileMode file (const oldmode)
+	go _ = a
 
 {- Adds the specified FileModes to the input mode, leaving the rest
  - unchanged. -}

@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="wsha.code+ga@b38779424f41c5701bbe5937340be43ff1474b2d"
+ subject="comment 2"
+ date="2015-12-12T10:42:46Z"
+ content="""
+Thanks for the response.
+
+With `pubkey` encryption, I am able to decrypt the remote's files normally using just `gpg --decrypt` with the public key used to encrypt them in my keyring. One thing I don't understand about `pubkey` encryption: what is in the `cipher=` entry in `remote.log` after the 256 bytes representing the HMAC cipher? The `gpg` key pair is used for encryption, so there is no encryption cipher to put in `remote.log` after the HMAC cipher, I would have thought.
+
+I understand the basic encryption set up, but I don't know how to use `gpg` to work with a raw cipher or raw encrypted text. For example with `pubkey` encryption, my interpretation is that the `cipher=` entry in `remote.log` is encrypted with the public key, but I can't just pass teh entry to `gpg --decrypt` because `gpg` expects the encrypted input to be formatted in a way that specifies which key to use to decrypt. Otherwise it says `gpg: no valid OpenPGP data found.` Similarly for `shared` encryption, I don't see how to pass the second half of the `remote.log` `cipher=` entry to `gpg` to decrypt the remote's files.
+
+I am also having trouble generating the special remote's keys. I created a `directory` remote with `shared` encryption (so that the `cipher=` entry in `remote.log` would not be encrypted). Then I added one file called `tmp.txt` which was stored in the annex as `SHA256E-s9--9c73fdec185d79405f58fc8b4e0ac22fa5ed2de7b7611a61b37606c905509650.txt` I did `git checkout git-annex -- remote.log` and then tried the following:
+
+        echo -n \"SHA256E-s9--9c73fdec185d79405f58fc8b4e0ac22fa5ed2de7b7611a61b37606c905509650.txt\" | openssl dgst -sha1 -hmac $(echo -n $(grep -oP 'cipher\=.*? ' remote.log | sed 's/cipher=//') | base64 -d | xxd -p -l 256 -c 256) -macopt hexkey:string`
+
+but the output does not match the GPGHMACSHA1 file name in the remote, and I don't understand why. I tried other variations as well (dropping the `.txt` or the SHA256E-s9--` prefix) but they did not work either.
+
+"""]]
