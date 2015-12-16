@@ -54,7 +54,14 @@ Content
   KeyCacheIndex key cache
 |]
 
-{- Opens the database, creating it if it doesn't exist yet. -}
+{- Opens the database, creating it if it doesn't exist yet.
+ -
+ - Multiple readers and writers can have the database open at the same
+ - time. Database.Handle deals with the concurrency issues.
+ - The lock is held while opening the database, so that when
+ - the database doesn't exist yet, one caller wins the lock and
+ - can create it undisturbed.
+ -}
 openDb :: Annex DbHandle
 openDb = withExclusiveLock gitAnnexKeysDbLock $ do
 	dbdir <- fromRepo gitAnnexKeysDb
