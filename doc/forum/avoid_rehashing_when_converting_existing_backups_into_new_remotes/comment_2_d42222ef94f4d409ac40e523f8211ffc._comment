@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/ZF7p46cPmpWtb9zvA8iTitPmiQ--#eb014"
+ nickname="Jason"
+ subject="It worked"
+ date="2015-12-14T04:46:46Z"
+ content="""
+The above process just completed. Of course it took a while to hash and create symlinks for the 20K+ files. The initial sync caused an expected \"Warning: no common commits\" however since the symlinks all pointed at the exact same hashed filenames there was nothing to merge. The sync did take several minutes, but it was much shorter than copying 120GB. I hope this helps someone else in the future.
+"""]]

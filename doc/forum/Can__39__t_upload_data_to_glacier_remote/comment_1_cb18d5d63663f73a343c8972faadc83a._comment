@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="basak"
+ subject="comment 1"
+ date="2015-12-13T21:35:59Z"
+ content="""
+Sounds like you're running the boto glacier command rather than the glacier-cli tool. Unfortunately they have the same name (my intention was to deprecate the boto tool but boto upstream deprecated boto entirely instead). The current plan is to rename glacier-cli to glcr, but I haven't got round to doing that yet.
+
+Try making sure that \"glacier\" runs the glacier-cli tool rather than boto's glacier.
+"""]]
