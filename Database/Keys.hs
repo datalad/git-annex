@@ -14,7 +14,6 @@ module Database.Keys (
 	DbHandle,
 	openDb,
 	closeDb,
-	shutdown,
 	addAssociatedFile,
 	getAssociatedFiles,
 	getAssociatedKey,
@@ -84,24 +83,7 @@ closeDb :: DbHandle -> IO ()
 closeDb (DbHandle h) = H.closeDb h
 
 withDbHandle :: (H.DbHandle -> IO a) -> Annex a
-withDbHandle a = do
-	(DbHandle h) <- dbHandle
-	liftIO $ a h
-
-dbHandle :: Annex DbHandle
-dbHandle = maybe startup return =<< Annex.getState Annex.keysdbhandle
-  where
-	startup = do
-		h <- openDb
-		Annex.changeState $ \s -> s { Annex.keysdbhandle = Just h }
-		return h
-
-shutdown :: Annex ()
-shutdown = maybe noop go =<< Annex.getState Annex.keysdbhandle
-  where
-	go h = do
-		Annex.changeState $ \s -> s { Annex.keysdbhandle = Nothing }
-		liftIO $ closeDb h
+withDbHandle a = bracket openDb (liftIO . closeDb) (\(DbHandle h) -> liftIO (a h))
 
 addAssociatedFile :: Key -> FilePath -> Annex ()
 addAssociatedFile k f = withDbHandle $ \h -> H.queueDb h (\_ _ -> pure True) $ do

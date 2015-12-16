@@ -60,7 +60,6 @@ import Types.NumCopies
 import Types.LockCache
 import Types.DesktopNotify
 import Types.CleanupActions
-import qualified Database.Keys.Types
 #ifdef WITH_QUVI
 import Utility.Quvi (QuviVersion)
 #endif
@@ -135,7 +134,6 @@ data AnnexState = AnnexState
 	, desktopnotify :: DesktopNotify
 	, workers :: [Either AnnexState (Async AnnexState)]
 	, concurrentjobs :: Maybe Int
-	, keysdbhandle :: Maybe Database.Keys.Types.DbHandle
 	}
 
 newState :: GitConfig -> Git.Repo -> AnnexState
@@ -181,7 +179,6 @@ newState c r = AnnexState
 	, desktopnotify = mempty
 	, workers = []
 	, concurrentjobs = Nothing
-	, keysdbhandle = Nothing
 	}
 
 {- Makes an Annex state object for the specified git repo.

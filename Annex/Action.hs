@@ -17,7 +17,6 @@ import System.Posix.Signals
 import Common.Annex
 import qualified Annex
 import Annex.Content
-import qualified Database.Keys
 
 {- Actions to perform each time ran. -}
 startup :: Annex ()
@@ -33,5 +32,4 @@ shutdown :: Bool -> Annex ()
 shutdown nocommit = do
 	saveState nocommit
 	sequence_ =<< M.elems <$> Annex.getState Annex.cleanup
-	Database.Keys.shutdown
 	liftIO reapZombies -- zombies from long-running git processes
