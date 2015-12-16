@@ -5,6 +5,9 @@ git-annex (5.20151209) UNRELEASED; urgency=medium
     The empty file it was sending tickled bugs in some php WebDAV server.
   * fsck: Failed to honor annex.diskreserve when checking a remote.
   * Debian: Build depend on concurrent-output.
+  * Fix insecure temporary permissions when git-annex repair is used in
+    in a corrupted git repository.
+  * Fix potential denial of service attack when creating temp dirs.
 
  -- Joey Hess <id@joeyh.name>  Thu, 10 Dec 2015 11:39:34 -0400
 
