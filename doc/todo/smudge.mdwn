@@ -348,6 +348,11 @@ files to be unlocked, while the indirect upgrades don't touch the files.
   (when not in direct mode).
   However, beware over-optimisation breaking the assistant or perhaps other
   long-lived processes.
+* Interaction with shared clones. Should avoid hard linking from/to a
+  object in a shared clone if either repository has the object unlocked.
+  (And should avoid unlocking an object if it's hard linked to a shared clone,
+  but that's already accomplished because it avoids unlocking an object if
+  it's hard linked at all)
 * Make automatic merge conflict resolution work for pointer files.
   - Should probably automatically handle merge conflicts between annex
     symlinks and pointer files too. Maybe by always resulting in a pointer
