@@ -1,3 +1,12 @@
+git-annex (5.20151219) UNRELEASED; urgency=medium
+
+  * status: On crippled filesystems, was displaying M for all annexed files
+    that were present. Probably caused by a change to what git status
+    displays in this situation. Fixed by treating files git thinks are
+    modified the same as typechanged files.
+
+ -- Joey Hess <id@joeyh.name>  Sat, 19 Dec 2015 13:31:17 -0400
+
 git-annex (5.20151218) unstable; urgency=medium
 
   * Add S3 features to git-annex version output.
