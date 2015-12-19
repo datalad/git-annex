@@ -31,11 +31,12 @@ import System.IO
 import System.Posix
 import Data.Maybe
 import Data.List
-import Control.Applicative
 import Network.BSD
 import System.FilePath
 import Data.Hash.MD5
 import System.Directory
+import Control.Applicative
+import Prelude
 
 type LockFile = FilePath
 
