@@ -323,8 +323,6 @@ files to be unlocked, while the indirect upgrades don't touch the files.
 
 * Still a few test suite failues for v6 with locked files.
 * Test suite should make pass for v6 with unlocked files.
-* assistant: In v6 mode, adds files in unlocked mode, so they can
-  continue to be modified. TODO
 * When the webapp creates a repo, it forces it into direct mode. But that
   will fail when annex.version=6. Long-term, the assistant should make v6
   repos, but short-term, the assistant should make v5 repos in direct mode.

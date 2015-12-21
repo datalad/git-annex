@@ -31,9 +31,11 @@ import Annex.Content
 import Annex.Link
 import Annex.CatFile
 import Annex.InodeSentinal
+import Annex.Version
 import qualified Annex
 import Utility.InodeCache
 import Annex.Content.Direct
+import qualified Database.Keys
 import qualified Command.Sync
 import qualified Git.Branch
 
@@ -228,12 +230,11 @@ commitStaged msg = do
 			return ok
 
 {- OSX needs a short delay after a file is added before locking it down,
- - when using a non-direct mode repository, as pasting a file seems to
- - try to set file permissions or otherwise access the file after closing
- - it. -}
+ - as pasting a file seems to try to set file permissions or otherwise
+ - access the file after closing it. -}
 delayaddDefault :: Annex (Maybe Seconds)
 #ifdef darwin_HOST_OS
-delayaddDefault = ifM isDirect
+delayaddDefault = ifM (isDirect || versionSupportsUnlockedPointers)
 	( return Nothing
 	, return $ Just $ Seconds 1
 	)
@@ -250,12 +251,11 @@ delayaddDefault = return Nothing
  - for write by some other process, and faster checking with git-ls-files
  - that the files are not already checked into git.
  -
- - When a file is added, Inotify will notice the new symlink. So this waits
- - for additional Changes to arrive, so that the symlink has hopefully been
- - staged before returning, and will be committed immediately.
- -
- - OTOH, for kqueue, eventsCoalesce, so instead the symlink is directly
- - created and staged.
+ - When a file is added in locked mode, Inotify will notice the new symlink.
+ - So this waits for additional Changes to arrive, so that the symlink has
+ - hopefully been staged before returning, and will be committed immediately.
+ - (OTOH, for kqueue, eventsCoalesce, so instead the symlink is directly
+ - created and staged.)
  -
  - Returns a list of all changes that are ready to be committed.
  - Any pending adds that are not ready yet are put back into the ChangeChan,
@@ -265,7 +265,8 @@ handleAdds :: Bool -> Maybe Seconds -> [Change] -> Assistant [Change]
 handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 	let (pending, inprocess) = partition isPendingAddChange incomplete
 	direct <- liftAnnex isDirect
-	(pending', cleanup) <- if direct
+	unlocked <- liftAnnex versionSupportsUnlockedPointers
+	(pending', cleanup) <- if unlocked || direct
 		then return (pending, noop)
 		else findnew pending
 	(postponed, toadd) <- partitionEithers <$> safeToAdd havelsof delayadd pending' inprocess
@@ -276,10 +277,11 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 
 	returnWhen (null toadd) $ do
 		added <- addaction toadd $
-			catMaybes <$> if direct
-				then adddirect toadd
-				else forM toadd add
-		if DirWatcher.eventsCoalesce || null added || direct
+			catMaybes <$>
+				if unlocked || direct
+					then addunlocked direct toadd
+					else forM toadd add
+		if DirWatcher.eventsCoalesce || null added || unlocked || direct
 			then return $ added ++ otherchanges
 			else do
 				r <- handleAdds havelsof delayadd =<< getChanges
@@ -316,15 +318,15 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 			maybe (failedingest change) (done change mcache $ keyFilename ks) mkey
 	add _ = return Nothing
 
-	{- In direct mode, avoid overhead of re-injesting a renamed
-	 - file, by examining the other Changes to see if a removed
-	 - file has the same InodeCache as the new file. If so,
-	 - we can just update bookkeeping, and stage the file in git.
+	{- Avoid overhead of re-injesting a renamed unlocked file, by
+	 - examining the other Changes to see if a removed file has the
+	 - same InodeCache as the new file. If so, we can just update
+	 - bookkeeping, and stage the file in git.
 	 -}
-	adddirect :: [Change] -> Assistant [Maybe Change]
-	adddirect toadd = do
+	addunlocked :: Bool -> [Change] -> Assistant [Maybe Change]
+	addunlocked isdirect toadd = do
 		ct <- liftAnnex compareInodeCachesWith
-		m <- liftAnnex $ removedKeysMap ct cs
+		m <- liftAnnex $ removedKeysMap isdirect ct cs
 		delta <- liftAnnex getTSDelta
 		if M.null m
 			then forM toadd add
@@ -335,22 +337,33 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 					Just cache ->
 						case M.lookup (inodeCacheToKey ct cache) m of
 							Nothing -> add c
-							Just k -> fastadd c k
+							Just k -> if isdirect
+								then fastadddirect c k
+								else fastaddunlocked c k
 
-	fastadd :: Change -> Key -> Assistant (Maybe Change)
-	fastadd change key = do
+	fastadddirect :: Change -> Key -> Assistant (Maybe Change)
+	fastadddirect change key = do
 		let source = keySource change
 		liftAnnex $ Command.Add.finishIngestDirect key source
 		done change Nothing (keyFilename source) key
+	
+	fastaddunlocked :: Change -> Key -> Assistant (Maybe Change)
+	fastaddunlocked change key = do
+		let source = keySource change
+		liftAnnex $ do
+			Database.Keys.addAssociatedFile key (keyFilename source)
+		done change Nothing (keyFilename source) key
 
-	removedKeysMap :: InodeComparisonType -> [Change] -> Annex (M.Map InodeCacheKey Key)
-	removedKeysMap ct l = do
+	removedKeysMap :: Bool -> InodeComparisonType -> [Change] -> Annex (M.Map InodeCacheKey Key)
+	removedKeysMap isdirect ct l = do
 		mks <- forM (filter isRmChange l) $ \c ->
 			catKeyFile $ changeFile c
 		M.fromList . concat <$> mapM mkpairs (catMaybes mks)
 	  where
 		mkpairs k = map (\c -> (inodeCacheToKey ct c, k)) <$>
-			recordedInodeCache k
+			if isdirect
+				then recordedInodeCache k
+				else Database.Keys.getInodeCaches k
 
 	failedingest change = do
 		refill [retryChange change]
@@ -359,12 +372,16 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 
 	done change mcache file key = liftAnnex $ do
 		logStatus key InfoPresent
-		link <- ifM isDirect
-			( calcRepo $ gitAnnexLink file key
-			, Command.Add.link file key mcache
+		ifM versionSupportsUnlockedPointers
+			( stagePointerFile file =<< hashPointerFile key
+			, do
+				link <- ifM isDirect
+					( calcRepo $ gitAnnexLink file key
+					, Command.Add.link file key mcache
+					)
+				whenM (pure DirWatcher.eventsCoalesce <||> isDirect) $
+					stageSymlink file =<< hashSymlink link
 			)
-		whenM (pure DirWatcher.eventsCoalesce <||> isDirect) $
-			stageSymlink file =<< hashSymlink link
 		showEndOk
 		return $ Just $ finishedChange change key
 

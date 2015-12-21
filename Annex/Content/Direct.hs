@@ -21,7 +21,6 @@ module Annex.Content.Direct (
 	addInodeCache,
 	writeInodeCache,
 	compareInodeCaches,
-	compareInodeCachesWith,
 	sameInodeCache,
 	elemInodeCaches,
 	sameFileStatus,
@@ -171,9 +170,6 @@ sameFileStatus key f status = do
 		(_, Just c) -> elemInodeCaches c old
 		([], Nothing) -> return True
 		_ -> return False
-
-compareInodeCachesWith :: Annex InodeComparisonType
-compareInodeCachesWith = ifM inodesChanged ( return Weakly, return Strongly )
 
 {- Copies the contentfile to the associated file, if the associated
  - file has no content. If the associated file does have content,

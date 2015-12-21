@@ -4,16 +4,18 @@ git-annex (6.20151225) unstable; urgency=medium
   * The upgrade to version 6 is not done fully automatically, because
     upgrading a direct mode repository to version 6 will prevent old
     versions of git-annex from working in other clones of that repository.
+  * init: --version parameter added to control which supported repository
+    version to use.
   * smudge: New command, used for git smudge filter. 
     This will replace direct mode.
-  * init: Configure .git/info/attributes to use git-annex as a smudge
+  * init, upgrade: Configure .git/info/attributes to use git-annex as a smudge
     filter. Note that this changes the default behavior of git add in a
     newly initialized repository; it will add files to the annex.
   * unlock, lock: In v6 mode, unlocking a file changes it from a symlink to a
     pointer file, and this change can be committed to the git repository.
   * add: In v6 mode, adds modified files to the annex.
-  * init: --version parameter added to control which supported repository
-    version to use.
+  * assistant: In v6 mode, adds files in unlocked mode, so they can
+    continue to be modified. TODO
  
  -- Joey Hess <id@joeyh.name>  Tue, 08 Dec 2015 11:14:03 -0400
 

@@ -24,6 +24,9 @@ compareInodeCaches x y
 		, return False
 		)
 
+compareInodeCachesWith :: Annex InodeComparisonType
+compareInodeCachesWith = ifM inodesChanged ( return Weakly, return Strongly )
+
 {- Checks if one of the provided old InodeCache matches the current
  - version of a file. -}
 sameInodeCache :: FilePath -> [InodeCache] -> Annex Bool
