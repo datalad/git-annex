@@ -22,6 +22,7 @@ import qualified Git.Ref
 import qualified Git.DiffTree as DiffTree
 import Utility.CopyFile
 import Command.PreCommit (lockPreCommitHook)
+import qualified Database.Keys
 
 cmd :: Command
 cmd = withGlobalOptions annexedMatchingOptions $
@@ -86,6 +87,7 @@ performIndirect file key = do
 
 cleanupIndirect :: FilePath -> Key -> CommandCleanup
 cleanupIndirect file key = do
+	Database.Keys.removeAssociatedFile key file
 	src <- calcRepo $ gitAnnexLocation key
 	ifM (Annex.getState Annex.fast)
 		( do
