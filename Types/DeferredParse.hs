@@ -10,7 +10,6 @@
 module Types.DeferredParse where
 
 import Annex
-import Common
 
 import Options.Applicative
 

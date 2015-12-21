@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2015-12-19T17:59:38Z"
+ content="""
+When using `pubkey`, the second 256 bytes of ciphertext are currently
+not used for anything.
+
+For `hybrid` and `shared`, the 256 bytes of ciphertext are used
+as a symmetric cipher. So the gpg option to use for both encrypting
+and decrypting is --symmetric. gpg then prompts for a passphrase,
+and the ciphertext is what's used.
+"""]]

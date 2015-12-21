@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2015-12-19T18:21:04Z"
+ content="""
+I'm still not entirely happy with the smudge/clean interface's performance.
+At least git doesn't fall over if the clean filter declines to read all the
+content of the large file on stdin anymore, which was the main thing
+preventing an optimised use of it. Still, git has to run the clean filter once
+per file, which is suboptimal. And, the smudge filter can't modify the file in
+the work tree, but instead has to pass the whole file content back to git
+for writing, which is going to result in a lot of unnecessary context
+switches and slowdown. Especially in git-annex's case, where all it really
+needs to do is make a hard link to the content.
+"""]]

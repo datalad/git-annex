@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="wsha.code+ga@b38779424f41c5701bbe5937340be43ff1474b2d"
+ subject="comment 4"
+ date="2015-12-16T11:21:48Z"
+ content="""
+Decrypting the cipher for `hybrid` and `pubkey` remotes is actually pretty straightforward: `echo -n <cipher_entry> | base64 -d | gpg --decrypt`. I think with that I have enough to put together a short summary of decrypting by hand the contents of `hybrid`, `pubkey`, and `shared` special remotes.
+"""]]

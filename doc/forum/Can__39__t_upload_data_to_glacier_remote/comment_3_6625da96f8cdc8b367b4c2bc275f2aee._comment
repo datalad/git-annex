@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-12-19T18:28:42Z"
+ content="""
+Note that, since version 5.20150219, git-annex probes to see if the
+"glacier" program in PATH is the one from boto, and fails with a nicer
+error message.
+
+The UnicodeDecodeError is mentioned in the thread for
+[[special_remotes/glacier]] too. There is a workaround posted in that
+thread. It would probably be good to nudge the boto maintainers to apply
+the fix, which has been available for at least 3 months now.
+"""]]

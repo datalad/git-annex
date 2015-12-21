@@ -1,0 +1,14 @@
+Hi,
+ I am looking to find out the best way to use git annex, when all repos will live on the same filesystem, using a central repo.
+
+What I have so far is, after creating the main repo (mainrepo).
+
+Create clones via: git clone -shared mainrepo clonerepo
+
+Then  use "git annex add" and "git add". When it comes to making the data accessible to the mainrepo, it is a little unclear to me. 
+There is a lot of disjoint information regarding pull/pushing content and which directions use hardlinks vs copies etc. So I 
+was hoping that someone could fill me in on best practices.
+
+Thanks in advance!
+
+Pete

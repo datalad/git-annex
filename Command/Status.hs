@@ -46,10 +46,19 @@ displayStatus s  = do
 	unlessM (showFullJSON [("status", [c]), ("file", f)]) $
 		liftIO $ putStrLn $ [c] ++ " " ++ f
 
--- Git thinks that present direct mode files are typechanged;
--- check their content to see if they are modified or not.
+-- Git thinks that present direct mode files are typechanged.
+-- (On crippled filesystems, git instead thinks they're modified.)
+-- Check their content to see if they are modified or not.
 statusDirect :: Status -> Annex (Maybe Status)
-statusDirect (TypeChanged t) = do
+statusDirect (TypeChanged t) = statusDirect' t
+statusDirect s@(Modified t) = ifM crippledFileSystem
+	( statusDirect' t
+	, pure (Just s)
+	)
+statusDirect s = pure (Just s)
+
+statusDirect' :: TopFilePath -> Annex (Maybe Status)
+statusDirect' t = do
 	absf <- fromRepo $ fromTopFilePath t
 	f <- liftIO $ relPathCwdToFile absf
 	v <- liftIO (catchMaybeIO $ getFileStatus f)
@@ -65,7 +74,6 @@ statusDirect (TypeChanged t) = do
 		, return $ Just $ Modified t
 		)
 	checkkey f _ Nothing = Just <$> checkNew f t
-statusDirect s = pure (Just s)
 
 checkNew :: FilePath -> TopFilePath -> Annex Status
 checkNew f t = ifM (isJust <$> catObjectDetails (Git.Ref.fileRef f))
