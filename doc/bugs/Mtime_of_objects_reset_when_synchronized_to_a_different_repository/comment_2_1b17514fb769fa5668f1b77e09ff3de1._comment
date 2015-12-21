@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 2"
+ date="2015-12-21T15:46:53Z"
+ content="""
+FWIW well -- git-annex does at least a bit to maintain mtime.  E.g. when I 'annex add' a file, the symlink's mtime becomes the one of the original file.  Unfortunately it is not the case though whenever I acquire the load for that key, which possibly gets correct mtime again, but then symlink doesn't get mtime adjusted to match to the one of the key.
+"""]]
