@@ -32,6 +32,7 @@ import Annex.Content.Direct
 import Annex.FileMatcher
 import Logs.Location
 import Utility.Metered
+import CmdLine.Batch
 import qualified Annex.Transfer as Transfer
 #ifdef WITH_QUVI
 import Annex.Quvi
@@ -51,6 +52,7 @@ data AddUrlOptions = AddUrlOptions
 	, suffixOption :: Maybe String
 	, relaxedOption :: Bool
 	, rawOption :: Bool
+	, batchOption :: BatchMode
 	}
 
 optParser :: CmdParamsDesc -> Parser AddUrlOptions
@@ -74,6 +76,7 @@ optParser desc = AddUrlOptions
 		))
 	<*> parseRelaxedOption
 	<*> parseRawOption
+	<*> parseBatchOption
 
 parseRelaxedOption :: Parser Bool
 parseRelaxedOption = switch
@@ -88,8 +91,13 @@ parseRawOption = switch
 	)
 
 seek :: AddUrlOptions -> CommandSeek
-seek o = allowConcurrentOutput $
-	forM_ (addUrls o) $ \u -> do
+seek o = allowConcurrentOutput $ do
+	forM_ (addUrls o) go
+	case batchOption o of
+		Batch -> batchSeek go
+		NoBatch -> noop
+  where
+	go u = do
 		r <- Remote.claimingUrl u
 		if Remote.uuid r == webUUID || rawOption o
 			then void $ commandAction $ startWeb o u

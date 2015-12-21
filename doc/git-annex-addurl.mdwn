@@ -70,6 +70,11 @@ be used to get better filenames.
   Enables parallel downloads when multiple urls are being added.
   For example: `-J4`  
 
+* `--batch`
+
+  Enables batch mode, in which lines containing urls to add are read from
+  stdin.
+
 # SEE ALSO
 
 [[git-annex]](1)
