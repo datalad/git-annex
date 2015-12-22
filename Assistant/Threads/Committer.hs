@@ -21,13 +21,13 @@ import Logs.Transfer
 import Logs.Location
 import qualified Annex.Queue
 import qualified Git.LsFiles
-import qualified Command.Add
 import Utility.ThreadScheduler
 import qualified Utility.Lsof as Lsof
 import qualified Utility.DirWatcher as DirWatcher
 import Types.KeySource
 import Config
 import Annex.Content
+import Annex.Ingest
 import Annex.Link
 import Annex.CatFile
 import Annex.InodeSentinal
@@ -314,7 +314,7 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 		doadd = sanitycheck ks $ do
 			(mkey, mcache) <- liftAnnex $ do
 				showStart "add" $ keyFilename ks
-				Command.Add.ingest $ Just ks
+				ingest $ Just ks
 			maybe (failedingest change) (done change mcache $ keyFilename ks) mkey
 	add _ = return Nothing
 
@@ -344,7 +344,7 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 	fastadddirect :: Change -> Key -> Assistant (Maybe Change)
 	fastadddirect change key = do
 		let source = keySource change
-		liftAnnex $ Command.Add.finishIngestDirect key source
+		liftAnnex $ finishIngestDirect key source
 		done change Nothing (keyFilename source) key
 	
 	fastaddunlocked :: Change -> Key -> Assistant (Maybe Change)
@@ -377,7 +377,7 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 			, do
 				link <- ifM isDirect
 					( calcRepo $ gitAnnexLink file key
-					, Command.Add.link file key mcache
+					, makeLink file key mcache
 					)
 				whenM (pure DirWatcher.eventsCoalesce <||> isDirect) $
 					stageSymlink file =<< hashSymlink link
@@ -424,7 +424,7 @@ safeToAdd _ _ [] [] = return []
 safeToAdd havelsof delayadd pending inprocess = do
 	maybe noop (liftIO . threadDelaySeconds) delayadd
 	liftAnnex $ do
-		keysources <- forM pending $ Command.Add.lockDown . changeFile
+		keysources <- forM pending $ lockDown . changeFile
 		let inprocess' = inprocess ++ mapMaybe mkinprocess (zip pending keysources)
 		openfiles <- if havelsof
 			then S.fromList . map fst3 . filter openwrite <$>

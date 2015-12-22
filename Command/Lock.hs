@@ -19,7 +19,7 @@ import Annex.Perms
 import Annex.ReplaceFile
 import Utility.InodeCache
 import qualified Database.Keys
-import qualified Command.Add
+import Annex.Ingest
 import Logs.Location
 	
 cmd :: Command
@@ -60,7 +60,7 @@ startNew file key = ifM (isJust <$> isAnnexLink file)
 performNew :: FilePath -> Key -> Bool -> CommandPerform
 performNew file key filemodified = do
 	lockdown =<< calcRepo (gitAnnexLocation key)
-	Command.Add.addLink file key
+	addLink file key
 		=<< withTSDelta (liftIO . genInodeCache file)
 	next $ cleanupNew file key
   where

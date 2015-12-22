@@ -14,14 +14,15 @@ import Network.URI
 import Common.Annex
 import Command
 import Backend
-import qualified Command.Add
 import qualified Annex
 import qualified Annex.Queue
 import qualified Annex.Url as Url
 import qualified Backend.URL
 import qualified Remote
 import qualified Types.Remote as Remote
+import qualified Command.Add
 import Annex.Content
+import Annex.Ingest
 import Annex.UUID
 import Logs.Web
 import Types.Key
@@ -359,7 +360,7 @@ cleanup u url file key mtmp = case mtmp of
 		when (isJust mtmp) $
 			logStatus key InfoPresent
 		setUrlPresent u key url
-		Command.Add.addLink file key Nothing
+		addLink file key Nothing
 		whenM isDirect $ do
 			void $ addAssociatedFile key file
 			{- For moveAnnex to work in direct mode, the symlink

@@ -20,7 +20,7 @@ import Annex.Content
 import Annex.Content.Direct
 import Annex.CatFile
 import Annex.Init
-import qualified Command.Add
+import Annex.Ingest
 
 cmd :: Command
 cmd = notBareRepo $ noDaemonRunning $
@@ -90,7 +90,7 @@ perform = do
 				Right _ -> do 
 					l <- calcRepo $ gitAnnexLink f k
 					liftIO $ createSymbolicLink l f
-				Left e -> catchNonAsync (Command.Add.undo f k e)
+				Left e -> catchNonAsync (restoreFile f k e)
 					warnlocked
 		showEndOk
 

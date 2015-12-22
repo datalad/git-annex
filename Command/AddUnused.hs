@@ -10,7 +10,7 @@ module Command.AddUnused where
 import Common.Annex
 import Logs.Location
 import Command
-import qualified Command.Add
+import Annex.Ingest
 import Command.Unused (withUnusedMaps, UnusedMaps(..), startUnused)
 import Types.Key
 
@@ -31,7 +31,7 @@ start = startUnused "addunused" perform
 perform :: Key -> CommandPerform
 perform key = next $ do
 	logStatus key InfoPresent
-	Command.Add.addLink file key Nothing
+	addLink file key Nothing
 	return True
   where
 	file = "unused." ++ key2file key
