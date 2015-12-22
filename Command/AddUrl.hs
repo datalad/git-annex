@@ -94,7 +94,7 @@ seek :: AddUrlOptions -> CommandSeek
 seek o = allowConcurrentOutput $ do
 	forM_ (addUrls o) go
 	case batchOption o of
-		Batch -> batchSeek go
+		Batch -> batchInput go
 		NoBatch -> noop
   where
 	go u = do
