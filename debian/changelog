@@ -15,7 +15,7 @@ git-annex (6.20151225) unstable; urgency=medium
     pointer file, and this change can be committed to the git repository.
   * add: In v6 mode, adds modified files to the annex.
   * assistant: In v6 mode, adds files in unlocked mode, so they can
-    continue to be modified. TODO
+    continue to be modified.
  
  -- Joey Hess <id@joeyh.name>  Tue, 08 Dec 2015 11:14:03 -0400
 
