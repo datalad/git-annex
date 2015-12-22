@@ -13,6 +13,7 @@ module Annex.Ingest (
 	ingest,
 	finishIngestDirect,
 	finishIngestUnlocked,
+	cleanOldKeys,
 	addLink,
 	makeLink,
 	restoreFile,
@@ -27,6 +28,7 @@ import Annex.Content.Direct
 import Annex.Perms
 import Annex.Link
 import Annex.MetaData
+import Logs.Location
 import qualified Annex
 import qualified Annex.Queue
 import qualified Database.Keys
@@ -143,6 +145,7 @@ ingest (Just (LockedDown lockingfile source)) = withTSDelta $ \delta -> do
 		-- linkAnnex falls back to copying if a file
 		-- already has a hard link.
 		cleanCruft source
+		cleanOldKeys (keyFilename source) key
 		r <- linkAnnex key (keyFilename source) (Just cache)
 		case r of
 			LinkAnnexFailed -> failure "failed to link to annex"
@@ -192,6 +195,34 @@ populateAssociatedFiles key source = do
 cleanCruft :: KeySource -> Annex ()
 cleanCruft source = when (contentLocation source /= keyFilename source) $
 	liftIO $ nukeFile $ contentLocation source
+
+-- If a worktree file was was hard linked to an annex object before,
+-- modifying the file would have caused the object to have the wrong
+-- content. Clean up from that.
+cleanOldKeys :: FilePath -> Key -> Annex ()
+cleanOldKeys file newkey = do
+	oldkeys <- filter (/= newkey)
+		<$> Database.Keys.getAssociatedKey file
+	mapM_ go oldkeys
+  where
+	go key = do
+		obj <- calcRepo (gitAnnexLocation key)
+		caches <- Database.Keys.getInodeCaches key
+		unlessM (sameInodeCache obj caches) $ do
+			unlinkAnnex key
+			fs <- filter (/= file)
+				<$> Database.Keys.getAssociatedFiles key
+			fs' <- filterM (`sameInodeCache` caches) fs
+			case fs' of
+				-- If linkAnnex fails, the associated 
+				-- file with the content is still present,
+				-- so no need for any recovery.
+				(f:_) -> do
+					ic <- withTSDelta (liftIO . genInodeCache f)
+					void $ linkAnnex key f ic
+				_ -> lostcontent
+	  where
+		lostcontent = logStatus key InfoMissing
 
 {- On error, put the file back so it doesn't seem to have vanished.
  - This can be called before or after the symlink is in place. -}

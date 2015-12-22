@@ -74,38 +74,10 @@ clean file = do
 	if isJust (parseLinkOrPointer b)
 		then liftIO $ B.hPut stdout b
 		else ifM (shouldAnnex file)
-			( do
-				k <- ingest file
-				oldkeys <- filter (/= k)
-					<$> Database.Keys.getAssociatedKey file
-				mapM_ (cleanOldKey file) oldkeys
-				Database.Keys.addAssociatedFile k file
-				liftIO $ emitPointer k
+			( liftIO . emitPointer =<< ingest file
 			, liftIO $ B.hPut stdout b
 			)
 	stop
-
--- If the file being cleaned was hard linked to the old key's annex object,
--- modifying the file will have caused the object to have the wrong content.
--- Clean up from that.
-cleanOldKey :: FilePath -> Key -> Annex ()
-cleanOldKey modifiedfile key = do
-	obj <- calcRepo (gitAnnexLocation key)
-	caches <- Database.Keys.getInodeCaches key
-	unlessM (sameInodeCache obj caches) $ do
-		unlinkAnnex key
-		fs <- filter (/= modifiedfile)
-			<$> Database.Keys.getAssociatedFiles key
-		fs' <- filterM (`sameInodeCache` caches) fs
-		case fs' of
-			-- If linkAnnex fails, the file with the content
-			-- is still present, so no need for any recovery.
-			(f:_) -> do
-				ic <- withTSDelta (liftIO . genInodeCache f)
-				void $ linkAnnex key f ic
-			_ -> lostcontent
-  where
-	lostcontent = logStatus key InfoMissing
 
 shouldAnnex :: FilePath -> Annex Bool
 shouldAnnex file = do
