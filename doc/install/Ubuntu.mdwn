@@ -42,3 +42,11 @@ If you don't have add-apt-repository installed run this command first:
 Warning: The version of git-annex shipped in Ubuntu Oneiric
 had [a bug that prevents upgrades from v1 git-annex repositories](https://bugs.launchpad.net/ubuntu/+source/git-annex/+bug/875958).
 If you need to upgrade such a repository, get a newer version of git-annex.
+
+## backport
+
+If the version shipped with Ubuntu is too old, 
+the [NeuroDebian team](http://neuro.debian.net/) provides a
+[standalone build package](http://neuro.debian.net/pkgs/git-annex-standalone.html)
+that is regularly updated and that should work across all releases of
+Ubuntu.

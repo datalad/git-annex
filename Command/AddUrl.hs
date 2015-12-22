@@ -54,6 +54,7 @@ data AddUrlOptions = AddUrlOptions
 	, relaxedOption :: Bool
 	, rawOption :: Bool
 	, batchOption :: BatchMode
+	, batchFilesOption :: Bool
 	}
 
 optParser :: CmdParamsDesc -> Parser AddUrlOptions
@@ -78,6 +79,10 @@ optParser desc = AddUrlOptions
 	<*> parseRelaxedOption
 	<*> parseRawOption
 	<*> parseBatchOption
+	<*> switch
+		( long "with-files"
+		<> help "parse batch mode lines of the form \"$url $file\""
+		)
 
 parseRelaxedOption :: Parser Bool
 parseRelaxedOption = switch
@@ -93,16 +98,25 @@ parseRawOption = switch
 
 seek :: AddUrlOptions -> CommandSeek
 seek o = allowConcurrentOutput $ do
-	forM_ (addUrls o) go
+	forM_ (addUrls o) (\u -> go (o, u))
 	case batchOption o of
-		Batch -> batchSeek go
+		Batch -> batchInput (parseBatchInput o) go
 		NoBatch -> noop
   where
-	go u = do
+	go (o', u) = do
 		r <- Remote.claimingUrl u
-		if Remote.uuid r == webUUID || rawOption o
-			then void $ commandAction $ startWeb o u
-			else checkUrl r o u
+		if Remote.uuid r == webUUID || rawOption o'
+			then void $ commandAction $ startWeb o' u
+			else checkUrl r o' u
+
+parseBatchInput :: AddUrlOptions -> String -> Either String (AddUrlOptions, URLString)
+parseBatchInput o s
+	| batchFilesOption o =
+		let (u, f) = separate (== ' ') s
+		in if null u || null f
+			then Left ("parsed empty url or filename in input: " ++ s)
+			else Right (o { fileOption = Just f }, u)
+	| otherwise = Right (o, s)
 
 checkUrl :: Remote -> AddUrlOptions -> URLString -> Annex ()
 checkUrl r o u = do

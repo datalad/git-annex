@@ -31,15 +31,7 @@ batchable handler parser paramdesc = batchseeker <$> batchparser
 		<*> cmdParams paramdesc
 	
 	batchseeker (opts, NoBatch, params) = mapM_ (go NoBatch opts) params
-	batchseeker (opts, Batch, _) = batchloop opts
-
-	batchloop opts = do
-		mp <- liftIO $ catchMaybeIO getLine
-		case mp of
-			Nothing -> return ()
-			Just p -> do
-				go Batch opts p
-				batchloop opts
+	batchseeker (opts, Batch, _) = batchInput Right (go Batch opts)
 
 	go batchmode opts p =
 		unlessM (handler opts p) $
@@ -52,11 +44,13 @@ batchBadInput NoBatch = liftIO exitFailure
 batchBadInput Batch = liftIO $ putStrLn ""
 
 -- Reads lines of batch mode input and passes to the action to handle.
-batchSeek :: (String -> Annex ()) -> Annex ()
-batchSeek a = do
+batchInput :: (String -> Either String a) -> (a -> Annex ()) -> Annex ()
+batchInput parser a = do
 	mp <- liftIO $ catchMaybeIO getLine
 	case mp of
 		Nothing -> return ()
-		Just p -> do
-			a p
-			batchSeek a
+		Just v -> do
+			either parseerr a (parser v)
+			batchInput parser a
+  where
+	parseerr s = error $ "Batch input parse failure: " ++ s

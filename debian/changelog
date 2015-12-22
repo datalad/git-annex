@@ -25,7 +25,7 @@ git-annex (5.20151219) UNRELEASED; urgency=medium
     that were present. Probably caused by a change to what git status
     displays in this situation. Fixed by treating files git thinks are
     modified the same as typechanged files.
-  * addurl: Added --batch option. 
+  * addurl: Added --batch and --with-files options.
 
  -- Joey Hess <id@joeyh.name>  Sat, 19 Dec 2015 13:31:17 -0400
 
