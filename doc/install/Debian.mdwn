@@ -22,3 +22,11 @@ Follow the instructions to [enable backports](http://backports.debian.org/Instru
 Follow the instructions to [enable backports](http://backports.debian.org/Instructions/).
 
 	sudo apt-get -t squeeze-backports install git-annex
+
+## backport
+
+If the version shipped with Debian is too old, 
+the [NeuroDebian team](http://neuro.debian.net/) provides a
+[standalone build package](http://neuro.debian.net/pkgs/git-annex-standalone.html)
+that is regularly updated and that should work across all releases of
+Debian.
