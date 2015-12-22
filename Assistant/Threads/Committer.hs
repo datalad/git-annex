@@ -55,7 +55,8 @@ commitThread = namedThread "Committer" $ do
 			=<< annexDelayAdd <$> Annex.getGitConfig
 	msg <- liftAnnex Command.Sync.commitMsg
 	waitChangeTime $ \(changes, time) -> do
-		readychanges <- handleAdds havelsof delayadd changes
+		readychanges <- handleAdds havelsof delayadd $
+			simplifyChanges changes
 		if shouldCommit False time (length readychanges) readychanges
 			then do
 				debug
