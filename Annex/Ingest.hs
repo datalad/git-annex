@@ -12,6 +12,7 @@ module Annex.Ingest (
 	lockDown,
 	ingest,
 	finishIngestDirect,
+	finishIngestUnlocked,
 	addLink,
 	makeLink,
 	restoreFile,
@@ -28,6 +29,7 @@ import Annex.Link
 import Annex.MetaData
 import qualified Annex
 import qualified Annex.Queue
+import qualified Database.Keys
 import Config
 import Utility.InodeCache
 import Annex.ReplaceFile
@@ -59,9 +61,8 @@ data LockedDown = LockedDown
  - against some changes, like deletion or overwrite of the file, and
  - allows lsof checks to be done more efficiently when adding a lot of files.
  -
- - If the file is to be locked, lockingfile is True. Then the write
- - bit is removed from the file as part of lock down to guard against
- - further writes.
+ - If lockingfile is True, the file is going to be added in locked mode.
+ - So, its write bit is removed as part of the lock down.
  -
  - Lockdown can fail if a file gets deleted, and Nothing will be returned.
  -}
@@ -134,13 +135,20 @@ ingest (Just (LockedDown lockingfile source)) = withTSDelta $ \delta -> do
 		catchNonAsync (moveAnnex key $ contentLocation source)
 			(restoreFile (keyFilename source) key)
 		liftIO $ nukeFile $ keyFilename source
+		populateAssociatedFiles key source
 		success key mcache s
 
 	gounlocked key (Just cache) s = do
+		-- Remove temp directory hard link first because
+		-- linkAnnex falls back to copying if a file
+		-- already has a hard link.
+		cleanCruft source
 		r <- linkAnnex key (keyFilename source) (Just cache)
 		case r of
 			LinkAnnexFailed -> failure "failed to link to annex"
-			_ -> success key (Just cache) s
+			_ -> do
+				finishIngestUnlocked key source
+				success key (Just cache) s
 	gounlocked _ _ _ = failure "failed statting file"
 
 	godirect key (Just cache) s = do
@@ -167,6 +175,19 @@ finishIngestDirect key source = do
 	otherfs <- filter (/= keyFilename source) <$> associatedFiles key
 	forM_ otherfs $
 		addContentWhenNotPresent key (keyFilename source)
+
+finishIngestUnlocked :: Key -> KeySource -> Annex ()
+finishIngestUnlocked key source = do
+	Database.Keys.addAssociatedFile key (keyFilename source)
+	populateAssociatedFiles key source
+
+{- Copy to any other locations using the same key. -}
+populateAssociatedFiles :: Key -> KeySource -> Annex ()
+populateAssociatedFiles key source = do
+	otherfs <- filter (/= keyFilename source) <$> Database.Keys.getAssociatedFiles key
+	obj <- calcRepo (gitAnnexLocation key)
+	forM_ otherfs $
+		populatePointerFile key obj
 
 cleanCruft :: KeySource -> Annex ()
 cleanCruft source = when (contentLocation source /= keyFilename source) $

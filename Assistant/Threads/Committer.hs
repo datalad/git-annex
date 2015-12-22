@@ -347,7 +347,7 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 		let source = keySource $ lockedDown change
 		liftAnnex $ if isdirect
 			then finishIngestDirect key source
-			else Database.Keys.addAssociatedFile key (keyFilename source)
+			else finishIngestUnlocked key source
 		done change Nothing (keyFilename source) key
 
 	removedKeysMap :: Bool -> InodeComparisonType -> [Change] -> Annex (M.Map InodeCacheKey Key)

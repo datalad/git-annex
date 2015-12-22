@@ -24,6 +24,7 @@ module Annex.Content (
 	withTmp,
 	checkDiskSpace,
 	moveAnnex,
+	populatePointerFile,
 	linkAnnex,
 	linkAnnex',
 	LinkAnnexResult(..),
