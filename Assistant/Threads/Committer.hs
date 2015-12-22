@@ -266,10 +266,12 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 	let (pending, inprocess) = partition isPendingAddChange incomplete
 	direct <- liftAnnex isDirect
 	unlocked <- liftAnnex versionSupportsUnlockedPointers
+	let lockingfiles = not (unlocked || direct)
 	(pending', cleanup) <- if unlocked || direct
 		then return (pending, noop)
 		else findnew pending
-	(postponed, toadd) <- partitionEithers <$> safeToAdd havelsof delayadd pending' inprocess
+	(postponed, toadd) <- partitionEithers
+		<$> safeToAdd lockingfiles havelsof delayadd pending' inprocess
 	cleanup
 
 	unless (null postponed) $
@@ -278,9 +280,9 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 	returnWhen (null toadd) $ do
 		added <- addaction toadd $
 			catMaybes <$>
-				if unlocked || direct
+				if not lockingfiles
 					then addunlocked direct toadd
-					else forM toadd add
+					else forM toadd (add lockingfiles)
 		if DirWatcher.eventsCoalesce || null added || unlocked || direct
 			then return $ added ++ otherchanges
 			else do
@@ -307,16 +309,17 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 		| c = return otherchanges
 		| otherwise = a
 
-	add :: Change -> Assistant (Maybe Change)
-	add change@(InProcessAddChange { keySource = ks }) = 
+	add :: Bool -> Change -> Assistant (Maybe Change)
+	add lockingfile change@(InProcessAddChange { lockedDown = ld }) = 
 		catchDefaultIO Nothing <~> doadd
 	  where
+	  	ks = keySource ld
 		doadd = sanitycheck ks $ do
 			(mkey, mcache) <- liftAnnex $ do
 				showStart "add" $ keyFilename ks
-				ingest $ Just ks
+				ingest $ Just $ LockedDown lockingfile ks
 			maybe (failedingest change) (done change mcache $ keyFilename ks) mkey
-	add _ = return Nothing
+	add _ _ = return Nothing
 
 	{- Avoid overhead of re-injesting a renamed unlocked file, by
 	 - examining the other Changes to see if a removed file has the
@@ -329,29 +332,22 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 		m <- liftAnnex $ removedKeysMap isdirect ct cs
 		delta <- liftAnnex getTSDelta
 		if M.null m
-			then forM toadd add
+			then forM toadd (add False)
 			else forM toadd $ \c -> do
 				mcache <- liftIO $ genInodeCache (changeFile c) delta
 				case mcache of
-					Nothing -> add c
+					Nothing -> add False c
 					Just cache ->
 						case M.lookup (inodeCacheToKey ct cache) m of
-							Nothing -> add c
-							Just k -> if isdirect
-								then fastadddirect c k
-								else fastaddunlocked c k
+							Nothing -> add False c
+							Just k -> fastadd isdirect c k
 
-	fastadddirect :: Change -> Key -> Assistant (Maybe Change)
-	fastadddirect change key = do
-		let source = keySource change
-		liftAnnex $ finishIngestDirect key source
-		done change Nothing (keyFilename source) key
-	
-	fastaddunlocked :: Change -> Key -> Assistant (Maybe Change)
-	fastaddunlocked change key = do
-		let source = keySource change
-		liftAnnex $ do
-			Database.Keys.addAssociatedFile key (keyFilename source)
+	fastadd :: Bool -> Change -> Key -> Assistant (Maybe Change)
+	fastadd isdirect change key = do
+		let source = keySource $ lockedDown change
+		liftAnnex $ if isdirect
+			then finishIngestDirect key source
+			else Database.Keys.addAssociatedFile key (keyFilename source)
 		done change Nothing (keyFilename source) key
 
 	removedKeysMap :: Bool -> InodeComparisonType -> [Change] -> Annex (M.Map InodeCacheKey Key)
@@ -419,16 +415,16 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
  -
  - Check by running lsof on the repository.
  -}
-safeToAdd :: Bool -> Maybe Seconds -> [Change] -> [Change] -> Assistant [Either Change Change]
-safeToAdd _ _ [] [] = return []
-safeToAdd havelsof delayadd pending inprocess = do
+safeToAdd :: Bool -> Bool -> Maybe Seconds -> [Change] -> [Change] -> Assistant [Either Change Change]
+safeToAdd _ _ _ [] [] = return []
+safeToAdd lockingfiles havelsof delayadd pending inprocess = do
 	maybe noop (liftIO . threadDelaySeconds) delayadd
 	liftAnnex $ do
-		keysources <- forM pending $ lockDown . changeFile
-		let inprocess' = inprocess ++ mapMaybe mkinprocess (zip pending keysources)
+		lockeddown <- forM pending $ lockDown lockingfiles . changeFile
+		let inprocess' = inprocess ++ mapMaybe mkinprocess (zip pending lockeddown)
 		openfiles <- if havelsof
 			then S.fromList . map fst3 . filter openwrite <$>
-				findopenfiles (map keySource inprocess')
+				findopenfiles (map (keySource . lockedDown) inprocess')
 			else pure S.empty
 		let checked = map (check openfiles) inprocess'
 
@@ -441,17 +437,18 @@ safeToAdd havelsof delayadd pending inprocess = do
 				allRight $ rights checked
 			else return checked
   where
-	check openfiles change@(InProcessAddChange { keySource = ks })
-		| S.member (contentLocation ks) openfiles = Left change
+	check openfiles change@(InProcessAddChange { lockedDown = ld })
+		| S.member (contentLocation (keySource ld)) openfiles = Left change
 	check _ change = Right change
 
-	mkinprocess (c, Just ks) = Just InProcessAddChange
+	mkinprocess (c, Just ld) = Just InProcessAddChange
 		{ changeTime = changeTime c
-		, keySource = ks
+		, lockedDown = ld
 		}
 	mkinprocess (_, Nothing) = Nothing
 
-	canceladd (InProcessAddChange { keySource = ks }) = do
+	canceladd (InProcessAddChange { lockedDown = ld }) = do
+		let ks = keySource ld
 		warning $ keyFilename ks
 			++ " still has writers, not adding"
 		-- remove the hard link

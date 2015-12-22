@@ -113,7 +113,9 @@ start file = ifAnnexed file addpresent add
 		next $ next $ cleanup file key Nothing =<< inAnnex key
 
 perform :: FilePath -> CommandPerform
-perform file = lockDown file >>= ingest >>= go
+perform file = do
+	lockingfile <- not <$> isDirect
+	lockDown lockingfile file >>= ingest >>= go
   where
 	go (Just key, cache) = next $ cleanup file key cache True
 	go (Nothing, _) = stop
