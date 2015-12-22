@@ -14,6 +14,7 @@ import Annex.Link
 import Annex.MetaData
 import Annex.FileMatcher
 import Annex.InodeSentinal
+import Utility.InodeCache
 import Types.KeySource
 import Backend
 import Logs.Location
@@ -86,7 +87,7 @@ clean file = do
 
 -- If the file being cleaned was hard linked to the old key's annex object,
 -- modifying the file will have caused the object to have the wrong content.
--- Clean up from that, making the 
+-- Clean up from that.
 cleanOldKey :: FilePath -> Key -> Annex ()
 cleanOldKey modifiedfile key = do
 	obj <- calcRepo (gitAnnexLocation key)
@@ -99,7 +100,9 @@ cleanOldKey modifiedfile key = do
 		case fs' of
 			-- If linkAnnex fails, the file with the content
 			-- is still present, so no need for any recovery.
-			(f:_) -> void $ linkAnnex key f
+			(f:_) -> do
+				ic <- withTSDelta (liftIO . genInodeCache f)
+				void $ linkAnnex key f ic
 			_ -> lostcontent
   where
 	lostcontent = logStatus key InfoMissing
@@ -112,17 +115,18 @@ shouldAnnex file = do
 ingest :: FilePath -> Annex Key
 ingest file = do
 	backend <- chooseBackend file
+	ic <- withTSDelta (liftIO . genInodeCache file)
 	let source = KeySource
 		{ keyFilename = file
 		, contentLocation = file
-		, inodeCache = Nothing
+		, inodeCache = ic
 		}
 	k <- fst . fromMaybe (error "failed to generate a key")
 		<$> genKey source backend
 	-- Hard link (or copy) file content to annex object
 	-- to prevent it from being lost when git checks out
 	-- a branch not containing this file.
-	r <- linkAnnex k file
+	r <- linkAnnex k file ic
 	case r of
 		LinkAnnexFailed -> error "Problem adding file to the annex"
 		LinkAnnexOk -> logStatus k InfoPresent

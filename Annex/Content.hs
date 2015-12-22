@@ -521,30 +521,43 @@ populatePointerFile k obj f = go =<< isPointerFile f
  - prevent losing the content if the source file is deleted, but does not
  - guard against modifications.
  -}
-linkAnnex :: Key -> FilePath -> Annex LinkAnnexResult
-linkAnnex key src = do
+linkAnnex :: Key -> FilePath -> Maybe InodeCache -> Annex LinkAnnexResult
+linkAnnex key src srcic = do
 	dest <- calcRepo (gitAnnexLocation key)
-	modifyContent dest $ linkAnnex' key src dest
+	modifyContent dest $ linkAnnex' key src srcic dest
 
 {- Hard links (or copies) src to dest, one of which should be the
  - annex object. Updates inode cache for src and for dest when it's
  - changed. -}
-linkAnnex' :: Key -> FilePath -> FilePath -> Annex LinkAnnexResult
-linkAnnex' key src dest = 
+linkAnnex' :: Key -> FilePath -> Maybe InodeCache -> FilePath -> Annex LinkAnnexResult
+linkAnnex' _ _ Nothing _ = return LinkAnnexFailed
+linkAnnex' key src (Just srcic) dest = 
 	ifM (liftIO $ doesFileExist dest)
 		( do
-			Database.Keys.storeInodeCaches key [src]
+			Database.Keys.addInodeCaches key [srcic]
 			return LinkAnnexNoop
 		, ifM (linkAnnex'' key src dest)
 			( do
 				thawContent dest
-				Database.Keys.storeInodeCaches key [dest, src]
-				return LinkAnnexOk
-			, do
-				Database.Keys.storeInodeCaches key [src]
-				return LinkAnnexFailed
+				-- src could have changed while being copied
+				-- to dest
+				mcache <- withTSDelta (liftIO . genInodeCache src)
+				case mcache of
+					Just srcic' | compareStrong srcic srcic' -> do
+						destic <- withTSDelta (liftIO . genInodeCache dest)
+						Database.Keys.addInodeCaches key $
+							catMaybes [destic, Just srcic]
+						return LinkAnnexOk
+					_ -> do
+						liftIO $ nukeFile dest
+						failed
+			, failed
 			)
 		)
+  where
+	failed = do
+		Database.Keys.addInodeCaches key [srcic]
+		return LinkAnnexFailed
 
 data LinkAnnexResult = LinkAnnexOk | LinkAnnexFailed | LinkAnnexNoop
 

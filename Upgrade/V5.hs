@@ -20,6 +20,7 @@ import qualified Git
 import qualified Git.LsFiles
 import qualified Git.Branch
 import Git.FileMode
+import Utility.InodeCache
 
 upgrade :: Bool -> Annex Bool
 upgrade automatic = do
@@ -88,7 +89,8 @@ upgradeDirectWorkTree = do
 		-- not populated with it. Since the work tree file
 		-- is recorded as an associated file, things will still
 		-- work that way, it's just not ideal.
-		void $ linkAnnex k f
+		ic <- withTSDelta (liftIO . genInodeCache f)
+		void $ linkAnnex k f ic
 	writepointer f k = liftIO $ do
 		nukeFile f
 		writeFile f (formatPointer k)
