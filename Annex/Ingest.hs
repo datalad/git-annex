@@ -150,7 +150,7 @@ ingest (Just (LockedDown lockingfile source)) = withTSDelta $ \delta -> do
 		case r of
 			LinkAnnexFailed -> failure "failed to link to annex"
 			_ -> do
-				finishIngestUnlocked key source
+				finishIngestUnlocked' key source
 				success key (Just cache) s
 	gounlocked _ _ _ = failure "failed statting file"
 
@@ -181,6 +181,11 @@ finishIngestDirect key source = do
 
 finishIngestUnlocked :: Key -> KeySource -> Annex ()
 finishIngestUnlocked key source = do
+	cleanCruft source
+	finishIngestUnlocked' key source
+
+finishIngestUnlocked' :: Key -> KeySource -> Annex ()
+finishIngestUnlocked' key source = do
 	Database.Keys.addAssociatedFile key (keyFilename source)
 	populateAssociatedFiles key source
 
