@@ -323,9 +323,6 @@ files to be unlocked, while the indirect upgrades don't touch the files.
 
 * Still a few test suite failues for v6 with locked files.
 * Test suite should make pass for v6 with unlocked files.
-* When the webapp creates a repo, it forces it into direct mode. But that
-  will fail when annex.version=6. Long-term, the assistant should make v6
-  repos, but short-term, the assistant should make v5 repos in direct mode.
 * Reconcile staged changes into the associated files database, whenever
   the database is queried. This is needed to handle eg:
   	git add largefile
@@ -360,14 +357,23 @@ files to be unlocked, while the indirect upgrades don't touch the files.
   when pushing changes committed in such a repo. Ideally, should avoid
   committing implicit unlocks, or should prevent such commits leaking out
   in pushes.
-* Dropping a smudged file causes git status to show it as modified, 
-  because the timestamp has changed. Getting a smudged file can also 
-  cause this. Upgrading a direct mode repo also leaves files in this state.
+* Dropping a smudged file causes git status (and git annex status)
+  to show it as modified,  because the timestamp has changed. 
+  Getting a smudged file can also cause this.
+  Upgrading a direct mode repo also leaves files in this state.
   User can use `git add` to clear it up, but better to avoid this,
   by updating stat info in the index.
   (May need to use libgit2 to do this, cannot find
   any plumbing except git-update-index, which is very inneficient for
   smudged files.)
+* Audit code for all uses of isDirect. These places almost always need
+  adjusting to support v6, if they haven't already.
+
+* Eventually (but not yet), make v6 the default for new repositories.
+  Note that the assistant forces repos into direct mode; that will need to
+  be changed then.
+* Later still, remove support for direct mode, and enable automatic
+  v5 to v6 upgrades.
 
 ----
 
