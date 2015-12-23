@@ -12,8 +12,6 @@
 
 module Database.Keys (
 	DbHandle,
-	openDb,
-	closeDb,
 	addAssociatedFile,
 	getAssociatedFiles,
 	getAssociatedKey,
@@ -27,7 +25,7 @@ module Database.Keys (
 ) where
 
 import Database.Types
-import Database.Keys.Types
+import Database.Keys.Handle
 import qualified Database.Queue as H
 import Locations
 import Common hiding (delete)
@@ -35,12 +33,12 @@ import Annex
 import Types.Key
 import Annex.Perms
 import Annex.LockFile
-import Messages
 import Utility.InodeCache
 import Annex.InodeSentinal
 
 import Database.Persist.TH
 import Database.Esqueleto hiding (Key)
+import Data.Time.Clock
 
 share [mkPersist sqlSettings, mkMigrate "migrateKeysDb"] [persistLowerCase|
 Associated
@@ -53,7 +51,86 @@ Content
   KeyCacheIndex key cache
 |]
 
-{- Opens the database, creating it if it doesn't exist yet.
+newtype ReadHandle = ReadHandle H.DbQueue
+
+type Reader v = ReadHandle -> Annex v
+
+{- Runs an action that reads from the database.
+ -
+ - If the database doesn't already exist, it's not created; mempty is
+ - returned instead. This way, when the keys database is not in use,
+ - there's minimal overhead in checking it.
+ -
+ - If the database is already open, any writes are flushed to it, to ensure
+ - consistency.
+ -
+ - Any queued writes will be flushed before the read.
+ -}
+runReader :: Monoid v => Reader v -> Annex v
+runReader a = do
+	h <- getDbHandle
+	withDbState h go
+  where
+	go DbEmpty = return (mempty, DbEmpty)
+	go st@(DbOpen qh) = do
+		liftIO $ H.flushDbQueue qh
+		v <- a (ReadHandle qh)
+		return (v, st)
+	go DbClosed = do
+		st' <- openDb False DbClosed
+		v <- case st' of
+			(DbOpen qh) -> a (ReadHandle qh)
+			_ -> return mempty
+		return (v, st')
+
+readDb :: SqlPersistM a -> ReadHandle -> Annex a
+readDb a (ReadHandle h) = liftIO $ H.queryDbQueue h a
+
+newtype WriteHandle = WriteHandle H.DbQueue
+
+type Writer = WriteHandle -> Annex ()
+
+{- Runs an action that writes to the database. Typically this is used to
+ - queue changes, which will be flushed at a later point.
+ -
+ - The database is created if it doesn't exist yet. -}
+runWriter :: Writer -> Annex ()
+runWriter a = do
+	h <- getDbHandle
+	withDbState h go
+  where
+	go st@(DbOpen qh) = do
+		v <- a (WriteHandle qh)
+		return (v, st)
+	go st = do
+		st' <- openDb True st
+		v <- case st' of
+			DbOpen qh -> a (WriteHandle qh)
+			_ -> error "internal"
+		return (v, st)
+
+queueDb :: SqlPersistM () -> WriteHandle -> Annex ()
+queueDb a (WriteHandle h) = liftIO $ H.queueDb h checkcommit a
+  where
+	-- commit queue after 1000 changes or 5 minutes, whichever comes first
+	checkcommit sz lastcommittime
+		| sz > 1000 = return True
+		| otherwise = do
+			now <- getCurrentTime
+			return $ diffUTCTime lastcommittime now > 300
+
+{- Gets the handle cached in Annex state; creates a new one if it's not yet
+ - available, but doesn't open the database. -}
+getDbHandle :: Annex DbHandle
+getDbHandle = go =<< getState keysdbhandle
+  where
+	go (Just h) = pure h
+	go Nothing = do
+		h <- liftIO newDbHandle
+		changeState $ \s -> s { keysdbhandle = Just h }
+		return h
+
+{- Opens the database, perhaps creating it if it doesn't exist yet.
  -
  - Multiple readers and writers can have the database open at the same
  - time. Database.Handle deals with the concurrency issues.
@@ -61,32 +138,32 @@ Content
  - the database doesn't exist yet, one caller wins the lock and
  - can create it undisturbed.
  -}
-openDb :: Annex DbHandle
-openDb = withExclusiveLock gitAnnexKeysDbLock $ do
+openDb :: Bool -> DbState -> Annex DbState
+openDb _ st@(DbOpen _) = return st
+openDb False DbEmpty = return DbEmpty
+openDb createdb _ = withExclusiveLock gitAnnexKeysDbLock $ do
 	dbdir <- fromRepo gitAnnexKeysDb
 	let db = dbdir </> "db"
-	unlessM (liftIO $ doesFileExist db) $ do
-		liftIO $ do
-			createDirectoryIfMissing True dbdir
-			H.initDb db $ void $
-				runMigrationSilent migrateKeysDb
-		setAnnexDirPerm dbdir
-		setAnnexFilePerm db
-	h <- liftIO $ H.openDbQueue db "content"
-
-	-- work around https://github.com/yesodweb/persistent/issues/474
-	liftIO setConsoleEncoding
-
-	return $ DbHandle h
-
-closeDb :: DbHandle -> IO ()
-closeDb (DbHandle h) = H.closeDbQueue h
-
-withDbHandle :: (H.DbQueue -> IO a) -> Annex a
-withDbHandle a = bracket openDb (liftIO . closeDb) (\(DbHandle h) -> liftIO (a h))
+	dbexists <- liftIO $ doesFileExist db
+	case (dbexists, createdb) of
+		(True, _) -> open db
+		(False, True) -> do
+			liftIO $ do
+				createDirectoryIfMissing True dbdir
+				H.initDb db $ void $
+					runMigrationSilent migrateKeysDb
+			setAnnexDirPerm dbdir
+			setAnnexFilePerm db
+			open db
+		(False, False) -> return DbEmpty
+  where
+	open db = liftIO $ DbOpen <$> H.openDbQueue db "content"
 
 addAssociatedFile :: Key -> FilePath -> Annex ()
-addAssociatedFile k f = withDbHandle $ \h -> H.queueDb h (\_ _ -> pure True) $ do
+addAssociatedFile k f = runWriter $ addAssociatedFile' k f
+
+addAssociatedFile' :: Key -> FilePath -> Writer
+addAssociatedFile' k f = queueDb $ do
 	-- If the same file was associated with a different key before,
 	-- remove that.
 	delete $ from $ \r -> do
@@ -98,11 +175,10 @@ addAssociatedFile k f = withDbHandle $ \h -> H.queueDb h (\_ _ -> pure True) $ d
 {- Note that the files returned were once associated with the key, but
  - some of them may not be any longer. -}
 getAssociatedFiles :: Key -> Annex [FilePath]
-getAssociatedFiles k = withDbHandle $ \h -> H.queryDbQueue h $
-	getAssociatedFiles' $ toSKey k
+getAssociatedFiles = runReader . getAssociatedFiles' . toSKey
 
-getAssociatedFiles' :: SKey -> SqlPersistM [FilePath]
-getAssociatedFiles' sk = do
+getAssociatedFiles' :: SKey -> Reader [FilePath]
+getAssociatedFiles' sk = readDb $ do
 	l <- select $ from $ \r -> do
 		where_ (r ^. AssociatedKey ==. val sk)
 		return (r ^. AssociatedFile)
@@ -111,22 +187,22 @@ getAssociatedFiles' sk = do
 {- Gets any keys that are on record as having a particular associated file.
  - (Should be one or none but the database doesn't enforce that.) -}
 getAssociatedKey :: FilePath -> Annex [Key]
-getAssociatedKey f = withDbHandle $ \h -> H.queryDbQueue h $
-	getAssociatedKey' f
+getAssociatedKey = runReader . getAssociatedKey'
 
-getAssociatedKey' :: FilePath -> SqlPersistM [Key]
-getAssociatedKey' f = do
+getAssociatedKey' :: FilePath -> Reader [Key]
+getAssociatedKey' f = readDb $ do
 	l <- select $ from $ \r -> do
 		where_ (r ^. AssociatedFile ==. val f)
 		return (r ^. AssociatedKey)
 	return $ map (fromSKey . unValue) l
 
 removeAssociatedFile :: Key -> FilePath -> Annex ()
-removeAssociatedFile k f = withDbHandle $ \h -> H.queueDb h (\_ _ -> pure True) $
+removeAssociatedFile k = runWriter . removeAssociatedFile' (toSKey k)
+
+removeAssociatedFile' :: SKey -> FilePath -> Writer
+removeAssociatedFile' sk f = queueDb $ 
 	delete $ from $ \r -> do
 		where_ (r ^. AssociatedKey ==. val sk &&. r ^. AssociatedFile ==. val f)
-  where
-	sk = toSKey k
 
 {- Stats the files, and stores their InodeCaches. -}
 storeInodeCaches :: Key -> [FilePath] -> Annex ()
@@ -134,23 +210,28 @@ storeInodeCaches k fs = withTSDelta $ \d ->
 	addInodeCaches k . catMaybes =<< liftIO (mapM (`genInodeCache` d) fs)
 
 addInodeCaches :: Key -> [InodeCache] -> Annex ()
-addInodeCaches k is = withDbHandle $ \h -> H.queueDb h (\_ _ -> pure True) $
-	forM_ is $ \i -> insertUnique $ Content (toSKey k) (toSInodeCache i)
+addInodeCaches k is = runWriter $ addInodeCaches' (toSKey k) is
+
+addInodeCaches' :: SKey -> [InodeCache] -> Writer
+addInodeCaches' sk is = queueDb $
+	forM_ is $ \i -> insertUnique $ Content sk (toSInodeCache i)
 
 {- A key may have multiple InodeCaches; one for the annex object, and one
  - for each pointer file that is a copy of it. -}
 getInodeCaches :: Key -> Annex [InodeCache]
-getInodeCaches k = withDbHandle $ \h -> H.queryDbQueue h $ do
+getInodeCaches = runReader . getInodeCaches' . toSKey
+
+getInodeCaches' :: SKey -> Reader [InodeCache]
+getInodeCaches' sk = readDb $ do
 	l <- select $ from $ \r -> do
 		where_ (r ^. ContentKey ==. val sk)
 		return (r ^. ContentCache)
 	return $ map (fromSInodeCache . unValue) l
-  where
-	sk = toSKey k
 
 removeInodeCaches :: Key -> Annex ()
-removeInodeCaches k = withDbHandle $ \h -> H.queueDb h (\_ _ -> pure True) $
+removeInodeCaches = runWriter . removeInodeCaches' . toSKey
+
+removeInodeCaches' :: SKey -> Writer
+removeInodeCaches' sk = queueDb $ 
 	delete $ from $ \r -> do
 		where_ (r ^. ContentKey ==. val sk)
-  where
-	sk = toSKey k

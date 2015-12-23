@@ -22,7 +22,6 @@ import Utility.Monad
 import Database.Handle
 
 import Database.Persist.Sqlite
-import Control.Monad
 import Control.Concurrent
 import Data.Time.Clock
 

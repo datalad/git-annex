@@ -19,6 +19,7 @@ module Database.Handle (
 ) where
 
 import Utility.Exception
+import Utility.FileSystemEncoding
 
 import Database.Persist.Sqlite
 import qualified Database.Sqlite as Sqlite
@@ -66,6 +67,10 @@ openDb :: FilePath -> TableName -> IO DbHandle
 openDb db tablename = do
 	jobs <- newEmptyMVar
 	worker <- async (workerThread (T.pack db) tablename jobs)
+	
+	-- work around https://github.com/yesodweb/persistent/issues/474
+	liftIO setConsoleEncoding
+
 	return $ DbHandle worker jobs
 
 {- This is optional; when the DbHandle gets garbage collected it will

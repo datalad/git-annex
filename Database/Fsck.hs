@@ -78,10 +78,6 @@ openDb u = do
 			rename tmpdbdir dbdir
 	lockFileCached =<< fromRepo (gitAnnexFsckDbLock u)
 	h <- liftIO $ H.openDbQueue db "fscked"
-
-	-- work around https://github.com/yesodweb/persistent/issues/474
-	liftIO setConsoleEncoding
-
 	return $ FsckHandle h u
 
 closeDb :: FsckHandle -> Annex ()

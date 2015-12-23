@@ -331,18 +331,6 @@ files to be unlocked, while the indirect upgrades don't touch the files.
 	# fails to drop content from associated file othername,
 	# because it doesn't know it has that name
 	# git commit clears up this mess
-* A new connection to the Keys database is opened each time.
-  It would be more efficient to reuse a connection. 
-  However, that needs a way to close the connection, which was a problem.
-  See 38a23928e9d45b56d6836a4eac703862d63cf93c for details.
-* See if the cases where the Keys database is not used can be
-  optimised. Eg, if the Keys database doesn't exist at all,
-  we know smudge/clean are not used, so queries don't
-  need to open the database or do reconciliation, but can simply return none.
-  Also, no need for Backend.lookupFile to catKeyFile in this case
-  (when not in direct mode).
-  However, beware over-optimisation breaking the assistant or perhaps other
-  long-lived processes.
 * Interaction with shared clones. Should avoid hard linking from/to a
   object in a shared clone if either repository has the object unlocked.
   (And should avoid unlocking an object if it's hard linked to a shared clone,
@@ -368,6 +356,14 @@ files to be unlocked, while the indirect upgrades don't touch the files.
   smudged files.)
 * Audit code for all uses of isDirect. These places almost always need
   adjusting to support v6, if they haven't already.
+* Optimisation: See if the database schema can be improved to speed things
+  up. Are there enough indexes? getAssociatedKey in particular does a
+  reverse lookup and might benefit from an index.
+* Optimisation: Reads from the Keys database avoid doing anything if the
+  database doesn't exist. This makes v5 repos, or v6 with all locked files
+  faster. However, if a v6 repo unlocks and then re-locks a file, its
+  database will exist, and so this optimisation will no longer apply.
+  Could try to detect when the database is empty, and remove it or avoid reads.
 
 * Eventually (but not yet), make v6 the default for new repositories.
   Note that the assistant forces repos into direct mode; that will need to
