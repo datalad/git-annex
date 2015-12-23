@@ -21,7 +21,7 @@ module Database.Fsck (
 ) where
 
 import Database.Types
-import qualified Database.Handle as H
+import qualified Database.Queue as H
 import Locations
 import Utility.PosixFiles
 import Utility.Exception
@@ -37,7 +37,7 @@ import Database.Persist.TH
 import Database.Esqueleto hiding (Key)
 import Data.Time.Clock
 
-data FsckHandle = FsckHandle H.DbHandle UUID
+data FsckHandle = FsckHandle H.DbQueue UUID
 
 {- Each key stored in the database has already been fscked as part
  - of the latest incremental fsck pass. -}
@@ -77,7 +77,7 @@ openDb u = do
 			void $ tryIO $ removeDirectoryRecursive dbdir
 			rename tmpdbdir dbdir
 	lockFileCached =<< fromRepo (gitAnnexFsckDbLock u)
-	h <- liftIO $ H.openDb db "fscked"
+	h <- liftIO $ H.openDbQueue db "fscked"
 
 	-- work around https://github.com/yesodweb/persistent/issues/474
 	liftIO setConsoleEncoding
@@ -86,7 +86,7 @@ openDb u = do
 
 closeDb :: FsckHandle -> Annex ()
 closeDb (FsckHandle h u) = do
-	liftIO $ H.closeDb h
+	liftIO $ H.closeDbQueue h
 	unlockFile =<< fromRepo (gitAnnexFsckDbLock u)
 
 addDb :: FsckHandle -> Key -> IO ()
@@ -102,8 +102,9 @@ addDb (FsckHandle h _) k = H.queueDb h checkcommit $
 			now <- getCurrentTime
 			return $ diffUTCTime lastcommittime now > 300
 
+{- Doesn't know about keys that were just added with addDb. -}
 inDb :: FsckHandle -> Key -> IO Bool
-inDb (FsckHandle h _) = H.queryDb h . inDb' . toSKey
+inDb (FsckHandle h _) = H.queryDbQueue h . inDb' . toSKey
 
 inDb' :: SKey -> SqlPersistM Bool
 inDb' sk = do

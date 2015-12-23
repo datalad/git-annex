@@ -28,7 +28,7 @@ module Database.Keys (
 
 import Database.Types
 import Database.Keys.Types
-import qualified Database.Handle as H
+import qualified Database.Queue as H
 import Locations
 import Common hiding (delete)
 import Annex
@@ -72,7 +72,7 @@ openDb = withExclusiveLock gitAnnexKeysDbLock $ do
 				runMigrationSilent migrateKeysDb
 		setAnnexDirPerm dbdir
 		setAnnexFilePerm db
-	h <- liftIO $ H.openDb db "content"
+	h <- liftIO $ H.openDbQueue db "content"
 
 	-- work around https://github.com/yesodweb/persistent/issues/474
 	liftIO setConsoleEncoding
@@ -80,9 +80,9 @@ openDb = withExclusiveLock gitAnnexKeysDbLock $ do
 	return $ DbHandle h
 
 closeDb :: DbHandle -> IO ()
-closeDb (DbHandle h) = H.closeDb h
+closeDb (DbHandle h) = H.closeDbQueue h
 
-withDbHandle :: (H.DbHandle -> IO a) -> Annex a
+withDbHandle :: (H.DbQueue -> IO a) -> Annex a
 withDbHandle a = bracket openDb (liftIO . closeDb) (\(DbHandle h) -> liftIO (a h))
 
 addAssociatedFile :: Key -> FilePath -> Annex ()
@@ -98,7 +98,7 @@ addAssociatedFile k f = withDbHandle $ \h -> H.queueDb h (\_ _ -> pure True) $ d
 {- Note that the files returned were once associated with the key, but
  - some of them may not be any longer. -}
 getAssociatedFiles :: Key -> Annex [FilePath]
-getAssociatedFiles k = withDbHandle $ \h -> H.queryDb h $
+getAssociatedFiles k = withDbHandle $ \h -> H.queryDbQueue h $
 	getAssociatedFiles' $ toSKey k
 
 getAssociatedFiles' :: SKey -> SqlPersistM [FilePath]
@@ -111,7 +111,7 @@ getAssociatedFiles' sk = do
 {- Gets any keys that are on record as having a particular associated file.
  - (Should be one or none but the database doesn't enforce that.) -}
 getAssociatedKey :: FilePath -> Annex [Key]
-getAssociatedKey f = withDbHandle $ \h -> H.queryDb h $
+getAssociatedKey f = withDbHandle $ \h -> H.queryDbQueue h $
 	getAssociatedKey' f
 
 getAssociatedKey' :: FilePath -> SqlPersistM [Key]
@@ -140,7 +140,7 @@ addInodeCaches k is = withDbHandle $ \h -> H.queueDb h (\_ _ -> pure True) $
 {- A key may have multiple InodeCaches; one for the annex object, and one
  - for each pointer file that is a copy of it. -}
 getInodeCaches :: Key -> Annex [InodeCache]
-getInodeCaches k = withDbHandle $ \h -> H.queryDb h $ do
+getInodeCaches k = withDbHandle $ \h -> H.queryDbQueue h $ do
 	l <- select $ from $ \r -> do
 		where_ (r ^. ContentKey ==. val sk)
 		return (r ^. ContentCache)

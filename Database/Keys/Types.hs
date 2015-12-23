@@ -9,6 +9,6 @@ module Database.Keys.Types (
 	DbHandle(..)
 ) where
 
-import qualified Database.Handle as H
+import qualified Database.Queue as H
 
-newtype DbHandle = DbHandle H.DbHandle
+newtype DbHandle = DbHandle H.DbQueue
