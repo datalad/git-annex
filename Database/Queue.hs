@@ -13,6 +13,7 @@ module Database.Queue (
 	openDbQueue,
 	queryDbQueue,
 	closeDbQueue,
+	flushDbQueue,
 	QueueSize,
 	queueDb,
 ) where
@@ -39,14 +40,25 @@ openDbQueue db tablename = DQ
 	<$> openDb db tablename
 	<*> (newMVar =<< emptyQueue)
 
-{- Must be called to ensure queued changes get written to the database. -}
+{- This or flushDbQueue must be called, eg at program exit to ensure
+ - queued changes get written to the database. -}
 closeDbQueue :: DbQueue -> IO ()
 closeDbQueue h@(DQ hdl _) = do
 	flushDbQueue h
 	closeDb hdl
 
-{- Makes a queury using the DbQueue. This should not be used to make
- - changes to the database!
+{- Blocks until all queued changes have been written to the database. -}
+flushDbQueue :: DbQueue -> IO ()
+flushDbQueue (DQ hdl qvar) = do
+	q@(Queue sz _ qa) <- takeMVar qvar
+	if sz > 0
+		then do
+			commitDb hdl qa
+			putMVar qvar =<< emptyQueue
+		else putMVar qvar q
+
+{- Makes a query using the DbQueue's database connection.
+ - This should not be used to make changes to the database!
  -
  - Queries will not return changes that have been recently queued,
  - so use with care.
@@ -66,12 +78,6 @@ emptyQueue :: IO Queue
 emptyQueue = do
 	now <- getCurrentTime
 	return $ Queue 0 now (return ())
-
-flushDbQueue :: DbQueue -> IO ()
-flushDbQueue (DQ hdl qvar) = do
-	Queue sz _ qa <- takeMVar qvar
-	when (sz > 0) $
-		commitDb hdl qa
 
 {- Queues a change to be made to the database. It will be queued
  - to be committed later, unless the commitchecker action returns true,
@@ -97,8 +103,6 @@ queueDb (DQ hdl qvar) commitchecker a = do
 			r <- commitDb' hdl qa'
 			case r of
 				Left _ -> enqueue $ Queue sz' lastcommittime qa'
-				Right _ -> do
-					now <- getCurrentTime
-					enqueue $ Queue 0 now (return ())
+				Right _ -> enqueue =<< emptyQueue
 		, enqueue $ Queue sz' lastcommittime qa'
 		)
