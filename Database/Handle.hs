@@ -26,7 +26,7 @@ import Control.Monad
 import Control.Monad.IO.Class (liftIO)
 import Control.Concurrent
 import Control.Concurrent.Async
-import Control.Exception (throwIO)
+import Control.Exception (throwIO, BlockedIndefinitelyOnMVar(..))
 import qualified Data.Text as T
 import Control.Monad.Trans.Resource (runResourceT)
 import Control.Monad.Logger (runNoLoggingT)
@@ -68,6 +68,8 @@ openDb db tablename = do
 	worker <- async (workerThread (T.pack db) tablename jobs)
 	return $ DbHandle worker jobs
 
+{- This is optional; when the DbHandle gets garbage collected it will
+ - auto-close. -}
 closeDb :: DbHandle -> IO ()
 closeDb (DbHandle worker jobs) = do
 	putMVar jobs CloseJob
@@ -123,29 +125,38 @@ data Job
 	| CloseJob
 
 workerThread :: T.Text -> TableName -> MVar Job -> IO ()
-workerThread db tablename jobs = catchNonAsync (run loop) showerr
+workerThread db tablename jobs =
+	catchNonAsync (runSqliteRobustly tablename db loop) showerr
   where
-  	showerr e = liftIO $ hPutStrLn stderr $
+  	showerr e = hPutStrLn stderr $
 		"sqlite worker thread crashed: " ++ show e
 	
+	getjob :: IO (Either BlockedIndefinitelyOnMVar Job)
+	getjob = try $ takeMVar jobs
+
 	loop = do
-		job <- liftIO $ takeMVar jobs
+		job <- liftIO getjob
 		case job of
-			QueryJob a -> a >> loop
+			-- Exception is thrown when the MVar is garbage
+			-- collected, which means the whole DbHandle
+			-- is not used any longer. Shutdown cleanly.
+			Left BlockedIndefinitelyOnMVar -> return ()
+			Right CloseJob -> return ()
+			Right (QueryJob a) -> a >> loop
 			-- change is run in a separate database connection
 			-- since sqlite only supports a single writer at a
 			-- time, and it may crash the database connection
-			ChangeJob a -> liftIO (a run) >> loop
-			CloseJob -> return ()
+			Right (ChangeJob a) -> liftIO (a (runSqliteRobustly tablename db)) >> loop
 	
-	-- like runSqlite, but calls settle on the raw sql Connection.
-	run a = do
-		conn <- Sqlite.open db
-		settle conn
-		runResourceT $ runNoLoggingT $
-			withSqlConn (wrapConnection conn) $
-				runSqlConn a
-
+-- like runSqlite, but calls settle on the raw sql Connection.
+runSqliteRobustly :: TableName -> T.Text -> (SqlPersistM a) -> IO a
+runSqliteRobustly tablename db a = do
+	conn <- Sqlite.open db
+	settle conn
+	runResourceT $ runNoLoggingT $
+		withSqlConn (wrapConnection conn) $
+			runSqlConn a
+  where
 	-- Work around a bug in sqlite: New database connections can
 	-- sometimes take a while to become usable; select statements will
 	-- fail with ErrorBusy for some time. So, loop until a select
