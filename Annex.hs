@@ -201,9 +201,12 @@ run s a = flip run' a =<< newMVar s
 run' :: MVar AnnexState -> Annex a -> IO (a, AnnexState)
 run' mvar a = do
 	r <- runReaderT (runAnnex a) mvar
+		`onException` (flush =<< readMVar mvar)
 	s' <- takeMVar mvar
-	maybe noop Keys.flushDbQueue (keysdbhandle s')
+	flush s'
 	return (r, s')
+  where
+	flush = maybe noop Keys.flushDbQueue . keysdbhandle
 
 {- Performs an action in the Annex monad from a starting state, 
  - and throws away the new state. -}
@@ -215,7 +218,10 @@ eval s a = fst <$> run s a
 makeRunner :: Annex (Annex a -> IO a)
 makeRunner = do
 	mvar <- ask
-	return $ \a -> fst <$> run' mvar a
+	return $ \a -> do
+		(r, s) <- run' mvar a
+		putMVar mvar s
+		return r
 
 getState :: (AnnexState -> v) -> Annex v
 getState selector = do
