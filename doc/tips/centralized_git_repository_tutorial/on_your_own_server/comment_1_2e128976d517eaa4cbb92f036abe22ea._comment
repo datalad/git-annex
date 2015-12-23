@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="mark@6b90344cdab3158eacb94a3944460d138afc9bef"
+ nickname="mark"
+ subject="Centralized server with separate remote"
+ date="2015-12-23T17:59:48Z"
+ content="""
+If I have git in a centralized server setup (local computer) and want the annexed files to be stored on S3, say, then do I have to have git and git-annex running on S3?
+
+Thanks! Mark
+"""]]
