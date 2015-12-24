@@ -107,7 +107,7 @@ runWriter a = do
 		v <- case st' of
 			DbOpen qh -> a (WriteHandle qh)
 			_ -> error "internal"
-		return (v, st)
+		return (v, st')
 
 queueDb :: SqlPersistM () -> WriteHandle -> Annex ()
 queueDb a (WriteHandle h) = liftIO $ H.queueDb h checkcommit a
