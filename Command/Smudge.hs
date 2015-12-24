@@ -14,6 +14,7 @@ import Annex.Link
 import Annex.MetaData
 import Annex.FileMatcher
 import Annex.InodeSentinal
+import Annex.Ingest
 import Utility.InodeCache
 import Types.KeySource
 import Backend
@@ -74,7 +75,7 @@ clean file = do
 	if isJust (parseLinkOrPointer b)
 		then liftIO $ B.hPut stdout b
 		else ifM (shouldAnnex file)
-			( liftIO . emitPointer =<< ingest file
+			( liftIO . emitPointer =<< ingestLocal file
 			, liftIO $ B.hPut stdout b
 			)
 	stop
@@ -84,8 +85,9 @@ shouldAnnex file = do
 	matcher <- largeFilesMatcher
 	checkFileMatcher matcher file
 
-ingest :: FilePath -> Annex Key
-ingest file = do
+-- TODO: Use main ingest code instead?
+ingestLocal :: FilePath -> Annex Key
+ingestLocal file = do
 	backend <- chooseBackend file
 	ic <- withTSDelta (liftIO . genInodeCache file)
 	let source = KeySource
@@ -105,6 +107,8 @@ ingest file = do
 		LinkAnnexNoop -> noop
 	genMetaData k file
 		=<< liftIO (getFileStatus file)
+	cleanOldKeys file k
+	Database.Keys.addAssociatedFile k file
 	return k
 
 emitPointer :: Key -> IO ()
