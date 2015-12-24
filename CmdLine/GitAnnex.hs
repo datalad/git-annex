@@ -96,6 +96,7 @@ import qualified Command.Upgrade
 import qualified Command.Forget
 import qualified Command.Proxy
 import qualified Command.DiffDriver
+import qualified Command.Smudge
 import qualified Command.Undo
 import qualified Command.Version
 #ifdef WITH_ASSISTANT
@@ -201,6 +202,7 @@ cmds testoptparser testrunner =
 	, Command.Forget.cmd
 	, Command.Proxy.cmd
 	, Command.DiffDriver.cmd
+	, Command.Smudge.cmd
 	, Command.Undo.cmd
 	, Command.Version.cmd
 #ifdef WITH_ASSISTANT

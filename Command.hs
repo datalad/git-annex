@@ -18,12 +18,13 @@ module Command (
 	stopUnless,
 	whenAnnexed,
 	ifAnnexed,
+	lookupFile,
 	isBareRepo,
 	module ReExported
 ) where
 
 import Common.Annex
-import qualified Backend
+import Annex.WorkTree
 import qualified Git
 import Types.Command as ReExported
 import Types.Option as ReExported
@@ -99,14 +100,6 @@ stop = return Nothing
 {- Stops unless a condition is met. -}
 stopUnless :: Annex Bool -> Annex (Maybe a) -> Annex (Maybe a)
 stopUnless c a = ifM c ( a , stop )
-
-{- Modifies an action to only act on files that are already annexed,
- - and passes the key on to it. -}
-whenAnnexed :: (FilePath -> Key -> Annex (Maybe a)) -> FilePath -> Annex (Maybe a)
-whenAnnexed a file = ifAnnexed file (a file) (return Nothing)
-
-ifAnnexed :: FilePath -> (Key -> Annex a) -> Annex a -> Annex a
-ifAnnexed file yes no = maybe no yes =<< Backend.lookupFile file
 
 isBareRepo :: Annex Bool
 isBareRepo = fromRepo Git.repoIsLocalBare

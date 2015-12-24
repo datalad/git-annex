@@ -14,7 +14,6 @@ import Limit
 import Utility.Matcher
 import Types.Group
 import Logs.Group
-import Logs.Remote
 import Annex.UUID
 import qualified Annex
 import Types.FileMatcher
@@ -53,8 +52,8 @@ parsedToMatcher parsed = case partitionEithers parsed of
 	([], vs) -> Right $ generate vs
 	(es, _) -> Left $ unwords $ map ("Parse failure: " ++) es
 
-exprParser :: FileMatcher Annex -> FileMatcher Annex -> GroupMap -> M.Map UUID RemoteConfig -> Maybe UUID -> String -> [Either String (Token (MatchFiles Annex))]
-exprParser matchstandard matchgroupwanted groupmap configmap mu expr =
+exprParser :: FileMatcher Annex -> FileMatcher Annex -> Annex GroupMap -> M.Map UUID RemoteConfig -> Maybe UUID -> String -> [Either String (Token (MatchFiles Annex))]
+exprParser matchstandard matchgroupwanted getgroupmap configmap mu expr =
 	map parse $ tokenizeMatcher expr
   where
 	parse = parseToken
@@ -62,12 +61,12 @@ exprParser matchstandard matchgroupwanted groupmap configmap mu expr =
 		matchgroupwanted
 		(limitPresent mu)
 		(limitInDir preferreddir)
-		groupmap
+		getgroupmap
 	preferreddir = fromMaybe "public" $
 		M.lookup "preferreddir" =<< (`M.lookup` configmap) =<< mu
 
-parseToken :: FileMatcher Annex -> FileMatcher Annex -> MkLimit Annex -> MkLimit Annex -> GroupMap -> String -> Either String (Token (MatchFiles Annex))
-parseToken matchstandard matchgroupwanted checkpresent checkpreferreddir groupmap t
+parseToken :: FileMatcher Annex -> FileMatcher Annex -> MkLimit Annex -> MkLimit Annex -> Annex GroupMap -> String -> Either String (Token (MatchFiles Annex))
+parseToken matchstandard matchgroupwanted checkpresent checkpreferreddir getgroupmap t
 	| t `elem` tokens = Right $ token t
 	| t == "standard" = call matchstandard
 	| t == "groupwanted" = call matchgroupwanted
@@ -86,7 +85,7 @@ parseToken matchstandard matchgroupwanted checkpresent checkpreferreddir groupma
 			, ("largerthan", limitSize (>))
 			, ("smallerthan", limitSize (<))
 			, ("metadata", limitMetaData)
-			, ("inallgroup", limitInAllGroup groupmap)
+			, ("inallgroup", limitInAllGroup getgroupmap)
 			]
   where
 	(k, v) = separate (== '=') t
@@ -109,9 +108,12 @@ largeFilesMatcher = go =<< annexLargeFiles <$> Annex.getGitConfig
   where
 	go Nothing = return matchAll
 	go (Just expr) = do
-		gm <- groupMap
-		rc <- readRemoteLog
 		u <- getUUID
+		-- No need to read remote configs, that's only needed for
+		-- inpreferreddir, which is used in preferred content
+		-- expressions but does not make sense in the 
+		-- annex.largefiles expression.
+		let emptyconfig = M.empty
 		either badexpr return $
-			parsedToMatcher $ exprParser matchAll matchAll gm rc (Just u) expr
+			parsedToMatcher $ exprParser matchAll matchAll groupMap emptyconfig (Just u) expr
 	badexpr e = error $ "bad annex.largefiles configuration: " ++ e

@@ -13,6 +13,7 @@ import Upgrade
 
 cmd :: Command
 cmd = dontCheck repoExists $ -- because an old version may not seem to exist
+	noDaemonRunning $ -- avoid upgrading repo out from under daemon
 	command "upgrade" SectionMaintenance "upgrade repository layout"
 		paramNothing (withParams seek)
 

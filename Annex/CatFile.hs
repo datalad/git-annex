@@ -1,6 +1,6 @@
 {- git cat-file interface, with handle automatically stored in the Annex monad
  -
- - Copyright 2011-2013 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,7 +16,7 @@ module Annex.CatFile (
 	catKey,
 	catKeyFile,
 	catKeyFileHEAD,
-	catLink,
+	catSymLinkTarget,
 ) where
 
 import qualified Data.ByteString.Lazy as L
@@ -29,8 +29,8 @@ import qualified Git.CatFile
 import qualified Annex
 import Git.Types
 import Git.FilePath
-import Git.FileMode
 import qualified Git.Ref
+import Annex.Link
 
 catFile :: Git.Branch -> FilePath -> Annex L.ByteString
 catFile branch file = do
@@ -80,52 +80,17 @@ catFileStop = do
 		(s { Annex.catfilehandles = M.empty }, Annex.catfilehandles s)
 	liftIO $ mapM_ Git.CatFile.catFileStop (M.elems m)
 
-{- From the Sha or Ref of a symlink back to the key.
- -
- - Requires a mode witness, to guarantee that the file is a symlink.
- -}
-catKey :: Ref -> FileMode -> Annex (Maybe Key)
-catKey = catKey' True
-
-catKey' :: Bool -> Sha -> FileMode -> Annex (Maybe Key)
-catKey' modeguaranteed sha mode
-	| isSymLink mode = do
-		l <- catLink modeguaranteed sha
-		return $ if isLinkToAnnex l
-			then fileKey $ takeFileName l
-			else Nothing
-	| otherwise = return Nothing
+{- From ref to a symlink or a pointer file, get the key. -}
+catKey :: Ref -> Annex (Maybe Key)
+catKey ref = parseLinkOrPointer <$> catObject ref
 
 {- Gets a symlink target. -}
-catLink :: Bool -> Sha -> Annex String
-catLink modeguaranteed sha = fromInternalGitPath . decodeBS <$> get
+catSymLinkTarget :: Sha -> Annex String
+catSymLinkTarget sha = fromInternalGitPath . decodeBS <$> get
   where
-	-- If the mode is not guaranteed to be correct, avoid
-	-- buffering the whole file content, which might be large.
-	-- 8192 is enough if it really is a symlink.
-	get
-		| modeguaranteed = catObject sha
-		| otherwise = L.take 8192 <$> catObject sha
-
-{- Looks up the key corresponding to the Ref using the running cat-file.
- -
- - Currently this always has to look in HEAD, because cat-file --batch
- - does not offer a way to specify that we want to look up a tree object
- - in the index. So if the index has a file staged not as a symlink,
- - and it is a symlink in head, the wrong mode is gotten.
- - Also, we have to assume the file is a symlink if it's not yet committed
- - to HEAD. For these reasons, modeguaranteed is not set.
- -}
-catKeyChecked :: Bool -> Ref -> Annex (Maybe Key)
-catKeyChecked needhead ref@(Ref r) =
-	catKey' False ref =<< findmode <$> catTree treeref
-  where
-	pathparts = split "/" r
-	dir = intercalate "/" $ take (length pathparts - 1) pathparts
-	file = fromMaybe "" $ lastMaybe pathparts
-	treeref = Ref $ if needhead then "HEAD" ++ dir ++ "/" else dir ++ "/"
-	findmode = fromMaybe symLinkMode . headMaybe .
-		 map snd . filter (\p -> fst p == file)
+	-- Avoid buffering the whole file content, which might be large.
+	-- 8192 is enough if it really is a symlink or pointer file.
+	get = L.take 8192 <$> catObject sha
 
 {- From a file in the repository back to the key.
  -
@@ -151,8 +116,8 @@ catKeyChecked needhead ref@(Ref r) =
 catKeyFile :: FilePath -> Annex (Maybe Key)
 catKeyFile f = ifM (Annex.getState Annex.daemon)
 	( catKeyFileHEAD f
-	, catKeyChecked True $ Git.Ref.fileRef f
+	, catKey $ Git.Ref.fileRef f
 	)
 
 catKeyFileHEAD :: FilePath -> Annex (Maybe Key)
-catKeyFileHEAD f = catKeyChecked False $ Git.Ref.fileFromRef Git.Ref.headRef f
+catKeyFileHEAD f = catKey $ Git.Ref.fileFromRef Git.Ref.headRef f

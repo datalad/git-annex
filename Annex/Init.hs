@@ -29,12 +29,12 @@ import Types.TrustLevel
 import Annex.Version
 import Annex.Difference
 import Annex.UUID
+import Annex.Link
 import Config
 import Annex.Direct
-import Annex.Content.Direct
 import Annex.Environment
-import Backend
 import Annex.Hook
+import Annex.InodeSentinal
 import Upgrade
 #ifndef mingw32_HOST_OS
 import Utility.UserInfo
@@ -57,8 +57,8 @@ genDescription Nothing = do
 	return $ concat [hostname, ":", reldir]
 #endif
 
-initialize :: Maybe String -> Annex ()
-initialize mdescription = do
+initialize :: Maybe String -> Maybe Version -> Annex ()
+initialize mdescription mversion = do
 	{- Has to come before any commits are made as the shared
 	 - clone heuristic expects no local objects. -}
 	sharedclone <- checkSharedClone
@@ -68,7 +68,7 @@ initialize mdescription = do
 	ensureCommit $ Annex.Branch.create
 
 	prepUUID
-	initialize'
+	initialize' mversion
 	
 	initSharedClone sharedclone
 
@@ -77,15 +77,18 @@ initialize mdescription = do
 
 -- Everything except for uuid setup, shared clone setup, and initial
 -- description.
-initialize' :: Annex ()
-initialize' = do
+initialize' :: Maybe Version -> Annex ()
+initialize' mversion = do
 	checkLockSupport
 	checkFifoSupport
 	checkCrippledFileSystem
 	unlessM isBare $
 		hookWrite preCommitHook
 	setDifferences
-	setVersion supportedVersion
+	unlessM (isJust <$> getVersion) $
+		setVersion (fromMaybe defaultVersion mversion)
+	whenM versionSupportsUnlockedPointers
+		configureSmudgeFilter
 	ifM (crippledFileSystem <&&> not <$> isBare)
 		( do
 			enableDirectMode
@@ -95,7 +98,7 @@ initialize' = do
 		, unlessM isBare
 			switchHEADBack
 		)
-	createInodeSentinalFile
+	createInodeSentinalFile False
 
 uninitialize :: Annex ()
 uninitialize = do
@@ -114,7 +117,7 @@ ensureInitialized :: Annex ()
 ensureInitialized = getVersion >>= maybe needsinit checkUpgrade
   where
 	needsinit = ifM Annex.Branch.hasSibling
-			( initialize Nothing
+			( initialize Nothing Nothing
 			, error "First run: git-annex init"
 			)
 

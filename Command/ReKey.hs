@@ -12,7 +12,7 @@ import Command
 import qualified Annex
 import Types.Key
 import Annex.Content
-import qualified Command.Add
+import Annex.Ingest
 import Logs.Web
 import Logs.Location
 import Utility.CopyFile
@@ -70,6 +70,6 @@ cleanup file oldkey newkey = do
 
 	-- Update symlink to use the new key.
 	liftIO $ removeFile file
-	Command.Add.addLink file newkey Nothing
+	addLink file newkey Nothing
 	logStatus newkey InfoPresent
 	return True

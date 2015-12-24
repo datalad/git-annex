@@ -31,7 +31,6 @@ module Messages (
 	showHeader,
 	showRaw,
 	setupConsole,
-	setConsoleEncoding,
 	enableDebugOutput,
 	disableDebugOutput,
 	debugEnabled,
@@ -182,13 +181,6 @@ setupConsole = do
 		<*> pure preciseLogFormatter
 	updateGlobalLogger rootLoggerName (setLevel NOTICE . setHandlers [s])
 	setConsoleEncoding
-
-{- This avoids ghc's output layer crashing on invalid encoded characters in
- - filenames when printing them out. -}
-setConsoleEncoding :: IO ()
-setConsoleEncoding = do
-	fileEncoding stdout
-	fileEncoding stderr
 
 {- Log formatter with precision into fractions of a second. -}
 preciseLogFormatter :: LogFormatter a

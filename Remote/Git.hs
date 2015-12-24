@@ -672,7 +672,7 @@ wantHardLink :: Annex Bool
 wantHardLink = (annexHardLink <$> Annex.getGitConfig) <&&> (not <$> isDirect)
 
 -- Copies from src to dest, updating a meter. If the copy finishes
--- successfully, calls a final check action, which must also success, or
+-- successfully, calls a final check action, which must also succeed, or
 -- returns false.
 --
 -- If either the remote or local repository wants to use hard links,

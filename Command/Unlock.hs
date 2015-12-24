@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <id@joeyh.name>
+ - Copyright 2010,2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,6 +11,11 @@ import Common.Annex
 import Command
 import Annex.Content
 import Annex.CatFile
+import Annex.Version
+import Annex.Link
+import Annex.ReplaceFile
+import Annex.InodeSentinal
+import Utility.InodeCache
 import Utility.CopyFile
 
 cmd :: Command
@@ -26,14 +31,46 @@ mkcmd n d = notDirect $ withGlobalOptions annexedMatchingOptions $
 seek :: CmdParams -> CommandSeek
 seek = withFilesInGit $ whenAnnexed start
 
-{- The unlock subcommand replaces the symlink with a copy of the file's
- - content. -}
+{- Before v6, the unlock subcommand replaces the symlink with a copy of
+ - the file's content. In v6 and above, it converts the file from a symlink
+ - to a pointer. -}
 start :: FilePath -> Key -> CommandStart
-start file key = do
-	showStart "unlock" file
+start file key = ifM (isJust <$> isAnnexLink file)
+	( do
+		showStart "unlock" file
+		ifM (inAnnex key)
+			( ifM versionSupportsUnlockedPointers
+				( next $ performNew file key
+				, startOld file key 
+				)
+			, do
+				warning "content not present; cannot unlock"
+				next $ next $ return False
+			)
+	, stop
+	)
+
+performNew :: FilePath -> Key -> CommandPerform
+performNew dest key = do
+	src <- calcRepo (gitAnnexLocation key)
+	srcic <- withTSDelta (liftIO . genInodeCache src)
+	replaceFile dest $ \tmp -> do
+		r <- linkAnnex' key src srcic tmp
+		case r of
+			LinkAnnexOk -> return ()
+			_ -> error "linkAnnex failed"
+	next $ cleanupNew dest key
+
+cleanupNew ::  FilePath -> Key -> CommandCleanup
+cleanupNew dest key = do
+	stagePointerFile dest =<< hashPointerFile key
+	return True
+
+startOld :: FilePath -> Key -> CommandStart
+startOld file key = 
 	ifM (inAnnex key)
 		( ifM (isJust <$> catKeyFileHEAD file)
-			( next $ perform file key
+			( next $ performOld file key
 			, do
 				warning "this has not yet been committed to git; cannot unlock it"
 				next $ next $ return False
@@ -43,8 +80,8 @@ start file key = do
 			next $ next $ return False
 		)
 
-perform :: FilePath -> Key -> CommandPerform
-perform dest key = ifM (checkDiskSpace Nothing key 0 True)
+performOld :: FilePath -> Key -> CommandPerform
+performOld dest key = ifM (checkDiskSpace Nothing key 0 True)
 	( do
 		src <- calcRepo $ gitAnnexLocation key
 		tmpdest <- fromRepo $ gitAnnexTmpObjectLocation key

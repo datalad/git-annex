@@ -25,7 +25,6 @@ import qualified Git.Branch
 import Git.Types (BlobType(..))
 import Config
 import Annex.ReplaceFile
-import Git.FileMode
 import Annex.VariantFile
 
 import qualified Data.Set as S
@@ -135,7 +134,7 @@ resolveMerge' (Just us) them u = do
 		| select (LsFiles.unmergedBlobType u) == Just SymlinkBlob =
 			case select' (LsFiles.unmergedSha u) of
 				Nothing -> return Nothing
-				Just sha -> catKey sha symLinkMode
+				Just sha -> catKey sha
 		| otherwise = return Nothing
 	
 	makelink key = do
@@ -174,7 +173,7 @@ resolveMerge' (Just us) them u = do
 			case select' (LsFiles.unmergedSha u) of
 				Nothing -> noop
 				Just sha -> do
-					link <- catLink True sha
+					link <- catSymLinkTarget sha
 					replacewithlink item link
 		
 	resolveby a = do

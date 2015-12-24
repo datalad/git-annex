@@ -22,7 +22,7 @@ import Git.Sha
 import Git.HashObject
 import Git.Types
 import Git.FilePath
-import qualified Backend
+import Annex.WorkTree
 import Annex.Index
 import Annex.Link
 import Annex.CatFile
@@ -342,7 +342,7 @@ applyView' mkviewedfile getfilemetadata view = do
 		hasher <- inRepo hashObjectStart
 		forM_ l $ \f -> do
 			relf <- getTopFilePath <$> inRepo (toTopFilePath f)
-			go uh hasher relf =<< Backend.lookupFile f
+			go uh hasher relf =<< lookupFile f
 		liftIO $ do
 			hashObjectStop hasher
 			void $ stopUpdateIndex uh
@@ -413,13 +413,13 @@ withViewChanges addmeta removemeta = do
 	handleremovals item
 		| DiffTree.srcsha item /= nullSha =
 			handlechange item removemeta
-				=<< catKey (DiffTree.srcsha item) (DiffTree.srcmode item)
+				=<< catKey (DiffTree.srcsha item)
 		| otherwise = noop
 	handleadds makeabs item
 		| DiffTree.dstsha item /= nullSha = 
 			handlechange item addmeta
 				=<< ifM isDirect
-					( catKey (DiffTree.dstsha item) (DiffTree.dstmode item)
+					( catKey (DiffTree.dstsha item)
 					-- optimisation
 					, isAnnexLink $ makeabs $ DiffTree.file item
 					)

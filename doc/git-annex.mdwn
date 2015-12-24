@@ -626,6 +626,14 @@ subdirectories).
 
   See [[git-annex-diffdriver]](1) for details.
 
+* `smudge`
+
+  This command lets git-annex be used as a git filter driver, allowing
+  annexed files in the git repository to be unlocked at all times, instead
+  of being symlinks.
+
+  See [[git-annex-smudge]](1) for details.
+
 * `remotedaemon`
 
   Detects when network remotes have received git pushes and fetches from them.

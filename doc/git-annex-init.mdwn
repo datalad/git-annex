@@ -24,6 +24,13 @@ mark it as dead (see [[git-annex-dead]](1)).
 This command is entirely safe, although usually pointless, to run inside an
 already initialized git-annex repository.
 
+# OPTIONS
+
+* `--version=N`
+
+  Force the repository to be initialized using a different annex.version
+  than the current default.
+
 # SEE ALSO
 
 [[git-annex]](1)

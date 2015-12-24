@@ -1,5 +1,8 @@
 {- git-annex direct mode
  -
+ - This is deprecated, and will be removed when direct mode gets removed
+ - from git-annex.
+ -
  - Copyright 2012-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
@@ -36,6 +39,7 @@ import Annex.VariantFile
 import Git.Index
 import Annex.Index
 import Annex.LockFile
+import Annex.InodeSentinal
 
 {- Uses git ls-files to find files that need to be committed, and stages
  - them into the index. Returns True if some changes were staged. -}
@@ -53,8 +57,8 @@ stageDirect = do
 	{- Determine what kind of modified or deleted file this is, as
 	 - efficiently as we can, by getting any key that's associated
 	 - with it in git, as well as its stat info. -}
-	go (file, Just sha, Just mode) = withTSDelta $ \delta -> do
-		shakey <- catKey sha mode
+	go (file, Just sha, Just _mode) = withTSDelta $ \delta -> do
+		shakey <- catKey sha
 		mstat <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus file
 		mcache <- liftIO $ maybe (pure Nothing) (toInodeCache delta file) mstat
 		filekey <- isAnnexLink file
@@ -107,8 +111,8 @@ preCommitDirect = do
 		withkey (DiffTree.srcsha diff) (DiffTree.srcmode diff) removeAssociatedFile
 		withkey (DiffTree.dstsha diff) (DiffTree.dstmode diff) addAssociatedFile
 	  where
-		withkey sha mode a = when (sha /= nullSha) $ do
-			k <- catKey sha mode
+		withkey sha _mode a = when (sha /= nullSha) $ do
+			k <- catKey sha
 			case k of
 				Nothing -> noop
 				Just key -> void $ a key $
@@ -256,16 +260,16 @@ updateWorkTree d oldref force = do
 	makeabs <- flip fromTopFilePath <$> gitRepo
 	let fsitems = zip (map (makeabs . DiffTree.file) items) items
 	forM_ fsitems $
-		go makeabs DiffTree.srcsha DiffTree.srcmode moveout moveout_raw
+		go makeabs DiffTree.srcsha moveout moveout_raw
 	forM_ fsitems $
-		go makeabs DiffTree.dstsha DiffTree.dstmode movein movein_raw
+		go makeabs DiffTree.dstsha movein movein_raw
 	void $ liftIO cleanup
   where
-	go makeabs getsha getmode a araw (f, item)
+	go makeabs getsha a araw (f, item)
 		| getsha item == nullSha = noop
 		| otherwise = void $
 			tryNonAsync . maybe (araw item makeabs f) (\k -> void $ a item makeabs k f)
-				=<< catKey (getsha item) (getmode item)
+				=<< catKey (getsha item)
 
 	moveout _ _ = removeDirect
 
@@ -395,7 +399,7 @@ changedDirect oldk f = do
 	whenM (pure (null locs) <&&> not <$> inAnnex oldk) $
 		logStatus oldk InfoMissing
 
-{- Enable/disable direct mode. -}
+{- Git config settings to enable/disable direct mode. -}
 setDirect :: Bool -> Annex ()
 setDirect wantdirect = do
 	if wantdirect

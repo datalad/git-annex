@@ -16,7 +16,9 @@ import qualified Command.Add
 import qualified Command.Fix
 import Annex.Direct
 import Annex.Hook
+import Annex.Link
 import Annex.View
+import Annex.Version
 import Annex.View.ViewedFile
 import Annex.LockFile
 import Logs.View
@@ -41,17 +43,22 @@ seek ps = lockPreCommitHook $ ifM isDirect
 		withWords startDirect ps
 		runAnnexHook preCommitAnnexHook
 	, do
-		ifM (liftIO Git.haveFalseIndex)
+		ifM (not <$> versionSupportsUnlockedPointers <&&> liftIO Git.haveFalseIndex)
 			( do
 				(fs, cleanup) <- inRepo $ Git.typeChangedStaged ps
-				whenM (anyM isUnlocked fs) $
+				whenM (anyM isOldUnlocked fs) $
 					error "Cannot make a partial commit with unlocked annexed files. You should `git annex add` the files you want to commit, and then run git commit."
 				void $ liftIO cleanup
 			, do
 				-- fix symlinks to files being committed
-				withFilesToBeCommitted (whenAnnexed Command.Fix.start) ps
+				flip withFilesToBeCommitted ps $ \f -> 
+					maybe stop (Command.Fix.start f)
+						=<< isAnnexLink f
 				-- inject unlocked files into the annex
-				withFilesUnlockedToBeCommitted startIndirect ps
+				-- (not needed when repo version uses
+				-- unlocked pointer files)
+				unlessM versionSupportsUnlockedPointers $
+					withFilesOldUnlockedToBeCommitted startInjectUnlocked ps
 			)
 		runAnnexHook preCommitAnnexHook
 		-- committing changes to a view updates metadata
@@ -64,8 +71,8 @@ seek ps = lockPreCommitHook $ ifM isDirect
 	)
 	
 
-startIndirect :: FilePath -> CommandStart
-startIndirect f = next $ do
+startInjectUnlocked :: FilePath -> CommandStart
+startInjectUnlocked f = next $ do
 	unlessM (callCommandAction $ Command.Add.start f) $
 		error $ "failed to add " ++ f ++ "; canceling commit"
 	next $ return True

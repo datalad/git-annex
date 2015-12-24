@@ -1,6 +1,6 @@
 {- git-annex file content managing
  -
- - Copyright 2010-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -24,6 +24,12 @@ module Annex.Content (
 	withTmp,
 	checkDiskSpace,
 	moveAnnex,
+	populatePointerFile,
+	linkAnnex,
+	linkAnnex',
+	LinkAnnexResult(..),
+	unlinkAnnex,
+	checkedCopyFile,
 	sendAnnex,
 	prepSendAnnex,
 	removeAnnex,
@@ -38,6 +44,7 @@ module Annex.Content (
 	dirKeys,
 	withObjectLoc,
 	staleKeysPrune,
+	isUnmodified,
 ) where
 
 import System.IO.Unsafe (unsafeInterleaveIO)
@@ -61,15 +68,19 @@ import Config
 import Git.SharedRepository
 import Annex.Perms
 import Annex.Link
-import Annex.Content.Direct
+import qualified Annex.Content.Direct as Direct
 import Annex.ReplaceFile
 import Annex.LockPool
 import Messages.Progress
 import qualified Types.Remote
 import qualified Types.Backend
 import qualified Backend
+import qualified Database.Keys
 import Types.NumCopies
 import Annex.UUID
+import Annex.InodeSentinal
+import Utility.InodeCache
+import Utility.PosixFiles
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
@@ -79,7 +90,10 @@ inAnnex key = inAnnexCheck key $ liftIO . doesFileExist
 inAnnexCheck :: Key -> (FilePath -> Annex Bool) -> Annex Bool
 inAnnexCheck key check = inAnnex' id False check key
 
-{- Generic inAnnex, handling both indirect and direct mode.
+{- inAnnex that performs an arbitrary check of the key's content.
+ -
+ - When the content is unlocked, it must also be unmodified, or the bad
+ - value will be returned.
  -
  - In direct mode, at least one of the associated files must pass the
  - check. Additionally, the file must be unmodified.
@@ -88,14 +102,22 @@ inAnnex' :: (a -> Bool) -> a -> (FilePath -> Annex a) -> Key -> Annex a
 inAnnex' isgood bad check key = withObjectLoc key checkindirect checkdirect
   where
 	checkindirect loc = do
-		whenM (fromRepo Git.repoIsUrl) $
-			error "inAnnex cannot check remote repo"
-		check loc
+		r <- check loc
+		if isgood r
+			then do
+				cache <- Database.Keys.getInodeCaches key
+				if null cache
+					then return r
+					else ifM (sameInodeCache loc cache)
+						( return r
+						, return bad
+						)
+			else return bad
 	checkdirect [] = return bad
 	checkdirect (loc:locs) = do
 		r <- check loc
 		if isgood r
-			then ifM (goodContent key loc)
+			then ifM (Direct.goodContent key loc)
 				( return r
 				, checkdirect locs
 				)
@@ -371,7 +393,7 @@ withTmp key action = do
 	return res
 
 {- Checks that there is disk space available to store a given key,
- - in a destination (or the annex) printing a warning if not. 
+ - in a destination directory (or the annex) printing a warning if not. 
  -
  - If the destination is on the same filesystem as the annex,
  - checks for any other running downloads, removing the amount of data still
@@ -379,7 +401,12 @@ withTmp key action = do
  - when doing concurrent downloads.
  -}
 checkDiskSpace :: Maybe FilePath -> Key -> Integer -> Bool -> Annex Bool
-checkDiskSpace destdir key alreadythere samefilesystem = ifM (Annex.getState Annex.force)
+checkDiskSpace destdir key = checkDiskSpace' (fromMaybe 1 (keySize key)) destdir key
+
+{- Allows specifying the size of the key, if it's known, which is useful
+ - as not all keys know their size. -}
+checkDiskSpace' :: Integer -> Maybe FilePath -> Key -> Integer -> Bool -> Annex Bool
+checkDiskSpace' need destdir key alreadythere samefilesystem = ifM (Annex.getState Annex.force)
 	( return True
 	, do
 		-- We can't get inprogress and free at the same
@@ -392,8 +419,8 @@ checkDiskSpace destdir key alreadythere samefilesystem = ifM (Annex.getState Ann
 			then sizeOfDownloadsInProgress (/= key)
 			else pure 0
 		free <- liftIO . getDiskFree =<< dir
-		case (free, fromMaybe 1 (keySize key)) of
-			(Just have, need) -> do
+		case free of
+			Just have -> do
 				reserve <- annexDiskReserve <$> Annex.getGitConfig
 				let delta = need + reserve - have - alreadythere + inprogress
 				let ok = delta <= 0
@@ -412,7 +439,10 @@ checkDiskSpace destdir key alreadythere samefilesystem = ifM (Annex.getState Ann
 
 {- Moves a key's content into .git/annex/objects/
  -
- - In direct mode, moves it to the associated file, or files.
+ - When a key has associated pointer files, the object is hard
+ - linked (or copied) to the files, and the object file is left thawed.
+ 
+ - In direct mode, moves the object file to the associated file, or files.
  -
  - What if the key there already has content? This could happen for
  - various reasons; perhaps the same content is being annexed again.
@@ -440,7 +470,12 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
 		( alreadyhave
 		, modifyContent dest $ do
 			liftIO $ moveFile src dest
-			freezeContent dest
+			fs <- Database.Keys.getAssociatedFiles key
+			if null fs
+				then freezeContent dest
+				else do
+					mapM_ (populatePointerFile key dest) fs
+					Database.Keys.storeInodeCaches key (dest:fs)
 		)
 	storeindirect = storeobject =<< calcRepo (gitAnnexLocation key)
 
@@ -458,21 +493,116 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
 		v <- isAnnexLink f
 		if Just key == v
 			then do
-				updateInodeCache key src
+				Direct.updateInodeCache key src
 				replaceFile f $ liftIO . moveFile src
 				chmodContent f
 				forM_ fs $
-					addContentWhenNotPresent key f
-			else ifM (goodContent key f)
+					Direct.addContentWhenNotPresent key f
+			else ifM (Direct.goodContent key f)
 				( storedirect' alreadyhave fs
 				, storedirect' fallback fs
 				)
 	
 	alreadyhave = liftIO $ removeFile src
 
+populatePointerFile :: Key -> FilePath -> FilePath -> Annex ()
+populatePointerFile k obj f = go =<< isPointerFile f
+  where
+	go (Just k') | k == k' = do
+		liftIO $ nukeFile f
+		unlessM (linkAnnex'' k obj f) $
+			liftIO $ writeFile f (formatPointer k)
+	go _ = return ()
+
+{- Hard links a file into .git/annex/objects/, falling back to a copy
+ - if necessary. Does nothing if the object file already exists.
+ -
+ - Does not lock down the hard linked object, so that the user can modify
+ - the source file. So, adding an object to the annex this way can
+ - prevent losing the content if the source file is deleted, but does not
+ - guard against modifications.
+ -}
+linkAnnex :: Key -> FilePath -> Maybe InodeCache -> Annex LinkAnnexResult
+linkAnnex key src srcic = do
+	dest <- calcRepo (gitAnnexLocation key)
+	modifyContent dest $ linkAnnex' key src srcic dest
+
+{- Hard links (or copies) src to dest, one of which should be the
+ - annex object. Updates inode cache for src and for dest when it's
+ - changed. -}
+linkAnnex' :: Key -> FilePath -> Maybe InodeCache -> FilePath -> Annex LinkAnnexResult
+linkAnnex' _ _ Nothing _ = return LinkAnnexFailed
+linkAnnex' key src (Just srcic) dest = 
+	ifM (liftIO $ doesFileExist dest)
+		( do
+			Database.Keys.addInodeCaches key [srcic]
+			return LinkAnnexNoop
+		, ifM (linkAnnex'' key src dest)
+			( do
+				thawContent dest
+				-- src could have changed while being copied
+				-- to dest
+				mcache <- withTSDelta (liftIO . genInodeCache src)
+				case mcache of
+					Just srcic' | compareStrong srcic srcic' -> do
+						destic <- withTSDelta (liftIO . genInodeCache dest)
+						Database.Keys.addInodeCaches key $
+							catMaybes [destic, Just srcic]
+						return LinkAnnexOk
+					_ -> do
+						liftIO $ nukeFile dest
+						failed
+			, failed
+			)
+		)
+  where
+	failed = do
+		Database.Keys.addInodeCaches key [srcic]
+		return LinkAnnexFailed
+
+data LinkAnnexResult = LinkAnnexOk | LinkAnnexFailed | LinkAnnexNoop
+
+{- Hard links or copies src to dest. Only uses a hard link if src
+ - is not already hardlinked to elsewhere. Checks disk reserve before
+ - copying, and will fail if not enough space, or if the dest file
+ - already exists. -}
+linkAnnex'' :: Key -> FilePath -> FilePath -> Annex Bool
+linkAnnex'' key src dest = catchBoolIO $ do
+	s <- liftIO $ getFileStatus src
+	let copy = checkedCopyFile' key src dest s
+#ifndef mingw32_HOST_OS
+	if linkCount s > 1
+		then copy
+		else liftIO (createLink src dest >> return True)
+			`catchIO` const copy
+#else
+	copy
+#endif
+
+{- Removes the annex object file for a key. Lowlevel. -}
+unlinkAnnex :: Key -> Annex ()
+unlinkAnnex key = do
+	obj <- calcRepo $ gitAnnexLocation key
+	modifyContent obj $ do
+		secureErase obj
+		liftIO $ nukeFile obj
+
+{- Checks disk space before copying. -}
+checkedCopyFile :: Key -> FilePath -> FilePath -> Annex Bool
+checkedCopyFile key src dest = catchBoolIO $
+	checkedCopyFile' key src dest
+		=<< liftIO (getFileStatus src)
+
+checkedCopyFile' :: Key -> FilePath -> FilePath -> FileStatus -> Annex Bool
+checkedCopyFile' key src dest s = catchBoolIO $
+	ifM (checkDiskSpace' (fromIntegral $ fileSize s) (Just $ takeDirectory dest) key 0 True)
+		( liftIO $ copyFileExternal CopyAllMetaData src dest
+		, return False
+		)
+
 {- Runs an action to transfer an object's content.
  -
- - In direct mode, it's possible for the file to change as it's being sent.
+ - In some cases, it's possible for the file to change as it's being sent.
  - If this happens, runs the rollback action and returns False. The
  - rollback action should remove the data that was transferred.
  -}
@@ -492,8 +622,9 @@ sendAnnex key rollback sendobject = go =<< prepSendAnnex key
 {- Returns a file that contains an object's content,
  - and a check to run after the transfer is complete.
  -
- - In direct mode, it's possible for the file to change as it's being sent,
- - and the check detects this case and returns False.
+ - When a file is unlocked (or in direct mode), it's possble for its
+ - content to change as it's being sent. The check detects this case
+ - and returns False.
  -
  - Note that the returned check action is, in some cases, run in the
  - Annex monad of the remote that is receiving the object, rather than
@@ -502,10 +633,23 @@ sendAnnex key rollback sendobject = go =<< prepSendAnnex key
 prepSendAnnex :: Key -> Annex (Maybe (FilePath, Annex Bool))
 prepSendAnnex key = withObjectLoc key indirect direct
   where
-	indirect f = return $ Just (f, return True)
+	indirect f = do
+		cache <- Database.Keys.getInodeCaches key
+		cache' <- if null cache
+			-- Since no inode cache is in the database, this
+			-- object is not currently unlocked. But that could
+			-- change while the transfer is in progress, so
+			-- generate an inode cache for the starting
+			-- content.
+			then maybeToList <$>
+				withTSDelta (liftIO . genInodeCache f)
+			else pure cache
+		return $ if null cache'
+			then Nothing
+			else Just (f, sameInodeCache f cache')
 	direct [] = return Nothing
 	direct (f:fs) = do
-		cache <- recordedInodeCache key
+		cache <- Direct.recordedInodeCache key
 		-- check that we have a good file
 		ifM (sameInodeCache f cache)
 			( return $ Just (f, sameInodeCache f cache)
@@ -520,7 +664,7 @@ prepSendAnnex key = withObjectLoc key indirect direct
 withObjectLoc :: Key -> (FilePath -> Annex a) -> ([FilePath] -> Annex a) -> Annex a
 withObjectLoc key indirect direct = ifM isDirect
 	( do
-		fs <- associatedFiles key
+		fs <- Direct.associatedFiles key
 		if null fs
 			then goindirect
 			else direct fs
@@ -544,6 +688,9 @@ cleanObjectLoc key cleaner = do
 
 {- Removes a key's file from .git/annex/objects/
  -
+ - When a key has associated pointer files, they are checked for
+ - modifications, and if unmodified, are reset.
+ -
  - In direct mode, deletes the associated files or files, and replaces
  - them with symlinks.
  -}
@@ -553,15 +700,49 @@ removeAnnex (ContentRemovalLock key) = withObjectLoc key remove removedirect
 	remove file = cleanObjectLoc key $ do
 		secureErase file
 		liftIO $ nukeFile file
-		removeInodeCache key
+		mapM_ (void . tryIO . resetpointer)
+			=<< Database.Keys.getAssociatedFiles key
+		Database.Keys.removeInodeCaches key
+		Direct.removeInodeCache key
+	resetpointer file = ifM (isUnmodified key file)
+		( do
+			secureErase file
+			liftIO $ nukeFile file
+			liftIO $ writeFile file (formatPointer key)	
+		-- Can't delete the pointer file.
+		-- If it was a hard link to the annex object,
+		-- that object might have been frozen as part of the
+		-- removal process, so thaw it.
+		, void $ tryIO $ thawContent file
+		)
 	removedirect fs = do
-		cache <- recordedInodeCache key
-		removeInodeCache key
+		cache <- Direct.recordedInodeCache key
+		Direct.removeInodeCache key
 		mapM_ (resetfile cache) fs
-	resetfile cache f = whenM (sameInodeCache f cache) $ do
+	resetfile cache f = whenM (Direct.sameInodeCache f cache) $ do
 		l <- calcRepo $ gitAnnexLink f key
 		secureErase f
 		replaceFile f $ makeAnnexLink l
+
+{- Check if a file contains the unmodified content of the key.
+ -
+ - The expensive way to tell is to do a verification of its content.
+ - The cheaper way is to see if the InodeCache for the key matches the
+ - file. -}
+isUnmodified :: Key -> FilePath -> Annex Bool
+isUnmodified key f = go =<< geti
+  where
+	go Nothing = return False
+	go (Just fc) = cheapcheck fc <||> expensivecheck fc
+	cheapcheck fc = anyM (compareInodeCaches fc)
+		=<< Database.Keys.getInodeCaches key
+	expensivecheck fc = ifM (verifyKeyContent AlwaysVerify Types.Remote.UnVerified key f)
+		-- The file could have been modified while it was
+		-- being verified. Detect that.
+		( geti >>= maybe (return False) (compareInodeCaches fc)
+		, return False
+		)
+	geti = withTSDelta (liftIO . genInodeCache f)
 
 {- Runs the secure erase command if set, otherwise does nothing.
  - File may or may not be deleted at the end; caller is responsible for
@@ -586,13 +767,14 @@ moveBad key = do
 	logStatus key InfoMissing
 	return dest
 
-data KeyLocation = InAnnex | InRepository
+data KeyLocation = InAnnex | InRepository | InAnywhere
 
 {- List of keys whose content exists in the specified location.
  
- - InAnnex only lists keys under .git/annex/objects,
- - while InRepository, in direct mode, also finds keys located in the
- - work tree.
+ - InAnnex only lists keys with content in .git/annex/objects,
+ - while InRepository, in direct mode, also finds keys with content
+ - in the work tree. InAnywhere lists all keys that have directories
+ - in .git/annex/objects, whether or not the content is present.
  -
  - Note that InRepository has to check whether direct mode files
  - have goodContent.
@@ -621,6 +803,11 @@ getKeysPresent keyloc = do
 		morekeys <- unsafeInterleaveIO a
 		continue (morekeys++keys) as
 
+	inanywhere = case keyloc of
+		InAnywhere -> True
+		_ -> False
+
+	present _ _ _ | inanywhere = pure True
 	present _ False d = presentInAnnex d
 	present s True d = presentDirect s d <||> presentInAnnex d
 
@@ -632,7 +819,8 @@ getKeysPresent keyloc = do
 		InRepository -> case fileKey (takeFileName d) of
 			Nothing -> return False
 			Just k -> Annex.eval s $ 
-				anyM (goodContent k) =<< associatedFiles k
+				anyM (Direct.goodContent k) =<< Direct.associatedFiles k
+		InAnywhere -> return True
 
 	{- In order to run Annex monad actions within unsafeInterleaveIO,
 	 - the current state is taken and reused. No changes made to this
