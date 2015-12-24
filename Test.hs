@@ -123,8 +123,8 @@ tests = testGroup "Tests" $ properties :
 	map (\(d, te) -> withTestMode te (unitTests d)) testmodes
   where
 	testmodes =
-		[ ("v6", TestMode { forceDirect = False, annexVersion = "6" })
-		, ("v5", TestMode { forceDirect = False, annexVersion = "5" })
+		-- [ ("v6", TestMode { forceDirect = False, annexVersion = "6" })
+		[ ("v5", TestMode { forceDirect = False, annexVersion = "5" })
 		-- Windows will only use direct mode, so don't test twice.
 #ifndef mingw32_HOST_OS
 		, ("v5 direct", TestMode { forceDirect = True,  annexVersion = "5" })
