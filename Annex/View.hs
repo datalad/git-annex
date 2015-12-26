@@ -329,8 +329,7 @@ narrowView = applyView' viewedFileReuse getViewedFileMetaData
  - Look up the metadata of annexed files, and generate any ViewedFiles,
  - and stage them.
  -
- - Currently only works in indirect mode. Must be run from top of
- - repository.
+ - Must be run from top of repository.
  -}
 applyView' :: MkViewedFile -> (FilePath -> MetaData) -> View -> Annex Git.Branch
 applyView' mkviewedfile getfilemetadata view = do
@@ -372,24 +371,6 @@ applyView' mkviewedfile getfilemetadata view = do
 		sha <- hashSymlink' hasher linktarget
 		liftIO . Git.UpdateIndex.streamUpdateIndex' uh
 			=<< inRepo (Git.UpdateIndex.stageSymlink f sha)
-
-{- Applies a view to the reference branch, generating a new branch
- - for the View.
- -
- - This needs to work incrementally, to quickly update the view branch
- - when the reference branch is changed. So, it works based on an
- - old version of the reference branch, uses diffTree to find the
- - changes, and applies those changes to the view branch.
- -}
-updateView :: View -> Git.Ref -> Git.Ref -> Annex Git.Branch
-updateView view ref oldref = genViewBranch view $ do
-	(diffs, cleanup) <- inRepo $ DiffTree.diffTree oldref ref
-	forM_ diffs go
-	void $ liftIO cleanup
-  where
-	go diff
-		| DiffTree.dstsha diff == nullSha = error "TODO delete file"
-		| otherwise = error "TODO add file"
 
 {- Diff between currently checked out branch and staged changes, and
  - update metadata to reflect the changes that are being committed to the
