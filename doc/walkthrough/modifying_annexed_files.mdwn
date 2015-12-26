@@ -19,10 +19,9 @@ it is a regular file.
 (If you decide you don't need to modify the file after all, or want to discard
 modifications, just use `git annex lock`.)
 
-When you `git commit`, git-annex's pre-commit hook will automatically
-notice that you are committing an unlocked file, and add its new content
-to the annex. The file will be replaced with a symlink to the new content,
-and this symlink is what gets committed to git in the end.
+When you `git commit` it will notice that you are committing an unlocked
+file, add its new content to the annex, and a pointer to that content is
+what gets committed to git.
 
 	# echo "now smaller, but even cooler" > my_cool_big_file
 	# git commit my_cool_big_file -m "changed an annexed file"
@@ -30,15 +29,5 @@ and this symlink is what gets committed to git in the end.
 	[master 64cda67] changed an annexed file
 	 1 files changed, 1 insertions(+), 1 deletions(-)
 
-There is one problem with using `git commit` like this: Git wants to first
-stage the entire contents of the file in its index. That can be slow for
-big files (sorta why git-annex exists in the first place). So, the
-automatic handling on commit is a nice safety feature, since it prevents
-the file content being accidentally committed into git. But when working with
-big files, it's faster to explicitly add them to the annex yourself
-before committing.
-
-	# echo "now smaller, but even cooler yet" > my_cool_big_file
-	# git annex add my_cool_big_file
-	add my_cool_big_file ok
-	# git commit my_cool_big_file -m "changed an annexed file"
+For more details on working with unlocked files vs the regular locked
+files, see [[tips/unlocked_files]].

@@ -1,4 +1,4 @@
-git-annex (5.20151219) UNRELEASED; urgency=medium
+git-annex (6.20151219) UNRELEASED; urgency=medium
 
   * Added v6 repository mode, but v5 is still the default for now.
   * The upgrade to version 6 is not done fully automatically yet, because
