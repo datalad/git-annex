@@ -336,16 +336,16 @@ applyView' mkviewedfile getfilemetadata view = do
 	top <- fromRepo Git.repoPath
 	(l, clean) <- inRepo $ Git.LsFiles.inRepo [top]
 	liftIO . nukeFile =<< fromRepo gitAnnexViewIndex
-	genViewBranch view $ do
-		uh <- inRepo Git.UpdateIndex.startUpdateIndex
-		hasher <- inRepo hashObjectStart
-		forM_ l $ \f -> do
-			relf <- getTopFilePath <$> inRepo (toTopFilePath f)
-			go uh hasher relf =<< lookupFile f
-		liftIO $ do
-			hashObjectStop hasher
-			void $ stopUpdateIndex uh
-			void clean
+	uh <- withViewIndex $ inRepo Git.UpdateIndex.startUpdateIndex
+	hasher <- inRepo hashObjectStart
+	forM_ l $ \f -> do
+		relf <- getTopFilePath <$> inRepo (toTopFilePath f)
+		go uh hasher relf =<< lookupFile f
+	liftIO $ do
+		hashObjectStop hasher
+		void $ stopUpdateIndex uh
+		void clean
+	genViewBranch view
   where
 	genviewedfiles = viewedFiles view mkviewedfile -- enables memoization
 	go uh hasher f (Just k) = do
@@ -408,24 +408,22 @@ withViewChanges addmeta removemeta = do
 	handlechange item a = maybe noop
 		(void . commandAction . a (getTopFilePath $ DiffTree.file item))
 
-{- Generates a branch for a view. This is done using a different index
- - file. An action is run to stage the files that will be in the branch.
- - Then a commit is made, to the view branch. The view branch is not
- - checked out, but entering it will display the view. -}
-genViewBranch :: View -> Annex () -> Annex Git.Branch
-genViewBranch view a = withIndex $ do
-	a
-	let branch = branchView view
-	void $ inRepo $ Git.Branch.commit Git.Branch.AutomaticCommit True (fromRef branch) branch []
-	return branch
-
 {- Runs an action using the view index file.
  - Note that the file does not necessarily exist, or can contain
  - info staged for an old view. -}
-withIndex :: Annex a -> Annex a
-withIndex a = do
+withViewIndex :: Annex a -> Annex a
+withViewIndex a = do
 	f <- fromRepo gitAnnexViewIndex
 	withIndexFile f a
+
+{- Generates a branch for a view, using the view index file
+ - to make a commit to the view branch. The view branch is not
+ - checked out, but entering it will display the view. -}
+genViewBranch :: View -> Annex Git.Branch
+genViewBranch view = withViewIndex $ do
+	let branch = branchView view
+	void $ inRepo $ Git.Branch.commit Git.Branch.AutomaticCommit True (fromRef branch) branch []
+	return branch
 
 withCurrentView :: (View -> Annex a) -> Annex a
 withCurrentView a = maybe (error "Not in a view.") a =<< currentView
