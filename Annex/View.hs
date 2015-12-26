@@ -399,11 +399,7 @@ withViewChanges addmeta removemeta = do
 	handleadds makeabs item
 		| DiffTree.dstsha item /= nullSha = 
 			handlechange item addmeta
-				=<< ifM isDirect
-					( catKey (DiffTree.dstsha item)
-					-- optimisation
-					, isAnnexLink $ makeabs $ DiffTree.file item
-					)
+				=<< catKey (DiffTree.dstsha item)
 		| otherwise = noop
 	handlechange item a = maybe noop
 		(void . commandAction . a (getTopFilePath $ DiffTree.file item))
