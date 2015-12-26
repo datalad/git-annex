@@ -31,7 +31,6 @@ import Logs.View
 import Utility.Glob
 import Utility.FileMode
 import Types.Command
-import Config
 import CmdLine.Action
 
 import qualified Data.Set as S
@@ -385,10 +384,9 @@ applyView' mkviewedfile getfilemetadata view = do
  -}
 withViewChanges :: (ViewedFile -> Key -> CommandStart) -> (ViewedFile -> Key -> CommandStart) -> Annex ()
 withViewChanges addmeta removemeta = do
-	makeabs <- flip fromTopFilePath <$> gitRepo
 	(diffs, cleanup) <- inRepo $ DiffTree.diffIndex Git.Ref.headRef
 	forM_ diffs handleremovals
-	forM_ diffs (handleadds makeabs)
+	forM_ diffs handleadds
 	void $ liftIO cleanup
   where
 	handleremovals item
@@ -396,7 +394,7 @@ withViewChanges addmeta removemeta = do
 			handlechange item removemeta
 				=<< catKey (DiffTree.srcsha item)
 		| otherwise = noop
-	handleadds makeabs item
+	handleadds item
 		| DiffTree.dstsha item /= nullSha = 
 			handlechange item addmeta
 				=<< catKey (DiffTree.dstsha item)
