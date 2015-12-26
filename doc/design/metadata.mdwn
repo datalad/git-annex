@@ -103,9 +103,8 @@ want to see.
 * Could use filename metadata for the key, recorded by git-annex add (which
   may not correspond to filenames being used in regular git branches like
   master for the key).
-* Could use the .map files to get a filename, but this is somewhat
-  arbitrary (.map can contain multiple filenames), and is only
-  currently supported in direct mode.
+* Could use the Keys database's associated files. Currently only works for v6
+  unlocked files, and not for locked files.
 * Current approach: Have a reference branch (eg master) and walk it to
   find filenames and
   keys. Fine as long as it can be done efficiently. Also allows including
@@ -144,26 +143,13 @@ in the git-annex branch. This is slow. A fast cache is needed.
 
 TODO
 
-# direct mode issues
+# unlocked file issues
 
-TODO (direct mode is currently not supported with view branches)
+View branches can't be used in direct mode repositories.
 
-Checking out a view branch can result in any number of copies of a file
-appearing in different directories. No problem in indirect mode, but
-in direct mode these are real, expensive copies.
-
-But, it's worth supporting direct mode!
-
-So, possible approaches:
-
-* Before checking out a view branch, calculate how much space will
-  be used by duplicates and refuse if not enough is free.
-* Only check out one file, and omit the copies. Keep track of which
-  files were omitted, and make sure that when committing on the branch,
-  that metadata is not removed. Has the downside that files can seem
-  to randomly move around in the tree as their metadata changes.
-* Disallow view branch checkouts that have duplicate files.
-  This would cripple it some, but perhaps not too badly?
+But, view branches do work with unlocked files in v6 repositories.
+The resulting view branch has all its files locked, although you
+can unlock them again after entering the branch.
 
 # gotchas
 
