@@ -89,7 +89,7 @@ catSymLinkTarget :: Sha -> Annex String
 catSymLinkTarget sha = fromInternalGitPath . decodeBS <$> get
   where
 	-- Avoid buffering the whole file content, which might be large.
-	-- 8192 is enough if it really is a symlink or pointer file.
+	-- 8192 is enough if it really is a symlink.
 	get = L.take 8192 <$> catObject sha
 
 {- From a file in the repository back to the key.
