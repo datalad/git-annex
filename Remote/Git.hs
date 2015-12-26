@@ -545,7 +545,7 @@ copyToRemote' r key file meterupdate
 			copylocal =<< Annex.Content.prepSendAnnex key
 	| Git.repoIsSsh (repo r) = commitOnCleanup r $
 		Annex.Content.sendAnnex key noop $ \object -> do
-			-- This is too broad really, but recykey normally
+			-- This is too broad really, but recvkey normally
 			-- verifies content anyway, so avoid complicating
 			-- it with a local sendAnnex check and rollback.
 			unlocked <- isDirect <||> versionSupportsUnlockedPointers
