@@ -1,4 +1,4 @@
-git-annex (6.20151225) unstable; urgency=medium
+git-annex (5.20151219) UNRELEASED; urgency=medium
 
   * Added v6 repository mode, but v5 is still the default for now.
   * The upgrade to version 6 is not done fully automatically, because
@@ -16,11 +16,8 @@ git-annex (6.20151225) unstable; urgency=medium
   * add: In v6 mode, adds modified files to the annex.
   * assistant: In v6 mode, adds files in unlocked mode, so they can
     continue to be modified.
- 
- -- Joey Hess <id@joeyh.name>  Tue, 08 Dec 2015 11:14:03 -0400
-
-git-annex (5.20151219) UNRELEASED; urgency=medium
-
+  * persistent-sqlite is now a hard build dependency, since v6 repository
+    mode needs it.
   * status: On crippled filesystems, was displaying M for all annexed files
     that were present. Probably caused by a change to what git status
     displays in this situation. Fixed by treating files git thinks are

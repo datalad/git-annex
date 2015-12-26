@@ -35,11 +35,8 @@ import Utility.CopyFile
 import Git.FilePath
 import Utility.PID
 import qualified Database.Keys
-
-#ifdef WITH_DATABASE
 import qualified Database.Fsck as FsckDb
 import Types.CleanupActions
-#endif
 
 import Data.Time.Clock.POSIX
 import System.Posix.Types (EpochTime)
@@ -481,17 +478,11 @@ runFsck inc file key a = ifM (needFsck inc key)
 {- Check if a key needs to be fscked, with support for incremental fscks. -}
 needFsck :: Incremental -> Key -> Annex Bool
 needFsck (ScheduleIncremental _ _ i) k = needFsck i k
-#ifdef WITH_DATABASE
 needFsck (ContIncremental h) key = liftIO $ not <$> FsckDb.inDb h key
-#endif
 needFsck _ _ = return True
 
 recordFsckTime :: Incremental -> Key -> Annex ()
-#ifdef WITH_DATABASE
 recordFsckTime inc key = withFsckDb inc $ \h -> liftIO $ FsckDb.addDb h key
-#else
-recordFsckTime _ _ = return ()
-#endif
 
 {- Records the start time of an incremental fsck.
  -
@@ -543,14 +534,11 @@ getStartTime u = do
 data Incremental
 	= NonIncremental
 	| ScheduleIncremental Duration UUID Incremental
-#ifdef WITH_DATABASE
 	| StartIncremental FsckDb.FsckHandle 
 	| ContIncremental FsckDb.FsckHandle
-#endif
 
 prepIncremental :: UUID -> Maybe IncrementalOpt -> Annex Incremental
 prepIncremental _ Nothing = pure NonIncremental
-#ifdef WITH_DATABASE
 prepIncremental u (Just StartIncrementalO) = do
 	recordStartTime u
 	ifM (FsckDb.newPass u)
@@ -565,9 +553,6 @@ prepIncremental u (Just (ScheduleIncrementalO delta)) = do
 		Nothing -> StartIncrementalO
 		Just _ -> MoreIncrementalO
 	return (ScheduleIncremental delta u i)
-#else
-prepIncremental _ _ = error "This git-annex was not built with database support; incremental fsck not supported"
-#endif
 
 cleanupIncremental :: Incremental -> Annex ()
 cleanupIncremental (ScheduleIncremental delta u i) = do
@@ -581,7 +566,6 @@ cleanupIncremental (ScheduleIncremental delta u i) = do
 	cleanupIncremental i
 cleanupIncremental _ = return ()
 
-#ifdef WITH_DATABASE
 openFsckDb :: UUID -> Annex FsckDb.FsckHandle
 openFsckDb u = do
 	h <- FsckDb.openDb u
@@ -594,7 +578,6 @@ withFsckDb (ContIncremental h) a = a h
 withFsckDb (StartIncremental h) a = a h
 withFsckDb NonIncremental _ = noop
 withFsckDb (ScheduleIncremental _ _ i) a = withFsckDb i a
-#endif
 
 data KeyStatus = KeyLocked | KeyUnlocked | KeyMissing
 

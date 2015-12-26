@@ -95,11 +95,6 @@ buildFlags = filter (not . null)
 #ifdef WITH_TORRENTPARSER
 	, "TorrentParser"
 #endif
-#ifdef WITH_DATABASE
-	, "Database"
-#else
-#warning Building without Database support
-#endif
 #ifdef WITH_EKG
 	, "EKG"
 #endif

@@ -104,10 +104,6 @@ Flag network-uri
   Description: Get Network.URI from the network-uri package
   Default: True
 
-Flag Database
-  Description: Enable building with persistent for database use (disable to build on platforms not supporting TH)
-  Default: True
-
 Flag Cryptonite
   Description: Use the cryptonite library, instead of the older cryptohash
 
@@ -128,7 +124,8 @@ Executable git-annex
    monad-control, transformers,
    bloomfilter, edit-distance,
    resourcet, http-conduit, http-client, http-types,
-   time, old-locale
+   time, old-locale,
+   esqueleto, persistent-sqlite, persistent, persistent-template
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs
   Extensions: PackageImports
@@ -272,10 +269,6 @@ Executable git-annex
   if flag(TorrentParser)
     Build-Depends: torrent (>= 10000.0.0)
     CPP-Options: -DWITH_TORRENTPARSER
-
-  if flag(Database)
-    Build-Depends: esqueleto, persistent-sqlite, persistent, persistent-template
-    CPP-Options: -DWITH_DATABASE
 
   if flag(ConcurrentOutput)
     Build-Depends: concurrent-output (>= 1.6)
