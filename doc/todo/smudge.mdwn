@@ -1,8 +1,58 @@
 git-annex should use smudge/clean filters.
 
-----
+### implementation todo list
 
-Update: Currently, this does not look likely to work. In particular,
+* Still a few test suite failues for v6 with locked files.
+* Test suite should make pass for v6 with unlocked files.
+* Reconcile staged changes into the associated files database, whenever
+  the database is queried. This is needed to handle eg:
+  	git add largefile
+	git mv largefile othername
+	git annex move othername --to foo
+	# fails to drop content from associated file othername,
+	# because it doesn't know it has that name
+	# git commit clears up this mess
+* Interaction with shared clones. Should avoid hard linking from/to a
+  object in a shared clone if either repository has the object unlocked.
+  (And should avoid unlocking an object if it's hard linked to a shared clone,
+  but that's already accomplished because it avoids unlocking an object if
+  it's hard linked at all)
+* Make automatic merge conflict resolution work for pointer files.
+  - Should probably automatically handle merge conflicts between annex
+    symlinks and pointer files too. Maybe by always resulting in a pointer
+    file, since the symlinks don't work everwhere.
+* Crippled filesystem should cause all files to be transparently unlocked.
+  Note that this presents problems when dealing with merge conflicts and
+  when pushing changes committed in such a repo. Ideally, should avoid
+  committing implicit unlocks, or should prevent such commits leaking out
+  in pushes.
+* Dropping a smudged file causes git status (and git annex status)
+  to show it as modified,  because the timestamp has changed. 
+  Getting a smudged file can also cause this.
+  Upgrading a direct mode repo also leaves files in this state.
+  User can use `git add` to clear it up, but better to avoid this,
+  by updating stat info in the index.
+  (May need to use libgit2 to do this, cannot find
+  any plumbing except git-update-index, which is very inneficient for
+  smudged files.)
+* Optimisation: See if the database schema can be improved to speed things
+  up. Are there enough indexes? getAssociatedKey in particular does a
+  reverse lookup and might benefit from an index.
+* Optimisation: Reads from the Keys database avoid doing anything if the
+  database doesn't exist. This makes v5 repos, or v6 with all locked files
+  faster. However, if a v6 repo unlocks and then re-locks a file, its
+  database will exist, and so this optimisation will no longer apply.
+  Could try to detect when the database is empty, and remove it or avoid reads.
+
+* Eventually (but not yet), make v6 the default for new repositories.
+  Note that the assistant forces repos into direct mode; that will need to
+  be changed then.
+* Later still, remove support for direct mode, and enable automatic
+  v5 to v6 upgrades.
+
+### historical notes
+
+2013: Currently, this does not look likely to work. In particular,
 the clean filter needs to consume all stdin from git, which consists of the
 entire content of the file. It cannot optimise by directly accessing
 the file in the repository, because git may be cleaning a different
@@ -19,7 +69,7 @@ available files, and checksum them, which is too expensive.
 >> that the index says are modified, so this is no longer a problem.
 >> --[[Joey]]
 
-----
+### background
 
 The clean filter is run when files are staged for commit. So a user could copy
 any file into the annex, git add it, and git-annex's clean filter causes
@@ -318,56 +368,6 @@ When a repo has some clones indirect and some direct, the upgraded repo
 will have all files unlocked, necessarily in all clones. This happens
 automatically, because when the direct repos are upgraded that causes the
 files to be unlocked, while the indirect upgrades don't touch the files.
-
-#### implementation todo list
-
-* Still a few test suite failues for v6 with locked files.
-* Test suite should make pass for v6 with unlocked files.
-* Reconcile staged changes into the associated files database, whenever
-  the database is queried. This is needed to handle eg:
-  	git add largefile
-	git mv largefile othername
-	git annex move othername --to foo
-	# fails to drop content from associated file othername,
-	# because it doesn't know it has that name
-	# git commit clears up this mess
-* Interaction with shared clones. Should avoid hard linking from/to a
-  object in a shared clone if either repository has the object unlocked.
-  (And should avoid unlocking an object if it's hard linked to a shared clone,
-  but that's already accomplished because it avoids unlocking an object if
-  it's hard linked at all)
-* Make automatic merge conflict resolution work for pointer files.
-  - Should probably automatically handle merge conflicts between annex
-    symlinks and pointer files too. Maybe by always resulting in a pointer
-    file, since the symlinks don't work everwhere.
-* Crippled filesystem should cause all files to be transparently unlocked.
-  Note that this presents problems when dealing with merge conflicts and
-  when pushing changes committed in such a repo. Ideally, should avoid
-  committing implicit unlocks, or should prevent such commits leaking out
-  in pushes.
-* Dropping a smudged file causes git status (and git annex status)
-  to show it as modified,  because the timestamp has changed. 
-  Getting a smudged file can also cause this.
-  Upgrading a direct mode repo also leaves files in this state.
-  User can use `git add` to clear it up, but better to avoid this,
-  by updating stat info in the index.
-  (May need to use libgit2 to do this, cannot find
-  any plumbing except git-update-index, which is very inneficient for
-  smudged files.)
-* Optimisation: See if the database schema can be improved to speed things
-  up. Are there enough indexes? getAssociatedKey in particular does a
-  reverse lookup and might benefit from an index.
-* Optimisation: Reads from the Keys database avoid doing anything if the
-  database doesn't exist. This makes v5 repos, or v6 with all locked files
-  faster. However, if a v6 repo unlocks and then re-locks a file, its
-  database will exist, and so this optimisation will no longer apply.
-  Could try to detect when the database is empty, and remove it or avoid reads.
-
-* Eventually (but not yet), make v6 the default for new repositories.
-  Note that the assistant forces repos into direct mode; that will need to
-  be changed then.
-* Later still, remove support for direct mode, and enable automatic
-  v5 to v6 upgrades.
 
 ----
 
