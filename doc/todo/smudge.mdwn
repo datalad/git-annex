@@ -354,8 +354,6 @@ files to be unlocked, while the indirect upgrades don't touch the files.
   (May need to use libgit2 to do this, cannot find
   any plumbing except git-update-index, which is very inneficient for
   smudged files.)
-* Audit code for all uses of isDirect. These places almost always need
-  adjusting to support v6, if they haven't already.
 * Optimisation: See if the database schema can be improved to speed things
   up. Are there enough indexes? getAssociatedKey in particular does a
   reverse lookup and might benefit from an index.
