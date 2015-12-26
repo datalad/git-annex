@@ -1,6 +1,6 @@
 {- Standard git remotes.
  -
- - Copyright 2011-2012 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -35,6 +35,7 @@ import Utility.Tmp
 import Config
 import Config.Cost
 import Annex.Init
+import Annex.Version
 import Types.Key
 import Types.CleanupActions
 import qualified CmdLine.GitAnnexShell.Fields as Fields
@@ -442,9 +443,8 @@ copyFromRemote' r key file dest meterupdate
 						file noRetry noObserver 
 						(\p -> copier object dest (combineMeterUpdate p meterupdate) checksuccess)
 	| Git.repoIsSsh (repo r) = unVerified $ feedprogressback $ \p -> do
-		direct <- isDirect
 		Ssh.rsyncHelper (Just (combineMeterUpdate meterupdate p))
-			=<< Ssh.rsyncParamsRemote direct r Download key dest file
+			=<< Ssh.rsyncParamsRemote False r Download key dest file
 	| Git.repoIsHttp (repo r) = unVerified $
 		Annex.Content.downloadUrl key meterupdate (keyUrls r key) dest
 	| otherwise = error "copying from non-ssh, non-http remote not supported"
@@ -545,15 +545,18 @@ copyToRemote' r key file meterupdate
 			copylocal =<< Annex.Content.prepSendAnnex key
 	| Git.repoIsSsh (repo r) = commitOnCleanup r $
 		Annex.Content.sendAnnex key noop $ \object -> do
-			direct <- isDirect
+			-- This is too broad really, but recykey normally
+			-- verifies content anyway, so avoid complicating
+			-- it with a local sendAnnex check and rollback.
+			unlocked <- isDirect <||> versionSupportsUnlockedPointers
 			Ssh.rsyncHelper (Just meterupdate)
-				=<< Ssh.rsyncParamsRemote direct r Upload key object file
+				=<< Ssh.rsyncParamsRemote unlocked r Upload key object file
 	| otherwise = error "copying to non-ssh repo not supported"
   where
 	copylocal Nothing = return False
 	copylocal (Just (object, checksuccess)) = do
 		-- The checksuccess action is going to be run in
-		-- the remote's Annex, but it needs access to the current
+		-- the remote's Annex, but it needs access to the local
 		-- Annex monad's state.
 		checksuccessio <- Annex.withCurrentState checksuccess
 		params <- Ssh.rsyncParams r Upload
