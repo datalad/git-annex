@@ -27,10 +27,11 @@ seek = withKeys start
 
 start :: Key -> CommandStart
 start key = fieldTransfer Download key $ \_p -> do
-	-- Always verify content when a direct mode repo is sending a file,
+	-- Always verify content when a repo is sending an unlocked file,
 	-- as the file could change while being transferred.
-	fromdirect <- isJust <$> Fields.getField Fields.direct
-	let verify = if fromdirect then AlwaysVerify else DefaultVerify
+	fromunlocked <- (isJust <$> Fields.getField Fields.unlocked)
+		<||> (isJust <$> Fields.getField Fields.direct)
+	let verify = if fromunlocked then AlwaysVerify else DefaultVerify
 	ifM (getViaTmp verify key go)
 		( do
 			-- forcibly quit after receiving one key,

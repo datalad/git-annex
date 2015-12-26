@@ -144,6 +144,7 @@ checkField :: (String, String) -> Bool
 checkField (field, val)
 	| field == fieldName remoteUUID = fieldCheck remoteUUID val
 	| field == fieldName associatedFile = fieldCheck associatedFile val
+	| field == fieldName unlocked = fieldCheck unlocked val
 	| field == fieldName direct = fieldCheck direct val
 	| field == fieldName autoInit = fieldCheck autoInit val
 	| otherwise = False
