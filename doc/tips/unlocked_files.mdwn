@@ -9,12 +9,11 @@ want to lose it in a fumblefingered mistake.
 	bash: some_file: Permission denied
 
 Sometimes though you want to modify a file. Maybe once, or maybe
-repeatedly. To modify an annexed file, you have to first unlock it,
+repeatedly. To modify a locked file, you have to first unlock it,
 by running `git annex unlock`.
 
 	# git annex unlock some_file
 	# echo "new content" > some_file
-	#
 
 Back before git-annex version 6, and its v6 repository mode, unlocking a file
 like this was a transient thing. You'd modify it and then `git annex add` the
@@ -32,7 +31,7 @@ had many problems of its own.
 
 ## enter v6 mode
 
-/!\ This is an experimental feature; see its [[todo_list|todo//smudge]]
+/!\ This is an experimental feature; see its [[todo_list|todo/smudge]]
 for known issues.
 
 This led to the v6 repository mode, which makes unlocked files remain
