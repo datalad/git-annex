@@ -27,16 +27,16 @@ the file was then back to being locked.
 
 But, that had some problems. The main one is that some users want to be able
 to edit files repeatedly, without manually having to unlock them every time.
-This is especially important when users are not masters of the command line.
 The [[direct_mode]] was made all files be unlocked all the time, but it
 had many problems of its own.
 
 ## enter v6 mode
 
 This led to the v6 repository mode, which makes unlocked files remain
-unlocked after they're committed, so you can keep changing them and committing
-the changes whenever you'd like. It also lets you use more normal git commands
-(or even interfaces on top of git) for handling annexed files.
+unlocked after they're committed, so you can keep changing them and
+committing the changes whenever you'd like. It also lets you use more
+normal git commands (or even interfaces on top of git) for handling
+annexed files.
 
 To get a repository into v6 mode, you can [[upgrade|upgrades]] it.
 This will eventually happen automatically, but for now it's a manual process
@@ -51,9 +51,9 @@ Or, you can init a new repository in v6 mode.
 
 ## using it
 
-Using a v6 repository is easy! Just use regular git commands to add
-and commit files. git will use git-annex to store the file contents,
-and the files will be left unlocked.
+Using a v6 repository is easy! Simply use regular git commands to add
+and commit files. In a git-annex repository, git will use git-annex
+to store the file contents, and the files will be left unlocked.
 
 [[!template id=note text="""
 Want `git add` to add some file contents to the annex, but store the contents of
@@ -98,14 +98,15 @@ unlocked mode, use `git add`.
 
 Unlocked files are handy, but they have one significant disadvantage
 compared with locked files: They use more disk space.
-While only one copy of a locked file has to be stored, normally,
+
+While only one copy of a locked file has to be stored, often
 two copies of an unlocked file are stored on disk. One copy is in
 the git work tree, where you can use and modify it,
 and the other is stashed away in `.git/annex/objects` (see [[internals]]).
 
 The reason for that second copy is to preserve the old version of the file,
-if you modify the unlocked file in the work tree. Being able to access
-old versions of files is an important part of git after all.
+when you modify the unlocked file in the work tree. Being able to access
+old versions of files is an important part of git after all!
 
 That's a good safe default. But there are ways to use git-annex that
 make the second copy not be worth keeping:

@@ -7,8 +7,8 @@ some documentation to that end.
 ### `.git/annex/objects/aa/bb/*/*`
 
 This is where locally available file contents are actually stored.
-Files added to the annex get a symlink checked into git that points
-to the file content.
+Files added to the annex get a symlink or pointer file checked into git,
+that points to the file content.
 
 First there are two levels of directories used for hashing, to prevent
 too many things ending up in any one directory.
