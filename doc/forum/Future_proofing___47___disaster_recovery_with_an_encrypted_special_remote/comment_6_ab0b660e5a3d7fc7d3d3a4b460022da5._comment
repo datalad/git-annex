@@ -1,0 +1,139 @@
+[[!comment format=mdwn
+ username="wsha.code+ga@b38779424f41c5701bbe5937340be43ff1474b2d"
+ subject="comment 6"
+ date="2015-12-26T12:31:13Z"
+ content="""
+joey, thanks for answering my questions. I have put together a bash script to check my understanding of how the different encryption methods work. The script is below. With it, I am able to generate the encrypted keys for items for `hybrid` and `shared` encrypted `directory` remotes and to decrypt items for `hybrid`, `shared`, and `pubkey` encrypted `directory` remotes (and presumably other special remotes but I tested with `directory` remotes since those were simplest). The only thing I have not been able to get to work is the generation of the encrypted item keys for `pubkey` remotes. Do you see what I am doing wrong for that case? Once I figure that out, I can make a tip entry on the wiki with the script.
+
+	#!/usr/bin/env bash
+
+	# args: file_path remote decrypt decrypt_path
+
+	# For shared, pubkey, and hybrid encryption:
+	# 1. Take in symlink and output encrypted key
+	# 2. Take in path to encrypted file and print decrypted file to stdout
+	#
+	# args: -r remote [-k symlink] [-d encrypted_file_path]
+
+	usage() {
+		echo \"Usage: ga_decrypt.sh -r REMOTE [-k SYMLINK] [-d FILE]\"
+		echo \"\"
+		echo \"    Either lookups up key on REMOTE for annex file linked with SYMLINK\"
+		echo \"    or decrypts FILE encrypted for REMOTE.\"
+		echo \"\"
+		echo \"    -r: REMOTE is special remote to use\"
+		echo \"    -k: SYMLINK is symlink in annex to print encrypted special remote key for\"
+		echo \"    -d: FILE is path to special remote file to decrypt to STDOUT\"
+		echo \"\"
+		echo \"NOTES: \"
+		echo \"    * Run in an indirect git annex repo.\"
+		echo \"    * Must specify -k or -d.\"
+		echo \"    * -k prints the key including the leading directory names used for a \"
+		echo \"       directory remote (even if REMOTE is not a directory remote)\"
+		echo \"    * -d works on a locally accessible file. It does not fetch a remote file\"
+		echo \"    * Must have gpg and openssl\"
+	}
+
+	decrypt_cipher() {
+		cipher=\"$1\"
+		echo \"$(echo -n \"$cipher\" | base64 -d | gpg --decrypt --quiet)\"
+	}
+
+	lookup_key() {
+		encryption=\"$1\"
+		cipher=\"$2\"
+		symlink=\"$3\"
+
+		if [ \"$encryption\" == \"hybrid\" ] || [ \"$encryption\" == \"pubkey\" ]; then
+			cipher=\"$(decrypt_cipher \"$cipher\")\"
+		fi
+
+		# Pull out MAC cipher from beginning of cipher
+		if [ \"$encryption\" = \"hybrid\" ] ; then
+			cipher=\"$(echo -n \"$cipher\" | head  -c 256 )\"
+		elif [ \"$encryption\" = \"shared\" ] ; then
+			cipher=\"$(echo -n \"$cipher\" | base64 -d | tr -d '\n' | head  -c 256 )\"
+		elif [ \"$encryption\" = \"pubkey\" ] ; then
+			# ???
+			: # Use entire base64 decrypted cipher
+			# cipher=\"$(echo -n \"$cipher\" | head  -c 256 )\"
+			# cipher=\"$(echo -n \"$cipher\" | base64 -d | tr -d '\n' | head  -c 256 )\"
+			# cipher=\"$(echo -n \"$cipher\" | base64 -d | tr -d '\n' )\"
+		fi
+
+		annex_key=\"$(basename \"$(readlink \"$symlink\")\")\"
+		hash=\"$(echo -n \"$annex_key\" | openssl dgst -sha1 -hmac \"$cipher\" | sed 's/(stdin)= //')\"
+		key=\"GPGHMACSHA1--$hash\"
+		checksum=\"$(echo -n $key | md5sum)\"
+		echo \"${checksum:0:3}/${checksum:3:3}/$key\"
+	}
+
+	decrypt_file() {
+		encryption=\"$1\"
+		cipher=\"$2\"
+		file_path=\"$3\"
+
+		if [ \"$encryption\" = \"pubkey\" ] ; then
+			gpg --quiet --decrypt \"${file_path}\"
+		else
+			if [ \"$encryption\" = \"hybrid\" ] ; then
+				cipher=\"$(decrypt_cipher \"$cipher\" | tail -c +257)\"
+			elif [ \"$encryption\" = \"shared\" ] ; then
+				cipher=\"$(echo -n \"$cipher\" | base64 -d | tr -d '\n' | tail  -c +257 )\"
+			fi
+			gpg --quiet --batch --passphrase \"$cipher\" --output - \"${file_path}\"
+		fi
+	}
+
+	main() {
+		OPTIND=1
+
+		mode=\"\"
+		remote=\"\"
+
+		while getopts \"r:k:d:\" opt; do
+			case \"$opt\" in
+				r)  remote=\"$OPTARG\"
+					;;
+				k)  if [ -z \"$mode\" ] ; then
+						mode=\"lookup key\"
+					else
+						usage
+						exit 2
+					fi
+					symlink=\"$OPTARG\"
+					;;
+				d)  if [ -z \"$mode\" ] ; then
+						mode=\"decrypt file\"
+					else
+						usage
+						exit 2
+					fi
+					file_path=\"$OPTARG\"
+					;;
+			esac
+		done
+
+		if [ -z \"$mode\" ] || [ -z \"$remote\" ] ; then
+			usage
+			exit 2
+		fi
+
+		shift $((OPTIND-1))
+
+		# Pull out config for desired remote name
+		remote_config=\"$(git show git-annex:remote.log | grep 'name='\"$remote \")\"
+
+		# Get encryption type and cipher from config
+		encryption=\"$(echo \"$remote_config\" | grep -oP 'encryption\=.*? ' | tr -d ' \n' | sed 's/encryption=//')\"
+		cipher=\"$(echo \"$remote_config\" | grep -oP 'cipher\=.*? ' | tr -d ' \n' | sed 's/cipher=//')\"
+
+		if [ \"$mode\" = \"lookup key\" ] ; then
+			lookup_key \"$encryption\" \"$cipher\" \"$symlink\"
+		elif [ \"$mode\" = \"decrypt file\" ] ; then
+			decrypt_file \"$encryption\" \"$cipher\" \"${file_path}\"
+		fi
+	}
+
+	main \"$@\"
+"""]]
