@@ -32,6 +32,9 @@ had many problems of its own.
 
 ## enter v6 mode
 
+/!\ This is an experimental feature; see its [[todo_list|todo//smudge]]
+for known issues.
+
 This led to the v6 repository mode, which makes unlocked files remain
 unlocked after they're committed, so you can keep changing them and
 committing the changes whenever you'd like. It also lets you use more
