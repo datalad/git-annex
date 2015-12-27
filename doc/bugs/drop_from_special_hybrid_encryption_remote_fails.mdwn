@@ -1,0 +1,57 @@
+### Please describe the problem.
+
+I am trying to drop a file from a special, hybrid encryption remote. It says "failed", but I cannot figure out why, the commands in --debug all seem to exit with ExitSuccess.
+
+### What steps will reproduce the problem?
+
+Not sure how to reproduce from scratch, see log below for what happens when I do 
+git annex drop file -f specialremote ...
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+$ git annex version
+git-annex version: 5.20150916+gitg79661ef-1~ndall+1
+build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA Database
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository version: 5
+upgrade supported from repository versions: 0 1 2 4
+"""]]
+
+### Please provide any additional information below.
+
+[[!format sh """
+[2015-12-27 00:15:58.093036] read: git ["--git-dir=../../.git","--work-tree=../..","--literal-pathspecs","ls-files","--cached","-z","--","20150816_cccamp/DSC04537.ARW"]
+[2015-12-27 00:15:58.147092] read: git ["--git-dir=../../.git","--work-tree=../..","--literal-pathspecs","show-ref","git-annex"]
+[2015-12-27 00:15:58.150596] process done ExitSuccess
+[2015-12-27 00:15:58.150901] read: git ["--git-dir=../../.git","--work-tree=../..","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2015-12-27 00:15:58.155607] process done ExitSuccess
+[2015-12-27 00:15:58.157843] read: git ["--git-dir=../../.git","--work-tree=../..","--literal-pathspecs","log","refs/heads/git-annex..85eb4dbbebcc100c2414f5a71f4fb9a22f0239fb","-n1","--pretty=%H"]
+[2015-12-27 00:15:58.162227] process done ExitSuccess
+[2015-12-27 00:15:58.162985] read: git ["--git-dir=../../.git","--work-tree=../..","--literal-pathspecs","log","refs/heads/git-annex..c0747d4c69cf80aa0290f1385454eb76a4c21032","-n1","--pretty=%H"]
+[2015-12-27 00:15:58.168515] process done ExitSuccess
+[2015-12-27 00:15:58.168888] read: git ["--git-dir=../../.git","--work-tree=../..","--literal-pathspecs","log","refs/heads/git-annex..0357da603dc61b28814125650def17fb0e3f82ca","-n1","--pretty=%H"]
+[2015-12-27 00:15:58.174589] process done ExitSuccess
+[2015-12-27 00:15:58.1749] read: git ["--git-dir=../../.git","--work-tree=../..","--literal-pathspecs","log","refs/heads/git-annex..4673c36870f0a536b4bedc3f5826f2d6b39c9d6a","-n1","--pretty=%H"]
+[2015-12-27 00:15:58.214221] process done ExitSuccess
+[2015-12-27 00:15:58.215418] read: git ["--git-dir=../../.git","--work-tree=../..","--literal-pathspecs","log","refs/heads/git-annex..75de80c0acf77e04e5b2b4c6f7947aec75603989","-n1","--pretty=%H"]
+[2015-12-27 00:15:58.243546] process done ExitSuccess
+[2015-12-27 00:15:58.244412] chat: git ["--git-dir=../../.git","--work-tree=../..","--literal-pathspecs","cat-file","--batch"]
+[2015-12-27 00:15:58.250349] read: git ["config","--null","--list"]
+[2015-12-27 00:15:58.250859] read: git ["config","--null","--list"]
+[2015-12-27 00:15:58.253927] process done ExitSuccess
+[2015-12-27 00:15:58.254538] chat: git ["--git-dir=../../.git","--work-tree=../..","--literal-pathspecs","check-attr","-z","--stdin","annex.backend","annex.numcopies","--"]
+[2015-12-27 00:15:58.255324] read: git ["--version"]
+[2015-12-27 00:15:58.257803] process done ExitSuccess
+drop stratohidrive 20150816_cccamp/DSC04537.ARW [2015-12-27 00:15:58.328068] chat: gpg ["--batch","--no-tty","--use-agent","--quiet","--trust-model","always","--decrypt"]
+[2015-12-27 00:15:58.354229] process done ExitSuccess
+failed
+git-annex: drop: 1 failed
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+As mentioned before, I am very, very happy with git-annex :-) Discovery of 2015 for me.
