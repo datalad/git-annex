@@ -79,7 +79,7 @@ performNew file key filemodified = do
 		unlessM (sameInodeCache obj (maybeToList mfc)) $ do
 			modifyContent obj $ replaceFile obj $ \tmp -> do
 				unlessM (checkedCopyFile key obj tmp) $
-					error "unable to lock file; need more free disk space"
+					error "unable to lock file"
 			Database.Keys.storeInodeCaches key [obj]
 
 	-- Try to repopulate obj from an unmodified associated file.

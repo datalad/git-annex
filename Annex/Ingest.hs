@@ -142,11 +142,11 @@ ingest (Just (LockedDown lockingfile source)) = withTSDelta $ \delta -> do
 
 	gounlocked key (Just cache) s = do
 		-- Remove temp directory hard link first because
-		-- linkAnnex falls back to copying if a file
+		-- linkToAnnex falls back to copying if a file
 		-- already has a hard link.
 		cleanCruft source
 		cleanOldKeys (keyFilename source) key
-		r <- linkAnnex key (keyFilename source) (Just cache)
+		r <- linkToAnnex key (keyFilename source) (Just cache)
 		case r of
 			LinkAnnexFailed -> failure "failed to link to annex"
 			_ -> do
@@ -219,12 +219,12 @@ cleanOldKeys file newkey = do
 				<$> Database.Keys.getAssociatedFiles key
 			fs' <- filterM (`sameInodeCache` caches) fs
 			case fs' of
-				-- If linkAnnex fails, the associated 
+				-- If linkToAnnex fails, the associated 
 				-- file with the content is still present,
 				-- so no need for any recovery.
 				(f:_) -> do
 					ic <- withTSDelta (liftIO . genInodeCache f)
-					void $ linkAnnex key f ic
+					void $ linkToAnnex key f ic
 				_ -> lostcontent
 	  where
 		lostcontent = logStatus key InfoMissing

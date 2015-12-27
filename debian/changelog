@@ -14,6 +14,13 @@ git-annex (6.20151219) UNRELEASED; urgency=medium
     pointer file, and this change can be committed to the git repository.
   * assistant: In v6 mode, adds files in unlocked mode, so they can
     continue to be modified.
+  * Added annex.thin setting, which makes unlocked files in v6 repositories
+    be hard linked to their content, instead of a copy. This saves disk
+    space but means any modification of an unlocked file will lose the local
+    (and possibly only) copy of the old version.
+  * Enable annex.thin by default on upgrade from direct mode to v6, since
+    direct mode made the same tradeoff.
+  * fix: Adjusts unlocked files as configured by annex.thin.
   * persistent-sqlite is now a hard build dependency, since v6 repository
     mode needs it.
   * status: On crippled filesystems, was displaying M for all annexed files

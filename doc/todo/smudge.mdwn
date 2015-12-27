@@ -13,10 +13,11 @@ git-annex should use smudge/clean filters.
 	# because it doesn't know it has that name
 	# git commit clears up this mess
 * Interaction with shared clones. Should avoid hard linking from/to a
-  object in a shared clone if either repository has the object unlocked.
-  (And should avoid unlocking an object if it's hard linked to a shared clone,
-  but that's already accomplished because it avoids unlocking an object if
-  it's hard linked at all)
+  object in a shared clone if either repository has the object unlocked
+  with a hard link in place.
+  (And should avoid unlocking an object with a hard link if it's hard
+  linked to a shared clone, but that's already accomplished because it
+  avoids unlocking an object if it's hard linked at all)
 * Make automatic merge conflict resolution work for pointer files.
   - Should probably automatically handle merge conflicts between annex
     symlinks and pointer files too. Maybe by always resulting in a pointer
@@ -46,7 +47,7 @@ git-annex should use smudge/clean filters.
 
 * Eventually (but not yet), make v6 the default for new repositories.
   Note that the assistant forces repos into direct mode; that will need to
-  be changed then.
+  be changed then, and it should enable annex.thin.
 * Later still, remove support for direct mode, and enable automatic
   v5 to v6 upgrades.
 
@@ -158,7 +159,7 @@ cannot directly write to the file or git gets unhappy.
 .. Are very important, otherwise a repo can't scale past the size of the
 smallest client's disk!
 
-It would be nice if the smudge filter could hard link or symlink a work
+It would be nice if the smudge filter could hard link a work
 tree file to the annex object.
 
 But currently, the smudge filter can't modify the work tree file on its own
@@ -184,7 +185,9 @@ smudged file in the work tree when renaming it. It instead deletes the old
 file and asks the smudge filter to smudge the new filename.
 
 So, copies need to be maintained in .git/annex/objects, though it's ok
-to use hard links to the work tree files.
+to use hard links to the work tree files. (Although somewhat unsafe
+since modification of the file will lose the old version. annex.thin
+setting can enable this.)
 
 Even if hard links are used, smudge needs to output the content of an
 annexed file, which will result in duplication when merging in renames of
@@ -241,21 +244,16 @@ git-annex clean:
 
   Generate annex key from filename and content from stdin.
 
-  Hard link .git/annex/objects to the file, if it doesn't already exist.
-  (On platforms not supporting hardlinks, copy the file to
-  .git/annex/objects.)
+  Hard link (annex.thin) or copy .git/annex/objects to the file,
+  if it doesn't already exist.
 
   This is done to prevent losing the only copy of a file when eg
   doing a git checkout of a different branch, or merging a commit that
-  renames or deletes a file. But, no attempt is made to 
+  renames or deletes a file. But, with annex.thin no attempt is made to 
   protect the object from being modified. If a user wants to
   protect object contents from modification, they should use
-  `git annex add`, not `git add`, or they can `git annex lock` after adding,.
-
-  There could be a configuration knob to cause a copy to be made to
-  .git/annex/objects -- useful for those crippled filesystems. It might
-  also drop that copy once the object gets uploaded to another repo ...
-  But that gets complicated quickly.
+  `git annex add`, not `git add`, or they can `git annex lock` after adding,
+  or not enable annex.thin.
 
   Update file map.
 

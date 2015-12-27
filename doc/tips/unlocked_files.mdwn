@@ -49,9 +49,11 @@ Or, you can init a new repository in v6 mode.
 	# git init
 	# git annex init --version=6
 
+## using it
+
 Using a v6 repository is easy! Just use regular git commands to add
-and commit files. Under the hood, git will use git-annex to store the file
-contents.
+and commit files. git will use git-annex to store the file contents,
+and the files will be left unlocked.
 
 [[!template id=note text="""
 Want `git add` to add some file contents to the annex, but store the contents of
@@ -70,8 +72,8 @@ smaller files in git itself? Configure annex.largefiles to match the former.
 	# git annex find
 	my_cool_big_file
 
-You can make whatever changes you like to committed files, and commit your
-changes.
+You can make whatever modifications you want to unlocked files, and commit
+your changes.
 
 	# echo more stuff >> my_cool_big_file
 	# git mv my_cool_big_file my_cool_bigger_file
@@ -81,47 +83,62 @@ changes.
 	 delete mode 100644 my_cool_big_file
 	 create mode 100644 my_cool_bigger_file
 
-Under the hood, this uses git's [[todo/smudge]] filter interface,
-and git-annex converts between the content of the big file and a pointer file,
+Under the hood, this uses git's [[todo/smudge]] filter interface, and
+git-annex converts between the content of the big file and a pointer file,
 which is what gets committed to git. 
 
-A v6 repository can have both locked and unlocked files. You can switch 
+A v6 repository can contain both locked and unlocked files. You can switch 
 a file back and forth using the `git annex lock` and `git annex unlock`
 commands. This changes what's stored in git between a git-annex symlink
-(locked) and a git-annex pointer file (unlocked).
+(locked) and a git-annex pointer file (unlocked). To add a file to
+the repository in locked mode, use `git annex add`; to add a file in
+unlocked mode, use `git add`.
 
-## danger will robinson
+## using less disk space
+
+Unlocked files are handy, but they have one significant disadvantage
+compared with locked files: They use more disk space.
+While only one copy of a locked file has to be stored, normally,
+two copies of an unlocked file are stored on disk. One copy is in
+the git work tree, where you can use and modify it,
+and the other is stashed away in `.git/annex/objects` (see [[internals]]).
+
+The reason for that second copy is to preserve the old version of the file,
+if you modify the unlocked file in the work tree. Being able to access
+old versions of files is an important part of git after all.
+
+That's a good safe default. But there are ways to use git-annex that
+make the second copy not be worth keeping:
 
 [[!template id=note text="""
-Double the disk space is used on systems like Windows that don't support
-hard links.
+When a [[direct_mode]] repository is upgraded, annex.thin is automatically
+set, because direct mode made the same single-copy tradeoff.
 """]]
 
-In contrast with locked files, which are quite safe, using unlocked files is a
-little bit dangerous. git-annex tries to avoid storing a duplicate copy of an
-unlocked file in your local repository, in order to not use double the disk
-space. But this means that an unlocked file can be the only copy of that
-version of the file's content. Modify it, and oops, you lost the old version!
+* When you're using git-annex to sync the current version of files acrosss
+  devices, and don't care much about previous versions.
+* When you have set up a backup repository, and use git-annex to copy
+  your files to the backup.
 
-In fact, that happened in the examples above, and you probably didn't notice
-until now. 
+In situations like these, you may want to avoid the overhead of the second
+local copy of unlocked files. There's config setting for that.
 
-	# git checkout HEAD^
-	HEAD is now at 92f2725 added my_cool_big_file to the annex
-	# cat my_cool_big_file 
-	/annex/objects/SHA256E-s30--e7aaf46f227886c10c98f8f76cae681afd0521438c78f958fc27114674b391a4
+	git config annex.thin true
 
-Woah, what's all that?! Well, it's the pointer file that gets checked into
-git. You'd see the same thing if you had used `git annex drop` to drop
-the content of the file from your repository.
+After changing annex.thin, you'll want to fix up the work tree to
+match the new setting:
 
-In the example above, the content wasn't explicitly dropped, but it was
-modified while it was unlocked... and so the old version of the content
-was lost.
+	git annex fix
 
-If this is worrying -- and it should be -- you'll want to keep files locked
-most of the time, or set up a remote and have git-annex copy the content of
-files to the remote as a backup.
+Note that setting annex.thin only has any effect on systems that support
+hard links. Ie, not Windows, and not FAT filesystems.
 
-By the way, don't worry about deleting an unlocked file. That *won't* lose
-its content.
+## tradeoffs
+
+Setting annex.thin can save a lot of disk space, but it's a tradeoff
+between disk usage and safety. 
+
+Keeping files locked is safer and also avoids using unnecessary
+disk space, but trades off easy modification of files.
+
+Pick the tradeoff that's right for you.

@@ -904,6 +904,14 @@ Here are all the supported configuration settings.
   will automatically set annex.hardlink and mark the repository as
   untrusted.
 
+* `annex.thin`
+
+  Set this to `true` to make unlocked files be a hard link to their content
+  in the annex, rather than a second copy. (Only when supported by the file
+  system, and only in repository version 6.) This can save considerable
+  disk space, but modification made to a file will lose the local (and
+  possibly only) copy of the old version. So, enable with care.
+
 * `annex.delayadd`
 
   Makes the watch and assistant commands delay for the specified number of

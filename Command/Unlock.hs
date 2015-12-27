@@ -14,8 +14,6 @@ import Annex.CatFile
 import Annex.Version
 import Annex.Link
 import Annex.ReplaceFile
-import Annex.InodeSentinal
-import Utility.InodeCache
 import Utility.CopyFile
 
 cmd :: Command
@@ -52,13 +50,11 @@ start file key = ifM (isJust <$> isAnnexLink file)
 
 performNew :: FilePath -> Key -> CommandPerform
 performNew dest key = do
-	src <- calcRepo (gitAnnexLocation key)
-	srcic <- withTSDelta (liftIO . genInodeCache src)
 	replaceFile dest $ \tmp -> do
-		r <- linkAnnex' key src srcic tmp
+		r <- linkFromAnnex key tmp
 		case r of
 			LinkAnnexOk -> return ()
-			_ -> error "linkAnnex failed"
+			_ -> error "unlock failed"
 	next $ cleanupNew dest key
 
 cleanupNew ::  FilePath -> Key -> CommandCleanup

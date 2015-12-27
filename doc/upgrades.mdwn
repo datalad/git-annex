@@ -72,10 +72,6 @@ The behavior of some commands changes in an upgraded repository:
 * `git annex unlock` and `git annex lock` change how the pointer to 
   the annexed content is stored in git.
 
-If a repository is only used in indirect mode, you can use git-annex
-v5 and v6 in different clones of the same indirect mode repository without
-problems.
-
 On upgrade, all files in a direct mode repository will be converted to
 unlocked files. The upgrade will stage changes to all annexed files in
 the git repository, which you can then commit.

@@ -52,7 +52,7 @@ seek ps = lockPreCommitHook $ ifM isDirect
 			, do
 				-- fix symlinks to files being committed
 				flip withFilesToBeCommitted ps $ \f -> 
-					maybe stop (Command.Fix.start f)
+					maybe stop (Command.Fix.start Command.Fix.FixSymlinks f)
 						=<< isAnnexLink f
 				-- inject unlocked files into the annex
 				-- (not needed when repo version uses

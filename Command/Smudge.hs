@@ -100,7 +100,7 @@ ingestLocal file = do
 	-- Hard link (or copy) file content to annex object
 	-- to prevent it from being lost when git checks out
 	-- a branch not containing this file.
-	r <- linkAnnex k file ic
+	r <- linkToAnnex k file ic
 	case r of
 		LinkAnnexFailed -> error "Problem adding file to the annex"
 		LinkAnnexOk -> logStatus k InfoPresent

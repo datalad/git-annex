@@ -25,8 +25,8 @@ module Annex.Content (
 	checkDiskSpace,
 	moveAnnex,
 	populatePointerFile,
-	linkAnnex,
-	linkAnnex',
+	linkToAnnex,
+	linkFromAnnex,
 	LinkAnnexResult(..),
 	unlinkAnnex,
 	checkedCopyFile,
@@ -469,13 +469,12 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
 	storeobject dest = ifM (liftIO $ doesFileExist dest)
 		( alreadyhave
 		, modifyContent dest $ do
+			freezeContent src
 			liftIO $ moveFile src dest
 			fs <- Database.Keys.getAssociatedFiles key
-			if null fs
-				then freezeContent dest
-				else do
-					mapM_ (populatePointerFile key dest) fs
-					Database.Keys.storeInodeCaches key (dest:fs)
+			unless (null fs) $ do
+				mapM_ (populatePointerFile key dest) fs
+				Database.Keys.storeInodeCaches key (dest:fs)
 		)
 	storeindirect = storeobject =<< calcRepo (gitAnnexLocation key)
 
@@ -510,48 +509,52 @@ populatePointerFile k obj f = go =<< isPointerFile f
   where
 	go (Just k') | k == k' = do
 		liftIO $ nukeFile f
-		unlessM (linkAnnex'' k obj f) $
-			liftIO $ writeFile f (formatPointer k)
+		ifM (linkOrCopy k obj f)
+			( thawContent f
+			, liftIO $ writeFile f (formatPointer k)
+			)
 	go _ = return ()
 
-{- Hard links a file into .git/annex/objects/, falling back to a copy
- - if necessary. Does nothing if the object file already exists.
- -
- - Does not lock down the hard linked object, so that the user can modify
- - the source file. So, adding an object to the annex this way can
- - prevent losing the content if the source file is deleted, but does not
- - guard against modifications.
- -}
-linkAnnex :: Key -> FilePath -> Maybe InodeCache -> Annex LinkAnnexResult
-linkAnnex key src srcic = do
-	dest <- calcRepo (gitAnnexLocation key)
-	modifyContent dest $ linkAnnex' key src srcic dest
+data LinkAnnexResult = LinkAnnexOk | LinkAnnexFailed | LinkAnnexNoop
 
-{- Hard links (or copies) src to dest, one of which should be the
- - annex object. Updates inode cache for src and for dest when it's
- - changed. -}
-linkAnnex' :: Key -> FilePath -> Maybe InodeCache -> FilePath -> Annex LinkAnnexResult
-linkAnnex' _ _ Nothing _ = return LinkAnnexFailed
-linkAnnex' key src (Just srcic) dest = 
+{- Populates the annex object file by hard linking or copying a source
+ - file to it. -}
+linkToAnnex :: Key -> FilePath -> Maybe InodeCache -> Annex LinkAnnexResult
+linkToAnnex key src srcic = do
+	dest <- calcRepo (gitAnnexLocation key)
+	modifyContent dest $ linkAnnex To key src srcic dest
+
+{- Makes a destination file be a link or copy from the annex object. -}
+linkFromAnnex :: Key -> FilePath -> Annex LinkAnnexResult
+linkFromAnnex key dest = do
+	src <- calcRepo (gitAnnexLocation key)
+	srcic <- withTSDelta (liftIO . genInodeCache src)
+	linkAnnex From key src srcic dest
+
+data FromTo = From | To
+
+{- Hard links or copies from or to the annex object location. 
+ - Updates inode cache.
+ -
+ - Thaws the file that is not the annex object.
+ - When a hard link was made, this necessarily thaws
+ - the annex object too. So, adding an object to the annex this
+ - way can prevent losing the content if the source file
+ - is deleted, but does not guard against modifications.
+ -}
+linkAnnex :: FromTo -> Key -> FilePath -> Maybe InodeCache -> FilePath -> Annex LinkAnnexResult
+linkAnnex _ _ _ Nothing _ = return LinkAnnexFailed
+linkAnnex fromto key src (Just srcic) dest = 
 	ifM (liftIO $ doesFileExist dest)
 		( do
 			Database.Keys.addInodeCaches key [srcic]
 			return LinkAnnexNoop
-		, ifM (linkAnnex'' key src dest)
+		, ifM (linkOrCopy key src dest)
 			( do
-				thawContent dest
-				-- src could have changed while being copied
-				-- to dest
-				mcache <- withTSDelta (liftIO . genInodeCache src)
-				case mcache of
-					Just srcic' | compareStrong srcic srcic' -> do
-						destic <- withTSDelta (liftIO . genInodeCache dest)
-						Database.Keys.addInodeCaches key $
-							catMaybes [destic, Just srcic]
-						return LinkAnnexOk
-					_ -> do
-						liftIO $ nukeFile dest
-						failed
+				thawContent $ case fromto of
+					From -> dest
+					To -> src
+				checksrcunchanged
 			, failed
 			)
 		)
@@ -559,25 +562,41 @@ linkAnnex' key src (Just srcic) dest =
 	failed = do
 		Database.Keys.addInodeCaches key [srcic]
 		return LinkAnnexFailed
+	checksrcunchanged = do
+		mcache <- withTSDelta (liftIO . genInodeCache src)
+		case mcache of
+			Just srcic' | compareStrong srcic srcic' -> do
+				destic <- withTSDelta (liftIO . genInodeCache dest)
+				Database.Keys.addInodeCaches key $
+					catMaybes [destic, Just srcic]
+				return LinkAnnexOk
+			_ -> do
+				liftIO $ nukeFile dest
+				failed
 
-data LinkAnnexResult = LinkAnnexOk | LinkAnnexFailed | LinkAnnexNoop
-
-{- Hard links or copies src to dest. Only uses a hard link if src
- - is not already hardlinked to elsewhere. Checks disk reserve before
- - copying, and will fail if not enough space, or if the dest file
- - already exists. -}
-linkAnnex'' :: Key -> FilePath -> FilePath -> Annex Bool
-linkAnnex'' key src dest = catchBoolIO $ do
-	s <- liftIO $ getFileStatus src
-	let copy = checkedCopyFile' key src dest s
+{- Hard links or copies src to dest. Only uses a hard link when annex.thin
+ - is enabled and when src is not already hardlinked to elsewhere.
+ - Checks disk reserve before copying, and will fail if not enough space,
+ - or if the dest file already exists. -}
+linkOrCopy :: Key -> FilePath -> FilePath -> Annex Bool
+linkOrCopy key src dest = catchBoolIO $
+	ifM (annexThin <$> Annex.getGitConfig)
+		( hardlink
+		, copy =<< getstat
+		)
+  where
+	hardlink = do
 #ifndef mingw32_HOST_OS
-	if linkCount s > 1
-		then copy
-		else liftIO (createLink src dest >> return True)
-			`catchIO` const copy
+		s <- getstat
+		if linkCount s > 1
+			then copy s
+			else liftIO (createLink src dest >> return True)
+				`catchIO` const (copy s)
 #else
-	copy
+		copy s
 #endif
+	copy = checkedCopyFile' key src dest
+	getstat = liftIO $ getFileStatus src
 
 {- Removes the annex object file for a key. Lowlevel. -}
 unlinkAnnex :: Key -> Annex ()
