@@ -16,6 +16,7 @@ import qualified Annex
 import Annex.Version
 import Annex.ReplaceFile
 import Annex.Content
+import Annex.Perms
 import qualified Annex.Queue
 import qualified Database.Keys
 #ifdef WITH_CLIBS
@@ -70,9 +71,11 @@ start fixwhat file key = do
 
 breakHardLink :: FilePath -> Key -> FilePath -> CommandPerform
 breakHardLink file key obj = do
-	replaceFile file $ \tmp -> 
+	replaceFile file $ \tmp -> do
 		unlessM (checkedCopyFile key obj tmp) $
 			error "unable to break hard link"
+		thawContent tmp
+		modifyContent obj $ freezeContent obj
 	Database.Keys.storeInodeCaches key [file]
 	next $ return True
 
