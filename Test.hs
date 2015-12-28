@@ -128,8 +128,8 @@ tests = testGroup "Tests" $ properties :
 		-- Windows will only use direct mode, so don't test twice.
 #ifndef mingw32_HOST_OS
 		, ("v5 direct", TestMode { forceDirect = True,  annexVersion = "5" })
-		]
 #endif
+		]
 
 properties :: TestTree
 properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
