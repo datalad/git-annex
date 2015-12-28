@@ -586,8 +586,8 @@ linkOrCopy key src dest = catchBoolIO $
 		)
   where
 	hardlink = do
-#ifndef mingw32_HOST_OS
 		s <- getstat
+#ifndef mingw32_HOST_OS
 		if linkCount s > 1
 			then copy s
 			else liftIO (createLink src dest >> return True)
