@@ -28,4 +28,4 @@ packages:
 - '.'
 extra-deps:
 - Win32-extras-0.2.0.1
-resolver: lts-3.7
+resolver: nightly-2015-12-28
