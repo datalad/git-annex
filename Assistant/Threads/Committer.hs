@@ -235,7 +235,7 @@ commitStaged msg = do
  - access the file after closing it. -}
 delayaddDefault :: Annex (Maybe Seconds)
 #ifdef darwin_HOST_OS
-delayaddDefault = ifM (isDirect || versionSupportsUnlockedPointers)
+delayaddDefault = ifM (isDirect <||> versionSupportsUnlockedPointers)
 	( return Nothing
 	, return $ Just $ Seconds 1
 	)
