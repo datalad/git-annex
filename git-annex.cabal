@@ -37,9 +37,6 @@ Flag S3
 Flag WebDAV
   Description: Enable WebDAV support
 
-Flag Inotify
-  Description: Enable inotify support
-
 Flag Assistant
   Description: Enable git-annex assistant and watch command
 
@@ -177,7 +174,7 @@ Executable git-annex
     CPP-Options: -DWITH_ASSISTANT
 
   if flag(Assistant)
-    if os(linux) && flag(Inotify)
+    if os(linux)
       Build-Depends: hinotify
       CPP-Options: -DWITH_INOTIFY
     else

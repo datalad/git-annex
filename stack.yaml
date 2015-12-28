@@ -3,7 +3,6 @@ flags:
     concurrentoutput: true
     tahoe: true
     tdfa: true
-    inotify: true
     feed: true
     webapp-secure: true
     production: true
