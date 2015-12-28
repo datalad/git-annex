@@ -1,6 +1,6 @@
 #!/bin/sh
 # It would be more usual to use:
-#   export CABAL=./Setup
+#   export BUILDER=./Setup
 # But Setup currently has a very bad dependency resolver, and very bad
 # debugging output, and tends to eat all memory and die on small buildds.
 # See https://github.com/haskell/cabal/issues/2777
