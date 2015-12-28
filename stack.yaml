@@ -5,7 +5,6 @@ flags:
     tdfa: true
     inotify: true
     feed: true
-    database: true
     webapp-secure: true
     production: true
     ekg: false
