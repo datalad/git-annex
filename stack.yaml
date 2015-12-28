@@ -11,7 +11,7 @@ flags:
     assistant: true
     pairing: true
     cryptonite: true
-    xmpp: false
+    xmpp: true
     network-uri: true
     s3: true
     dbus: false
