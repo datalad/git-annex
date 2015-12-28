@@ -24,6 +24,8 @@ import Database.Handle
 import Database.Persist.Sqlite
 import Control.Concurrent
 import Data.Time.Clock
+import Control.Applicative
+import Prelude
 
 {- A DbQueue wraps a DbHandle, adding a queue of writes to perform.
  -
