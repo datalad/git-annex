@@ -7,7 +7,6 @@
 
 module Main where
 
-import Control.Applicative
 import System.Environment (getArgs)
 import Data.Maybe
 import System.FilePath
@@ -15,6 +14,8 @@ import System.Directory
 import Control.Monad
 import Data.List
 import Data.String.Utils
+import Control.Applicative
+import Prelude
 
 import Utility.PartialPrelude
 import Utility.Directory
