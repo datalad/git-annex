@@ -25,5 +25,5 @@ packages:
 - '.'
 extra-deps:
 - Win32-extras-0.2.0.1
-- concurrent-output
+- concurrent-output-1.7.2
 resolver: nightly-2015-12-28
