@@ -27,7 +27,7 @@ Build/SysConfig.hs: configure.hs Build/TestConfig.hs Build/Configure.hs
 git-annex: Build/SysConfig.hs
 	$(BUILDER) build -j1
 	if [ "$(BUILDER)" = stack ]; then \
-		ln -sf $(shell find .stack-work/ -name git-annex -type f | grep build/git-annex/git-annex) git-annex; \
+		ln -sf $(shell find .stack-work/ -name git-annex -type f | grep build/git-annex/git-annex | tail -n 1) git-annex; \
 	else \
 		ln -sf dist/build/git-annex/git-annex git-annex; \
 	fi
