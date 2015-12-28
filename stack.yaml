@@ -1,6 +1,6 @@
 flags:
   git-annex:
-    concurrentoutput: true
+    concurrentoutput: false
     tahoe: true
     tdfa: true
     inotify: true
