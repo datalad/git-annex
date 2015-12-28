@@ -28,6 +28,9 @@ git-annex (6.20151219) UNRELEASED; urgency=medium
     displays in this situation. Fixed by treating files git thinks are
     modified the same as typechanged files.
   * addurl: Added --batch and --with-files options.
+  * Debian: Adjust build dependencies for webapp, DAV. Now available on
+    mips, mipsel, but temporarily removed armel since build is failing
+    there.
 
  -- Joey Hess <id@joeyh.name>  Sat, 19 Dec 2015 13:31:17 -0400
 
