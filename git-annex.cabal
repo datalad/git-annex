@@ -40,9 +40,6 @@ Flag WebDAV
 Flag Inotify
   Description: Enable inotify support
 
-Flag Dbus
-  Description: Enable dbus support
-
 Flag Assistant
   Description: Enable git-annex assistant and watch command
 
@@ -54,9 +51,6 @@ Flag Webapp-secure
 
 Flag Pairing
   Description: Enable pairing
-
-Flag XMPP
-  Description: Enable notifications using XMPP
 
 Flag DNS
   Description: Enable the haskell DNS library for DNS lookup
@@ -86,9 +80,6 @@ Flag Quvi
 
 Flag Tahoe
   Description: Enable the tahoe special remote
-
-Flag DesktopNotify
-  Description: Enable desktop environment notifications
 
 Flag TorrentParser
   Description: Use haskell torrent library to parse torrent files
@@ -207,14 +198,8 @@ Executable git-annex
               C-Sources: Utility/libkqueue.c
 
   if (os(linux))
-    if flag(Dbus)
-      Build-Depends: dbus (>= 0.10.7)
-      CPP-Options: -DWITH_DBUS
-  
-    if flag(DesktopNotify)
-      if flag(Dbus)
-        Build-Depends: dbus (>= 0.10.3), fdo-notify (>= 0.3)
-        CPP-Options: -DWITH_DESKTOP_NOTIFY -DWITH_DBUS_NOTIFICATIONS
+    Build-Depends: dbus (>= 0.10.7), fdo-notify (>= 0.3)
+    CPP-Options: -DWITH_DBUS -DWITH_DESKTOP_NOTIFY -DWITH_DBUS_NOTIFICATIONS
 
   if flag(Android)
     Build-Depends: data-endian
@@ -246,7 +231,7 @@ Executable git-annex
     Build-Depends: network-multicast, network-info
     CPP-Options: -DWITH_PAIRING
 
-  if flag(XMPP) && (! os(windows))
+  if (! os(windows))
     Build-Depends: network-protocol-xmpp, gnutls (>= 0.1.4), xml-types
     CPP-Options: -DWITH_XMPP
 

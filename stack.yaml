@@ -1,31 +1,29 @@
 flags:
   git-annex:
-    concurrentoutput: false
+    concurrentoutput: true
     tahoe: true
     tdfa: true
     inotify: true
     feed: true
     webapp-secure: true
     production: true
-    ekg: false
     assistant: true
     pairing: true
     cryptonite: true
-    xmpp: true
     network-uri: true
     s3: true
-    dbus: false
     testsuite: true
     webdav: true
     torrentparser: true
-    android: false
-    androidsplice: false
     quvi: true
     dns: true
-    desktopnotify: true
     webapp: true
+    android: false
+    androidsplice: false
+    ekg: false
 packages:
 - '.'
 extra-deps:
 - Win32-extras-0.2.0.1
+- concurrent-output
 resolver: nightly-2015-12-28
