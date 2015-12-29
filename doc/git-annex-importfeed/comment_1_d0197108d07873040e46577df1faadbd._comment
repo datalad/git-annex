@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joseph.rawson.works@85a210ab8c0e37a0b2d6bb235738b20e23e8878f"
+ nickname="joseph.rawson.works"
+ subject="Replacing dashes with underscores"
+ date="2015-12-28T22:39:49Z"
+ content="""
+An example rss item entry:
+
+    <item><title>00135929509939-04</title><guid isPermaLink=\"false\">http://40.media.tumblr.com/01a46c39dc0e0f3447fbed4f0807047f/tumblr_nyoj75VlaG1sgxjc6o3_1280.jpg</guid><enclosure url=\"http://40.media.tumblr.com/01a46c39dc0e0f3447fbed4f0807047f/tumblr_nyoj75VlaG1sgxjc6o3_1280.jpg\" length=\"0\" type=\"\"/></item>
+
+Using --template '${itemtitle}${extension}'
+
+The resulting filename is **00135929509939_04.jpg** (The dash was replaced with an underscore).
+
+I decided to just change all the filenames in each blog repository to use underscores, however, I thought you might want to know about this.
+"""]]
