@@ -2,8 +2,12 @@ git-annex should use smudge/clean filters.
 
 ### implementation todo list
 
-* Still a few test suite failues for v6 with locked files.
-* Test suite should make pass for v6 with unlocked files.
+* Test suite:
+   Next "needs to be done" is to work on the test suite some more for v6
+   repositories. Need to add a test for how it resolves a conflict between
+   an unlocked and a locked file that point to the same key. Need to add
+   another pass through all the tests with files being unlocked. And need to
+   fix the two remaining test failures.
 * Reconcile staged changes into the associated files database, whenever
   the database is queried. This is needed to handle eg:
   	git add largefile
