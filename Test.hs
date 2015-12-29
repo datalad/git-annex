@@ -123,7 +123,7 @@ tests = testGroup "Tests" $ properties :
 	map (\(d, te) -> withTestMode te (unitTests d)) testmodes
   where
 	testmodes =
-		-- [ ("v6", TestMode { forceDirect = False, annexVersion = "6" })
+		--[ ("v6", TestMode { forceDirect = False, annexVersion = "6" })
 		[ ("v5", TestMode { forceDirect = False, annexVersion = "5" })
 		-- Windows will only use direct mode, so don't test twice.
 #ifndef mingw32_HOST_OS
@@ -1082,9 +1082,8 @@ test_nonannexed_file_conflict_resolution :: Assertion
 test_nonannexed_file_conflict_resolution = do
 	check True False
 	check False False
-	whenM (annexeval Annex.Version.versionSupportsDirectMode) $ do
-		check True True
-		check False True
+	check True True
+	check False True
   where
 	check inr1 switchdirect = withtmpclonerepo $ \r1 ->
 		withtmpclonerepo $ \r2 ->
@@ -1103,7 +1102,8 @@ test_nonannexed_file_conflict_resolution = do
 				let l = if inr1 then [r1, r2] else [r2, r1]
 				forM_ l $ \r -> indir r $ do
 					when switchdirect $
-						git_annex "direct" [] @? "failed switching to direct mode"
+						whenM (annexeval Annex.Version.versionSupportsDirectMode) $
+							git_annex "direct" [] @? "failed switching to direct mode"
 					git_annex "sync" [] @? "sync failed"
 				checkmerge ("r1" ++ show switchdirect) r1
 				checkmerge ("r2" ++ show switchdirect) r2
@@ -1133,9 +1133,8 @@ test_nonannexed_symlink_conflict_resolution :: Assertion
 test_nonannexed_symlink_conflict_resolution = do
 	check True False
 	check False False
-	whenM (annexeval Annex.Version.versionSupportsDirectMode) $ do
-		check True True
-		check False True
+	check True True
+	check False True
   where
 	check inr1 switchdirect = withtmpclonerepo $ \r1 ->
 		withtmpclonerepo $ \r2 ->
@@ -1155,7 +1154,8 @@ test_nonannexed_symlink_conflict_resolution = do
 				let l = if inr1 then [r1, r2] else [r2, r1]
 				forM_ l $ \r -> indir r $ do
 					when switchdirect $
-						git_annex "direct" [] @? "failed switching to direct mode"
+						whenM (annexeval Annex.Version.versionSupportsDirectMode) $ do
+							git_annex "direct" [] @? "failed switching to direct mode"
 					git_annex "sync" [] @? "sync failed"
 				checkmerge ("r1" ++ show switchdirect) r1
 				checkmerge ("r2" ++ show switchdirect) r2
