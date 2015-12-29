@@ -129,7 +129,10 @@ resolveMerge' unstagedmap (Just us) them u = do
 			| keyUs /= keyThem -> resolveby [keyUs, keyThem] $ do
 				makeannexlink keyUs LsFiles.valUs
 				makeannexlink keyThem LsFiles.valThem
-				liftIO $ nukeFile file
+				-- cleanConflictCruft can't handle unlocked
+				-- files, so delete here.
+				unless (islocked LsFiles.valUs) $
+					liftIO $ nukeFile file
 			| otherwise -> do
 				-- Only resolve using symlink when both
 				-- were locked, otherwise use unlocked
