@@ -132,13 +132,15 @@ resolveMerge' unstagedmap (Just us) them u = do
 				makeannexlink keyUs LsFiles.valUs
 				makeannexlink keyThem LsFiles.valThem
 				liftIO $ nukeFile file
-			| otherwise -> resolveby [keyUs, keyThem] $ do
+			| otherwise -> do
 				-- Only resolve using symlink when both
-				-- were locked, otherwise use unlocked pointer.
+				-- were locked, otherwise use unlocked
+				-- pointer.
+				-- In either case, keep original filename.
 				if islocked LsFiles.valUs && islocked LsFiles.valThem
-					then makesymlink keyUs
-					else makepointer keyUs
-				liftIO $ nukeFile file
+					then makesymlink keyUs file
+					else makepointer keyUs file
+				return ([keyUs, keyThem], Just file)
 		-- Our side is annexed file, other side is not.
 		(Just keyUs, Nothing) -> resolveby [keyUs] $ do
 			graftin them file LsFiles.valThem LsFiles.valThem
@@ -160,11 +162,12 @@ resolveMerge' unstagedmap (Just us) them u = do
 	islocked select = select (LsFiles.unmergedBlobType u) == Just SymlinkBlob
 
 	makeannexlink key select
-		| islocked select = makesymlink key
-		| otherwise = makepointer key
+		| islocked select = makesymlink key dest
+		| otherwise = makepointer key dest
+	  where
+		dest = variantFile file key
 
-	makesymlink key = do
-		let dest = variantFile file key
+	makesymlink key dest = do
 		l <- calcRepo $ gitAnnexLink dest key
 		replacewithlink dest l
 		stageSymlink dest =<< hashSymlink l
@@ -176,8 +179,7 @@ resolveMerge' unstagedmap (Just us) them u = do
 		, replaceFile dest $ makeGitLink link
 		)
 
-	makepointer key = do
-		let dest = variantFile file key
+	makepointer key dest = do
 		unlessM (reuseOldFile unstagedmap key file dest) $ do
 			r <- linkFromAnnex key dest
 			case r of
