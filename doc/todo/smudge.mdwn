@@ -18,10 +18,6 @@ git-annex should use smudge/clean filters.
   (And should avoid unlocking an object with a hard link if it's hard
   linked to a shared clone, but that's already accomplished because it
   avoids unlocking an object if it's hard linked at all)
-* Make automatic merge conflict resolution work for pointer files.
-  - Should probably automatically handle merge conflicts between annex
-    symlinks and pointer files too. Maybe by always resulting in a pointer
-    file, since the symlinks don't work everwhere.
 * Crippled filesystem should cause all files to be transparently unlocked.
   Note that this presents problems when dealing with merge conflicts and
   when pushing changes committed in such a repo. Ideally, should avoid

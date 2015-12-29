@@ -19,6 +19,9 @@ import Utility.InodeCache
 import Types.KeySource
 import Backend
 import Logs.Location
+import Annex.Index (addGitEnv)
+import Utility.Env
+import qualified Git
 import qualified Database.Keys
 
 import qualified Data.ByteString.Lazy as B
@@ -56,7 +59,7 @@ smudge file = do
 			-- don't provide such modified content as it
 			-- will be confusing. inAnnex will detect such
 			-- modifications.
-			ifM (inAnnex k)
+			ifM ((not <$> smudgeDisabled) <&&> inAnnex k)
 				( do
 					content <- calcRepo (gitAnnexLocation k)
 					liftIO $ B.putStr . fromMaybe b
@@ -65,6 +68,16 @@ smudge file = do
 				)
 			Database.Keys.addAssociatedFile k file
 	stop
+
+-- Environment variable to disable smudging providing the content of keys.
+smudgeDisabled :: Annex Bool
+smudgeDisabled = liftIO $ isJust <$> getEnv smudgeDisableEnv
+
+smudgeDisableEnv :: String
+smudgeDisableEnv = "ANNEX_SMUDGE_DISABLE"
+
+withSmudgeDisabled :: (Git.Repo -> IO a) -> Annex a
+withSmudgeDisabled a = inRepo $ \r -> addGitEnv r smudgeDisableEnv "1" >>= a
 
 -- Clean filter is fed file content on stdin, decides if a file
 -- should be stored in the annex, and outputs a pointer to its
