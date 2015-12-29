@@ -544,12 +544,16 @@ data FromTo = From | To
  -}
 linkAnnex :: FromTo -> Key -> FilePath -> Maybe InodeCache -> FilePath -> Annex LinkAnnexResult
 linkAnnex _ _ _ Nothing _ = return LinkAnnexFailed
-linkAnnex fromto key src (Just srcic) dest = 
-	ifM (liftIO $ doesFileExist dest)
-		( do
-			Database.Keys.addInodeCaches key [srcic]
+linkAnnex fromto key src (Just srcic) dest = do
+	mdestic <- withTSDelta (liftIO . genInodeCache dest)
+	case mdestic of
+		Just destic -> do
+			cs <- Database.Keys.getInodeCaches key
+			if null cs
+				then Database.Keys.addInodeCaches key [srcic, destic]
+				else Database.Keys.addInodeCaches key [srcic]
 			return LinkAnnexNoop
-		, ifM (linkOrCopy key src dest)
+		Nothing -> ifM (linkOrCopy key src dest)
 			( do
 				thawContent $ case fromto of
 					From -> dest
@@ -557,7 +561,6 @@ linkAnnex fromto key src (Just srcic) dest =
 				checksrcunchanged
 			, failed
 			)
-		)
   where
 	failed = do
 		Database.Keys.addInodeCaches key [srcic]
