@@ -167,10 +167,10 @@ resolveMerge' unstagedmap (Just us) them u = do
 
 	makesymlink key dest = do
 		l <- calcRepo $ gitAnnexLink dest key
-		replacewithlink dest l
+		replacewithsymlink dest l
 		stageSymlink dest =<< hashSymlink l
 
-	replacewithlink dest link = ifM isDirect
+	replacewithsymlink dest link = ifM isDirect
 		( do
 			d <- fromRepo gitAnnexMergeDir
 			replaceFile (d </> dest) $ makeGitLink link
@@ -211,7 +211,7 @@ resolveMerge' unstagedmap (Just us) them u = do
 				Nothing -> noop
 				Just sha -> do
 					link <- catSymLinkTarget sha
-					replacewithlink item link
+					replacewithsymlink item link
 	
 	resolveby ks a = do
 		{- Remove conflicted file from index so merge can be resolved. -}
