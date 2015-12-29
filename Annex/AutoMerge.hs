@@ -30,7 +30,6 @@ import Annex.VariantFile
 import qualified Database.Keys
 import Annex.InodeSentinal
 import Utility.InodeCache
-import Command.Smudge (withSmudgeDisabled)
 
 import qualified Data.Set as S
 import qualified Data.Map as M
@@ -50,8 +49,7 @@ autoMergeFrom branch currbranch commitmode = do
   where
 	go old = ifM isDirect
 		( mergeDirect currbranch old branch (resolveMerge old branch) commitmode
-		-- Avoid smudge filter populating files while merging.
-		, withSmudgeDisabled (Git.Merge.mergeNonInteractive branch commitmode)
+		, inRepo (Git.Merge.mergeNonInteractive branch commitmode)
 			<||> (resolveMerge old branch <&&> commitResolvedMerge commitmode)
 		)
 
