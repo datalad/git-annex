@@ -111,10 +111,10 @@ resolveMerge us them = do
 		void $ liftIO cleanup2
 
 	when merged $ do
+		Annex.Queue.flush
 		unlessM isDirect $ do
 			unstagedmap <- inodeMap $ inRepo $ LsFiles.notInRepo False [top]
 			cleanConflictCruft mergedks' mergedfs' unstagedmap
-		Annex.Queue.flush
 		showLongNote "Merge conflict was automatically resolved; you may want to examine the result."
 	return merged
 
