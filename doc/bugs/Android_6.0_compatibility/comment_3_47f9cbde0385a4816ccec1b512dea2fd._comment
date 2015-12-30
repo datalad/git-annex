@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="divergentdave@5c17d06f6d67c6f157b76a4cc95ca764b7d2f899"
+ nickname="divergentdave"
+ subject="SELinux"
+ date="2015-12-30T03:40:02Z"
+ content="""
+According to [this issue on Google Code](https://code.google.com/p/android-developer-preview/issues/detail?id=3150), hard linking files is not allowed on Android 6.0. It looks like the only recourse will be to reconfigure or patch OpenSSH, such that it doesn't need to create a hardlink.
+"""]]
