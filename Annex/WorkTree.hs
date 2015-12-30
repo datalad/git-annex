@@ -13,7 +13,7 @@ import Annex.CatFile
 import Annex.Version
 import Config
 
-{- Looks up the key corresponding to an annexed file,
+{- Looks up the key corresponding to an annexed file in the work tree,
  - by examining what the file links to.
  -
  - An unlocked file will not have a link on disk, so fall back to
@@ -25,7 +25,10 @@ lookupFile file = do
 	case mkey of
 		Just key -> makeret key
 		Nothing -> ifM (versionSupportsUnlockedPointers <||> isDirect)
-			( maybe (return Nothing) makeret =<< catKeyFile file
+			( ifM (liftIO $ doesFileExist file)
+				( maybe (return Nothing) makeret =<< catKeyFile file
+				, return Nothing
+				)
 			, return Nothing 
 			)
   where

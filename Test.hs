@@ -123,7 +123,7 @@ tests = testGroup "Tests" $ properties :
 	map (\(d, te) -> withTestMode te (unitTests d)) testmodes
   where
 	testmodes =
-		--[ ("v6", TestMode { forceDirect = False, annexVersion = "6" })
+		-- [ ("v6", TestMode { forceDirect = False, annexVersion = "6" })
 		[ ("v5", TestMode { forceDirect = False, annexVersion = "5" })
 		-- Windows will only use direct mode, so don't test twice.
 #ifndef mingw32_HOST_OS
@@ -798,8 +798,8 @@ test_unused = intmpclonerepoInDirect $ do
 	checkunused [] "after dropunused"
 	not <$> git_annex "dropunused" ["--force", "10", "501"] @? "dropunused failed to fail on bogus numbers"
 
-	-- unused used to miss symlinks that were not staged and pointed 
-	-- at annexed content, and think that content was unused
+	-- unused used to miss renamed symlinks that were not staged
+	-- and pointed at annexed content, and think that content was unused
 	writeFile "unusedfile" "unusedcontent"
 	git_annex "add" ["unusedfile"] @? "add of unusedfile failed"
 	unusedfilekey <- annexeval $ findkey "unusedfile"
@@ -807,7 +807,7 @@ test_unused = intmpclonerepoInDirect $ do
 	boolSystem "git" [Param "rm", Param "-qf", File "unusedfile"] @? "git rm failed"
 	checkunused [] "with unstaged link"
 	removeFile "unusedunstagedfile"
-	checkunused [unusedfilekey] "with unstaged link deleted"
+	checkunused [unusedfilekey] "with renamed link deleted"
 
 	-- unused used to miss symlinks that were deleted or modified
 	-- manually, but commited as such.
