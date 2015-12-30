@@ -3,8 +3,6 @@ git-annex should use smudge/clean filters.
 ### implementation todo list
 
 * Test suite:
-   - add a test for how it resolves a conflict between
-     an unlocked and a locked file that point to the same key.
    - add another pass through all the tests with files being unlocked in v6 mode
 * Reconcile staged changes into the associated files database, whenever
   the database is queried. This is needed to handle eg:

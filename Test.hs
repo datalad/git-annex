@@ -225,6 +225,7 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 	, testCase "conflict resolution (removed file)" test_remove_conflict_resolution
 	, testCase "conflict resolution (nonannexed file)" test_nonannexed_file_conflict_resolution
 	, testCase "conflict resolution (nonannexed symlink)" test_nonannexed_symlink_conflict_resolution
+	, testCase "conflict resolution (mixed locked and unlocked file)" test_mixed_lock_conflict_resolution
 	, testCase "map" test_map
 	, testCase "uninit" test_uninit
 	, testCase "uninit (in git-annex branch)" test_uninit_inbranch
@@ -1258,6 +1259,44 @@ test_conflict_resolution_symlink_bit =
 		l <- annexeval $ Annex.inRepo $ Git.LsTree.lsTreeFiles Git.Ref.headRef [f]
 		all (\i -> Git.Types.toBlobType (Git.LsTree.mode i) == Just Git.Types.SymlinkBlob) l
 			@? (what ++ " " ++ f ++ " lost symlink bit after merge: " ++ show l)
+
+{- A v6 unlocked file that conflicts with a locked file should be resolved
+ - in favor of the unlocked file, with no variant files, as long as they
+ - both point to the same key. -}
+test_mixed_lock_conflict_resolution :: Assertion
+test_mixed_lock_conflict_resolution = 
+	withtmpclonerepo $ \r1 ->
+		withtmpclonerepo $ \r2 -> do
+			indir r1 $ whenM shouldtest $ do
+				disconnectOrigin
+				writeFile conflictor "conflictor"
+				git_annex "add" [conflictor] @? "add conflicter failed"
+				git_annex "sync" [] @? "sync failed in r1"
+			indir r2 $ whenM shouldtest $ do
+				disconnectOrigin
+				writeFile conflictor "conflictor"
+				git_annex "add" [conflictor] @? "add conflicter failed"
+				git_annex "unlock" [conflictor] @? "unlock conflicter failed"
+				git_annex "sync" [] @? "sync failed in r2"
+			pair r1 r2
+			forM_ [r1,r2,r1] $ \r -> indir r $
+				git_annex "sync" [] @? "sync failed"
+			checkmerge "r1" r1
+			checkmerge "r2" r2
+  where
+	shouldtest = annexeval Annex.Version.versionSupportsUnlockedPointers
+	conflictor = "conflictor"
+	variantprefix = conflictor ++ ".variant"
+	checkmerge what d = indir d $ whenM shouldtest $ do
+		l <- getDirectoryContents "."
+		let v = filter (variantprefix `isPrefixOf`) l
+		length v == 0
+			@? (what ++ " not exactly 0 variant files in: " ++ show l)
+		conflictor `elem` l @? ("conflictor not present after conflict resolution")
+		git_annex "get" [conflictor] @? "get failed"
+		git_annex_expectoutput "find" [conflictor] [conflictor]
+		-- regular file because it's unlocked
+		checkregularfile conflictor
 
 {- Set up repos as remotes of each other. -}
 pair :: FilePath -> FilePath -> Assertion
