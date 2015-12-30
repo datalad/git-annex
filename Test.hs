@@ -770,6 +770,7 @@ test_migrate' usegitattributes = intmpclonerepoInDirect $ do
 test_unused :: Assertion
 -- This test is broken in direct mode
 test_unused = intmpclonerepoInDirect $ do
+	checkunused [] "in new clone"
 	-- keys have to be looked up before files are removed
 	annexedfilekey <- annexeval $ findkey annexedfile
 	sha1annexedfilekey <- annexeval $ findkey sha1annexedfile
@@ -1629,6 +1630,12 @@ configrepo dir = indir dir $ do
 	boolSystem "git" [Param "config", Param "user.email", Param "test@example.com"] @? "git config failed"
 	-- avoid signed commits by test suite
 	boolSystem "git" [Param "config", Param "commit.gpgsign", Param "false"] @? "git config failed"
+	-- tell git-annex to not annex the ingitfile
+	boolSystem "git"
+		[ Param "config"
+		, Param "annex.largefiles"
+		, Param ("exclude=" ++ ingitfile)
+		] @? "git config annex.largefiles failed"
 
 ensuretmpdir :: IO ()
 ensuretmpdir = do
@@ -1797,12 +1804,6 @@ setupTestMode = do
 	testmode <- getTestMode
 	when (forceDirect testmode) $
 		git_annex "direct" ["-q"] @? "git annex direct failed"
-	whenM (annexeval Annex.Version.versionSupportsUnlockedPointers) $
-		boolSystem "git"
-			[ Param "config"
-			, Param "annex.largefiles"
-			, Param ("exclude=" ++ ingitfile)
-			] @? "git config annex.largefiles failed"
 
 changeToTmpDir :: FilePath -> IO ()
 changeToTmpDir t = do
