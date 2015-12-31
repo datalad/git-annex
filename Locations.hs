@@ -245,7 +245,7 @@ gitAnnexKeysDb r = gitAnnexDir r </> "keys"
 
 {- Lock file for the keys database. -}
 gitAnnexKeysDbLock :: Git.Repo -> FilePath
-gitAnnexKeysDbLock r = gitAnnexKeysDb r ++ "lck"
+gitAnnexKeysDbLock r = gitAnnexKeysDb r ++ ".lck"
 
 {- .git/annex/fsck/uuid/ is used to store information about incremental
  - fscks. -}
