@@ -1,0 +1,54 @@
+### Please describe the problem.
+git annex works perfectly fine under windows now; awesome work! One of the tests in the suite still fails (which might affect some features, that I don't use (yet?)).
+
+### What steps will reproduce the problem?
+[[!format sh """
+$ git annex test -p addurl
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+$ git --version
+git version 2.6.4.windows.1
+
+$ git annex version
+git-annex version: 5.20151218-g5008846
+build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3(multipartupload) WebDAV ConcurrentOutput DNS Feeds Quvi TDFA TorrentParser Database
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+"""]]
+
+Windows 10 (OS Build 10586.0)
+
+### Please provide any additional information below.
+
+[[!format sh """
+$ git annex test -p addurl
+Tests
+  Unit Tests
+Init Tests
+    addurl:   init:   Detected a filesystem without fifo support.
+  Disabling ssh connection caching.
+  Detected a crippled filesystem.
+  Enabling direct mode.
+OK (2.74s)
+  add:  fatal: This operation must be run in a work tree
+OK (6.00s)
+
+All 2 tests passed (8.79s)
+  Detected a filesystem without fifo support.
+  Disabling ssh connection caching.
+  Detected a crippled filesystem.
+  Enabling direct mode.
+removeDirectoryRecursive: permission denied (The process cannot access the file because it is being used by another process.)
+sleeping 10 seconds and will retry directory cleanup
+FAIL (7.16s)
+      addurl failed on file:///Users/born/.t/tmprepo0/myurl
+
+1 out of 1 tests failed (28.13s)
+  (This could be due to a bug in git-annex, or an incompatability
+   with utilities, such as git, installed on this system.)
+"""]]
+
+
