@@ -38,6 +38,7 @@ import Utility.InodeCache
 import Annex.InodeSentinal
 import qualified Git.Types
 import qualified Git.LsTree
+import qualified Git.Branch
 import Git.Ref
 import Git.FilePath
 import Annex.CatFile
@@ -214,14 +215,15 @@ removeAssociatedFile' sk f = queueDb $
 {- Find all unlocked associated files. This is expensive, and so normally
  - the associated files are updated incrementally when changes are noticed. -}
 scanAssociatedFiles :: Annex ()
-scanAssociatedFiles = runWriter $ \h -> do
-	showSideAction "scanning for unlocked files"
-	dropallassociated h
-	l <- inRepo $ Git.LsTree.lsTree headRef
-	forM_ l $ \i -> 
-		when (isregfile i) $
-			maybe noop (add h i)
-				=<< catKey (Git.Types.Ref $ Git.LsTree.sha i)
+scanAssociatedFiles = whenM (isJust <$> inRepo Git.Branch.current) $ 
+	runWriter $ \h -> do
+		showSideAction "scanning for unlocked files"
+		dropallassociated h
+		l <- inRepo $ Git.LsTree.lsTree headRef
+		forM_ l $ \i -> 
+			when (isregfile i) $
+				maybe noop (add h i)
+					=<< catKey (Git.Types.Ref $ Git.LsTree.sha i)
   where
 	dropallassociated = queueDb $
 		delete $ from $ \(_r :: SqlExpr (Entity Associated)) ->
