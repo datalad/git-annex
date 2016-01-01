@@ -49,6 +49,7 @@ upgrade automatic = do
 		showLongNote "Changes have been staged for all annexed files in this repository; you should run `git commit` to commit these changes."
 		showLongNote "Any other clones of this repository that use direct mode need to be upgraded now, too."
 	configureSmudgeFilter
+	Database.Keys.scanAssociatedFiles
 	-- Inode sentinal file was only used in direct mode and when
 	-- locking down files as they were added. In v6, it's used more
 	-- extensively, so make sure it exists, since old repos that didn't

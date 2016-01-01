@@ -124,8 +124,8 @@ tests = testGroup "Tests" $ properties :
 	map (\(d, te) -> withTestMode te (unitTests d)) testmodes
   where
 	testmodes =
-		-- ("v6 unlocked", (testMode "6") { unlockedFiles = True })
-		[ ("v6 locked", testMode "6")
+		[ ("v6 unlocked", (testMode "6") { unlockedFiles = True })
+		, ("v6 locked", testMode "6")
 		, ("v5", testMode "5")
 #ifndef mingw32_HOST_OS
 		-- Windows will only use direct mode, so don't test twice.

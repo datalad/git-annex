@@ -1,14 +1,14 @@
 {- Sqlite database of information about Keys
  -
- - Copyright 2015 Joey Hess <id@joeyh.name>
- -:
+ - Copyright 2015-2016 Joey Hess <id@joeyh.name>
+ -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 {-# LANGUAGE QuasiQuotes, TypeFamilies, TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings, GADTs, FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses, GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RankNTypes, ScopedTypeVariables #-}
 
 module Database.Keys (
 	DbHandle,
@@ -16,6 +16,7 @@ module Database.Keys (
 	getAssociatedFiles,
 	getAssociatedKey,
 	removeAssociatedFile,
+	scanAssociatedFiles,
 	storeInodeCaches,
 	addInodeCaches,
 	getInodeCaches,
@@ -35,6 +36,12 @@ import Annex.Perms
 import Annex.LockFile
 import Utility.InodeCache
 import Annex.InodeSentinal
+import qualified Git.Types
+import qualified Git.LsTree
+import Git.Ref
+import Git.FilePath
+import Annex.CatFile
+import Messages
 
 import Database.Persist.TH
 import Database.Esqueleto hiding (Key)
@@ -203,6 +210,27 @@ removeAssociatedFile' :: SKey -> FilePath -> Writer
 removeAssociatedFile' sk f = queueDb $ 
 	delete $ from $ \r -> do
 		where_ (r ^. AssociatedKey ==. val sk &&. r ^. AssociatedFile ==. val f)
+	
+{- Find all unlocked associated files. This is expensive, and so normally
+ - the associated files are updated incrementally when changes are noticed. -}
+scanAssociatedFiles :: Annex ()
+scanAssociatedFiles = runWriter $ \h -> do
+	showSideAction "scanning for unlocked files"
+	dropallassociated h
+	l <- inRepo $ Git.LsTree.lsTree headRef
+	forM_ l $ \i -> 
+		when (isregfile i) $
+			maybe noop (add h i)
+				=<< catKey (Git.Types.Ref $ Git.LsTree.sha i)
+  where
+	dropallassociated = queueDb $
+		delete $ from $ \(_r :: SqlExpr (Entity Associated)) ->
+			return ()
+	isregfile i = Git.Types.toBlobType (Git.LsTree.mode i) == Just Git.Types.FileBlob
+	add h i k = flip queueDb h $ 
+		void $ insertUnique $ Associated
+			(toSKey k)
+			(getTopFilePath $ Git.LsTree.file i)
 
 {- Stats the files, and stores their InodeCaches. -}
 storeInodeCaches :: Key -> [FilePath] -> Annex ()

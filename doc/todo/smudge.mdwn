@@ -4,14 +4,6 @@ git-annex should use smudge/clean filters.
 
 * Test suite has a currently disabled pass that tests v6 unlocked files.
   That pass has many failures.
-* Associated files database is not populated when a repository is cloned,
-  because the smudge filters are not set up when git checks out the work
-  tree. So, git annex get etc won't work immediately after cloning.
-  Need to make init run through the whole work index and populate the
-  associated files database.
-  (Or could update it incrementally, so git-annex get foo updates the
-  database for foo's key. But, then if bar has the same content as foo, bar
-  wouldn't be populated by get foo.)
 * Reconcile staged changes into the associated files database, whenever
   the database is queried. This is needed to handle eg:
   	git add largefile

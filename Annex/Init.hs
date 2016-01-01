@@ -1,6 +1,6 @@
 {- git-annex repository initialization
  -
- - Copyright 2011 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -36,6 +36,7 @@ import Annex.Environment
 import Annex.Hook
 import Annex.InodeSentinal
 import Upgrade
+import qualified Database.Keys
 #ifndef mingw32_HOST_OS
 import Utility.UserInfo
 import Utility.FileMode
@@ -87,8 +88,9 @@ initialize' mversion = do
 	setDifferences
 	unlessM (isJust <$> getVersion) $
 		setVersion (fromMaybe defaultVersion mversion)
-	whenM versionSupportsUnlockedPointers
+	whenM versionSupportsUnlockedPointers $ do
 		configureSmudgeFilter
+		Database.Keys.scanAssociatedFiles
 	ifM (crippledFileSystem <&&> not <$> isBare)
 		( do
 			enableDirectMode
