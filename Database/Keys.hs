@@ -29,9 +29,8 @@ import Database.Types
 import Database.Keys.Handle
 import qualified Database.Queue as H
 import Locations
-import Common hiding (delete)
-import Annex
-import Types.Key
+import Common.Annex hiding (delete)
+import qualified Annex
 import Annex.Perms
 import Annex.LockFile
 import Utility.InodeCache
@@ -42,7 +41,6 @@ import qualified Git.Branch
 import Git.Ref
 import Git.FilePath
 import Annex.CatFile
-import Messages
 
 import Database.Persist.TH
 import Database.Esqueleto hiding (Key)
@@ -130,12 +128,12 @@ queueDb a (WriteHandle h) = liftIO $ H.queueDb h checkcommit a
 {- Gets the handle cached in Annex state; creates a new one if it's not yet
  - available, but doesn't open the database. -}
 getDbHandle :: Annex DbHandle
-getDbHandle = go =<< getState keysdbhandle
+getDbHandle = go =<< Annex.getState Annex.keysdbhandle
   where
 	go (Just h) = pure h
 	go Nothing = do
 		h <- liftIO newDbHandle
-		changeState $ \s -> s { keysdbhandle = Just h }
+		Annex.changeState $ \s -> s { Annex.keysdbhandle = Just h }
 		return h
 
 {- Opens the database, perhaps creating it if it doesn't exist yet.
@@ -219,11 +217,12 @@ scanAssociatedFiles = whenM (isJust <$> inRepo Git.Branch.current) $
 	runWriter $ \h -> do
 		showSideAction "scanning for unlocked files"
 		dropallassociated h
-		l <- inRepo $ Git.LsTree.lsTree headRef
+		(l, cleanup) <- inRepo $ Git.LsTree.lsTree headRef
 		forM_ l $ \i -> 
 			when (isregfile i) $
 				maybe noop (add h i)
 					=<< catKey (Git.Types.Ref $ Git.LsTree.sha i)
+		liftIO $ void cleanup
   where
 	dropallassociated = queueDb $
 		delete $ from $ \(_r :: SqlExpr (Entity Associated)) ->

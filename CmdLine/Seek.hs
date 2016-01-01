@@ -77,7 +77,7 @@ withFilesInRefs a = mapM_ go
   where
 	go r = do	
 		matcher <- Limit.getMatcher
-		l <- inRepo $ LsTree.lsTree (Git.Ref r)
+		(l, cleanup) <- inRepo $ LsTree.lsTree (Git.Ref r)
 		forM_ l $ \i -> do
 			let f = getTopFilePath $ LsTree.file i
 			v <- catKey (Git.Ref $ LsTree.sha i)
@@ -85,6 +85,7 @@ withFilesInRefs a = mapM_ go
 				Nothing -> noop
 				Just k -> whenM (matcher $ MatchingKey k) $
 					commandAction $ a f k
+		liftIO $ void cleanup
 
 withPathContents :: ((FilePath, FilePath) -> CommandStart) -> CmdParams -> CommandSeek
 withPathContents a params = do
