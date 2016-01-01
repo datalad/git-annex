@@ -1,0 +1,5 @@
+Got the test suite passing 100%, but then added a pass that uses v6
+unlocked files and 30-some more failures appeared. Fixed a couple of the
+bugs today. After sprinting unexpectedly hard all December on v6, I need a
+change of pace, so I started digging into the website message backlog
+and fixed some bugs and posted some comments there.
