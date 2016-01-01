@@ -35,6 +35,9 @@ git-annex (6.20151219) UNRELEASED; urgency=medium
     there.
   * info: Fix "backend usage" numbers, which were counting present keys
     twice.
+  * info --json: Improve json for "backend usage", using a nested object
+    with fields for each backend instead of the previous weird nested lists.
+    This may break existing parsers of this json output, if there were any.
 
  -- Joey Hess <id@joeyh.name>  Sat, 19 Dec 2015 13:31:17 -0400
 
