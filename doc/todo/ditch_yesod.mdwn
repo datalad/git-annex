@@ -3,7 +3,7 @@ reasons:
 
 * It's by far the largest use of TH in git-annex, and TH is of course very
   painful for the android port, other builds like debian mips that don't
-  currently support TH, etc.
+  currently support TH, etc. (Update: mips does support it now, it seems!)
 * I think it's responsible for at least 50% of the executable size, and I
   suspect a lot of that is unncessary bloat for parts of yesod that
   git-annex doesn't really use.
@@ -23,7 +23,7 @@ fast as hamlet, and pure haskell code.
 
 Game plan:
 
-1. Uploadd a yesod-lucid to hackage. (done)
+1. Upload a yesod-lucid to hackage. (done)
 2. Get servant, lucid, maybe yesod-lucid, packaged in Debian
 3. Start converting individual yesod Handler Html to Handler LucidHtml.
    This will ditch the hamlet. This is by far the most work, but it can be
