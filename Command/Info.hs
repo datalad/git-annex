@@ -403,11 +403,8 @@ disk_size = simpleStat "available local disk space" $
 
 backend_usage :: Stat
 backend_usage = stat "backend usage" $ json fmt $
-	calc
-		<$> (backendsKeys <$> cachedReferencedData)
-		<*> (backendsKeys <$> cachedPresentData)
+	sort . M.toList . backendsKeys <$> cachedReferencedData
   where
-	calc x y = sort $ M.toList $ M.unionWith (+) x y
 	fmt = multiLine . map (\(n, b) -> b ++ ": " ++ show n) . map swap
 
 numcopies_stats :: Stat
