@@ -67,6 +67,7 @@ import qualified Config
 import qualified Config.Cost
 import qualified Crypto
 import qualified Annex.WorkTree
+import qualified Annex.Link
 import qualified Annex.Init
 import qualified Annex.CatFile
 import qualified Annex.View
@@ -123,11 +124,12 @@ tests = testGroup "Tests" $ properties :
 	map (\(d, te) -> withTestMode te (unitTests d)) testmodes
   where
 	testmodes =
-		[ ("v6", TestMode { forceDirect = False, annexVersion = "6" })
-		, ("v5", TestMode { forceDirect = False, annexVersion = "5" })
-		-- Windows will only use direct mode, so don't test twice.
+		-- ("v6 unlocked", (testMode "6") { unlockedFiles = True })
+		[ ("v6 locked", testMode "6")
+		, ("v5", testMode "5")
 #ifndef mingw32_HOST_OS
-		, ("v5 direct", TestMode { forceDirect = True,  annexVersion = "5" })
+		-- Windows will only use direct mode, so don't test twice.
+		, ("v5 direct", (testMode "5") { forceDirect = True })
 #endif
 		]
 
@@ -181,7 +183,7 @@ initTests = testGroup "Init Tests"
 
 unitTests :: String -> TestTree
 unitTests note = testGroup ("Unit Tests " ++ note)
-	[ testCase "add sha1dup" test_add_sha1dup
+	[ testCase "add dup" test_add_dup
 	, testCase "add extras" test_add_extras
 	, testCase "shared clone" test_shared_clone
 	, testCase "log" test_log
@@ -257,10 +259,12 @@ test_init = innewrepo $ do
 test_add :: Assertion
 test_add = inmainrepo $ do
 	writeFile annexedfile $ content annexedfile
-	git_annex "add" [annexedfile] @? "add failed"
+	add_annex annexedfile @? "add failed"
 	annexed_present annexedfile
 	writeFile sha1annexedfile $ content sha1annexedfile
 	git_annex "add" [sha1annexedfile, "--backend=SHA1"] @? "add with SHA1 failed"
+	whenM (unlockedFiles <$> getTestMode) $
+		git_annex "unlock" [sha1annexedfile] @? "unlock failed"
 	annexed_present sha1annexedfile
 	checkbackend sha1annexedfile backendSHA1
 	ifM (annexeval Config.isDirect)
@@ -277,17 +281,19 @@ test_add = inmainrepo $ do
 			unannexed ingitfile
 		)
 
-test_add_sha1dup :: Assertion
-test_add_sha1dup = intmpclonerepo $ do
-	writeFile sha1annexedfiledup $ content sha1annexedfiledup
-	git_annex "add" [sha1annexedfiledup, "--backend=SHA1"] @? "add of second file with same SHA1 failed"
-	annexed_present sha1annexedfiledup
-	annexed_present sha1annexedfile
+test_add_dup :: Assertion
+test_add_dup = intmpclonerepo $ do
+	writeFile annexedfiledup $ content annexedfiledup
+	add_annex annexedfiledup @? "add of second file with same content failed"
+	annexed_present annexedfiledup
+	annexed_present annexedfile
 
 test_add_extras :: Assertion
 test_add_extras = intmpclonerepo $ do
 	writeFile wormannexedfile $ content wormannexedfile
 	git_annex "add" [wormannexedfile, "--backend=WORM"] @? "add with WORM failed"
+	whenM (unlockedFiles <$> getTestMode) $
+		git_annex "unlock" [wormannexedfile] @? "unlock failed"
 	annexed_present wormannexedfile
 	checkbackend wormannexedfile backendWORM
 
@@ -964,12 +970,12 @@ test_conflict_resolution =
 			indir r1 $ do
 				disconnectOrigin
 				writeFile conflictor "conflictor1"
-				git_annex "add" [conflictor] @? "add conflicter failed"
+				add_annex conflictor @? "add conflicter failed"
 				git_annex "sync" [] @? "sync failed in r1"
 			indir r2 $ do
 				disconnectOrigin
 				writeFile conflictor "conflictor2"
-				git_annex "add" [conflictor] @? "add conflicter failed"
+				add_annex conflictor @? "add conflicter failed"
 				git_annex "sync" [] @? "sync failed in r2"
 			pair r1 r2
 			forM_ [r1,r2,r1] $ \r -> indir r $
@@ -1002,13 +1008,13 @@ test_mixed_conflict_resolution = do
 			indir r1 $ do
 				disconnectOrigin
 				writeFile conflictor "conflictor"
-				git_annex "add" [conflictor] @? "add conflicter failed"
+				add_annex conflictor @? "add conflicter failed"
 				git_annex "sync" [] @? "sync failed in r1"
 			indir r2 $ do
 				disconnectOrigin
 				createDirectory conflictor
 				writeFile subfile "subfile"
-				git_annex "add" [conflictor] @? "add conflicter failed"
+				add_annex conflictor @? "add conflicter failed"
 				git_annex "sync" [] @? "sync failed in r2"
 			pair r1 r2
 			let l = if inr1 then [r1, r2] else [r2, r1]
@@ -1044,7 +1050,7 @@ test_remove_conflict_resolution = do
 			indir r1 $ do
 				disconnectOrigin
 				writeFile conflictor "conflictor"
-				git_annex "add" [conflictor] @? "add conflicter failed"
+				add_annex conflictor @? "add conflicter failed"
 				git_annex "sync" [] @? "sync failed in r1"
 			indir r2 $
 				disconnectOrigin
@@ -1093,7 +1099,7 @@ test_nonannexed_file_conflict_resolution = do
 				indir r1 $ do
 					disconnectOrigin
 					writeFile conflictor "conflictor"
-					git_annex "add" [conflictor] @? "add conflicter failed"
+					add_annex conflictor @? "add conflicter failed"
 					git_annex "sync" [] @? "sync failed in r1"
 				indir r2 $ do
 					disconnectOrigin
@@ -1150,7 +1156,7 @@ test_nonannexed_symlink_conflict_resolution = do
 				indir r1 $ do
 					disconnectOrigin
 					writeFile conflictor "conflictor"
-					git_annex "add" [conflictor] @? "add conflicter failed"
+					add_annex conflictor @? "add conflicter failed"
 					git_annex "sync" [] @? "sync failed in r1"
 				indir r2 $ do
 					disconnectOrigin
@@ -1201,7 +1207,7 @@ test_uncommitted_conflict_resolution = do
 				disconnectOrigin
 				createDirectoryIfMissing True (parentDir remoteconflictor)
 				writeFile remoteconflictor annexedcontent
-				git_annex "add" [conflictor] @? "add remoteconflicter failed"
+				add_annex conflictor @? "add remoteconflicter failed"
 				git_annex "sync" [] @? "sync failed in r1"
 			indir r2 $ do
 				disconnectOrigin
@@ -1776,6 +1782,10 @@ checkbackend file expected = do
 		=<< Annex.WorkTree.lookupFile file
 	assertEqual ("backend for " ++ file) (Just expected) b
 
+checkispointerfile :: FilePath -> Assertion
+checkispointerfile f = unlessM (isJust <$> Annex.Link.isPointerFile f) $
+	assertFailure $ f ++ " is not a pointer file"
+
 inlocationlog :: FilePath -> Assertion
 inlocationlog f = checklocationlog f True
 
@@ -1789,20 +1799,38 @@ runchecks (a:as) f = do
 	runchecks as f
 
 annexed_notpresent :: FilePath -> Assertion
-annexed_notpresent = runchecks
-	[checklink, checkdangling, notinlocationlog]
+annexed_notpresent f = ifM (unlockedFiles <$> getTestMode)
+	( runchecks [checkregularfile, checkispointerfile, notinlocationlog] f
+	, runchecks [checklink, checkdangling, notinlocationlog] f
+	)
 
 annexed_present :: FilePath -> Assertion
-annexed_present = runchecks
-	[checklink, checkcontent, checkunwritable, inlocationlog]
+annexed_present f = ifM (unlockedFiles <$> getTestMode)
+	( runchecks [checkregularfile, checkcontent, checkwritable, inlocationlog] f
+	, runchecks [checklink, checkcontent, checkunwritable, inlocationlog] f
+	)
 
 unannexed :: FilePath -> Assertion
 unannexed = runchecks [checkregularfile, checkcontent, checkwritable]
 
+add_annex :: FilePath -> IO Bool
+add_annex f = ifM (unlockedFiles <$> getTestMode)
+	( boolSystem "git" [Param "add", File f]
+	, git_annex "add" [f]
+	)
+
 data TestMode = TestMode
 	{ forceDirect :: Bool
-	, annexVersion :: String
+	, unlockedFiles :: Bool
+	, annexVersion :: Annex.Version.Version
 	} deriving (Read, Show)
+
+testMode :: Annex.Version.Version -> TestMode
+testMode v = TestMode
+	{ forceDirect = False
+	, unlockedFiles = False
+	, annexVersion = v
+	}
 
 withTestMode :: TestMode -> TestTree -> TestTree
 withTestMode testmode = withResource prepare release . const
@@ -1873,6 +1901,9 @@ tmprepodir = go (0 :: Int)
 annexedfile :: String
 annexedfile = "foo"
 
+annexedfiledup :: String
+annexedfiledup = "foodup"
+
 wormannexedfile :: String
 wormannexedfile = "apple"
 
@@ -1890,6 +1921,7 @@ content f
 	| f == annexedfile = "annexed file content"
 	| f == ingitfile = "normal file content"
 	| f == sha1annexedfile ="sha1 annexed file content"
+	| f == annexedfiledup = content annexedfile
 	| f == sha1annexedfiledup = content sha1annexedfile
 	| f == wormannexedfile = "worm annexed file content"
 	| "import" `isPrefixOf` f = "imported content"
