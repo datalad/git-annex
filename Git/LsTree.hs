@@ -26,7 +26,7 @@ import System.Posix.Types
 data TreeItem = TreeItem
 	{ mode :: FileMode
 	, typeobj :: String
-	, sha :: String
+	, sha :: Ref
 	, file :: TopFilePath
 	} deriving Show
 
@@ -66,7 +66,7 @@ parseLsTree :: String -> TreeItem
 parseLsTree l = TreeItem 
 	{ mode = fst $ Prelude.head $ readOct m
 	, typeobj = t
-	, sha = s
+	, sha = Ref s
 	, file = asTopFilePath $ Git.Filename.decode f
 	}
   where

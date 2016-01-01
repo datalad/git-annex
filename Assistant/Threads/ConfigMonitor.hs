@@ -20,6 +20,7 @@ import Logs.Group
 import Logs.NumCopies
 import Remote.List (remoteListRefresh)
 import qualified Git.LsTree as LsTree
+import Git.Types
 import Git.FilePath
 import qualified Annex.Branch
 
@@ -51,7 +52,7 @@ configMonitorThread = namedThread "ConfigMonitor" $ loop =<< getConfigs
 		loop new
 
 {- Config files, and their checksums. -}
-type Configs = S.Set (FilePath, String)
+type Configs = S.Set (FilePath, Sha)
 
 {- All git-annex's config files, and actions to run when they change. -}
 configFilesActions :: [(FilePath, Assistant ())]

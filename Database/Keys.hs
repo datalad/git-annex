@@ -221,7 +221,7 @@ scanAssociatedFiles = whenM (isJust <$> inRepo Git.Branch.current) $
 		forM_ l $ \i -> 
 			when (isregfile i) $
 				maybe noop (add h i)
-					=<< catKey (Git.Types.Ref $ Git.LsTree.sha i)
+					=<< catKey (Git.LsTree.sha i)
 		liftIO $ void cleanup
   where
 	dropallassociated = queueDb $
