@@ -30,3 +30,5 @@ instead of more logical
 also it seems it just doubles them since I have only 2 files, 1 for each backend (as reported also by info "local annex keys": 2). 
 
 [[!meta author=yoh]]
+
+> [[fixed|done]] --[[Joey]]
