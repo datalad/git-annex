@@ -104,7 +104,6 @@ catTree h treeref = go <$> catObjectDetails h treeref
 				(dropsha rest)
 
 	-- these 20 bytes after the NUL hold the file's sha
-	-- TODO: convert from raw form to regular sha
 	dropsha = L.drop 21
 
 	parsemodefile b = 
