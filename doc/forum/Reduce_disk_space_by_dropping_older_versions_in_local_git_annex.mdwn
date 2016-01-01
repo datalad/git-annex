@@ -1,0 +1,9 @@
+Looking at using git-annex, I wonder if there is a way of removing previous versions from a local git repository annex. We have a 'gold' copy of the repository and will also have of the annex, so dropping a local copy is fine.
+
+If I checkout older git tags, then the git repo annex fills up with those old annex file versions, and I would like a way of flushing out the old versions to minimise the disk space.
+
+I tried git annex drop, but that appears to only drop the current version.
+
+Does git-annex understand that all the versions of a file are related, or is this relationship only discoverable from the symlink in the git repo?
+
+It is not a deal-breaker, but I would like a single command I can give my team if they are running short on disk space.
