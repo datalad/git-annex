@@ -11,13 +11,8 @@ import Common.Annex
 import Command
 import Annex.Content
 import Annex.Link
-import Annex.MetaData
 import Annex.FileMatcher
-import Annex.InodeSentinal
 import Annex.Ingest
-import Utility.InodeCache
-import Types.KeySource
-import Backend
 import Logs.Location
 import qualified Database.Keys
 
@@ -75,41 +70,21 @@ clean file = do
 	if isJust (parseLinkOrPointer b)
 		then liftIO $ B.hPut stdout b
 		else ifM (shouldAnnex file)
-			( liftIO . emitPointer =<< ingestLocal file
+			( liftIO . emitPointer
+				=<< go =<< ingest =<< lockDown False file
 			, liftIO $ B.hPut stdout b
 			)
 	stop
+  where
+	go (Just k, _) = do
+		logStatus k InfoPresent
+		return k
+	go _ = error "could not add file to the annex"
 
 shouldAnnex :: FilePath -> Annex Bool
 shouldAnnex file = do
 	matcher <- largeFilesMatcher
 	checkFileMatcher matcher file
-
--- TODO: Use main ingest code instead?
-ingestLocal :: FilePath -> Annex Key
-ingestLocal file = do
-	backend <- chooseBackend file
-	ic <- withTSDelta (liftIO . genInodeCache file)
-	let source = KeySource
-		{ keyFilename = file
-		, contentLocation = file
-		, inodeCache = ic
-		}
-	k <- fst . fromMaybe (error "failed to generate a key")
-		<$> genKey source backend
-	-- Hard link (or copy) file content to annex object
-	-- to prevent it from being lost when git checks out
-	-- a branch not containing this file.
-	r <- linkToAnnex k file ic
-	case r of
-		LinkAnnexFailed -> error "Problem adding file to the annex"
-		LinkAnnexOk -> logStatus k InfoPresent
-		LinkAnnexNoop -> noop
-	genMetaData k file
-		=<< liftIO (getFileStatus file)
-	cleanOldKeys file k
-	Database.Keys.addAssociatedFile k file
-	return k
 
 emitPointer :: Key -> IO ()
 emitPointer = putStr . formatPointer
