@@ -248,7 +248,7 @@ cleanConflictCruft resolvedks resolvedfs unstagedmap = do
 		| S.member f fs || S.member (conflictCruftBase f) fs = anyM id
 			[ pure (S.member i is)
 			, inks <$> isAnnexLink f
-			, inks <$> isPointerFile f
+			, inks <$> liftIO (isPointerFile f)
 			]
 		| otherwise = return False
 

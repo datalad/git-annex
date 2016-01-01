@@ -41,7 +41,7 @@ startNew file key = ifM (isJust <$> isAnnexLink file)
 	( stop
 	, do
 		showStart "lock" file
-		go =<< isPointerFile file
+		go =<< liftIO (isPointerFile file)
 	)
   where
 	go (Just key')

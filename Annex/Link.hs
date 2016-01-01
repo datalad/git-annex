@@ -153,6 +153,6 @@ formatPointer k =
 	toInternalGitPath (pathSeparator:objectDir </> key2file k) ++ "\n"
 
 {- Checks if a file is a pointer to a key. -}
-isPointerFile :: FilePath -> Annex (Maybe Key)
-isPointerFile f = liftIO $ catchDefaultIO Nothing $ 
+isPointerFile :: FilePath -> IO (Maybe Key)
+isPointerFile f = catchDefaultIO Nothing $ 
 	parseLinkOrPointer <$> L.readFile f

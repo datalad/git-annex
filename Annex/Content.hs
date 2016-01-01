@@ -505,7 +505,7 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
 	alreadyhave = liftIO $ removeFile src
 
 populatePointerFile :: Key -> FilePath -> FilePath -> Annex ()
-populatePointerFile k obj f = go =<< isPointerFile f
+populatePointerFile k obj f = go =<< liftIO (isPointerFile f)
   where
 	go (Just k') | k == k' = do
 		liftIO $ nukeFile f
