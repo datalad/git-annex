@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-01-01T20:38:09Z"
+ content="""
+git-annex doesn't set up such hooks, but you can easily make a
+post-checkout and/or post-merge hook that runs, eg "git-annex get"
+
+You might also want a pre-push hook that does "git annex copy --to origin"
+to make sure they upload their annexed files. 
+
+Or, change workflows to use `git annex sync --content`
+"""]]
