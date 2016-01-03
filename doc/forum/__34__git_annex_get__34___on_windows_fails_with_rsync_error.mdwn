@@ -1,0 +1,20 @@
+I tried cloning an annex repo between two drives "c:" and "d:". The part with "git clone" itself works, but when I try to execute "git annex get", rsync reports an error about a missing path starting with "/cygdrive".
+
+    Sameer@DESKTOP-6CJGO0T MINGW32 /d/a (annex/direct/master)
+    $ git annex get --not --in here
+    get world.txt (from origin...)
+    rsync: change_dir "/cygdrive/c/scratch/a" failed: No such file or directory (2)
+    rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1183) [sender=3.1.1]
+    
+      rsync failed -- run git annex again to resume file transfer
+    
+      Unable to access these remotes: origin
+    
+      Try making some of these repositories available:
+            cda3a2c6-7ddc-4164-ad6d-fbb2720b24d7 -- DESKTOP-6CJGO0T:C:\scratch\a [origin]
+    failed
+    git-annex: get: 1 failed
+
+I am running git annex that was installed in the same directory as a 32-bit git version 2.6.4 for windows (mingw32).
+
+The question is, my windows drives are actually visible as "/c" and "/a" ... then why is rsync searching for "/cygdrive/c" etc? This is clearly not a Cygwin installation.
