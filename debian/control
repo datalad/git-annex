@@ -43,9 +43,9 @@ Build-Depends:
 	libghc-wai-dev                      [i386 amd64 arm64 armhf kfreebsd-i386 kfreebsd-amd64 mips mipsel powerpc ppc64el s390x],
 	libghc-wai-extra-dev                [i386 amd64 arm64 armhf kfreebsd-i386 kfreebsd-amd64 mips mipsel powerpc ppc64el s390x],
 	libghc-dav-dev (>= 1.0)             [i386 amd64 arm64 armhf kfreebsd-i386 kfreebsd-amd64 mips mips64el mipsel powerpc ppc64el s390x sparc64 hppa alpha hurd-i386],
-	libghc-persistent-dev
-	libghc-persistent-template-dev
-	libghc-persistent-sqlite-dev
+	libghc-persistent-dev,
+	libghc-persistent-template-dev,
+	libghc-persistent-sqlite-dev,
 	libghc-esqueleto-dev,
 	libghc-securemem-dev,
 	libghc-byteable-dev,
