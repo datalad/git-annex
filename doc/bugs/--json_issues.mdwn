@@ -1,0 +1,44 @@
+### Please describe the problem.
+Duplicate "note" properties in JSON output of whereis command.  The JSON output is "[strictly speaking](http://stackoverflow.com/questions/21832701/does-json-syntax-allow-duplicate-keys-in-an-object)" valid, however, the duplicate property makes it difficult to use python-json, and possibly other implementations (I just checked node and chromium and they also keep the value of the last property after deserialization). 
+
+I noticed the problem being mentioned [here](https://git-annex.branchable.com/forum/git_annex_whereis_--json_output_with_two_variables_with_same_name/), where the user desires to parse an entry in the machine parsable json output that is apparently not meant to be parsed by a machine, which makes a person wonder why it's there anyway.  Even so, obtaining the actual url in the web remote for an annexed object relies on one of the "note" properties in the json output.  Using [whereis](
+http://git-annex.branchable.com/tips/using_the_web_as_a_special_remote/#comment-7878bde74289b42500e4fac3a122a535) to get the url(s) for a file is the recommended method.  A json implementation that sets the first property, then ignores remaining duplicates will only parse the "2 copies" note, and ignore the url.
+
+If the "note" properties are meant to be comments, it might be a good idea to find another property for the url(s).  Please note that I haven't looked at multiple urls for an object, so I'm not sure that only the last listed url will appear in parsed json object.
+
+### What steps will reproduce the problem?
+
+git-annex whereis --json
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 5.20151208-1 (sid chroot)
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+umeboshi@bard:~/tmp$ git init testweb
+Initialized empty Git repository in /freespace/home/umeboshi/tmp/testweb/.git/
+umeboshi@bard:~/tmp$ cd testweb/
+umeboshi@bard:~/tmp/testweb$ git-annex init
+init  ok
+(recording state in git...)
+umeboshi@bard:~/tmp/testweb$ git-annex addurl http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf
+addurl www.ecma_international.org_publications_files_ECMA_ST_ECMA_404.pdf (downloading http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf ...) 
+/freespace/home/ume 100%[===================>]   1.08M   917KB/s    in 1.2s    
+ok
+(recording state in git...)
+umeboshi@bard:~/tmp/testweb$ git-annex whereis www.ecma_international.org_publications_files_ECMA_ST_ECMA_404.pdf  --json
+{"command":"whereis","file":"www.ecma_international.org_publications_files_ECMA_ST_ECMA_404.pdf","note":"2 copies","whereis":[{"uuid":"00000000-0000-0000-0000-000000000001","description":"web","here":false},{"uuid":"996522e8-a433-42ff-85f2-48e456fdb120","description":"umeboshi@bard:~/tmp/testweb","here":true}],"note":"\t00000000-0000-0000-0000-000000000001 -- web\n \t996522e8-a433-42ff-85f2-48e456fdb120 -- umeboshi@bard:~/tmp/testweb [here]\n","untrusted":[],"note":"web: http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf\n","success":true}
+
+umeboshi@bard:~/tmp/testweb$ 
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Lol!  Positive note!  I spend a couple of days making specially crafted rss files for importfeed, so I can have appropriate filenames, then look back and see that you are working on '--batch --with-files' options to addurl.  Have a Happy New Year!  :)
