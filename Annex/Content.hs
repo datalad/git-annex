@@ -65,6 +65,7 @@ import Utility.DataUnits
 import Utility.CopyFile
 import Utility.Metered
 import Config
+import Git.FilePath
 import Git.SharedRepository
 import Annex.Perms
 import Annex.Link
@@ -471,7 +472,9 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
 		, modifyContent dest $ do
 			freezeContent src
 			liftIO $ moveFile src dest
-			fs <- Database.Keys.getAssociatedFiles key
+			g <- Annex.gitRepo 
+			fs <- map (`fromTopFilePath` g)
+				<$> Database.Keys.getAssociatedFiles key
 			unless (null fs) $ do
 				mapM_ (populatePointerFile key dest) fs
 				Database.Keys.storeInodeCaches key (dest:fs)
@@ -722,7 +725,8 @@ removeAnnex (ContentRemovalLock key) = withObjectLoc key remove removedirect
 	remove file = cleanObjectLoc key $ do
 		secureErase file
 		liftIO $ nukeFile file
-		mapM_ (void . tryIO . resetpointer)
+		g <- Annex.gitRepo 
+		mapM_ (\f -> void $ tryIO $ resetpointer $ fromTopFilePath f g)
 			=<< Database.Keys.getAssociatedFiles key
 		Database.Keys.removeInodeCaches key
 		Direct.removeInodeCache key

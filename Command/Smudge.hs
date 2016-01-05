@@ -15,6 +15,7 @@ import Annex.FileMatcher
 import Annex.Ingest
 import Logs.Location
 import qualified Database.Keys
+import Git.FilePath
 
 import qualified Data.ByteString.Lazy as B
 
@@ -58,7 +59,7 @@ smudge file = do
 						=<< catchMaybeIO (B.readFile content)
 				, liftIO $ B.putStr b
 				)
-			Database.Keys.addAssociatedFile k file
+			Database.Keys.addAssociatedFile k =<< inRepo (toTopFilePath file)
 	stop
 
 -- Clean filter is fed file content on stdin, decides if a file

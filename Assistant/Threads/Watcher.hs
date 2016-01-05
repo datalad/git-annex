@@ -41,6 +41,7 @@ import Annex.ReplaceFile
 import Annex.Version
 import Annex.InodeSentinal
 import Git.Types
+import Git.FilePath
 import Config
 import Utility.ThreadScheduler
 import Logs.Location
@@ -225,8 +226,11 @@ shouldRestage :: DaemonStatus -> Bool
 shouldRestage ds = scanComplete ds || forceRestage ds
 
 onAddUnlocked :: Bool -> FileMatcher Annex -> Handler
-onAddUnlocked = onAddUnlocked' False contentchanged Database.Keys.addAssociatedFile samefilestatus
+onAddUnlocked = onAddUnlocked' False contentchanged addassociatedfile samefilestatus
   where
+	addassociatedfile key file = 
+		Database.Keys.addAssociatedFile key
+			=<< inRepo (toTopFilePath file)
 	samefilestatus key file status = do
 		cache <- Database.Keys.getInodeCaches key
 		curr <- withTSDelta $ \delta -> liftIO $ toInodeCache delta file status
@@ -235,7 +239,8 @@ onAddUnlocked = onAddUnlocked' False contentchanged Database.Keys.addAssociatedF
 			([], Nothing) -> return True
 			_ -> return False
 	contentchanged oldkey file = do
-		Database.Keys.removeAssociatedFile oldkey file
+		Database.Keys.removeAssociatedFile oldkey
+			=<< inRepo (toTopFilePath file)
 		unlessM (inAnnex oldkey) $
 			logStatus oldkey InfoMissing
 
@@ -356,8 +361,9 @@ onDel file _ = do
 
 onDel' :: FilePath -> Annex ()
 onDel' file = do
+	topfile <- inRepo (toTopFilePath file)
 	ifM versionSupportsUnlockedPointers
-		( withkey $ flip Database.Keys.removeAssociatedFile file
+		( withkey $ flip Database.Keys.removeAssociatedFile topfile
 		, whenM isDirect $
 			withkey $ \key -> void $ removeAssociatedFile key file
 		)

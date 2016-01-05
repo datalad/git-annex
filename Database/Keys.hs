@@ -165,50 +165,50 @@ openDb createdb _ = withExclusiveLock gitAnnexKeysDbLock $ do
   where
 	open db = liftIO $ DbOpen <$> H.openDbQueue db "content"
 
-addAssociatedFile :: Key -> FilePath -> Annex ()
+addAssociatedFile :: Key -> TopFilePath -> Annex ()
 addAssociatedFile k f = runWriter $ addAssociatedFile' k f
 
-addAssociatedFile' :: Key -> FilePath -> Writer
+addAssociatedFile' :: Key -> TopFilePath -> Writer
 addAssociatedFile' k f = queueDb $ do
 	-- If the same file was associated with a different key before,
 	-- remove that.
 	delete $ from $ \r -> do
-		where_ (r ^. AssociatedFile ==. val f &&. r ^. AssociatedKey ==. val sk)
-	void $ insertUnique $ Associated sk f
+		where_ (r ^. AssociatedFile ==. val (getTopFilePath f) &&. r ^. AssociatedKey ==. val sk)
+	void $ insertUnique $ Associated sk (getTopFilePath f)
   where
 	sk = toSKey k
 
 {- Note that the files returned were once associated with the key, but
  - some of them may not be any longer. -}
-getAssociatedFiles :: Key -> Annex [FilePath]
+getAssociatedFiles :: Key -> Annex [TopFilePath]
 getAssociatedFiles = runReader . getAssociatedFiles' . toSKey
 
-getAssociatedFiles' :: SKey -> Reader [FilePath]
+getAssociatedFiles' :: SKey -> Reader [TopFilePath]
 getAssociatedFiles' sk = readDb $ do
 	l <- select $ from $ \r -> do
 		where_ (r ^. AssociatedKey ==. val sk)
 		return (r ^. AssociatedFile)
-	return $ map unValue l
+	return $ map (TopFilePath . unValue) l
 
 {- Gets any keys that are on record as having a particular associated file.
  - (Should be one or none but the database doesn't enforce that.) -}
-getAssociatedKey :: FilePath -> Annex [Key]
+getAssociatedKey :: TopFilePath -> Annex [Key]
 getAssociatedKey = runReader . getAssociatedKey'
 
-getAssociatedKey' :: FilePath -> Reader [Key]
+getAssociatedKey' :: TopFilePath -> Reader [Key]
 getAssociatedKey' f = readDb $ do
 	l <- select $ from $ \r -> do
-		where_ (r ^. AssociatedFile ==. val f)
+		where_ (r ^. AssociatedFile ==. val (getTopFilePath f))
 		return (r ^. AssociatedKey)
 	return $ map (fromSKey . unValue) l
 
-removeAssociatedFile :: Key -> FilePath -> Annex ()
+removeAssociatedFile :: Key -> TopFilePath -> Annex ()
 removeAssociatedFile k = runWriter . removeAssociatedFile' (toSKey k)
 
-removeAssociatedFile' :: SKey -> FilePath -> Writer
+removeAssociatedFile' :: SKey -> TopFilePath -> Writer
 removeAssociatedFile' sk f = queueDb $ 
 	delete $ from $ \r -> do
-		where_ (r ^. AssociatedKey ==. val sk &&. r ^. AssociatedFile ==. val f)
+		where_ (r ^. AssociatedKey ==. val sk &&. r ^. AssociatedFile ==. val (getTopFilePath f))
 	
 {- Find all unlocked associated files. This is expensive, and so normally
  - the associated files are updated incrementally when changes are noticed. -}

@@ -37,6 +37,7 @@ import Utility.InodeCache
 import Annex.ReplaceFile
 import Utility.Tmp
 import Utility.CopyFile
+import Git.FilePath
 import Annex.InodeSentinal
 #ifdef WITH_CLIBS
 #ifndef __ANDROID__
@@ -186,15 +187,18 @@ finishIngestUnlocked key source = do
 
 finishIngestUnlocked' :: Key -> KeySource -> Annex ()
 finishIngestUnlocked' key source = do
-	Database.Keys.addAssociatedFile key (keyFilename source)
+	Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath (keyFilename source))
 	populateAssociatedFiles key source
 
 {- Copy to any other locations using the same key. -}
 populateAssociatedFiles :: Key -> KeySource -> Annex ()
 populateAssociatedFiles key source = do
-	otherfs <- filter (/= keyFilename source) <$> Database.Keys.getAssociatedFiles key
 	obj <- calcRepo (gitAnnexLocation key)
-	forM_ otherfs $
+	g <- Annex.gitRepo
+	ingestedf <- flip fromTopFilePath g
+		<$> inRepo (toTopFilePath (keyFilename source))
+	afs <- map (`fromTopFilePath` g) <$> Database.Keys.getAssociatedFiles key
+	forM_ (filter (/= ingestedf) afs) $
 		populatePointerFile key obj
 
 cleanCruft :: KeySource -> Annex ()
@@ -206,16 +210,18 @@ cleanCruft source = when (contentLocation source /= keyFilename source) $
 -- content. Clean up from that.
 cleanOldKeys :: FilePath -> Key -> Annex ()
 cleanOldKeys file newkey = do
+	g <- Annex.gitRepo
+	ingestedf <- flip fromTopFilePath g <$> inRepo (toTopFilePath file)
+	topf <- inRepo (toTopFilePath file)
 	oldkeys <- filter (/= newkey)
-		<$> Database.Keys.getAssociatedKey file
-	mapM_ go oldkeys
-  where
-	go key = do
+		<$> Database.Keys.getAssociatedKey topf
+	forM_ oldkeys $ \key -> do
 		obj <- calcRepo (gitAnnexLocation key)
 		caches <- Database.Keys.getInodeCaches key
 		unlessM (sameInodeCache obj caches) $ do
 			unlinkAnnex key
-			fs <- filter (/= file)
+			fs <- filter (/= ingestedf)
+				. map (`fromTopFilePath` g)
 				<$> Database.Keys.getAssociatedFiles key
 			fs' <- filterM (`sameInodeCache` caches) fs
 			case fs' of
@@ -225,9 +231,7 @@ cleanOldKeys file newkey = do
 				(f:_) -> do
 					ic <- withTSDelta (liftIO . genInodeCache f)
 					void $ linkToAnnex key f ic
-				_ -> lostcontent
-	  where
-		lostcontent = logStatus key InfoMissing
+				_ -> logStatus key InfoMissing
 
 {- On error, put the file back so it doesn't seem to have vanished.
  - This can be called before or after the symlink is in place. -}

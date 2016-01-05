@@ -24,6 +24,7 @@ import qualified Git.Ref
 import qualified Git
 import qualified Git.Branch
 import Git.Types (BlobType(..))
+import Git.FilePath
 import Config
 import Annex.ReplaceFile
 import Annex.VariantFile
@@ -188,7 +189,7 @@ resolveMerge' unstagedmap (Just us) them u = do
 					writeFile dest (formatPointer key)
 				_ -> noop
 		stagePointerFile dest =<< hashPointerFile key
-		Database.Keys.addAssociatedFile key dest
+		Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath dest)
 
 	{- Stage a graft of a directory or file from a branch.
 	 -

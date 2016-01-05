@@ -20,6 +20,7 @@ import qualified Annex.Content.Direct as Direct
 import qualified Git
 import qualified Git.LsFiles
 import qualified Git.Branch
+import Git.FilePath
 import Git.FileMode
 import Git.Config
 import Utility.InodeCache
@@ -89,7 +90,8 @@ upgradeDirectWorkTree = do
 					, fromdirect f k
 					)
 				stagePointerFile f =<< hashPointerFile k
-				Database.Keys.addAssociatedFile k f
+				Database.Keys.addAssociatedFile k
+					=<< inRepo (toTopFilePath f)
 				return ()
 	go _ = noop
 

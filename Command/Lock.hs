@@ -21,6 +21,7 @@ import Utility.InodeCache
 import qualified Database.Keys
 import Annex.Ingest
 import Logs.Location
+import Git.FilePath
 	
 cmd :: Command
 cmd = notDirect $ withGlobalOptions annexedMatchingOptions $
@@ -85,7 +86,9 @@ performNew file key filemodified = do
 	-- Try to repopulate obj from an unmodified associated file.
 	repopulate obj
 		| filemodified = modifyContent obj $ do
-			fs <- Database.Keys.getAssociatedFiles key
+			g <- Annex.gitRepo
+			fs <- mapM (`fromTopFilePath` g)
+				<$> Database.Keys.getAssociatedFiles key
 			mfile <- firstM (isUnmodified key) fs
 			liftIO $ nukeFile obj
 			case mfile of
@@ -99,7 +102,7 @@ performNew file key filemodified = do
 
 cleanupNew :: FilePath -> Key -> CommandCleanup
 cleanupNew file key = do
-	Database.Keys.removeAssociatedFile key file
+	Database.Keys.removeAssociatedFile key =<< inRepo (toTopFilePath file)
 	return True
 
 startOld :: FilePath -> CommandStart

@@ -13,9 +13,8 @@
 {-# LANGUAGE CPP #-}
 
 module Git.FilePath (
-	TopFilePath,
+	TopFilePath(..),
 	fromTopFilePath,
-	getTopFilePath,
 	toTopFilePath,
 	asTopFilePath,
 	InternalGitPath,
