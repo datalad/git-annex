@@ -42,7 +42,7 @@ by running "git annex sync" on the remote.
 
 * `--commit`, `--no-commit`
 
-  A commit is done by default. Use --no-cmmit to avoid committing local changes.
+  A commit is done by default. Use --no-commit to avoid committing local changes.
 
 * `--message=msg`
 
