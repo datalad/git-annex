@@ -60,7 +60,7 @@ simplifyPath path = dropTrailingPathSeparator $
 {- Makes a path absolute.
  -
  - The first parameter is a base directory (ie, the cwd) to use if the path
- - is not already absolute.
+ - is not already absolute, and should itsef be absolute.
  -
  - Does not attempt to deal with edge cases or ensure security with
  - untrusted inputs.

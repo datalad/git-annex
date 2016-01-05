@@ -188,7 +188,7 @@ getAssociatedFiles' sk = readDb $ do
 	l <- select $ from $ \r -> do
 		where_ (r ^. AssociatedKey ==. val sk)
 		return (r ^. AssociatedFile)
-	return $ map (TopFilePath . unValue) l
+	return $ map (asTopFilePath . unValue) l
 
 {- Gets any keys that are on record as having a particular associated file.
  - (Should be one or none but the database doesn't enforce that.) -}
