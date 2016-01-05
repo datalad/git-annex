@@ -316,12 +316,12 @@ test_import :: Assertion
 test_import = intmpclonerepo $ Utility.Tmp.withTmpDir "importtest" $ \importdir -> do
 	(toimport1, importf1, imported1) <- mktoimport importdir "import1"
 	git_annex "import" [toimport1] @? "import failed"
-	annexed_present imported1
+	annexed_present_locked imported1
 	checkdoesnotexist importf1
 
 	(toimport2, importf2, imported2) <- mktoimport importdir "import2"
 	git_annex "import" [toimport2] @? "import of duplicate failed"
-	annexed_present imported2
+	annexed_present_locked imported2
 	checkdoesnotexist importf2
 
 	(toimport3, importf3, imported3) <- mktoimport importdir "import3"
@@ -341,11 +341,11 @@ test_import = intmpclonerepo $ Utility.Tmp.withTmpDir "importtest" $ \importdir 
 	
 	(toimport5, importf5, imported5) <- mktoimport importdir "import5"
 	git_annex "import" ["--duplicate", toimport5] @? "import --duplicate failed"
-	annexed_present imported5
+	annexed_present_locked imported5
 	checkexists importf5
 	
 	git_annex "drop" ["--force", imported1, imported2, imported5] @? "drop failed"
-	annexed_notpresent imported2
+	annexed_notpresent_locked imported2
 	(toimportdup, importfdup, importeddup) <- mktoimport importdir "importdup"
 	git_annex "import" ["--clean-duplicates", toimportdup] 
 		@? "import of missing duplicate with --clean-duplicates failed"
@@ -361,13 +361,15 @@ test_import = intmpclonerepo $ Utility.Tmp.withTmpDir "importtest" $ \importdir 
 test_reinject :: Assertion
 test_reinject = intmpclonerepoInDirect $ do
 	git_annex "drop" ["--force", sha1annexedfile] @? "drop failed"
+	annexed_notpresent sha1annexedfile
 	writeFile tmp $ content sha1annexedfile
 	r <- annexeval $ Types.Backend.getKey backendSHA1
 		Types.KeySource.KeySource { Types.KeySource.keyFilename = tmp, Types.KeySource.contentLocation = tmp, Types.KeySource.inodeCache = Nothing }
 	let key = Types.Key.key2file $ fromJust r
 	git_annex "reinject" [tmp, sha1annexedfile] @? "reinject failed"
+	annexed_present sha1annexedfile
 	git_annex "fromkey" [key, sha1annexedfiledup] @? "fromkey failed for dup"
-	annexed_present sha1annexedfiledup
+	annexed_present_locked sha1annexedfiledup
   where
 	tmp = "tmpfile"
 
@@ -1800,15 +1802,29 @@ runchecks (a:as) f = do
 
 annexed_notpresent :: FilePath -> Assertion
 annexed_notpresent f = ifM (unlockedFiles <$> getTestMode)
-	( runchecks [checkregularfile, checkispointerfile, notinlocationlog] f
-	, runchecks [checklink, checkdangling, notinlocationlog] f
+	( annexed_notpresent_unlocked f
+	, annexed_notpresent_locked f
 	)
+
+annexed_notpresent_locked :: FilePath -> Assertion
+annexed_notpresent_locked = runchecks [checklink, checkdangling, notinlocationlog]
+
+annexed_notpresent_unlocked :: FilePath -> Assertion
+annexed_notpresent_unlocked = runchecks [checkregularfile, checkispointerfile, notinlocationlog]
 
 annexed_present :: FilePath -> Assertion
 annexed_present f = ifM (unlockedFiles <$> getTestMode)
-	( runchecks [checkregularfile, checkcontent, checkwritable, inlocationlog] f
-	, runchecks [checklink, checkcontent, checkunwritable, inlocationlog] f
+	( annexed_present_unlocked f
+	, annexed_present_locked f
 	)
+
+annexed_present_locked :: FilePath -> Assertion
+annexed_present_locked = runchecks
+	[checklink, checkcontent, checkunwritable, inlocationlog]
+
+annexed_present_unlocked :: FilePath -> Assertion
+annexed_present_unlocked = runchecks
+	[checkregularfile, checkcontent, checkwritable, inlocationlog]
 
 unannexed :: FilePath -> Assertion
 unannexed = runchecks [checkregularfile, checkcontent, checkwritable]
