@@ -4,6 +4,8 @@ git-annex should use smudge/clean filters.
 
 * Test suite has a currently disabled pass that tests v6 unlocked files.
   That pass has many failures.
+* Intermittent test suite failures, with:
+	Exception: failed to commit changes to sqlite database: Just SQLite3 returned ErrorIO while attempting to perform step.
 * Reconcile staged changes into the associated files database, whenever
   the database is queried. This is needed to handle eg:
   	git add largefile
