@@ -705,8 +705,8 @@ test_fsck_basic = intmpclonerepo $ do
 		git_annex "get" [f] @? "get of file failed"
 		Utility.FileMode.allowWrite f
 		writeFile f (changedcontent f)
-		ifM (annexeval Config.isDirect)
-			( git_annex "fsck" [] @? "fsck failed in direct mode with changed file content"
+		ifM (annexeval Config.isDirect <||> unlockedFiles <$> getTestMode)
+			( git_annex "fsck" [] @? "fsck failed on unlocked file with changed file content"
 			, not <$> git_annex "fsck" [] @? "fsck failed to fail with corrupted file content"
 			)
 		git_annex "fsck" [] @? "fsck unexpectedly failed again; previous one did not fix problem with " ++ f
@@ -828,7 +828,7 @@ test_unused = intmpclonerepoInDirect $ do
 	checkunused [unusedfilekey] "with renamed link deleted"
 
 	-- unused used to miss symlinks that were deleted or modified
-	-- manually, but commited as such.
+	-- manually
 	writeFile "unusedfile" "unusedcontent"
 	git_annex "add" ["unusedfile"] @? "add of unusedfile failed"
 	boolSystem "git" [Param "add", File "unusedfile"] @? "git add failed"
@@ -837,15 +837,14 @@ test_unused = intmpclonerepoInDirect $ do
 	boolSystem "git" [Param "rm", Param "-qf", File "unusedfile"] @? "git rm failed"
 	checkunused [unusedfilekey'] "with staged link deleted"
 
-	-- unused used to miss symlinks that were deleted or modified
-	-- manually, but not staged as such.
+	-- unused used to false positive on symlinks that were
+	-- deleted or modified manually, but not staged as such
 	writeFile "unusedfile" "unusedcontent"
 	git_annex "add" ["unusedfile"] @? "add of unusedfile failed"
 	boolSystem "git" [Param "add", File "unusedfile"] @? "git add failed"
-	unusedfilekey'' <- annexeval $ findkey "unusedfile"
-	checkunused [] "with unstaged deleted link"
+	checkunused [] "with staged file"
 	removeFile "unusedfile"
-	checkunused [unusedfilekey''] "with unstaged link deleted"
+	checkunused [] "with staged deleted file"
 
   where
 	checkunused expectedkeys desc = do
