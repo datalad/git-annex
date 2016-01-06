@@ -625,6 +625,7 @@ test_partial_commit = intmpclonerepoInDirect $ do
 	git_annex "get" [annexedfile] @? "get of file failed"
 	annexed_present annexedfile
 	git_annex "unlock" [annexedfile] @? "unlock failed"
+	changecontent annexedfile
 	ifM (annexeval Annex.Version.versionSupportsUnlockedPointers)
 		( boolSystem "git" [Param "commit", Param "-q", Param "-m", Param "test", File annexedfile]
 			@? "partial commit of unlocked file should be allowed in v6 repository"
