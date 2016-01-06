@@ -634,7 +634,7 @@ test_partial_commit = intmpclonerepoInDirect $ do
 		)
 
 test_fix :: Assertion
-test_fix = intmpclonerepoInDirect $ do
+test_fix = intmpclonerepoInDirect $ unlessM (unlockedFiles <$> getTestMode) $ do
 	annexed_notpresent annexedfile
 	git_annex "fix" [annexedfile] @? "fix of not present failed"
 	annexed_notpresent annexedfile
