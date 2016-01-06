@@ -182,13 +182,13 @@ excludeReferenced refspec ks = runfilter firstlevel ks >>= runfilter secondlevel
 	secondlevel = withKeysReferencedInGit refspec
 
 {- Given an initial value, folds it with each key referenced by
- - symlinks in the git repo. -}
+ - files in the working tree. -}
 withKeysReferenced :: v -> (Key -> v -> v) -> Annex v
 withKeysReferenced initial a = withKeysReferenced' Nothing initial folda
   where
 	folda k _ v = return $ a k v
 
-{- Runs an action on each referenced key in the git repo. -}
+{- Runs an action on each referenced key in the working tree. -}
 withKeysReferencedM :: (Key -> Annex ()) -> Annex ()
 withKeysReferencedM a = withKeysReferenced' Nothing () calla
   where
@@ -271,8 +271,8 @@ withKeysReferencedInGitRef a ref = do
 	liftIO $ void clean
   where
 	tKey True = lookupFile . getTopFilePath . DiffTree.file
-	tKey False = fileKey . takeFileName . decodeBS <$$>
-		catFile ref . getTopFilePath . DiffTree.file
+	tKey False = parseLinkOrPointer
+		<$$> catFile ref . getTopFilePath . DiffTree.file
 
 data UnusedMaps = UnusedMaps
 	{ unusedMap :: UnusedMap
