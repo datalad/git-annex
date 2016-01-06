@@ -14,7 +14,14 @@ import Test.Tasty.Options
 #endif
 
 #ifdef WITH_TESTSUITE
-type TestOptions = OptionSet
+data TestOptions = TestOptions
+	{ tastyOptionSet :: OptionSet
+	, keepFailuresOption :: Bool
+	}
+
+instance Monoid TestOptions where
+	mempty = TestOptions mempty False
+
 #else
 type TestOptions = ()
 #endif

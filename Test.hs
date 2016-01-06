@@ -9,6 +9,7 @@
 
 module Test where
 
+import Types.Test
 import Options.Applicative.Types
 
 #ifndef WITH_TESTSUITE
@@ -24,11 +25,11 @@ runner = Nothing
 #else
 
 import Test.Tasty
-import Test.Tasty.Options
 import Test.Tasty.Runners
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
 import Test.Tasty.Ingredients.Rerun
+import Options.Applicative (switch, long, help)
 
 import qualified Data.Map as M
 import qualified Text.JSON
@@ -99,11 +100,16 @@ import qualified Types.Crypto
 import qualified Utility.Gpg
 #endif
 
-optParser :: Parser OptionSet
-optParser = suiteOptionParser ingredients tests
+optParser :: Parser TestOptions
+optParser = TestOptions
+	<$> suiteOptionParser ingredients (tests mempty)
+	<*> switch
+		( long "keep-failures"
+		<> help "preserve repositories on test failure"
+		)
 
-runner :: Maybe (OptionSet -> IO ())
-runner = Just $ \opts -> case tryIngredients ingredients opts tests of
+runner :: Maybe (TestOptions -> IO ())
+runner = Just $ \opts -> case tryIngredients ingredients (tastyOptionSet opts) (tests opts) of
 	Nothing -> error "No tests found!?"
 	Just act -> ifM act
 		( exitSuccess
@@ -119,17 +125,17 @@ ingredients =
 	, rerunningTests [consoleTestReporter]
 	]
 
-tests :: TestTree
-tests = testGroup "Tests" $ properties :
+tests :: TestOptions -> TestTree
+tests opts = testGroup "Tests" $ properties :
 	map (\(d, te) -> withTestMode te (unitTests d)) testmodes
   where
 	testmodes =
-		-- [ ("v6 unlocked", (testMode "6") { unlockedFiles = True })
-		[ ("v6 locked", testMode "6")
-		, ("v5", testMode "5")
+		[ ("v6 unlocked", (testMode opts "6") { unlockedFiles = True })
+		, ("v6 locked", testMode opts "6")
+		, ("v5", testMode opts "5")
 #ifndef mingw32_HOST_OS
 		-- Windows will only use direct mode, so don't test twice.
-		, ("v5 direct", (testMode "5") { forceDirect = True })
+		, ("v5 direct", (testMode opts "5") { forceDirect = True })
 #endif
 		]
 
@@ -1611,7 +1617,17 @@ withtmpclonerepo = withtmpclonerepo' newCloneRepoConfig
 withtmpclonerepo' :: CloneRepoConfig -> (FilePath -> Assertion) -> Assertion
 withtmpclonerepo' cfg a = do
 	dir <- tmprepodir
-	bracket (clonerepo mainrepodir dir cfg) cleanup a
+	clone <- clonerepo mainrepodir dir cfg
+	r <- tryNonAsync (a clone)
+	case r of
+		Right () -> cleanup clone
+		Left e -> do
+			ifM (keepFailures <$> getTestMode)
+				( putStrLn $ "** Preserving repo for failure analysis in " ++ clone
+				, cleanup clone
+				)
+			throwM e
+
 
 disconnectOrigin :: Assertion
 disconnectOrigin = boolSystem "git" [Param "remote", Param "rm", Param "origin"] @? "remote rm"
@@ -1839,13 +1855,15 @@ data TestMode = TestMode
 	{ forceDirect :: Bool
 	, unlockedFiles :: Bool
 	, annexVersion :: Annex.Version.Version
+	, keepFailures :: Bool
 	} deriving (Read, Show)
 
-testMode :: Annex.Version.Version -> TestMode
-testMode v = TestMode
+testMode :: TestOptions -> Annex.Version.Version -> TestMode
+testMode opts v = TestMode
 	{ forceDirect = False
 	, unlockedFiles = False
 	, annexVersion = v
+	, keepFailures = keepFailuresOption opts
 	}
 
 withTestMode :: TestMode -> TestTree -> TestTree
@@ -1858,13 +1876,14 @@ withTestMode testmode = withResource prepare release . const
 			Just act -> unlessM act $
 				error "init tests failed! cannot continue"
 		return ()
-	release _ = cleanup' True tmpdir
+	release _
+		| keepFailures testmode = void $ tryIO $ do
+			cleanup' True mainrepodir
+			removeDirectory tmpdir
+		| otherwise = cleanup' True tmpdir
 
 setTestMode :: TestMode -> IO ()
 setTestMode testmode = do
-	whenM (doesDirectoryExist tmpdir) $
-		error $ "The temporary directory " ++ tmpdir ++ " already exists; cannot run test suite."
-
 	currdir <- getCurrentDirectory
 	p <- Utility.Env.getEnvDefault "PATH" ""
 

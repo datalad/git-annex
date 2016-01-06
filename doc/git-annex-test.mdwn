@@ -10,8 +10,7 @@ git annex test
 
 This runs git-annex's built-in test suite.
 
-The test suite runs in the `.t` subdirectory of the current directory
-(it refuses to run if `.t` already exists).
+The test suite runs in the `.t` subdirectory of the current directory.
 
 It can be useful to run the test suite on different filesystems,
 or to verify your local installation of git-annex.
@@ -19,7 +18,12 @@ or to verify your local installation of git-annex.
 # OPTIONS
       
 There are several options, provided by Haskell's tasty test
-framework. Pass --help for details.
+framework. Pass --help for details about those.
+
+* `--keep-failures`
+
+  When there are test failures, leave the `.t` directory populated with
+  repositories that demonstate the failures, for later analysis.
 
 # SEE ALSO
 

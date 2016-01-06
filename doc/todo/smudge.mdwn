@@ -6,6 +6,7 @@ git-annex should use smudge/clean filters.
   That pass has many failures.
 * Intermittent test suite failures, with:
 	Exception: failed to commit changes to sqlite database: Just SQLite3 returned ErrorIO while attempting to perform step.
+	sqlite worker thread crashed: SQLite3 returned ErrorError while attempting to perform step.
 * Reconcile staged changes into the associated files database, whenever
   the database is queried. This is needed to handle eg:
   	git add largefile
