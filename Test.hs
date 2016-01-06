@@ -546,9 +546,11 @@ test_preferred_content = intmpclonerepo $ do
 
 test_lock :: Assertion
 test_lock = intmpclonerepoInDirect $ do
-	-- regression test: unlock of not present file should skip it
 	annexed_notpresent annexedfile
-	not <$> git_annex "unlock" [annexedfile] @? "unlock failed to fail with not present file"
+	ifM (unlockedFiles <$> getTestMode)
+		( not <$> git_annex "lock" [annexedfile] @? "lock failed to fail with not present file"
+		, not <$> git_annex "unlock" [annexedfile] @? "unlock failed to fail with not present file"
+		)
 	annexed_notpresent annexedfile
 
 	-- regression test: unlock of newly added, not committed file

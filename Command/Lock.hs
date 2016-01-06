@@ -46,7 +46,7 @@ startNew file key = ifM (isJust <$> isAnnexLink file)
 	)
   where
 	go (Just key')
-		| key' == key = cont False
+		| key' == key = error "content not present; cannot lock"
 		| otherwise = errorModified
 	go Nothing = 
 		ifM (isUnmodified key file) 
