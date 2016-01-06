@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-01-06T15:50:13Z"
+ content="""
+1. You have to run something on the receiving remote to update its working
+tree. Running the assistant in that repository would be one easy option.
+
+2. This is fine, git-annex will notice if a repository on a path changes
+and do the right thing.
+"""]]
