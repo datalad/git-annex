@@ -38,6 +38,7 @@ git-annex (6.20151219) UNRELEASED; urgency=medium
   * info --json: Improve json for "backend usage", using a nested object
     with fields for each backend instead of the previous weird nested lists.
     This may break existing parsers of this json output, if there were any.
+  * whereis --json: Make url list be included in machine-parseable form.
 
  -- Joey Hess <id@joeyh.name>  Sat, 19 Dec 2015 13:31:17 -0400
 

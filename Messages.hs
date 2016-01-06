@@ -35,6 +35,7 @@ module Messages (
 	disableDebugOutput,
 	debugEnabled,
 	commandProgressDisabled,
+	outputMessage,
 ) where
 
 import Text.JSON

@@ -6,6 +6,9 @@ http://git-annex.branchable.com/tips/using_the_web_as_a_special_remote/#comment-
 
 If the "note" properties are meant to be comments, it might be a good idea to find another property for the url(s).  Please note that I haven't looked at multiple urls for an object, so I'm not sure that only the last listed url will appear in parsed json object.
 
+> The note properties are any notes git-annex normally displays while
+> running a command.
+
 ### What steps will reproduce the problem?
 
 git-annex whereis --json
@@ -42,3 +45,5 @@ umeboshi@bard:~/tmp/testweb$
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Lol!  Positive note!  I spend a couple of days making specially crafted rss files for importfeed, so I can have appropriate filenames, then look back and see that you are working on '--batch --with-files' options to addurl.  Have a Happy New Year!  :)
+
+> [[fixed|done]] --[[Joey]]
