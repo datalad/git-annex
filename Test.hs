@@ -575,7 +575,7 @@ test_lock = intmpclonerepoInDirect $ do
 	-- In v6 mode, the original content of the file is not always
 	-- preserved after modification, so re-get it.
 	git_annex "get" [annexedfile] @? "get of file failed after lock --force"
-	annexed_present annexedfile
+	annexed_present_locked annexedfile
 	git_annex "unlock" [annexedfile] @? "unlock failed"		
 	unannexed annexedfile
 	changecontent annexedfile
