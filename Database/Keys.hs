@@ -173,7 +173,7 @@ addAssociatedFile' k f = queueDb $ do
 	-- If the same file was associated with a different key before,
 	-- remove that.
 	delete $ from $ \r -> do
-		where_ (r ^. AssociatedFile ==. val (getTopFilePath f) &&. r ^. AssociatedKey ==. val sk)
+		where_ (r ^. AssociatedFile ==. val (getTopFilePath f) &&. not_ (r ^. AssociatedKey ==. val sk))
 	void $ insertUnique $ Associated sk (getTopFilePath f)
   where
 	sk = toSKey k
