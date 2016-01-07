@@ -17,6 +17,7 @@ import Annex.Content
 import qualified Command.ReKey
 import qualified Command.Fsck
 import qualified Annex
+import Logs.MetaData
 
 cmd :: Command
 cmd = notDirect $ withGlobalOptions annexedMatchingOptions $
@@ -73,7 +74,8 @@ perform file oldkey oldbackend newbackend = go =<< genkey
 		| knowngoodcontent = finish newkey
 		| otherwise = stopUnless checkcontent $ finish newkey
 	checkcontent = Command.Fsck.checkBackend oldbackend oldkey Command.Fsck.KeyLocked $ Just file
-	finish newkey = stopUnless (Command.ReKey.linkKey oldkey newkey) $
+	finish newkey = stopUnless (Command.ReKey.linkKey oldkey newkey) $ do
+		copyMetaData oldkey newkey
 		next $ Command.ReKey.cleanup file oldkey newkey
 	genkey = case maybe Nothing (\fm -> fm oldkey newbackend (Just file)) (fastMigrate oldbackend) of
 		Just newkey -> return $ Just (newkey, True)
