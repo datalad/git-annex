@@ -1,6 +1,6 @@
 {- git-annex test suite
  -
- - Copyright 2010-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -369,9 +369,7 @@ test_reinject = intmpclonerepoInDirect $ do
 	git_annex "drop" ["--force", sha1annexedfile] @? "drop failed"
 	annexed_notpresent sha1annexedfile
 	writeFile tmp $ content sha1annexedfile
-	r <- annexeval $ Types.Backend.getKey backendSHA1
-		Types.KeySource.KeySource { Types.KeySource.keyFilename = tmp, Types.KeySource.contentLocation = tmp, Types.KeySource.inodeCache = Nothing }
-	let key = Types.Key.key2file $ fromJust r
+	key <- Types.Key.key2file <$> getKey backendSHA1 tmp
 	git_annex "reinject" [tmp, sha1annexedfile] @? "reinject failed"
 	annexed_present sha1annexedfile
 	git_annex "fromkey" [key, sha1annexedfiledup] @? "fromkey failed for dup"
@@ -789,11 +787,10 @@ test_unused :: Assertion
 -- This test is broken in direct mode
 test_unused = intmpclonerepoInDirect $ do
 	checkunused [] "in new clone"
-	-- keys have to be looked up before files are removed
-	annexedfilekey <- annexeval $ findkey annexedfile
-	sha1annexedfilekey <- annexeval $ findkey sha1annexedfile
 	git_annex "get" [annexedfile] @? "get of file failed"
 	git_annex "get" [sha1annexedfile] @? "get of file failed"
+	annexedfilekey <- getKey backendSHA256E annexedfile
+	sha1annexedfilekey <- getKey backendSHA1 sha1annexedfile
 	checkunused [] "after get"
 	boolSystem "git" [Param "rm", Param "-fq", File annexedfile] @? "git rm failed"
 	checkunused [] "after rm"
@@ -820,7 +817,7 @@ test_unused = intmpclonerepoInDirect $ do
 	-- and pointed at annexed content, and think that content was unused
 	writeFile "unusedfile" "unusedcontent"
 	git_annex "add" ["unusedfile"] @? "add of unusedfile failed"
-	unusedfilekey <- annexeval $ findkey "unusedfile"
+	unusedfilekey <- getKey backendSHA256E "unusedfile"
 	renameFile "unusedfile" "unusedunstagedfile"
 	boolSystem "git" [Param "rm", Param "-qf", File "unusedfile"] @? "git rm failed"
 	checkunused [] "with unstaged link"
@@ -832,7 +829,7 @@ test_unused = intmpclonerepoInDirect $ do
 	writeFile "unusedfile" "unusedcontent"
 	git_annex "add" ["unusedfile"] @? "add of unusedfile failed"
 	boolSystem "git" [Param "add", File "unusedfile"] @? "git add failed"
-	unusedfilekey' <- annexeval $ findkey "unusedfile"
+	unusedfilekey' <- getKey backendSHA256E "unusedfile"
 	checkunused [] "with staged deleted link"
 	boolSystem "git" [Param "rm", Param "-qf", File "unusedfile"] @? "git rm failed"
 	checkunused [unusedfilekey'] "with staged link deleted"
@@ -846,6 +843,27 @@ test_unused = intmpclonerepoInDirect $ do
 	removeFile "unusedfile"
 	checkunused [] "with staged deleted file"
 
+	-- When an unlocked file is modified, git diff will cause git-annex
+	-- to add its content to the repository. Make sure that's not
+	-- found as unused.
+	whenM (unlockedFiles <$> getTestMode) $ do
+		let f = "unlockedfile"
+		writeFile f "unlockedcontent1"
+		boolSystem "git" [Param "add", File "unlockedfile"] @? "git add failed"
+		checkunused [] "with unlocked file before modification"
+		writeFile f "unlockedcontent2"
+		checkunused [] "with unlocked file after modification"
+		not <$> boolSystem "git" [Param "diff", Param "--quiet", File f] @? "git diff did not show changes to unlocked file"
+		ver2key <- getKey backendSHA256E "unlockedfile"
+		-- still nothing unused because one version is in the index
+		-- and the other is in the work tree
+		checkunused [] "with unlocked file after git diff"
+		writeFile f "unlockedcontent3"
+		-- original version is still in index; version 2 is unused
+		-- now, and version 3 is in work tree
+		checkunused [ver2key] "with unlocked file after second modification"
+		not <$> boolSystem "git" [Param "diff", Param "--quiet", File f] @? "git diff did not show changes to unlocked file"
+		checkunused [ver2key] "with unlocked file after second git diff"
   where
 	checkunused expectedkeys desc = do
 		git_annex "unused" [] @? "unused failed"
@@ -853,9 +871,6 @@ test_unused = intmpclonerepoInDirect $ do
 		let unusedkeys = M.elems unusedmap
 		assertEqual ("unused keys differ " ++ desc)
 			(sort expectedkeys) (sort unusedkeys)
-	findkey f = do
-		r <- Annex.WorkTree.lookupFile f
-		return $ fromJust r
 
 test_describe :: Assertion
 test_describe = intmpclonerepo $ do
@@ -1976,10 +1991,23 @@ backendSHA1 = backend_ "SHA1"
 backendSHA256 :: Types.Backend
 backendSHA256 = backend_ "SHA256"
 
+backendSHA256E :: Types.Backend
+backendSHA256E = backend_ "SHA256E"
+
 backendWORM :: Types.Backend
 backendWORM = backend_ "WORM"
 
 backend_ :: String -> Types.Backend
 backend_ = Backend.lookupBackendName
+
+getKey :: Types.Backend -> FilePath -> IO Types.Key
+getKey b f = fromJust <$> annexeval go
+  where
+	go = Types.Backend.getKey b
+		Types.KeySource.KeySource
+			{ Types.KeySource.keyFilename = f
+			, Types.KeySource.contentLocation = f
+			, Types.KeySource.inodeCache = Nothing
+			}
 
 #endif

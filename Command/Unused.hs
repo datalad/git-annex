@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -32,8 +32,11 @@ import Types.Key
 import Types.RefSpec
 import Git.Types
 import Git.Sha
+import Git.FilePath
 import Logs.View (is_branchView)
 import Annex.BloomFilter
+import qualified Database.Keys
+import Annex.InodeSentinal
 
 cmd :: Command
 cmd = command "unused" SectionMaintenance "look for unused file content"
@@ -156,23 +159,29 @@ dropMsg' s = "\nTo remove unwanted data: git-annex dropunused" ++ s ++ " NUMBER\
  -
  - Strategy:
  -
- - Pass keys through 3 bloom filters in order, only creating each bloom
+ - Pass keys through these filters in order, only creating each bloom
  - filter on demand if the previous one didn't filter out all keys.
  -
- - 1. All keys referenced by files in the work tree.
+ - 1. Bloom filter containing all keys referenced by files in the work tree.
  -    This is the fastest one to build and will filter out most keys.
- - 2. All keys in the diff from the work tree to the index.
- - 3. All keys in the diffs between the index and branches matching the
- -    RefSpec. (This can take quite a while).
+ - 2. Bloom filter containing all keys in the diff from the work tree to
+ -    the index.
+ - 3. Associated files filter. A v6 unlocked file may have had its content
+ -    added to the annex (by eg, git diff running the smudge filter),
+ -    but the new key is not yet staged in the index. But if so, it will 
+ -    have an associated file.
+ - 4. Bloom filter containing all keys in the diffs between the index and
+ -    branches matching the RefSpec. (This can take quite a while to build).
  -}
 excludeReferenced :: RefSpec -> [Key] -> Annex [Key]
-excludeReferenced refspec ks =
-	runfilter withKeysReferencedM ks
-		>>= runfilter withKeysReferencedDiffIndex
-			>>= runfilter (withKeysReferencedDiffGitRefs refspec)
+excludeReferenced refspec ks = runbloomfilter withKeysReferencedM ks
+	>>= runbloomfilter withKeysReferencedDiffIndex
+	>>= runfilter associatedFilesFilter
+	>>= runbloomfilter (withKeysReferencedDiffGitRefs refspec)
   where
 	runfilter _ [] = return [] -- optimisation
-	runfilter a l = bloomFilter l <$> genBloomFilter a
+	runfilter a l = a l
+	runbloomfilter a = runfilter $ \l -> bloomFilter l <$> genBloomFilter a
 
 {- Given an initial value, folds it with each key referenced by
  - files in the working tree. -}
@@ -268,6 +277,24 @@ withKeysReferencedDiff a getdiff extractsha = do
 		unless (sha == nullSha) $
 			(parseLinkOrPointer <$> catObject sha)
 				>>= maybe noop a
+
+{- Filters out keys that have an associated file that's not modified. -}
+associatedFilesFilter :: [Key] -> Annex [Key]
+associatedFilesFilter = filterM go
+  where
+	go k = do
+		cs <- Database.Keys.getInodeCaches k
+		if null cs
+			then return True
+			else checkunmodified cs
+				=<< Database.Keys.getAssociatedFiles k
+	checkunmodified _ [] = return True
+	checkunmodified cs (f:fs) = do
+		relf <- fromRepo $ fromTopFilePath f
+		ifM (sameInodeCache relf cs)
+			( return False
+			, checkunmodified cs fs
+			)
 
 data UnusedMaps = UnusedMaps
 	{ unusedMap :: UnusedMap
