@@ -1,0 +1,42 @@
+### Please describe the problem.
+
+When using the metadata driven view fields values that contain a slash break the view field=* functionality
+
+### What steps will reproduce the problem?
+
+    $ git annex metadata --set test=a/b file.tex
+    $ git annex view test=*    
+    view  (searching...) 
+    git-annex: fd:13: commitBuffer: invalid argument (invalid character)
+    failed
+    git-annex: view: 1 failed
+
+    
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 5.20151218-g5008846 on ArchLinux
+
+
+### Please provide any additional information below.
+
+To me it seems like this is only occuring during a field=* view.
+Everywhere else the field value behaves normally, For example its possible to directly address the field value in a view without issue.
+
+    $ git annex view test=a/b
+    view  (searching...) 
+    Switched to branch 'views/(test=a/b)'
+    ok
+
+
+I dont have any issues with non latin characters so this doesnt seem related to the locale issues in [https://git-annex.branchable.com/bugs/view_fails_with___34__invalid_character__34__/](https://git-annex.branchable.com/bugs/view_fails_with___34__invalid_character__34__/)
+
+I was trying out the metadata extraction via libextractor and for the mimetype there often are slashes involved.
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Apart from this git-annex is working very well for me. I mostly use it as an archive, distributing numerous copies on various hard drives and cloud providers and keeping track of what is where.Its an amazing tool for that.
+
+
+
