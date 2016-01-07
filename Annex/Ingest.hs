@@ -9,6 +9,7 @@
 
 module Annex.Ingest (
 	LockedDown(..),
+	LockDownConfig(..),
 	lockDown,
 	ingest,
 	finishIngestDirect,
@@ -48,8 +49,14 @@ import Utility.Touch
 import Control.Exception (IOException)
 
 data LockedDown = LockedDown
-	{ lockingFile :: Bool
+	{ lockDownConfig :: LockDownConfig
 	, keySource :: KeySource
+	}
+	deriving (Show)
+
+data LockDownConfig = LockDownConfig
+	{ lockingFile :: Bool -- ^ write bit removed during lock down
+	, hardlinkFileTmp :: Bool -- ^ hard link to temp directory
 	}
 	deriving (Show)
 
@@ -64,24 +71,21 @@ data LockedDown = LockedDown
  - against some changes, like deletion or overwrite of the file, and
  - allows lsof checks to be done more efficiently when adding a lot of files.
  -
- - If lockingfile is True, the file is going to be added in locked mode.
- - So, its write bit is removed as part of the lock down.
- -
  - Lockdown can fail if a file gets deleted, and Nothing will be returned.
  -}
-lockDown :: Bool -> FilePath -> Annex (Maybe LockedDown)
-lockDown lockingfile file = either 
+lockDown :: LockDownConfig -> FilePath -> Annex (Maybe LockedDown)
+lockDown cfg file = either 
 		(\e -> warning (show e) >> return Nothing)
 		(return . Just)
-	=<< lockDown' lockingfile file
+	=<< lockDown' cfg file
 
-lockDown' :: Bool -> FilePath -> Annex (Either IOException LockedDown)
-lockDown' lockingfile file = ifM crippledFileSystem
+lockDown' :: LockDownConfig -> FilePath -> Annex (Either IOException LockedDown)
+lockDown' cfg file = ifM (pure (not (hardlinkFileTmp cfg)) <||> crippledFileSystem)
 	( withTSDelta $ liftIO . tryIO . nohardlink
 	, tryIO $ do
 		tmp <- fromRepo gitAnnexTmpMiscDir
 		createAnnexDirectory tmp
-		when lockingfile $
+		when (lockingFile cfg) $
 			freezeContent file
 		withTSDelta $ \delta -> liftIO $ do
 			(tmpfile, h) <- openTempFile tmp $
@@ -93,7 +97,7 @@ lockDown' lockingfile file = ifM crippledFileSystem
   where
 	nohardlink delta = do
 		cache <- genInodeCache file delta
-		return $ LockedDown lockingfile $ KeySource
+		return $ LockedDown cfg $ KeySource
 			{ keyFilename = file
 			, contentLocation = file
 			, inodeCache = cache
@@ -101,7 +105,7 @@ lockDown' lockingfile file = ifM crippledFileSystem
 	withhardlink delta tmpfile = do
 		createLink file tmpfile
 		cache <- genInodeCache tmpfile delta
-		return $ LockedDown lockingfile $ KeySource
+		return $ LockedDown cfg $ KeySource
 			{ keyFilename = file
 			, contentLocation = tmpfile
 			, inodeCache = cache
@@ -115,7 +119,7 @@ lockDown' lockingfile file = ifM crippledFileSystem
  -}
 ingest :: Maybe LockedDown -> Annex (Maybe Key, Maybe InodeCache)
 ingest Nothing = return (Nothing, Nothing)
-ingest (Just (LockedDown lockingfile source)) = withTSDelta $ \delta -> do
+ingest (Just (LockedDown cfg source)) = withTSDelta $ \delta -> do
 	backend <- chooseBackend $ keyFilename source
 	k <- genKey source backend
 	let src = contentLocation source
@@ -127,7 +131,7 @@ ingest (Just (LockedDown lockingfile source)) = withTSDelta $ \delta -> do
 		_ -> failure "changed while it was being added"
   where
 	go (Just (key, _)) mcache (Just s)
-		| lockingfile = golocked key mcache s
+		| lockingFile cfg = golocked key mcache s
 		| otherwise = ifM isDirect
 			( godirect key mcache s
 			, gounlocked key mcache s

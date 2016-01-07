@@ -72,7 +72,7 @@ clean file = do
 		then liftIO $ B.hPut stdout b
 		else ifM (shouldAnnex file)
 			( liftIO . emitPointer
-				=<< go =<< ingest =<< lockDown False file
+				=<< go =<< ingest =<< lockDown cfg file
 			, liftIO $ B.hPut stdout b
 			)
 	stop
@@ -81,6 +81,10 @@ clean file = do
 		logStatus k InfoPresent
 		return k
 	go _ = error "could not add file to the annex"
+	cfg = LockDownConfig
+		{ lockingFile = False
+		, hardlinkFileTmp = False
+		}
 
 shouldAnnex :: FilePath -> Annex Bool
 shouldAnnex file = do

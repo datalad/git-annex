@@ -115,7 +115,11 @@ start file = ifAnnexed file addpresent add
 perform :: FilePath -> CommandPerform
 perform file = do
 	lockingfile <- not <$> isDirect
-	lockDown lockingfile file >>= ingest >>= go
+	let cfg = LockDownConfig
+		{ lockingFile = lockingfile
+		, hardlinkFileTmp = True
+		}
+	lockDown cfg file >>= ingest >>= go
   where
 	go (Just key, cache) = next $ cleanup file key cache True
 	go (Nothing, _) = stop
