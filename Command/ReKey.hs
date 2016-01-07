@@ -16,10 +16,8 @@ import Annex.Ingest
 import Annex.Link
 import Annex.Perms
 import Annex.ReplaceFile
-import Logs.Web
 import Logs.Location
 import Git.FilePath
-import qualified Remote
 import qualified Database.Keys
 import Annex.InodeSentinal
 import Utility.InodeCache
@@ -93,13 +91,6 @@ linkKey file oldkey newkey = ifM (isJust <$> isAnnexLink file)
 
 cleanup :: FilePath -> Key -> Key -> CommandCleanup
 cleanup file oldkey newkey = do
-	-- If the old key had some associated urls, record them for
-	-- the new key as well.
-	urls <- getUrls oldkey
-	forM_ urls $ \url -> do
-		r <- Remote.claimingUrl url
-		setUrlPresent (Remote.uuid r) newkey url
-
 	ifM (isJust <$> isAnnexLink file)
 		( do
 			-- Update symlink to use the new key.

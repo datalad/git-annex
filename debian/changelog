@@ -44,6 +44,9 @@ git-annex (6.20151219) UNRELEASED; urgency=medium
     removed (but not git rmed). git still has the add staged in this case,
     so the content should not be unused and was wrongly treated as such.
   * migrate: Copy over metadata to new key.
+  * rekey: No longer copies over urls from the old to the new key.
+    It makes sense for migrate to do that, but not for this low-level
+    (and little used) plumbing command to.
 
  -- Joey Hess <id@joeyh.name>  Sat, 19 Dec 2015 13:31:17 -0400
 
