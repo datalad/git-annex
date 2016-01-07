@@ -30,6 +30,8 @@ module Annex.Content (
 	LinkAnnexResult(..),
 	unlinkAnnex,
 	checkedCopyFile,
+	linkOrCopy,
+	linkOrCopy',
 	sendAnnex,
 	prepSendAnnex,
 	removeAnnex,
@@ -582,11 +584,14 @@ linkAnnex fromto key src (Just srcic) dest = do
 
 {- Hard links or copies src to dest. Only uses a hard link when annex.thin
  - is enabled and when src is not already hardlinked to elsewhere.
- - Checks disk reserve before copying, and will fail if not enough space,
- - or if the dest file already exists. -}
+ - Checks disk reserve before copying against the size of the key,
+ - and will fail if not enough space, or if the dest file already exists. -}
 linkOrCopy :: Key -> FilePath -> FilePath -> Annex Bool
-linkOrCopy key src dest = catchBoolIO $
-	ifM (annexThin <$> Annex.getGitConfig)
+linkOrCopy = linkOrCopy' (annexThin <$> Annex.getGitConfig)
+
+linkOrCopy' :: Annex Bool -> Key -> FilePath -> FilePath -> Annex Bool
+linkOrCopy' canhardlink key src dest = catchBoolIO $
+	ifM canhardlink
 		( hardlink
 		, copy =<< getstat
 		)

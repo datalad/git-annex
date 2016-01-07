@@ -74,9 +74,12 @@ perform file oldkey oldbackend newbackend = go =<< genkey
 		| knowngoodcontent = finish newkey
 		| otherwise = stopUnless checkcontent $ finish newkey
 	checkcontent = Command.Fsck.checkBackend oldbackend oldkey Command.Fsck.KeyLocked $ Just file
-	finish newkey = stopUnless (Command.ReKey.linkKey oldkey newkey) $ do
-		copyMetaData oldkey newkey
-		next $ Command.ReKey.cleanup file oldkey newkey
+	finish newkey = ifM (Command.ReKey.linkKey file oldkey newkey)
+		( do
+			copyMetaData oldkey newkey
+			next $ Command.ReKey.cleanup file oldkey newkey
+		, error "failed"
+		)
 	genkey = case maybe Nothing (\fm -> fm oldkey newbackend (Just file)) (fastMigrate oldbackend) of
 		Just newkey -> return $ Just (newkey, True)
 		Nothing -> do
