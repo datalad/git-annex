@@ -36,10 +36,8 @@ import Logs.View (is_branchView)
 import Annex.BloomFilter
 
 cmd :: Command
-cmd = -- withGlobalOptions [unusedFromOption, refSpecOption] $
-	command "unused" SectionMaintenance 
-		"look for unused file content"
-		paramNothing (seek <$$> optParser)
+cmd = command "unused" SectionMaintenance "look for unused file content"
+	paramNothing (seek <$$> optParser)
 
 data UnusedOptions = UnusedOptions
 	{ fromRemote :: Maybe RemoteName
