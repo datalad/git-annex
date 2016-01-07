@@ -5,19 +5,6 @@ git-annex should use smudge/clean filters.
 * Intermittent sqlite related test suite failures, with:
 	Exception: failed to commit changes to sqlite database: Just SQLite3 returned ErrorIO while attempting to perform step.
 	sqlite worker thread crashed: SQLite3 returned ErrorError while attempting to perform step.
-
-* Dropping a smudged file causes git status (and git annex status)
-  to show it as modified,  because the timestamp has changed. 
-  Getting a smudged file can also cause this.
-  Upgrading a direct mode repo also leaves files in this state.
-  User can use `git add` to clear it up, but better to avoid this,
-  by updating stat info in the index.
-  (May need to use libgit2 to do this efficiently, cannot find
-  any plumbing except git-update-index, which is very inneficient for
-  smudged files.)
-  ** This causes some test suite failures; git merge fails when files
-  are in this state **
-
 * Reconcile staged changes into the associated files database, whenever
   the database is queried. This is needed to handle eg:
   	git add largefile
@@ -32,6 +19,15 @@ git-annex should use smudge/clean filters.
   (And should avoid unlocking an object with a hard link if it's hard
   linked to a shared clone, but that's already accomplished because it
   avoids unlocking an object if it's hard linked at all)
+* Dropping a smudged file causes git status (and git annex status)
+  to show it as modified,  because the timestamp has changed. 
+  Getting a smudged file can also cause this.
+  Upgrading a direct mode repo also leaves files in this state.
+  User can use `git add` to clear it up, but better to avoid this,
+  by updating stat info in the index.
+  (May need to use libgit2 to do this efficiently, cannot find
+  any plumbing except git-update-index, which is very inneficient for
+  smudged files.)
 * Crippled filesystem should cause all files to be transparently unlocked.
   Note that this presents problems when dealing with merge conflicts and
   when pushing changes committed in such a repo. Ideally, should avoid
