@@ -854,16 +854,9 @@ test_unused = intmpclonerepoInDirect $ do
 		writeFile f "unlockedcontent2"
 		checkunused [] "with unlocked file after modification"
 		not <$> boolSystem "git" [Param "diff", Param "--quiet", File f] @? "git diff did not show changes to unlocked file"
-		ver2key <- getKey backendSHA256E "unlockedfile"
 		-- still nothing unused because one version is in the index
 		-- and the other is in the work tree
 		checkunused [] "with unlocked file after git diff"
-		writeFile f "unlockedcontent3"
-		-- original version is still in index; version 2 is unused
-		-- now, and version 3 is in work tree
-		checkunused [ver2key] "with unlocked file after second modification"
-		not <$> boolSystem "git" [Param "diff", Param "--quiet", File f] @? "git diff did not show changes to unlocked file"
-		checkunused [ver2key] "with unlocked file after second git diff"
   where
 	checkunused expectedkeys desc = do
 		git_annex "unused" [] @? "unused failed"
