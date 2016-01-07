@@ -12,6 +12,7 @@ module Git.DiffTree (
 	diffTreeRecursive,
 	diffIndex,
 	diffWorkTree,
+	diffFiles,
 	diffLog,
 ) where
 
@@ -65,6 +66,10 @@ diffIndex' ref params repo =
 			repo
 		, return ([], return True)
 		)
+
+{- Diff between the index and work tree. -}
+diffFiles :: [CommandParam] -> Repo -> IO ([DiffTreeItem], IO Bool)
+diffFiles = getdiff (Param "diff-files")
 
 {- Runs git log in --raw mode to get the changes that were made in
  - a particular commit. The output format is adjusted to be the same

@@ -30,8 +30,8 @@ import Annex.Link
 import Annex.CatFile
 import Types.Key
 import Types.RefSpec
-import Git.FilePath
 import Git.Types
+import Git.Sha
 import Logs.View (is_branchView)
 import Annex.BloomFilter
 
@@ -158,28 +158,23 @@ dropMsg' s = "\nTo remove unwanted data: git-annex dropunused" ++ s ++ " NUMBER\
  -
  - Strategy:
  -
- - * Build a bloom filter of all keys referenced by symlinks. This 
- -   is the fastest one to build and will filter out most keys.
- - * If keys remain, build a second bloom filter of keys referenced by
- -   branches maching the RefSpec.
- - * The list is streamed through these bloom filters lazily, so both will
- -   exist at the same time. This means that twice the memory is used,
- -   but they're relatively small, so the added complexity of using a
- -   mutable bloom filter does not seem worthwhile.
- - * Generating the second bloom filter can take quite a while, since
- -   it needs enumerating all keys in all git branches. But, the common
- -   case, if the second filter is needed, is for some keys to be globally
- -   unused, and in that case, no short-circuit is possible.
- -   Short-circuiting if the first filter filters all the keys handles the
- -   other common case.
+ - Pass keys through 3 bloom filters in order, only creating each bloom
+ - filter on demand if the previous one didn't filter out all keys.
+ -
+ - 1. All keys referenced by files in the work tree.
+ -    This is the fastest one to build and will filter out most keys.
+ - 2. All keys in the diff from the work tree to the index.
+ - 3. All keys in the diffs between the index and branches matching the
+ -    RefSpec. (This can take quite a while).
  -}
 excludeReferenced :: RefSpec -> [Key] -> Annex [Key]
-excludeReferenced refspec ks = runfilter firstlevel ks >>= runfilter secondlevel
+excludeReferenced refspec ks =
+	runfilter withKeysReferencedM ks
+		>>= runfilter withKeysReferencedDiffIndex
+			>>= runfilter (withKeysReferencedDiffGitRefs refspec)
   where
 	runfilter _ [] = return [] -- optimisation
 	runfilter a l = bloomFilter l <$> genBloomFilter a
-	firstlevel = withKeysReferencedM
-	secondlevel = withKeysReferencedInGit refspec
 
 {- Given an initial value, folds it with each key referenced by
  - files in the working tree. -}
@@ -218,7 +213,6 @@ withKeysReferenced' mdir initial a = do
 		mk <- getM id
 			[ isAnnexLink f
 			, liftIO (isPointerFile f)
-			, catKeyFile f
 			]
 		case mk of
 			Nothing -> go v fs
@@ -226,53 +220,56 @@ withKeysReferenced' mdir initial a = do
 				!v' <- a k f v
 				go v' fs
 
-withKeysReferencedInGit :: RefSpec -> (Key -> Annex ()) -> Annex ()
-withKeysReferencedInGit refspec a = do
-	current <- inRepo Git.Branch.currentUnsafe
-	shaHead <- maybe (return Nothing) (inRepo . Git.Ref.sha) current
-	rs <- relevantrefs (shaHead, current)
-		<$> inRepo (Git.Command.pipeReadStrict [Param "show-ref"])
-	usedrefs <- applyRefSpec refspec rs (getreflog rs)
-	forM_ usedrefs $
-		withKeysReferencedInGitRef a
+withKeysReferencedDiffGitRefs :: RefSpec -> (Key -> Annex ()) -> Annex ()
+withKeysReferencedDiffGitRefs refspec a = do
+	rs <- relevantrefs <$> inRepo (Git.Command.pipeReadStrict [Param "show-ref"])
+	shaHead <- maybe (return Nothing) (inRepo . Git.Ref.sha)
+		=<< inRepo Git.Branch.currentUnsafe
+	let haveHead = any (\(shaRef, _) -> Just shaRef == shaHead) rs
+	let rs' = map snd (nubRefs rs)
+	usedrefs <- applyRefSpec refspec rs' (getreflog rs')
+	forM_ (if haveHead then usedrefs else Git.Ref.headRef : usedrefs) $
+		withKeysReferencedDiffGitRef a
   where
-	relevantrefs headRef = addHead headRef .
+	relevantrefs = map (\(r, h) -> (Git.Ref r, Git.Ref h)) .
 		filter ourbranches .
 		map (separate (== ' ')) .
 		lines
-	nubRefs = map (Git.Ref . snd) . nubBy (\(x, _) (y, _) -> x == y)
+	nubRefs = nubBy (\(x, _) (y, _) -> x == y)
 	ourbranchend = '/' : Git.fromRef Annex.Branch.name
 	ourbranches (_, b) = not (ourbranchend `isSuffixOf` b)
 		&& not ("refs/synced/" `isPrefixOf` b)
 		&& not (is_branchView (Git.Ref b))
-	addHead headRef refs = case headRef of
-		-- if HEAD diverges from all branches (except the branch it
-		-- points to), run the actions on staged keys (and keys
-		-- that are only present in the work tree if the repo is
-		-- non bare)
-		(Just (Git.Ref x), Just (Git.Ref b))
-			| all (\(x',b') -> x /= x' || b == b') refs ->
-				Git.Ref.headRef
-				: nubRefs (filter ((/= x) . fst) refs)
-		_ -> nubRefs refs
 	getreflog rs = inRepo $ Git.RefLog.getMulti rs
 
 {- Runs an action on keys referenced in the given Git reference which
- - differ from those referenced in the work tree. -}
-withKeysReferencedInGitRef :: (Key -> Annex ()) -> Git.Ref -> Annex ()
-withKeysReferencedInGitRef a ref = do
+ - differ from those referenced in the index. -}
+withKeysReferencedDiffGitRef :: (Key -> Annex ()) -> Git.Ref -> Annex ()
+withKeysReferencedDiffGitRef a ref = do
 	showAction $ "checking " ++ Git.Ref.describe ref
-	bare <- isBareRepo
-	(ts,clean) <- inRepo $ if bare
-		then DiffTree.diffIndex ref
-		else DiffTree.diffWorkTree ref
-	let lookAtWorkingTree = not bare && ref == Git.Ref.headRef
-	forM_ ts $ tKey lookAtWorkingTree >=> maybe noop a
+	withKeysReferencedDiff a
+		(inRepo $ DiffTree.diffIndex ref)
+		DiffTree.srcsha
+
+{- Runs an action on keys referenced in the index which differ from the
+ - work tree. -}
+withKeysReferencedDiffIndex :: (Key -> Annex ()) -> Annex ()
+withKeysReferencedDiffIndex a = unlessM (isBareRepo) $
+	withKeysReferencedDiff a
+		(inRepo $ DiffTree.diffFiles [])
+		DiffTree.srcsha
+
+withKeysReferencedDiff :: (Key -> Annex ()) -> (Annex ([DiffTree.DiffTreeItem], IO Bool)) -> (DiffTree.DiffTreeItem -> Sha) -> Annex ()
+withKeysReferencedDiff a getdiff extractsha = do
+	(ds, clean) <- getdiff
+	forM_ ds go
 	liftIO $ void clean
   where
-	tKey True = lookupFile . getTopFilePath . DiffTree.file
-	tKey False = parseLinkOrPointer
-		<$$> catFile ref . getTopFilePath . DiffTree.file
+	go d = do
+		let sha = extractsha d
+		unless (sha == nullSha) $
+			(parseLinkOrPointer <$> catObject sha)
+				>>= maybe noop a
 
 data UnusedMaps = UnusedMaps
 	{ unusedMap :: UnusedMap
