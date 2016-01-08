@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="anntzer.lee@b6e099b6ef8ba8b53005ca7f0e473e825001129b"
+ nickname="anntzer.lee"
+ subject="comment 4"
+ date="2016-01-08T07:35:21Z"
+ content="""
+I got the same error (with the same no-output from `ssh remote /bin/true`) with a fresh install of git annex, *when I did not have write rights to the remote's .git folder*.  I temporarily solved the issue by giving myself write rights to that folder, but can this be avoided?
+"""]]
