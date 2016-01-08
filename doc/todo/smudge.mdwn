@@ -2,9 +2,14 @@ git-annex should use smudge/clean filters.
 
 ### implementation todo list
 
-* Intermittent sqlite related test suite failures, with:
-	Exception: failed to commit changes to sqlite database: Just SQLite3 returned ErrorIO while attempting to perform step.
-	sqlite worker thread crashed: SQLite3 returned ErrorError while attempting to perform step.
+* Interaction with shared clones. Should avoid hard linking from/to a
+  object in a shared clone if either repository has the object unlocked
+  with a hard link in place.
+  (And should avoid unlocking an object with a hard link if it's hard
+  linked to a shared clone, but that's already accomplished because it
+  avoids unlocking an object if it's hard linked at all)
+  **release blocker**
+
 * Reconcile staged changes into the associated files database, whenever
   the database is queried. This is needed to handle eg:
   	git add largefile
@@ -13,12 +18,6 @@ git-annex should use smudge/clean filters.
 	# fails to drop content from associated file othername,
 	# because it doesn't know it has that name
 	# git commit clears up this mess
-* Interaction with shared clones. Should avoid hard linking from/to a
-  object in a shared clone if either repository has the object unlocked
-  with a hard link in place.
-  (And should avoid unlocking an object with a hard link if it's hard
-  linked to a shared clone, but that's already accomplished because it
-  avoids unlocking an object if it's hard linked at all)
 * Dropping a smudged file causes git status (and git annex status)
   to show it as modified,  because the timestamp has changed. 
   Getting a smudged file can also cause this.
@@ -44,7 +43,7 @@ git-annex should use smudge/clean filters.
 
 * Eventually (but not yet), make v6 the default for new repositories.
   Note that the assistant forces repos into direct mode; that will need to
-  be changed then, and it should enable annex.thin.
+  be changed then, and it should enable annex.thin instead.
 * Later still, remove support for direct mode, and enable automatic
   v5 to v6 upgrades.
 

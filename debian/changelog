@@ -3,17 +3,19 @@ git-annex (6.20151219) UNRELEASED; urgency=medium
   "hexapodia as the key insight"
 
   * Added v6 repository mode, but v5 is still the default for now.
+  * unlock, lock: In v6 mode, unlocking a file changes it from a symlink to a
+    pointer file, and this change can be committed to the git repository.
+    For details, see http://git-annex.branchable.com/tips/unlocked_files/
   * The upgrade to version 6 is not done fully automatically yet, because
     upgrading a direct mode repository to version 6 will prevent old
     versions of git-annex from working in other clones of that repository.
+    For details, see http://git-annex.branchable.com/upgrades/
   * init: --version parameter added to control which supported repository
     version to use.
   * init, upgrade: Configure .git/info/attributes to use git-annex
     as a smudge filter. In v6 repository mode, this makes git add
-    add files to the annex, unless overridden by annex.largefiles
-    configuration.
-  * unlock, lock: In v6 mode, unlocking a file changes it from a symlink to a
-    pointer file, and this change can be committed to the git repository.
+    add files to the annex in unlocked mode, unless overridden by
+    annex.largefiles configuration.
   * assistant: In v6 mode, adds files in unlocked mode, so they can
     continue to be modified.
   * Added annex.thin setting, which makes unlocked files in v6 repositories
