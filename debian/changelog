@@ -28,6 +28,7 @@ git-annex (6.20151219) UNRELEASED; urgency=medium
   * persistent-sqlite is now a hard build dependency, since v6 repository
     mode needs it.
 
+
   * status: On crippled filesystems, was displaying M for all annexed files
     that were present. Probably caused by a change to what git status
     displays in this situation. Fixed by treating files git thinks are
