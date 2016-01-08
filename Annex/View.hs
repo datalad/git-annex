@@ -226,32 +226,22 @@ toViewPath :: MetaValue -> FilePath
 toViewPath = concatMap escapeslash . fromMetaValue
   where
 	escapeslash c
-		| c == '/' = [pseudoSlash]
-		| c == '\\' = [pseudoBackslash]
-		| c == pseudoSlash = [pseudoSlash, pseudoSlash]
-		| c == pseudoBackslash = [pseudoBackslash, pseudoBackslash]
+		| c == '/' = "%_"
+		| c == '\\' = "%."
+		| c == '%' = "%%"
 		| otherwise = [c]
 
 fromViewPath :: FilePath -> MetaValue
 fromViewPath = toMetaValue . deescapeslash []
   where
 	deescapeslash s [] = reverse s
-	deescapeslash s (c:cs)
-		| c == pseudoSlash = case cs of
-			(c':cs')
-				| c' == pseudoSlash -> deescapeslash (pseudoSlash:s) cs'
-			_ -> deescapeslash ('/':s) cs
-		| c == pseudoBackslash = case cs of
-			(c':cs')
-				| c' == pseudoBackslash -> deescapeslash (pseudoBackslash:s) cs'
-			_ -> deescapeslash ('/':s) cs
-		| otherwise = deescapeslash (c:s) cs
+	deescapeslash s ('%':'_':cs) = deescapeslash ('/':s) cs
+	deescapeslash s ('%':'.':cs) = deescapeslash ('\\':s) cs
+	deescapeslash s ('%':'%':cs) = deescapeslash ('%':s) cs
+	deescapeslash s (c:cs) = deescapeslash (c:s) cs
 
-pseudoSlash :: Char
-pseudoSlash = '\8725' -- '∕' /= '/'
-
-pseudoBackslash :: Char
-pseudoBackslash = '\9586' -- '╲' /= '\'
+prop_viewPath_roundtrips :: MetaValue -> Bool
+prop_viewPath_roundtrips v = fromViewPath (toViewPath v) == v
 
 pathProduct :: [[FilePath]] -> [FilePath]
 pathProduct [] = []

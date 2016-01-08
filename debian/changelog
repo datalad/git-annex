@@ -25,6 +25,7 @@ git-annex (6.20151219) UNRELEASED; urgency=medium
   * fix: Adjusts unlocked files as configured by annex.thin.
   * persistent-sqlite is now a hard build dependency, since v6 repository
     mode needs it.
+
   * status: On crippled filesystems, was displaying M for all annexed files
     that were present. Probably caused by a change to what git status
     displays in this situation. Fixed by treating files git thinks are
@@ -47,6 +48,9 @@ git-annex (6.20151219) UNRELEASED; urgency=medium
   * rekey: No longer copies over urls from the old to the new key.
     It makes sense for migrate to do that, but not for this low-level
     (and little used) plumbing command to.
+  * view: Avoid using cute unicode homomorphs for '/' and '\' and instead
+    use ugly escaping, as the unicode method doesn't work on non-unicode
+    supporting systems.
 
  -- Joey Hess <id@joeyh.name>  Sat, 19 Dec 2015 13:31:17 -0400
 

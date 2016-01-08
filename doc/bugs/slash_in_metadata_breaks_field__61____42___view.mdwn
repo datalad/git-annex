@@ -39,4 +39,4 @@ I was trying out the metadata extraction via libextractor and for the mimetype t
 Apart from this git-annex is working very well for me. I mostly use it as an archive, distributing numerous copies on various hard drives and cloud providers and keeping track of what is where.Its an amazing tool for that.
 
 
-
+> [[done]] --[[Joey]] 
