@@ -1,6 +1,6 @@
 {- git-annex automatic merge conflict resolution
  -
- - Copyright 2012-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -34,6 +34,7 @@ import Utility.InodeCache
 
 import qualified Data.Set as S
 import qualified Data.Map as M
+import qualified Data.ByteString.Lazy as L
 
 {- Merges from a branch into the current branch (which may not exist yet),
  - with automatic merge conflict resolution.
@@ -145,11 +146,11 @@ resolveMerge' unstagedmap (Just us) them u = do
 				return ([keyUs, keyThem], Just file)
 		-- Our side is annexed file, other side is not.
 		(Just keyUs, Nothing) -> resolveby [keyUs] $ do
-			graftin them file LsFiles.valThem LsFiles.valThem
+			graftin them file LsFiles.valThem LsFiles.valThem LsFiles.valUs
 			makeannexlink keyUs LsFiles.valUs
 		-- Our side is not annexed file, other side is.
 		(Nothing, Just keyThem) -> resolveby [keyThem] $ do
-			graftin us file LsFiles.valUs LsFiles.valUs
+			graftin us file LsFiles.valUs LsFiles.valUs LsFiles.valThem
 			makeannexlink keyThem LsFiles.valThem
 		-- Neither side is annexed file; cannot resolve.
 		(Nothing, Nothing) -> return ([], Nothing)
@@ -174,12 +175,8 @@ resolveMerge' unstagedmap (Just us) them u = do
 		replacewithsymlink dest l
 		stageSymlink dest =<< hashSymlink l
 
-	replacewithsymlink dest link = ifM isDirect
-		( do
-			d <- fromRepo gitAnnexMergeDir
-			replaceFile (d </> dest) $ makeGitLink link
-		, replaceFile dest $ makeGitLink link
-		)
+	replacewithsymlink dest link = withworktree dest $ \f ->
+		replaceFile f $ makeGitLink link
 
 	makepointer key dest = do
 		unlessM (reuseOldFile unstagedmap key file dest) $ do
@@ -191,31 +188,48 @@ resolveMerge' unstagedmap (Just us) them u = do
 		stagePointerFile dest =<< hashPointerFile key
 		Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath dest)
 
-	{- Stage a graft of a directory or file from a branch.
-	 -
-	 - When there is a conflicted merge where one side is a directory
-	 - or file, and the other side is a symlink, git merge always
-	 - updates the work tree to contain the non-symlink. So, the
-	 - directory or file will already be in the work tree correctly,
-	 - and they just need to be staged into place. Do so by copying the
-	 - index. (Note that this is also better than calling git-add
-	 - because on a crippled filesystem, it preserves any symlink
-	 - bits.)
-	 -
-	 - It's also possible for the branch to have a symlink in it,
-	 - which is not a git-annex symlink. In this special case,
-	 - git merge does not update the work tree to contain the symlink
-	 - from the branch, so we have to do so manually.
-	 -}
-	graftin b item select select' = do
+	withworktree f a = ifM isDirect
+		( do
+			d <- fromRepo gitAnnexMergeDir
+			a (d </> f)
+		, a f
+		)
+
+	{- Stage a graft of a directory or file from a branch
+	 - and update the work tree. -}
+	graftin b item selectwant selectwant' selectunwant = do
 		Annex.Queue.addUpdateIndex
 			=<< fromRepo (UpdateIndex.lsSubTree b item)
-		when (select (LsFiles.unmergedBlobType u) == Just SymlinkBlob) $
-			case select' (LsFiles.unmergedSha u) of
-				Nothing -> noop
-				Just sha -> do
-					link <- catSymLinkTarget sha
-					replacewithsymlink item link
+
+		-- Update the work tree to reflect the graft.
+		case (selectwant (LsFiles.unmergedBlobType u), selectunwant (LsFiles.unmergedBlobType u)) of
+			-- Symlinks are never left in work tree when
+			-- there's a conflict with anything else.
+			-- So, when grafting in a symlink, we must create it:
+			(Just SymlinkBlob, _) -> do
+				case selectwant' (LsFiles.unmergedSha u) of
+					Nothing -> noop
+					Just sha -> do
+						link <- catSymLinkTarget sha
+						replacewithsymlink item link
+			-- And when grafting in anything else vs a symlink,
+			-- the work tree already contains what we want.
+			(_, Just SymlinkBlob) -> noop
+			_ -> ifM (withworktree item (liftIO . doesDirectoryExist))
+				-- a conflict between a file and a directory
+				-- leaves the directory, so since a directory
+				-- is there, it must be what was wanted
+				( noop
+				-- probably a file with conflict markers is
+				-- in the work tree; replace with grafted
+				-- file content
+				, case selectwant' (LsFiles.unmergedSha u) of
+					Nothing -> noop
+					Just sha -> withworktree item $ \f -> 
+						replaceFile f $ \tmp -> do
+							c <- catObject sha
+							liftIO $ L.writeFile tmp c
+				)
 	
 	resolveby ks a = do
 		{- Remove conflicted file from index so merge can be resolved. -}
