@@ -1631,14 +1631,11 @@ withtmpclonerepo' cfg a = do
 	clone <- clonerepo mainrepodir dir cfg
 	r <- tryNonAsync (a clone)
 	case r of
-		Right () -> cleanup clone
+		Right () -> return ()
 		Left e -> do
-			ifM (keepFailures <$> getTestMode)
-				( putStrLn $ "** Preserving repo for failure analysis in " ++ clone
-				, cleanup clone
-				)
+			whenM (keepFailures <$> getTestMode) $
+				putStrLn $ "** Preserving repo for failure analysis in " ++ clone
 			throwM e
-
 
 disconnectOrigin :: Assertion
 disconnectOrigin = boolSystem "git" [Param "remote", Param "rm", Param "origin"] @? "remote rm"
