@@ -48,9 +48,8 @@ git-annex (6.20151219) UNRELEASED; urgency=medium
   * rekey: No longer copies over urls from the old to the new key.
     It makes sense for migrate to do that, but not for this low-level
     (and little used) plumbing command to.
-  * view: Avoid using cute unicode homomorphs for '/' and '\' and instead
-    use ugly escaping, as the unicode method doesn't work on non-unicode
-    supporting systems.
+  * view: Fix crash in non-unicode capable locale when entering a view
+    of metadata containing a slash or backslash.
 
  -- Joey Hess <id@joeyh.name>  Sat, 19 Dec 2015 13:31:17 -0400
 

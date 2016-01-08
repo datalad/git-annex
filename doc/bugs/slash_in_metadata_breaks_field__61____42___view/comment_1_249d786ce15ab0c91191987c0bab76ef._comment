@@ -21,4 +21,7 @@ unicode support.
 
 Sigh, 2016 and still can't have nice things.. Suppose it'll have to use an
 ugly encoding for them instead.
+
+Update: Can have nice things, just have to encode the characters using the
+FileSystemEncoding!
 """]]

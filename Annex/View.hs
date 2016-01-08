@@ -222,23 +222,37 @@ viewComponentMatcher viewcomponent = \metadata ->
 		| S.null s = Nothing
 		| otherwise = Just (S.toList s)
 
+-- This is '∕', a unicode character that displays the same as '/' but is
+-- not it. It is encoded using the filesystem encoding, which allows it
+-- to be used even when not in a unicode capable locale.
+pseudoSlash :: String
+pseudoSlash = "\56546\56456\56469"
+
+-- And this is '╲' similarly.
+pseudoBackslash :: String
+pseudoBackslash = "\56546\56469\56498"
+
 toViewPath :: MetaValue -> FilePath
-toViewPath = concatMap escapeslash . fromMetaValue
+toViewPath = escapeslash [] . fromMetaValue
   where
-	escapeslash c
-		| c == '/' = "%_"
-		| c == '\\' = "%."
-		| c == '%' = "%%"
-		| otherwise = [c]
+	escapeslash s ('/':cs) = escapeslash (pseudoSlash:s) cs
+	escapeslash s ('\\':cs) = escapeslash (pseudoBackslash:s) cs
+	escapeslash s ('%':cs) = escapeslash ("%%":s) cs
+	escapeslash s (c1:c2:c3:cs)
+		| [c1,c2,c3] == pseudoSlash = escapeslash ("%":pseudoSlash:s) cs
+		| [c1,c2,c3] == pseudoBackslash = escapeslash ("%":pseudoBackslash:s) cs
+		| otherwise = escapeslash ([c1]:s) (c2:c3:cs)
+	escapeslash s cs = concat (reverse (cs:s))
 
 fromViewPath :: FilePath -> MetaValue
 fromViewPath = toMetaValue . deescapeslash []
   where
-	deescapeslash s [] = reverse s
-	deescapeslash s ('%':'_':cs) = deescapeslash ('/':s) cs
-	deescapeslash s ('%':'.':cs) = deescapeslash ('\\':s) cs
-	deescapeslash s ('%':'%':cs) = deescapeslash ('%':s) cs
-	deescapeslash s (c:cs) = deescapeslash (c:s) cs
+	deescapeslash s ('%':escapedc:cs) = deescapeslash ([escapedc]:s) cs
+	deescapeslash s (c1:c2:c3:cs)
+		| [c1,c2,c3] == pseudoSlash = deescapeslash ("/":s) cs
+		| [c1,c2,c3] == pseudoBackslash = deescapeslash ("\\":s) cs
+		| otherwise = deescapeslash ([c1]:s) (c2:c3:cs)
+	deescapeslash s cs = concat (reverse (cs:s))
 
 prop_viewPath_roundtrips :: MetaValue -> Bool
 prop_viewPath_roundtrips v = fromViewPath (toViewPath v) == v
