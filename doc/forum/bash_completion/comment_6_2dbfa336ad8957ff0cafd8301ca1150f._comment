@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="wsha.code+ga@b38779424f41c5701bbe5937340be43ff1474b2d"
+ nickname="wsha.code+ga"
+ subject="comment 6"
+ date="2016-01-10T03:08:24Z"
+ content="""
+It seems that the `bash-completion.bash` file is not included in the standalone Linux tarball. Could it be added? It would be helpful at least for the Arch package in the AUR that is based on the tarball.
+"""]]
