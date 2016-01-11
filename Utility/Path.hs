@@ -271,6 +271,31 @@ toCygPath p
 		| otherwise = s
 #endif
 
+{- Converts a DOS style path to a msys2 style path. Only on Windows.
+ - Any trailing '\' is preserved as a trailing '/' 
+ - 
+ - Taken from: http://sourceforge.net/p/msys2/wiki/MSYS2%20introduction/i
+ -
+ - The virtual filesystem contains:
+ -  /c, /d, ...	mount points for Windows drives
+ -}
+toMSYS2Path :: FilePath -> FilePath
+#ifndef mingw32_HOST_OS
+toMSYS2Path = id
+#else
+toMSYS2Path p
+	| null drive = recombine parts
+	| otherwise = recombine $ "/" : driveletter drive : parts
+  where
+	(drive, p') = splitDrive p
+	parts = splitDirectories p'
+	driveletter = map toLower . takeWhile (/= ':')
+	recombine = fixtrailing . Posix.joinPath
+	fixtrailing s
+		| hasTrailingPathSeparator p = Posix.addTrailingPathSeparator s
+		| otherwise = s
+#endif
+
 {- Maximum size to use for a file in a specified directory.
  -
  - Many systems have a 255 byte limit to the name of a file, 
