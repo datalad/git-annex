@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-01-11T16:46:42Z"
+ content="""
+I can't even type an e with an accent in it into the bash prompt on OSX.
+However, I copied over such a file, and had no problem adding it:
+
+	bash-3.2$ ls
+	e??
+	bash-3.2$ git annex add .
+	add ë ok
+	bash-3.2$ git annex status
+	A ë
+
+I also tried tab-completing a file named "testë" and that also works:
+
+	oberon:gd joeyh$ git annex add teste\314\210 
+	add testë ok
+	(recording state in git...)
+
+So, I can't reproduce your problem.
+"""]]
