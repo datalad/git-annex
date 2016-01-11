@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-01-11T16:19:45Z"
+ content="""
+This is a closed bug from 2013.
+
+IIRC, the issue was that specifying a port couldn't work as the webapp
+needs to use two different ports in the repository creation process. Since
+--listen has been changed to not allow a port to be specified, this bug is
+no longer relevant.
+"""]]
