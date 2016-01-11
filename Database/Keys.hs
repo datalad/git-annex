@@ -21,10 +21,9 @@ module Database.Keys (
 	addInodeCaches,
 	getInodeCaches,
 	removeInodeCaches,
-	AssociatedId,
-	ContentId,
 ) where
 
+import qualified Database.Keys.SQL as SQL
 import Database.Types
 import Database.Keys.Handle
 import qualified Database.Queue as H
@@ -42,24 +41,7 @@ import Git.Ref
 import Git.FilePath
 import Annex.CatFile
 
-import Database.Persist.TH
 import Database.Esqueleto hiding (Key)
-import Data.Time.Clock
-
-share [mkPersist sqlSettings, mkMigrate "migrateKeysDb"] [persistLowerCase|
-Associated
-  key SKey
-  file FilePath
-  KeyFileIndex key file
-Content
-  key SKey
-  cache SInodeCache
-  KeyCacheIndex key cache
-|]
-
-newtype ReadHandle = ReadHandle H.DbQueue
-
-type Reader v = ReadHandle -> Annex v
 
 {- Runs an action that reads from the database.
  -
@@ -72,7 +54,7 @@ type Reader v = ReadHandle -> Annex v
  -
  - Any queued writes will be flushed before the read.
  -}
-runReader :: Monoid v => Reader v -> Annex v
+runReader :: Monoid v => (SQL.ReadHandle -> Annex v) -> Annex v
 runReader a = do
 	h <- getDbHandle
 	withDbState h go
@@ -80,50 +62,39 @@ runReader a = do
 	go DbEmpty = return (mempty, DbEmpty)
 	go st@(DbOpen qh) = do
 		liftIO $ H.flushDbQueue qh
-		v <- a (ReadHandle qh)
+		v <- a (SQL.ReadHandle qh)
 		return (v, st)
 	go DbClosed = do
 		st' <- openDb False DbClosed
 		v <- case st' of
-			(DbOpen qh) -> a (ReadHandle qh)
+			(DbOpen qh) -> a (SQL.ReadHandle qh)
 			_ -> return mempty
 		return (v, st')
 
-readDb :: SqlPersistM a -> ReadHandle -> Annex a
-readDb a (ReadHandle h) = liftIO $ H.queryDbQueue h a
-
-newtype WriteHandle = WriteHandle H.DbQueue
-
-type Writer = WriteHandle -> Annex ()
+runReaderIO :: Monoid v => (SQL.ReadHandle -> IO v) -> Annex v
+runReaderIO a = runReader (liftIO . a)
 
 {- Runs an action that writes to the database. Typically this is used to
  - queue changes, which will be flushed at a later point.
  -
  - The database is created if it doesn't exist yet. -}
-runWriter :: Writer -> Annex ()
+runWriter :: (SQL.WriteHandle -> Annex ()) -> Annex ()
 runWriter a = do
 	h <- getDbHandle
 	withDbState h go
   where
 	go st@(DbOpen qh) = do
-		v <- a (WriteHandle qh)
+		v <- a (SQL.WriteHandle qh)
 		return (v, st)
 	go st = do
 		st' <- openDb True st
 		v <- case st' of
-			DbOpen qh -> a (WriteHandle qh)
+			DbOpen qh -> a (SQL.WriteHandle qh)
 			_ -> error "internal"
 		return (v, st')
 
-queueDb :: SqlPersistM () -> WriteHandle -> Annex ()
-queueDb a (WriteHandle h) = liftIO $ H.queueDb h checkcommit a
-  where
-	-- commit queue after 1000 changes or 5 minutes, whichever comes first
-	checkcommit sz lastcommittime
-		| sz > 1000 = return True
-		| otherwise = do
-			now <- getCurrentTime
-			return $ diffUTCTime lastcommittime now > 300
+runWriterIO :: (SQL.WriteHandle -> IO ()) -> Annex ()
+runWriterIO a = runWriter (liftIO . a)
 
 {- Gets the handle cached in Annex state; creates a new one if it's not yet
  - available, but doesn't open the database. -}
@@ -157,7 +128,7 @@ openDb createdb _ = withExclusiveLock gitAnnexKeysDbLock $ do
 			liftIO $ do
 				createDirectoryIfMissing True dbdir
 				H.initDb db $ void $
-					runMigrationSilent migrateKeysDb
+					runMigrationSilent SQL.migrateKeysDb
 			setAnnexDirPerm dbdir
 			setAnnexFilePerm db
 			open db
@@ -166,50 +137,21 @@ openDb createdb _ = withExclusiveLock gitAnnexKeysDbLock $ do
 	open db = liftIO $ DbOpen <$> H.openDbQueue db "content"
 
 addAssociatedFile :: Key -> TopFilePath -> Annex ()
-addAssociatedFile k f = runWriter $ addAssociatedFile' k f
-
-addAssociatedFile' :: Key -> TopFilePath -> Writer
-addAssociatedFile' k f = queueDb $ do
-	-- If the same file was associated with a different key before,
-	-- remove that.
-	delete $ from $ \r -> do
-		where_ (r ^. AssociatedFile ==. val (getTopFilePath f) &&. not_ (r ^. AssociatedKey ==. val sk))
-	void $ insertUnique $ Associated sk (getTopFilePath f)
-  where
-	sk = toSKey k
+addAssociatedFile k f = runWriterIO $ SQL.addAssociatedFile (toSKey k) f
 
 {- Note that the files returned were once associated with the key, but
  - some of them may not be any longer. -}
 getAssociatedFiles :: Key -> Annex [TopFilePath]
-getAssociatedFiles = runReader . getAssociatedFiles' . toSKey
-
-getAssociatedFiles' :: SKey -> Reader [TopFilePath]
-getAssociatedFiles' sk = readDb $ do
-	l <- select $ from $ \r -> do
-		where_ (r ^. AssociatedKey ==. val sk)
-		return (r ^. AssociatedFile)
-	return $ map (asTopFilePath . unValue) l
+getAssociatedFiles = runReaderIO . SQL.getAssociatedFiles . toSKey
 
 {- Gets any keys that are on record as having a particular associated file.
  - (Should be one or none but the database doesn't enforce that.) -}
 getAssociatedKey :: TopFilePath -> Annex [Key]
-getAssociatedKey = runReader . getAssociatedKey'
-
-getAssociatedKey' :: TopFilePath -> Reader [Key]
-getAssociatedKey' f = readDb $ do
-	l <- select $ from $ \r -> do
-		where_ (r ^. AssociatedFile ==. val (getTopFilePath f))
-		return (r ^. AssociatedKey)
-	return $ map (fromSKey . unValue) l
+getAssociatedKey = map fromSKey <$$> runReaderIO . SQL.getAssociatedKey
 
 removeAssociatedFile :: Key -> TopFilePath -> Annex ()
-removeAssociatedFile k = runWriter . removeAssociatedFile' (toSKey k)
+removeAssociatedFile k = runWriterIO . SQL.removeAssociatedFile (toSKey k)
 
-removeAssociatedFile' :: SKey -> TopFilePath -> Writer
-removeAssociatedFile' sk f = queueDb $ 
-	delete $ from $ \r -> do
-		where_ (r ^. AssociatedKey ==. val sk &&. r ^. AssociatedFile ==. val (getTopFilePath f))
-	
 {- Find all unlocked associated files. This is expensive, and so normally
  - the associated files are updated incrementally when changes are noticed. -}
 scanAssociatedFiles :: Annex ()
@@ -224,12 +166,12 @@ scanAssociatedFiles = whenM (isJust <$> inRepo Git.Branch.current) $
 					=<< catKey (Git.LsTree.sha i)
 		liftIO $ void cleanup
   where
-	dropallassociated = queueDb $
-		delete $ from $ \(_r :: SqlExpr (Entity Associated)) ->
+	dropallassociated h = liftIO $ flip SQL.queueDb h $
+		delete $ from $ \(_r :: SqlExpr (Entity SQL.Associated)) ->
 			return ()
 	isregfile i = Git.Types.toBlobType (Git.LsTree.mode i) == Just Git.Types.FileBlob
-	add h i k = flip queueDb h $ 
-		void $ insertUnique $ Associated
+	add h i k = liftIO $ flip SQL.queueDb h $ 
+		void $ insertUnique $ SQL.Associated
 			(toSKey k)
 			(getTopFilePath $ Git.LsTree.file i)
 
@@ -239,28 +181,12 @@ storeInodeCaches k fs = withTSDelta $ \d ->
 	addInodeCaches k . catMaybes =<< liftIO (mapM (`genInodeCache` d) fs)
 
 addInodeCaches :: Key -> [InodeCache] -> Annex ()
-addInodeCaches k is = runWriter $ addInodeCaches' (toSKey k) is
-
-addInodeCaches' :: SKey -> [InodeCache] -> Writer
-addInodeCaches' sk is = queueDb $
-	forM_ is $ \i -> insertUnique $ Content sk (toSInodeCache i)
+addInodeCaches k is = runWriterIO $ SQL.addInodeCaches (toSKey k) is
 
 {- A key may have multiple InodeCaches; one for the annex object, and one
  - for each pointer file that is a copy of it. -}
 getInodeCaches :: Key -> Annex [InodeCache]
-getInodeCaches = runReader . getInodeCaches' . toSKey
-
-getInodeCaches' :: SKey -> Reader [InodeCache]
-getInodeCaches' sk = readDb $ do
-	l <- select $ from $ \r -> do
-		where_ (r ^. ContentKey ==. val sk)
-		return (r ^. ContentCache)
-	return $ map (fromSInodeCache . unValue) l
+getInodeCaches = runReaderIO . SQL.getInodeCaches . toSKey
 
 removeInodeCaches :: Key -> Annex ()
-removeInodeCaches = runWriter . removeInodeCaches' . toSKey
-
-removeInodeCaches' :: SKey -> Writer
-removeInodeCaches' sk = queueDb $ 
-	delete $ from $ \r -> do
-		where_ (r ^. ContentKey ==. val sk)
+removeInodeCaches = runWriterIO . SQL.removeInodeCaches . toSKey
