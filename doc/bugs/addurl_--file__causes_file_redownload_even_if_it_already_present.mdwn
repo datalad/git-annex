@@ -3,6 +3,7 @@
 IMHO annex shouldn't redownload the file (not yet under annex/git control) entirely if pointed by --file=FILE FILE exists.  
 
 [[!format sh """
+
 $> chmod a+w -R /tmp/123; rm -rf /tmp/123; mkdir /tmp/123; cd /tmp/123; git init; git annex init;                                            
 Initialized empty Git repository in /tmp/123/.git/                                               
 init  ok
@@ -20,5 +21,7 @@ ok
 
 $> git annex version
 git-annex version: 6.20160104+gitg0cf96be-1~ndall+1
+
 """]
+
 [[!meta author=yoh]]
