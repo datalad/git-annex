@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-01-11T16:30:18Z"
+ content="""
+The `--from` option can be used with any remote, whether it's a normal git
+remote or a special remote.
+"""]]
