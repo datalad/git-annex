@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-01-11T16:32:47Z"
+ content="""
+Seems to have been resolved in brew by forcing the Webapp flag, which I
+think is the right solution.
+"""]]
