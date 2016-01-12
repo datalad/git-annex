@@ -133,20 +133,20 @@ openDb createdb _ = withExclusiveLock gitAnnexKeysDbLock $ do
 	open db = liftIO $ DbOpen <$> H.openDbQueue db SQL.containedTable
 
 addAssociatedFile :: Key -> TopFilePath -> Annex ()
-addAssociatedFile k f = runWriterIO $ SQL.addAssociatedFile (toSKey k) f
+addAssociatedFile k f = runWriterIO $ SQL.addAssociatedFile (toIKey k) f
 
 {- Note that the files returned were once associated with the key, but
  - some of them may not be any longer. -}
 getAssociatedFiles :: Key -> Annex [TopFilePath]
-getAssociatedFiles = runReaderIO . SQL.getAssociatedFiles . toSKey
+getAssociatedFiles = runReaderIO . SQL.getAssociatedFiles . toIKey
 
 {- Gets any keys that are on record as having a particular associated file.
  - (Should be one or none but the database doesn't enforce that.) -}
 getAssociatedKey :: TopFilePath -> Annex [Key]
-getAssociatedKey = map fromSKey <$$> runReaderIO . SQL.getAssociatedKey
+getAssociatedKey = map fromIKey <$$> runReaderIO . SQL.getAssociatedKey
 
 removeAssociatedFile :: Key -> TopFilePath -> Annex ()
-removeAssociatedFile k = runWriterIO . SQL.removeAssociatedFile (toSKey k)
+removeAssociatedFile k = runWriterIO . SQL.removeAssociatedFile (toIKey k)
 
 {- Find all unlocked associated files. This is expensive, and so normally
  - the associated files are updated incrementally when changes are noticed. -}
@@ -168,7 +168,7 @@ scanAssociatedFiles = whenM (isJust <$> inRepo Git.Branch.current) $
 	isregfile i = Git.Types.toBlobType (Git.LsTree.mode i) == Just Git.Types.FileBlob
 	add h i k = liftIO $ flip SQL.queueDb h $ 
 		void $ insertUnique $ SQL.Associated
-			(toSKey k)
+			(toIKey k)
 			(getTopFilePath $ Git.LsTree.file i)
 
 {- Stats the files, and stores their InodeCaches. -}
@@ -177,12 +177,12 @@ storeInodeCaches k fs = withTSDelta $ \d ->
 	addInodeCaches k . catMaybes =<< liftIO (mapM (`genInodeCache` d) fs)
 
 addInodeCaches :: Key -> [InodeCache] -> Annex ()
-addInodeCaches k is = runWriterIO $ SQL.addInodeCaches (toSKey k) is
+addInodeCaches k is = runWriterIO $ SQL.addInodeCaches (toIKey k) is
 
 {- A key may have multiple InodeCaches; one for the annex object, and one
  - for each pointer file that is a copy of it. -}
 getInodeCaches :: Key -> Annex [InodeCache]
-getInodeCaches = runReaderIO . SQL.getInodeCaches . toSKey
+getInodeCaches = runReaderIO . SQL.getInodeCaches . toIKey
 
 removeInodeCaches :: Key -> Annex ()
-removeInodeCaches = runWriterIO . SQL.removeInodeCaches . toSKey
+removeInodeCaches = runWriterIO . SQL.removeInodeCaches . toIKey

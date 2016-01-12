@@ -25,12 +25,12 @@ import Control.Monad
 
 share [mkPersist sqlSettings, mkMigrate "migrateKeysDb"] [persistLowerCase|
 Associated
-  key SKey
+  key IKey
   file FilePath
   KeyFileIndex key file
   FileKeyIndex file key
 Content
-  key SKey
+  key IKey
   cache SInodeCache
   KeyCacheIndex key cache
 |]
@@ -58,51 +58,51 @@ queueDb a (WriteHandle h) = H.queueDb h checkcommit a
 			now <- getCurrentTime
 			return $ diffUTCTime lastcommittime now > 300
 
-addAssociatedFile :: SKey -> TopFilePath -> WriteHandle -> IO ()
-addAssociatedFile sk f = queueDb $ do
+addAssociatedFile :: IKey -> TopFilePath -> WriteHandle -> IO ()
+addAssociatedFile ik f = queueDb $ do
 	-- If the same file was associated with a different key before,
 	-- remove that.
 	delete $ from $ \r -> do
-		where_ (r ^. AssociatedFile ==. val (getTopFilePath f) &&. not_ (r ^. AssociatedKey ==. val sk))
-	void $ insertUnique $ Associated sk (getTopFilePath f)
+		where_ (r ^. AssociatedFile ==. val (getTopFilePath f) &&. not_ (r ^. AssociatedKey ==. val ik))
+	void $ insertUnique $ Associated ik (getTopFilePath f)
 
 {- Note that the files returned were once associated with the key, but
  - some of them may not be any longer. -}
-getAssociatedFiles :: SKey -> ReadHandle -> IO [TopFilePath]
-getAssociatedFiles sk = readDb $ do
+getAssociatedFiles :: IKey -> ReadHandle -> IO [TopFilePath]
+getAssociatedFiles ik = readDb $ do
 	l <- select $ from $ \r -> do
-		where_ (r ^. AssociatedKey ==. val sk)
+		where_ (r ^. AssociatedKey ==. val ik)
 		return (r ^. AssociatedFile)
 	return $ map (asTopFilePath . unValue) l
 
 {- Gets any keys that are on record as having a particular associated file.
  - (Should be one or none but the database doesn't enforce that.) -}
-getAssociatedKey :: TopFilePath -> ReadHandle -> IO [SKey]
+getAssociatedKey :: TopFilePath -> ReadHandle -> IO [IKey]
 getAssociatedKey f = readDb $ do
 	l <- select $ from $ \r -> do
 		where_ (r ^. AssociatedFile ==. val (getTopFilePath f))
 		return (r ^. AssociatedKey)
 	return $ map unValue l
 
-removeAssociatedFile :: SKey -> TopFilePath -> WriteHandle -> IO ()
-removeAssociatedFile sk f = queueDb $ 
+removeAssociatedFile :: IKey -> TopFilePath -> WriteHandle -> IO ()
+removeAssociatedFile ik f = queueDb $ 
 	delete $ from $ \r -> do
-		where_ (r ^. AssociatedKey ==. val sk &&. r ^. AssociatedFile ==. val (getTopFilePath f))
+		where_ (r ^. AssociatedKey ==. val ik &&. r ^. AssociatedFile ==. val (getTopFilePath f))
 
-addInodeCaches :: SKey -> [InodeCache] -> WriteHandle -> IO ()
-addInodeCaches sk is = queueDb $
-	forM_ is $ \i -> insertUnique $ Content sk (toSInodeCache i)
+addInodeCaches :: IKey -> [InodeCache] -> WriteHandle -> IO ()
+addInodeCaches ik is = queueDb $
+	forM_ is $ \i -> insertUnique $ Content ik (toSInodeCache i)
 
 {- A key may have multiple InodeCaches; one for the annex object, and one
  - for each pointer file that is a copy of it. -}
-getInodeCaches :: SKey -> ReadHandle -> IO [InodeCache]
-getInodeCaches sk = readDb $ do
+getInodeCaches :: IKey -> ReadHandle -> IO [InodeCache]
+getInodeCaches ik = readDb $ do
 	l <- select $ from $ \r -> do
-		where_ (r ^. ContentKey ==. val sk)
+		where_ (r ^. ContentKey ==. val ik)
 		return (r ^. ContentCache)
 	return $ map (fromSInodeCache . unValue) l
 
-removeInodeCaches :: SKey -> WriteHandle -> IO ()
-removeInodeCaches sk = queueDb $ 
+removeInodeCaches :: IKey -> WriteHandle -> IO ()
+removeInodeCaches ik = queueDb $ 
 	delete $ from $ \r -> do
-		where_ (r ^. ContentKey ==. val sk)
+		where_ (r ^. ContentKey ==. val ik)

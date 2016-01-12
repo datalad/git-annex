@@ -27,6 +27,24 @@ fromSKey (SKey s) = fromMaybe (error $ "bad serialied Key " ++ s) (file2key s)
 
 derivePersistField "SKey"
 
+-- A Key index. More efficient than SKey, but its Read instance does not
+-- work when it's used in any kind of complex data structure.
+newtype IKey = IKey String
+
+instance Read IKey where
+	readsPrec _ s = [(IKey s, "")]
+
+instance Show IKey where
+	show (IKey s) = s
+
+toIKey :: Key -> IKey
+toIKey = IKey . key2file
+
+fromIKey :: IKey -> Key
+fromIKey (IKey s) = fromMaybe (error $ "bad serialied Key " ++ s) (file2key s)
+
+derivePersistField "IKey"
+
 -- A serialized InodeCache
 newtype SInodeCache = I String
 	deriving (Show, Read)

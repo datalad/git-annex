@@ -87,13 +87,13 @@ populateAssociatedFiles h num = do
 		SQL.addAssociatedFile (keyN n) (fileN n) (SQL.WriteHandle h)
 	H.flushDbQueue h
 
-keyN :: Int -> SKey
-keyN n = SKey ("key" ++ show n)
+keyN :: Int -> IKey
+keyN n = IKey ("key" ++ show n)
 
 fileN :: Int -> TopFilePath
 fileN n = asTopFilePath ("file" ++ show n)
 
-keyMiss :: SKey
+keyMiss :: IKey
 keyMiss = keyN 0 -- 0 is never stored
 
 fileMiss :: TopFilePath
@@ -114,8 +114,8 @@ benchDb tmpdir num = do
 instance NFData TopFilePath where
 	rnf = rnf . getTopFilePath
 
-instance NFData SKey where
-	rnf (SKey s) = rnf s
+instance NFData IKey where
+	rnf (IKey s) = rnf s
 	
 -- can't use Criterion's defaultMain here because it looks at
 -- command-line parameters
