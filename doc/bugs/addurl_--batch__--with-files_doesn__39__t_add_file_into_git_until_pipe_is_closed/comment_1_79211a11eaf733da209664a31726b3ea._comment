@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 1"
+ date="2016-01-12T03:35:15Z"
+ content="""
+actually tried now the similar way in bash with pre-downloaded file, the same situation. I guess my test in python for this scenario didn't care to try to commit it without explicit 'git add' ;-)
+"""]]

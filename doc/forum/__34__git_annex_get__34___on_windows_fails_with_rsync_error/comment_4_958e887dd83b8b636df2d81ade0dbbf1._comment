@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="sameerds"
+ subject="cygwin/msys-independent fix?"
+ date="2016-01-12T04:07:39Z"
+ content="""
+Thank you, pkitslaar, for working this out! I will try it out ASAP and provide feedback. But generally, why can we not create Windows-style paths, and then rely on the underlying platform to do the right thing? I would expect that \"rsync\" or any other binary will accept \"C:\scratch\a\" as a valid path, and then translate it appropriately for its own host such as cygwin or msys. \"Clients\" of these binaries should not have to worry about such things.
+"""]]

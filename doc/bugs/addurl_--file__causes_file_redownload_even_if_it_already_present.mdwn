@@ -1,0 +1,27 @@
+### Please describe the problem.
+
+IMHO annex shouldn't redownload the file (not yet under annex/git control) entirely if pointed by --file=FILE FILE exists.  
+
+[[!format sh """
+
+$> chmod a+w -R /tmp/123; rm -rf /tmp/123; mkdir /tmp/123; cd /tmp/123; git init; git annex init;                                            
+Initialized empty Git repository in /tmp/123/.git/                                               
+init  ok
+
+$> wget -q http://www.onerussian.com/tmp/banner.png                                  
+
+$> ls -l 
+total 28
+-rw------- 1 yoh yoh 25319 Sep 17 13:49 banner.png
+
+$> git annex addurl --file=banner.png http://www.onerussian.com/tmp/banner.png
+addurl banner.png (downloading http://www.onerussian.com/tmp/banner.png ...) 
+/tmp/123/.git/annex/tmp/URL-s25319--http&c%%w 100%[=================================================================================================>]  24.73K  --.-KB/s    in 0.003s  
+ok
+
+$> git annex version
+git-annex version: 6.20160104+gitg0cf96be-1~ndall+1
+
+"""]
+
+[[!meta author=yoh]]

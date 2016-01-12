@@ -1,0 +1,96 @@
+### Please describe the problem.
+
+only happens if file doesn't exist yet and gets downloaded (interestingly, as I reported in another report, if file exists it gets re-downloaded but this bug doesn't repeat)
+
+[[!format sh """
+
+$> chmod a+w -R /tmp/123; rm -rf /tmp/123; mkdir /tmp/123; cd /tmp/123; git init; git annex init;                                                 
+Initialized empty Git repository in /tmp/123/.git/
+init  ok
+(recording state in git...)
+
+$> mkfifo /tmp/pipe
+
+$> cat /tmp/pipe | git annex --debug addurl --batch --with-files                
+^Z                                                               
+[2]  + 1084 suspended  cat /tmp/pipe | 
+       1085 suspended  git annex --debug addurl --batch --with-files
+
+$> bg
+[2]  - 1084 continued  cat /tmp/pipe | 
+       1085 continued  git annex --debug addurl --batch --with-files
+
+$> exec 3>/tmp/pipe
+
+$> echo "http://www.onerussian.com/tmp/banner.png banner.png" >&3                                                
+[2016-01-11 22:25:34.423037] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]                                                                                    
+[2016-01-11 22:25:34.427649] process done ExitSuccess
+[2016-01-11 22:25:34.428067] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2016-01-11 22:25:34.432199] process done ExitSuccess
+
+$> [2016-01-11 22:25:34.432834] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..87efc349dceb06df635c8485ef536ae11f48736c","-n1","--pretty=%H"]
+[2016-01-11 22:25:34.438533] process done ExitSuccess
+[2016-01-11 22:25:34.439666] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2016-01-11 22:25:34.444875] read: quvi ["--version"]
+[2016-01-11 22:25:34.452158] process done ExitSuccess
+[2016-01-11 22:25:34.452563] call: quvi ["--verbosity","mute","--support","http://www.onerussian.com/tmp/banner.png"]
+[2016-01-11 22:25:34.468071] process done ExitFailure 65
+addurl banner.png (downloading http://www.onerussian.com/tmp/banner.png ...) 
+[2016-01-11 22:25:34.500939] call: wget ["-q","--show-progress","--clobber","-c","-O","/tmp/123/.git/annex/tmp/URL-s25319--http&c%%www.onerussian.com%tmp%banner.png","http://www.onerussian.com/tmp/banner.png","--user-agent","git-annex/6.20160104+gitg0cf96be-1~ndall+1"]
+/tmp/123/.git/annex/tmp/URL-s25319--http&c%%www.on 100%[==============================================================================================================>]  24.73K  --.-KB/s    in 0s      
+[2016-01-11 22:25:34.518335] process done ExitSuccess
+[2016-01-11 22:25:34.519195] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","check-attr","-z","--stdin","annex.backend","annex.numcopies","--"]
+[2016-01-11 22:25:34.5241] read: git ["--version"]
+[2016-01-11 22:25:34.527001] process done ExitSuccess
+ok
+
+$> git status  # note that file is untracked, although it is a symlink into .git/annex/objects
+On branch master
+
+Initial commit
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	banner.png
+
+nothing added to commit but untracked files present (use "git add" to track)
+
+$> # closing the pipe now
+$> exec 3>&-
+(recording state in git...)                                                                                                                                                                               
+[2016-01-11 22:26:02.947133] feed: xargs ["-0","git","--git-dir=.git","--work-tree=.","--literal-pathspecs","add","--"]
+$> [2016-01-11 22:26:02.95701] process done ExitSuccess
+[2016-01-11 22:26:02.961588] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","hash-object","-w","--stdin-paths","--no-filters"]
+[2016-01-11 22:26:02.964507] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-index","-z","--index-info"]
+[2016-01-11 22:26:02.971853] process done ExitSuccess
+[2016-01-11 22:26:02.972524] process done ExitSuccess
+[2016-01-11 22:26:02.973043] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2016-01-11 22:26:02.975871] process done ExitSuccess
+[2016-01-11 22:26:02.977613] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","write-tree"]
+[2016-01-11 22:26:02.982308] process done ExitSuccess
+[2016-01-11 22:26:02.982744] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","commit-tree","0b4d294f555bc86c17de89bca35193433408bbef","--no-gpg-sign","-p","refs/heads/git-annex"]
+[2016-01-11 22:26:02.990485] process done ExitSuccess
+[2016-01-11 22:26:02.990941] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","refs/heads/git-annex","1359dc4d9296bc4f5941e7299376319899ea222c"]
+[2016-01-11 22:26:02.995434] process done ExitSuccess
+
+[2]  - 1084 done       cat /tmp/pipe | 
+       1085 done       git annex --debug addurl --batch --with-files
+
+$> git status
+On branch master
+
+Initial commit
+
+Changes to be committed:
+  (use "git rm --cached <file>..." to unstage)
+
+	new file:   banner.png
+
+$> git annex version
+git-annex version: 6.20160104+gitg0cf96be-1~ndall+1
+...
+
+"""]]
+
+[[!meta author=yoh]]
