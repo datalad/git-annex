@@ -47,6 +47,8 @@ benchmark _ = withTmpDirIn "." "benchmark" $ \tmpdir -> do
 			, getAssociatedFilesMissBench db
 			, getAssociatedKeyHitBench db
 			, getAssociatedKeyMissBench db
+			, addAssociatedFileOldBench db
+			, addAssociatedFileNewBench db
 			]
 
 getAssociatedFilesHitBench :: BenchDb -> Benchmark
@@ -66,6 +68,18 @@ getAssociatedKeyHitBench (BenchDb h num) = bench ("getAssociatedKey from " ++ sh
 getAssociatedKeyMissBench :: BenchDb -> Benchmark
 getAssociatedKeyMissBench (BenchDb h num) = bench ("getAssociatedKey from " ++ show num ++ " (miss)") $ nfIO $
 	SQL.getAssociatedKey fileMiss (SQL.ReadHandle h)
+
+addAssociatedFileOldBench :: BenchDb -> Benchmark
+addAssociatedFileOldBench ( BenchDb h num) = bench ("addAssociatedFile to " ++ show num ++ " (old)") $ nfIO $ do
+	n <- getStdRandom (randomR (1,num))
+	SQL.addAssociatedFile (keyN n) (fileN n) (SQL.WriteHandle h)
+	H.flushDbQueue h
+
+addAssociatedFileNewBench :: BenchDb -> Benchmark
+addAssociatedFileNewBench ( BenchDb h num) = bench ("addAssociatedFile to " ++ show num ++ " (new)") $ nfIO $ do
+	n <- getStdRandom (randomR (1,num))
+	SQL.addAssociatedFile (keyN n) (fileN (n+1)) (SQL.WriteHandle h)
+	H.flushDbQueue h
 
 populateAssociatedFiles :: H.DbQueue -> Int -> IO ()
 populateAssociatedFiles h num = do
