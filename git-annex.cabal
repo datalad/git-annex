@@ -88,6 +88,10 @@ Flag EKG
   Description: Enable use of EKG to monitor git-annex as it runs (at http://localhost:4242/)
   Default: False
 
+Flag Benchmark
+  Description: Enable benchmarking
+  Default: False
+
 Flag network-uri
   Description: Get Network.URI from the network-uri package
   Default: True
@@ -260,6 +264,10 @@ Executable git-annex
     Build-Depends: ekg
     GHC-Options: -with-rtsopts=-T
     CPP-Options: -DWITH_EKG
+  
+  if flag(Benchmark)
+    Build-Depends: criterion, deepseq
+    CPP-Options: -DWITH_BENCHMARK
 
 source-repository head
   type: git

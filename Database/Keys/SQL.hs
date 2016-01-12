@@ -13,6 +13,7 @@
 module Database.Keys.SQL where
 
 import Database.Types
+import Database.Handle
 import qualified Database.Queue as H
 import Utility.InodeCache
 import Git.FilePath
@@ -32,6 +33,12 @@ Content
   cache SInodeCache
   KeyCacheIndex key cache
 |]
+
+containedTable :: TableName
+containedTable = "content"
+
+createTables :: SqlPersistM ()
+createTables = void $ runMigrationSilent migrateKeysDb
 
 newtype ReadHandle = ReadHandle H.DbQueue
 

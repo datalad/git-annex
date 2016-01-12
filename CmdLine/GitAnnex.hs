@@ -115,6 +115,9 @@ import qualified Command.Test
 import qualified Command.FuzzTest
 import qualified Command.TestRemote
 #endif
+#ifdef WITH_BENCHMARK
+import qualified Command.Benchmark
+#endif
 #ifdef WITH_EKG
 import System.Remote.Monitoring
 #endif
@@ -220,6 +223,9 @@ cmds testoptparser testrunner =
 #ifdef WITH_TESTSUITE
 	, Command.FuzzTest.cmd
 	, Command.TestRemote.cmd
+#endif
+#ifdef WITH_BENCHMARK
+	, Command.Benchmark.cmd
 #endif
 	]
 

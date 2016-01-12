@@ -5,7 +5,7 @@ module Common (module X) where
 import Control.Monad as X
 import Control.Monad.IfElse as X
 import Control.Applicative as X
-import "mtl" Control.Monad.State.Strict as X (liftIO)
+import Control.Monad.IO.Class as X (liftIO)
 
 import Data.Maybe as X
 import Data.List as X hiding (head, tail, init, last)

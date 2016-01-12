@@ -127,14 +127,13 @@ openDb createdb _ = withExclusiveLock gitAnnexKeysDbLock $ do
 		(False, True) -> do
 			liftIO $ do
 				createDirectoryIfMissing True dbdir
-				H.initDb db $ void $
-					runMigrationSilent SQL.migrateKeysDb
+				H.initDb db SQL.createTables
 			setAnnexDirPerm dbdir
 			setAnnexFilePerm db
 			open db
 		(False, False) -> return DbEmpty
   where
-	open db = liftIO $ DbOpen <$> H.openDbQueue db "content"
+	open db = liftIO $ DbOpen <$> H.openDbQueue db SQL.containedTable
 
 addAssociatedFile :: Key -> TopFilePath -> Annex ()
 addAssociatedFile k f = runWriterIO $ SQL.addAssociatedFile (toSKey k) f

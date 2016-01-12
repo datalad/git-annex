@@ -672,6 +672,11 @@ subdirectories).
   
   See [[git-annex-fuzztest]](1) for details.
 
+* `benchmark`
+
+  This runs git-annex's built-in benchmarks, if it was built with
+  benchmarking support.
+
 # COMMON OPTIONS
 
 These common options are accepted by all git-annex commands, and

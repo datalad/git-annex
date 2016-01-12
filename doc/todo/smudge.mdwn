@@ -32,14 +32,6 @@ git-annex should use smudge/clean filters.
   when pushing changes committed in such a repo. Ideally, should avoid
   committing implicit unlocks, or should prevent such commits leaking out
   in pushes.
-* Optimisation: See if the database schema can be improved to speed things
-  up. Are there enough indexes? getAssociatedKey in particular does a
-  reverse lookup and might benefit from an index.
-* Optimisation: Reads from the Keys database avoid doing anything if the
-  database doesn't exist. This makes v5 repos, or v6 with all locked files
-  faster. However, if a v6 repo unlocks and then re-locks a file, its
-  database will exist, and so this optimisation will no longer apply.
-  Could try to detect when the database is empty, and remove it or avoid reads.
 
 * Eventually (but not yet), make v6 the default for new repositories.
   Note that the assistant forces repos into direct mode; that will need to
