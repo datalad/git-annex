@@ -28,6 +28,7 @@ Associated
   key SKey
   file FilePath
   KeyFileIndex key file
+  FileKeyIndex file key
 Content
   key SKey
   cache SInodeCache
