@@ -41,9 +41,7 @@ benchmark _ = withTmpDirIn "." "benchmark" $ \tmpdir -> do
 		, 10000
 		-- , 100000
 		]
-	-- can't use Criterion's defaultMain here because it looks at
-	-- command-line parameters
-	withConfig defaultConfig $ runAndAnalyse (const True) $
+	runCriterion $
 		bgroup "keys database" $ flip concatMap dbs $ \db ->
 			[ getAssociatedFilesHitBench db
 			, getAssociatedFilesMissBench db
@@ -104,3 +102,8 @@ instance NFData TopFilePath where
 
 instance NFData SKey where
 	rnf (SKey s) = rnf s
+	
+-- can't use Criterion's defaultMain here because it looks at
+-- command-line parameters
+runCriterion :: Benchmark -> IO ()
+runCriterion = withConfig defaultConfig . runAndAnalyse (const True)
