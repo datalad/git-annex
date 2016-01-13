@@ -41,7 +41,7 @@ import qualified Utility.Quvi as Quvi
 #endif
 
 cmd :: Command
-cmd = notBareRepo $ withGlobalOptions [jobsOption] $
+cmd = notBareRepo $ withGlobalOptions [jobsOption, jsonOption] $
 	command "addurl" SectionCommon "add urls to annex"
 		(paramRepeating paramUrl) (seek <$$> optParser)
 

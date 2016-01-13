@@ -19,3 +19,6 @@ failed
 """]]
 
 [[!meta author=yoh]]
+
+> I've made --json work for addurl; I feel that's the way to go for parsing
+> its output. [[done]] --[[Joey]]

@@ -83,6 +83,11 @@ be used to get better filenames.
   content if the file does not yet exist; the same as
   `git annex addurl $url --file $file`
 
+* `--json`
+
+  Enable JSON output. This is intended to be parsed by programs that use
+  git-annex. Each line of output is a JSON object.
+
 # SEE ALSO
 
 [[git-annex]](1)
