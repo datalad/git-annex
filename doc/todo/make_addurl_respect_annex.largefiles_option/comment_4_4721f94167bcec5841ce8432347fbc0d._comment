@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-01-13T19:11:33Z"
+ content="""
+Er, re your last comment, I closed this bug because I made addurl honor
+annex.largefiles..
+
+That was done in December 8th. AFAICS, there's nothing more to be done
+except use that feature.
+"""]]
