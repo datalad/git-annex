@@ -195,11 +195,7 @@ runHandler handler file filestatus = void $ do
 	case r of
 		Left e -> liftIO $ warningIO $ show e
 		Right Nothing -> noop
-		Right (Just change) -> do
-			-- Just in case the commit thread is not
-			-- flushing the queue fast enough.
-			liftAnnex Annex.Queue.flushWhenFull
-			recordChange change
+		Right (Just change) -> recordChange change
   where
 	normalize f
 		| "./" `isPrefixOf` file = drop 2 f
@@ -391,7 +387,6 @@ onDelDir dir _ = do
 	recordChanges $ map (\f -> Change now f RmChange) fs
 
 	void $ liftIO clean
-	liftAnnex Annex.Queue.flushWhenFull
 	noChange
 
 {- Called when there's an error with inotify or kqueue. -}

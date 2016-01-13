@@ -137,7 +137,7 @@ merge origq newq = origq
 
 {- Is a queue large enough that it should be flushed? -}
 full :: Queue -> Bool
-full (Queue cur lim  _) = cur > lim
+full (Queue cur lim  _) = cur >= lim
 
 {- Runs a queue on a git repository. -}
 flush :: Queue -> Repo -> IO Queue
