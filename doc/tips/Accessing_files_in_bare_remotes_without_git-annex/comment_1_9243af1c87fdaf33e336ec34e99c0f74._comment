@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="emanuele.ruffaldi@56b9c9a5c1f873994b869248e9b53aa20f437d20"
+ nickname="emanuele.ruffaldi"
+ subject="Updated"
+ date="2016-01-12T22:47:49Z"
+ content="""
+- support for non-bare repositories
+- option for creating a tar file containing all the master checked out with the symbolic links to the content files. This is mountable with the archivemount tool
+"""]]
