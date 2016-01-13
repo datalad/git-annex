@@ -1,0 +1,23 @@
+Basically, this is how it looks now (this is part of my music collection, but there are other directories with the same symptoms):
+
+    simon@simon-desktop /run/media/simon/TOSHIBA EXT/Stuff/Music/Amy Kuney - Breaking Bad Habits EP (2006) ±annex/direct/master » ls -l
+    insgesamt 4
+    -rwxrwxrwx 1 simon simon 196  7. Dez 13:37 01 So Help Me God.mp3
+    -rwxrwxrwx 1 simon simon 196  7. Dez 13:37 02 Sore Loser.mp3
+    -rwxrwxrwx 1 simon simon 196  7. Dez 13:37 03 How The Wind Must Feel.mp3
+    -rwxrwxrwx 1 simon simon 196  7. Dez 13:37 04 Sold Out.mp3
+    -rwxrwxrwx 1 simon simon 196  7. Dez 13:37 05 In The Dark.mp3
+    -rwxrwxrwx 1 simon simon 196  7. Dez 13:37 06 Breaking Bad Habits.mp3
+    -rwxrwxrwx 1 simon simon 196  7. Dez 13:37 AmyKuneyEP.jpg
+    simon@simon-desktop /run/media/simon/TOSHIBA EXT/Stuff/Music/Amy Kuney - Breaking Bad Habits EP (2006) ±annex/direct/master » cat 01\ So\ Help\ Me\ God.mp3 
+    ../../.git/annex/objects/M5/Pq/SHA256E-s213--96db10197b716998d35576c39fc2468bd197b5a4ba2bec14a78454b278d96498.mp3/SHA256E-s213--96db10197b716998d35576c39fc2468bd197b5a4ba2bec14a78454b278d96498.mp3%
+    simon@simon-desktop /run/media/simon/TOSHIBA EXT/Stuff/Music/Amy Kuney - Breaking Bad Habits EP (2006) ±annex/direct/master » ls ../../.git/annex/objects/M5
+    ls: Zugriff auf ../../.git/annex/objects/M5 nicht möglich: Datei oder Verzeichnis nicht gefunden
+    simon@simon-desktop /run/media/simon/TOSHIBA EXT/Stuff/Music/Amy Kuney - Breaking Bad Habits EP (2006) ±annex/direct/master » find ../../.git/annex | grep 96db10197b716998d3557                               2 ↵
+    ../../.git/annex/objects/a5b/e78/SHA256E-s213--96db10197b716998d35576c39fc2468bd197b5a4ba2bec14a78454b278d96498.mp3
+    ../../.git/annex/objects/a5b/e78/SHA256E-s213--96db10197b716998d35576c39fc2468bd197b5a4ba2bec14a78454b278d96498.mp3/SHA256E-s213--96db10197b716998d35576c39fc2468bd197b5a4ba2bec14a78454b278d96498.mp3.map
+    simon@simon-desktop /run/media/simon/TOSHIBA EXT/Stuff/Music/Amy Kuney - Breaking Bad Habits EP (2006) ±annex/direct/master » git annex info  
+    repository mode: direct
+
+So, I only have a bunch of text files containing file paths. The actual files are in .git/annex/objects somewhere, but not exactly in the path specified in those text files. I'm not sure how it ended up that way, I'm in direct mode after all.
+For starters, I would like to know how I can repair this mess.
