@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="git-annex@8c58bb43191e0443be5d100448ba874284c5a778"
+ nickname="git-annex"
+ subject="OSX Homebrew Has Same Failure"
+ date="2016-01-13T00:09:13Z"
+ content="""
+Unfortunately this issues also exists in the OSX Homebrew release of version 5.20151218
+
+> build flags: Assistant Pairing Testsuite WebDAV FsEvents XMPP ConcurrentOutput DNS Feeds Quvi TDFA TorrentParser Database
+> key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+> remote types: git gcrypt bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+
+
+"""]]
