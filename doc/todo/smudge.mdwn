@@ -2,14 +2,6 @@ git-annex should use smudge/clean filters.
 
 ### implementation todo list
 
-* Interaction with shared clones. Should avoid hard linking from/to a
-  object in a shared clone if either repository has the object unlocked
-  with a hard link in place.
-  (And should avoid unlocking an object with a hard link if it's hard
-  linked to a shared clone, but that's already accomplished because it
-  avoids unlocking an object if it's hard linked at all)
-  **release blocker**
-
 * Reconcile staged changes into the associated files database, whenever
   the database is queried. This is needed to handle eg:
   	git add largefile

@@ -672,7 +672,12 @@ commitOnCleanup r a = go `after` a
 						toCommand shellparams
 
 wantHardLink :: Annex Bool
-wantHardLink = (annexHardLink <$> Annex.getGitConfig) <&&> (not <$> isDirect)
+wantHardLink = (annexHardLink <$> Annex.getGitConfig)
+	-- Not direct mode files because they can be modified at any time.
+	<&&> (not <$> isDirect)
+	-- Not unlocked files that are hard linked in the work tree,
+	-- because they can be modified at any time.
+	<&&> (not <$> annexThin <$> Annex.getGitConfig)
 
 -- Copies from src to dest, updating a meter. If the copy finishes
 -- successfully, calls a final check action, which must also succeed, or
@@ -694,7 +699,7 @@ mkCopier remotewanthardlink rsyncparams = do
 #ifndef mingw32_HOST_OS
 	localwanthardlink <- wantHardLink
 	let linker = \src dest -> createLink src dest >> return True
-	ifM (pure (remotewanthardlink || localwanthardlink))
+	ifM (pure (remotewanthardlink || localwanthardlink) <&&> not <$> isDirect)
 		( return $ \src dest p check ->
 			ifM (liftIO (catchBoolIO (linker src dest)))
 				( return (True, Verified)
