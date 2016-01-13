@@ -252,25 +252,6 @@ dotfile file
   where
 	f = takeFileName file
 
-{- Converts a DOS style path to a Cygwin style path. Only on Windows.
- - Any trailing '\' is preserved as a trailing '/' -}
-toCygPath :: FilePath -> FilePath
-#ifndef mingw32_HOST_OS
-toCygPath = id
-#else
-toCygPath p
-	| null drive = recombine parts
-	| otherwise = recombine $ "/cygdrive" : driveletter drive : parts
-  where
-	(drive, p') = splitDrive p
-	parts = splitDirectories p'
-	driveletter = map toLower . takeWhile (/= ':')
-	recombine = fixtrailing . Posix.joinPath
-	fixtrailing s
-		| hasTrailingPathSeparator p = Posix.addTrailingPathSeparator s
-		| otherwise = s
-#endif
-
 {- Converts a DOS style path to a msys2 style path. Only on Windows.
  - Any trailing '\' is preserved as a trailing '/' 
  - 
