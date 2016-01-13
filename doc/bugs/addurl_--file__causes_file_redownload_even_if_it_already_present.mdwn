@@ -25,3 +25,8 @@ git-annex version: 6.20160104+gitg0cf96be-1~ndall+1
 """]
 
 [[!meta author=yoh]]
+
+> I don't think that the re-download is the bug. The actual problem
+> is that the file is present and not an annexed file, so git-annex addurl
+> should avoid overwriting it, whatever its content. [[fixed|done]]
+> --[[Joey]]
