@@ -11,6 +11,8 @@ module Types.Test where
 
 #ifdef WITH_TESTSUITE
 import Test.Tasty.Options
+import Data.Monoid
+import Prelude
 #endif
 
 #ifdef WITH_TESTSUITE
@@ -21,6 +23,9 @@ data TestOptions = TestOptions
 
 instance Monoid TestOptions where
 	mempty = TestOptions mempty False
+	mappend a b = TestOptions
+		(tastyOptionSet a <> tastyOptionSet b)
+		(keepFailuresOption a || keepFailuresOption b)
 
 #else
 type TestOptions = ()
