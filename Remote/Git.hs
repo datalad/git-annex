@@ -694,7 +694,7 @@ mkCopier remotewanthardlink rsyncparams = do
 #ifndef mingw32_HOST_OS
 	localwanthardlink <- wantHardLink
 	let linker = \src dest -> createLink src dest >> return True
-	ifM (pure (remotewanthardlink || localwanthardlink) <&&> not <$> isDirect)
+	ifM (pure (remotewanthardlink || localwanthardlink))
 		( return $ \src dest p check ->
 			ifM (liftIO (catchBoolIO (linker src dest)))
 				( return (True, Verified)
