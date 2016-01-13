@@ -55,6 +55,8 @@ git-annex (6.20151219) UNRELEASED; urgency=medium
     of metadata containing a slash or backslash.
   * When annex.http-headers is used to set the User-Agent header, avoid
     sending User-Agent: git-annex
+  * Windows: Fix rsync cross-drive hack to work with msys2 rsync.
+    Thanks, Pieter Kitslaar.
 
  -- Joey Hess <id@joeyh.name>  Sat, 19 Dec 2015 13:31:17 -0400
 
