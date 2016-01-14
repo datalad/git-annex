@@ -114,11 +114,6 @@ old versions of files is an important part of git after all!
 That's a good safe default. But there are ways to use git-annex that
 make the second copy not be worth keeping:
 
-[[!template id=note text="""
-When a [[direct_mode]] repository is upgraded, annex.thin is automatically
-set, because direct mode made the same single-copy tradeoff.
-"""]]
-
 * When you're using git-annex to sync the current version of files across
   devices, and don't care much about previous versions.
 * When you have set up a backup repository, and use git-annex to copy
@@ -141,6 +136,11 @@ hard links. Ie, not Windows, and not FAT filesystems.
 
 Setting annex.thin can save a lot of disk space, but it's a tradeoff
 between disk usage and safety. 
+
+[[!template id=note text="""
+When a [[direct_mode]] repository is upgraded, annex.thin is automatically
+set, because direct mode made the same single-copy tradeoff.
+"""]]
 
 Keeping files locked is safer and also avoids using unnecessary
 disk space, but trades off easy modification of files.
