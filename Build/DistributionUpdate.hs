@@ -16,7 +16,7 @@ import Utility.Url
 import qualified Git.Construct
 import qualified Annex
 import Annex.Content
-import Backend
+import Annex.WorkTree
 import Git.Command
 
 import Data.Time.Clock
