@@ -134,13 +134,13 @@ hard links. Ie, not Windows, and not FAT filesystems.
 
 ## tradeoffs
 
-Setting annex.thin can save a lot of disk space, but it's a tradeoff
-between disk usage and safety. 
-
 [[!template id=note text="""
 When a [[direct_mode]] repository is upgraded, annex.thin is automatically
 set, because direct mode made the same single-copy tradeoff.
 """]]
+
+Setting annex.thin can save a lot of disk space, but it's a tradeoff
+between disk usage and safety. 
 
 Keeping files locked is safer and also avoids using unnecessary
 disk space, but trades off easy modification of files.
