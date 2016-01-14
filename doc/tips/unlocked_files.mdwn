@@ -119,13 +119,13 @@ When a [[direct_mode]] repository is upgraded, annex.thin is automatically
 set, because direct mode made the same single-copy tradeoff.
 """]]
 
-* When you're using git-annex to sync the current version of files acrosss
+* When you're using git-annex to sync the current version of files across
   devices, and don't care much about previous versions.
 * When you have set up a backup repository, and use git-annex to copy
   your files to the backup.
 
 In situations like these, you may want to avoid the overhead of the second
-local copy of unlocked files. There's config setting for that.
+local copy of unlocked files. There's a config setting for that.
 
 	git config annex.thin true
 
