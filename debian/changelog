@@ -1,4 +1,4 @@
-git-annex (6.20151219) UNRELEASED; urgency=medium
+git-annex (6.20160114) unstable; urgency=medium
 
   "hexapodia as the key insight"
 
@@ -60,7 +60,7 @@ git-annex (6.20151219) UNRELEASED; urgency=medium
   * Windows: Fix rsync cross-drive hack to work with msys2 rsync.
     Thanks, Pieter Kitslaar.
 
- -- Joey Hess <id@joeyh.name>  Sat, 19 Dec 2015 13:31:17 -0400
+ -- Joey Hess <id@joeyh.name>  Thu, 14 Jan 2016 10:14:19 -0400
 
 git-annex (5.20151218) unstable; urgency=medium
 
