@@ -87,7 +87,8 @@ your changes.
 
 Under the hood, this uses git's [[todo/smudge]] filter interface, and
 git-annex converts between the content of the big file and a pointer file,
-which is what gets committed to git. 
+which is what gets committed to git. All the regular git-annex commands
+(get, drop, etc) can be used on unlocked files too.
 
 A v6 repository can contain both locked and unlocked files. You can switch 
 a file back and forth using the `git annex lock` and `git annex unlock`
