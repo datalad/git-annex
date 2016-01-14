@@ -13,7 +13,6 @@ import Common.Annex
 import qualified Annex
 import Annex.Concurrent
 import Types.Command
-import qualified Annex.Queue
 import Messages.Concurrent
 import Messages.Internal
 import Types.Messages

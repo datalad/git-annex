@@ -22,8 +22,6 @@ import Database.Persist.TH
 import Database.Esqueleto hiding (Key)
 import Data.Time.Clock
 import Control.Monad
-import Control.Applicative
-import Prelude
 
 share [mkPersist sqlSettings, mkMigrate "migrateKeysDb"] [persistLowerCase|
 Associated
