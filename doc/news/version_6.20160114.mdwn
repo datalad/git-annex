@@ -1,58 +1,59 @@
 git-annex 6.20160114 released with [[!toggle text="these changes"]]
 [[!toggleable text="""
-   "hexapodia as the key insight"
-   * Added v6 repository mode, but v5 is still the default for now.
-   * unlock, lock: In v6 mode, unlocking a file changes it from a symlink to a
-     pointer file, and this change can be committed to the git repository.
-     For details, see http://git-annex.branchable.com/tips/unlocked\_files/
-   * The upgrade to version 6 is not done fully automatically yet, because
-     upgrading a direct mode repository to version 6 will prevent old
-     versions of git-annex from working in other clones of that repository.
-     For details, see http://git-annex.branchable.com/upgrades/
-   * init: --version parameter added to control which supported repository
-     version to use.
-   * init, upgrade: Configure .git/info/attributes to use git-annex
-     as a smudge filter. In v6 repository mode, this makes git add
-     add files to the annex in unlocked mode, unless overridden by
-     annex.largefiles configuration.
-   * assistant: In v6 mode, adds files in unlocked mode, so they can
-     continue to be modified.
-   * Added annex.thin setting, which makes unlocked files in v6 repositories
-     be hard linked to their content, instead of a copy. This saves disk
-     space but means any modification of an unlocked file will lose the local
-     (and possibly only) copy of the old version.
-   * Enable annex.thin by default on upgrade from direct mode to v6, since
-     direct mode made the same tradeoff.
-   * fix: Adjusts unlocked files as configured by annex.thin.
-   * persistent-sqlite is now a hard build dependency, since v6 repository
-     mode needs it.
-   * status: On crippled filesystems, was displaying M for all annexed files
-     that were present. Probably caused by a change to what git status
-     displays in this situation. Fixed by treating files git thinks are
-     modified the same as typechanged files.
-   * addurl: Added --batch and --with-files options.
-   * addurl: Support --json, particularly useful in --batch mode.
-   * addurl: Refuse to overwrite any existing, non-annexed file.
-   * Debian: Adjust build dependencies for webapp, DAV. Now available on
-     mips, mipsel, but temporarily removed armel since build is failing
-     there.
-   * info: Fix "backend usage" numbers, which were counting present keys
-     twice.
-   * info --json: Improve json for "backend usage", using a nested object
-     with fields for each backend instead of the previous weird nested lists.
-     This may break existing parsers of this json output, if there were any.
-   * whereis --json: Make url list be included in machine-parseable form.
-   * test: Added --keep-failures option.
-   * unused: Bug fix when a new file was added to the annex, and then
-     removed (but not git rmed). git still has the add staged in this case,
-     so the content should not be unused and was wrongly treated as such.
-   * migrate: Copy over metadata to new key.
-   * rekey: No longer copies over urls from the old to the new key.
-     It makes sense for migrate to do that, but not for this low-level
-     (and little used) plumbing command to.
-   * view: Fix crash in non-unicode capable locale when entering a view
-     of metadata containing a slash or backslash.
-   * When annex.http-headers is used to set the User-Agent header, avoid
-     sending User-Agent: git-annex
-   * Windows: Fix rsync cross-drive hack to work with msys2 rsync.
-     Thanks, Pieter Kitslaar."""]]
+"hexapodia as the key insight"
+
+* Added v6 repository mode, but v5 is still the default for now.
+* unlock, lock: In v6 mode, unlocking a file changes it from a symlink to a
+  pointer file, and this change can be committed to the git repository.
+  For details, see http://git-annex.branchable.com/tips/unlocked\_files/
+* The upgrade to version 6 is not done fully automatically yet, because
+  upgrading a direct mode repository to version 6 will prevent old
+  versions of git-annex from working in other clones of that repository.
+  For details, see http://git-annex.branchable.com/upgrades/
+* init: --version parameter added to control which supported repository
+  version to use.
+* init, upgrade: Configure .git/info/attributes to use git-annex
+  as a smudge filter. In v6 repository mode, this makes git add
+  add files to the annex in unlocked mode, unless overridden by
+  annex.largefiles configuration.
+* assistant: In v6 mode, adds files in unlocked mode, so they can
+  continue to be modified.
+* Added annex.thin setting, which makes unlocked files in v6 repositories
+  be hard linked to their content, instead of a copy. This saves disk
+  space but means any modification of an unlocked file will lose the local
+  (and possibly only) copy of the old version.
+* Enable annex.thin by default on upgrade from direct mode to v6, since
+  direct mode made the same tradeoff.
+* fix: Adjusts unlocked files as configured by annex.thin.
+* persistent-sqlite is now a hard build dependency, since v6 repository
+  mode needs it.
+* status: On crippled filesystems, was displaying M for all annexed files
+  that were present. Probably caused by a change to what git status
+  displays in this situation. Fixed by treating files git thinks are
+  modified the same as typechanged files.
+* addurl: Added --batch and --with-files options.
+* addurl: Support --json, particularly useful in --batch mode.
+* addurl: Refuse to overwrite any existing, non-annexed file.
+* Debian: Adjust build dependencies for webapp, DAV. Now available on
+  mips, mipsel, but temporarily removed armel since build is failing
+  there.
+* info: Fix "backend usage" numbers, which were counting present keys
+  twice.
+* info --json: Improve json for "backend usage", using a nested object
+  with fields for each backend instead of the previous weird nested lists.
+  This may break existing parsers of this json output, if there were any.
+* whereis --json: Make url list be included in machine-parseable form.
+* test: Added --keep-failures option.
+* unused: Bug fix when a new file was added to the annex, and then
+  removed (but not git rmed). git still has the add staged in this case,
+  so the content should not be unused and was wrongly treated as such.
+* migrate: Copy over metadata to new key.
+* rekey: No longer copies over urls from the old to the new key.
+  It makes sense for migrate to do that, but not for this low-level
+  (and little used) plumbing command to.
+* view: Fix crash in non-unicode capable locale when entering a view
+  of metadata containing a slash or backslash.
+* When annex.http-headers is used to set the User-Agent header, avoid
+  sending User-Agent: git-annex
+* Windows: Fix rsync cross-drive hack to work with msys2 rsync.
+  Thanks, Pieter Kitslaar."""]]
