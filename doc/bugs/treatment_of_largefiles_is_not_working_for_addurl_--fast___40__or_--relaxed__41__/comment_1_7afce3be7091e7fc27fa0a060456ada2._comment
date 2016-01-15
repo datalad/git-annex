@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-01-15T18:38:53Z"
+ content="""
+Obviously --relaxed doesn't know the size of the file at all, so it
+wouldn't know what to do for "largerthan".
+
+--fast often knows the file size, but not always. When quvi is used, the
+size is not included in the key. When a special remote claims an url, the
+size may or may not be known.
+
+So, annex.largefiles could be supported for --fast but not for --relaxed,
+and only for urls not using quvi or some special remotes.
+This seems so complicated to document that it's probably not a good idea.
+Such complexity makes me start to wonder if I made a mistake by adding this
+feature to addurl.
+
+Also, adding support for this would complicate any later annex.largefiles
+settings, like mime type matching, that need to look at the content of the
+file.
+"""]]
