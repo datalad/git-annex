@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="grawity@2ea26be48562f66fcb9b66307da72b1e2e37453f"
+ nickname="grawity"
+ subject="usage changes"
+ date="2016-01-15T13:31:37Z"
+ content="""
+This sounds interesting. But OTOH I'm curious about upgrades from direct mode (which I assume will soon go away):
+
+If currently I just use `annex add; annex sync --content` on a media repo, would that change to `git add --all; git commit -m whatever; annex unlock *; annex sync --content`? That is, will v6 require the manual commit step?
+
+Also, when `annex get` or `annex sync` retrieve files from another repo, will there be an option to have the files unlocked by default, as in v5 direct mode?
+
+(I'm kinda hoping for `annex init --thin` or something similar to the v5 `annex direct`, as manually setting config options is easy to forget.)
+"""]]
