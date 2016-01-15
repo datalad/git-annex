@@ -1,3 +1,10 @@
+git-annex (6.20160115) UNRELEASED; urgency=medium
+
+  * whereis --json: Urls are now listed inside the remote that claims them,
+    rather than all together at the end.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 15 Jan 2016 14:05:01 -0400
+
 git-annex (6.20160114) unstable; urgency=medium
 
   "hexapodia as the key insight"

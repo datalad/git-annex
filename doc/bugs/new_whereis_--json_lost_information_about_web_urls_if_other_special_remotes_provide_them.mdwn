@@ -89,3 +89,5 @@ as you can see -- only --json format is missing on web remote URLs.  I guess, id
 what is the purpose of note in current output anyways since it just duplicates information in 'whereis' field?
 
 [[!meta author=yoh]]
+
+> [[fixed|done]] --[[Joey]]

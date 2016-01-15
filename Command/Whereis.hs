@@ -13,6 +13,7 @@ import Remote
 import Logs.Trust
 import Logs.Web
 import Remote.Web (getWebUrls)
+import Annex.UUID
 
 import qualified Data.Map as M
 
@@ -54,32 +55,39 @@ start' remotemap key afile = do
 perform :: M.Map UUID Remote -> Key -> CommandPerform
 perform remotemap key = do
 	locations <- keyLocations key
+	urls <- getUUIDUrls key locations remotemap
 	(untrustedlocations, safelocations) <- trustPartition UnTrusted locations
 	let num = length safelocations
 	showNote $ show num ++ " " ++ copiesplural num
-	pp <- prettyPrintUUIDs "whereis" safelocations
+	pp <- ppwhereis "whereis" safelocations urls
 	unless (null safelocations) $ showLongNote pp
-	pp' <- prettyPrintUUIDs "untrusted" untrustedlocations
+	pp' <- ppwhereis "untrusted" untrustedlocations urls
 	unless (null untrustedlocations) $ showLongNote $ untrustedheader ++ pp'
 
-	-- Since other remotes than the web remote can set urls
-	-- where a key can be downloaded, get and show all such urls
-	-- as a special case.
-	showRemoteUrls "web" =<< getWebUrls key
-	forM_ (mapMaybe (`M.lookup` remotemap) locations) $
-		performRemoteUrls key
+	mapM_ (showRemoteUrls remotemap) urls
+
 	if null safelocations then stop else next $ return True
   where
 	copiesplural 1 = "copy"
 	copiesplural _ = "copies"
 	untrustedheader = "The following untrusted locations may also have copies:\n"
+	ppwhereis h ls urls = do
+		descm <- uuidDescriptions
+		let urlvals = map (\(u, us) -> (u, Just us)) $
+			filter (\(u,_) -> u `elem` ls) urls
+		prettyPrintUUIDsWith (Just "urls") h descm (const Nothing) urlvals
 
-performRemoteUrls :: Key -> Remote -> Annex () 
-performRemoteUrls key remote = do
-	ls <- (++)
+getUUIDUrls :: Key -> [UUID] -> M.Map UUID Remote -> Annex [(UUID, [URLString])]
+getUUIDUrls key uuids remotemap = forM uuids $ \uu -> (,)
+	<$> pure uu
+	<*> maybe (pure []) (getRemoteUrls key) (M.lookup uu remotemap)
+
+getRemoteUrls :: Key -> Remote -> Annex [URLString]
+getRemoteUrls key remote
+	| uuid remote == webUUID = getWebUrls key
+	| otherwise = (++)
 		<$> askremote
 		<*> claimedurls
-	showRemoteUrls (name remote) ls
   where
 	askremote = maybe (pure []) (flip id key) (whereisKey remote)
 	claimedurls = do
@@ -89,10 +97,11 @@ performRemoteUrls key remote = do
 			<$> getUrls key
 		filterM (\u -> (==) <$> pure remote <*> claimingUrl u) us
 
-showRemoteUrls :: String -> [String] -> Annex ()
-showRemoteUrls nm us
-	| null us = return ()
-	| otherwise = do
-		let ls = unlines $ map (\u -> nm ++ ": " ++ u) us 
-		outputMessage noop ('\n' : indent ls ++ "\n")
-		maybeShowJSON [("urls", us)]
+showRemoteUrls :: M.Map UUID Remote -> (UUID, [URLString]) -> Annex ()
+showRemoteUrls remotemap (uu, us)
+	| null us = noop
+	| otherwise = case M.lookup uu remotemap of
+		Just r -> do
+			let ls = unlines $ map (\u -> name r ++ ": " ++ u) us 
+			outputMessage noop ('\n' : indent ls ++ "\n")
+		Nothing -> noop
