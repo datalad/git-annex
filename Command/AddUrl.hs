@@ -258,8 +258,7 @@ performQuvi relaxed pageurl videourl file = ifAnnexed file addurl geturl
 
 #ifdef WITH_QUVI
 addUrlFileQuvi :: Bool -> URLString -> URLString -> FilePath -> Annex (Maybe Key)
-addUrlFileQuvi relaxed quviurl videourl file = do
-	checkDoesNotExist file
+addUrlFileQuvi relaxed quviurl videourl file = stopUnless (doesNotExist file) $ do
 	let key = Backend.URL.fromUrl quviurl Nothing
 	ifM (pure relaxed <||> Annex.getState Annex.fast)
 		( do
@@ -309,19 +308,20 @@ addUrlChecked relaxed url u checkexistssize key
 		)
 
 addUrlFile :: Bool -> URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
-addUrlFile relaxed url urlinfo file = do
-	checkDoesNotExist file
+addUrlFile relaxed url urlinfo file = stopUnless (doesNotExist file) $ do
 	liftIO $ createDirectoryIfMissing True (parentDir file)
 	ifM (Annex.getState Annex.fast <||> pure relaxed)
 		( nodownload url urlinfo file
 		, downloadWeb url urlinfo file
 		)
 
-checkDoesNotExist :: FilePath -> Annex ()
-checkDoesNotExist file = go =<< liftIO (catchMaybeIO $ getSymbolicLinkStatus file)
+doesNotExist :: FilePath -> Annex Bool
+doesNotExist file = go =<< liftIO (catchMaybeIO $ getSymbolicLinkStatus file)
   where
-	go Nothing = return ()
-	go (Just _) = error $ file ++ " already exists and is not annexed; not overwriting"
+	go Nothing = return True
+	go (Just _) = do
+		warning $ file ++ " already exists and is not annexed; not overwriting"
+		return False
 
 downloadWeb :: URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
 downloadWeb url urlinfo file = do
