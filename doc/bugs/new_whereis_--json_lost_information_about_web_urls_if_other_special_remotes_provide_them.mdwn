@@ -1,0 +1,91 @@
+### Please describe the problem.
+
+With upgrade to 6.20160114+gitg6be9ee0-1~ndall+1 our (datalad) tests started to fail since apparently format of whereis --json has changed.  It changed probably for the best since now no need to parse out urls from the generic 'note' field.  BUT it seems that it has lost 1. ability to associate urls with remotes 2. doesn't list web remote urls if another remote provides urls as well
+
+### Please provide any additional information below.
+
+[[!format sh """
+$> git annex whereis  sub001/BOLD/task001_run001/bold.nii.gz                          
+whereis sub001/BOLD/task001_run001/bold.nii.gz (3 copies) 
+  	00000000-0000-0000-0000-000000000001 -- web
+   	70d0c2f3-0d57-485c-8802-f6e829503516 -- [datalad-archives]
+   	bb907499-dbea-4713-977f-0ccd209de415 -- yoh@hopa:~/datalad/crawl/openfmri/ds000005 [here]
+
+  web: http://www.onerussian.com/tmp/banner.png
+  web: http://www.onerussian.com/tmp/bold.nii.gz
+
+  datalad-archives: dl+archive:SHA256E-s110760--5c9a3b565944b84c7df381481b597d716061881cbfc85493317452e85ea9b391.tgz/ds005/sub001/BOLD/task001_run001/bold.nii.gz
+  datalad-archives: dl+archive:SHA256E-s111649--63c9168b53e033c29d188b97d4950e267fa93a4d991fc92f42a3bb9488013863.tgz/ds005/sub001/BOLD/task001_run001/bold.nii.gz
+  datalad-archives: dl+archive:SHA256E-s112069--f1afedb105994006cbf37c03e2a05b538397283701c5a9bee483287ca912d690.tgz/ds005/sub001/BOLD/task001_run001/bold.nii.gz
+  datalad-archives: dl+archive:SHA256E-s154612--8adda02a8bc1a88f864f2cff31766f5ad4fcefbb42afd7230f95edfb5e0dfcb1.tgz/ds005/sub001/BOLD/task001_run001/bold.nii.gz
+ok
+
+$> git annex whereis --json sub001/BOLD/task001_run001/bold.nii.gz | python -m json.tool                      
+{            
+    "command": "whereis",
+    "file": "sub001/BOLD/task001_run001/bold.nii.gz",
+    "note": "\t00000000-0000-0000-0000-000000000001 -- web\n \t70d0c2f3-0d57-485c-8802-f6e829503516 -- [datalad-archives]\n \tbb907499-dbea-4713-977f-0ccd209de415 -- yoh@hopa:~/datalad/crawl/openfmri/ds000005 [here]\n",
+    "success": true,
+    "untrusted": [],
+    "urls": [
+        "dl+archive:SHA256E-s110760--5c9a3b565944b84c7df381481b597d716061881cbfc85493317452e85ea9b391.tgz/ds005/sub001/BOLD/task001_run001/bold.nii.gz",
+        "dl+archive:SHA256E-s111649--63c9168b53e033c29d188b97d4950e267fa93a4d991fc92f42a3bb9488013863.tgz/ds005/sub001/BOLD/task001_run001/bold.nii.gz",
+        "dl+archive:SHA256E-s112069--f1afedb105994006cbf37c03e2a05b538397283701c5a9bee483287ca912d690.tgz/ds005/sub001/BOLD/task001_run001/bold.nii.gz",
+        "dl+archive:SHA256E-s154612--8adda02a8bc1a88f864f2cff31766f5ad4fcefbb42afd7230f95edfb5e0dfcb1.tgz/ds005/sub001/BOLD/task001_run001/bold.nii.gz"
+    ],
+    "whereis": [
+        {
+            "description": "web",
+            "here": false,
+            "uuid": "00000000-0000-0000-0000-000000000001"
+        },
+        {
+            "description": "[datalad-archives]",
+            "here": false,
+            "uuid": "70d0c2f3-0d57-485c-8802-f6e829503516"
+        },
+        {
+            "description": "yoh@hopa:~/datalad/crawl/openfmri/ds000005",
+            "here": true,
+            "uuid": "bb907499-dbea-4713-977f-0ccd209de415"
+        }
+    ]
+}
+
+"""]]
+
+as you can see -- only --json format is missing on web remote URLs.  I guess, ideally, "urls" should also be an associative array with keys corresponding to remote names and listing them under.  OR why not to list them within the remote record under 'whereis'?  Sounds like the most logical place for them to be at, e.g.
+
+[[!format sh """
+
+    "whereis": [
+        {
+            "description": "web",
+            "here": false,
+            "uuid": "00000000-0000-0000-0000-000000000001",
+            "urls": [ "http://www.onerussian.com/tmp/bold.nii.gz"]
+        },
+        {
+            "description": "[datalad-archives]",
+            "here": false,
+            "uuid": "70d0c2f3-0d57-485c-8802-f6e829503516"
+            "urls": [
+        "dl+archive:SHA256E-s110760--5c9a3b565944b84c7df381481b597d716061881cbfc85493317452e85ea9b391.tgz/ds005/sub001/BOLD/task001_run001/bold.nii.gz",
+        "dl+archive:SHA256E-s111649--63c9168b53e033c29d188b97d4950e267fa93a4d991fc92f42a3bb9488013863.tgz/ds005/sub001/BOLD/task001_run001/bold.nii.gz",
+        "dl+archive:SHA256E-s112069--f1afedb105994006cbf37c03e2a05b538397283701c5a9bee483287ca912d690.tgz/ds005/sub001/BOLD/task001_run001/bold.nii.gz",
+        "dl+archive:SHA256E-s154612--8adda02a8bc1a88f864f2cff31766f5ad4fcefbb42afd7230f95edfb5e0dfcb1.tgz/ds005/sub001/BOLD/task001_run001/bold.nii.gz"
+    ],
+
+
+        },
+        {
+            "description": "yoh@hopa:~/datalad/crawl/openfmri/ds000005",
+            "here": true,
+            "uuid": "bb907499-dbea-4713-977f-0ccd209de415"
+        }
+    ]
+"""]]
+
+what is the purpose of note in current output anyways since it just duplicates information in 'whereis' field?
+
+[[!meta author=yoh]]
