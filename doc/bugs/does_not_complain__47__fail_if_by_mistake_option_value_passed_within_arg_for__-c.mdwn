@@ -22,3 +22,5 @@ lrwxrwxrwx 1 yoh yoh 189 Nov 12 12:03 svgtune-0.2.0/README.rst -> ../.git/annex/
 
 [[!meta author=yoh]]
 
+> I guess it could be considered [[done]] --[[yoh]]
+
