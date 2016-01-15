@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="new effect in list of &quot;fixed&quot; behavior to fail addurl if non-annex file exists"
+ date="2016-01-15T04:45:07Z"
+ content="""
+[[format sh \"\"\"
+$> echo \"http://www.onerussian.com/tmp/banner.png 123\" | git annex addurl --batch --with-files 2>/dev/null
+addurl 123 %  
+\"\"\"]]
+
+so no indication of addurl failing for that existing (123) file.  Should at least say \"failed\" I guess
+"""]]
