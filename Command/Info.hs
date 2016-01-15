@@ -38,6 +38,7 @@ import qualified Limit
 import Messages.JSON (DualDisp(..))
 import Annex.BloomFilter
 import qualified Command.Unused
+import CmdLine.Batch
 
 -- a named computation that produces a statistic
 type Stat = StatState (Maybe (String, StatState String))
@@ -86,6 +87,7 @@ cmd = noCommit $ withGlobalOptions (jsonOption : annexedMatchingOptions) $
 data InfoOptions = InfoOptions
 	{ infoFor :: CmdParams
 	, bytesOption :: Bool
+	, batchOption :: BatchMode
 	}
 
 optParser :: CmdParamsDesc -> Parser InfoOptions
@@ -95,9 +97,12 @@ optParser desc = InfoOptions
 		( long "bytes"
 		<> help "display file sizes in bytes"
 		)
+	<*> parseBatchOption
 
 seek :: InfoOptions -> CommandSeek
-seek o = withWords (start o) (infoFor o)
+seek o = case batchOption o of
+	NoBatch -> withWords (start o) (infoFor o)
+	Batch -> batchInput Right (itemInfo o)
 
 start :: InfoOptions -> [String] -> CommandStart
 start o [] = do
@@ -125,11 +130,18 @@ itemInfo o p = ifM (isdir p)
 				v' <- Remote.nameToUUID' p
 				case v' of
 					Right u -> uuidInfo o u
-					Left _ -> ifAnnexed p (fileInfo o p) noinfo
+					Left _ -> ifAnnexed p 
+						(fileInfo o p)
+						(noInfo p)
 	)
   where
 	isdir = liftIO . catchBoolIO . (isDirectory <$$> getFileStatus)
-	noinfo = error $ p ++ " is not a directory or an annexed file or a remote or a uuid"
+
+noInfo :: String -> Annex ()
+noInfo s = do
+	showStart "info" s
+	showNote $ " not a directory or an annexed file or a remote or a uuid"
+	showEndFail
 
 dirInfo :: InfoOptions -> FilePath -> Annex ()
 dirInfo o dir = showCustom (unwords ["info", dir]) $ do
