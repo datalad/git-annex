@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="wsha.code+ga@b38779424f41c5701bbe5937340be43ff1474b2d"
+ nickname="wsha.code+ga"
+ subject="comment 6"
+ date="2016-01-16T12:20:05Z"
+ content="""
+I just upgraded to 6.20160114-g297a744. `git annex version` shows me `S3(multipartupload)`, and trying to set `storageclass=STANDARD_IA` still leaves the storageclass as `Standard`. Would it show `S3(multipartupload,storageclasses)` if it had `STANDARD_IA` support from `aws-0.13`? I see that `aws-0.13.0` was added to Debian unstable on 2016/01/11 -- was that too close to make the 2016/01/14 release?
+"""]]
