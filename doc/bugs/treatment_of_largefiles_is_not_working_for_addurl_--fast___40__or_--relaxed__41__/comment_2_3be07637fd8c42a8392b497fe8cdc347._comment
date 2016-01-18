@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 2"
+ date="2016-01-15T21:27:55Z"
+ content="""
+would it be possible to get something like
+
+[[!format sh \"\"\"
+git annex evaluate-expression [--size X] [--filename Y] [--mime Z] [--file F] [--repository A and so on] ... EXPRESSION
+\"\"\"]]
+
+which, given the EXPRESSION (as the one for largefiles) would use provided information and if necessary (e.g. size is not provided but needed) consult --file value, and return 0 if condition satisfied, 1 if unsatisfied, 2 if no sufficient information provided (e.g. --file was needed since --size was not provided but used by the condition)? ;-)
+
+I understand that you are aiming for the most flexible and generic solution. in my case I am aiming for a less generic use-case, e.g. when I still use largefiles for a repository which in general links to the content using --fast (or --relaxed) but where I need to add some files (e.g. *.txt) straight into git.  I thought to resort to largefiles handling within git-annex for that instead of creating my own specifications (which files to add to git or to annex based on name and/or size) 
+"""]]
