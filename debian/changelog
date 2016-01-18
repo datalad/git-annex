@@ -3,6 +3,9 @@ git-annex (6.20160115) UNRELEASED; urgency=medium
   * whereis --json: Urls are now listed inside the remote that claims them,
     rather than all together at the end.
   * info: Support --batch mode.
+  * Force output to be line-buffered, even when it's not connected to the
+    terminal. This is particuarly important for commands with --batch
+    output, which was not always being flushed at an appropriate time.
 
  -- Joey Hess <id@joeyh.name>  Fri, 15 Jan 2016 14:05:01 -0400
 

@@ -182,6 +182,11 @@ setupConsole = do
 		<*> pure preciseLogFormatter
 	updateGlobalLogger rootLoggerName (setLevel NOTICE . setHandlers [s])
 	setConsoleEncoding
+	{- Force output to be line buffered. This is normally the case when
+	 - it's connected to a terminal, but may not be when redirected to
+	 - a file or a pipe. -}
+	hSetBuffering stdout LineBuffering
+	hSetBuffering stderr LineBuffering
 
 {- Log formatter with precision into fractions of a second. -}
 preciseLogFormatter :: LogFormatter a
