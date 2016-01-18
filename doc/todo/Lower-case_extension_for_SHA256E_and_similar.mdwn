@@ -6,10 +6,14 @@ We talked about that very shortly a few months ago:
      tribut  is there a backend that lowercases the extension? or do the *E backends do that anyway?
      joeyh   it does not
      tribut  but would it make sense? or am i missing something?
-     joeyh   I don't know.. the extension is only there for stupid programs that follow symlinks and check extensions. If such a program cares about .GIF vss .gif, you might have a problem
-     joeyh   I think that you can git-annex migrate from hashE to hash, then migrate back, and it'll update to the new file extension.
+     joeyh   I don't know.. the extension is only there for stupid programs that follow symlinks and
+             check extensions. If such a program cares about .GIF vss .gif, you might have a problem
+     joeyh   I think that you can git-annex migrate from hashE to hash, then migrate back, and it'll
+             update to the new file extension.
      tribut  i was thinking about content-identical images with .JPG or .jpg extension
-     tribut  and because even the most retarded of programs wont care, i thought the backend could lowercase the extension
+     tribut  and because even the most retarded of programs wont care, i thought the backend could
+             lowercase the extension
      joeyh   ah, sure, using the E backend reduces the ability to de-duplicate
-     joeyh   I'd not want to add a e backend set just for this. There's no requirement that the extension extraction code be stable, so it could be considered changing it to lower-case
+     joeyh   I'd not want to add a e backend set just for this. There's no requirement that the
+             extension extraction code be stable, so it could be considered changing it to lower-case
      joeyh   otoh, I have no idea if some programs are dumb enough to care about .git vs .GIF
