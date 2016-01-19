@@ -7,6 +7,9 @@ git-annex (6.20160115) UNRELEASED; urgency=medium
     terminal. This is particuarly important for commands with --batch
     output, which was not always being flushed at an appropriate time.
   * add, import: Support --json output.
+  * addurl --json: Include field for added key (unless the file was
+    added directly to git due to annex.largefiles configuration.)
+    (Also done by add --json and import --json)
 
  -- Joey Hess <id@joeyh.name>  Fri, 15 Jan 2016 14:05:01 -0400
 
