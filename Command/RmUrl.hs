@@ -31,8 +31,5 @@ start (file, url) = flip whenAnnexed file $ \_ key -> do
 cleanup :: String -> Key -> CommandCleanup
 cleanup url key = do
 	r <- Remote.claimingUrl url
-	let url' = if Remote.uuid r == webUUID
-		then url
-		else setDownloader url OtherDownloader
-	setUrlMissing (Remote.uuid r) key url'
+	setUrlMissing (Remote.uuid r) key (setDownloader' url r)
 	return True

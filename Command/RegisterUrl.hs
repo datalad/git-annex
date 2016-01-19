@@ -55,8 +55,5 @@ perform key url = do
 perform' :: Key -> URLString -> Annex Bool
 perform' key url = do
 	r <- Remote.claimingUrl url
-	let url' = if Remote.uuid r == webUUID
-		then url
-		else setDownloader url OtherDownloader
-	setUrlPresent (Remote.uuid r) key url'
+	setUrlPresent (Remote.uuid r) key (setDownloader' url r)
 	return True

@@ -15,6 +15,7 @@ module Logs.Web (
 	Downloader(..),
 	getDownloader,
 	setDownloader,
+	setDownloader',
 	setTempUrl,
 	removeTempUrl,
 ) where
@@ -32,6 +33,8 @@ import Annex.CatFile
 import qualified Git
 import qualified Git.LsFiles
 import Utility.Url
+import Annex.UUID
+import qualified Types.Remote as Remote
 
 {- Gets all urls that a key might be available from. -}
 getUrls :: Key -> Annex [URLString]
@@ -107,6 +110,11 @@ setDownloader :: URLString -> Downloader -> String
 setDownloader u WebDownloader = u
 setDownloader u QuviDownloader = "quvi:" ++ u
 setDownloader u OtherDownloader = ":" ++ u
+
+setDownloader' :: URLString -> Remote -> String
+setDownloader' u r
+	| Remote.uuid r == webUUID = setDownloader u WebDownloader
+	| otherwise = setDownloader u OtherDownloader
 
 getDownloader :: URLString -> (URLString, Downloader)
 getDownloader u = case separate (== ':') u of
