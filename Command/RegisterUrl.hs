@@ -14,6 +14,7 @@ import Command
 import Logs.Web
 import Annex.UUID
 import Command.FromKey (mkKey)
+import qualified Remote
 
 cmd :: Command
 cmd = notDirect $ notBareRepo $
@@ -53,5 +54,9 @@ perform key url = do
 
 perform' :: Key -> URLString -> Annex Bool
 perform' key url = do
-	setUrlPresent webUUID key url
+	r <- Remote.claimingUrl url
+	let url' = if Remote.uuid r == webUUID
+		then url
+		else setDownloader url OtherDownloader
+	setUrlPresent (Remote.uuid r) key url'
 	return True
