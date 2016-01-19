@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-01-19T20:35:51Z"
+ content="""
+I don't see how git-annex would know if it's the "first run" or not.
+Nor can I see any way that direct mode could influence the behavior here.
+
+Is there some way to reproduce this without having the datalad special
+remote?
+"""]]
