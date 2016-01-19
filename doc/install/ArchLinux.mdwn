@@ -1,3 +1,7 @@
+There is now an [official git-annex package for Arch](https://www.archlinux.org/packages/community/x86_64/git-annex/), so to install it:
+
+	pacman -S git-annex
+
 There are at least four non non-official packages for git-annex in the Arch Linux User Repository. Any of these may be installed manually per [AUR guidelines](https://wiki.archlinux.org/index.php/AUR_User_Guidelines#Installing_packages) or using a wrapper such as [`yaourt`](https://wiki.archlinux.org/index.php/yaourt) shown below.
 
 1. The simplest method is to use the [git-annex-bin](https://aur.archlinux.org/packages/git-annex-bin/) package based on the [prebuilt Linux tarballs](http://downloads.kitenet.net/git-annex/linux/current/). This package includes many of the binary shims from the pre-built package. Although common Linux system utilities have been stripped in favor of normal dependencies, the pre-configured Haskell libraries included out of the box make this an easy install. The disadvantage is the resulting installation is a bit on the heavy side at nearly 100M.
