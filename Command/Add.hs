@@ -22,6 +22,7 @@ import Annex.FileMatcher
 import Annex.Version
 import qualified Database.Keys
 import Types.Key
+import CmdLine.Batch
 
 cmd :: Command
 cmd = notBareRepo $ withGlobalOptions (jobsOption : jsonOption : fileMatchingOptions) $
@@ -31,6 +32,7 @@ cmd = notBareRepo $ withGlobalOptions (jobsOption : jsonOption : fileMatchingOpt
 data AddOptions = AddOptions
 	{ addThese :: CmdParams
 	, includeDotFiles :: Bool
+	, batchOption :: BatchMode
 	}
 
 optParser :: CmdParamsDesc -> Parser AddOptions
@@ -40,6 +42,7 @@ optParser desc = AddOptions
 		( long "include-dotfiles"
 		<> help "don't skip dotfiles"
 		)
+	<*> parseBatchOption
 
 {- Add acts on both files not checked into git yet, and unlocked files.
  -
@@ -47,15 +50,20 @@ optParser desc = AddOptions
 seek :: AddOptions -> CommandSeek
 seek o = allowConcurrentOutput $ do
 	matcher <- largeFilesMatcher
-	let go a = flip a (addThese o) $ \file -> ifM (checkFileMatcher matcher file <||> Annex.getState Annex.force)
+	let gofile file = ifM (checkFileMatcher matcher file <||> Annex.getState Annex.force)
 		( start file
 		, startSmall file
 		)
-	go $ withFilesNotInGit (not $ includeDotFiles o)
-	ifM (versionSupportsUnlockedPointers <||> isDirect)
-		( go withFilesMaybeModified
-		, go withFilesOldUnlocked
-		)
+	case batchOption o of
+		Batch -> batchInput Right $
+			batchCommandAction . gofile
+		NoBatch -> do
+			let go a = a gofile (addThese o)
+			go (withFilesNotInGit (not $ includeDotFiles o))
+			ifM (versionSupportsUnlockedPointers <||> isDirect)
+				( go withFilesMaybeModified
+				, go withFilesOldUnlocked
+				)
 
 {- Pass file off to git-add. -}
 startSmall :: FilePath -> CommandStart

@@ -134,15 +134,20 @@ includeCommandAction a = account =<< tryIO (callCommandAction a)
  - stages, without catching errors. Useful if one command wants to run
  - part of another command. -}
 callCommandAction :: CommandStart -> CommandCleanup
-callCommandAction = start
+callCommandAction = fromMaybe True <$$> callCommandAction' 
+
+{- Like callCommandAction, but returns Nothing when the command did not
+ - perform any action. -}
+callCommandAction' :: CommandStart -> Annex (Maybe Bool)
+callCommandAction' = start
   where
 	start   = stage $ maybe skip perform
 	perform = stage $ maybe failure cleanup
 	cleanup = stage $ status
 	stage = (=<<)
-	skip = return True
-	failure = showEndFail >> return False
-	status r = showEndResult r >> return r
+	skip = return Nothing
+	failure = showEndFail >> return (Just False)
+	status r = showEndResult r >> return (Just r)
 
 {- Do concurrent output when that has been requested. -}
 allowConcurrentOutput :: Annex a -> Annex a

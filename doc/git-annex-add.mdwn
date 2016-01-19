@@ -8,8 +8,9 @@ git annex add `[path ...]`
 
 # DESCRIPTION
 
-Adds files in the path to the annex. If no path is specified, adds
-files from the current directory and below.
+Adds the specified files to the annex. If a directory is specified,
+acts on all files inside the directory and its subdirectories.
+If no path is specified, adds files from the current directory and below.
 
 Files that are already checked into git and are unmodified, or that
 git has been configured to ignore will be silently skipped.
@@ -58,6 +59,15 @@ annexed content, and other symlinks.
 
   Enable JSON output. This is intended to be parsed by programs that use
   git-annex. Each line of output is a JSON object.
+
+* `--batch`
+
+  Enables batch mode, in which a file to add is read in a line from stdin,
+  the file is added, and repeat.
+
+  Note that if a file is skipped (due to not existing, being gitignored,
+  already being in git etc), an empty line will be output instead of the
+  normal output produced when adding a file.
 
 # SEE ALSO
 

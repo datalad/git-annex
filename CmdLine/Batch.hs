@@ -54,3 +54,14 @@ batchInput parser a = do
 			batchInput parser a
   where
 	parseerr s = error $ "Batch input parse failure: " ++ s
+
+-- Runs a CommandStart in batch mode.
+--
+-- The batch mode user expects to read a line of output, and it's up to the
+-- CommandStart to generate that output as it succeeds or fails to do its
+-- job. However, if it stops without doing anything, it won't generate
+-- any output, so in that case, batchBadInput is used to provide the caller
+-- with an empty line.
+batchCommandAction :: CommandStart -> Annex ()
+batchCommandAction a = maybe (batchBadInput Batch) (const noop)
+	=<< callCommandAction' a
