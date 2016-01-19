@@ -1,0 +1,99 @@
+### Please describe the problem.
+
+I am a bit unsure what is going on ;)
+
+### What version of git-annex are you using? On what operating system?
+
+6.20160118+gitgdaf852e-1~ndall+1
+
+### Please provide any additional information below.
+
+[[!format sh """
+
+$ chmod a+w -R /tmp/123; rm -rf /tmp/123; mkdir /tmp/123; cd /tmp/123; git init; git annex init;
+chmod: cannot access ‘/tmp/123’: No such file or directory
+Initialized empty Git repository in /tmp/123/.git/
+init  ok
+(recording state in git...)
+
+$ git annex addurl --file svgtune_0.2.0.orig.tar.gz http://http.debian.net/debian/pool/main/s/svgtune/svgtune_0.2.0.orig.tar.gz
+addurl svgtune_0.2.0.orig.tar.gz (downloading http://http.debian.net/debian/pool/main/s/svgtune/svgtune_0.2.0.orig.tar.gz ...) 
+/tmp/123/.git/annex/tmp/URL-s5121--http&c%%http.debian. 100%[===============================================================================================================================>]   5.00K  --.-KB/s    in 0s      
+ok
+(recording state in git...)
+
+$ ls -l svgtune_0.2.0.orig.tar.gz 
+lrwxrwxrwx 1 yoh yoh 198 Jan 19 14:29 svgtune_0.2.0.orig.tar.gz -> .git/annex/objects/K6/j2/SHA256E-s5121--6d8f7d10206a120a42bec2cd29bc2365d09889fdf070ac8c67d1cff0b1539f63.tar.gz/SHA256E-s5121--6d8f7d10206a120a42bec2cd29bc2365d09889fdf070ac8c67d1cff0b1539f63.tar.gz
+
+$ git annex info
+repository mode: indirect
+trusted repositories: 0
+semitrusted repositories: 3
+	00000000-0000-0000-0000-000000000001 -- web
+ 	00000000-0000-0000-0000-000000000002 -- bittorrent
+ 	1087c63f-e325-41ff-9c45-bbc493aa42f1 -- yoh@hopa:/tmp/123 [here]
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 1 gigabyte (+1 megabyte reserved)
+local annex keys: 1
+local annex size: 5.12 kilobytes
+annexed files in working tree: 1
+size of annexed files in working tree: 5.12 kilobytes
+bloom filter size: 32 mebibytes (0% full)
+backend usage: 
+	SHA256E: 1
+
+$ git annex initremote datalad-archives externaltype=dl+archive type=external autoenable=true encryption=none 
+initremote datalad-archives ok
+(recording state in git...)
+
+$ echo "dl+archive:SHA256E-s5121--6d8f7d10206a120a42bec2cd29bc2365d09889fdf070ac8c67d1cff0b1539f63.tar.gz/svgtune-0.2.0/README.rst README.rst" | git annex addurl -c annex.largefiles=exclude=*.rst --with-files --json --batch 
+{"command":"addurl","file":"README.rst","note":"from datalad-archives","success":true}                                                                                                                                         
+
+$ ls -l README.rst 
+lrwxrwxrwx 1 yoh yoh 192 Jan 19 14:33 README.rst -> .git/annex/objects/V4/3p/SHA256E-s2126--76cea2921af6b250b9bcde3a99785d1010d657cbc6781f01cd7a7886708c441f.rst/SHA256E-s2126--76cea2921af6b250b9bcde3a99785d1010d657cbc6781f01cd7a7886708c441f.rst
+
+$ echo "http://www.onerussian.com/tmp/README2.rst README2.rst" | git annex addurl -c annex.largefiles=exclude=*.rst --with-files --json --batch        
+{"command":"addurl","file":"README2.rst","note":"downloading http://www.onerussian.com/tmp/README2.rst ...","note":"non-large file; adding content to git repository","success":true}
+
+$ ls -l README2.rst
+-rw------- 1 yoh yoh 13 Jan 19 14:34 README2.rst
+
+$ echo "dl+archive:SHA256E-s5121--6d8f7d10206a120a42bec2cd29bc2365d09889fdf070ac8c67d1cff0b1539f63.tar.gz/svgtune-0.2.0/Makefile Makefile" | git annex addurl --debug -c annex.largefiles=exclude=*Makefile --with-files --json --batch                                                                                                                                                                                                    
+{"command":"addurl","file":"Makefile","note":"from datalad-archives","note":"non-large file; adding content to git repository","success":true}
+
+$ echo "dl+archive:SHA256E-s5121--6d8f7d10206a120a42bec2cd29bc2365d09889fdf070ac8c67d1cff0b1539f63.tar.gz/svgtune-0.2.0/README.rst README-2.rst" | git annex addurl -c annex.largefiles=exclude=*.rst --with-files --json --batch                                                                                                                                          
+{"command":"addurl","file":"README-2.rst","note":"from datalad-archives","note":"non-large file; adding content to git repository","success":true}
+
+
+"""]]
+
+and to re-confirm  that only for the first file, I am redoing above but first asking to addurl Makefile (goes errorneously to annex) and then README.rst (goes to git as it should)
+
+[[!format sh """
+$ chmod a+w -R /tmp/123; rm -rf /tmp/123; mkdir /tmp/123; cd /tmp/123; git init; git annex init;
+Initialized empty Git repository in /tmp/123/.git/
+init  ok
+(recording state in git...)
+
+$ git annex addurl --file svgtune_0.2.0.orig.tar.gz http://http.debian.net/debian/pool/main/s/svgtune/svgtune_0.2.0.orig.tar.gz
+addurl svgtune_0.2.0.orig.tar.gz (downloading http://http.debian.net/debian/pool/main/s/svgtune/svgtune_0.2.0.orig.tar.gz ...) 
+/tmp/123/.git/annex/tmp/URL-s5121--http&c%%http.debian. 100%[===============================================================================================================================>]   5.00K  --.-KB/s    in 0s      
+ok
+(recording state in git...)
+
+$ git annex initremote datalad-archives externaltype=dl+archive type=external autoenable=true encryption=none
+initremote datalad-archives ok
+(recording state in git...)
+
+$ echo "dl+archive:SHA256E-s5121--6d8f7d10206a120a42bec2cd29bc2365d09889fdf070ac8c67d1cff0b1539f63.tar.gz/svgtune-0.2.0/Makefile Makefile" | git annex addurl --debug -c annex.largefiles=exclude=*Makefile --with-files --json --batch                                                                                                                                                                                                                         
+{"command":"addurl","file":"Makefile","note":"from datalad-archives","success":true}                                                                   
+
+$ echo "dl+archive:SHA256E-s5121--6d8f7d10206a120a42bec2cd29bc2365d09889fdf070ac8c67d1cff0b1539f63.tar.gz/svgtune-0.2.0/README.rst README.rst" | git annex addurl -c annex.largefiles=exclude=*.rst --with-files --json --batch
+{"command":"addurl","file":"README.rst","note":"from datalad-archives","note":"non-large file; adding content to git repository","success":true}
+
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+

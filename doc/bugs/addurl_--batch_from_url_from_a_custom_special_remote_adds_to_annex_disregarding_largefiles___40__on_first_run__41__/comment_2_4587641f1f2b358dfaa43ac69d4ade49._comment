@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 2"
+ date="2016-01-19T19:50:25Z"
+ content="""
+and actually has nothing to do with custom special remotes -- the same for regular url:
+
+[[!format sh \"\"\"
+$ chmod a+w -R /tmp/123; rm -rf /tmp/123; mkdir /tmp/123; cd /tmp/123; git init; git annex init;                                                                                                                               
+Initialized empty Git repository in /tmp/123/.git/
+init  ok
+(recording state in git...)
+
+$ git annex addurl --file svgtune_0.2.0.orig.tar.gz http://http.debian.net/debian/pool/main/s/svgtune/svgtune_0.2.0.orig.tar.gz
+addurl svgtune_0.2.0.orig.tar.gz (downloading http://http.debian.net/debian/pool/main/s/svgtune/svgtune_0.2.0.orig.tar.gz ...) 
+/tmp/123/.git/annex/tmp/URL-s5121--http&c%%http.debian. 100%[===============================================================================================================================>]   5.00K  --.-KB/s    in 0s      
+ok
+(recording state in git...)
+
+$ git annex initremote datalad-archives externaltype=dl+archive type=external autoenable=true encryption=none
+initremote datalad-archives ok
+(recording state in git...)
+
+$ echo \"http://www.onerussian.com/tmp/README2.rst README2.rst\" | git annex addurl -c annex.largefiles=exclude=*.rst --with-files --json --batch
+{\"command\":\"addurl\",\"file\":\"README2.rst\",\"note\":\"downloading http://www.onerussian.com/tmp/README2.rst ...\",\"success\":true}
+
+$ ls -l README2.rst 
+lrwxrwxrwx 1 yoh yoh 188 Jan 19 14:49 README2.rst -> .git/annex/objects/9p/28/SHA256E-s13--1c87b6727f523662df714f06a94ea27fa4d9050c38f4f7712bd4663ffbfdfa01.rst/SHA256E-s13--1c87b6727f523662df714f06a94ea27fa4d9050c38f4f7712bd4663ffbfdfa01.rst
+
+$ echo \"http://www.onerussian.com/tmp/README2.rst README2_.rst\" | git annex addurl -c annex.largefiles=exclude=*.rst --with-files --json --batch 
+{\"command\":\"addurl\",\"file\":\"README2_.rst\",\"note\":\"downloading http://www.onerussian.com/tmp/README2.rst ...\",\"note\":\"non-large file; adding content to git repository\",\"success\":true}
+
+$ ls -l README2_.rst 
+-rw------- 1 yoh yoh 13 Jan 19 14:34 README2_.rst
+
+\"\"\"]]
+"""]]

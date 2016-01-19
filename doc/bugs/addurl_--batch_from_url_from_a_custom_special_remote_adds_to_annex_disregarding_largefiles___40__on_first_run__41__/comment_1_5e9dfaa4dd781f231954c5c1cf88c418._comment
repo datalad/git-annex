@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 1"
+ date="2016-01-19T19:48:10Z"
+ content="""
+not sure if of help, but I think it happens for the first 'addurl --batch' process invocation, not just for the first url (in my examples above I didn't have persistent --batch'ed process), since in the results of my batched runs (single addurl --batch process) I have not just a single file but many added to annex instead of git. (previously used a sequence of add/find/addurl which now replaced with a batched addurl)
+"""]]
