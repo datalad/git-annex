@@ -25,7 +25,7 @@ import Utility.ThreadScheduler
 import Utility.NotificationBroadcaster
 import Utility.Batch
 import qualified Git.LsFiles as LsFiles
-import qualified Backend
+import Annex.WorkTree
 import Annex.Content
 import Annex.Wanted
 import CmdLine.Action
@@ -142,7 +142,7 @@ expensiveScan urlrenderer rs = batch <~> do
 		(unwanted', ts) <- maybe
 			(return (unwanted, []))
 			(findtransfers f unwanted)
-				=<< liftAnnex (Backend.lookupFile f)
+				=<< liftAnnex (lookupFile f)
 		mapM_ (enqueue f) ts
 		scan unwanted' fs
 

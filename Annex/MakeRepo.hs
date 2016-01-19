@@ -75,7 +75,7 @@ initRepo False _ dir desc mgroup = inDir dir $ do
 
 initRepo' :: Maybe String -> Maybe StandardGroup -> Annex ()
 initRepo' desc mgroup = unlessM isInitialized $ do
-	initialize desc
+	initialize desc Nothing
 	u <- getUUID
 	maybe noop (defaultStandardGroup u) mgroup
 	{- Ensure branch gets committed right away so it is

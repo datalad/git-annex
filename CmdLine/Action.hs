@@ -13,7 +13,6 @@ import Common.Annex
 import qualified Annex
 import Annex.Concurrent
 import Types.Command
-import qualified Annex.Queue
 import Messages.Concurrent
 import Messages.Internal
 import Types.Messages
@@ -119,11 +118,8 @@ findFreeSlot = go []
 
 {- Like commandAction, but without the concurrency. -}
 includeCommandAction :: CommandStart -> CommandCleanup
-includeCommandAction a = account =<< tryIO go
+includeCommandAction a = account =<< tryIO (callCommandAction a)
   where
-	go = do
-		Annex.Queue.flushWhenFull
-		callCommandAction a
 	account (Right True) = return True
 	account (Right False) = incerr
 	account (Left err) = do

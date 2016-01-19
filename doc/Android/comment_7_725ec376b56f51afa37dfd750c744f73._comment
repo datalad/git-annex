@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joseph.rawson.works@85a210ab8c0e37a0b2d6bb235738b20e23e8878f"
+ nickname="joseph.rawson.works"
+ subject="ssh keys, github, xmpp"
+ date="2015-12-28T22:09:24Z"
+ content="""
+I generated an rsa keypair and added them to /sd/ga-h/.ssh, yet they were overwritten.  I couldn't access my annexes located on github.  I couldn't login to google talk, as instructed by the web app.
+
+Thanks for letting me know about gitlab supporting git-annex.
+"""]]

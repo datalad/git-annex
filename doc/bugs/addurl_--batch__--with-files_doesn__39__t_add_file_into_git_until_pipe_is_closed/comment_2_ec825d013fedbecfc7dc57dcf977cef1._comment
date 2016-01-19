@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-01-13T18:26:40Z"
+ content="""
+git-annex queues up adds because `git add` can be relatively expensive
+(rewriting the whole index file).
+
+If you don't want the queueing to happen for some reason, you can set
+annex.queuesize=1
+
+(Fixed a fencepost problem that made the queue flush lag by one item when
+using annex.queuesize=1)
+"""]]

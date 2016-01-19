@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="&quot;done&quot; but only for non --fast/--relaxed"
+ date="2016-01-13T23:49:30Z"
+ content="""
+ah -- didn't spot that it was \"done\" (didn't see a notification on it being resolved in invoice or emails)
+
+unfortunately it seems to not work for --fast (or --relaxed, although that one I guess I can understand):
+
+[[!format sh \"\"\"
+
+$ chmod a+w -R /tmp/123; rm -rf /tmp/123; mkdir /tmp/123; cd /tmp/123; git init; git annex init;
+Initialized empty Git repository in /tmp/123/.git/
+init  ok
+(recording state in git...)
+
+$ git -c annex.largefiles=exclude=*.txt annex addurl --file=test.txt --fast \"http://www.onerussian.com/tmp/banner.png\"
+addurl test.txt ok                                                   
+(recording state in git...)
+
+$ ls -l test.txt
+lrwxrwxrwx 1 yoh yoh 132 Jan 13 18:44 test.txt -> .git/annex/objects/KW/kj/URL-s25319--http&c%%www.onerussian.com%tmp%banner.png/URL-s25319--http&c%%www.onerussian.com%tmp%banner.png
+
+\"\"\"]]
+
+it does for if no --fast, or --relaxed
+"""]]

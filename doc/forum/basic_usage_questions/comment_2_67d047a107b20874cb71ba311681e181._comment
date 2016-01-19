@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="grawity@2ea26be48562f66fcb9b66307da72b1e2e37453f"
+ nickname="grawity"
+ subject="comment 2"
+ date="2016-01-07T06:19:30Z"
+ content="""
+Alright, thanks. For #1, it sounds like something like Git's hooks/post-receive would be very useful here – can they be used with direct mode, or might git-annex have its own mechanism?
+
+---
+
+Also question 3 – what's the proper way to remove files and have the deletion propagate to all repos? I couldn't find it under \"Removing files\"... Is it `git annex drop --force`? Or should I just `rm` the files and hope that `git annex sync` will pick it up?
+
+The latter seems to work, although the files remain in `git annex unused`, and when I run `git annex dropunused` I again get warnings about \"0 out of 1 copies confirmed\" (so I have to use `--force` again), so it seems like a wrong way?
+
+(These are large read-only video files, I don't care about keeping revision history, only about syncing what I have. I haven't yet done any \"preferred content\" config either...)
+"""]]

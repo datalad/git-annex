@@ -18,7 +18,7 @@ import Utility.Tmp
  - which it can write to, and once done the temp file is moved into place
  - and anything else in the temp directory is deleted.
  -
- - The action can throw an IO exception, in which case the temp directory
+ - The action can throw an exception, in which case the temp directory
  - will be deleted, and the existing file will be preserved.
  -
  - Throws an IO exception when it was unable to replace the file.

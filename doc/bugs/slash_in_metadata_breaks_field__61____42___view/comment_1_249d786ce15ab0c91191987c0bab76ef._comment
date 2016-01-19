@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-01-08T15:52:22Z"
+ content="""
+I was able to reproduce this problem, but only with LANG=C. It works in a
+unicode locale.
+
+What's torpedoing this is a hack that it uses to handle "/" in a view.
+
+	pseudoSlash :: Char
+	pseudoSlash = '\8725' -- '∕' /= '/'
+
+It's necessary that in a view, each viewed metadata component yield exactly one
+level of directory hierarchy. Otherwise, it would be impossible to reverse
+"a/b/c/file" when viewing on 2 metadata components -- 
+is that "a/b" and "c" or "a" and "b/c"?
+
+Which is why I used this cutsey hack, but yeah, it requires working
+unicode support.
+
+Sigh, 2016 and still can't have nice things.. Suppose it'll have to use an
+ugly encoding for them instead.
+
+Update: Can have nice things, just have to encode the characters using the
+FileSystemEncoding!
+"""]]

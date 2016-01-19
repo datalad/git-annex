@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2016-01-13T16:29:42Z"
+ content="""
+rsync thinks that "C:foo" is the file foo on host C. This makes it not
+usable cross-drive on windows without some hack.
+
+So, this hack broke when the bundled rsync build was changed from the cygwin
+build to the msys build. I'll apply pkitslaar's patch.
+"""]]

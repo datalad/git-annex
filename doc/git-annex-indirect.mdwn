@@ -11,9 +11,8 @@ git annex indirect
 Switches a repository back from direct mode to the default, indirect
 mode.
 
-Some systems cannot support git-annex in indirect mode, because they
-do not support symbolic links. Repositories on such systems instead
-default to using direct mode.
+Note that the direct mode/indirect mode distinction is removed in v6
+git-annex repositories.
 
 # SEE ALSO
 

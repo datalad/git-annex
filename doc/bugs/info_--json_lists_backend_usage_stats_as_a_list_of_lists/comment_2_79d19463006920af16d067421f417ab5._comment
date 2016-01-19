@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 2"
+ date="2016-01-02T01:57:45Z"
+ content="""
+well -- it is possible to define schemas for json and validate conformance to them... saw in slybot using https://github.com/Julian/jsonschema for that (if of any help).
+May be worth adding \"git annex schema version\" information within the output?
+"""]]

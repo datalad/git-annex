@@ -4,18 +4,6 @@ see [[tips/using_Amazon_S3]].
 
 [[!toc]]
 
-## encryption backends
-
-It makes sense to support multiple encryption backends. So, there
-should be a way to tell what backend is responsible for a given filename
-in an encrypted remote. (And since special remotes can also store files
-unencrypted, differentiate from those as well.)
-
-The rest of this page will describe a single encryption backend using GPG.
-Probably only one will be needed, but who knows? Maybe that backend will
-turn out badly designed, or some other encryptor needed. Designing
-with more than one encryption backend in mind helps future-proofing.
-
 ## encryption key management
 
 [[!template id=note text="""
@@ -35,17 +23,21 @@ already been stored in the remote.
 
 Different encrypted remotes need to be able to each use different ciphers.
 Allowing multiple ciphers to be used within a single remote would add a lot
-of complexity, so is not planned to be supported.
+of complexity, so is not supported.
 Instead, if you want a new cipher, create a new S3 bucket, or whatever.
 There does not seem to be much benefit to using the same cipher for
 two different encrypted remotes.
 
-So, the encrypted cipher could just be stored with the rest of a remote's
+So, the encrypted cipher is just stored with the rest of a remote's
 configuration in `remotes.log` (see [[internals]]). When `git
-annex intiremote` makes a remote, it can generate a random symmetric
+annex intiremote` makes a remote, it generates a random symmetric
 cipher, and encrypt it with the specified gpg key. To allow another gpg
 public key access, update the encrypted cipher to be encrypted to both gpg
 keys.
+
+Note that there's a shared encryption mode where the cipher is not
+encrypted. When this mode is used, any clone of the git repository
+can decrypt files stored in its special remote.
 
 ## filename enumeration
 
@@ -73,7 +65,8 @@ can be chosen for new remotes.
 It was suggested that it might not be wise to use the same cipher for both
 gpg and HMAC. Being paranoid, it's best not to tie the security of one
 to the security of the other. So, the encrypted cipher described above is
-actually split in two; half is used for HMAC, and half for gpg.
+actually split in two; the first half is used for HMAC, and the second
+half for gpg.
 
 ----
 
@@ -101,6 +94,9 @@ in remotes.log. This way anyone whose gpg key has been given access to
 the cipher can get access to whatever other credentials are needed to
 use the special remote.
 
+For example, the S3 special remote does this if configured with
+embedcreds=yet.
+
 ## risks
 
 A risk of this scheme is that, once the symmetric cipher has been
@@ -118,9 +114,5 @@ that an attacker with local machine access can tell at least all the
 filenames and metadata of files stored in the encrypted remote anyway,
 and can access whatever content is stored locally.
 
-This design does not support obfuscating the size of files by chunking
-them, as that would have added a lot of complexity, for dubious benefits.
-If the untrusted party running the encrypted remote wants to know file sizes,
-they could correlate chunks that are accessed together. Encrypting data
-changes the original file size enough to avoid it being used as a direct
-fingerprint at least.
+This design does not address obfuscating the size of files by chunking
+them. However, chunking was later added; see [[design/assistant/chunks]].

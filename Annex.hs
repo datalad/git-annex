@@ -60,6 +60,7 @@ import Types.NumCopies
 import Types.LockCache
 import Types.DesktopNotify
 import Types.CleanupActions
+import qualified Database.Keys.Handle as Keys
 #ifdef WITH_QUVI
 import Utility.Quvi (QuviVersion)
 #endif
@@ -134,6 +135,7 @@ data AnnexState = AnnexState
 	, desktopnotify :: DesktopNotify
 	, workers :: [Either AnnexState (Async AnnexState)]
 	, concurrentjobs :: Maybe Int
+	, keysdbhandle :: Maybe Keys.DbHandle
 	}
 
 newState :: GitConfig -> Git.Repo -> AnnexState
@@ -179,6 +181,7 @@ newState c r = AnnexState
 	, desktopnotify = mempty
 	, workers = []
 	, concurrentjobs = Nothing
+	, keysdbhandle = Nothing
 	}
 
 {- Makes an Annex state object for the specified git repo.
@@ -193,25 +196,32 @@ new r = do
 {- Performs an action in the Annex monad from a starting state,
  - returning a new state. -}
 run :: AnnexState -> Annex a -> IO (a, AnnexState)
-run s a = do
-	mvar <- newMVar s
+run s a = flip run' a =<< newMVar s
+
+run' :: MVar AnnexState -> Annex a -> IO (a, AnnexState)
+run' mvar a = do
 	r <- runReaderT (runAnnex a) mvar
+		`onException` (flush =<< readMVar mvar)
 	s' <- takeMVar mvar
+	flush s'
 	return (r, s')
+  where
+	flush = maybe noop Keys.flushDbQueue . keysdbhandle
 
 {- Performs an action in the Annex monad from a starting state, 
  - and throws away the new state. -}
 eval :: AnnexState -> Annex a -> IO a
-eval s a = do
-	mvar <- newMVar s
-	runReaderT (runAnnex a) mvar
+eval s a = fst <$> run s a
 
 {- Makes a runner action, that allows diving into IO and from inside
  - the IO action, running an Annex action. -}
 makeRunner :: Annex (Annex a -> IO a)
 makeRunner = do
 	mvar <- ask
-	return $ \a -> runReaderT (runAnnex a) mvar
+	return $ \a -> do
+		(r, s) <- run' mvar a
+		putMVar mvar s
+		return r
 
 getState :: (AnnexState -> v) -> Annex v
 getState selector = do

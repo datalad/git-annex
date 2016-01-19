@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="jhannwong@c9c7a67b5632a4bbc0c959cfeb3d340e02f28565"
+ nickname="jhannwong"
+ subject="A problem with SmartGit then?"
+ date="2015-12-21T03:21:58Z"
+ content="""
+> git-annex init sets up .git/hooks/pre-commit to run git annex pre-commit. It looks like when git commit is run, the git-annex program is not in PATH. This probably has something to do with the way you installed git-annex.
+
+``which git-annex`` shows ``/usr/local/bin/git-annex``. I think I installed via Homebrew.
+
+Seems to be a problem with SmartGit then. The pre-commit hooks work just fine in Terminal sessions.
+
+> (Why is git-annex | less blanking out? Because git-annex outputs usage messages to stderr, and less pages stdout. Use git-annex 2>&1 |less)
+
+Ah. Oops.
+"""]]

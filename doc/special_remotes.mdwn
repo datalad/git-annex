@@ -44,6 +44,7 @@ for using git-annex with various services:
 * [pCloud](https://github.com/tochev/git-annex-remote-pcloud)
 * [[ipfs]]
 * [Ceph](https://github.com/mhameed/git-annex-remote-ceph)
+* [Blackblaze's B2](https://github.com/encryptio/git-annex-remote-b2)
 
 Want to add support for something else? [[Write your own!|external]]
 

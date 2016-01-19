@@ -6,6 +6,7 @@
  - ** DO NOT COMMIT ** 
  -}
 import qualified Data.Monoid
+import qualified Control.Applicative
 import qualified Data.Set
 import qualified Data.Set as Data.Set.Base
 import qualified Data.Map

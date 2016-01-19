@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2016-01-11T16:36:01Z"
+ content="""
+git-annex needs write access to the repository it's running in. This is a
+fairly pervasive assumption and it would not be at all easy to fix.
+"""]]

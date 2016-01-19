@@ -1,7 +1,7 @@
 {- Caching a file's inode, size, and modification time
  - to see when it's changed.
  -
- - Copyright 2013, 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2014 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -54,7 +54,7 @@ newtype InodeCache = InodeCache InodeCachePrim
 {- Inode caches can be compared in two different ways, either weakly
  - or strongly. -}
 data InodeComparisonType = Weakly | Strongly
-	deriving (Eq, Ord)
+	deriving (Eq, Ord, Show)
 
 {- Strong comparison, including inodes. -}
 compareStrong :: InodeCache -> InodeCache -> Bool
@@ -81,7 +81,7 @@ compareBy Weakly = compareWeak
 {- For use in a Map; it's determined at creation time whether this
  - uses strong or weak comparison for Eq. -}
 data InodeCacheKey = InodeCacheKey InodeComparisonType InodeCachePrim
-	deriving (Ord)
+	deriving (Ord, Show)
 
 instance Eq InodeCacheKey where
 	(InodeCacheKey ctx x) == (InodeCacheKey cty y) =

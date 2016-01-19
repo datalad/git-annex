@@ -1,0 +1,8 @@
+
+git-annex is amazing for my large files backup necessities, but I am a bit scared for the long-term possibility of accessing data, without git-annex.
+
+For this reason I have prepared a small Python tool that accesses the content of bare git-annex repositories. The tool retrieves the locations of a file, and the path to the file in the current annex. This works with the last v6 version of the git-annex format.
+
+This is motivated by the fact that in the master branch the files are stores as links to .git/annex/objects/XX/YY/KEY/KEY (as it is correct for non-bare repos), while in the bare the files are stored in annex/objecst/ZZ/WW/KEY/KEY.
+
+The source code is available here: <https://gist.github.com/eruffaldi/924f6b53a63dede6e59f>

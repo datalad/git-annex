@@ -107,7 +107,7 @@ to git-annex-shell are:
   on new dashed options).
 
   Currently used fields include remoteuuid=, associatedfile=,
-  direct=, and autoinit=
+  unlocked=, direct=, and autoinit=
 
 # HOOK
 

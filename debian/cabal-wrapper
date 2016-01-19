@@ -1,11 +1,9 @@
 #!/bin/sh
 # It would be more usual to use:
-#   export CABAL=./Setup
+#   export BUILDER=./Setup
 # But Setup currently has a very bad dependency resolver, and very bad
 # debugging output, and tends to eat all memory and die on small buildds.
-#
-# This should be revisited once Debian has a newer ghc than 7.6.3,
-# and hopefully gets the improved dependency resolver from cabal.
+# See https://github.com/haskell/cabal/issues/2777
 set -e
 
 # Avoid cabal writing to HOME, and avoid local cabal settings

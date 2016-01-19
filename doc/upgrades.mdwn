@@ -43,6 +43,42 @@ conflicts first before upgrading git-annex.
 
 The upgrade events, so far:
 
+## v5 -> v6 (git-annex version 6.x)
+
+The upgrade from v5 to v6 is handled manually. Run `git-annex upgrade`
+perform the upgrade.
+
+Warning: All places that a direct mode repository is cloned to should be 
+running git-annex version 6.x before you upgrade the repository.
+This is necessary because the contents of the repository are changed
+in the upgrade, and the old version of git-annex won't be able to
+access files after the repo is upgraded.
+
+This upgrade does away with the direct mode/indirect mode distinction.
+A v6 git-annex repository can have some files locked and other files
+unlocked, and all git and git-annex commands can be used on both locked and
+unlocked files. (Although for locked files to work, the filesystem
+must support symbolic links..)
+
+The behavior of some commands changes in an upgraded repository:
+
+* `git add` will add files to the annex, in unlocked mode, rather than
+   adding them directly to the git repository. To cause some files to be
+   added directly to git, you can configure `annex.largefiles`. For
+   example:
+
+   	git config annex.largefiles "largerthan=100kb and not (include=*.c or include=*.h)"
+
+* `git annex unlock` and `git annex lock` change how the pointer to 
+  the annexed content is stored in git.
+
+On upgrade, all files in a direct mode repository will be converted to
+unlocked files. The upgrade will stage changes to all annexed files in
+the git repository, which you can then commit.
+
+If a repository has some clones using direct mode and some using indirect
+mode, all the files will end up unlocked in all clones after the upgrade.
+
 ## v4 -> v5 (git-annex version 5.x)
 
 The upgrade from v4 to v5 is handled

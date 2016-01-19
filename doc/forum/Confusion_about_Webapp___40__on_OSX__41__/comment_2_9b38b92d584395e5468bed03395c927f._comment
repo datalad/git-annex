@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="oliverconzen@8cff8c5ab3868de177f748566f90c79720f9cf4b"
+ nickname="oliverconzen"
+ subject="comment 2"
+ date="2016-01-08T19:21:28Z"
+ content="""
+After revisiting this issue the guys over at Homebrew have no idea whats going on apparently. The build process seems to be fairly complicated although obviously automated by cabal. The feature just seemed to went missing and nobody has an idea where to search. I am currently compiling from source and fairly confident that I will get it working.
+
+Since not everyone has the time to deal with this in their freetime, and brew is pretty much done to to this kind of thing automagically, maybe it is worth checking with them what went wrong.
+
+<https://github.com/Homebrew/homebrew/search?q=git+annex+webapp&type=Issues&utf8=%E2%9C%93> reveals two issues about the webapp and S3 features disappearing in between updates with no changes to the formula.
+"""]]

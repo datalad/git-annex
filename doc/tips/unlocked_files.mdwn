@@ -1,0 +1,147 @@
+Normally, git-annex stores annexed files in the repository, locked down,
+which prevents the content of the file from being modified.
+That's a good thing, because it might be the only copy, you wouldn't
+want to lose it in a fumblefingered mistake.
+
+	# git annex add some_file
+	add some_file
+	# echo oops > some_file
+	bash: some_file: Permission denied
+
+Sometimes though you want to modify a file. Maybe once, or maybe
+repeatedly. To modify a locked file, you have to first unlock it,
+by running `git annex unlock`.
+
+	# git annex unlock some_file
+	# echo "new content" > some_file
+
+Back before git-annex version 6, and its v6 repository mode, unlocking a file
+like this was a transient thing. You'd modify it and then `git annex add` the
+modified version to the annex, and finally `git commit`. The new version of
+the file was then back to being locked.
+
+	# git annex add some_file
+	add some_file
+	# git commit
+
+But, that had some problems. The main one is that some users want to be able
+to edit files repeatedly, without manually having to unlock them every time.
+The [[direct_mode]] was made all files be unlocked all the time, but it
+had many problems of its own.
+
+## enter v6 mode
+
+/!\ This is an experimental feature; see its [[todo_list|todo/smudge]]
+for known issues.
+
+This led to the v6 repository mode, which makes unlocked files remain
+unlocked after they're committed, so you can keep changing them and
+committing the changes whenever you'd like. It also lets you use more
+normal git commands (or even interfaces on top of git) for handling
+annexed files.
+
+To get a repository into v6 mode, you can [[upgrade|upgrades]] it.
+This will eventually happen automatically, but for now it's a manual process
+(be sure to read [[upgrades]] before doing this):
+
+	# git annex upgrade
+	
+Or, you can init a new repository in v6 mode.
+
+	# git init
+	# git annex init --version=6
+
+## using it
+
+Using a v6 repository is easy! Simply use regular git commands to add
+and commit files. In a git-annex repository, git will use git-annex
+to store the file contents, and the files will be left unlocked.
+
+[[!template id=note text="""
+Want `git add` to add some file contents to the annex, but store the contents of
+smaller files in git itself? Configure annex.largefiles to match the former.
+
+	git config annex.largefiles \
+		"largerthan=100kb and not include=*.c"
+"""]]
+
+	# cp ~/my_cool_big_file .
+	# git add my_cool_big_file
+	# git commit -m "added my_cool_big_file to the annex"
+	[master (root-commit) 92f2725] added my_cool_big_file to the annex
+	 1 file changed, 1 insertion(+)
+	  create mode 100644 my_cool_big_file
+	# git annex find
+	my_cool_big_file
+
+You can make whatever modifications you want to unlocked files, and commit
+your changes.
+
+	# echo more stuff >> my_cool_big_file
+	# git mv my_cool_big_file my_cool_bigger_file
+	# git commit -a -m "some changes"
+	[master 196c0e2] some changes
+	 2 files changed, 1 insertion(+), 1 deletion(-)
+	 delete mode 100644 my_cool_big_file
+	 create mode 100644 my_cool_bigger_file
+
+Under the hood, this uses git's [[todo/smudge]] filter interface, and
+git-annex converts between the content of the big file and a pointer file,
+which is what gets committed to git. 
+
+A v6 repository can contain both locked and unlocked files. You can switch 
+a file back and forth using the `git annex lock` and `git annex unlock`
+commands. This changes what's stored in git between a git-annex symlink
+(locked) and a git-annex pointer file (unlocked). To add a file to
+the repository in locked mode, use `git annex add`; to add a file in
+unlocked mode, use `git add`.
+
+## using less disk space
+
+Unlocked files are handy, but they have one significant disadvantage
+compared with locked files: They use more disk space.
+
+While only one copy of a locked file has to be stored, often
+two copies of an unlocked file are stored on disk. One copy is in
+the git work tree, where you can use and modify it,
+and the other is stashed away in `.git/annex/objects` (see [[internals]]).
+
+The reason for that second copy is to preserve the old version of the file,
+when you modify the unlocked file in the work tree. Being able to access
+old versions of files is an important part of git after all!
+
+That's a good safe default. But there are ways to use git-annex that
+make the second copy not be worth keeping:
+
+[[!template id=note text="""
+When a [[direct_mode]] repository is upgraded, annex.thin is automatically
+set, because direct mode made the same single-copy tradeoff.
+"""]]
+
+* When you're using git-annex to sync the current version of files acrosss
+  devices, and don't care much about previous versions.
+* When you have set up a backup repository, and use git-annex to copy
+  your files to the backup.
+
+In situations like these, you may want to avoid the overhead of the second
+local copy of unlocked files. There's config setting for that.
+
+	git config annex.thin true
+
+After changing annex.thin, you'll want to fix up the work tree to
+match the new setting:
+
+	git annex fix
+
+Note that setting annex.thin only has any effect on systems that support
+hard links. Ie, not Windows, and not FAT filesystems.
+
+## tradeoffs
+
+Setting annex.thin can save a lot of disk space, but it's a tradeoff
+between disk usage and safety. 
+
+Keeping files locked is safer and also avoids using unnecessary
+disk space, but trades off easy modification of files.
+
+Pick the tradeoff that's right for you.

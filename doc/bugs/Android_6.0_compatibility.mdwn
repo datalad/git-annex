@@ -1,0 +1,33 @@
+### Please describe the problem.
+Git-annex appears to be incompatible with Android 6. I downloaded the APK for Android 5 and tried installing it on a Nexus 5X running Android 6.0.1. The biggest issue is that pushing and pulling to SSH remotes fails with a "Permission denied" error from muxserver_listen() in OpenSSH. There are some other warnings and errors, listed below, would you like me to file separate bugs for each or track everything here?
+
+- The full error from ssh is "muxserver_listen: link mux listener /data/data/ga.androidterm/tmp/ssh/annex-user@192.168.0.3.Jg42jDbmIRBdbjDZ => /data/data/ga.androidterm/tmp/ssh/annex-user@192.168.0.3: Permission denied". Immediately after that there is an error message, presumably from git, that reads "fatal: Could not read from remote repository." I am able to SSH to the server from the app's command line, and get an interactive shell. I can successfully run 'git fetch `git remote`', but `git annex sync` runs into this issue.
+- When switching between two repositories in the webapp, the page never loads after clicking on a repository. After trying the link a few times, I can see "git-annex: Daemon is already running." through the webapp's log viewer. However, if I stop the daemon through the webapp and start it again, then the webapp will indicate that I successfully switched to the other repository.
+- There is a warning message in the console that reads, "WARNING: linker: git-annex has text relocations. This is wasting memory and prevents security hardening. Please fix." It appears that apps targeting SDK version 23 are not allowed to use text relocations, while apps targeting lower versions just get this warning. See http://developer.android.com/about/versions/marshmallow/android-6.0-changes.html#behavior-runtime
+- There is a warning message at the top of every new terminal that says "Falling back to hardcoded app location; cannot find expected files in /data/app/ga.androidterm-1/lib". This issue doesn't appear to affect anything, but I thought I'd mention it for completeness.
+- At various times during syncing, "\_\_bionic_open_tzdata_path: ANDROID_DATA not set!" and "\_\_bionic_open_tzdata_path: ANDROID_ROOT not set!" show up in the log.
+
+### What steps will reproduce the problem?
+1. Install Android 5.0 APK on Android 6.0 phone
+2. Create a repository
+3. Add an SSH remote
+
+### What version of git-annex are you using? On what operating system?
+5.20151217-g7b73f34 on Android 6.0.1
+
+### Please provide any additional information below.
+[[!format sh """
+muxserver_listen: link mux listener /data/data/ga.androidterm/tmp/ssh/annex-user@192.168.0.3.ZUzI2MBl8k0qt2pg => /data/data/ga.androidterm/tmp/ssh/annex-user@192.168.0.3: Permission denied
+"""]]
+
+If I look in this temporary directory after the fact, I see the following.
+
+[[!format sh """
+> ls -l /data/data/ga.androidterm/tmp/ssh
+-rw-------    1 u0_a108  u0_a108      0 Dec 24 10:06 annex-user@192.168.0.3.lock
+"""]]
+
+I suppose since the socket is a Unix domain socket, it gets destroyed when the process stops, so it shouldn't be surprising there's nothing else in that directory.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+Not yet, but I'm excited to make it work!

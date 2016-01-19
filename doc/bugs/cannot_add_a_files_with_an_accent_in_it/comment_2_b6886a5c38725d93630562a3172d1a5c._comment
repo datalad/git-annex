@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="Alan"
+ subject="Some additional information"
+ date="2016-01-12T17:48:58Z"
+ content="""
+Here is what `locale` returns here
+
+    LANG=
+    LC_COLLATE=\"en_US.UTF-8\"
+    LC_CTYPE=\"en_US.UTF-8\"
+    LC_MESSAGES=\"en_US.UTF-8\"
+    LC_MONETARY=\"en_US.UTF-8\"
+    LC_NUMERIC=\"en_US.UTF-8\"
+    LC_TIME=\"en_US.UTF-8\"
+    LC_ALL=\"en_US.UTF-8\"
+
+I think it may matter as I see that your accents are not displayed correctly when you \"tab\".
+
+To type a é on OS X with qwerty, you can do `option-e` then e.
+"""]]

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 4"
+ date="2015-12-23T12:46:36Z"
+ content="""
+> This is unlikely to waste enough time to make it worthwhile to develop a hack that only hashes once.
+
+In my super-heavy use case, the second hashing of the files is *dwarfed* by the 45 minute wait for git to update .git/index, so I would agree with this.
+"""]]

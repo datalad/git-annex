@@ -626,6 +626,14 @@ subdirectories).
 
   See [[git-annex-diffdriver]](1) for details.
 
+* `smudge`
+
+  This command lets git-annex be used as a git filter driver, allowing
+  annexed files in the git repository to be unlocked at all times, instead
+  of being symlinks.
+
+  See [[git-annex-smudge]](1) for details.
+
 * `remotedaemon`
 
   Detects when network remotes have received git pushes and fetches from them.
@@ -663,6 +671,11 @@ subdirectories).
   for use in testing the assistant.
   
   See [[git-annex-fuzztest]](1) for details.
+
+* `benchmark`
+
+  This runs git-annex's built-in benchmarks, if it was built with
+  benchmarking support.
 
 # COMMON OPTIONS
 
@@ -895,6 +908,14 @@ Here are all the supported configuration settings.
   When a repository is set up using `git clone --shared`, git-annex init
   will automatically set annex.hardlink and mark the repository as
   untrusted.
+
+* `annex.thin`
+
+  Set this to `true` to make unlocked files be a hard link to their content
+  in the annex, rather than a second copy. (Only when supported by the file
+  system, and only in repository version 6.) This can save considerable
+  disk space, but modification made to a file will lose the local (and
+  possibly only) copy of the old version. So, enable with care.
 
 * `annex.delayadd`
 

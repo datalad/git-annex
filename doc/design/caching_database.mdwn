@@ -27,7 +27,8 @@ Store in the database the Ref of the branch that was used to construct it.
 
 1. Store incremental fsck info in db, on a branch, with sqlite. **done**
 2. Make sure that builds on all platforms, and works reliably. **done**
-3. Use sqlite db for associated files cache, and use in direct mode.
+3. Use sqlite db for associated files cache. **done** (only for v6 unlocked
+   files)
 4. Also, use associated files db to construct views.
 5. Use sqlite db for metadata cache.
 6. Use sqlite db for list of keys present in local annex.

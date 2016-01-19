@@ -1,0 +1,46 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2015-12-19T16:30:55Z"
+ content="""
+Sorry I haven't had a chance to think about this problem any more.
+The v6 repository format I've been working on should eliminate class problem
+anyway. It will let git itself be able to tell if annexed files are modified
+or not.
+
+But there is something you can try to debug what's going on.
+
+0. Run the git bash shell and cd to your repository's directory.
+1. `cat .git/annex/sentinal.cache` and paste its content.
+2. `stat .git/annex/sentinal --terse` and paste the output of that.
+2. Pick one of the files wrongly showing as modified. Run `stat $file --terse`
+  and paste the output of that.
+3. And then this command should output the inode cache for the file.
+   Be sure to replace $file with the name of the file:
+   `cat $(git annex find $file --format='.git/annex/objects/${hashdirlower}${key}/${key}.cache`)
+
+But hmm, as I was running windows to get these instructions, I seem to have
+reproduced the problem myself! In my case:
+
+* The sentinal.cache contained data matching the stat of the sentinal file.
+* The annexed file's mtime and size (and even inode) matched the cached
+  values.
+* `git annex status` showed the file as modifed; `git annex sync` found
+  nothing to commit and didn't change that.
+
+Some more debugging and.. It seems this is not a horrible windows-specific
+time zone problem. Thank goodness. Instead, what's going on is that `git -c
+core.bare=false status` does not show these files as typechanged, but as
+modified instead. Since `git annex status` only has special case handling
+for typechanged files, it just passes the M through and displays it.
+
+So, this is only a display problem, and thus nothing to worry about really.
+Ie, the rest of git-annex's behavior should not be impacted at all.
+
+It's not windows specific.. Same happens on FAT on Linux. I think git's
+behavior probably changed since an earlier version; I'm pretty sure its
+status showed typechanged before. Anyway, I've fixed the status display,
+on these systems it will now treat files git says are modified the same
+as typechanged, and so will use git-annex's inode cache info to diplay
+an accurate status for them.
+"""]]

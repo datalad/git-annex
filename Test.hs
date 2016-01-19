@@ -1,6 +1,6 @@
 {- git-annex test suite
  -
- - Copyright 2010-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -9,6 +9,7 @@
 
 module Test where
 
+import Types.Test
 import Options.Applicative.Types
 
 #ifndef WITH_TESTSUITE
@@ -24,11 +25,11 @@ runner = Nothing
 #else
 
 import Test.Tasty
-import Test.Tasty.Options
 import Test.Tasty.Runners
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
 import Test.Tasty.Ingredients.Rerun
+import Options.Applicative (switch, long, help)
 
 import qualified Data.Map as M
 import qualified Text.JSON
@@ -38,6 +39,7 @@ import Common
 import qualified Utility.SafeCommand
 import qualified Annex
 import qualified Annex.UUID
+import qualified Annex.Version
 import qualified Backend
 import qualified Git.CurrentRepo
 import qualified Git.Filename
@@ -65,6 +67,8 @@ import qualified Types.Messages
 import qualified Config
 import qualified Config.Cost
 import qualified Crypto
+import qualified Annex.WorkTree
+import qualified Annex.Link
 import qualified Annex.Init
 import qualified Annex.CatFile
 import qualified Annex.View
@@ -96,11 +100,16 @@ import qualified Types.Crypto
 import qualified Utility.Gpg
 #endif
 
-optParser :: Parser OptionSet
-optParser = suiteOptionParser ingredients tests
+optParser :: Parser TestOptions
+optParser = TestOptions
+	<$> suiteOptionParser ingredients (tests mempty)
+	<*> switch
+		( long "keep-failures"
+		<> help "preserve repositories on test failure"
+		)
 
-runner :: Maybe (OptionSet -> IO ())
-runner = Just $ \opts -> case tryIngredients ingredients opts tests of
+runner :: Maybe (TestOptions -> IO ())
+runner = Just $ \opts -> case tryIngredients ingredients (tastyOptionSet opts) (tests opts) of
 	Nothing -> error "No tests found!?"
 	Just act -> ifM act
 		( exitSuccess
@@ -116,19 +125,19 @@ ingredients =
 	, rerunningTests [consoleTestReporter]
 	]
 
-tests :: TestTree
-tests = testGroup "Tests"
-	-- Test both direct and indirect mode.
-	-- Windows is only going to use direct mode, so don't test twice.
-	[ properties
+tests :: TestOptions -> TestTree
+tests opts = testGroup "Tests" $ properties :
+	map (\(d, te) -> withTestMode te (unitTests d)) testmodes
+  where
+	testmodes =
+		[ ("v6 unlocked", (testMode opts "6") { unlockedFiles = True })
+		, ("v6 locked", testMode opts "6")
+		, ("v5", testMode opts "5")
 #ifndef mingw32_HOST_OS
-	, withTestEnv True $ unitTests "(direct)"
-	, withTestEnv False $ unitTests "(indirect)"
-#else
-	, withTestEnv False $ unitTests ""
+		-- Windows will only use direct mode, so don't test twice.
+		, ("v5 direct", (testMode opts "5") { forceDirect = True })
 #endif
-	]
-
+		]
 
 properties :: TestTree
 properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
@@ -164,6 +173,7 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
 	, testProperty "prop_metadata_sane" Types.MetaData.prop_metadata_sane
 	, testProperty "prop_metadata_serialize" Types.MetaData.prop_metadata_serialize
 	, testProperty "prop_branchView_legal" Logs.View.prop_branchView_legal
+	, testProperty "prop_viewPath_roundtrips" Annex.View.prop_viewPath_roundtrips
 	, testProperty "prop_view_roundtrips" Annex.View.prop_view_roundtrips
 	, testProperty "prop_viewedFile_rountrips" Annex.View.ViewedFile.prop_viewedFile_roundtrips
 	, testProperty "prop_b64_roundtrips" Utility.Base64.prop_b64_roundtrips
@@ -180,7 +190,7 @@ initTests = testGroup "Init Tests"
 
 unitTests :: String -> TestTree
 unitTests note = testGroup ("Unit Tests " ++ note)
-	[ testCase "add sha1dup" test_add_sha1dup
+	[ testCase "add dup" test_add_dup
 	, testCase "add extras" test_add_extras
 	, testCase "shared clone" test_shared_clone
 	, testCase "log" test_log
@@ -224,6 +234,7 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 	, testCase "conflict resolution (removed file)" test_remove_conflict_resolution
 	, testCase "conflict resolution (nonannexed file)" test_nonannexed_file_conflict_resolution
 	, testCase "conflict resolution (nonannexed symlink)" test_nonannexed_symlink_conflict_resolution
+	, testCase "conflict resolution (mixed locked and unlocked file)" test_mixed_lock_conflict_resolution
 	, testCase "map" test_map
 	, testCase "uninit" test_uninit
 	, testCase "uninit (in git-annex branch)" test_uninit_inbranch
@@ -242,8 +253,11 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 -- this test case create the main repo
 test_init :: Assertion
 test_init = innewrepo $ do
-	git_annex "init" [reponame] @? "init failed"
-	handleforcedirect
+	ver <- annexVersion <$> getTestMode
+	if ver == Annex.Version.defaultVersion
+		then git_annex "init" [reponame] @? "init failed"
+		else git_annex "init" [reponame, "--version", ver] @? "init failed"
+	setupTestMode
   where
 	reponame = "test repo"
 
@@ -252,10 +266,12 @@ test_init = innewrepo $ do
 test_add :: Assertion
 test_add = inmainrepo $ do
 	writeFile annexedfile $ content annexedfile
-	git_annex "add" [annexedfile] @? "add failed"
+	add_annex annexedfile @? "add failed"
 	annexed_present annexedfile
 	writeFile sha1annexedfile $ content sha1annexedfile
 	git_annex "add" [sha1annexedfile, "--backend=SHA1"] @? "add with SHA1 failed"
+	whenM (unlockedFiles <$> getTestMode) $
+		git_annex "unlock" [sha1annexedfile] @? "unlock failed"
 	annexed_present sha1annexedfile
 	checkbackend sha1annexedfile backendSHA1
 	ifM (annexeval Config.isDirect)
@@ -272,17 +288,19 @@ test_add = inmainrepo $ do
 			unannexed ingitfile
 		)
 
-test_add_sha1dup :: Assertion
-test_add_sha1dup = intmpclonerepo $ do
-	writeFile sha1annexedfiledup $ content sha1annexedfiledup
-	git_annex "add" [sha1annexedfiledup, "--backend=SHA1"] @? "add of second file with same SHA1 failed"
-	annexed_present sha1annexedfiledup
-	annexed_present sha1annexedfile
+test_add_dup :: Assertion
+test_add_dup = intmpclonerepo $ do
+	writeFile annexedfiledup $ content annexedfiledup
+	add_annex annexedfiledup @? "add of second file with same content failed"
+	annexed_present annexedfiledup
+	annexed_present annexedfile
 
 test_add_extras :: Assertion
 test_add_extras = intmpclonerepo $ do
 	writeFile wormannexedfile $ content wormannexedfile
 	git_annex "add" [wormannexedfile, "--backend=WORM"] @? "add with WORM failed"
+	whenM (unlockedFiles <$> getTestMode) $
+		git_annex "unlock" [wormannexedfile] @? "unlock failed"
 	annexed_present wormannexedfile
 	checkbackend wormannexedfile backendWORM
 
@@ -294,7 +312,6 @@ test_shared_clone = intmpsharedclonerepo $ do
 		, "--get"
 		, "annex.hardlink"
 		]
-	print v
 	v == Just "true\n"
 		@? "shared clone of repo did not get annex.hardlink set"
 
@@ -306,12 +323,12 @@ test_import :: Assertion
 test_import = intmpclonerepo $ Utility.Tmp.withTmpDir "importtest" $ \importdir -> do
 	(toimport1, importf1, imported1) <- mktoimport importdir "import1"
 	git_annex "import" [toimport1] @? "import failed"
-	annexed_present imported1
+	annexed_present_locked imported1
 	checkdoesnotexist importf1
 
 	(toimport2, importf2, imported2) <- mktoimport importdir "import2"
 	git_annex "import" [toimport2] @? "import of duplicate failed"
-	annexed_present imported2
+	annexed_present_locked imported2
 	checkdoesnotexist importf2
 
 	(toimport3, importf3, imported3) <- mktoimport importdir "import3"
@@ -331,11 +348,11 @@ test_import = intmpclonerepo $ Utility.Tmp.withTmpDir "importtest" $ \importdir 
 	
 	(toimport5, importf5, imported5) <- mktoimport importdir "import5"
 	git_annex "import" ["--duplicate", toimport5] @? "import --duplicate failed"
-	annexed_present imported5
+	annexed_present_locked imported5
 	checkexists importf5
 	
 	git_annex "drop" ["--force", imported1, imported2, imported5] @? "drop failed"
-	annexed_notpresent imported2
+	annexed_notpresent_locked imported2
 	(toimportdup, importfdup, importeddup) <- mktoimport importdir "importdup"
 	git_annex "import" ["--clean-duplicates", toimportdup] 
 		@? "import of missing duplicate with --clean-duplicates failed"
@@ -351,13 +368,13 @@ test_import = intmpclonerepo $ Utility.Tmp.withTmpDir "importtest" $ \importdir 
 test_reinject :: Assertion
 test_reinject = intmpclonerepoInDirect $ do
 	git_annex "drop" ["--force", sha1annexedfile] @? "drop failed"
+	annexed_notpresent sha1annexedfile
 	writeFile tmp $ content sha1annexedfile
-	r <- annexeval $ Types.Backend.getKey backendSHA1
-		Types.KeySource.KeySource { Types.KeySource.keyFilename = tmp, Types.KeySource.contentLocation = tmp, Types.KeySource.inodeCache = Nothing }
-	let key = Types.Key.key2file $ fromJust r
+	key <- Types.Key.key2file <$> getKey backendSHA1 tmp
 	git_annex "reinject" [tmp, sha1annexedfile] @? "reinject failed"
+	annexed_present sha1annexedfile
 	git_annex "fromkey" [key, sha1annexedfiledup] @? "fromkey failed for dup"
-	annexed_present sha1annexedfiledup
+	annexed_present_locked sha1annexedfiledup
   where
 	tmp = "tmpfile"
 
@@ -528,16 +545,21 @@ test_preferred_content = intmpclonerepo $ do
 
 test_lock :: Assertion
 test_lock = intmpclonerepoInDirect $ do
-	-- regression test: unlock of not present file should skip it
 	annexed_notpresent annexedfile
-	not <$> git_annex "unlock" [annexedfile] @? "unlock failed to fail with not present file"
+	ifM (unlockedFiles <$> getTestMode)
+		( not <$> git_annex "lock" [annexedfile] @? "lock failed to fail with not present file"
+		, not <$> git_annex "unlock" [annexedfile] @? "unlock failed to fail with not present file"
+		)
 	annexed_notpresent annexedfile
 
 	-- regression test: unlock of newly added, not committed file
-	-- should fail
+	-- should fail in v5 mode. In v6 mode, this is allowed.
 	writeFile "newfile" "foo"
 	git_annex "add" ["newfile"] @? "add new file failed"
-	not <$> git_annex "unlock" ["newfile"] @? "unlock failed to fail on newly added, never committed file"
+	ifM (annexeval Annex.Version.versionSupportsUnlockedPointers)
+		( git_annex "unlock" ["newfile"] @? "unlock failed on newly added, never committed file in v6 repository"
+		, not <$> git_annex "unlock" ["newfile"] @? "unlock failed to fail on newly added, never committed file in v5 repository"
+		)
 
 	git_annex "get" [annexedfile] @? "get of file failed"
 	annexed_present annexedfile
@@ -549,12 +571,21 @@ test_lock = intmpclonerepoInDirect $ do
 	writeFile annexedfile $ content annexedfile ++ "foo"
 	not <$> git_annex "lock" [annexedfile] @? "lock failed to fail without --force"
 	git_annex "lock" ["--force", annexedfile] @? "lock --force failed"
-	annexed_present annexedfile
+	-- In v6 mode, the original content of the file is not always
+	-- preserved after modification, so re-get it.
+	git_annex "get" [annexedfile] @? "get of file failed after lock --force"
+	annexed_present_locked annexedfile
 	git_annex "unlock" [annexedfile] @? "unlock failed"		
 	unannexed annexedfile
 	changecontent annexedfile
-	git_annex "add" [annexedfile] @? "add of modified file failed"
-	runchecks [checklink, checkunwritable] annexedfile
+	ifM (annexeval Annex.Version.versionSupportsUnlockedPointers)
+		( do
+			boolSystem "git" [Param "add", Param annexedfile] @? "add of modified file failed"
+			runchecks [checkregularfile, checkwritable] annexedfile
+		, do
+			git_annex "add" [annexedfile] @? "add of modified file failed"
+			runchecks [checklink, checkunwritable] annexedfile
+		)
 	c <- readFile annexedfile
 	assertEqual "content of modified file" c (changedcontent annexedfile)
 	r' <- git_annex "drop" [annexedfile]
@@ -580,7 +611,10 @@ test_edit' precommit = intmpclonerepoInDirect $ do
 			@? "pre-commit failed"
 		else boolSystem "git" [Param "commit", Param "-q", Param "-m", Param "contentchanged"]
 			@? "git commit of edited file failed"
-	runchecks [checklink, checkunwritable] annexedfile
+	ifM (annexeval Annex.Version.versionSupportsUnlockedPointers)
+		( runchecks [checkregularfile, checkwritable] annexedfile
+		, runchecks [checklink, checkunwritable] annexedfile
+		)
 	c <- readFile annexedfile
 	assertEqual "content of modified file" c (changedcontent annexedfile)
 	not <$> git_annex "drop" [annexedfile] @? "drop wrongly succeeded with no known copy of modified file"
@@ -590,11 +624,16 @@ test_partial_commit = intmpclonerepoInDirect $ do
 	git_annex "get" [annexedfile] @? "get of file failed"
 	annexed_present annexedfile
 	git_annex "unlock" [annexedfile] @? "unlock failed"
-	not <$> boolSystem "git" [Param "commit", Param "-q", Param "-m", Param "test", File annexedfile]
-		@? "partial commit of unlocked file not blocked by pre-commit hook"
+	changecontent annexedfile
+	ifM (annexeval Annex.Version.versionSupportsUnlockedPointers)
+		( boolSystem "git" [Param "commit", Param "-q", Param "-m", Param "test", File annexedfile]
+			@? "partial commit of unlocked file should be allowed in v6 repository"
+		, not <$> boolSystem "git" [Param "commit", Param "-q", Param "-m", Param "test", File annexedfile]
+			@? "partial commit of unlocked file not blocked by pre-commit hook"
+		)
 
 test_fix :: Assertion
-test_fix = intmpclonerepoInDirect $ do
+test_fix = intmpclonerepoInDirect $ unlessM (unlockedFiles <$> getTestMode) $ do
 	annexed_notpresent annexedfile
 	git_annex "fix" [annexedfile] @? "fix of not present failed"
 	annexed_notpresent annexedfile
@@ -617,9 +656,13 @@ test_direct :: Assertion
 test_direct = intmpclonerepoInDirect $ do
 	git_annex "get" [annexedfile] @? "get of file failed"
 	annexed_present annexedfile
-	git_annex "direct" [] @? "switch to direct mode failed"
-	annexed_present annexedfile
-	git_annex "indirect" [] @? "switch to indirect mode failed"
+	ifM (annexeval Annex.Version.versionSupportsUnlockedPointers)
+		( not <$> git_annex "direct" [] @? "switch to direct mode failed to fail in v6 repository"
+		, do
+			git_annex "direct" [] @? "switch to direct mode failed"
+			annexed_present annexedfile
+			git_annex "indirect" [] @? "switch to indirect mode failed"
+		)
 
 test_trust :: Assertion
 test_trust = intmpclonerepo $ do
@@ -661,8 +704,8 @@ test_fsck_basic = intmpclonerepo $ do
 		git_annex "get" [f] @? "get of file failed"
 		Utility.FileMode.allowWrite f
 		writeFile f (changedcontent f)
-		ifM (annexeval Config.isDirect)
-			( git_annex "fsck" [] @? "fsck failed in direct mode with changed file content"
+		ifM (annexeval Config.isDirect <||> unlockedFiles <$> getTestMode)
+			( git_annex "fsck" [] @? "fsck failed on unlocked file with changed file content"
 			, not <$> git_annex "fsck" [] @? "fsck failed to fail with corrupted file content"
 			)
 		git_annex "fsck" [] @? "fsck unexpectedly failed again; previous one did not fix problem with " ++ f
@@ -744,11 +787,11 @@ test_migrate' usegitattributes = intmpclonerepoInDirect $ do
 test_unused :: Assertion
 -- This test is broken in direct mode
 test_unused = intmpclonerepoInDirect $ do
-	-- keys have to be looked up before files are removed
-	annexedfilekey <- annexeval $ findkey annexedfile
-	sha1annexedfilekey <- annexeval $ findkey sha1annexedfile
+	checkunused [] "in new clone"
 	git_annex "get" [annexedfile] @? "get of file failed"
 	git_annex "get" [sha1annexedfile] @? "get of file failed"
+	annexedfilekey <- getKey backendSHA256E annexedfile
+	sha1annexedfilekey <- getKey backendSHA1 sha1annexedfile
 	checkunused [] "after get"
 	boolSystem "git" [Param "rm", Param "-fq", File annexedfile] @? "git rm failed"
 	checkunused [] "after rm"
@@ -771,37 +814,50 @@ test_unused = intmpclonerepoInDirect $ do
 	checkunused [] "after dropunused"
 	not <$> git_annex "dropunused" ["--force", "10", "501"] @? "dropunused failed to fail on bogus numbers"
 
-	-- unused used to miss symlinks that were not staged and pointed 
-	-- at annexed content, and think that content was unused
+	-- unused used to miss renamed symlinks that were not staged
+	-- and pointed at annexed content, and think that content was unused
 	writeFile "unusedfile" "unusedcontent"
 	git_annex "add" ["unusedfile"] @? "add of unusedfile failed"
-	unusedfilekey <- annexeval $ findkey "unusedfile"
+	unusedfilekey <- getKey backendSHA256E "unusedfile"
 	renameFile "unusedfile" "unusedunstagedfile"
 	boolSystem "git" [Param "rm", Param "-qf", File "unusedfile"] @? "git rm failed"
 	checkunused [] "with unstaged link"
 	removeFile "unusedunstagedfile"
-	checkunused [unusedfilekey] "with unstaged link deleted"
+	checkunused [unusedfilekey] "with renamed link deleted"
 
 	-- unused used to miss symlinks that were deleted or modified
-	-- manually, but commited as such.
+	-- manually
 	writeFile "unusedfile" "unusedcontent"
 	git_annex "add" ["unusedfile"] @? "add of unusedfile failed"
 	boolSystem "git" [Param "add", File "unusedfile"] @? "git add failed"
-	unusedfilekey' <- annexeval $ findkey "unusedfile"
+	unusedfilekey' <- getKey backendSHA256E "unusedfile"
 	checkunused [] "with staged deleted link"
 	boolSystem "git" [Param "rm", Param "-qf", File "unusedfile"] @? "git rm failed"
 	checkunused [unusedfilekey'] "with staged link deleted"
 
-	-- unused used to miss symlinks that were deleted or modified
-	-- manually, but not staged as such.
+	-- unused used to false positive on symlinks that were
+	-- deleted or modified manually, but not staged as such
 	writeFile "unusedfile" "unusedcontent"
 	git_annex "add" ["unusedfile"] @? "add of unusedfile failed"
 	boolSystem "git" [Param "add", File "unusedfile"] @? "git add failed"
-	unusedfilekey'' <- annexeval $ findkey "unusedfile"
-	checkunused [] "with unstaged deleted link"
+	checkunused [] "with staged file"
 	removeFile "unusedfile"
-	checkunused [unusedfilekey''] "with unstaged link deleted"
+	checkunused [] "with staged deleted file"
 
+	-- When an unlocked file is modified, git diff will cause git-annex
+	-- to add its content to the repository. Make sure that's not
+	-- found as unused.
+	whenM (unlockedFiles <$> getTestMode) $ do
+		let f = "unlockedfile"
+		writeFile f "unlockedcontent1"
+		boolSystem "git" [Param "add", File "unlockedfile"] @? "git add failed"
+		checkunused [] "with unlocked file before modification"
+		writeFile f "unlockedcontent2"
+		checkunused [] "with unlocked file after modification"
+		not <$> boolSystem "git" [Param "diff", Param "--quiet", File f] @? "git diff did not show changes to unlocked file"
+		-- still nothing unused because one version is in the index
+		-- and the other is in the work tree
+		checkunused [] "with unlocked file after git diff"
   where
 	checkunused expectedkeys desc = do
 		git_annex "unused" [] @? "unused failed"
@@ -809,9 +865,6 @@ test_unused = intmpclonerepoInDirect $ do
 		let unusedkeys = M.elems unusedmap
 		assertEqual ("unused keys differ " ++ desc)
 			(sort expectedkeys) (sort unusedkeys)
-	findkey f = do
-		r <- Backend.lookupFile f
-		return $ fromJust r
 
 test_describe :: Assertion
 test_describe = intmpclonerepo $ do
@@ -936,12 +989,12 @@ test_conflict_resolution =
 			indir r1 $ do
 				disconnectOrigin
 				writeFile conflictor "conflictor1"
-				git_annex "add" [conflictor] @? "add conflicter failed"
+				add_annex conflictor @? "add conflicter failed"
 				git_annex "sync" [] @? "sync failed in r1"
 			indir r2 $ do
 				disconnectOrigin
 				writeFile conflictor "conflictor2"
-				git_annex "add" [conflictor] @? "add conflicter failed"
+				add_annex conflictor @? "add conflicter failed"
 				git_annex "sync" [] @? "sync failed in r2"
 			pair r1 r2
 			forM_ [r1,r2,r1] $ \r -> indir r $
@@ -974,13 +1027,13 @@ test_mixed_conflict_resolution = do
 			indir r1 $ do
 				disconnectOrigin
 				writeFile conflictor "conflictor"
-				git_annex "add" [conflictor] @? "add conflicter failed"
+				add_annex conflictor @? "add conflicter failed"
 				git_annex "sync" [] @? "sync failed in r1"
 			indir r2 $ do
 				disconnectOrigin
 				createDirectory conflictor
 				writeFile subfile "subfile"
-				git_annex "add" [conflictor] @? "add conflicter failed"
+				add_annex conflictor @? "add conflicter failed"
 				git_annex "sync" [] @? "sync failed in r2"
 			pair r1 r2
 			let l = if inr1 then [r1, r2] else [r2, r1]
@@ -1016,7 +1069,7 @@ test_remove_conflict_resolution = do
 			indir r1 $ do
 				disconnectOrigin
 				writeFile conflictor "conflictor"
-				git_annex "add" [conflictor] @? "add conflicter failed"
+				add_annex conflictor @? "add conflicter failed"
 				git_annex "sync" [] @? "sync failed in r1"
 			indir r2 $
 				disconnectOrigin
@@ -1065,18 +1118,24 @@ test_nonannexed_file_conflict_resolution = do
 				indir r1 $ do
 					disconnectOrigin
 					writeFile conflictor "conflictor"
-					git_annex "add" [conflictor] @? "add conflicter failed"
+					add_annex conflictor @? "add conflicter failed"
 					git_annex "sync" [] @? "sync failed in r1"
 				indir r2 $ do
 					disconnectOrigin
 					writeFile conflictor nonannexed_content
+					boolSystem "git"
+						[ Param "config"
+						, Param "annex.largefiles"
+						, Param ("exclude=" ++ ingitfile ++ " and exclude=" ++ conflictor)
+						] @? "git config annex.largefiles failed"
 					boolSystem "git" [Param "add", File conflictor] @? "git add conflictor failed"
 					git_annex "sync" [] @? "sync failed in r2"
 				pair r1 r2
 				let l = if inr1 then [r1, r2] else [r2, r1]
 				forM_ l $ \r -> indir r $ do
 					when switchdirect $
-						git_annex "direct" [] @? "failed switching to direct mode"
+						whenM (annexeval Annex.Version.versionSupportsDirectMode) $
+							git_annex "direct" [] @? "failed switching to direct mode"
 					git_annex "sync" [] @? "sync failed"
 				checkmerge ("r1" ++ show switchdirect) r1
 				checkmerge ("r2" ++ show switchdirect) r2
@@ -1116,7 +1175,7 @@ test_nonannexed_symlink_conflict_resolution = do
 				indir r1 $ do
 					disconnectOrigin
 					writeFile conflictor "conflictor"
-					git_annex "add" [conflictor] @? "add conflicter failed"
+					add_annex conflictor @? "add conflicter failed"
 					git_annex "sync" [] @? "sync failed in r1"
 				indir r2 $ do
 					disconnectOrigin
@@ -1127,7 +1186,8 @@ test_nonannexed_symlink_conflict_resolution = do
 				let l = if inr1 then [r1, r2] else [r2, r1]
 				forM_ l $ \r -> indir r $ do
 					when switchdirect $
-						git_annex "direct" [] @? "failed switching to direct mode"
+						whenM (annexeval Annex.Version.versionSupportsDirectMode) $ do
+							git_annex "direct" [] @? "failed switching to direct mode"
 					git_annex "sync" [] @? "sync failed"
 				checkmerge ("r1" ++ show switchdirect) r1
 				checkmerge ("r2" ++ show switchdirect) r2
@@ -1166,7 +1226,7 @@ test_uncommitted_conflict_resolution = do
 				disconnectOrigin
 				createDirectoryIfMissing True (parentDir remoteconflictor)
 				writeFile remoteconflictor annexedcontent
-				git_annex "add" [conflictor] @? "add remoteconflicter failed"
+				add_annex conflictor @? "add remoteconflicter failed"
 				git_annex "sync" [] @? "sync failed in r1"
 			indir r2 $ do
 				disconnectOrigin
@@ -1224,6 +1284,44 @@ test_conflict_resolution_symlink_bit =
 		l <- annexeval $ Annex.inRepo $ Git.LsTree.lsTreeFiles Git.Ref.headRef [f]
 		all (\i -> Git.Types.toBlobType (Git.LsTree.mode i) == Just Git.Types.SymlinkBlob) l
 			@? (what ++ " " ++ f ++ " lost symlink bit after merge: " ++ show l)
+
+{- A v6 unlocked file that conflicts with a locked file should be resolved
+ - in favor of the unlocked file, with no variant files, as long as they
+ - both point to the same key. -}
+test_mixed_lock_conflict_resolution :: Assertion
+test_mixed_lock_conflict_resolution = 
+	withtmpclonerepo $ \r1 ->
+		withtmpclonerepo $ \r2 -> do
+			indir r1 $ whenM shouldtest $ do
+				disconnectOrigin
+				writeFile conflictor "conflictor"
+				git_annex "add" [conflictor] @? "add conflicter failed"
+				git_annex "sync" [] @? "sync failed in r1"
+			indir r2 $ whenM shouldtest $ do
+				disconnectOrigin
+				writeFile conflictor "conflictor"
+				git_annex "add" [conflictor] @? "add conflicter failed"
+				git_annex "unlock" [conflictor] @? "unlock conflicter failed"
+				git_annex "sync" [] @? "sync failed in r2"
+			pair r1 r2
+			forM_ [r1,r2,r1] $ \r -> indir r $
+				git_annex "sync" [] @? "sync failed"
+			checkmerge "r1" r1
+			checkmerge "r2" r2
+  where
+	shouldtest = annexeval Annex.Version.versionSupportsUnlockedPointers
+	conflictor = "conflictor"
+	variantprefix = conflictor ++ ".variant"
+	checkmerge what d = indir d $ whenM shouldtest $ do
+		l <- getDirectoryContents "."
+		let v = filter (variantprefix `isPrefixOf`) l
+		length v == 0
+			@? (what ++ " not exactly 0 variant files in: " ++ show l)
+		conflictor `elem` l @? ("conflictor not present after conflict resolution")
+		git_annex "get" [conflictor] @? "get failed"
+		git_annex_expectoutput "find" [conflictor] [conflictor]
+		-- regular file because it's unlocked
+		checkregularfile conflictor
 
 {- Set up repos as remotes of each other. -}
 pair :: FilePath -> FilePath -> Assertion
@@ -1380,7 +1478,7 @@ test_crypto = do
 			(c,k) <- annexeval $ do
 				uuid <- Remote.nameToUUID "foo"
 				rs <- Logs.Remote.readRemoteLog
-				Just k <- Backend.lookupFile annexedfile
+				Just k <- Annex.WorkTree.lookupFile annexedfile
 				return (fromJust $ M.lookup uuid rs, k)
 			let key = if scheme `elem` ["hybrid","pubkey"]
 					then Just $ Utility.Gpg.KeyIds [Utility.Gpg.testKeyId]
@@ -1505,7 +1603,7 @@ intmpclonerepoInDirect a = intmpclonerepo $
 		)
   where
 	isdirect = annexeval $ do
-		Annex.Init.initialize Nothing
+		Annex.Init.initialize Nothing Nothing
 		Config.isDirect
 
 checkRepo :: Types.Annex a -> FilePath -> IO a
@@ -1530,7 +1628,14 @@ withtmpclonerepo = withtmpclonerepo' newCloneRepoConfig
 withtmpclonerepo' :: CloneRepoConfig -> (FilePath -> Assertion) -> Assertion
 withtmpclonerepo' cfg a = do
 	dir <- tmprepodir
-	bracket (clonerepo mainrepodir dir cfg) cleanup a
+	clone <- clonerepo mainrepodir dir cfg
+	r <- tryNonAsync (a clone)
+	case r of
+		Right () -> return ()
+		Left e -> do
+			whenM (keepFailures <$> getTestMode) $
+				putStrLn $ "** Preserving repo for failure analysis in " ++ clone
+			throwM e
 
 disconnectOrigin :: Assertion
 disconnectOrigin = boolSystem "git" [Param "remote", Param "rm", Param "origin"] @? "remote rm"
@@ -1584,11 +1689,14 @@ clonerepo old new cfg = do
 		]
 	boolSystem "git" cloneparams @? "git clone failed"
 	configrepo new
-	indir new $
-		git_annex "init" ["-q", new] @? "git annex init failed"
+	indir new $ do
+		ver <- annexVersion <$> getTestMode
+		if ver == Annex.Version.defaultVersion
+			then git_annex "init" ["-q", new] @? "git annex init failed"
+			else git_annex "init" ["-q", new, "--version", ver] @? "git annex init failed"
 	unless (bareClone cfg) $
 		indir new $
-			handleforcedirect
+			setupTestMode
 	return new
 
 configrepo :: FilePath -> IO ()
@@ -1598,11 +1706,13 @@ configrepo dir = indir dir $ do
 	boolSystem "git" [Param "config", Param "user.email", Param "test@example.com"] @? "git config failed"
 	-- avoid signed commits by test suite
 	boolSystem "git" [Param "config", Param "commit.gpgsign", Param "false"] @? "git config failed"
+	-- tell git-annex to not annex the ingitfile
+	boolSystem "git"
+		[ Param "config"
+		, Param "annex.largefiles"
+		, Param ("exclude=" ++ ingitfile)
+		] @? "git config annex.largefiles failed"
 
-handleforcedirect :: IO ()
-handleforcedirect = whenM ((==) "1" <$> Utility.Env.getEnvDefault "FORCEDIRECT" "") $
-	git_annex "direct" ["-q"] @? "git annex direct failed"
-	
 ensuretmpdir :: IO ()
 ensuretmpdir = do
 	e <- doesDirectoryExist tmpdir
@@ -1666,10 +1776,10 @@ checkunwritable f = unlessM (annexeval Config.isDirect) $ do
 
 checkwritable :: FilePath -> Assertion
 checkwritable f = do
-	r <- tryIO $ writeFile f $ content f
-	case r of
-		Left _ -> assertFailure $ "unable to modify " ++ f
-		Right _ -> return ()
+	s <- getFileStatus f
+	let mode = fileMode s
+	unless (mode == mode `unionFileModes` ownerWriteMode) $
+		assertFailure $ "unable to modify " ++ f
 
 checkdangling :: FilePath -> Assertion
 checkdangling f = ifM (annexeval Config.crippledFileSystem)
@@ -1684,7 +1794,7 @@ checkdangling f = ifM (annexeval Config.crippledFileSystem)
 checklocationlog :: FilePath -> Bool -> Assertion
 checklocationlog f expected = do
 	thisuuid <- annexeval Annex.UUID.getUUID
-	r <- annexeval $ Backend.lookupFile f
+	r <- annexeval $ Annex.WorkTree.lookupFile f
 	case r of
 		Just k -> do
 			uuids <- annexeval $ Remote.keyLocations k
@@ -1695,8 +1805,12 @@ checklocationlog f expected = do
 checkbackend :: FilePath -> Types.Backend -> Assertion
 checkbackend file expected = do
 	b <- annexeval $ maybe (return Nothing) (Backend.getBackend file) 
-		=<< Backend.lookupFile file
+		=<< Annex.WorkTree.lookupFile file
 	assertEqual ("backend for " ++ file) (Just expected) b
+
+checkispointerfile :: FilePath -> Assertion
+checkispointerfile f = unlessM (isJust <$> Annex.Link.isPointerFile f) $
+	assertFailure $ f ++ " is not a pointer file"
 
 inlocationlog :: FilePath -> Assertion
 inlocationlog f = checklocationlog f True
@@ -1711,33 +1825,73 @@ runchecks (a:as) f = do
 	runchecks as f
 
 annexed_notpresent :: FilePath -> Assertion
-annexed_notpresent = runchecks
-	[checklink, checkdangling, notinlocationlog]
+annexed_notpresent f = ifM (unlockedFiles <$> getTestMode)
+	( annexed_notpresent_unlocked f
+	, annexed_notpresent_locked f
+	)
+
+annexed_notpresent_locked :: FilePath -> Assertion
+annexed_notpresent_locked = runchecks [checklink, checkdangling, notinlocationlog]
+
+annexed_notpresent_unlocked :: FilePath -> Assertion
+annexed_notpresent_unlocked = runchecks [checkregularfile, checkispointerfile, notinlocationlog]
 
 annexed_present :: FilePath -> Assertion
-annexed_present = runchecks
+annexed_present f = ifM (unlockedFiles <$> getTestMode)
+	( annexed_present_unlocked f
+	, annexed_present_locked f
+	)
+
+annexed_present_locked :: FilePath -> Assertion
+annexed_present_locked = runchecks
 	[checklink, checkcontent, checkunwritable, inlocationlog]
+
+annexed_present_unlocked :: FilePath -> Assertion
+annexed_present_unlocked = runchecks
+	[checkregularfile, checkcontent, checkwritable, inlocationlog]
 
 unannexed :: FilePath -> Assertion
 unannexed = runchecks [checkregularfile, checkcontent, checkwritable]
 
-withTestEnv :: Bool -> TestTree -> TestTree
-withTestEnv forcedirect = withResource prepare release . const
+add_annex :: FilePath -> IO Bool
+add_annex f = ifM (unlockedFiles <$> getTestMode)
+	( boolSystem "git" [Param "add", File f]
+	, git_annex "add" [f]
+	)
+
+data TestMode = TestMode
+	{ forceDirect :: Bool
+	, unlockedFiles :: Bool
+	, annexVersion :: Annex.Version.Version
+	, keepFailures :: Bool
+	} deriving (Read, Show)
+
+testMode :: TestOptions -> Annex.Version.Version -> TestMode
+testMode opts v = TestMode
+	{ forceDirect = False
+	, unlockedFiles = False
+	, annexVersion = v
+	, keepFailures = keepFailuresOption opts
+	}
+
+withTestMode :: TestMode -> TestTree -> TestTree
+withTestMode testmode = withResource prepare release . const
   where
 	prepare = do
-		setTestEnv forcedirect
+		setTestMode testmode
 		case tryIngredients [consoleTestReporter] mempty initTests of
 			Nothing -> error "No tests found!?"
 			Just act -> unlessM act $
 				error "init tests failed! cannot continue"
 		return ()
-	release _ = cleanup' True tmpdir
+	release _
+		| keepFailures testmode = void $ tryIO $ do
+			cleanup' True mainrepodir
+			removeDirectory tmpdir
+		| otherwise = cleanup' True tmpdir
 
-setTestEnv :: Bool -> IO ()
-setTestEnv forcedirect = do
-	whenM (doesDirectoryExist tmpdir) $
-		error $ "The temporary directory " ++ tmpdir ++ " already exists; cannot run test suite."
-
+setTestMode :: TestMode -> IO ()
+setTestMode testmode = do
 	currdir <- getCurrentDirectory
 	p <- Utility.Env.getEnvDefault "PATH" ""
 
@@ -1754,8 +1908,17 @@ setTestEnv forcedirect = do
 		, ("GIT_COMMITTER_NAME", "git-annex test")
 		-- force gpg into batch mode for the tests
 		, ("GPG_BATCH", "1")
-		, ("FORCEDIRECT", if forcedirect then "1" else "")
+		, ("TESTMODE", show testmode)
 		]
+
+getTestMode :: IO TestMode
+getTestMode = Prelude.read <$> Utility.Env.getEnvDefault "TESTMODE" ""
+
+setupTestMode :: IO ()
+setupTestMode = do
+	testmode <- getTestMode
+	when (forceDirect testmode) $
+		git_annex "direct" ["-q"] @? "git annex direct failed"
 
 changeToTmpDir :: FilePath -> IO ()
 changeToTmpDir t = do
@@ -1781,6 +1944,9 @@ tmprepodir = go (0 :: Int)
 annexedfile :: String
 annexedfile = "foo"
 
+annexedfiledup :: String
+annexedfiledup = "foodup"
+
 wormannexedfile :: String
 wormannexedfile = "apple"
 
@@ -1791,13 +1957,14 @@ sha1annexedfiledup :: String
 sha1annexedfiledup = "sha1foodup"
 
 ingitfile :: String
-ingitfile = "bar"
+ingitfile = "bar.c"
 
 content :: FilePath -> String		
 content f
 	| f == annexedfile = "annexed file content"
 	| f == ingitfile = "normal file content"
 	| f == sha1annexedfile ="sha1 annexed file content"
+	| f == annexedfiledup = content annexedfile
 	| f == sha1annexedfiledup = content sha1annexedfile
 	| f == wormannexedfile = "worm annexed file content"
 	| "import" `isPrefixOf` f = "imported content"
@@ -1815,10 +1982,23 @@ backendSHA1 = backend_ "SHA1"
 backendSHA256 :: Types.Backend
 backendSHA256 = backend_ "SHA256"
 
+backendSHA256E :: Types.Backend
+backendSHA256E = backend_ "SHA256E"
+
 backendWORM :: Types.Backend
 backendWORM = backend_ "WORM"
 
 backend_ :: String -> Types.Backend
 backend_ = Backend.lookupBackendName
+
+getKey :: Types.Backend -> FilePath -> IO Types.Key
+getKey b f = fromJust <$> annexeval go
+  where
+	go = Types.Backend.getKey b
+		Types.KeySource.KeySource
+			{ Types.KeySource.keyFilename = f
+			, Types.KeySource.contentLocation = f
+			, Types.KeySource.inodeCache = Nothing
+			}
 
 #endif

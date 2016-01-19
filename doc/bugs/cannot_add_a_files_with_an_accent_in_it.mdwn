@@ -1,0 +1,43 @@
+### Please describe the problem.
+
+I cannot add a file that has an accent in its name. If I change the file name to not have accents, everything works.
+
+### What steps will reproduce the problem?
+
+- create a file with an accent in its name
+- "git annex status" shows the file is not checked in
+- "git annex add" the file
+- nothing happens, and "git annex status" still shows the file as not checked in
+
+### What version of git-annex are you using? On what operating system?
+
+% brew info git-annex
+git-annex: stable 5.20151218 (bottled), HEAD
+
+OS X 10.11.2
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+[schmitta@charm-ecran:~/Documents/annex on master]
+% git annex status
+[schmitta@charm-ecran:~/Documents/annex on master]
+% cat > é
+foo
+[schmitta@charm-ecran:~/Documents/annex on master]
+% git annex status                                                            ✭
+? é
+[schmitta@charm-ecran:~/Documents/annex on master]
+% git annex add é                                                             ✭
+[schmitta@charm-ecran:~/Documents/annex on master]
+% git annex status                                                            ✭
+? é
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes, git annex is great and I use it to store videos I want to watch later but that are too big to all be stored on my laptop.

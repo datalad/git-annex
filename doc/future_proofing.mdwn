@@ -36,3 +36,10 @@ problem:
   files end up in `lost+found`, they can easily be lifted back out into
   another clone of the repository. Even if the filenames are lost,
   it's possible to [[tips/recover_data_from_lost+found]].
+
+* What about encrypted special remotes? A 
+  [[fairly simple shell script using standard tools|Decrypting_files_in_special_remotes_without_git-annex]]
+  (gpg and openssl) can decrypt files stored on such
+  a remote, as long as you have access to the encryption keys (which
+  are stored in the git-annex branch of the repository, sometimes
+  encrypted with your gpg key).

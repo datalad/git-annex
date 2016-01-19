@@ -18,13 +18,14 @@ import qualified Upgrade.V1
 import qualified Upgrade.V2
 import qualified Upgrade.V3
 import qualified Upgrade.V4
+import qualified Upgrade.V5
 
 checkUpgrade :: Version -> Annex ()
 checkUpgrade = maybe noop error <=< needsUpgrade
 
 needsUpgrade :: Version -> Annex (Maybe String)
 needsUpgrade v
-	| v == supportedVersion = ok
+	| v `elem` supportedVersions = ok
 	| v `elem` autoUpgradeableVersions = ifM (upgrade True)
 		( ok
 		, err "Automatic upgrade failed!"
@@ -40,7 +41,7 @@ upgrade :: Bool -> Annex Bool
 upgrade automatic = do
 	upgraded <- go =<< getVersion
 	when upgraded $
-		setVersion supportedVersion
+		setVersion latestVersion
 	return upgraded
   where
 #ifndef mingw32_HOST_OS
@@ -53,4 +54,5 @@ upgrade automatic = do
 	go (Just "2") = Upgrade.V2.upgrade
 	go (Just "3") = Upgrade.V3.upgrade automatic
 	go (Just "4") = Upgrade.V4.upgrade automatic
+	go (Just "5") = Upgrade.V5.upgrade automatic
 	go _ = return True

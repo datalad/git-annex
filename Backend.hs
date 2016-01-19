@@ -9,9 +9,7 @@ module Backend (
 	list,
 	orderedList,
 	genKey,
-	lookupFile,
 	getBackend,
-	isAnnexLink,
 	chooseBackend,
 	lookupBackendName,
 	maybeLookupBackendName,
@@ -21,12 +19,9 @@ module Backend (
 import Common.Annex
 import qualified Annex
 import Annex.CheckAttr
-import Annex.CatFile
-import Annex.Link
 import Types.Key
 import Types.KeySource
 import qualified Types.Backend as B
-import Config
 
 -- When adding a new backend, import it here and add it to the list.
 import qualified Backend.Hash
@@ -77,26 +72,6 @@ genKey' (b:bs) source = do
 	fixbadchar c
 		| c == '\n' = '_'
 		| otherwise = c
-
-{- Looks up the key corresponding to an annexed file,
- - by examining what the file links to.
- -
- - In direct mode, there is often no link on disk, in which case
- - the symlink is looked up in git instead. However, a real link
- - on disk still takes precedence over what was committed to git in direct
- - mode.
- -}
-lookupFile :: FilePath -> Annex (Maybe Key)
-lookupFile file = do
-	mkey <- isAnnexLink file
-	case mkey of
-		Just key -> makeret key
-		Nothing -> ifM isDirect
-			( maybe (return Nothing) makeret =<< catKeyFile file
-			, return Nothing
-			)
-  where
-	makeret k = return $ Just k
 
 getBackend :: FilePath -> Key -> Annex (Maybe Backend)
 getBackend file k = let bname = keyBackendName k in

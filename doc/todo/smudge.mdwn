@@ -1,8 +1,39 @@
 git-annex should use smudge/clean filters.
 
-----
+### implementation todo list
 
-Update: Currently, this does not look likely to work. In particular,
+* Reconcile staged changes into the associated files database, whenever
+  the database is queried. This is needed to handle eg:
+  	git add largefile
+	git mv largefile othername
+	git annex move othername --to foo
+	# fails to drop content from associated file othername,
+	# because it doesn't know it has that name
+	# git commit clears up this mess
+* Dropping a smudged file causes git status (and git annex status)
+  to show it as modified,  because the timestamp has changed. 
+  Getting a smudged file can also cause this.
+  Upgrading a direct mode repo also leaves files in this state.
+  User can use `git add` to clear it up, but better to avoid this,
+  by updating stat info in the index.
+  (May need to use libgit2 to do this efficiently, cannot find
+  any plumbing except git-update-index, which is very inneficient for
+  smudged files.)
+* Crippled filesystem should cause all files to be transparently unlocked.
+  Note that this presents problems when dealing with merge conflicts and
+  when pushing changes committed in such a repo. Ideally, should avoid
+  committing implicit unlocks, or should prevent such commits leaking out
+  in pushes.
+
+* Eventually (but not yet), make v6 the default for new repositories.
+  Note that the assistant forces repos into direct mode; that will need to
+  be changed then, and it should enable annex.thin instead.
+* Later still, remove support for direct mode, and enable automatic
+  v5 to v6 upgrades.
+
+### historical notes
+
+2013: Currently, this does not look likely to work. In particular,
 the clean filter needs to consume all stdin from git, which consists of the
 entire content of the file. It cannot optimise by directly accessing
 the file in the repository, because git may be cleaning a different
@@ -19,7 +50,7 @@ available files, and checksum them, which is too expensive.
 >> that the index says are modified, so this is no longer a problem.
 >> --[[Joey]]
 
-----
+### background
 
 The clean filter is run when files are staged for commit. So a user could copy
 any file into the annex, git add it, and git-annex's clean filter causes
@@ -108,7 +139,7 @@ cannot directly write to the file or git gets unhappy.
 .. Are very important, otherwise a repo can't scale past the size of the
 smallest client's disk!
 
-It would be nice if the smudge filter could hard link or symlink a work
+It would be nice if the smudge filter could hard link a work
 tree file to the annex object.
 
 But currently, the smudge filter can't modify the work tree file on its own
@@ -134,7 +165,9 @@ smudged file in the work tree when renaming it. It instead deletes the old
 file and asks the smudge filter to smudge the new filename.
 
 So, copies need to be maintained in .git/annex/objects, though it's ok
-to use hard links to the work tree files.
+to use hard links to the work tree files. (Although somewhat unsafe
+since modification of the file will lose the old version. annex.thin
+setting can enable this.)
 
 Even if hard links are used, smudge needs to output the content of an
 annexed file, which will result in duplication when merging in renames of
@@ -158,7 +191,8 @@ Using git-annex on a crippled filesystem that does not support symlinks.
 Data:
 
 * An annex pointer file has as its first line the git-annex key
-  that it's standing in for. Subsequent lines of the file might
+  that it's standing in for (prefixed with "annex/objects/", similar to
+  an annex symlink target). Subsequent lines of the file might
   be a message saying that the file's content is not currently available.
   An annex pointer file is checked into the git repository the same way
   that an annex symlink is checked in.
@@ -177,8 +211,8 @@ Configuration:
   the annex. Other files are passed through the smudge/clean as-is and
   have their contents stored in git.
 
-* annex.direct is repurposed to configure how the assistant adds files.
-  When set to true, they're added unlocked.
+* annex.direct is repurposed to configure how git-annex adds files.
+  When set to false, it adds symlinks and when true it adds pointer files.
 
 git-annex clean:
 
@@ -190,21 +224,16 @@ git-annex clean:
 
   Generate annex key from filename and content from stdin.
 
-  Hard link .git/annex/objects to the file, if it doesn't already exist.
-  (On platforms not supporting hardlinks, copy the file to
-  .git/annex/objects.)
+  Hard link (annex.thin) or copy .git/annex/objects to the file,
+  if it doesn't already exist.
 
   This is done to prevent losing the only copy of a file when eg
   doing a git checkout of a different branch, or merging a commit that
-  renames or deletes a file. But, no attempt is made to 
+  renames or deletes a file. But, with annex.thin no attempt is made to 
   protect the object from being modified. If a user wants to
   protect object contents from modification, they should use
-  `git annex add`, not `git add`, or they can `git annex lock` after adding,.
-
-  There could be a configuration knob to cause a copy to be made to
-  .git/annex/objects -- useful for those crippled filesystems. It might
-  also drop that copy once the object gets uploaded to another repo ...
-  But that gets complicated quickly.
+  `git annex add`, not `git add`, or they can `git annex lock` after adding,
+  or not enable annex.thin.
 
   Update file map.
 
@@ -232,15 +261,11 @@ git annex lock/unlock:
   transition repositories to using pointers, and a cleaner unlock/lock
   for repos using symlinks.
 
-  unlock will stage a pointer file, and will copy the content of the object
-  out of .git/annex/objects to the work tree file. (Might want a --hardlink
-  switch.)
+  unlock will stage a pointer file, and will link the content of the object
+  from .git/annex/objects to the work tree file.
   
-  lock will replace the current work tree file with the symlink, and stage it.
-  Note that multiple work tree files could point to the same object.
-  So, if the link count is > 1, replace the annex object with a copy of
-  itself to break such a hard link. Always finish by locking down the
-  permissions of the annex object.
+  lock will replace the current work tree file with the symlink, and stage it,
+  and lock down the permissions of the annex object.
 
 #### file map
 
@@ -248,7 +273,8 @@ The file map needs to map from `Key -> [File]`. `File -> Key`
 seems useful to have, but in practice is not worthwhile.
 
 Drop and get operations need to know what files in the work tree use a
-given key in order to update the work tree.
+given key in order to update the work tree. And, we don't want to
+overwrite a work tree file if it's been modified when dropping or getting.
 
 git-annex commands that look at annex symlinks to get keys to act on will
 need fall back to either consulting the file map, or looking at the staged
@@ -275,12 +301,13 @@ In particular:
 * Is the smudge filter called at any other time? Seems unlikely but then
   there could be situations with a detached work tree or such.
 * Does git call any useful hooks when removing a file from the work tree,
-  or converting it to not be annexed?
+  or converting it to not be annexed, or for `git mv` of an annexed file?
   No!
 
 From this analysis, any file map generated by the smudge/clean filters
 is necessary potentially innaccurate. It may list deleted files.
 It may or may not reflect current unstaged changes from the work tree.
+
 
 Follows that any use of the file map needs to verify the info from it,
 and throw out bad cached info (updating the map to match reality). 
@@ -306,17 +333,19 @@ just look at the repo content in the first place..
 
 annex.version changes to 6
 
-Upgrade should be handled automatically.
+git config for filter.annex.smudge and filter.annex.clean is set up.
 
-On upgrade, update .gitattributes with a stock configuration, unless
-it already mentions "filter=annex".
+.gitattributes is updated with a stock configuration,
+unless it already mentions "filter=annex".
 
 Upgrading a direct mode repo needs to switch it out of bare mode, and
 needs to run `git annex unlock` on all files (or reach the same result).
 So will need to stage changes to all annexed files.
 
 When a repo has some clones indirect and some direct, the upgraded repo
-will have all files unlocked, necessarily in all clones.
+will have all files unlocked, necessarily in all clones. This happens
+automatically, because when the direct repos are upgraded that causes the
+files to be unlocked, while the indirect upgrades don't touch the files.
 
 ----
 

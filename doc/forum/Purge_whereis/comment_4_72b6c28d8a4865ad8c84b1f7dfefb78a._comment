@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="frost.kristian@75a6b6a25121f985cd8708f98c691d41716ac720"
+ nickname="frost.kristian"
+ subject="comment 4"
+ date="2015-12-21T17:47:13Z"
+ content="""
+I did some digging. When creating a repo from the webapp, it is per default in direct mode. In direct mode, I am not able to run any git commands such as git commit. Subsequently, when running git annex sync. Files added when sync is disabled from the webapp are not committed.
+
+Is git-annex behaving as expected here?
+"""]]

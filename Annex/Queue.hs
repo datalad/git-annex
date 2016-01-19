@@ -25,28 +25,33 @@ import qualified Git.UpdateIndex
 addCommand :: String -> [CommandParam] -> [FilePath] -> Annex ()
 addCommand command params files = do
 	q <- get
-	store <=< inRepo $ Git.Queue.addCommand command params files q
+	store <=< flushWhenFull <=< inRepo $
+		Git.Queue.addCommand command params files q
 
 {- Adds an update-index stream to the queue. -}
 addUpdateIndex :: Git.UpdateIndex.Streamer -> Annex ()
 addUpdateIndex streamer = do
 	q <- get
-	store <=< inRepo $ Git.Queue.addUpdateIndex streamer q
+	store <=< flushWhenFull <=< inRepo $
+		Git.Queue.addUpdateIndex streamer q
 
-{- Runs the queue if it is full. Should be called periodically. -}
-flushWhenFull :: Annex ()
-flushWhenFull = do
-	q <- get
-	when (Git.Queue.full q) flush
+{- Runs the queue if it is full. -}
+flushWhenFull :: Git.Queue.Queue -> Annex Git.Queue.Queue
+flushWhenFull q
+	| Git.Queue.full q = flush' q
+	| otherwise = return q
 
 {- Runs (and empties) the queue. -}
 flush :: Annex ()
 flush = do
 	q <- get
 	unless (0 == Git.Queue.size q) $ do
-		showStoringStateAction
-		q' <- inRepo $ Git.Queue.flush q
-		store q'
+		store =<< flush' q
+
+flush' :: Git.Queue.Queue -> Annex Git.Queue.Queue
+flush' q = do
+	showStoringStateAction
+	inRepo $ Git.Queue.flush q
 
 {- Gets the size of the queue. -}
 size :: Annex Int
@@ -70,5 +75,4 @@ mergeFrom st = case repoqueue st of
 	Just newq -> do
 		q <- get
 		let !q' = Git.Queue.merge q newq
-		store q'
-		flushWhenFull
+		store =<< flushWhenFull q'

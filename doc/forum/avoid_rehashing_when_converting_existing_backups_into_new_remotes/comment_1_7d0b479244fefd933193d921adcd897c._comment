@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/ZF7p46cPmpWtb9zvA8iTitPmiQ--#eb014"
+ nickname="Jason"
+ subject="I'm also having this issue"
+ date="2015-12-14T03:17:58Z"
+ content="""
+I have the exact same issue: two copies of photos and videos that I have been using rsync to maintain. Converted one disk to git-annex, cloned the repo and moved .git/ into the second but can't seem to find a fast way to move the files to the correct hash id in the annex dir and create the symlinks. I'm thinking it might be best to just do a `git init; git annex init; git annex add .; git commit` then add the remotes in both directions and \"sync\".
+"""]]

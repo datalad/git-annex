@@ -15,6 +15,9 @@ import System.Directory
 import Control.Monad.IfElse
 import System.FilePath
 import Control.Monad.IO.Class
+#ifndef mingw32_HOST_OS
+import System.Posix.Temp (mkdtemp)
+#endif
 
 import Utility.Exception
 import Utility.FileSystemEncoding
@@ -64,25 +67,22 @@ withTmpFileIn tmpdir template a = bracket create remove use
  - directory and all its contents. -}
 withTmpDir :: (MonadMask m, MonadIO m) => Template -> (FilePath -> m a) -> m a
 withTmpDir template a = do
-	tmpdir <- liftIO $ catchDefaultIO "." getTemporaryDirectory
-	withTmpDirIn tmpdir template a
+	topleveltmpdir <- liftIO $ catchDefaultIO "." getTemporaryDirectory
+#ifndef mingw32_HOST_OS
+	-- Use mkdtemp to create a temp directory securely in /tmp.
+	bracket
+		(liftIO $ mkdtemp $ topleveltmpdir </> template)
+		removeTmpDir
+		a
+#else
+	withTmpDirIn topleveltmpdir template a
+#endif
 
 {- Runs an action with a tmp directory located within a specified directory,
  - then removes the tmp directory and all its contents. -}
 withTmpDirIn :: (MonadMask m, MonadIO m) => FilePath -> Template -> (FilePath -> m a) -> m a
-withTmpDirIn tmpdir template = bracketIO create remove
+withTmpDirIn tmpdir template = bracketIO create removeTmpDir
   where
-	remove d = whenM (doesDirectoryExist d) $ do
-#if mingw32_HOST_OS
-		-- Windows will often refuse to delete a file
-		-- after a process has just written to it and exited.
-		-- Because it's crap, presumably. So, ignore failure
-		-- to delete the temp directory.
-		_ <- tryIO $ removeDirectoryRecursive d
-		return ()
-#else
-		removeDirectoryRecursive d
-#endif
 	create = do
 		createDirectoryIfMissing True tmpdir
 		makenewdir (tmpdir </> template) (0 :: Int)
@@ -91,6 +91,21 @@ withTmpDirIn tmpdir template = bracketIO create remove
 		catchIOErrorType AlreadyExists (const $ makenewdir t $ n + 1) $ do
 			createDirectory dir
 			return dir
+
+{- Deletes the entire contents of the the temporary directory, if it
+ - exists. -}
+removeTmpDir :: MonadIO m => FilePath -> m ()
+removeTmpDir tmpdir = liftIO $ whenM (doesDirectoryExist tmpdir) $ do
+#if mingw32_HOST_OS
+	-- Windows will often refuse to delete a file
+	-- after a process has just written to it and exited.
+	-- Because it's crap, presumably. So, ignore failure
+	-- to delete the temp directory.
+	_ <- tryIO $ removeDirectoryRecursive tmpdir
+	return ()
+#else
+	removeDirectoryRecursive tmpdir
+#endif
 
 {- It's not safe to use a FilePath of an existing file as the template
  - for openTempFile, because if the FilePath is really long, the tmpfile

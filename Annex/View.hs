@@ -22,7 +22,7 @@ import Git.Sha
 import Git.HashObject
 import Git.Types
 import Git.FilePath
-import qualified Backend
+import Annex.WorkTree
 import Annex.Index
 import Annex.Link
 import Annex.CatFile
@@ -31,7 +31,6 @@ import Logs.View
 import Utility.Glob
 import Utility.FileMode
 import Types.Command
-import Config
 import CmdLine.Action
 
 import qualified Data.Set as S
@@ -223,36 +222,40 @@ viewComponentMatcher viewcomponent = \metadata ->
 		| S.null s = Nothing
 		| otherwise = Just (S.toList s)
 
+-- This is '∕', a unicode character that displays the same as '/' but is
+-- not it. It is encoded using the filesystem encoding, which allows it
+-- to be used even when not in a unicode capable locale.
+pseudoSlash :: String
+pseudoSlash = "\56546\56456\56469"
+
+-- And this is '╲' similarly.
+pseudoBackslash :: String
+pseudoBackslash = "\56546\56469\56498"
+
 toViewPath :: MetaValue -> FilePath
-toViewPath = concatMap escapeslash . fromMetaValue
+toViewPath = escapeslash [] . fromMetaValue
   where
-	escapeslash c
-		| c == '/' = [pseudoSlash]
-		| c == '\\' = [pseudoBackslash]
-		| c == pseudoSlash = [pseudoSlash, pseudoSlash]
-		| c == pseudoBackslash = [pseudoBackslash, pseudoBackslash]
-		| otherwise = [c]
+	escapeslash s ('/':cs) = escapeslash (pseudoSlash:s) cs
+	escapeslash s ('\\':cs) = escapeslash (pseudoBackslash:s) cs
+	escapeslash s ('%':cs) = escapeslash ("%%":s) cs
+	escapeslash s (c1:c2:c3:cs)
+		| [c1,c2,c3] == pseudoSlash = escapeslash ("%":pseudoSlash:s) cs
+		| [c1,c2,c3] == pseudoBackslash = escapeslash ("%":pseudoBackslash:s) cs
+		| otherwise = escapeslash ([c1]:s) (c2:c3:cs)
+	escapeslash s cs = concat (reverse (cs:s))
 
 fromViewPath :: FilePath -> MetaValue
 fromViewPath = toMetaValue . deescapeslash []
   where
-	deescapeslash s [] = reverse s
-	deescapeslash s (c:cs)
-		| c == pseudoSlash = case cs of
-			(c':cs')
-				| c' == pseudoSlash -> deescapeslash (pseudoSlash:s) cs'
-			_ -> deescapeslash ('/':s) cs
-		| c == pseudoBackslash = case cs of
-			(c':cs')
-				| c' == pseudoBackslash -> deescapeslash (pseudoBackslash:s) cs'
-			_ -> deescapeslash ('/':s) cs
-		| otherwise = deescapeslash (c:s) cs
+	deescapeslash s ('%':escapedc:cs) = deescapeslash ([escapedc]:s) cs
+	deescapeslash s (c1:c2:c3:cs)
+		| [c1,c2,c3] == pseudoSlash = deescapeslash ("/":s) cs
+		| [c1,c2,c3] == pseudoBackslash = deescapeslash ("\\":s) cs
+		| otherwise = deescapeslash ([c1]:s) (c2:c3:cs)
+	deescapeslash s cs = concat (reverse (cs:s))
 
-pseudoSlash :: Char
-pseudoSlash = '\8725' -- '∕' /= '/'
-
-pseudoBackslash :: Char
-pseudoBackslash = '\9586' -- '╲' /= '\'
+prop_viewPath_roundtrips :: MetaValue -> Bool
+prop_viewPath_roundtrips v = fromViewPath (toViewPath v) == v
 
 pathProduct :: [[FilePath]] -> [FilePath]
 pathProduct [] = []
@@ -329,24 +332,23 @@ narrowView = applyView' viewedFileReuse getViewedFileMetaData
  - Look up the metadata of annexed files, and generate any ViewedFiles,
  - and stage them.
  -
- - Currently only works in indirect mode. Must be run from top of
- - repository.
+ - Must be run from top of repository.
  -}
 applyView' :: MkViewedFile -> (FilePath -> MetaData) -> View -> Annex Git.Branch
 applyView' mkviewedfile getfilemetadata view = do
 	top <- fromRepo Git.repoPath
 	(l, clean) <- inRepo $ Git.LsFiles.inRepo [top]
 	liftIO . nukeFile =<< fromRepo gitAnnexViewIndex
-	genViewBranch view $ do
-		uh <- inRepo Git.UpdateIndex.startUpdateIndex
-		hasher <- inRepo hashObjectStart
-		forM_ l $ \f -> do
-			relf <- getTopFilePath <$> inRepo (toTopFilePath f)
-			go uh hasher relf =<< Backend.lookupFile f
-		liftIO $ do
-			hashObjectStop hasher
-			void $ stopUpdateIndex uh
-			void clean
+	uh <- withViewIndex $ inRepo Git.UpdateIndex.startUpdateIndex
+	hasher <- inRepo hashObjectStart
+	forM_ l $ \f -> do
+		relf <- getTopFilePath <$> inRepo (toTopFilePath f)
+		go uh hasher relf =<< lookupFile f
+	liftIO $ do
+		hashObjectStop hasher
+		void $ stopUpdateIndex uh
+		void clean
+	genViewBranch view
   where
 	genviewedfiles = viewedFiles view mkviewedfile -- enables memoization
 	go uh hasher f (Just k) = do
@@ -373,24 +375,6 @@ applyView' mkviewedfile getfilemetadata view = do
 		liftIO . Git.UpdateIndex.streamUpdateIndex' uh
 			=<< inRepo (Git.UpdateIndex.stageSymlink f sha)
 
-{- Applies a view to the reference branch, generating a new branch
- - for the View.
- -
- - This needs to work incrementally, to quickly update the view branch
- - when the reference branch is changed. So, it works based on an
- - old version of the reference branch, uses diffTree to find the
- - changes, and applies those changes to the view branch.
- -}
-updateView :: View -> Git.Ref -> Git.Ref -> Annex Git.Branch
-updateView view ref oldref = genViewBranch view $ do
-	(diffs, cleanup) <- inRepo $ DiffTree.diffTree oldref ref
-	forM_ diffs go
-	void $ liftIO cleanup
-  where
-	go diff
-		| DiffTree.dstsha diff == nullSha = error "TODO delete file"
-		| otherwise = error "TODO add file"
-
 {- Diff between currently checked out branch and staged changes, and
  - update metadata to reflect the changes that are being committed to the
  - view.
@@ -404,47 +388,40 @@ updateView view ref oldref = genViewBranch view $ do
  -}
 withViewChanges :: (ViewedFile -> Key -> CommandStart) -> (ViewedFile -> Key -> CommandStart) -> Annex ()
 withViewChanges addmeta removemeta = do
-	makeabs <- flip fromTopFilePath <$> gitRepo
 	(diffs, cleanup) <- inRepo $ DiffTree.diffIndex Git.Ref.headRef
 	forM_ diffs handleremovals
-	forM_ diffs (handleadds makeabs)
+	forM_ diffs handleadds
 	void $ liftIO cleanup
   where
 	handleremovals item
 		| DiffTree.srcsha item /= nullSha =
 			handlechange item removemeta
-				=<< catKey (DiffTree.srcsha item) (DiffTree.srcmode item)
+				=<< catKey (DiffTree.srcsha item)
 		| otherwise = noop
-	handleadds makeabs item
+	handleadds item
 		| DiffTree.dstsha item /= nullSha = 
 			handlechange item addmeta
-				=<< ifM isDirect
-					( catKey (DiffTree.dstsha item) (DiffTree.dstmode item)
-					-- optimisation
-					, isAnnexLink $ makeabs $ DiffTree.file item
-					)
+				=<< catKey (DiffTree.dstsha item)
 		| otherwise = noop
 	handlechange item a = maybe noop
 		(void . commandAction . a (getTopFilePath $ DiffTree.file item))
 
-{- Generates a branch for a view. This is done using a different index
- - file. An action is run to stage the files that will be in the branch.
- - Then a commit is made, to the view branch. The view branch is not
- - checked out, but entering it will display the view. -}
-genViewBranch :: View -> Annex () -> Annex Git.Branch
-genViewBranch view a = withIndex $ do
-	a
-	let branch = branchView view
-	void $ inRepo $ Git.Branch.commit Git.Branch.AutomaticCommit True (fromRef branch) branch []
-	return branch
-
 {- Runs an action using the view index file.
  - Note that the file does not necessarily exist, or can contain
  - info staged for an old view. -}
-withIndex :: Annex a -> Annex a
-withIndex a = do
+withViewIndex :: Annex a -> Annex a
+withViewIndex a = do
 	f <- fromRepo gitAnnexViewIndex
 	withIndexFile f a
+
+{- Generates a branch for a view, using the view index file
+ - to make a commit to the view branch. The view branch is not
+ - checked out, but entering it will display the view. -}
+genViewBranch :: View -> Annex Git.Branch
+genViewBranch view = withViewIndex $ do
+	let branch = branchView view
+	void $ inRepo $ Git.Branch.commit Git.Branch.AutomaticCommit True (fromRef branch) branch []
+	return branch
 
 withCurrentView :: (View -> Annex a) -> Annex a
 withCurrentView a = maybe (error "Not in a view.") a =<< currentView

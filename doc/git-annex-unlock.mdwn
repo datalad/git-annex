@@ -10,9 +10,25 @@ git annex unlock `[path ...]`
 
 Normally, the content of annexed files is protected from being changed.
 Unlocking an annexed file allows it to be modified. This replaces the
-symlink for each specified file with a copy of the file's content.
-You can then modify it and `git annex add` (or `git commit`) to inject
-it back into the annex.
+symlink for each specified file with the file's content.
+You can then modify it and `git annex add` (or `git commit`) to save your
+changes.
+
+In repositories with annex.version 5 or earlier, unlocking a file is local
+to the repository, and is temporary. With version 6, unlocking a file
+changes how it is stored in the git repository (from a symlink to a pointer
+file), so you can commit it like any other change. Also in version 6, you
+can use `git add` to add a fie to the annex in unlocked form. This allows
+workflows where a file starts out unlocked, is modified as necessary, and
+is locked once it reaches its final version.
+
+Normally, unlocking a file requires a copy to be made of its content,
+so that its original content is preserved, while the copy can be modified.
+To use less space, annex.thin can be set to true; this makes a hard link
+to the content be made instead of a copy. (Only when supported by the file
+system, and only in repository version 6.) While this can save considerable
+disk space, any modification made to a file will cause the old version of the
+file to be lost from the local repository. So, enable annex.thin with care.
 
 # OPTIONS
 

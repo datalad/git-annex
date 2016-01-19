@@ -1,0 +1,61 @@
+### Please describe the problem.
+
+When there are low disk space left, changes in the annex repo are only semi updated, leaving the dir and git annex state out of sync, leaving error messages with "invalid objects" and "fatal: git-write-tree: error building trees".
+
+I ignored these errors, and kept on trying to copy over all the files to a remote disk, since I wanted a backup, which resultet in symlinks pointing to files which aren't there.
+
+Maybe git-annex should stop if it sees that it's not enough disk space to perform a certain operation? E.g. cache space needed for syncing.
+
+### What steps will reproduce the problem?
+
+I'm not certain about what command that created the issue, but i ran various commands:
+
+- `git annex sync EXTERNALREPO`
+- `git annex copy --to EXTERNALREPO`
+- `git annex unlock Videos/`
+- `git annex lock Videos/`
+
+My disk had 280MB left, and the repo were at a few GBs. Somewhere in between these commands, git-annex started producing a lot of error messages for various files.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 5.20140717 (Fedora 23)
+
+### Please provide any additional information below.
+
+Unfortunately, I don't have the full transcript of my badly behaved commands. Instead I add some of the error messages:
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+    $ git annex lock Videos/
+    error: invalid object 100644 56715f46d9256bdcef0cd387364818e597dc9f41 for '003/a56/SHA256-s23430--26dc3b33a5101e4ead217241a371b17f15e7a2f37bbcaedd0d35a0a1aa4eb9b0.log.cnk'
+    fatal: git-write-tree: error building trees
+    git-annex: failed to read sha from git write-tree
+    
+    $ git annex sync
+    error: refs/remotes/remote_annex/synced/master does not point to a valid object!
+    error: refs/remotes/home/synced/master does not point to a valid object!
+    error: refs/remotes/work_annex/synced/master does not point to a valid object!
+    error: refs/remotes/home_annex/synced/master does not point to a valid object!
+    error: refs/remotes/home/synced/master does not point to a valid object!
+    error: refs/remotes/work_annex/synced/master does not point to a valid object!
+    error: Could not read bf3d6640fa32460032926ae6...
+    fatal: revision walk setup failed
+    error: Could not read 8cdec1808723971eaf30e32...
+    fatal: revision walk setup failed
+    (merging work/git-annex into git-annex...)
+    fatal: unable to read tree 21e0681190de239f41d...
+    (Recording state in git...)
+    error: invalid object 100644 56715f36d9256bdeff... for '003/a56/SHA256-s23430--2dc3b411e5ead...log.cnk'
+    fatal: git-write-tree: error building trees
+    git-annex: failed to read sha from git write-tree
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+It worked as a charm until my disk got full! (Maybe it is better to split it up in various, smaller repos, and sync them individually?)

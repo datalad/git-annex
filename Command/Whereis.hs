@@ -7,14 +7,14 @@
 
 module Command.Whereis where
 
-import qualified Data.Map as M
-
 import Common.Annex
 import Command
 import Remote
 import Logs.Trust
 import Logs.Web
 import Remote.Web (getWebUrls)
+
+import qualified Data.Map as M
 
 cmd :: Command
 cmd = noCommit $ withGlobalOptions (jsonOption : annexedMatchingOptions) $
@@ -65,21 +65,21 @@ perform remotemap key = do
 	-- Since other remotes than the web remote can set urls
 	-- where a key can be downloaded, get and show all such urls
 	-- as a special case.
-	showRemote "web" =<< getWebUrls key
+	showRemoteUrls "web" =<< getWebUrls key
 	forM_ (mapMaybe (`M.lookup` remotemap) locations) $
-		performRemote key
+		performRemoteUrls key
 	if null safelocations then stop else next $ return True
   where
 	copiesplural 1 = "copy"
 	copiesplural _ = "copies"
 	untrustedheader = "The following untrusted locations may also have copies:\n"
 
-performRemote :: Key -> Remote -> Annex () 
-performRemote key remote = do
+performRemoteUrls :: Key -> Remote -> Annex () 
+performRemoteUrls key remote = do
 	ls <- (++)
 		<$> askremote
 		<*> claimedurls
-	showRemote (name remote) ls
+	showRemoteUrls (name remote) ls
   where
 	askremote = maybe (pure []) (flip id key) (whereisKey remote)
 	claimedurls = do
@@ -89,8 +89,10 @@ performRemote key remote = do
 			<$> getUrls key
 		filterM (\u -> (==) <$> pure remote <*> claimingUrl u) us
 
-showRemote :: String -> [String] -> Annex ()
-showRemote n ls
-	| null ls = return ()
-	| otherwise = showLongNote $ unlines $
-		map (\l -> n ++ ": " ++ l) ls
+showRemoteUrls :: String -> [String] -> Annex ()
+showRemoteUrls nm us
+	| null us = return ()
+	| otherwise = do
+		let ls = unlines $ map (\u -> nm ++ ": " ++ u) us 
+		outputMessage noop ('\n' : indent ls ++ "\n")
+		maybeShowJSON [("urls", us)]

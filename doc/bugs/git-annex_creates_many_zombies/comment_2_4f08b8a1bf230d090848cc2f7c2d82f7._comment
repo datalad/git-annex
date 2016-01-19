@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="SamuelTardieu"
+ subject="comment 2"
+ date="2015-12-17T11:15:55Z"
+ content="""
+Indeed.
+
+I've migrated the Gentoo server from OpenRC to systemd so that I can use systemd-nspawn instead of docker for git-annex.
+"""]]

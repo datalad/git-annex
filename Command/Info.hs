@@ -12,7 +12,6 @@ module Command.Info where
 import "mtl" Control.Monad.State.Strict
 import qualified Data.Map.Strict as M
 import Text.JSON
-import Data.Tuple
 import Data.Ord
 
 import Common.Annex
@@ -403,12 +402,9 @@ disk_size = simpleStat "available local disk space" $
 
 backend_usage :: Stat
 backend_usage = stat "backend usage" $ json fmt $
-	calc
-		<$> (backendsKeys <$> cachedReferencedData)
-		<*> (backendsKeys <$> cachedPresentData)
+	toJSObject . sort . M.toList . backendsKeys <$> cachedReferencedData
   where
-	calc x y = sort $ M.toList $ M.unionWith (+) x y
-	fmt = multiLine . map (\(n, b) -> b ++ ": " ++ show n) . map swap
+	fmt = multiLine . map (\(b, n) -> b ++ ": " ++ show n) . fromJSObject
 
 numcopies_stats :: Stat
 numcopies_stats = stat "numcopies stats" $ json fmt $

@@ -78,15 +78,18 @@ instance Default UrlOptions
 	def = UrlOptions Nothing [] [] id
 
 mkUrlOptions :: Maybe UserAgent -> Headers -> [CommandParam] -> UrlOptions
-mkUrlOptions useragent reqheaders reqparams =
+mkUrlOptions defuseragent reqheaders reqparams =
 	UrlOptions useragent reqheaders reqparams applyrequest
   where
 	applyrequest = \r -> r { requestHeaders = requestHeaders r ++ addedheaders }
 	addedheaders = uaheader ++ otherheaders
+	useragent = maybe defuseragent (Just . B8.toString . snd)
+		(headMaybe uafromheaders)
 	uaheader = case useragent of
 		Nothing -> []
 		Just ua -> [(hUserAgent, B8.fromString ua)]
-	otherheaders = map toheader reqheaders
+	(uafromheaders, otherheaders) = partition (\(h, _) -> h == hUserAgent)
+		(map toheader reqheaders)
 	toheader s =
 		let (h, v) = separate (== ':') s
 		    h' = CI.mk (B8.fromString h)

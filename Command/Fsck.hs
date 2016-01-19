@@ -34,11 +34,9 @@ import Utility.HumanTime
 import Utility.CopyFile
 import Git.FilePath
 import Utility.PID
-
-#ifdef WITH_DATABASE
+import qualified Database.Keys
 import qualified Database.Fsck as FsckDb
 import Types.CleanupActions
-#endif
 
 import Data.Time.Clock.POSIX
 import System.Posix.Types (EpochTime)
@@ -118,16 +116,18 @@ start from inc file key = do
 	go = runFsck inc file key
 
 perform :: Key -> FilePath -> Backend -> NumCopies -> Annex Bool
-perform key file backend numcopies = check
-	-- order matters
-	[ fixLink key file
-	, verifyLocationLog key file
-	, verifyDirectMapping key file
-	, verifyDirectMode key file
-	, checkKeySize key
-	, checkBackend backend key (Just file)
-	, checkKeyNumCopies key (Just file) numcopies
-	]
+perform key file backend numcopies = do
+	keystatus <- getKeyStatus key
+	check
+		-- order matters
+		[ fixLink key file
+		, verifyLocationLog key keystatus file
+		, verifyDirectMapping key file
+		, verifyDirectMode key file
+		, checkKeySize key keystatus
+		, checkBackend backend key keystatus (Just file)
+		, checkKeyNumCopies key (Just file) numcopies
+		]
 
 {- To fsck a remote, the content is retrieved to a tmp file,
  - and checked locally. -}
@@ -162,7 +162,7 @@ performRemote key file backend numcopies remote =
 		let cleanup = liftIO $ catchIO (removeFile tmp) (const noop)
 		cleanup
 		cleanup `after` a tmp
-	getfile tmp = ifM (checkDiskSpace (Just tmp) key 0 True)
+	getfile tmp = ifM (checkDiskSpace (Just (takeDirectory tmp)) key 0 True)
 		( ifM (Remote.retrieveKeyFileCheap remote key (Just file) tmp)
 			( return (Just True)
 			, ifM (Annex.getState Annex.fast)
@@ -183,19 +183,19 @@ startKey inc key numcopies =
 			performKey key backend numcopies
 
 performKey :: Key -> Backend -> NumCopies -> Annex Bool
-performKey key backend numcopies = check
-	[ verifyLocationLog key (key2file key)
-	, checkKeySize key
-	, checkBackend backend key Nothing
-	, checkKeyNumCopies key Nothing numcopies
-	]
+performKey key backend numcopies = do
+	keystatus <- getKeyStatus key
+	check
+		[ verifyLocationLog key keystatus (key2file key)
+		, checkKeySize key keystatus
+		, checkBackend backend key keystatus Nothing
+		, checkKeyNumCopies key Nothing numcopies
+		]
 
 check :: [Annex Bool] -> Annex Bool
 check cs = and <$> sequence cs
 
-{- Checks that the file's link points correctly to the content.
- -
- - In direct mode, there is only a link when the content is not present.
+{- Checks that symlinks points correctly to the annexed content.
  -}
 fixLink :: Key -> FilePath -> Annex Bool
 fixLink key file = do
@@ -214,19 +214,23 @@ fixLink key file = do
 
 {- Checks that the location log reflects the current status of the key,
  - in this repository only. -}
-verifyLocationLog :: Key -> String -> Annex Bool
-verifyLocationLog key desc = do
-	present <- inAnnex key
+verifyLocationLog :: Key -> KeyStatus -> String -> Annex Bool
+verifyLocationLog key keystatus desc = do
+	obj <- calcRepo $ gitAnnexLocation key
+	present <- if isKeyUnlocked keystatus
+		then liftIO (doesFileExist obj)
+		else inAnnex key
 	direct <- isDirect
 	u <- getUUID
 	
-	{- Since we're checking that a key's file is present, throw
+	{- Since we're checking that a key's object file is present, throw
 	 - in a permission fixup here too. -}
-	file <- calcRepo $ gitAnnexLocation key
-	when (present && not direct) $
-		freezeContent file
-	whenM (liftIO $ doesDirectoryExist $ parentDir file) $
-		freezeContentDir file
+	when (present && not direct) $ void $ tryIO $
+		if isKeyUnlocked keystatus
+			then thawContent obj
+			else freezeContent obj
+	whenM (liftIO $ doesDirectoryExist $ parentDir obj) $
+		freezeContentDir obj
 
 	{- In direct mode, modified files will show up as not present,
 	 - but that is expected and not something to do anything about. -}
@@ -288,18 +292,16 @@ verifyDirectMode key file = do
 {- The size of the data for a key is checked against the size encoded in
  - the key's metadata, if available.
  -
- - Not checked in direct mode, because files can be changed directly.
+ - Not checked when a file is unlocked, or in direct mode.
  -}
-checkKeySize :: Key -> Annex Bool
-checkKeySize key = ifM isDirect
-	( return True
-	, do
-		file <- calcRepo $ gitAnnexLocation key
-		ifM (liftIO $ doesFileExist file)
-			( checkKeySizeOr badContent key file
-			, return True
-			)
-	)
+checkKeySize :: Key -> KeyStatus -> Annex Bool
+checkKeySize _ KeyUnlocked = return True
+checkKeySize key _ = do
+	file <- calcRepo $ gitAnnexLocation key
+	ifM (liftIO $ doesFileExist file)
+		( checkKeySizeOr badContent key file
+		, return True
+		)
 
 checkKeySizeRemote :: Key -> Remote -> Maybe FilePath -> Annex Bool
 checkKeySizeRemote _ _ Nothing = return True
@@ -326,18 +328,26 @@ checkKeySizeOr bad key file = case Types.Key.keySize key of
 			, msg
 			]
 
-{- Runs the backend specific check on a key's content.
+{- Runs the backend specific check on a key's content object.
+ -
+ - When a file is unlocked, it may be a hard link to the object,
+ - thus when the user modifies the file, the object will be modified and
+ - not pass the check, and we don't want to find an error in this case.
+ - So, skip the check if the key is unlocked and modified.
  -
  - In direct mode this is not done if the file has clearly been modified,
  - because modification of direct mode files is allowed. It's still done
  - if the file does not appear modified, to catch disk corruption, etc.
  -}
-checkBackend :: Backend -> Key -> Maybe FilePath -> Annex Bool
-checkBackend backend key mfile = go =<< isDirect
+checkBackend :: Backend -> Key -> KeyStatus -> Maybe FilePath -> Annex Bool
+checkBackend backend key keystatus mfile = go =<< isDirect
   where
 	go False = do
 		content <- calcRepo $ gitAnnexLocation key
-		checkBackendOr badContent backend key content
+		ifM (pure (isKeyUnlocked keystatus) <&&> (not <$> isUnmodified key content))
+			( nocheck
+			, checkBackendOr badContent backend key content
+			)
 	go True = maybe nocheck checkdirect mfile
 	checkdirect file = ifM (goodContent key file)
 		( checkBackendOr' (badContentDirect file) backend key file
@@ -468,17 +478,11 @@ runFsck inc file key a = ifM (needFsck inc key)
 {- Check if a key needs to be fscked, with support for incremental fscks. -}
 needFsck :: Incremental -> Key -> Annex Bool
 needFsck (ScheduleIncremental _ _ i) k = needFsck i k
-#ifdef WITH_DATABASE
 needFsck (ContIncremental h) key = liftIO $ not <$> FsckDb.inDb h key
-#endif
 needFsck _ _ = return True
 
 recordFsckTime :: Incremental -> Key -> Annex ()
-#ifdef WITH_DATABASE
 recordFsckTime inc key = withFsckDb inc $ \h -> liftIO $ FsckDb.addDb h key
-#else
-recordFsckTime _ _ = return ()
-#endif
 
 {- Records the start time of an incremental fsck.
  -
@@ -530,14 +534,11 @@ getStartTime u = do
 data Incremental
 	= NonIncremental
 	| ScheduleIncremental Duration UUID Incremental
-#ifdef WITH_DATABASE
 	| StartIncremental FsckDb.FsckHandle 
 	| ContIncremental FsckDb.FsckHandle
-#endif
 
 prepIncremental :: UUID -> Maybe IncrementalOpt -> Annex Incremental
 prepIncremental _ Nothing = pure NonIncremental
-#ifdef WITH_DATABASE
 prepIncremental u (Just StartIncrementalO) = do
 	recordStartTime u
 	ifM (FsckDb.newPass u)
@@ -552,9 +553,6 @@ prepIncremental u (Just (ScheduleIncrementalO delta)) = do
 		Nothing -> StartIncrementalO
 		Just _ -> MoreIncrementalO
 	return (ScheduleIncremental delta u i)
-#else
-prepIncremental _ _ = error "This git-annex was not built with database support; incremental fsck not supported"
-#endif
 
 cleanupIncremental :: Incremental -> Annex ()
 cleanupIncremental (ScheduleIncremental delta u i) = do
@@ -568,7 +566,6 @@ cleanupIncremental (ScheduleIncremental delta u i) = do
 	cleanupIncremental i
 cleanupIncremental _ = return ()
 
-#ifdef WITH_DATABASE
 openFsckDb :: UUID -> Annex FsckDb.FsckHandle
 openFsckDb u = do
 	h <- FsckDb.openDb u
@@ -581,4 +578,20 @@ withFsckDb (ContIncremental h) a = a h
 withFsckDb (StartIncremental h) a = a h
 withFsckDb NonIncremental _ = noop
 withFsckDb (ScheduleIncremental _ _ i) a = withFsckDb i a
-#endif
+
+data KeyStatus = KeyLocked | KeyUnlocked | KeyMissing
+
+isKeyUnlocked :: KeyStatus -> Bool
+isKeyUnlocked KeyUnlocked = True
+isKeyUnlocked KeyLocked = False
+isKeyUnlocked KeyMissing = False
+
+getKeyStatus :: Key -> Annex KeyStatus
+getKeyStatus key = ifM isDirect
+	( return KeyUnlocked
+	, catchDefaultIO KeyMissing $ do
+		obj <- calcRepo $ gitAnnexLocation key
+		unlocked <- ((> 1) . linkCount <$> liftIO (getFileStatus obj))
+			<&&> (not . null <$> Database.Keys.getAssociatedFiles key)
+		return $ if unlocked then KeyUnlocked else KeyLocked
+	)

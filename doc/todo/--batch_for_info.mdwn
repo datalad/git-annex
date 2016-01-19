@@ -1,0 +1,3 @@
+I guess as other commands which take separate files/keys as its argument(s), having --batch for info command would be of benefit
+
+[[!meta author=yoh]]

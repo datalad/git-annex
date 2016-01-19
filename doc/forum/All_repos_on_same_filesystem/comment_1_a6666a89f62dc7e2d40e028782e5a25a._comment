@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-12-19T17:55:40Z"
+ content="""
+When you clone a repository with --shared, all git-annex commands
+that transfer data into or out of the repository will use hardlinks
+whenever possible.
+
+(But, before version 5.20150916, it didn't manage to use them all the
+time.)
+
+To get started, just use `git annex sync --content`
+"""]]

@@ -11,8 +11,8 @@ import Common.Annex
 import qualified Annex
 import qualified Utility.Matcher
 import qualified Remote
-import qualified Backend
 import Annex.Content
+import Annex.WorkTree
 import Annex.Action
 import Annex.UUID
 import Logs.Trust
@@ -201,22 +201,22 @@ limitAnything _ _ = return True
 {- Adds a limit to skip files not believed to be present in all
  - repositories in the specified group. -}
 addInAllGroup :: String -> Annex ()
-addInAllGroup groupname = do
-	m <- groupMap
-	addLimit $ limitInAllGroup m groupname
+addInAllGroup groupname = addLimit $ limitInAllGroup groupMap groupname
 
-limitInAllGroup :: GroupMap -> MkLimit Annex
-limitInAllGroup m groupname
-	| S.null want = Right $ const $ const $ return True
-	| otherwise = Right $ \notpresent -> checkKey $ check notpresent
-  where
-	want = fromMaybe S.empty $ M.lookup groupname $ uuidsByGroup m
-	check notpresent key
+limitInAllGroup :: Annex GroupMap -> MkLimit Annex
+limitInAllGroup getgroupmap groupname = Right $ \notpresent mi -> do
+	m <- getgroupmap
+	let want = fromMaybe S.empty $ M.lookup groupname $ uuidsByGroup m
+	if S.null want
+		then return True
 		-- optimisation: Check if a wanted uuid is notpresent.
-		| not (S.null (S.intersection want notpresent))	= return False
-		| otherwise = do
-			present <- S.fromList <$> Remote.keyLocations key
-			return $ S.null $ want `S.difference` present
+		else if not (S.null (S.intersection want notpresent))
+			then return False
+			else checkKey (check want) mi
+  where
+	check want key = do
+		present <- S.fromList <$> Remote.keyLocations key
+		return $ S.null $ want `S.difference` present
 
 {- Adds a limit to skip files not using a specified key-value backend. -}
 addInBackend :: String -> Annex ()
@@ -277,7 +277,7 @@ addTimeLimit s = do
 			else return True
 
 lookupFileKey :: FileInfo -> Annex (Maybe Key)
-lookupFileKey = Backend.lookupFile . currFile
+lookupFileKey = lookupFile . currFile
 
 checkKey :: (Key -> Annex Bool) -> MatchInfo -> Annex Bool
 checkKey a (MatchingFile fi) = lookupFileKey fi >>= maybe (return False) a

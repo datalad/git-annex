@@ -15,14 +15,20 @@ import qualified Annex
 
 type Version = String
 
-supportedVersion :: Version
-supportedVersion = "5"
+defaultVersion :: Version
+defaultVersion = "5"
+
+latestVersion :: Version
+latestVersion = "6"
+
+supportedVersions :: [Version]
+supportedVersions = ["5", "6"]
 
 upgradableVersions :: [Version]
 #ifndef mingw32_HOST_OS
-upgradableVersions = ["0", "1", "2", "4"]
+upgradableVersions = ["0", "1", "2", "4", "5"]
 #else
-upgradableVersions = ["2", "3", "4"]
+upgradableVersions = ["2", "3", "4", "5"]
 #endif
 
 autoUpgradeableVersions :: [Version]
@@ -33,6 +39,18 @@ versionField = annexConfig "version"
 
 getVersion :: Annex (Maybe Version)
 getVersion = annexVersion <$> Annex.getGitConfig
+
+versionSupportsDirectMode :: Annex Bool
+versionSupportsDirectMode = go <$> getVersion
+  where
+	go (Just "6") = False
+	go _ = True
+
+versionSupportsUnlockedPointers :: Annex Bool
+versionSupportsUnlockedPointers = go <$> getVersion
+  where
+	go (Just "6") = True
+	go _ = False
 
 setVersion :: Version -> Annex ()
 setVersion = setConfig versionField

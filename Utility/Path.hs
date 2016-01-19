@@ -60,7 +60,7 @@ simplifyPath path = dropTrailingPathSeparator $
 {- Makes a path absolute.
  -
  - The first parameter is a base directory (ie, the cwd) to use if the path
- - is not already absolute.
+ - is not already absolute, and should itsef be absolute.
  -
  - Does not attempt to deal with edge cases or ensure security with
  - untrusted inputs.
@@ -252,15 +252,21 @@ dotfile file
   where
 	f = takeFileName file
 
-{- Converts a DOS style path to a Cygwin style path. Only on Windows.
- - Any trailing '\' is preserved as a trailing '/' -}
-toCygPath :: FilePath -> FilePath
+{- Converts a DOS style path to a msys2 style path. Only on Windows.
+ - Any trailing '\' is preserved as a trailing '/' 
+ - 
+ - Taken from: http://sourceforge.net/p/msys2/wiki/MSYS2%20introduction/i
+ -
+ - The virtual filesystem contains:
+ -  /c, /d, ...	mount points for Windows drives
+ -}
+toMSYS2Path :: FilePath -> FilePath
 #ifndef mingw32_HOST_OS
-toCygPath = id
+toMSYS2Path = id
 #else
-toCygPath p
+toMSYS2Path p
 	| null drive = recombine parts
-	| otherwise = recombine $ "/cygdrive" : driveletter drive : parts
+	| otherwise = recombine $ "/" : driveletter drive : parts
   where
 	(drive, p') = splitDrive p
 	parts = splitDirectories p'

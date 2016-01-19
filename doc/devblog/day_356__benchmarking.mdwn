@@ -1,0 +1,11 @@
+Added `git annex benchmark` which uses the excellent Criterion to benchmark
+parts of git-annex. What I'm interested in benchmarking right now is the
+sqlite database that is used to manage v6 unlocked files, but having a
+built-in benchmark will probably have other uses later.
+
+The benchmark results were pretty good; queries from the database are
+quite fast (60 microseconds warm cache) and scale well as the size increases.
+I did find one scalability issue, which was fixed by adding another index
+to the database. The kind of schema change that it's easy to make now, but
+that would be a painful transition if it had to be done once this was in wide
+use.

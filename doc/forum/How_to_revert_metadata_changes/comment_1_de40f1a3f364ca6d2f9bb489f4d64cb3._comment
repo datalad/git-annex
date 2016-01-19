@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-01-01T19:23:29Z"
+ content="""
+`git-annex metadata` used to affect all files under the current directory
+if you left off the files to update. That changed a while ago to prevent
+that fairly common mistake, pity your git-annex is too old to have that
+fixed.
+
+You're on sort of the right track with the git-annex branch, but there are some
+complications:
+
+1. .git/annex/index is the index file for the git-annex branch. When you
+   change the git-annex branch manually, you also need to delete that
+   file. This will cause git-annex to re-generate its index from the new
+   contents of the branch.
+2. Resetting the git-annex branch to a previous rev won't "stick"
+   if the problimatic rev has already been pushed to other repositories.
+   git-annex will automatically re-merge the git-annex branches from other
+   repos at some point and get the problem rev back. Instead you'll need to
+   make a commit to the git-annex branch that undoes the changes made by the
+   problem rev. (eg `git revert`)
+3. The contents of the git-annex branch are merged by essentially
+   taking the union of the local and remote contents.
+   So if some other clone of the repository still has the
+   problimatic data in its git-annex branch, when git-annex union
+   merges that in, the problem data will come back again, even if you've
+   made a local commit that reverts its addition.
+
+So, you can easily deal with #1; it wouldn't be hard to do #2, but #3
+will be a real sticking point, if the bad data has been pushed out to any
+other repos.
+
+In that case, the only thing to do is to record new information on the
+git-annex branch, so git-annex knows that even if this metadata was set
+before, it's not set any longer. The way to do that is just use
+`git annex metadata --set name-=bla`
+"""]]

@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-01-01T20:27:27Z"
+ content="""
+It was indeed a bug that it counted both keys referenced in the work tree
+and keys whose content was present. Fixed.
+
+It's not hard to fix the json format, but then what happens to anything
+that may be parsing the existing format? I could use a different field
+for the better formatted version and keep the old version in the current
+field, but if the goal is to make the json better, that doesn't really
+work.
+
+Since the old output is so funky, it seems likely to me you're the first
+one to try to consume it since anyone reasonable would file a but report
+about it and you're the first who did.
+
+So.. I guess I'll change the json format and see if anyone complains. 
+
+I have to say that this business of not having any specification other
+than what it currently is, is what annoys me about JSON as a consumer of it.
+"""]]

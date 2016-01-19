@@ -60,6 +60,7 @@ data GitConfig = GitConfig
 	, annexListen :: Maybe String
 	, annexStartupScan :: Bool
 	, annexHardLink :: Bool
+	, annexThin :: Bool
 	, annexDifferences :: Differences
 	, annexUsedRefSpec :: Maybe RefSpec
 	, annexVerify :: Bool
@@ -104,6 +105,7 @@ extractGitConfig r = GitConfig
 	, annexListen = getmaybe (annex "listen")
 	, annexStartupScan = getbool (annex "startupscan") True
 	, annexHardLink = getbool (annex "hardlink") False
+	, annexThin = getbool (annex "thin") False
 	, annexDifferences = getDifferences r
 	, annexUsedRefSpec = either (const Nothing) Just . parseRefSpec 
 		=<< getmaybe (annex "used-refspec")

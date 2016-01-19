@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="fbicknel@01ede624a1a56b3998b823e9b60da0ff81cccb16"
+ nickname="fbicknel"
+ subject="Complete removal"
+ date="2015-12-10T16:16:43Z"
+ content="""
+So, and I hope this isn't too Captain Obvious, if we drop the file at each repo, we essentially remove it from existence as far as this git-annex cluster is concerned?
+"""]]

@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 5.20151208
+Version: 6.20160114
 Cabal-Version: >= 1.8
 License: GPL-3
 Maintainer: Joey Hess <id@joeyh.name>
@@ -37,12 +37,6 @@ Flag S3
 Flag WebDAV
   Description: Enable WebDAV support
 
-Flag Inotify
-  Description: Enable inotify support
-
-Flag Dbus
-  Description: Enable dbus support
-
 Flag Assistant
   Description: Enable git-annex assistant and watch command
 
@@ -54,9 +48,6 @@ Flag Webapp-secure
 
 Flag Pairing
   Description: Enable pairing
-
-Flag XMPP
-  Description: Enable notifications using XMPP
 
 Flag DNS
   Description: Enable the haskell DNS library for DNS lookup
@@ -87,9 +78,6 @@ Flag Quvi
 Flag Tahoe
   Description: Enable the tahoe special remote
 
-Flag DesktopNotify
-  Description: Enable desktop environment notifications
-
 Flag TorrentParser
   Description: Use haskell torrent library to parse torrent files
 
@@ -100,12 +88,12 @@ Flag EKG
   Description: Enable use of EKG to monitor git-annex as it runs (at http://localhost:4242/)
   Default: False
 
+Flag Benchmark
+  Description: Enable benchmarking
+  Default: False
+
 Flag network-uri
   Description: Get Network.URI from the network-uri package
-  Default: True
-
-Flag Database
-  Description: Enable building with persistent for database use (disable to build on platforms not supporting TH)
   Default: True
 
 Flag Cryptonite
@@ -128,7 +116,8 @@ Executable git-annex
    monad-control, transformers,
    bloomfilter, edit-distance,
    resourcet, http-conduit, http-client, http-types,
-   time, old-locale
+   time, old-locale,
+   esqueleto, persistent-sqlite, persistent, persistent-template
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs
   Extensions: PackageImports
@@ -189,7 +178,7 @@ Executable git-annex
     CPP-Options: -DWITH_ASSISTANT
 
   if flag(Assistant)
-    if os(linux) && flag(Inotify)
+    if os(linux)
       Build-Depends: hinotify
       CPP-Options: -DWITH_INOTIFY
     else
@@ -210,14 +199,8 @@ Executable git-annex
               C-Sources: Utility/libkqueue.c
 
   if (os(linux))
-    if flag(Dbus)
-      Build-Depends: dbus (>= 0.10.7)
-      CPP-Options: -DWITH_DBUS
-  
-    if flag(DesktopNotify)
-      if flag(Dbus)
-        Build-Depends: dbus (>= 0.10.3), fdo-notify (>= 0.3)
-        CPP-Options: -DWITH_DESKTOP_NOTIFY -DWITH_DBUS_NOTIFICATIONS
+    Build-Depends: dbus (>= 0.10.7), fdo-notify (>= 0.3)
+    CPP-Options: -DWITH_DBUS -DWITH_DESKTOP_NOTIFY -DWITH_DBUS_NOTIFICATIONS
 
   if flag(Android)
     Build-Depends: data-endian
@@ -249,7 +232,7 @@ Executable git-annex
     Build-Depends: network-multicast, network-info
     CPP-Options: -DWITH_PAIRING
 
-  if flag(XMPP) && (! os(windows))
+  if (! os(windows))
     Build-Depends: network-protocol-xmpp, gnutls (>= 0.1.4), xml-types
     CPP-Options: -DWITH_XMPP
 
@@ -273,10 +256,6 @@ Executable git-annex
     Build-Depends: torrent (>= 10000.0.0)
     CPP-Options: -DWITH_TORRENTPARSER
 
-  if flag(Database)
-    Build-Depends: esqueleto, persistent-sqlite, persistent, persistent-template
-    CPP-Options: -DWITH_DATABASE
-
   if flag(ConcurrentOutput)
     Build-Depends: concurrent-output (>= 1.6)
     CPP-Options: -DWITH_CONCURRENTOUTPUT
@@ -285,6 +264,10 @@ Executable git-annex
     Build-Depends: ekg
     GHC-Options: -with-rtsopts=-T
     CPP-Options: -DWITH_EKG
+  
+  if flag(Benchmark)
+    Build-Depends: criterion, deepseq
+    CPP-Options: -DWITH_BENCHMARK
 
 source-repository head
   type: git

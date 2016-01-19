@@ -1,0 +1,34 @@
+### What version of git-annex are you using? On what operating system?
+
+5.20151116+gitg5416a1a-1~ndall+1
+
+### Please provide any additional information below.
+
+[[!format sh """
+    "backend usage": [
+        [
+            "MD5E",
+            2
+        ],
+        [
+            "SHA256E",
+            2
+        ]
+    ],
+"""]]
+
+instead of more logical
+
+[[!format sh """
+
+    "backend usage": {
+         "MD5E": 2,
+         "SHA256E": 2
+    }
+"""]]
+
+also it seems it just doubles them since I have only 2 files, 1 for each backend (as reported also by info "local annex keys": 2). 
+
+[[!meta author=yoh]]
+
+> [[fixed|done]] --[[Joey]]

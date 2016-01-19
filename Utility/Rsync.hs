@@ -54,16 +54,16 @@ rsyncUseDestinationPermissions = Param "--chmod=ugo=rwX"
 rsync :: [CommandParam] -> IO Bool
 rsync = boolSystem "rsync" . rsyncParamsFixup
 
-{- On Windows, rsync is from Cygwin, and expects to get Cygwin formatted
+{- On Windows, rsync is from msys2, and expects to get msys2 formatted
  - paths to files. (It thinks that C:foo refers to a host named "C").
  - Fix up the Params appropriately. -}
 rsyncParamsFixup :: [CommandParam] -> [CommandParam]
 #ifdef mingw32_HOST_OS
 rsyncParamsFixup = map fixup
   where
-	fixup (File f) = File (toCygPath f)
+	fixup (File f) = File (toMSYS2Path f)
 	fixup (Param s)
-		| rsyncUrlIsPath s = Param (toCygPath s)
+		| rsyncUrlIsPath s = Param (toMSYS2Path s)
 	fixup p = p
 #else
 rsyncParamsFixup = id

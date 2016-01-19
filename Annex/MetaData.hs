@@ -30,7 +30,7 @@ import Data.Time.Clock.POSIX
  - When the file has been modified, the metadata is copied over
  - from the old key to the new key. Note that it looks at the old key as
  - committed to HEAD -- the new key may or may not have already been staged
- - in th annex.
+ - in the index.
  -
  - Also, can generate new metadata, if configured to do so.
  -}

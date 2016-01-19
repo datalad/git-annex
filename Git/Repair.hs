@@ -342,8 +342,8 @@ verifyTree missing treesha r
 	| S.member treesha missing = return False
 	| otherwise = do
 		(ls, cleanup) <- pipeNullSplit (LsTree.lsTreeParams treesha []) r
-		let objshas = map (extractSha . LsTree.sha . LsTree.parseLsTree) ls
-		if any isNothing objshas || any (`S.member` missing) (catMaybes objshas)
+		let objshas = map (LsTree.sha . LsTree.parseLsTree) ls
+		if any (`S.member` missing) objshas
 			then do
 				void cleanup
 				return False

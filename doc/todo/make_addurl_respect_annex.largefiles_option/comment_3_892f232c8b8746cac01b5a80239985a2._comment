@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="another side-effect of largefiles not being supported for my usecase"
+ date="2016-01-12T17:20:08Z"
+ content="""
+since there is no support for largefiles in addurl, is there ANY way to get idea either annex would have added a file to git or to annex if I do know the filename and its size?  pretty much a use-case is downloading/adding (small) .txt files to git, while the rest to annex in --fast (or --relaxed) mode.
+If there is no way to query annex'es opinion given necessary information, I would have no ability to decide on my end without duplicating largefiles checking logic.
+"""]]

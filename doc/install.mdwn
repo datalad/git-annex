@@ -20,8 +20,6 @@ detailed instructions             | quick install
 [[Windows]]                       | [download installer](https://downloads.kitenet.net/git-annex/windows/current/) **beta**
 """]]
 
-Note: [[todo/git-annex_in_debian_sid]] is somewhat outdated, which makes the above Debian and Ubuntu release not quite up to date. The [NeuroDebian team](http://neuro.debian.net/) provides a [standalone build package](http://neuro.debian.net/pkgs/git-annex-standalone.html) that is regularly updated and that should work across all releases of Ubuntu and Debian. See [[todo/git-annex-standalone_Debian_package/]] for more information.
-
 All the download links above use https for security. For added security, see
 [[verifying_downloads]].
 

@@ -191,7 +191,7 @@ testDav url (Just (u, p)) = do
 		makeParentDirs
 		void $ mkColRecursive tmpDir
 		inLocation (tmpLocation "git-annex-test") $ do
-			putContentM (Nothing, L.empty)
+			putContentM (Nothing, L8.fromString "test")
 			delContentM
   where
 	test a = liftIO $

@@ -7,7 +7,6 @@
 
 module Main where
 
-import Control.Applicative
 import System.Environment
 import Data.Maybe
 import System.FilePath
@@ -16,6 +15,8 @@ import Control.Monad
 import Data.List
 import System.Posix.Files
 import Control.Monad.IfElse
+import Control.Applicative
+import Prelude
 
 import Utility.LinuxMkLibs
 import Utility.Directory

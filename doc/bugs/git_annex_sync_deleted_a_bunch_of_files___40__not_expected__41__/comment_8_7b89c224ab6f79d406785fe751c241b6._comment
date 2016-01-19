@@ -1,0 +1,77 @@
+[[!comment format=mdwn
+ username="yminus"
+ subject="comment 8"
+ date="2015-12-13T22:55:15Z"
+ content="""
+I think the problem in my case is that I had special characters in some file names which fat does not support.
+
+I tried to recover the git annex repo in direct mode using these steps:
+<pre>
+git push --force n900 master 
+git checkout synced/master
+git push --force n900 synced/master 
+git checkout master
+git annex unlock flac/Type_O_Negative/2003_Life_Is_Killing_Me/
+mv flac/Type_O_Negative/2003_Life_Is_Killing_Me/03.Less_Than_Zero_\(\<0\).flac flac/Type_O_Negative/2003_Life_Is_Killing_Me/03.Less_Than_Zero.flac
+git annex add flac/
+git commit -m \"Work around broken file systems\"
+git push --force n900 master 
+git checkout synced/master
+git push --force n900 synced/master 
+git checkout master
+git annex sync n900
+</pre>
+
+But now the last git annex sync creates a merge commit which only contains \"variants\" of the renamed files:
+
+<pre>
+    Merge remote-tracking branch 'refs/remotes/origin/synced/master' into annex/direct/master
+    
+    # Conflicts:
+    #	flac/Type_O_Negative/2003_Life_Is_Killing_Me/03.Less_Than_Zero.flac
+    #	mp3/Type_O_Negative/2003_Life_Is_Killing_Me/03.Less_Than_Zero.mp3
+
+ flac/Type_O_Negative/2003_Life_Is_Killing_Me/03.Less_Than_Zero.variant-6467.flac 
+index 0000000,c33ca87..c33ca87
+mode 000000,120000..120000
+
+ mp3/Type_O_Negative/2003_Life_Is_Killing_Me/03.Less_Than_Zero.variant-562b.mp3 
+index 0000000,a247fc6..a247fc6
+mode 000000,120000..120000
+</pre>
+
+So the repo on n900 still does not contain all the files added since the last sync (git annex get fails for those files). At least now the sync does not delete files in my laptop repo any more.
+
+This is the current state:
+
+<pre>
+*   44dd9a8 (n900/annex/direct/master) Merge remote-tracking branch 'refs/remotes/origin/synced/master' into annex/direct/master
+|\  
+| *   21df034 (HEAD -> master, tag: before_syncing_n900, nas/synced/master, n900/synced/master, n900/master, synced/master) Merge remote-tracking branch 'refs/remotes/nas/master'
+| |\  
+| | * 4f61c44 (nas/master) Work around broken file systems
+| | * 85ab30f ADDED FILES
+| * | 92bc06e Work around broken file systmes (mp3)
+| |/  
+* |   a945a24 merge refs/heads/synced/master
+|\ \  
+| |/  
+| * 1236008 (origin/synced/master, origin/master) ADDED FILES
+| * 17c4f54 ADDED FILES
+| *   364d525 Merge remote-tracking branch 'refs/remotes/origin/master'
+| |\  
+| | * c18f170 ADDED FILES
+| | * 9dd5668 ADDED FILES
+| * | c3280fc ADDED FILES
+| * | 2babe80 ADDED FILES
+| * | b964e29 ADDED FILES
+| * | 03f3bd1 ADDED FILES
+| * | 010a469 ADDED FILES
+| * | 8acf199 ADDED FILES
+| * |   f2477bc Merge remote-tracking branch 'refs/remotes/origin/master'
+| |\ \  
+| | |/  
+| | * 121ffd1 ADDED FILES
+* | | dc88b8a git-annex in lars@lars-laptop:/run/media/lars/Nokia N900/.sounds/Musik
+</pre>
+"""]]

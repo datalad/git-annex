@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="wsha.code+ga@b38779424f41c5701bbe5937340be43ff1474b2d"
+ subject="comment 5"
+ date="2015-12-12T05:28:51Z"
+ content="""
+Thanks for the clarification. I was referring to the Linux build. I might have been wrong about aws 0.13 being released. It is listed in the NixOS and Hackage package repos, but I don't see a 0.13.0 tag on the project's GitHub page, so maybe those other repos are packaging the nightly build of the master branch as version 0.13.0 while the final 0.13.0 hasn't been frozen yet. I will wait for the Debian repo to get updated (I could build it by hand but I like to rely on the package manager as I will otherwise forget to update the package in the future). It looks like Debian unstable lags the git repo tags by 1-2 months.
+"""]]

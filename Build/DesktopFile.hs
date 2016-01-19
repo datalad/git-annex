@@ -20,13 +20,14 @@ import Utility.OSX
 import Assistant.Install.AutoStart
 import Assistant.Install.Menu
 
-import Control.Applicative
 import System.Directory
 import System.Environment
 #ifndef mingw32_HOST_OS
 import System.Posix.User
 #endif
 import Data.Maybe
+import Control.Applicative
+import Prelude
 
 systemwideInstall :: IO Bool
 #ifndef mingw32_HOST_OS 

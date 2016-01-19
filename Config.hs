@@ -90,3 +90,21 @@ setCrippledFileSystem :: Bool -> Annex ()
 setCrippledFileSystem b = do
 	setConfig (annexConfig "crippledfilesystem") (Git.Config.boolConfig b)
 	Annex.changeGitConfig $ \c -> c { annexCrippledFileSystem = b }
+
+configureSmudgeFilter :: Annex ()
+configureSmudgeFilter = do
+	setConfig (ConfigKey "filter.annex.smudge") "git-annex smudge %f"
+	setConfig (ConfigKey "filter.annex.clean") "git-annex smudge --clean %f"
+	lf <- Annex.fromRepo Git.attributesLocal
+	gf <- Annex.fromRepo Git.attributes
+	lfs <- readattr lf
+	gfs <- readattr gf
+	liftIO $ unless ("filter=annex" `isInfixOf` (lfs ++ gfs)) $ do
+		createDirectoryIfMissing True (takeDirectory lf)
+		writeFile lf (lfs ++ "\n" ++ stdattr)
+  where
+	readattr = liftIO . catchDefaultIO "" . readFileStrictAnyEncoding
+	stdattr = unlines
+		[ "* filter=annex"
+		, ".* !filter"
+		]

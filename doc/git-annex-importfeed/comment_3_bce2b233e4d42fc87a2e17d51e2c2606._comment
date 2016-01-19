@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="umeboshi"
+ subject="comment 3"
+ date="2016-01-02T21:02:51Z"
+ content="""
+I just thought it was surprising behavior, especially when ```git-annex addurl --file 123-45.ext $url``` preserves the dash in the filename, yet the rss I constructed to add multiple urls, with files, didn't do this.
+
+The new ```--batch --with-files``` options to addurl will eliminate the need to create specially crafted rss files.
+
+Thanks! :)
+"""]]

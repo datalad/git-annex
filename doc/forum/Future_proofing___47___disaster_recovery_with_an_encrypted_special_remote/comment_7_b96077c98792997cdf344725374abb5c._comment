@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2016-01-01T20:42:34Z"
+ content="""
+I think it's great you're working on this, and [[future_proofing]] is
+probably a good place to put the result.
+
+I did some digging, and the cipher used for pubkey includes a trailing
+new line. The trailing newline seems to be lost in your script, and
+adding it makes it work.
+
+	cipher="$cipher
+	"
+
+I think the actual problem in the script is in this line:
+
+	cipher="$(decrypt_cipher "$cipher")"
+
+I verified that decrypt_cipher outputs the trailing newline, but
+in capturing its output, the shell chomps it. Can't remember ATM if there's
+a way to avoid that in shell scripting.
+
+Arguably git-annex should not be treating that newline as part of the
+cipher text, although it's probably too late to change that, certainly for
+existing repositories..
+"""]]

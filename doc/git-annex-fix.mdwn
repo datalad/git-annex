@@ -1,6 +1,6 @@
 # NAME
 
-git-annex fix - fix up symlinks to point to annexed content
+git-annex fix - fix up links to annexed content
 
 # SYNOPSIS
 
@@ -11,8 +11,11 @@ git annex fix `[path ...]`
 Fixes up symlinks that have become broken to again point to annexed
 content.
 
-This is useful to run if you have been moving the symlinks around,
-but is done automatically when committing a change with git too.
+This is useful to run manually when you have been moving the symlinks
+around, but is done automatically when committing a change with git too.
+
+Also, adjusts unlocked files to be copies or hard links as
+configured by annex.thin.
 
 # OPTIONS
 

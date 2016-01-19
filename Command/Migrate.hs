@@ -17,6 +17,9 @@ import Annex.Content
 import qualified Command.ReKey
 import qualified Command.Fsck
 import qualified Annex
+import Logs.MetaData
+import Logs.Web
+import qualified Remote
 
 cmd :: Command
 cmd = notDirect $ withGlobalOptions annexedMatchingOptions $
@@ -72,9 +75,19 @@ perform file oldkey oldbackend newbackend = go =<< genkey
 	go (Just (newkey, knowngoodcontent))
 		| knowngoodcontent = finish newkey
 		| otherwise = stopUnless checkcontent $ finish newkey
-	checkcontent = Command.Fsck.checkBackend oldbackend oldkey $ Just file
-	finish newkey = stopUnless (Command.ReKey.linkKey oldkey newkey) $
-		next $ Command.ReKey.cleanup file oldkey newkey
+	checkcontent = Command.Fsck.checkBackend oldbackend oldkey Command.Fsck.KeyLocked $ Just file
+	finish newkey = ifM (Command.ReKey.linkKey file oldkey newkey)
+		( do
+			copyMetaData oldkey newkey
+			-- If the old key had some associated urls, record them for
+			-- the new key as well.
+			urls <- getUrls oldkey
+			forM_ urls $ \url -> do
+				r <- Remote.claimingUrl url
+				setUrlPresent (Remote.uuid r) newkey url
+			next $ Command.ReKey.cleanup file oldkey newkey
+		, error "failed"
+		)
 	genkey = case maybe Nothing (\fm -> fm oldkey newbackend (Just file)) (fastMigrate oldbackend) of
 		Just newkey -> return $ Just (newkey, True)
 		Nothing -> do

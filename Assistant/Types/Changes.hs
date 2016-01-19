@@ -1,18 +1,22 @@
 {- git-annex assistant change tracking
  -
- - Copyright 2012-2013 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
+
+{-# LANGUAGE BangPatterns #-}
 
 module Assistant.Types.Changes where
 
 import Types.KeySource
 import Types.Key
 import Utility.TList
+import Annex.Ingest
 
 import Control.Concurrent.STM
 import Data.Time.Clock
+import qualified Data.Set as S
 
 {- An un-ordered pool of Changes that have been noticed and should be
  - staged and committed. Changes will typically be in order, but ordering
@@ -38,7 +42,7 @@ data Change
 		}
 	| InProcessAddChange
 		{ changeTime ::UTCTime
-		, keySource :: KeySource
+		, lockedDown :: LockedDown
 		}
 	deriving (Show)
 
@@ -53,7 +57,7 @@ changeInfoKey _ = Nothing
 changeFile :: Change -> FilePath
 changeFile (Change _ f _) = f
 changeFile (PendingAddChange _ f) = f
-changeFile (InProcessAddChange _ ks) = keyFilename ks
+changeFile (InProcessAddChange _ ld) = keyFilename $ keySource ld
 
 isPendingAddChange :: Change -> Bool
 isPendingAddChange (PendingAddChange {}) = True
@@ -64,14 +68,33 @@ isInProcessAddChange (InProcessAddChange {}) = True
 isInProcessAddChange _ = False
 
 retryChange :: Change -> Change
-retryChange (InProcessAddChange time ks) =
-	PendingAddChange time (keyFilename ks)
+retryChange c@(InProcessAddChange time _) =
+	PendingAddChange time $ changeFile c
 retryChange c = c
 
 finishedChange :: Change -> Key -> Change
-finishedChange c@(InProcessAddChange { keySource = ks }) k = Change
+finishedChange c@(InProcessAddChange {}) k = Change
 	{ changeTime = changeTime c
-	, _changeFile = keyFilename ks
+	, _changeFile = changeFile c
 	, changeInfo = AddKeyChange k
 	}
 finishedChange c _ = c
+
+{- Combine PendingAddChanges that are for the same file.
+ - Multiple such often get noticed when eg, a file is opened and then
+ - closed in quick succession. -}
+simplifyChanges :: [Change] -> [Change]
+simplifyChanges [c] = [c]
+simplifyChanges cl = go cl S.empty []
+  where
+ 	go [] _ l = reverse l
+	go (c:cs) seen l
+		| isPendingAddChange c =
+			if S.member f seen 
+				then go cs seen l
+				else 
+					let !seen' = S.insert f seen
+					in go cs seen' (c:l)
+		| otherwise = go cs seen (c:l)
+	  where
+		f = changeFile c

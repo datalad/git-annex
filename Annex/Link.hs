@@ -5,7 +5,9 @@
  - On other filesystems, git instead stores the symlink target in a regular
  - file.
  -
- - Copyright 2013 Joey Hess <id@joeyh.name>
+ - Pointer files are used instead of symlinks for unlocked files.
+ -
+ - Copyright 2013-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -19,6 +21,9 @@ import qualified Git.UpdateIndex
 import qualified Annex.Queue
 import Git.Types
 import Git.FilePath
+import Types.Key
+
+import qualified Data.ByteString.Lazy as L
 
 type LinkTarget = String
 
@@ -105,8 +110,49 @@ hashSymlink' :: Git.HashObject.HashObjectHandle -> LinkTarget -> Annex Sha
 hashSymlink' h linktarget = liftIO $ Git.HashObject.hashBlob h $
 	toInternalGitPath linktarget
 
-{- Stages a symlink to the annex, using a Sha of its target. -}
+{- Stages a symlink to an annexed object, using a Sha of its target. -}
 stageSymlink :: FilePath -> Sha -> Annex ()
 stageSymlink file sha =
 	Annex.Queue.addUpdateIndex =<<
 		inRepo (Git.UpdateIndex.stageSymlink file sha)
+
+{- Injects a pointer file content into git, returning its Sha. -}
+hashPointerFile :: Key -> Annex Sha
+hashPointerFile key = inRepo $ Git.HashObject.hashObject BlobObject $
+	formatPointer key
+
+{- Stages a pointer file, using a Sha of its content -}
+stagePointerFile :: FilePath -> Sha -> Annex ()
+stagePointerFile file sha =
+	Annex.Queue.addUpdateIndex =<<
+		inRepo (Git.UpdateIndex.stageFile sha FileBlob file)
+
+{- Parses a symlink target or a pointer file to a Key.
+ - Only looks at the first line, as pointer files can have subsequent
+ - lines. -}
+parseLinkOrPointer :: L.ByteString -> Maybe Key
+parseLinkOrPointer = parseLinkOrPointer' . decodeBS . L.take maxsz
+  where
+	{- Want to avoid buffering really big files in git into
+	 - memory when reading files that may be pointers.
+	 -
+	 - 8192 bytes is plenty for a pointer to a key.
+	 - Pad some more to allow for any pointer files that might have
+	 - lines after the key explaining what the file is used for. -}
+	maxsz = 81920
+
+parseLinkOrPointer' :: String -> Maybe Key
+parseLinkOrPointer' s = headMaybe (lines (fromInternalGitPath s)) >>= go
+  where
+	go l
+		| isLinkToAnnex l = file2key $ takeFileName l
+		| otherwise = Nothing
+
+formatPointer :: Key -> String
+formatPointer k = 
+	toInternalGitPath (pathSeparator:objectDir </> key2file k) ++ "\n"
+
+{- Checks if a file is a pointer to a key. -}
+isPointerFile :: FilePath -> IO (Maybe Key)
+isPointerFile f = catchDefaultIO Nothing $ 
+	parseLinkOrPointer <$> L.readFile f

@@ -134,11 +134,13 @@ moveFile src dest = tryIO (rename src dest) >>= onrename
 				_ <- tryIO $ removeFile tmp
 				throwM e'
 
+#ifndef mingw32_HOST_OS	
 	isdir f = do
 		r <- tryIO $ getFileStatus f
 		case r of
 			(Left _) -> return False
 			(Right s) -> return $ isDirectory s
+#endif
 
 {- Removes a file, which may or may not exist, and does not have to
  - be a regular file.

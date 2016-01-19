@@ -96,6 +96,7 @@ import qualified Command.Upgrade
 import qualified Command.Forget
 import qualified Command.Proxy
 import qualified Command.DiffDriver
+import qualified Command.Smudge
 import qualified Command.Undo
 import qualified Command.Version
 #ifdef WITH_ASSISTANT
@@ -113,6 +114,9 @@ import qualified Command.Test
 #ifdef WITH_TESTSUITE
 import qualified Command.FuzzTest
 import qualified Command.TestRemote
+#endif
+#ifdef WITH_BENCHMARK
+import qualified Command.Benchmark
 #endif
 #ifdef WITH_EKG
 import System.Remote.Monitoring
@@ -201,6 +205,7 @@ cmds testoptparser testrunner =
 	, Command.Forget.cmd
 	, Command.Proxy.cmd
 	, Command.DiffDriver.cmd
+	, Command.Smudge.cmd
 	, Command.Undo.cmd
 	, Command.Version.cmd
 #ifdef WITH_ASSISTANT
@@ -218,6 +223,9 @@ cmds testoptparser testrunner =
 #ifdef WITH_TESTSUITE
 	, Command.FuzzTest.cmd
 	, Command.TestRemote.cmd
+#endif
+#ifdef WITH_BENCHMARK
+	, Command.Benchmark.cmd
 #endif
 	]
 

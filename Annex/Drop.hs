@@ -18,6 +18,8 @@ import Command
 import Annex.Wanted
 import Config
 import Annex.Content.Direct
+import qualified Database.Keys
+import Git.FilePath
 
 import qualified Data.Set as S
 import System.Log.Logger (debugM)
@@ -46,14 +48,11 @@ type Reason = String
  -}
 handleDropsFrom :: [UUID] -> [Remote] -> Reason -> Bool -> Key -> AssociatedFile -> [VerifiedCopy] -> (CommandStart -> CommandCleanup) -> Annex ()
 handleDropsFrom locs rs reason fromhere key afile preverified runner = do
-	fs <- ifM isDirect
-		( do
-			l <- associatedFilesRelative key
-			return $ if null l
-				then maybeToList afile
-				else l
-		, return $ maybeToList afile
+	l <- ifM isDirect
+		( associatedFilesRelative key
+		, mapM getTopFilePath <$> Database.Keys.getAssociatedFiles key
 		)
+	let fs = if null l then maybeToList afile else l
 	n <- getcopies fs
 	void $ if fromhere && checkcopies n Nothing
 		then go fs rs n >>= dropl fs

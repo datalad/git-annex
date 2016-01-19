@@ -15,12 +15,15 @@ import Config
 import qualified Annex
 import Annex.Content
 import Annex.Content.Direct
+import Annex.Version
 import qualified Git.Command
 import qualified Git.Branch
 import qualified Git.Ref
 import qualified Git.DiffTree as DiffTree
 import Utility.CopyFile
 import Command.PreCommit (lockPreCommitHook)
+import qualified Database.Keys
+import Git.FilePath
 
 cmd :: Command
 cmd = withGlobalOptions annexedMatchingOptions $
@@ -32,7 +35,7 @@ seek :: CmdParams -> CommandSeek
 seek = wrapUnannex . (withFilesInGit $ whenAnnexed start)
 
 wrapUnannex :: Annex a -> Annex a
-wrapUnannex a = ifM isDirect
+wrapUnannex a = ifM (versionSupportsUnlockedPointers <||> isDirect)
 	( a
 	{- Run with the pre-commit hook disabled, to avoid confusing
 	 - behavior if an unannexed file is added back to git as
@@ -85,6 +88,7 @@ performIndirect file key = do
 
 cleanupIndirect :: FilePath -> Key -> CommandCleanup
 cleanupIndirect file key = do
+	Database.Keys.removeAssociatedFile key =<< inRepo (toTopFilePath file)
 	src <- calcRepo $ gitAnnexLocation key
 	ifM (Annex.getState Annex.fast)
 		( do
