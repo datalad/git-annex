@@ -21,9 +21,10 @@ import Utility.InodeCache
 import Annex.FileMatcher
 import Annex.Version
 import qualified Database.Keys
+import Types.Key
 
 cmd :: Command
-cmd = notBareRepo $ withGlobalOptions (jobsOption : fileMatchingOptions) $
+cmd = notBareRepo $ withGlobalOptions (jobsOption : jsonOption : fileMatchingOptions) $
 	command "add" SectionCommon "add files to annex"
 		paramPaths (seek <$$> optParser)
 
@@ -126,6 +127,7 @@ perform file = do
 
 cleanup :: FilePath -> Key -> Maybe InodeCache -> Bool -> CommandCleanup
 cleanup file key mcache hascontent = do
+	maybeShowJSON [("key", key2file key)]
 	ifM (isDirect <&&> pure hascontent)
 		( do
 			l <- calcRepo $ gitAnnexLink file key

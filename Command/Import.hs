@@ -23,7 +23,7 @@ import Types.FileMatcher
 import Annex.FileMatcher
 
 cmd :: Command
-cmd = withGlobalOptions (jobsOption : fileMatchingOptions) $ notBareRepo $
+cmd = withGlobalOptions (jobsOption : jsonOption : fileMatchingOptions) $ notBareRepo $
 	command "import" SectionCommon 
 		"move and add files from outside git working copy"
 		paramPaths (seek <$$> optParser)

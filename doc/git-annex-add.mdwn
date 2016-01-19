@@ -54,6 +54,11 @@ annexed content, and other symlinks.
   Adds multiple files in parallel. This may be faster.
   For example: `-J4`  
 
+* `--json`
+
+  Enable JSON output. This is intended to be parsed by programs that use
+  git-annex. Each line of output is a JSON object.
+
 # SEE ALSO
 
 [[git-annex]](1)
