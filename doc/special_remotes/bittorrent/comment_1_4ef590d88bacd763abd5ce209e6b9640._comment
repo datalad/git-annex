@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="wzhd"
+ subject="attaching a torrent file to a downloaded and annexed directory"
+ date="2016-01-19T10:07:27Z"
+ content="""
+I have a multi-file torrent that has been downloaded and annexed. After reading the article about web remote, I thought `git-annex addurl --file` could be used. However, when I tried `git-annex addurl --file video/tvseries/someseries /tmp/some.torrent`, I get the error 
+
+    addurl video/tvseries/someseries git-annex: video/anime/tvseries/someseries already exists and is not annexed; not overwriting
+
+Attaching the torrent to one of the files inside failed, too, with the message:
+
+    addurl video/tvseries/someseries/someepisode.mkv 
+    while adding a new url to an already annexed file, failed to verify url exists: /tmp/some.torrent
+    failed
+    git-annex: addurl: 1 failed
+
+"""]]
