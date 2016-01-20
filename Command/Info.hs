@@ -140,7 +140,7 @@ itemInfo o p = ifM (isdir p)
 noInfo :: String -> Annex ()
 noInfo s = do
 	showStart "info" s
-	showNote $ " not a directory or an annexed file or a remote or a uuid"
+	showNote $ "not a directory or an annexed file or a remote or a uuid"
 	showEndFail
 
 dirInfo :: InfoOptions -> FilePath -> Annex ()
