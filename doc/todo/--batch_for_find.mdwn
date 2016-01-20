@@ -1,3 +1,5 @@
 I am using `annex find filename` after running 'annex add` to figure out if file was added to annex or to git.
 
 [[!meta author=yoh]]
+
+> [[done]] --[[Joey]]
