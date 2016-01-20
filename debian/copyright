@@ -39,6 +39,11 @@ Files: Utility/Mounts.hsc
 Copyright: Volker Wysk <hsss@volker-wysk.de>
 License: LGPL-2.1+
 
+Files: Annex/DirHashes.hs
+Copyright: 2001 Ian Lynagh
+           2010-2015 Joey Hess <id@joeyh.name>
+License: GPL-3+
+
 Files: Utility/libmounts.c
 Copyright: 1980, 1989, 1993, 1994 The Regents of the University of California
            2001 David Rufino <daverufino@btinternet.com>
