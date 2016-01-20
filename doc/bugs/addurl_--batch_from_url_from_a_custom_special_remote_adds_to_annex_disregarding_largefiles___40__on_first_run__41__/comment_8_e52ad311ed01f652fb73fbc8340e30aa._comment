@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2016-01-20T18:30:18Z"
+ content="""
+I don't know how the datalad remote could be causing this, but I can't
+reproduce this under as similar circumstances as I can set up here.
+
+(I also can't find any code paths through addurl where it doesn't check
+annex.largefiles, except of course for code paths where it doesn't download
+the content of the file.)
+"""]]
