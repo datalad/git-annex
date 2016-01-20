@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="wsha.code+ga@b38779424f41c5701bbe5937340be43ff1474b2d"
+ nickname="wsha.code+ga"
+ subject="comment 8"
+ date="2016-01-20T19:24:17Z"
+ content="""
+Thanks for checking. I am using Arch, and I just noticed that in the last week a new `git-annex` package was added to the official `community` repo (I guess you noticed too since I see that the [[Install]] page is already updated). Previously, I had been using a package from the AUR that repackaged the prebuilt binary, but now I have switched to the new package in `community` which is rebuilt by Arch's build service so that it includes the updated `aws` library.
+"""]]
