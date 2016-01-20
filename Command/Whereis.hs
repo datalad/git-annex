@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -14,6 +14,7 @@ import Logs.Trust
 import Logs.Web
 import Remote.Web (getWebUrls)
 import Annex.UUID
+import CmdLine.Batch
 
 import qualified Data.Map as M
 
@@ -26,20 +27,26 @@ cmd = noCommit $ withGlobalOptions (jsonOption : annexedMatchingOptions) $
 data WhereisOptions = WhereisOptions
 	{ whereisFiles :: CmdParams
 	, keyOptions :: Maybe KeyOptions
+	, batchOption :: BatchMode
 	}
 
 optParser :: CmdParamsDesc -> Parser WhereisOptions
 optParser desc = WhereisOptions
 	<$> cmdParams desc
 	<*> optional (parseKeyOptions False)
+	<*> parseBatchOption
 
 seek :: WhereisOptions -> CommandSeek
 seek o = do
 	m <- remoteMap id
-	withKeyOptions (keyOptions o) False
-		(startKeys m)
-		(withFilesInGit $ whenAnnexed $ start m)
-		(whereisFiles o)
+	let go = whenAnnexed $ start m
+	case batchOption o of
+		Batch -> batchFiles go
+		NoBatch -> 
+			withKeyOptions (keyOptions o) False
+				(startKeys m)
+				(withFilesInGit go)
+				(whereisFiles o)
 
 start :: M.Map UUID Remote -> FilePath -> Key -> CommandStart
 start remotemap file key = start' remotemap key (Just file)

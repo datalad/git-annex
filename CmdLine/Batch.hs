@@ -65,3 +65,8 @@ batchInput parser a = do
 batchCommandAction :: CommandStart -> Annex ()
 batchCommandAction a = maybe (batchBadInput Batch) (const noop)
 	=<< callCommandAction' a
+
+-- Reads lines of batch input and passes the filepaths to a CommandStart
+-- to handle them.
+batchFiles :: (FilePath -> CommandStart) -> Annex ()
+batchFiles a = batchInput Right $ batchCommandAction . a

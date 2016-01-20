@@ -55,8 +55,7 @@ seek o = allowConcurrentOutput $ do
 		, startSmall file
 		)
 	case batchOption o of
-		Batch -> batchInput Right $
-			batchCommandAction . gofile
+		Batch -> batchFiles gofile
 		NoBatch -> do
 			let go a = a gofile (addThese o)
 			go (withFilesNotInGit (not $ includeDotFiles o))
