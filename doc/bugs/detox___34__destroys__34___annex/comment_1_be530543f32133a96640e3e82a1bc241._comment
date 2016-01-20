@@ -20,5 +20,5 @@ all your annexed objects in lost+found with useless names. I'd recover the
 same way, by moving the annexed objects from .git/annex/objects into the
 repository, and running git-annex add on them, so it will pick the same
 hashes as before and will move the objects back into place.
-See [[recover_data_from_lost+found]].
+See [[tips/recover_data_from_lost+found]].
 """]]

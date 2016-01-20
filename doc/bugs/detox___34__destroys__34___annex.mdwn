@@ -32,3 +32,6 @@ Linux
 
 
 I currently have about a dozen annexes, local and remote (nfs, git), no other big problem apart from lack of speed when syncing
+
+> Closing since I don't see how any changes to git-annex can prevent this
+> kind of problem. [[done]] --[[Joey]]
