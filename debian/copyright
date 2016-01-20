@@ -2,11 +2,11 @@ Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Source: native package
 
 Files: *
-Copyright: © 2010-2015 Joey Hess <id@joeyh.name>
+Copyright: © 2010-2016 Joey Hess <id@joeyh.name>
 License: GPL-3+
 
 Files: Assistant/WebApp.hs Assistant/WebApp/* templates/* static/*
-Copyright: © 2012-2014 Joey Hess <id@joeyh.name>
+Copyright: © 2012-2016 Joey Hess <id@joeyh.name>
            © 2014 Sören Brunk
 License: AGPL-3+
 
@@ -21,7 +21,7 @@ Copyright: 2011 Bas van Dijk & Roel van Dijk
 License: BSD-2-clause
 
 Files: Utility/*
-Copyright: 2012-2015 Joey Hess <id@joeyh.name>
+Copyright: 2012-2016 Joey Hess <id@joeyh.name>
 License: BSD-2-clause
 
 Files: Utility/Gpg.hs Utility/DirWatcher*
