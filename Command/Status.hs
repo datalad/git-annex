@@ -17,10 +17,11 @@ import qualified Git.Ref
 import Git.FilePath
 
 cmd :: Command
-cmd = notBareRepo $ noCommit $ noMessages $ withGlobalOptions [jsonOption] $
-	command "status" SectionCommon
-		"show the working tree status"
-		paramPaths (withParams seek)
+cmd = notBareRepo $ noCommit $ noMessages $
+	withGlobalOptions [jsonOption] $
+		command "status" SectionCommon
+			"show the working tree status"
+			paramPaths (withParams seek)
 
 seek :: CmdParams -> CommandSeek
 seek = withWords start

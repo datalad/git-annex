@@ -36,6 +36,7 @@ module Messages (
 	debugEnabled,
 	commandProgressDisabled,
 	outputMessage,
+	implicitMessage,
 ) where
 
 import Text.JSON
@@ -212,3 +213,9 @@ commandProgressDisabled = withOutputType $ \t -> return $ case t of
 	JSONOutput -> True
 	NormalOutput -> False
 	ConcurrentOutput _ -> True
+
+{- Use to show a message that is displayed implicitly, and so might be
+ - disabled when running a certian command that needs more control over its
+ - output. -}
+implicitMessage :: Annex () -> Annex ()
+implicitMessage = whenM (implicitMessages <$> Annex.getState Annex.output)

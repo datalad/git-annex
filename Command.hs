@@ -66,8 +66,11 @@ withParams mkseek paramdesc = mkseek <$> cmdParams paramdesc
 noCommit :: Command -> Command
 noCommit c = c { cmdnocommit = True }
 
-{- Indicates that a command should not output anything other than what
- - it directly sends to stdout. (--json can override this). -}
+{- Indicates that a command should not output the usual messages when
+ - starting or stopping processing a file or other item. Unless --json mode
+ - is enabled, this also enables quiet output mode, so only things
+ - explicitly output by the command are shown and not progress messages
+ - etc. -}
 noMessages :: Command -> Command
 noMessages c = c { cmdnomessages = True }
 

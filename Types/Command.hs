@@ -40,7 +40,7 @@ type CommandCleanup = Annex Bool
 data Command = Command
 	{ cmdcheck :: [CommandCheck] -- check stage
 	, cmdnocommit :: Bool        -- don't commit journalled state changes
-	, cmdnomessages :: Bool      -- don't output normal messages
+	, cmdnomessages :: Bool -- don't output normal messages
 	, cmdname :: String
 	, cmdparamdesc :: CmdParamsDesc -- description of params for usage
 	, cmdsection :: CommandSection

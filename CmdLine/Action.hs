@@ -124,7 +124,7 @@ includeCommandAction a = account =<< tryIO (callCommandAction a)
 	account (Right False) = incerr
 	account (Left err) = do
 		toplevelWarning True (show err)
-		showEndFail
+		implicitMessage showEndFail
 		incerr
 	incerr = do
 		Annex.incError
@@ -146,8 +146,8 @@ callCommandAction' = start
 	cleanup = stage $ status
 	stage = (=<<)
 	skip = return Nothing
-	failure = showEndFail >> return (Just False)
-	status r = showEndResult r >> return (Just r)
+	failure = implicitMessage showEndFail >> return (Just False)
+	status r = implicitMessage (showEndResult r) >> return (Just r)
 
 {- Do concurrent output when that has been requested. -}
 allowConcurrentOutput :: Annex a -> Annex a

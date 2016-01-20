@@ -39,8 +39,10 @@ dispatch fuzzyok allargs allcmds globaloptions fields getgitrepo progname progde
 			(cmd, seek, globalconfig) <- parsewith False cmdparser
 				(\a -> inRepo $ a . Just)
 				(liftIO . O.handleParseResult)
-			when (cmdnomessages cmd) $ 
+			when (cmdnomessages cmd) $ do
 				Annex.setOutput QuietOutput
+				Annex.changeState $ \s -> s 
+					{ Annex.output = (Annex.output s) { implicitMessages = False } }
 			getParsed globalconfig
 			whenM (annexDebug <$> Annex.getGitConfig) $
 				liftIO enableDebugOutput
