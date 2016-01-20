@@ -12,7 +12,6 @@ module Command.RegisterUrl where
 import Common.Annex
 import Command
 import Logs.Web
-import Annex.UUID
 import Command.FromKey (mkKey)
 import qualified Remote
 
