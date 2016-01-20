@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-01-20T19:08:34Z"
+ content="""
+So, this seems to suggest that `git annex add` exited before it got around
+to checking all the files it had added into the git repository.
+
+I don't see how that could happen if the command exited successfully.
+If it were interrupted, sure.
+
+Normally I'd recommend that `git annex add` just be re-run to recover from
+an interrupted add. But if it's just going to exit for some reason again,
+I guess that won't work.
+
+I think you need to strace a git-annex command like `git-annex copy --to S3`
+and see if there's some clue why it's exiting unexpectedly.
+"""]]
