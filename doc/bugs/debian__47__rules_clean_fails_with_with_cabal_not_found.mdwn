@@ -63,3 +63,6 @@ index e6ee592..3345fee 100755
 git-annex has been a great way for me to explore both Haskell and software packaging.
 
 I enjoyed the interview on LWN.
+
+> I don't think this is a bug, I think build dependencies were not
+> installed when building the package. [[done]] --[[Joey]]
