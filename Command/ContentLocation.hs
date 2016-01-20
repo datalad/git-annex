@@ -14,7 +14,7 @@ import Annex.Content
 import Types.Key
 
 cmd :: Command
-cmd = noCommit $ noMessages $
+cmd = noCommit $ 
 	command "contentlocation" SectionPlumbing 
 		"looks up content for a key"
 		(paramRepeating paramKey)

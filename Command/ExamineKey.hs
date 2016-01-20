@@ -15,7 +15,7 @@ import Command.Find (parseFormatOption, showFormatted, keyVars)
 import Types.Key
 
 cmd :: Command
-cmd = noCommit $ noMessages $ withGlobalOptions [jsonOption] $
+cmd = noCommit $ withGlobalOptions [jsonOption] $
 	command "examinekey" SectionPlumbing 
 		"prints information from a key"
 		(paramRepeating paramKey)
