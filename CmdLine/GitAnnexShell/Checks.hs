@@ -7,7 +7,7 @@
 
 module CmdLine.GitAnnexShell.Checks where
 
-import Common.Annex
+import Annex.Common
 import Command
 import qualified Annex
 import Annex.Init

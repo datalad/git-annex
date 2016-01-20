@@ -11,7 +11,7 @@
 
 module Annex.Hook where
 
-import Common.Annex
+import Annex.Common
 import qualified Git.Hook as Git
 import Config
 import qualified Annex

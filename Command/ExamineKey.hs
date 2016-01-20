@@ -7,12 +7,9 @@
 
 module Command.ExamineKey where
 
-import Common.Annex
 import Command
-import CmdLine.Batch
 import qualified Utility.Format
 import Command.Find (parseFormatOption, showFormatted, keyVars)
-import Types.Key
 
 cmd :: Command
 cmd = noCommit $ withGlobalOptions [jsonOption] $

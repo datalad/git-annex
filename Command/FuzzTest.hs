@@ -7,9 +7,8 @@
 
 module Command.FuzzTest where
 
-import Common.Annex
-import qualified Annex
 import Command
+import qualified Annex
 import qualified Git.Config
 import Config
 import Utility.ThreadScheduler

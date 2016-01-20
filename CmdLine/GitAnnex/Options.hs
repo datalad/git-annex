@@ -11,14 +11,13 @@ import Options.Applicative
 import Options.Applicative.Builder.Internal
 import Control.Concurrent
 
-import Common.Annex
+import Annex.Common
 import qualified Git.Config
 import qualified Git.Construct
 import Git.Types
 import Types.TrustLevel
 import Types.NumCopies
 import Types.Messages
-import Types.Key
 import Types.Command
 import Types.DeferredParse
 import Types.DesktopNotify

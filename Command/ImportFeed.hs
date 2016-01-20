@@ -20,9 +20,8 @@ import Data.Time.Format
 import System.Locale
 #endif
 
-import Common.Annex
-import qualified Annex
 import Command
+import qualified Annex
 import qualified Annex.Url as Url
 import qualified Remote
 import qualified Types.Remote as Remote

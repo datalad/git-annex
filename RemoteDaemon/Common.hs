@@ -12,7 +12,7 @@ module RemoteDaemon.Common
 	) where
 
 import qualified Annex
-import Common.Annex
+import Annex.Common
 import RemoteDaemon.Types
 import qualified Git
 import Annex.CatFile

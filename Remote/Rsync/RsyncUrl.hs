@@ -10,7 +10,7 @@
 module Remote.Rsync.RsyncUrl where
 
 import Types
-import Locations
+import Annex.Locations
 import Utility.Rsync
 import Utility.SafeCommand
 

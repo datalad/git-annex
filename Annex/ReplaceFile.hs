@@ -7,7 +7,7 @@
 
 module Annex.ReplaceFile where
 
-import Common.Annex
+import Annex.Common
 import Annex.Perms
 import Utility.Tmp
 

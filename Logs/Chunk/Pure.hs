@@ -14,7 +14,7 @@ module Logs.Chunk.Pure
 	, showLog
 	) where
 
-import Common.Annex
+import Annex.Common
 import Logs.MapLog
 import Data.Int
 

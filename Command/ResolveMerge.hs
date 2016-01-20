@@ -7,7 +7,6 @@
 
 module Command.ResolveMerge where
 
-import Common.Annex
 import Command
 import qualified Git
 import Git.Sha

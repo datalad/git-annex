@@ -9,7 +9,7 @@
 
 module Remote.Helper.Http where
 
-import Common.Annex
+import Annex.Common
 import Types.StoreRetrieve
 import Utility.Metered
 import Remote.Helper.Special

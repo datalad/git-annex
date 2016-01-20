@@ -7,7 +7,6 @@
 
 module Command.GCryptSetup where
 
-import Common.Annex
 import Command
 import Annex.UUID
 import qualified Remote.GCrypt

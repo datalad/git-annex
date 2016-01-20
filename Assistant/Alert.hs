@@ -9,7 +9,7 @@
 
 module Assistant.Alert where
 
-import Common.Annex
+import Annex.Common
 import Assistant.Types.Alert
 import Assistant.Alert.Utility
 import qualified Remote

@@ -9,7 +9,6 @@
 
 module Command.Unannex where
 
-import Common.Annex
 import Command
 import Config
 import qualified Annex

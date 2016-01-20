@@ -28,7 +28,7 @@ module Assistant.Monad (
 import "mtl" Control.Monad.Reader
 import System.Log.Logger
 
-import Common.Annex
+import Annex.Common
 import Assistant.Types.ThreadedMonad
 import Assistant.Types.DaemonStatus
 import Assistant.Types.ScanRemotes

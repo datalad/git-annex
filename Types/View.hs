@@ -7,7 +7,7 @@
 
 module Types.View where
 
-import Common.Annex
+import Annex.Common
 import Types.MetaData
 import Utility.QuickCheck
 import qualified Git

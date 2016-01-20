@@ -13,7 +13,6 @@ import qualified Data.Map as M
 
 import Assistant.Common
 import qualified Git
-import Types.Key
 import Logs.Unused
 import Logs.Location
 import Annex.Content

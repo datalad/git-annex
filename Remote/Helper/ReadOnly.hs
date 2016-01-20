@@ -12,7 +12,7 @@ module Remote.Helper.ReadOnly
 	, readonlyRemoveKey
 	) where
 
-import Common.Annex
+import Annex.Common
 import Types.Remote
 import Types.StoreRetrieve
 import Utility.Metered

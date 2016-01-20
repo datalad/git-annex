@@ -23,7 +23,7 @@ module Logs.Web (
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Map as M
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
 import Logs
 import Logs.Presence

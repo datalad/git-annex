@@ -7,7 +7,6 @@
 
 module Command.Version where
 
-import Common.Annex
 import Command
 import qualified Build.SysConfig as SysConfig
 import Annex.Version

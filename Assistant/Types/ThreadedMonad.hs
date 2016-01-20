@@ -7,7 +7,7 @@
 
 module Assistant.Types.ThreadedMonad where
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
 
 import Control.Concurrent

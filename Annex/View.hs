@@ -7,7 +7,7 @@
 
 module Annex.View where
 
-import Common.Annex
+import Annex.Common
 import Annex.View.ViewedFile
 import Types.View
 import Types.MetaData

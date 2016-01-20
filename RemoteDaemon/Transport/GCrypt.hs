@@ -7,7 +7,7 @@
 
 module RemoteDaemon.Transport.GCrypt (transport) where
 
-import Common.Annex
+import Annex.Common
 import RemoteDaemon.Types
 import RemoteDaemon.Common
 import RemoteDaemon.Transport.Ssh (transportUsingCmd)

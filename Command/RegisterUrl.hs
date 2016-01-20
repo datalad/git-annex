@@ -9,7 +9,6 @@
 
 module Command.RegisterUrl where
 
-import Common.Annex
 import Command
 import Logs.Web
 import Command.FromKey (mkKey)

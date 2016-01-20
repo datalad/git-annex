@@ -11,7 +11,6 @@ module Command.AddUrl where
 
 import Network.URI
 
-import Common.Annex
 import Command
 import Backend
 import qualified Annex
@@ -25,7 +24,6 @@ import Annex.Content
 import Annex.Ingest
 import Annex.UUID
 import Logs.Web
-import Types.Key
 import Types.KeySource
 import Types.UrlContents
 import Config
@@ -33,7 +31,6 @@ import Annex.Content.Direct
 import Annex.FileMatcher
 import Logs.Location
 import Utility.Metered
-import CmdLine.Batch
 import qualified Annex.Transfer as Transfer
 #ifdef WITH_QUVI
 import Annex.Quvi

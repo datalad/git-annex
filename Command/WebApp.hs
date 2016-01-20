@@ -9,7 +9,6 @@
 
 module Command.WebApp where
 
-import Common.Annex
 import Command
 import Assistant
 import Assistant.Common

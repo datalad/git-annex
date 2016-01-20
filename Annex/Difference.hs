@@ -10,7 +10,7 @@ module Annex.Difference (
 	setDifferences,
 ) where
 
-import Common.Annex
+import Annex.Common
 import Types.Difference
 import Logs.Difference
 import Config

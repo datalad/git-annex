@@ -10,7 +10,7 @@ module Logs.PreferredContent.Raw where
 import qualified Data.Map as M
 import Data.Time.Clock.POSIX
 
-import Common.Annex
+import Annex.Common
 import qualified Annex.Branch
 import qualified Annex
 import Logs

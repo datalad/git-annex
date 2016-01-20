@@ -9,10 +9,9 @@
 
 module Logs.Transfer where
 
-import Common.Annex
+import Annex.Common
 import Annex.Perms
 import qualified Git
-import Types.Key
 import Utility.Metered
 import Utility.Percentage
 import Utility.QuickCheck

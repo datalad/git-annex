@@ -7,7 +7,7 @@
 
 module Assistant.Common (module X) where
 
-import Common.Annex as X
+import Annex.Common as X
 import Assistant.Monad as X
 import Assistant.Types.DaemonStatus as X
 import Assistant.Types.NamedThread as X

@@ -7,7 +7,7 @@
 
 module Types.StoreRetrieve where
 
-import Common.Annex
+import Annex.Common
 import Utility.Metered
 
 import qualified Data.ByteString.Lazy as L

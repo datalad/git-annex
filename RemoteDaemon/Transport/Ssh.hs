@@ -7,7 +7,7 @@
 
 module RemoteDaemon.Transport.Ssh (transport, transportUsingCmd) where
 
-import Common.Annex
+import Annex.Common
 import Annex.Ssh
 import RemoteDaemon.Types
 import RemoteDaemon.Common

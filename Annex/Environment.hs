@@ -9,7 +9,7 @@
 
 module Annex.Environment where
 
-import Common.Annex
+import Annex.Common
 import Utility.UserInfo
 import qualified Git.Config
 import Config

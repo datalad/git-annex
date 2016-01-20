@@ -14,16 +14,14 @@ import qualified Data.Map.Strict as M
 import Text.JSON
 import Data.Ord
 
-import Common.Annex
+import Command
 import qualified Git
 import qualified Annex
 import qualified Remote
 import qualified Types.Remote as Remote
-import Command
 import Utility.DataUnits
 import Utility.DiskFree
 import Annex.Content
-import Types.Key
 import Logs.UUID
 import Logs.Trust
 import Logs.Location
@@ -38,7 +36,6 @@ import qualified Limit
 import Messages.JSON (DualDisp(..))
 import Annex.BloomFilter
 import qualified Command.Unused
-import CmdLine.Batch
 
 -- a named computation that produces a statistic
 type Stat = StatState (Maybe (String, StatState String))

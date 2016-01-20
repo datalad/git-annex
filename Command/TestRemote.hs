@@ -7,13 +7,10 @@
 
 module Command.TestRemote where
 
-import Common
 import Command
 import qualified Annex
 import qualified Remote
 import qualified Types.Remote as Remote
-import Types
-import Types.Key (key2file, keyBackendName, keySize)
 import Types.Backend (getKey, verifyKeyContent)
 import Types.KeySource
 import Annex.Content
@@ -23,10 +20,8 @@ import Utility.Tmp
 import Utility.Metered
 import Utility.DataUnits
 import Utility.CopyFile
-import Messages
 import Types.Messages
 import Remote.Helper.Chunked
-import Locations
 import Git.Types
 
 import Test.Tasty

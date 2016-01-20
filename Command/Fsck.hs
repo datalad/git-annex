@@ -9,12 +9,10 @@
 
 module Command.Fsck where
 
-import Common.Annex
 import Command
 import qualified Annex
 import qualified Remote
 import qualified Types.Backend
-import qualified Types.Key
 import qualified Backend
 import Annex.Content
 import Annex.Content.Direct
@@ -29,7 +27,6 @@ import Annex.NumCopies
 import Annex.UUID
 import Utility.DataUnits
 import Config
-import Types.Key
 import Utility.HumanTime
 import Utility.CopyFile
 import Git.FilePath
@@ -177,7 +174,7 @@ performRemote key file backend numcopies remote =
 
 startKey :: Incremental -> Key -> NumCopies -> CommandStart
 startKey inc key numcopies =
-	case Backend.maybeLookupBackendName (Types.Key.keyBackendName key) of
+	case Backend.maybeLookupBackendName (keyBackendName key) of
 		Nothing -> stop
 		Just backend -> runFsck inc (key2file key) key $
 			performKey key backend numcopies
@@ -309,7 +306,7 @@ checkKeySizeRemote key remote (Just file) =
 	checkKeySizeOr (badContentRemote remote file) key file
 
 checkKeySizeOr :: (Key -> Annex String) -> Key -> FilePath -> Annex Bool
-checkKeySizeOr bad key file = case Types.Key.keySize key of
+checkKeySizeOr bad key file = case keySize key of
 	Nothing -> return True
 	Just size -> do
 		size' <- liftIO $ getFileSize file

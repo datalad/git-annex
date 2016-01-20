@@ -7,7 +7,6 @@
 
 module Command.View where
 
-import Common.Annex
 import Command
 import qualified Git
 import qualified Git.Command

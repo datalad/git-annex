@@ -24,7 +24,7 @@ import qualified "sandi" Codec.Binary.Base64 as B64
 import qualified Data.ByteString as B
 import Data.Bits.Utils
 
-import Common.Annex
+import Annex.Common
 import Types.Remote
 import Crypto
 import Types.Crypto

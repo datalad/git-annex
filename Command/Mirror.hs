@@ -7,7 +7,6 @@
 
 module Command.Mirror where
 
-import Common.Annex
 import Command
 import qualified Command.Move
 import qualified Command.Drop

@@ -7,7 +7,7 @@
 
 module Assistant.Types.TransferrerPool where
 
-import Common.Annex
+import Annex.Common
 import Utility.NotificationBroadcaster
 import Assistant.Types.DaemonStatus
 

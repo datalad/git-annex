@@ -10,7 +10,7 @@ module Logs.RemoteState (
 	setRemoteState,
 ) where
 
-import Common.Annex
+import Annex.Common
 import Logs
 import Logs.UUIDBased
 import qualified Annex.Branch

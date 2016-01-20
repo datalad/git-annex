@@ -14,7 +14,6 @@ import Data.Function
 import Data.Tuple.Utils
 import Data.Ord
 
-import Common.Annex
 import Command
 import Remote
 import Logs.Trust

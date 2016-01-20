@@ -9,7 +9,7 @@
 
 module Remote.Helper.Messages where
 
-import Common.Annex
+import Annex.Common
 import qualified Git
 import qualified Types.Remote as Remote
 

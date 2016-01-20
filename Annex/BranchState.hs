@@ -9,7 +9,7 @@
 
 module Annex.BranchState where
 
-import Common.Annex
+import Annex.Common
 import Types.BranchState
 import qualified Annex
 

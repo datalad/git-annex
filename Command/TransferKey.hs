@@ -7,7 +7,6 @@
 
 module Command.TransferKey where
 
-import Common.Annex
 import Command
 import Annex.Content
 import Logs.Location

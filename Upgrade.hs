@@ -9,7 +9,7 @@
 
 module Upgrade where
 
-import Common.Annex
+import Annex.Common
 import Annex.Version
 #ifndef mingw32_HOST_OS
 import qualified Upgrade.V0

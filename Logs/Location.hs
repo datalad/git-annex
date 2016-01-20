@@ -25,7 +25,7 @@ module Logs.Location (
 	loggedKeysFor,
 ) where
 
-import Common.Annex
+import Annex.Common
 import qualified Annex.Branch
 import Logs
 import Logs.Presence

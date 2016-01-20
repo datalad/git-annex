@@ -7,7 +7,7 @@
 
 module CmdLine.Usage where
 
-import Common.Annex
+import Annex.Common
 import Types.Command
 
 usageMessage :: String -> String

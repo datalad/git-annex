@@ -9,7 +9,7 @@
 
 module Config where
 
-import Common.Annex
+import Annex.Common
 import qualified Git
 import qualified Git.Config
 import qualified Git.Command

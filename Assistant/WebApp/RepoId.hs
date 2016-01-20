@@ -7,7 +7,7 @@
 
 module Assistant.WebApp.RepoId where
 
-import Common.Annex
+import Annex.Common
 import Git.Types (RemoteName)
 import qualified Remote
 

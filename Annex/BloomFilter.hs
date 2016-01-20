@@ -7,7 +7,7 @@
 
 module Annex.BloomFilter where
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
 import Utility.Bloom
 

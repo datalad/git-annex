@@ -8,9 +8,7 @@
 module Command.Dead where
 
 import Command
-import Common.Annex
 import Types.TrustLevel
-import Types.Key
 import Command.Trust (trustCommand)
 import Logs.Location
 import Remote (keyLocations)

@@ -7,12 +7,10 @@
 
 module Command.AddUnused where
 
-import Common.Annex
 import Logs.Location
 import Command
 import Annex.Ingest
 import Command.Unused (withUnusedMaps, UnusedMaps(..), startUnused)
-import Types.Key
 
 cmd :: Command
 cmd = notDirect $ 

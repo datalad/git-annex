@@ -15,7 +15,7 @@ module Logs.Difference (
 import Data.Time.Clock.POSIX
 import qualified Data.Map as M
 
-import Common.Annex
+import Annex.Common
 import Types.Difference
 import qualified Annex.Branch
 import Logs

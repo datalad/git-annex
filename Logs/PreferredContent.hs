@@ -27,7 +27,7 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.Either
 
-import Common.Annex
+import Annex.Common
 import Logs.PreferredContent.Raw
 import qualified Annex.Branch
 import qualified Annex

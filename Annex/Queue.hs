@@ -16,7 +16,7 @@ module Annex.Queue (
 	mergeFrom,
 ) where
 
-import Common.Annex
+import Annex.Common
 import Annex hiding (new)
 import qualified Git.Queue
 import qualified Git.UpdateIndex

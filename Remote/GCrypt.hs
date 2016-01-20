@@ -19,7 +19,7 @@ import qualified Data.ByteString.Lazy as L
 import Control.Exception
 import Data.Default
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
 import Types.Remote
 import Types.GitConfig

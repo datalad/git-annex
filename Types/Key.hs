@@ -1,6 +1,4 @@
 {- git-annex Key data type
- - 
- - Most things should not need this, using Types instead
  -
  - Copyright 2011-2014 Joey Hess <id@joeyh.name>
  -

@@ -9,7 +9,7 @@
 
 module Remote.Web (remote, getWebUrls) where
 
-import Common.Annex
+import Annex.Common
 import Types.Remote
 import Remote.Helper.Messages
 import qualified Git
@@ -18,7 +18,6 @@ import Annex.Content
 import Config.Cost
 import Logs.Web
 import Annex.UUID
-import Types.Key
 import Utility.Metered
 import qualified Annex.Url as Url
 #ifdef WITH_QUVI

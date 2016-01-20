@@ -7,7 +7,7 @@
 
 module Remote.Helper.Git where
 
-import Common.Annex
+import Annex.Common
 import qualified Git
 import Types.Availability
 import qualified Types.Remote as Remote

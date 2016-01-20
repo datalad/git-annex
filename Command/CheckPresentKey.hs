@@ -7,9 +7,7 @@
 
 module Command.CheckPresentKey where
 
-import Common.Annex
 import Command
-import Types.Key
 import qualified Remote
 import Annex
 import Types.Messages

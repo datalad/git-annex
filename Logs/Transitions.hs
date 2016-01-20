@@ -17,7 +17,7 @@ module Logs.Transitions where
 import Data.Time.Clock.POSIX
 import qualified Data.Set as S
 
-import Common.Annex
+import Annex.Common
 import Logs.TimeStamp
 
 transitionsLog :: FilePath

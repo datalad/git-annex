@@ -7,7 +7,6 @@
 
 module Command.Commit where
 
-import Common.Annex
 import Command
 import qualified Annex.Branch
 import qualified Git

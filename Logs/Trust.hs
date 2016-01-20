@@ -20,7 +20,7 @@ module Logs.Trust (
 import qualified Data.Map as M
 import Data.Default
 
-import Common.Annex
+import Annex.Common
 import Types.TrustLevel
 import qualified Annex
 import Logs

@@ -19,7 +19,7 @@ import Network.HTTP.Types
 import System.IO.Error
 import Control.Monad.Catch
 
-import Common.Annex
+import Annex.Common
 import Types.Remote
 import qualified Git
 import Config

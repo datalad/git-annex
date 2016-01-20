@@ -7,7 +7,7 @@
 
 module Remote.Helper.Ssh where
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
 import qualified Git
 import qualified Git.Url
@@ -15,7 +15,6 @@ import Annex.UUID
 import Annex.Ssh
 import CmdLine.GitAnnexShell.Fields (Field, fieldName)
 import qualified CmdLine.GitAnnexShell.Fields as Fields
-import Types.Key
 import Remote.Helper.Messages
 import Messages.Progress
 import Utility.Metered

@@ -22,7 +22,7 @@ import qualified Data.Set as S
 import Data.Time.Clock.POSIX
 import Data.Time.LocalTime
 
-import Common.Annex
+import Annex.Common
 import Types.ScheduledActivity
 import qualified Annex.Branch
 import Logs

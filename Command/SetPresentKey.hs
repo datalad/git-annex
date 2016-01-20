@@ -7,11 +7,9 @@
 
 module Command.SetPresentKey where
 
-import Common.Annex
 import Command
 import Logs.Location
 import Logs.Presence.Pure
-import Types.Key
 
 cmd :: Command
 cmd = noCommit $ 

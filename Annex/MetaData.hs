@@ -11,7 +11,7 @@ module Annex.MetaData (
 	module X
 ) where
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
 import Types.MetaData as X
 import Annex.MetaData.StandardFields as X

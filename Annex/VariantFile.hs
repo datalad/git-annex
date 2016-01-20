@@ -7,8 +7,7 @@
 
 module Annex.VariantFile where
 
-import Common.Annex
-import Types.Key
+import Annex.Common
 
 import Data.Hash.MD5
 

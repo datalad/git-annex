@@ -7,7 +7,6 @@
 
 module Command.Lock where
 
-import Common.Annex
 import Command
 import qualified Annex.Queue
 import qualified Annex

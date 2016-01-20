@@ -25,7 +25,7 @@ import qualified Data.Map as M
 import Data.Time.Clock.POSIX
 
 import Types.UUID
-import Common.Annex
+import Annex.Common
 import qualified Annex
 import qualified Annex.Branch
 import Logs

@@ -9,7 +9,6 @@
 
 module Command.PreCommit where
 
-import Common.Annex
 import Command
 import Config
 import qualified Command.Add

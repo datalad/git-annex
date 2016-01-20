@@ -38,9 +38,8 @@ import Data.ByteString.UTF8 (fromString)
 import qualified Data.Map as M
 import Control.Monad.IO.Class
 
-import Common.Annex
+import Annex.Common
 import qualified Utility.Gpg as Gpg
-import Types.Key
 import Types.Crypto
 import Types.Remote
 

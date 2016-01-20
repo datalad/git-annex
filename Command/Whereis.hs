@@ -7,14 +7,12 @@
 
 module Command.Whereis where
 
-import Common.Annex
 import Command
 import Remote
 import Logs.Trust
 import Logs.Web
 import Remote.Web (getWebUrls)
 import Annex.UUID
-import CmdLine.Batch
 
 import qualified Data.Map as M
 

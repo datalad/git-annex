@@ -7,10 +7,8 @@
 
 module Command.ReadPresentKey where
 
-import Common.Annex
 import Command
 import Logs.Location
-import Types.Key
 
 cmd :: Command
 cmd = noCommit $ 

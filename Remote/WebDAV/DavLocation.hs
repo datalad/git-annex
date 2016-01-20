@@ -11,7 +11,7 @@
 module Remote.WebDAV.DavLocation where
 
 import Types
-import Locations
+import Annex.Locations
 import Utility.Url (URLString)
 
 import System.FilePath.Posix -- for manipulating url paths

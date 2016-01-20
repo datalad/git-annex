@@ -11,7 +11,7 @@ module Annex.CheckAttr (
 	checkAttrStop,
 ) where
 
-import Common.Annex
+import Annex.Common
 import qualified Git.CheckAttr as Git
 import qualified Annex
 

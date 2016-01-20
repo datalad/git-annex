@@ -7,9 +7,8 @@
 
 module Command.Wanted where
 
-import Common.Annex
-import qualified Annex
 import Command
+import qualified Annex
 import qualified Remote
 import Logs.PreferredContent
 import Types.Messages

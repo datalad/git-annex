@@ -22,13 +22,10 @@ module Database.Fsck (
 
 import Database.Types
 import qualified Database.Queue as H
-import Locations
+import Annex.Locations
 import Utility.PosixFiles
 import Utility.Exception
-import Common
-import Annex
-import Types.Key
-import Types.UUID
+import Annex.Common
 import Annex.Perms
 import Annex.LockFile
 

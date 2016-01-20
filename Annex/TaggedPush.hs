@@ -7,7 +7,7 @@
 
 module Annex.TaggedPush where
 
-import Common.Annex
+import Annex.Common
 import qualified Remote
 import qualified Annex.Branch
 import qualified Git

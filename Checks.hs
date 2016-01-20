@@ -10,7 +10,7 @@
 
 module Checks where
 
-import Common.Annex
+import Annex.Common
 import Types.Command
 import Annex.Init
 import Config

@@ -28,7 +28,7 @@ module Annex.UUID (
 	bitTorrentUUID,
 ) where
 
-import Common.Annex
+import Annex.Common
 import qualified Git
 import qualified Git.Config
 import Config

@@ -7,7 +7,7 @@
 
 module Limit.Wanted where
 
-import Common.Annex
+import Annex.Common
 import Annex.Wanted
 import Limit
 import Types.FileMatcher

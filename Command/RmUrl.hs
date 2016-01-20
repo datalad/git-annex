@@ -7,7 +7,6 @@
 
 module Command.RmUrl where
 
-import Common.Annex
 import Command
 import Logs.Web
 import qualified Remote

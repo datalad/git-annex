@@ -7,7 +7,7 @@
 
 module Upgrade.V0 where
 
-import Common.Annex
+import Annex.Common
 import Annex.Content
 import qualified Upgrade.V1
 

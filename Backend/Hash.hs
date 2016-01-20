@@ -12,10 +12,9 @@ module Backend.Hash (
 	testKeyBackend,
 ) where
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
 import Types.Backend
-import Types.Key
 import Types.KeySource
 import Utility.Hash
 import Utility.ExternalSHA

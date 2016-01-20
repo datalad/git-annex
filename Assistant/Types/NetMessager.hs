@@ -7,7 +7,7 @@
 
 module Assistant.Types.NetMessager where
 
-import Common.Annex
+import Annex.Common
 import Assistant.Pairing
 import Git.Types
 

@@ -7,7 +7,6 @@
 
 module Command.Proxy where
 
-import Common.Annex
 import Command
 import Config
 import Utility.Tmp

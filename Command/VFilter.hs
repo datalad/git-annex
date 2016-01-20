@@ -7,7 +7,6 @@
 
 module Command.VFilter where
 
-import Common.Annex
 import Command
 import Annex.View
 import Command.View (paramView, checkoutViewBranch)

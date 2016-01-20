@@ -7,7 +7,7 @@
 
 module Limit where
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
 import qualified Utility.Matcher
 import qualified Remote
@@ -18,7 +18,6 @@ import Annex.UUID
 import Logs.Trust
 import Annex.NumCopies
 import Types.TrustLevel
-import Types.Key
 import Types.Group
 import Types.FileMatcher
 import Types.MetaData

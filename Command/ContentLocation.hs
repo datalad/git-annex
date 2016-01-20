@@ -7,11 +7,8 @@
 
 module Command.ContentLocation where
 
-import Common.Annex
 import Command
-import CmdLine.Batch
 import Annex.Content
-import Types.Key
 
 cmd :: Command
 cmd = noCommit $ 

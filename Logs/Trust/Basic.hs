@@ -13,7 +13,7 @@ module Logs.Trust.Basic (
 
 import Data.Time.Clock.POSIX
 
-import Common.Annex
+import Annex.Common
 import Types.TrustLevel
 import qualified Annex.Branch
 import qualified Annex

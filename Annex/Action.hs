@@ -14,7 +14,7 @@ import qualified Data.Map as M
 import System.Posix.Signals
 #endif
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
 import Annex.Content
 

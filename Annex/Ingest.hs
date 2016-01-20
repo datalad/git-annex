@@ -21,7 +21,7 @@ module Annex.Ingest (
 	forceParams,
 ) where
 
-import Common.Annex
+import Annex.Common
 import Types.KeySource
 import Backend
 import Annex.Content

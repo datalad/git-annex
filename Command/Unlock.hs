@@ -7,7 +7,6 @@
 
 module Command.Unlock where
 
-import Common.Annex
 import Command
 import Annex.Content
 import Annex.CatFile

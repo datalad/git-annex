@@ -7,9 +7,8 @@
 
 module Backend.WORM (backends) where
 
-import Common.Annex
+import Annex.Common
 import Types.Backend
-import Types.Key
 import Types.KeySource
 import Backend.Utilities
 import Git.FilePath

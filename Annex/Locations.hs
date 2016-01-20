@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Locations (
+module Annex.Locations (
 	keyFile,
 	fileKey,
 	keyPaths,
@@ -76,9 +76,9 @@ import Data.Char
 import Data.Default
 
 import Common
-import Types.GitConfig
 import Types.Key
 import Types.UUID
+import Types.GitConfig
 import Types.Difference
 import qualified Git
 import Git.FilePath

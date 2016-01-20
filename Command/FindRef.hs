@@ -7,7 +7,6 @@
 
 module Command.FindRef where
 
-import Common.Annex
 import Command
 import qualified Command.Find as Find
 

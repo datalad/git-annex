@@ -33,7 +33,7 @@ module Logs.MetaData (
 	copyMetaData,
 ) where
 
-import Common.Annex
+import Annex.Common
 import Types.MetaData
 import Annex.MetaData.StandardFields
 import qualified Annex.Branch

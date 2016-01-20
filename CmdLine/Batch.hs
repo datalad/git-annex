@@ -7,8 +7,11 @@
 
 module CmdLine.Batch where
 
-import Common.Annex
-import Command
+import Annex.Common
+import Types.Command
+import CmdLine.Action
+import CmdLine.GitAnnex.Options
+import Options.Applicative
 
 data BatchMode = Batch | NoBatch
 

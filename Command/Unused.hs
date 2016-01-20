@@ -11,7 +11,6 @@ module Command.Unused where
 
 import qualified Data.Map as M
 
-import Common.Annex
 import Command
 import Logs.Unused
 import Annex.Content
@@ -28,7 +27,6 @@ import qualified Remote
 import qualified Annex.Branch
 import Annex.Link
 import Annex.CatFile
-import Types.Key
 import Types.RefSpec
 import Git.Types
 import Git.Sha

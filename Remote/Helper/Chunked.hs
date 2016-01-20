@@ -17,11 +17,10 @@ module Remote.Helper.Chunked (
 	checkPresentChunks,
 ) where
 
-import Common.Annex
+import Annex.Common
 import Utility.DataUnits
 import Types.StoreRetrieve
 import Types.Remote
-import Types.Key
 import Logs.Chunk
 import Utility.Metered
 import Crypto (EncKey)

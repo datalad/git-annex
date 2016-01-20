@@ -7,7 +7,6 @@
 
 module Command.NotifyChanges where
 
-import Common.Annex
 import Command
 import Utility.DirWatcher
 import Utility.DirWatcher.Types

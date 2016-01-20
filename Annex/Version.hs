@@ -9,7 +9,7 @@
 
 module Annex.Version where
 
-import Common.Annex
+import Annex.Common
 import Config
 import qualified Annex
 

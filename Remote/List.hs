@@ -11,7 +11,7 @@ module Remote.List where
 
 import qualified Data.Map as M
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
 import Logs.Remote
 import Types.Remote

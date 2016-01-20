@@ -8,7 +8,7 @@
  - Also gpg signs the files.
  -}
 
-import Common.Annex
+import Annex.Common
 import Types.Distribution
 import Build.Version (getChangelogVersion, Version)
 import Utility.UserInfo

@@ -19,7 +19,6 @@ module Command.Sync (
 	updateSyncBranch,
 ) where
 
-import Common.Annex
 import Command
 import qualified Annex
 import qualified Annex.Branch

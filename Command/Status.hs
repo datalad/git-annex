@@ -7,7 +7,6 @@
 
 module Command.Status where
 
-import Common.Annex
 import Command
 import Annex.CatFile
 import Annex.Content.Direct

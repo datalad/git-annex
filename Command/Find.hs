@@ -10,14 +10,11 @@ module Command.Find where
 import Data.Default
 import qualified Data.Map as M
 
-import Common.Annex
 import Command
 import Annex.Content
 import Limit
 import qualified Utility.Format
 import Utility.DataUnits
-import Types.Key
-import CmdLine.Batch
 
 cmd :: Command
 cmd = withGlobalOptions annexedMatchingOptions $ mkCommand $

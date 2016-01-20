@@ -12,7 +12,7 @@ module Logs.Difference.Pure (
 
 import qualified Data.Map as M
 
-import Common.Annex
+import Annex.Common
 import Types.Difference
 import Logs.UUIDBased
 

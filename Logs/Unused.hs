@@ -33,9 +33,8 @@ import qualified Data.Set as S
 import Data.Time.Clock.POSIX
 import Data.Time
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
-import Types.Key
 import Utility.Tmp
 import Logs.TimeStamp
 

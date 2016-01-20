@@ -24,7 +24,7 @@ import qualified Data.Map as M
 import Data.Hash.MD5
 import System.Exit
 
-import Common.Annex
+import Annex.Common
 import Annex.LockFile
 import qualified Build.SysConfig as SysConfig
 import qualified Annex

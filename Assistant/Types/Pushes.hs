@@ -7,7 +7,7 @@
 
 module Assistant.Types.Pushes where
 
-import Common.Annex
+import Annex.Common
 
 import Control.Concurrent.STM
 import Data.Time.Clock

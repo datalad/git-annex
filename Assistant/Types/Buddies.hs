@@ -9,7 +9,7 @@
 
 module Assistant.Types.Buddies where
 
-import Common.Annex
+import Annex.Common
 
 import qualified Data.Map as M
 import Control.Concurrent.STM

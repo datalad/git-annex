@@ -7,7 +7,7 @@
 
 module Assistant.Types.TransferQueue where
 
-import Common.Annex
+import Annex.Common
 import Logs.Transfer
 
 import Control.Concurrent.STM

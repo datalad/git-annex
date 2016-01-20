@@ -7,7 +7,6 @@
 
 module Command.Add where
 
-import Common.Annex
 import Command
 import Annex.Ingest
 import Logs.Location
@@ -16,13 +15,11 @@ import Annex.Content.Direct
 import Annex.Link
 import qualified Annex
 import qualified Annex.Queue
+import qualified Database.Keys
 import Config
 import Utility.InodeCache
 import Annex.FileMatcher
 import Annex.Version
-import qualified Database.Keys
-import Types.Key
-import CmdLine.Batch
 
 cmd :: Command
 cmd = notBareRepo $ withGlobalOptions (jobsOption : jsonOption : fileMatchingOptions) $

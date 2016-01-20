@@ -9,7 +9,7 @@
 
 module CmdLine.Action where
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
 import Annex.Concurrent
 import Types.Command

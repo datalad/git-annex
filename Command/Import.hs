@@ -7,7 +7,6 @@
 
 module Command.Import where
 
-import Common.Annex
 import Command
 import qualified Git
 import qualified Annex
@@ -16,7 +15,6 @@ import Utility.CopyFile
 import Backend
 import Remote
 import Types.KeySource
-import Types.Key
 import Annex.CheckIgnore
 import Annex.NumCopies
 import Types.FileMatcher

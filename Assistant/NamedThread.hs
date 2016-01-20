@@ -9,7 +9,7 @@
 
 module Assistant.NamedThread where
 
-import Common.Annex
+import Annex.Common
 import Assistant.Types.NamedThread
 import Assistant.Types.ThreadName
 import Assistant.Types.DaemonStatus

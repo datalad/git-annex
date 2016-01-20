@@ -18,7 +18,7 @@ module Annex.Perms (
 	withShared,
 ) where
 
-import Common.Annex
+import Annex.Common
 import Utility.FileMode
 import Git.SharedRepository
 import qualified Annex

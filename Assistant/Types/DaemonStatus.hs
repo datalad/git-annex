@@ -7,7 +7,7 @@
 
 module Assistant.Types.DaemonStatus where
 
-import Common.Annex
+import Annex.Common
 import Assistant.Pairing
 import Utility.NotificationBroadcaster
 import Logs.Transfer

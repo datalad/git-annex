@@ -9,7 +9,6 @@ module Command.Map where
 
 import qualified Data.Map as M
 
-import Common.Annex
 import Command
 import qualified Git
 import qualified Git.Url

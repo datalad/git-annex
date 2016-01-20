@@ -24,8 +24,8 @@ import qualified Database.Keys.SQL as SQL
 import Database.Types
 import Database.Keys.Handle
 import qualified Database.Queue as H
-import Locations
-import Common.Annex hiding (delete)
+import Annex.Locations
+import Annex.Common hiding (delete)
 import qualified Annex
 import Annex.Perms
 import Annex.LockFile

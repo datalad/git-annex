@@ -7,10 +7,8 @@
 
 module Command.ReKey where
 
-import Common.Annex
 import Command
 import qualified Annex
-import Types.Key
 import Annex.Content
 import Annex.Ingest
 import Annex.Link

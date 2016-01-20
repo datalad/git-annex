@@ -10,9 +10,8 @@ module Backend.URL (
 	fromUrl
 ) where
 
-import Common.Annex
+import Annex.Common
 import Types.Backend
-import Types.Key
 import Backend.Utilities
 
 backends :: [Backend]

@@ -7,11 +7,10 @@
 
 module Annex.Drop where
 
-import Common.Annex
+import Annex.Common
 import Logs.Trust
 import Annex.NumCopies
 import Types.Remote (uuid)
-import Types.Key (key2file)
 import qualified Remote
 import qualified Command.Drop
 import Command

@@ -7,7 +7,6 @@
 
 module Command.Help where
 
-import Common.Annex
 import Command
 import qualified Command.Init
 import qualified Command.Add

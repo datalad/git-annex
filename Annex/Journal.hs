@@ -13,7 +13,7 @@
 
 module Annex.Journal where
 
-import Common.Annex
+import Annex.Common
 import qualified Git
 import Annex.Perms
 import Annex.LockFile

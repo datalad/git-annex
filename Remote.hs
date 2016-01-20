@@ -59,7 +59,7 @@ import Text.JSON
 import Text.JSON.Generic
 import Data.Ord
 
-import Common.Annex
+import Annex.Common
 import Types.Remote
 import qualified Annex
 import Annex.UUID

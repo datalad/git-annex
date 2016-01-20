@@ -19,7 +19,7 @@ module Creds (
 	includeCredsInfo,
 ) where
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
 import Types.Creds
 import Annex.Perms

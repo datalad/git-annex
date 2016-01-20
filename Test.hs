@@ -48,7 +48,7 @@ import qualified Git.Types
 import qualified Git.Ref
 import qualified Git.LsTree
 import qualified Git.FilePath
-import qualified Locations
+import qualified Annex.Locations
 import qualified Types.KeySource
 import qualified Types.Backend
 import qualified Types.TrustLevel
@@ -143,7 +143,7 @@ properties :: TestTree
 properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
 	[ testProperty "prop_isomorphic_deencode_git" Git.Filename.prop_isomorphic_deencode
 	, testProperty "prop_isomorphic_deencode" Utility.Format.prop_isomorphic_deencode
-	, testProperty "prop_isomorphic_fileKey" Locations.prop_isomorphic_fileKey
+	, testProperty "prop_isomorphic_fileKey" Annex.Locations.prop_isomorphic_fileKey
 	, testProperty "prop_isomorphic_key_encode" Types.Key.prop_isomorphic_key_encode
 	, testProperty "prop_isomorphic_key_decode" Types.Key.prop_isomorphic_key_decode
 	, testProperty "prop_isomorphic_shellEscape" Utility.SafeCommand.prop_isomorphic_shellEscape
@@ -1516,7 +1516,7 @@ test_crypto = do
 		checkFile mvariant filename =
 			Utility.Gpg.checkEncryptionFile gpgcmd filename $
 				if mvariant == Just Types.Crypto.PubKey then ks else Nothing
-		key2files cipher = Locations.keyPaths .
+		key2files cipher = Annex.Locations.keyPaths .
 			Crypto.encryptKey Types.Crypto.HmacSha1 cipher
 #else
 test_crypto = putStrLn "gpg testing not implemented on Windows"

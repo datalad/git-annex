@@ -7,9 +7,8 @@
 
 module Remote.Hook (remote) where
 
-import Common.Annex
+import Annex.Common
 import Types.Remote
-import Types.Key
 import Types.Creds
 import qualified Git
 import Config

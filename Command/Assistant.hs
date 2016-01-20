@@ -7,7 +7,6 @@
 
 module Command.Assistant where
 
-import Common.Annex
 import Command
 import qualified Command.Watch
 import Annex.Init

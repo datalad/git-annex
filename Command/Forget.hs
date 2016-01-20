@@ -7,7 +7,6 @@
 
 module Command.Forget where
 
-import Common.Annex
 import Command
 import qualified Annex.Branch as Branch
 import Logs.Transitions

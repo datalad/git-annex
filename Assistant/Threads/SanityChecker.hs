@@ -40,7 +40,6 @@ import Assistant.Unused
 import Logs.Unused
 import Logs.Transfer
 import Annex.Path
-import Types.Key (keyBackendName)
 import qualified Annex
 #ifdef WITH_WEBAPP
 import Assistant.WebApp.Types

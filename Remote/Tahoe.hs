@@ -27,7 +27,7 @@ import Data.Aeson
 import Data.ByteString.Lazy.UTF8 (fromString)
 import Control.Concurrent.STM
 
-import Common.Annex
+import Annex.Common
 import Types.Remote
 import Types.Creds
 import qualified Git

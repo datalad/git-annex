@@ -15,7 +15,7 @@ import qualified Options.Applicative.Help as H
 import qualified Control.Exception as E
 import Control.Exception (throw)
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
 import qualified Git
 import qualified Git.AutoCorrect

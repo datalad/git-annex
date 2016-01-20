@@ -20,7 +20,9 @@ module Annex.LockPool.PosixOrPid (
 	checkSaneLock,
 ) where
 
-import Common.Annex
+import Common
+import Types
+import Annex.Locations
 import qualified Annex
 import qualified Utility.LockPool.Posix as Posix
 import qualified Utility.LockPool.PidLock as Pid
@@ -58,7 +60,7 @@ checkSaneLock f h = H.checkSaneLock f h
 
 pidLockFile :: Annex (Maybe FilePath)
 pidLockFile = ifM (annexPidLock <$> Annex.getGitConfig)
-	( Just <$> fromRepo gitAnnexPidLockFile
+	( Just <$> Annex.fromRepo gitAnnexPidLockFile
 	, pure Nothing
 	)
 

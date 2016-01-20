@@ -12,9 +12,8 @@ import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
 import System.IO.Error
 
-import Common.Annex
+import Annex.Common
 import Types.Remote
-import Types.Key
 import Types.Creds
 import qualified Git
 import Config

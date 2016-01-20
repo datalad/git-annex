@@ -23,19 +23,19 @@ module Command (
 	module ReExported
 ) where
 
-import Common.Annex
+import Annex.Common as ReExported
 import Annex.WorkTree
 import qualified Git
 import Types.Command as ReExported
-import Types.Option as ReExported
 import Types.DeferredParse as ReExported
-import CmdLine.Seek as ReExported
 import Checks as ReExported
+import CmdLine.Seek as ReExported
 import CmdLine.Usage as ReExported
 import CmdLine.Action as ReExported
 import CmdLine.Option as ReExported
 import CmdLine.GlobalSetter as ReExported
 import CmdLine.GitAnnex.Options as ReExported
+import CmdLine.Batch as ReExported
 import Options.Applicative as ReExported hiding (command)
 
 import qualified Options.Applicative as O
