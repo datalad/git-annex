@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-01-20T18:49:07Z"
+ content="""
+@wsha.code, if you opt to use annex.thin, then commit a file, and then
+edit the same file again and commit again, the older commit will be in
+git's history, but if you check it out, the old content of the file won't
+be available. This is very similar to what happens when not using annex.thin,
+but later running git-annex unused and dropping the "unused" intermediate
+version of the file.
+
+Running `git annex sync --content` or just `git annex copy --to remote`
+will get the thin version of the file saved on a remote, and then editing
+it won't lose the content. But note that if you edited a file while it was
+being copied off to the remote, the previous version would still get lost.
+
+If these seem like troublesome behaviors, well that's why annex.thin is not
+enabled by default.
+"""]]
