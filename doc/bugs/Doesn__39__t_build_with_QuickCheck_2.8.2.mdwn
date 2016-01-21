@@ -5,8 +5,8 @@ I am getting build errors when trying to compile git-annex with QuickCheck 2.8.2
 Build git-annex with QuickCheck 2.8.2, and get the following errors:
 
 
-[ 30 of 535] Compiling Utility.QuickCheck ( Utility/QuickCheck.hs, dist/build/git-annex/git-annex-tmp/Utility/QuickCheck.o )
-
+    [ 30 of 535] Compiling Utility.QuickCheck ( Utility/QuickCheck.hs, dist/build/git-annex/git-annex-tmp/Utility/QuickCheck.o )
+    
     Utility/QuickCheck.hs:24:10:
         Duplicate instance declarations:
           instance (Arbitrary k, Arbitrary v, Eq k, Ord k) =>
