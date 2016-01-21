@@ -6,29 +6,14 @@
  -}
 
 module Command (
-	command,
-	withParams,
-	(<--<),
-	noRepo,
-	noCommit,
-	noMessages,
-	withGlobalOptions,
-	next,
-	stop,
-	stopUnless,
-	whenAnnexed,
-	ifAnnexed,
-	lookupFile,
-	isBareRepo,
+	module Command,
 	module ReExported
 ) where
 
 import Annex.Common as ReExported
-import Annex.WorkTree
-import qualified Git
+import Annex.WorkTree as ReExported (whenAnnexed, ifAnnexed)
 import Types.Command as ReExported
 import Types.DeferredParse as ReExported
-import Checks as ReExported
 import CmdLine.Seek as ReExported
 import CmdLine.Usage as ReExported
 import CmdLine.Action as ReExported
@@ -37,8 +22,10 @@ import CmdLine.GlobalSetter as ReExported
 import CmdLine.GitAnnex.Options as ReExported
 import CmdLine.Batch as ReExported
 import Options.Applicative as ReExported hiding (command)
-
-import qualified Options.Applicative as O
+import qualified Git
+import Annex.Init
+import Config
+import Utility.Daemon
 
 {- Generates a normal Command -}
 command :: String -> CommandSection -> String -> CmdParamsDesc -> (CmdParamsDesc -> CommandParser) -> Command
@@ -47,7 +34,7 @@ command name section desc paramdesc mkparser =
 		section desc (mkparser paramdesc) Nothing
 
 {- Simple option parser that takes all non-option params as-is. -}
-withParams :: (CmdParams -> v) -> CmdParamsDesc -> O.Parser v
+withParams :: (CmdParams -> v) -> CmdParamsDesc -> Parser v
 withParams mkseek paramdesc = mkseek <$> cmdParams paramdesc
 
 {- Uses the supplied option parser, which yields a deferred parse,
@@ -76,7 +63,7 @@ noMessages c = c { cmdnomessages = True }
 
 {- Adds a fallback action to a command, that will be run if it's used
  - outside a git repository. -}
-noRepo :: (String -> O.Parser (IO ())) -> Command -> Command
+noRepo :: (String -> Parser (IO ())) -> Command -> Command
 noRepo a c = c { cmdnorepo = Just (a (cmdparamdesc c)) }
 
 {- Adds global options to a command's option parser, and modifies its seek
@@ -106,3 +93,33 @@ stopUnless c a = ifM c ( a , stop )
 
 isBareRepo :: Annex Bool
 isBareRepo = fromRepo Git.repoIsLocalBare
+
+commonChecks :: [CommandCheck]
+commonChecks = [repoExists]
+
+repoExists :: CommandCheck
+repoExists = CommandCheck 0 ensureInitialized
+
+notDirect :: Command -> Command
+notDirect = addCheck $ whenM isDirect $
+	error "You cannot run this command in a direct mode repository."
+
+notBareRepo :: Command -> Command
+notBareRepo = addCheck $ whenM (fromRepo Git.repoIsLocalBare) $
+	error "You cannot run this command in a bare repository."
+
+noDaemonRunning :: Command -> Command
+noDaemonRunning = addCheck $ whenM (isJust <$> daemonpid) $
+	error "You cannot run this command while git-annex watch or git-annex assistant is running."
+  where
+	daemonpid = liftIO . checkDaemon =<< fromRepo gitAnnexPidFile
+
+dontCheck :: CommandCheck -> Command -> Command
+dontCheck check cmd = mutateCheck cmd $ \c -> filter (/= check) c
+
+addCheck :: Annex () -> Command -> Command
+addCheck check cmd = mutateCheck cmd $ \c ->
+	CommandCheck (length c + 100) check : c
+
+mutateCheck :: Command -> ([CommandCheck] -> [CommandCheck]) -> Command
+mutateCheck cmd@(Command { cmdcheck = c }) a = cmd { cmdcheck = a c }
