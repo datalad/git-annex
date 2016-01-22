@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="jtgeibel@4ad445b2ef940dedb1b6d9b19e3888e56b33541b"
+ nickname="jtgeibel"
+ subject="source-only build"
+ date="2016-01-21T05:09:52Z"
+ content="""
+Yeah, my patch is definitely incorrect.
+
+Until now, I've been able to build a source-only package on a local machine which does not have ghc, cabal, or any haskell libraries installed.  The binary packages are then built in a PPA which includes backports of all the build-deps.  I'd like to avoid adding that PPA and all those dependencies to my local machine.
+
+The top level command I'm using to build the source package is `gbp buildpackage --git-debian-branch=wily --git-sign-tags --git-tag -S -sa` and this adds `-d` when calling `dpkg-buildpackage` which does not check build dependencies and conflicts.
+
+For now I've installed the dependencies and have my v6 builds!  Maybe `debian/cabal-wrapper` can detect the condition where cabal is not installed and the subcommand is \"clean\" and return success, since if cabal is not installed there won't be anything to clean.
+"""]]

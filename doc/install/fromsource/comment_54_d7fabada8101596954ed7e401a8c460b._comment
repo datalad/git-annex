@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="reyman64@f52a9d695f5dc1d5b0788fbb9877e9401fae7421"
+ nickname="reyman64"
+ subject="Error on compile"
+ date="2016-01-20T22:50:01Z"
+ content="""
+Hi, i have an error with last pulled version on my system : 
+
+[17 of 23] Compiling Text.Feed.Constructor ( src/Text/Feed/Constructor.hs, dist/build/Text/Feed/Constructor.o )
+
+src/Text/Feed/Constructor.hs:131:5: Warning:
+    Pattern match(es) are non-exhaustive
+    In a case alternative: Patterns not matched: XMLFeed _
+[18 of 23] Compiling Text.Feed.Export ( src/Text/Feed/Export.hs, dist/build/Text/Feed/Export.o )
+[19 of 23] Compiling Text.Feed.Import ( src/Text/Feed/Import.hs, dist/build/Text/Feed/Import.o )
+[20 of 23] Compiling Text.Feed.Util   ( src/Text/Feed/Util.hs, dist/build/Text/Feed/Util.o )
+[21 of 23] Compiling Text.Feed.Query  ( src/Text/Feed/Query.hs, dist/build/Text/Feed/Query.o )
+
+src/Text/Feed/Query.hs:66:53:
+    Module ‘Data.Time.Locale.Compat’ does not export ‘rfc822DateFormat’
+
+src/Text/Feed/Query.hs:66:71:
+    Module
+    ‘Data.Time.Locale.Compat’
+    does not export
+    ‘iso8601DateFormat’
+cabal: Error: some packages failed to install:
+feed-0.3.11.1 failed during the building phase. The exception was:
+ExitFailure 1
+
+"""]]

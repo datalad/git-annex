@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="grawity@2ea26be48562f66fcb9b66307da72b1e2e37453f"
+ nickname="grawity"
+ subject="gvfs reliability"
+ date="2016-01-22T08:02:12Z"
+ content="""
+As a side note: gvfs volume monitor doesn't emit `MountAdded` for _all_ mounts – as far as I can see, it only does so for mountpoints that are meant to be _visible in the GUI_. So there's no `MountAdded` signal if I manually mount something on `/mnt`.
+
+Using UDisks2 directly may be more reliable (and does not require the desktop session). It is available on the system bus as `org.freedesktop.UDisks2`:
+
+[[!format text \"\"\"
+signal time=1453449434.447244 sender=:1.8475 -> destination=(null destination) serial=1846 path=/org/freedesktop/UDisks2/block_devices/sdb1; interface=org.freedesktop.DBus.Properties; member=PropertiesChanged
+   string \"org.freedesktop.UDisks2.Filesystem\"
+   array [
+      dict entry(
+         string \"MountPoints\"
+         variant             array [
+               array of bytes \"/mnt\" + \0
+            ]
+      )
+   ]
+   array [
+   ]
+signal time=1453449440.453104 sender=:1.8475 -> destination=(null destination) serial=1847 path=/org/freedesktop/UDisks2/block_devices/sdb1; interface=org.freedesktop.DBus.Properties; member=PropertiesChanged
+   string \"org.freedesktop.UDisks2.Filesystem\"
+   array [
+      dict entry(
+         string \"MountPoints\"
+         variant             array [
+            ]
+      )
+   ]
+   array [
+   ]
+\"\"\"]
+"""]]

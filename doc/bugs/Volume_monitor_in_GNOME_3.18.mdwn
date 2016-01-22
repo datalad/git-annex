@@ -1,0 +1,180 @@
+### Please describe the problem.
+
+The assistant prints _"No known volume monitor available through dbus; falling back to mtab polling"_ on startup. Based on source code, it expects to find `org.gtk.Private.UDisks2VolumeMonitor` on the session bus.
+
+However, gvfs 1.26 (on GNOME 3.18) has renamed the service to `org.gtk.vfs.UDisks2VolumeMonitor` instead, and git-annex doesn't know about that yet.
+
+### What steps will reproduce the problem?
+
+Start the assistant on GNOME 3.18.
+
+### What version of git-annex are you using? On what operating system?
+
+Arch Linux:
+git-annex     6.20160114-8
+gvfs          1.26.2-1
+
+### Please provide any additional information below.
+
+The signals seem to have the same format:
+
+[[!format text """
+signal time=1453449272.593009 sender=:1.25 -> destination=(null destination) serial=2270 path=/org/gtk/Private/RemoteVolumeMonitor; interface=org.gtk.Private.RemoteVolumeMonitor; member=MountAdded
+   string "org.gtk.vfs.UDisks2VolumeMonitor"
+   string "0x1981b90"
+   struct {
+      string "0x1981b90"
+      string "A0D8-7268"
+      string ". GThemedIcon drive-harddisk-usb drive-harddisk drive"
+      string ". GThemedIcon drive-harddisk-usb-symbolic drive-harddisk-symbolic drive-symbolic drive-harddisk-usb drive-harddisk drive"
+      string ""
+      string "file:///run/media/grawity/A0D8-7268"
+      boolean true
+      string "0x7f396402a400"
+      array [
+      ]
+      string "gvfs.time_detected_usec.1453449272586665"
+      array [
+      ]
+   }
+"""]]
+
+The DBus interface looks like this:
+
+[[!format text """
+$ gdbus introspect -e -d org.gtk.vfs.UDisks2VolumeMonitor -o / -r
+node /org/gtk/Private/RemoteVolumeMonitor {
+  interface org.freedesktop.DBus.Properties {
+    methods:
+      Get(in  s interface_name,
+          in  s property_name,
+          out v value);
+      GetAll(in  s interface_name,
+             out a{sv} properties);
+      Set(in  s interface_name,
+          in  s property_name,
+          in  v value);
+    signals:
+      PropertiesChanged(s interface_name,
+                        a{sv} changed_properties,
+                        as invalidated_properties);
+    properties:
+  };
+  interface org.freedesktop.DBus.Introspectable {
+    methods:
+      Introspect(out s xml_data);
+    signals:
+    properties:
+  };
+  interface org.freedesktop.DBus.Peer {
+    methods:
+      Ping();
+      GetMachineId(out s machine_uuid);
+    signals:
+    properties:
+  };
+  interface org.gtk.Private.RemoteVolumeMonitor {
+    methods:
+      IsSupported(out b is_supported);
+      List(out a(ssssbbbbbbbbuasa{ss}sa{sv}) drives,
+           out a(ssssssbbssa{ss}sa{sv}) volumes,
+           out a(ssssssbsassa{sv}) mounts);
+      CancelOperation(in  s cancellation_id,
+                      out b was_cancelled);
+      MountUnmount(in  s id,
+                   in  s cancellation_id,
+                   in  u unmount_flags,
+                   in  s mount_op_id);
+      VolumeMount(in  s id,
+                  in  s cancellation_id,
+                  in  u mount_flags,
+                  in  s mount_op_id);
+      DriveEject(in  s id,
+                 in  s cancellation_id,
+                 in  u unmount_flags,
+                 in  s mount_op_id);
+      DrivePollForMedia(in  s id,
+                        in  s cancellation_id);
+      DriveStart(in  s id,
+                 in  s cancellation_id,
+                 in  u flags,
+                 in  s mount_op_id);
+      DriveStop(in  s id,
+                in  s cancellation_id,
+                in  u unmount_flags,
+                in  s mount_op_id);
+      MountOpReply(in  s mount_op_id,
+                   in  i result,
+                   in  s user_name,
+                   in  s domain,
+                   in  s encoded_password,
+                   in  i password_save,
+                   in  i choice,
+                   in  b anonymous);
+    signals:
+      DriveChanged(s dbus_name,
+                   s id,
+                   (ssssbbbbbbbbuasa{ss}sa{sv}) drive);
+      DriveConnected(s dbus_name,
+                     s id,
+                     (ssssbbbbbbbbuasa{ss}sa{sv}) drive);
+      DriveDisconnected(s dbus_name,
+                        s id,
+                        (ssssbbbbbbbbuasa{ss}sa{sv}) drive);
+      DriveEjectButton(s dbus_name,
+                       s id,
+                       (ssssbbbbbbbbuasa{ss}sa{sv}) drive);
+      DriveStopButton(s dbus_name,
+                      s id,
+                      (ssssbbbbbbbbuasa{ss}sa{sv}) drive);
+      VolumeChanged(s dbus_name,
+                    s id,
+                    (ssssssbbssa{ss}sa{sv}) volume);
+      VolumeAdded(s dbus_name,
+                  s id,
+                  (ssssssbbssa{ss}sa{sv}) volume);
+      VolumeRemoved(s dbus_name,
+                    s id,
+                    (ssssssbbssa{ss}sa{sv}) volume);
+      MountChanged(s dbus_name,
+                   s id,
+                   (ssssssbsassa{sv}) mount);
+      MountAdded(s dbus_name,
+                 s id,
+                 (ssssssbsassa{sv}) mount);
+      MountPreUnmount(s dbus_name,
+                      s id,
+                      (ssssssbsassa{sv}) mount);
+      MountRemoved(s dbus_name,
+                   s id,
+                   (ssssssbsassa{sv}) mount);
+      MountOpAskPassword(s dbus_name,
+                         s id,
+                         s message_to_show,
+                         s default_user,
+                         s default_domain,
+                         u flags);
+      MountOpAskQuestion(s dbus_name,
+                         s id,
+                         s message_to_show,
+                         as choices);
+      MountOpShowProcesses(s dbus_name,
+                           s id,
+                           s message_to_show,
+                           ai pid,
+                           as choices);
+      MountOpShowUnmountProgress(s dbus_name,
+                                 s id,
+                                 s message_to_show,
+                                 x time_left,
+                                 x bytes_left);
+      MountOpAborted(s dbus_name,
+                     s id);
+    properties:
+  };
+};
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Works fine in general.

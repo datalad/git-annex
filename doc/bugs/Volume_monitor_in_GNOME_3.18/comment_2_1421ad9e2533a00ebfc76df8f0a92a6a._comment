@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="grawity@2ea26be48562f66fcb9b66307da72b1e2e37453f"
+ nickname="grawity"
+ subject="comment 2"
+ date="2016-01-22T08:11:18Z"
+ content="""
+Seems like I failed at comment formatting. But another addition: UDisks2 might also be a good idea because it's already used by _both_ Gvfs (GNOME/Xfce) and KDE _and_ Enlightenment 17+ and Deepin, which might be an improvement over the current \"gvfs vs unreliable kde stuff\" code split.
+"""]]
