@@ -97,3 +97,4 @@ $ echo "dl+archive:SHA256E-s5121--6d8f7d10206a120a42bec2cd29bc2365d09889fdf070ac
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 
+> fixed; [[done]] --[[Joey]]
