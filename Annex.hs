@@ -30,6 +30,7 @@ module Annex (
 	getGitConfig,
 	changeGitConfig,
 	changeGitRepo,
+	adjustGitRepo,
 	getRemoteGitConfig,
 	withCurrentState,
 	changeDirectory,
@@ -95,6 +96,7 @@ newtype Annex a = Annex { runAnnex :: ReaderT (MVar AnnexState) IO a }
 -- internal state storage
 data AnnexState = AnnexState
 	{ repo :: Git.Repo
+	, repoadjustment :: (Git.Repo -> IO Git.Repo)
 	, gitconfig :: GitConfig
 	, backends :: [BackendA Annex]
 	, remotes :: [Types.Remote.RemoteA Annex]
@@ -141,6 +143,7 @@ data AnnexState = AnnexState
 newState :: GitConfig -> Git.Repo -> AnnexState
 newState c r = AnnexState
 	{ repo = r
+	, repoadjustment = return
 	, gitconfig = c
 	, backends = []
 	, remotes = []
@@ -295,10 +298,20 @@ changeGitConfig a = changeState $ \s -> s { gitconfig = a (gitconfig s) }
 
 {- Changing the git Repo data also involves re-extracting its GitConfig. -}
 changeGitRepo :: Git.Repo -> Annex ()
-changeGitRepo r = changeState $ \s -> s
-	{ repo = r
-	, gitconfig = extractGitConfig r
-	}
+changeGitRepo r = do
+	adjuster <- getState repoadjustment
+	r' <- liftIO $ adjuster r
+	changeState $ \s -> s
+		{ repo = r'
+		, gitconfig = extractGitConfig r'
+		}
+
+{- Adds an adjustment to the Repo data. Adjustments persist across reloads
+ - of the repo's config. -}
+adjustGitRepo :: (Git.Repo -> IO Git.Repo) -> Annex ()
+adjustGitRepo a = do
+	changeState $ \s -> s { repoadjustment = \r -> repoadjustment s r >>= a }
+	changeGitRepo =<< gitRepo
 
 {- Gets the RemoteGitConfig from a remote, given the Git.Repo for that
  - remote. -}

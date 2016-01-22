@@ -11,6 +11,8 @@ git-annex (6.20160115) UNRELEASED; urgency=medium
     added directly to git due to annex.largefiles configuration.)
     (Also done by add --json and import --json)
   * registerurl: Check if a remote claims the url, same as addurl does.
+  * Bug fix: Git config settings passed to git-annex -c did not always take
+    effect.
 
  -- Joey Hess <id@joeyh.name>  Fri, 15 Jan 2016 14:05:01 -0400
 
