@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-01-22T20:10:01Z"
+ content="""
+Thanks for the info.
+
+I think I was having difficulty matching on the udisks2 signals before, due
+to how they're structured, but I found a way now.
+"""]]
