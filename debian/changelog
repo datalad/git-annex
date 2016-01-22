@@ -13,6 +13,7 @@ git-annex (6.20160115) UNRELEASED; urgency=medium
   * registerurl: Check if a remote claims the url, same as addurl does.
   * Bug fix: Git config settings passed to git-annex -c did not always take
     effect.
+  * assistant: Added new name used for udisks2 dbus service in gnome 3.18.
 
  -- Joey Hess <id@joeyh.name>  Fri, 15 Jan 2016 14:05:01 -0400
 

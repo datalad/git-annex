@@ -95,9 +95,10 @@ checkMountMonitor client = do
 				]
 			return True
   where
-	startableservices = [gvfs, gvfsgdu]
+	startableservices = [gvfsnew, gvfs, gvfsgdu]
 	usableservices = startableservices ++ [kde]
 	gvfs = "org.gtk.Private.UDisks2VolumeMonitor"
+	gvfsnew = "org.gtk.vfs.UDisks2VolumeMonitor"
 	gvfsgdu = "org.gtk.Private.GduVolumeMonitor"
 	kde = "org.kde.DeviceNotifications"
 
