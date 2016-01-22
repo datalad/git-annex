@@ -98,7 +98,7 @@ docs: mans
 		--exclude='users/*' --exclude='devblog/*' --exclude='thanks'
 
 clean:
-	if [ "$(BUILDER)" != ./Setup ]; then $(BUILDER) clean; fi
+	if [ "$(BUILDER)" != ./Setup ] && [ "$(BUILDER)" != cabal ]; then $(BUILDER) clean; fi
 	rm -rf tmp dist git-annex $(mans) configure  *.tix .hpc \
 		doc/.ikiwiki html dist tags Build/SysConfig.hs \
 		Setup Build/InstallDesktopFile Build/EvilSplicer \
