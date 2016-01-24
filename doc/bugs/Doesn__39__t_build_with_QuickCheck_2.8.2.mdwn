@@ -28,3 +28,6 @@ git-annex 6.20160114, on Arch Linux x86_64.
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Yes, it built fine with QuickCheck 2.8. I didn't test with 2.8.1, though.
+
+> ifdefed those instances out with this version of quickcheck. [[done]]
+> --[[Joey]]
