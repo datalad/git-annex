@@ -1,0 +1,30 @@
+### Please describe the problem.
+Can't remove repositories
+
+### What steps will reproduce the problem?
+In repo view, click Actions and select Delete. Then enter "Yes, please do as I say!" in text field and click Delete this repo. Error! Internal Server Error: git [Param "config",Param "annex.autocommit",Param "false"] failed
+
+### What version of git-annex are you using? On what operating system?
+6.20160114-g6be9ee0 
+
+Mac OS X
+
+### Please provide any additional information below.
+
+I can't enable logging. When I do, I receive a similar error message
+
+"git [Param "config",Param "annex.diskreserve",Param "1 megabyte"] failed"
+
+I just downloaded and installed Git Annex. This problem was there from day 1.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
