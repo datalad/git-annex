@@ -16,6 +16,8 @@ git-annex (6.20160115) UNRELEASED; urgency=medium
   * assistant: Use udisks2 dbus events to detect when disks are mounted,
     instead of relying on gnome/kde stuff that is not stable.
   * Fix build with QuickCheck 2.8.2
+  * matchexpression: New plumbing command to check if a preferred content
+    expression matches some data.
 
  -- Joey Hess <id@joeyh.name>  Fri, 15 Jan 2016 14:05:01 -0400
 

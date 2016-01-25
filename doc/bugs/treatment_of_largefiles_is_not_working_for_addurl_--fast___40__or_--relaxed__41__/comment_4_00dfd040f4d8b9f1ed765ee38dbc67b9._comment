@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-01-25T20:15:05Z"
+ content="""
+Implemented the matchexpression command.
+
+	time for x in $(seq 1 100); do git annex matchexpression "include=*.png and largerthan=100mb" --file=foo.png --size=10mb --debug; done
+	
+	real	0m5.167s
+	user	0m2.688s
+	sys	0m1.860s
+
+Don't know if that's fast enough or if it will need further optimisation
+or a --batch option..
+"""]]

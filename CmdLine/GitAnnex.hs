@@ -27,6 +27,7 @@ import qualified Command.Fsck
 import qualified Command.LookupKey
 import qualified Command.ContentLocation
 import qualified Command.ExamineKey
+import qualified Command.MatchExpression
 import qualified Command.FromKey
 import qualified Command.RegisterUrl
 import qualified Command.SetKey
@@ -166,6 +167,7 @@ cmds testoptparser testrunner =
 	, Command.LookupKey.cmd
 	, Command.ContentLocation.cmd
 	, Command.ExamineKey.cmd
+	, Command.MatchExpression.cmd
 	, Command.FromKey.cmd
 	, Command.RegisterUrl.cmd
 	, Command.SetKey.cmd

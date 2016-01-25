@@ -1,0 +1,51 @@
+# NAME
+
+git-annex matchexpression - checks if a preferred content expression matches
+
+# SYNOPSIS
+
+git annex matchexpression `expression [data]`
+
+# DESCRIPTION
+
+This plumbing-level command is given a prefferred content expression,
+and some data, and checks if the expression matches the data. It exits 0 if
+it matches, and 1 if not. If not enough data was provided, it displays an
+error and exits with special code 42.
+
+For example, this will exit 0:
+
+	git annex matchexpression "include=*.png and largerthan=1mb" --file=foo.png --size=10mb
+
+# OPTIONS
+
+* `--file=`
+
+  Provide the filename to match against. Note that the file does not have
+  to actually exist on disk.
+
+* `--size=`
+
+  Tell what the size of the file is. The size can be specified with any
+  commonly used units, for example, "0.5 gb" or "100 KiloBytes".
+
+* `--key=`
+
+  Tell what key is being matched against. This is needed for
+  matching expressions like "copies=N" and "metadata=tag=foo" and
+  "present", which all need to look up the information on file for a key.
+
+  Many keys have a known size, and so --size is not needed when specifying
+  such a key.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-preferred-content]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.
