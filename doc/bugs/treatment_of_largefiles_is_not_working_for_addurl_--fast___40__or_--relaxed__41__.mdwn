@@ -23,3 +23,7 @@ lrwxrwxrwx 1 yoh yoh 132 Jan 13 18:44 test.txt -> .git/annex/objects/KW/kj/URL-s
 it does consider largefiles for if addurl without  --fast, or --relaxed
 
 [[!meta author=yoh]]
+
+> [[done]]; this can't really be done, but I added `git annex
+> matchexpression` to allow scripting that checks expressions such as
+> annex.largefiles. --[[Joey]]
