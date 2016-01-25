@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-01-25T17:51:25Z"
+ content="""
+Wait, you can't add a file to git that's not present, so even if addurl did
+support largefiles for --fast and --relaxed, all it could do if the file
+was not large was error out, because it wouldn't have downloaded the
+content to add to git in the first place!
+
+Now, as to some plumbing to check if an expression matches
+some data, it's a good idea. Implementing it without adding a lot of
+complexity may be tricky though. In particular something like `limitSize`
+can't currently error out, which is important so that matching preferred
+content never crashes git-annex.. but it needs to if the size is not provided
+in this other use case.
+
+What I think I could do is add a new data type to MatchInfo, something
+like:
+
+	MatchingInfo (Maybe FilePath) (Maybe FileSize) (Maybe Key)
+
+And then in terminals like `limitSize`, when a MatchingInfo is provided,
+have it error out if size is not provided.
+
+The command-line interface for this would be sufficiently complicated
+that it might be best to go with a full json input for batch mode.
+User needs to provide the expression, and any/all of filepath, filesize,
+key, and in the future perhaps other info (mime type etc). 
+
+Maybe  batch mode wouldn't be needed though; the command should not need
+to spin up any git helper processes at all to check such an expression and so
+should run pretty fast.
+"""]]
