@@ -81,6 +81,10 @@ Several options can be used to adjust handling of duplicate files.
 Note that using `--deduplicate` or `--clean-duplicates` with the WORM
 backend does not look at file content, but filename and mtime.
 
+If annex.largefiles is configured, and does not match a file, `git annex
+import` will add the non-large file directly to the git repository,
+instead of to the annex.
+
 # SEE ALSO
 
 [[git-annex]](1)
