@@ -60,9 +60,6 @@ Flag AndroidSplice
 Flag TestSuite
   Description: Embed the test suite into git-annex
 
-Flag TDFA
-  Description: Use regex-tdfa for wildcards
-
 Flag TorrentParser
   Description: Use haskell torrent library to parse torrent files
 
@@ -104,7 +101,8 @@ Executable git-annex
    time, old-locale,
    esqueleto, persistent-sqlite, persistent, persistent-template,
    aeson,
-   feed
+   feed,
+   regex-tdfa
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs
   Extensions: PackageImports
@@ -146,12 +144,6 @@ Executable git-annex
     Build-Depends: tasty (>= 0.7), tasty-hunit, tasty-quickcheck, tasty-rerun,
      crypto-api
     CPP-Options: -DWITH_TESTSUITE
-
-  if flag(TDFA)
-    Build-Depends: regex-tdfa
-    CPP-Options: -DWITH_TDFA
-  else
-    Build-Depends: regex-compat
 
   if flag(S3)
     Build-Depends: conduit, conduit-extra, aws (>= 0.9.2)

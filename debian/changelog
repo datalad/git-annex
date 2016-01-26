@@ -20,10 +20,8 @@ git-annex (6.20160115) UNRELEASED; urgency=medium
     expression matches some data.
   * Removed the webapp-secure build flag, rolling it into the webapp build
     flag.
-  * Removed the quvi and tahoe build flags, which only adds aeson to
-    the core dependencies.
-  * Removed the feed build flag, which only adds feed to the core
-    dependencies.
+  * Removed the quvi, tahoe, feed, and tfds build flags, adding
+    aeson feed and regex-tdfa to the core dependencies.
   * Roll the dns build flag into the assistant build flag.
 
  -- Joey Hess <id@joeyh.name>  Fri, 15 Jan 2016 14:05:01 -0400
