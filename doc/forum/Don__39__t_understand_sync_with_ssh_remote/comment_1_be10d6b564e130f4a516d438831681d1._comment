@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="reyman64@740e43250854ada1b8484b3bc44b53be03367d70"
+ nickname="reyman64"
+ subject="comment 1"
+ date="2016-01-26T19:14:51Z"
+ content="""
+Ok i finally understand.
+
+I remove the ssh with `git add remove pdfwebfaction` and recreate with
+
+`git remote add pdfwebfaction ssh://reyman@webxxx.webfaction.com:/home/reyman/webdav/pdf`
+
+At this step, `git annex get --from pdfwebfaction` doesn't work, i need to create and add a file like `touch test` to my local empty git repository.
+
+After that, the previous command work.
+
+
+"""]]
