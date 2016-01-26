@@ -25,6 +25,8 @@ git-annex (6.20160126) unstable; urgency=medium
   * Removed the quvi, tahoe, feed, and tfds build flags, adding
     aeson feed and regex-tdfa to the core dependencies.
   * Roll the dns build flag into the assistant build flag.
+  * Debian: Avoid building debug package, since gdb is not often useful
+    to debug haskell programs.
 
  -- Joey Hess <id@joeyh.name>  Tue, 26 Jan 2016 14:57:42 -0400
 

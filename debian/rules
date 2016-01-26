@@ -25,6 +25,10 @@ override_dh_auto_install:
 override_dh_fixperms:
 	dh_fixperms -Xld-linux
 
+# gdb can't do much with a haskell program, so avoid the debug package
+override_dh_strip:
+	dh_strip --no-ddebs
+
 # Do not add "ldconfig" trigger since all libraries in the standalone build
 # are private copies and the trigger activate-noawait trigger may not work
 # on elderly distributions (e.g. squeeze)
