@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-01-19T17:13:05Z"
+ content="""
+You were talking about determining if a file is in git-annex or git, and
+git-annex info can do that.
+"""]]

@@ -7,10 +7,8 @@
 
 module Command.Migrate where
 
-import Common.Annex
 import Command
 import Backend
-import qualified Types.Key
 import Types.Backend (canUpgradeKey, fastMigrate)
 import Types.KeySource
 import Annex.Content
@@ -55,7 +53,7 @@ start file key = do
  -  - Something has changed in the backend, such as a bug fix.
  -}
 upgradableKey :: Backend -> Key -> Bool
-upgradableKey backend key = isNothing (Types.Key.keySize key) || backendupgradable
+upgradableKey backend key = isNothing (keySize key) || backendupgradable
   where
 	backendupgradable = maybe False (\a -> a key) (canUpgradeKey backend)
 

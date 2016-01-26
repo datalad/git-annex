@@ -7,10 +7,8 @@
 
 module Command.LockContent where
 
-import Common.Annex
 import Command
 import Annex.Content
-import Types.Key
 import Remote.Helper.Ssh (contentLockedMarker)
 
 cmd :: Command

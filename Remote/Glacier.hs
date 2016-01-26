@@ -11,9 +11,8 @@ import qualified Data.Map as M
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as L
 
-import Common.Annex
+import Annex.Common
 import Types.Remote
-import Types.Key
 import qualified Git
 import Config
 import Config.Cost

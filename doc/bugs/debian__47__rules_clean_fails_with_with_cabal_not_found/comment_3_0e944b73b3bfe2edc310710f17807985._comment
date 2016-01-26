@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-01-22T15:49:19Z"
+ content="""
+That's a reasonable thing to want to do. It might be that passing -nc to
+dpkg-buildpackage would be the best thing to do. In any case, 
+I've adjusted the Makefile.
+"""]]

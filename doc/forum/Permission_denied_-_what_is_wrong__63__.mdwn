@@ -1,0 +1,28 @@
+I just set up one local repo and one remote server repo (accessible via SSH) that are synced with each other. However, when I add a file to the local repo it never appears on the remote repo. From the log:
+
+***************************************************************************
+    (scanning...) [2016-01-18 14:55:26.566983] Watcher: Performing startup scan
+    [2016-01-18 14:55:26.584387] Committer: Committing changes to git
+    (recording state in git...)
+    (started...) 
+    Permission denied, please try again.
+    Permission denied, please try again.
+    Permission denied (publickey,password,keyboard-interactive).
+    rsync: connection unexpectedly closed (0 bytes received so far) [sender]
+    rsync error: unexplained error (code 255) at /SourceCache/rsync/rsync-45/rsync/io.c(453) [sender=2.6.9]
+    
+      rsync failed -- run git annex again to resume file transfer
+    [2016-01-18 14:55:30.429824] main: Syncing with lacieannex 
+    
+    Permission denied, please try again.
+    Permission denied, please try again.
+    Permission denied (publickey,password,keyboard-interactive).
+    rsync: connection unexpectedly closed (0 bytes received so far) [sender]
+    rsync error: error in rsync protocol data stream
+      rsync failed -- run git annex again to resume file transfer
+     (code 12) at /SourceCache/rsync/rsync-45/rsync/io.c(453) [sender=2.6.9]
+***************************************************************************
+
+I suspect there is something with the ssh authentication. I tried to remove all keys from my known_hosts that was related to the server (a handful since I had accessed it at server.local, server.lan, 192.168.1.3, fqdn:2222 etc). My plan was to re-run the setup screen where you enter the details about the remote server, including your username and password, but that step seems unavailable after the initial setup.
+
+How do I fix the issues above?

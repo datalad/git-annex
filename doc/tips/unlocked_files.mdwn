@@ -31,7 +31,7 @@ had many problems of its own.
 
 ## enter v6 mode
 
-/!\ This is an experimental feature; see its [[todo_list|todo/smudge]]
+/!\ This is an new feature; see its [[todo_list|todo/smudge]]
 for known issues.
 
 This led to the v6 repository mode, which makes unlocked files remain
@@ -87,7 +87,8 @@ your changes.
 
 Under the hood, this uses git's [[todo/smudge]] filter interface, and
 git-annex converts between the content of the big file and a pointer file,
-which is what gets committed to git. 
+which is what gets committed to git. All the regular git-annex commands
+(get, drop, etc) can be used on unlocked files too.
 
 A v6 repository can contain both locked and unlocked files. You can switch 
 a file back and forth using the `git annex lock` and `git annex unlock`
@@ -113,18 +114,13 @@ old versions of files is an important part of git after all!
 That's a good safe default. But there are ways to use git-annex that
 make the second copy not be worth keeping:
 
-[[!template id=note text="""
-When a [[direct_mode]] repository is upgraded, annex.thin is automatically
-set, because direct mode made the same single-copy tradeoff.
-"""]]
-
-* When you're using git-annex to sync the current version of files acrosss
+* When you're using git-annex to sync the current version of files across
   devices, and don't care much about previous versions.
 * When you have set up a backup repository, and use git-annex to copy
   your files to the backup.
 
 In situations like these, you may want to avoid the overhead of the second
-local copy of unlocked files. There's config setting for that.
+local copy of unlocked files. There's a config setting for that.
 
 	git config annex.thin true
 
@@ -137,6 +133,11 @@ Note that setting annex.thin only has any effect on systems that support
 hard links. Ie, not Windows, and not FAT filesystems.
 
 ## tradeoffs
+
+[[!template id=note text="""
+When a [[direct_mode]] repository is upgraded, annex.thin is automatically
+set, because direct mode made the same single-copy tradeoff.
+"""]]
 
 Setting annex.thin can save a lot of disk space, but it's a tradeoff
 between disk usage and safety. 

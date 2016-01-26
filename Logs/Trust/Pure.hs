@@ -7,7 +7,7 @@
 
 module Logs.Trust.Pure where
 
-import Common.Annex
+import Annex.Common
 import Types.TrustLevel
 import Logs.UUIDBased
 

@@ -4,12 +4,16 @@ git-annex should use smudge/clean filters.
 
 * Reconcile staged changes into the associated files database, whenever
   the database is queried. This is needed to handle eg:
+
+  ```
   	git add largefile
 	git mv largefile othername
 	git annex move othername --to foo
 	# fails to drop content from associated file othername,
 	# because it doesn't know it has that name
 	# git commit clears up this mess
+  ```
+
 * Dropping a smudged file causes git status (and git annex status)
   to show it as modified,  because the timestamp has changed. 
   Getting a smudged file can also cause this.

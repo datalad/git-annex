@@ -1,0 +1,20 @@
+### Please describe the problem.
+
+The 'present' flag in the wanted files flag for a repository is ignored when doing a `git annex sync --content`, which causes git annex to (try to) drop all files. E.g. the line 
+
+    wanted $repoid = lackingcopies=1 or present
+
+in `git annex vicfg` tries to drop all files if enough copies are available. `git annex drop --auto` works as expected and doesn't try to drop files.
+
+### What steps will reproduce the problem?
+Use 'present' in the 'wanted' option of a repo and do a `git annex sync --content`. `wanted $repouuid = present` was enough to trigger that behaviour.
+
+### What version of git-annex are you using? On what operating system?
+git-annex version 6.20160114 on Arch Linux.
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+This behaviour is relatively recent. Until some time ago everything worked as expected with the expression above.
+
+> [[fixed|done]] --[[Joey]]

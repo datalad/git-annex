@@ -6,7 +6,7 @@
  - UUIDs of remotes are cached in git config, using keys named
  - remote.<name>.annex-uuid
  -
- - Copyright 2010-2013 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -28,7 +28,8 @@ module Annex.UUID (
 	bitTorrentUUID,
 ) where
 
-import Common.Annex
+import Annex.Common
+import qualified Annex
 import qualified Git
 import qualified Git.Config
 import Config
@@ -58,9 +59,10 @@ gCryptNameSpace = U5.generateNamed U5.namespaceURL $
 
 {- Get current repository's UUID. -}
 getUUID :: Annex UUID
-getUUID = getRepoUUID =<< gitRepo
+getUUID = annexUUID <$> Annex.getGitConfig 
 
-{- Looks up a repo's UUID, caching it in .git/config if it's not already. -}
+{- Looks up a remote repo's UUID, caching it in .git/config if
+ - it's not already. -}
 getRepoUUID :: Git.Repo -> Annex UUID
 getRepoUUID r = do
 	c <- toUUID <$> getConfig cachekey ""
@@ -78,7 +80,9 @@ getRepoUUID r = do
 	cachekey = remoteConfig r "uuid"
 
 removeRepoUUID :: Annex ()
-removeRepoUUID = unsetConfig configkey
+removeRepoUUID = do
+	unsetConfig configkey
+	storeUUID NoUUID
 
 getUncachedUUID :: Git.Repo -> UUID
 getUncachedUUID = toUUID . Git.Config.get key ""
@@ -98,7 +102,9 @@ prepUUID = whenM ((==) NoUUID <$> getUUID) $
 	storeUUID =<< liftIO genUUID
 
 storeUUID :: UUID -> Annex ()
-storeUUID = storeUUIDIn configkey
+storeUUID u = do
+	Annex.changeGitConfig $ \c -> c { annexUUID = u }
+	storeUUIDIn configkey u
 
 storeUUIDIn :: ConfigKey -> UUID -> Annex ()
 storeUUIDIn configfield = setConfig configfield . fromUUID

@@ -7,11 +7,9 @@
 
 module Command.TransferInfo where
 
-import Common.Annex
 import Command
 import Annex.Content
 import Logs.Transfer
-import Types.Key
 import qualified CmdLine.GitAnnexShell.Fields as Fields
 import Utility.Metered
 

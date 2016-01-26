@@ -7,7 +7,6 @@
 
 module Command.VAdd where
 
-import Common.Annex
 import Command
 import Annex.View
 import Command.View (checkoutViewBranch)

@@ -7,7 +7,6 @@
 
 module Command.GroupWanted where
 
-import Common.Annex
 import Command
 import Logs.PreferredContent
 import Command.Wanted (performGet, performSet)

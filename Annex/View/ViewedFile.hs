@@ -16,7 +16,7 @@ module Annex.View.ViewedFile (
 	prop_viewedFile_roundtrips,
 ) where
 
-import Common.Annex
+import Annex.Common
 
 type FileName = String
 type ViewedFile = FileName

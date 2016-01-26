@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 6.20160114
+Version: 6.20160126
 Cabal-Version: >= 1.8
 License: GPL-3
 Maintainer: Joey Hess <id@joeyh.name>
@@ -43,14 +43,8 @@ Flag Assistant
 Flag Webapp
   Description: Enable git-annex webapp
 
-Flag Webapp-secure
-  Description: Secure webapp
-
 Flag Pairing
   Description: Enable pairing
-
-Flag DNS
-  Description: Enable the haskell DNS library for DNS lookup
 
 Flag Production
   Description: Enable production build (slower build; faster binary)
@@ -65,18 +59,6 @@ Flag AndroidSplice
 
 Flag TestSuite
   Description: Embed the test suite into git-annex
-
-Flag TDFA
-  Description: Use regex-tdfa for wildcards
-
-Flag Feed
-  Description: Enable podcast feed support
-
-Flag Quvi
-  Description: Enable use of quvi to download videos
-
-Flag Tahoe
-  Description: Enable the tahoe special remote
 
 Flag TorrentParser
   Description: Use haskell torrent library to parse torrent files
@@ -117,12 +99,19 @@ Executable git-annex
    bloomfilter, edit-distance,
    resourcet, http-conduit, http-client, http-types,
    time, old-locale,
-   esqueleto, persistent-sqlite, persistent, persistent-template
+   esqueleto, persistent-sqlite, persistent, persistent-template,
+   aeson,
+   feed,
+   regex-tdfa
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs
   Extensions: PackageImports
   -- Some things don't work with the non-threaded RTS.
   GHC-Options: -threaded
+
+  -- Fully optimize for production.
+  if flag(Production)
+    GHC-Options: -O2
 
   -- Avoid linking with unused dynamic libaries.
   -- (Only tested on Linux).
@@ -140,10 +129,6 @@ Executable git-annex
   else
     Build-Depends: cryptohash (>= 0.11.0)
 
-  -- Fully optimize for production.
-  if flag(Production)
-    GHC-Options: -O2
-
   if (os(windows))
     Build-Depends: Win32, Win32-extras, unix-compat (>= 0.4.1.3), setenv,
       process (>= 1.3.0.0)
@@ -160,12 +145,6 @@ Executable git-annex
      crypto-api
     CPP-Options: -DWITH_TESTSUITE
 
-  if flag(TDFA)
-    Build-Depends: regex-tdfa
-    CPP-Options: -DWITH_TDFA
-  else
-    Build-Depends: regex-compat
-
   if flag(S3)
     Build-Depends: conduit, conduit-extra, aws (>= 0.9.2)
     CPP-Options: -DWITH_S3
@@ -175,6 +154,7 @@ Executable git-annex
     CPP-Options: -DWITH_WEBDAV
 
   if flag(Assistant) && ! os(solaris)
+    Build-Depends: dns
     CPP-Options: -DWITH_ASSISTANT
 
   if flag(Assistant)
@@ -217,16 +197,14 @@ Executable git-annex
      yesod-core (>= 1.2.19),
      path-pieces (>= 0.1.4),
      warp (>= 3.0.0.5),
-     warp-tls,
+     warp-tls (>= 1.4),
      wai, wai-extra,
      blaze-builder, crypto-api, clientsession,
-     template-haskell, aeson,
-     shakespeare (>= 2.0.0)
+     template-haskell,
+     shakespeare (>= 2.0.0),
+     securemem,
+     byteable
     CPP-Options: -DWITH_WEBAPP
-
-  if flag(Webapp) && flag (Webapp-secure)
-    Build-Depends: warp-tls (>= 1.4), securemem, byteable
-    CPP-Options: -DWITH_WEBAPP_SECURE
 
   if flag(Pairing)
     Build-Depends: network-multicast, network-info
@@ -235,23 +213,7 @@ Executable git-annex
   if (! os(windows))
     Build-Depends: network-protocol-xmpp, gnutls (>= 0.1.4), xml-types
     CPP-Options: -DWITH_XMPP
-
-  if flag(DNS)
-    Build-Depends: dns
-    CPP-Options: -DWITH_DNS
-
-  if flag(Feed)
-    Build-Depends: feed (>= 0.3.4)
-    CPP-Options: -DWITH_FEED
   
-  if flag(Quvi)
-    Build-Depends: aeson
-    CPP-Options: -DWITH_QUVI
-  
-  if flag(Tahoe)
-    Build-Depends: aeson
-    CPP-Options: -DWITH_TAHOE
-
   if flag(TorrentParser)
     Build-Depends: torrent (>= 10000.0.0)
     CPP-Options: -DWITH_TORRENTPARSER

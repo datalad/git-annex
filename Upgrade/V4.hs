@@ -7,7 +7,7 @@
 
 module Upgrade.V4 where
 
-import Common.Annex
+import Annex.Common
 import Config
 import Annex.Direct
 

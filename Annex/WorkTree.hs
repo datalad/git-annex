@@ -7,7 +7,7 @@
 
 module Annex.WorkTree where
 
-import Common.Annex
+import Annex.Common
 import Annex.Link
 import Annex.CatFile
 import Annex.Version

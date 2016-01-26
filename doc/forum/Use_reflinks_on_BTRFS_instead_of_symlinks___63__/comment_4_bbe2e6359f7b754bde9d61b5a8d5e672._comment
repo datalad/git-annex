@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-01-20T18:43:13Z"
+ content="""
+It's true; the directory special remote copies the files in and out. The
+main reason this is done is to get a useful progress display, which using
+`cp` wouldn't provide. Of course, if cp were using reflinks, it'd be so
+fast that a progress display would not be necessary! But often, reflinks
+cannot be used.
+
+It might be a good enhancement for the directory special remote to be
+configurable to use cp --reflink, or even autodetect if reflinks can be
+used (although I don't know how it would detect that).
+
+OTOH, you might be better off using `git clone --shared`. Recent versions
+of git-annex can hard-link objects between shared clones.
+"""]]

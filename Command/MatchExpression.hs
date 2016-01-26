@@ -1,0 +1,75 @@
+{- git-annex command
+ -
+ - Copyright 2016 Joey Hess <id@joeyh.name>
+ -
+ - Licensed under the GNU GPL version 3 or higher.
+ -}
+
+module Command.MatchExpression where
+
+import Command
+import Annex.FileMatcher
+import Types.FileMatcher
+import Utility.DataUnits
+import Utility.Matcher
+import Annex.UUID
+import Logs.Group
+
+import qualified Data.Map as M
+import qualified Data.Set as S
+
+cmd :: Command
+cmd = noCommit $
+	command "matchexpression" SectionPlumbing 
+		"checks if a preferred content expression matches"
+		paramExpression
+		(seek <$$> optParser)
+
+data MatchExpressionOptions = MatchExpressionOptions
+	{ matchexpr :: String
+	, matchinfo :: MatchInfo
+	}
+
+optParser :: CmdParamsDesc -> Parser MatchExpressionOptions
+optParser desc = MatchExpressionOptions
+	<$> argument str (metavar desc)
+	<*> (addkeysize <$> dataparser)
+  where
+	dataparser = MatchingInfo
+		<$> optinfo "file" (strOption
+			( long "file" <> metavar paramFile
+			<> help "specify filename to match against"
+			))
+		<*> optinfo "key" (option (str >>= parseKey)
+			( long "key" <> metavar paramKey
+			<> help "specify key to match against"
+			))
+		<*> optinfo "size" (option (str >>= maybe (fail "parse error") return . readSize dataUnits)
+			( long "size" <> metavar paramSize
+			<> help "specify size to match against"
+			))
+	optinfo datadesc mk = (Right <$> mk)
+		<|> (pure $ Left $ missingdata datadesc)
+	missingdata datadesc = bail $ "cannot match this expression without " ++ datadesc ++ " data"
+	-- When a key is provided, use its size.
+	addkeysize i@(MatchingInfo f (Right k) _) = case keySize k of
+		Just sz -> MatchingInfo f (Right k) (Right sz)
+		Nothing -> i
+	addkeysize i = i
+
+seek :: MatchExpressionOptions -> CommandSeek
+seek o = do
+	u <- getUUID
+	case parsedToMatcher $ exprParser matchAll matchAll groupMap M.empty (Just u) (matchexpr o) of
+		Left e -> liftIO $ bail $ "bad expression: " ++ e
+		Right matcher -> ifM (checkmatcher matcher)
+			( liftIO exitSuccess
+			, liftIO exitFailure
+			)
+  where
+	checkmatcher matcher = matchMrun matcher $ \a -> a S.empty (matchinfo o)
+
+bail :: String -> IO a
+bail s = do
+	hPutStrLn stderr s
+	exitWith $ ExitFailure 42

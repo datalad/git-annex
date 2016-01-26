@@ -59,7 +59,7 @@ import Text.JSON
 import Text.JSON.Generic
 import Data.Ord
 
-import Common.Annex
+import Annex.Common
 import Types.Remote
 import qualified Annex
 import Annex.UUID
@@ -183,6 +183,7 @@ prettyPrintUUIDs header uuids = do
 prettyPrintUUIDsDescs :: String -> M.Map UUID RemoteName -> [UUID] -> Annex String
 prettyPrintUUIDsDescs header descm uuids =
 	prettyPrintUUIDsWith Nothing header descm
+		(const Nothing)
 		(zip uuids (repeat (Nothing :: Maybe String)))
 
 {- An optional field can be included in the list of UUIDs. -}
@@ -191,9 +192,10 @@ prettyPrintUUIDsWith
 	=> Maybe String 
 	-> String 
 	-> M.Map UUID RemoteName
+	-> (v -> Maybe String)
 	-> [(UUID, Maybe v)] 
 	-> Annex String
-prettyPrintUUIDsWith optfield header descm uuidvals = do
+prettyPrintUUIDsWith optfield header descm showval uuidvals = do
 	hereu <- getUUID
 	maybeShowJSON [(header, map (jsonify hereu) uuidvals)]
 	return $ unwords $ map (\u -> "\t" ++ prettify hereu u ++ "\n") uuidvals
@@ -209,9 +211,9 @@ prettyPrintUUIDsWith optfield header descm uuidvals = do
 			| null n && ishere = "here"
 			| ishere = addName n "here"
 			| otherwise = n
-		addoptval s = case optval of
+		addoptval s = case showval =<< optval of
 			Nothing -> s
-			Just val -> show val ++ ": " ++ s
+			Just val -> val ++ ": " ++ s
 	jsonify hereu (u, optval) = toJSObject $ catMaybes
 		[ Just ("uuid", toJSON $ fromUUID u)
 		, Just ("description", toJSON $ finddescription u)

@@ -7,11 +7,9 @@
 
 module Command.Reinit where
 
-import Common.Annex
 import Command
 import Annex.Init
 import Annex.UUID
-import Types.UUID
 import qualified Remote
 import qualified Annex.SpecialRemote
 	

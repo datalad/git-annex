@@ -7,8 +7,7 @@
 
 module Logs where
 
-import Common.Annex
-import Types.Key
+import Annex.Common
 import Annex.DirHashes
 
 {- There are several varieties of log file formats. -}

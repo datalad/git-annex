@@ -1,0 +1,68 @@
+### Please describe the problem.
+
+Adding BUILDER=stack support in 441573a9 breaks building debian based packages.
+
+### What steps will reproduce the problem?
+
+[[!format sh """
+$ debian/rules clean
+dh clean
+   dh_testdir
+   dh_auto_clean
+        make -j1 clean
+make[1]: Entering directory '/home/jtgeibel/repos/launchpad.net/git-annex'
+debian/cabal-wrapper clean
+debian/cabal-wrapper: 14: debian/cabal-wrapper: cabal: not found
+Makefile:101: recipe for target 'clean' failed
+make[1]: *** [clean] Error 127
+make[1]: Leaving directory '/home/jtgeibel/repos/launchpad.net/git-annex'
+dh_auto_clean: make -j1 clean returned exit code 2
+debian/rules:12: recipe for target 'clean' failed
+make: *** [clean] Error 2
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+
+6.20160114 (Ubuntu wily & trusty)
+
+### Please provide any additional information below.
+
+I've patched this locally as follows.  In the Makefile I've assumed that both cabal and stack support a clean command.
+
+[[!format patch """
+diff --git a/Makefile b/Makefile                                                                                                                              
+index 342152c..977855a 100644                                                                                                                                               
+--- a/Makefile                                                                                                                                                              
++++ b/Makefile                                                                                                                                                              
+@@ -98,7 +98,7 @@ docs: mans                                                                                                                                                                 
+                --exclude='users/*' --exclude='devblog/*' --exclude='thanks'                                                                                                                 
+                                                                                                                                                                                             
+ clean:                                                                                                                                                                                      
+-       $(BUILDER) clean                                                                                                                                                                     
++       if [ "$(BUILDER)" != ./Setup ]; then $(BUILDER) clean; fi                                                                                                                            
+        rm -rf tmp dist git-annex $(mans) configure  *.tix .hpc \                                                                                                                            
+                doc/.ikiwiki html dist tags Build/SysConfig.hs \                                                                                                                             
+                Setup Build/InstallDesktopFile Build/EvilSplicer \                                                                                                                                                
+diff --git a/debian/rules b/debian/rules
+index e6ee592..3345fee 100755
+--- a/debian/rules
++++ b/debian/rules
+@@ -1,6 +1,6 @@
+ #!/usr/bin/make -f
+ 
+-export BUILDER=debian/cabal-wrapper
++export BUILDER=./Setup
+ 
+ STANDALONE_BUILD=$(shell grep -qe '^Package: git-annex-standalone' debian/control \
+                          && echo 1 || echo 0)
+"""]]
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+git-annex has been a great way for me to explore both Haskell and software packaging.
+
+I enjoyed the interview on LWN.
+
+> I don't think this is a bug, I think build dependencies were not
+> installed when building the package. [[done]] --[[Joey]]

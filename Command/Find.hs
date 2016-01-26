@@ -10,13 +10,11 @@ module Command.Find where
 import Data.Default
 import qualified Data.Map as M
 
-import Common.Annex
 import Command
 import Annex.Content
 import Limit
 import qualified Utility.Format
 import Utility.DataUnits
-import Types.Key
 
 cmd :: Command
 cmd = withGlobalOptions annexedMatchingOptions $ mkCommand $
@@ -29,12 +27,14 @@ mkCommand = noCommit . noMessages . withGlobalOptions [jsonOption]
 data FindOptions = FindOptions
 	{ findThese :: CmdParams
 	, formatOption :: Maybe Utility.Format.Format
+	, batchOption :: BatchMode
 	}
 
 optParser :: CmdParamsDesc -> Parser FindOptions
 optParser desc = FindOptions
 	<$> cmdParams desc
 	<*> optional parseFormatOption
+	<*> parseBatchOption
 
 parseFormatOption :: Parser Utility.Format.Format
 parseFormatOption = 
@@ -48,15 +48,21 @@ parseFormatOption =
 		)
 
 seek :: FindOptions -> CommandSeek
-seek o = withFilesInGit (whenAnnexed $ start o) (findThese o)
+seek o = case batchOption o of
+	NoBatch -> withFilesInGit go (findThese o)
+	Batch -> batchFiles go
+  where
+	go = whenAnnexed $ start o
 
+-- only files inAnnex are shown, unless the user has requested
+-- others via a limit
 start :: FindOptions -> FilePath -> Key -> CommandStart
-start o file key = do
-	-- only files inAnnex are shown, unless the user has requested
-	-- others via a limit
-	whenM (limited <||> inAnnex key) $
+start o file key = ifM (limited <||> inAnnex key)
+	( do
 		showFormatted (formatOption o) file $ ("file", file) : keyVars key
-	stop
+		next $ next $ return True
+	, stop
+	)
 
 showFormatted :: Maybe Utility.Format.Format -> String -> [(String, String)] -> Annex ()
 showFormatted format unformatted vars =

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-01-22T15:59:31Z"
+ content="""
+Well, it was documented over on [[preferred_content]]. But I've moved the
+documentation to here so it'll be available in man page form.
+"""]]

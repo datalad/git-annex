@@ -7,9 +7,8 @@
 
 module Command.Uninit where
 
-import Common.Annex
-import qualified Annex
 import Command
+import qualified Annex
 import qualified Git
 import qualified Git.Command
 import qualified Command.Unannex

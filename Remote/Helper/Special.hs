@@ -32,7 +32,7 @@ module Remote.Helper.Special (
 	module X
 ) where
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
 import Types.StoreRetrieve
 import Types.Remote

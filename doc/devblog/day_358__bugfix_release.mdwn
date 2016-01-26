@@ -1,0 +1,9 @@
+Bugfix release of git-annex today. The release earlier this month had a bug
+that caused `git annex sync --content` to drop files that should be
+preferred content. So I had to rush out a fix after that [bug was reported](http://git-annex.branchable.com/bugs/wanted___61___present_gets_ignored_in___39__git_annex_sync_--content__39__/).
+(Some of the builds for the new release are still updating as I post this.)
+
+In the past week I've been dealing with a blizzard. Snowed in for 6 days
+and counting. That has slightly back-burnered working on git-annex, and
+I've mostly been making enhancements that the DataLad project needs, along
+the lines of more commands supporting --batch and better --json output. 

@@ -24,7 +24,7 @@ module Logs.Chunk (
 	getCurrentChunks,
 ) where
 
-import Common.Annex
+import Annex.Common
 import Logs
 import Logs.MapLog
 import qualified Annex.Branch

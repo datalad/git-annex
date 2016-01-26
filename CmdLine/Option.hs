@@ -9,7 +9,7 @@ module CmdLine.Option where
 
 import Options.Applicative
 
-import Common.Annex
+import Annex.Common
 import CmdLine.Usage
 import CmdLine.GlobalSetter
 import qualified Annex

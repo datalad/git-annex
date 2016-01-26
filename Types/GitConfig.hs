@@ -19,6 +19,7 @@ import qualified Git.Construct
 import Git.SharedRepository
 import Utility.DataUnits
 import Config.Cost
+import Types.UUID
 import Types.Distribution
 import Types.Availability
 import Types.NumCopies
@@ -32,6 +33,7 @@ import Utility.ThreadScheduler (Seconds(..))
  - such as annex.foo -}
 data GitConfig = GitConfig
 	{ annexVersion :: Maybe String
+	, annexUUID :: UUID
 	, annexNumCopies :: Maybe NumCopies
 	, annexDiskReserve :: Integer
 	, annexDirect :: Bool
@@ -75,6 +77,7 @@ data GitConfig = GitConfig
 extractGitConfig :: Git.Repo -> GitConfig
 extractGitConfig r = GitConfig
 	{ annexVersion = notempty $ getmaybe (annex "version")
+	, annexUUID = maybe NoUUID toUUID $ getmaybe (annex "uuid")
 	, annexNumCopies = NumCopies <$> getmayberead (annex "numcopies")
 	, annexDiskReserve = fromMaybe onemegabyte $
 		readSize dataUnits =<< getmaybe (annex "diskreserve")

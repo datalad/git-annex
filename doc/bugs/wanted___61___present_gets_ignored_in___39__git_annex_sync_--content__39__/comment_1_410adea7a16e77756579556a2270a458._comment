@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-01-26T18:22:48Z"
+ content="""
+I think it's worse than that, it lost track of the filename, so
+preferred content expressions with include= or exclude= will also do the
+wrong thing.
+
+Going to have to rush out a release fixing this..
+"""]]

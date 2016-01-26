@@ -10,7 +10,7 @@ module Logs.Presence.Pure where
 import Data.Time.Clock.POSIX
 import qualified Data.Map as M
 
-import Common.Annex
+import Annex.Common
 import Logs.TimeStamp
 import Utility.QuickCheck
 

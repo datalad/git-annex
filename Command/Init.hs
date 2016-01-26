@@ -7,7 +7,6 @@
 
 module Command.Init where
 
-import Common.Annex
 import Command
 import Annex.Init
 import Annex.Version

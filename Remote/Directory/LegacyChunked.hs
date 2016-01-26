@@ -12,7 +12,7 @@ module Remote.Directory.LegacyChunked where
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as S
 
-import Common.Annex
+import Annex.Common
 import Utility.FileMode
 import Remote.Helper.Special
 import qualified Remote.Helper.Chunked.Legacy as Legacy

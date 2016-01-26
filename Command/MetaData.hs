@@ -7,7 +7,6 @@
 
 module Command.MetaData where
 
-import Common.Annex
 import Command
 import Annex.MetaData
 import Logs.MetaData

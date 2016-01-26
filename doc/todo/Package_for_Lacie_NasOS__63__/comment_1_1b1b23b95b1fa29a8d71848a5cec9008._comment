@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-01-20T18:56:36Z"
+ content="""
+If that is a Linux-based NAS, there's a reasonably good chance that one
+of the [Linux standalone builds](https://git-annex.branchable.com/install/Linux_standalone/)
+of git-annex will run on it.
+
+Actually, from what I can see, it's based on Debian, so you might be able
+to just apt-get install git-annex
+"""]]

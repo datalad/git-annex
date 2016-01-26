@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 16"""
+ date="2016-01-24T18:16:24Z"
+ content="""
+You can use the --listen parameter to make the webapp listen on an address
+and then connect to it from a web browser on your LAN. See
+<http://git-annex.branchable.com/git-annex-webapp/>
+"""]]

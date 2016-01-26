@@ -7,7 +7,7 @@
 
 module Upgrade.V2 where
 
-import Common.Annex
+import Annex.Common
 import qualified Git
 import qualified Git.Command
 import qualified Git.Ref

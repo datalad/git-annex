@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-01-15T18:24:28Z"
+ content="""
+Dude, you're /dev/nulling stderr, where the error is printed.
+
+In any case, sure, we can make addurl not throw a fatal error in this
+particular case. There are of course many other error conditions where it
+may still throw a fatal error.
+"""]]

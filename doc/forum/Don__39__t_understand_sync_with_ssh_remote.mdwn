@@ -1,0 +1,54 @@
+Hi,
+
+I don't understand how to sync an empty local repository on my local pc with ssh server.
+
+On webfaction distant ssh host, i create a repository in v6  which contain all my file (commited with git commit).
+
+        00000000-0000-0000-0000-000000000001 -- web
+        00000000-0000-0000-0000-000000000002 -- bittorrent
+        151c9c3c-7bf2-4a06-ab47-38dfd65b0d12 -- reyman64@web504.webfaction.com:~/webdav/bib/seb/pdf-repository [here]
+
+On local pc, i create an empty repository, also in v6, and i configure ssh remote, nammed "pdfwebfaction", so git annex info return this
+
+        00000000-0000-0000-0000-000000000001 -- web
+        00000000-0000-0000-0000-000000000002 -- bittorrent
+        151c9c3c-7bf2-4a06-ab47-38dfd65b0d12 -- reyman64@web504.webfaction.com:~/webdav/bib/seb/pdf-repository
+        9d08d7c0-55da-451e-8ca3-aaa612eefb46 -- reyman@Dunwich:~/Sync/PDF_Webfaction [here]
+
+
+I want to sync local with this remote branch, and sync content, so i try :
+ 
+    git annex sync pdfwebfaction
+
+Which return :
+
+    commit  git-annex: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","commit","-a","-m","git-annex in reyman@Dunwich:~/Sync/PDF_Webfaction"] exited 1
+
+And i also try without success : 
+
+    git-annex get --from pdfwebfaction
+
+which return an error about uuid, don't understand why because uuid exist for ssh repo :
+
+    git-annex: cannot determine uuid for pdfwebfaction (perhaps you need to run "git annex sync"?) (remote.pdfwebfaction.annex-ignore is set)
+
+My git config is : 
+
+    [core]
+        repositoryformatversion = 0
+        filemode = true
+        bare = false
+        logallrefupdates = true
+    [annex]
+        uuid = 9d08d7c0-55da-451e-8ca3-aaa612eefb46
+        version = 6
+    [filter "annex"]
+        smudge = git-annex smudge %f
+        clean = git-annex smudge --clean %f
+    [remote "pdfwebfaction"]
+        url = ssh://reyman64@reyman64.webfactional.com:/home/reyman64/webdav/bib/seb/pdf-repository
+        fetch = +refs/heads/*:refs/remotes/pdfwebfaction/*
+
+There is something i don't understand, and the documentation talk only about ssh associated with a git clone command.
+
+PS : the ssh connection is correct, i test it.

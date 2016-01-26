@@ -14,14 +14,13 @@
 
 module Annex.Link where
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
 import qualified Git.HashObject
 import qualified Git.UpdateIndex
 import qualified Annex.Queue
 import Git.Types
 import Git.FilePath
-import Types.Key
 
 import qualified Data.ByteString.Lazy as L
 

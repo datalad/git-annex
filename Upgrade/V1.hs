@@ -11,8 +11,7 @@ import System.Posix.Types
 import Data.Char
 import Data.Default
 
-import Common.Annex
-import Types.Key
+import Annex.Common
 import Annex.Content
 import Logs.Presence
 import qualified Annex.Queue

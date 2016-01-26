@@ -11,7 +11,7 @@ module Remote.Helper.Hooks (addHooks) where
 
 import qualified Data.Map as M
 
-import Common.Annex
+import Annex.Common
 import Types.Remote
 import Types.CleanupActions
 import qualified Annex

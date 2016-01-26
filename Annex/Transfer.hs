@@ -18,7 +18,7 @@ module Annex.Transfer (
 	forwardRetry,
 ) where
 
-import Common.Annex
+import Annex.Common
 import Logs.Transfer as X
 import Annex.Notification as X
 import Annex.Perms

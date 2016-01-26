@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-01-15T18:10:26Z"
+ content="""
+The web urls were included in the json output, but it seems some json
+parsers, including the one you're using, only show the last value of an
+attribute when multiple values are repeated, as happened when there were
+both web and other remotes with urls.
+
+Anyway, I've updated the json output to include the url list inside the
+remote's record.
+
+(The "note" just collects any output that is not explicitly formatted as
+json.)
+"""]]

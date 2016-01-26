@@ -9,7 +9,7 @@
 
 module Assistant.Pairing where
 
-import Common.Annex
+import Annex.Common
 import Utility.Verifiable
 import Assistant.Ssh
 

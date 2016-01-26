@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2016-01-19T20:21:26Z"
+ content="""
+Yes, you need "(storageclasses)".
+
+I see it's available in autobuilds now.
+"""]]

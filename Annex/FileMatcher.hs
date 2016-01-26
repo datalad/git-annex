@@ -9,7 +9,7 @@ module Annex.FileMatcher where
 
 import qualified Data.Map as M
 
-import Common.Annex
+import Annex.Common
 import Limit
 import Utility.Matcher
 import Types.Group

@@ -39,9 +39,9 @@
 * git-annex is not [git-media](https://github.com/schacon/git-media),
   although they both approach the same problem from a similar direction.
   I only learned of git-media after writing git-annex, but I probably
-  would have still written git-annex instead of using it. Currently,
-  git-media has the advantage of using git smudge filters rather than
-  git-annex's pile of symlinks, and it may be a tighter fit for certain
+  would have still written git-annex instead of using it. 
+  git-media uses git smudge filters (recently supported in git-annex as
+  well; see [[tips/unlocked_files]]) and may be a tighter fit for certain
   situations. It lacks git-annex's support for widely distributed storage,
   using only a single backend data store. It also does not support
   partial checkouts of file contents, like git-annex does.

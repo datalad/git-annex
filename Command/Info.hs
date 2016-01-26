@@ -14,16 +14,14 @@ import qualified Data.Map.Strict as M
 import Text.JSON
 import Data.Ord
 
-import Common.Annex
+import Command
 import qualified Git
 import qualified Annex
 import qualified Remote
 import qualified Types.Remote as Remote
-import Command
 import Utility.DataUnits
 import Utility.DiskFree
 import Annex.Content
-import Types.Key
 import Logs.UUID
 import Logs.Trust
 import Logs.Location
@@ -86,6 +84,7 @@ cmd = noCommit $ withGlobalOptions (jsonOption : annexedMatchingOptions) $
 data InfoOptions = InfoOptions
 	{ infoFor :: CmdParams
 	, bytesOption :: Bool
+	, batchOption :: BatchMode
 	}
 
 optParser :: CmdParamsDesc -> Parser InfoOptions
@@ -95,9 +94,12 @@ optParser desc = InfoOptions
 		( long "bytes"
 		<> help "display file sizes in bytes"
 		)
+	<*> parseBatchOption
 
 seek :: InfoOptions -> CommandSeek
-seek o = withWords (start o) (infoFor o)
+seek o = case batchOption o of
+	NoBatch -> withWords (start o) (infoFor o)
+	Batch -> batchInput Right (itemInfo o)
 
 start :: InfoOptions -> [String] -> CommandStart
 start o [] = do
@@ -125,11 +127,18 @@ itemInfo o p = ifM (isdir p)
 				v' <- Remote.nameToUUID' p
 				case v' of
 					Right u -> uuidInfo o u
-					Left _ -> ifAnnexed p (fileInfo o p) noinfo
+					Left _ -> ifAnnexed p 
+						(fileInfo o p)
+						(noInfo p)
 	)
   where
 	isdir = liftIO . catchBoolIO . (isDirectory <$$> getFileStatus)
-	noinfo = error $ p ++ " is not a directory or an annexed file or a remote or a uuid"
+
+noInfo :: String -> Annex ()
+noInfo s = do
+	showStart "info" s
+	showNote $ "not a directory or an annexed file or a remote or a uuid"
+	showEndFail
 
 dirInfo :: InfoOptions -> FilePath -> Annex ()
 dirInfo o dir = showCustom (unwords ["info", dir]) $ do
@@ -425,7 +434,7 @@ reposizes_stats = stat desc $ nojson $ do
 	let maxlen = maximum (map (length . snd) l)
 	descm <- lift uuidDescriptions
 	-- This also handles json display.
-	s <- lift $ prettyPrintUUIDsWith (Just "size") desc descm $
+	s <- lift $ prettyPrintUUIDsWith (Just "size") desc descm (Just . show) $
 		map (\(u, sz) -> (u, Just $ mkdisp sz maxlen)) l
 	return $ countRepoList (length l) s
   where

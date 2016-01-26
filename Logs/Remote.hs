@@ -22,7 +22,7 @@ import qualified Data.Map as M
 import Data.Time.Clock.POSIX
 import Data.Char
 
-import Common.Annex
+import Annex.Common
 import qualified Annex.Branch
 import Types.Remote
 import Logs

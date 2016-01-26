@@ -11,7 +11,7 @@ module Logs.FsckResults (
 	clearFsckResults,
 ) where
 
-import Common.Annex
+import Annex.Common
 import Utility.Tmp
 import Git.Fsck
 import Git.Types

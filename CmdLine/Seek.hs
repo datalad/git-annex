@@ -11,9 +11,8 @@
 
 module CmdLine.Seek where
 
-import Common.Annex
+import Annex.Common
 import Types.Command
-import Types.Key
 import Types.FileMatcher
 import qualified Annex
 import qualified Git

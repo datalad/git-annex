@@ -31,10 +31,8 @@ import Blaze.ByteString.Builder.Char.Utf8 (fromText)
 import Blaze.ByteString.Builder (Builder)
 import Control.Arrow ((***))
 import Control.Concurrent
-#ifdef WITH_WEBAPP_SECURE
 import Data.SecureMem
 import Data.Byteable
-#endif
 #ifdef __ANDROID__
 import Data.Endian
 #endif
@@ -77,11 +75,7 @@ runWebApp tlssettings h app observer = withSocketsDo $ do
 	sockaddr <- fixSockAddr <$> getSocketName sock
 	observer sockaddr
   where
-#ifdef WITH_WEBAPP_SECURE
 	go = (maybe runSettingsSocket (\ts -> runTLSSocket ts) tlssettings)
-#else
-	go = runSettingsSocket
-#endif
 
 fixSockAddr :: SockAddr -> SockAddr
 #ifdef __ANDROID__
@@ -165,25 +159,13 @@ webAppSessionBackend _ = do
 		Just . Yesod.clientSessionBackend key . fst
 			<$> Yesod.clientSessionDateCacher timeout
 
-#ifdef WITH_WEBAPP_SECURE
 type AuthToken = SecureMem
-#else
-type AuthToken = T.Text
-#endif
 
 toAuthToken :: T.Text -> AuthToken
-#ifdef WITH_WEBAPP_SECURE
 toAuthToken = secureMemFromByteString . TE.encodeUtf8
-#else
-toAuthToken = id
-#endif
 
 fromAuthToken :: AuthToken -> T.Text
-#ifdef WITH_WEBAPP_SECURE
 fromAuthToken = TE.decodeLatin1 . toBytes
-#else
-fromAuthToken = id
-#endif
 
 {- Generates a random sha2_512 string, encapsulated in a SecureMem,
  - suitable to be used for an authentication secret. -}

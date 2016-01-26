@@ -12,7 +12,7 @@ module Annex.CheckIgnore (
 	checkIgnoreStop
 ) where
 
-import Common.Annex
+import Annex.Common
 import qualified Git.CheckIgnore as Git
 import qualified Annex
 

@@ -36,6 +36,7 @@ module Messages (
 	debugEnabled,
 	commandProgressDisabled,
 	outputMessage,
+	implicitMessage,
 ) where
 
 import Text.JSON
@@ -182,6 +183,11 @@ setupConsole = do
 		<*> pure preciseLogFormatter
 	updateGlobalLogger rootLoggerName (setLevel NOTICE . setHandlers [s])
 	setConsoleEncoding
+	{- Force output to be line buffered. This is normally the case when
+	 - it's connected to a terminal, but may not be when redirected to
+	 - a file or a pipe. -}
+	hSetBuffering stdout LineBuffering
+	hSetBuffering stderr LineBuffering
 
 {- Log formatter with precision into fractions of a second. -}
 preciseLogFormatter :: LogFormatter a
@@ -207,3 +213,9 @@ commandProgressDisabled = withOutputType $ \t -> return $ case t of
 	JSONOutput -> True
 	NormalOutput -> False
 	ConcurrentOutput _ -> True
+
+{- Use to show a message that is displayed implicitly, and so might be
+ - disabled when running a certian command that needs more control over its
+ - output. -}
+implicitMessage :: Annex () -> Annex ()
+implicitMessage = whenM (implicitMessages <$> Annex.getState Annex.output)

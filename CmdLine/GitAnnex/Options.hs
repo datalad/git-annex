@@ -11,14 +11,13 @@ import Options.Applicative
 import Options.Applicative.Builder.Internal
 import Control.Concurrent
 
-import Common.Annex
+import Annex.Common
 import qualified Git.Config
 import qualified Git.Construct
 import Git.Types
 import Types.TrustLevel
 import Types.NumCopies
 import Types.Messages
-import Types.Key
 import Types.Command
 import Types.DeferredParse
 import Types.DesktopNotify
@@ -88,9 +87,8 @@ gitAnnexGlobalOptions = commonGlobalOptions ++
   where
 	setnumcopies n = Annex.changeState $ \s -> s { Annex.forcenumcopies = Just $ NumCopies n }
 	setuseragent v = Annex.changeState $ \s -> s { Annex.useragent = Just v }
-	setgitconfig v = inRepo (Git.Config.store v)
-		>>= pure . (\r -> r { gitGlobalOpts = gitGlobalOpts r ++ [Param "-c", Param v] })
-		>>= Annex.changeGitRepo
+	setgitconfig v = Annex.adjustGitRepo $ \r -> Git.Config.store v $ 
+		r { gitGlobalOpts = gitGlobalOpts r ++ [Param "-c", Param v] }
 	setdesktopnotify v = Annex.changeState $ \s -> s { Annex.desktopnotify = Annex.desktopnotify s <> v }
 
 {- Parser that accepts all non-option params. -}

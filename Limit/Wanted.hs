@@ -7,7 +7,7 @@
 
 module Limit.Wanted where
 
-import Common.Annex
+import Annex.Common
 import Annex.Wanted
 import Limit
 import Types.FileMatcher
@@ -21,3 +21,4 @@ addWantDrop = addLimit $ Right $ const $ checkWant $ wantDrop False Nothing Noth
 checkWant :: (Maybe FilePath -> Annex Bool) -> MatchInfo -> Annex Bool
 checkWant a (MatchingFile fi) = a (Just $ matchFile fi)
 checkWant _ (MatchingKey _) = return False
+checkWant _ (MatchingInfo {}) = return False

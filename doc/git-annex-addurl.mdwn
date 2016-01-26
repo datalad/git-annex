@@ -88,6 +88,13 @@ be used to get better filenames.
   Enable JSON output. This is intended to be parsed by programs that use
   git-annex. Each line of output is a JSON object.
 
+# CAVEATS
+
+If annex.largefiles is configured, and does not match a file, `git annex
+addurl` will add the non-large file directly to the git repository,
+instead of to the annex. However, this is not done when --fast or --relaxed
+is used.
+
 # SEE ALSO
 
 [[git-annex]](1)

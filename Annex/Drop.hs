@@ -7,11 +7,11 @@
 
 module Annex.Drop where
 
-import Common.Annex
+import Annex.Common
+import qualified Annex
 import Logs.Trust
 import Annex.NumCopies
 import Types.Remote (uuid)
-import Types.Key (key2file)
 import qualified Remote
 import qualified Command.Drop
 import Command
@@ -50,9 +50,13 @@ handleDropsFrom :: [UUID] -> [Remote] -> Reason -> Bool -> Key -> AssociatedFile
 handleDropsFrom locs rs reason fromhere key afile preverified runner = do
 	l <- ifM isDirect
 		( associatedFilesRelative key
-		, mapM getTopFilePath <$> Database.Keys.getAssociatedFiles key
+		, do
+			g <- Annex.gitRepo
+			map (`fromTopFilePath` g) <$> Database.Keys.getAssociatedFiles key
 		)
-	let fs = if null l then maybeToList afile else l
+	let fs = case afile of
+		Just f -> nub (f : l)
+		Nothing -> l
 	n <- getcopies fs
 	void $ if fromhere && checkcopies n Nothing
 		then go fs rs n >>= dropl fs

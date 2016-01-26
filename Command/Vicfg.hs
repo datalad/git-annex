@@ -16,7 +16,6 @@ import Data.Tuple (swap)
 import Data.Char (isSpace)
 import Data.Default
 
-import Common.Annex
 import Command
 import Annex.Perms
 import Types.TrustLevel

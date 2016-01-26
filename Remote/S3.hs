@@ -31,9 +31,8 @@ import Data.IORef
 import Data.Bits.Utils
 import System.Log.Logger
 
-import Common.Annex
+import Annex.Common
 import Types.Remote
-import Types.Key
 import qualified Git
 import Config
 import Config.Cost

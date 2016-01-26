@@ -16,10 +16,9 @@ module Backend (
 	isStableKey,
 ) where
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
 import Annex.CheckAttr
-import Types.Key
 import Types.KeySource
 import qualified Types.Backend as B
 

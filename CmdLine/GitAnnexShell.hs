@@ -7,7 +7,7 @@
 
 module CmdLine.GitAnnexShell where
 
-import Common.Annex
+import Annex.Common
 import qualified Git.Construct
 import qualified Git.Config
 import CmdLine

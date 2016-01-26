@@ -14,7 +14,7 @@ module Annex.Index (
 
 import qualified Control.Exception as E
 
-import Common.Annex
+import Annex.Common
 import Git.Types
 import qualified Annex
 import Utility.Env

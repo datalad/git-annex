@@ -19,7 +19,7 @@ module Logs.View (
 	prop_branchView_legal,
 ) where
 
-import Common.Annex
+import Annex.Common
 import Types.View
 import Types.MetaData
 import qualified Git

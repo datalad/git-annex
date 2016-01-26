@@ -25,7 +25,7 @@ module Logs.Presence (
 import Data.Time.Clock.POSIX
 
 import Logs.Presence.Pure as X
-import Common.Annex
+import Annex.Common
 import qualified Annex.Branch
 import Git.Types (RefDate)
 

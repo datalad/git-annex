@@ -9,7 +9,7 @@
 
 module Annex.InodeSentinal where
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
 import Utility.InodeCache
 import Annex.Perms

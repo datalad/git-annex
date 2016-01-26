@@ -9,7 +9,7 @@
 
 module Remote.BitTorrent (remote) where
 
-import Common.Annex
+import Annex.Common
 import Types.Remote
 import qualified Annex
 import qualified Git
@@ -18,7 +18,6 @@ import Config.Cost
 import Logs.Web
 import Types.UrlContents
 import Types.CleanupActions
-import Types.Key
 import Messages.Progress
 import Utility.Metered
 import Utility.Tmp

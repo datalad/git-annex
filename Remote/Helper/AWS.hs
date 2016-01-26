@@ -10,7 +10,7 @@
 
 module Remote.Helper.AWS where
 
-import Common.Annex
+import Annex.Common
 import Creds
 
 import qualified Data.Map as M

@@ -7,7 +7,6 @@
 
 module Command.Reinject where
 
-import Common.Annex
 import Command
 import Logs.Location
 import Annex.Content

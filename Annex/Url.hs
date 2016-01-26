@@ -13,7 +13,7 @@ module Annex.Url (
 	getUserAgent,
 ) where
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
 import Utility.Url as U
 import qualified Build.SysConfig as SysConfig

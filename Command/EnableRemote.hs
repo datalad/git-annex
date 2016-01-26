@@ -7,7 +7,6 @@
 
 module Command.EnableRemote where
 
-import Common.Annex
 import Command
 import qualified Logs.Remote
 import qualified Types.Remote as R

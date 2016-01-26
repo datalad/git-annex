@@ -535,6 +535,12 @@ subdirectories).
   
   See [[git-annex-examinekey]](1) for details.
 
+* `matchexpression`
+
+  Checks if a preferred content expression matches provided data.
+  
+  See [[git-annex-matchexpression]](1) for details.
+
 * `fromkey [key file]`
 
   Manually set up a file in the git repository to link to a specified key.
@@ -552,7 +558,6 @@ subdirectories).
   Moves a file into the annex as the content of a key.
   
   See [[git-annex-setkey]](1) for details.
-
 
 * `dropkey [key ...]`
 

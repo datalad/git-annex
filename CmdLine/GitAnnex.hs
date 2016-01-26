@@ -27,6 +27,7 @@ import qualified Command.Fsck
 import qualified Command.LookupKey
 import qualified Command.ContentLocation
 import qualified Command.ExamineKey
+import qualified Command.MatchExpression
 import qualified Command.FromKey
 import qualified Command.RegisterUrl
 import qualified Command.SetKey
@@ -84,9 +85,7 @@ import qualified Command.Vicfg
 import qualified Command.Sync
 import qualified Command.Mirror
 import qualified Command.AddUrl
-#ifdef WITH_FEED
 import qualified Command.ImportFeed
-#endif
 import qualified Command.RmUrl
 import qualified Command.Import
 import qualified Command.Map
@@ -137,9 +136,7 @@ cmds testoptparser testrunner =
 	, Command.Sync.cmd
 	, Command.Mirror.cmd
 	, Command.AddUrl.cmd
-#ifdef WITH_FEED
 	, Command.ImportFeed.cmd
-#endif
 	, Command.RmUrl.cmd
 	, Command.Import.cmd
 	, Command.Init.cmd
@@ -166,6 +163,7 @@ cmds testoptparser testrunner =
 	, Command.LookupKey.cmd
 	, Command.ContentLocation.cmd
 	, Command.ExamineKey.cmd
+	, Command.MatchExpression.cmd
 	, Command.FromKey.cmd
 	, Command.RegisterUrl.cmd
 	, Command.SetKey.cmd

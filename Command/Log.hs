@@ -19,7 +19,6 @@ import Data.Time
 import System.Locale
 #endif
 
-import Common.Annex
 import Command
 import Logs
 import qualified Logs.Presence

@@ -7,7 +7,6 @@
 
 module Command.VCycle where
 
-import Common.Annex
 import Command
 import Annex.View
 import Types.View

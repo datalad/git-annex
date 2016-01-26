@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2016-01-22T17:43:01Z"
+ content="""
+This is caused by git-annex needing to change the git config for the
+special remote, so it then re-loads it, and thus loses the value passed
+via -c.
+
+Workaround is to pass the -c as a parameter to git, not annex.
+
+And fixed now.
+"""]]

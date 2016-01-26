@@ -9,11 +9,10 @@
 
 module Command.RegisterUrl where
 
-import Common.Annex
 import Command
 import Logs.Web
-import Annex.UUID
 import Command.FromKey (mkKey)
+import qualified Remote
 
 cmd :: Command
 cmd = notDirect $ notBareRepo $
@@ -53,5 +52,6 @@ perform key url = do
 
 perform' :: Key -> URLString -> Annex Bool
 perform' key url = do
-	setUrlPresent webUUID key url
+	r <- Remote.claimingUrl url
+	setUrlPresent (Remote.uuid r) key (setDownloader' url r)
 	return True

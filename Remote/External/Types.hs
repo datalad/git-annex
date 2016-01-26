@@ -31,8 +31,7 @@ module Remote.External.Types (
 	supportedProtocolVersions,
 ) where
 
-import Common.Annex
-import Types.Key (file2key, key2file)
+import Annex.Common
 import Types.StandardGroups (PreferredContentExpression)
 import Utility.Metered (BytesProcessed(..))
 import Logs.Transfer (Direction(..))

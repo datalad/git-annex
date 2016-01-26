@@ -8,7 +8,7 @@
  - Also gpg signs the files.
  -}
 
-import Common.Annex
+import Annex.Common
 import Types.Distribution
 import Build.Version (getChangelogVersion, Version)
 import Utility.UserInfo
@@ -16,7 +16,7 @@ import Utility.Url
 import qualified Git.Construct
 import qualified Annex
 import Annex.Content
-import Backend
+import Annex.WorkTree
 import Git.Command
 
 import Data.Time.Clock

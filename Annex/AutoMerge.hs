@@ -11,7 +11,7 @@ module Annex.AutoMerge
 	, commitResolvedMerge
 	) where
 
-import Common.Annex
+import Annex.Common
 import qualified Annex.Queue
 import Annex.Direct
 import Annex.CatFile

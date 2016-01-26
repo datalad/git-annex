@@ -5,11 +5,9 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Remote.Web (remote, getWebUrls) where
 
-import Common.Annex
+import Annex.Common
 import Types.Remote
 import Remote.Helper.Messages
 import qualified Git
@@ -18,13 +16,10 @@ import Annex.Content
 import Config.Cost
 import Logs.Web
 import Annex.UUID
-import Types.Key
 import Utility.Metered
 import qualified Annex.Url as Url
-#ifdef WITH_QUVI
 import Annex.Quvi
 import qualified Utility.Quvi as Quvi
-#endif
 
 remote :: RemoteType
 remote = RemoteType {
@@ -83,13 +78,8 @@ downloadKey key _af dest p = unVerified $ get =<< getWebUrls key
 			let (u', downloader) = getDownloader u
 			case downloader of
 				QuviDownloader -> do
-#ifdef WITH_QUVI
 					flip (downloadUrl key p) dest
 						=<< withQuviOptions Quvi.queryLinks [Quvi.httponly, Quvi.quiet] u'
-#else
-					warning "quvi support needed for this url"
-					return False
-#endif
 				_ -> downloadUrl key p [u'] dest
 
 downloadKeyCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
@@ -117,11 +107,7 @@ checkKey' key us = firsthit us (Right False) $ \u -> do
 	showChecking u'
 	case downloader of
 		QuviDownloader ->
-#ifdef WITH_QUVI
 			Right <$> withQuviOptions Quvi.check [Quvi.httponly, Quvi.quiet] u'
-#else
-			return $ Left "quvi support needed for this url"
-#endif
 		_ -> do
 			Url.withUrlOptions $ catchMsgIO .
 				Url.checkBoth u' (keySize key)

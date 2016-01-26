@@ -7,9 +7,8 @@
 
 module Command.Watch where
 
-import Common.Annex
-import Assistant
 import Command
+import Assistant
 import Utility.HumanTime
 
 cmd :: Command

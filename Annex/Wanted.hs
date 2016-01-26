@@ -7,7 +7,7 @@
 
 module Annex.Wanted where
 
-import Common.Annex
+import Annex.Common
 import Logs.PreferredContent
 import Annex.UUID
 

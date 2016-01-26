@@ -1,0 +1,8 @@
+git-annex bundles gpg on OSX, but this bundled one is not integrated with
+gpg-agent. So, if gpg is installed system-wide, it's probably better to use
+that one (barring any versioning issues).
+
+A solution might be to move the gpg binary to a different directory and put
+it at the end of PATH, not the front. So system one is used if available.
+
+This should also be considered for the linux standalone builds.

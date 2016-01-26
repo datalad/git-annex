@@ -7,7 +7,7 @@
 
 module Upgrade.V5 where
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
 import Config
 import Annex.InodeSentinal

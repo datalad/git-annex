@@ -19,7 +19,6 @@ import Utility.NotificationBroadcaster
 import Logs.Transfer
 import Utility.Percentage
 import Utility.DataUnits
-import Types.Key
 import qualified Remote
 import qualified Git
 

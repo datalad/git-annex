@@ -9,11 +9,9 @@
 
 module Command.FromKey where
 
-import Common.Annex
 import Command
 import qualified Annex.Queue
 import Annex.Content
-import Types.Key
 import qualified Annex
 import qualified Backend.URL
 

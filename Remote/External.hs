@@ -9,11 +9,10 @@ module Remote.External (remote) where
 
 import Remote.External.Types
 import qualified Annex
-import Common.Annex
+import Annex.Common
 import Types.Remote
 import Types.CleanupActions
 import Types.UrlContents
-import Types.Key
 import qualified Git
 import Config
 import Git.Config (isTrue, boolConfig)

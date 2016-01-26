@@ -98,7 +98,7 @@ docs: mans
 		--exclude='users/*' --exclude='devblog/*' --exclude='thanks'
 
 clean:
-	$(BUILDER) clean
+	if [ "$(BUILDER)" != ./Setup ] && [ "$(BUILDER)" != cabal ]; then $(BUILDER) clean; fi
 	rm -rf tmp dist git-annex $(mans) configure  *.tix .hpc \
 		doc/.ikiwiki html dist tags Build/SysConfig.hs \
 		Setup Build/InstallDesktopFile Build/EvilSplicer \
@@ -274,7 +274,7 @@ hdevtools:
 distributionupdate:
 	git pull
 	cabal configure
-	ghc -Wall --make Build/DistributionUpdate -XPackageImports -optP-include -optPdist/build/autogen/cabal_macros.h
+	ghc -Wall -fno-warn-tabs --make Build/DistributionUpdate -XPackageImports -optP-include -optPdist/build/autogen/cabal_macros.h
 	./Build/DistributionUpdate
 
 .PHONY: git-annex git-union-merge tags

@@ -71,10 +71,19 @@ Several options can be used to adjust handling of duplicate files.
   Imports multiple files in parallel. This may be faster.
   For example: `-J4`  
 
+* `--json`
+
+  Enable JSON output. This is intended to be parsed by programs that use
+  git-annex. Each line of output is a JSON object.
+
 # CAVEATS
 
 Note that using `--deduplicate` or `--clean-duplicates` with the WORM
 backend does not look at file content, but filename and mtime.
+
+If annex.largefiles is configured, and does not match a file, `git annex
+import` will add the non-large file directly to the git repository,
+instead of to the annex.
 
 # SEE ALSO
 

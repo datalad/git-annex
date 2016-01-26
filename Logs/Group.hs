@@ -20,7 +20,7 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.Time.Clock.POSIX
 
-import Common.Annex
+import Annex.Common
 import Logs
 import qualified Annex.Branch
 import qualified Annex

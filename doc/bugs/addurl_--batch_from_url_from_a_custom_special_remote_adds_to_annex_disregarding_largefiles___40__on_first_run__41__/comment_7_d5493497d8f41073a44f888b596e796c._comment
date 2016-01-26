@@ -1,0 +1,99 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 7"
+ date="2016-01-19T21:14:03Z"
+ content="""
+and here is the first and 2nd invocations which differ in --debug output and their end result
+[[!format sh \"\"\"
+$ echo \"http://www.onerussian.com/tmp/README2.rst README2.rst\" | git annex addurl -c annex.largefiles=exclude=*.rst --with-files --json --batch --debug
+[2016-01-19 16:12:26.995558] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.largefiles=exclude=*.rst\",\"show-ref\",\"git-annex\"]
+[2016-01-19 16:12:26.997958] process done ExitSuccess
+[2016-01-19 16:12:26.998035] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.largefiles=exclude=*.rst\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2016-01-19 16:12:27.000078] process done ExitSuccess
+[2016-01-19 16:12:27.000635] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.largefiles=exclude=*.rst\",\"log\",\"refs/heads/git-annex..d7ffcd26b0f991c83da0d59997a4b4d7bb6c9ff2\",\"-n1\",\"--pretty=%H\"]
+[2016-01-19 16:12:27.003861] process done ExitSuccess
+[2016-01-19 16:12:27.004656] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.largefiles=exclude=*.rst\",\"cat-file\",\"--batch\"]
+[2016-01-19 16:12:27.009211] chat: git-annex-remote-dl+archive []
+[2016-01-19 16:12:27.527475] git-annex-remote-dl+archive --> VERSION 1
+[2016-01-19 16:12:27.527623] git-annex-remote-dl+archive <-- PREPARE
+[2016-01-19 16:12:27.527861] git-annex-remote-dl+archive --> PREPARE-SUCCESS
+[2016-01-19 16:12:27.527931] git-annex-remote-dl+archive <-- GETCOST
+[2016-01-19 16:12:27.528052] git-annex-remote-dl+archive --> COST 100
+[2016-01-19 16:12:27.528131] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.largefiles=exclude=*.rst\",\"config\",\"remote.datalad-archives.annex-cost\",\"100.0\"]
+[2016-01-19 16:12:27.530227] process done ExitSuccess
+[2016-01-19 16:12:27.530302] read: git [\"config\",\"--null\",\"--list\"]
+[2016-01-19 16:12:27.533089] process done ExitSuccess
+[2016-01-19 16:12:27.53319] git-annex-remote-dl+archive <-- GETAVAILABILITY
+[2016-01-19 16:12:27.533378] git-annex-remote-dl+archive --> AVAILABILITY LOCAL
+[2016-01-19 16:12:27.533669] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.largefiles=exclude=*.rst\",\"config\",\"remote.datalad-archives.annex-availability\",\"LocallyAvailable\"]
+[2016-01-19 16:12:27.535709] process done ExitSuccess
+[2016-01-19 16:12:27.535862] read: git [\"config\",\"--null\",\"--list\"]
+[2016-01-19 16:12:27.538559] process done ExitSuccess
+[2016-01-19 16:12:27.538738] git-annex-remote-dl+archive <-- CLAIMURL http://www.onerussian.com/tmp/README2.rst
+[2016-01-19 16:12:27.538935] git-annex-remote-dl+archive --> DEBUG Not claiming url http://www.onerussian.com/tmp/README2.rst
+[2016-01-19 16:12:27.539007] Not claiming url http://www.onerussian.com/tmp/README2.rst
+[2016-01-19 16:12:27.539081] git-annex-remote-dl+archive --> CLAIMURL-FAILURE
+[2016-01-19 16:12:27.539358] read: quvi [\"--version\"]
+[2016-01-19 16:12:27.544211] process done ExitSuccess
+[2016-01-19 16:12:27.544298] call: quvi [\"--verbosity\",\"mute\",\"--support\",\"http://www.onerussian.com/tmp/README2.rst\"]
+[2016-01-19 16:12:27.55835] process done ExitFailure 65
+{\"command\":\"addurl\",\"file\":\"README2.rst\",\"note\":\"downloading http://www.onerussian.com/tmp/README2.rst ...\"[2016-01-19 16:12:27.59644] call: wget [\"-q\",\"--clobber\",\"-c\",\"-O\",\"/tmp/123/.git/annex/tmp/URL-s13--http&c%%www.onerussian.com%tmp%README2.rst\",\"http://www.onerussian.com/tmp/README2.rst\",\"--user-agent\",\"git-annex/6.20160118+gitgdaf852e-1~ndall+1\"]
+[2016-01-19 16:12:27.615658] process done ExitSuccess
+[2016-01-19 16:12:27.616383] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.largefiles=exclude=*.rst\",\"check-attr\",\"-z\",\"--stdin\",\"annex.backend\",\"annex.numcopies\",\"--\"]
+[2016-01-19 16:12:27.617697] read: git [\"--version\"]
+[2016-01-19 16:12:27.62155] process done ExitSuccess
+,\"success\":true}
+[2016-01-19 16:12:27.633965] feed: xargs [\"-0\",\"git\",\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.largefiles=exclude=*.rst\",\"add\",\"--\"]
+[2016-01-19 16:12:27.64207] process done ExitSuccess
+[2016-01-19 16:12:27.643078] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.largefiles=exclude=*.rst\",\"hash-object\",\"-w\",\"--stdin-paths\",\"--no-filters\"]
+[2016-01-19 16:12:27.644711] feed: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.largefiles=exclude=*.rst\",\"update-index\",\"-z\",\"--index-info\"]
+[2016-01-19 16:12:27.651595] process done ExitSuccess
+[2016-01-19 16:12:27.651948] process done ExitSuccess
+[2016-01-19 16:12:27.652117] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.largefiles=exclude=*.rst\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2016-01-19 16:12:27.655295] process done ExitSuccess
+[2016-01-19 16:12:27.656512] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.largefiles=exclude=*.rst\",\"write-tree\"]
+[2016-01-19 16:12:27.662511] process done ExitSuccess
+[2016-01-19 16:12:27.662718] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.largefiles=exclude=*.rst\",\"commit-tree\",\"5051fd1b69430fa24b200817f6c724ce1269059a\",\"--no-gpg-sign\",\"-p\",\"refs/heads/git-annex\"]
+[2016-01-19 16:12:27.673622] process done ExitSuccess
+[2016-01-19 16:12:27.673873] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.largefiles=exclude=*.rst\",\"update-ref\",\"refs/heads/git-annex\",\"bb2fd6a3391ad86b627c121c2b013f61c1936b0c\"]
+[2016-01-19 16:12:27.679617] process done ExitSuccess
+[2016-01-19 16:12:27.760906] process done ExitSuccess
+
+$ echo \"http://www.onerussian.com/tmp/README2.rst README-2.rst\" | git annex addurl -c annex.largefiles=exclude=*.rst --with-files --json --batch --debug 
+[2016-01-19 16:12:42.552976] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.largefiles=exclude=*.rst\",\"show-ref\",\"git-annex\"]
+[2016-01-19 16:12:42.556093] process done ExitSuccess
+[2016-01-19 16:12:42.556174] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.largefiles=exclude=*.rst\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2016-01-19 16:12:42.558521] process done ExitSuccess
+[2016-01-19 16:12:42.558658] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.largefiles=exclude=*.rst\",\"log\",\"refs/heads/git-annex..bb2fd6a3391ad86b627c121c2b013f61c1936b0c\",\"-n1\",\"--pretty=%H\"]
+[2016-01-19 16:12:42.561171] process done ExitSuccess
+[2016-01-19 16:12:42.561883] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.largefiles=exclude=*.rst\",\"cat-file\",\"--batch\"]
+[2016-01-19 16:12:42.565138] chat: git-annex-remote-dl+archive []
+[2016-01-19 16:12:43.082528] git-annex-remote-dl+archive --> VERSION 1
+[2016-01-19 16:12:43.082742] git-annex-remote-dl+archive <-- PREPARE
+[2016-01-19 16:12:43.083009] git-annex-remote-dl+archive --> PREPARE-SUCCESS
+[2016-01-19 16:12:43.083139] git-annex-remote-dl+archive <-- CLAIMURL http://www.onerussian.com/tmp/README2.rst
+[2016-01-19 16:12:43.083369] git-annex-remote-dl+archive --> DEBUG Not claiming url http://www.onerussian.com/tmp/README2.rst
+[2016-01-19 16:12:43.083494] Not claiming url http://www.onerussian.com/tmp/README2.rst
+[2016-01-19 16:12:43.083596] git-annex-remote-dl+archive --> CLAIMURL-FAILURE
+[2016-01-19 16:12:43.083766] read: quvi [\"--version\"]
+[2016-01-19 16:12:43.089921] process done ExitSuccess
+[2016-01-19 16:12:43.090047] call: quvi [\"--verbosity\",\"mute\",\"--support\",\"http://www.onerussian.com/tmp/README2.rst\"]
+[2016-01-19 16:12:43.106383] process done ExitFailure 65
+{\"command\":\"addurl\",\"file\":\"README-2.rst\",\"note\":\"downloading http://www.onerussian.com/tmp/README2.rst ...\"[2016-01-19 16:12:43.167357] call: wget [\"-q\",\"--clobber\",\"-c\",\"-O\",\"/tmp/123/.git/annex/tmp/URL-s13--http&c%%www.onerussian.com%tmp%README2.rst\",\"http://www.onerussian.com/tmp/README2.rst\",\"--user-agent\",\"git-annex/6.20160118+gitgdaf852e-1~ndall+1\"]
+[2016-01-19 16:12:43.184513] process done ExitSuccess
+[2016-01-19 16:12:43.184842] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.largefiles=exclude=*.rst\",\"check-attr\",\"-z\",\"--stdin\",\"annex.backend\",\"annex.numcopies\",\"--\"]
+[2016-01-19 16:12:43.185231] read: git [\"--version\"]
+[2016-01-19 16:12:43.189767] process done ExitSuccess
+,\"note\":\"non-large file; adding content to git repository\",\"success\":true}
+[2016-01-19 16:12:43.193754] feed: xargs [\"-0\",\"git\",\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.largefiles=exclude=*.rst\",\"add\",\"--\"]
+[2016-01-19 16:12:43.199038] process done ExitSuccess
+[2016-01-19 16:12:43.256073] process done ExitSuccess
+
+$ ls -l 
+total 8
+-rw------- 1 yoh yoh  13 Jan 19 14:34 README-2.rst
+lrwxrwxrwx 1 yoh yoh 188 Jan 19 16:12 README2.rst -> .git/annex/objects/9p/28/SHA256E-s13--1c87b6727f523662df714f06a94ea27fa4d9050c38f4f7712bd4663ffbfdfa01.rst/SHA256E-s13--1c87b6727f523662df714f06a94ea27fa4d9050c38f4f7712bd4663ffbfdfa01.rst
+
+
+\"\"\"]]
+"""]]

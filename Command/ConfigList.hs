@@ -7,7 +7,6 @@
 
 module Command.ConfigList where
 
-import Common.Annex
 import Command
 import Annex.UUID
 import Annex.Init

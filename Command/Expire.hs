@@ -7,7 +7,6 @@
 
 module Command.Expire where
 
-import Common.Annex
 import Command
 import Logs.Activity
 import Logs.UUID

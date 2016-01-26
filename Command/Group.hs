@@ -7,7 +7,6 @@
 
 module Command.Group where
 
-import Common.Annex
 import Command
 import qualified Remote
 import Logs.Group

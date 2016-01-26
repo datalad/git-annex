@@ -15,7 +15,7 @@ module Annex.LockFile (
 	tryExclusiveLock,
 ) where
 
-import Common.Annex
+import Annex.Common
 import Annex
 import Types.LockCache
 import qualified Git

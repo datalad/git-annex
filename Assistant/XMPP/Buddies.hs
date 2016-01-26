@@ -8,7 +8,7 @@
 module Assistant.XMPP.Buddies where
 
 import Assistant.XMPP
-import Common.Annex
+import Annex.Common
 import Assistant.Types.Buddies
 
 import Network.Protocol.XMPP

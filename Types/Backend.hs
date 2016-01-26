@@ -1,4 +1,4 @@
-{- git-annex key/value backend data type
+{- git-annex key backend data type
  -
  - Most things should not need this, using Types instead
  -

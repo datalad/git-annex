@@ -9,13 +9,11 @@
 
 module Command.TransferKeys where
 
-import Common.Annex
 import Command
 import Annex.Content
 import Logs.Location
 import Annex.Transfer
 import qualified Remote
-import Types.Key
 import Utility.SimpleProtocol (dupIoHandles)
 import Git.Types (RemoteName)
 

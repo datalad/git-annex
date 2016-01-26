@@ -23,7 +23,7 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
 import System.PosixCompat.Types
 
-import Common.Annex
+import Annex.Common
 import qualified Git
 import qualified Git.CatFile
 import qualified Annex

@@ -7,11 +7,9 @@
 
 module Command.SetKey where
 
-import Common.Annex
 import Command
 import Logs.Location
 import Annex.Content
-import Types.Key
 
 cmd :: Command
 cmd = command "setkey" SectionPlumbing "sets annexed content for a key"

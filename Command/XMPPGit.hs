@@ -7,7 +7,6 @@
 
 module Command.XMPPGit where
 
-import Common.Annex
 import Command
 import Assistant.XMPP.Git
 

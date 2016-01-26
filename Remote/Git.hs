@@ -13,7 +13,7 @@ module Remote.Git (
 	repoAvail,
 ) where
 
-import Common.Annex
+import Annex.Common
 import Annex.Ssh
 import Types.Remote
 import Types.GitConfig
@@ -36,7 +36,6 @@ import Config
 import Config.Cost
 import Annex.Init
 import Annex.Version
-import Types.Key
 import Types.CleanupActions
 import qualified CmdLine.GitAnnexShell.Fields as Fields
 import Logs.Location

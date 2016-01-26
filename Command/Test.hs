@@ -7,9 +7,7 @@
 
 module Command.Test where
 
-import Common
 import Command
-import Messages
 import Types.Test
 
 cmd :: Parser TestOptions -> Maybe TestRunner -> Command

@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="but works correct in direct mode"
+ date="2016-01-19T20:05:56Z"
+ content="""
+really sorry for spam ;) but here you go -- works correct in direct mode
+
+[[!format sh \"\"\"
+$ chmod a+w -R /tmp/123; rm -rf /tmp/123; mkdir /tmp/123; cd /tmp/123; git init; git annex init;
+Initialized empty Git repository in /tmp/123/.git/
+init  ok
+(recording state in git...)
+
+$ git annex direct                                                                              
+commit  
+On branch master
+
+Initial commit
+
+nothing to commit
+ok
+direct  ok
+
+$ git annex initremote datalad-archives externaltype=dl+archive type=external autoenable=true encryption=none
+initremote datalad-archives ok
+(recording state in git...)
+
+$ echo \"http://www.onerussian.com/tmp/README2.rst README2.rst\" | git annex addurl -c annex.largefiles=exclude=*.rst --with-files --json --batch
+{\"command\":\"addurl\",\"file\":\"README2.rst\",\"note\":\"downloading http://www.onerussian.com/tmp/README2.rst ...\",\"success\":true}
+
+$ ls -l 
+total 4
+-rw------- 1 yoh yoh 13 Jan 19 14:34 README2.rst
+\"\"\"]]
+"""]]

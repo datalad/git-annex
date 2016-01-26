@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="reyman64@740e43250854ada1b8484b3bc44b53be03367d70"
+ nickname="reyman64"
+ subject="comment 3"
+ date="2016-01-22T22:12:24Z"
+ content="""
+You're right, works much much better with stack.
+
+If other user are interested, i create a tutorial here to install cabal / stack on : [webfaction hosting](https://community.webfaction.com/questions/19167/install-haskell-ghc-and-cabal-from-source-on-webfaction) After stack install, compiling git-annex is very easy (compared to cabal instal ....)
+"""]]

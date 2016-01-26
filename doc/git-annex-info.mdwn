@@ -30,6 +30,11 @@ for the repository as a whole.
 
   Show file sizes in bytes, disabling the default nicer units.
 
+* `--batch`
+
+  Enable batch mode, in which a line containing an item is read from stdin,
+  the information about it is output to stdout, and repeat.
+
 * file matching options
 
   When a directory is specified, the [[git-annex-matching-options]](1)

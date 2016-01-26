@@ -7,7 +7,7 @@
 
 module Annex.Concurrent where
 
-import Common.Annex
+import Annex.Common
 import Annex
 import Annex.CatFile
 import Annex.CheckAttr

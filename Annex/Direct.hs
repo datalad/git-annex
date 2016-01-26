@@ -10,7 +10,7 @@
 
 module Annex.Direct where
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
 import qualified Git
 import qualified Git.LsFiles

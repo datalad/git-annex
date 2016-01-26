@@ -7,7 +7,6 @@
 
 module Command.Import where
 
-import Common.Annex
 import Command
 import qualified Git
 import qualified Annex
@@ -16,14 +15,13 @@ import Utility.CopyFile
 import Backend
 import Remote
 import Types.KeySource
-import Types.Key
 import Annex.CheckIgnore
 import Annex.NumCopies
 import Types.FileMatcher
 import Annex.FileMatcher
 
 cmd :: Command
-cmd = withGlobalOptions (jobsOption : fileMatchingOptions) $ notBareRepo $
+cmd = withGlobalOptions (jobsOption : jsonOption : fileMatchingOptions) $ notBareRepo $
 	command "import" SectionCommon 
 		"move and add files from outside git working copy"
 		paramPaths (seek <$$> optParser)

@@ -7,14 +7,11 @@
 
 module Command.LookupKey where
 
-import Common.Annex
 import Command
-import CmdLine.Batch
 import Annex.CatFile
-import Types.Key
 
 cmd :: Command
-cmd = notBareRepo $ noCommit $ noMessages $
+cmd = notBareRepo $ noCommit $
 	command "lookupkey" SectionPlumbing 
 		"looks up key used for file"
 		(paramRepeating paramFile)

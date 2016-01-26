@@ -18,7 +18,7 @@ module Remote.Rsync (
 	RsyncOpts
 ) where
 
-import Common.Annex
+import Annex.Common
 import Types.Remote
 import qualified Git
 import Config
@@ -36,7 +36,6 @@ import Messages.Progress
 import Utility.Metered
 import Logs.Transfer
 import Types.Creds
-import Types.Key (isChunkKey)
 import Annex.DirHashes
 import Utility.Tmp
 

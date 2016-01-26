@@ -22,7 +22,7 @@ module Annex.NumCopies (
 	UnVerifiedCopy(..),
 ) where
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
 import Types.NumCopies
 import Logs.NumCopies

@@ -7,7 +7,7 @@
 
 module Remote.Helper.Chunked.Legacy where
 
-import Common.Annex
+import Annex.Common
 import Remote.Helper.Chunked
 import Utility.Metered
 

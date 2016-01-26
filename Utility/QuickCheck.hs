@@ -6,7 +6,7 @@
  -}
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE TypeSynonymInstances, CPP #-}
 
 module Utility.QuickCheck
 	( module X
@@ -21,11 +21,13 @@ import qualified Data.Set as S
 import Control.Applicative
 import Prelude
 
+#if ! MIN_VERSION_QuickCheck(2,8,2)
 instance (Arbitrary k, Arbitrary v, Eq k, Ord k) => Arbitrary (M.Map k v) where
 	arbitrary = M.fromList <$> arbitrary
 
 instance (Arbitrary v, Eq v, Ord v) => Arbitrary (S.Set v) where
 	arbitrary = S.fromList <$> arbitrary
+#endif
 
 {- Times before the epoch are excluded. -}
 instance Arbitrary POSIXTime where

@@ -7,7 +7,6 @@
 
 module Command.Add where
 
-import Common.Annex
 import Command
 import Annex.Ingest
 import Logs.Location
@@ -16,20 +15,21 @@ import Annex.Content.Direct
 import Annex.Link
 import qualified Annex
 import qualified Annex.Queue
+import qualified Database.Keys
 import Config
 import Utility.InodeCache
 import Annex.FileMatcher
 import Annex.Version
-import qualified Database.Keys
 
 cmd :: Command
-cmd = notBareRepo $ withGlobalOptions (jobsOption : fileMatchingOptions) $
+cmd = notBareRepo $ withGlobalOptions (jobsOption : jsonOption : fileMatchingOptions) $
 	command "add" SectionCommon "add files to annex"
 		paramPaths (seek <$$> optParser)
 
 data AddOptions = AddOptions
 	{ addThese :: CmdParams
 	, includeDotFiles :: Bool
+	, batchOption :: BatchMode
 	}
 
 optParser :: CmdParamsDesc -> Parser AddOptions
@@ -39,6 +39,7 @@ optParser desc = AddOptions
 		( long "include-dotfiles"
 		<> help "don't skip dotfiles"
 		)
+	<*> parseBatchOption
 
 {- Add acts on both files not checked into git yet, and unlocked files.
  -
@@ -46,15 +47,19 @@ optParser desc = AddOptions
 seek :: AddOptions -> CommandSeek
 seek o = allowConcurrentOutput $ do
 	matcher <- largeFilesMatcher
-	let go a = flip a (addThese o) $ \file -> ifM (checkFileMatcher matcher file <||> Annex.getState Annex.force)
+	let gofile file = ifM (checkFileMatcher matcher file <||> Annex.getState Annex.force)
 		( start file
 		, startSmall file
 		)
-	go $ withFilesNotInGit (not $ includeDotFiles o)
-	ifM (versionSupportsUnlockedPointers <||> isDirect)
-		( go withFilesMaybeModified
-		, go withFilesOldUnlocked
-		)
+	case batchOption o of
+		Batch -> batchFiles gofile
+		NoBatch -> do
+			let go a = a gofile (addThese o)
+			go (withFilesNotInGit (not $ includeDotFiles o))
+			ifM (versionSupportsUnlockedPointers <||> isDirect)
+				( go withFilesMaybeModified
+				, go withFilesOldUnlocked
+				)
 
 {- Pass file off to git-add. -}
 startSmall :: FilePath -> CommandStart
@@ -126,6 +131,7 @@ perform file = do
 
 cleanup :: FilePath -> Key -> Maybe InodeCache -> Bool -> CommandCleanup
 cleanup file key mcache hascontent = do
+	maybeShowJSON [("key", key2file key)]
 	ifM (isDirect <&&> pure hascontent)
 		( do
 			l <- calcRepo $ gitAnnexLink file key

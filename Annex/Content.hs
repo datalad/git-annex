@@ -52,7 +52,7 @@ module Annex.Content (
 import System.IO.Unsafe (unsafeInterleaveIO)
 import qualified Data.Set as S
 
-import Common.Annex
+import Annex.Common
 import Logs.Location
 import Logs.Transfer
 import qualified Git
@@ -62,7 +62,6 @@ import qualified Annex.Branch
 import Utility.DiskFree
 import Utility.FileMode
 import qualified Annex.Url as Url
-import Types.Key
 import Utility.DataUnits
 import Utility.CopyFile
 import Utility.Metered
@@ -336,12 +335,12 @@ verifyKeyContent v Types.Remote.UnVerified k f = ifM (shouldVerify v)
 	, return True
 	)
   where
-	verifysize = case Types.Key.keySize k of
+	verifysize = case keySize k of
 		Nothing -> return True
 		Just size -> do
 			size' <- liftIO $ catchDefaultIO 0 $ getFileSize f
 			return (size' == size)
-	verifycontent = case Types.Backend.verifyKeyContent =<< Backend.maybeLookupBackendName (Types.Key.keyBackendName k) of
+	verifycontent = case Types.Backend.verifyKeyContent =<< Backend.maybeLookupBackendName (keyBackendName k) of
 		Nothing -> return True
 		Just verifier -> verifier k f
 

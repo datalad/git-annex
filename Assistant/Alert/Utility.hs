@@ -7,7 +7,7 @@
 
 module Assistant.Alert.Utility where
 
-import Common.Annex
+import Annex.Common
 import Assistant.Types.Alert
 import Utility.Tense
 

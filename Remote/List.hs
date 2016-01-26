@@ -11,7 +11,7 @@ module Remote.List where
 
 import qualified Data.Map as M
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
 import Logs.Remote
 import Types.Remote
@@ -34,9 +34,7 @@ import qualified Remote.BitTorrent
 #ifdef WITH_WEBDAV
 import qualified Remote.WebDAV
 #endif
-#ifdef WITH_TAHOE
 import qualified Remote.Tahoe
-#endif
 import qualified Remote.Glacier
 import qualified Remote.Ddar
 import qualified Remote.Hook
@@ -57,9 +55,7 @@ remoteTypes =
 #ifdef WITH_WEBDAV
 	, Remote.WebDAV.remote
 #endif
-#ifdef WITH_TAHOE
 	, Remote.Tahoe.remote
-#endif
 	, Remote.Glacier.remote
 	, Remote.Ddar.remote
 	, Remote.Hook.remote

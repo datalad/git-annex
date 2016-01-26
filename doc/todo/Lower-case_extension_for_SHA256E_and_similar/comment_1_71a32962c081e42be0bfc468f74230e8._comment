@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 1"
+ date="2016-01-18T13:16:59Z"
+ content="""
+Joey implemented the '--force' option in *git annex migrate* at my request to deal with this issue.
+
+* Rename symlinks to lowercase extension
+* git annex migrate --force (causes the keys to be recreated using the new, lowercase extension)
+* git annex unused (for removing the now unused upper/mixed case files in the store).
+
+It's not the smoothest method, but it works well enough :)
+"""]]

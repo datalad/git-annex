@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 55"""
+ date="2016-01-22T15:56:01Z"
+ content="""
+@reyman64, that's a failure to build the feed package, not git-annex.
+See <http://hackage.haskell.org/package/feed> for a pointer to its bug
+tracker.
+
+The best way to avoid running into such problems is to use stack rather
+than cabal to build git-annex, since that avoids using bleeding-edge and
+thus frequently broken versions of the dependencies.
+"""]]

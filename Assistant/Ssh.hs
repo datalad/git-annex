@@ -7,7 +7,7 @@
 
 module Assistant.Ssh where
 
-import Common.Annex
+import Annex.Common
 import Utility.Tmp
 import Utility.Shell
 import Utility.Rsync

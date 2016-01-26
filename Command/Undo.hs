@@ -7,7 +7,6 @@
 
 module Command.Undo where
 
-import Common.Annex
 import Command
 import Config
 import Annex.Direct

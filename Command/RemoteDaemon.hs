@@ -7,7 +7,6 @@
 
 module Command.RemoteDaemon where
 
-import Common.Annex
 import Command
 import RemoteDaemon.Core
 

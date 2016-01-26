@@ -1,0 +1,33 @@
+### Please describe the problem.
+I am getting build errors when trying to compile git-annex with QuickCheck 2.8.2.
+
+### What steps will reproduce the problem?
+Build git-annex with QuickCheck 2.8.2, and get the following errors:
+
+
+    [ 30 of 535] Compiling Utility.QuickCheck ( Utility/QuickCheck.hs, dist/build/git-annex/git-annex-tmp/Utility/QuickCheck.o )
+    
+    Utility/QuickCheck.hs:24:10:
+        Duplicate instance declarations:
+          instance (Arbitrary k, Arbitrary v, Eq k, Ord k) =>
+                   Arbitrary (M.Map k v)
+            -- Defined at Utility/QuickCheck.hs:24:10
+          instance [safe] (Ord k, Arbitrary k, Arbitrary v) =>
+                          Arbitrary (M.Map k v)
+            -- Defined in `Test.QuickCheck.Arbitrary'
+
+    Utility/QuickCheck.hs:27:10:
+        Duplicate instance declarations:
+          instance (Arbitrary v, Eq v, Ord v) => Arbitrary (S.Set v)
+            -- Defined at Utility/QuickCheck.hs:27:10
+          instance [safe] (Ord a, Arbitrary a) => Arbitrary (S.Set a)
+            -- Defined in `Test.QuickCheck.Arbitrary'
+
+### What version of git-annex are you using? On what operating system?
+git-annex 6.20160114, on Arch Linux x86_64.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+Yes, it built fine with QuickCheck 2.8. I didn't test with 2.8.1, though.
+
+> ifdefed those instances out with this version of quickcheck. [[done]]
+> --[[Joey]]

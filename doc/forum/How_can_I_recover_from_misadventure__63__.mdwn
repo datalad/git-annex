@@ -1,0 +1,10 @@
+Hi, 
+
+  I have been attempting to use `git annex` for archiving about 300gb of data (a usb disk that is a copy of a laptop drive). I have an S3 special remote setup as a backup remote right now (the plan is once I feel like the data is safe on s3 I will change the remote type to archive and get rid of the local copies). I am using the WORM backend. I think something has gone wrong:
+
+1. As of right now I have about 200mb of data on S3, but 'git annex copy --to S3 .' runs for a while, then exits, without any indication that it has uploaded any additional files.
+2. .git/ is around 200gb in size
+3. 'git annex add .' adds files for a while, then exits, and does the same thing when run again.
+4. At this point I decided to try and restart from scratch so I ran 'git annex direct' to get the files replaced in the working directory, this runs for a while then hangs.
+
+This has been my first outing with `git annex`, so I am sort of at a loss as to what there is I can poke at to try and determine what is going on. It would be nice to be able to get the data back to the original state, but more than that, I would like to understand what I did wrong, and I would appreciate any pointers or advice. 

@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-01-20T18:36:57Z"
+ content="""
+"cabal: not found"
+
+Since cabal-install is a build-dependency of the package, why is cabal not
+available?
+
+The debian package builds just fine here. I diagnose that the problem is on
+your build system.
+
+All your patch is doing is modifying it to not build the package using
+cabal. But, debian/cabal-wrapper's comments explain why we need to use
+cabal.
+"""]]

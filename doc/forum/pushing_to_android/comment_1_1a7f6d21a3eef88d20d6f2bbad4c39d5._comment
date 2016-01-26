@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-01-20T19:17:47Z"
+ content="""
+Gosh, I don't know. Android's permission model is not really designed to
+make it very usable as a general unix system like this. Unfortunately.
+
+You might be able to get away with just copying the files from the
+git-annex app into the sheper app.
+
+I think that a better option though, would be to run git-annex on the phone
+and let it notice when a change is made to the repository, and pull.
+The best way to set that up is to use the web app to add a repository on a
+ssh server. As long as the ssh server is running git-annex 5.20140405
+or newer, the git-annex on the phone will be able to instantly notice when
+changes are pushed into the ssh server, and will pull them down to the
+phone.
+"""]]

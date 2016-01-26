@@ -9,7 +9,7 @@
 
 module Annex.Notification (NotifyWitness, notifyTransfer, notifyDrop) where
 
-import Common.Annex
+import Annex.Common
 import Logs.Transfer
 #ifdef WITH_DBUS_NOTIFICATIONS
 import qualified Annex

@@ -29,7 +29,7 @@ module Annex.Content.Direct (
 	addContentWhenNotPresent,
 ) where
 
-import Common.Annex
+import Annex.Common
 import Annex.Perms
 import qualified Git
 import Utility.Tmp

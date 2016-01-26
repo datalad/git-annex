@@ -1,0 +1,8 @@
+After finally releasing git-annex 6 yesterday, I did some catching up
+today, and got the message backlog back down from 120 to 100.
+
+By the way, the first OSX release of git-annex 6 was broken; I had to fix
+an issue on the builder and update the build. If you upgraded at the wrong
+time, you might find that git-annex doesn't run; if so reinstall it.
+I now have an account on a separate OSX machine from the build machine,
+that automatically tests the daily build, to detect such problems.

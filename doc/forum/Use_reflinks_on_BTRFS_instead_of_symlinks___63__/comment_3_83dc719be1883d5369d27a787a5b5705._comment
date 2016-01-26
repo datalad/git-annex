@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="sylvain.joyeux@5c33d7abae4df5f574fc4b8791d02054d245bf62"
+ nickname="sylvain.joyeux"
+ subject="not on the directory special remote"
+ date="2016-01-20T11:39:35Z"
+ content="""
+I'm trying to share videos across my (many) presentations using annex. My idea was to have a local annex directory remote that is used by all the presentation gits.
+
+However, it seems that copying from a directory special remote does not use reflink. Is that right ?
+
+Thanks for git-annex !
+
+Sylvain
+"""]]

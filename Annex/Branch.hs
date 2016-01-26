@@ -32,7 +32,7 @@ import qualified Data.Map as M
 import Data.Bits.Utils
 import Control.Concurrent (threadDelay)
 
-import Common.Annex
+import Annex.Common
 import Annex.BranchState
 import Annex.Journal
 import Annex.Index

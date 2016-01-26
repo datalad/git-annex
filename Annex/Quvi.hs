@@ -9,7 +9,7 @@
 
 module Annex.Quvi where
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
 import Utility.Quvi
 import Utility.Url

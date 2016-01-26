@@ -7,7 +7,7 @@
 
 module Annex.SpecialRemote where
 
-import Common.Annex
+import Annex.Common
 import Remote (remoteTypes, remoteMap)
 import Types.Remote (RemoteConfig, RemoteConfigKey, typename, setup)
 import Logs.Remote

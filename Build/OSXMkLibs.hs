@@ -12,6 +12,7 @@ import Data.Maybe
 import System.FilePath
 import System.Directory
 import Control.Monad
+import Control.Monad.IfElse
 import Data.List
 import Data.String.Utils
 import Control.Applicative
@@ -53,9 +54,10 @@ installLibs appbase replacement_libs libmap = do
 			, do
 				createDirectoryIfMissing True (parentDir dest)
 				putStrLn $ "installing " ++ pathlib ++ " as " ++ shortlib
-				_ <- boolSystem "cp" [File pathlib, File dest]
-				_ <- boolSystem "chmod" [Param "644", File dest]
-				_ <- boolSystem "ln" [Param "-s", File fulllib, File symdest]
+				unlessM (boolSystem "cp" [File pathlib, File dest]
+					<&&> boolSystem "chmod" [Param "644", File dest]
+					<&&> boolSystem "ln" [Param "-s", File fulllib, File symdest]) $
+					error "library install failed"
 				return $ Just appbase
 			)
 	return (catMaybes libs, replacement_libs', libmap')

@@ -1,0 +1,21 @@
+### Please describe the problem.
+
+Complained elsewhere (http://git-annex.branchable.com/bugs/inconsistent_output_upon_addurl_--batch_complicates_if_not_forbids_reliable_parsing_of_output/) haven't mentioned it was marked fixed, so reiterating as independent bugreport
+
+With today's version
+[[!format sh """
+
+$> echo "http://www.onerussian.com/tmp/banner.png 123" | git annex addurl --batch --with-files
+addurl 123 git-annex: 123 already exists and is not annexed; not overwriting                  
+
+$> echo "http://www.onerussian.com/tmp/banner.png 123" | git annex addurl --batch --with-files 2>/dev/null
+addurl 123 %       
+
+$> echo "http://www.onerussian.com/tmp/banner.png 123" | git annex addurl --batch --with-files --json 2>/dev/null 
+{"command":"addurl","file":"123"% 
+
+"""]]
+
+[[!meta author=yoh]]
+
+> [[fixed|done]] --[[Joey]]
