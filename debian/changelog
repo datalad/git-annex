@@ -1,5 +1,7 @@
 git-annex (6.20160115) UNRELEASED; urgency=medium
 
+  * Fix nasty reversion in the last release that broke sync --content's
+    handling of many preferred content expressions.
   * whereis --json: Urls are now listed inside the remote that claims them,
     rather than all together at the end.
   * info, add, whereis, find: Support --batch mode.

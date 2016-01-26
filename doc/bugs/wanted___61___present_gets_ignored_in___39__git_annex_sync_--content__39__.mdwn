@@ -16,3 +16,5 @@ git-annex version 6.20160114 on Arch Linux.
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 This behaviour is relatively recent. Until some time ago everything worked as expected with the expression above.
+
+> [[fixed|done]] --[[Joey]]

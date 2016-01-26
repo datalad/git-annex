@@ -86,7 +86,7 @@ performNew file key filemodified = do
 	repopulate obj
 		| filemodified = modifyContent obj $ do
 			g <- Annex.gitRepo
-			fs <- mapM (`fromTopFilePath` g)
+			fs <- map (`fromTopFilePath` g)
 				<$> Database.Keys.getAssociatedFiles key
 			mfile <- firstM (isUnmodified key) fs
 			liftIO $ nukeFile obj
