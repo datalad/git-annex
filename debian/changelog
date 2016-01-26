@@ -1,4 +1,4 @@
-git-annex (6.20160115) UNRELEASED; urgency=medium
+git-annex (6.20160126) unstable; urgency=medium
 
   * Fix nasty reversion in the last release that broke sync --content's
     handling of many preferred content expressions.
@@ -26,7 +26,7 @@ git-annex (6.20160115) UNRELEASED; urgency=medium
     aeson feed and regex-tdfa to the core dependencies.
   * Roll the dns build flag into the assistant build flag.
 
- -- Joey Hess <id@joeyh.name>  Fri, 15 Jan 2016 14:05:01 -0400
+ -- Joey Hess <id@joeyh.name>  Tue, 26 Jan 2016 14:57:42 -0400
 
 git-annex (6.20160114) unstable; urgency=medium
 
