@@ -46,9 +46,6 @@ Flag Webapp
 Flag Pairing
   Description: Enable pairing
 
-Flag DNS
-  Description: Enable the haskell DNS library for DNS lookup
-
 Flag Production
   Description: Enable production build (slower build; faster binary)
 
@@ -165,6 +162,7 @@ Executable git-annex
     CPP-Options: -DWITH_WEBDAV
 
   if flag(Assistant) && ! os(solaris)
+    Build-Depends: dns
     CPP-Options: -DWITH_ASSISTANT
 
   if flag(Assistant)
@@ -223,10 +221,6 @@ Executable git-annex
   if (! os(windows))
     Build-Depends: network-protocol-xmpp, gnutls (>= 0.1.4), xml-types
     CPP-Options: -DWITH_XMPP
-
-  if flag(DNS)
-    Build-Depends: dns
-    CPP-Options: -DWITH_DNS
   
   if flag(TorrentParser)
     Build-Depends: torrent (>= 10000.0.0)

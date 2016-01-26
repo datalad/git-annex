@@ -73,9 +73,6 @@ buildFlags = filter (not . null)
 #else
 #warning Building without ConcurrentOutput
 #endif
-#ifdef WITH_DNS
-	, "DNS"
-#endif
 #ifdef WITH_TDFA
 	, "TDFA"
 #endif
