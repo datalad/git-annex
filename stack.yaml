@@ -22,6 +22,4 @@ flags:
     ekg: false
 packages:
 - '.'
-extra-deps:
-- concurrent-output-1.7.2
-resolver: nightly-2015-12-28
+resolver: lts-5.0
