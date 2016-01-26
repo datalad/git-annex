@@ -916,6 +916,18 @@ test_sync = intmpclonerepo $ do
 	 - 7b0970b340d7faeb745c666146c7f701ec71808f, where in direct mode
 	 - sync committed the symlink standin file to the annex. -}
 	git_annex_expectoutput "find" ["--in", "."] []
+	{- Regression test for bug fixed in
+	 - 039e83ed5d1a11fd562cce55b8429c840d72443e, where a present
+	 - wanted file was dropped. -}
+	git_annex "get" [annexedfile] @? "get failed"
+	git_annex_expectoutput "find" ["--in", "."] [annexedfile]
+	git_annex "wanted" [".", "present"] @? "wanted failed"
+	git_annex "sync" ["--content"] @? "sync failed"
+	git_annex_expectoutput "find" ["--in", "."] [annexedfile]
+	git_annex "drop" [annexedfile] @? "drop failed"
+	git_annex_expectoutput "find" ["--in", "."] []
+	git_annex "sync" ["--content"] @? "sync failed"
+	git_annex_expectoutput "find" ["--in", "."] []
 
 {- Regression test for union merge bug fixed in
  - 0214e0fb175a608a49b812d81b4632c081f63027 -}
