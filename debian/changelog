@@ -18,6 +18,12 @@ git-annex (6.20160115) UNRELEASED; urgency=medium
   * Fix build with QuickCheck 2.8.2
   * matchexpression: New plumbing command to check if a preferred content
     expression matches some data.
+  * Removed the webapp-secure build flag, rolling it into the webapp build
+    flag.
+  * Removed the quvi and tahoe build flags, which only adds aeson to
+    the core dependencies.
+  * Removed the feed build flag, which only adds feed to the core
+    dependencies.
 
  -- Joey Hess <id@joeyh.name>  Fri, 15 Jan 2016 14:05:01 -0400
 

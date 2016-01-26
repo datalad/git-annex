@@ -22,9 +22,6 @@ buildFlags = filter (not . null)
 #else
 #warning Building without the webapp. You probably need to install Yesod..
 #endif
-#ifdef WITH_WEBAPP_SECURE
-	, "Webapp-secure"
-#endif
 #ifdef WITH_PAIRING
 	, "Pairing"
 #else
@@ -79,16 +76,6 @@ buildFlags = filter (not . null)
 #ifdef WITH_DNS
 	, "DNS"
 #endif
-#ifdef WITH_FEED
-	, "Feeds"
-#else
-#warning Building without Feeds.
-#endif
-#ifdef WITH_QUVI
-	, "Quvi"
-#else
-#warning Building without quvi.
-#endif
 #ifdef WITH_TDFA
 	, "TDFA"
 #endif
@@ -98,4 +85,8 @@ buildFlags = filter (not . null)
 #ifdef WITH_EKG
 	, "EKG"
 #endif
+	-- Always enabled now, but users may be used to seeing these flags
+	-- listed.
+	, "Feeds"
+	, "Quvi"
 	]

@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, GeneralizedNewtypeDeriving, PackageImports, BangPatterns #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving, PackageImports, BangPatterns #-}
 
 module Annex (
 	Annex,
@@ -62,9 +62,7 @@ import Types.LockCache
 import Types.DesktopNotify
 import Types.CleanupActions
 import qualified Database.Keys.Handle as Keys
-#ifdef WITH_QUVI
 import Utility.Quvi (QuviVersion)
-#endif
 import Utility.InodeCache
 import Utility.Url
 
@@ -130,9 +128,7 @@ data AnnexState = AnnexState
 	, errcounter :: Integer
 	, unusedkeys :: Maybe (S.Set Key)
 	, tempurls :: M.Map Key URLString
-#ifdef WITH_QUVI
 	, quviversion :: Maybe QuviVersion
-#endif
 	, existinghooks :: M.Map Git.Hook.Hook Bool
 	, desktopnotify :: DesktopNotify
 	, workers :: [Either AnnexState (Async AnnexState)]
@@ -177,9 +173,7 @@ newState c r = AnnexState
 	, errcounter = 0
 	, unusedkeys = Nothing
 	, tempurls = M.empty
-#ifdef WITH_QUVI
 	, quviversion = Nothing
-#endif
 	, existinghooks = M.empty
 	, desktopnotify = mempty
 	, workers = []

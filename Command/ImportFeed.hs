@@ -33,11 +33,9 @@ import Command.AddUrl (addUrlFile, downloadRemoteFile, parseRelaxedOption, parse
 import Annex.Perms
 import Annex.UUID
 import Backend.URL (fromUrl)
-#ifdef WITH_QUVI
 import Annex.Quvi
 import qualified Utility.Quvi as Quvi
 import Command.AddUrl (addUrlFileQuvi)
-#endif
 import Types.MetaData
 import Logs.MetaData
 import Annex.MetaData
@@ -139,16 +137,12 @@ findDownloads u = go =<< downloadFeed u
 		Just (enclosureurl, _, _) -> return $ 
 			Just $ ToDownload f u i $ Enclosure enclosureurl
 		Nothing -> mkquvi f i
-#ifdef WITH_QUVI
 	mkquvi f i = case getItemLink i of
 		Just link -> ifM (quviSupported link)
 			( return $ Just $ ToDownload f u i $ QuviLink link
 			, return Nothing
 			)
 		Nothing -> return Nothing
-#else
-	mkquvi _ _ = return Nothing
-#endif
 
 {- Feeds change, so a feed download cannot be resumed. -}
 downloadFeed :: URLString -> Annex (Maybe Feed)
@@ -193,7 +187,6 @@ performDownload opts cache todownload = case location todownload of
 								else []
 							
 	QuviLink pageurl -> do
-#ifdef WITH_QUVI
 		let quviurl = setDownloader pageurl QuviDownloader
 		checkknown quviurl $ do
 			mp <- withQuviOptions Quvi.query [Quvi.quiet, Quvi.httponly] pageurl
@@ -206,9 +199,6 @@ performDownload opts cache todownload = case location todownload of
 						checkknown videourl $
 							rundownload videourl ("." ++ fromMaybe "m" (Quvi.linkSuffix link)) $ \f ->
 								maybeToList <$> addUrlFileQuvi (relaxedOption opts) quviurl videourl f
-#else
-		return False
-#endif
   where
 	forced = Annex.getState Annex.force
 
