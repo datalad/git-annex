@@ -33,7 +33,7 @@ type OptInfo a = Either (IO a) a
 -- If the OptInfo is not available, accessing it may result in eg an
 -- exception being thrown.
 getInfo :: MonadIO m => OptInfo a -> m a
-getInfo (Right i) = pure i
+getInfo (Right i) = return i
 getInfo (Left e) = liftIO e
 
 type FileMatcherMap a = M.Map UUID (Utility.Matcher.Matcher (S.Set UUID -> MatchInfo -> a Bool))
