@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-01-26T16:21:56Z"
+ content="""
+I can reproduce this with LANG=C.
+
+The cause seems to be that concurrent-output uses Text internally, and
+Strings encoded using the filesystem encoding fail to round-trip through
+Text.
+
+I tried changing concurrent-output from using `T.hPutStr stdout t` to
+`hPutStr stdout (T.unpack t)` but that doesn't help; by the time the String
+comes back out it's lost the filesystem encoding and so contains invalid
+characters.
+
+Seems that the only way to fix this would be to change concurrent-output
+not to use Text. However, it can't use ByteString because it needs to
+operate on individual unicode characters when updating a region.
+Which leaves only String, which I fear would slow
+concurrent-output down quite significantly.
+
+(It might be possible to use ByteString for most of it, and fall back to
+String only when calculating the display update and so avoid most of the
+permformance impact. I have an incomplete conversion headed in that
+direction in the use-bytestring branch in concurrent-output git repo. After
+spending 2 hours on it, it's nowhere near done.)
+
+Since git-annex remains usable without -J, and since this only affects
+systems that don't have a unicode locale configured and yet are using
+unicode filenames (or systems that do use a unicode locale and have
+filenames that are not valid utf-8), I'm kind of inclined not to massively
+rework and likely slow down concurrent-output just to handle this case.
+But I don't like it.
+
+Workaround: Compile git-annex with -f-ConcurrentOutput and the problem
+will be avoided, although then you won't get progress displays when doing a
+`git-annex get -Jn`
+"""]]
