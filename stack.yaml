@@ -1,10 +1,6 @@
 flags:
   git-annex:
     concurrentoutput: true
-    tahoe: true
-    tdfa: true
-    feed: true
-    webapp-secure: true
     production: true
     assistant: true
     pairing: true
@@ -14,8 +10,6 @@ flags:
     testsuite: true
     webdav: true
     torrentparser: true
-    quvi: true
-    dns: true
     webapp: true
     android: false
     androidsplice: false
