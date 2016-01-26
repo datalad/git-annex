@@ -1,7 +1,6 @@
 {- SRV record lookup
  -
- - Uses either the ADNS Haskell library, or the standalone Haskell DNS
- - package, or the host command.
+ - Uses either the the standalone Haskell DNS package, or the host command.
  -
  - Copyright 2012 Joey Hess <id@joeyh.name>
  -
@@ -29,15 +28,10 @@ import Data.Maybe
 import Control.Applicative
 import Prelude
 
-#ifdef WITH_ADNS
-import ADNS.Resolver
-import Data.Either
-#else
 #ifdef WITH_DNS
 import qualified Network.DNS.Lookup as DNS
 import Network.DNS.Resolver
 import qualified Data.ByteString.UTF8 as B8
-#endif
 #endif
 
 newtype SRV = SRV String
@@ -58,12 +52,6 @@ mkSRVTcp = mkSRV "tcp"
  -
  - On error, returns an empty list. -}
 lookupSRV :: SRV -> IO [HostPort]
-#ifdef WITH_ADNS
-lookupSRV (SRV srv) = initResolver [] $ \resolver -> do
-	r <- catchDefaultIO (Right []) $
-		resolveSRV resolver srv
-	return $ either (\_ -> []) id r
-#else
 #ifdef WITH_DNS
 lookupSRV (SRV srv) = do
 	seed <- makeResolvSeed defaultResolvConf
@@ -82,7 +70,6 @@ lookupSRV (SRV srv) = do
 		)
 #else
 lookupSRV = lookupSRVHost
-#endif
 #endif
 
 lookupSRVHost :: SRV -> IO [HostPort]
