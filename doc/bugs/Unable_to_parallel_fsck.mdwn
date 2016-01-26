@@ -79,3 +79,5 @@ FAIL 1
 
 Plenty. In fact I've been using it for a long time - I just only recently tried to use -J2 to speed up the fsck'ing :)
 
+
+[[!meta title="-J can crash on displaying filenames not supported by current locale"]]
