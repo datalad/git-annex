@@ -1,0 +1,1 @@
+I don't see anywhere in the documentation that specifies this, but git-annex hasn't been syncing any kind of compressed file for me like zip files or 7z compressed files.  Haven't tried gzip files.  It has been working fine with other files like PDFs, video, images etc.  Was wanting to know if that is expected behaviour or if something is wrong?
