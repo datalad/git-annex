@@ -49,5 +49,5 @@ genBloomFilter populate = do
   where
 	lift = liftIO . stToIO
 
-bloomFilter :: Hashable v => [v] -> Bloom v -> [v]
+bloomFilter :: [v] -> Bloom v -> [v]
 bloomFilter l bloom = filter (\v -> v `notElemB` bloom) l
