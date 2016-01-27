@@ -52,7 +52,7 @@ dropDead f content trustmap = case getLogVariety f of
 	Just OtherLog -> PreserveFile
 	Nothing -> PreserveFile
 
-dropDeadFromMapLog :: Ord k => TrustMap -> (k -> UUID) -> M.Map k v -> M.Map k v
+dropDeadFromMapLog :: TrustMap -> (k -> UUID) -> M.Map k v -> M.Map k v
 dropDeadFromMapLog trustmap getuuid = M.filterWithKey $ \k _v -> notDead trustmap getuuid k
 
 {- Presence logs can contain UUIDs or other values. Any line that matches
