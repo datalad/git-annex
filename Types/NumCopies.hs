@@ -111,7 +111,7 @@ invalidatableVerifiedCopy mk u check = do
 -- Constructs a VerifiedCopy, and runs the action, ensuring that the
 -- verified copy is invalidated when the action returns, or on error.
 withVerifiedCopy 
-	:: (Monad m, MonadMask m, MonadIO m, ToUUID u)
+	:: (MonadMask m, MonadIO m, ToUUID u)
 	=> (V -> VerifiedCopy)
 	-> u
 	-> IO Bool
