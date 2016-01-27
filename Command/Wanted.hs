@@ -50,7 +50,7 @@ performGet getter a = do
 	liftIO $ putStrLn $ fromMaybe "" $ M.lookup a m
 	next $ return True
 
-performSet :: Ord a => (a -> PreferredContentExpression -> Annex ()) -> String -> a -> CommandPerform
+performSet :: (a -> PreferredContentExpression -> Annex ()) -> String -> a -> CommandPerform
 performSet setter expr a = case checkPreferredContentExpression expr of
 	Just e -> error $ "Parse error: " ++ e
 	Nothing -> do
