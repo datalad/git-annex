@@ -9,7 +9,7 @@ git annex add
 git annex sync
 ```
 
-The I went to another repo (clone of the first) and did:
+Then I went to another repo (clone of the first) and did:
 
 ```
 cd /paht1
