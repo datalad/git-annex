@@ -1,0 +1,39 @@
+### Please describe the problem.
+
+with previous snapshot (6.20160119+gitgb2a2f5d-1~ndall+1) you just get a clean output
+
+[[!format sh """
+hopa:~/.tmp
+$> git clone /home/yoh/.tmp/datalad_temp_clone_url_RmXPyt 123
+Cloning into '123'...                    
+done.
+
+$> cd 123 
+INFO.txt  test-annex.dat@  test.dat
+
+$> git annex lookupkey test-annex.dat                                        
+SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b.dat
+
+"""]]
+
+with new one (6.20160126+gitg65f4442-1~ndall+1) you get it polluted in such a freshly cloned repo with
+
+[[!format sh """
+$> git annex lookupkey test-annex.dat                        
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b.dat
+"""]]
+
+and since I am a "dude" who likes "devnulling" things for some reason (I hope reason is clear here ;)):
+
+[[!format sh """
+$> git annex lookupkey test-annex.dat 2>/dev/null            
+(merging origin/git-annex into git-annex...)     
+(recording state in git...)
+SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b.dat
+"""]]
+
+I guess I will just skip all lines starting with ( for now but thought to let you know about such changed behavior which might complicate pipelining etc
+
+[[!meta author=yoh]]
