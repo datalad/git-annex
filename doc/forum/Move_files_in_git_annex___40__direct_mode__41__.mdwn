@@ -1,0 +1,22 @@
+Hi guys, I have a git annex repo under `/path`.
+
+I ran:
+
+```
+cd /path/subdir2
+mv ../subdir1/stuff* .
+git annex add
+git annex sync
+```
+
+The I went to another repo (clone of the first) and did:
+
+```
+cd /paht1
+git annex sync
+git annex get .
+```
+
+Now I got the stuff from under `subdir2` in my second repo, just that the same stuff is also still under `subdir1` - how do I make git-annex aware of this change?
+
+Also, someone suggested running `git annex watch`
