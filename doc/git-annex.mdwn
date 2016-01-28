@@ -828,6 +828,12 @@ Here are all the supported configuration settings.
 
   	git annex add -c annex.largefiles='include=*' 99kbfile
 
+* `annex.addsmallfiles`
+
+  Controls whether small files (not matching annex.largefiles)
+  should be checked into git by `git annex add`. Defaults to true;
+  set to false to instead make small files be skipped.
+
 * `annex.numcopies`
 
   This is a deprecated setting. You should instead use the

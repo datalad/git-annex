@@ -1,3 +1,10 @@
+git-annex (6.20160127) UNRELEASED; urgency=medium
+
+  * annex.addsmallfiles: New option controlling what is done when
+    adding files not matching annex.largefiles.
+
+ -- Joey Hess <id@joeyh.name>  Thu, 28 Jan 2016 13:53:09 -0400
+
 git-annex (6.20160126) unstable; urgency=medium
 
   * Fix nasty reversion in the last release that broke sync --content's

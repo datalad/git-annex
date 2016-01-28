@@ -49,7 +49,10 @@ seek o = allowConcurrentOutput $ do
 	matcher <- largeFilesMatcher
 	let gofile file = ifM (checkFileMatcher matcher file <||> Annex.getState Annex.force)
 		( start file
-		, startSmall file
+		, ifM (annexAddSmallFiles <$> Annex.getGitConfig)
+			( startSmall file
+			, stop
+			)
 		)
 	case batchOption o of
 		Batch -> batchFiles gofile

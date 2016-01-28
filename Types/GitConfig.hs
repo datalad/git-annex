@@ -54,6 +54,7 @@ data GitConfig = GitConfig
 	, annexWebDownloadCommand :: Maybe String
 	, annexCrippledFileSystem :: Bool
 	, annexLargeFiles :: Maybe String
+	, annexAddSmallFiles :: Bool
 	, annexFsckNudge :: Bool
 	, annexAutoUpgrade :: AutoUpgrade
 	, annexExpireUnused :: Maybe (Maybe Duration)
@@ -99,6 +100,7 @@ extractGitConfig r = GitConfig
 	, annexWebDownloadCommand = getmaybe (annex "web-download-command")
 	, annexCrippledFileSystem = getbool (annex "crippledfilesystem") False
 	, annexLargeFiles = getmaybe (annex "largefiles")
+	, annexAddSmallFiles = getbool (annex "addsmallfiles") True
 	, annexFsckNudge = getbool (annex "fscknudge") True
 	, annexAutoUpgrade = toAutoUpgrade $ getmaybe (annex "autoupgrade")
 	, annexExpireUnused = maybe Nothing Just . parseDuration
