@@ -1,0 +1,34 @@
+### Please describe the problem.
+
+I am running `git-annex test`, it stops on an NFS mount with exhausted resources (too many open FDs).
+
+Then I try to remove the `.t` directory with `rm -rf .t` and get many errors like:
+
+```
+rm: cannot remove `.t/tmprepo61/.git/annex/objects/96/qw/SHA256E-s10--bcc2eba25d48be76c9d968f2d818196b0e10e13476dcff75371fc0ca4910450c/SHA256E-s10--bcc2eba25d48be76c9d968f2d818196b0e10e13476dcff75371fc0ca4910450c': Permission denied
+```
+
+The permissions on those files look normal (they are mine).
+
+### What steps will reproduce the problem?
+
+see above
+
+### What version of git-annex are you using? On what operating system?
+
+git HEAD (self-built). On Linux.
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+On /tmp the self-test works. Maybe it is related to NFS?
+

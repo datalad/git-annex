@@ -1,0 +1,5 @@
+Please pull branch `patch-1` from repo
+
+https://github.com/ggreif/git-annex.git
+
+It contains some cleanups from warnings that appear with GHC 7.11 (and probably 8.0 too).
