@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="grawity@2ea26be48562f66fcb9b66307da72b1e2e37453f"
+ nickname="grawity"
+ subject="default settings?"
+ date="2016-01-28T09:32:45Z"
+ content="""
+Could you clarify how the _default_ (empty) preferred content setting works? Is it equivalent to `anything`, or more magical than that?
+
+(Asking because I noticed that `annex find --in . --want-drop` in such a repo matches basically all files, even the ones that `annex sync --content` just retrieved. Likewise, it retrieves files while `annex find --not --in . --want-get` lists nothing. I'm fine with the sync behavior here, but somewhat worried that a _future_ `annex sync --content` would actually decide to drop everything... I'm running 6.20160126 with numcopies=1.)
+
+Also, what happens if I use `standard` for a repo that's not in any group?
+"""]]
