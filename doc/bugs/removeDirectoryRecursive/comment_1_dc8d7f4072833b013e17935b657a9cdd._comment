@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-01-29T17:59:18Z"
+ content="""
+Reproduced this. The repository deletion seems to work, except it falls on
+the last hurdle, of removing the actual repository itself. This also
+prevents the webapp from shutting down properly.
+
+So, to get out of this state, kill git-annex and delete the directory
+yourself.
+"""]]

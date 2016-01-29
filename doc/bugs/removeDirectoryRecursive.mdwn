@@ -27,4 +27,4 @@ I just downloaded and installed Git Annex. This problem was there from day 1.
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
-
+> Fixed it to properly delete the repo. [[done]] --[[Joey]]

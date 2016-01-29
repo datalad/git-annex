@@ -4,6 +4,7 @@ git-annex (6.20160127) UNRELEASED; urgency=medium
     adding files not matching annex.largefiles.
   * Fix reversion in lookupkey, contentlocation, and examinekey which
     caused them to sometimes output side messages.
+  * webapp: Fix deletion of current repository directory.
 
  -- Joey Hess <id@joeyh.name>  Thu, 28 Jan 2016 13:53:09 -0400
 
