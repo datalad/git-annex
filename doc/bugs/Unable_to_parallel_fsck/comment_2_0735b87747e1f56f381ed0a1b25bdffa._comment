@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-01-29T17:05:34Z"
+ content="""
+I finished the use-bytestring branch, but that turns out not to work; once
+the FilePath is converted to a ByteString, all the specially encoded
+characters don't get decoded back properly, and so the result is a bunch of
+�����.
+
+I think that for this to work, System.Console.Regions would need to use
+String exclusively, and probably System.Console.Concurrent would too. Which
+would probably slow it down and complicate it significantly.
+"""]]
