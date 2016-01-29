@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="viric@582d0845fdeae54b262502f49509b4577a5adbf8"
+ nickname="viric"
+ subject="Use --used-refspec"
+ date="2016-01-29T21:37:35Z"
+ content="""
+\"joeyh\" just helped me on irc, because I had this very same problem. I have git-annex repositories in A, and in external hard disks B, C, D, ...
+
+If I remove a file in A, I mean to 1) free space in A (drop) and 2) this to propagate later to the drives.
+
+No matter what \"git annex sync\" you do from A, the hard disks in your armchair will keep references to the file in their checkout, so A will refuse to drop the file contents until you run \"git annex sync\" from *each* of your external hard disks.
+
+What you need (and what I also needed) was to rule the drop/unused from A alone. You have to use \"git annex unused --used-refspec=+master\" from A, and that
+will only keep into account the contents referenced by your current A master, ignoring the checkouts of B, C, D, ...
+
+The \"used-refspec\" can even be set up in the git config.
+"""]]
