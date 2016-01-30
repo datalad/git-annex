@@ -32,7 +32,7 @@ Using `ps` I got the command executed on the remote side. Running it directly gi
 
 [[!format sh """
 $ git-annex-shell sendkey /home/annex/repo SHA256E-sxxxxxxx52--xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx8c.avi --uuid 9axxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxde -- remoteuuid=9bxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxb4 direct= associatedfile=somefile.avi -- dummy rsync --server --sender -pe.Lsfx --inplace . .
-git-annex: ../../../home/yggdrasil/Yggdrasil/.git/annex/transfer/upload/9bxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxb4/lck.SHA256E-sxxxxxxx52--xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx8c.avi: openFd: does not exist (No such file or directory)
+git-annex: ../../../home/annex/repo/.git/annex/transfer/upload/9bxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxb4/lck.SHA256E-sxxxxxxx52--xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx8c.avi: openFd: does not exist (No such file or directory)
 failed
 git-annex-shell: sendkey: 1 failed
 """]]
