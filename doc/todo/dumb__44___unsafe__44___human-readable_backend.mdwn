@@ -1,0 +1,12 @@
+This was already discussed twice previously: [[forum/original_filename_on_s3/]] and [[todo/Facilitate_public_pretty_S3_URLs/]]. Yet I am still constantly having problems with this when trying to use git-annex to do some particular stuff.
+
+My latest example is a friend that wanted to sync files to a remote Webdav server. While I know he can use [[special_remotes/webdav/]] support, the resulting filenames on the webdav server will be basically garbled beyond recognition for any user that will use the Webdav server without git-annex.
+
+I understand the rationale behind the existing [[backends]], but wouldn't it be possible to implement a new backend that would just use the filename as a key?
+
+I know this would have several downsides:
+
+* lack of deduplication
+* much more exposed to corruption (no checksum to check against recorded? or can this be put somewhere else?)
+
+The main advantage, for me, is much better interoperability: any remote becomes usable by other non-git-annex clients... It would also be great as it would allow me to store only a *part* of my git-annex files on a remote without having a forest of empty files (on broken filesystems) or symlinks (on real filesystems) for files that are missing, something that is a massive source of confusion for users I work with. It could, for example, allow me to create thumb drives that would solve the [[hide missing files]] problem. -- [[anarcat]]
