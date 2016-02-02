@@ -74,6 +74,7 @@ parseToken matchstandard matchgroupwanted checkpresent checkpreferreddir getgrou
 	| t == "inpreferreddir" = use checkpreferreddir
 	| t == "unused" = Right $ Operation limitUnused
 	| t == "anything" = Right $ Operation limitAnything
+	| t == "nothing" = Right $ Operation limitNothing
 	| otherwise = maybe (Left $ "near " ++ show t) use $ M.lookup k $
 		M.fromList
 			[ ("include", limitInclude)

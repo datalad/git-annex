@@ -218,6 +218,10 @@ elsewhere to allow removing it).
 
   Matches any version of any file.
 
+* `nothing`
+
+  Matches nothing. (Same as "not anything")
+
 * `not expression`
 
   Inverts what the expression matches. For example, `not include=archive/*`
