@@ -3,7 +3,7 @@
 [[!img /assistant/osx-app.png align=right link=/assistant]]
 For easy installation, use the prebuilt app bundle.
 
-* 10.10 Yosemite / 10.9 Mavericks: [git-annex.dmg](https://downloads.kitenet.net/git-annex/OSX/current/10.10_Yosemite/git-annex.dmg)
+* 10.11 El Capitan / 10.10 Yosemite / 10.9 Mavericks: [git-annex.dmg](https://downloads.kitenet.net/git-annex/OSX/current/10.10_Yosemite/git-annex.dmg)
 * 10.8.2 Mountain Lion: [git-annex.dmg.bz2](https://downloads.kitenet.net/git-annex/OSX/current/10.8.2_Mountain_Lion/git-annex.dmg.bz2) **warning: not being updated any longer**
 * 10.7.5 Lion: [git-annex.dmg](https://downloads.kitenet.net/git-annex/OSX/current/10.7.5_Lion/git-annex.dmg) **warning: not being updated any longer**
 
@@ -21,14 +21,14 @@ several more. Handy if you don't otherwise have git installed.
 ## autobuilds
 
 [[Joey]] autobuilds the app for 10.10 Yosemite
-(also reported to work on 10.9 Mavericks).
+(also reported to work on 10.9 Mavericks and 10.11 El Capitan).
 Thanks to Kevin McKenzie for hosting the autobuilder.
 
 * [autobuild of git-annex.dmg](https://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-yosemite/git-annex.dmg) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-yosemite/))
 
 ## using Homebrew
 
-git-annex is now [[available in Homebrew|Homebrew]]!
+git-annex is now [[available in Homebrew|Homebrew]] (source) as well as [[available in Homebrew Cask|Homebrew-cask]](binary).
 
 ## using MacPorts
 
