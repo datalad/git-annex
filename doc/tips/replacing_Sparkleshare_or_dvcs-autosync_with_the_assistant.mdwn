@@ -8,11 +8,7 @@ thing, but even better!
 
 ----
 
-First, get git-annex version 4.20130329 or newer.
-
-----
-
-Let's suppose you're delveloping a video game, written in C. You have
+Let's suppose you're developing a video game, written in C. You have
 source code, and some large game assets. You want to ensure the source
 code is stored in git -- that's what git's for! And you want to store
 the game assets in the git annex -- to avod bloating your git repos with
@@ -24,20 +20,14 @@ file that is stored in the annex.
 
 	git config annex.largefiles "largerthan=100kb and not (include=*.c or include=*.h)"
 
+For more details about this configuration, see [[largefiles]].
+
 ----
 
 Now if you run `git annex add`, it will only add the large files to the
-annex. You can `git add` the small files directly to git.
+annex; small files will be stored in git.
 
-Note that in order to use `git add` on the small files, your repository
-needs to be in indirect mode, rather than [[direct mode]]. If it's in
-direct mode, `git add` will fail. You can fix that:
-
-	git annex indirect
-
-----
-
-A less manual option is to run `git annex assistant`. It will *automatically*
+Or, run `git annex assistant`. It will *automatically*
 add the large files to the annex, and store the small files in git.
 It'll notice every time you modify a file, and immediately commit it,
 too. And sync it out to other repositories you configure using `git annex

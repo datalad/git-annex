@@ -60,9 +60,7 @@ to store the file contents, and the files will be left unlocked.
 [[!template id=note text="""
 Want `git add` to add some file contents to the annex, but store the contents of
 smaller files in git itself? Configure annex.largefiles to match the former.
-
-	git config annex.largefiles \
-		"largerthan=100kb and not include=*.c"
+See [[largefiles]].
 """]]
 
 	# cp ~/my_cool_big_file .

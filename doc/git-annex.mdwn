@@ -810,7 +810,12 @@ Here are all the supported configuration settings.
 
 * `annex.largefiles`
 
-  See "LARGE FILES CONFIGURATION" below.
+  Used to configure which files are large enough to be added to the annex.
+  Default: All files.
+
+  Overrides any annex.largefiles attributes in `.gitattributes` files.
+
+  See <https://git-annex.branchable.com/tips/largefiles> for details.
 
 * `annex.addsmallfiles`
 
@@ -1277,7 +1282,7 @@ Here are all the supported configuration settings.
 
   These can be passed to `git annex init` to tune the repository.
   They cannot be safely changed in a running repository.
-  For details, see <http://git-annex.branchable.com/tuning/>.
+  For details, see <https://git-annex.branchable.com/tuning/>.
 
 # CONFIGURATION VIA .gitattributes
 
@@ -1290,8 +1295,9 @@ but the SHA256E backend for ogg files:
 	* annex.backend=WORM
 	*.ogg annex.backend=SHA256E
 
-There is a annex.largefiles attribute; see "LARGE FILES CONFIGURATION"
-below.
+There is a annex.largefiles attribute; which is used to configure which
+files are large enough to be added to the annex.
+See <https://git-annex.branchable.com/tips/largefiles> for details.
 
 The numcopies setting can also be configured on a per-file-type basis via
 the `annex.numcopies` attribute in `.gitattributes` files. This overrides
@@ -1313,61 +1319,6 @@ numcopies` command is useful to configure a global default for numcopies.
 Also note that when using views, only the toplevel .gitattributes file is
 preserved in the view, so other settings in other files won't have any
 effect.
-
-# LARGE FILES CONFIGURATION
-
-Normally commands like `git annex add` always add files to the annex.
-And when using the v6 repository mode, even `git add` and `git commit -a`
-will add files to the annex.
-
-However, sometimes it's useful to keep the content of some smaller files in
-git, any only annex the larger files. For example, a game's code should be
-committed to git while its artwork is stored in the annex.
-
-The annex.largefiles configuration meets this need. It's checked by
-`git annex add`, by `git add` and `git commit -a` (in v6 repositories),
-by `git annex import` and the assistant. It's also used by
-`git annex addurl` and `git annex importfeed` when downloading files.
-When a file does not match annex.largefiles, it will be added to git instead
-of to the annex.
-
-There are two ways to configure annex.largefiles. Setting it in the
-`.gitattributes` file is recommended to consistently use the same
-configuration across different checkouts of the repository. Setting the
-annex.largefiles git configuration lets different checkouts behave
-differently. The git configuration overrides the `.gitattributes`
-configuration.
-
-For example, in the game scenario, here's how to make only files of a
-certian size be annexed, and never source code files:
-  
-	git config annex.largefiles 'largerthan=100kb and (not include=*.c)'
-
-The value is a preferred content expression.
-See [[git-annex-preferred-content]](1) for details.
-
-To configure the same thing in the `.gitattributes` file, looks a little
-bit different:
-
-	* annex.largefiles=(largerthan=100kb)
-	*.c annex.largefiles=nothing
-
-That has the same effect as the git configuration, because the attribute for
-*.c overrides the previous attribute. 
-
-Note that, since git attribute values cannot contain whitespace,
-it's useful to instead parenthesize the terms of the preferred content
-expression. This trick allows setting the annex.largefiles attribute to more
-complicated expressions. For example, this is the same as the git config
-shown earlier:
-
-	* annex.largefiles=(largerthan=100kb)and(not(include=*.c))
-
-By the way, if you've set up an annex.largefiles configuration but want to
-force a file to be stored in the annex, you can temporarily override the
-configuration like this:
-
-	git annex add -c annex.largefiles=anything smallfile
 
 # EXIT STATUS
 
@@ -1402,7 +1353,7 @@ whenever the git-annex branch is updated. You can make this hook run
 # SEE ALSO
 
 More git-annex documentation is available on its web site,
-<http://git-annex.branchable.com/>
+<https://git-annex.branchable.com/>
 
 If git-annex is installed from a package, a copy of its documentation
 should be included, in, for example, `/usr/share/doc/git-annex/`.
@@ -1411,6 +1362,6 @@ should be included, in, for example, `/usr/share/doc/git-annex/`.
 
 Joey Hess <id@joeyh.name>
 
-<http://git-annex.branchable.com/>
+<https://git-annex.branchable.com/>
 
 Warning: Automatically converted into a man page by mdwn2man. Edit with care.
