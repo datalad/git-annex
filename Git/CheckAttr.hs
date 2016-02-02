@@ -92,3 +92,6 @@ checkAttr (h, attrs, oldgit, currdir) want file = do
 		sep = ": " ++ attr ++ ": "
 	getattrvalues (_filename:attr:val:rest) c = getattrvalues rest ((attr,val):c)
 	getattrvalues _ c = c
+
+unspecifiedAttr :: String
+unspecifiedAttr = "!"

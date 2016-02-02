@@ -1,6 +1,6 @@
 {- git-annex file matching
  -
- - Copyright 2012-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -19,12 +19,18 @@ import qualified Annex
 import Types.FileMatcher
 import Git.FilePath
 import Types.Remote (RemoteConfig)
+import Annex.CheckAttr
+import Git.CheckAttr (unspecifiedAttr)
 
 import Data.Either
 import qualified Data.Set as S
 
-checkFileMatcher :: FileMatcher Annex -> FilePath -> Annex Bool
-checkFileMatcher matcher file = checkMatcher matcher Nothing (Just file) S.empty True
+type GetFileMatcher = FilePath -> Annex (FileMatcher Annex)
+
+checkFileMatcher :: GetFileMatcher -> FilePath -> Annex Bool
+checkFileMatcher getmatcher file = do
+	matcher <- getmatcher file
+	checkMatcher matcher Nothing (Just file) S.empty True
 
 checkMatcher :: FileMatcher Annex -> Maybe Key -> AssociatedFile -> AssumeNotPresent -> Bool -> Annex Bool
 checkMatcher matcher mkey afile notpresent d
@@ -104,11 +110,19 @@ tokenizeMatcher = filter (not . null ) . concatMap splitparens . words
 
 {- Generates a matcher for files large enough (or meeting other criteria)
  - to be added to the annex, rather than directly to git. -}
-largeFilesMatcher :: Annex (FileMatcher Annex)
+largeFilesMatcher :: Annex GetFileMatcher
 largeFilesMatcher = go =<< annexLargeFiles <$> Annex.getGitConfig
   where
-	go Nothing = return matchAll
 	go (Just expr) = do
+		matcher <- mkmatcher expr
+		return $ const $ return matcher
+	go Nothing = return $ \file -> do
+		expr <- checkAttr "annex.largefiles" file
+		if null expr || expr == unspecifiedAttr
+			then return matchAll
+			else mkmatcher expr
+
+	mkmatcher expr = do
 		u <- getUUID
 		-- No need to read remote configs, that's only needed for
 		-- inpreferreddir, which is used in preferred content

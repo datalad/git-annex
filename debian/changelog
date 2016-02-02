@@ -6,6 +6,10 @@ git-annex (6.20160127) UNRELEASED; urgency=medium
     caused them to sometimes output side messages.
   * webapp: Fix deletion of current repository directory.
   * Added "nothing" to preferred content expression syntax.
+  * annex.largefiles can be configured in .gitattributes too;
+    this is particulary useful for v6 repositories, since the
+    .gitattributes configuration will apply in all clones of the
+    repository.
 
  -- Joey Hess <id@joeyh.name>  Thu, 28 Jan 2016 13:53:09 -0400
 

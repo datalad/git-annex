@@ -200,9 +200,13 @@ limitUnused _ (MatchingInfo _ ak _) = do
 	k <- getInfo ak
 	S.member k <$> unusedKeys
 
-{- Limit that matches any version of any file. -}
+{- Limit that matches any version of any file or key. -}
 limitAnything :: MatchFiles Annex
 limitAnything _ _ = return True
+
+{- Limit that never matches. -}
+limitNothing :: MatchFiles Annex
+limitNothing _ _ = return False
 
 {- Adds a limit to skip files not believed to be present in all
  - repositories in the specified group. -}
