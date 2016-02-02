@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="divergentdave@5c17d06f6d67c6f157b76a4cc95ca764b7d2f899"
+ nickname="divergentdave"
+ subject="Disabling SSH connection caching"
+ date="2016-02-01T06:52:55Z"
+ content="""
+I was looking into how SSH connection caching is handled, and it seems there's a bug in the sshCacheDir function in Annex/Ssh.hs. If I'm reading things right, `annex.sshcaching` is ignored when `annex.crippledfilesystem` is set. Thus, even though the configuration says SSH caching is disabled, this function still creates and passes out a temporary directory to be used for connection caching. Further up, this results in ControlPersist, ControlMaster, etc. being passed to OpenSSH, which runs into the SELinux rules. I think the `ifM` calls should be nested the other way around, (see below) which would allow me to turn off connection caching and hopefully get SSH working. I haven't tested this yet, though I plan to get a build environment set up within a month for further tinkering.
+
+Revised sshCacheDir:
+
+```
+sshCacheDir :: Annex (Maybe FilePath)
+sshCacheDir
+        | SysConfig.sshconnectioncaching = ifM
+                ( fromMaybe True . annexSshCaching <$> Annex.getGitConfig )
+                ( ifM crippledFileSystem
+                        ( maybe (return Nothing) usetmpdir =<< gettmpdir
+                        , Just <$> fromRepo gitAnnexSshDir )
+                , return Nothing
+                )
+        | otherwise = return Nothing
+  where
+        gettmpdir = liftIO $ getEnv \"GIT_ANNEX_TMP_DIR\"
+        usetmpdir tmpdir = liftIO $ catchMaybeIO $ do
+                let socktmp = tmpdir </> \"ssh\"
+                createDirectoryIfMissing True socktmp
+                return socktmp
+```
+"""]]

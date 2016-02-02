@@ -1,0 +1,9 @@
+I seem to recall a time when [[direct mode]] would hide files that were not present in the local repository. While this created a bunch of headaches for people that wanted to get the missing files, it was great for users that didn't care and only wanted to see what was actually there. (In fact, it was suggested as a solution in [[forum/usability:_what_are_those_arrow_things__63__/]], a year and a half ago.)
+
+Now this behavior has changed, and with v6 coming up, all those distinctions have basically gone away anyways...
+
+So what's someone to do if he wants to deal with the usability issue mentioned above? To restate: the problem is users I share files with often see a *lot* of files, with only a fraction of them being actually present. A lot of those files are obviously large, and so they are having a frustrating experience with git-annex because they see all those promises of "files being there" but they have a hard time actually finding which files *really* are there. So they click one one broken link after the other and generally give up before they figure out how to pop a terminal open, use `find -L -type l` or `find -type l` (i can never remember which!) - something we can hardly expect from the average GUI user...
+
+Maybe this could be accomplished through a [[dumb, unsafe, human-readable backend]]?
+
+Thanks for any advice! --[[anarcat]]

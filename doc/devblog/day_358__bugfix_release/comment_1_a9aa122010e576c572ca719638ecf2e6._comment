@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 1"
+ date="2016-02-01T12:43:47Z"
+ content="""
+--batch and --with-files on addurl is amazing! I migrated one of my scripts last night, that used to use 'parallel' and disabling autocommit, and it simplified the workflow a *lot*.
+"""]]

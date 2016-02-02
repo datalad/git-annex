@@ -1,0 +1,8 @@
+Thanks for the great tool!
+
+Is git-annex multisession compatible? I'm assuming that an "add" for example, will switch to the git-annex branch, commit data, and switch back to the previous branch. Is this protected by a Lock of some sort so that if two separate processes are interacting with the same repo/annex simultaneously there won't be any corruption?
+
+If not, is this something I could add within my python class that is implementing the interface to the Annex?
+
+Thanks,
+Mark
