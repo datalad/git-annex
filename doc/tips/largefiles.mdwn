@@ -17,10 +17,12 @@ also used by `git annex addurl` and `git annex importfeed` when downloading
 files. When a file does not match annex.largefiles, these commands will
 add its content to git instead of to the annex.
 
+This saves you the bother of keeping things straight when adding files.
+
 ## examples
 
 For example, let's make only files larger than 100 kb be added to the annex,
-and never *.c and *.h source files.
+and never `*.c` and `*.h` source code files.
 
 Write this to the `.gitattributes` file:
 
@@ -40,7 +42,7 @@ checkouts behave differently. The git configuration overrides the
 
 ## syntax
 
-The way the `.gitattributes` example above works is, *.c and *.h files
+The way the `.gitattributes` example above works is, `*.c` and `*.h` files
 have the annex.largefiles attribute set to "nothing", which matches nothing,
 and so those files are never treated as large files. All other files use
 the other value, which checks the file size.
