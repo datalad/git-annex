@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Jan"
+ subject="comment 7"
+ date="2016-02-03T02:49:01Z"
+ content="""
+I can confirm that Remi's suggestion does work as expected, thanks!
+
+    $ git annex sync --content
+    get 2014/2014-06-14/IMG_1448.JPG (from origin...) (checksum...) ok
+    copy 2014/2014-06-14/IMG_1448.JPG copy 2014/2014-06-14/IMG_1448.JPG (to usb...) ok
+    drop 2014/2014-06-14/IMG_1448.JPG ok
+"""]]
