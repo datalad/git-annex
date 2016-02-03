@@ -14,6 +14,7 @@ module Annex.FileMatcher (
 	matchAll,
 	preferredContentParser,
 	parsedToMatcher,
+	mkLargeFilesParser,
 	largeFilesMatcher,
 ) where
 
