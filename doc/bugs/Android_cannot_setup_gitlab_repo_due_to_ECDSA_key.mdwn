@@ -1,0 +1,40 @@
+### Please describe the problem.
+Cannot add gitlab repository on Android.
+
+### What steps will reproduce the problem?
+After attempting to add a gitlab repository on git-annex assistant, I am presented with a ssh key and prompted to add it to my gitlab account. After doing so and continuing, git-annex assistant returns to the same page and presents the ssh key again. Attempting to continue repeats the cycle as the ssh key is presented over and over.
+
+### What version of git-annex are you using? On what operating system?
+Stable version for Lollipop (I experienced this same error on Kit Kat ~6 months ago but could not resolve it at that point)
+Android 5.0 git-annex.apk
+
+### Please provide any additional information below.
+In the git-annex assistant log I see:
+
+    No ECDSA host key is known for gitlab.com and you have requested strict checking. 
+    Host key verification failed. 
+    No ECDSA host key is known for gitlab.com and you have requested strict checking. 
+    Host key verification failed. 
+    fatal: Could not read from remote repository
+    
+    Please make sure you have the correct access rights and the repository exists.
+    Host key verification failed.
+    Host key verification failed.
+    fatal: Could not read from remote repository.
+
+I resolved the issue by opening a new terminal window, attempting to connect to gitlab (ssh git@gitlab.com), verifying the ECDSA key against the gitlab website (https://about.gitlab.com/gitlab-com/) and accepting the key. The file .ssh/known_hosts was created. The gitlab repository could then be added in git annex assistant.
+
+The lack of information about the error presented to the user in git annex assistant was part of the problem.
+
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
