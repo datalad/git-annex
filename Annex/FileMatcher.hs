@@ -79,9 +79,9 @@ parseToken matchstandard matchgroupwanted checkpresent checkpreferreddir getgrou
 		"groupwanted" -> call matchgroupwanted
 		"present" -> use checkpresent
 		"inpreferreddir" -> use checkpreferreddir
-		"unused" -> Right $ Operation limitUnused
-		"anything" -> Right $ Operation limitAnything
-		"nothing" -> Right $ Operation limitNothing
+		"unused" -> simply limitUnused
+		"anything" -> simply limitAnything
+		"nothing" -> simply limitNothing
 		_ -> case k of
 			"include" -> use limitInclude
 			"exclude" -> use limitExclude
@@ -96,6 +96,7 @@ parseToken matchstandard matchgroupwanted checkpresent checkpreferreddir getgrou
 			_ -> Left $ "near " ++ show t
   where
 	(k, v) = separate (== '=') t
+	simply = Right . Operation
 	use a = Operation <$> a v
 	call sub = Right $ Operation $ \notpresent mi ->
 		matchMrun sub $ \a -> a notpresent mi
