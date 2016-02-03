@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Annex.FileMatcher (
 	GetFileMatcher,
 	checkFileMatcher,
@@ -27,6 +29,10 @@ import Git.FilePath
 import Types.Remote (RemoteConfig)
 import Annex.CheckAttr
 import Git.CheckAttr (unspecifiedAttr)
+
+#ifdef WITH_MAGICMIME
+import Magic
+#endif
 
 import Data.Either
 import qualified Data.Set as S
@@ -119,10 +125,19 @@ preferredContentParser matchstandard matchgroupwanted getgroupmap configmap mu e
 	preferreddir = fromMaybe "public" $
 		M.lookup "preferreddir" =<< (`M.lookup` configmap) =<< mu
 
-largeFilesParser :: String -> [ParseResult]
-largeFilesParser expr = map parse $ tokenizeMatcher expr
-  where
-	parse = parseToken commonTokens
+mkLargeFilesParser :: Annex (String -> [ParseResult])
+mkLargeFilesParser = do
+#ifdef WITH_MAGICMIME
+	magicmime <- liftIO $ magicOpen [MagicMimeType]
+	liftIO $ magicLoadDefault magicmime
+#endif
+	let parse = parseToken $ commonTokens
+#ifdef WITH_MAGICMIME
+		++ [ ValueToken "mimetype" (usev $ matchMagic magicmime) ]
+#else
+		++ [ ValueToken "mimetype" (const $ Left "\"mimetype\" not supported; not built with MagicMime support") ]
+#endif
+	return $ map parse . tokenizeMatcher
 
 {- Generates a matcher for files large enough (or meeting other criteria)
  - to be added to the annex, rather than directly to git. -}
@@ -138,7 +153,9 @@ largeFilesMatcher = go =<< annexLargeFiles <$> Annex.getGitConfig
 			then return matchAll
 			else mkmatcher expr
 
-	mkmatcher = either badexpr return . parsedToMatcher . largeFilesParser
+	mkmatcher expr = do
+		parser <- mkLargeFilesParser
+		either badexpr return $ parsedToMatcher $ parser expr
 	badexpr e = error $ "bad annex.largefiles configuration: " ++ e
 
 simply :: MatchFiles Annex -> ParseResult

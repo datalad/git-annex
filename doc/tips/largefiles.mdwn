@@ -50,12 +50,25 @@ The following terms can be used in annex.largefiles:
 
   Specify files to include or exclude.
 
+  The glob can contain `*` and `?` to match arbitrary characters.
+
 * `smallerthan=size` / `largerthan=size`
 
   Matches only files smaller than, or larger than the specified size.
 
   The size can be specified with any commonly used units, for example,
   "0.5 gb" or "100 KiloBytes"
+
+* `mimetype=glob`
+
+  Looks up the MIME type of a file, and checks if the glob matches it.
+
+  For example, "mimetype=text/*" will match many varieties of text files,
+  including "text/plain", but also "text/x-shellscript", "text/x-makefile",
+  etc.
+
+  This is only available to use when git-annex was built with the
+  MagicMime build flag.
 
 * `anything`
 

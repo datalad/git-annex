@@ -63,6 +63,9 @@ Flag TestSuite
 Flag TorrentParser
   Description: Use haskell torrent library to parse torrent files
 
+Flag MagicMime
+  Description: Use libmagic to determine file MIME types
+
 Flag ConcurrentOutput
   Description: Use concurrent-output library
 
@@ -217,6 +220,10 @@ Executable git-annex
   if flag(TorrentParser)
     Build-Depends: torrent (>= 10000.0.0)
     CPP-Options: -DWITH_TORRENTPARSER
+
+  if flag(MagicMime)
+    Build-Depends: magic
+    CPP-Options: -DWITH_MAGICMIME
 
   if flag(ConcurrentOutput)
     Build-Depends: concurrent-output (>= 1.6)

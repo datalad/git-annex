@@ -76,6 +76,9 @@ buildFlags = filter (not . null)
 #ifdef WITH_TORRENTPARSER
 	, "TorrentParser"
 #endif
+#ifdef WITH_MAGICMIME
+	, "MagicMime"
+#endif
 #ifdef WITH_EKG
 	, "EKG"
 #endif

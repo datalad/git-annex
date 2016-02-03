@@ -72,6 +72,7 @@ Build-Depends:
 	libghc-optparse-applicative-dev (>= 0.11.0),
 	libghc-torrent-dev,
 	libghc-concurrent-output-dev,
+	libghc-magic-dev,
 	lsof [linux-any],
 	ikiwiki,
 	perlmagick,

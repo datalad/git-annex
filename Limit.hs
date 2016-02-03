@@ -1,9 +1,11 @@
 {- user-specified limits on files to act on
  -
- - Copyright 2011-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
+
+{-# LANGUAGE CPP #-}
 
 module Limit where
 
@@ -29,6 +31,10 @@ import Git.Types (RefDate(..))
 import Utility.Glob
 import Utility.HumanTime
 import Utility.DataUnits
+
+#ifdef WITH_MAGICMIME
+import Magic
+#endif
 
 import Data.Time.Clock.POSIX
 import qualified Data.Set as S
@@ -84,11 +90,23 @@ limitExclude glob = Right $ const $ not <$$> matchGlobFile glob
 
 matchGlobFile :: String -> MatchInfo -> Annex Bool
 matchGlobFile glob = go
-	where
-		cglob = compileGlob glob CaseSensative -- memoized
-		go (MatchingKey _) = pure False
-		go (MatchingFile fi) = pure $ matchGlob cglob (matchFile fi)
-		go (MatchingInfo af _ _) = matchGlob cglob <$> getInfo af
+  where
+	cglob = compileGlob glob CaseSensative -- memoized
+	go (MatchingKey _) = pure False
+	go (MatchingFile fi) = pure $ matchGlob cglob (matchFile fi)
+	go (MatchingInfo af _ _) = matchGlob cglob <$> getInfo af
+
+#ifdef WITH_MAGICMIME
+matchMagic :: Magic -> MkLimit Annex
+matchMagic magic glob = Right $ const go
+  where
+ 	cglob = compileGlob glob CaseSensative -- memoized
+	go (MatchingKey _) = pure False
+	go (MatchingFile fi) = check (matchFile fi)
+	go (MatchingInfo af _ _) = check =<< getInfo af
+	check f = liftIO $ catchBoolIO $
+		matchGlob cglob <$> magicFile magic f
+#endif
 
 {- Adds a limit to skip files not believed to be present
  - in a specfied repository. Optionally on a prior date. -}
