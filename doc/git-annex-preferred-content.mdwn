@@ -32,7 +32,7 @@ elsewhere to allow removing it).
 
 # EXPRESSIONS
 
-* `include=glob` and `exclude=glob`
+* `include=glob` / `exclude=glob`
 
   Match files to include, or exclude.
 
@@ -101,7 +101,7 @@ elsewhere to allow removing it).
   Matches only files that git-annex believes are present in all repositories
   in the specified group.
 
-* `smallerthan=size` and `largerthan=size`
+* `smallerthan=size` / `largerthan=size`
 
   Matches only files whose content is smaller than, or larger than the
   specified size.

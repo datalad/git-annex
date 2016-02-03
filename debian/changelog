@@ -10,6 +10,9 @@ git-annex (6.20160127) UNRELEASED; urgency=medium
     this is particulary useful for v6 repositories, since the
     .gitattributes configuration will apply in all clones of the
     repository.
+  * Limit annex.largefiles parsing to the subset of preferred content
+    expressions that make sense in its context. So, not "standard"
+    or "lackingcopies", etc.
 
  -- Joey Hess <id@joeyh.name>  Thu, 28 Jan 2016 13:53:09 -0400
 

@@ -60,7 +60,7 @@ optParser desc = MatchExpressionOptions
 seek :: MatchExpressionOptions -> CommandSeek
 seek o = do
 	u <- getUUID
-	case parsedToMatcher $ exprParser matchAll matchAll groupMap M.empty (Just u) (matchexpr o) of
+	case parsedToMatcher $ preferredContentParser matchAll matchAll groupMap M.empty (Just u) (matchexpr o) of
 		Left e -> liftIO $ bail $ "bad expression: " ++ e
 		Right matcher -> ifM (checkmatcher matcher)
 			( liftIO exitSuccess

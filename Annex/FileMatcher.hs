@@ -5,7 +5,15 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Annex.FileMatcher where
+module Annex.FileMatcher (
+	GetFileMatcher,
+	checkFileMatcher,
+	checkMatcher,
+	matchAll,
+	preferredContentParser,
+	parsedToMatcher,
+	largeFilesMatcher,
+) where
 
 import qualified Data.Map as M
 
@@ -13,8 +21,6 @@ import Annex.Common
 import Limit
 import Utility.Matcher
 import Types.Group
-import Logs.Group
-import Annex.UUID
 import qualified Annex
 import Types.FileMatcher
 import Git.FilePath
@@ -53,53 +59,38 @@ fileMatchInfo file = do
 matchAll :: FileMatcher Annex
 matchAll = generate []
 
-parsedToMatcher :: [Either String (Token (MatchFiles Annex))] -> Either String (FileMatcher Annex)
+parsedToMatcher :: [ParseResult] -> Either String (FileMatcher Annex)
 parsedToMatcher parsed = case partitionEithers parsed of
 	([], vs) -> Right $ generate vs
 	(es, _) -> Left $ unwords $ map ("Parse failure: " ++) es
 
-exprParser :: FileMatcher Annex -> FileMatcher Annex -> Annex GroupMap -> M.Map UUID RemoteConfig -> Maybe UUID -> String -> [Either String (Token (MatchFiles Annex))]
-exprParser matchstandard matchgroupwanted getgroupmap configmap mu expr =
-	map parse $ tokenizeMatcher expr
-  where
-	parse = parseToken
-		matchstandard
-		matchgroupwanted
-		(limitPresent mu)
-		(limitInDir preferreddir)
-		getgroupmap
-	preferreddir = fromMaybe "public" $
-		M.lookup "preferreddir" =<< (`M.lookup` configmap) =<< mu
+data ParseToken
+	= SimpleToken String ParseResult
+	| ValueToken String (String -> ParseResult)
 
-parseToken :: FileMatcher Annex -> FileMatcher Annex -> MatchFiles Annex -> MatchFiles Annex -> Annex GroupMap -> String -> Either String (Token (MatchFiles Annex))
-parseToken matchstandard matchgroupwanted checkpresent checkpreferreddir getgroupmap t
+type ParseResult = Either String (Token (MatchFiles Annex))
+
+parseToken :: [ParseToken] -> String -> ParseResult
+parseToken l t
 	| t `elem` tokens = Right $ token t
-	| otherwise = case t of
-		"standard" -> call matchstandard
-		"groupwanted" -> call matchgroupwanted
-		"present" -> simply checkpresent
-		"inpreferreddir" -> simply checkpreferreddir
-		"unused" -> simply limitUnused
-		"anything" -> simply limitAnything
-		"nothing" -> simply limitNothing
-		_ -> case k of
-			"include" -> usev limitInclude
-			"exclude" -> usev limitExclude
-			"copies" -> usev limitCopies
-			"lackingcopies" -> usev $ limitLackingCopies False
-			"approxlackingcopies" -> usev $ limitLackingCopies True
-			"inbackend" -> usev limitInBackend
-			"largerthan" -> usev $ limitSize (>)
-			"smallerthan" -> usev $ limitSize (<)
-			"metadata" -> usev limitMetaData
-			"inallgroup" -> usev $ limitInAllGroup getgroupmap
-			_ -> Left $ "near " ++ show t
+	| otherwise = go l
   where
+	go [] = Left $ "near " ++ show t
+	go (SimpleToken s r : _) | s == t = r
+	go (ValueToken s mkr : _) | s == k = mkr v
+	go (_ : ps) = go ps
 	(k, v) = separate (== '=') t
-	simply = Right . Operation
-	usev a = Operation <$> a v
-	call sub = Right $ Operation $ \notpresent mi ->
-		matchMrun sub $ \a -> a notpresent mi
+
+commonTokens :: [ParseToken]
+commonTokens =
+	[ SimpleToken "unused" (simply limitUnused)
+	, SimpleToken "anything" (simply limitAnything)
+	, SimpleToken "nothing" (simply limitNothing)
+	, ValueToken "include" (usev limitInclude)
+	, ValueToken "exclude" (usev limitExclude)
+	, ValueToken "largerthan" (usev $ limitSize (>))
+	, ValueToken "smallerthan" (usev $ limitSize (<))
+	]
 
 {- This is really dumb tokenization; there's no support for quoted values.
  - Open and close parens are always treated as standalone tokens;
@@ -108,6 +99,30 @@ tokenizeMatcher :: String -> [String]
 tokenizeMatcher = filter (not . null ) . concatMap splitparens . words
   where
 	splitparens = segmentDelim (`elem` "()")
+
+preferredContentParser :: FileMatcher Annex -> FileMatcher Annex -> Annex GroupMap -> M.Map UUID RemoteConfig -> Maybe UUID -> String -> [ParseResult]
+preferredContentParser matchstandard matchgroupwanted getgroupmap configmap mu expr =
+	map parse $ tokenizeMatcher expr
+  where
+ 	parse = parseToken $
+		[ SimpleToken "standard" (call matchstandard)
+		, SimpleToken "groupwanted" (call matchgroupwanted)
+		, SimpleToken "present" (simply $ limitPresent mu)
+		, SimpleToken "inpreferreddir" (simply $ limitInDir preferreddir)
+		, ValueToken "copies" (usev limitCopies)
+		, ValueToken "lackingcopies" (usev $ limitLackingCopies False)
+		, ValueToken "approxlackingcopies" (usev $ limitLackingCopies True)
+		, ValueToken "inbacked" (usev limitInBackend)
+		, ValueToken "metadata" (usev limitMetaData)
+		, ValueToken "inallgroup" (usev $ limitInAllGroup getgroupmap)
+		] ++ commonTokens
+	preferreddir = fromMaybe "public" $
+		M.lookup "preferreddir" =<< (`M.lookup` configmap) =<< mu
+
+largeFilesParser :: String -> [ParseResult]
+largeFilesParser expr = map parse $ tokenizeMatcher expr
+  where
+	parse = parseToken commonTokens
 
 {- Generates a matcher for files large enough (or meeting other criteria)
  - to be added to the annex, rather than directly to git. -}
@@ -123,13 +138,15 @@ largeFilesMatcher = go =<< annexLargeFiles <$> Annex.getGitConfig
 			then return matchAll
 			else mkmatcher expr
 
-	mkmatcher expr = do
-		u <- getUUID
-		-- No need to read remote configs, that's only needed for
-		-- inpreferreddir, which is used in preferred content
-		-- expressions but does not make sense in the 
-		-- annex.largefiles expression.
-		let emptyconfig = M.empty
-		either badexpr return $
-			parsedToMatcher $ exprParser matchAll matchAll groupMap emptyconfig (Just u) expr
+	mkmatcher = either badexpr return . parsedToMatcher . largeFilesParser
 	badexpr e = error $ "bad annex.largefiles configuration: " ++ e
+
+simply :: MatchFiles Annex -> ParseResult
+simply = Right . Operation
+
+usev :: MkLimit Annex -> String -> ParseResult
+usev a v = Operation <$> a v
+
+call :: FileMatcher Annex -> ParseResult
+call sub = Right $ Operation $ \notpresent mi ->
+	matchMrun sub $ \a -> a notpresent mi

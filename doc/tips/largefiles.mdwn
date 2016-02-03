@@ -42,19 +42,45 @@ checkouts behave differently. The git configuration overrides the
 
 ## syntax
 
+The value of annex.largefiles is similar to a
+[[preferred content expression|git-annex-preferred-content]].
+The following terms can be used in annex.largefiles:
+
+* `include=glob` / `exclude=glob`
+
+  Specify files to include or exclude.
+
+* `smallerthan=size` / `largerthan=size`
+
+  Matches only files smaller than, or larger than the specified size.
+
+  The size can be specified with any commonly used units, for example,
+  "0.5 gb" or "100 KiloBytes"
+
+* `anything`
+
+  Matches any file.
+
+* `nothing`
+
+  Matches no files. (Same as "not anything")
+
+* `not expression`
+
+  Inverts what the expression matches.
+
+* `and` / `or` / `( expression )`
+
+  These can be used to build up more complicated expressions.
+
 The way the `.gitattributes` example above works is, `*.c` and `*.h` files
-have the annex.largefiles attribute set to "nothing", which matches nothing,
+have the annex.largefiles attribute set to "nothing",
 and so those files are never treated as large files. All other files use
 the other value, which checks the file size.
 
-The value of annex.largefiles is a
-[[preferred content expression|git-annex-preferred-content]] that is
-used to match the large files.
-
 Note that, since git attribute values cannot contain whitespace,
-it's useful to instead parenthesize the terms of the 
-[[preferred content expression|git-annex-preferred-content]]. This trick
-allows setting the annex.largefiles attribute to more complicated expressions.
+it's useful to instead parenthesize the terms of the annex.largefiles
+attribute. This trick allows for more complicated expressions.
 For example, this is the same as the git config shown earlier, shoehorned
 into a git attribute:
 
