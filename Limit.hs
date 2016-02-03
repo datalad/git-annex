@@ -118,11 +118,8 @@ addIn s = addLimit =<< mk
 				else inAnnex key
 
 {- Limit to content that is currently present on a uuid. -}
-limitPresent :: Maybe UUID -> MkLimit Annex
-limitPresent u _ = Right $ matchPresent u
-
-matchPresent :: Maybe UUID -> MatchFiles Annex
-matchPresent u _ = checkKey $ \key -> do
+limitPresent :: Maybe UUID -> MatchFiles Annex
+limitPresent u _ = checkKey $ \key -> do
 	hereu <- getUUID
 	if u == Just hereu || isNothing u
 		then inAnnex key
@@ -131,8 +128,8 @@ matchPresent u _ = checkKey $ \key -> do
 			return $ maybe False (`elem` us) u
 
 {- Limit to content that is in a directory, anywhere in the repository tree -}
-limitInDir :: FilePath -> MkLimit Annex
-limitInDir dir = const $ Right $ const go
+limitInDir :: FilePath -> MatchFiles Annex
+limitInDir dir = const go
   where
 	go (MatchingFile fi) = checkf $ matchFile fi
 	go (MatchingKey _) = return False

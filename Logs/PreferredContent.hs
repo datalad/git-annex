@@ -125,7 +125,7 @@ makeMatcher groupmap configmap groupwantedmap u = go True True
 unknownMatcher :: UUID -> FileMatcher Annex
 unknownMatcher u = generate [present]
   where
-	present = Operation $ matchPresent (Just u)
+	present = Operation $ limitPresent (Just u)
 
 {- Checks if an expression can be parsed, if not returns Just error -}
 checkPreferredContentExpression :: PreferredContentExpression -> Maybe String

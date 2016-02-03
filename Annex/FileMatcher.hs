@@ -71,33 +71,33 @@ exprParser matchstandard matchgroupwanted getgroupmap configmap mu expr =
 	preferreddir = fromMaybe "public" $
 		M.lookup "preferreddir" =<< (`M.lookup` configmap) =<< mu
 
-parseToken :: FileMatcher Annex -> FileMatcher Annex -> MkLimit Annex -> MkLimit Annex -> Annex GroupMap -> String -> Either String (Token (MatchFiles Annex))
+parseToken :: FileMatcher Annex -> FileMatcher Annex -> MatchFiles Annex -> MatchFiles Annex -> Annex GroupMap -> String -> Either String (Token (MatchFiles Annex))
 parseToken matchstandard matchgroupwanted checkpresent checkpreferreddir getgroupmap t
 	| t `elem` tokens = Right $ token t
 	| otherwise = case t of
 		"standard" -> call matchstandard
 		"groupwanted" -> call matchgroupwanted
-		"present" -> use checkpresent
-		"inpreferreddir" -> use checkpreferreddir
+		"present" -> simply checkpresent
+		"inpreferreddir" -> simply checkpreferreddir
 		"unused" -> simply limitUnused
 		"anything" -> simply limitAnything
 		"nothing" -> simply limitNothing
 		_ -> case k of
-			"include" -> use limitInclude
-			"exclude" -> use limitExclude
-			"copies" -> use limitCopies
-			"lackingcopies" -> use $ limitLackingCopies False
-			"approxlackingcopies" -> use $ limitLackingCopies True
-			"inbackend" -> use limitInBackend
-			"largerthan" -> use $ limitSize (>)
-			"smallerthan" -> use $ limitSize (<)
-			"metadata" -> use limitMetaData
-			"inallgroup" -> use $ limitInAllGroup getgroupmap
+			"include" -> usev limitInclude
+			"exclude" -> usev limitExclude
+			"copies" -> usev limitCopies
+			"lackingcopies" -> usev $ limitLackingCopies False
+			"approxlackingcopies" -> usev $ limitLackingCopies True
+			"inbackend" -> usev limitInBackend
+			"largerthan" -> usev $ limitSize (>)
+			"smallerthan" -> usev $ limitSize (<)
+			"metadata" -> usev limitMetaData
+			"inallgroup" -> usev $ limitInAllGroup getgroupmap
 			_ -> Left $ "near " ++ show t
   where
 	(k, v) = separate (== '=') t
 	simply = Right . Operation
-	use a = Operation <$> a v
+	usev a = Operation <$> a v
 	call sub = Right $ Operation $ \notpresent mi ->
 		matchMrun sub $ \a -> a notpresent mi
 
