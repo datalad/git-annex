@@ -67,6 +67,8 @@ The following terms can be used in annex.largefiles:
   including "text/plain", but also "text/x-shellscript", "text/x-makefile",
   etc.
 
+  The MIME types are the same that are displayed by running `file --mime-type`
+
   This is only available to use when git-annex was built with the
   MagicMime build flag.
 
