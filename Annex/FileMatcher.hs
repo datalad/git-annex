@@ -74,26 +74,26 @@ exprParser matchstandard matchgroupwanted getgroupmap configmap mu expr =
 parseToken :: FileMatcher Annex -> FileMatcher Annex -> MkLimit Annex -> MkLimit Annex -> Annex GroupMap -> String -> Either String (Token (MatchFiles Annex))
 parseToken matchstandard matchgroupwanted checkpresent checkpreferreddir getgroupmap t
 	| t `elem` tokens = Right $ token t
-	| t == "standard" = call matchstandard
-	| t == "groupwanted" = call matchgroupwanted
-	| t == "present" = use checkpresent
-	| t == "inpreferreddir" = use checkpreferreddir
-	| t == "unused" = Right $ Operation limitUnused
-	| t == "anything" = Right $ Operation limitAnything
-	| t == "nothing" = Right $ Operation limitNothing
-	| otherwise = maybe (Left $ "near " ++ show t) use $ M.lookup k $
-		M.fromList
-			[ ("include", limitInclude)
-			, ("exclude", limitExclude)
-			, ("copies", limitCopies)
-			, ("lackingcopies", limitLackingCopies False)
-			, ("approxlackingcopies", limitLackingCopies True)
-			, ("inbackend", limitInBackend)
-			, ("largerthan", limitSize (>))
-			, ("smallerthan", limitSize (<))
-			, ("metadata", limitMetaData)
-			, ("inallgroup", limitInAllGroup getgroupmap)
-			]
+	| otherwise = case t of
+		"standard" -> call matchstandard
+		"groupwanted" -> call matchgroupwanted
+		"present" -> use checkpresent
+		"inpreferreddir" -> use checkpreferreddir
+		"unused" -> Right $ Operation limitUnused
+		"anything" -> Right $ Operation limitAnything
+		"nothing" -> Right $ Operation limitNothing
+		_ -> case k of
+			"include" -> use limitInclude
+			"exclude" -> use limitExclude
+			"copies" -> use limitCopies
+			"lackingcopies" -> use $ limitLackingCopies False
+			"approxlackingcopies" -> use $ limitLackingCopies True
+			"inbackend" -> use limitInBackend
+			"largerthan" -> use $ limitSize (>)
+			"smallerthan" -> use $ limitSize (<)
+			"metadata" -> use limitMetaData
+			"inallgroup" -> use $ limitInAllGroup getgroupmap
+			_ -> Left $ "near " ++ show t
   where
 	(k, v) = separate (== '=') t
 	use a = Operation <$> a v
