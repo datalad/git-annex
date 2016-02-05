@@ -1,0 +1,56 @@
+The [2015 git-annex user servey](http://git-annex-survey.branchable.com/polls/2015/)
+is over with, and I'm reading through it and comparing with the
+[2013 survey](http://git-annex-survey.branchable.com/polls/2013/).
+
+37% fewer users responded to the 2015 survey than in 2013.
+It's hard to tell if this has anything to do with the total number of
+git-annex users; Debian's popcon suggests the number of users has doubled
+since 2013, although its graph also suggests the number of users has
+flattened off since 2014. The difference may just be that I 
+promoted the 2013 survey better than the 2015 survey, perhaps reaching
+kickstarter backers who I was in touch with back then.
+
+25% use the assistant. Of those, 20% use XMPP, which is good to know as I'd
+like to get rid of it.
+
+Android use has quardrupled, and Windows use has doubled; both are now at
+4%. It's not surprising that Android and Windows users still think more
+porting work is needed for those OSes. iOS is the only unsupported OS that
+more than 1% of users want. Embedded and NAS systems were mentioned much
+less than in 2013; probably the
+[[arm_tarball_build|forum/new_linux_arm_tarball_build]] met many such
+needs.
+
+About the same percentage of users prefer direct mode in 2015 as did in 2013,
+and ditto for indirect mode. But, more users in 2015 only use direct mode
+on platforms that force its use. Correlating with the OS percentages
+suggests that many of these users are using removable media with the
+FAT filesystem, rather than an OS like Windows or Android. Hopefully
+v6 unlocked files will eventually better meet those user's needs.
+
+The percent of users installing git-annex from source has halved since 2013,
+and it seems that builds from this website have taken up most of that slack;
+I would have expected more installs from Debian, Homebrew etc, but that
+seems not to have increased.
+
+The number of repositories per user has gone up quite a lot since 2013,
+when only 7% of users had more than 10 repos. Now, 23% of users do. And,
+2% of users have more than 100 repos! This probably involves both more
+repositories for different purposes, and cloning of repositories
+to more devices.
+
+Similarly, the amount of data stored has gone up. 34% have more than 1
+terabyte stored, up from 18% in 2013. 2% have more than 16 terabytes.
+
+There's some indications of more users sharing repositories or
+otherwise using it in teams of larger groups, although most users still use
+it by themselves.
+
+Users seem happier with git-annex now than in 2013. 16% call it "one of my
+favorite applications of all time". And, significantly fewer find it too
+hard to use than in 2013.
+
+The main blocking problems are documentation, performance with many
+files (a general git problem), and various issues with the assistant.
+Respondants suggest more focus on making it easier for nontechnical users,
+and for use in larger groups/organizations.
