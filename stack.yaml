@@ -12,6 +12,8 @@ flags:
     torrentparser: true
     webapp: true
     magicmime: false
+    xmpp: false
+    dbus: false
     android: false
     androidsplice: false
     ekg: false
