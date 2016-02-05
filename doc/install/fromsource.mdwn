@@ -53,17 +53,19 @@ Move git-annex into some directory that is in your PATH:
 
 	mv ~/.local/bin/git-annex ~/bin # or /usr/local/bin/ or whatever
 
-Note that this build produces a git-annex without XMPP and DBUS support.
-These optional features are only used by the webapp, and require
-installing additional C libraries. To try to build with these features
+Note that this build produces a git-annex without the build flags
+XMPP, DBUS, and MagicMime.
+These optional features require installing additional C libraries.
+To try to build with these features 
 enabled, pass extra parameters when running stack: 
-`--flag git-annex:XMPP --flag git-annex:DBUS`
+`--flag git-annex:XMPP --flag git-annex:DBUS --flag git-annex:MagicMime`
 
 ## minimal build from source with cabal
 
-This can be done anywhere, and builds git-annex without some optional features
-that require harder-to-install C libraries. This is plenty to let you get started with
-git-annex, but it does not include the assistant or webapp.
+This can be done anywhere, and builds git-annex without some optional
+features that require harder-to-install C libraries. This is plenty to let
+you get started with git-annex, but it does not include the assistant or
+webapp.
 
 Be warned that this involves building a lot of Haskell libraries from
 source, and so it has a lot of moving parts, and it's not uncommon for it
@@ -81,8 +83,8 @@ Inside the source tree, run:
 
 To build with all features enabled, including the assistant and webapp,
 you will need to install several C libraries and their headers,
-including libgnutls, libgsasl, libxml2, and zlib. How to do that for
-your OS is beyond the scope of this page. 
+including libgnutls, libgsasl, libxml2, libmagic, and zlib. How to do
+that for your OS is beyond the scope of this page. 
 
 Once the C libraries are installed, run inside the source tree:
 
