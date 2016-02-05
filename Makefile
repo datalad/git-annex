@@ -18,14 +18,13 @@ build: $(all)
 Build/SysConfig.hs: configure.hs Build/TestConfig.hs Build/Configure.hs
 	if [ "$(BUILDER)" = ./Setup ]; then ghc --make Setup; fi
 	if [ "$(BUILDER)" = stack ]; then \
-		$(BUILDER) build -j1; \
+		$(BUILDER) build $(BUILDEROPTIONS); \
 	else \
 		$(BUILDER) configure --ghc-options="$(shell Build/collect-ghc-options.sh)"; \
 	fi
 
-# -j1 is used for reproducible build
 git-annex: Build/SysConfig.hs
-	$(BUILDER) build -j1
+	$(BUILDER) build $(BUILDEROPTIONS)
 	if [ "$(BUILDER)" = stack ]; then \
 		ln -sf $$(find .stack-work/ -name git-annex -type f | grep build/git-annex/git-annex | tail -n 1) git-annex; \
 	else \

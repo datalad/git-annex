@@ -2,6 +2,9 @@
 
 export BUILDER=debian/cabal-wrapper
 
+# -j1 is used for reproducible build
+export BUILDEROPTIONS=-j1
+
 STANDALONE_BUILD=$(shell grep -qe '^Package: git-annex-standalone' debian/control \
                          && echo 1 || echo 0)
 
