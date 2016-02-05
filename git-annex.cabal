@@ -84,6 +84,12 @@ Flag network-uri
 Flag Cryptonite
   Description: Use the cryptonite library, instead of the older cryptohash
 
+Flag Dbus
+  Description: Enable dbus support
+
+Flag XMPP
+  Description: Enable notifications using XMPP
+
 Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends:
@@ -181,9 +187,10 @@ Executable git-annex
               CPP-Options: -DWITH_KQUEUE
               C-Sources: Utility/libkqueue.c
 
-  if (os(linux))
-    Build-Depends: dbus (>= 0.10.7), fdo-notify (>= 0.3)
-    CPP-Options: -DWITH_DBUS -DWITH_DESKTOP_NOTIFY -DWITH_DBUS_NOTIFICATIONS
+  if flag(Dbus)
+    if (os(linux))
+      Build-Depends: dbus (>= 0.10.7), fdo-notify (>= 0.3)
+      CPP-Options: -DWITH_DBUS -DWITH_DESKTOP_NOTIFY -DWITH_DBUS_NOTIFICATIONS
 
   if flag(Android)
     Build-Depends: data-endian
@@ -213,9 +220,10 @@ Executable git-annex
     Build-Depends: network-multicast, network-info
     CPP-Options: -DWITH_PAIRING
 
-  if (! os(windows))
-    Build-Depends: network-protocol-xmpp, gnutls (>= 0.1.4), xml-types
-    CPP-Options: -DWITH_XMPP
+  if flag(XMPP)
+    if (! os(windows))
+      Build-Depends: network-protocol-xmpp, gnutls (>= 0.1.4), xml-types
+      CPP-Options: -DWITH_XMPP
   
   if flag(TorrentParser)
     Build-Depends: torrent (>= 10000.0.0)

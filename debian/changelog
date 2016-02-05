@@ -17,6 +17,8 @@ git-annex (6.20160127) UNRELEASED; urgency=medium
     is linked with libmagic.
   * matchexpression: Added --largefiles option to parse an annex.largefiles
     expression.
+  * Brought back the dbus and xmpp build flags, so build from source can be
+    done without C libraries that may be hard to install.
 
  -- Joey Hess <id@joeyh.name>  Thu, 28 Jan 2016 13:53:09 -0400
 
