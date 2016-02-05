@@ -11,6 +11,7 @@ flags:
     webdav: true
     torrentparser: true
     webapp: true
+    magicmime: false
     android: false
     androidsplice: false
     ekg: false
