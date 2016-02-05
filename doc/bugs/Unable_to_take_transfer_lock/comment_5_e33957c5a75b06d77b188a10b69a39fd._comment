@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2016-02-05T17:01:24Z"
+ content="""
+@luca you might get that with -J2 if you have two work tree files that
+point to the same key. The first thread will start copying the first file,
+and then the second thread tries to copy the second file but sees the key
+is already being copied.
+
+It shouldn't happen otherwise; the way -J works is it splits files between
+threads. So, no two threads will be working on the same file, except in the
+situation described above.
+
+I doubt that whatever you're seeing is the same problem originally
+described in this bug report. I'm still waiting for a followup with missing
+information about the originally described bug.
+"""]]
