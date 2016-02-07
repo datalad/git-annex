@@ -1,0 +1,54 @@
+### Please describe the problem.
+Adding a magnet link via addurl fails after downloading the torrent metatdata if the "announce" field of the torrent is empty
+
+### What steps will reproduce the problem?
+    git annex addurl "magnet:?xt=urn:btih:88066b90278f2de655ee2dd44e784c340b54e45c"
+
+
+### What version of git-annex are you using? On what operating system?
+git-annex version: 6.20160126
+archlinux
+
+### Please provide any additional information below.
+I have traced back the Problem to the parsing of the torrent metatdata.
+Since you also seem to be the author of the haskel-torrent parser I felt it is apropriate to post here.
+
+The above magnet link (an Archlinux Iso) results in a .torrent file that has no "announce" entry. Instead it only has the entry "announce-list" with multiple urls.
+This causes the parser to fail.
+I dont know if having only "announce-list" horribly violates some standard, however a second magnet link that i tried showed the same behaviour so this might not be an unusual case.
+
+I was able to put in a workarround in btshowmetainfo.py to set "annonuce" to the first entry from "announce-list" if it wasn't defined.
+My git-annex binary is compiled with the haskel parser enabled do this doesn't change annexs' behaviour.
+
+It's not a big dealbreaker for me, just playing arround with the torrent feaure for now.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+git annex addurl "magnet:?xt=urn:btih:88066b90278f2de655ee2dd44e784c340b54e45c"
+(downloading torrent file...) 
+
+02/07 16:42:13 [NOTICE] IPv4 DHT: listening on UDP port 6964
+
+02/07 16:42:13 [NOTICE] IPv4 BitTorrent: listening on TCP port 6927
+
+02/07 16:42:13 [NOTICE] IPv6 BitTorrent: listening on TCP port 6927
+[#96c5b2 27KiB/27KiB(100%) CN:11 SD:2]                            
+02/07 16:42:32 [NOTICE] Download complete: [METADATA]88066b90278f2de655ee2dd44e784c340b54e45c
+
+02/07 16:42:32 [NOTICE] Saved metadata as ../../.git/annex/misctmp/URL--magnet&c,63xt,61urn&cbtih&c88066b90278f2de655ee2dd44e784c340b54e45c/meta/88066b90278f2de655ee2dd44e784c340b54e45c.torrent.
+                                                                  
+Download Results:
+gid   |stat|avg speed  |path/URI
+======+====+===========+=======================================================
+96c5b2|OK  |       0B/s|[MEMORY][METADATA]88066b90278f2de655ee2dd44e784c340b54e45c
+
+Status Legend:
+(OK):download completed.
+git-annex: failed to parse torrent: Name not found in dictionary: announce
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
