@@ -12,4 +12,7 @@ announce-list either. No announce and no announce-list? It's possible that
 aria2c, which I used to download it like git-annex does, doesn't know about
 announce-list and left it out when saving the torrent file. Maybe it left
 out announce too? Do you have a non-magnet url for this torrent file?
+
+I'll make the haskell torrent library support parsing announce-list once
+<https://github.com/creichert/bencode/issues/12> is fixed.
 """]]
