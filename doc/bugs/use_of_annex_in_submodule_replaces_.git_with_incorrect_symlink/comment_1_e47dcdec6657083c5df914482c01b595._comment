@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="submodules of the submodules"
+ date="2016-02-08T16:05:18Z"
+ content="""
+replacing broken link seems to work but then for submodules within those submodules I run into similar problems.  While looking into it, could you please check that it works within submodules of the submodules (and so on)? ;)
+"""]]
