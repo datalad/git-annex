@@ -1,0 +1,9 @@
+I'm experiencing a strange behaviour...
+
+I have a few annexes (local, ssh, gitolite) in my group, some of them  are "manual standard" and some are "backup".
+
+If I 'get' files on my laptop annex and then I 'sync --content' local files are dropped! Local is "manual standard".
+
+Am I doing something wrong?
+
+Thanks
