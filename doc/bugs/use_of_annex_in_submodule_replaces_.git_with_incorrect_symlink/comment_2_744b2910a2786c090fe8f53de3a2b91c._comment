@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 2"
+ date="2016-02-08T16:21:57Z"
+ content="""
+the initial issue seems to relate to invoking initial git annex command within a subdirectory of a submodule, so it sticks then too many ../.. into the path of .git.  I was being able to successfully acquire content within submodule and submodule of submodule whenever initial annex command was within the top dir of the submodule  (now just need to resolve accumulated chaos in an existing repository) ;-)
+"""]]
