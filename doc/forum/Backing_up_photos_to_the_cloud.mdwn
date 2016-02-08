@@ -1,0 +1,13 @@
+I'm using git annex to manage my photo collection. The main reason is because my laptop doesn't have enough space to store all my photos, so I'm using git annex to create a sort of split repository between my laptop (which has some photos) and an external drive (which has everything). So far this has worked well, I have around 15,000 photos which is around 40GB.
+
+Now I also want to see if I can use git annex to improve my backup workflow. Previously I've just exported albums from my photo manager (iPhoto on OS X), zipped them up, and uploaded them to S3. I have lifecycle rules setup so that they are automatically replicated to a different region and archived to Glacier (it's a lot easier than dealing with Glacier directly). I am using this as a last resort backup in case everything else is lost, so it doesn't matter if it takes a while to access. This works well, except on it's own I don't really know what photos are stored where, which is where I'm hoping git annex can help.
+
+I've tried using the S3 remote, but there are a few things which I don't like:
+
+1) If the git repository is lost I can't recover the original paths, so I won't know which photo belongs in which album. As this is a last resort backup, if I ever need to get anything from here it's likely that the git repository is also lost. [JGit supports storing Git repositories in S3](http://www.fancybeans.com/blog/2012/08/24/how-to-use-s3-as-a-private-git-repository/), but that seems like the wrong way to solve this, I'd prefer just to have the original folder structure maintained.
+
+2) As there are 15,000 photos, that means 15,000 requests to S3 to upload them and another 15,000 each time I check them. On my connection I can upload to AWS at around 5MB/s, but due to latency that only means one or two photos per second. I'd prefer to just upload archives.
+
+As I understand encryption + chunking with a sufficiently large size (say 100Mb) would help solve the second problem, but as this is a last resort backup I don't want to have to worry about encryption keys or passphrases.
+
+It looks like a wrapper around the [archivedrive feature](https://git-annex.branchable.com/tips/offline_archive_drives/) (which archives, zips and uploads it to S3) would do what I want, but I'm wondering if there is a better way?
