@@ -74,7 +74,7 @@ added.
 One way to avoid this problem would be if the preferred content was only
 used for the initial distribution of files to a repo. If the repo has
 gotten all the files it wants, it could make a second pass and
-opportunisticly get files it doesn't want but that it has space for
+opportunistically get files it doesn't want but that it has space for
 and that don't have enough copies yet.
 Although this gets back to the original problem of multiple repos racing
 downloads and files getting more than the desired number of copies.
