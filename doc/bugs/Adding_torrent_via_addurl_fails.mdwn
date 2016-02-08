@@ -1,3 +1,5 @@
+[[!meta title="addurl failure with non-standard torrent file"]]
+
 ### Please describe the problem.
 Adding a magnet link via addurl fails after downloading the torrent metatdata if the "announce" field of the torrent is empty
 
