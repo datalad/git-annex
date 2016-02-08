@@ -90,8 +90,9 @@ fixupSubmodule r@(Repo { location = l@(Local { worktree = Just w, gitdir = d }) 
   where
 	dotgit = w </> ".git"
 	replacedotgit = whenM (doesFileExist dotgit) $ do
+		linktarget <- relPathDirToFile w d
 		nukeFile dotgit
-		createSymbolicLink (w </> d) dotgit
+		createSymbolicLink linktarget dotgit
 		maybe (error "unset core.worktree failed") (\_ -> return ())
 			=<< Git.Config.unset "core.worktree" r
 fixupSubmodule r _ = return r

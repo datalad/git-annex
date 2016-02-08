@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-02-08T18:27:32Z"
+ content="""
+Yeah, it was running git annex init in the subdir of the submodule that
+triggered the bug. Easy fix, also fixes init in submodules of submodules.
+"""]]
