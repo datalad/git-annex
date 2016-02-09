@@ -9,6 +9,10 @@ Consider two use cases:
 Both of these could be met by making `git-annex sync` maintain an adjusted
 version of the original branch, eg `adjusted/master`.
 
+[Alternatively, it could stay on the master branch, and only adjust the
+work tree and index. See WORKTREE notes below for how this choice would
+play out.]
+
 [[!toc]]
 
 ## filters
@@ -32,6 +36,11 @@ Since the adjusted/master branch is not present on the remote, if the user
 does a `git pull`, it won't merge in changes from origin/master. Which is
 good because the filter needs to be applied first.
 
+[WORKTREE: `git pull` would update the work tree, and may lead to conflicts
+between the adjusted work tree and pulled changes. A post-merge hook would
+be needed to re-adjust the work tree, and there would be a window where eg,
+not present files would appear in the work tree.]
+
 However, if the user does `git merge origin/master`, they'll get into a
 state where the filter has not been applied. The post-merge hook could be
 used to clean up after that. Or, let the user foot-shoot this way; they can
@@ -44,6 +53,11 @@ be looked up, and the filter applied to it. So, dropping a file with the
 missing file filter would cause it to be removed from the adjusted branch,
 and receiving a file's content would cause it to appear in the adjusted
 branch.
+
+These changes would need to be committed to the adjusted branch, otherwise
+`git diff` would show them.
+
+[WORKTREE: Simply adjust the work tree (and index) per the filter.]
 
 ## commit
 
@@ -69,7 +83,8 @@ So, the branches would look like this:
         |                B''
 
 Note particularly that B does not have A' in its history; the adjusted
-branch is not evident from outside.
+branch is not evident from outside. So, we need a way to detect commits
+like A'.
 
 Also note that B gets merged back to the adjusted branch, re-applying the
 filter. This will make other checkouts that are in the same adjusted branch
@@ -78,6 +93,10 @@ end up with the same B'' commit when they pull B.
 It might be useful to have a post-commit hook that generates the
 reverse-filtered commit and updates the original branch. And/or
 `git-annex sync` could do it.
+
+[WORKTREE: A pre-commit hook would be needed to update the staged changes, 
+reversing the filter before the commit is made. All the other complications
+above are avoided.]
 
 ## reverse filtering
 
@@ -105,6 +124,26 @@ adjusted/master won't push anything. It would with "matching". Pity. (I
 continue to feel git picked the wrong default here.) Users may find that
 surprising. Users of `git-annex sync` won't need to worry about it though.
 
+[WORKTREE: push works as usual]
+
+## acting on filtered-out files
+
+If a file is filtered out due to not existing, there should be a way
+for `git annex get` to get it. Since the filtered out file is not in the
+index, that would not normally work. What to do?
+
+Maybe instead of making a branch where the file is deleted, it would be
+better to delete it from the work tree, but keep the branch as-is. Then
+`git annex get` would see the file, as it's in the index. 
+
+But, not maintaining an adjusted branch complicates other things. See
+WORKTREE notes throughout this page. Overall, the WORKTREE approach seems
+too problimatic.
+
+Ah, but we know that when filter #2 is in place, any file that `git annex
+get` could act on is not in the index. So, it could look at the master branch
+instead. (Same for `git annex move --from` and `git annex copy --from`)
+
 ## problems
 
 Using `git checkout` when in an adjusted branch is problimatic, because a
@@ -113,10 +152,12 @@ you want to get into an adjusted branch, you have to run some command.
 Or, could make a post-checkout hook.
 
 Tags are bit of a problem. If the user tags an ajusted branch, the tag
-includes the local adjustments.
+includes the local adjustments.  
+[WORKTREE: not a problem]
 
 If the user refers to commit shas (in, eg commit messages), those won't be
-visible to anyone else.
+visible to anyone else.  
+[WORKTREE: not a problem]
 
 ## integration with view branches
 
@@ -127,3 +168,6 @@ Could go a step further, and implement view branches as another branch
 adjusting filter, albeit an extreme one. This might improve view branches.
 For example, it's not currently possible to update a view branch with
 changes fetched from a remote, and this could get us there.
+
+[WORKTREE: Wouldn't be able to integrate, unless view branches are changed
+into adjusted view worktrees.]
