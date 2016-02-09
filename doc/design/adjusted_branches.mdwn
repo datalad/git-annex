@@ -33,9 +33,9 @@ the original branch yet.
 
 Then we need to get from that commit to one with the filters reversed,
 which should be the same as if the adjusted branch had not been used.
+This commit gets added onto the original branch.
 
-Note that this commit should have as its parent the tip of the original
-branch. So, the branches would look like this:
+So, the branches would look like this:
 
         master           adjusted/master
         A ---filter----> A
@@ -56,7 +56,8 @@ filter. This will make other checkouts that are in the same adjusted branch
 end up with the same B'' commit when they pull B.
 
 It might be useful to have a post-commit hook that generates the
-reverse-filtered commit and updates the original branch.
+reverse-filtered commit and updates the original branch. And/or
+`git-annex sync` could do it.
 
 The new master branch can then be pushed out to remotes. The
 adjusted/master branch is not pushed to remotes. `git-annex sync` should
@@ -80,9 +81,10 @@ includes the local adjustments.
 If the user refers to commit shas (in, eg commit messages), those won't be
 visible to anyone else.
 
-Running `git push` when in adjusted/master won't push anything
-(with "matching" push strategy). Users may find that surprising.
-Users of `git-annex sync` won't need to worry about it though.
+When push.default is "simple" (the new default), running `git push` when in
+adjusted/master won't push anything. It would with "matching". Users may
+find that surprising. Users of `git-annex sync` won't need to worry about
+it though.
 
 ## integration with view branches
 
