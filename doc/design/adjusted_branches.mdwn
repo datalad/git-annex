@@ -185,7 +185,11 @@ like this, at its most simple:
 
 	setFilter :: Filter -> Annex ()
 
-	data FilterAction = UnchangedFile | UnlockFile | HideFile | RenameFile FilePath FilePath
+	data FilterAction
+		= UnchangedFile FilePath
+		| UnlockFile FilePath
+		| HideFile FilePath
+		| RenameFile FilePath FilePath
 
 	data FileInfo = FileInfo
 		{ originalBranchFile :: FileStatus
@@ -194,15 +198,24 @@ like this, at its most simple:
 		}
 
 	data FileStatus = IsAnnexSymlink | IsAnnexPointer
+		deriving (Eq)
 
 	applyFilter :: Filter -> FilePath -> FileInfo -> FilterAction
+	applyFilter UnlockFilter f fi
+		| worktreeFile fi == Just IsAnnexSymlink = UnlockFile f
+	applyFilter HideMissingFilter f fi
+		| not (isContentPresent fi) = HideFile f
+	applyFilter UnlockHideMissingFilter f fi
+		| not (isContentPresent fi) = HideFile f
+		| otherwise = applyFilter UnlockFilter f fi
+	applyFilter _ f _ = UnchangedFile f
+
+	applyFilterAction :: FilePath -> FilterAction -> Annex Bool
 
 	-- Look at the current state of file and get the FilterAction that
 	-- would have led to this state.
 	reverseFilter :: Filter -> FilePath -> FileInfo -> FilterAction
 
-	applyFilterAction :: FilePath -> FilterAction -> Annex Bool
-
-	-- Generate a version of the original commit with the filtering of
-	-- modified files reversed.
-	reverseFilterActions :: [(FilePath, FilterAction)] -> Git.Commit -> Git.Commit
+	-- Generate a version of the commit made on the filter branch
+	-- with the filtering of modified files reversed.
+	unfilteredCommit :: Filter -> Git.Commit -> Git.Commit
