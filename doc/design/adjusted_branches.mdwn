@@ -193,28 +193,23 @@ like this, at its most simple:
 
 	data FileInfo = FileInfo
 		{ originalBranchFile :: FileStatus
-		, worktreeFile :: Maybe FileStatus
 		, isContentPresent :: Bool
 		}
 
 	data FileStatus = IsAnnexSymlink | IsAnnexPointer
 		deriving (Eq)
 
-	applyFilter :: Filter -> FilePath -> FileInfo -> FilterAction
-	applyFilter UnlockFilter f fi
-		| worktreeFile fi == Just IsAnnexSymlink = UnlockFile f
-	applyFilter HideMissingFilter f fi
+	filterAction :: Filter -> FilePath -> FileInfo -> FilterAction
+	filterAction UnlockFilter f fi
+		| originalBranchFile fi == Just IsAnnexSymlink = UnlockFile f
+	filterAction HideMissingFilter f fi
 		| not (isContentPresent fi) = HideFile f
-	applyFilter UnlockHideMissingFilter f fi
+	filterAction UnlockHideMissingFilter f fi
 		| not (isContentPresent fi) = HideFile f
-		| otherwise = applyFilter UnlockFilter f fi
-	applyFilter _ f _ = UnchangedFile f
+		| otherwise = filterAction UnlockFilter f fi
+	filterAction _ f _ = UnchangedFile f
 
 	applyFilterAction :: FilePath -> FilterAction -> Annex Bool
-
-	-- Look at the current state of file and get the FilterAction that
-	-- would have led to this state.
-	reverseFilter :: Filter -> FilePath -> FileInfo -> FilterAction
 
 	-- Generate a version of the commit made on the filter branch
 	-- with the filtering of modified files reversed.
