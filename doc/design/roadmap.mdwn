@@ -6,7 +6,7 @@
 * [[assistant/gpgkeys]] management for the assistant
 * [[assistant/telehash]] or similar
 * [[design/requests_routing]]
-* [[design/v6]] repo format
+* [[design/new_repo_versions]]
 
 ## the rearview
 
