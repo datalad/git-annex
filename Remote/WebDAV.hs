@@ -339,7 +339,7 @@ storeLegacyChunked chunksize k dav b =
 	finalizer tmp' dest' = goDAV dav $ 
 		finalizeStore (baseURL dav) tmp' (fromJust $ locationParent dest')
 
-	tmp = keyTmpLocation k
+	tmp = addTrailingPathSeparator $ keyTmpLocation k
 	dest = keyLocation k
 
 retrieveLegacyChunked :: DavHandle -> Retriever

@@ -24,6 +24,8 @@ git-annex (6.20160127) UNRELEASED; urgency=medium
     submodule.
   * WebDAV: Set depth 1 in PROPFIND request, for better compatability with
     some servers. Thanks, wzhd.
+  * WebDAV: Remove a bogus trailing slash from the end of the url to the
+    temporary store location for a key. Thanks, wzhd.
 
  -- Joey Hess <id@joeyh.name>  Thu, 28 Jan 2016 13:53:09 -0400
 
