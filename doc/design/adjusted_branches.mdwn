@@ -215,8 +215,10 @@ like this, at its most simple:
 		| otherwise = filterAction UnlockFilter f fi
 	filterAction _ f _ = UnchangedFile f
 
-	applyFilterAction :: FilePath -> FilterAction -> Annex Bool
+	filteredCommit :: Filter -> Git.Commit -> Git.Commit
 
 	-- Generate a version of the commit made on the filter branch
 	-- with the filtering of modified files reversed.
 	unfilteredCommit :: Filter -> Git.Commit -> Git.Commit
+
+	isFilteredCommit :: Git.Commit -> Bool
