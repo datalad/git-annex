@@ -189,7 +189,6 @@ like this, at its most simple:
 		= UnchangedFile FilePath
 		| UnlockFile FilePath
 		| HideFile FilePath
-		| RenameFile FilePath FilePath
 
 	data FileInfo = FileInfo
 		{ originalBranchFile :: FileStatus
@@ -201,7 +200,7 @@ like this, at its most simple:
 
 	filterAction :: Filter -> FilePath -> FileInfo -> FilterAction
 	filterAction UnlockFilter f fi
-		| originalBranchFile fi == Just IsAnnexSymlink = UnlockFile f
+		| originalBranchFile fi == IsAnnexSymlink = UnlockFile f
 	filterAction HideMissingFilter f fi
 		| not (isContentPresent fi) = HideFile f
 	filterAction UnlockHideMissingFilter f fi
