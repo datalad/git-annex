@@ -53,3 +53,13 @@ includes the local adjustments.
 Running `git push` when in adjusted/master won't push anything
 (with "matching" push strategy). Users may find that surprising.
 Users of `git-annex sync` won't need to worry about it though.
+
+## integration with view branches
+
+Entering a view from an adjusted branch should probably carry the filtering
+over into the creation/updating of the view branch.
+
+Could go a step further, and implement view branches as another branch
+adjusting filter, albeit an extreme one. This might improve view branches.
+For example, it's not currently possible to update a view branch with
+changes fetched from a remote, and this could get us there.
