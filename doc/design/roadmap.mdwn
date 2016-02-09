@@ -1,13 +1,12 @@
 ## ahead
 
-* [[design/caching_database]] for metadata views, direct mode mappings
+* [[adjusted_branches]]
+* [[design/caching_database]] for metadata views
 * [[assistant/deltas]]
 * [[assistant/gpgkeys]] management for the assistant
 * [[assistant/telehash]] or similar
 * [[design/requests_routing]]
 * [[design/v6]] repo format
-* [[todo/deferred_update_mode]]
-* [[use smudge and clean filters|todo/smudge]] like Git LFS
 
 ## the rearview
 
