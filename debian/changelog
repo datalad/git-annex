@@ -22,6 +22,8 @@ git-annex (6.20160127) UNRELEASED; urgency=medium
   * init: Fix bugs in submodule .git symlink fixup, that occurred when
     initializing in a subdirectory of a submodule and a submodule of a
     submodule.
+  * WebDAV: Set depth 1 in PROPFIND request, for better compatability with
+    some servers. Thanks, wzhd.
 
  -- Joey Hess <id@joeyh.name>  Thu, 28 Jan 2016 13:53:09 -0400
 

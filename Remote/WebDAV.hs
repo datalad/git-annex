@@ -260,7 +260,10 @@ existsDAV :: DavLocation -> DAVT IO (Either String Bool)
 existsDAV l = inLocation l check `catchNonAsync` (\e -> return (Left $ show e))
   where
 	check = do
-		setDepth Nothing
+		-- Some DAV services only support depth of 1, and
+		-- more depth is certainly not needed to check if a
+		-- location exists.
+		setDepth (Just Depth1)
 		catchJust
 			(matchStatusCodeException (== notFound404))
 			(getPropsM >> ispresent True)
