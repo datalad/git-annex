@@ -161,6 +161,13 @@ If the user refers to commit shas (in, eg commit messages), those won't be
 visible to anyone else.  
 [WORKTREE: not a problem]
 
+When a pull modifies a file, its content won't be available, and so it
+would be hidden temporarily by filter #2. So the file would seem to vanish,
+and come back later, which could be confusing. Could be fixed as discussed
+in [[todo/deferred_update_mode]]. Arguably, it's just as confusing for the
+file to remain visible but have its content temporarily replaced with a
+annex pointer.
+
 ## integration with view branches
 
 Entering a view from an adjusted branch should probably carry the filtering
