@@ -100,22 +100,23 @@ The new master branch can then be pushed out to remotes. The
 adjusted/master branch is not pushed to remotes. `git-annex sync` should
 automatically push master when adjusted/master is checked out.
 
+When push.default is "simple" (the new default), running `git push` when in
+adjusted/master won't push anything. It would with "matching". Pity. (I
+continue to feel git picked the wrong default here.) Users may find that
+surprising. Users of `git-annex sync` won't need to worry about it though.
+
 ## problems
 
 Using `git checkout` when in an adjusted branch is problimatic, because a
 non-adjusted branch would then be checked out. But, we can just say, if
 you want to get into an adjusted branch, you have to run some command.
+Or, could make a post-checkout hook.
 
 Tags are bit of a problem. If the user tags an ajusted branch, the tag
 includes the local adjustments.
 
 If the user refers to commit shas (in, eg commit messages), those won't be
 visible to anyone else.
-
-When push.default is "simple" (the new default), running `git push` when in
-adjusted/master won't push anything. It would with "matching". Users may
-find that surprising. Users of `git-annex sync` won't need to worry about
-it though.
 
 ## integration with view branches
 
