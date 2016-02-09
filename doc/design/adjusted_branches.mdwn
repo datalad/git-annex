@@ -7,13 +7,18 @@ Consider two use cases:
 2. [[todo/hide_missing_files]]
 
 Both of these could be met by making `git-annex sync` maintain an adjusted
-version of the HEAD branch. This could be a detached HEAD or a branch named
-eg `adjusted/master`.
+version of the original branch, eg `adjusted/master`.
+
+[[!toc]]
+
+## filters
 
 There would be a filter function. For #1 above it would simply convert all
 annex symlinks to annex file pointers. For #2 above it would omit files
 whose content is not currently in the annex. Sometimes, both #1 and #2 would
 be wanted.
+
+## merge
 
 When merging changes from a remote, apply the filter to the head of the
 remote branch, resulting in a commit with its changes. Merge in that
@@ -21,11 +26,26 @@ commit. Note that it's possible to control the metadata of the commit such
 that 2 users who have the same adjusted branch checked out, both generate
 the same commit sha.
 
+This would be done by `git annex merge` and `git annex sync`.
+
+Since the adjusted/master branch is not present on the remote, if the user
+does a `git pull`, it won't merge in changes from origin/master. Which is
+good because the filter needs to be applied first.
+
+However, if the user does `git merge origin/master`, they'll get into a
+state where the filter has not been applied. The post-merge hook could be
+used to clean up after that. Or, let the user foot-shoot this way; they can
+always reset back once they notice the mistake.
+
+## annex object add/remove
+
 When objects are added/removed from the annex, the associated file has to
 be looked up, and the filter applied to it. So, dropping a file with the
 missing file filter would cause it to be removed from the adjusted branch,
 and receiving a file's content would cause it to appear in the adjusted
 branch.
+
+## commit
 
 When committing changes, a commit is made as usual to the adjusted branch.
 So, the user can `git commit` (or `git annex sync`). This does not touch
@@ -59,17 +79,28 @@ It might be useful to have a post-commit hook that generates the
 reverse-filtered commit and updates the original branch. And/or
 `git-annex sync` could do it.
 
-The new master branch can then be pushed out to remotes. The
-adjusted/master branch is not pushed to remotes. `git-annex sync` should
-automatically push master when adjusted/master is checked out.
-
-## problems
+## reverse filtering
 
 Reversing filter #1 would mean only converting pointer files to
 symlinks when the file was originally a symlink. This is problimatic when a
 file is renamed. Would it be ok, if foo is renamed to bar and bar is
 committed, for it to be committed as an unlocked file, even if foo was
 originally locked?
+
+Reversing filter #2 would mean not deleting removed files whose content was
+not present. When the commit includes deletion of files that were removed
+due to their content not being present, those deletions are not propigated.
+When the user deletes an unlocked file, the content is still
+present in annex, so reversing the filter should propigate the file
+deletion.
+
+## push
+
+The new master branch can then be pushed out to remotes. The
+adjusted/master branch is not pushed to remotes. `git-annex sync` should
+automatically push master when adjusted/master is checked out.
+
+## problems
 
 Using `git checkout` when in an adjusted branch is problimatic, because a
 non-adjusted branch would then be checked out. But, we can just say, if
