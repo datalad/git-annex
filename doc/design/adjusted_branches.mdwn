@@ -16,7 +16,10 @@ whose content is not currently in the annex. Sometimes, both #1 and #2 would
 be wanted.
 
 When merging changes from a remote, apply the filter to the head of the
-remote branch, and merge the result.
+remote branch, resulting in a commit with its changes. Merge in that
+commit. Note that it's possible to control the metadata of the commit such
+that 2 users who have the same adjusted branch checked out, both generate
+the same commit sha.
 
 When objects are added/removed from the annex, the associated file has to
 be looked up, and the filter applied to it. So, dropping a file with the
@@ -24,24 +27,48 @@ missing file filter would cause it to be removed from the adjusted branch,
 and receiving a file's content would cause it to appear in the adjusted
 branch.
 
-When committing changes, the filter has to be reversed somehow. The
-commit is fed through the reversing filter to get a commit that should be
-the same as if the branch had not been adjusted. This needs to be done by
-the pre-commit hook, so that the user can run `git commit`, if possible.
-It would be annoying if only `git-annex sync` made such commits.
+When committing changes, a commit is made as usual to the adjusted branch.
+So, the user can `git commit` (or `git annex sync`). This does not touch
+the original branch yet. 
 
-The reverse-filtered commit becomes the new tip of the master branch, and
-so can be pushed out to remotes. The adjusted/master branch is not pushed
-to remotes. `git-annex sync` should automatically push master when
-adjusted/master is checked out.
+Then we need to get from that commit to one with the filters reversed,
+which should be the same as if the adjusted branch had not been used.
 
-Note that reversing filter #1 would mean only converting pointer files to
+Note that this commit should have as its parent the tip of the original
+branch. So, the branches would look like this:
+
+        master           adjusted/master
+        A ---filter----> A
+        |                |
+        |                A'
+        |                |
+        |                B'
+        B <--rev filter- |
+        |                B
+        | ---filter----> |
+        |                B''
+
+Note particularly that B does not have A' in its history; the adjusted
+branch is not evident from outside.
+
+Also note that B gets merged back to the adjusted branch, re-applying the
+filter. This will make other checkouts that are in the same adjusted branch
+end up with the same B'' commit when they pull B.
+
+It might be useful to have a post-commit hook that generates the
+reverse-filtered commit and updates the original branch.
+
+The new master branch can then be pushed out to remotes. The
+adjusted/master branch is not pushed to remotes. `git-annex sync` should
+automatically push master when adjusted/master is checked out.
+
+## problems
+
+Reversing filter #1 would mean only converting pointer files to
 symlinks when the file was originally a symlink. This is problimatic when a
 file is renamed. Would it be ok, if foo is renamed to bar and bar is
 committed, for it to be committed as an unlocked file, even if foo was
 originally locked?
-
-## problems
 
 Using `git checkout` when in an adjusted branch is problimatic, because a
 non-adjusted branch would then be checked out. But, we can just say, if
@@ -49,6 +76,9 @@ you want to get into an adjusted branch, you have to run some command.
 
 Tags are bit of a problem. If the user tags an ajusted branch, the tag
 includes the local adjustments.
+
+If the user refers to commit shas (in, eg commit messages), those won't be
+visible to anyone else.
 
 Running `git push` when in adjusted/master won't push anything
 (with "matching" push strategy). Users may find that surprising.
