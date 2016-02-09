@@ -187,14 +187,22 @@ like this, at its most simple:
 
 	data FilterAction = UnchangedFile | UnlockFile | HideFile | RenameFile FilePath FilePath
 
-	applyFilter :: Filter -> FilePath -> Annex FilterAction
+	data FileInfo = FileInfo
+		{ originalBranchFile :: FileStatus
+		, worktreeFile :: Maybe FileStatus
+		, isContentPresent :: Bool
+		}
 
-	-- Look at current state of file and get the FilterAction that
+	data FileStatus = IsAnnexSymlink | IsAnnexPointer
+
+	applyFilter :: Filter -> FilePath -> FileInfo -> FilterAction
+
+	-- Look at the current state of file and get the FilterAction that
 	-- would have led to this state.
-	reverseFilter :: Filter -> FilePath -> Annex FilterAction
+	reverseFilter :: Filter -> FilePath -> FileInfo -> FilterAction
 
 	applyFilterAction :: FilePath -> FilterAction -> Annex Bool
 
 	-- Generate a version of the original commit with the filtering of
 	-- modified files reversed.
-	reverseFilterActions :: [(FilePath, FilterAction)] -> Git.Commit -> Annex Git.Commit
+	reverseFilterActions :: [(FilePath, FilterAction)] -> Git.Commit -> Git.Commit
