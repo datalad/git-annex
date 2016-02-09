@@ -12,7 +12,8 @@ eg `adjusted/master`.
 
 There would be a filter function. For #1 above it would simply convert all
 annex symlinks to annex file pointers. For #2 above it would omit files
-whose content is not currently in the annex.
+whose content is not currently in the annex. Sometimes, both #1 and #2 would
+be wanted.
 
 When merging changes from a remote, apply the filter to the head of the
 remote branch, and merge the result.
