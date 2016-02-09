@@ -27,7 +27,7 @@ git-annex should use smudge/clean filters.
   Note that this presents problems when dealing with merge conflicts and
   when pushing changes committed in such a repo. Ideally, should avoid
   committing implicit unlocks, or should prevent such commits leaking out
-  in pushes.
+  in pushes. See [[design/adjusted_branches]].
 
 * Eventually (but not yet), make v6 the default for new repositories.
   Note that the assistant forces repos into direct mode; that will need to
