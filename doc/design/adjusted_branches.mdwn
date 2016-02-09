@@ -9,18 +9,16 @@ Consider two use cases:
 Both of these could be met by making `git-annex sync` maintain an adjusted
 version of the original branch, eg `adjusted/master`.
 
+There would be a filter function. For #1 above it would simply convert all
+annex symlinks to annex file pointers. For #2 above it would omit files
+whose content is not currently in the annex. Sometimes, both #1 and #2 would
+be wanted.
+
 [Alternatively, it could stay on the master branch, and only adjust the
 work tree and index. See WORKTREE notes below for how this choice would
 play out.]
 
 [[!toc]]
-
-## filters
-
-There would be a filter function. For #1 above it would simply convert all
-annex symlinks to annex file pointers. For #2 above it would omit files
-whose content is not currently in the annex. Sometimes, both #1 and #2 would
-be wanted.
 
 ## merge
 
@@ -144,6 +142,10 @@ Ah, but we know that when filter #2 is in place, any file that `git annex
 get` could act on is not in the index. So, it could look at the master branch
 instead. (Same for `git annex move --from` and `git annex copy --from`)
 
+OTOH, if filter #1 is in place and not #2, a file might be renamed in the
+index, and `git annex get $newname` should work. So, it should look at the
+index in that case.
+
 ## problems
 
 Using `git checkout` when in an adjusted branch is problimatic, because a
@@ -171,3 +173,28 @@ changes fetched from a remote, and this could get us there.
 
 [WORKTREE: Wouldn't be able to integrate, unless view branches are changed
 into adjusted view worktrees.]
+
+## filter interface
+
+Distilling all of the above, the filter interface needs to be something
+like this, at its most simple:
+
+	data Filter = UnlockFilter | HideMissingFilter | UnlockHideMissingFilter
+
+	getFilter :: Annex Filter
+
+	setFilter :: Filter -> Annex ()
+
+	data FilterAction = UnchangedFile | UnlockFile | HideFile
+
+	applyFilter :: Filter -> FilePath -> Annex FilterAction
+
+	-- Look at current state of file and get the FilterAction that
+	-- would have led to this state.
+	reverseFilter :: Filter -> FilePath -> Annex FilterAction
+
+	applyFilterAction :: FilePath -> FilterAction -> Annex Bool
+
+	-- Generate a version of the original commit with the filtering of
+	-- modified files reversed.
+	reverseFilterActions :: [(FilePath, FilterAction)] -> Git.Commit -> Annex Git.Commit
