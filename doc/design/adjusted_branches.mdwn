@@ -185,7 +185,7 @@ like this, at its most simple:
 
 	setFilter :: Filter -> Annex ()
 
-	data FilterAction = UnchangedFile | UnlockFile | HideFile
+	data FilterAction = UnchangedFile | UnlockFile | HideFile | RenameFile FilePath FilePath
 
 	applyFilter :: Filter -> FilePath -> Annex FilterAction
 
