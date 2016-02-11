@@ -1,4 +1,4 @@
-git-annex (6.20160127) UNRELEASED; urgency=medium
+git-annex (6.20160211) unstable; urgency=medium
 
   * annex.addsmallfiles: New option controlling what is done when
     adding files not matching annex.largefiles.
@@ -22,14 +22,14 @@ git-annex (6.20160127) UNRELEASED; urgency=medium
   * init: Fix bugs in submodule .git symlink fixup, that occurred when
     initializing in a subdirectory of a submodule and a submodule of a
     submodule.
-  * WebDAV: Set depth 1 in PROPFIND request, for better compatability with
+  * WebDAV: Set depth 1 in PROPFIND request, for better compatibility with
     some servers. Thanks, wzhd.
   * WebDAV: Remove a bogus trailing slash from the end of the url to the
     temporary store location for a key. Thanks, wzhd.
   * S3: Allow configuring with requeststyle=path to use path-style bucket
     access instead of the default DNS-style access.
 
- -- Joey Hess <id@joeyh.name>  Thu, 28 Jan 2016 13:53:09 -0400
+ -- Joey Hess <id@joeyh.name>  Thu, 11 Feb 2016 11:42:19 -0400
 
 git-annex (6.20160126) unstable; urgency=medium
 
