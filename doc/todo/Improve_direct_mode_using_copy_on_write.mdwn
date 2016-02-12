@@ -40,3 +40,5 @@ copy on write is available using `cp --reflink=always`. It correspond to the fol
 Looking at the code it would be preferable to exec directly to `cp`, see [copy_range() on LWN](http://lwn.net/Articles/550621/) and this [more recent article about splice() on LWN](http://lwn.net/Articles/567086/)
 
 Also, `cp --reflink` fall back to copy when copy-on-write is not available while `cp --reflink=always` do not.
+
+> The new v6 repository mode works this way. [[done]] --[[Joey]]
