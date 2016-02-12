@@ -26,8 +26,8 @@ import Prelude
 newtype DbHandle = DbHandle (MVar DbState)
 
 -- The database can be closed or open, but it also may have been
--- tried to open (for read) and didn't exist yet.
-data DbState = DbClosed | DbOpen H.DbQueue | DbEmpty
+-- tried to open (for read) and didn't exist yet or is not readable.
+data DbState = DbClosed | DbOpen H.DbQueue | DbUnavailable
 
 newDbHandle :: IO DbHandle
 newDbHandle = DbHandle <$> newMVar DbClosed

@@ -56,7 +56,7 @@ runReader a = do
 	h <- getDbHandle
 	withDbState h go
   where
-	go DbEmpty = return (mempty, DbEmpty)
+	go DbUnavailable = return (mempty, DbUnavailable)
 	go st@(DbOpen qh) = do
 		liftIO $ H.flushDbQueue qh
 		v <- a (SQL.ReadHandle qh)
@@ -114,8 +114,8 @@ getDbHandle = go =<< Annex.getState Annex.keysdbhandle
  -}
 openDb :: Bool -> DbState -> Annex DbState
 openDb _ st@(DbOpen _) = return st
-openDb False DbEmpty = return DbEmpty
-openDb createdb _ = withExclusiveLock gitAnnexKeysDbLock $ do
+openDb False DbUnavailable = return DbUnavailable
+openDb createdb _ = catchPermissionDenied permerr $ withExclusiveLock gitAnnexKeysDbLock $ do
 	dbdir <- fromRepo gitAnnexKeysDb
 	let db = dbdir </> "db"
 	dbexists <- liftIO $ doesFileExist db
@@ -128,9 +128,14 @@ openDb createdb _ = withExclusiveLock gitAnnexKeysDbLock $ do
 			setAnnexDirPerm dbdir
 			setAnnexFilePerm db
 			open db
-		(False, False) -> return DbEmpty
+		(False, False) -> return DbUnavailable
   where
 	open db = liftIO $ DbOpen <$> H.openDbQueue db SQL.containedTable
+	-- If permissions don't allow opening the database, treat it as if
+	-- it does not exist.
+	permerr e = case createdb of
+		False -> return DbUnavailable
+		True -> throwM e
 
 addAssociatedFile :: Key -> TopFilePath -> Annex ()
 addAssociatedFile k f = runWriterIO $ SQL.addAssociatedFile (toIKey k) f
