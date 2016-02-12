@@ -4,16 +4,28 @@ git-annex checkpresentkey - check if key is present in remote
 
 # SYNOPSIS
 
-git annex checkpresentkey `key remote`
+git annex checkpresentkey `key` `[remote]`
 
 # DESCRIPTION
 
 This plumbing-level command verifies if the specified key's content
 is present in the specified remote.
 
+When no remote is specified, it verifies if the key's content is present
+somewhere, checking accessible remotes until it finds the content.
+
 Exits 0 if the content is verified present, or 1 if it is verified to not
-be present. If there is a problem checking the remote, the special
-exit code 100 is used, and an error message is output to stderr.
+be present. If there is a problem, the special exit code 100 is used,
+and an error message is output to stderr.
+
+# OPTIONS
+
+* `--batch`
+
+  Enables batch mode. In this mode, the `key` is not specified at the
+  command line, but the `remote` may still be. Lines containing keys are
+  read from stdin, and a line is output with "1" if the key is verified to
+  be present, and "0" otherwise.
 
 # SEE ALSO
 
