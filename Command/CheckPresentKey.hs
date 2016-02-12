@@ -68,8 +68,7 @@ exitResult (CheckFailure msg) = liftIO $ do
 
 batchResult :: Result -> Annex ()
 batchResult Present = liftIO $ putStrLn "1"
-batchResult NotPresent = liftIO $ putStrLn "0"
-batchResult failure = exitResult failure
+batchResult _ = liftIO $ putStrLn "0"
 
 toKey :: String -> Key
 toKey = fromMaybe (error "Bad key") . file2key
