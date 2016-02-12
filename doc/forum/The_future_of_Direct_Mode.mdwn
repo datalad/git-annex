@@ -17,7 +17,7 @@ Here is what I learned so far:
 
   - Direct mode seems to work fine on the portable devices, but is now deprecated. It won't work on the V6 repositories.
 
-  - The new V6 repositories allows for the unlocking of files, replacing the link-like files (on Windows filesystems) with the real files, that allows me to browse them on the media player (by path and name). I did not find a way to keep them always unlocked by default, so I guess I would need to unlock them manually. Also, I would be keeping an extra copy of each file, since `annex.thing` won't work. In addition, as I don't expect to be editing any these files (not on these devices, at least), the loss of half the storage capacity is wasteful and undesirable.
+  - The new V6 repositories allows for the unlocking of files, replacing the link-like files (on Windows filesystems) with the real files, that allows me to browse them on the media player (by path and name). I did not find a way to keep them always unlocked by default, so I guess I would need to unlock them manually. Also, I would be keeping an extra copy of each file, since `annex.thin` won't work. In addition, as I don't expect to be editing any these files (not on these devices, at least), the loss of half the storage capacity is wasteful and undesirable.
 
   - Special remotes `directory` and `rsync` do not keep the original structure of the system, and for this reason do not fit for my purposes.
 
