@@ -174,7 +174,7 @@ scanAssociatedFiles = whenM (isJust <$> inRepo Git.Branch.current) $
 	add h i k = liftIO $ flip SQL.queueDb h $ 
 		void $ insertUnique $ SQL.Associated
 			(toIKey k)
-			(getTopFilePath $ Git.LsTree.file i)
+			(toSFilePath $ getTopFilePath $ Git.LsTree.file i)
 
 {- Stats the files, and stores their InodeCaches. -}
 storeInodeCaches :: Key -> [FilePath] -> Annex ()

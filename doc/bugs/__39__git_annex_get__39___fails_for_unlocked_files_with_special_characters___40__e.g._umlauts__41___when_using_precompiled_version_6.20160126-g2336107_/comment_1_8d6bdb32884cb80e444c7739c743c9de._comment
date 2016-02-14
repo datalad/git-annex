@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-02-14T19:19:46Z"
+ content="""
+Reproduced using LANG=C.
+
+This is a problem with the filename stored in the keys db. In the first
+repo, it has:
+
+	VALUES(1,'SHA256E-s8--d1d0c59000f7c0d71485b051c9ca3f25f7afa84f0be5fea98fe1e12f3f898f44','test_öüä');
+
+However, in the clone:
+
+	VALUES(1,'SHA256E-s8--d1d0c59000f7c0d71485b051c9ca3f25f7afa84f0be5fea98fe1e12f3f898f44','test_������');
+
+So, it's lost the correct filename there. Since it doesn't
+find the file with the messed up name, it doesn't replace the file content.
+
+The problem is not with decoding git's C-style character encoding; that
+happens ok yielding `"test_\56515\56502\56515\56508\56515\56484"`. 
+But, that does not seem to get stored in the database correctly.
+
+Seems that these unicode surrigates are not handled by the sqlite layer.
+The surrigates are being used because LANG=C does not support
+unicode. This could also happen when in a (working) utf-8 locale, when
+the filename is not utf-8 encoded.
+
+So, need to escape strings containing such surrigates before passing to
+SQL. In a backwards-compatible way. Done.
+"""]]

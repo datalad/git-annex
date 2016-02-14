@@ -1,6 +1,6 @@
 {- types for SQL databases
  -
- - Copyright 2015 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,7 +11,9 @@ module Database.Types where
 
 import Database.Persist.TH
 import Data.Maybe
+import Data.Char
 
+import Utility.PartialPrelude
 import Types.Key
 import Utility.InodeCache
 
@@ -53,6 +55,41 @@ toSInodeCache :: InodeCache -> SInodeCache
 toSInodeCache = I . showInodeCache
 
 fromSInodeCache :: SInodeCache -> InodeCache
-fromSInodeCache (I s) = fromMaybe (error $ "bad serialied InodeCache " ++ s) (readInodeCache s)
+fromSInodeCache (I s) = fromMaybe (error $ "bad serialized InodeCache " ++ s) (readInodeCache s)
 
 derivePersistField "SInodeCache"
+
+-- A serialized FilePath.
+--
+-- Not all unicode characters round-trip through sqlite. In particular,
+-- surrigate code points do not. So, escape the FilePath. But, only when
+-- it contains such characters.
+newtype SFilePath = SFilePath String
+
+-- Note that Read instance does not work when used in any kind of complex
+-- data structure.
+instance Read SFilePath where
+	readsPrec _ s = [(SFilePath s, "")]
+
+instance Show SFilePath where
+	show (SFilePath s) = s
+
+toSFilePath :: FilePath -> SFilePath
+toSFilePath s@('"':_) = SFilePath (show s)
+toSFilePath s
+	| any needsescape s = SFilePath (show s)
+	| otherwise = SFilePath s
+  where
+	needsescape c = case generalCategory c of
+		Surrogate -> True
+		PrivateUse -> True
+		NotAssigned -> True
+		_ -> False
+
+fromSFilePath :: SFilePath -> FilePath
+fromSFilePath (SFilePath s@('"':_)) =
+	fromMaybe (error "bad serialized SFilePath " ++ s) (readish s)
+fromSFilePath (SFilePath s) = s
+
+derivePersistField "SFilePath"
+
