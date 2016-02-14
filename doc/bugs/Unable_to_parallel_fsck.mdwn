@@ -81,3 +81,8 @@ Plenty. In fact I've been using it for a long time - I just only recently tried 
 
 
 [[!meta title="-J can crash on displaying filenames not supported by current locale"]]
+
+> I've worked around this by detecting the non-unicode locale and avoiding
+> the fancy concurrent output which needs it. So -J will work, just not
+> with concurrent progress. I think this is the best that can be done
+> reasonably, so [[done]]. --[[Joey]]

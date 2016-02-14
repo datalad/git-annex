@@ -53,7 +53,7 @@ performCommandAction Command { cmdcheck = c, cmdname = name } seek cont = do
 commandAction :: CommandStart -> Annex ()
 commandAction a = withOutputType go 
   where
-	go (ConcurrentOutput n) = do
+	go o@(ConcurrentOutput n _) = do
 		ws <- Annex.getState Annex.workers
 		(st, ws') <- if null ws
 			then do
@@ -63,7 +63,7 @@ commandAction a = withOutputType go
 				l <- liftIO $ drainTo (n-1) ws
 				findFreeSlot l
 		w <- liftIO $ async
-			$ snd <$> Annex.run st (inOwnConsoleRegion run)
+			$ snd <$> Annex.run st (inOwnConsoleRegion o run)
 		Annex.changeState $ \s -> s { Annex.workers = Right w:ws' }
 	go _  =	run
 	run = void $ includeCommandAction a
@@ -155,9 +155,13 @@ allowConcurrentOutput :: Annex a -> Annex a
 allowConcurrentOutput a = go =<< Annex.getState Annex.concurrentjobs
   where
 	go Nothing = a
-	go (Just n) = Regions.displayConsoleRegions $
-		bracket_ (setup n) cleanup a
-	setup = Annex.setOutput . ConcurrentOutput
+	go (Just n) = ifM (liftIO concurrentOutputSupported)
+		( Regions.displayConsoleRegions $
+			goconcurrent (ConcurrentOutput n True)
+		, goconcurrent (ConcurrentOutput n False)
+		)
+	goconcurrent o = bracket_ (setup o) cleanup a
+	setup = Annex.setOutput
 	cleanup = do
 		finishCommandActions
 		Annex.setOutput NormalOutput

@@ -46,16 +46,16 @@ metered combinemeterupdate key a = case keySize key of
 		liftIO $ clearMeter stdout meter
 		return r
 #if WITH_CONCURRENTOUTPUT
-	go size (ConcurrentOutput _) = withProgressRegion $ \r -> do
-		(progress, meter) <- mkmeter size
-		a $ \n -> liftIO $ do
-			setP progress $ fromBytesProcessed n
-			s <- renderMeter meter
-			Regions.setConsoleRegion r ("\n" ++ s)
-			maybe noop (\m -> m n) combinemeterupdate
-#else
-	go _ (ConcurrentOutput _) = nometer
+	go size o@(ConcurrentOutput {})
+		| concurrentOutputEnabled o = withProgressRegion $ \r -> do
+			(progress, meter) <- mkmeter size
+			a $ \n -> liftIO $ do
+				setP progress $ fromBytesProcessed n
+				s <- renderMeter meter
+				Regions.setConsoleRegion r ("\n" ++ s)
+				maybe noop (\m -> m n) combinemeterupdate
 #endif
+		| otherwise = nometer
 
 	mkmeter size = do
 		progress <- liftIO $ newProgress "" size
@@ -69,14 +69,14 @@ metered combinemeterupdate key a = case keySize key of
 concurrentMetered :: Maybe MeterUpdate -> Key -> (MeterUpdate -> Annex a) -> Annex a
 concurrentMetered combinemeterupdate key a = withOutputType go
   where
-	go (ConcurrentOutput _) = metered combinemeterupdate key a
+	go (ConcurrentOutput {}) = metered combinemeterupdate key a
 	go _ = a (fromMaybe nullMeterUpdate combinemeterupdate)
 
 {- Poll file size to display meter, but only for concurrent output. -}
 concurrentMeteredFile :: FilePath -> Maybe MeterUpdate -> Key -> Annex a -> Annex a
 concurrentMeteredFile file combinemeterupdate key a = withOutputType go
   where
-	go (ConcurrentOutput _) = metered combinemeterupdate key $ \p ->
+	go (ConcurrentOutput {}) = metered combinemeterupdate key $ \p ->
 		watchFileSize file p a
 	go _ = a
 
@@ -120,6 +120,6 @@ mkStderrEmitter :: Annex (String -> IO ())
 mkStderrEmitter = withOutputType go
   where
 #ifdef WITH_CONCURRENTOUTPUT
-	go (ConcurrentOutput _) = return Console.errorConcurrent
+	go o | concurrentOutputEnabled o = return Console.errorConcurrent
 #endif
 	go _ = return (hPutStrLn stderr)

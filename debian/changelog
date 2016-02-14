@@ -3,6 +3,9 @@ git-annex (6.20160212) UNRELEASED; urgency=medium
   * Support getting files from read-only repositories.
   * checkpresentkey: Allow to be run without an explicit remote.
   * checkpresentkey: Added --batch.
+  * Work around problem with concurrent-output when in a non-unicode locale
+    by avoiding use of it in such a locale. Instead -J will behave as if
+    it was built without concurrent-output support in this situation.
 
  -- Joey Hess <id@joeyh.name>  Fri, 12 Feb 2016 14:03:46 -0400
 
