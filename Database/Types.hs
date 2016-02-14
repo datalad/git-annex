@@ -66,6 +66,8 @@ derivePersistField "SInodeCache"
 -- it contains such characters.
 newtype SFilePath = SFilePath String
 
+instance 
+
 -- Note that Read instance does not work when used in any kind of complex
 -- data structure.
 instance Read SFilePath where
