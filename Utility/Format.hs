@@ -103,7 +103,7 @@ empty _ = False
 {- Decodes a C-style encoding, where \n is a newline, \NNN is an octal
  - encoded character, and \xNN is a hex encoded character.
  -}
-decode_c :: FormatString -> FormatString
+decode_c :: FormatString -> String
 decode_c [] = []
 decode_c s = unescape ("", s)
   where
@@ -141,14 +141,14 @@ decode_c s = unescape ("", s)
 	handle n = ("", n)
 
 {- Inverse of decode_c. -}
-encode_c :: FormatString -> FormatString
+encode_c :: String -> FormatString
 encode_c = encode_c' (const False)
 
 {- Encodes more strictly, including whitespace. -}
-encode_c_strict :: FormatString -> FormatString
+encode_c_strict :: String -> FormatString
 encode_c_strict = encode_c' isSpace
 
-encode_c' :: (Char -> Bool) -> FormatString -> FormatString
+encode_c' :: (Char -> Bool) -> String -> FormatString
 encode_c' p = concatMap echar
   where
 	e c = '\\' : [c]
