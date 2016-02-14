@@ -1,0 +1,6 @@
+Hi,
+
+Because git annex doesn't annex symlinks, it is not possible to copy files from the a repository with a simple cp/rsync dereferencing each files. If we do this as of today, we would lose the original symlink information.
+Would it be possible to change this behavior in the future, at least with an option?
+
+Thanks
