@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="jody.frankowski@46af27a91b08450190f627a8fba772a61e22719f"
+ nickname="jody.frankowski"
+ subject="comment 2"
+ date="2016-02-14T20:31:49Z"
+ content="""
+Both direct mode and unlocking are costly. Enabling annexing of symlinks is a very useful optimisation imho, and very important mechanism going forward with v6 repos.
+"""]]
