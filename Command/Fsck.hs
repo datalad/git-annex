@@ -588,7 +588,6 @@ getKeyStatus key = ifM isDirect
 	( return KeyUnlocked
 	, catchDefaultIO KeyMissing $ do
 		obj <- calcRepo $ gitAnnexLocation key
-		unlocked <- ((> 1) . linkCount <$> liftIO (getFileStatus obj))
-			<&&> (not . null <$> Database.Keys.getAssociatedFiles key)
+		unlocked <- not . null <$> Database.Keys.getAssociatedFiles key
 		return $ if unlocked then KeyUnlocked else KeyLocked
 	)
