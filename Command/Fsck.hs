@@ -114,12 +114,12 @@ start from inc file key = do
 
 perform :: Key -> FilePath -> Backend -> NumCopies -> Annex Bool
 perform key file backend numcopies = do
-	keystatus <- getKeyStatus key
+	keystatus <- getKeyFileStatus key file
 	check
 		-- order matters
 		[ fixLink key file
 		, verifyLocationLog key keystatus file
-		, verifyAssociatedFiles key file
+		, verifyAssociatedFiles key keystatus file
 		, verifyDirectMode key file
 		, checkKeySize key keystatus
 		, checkBackend backend key keystatus (Just file)
@@ -262,8 +262,8 @@ verifyLocationLog' key desc present u updatestatus = do
 		updatestatus s
 
 {- Verifies the associated file records. -}
-verifyAssociatedFiles :: Key -> FilePath -> Annex Bool
-verifyAssociatedFiles key file = do
+verifyAssociatedFiles :: Key -> KeyStatus -> FilePath -> Annex Bool
+verifyAssociatedFiles key keystatus file = do
 	ifM isDirect (godirect, goindirect)
 	return True
   where
@@ -272,7 +272,13 @@ verifyAssociatedFiles key file = do
 		forM_ fs $ \f -> 
 			unlessM (liftIO $ doesFileExist f) $
 				void $ Direct.removeAssociatedFile key f
-	goindirect = return ()
+	goindirect = case keystatus of
+		KeyUnlocked -> do
+			f <- inRepo $ toTopFilePath file
+			afs <- Database.Keys.getAssociatedFiles key
+			unless (getTopFilePath f `elem` map getTopFilePath afs) $
+				Database.Keys.addAssociatedFile key f
+		_ -> return ()
 
 {- Ensures that files whose content is available are in direct mode. -}
 verifyDirectMode :: Key -> FilePath -> Annex Bool
@@ -587,7 +593,17 @@ getKeyStatus :: Key -> Annex KeyStatus
 getKeyStatus key = ifM isDirect
 	( return KeyUnlocked
 	, catchDefaultIO KeyMissing $ do
-		obj <- calcRepo $ gitAnnexLocation key
 		unlocked <- not . null <$> Database.Keys.getAssociatedFiles key
 		return $ if unlocked then KeyUnlocked else KeyLocked
 	)
+
+getKeyFileStatus :: Key -> FilePath -> Annex KeyStatus
+getKeyFileStatus key file = do
+	s <- getKeyStatus key
+	case s of
+		KeyLocked -> catchDefaultIO KeyLocked $
+			ifM (isJust <$> isAnnexLink file)
+				( return KeyLocked
+				, return KeyUnlocked
+				)
+		_ -> return s
