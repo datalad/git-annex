@@ -15,7 +15,7 @@ import qualified Remote
 import qualified Types.Backend
 import qualified Backend
 import Annex.Content
-import Annex.Content.Direct
+import qualified Annex.Content.Direct as Direct
 import Annex.Direct
 import Annex.Perms
 import Annex.Link
@@ -119,7 +119,7 @@ perform key file backend numcopies = do
 		-- order matters
 		[ fixLink key file
 		, verifyLocationLog key keystatus file
-		, verifyDirectMapping key file
+		, verifyAssociatedFiles key file
 		, verifyDirectMode key file
 		, checkKeySize key keystatus
 		, checkBackend backend key keystatus (Just file)
@@ -261,18 +261,18 @@ verifyLocationLog' key desc present u updatestatus = do
 		showNote "fixing location log"
 		updatestatus s
 
-{- Ensures the direct mode mapping file is consistent. Each file
- - it lists for the key should exist, and the specified file should be
- - included in it.
- -}
-verifyDirectMapping :: Key -> FilePath -> Annex Bool
-verifyDirectMapping key file = do
-	whenM isDirect $ do
-		fs <- addAssociatedFile key file
+{- Verifies the associated file records. -}
+verifyAssociatedFiles :: Key -> FilePath -> Annex Bool
+verifyAssociatedFiles key file = do
+	ifM isDirect (godirect, goindirect)
+	return True
+  where
+	godirect = do
+		fs <- Direct.addAssociatedFile key file
 		forM_ fs $ \f -> 
 			unlessM (liftIO $ doesFileExist f) $
-				void $ removeAssociatedFile key f
-	return True
+				void $ Direct.removeAssociatedFile key f
+	goindirect = return ()
 
 {- Ensures that files whose content is available are in direct mode. -}
 verifyDirectMode :: Key -> FilePath -> Annex Bool
@@ -346,9 +346,9 @@ checkBackend backend key keystatus mfile = go =<< isDirect
 			, checkBackendOr badContent backend key content
 			)
 	go True = maybe nocheck checkdirect mfile
-	checkdirect file = ifM (goodContent key file)
+	checkdirect file = ifM (Direct.goodContent key file)
 		( checkBackendOr' (badContentDirect file) backend key file
-			(goodContent key file)
+			(Direct.goodContent key file)
 		, nocheck
 		)
 	nocheck = return True
