@@ -42,3 +42,5 @@ The remote repository is marked as read-only. The user on the remote has only re
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes! :-) Despite this, everything works like a charm with several repos on different OSs with lots of data. Thanks for this great tool!
+
+> [[fixed|done]] --[[Joey]]
