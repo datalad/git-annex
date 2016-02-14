@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-02-14T19:13:05Z"
+ content="""
+Is the content of the files locally present? Either fsck incorrectly thinks
+it's not present despite it being present, or fsck correctly noticed that
+it somehow went missing..
+
+Is this repository using direct mode?
+"""]]
