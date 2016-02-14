@@ -74,3 +74,4 @@ I tested this on two different systems, Arch Linux and Debian Jessie. It does no
 
 Yes, I've been using it for more than a year to synchronize between different PCs. Great work :-) 
 
+> [[fixed|done]] --[[Joey]]

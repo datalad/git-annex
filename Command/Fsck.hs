@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -25,6 +25,7 @@ import Logs.Activity
 import Logs.TimeStamp
 import Annex.NumCopies
 import Annex.UUID
+import Annex.ReplaceFile
 import Utility.DataUnits
 import Config
 import Utility.HumanTime
@@ -120,7 +121,7 @@ perform key file backend numcopies = do
 		[ fixLink key file
 		, verifyLocationLog key keystatus file
 		, verifyAssociatedFiles key keystatus file
-		, verifyDirectMode key file
+		, verifyWorkTree key file
 		, checkKeySize key keystatus
 		, checkBackend backend key keystatus (Just file)
 		, checkKeyNumCopies key (Just file) numcopies
@@ -280,17 +281,36 @@ verifyAssociatedFiles key keystatus file = do
 				Database.Keys.addAssociatedFile key f
 		_ -> return ()
 
-{- Ensures that files whose content is available are in direct mode. -}
-verifyDirectMode :: Key -> FilePath -> Annex Bool
-verifyDirectMode key file = do
-	whenM (isDirect <&&> isJust <$> isAnnexLink file) $ do
+verifyWorkTree :: Key -> FilePath -> Annex Bool
+verifyWorkTree key file = do
+	ifM isDirect ( godirect, goindirect )
+	return True
+  where
+	{- Ensures that files whose content is available are in direct mode. -}
+	godirect = whenM (isJust <$> isAnnexLink file) $ do
 		v <- toDirectGen key file
 		case v of
 			Nothing -> noop
 			Just a -> do
 				showNote "fixing direct mode"
 				a
-	return True
+	{- Make sure that a pointer file is replaced with its content,
+	 - when the content is available. -}
+	goindirect = do
+		mk <- liftIO $ isPointerFile file
+		case mk of
+			Just k | k == key -> whenM (inAnnex key) $ do
+				showNote "fixing worktree content"
+				replaceFile file $ \tmp -> 
+					ifM (annexThin <$> Annex.getGitConfig)
+						( void $ linkFromAnnex key tmp
+						, do
+							obj <- calcRepo $ gitAnnexLocation key
+							void $ checkedCopyFile key obj tmp
+							thawContent tmp
+						)
+				Database.Keys.storeInodeCaches key [file]
+			_ -> return ()
 
 {- The size of the data for a key is checked against the size encoded in
  - the key's metadata, if available.

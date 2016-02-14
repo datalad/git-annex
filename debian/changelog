@@ -9,6 +9,8 @@ git-annex (6.20160212) UNRELEASED; urgency=medium
   * Fix storing of filenames of v6 unlocked files when the filename is not
     representable in the current locale.
   * fsck: Detect and fix missing associated file mappings in v6 repositories.
+  * fsck: Populate unlocked files in v6 repositories whose content is
+    present in annex/objects but didn't reach the work tree.
 
  -- Joey Hess <id@joeyh.name>  Fri, 12 Feb 2016 14:03:46 -0400
 

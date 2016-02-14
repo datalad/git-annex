@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-02-14T21:10:53Z"
+ content="""
+`git annex fsck` will now clean up repos affected by this problem.
+"""]]
