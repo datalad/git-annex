@@ -4,3 +4,5 @@ Because git annex doesn't annex symlinks, it is not possible to copy files from 
 Would it be possible to change this behavior in the future, at least with an option?
 
 Thanks
+
+> Not going to happen, sorry. [[done]] --[[Joey]]
