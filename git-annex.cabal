@@ -144,10 +144,8 @@ Executable git-annex
       process (>= 1.3.0.0)
   else
     Build-Depends: unix
-    -- Need to list these because they're generated from .hsc files.
-    Other-Modules: Utility.Touch
-    Include-Dirs: Utility
-    CPP-Options: -DWITH_CLIBS
+    if impl(ghc <= 7.6.3)
+      Other-Modules: Utility.Touch.Old
 
   if flag(TestSuite)
     Build-Depends: tasty (>= 0.7), tasty-hunit, tasty-quickcheck, tasty-rerun,
