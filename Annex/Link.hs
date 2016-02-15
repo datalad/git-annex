@@ -12,6 +12,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Annex.Link where
 
 import Annex.Common
@@ -155,3 +157,18 @@ formatPointer k =
 isPointerFile :: FilePath -> IO (Maybe Key)
 isPointerFile f = catchDefaultIO Nothing $ 
 	parseLinkOrPointer <$> L.readFile f
+
+{- Checks a symlink target or pointer file first line to see if it
+ - appears to point to annexed content.
+ -
+ - We only look for paths inside the .git directory, and not at the .git
+ - directory itself, because GIT_DIR may cause a directory name other
+ - than .git to be used.
+ -}
+isLinkToAnnex :: FilePath -> Bool
+isLinkToAnnex s = (pathSeparator:objectDir) `isInfixOf` s
+#ifdef mingw32_HOST_OS
+	-- '/' is still used inside pointer files on Windows, not the native
+	-- '\'
+	|| ('/':objectDir) `isInfixOf` s
+#endif

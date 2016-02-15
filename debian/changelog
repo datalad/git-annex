@@ -13,6 +13,7 @@ git-annex (6.20160212) UNRELEASED; urgency=medium
     present in annex/objects but didn't reach the work tree.
   * When initializing a v6 repo on a crippled filesystem, don't force it
     into direct mode.
+  * Windows: Fix v6 unlocked files to actually work.
 
  -- Joey Hess <id@joeyh.name>  Fri, 12 Feb 2016 14:03:46 -0400
 
