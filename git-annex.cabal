@@ -144,9 +144,8 @@ Executable git-annex
   else
     Build-Depends: unix
     -- Need to list these because they're generated from .hsc files.
-    Other-Modules: Utility.Touch Utility.Mounts
+    Other-Modules: Utility.Touch
     Include-Dirs: Utility
-    C-Sources: Utility/libdiskfree.c Utility/libmounts.c
     CPP-Options: -DWITH_CLIBS
 
   if flag(TestSuite)
@@ -163,7 +162,7 @@ Executable git-annex
     CPP-Options: -DWITH_WEBDAV
 
   if flag(Assistant) && ! os(solaris)
-    Build-Depends: dns
+    Build-Depends: dns, mountpoints
     CPP-Options: -DWITH_ASSISTANT
 
   if flag(Assistant)
