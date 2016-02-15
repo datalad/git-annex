@@ -11,6 +11,8 @@ git-annex (6.20160212) UNRELEASED; urgency=medium
   * fsck: Detect and fix missing associated file mappings in v6 repositories.
   * fsck: Populate unlocked files in v6 repositories whose content is
     present in annex/objects but didn't reach the work tree.
+  * When initializing a v6 repo on a crippled filesystem, don't force it
+    into direct mode.
 
  -- Joey Hess <id@joeyh.name>  Fri, 12 Feb 2016 14:03:46 -0400
 

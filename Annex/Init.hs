@@ -91,7 +91,7 @@ initialize' mversion = do
 	whenM versionSupportsUnlockedPointers $ do
 		configureSmudgeFilter
 		Database.Keys.scanAssociatedFiles
-	ifM (crippledFileSystem <&&> not <$> isBare)
+	ifM (crippledFileSystem <&&> (not <$> isBare) <&&> (not <$> versionSupportsUnlockedPointers))
 		( do
 			enableDirectMode
 			setDirect True
