@@ -34,7 +34,7 @@ data Mntent = Mntent
 	{ mnt_fsname :: String
 	, mnt_dir :: FilePath
 	, mnt_type :: String
-	} deriving (Read, Show, Eq, Ord)
+	} deriving (Show, Eq, Ord)
 
 #ifndef __ANDROID__
 
