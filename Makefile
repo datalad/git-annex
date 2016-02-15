@@ -258,10 +258,12 @@ fast: dist/cabalbuild
 	@ln -sf dist/build/git-annex/git-annex git-annex
 	@$(MAKE) tags >/dev/null 2>&1 &
 
-dist/cabalbuild: git-annex.cabal
+dist/cabalbuild: dist/caballog
+	grep 'ghc --make' dist/caballog | tail -n 1 > dist/cabalbuild
+	
+dist/caballog: git-annex.cabal
 	$(BUILDER) configure -f"-Production" -O0 --enable-executable-dynamic
 	$(BUILDER) build -v2 --ghc-options="-O0 -j" | tee dist/caballog
-	grep 'ghc --make' dist/caballog | tail -n 1 > dist/cabalbuild
 
 # Hardcoded command line to make hdevtools start up and work.
 # You will need some memory. It's worth it.
