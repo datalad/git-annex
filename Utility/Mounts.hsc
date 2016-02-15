@@ -1,5 +1,7 @@
 {- Interface to mtab (and fstab)
  - 
+ - Deprecated; moving to mountpoints library on hackage.
+ - 
  - Derived from hsshellscript, originally written by
  - Volker Wysk <hsss@volker-wysk.de>
  - 
@@ -7,6 +9,7 @@
  - Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU LGPL version 2.1 or higher.
+ -
  -}
 
 {-# LANGUAGE ForeignFunctionInterface #-}
