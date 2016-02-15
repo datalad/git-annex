@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 3"
+ date="2016-02-15T17:02:59Z"
+ content="""
+yeap, saw fast but it is kinda of limited use. doesn't even go through git-annex branch to report amount of storage occupied.  I didn't check but \"working tree\" is probably a current checked out branch, and that is why requires traversal and thus slow.  What is often also desired to know what is the total number/size of annexed files I have locally in any given annex.  So something along of 'du -scm .git/annex/objects' (but via info in git-annex branch instead).  May be that could be included in the --fast portion?
+
+as for disk-bound:  in my case /tmp is in ram, there is no disk activities, git-annex is 100% (1 core) busy, FWIW:
+
+[[!format sh \"\"\"
+	Command being timed: \"git annex info\"
+	User time (seconds): 27.69
+	System time (seconds): 0.68
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:28.42
+\"\"\"]]
+
+"""]]
