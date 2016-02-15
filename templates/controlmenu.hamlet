@@ -7,6 +7,7 @@
     <a href="@{RepositorySwitcherR}">
       <span .glyphicon .glyphicon-folder-close>
       \ Switch repository
+  <li>&nbsp;</li>
   <li>
     <a href="@{RestartR}">
       <span .glyphicon .glyphicon-repeat>

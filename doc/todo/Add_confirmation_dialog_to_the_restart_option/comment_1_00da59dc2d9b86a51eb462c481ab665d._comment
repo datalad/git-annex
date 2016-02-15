@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-02-15T16:54:54Z"
+ content="""
+Restarting the daemon should just take a second and the web browser should
+redirect to the new instance. I guess it does move away from the current
+page to the dashboard, and in a way that the back button can't undo, but I
+see no other harm in accidentially restarting the daemon.
+
+So, I think I'll just add a spacer to separate the repository part of that
+menu from the daemon part.
+"""]]

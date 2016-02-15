@@ -1,2 +1,4 @@
 I have four git-annex repositories and I often use the option "Switch repository" in the webapp, but this option is just above the "Restart daemon" option and I have clicked it quite a few time unintentionally.
 Could it be possible to add a confirmation dialog just like in the "Shutdown daemon" option?
+
+> spacer added; [[done]]  --[[Joey]]
