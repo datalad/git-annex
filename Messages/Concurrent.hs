@@ -11,10 +11,10 @@
 module Messages.Concurrent where
 
 import Annex
+import Types.Messages
 
 #ifdef WITH_CONCURRENTOUTPUT
 import Common
-import Types.Messages
 import qualified System.Console.Concurrent as Console
 import qualified System.Console.Regions as Regions
 import Control.Concurrent.STM
@@ -32,8 +32,8 @@ import GHC.IO.Encoding
  - instead.
  -}
 concurrentMessage :: OutputType -> Bool -> String -> Annex () -> Annex ()
-#ifdef WITH_CONCURRENTOUTPUT
 concurrentMessage o iserror msg fallback 
+#ifdef WITH_CONCURRENTOUTPUT
 	| concurrentOutputEnabled o =
 		go =<< consoleRegion <$> Annex.getState Annex.output
 #endif

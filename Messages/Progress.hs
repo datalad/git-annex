@@ -45,8 +45,8 @@ metered combinemeterupdate key a = case keySize key of
 			maybe noop (\m -> m n) combinemeterupdate
 		liftIO $ clearMeter stdout meter
 		return r
-#if WITH_CONCURRENTOUTPUT
 	go size o@(ConcurrentOutput {})
+#if WITH_CONCURRENTOUTPUT
 		| concurrentOutputEnabled o = withProgressRegion $ \r -> do
 			(progress, meter) <- mkmeter size
 			a $ \n -> liftIO $ do
