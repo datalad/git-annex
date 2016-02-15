@@ -251,16 +251,17 @@ androidapp:
 	$(MAKE) android
 	$(MAKE) -C standalone/android
 
-# We bypass cabal, and only run the main ghc --make command for a
-# fast development built.
-fast: dist/caballog
-	@$$(grep 'ghc --make' dist/caballog | head -n 1 | sed -e 's/-package-id [^ ]*//g' -e 's/-hide-all-packages//') -O0 -j -dynamic
+# Bypass cabal, and only run the main ghc --make command for a
+# faster development build.
+fast: dist/cabalbuild
+	@sh dist/cabalbuild
 	@ln -sf dist/build/git-annex/git-annex git-annex
 	@$(MAKE) tags >/dev/null 2>&1 &
 
-dist/caballog: git-annex.cabal
+dist/cabalbuild: git-annex.cabal
 	$(BUILDER) configure -f"-Production" -O0 --enable-executable-dynamic
-	$(BUILDER) build -v2 | tee $@
+	$(BUILDER) build -v2 --ghc-options="-O0 -j" | tee dist/caballog
+	grep 'ghc --make' dist/caballog | tail -n 1 > dist/cabalbuild
 
 # Hardcoded command line to make hdevtools start up and work.
 # You will need some memory. It's worth it.
