@@ -111,7 +111,8 @@ Executable git-annex
    esqueleto, persistent-sqlite, persistent, persistent-template,
    aeson,
    feed,
-   regex-tdfa
+   regex-tdfa,
+   disk-free-space
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs
   Extensions: PackageImports
