@@ -108,7 +108,7 @@ runTransfer' ignorelock t file shouldretry transferobserver transferaction = do
 	prep tfile _mode info = catchPermissionDenied (const prepfailed) $ do
 		let lck = transferLockFile tfile
 		createAnnexDirectory $ takeDirectory lck
-		v <- catchMaybeIO $ lockExclusive lck
+		v <- catchMaybeIO $ liftIO $ lockExclusive lck
 		case v of
 			Nothing -> return (Nothing, False)
 			Just Nothing -> return (Nothing, True)
