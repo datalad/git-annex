@@ -101,10 +101,5 @@ PATH="$(pwd)/dist/build/git-annex/:$PATH"
 export PATH
 mkdir -p c:/WINDOWS/Temp/git-annex-test/
 cd c:/WINDOWS/Temp/git-annex-test/
-if withcyg git-annex.exe test; then
-	rm -rf .t
-else
-	rm -rf .t
-	echo "Test suite failure; failing build!" >&2
-	exit 1
-fi
+rm -rf .t
+withcyg git-annex.exe test
