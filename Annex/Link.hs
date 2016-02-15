@@ -25,6 +25,7 @@ import Git.Types
 import Git.FilePath
 
 import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString as B
 
 type LinkTarget = String
 
@@ -158,8 +159,9 @@ formatPointer k =
 
 {- Checks if a file is a pointer to a key. -}
 isPointerFile :: FilePath -> IO (Maybe Key)
-isPointerFile f = catchDefaultIO Nothing $ 
-	parseLinkOrPointer <$> L.readFile f
+isPointerFile f = catchDefaultIO Nothing $ do
+	b <- B.readFile f
+	return $ parseLinkOrPointer $ L.fromChunks [b]
 
 {- Checks a symlink target or pointer file first line to see if it
  - appears to point to annexed content.
