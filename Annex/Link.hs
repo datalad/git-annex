@@ -143,11 +143,14 @@ parseLinkOrPointer = parseLinkOrPointer' . decodeBS . L.take maxsz
 	maxsz = 81920
 
 parseLinkOrPointer' :: String -> Maybe Key
-parseLinkOrPointer' s = headMaybe (lines (fromInternalGitPath s)) >>= go
+parseLinkOrPointer' = go . fromInternalGitPath . takeWhile (not . lineend)
   where
 	go l
 		| isLinkToAnnex l = file2key $ takeFileName l
 		| otherwise = Nothing
+	lineend '\n' = True
+	lineend '\r' = True
+	lineend _ = False
 
 formatPointer :: Key -> String
 formatPointer k = 
