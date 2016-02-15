@@ -131,9 +131,10 @@ tests opts = testGroup "Tests" $ properties :
   where
 	testmodes =
 		[ ("v6 unlocked", (testMode opts "6") { unlockedFiles = True })
-		, ("v6 locked", testMode opts "6")
 		, ("v5", testMode opts "5")
 #ifndef mingw32_HOST_OS
+		-- Windows does not support locked files in v6 yet.
+		, ("v6 locked", testMode opts "6")
 		-- Windows will only use direct mode, so don't test twice.
 		, ("v5 direct", (testMode opts "5") { forceDirect = True })
 #endif
