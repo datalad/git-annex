@@ -105,6 +105,6 @@ if withcyg git-annex.exe test; then
 	rm -rf .t
 else
 	rm -rf .t
-	echo "Test suite failure; failing build!"
-	false
+	echo "Test suite failure; failing build!" >&2
+	exit 1
 fi
