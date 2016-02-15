@@ -19,7 +19,9 @@ import qualified System.Console.Concurrent as Console
 import qualified System.Console.Regions as Regions
 import Control.Concurrent.STM
 import qualified Data.Text as T
+#ifndef mingw32_HOST_OS
 import GHC.IO.Encoding
+#endif
 #endif
 
 {- Outputs a message in a concurrency safe way.
