@@ -230,8 +230,9 @@ Executable git-annex
     CPP-Options: -DWITH_TORRENTPARSER
 
   if flag(MagicMime)
-    Build-Depends: magic
-    CPP-Options: -DWITH_MAGICMIME
+    if (! os(windows))
+      Build-Depends: magic
+      CPP-Options: -DWITH_MAGICMIME
 
   if flag(ConcurrentOutput)
     Build-Depends: concurrent-output (>= 1.6)
