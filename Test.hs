@@ -71,6 +71,7 @@ import qualified Annex.WorkTree
 import qualified Annex.Link
 import qualified Annex.Init
 import qualified Annex.CatFile
+import qualified Annex.Path
 import qualified Annex.View
 import qualified Annex.View.ViewedFile
 import qualified Logs.View
@@ -1596,7 +1597,8 @@ git_annex command params = do
 {- Runs git-annex and returns its output. -}
 git_annex_output :: String -> [String] -> IO String
 git_annex_output command params = do
-	got <- Utility.Process.readProcess "git-annex" (command:params)
+	pp <- Annex.Path.programPath
+	got <- Utility.Process.readProcess pp (command:params)
 	-- Since the above is a separate process, code coverage stats are
 	-- not gathered for things run in it.
 	-- Run same command again, to get code coverage.
