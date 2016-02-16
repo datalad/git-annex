@@ -100,6 +100,12 @@ Build/BuildVersion > dist/build-version
 PATH="$(pwd)/dist/build/git-annex/:$PATH"
 export PATH
 mkdir -p c:/WINDOWS/Temp/git-annex-test/
+oldpwd="$(pwd)"
 cd c:/WINDOWS/Temp/git-annex-test/
 rm -rf .t
-withcyg git-annex.exe test
+if ! withcyg git-annex.exe test; then
+	# For some reason a nonzero exit is not propigated out of this
+	# shell script from the test suite. Instead, delete the build
+	# artifact, to prevent a bad one being uploaded.
+	rm -f "$oldpwd/git-annex-installer.exe"
+fi
