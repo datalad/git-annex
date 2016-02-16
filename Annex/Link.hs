@@ -147,7 +147,7 @@ parseLinkOrPointer' :: String -> Maybe Key
 parseLinkOrPointer' = go . fromInternalGitPath . takeWhile (not . lineend)
   where
 	go l
-		| isLinkToAnnex l = file2key $ takeFileName l
+		| isLinkToAnnex l = fileKey $ takeFileName l
 		| otherwise = Nothing
 	lineend '\n' = True
 	lineend '\r' = True
@@ -155,7 +155,7 @@ parseLinkOrPointer' = go . fromInternalGitPath . takeWhile (not . lineend)
 
 formatPointer :: Key -> String
 formatPointer k = 
-	toInternalGitPath (pathSeparator:objectDir </> key2file k) ++ "\n"
+	toInternalGitPath (pathSeparator:objectDir </> keyFile k) ++ "\n"
 
 {- Checks if a file is a pointer to a key. -}
 isPointerFile :: FilePath -> IO (Maybe Key)
