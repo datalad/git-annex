@@ -134,15 +134,13 @@ tests crippledfilesystem opts = testGroup "Tests" $ properties :
   where
 	testmodes = catMaybes
 		[ Just ("v6 unlocked", (testMode opts "6") { unlockedFiles = True })
-		, Just ("v5", testMode opts "5")
-		, if crippledfilesystem
-			then Nothing
-			else Just ("v6 locked", testMode opts "6")
-#ifndef mingw32_HOST_OS
-		-- Windows will only use direct mode, so don't test twice.
+		, unlesscrippled ("v5", testMode opts "5")
+		, unlesscrippled ("v6 locked", testMode opts "6")
 		, Just ("v5 direct", (testMode opts "5") { forceDirect = True })
-#endif
 		]
+	unlesscrippled v
+		| crippledfilesystem = Nothing
+		| otherwise = Just v
 
 properties :: TestTree
 properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
@@ -830,16 +828,20 @@ test_unused = intmpclonerepoInDirect $ do
 	checkunused [] "after dropunused"
 	not <$> git_annex "dropunused" ["--force", "10", "501"] @? "dropunused failed to fail on bogus numbers"
 
-	-- unused used to miss renamed symlinks that were not staged
-	-- and pointed at annexed content, and think that content was unused
-	writeFile "unusedfile" "unusedcontent"
-	git_annex "add" ["unusedfile"] @? "add of unusedfile failed"
-	unusedfilekey <- getKey backendSHA256E "unusedfile"
-	renameFile "unusedfile" "unusedunstagedfile"
-	boolSystem "git" [Param "rm", Param "-qf", File "unusedfile"] @? "git rm failed"
-	checkunused [] "with unstaged link"
-	removeFile "unusedunstagedfile"
-	checkunused [unusedfilekey] "with renamed link deleted"
+	-- Unused used to miss renamed symlinks that were not staged
+	-- and pointed at annexed content, and think that content was unused.
+	-- This is only relevant when using locked files; if the file is
+	-- unlocked, the work tree file has the content, and there's no way
+	-- to associate it with the key.
+	unlessM (unlockedFiles <$> getTestMode) $ do
+		writeFile "unusedfile" "unusedcontent"
+		git_annex "add" ["unusedfile"] @? "add of unusedfile failed"
+		unusedfilekey <- getKey backendSHA256E "unusedfile"
+		renameFile "unusedfile" "unusedunstagedfile"
+		boolSystem "git" [Param "rm", Param "-qf", File "unusedfile"] @? "git rm failed"
+		checkunused [] "with unstaged link"
+		removeFile "unusedunstagedfile"
+		checkunused [unusedfilekey] "with renamed link deleted"
 
 	-- unused used to miss symlinks that were deleted or modified
 	-- manually
@@ -1765,16 +1767,17 @@ cleanup' final dir = whenM (doesDirectoryExist dir) $ do
 				removeDirectoryRecursive dir
 	
 checklink :: FilePath -> Assertion
-checklink f = ifM (annexeval Config.crippledFileSystem)
-	( (isJust <$> annexeval (Annex.Link.getAnnexLinkTarget f))
-		@? f ++ " is not a (crippled) symlink"
-	, do
-		s <- getSymbolicLinkStatus f
-		-- in direct mode, it may be a symlink, or not, depending
-		-- on whether the content is present.
-		unlessM (annexeval Config.isDirect) $
-			isSymbolicLink s @? f ++ " is not a symlink"
-	)
+checklink f =
+	-- in direct mode, it may be a symlink, or not, depending
+	-- on whether the content is present.
+	unlessM (annexeval Config.isDirect) $
+		ifM (annexeval Config.crippledFileSystem)
+			( (isJust <$> annexeval (Annex.Link.getAnnexLinkTarget f))
+				@? f ++ " is not a (crippled) symlink"
+			, do
+				s <- getSymbolicLinkStatus f
+				isSymbolicLink s @? f ++ " is not a symlink"
+			)
 
 checkregularfile :: FilePath -> Assertion
 checkregularfile f = do
@@ -1876,8 +1879,10 @@ annexed_present f = ifM (unlockedFiles <$> getTestMode)
 	)
 
 annexed_present_locked :: FilePath -> Assertion
-annexed_present_locked = runchecks
-	[checklink, checkcontent, checkunwritable, inlocationlog]
+annexed_present_locked f = ifM (annexeval Config.crippledFileSystem)
+	( runchecks [checklink, inlocationlog] f
+	, runchecks [checklink, checkcontent, checkunwritable, inlocationlog] f
+	)
 
 annexed_present_unlocked :: FilePath -> Assertion
 annexed_present_unlocked = runchecks
