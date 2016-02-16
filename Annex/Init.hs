@@ -37,11 +37,11 @@ import Annex.Environment
 import Annex.Hook
 import Annex.InodeSentinal
 import Upgrade
+import Annex.Perms
 import qualified Database.Keys
 #ifndef mingw32_HOST_OS
 import Utility.UserInfo
 import Utility.FileMode
-import Annex.Perms
 import System.Posix.User
 import qualified Utility.LockFile.Posix as Posix
 #endif
