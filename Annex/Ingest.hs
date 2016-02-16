@@ -1,6 +1,6 @@
 {- git-annex content ingestion
  -
- - Copyright 2010-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,14 +11,17 @@ module Annex.Ingest (
 	LockedDown(..),
 	LockDownConfig(..),
 	lockDown,
+	ingestAdd,
 	ingest,
 	finishIngestDirect,
 	finishIngestUnlocked,
 	cleanOldKeys,
 	addLink,
 	makeLink,
+	addUnlocked,
 	restoreFile,
 	forceParams,
+	addAnnexedFile,
 ) where
 
 import Annex.Common
@@ -29,6 +32,7 @@ import Annex.Content.Direct
 import Annex.Perms
 import Annex.Link
 import Annex.MetaData
+import Annex.Version
 import Logs.Location
 import qualified Annex
 import qualified Annex.Queue
@@ -111,11 +115,30 @@ lockDown' cfg file = ifM (pure (not (hardlinkFileTmp cfg)) <||> crippledFileSyst
 			, inodeCache = cache
 			}
 
-{- Ingests a locked down file into the annex.
- -
- - The file may be added to the git repository as a locked or an unlocked
- - file. When unlocked, the work tree file is left alone. When locked, 
- - the work tree file is deleted, in preparation for adding the symlink.
+{- Ingests a locked down file into the annex. Updates the work tree and
+ - index. -}
+ingestAdd :: Maybe LockedDown -> Annex (Maybe Key)
+ingestAdd Nothing = return Nothing
+ingestAdd ld@(Just (LockedDown cfg source)) = do
+	(mk, mic) <- ingest ld
+	case mk of
+		Nothing -> return Nothing
+		Just k -> do
+			let f = keyFilename source
+			if lockingFile cfg
+				then do
+					liftIO $ nukeFile f
+					addLink f k mic
+				else ifM isDirect
+					( do
+						l <- calcRepo $ gitAnnexLink f k
+						stageSymlink f =<< hashSymlink l
+					, stagePointerFile f =<< hashPointerFile k
+					)
+			return (Just k)
+
+{- Ingests a locked down file into the annex. Does not update the working
+ - tree or the index.
  -}
 ingest :: Maybe LockedDown -> Annex (Maybe Key, Maybe InodeCache)
 ingest Nothing = return (Nothing, Nothing)
@@ -141,7 +164,6 @@ ingest (Just (LockedDown cfg source)) = withTSDelta $ \delta -> do
 	golocked key mcache s = do
 		catchNonAsync (moveAnnex key $ contentLocation source)
 			(restoreFile (keyFilename source) key)
-		liftIO $ nukeFile $ keyFilename source
 		populateAssociatedFiles key source
 		success key mcache s
 
@@ -295,3 +317,50 @@ forceParams = ifM (Annex.getState Annex.force)
 	( return [Param "-f"]
 	, return []
 	)
+
+{- Whether a file should be added unlocked or not. Default is to not,
+ - unless symlinks are not supported. annex.addunlocked can override that. -}
+addUnlocked :: Annex Bool
+addUnlocked = isDirect <||>
+	(versionSupportsUnlockedPointers <&&>
+	 ((not . coreSymlinks <$> Annex.getGitConfig) <||>
+	  (annexAddUnlocked <$> Annex.getGitConfig)
+	 )
+	)
+
+{- Adds a file to the work tree for the key, and stages it in the index.
+ - The content of the key may be provided in a temp file, which will be
+ - moved into place. -}
+addAnnexedFile :: FilePath -> Key -> Maybe FilePath -> Annex ()
+addAnnexedFile file key mtmp = ifM (addUnlocked <&&> not <$> isDirect)
+	( do
+		stagePointerFile file =<< hashPointerFile key
+		Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath file)
+		case mtmp of
+			Just tmp -> do
+				moveAnnex key tmp
+				linkunlocked
+			Nothing -> ifM (inAnnex key)
+				( linkunlocked
+				, writepointer
+				)
+	, do
+		addLink file key Nothing
+		whenM isDirect $ do
+			void $ addAssociatedFile key file
+		case mtmp of
+			Just tmp -> do
+				{- For moveAnnex to work in direct mode, the
+				 - symlink must already exist, so flush the queue. -}
+				whenM isDirect $
+					Annex.Queue.flush
+				moveAnnex key tmp
+			Nothing -> return ()
+	)
+  where
+	writepointer = liftIO $ writeFile file (formatPointer key)
+	linkunlocked = do
+		r <- linkFromAnnex key file
+		case r of
+			LinkAnnexFailed -> writepointer
+			_ -> return ()

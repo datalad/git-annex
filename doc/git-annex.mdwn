@@ -823,6 +823,15 @@ Here are all the supported configuration settings.
   should be checked into git by `git annex add`. Defaults to true;
   set to false to instead make small files be skipped.
 
+* `annex.addunlocked`
+
+  Set to true to make commands like `git-annex add` that add files to the
+  repository add them in unlocked form. The default is to add files in
+  locked form. This only has effect in version 6 repositories.
+
+  When a repository has core.symlinks set to false, it implicitly
+  sets annex.addunlocked to true.
+
 * `annex.numcopies`
 
   This is a deprecated setting. You should instead use the

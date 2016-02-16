@@ -14,6 +14,12 @@ git-annex (6.20160212) UNRELEASED; urgency=medium
   * When initializing a v6 repo on a crippled filesystem, don't force it
     into direct mode.
   * Windows: Fix v6 unlocked files to actually work.
+  * add, addurl, import, importfeed: When in a v6 repository on a crippled
+    filesystem, add files unlocked.
+  * annex.addunlocked: New configuration setting, makes files always be
+    added unlocked. (v6 only)
+  * Improve format of v6 unlocked pointer files to support keys containing
+    slashes.
 
  -- Joey Hess <id@joeyh.name>  Fri, 12 Feb 2016 14:03:46 -0400
 

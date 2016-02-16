@@ -12,7 +12,6 @@ import Network.URI
 import Command
 import Backend
 import qualified Annex
-import qualified Annex.Queue
 import qualified Annex.Url as Url
 import qualified Backend.URL
 import qualified Remote
@@ -24,8 +23,6 @@ import Annex.UUID
 import Logs.Web
 import Types.KeySource
 import Types.UrlContents
-import Config
-import Annex.Content.Direct
 import Annex.FileMatcher
 import Logs.Location
 import Utility.Metered
@@ -363,13 +360,7 @@ cleanup u url file key mtmp = case mtmp of
 		when (isJust mtmp) $
 			logStatus key InfoPresent
 		setUrlPresent u key url
-		addLink file key Nothing
-		whenM isDirect $ do
-			void $ addAssociatedFile key file
-			{- For moveAnnex to work in direct mode, the symlink
-			 - must already exist, so flush the queue. -}
-			Annex.Queue.flush
-		maybe noop (moveAnnex key) mtmp
+		addAnnexedFile file key mtmp
 
 nodownload :: URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
 nodownload url urlinfo file
