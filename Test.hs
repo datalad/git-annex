@@ -102,22 +102,25 @@ import qualified Utility.Gpg
 
 optParser :: Parser TestOptions
 optParser = TestOptions
-	<$> suiteOptionParser ingredients (tests mempty)
+	<$> suiteOptionParser ingredients (tests False mempty)
 	<*> switch
 		( long "keep-failures"
 		<> help "preserve repositories on test failure"
-		)
+	)
 
 runner :: Maybe (TestOptions -> IO ())
-runner = Just $ \opts -> case tryIngredients ingredients (tastyOptionSet opts) (tests opts) of
-	Nothing -> error "No tests found!?"
-	Just act -> ifM act
-		( exitSuccess
-		, do
-			putStrLn "  (This could be due to a bug in git-annex, or an incompatability"
-			putStrLn "   with utilities, such as git, installed on this system.)"
-			exitFailure
-		)
+runner = Just $ \opts -> do
+	ensuretmpdir
+	crippledfilesystem <- Annex.Init.probeCrippledFileSystem' tmpdir
+	case tryIngredients ingredients (tastyOptionSet opts) (tests crippledfilesystem opts) of
+		Nothing -> error "No tests found!?"
+		Just act -> ifM act
+			( exitSuccess
+			, do
+				putStrLn "  (This could be due to a bug in git-annex, or an incompatability"
+				putStrLn "   with utilities, such as git, installed on this system.)"
+				exitFailure
+			)
 
 ingredients :: [Ingredient]
 ingredients =
@@ -125,18 +128,19 @@ ingredients =
 	, rerunningTests [consoleTestReporter]
 	]
 
-tests :: TestOptions -> TestTree
-tests opts = testGroup "Tests" $ properties :
+tests :: Bool -> TestOptions -> TestTree
+tests crippledfilesystem opts = testGroup "Tests" $ properties :
 	map (\(d, te) -> withTestMode te (unitTests d)) testmodes
   where
-	testmodes =
-		[ ("v6 unlocked", (testMode opts "6") { unlockedFiles = True })
-		, ("v5", testMode opts "5")
+	testmodes = catMaybes
+		[ Just ("v6 unlocked", (testMode opts "6") { unlockedFiles = True })
+		, Just ("v5", testMode opts "5")
+		, if crippledfilesystem
+			then Nothing
+			else Just ("v6 locked", testMode opts "6")
 #ifndef mingw32_HOST_OS
-		-- Windows does not support locked files in v6 yet.
-		, ("v6 locked", testMode opts "6")
 		-- Windows will only use direct mode, so don't test twice.
-		, ("v5 direct", (testMode opts "5") { forceDirect = True })
+		, Just ("v5 direct", (testMode opts "5") { forceDirect = True })
 #endif
 		]
 
@@ -324,12 +328,12 @@ test_import :: Assertion
 test_import = intmpclonerepo $ Utility.Tmp.withTmpDir "importtest" $ \importdir -> do
 	(toimport1, importf1, imported1) <- mktoimport importdir "import1"
 	git_annex "import" [toimport1] @? "import failed"
-	annexed_present_locked imported1
+	annexed_present_imported imported1
 	checkdoesnotexist importf1
 
 	(toimport2, importf2, imported2) <- mktoimport importdir "import2"
 	git_annex "import" [toimport2] @? "import of duplicate failed"
-	annexed_present_locked imported2
+	annexed_present_imported imported2
 	checkdoesnotexist importf2
 
 	(toimport3, importf3, imported3) <- mktoimport importdir "import3"
@@ -349,11 +353,11 @@ test_import = intmpclonerepo $ Utility.Tmp.withTmpDir "importtest" $ \importdir 
 	
 	(toimport5, importf5, imported5) <- mktoimport importdir "import5"
 	git_annex "import" ["--duplicate", toimport5] @? "import --duplicate failed"
-	annexed_present_locked imported5
+	annexed_present_imported imported5
 	checkexists importf5
 	
 	git_annex "drop" ["--force", imported1, imported2, imported5] @? "drop failed"
-	annexed_notpresent_locked imported2
+	annexed_notpresent_imported imported2
 	(toimportdup, importfdup, importeddup) <- mktoimport importdir "importdup"
 	git_annex "import" ["--clean-duplicates", toimportdup] 
 		@? "import of missing duplicate with --clean-duplicates failed"
@@ -365,6 +369,14 @@ test_import = intmpclonerepo $ Utility.Tmp.withTmpDir "importtest" $ \importdir 
 		let importf = subdir </> "f"
 		writeFile (importdir </> importf) (content importf)
 		return (importdir </> subdir, importdir </> importf, importf)
+	annexed_present_imported f = ifM (annexeval Config.crippledFileSystem)
+		( annexed_present_unlocked f
+		, annexed_present_locked f
+		)
+	annexed_notpresent_imported f = ifM (annexeval Config.crippledFileSystem)
+		( annexed_notpresent_unlocked f
+		, annexed_notpresent_locked f
+		)
 
 test_reinject :: Assertion
 test_reinject = intmpclonerepoInDirect $ do
@@ -1273,7 +1285,7 @@ test_uncommitted_conflict_resolution = do
  - lost track of whether a file was a symlink. 
  -}
 test_conflict_resolution_symlink_bit :: Assertion
-test_conflict_resolution_symlink_bit =
+test_conflict_resolution_symlink_bit = unlessM (unlockedFiles <$> getTestMode) $
 	withtmpclonerepo $ \r1 ->
 		withtmpclonerepo $ \r2 ->
 			withtmpclonerepo $ \r3 -> do
@@ -1546,9 +1558,10 @@ test_add_subdirs = intmpclonerepo $ do
 
 	{- Regression test for Windows bug where symlinks were not
 	 - calculated correctly for files in subdirs. -}
-	git_annex "sync" [] @? "sync failed"
-	l <- annexeval $ decodeBS <$> Annex.CatFile.catObject (Git.Types.Ref "HEAD:dir/foo")
-	"../.git/annex/" `isPrefixOf` l @? ("symlink from subdir to .git/annex is wrong: " ++ l)
+	unlessM (unlockedFiles <$> getTestMode) $ do
+		git_annex "sync" [] @? "sync failed"
+		l <- annexeval $ decodeBS <$> Annex.CatFile.catObject (Git.Types.Ref "HEAD:dir/foo")
+		"../.git/annex/" `isPrefixOf` l @? ("symlink from subdir to .git/annex is wrong: " ++ l)
 
 	createDirectory "dir2"
 	writeFile ("dir2" </> "foo") $ content annexedfile
@@ -1752,12 +1765,16 @@ cleanup' final dir = whenM (doesDirectoryExist dir) $ do
 				removeDirectoryRecursive dir
 	
 checklink :: FilePath -> Assertion
-checklink f = do
-	s <- getSymbolicLinkStatus f
-	-- in direct mode, it may be a symlink, or not, depending
-	-- on whether the content is present.
-	unlessM (annexeval Config.isDirect) $
-		isSymbolicLink s @? f ++ " is not a symlink"
+checklink f = ifM (annexeval Config.crippledFileSystem)
+	( (isJust <$> annexeval (Annex.Link.getAnnexLinkTarget f))
+		@? f ++ " is not a (crippled) symlink"
+	, do
+		s <- getSymbolicLinkStatus f
+		-- in direct mode, it may be a symlink, or not, depending
+		-- on whether the content is present.
+		unlessM (annexeval Config.isDirect) $
+			isSymbolicLink s @? f ++ " is not a symlink"
+	)
 
 checkregularfile :: FilePath -> Assertion
 checkregularfile f = do

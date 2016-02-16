@@ -14,6 +14,7 @@ module Annex.Init (
 	initialize',
 	uninitialize,
 	probeCrippledFileSystem,
+	probeCrippledFileSystem',
 ) where
 
 import Annex.Common
@@ -134,16 +135,20 @@ isBare = fromRepo Git.repoIsLocalBare
  - or removing write access from files. -}
 probeCrippledFileSystem :: Annex Bool
 probeCrippledFileSystem = do
+	tmp <- fromRepo gitAnnexTmpMiscDir
+	createAnnexDirectory tmp
+	liftIO $ probeCrippledFileSystem' tmp
+
+probeCrippledFileSystem' :: FilePath -> IO Bool
+probeCrippledFileSystem' tmp = do
 #ifdef mingw32_HOST_OS
 	return True
 #else
-	tmp <- fromRepo gitAnnexTmpMiscDir
 	let f = tmp </> "gaprobe"
-	createAnnexDirectory tmp
-	liftIO $ writeFile f ""
-	uncrippled <- liftIO $ probe f
-	void $ liftIO $ tryIO $ allowWrite f
-	liftIO $ removeFile f
+	writeFile f ""
+	uncrippled <- probe f
+	void $ tryIO $ allowWrite f
+	removeFile f
 	return $ not uncrippled
   where
 	probe f = catchBoolIO $ do
