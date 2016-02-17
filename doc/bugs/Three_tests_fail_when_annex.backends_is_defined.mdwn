@@ -17,7 +17,9 @@ to `~/.gitconfig`.
 
 Newest git-annex (6.20160211 amd64) from downloads.kitenet.net.
 
-Fresh Debian GNU/Linux 8.3 (64 bit). Installed yesterday, so it's pretty pristine.
+- Debian GNU/Linux 8.3 (64 bit). Installed yesterday, so it's pretty pristine.
+- git version 2.7.1.287.g4943984 (Newest version from 'master' in 
+  git.git)
 
 The first version with this problem is 6.20160114. 5.20151218 works.
 
@@ -96,8 +98,10 @@ but still no luck:
     make: *** [Build/SysConfig.hs] Error 1
 
 I was hoping to get it to build so I could find the exact commit that 
-introduced this. Is building on Debian 8.3 (jessie) supported? I found a 
-bug report from you on 
-<https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=778987> that seems to be related, 
-but I don't know if that's the case. The newest version I'm able to build is 
-5.20150219, somewhere after that various things start to fail.
+introduced this, and also provide some patches with some functionality 
+I've been thinking of. Is building on Debian 8.3 (jessie) supported? I 
+found a bug report from you on 
+<https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=778987> that seems to 
+be related, but I don't know if that's the case. The newest version I'm 
+able to build is 5.20150219, somewhere after that various things start 
+to fail.
