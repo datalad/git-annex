@@ -1,4 +1,4 @@
-git-annex (6.20160212) UNRELEASED; urgency=medium
+git-annex (6.20160217) unstable; urgency=medium
 
   * Support getting files from read-only repositories.
   * checkpresentkey: Allow to be run without an explicit remote.
@@ -21,7 +21,7 @@ git-annex (6.20160212) UNRELEASED; urgency=medium
   * Improve format of v6 unlocked pointer files to support keys containing
     slashes.
 
- -- Joey Hess <id@joeyh.name>  Fri, 12 Feb 2016 14:03:46 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 17 Feb 2016 14:48:51 -0400
 
 git-annex (6.20160211) unstable; urgency=medium
 
