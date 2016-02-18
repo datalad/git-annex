@@ -1,3 +1,9 @@
+git-annex (6.20160218) UNRELEASED; urgency=medium
+
+  * Update perlmagick build dependency. Closes: #789225
+
+ -- Joey Hess <id@joeyh.name>  Thu, 18 Feb 2016 13:09:21 -0400
+
 git-annex (6.20160217) unstable; urgency=medium
 
   * Support getting files from read-only repositories.

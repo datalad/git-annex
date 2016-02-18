@@ -75,7 +75,7 @@ Build-Depends:
 	libghc-magic-dev,
 	lsof [linux-any],
 	ikiwiki,
-	perlmagick,
+	libimage-magick-perl,
 	git (>= 1:1.8.1),
 	rsync,
 	wget,
