@@ -4,6 +4,8 @@ git-annex (6.20160218) UNRELEASED; urgency=medium
   * Fix memory leak in last release, which affected commands like
     git-annex status when a large non-annexed file is present in the work
     tree.
+  * fsck: When the only copy of a file is in a dead repository, mention
+    the repository.
 
  -- Joey Hess <id@joeyh.name>  Thu, 18 Feb 2016 13:09:21 -0400
 

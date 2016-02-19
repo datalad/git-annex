@@ -409,7 +409,9 @@ checkBackendOr' bad backend key file postcheck =
 checkKeyNumCopies :: Key -> AssociatedFile -> NumCopies -> Annex Bool
 checkKeyNumCopies key afile numcopies = do
 	let file = fromMaybe (key2file key) afile
-	(untrustedlocations, safelocations) <- trustPartition UnTrusted =<< Remote.keyLocations key
+	locs <- loggedLocations key
+	(untrustedlocations, otherlocations) <- trustPartition UnTrusted locs
+	(deadlocations, safelocations) <- trustPartition DeadTrusted otherlocations
 	let present = NumCopies (length safelocations)
 	if present < numcopies
 		then ifM (pure (isNothing afile) <&&> checkDead key)
@@ -417,29 +419,35 @@ checkKeyNumCopies key afile numcopies = do
 				showLongNote $ "This key is dead, skipping."
 				return True
 			, do
-				ppuuids <- Remote.prettyPrintUUIDs "untrusted" untrustedlocations
-				warning $ missingNote file present numcopies ppuuids
+				untrusted <- Remote.prettyPrintUUIDs "untrusted" untrustedlocations
+				dead <- Remote.prettyPrintUUIDs "dead" deadlocations
+				warning $ missingNote file present numcopies untrusted dead
 				when (fromNumCopies present == 0 && isNothing afile) $
 					showLongNote "(Avoid this check by running: git annex dead --key )"
 				return False
 			)
 		else return True
 
-missingNote :: String -> NumCopies -> NumCopies -> String -> String
-missingNote file (NumCopies 0) _ [] = 
-		"** No known copies exist of " ++ file
-missingNote file (NumCopies 0) _ untrusted =
+missingNote :: String -> NumCopies -> NumCopies -> String -> String -> String
+missingNote file (NumCopies 0) _ [] dead = 
+		"** No known copies exist of " ++ file ++ honorDead dead
+missingNote file (NumCopies 0) _ untrusted dead =
 		"Only these untrusted locations may have copies of " ++ file ++
 		"\n" ++ untrusted ++
-		"Back it up to trusted locations with git-annex copy."
-missingNote file present needed [] =
+		"Back it up to trusted locations with git-annex copy." ++ honorDead dead
+missingNote file present needed [] _ =
 		"Only " ++ show (fromNumCopies present) ++ " of " ++ show (fromNumCopies needed) ++ 
 		" trustworthy copies exist of " ++ file ++
 		"\nBack it up with git-annex copy."
-missingNote file present needed untrusted = 
-		missingNote file present needed [] ++
+missingNote file present needed untrusted dead = 
+		missingNote file present needed [] dead ++
 		"\nThe following untrusted locations may also have copies: " ++
 		"\n" ++ untrusted
+	
+honorDead :: String -> String
+honorDead dead
+	| null dead = ""
+	| otherwise = "\nThese dead repositories used to have copies\n" ++ dead
 
 {- Bad content is moved aside. -}
 badContent :: Key -> Annex String
