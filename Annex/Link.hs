@@ -12,7 +12,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
+{-# LANGUAGE CPP, BangPatterns #-}
 
 module Annex.Link where
 
@@ -25,7 +25,7 @@ import Git.Types
 import Git.FilePath
 
 import qualified Data.ByteString.Lazy as L
-import qualified Data.ByteString as B
+import Data.Int
 
 type LinkTarget = String
 
@@ -133,15 +133,17 @@ stagePointerFile file sha =
  - Only looks at the first line, as pointer files can have subsequent
  - lines. -}
 parseLinkOrPointer :: L.ByteString -> Maybe Key
-parseLinkOrPointer = parseLinkOrPointer' . decodeBS . L.take maxsz
+parseLinkOrPointer = parseLinkOrPointer' . decodeBS . L.take maxPointerSz
   where
-	{- Want to avoid buffering really big files in git into
-	 - memory when reading files that may be pointers.
-	 -
-	 - 8192 bytes is plenty for a pointer to a key.
-	 - Pad some more to allow for any pointer files that might have
-	 - lines after the key explaining what the file is used for. -}
-	maxsz = 81920
+
+{- Want to avoid buffering really big files in git into
+ - memory when reading files that may be pointers.
+ -
+ - 8192 bytes is plenty for a pointer to a key.
+ - Pad some more to allow for any pointer files that might have
+ - lines after the key explaining what the file is used for. -}
+maxPointerSz :: Int64
+maxPointerSz = 81920
 
 parseLinkOrPointer' :: String -> Maybe Key
 parseLinkOrPointer' = go . fromInternalGitPath . takeWhile (not . lineend)
@@ -160,8 +162,9 @@ formatPointer k =
 {- Checks if a file is a pointer to a key. -}
 isPointerFile :: FilePath -> IO (Maybe Key)
 isPointerFile f = catchDefaultIO Nothing $ do
-	b <- B.readFile f
-	return $ parseLinkOrPointer $ L.fromChunks [b]
+	b <- L.take maxPointerSz <$> L.readFile f
+	let !mk = parseLinkOrPointer' (decodeBS b)
+	return mk
 
 {- Checks a symlink target or pointer file first line to see if it
  - appears to point to annexed content.

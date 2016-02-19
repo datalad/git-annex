@@ -1,6 +1,9 @@
 git-annex (6.20160218) UNRELEASED; urgency=medium
 
   * Update perlmagick build dependency. Closes: #789225
+  * Fix memory leak in last release, which affected commands like
+    git-annex status when a large non-annexed file is present in the work
+    tree.
 
  -- Joey Hess <id@joeyh.name>  Thu, 18 Feb 2016 13:09:21 -0400
 
