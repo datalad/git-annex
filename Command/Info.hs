@@ -22,6 +22,7 @@ import qualified Types.Remote as Remote
 import Utility.DataUnits
 import Utility.DiskFree
 import Annex.Content
+import Annex.UUID
 import Logs.UUID
 import Logs.Trust
 import Logs.Location
@@ -111,6 +112,9 @@ start o ps = do
 
 globalInfo :: InfoOptions -> Annex ()
 globalInfo o = do
+	u <- getUUID
+	whenM ((==) DeadTrusted <$> lookupTrust u) $
+		earlyWarning "Warning: This repository is currently marked as dead."
 	stats <- selStats global_fast_stats global_slow_stats
 	showCustom "info" $ do
 		evalStateT (mapM_ showStat stats) (emptyStatInfo o)

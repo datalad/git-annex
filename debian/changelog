@@ -6,6 +6,7 @@ git-annex (6.20160218) UNRELEASED; urgency=medium
     tree.
   * fsck: When the only copy of a file is in a dead repository, mention
     the repository.
+  * info: Mention when run in a dead repository.
 
  -- Joey Hess <id@joeyh.name>  Thu, 18 Feb 2016 13:09:21 -0400
 
