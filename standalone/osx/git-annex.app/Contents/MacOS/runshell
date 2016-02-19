@@ -64,7 +64,7 @@ fi
 # system binaries. Extra binaries come after system path.
 ORIG_PATH="$PATH"
 export ORIG_PATH
-PATH="$bundle:$PATH:$base/extra"
+PATH="$bundle:$PATH:$bundle/extra"
 export PATH
 
 ORIG_GIT_EXEC_PATH="$GIT_EXEC_PATH"
