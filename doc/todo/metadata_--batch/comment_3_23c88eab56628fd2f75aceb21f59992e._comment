@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-02-19T20:47:28Z"
+ content="""
+See
+<http://git-annex.branchable.com/todo/ability_to_set_metadata_from_json/>
+
+If it does support json input, the simplest interface would be to use the
+same json objects for both output and input.
+
+Both aeson and json are currently dependencies, and either could be used to
+parse json input.
+"""]]
