@@ -58,3 +58,4 @@ git-annex: direct: 1 failed
 """]]
 
 [[!tag moreinfo]]
+[[!meta tag=deprecateddirectmode]]

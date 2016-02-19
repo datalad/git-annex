@@ -33,3 +33,4 @@ mappings would lead to faster code. So, this feature seems best blocked on
 the direct mode database either way!
 
 --[[Joey]]
+[[!meta tag=deprecateddirectmode]]

@@ -1,3 +1,5 @@
 The metadata storage for direct mode (V3) is this. In directory .git/annex/objects, there is one .map for all annexed file, and one .cache for all files in the working tree. Both are small files, containing only 1 line or a few lines. I have a repo with lots of photos, and this created lots of small files. I believe this will cause many performance issues. 
 
 It would be great if these files are packed, maybe also in the git pack files format.
+
+[[!meta tag=deprecateddirectmode]]

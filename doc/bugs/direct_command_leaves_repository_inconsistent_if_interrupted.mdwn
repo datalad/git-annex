@@ -43,3 +43,5 @@ Similar issues and discussions:
 * [[forum/git-status_typechange_in_direct_mode/]]
 
 [[!meta title="git annex lock --force deletes only copy of content after interrupted switch to direct mode"]
+
+[[!meta tag=deprecateddirectmode]]
