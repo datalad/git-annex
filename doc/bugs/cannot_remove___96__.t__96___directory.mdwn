@@ -32,3 +32,6 @@ git HEAD (self-built). On Linux.
 
 On /tmp the self-test works. Maybe it is related to NFS?
 
+> Turns out that git-annex was keeping files in .t open in some
+> circumstances after deleting them. I have fixed some of this. Possibly
+> not all. --[[Joey]]
