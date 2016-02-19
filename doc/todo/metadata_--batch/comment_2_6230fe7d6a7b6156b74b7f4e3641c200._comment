@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 2"
+ date="2016-02-19T20:06:19Z"
+ content="""
+yes -- json output would probably be the best
+I know that other --batch functions do not take json input, but I wonder if it might make sense here as well? smth like {'file': 'filename', 'add-field': {'field1': 'value1'}, 'remove-field': ..., 'add-tag': ['tag1', 'tag2'], 'remove-tag': ['...     and so on.
+"""]]
