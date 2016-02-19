@@ -61,10 +61,10 @@ if [ ! -e "$HOME/.ssh/git-annex-wrapper" ]; then
 fi
 
 # Put our binaries first, to avoid issues with out of date or incompatable
-# system binaries.
+# system binaries. Extra binaries come after system path.
 ORIG_PATH="$PATH"
 export ORIG_PATH
-PATH="$bundle:$PATH"
+PATH="$bundle:$PATH:$base/extra"
 export PATH
 
 ORIG_GIT_EXEC_PATH="$GIT_EXEC_PATH"

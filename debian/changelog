@@ -7,6 +7,8 @@ git-annex (6.20160218) UNRELEASED; urgency=medium
   * fsck: When the only copy of a file is in a dead repository, mention
     the repository.
   * info: Mention when run in a dead repository.
+  * Linux and OSX standalone builds put the bundled gpg last in PATH,
+    so any system gpg will be preferred over it.
 
  -- Joey Hess <id@joeyh.name>  Thu, 18 Feb 2016 13:09:21 -0400
 
