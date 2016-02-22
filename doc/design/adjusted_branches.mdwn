@@ -22,20 +22,21 @@ play out.]
 
 ## filtering
 
-        master           adjusted/master
+	master           adjusted/master
 	A
-        |--------------->A'
-        |                |
+	|--------------->A'
+	|                |
 
-When generating commit A', reuse the date and author and committer of A.
-This means that two users with the adjusted branch checked out and using
-the same filters will get identical shas for A', and so can collaborate on
-them.
+When generating commit A', reuse the date of A and use a standard author,
+committer, and message. This means that two users with the adjusted branch
+checked out and using the same filters will get identical shas for A', and
+so can collaborate on them.
 
 ## commit
 
 When committing changes, a commit is made as usual to the adjusted branch.
-So, the user can `git commit`. This does not touch the original branch yet. 
+So, the user can `git commit` as usual. This does not touch the
+original branch yet. 
 
 Then we need to get from that commit to one with the filters reversed,
 which should be the same as if the adjusted branch had not been used.
@@ -43,15 +44,15 @@ This commit gets added onto the original branch.
 
 So, the branches would look like this:
 
-        master           adjusted/master
+	master           adjusted/master
 	A
-        |--------------->A'
-        |                |
-        |                |C (new commit)
-        B - - - - - - - -
-        |                
-        |--------------->B'
-        |                |
+	|--------------->A'
+	|                |
+	|                C (new commit)
+	B < - - - - - - -
+	|                
+	|--------------->B'
+	|                |
 
 Note particularly that B does not have A' or C in its history;
 the adjusted branch is not evident from outside.
@@ -64,70 +65,98 @@ same B' commit when they pull B.
 It might be useful to have a post-commit hook that generates B and B'
 and updates the branches. And/or `git-annex sync` could do it.
 
+There may be multiple commits made to the adjusted branch before any get
+applied back to the original branch. This is handled by reverse filtering
+one at a time and rebasing the others on top.
+
+	master           adjusted/master
+	A
+	|--------------->A'
+	|                |
+	|                C1
+	|                |
+	|                C2
+
+
+	master           adjusted/master
+	A
+	|--------------->A'
+	|                |
+	|                C1
+	B1< - - - - - - -
+	|
+	|--------------->B1'
+	|                |
+	|                C2'
+	B2< - - - - - - -
+	|
+	|--------------->B2'
+
+
 [WORKTREE: A pre-commit hook would be needed to update the staged changes, 
 reversing the filter before the commit is made. All the other complications
 above are avoided.]
 
 ## merge
 
-This would be done by `git annex merge` and `git annex sync`.
+This would be done by `git annex merge` and `git annex sync`, with the goal
+of merging origin/master into master, and updating adjusted/master.
 
 Note that the adjusted files db needs to be updated to reflect the changes
 that are merged in, for object add/remove to work as described below.
 
 When merging, there should never be any commits present on the
 adjusted/master branch that have not yet been filtered over to the master
-branch. There may be staged changes, or changes in the work tree.
+branch. If there are any such commits, just filter them into master before
+beginning the merge. There may be staged changes, or changes in the work tree.
 
 First filter the new commit:
 
-        master           adjusted/master
+	origin/master    adjusted/master
 	A
-        |--------------->A'
-        |                |
-        |                |
-        B
-        |                
-        |---------->B'
+	|--------------->A'
+	|                |
+	|                |
+	B
+	|                
+	|---------->B'
 
 Then, merge that into adjusted/master:
 
-        master           adjusted/master
+	origin/master    adjusted/master
 	A
-        |--------------->A'
-        |                |
-        |                |
-        B                |
-        |                |
-        |----------->B'->B''
+	|--------------->A'
+	|                |
+	|                |
+	B                |
+	|                |
+	|----------->B'->B''
 
-That will take care of updating the work tree. (If there's a merge
-conflict it will happen here.)
+That merge will take care of updating the work tree.
 
-Now one extra step is needed; reset adjusted/master to use B'
-(here it's important that B'' and B' have the same tree).
+(What if there is a merge conflict between A' and B'? Normally such a merge
+conflict should only affect the work tree/index, so can be resolved without
+making a commit, but B'' may end up being made to resolve a merge
+conflict.)
 
-        master           adjusted/master
+Once the merge is done, we have a commit B'' on adjusted/master. To finish,
+adjust that commit so it does not have adjusted/master as its parent.
+
+	origin/master    adjusted/master
 	A
-        |--------------->A'
-        |                |
-        |                |
-        B
-        |                
-        |--------------->B'
-        |                |
+	|--------------->A'
+	|                |
+	|                |
+	B
+	|                
+	|--------------->B''
+	|                |
 
-Notice how similar this is to the commit graph above. So, merging
-the same B commit from master will lead to an identical sha for B' 
-as the committer got.
+Finally, update master to point to B''.
 
-(What if there is a merge conflict? Then B'' won't be created yet
-and the conflict is between A' and B'. User can resolve that conflict as
-usual, which may lead to a commit (or perhaps they resolve the conflict 
-in the work tree without a commit. The conficted merge 
-commit is handled like any other commit to the adjusted/master branch;
-it gets reverse filtered back to master and bounces back to
-adjusted/master.)
+Notice how similar this is to the commit graph. So, "fast-forward" 
+merging the same B commit from origin/master will lead to an identical
+sha for B' as the original committer got.
 
 Since the adjusted/master branch is not present on the remote, if the user
 does a `git pull`, it won't merge in changes from origin/master. Which is
@@ -162,14 +191,20 @@ Reversing filter #1 would mean only converting pointer files to
 symlinks when the file was originally a symlink. This is problimatic when a
 file is renamed. Would it be ok, if foo is renamed to bar and bar is
 committed, for it to be committed as an unlocked file, even if foo was
-originally locked?
+originally locked? Probably.
 
 Reversing filter #2 would mean not deleting removed files whose content was
 not present. When the commit includes deletion of files that were removed
 due to their content not being present, those deletions are not propigated.
 When the user deletes an unlocked file, the content is still
 present in annex, so reversing the filter should propigate the file
-deletion.
+deletion. 
+
+What if an object was sent to the annex (or removed from the annex)
+after the commit and before the reverse filtering? This would cause the
+reverse filter to draw the wrong conclusion. Maybe look at a list of what
+objects were not present when applying the filter, and use that to decide
+which to not delete when reversing it?
 
 ## push
 
@@ -280,5 +315,3 @@ like this, at its most simple:
 	-- Generate a version of the commit made on the filter branch
 	-- with the filtering of modified files reversed.
 	unfilteredCommit :: Filter -> Git.Commit -> Git.Commit
-
-	isFilteredCommit :: Git.Commit -> Bool
