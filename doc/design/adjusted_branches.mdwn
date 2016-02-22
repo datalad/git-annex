@@ -20,29 +20,128 @@ play out.]
 
 [[!toc]]
 
+## filtering
+
+        master           adjusted/master
+	A
+        |--------------->A'
+        |                |
+
+When generating commit A', reuse the date and author and committer of A.
+This means that two users with the adjusted branch checked out and using
+the same filters will get identical shas for A', and so can collaborate on
+them.
+
+## commit
+
+When committing changes, a commit is made as usual to the adjusted branch.
+So, the user can `git commit`. This does not touch the original branch yet. 
+
+Then we need to get from that commit to one with the filters reversed,
+which should be the same as if the adjusted branch had not been used.
+This commit gets added onto the original branch.
+
+So, the branches would look like this:
+
+        master           adjusted/master
+	A
+        |--------------->A'
+        |                |
+        |                |C (new commit)
+        B - - - - - - - -
+        |                
+        |--------------->B'
+        |                |
+
+Note particularly that B does not have A' or C in its history;
+the adjusted branch is not evident from outside.
+
+Also note that B gets filtered and the adjusted branch is rebased on top of
+it, so C does not remain in the adjusted branch history either. This will
+make other checkouts that are in the same adjusted branch end up with the
+same B' commit when they pull B.
+
+It might be useful to have a post-commit hook that generates B and B'
+and updates the branches. And/or `git-annex sync` could do it.
+
+[WORKTREE: A pre-commit hook would be needed to update the staged changes, 
+reversing the filter before the commit is made. All the other complications
+above are avoided.]
+
 ## merge
 
-When merging changes from a remote, apply the filter to the head of the
-remote branch, resulting in a commit with its changes. Merge in that
-commit. Note that it's possible to control the metadata of the commit such
-that 2 users who have the same adjusted branch checked out, both generate
-the same commit sha.
-
 This would be done by `git annex merge` and `git annex sync`.
+
+Note that the adjusted files db needs to be updated to reflect the changes
+that are merged in, for object add/remove to work as described below.
+
+When merging, there should never be any commits present on the
+adjusted/master branch that have not yet been filtered over to the master
+branch. There may be staged changes, or changes in the work tree.
+
+First filter the new commit:
+
+        master           adjusted/master
+	A
+        |--------------->A'
+        |                |
+        |                |
+        B
+        |                
+        |---------->B'
+
+Then, merge that into adjusted/master:
+
+        master           adjusted/master
+	A
+        |--------------->A'
+        |                |
+        |                |
+        B                |
+        |                |
+        |----------->B'->B''
+
+That will take care of updating the work tree. (If there's a merge
+conflict it will happen here.)
+
+Now one extra step is needed; reset adjusted/master to use B'
+(here it's important that B'' and B' have the same tree).
+
+        master           adjusted/master
+	A
+        |--------------->A'
+        |                |
+        |                |
+        B
+        |                
+        |--------------->B'
+        |                |
+
+Notice how similar this is to the commit graph above. So, merging
+the same B commit from master will lead to an identical sha for B' 
+as the committer got.
+
+(What if there is a merge conflict? Then B'' won't be created yet
+and the conflict is between A' and B'. User can resolve that conflict as
+usual, which may lead to a commit (or perhaps they resolve the conflict 
+in the work tree without a commit. The conficted merge 
+commit is handled like any other commit to the adjusted/master branch;
+it gets reverse filtered back to master and bounces back to
+adjusted/master.)
 
 Since the adjusted/master branch is not present on the remote, if the user
 does a `git pull`, it won't merge in changes from origin/master. Which is
 good because the filter needs to be applied first.
 
-[WORKTREE: `git pull` would update the work tree, and may lead to conflicts
-between the adjusted work tree and pulled changes. A post-merge hook would
-be needed to re-adjust the work tree, and there would be a window where eg,
-not present files would appear in the work tree.]
-
 However, if the user does `git merge origin/master`, they'll get into a
 state where the filter has not been applied. The post-merge hook could be
 used to clean up after that. Or, let the user foot-shoot this way; they can
 always reset back once they notice the mistake.
+
+[WORKTREE: `git pull` would update the work tree, and may lead to conflicts
+between the adjusted work tree and pulled changes. A post-merge hook would
+be needed to re-adjust the work tree, and there would be a window where eg,
+not present files would appear in the work tree.]
 
 ## annex object add/remove
 
@@ -56,45 +155,6 @@ These changes would need to be committed to the adjusted branch, otherwise
 `git diff` would show them.
 
 [WORKTREE: Simply adjust the work tree (and index) per the filter.]
-
-## commit
-
-When committing changes, a commit is made as usual to the adjusted branch.
-So, the user can `git commit` (or `git annex sync`). This does not touch
-the original branch yet. 
-
-Then we need to get from that commit to one with the filters reversed,
-which should be the same as if the adjusted branch had not been used.
-This commit gets added onto the original branch.
-
-So, the branches would look like this:
-
-        master           adjusted/master
-        A ---filter----> A
-        |                |
-        |                A'
-        |                |
-        |                B'
-        B <--rev filter- |
-        |                B
-        | ---filter----> |
-        |                B''
-
-Note particularly that B does not have A' in its history; the adjusted
-branch is not evident from outside. So, we need a way to detect commits
-like A'.
-
-Also note that B gets merged back to the adjusted branch, re-applying the
-filter. This will make other checkouts that are in the same adjusted branch
-end up with the same B'' commit when they pull B.
-
-It might be useful to have a post-commit hook that generates the
-reverse-filtered commit and updates the original branch. And/or
-`git-annex sync` could do it.
-
-[WORKTREE: A pre-commit hook would be needed to update the staged changes, 
-reversing the filter before the commit is made. All the other complications
-above are avoided.]
 
 ## reverse filtering
 
