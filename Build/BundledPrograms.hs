@@ -29,8 +29,10 @@ extraBundledPrograms = catMaybes
 	-- On Windows, gpg is bundled with git for windows.
 #ifndef mingw32_HOST_OS
 	[ SysConfig.gpg
-	]
+#else
+	[
 #endif
+	]
 
 {- Programs that should be preferred for use from the bundle, over
  - any that might be installed on the system otherwise. These come before
