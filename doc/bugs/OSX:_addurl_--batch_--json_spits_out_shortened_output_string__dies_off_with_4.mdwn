@@ -34,4 +34,5 @@ error: git-annex died of signal 4
 
 """]]
 
+[[!meta author=yoh]]
 
