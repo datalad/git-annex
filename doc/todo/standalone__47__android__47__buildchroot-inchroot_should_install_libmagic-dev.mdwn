@@ -1,0 +1,1 @@
+I'm setting up an Android build environment, and the standalone/android/install-haskell-packages script fails while installing the Magic package. The standalone/android/buildchroot-inchroot package should run `apt-get -y install libmagic-dev` to install this dependency.
