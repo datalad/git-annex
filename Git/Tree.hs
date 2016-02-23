@@ -42,6 +42,8 @@ getTree r repo = do
 	let t = either (\e -> error ("ls-tree parse error:" ++ e)) id (extractTree l)
 	return (t, cleanup)
 
+{- Assumes the list is ordered, with tree objects coming right before their
+ - contents. -}
 extractTree :: [LsTree.TreeItem] -> Either String Tree
 extractTree l = case go [] "" l of
 	Right (t, []) -> Right (Tree t)
@@ -72,7 +74,7 @@ extractTree l = case go [] "" l of
  - interface.
  -}
 recordTree :: Repo -> Tree -> IO Sha
-recordTree repo (Tree t) = do
+recordTree repo t = do
 	h <- CoProcess.rawMode =<< gitCoProcessStart False ps repo
 	sha <- recordTree' h t
 	CoProcess.stop h
@@ -80,8 +82,8 @@ recordTree repo (Tree t) = do
   where
 	ps = [Param "mktree", Param "--batch", Param "-z"]
 
-recordTree' :: CoProcess.CoProcessHandle -> [TreeContent] -> IO Sha
-recordTree' h l = mkTree h =<< mapM (recordSubTree h) l
+recordTree' :: CoProcess.CoProcessHandle -> Tree -> IO Sha
+recordTree' h (Tree l) = mkTree h =<< mapM (recordSubTree h) l
 
 recordSubTree :: CoProcess.CoProcessHandle -> TreeContent -> IO TreeContent
 recordSubTree h (NewSubTree d l) = do
@@ -102,4 +104,13 @@ mkTree cp l = CoProcess.query cp send receive
 	receive h = Ref <$> hGetLine h
 
 mkTreeOutput :: FileMode -> ObjectType -> Sha -> TopFilePath -> String
-mkTreeOutput fm ot s f = showOct fm "" ++ " " ++ show ot ++ " " ++ fromRef s ++ "\t" ++ takeFileName (getTopFilePath f) ++ "\NUL"
+mkTreeOutput fm ot s f = concat
+	[ showOct fm ""
+	, " "
+	, show ot
+	, " "
+	, fromRef s
+	, "\t"
+	, takeFileName (getTopFilePath f)
+	, "\NUL"
+	]
