@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-02-23T14:55:36Z"
+ content="""
+My android builds include neither magic nor concurrent-output (which is
+what's using terminal-size). I don't feel it's worth trying to get
+these features working on androd.
+
+So, I've adjusted install-haskell-packages to disable the flags.
+
+If you are interested in working on the android port, I'd be very excited
+for any help. As you can see, there is much room for improvement in the
+build system for it. (It would be nice to rework it to use stack, rather
+than the current approach, and using stack would automatically disable
+these flags that are not portable.) And of course, there are many other
+parts of the android port that need improvement.
+"""]]
