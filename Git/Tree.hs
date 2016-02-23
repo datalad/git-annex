@@ -17,6 +17,7 @@ import Git
 import Git.FilePath
 import Git.Types
 import Git.Command
+import Git.Sha
 import qualified Git.LsTree as LsTree
 import qualified Utility.CoProcess as CoProcess
 
@@ -101,7 +102,7 @@ mkTree cp l = CoProcess.query cp send receive
 			RecordedSubTree f s _ -> mkTreeOutput 0o040000 TreeObject s f
 			NewSubTree _ _ -> error "recordSubTree internal error; unexpected NewSubTree"
 		hPutStr h "\NUL" -- signal end of tree to --batch
-	receive h = Ref <$> hGetLine h
+	receive h = getSha "mktree" (hGetLine h)
 
 mkTreeOutput :: FileMode -> ObjectType -> Sha -> TopFilePath -> String
 mkTreeOutput fm ot s f = concat
