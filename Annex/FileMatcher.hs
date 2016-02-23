@@ -129,8 +129,10 @@ preferredContentParser matchstandard matchgroupwanted getgroupmap configmap mu e
 mkLargeFilesParser :: Annex (String -> [ParseResult])
 mkLargeFilesParser = do
 #ifdef WITH_MAGICMIME
-	magicmime <- liftIO $ magicOpen [MagicMimeType]
-	liftIO $ magicLoadDefault magicmime
+	magicmime <- liftIO $ catchMaybeIO $ do
+		m <- magicOpen [MagicMimeType]
+		liftIO $ magicLoadDefault m
+		return m
 #endif
 	let parse = parseToken $ commonTokens
 #ifdef WITH_MAGICMIME

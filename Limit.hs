@@ -97,14 +97,15 @@ matchGlobFile glob = go
 	go (MatchingInfo af _ _ _) = matchGlob cglob <$> getInfo af
 
 #ifdef WITH_MAGICMIME
-matchMagic :: Magic -> MkLimit Annex
-matchMagic magic glob = Right $ const go
+matchMagic :: Maybe Magic -> MkLimit Annex
+matchMagic (Just magic) glob = Right $ const go
   where
  	cglob = compileGlob glob CaseSensative -- memoized
 	go (MatchingKey _) = pure False
 	go (MatchingFile fi) = liftIO $ catchBoolIO $
 		matchGlob cglob <$> magicFile magic (matchFile fi)
 	go (MatchingInfo _ _ _ mimeval) = matchGlob cglob <$> getInfo mimeval
+matchMagic Nothing _ = Left "unable to load magic database; \"mimetype\" cannot be used"
 #endif
 
 {- Adds a limit to skip files not believed to be present
