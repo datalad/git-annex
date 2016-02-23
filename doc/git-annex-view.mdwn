@@ -27,9 +27,9 @@ There are fields corresponding to the path to the file. So a file
 These location fields can be used the same as other metadata to construct
 the view.
   
-For example, `/=podcasts` will only include files from the podcasts
-directory in the view, while `podcasts/=*` will preserve the
-subdirectories of the podcasts directory in the view.
+For example, `/=foo` will only include files from the foo
+directory in the view, while `foo/=*` will preserve the
+subdirectories of the foo directory in the view.
 
 # SEE ALSO
 
