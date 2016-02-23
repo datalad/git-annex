@@ -8,9 +8,10 @@
 module Git.LsTree (
 	TreeItem(..),
 	lsTree,
+	lsTree',
 	lsTreeParams,
 	lsTreeFiles,
-	parseLsTree
+	parseLsTree,
 ) where
 
 import Common
@@ -33,8 +34,11 @@ data TreeItem = TreeItem
 {- Lists the complete contents of a tree, recursing into sub-trees,
  - with lazy output. -}
 lsTree :: Ref -> Repo -> IO ([TreeItem], IO Bool)
-lsTree t repo = do
-	(l, cleanup) <- pipeNullSplit (lsTreeParams t []) repo
+lsTree = lsTree' []
+
+lsTree' :: [CommandParam] -> Ref -> Repo -> IO ([TreeItem], IO Bool)
+lsTree' ps t repo = do
+	(l, cleanup) <- pipeNullSplit (lsTreeParams t ps) repo
 	return (map parseLsTree l, cleanup)
 
 lsTreeParams :: Ref -> [CommandParam] -> [CommandParam]
