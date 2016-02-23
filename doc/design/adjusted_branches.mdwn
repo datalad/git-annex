@@ -206,6 +206,9 @@ reverse filter to draw the wrong conclusion. Maybe look at a list of what
 objects were not present when applying the filter, and use that to decide
 which to not delete when reversing it?
 
+So, a reverse filter may need some state that was collected when running
+the filter forwards, in order to decide what to do.
+
 ## push
 
 The new master branch can then be pushed out to remotes. The
@@ -272,6 +275,8 @@ Could go a step further, and implement view branches as another branch
 adjusting filter, albeit an extreme one. This might improve view branches.
 For example, it's not currently possible to update a view branch with
 changes fetched from a remote, and this could get us there.
+
+This would need the reverse filter to be able to change metadata.
 
 [WORKTREE: Wouldn't be able to integrate, unless view branches are changed
 into adjusted view worktrees.]
