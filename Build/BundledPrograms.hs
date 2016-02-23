@@ -26,7 +26,10 @@ extraBundledPrograms :: [FilePath]
 extraBundledPrograms = catMaybes
 	-- The system gpg is probably better, because it may better
 	-- integrate with the system gpg-agent, etc.
+	-- On Windows, gpg is bundled with git for windows.
+#ifndef mingw32_HOST_OS
 	[ SysConfig.gpg
+#endif
 	]
 
 {- Programs that should be preferred for use from the bundle, over
