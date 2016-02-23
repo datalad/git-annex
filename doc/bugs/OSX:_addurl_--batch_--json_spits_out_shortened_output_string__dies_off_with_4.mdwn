@@ -36,3 +36,6 @@ error: git-annex died of signal 4
 
 [[!meta author=yoh]]
 
+> [[done]]; this was indeed due to libmagic, and I've fixed it using brew
+> --build-bottle to make a portable one. Then had to disable the build
+> flag. --[[Joey]]
