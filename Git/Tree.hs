@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE BangPatterns #-}
+
 module Git.Tree (
 	Tree(..),
 	TreeContent(..),
@@ -36,12 +38,14 @@ data TreeContent
 	deriving (Show)
 
 {- Gets the Tree for a Ref. -}
-getTree :: Ref -> Repo -> IO (Tree, IO Bool)
+getTree :: Ref -> Repo -> IO Tree
 getTree r repo = do
 	-- Pass -t to get the tree object shas, which are normally omitted.
 	(l, cleanup) <- LsTree.lsTree' [Param "-t"] r repo
-	let t = either (\e -> error ("ls-tree parse error:" ++ e)) id (extractTree l)
-	return (t, cleanup)
+	let !t = either (\e -> error ("ls-tree parse error:" ++ e)) id
+		(extractTree l)
+	void cleanup
+	return t
 
 {- Assumes the list is ordered, with tree objects coming right before their
  - contents. -}
