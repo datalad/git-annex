@@ -52,6 +52,15 @@ getTree r repo = do
 lsTreeWithObjects :: Ref -> Repo -> IO ([LsTree.TreeItem], IO Bool)
 lsTreeWithObjects = LsTree.lsTree' [Param "-t"]
 
+newtype MkTreeHandle = MkTreeHandle CoProcess.CoProcessHandle
+
+withMkTreeHandle :: (MonadIO m, MonadMask m) => Repo -> (MkTreeHandle -> m a) -> m a
+withMkTreeHandle repo a = bracketIO setup cleanup (a . MkTreeHandle)
+  where
+	setup = CoProcess.rawMode =<< gitCoProcessStart False ps repo
+	ps = [Param "mktree", Param "--batch", Param "-z"]
+	cleanup = CoProcess.stop
+
 {- Records a Tree in the Repo, returning its Sha.
  - 
  - Efficiently handles subtrees, by only recording ones that have not
@@ -60,31 +69,22 @@ lsTreeWithObjects = LsTree.lsTree' [Param "-t"]
  - interface.
  -}
 recordTree :: Tree -> Repo -> IO Sha
-recordTree t repo = do
-	h <- startRecordTree repo
-	sha <- recordTree' h t
-	CoProcess.stop h
-	return sha
+recordTree t repo = withMkTreeHandle repo $ \h -> recordTree' h t
 
-startRecordTree :: Repo -> IO CoProcess.CoProcessHandle
-startRecordTree repo = CoProcess.rawMode =<< gitCoProcessStart False ps repo
-  where
-	ps = [Param "mktree", Param "--batch", Param "-z"]
-
-recordTree' :: CoProcess.CoProcessHandle -> Tree -> IO Sha
+recordTree' :: MkTreeHandle -> Tree -> IO Sha
 recordTree' h (Tree l) = mkTree h =<< mapM (recordSubTree h) l
 
 {- Note that the returned RecordedSubTree does not have its [TreeContent]
  - list populated. This is a memory optimisation, since the list is not
  - used. -}
-recordSubTree :: CoProcess.CoProcessHandle -> TreeContent -> IO TreeContent
+recordSubTree :: MkTreeHandle -> TreeContent -> IO TreeContent
 recordSubTree h (NewSubTree d l) = do
 	sha <- mkTree h =<< mapM (recordSubTree h) l
 	return (RecordedSubTree d sha [])
 recordSubTree _ alreadyrecorded = return alreadyrecorded
  
-mkTree :: CoProcess.CoProcessHandle -> [TreeContent] -> IO Sha
-mkTree cp l = CoProcess.query cp send receive
+mkTree :: MkTreeHandle -> [TreeContent] -> IO Sha
+mkTree (MkTreeHandle cp) l = CoProcess.query cp send receive
   where
 	send h = do
 		forM_ l $ \i -> hPutStr h $ case i of
@@ -114,13 +114,11 @@ data TreeItem = TreeItem TopFilePath FileMode Sha
  - While less flexible than using getTree and recordTree, this avoids
  - buffering the whole tree in memory.
  -}
-adjustTree :: MonadIO m => (TreeItem -> m (Maybe TreeItem)) -> Ref -> Repo -> m Sha
-adjustTree adjust r repo = do
+adjustTree :: (MonadIO m, MonadMask m) => (TreeItem -> m (Maybe TreeItem)) -> Ref -> Repo -> m Sha
+adjustTree adjust r repo = withMkTreeHandle repo $ \h -> do
 	(l, cleanup) <- liftIO $ lsTreeWithObjects r repo
-	h <- liftIO $ startRecordTree repo
 	(l', _, _) <- go h False [] topTree l
 	sha <- liftIO $ mkTree h l'
-	liftIO $ CoProcess.stop h
 	void $ liftIO cleanup
 	return sha
   where
