@@ -119,7 +119,6 @@ adjustTree adjust r repo = do
 	(l, cleanup) <- liftIO $ lsTreeWithObjects r repo
 	h <- liftIO $ startRecordTree repo
 	(l', _, _) <- go h False [] topTree l
-	liftIO $ print l'
 	sha <- liftIO $ mkTree h l'
 	liftIO $ CoProcess.stop h
 	void $ liftIO cleanup
@@ -135,15 +134,16 @@ adjustTree adjust r repo = do
 					case v of
 						Nothing -> go h True c intree is
 						Just ti'@(TreeItem f m s) ->
-							let modified = ti' /= ti
+							let !modified = wasmodified || ti' /= ti
 							    blob = TreeBlob f m s
-							in go h (wasmodified || modified) (blob:c) intree is
+							in go h modified (blob:c) intree is
 				Just TreeObject -> do
 					(sl, modified, is') <- go h False [] (subTree i) is
 					subtree <- if modified
 						then liftIO $ recordSubTree h $ NewSubTree (LsTree.file i) sl
 						else return $ RecordedSubTree (LsTree.file i) (LsTree.sha i) [] 
-					go h (modified || wasmodified) (subtree : c) intree is'
+					let !modified' = modified || wasmodified
+					go h modified' (subtree : c) intree is'
 				_ -> error ("unexpected object type \"" ++ LsTree.typeobj i ++ "\"")
 		| otherwise = return (c, wasmodified, i:is)
 
@@ -177,6 +177,6 @@ topTree :: InTree
 topTree = notElem '/' . getTopFilePath . LsTree.file
 
 subTree :: LsTree.TreeItem -> InTree
-subTree i =
-	let prefix = getTopFilePath (LsTree.file i) ++ "/"
+subTree t =
+	let prefix = getTopFilePath (LsTree.file t) ++ "/"
 	in (\i -> prefix `isPrefixOf` getTopFilePath (LsTree.file i))
