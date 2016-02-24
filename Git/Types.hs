@@ -11,7 +11,6 @@ import Network.URI
 import qualified Data.Map as M
 import System.Posix.Types
 import Utility.SafeCommand
-import Utility.URI ()
 
 {- Support repositories on local disk, and repositories accessed via an URL.
  -

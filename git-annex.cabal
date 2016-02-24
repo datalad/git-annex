@@ -130,7 +130,7 @@ Executable git-annex
   if flag(network-uri)
     Build-Depends: network-uri (>= 2.6), network (>= 2.6)
   else
-    Build-Depends: network (< 2.6), network (>= 2.0)
+    Build-Depends: network (< 2.6), network (>= 2.4)
 
   if flag(Cryptonite)
     Build-Depends: cryptonite
