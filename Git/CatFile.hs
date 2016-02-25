@@ -1,6 +1,6 @@
 {- git cat-file interface
  -
- - Copyright 2011, 2013 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -13,6 +13,7 @@ module Git.CatFile (
 	catFile,
 	catFileDetails,
 	catTree,
+	catCommit,
 	catObject,
 	catObjectDetails,
 ) where
@@ -20,6 +21,10 @@ module Git.CatFile (
 import System.IO
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString.Lazy.Char8 as L8
+import qualified Data.Map as M
+import Data.String
+import Data.Char
 import Data.Tuple.Utils
 import Numeric
 import System.Posix.Types
@@ -110,3 +115,43 @@ catTree h treeref = go <$> catObjectDetails h treeref
 		let (modestr, file) = separate (== ' ') (decodeBS b)
 		in (file, readmode modestr)
 	readmode = fromMaybe 0 . fmap fst . headMaybe . readOct
+
+catCommit :: CatFileHandle -> Ref -> IO (Maybe Commit)
+catCommit h commitref = go <$> catObjectDetails h commitref
+  where
+	go (Just (b, _, CommitObject)) = parseCommit b
+	go _ = Nothing
+
+parseCommit :: L.ByteString -> Maybe Commit
+parseCommit b = Commit
+	<$> (extractSha . L8.unpack =<< field "tree")
+	<*> (parsemetadata <$> field "author")
+	<*> (parsemetadata <$> field "committer")
+	<*> Just (L8.unpack $ L.intercalate (L.singleton nl) message)
+  where
+	field n = M.lookup (fromString n) fields
+	fields = M.fromList ((map breakfield) header)
+	breakfield l =
+		let (k, sp_v) = L.break (== sp) l
+		in (k, L.drop 1 sp_v)
+	(header, message) = separate L.null ls
+	ls = L.split nl b
+
+	-- author and committer lines have the form: "name <email> date"
+	-- The email is always present, even if empty "<>"
+	parsemetadata l = CommitMetaData
+		{ commitName = whenset $ L.init name_sp
+		, commitEmail = whenset email
+		, commitDate = whenset $ L.drop 2 gt_sp_date
+		}
+	  where
+		(name_sp, rest) = L.break (== lt) l
+		(email, gt_sp_date) = L.break (== gt) (L.drop 1 rest)
+		whenset v
+			| L.null v = Nothing
+			| otherwise = Just (L8.unpack v)
+
+	nl = fromIntegral (ord '\n')
+	sp = fromIntegral (ord ' ')
+	lt = fromIntegral (ord '<')
+	gt = fromIntegral (ord '>')

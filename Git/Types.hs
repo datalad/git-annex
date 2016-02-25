@@ -97,3 +97,18 @@ toBlobType 0o100644 = Just FileBlob
 toBlobType 0o100755 = Just ExecutableBlob
 toBlobType 0o120000 = Just SymlinkBlob
 toBlobType _ = Nothing
+
+data Commit = Commit
+	{ commitTree :: Sha
+	, commitAuthorMetaData :: CommitMetaData
+	, commitCommitterMetaData :: CommitMetaData
+	, commitMessage :: String
+	}
+	deriving (Show)
+
+data CommitMetaData = CommitMetaData
+	{ commitName :: Maybe String
+	, commitEmail :: Maybe String
+	, commitDate :: Maybe String -- In raw git form, "epoch -tzoffset"
+	}
+	deriving (Show)
