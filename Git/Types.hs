@@ -98,6 +98,11 @@ toBlobType 0o100755 = Just ExecutableBlob
 toBlobType 0o120000 = Just SymlinkBlob
 toBlobType _ = Nothing
 
+fromBlobType :: BlobType -> FileMode
+fromBlobType FileBlob = 0o100644
+fromBlobType ExecutableBlob = 0o100755
+fromBlobType SymlinkBlob = 0o120000
+
 data Commit = Commit
 	{ commitTree :: Sha
 	, commitAuthorMetaData :: CommitMetaData
