@@ -11,6 +11,7 @@ git-annex (6.20160218) UNRELEASED; urgency=medium
     so any system gpg will be preferred over it.
   * Avoid crashing when built with MagicMime support, but when the magic
     database cannot be loaded.
+  * Include magic database in the linux and OSX standalone builds.
 
  -- Joey Hess <id@joeyh.name>  Thu, 18 Feb 2016 13:09:21 -0400
 

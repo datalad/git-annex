@@ -33,6 +33,7 @@ import Git.CheckAttr (unspecifiedAttr)
 
 #ifdef WITH_MAGICMIME
 import Magic
+import Utility.Env
 #endif
 
 import Data.Either
@@ -131,7 +132,12 @@ mkLargeFilesParser = do
 #ifdef WITH_MAGICMIME
 	magicmime <- liftIO $ catchMaybeIO $ do
 		m <- magicOpen [MagicMimeType]
-		liftIO $ magicLoadDefault m
+		liftIO $ do
+			md <- getEnv "GIT_ANNEX_DIR"
+			case md of
+				Nothing -> magicLoadDefault m
+				Just d -> magicLoad m
+					(d </> "magic" </> "magic.mgc")
 		return m
 #endif
 	let parse = parseToken $ commonTokens

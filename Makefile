@@ -147,6 +147,8 @@ linuxstandalone-nobuild: Build/Standalone Build/LinuxMkLibs
 	install -d "$(LINUXSTANDALONE_DEST)/git-core"
 	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(LINUXSTANDALONE_DEST)"/git-core && tar x)
 	install -d "$(LINUXSTANDALONE_DEST)/templates"
+	install -d "$(LINUXSTANDALONE_DEST)/magic"
+	cp /usr/share/file/magic.mgc "$(LINUXSTANDALONE_DEST)/magic"
 	
 	./Build/LinuxMkLibs "$(LINUXSTANDALONE_DEST)"
 	
@@ -199,6 +201,12 @@ osxapp: Build/Standalone Build/OSXMkLibs
 
 	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(OSXAPP_BASE)" && tar x)
 	install -d "$(OSXAPP_BASE)/templates"
+	install -d "$(OSXAPP_BASE)/magic"
+	if [ -e "$(OSX_MAGIC_FILE)" ]; then \
+		cp "$(OSX_MAGIC_FILE)" "$(OSXAPP_BASE)/magic/magic.mgc"; \
+	else \
+		echo "** OSX_MAGIC_FILE not set; not including it" >&2; \
+	endif
 
 	# OSX looks in man dir nearby the bin
 	$(MAKE) install-mans DESTDIR="$(OSXAPP_BASE)/.." SHAREDIR="" PREFIX=""
