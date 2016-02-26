@@ -11,3 +11,8 @@ Commit 7482853ddddc21f2696dcfbc82d737f03032134a may be relevant,
 but I don't understand how yet. A small test program using the same
 code doesn't exhibit the problem, even when built in the identical build
 environment as the 6.20160217-g95bbdb8 that has the problem.
+
+> Update: Reverted 7482853ddddc21f2696dcfbc82d737f03032134a and indeed the
+> problem got fixed. But, reverting that commit breaks the test suite on
+> windows and has a FD leak, so is not desirable. This needs more
+> investigation. --[[Joey]]
