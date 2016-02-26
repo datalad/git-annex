@@ -21,3 +21,5 @@ annex is up to date: 6.20160225+gitg229db26-1~ndall+1
 
 edit1: that is happening on jessie with file 1:5.22+15-2+deb8u1 if that is relevant
 [[!meta author=yoh]]
+
+> [[fixed|done]] --[[Joey]]
