@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="divergentdave@5c17d06f6d67c6f157b76a4cc95ca764b7d2f899"
+ nickname="divergentdave"
+ subject="comment 3"
+ date="2016-02-26T03:56:41Z"
+ content="""
+It looks like the flag in that change was incorrect. I had to change it to `--flags=\"-magicmime -concurrentoutput\"`. (no hyphen between current and output) After that, I was able to reinstall the libraries.
+
+I'd be happy to lend a hand, expect more patches!
+"""]]
