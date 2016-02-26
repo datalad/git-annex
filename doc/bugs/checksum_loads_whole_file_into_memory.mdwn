@@ -1,0 +1,13 @@
+Using eg, fsck with the MD5 backend loads whole files into memory.
+
+May only happen for very large files (40 gb) or in other specific
+circumstances, including ghc version used for buildd etc.
+
+Observed with 6.20160217-g95bbdb8, linux standalone amd64.
+
+Not observed with 5.20151218-g5008846.
+
+Commit 7482853ddddc21f2696dcfbc82d737f03032134a may be relevant,
+but I don't understand how yet. A small test program using the same
+code doesn't exhibit the problem, even when built in the identical build
+environment as the 6.20160217-g95bbdb8 that has the problem.
