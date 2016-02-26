@@ -16,3 +16,9 @@ environment as the 6.20160217-g95bbdb8 that has the problem.
 > problem got fixed. But, reverting that commit breaks the test suite on
 > windows and has a FD leak, so is not desirable. This needs more
 > investigation. --[[Joey]]
+
+>> I see it now, the checksum is a String and it was only forced to WHNF,
+>> so the hashing didn't fully complete and the file got buffered.
+>> Probably only occurred when fscking, and not when adding a file,
+>> due to differing use patterns of the checksum.
+>> [[fixed|done]] --[[Joey]] 

@@ -12,6 +12,9 @@ git-annex (6.20160218) UNRELEASED; urgency=medium
   * Avoid crashing when built with MagicMime support, but when the magic
     database cannot be loaded.
   * Include magic database in the linux and OSX standalone builds.
+  * Fix memory leak when hashing files, which triggered during fsck
+    when an external hash program was not used.
+    (This leak was introduced in version 6.20160114.)
 
  -- Joey Hess <id@joeyh.name>  Thu, 18 Feb 2016 13:09:21 -0400
 
