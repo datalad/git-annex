@@ -206,7 +206,7 @@ osxapp: Build/Standalone Build/OSXMkLibs
 		cp "$(OSX_MAGIC_FILE)" "$(OSXAPP_BASE)/magic/magic.mgc"; \
 	else \
 		echo "** OSX_MAGIC_FILE not set; not including it" >&2; \
-	endif
+	fi
 
 	# OSX looks in man dir nearby the bin
 	$(MAKE) install-mans DESTDIR="$(OSXAPP_BASE)/.." SHAREDIR="" PREFIX=""
