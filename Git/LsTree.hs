@@ -73,7 +73,7 @@ parseLsTree l = TreeItem
 	{ mode = smode
 	, typeobj = t
 	, sha = Ref s
-	, file = asTopFilePath $ Git.Filename.decode f
+	, file = sfile
 	}
   where
 	-- l = <mode> SP <type> SP <sha> TAB <file>
