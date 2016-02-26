@@ -171,11 +171,9 @@ hashFile hash file filesize = go hash
 	go (SkeinHash hashsize) = use (skeinHasher hashsize)
 	
 	use hasher = liftIO $ do
-		hdl <- openBinaryFile file ReadMode
-		b <- L.hGetContents hdl
-		let !hsh = hasher b
-		hClose hdl
-		return hsh
+		h <- hasher <$> L.readFile file
+		-- Force full evaluation so file is read and closed.
+		return (length h `seq` h)
 	
 	usehasher hashsize = case shaHasher hashsize filesize of
 		Left sha -> use sha
