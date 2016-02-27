@@ -115,6 +115,15 @@ file contents are present at either of two repositories.
   matches the glob. The values of metadata fields are matched case
   insensitively.
 
+* `--metadata field<number` / `--metadata field>number`
+* `--metadata field<=number` / `--metadata field>=number`
+
+  Matches only files that have a metadata field attached with a value that
+  is a number and is less than or greater than the specified number.
+
+  (Note that you will need to quote the second parameter to avoid
+  the shell doing redirection.)
+
 * `--want-get`
 
   Matches files that the preferred content settings for the repository

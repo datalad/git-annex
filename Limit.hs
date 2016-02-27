@@ -23,6 +23,7 @@ import Types.TrustLevel
 import Types.Group
 import Types.FileMatcher
 import Types.MetaData
+import Annex.MetaData
 import Logs.MetaData
 import Logs.Group
 import Logs.Unused
@@ -278,14 +279,12 @@ addMetaData :: String -> Annex ()
 addMetaData = addLimit . limitMetaData
 
 limitMetaData :: MkLimit Annex
-limitMetaData s = case parseMetaData s of
+limitMetaData s = case parseMetaDataMatcher s of
 	Left e -> Left e
-	Right (f, v) ->
-		let cglob = compileGlob (fromMetaValue v) CaseInsensative
-		in Right $ const $ checkKey (check f cglob)
+	Right (f, matching) -> Right $ const $ checkKey (check f matching)
   where
-	check f cglob k = not . S.null 
-		. S.filter (matchGlob cglob . fromMetaValue) 
+	check f matching k = not . S.null 
+		. S.filter matching
 		. metaDataValues f <$> getCurrentMetaData k
 
 addTimeLimit :: String -> Annex ()
