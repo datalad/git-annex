@@ -70,7 +70,7 @@ addmeta() {
 	file="$1"
 	field="$2"
 	value="$3"
-	afield="$(echo "$field" | tr ' ' '_' | tr 'A-Z' 'a-z')"
+	afield="$(echo "$field" | tr ' ' '_')"
 	git -c annex.alwayscommit=false annex metadata \
 		--set "$afield$equal$value" --quiet -- "$file"
 }
