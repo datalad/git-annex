@@ -2,22 +2,47 @@ git-annex's [[metadata]] works best when files have a lot of useful
 metadata attached to them.
 
 To make git-annex automatically set the year and month when adding files,
-run `git config annex.genmetadata true`.
+run: `git config annex.genmetadata true`
+
+## git commit hook
 
 A git commit hook can be set up to extract lots of metadata from files
-like photos, mp3s, etc.
+like photos, mp3s, etc. Whenever annexed files are committed, their
+metadata will be extracted and stored.
 
-1. Install the `extract` utility, from <http://www.gnu.org/software/libextractor/>  
-   `apt-get install extract`
-2. Download [[pre-commit-annex]] and install it in your git-annex repository
-   as `.git/hooks/pre-commit-annex`.  
-   Remember to make the script executable!
-3. Run: `git config metadata.extract "artist album title camera_make video_dimensions"`
+Download [[pre-commit-annex]] and install it in your git-annex repository
+as `.git/hooks/pre-commit-annex`  
+Remember to make the script executable! `chmod +x .git/hooks/pre-commit-annex`
 
-Now any fields you list in metadata.extract to will be extracted and
-stored when files are committed.
+### using extract
+
+The git commit hook can use extract to get metadata.
+
+Install it from <http://www.gnu.org/software/libextractor/>  
+`apt-get install extract`
+
+Configure which metadata fields to ask extract for: `git config metadata.extract "artist album title camera_make video_dimensions"`
 
 To get a list of all possible fields, run: `extract -L | sed 's/ /_/g'`
+
+### using exiftool
+
+The git commit hook can also use exiftool to get metadata.
+
+Install it from <http://owl.phy.queensu.ca/~phil/exiftool/>  
+`apt-get install libimage-exiftool-perl`
+
+Configure which metadata fields to ask exiftool for: `git config metadata.exiftool "Model ImageSize FocusRange GPSAltitude GPSCoordinates"`
+
+To get a list of all possible fields, run: `exiftool -list`
+
+### using both extract and exiftool
+
+If you want some metadata that extract knows about, and other metadata
+that exiftool knows about, just install them both, and set both
+`metadata.extract` and `metadata.exiftool`.
+
+### overwriting existing metadata
 
 By default, if a git-annex already has a metadata field for a file,
 its value will not be overwritten with metadata taken from files.

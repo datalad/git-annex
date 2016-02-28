@@ -19,6 +19,9 @@ git-annex (6.20160218) UNRELEASED; urgency=medium
     to match ranges of numeric values.
   * Similarly, support preferred content expressions like
     metadata=field<number and metadata=field>number
+  * The pre-commit-annex hook script that automatically extracts
+    metadata has been updated to also use exiftool.
+    Thanks, Klaus Ethgen.
 
  -- Joey Hess <id@joeyh.name>  Thu, 18 Feb 2016 13:09:21 -0400
 

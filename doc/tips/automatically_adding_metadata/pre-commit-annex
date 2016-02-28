@@ -1,4 +1,20 @@
-#!/bin/sh
+#! /bin/sh
+#
+# Copyright (C) 2014 Joey Hess <id@joeyh.name>
+# Copyright (C) 2016 Klaus Ethgen <Klaus@Ethgen.ch>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # This script can be used to add git-annex metadata to files when they're
 # committed. It is typically installed as .git/hooks/pre-commit-annex
@@ -6,67 +22,97 @@
 # You can also run this script by hand, passing it the names of files
 # already checked into git-annex, and it will extract/refresh the git-annex
 # metadata from the files.
-#
-# Copyright 2014 Joey Hess <id@joeyh.name>
-# License: GPL-3+
 
-extract="$(git config metadata.extract || true)" 
-want="$(perl -e 'print (join("|", map {s/_/ /g; "^$_ - "} (split " ", shift())))' "$extract")"
-
-if [ -z "$want" ]; then
-	exit 0
+tool="$(git config metadata.tool || :)"
+if [ -z "$tool" ]; then
+	tool=extract
 fi
-
-case "$(git config --bool metadata.overwrite || true)" in
-	true)
-		overwrite=1
+case "$tool" in
+	exiftool)
+		tool_exec="exiftool -unknown -zip -veryShort -ignoreMinorErrors -use MWG -dateFormat '%Y-%m-%dT%H:%M:%S'"
 	;;
 	*)
-		overwrite=""
+		tool_exec="$tool"
 	;;
 esac
 
-addmeta () {
+extract_fields="$(git config metadata.extract || :)"
+if [ -n "$extract_fields" ]; then
+	tools=extract
+	extract_want="^($(echo "$extract_fields" | sed -e 's/ /|/g' -e 's/_/ /g'))"
+fi
+exiftool_fields="$(git config metadata.exiftool || :)"
+if [ -n "$exiftool_fields" ]; then
+	tools="exiftool $tools"
+	exiftool_want="^($(echo "$exiftool_fields" | sed -e 's/ /|/g' -e 's/_/ /g'))"
+fi
+if [ -z "$tools" ]; then
+	exit 0
+fi
+
+case "$(git config --bool metadata.overwrite || :)" in
+	true)
+		equal="="
+	;;
+	*)
+		equal="?="
+	;;
+esac
+
+if git rev-parse --verify HEAD >/dev/null 2>&1; then
+	against="HEAD"
+else
+	# Initial commit: diff against an empty tree object
+	against="4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+fi
+
+addmeta() {
 	file="$1"
 	field="$2"
 	value="$3"
-	afield="$(echo "$field" | tr ' ' _)"
-	if [ "$overwrite" ]; then
-		p="$afield=$value"
-
-	else
-		p="$afield?=$value"
-	fi
-	git -c annex.alwayscommit=false annex metadata "$file" -s "$p" --quiet
+	afield="$(echo "$field" | tr ' ' '_' | tr 'A-Z' 'a-z')"
+	git -c annex.alwayscommit=false annex metadata \
+		--set "$afield$equal$value" --quiet -- "$file"
 }
 
-if git rev-parse --verify HEAD >/dev/null 2>&1; then
-	against=HEAD
-else
-	# Initial commit: diff against an empty tree object
-	against=4b825dc642cb6eb9a060e54bf8d69288fbee4904
-fi
-
-IFS="
-"
-
-process () {
+process() {
 	if [ -e "$f" ]; then
 		echo "adding metadata for $f"
-		for l in $(extract "$f" | egrep "$want"); do
-			field="${l%% - *}"
-			value="${l#* - }"
-			addmeta "$f" "$field" "$value"
+		for tool in $tools; do
+			case "$tool" in
+				exiftool)
+					tool_exec="exiftool -unknown -zip -veryShort -ignoreMinorErrors -use MWG -dateFormat '%Y-%m-%dT%H:%M:%S'"
+				;;
+				*)
+					tool_exec="$tool"
+				;;
+			esac
+			LC_ALL=C $tool_exec "./$f" | eval egrep --text -i \""\$${tool}_want"\" | while read line; do
+				case "$tool" in
+					extract)
+						field="${line%% - *}"
+						value="${line#* - }"
+					;;
+					exiftool)
+						field="${line%%: *}"
+						value="${line#*: }"
+					;;
+				esac
+				
+				if [ -n "$value" ]; then
+					addmeta "$f" "$field" "$value"
+				fi
+			done
 		done
 	fi
 }
 
 if [ -n "$*" ]; then
-	for f in $@; do
+	for f in "$@"; do
 		process "$f"
 	done
 else
-	for f in $(git diff-index --name-only --cached $against); do
+	for f in "$(git diff-index --name-only --cached $against)"; do
 		process "$f"
 	done
 fi
