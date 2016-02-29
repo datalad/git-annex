@@ -269,21 +269,22 @@ updateSyncBranch :: CurrBranch -> Annex ()
 updateSyncBranch (Nothing, _) = noop
 updateSyncBranch (Just branch, _) = do
 	-- Update the sync branch to match the new state of the branch
-	inRepo $ updateBranch $ syncBranch branch
+	inRepo $ updateBranch (syncBranch branch) branch
 	-- In direct mode, we're operating on some special direct mode
-	-- branch, rather than the intended branch, so update the indended
+	-- branch, rather than the intended branch, so update the intended
 	-- branch.
 	whenM isDirect $
-		inRepo $ updateBranch $ fromDirectBranch branch
+		inRepo $ updateBranch (fromDirectBranch branch) branch
 
-updateBranch :: Git.Branch -> Git.Repo -> IO ()
-updateBranch syncbranch g = 
+updateBranch :: Git.Branch -> Git.Branch -> Git.Repo -> IO ()
+updateBranch syncbranch updateto g = 
 	unlessM go $ error $ "failed to update " ++ Git.fromRef syncbranch
   where
 	go = Git.Command.runBool
 		[ Param "branch"
 		, Param "-f"
 		, Param $ Git.fromRef $ Git.Ref.base syncbranch
+		, Param $ Git.fromRef $ updateto
 		] g
 
 pullRemote :: SyncOptions -> Remote -> CurrBranch -> CommandStart
@@ -311,7 +312,7 @@ mergeRemote remote currbranch = ifM isBareRepo
 			branch <- inRepo Git.Branch.currentUnsafe
 			mergelisted (pure (branchlist branch))
 		(Just branch, _) -> do
-			inRepo $ updateBranch $ syncBranch branch
+			inRepo $ updateBranch (syncBranch branch) branch
 			mergelisted (tomerge (branchlist (Just branch)))
 	)
   where

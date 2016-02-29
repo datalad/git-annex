@@ -299,7 +299,7 @@ runPush checkcloudrepos (Pushing cid (PushRequest theiruuid)) =
 		(g, u) <- liftAnnex $ (,)
 			<$> gitRepo
 			<*> getUUID
-		liftIO $ Command.Sync.updateBranch (Command.Sync.syncBranch branch) g
+		liftIO $ Command.Sync.updateBranch (Command.Sync.syncBranch branch) branch g
 		selfjid <- ((T.unpack <$>) . xmppClientID) <$> getDaemonStatus
 		if null rs
 			then return Nothing
