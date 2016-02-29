@@ -67,9 +67,6 @@ adjustedToOriginal b
 	bs = fromRef b
 	prefixlen = length adjustedBranchPrefix
 
-getAdjustment :: Annex (Maybe (Adjustment, OrigBranch))
-getAdjustment = maybe Nothing adjustedToOriginal <$> inRepo Git.Branch.current
-
 originalBranch :: Annex (Maybe OrigBranch)
 originalBranch = fmap getorig <$> inRepo Git.Branch.current
   where
@@ -123,6 +120,6 @@ commitAdjustedTree treesha parent = go =<< catCommit parent
 
 {- Update the currently checked out adjusted branch, merging the provided
  - branch into it. -}
-updateAdjustedBranch :: Adjustment -> OrigBranch -> Branch -> Annex ()
+updateAdjustedBranch :: Adjustment -> OrigBranch -> Branch -> Annex Bool
 updateAdjustedBranch mergebranch = do
 	error "updateAdjustedBranch"
