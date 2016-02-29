@@ -139,6 +139,28 @@ conflict should only affect the work tree/index, so can be resolved without
 making a commit, but B'' may end up being made to resolve a merge
 conflict.)
 
+------
+
+FIXME: When an adjusted unlocked branch has gotten a file, and a new
+commit is merged in, that does not touch that file, there is a false merge
+conflict on the file. It's auto-resolved by creating a .variant file.
+This is probably a bug in the auto-resolve code for v6 files.
+
+Test case:
+
+	git clone ~/lib/tmp
+	cd tmp
+	git annex upgrade
+	git annex adjust
+	git annex get t/foo
+	# make change in ~/lib/tmp and commit
+	git annex sync
+	# t/foo.variant-* is there
+
+------
+
+
+
 Once the merge is done, we have a commit B'' on adjusted/master. To finish,
 adjust that commit so it does not have adjusted/master as its parent.
 
