@@ -27,7 +27,6 @@ import Annex.TaggedPush
 import Annex.CatFile
 import Config
 import Git
-import qualified Git.Branch
 import qualified Types.Remote as Remote
 import qualified Remote as Remote
 import Remote.List

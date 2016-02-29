@@ -120,6 +120,6 @@ commitAdjustedTree treesha parent = go =<< catCommit parent
 
 {- Update the currently checked out adjusted branch, merging the provided
  - branch into it. -}
-updateAdjustedBranch :: Adjustment -> OrigBranch -> Branch -> Annex Bool
-updateAdjustedBranch mergebranch = do
+updateAdjustedBranch :: Branch -> (OrigBranch, Adjustment) -> Git.Branch.CommitMode -> Annex Bool
+updateAdjustedBranch tomerge (origbranch, adj) commitmode = do
 	error "updateAdjustedBranch"

@@ -10,6 +10,7 @@ module Command.Sync (
 	cmd,
 	CurrBranch,
 	getCurrBranch,
+	merge,
 	prepMerge,
 	mergeLocal,
 	mergeRemote,
@@ -165,6 +166,12 @@ getCurrBranch = do
 prepMerge :: Annex ()
 prepMerge = Annex.changeDirectory =<< fromRepo Git.repoPath
 
+merge :: CurrBranch -> Git.Branch.CommitMode -> Git.Branch -> Annex Bool
+merge (Just b, Just adj) commitmode tomerge =
+	updateAdjustedBranch tomerge (b, adj) commitmode
+merge (b, _) commitmode tomerge =
+	autoMergeFrom tomerge b commitmode
+
 syncBranch :: Git.Ref -> Git.Ref
 syncBranch = Git.Ref.under "refs/heads/synced" . fromDirectBranch
 
@@ -236,8 +243,7 @@ commitStaged commitmode commitmessage = do
 	return True
 
 mergeLocal :: CurrBranch -> CommandStart
-mergeLocal (Nothing, _) = stop
-mergeLocal (Just branch, madj) = go =<< needmerge
+mergeLocal currbranch@(Just branch, _) = go =<< needmerge
   where
 	syncbranch = syncBranch branch
 	needmerge = ifM isBareRepo
@@ -250,9 +256,9 @@ mergeLocal (Just branch, madj) = go =<< needmerge
 	go False = stop
 	go True = do
 		showStart "merge" $ Git.Ref.describe syncbranch
-		next $ next $ case madj of
-			Nothing -> autoMergeFrom syncbranch (Just branch) Git.Branch.ManualCommit
-			Just adj -> updateAdjustedBranch adj branch syncbranch
+		next $ next $
+			merge currbranch Git.Branch.ManualCommit syncbranch
+mergeLocal (Nothing, _) = stop
 
 pushLocal :: CurrBranch -> CommandStart
 pushLocal b = do
@@ -298,19 +304,19 @@ pullRemote o remote branch = stopUnless (pure $ pullOption o) $ do
  - while the synced/master may have changes that some
  - other remote synced to this remote. So, merge them both. -}
 mergeRemote :: Remote -> CurrBranch -> CommandCleanup
-mergeRemote remote b = ifM isBareRepo
+mergeRemote remote currbranch = ifM isBareRepo
 	( return True
-	, case b of
+	, case currbranch of
 		(Nothing, _) -> do
 			branch <- inRepo Git.Branch.currentUnsafe
-			and <$> mapM (merge Nothing Nothing) (branchlist branch)
-		(Just currbranch, madj) -> do
-			inRepo $ updateBranch $ syncBranch currbranch
-			and <$> (mapM (merge (Just currbranch) madj) =<< tomerge (branchlist (Just currbranch)))
+			mergelisted (pure (branchlist branch))
+		(Just branch, _) -> do
+			inRepo $ updateBranch $ syncBranch branch
+			mergelisted (tomerge (branchlist (Just branch)))
 	)
   where
-	merge (Just origbranch) (Just adj) br = updateAdjustedBranch adj origbranch br
-	merge currbranch _ br = autoMergeFrom (remoteBranch remote br) currbranch Git.Branch.ManualCommit
+	mergelisted getlist = and <$> 
+		(mapM (merge currbranch Git.Branch.ManualCommit) =<< getlist)
 	tomerge = filterM (changed remote)
 	branchlist Nothing = []
 	branchlist (Just branch) = [branch, syncBranch branch]
