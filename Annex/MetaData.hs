@@ -61,7 +61,7 @@ dateMetaData mtime old = MetaData $ M.fromList $ filter isnew
 parseModMeta :: String -> Either String ModMeta
 parseModMeta p = case lastMaybe f of
 	Just '+' -> AddMeta <$> mkMetaField f' <*> v
-	Just '-' -> DelMeta <$> mkMetaField f' <*> v
+	Just '-' -> DelMeta <$> mkMetaField f' <*> (Just <$> v)
 	Just '?' -> MaybeSetMeta <$> mkMetaField f' <*> v
 	_ -> SetMeta <$> mkMetaField f <*> v
   where

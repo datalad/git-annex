@@ -1,3 +1,9 @@
+git-annex (6.20160230) UNRELEASED; urgency=medium
+
+  * metadata: Added -r to remove all current values of a field.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 29 Feb 2016 13:00:30 -0400
+
 git-annex (6.20160229) unstable; urgency=medium
 
   * Update perlmagick build dependency. Closes: #789225

@@ -19,34 +19,39 @@ When run without any -s or -t parameters, displays the current metadata.
 
 # OPTIONS
 
-* `-g field`
+* `-g field` / `--get field`
 
   Get the value(s) of a single field.
 
   The values will be output one per line, with no other output, so
   this is suitable for use in a script.
 
-* `-s field=value`
+* `-s field=value` / `--set field=value`
 
   Set a field's value, removing any old values.
 
-* `-s field+=value`
+* `-s field+=value` / `--set field+=value`
 
   Add an additional value, preserving any old values.
 
-* `-s field-=value`
-
-  Remove a value.
-
-* `-s field?=value`
+* `-s field?=value` / `--set field?=value`
 
   Set a value, but only if the field does not already have a value set.
-  
-* `-t tag`
+
+* `-s field-=value` / `--set field-=value`
+
+  Remove a value from a field, leaving any other values that the field has
+  set.
+
+* `-r field` / `--remove field`
+
+  Remove all current values of the field.
+
+* `-t tag` / `--tag tag`
 
   Set a tag. Note that a tag is just a value of the "tag" field.
 
-* `-u tag`
+* `-u tag` / `--unset tag`
 
   Unset a tag.
 
