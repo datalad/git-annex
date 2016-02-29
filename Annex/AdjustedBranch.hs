@@ -129,8 +129,7 @@ commitAdjustedTree treesha parent = go =<< catCommit parent
 {- Update the currently checked out adjusted branch, merging the provided
  - branch into it. -}
 updateAdjustedBranch :: Branch -> (OrigBranch, Adjustment) -> Git.Branch.CommitMode -> Annex Bool
-updateAdjustedBranch tomerge (origbranch, adj) commitmode = do
-	liftIO $ print ("updateAdjustedBranch", tomerge)
+updateAdjustedBranch tomerge (origbranch, adj) commitmode =
 	go =<< (,)
 		<$> inRepo (Git.Ref.sha tomerge)
 		<*> inRepo Git.Branch.current
@@ -139,7 +138,6 @@ updateAdjustedBranch tomerge (origbranch, adj) commitmode = do
 		( do
 			propigateAdjustedCommits origbranch adj
 			adjustedtomerge <- adjust adj mergesha
-			liftIO $ print ("mergesha", mergesha, "adjustedtomerge", adjustedtomerge)
 			ifM (inRepo $ Git.Branch.changed currbranch adjustedtomerge)
 				( ifM (autoMergeFrom adjustedtomerge (Just currbranch) commitmode)
 					( recommit currbranch mergesha =<< catCommit currbranch
