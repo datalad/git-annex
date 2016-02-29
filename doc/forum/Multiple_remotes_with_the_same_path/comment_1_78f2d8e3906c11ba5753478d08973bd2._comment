@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-02-29T15:47:39Z"
+ content="""
+git-annex is not getting confused; it's looking at the current content of
+the remote and using that uuid. Failing to do so would constitute
+confusion.
+
+If you want the remote to only work when the drive is plugged into a single
+host, you need to make the remote path only reach a repository on that
+host. One way would be a symlink, eg `/home/grawity/Attic/rain-Software ->
+Software` on rain.
+
+Or, just use the repository description, eg
+`--in grawity@rain:~/Attic/Software`. Note that the description can be
+changed to something easier to type.
+"""]]
