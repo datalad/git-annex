@@ -25,6 +25,7 @@ import Git.Env
 import Annex.CatFile
 import Annex.Link
 import Git.HashObject
+import Annex.AutoMerge
 
 data Adjustment = UnlockAdjustment
 	deriving (Show)
@@ -92,14 +93,18 @@ enterAdjustedBranch adj = go =<< originalBranch
 
 adjustBranch :: Adjustment -> OrigBranch -> Annex AdjBranch
 adjustBranch adj origbranch = do
-	h <- inRepo hashObjectStart
-	treesha <- adjustTree (adjustTreeItem adj h) origbranch =<< Annex.gitRepo
-	liftIO $ hashObjectStop h
-	commitsha <- commitAdjustedTree treesha origbranch
-	inRepo $ Git.Branch.update adjbranch commitsha
+	sha <- adjust adj origbranch
+	inRepo $ Git.Branch.update adjbranch sha
 	return adjbranch
   where
 	adjbranch = originalToAdjusted origbranch adj
+
+adjust :: Adjustment -> Ref -> Annex Sha
+adjust adj orig = do
+	h <- inRepo hashObjectStart
+	treesha <- adjustTree (adjustTreeItem adj h) orig =<< Annex.gitRepo
+	liftIO $ hashObjectStop h
+	commitAdjustedTree treesha orig
 
 {- Commits a given adjusted tree, with the provided parent ref.
  -
@@ -122,4 +127,40 @@ commitAdjustedTree treesha parent = go =<< catCommit parent
  - branch into it. -}
 updateAdjustedBranch :: Branch -> (OrigBranch, Adjustment) -> Git.Branch.CommitMode -> Annex Bool
 updateAdjustedBranch tomerge (origbranch, adj) commitmode = do
-	error "updateAdjustedBranch"
+	liftIO $ print ("updateAdjustedBranch", tomerge)
+	go =<< (,)
+		<$> inRepo (Git.Ref.sha tomerge)
+		<*> inRepo Git.Branch.current
+  where
+	go (Just mergesha, Just currbranch) = ifM (inRepo $ Git.Branch.changed currbranch mergesha)
+		( do
+			propigateAdjustedCommits origbranch adj
+			adjustedtomerge <- adjust adj mergesha
+			liftIO $ print ("mergesha", mergesha, "adjustedtomerge", adjustedtomerge)
+			ifM (inRepo $ Git.Branch.changed currbranch adjustedtomerge)
+				( ifM (autoMergeFrom adjustedtomerge (Just currbranch) commitmode)
+					( recommit currbranch mergesha =<< catCommit currbranch
+					, return False
+					)
+				, return True -- no changes to merge
+				)
+		, return True -- no changes to merge
+		)
+	go _ = return False
+	{- Once a merge commit has been made, re-do it, removing
+	 - the old version of the adjusted branch as a parent, and
+	 - making the only parent be the branch that was merged in.
+	 -
+	 - Doing this ensures that the same commit Sha is
+	 - always arrived at for a given commit from the merged in branch.
+	 -}
+	recommit currbranch parent (Just commit) = do
+		commitsha <- commitAdjustedTree (commitTree commit) parent
+		inRepo $ Git.Branch.update currbranch commitsha
+		return True
+	recommit _ _ Nothing = return False
+
+{- Check for any commits present on the adjusted branch that have not yet
+ - been propigated to the master branch, and propigate them. -}
+propigateAdjustedCommits :: OrigBranch -> Adjustment -> Annex ()
+propigateAdjustedCommits originbranch adj = return () -- TODO
