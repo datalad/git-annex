@@ -317,7 +317,7 @@ mergeRemote remote currbranch = ifM isBareRepo
 	)
   where
 	mergelisted getlist = and <$> 
-		(mapM (merge currbranch Git.Branch.ManualCommit) =<< getlist)
+		(mapM (merge currbranch Git.Branch.ManualCommit . remoteBranch remote) =<< getlist)
 	tomerge = filterM (changed remote)
 	branchlist Nothing = []
 	branchlist (Just branch) = [branch, syncBranch branch]
