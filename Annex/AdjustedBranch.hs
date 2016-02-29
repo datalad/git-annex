@@ -5,7 +5,14 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Annex.AdjustedBranch where
+module Annex.AdjustedBranch (
+	Adjustment(..),
+	OrigBranch,
+	AdjBranch,
+	adjustedToOriginal,
+	enterAdjustedBranch,
+	updateAdjustedBranch,
+) where
 
 import Annex.Common
 import qualified Annex
@@ -38,22 +45,35 @@ type AdjBranch = Branch
 adjustedBranchPrefix :: String
 adjustedBranchPrefix = "refs/heads/adjusted/"
 
-originalToAdjusted :: OrigBranch -> AdjBranch
-originalToAdjusted orig = Ref $ adjustedBranchPrefix ++ takeFileName (fromRef orig)
+serialize :: Adjustment -> String
+serialize UnlockAdjustment = "unlock"
 
-adjustedToOriginal :: AdjBranch -> Maybe (OrigBranch)
+deserialize :: String -> Maybe Adjustment
+deserialize "unlock" = Just UnlockAdjustment
+deserialize _ = Nothing
+
+originalToAdjusted :: OrigBranch -> Adjustment -> AdjBranch
+originalToAdjusted orig adj = Git.Ref.under base orig
+  where
+	base = adjustedBranchPrefix ++ serialize adj
+
+adjustedToOriginal :: AdjBranch -> Maybe (Adjustment, OrigBranch)
 adjustedToOriginal b
-	| adjustedBranchPrefix `isPrefixOf` bs =
-		Just $ Ref $ drop prefixlen bs
+	| adjustedBranchPrefix `isPrefixOf` bs = do
+		adj <- deserialize (takeWhile (/= '/') (drop prefixlen bs))
+		Just (adj, Git.Ref.basename b)
 	| otherwise = Nothing
   where
 	bs = fromRef b
 	prefixlen = length adjustedBranchPrefix
 
+getAdjustment :: Annex (Maybe (Adjustment, OrigBranch))
+getAdjustment = maybe Nothing adjustedToOriginal <$> inRepo Git.Branch.current
+
 originalBranch :: Annex (Maybe OrigBranch)
 originalBranch = fmap getorig <$> inRepo Git.Branch.current
   where
-	getorig currbranch = fromMaybe currbranch (adjustedToOriginal currbranch)
+	getorig currbranch = maybe currbranch snd (adjustedToOriginal currbranch)
 
 {- Enter an adjusted version of current branch (or, if already in an
  - adjusted version of a branch, changes the adjustment of the original
@@ -82,7 +102,7 @@ adjustBranch adj origbranch = do
 	inRepo $ Git.Branch.update adjbranch commitsha
 	return adjbranch
   where
-	adjbranch = originalToAdjusted origbranch
+	adjbranch = originalToAdjusted origbranch adj
 
 {- Commits a given adjusted tree, with the provided parent ref.
  -
@@ -100,3 +120,9 @@ commitAdjustedTree treesha parent = go =<< catCommit parent
 		mkcommit
 	mkcommit = Git.Branch.commitTree
 		Git.Branch.AutomaticCommit "adjusted branch" [parent] treesha
+
+{- Update the currently checked out adjusted branch, merging the provided
+ - branch into it. -}
+updateAdjustedBranch :: Adjustment -> OrigBranch -> Branch -> Annex ()
+updateAdjustedBranch mergebranch = do
+	error "updateAdjustedBranch"
