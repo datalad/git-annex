@@ -12,6 +12,9 @@ module Git.Env where
 import Git
 import Git.Types
 import Utility.Env
+#ifdef __ANDROID__
+import Common
+#endif
 
 {- Adjusts the gitEnv of a Repo. Copies the system environment if the repo
  - does not have any gitEnv yet. -}

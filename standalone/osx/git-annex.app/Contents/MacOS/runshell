@@ -77,7 +77,11 @@ export ORIG_GIT_TEMPLATE_DIR
 GIT_TEMPLATE_DIR="$bundle/templates"
 export GIT_TEMPLATE_DIR
 
-# Indicate which variables were exported above.
+GIT_ANNEX_DIR="$bundle"
+export GIT_ANNEX_DIR
+
+# Indicate which variables were exported above and should be cleaned
+# when running non-bundled programs.
 GIT_ANNEX_STANDLONE_ENV="PATH GIT_EXEC_PATH GIT_TEMPLATE_DIR"
 export GIT_ANNEX_STANDLONE_ENV
 

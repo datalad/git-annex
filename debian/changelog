@@ -1,4 +1,10 @@
-git-annex (6.20160218) UNRELEASED; urgency=medium
+git-annex (6.20160230) UNRELEASED; urgency=medium
+
+  * metadata: Added -r to remove all current values of a field.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 29 Feb 2016 13:00:30 -0400
+
+git-annex (6.20160229) unstable; urgency=medium
 
   * Update perlmagick build dependency. Closes: #789225
   * Fix memory leak in last release, which affected commands like
@@ -11,8 +17,19 @@ git-annex (6.20160218) UNRELEASED; urgency=medium
     so any system gpg will be preferred over it.
   * Avoid crashing when built with MagicMime support, but when the magic
     database cannot be loaded.
+  * Include magic database in the linux and OSX standalone builds.
+  * Fix memory leak when hashing files, which triggered during fsck
+    when an external hash program was not used.
+    (This leak was introduced in version 6.20160114.)
+  * Support --metadata field<number, --metadata field>number etc
+    to match ranges of numeric values.
+  * Similarly, support preferred content expressions like
+    metadata=field<number and metadata=field>number
+  * The pre-commit-annex hook script that automatically extracts
+    metadata has been updated to also use exiftool.
+    Thanks, Klaus Ethgen.
 
- -- Joey Hess <id@joeyh.name>  Thu, 18 Feb 2016 13:09:21 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 29 Feb 2016 12:41:49 -0400
 
 git-annex (6.20160217) unstable; urgency=medium
 

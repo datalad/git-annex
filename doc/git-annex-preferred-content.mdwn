@@ -119,6 +119,15 @@ elsewhere to allow removing it).
 
   To match author metadata, use `metadata=author=*Smith`
 
+* `metadata=field<number` / `metadata=field>number` 
+* `metadata=field<=number` / `metadata=field>=number`
+
+  Matches only files that have a metadata field attached with a value that
+  is a number and is less than or greater than the specified number.
+
+  To match PDFs with between 100 and 200 pages (assuming something has set
+  that metadata), use `metadata=pagecount>=100 and metadata=pagecount<=200`
+
 * `present`
 
   Makes content be wanted if it's present, but not otherwise.

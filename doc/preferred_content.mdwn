@@ -67,3 +67,4 @@ they were added in.
 * "metadata=" 5.20140221
 * "lackingcopies=", "approxlackingcopies=", "unused=" 5.20140127
 * "inpreferreddir=" 4.20130501
+* "metadata=field&lt;number" etc 6.20160227

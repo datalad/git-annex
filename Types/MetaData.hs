@@ -36,8 +36,6 @@ module Types.MetaData (
 	metaDataValues,
 	ModMeta(..),
 	modMeta,
-	parseModMeta,
-	parseMetaData,
 	prop_metadata_sane,
 	prop_metadata_serialize
 ) where
@@ -221,9 +219,13 @@ metaDataValues f (MetaData m) = fromMaybe S.empty (M.lookup f m)
 {- Ways that existing metadata can be modified -}
 data ModMeta
 	= AddMeta MetaField MetaValue
-	| DelMeta MetaField MetaValue
-	| SetMeta MetaField MetaValue -- removes any existing values
-	| MaybeSetMeta MetaField MetaValue -- when field has no existing value
+	| DelMeta MetaField (Maybe MetaValue)
+	-- ^ delete value of a field. With Just, only that specific value
+	-- is deleted; with Nothing, all current values are deleted.
+	| SetMeta MetaField MetaValue
+	-- ^ removes any existing values
+	| MaybeSetMeta MetaField MetaValue
+	-- ^ set when field has no existing value
 	deriving (Show)
 
 {- Applies a ModMeta, generating the new MetaData.
@@ -231,33 +233,16 @@ data ModMeta
  - values set in the input metadata. It only contains changed values. -}
 modMeta :: MetaData -> ModMeta -> MetaData
 modMeta _ (AddMeta f v) = updateMetaData f v emptyMetaData
-modMeta _ (DelMeta f oldv) = updateMetaData f (unsetMetaValue oldv) emptyMetaData
+modMeta _ (DelMeta f (Just oldv)) =
+	updateMetaData f (unsetMetaValue oldv) emptyMetaData
+modMeta m (DelMeta f Nothing) = MetaData $ M.singleton f $
+	S.fromList $ map unsetMetaValue $ S.toList $ currentMetaDataValues f m
 modMeta m (SetMeta f v) = updateMetaData f v $
 	foldr (updateMetaData f) emptyMetaData $
 		map unsetMetaValue $ S.toList $ currentMetaDataValues f m
 modMeta m (MaybeSetMeta f v)
 	| S.null (currentMetaDataValues f m) = updateMetaData f v emptyMetaData
 	| otherwise = emptyMetaData
-
-{- Parses field=value, field+=value, field-=value, field?=value -}
-parseModMeta :: String -> Either String ModMeta
-parseModMeta p = case lastMaybe f of
-	Just '+' -> AddMeta <$> mkMetaField f' <*> v
-	Just '-' -> DelMeta <$> mkMetaField f' <*> v
-	Just '?' -> MaybeSetMeta <$> mkMetaField f' <*> v
-	_ -> SetMeta <$> mkMetaField f <*> v
-  where
-	(f, sv) = separate (== '=') p
-	f' = beginning f
-	v = pure (toMetaValue sv)
-
-{- Parses field=value -}
-parseMetaData :: String -> Either String (MetaField, MetaValue)
-parseMetaData p = (,)
-	<$> mkMetaField f
-	<*> pure (toMetaValue v)
-  where
-	(f, v) = separate (== '=') p
 
 {- Avoid putting too many fields in the map; extremely large maps make
  - the seriaization test slow due to the sheer amount of data.

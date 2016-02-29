@@ -1,0 +1,24 @@
+git-annex 6.20160229 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Update perlmagick build dependency. Closes: #[789225](http://bugs.debian.org/789225)
+   * Fix memory leak in last release, which affected commands like
+     git-annex status when a large non-annexed file is present in the work
+     tree.
+   * fsck: When the only copy of a file is in a dead repository, mention
+     the repository.
+   * info: Mention when run in a dead repository.
+   * Linux and OSX standalone builds put the bundled gpg last in PATH,
+     so any system gpg will be preferred over it.
+   * Avoid crashing when built with MagicMime support, but when the magic
+     database cannot be loaded.
+   * Include magic database in the linux and OSX standalone builds.
+   * Fix memory leak when hashing files, which triggered during fsck
+     when an external hash program was not used.
+     (This leak was introduced in version 6.20160114.)
+   * Support --metadata field&lt;number, --metadata field&gt;number etc
+     to match ranges of numeric values.
+   * Similarly, support preferred content expressions like
+     metadata=field&lt;number and metadata=field&gt;number
+   * The pre-commit-annex hook script that automatically extracts
+     metadata has been updated to also use exiftool.
+     Thanks, Klaus Ethgen."""]]
