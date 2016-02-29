@@ -174,7 +174,7 @@ adjust that commit so it does not have adjusted/master as its parent.
 	|--------------->B''
 	|                |
 
-Finally, update master to point to B''.
+Finally, update master, by reverse filtering B''. TODO
 
 Notice how similar this is to the commit graph. So, "fast-forward" 
 merging the same B commit from origin/master will lead to an identical
