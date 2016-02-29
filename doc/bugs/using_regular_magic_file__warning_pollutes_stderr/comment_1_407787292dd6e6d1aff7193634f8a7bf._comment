@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-02-26T15:52:43Z"
+ content="""
+Reproduced in a clean chroot using the linux standalone tarball.
+
+I think it does this when it can't find any magic file.
+
+Fixing by including the magic database in the bundle. This will also let me
+re-enable magicmime on OSX.
+"""]]
