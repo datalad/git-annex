@@ -292,10 +292,9 @@ xmppRemotes cid theiruuid = case baseJID <$> parseJID cid of
 {- Returns the ClientID that it pushed to. -}
 runPush :: (Remote -> Assistant ()) -> NetMessage -> Assistant (Maybe ClientID)
 runPush checkcloudrepos (Pushing cid (PushRequest theiruuid)) =
-	go =<< liftAnnex (inRepo Git.Branch.current)
+	go =<< liftAnnex (join Command.Sync.getCurrBranch)
   where
-	go Nothing = return Nothing
-	go (Just branch) = do
+	go (Just branch, _) = do
 		rs <- xmppRemotes cid theiruuid
 		liftAnnex $ Annex.Branch.commit "update"
 		(g, u) <- liftAnnex $ (,)
@@ -311,6 +310,7 @@ runPush checkcloudrepos (Pushing cid (PushRequest theiruuid)) =
 						xmppPush cid (taggedPush u selfjid branch r)
 					checkcloudrepos r
 				return $ Just cid
+	go _ = return Nothing
 runPush checkcloudrepos (Pushing cid (StartingPush theiruuid)) = do
 	rs <- xmppRemotes cid theiruuid
 	if null rs
