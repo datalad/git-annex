@@ -26,6 +26,7 @@ import Annex.CatFile
 import Annex.Link
 import Git.HashObject
 import Annex.AutoMerge
+import qualified Database.Keys
 
 data Adjustment = UnlockAdjustment
 	deriving (Show)
@@ -35,8 +36,10 @@ adjustTreeItem UnlockAdjustment h ti@(TreeItem f m s)
 	| toBlobType m == Just SymlinkBlob = do
 		mk <- catKey s
 		case mk of
-			Just k -> Just . TreeItem f (fromBlobType FileBlob)
-				<$> hashPointerFile' h k
+			Just k -> do
+				Database.Keys.addAssociatedFile k f
+				Just . TreeItem f (fromBlobType FileBlob)
+					<$> hashPointerFile' h k
 			Nothing -> return (Just ti)
 	| otherwise = return (Just ti)
 
