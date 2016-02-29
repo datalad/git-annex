@@ -1,0 +1,37 @@
+### Please describe the problem.
+The way git-annex deals with submodules (replacing the .git file in the submodule, with a link to the corresponding gitdir of the submodule) seems to confuse Git when creating another submodule in an annex-init'ed submodule.
+
+### What steps will reproduce the problem?
+    % mkdir some ; cd some; git init
+    Initialized empty Git repository in /tmp/some/.git/
+    % git submodule add /src/somegitrepo sub_lvl1
+    Cloning into 'sub_lvl1'...
+    done.
+    % cd sub_lvl1
+    % git annex init
+    init  (merging origin/git-annex into git-annex...)
+    (recording state in git...)
+    ok
+    (recording state in git...)
+    % git submodule add /src/somegitrepo sub_lvl2
+    Cloning into 'sub_lvl2'...
+    done.
+    fatal: Could not chdir to '../../../sub_lvl2': No such file or directory
+    Unable to checkout submodule 'sub_lvl2'
+
+### What version of git-annex are you using? On what operating system?
+    % apt-cache policy git-annex-standalone
+    git-annex-standalone:
+      Installed: 6.20160213+gitg9597a21-1~ndall+1
+
+Debian stretch, git-annex from NeuroDebian.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes, lots! Using it for some of its original use cases for more than five years now -- I was actually surprised to learn, just now, that the oldest commit in my music repository is exactly 5 years and 6 days old. Thanks for longevity and reliability!
+
+More recently I aim exploring the use of git annex for managing datasets and their dependencies, i.e. going from raw to some processed state over multiple levels, where each level is a useful starting point for some analysis, and each previous level is a dependency (input) to the next. With just one level above "raw" this has massively improved collaboration workflows in student/teacher settings for me. Deeper nesting levels would allow for even more interesting applications, but see above ;-) I think Git seems needlessly confused, but I don't fully grasp what is happening yet. I'd appreciate any insight you may have. Although it is Git that shows the undesired behavior, it seems it is git-annex that ultimately confused it. Hence I came here first.
+
+BTW: What a nice idea to ask for something like this in a bug report.
+
+
