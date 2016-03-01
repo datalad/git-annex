@@ -94,6 +94,6 @@ tryPidLock m f posixlock = liftIO . go =<< pidLockFile
 
 -- The posix lock file is created even when using pid locks, in order to
 -- avoid complicating any code that might expect to be able to see that
--- lock file.
+-- lock file. But, it's not locked.
 dummyPosixLock :: Maybe FileMode -> LockFile -> IO ()
 dummyPosixLock m f = closeFd =<< openLockFile ReadLock m f
