@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="bvaa"
+ subject="similar problem"
+ date="2016-03-01T08:12:27Z"
+ content="""
+I have a similar problem on Windows 7 64bit trying to add files that are around 5GB in size. I tried repository version 5 and 6 with same results.
+
+```
+$ git annex add bigfile
+add bigfile ok
+(recording state in git...)
+
+$ git annex status
+fatal: Cannot handle files this big
+```
+git-annex version: 6.20160229-g37a89cc
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload) WebDAV ConcurrentOutput TorrentParser Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository versions: 5 6
+upgrade supported from repository versions: 2 3 4 5
+
+"""]]
