@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-03-01T15:35:48Z"
+ content="""
+Oddly, I cannot reproduce this, although I can reproduce the behavior in
+<http://git-annex.branchable.com/bugs/thread_blocked_indefinitely_in_an_STM_transaction__while_moving_within__a_local_clone/>a
+
+(smaug:/tmp/123 has permissions that do not let me access it.)
+"""]]
