@@ -1,0 +1,39 @@
+relates to having pidlock true
+
+[[!format sh """
+$> mkdir 123; cd 123; git init; git annex init; git config annex.pidlock true && echo "123" > 123.dat; git annex add 123.dat; git commit -m 'added';
+W: git-annex repositories not (yet) supported in the prompt
+Initialized empty Git repository in /tmp/123/.git/
+init  ok
+(recording state in git...)
+add 123.dat ok
+(recording state in git...)
+[master (root-commit) 9449f1b] added
+ 1 file changed, 1 insertion(+)
+ create mode 120000 123.dat
+
+$> git clone . ../123-clone && git remote add clone ../123-clone && git fetch clone && cd ../123-clone && git config annex.pidlock true && cd - && git annex move --to=clone .
+Cloning into '../123-clone'...                                                                                                                                         
+done.
+From ../123-clone
+ * [new branch]      master     -> clone/master
+move 123.dat git-annex: thread blocked indefinitely in an STM transaction
+
+$> echo $?
+1
+
+$> git annex version
+git-annex version: 6.20160226+gitg01f1de0-1~ndall+1
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository versions: 5 6
+upgrade supported from repository versions: 0 1 2 4 5
+
+"""]]
+
+and it works ok without pidlock enabled
+
+[[!meta author=yoh]]
+
