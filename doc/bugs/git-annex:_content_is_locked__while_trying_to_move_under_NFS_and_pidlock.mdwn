@@ -1,0 +1,31 @@
+### Please describe the problem.
+
+Ideally annex should detect all "paranormal" cases such as running on NFS mounted partition, but according to [https://git-annex.branchable.com/bugs/huge_multiple_copies_of___39__.nfs__42____39___and___39__.panfs__42____39___being_created/](https://git-annex.branchable.com/bugs/huge_multiple_copies_of___39__.nfs__42____39___and___39__.panfs__42____39___being_created/).  Happily ignorant we were running annex (5.20151116-g76139a9) on NFS mounted partition until we filled up 2TB of allocated to us space with .nfs* files.  Well -- apparently according to above we should have tried pidlock... trying now but doesn't work :-/
+
+[[!format sh """
+*$> git clone smaug:/tmp/123 123-clone && cd 123-clone && git config annex.pidlock true && echo 124 > 124.dat && git annex add 124.dat && git commit -m 'added 124' && git annex move --to=origin 124.dat
+Initialized empty Git repository in /home/yhalchen/123-clone/.git/
+remote: Counting objects: 22, done.
+remote: Compressing objects: 100% (16/16), done.
+remote: Total 22 (delta 3), reused 0 (delta 0)
+Receiving objects: 100% (22/22), done.
+Resolving deltas: 100% (3/3), done.
+total 1
+1 123.dat@  1 README.txt
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+add 124.dat ok
+(recording state in git...)
+[master 0f1092a] added 124
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+ create mode 120000 124.dat
+move 124.dat (checking origin...) git-annex: content is locked
+
+$> echo $?
+1
+
+"""]]
+
+BTW running move in our old now somewhat screwed up annex, results in a differently expressed error: [http://www.onerussian.com/tmp/2016-02-29.png](http://www.onerussian.com/tmp/2016-02-29.png)
+
+[[!meta author=yoh]]
