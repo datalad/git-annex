@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="recent snapshot seems has fixed it"
+ date="2016-03-01T18:52:27Z"
+ content="""
+[[!format sh \"\"\"
+$> git clone smaug:/tmp/123 123-clone && cd 123-clone && git config annex.pidlock true && echo 124 > 124.dat && git annex add 124.dat && git commit -m 'added 124' && git annex move --to=origin 124.dat
+Cloning into '123-clone'...
+remote: Counting objects: 22, done.
+remote: Compressing objects: 100% (16/16), done.
+remote: Total 22 (delta 3), reused 0 (delta 0)
+Receiving objects: 100% (22/22), done.
+Resolving deltas: 100% (3/3), done.
+Checking connectivity... done.
+total 1
+1 123.dat@  1 README.txt
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+add 124.dat ok
+(recording state in git...)
+[master 6eca577] added 124
+ 1 file changed, 1 insertion(+)
+ create mode 120000 124.dat
+move 124.dat (checking origin...) ok
+(recording state in git...)
+
+$> git annex version
+git-annex version: 6.20160301+gitg647fffd-1~ndall+1
+
+\"\"\"]]
+"""]]
