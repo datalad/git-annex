@@ -33,6 +33,8 @@ import Prelude
 -- Takes a pid lock, blocking until the lock is available or the timeout.
 waitLock :: Seconds -> LockFile -> IO LockHandle
 waitLock timeout file = makeLockHandle
+	-- LockShared for STM lock, because a pid lock can be the top-level
+	-- lock with various other STM level locks gated behind it.
 	(P.waitTakeLock P.lockPool file LockShared)
 	(mk <$> F.waitLock timeout file)
 
