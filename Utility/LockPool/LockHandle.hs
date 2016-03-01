@@ -7,7 +7,16 @@
 
 {-# LANGUAGE CPP #-}
 
-module Utility.LockPool.LockHandle where
+module Utility.LockPool.LockHandle (
+	LockHandle,
+	FileLockOps(..),
+	dropLock,
+#ifndef mingw32_HOST_OS
+	checkSaneLock,
+#endif
+	makeLockHandle,
+	tryMakeLockHandle,
+) where
 
 import qualified Utility.LockPool.STM as P
 #ifndef mingw32_HOST_OS
@@ -17,10 +26,7 @@ import Utility.LockPool.STM (LockFile)
 import Control.Concurrent.STM
 import Control.Exception
 
-data LockHandle = LockHandle
-	{ poolHandle :: P.LockHandle
-	, fileLockOps :: FileLockOps
-	}
+data LockHandle = LockHandle P.LockHandle FileLockOps
 
 data FileLockOps = FileLockOps
 	{ fDropLock :: IO ()
@@ -30,7 +36,7 @@ data FileLockOps = FileLockOps
 	}
 
 dropLock :: LockHandle -> IO ()
-dropLock h = P.releaseLock (poolHandle h) (fDropLock (fileLockOps h))
+dropLock (LockHandle ph _) = P.releaseLock ph
 
 #ifndef mingw32_HOST_OS
 checkSaneLock :: LockFile -> LockHandle -> IO Bool
@@ -40,26 +46,30 @@ checkSaneLock lockfile (LockHandle _ flo) = fCheckSaneLock flo lockfile
 -- Take a lock, by first updating the lock pool, and then taking the file
 -- lock. If taking the file lock fails for any reason, take care to
 -- release the lock in the lock pool.
-makeLockHandle :: STM P.LockHandle -> IO FileLockOps -> IO LockHandle
-makeLockHandle pa fa = bracketOnError setup cleanup go
+makeLockHandle :: P.LockPool -> LockFile -> (P.LockPool -> LockFile -> STM P.LockHandle) -> (LockFile -> IO FileLockOps) -> IO LockHandle
+makeLockHandle pool file pa fa = bracketOnError setup cleanup go
   where
-	setup = atomically pa
-	cleanup ph = P.releaseLock ph (return ())
-	go ph = do
-		fo <- fa
-		return $ LockHandle ph fo
+	setup = atomically (pa pool file)
+	cleanup ph = P.releaseLock ph
+	go ph = mkLockHandle pool file ph =<< fa file
 
-tryMakeLockHandle :: STM (Maybe P.LockHandle) -> IO (Maybe FileLockOps) -> IO (Maybe LockHandle)
-tryMakeLockHandle pa fa = bracketOnError setup cleanup go
+tryMakeLockHandle :: P.LockPool -> LockFile -> (P.LockPool -> LockFile -> STM (Maybe P.LockHandle)) -> (LockFile -> IO (Maybe FileLockOps)) -> IO (Maybe LockHandle)
+tryMakeLockHandle pool file pa fa = bracketOnError setup cleanup go
   where
-	setup = atomically pa
+	setup = atomically (pa pool file)
 	cleanup Nothing = return ()
-	cleanup (Just ph) = P.releaseLock ph (return ())
+	cleanup (Just ph) = P.releaseLock ph
 	go Nothing = return Nothing
 	go (Just ph) = do
-		mfo <- fa
+		mfo <- fa file
 		case mfo of
 			Nothing -> do
 				cleanup (Just ph)
 				return Nothing
-			Just fo -> return $ Just $ LockHandle ph fo
+			Just fo -> Just <$> mkLockHandle pool file ph fo
+
+mkLockHandle :: P.LockPool -> LockFile -> P.LockHandle -> FileLockOps -> IO LockHandle
+mkLockHandle pool file ph fo = do
+	atomically $ P.registerCloseLockFile pool file (fDropLock fo)
+	return $ LockHandle ph fo
+	

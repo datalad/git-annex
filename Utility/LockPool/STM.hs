@@ -15,7 +15,11 @@ module Utility.LockPool.STM (
 	tryTakeLock,
 	getLockStatus,
 	releaseLock,
+	CloseLockFile,
+	registerCloseLockFile,
 ) where
+
+import Utility.Monad
 
 import System.IO.Unsafe (unsafePerformIO)
 import qualified Data.Map.Strict as M
@@ -36,7 +40,9 @@ type LockHandle = TMVar (LockPool, LockFile)
 
 type LockCount = Integer
 
-data LockStatus = LockStatus LockMode LockCount
+data LockStatus = LockStatus LockMode LockCount CloseLockFile
+
+type CloseLockFile = IO ()
 
 -- This TMVar is normally kept full.
 type LockPool = TMVar (M.Map LockFile LockStatus)
@@ -59,11 +65,11 @@ waitTakeLock :: LockPool -> LockFile -> LockMode -> STM LockHandle
 waitTakeLock pool file mode = do
 	m <- takeTMVar pool
 	v <- case M.lookup file m of
-		Just (LockStatus mode' n)
+		Just (LockStatus mode' n closelockfile)
 			| mode == LockShared && mode' == LockShared ->
-				return $ LockStatus mode (succ n)
+				return $ LockStatus mode (succ n) closelockfile
 			| n > 0 -> retry -- wait for lock
-		_ -> return $ LockStatus mode 1
+		_ -> return $ LockStatus mode 1 noop
 	putTMVar pool (M.insert file v m)
 	newTMVar (pool, file)
 
@@ -73,6 +79,16 @@ tryTakeLock pool file mode =
 	(Just <$> waitTakeLock pool file mode)
 		`orElse`
 	return Nothing
+
+-- Call after waitTakeLock or tryTakeLock, to register a CloseLockFile
+-- action to run when releasing the lock.
+registerCloseLockFile :: LockPool -> LockFile -> CloseLockFile -> STM ()
+registerCloseLockFile pool file closelockfile = do
+	m <- takeTMVar pool
+	putTMVar pool (M.update go file m)
+  where
+	go (LockStatus mode n closelockfile') = Just $
+		LockStatus mode n (closelockfile' >> closelockfile)
 
 -- Checks if a lock is being held. If it's held by the current process,
 -- runs the getdefault action; otherwise runs the checker action.
@@ -87,7 +103,7 @@ getLockStatus pool file getdefault checker = do
 	v <- atomically $ do
 		m <- takeTMVar pool
 		let threadlocked = case M.lookup file m of
-			Just (LockStatus _ n) | n > 0 -> True
+			Just (LockStatus _ n _) | n > 0 -> True
 			_ -> False
 		if threadlocked
 			then do
@@ -99,25 +115,24 @@ getLockStatus pool file getdefault checker = do
 		Just restore -> bracket_ (return ()) restore checker
 
 -- Only runs action to close underlying lock file when this is the last
--- user of the lock, and when the handle has not already been closed.
+-- user of the lock, and when the lock has not already been closed.
 --
--- Note that the lock pool is left empty while the closelockfile action
+-- Note that the lock pool is left empty while the CloseLockFile action
 -- is run, to avoid race with another thread trying to open the same lock
 -- file.
-releaseLock :: LockHandle -> IO () -> IO ()
-releaseLock h closelockfile = go =<< atomically (tryTakeTMVar h)
+releaseLock :: LockHandle -> IO ()
+releaseLock h = go =<< atomically (tryTakeTMVar h)
   where
 	go (Just (pool, file)) = do
-		(m, unused) <- atomically $ do
+		(m, closelockfile) <- atomically $ do
 			m <- takeTMVar pool
 			return $ case M.lookup file m of
-				Just (LockStatus mode n)
-					| n == 1 -> (M.delete file m, True)
+				Just (LockStatus mode n closelockfile)
+					| n == 1 -> (M.delete file m, closelockfile)
 					| otherwise ->
-						(M.insert file (LockStatus mode (pred n)) m, False)
-				Nothing -> (m, True)
-		when unused
-			closelockfile
+						(M.insert file (LockStatus mode (pred n) closelockfile) m, noop)
+				Nothing -> (m, noop)
+		closelockfile
 		atomically $ putTMVar pool m
 	-- The LockHandle was already closed.
 	go Nothing = return ()

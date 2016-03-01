@@ -32,17 +32,17 @@ import Prelude
 
 -- Takes a pid lock, blocking until the lock is available or the timeout.
 waitLock :: Seconds -> LockFile -> IO LockHandle
-waitLock timeout file = makeLockHandle
+waitLock timeout file = makeLockHandle P.lockPool file
 	-- LockShared for STM lock, because a pid lock can be the top-level
 	-- lock with various other STM level locks gated behind it.
-	(P.waitTakeLock P.lockPool file LockShared)
-	(mk <$> F.waitLock timeout file)
+	(\p f -> P.waitTakeLock p f LockShared)
+	(\f -> mk <$> F.waitLock timeout f)
 
 -- Tries to take a pid lock, but does not block.
 tryLock :: LockFile -> IO (Maybe LockHandle)
-tryLock file = tryMakeLockHandle
-	(P.tryTakeLock P.lockPool file LockShared)
-	(fmap mk <$> F.tryLock file)
+tryLock file = tryMakeLockHandle P.lockPool file
+	(\p f -> P.tryTakeLock p f LockShared)
+	(\f -> fmap mk <$> F.tryLock f)
 
 checkLocked :: LockFile -> IO (Maybe Bool)
 checkLocked file = P.getLockStatus P.lockPool file
