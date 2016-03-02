@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="mih"
+ subject="Thanks"
+ date="2016-03-02T19:30:49Z"
+ content="""
+Thanks for investigating this further.
+
+One aspect that may make switching the location of the .git directory into the worktree of the submodule less desirable is this: With the actual .git in ../.git/modules/... one can easily rm -rf the submodule, deinit it, and re-init/update from the (still present) ../.git/modules/... at a later point in time. Especially, when a submodule is a more complicated beast (e.g. with multiple configured remotes) the required steps to regenerate the same setup get more complex.
+"""]]
