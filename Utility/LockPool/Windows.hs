@@ -34,7 +34,7 @@ lockShared file = tryMakeLockHandle P.lockPool file
  - content, a separate LockFile should be used. -}
 lockExclusive :: LockFile -> IO (Maybe LockHandle)
 lockExclusive file = tryMakeLockHandle P.lockPool file
-	(\p -> P.tryTakeLock f LockExclusive)
+	(\p f -> P.tryTakeLock f LockExclusive)
 	(\f -> fmap mk <$> F.lockExclusive f)
 
 {- If the initial lock fails, this is a BUSY wait, and does not
