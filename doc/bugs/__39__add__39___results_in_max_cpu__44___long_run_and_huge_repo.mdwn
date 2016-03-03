@@ -1,0 +1,40 @@
+### Please describe the problem.
+massive repo, max cpu using
+
+    git annex add .
+
+had to interrupt the job as it was processing 1 small file per 5 seconds after about 3h run.
+
+I am running it on the root of a large (currently 1TB) exFAT-based drive used for archiving
+
+The repo grew to 28G.
+
+Is this a regular issue with exFAT? I've done quite a bit of searching. I'll do more.
+
+### What steps will reproduce the problem?
+- install on El Capitan (latest) via home-brew
+- create 1TB exFAT file store
+- follow walk through to setup annex locally and on external
+- add
+
+### What version of git-annex are you using? On what operating system?
+git-annex version: 6.20160126
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV FsEvents XMPP ConcurrentOutput TorrentParser Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+
+El Capitan 10.11.3
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+I'd love to say I have. You'll hear my shout of joy when I do.
