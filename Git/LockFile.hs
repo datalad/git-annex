@@ -32,7 +32,22 @@ data LockHandle = LockHandle FilePath HANDLE
  - time.
  -}
 openLock :: FilePath -> IO LockHandle
-openLock lck = do
+openLock lck = openLock' lck `catchNonAsync` lckerr
+  where
+	lckerr e = do
+		-- Same error message displayed by git.
+		whenM (doesFileExist lck) $
+			hPutStrLn stderr $ unlines
+				[ "fatal: Unable to create '" ++ lck ++ "': " ++ show e
+				, ""
+				, "If no other git process is currently running, this probably means a"
+				, "git process crashed in this repository earlier. Make sure no other git"
+				, "process is running and remove the file manually to continue."
+				]
+		throwM e
+
+openLock' :: FilePath -> IO LockHandle
+openLock' lck = do
 #ifndef mingw32_HOST_OS
 	-- On unix, git simply uses O_EXCL
 	h <- openFd lck ReadWrite (Just 0O666)
