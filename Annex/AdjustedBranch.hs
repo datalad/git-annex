@@ -22,6 +22,8 @@ import qualified Git.Ref
 import qualified Git.Command
 import Git.Tree
 import Git.Env
+import Git.Index
+import qualified Git.LockFile
 import Annex.CatFile
 import Annex.Link
 import Git.HashObject
@@ -86,7 +88,7 @@ originalBranch = fmap getorig <$> inRepo Git.Branch.current
 enterAdjustedBranch :: Adjustment -> Annex ()
 enterAdjustedBranch adj = go =<< originalBranch
   where
-	go (Just origbranch) = do
+	go (Just origbranch) = preventCommits $ do
 		adjbranch <- adjustBranch adj origbranch
 		inRepo $ Git.Command.run
 			[ Param "checkout"
@@ -109,6 +111,19 @@ adjust adj orig = do
 	liftIO $ hashObjectStop h
 	commitAdjustedTree treesha orig
 
+{- Locks git's index file, preventing git from making a commit, merge, 
+ - or otherwise changing the HEAD ref while the action is run.
+ -
+ - Throws an IO exception if the index file is already locked.
+ -}
+preventCommits :: Annex a -> Annex a
+preventCommits = bracket setup cleanup . const
+  where
+	setup = do
+		lck <- fromRepo indexFileLock
+		liftIO $ Git.LockFile.openLock lck
+	cleanup lckhandle = liftIO $ Git.LockFile.closeLock lckhandle
+
 {- Commits a given adjusted tree, with the provided parent ref.
  -
  - This should always yield the same value, even if performed in different 
@@ -129,8 +144,8 @@ commitAdjustedTree treesha parent = go =<< catCommit parent
 {- Update the currently checked out adjusted branch, merging the provided
  - branch into it. -}
 updateAdjustedBranch :: Branch -> (OrigBranch, Adjustment) -> Git.Branch.CommitMode -> Annex Bool
-updateAdjustedBranch tomerge (origbranch, adj) commitmode =
-	go =<< (,)
+updateAdjustedBranch tomerge (origbranch, adj) commitmode = 
+	catchBoolIO $ preventCommits $ go =<< (,)
 		<$> inRepo (Git.Ref.sha tomerge)
 		<*> inRepo Git.Branch.current
   where
