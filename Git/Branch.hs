@@ -48,15 +48,25 @@ currentUnsafe r = parse . firstLine
 changed :: Branch -> Branch -> Repo -> IO Bool
 changed origbranch newbranch repo
 	| origbranch == newbranch = return False
-	| otherwise = not . null <$> diffs
+	| otherwise = not . null
+		<$> changed' origbranch newbranch [Param "-n1"] repo
   where
-	diffs = pipeReadStrict
+
+changed' :: Branch -> Branch -> [CommandParam] -> Repo -> IO String
+changed' origbranch newbranch extraps repo = pipeReadStrict ps repo
+  where
+	ps =
 		[ Param "log"
 		, Param (fromRef origbranch ++ ".." ++ fromRef newbranch)
-		, Param "-n1"
 		, Param "--pretty=%H"
-		] repo
+		] ++ extraps
 
+{- Lists commits that are in the second branch and not in the first branch. -}
+changedCommits :: Branch -> Branch -> [CommandParam] -> Repo -> IO [Sha]
+changedCommits origbranch newbranch extraps repo = 
+	catMaybes . map extractSha . lines
+		<$> changed' origbranch newbranch extraps repo
+	
 {- Check if it's possible to fast-forward from the old
  - ref to the new ref.
  -

@@ -267,21 +267,20 @@ pushLocal b = do
 
 updateSyncBranch :: CurrBranch -> Annex ()
 updateSyncBranch (Nothing, _) = noop
-updateSyncBranch (Just branch, _) = do
+updateSyncBranch (Just branch, madj) = do
 	-- When in an adjusted branch, propigate any changes to it back to
 	-- the original branch.
-	branch' <- case adjustedToOriginal branch of
-		Just (adj, origbranch) -> do
-			propigateAdjustedCommits origbranch adj
-			return origbranch
-		Nothing -> return branch
+	case madj of
+		Just adj -> propigateAdjustedCommits branch
+			(adj, originalToAdjusted branch adj)
+		Nothing -> return ()
 	-- Update the sync branch to match the new state of the branch
-	inRepo $ updateBranch (syncBranch branch') branch'
+	inRepo $ updateBranch (syncBranch branch) branch
 	-- In direct mode, we're operating on some special direct mode
 	-- branch, rather than the intended branch, so update the intended
 	-- branch.
 	whenM isDirect $
-		inRepo $ updateBranch (fromDirectBranch branch') branch'
+		inRepo $ updateBranch (fromDirectBranch branch) branch
 
 updateBranch :: Git.Branch -> Git.Branch -> Git.Repo -> IO ()
 updateBranch syncbranch updateto g = 

@@ -351,3 +351,5 @@ like this, at its most simple:
 * Entering an adjusted branch can race with commits to the current branch,
   and so the assistant should not be running, or at least should have
   commits disabled when entering it.
+* When the adjusted branch unlocks files, behave as if annex.addunlocked is
+  set, so git annex add will add files unlocked.
