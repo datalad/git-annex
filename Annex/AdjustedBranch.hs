@@ -91,8 +91,8 @@ originalBranch = fmap fromAdjustedBranch <$> inRepo Git.Branch.current
 enterAdjustedBranch :: Adjustment -> Annex ()
 enterAdjustedBranch adj = go =<< originalBranch
   where
-	go (Just origbranch) = preventCommits $ do
-		adjbranch <- adjustBranch adj origbranch
+	go (Just origbranch) = do
+		adjbranch <- preventCommits $ adjustBranch adj origbranch
 		inRepo $ Git.Command.run
 			[ Param "checkout"
 			, Param $ fromRef $ Git.Ref.base $ adjbranch

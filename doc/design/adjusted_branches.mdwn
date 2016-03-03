@@ -342,3 +342,12 @@ like this, at its most simple:
 	-- Generate a version of the commit made on the filter branch
 	-- with the filtering of modified files reversed.
 	unfilteredCommit :: Filter -> Git.Commit -> Git.Commit
+
+## TODOs
+
+* Need a better command-line interface than `git annex adjust`,
+  that allows picking adjustments.
+* Interface in webapp to enable adjustments.
+* Entering an adjusted branch can race with commits to the current branch,
+  and so the assistant should not be running, or at least should have
+  commits disabled when entering it.
