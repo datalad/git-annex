@@ -1,0 +1,72 @@
+Tuesday was spent dealing with lock files. Turned out there were some bugs
+in the `annex.pidlock` configuration that prevented it from working, and
+could even lead to data loss.
+
+And then more lock files today, since I needed to lock git's index file the
+same way git does. This involved finding out how to emulate `O_EXCL` under
+Windows. Urgh.
+
+Finally got back to working on [[adjusted_branches]] today. And, I've just
+gotten syncing of commits from adjusted branches back to the orginal branch
+working! Time for short demo of what I've been building for the past couple
+weeks:
+
+	joey@darkstar:~/tmp/demo>ls -l
+	total 4
+	lrwxrwxrwx 1 joey joey 190 Mar  3 17:09 bigfile -> .git/annex/objects/zx/X8/SHA256E-s1048576--44ee9fdd91d4bc567355f8b2becd5fe137b9e3aafdfe804341ce2bcc73b8013f/SHA256E-s1048576--44ee9fdd91d4bc567355f8b2becd5fe137b9e3aafdfe804341ce2bcc73b8013f
+	joey@darkstar:~/tmp/demo>git annex adjust
+	Switched to branch 'adjusted/master(unlocked)'
+	ok
+	joey@darkstar:~/tmp/demo#master(unlocked)>ls -l
+	total 4
+	-rw-r--r-- 1 joey joey 1048576 Mar  3 17:09 bigfile
+
+Entering the adjusted branch unlocked all the files.
+
+	joey@darkstar:~/tmp/demo#master(unlocked)>git mv bigfile newname
+	joey@darkstar:~/tmp/demo#master(unlocked)>git commit -m rename
+	[adjusted/master(unlocked) 29e1bc8] rename
+	 1 file changed, 0 insertions(+), 0 deletions(-)
+	  rename bigfile => newname (100%)
+	joey@darkstar:~/tmp/demo#master(unlocked)>git log --pretty=oneline
+	29e1bc835080298bbeeaa4a9faf42858c050cad5 rename
+	a195537dc5beeee73fc026246bd102bae9770389 git-annex adjusted branch
+	5dc1d94d40af4bf4a88b52805e2a3ae855122958 add
+	joey@darkstar:~/tmp/demo#master(unlocked)>git log --pretty=oneline master
+	5dc1d94d40af4bf4a88b52805e2a3ae855122958 add
+
+The commit was made on top of the commit that generated the adjusted branch.
+It's not yet reached the master branch.
+
+	joey@darkstar:~/tmp/demo#master(unlocked)>git annex sync
+	commit  ok
+	joey@darkstar:~/tmp/demo#master(unlocked)>git log --pretty=oneline
+	b60c5d6dfe55107431b80382596f14f4dcd259c9 git-annex adjusted branch
+	9c36848f078a2bb7a304010e962a2b7318c0877c rename
+	5dc1d94d40af4bf4a88b52805e2a3ae855122958 add
+	joey@darkstar:~/tmp/demo#master(unlocked)>git log --pretty=oneline master
+	9c36848f078a2bb7a304010e962a2b7318c0877c rename
+	5dc1d94d40af4bf4a88b52805e2a3ae855122958 add
+
+Now the commit has reached master. Notice how the history of the adjusted
+branch was rebased on top of the updated master branch as well.
+
+	joey@darkstar:~/tmp/demo#master(unlocked)>ls -l
+	total 1024
+	-rw-r--r-- 1 joey joey 1048576 Mar  3 17:09 newname
+	joey@darkstar:~/tmp/demo#master(unlocked)>git checkout master
+	Switched to branch 'master'
+	joey@darkstar:~/tmp/demo>ls -l
+	total 4
+	lrwxrwxrwx 1 joey joey 190 Mar  3 17:12 newname -> .git/annex/objects/zx/X8/SHA256E-s1048576--44ee9fdd91d4bc567355f8b2becd5fe137b9e3aafdfe804341ce2bcc73b8013f/SHA256E-s1048576--44ee9fdd91d4bc567355f8b2becd5fe137b9e3aafdfe804341ce2bcc73b8013f
+
+Just as we'd want, the file is locked in master, and unlocked in 
+the adjusted branch.
+
+(Not shown: git annex sync will also merge in and adjust changes from remotes.)
+
+So, that all looks great! But, it's cheating a bit, because it locks
+all files when updating the master branch. I need to make it remember,
+somehow, when files were originally unlocked, and keep them unlocked. Also
+want to implement other adjustments, like hiding files whose content is not
+present.
