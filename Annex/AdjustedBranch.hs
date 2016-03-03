@@ -74,22 +74,24 @@ adjustedBranchPrefix :: String
 adjustedBranchPrefix = "refs/heads/adjusted/"
 
 serialize :: Adjustment -> String
-serialize UnlockAdjustment = "unlock"
+serialize UnlockAdjustment = "unlocked"
 
 deserialize :: String -> Maybe Adjustment
-deserialize "unlock" = Just UnlockAdjustment
+deserialize "unlocked" = Just UnlockAdjustment
 deserialize _ = Nothing
 
 originalToAdjusted :: OrigBranch -> Adjustment -> AdjBranch
-originalToAdjusted orig adj = Git.Ref.under base orig
+originalToAdjusted orig adj = Ref $
+	adjustedBranchPrefix ++ base ++ '(' : serialize adj ++ ")"
   where
-	base = adjustedBranchPrefix ++ serialize adj
+	base = fromRef (Git.Ref.basename orig)
 
 adjustedToOriginal :: AdjBranch -> Maybe (Adjustment, OrigBranch)
 adjustedToOriginal b
 	| adjustedBranchPrefix `isPrefixOf` bs = do
-		adj <- deserialize (takeWhile (/= '/') (drop prefixlen bs))
-		Just (adj, Git.Ref.basename b)
+		let (base, as) = separate (== '(') (drop prefixlen bs)
+		adj <- deserialize (takeWhile (/= ')') as)
+		Just (adj, Git.Ref.under "refs/heads" (Ref base))
 	| otherwise = Nothing
   where
 	bs = fromRef b
@@ -217,7 +219,7 @@ updateAdjustedBranch tomerge (origbranch, adj) commitmode =
  -}
 propigateAdjustedCommits :: OrigBranch -> (Adjustment, AdjBranch) -> Annex ()
 propigateAdjustedCommits origbranch (adj, currbranch) = do
-	v <- inRepo $ Git.Ref.sha (Git.Ref.under "refs/heads/" origbranch)
+	v <- inRepo $ Git.Ref.sha (Git.Ref.under "refs/heads" origbranch)
 	case v of
 		Just origsha -> go origsha False =<< newcommits
 		Nothing -> return ()
