@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="acbg@8d58f794ce92f6be28b5dbd402059bc30262eb92"
+ nickname="acbg"
+ subject="Since which version does this apply?"
+ date="2016-03-03T16:16:28Z"
+ content="""
+I use version 5.20140412, and I've tried the annex.largefiles in .gitattributes, but doesn't work.   Every file is added to .git/annex/objects, including the ones that are excluded in .gitattributes.
+
+I've just started using git-annex so maybe I'm doing something wrong...
+"""]]
