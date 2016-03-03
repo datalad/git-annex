@@ -10,8 +10,10 @@ module Annex.AdjustedBranch (
 	OrigBranch,
 	AdjBranch,
 	adjustedToOriginal,
+	fromAdjustedBranch,
 	enterAdjustedBranch,
 	updateAdjustedBranch,
+	propigateAdjustedCommits,
 ) where
 
 import Annex.Common
@@ -73,10 +75,11 @@ adjustedToOriginal b
 	bs = fromRef b
 	prefixlen = length adjustedBranchPrefix
 
+fromAdjustedBranch :: Branch -> OrigBranch
+fromAdjustedBranch b = maybe b snd (adjustedToOriginal b)
+
 originalBranch :: Annex (Maybe OrigBranch)
-originalBranch = fmap getorig <$> inRepo Git.Branch.current
-  where
-	getorig currbranch = maybe currbranch snd (adjustedToOriginal currbranch)
+originalBranch = fmap fromAdjustedBranch <$> inRepo Git.Branch.current
 
 {- Enter an adjusted version of current branch (or, if already in an
  - adjusted version of a branch, changes the adjustment of the original
@@ -173,10 +176,11 @@ updateAdjustedBranch tomerge (origbranch, adj) commitmode =
 	recommit currbranch parent (Just commit) = do
 		commitsha <- commitAdjustedTree (commitTree commit) parent
 		inRepo $ Git.Branch.update currbranch commitsha
+		propigateAdjustedCommits origbranch adj
 		return True
 	recommit _ _ Nothing = return False
 
 {- Check for any commits present on the adjusted branch that have not yet
- - been propigated to the master branch, and propigate them. -}
+ - been propigated to the orig branch, and propigate them. -}
 propigateAdjustedCommits :: OrigBranch -> Adjustment -> Annex ()
 propigateAdjustedCommits originbranch adj = return () -- TODO

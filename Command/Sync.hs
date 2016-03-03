@@ -172,8 +172,8 @@ merge (Just b, Just adj) commitmode tomerge =
 merge (b, _) commitmode tomerge =
 	autoMergeFrom tomerge b commitmode
 
-syncBranch :: Git.Ref -> Git.Ref
-syncBranch = Git.Ref.under "refs/heads/synced" . fromDirectBranch
+syncBranch :: Git.Branch -> Git.Branch
+syncBranch = Git.Ref.under "refs/heads/synced" . fromDirectBranch . fromAdjustedBranch
 
 remoteBranch :: Remote -> Git.Ref -> Git.Ref
 remoteBranch remote = Git.Ref.underBase $ "refs/remotes/" ++ Remote.name remote
@@ -268,13 +268,20 @@ pushLocal b = do
 updateSyncBranch :: CurrBranch -> Annex ()
 updateSyncBranch (Nothing, _) = noop
 updateSyncBranch (Just branch, _) = do
+	-- When in an adjusted branch, propigate any changes to it back to
+	-- the original branch.
+	branch' <- case adjustedToOriginal branch of
+		Just (adj, origbranch) -> do
+			propigateAdjustedCommits origbranch adj
+			return origbranch
+		Nothing -> return branch
 	-- Update the sync branch to match the new state of the branch
-	inRepo $ updateBranch (syncBranch branch) branch
+	inRepo $ updateBranch (syncBranch branch') branch'
 	-- In direct mode, we're operating on some special direct mode
 	-- branch, rather than the intended branch, so update the intended
 	-- branch.
 	whenM isDirect $
-		inRepo $ updateBranch (fromDirectBranch branch) branch
+		inRepo $ updateBranch (fromDirectBranch branch') branch'
 
 updateBranch :: Git.Branch -> Git.Branch -> Git.Repo -> IO ()
 updateBranch syncbranch updateto g = 
@@ -368,16 +375,16 @@ pushRemote o remote (Just branch, _) = stopUnless (pure (pushOption o) <&&> need
  - The sync push will fail to overwrite if receive.denyNonFastforwards is
  - set on the remote.
  -}
-pushBranch :: Remote -> Git.Ref -> Git.Repo -> IO Bool
+pushBranch :: Remote -> Git.Branch -> Git.Repo -> IO Bool
 pushBranch remote branch g = tryIO (directpush g) `after` syncpush g
   where
 	syncpush = Git.Command.runBool $ pushparams
 		[ Git.Branch.forcePush $ refspec Annex.Branch.name
-		, refspec branch
+		, refspec $ fromAdjustedBranch branch
 		]
 	directpush = Git.Command.runQuiet $ pushparams
 		[ Git.fromRef $ Git.Ref.base $ Annex.Branch.name
-		, Git.fromRef $ Git.Ref.base $ fromDirectBranch branch
+		, Git.fromRef $ Git.Ref.base $ fromDirectBranch $ fromAdjustedBranch branch
 		]
 	pushparams branches =
 		[ Param "push"
