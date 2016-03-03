@@ -19,9 +19,7 @@ module Utility.LockPool.LockHandle (
 ) where
 
 import qualified Utility.LockPool.STM as P
-#ifndef mingw32_HOST_OS
 import Utility.LockPool.STM (LockFile)
-#endif
 
 import Control.Concurrent.STM
 import Control.Exception
