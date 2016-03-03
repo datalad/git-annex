@@ -219,19 +219,25 @@ updateAdjustedBranch tomerge (origbranch, adj) commitmode =
  -}
 propigateAdjustedCommits :: OrigBranch -> (Adjustment, AdjBranch) -> Annex ()
 propigateAdjustedCommits origbranch (adj, currbranch) = do
-	v <- inRepo $ Git.Ref.sha (Git.Ref.under "refs/heads" origbranch)
-	case v of
-		Just origsha -> preventCommits $ 
-			go origsha False =<< newcommits
+	ov <- inRepo $ Git.Ref.sha (Git.Ref.under "refs/heads" origbranch)
+	case ov of
+		Just origsha -> preventCommits $ do
+			cv <- catCommit currbranch
+			case cv of
+				Just currcommit -> 
+					newcommits 
+						>>= go origsha False
+						>>= rebase currcommit
+				Nothing -> return ()
 		Nothing -> return ()
   where
 	newcommits = inRepo $ Git.Branch.changedCommits origbranch currbranch
 		-- Get commits oldest first, so they can be processed
 		-- in order made.
 		[Param "--reverse"]
-	go newhead _ [] = do
-		inRepo $ Git.Branch.update origbranch newhead
-		-- TODO rebase adjusted branch
+	go parent _ [] = do
+		inRepo $ Git.Branch.update origbranch parent
+		return parent
 	go parent pastadjcommit (sha:l) = do
 		mc <- catCommit sha
 		case mc of
@@ -242,6 +248,12 @@ propigateAdjustedCommits origbranch (adj, currbranch) = do
 					commit <- reverseAdjustedCommit parent adj c
 					go commit pastadjcommit l
 			_ -> go parent pastadjcommit l
+	rebase currcommit newparent = do
+		-- Reuse the current adjusted tree,
+		-- and reparent it on top of the new
+		-- version of the origbranch.
+		commitAdjustedTree (commitTree currcommit) newparent
+			>>= inRepo . Git.Branch.update currbranch
 
 {- Reverses an adjusted commit, yielding a commit sha.
  -
