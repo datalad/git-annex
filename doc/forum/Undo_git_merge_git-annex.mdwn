@@ -1,0 +1,3 @@
+After accidentally typing git merge git-annex, I am now wondering how to clean up the resulting chaos...
+
+Any tips?
