@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-03-01T16:21:31Z"
+ content="""
+Analysis: What's crashing is Utility.LockPool.PidLock.waitLock after a call
+to Utility.LockPool.PidLock.tryLock. The former takes an exclusive STM lock
+of the pid lock file; the latter takes a shared STM lock. 
+
+Since the pid lock stands in for multiple more fine-grained locks, waitLock
+will be called while a lock from tryLock (or a previous waitLock perhaps)
+is still open.
+
+The fix seems as simple as making waitLock take a shared STM lock of the
+pid lock file, leaving the exclusive lock for the later, more fine-grained
+STM lock checking that's done after taking the pid lock.
+"""]]

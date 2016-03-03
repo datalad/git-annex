@@ -1,6 +1,11 @@
 git-annex (6.20160230) UNRELEASED; urgency=medium
 
   * metadata: Added -r to remove all current values of a field.
+  * Fix data loss that can occur when annex.pidlock is set in a repository.
+  * Fix bug preventing moving files to/from a repository with annex.pidlock set.
+  * Fix shared lock file FD leak.
+  * Fix metadata hook behavior when multiple files are added at once.
+    Thanks, Klaus Ethgen.
 
  -- Joey Hess <id@joeyh.name>  Mon, 29 Feb 2016 13:00:30 -0400
 

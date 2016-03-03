@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-03-02T16:48:24Z"
+ content="""
+[git bug report](http://news.gmane.org/find-root.php?message_id=20160301204218.GA4083%40kitenet.net)
+
+So far, the git devs admit this is a problem, but don't seem too keen on fixing
+it, even though it breaks backwards compatability with repositories git
+submodule add created (circa 2012).
+
+It might be that git-annex init could work around git's bugginess by,
+instead of making submodule/.git a symlink to ../.git/modules/dir, making
+submodule/.git be the git directory, and converting ../.git/modules/dir
+to a symlink. In very limited testing, that setup seems to work. 
+
+I don't know if all the submodule stuff would work, perhaps it would break moving
+submodules etc. And, since git likes to chdir around (not the best idea),
+if it expected to be able to chdir from .git/modules to dir and chdir .. to
+get back, changing that to a symlink would defeat it.
+
+BTW, I found another way, unrelated to git-annex or symlinks at all,
+that git submodule add's broken path handling makes it fall over with
+nested submodules.
+<http://news.gmane.org/find-root.php?message_id=20160302165240.GA17654%40kitenet.net>.
+
+(It's almost like myrepos was a better idea than this submodule stuff, or
+something...)
+""]]

@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # Copyright (C) 2014 Joey Hess <id@joeyh.name>
 # Copyright (C) 2016 Klaus Ethgen <Klaus@Ethgen.ch>
@@ -112,7 +112,7 @@ if [ -n "$*" ]; then
 		process "$f"
 	done
 else
-	for f in "$(git diff-index --name-only --cached $against)"; do
+	git diff-index --name-only --cached $against | while read f; do
 		process "$f"
 	done
 fi

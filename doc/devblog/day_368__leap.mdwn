@@ -1,0 +1,9 @@
+Pushed out a release today, could not resist the leap day in the version
+number, and also there were enough bug fixes accumulated to make it worth
+doing.
+
+I now have `git-annex sync` working inside adjusted branches, so pulls
+get adjusted appropriately before being merged into the adjusted branch.
+Seems to mostly work well, I did just find one bug in it though. Only
+propigating adjusted commits remains to be done to finish my adjusted
+branches prototype.

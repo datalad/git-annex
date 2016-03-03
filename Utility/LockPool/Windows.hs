@@ -22,9 +22,9 @@ import Utility.LockPool.STM (LockFile, LockMode(..))
 {- Tries to lock a file with a shared lock, which allows other processes to
  - also lock it shared. Fails if the file is exclusively locked. -}
 lockShared :: LockFile -> IO (Maybe LockHandle)
-lockShared file = tryMakeLockHandle
-	(P.tryTakeLock P.lockPool file LockShared)
-	(fmap mk <$> F.lockShared file)
+lockShared file = tryMakeLockHandle P.lockPool file
+	(\p f -> P.tryTakeLock p f LockShared)
+	(\f -> fmap mk <$> F.lockShared f)
 
 {- Tries to take an exclusive lock on a file. Fails if another process has
  - a shared or exclusive lock.
@@ -33,9 +33,9 @@ lockShared file = tryMakeLockHandle
  - read or write by any other process. So for advisory locking of a file's
  - content, a separate LockFile should be used. -}
 lockExclusive :: LockFile -> IO (Maybe LockHandle)
-lockExclusive file = tryMakeLockHandle
-	(P.tryTakeLock P.lockPool file LockExclusive)
-	(fmap mk <$> F.lockExclusive file)
+lockExclusive file = tryMakeLockHandle P.lockPool file
+	(\p f -> P.tryTakeLock f LockExclusive)
+	(\f -> fmap mk <$> F.lockExclusive f)
 
 {- If the initial lock fails, this is a BUSY wait, and does not
  - guarentee FIFO order of waiters. In other news, Windows is a POS. -}
