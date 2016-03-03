@@ -60,7 +60,7 @@ adjustTreeItem UnlockAdjustment Reverse h ti@(TreeItem f m s)
 		case mk of
 			Just k -> do
 				absf <- inRepo $ \r -> absPath $
-					repoPath r <> fromTopFilePath f r
+					fromTopFilePath f r
 				linktarget <- calcRepo $ gitAnnexLink absf k
 				Just . TreeItem f (fromBlobType SymlinkBlob)
 					<$> hashSymlink' h linktarget
@@ -221,7 +221,8 @@ propigateAdjustedCommits :: OrigBranch -> (Adjustment, AdjBranch) -> Annex ()
 propigateAdjustedCommits origbranch (adj, currbranch) = do
 	v <- inRepo $ Git.Ref.sha (Git.Ref.under "refs/heads" origbranch)
 	case v of
-		Just origsha -> go origsha False =<< newcommits
+		Just origsha -> preventCommits $ 
+			go origsha False =<< newcommits
 		Nothing -> return ()
   where
 	newcommits = inRepo $ Git.Branch.changedCommits origbranch currbranch
