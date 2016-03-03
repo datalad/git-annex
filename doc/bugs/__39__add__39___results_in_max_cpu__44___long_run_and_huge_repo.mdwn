@@ -12,7 +12,7 @@ The repo grew to 28G.
 Is this a regular issue with exFAT? I've done quite a bit of searching. I'll do more.
 
 ### What steps will reproduce the problem?
-- install on El Capitan (latest) via home-brew
+- install on El Capitan (latest) via homebrew
 - create 1TB exFAT file store
 - follow walk through to setup annex locally and on external
 - add
