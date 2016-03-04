@@ -6,7 +6,7 @@ And then more lock files today, since I needed to lock git's index file the
 same way git does. This involved finding out how to emulate `O_EXCL` under
 Windows. Urgh.
 
-Finally got back to working on [[adjusted_branches]] today. And, I've just
+Finally got back to working on [[design/adjusted_branches]] today. And, I've just
 gotten syncing of commits from adjusted branches back to the orginal branch
 working! Time for short demo of what I've been building for the past couple
 weeks:
