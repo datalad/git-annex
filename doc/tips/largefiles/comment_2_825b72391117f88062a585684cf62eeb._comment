@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="workspace"
+ subject="same problem"
+ date="2016-03-04T20:44:26Z"
+ content="""
+I have the same problem:
+the annex.largefiles is ignored by \"git add\" when set in .gitattributes
+allthouch git check-attr does list it.
+
+but it works when set with git config annex.largefiles
+
+git annex version 6.20160126
+"""]]
