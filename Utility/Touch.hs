@@ -47,6 +47,6 @@ touchBoth :: FilePath -> TimeSpec -> TimeSpec -> Bool -> IO ()
 touchBoth _ _ _ _ = return ()
 
 touch :: FilePath -> TimeSpec -> Bool -> IO ()
-touch _ _ = return ()
+touch _ _ _ = return ()
 
 #endif
