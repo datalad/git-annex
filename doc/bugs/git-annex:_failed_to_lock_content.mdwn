@@ -4,17 +4,17 @@ Cannot drop unused files on a USB drive, failing with the error message "git-ann
 
 ### What steps will reproduce the problem?
 
-1) Installed stand-alone verison of git-annex on Ubuntu sometime last month
-2) Created a repository on my main HD, upgraded to v6
-3) Added files to it
-4) Created a USB (vfat) repo using the webapp without encryption; stopped the webapp, and ran `git annex get` on the USB repo.
-5) Saw that I had added some files to the repo by mistake, and used `git annex unannex $FILES` on the main HD, then `git annex unused`, then `git annex dropunused 1-101`
-6) Re-synced both repos
-7) In the USB repo, `git annex unused` showed the same list as on the HD.
-8) `git annex dropunused 1-101` then fails
-9) Installed the latest stand-alone version (6.20160229-gbe4820c)
-10) tried dropping again, didn't work; reboot the computer; tried dropping again, didn't work.
-11) ran `git annex upgrade` on USB repo, tried dropping agian, no success
+1. Installed stand-alone verison of git-annex on Ubuntu sometime last month
+2. Created a repository on my main HD, upgraded to v6
+3. Added files to it
+4. Created a USB (vfat) repo using the webapp without encryption; stopped the webapp, and ran `git annex get` on the USB repo.
+5. Saw that I had added some files to the repo by mistake, and used `git annex unannex $FILES` on the main HD, then `git annex unused`, then `git annex dropunused 1-101`
+6. Re-synced both repos
+7. In the USB repo, `git annex unused` showed the same list as on the HD.
+8. `git annex dropunused 1-101` then fails
+9. Installed the latest stand-alone version (6.20160229-gbe4820c)
+10. tried dropping again, didn't work; reboot the computer; tried dropping again, didn't work.
+11. ran `git annex upgrade` on USB repo, tried dropping agian, no success
 
 ### What version of git-annex are you using? On what operating system?
 
