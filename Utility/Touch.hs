@@ -43,7 +43,7 @@ import System.PosixCompat
 newtype TimeSpec = TimeSpec EpochTime
 
 {- Noop for Windows -}
-touchBoth FilePath -> TimeSpec -> TimeSpec -> Bool -> IO ()
+touchBoth :: FilePath -> TimeSpec -> TimeSpec -> Bool -> IO ()
 touchBoth _ _ _ _ = return ()
 
 touch :: FilePath -> TimeSpec -> Bool -> IO ()
