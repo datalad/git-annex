@@ -1,0 +1,105 @@
+### Please describe the problem.
+
+Cannot drop unused files on a USB drive, failing with the error message "git-annex: failed to lock content".
+
+### What steps will reproduce the problem?
+
+1. Installed stand-alone verison of git-annex on Ubuntu sometime last month
+2. Created a repository on my main HD, upgraded to v6
+3. Added files to it
+4. Created a USB (vfat) repo using the webapp without encryption; stopped the webapp, and ran `git annex get` on the USB repo.
+5. Saw that I had added some files to the repo by mistake, and used `git annex unannex $FILES` on the main HD, then `git annex unused`, then `git annex dropunused 1-101`
+6. Re-synced both repos
+7. In the USB repo, `git annex unused` showed the same list as on the HD.
+8. `git annex dropunused 1-101` then fails
+9. Installed the latest stand-alone version (6.20160229-gbe4820c)
+10. tried dropping again, didn't work; reboot the computer; tried dropping again, didn't work.
+11. ran `git annex upgrade` on USB repo, tried dropping agian, no success
+
+### What version of git-annex are you using? On what operating system?
+
+* git annex version 6.20160229-gbe4820c
+* Ubuntu 15.10
+
+### Please provide any additional information below.
+
+[[!format sh """
+/media/ellis/USB04/repo/taiji-lib
+% cat annex/unused
+2 SHA256E-s562039928--04903c0b7d4e16062b3dc0bf17a84ce7943545d9437b80947ff98a3d3483e66e.AVI 1457129072.853555s
+101 SHA256E-s38464078--0db38599ed526d248857015c7b8e1b177af646939f8e0c8004b17a931ce2e101.wav 1457129072.853555s
+...
+44 SHA256E-s561941624--fdf6f89d9403464d4c494eac67fc1525aa6b9b0adc96be99f7d42e7f5472e44c.avi 1457129072.853555s
+
+/media/ellis/USB04/repo/taiji-lib
+% git annex dropunused 101 --debug                                                                                                                                                                                                                                13:09:28
+[2016-03-05 13:09:28.675403] read: git ["--git-dir=.","--literal-pathspecs","show-ref","git-annex"]
+[2016-03-05 13:09:28.677635] process done ExitSuccess
+[2016-03-05 13:09:28.67773] read: git ["--git-dir=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2016-03-05 13:09:28.679775] process done ExitSuccess
+[2016-03-05 13:09:28.680234] read: git ["--git-dir=.","--literal-pathspecs","log","refs/heads/git-annex..aee0b39b5232c369721c08eb782a7143ba2f8901","-n1","--pretty=%H"]
+[2016-03-05 13:09:28.685879] process done ExitSuccess
+[2016-03-05 13:09:28.686006] read: git ["--git-dir=.","--literal-pathspecs","log","refs/heads/git-annex..2b2b2747a6533f115867cc7a70a426764fc90286","-n1","--pretty=%H"]
+[2016-03-05 13:09:28.688135] process done ExitSuccess
+[2016-03-05 13:09:28.688227] read: git ["--git-dir=.","--literal-pathspecs","log","refs/heads/git-annex..4f4acf1555539a7bcb520e4befbeab803f220f67","-n1","--pretty=%H"]
+[2016-03-05 13:09:28.690357] process done ExitSuccess
+[2016-03-05 13:09:28.691327] chat: git ["--git-dir=.","--literal-pathspecs","cat-file","--batch"]
+dropunused 101 git-annex: failed to lock content: ./annex/objects/97e/78c/SHA256E-s38464078--0db38599ed526d248857015c7b8e1b177af646939f8e0c8004b17a931ce2e101.wav/SHA256E-s38464078--0db38599ed526d248857015c7b8e1b177af646939f8e0c8004b17a931ce2e101.wav: openFd: permission denied (Permission denied)
+
+/media/ellis/USB04/repo/taiji-lib
+% ls -l ./annex/objects/97e/78c/SHA256E-s38464078--0db38599ed526d248857015c7b8e1b177af646939f8e0c8004b17a931ce2e101.wav/SHA256E-s38464078--0db38599ed526d248857015c7b8e1b177af646939f8e0c8004b17a931ce2e101.wav
+-r--r--r-- 1 ellis ellis 38464078 Mar  4 18:32 ./annex/objects/97e/78c/SHA256E-s38464078--0db38599ed526d248857015c7b8e1b177af646939f8e0c8004b17a931ce2e101.wav/SHA256E-s38464078--0db38599ed526d248857015c7b8e1b177af646939f8e0c8004b17a931ce2e101.wav
+
+/media/ellis/USB04/repo/taiji-lib
+% strace -e file -f git annex dropunused 101 --debug
+...
+[pid  4646] openat(AT_FDCWD, "./objects/pack", O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC) = 3
+[pid  4646] access("./objects/pack/pack-80b045ea51312a9d40fdefd0c76ef54d494cd5c1.keep", F_OK) = -1 ENOENT (No such file or directory)
+[pid  4646] stat("./objects/pack/pack-80b045ea51312a9d40fdefd0c76ef54d494cd5c1.pack", {st_mode=S_IFREG|0644, st_size=828068, ...}) = 0
+[pid  4646] access("./objects/pack/pack-69caefc604cfbcb2f374ab0b4266f444fec4930f.keep", F_OK <unfinished ...>
+[pid  4636] --- SIGVTALRM {si_signo=SIGVTALRM, si_code=SI_TIMER, si_pid=0, si_uid=1, si_value=0} ---
+[pid  4646] <... access resumed> )      = -1 ENOENT (No such file or directory)
+[pid  4646] stat("./objects/pack/pack-69caefc604cfbcb2f374ab0b4266f444fec4930f.pack", {st_mode=S_IFREG|0644, st_size=55237, ...}) = 0
+[pid  4646] access("./objects/pack/pack-f6711fe647796d2143d12b6f915686d373f4e69b.keep", F_OK) = -1 ENOENT (No such file or directory)
+[pid  4646] stat("./objects/pack/pack-f6711fe647796d2143d12b6f915686d373f4e69b.pack", {st_mode=S_IFREG|0644, st_size=116702, ...}) = 0
+[pid  4646] access("./objects/pack/pack-31185be34b1a30abb4b6e427c1ec924cfee300af.keep", F_OK) = -1 ENOENT (No such file or directory)
+[pid  4646] stat("./objects/pack/pack-31185be34b1a30abb4b6e427c1ec924cfee300af.pack", {st_mode=S_IFREG|0644, st_size=116197, ...}) = 0
+[pid  4646] getcwd("/media/ellis/USB04/repo/taiji-lib", 129) = 34
+[pid  4646] open("./objects/info/alternates", O_RDONLY|O_NOATIME) = -1 ENOENT (No such file or directory)
+[pid  4646] open("./objects/pack/pack-f6711fe647796d2143d12b6f915686d373f4e69b.idx", O_RDONLY|O_NOATIME) = 3
+[pid  4646] open("./objects/pack/pack-31185be34b1a30abb4b6e427c1ec924cfee300af.idx", O_RDONLY|O_NOATIME) = 3
+[pid  4646] open("./objects/pack/pack-80b045ea51312a9d40fdefd0c76ef54d494cd5c1.idx", O_RDONLY|O_NOATIME) = 3
+[pid  4646] open("./objects/pack/pack-69caefc604cfbcb2f374ab0b4266f444fec4930f.idx", O_RDONLY|O_NOATIME) = 3
+[pid  4646] open("./objects/ae/e0b39b5232c369721c08eb782a7143ba2f8901", O_RDONLY|O_NOATIME) = 3
+[pid  4646] open("./objects/1d/ca126189c826e37b03897754fab7e8a8687683", O_RDONLY|O_NOATIME) = 3
+[pid  4636] stat("./annex/unused", {st_mode=S_IFREG|0644, st_size=11160, ...}) = 0
+[pid  4636] open("./annex/unused", O_RDONLY|O_NOCTTY|O_NONBLOCK) = 11
+[pid  4636] --- SIGVTALRM {si_signo=SIGVTALRM, si_code=SI_TIMER, si_pid=0, si_uid=0, si_value=0} ---
+[pid  4636] stat("./annex/badunused", {st_mode=S_IFREG|0644, st_size=0, ...}) = 0
+[pid  4636] open("./annex/badunused", O_RDONLY|O_NOCTTY|O_NONBLOCK) = 11
+[pid  4636] stat("./annex/tmpunused", {st_mode=S_IFREG|0644, st_size=0, ...}) = 0
+[pid  4636] open("./annex/tmpunused", O_RDONLY|O_NOCTTY|O_NONBLOCK) = 11
+dropunused 101 [pid  4636] stat("./annex/objects/97e/78c/SHA256E-s38464078--0db38599ed526d248857015c7b8e1b177af646939f8e0c8004b17a931ce2e101.wav/SHA256E-s38464078--0db38599ed526d248857015c7b8e1b177af646939f8e0c8004b17a931ce2e101.wav", {st_mode=S_IFREG|0444, st_size=38464078, ...}) = 0
+[pid  4636] stat("./annex/objects/97e/78c/SHA256E-s38464078--0db38599ed526d248857015c7b8e1b177af646939f8e0c8004b17a931ce2e101.wav/SHA256E-s38464078--0db38599ed526d248857015c7b8e1b177af646939f8e0c8004b17a931ce2e101.wav", {st_mode=S_IFREG|0444, st_size=38464078, ...}) = 0
+[pid  4636] stat("./annex", {st_mode=S_IFDIR|0755, st_size=32768, ...}) = 0
+[pid  4636] open("./annex/keys.lck", O_RDWR|O_CREAT, 0666) = 11
+[pid  4636] stat("./annex/keys/db", 0x7f2247d0ceb0) = -1 ENOENT (No such file or directory)
+[pid  4636] --- SIGVTALRM {si_signo=SIGVTALRM, si_code=SI_TIMER, si_pid=0, si_uid=9, si_value=0} ---
+[pid  4636] stat("./annex/objects/97e/78c/SHA256E-s38464078--0db38599ed526d248857015c7b8e1b177af646939f8e0c8004b17a931ce2e101.wav/SHA256E-s38464078--0db38599ed526d248857015c7b8e1b177af646939f8e0c8004b17a931ce2e101.wav", {st_mode=S_IFREG|0444, st_size=38464078, ...}) = 0
+[pid  4636] open("./annex/objects/97e/78c/SHA256E-s38464078--0db38599ed526d248857015c7b8e1b177af646939f8e0c8004b17a931ce2e101.wav/SHA256E-s38464078--0db38599ed526d248857015c7b8e1b177af646939f8e0c8004b17a931ce2e101.wav", O_RDWR) = -1 EACCES (Permission denied)
+git-annex: failed to lock content: ./annex/objects/97e/78c/SHA256E-s38464078--0db38599ed526d248857015c7b8e1b177af646939f8e0c8004b17a931ce2e101.wav/SHA256E-s38464078--0db38599ed526d248857015c7b8e1b177af646939f8e0c8004b17a931ce2e101.wav: openFd: permission denied (Permission denied)
+[pid  4638] +++ exited with 0 +++
+[pid  4639] +++ exited with 0 +++
+[pid  4637] +++ exited with 0 +++
+[pid  4636] +++ exited with 1 +++
+[pid  4623] --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=4636, si_status=1, si_utime=1, si_stime=4} ---
+[pid  4623] +++ exited with 1 +++
++++ exited with 0 +++
+
+"""]]
+
+Could the problem have something to do with the file having permission 0444 and trying to opening it O_RDWR?
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Been using it since your kickstarter campaign!
