@@ -25,7 +25,7 @@ import Assistant.Threads.RemoteControl
 import Assistant.Threads.SanityChecker
 import Assistant.Threads.Cronner
 import Assistant.Threads.ProblemFixer
-#ifdef WITH_CLIBS
+#ifndef mingw32_HOST_OS
 import Assistant.Threads.MountWatcher
 #endif
 import Assistant.Threads.NetWatcher
@@ -170,7 +170,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 				, assist $ sanityCheckerDailyThread urlrenderer
 				, assist sanityCheckerHourlyThread
 				, assist $ problemFixerThread urlrenderer
-#ifdef WITH_CLIBS
+#ifndef mingw32_HOST_OS
 				, assist $ mountWatcherThread urlrenderer
 #endif
 				, assist netWatcherThread

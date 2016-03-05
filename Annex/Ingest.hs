@@ -5,8 +5,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Annex.Ingest (
 	LockedDown(..),
 	LockDownConfig(..),
@@ -42,13 +40,9 @@ import Utility.InodeCache
 import Annex.ReplaceFile
 import Utility.Tmp
 import Utility.CopyFile
+import Utility.Touch
 import Git.FilePath
 import Annex.InodeSentinal
-#ifdef WITH_CLIBS
-#ifndef __ANDROID__
-import Utility.Touch
-#endif
-#endif
 
 import Control.Exception (IOException)
 
@@ -282,11 +276,7 @@ makeLink file key mcache = flip catchNonAsync (restoreFile file key) $ do
 	-- touch symlink to have same time as the original file,
 	-- as provided in the InodeCache
 	case mcache of
-#if defined(WITH_CLIBS) && ! defined(__ANDROID__)
 		Just c -> liftIO $ touch file (TimeSpec $ inodeCacheToMtime c) False
-#else
-		Just _ -> noop
-#endif
 		Nothing -> noop
 
 	return l
