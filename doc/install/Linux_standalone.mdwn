@@ -26,8 +26,7 @@ linux systems.
 * [[forum_thread|forum/new_linux_arm_tarball_build]]
 
 The build for ancient kernels is for use with Linux kernel versions
-such as 2.6.32. It is missing some features, like SHA3 support and
-the webapp. It will work on both 32 and 64 bit systems.
+such as 2.6.32. It will work on both 32 and 64 bit systems.
 
 ## autobuilds
 
