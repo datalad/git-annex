@@ -8,7 +8,7 @@ git-annex (6.20160230) UNRELEASED; urgency=medium
     Thanks, Klaus Ethgen.
   * Added dependencies on haskell mountpoints and disk-free-space
     libraries, removing FFI code from git-annex.
-  * dropkey: Add --batch.
+  * dropkey: Add --batch and --json.
 
  -- Joey Hess <id@joeyh.name>  Mon, 29 Feb 2016 13:00:30 -0400
 
