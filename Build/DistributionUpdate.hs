@@ -13,6 +13,7 @@ import Types.Distribution
 import Build.Version (getChangelogVersion, Version)
 import Utility.UserInfo
 import Utility.Url
+import Utility.Tmp
 import qualified Git.Construct
 import qualified Annex
 import Annex.Content
@@ -56,7 +57,8 @@ main = do
 	state <- Annex.new =<< Git.Construct.fromPath "."
 	Annex.eval state (makeinfos updated version)
 
--- Download a build from the autobuilder, and return its version.
+-- Download a build from the autobuilder, virus check it, and return its
+-- version.
 -- It's very important that the version matches the build, otherwise
 -- auto-upgrades can loop reatedly. So, check build-version before
 -- and after downloading the file.
@@ -72,18 +74,21 @@ getbuild repodir (url, f) = do
 		putStrLn $ "*** " ++ s
 		return Nothing
 	ifM (download url tmp def)
-		( do
-			bv2 <- getbv
-			case bv2 of
-				Nothing -> oops $ "no build-version file for " ++ url
-				(Just v)
-					| bv2 == bv1 -> do
-						nukeFile dest
-						renameFile tmp dest
-						-- remove git rev part of version
-						let v' = takeWhile (/= '-') v
-						return $ Just (f, v')
-					| otherwise -> oops $ "build version changed while downloading " ++ url ++ " " ++ show (bv1, bv2)
+		( ifM (liftIO $ virusFree tmp)
+			( do
+				bv2 <- getbv
+				case bv2 of
+					Nothing -> oops $ "no build-version file for " ++ url
+					(Just v)
+						| bv2 == bv1 -> do
+							nukeFile dest
+							renameFile tmp dest
+							-- remove git rev part of version
+							let v' = takeWhile (/= '-') v
+							return $ Just (f, v')
+						| otherwise -> oops $ "build version changed while downloading " ++ url ++ " " ++ show (bv1, bv2)
+			, oops $ "VIRUS detected in " ++ url
+			)
 		, oops $ "failed to download " ++ url
 		)
   where
@@ -170,3 +175,30 @@ signFile f = do
 		]
 	liftIO $ rename (f ++ ".asc") (f ++ ".sig")
 	void $ inRepo $ runBool [Param "add", File (f ++ ".sig")]
+
+-- clamscan should handle unpacking archives, but did not in my
+-- testing, so do it manually.
+virusFree :: FilePath -> IO Bool
+virusFree f 
+	| ".tar.gz" `isSuffixOf` f = unpack $ \tmpdir ->
+		boolSystem "tar" [ Param "xf", File f, Param "-C", File tmpdir ]
+	| ".dmg" `isSuffixOf` f = unpack $ \tmpdir -> do
+		-- 7z can extract partitions from a dmg, and then
+		-- run on partitions can extract their files
+		unhfs tmpdir f
+		parts <- filter (".hfs" `isSuffixOf`) <$> getDirectoryContents tmpdir
+		forM_ parts $ unhfs tmpdir
+		return True
+	| otherwise = clamscan f
+  where
+	clamscan f' = boolSystem "clamscan"
+		[ Param "--no-summary"
+		, Param "-r"
+		, Param f'
+		]
+	unpack unpacker = withTmpDir "clamscan" $ \tmpdir -> do
+		unlessM (unpacker tmpdir) $
+			error $ "Failed to unpack " ++ f ++ " for virus scan"
+		clamscan tmpdir
+	unhfs dest f' = unlessM (boolSystem "7z" [ Param "x", Param ("-o" ++ dest), File f' ]) $
+		error $ "Failed extracting hfs " ++ f'
