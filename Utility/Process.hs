@@ -18,6 +18,7 @@ module Utility.Process (
 	readProcessEnv,
 	writeReadProcessEnv,
 	forceSuccessProcess,
+	forceSuccessProcess',
 	checkSuccessProcess,
 	ignoreFailureProcess,
 	createProcessSuccess,
@@ -129,12 +130,12 @@ writeReadProcessEnv cmd args environ writestdin adjusthandle = do
 -- | Waits for a ProcessHandle, and throws an IOError if the process
 -- did not exit successfully.
 forceSuccessProcess :: CreateProcess -> ProcessHandle -> IO ()
-forceSuccessProcess p pid = do
-	code <- waitForProcess pid
-	case code of
-		ExitSuccess -> return ()
-		ExitFailure n -> ioError $ userError $
-			showCmd p ++ " exited " ++ show n
+forceSuccessProcess p pid = waitForProcess pid >>= forceSuccessProcess' p
+
+forceSuccessProcess' :: CreateProcess -> ExitCode -> IO ()
+forceSuccessProcess' _ ExitSuccess = return ()
+forceSuccessProcess' p (ExitFailure n) = fail $
+	showCmd p ++ " exited " ++ show n
 
 -- | Waits for a ProcessHandle and returns True if it exited successfully.
 -- Note that using this with createProcessChecked will throw away
