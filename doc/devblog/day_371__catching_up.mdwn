@@ -1,0 +1,21 @@
+Over the weekend, I converted the linux "ancient" autobuilder to use stack.
+This makes it easier to get all the recent versions of all the haskell
+dependencies installed there.
+
+Also, merged my no-ffi branch, removing some library code from git-annex
+and adding new dependencies. It's good to remove code.
+
+Today, fixed the OSX dmg file -- its bundled gpg was broken. I pushed out a
+new version of the OSX dmg file with the fix.
+
+With the recent incident in mind of malware inserted into the Transmission
+dmg, I've added a virus scan step to the release process
+for all the git-annex images. This way, we'll notice if an autobuilder
+gets a virus.
+
+Also caught up on some backlog, although the remaining backlog is a little
+larger than I'd like at 135 messages.
+
+Hope to work some more on adjusted branches this week. A few mornings ago,
+I had what may be a key insight about how to reverse adjustments when
+propigating changes back from the adjusted branch.
