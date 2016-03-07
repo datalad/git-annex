@@ -54,6 +54,7 @@ data GitConfig = GitConfig
 	, annexWebDownloadCommand :: Maybe String
 	, annexCrippledFileSystem :: Bool
 	, annexLargeFiles :: Maybe String
+	, annexAddSmallFiles :: Bool
 	, annexFsckNudge :: Bool
 	, annexAutoUpgrade :: AutoUpgrade
 	, annexExpireUnused :: Maybe (Maybe Duration)
@@ -68,6 +69,7 @@ data GitConfig = GitConfig
 	, annexVerify :: Bool
 	, annexPidLock :: Bool
 	, annexPidLockTimeout :: Seconds
+	, annexAddUnlocked :: Bool
 	, coreSymlinks :: Bool
 	, coreSharedRepository :: SharedRepository
 	, gcryptId :: Maybe String
@@ -99,6 +101,7 @@ extractGitConfig r = GitConfig
 	, annexWebDownloadCommand = getmaybe (annex "web-download-command")
 	, annexCrippledFileSystem = getbool (annex "crippledfilesystem") False
 	, annexLargeFiles = getmaybe (annex "largefiles")
+	, annexAddSmallFiles = getbool (annex "addsmallfiles") True
 	, annexFsckNudge = getbool (annex "fscknudge") True
 	, annexAutoUpgrade = toAutoUpgrade $ getmaybe (annex "autoupgrade")
 	, annexExpireUnused = maybe Nothing Just . parseDuration
@@ -116,6 +119,7 @@ extractGitConfig r = GitConfig
 	, annexPidLock = getbool (annex "pidlock") False
 	, annexPidLockTimeout = Seconds $ fromMaybe 300 $
 		getmayberead (annex "pidlocktimeout")
+	, annexAddUnlocked = getbool (annex "addunlocked") False
 	, coreSymlinks = getbool "core.symlinks" True
 	, coreSharedRepository = getSharedRepository r
 	, gcryptId = getmaybe "core.gcrypt-id"

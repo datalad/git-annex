@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="git-annex.branchable.com@69b3f2da2837a3d9de8eab0b93771008294b7d69"
+ nickname="git-annex.branchable.com"
+ subject="Does a tar of `.git` solve the problem"
+ date="2016-01-28T19:03:08Z"
+ content="""
+Just wondering if tarring .git (excluding .git/annex of course}) into a file in the root of the repo will serve this purpose? Seems like it would to me... How would one restore from this... it'd be (practically) a bare repo right?
+"""]]

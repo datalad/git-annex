@@ -1,0 +1,322 @@
+Consider two use cases:
+
+1. Using a v6 repo with locked files on a crippled filesystem not
+   supporting symlinks. For the files to be usable, they need to be
+   unlocked. But, the user may not want to unlock the files everywhere,
+   just on this one crippled system.
+2. [[todo/hide_missing_files]]
+
+Both of these could be met by making `git-annex sync` maintain an adjusted
+version of the original branch, eg `adjusted/master`.
+
+There would be a filter function. For #1 above it would simply convert all
+annex symlinks to annex file pointers. For #2 above it would omit files
+whose content is not currently in the annex. Sometimes, both #1 and #2 would
+be wanted.
+
+[Alternatively, it could stay on the master branch, and only adjust the
+work tree and index. See WORKTREE notes below for how this choice would
+play out.]
+
+[[!toc]]
+
+## filtering
+
+	master           adjusted/master
+	A
+	|--------------->A'
+	|                |
+
+When generating commit A', reuse the date of A and use a standard author,
+committer, and message. This means that two users with the adjusted branch
+checked out and using the same filters will get identical shas for A', and
+so can collaborate on them.
+
+## commit
+
+When committing changes, a commit is made as usual to the adjusted branch.
+So, the user can `git commit` as usual. This does not touch the
+original branch yet. 
+
+Then we need to get from that commit to one with the filters reversed,
+which should be the same as if the adjusted branch had not been used.
+This commit gets added onto the original branch.
+
+So, the branches would look like this:
+
+	master           adjusted/master
+	A
+	|--------------->A'
+	|                |
+	|                C (new commit)
+	B < - - - - - - -
+	|                
+	|--------------->B'
+	|                |
+
+Note particularly that B does not have A' or C in its history;
+the adjusted branch is not evident from outside.
+
+Also note that B gets filtered and the adjusted branch is rebased on top of
+it, so C does not remain in the adjusted branch history either. This will
+make other checkouts that are in the same adjusted branch end up with the
+same B' commit when they pull B.
+
+It might be useful to have a post-commit hook that generates B and B'
+and updates the branches. And/or `git-annex sync` could do it.
+
+There may be multiple commits made to the adjusted branch before any get
+applied back to the original branch. This is handled by reverse filtering
+one at a time and rebasing the others on top.
+
+	master           adjusted/master
+	A
+	|--------------->A'
+	|                |
+	|                C1
+	|                |
+	|                C2
+
+
+	master           adjusted/master
+	A
+	|--------------->A'
+	|                |
+	|                C1
+	B1< - - - - - - -
+	|
+	|--------------->B1'
+	|                |
+	|                C2'
+	B2< - - - - - - -
+	|
+	|--------------->B2'
+
+
+[WORKTREE: A pre-commit hook would be needed to update the staged changes, 
+reversing the filter before the commit is made. All the other complications
+above are avoided.]
+
+## merge
+
+This would be done by `git annex merge` and `git annex sync`, with the goal
+of merging origin/master into master, and updating adjusted/master.
+
+Note that the adjusted files db needs to be updated to reflect the changes
+that are merged in, for object add/remove to work as described below.
+
+When merging, there should never be any commits present on the
+adjusted/master branch that have not yet been filtered over to the master
+branch. If there are any such commits, just filter them into master before
+beginning the merge. There may be staged changes, or changes in the work tree.
+
+First filter the new commit:
+
+	origin/master    adjusted/master
+	A
+	|--------------->A'
+	|                |
+	|                |
+	B
+	|                
+	|---------->B'
+
+Then, merge that into adjusted/master:
+
+	origin/master    adjusted/master
+	A
+	|--------------->A'
+	|                |
+	|                |
+	B                |
+	|                |
+	|----------->B'->B''
+
+That merge will take care of updating the work tree.
+
+(What if there is a merge conflict between A' and B'? Normally such a merge
+conflict should only affect the work tree/index, so can be resolved without
+making a commit, but B'' may end up being made to resolve a merge
+conflict.)
+
+Once the merge is done, we have a commit B'' on adjusted/master. To finish,
+adjust that commit so it does not have adjusted/master as its parent.
+
+	origin/master    adjusted/master
+	A
+	|--------------->A'
+	|                |
+	|                |
+	B
+	|                
+	|--------------->B''
+	|                |
+
+Finally, update master to point to B''.
+
+Notice how similar this is to the commit graph. So, "fast-forward" 
+merging the same B commit from origin/master will lead to an identical
+sha for B' as the original committer got.
+
+Since the adjusted/master branch is not present on the remote, if the user
+does a `git pull`, it won't merge in changes from origin/master. Which is
+good because the filter needs to be applied first.
+
+However, if the user does `git merge origin/master`, they'll get into a
+state where the filter has not been applied. The post-merge hook could be
+used to clean up after that. Or, let the user foot-shoot this way; they can
+always reset back once they notice the mistake.
+
+[WORKTREE: `git pull` would update the work tree, and may lead to conflicts
+between the adjusted work tree and pulled changes. A post-merge hook would
+be needed to re-adjust the work tree, and there would be a window where eg,
+not present files would appear in the work tree.]
+
+## annex object add/remove
+
+When objects are added/removed from the annex, the associated file has to
+be looked up, and the filter applied to it. So, dropping a file with the
+missing file filter would cause it to be removed from the adjusted branch,
+and receiving a file's content would cause it to appear in the adjusted
+branch.
+
+These changes would need to be committed to the adjusted branch, otherwise
+`git diff` would show them.
+
+[WORKTREE: Simply adjust the work tree (and index) per the filter.]
+
+## reverse filtering
+
+Reversing filter #1 would mean only converting pointer files to
+symlinks when the file was originally a symlink. This is problimatic when a
+file is renamed. Would it be ok, if foo is renamed to bar and bar is
+committed, for it to be committed as an unlocked file, even if foo was
+originally locked? Probably.
+
+Reversing filter #2 would mean not deleting removed files whose content was
+not present. When the commit includes deletion of files that were removed
+due to their content not being present, those deletions are not propigated.
+When the user deletes an unlocked file, the content is still
+present in annex, so reversing the filter should propigate the file
+deletion. 
+
+What if an object was sent to the annex (or removed from the annex)
+after the commit and before the reverse filtering? This would cause the
+reverse filter to draw the wrong conclusion. Maybe look at a list of what
+objects were not present when applying the filter, and use that to decide
+which to not delete when reversing it?
+
+So, a reverse filter may need some state that was collected when running
+the filter forwards, in order to decide what to do.
+
+## push
+
+The new master branch can then be pushed out to remotes. The
+adjusted/master branch is not pushed to remotes. `git-annex sync` should
+automatically push master when adjusted/master is checked out.
+
+When push.default is "simple" (the new default), running `git push` when in
+adjusted/master won't push anything. It would with "matching". Pity. (I
+continue to feel git picked the wrong default here.) Users may find that
+surprising. Users of `git-annex sync` won't need to worry about it though.
+
+[WORKTREE: push works as usual]
+
+## acting on filtered-out files
+
+If a file is filtered out due to not existing, there should be a way
+for `git annex get` to get it. Since the filtered out file is not in the
+index, that would not normally work. What to do?
+
+Maybe instead of making a branch where the file is deleted, it would be
+better to delete it from the work tree, but keep the branch as-is. Then
+`git annex get` would see the file, as it's in the index. 
+
+But, not maintaining an adjusted branch complicates other things. See
+WORKTREE notes throughout this page. Overall, the WORKTREE approach seems
+too problimatic.
+
+Ah, but we know that when filter #2 is in place, any file that `git annex
+get` could act on is not in the index. So, it could look at the master branch
+instead. (Same for `git annex move --from` and `git annex copy --from`)
+
+OTOH, if filter #1 is in place and not #2, a file might be renamed in the
+index, and `git annex get $newname` should work. So, it should look at the
+index in that case.
+
+## problems
+
+Using `git checkout` when in an adjusted branch is problimatic, because a
+non-adjusted branch would then be checked out. But, we can just say, if
+you want to get into an adjusted branch, you have to run some command.
+Or, could make a post-checkout hook.
+
+Tags are bit of a problem. If the user tags an ajusted branch, the tag
+includes the local adjustments.  
+[WORKTREE: not a problem]
+
+If the user refers to commit shas (in, eg commit messages), those won't be
+visible to anyone else.  
+[WORKTREE: not a problem]
+
+When a pull modifies a file, its content won't be available, and so it
+would be hidden temporarily by filter #2. So the file would seem to vanish,
+and come back later, which could be confusing. Could be fixed as discussed
+in [[todo/deferred_update_mode]]. Arguably, it's just as confusing for the
+file to remain visible but have its content temporarily replaced with a
+annex pointer.
+
+## integration with view branches
+
+Entering a view from an adjusted branch should probably carry the filtering
+over into the creation/updating of the view branch.
+
+Could go a step further, and implement view branches as another branch
+adjusting filter, albeit an extreme one. This might improve view branches.
+For example, it's not currently possible to update a view branch with
+changes fetched from a remote, and this could get us there.
+
+This would need the reverse filter to be able to change metadata.
+
+[WORKTREE: Wouldn't be able to integrate, unless view branches are changed
+into adjusted view worktrees.]
+
+## filter interface
+
+Distilling all of the above, the filter interface needs to be something
+like this, at its most simple:
+
+	data Filter = UnlockFilter | HideMissingFilter | UnlockHideMissingFilter
+
+	getFilter :: Annex Filter
+
+	setFilter :: Filter -> Annex ()
+
+	data FilterAction
+		= UnchangedFile FilePath
+		| UnlockFile FilePath
+		| HideFile FilePath
+
+	data FileInfo = FileInfo
+		{ originalBranchFile :: FileStatus
+		, isContentPresent :: Bool
+		}
+
+	data FileStatus = IsAnnexSymlink | IsAnnexPointer
+		deriving (Eq)
+
+	filterAction :: Filter -> FilePath -> FileInfo -> FilterAction
+	filterAction UnlockFilter f fi
+		| originalBranchFile fi == IsAnnexSymlink = UnlockFile f
+	filterAction HideMissingFilter f fi
+		| not (isContentPresent fi) = HideFile f
+	filterAction UnlockHideMissingFilter f fi
+		| not (isContentPresent fi) = HideFile f
+		| otherwise = filterAction UnlockFilter f fi
+	filterAction _ f _ = UnchangedFile f
+
+	filteredCommit :: Filter -> Git.Commit -> Git.Commit
+
+	-- Generate a version of the commit made on the filter branch
+	-- with the filtering of modified files reversed.
+	unfilteredCommit :: Filter -> Git.Commit -> Git.Commit

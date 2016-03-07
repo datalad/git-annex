@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="divergentdave@5c17d06f6d67c6f157b76a4cc95ca764b7d2f899"
+ nickname="divergentdave"
+ subject="comment 1"
+ date="2016-02-21T05:15:57Z"
+ content="""
+I got further along in the build process, but cabal couldn't install the \"arm-linux-androideabi-4.8\" versions of `magic` and `terminal-size`. The magic library couldn't be installed because there wasn't an appropriate C library available. The terminal-size library failed with the following compilation error.
+
+```
+Posix.hsc: In function '_hsc2hs_test11':
+Posix.hsc:32:39: error: invalid application of 'sizeof' to incomplete type 'struct winsize'
+In file included from /home/builder/.ghc/android-14/arm-linux-androideabi-4.8/sysroot/usr/include/sys/types.h:33:0,
+                 from /home/builder/.ghc/android-14/arm-linux-androideabi-4.8/sysroot/usr/include/unistd.h:33,
+                 from Posix.hsc:21:
+Posix.hsc: In function '_hsc2hs_test15':
+Posix.hsc:35:48: error: invalid use of undefined type 'struct winsize'
+...
+```
+"""]]

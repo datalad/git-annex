@@ -1,0 +1,77 @@
+### Please describe the problem.
+
+Setup: Centralized bare repository, different clones, annex v6. When files with special characters, for example german umlauts (öäü), are part of the repository, it does not work to get these files if the file is unlocked. It will be successfully downloaded from the repo (the correct file is stored in the .git/annex subfolder), but the textfile with the initial link will not be replaced.  
+
+It seems to be related to the precompiled 6.20160126-g2336107 version, since it works fine for the version packaged for Arch Linux (pacman).
+
+### What steps will reproduce the problem?
+
+
+1) Create a bare repo
+
+    $ git init testing.git --bare --shared
+
+2) clone the bare repo, init
+
+    $ git clone testing.git test1
+    $ git annex init
+    $ git annex upgrade
+
+3) Add some file with umlauts
+
+    $ echo Wäää >> test_öüä
+    $ git add .
+    $ git annex sync --content
+
+4) Clone bare repo again
+
+    $ git clone testing.git test2
+
+5) Init and try to get the file
+
+    $ git annex init 'test3'
+    $ git annex upgrade
+    $ git annex get test_öüä
+
+After the last step the download message will be printed:
+
+    get testäöü (from origin...) 
+    SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+                  0 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+    (checksum...) ok
+    (recording state in git...)
+
+.. and the file is correctly downloaded, but the file is not replaced and will still contain the file link to the annex folder.
+
+### What version of git-annex are you using? On what operating system?
+
+Failing version:
+
+    $ git-annex version    
+    git-annex version: 6.20160126-g2336107
+
+    build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput TorrentParser Feeds Quvi
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM    URL
+    remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+
+
+Working version from Arch Linux:
+
+    git-annex version: 6.20160126
+
+    build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput TorrentParser Feeds Quvi
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+
+I tested this on two different systems, Arch Linux and Debian Jessie. It does not work with the downloaded precompiled version on both systems.
+
+
+### Please provide any additional information below.
+
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes, I've been using it for more than a year to synchronize between different PCs. Great work :-) 
+
+> [[fixed|done]] --[[Joey]]

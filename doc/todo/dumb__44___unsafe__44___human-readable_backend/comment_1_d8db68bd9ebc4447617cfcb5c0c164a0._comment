@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-02-09T16:37:11Z"
+ content="""
+Use what filename? A key can have any number of associated filenames in one
+or several git branches. The filenames can change at any time.
+
+AFAICS, this is a "pony" request. It seems like a good idea, but doesn't
+really work when you look at the details.
+"""]]

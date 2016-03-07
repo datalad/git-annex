@@ -61,10 +61,10 @@ if [ ! -e "$HOME/.ssh/git-annex-wrapper" ]; then
 fi
 
 # Put our binaries first, to avoid issues with out of date or incompatable
-# system binaries.
+# system binaries. Extra binaries come after system path.
 ORIG_PATH="$PATH"
 export ORIG_PATH
-PATH="$bundle:$PATH"
+PATH="$bundle:$PATH:$bundle/extra"
 export PATH
 
 ORIG_GIT_EXEC_PATH="$GIT_EXEC_PATH"
@@ -77,7 +77,11 @@ export ORIG_GIT_TEMPLATE_DIR
 GIT_TEMPLATE_DIR="$bundle/templates"
 export GIT_TEMPLATE_DIR
 
-# Indicate which variables were exported above.
+GIT_ANNEX_DIR="$bundle"
+export GIT_ANNEX_DIR
+
+# Indicate which variables were exported above and should be cleaned
+# when running non-bundled programs.
 GIT_ANNEX_STANDLONE_ENV="PATH GIT_EXEC_PATH GIT_TEMPLATE_DIR"
 export GIT_ANNEX_STANDLONE_ENV
 

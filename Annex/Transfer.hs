@@ -91,8 +91,9 @@ runTransfer' ignorelock t file shouldretry transferobserver transferaction = do
 			return v
   where
 #ifndef mingw32_HOST_OS
-	prep tfile mode info = do
+	prep tfile mode info = catchPermissionDenied (const prepfailed) $ do
 		let lck = transferLockFile tfile
+		createAnnexDirectory $ takeDirectory lck
 		r <- tryLockExclusive (Just mode) lck
 		case r of
 			Nothing -> return (Nothing, True)
@@ -104,9 +105,10 @@ runTransfer' ignorelock t file shouldretry transferobserver transferaction = do
 				, return (Nothing, True)
 				)
 #else
-	prep tfile _mode info = liftIO $ do
+	prep tfile _mode info = catchPermissionDenied (const prepfailed) $ do
 		let lck = transferLockFile tfile
-		v <- catchMaybeIO $ lockExclusive lck
+		createAnnexDirectory $ takeDirectory lck
+		v <- catchMaybeIO $ liftIO $ lockExclusive lck
 		case v of
 			Nothing -> return (Nothing, False)
 			Just Nothing -> return (Nothing, True)
@@ -115,6 +117,8 @@ runTransfer' ignorelock t file shouldretry transferobserver transferaction = do
 					writeTransferInfoFile info tfile
 				return (Just lockhandle, False)
 #endif
+	prepfailed = return (Nothing, False)
+
 	cleanup _ Nothing = noop
 	cleanup tfile (Just lockhandle) = do
 		let lck = transferLockFile tfile

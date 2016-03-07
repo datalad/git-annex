@@ -13,6 +13,7 @@ import Data.Default
 
 import Annex.Common
 import Annex.Content
+import Annex.Link
 import Logs.Presence
 import qualified Annex.Queue
 import qualified Git

@@ -1,0 +1,5 @@
+There's `git annex reinject <src> <dst>` for re-adding one file's contents to the local annex. But what if I have a whole bunch of files, and want git-annex itself to decide whether & where it needs to reinject them? (And if the file doesn't need to be reinjected, it would remain in its original place.)
+
+None of the `git annex import` modes work properly in this case. By default, importing adds another, unnecessary copy of the imported file (which I have to `rm` after importing). The `--clean-duplicates` mode seems close, but it insists on verifying the content in other repositories rather than just reinjecting it locally. (Let's assume that the main reason I'm trying to reinject is that I cannot access other repos.)
+
+So I'm hoping for something like `git annex import --reinject <src>...`. Or are there other existing ways to achieve the same? I couldn't find any.

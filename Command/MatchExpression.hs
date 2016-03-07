@@ -27,12 +27,17 @@ cmd = noCommit $
 
 data MatchExpressionOptions = MatchExpressionOptions
 	{ matchexpr :: String
+	, largeFilesExpression :: Bool
 	, matchinfo :: MatchInfo
 	}
 
 optParser :: CmdParamsDesc -> Parser MatchExpressionOptions
 optParser desc = MatchExpressionOptions
 	<$> argument str (metavar desc)
+	<*> switch
+		( long "largefiles"
+		<> help "parse as annex.largefiles expression"
+		)
 	<*> (addkeysize <$> dataparser)
   where
 	dataparser = MatchingInfo
@@ -48,19 +53,27 @@ optParser desc = MatchExpressionOptions
 			( long "size" <> metavar paramSize
 			<> help "specify size to match against"
 			))
+		<*> optinfo "mimetype" (strOption
+			( long "mimetype" <> metavar paramValue
+			<> help "specify mime type to match against"
+			))
+
 	optinfo datadesc mk = (Right <$> mk)
 		<|> (pure $ Left $ missingdata datadesc)
 	missingdata datadesc = bail $ "cannot match this expression without " ++ datadesc ++ " data"
 	-- When a key is provided, use its size.
-	addkeysize i@(MatchingInfo f (Right k) _) = case keySize k of
-		Just sz -> MatchingInfo f (Right k) (Right sz)
+	addkeysize i@(MatchingInfo f (Right k) _ m) = case keySize k of
+		Just sz -> MatchingInfo f (Right k) (Right sz) m
 		Nothing -> i
 	addkeysize i = i
 
 seek :: MatchExpressionOptions -> CommandSeek
 seek o = do
-	u <- getUUID
-	case parsedToMatcher $ exprParser matchAll matchAll groupMap M.empty (Just u) (matchexpr o) of
+	parser <- if largeFilesExpression o
+		then mkLargeFilesParser
+		else preferredContentParser 
+			matchAll matchAll groupMap M.empty . Just <$> getUUID
+	case parsedToMatcher $ parser ((matchexpr o)) of
 		Left e -> liftIO $ bail $ "bad expression: " ++ e
 		Right matcher -> ifM (checkmatcher matcher)
 			( liftIO exitSuccess

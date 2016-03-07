@@ -36,8 +36,6 @@ module Types.MetaData (
 	metaDataValues,
 	ModMeta(..),
 	modMeta,
-	parseModMeta,
-	parseMetaData,
 	prop_metadata_sane,
 	prop_metadata_serialize
 ) where
@@ -238,26 +236,6 @@ modMeta m (SetMeta f v) = updateMetaData f v $
 modMeta m (MaybeSetMeta f v)
 	| S.null (currentMetaDataValues f m) = updateMetaData f v emptyMetaData
 	| otherwise = emptyMetaData
-
-{- Parses field=value, field+=value, field-=value, field?=value -}
-parseModMeta :: String -> Either String ModMeta
-parseModMeta p = case lastMaybe f of
-	Just '+' -> AddMeta <$> mkMetaField f' <*> v
-	Just '-' -> DelMeta <$> mkMetaField f' <*> v
-	Just '?' -> MaybeSetMeta <$> mkMetaField f' <*> v
-	_ -> SetMeta <$> mkMetaField f <*> v
-  where
-	(f, sv) = separate (== '=') p
-	f' = beginning f
-	v = pure (toMetaValue sv)
-
-{- Parses field=value -}
-parseMetaData :: String -> Either String (MetaField, MetaValue)
-parseMetaData p = (,)
-	<$> mkMetaField f
-	<*> pure (toMetaValue v)
-  where
-	(f, v) = separate (== '=') p
 
 {- Avoid putting too many fields in the map; extremely large maps make
  - the seriaization test slow due to the sheer amount of data.

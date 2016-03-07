@@ -88,3 +88,7 @@ lrwxrwxrwx 1 yoh yoh 186 Jul 28 16:11 test-annex.dat -> .git/annex/objects/zk/71
 
 # End of transcript or log.
 """]]
+
+> Closing as I think we're in agreement this is the right behavior.
+> But, see <http://git-annex.branchable.com/todo/hide_missing_files/>.
+> [[done]] --[[Joey]] 

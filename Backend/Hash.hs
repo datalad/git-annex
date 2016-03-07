@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE BangPatterns, CPP #-}
+{-# LANGUAGE CPP #-}
 
 module Backend.Hash (
 	backends,
@@ -171,8 +171,9 @@ hashFile hash file filesize = go hash
 	go (SkeinHash hashsize) = use (skeinHasher hashsize)
 	
 	use hasher = liftIO $ do
-		!h <- hasher <$> L.readFile file
-		return h
+		h <- hasher <$> L.readFile file
+		-- Force full evaluation so file is read and closed.
+		return (length h `seq` h)
 	
 	usehasher hashsize = case shaHasher hashsize filesize of
 		Left sha -> use sha

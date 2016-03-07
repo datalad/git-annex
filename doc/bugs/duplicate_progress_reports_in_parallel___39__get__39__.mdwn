@@ -1,0 +1,22 @@
+[[!format sh """
+$> git annex version                    
+git-annex version: 6.20160213+gitg9597a21-1~ndall+1
+...
+$> git annex get -J 5 .
+get docs/freesurfer.groupanalysis.ppt (from origin...) (checksum...) ok
+get docs/freesurfer.future_directions.2007.ppt (from origin...) (checksum...) ok
+get docs/freesurfer.groupanalysis.short.ppt (from origin...) (checksum...) ok
+get distribution/trctrain/trctraindata.tar.gz (from origin...) 
+47%          80.2MB/s 3s
+47%          80.2MB/s 3s
+get docs/freesurfer.inferring_architectonics.ppt (from origin...) 
+33%           8.1MB/s 4s
+33%           8.1MB/s 4s
+get docs/freesurfer.intro.2011.ppt (from origin...) 
+64%           7.3MB/s 1s
+64%           7.3MB/s 1s
+get docs/freesurfer.intro.mmclass.ppt (from origin...)
+# End of transcript or log.
+"""]]
+
+[[!meta author=yoh]]

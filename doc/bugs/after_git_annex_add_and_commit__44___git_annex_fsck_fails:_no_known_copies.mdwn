@@ -1,0 +1,16 @@
+I added new content to my git annex repo on my laptop, in the usual way: copying the new dir into the repo, then cd into the new directory, 'git annex add .' and then 'git commit -m <MSG>'. Everything went well, with no errors, which means that the files were correctly moved to .git/annex/objects/ and symbolic links were created in the new dir. But now, if I do 'git annex fsck .', I get an error for each file:
+[[!format sh """
+fsck <FILENAME> (fixing location log) (checksum...)
+
+  ** No known copies exist of <FILENAME>
+failed
+"""]]
+Unfortunately, I am not able to reproduce the problem on a toy-example repository. This means that my git annex repo may be broken. How do I fix it?
+I use git v1.9.1 on Ubuntu 14.04 LTS, and git-annex version: 5.20150406-gb2814bc
+
+OK, in all honesty, I did a 'git annex sync' between the 'add' and the 'commit' above. But I synced with a clone of the repository that I keep on an external drive, which is less updated than my laptop. It is less updated because I always add content on my laptop and then sync/get from the external disk. So the sync did no harm, apparently.
+
+> Since this seems to be only a problem with messaging about accidentially
+> marked dead repositories, I've made fsck mention when a file is only
+> located in a dead repo, and I've made info tell when it's run in a
+> supposedly-dead repo. [[done]] --[[Joey]]

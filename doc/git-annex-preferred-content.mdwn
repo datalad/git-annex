@@ -32,7 +32,7 @@ elsewhere to allow removing it).
 
 # EXPRESSIONS
 
-* `include=glob` and `exclude=glob`
+* `include=glob` / `exclude=glob`
 
   Match files to include, or exclude.
 
@@ -101,7 +101,7 @@ elsewhere to allow removing it).
   Matches only files that git-annex believes are present in all repositories
   in the specified group.
 
-* `smallerthan=size` and `largerthan=size`
+* `smallerthan=size` / `largerthan=size`
 
   Matches only files whose content is smaller than, or larger than the
   specified size.
@@ -118,6 +118,15 @@ elsewhere to allow removing it).
   To match a tag "done", use `metadata=tag=done`
 
   To match author metadata, use `metadata=author=*Smith`
+
+* `metadata=field<number` / `metadata=field>number` 
+* `metadata=field<=number` / `metadata=field>=number`
+
+  Matches only files that have a metadata field attached with a value that
+  is a number and is less than or greater than the specified number.
+
+  To match PDFs with between 100 and 200 pages (assuming something has set
+  that metadata), use `metadata=pagecount>=100 and metadata=pagecount<=200`
 
 * `present`
 
@@ -217,6 +226,10 @@ elsewhere to allow removing it).
 * `anything`
 
   Matches any version of any file.
+
+* `nothing`
+
+  Matches nothing. (Same as "not anything")
 
 * `not expression`
 

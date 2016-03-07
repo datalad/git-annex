@@ -28,6 +28,11 @@ designed to interoperate with it.
   uses git-annex to "create a two-way, distributed content distribution
   network for communities with poor connexions to the internet".
 
+* [The Japanese American Legacy Project](http://www.densho.org/)
+  uses git-annex to manage upwards of 100 terabytes of collections,
+  transporting them from small cultural heritage sites on USB drives.
+  User interface is a [Django web app](https://github.com/densho).
+
 * [[forum/gadu_-_git-annex_disk_usage]] is a du like utility that
   is git-annex aware.
 

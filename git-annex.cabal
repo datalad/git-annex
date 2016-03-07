@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 6.20160126
+Version: 6.20160229
 Cabal-Version: >= 1.8
 License: GPL-3
 Maintainer: Joey Hess <id@joeyh.name>
@@ -63,6 +63,9 @@ Flag TestSuite
 Flag TorrentParser
   Description: Use haskell torrent library to parse torrent files
 
+Flag MagicMime
+  Description: Use libmagic to determine file MIME types
+
 Flag ConcurrentOutput
   Description: Use concurrent-output library
 
@@ -80,6 +83,12 @@ Flag network-uri
 
 Flag Cryptonite
   Description: Use the cryptonite library, instead of the older cryptohash
+
+Flag Dbus
+  Description: Enable dbus support
+
+Flag XMPP
+  Description: Enable notifications using XMPP
 
 Executable git-annex
   Main-Is: git-annex.hs
@@ -121,7 +130,7 @@ Executable git-annex
   if flag(network-uri)
     Build-Depends: network-uri (>= 2.6), network (>= 2.6)
   else
-    Build-Depends: network (< 2.6), network (>= 2.0)
+    Build-Depends: network (< 2.6), network (>= 2.4)
 
   if flag(Cryptonite)
     Build-Depends: cryptonite
@@ -178,9 +187,10 @@ Executable git-annex
               CPP-Options: -DWITH_KQUEUE
               C-Sources: Utility/libkqueue.c
 
-  if (os(linux))
-    Build-Depends: dbus (>= 0.10.7), fdo-notify (>= 0.3)
-    CPP-Options: -DWITH_DBUS -DWITH_DESKTOP_NOTIFY -DWITH_DBUS_NOTIFICATIONS
+  if flag(Dbus)
+    if (os(linux))
+      Build-Depends: dbus (>= 0.10.7), fdo-notify (>= 0.3)
+      CPP-Options: -DWITH_DBUS -DWITH_DESKTOP_NOTIFY -DWITH_DBUS_NOTIFICATIONS
 
   if flag(Android)
     Build-Depends: data-endian
@@ -210,13 +220,19 @@ Executable git-annex
     Build-Depends: network-multicast, network-info
     CPP-Options: -DWITH_PAIRING
 
-  if (! os(windows))
-    Build-Depends: network-protocol-xmpp, gnutls (>= 0.1.4), xml-types
-    CPP-Options: -DWITH_XMPP
+  if flag(XMPP)
+    if (! os(windows))
+      Build-Depends: network-protocol-xmpp, gnutls (>= 0.1.4), xml-types
+      CPP-Options: -DWITH_XMPP
   
   if flag(TorrentParser)
     Build-Depends: torrent (>= 10000.0.0)
     CPP-Options: -DWITH_TORRENTPARSER
+
+  if flag(MagicMime)
+    if (! os(windows))
+      Build-Depends: magic
+      CPP-Options: -DWITH_MAGICMIME
 
   if flag(ConcurrentOutput)
     Build-Depends: concurrent-output (>= 1.6)

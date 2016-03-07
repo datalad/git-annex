@@ -21,13 +21,13 @@ outputMessage json s = withOutputType go
 	go NormalOutput = liftIO $
 		flushed $ putStr s
 	go QuietOutput = q
-	go (ConcurrentOutput _) = concurrentMessage False s q
+	go o@(ConcurrentOutput {}) = concurrentMessage o False s q
 	go JSONOutput = liftIO $ flushed json
 
 outputError :: String -> Annex ()
 outputError s = withOutputType go
   where
-	go (ConcurrentOutput _) = concurrentMessage True s (go NormalOutput)
+	go o@(ConcurrentOutput {}) = concurrentMessage o True s (go NormalOutput)
 	go _ = liftIO $ do
 		hFlush stdout
 		hPutStr stderr s

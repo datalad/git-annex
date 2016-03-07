@@ -12,12 +12,10 @@ import Annex.Ingest
 import Logs.Location
 import Annex.Content
 import Annex.Content.Direct
-import Annex.Link
 import qualified Annex
 import qualified Annex.Queue
 import qualified Database.Keys
 import Config
-import Utility.InodeCache
 import Annex.FileMatcher
 import Annex.Version
 
@@ -49,7 +47,10 @@ seek o = allowConcurrentOutput $ do
 	matcher <- largeFilesMatcher
 	let gofile file = ifM (checkFileMatcher matcher file <||> Annex.getState Annex.force)
 		( start file
-		, startSmall file
+		, ifM (annexAddSmallFiles <$> Annex.getGitConfig)
+			( startSmall file
+			, stop
+			)
 		)
 	case batchOption o of
 		Batch -> batchFiles gofile
@@ -96,48 +97,42 @@ start file = ifAnnexed file addpresent add
 		( do
 			ms <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus file
 			case ms of
-				Just s | isSymbolicLink s -> fixup key
+				Just s | isSymbolicLink s -> fixuplink key
 				_ -> ifM (sameInodeCache file =<< Database.Keys.getInodeCaches key)
 						( stop, add )
 		, ifM isDirect
 			( do
 				ms <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus file
 				case ms of
-					Just s | isSymbolicLink s -> fixup key
+					Just s | isSymbolicLink s -> fixuplink key
 					_ -> ifM (goodContent key file)
 						( stop , add )
-			, fixup key
+			, fixuplink key
 			)
 		)
-	fixup key = do
+	fixuplink key = do
 		-- the annexed symlink is present but not yet added to git
 		showStart "add" file
 		liftIO $ removeFile file
-		whenM isDirect $
-			void $ addAssociatedFile key file
-		next $ next $ cleanup file key Nothing =<< inAnnex key
+		next $ next $ do
+			addLink file key Nothing
+			cleanup key =<< inAnnex key
 
 perform :: FilePath -> CommandPerform
 perform file = do
-	lockingfile <- not <$> isDirect
+	lockingfile <- not <$> addUnlocked
 	let cfg = LockDownConfig
 		{ lockingFile = lockingfile
 		, hardlinkFileTmp = True
 		}
-	lockDown cfg file >>= ingest >>= go
+	lockDown cfg file >>= ingestAdd >>= finish
   where
-	go (Just key, cache) = next $ cleanup file key cache True
-	go (Nothing, _) = stop
+	finish (Just key) = next $ cleanup key True
+	finish Nothing = stop
 
-cleanup :: FilePath -> Key -> Maybe InodeCache -> Bool -> CommandCleanup
-cleanup file key mcache hascontent = do
+cleanup :: Key -> Bool -> CommandCleanup
+cleanup key hascontent = do
 	maybeShowJSON [("key", key2file key)]
-	ifM (isDirect <&&> pure hascontent)
-		( do
-			l <- calcRepo $ gitAnnexLink file key
-			stageSymlink file =<< hashSymlink l
-		, addLink file key mcache
-		)
 	when hascontent $
 		logStatus key InfoPresent
 	return True

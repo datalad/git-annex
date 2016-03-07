@@ -10,6 +10,7 @@ module Annex.CatFile (
 	catFileDetails,
 	catObject,
 	catTree,
+	catCommit,
 	catObjectDetails,
 	catFileHandle,
 	catFileStop,
@@ -51,6 +52,11 @@ catTree :: Git.Ref -> Annex [(FilePath, FileMode)]
 catTree ref = do
 	h <- catFileHandle
 	liftIO $ Git.CatFile.catTree h ref
+
+catCommit :: Git.Ref -> Annex (Maybe Commit)
+catCommit ref = do
+	h <- catFileHandle
+	liftIO $ Git.CatFile.catCommit h ref
 
 catObjectDetails :: Git.Ref -> Annex (Maybe (L.ByteString, Sha, ObjectType))
 catObjectDetails ref = do

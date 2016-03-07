@@ -71,6 +71,7 @@ import qualified Annex.WorkTree
 import qualified Annex.Link
 import qualified Annex.Init
 import qualified Annex.CatFile
+import qualified Annex.Path
 import qualified Annex.View
 import qualified Annex.View.ViewedFile
 import qualified Logs.View
@@ -102,22 +103,25 @@ import qualified Utility.Gpg
 
 optParser :: Parser TestOptions
 optParser = TestOptions
-	<$> suiteOptionParser ingredients (tests mempty)
+	<$> suiteOptionParser ingredients (tests False mempty)
 	<*> switch
 		( long "keep-failures"
 		<> help "preserve repositories on test failure"
-		)
+	)
 
 runner :: Maybe (TestOptions -> IO ())
-runner = Just $ \opts -> case tryIngredients ingredients (tastyOptionSet opts) (tests opts) of
-	Nothing -> error "No tests found!?"
-	Just act -> ifM act
-		( exitSuccess
-		, do
-			putStrLn "  (This could be due to a bug in git-annex, or an incompatability"
-			putStrLn "   with utilities, such as git, installed on this system.)"
-			exitFailure
-		)
+runner = Just $ \opts -> do
+	ensuretmpdir
+	crippledfilesystem <- Annex.Init.probeCrippledFileSystem' tmpdir
+	case tryIngredients ingredients (tastyOptionSet opts) (tests crippledfilesystem opts) of
+		Nothing -> error "No tests found!?"
+		Just act -> ifM act
+			( exitSuccess
+			, do
+				putStrLn "  (This could be due to a bug in git-annex, or an incompatability"
+				putStrLn "   with utilities, such as git, installed on this system.)"
+				exitFailure
+			)
 
 ingredients :: [Ingredient]
 ingredients =
@@ -125,19 +129,19 @@ ingredients =
 	, rerunningTests [consoleTestReporter]
 	]
 
-tests :: TestOptions -> TestTree
-tests opts = testGroup "Tests" $ properties :
+tests :: Bool -> TestOptions -> TestTree
+tests crippledfilesystem opts = testGroup "Tests" $ properties :
 	map (\(d, te) -> withTestMode te (unitTests d)) testmodes
   where
-	testmodes =
-		[ ("v6 unlocked", (testMode opts "6") { unlockedFiles = True })
-		, ("v6 locked", testMode opts "6")
-		, ("v5", testMode opts "5")
-#ifndef mingw32_HOST_OS
-		-- Windows will only use direct mode, so don't test twice.
-		, ("v5 direct", (testMode opts "5") { forceDirect = True })
-#endif
+	testmodes = catMaybes
+		[ Just ("v6 unlocked", (testMode opts "6") { unlockedFiles = True })
+		, unlesscrippled ("v5", testMode opts "5")
+		, unlesscrippled ("v6 locked", testMode opts "6")
+		, Just ("v5 direct", (testMode opts "5") { forceDirect = True })
 		]
+	unlesscrippled v
+		| crippledfilesystem = Nothing
+		| otherwise = Just v
 
 properties :: TestTree
 properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
@@ -323,12 +327,12 @@ test_import :: Assertion
 test_import = intmpclonerepo $ Utility.Tmp.withTmpDir "importtest" $ \importdir -> do
 	(toimport1, importf1, imported1) <- mktoimport importdir "import1"
 	git_annex "import" [toimport1] @? "import failed"
-	annexed_present_locked imported1
+	annexed_present_imported imported1
 	checkdoesnotexist importf1
 
 	(toimport2, importf2, imported2) <- mktoimport importdir "import2"
 	git_annex "import" [toimport2] @? "import of duplicate failed"
-	annexed_present_locked imported2
+	annexed_present_imported imported2
 	checkdoesnotexist importf2
 
 	(toimport3, importf3, imported3) <- mktoimport importdir "import3"
@@ -348,11 +352,11 @@ test_import = intmpclonerepo $ Utility.Tmp.withTmpDir "importtest" $ \importdir 
 	
 	(toimport5, importf5, imported5) <- mktoimport importdir "import5"
 	git_annex "import" ["--duplicate", toimport5] @? "import --duplicate failed"
-	annexed_present_locked imported5
+	annexed_present_imported imported5
 	checkexists importf5
 	
 	git_annex "drop" ["--force", imported1, imported2, imported5] @? "drop failed"
-	annexed_notpresent_locked imported2
+	annexed_notpresent_imported imported2
 	(toimportdup, importfdup, importeddup) <- mktoimport importdir "importdup"
 	git_annex "import" ["--clean-duplicates", toimportdup] 
 		@? "import of missing duplicate with --clean-duplicates failed"
@@ -364,6 +368,14 @@ test_import = intmpclonerepo $ Utility.Tmp.withTmpDir "importtest" $ \importdir 
 		let importf = subdir </> "f"
 		writeFile (importdir </> importf) (content importf)
 		return (importdir </> subdir, importdir </> importf, importf)
+	annexed_present_imported f = ifM (annexeval Config.crippledFileSystem)
+		( annexed_present_unlocked f
+		, annexed_present_locked f
+		)
+	annexed_notpresent_imported f = ifM (annexeval Config.crippledFileSystem)
+		( annexed_notpresent_unlocked f
+		, annexed_notpresent_locked f
+		)
 
 test_reinject :: Assertion
 test_reinject = intmpclonerepoInDirect $ do
@@ -373,8 +385,11 @@ test_reinject = intmpclonerepoInDirect $ do
 	key <- Types.Key.key2file <$> getKey backendSHA1 tmp
 	git_annex "reinject" [tmp, sha1annexedfile] @? "reinject failed"
 	annexed_present sha1annexedfile
-	git_annex "fromkey" [key, sha1annexedfiledup] @? "fromkey failed for dup"
-	annexed_present_locked sha1annexedfiledup
+	-- fromkey can't be used on a crippled filesystem, since it makes a
+	-- symlink
+	unlessM (annexeval Config.crippledFileSystem) $ do
+		git_annex "fromkey" [key, sha1annexedfiledup] @? "fromkey failed for dup"
+		annexed_present_locked sha1annexedfiledup
   where
 	tmp = "tmpfile"
 
@@ -814,16 +829,20 @@ test_unused = intmpclonerepoInDirect $ do
 	checkunused [] "after dropunused"
 	not <$> git_annex "dropunused" ["--force", "10", "501"] @? "dropunused failed to fail on bogus numbers"
 
-	-- unused used to miss renamed symlinks that were not staged
-	-- and pointed at annexed content, and think that content was unused
-	writeFile "unusedfile" "unusedcontent"
-	git_annex "add" ["unusedfile"] @? "add of unusedfile failed"
-	unusedfilekey <- getKey backendSHA256E "unusedfile"
-	renameFile "unusedfile" "unusedunstagedfile"
-	boolSystem "git" [Param "rm", Param "-qf", File "unusedfile"] @? "git rm failed"
-	checkunused [] "with unstaged link"
-	removeFile "unusedunstagedfile"
-	checkunused [unusedfilekey] "with renamed link deleted"
+	-- Unused used to miss renamed symlinks that were not staged
+	-- and pointed at annexed content, and think that content was unused.
+	-- This is only relevant when using locked files; if the file is
+	-- unlocked, the work tree file has the content, and there's no way
+	-- to associate it with the key.
+	unlessM (unlockedFiles <$> getTestMode) $ do
+		writeFile "unusedfile" "unusedcontent"
+		git_annex "add" ["unusedfile"] @? "add of unusedfile failed"
+		unusedfilekey <- getKey backendSHA256E "unusedfile"
+		renameFile "unusedfile" "unusedunstagedfile"
+		boolSystem "git" [Param "rm", Param "-qf", File "unusedfile"] @? "git rm failed"
+		checkunused [] "with unstaged link"
+		removeFile "unusedunstagedfile"
+		checkunused [unusedfilekey] "with renamed link deleted"
 
 	-- unused used to miss symlinks that were deleted or modified
 	-- manually
@@ -915,6 +934,18 @@ test_sync = intmpclonerepo $ do
 	{- Regression test for bug fixed in 
 	 - 7b0970b340d7faeb745c666146c7f701ec71808f, where in direct mode
 	 - sync committed the symlink standin file to the annex. -}
+	git_annex_expectoutput "find" ["--in", "."] []
+	{- Regression test for bug fixed in
+	 - 039e83ed5d1a11fd562cce55b8429c840d72443e, where a present
+	 - wanted file was dropped. -}
+	git_annex "get" [annexedfile] @? "get failed"
+	git_annex_expectoutput "find" ["--in", "."] [annexedfile]
+	git_annex "wanted" [".", "present"] @? "wanted failed"
+	git_annex "sync" ["--content"] @? "sync failed"
+	git_annex_expectoutput "find" ["--in", "."] [annexedfile]
+	git_annex "drop" [annexedfile] @? "drop failed"
+	git_annex_expectoutput "find" ["--in", "."] []
+	git_annex "sync" ["--content"] @? "sync failed"
 	git_annex_expectoutput "find" ["--in", "."] []
 
 {- Regression test for union merge bug fixed in
@@ -1257,7 +1288,7 @@ test_uncommitted_conflict_resolution = do
  - lost track of whether a file was a symlink. 
  -}
 test_conflict_resolution_symlink_bit :: Assertion
-test_conflict_resolution_symlink_bit =
+test_conflict_resolution_symlink_bit = unlessM (unlockedFiles <$> getTestMode) $
 	withtmpclonerepo $ \r1 ->
 		withtmpclonerepo $ \r2 ->
 			withtmpclonerepo $ \r3 -> do
@@ -1530,9 +1561,10 @@ test_add_subdirs = intmpclonerepo $ do
 
 	{- Regression test for Windows bug where symlinks were not
 	 - calculated correctly for files in subdirs. -}
-	git_annex "sync" [] @? "sync failed"
-	l <- annexeval $ decodeBS <$> Annex.CatFile.catObject (Git.Types.Ref "HEAD:dir/foo")
-	"../.git/annex/" `isPrefixOf` l @? ("symlink from subdir to .git/annex is wrong: " ++ l)
+	unlessM (unlockedFiles <$> getTestMode) $ do
+		git_annex "sync" [] @? "sync failed"
+		l <- annexeval $ decodeBS <$> Annex.CatFile.catObject (Git.Types.Ref "HEAD:dir/foo")
+		"../.git/annex/" `isPrefixOf` l @? ("symlink from subdir to .git/annex is wrong: " ++ l)
 
 	createDirectory "dir2"
 	writeFile ("dir2" </> "foo") $ content annexedfile
@@ -1565,7 +1597,8 @@ git_annex command params = do
 {- Runs git-annex and returns its output. -}
 git_annex_output :: String -> [String] -> IO String
 git_annex_output command params = do
-	got <- Utility.Process.readProcess "git-annex" (command:params)
+	pp <- Annex.Path.programPath
+	got <- Utility.Process.readProcess pp (command:params)
 	-- Since the above is a separate process, code coverage stats are
 	-- not gathered for things run in it.
 	-- Run same command again, to get code coverage.
@@ -1736,12 +1769,17 @@ cleanup' final dir = whenM (doesDirectoryExist dir) $ do
 				removeDirectoryRecursive dir
 	
 checklink :: FilePath -> Assertion
-checklink f = do
-	s <- getSymbolicLinkStatus f
+checklink f =
 	-- in direct mode, it may be a symlink, or not, depending
 	-- on whether the content is present.
 	unlessM (annexeval Config.isDirect) $
-		isSymbolicLink s @? f ++ " is not a symlink"
+		ifM (annexeval Config.crippledFileSystem)
+			( (isJust <$> annexeval (Annex.Link.getAnnexLinkTarget f))
+				@? f ++ " is not a (crippled) symlink"
+			, do
+				s <- getSymbolicLinkStatus f
+				isSymbolicLink s @? f ++ " is not a symlink"
+			)
 
 checkregularfile :: FilePath -> Assertion
 checkregularfile f = do
@@ -1843,8 +1881,10 @@ annexed_present f = ifM (unlockedFiles <$> getTestMode)
 	)
 
 annexed_present_locked :: FilePath -> Assertion
-annexed_present_locked = runchecks
-	[checklink, checkcontent, checkunwritable, inlocationlog]
+annexed_present_locked f = ifM (annexeval Config.crippledFileSystem)
+	( runchecks [checklink, inlocationlog] f
+	, runchecks [checklink, checkcontent, checkunwritable, inlocationlog] f
+	)
 
 annexed_present_unlocked :: FilePath -> Assertion
 annexed_present_unlocked = runchecks

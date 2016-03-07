@@ -1,0 +1,46 @@
+### Please describe the problem.
+
+Getting a file from a read-only remote fails with the following error:
+
+[[!format sh """
+$ git annex get somefile.avi
+get somefile.avi (from some.repo...)
+git-annex: ../../../home/annex/repo/.git/annex/transfer/upload/9bxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxb4/lck.SHA256E-sxxxxxxx52--xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx8c.avi: openFd: does not exist (No su
+ch file oprotocol version mismatch -- is your shell clean?
+(see the rsync man page for an explanation)
+rsync error: protocol incompatibility (code 2) at compat.c(176) [Receiver=3.1.1]
+r directory)
+git-annex-shell: sendkey: 1 failed
+
+  rsync failed -- run git annex again to resume file transfer
+
+  Unable to access these remotes: some.repo
+
+  Try making some of these repositories available:
+        xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -- [some.repo]
+failed
+git-annex: get: 1 failed
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+
+Locally git-annex 5.20141125 on debian/jessie, remotely 5.20150727 on FreeBSD.
+
+### Please provide any additional information below.
+
+Using `ps` I got the command executed on the remote side. Running it directly gives:
+
+[[!format sh """
+$ git-annex-shell sendkey /home/annex/repo SHA256E-sxxxxxxx52--xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx8c.avi --uuid 9axxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxde -- remoteuuid=9bxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxb4 direct= associatedfile=somefile.avi -- dummy rsync --server --sender -pe.Lsfx --inplace . .
+git-annex: ../../../home/annex/repo/.git/annex/transfer/upload/9bxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxb4/lck.SHA256E-sxxxxxxx52--xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx8c.avi: openFd: does not exist (No such file or directory)
+failed
+git-annex-shell: sendkey: 1 failed
+"""]]
+
+The remote repository is marked as read-only. The user on the remote has only read-only access to the git-annex repository.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes! :-) Despite this, everything works like a charm with several repos on different OSs with lots of data. Thanks for this great tool!
+
+> [[fixed|done]] --[[Joey]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-02-14T19:14:28Z"
+ content="""
+Since git natively supports symlinks, adding a whole separate
+implementation of them in git-annex would be a needless complication.
+
+You could instead use a direct mode repository, or unlocked files in a v6
+repository. Either avoids the symlinks so you don't need to dereference
+your cp.
+"""]]

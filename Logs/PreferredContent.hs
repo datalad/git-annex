@@ -102,7 +102,7 @@ makeMatcher groupmap configmap groupwantedmap u = go True True
 		| null (lefts tokens) = generate $ rights tokens
 		| otherwise = unknownMatcher u
 	  where
-		tokens = exprParser matchstandard matchgroupwanted (pure groupmap) configmap (Just u) expr
+		tokens = preferredContentParser matchstandard matchgroupwanted (pure groupmap) configmap (Just u) expr
 		matchstandard
 			| expandstandard = maybe (unknownMatcher u) (go False False)
 				(standardPreferredContent <$> getStandardGroup mygroups)
@@ -125,7 +125,7 @@ makeMatcher groupmap configmap groupwantedmap u = go True True
 unknownMatcher :: UUID -> FileMatcher Annex
 unknownMatcher u = generate [present]
   where
-	present = Operation $ matchPresent (Just u)
+	present = Operation $ limitPresent (Just u)
 
 {- Checks if an expression can be parsed, if not returns Just error -}
 checkPreferredContentExpression :: PreferredContentExpression -> Maybe String
@@ -133,7 +133,7 @@ checkPreferredContentExpression expr = case parsedToMatcher tokens of
 	Left e -> Just e
 	Right _ -> Nothing
   where
-	tokens = exprParser matchAll matchAll (pure emptyGroupMap) M.empty Nothing expr
+	tokens = preferredContentParser matchAll matchAll (pure emptyGroupMap) M.empty Nothing expr
 
 {- Puts a UUID in a standard group, and sets its preferred content to use
  - the standard expression for that group (unless preferred content is

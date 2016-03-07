@@ -1,6 +1,6 @@
 {- git-annex metadata
  -
- - Copyright 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -8,6 +8,8 @@
 module Annex.MetaData (
 	genMetaData,
 	dateMetaData,
+	parseModMeta,
+	parseMetaDataMatcher,
 	module X
 ) where
 
@@ -17,6 +19,7 @@ import Types.MetaData as X
 import Annex.MetaData.StandardFields as X
 import Logs.MetaData
 import Annex.CatFile
+import Utility.Glob
 
 import qualified Data.Set as S
 import qualified Data.Map as M
@@ -53,3 +56,37 @@ dateMetaData mtime old = MetaData $ M.fromList $ filter isnew
   where
 	isnew (f, _) = S.null (currentMetaDataValues f old)
 	(y, m, _d) = toGregorian $ utctDay mtime
+
+{- Parses field=value, field+=value, field-=value, field?=value -}
+parseModMeta :: String -> Either String ModMeta
+parseModMeta p = case lastMaybe f of
+	Just '+' -> AddMeta <$> mkMetaField f' <*> v
+	Just '-' -> DelMeta <$> mkMetaField f' <*> v
+	Just '?' -> MaybeSetMeta <$> mkMetaField f' <*> v
+	_ -> SetMeta <$> mkMetaField f <*> v
+  where
+	(f, sv) = separate (== '=') p
+	f' = beginning f
+	v = pure (toMetaValue sv)
+
+{- Parses field=value, field<value, field<=value, field>value, field>=value -}
+parseMetaDataMatcher :: String -> Either String (MetaField, MetaValue -> Bool)
+parseMetaDataMatcher p = (,)
+	<$> mkMetaField f
+	<*> pure matcher
+  where
+	(f, op_v) = break (`elem` "=<>") p
+	matcher = case op_v of
+		('=':v) -> checkglob v
+		('<':'=':v) -> checkcmp (<=) v
+		('<':v) -> checkcmp (<) v
+		('>':'=':v) -> checkcmp (>=) v
+		('>':v) -> checkcmp (>) v
+		_ -> checkglob ""
+	checkglob v =
+		let cglob = compileGlob v CaseInsensative
+		in matchGlob cglob . fromMetaValue
+	checkcmp cmp v v' = case (doubleval v, doubleval (fromMetaValue v')) of
+		(Just d, Just d') -> d' `cmp` d
+		_ -> False
+	doubleval v = readish v :: Maybe Double

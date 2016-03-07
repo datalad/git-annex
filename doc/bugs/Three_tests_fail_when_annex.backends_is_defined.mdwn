@@ -1,0 +1,107 @@
+### Please describe the problem.
+
+I noticed three tests failed when running "git annex test", and it seems 
+it's because I have `annex.backends` set to `SHA256` in `~/.gitconfig`. 
+When I disable that option, all tests succeed.
+
+### What steps will reproduce the problem?
+
+Add
+
+    [annex]
+      backends = SHA256
+
+to `~/.gitconfig`.
+
+### What version of git-annex are you using? On what operating system?
+
+Newest git-annex (6.20160211 amd64) from downloads.kitenet.net.
+
+- Debian GNU/Linux 8.3 (64 bit). Installed yesterday, so it's pretty pristine.
+- git version 2.7.1.287.g4943984 (Newest version from 'master' in 
+  git.git)
+
+The first version with this problem is 6.20160114. 5.20151218 works.
+
+### Please provide any additional information below.
+
+[[!format text """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+$ git annex test
+Tests
+
+[Removed 188 lines]
+
+    migrate (via gitattributes):                          /etc/magic, 4: Warning: using regular magic file `/usr/share/misc/magic'
+OK (3.11s)
+    unused:                                               /etc/magic, 4: Warning: using regular magic file `/usr/share/misc/magic'
+FAIL (1.84s)
+      unused keys differ after origin branches are gone
+      expected: [Key {keyName = "e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77", keyBackendName = "SHA256E", keySize = Just 20, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}]
+       but got: [Key {keyName = "e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77", keyBackendName = "SHA256", keySize = Just 20, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}]
+    describe:                                             /etc/magic, 4: Warning: using regular magic file `/usr/share/misc/magic'
+OK (0.84s)
+
+[Removed 1108 lines]
+
+    migrate (via gitattributes):                          /etc/magic, 4: Warning: using regular magic file `/usr/share/misc/magic'
+OK (3.34s)
+    unused:                                               /etc/magic, 4: Warning: using regular magic file `/usr/share/misc/magic'
+/etc/magic, 4: Warning: using regular magic file `/usr/share/misc/magic'
+/etc/magic, 4: Warning: using regular magic file `/usr/share/misc/magic'
+FAIL (1.82s)
+      unused keys differ after origin branches are gone
+      expected: [Key {keyName = "e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77", keyBackendName = "SHA256E", keySize = Just 20, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}]
+       but got: [Key {keyName = "e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77", keyBackendName = "SHA256", keySize = Just 20, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}]
+    describe:                                             /etc/magic, 4: Warning: using regular magic file `/usr/share/misc/magic'
+OK (0.78s)
+
+[Removed 1062 lines]
+
+    migrate (via gitattributes):                          OK (2.64s)
+    unused:                                               FAIL (1.53s)
+      unused keys differ after origin branches are gone
+      expected: [Key {keyName = "e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77", keyBackendName = "SHA256E", keySize = Just 20, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}]
+       but got: [Key {keyName = "e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77", keyBackendName = "SHA256", keySize = Just 20, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}]
+    describe:                                             OK (0.62s)
+
+[Removed 1667 lines]
+
+3 out of 269 tests failed (640.58s)
+  (This could be due to a bug in git-annex, or an incompatability
+   with utilities, such as git, installed on this system.)
+$
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Roses are red<br/>
+Violets are blue<br/>
+git-annex is awesome<br/>
+and so are you
+
+`;-)`
+
+But bloody hell, it's hard to get this thing to build. As you've 
+mentioned earlier, building on Debian 7 isn't supported anymore, so I 
+installed Debian 8.3 yesterday for the sole purpose of compiling git-annex, 
+but still no luck:
+
+    [32 of 32] Compiling Main             ( dist/setup/setup.hs, dist/setup/Main.o )
+    Linking ./dist/setup/setup ...
+    unrecognized option `--extra-prog-path=/home/sunny/.cabal/bin'
+    Makefile:19: recipe for target 'Build/SysConfig.hs' failed
+    make: *** [Build/SysConfig.hs] Error 1
+
+I was hoping to get it to build so I could find the exact commit that 
+introduced this, and also provide some patches with some functionality 
+I've been thinking of. Is building on Debian 8.3 (jessie) supported? I 
+found a bug report from you on 
+<https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=778987> that seems to 
+be related, but I don't know if that's the case. The newest version I'm 
+able to build is 5.20150219, somewhere after that various things start 
+to fail.

@@ -17,7 +17,6 @@ import Remote
 import Types.KeySource
 import Annex.CheckIgnore
 import Annex.NumCopies
-import Types.FileMatcher
 import Annex.FileMatcher
 
 cmd :: Command
@@ -67,7 +66,7 @@ seek o = allowConcurrentOutput $ do
 	largematcher <- largeFilesMatcher
 	withPathContents (start largematcher (duplicateMode o)) (importFiles o)
 
-start :: FileMatcher Annex -> DuplicateMode -> (FilePath, FilePath) -> CommandStart
+start :: GetFileMatcher -> DuplicateMode -> (FilePath, FilePath) -> CommandStart
 start largematcher mode (srcfile, destfile) =
 	ifM (liftIO $ isRegularFile <$> getSymbolicLinkStatus srcfile)
 		( do

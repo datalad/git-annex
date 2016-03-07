@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="mark@6b90344cdab3158eacb94a3944460d138afc9bef"
+ nickname="mark"
+ subject="comment 2"
+ date="2016-02-04T18:23:07Z"
+ content="""
+Thanks Joey for the response.
+
+This brings up two questions. 
+
+1) In my setup I have my own \"sync\" of just the git-annex branch with the remote after git annex operations. (I didn't want the master branch synch of \"git annex sync\". In this sync of mine I switch branches to do a pull/push on the git-annex branch. I found that I had to put file locks around all other git annex operations in order for things to keep from getting messed up in git. Is this because if I switch to another branch the git annex add (for example) won't work correctly even though it doesn't switch branches?
+
+2) I could avoid the whole issue if I could \"pull -rebase\" and push the git-annex branch without switching branches. Is there a way to do that?
+
+Thanks! -Mark
+"""]]

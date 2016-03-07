@@ -1,0 +1,3 @@
+The OSX .dmg is built without the MagicMime build flag. Turning it on will
+take some work to ship a copy of the magic database inside the dmg.
+--[[Joey]]

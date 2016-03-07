@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2016-02-19T15:58:17Z"
+ content="""
+When run on a local repository, git-annex info does not look at the
+git-annex branch. That would be slower than traversing the directories.
+(Asking for info about a remote does look at the git-annex branch.)
+
+git ls-tree does not have to look at files on disk, so is not comprable.
+The work `git annex info` does is roughly the same as a du of
+.git/annex/objects and a readlink of each symlink in the work tree.
+
+If you just want the .git/annex/objects size, perhaps it would make sense
+to have a way to get only one stat from git-annex status. Or perhaps 
+it would be as good to `du .git/annex/objects`?
+"""]]

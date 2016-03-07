@@ -11,7 +11,6 @@ import Network.URI
 import qualified Data.Map as M
 import System.Posix.Types
 import Utility.SafeCommand
-import Utility.URI ()
 
 {- Support repositories on local disk, and repositories accessed via an URL.
  -
@@ -98,3 +97,23 @@ toBlobType 0o100644 = Just FileBlob
 toBlobType 0o100755 = Just ExecutableBlob
 toBlobType 0o120000 = Just SymlinkBlob
 toBlobType _ = Nothing
+
+fromBlobType :: BlobType -> FileMode
+fromBlobType FileBlob = 0o100644
+fromBlobType ExecutableBlob = 0o100755
+fromBlobType SymlinkBlob = 0o120000
+
+data Commit = Commit
+	{ commitTree :: Sha
+	, commitAuthorMetaData :: CommitMetaData
+	, commitCommitterMetaData :: CommitMetaData
+	, commitMessage :: String
+	}
+	deriving (Show)
+
+data CommitMetaData = CommitMetaData
+	{ commitName :: Maybe String
+	, commitEmail :: Maybe String
+	, commitDate :: Maybe String -- In raw git form, "epoch -tzoffset"
+	}
+	deriving (Show)

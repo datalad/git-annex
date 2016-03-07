@@ -22,10 +22,10 @@ import Control.Applicative
 import Prelude
 
 #if ! MIN_VERSION_QuickCheck(2,8,2)
-instance (Arbitrary k, Arbitrary v, Eq k, Ord k) => Arbitrary (M.Map k v) where
+instance (Arbitrary k, Arbitrary v, Ord k) => Arbitrary (M.Map k v) where
 	arbitrary = M.fromList <$> arbitrary
 
-instance (Arbitrary v, Eq v, Ord v) => Arbitrary (S.Set v) where
+instance (Arbitrary v, Ord v) => Arbitrary (S.Set v) where
 	arbitrary = S.fromList <$> arbitrary
 #endif
 

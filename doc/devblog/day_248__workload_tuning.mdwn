@@ -15,7 +15,7 @@ Today I put together a lot of things I've been thinking about:
   make git-annex a lot more complicated, or b) negatively impact others.
   (Without having to fork git-annex.)
 
-This is discussed in more depth in [[design/v6]].
+This is discussed in more depth in [[design/new_repo_versions]].
 
 The solution, which I've built today, is support for
 [[tuning]] settings, when a new repository is first created. The resulting

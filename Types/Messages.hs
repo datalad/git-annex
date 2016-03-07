@@ -15,7 +15,7 @@ import Data.Default
 import System.Console.Regions (ConsoleRegion)
 #endif
 
-data OutputType = NormalOutput | QuietOutput | ConcurrentOutput Int | JSONOutput
+data OutputType = NormalOutput | QuietOutput | ConcurrentOutput Int Bool | JSONOutput
 	deriving (Show)
 
 data SideActionBlock = NoBlock | StartBlock | InBlock

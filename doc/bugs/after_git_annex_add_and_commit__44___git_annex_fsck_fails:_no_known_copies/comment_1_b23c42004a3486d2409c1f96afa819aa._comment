@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="emanuele.olivetti@47d88ed185b03191e25329caa6fabc2efb3118b2"
+ nickname="emanuele.olivetti"
+ subject="comment 1"
+ date="2016-02-13T22:27:56Z"
+ content="""
+Additional information: I have 62 files in the added directory. Git-annex info return this, with a suspicious \"numcopies -2: 62\":
+
+    > git-annex info .
+    directory: .
+    local annex keys: 62
+    local annex size: 377.19 megabytes
+    annexed files in working tree: 62
+    size of annexed files in working tree: 377.19 megabytes
+    numcopies stats: 
+        	numcopies -2: 62
+
+"""]]

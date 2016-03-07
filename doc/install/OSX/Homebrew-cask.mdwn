@@ -1,0 +1,3 @@
+[Homebrew Cask](http://caskroom.io) has a [cask](https://github.com/caskroom/homebrew-cask/blob/master/Casks/git-annex.rb) for git-annex.
+
+Homebrew cask users can simply run `brew cask install git-annex` to install git-annex and git-annex-shell from the OSX binary images.

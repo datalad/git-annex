@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-02-19T15:53:46Z"
+ content="""
+Don't know, unless your system somehow has the magic C library installed
+but no magic database file installed. You should file a bug report with
+details about your system and how you installed the magic C library.
+"""]]

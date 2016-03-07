@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -15,7 +15,7 @@ import qualified Remote
 import qualified Types.Backend
 import qualified Backend
 import Annex.Content
-import Annex.Content.Direct
+import qualified Annex.Content.Direct as Direct
 import Annex.Direct
 import Annex.Perms
 import Annex.Link
@@ -25,6 +25,7 @@ import Logs.Activity
 import Logs.TimeStamp
 import Annex.NumCopies
 import Annex.UUID
+import Annex.ReplaceFile
 import Utility.DataUnits
 import Config
 import Utility.HumanTime
@@ -114,13 +115,13 @@ start from inc file key = do
 
 perform :: Key -> FilePath -> Backend -> NumCopies -> Annex Bool
 perform key file backend numcopies = do
-	keystatus <- getKeyStatus key
+	keystatus <- getKeyFileStatus key file
 	check
 		-- order matters
 		[ fixLink key file
 		, verifyLocationLog key keystatus file
-		, verifyDirectMapping key file
-		, verifyDirectMode key file
+		, verifyAssociatedFiles key keystatus file
+		, verifyWorkTree key file
 		, checkKeySize key keystatus
 		, checkBackend backend key keystatus (Just file)
 		, checkKeyNumCopies key (Just file) numcopies
@@ -261,30 +262,55 @@ verifyLocationLog' key desc present u updatestatus = do
 		showNote "fixing location log"
 		updatestatus s
 
-{- Ensures the direct mode mapping file is consistent. Each file
- - it lists for the key should exist, and the specified file should be
- - included in it.
- -}
-verifyDirectMapping :: Key -> FilePath -> Annex Bool
-verifyDirectMapping key file = do
-	whenM isDirect $ do
-		fs <- addAssociatedFile key file
+{- Verifies the associated file records. -}
+verifyAssociatedFiles :: Key -> KeyStatus -> FilePath -> Annex Bool
+verifyAssociatedFiles key keystatus file = do
+	ifM isDirect (godirect, goindirect)
+	return True
+  where
+	godirect = do
+		fs <- Direct.addAssociatedFile key file
 		forM_ fs $ \f -> 
 			unlessM (liftIO $ doesFileExist f) $
-				void $ removeAssociatedFile key f
-	return True
+				void $ Direct.removeAssociatedFile key f
+	goindirect = case keystatus of
+		KeyUnlocked -> do
+			f <- inRepo $ toTopFilePath file
+			afs <- Database.Keys.getAssociatedFiles key
+			unless (getTopFilePath f `elem` map getTopFilePath afs) $
+				Database.Keys.addAssociatedFile key f
+		_ -> return ()
 
-{- Ensures that files whose content is available are in direct mode. -}
-verifyDirectMode :: Key -> FilePath -> Annex Bool
-verifyDirectMode key file = do
-	whenM (isDirect <&&> isJust <$> isAnnexLink file) $ do
+verifyWorkTree :: Key -> FilePath -> Annex Bool
+verifyWorkTree key file = do
+	ifM isDirect ( godirect, goindirect )
+	return True
+  where
+	{- Ensures that files whose content is available are in direct mode. -}
+	godirect = whenM (isJust <$> isAnnexLink file) $ do
 		v <- toDirectGen key file
 		case v of
 			Nothing -> noop
 			Just a -> do
 				showNote "fixing direct mode"
 				a
-	return True
+	{- Make sure that a pointer file is replaced with its content,
+	 - when the content is available. -}
+	goindirect = do
+		mk <- liftIO $ isPointerFile file
+		case mk of
+			Just k | k == key -> whenM (inAnnex key) $ do
+				showNote "fixing worktree content"
+				replaceFile file $ \tmp -> 
+					ifM (annexThin <$> Annex.getGitConfig)
+						( void $ linkFromAnnex key tmp
+						, do
+							obj <- calcRepo $ gitAnnexLocation key
+							void $ checkedCopyFile key obj tmp
+							thawContent tmp
+						)
+				Database.Keys.storeInodeCaches key [file]
+			_ -> return ()
 
 {- The size of the data for a key is checked against the size encoded in
  - the key's metadata, if available.
@@ -346,9 +372,9 @@ checkBackend backend key keystatus mfile = go =<< isDirect
 			, checkBackendOr badContent backend key content
 			)
 	go True = maybe nocheck checkdirect mfile
-	checkdirect file = ifM (goodContent key file)
+	checkdirect file = ifM (Direct.goodContent key file)
 		( checkBackendOr' (badContentDirect file) backend key file
-			(goodContent key file)
+			(Direct.goodContent key file)
 		, nocheck
 		)
 	nocheck = return True
@@ -383,7 +409,9 @@ checkBackendOr' bad backend key file postcheck =
 checkKeyNumCopies :: Key -> AssociatedFile -> NumCopies -> Annex Bool
 checkKeyNumCopies key afile numcopies = do
 	let file = fromMaybe (key2file key) afile
-	(untrustedlocations, safelocations) <- trustPartition UnTrusted =<< Remote.keyLocations key
+	locs <- loggedLocations key
+	(untrustedlocations, otherlocations) <- trustPartition UnTrusted locs
+	(deadlocations, safelocations) <- trustPartition DeadTrusted otherlocations
 	let present = NumCopies (length safelocations)
 	if present < numcopies
 		then ifM (pure (isNothing afile) <&&> checkDead key)
@@ -391,29 +419,35 @@ checkKeyNumCopies key afile numcopies = do
 				showLongNote $ "This key is dead, skipping."
 				return True
 			, do
-				ppuuids <- Remote.prettyPrintUUIDs "untrusted" untrustedlocations
-				warning $ missingNote file present numcopies ppuuids
+				untrusted <- Remote.prettyPrintUUIDs "untrusted" untrustedlocations
+				dead <- Remote.prettyPrintUUIDs "dead" deadlocations
+				warning $ missingNote file present numcopies untrusted dead
 				when (fromNumCopies present == 0 && isNothing afile) $
 					showLongNote "(Avoid this check by running: git annex dead --key )"
 				return False
 			)
 		else return True
 
-missingNote :: String -> NumCopies -> NumCopies -> String -> String
-missingNote file (NumCopies 0) _ [] = 
-		"** No known copies exist of " ++ file
-missingNote file (NumCopies 0) _ untrusted =
+missingNote :: String -> NumCopies -> NumCopies -> String -> String -> String
+missingNote file (NumCopies 0) _ [] dead = 
+		"** No known copies exist of " ++ file ++ honorDead dead
+missingNote file (NumCopies 0) _ untrusted dead =
 		"Only these untrusted locations may have copies of " ++ file ++
 		"\n" ++ untrusted ++
-		"Back it up to trusted locations with git-annex copy."
-missingNote file present needed [] =
+		"Back it up to trusted locations with git-annex copy." ++ honorDead dead
+missingNote file present needed [] _ =
 		"Only " ++ show (fromNumCopies present) ++ " of " ++ show (fromNumCopies needed) ++ 
 		" trustworthy copies exist of " ++ file ++
 		"\nBack it up with git-annex copy."
-missingNote file present needed untrusted = 
-		missingNote file present needed [] ++
+missingNote file present needed untrusted dead = 
+		missingNote file present needed [] dead ++
 		"\nThe following untrusted locations may also have copies: " ++
 		"\n" ++ untrusted
+	
+honorDead :: String -> String
+honorDead dead
+	| null dead = ""
+	| otherwise = "\nThese dead repositories used to have copies\n" ++ dead
 
 {- Bad content is moved aside. -}
 badContent :: Key -> Annex String
@@ -587,8 +621,17 @@ getKeyStatus :: Key -> Annex KeyStatus
 getKeyStatus key = ifM isDirect
 	( return KeyUnlocked
 	, catchDefaultIO KeyMissing $ do
-		obj <- calcRepo $ gitAnnexLocation key
-		unlocked <- ((> 1) . linkCount <$> liftIO (getFileStatus obj))
-			<&&> (not . null <$> Database.Keys.getAssociatedFiles key)
+		unlocked <- not . null <$> Database.Keys.getAssociatedFiles key
 		return $ if unlocked then KeyUnlocked else KeyLocked
 	)
+
+getKeyFileStatus :: Key -> FilePath -> Annex KeyStatus
+getKeyFileStatus key file = do
+	s <- getKeyStatus key
+	case s of
+		KeyLocked -> catchDefaultIO KeyLocked $
+			ifM (isJust <$> isAnnexLink file)
+				( return KeyLocked
+				, return KeyUnlocked
+				)
+		_ -> return s

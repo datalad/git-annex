@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="mark@6b90344cdab3158eacb94a3944460d138afc9bef"
+ nickname="mark"
+ subject="comment 6"
+ date="2016-02-05T18:18:58Z"
+ content="""
+Ah, that is very helpful information. I'll explore that. Any reason the fetch should not use the \"+\" to work with non-fast-forward updates?
+
+I greatly appreciate your time. Thanks!
+"""]]

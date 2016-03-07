@@ -35,7 +35,6 @@ import Annex.CatFile
 import Annex.CheckIgnore
 import Annex.Link
 import Annex.FileMatcher
-import Types.FileMatcher
 import Annex.Content
 import Annex.ReplaceFile
 import Annex.Version
@@ -202,8 +201,8 @@ runHandler handler file filestatus = void $ do
 		| otherwise = f
 
 {- Small files are added to git as-is, while large ones go into the annex. -}
-add :: FileMatcher Annex -> FilePath -> Assistant (Maybe Change)
-add bigfilematcher file = ifM (liftAnnex $ checkFileMatcher bigfilematcher file)
+add :: GetFileMatcher -> FilePath -> Assistant (Maybe Change)
+add largefilematcher file = ifM (liftAnnex $ checkFileMatcher largefilematcher file)
 	( pendingAddChange file
 	, do
 		liftAnnex $ Annex.Queue.addCommand "add"
@@ -211,7 +210,7 @@ add bigfilematcher file = ifM (liftAnnex $ checkFileMatcher bigfilematcher file)
 		madeChange file AddFileChange
 	)
 
-onAdd :: FileMatcher Annex -> Handler
+onAdd :: GetFileMatcher -> Handler
 onAdd matcher file filestatus
 	| maybe False isRegularFile filestatus =
 		unlessIgnored file $
@@ -221,7 +220,7 @@ onAdd matcher file filestatus
 shouldRestage :: DaemonStatus -> Bool
 shouldRestage ds = scanComplete ds || forceRestage ds
 
-onAddUnlocked :: Bool -> FileMatcher Annex -> Handler
+onAddUnlocked :: Bool -> GetFileMatcher -> Handler
 onAddUnlocked = onAddUnlocked' False contentchanged addassociatedfile samefilestatus
   where
 	addassociatedfile key file = 
@@ -243,10 +242,10 @@ onAddUnlocked = onAddUnlocked' False contentchanged addassociatedfile samefilest
 {- In direct mode, add events are received for both new files, and
  - modified existing files.
  -}
-onAddDirect :: Bool -> FileMatcher Annex -> Handler
+onAddDirect :: Bool -> GetFileMatcher -> Handler
 onAddDirect = onAddUnlocked' True changedDirect (\k f -> void $ addAssociatedFile k f) sameFileStatus
 
-onAddUnlocked' :: Bool -> (Key -> FilePath -> Annex ()) -> (Key -> FilePath -> Annex ()) -> (Key -> FilePath -> FileStatus -> Annex Bool) -> Bool -> FileMatcher Annex -> Handler
+onAddUnlocked' :: Bool -> (Key -> FilePath -> Annex ()) -> (Key -> FilePath -> Annex ()) -> (Key -> FilePath -> FileStatus -> Annex Bool) -> Bool -> GetFileMatcher -> Handler
 onAddUnlocked' isdirect contentchanged addassociatedfile samefilestatus symlinkssupported matcher file fs = do
 	v <- liftAnnex $ catKeyFile file
 	case (v, fs) of

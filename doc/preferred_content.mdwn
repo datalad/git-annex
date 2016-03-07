@@ -58,6 +58,7 @@ it assumes all files that are currently present are preferred content.
 Here are recent changes to preferred content expressions, and the version
 they were added in.
 
+* "nothing" 6.201600202
 * "anything" 5.20150616
 * "standard" 5.20140314  
   (only when used in a more complicated expression; "standard" by
@@ -66,3 +67,4 @@ they were added in.
 * "metadata=" 5.20140221
 * "lackingcopies=", "approxlackingcopies=", "unused=" 5.20140127
 * "inpreferreddir=" 4.20130501
+* "metadata=field&lt;number" etc 6.20160227

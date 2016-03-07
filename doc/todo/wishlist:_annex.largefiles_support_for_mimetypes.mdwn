@@ -1,1 +1,7 @@
 It would be nice to have mimetype support on the `annex.largefiles` configuration directive. F.e. `git config annex.largefiles "not mimetype=text/plain"`
+
+> [[done]]; Implemented support for mimetype=text/plain or even
+> mimetype=text/*
+> 
+> Decided not to add external command test support, at least not for now.
+> --[[Joey]]

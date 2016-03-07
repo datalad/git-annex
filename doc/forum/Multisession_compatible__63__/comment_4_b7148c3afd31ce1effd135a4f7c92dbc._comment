@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="mark@6b90344cdab3158eacb94a3944460d138afc9bef"
+ nickname="mark"
+ subject="comment 4"
+ date="2016-02-05T17:32:22Z"
+ content="""
+Thanks again. Good information.
+
+So does \"git annex sync\" do any branch checkout?
+
+I'm using git annex to manage regression test outputs for audio. I don't want \"git annex sync\" because I want annex gets, etc. to be basically automatic. But I need to make sure when a test starts that the git-annex branch is up-to-date in case updated reference outputs were checked in elsewhere. So I want to sync the git-annex branch (but not the master because someone maybe locally testing code changes to vet the impact). I'm not a git expert, but it appears that you can't pull (or more specifically merge) outside of your working directory, so I'm simply switching branches to pull/push the git annex branch, but as we've discussed that isn't multisession safe.
+
+So, if you're able to do the git annex sync without a branch checkout, then there is hope that I can do a subset (just a sync of the git-annex branch) without a branch checkout.
+
+If I'm displaying a fundamental misunderstanding or missing something obvious, I'm all ears.
+"""]]

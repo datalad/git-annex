@@ -1,0 +1,18 @@
+Now I have a proof of concept [[design/adjusted_branches]]
+implementation, that creates a branch where all locked files
+are adjusted to be unlocked. It works!
+
+Building the adjusted branch is pretty fast; around 2 thousand files
+per second. And, I have a trick in my back pocket that could double that
+speed. It's important this be quite fast, because it'll be done often.
+
+Checking out the adjusted branch can be bit slow though, since git runs
+`git annex smudge` once per unlocked file. So that might need to be
+optimised somehow. On the other hand, this should be done only rarely.
+
+I like that it generates reproducible git commits so the same adjustments
+of the same branch will always have the same sha, no matter when and where
+it's done. Implementing that involved parsing git commit objects.
+
+Next step will be merging pulled changes into the adjusted branch, while
+maintaining the desired adjustments.

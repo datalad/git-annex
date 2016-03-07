@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-02-23T15:03:19Z"
+ content="""
+OSX signal 4 is SIGILL; git-annex test fails similarly, but so far I've only
+had the problem be reported on this same datalads mac; I don't know how
+widespread the problem is.
+
+Occurs to me it could well be libmagic that's dying. That would be
+consistent with the point it fails, and IIRC with where git-annex test was
+failing. Any use of annex.largefiles will cause the magic library to be
+initialized.
+
+I've seen libraries taken from homebrew (as libmagic is)
+be aggressively optimised for the host CPU and sigill on others.
+
+I've re-installed that using `brew install --build-bottle` now.
+Hopefully that will fix the problem.
+"""]]

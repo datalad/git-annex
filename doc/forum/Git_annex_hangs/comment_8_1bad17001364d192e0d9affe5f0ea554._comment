@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2016-01-29T17:47:02Z"
+ content="""
+This was fixed in git-annex back in January 2015. It now checks the git
+version at runtime, not assuming it will be used with as recent a version
+of git as was available at compile time.
+
+So if you're still seeing this problem, upgrading git-annex or git is the only
+solution.
+"""]]

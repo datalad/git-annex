@@ -38,12 +38,14 @@ checkAttrStart attrs repo = do
 checkAttrStop :: CheckAttrHandle -> IO ()
 checkAttrStop (h, _, _, _) = CoProcess.stop h
 
-{- Gets an attribute of a file. -}
+{- Gets an attribute of a file. When the attribute is not specified,
+ - returns "" -}
 checkAttr :: CheckAttrHandle -> Attr -> FilePath -> IO String
 checkAttr (h, attrs, oldgit, currdir) want file = do
 	pairs <- CoProcess.query h send (receive "")
 	let vals = map snd $ filter (\(attr, _) -> attr == want) pairs
 	case vals of
+		["unspecified"] -> return ""
 		[v] -> return v
 		_ -> error $ "unable to determine " ++ want ++ " attribute of " ++ file
   where
@@ -92,3 +94,8 @@ checkAttr (h, attrs, oldgit, currdir) want file = do
 		sep = ": " ++ attr ++ ": "
 	getattrvalues (_filename:attr:val:rest) c = getattrvalues rest ((attr,val):c)
 	getattrvalues _ c = c
+
+{- User may enter this to override a previous attr setting, when they wish
+ - to not specify an attr for some files. -}
+unspecifiedAttr :: String
+unspecifiedAttr = "!"

@@ -212,7 +212,7 @@ commandProgressDisabled = withOutputType $ \t -> return $ case t of
 	QuietOutput -> True
 	JSONOutput -> True
 	NormalOutput -> False
-	ConcurrentOutput _ -> True
+	ConcurrentOutput {} -> True
 
 {- Use to show a message that is displayed implicitly, and so might be
  - disabled when running a certian command that needs more control over its

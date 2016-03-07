@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="konubinix"
+ subject="fuser and unison?"
+ date="2016-02-10T09:12:52Z"
+ content="""
+Dear anarcat, I totally understand your use case since I often get into situations like that. I think that, by design (content addressable storage etc.), git-annex is not at all suited to fulfill this use case.
+
+I managed to use a combination of a fuse mount and unison to reach that use case.
+
+I create a fuse view of the git annex working copy with pyfs (http://pyfilesystem.org/) via a command line like : fsmount -f -a file:///my_git_annex_working_copy my_share_directory
+
+Generally, I share the fuse mount over samba, ftp and http.
+
+In order to synchronize with a distant directory (the use case you mentioned), I use another fuse mount and unison to sync both.
+
+Generally, I share the content on a remote samba server, using: 'smbnetfs ~/Network' and then 'unison my_share_directory ~/Network/PathToTheRemote'
+
+In the case of a s3 drive, I don't know the details since I never went there, but you could try: 'fsmount -f -a s3:///my_s3_remote my_s3_directory', then 'unison my_share_directory my_s3_directory'
+
+You may think that all those mounts are difficult to manage. As a matter of fact, I use supervisord (http://supervisord.org/) that helps making sure that everything is running OK. I have been using that setup for a few years now, without trouble.
+
+I hope that I could help.
+"""]]

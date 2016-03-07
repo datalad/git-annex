@@ -1,0 +1,18 @@
+[[!format sh """
+$> git annex version
+git-annex version: 6.20160126+gitg65f4442-1~ndall+1
+...
+$> man git-annex-checkpresentkey | head
+git-annex-checkpresentkey(1)               General Commands Manual               git-annex-checkpresentkey(1)
+
+NAME
+       git-annex-checkpresentkey - check if key is present in remote
+
+SYNOPSIS
+       git annex  key remote
+
+"""]]
+
+[[!meta author=yoh]]
+
+> [[fixed|done]] --[[Joey]]

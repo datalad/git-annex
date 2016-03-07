@@ -23,3 +23,11 @@ upgrade supported from repository versions: 0 1 2
 """]]
 
 I'm guessing that one of the machines with access to this repository was running a newer version of git-annex, and that the repository was upgraded in the course of some action.
+
+> I took this onboard with v6; upgrade to it is currently optional and will
+> only become the default once enough years have passed that it's
+> reasonable to assume most people have git-annex 6.x installed.
+> 
+> I think at this point it's reasonable to assume most people have
+> git-annex 5.x installed, so there's no point in trying to change to v3 to
+> v5 forced upgrade at this point. So, [[done]] --[[Joey]]

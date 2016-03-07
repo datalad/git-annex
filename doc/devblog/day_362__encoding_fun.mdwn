@@ -1,0 +1,19 @@
+This was one of those days where I somehow end up dealing with tricky
+filename encoding problems all day.
+
+First, worked around inability for concurrent-output to display unicode
+characters when in a non-unicode locale. The normal trick that git-annex
+uses doesn't work in this case. Since it only affected -J, I decided to
+make git-annex detect the problem and make -J behave as if it was not built
+with the concurrent-output feature. So, it just doesn't display concurrent
+output, which is better than crashing with an encoding error.
+
+The other problem affects v6 repos only. Seems that not all Strings will
+round trip through a persistent sqlite database. In particular, unicode
+surrogate characters are replaced with garbage. This is really [a bug in
+persistent](https://github.com/yesodweb/persistent/issues/540).
+But, for git-annex's purposes, it was possible to work around it,
+by detecting such Strings and serializing them differently.
+
+Then I had to enhance `git annex fsck` to fix up repositories that were
+affected by that problem.

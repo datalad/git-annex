@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-01-29T17:39:13Z"
+ content="""
+Well, that should work; the files should get moved in the second clone
+automatically when it's synced.
+
+Just tested it, seems to work ok.
+
+What does `git annex status` say in the second repo?
+"""]]

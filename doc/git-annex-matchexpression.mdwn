@@ -1,6 +1,6 @@
 # NAME
 
-git-annex matchexpression - checks if a preferred content expression matches
+git-annex matchexpression - checks if an expression matches
 
 # SYNOPSIS
 
@@ -8,7 +8,7 @@ git annex matchexpression `expression [data]`
 
 # DESCRIPTION
 
-This plumbing-level command is given a prefferred content expression,
+This plumbing-level command is given a preferred content expression,
 and some data, and checks if the expression matches the data. It exits 0 if
 it matches, and 1 if not. If not enough data was provided, it displays an
 error and exits with special code 42.
@@ -37,6 +37,16 @@ For example, this will exit 0:
 
   Many keys have a known size, and so --size is not needed when specifying
   such a key.
+
+* `--largefiles`
+
+  Parse the expression as an annex.largefiles expression, rather than a
+  preferred content expression.
+
+* `--mimetype=`
+
+  Tell what the mime type of the file is. Only needed when using
+  --largefiles with a mimetype= expression.
 
 # SEE ALSO
 

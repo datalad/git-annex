@@ -1,0 +1,5 @@
+While being asked to check if file is available from "[datalad-archives]" remote I need to check if the archive's key available.  Ideally I wish I could ask through the ongoing interaction protocol, but if not, I could use smth like 'git annex checkpresentkey' but that one demands specification also of a remote which to check.  In my case I just want to know if that key is available from any remote, so I could confirm that the file is still present in our archives remote, i.e. that it could be retrieved later on
+
+[[!meta author=yoh]]
+
+> [[done]]] --[[Joey]]

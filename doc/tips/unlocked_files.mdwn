@@ -60,9 +60,7 @@ to store the file contents, and the files will be left unlocked.
 [[!template id=note text="""
 Want `git add` to add some file contents to the annex, but store the contents of
 smaller files in git itself? Configure annex.largefiles to match the former.
-
-	git config annex.largefiles \
-		"largerthan=100kb and not include=*.c"
+See [[largefiles]].
 """]]
 
 	# cp ~/my_cool_big_file .
@@ -89,6 +87,13 @@ Under the hood, this uses git's [[todo/smudge]] filter interface, and
 git-annex converts between the content of the big file and a pointer file,
 which is what gets committed to git. All the regular git-annex commands
 (get, drop, etc) can be used on unlocked files too.
+
+[[!template id=note text="""
+By default, git-annex commands will add files in locked mode,
+unless used on a filesystem that does not support symlinks, when unlocked
+mode is used. To make them always use unlocked mode, run:
+`git config annex.addunlocked true`
+"""]]
 
 A v6 repository can contain both locked and unlocked files. You can switch 
 a file back and forth using the `git annex lock` and `git annex unlock`

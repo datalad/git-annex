@@ -188,7 +188,7 @@ prettyPrintUUIDsDescs header descm uuids =
 
 {- An optional field can be included in the list of UUIDs. -}
 prettyPrintUUIDsWith
-	:: (JSON v, Show v) 
+	:: JSON v
 	=> Maybe String 
 	-> String 
 	-> M.Map UUID RemoteName

@@ -431,7 +431,13 @@ withS3HandleMaybe c u a = do
 		{ managerResponseTimeout = Nothing }
 
 s3Configuration :: RemoteConfig -> S3.S3Configuration AWS.NormalQuery
-s3Configuration c = (S3.s3 proto endpoint False) { S3.s3Port = port }
+s3Configuration c = cfg
+	{ S3.s3Port = port
+	, S3.s3RequestStyle = case M.lookup "requeststyle" c of
+		Just "path" -> S3.PathStyle
+		Just s -> error $ "bad S3 requeststyle value: " ++ s
+		Nothing -> S3.s3RequestStyle cfg
+	}
   where
 	proto
 		| port == 443 = AWS.HTTPS
@@ -448,6 +454,7 @@ s3Configuration c = (S3.s3 proto endpoint False) { S3.s3Port = port }
 		case reads s of
 		[(p, _)] -> p
 		_ -> error $ "bad S3 port value: " ++ s
+	cfg = S3.s3 proto endpoint False
 
 tryS3 :: Annex a -> Annex (Either S3.S3Error a)
 tryS3 a = (Right <$> a) `catch` (pure . Left)

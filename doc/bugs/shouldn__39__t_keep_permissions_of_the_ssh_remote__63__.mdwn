@@ -1,0 +1,9 @@
+### Please describe the problem.
+
+Initially generated an annex while having a restrictive umask 077.  Then cloned that repository to another host for public consumption so directory had proper/good permissions set allowing group to access.  And everything is accessible but not the load which I 'annex get'ed.  Key directories were readable but not the content.  I guess there is somewhere 'preserve permissions' setting for rsync/scp which imho shouldn't be there and content should inherit local/environment settings
+
+### What version of git-annex are you using? On what operating system?
+
+6.20160208+gitg1ac9034-1~ndall+1
+
+[[!meta author=yoh]]

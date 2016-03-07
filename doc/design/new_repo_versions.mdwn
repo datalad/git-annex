@@ -1,7 +1,7 @@
 This page's purpose is to collect and explore plans for a future
-annex.version 6.
+annex.version.
 
-There are two major possible changes that could go in v6 or a later
+There are two major possible changes that could go in a new repo
 version that would require a hard migration of git-annex repositories:
 
 1. Changing .git/annex/objects/ paths, as appear in the git-annex symlinks.
@@ -115,7 +115,7 @@ Possible reasons to make changes:
 
 ## living on the edge
 
-Rather than a hard transition, git-annex could add a v6 mode
+Rather than a hard transition, git-annex could add a mode
 that could be optionally enabled when initing a repo for the first time.
 
 Users who know they need that mode could then turn it one, and get the
@@ -126,14 +126,14 @@ There could even be multiple modes, with different tradeoffs depending on
 how the repo will be used, its size, etc. Of course that adds complexity.
 
 But the main problem with this idea is, how to avoid the foot shooting
-result of merging repo A(v5) into repo B(v6)? This seems like it would be
+result of merging repo A(v5) into repo B(vNG)? This seems like it would be
 all to easy for a user to do. 
 
 As far as git-annex branch changes go, it might be possible for git-annex
 to paper over the problem by handling both versions in the merged git-annex
 branch, as discussed earlier. But for .git/annex/objects/ changes, there
 does not seem to be a reasonable thing for git-annex to do. When it's
-receiving an object into a mixed v5 and v6 repo, it can't know which
+receiving an object into a mixed v5 and vNG repo, it can't know which
 location that repo expects the object file to be located in. Different
 files in the repo might point to the same object in different locations!
 Total mess. Must avoid this.
@@ -180,7 +180,7 @@ they want to make the default meet their use case better, that is more
 a matter of configuration than of picking a version. 
 
 For example, we could say that the user is opting out of the second-level
-object hash directories. Or we could say the user is choosing to use v6,
+object hash directories. Or we could say the user is choosing to use vNG,
 which is like  v5 except with different object hash directory structure.
 
 	git annex init --config annex.objects.hashdirectories 1 

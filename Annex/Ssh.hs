@@ -34,7 +34,7 @@ import Config
 import Annex.Path
 import Utility.Env
 import Types.CleanupActions
-import Annex.Index (addGitEnv)
+import Git.Env
 #ifndef mingw32_HOST_OS
 import Annex.Perms
 import Annex.LockPool

@@ -26,7 +26,7 @@ import Control.Monad
 share [mkPersist sqlSettings, mkMigrate "migrateKeysDb"] [persistLowerCase|
 Associated
   key IKey
-  file FilePath
+  file SFilePath
   KeyFileIndex key file
   FileKeyIndex file key
 Content
@@ -63,8 +63,10 @@ addAssociatedFile ik f = queueDb $ do
 	-- If the same file was associated with a different key before,
 	-- remove that.
 	delete $ from $ \r -> do
-		where_ (r ^. AssociatedFile ==. val (getTopFilePath f) &&. not_ (r ^. AssociatedKey ==. val ik))
-	void $ insertUnique $ Associated ik (getTopFilePath f)
+		where_ (r ^. AssociatedFile ==. val af &&. not_ (r ^. AssociatedKey ==. val ik))
+	void $ insertUnique $ Associated ik af
+  where
+	af = toSFilePath (getTopFilePath f)
 
 {- Note that the files returned were once associated with the key, but
  - some of them may not be any longer. -}
@@ -73,21 +75,25 @@ getAssociatedFiles ik = readDb $ do
 	l <- select $ from $ \r -> do
 		where_ (r ^. AssociatedKey ==. val ik)
 		return (r ^. AssociatedFile)
-	return $ map (asTopFilePath . unValue) l
+	return $ map (asTopFilePath . fromSFilePath . unValue) l
 
 {- Gets any keys that are on record as having a particular associated file.
  - (Should be one or none but the database doesn't enforce that.) -}
 getAssociatedKey :: TopFilePath -> ReadHandle -> IO [IKey]
 getAssociatedKey f = readDb $ do
 	l <- select $ from $ \r -> do
-		where_ (r ^. AssociatedFile ==. val (getTopFilePath f))
+		where_ (r ^. AssociatedFile ==. val af)
 		return (r ^. AssociatedKey)
 	return $ map unValue l
+  where
+	af = toSFilePath (getTopFilePath f)
 
 removeAssociatedFile :: IKey -> TopFilePath -> WriteHandle -> IO ()
 removeAssociatedFile ik f = queueDb $ 
 	delete $ from $ \r -> do
-		where_ (r ^. AssociatedKey ==. val ik &&. r ^. AssociatedFile ==. val (getTopFilePath f))
+		where_ (r ^. AssociatedKey ==. val ik &&. r ^. AssociatedFile ==. val af)
+  where
+	af = toSFilePath (getTopFilePath f)
 
 addInodeCaches :: IKey -> [InodeCache] -> WriteHandle -> IO ()
 addInodeCaches ik is = queueDb $

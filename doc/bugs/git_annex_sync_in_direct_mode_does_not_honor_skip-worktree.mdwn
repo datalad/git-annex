@@ -35,3 +35,4 @@ I did a little digging in the code, and it looks like the source of this is the 
 I wonder if this would have side effects, or if there are other places in the code where skip-worktree files would need to be handled, though. I'm particularly motivated to solve this, so let me know if it doesn't look like it would get looked at right away, and I'll have an excuse to get a Haskell dev environment setup again and shake the rust off.
 
 [[!tag confirmed]]
+[[!meta tag=deprecateddirectmode]]

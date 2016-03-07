@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-02-03T19:08:38Z"
+ content="""
+Update: There are now separate parsers for preferred content and
+annex.largefiles expressions, so this could be put in only the
+annex.largefiles parser.
+
+I kind of like the idea of letting an external program be run
+to test if the file is large. Of course, it would be up to the user to
+make the external program fast enough.
+
+The expression could be something like "checkprogram=foo". Since
+expressions have simple word-based tokenization, no parameters
+would be able to be passed to the program (except the file to check).
+
+For getting mime type, the best way seems to be to use 
+<http://hackage.haskell.org/package/magic>. Using `magicOpen [MagicMimeType]`
+I got it to probe mime types for files.
+
+Since libmagic won't be available everywhere, it would have to be a build flag,
+and if a git-annex not built with support for it is fed an expression with
+"magic=", it would have to error out when parsing the expression.
+
+Of course, these options are not mutually exclusive..
+"""]]

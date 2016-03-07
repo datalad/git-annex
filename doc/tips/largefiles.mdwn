@@ -1,0 +1,110 @@
+[[!meta title="annex.largefiles: configuring mixed content repositories"]]
+
+Normally commands like `git annex add` always add files to the annex.
+And when using the v6 repository mode, even `git add` and `git commit -a`
+will add files to the annex.
+
+Let's suppose you're developing a video game, written in C. You have
+source code, and some large game assets. You want to ensure the source
+code is stored in git -- that's what git's for! And you want to store
+the game assets in the git annex -- to avod bloating your git repos with
+possibly enormous files, but still version control them.
+
+The annex.largefiles configuration is useful for such mixed content
+repositories. It's checked by `git annex add`, by `git add` and `git commit -a`
+(in v6 repositories), by `git annex import` and the assistant. It's
+also used by `git annex addurl` and `git annex importfeed` when downloading
+files. When a file does not match annex.largefiles, these commands will
+add its content to git instead of to the annex.
+
+This saves you the bother of keeping things straight when adding files.
+
+## examples
+
+For example, let's make only files larger than 100 kb be added to the annex,
+and never `*.c` and `*.h` source code files.
+
+Write this to the `.gitattributes` file:
+
+	* annex.largefiles=(largerthan=100kb)
+	*.c annex.largefiles=nothing
+	*.h annex.largefiles=nothing
+
+Or, set the git configuration instead:
+  
+	git config annex.largefiles 'largerthan=100kb and not (include=*.c or include=*.h)'
+
+Both of these settings do the same thing. Setting it in the `.gitattributes`
+file makes any checkout of the repository share that configuration, so is often
+a good choice. Setting the annex.largefiles git configuration lets different
+checkouts behave differently. The git configuration overrides the
+`.gitattributes` configuration.
+
+## syntax
+
+The value of annex.largefiles is similar to a
+[[preferred content expression|git-annex-preferred-content]].
+The following terms can be used in annex.largefiles:
+
+* `include=glob` / `exclude=glob`
+
+  Specify files to include or exclude.
+
+  The glob can contain `*` and `?` to match arbitrary characters.
+
+* `smallerthan=size` / `largerthan=size`
+
+  Matches only files smaller than, or larger than the specified size.
+
+  The size can be specified with any commonly used units, for example,
+  "0.5 gb" or "100 KiloBytes"
+
+* `mimetype=glob`
+
+  Looks up the MIME type of a file, and checks if the glob matches it.
+
+  For example, "mimetype=text/*" will match many varieties of text files,
+  including "text/plain", but also "text/x-shellscript", "text/x-makefile",
+  etc.
+
+  The MIME types are the same that are displayed by running `file --mime-type`
+
+  This is only available to use when git-annex was built with the
+  MagicMime build flag.
+
+* `anything`
+
+  Matches any file.
+
+* `nothing`
+
+  Matches no files. (Same as "not anything")
+
+* `not expression`
+
+  Inverts what the expression matches.
+
+* `and` / `or` / `( expression )`
+
+  These can be used to build up more complicated expressions.
+
+The way the `.gitattributes` example above works is, `*.c` and `*.h` files
+have the annex.largefiles attribute set to "nothing",
+and so those files are never treated as large files. All other files use
+the other value, which checks the file size.
+
+Note that, since git attribute values cannot contain whitespace,
+it's useful to instead parenthesize the terms of the annex.largefiles
+attribute. This trick allows for more complicated expressions.
+For example, this is the same as the git config shown earlier, shoehorned
+into a git attribute:
+
+	* annex.largefiles=(largerthan=100kb)and(not((include=*.c)or(include=*.h)))
+
+## temporarily override
+
+If you've set up an annex.largefiles configuration but want to force a file to
+be stored in the annex, you can temporarily override the configuration like
+this:
+
+	git annex add -c annex.largefiles=anything smallfile

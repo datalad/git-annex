@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-02-17T19:19:18Z"
+ content="""
+Setting `GIT_CONFIG` won't work well, because sometimes git-annex in one
+repo needs to look at the config of another repo, which would be prevented
+by that setting.
+"""]]

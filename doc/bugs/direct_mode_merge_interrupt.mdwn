@@ -52,3 +52,5 @@ merge. (I assume this is how `git merge` normally works.) --[[Joey]]
 > then run mergeDirectCleanup to recover, before any commits can be made
 > from the inconsistent state. This approach seems to get complicated
 > quickly.. --[[Joey]]
+
+[[!meta tag=deprecateddirectmode]]

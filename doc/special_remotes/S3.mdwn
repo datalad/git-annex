@@ -59,6 +59,9 @@ the S3 remote.
 * `host` and `port` - Specify in order to use a different, S3 compatable
   service.
 
+* `requeststyle` - Set to "path" to use path style requests, instead of the
+  default DNS style requests. This is needed with some S3 services.
+
 * `bucket` - S3 requires that buckets have a globally unique name, 
   so by default, a bucket name is chosen based on the remote name
   and UUID. This can be specified to pick a bucket name.

@@ -27,11 +27,15 @@ git-annex should use smudge/clean filters.
   Note that this presents problems when dealing with merge conflicts and
   when pushing changes committed in such a repo. Ideally, should avoid
   committing implicit unlocks, or should prevent such commits leaking out
-  in pushes.
+  in pushes. See [[design/adjusted_branches]].
 
 * Eventually (but not yet), make v6 the default for new repositories.
   Note that the assistant forces repos into direct mode; that will need to
   be changed then, and it should enable annex.thin instead.
+* annex.thin doesn't work on crippled filesystems, so changing to v6
+  unlocked files on such a FS always doubles disk use from direct mode.
+  Do something about this? Could use windows hard link equivilant.. Or,
+  could only store the file content in the work tree and not annex/objects.
 * Later still, remove support for direct mode, and enable automatic
   v5 to v6 upgrades.
 

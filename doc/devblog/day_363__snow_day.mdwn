@@ -1,0 +1,11 @@
+Made a `no-cbits` branch that removes several things that use C code and
+the FFI. I moved one of them out to a new haskell library,
+<http://hackage.haskell.org/package/mountpoints>. Others were replaced with
+other existing libraries. This will simplify git-annex's build process, and
+more library use is good. Planning to merge this branch in a week or two.
+
+v6 unlocked files don't work on Windows. I had assumed that since the build
+was succeeding, the test suite was passing there. But, it turns out the
+test suite was failing and somehow not failing the build. Have now fixed
+several problems with v6 on Windows. Still a couple test suite problems to
+address.

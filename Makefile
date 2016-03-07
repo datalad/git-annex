@@ -18,14 +18,13 @@ build: $(all)
 Build/SysConfig.hs: configure.hs Build/TestConfig.hs Build/Configure.hs
 	if [ "$(BUILDER)" = ./Setup ]; then ghc --make Setup; fi
 	if [ "$(BUILDER)" = stack ]; then \
-		$(BUILDER) build -j1; \
+		$(BUILDER) build $(BUILDEROPTIONS); \
 	else \
 		$(BUILDER) configure --ghc-options="$(shell Build/collect-ghc-options.sh)"; \
 	fi
 
-# -j1 is used for reproducible build
 git-annex: Build/SysConfig.hs
-	$(BUILDER) build -j1
+	$(BUILDER) build $(BUILDEROPTIONS)
 	if [ "$(BUILDER)" = stack ]; then \
 		ln -sf $$(find .stack-work/ -name git-annex -type f | grep build/git-annex/git-annex | tail -n 1) git-annex; \
 	else \
@@ -148,6 +147,8 @@ linuxstandalone-nobuild: Build/Standalone Build/LinuxMkLibs
 	install -d "$(LINUXSTANDALONE_DEST)/git-core"
 	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(LINUXSTANDALONE_DEST)"/git-core && tar x)
 	install -d "$(LINUXSTANDALONE_DEST)/templates"
+	install -d "$(LINUXSTANDALONE_DEST)/magic"
+	cp /usr/share/file/magic.mgc "$(LINUXSTANDALONE_DEST)/magic"
 	
 	./Build/LinuxMkLibs "$(LINUXSTANDALONE_DEST)"
 	
@@ -200,6 +201,12 @@ osxapp: Build/Standalone Build/OSXMkLibs
 
 	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(OSXAPP_BASE)" && tar x)
 	install -d "$(OSXAPP_BASE)/templates"
+	install -d "$(OSXAPP_BASE)/magic"
+	if [ -e "$(OSX_MAGIC_FILE)" ]; then \
+		cp "$(OSX_MAGIC_FILE)" "$(OSXAPP_BASE)/magic/magic.mgc"; \
+	else \
+		echo "** OSX_MAGIC_FILE not set; not including it" >&2; \
+	fi
 
 	# OSX looks in man dir nearby the bin
 	$(MAKE) install-mans DESTDIR="$(OSXAPP_BASE)/.." SHAREDIR="" PREFIX=""
@@ -252,16 +259,19 @@ androidapp:
 	$(MAKE) android
 	$(MAKE) -C standalone/android
 
-# We bypass cabal, and only run the main ghc --make command for a
-# fast development built.
-fast: dist/caballog
-	@$$(grep 'ghc --make' dist/caballog | head -n 1 | sed -e 's/-package-id [^ ]*//g' -e 's/-hide-all-packages//') -O0 -j -dynamic
+# Bypass cabal, and only run the main ghc --make command for a
+# faster development build.
+fast: dist/cabalbuild
+	@sh dist/cabalbuild
 	@ln -sf dist/build/git-annex/git-annex git-annex
 	@$(MAKE) tags >/dev/null 2>&1 &
 
+dist/cabalbuild: dist/caballog
+	grep 'ghc --make' dist/caballog | tail -n 1 > dist/cabalbuild
+	
 dist/caballog: git-annex.cabal
 	$(BUILDER) configure -f"-Production" -O0 --enable-executable-dynamic
-	$(BUILDER) build -v2 | tee $@
+	$(BUILDER) build -v2 --ghc-options="-O0 -j" | tee dist/caballog
 
 # Hardcoded command line to make hdevtools start up and work.
 # You will need some memory. It's worth it.

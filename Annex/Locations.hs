@@ -63,7 +63,6 @@ module Annex.Locations (
 	gitAnnexSshDir,
 	gitAnnexRemotesDir,
 	gitAnnexAssistantDefaultDir,
-	isLinkToAnnex,
 	HashLevels(..),
 	hashDirMixed,
 	hashDirLower,
@@ -385,15 +384,6 @@ gitAnnexRemotesDir r = addTrailingPathSeparator $ gitAnnexDir r </> "remotes"
  - repositories, by default. -}
 gitAnnexAssistantDefaultDir :: FilePath
 gitAnnexAssistantDefaultDir = "annex"
-
-{- Checks a symlink target to see if it appears to point to annexed content.
- -
- - We only look at paths inside the .git directory, and not at the .git
- - directory itself, because GIT_DIR may cause a directory name other
- - than .git to be used.
- -}
-isLinkToAnnex :: FilePath -> Bool
-isLinkToAnnex s = (pathSeparator:objectDir) `isInfixOf` s
 
 {- Sanitizes a String that will be used as part of a Key's keyName,
  - dealing with characters that cause problems on substandard filesystems.

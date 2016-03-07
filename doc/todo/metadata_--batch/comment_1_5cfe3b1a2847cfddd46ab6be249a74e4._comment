@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-02-19T19:18:41Z"
+ content="""
+The metadata command is pretty complex. A batch interface would need to
+cover both setting and getting. 
+
+There are four different ways to change a value, so it would probably
+make sense for the input to be of the form "file field=value"
+or "file field+=value" or "file field-=value" or "file field?=value"
+
+A field can have multiple values, including "". So, a batch interface
+to querying the value would need to handle that in its output. Perhaps
+json output?
+"""]]

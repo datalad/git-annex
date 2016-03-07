@@ -19,7 +19,9 @@ import qualified Data.Set as S
 data MatchInfo
 	= MatchingFile FileInfo
 	| MatchingKey Key
-	| MatchingInfo (OptInfo FilePath) (OptInfo Key) (OptInfo FileSize)
+	| MatchingInfo (OptInfo FilePath) (OptInfo Key) (OptInfo FileSize) (OptInfo MimeType)
+
+type MimeType = String
 
 data FileInfo = FileInfo
 	{ currFile :: FilePath

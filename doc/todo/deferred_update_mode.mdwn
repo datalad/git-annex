@@ -26,3 +26,10 @@ annex.merge=trydownloadfirst and annex.merge=reqdownloadfirst
 
 Let `git annex merge` be used to force a merge, even when content is not
 available.
+
+## alternatively
+
+What about just making `git-annex sync --content` try to get the content of
+all files before updating the work tree? (The assistant would need changes
+too; it would need to queue all the downloads and trigger a work tree
+update once all the downloads have been tried.)

@@ -1,0 +1,49 @@
+### Please describe the problem.
+
+Created a temp repository with a submodule under 3rd/visloc referring to another annex via ssh
+
+[[!format sh """
+
+# I have removed some output/wrong cmd calls, hopefully without side-effects
+
+hopa:/tmp/test
+$> cat 3rd/visloc/.git
+gitdir: ../../.git/modules/3rd/visloc
+
+$> git commit -m 'RF: ...' -a                                
+[master (root-commit) fc37b4f] RF: ...
+ 2 files changed, 4 insertions(+)
+ create mode 100644 .gitmodules
+ create mode 160000 3rd/visloc
+
+$> ls -l 3rd/visloc/.git                                                                            
+-rw------- 1 yoh yoh 38 Feb  8 10:26 3rd/visloc/.git
+
+$> cat 3rd/visloc/.git
+gitdir: ../../.git/modules/3rd/visloc
+
+$> cd 3rd/visloc/sub-01/rois 
+
+$> git annex get *
+fatal: Not a git repository: '../../.git'
+git-annex: First run: git-annex init
+
+$> cd -
+/tmp/test
+
+$> ls -l 3rd/visloc/.git    
+lrwxrwxrwx 1 yoh yoh 41 Feb  8 10:43 3rd/visloc/.git -> ../../../../../../.git/modules/3rd/visloc
+
+$> git annex version
+git-annex version: 6.20160126+gitg65f4442-1~ndall+1
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput DNS TDFA TorrentParser Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository versions: 5 6
+upgrade supported from repository versions: 0 1 2 4 5
+"""]]
+
+[[!meta author=yoh]]
+
+> [[fixed|done]]

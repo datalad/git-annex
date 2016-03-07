@@ -1,25 +1,27 @@
-{-# OPTIONS_GHC -fno-warn-orphans #-}
-
 {- git-annex output messages, including concurrent output to display regions
  -
- - Copyright 2010-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 {-# LANGUAGE CPP #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Messages.Concurrent where
 
 import Annex
+import Types.Messages
 
 #ifdef WITH_CONCURRENTOUTPUT
 import Common
-import Types.Messages
 import qualified System.Console.Concurrent as Console
 import qualified System.Console.Regions as Regions
 import Control.Concurrent.STM
 import qualified Data.Text as T
+#ifndef mingw32_HOST_OS
+import GHC.IO.Encoding
+#endif
 #endif
 
 {- Outputs a message in a concurrency safe way.
@@ -29,9 +31,14 @@ import qualified Data.Text as T
  - When built without concurrent-output support, the fallback action is run
  - instead.
  -}
-concurrentMessage :: Bool -> String -> Annex () -> Annex ()
+concurrentMessage :: OutputType -> Bool -> String -> Annex () -> Annex ()
+concurrentMessage o iserror msg fallback 
 #ifdef WITH_CONCURRENTOUTPUT
-concurrentMessage iserror msg _ = go =<< consoleRegion <$> Annex.getState Annex.output
+	| concurrentOutputEnabled o =
+		go =<< consoleRegion <$> Annex.getState Annex.output
+#endif
+	| otherwise = fallback
+#ifdef WITH_CONCURRENTOUTPUT
   where
 	go Nothing
 		| iserror = liftIO $ Console.errorConcurrent msg
@@ -48,9 +55,6 @@ concurrentMessage iserror msg _ = go =<< consoleRegion <$> Annex.getState Annex.
 			rl <- takeTMVar Regions.regionList
 			putTMVar Regions.regionList
 				(if r `elem` rl then rl else r:rl)
-
-#else
-concurrentMessage _ _ fallback = fallback
 #endif
 
 {- Runs an action in its own dedicated region of the console.
@@ -62,21 +66,25 @@ concurrentMessage _ _ fallback = fallback
  - When not at a console, a region is not displayed until the action is
  - complete.
  -}
-inOwnConsoleRegion :: Annex a -> Annex a
+inOwnConsoleRegion :: OutputType -> Annex a -> Annex a
+inOwnConsoleRegion o a
 #ifdef WITH_CONCURRENTOUTPUT
-inOwnConsoleRegion a = do
-	r <- mkregion
-	setregion (Just r)
-	eret <- tryNonAsync a `onException` rmregion r
-	case eret of
-		Left e -> do
-			-- Add error message to region before it closes.
-			concurrentMessage True (show e) noop
-			rmregion r
-			throwM e
-		Right ret -> do
-			rmregion r
-			return ret
+	| concurrentOutputEnabled o = do
+		r <- mkregion
+		setregion (Just r)
+		eret <- tryNonAsync a `onException` rmregion r
+		case eret of
+			Left e -> do
+				-- Add error message to region before it closes.
+				concurrentMessage o True (show e) noop
+				rmregion r
+				throwM e
+			Right ret -> do
+				rmregion r
+				return ret
+#endif
+	| otherwise = a
+#ifdef WITH_CONCURRENTOUTPUT
   where
 	-- The region is allocated here, but not displayed until 
 	-- a message is added to it. This avoids unnecessary screen
@@ -94,8 +102,6 @@ inOwnConsoleRegion a = do
 			unless (T.null t) $
 				Console.bufferOutputSTM h t
 			Regions.closeConsoleRegion r
-#else
-inOwnConsoleRegion = id
 #endif
 
 {- The progress region is displayed inline with the current console region. -}
@@ -108,3 +114,24 @@ withProgressRegion a = do
 instance Regions.LiftRegion Annex where
 	liftRegion = liftIO . atomically
 #endif
+
+{- The concurrent-output library uses Text, which bypasses the normal use
+ - of the fileSystemEncoding to roundtrip invalid characters, when in a
+ - non-unicode locale. Work around that problem by avoiding using
+ - concurrent output when not in a unicode locale. -}
+concurrentOutputSupported :: IO Bool
+#ifdef WITH_CONCURRENTOUTPUT
+#ifndef mingw32_HOST_OS
+concurrentOutputSupported = do
+	enc <- getLocaleEncoding
+	return ("UTF" `isInfixOf` textEncodingName enc)
+#else
+concurrentOutputSupported = return True -- Windows is always unicode
+#endif
+#else
+concurrentOutputSupported = return False
+#endif
+
+concurrentOutputEnabled :: OutputType -> Bool
+concurrentOutputEnabled (ConcurrentOutput _ b) = b
+concurrentOutputEnabled _ = False

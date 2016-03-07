@@ -21,7 +21,8 @@ module Utility.Exception (
 	tryNonAsync,
 	tryWhenExists,
 	catchIOErrorType,
-	IOErrorType(..)
+	IOErrorType(..),
+	catchPermissionDenied,
 ) where
 
 import Control.Monad.Catch as X hiding (Handler)
@@ -97,3 +98,6 @@ catchIOErrorType errtype onmatchingerr a = catchIO a onlymatching
 	onlymatching e
 		| ioeGetErrorType e == errtype = onmatchingerr e
 		| otherwise = throwM e
+
+catchPermissionDenied :: MonadCatch m => (IOException -> m a) -> m a -> m a
+catchPermissionDenied = catchIOErrorType PermissionDenied

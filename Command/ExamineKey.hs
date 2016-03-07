@@ -12,7 +12,7 @@ import qualified Utility.Format
 import Command.Find (parseFormatOption, showFormatted, keyVars)
 
 cmd :: Command
-cmd = noCommit $ withGlobalOptions [jsonOption] $
+cmd = noCommit $ noMessages $ withGlobalOptions [jsonOption] $
 	command "examinekey" SectionPlumbing 
 		"prints information from a key"
 		(paramRepeating paramKey)

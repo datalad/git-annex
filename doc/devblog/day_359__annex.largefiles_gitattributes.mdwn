@@ -1,0 +1,18 @@
+For use cases that mix annexed files with files stored in git, the
+annex.largefiles config is more important in v6 repositories than before,
+since it configures the behavior of `git add` and even `git commit -a`. To
+make it possible to set annex.largefiles so it'll stick across clones of
+a repository, I have now made it be supported in `.gitattributes` files
+as well as git config.
+
+Setting it in .gitattributes looks a little bit different, since
+the regular .gitattributes syntax can be used to match on the filename.
+
+	* annex.largefiles=(largerthan=100kb)
+	*.c annex.largefiles=nothing
+
+It seems there's no way to make a git attribute value contain whitespace.
+So, more complicated annex.largefiles expressions need to use parens to
+break up the words.
+
+	* annex.largefiles=(largerthan=100kb)and(not(include=*.c))

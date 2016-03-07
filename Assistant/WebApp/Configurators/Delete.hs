@@ -104,7 +104,7 @@ deleteCurrentRepository = dangerPage $ do
 			liftIO $ do
 				recurseDir SystemFS dir
 					>>= mapM_ (void . tryIO . allowWrite)
-				removeDirectoryRecursive dir
+				removeDirectoryRecursive =<< absPath dir
 			
 			redirect ShutdownConfirmedR
 		_ -> $(widgetFile "configurators/delete/currentrepository")

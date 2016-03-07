@@ -23,7 +23,7 @@ import qualified Git.BuildVersion
  - branch is not created yet. So, this also looks at show-ref HEAD
  - to double-check.
  -}
-current :: Repo -> IO (Maybe Git.Ref)
+current :: Repo -> IO (Maybe Branch)
 current r = do
 	v <- currentUnsafe r
 	case v of
@@ -35,7 +35,7 @@ current r = do
 				)
 
 {- The current branch, which may not really exist yet. -}
-currentUnsafe :: Repo -> IO (Maybe Git.Ref)
+currentUnsafe :: Repo -> IO (Maybe Branch)
 currentUnsafe r = parse . firstLine
 	<$> pipeReadStrict [Param "symbolic-ref", Param "-q", Param $ fromRef Git.Ref.headRef] r
   where
@@ -144,25 +144,31 @@ commit commitmode allowempty message branch parentrefs repo = do
 		pipeReadStrict [Param "write-tree"] repo
 	ifM (cancommit tree)
 		( do
-			sha <- getSha "commit-tree" $
-				pipeWriteRead ([Param "commit-tree", Param (fromRef tree)] ++ ps) sendmsg repo
+			sha <- commitTree commitmode message parentrefs tree repo
 			update branch sha repo
 			return $ Just sha
 		, return Nothing
 		)
   where
-	ps = applyCommitMode commitmode $
-		map Param $ concatMap (\r -> ["-p", fromRef r]) parentrefs
 	cancommit tree
 		| allowempty = return True
 		| otherwise = case parentrefs of
 			[p] -> maybe False (tree /=) <$> Git.Ref.tree p repo
 			_ -> return True
-	sendmsg = Just $ flip hPutStr message
 
 commitAlways :: CommitMode -> String -> Branch -> [Ref] -> Repo -> IO Sha
 commitAlways commitmode message branch parentrefs repo = fromJust
 	<$> commit commitmode True message branch parentrefs repo
+
+commitTree :: CommitMode -> String -> [Ref] -> Ref -> Repo -> IO Sha
+commitTree commitmode message parentrefs tree repo =
+	getSha "commit-tree" $
+		pipeWriteRead ([Param "commit-tree", Param (fromRef tree)] ++ ps)
+			sendmsg repo
+  where
+	ps = applyCommitMode commitmode $
+		map Param $ concatMap (\r -> ["-p", fromRef r]) parentrefs
+	sendmsg = Just $ flip hPutStr message
 
 {- A leading + makes git-push force pushing a branch. -}
 forcePush :: String -> String

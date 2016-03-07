@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 18"""
+ date="2016-01-29T17:27:42Z"
+ content="""
+@db, git-annex supports the standard TMPDIR environment variable.
+But, this is getting quite far afield from the topic of this thread.
+"""]]

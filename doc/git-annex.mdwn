@@ -795,6 +795,9 @@ Here are all the supported configuration settings.
   Space-separated list of names of the key-value backends to use.
   The first listed is used to store new files by default.
 
+  This is overridden by annex annex.backend configuration in the
+  .gitattributes files.
+
 * `annex.diskreserve`
 
   Amount of disk space to reserve. Disk space is checked when transferring
@@ -807,35 +810,38 @@ Here are all the supported configuration settings.
 
 * `annex.largefiles`
 
-  Allows configuring which files are considered to be large enough to
-  need to be added to the annex. By default, all specified files are added
-  to the annex, but configuring this can cause the small files to be
-  checked into git, without using the annex.
+  Used to configure which files are large enough to be added to the annex.
+  Default: All files.
 
-  The value is a preferred content expression. See [[git-annex-preferred-content]](1)
-  for details.
+  Overrides any annex.largefiles attributes in `.gitattributes` files.
 
-  Example:
+  See <https://git-annex.branchable.com/tips/largefiles> for details.
 
-	annex.largefiles = largerthan=100kb and not (include=*.c or include=*.h)
+* `annex.addsmallfiles`
 
-  This setting is checked by `git annex add`, `git annex import` and the assistant.
-  It's also used by `git annex addurl` and `git annex importfeed` when
-  downloading files.
+  Controls whether small files (not matching annex.largefiles)
+  should be checked into git by `git annex add`. Defaults to true;
+  set to false to instead make small files be skipped.
 
-  It can be useful to temporarily override it via -c at the command line.
-  For example:
+* `annex.addunlocked`
 
-  	git annex add -c annex.largefiles='include=*' 99kbfile
+  Set to true to make commands like `git-annex add` that add files to the
+  repository add them in unlocked form. The default is to add files in
+  locked form. This only has effect in version 6 repositories.
+
+  When a repository has core.symlinks set to false, it implicitly
+  sets annex.addunlocked to true.
 
 * `annex.numcopies`
 
   This is a deprecated setting. You should instead use the
   `git annex numcopies` command to configure how many copies of files
-  are kept across all repositories.
+  are kept across all repositories, or the annex.numcopies .gitattributes
+  setting.
 
   This config setting is only looked at when `git annex numcopies` has
-  never been configured.
+  never been configured, and when there's no annex.numcopies setting in the
+  .gitattributes file.
 
   Note that setting numcopies to 0 is very unsafe.
 
@@ -1285,7 +1291,7 @@ Here are all the supported configuration settings.
 
   These can be passed to `git annex init` to tune the repository.
   They cannot be safely changed in a running repository.
-  For details, see <http://git-annex.branchable.com/tuning/>.
+  For details, see <https://git-annex.branchable.com/tuning/>.
 
 # CONFIGURATION VIA .gitattributes
 
@@ -1297,6 +1303,10 @@ but the SHA256E backend for ogg files:
 
 	* annex.backend=WORM
 	*.ogg annex.backend=SHA256E
+
+There is a annex.largefiles attribute; which is used to configure which
+files are large enough to be added to the annex.
+See <https://git-annex.branchable.com/tips/largefiles> for details.
 
 The numcopies setting can also be configured on a per-file-type basis via
 the `annex.numcopies` attribute in `.gitattributes` files. This overrides
@@ -1312,7 +1322,8 @@ Note that setting numcopies to 0 is very unsafe.
 These settings are honored by git-annex whenever it's operating on a
 matching file. However, when using --all, --unused, or --key to specify
 keys to operate on, git-annex is operating on keys and not files, so will
-not honor the settings from .gitattributes.
+not honor the settings from .gitattributes. For this reason, the `git annex
+numcopies` command is useful to configure a global default for numcopies.
 
 Also note that when using views, only the toplevel .gitattributes file is
 preserved in the view, so other settings in other files won't have any
@@ -1351,7 +1362,7 @@ whenever the git-annex branch is updated. You can make this hook run
 # SEE ALSO
 
 More git-annex documentation is available on its web site,
-<http://git-annex.branchable.com/>
+<https://git-annex.branchable.com/>
 
 If git-annex is installed from a package, a copy of its documentation
 should be included, in, for example, `/usr/share/doc/git-annex/`.
@@ -1360,6 +1371,6 @@ should be included, in, for example, `/usr/share/doc/git-annex/`.
 
 Joey Hess <id@joeyh.name>
 
-<http://git-annex.branchable.com/>
+<https://git-annex.branchable.com/>
 
 Warning: Automatically converted into a man page by mdwn2man. Edit with care.

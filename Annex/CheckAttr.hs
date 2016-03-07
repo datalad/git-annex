@@ -20,6 +20,7 @@ annexAttrs :: [Git.Attr]
 annexAttrs =
 	[ "annex.backend"
 	, "annex.numcopies"
+	, "annex.largefiles"
 	]
 
 checkAttr :: Git.Attr -> FilePath -> Annex String

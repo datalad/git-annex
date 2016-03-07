@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="would it be possible to get a branch only with annexed content?"
+ date="2016-02-25T03:04:26Z"
+ content="""
+I am yet to grasp all the glorious plans here, but wondered to ask:  it seems like it then should be possible to establish a branch only with annexed archive? may be matching some preferred content expression?
+Usecase:  a relatively large git/annex repository mixing in code, large data files, and some pre-built binaries.  If I could seamlessly and reproducibly (with the progress of their master) tease those apart (for separate Debian packaging ;)), that would be really handy
+
+[[!meta author=yoh]]
+"""]]
