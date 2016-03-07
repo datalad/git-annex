@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-03-07T16:58:35Z"
+ content="""
+I replicated this as best I could, and the dropunused succeeded. But my
+strace has an extra chmod:
+
+	stat("./annex/objects/02e/a64/SHA256E-s30--b6eac296ebeab4b5593387489571654cd5019d8bb3bc3bc08ac8a41e22bad133/SHA256E-s30--b6eac296ebeab4b5593387489571654cd5019d8bb3bc3bc08ac8a41e22bad133", {st_mode=S_IFREG|0444, st_size=30, ...}) = 0
+	stat("./annex/objects/02e/a64/SHA256E-s30--b6eac296ebeab4b5593387489571654cd5019d8bb3bc3bc08ac8a41e22bad133/SHA256E-s30--b6eac296ebeab4b5593387489571654cd5019d8bb3bc3bc08ac8a41e22bad133", {st_mode=S_IFREG|0444, st_size=30, ...}) = 0
+	chmod("./annex/objects/02e/a64/SHA256E-s30--b6eac296ebeab4b5593387489571654cd5019d8bb3bc3bc08ac8a41e22bad133/SHA256E-s30--b6eac296ebeab4b5593387489571654cd5019d8bb3bc3bc08ac8a41e22bad133", 0100644) = 0
+	open("./annex/objects/02e/a64/SHA256E-s30--b6eac296ebeab4b5593387489571654cd5019d8bb3bc3bc08ac8a41e22bad133/SHA256E-s30--b6eac296ebeab4b5593387489571654cd5019d8bb3bc3bc08ac8a41e22bad133", O_RDWR) = 16
+
+So, it kind of looks like it checked the permissions and decided 0444 was good
+enough and didn't chmod it to allow write (in order to lock it for removal).
+
+The only way I can see how that could perhaps happen is if git-anenx thinks
+it's in a crippled filesystem that doesn't support chmod. But then the file
+shouldn't be locked down like that. I was, though, able to reproduce 
+that behavior after running `git config annex.crippledfilesystem true`
+
+So, I need more information: What filesystem is the USB drive formatted with,
+and can you run `git config --list` in the git repository on the drive and
+paste the output please.
+"""]]
