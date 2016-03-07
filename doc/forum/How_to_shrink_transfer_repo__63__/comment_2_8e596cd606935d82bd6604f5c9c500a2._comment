@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-03-07T17:52:21Z"
+ content="""
+Normally, files should be dropped from the transfer repository once they
+have reached all known client repositories. The drop should be done by
+the client repositories, so the transfer repo doesn't need access to the
+client repos to verify that they have a copy.
+
+But your problem is with *unused* files that are hanging around in
+the transfer repo. This can happen if a file reaches the transfer repo and
+then gets deleted from a client, and so the other clients never download it. 
+
+To clean out those files, run: `git annex dropunused --from astarte --force`
+
+You need to "use the force" because the unused file is only present in the
+transfer repo. If you want to get rid of its content for good, that's fine.
+A safer option is to move the unused file to the local repo: `git annex
+move --unused --from astarte`
+"""]]
