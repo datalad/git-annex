@@ -111,8 +111,7 @@ Executable git-annex
    esqueleto, persistent-sqlite, persistent, persistent-template,
    aeson,
    feed,
-   regex-tdfa,
-   disk-free-space
+   regex-tdfa
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs
   Extensions: PackageImports
@@ -193,6 +192,9 @@ Executable git-annex
   if flag(Android)
     Build-Depends: data-endian
     CPP-Options: -D__ANDROID__ -DANDROID_SPLICES -D__NO_TH__
+  else
+    Build-Depends: disk-free-space
+
   if flag(AndroidSplice)
     CPP-Options: -DANDROID_SPLICES
 
