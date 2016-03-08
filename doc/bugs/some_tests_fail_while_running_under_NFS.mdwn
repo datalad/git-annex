@@ -1,0 +1,54 @@
+### Please describe the problem.
+
+4 out of 269 tests failed (4468.00s)
+
+hard to assess how critical they are... 
+
+### What steps will reproduce the problem?
+
+run git annex test
+
+### What version of git-annex are you using? On what operating system?
+
+6.20160307+gitgb095561-1~ndall+1
+
+### Please provide any additional information below.
+
+[Full log](http://www.onerussian.com/tmp/git-annex-tests-6.20160307+gitgb095561-1~ndall+1.log)
+
+[[!format sh """
+smaug:/mnt/nfs/scrap/datalad/test_annex
+$> grep -B5 FAIL git-annex-tests-6.20160307+gitgb095561-1~ndall+1.log
+    crypto:                                               OK (50.57s)
+    preferred content:                                    OK (20.36s)
+    add subdirs:                                          OK (8.97s)
+    addurl:                                               .t/tmprepo73/.git/annex/keys: removeDirectoryRecursive: unsatisfied constraints (Directory not empty)
+sleeping 10 seconds and will retry directory cleanup
+FAIL
+--
+   293ed4c..c16b350  git-annex -> synced/git-annex
+   dd272eb..ffe1721  master -> synced/master
+OK (11.64s)
+    addurl:                                               .t/tmprepo73/.git/annex/keys/.nfs0000000009a305870000020e: removeDirectoryRecursive: resource busy (Device or resource busy)
+sleeping 10 seconds and will retry directory cleanup
+FAIL
+--
+   0993b09..c09ddc4  git-annex -> synced/git-annex
+   a823824..520f58c  master -> synced/master
+OK (13.67s)
+    addurl:                                               .t/tmprepo73/.git/annex/keys/.nfs0000000009a305870000020e: removeDirectoryRecursive: resource busy (Device or resource busy)
+sleeping 10 seconds and will retry directory cleanup
+FAIL
+--
+OK (14.59s)
+    addurl:                                               On branch master
+nothing to commit, working directory clean
+.t/tmprepo73/.git/annex/keys/.nfs0000000009a305870000020e: removeDirectoryRecursive: resource busy (Device or resource busy)
+sleeping 10 seconds and will retry directory cleanup
+FAIL
+
+
+# End of transcript or log.
+"""]]
+
+[[!meta author=yoh]]
