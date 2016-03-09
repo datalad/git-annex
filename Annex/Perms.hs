@@ -92,8 +92,15 @@ freezeContentDir file = unlessM crippledFileSystem $
 	go _ = liftIO $ preventWrite dir
 
 thawContentDir :: FilePath -> Annex ()
-thawContentDir file = unlessM crippledFileSystem $
-	liftIO $ allowWrite $ parentDir file
+thawContentDir file = ifM crippledFileSystem
+	-- Probably cannot change mode on crippled filesystem,
+	-- but if file modes are supported, the directory may be frozen,
+	-- so try to thaw it.
+	( void $ tryNonAsync go
+	, go
+	)
+  where
+	go = liftIO $ allowWrite $ parentDir file
 
 {- Makes the directory tree to store an annexed file's content,
  - with appropriate permissions on each level. -}

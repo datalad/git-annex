@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2016-03-09T17:31:18Z"
+ content="""
+Ok, I managed to get a vfat that honors file perms with those mount
+options.
+
+I'm going to make git-annex always try to chmod the file, even if it's on a
+crippled filesystem. That should solve it.
+"""]]

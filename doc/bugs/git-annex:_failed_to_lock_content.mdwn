@@ -103,3 +103,5 @@ Could the problem have something to do with the file having permission 0444 and 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Been using it since your kickstarter campaign!
+
+> [[done]] --[[Joey]]

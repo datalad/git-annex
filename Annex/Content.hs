@@ -951,8 +951,13 @@ chmodContent file = unlessM crippledFileSystem $
 {- Allows writing to an annexed file that freezeContent was called on
  - before. -}
 thawContent :: FilePath -> Annex ()
-thawContent file = unlessM crippledFileSystem $
-	withShared go
+thawContent file = ifM crippledFileSystem
+	-- Probably cannot change mode on crippled filesystem,
+	-- but if file modes are supported, the content may be frozen
+	-- so try to thaw it.
+	( void $ tryNonAsync $ withShared go
+	, withShared go
+	)
   where
 	go GroupShared = liftIO $ groupWriteRead file
 	go AllShared = liftIO $ groupWriteRead file

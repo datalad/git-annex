@@ -11,6 +11,7 @@ git-annex (6.20160230) UNRELEASED; urgency=medium
   * dropkey: Add --batch and --json.
   * Fix OSX dmg to include libraries needed by bundled gpg,
     lost in last release.
+  * Always try to thaw content, even when annex.crippledfilesystem is set.
 
  -- Joey Hess <id@joeyh.name>  Mon, 29 Feb 2016 13:00:30 -0400
 
