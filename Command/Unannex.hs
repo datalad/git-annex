@@ -13,6 +13,7 @@ import Command
 import Config
 import qualified Annex
 import Annex.Content
+import Annex.Perms
 import Annex.Content.Direct
 import Annex.Version
 import qualified Git.Command
