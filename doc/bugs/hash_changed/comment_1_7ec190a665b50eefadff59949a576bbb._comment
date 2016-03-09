@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="mail@f1d77c48f528d8c7b885900281887e045ad5114e"
+ nickname="mail"
+ subject="Solution"
+ date="2016-03-09T16:03:35Z"
+ content="""
+The solution proposed by \"joeyh\" on irc was to remove the symlink (`git rm` it) and then move the actual file from .git/annex/bad back to the file and `git annex add` it again.
+
+Worked beautifully.
+"""]]
