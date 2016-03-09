@@ -25,3 +25,8 @@ The problem was on several disks, different manufacturer, different disk size, e
 
 I use annex for years now, never had a problem with it. It is one of the most awesome pieces of software I've seen in the last 10 years, though I only use a really small part of it. Sometimes it bugs me a little that it consumes quite a lot of memory on large repositories, though most of the time this is not an issue for me.
 
+> I think this was not a bug in hashing, just a corrupted file that
+> spread to several repositories. More recent git-annex versions checksum
+> files after transfer so detect the problem. 
+> 
+> Since it was resolved to reporter's satisfaction, [[done]] --[[Joey]]
