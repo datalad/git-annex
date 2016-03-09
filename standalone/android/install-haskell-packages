@@ -65,7 +65,7 @@ patched () {
 installgitannexdeps () {
 	pushd ../..
 	ln -sf standalone/android/cabal.config
-	cabal install --only-dependencies --flags="-magicmime -concurrent-output" "$@" # --force-reinstalls --reinstall
+	cabal install --only-dependencies --flags="-magicmime -concurrentoutput" "$@" # --force-reinstalls --reinstall
 	rm -f cabal.config
 	popd
 }
