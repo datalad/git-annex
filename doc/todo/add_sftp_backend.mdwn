@@ -1,0 +1,3 @@
+A sftp backend would be nice because gpg operations could be pipelined to the network transfer, not requiring the creation of a full file to disk with gpg before the network transmission, as it happens with rsync.
+
+There should be some libraries that can handle the sftp connections and transfers. I read that even curl has support for that.

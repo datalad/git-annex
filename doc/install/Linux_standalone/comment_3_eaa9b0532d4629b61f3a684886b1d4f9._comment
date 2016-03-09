@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="nasava"
+ subject="Ancient variant for Armel"
+ date="2016-03-08T22:02:29Z"
+ content="""
+I have a NAS running Linux Kernel 2.6.36 unfortunately not possible updating it. The newest standalone build complains about \"kernel too old\". Is there a variant somewhere for ancient armel also like for x86_32? Or how can I build one?
+"""]]
