@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE BangPatterns, TypeSynonymInstances, FlexibleInstances #-}
 
 module Git.Tree (
 	Tree(..),
@@ -29,6 +29,7 @@ import Numeric
 import System.Posix.Types
 import Control.Monad.IO.Class
 import qualified Data.Set as S
+import qualified Data.Map as M
 
 newtype Tree = Tree [TreeContent]
 	deriving (Show)
@@ -39,7 +40,7 @@ data TreeContent
 	| RecordedSubTree TopFilePath Sha [TreeContent]
 	-- A subtree that has not yet been recorded in git.
 	| NewSubTree TopFilePath [TreeContent]
-	deriving (Show, Eq)
+	deriving (Show, Eq, Ord)
 
 {- Gets the Tree for a Ref. -}
 getTree :: Ref -> Repo -> IO Tree
@@ -112,11 +113,35 @@ data TreeItem = TreeItem TopFilePath FileMode Sha
 
 treeItemToTreeContent :: TreeItem -> TreeContent
 treeItemToTreeContent (TreeItem f m s) = TreeBlob f m s
-	
--- FIXME: When addtreeitems has an item in a new
--- subdirectory, no subtree contains it. We need to add a
--- new subtree in this case, but not in the case where the
--- subdirectory already exists in the tree.
+
+treeItemsToTree :: [TreeItem] -> Tree
+treeItemsToTree = go M.empty
+  where
+	go m [] = Tree $ filter (notElem '/' . gitPath) (M.elems m)
+	go m (i:is)
+		| '/' `notElem` p =
+			go (M.insert p (treeItemToTreeContent i) m) is
+		| otherwise = case M.lookup idir m of
+			Just (NewSubTree d l) ->
+				go (addsubtree idir m (NewSubTree d (c:l))) is
+			_ ->
+				go (addsubtree idir m (NewSubTree (asTopFilePath idir) [c])) is
+	  where
+		p = gitPath i
+		idir = takeDirectory p
+		c = treeItemToTreeContent i
+
+	addsubtree d m t
+		| elem '/' d = 
+			let m' = M.insert d t m
+			in case M.lookup parent m' of
+				Just (NewSubTree d' l) ->
+					let l' = filter (\ti -> gitPath ti /= d) l
+					in addsubtree parent m' (NewSubTree d' (t:l'))
+				_ -> addsubtree parent m' (NewSubTree (asTopFilePath parent) [t])
+		| otherwise = M.insert d t m
+	  where
+		parent = takeDirectory d
 
 {- Applies an adjustment to items in a tree.
  -
@@ -139,7 +164,7 @@ adjustTree adjusttreeitem addtreeitems removefiles r repo =
 	withMkTreeHandle repo $ \h -> do
 		(l, cleanup) <- liftIO $ lsTreeWithObjects r repo
 		(l', _, _) <- go h False [] inTopTree l
-		l'' <- adjustlist topitem l'
+		l'' <- adjustlist h inTopTree (const True) l'
 		sha <- liftIO $ mkTree h l''
 		void $ liftIO cleanup
 		return sha
@@ -158,7 +183,7 @@ adjustTree adjusttreeitem addtreeitems removefiles r repo =
 						in go h modified (blob:c) intree is
 			Just TreeObject -> do
 				(sl, modified, is') <- go h False [] (beneathSubTree i) is
-				sl' <- adjustlist (inTree i) sl
+				sl' <- adjustlist h (inTree i) (beneathSubTree i) sl
 				subtree <- if modified || sl' /= sl
 					then liftIO $ recordSubTree h $ NewSubTree (LsTree.file i) sl'
 					else return $ RecordedSubTree (LsTree.file i) (LsTree.sha i) [] 
@@ -166,12 +191,17 @@ adjustTree adjusttreeitem addtreeitems removefiles r repo =
 				go h modified' (subtree : c) intree is'
 			_ -> error ("unexpected object type \"" ++ LsTree.typeobj i ++ "\"")
 		| otherwise = return (c, wasmodified, i:is)
-	adjustlist ishere l = do
-		let added = filter ishere addtreeitems
-		let l' = map treeItemToTreeContent added ++ l
-		let l'' = filter (not . removed) l'
-		return l''
-	topitem (TreeItem f _ _) = inTopTree' f
+
+	adjustlist h ishere underhere l = do
+		let (addhere, rest) = partition ishere addtreeitems
+		let l' = filter (not . removed) $
+			map treeItemToTreeContent addhere ++ l
+		let inl i = any (\t -> beneathSubTree t i) l'
+		let (Tree addunderhere) = treeItemsToTree $
+			filter (\i -> underhere i && not (inl i)) rest
+		addunderhere' <- liftIO $ mapM (recordSubTree h) addunderhere
+		return (addunderhere'++l')
+
 	removeset = S.fromList removefiles
 	removed (TreeBlob f _ _) = S.member f removeset
 	removed _ = False
@@ -199,21 +229,34 @@ extractTree l = case go [] inTopTree l of
 		| otherwise = Right (t, i:is)
 	parseerr = Left
 
-type InTree = LsTree.TreeItem -> Bool
+class GitPath t where
+	gitPath :: t -> FilePath
 
-inTopTree :: InTree
-inTopTree = inTopTree' . LsTree.file
+instance GitPath FilePath where
+	gitPath = id
 
-inTopTree' :: TopFilePath -> Bool
-inTopTree' f = takeDirectory (getTopFilePath f) == "."
+instance GitPath TopFilePath where
+	gitPath = getTopFilePath
 
-beneathSubTree :: LsTree.TreeItem -> InTree
-beneathSubTree t =
-	let prefix = getTopFilePath (LsTree.file t) ++ "/"
-	in (\i -> prefix `isPrefixOf` getTopFilePath (LsTree.file i))
+instance GitPath TreeItem where
+	gitPath (TreeItem f _ _) = gitPath f
 
-inTree :: LsTree.TreeItem -> TreeItem -> Bool
-inTree = inTree' . LsTree.file
+instance GitPath LsTree.TreeItem where
+	gitPath = gitPath . LsTree.file
 
-inTree' :: TopFilePath -> TreeItem -> Bool
-inTree' f (TreeItem f' _ _) = takeDirectory (getTopFilePath f') == takeDirectory (getTopFilePath f)
+instance GitPath TreeContent where
+	gitPath (TreeBlob f _ _) = gitPath f
+	gitPath (RecordedSubTree f _ _) = gitPath f
+	gitPath (NewSubTree f _) = gitPath f
+
+inTopTree :: GitPath t => t -> Bool
+inTopTree = inTree "."
+
+inTree :: (GitPath t, GitPath f) => t -> f -> Bool
+inTree t f = gitPath t == takeDirectory (gitPath f)
+
+beneathSubTree :: (GitPath t, GitPath f) => t -> f -> Bool
+beneathSubTree t f = prefix `isPrefixOf` gitPath f
+  where
+	tp = gitPath t
+	prefix = if null tp then tp else tp ++ "/"
