@@ -40,14 +40,22 @@ import qualified Database.Keys
 
 import qualified Data.Map as M
 
-data Adjustment = UnlockAdjustment
+data Adjustment
+	= NoneAdjustment
+	| UnlockAdjustment
+	| LockAdjustment
 	deriving (Show)
 
-data Direction = Forward | Reverse
+{- Note that adjustments can only be reversed once; reversing a reversal
+ - does not always get back to the original. -}
+reverseAdjustment :: Adjustment -> Adjustment
+reverseAdjustment NoneAdjustment = NoneAdjustment
+reverseAdjustment UnlockAdjustment = LockAdjustment
+reverseAdjustment LockAdjustment = UnlockAdjustment
 
 {- How to perform various adjustments to a TreeItem. -}
-adjustTreeItem :: Adjustment -> Direction -> HashObjectHandle -> TreeItem -> Annex (Maybe TreeItem)
-adjustTreeItem UnlockAdjustment Forward h ti@(TreeItem f m s)
+adjustTreeItem :: Adjustment -> HashObjectHandle -> TreeItem -> Annex (Maybe TreeItem)
+adjustTreeItem UnlockAdjustment h ti@(TreeItem f m s)
 	| toBlobType m == Just SymlinkBlob = do
 		mk <- catKey s
 		case mk of
@@ -57,7 +65,7 @@ adjustTreeItem UnlockAdjustment Forward h ti@(TreeItem f m s)
 					<$> hashPointerFile' h k
 			Nothing -> return (Just ti)
 	| otherwise = return (Just ti)
-adjustTreeItem UnlockAdjustment Reverse h ti@(TreeItem f m s)
+adjustTreeItem LockAdjustment h ti@(TreeItem f m s)
 	| toBlobType m /= Just SymlinkBlob = do
 		mk <- catKey s
 		case mk of
@@ -69,6 +77,7 @@ adjustTreeItem UnlockAdjustment Reverse h ti@(TreeItem f m s)
 					<$> hashSymlink' h linktarget
 			Nothing -> return (Just ti)
 	| otherwise = return (Just ti)
+adjustTreeItem NoneAdjustment _ ti = return (Just ti)
 
 type OrigBranch = Branch
 type AdjBranch = Branch
@@ -78,9 +87,12 @@ adjustedBranchPrefix = "refs/heads/adjusted/"
 
 serialize :: Adjustment -> String
 serialize UnlockAdjustment = "unlocked"
+serialize LockAdjustment = "locked"
+serialize NoneAdjustment = "none"
 
 deserialize :: String -> Maybe Adjustment
 deserialize "unlocked" = Just UnlockAdjustment
+deserialize "locked" = Just UnlockAdjustment
 deserialize _ = Nothing
 
 originalToAdjusted :: OrigBranch -> Adjustment -> AdjBranch
@@ -118,30 +130,30 @@ enterAdjustedBranch adj = go =<< originalBranch
   where
 	go (Just origbranch) = do
 		adjbranch <- preventCommits $ const $ 
-			adjustBranch adj Forward origbranch
+			adjustBranch adj origbranch
 		inRepo $ Git.Command.run
 			[ Param "checkout"
 			, Param $ fromRef $ Git.Ref.base $ adjbranch
 			]
 	go Nothing = error "not on any branch!"
 
-adjustBranch :: Adjustment -> Direction -> OrigBranch -> Annex AdjBranch
-adjustBranch adj direction origbranch = do
-	sha <- adjust adj direction origbranch
+adjustBranch :: Adjustment -> OrigBranch -> Annex AdjBranch
+adjustBranch adj origbranch = do
+	sha <- adjust adj origbranch
 	inRepo $ Git.Branch.update adjbranch sha
 	return adjbranch
   where
 	adjbranch = originalToAdjusted origbranch adj
 
-adjust :: Adjustment -> Direction -> Ref -> Annex Sha
-adjust adj direction orig = do
-	treesha <- adjustTree adj direction orig
+adjust :: Adjustment -> Ref -> Annex Sha
+adjust adj orig = do
+	treesha <- adjustTree adj orig
 	commitAdjustedTree treesha orig
 
-adjustTree :: Adjustment -> Direction -> Ref -> Annex Sha
-adjustTree adj direction orig = do
+adjustTree :: Adjustment -> Ref -> Annex Sha
+adjustTree adj orig = do
 	h <- inRepo hashObjectStart
-	let toadj = adjustTreeItem adj direction h
+	let toadj = adjustTreeItem adj h
 	treesha <- Git.Tree.adjustTree toadj [] [] orig =<< Annex.gitRepo
 	liftIO $ hashObjectStop h
 	return treesha
@@ -193,7 +205,7 @@ updateAdjustedBranch tomerge (origbranch, adj) commitmode = catchBoolIO $ do
 		ifM (inRepo $ Git.Branch.changed currbranch mergesha)
 			( do
 				propigateAdjustedCommits' origbranch (adj, currbranch) commitsprevented
-				adjustedtomerge <- adjust adj Forward mergesha
+				adjustedtomerge <- adjust adj mergesha
 				ifM (inRepo $ Git.Branch.changed currbranch adjustedtomerge)
 					( do
 						liftIO $ Git.LockFile.closeLock commitsprevented
@@ -296,7 +308,7 @@ reverseAdjustedCommit h newparent adj (csha, c) origbranch
 		let (adds, others) = partition (\dti -> Git.DiffTree.srcsha dti == nullSha) diff
 		let (removes, changes) = partition (\dti -> Git.DiffTree.dstsha dti == nullSha) others
 		adds' <- catMaybes <$>
-			mapM (adjustTreeItem adj Reverse h) (map diffTreeToTreeItem adds)
+			mapM (adjustTreeItem reverseadj h) (map diffTreeToTreeItem adds)
 		treesha <- Git.Tree.adjustTree
 			(propchanges changes)
 			adds'
@@ -311,10 +323,11 @@ reverseAdjustedCommit h newparent adj (csha, c) origbranch
 					(commitMessage c) [newparent] treesha
 		return (Right revadjcommit)
   where
+	reverseadj = reverseAdjustment adj
 	propchanges changes ti@(TreeItem f _ _) =
 		case M.lookup f m of
 			Nothing -> return (Just ti) -- not changed
-			Just change -> adjustTreeItem adj Reverse h change
+			Just change -> adjustTreeItem reverseadj h change
 	  where
 		m = M.fromList $ map (\i@(TreeItem f' _ _) -> (f', i)) $
 			map diffTreeToTreeItem changes
