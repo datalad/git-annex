@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="frederik@ffbea6a549cb3f460d110386c0f634c1ddc6a68a"
+ nickname="frederik"
+ subject="comment 1"
+ date="2016-03-04T14:06:17Z"
+ content="""
+git revert -m 1 [sha_of_merge] seems to have done the trick
+"""]]

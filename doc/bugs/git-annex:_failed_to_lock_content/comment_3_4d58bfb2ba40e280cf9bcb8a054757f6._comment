@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="ellis"
+ subject="comment 3"
+ date="2016-03-08T19:52:21Z"
+ content="""
+And the file system is VFAT:
+
+    /dev/sde1 on /media/ellis/USB04 type vfat (rw,nosuid,nodev,relatime,uid=1000,gid=1000,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,showexec,utf8,flush,errors=remount-ro,uhelper=udisks2)
+"""]]

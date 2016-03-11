@@ -17,13 +17,18 @@ module Messages.JSON (
 import Text.JSON
 
 import qualified Utility.JSONStream as Stream
+import Types.Key
+import Data.Maybe
 
-start :: String -> Maybe String -> IO ()
-start command file =
-	putStr $ Stream.start $ ("command", command) : filepart file
+start :: String -> Maybe FilePath -> Maybe Key -> IO ()
+start command file key = putStr $ Stream.start $ catMaybes
+	[ part "command" (Just command)
+	, part "file" file
+	, part "key" (fmap key2file key)
+	]
   where
-	filepart Nothing = []
-	filepart (Just f) = [("file", f)]
+	part _ Nothing = Nothing
+	part l (Just v) = Just (l, v)
 
 end :: Bool -> IO ()
 end b = putStr $ Stream.add [("success", b)] ++ Stream.end

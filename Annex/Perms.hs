@@ -11,6 +11,9 @@ module Annex.Perms (
 	annexFileMode,
 	createAnnexDirectory,
 	noUmask,
+	freezeContent,
+	thawContent,
+	chmodContent,
 	createContentDir,
 	freezeContentDir,
 	thawContentDir,
@@ -77,6 +80,55 @@ createAnnexDirectory dir = walk dir [] =<< top
 			liftIO $ createDirectoryIfMissing True p
 			setAnnexDirPerm p
 
+{- Normally, blocks writing to an annexed file, and modifies file
+ - permissions to allow reading it.
+ -
+ - When core.sharedRepository is set, the write bits are not removed from
+ - the file, but instead the appropriate group write bits are set. This is
+ - necessary to let other users in the group lock the file.
+ -}
+freezeContent :: FilePath -> Annex ()
+freezeContent file = unlessM crippledFileSystem $
+	withShared go
+  where
+	go GroupShared = liftIO $ modifyFileMode file $
+		addModes [ownerReadMode, groupReadMode, ownerWriteMode, groupWriteMode]
+	go AllShared = liftIO $ modifyFileMode file $
+		addModes (readModes ++ writeModes)
+	go _ = liftIO $ modifyFileMode file $
+		removeModes writeModes .
+		addModes [ownerReadMode]
+
+{- Adjusts read mode of annexed file per core.sharedRepository setting. -}
+chmodContent :: FilePath -> Annex ()
+chmodContent file = unlessM crippledFileSystem $
+	withShared go
+  where
+	go GroupShared = liftIO $ modifyFileMode file $
+		addModes [ownerReadMode, groupReadMode]
+	go AllShared = liftIO $ modifyFileMode file $
+		addModes readModes
+	go _ = liftIO $ modifyFileMode file $
+		addModes [ownerReadMode]
+
+{- Allows writing to an annexed file that freezeContent was called on
+ - before. -}
+thawContent :: FilePath -> Annex ()
+thawContent file = thawPerms $ withShared go
+  where
+	go GroupShared = liftIO $ groupWriteRead file
+	go AllShared = liftIO $ groupWriteRead file
+	go _ = liftIO $ allowWrite file
+
+{- Runs an action that thaws a file's permissions. This will probably
+ - fail on a crippled filesystem. But, if file modes are supported on a
+ - crippled filesystem, the file may be frozen, so try to thaw it. -}
+thawPerms :: Annex () -> Annex ()
+thawPerms a = ifM crippledFileSystem
+	( void $ tryNonAsync a
+	, a
+	)
+
 {- Blocks writing to the directory an annexed file is in, to prevent the
  - file accidentially being deleted. However, if core.sharedRepository
  - is set, this is not done, since the group must be allowed to delete the
@@ -92,8 +144,7 @@ freezeContentDir file = unlessM crippledFileSystem $
 	go _ = liftIO $ preventWrite dir
 
 thawContentDir :: FilePath -> Annex ()
-thawContentDir file = unlessM crippledFileSystem $
-	liftIO $ allowWrite $ parentDir file
+thawContentDir file = thawPerms $ liftIO $ allowWrite $ parentDir file
 
 {- Makes the directory tree to store an annexed file's content,
  - with appropriate permissions on each level. -}

@@ -9,6 +9,6 @@ under the AGPL as a whole. git-annex built without the webapp does
 not include this code, so remains GPLed.
 
 git-annex contains a variety of other code, artwork, etc copyright by
-others, under a variety of licences, including the [[LGPL]], BSD,
+others, under a variety of licences, including the BSD,
 MIT, and Apache 2.0 licenses. For details, see
 [this file](http://source.git-annex.branchable.com/?p=source.git;a=blob_plain;f=debian/copyright;hb=HEAD).

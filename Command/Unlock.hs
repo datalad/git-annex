@@ -9,6 +9,7 @@ module Command.Unlock where
 
 import Command
 import Annex.Content
+import Annex.Perms
 import Annex.CatFile
 import Annex.Version
 import Annex.Link

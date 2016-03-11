@@ -19,4 +19,7 @@ flags:
     ekg: false
 packages:
 - '.'
-resolver: lts-5.0
+resolver: lts-5.5
+extra-deps:
+- mountpoints-1.0.1
+- disk-free-space-0.1.0.1

@@ -24,9 +24,7 @@ import qualified Command.Sync
 import Config.Files
 import Utility.FreeDesktop
 import Utility.DiskFree
-#ifdef WITH_CLIBS
 import Utility.Mounts
-#endif
 import Utility.DataUnits
 import Remote (prettyUUID)
 import Annex.UUID
@@ -359,7 +357,6 @@ driveList :: IO [RemovableDrive]
 -- Could use wmic, but it only works for administrators.
 driveList = mapM (\d -> genRemovableDrive $ d:":\\") ['A'..'Z']
 #else
-#ifdef WITH_CLIBS
 driveList = mapM (genRemovableDrive . mnt_dir) =<< filter sane <$> getMounts
   where
 	-- filter out some things that are surely not removable drives
@@ -379,9 +376,6 @@ driveList = mapM (genRemovableDrive . mnt_dir) =<< filter sane <$> getMounts
 		| dir == "/sdcard" = False
 #endif
 		| otherwise = True
-#else
-driveList = return []
-#endif
 #endif
 
 genRemovableDrive :: FilePath -> IO RemovableDrive

@@ -23,6 +23,8 @@ import Utility.LockPool.STM (LockFile)
 
 import Control.Concurrent.STM
 import Control.Exception
+import Control.Applicative
+import Prelude
 
 data LockHandle = LockHandle P.LockHandle FileLockOps
 

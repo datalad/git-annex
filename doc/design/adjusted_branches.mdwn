@@ -231,6 +231,12 @@ which to not delete when reversing it?
 So, a reverse filter may need some state that was collected when running
 the filter forwards, in order to decide what to do.
 
+Alternatively, instead of reverse filtering the whole adjusted tree,
+look at just the new commit that's being propigated back from the
+adjusted to master branch. Get the diff from it to the previous
+commit; the changes that were made. Then de-adjust those changes,
+and apply the changes to the master branch.
+
 ## push
 
 The new master branch can then be pushed out to remotes. The

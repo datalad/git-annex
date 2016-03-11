@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-03-07T17:23:19Z"
+ content="""
+The first version to support largefiles in .gitattributes was 6.20160211,
+so both the above commenters just have too old a version.
+"""]]

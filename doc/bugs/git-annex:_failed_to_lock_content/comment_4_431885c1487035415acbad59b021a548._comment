@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-03-08T20:38:25Z"
+ content="""
+Thanks, that's consistent with my analysis.
+
+The only thing I don't understand is how a file on a vfat filesystem can
+have mode 444. When I make a vfat filesystem and mount it on linux,
+chmod doesn't change the mode of files at all; they're hardcoded at 755.
+
+Is your drive mounted with any interesting mount options? Paste the output
+from `mount` for the drive.
+
+Can you chmod the file to have some mode other than 444?
+"""]]

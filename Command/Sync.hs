@@ -522,6 +522,5 @@ syncFile ebloom rs af k = do
 				)
 		, return []
 		)
-	put dest = includeCommandAction $ do
-		showStart' "copy" k af
+	put dest = includeCommandAction $ 
 		Command.Move.toStart' dest False af k
