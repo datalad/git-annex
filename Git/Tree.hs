@@ -109,15 +109,19 @@ mkTreeOutput fm ot s f = concat
 data TreeItem = TreeItem TopFilePath FileMode Sha
 	deriving (Eq)
 
+treeItemToTreeContent :: TreeItem -> TreeContent
+treeItemToTreeContent (TreeItem f m s) = TreeBlob f m s
+
 {- Applies an adjustment to items in a tree.
+ - Can also add new items to the tree.
  -
  - While less flexible than using getTree and recordTree, this avoids
  - buffering the whole tree in memory.
  -}
-adjustTree :: (MonadIO m, MonadMask m) => (TreeItem -> m (Maybe TreeItem)) -> Ref -> Repo -> m Sha
-adjustTree adjust r repo = withMkTreeHandle repo $ \h -> do
+adjustTree :: (MonadIO m, MonadMask m) => (TreeItem -> m (Maybe TreeItem)) -> [TreeItem] -> Ref -> Repo -> m Sha
+adjustTree adjusttreeitem addtreeitems r repo = withMkTreeHandle repo $ \h -> do
 	(l, cleanup) <- liftIO $ lsTreeWithObjects r repo
-	(l', _, _) <- go h False [] topTree l
+	(l', _, _) <- go h False [] inTopTree l
 	sha <- liftIO $ mkTree h l'
 	void $ liftIO cleanup
 	return sha
@@ -128,7 +132,7 @@ adjustTree adjust r repo = withMkTreeHandle repo $ \h -> do
 			case readObjectType (LsTree.typeobj i) of
 				Just BlobObject -> do
 					let ti = TreeItem (LsTree.file i) (LsTree.mode i) (LsTree.sha i)
-					v <- adjust ti
+					v <- adjusttreeitem ti
 					case v of
 						Nothing -> go h True c intree is
 						Just ti'@(TreeItem f m s) ->
@@ -136,9 +140,11 @@ adjustTree adjust r repo = withMkTreeHandle repo $ \h -> do
 							    blob = TreeBlob f m s
 							in go h modified (blob:c) intree is
 				Just TreeObject -> do
-					(sl, modified, is') <- go h False [] (subTree i) is
-					subtree <- if modified
-						then liftIO $ recordSubTree h $ NewSubTree (LsTree.file i) sl
+					(sl, modified, is') <- go h False [] (beneathSubTree i) is
+					let added = filter (inSubTree i) addtreeitems
+					subtree <- if modified || not (null added)
+						then liftIO $ recordSubTree h $ NewSubTree (LsTree.file i)
+							(map treeItemToTreeContent added ++ sl)
 						else return $ RecordedSubTree (LsTree.file i) (LsTree.sha i) [] 
 					let !modified' = modified || wasmodified
 					go h modified' (subtree : c) intree is'
@@ -148,7 +154,7 @@ adjustTree adjust r repo = withMkTreeHandle repo $ \h -> do
 {- Assumes the list is ordered, with tree objects coming right before their
  - contents. -}
 extractTree :: [LsTree.TreeItem] -> Either String Tree
-extractTree l = case go [] topTree l of
+extractTree l = case go [] inTopTree l of
 	Right (t, []) -> Right (Tree t)
 	Right _ -> parseerr "unexpected tree form"
 	Left e -> parseerr e
@@ -160,7 +166,7 @@ extractTree l = case go [] topTree l of
 				Just BlobObject ->
 					let b = TreeBlob (LsTree.file i) (LsTree.mode i) (LsTree.sha i)
 					in go (b:t) intree is
-				Just TreeObject -> case go [] (subTree i) is of
+				Just TreeObject -> case go [] (beneathSubTree i) is of
 					Right (subtree, is') ->
 						let st = RecordedSubTree (LsTree.file i) (LsTree.sha i) subtree
 						in go (st:t) intree is'
@@ -171,10 +177,13 @@ extractTree l = case go [] topTree l of
 
 type InTree = LsTree.TreeItem -> Bool
 
-topTree :: InTree
-topTree = notElem '/' . getTopFilePath . LsTree.file
+inTopTree :: InTree
+inTopTree = notElem '/' . getTopFilePath . LsTree.file
 
-subTree :: LsTree.TreeItem -> InTree
-subTree t =
+beneathSubTree :: LsTree.TreeItem -> InTree
+beneathSubTree t =
 	let prefix = getTopFilePath (LsTree.file t) ++ "/"
 	in (\i -> prefix `isPrefixOf` getTopFilePath (LsTree.file i))
+
+inSubTree :: LsTree.TreeItem -> TreeItem -> Bool
+inSubTree t (TreeItem f _ _) = takeDirectory (getTopFilePath f) == takeDirectory (getTopFilePath (LsTree.file t))
