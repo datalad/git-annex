@@ -128,27 +128,26 @@ adjustTree adjusttreeitem addtreeitems r repo = withMkTreeHandle repo $ \h -> do
   where
 	go _ wasmodified c _ [] = return (c, wasmodified, [])
 	go h wasmodified c intree (i:is)
-		| intree i =
-			case readObjectType (LsTree.typeobj i) of
-				Just BlobObject -> do
-					let ti = TreeItem (LsTree.file i) (LsTree.mode i) (LsTree.sha i)
-					v <- adjusttreeitem ti
-					case v of
-						Nothing -> go h True c intree is
-						Just ti'@(TreeItem f m s) ->
-							let !modified = wasmodified || ti' /= ti
-							    blob = TreeBlob f m s
-							in go h modified (blob:c) intree is
-				Just TreeObject -> do
-					(sl, modified, is') <- go h False [] (beneathSubTree i) is
-					let added = filter (inSubTree i) addtreeitems
-					subtree <- if modified || not (null added)
-						then liftIO $ recordSubTree h $ NewSubTree (LsTree.file i)
-							(map treeItemToTreeContent added ++ sl)
-						else return $ RecordedSubTree (LsTree.file i) (LsTree.sha i) [] 
-					let !modified' = modified || wasmodified
-					go h modified' (subtree : c) intree is'
-				_ -> error ("unexpected object type \"" ++ LsTree.typeobj i ++ "\"")
+		| intree i = case readObjectType (LsTree.typeobj i) of
+			Just BlobObject -> do
+				let ti = TreeItem (LsTree.file i) (LsTree.mode i) (LsTree.sha i)
+				v <- adjusttreeitem ti
+				case v of
+					Nothing -> go h True c intree is
+					Just ti'@(TreeItem f m s) ->
+						let !modified = wasmodified || ti' /= ti
+						    blob = TreeBlob f m s
+						in go h modified (blob:c) intree is
+			Just TreeObject -> do
+				(sl, modified, is') <- go h False [] (beneathSubTree i) is
+				let added = filter (inTree i) addtreeitems
+				subtree <- if modified || not (null added)
+					then liftIO $ recordSubTree h $ NewSubTree (LsTree.file i)
+						(map treeItemToTreeContent added ++ sl)
+					else return $ RecordedSubTree (LsTree.file i) (LsTree.sha i) [] 
+				let !modified' = modified || wasmodified
+				go h modified' (subtree : c) intree is'
+			_ -> error ("unexpected object type \"" ++ LsTree.typeobj i ++ "\"")
 		| otherwise = return (c, wasmodified, i:is)
 
 {- Assumes the list is ordered, with tree objects coming right before their
@@ -161,17 +160,16 @@ extractTree l = case go [] inTopTree l of
   where
 	go t _ [] = Right (t, [])
 	go t intree (i:is)
-		| intree i = 
-			case readObjectType (LsTree.typeobj i) of
-				Just BlobObject ->
-					let b = TreeBlob (LsTree.file i) (LsTree.mode i) (LsTree.sha i)
-					in go (b:t) intree is
-				Just TreeObject -> case go [] (beneathSubTree i) is of
-					Right (subtree, is') ->
-						let st = RecordedSubTree (LsTree.file i) (LsTree.sha i) subtree
-						in go (st:t) intree is'
-					Left e -> Left e
-				_ -> parseerr ("unexpected object type \"" ++ LsTree.typeobj i ++ "\"")
+		| intree i = case readObjectType (LsTree.typeobj i) of
+			Just BlobObject ->
+				let b = TreeBlob (LsTree.file i) (LsTree.mode i) (LsTree.sha i)
+				in go (b:t) intree is
+			Just TreeObject -> case go [] (beneathSubTree i) is of
+				Right (subtree, is') ->
+					let st = RecordedSubTree (LsTree.file i) (LsTree.sha i) subtree
+					in go (st:t) intree is'
+				Left e -> Left e
+			_ -> parseerr ("unexpected object type \"" ++ LsTree.typeobj i ++ "\"")
 		| otherwise = Right (t, i:is)
 	parseerr = Left
 
@@ -185,5 +183,5 @@ beneathSubTree t =
 	let prefix = getTopFilePath (LsTree.file t) ++ "/"
 	in (\i -> prefix `isPrefixOf` getTopFilePath (LsTree.file i))
 
-inSubTree :: LsTree.TreeItem -> TreeItem -> Bool
-inSubTree t (TreeItem f _ _) = takeDirectory (getTopFilePath f) == takeDirectory (getTopFilePath (LsTree.file t))
+inTree :: LsTree.TreeItem -> TreeItem -> Bool
+inTree t (TreeItem f _ _) = takeDirectory (getTopFilePath f) == takeDirectory (getTopFilePath (LsTree.file t))
