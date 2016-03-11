@@ -20,6 +20,6 @@ seek = withWords start
 
 start :: [String] -> CommandStart
 start [] = do
-	enterAdjustedBranch UnlockAdjustment
+	enterAdjustedBranch HideMissingAdjustment
 	next $ next $ return True
 start _ = error "Unknown parameter"

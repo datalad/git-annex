@@ -36,22 +36,23 @@ import Annex.CatFile
 import Annex.Link
 import Git.HashObject
 import Annex.AutoMerge
+import Annex.Content
 import qualified Database.Keys
 
 import qualified Data.Map as M
 
 data Adjustment
-	= NoneAdjustment
-	| UnlockAdjustment
+	= UnlockAdjustment
 	| LockAdjustment
+	| HideMissingAdjustment
+	| ShowMissingAdjustment
 	deriving (Show)
 
-{- Note that adjustments can only be reversed once; reversing a reversal
- - does not always get back to the original. -}
 reverseAdjustment :: Adjustment -> Adjustment
-reverseAdjustment NoneAdjustment = NoneAdjustment
 reverseAdjustment UnlockAdjustment = LockAdjustment
 reverseAdjustment LockAdjustment = UnlockAdjustment
+reverseAdjustment HideMissingAdjustment = ShowMissingAdjustment
+reverseAdjustment ShowMissingAdjustment = HideMissingAdjustment
 
 {- How to perform various adjustments to a TreeItem. -}
 adjustTreeItem :: Adjustment -> HashObjectHandle -> TreeItem -> Annex (Maybe TreeItem)
@@ -77,7 +78,15 @@ adjustTreeItem LockAdjustment h ti@(TreeItem f m s)
 					<$> hashSymlink' h linktarget
 			Nothing -> return (Just ti)
 	| otherwise = return (Just ti)
-adjustTreeItem NoneAdjustment _ ti = return (Just ti)
+adjustTreeItem HideMissingAdjustment h ti@(TreeItem _ _ s) = do
+	mk <- catKey s
+	case mk of
+		Just k -> ifM (inAnnex k)
+			( return (Just ti)
+			, return Nothing
+			)
+		Nothing -> return (Just ti)
+adjustTreeItem ShowMissingAdjustment _ ti = return (Just ti)
 
 type OrigBranch = Branch
 type AdjBranch = Branch
@@ -88,11 +97,13 @@ adjustedBranchPrefix = "refs/heads/adjusted/"
 serialize :: Adjustment -> String
 serialize UnlockAdjustment = "unlocked"
 serialize LockAdjustment = "locked"
-serialize NoneAdjustment = "none"
+serialize HideMissingAdjustment = "present"
+serialize ShowMissingAdjustment = "showmissing"
 
 deserialize :: String -> Maybe Adjustment
 deserialize "unlocked" = Just UnlockAdjustment
 deserialize "locked" = Just UnlockAdjustment
+deserialize "present" = Just HideMissingAdjustment
 deserialize _ = Nothing
 
 originalToAdjusted :: OrigBranch -> Adjustment -> AdjBranch
