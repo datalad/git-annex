@@ -107,7 +107,7 @@ parseDiffRaw l = go l []
 	go (info:f:rest) c = case mk info f of
 		Nothing -> Nothing
 		Just i -> go rest (i:c)
-	go (s:[]) _ = Nothing
+	go (_:[]) _ = Nothing
 
 	mk info f = DiffTreeItem
 		<$> readmode srcm
