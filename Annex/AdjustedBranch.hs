@@ -1,4 +1,4 @@
-{- adjusted version of main branch
+{- adjusted branch
  -
  - Copyright 2016 Joey Hess <id@joeyh.name>
  -
@@ -25,7 +25,9 @@ import qualified Git.Branch
 import qualified Git.Ref
 import qualified Git.Command
 import qualified Git.Tree
+import qualified Git.DiffTree
 import Git.Tree (TreeItem(..))
+import Git.Sha
 import Git.Env
 import Git.Index
 import Git.FilePath
@@ -36,11 +38,14 @@ import Git.HashObject
 import Annex.AutoMerge
 import qualified Database.Keys
 
+import qualified Data.Map as M
+
 data Adjustment = UnlockAdjustment
 	deriving (Show)
 
 data Direction = Forward | Reverse
 
+{- How to perform various adjustments to a TreeItem. -}
 adjustTreeItem :: Adjustment -> Direction -> HashObjectHandle -> TreeItem -> Annex (Maybe TreeItem)
 adjustTreeItem UnlockAdjustment Forward h ti@(TreeItem f m s)
 	| toBlobType m == Just SymlinkBlob = do
@@ -53,8 +58,6 @@ adjustTreeItem UnlockAdjustment Forward h ti@(TreeItem f m s)
 			Nothing -> return (Just ti)
 	| otherwise = return (Just ti)
 adjustTreeItem UnlockAdjustment Reverse h ti@(TreeItem f m s)
-	-- XXX does not remember when files were originally unlocked; locks
-	-- everything
 	| toBlobType m /= Just SymlinkBlob = do
 		mk <- catKey s
 		case mk of
@@ -114,7 +117,8 @@ enterAdjustedBranch :: Adjustment -> Annex ()
 enterAdjustedBranch adj = go =<< originalBranch
   where
 	go (Just origbranch) = do
-		adjbranch <- preventCommits $ adjustBranch adj Forward origbranch
+		adjbranch <- preventCommits $ const $ 
+			adjustBranch adj Forward origbranch
 		inRepo $ Git.Command.run
 			[ Param "checkout"
 			, Param $ fromRef $ Git.Ref.base $ adjbranch
@@ -137,23 +141,25 @@ adjust adj direction orig = do
 adjustTree :: Adjustment -> Direction -> Ref -> Annex Sha
 adjustTree adj direction orig = do
 	h <- inRepo hashObjectStart
-	treesha <- Git.Tree.adjustTree (adjustTreeItem adj direction h) orig
-		=<< Annex.gitRepo
+	let toadj = adjustTreeItem adj direction h
+	treesha <- Git.Tree.adjustTree toadj [] orig =<< Annex.gitRepo
 	liftIO $ hashObjectStop h
 	return treesha
+
+type CommitsPrevented = Git.LockFile.LockHandle
 
 {- Locks git's index file, preventing git from making a commit, merge, 
  - or otherwise changing the HEAD ref while the action is run.
  -
  - Throws an IO exception if the index file is already locked.
  -}
-preventCommits :: Annex a -> Annex a
-preventCommits = bracket setup cleanup . const
+preventCommits :: (CommitsPrevented -> Annex a) -> Annex a
+preventCommits = bracket setup cleanup
   where
 	setup = do
 		lck <- fromRepo indexFileLock
 		liftIO $ Git.LockFile.openLock lck
-	cleanup lckhandle = liftIO $ Git.LockFile.closeLock lckhandle
+	cleanup = liftIO . Git.LockFile.closeLock
 
 {- Commits a given adjusted tree, with the provided parent ref.
  -
@@ -178,25 +184,29 @@ adjustedBranchCommitMessage = "git-annex adjusted branch"
 {- Update the currently checked out adjusted branch, merging the provided
  - branch into it. -}
 updateAdjustedBranch :: Branch -> (OrigBranch, Adjustment) -> Git.Branch.CommitMode -> Annex Bool
-updateAdjustedBranch tomerge (origbranch, adj) commitmode = 
-	catchBoolIO $ preventCommits $ go =<< (,)
+updateAdjustedBranch tomerge (origbranch, adj) commitmode = catchBoolIO $ do
+	preventCommits $ \commitsprevented -> go commitsprevented =<< (,)
 		<$> inRepo (Git.Ref.sha tomerge)
 		<*> inRepo Git.Branch.current
   where
-	go (Just mergesha, Just currbranch) = ifM (inRepo $ Git.Branch.changed currbranch mergesha)
-		( do
-			propigateAdjustedCommits origbranch (adj, currbranch)
-			adjustedtomerge <- adjust adj Forward mergesha
-			ifM (inRepo $ Git.Branch.changed currbranch adjustedtomerge)
-				( ifM (autoMergeFrom adjustedtomerge (Just currbranch) commitmode)
-					( recommit currbranch mergesha =<< catCommit currbranch
-					, return False
+	go commitsprevented (Just mergesha, Just currbranch) =
+		ifM (inRepo $ Git.Branch.changed currbranch mergesha)
+			( do
+				propigateAdjustedCommits' origbranch (adj, currbranch) commitsprevented
+				adjustedtomerge <- adjust adj Forward mergesha
+				ifM (inRepo $ Git.Branch.changed currbranch adjustedtomerge)
+					( do
+						liftIO $ Git.LockFile.closeLock commitsprevented
+						ifM (autoMergeFrom adjustedtomerge (Just currbranch) commitmode)
+							( preventCommits $ \commitsprevented' ->
+								recommit commitsprevented' currbranch mergesha =<< catCommit currbranch
+							, return False
+							)
+					, return True -- no changes to merge
 					)
-				, return True -- no changes to merge
-				)
-		, return True -- no changes to merge
-		)
-	go _ = return False
+			, return True -- no changes to merge
+			)
+	go _ _ = return False
 	{- Once a merge commit has been made, re-do it, removing
 	 - the old version of the adjusted branch as a parent, and
 	 - making the only parent be the branch that was merged in.
@@ -204,12 +214,12 @@ updateAdjustedBranch tomerge (origbranch, adj) commitmode =
 	 - Doing this ensures that the same commit Sha is
 	 - always arrived at for a given commit from the merged in branch.
 	 -}
-	recommit currbranch parent (Just commit) = do
+	recommit commitsprevented currbranch parent (Just commit) = do
 		commitsha <- commitAdjustedTree (commitTree commit) parent
 		inRepo $ Git.Branch.update currbranch commitsha
-		propigateAdjustedCommits origbranch (adj, currbranch)
+		propigateAdjustedCommits' origbranch (adj, currbranch) commitsprevented
 		return True
-	recommit _ _ Nothing = return False
+	recommit _ _ _ Nothing = return False
 
 {- Check for any commits present on the adjusted branch that have not yet
  - been propigated to the orig branch, and propigate them.
@@ -218,16 +228,26 @@ updateAdjustedBranch tomerge (origbranch, adj) commitmode =
  - rebase the adjusted branch on top of the updated orig branch.
  -}
 propigateAdjustedCommits :: OrigBranch -> (Adjustment, AdjBranch) -> Annex ()
-propigateAdjustedCommits origbranch (adj, currbranch) = do
+propigateAdjustedCommits origbranch (adj, currbranch) = 
+	preventCommits $ propigateAdjustedCommits' origbranch (adj, currbranch)
+
+propigateAdjustedCommits' :: OrigBranch -> (Adjustment, AdjBranch) -> CommitsPrevented -> Annex ()
+propigateAdjustedCommits' origbranch (adj, currbranch) _commitsprevented = do
 	ov <- inRepo $ Git.Ref.sha (Git.Ref.under "refs/heads" origbranch)
 	case ov of
-		Just origsha -> preventCommits $ do
+		Just origsha -> do
 			cv <- catCommit currbranch
 			case cv of
-				Just currcommit -> 
-					newcommits 
-						>>= go origsha False
-						>>= rebase currcommit
+				Just currcommit -> do
+					h <- inRepo hashObjectStart
+					v <- newcommits >>= go h origsha False
+					liftIO $ hashObjectStop h
+					case v of
+						Left e -> do
+							warning e
+							return ()
+						Right newparent ->
+							rebase currcommit newparent
 				Nothing -> return ()
 		Nothing -> return ()
   where
@@ -235,19 +255,21 @@ propigateAdjustedCommits origbranch (adj, currbranch) = do
 		-- Get commits oldest first, so they can be processed
 		-- in order made.
 		[Param "--reverse"]
-	go parent _ [] = do
+	go _ parent _ [] = do
 		inRepo $ Git.Branch.update origbranch parent
-		return parent
-	go parent pastadjcommit (sha:l) = do
+		return (Right parent)
+	go h parent pastadjcommit (sha:l) = do
 		mc <- catCommit sha
 		case mc of
 			Just c
 				| commitMessage c == adjustedBranchCommitMessage ->
-					go parent True l
+					go h parent True l
 				| pastadjcommit -> do
-					commit <- reverseAdjustedCommit parent adj c
-					go commit pastadjcommit l
-			_ -> go parent pastadjcommit l
+					v <- reverseAdjustedCommit h parent adj (sha, c) origbranch
+					case v of
+						Left e -> return (Left e)
+						Right commit -> go h commit pastadjcommit l
+			_ -> go h parent pastadjcommit l
 	rebase currcommit newparent = do
 		-- Reuse the current adjusted tree,
 		-- and reparent it on top of the new
@@ -255,16 +277,46 @@ propigateAdjustedCommits origbranch (adj, currbranch) = do
 		commitAdjustedTree (commitTree currcommit) newparent
 			>>= inRepo . Git.Branch.update currbranch
 
-{- Reverses an adjusted commit, yielding a commit sha.
+{- Reverses an adjusted commit, and commit on top of the provided newparent,
+ - yielding a commit sha.
+ -
+ - Adjust the tree of the newparent, changing only the files that the
+ - commit changed, and reverse adjusting those changes.
  -
  - Note that the commit message, and the author and committer metadata are
  - copied over. However, any gpg signature will be lost, and any other
  - headers are not copied either. -}
-reverseAdjustedCommit :: Sha -> Adjustment -> Commit -> Annex Sha
-reverseAdjustedCommit parent adj c = do
-	treesha <- adjustTree adj Reverse (commitTree c)
-	inRepo $ commitWithMetaData
-		(commitAuthorMetaData c)
-		(commitCommitterMetaData c) $
-		Git.Branch.commitTree Git.Branch.AutomaticCommit
-			(commitMessage c) [parent] treesha
+reverseAdjustedCommit :: HashObjectHandle -> Sha -> Adjustment -> (Sha, Commit) -> OrigBranch -> Annex (Either String Sha)
+reverseAdjustedCommit h newparent adj (csha, c) origbranch
+	-- commitDiff does not support merge commits
+	| length (commitParent c) > 1 = return $
+		Left $ "unable to propigate merge commit " ++ show csha ++ " back to " ++ show origbranch
+	| otherwise = do
+		(diff, cleanup) <- inRepo (Git.DiffTree.commitDiff csha)
+		let (adds, changes) = partition (\dti -> Git.DiffTree.srcsha dti == nullSha) diff
+		adds' <- catMaybes <$>
+			mapM (adjustTreeItem adj Reverse h) (map diffTreeToTreeItem adds)
+		treesha <- Git.Tree.adjustTree (propchanges changes)
+			adds' newparent
+			=<< Annex.gitRepo
+		void $ liftIO cleanup
+		revadjcommit <- inRepo $ commitWithMetaData
+			(commitAuthorMetaData c)
+			(commitCommitterMetaData c) $
+				Git.Branch.commitTree Git.Branch.AutomaticCommit
+					(commitMessage c) [newparent] treesha
+		return (Right revadjcommit)
+  where
+	propchanges changes ti@(TreeItem f _ _) =
+		case M.lookup f m of
+			Nothing -> return (Just ti) -- not changed
+			Just change -> adjustTreeItem adj Reverse h change
+	  where
+		m = M.fromList $ map (\i@(TreeItem f' _ _) -> (f', i)) $
+			map diffTreeToTreeItem changes
+
+diffTreeToTreeItem :: Git.DiffTree.DiffTreeItem -> TreeItem
+diffTreeToTreeItem dti = TreeItem
+	(Git.DiffTree.file dti)
+	(Git.DiffTree.dstmode dti)
+	(Git.DiffTree.dstsha dti)

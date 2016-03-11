@@ -67,7 +67,7 @@ and updates the branches. And/or `git-annex sync` could do it.
 
 There may be multiple commits made to the adjusted branch before any get
 applied back to the original branch. This is handled by reverse filtering
-one at a time and rebasing the others on top.
+commits one at a time and rebasing the others on top.
 
 	master           adjusted/master
 	A

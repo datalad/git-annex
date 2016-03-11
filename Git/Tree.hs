@@ -107,7 +107,7 @@ mkTreeOutput fm ot s f = concat
 	]
 
 data TreeItem = TreeItem TopFilePath FileMode Sha
-	deriving (Eq)
+	deriving (Show, Eq)
 
 treeItemToTreeContent :: TreeItem -> TreeContent
 treeItemToTreeContent (TreeItem f m s) = TreeBlob f m s
@@ -122,7 +122,7 @@ adjustTree :: (MonadIO m, MonadMask m) => (TreeItem -> m (Maybe TreeItem)) -> [T
 adjustTree adjusttreeitem addtreeitems r repo = withMkTreeHandle repo $ \h -> do
 	(l, cleanup) <- liftIO $ lsTreeWithObjects r repo
 	(l', _, _) <- go h False [] inTopTree l
-	sha <- liftIO $ mkTree h l'
+	sha <- liftIO $ mkTree h (map treeItemToTreeContent addedtotop ++ l')
 	void $ liftIO cleanup
 	return sha
   where
@@ -149,6 +149,7 @@ adjustTree adjusttreeitem addtreeitems r repo = withMkTreeHandle repo $ \h -> do
 				go h modified' (subtree : c) intree is'
 			_ -> error ("unexpected object type \"" ++ LsTree.typeobj i ++ "\"")
 		| otherwise = return (c, wasmodified, i:is)
+	addedtotop = filter (\(TreeItem f _ _) -> inTopTree' f) addtreeitems
 
 {- Assumes the list is ordered, with tree objects coming right before their
  - contents. -}
@@ -176,7 +177,10 @@ extractTree l = case go [] inTopTree l of
 type InTree = LsTree.TreeItem -> Bool
 
 inTopTree :: InTree
-inTopTree = notElem '/' . getTopFilePath . LsTree.file
+inTopTree = inTopTree' . LsTree.file
+
+inTopTree' :: TopFilePath -> Bool
+inTopTree' f = takeDirectory (getTopFilePath f) == "."
 
 beneathSubTree :: LsTree.TreeItem -> InTree
 beneathSubTree t =
