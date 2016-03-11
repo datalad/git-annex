@@ -120,8 +120,8 @@ treeItemToTreeContent (TreeItem f m s) = TreeBlob f m s
 
 {- Applies an adjustment to items in a tree.
  -
- - While less flexible than using getTree and recordTree, this avoids
- - buffering the whole tree in memory.
+ - While less flexible than using getTree and recordTree,
+ - this avoids buffering the whole tree in memory.
  -}
 adjustTree
 	:: (MonadIO m, MonadMask m)
@@ -139,9 +139,8 @@ adjustTree adjusttreeitem addtreeitems removefiles r repo =
 	withMkTreeHandle repo $ \h -> do
 		(l, cleanup) <- liftIO $ lsTreeWithObjects r repo
 		(l', _, _) <- go h False [] inTopTree l
-		sha <- liftIO $ mkTree h $
-			filter (not . removed) $
-				map treeItemToTreeContent (filter topitem addtreeitems) ++ l'
+		l'' <- adjustlist topitem l'
+		sha <- liftIO $ mkTree h l''
 		void $ liftIO cleanup
 		return sha
   where
@@ -159,16 +158,19 @@ adjustTree adjusttreeitem addtreeitems removefiles r repo =
 						in go h modified (blob:c) intree is
 			Just TreeObject -> do
 				(sl, modified, is') <- go h False [] (beneathSubTree i) is
-				let added = filter (inTree i) addtreeitems
-				let sl' = map treeItemToTreeContent added ++ sl
-				let sl'' = filter (not . removed) sl'
-				subtree <- if modified || sl'' /= sl
-					then liftIO $ recordSubTree h $ NewSubTree (LsTree.file i) sl''
+				sl' <- adjustlist (inTree i) sl
+				subtree <- if modified || sl' /= sl
+					then liftIO $ recordSubTree h $ NewSubTree (LsTree.file i) sl'
 					else return $ RecordedSubTree (LsTree.file i) (LsTree.sha i) [] 
 				let !modified' = modified || wasmodified
 				go h modified' (subtree : c) intree is'
 			_ -> error ("unexpected object type \"" ++ LsTree.typeobj i ++ "\"")
 		| otherwise = return (c, wasmodified, i:is)
+	adjustlist ishere l = do
+		let added = filter ishere addtreeitems
+		let l' = map treeItemToTreeContent added ++ l
+		let l'' = filter (not . removed) l'
+		return l''
 	topitem (TreeItem f _ _) = inTopTree' f
 	removeset = S.fromList removefiles
 	removed (TreeBlob f _ _) = S.member f removeset
