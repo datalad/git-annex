@@ -142,7 +142,7 @@ adjustTree :: Adjustment -> Direction -> Ref -> Annex Sha
 adjustTree adj direction orig = do
 	h <- inRepo hashObjectStart
 	let toadj = adjustTreeItem adj direction h
-	treesha <- Git.Tree.adjustTree toadj [] orig =<< Annex.gitRepo
+	treesha <- Git.Tree.adjustTree toadj [] [] orig =<< Annex.gitRepo
 	liftIO $ hashObjectStop h
 	return treesha
 
@@ -293,11 +293,15 @@ reverseAdjustedCommit h newparent adj (csha, c) origbranch
 		Left $ "unable to propigate merge commit " ++ show csha ++ " back to " ++ show origbranch
 	| otherwise = do
 		(diff, cleanup) <- inRepo (Git.DiffTree.commitDiff csha)
-		let (adds, changes) = partition (\dti -> Git.DiffTree.srcsha dti == nullSha) diff
+		let (adds, others) = partition (\dti -> Git.DiffTree.srcsha dti == nullSha) diff
+		let (removes, changes) = partition (\dti -> Git.DiffTree.dstsha dti == nullSha) others
 		adds' <- catMaybes <$>
 			mapM (adjustTreeItem adj Reverse h) (map diffTreeToTreeItem adds)
-		treesha <- Git.Tree.adjustTree (propchanges changes)
-			adds' newparent
+		treesha <- Git.Tree.adjustTree
+			(propchanges changes)
+			adds'
+			(map Git.DiffTree.file removes)
+			newparent
 			=<< Annex.gitRepo
 		void $ liftIO cleanup
 		revadjcommit <- inRepo $ commitWithMetaData

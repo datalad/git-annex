@@ -28,6 +28,7 @@ import qualified Utility.CoProcess as CoProcess
 import Numeric
 import System.Posix.Types
 import Control.Monad.IO.Class
+import qualified Data.Set as S
 
 newtype Tree = Tree [TreeContent]
 	deriving (Show)
@@ -38,7 +39,7 @@ data TreeContent
 	| RecordedSubTree TopFilePath Sha [TreeContent]
 	-- A subtree that has not yet been recorded in git.
 	| NewSubTree TopFilePath [TreeContent]
-	deriving (Show)
+	deriving (Show, Eq)
 
 {- Gets the Tree for a Ref. -}
 getTree :: Ref -> Repo -> IO Tree
@@ -113,18 +114,31 @@ treeItemToTreeContent :: TreeItem -> TreeContent
 treeItemToTreeContent (TreeItem f m s) = TreeBlob f m s
 
 {- Applies an adjustment to items in a tree.
- - Can also add new items to the tree.
  -
  - While less flexible than using getTree and recordTree, this avoids
  - buffering the whole tree in memory.
  -}
-adjustTree :: (MonadIO m, MonadMask m) => (TreeItem -> m (Maybe TreeItem)) -> [TreeItem] -> Ref -> Repo -> m Sha
-adjustTree adjusttreeitem addtreeitems r repo = withMkTreeHandle repo $ \h -> do
-	(l, cleanup) <- liftIO $ lsTreeWithObjects r repo
-	(l', _, _) <- go h False [] inTopTree l
-	sha <- liftIO $ mkTree h (map treeItemToTreeContent addedtotop ++ l')
-	void $ liftIO cleanup
-	return sha
+adjustTree
+	:: (MonadIO m, MonadMask m)
+	=> (TreeItem -> m (Maybe TreeItem))
+	-- ^ Adjust an item in the tree. Nothing deletes the item.
+	-- Cannot move the item to a different tree.
+	-> [TreeItem]
+	-- ^ New items to add to the tree.
+	-> [TopFilePath]
+	-- ^ Files to remove from the tree.
+	-> Ref
+	-> Repo
+	-> m Sha
+adjustTree adjusttreeitem addtreeitems removefiles r repo =
+	withMkTreeHandle repo $ \h -> do
+		(l, cleanup) <- liftIO $ lsTreeWithObjects r repo
+		(l', _, _) <- go h False [] inTopTree l
+		sha <- liftIO $ mkTree h $
+			filter (not . removed) $
+				map treeItemToTreeContent (filter topitem addtreeitems) ++ l'
+		void $ liftIO cleanup
+		return sha
   where
 	go _ wasmodified c _ [] = return (c, wasmodified, [])
 	go h wasmodified c intree (i:is)
@@ -141,15 +155,19 @@ adjustTree adjusttreeitem addtreeitems r repo = withMkTreeHandle repo $ \h -> do
 			Just TreeObject -> do
 				(sl, modified, is') <- go h False [] (beneathSubTree i) is
 				let added = filter (inTree i) addtreeitems
-				subtree <- if modified || not (null added)
-					then liftIO $ recordSubTree h $ NewSubTree (LsTree.file i)
-						(map treeItemToTreeContent added ++ sl)
+				let sl' = map treeItemToTreeContent added ++ sl
+				let sl'' = filter (not . removed) sl'
+				subtree <- if modified || sl'' /= sl
+					then liftIO $ recordSubTree h $ NewSubTree (LsTree.file i) sl''
 					else return $ RecordedSubTree (LsTree.file i) (LsTree.sha i) [] 
 				let !modified' = modified || wasmodified
 				go h modified' (subtree : c) intree is'
 			_ -> error ("unexpected object type \"" ++ LsTree.typeobj i ++ "\"")
 		| otherwise = return (c, wasmodified, i:is)
-	addedtotop = filter (\(TreeItem f _ _) -> inTopTree' f) addtreeitems
+	topitem (TreeItem f _ _) = inTopTree' f
+	removeset = S.fromList removefiles
+	removed (TreeBlob f _ _) = S.member f removeset
+	removed _ = False
 
 {- Assumes the list is ordered, with tree objects coming right before their
  - contents. -}
@@ -188,4 +206,7 @@ beneathSubTree t =
 	in (\i -> prefix `isPrefixOf` getTopFilePath (LsTree.file i))
 
 inTree :: LsTree.TreeItem -> TreeItem -> Bool
-inTree t (TreeItem f _ _) = takeDirectory (getTopFilePath f) == takeDirectory (getTopFilePath (LsTree.file t))
+inTree = inTree' . LsTree.file
+
+inTree' :: TopFilePath -> TreeItem -> Bool
+inTree' f (TreeItem f' _ _) = takeDirectory (getTopFilePath f') == takeDirectory (getTopFilePath f)
