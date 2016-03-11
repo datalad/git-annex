@@ -112,6 +112,11 @@ data TreeItem = TreeItem TopFilePath FileMode Sha
 
 treeItemToTreeContent :: TreeItem -> TreeContent
 treeItemToTreeContent (TreeItem f m s) = TreeBlob f m s
+	
+-- FIXME: When addtreeitems has an item in a new
+-- subdirectory, no subtree contains it. We need to add a
+-- new subtree in this case, but not in the case where the
+-- subdirectory already exists in the tree.
 
 {- Applies an adjustment to items in a tree.
  -
