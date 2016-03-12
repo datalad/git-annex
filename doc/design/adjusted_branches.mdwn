@@ -207,35 +207,17 @@ These changes would need to be committed to the adjusted branch, otherwise
 
 [WORKTREE: Simply adjust the work tree (and index) per the filter.]
 
-## reverse filtering
+## reverse filtering commits
 
-Reversing filter #1 would mean only converting pointer files to
-symlinks when the file was originally a symlink. This is problimatic when a
-file is renamed. Would it be ok, if foo is renamed to bar and bar is
-committed, for it to be committed as an unlocked file, even if foo was
-originally locked? Probably.
+A user's commits on the adjusted branch have to be reverse filtered
+to get changes to apply to the master branch.
 
-Reversing filter #2 would mean not deleting removed files whose content was
-not present. When the commit includes deletion of files that were removed
-due to their content not being present, those deletions are not propigated.
-When the user deletes an unlocked file, the content is still
-present in annex, so reversing the filter should propigate the file
-deletion. 
+This reversal of one filter can be done as just another filter.
+Since only files touched by the commit will be reverse filtered, it doesn't
+need to reverse all changes made by the original filter.
 
-What if an object was sent to the annex (or removed from the annex)
-after the commit and before the reverse filtering? This would cause the
-reverse filter to draw the wrong conclusion. Maybe look at a list of what
-objects were not present when applying the filter, and use that to decide
-which to not delete when reversing it?
-
-So, a reverse filter may need some state that was collected when running
-the filter forwards, in order to decide what to do.
-
-Alternatively, instead of reverse filtering the whole adjusted tree,
-look at just the new commit that's being propigated back from the
-adjusted to master branch. Get the diff from it to the previous
-commit; the changes that were made. Then de-adjust those changes,
-and apply the changes to the master branch.
+For example, reversing the unlock filter might lock the file. Or, it might
+do nothing, which would make all committed files remain unlocked.
 
 ## push
 
@@ -304,58 +286,20 @@ adjusting filter, albeit an extreme one. This might improve view branches.
 For example, it's not currently possible to update a view branch with
 changes fetched from a remote, and this could get us there.
 
-This would need the reverse filter to be able to change metadata.
+This would need the reverse filter to be able to change metadata,
+so that a commit that moved files in the view updates their metadata.
 
 [WORKTREE: Wouldn't be able to integrate, unless view branches are changed
 into adjusted view worktrees.]
-
-## filter interface
-
-Distilling all of the above, the filter interface needs to be something
-like this, at its most simple:
-
-	data Filter = UnlockFilter | HideMissingFilter | UnlockHideMissingFilter
-
-	getFilter :: Annex Filter
-
-	setFilter :: Filter -> Annex ()
-
-	data FilterAction
-		= UnchangedFile FilePath
-		| UnlockFile FilePath
-		| HideFile FilePath
-
-	data FileInfo = FileInfo
-		{ originalBranchFile :: FileStatus
-		, isContentPresent :: Bool
-		}
-
-	data FileStatus = IsAnnexSymlink | IsAnnexPointer
-		deriving (Eq)
-
-	filterAction :: Filter -> FilePath -> FileInfo -> FilterAction
-	filterAction UnlockFilter f fi
-		| originalBranchFile fi == IsAnnexSymlink = UnlockFile f
-	filterAction HideMissingFilter f fi
-		| not (isContentPresent fi) = HideFile f
-	filterAction UnlockHideMissingFilter f fi
-		| not (isContentPresent fi) = HideFile f
-		| otherwise = filterAction UnlockFilter f fi
-	filterAction _ f _ = UnchangedFile f
-
-	filteredCommit :: Filter -> Git.Commit -> Git.Commit
-
-	-- Generate a version of the commit made on the filter branch
-	-- with the filtering of modified files reversed.
-	unfilteredCommit :: Filter -> Git.Commit -> Git.Commit
 
 ## TODOs
 
 * Need a better command-line interface than `git annex adjust`,
   that allows picking adjustments.
 * Interface in webapp to enable adjustments.
-* Entering an adjusted branch can race with commits to the current branch,
-  and so the assistant should not be running, or at least should have
-  commits disabled when entering it.
+* Entering an adjusted branch can prevent commits to the current branch
+  (locking will cause the commits to fail) and so the assistant
+  should not be running, or at least should have commits disabled
+  when entering it.
 * When the adjusted branch unlocks files, behave as if annex.addunlocked is
   set, so git annex add will add files unlocked.
