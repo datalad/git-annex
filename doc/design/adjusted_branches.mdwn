@@ -62,9 +62,6 @@ it, so C does not remain in the adjusted branch history either. This will
 make other checkouts that are in the same adjusted branch end up with the
 same B' commit when they pull B.
 
-It might be useful to have a post-commit hook that generates B and B'
-and updates the branches. And/or `git-annex sync` could do it.
-
 There may be multiple commits made to the adjusted branch before any get
 applied back to the original branch. This is handled by reverse filtering
 commits one at a time and rebasing the others on top.
@@ -260,6 +257,11 @@ Using `git checkout` when in an adjusted branch is problimatic, because a
 non-adjusted branch would then be checked out. But, we can just say, if
 you want to get into an adjusted branch, you have to run some command.
 Or, could make a post-checkout hook.
+
+After a commit to an adjusted branch, `git push` won't do anything. The
+user has to know to git-annex sync. (Even if a pre-commit hook propigated
+the commit back to the master branch, `git push` wouldn't push it with the
+default "matching" push strategy.)
 
 Tags are bit of a problem. If the user tags an ajusted branch, the tag
 includes the local adjustments.  
