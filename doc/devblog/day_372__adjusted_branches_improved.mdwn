@@ -1,4 +1,4 @@
-After a real brain-bender of a day, I have commit propigation from the
+After a real brain-bender of a day, I have commit propagation from the
 adjusted branch back to the original branch working, without needing to
 reverse adjust the whole tree. This is faster, but the really nice thing
 is that it makes individual adjustments simpler to write.
