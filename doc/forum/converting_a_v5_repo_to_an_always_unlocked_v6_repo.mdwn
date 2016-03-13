@@ -12,8 +12,12 @@ The repository is about 600G to start with and I don't have another 600G of free
 4.       git annex unlock
 
 It's all good to this point. Everything gets unlocked and is fine. 
-Then I try to commit the changes with "git annex sync" and the process seems to take 
-and incredibly long time (hours) and then ends up running out of space. I check the repository with "du -sh"
+Then I try to commit the changes with:
+
+     git annex sync
+
+The process seems to take 
+and incredibly long time (several hours) and then ends up running out of space. I check the repository with "du -sh"
 and it's almost double the size. Is there a reason for this? Is there a way to avoid this duplication of data. Shouldn't annex.thin do the trick?
 Should I not have done the sync thing? (I need to sync with other repos too after the migration is done)
 
