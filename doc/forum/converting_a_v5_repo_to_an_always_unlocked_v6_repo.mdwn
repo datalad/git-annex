@@ -19,8 +19,7 @@ Then I try to commit the changes with:
 The process seems to take 
 and incredibly long time (several hours) and then ends up running out of space. I check the repository with "du -sh"
 and it's almost double the size. Is there a reason for this? Is there a way to avoid this duplication of data. Shouldn't annex.thin do the trick?
-Should I not have done the sync thing? (I need to sync with other repos too after the migration is done)
 
-Is there a correct way to migrate my repo to an always unlocked one which won't require hours of time and take all that disk space?
+Is there a correct and faster way to migrate my repo to an always unlocked one which won't require hours of time and take all that disk space?
 
 thanks a lot, daniel
