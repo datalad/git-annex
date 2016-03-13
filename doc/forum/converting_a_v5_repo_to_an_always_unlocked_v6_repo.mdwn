@@ -20,6 +20,15 @@ The process seems to take
 and incredibly long time (several hours) and then ends up running out of space. I check the repository with "du -sh"
 and it's almost double the size. Is there a reason for this? Is there a way to avoid this duplication of data. Shouldn't annex.thin do the trick?
 
+This is also strange: with "git annex info" I get
+
+     local annex keys: 3572
+     local annex size: 933.19 gigabytes
+     annexed files in working tree: 0
+     size of annexed files in working tree: 0 bytes
+
+the annex size should be about 540G and why are there no annexed files in the working tree?
+
 Is there a correct and faster way to migrate my repo to an always unlocked one which won't require hours of time and take all that disk space?
 
 thanks a lot, daniel
