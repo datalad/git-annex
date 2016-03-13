@@ -4,7 +4,7 @@ I'm trying to convert a v5 classic, symlink repository into a v6 always unloked 
 
 I'm trying to follow along with: <http://git-annex.branchable.com/tips/unlocked_files>
 but something goes wrong in the process, so I'm sure I'm missing something.
-The repository is about 600G to start with and I don't have another 600G of free space on disk, so I'm going with thin mode:
+The repository is about 600G to start with on a ext4 filesystem, and I don't have another 600G of free space on disk, so I'm going with thin mode:
 
 1.       git annex upgrade 
 2.       git config annex.thin true 
