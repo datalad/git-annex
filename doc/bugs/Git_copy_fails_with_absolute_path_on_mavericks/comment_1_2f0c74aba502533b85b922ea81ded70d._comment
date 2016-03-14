@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-03-14T17:34:21Z"
+ content="""
+Using absolute paths to files is an unusual thing to do with git in my
+experience. But, git does seem to support it, at least some of the time.
+
+I think that git-annex's support for it comes down to what `git ls-files`
+does. For example:
+
+	joey@darkstar:~/tmp/me> git ls-files ~/tmp/me/foo
+	foo
+
+Since git-annex uses git ls-files, it sees a relative file and so
+all or most all git-annex commands can work with the absolute file input.
+
+Does git ls-files convert the absolute path to a relative path
+when you run it on the Mavericks system?
+
+What version of git is installed on the Mavericks system? Is
+git-annex installed from the git-annex app, or from homebrew, or how?
+"""]]
