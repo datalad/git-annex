@@ -45,12 +45,12 @@ import qualified Git.Branch
 import qualified Git.UnionMerge
 import qualified Git.UpdateIndex
 import Git.LsTree (lsTreeParams)
-import Git.HashObject
+import qualified Git.HashObject
+import Annex.HashObject
 import Git.Types
 import Git.FilePath
 import Annex.CatFile
 import Annex.Perms
-import Annex.HashObject (hashObjectHandle)
 import Logs
 import Logs.Transitions
 import Logs.Trust.Pure
@@ -425,11 +425,10 @@ stageJournal jl = withIndex $ do
 	let dir = gitAnnexJournalDir g
 	(jlogf, jlogh) <- openjlog
 	liftIO $ fileEncoding jlogh
-	withJournalHandle $ \jh -> do
-		h <- hashObjectStart g
+	h <- hashObjectHandle
+	withJournalHandle $ \jh ->
 		Git.UpdateIndex.streamUpdateIndex g
 			[genstream dir h jh jlogh]
-		hashObjectStop h
 	return $ cleanup dir jlogh jlogf
   where
 	genstream dir h jh jlogh streamer = do
@@ -439,7 +438,7 @@ stageJournal jl = withIndex $ do
 			Just file -> do
 				unless (dirCruft file) $ do
 					let path = dir </> file
-					sha <- hashFile h path
+					sha <- Git.HashObject.hashFile h path
 					hPutStrLn jlogh file
 					streamer $ Git.UpdateIndex.updateIndexLine
 						sha FileBlob (asTopFilePath $ fileJournal file)
@@ -551,13 +550,11 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 	run changers = do
 		trustmap <- calcTrustMap <$> getRaw trustLog
 		fs <- branchFiles
-		hasher <- inRepo hashObjectStart
 		forM_ fs $ \f -> do
 			content <- getRaw f
-			apply changers hasher f content trustmap
-		liftIO $ hashObjectStop hasher
-	apply [] _ _ _ _ = return ()
-	apply (changer:rest) hasher file content trustmap =
+			apply changers f content trustmap
+	apply [] _ _ _ = return ()
+	apply (changer:rest) file content trustmap =
 		case changer file content trustmap of
 			RemoveFile -> do
 				Annex.Queue.addUpdateIndex
@@ -566,12 +563,12 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 				-- transitions on it.
 				return ()
 			ChangeFile content' -> do
-				sha <- liftIO $ hashBlob hasher content'
+				sha <- hashBlob content'
 				Annex.Queue.addUpdateIndex $ Git.UpdateIndex.pureStreamer $
 					Git.UpdateIndex.updateIndexLine sha FileBlob (asTopFilePath file)
-				apply rest hasher file content' trustmap
+				apply rest file content' trustmap
 			PreserveFile ->
-				apply rest hasher file content trustmap
+				apply rest file content trustmap
 
 checkBranchDifferences :: Git.Ref -> Annex ()
 checkBranchDifferences ref = do
