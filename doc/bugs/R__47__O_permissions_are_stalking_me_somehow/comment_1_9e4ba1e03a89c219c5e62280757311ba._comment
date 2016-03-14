@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-03-14T17:53:32Z"
+ content="""
+A file's permissions cannot prevent it being renamed; so I diagnose some
+kind of directory permission problem.
+
+(Also AFAICS git-annex add deals with files whose permissions don't allow
+being read by turning on the read bit. And it should never need the write
+bit. I can `chmod 000 foo; git annex add foo` and it succeeds..)
+"""]]
