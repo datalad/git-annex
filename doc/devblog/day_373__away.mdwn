@@ -1,0 +1,6 @@
+Caught up with a few last things today, before I leave for 
+[a week in Boston](http://joeyh.name/trips/2016/boston/).
+
+Converted several places that ran git hash-object repeatedly to feed data
+to a running process. This sped up git-annex add in direct mode and with
+v6 unlocked files, by up to 2x.
