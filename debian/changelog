@@ -12,6 +12,7 @@ git-annex (6.20160230) UNRELEASED; urgency=medium
   * Fix OSX dmg to include libraries needed by bundled gpg,
     lost in last release.
   * Always try to thaw content, even when annex.crippledfilesystem is set.
+  * Correct git-annex info to include unlocked files in v6 repository.
 
  -- Joey Hess <id@joeyh.name>  Mon, 29 Feb 2016 13:00:30 -0400
 

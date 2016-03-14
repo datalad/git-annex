@@ -159,7 +159,9 @@ formatPointer :: Key -> String
 formatPointer k = 
 	toInternalGitPath (pathSeparator:objectDir </> keyFile k) ++ "\n"
 
-{- Checks if a file is a pointer to a key. -}
+{- Checks if a worktree file is a pointer to a key.
+ -
+ - Unlocked files whose content is present are not detected by this. -}
 isPointerFile :: FilePath -> IO (Maybe Key)
 isPointerFile f = catchDefaultIO Nothing $ do
 	b <- L.take maxPointerSz <$> L.readFile f
