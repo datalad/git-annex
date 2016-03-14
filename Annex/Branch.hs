@@ -564,7 +564,7 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 				-- transitions on it.
 				return ()
 			ChangeFile content' -> do
-				sha <- inRepo $ hashObject BlobObject content'
+				sha <- liftIO $ hashBlob hasher content'
 				Annex.Queue.addUpdateIndex $ Git.UpdateIndex.pureStreamer $
 					Git.UpdateIndex.updateIndexLine sha FileBlob (asTopFilePath file)
 				apply rest hasher file content' trustmap
