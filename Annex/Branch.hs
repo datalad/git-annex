@@ -50,6 +50,7 @@ import Git.Types
 import Git.FilePath
 import Annex.CatFile
 import Annex.Perms
+import Annex.HashObject (hashObjectHandle)
 import Logs
 import Logs.Transitions
 import Logs.Trust.Pure
@@ -342,8 +343,9 @@ genIndex g = Git.UpdateIndex.streamUpdateIndex g
 mergeIndex :: JournalLocked -> [Git.Ref] -> Annex ()
 mergeIndex jl branches = do
 	prepareModifyIndex jl
-	h <- catFileHandle
-	inRepo $ \g -> Git.UnionMerge.mergeIndex h g branches
+	hashhandle <- hashObjectHandle
+	ch <- catFileHandle
+	inRepo $ \g -> Git.UnionMerge.mergeIndex hashhandle ch g branches
 
 {- Removes any stale git lock file, to avoid git falling over when
  - updating the index.
