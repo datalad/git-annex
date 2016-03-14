@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-03-14T20:40:45Z"
+ content="""
+Is this git-annex built with the ConcurrentOutput flag?
+
+It kind of looks like it; if so the only thing that looks wrong
+is there are for some reason two copies of each progress line for each
+file.
+
+I don't see this in my testing..
+"""]]
