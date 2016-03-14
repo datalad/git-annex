@@ -1,0 +1,46 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-03-14T17:59:08Z"
+ content="""
+If I've done the math right, 5 files per second over 3 hours is only 2000 files.
+The size of the files does matter, since git-annex has to read them all.
+You said the repo grew to 28 gb; does that mean you added 2000 files
+totalling 28 gb in size?
+
+I can add 2000 tiny files (5 bytes each) in 2 seconds on a SSD on Linux.
+
+By using a FAT filesystem, you've forced git-annex to use direct mode.
+Direct mode can be a little slower, but not a great deal. Adding 2000 files
+to a direct mode repo takes around 11 seconds here. (I did a little
+optimisation and sped that up to 7 seconds.)
+
+Doing the same benchmark on a removable USB stick with a FAT filesystem
+was still not slow; 7 seconds again.
+
+But then I had linux mount that FAT filesystem sync (so, it flushes each
+file write to disk, not buffering them), and I start getting closer to your
+slow speed; benchmark took 53 minutes.
+
+So, I think the slow speed you're seeing is quite likely due to a
+combination of, in order from most to least important:
+
+1. Synchronous writes to your disk drive. Fixable in linux by eg, running
+   "mount -o remount,async /path/to/repo" and there's probably something
+   similar for OSX.
+2. External drive being slow to access. (And if a spinning disk, slow to
+   seek.)
+3. git-annex using direct mode on FAT
+
+Also there is a fair amount of faff that git-annex does when adding a file
+around calling rename, stat, mkdir, etc multiple times. It may be possible
+to optimize some of that to get at some speedup on synchronous disks.
+But, I'd not expect more than a few percentage points speedup from such
+optimisation.
+
+One other possiblity is you could be hitting an edge case where direct mode's
+performace is bad. One known such edge case is if you have a lot of files
+that all have the same content. For example, I made 2000 files that were
+all empty; adding them to a direct mode repository gets slower and slower
+to the point it's spending 10 or more seconds per file. 
+"""]]
