@@ -8,6 +8,9 @@ Instead, I'd like a way to stream multiple objects into git using stdin.
 Sometime, should look at either extending git-hash-object to support that,
 or possibly look at using git-fast-import instead.
 
+> Well, I went with git hash-object --stdin-paths despite it needing to read from
+> temp files. --[[Joey]]
+
 --- 
 
 `git-annex merge` also runs `git show` once per file that needs to be
@@ -21,3 +24,5 @@ There is already a Git.CatFile library that can do this easily. --[[Joey]]
 Merging used to use memory proportional to the size of the diff. It now
 streams data, running in constant space. This probably sped it up a lot,
 as there's much less allocation and GC action. --[[Joey]] 
+
+[[done]] 
