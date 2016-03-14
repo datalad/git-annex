@@ -19,7 +19,7 @@ import qualified Git.LsFiles
 import qualified Git.Ref
 import Git.UpdateIndex
 import Git.Sha
-import Git.HashObject
+import Annex.HashObject
 import Git.Types
 import Git.FilePath
 import Annex.WorkTree
@@ -340,38 +340,36 @@ applyView' mkviewedfile getfilemetadata view = do
 	(l, clean) <- inRepo $ Git.LsFiles.inRepo [top]
 	liftIO . nukeFile =<< fromRepo gitAnnexViewIndex
 	uh <- withViewIndex $ inRepo Git.UpdateIndex.startUpdateIndex
-	hasher <- inRepo hashObjectStart
 	forM_ l $ \f -> do
 		relf <- getTopFilePath <$> inRepo (toTopFilePath f)
-		go uh hasher relf =<< lookupFile f
+		go uh relf =<< lookupFile f
 	liftIO $ do
-		hashObjectStop hasher
 		void $ stopUpdateIndex uh
 		void clean
 	genViewBranch view
   where
 	genviewedfiles = viewedFiles view mkviewedfile -- enables memoization
-	go uh hasher f (Just k) = do
+	go uh f (Just k) = do
 		metadata <- getCurrentMetaData k
 		let metadata' = getfilemetadata f `unionMetaData` metadata
 		forM_ (genviewedfiles f metadata') $ \fv -> do
 			f' <- fromRepo $ fromTopFilePath $ asTopFilePath fv
-			stagesymlink uh hasher f' =<< calcRepo (gitAnnexLink f' k)
-	go uh hasher f Nothing
+			stagesymlink uh f' =<< calcRepo (gitAnnexLink f' k)
+	go uh f Nothing
 		| "." `isPrefixOf` f = do
 			s <- liftIO $ getSymbolicLinkStatus f
 			if isSymbolicLink s
-				then stagesymlink uh hasher f =<< liftIO (readSymbolicLink f)
+				then stagesymlink uh f =<< liftIO (readSymbolicLink f)
 				else do
-					sha <- liftIO $ Git.HashObject.hashFile hasher f
+					sha <- hashFile f
 					let blobtype = if isExecutable (fileMode s)
 						then ExecutableBlob
 						else FileBlob
 					liftIO . Git.UpdateIndex.streamUpdateIndex' uh
 						=<< inRepo (Git.UpdateIndex.stageFile sha blobtype f)
 		| otherwise = noop
-	stagesymlink uh hasher f linktarget = do
-		sha <- hashSymlink' hasher linktarget
+	stagesymlink uh f linktarget = do
+		sha <- hashSymlink linktarget
 		liftIO . Git.UpdateIndex.streamUpdateIndex' uh
 			=<< inRepo (Git.UpdateIndex.stageSymlink f sha)
 

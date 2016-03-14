@@ -18,11 +18,11 @@ module Annex.Link where
 
 import Annex.Common
 import qualified Annex
-import qualified Git.HashObject
 import qualified Git.UpdateIndex
 import qualified Annex.Queue
 import Git.Types
 import Git.FilePath
+import Annex.HashObject
 
 import qualified Data.ByteString.Lazy as L
 import Data.Int
@@ -105,12 +105,7 @@ addAnnexLink linktarget file = do
 
 {- Injects a symlink target into git, returning its Sha. -}
 hashSymlink :: LinkTarget -> Annex Sha
-hashSymlink linktarget = inRepo $ Git.HashObject.hashObject BlobObject $ 
-	toInternalGitPath linktarget
-
-hashSymlink' :: Git.HashObject.HashObjectHandle -> LinkTarget -> Annex Sha
-hashSymlink' h linktarget = liftIO $ Git.HashObject.hashBlob h $
-	toInternalGitPath linktarget
+hashSymlink linktarget = hashBlob (toInternalGitPath linktarget)
 
 {- Stages a symlink to an annexed object, using a Sha of its target. -}
 stageSymlink :: FilePath -> Sha -> Annex ()
@@ -120,8 +115,7 @@ stageSymlink file sha =
 
 {- Injects a pointer file content into git, returning its Sha. -}
 hashPointerFile :: Key -> Annex Sha
-hashPointerFile key = inRepo $ Git.HashObject.hashObject BlobObject $
-	formatPointer key
+hashPointerFile key = hashBlob (formatPointer key)
 
 {- Stages a pointer file, using a Sha of its content -}
 stagePointerFile :: FilePath -> Sha -> Annex ()
