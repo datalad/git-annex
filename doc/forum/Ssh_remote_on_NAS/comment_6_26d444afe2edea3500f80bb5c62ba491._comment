@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="torpidus"
+ subject="comment 6"
+ date="2016-03-16T22:23:26Z"
+ content="""
+Hello Fabio,
+I came across this posting from you one year ago. Since I'm also using a QNAP NAS for hosting several of my git-annex repos, it would be very valuable to hear some details about your setup. My setup currently consists of a virtual machine hosted on the NAS with an ordinary linux, nothing special. Would love to have git-annex installed on the NAS operating system rather, which is unfortunately not that easy.
+
+
+Even in case you may not have been able to solve the issue described in this thread, can you maybe tell for example how you solved the issue of the QNAP operating system purging self-installed software? Or how you managed to let the pre-installed SSH daemon let other users than \"admin\" log-in?
+
+
+Probably we're the first ones ever trying this, so it would be very useful to collect all about QNAP NAS and the usage of git-annex on these devices.
+"""]]
