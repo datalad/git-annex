@@ -6,13 +6,13 @@ git-annex builds that bundle git need to be updated.
 status of autobuilds:
 
 * Linux is fixed (all builds)
-* OSX pending
+* OSX pending (host is moving)
 * Windows waiting on updated release of git for Windows
 * Android is fixed (git build is untested)
 
 status of released builds:
 
-* Linux is vulnerable
+* Linux is fixed (all builds)
 * OSX is vulnerable
 * Windows is vulnerable
-* Android is vulnerable
+* Android is fixed (git build is untested)
