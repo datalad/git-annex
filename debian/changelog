@@ -16,6 +16,7 @@ git-annex (6.20160230) UNRELEASED; urgency=medium
   * Sped up git-annex add in direct mode and v6 by using
     git hash-object --stdin-paths.
   * Sped up git-annex merge by using git hash-object --stdin-paths.
+  * Fix build with stack 0.1.6 which needs explicit-setup-deps.
 
  -- Joey Hess <id@joeyh.name>  Mon, 29 Feb 2016 13:00:30 -0400
 

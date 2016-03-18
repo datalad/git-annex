@@ -54,3 +54,7 @@ to `stack.yaml` [(as described here)](https://github.com/commercialhaskell/stack
 fixes the error and builds git-annex successfully.
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+> Ok, added that. I am not sure if older version of stack will stumble over
+> the new field; if so I suppose the user can comment it out or upgrade
+> stack. [[done]] --[[Joey]]
