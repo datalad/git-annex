@@ -7,12 +7,12 @@ status of autobuilds:
 
 * Linux is fixed (all builds)
 * OSX pending (host is moving)
-* Windows waiting on updated release of git for Windows
+* Windows does not bundle git
 * Android is fixed (git build is untested)
 
 status of released builds:
 
 * Linux is fixed (all builds)
-* OSX is vulnerable
-* Windows is vulnerable
+* OSX is **vulnerable**
+* Windows does not bundle git
 * Android is fixed (git build is untested)
