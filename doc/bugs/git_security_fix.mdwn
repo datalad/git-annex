@@ -1,0 +1,18 @@
+git had some remotely exploitable security holes announced recently
+(CVE-2016-2324, CVE-2016-2315)
+
+git-annex builds that bundle git need to be updated.
+
+status of autobuilds:
+
+* Linux is fixed (all builds)
+* OSX pending
+* Windows waiting on updated release of git for Windows
+* Android is fixed (git build is untested)
+
+status of released builds:
+
+* Linux is vulnerable
+* OSX is vulnerable
+* Windows is vulnerable
+* Android is vulnerable
