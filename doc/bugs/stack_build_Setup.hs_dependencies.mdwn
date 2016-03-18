@@ -55,9 +55,17 @@ fixes the error and builds git-annex successfully.
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
-> Looks like older versions of stack work too with files with
-> this field in it. But, this broke stack 1.0.4 building some
-> dependencies (eg, process), so I instead set only "git-annex: true"
-> so building deps won't be affected.
+> I tried enabling this, and it broke build on my i386ancient autobuilder,
+> which uses stack 1.0.4.2. Strange build failure
+> both building git-annex and also its dependencies (eg, process):
+
+	/usr/bin/ld: cannot find -ltinfo
+
+> Which seems to be libtinfo, part of the ncurses library. Which is weird,
+> AFAIK git-annex does not use ncurses at all.
 > 
-> [[done]] --[[Joey]]
+> I tried weakening the setting from `*` to  `git-annex: true`, which
+> lets the build deps get built, but building git-annex still fails with
+> above error.
+> 
+> --[[Joey]]
