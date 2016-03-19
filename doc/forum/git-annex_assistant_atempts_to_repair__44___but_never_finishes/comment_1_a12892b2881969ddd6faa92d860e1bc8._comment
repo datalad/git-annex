@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="openmedi"
+ subject="comment 1"
+ date="2016-03-19T17:08:19Z"
+ content="""
+I added an old external hdd to my setup and now it seems to be working again. I assume, that a lot of my remotes stoped working, or only working sometimes. I guess I have to use `testremote` and go from there…
+"""]]
