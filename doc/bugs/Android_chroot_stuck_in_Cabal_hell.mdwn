@@ -1,0 +1,20 @@
+### Please describe the problem.
+I'm trying to get an Android development environment set up, but I am running into conflicting library versions inside of the chroot. The package installation script now finishes, but I run into a link-time error during `cabal configure` because it is pulling in two different versions of the unix package for some reason. Please let me know if there is any information I can get from my build environment that would help diagnosing the issue.
+
+### What steps will reproduce the problem?
+Run `buildchroot`, `install-haskell-packages`, `make android`
+
+### What version of git-annex are you using? On what operating system?
+Attempting to build from source, cross-compiling for Android on Debian Jessie.
+
+### Please provide any additional information below.
+
+[[!format sh """
+Linking ./dist/setup/setup ...
+/usr/lib/ghc/unix-2.6.0.1/libHSunix-2.6.0.1.a(execvpe.o): In function `pPrPr_disableITimers':
+(.text+0x300): multiple definition of `pPrPr_disableITimers'
+/home/builder/.cabal/lib/i386-linux-ghc-7.6.3/unix-2.7.1.0/libHSunix-2.7.1.0.a(ghcrts.o):ghcrts.c:(.text+0x0): first defined here
+collect2: error: ld returned 1 exit status
+Makefile:225: recipe for target 'android' failed
+make: *** [android] Error 1
+"""]]
