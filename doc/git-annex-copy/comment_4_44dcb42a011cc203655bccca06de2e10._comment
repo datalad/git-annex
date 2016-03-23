@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="b@526b37d9a821b5f9ce4e48014422239233ded155"
+ nickname="b"
+ subject="Fetch files from two (or more) remotes simultaneously?"
+ date="2016-03-21T22:47:42Z"
+ content="""
+Let's assume that user has two slow remotes. Is it possible to fetch the data from both to at least partially speed-up the process?
+"""]]
