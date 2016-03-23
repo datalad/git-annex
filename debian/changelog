@@ -1,3 +1,10 @@
+git-annex (6.20160319) UNRELEASED; urgency=medium
+
+  * ddar remote: fix ssh calls
+    Thanks, Robie Basak
+
+ -- Joey Hess <id@joeyh.name>  Wed, 23 Mar 2016 11:42:36 -0400
+
 git-annex (6.20160318) unstable; urgency=medium
 
   * metadata: Added -r to remove all current values of a field.
