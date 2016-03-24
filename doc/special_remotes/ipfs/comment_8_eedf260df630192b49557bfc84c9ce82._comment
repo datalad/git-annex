@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="git remote"
+ date="2016-03-24T14:15:06Z"
+ content="""
+there is now a [git remote for IPFS](https://github.com/cryptix/git-remote-ipfs). I *believe* it suffers from the same problem as all files within ipfs, namely that the contents are duplicated inside the repo. However, it certainly make for an interesting decentralised way of sharing metadata. --[[anarcat]]
+"""]]
