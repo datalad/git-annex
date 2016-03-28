@@ -4,8 +4,6 @@
 For easy installation, use the prebuilt app bundle.
 
 * 10.11 El Capitan / 10.10 Yosemite / 10.9 Mavericks: [git-annex.dmg](https://downloads.kitenet.net/git-annex/OSX/current/10.10_Yosemite/git-annex.dmg)
-* 10.8.2 Mountain Lion: [git-annex.dmg.bz2](https://downloads.kitenet.net/git-annex/OSX/current/10.8.2_Mountain_Lion/git-annex.dmg.bz2) **warning: not being updated any longer**
-* 10.7.5 Lion: [git-annex.dmg](https://downloads.kitenet.net/git-annex/OSX/current/10.7.5_Lion/git-annex.dmg) **warning: not being updated any longer**
 
 To run the [[git-annex_assistant|/assistant]], just
 install the app, look for the icon, and start it up. 
