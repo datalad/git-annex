@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-03-28T13:22:35Z"
+ content="""
+For the simple reason that git-annex doesn't know the mime type of a file
+before it downloads a copy.
+
+There are some more complicated reasons involving preferred content
+expressions needing to evaluate the same way in different repos, which
+can be on different computers with different versions of the magic
+database, etc.
+"""]]
