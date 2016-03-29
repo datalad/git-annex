@@ -44,6 +44,7 @@ cmd = withGlobalOptions annexedMatchingOptions $
 
 data LogOptions = LogOptions
 	{ logFiles :: CmdParams
+	, rawDateOption :: Bool
 	, gourceOption :: Bool
 	, passthruOptions :: [CommandParam]
 	}
@@ -51,6 +52,10 @@ data LogOptions = LogOptions
 optParser :: CmdParamsDesc -> Parser LogOptions
 optParser desc = LogOptions
 	<$> cmdParams desc
+	<*> switch
+		( long "raw-date"
+		<> help "display seconds from unix epoch"
+		)
 	<*> switch
 		( long "gource"
 		<> help "format output for gource"
@@ -92,8 +97,9 @@ start m zone o file key = do
 	stop
   where
 	output
-		| (gourceOption o) = gourceOutput lookupdescription file
-		| otherwise = normalOutput lookupdescription file zone
+		| rawDateOption o = normalOutput lookupdescription file show
+		| gourceOption o = gourceOutput lookupdescription file
+		| otherwise = normalOutput lookupdescription file (showTimeStamp zone)
 	lookupdescription u = fromMaybe (fromUUID u) $ M.lookup u m
 
 showLog :: Outputter -> [RefChange] -> Annex ()
@@ -109,11 +115,11 @@ showLog outputter ps = do
 	get ref = map toUUID . Logs.Presence.getLog . L.unpack <$>
 		catObject ref
 
-normalOutput :: (UUID -> String) -> FilePath -> TimeZone -> Outputter
-normalOutput lookupdescription file zone present ts us =
+normalOutput :: (UUID -> String) -> FilePath -> (POSIXTime -> String) -> Outputter
+normalOutput lookupdescription file formattime present ts us =
 	liftIO $ mapM_ (putStrLn . format) us
   where
-	time = showTimeStamp zone ts
+	time = formattime ts
 	addel = if present then "+" else "-"
 	format u = unwords [ addel, time, file, "|", 
 		fromUUID u ++ " -- " ++ lookupdescription u ]

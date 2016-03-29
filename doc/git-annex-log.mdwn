@@ -20,6 +20,11 @@ showing each repository they were added to ("+") and removed from ("-").
   
   For example: `--since "1 month ago"`
 
+* `--raw-date`
+
+  Rather than the normal display of a date in the local time zone,
+  displays seconds since the unix epoch.
+
 * `--gource`
 
   Generates output suitable for the `gource` visualization program.

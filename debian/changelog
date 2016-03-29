@@ -3,6 +3,7 @@ git-annex (6.20160319) UNRELEASED; urgency=medium
   * ddar remote: fix ssh calls
     Thanks, Robie Basak
   * log: Display time with time zone.
+  * log --raw-date: Use to display seconds from unix epoch.
 
  -- Joey Hess <id@joeyh.name>  Wed, 23 Mar 2016 11:42:36 -0400
 
