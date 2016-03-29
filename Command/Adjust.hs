@@ -36,5 +36,6 @@ start :: Adjustment -> CommandStart
 start adj = do
 	unlessM versionSupportsAdjustedBranch $
 		error "Adjusted branches are only supported in v6 or newer repositories."
+	showStart "adjust" ""
 	enterAdjustedBranch adj
 	next $ next $ return True

@@ -14,6 +14,7 @@ module Annex.AdjustedBranch (
 	fromAdjustedBranch,
 	getAdjustment,
 	enterAdjustedBranch,
+	adjustToCrippledFileSystem,
 	updateAdjustedBranch,
 	propigateAdjustedCommits,
 ) where
@@ -150,6 +151,18 @@ enterAdjustedBranch adj = go =<< originalBranch
 			, Param $ fromRef $ Git.Ref.base $ adjbranch
 			]
 	go Nothing = error "not on any branch!"
+
+adjustToCrippledFileSystem :: Annex ()
+adjustToCrippledFileSystem = do
+	warning "Entering an adjusted branch where files are unlocked as this filesystem does not support locked files."
+	whenM (isNothing <$> originalBranch) $
+		void $ inRepo $ Git.Branch.commitCommand Git.Branch.AutomaticCommit
+			[ Param "--quiet"
+			, Param "--allow-empty"
+			, Param "-m"
+			, Param "commit before entering adjusted unlocked branch"
+			]
+	enterAdjustedBranch UnlockAdjustment
 
 adjustBranch :: Adjustment -> OrigBranch -> Annex AdjBranch
 adjustBranch adj origbranch = do
