@@ -12,14 +12,26 @@ import Annex.AdjustedBranch
 
 cmd :: Command
 cmd = notBareRepo $ notDirect $
-	command "adjust" SectionSetup "adjust branch"
-		paramNothing (withParams seek)
+	command "adjust" SectionSetup "enter adjusted branch"
+		paramNothing (seek <$$> optParser)
 
-seek :: CmdParams -> CommandSeek
-seek = withWords start
+optParser :: CmdParamsDesc -> Parser Adjustment
+optParser _ = 
+	flag' UnlockAdjustment
+		( long "unlock"
+		<> help "unlock annexed files"
+		)
+	{- Not ready yet
+	<|> flag' HideMissingAdjustment
+		( long "hide-missing"
+		<> help "omit annexed files whose content is not present"
+		)
+	-}
 
-start :: [String] -> CommandStart
-start [] = do
-	enterAdjustedBranch HideMissingAdjustment
+seek :: Adjustment -> CommandSeek
+seek = commandAction . start
+
+start :: Adjustment -> CommandStart
+start adj = do
+	enterAdjustedBranch adj
 	next $ next $ return True
-start _ = error "Unknown parameter"
