@@ -34,7 +34,6 @@ import Git.FilePath
 import qualified Git.LockFile
 import Annex.CatFile
 import Annex.Link
-import Git.HashObject
 import Annex.AutoMerge
 import Annex.Content
 import qualified Database.Keys
@@ -55,18 +54,18 @@ reverseAdjustment HideMissingAdjustment = ShowMissingAdjustment
 reverseAdjustment ShowMissingAdjustment = HideMissingAdjustment
 
 {- How to perform various adjustments to a TreeItem. -}
-adjustTreeItem :: Adjustment -> HashObjectHandle -> TreeItem -> Annex (Maybe TreeItem)
-adjustTreeItem UnlockAdjustment h ti@(TreeItem f m s)
+adjustTreeItem :: Adjustment -> TreeItem -> Annex (Maybe TreeItem)
+adjustTreeItem UnlockAdjustment ti@(TreeItem f m s)
 	| toBlobType m == Just SymlinkBlob = do
 		mk <- catKey s
 		case mk of
 			Just k -> do
 				Database.Keys.addAssociatedFile k f
 				Just . TreeItem f (fromBlobType FileBlob)
-					<$> hashPointerFile' h k
+					<$> hashPointerFile k
 			Nothing -> return (Just ti)
 	| otherwise = return (Just ti)
-adjustTreeItem LockAdjustment h ti@(TreeItem f m s)
+adjustTreeItem LockAdjustment ti@(TreeItem f m s)
 	| toBlobType m /= Just SymlinkBlob = do
 		mk <- catKey s
 		case mk of
@@ -75,10 +74,10 @@ adjustTreeItem LockAdjustment h ti@(TreeItem f m s)
 					fromTopFilePath f r
 				linktarget <- calcRepo $ gitAnnexLink absf k
 				Just . TreeItem f (fromBlobType SymlinkBlob)
-					<$> hashSymlink' h linktarget
+					<$> hashSymlink linktarget
 			Nothing -> return (Just ti)
 	| otherwise = return (Just ti)
-adjustTreeItem HideMissingAdjustment h ti@(TreeItem _ _ s) = do
+adjustTreeItem HideMissingAdjustment ti@(TreeItem _ _ s) = do
 	mk <- catKey s
 	case mk of
 		Just k -> ifM (inAnnex k)
@@ -86,7 +85,7 @@ adjustTreeItem HideMissingAdjustment h ti@(TreeItem _ _ s) = do
 			, return Nothing
 			)
 		Nothing -> return (Just ti)
-adjustTreeItem ShowMissingAdjustment _ ti = return (Just ti)
+adjustTreeItem ShowMissingAdjustment ti = return (Just ti)
 
 type OrigBranch = Branch
 type AdjBranch = Branch
@@ -163,10 +162,8 @@ adjust adj orig = do
 
 adjustTree :: Adjustment -> Ref -> Annex Sha
 adjustTree adj orig = do
-	h <- inRepo hashObjectStart
-	let toadj = adjustTreeItem adj h
+	let toadj = adjustTreeItem adj
 	treesha <- Git.Tree.adjustTree toadj [] [] orig =<< Annex.gitRepo
-	liftIO $ hashObjectStop h
 	return treesha
 
 type CommitsPrevented = Git.LockFile.LockHandle
@@ -262,9 +259,7 @@ propigateAdjustedCommits' origbranch (adj, currbranch) _commitsprevented = do
 			cv <- catCommit currbranch
 			case cv of
 				Just currcommit -> do
-					h <- inRepo hashObjectStart
-					v <- newcommits >>= go h origsha False
-					liftIO $ hashObjectStop h
+					v <- newcommits >>= go origsha False
 					case v of
 						Left e -> do
 							warning e
@@ -278,21 +273,21 @@ propigateAdjustedCommits' origbranch (adj, currbranch) _commitsprevented = do
 		-- Get commits oldest first, so they can be processed
 		-- in order made.
 		[Param "--reverse"]
-	go _ parent _ [] = do
+	go parent _ [] = do
 		inRepo $ Git.Branch.update origbranch parent
 		return (Right parent)
-	go h parent pastadjcommit (sha:l) = do
+	go parent pastadjcommit (sha:l) = do
 		mc <- catCommit sha
 		case mc of
 			Just c
 				| commitMessage c == adjustedBranchCommitMessage ->
-					go h parent True l
+					go parent True l
 				| pastadjcommit -> do
-					v <- reverseAdjustedCommit h parent adj (sha, c) origbranch
+					v <- reverseAdjustedCommit parent adj (sha, c) origbranch
 					case v of
 						Left e -> return (Left e)
-						Right commit -> go h commit pastadjcommit l
-			_ -> go h parent pastadjcommit l
+						Right commit -> go commit pastadjcommit l
+			_ -> go parent pastadjcommit l
 	rebase currcommit newparent = do
 		-- Reuse the current adjusted tree,
 		-- and reparent it on top of the new
@@ -309,8 +304,8 @@ propigateAdjustedCommits' origbranch (adj, currbranch) _commitsprevented = do
  - Note that the commit message, and the author and committer metadata are
  - copied over. However, any gpg signature will be lost, and any other
  - headers are not copied either. -}
-reverseAdjustedCommit :: HashObjectHandle -> Sha -> Adjustment -> (Sha, Commit) -> OrigBranch -> Annex (Either String Sha)
-reverseAdjustedCommit h newparent adj (csha, c) origbranch
+reverseAdjustedCommit :: Sha -> Adjustment -> (Sha, Commit) -> OrigBranch -> Annex (Either String Sha)
+reverseAdjustedCommit newparent adj (csha, c) origbranch
 	-- commitDiff does not support merge commits
 	| length (commitParent c) > 1 = return $
 		Left $ "unable to propigate merge commit " ++ show csha ++ " back to " ++ show origbranch
@@ -319,7 +314,7 @@ reverseAdjustedCommit h newparent adj (csha, c) origbranch
 		let (adds, others) = partition (\dti -> Git.DiffTree.srcsha dti == nullSha) diff
 		let (removes, changes) = partition (\dti -> Git.DiffTree.dstsha dti == nullSha) others
 		adds' <- catMaybes <$>
-			mapM (adjustTreeItem reverseadj h) (map diffTreeToTreeItem adds)
+			mapM (adjustTreeItem reverseadj) (map diffTreeToTreeItem adds)
 		treesha <- Git.Tree.adjustTree
 			(propchanges changes)
 			adds'
@@ -338,7 +333,7 @@ reverseAdjustedCommit h newparent adj (csha, c) origbranch
 	propchanges changes ti@(TreeItem f _ _) =
 		case M.lookup f m of
 			Nothing -> return (Just ti) -- not changed
-			Just change -> adjustTreeItem reverseadj h change
+			Just change -> adjustTreeItem reverseadj change
 	  where
 		m = M.fromList $ map (\i@(TreeItem f' _ _) -> (f', i)) $
 			map diffTreeToTreeItem changes

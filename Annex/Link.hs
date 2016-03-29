@@ -117,9 +117,6 @@ stageSymlink file sha =
 hashPointerFile :: Key -> Annex Sha
 hashPointerFile key = hashBlob (formatPointer key)
 
-hashPointerFile' :: Git.HashObject.HashObjectHandle -> Key -> Annex Sha
-hashPointerFile' h = liftIO . Git.HashObject.hashBlob h . formatPointer
-
 {- Stages a pointer file, using a Sha of its content -}
 stagePointerFile :: FilePath -> Sha -> Annex ()
 stagePointerFile file sha =
