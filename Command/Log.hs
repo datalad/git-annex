@@ -86,9 +86,9 @@ start
 	-> Key
 	-> CommandStart
 start m zone o file key = do
-	showLog output =<< readLog <$> getLog key (passthruOptions o)
-	-- getLog produces a zombie; reap it
-	liftIO reapZombies
+	(ls, cleanup) <- getLog key (passthruOptions o)
+	showLog output (readLog ls)
+	void $ liftIO cleanup
 	stop
   where
 	output
@@ -150,13 +150,13 @@ compareChanges format changes = concatMap diff $ zip changes (drop 1 changes)
  - once the location log file is gone avoids it checking all the way back
  - to commit 0 to see if it used to exist, so generally speeds things up a
  - *lot* for newish files. -}
-getLog :: Key -> [CommandParam] -> Annex [String]
+getLog :: Key -> [CommandParam] -> Annex ([String], IO Bool)
 getLog key os = do
 	top <- fromRepo Git.repoPath
 	p <- liftIO $ relPathCwdToFile top
 	config <- Annex.getGitConfig
 	let logfile = p </> locationLogFile config key
-	inRepo $ pipeNullSplitZombie $
+	inRepo $ pipeNullSplit $
 		[ Param "log"
 		, Param "-z"
 		, Param "--pretty=format:%ct"
@@ -196,4 +196,5 @@ parseTimeStamp = utcTimeToPOSIXSeconds . fromMaybe (error "bad timestamp") .
 #endif
 
 showTimeStamp :: TimeZone -> POSIXTime -> String
-showTimeStamp zone = show . utcToLocalTime zone . posixSecondsToUTCTime
+showTimeStamp zone = formatTime defaultTimeLocale rfc822DateFormat 
+	. utcToZonedTime zone . posixSecondsToUTCTime
