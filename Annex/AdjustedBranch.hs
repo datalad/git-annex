@@ -12,6 +12,7 @@ module Annex.AdjustedBranch (
 	originalToAdjusted,
 	adjustedToOriginal,
 	fromAdjustedBranch,
+	getAdjustment,
 	enterAdjustedBranch,
 	updateAdjustedBranch,
 	propigateAdjustedCommits,
@@ -45,7 +46,7 @@ data Adjustment
 	| LockAdjustment
 	| HideMissingAdjustment
 	| ShowMissingAdjustment
-	deriving (Show)
+	deriving (Show, Eq)
 
 reverseAdjustment :: Adjustment -> Adjustment
 reverseAdjustment UnlockAdjustment = LockAdjustment
@@ -121,6 +122,9 @@ adjustedToOriginal b
   where
 	bs = fromRef b
 	prefixlen = length adjustedBranchPrefix
+
+getAdjustment :: Branch -> Maybe Adjustment
+getAdjustment = fmap fst . adjustedToOriginal
 
 fromAdjustedBranch :: Branch -> OrigBranch
 fromAdjustedBranch b = maybe b snd (adjustedToOriginal b)

@@ -136,6 +136,7 @@ data AnnexState = AnnexState
 	, workers :: [Either AnnexState (Async AnnexState)]
 	, concurrentjobs :: Maybe Int
 	, keysdbhandle :: Maybe Keys.DbHandle
+	, cachedcurrentbranch :: Maybe Git.Branch
 	}
 
 newState :: GitConfig -> Git.Repo -> AnnexState
@@ -182,6 +183,7 @@ newState c r = AnnexState
 	, workers = []
 	, concurrentjobs = Nothing
 	, keysdbhandle = Nothing
+	, cachedcurrentbranch = Nothing
 	}
 
 {- Makes an Annex state object for the specified git repo.
