@@ -295,6 +295,13 @@ subdirectories).
   
   See [[git-annex-indirect]](1) for details.
 
+* `adjust`
+
+  Switches a repository to use an adjusted branch, which can automatically
+  unlock all files, etc.
+  
+  See [[git-annex-adjust]](1) for details.
+
 # REPOSITORY MAINTENANCE COMMANDS
 
 * `fsck [path ...]`

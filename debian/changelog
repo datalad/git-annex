@@ -1,5 +1,7 @@
 git-annex (6.20160319) UNRELEASED; urgency=medium
 
+  * adjust --unlock: Enters an adjusted branch in which all annexed files
+    are unlocked. The v6 equivilant of direct mode, but much cleaner!
   * ddar remote: fix ssh calls
     Thanks, Robie Basak
 
