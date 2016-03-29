@@ -1,0 +1,23 @@
+My todos
+========
+
+[[!inline pages="todo/* and !todo/done and !link(todo/done) and
+author(mih)" sort=mtime feeds=no actions=yes archive=yes show=0]]
+
+Done
+----
+
+[[!inline pages="todo/* and !todo/done and link(todo/done) and
+author(mih)" feeds=no actions=yes archive=yes show=0]]
+
+My bugs
+=======
+
+[[!inline pages="bugs/* and !bugs/done and !link(bugs/done) and
+author(mih)" sort=mtime feeds=no actions=yes archive=yes show=0  template=buglist]]
+
+Fixed
+-----
+
+[[!inline pages="bugs/* and !bugs/done and link(bugs/done) and
+author(mih)" feeds=no actions=yes archive=yes show=0  template=buglist]]

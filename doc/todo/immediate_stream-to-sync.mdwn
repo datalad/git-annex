@@ -1,0 +1,9 @@
+git-annex is really great for secure distributed archival, but it's missing a piece of the reliability portion: when data is generated and saved a system may crash before finishing, and some data may be lost, before the add is initiated.
+
+If there were a way to add a file at the same time as writing it -- and then at the same time stream that live data to a remote -- it would increase the utility of git-add for such uses as storing live recording and logfiles.
+
+I imagine e.g.
+
+$ cat /proc/kmsg | git annex addstreamsync livelogs/kernel-log-$(date)
+
+and kmsg would be streamed to enough remotes to meet numcopies, and hashed live .  If possible, if the system then crashed and even the entire source repo was lost, the remote would have some incomplete file and be able to complete the add properly at next sync.  Hashing the data at the same time as generating it would also speed adding any new file.

@@ -44,5 +44,5 @@ main = do
 	_ <- Git.Index.override $ tmpIndex g
 	setup g
 	Git.UnionMerge.merge aref bref g
-	_ <- Git.Branch.commit "union merge" newref [aref, bref] g
+	_ <- Git.Branch.commit Git.Branch.ManualCommit False "union merge" newref [aref, bref] g
 	cleanup g

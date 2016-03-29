@@ -1,0 +1,34 @@
+Hi,
+I'm trying to convert a v5 classic, symlink repository into a v6 always unloked repository.
+
+
+I'm trying to follow along with: <http://git-annex.branchable.com/tips/unlocked_files>
+but something goes wrong in the process, so I'm sure I'm missing something.
+The repository is about 600G to start with on a ext4 filesystem, and I don't have another 600G of free space on disk, so I'm going with thin mode:
+
+1.       git annex upgrade 
+2.       git config annex.thin true 
+3.       git annex fix 
+4.       git annex unlock
+
+It's all good to this point. Everything gets unlocked and is fine. 
+Then I try to commit the changes with:
+
+     git annex sync
+
+The process seems to take 
+and incredibly long time (several hours) and then ends up running out of space. I check the repository with "du -sh"
+and it's almost double the size. Is there a reason for this? Is there a way to avoid this duplication of data. Shouldn't annex.thin do the trick?
+
+This is also strange: with "git annex info" I get
+
+     local annex keys: 3572
+     local annex size: 933.19 gigabytes
+     annexed files in working tree: 0
+     size of annexed files in working tree: 0 bytes
+
+the annex size should be about 540G and why are there no annexed files in the working tree?
+
+Is there a correct and faster way to migrate my repo to an always unlocked one which won't require hours of time and take all that disk space?
+
+thanks a lot, daniel

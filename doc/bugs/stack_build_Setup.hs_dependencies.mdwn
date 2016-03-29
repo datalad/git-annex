@@ -1,0 +1,71 @@
+### Please describe the problem.
+
+`stack build` on a fresh clone of git-annex at e029eb8b fails with
+
+    git-annex-6.20160229: configure
+
+    Utility/FileSystemEncoding.hs:30:18:
+        Could not find module ‘Data.Hash.MD5’
+        Use -v to see a list of the files searched for.
+
+    Utility/FileSystemEncoding.hs:32:8:
+        Could not find module ‘Data.Bits.Utils’
+        Perhaps you meant
+          Data.BitUtil
+          Data.Bits.Lens (from lens-4.13@lens_IUJoiaRWYAQ6ieqgqTJZ5D)
+        Use -v to see a list of the files searched for.
+
+    Utility/FileSystemEncoding.hs:34:8:
+        Could not find module ‘Data.List.Utils’
+        Perhaps you meant
+          Data.BitUtil
+          Data.List.Lens (from lens-4.13@lens_IUJoiaRWYAQ6ieqgqTJZ5D)
+          Data.List.Split (from split-0.2.3@split_CDzOynTh4l8Ahg1HaWUL4Z)
+        Use -v to see a list of the files searched for.
+
+    Utility/Process.hs:53:8:
+        Could not find module ‘System.Log.Logger’
+        Perhaps you meant
+          System.Log.FastLogger (from fast-logger-2.4.1@fastl_1adi3bwIxvVE3Gyx2Jy1k0)
+        Use -v to see a list of the files searched for.
+
+    Utility/SafeCommand.hs:14:8:
+        Could not find module ‘Data.String.Utils’
+        Perhaps you meant
+          Data.String.UTF8 (from utf8-string-1.0.1.1@utf8s_L8eKHa7Iv9q7FVKUYW6u4b)
+        Use -v to see a list of the files searched for.
+
+### What steps will reproduce the problem?
+
+`stack build`
+
+### What version of git-annex are you using? On what operating system?
+
+e029eb8b, OS X 10.10.5.
+
+### Please provide any additional information below.
+
+These are apparently dependencies of `Setup.hs`. Adding
+
+    explicit-setup-deps:
+      "*": true
+
+to `stack.yaml` [(as described here)](https://github.com/commercialhaskell/stack/blob/a59997d5db963bba403119843340688ee25e2c6f/doc/yaml_configuration.md#explicit-setup-deps)
+fixes the error and builds git-annex successfully.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+> I tried enabling this, and it broke build on my i386ancient autobuilder,
+> which uses stack 1.0.4.2. Strange build failure
+> both building git-annex and also its dependencies (eg, process):
+
+	/usr/bin/ld: cannot find -ltinfo
+
+> Which seems to be libtinfo, part of the ncurses library. Which is weird,
+> AFAIK git-annex does not use ncurses at all.
+> 
+> I tried weakening the setting from `*` to  `git-annex: true`, which
+> lets the build deps get built, but building git-annex still fails with
+> above error.
+> 
+> --[[Joey]]

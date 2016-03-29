@@ -1,0 +1,15 @@
+### Please describe the problem.
+
+When a repository created shared pre 5.20151208 is fsck'd, it spews error messages a la `setFileMode: permission denied (Operation not permitted)` and fails the fsck.
+
+This seems to be due to the change in file permissions introduced in [[news/5.20151208]] ("When core.sharedRepository is set, annex object files are not made mode 444, since that prevents a user other than the file owner from locking them. Instead, a mode such as 664 is used in this case."). The error message is unclear to a user, though, and does IMO not constitute an error to fail over.
+
+IMO, failure to set the mode due to ownership issues should be ignored in fsck, and when a user other than the original owner tries to lock a file, they should be presented with an error message a la "Please run `git annex fsck --fast` as <user> to fix the file's permissions". As an alternative or additionally, fsck could show a warning (maybe even an error) that running an additional fsck as all of the other users (explicit list would be nice) to fix all file permissions.
+
+### Workarounds
+
+The issue can be resolved for a repository by 
+
+### What version of git-annex are you using? On what operating system?
+
+This was observed on a git-annex remote pushed to via ssh on debian sid, with pushes from various git-annex versions over the past years.

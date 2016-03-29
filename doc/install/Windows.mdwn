@@ -35,8 +35,5 @@ Once the prerequisites are installed, run:
 	cd gitannex
 	build
 
-Note that git from Cygwin is able to clone git-annex's git repository;
-Regular git for Windows cannot due to some characters in filenames.
-
 (To build the git-annex installer, you also need to install the NullSoft
 installer system.)

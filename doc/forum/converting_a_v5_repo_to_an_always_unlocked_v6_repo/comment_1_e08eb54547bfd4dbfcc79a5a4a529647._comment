@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-03-14T16:48:33Z"
+ content="""
+Thank you for trying v6 unlocked mode; do note that it's still somewhat
+experimental.
+
+`git annex info` doesn't report correctly on unlocked files, which is why
+it has 0 in two places in the output you showed. I have just committed a
+fix for that problem.
+
+I don't know what would cause the unexpectedly small "local annex size".
+That should correspond to `du -hsc .git/annex/objects`; if it does then you
+seem to have fewer annexed objects than you expect for some reason.
+
+The behavior on sync sounds kind of like git commit is checking the whole
+contents of files into git, bypassing the annex. I don't know how that
+could happen, barring a misconfiguration, but it's at least the first thing
+to check. Check for gigabytes of data in .git/objects/ to see if that
+is the case. 
+
+If the above isn't the problem, can you see if the files in the work tree
+have a link count of 2? For example:
+
+	$ ls -l
+	-rw-r--r--  2 joey joey     30 Mar 14 12:49 foo
+	            ^
+
+If you don't see link count of 2, something has caused the annex.thin not
+to take effect. One possibility would be if the `git annex sync` merged in
+changes that moved a lot of files around. When that happens, git checks out
+the updated work tree, and git-annex currently is not able to preserve
+annex.thin in that case.
+"""]]

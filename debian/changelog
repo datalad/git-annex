@@ -1,4 +1,11 @@
-git-annex (6.20160230) UNRELEASED; urgency=medium
+git-annex (6.20160319) UNRELEASED; urgency=medium
+
+  * ddar remote: fix ssh calls
+    Thanks, Robie Basak
+
+ -- Joey Hess <id@joeyh.name>  Wed, 23 Mar 2016 11:42:36 -0400
+
+git-annex (6.20160318) unstable; urgency=medium
 
   * metadata: Added -r to remove all current values of a field.
   * Fix data loss that can occur when annex.pidlock is set in a repository.
@@ -12,8 +19,12 @@ git-annex (6.20160230) UNRELEASED; urgency=medium
   * Fix OSX dmg to include libraries needed by bundled gpg,
     lost in last release.
   * Always try to thaw content, even when annex.crippledfilesystem is set.
+  * Correct git-annex info to include unlocked files in v6 repository.
+  * Sped up git-annex add in direct mode and v6 by using
+    git hash-object --stdin-paths.
+  * Sped up git-annex merge by using git hash-object --stdin-paths.
 
- -- Joey Hess <id@joeyh.name>  Mon, 29 Feb 2016 13:00:30 -0400
+ -- Joey Hess <id@joeyh.name>  Fri, 18 Mar 2016 11:30:36 -0400
 
 git-annex (6.20160229) unstable; urgency=medium
 

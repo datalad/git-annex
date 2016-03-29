@@ -1,0 +1,12 @@
+### Please describe the problem.
+
+git-annex version: 6.20160126
+
+Problem happens on Mavericks, not on Yosemite with same version.
+
+Can do a relative or absolute path on a git annex add.
+
+But on the git annex copy to an S3 remote, if I use an absolute path for the file descriptor (e.g. /Users/name/git_directory/test.txt) it will not report an error, but will also not print the "copied..." string. A subsequent call with a relative path (e.g. test.txt) will work, show the copied message and indeed show up on S3.
+
+
+Good news: It's working great on Yosemite!

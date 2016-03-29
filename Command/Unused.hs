@@ -27,6 +27,7 @@ import qualified Remote
 import qualified Annex.Branch
 import Annex.Link
 import Annex.CatFile
+import Annex.WorkTree
 import Types.RefSpec
 import Git.Types
 import Git.Sha
@@ -215,10 +216,7 @@ withKeysReferenced' mdir initial a = do
 		Just dir -> inRepo $ LsFiles.inRepo [dir]
 	go v [] = return v
 	go v (f:fs) = do
-		mk <- getM id
-			[ isAnnexLink f
-			, liftIO (isPointerFile f)
-			]
+		mk <- lookupFile f
 		case mk of
 			Nothing -> go v fs
 			Just k -> do
