@@ -197,7 +197,7 @@ When objects are added/removed from the annex, the associated file has to
 be looked up, and the filter applied to it. So, dropping a file with the
 missing file filter would cause it to be removed from the adjusted branch,
 and receiving a file's content would cause it to appear in the adjusted
-branch.
+branch. TODO
 
 These changes would need to be committed to the adjusted branch, otherwise
 `git diff` would show them.
@@ -255,8 +255,10 @@ index in that case.
 
 Using `git checkout` when in an adjusted branch is problimatic, because a
 non-adjusted branch would then be checked out. But, we can just say, if
-you want to get into an adjusted branch, you have to run some command.
-Or, could make a post-checkout hook.
+you want to get into an adjusted branch, you have to run git annex adjust
+Or, could make a post-checkout hook. This is would mostly be confusing when
+git-annex init switched into the adjusted branch due to lack of symlink
+support.
 
 After a commit to an adjusted branch, `git push` won't do anything. The
 user has to know to git-annex sync. (Even if a pre-commit hook propigated
