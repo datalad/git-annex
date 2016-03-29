@@ -299,3 +299,4 @@ into adjusted view worktrees.]
 ## TODOs
 
 * Interface in webapp to enable adjustments.
+* Upgrade from direct mode to v6 in unlocked branch.
