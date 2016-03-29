@@ -138,7 +138,7 @@ conflict.)
 
 ------
 
-FIXME: When an adjusted unlocked branch has gotten a file, and a new
+TODO FIXME: When an adjusted unlocked branch has gotten a file, and a new
 commit is merged in, that does not touch that file, there is a false merge
 conflict on the file. It's auto-resolved by creating a .variant file.
 This is probably a bug in the auto-resolve code for v6 files.
@@ -296,8 +296,6 @@ into adjusted view worktrees.]
 
 ## TODOs
 
-* Need a better command-line interface than `git annex adjust`,
-  that allows picking adjustments.
 * Interface in webapp to enable adjustments.
 * Entering an adjusted branch can prevent commits to the current branch
   (locking will cause the commits to fail) and so the assistant
