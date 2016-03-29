@@ -299,7 +299,3 @@ into adjusted view worktrees.]
 ## TODOs
 
 * Interface in webapp to enable adjustments.
-* Entering an adjusted branch can prevent commits to the current branch
-  (locking will cause the commits to fail) and so the assistant
-  should not be running, or at least should have commits disabled
-  when entering it.
