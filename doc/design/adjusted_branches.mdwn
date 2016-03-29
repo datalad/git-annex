@@ -300,3 +300,4 @@ into adjusted view worktrees.]
 
 * Interface in webapp to enable adjustments.
 * Upgrade from direct mode to v6 in unlocked branch.
+* Honor annex.thin when entering an adjusted branch.
