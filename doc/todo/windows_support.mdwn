@@ -11,6 +11,8 @@ you could just use this to run linux git-annex on windows. No port needed.
 
 That would be great!
 
+Seems like this would need Windows 10.
+
 ## status
 
 * There can be problems when the git-annex repository is in a deep
