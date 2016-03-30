@@ -233,6 +233,68 @@ Notice how `n900` was shown here: that metadata obviously *is* somewhere! The uu
 
 So i guess i could manually edit that uuid.log file to restore my metadata, but i'm puzzled as to where my data went or how!
 
+### Workaround
+
+The workaround is to, of course, restore a known sane `uuid.log`:
+
+[[!format sh """
+[1048]anarcat@angela:~128$ git clone -b git-annex mp3 mp3.annex
+Clonage dans 'mp3.annex'...
+fait.
+Extraction des fichiers: 100% (32234/32234), fait.
+[1049]anarcat@angela:~$ cd mp3.annex/
+[1067]anarcat@angela:mp3.annex$ git co dfe1b77 uuid.log
+[1068]anarcat@angela:mp3.annex$ git status
+Sur la branche git-annex
+Votre branche est à jour avec 'origin/git-annex'.
+Modifications qui seront validées :
+  (utilisez "git reset HEAD <fichier>..." pour désindexer)
+
+        modifié :         uuid.log
+
+[1069]anarcat@angela:mp3.annex$ git commit -m"restore broken uuid.log"
+[git-annex 9628f3b] restore broken uuid.log
+ 1 file changed, 14 insertions(+), 1 deletion(-)
+ rewrite uuid.log (100%)
+[1070]anarcat@angela:mp3.annex$ git push
+Décompte des objets: 2, fait.
+Delta compression using up to 2 threads.
+Compression des objets: 100% (2/2), fait.
+Écriture des objets: 100% (2/2), 262 bytes | 0 bytes/s, fait.
+Total 2 (delta 1), reused 0 (delta 0)
+To /home/anarcat/mp3
+   266099a..9628f3b  git-annex -> git-annex
+[1071]anarcat@angela:mp3.annex$ cd -
+/home/anarcat
+[1072]anarcat@angela:~$ git ^C
+[1072]anarcat@angela:~130$ cd -
+/home/anarcat/mp3.annex
+[1072]anarcat@angela:mp3.annex$ cd ../mp3
+[1073]anarcat@angela:mp3$ git annex merge
+merge git-annex ok
+[1074]anarcat@angela:mp3$ git annex info --fast
+repository mode: indirect
+trusted repositories: 4
+        22921df6-ff75-491c-b5d9-5a2aab33a689 -- anarcat@marcos:/media/anarcat/79884590-6445-4a6f-ae12-050b9a7c1912/mp3
+        b7802161-c984-4c9f-8d05-787a29c41cfe -- anarcat@marcos:/srv/mp3 [marcos]
+        c2ca4a13-9a5f-461b-a44b-53255ed3e2f9 -- anarcat@desktop008:/srv/musique/anarcat/mp3 [markov]
+        f8818d12-9882-4ca5-bc0f-04e987888a8d -- anarcat@marcos:/media/anarcat/green_crypt/mp3/
+semitrusted repositories: 8
+        00000000-0000-0000-0000-000000000001 -- web
+        00000000-0000-0000-0000-000000000002 -- bittorrent
+        0f9185ea-8462-4230-8cae-462a1ad0df36 -- anarcat@angela:~/mp3 [here]
+        3f6d8082-6f4b-4faa-a3d9-bd5db1891077 -- anarcat@lab-sc.no-ip.org:mp3
+        4249a4ea-343a-43a8-9bba-457d2ff87c7d -- rachel@topcrapn:~/Musique/MUSIC/anarcat
+        487dda55-d164-4bf1-9d85-66caaa9c0743 -- 300GB hard drive labeled VHS [VHS]
+        6f812272-18c8-4346-b68a-f57ae50f657e -- htcones
+        f867da6f-78cb-49be-a0db-d1c8e5f53664 -- n900
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 13.44 gigabytes (+1 megabyte reserved)
+"""]]
+
+But it seems to me there is a weird interaction between transitions and fresh new git repo syncs... that could be fixed...
+
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes! Git-annex works generally well and, even though i often report bugs here, i am still quite happy with it. :) --[[anarcat]]
