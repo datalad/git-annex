@@ -193,7 +193,45 @@ $ git cat-file -p git-annex:001/694/SHA256E-s6732474--e084001bc23a90bfd65d9a3fa2
 1458775384.454193s 0 6f812272-18c8-4346-b68a-f57ae50f657e
 """]]
 
-it's a mystery to me why that stuff disappeared from `git-annex info`.
+it's a mystery to me why that stuff disappeared from `git-annex info`. it's especially confusing since some commands seem to recognize there *was* a remote there:
+
+    $ git annex enableremote f867da6f-78cb-49be-a0db-d1c8e5f53664
+    git-annex: Unknown special remote.
+            f867da6f-78cb-49be-a0db-d1c8e5f53664 -- n900
+
+Notice how `n900` was shown here: that metadata obviously *is* somewhere! The uuid.log file is obviously damaged:
+
+    [1036]anarcat@angela:mp31$ git cat-file -p git-annex:uuid.log
+    45124790-dbb7-4e2e-bc0a-acfb618a01e0 anarcat@angela:/media/anarcat/cb39412b-d221-4846-a9dd-cdbabd9958f1/Music timestamp=1459356223.537195s
+
+... and it clearly looks like the file was damaged on that new repo:
+
+[[!format txt """
+*   266099a N (synced/git-annex, git-annex) continuing transition ["forget git history","forget dead remotes","forget git history","forget dead remotes","forget git history","forget git history","forget dead remotes","forget git history","forget dead remotes","forget git history","forget dead remotes","forget git history","forget dead remotes"] (il y a 75 minutes) <Antoine Beaupré>
+|\
+* | 298cc10 N (htcones/synced/git-annex) continuing transition ["forget git history","forget dead remotes","forget git history","forget dead remotes","forget git history","forget git history","forget dead remotes","forget git history","forget dead remotes","forget git history","forget dead remotes","forget git history","forget dead remotes"] (il y a 13 jours) <Antoine Beaupré>| |
+| | diff --git a/uuid.log b/uuid.log
+| | index 656b369..a730ad0 100644
+| | --- a/uuid.log
+| | +++ b/uuid.log
+| | @@ -1,14 +1,9 @@
+| |  0f9185ea-8462-4230-8cae-462a1ad0df36 anarcat@angela:~/mp3 timestamp=1376882226.164478s
+| |  22921df6-ff75-491c-b5d9-5a2aab33a689 anarcat@marcos:/media/anarcat/79884590-6445-4a6f-ae12-050b9a7c1912/mp3 timestamp=1397741440.125973s
+| | -2fec390f-f21b-4293-be50-f219be10ea02 anarcat@marcos:/media/anarcat/Nokia N900/.sounds/mp3-test timestamp=1444709804.587901s
+| |  3f6d8082-6f4b-4faa-a3d9-bd5db1891077 anarcat@lab-sc.no-ip.org:mp3 timestamp=1397882243.602438s
+| | -3f6d8082-6f4b-4faa-a3d9-bd5db1891077 anarcat@serveur-maison:~/mp3 timestamp=1397870776.162703s
+| |  4249a4ea-343a-43a8-9bba-457d2ff87c7d rachel@topcrapn:~/Musique/MUSIC/anarcat timestamp=1398631775.545666s
+| |  487dda55-d164-4bf1-9d85-66caaa9c0743 300GB hard drive labeled VHS timestamp=1397880144.616515s
+| | -509d1cd7-ecd1-4e2f-803d-575d9c56a5bc anarcat@angela:/media/anarcat/Nokia N900/.sounds/mp3 timestamp=1444483581.960103s
+| |  b7802161-c984-4c9f-8d05-787a29c41cfe anarcat@marcos:/srv/mp3 timestamp=1376874943.951103s
+| |  c2ca4a13-9a5f-461b-a44b-53255ed3e2f9 anarcat@desktop008:/srv/musique/anarcat/mp3 timestamp=1410989161.237514s
+| | -c2ca4a13-9a5f-461b-a44b-53255ed3e2f9 anarcat@desktop008:/srv/musique/anarcat/musique/mp3 timestamp=1384884883.106166s
+| | -f641e18f-7cb1-49ba-abe1-7544b435b67f anarcat@marcos:/media/anarcat/Nokia N900/.sounds/mp3-init timestamp=1444708760.468268s
+| |  f867da6f-78cb-49be-a0db-d1c8e5f53664 n900 timestamp=1445438785.796624s
+| |  f8818d12-9882-4ca5-bc0f-04e987888a8d anarcat@marcos:/media/anarcat/green_crypt/mp3/ timestamp=1407470841.967597s
+"""]]
+
+So i guess i could manually edit that uuid.log file to restore my metadata, but i'm puzzled as to where my data went or how!
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
