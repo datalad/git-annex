@@ -171,7 +171,7 @@ adjust that commit so it does not have adjusted/master as its parent.
 	|--------------->B''
 	|                |
 
-Finally, update master, by reverse filtering B''. TODO
+Finally, update master, by reverse filtering B''.
 
 Notice how similar this is to the commit graph. So, "fast-forward" 
 merging the same B commit from origin/master will lead to an identical
@@ -301,3 +301,22 @@ into adjusted view worktrees.]
 * Interface in webapp to enable adjustments.
 * Upgrade from direct mode to v6 in unlocked branch.
 * Honor annex.thin when entering an adjusted branch.
+* Cloning a repo that has an adjusted branch checked out gets into an ugly
+  state.
+
+Bug running git-annex sync in adjusted branch when there is a local change
+that gets committed (or already has been), and remote changes available.
+Both propigateAdjustedCommits and updateAdjustedBranch
+get called in this scenario. Neither order of calling the two works entirely.
+
+The reflog has:
+
+d585d7f HEAD@{1}: rebasing adjusted branch on top of updated original branch
+e51daec HEAD@{2}: merge f7f2b9f3b1d1c97a1ab24f4a94d4a27d84898992: Merge made by the 'recursive' strategy.
+9504e7b HEAD@{3}: rebasing adjusted branch on top of updated original branch
+6c6fd41 HEAD@{4}: commit: add
+
+e51daec has ok correct history; it gets messed up in d585d7f
+
+Problem is just, that the commit made to the adjusted branch 
+is left out of the history.

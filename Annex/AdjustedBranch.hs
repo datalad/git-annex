@@ -222,28 +222,27 @@ adjustedBranchCommitMessage = "git-annex adjusted branch"
  - branch into it. -}
 updateAdjustedBranch :: Branch -> (OrigBranch, Adjustment) -> Git.Branch.CommitMode -> Annex Bool
 updateAdjustedBranch tomerge (origbranch, adj) commitmode = catchBoolIO $
-	join $ preventCommits $ \commitsprevented -> go commitsprevented =<< (,)
+	join $ preventCommits $ \_ -> go =<< (,)
 		<$> inRepo (Git.Ref.sha tomerge)
 		<*> inRepo Git.Branch.current
   where
-	go commitsprevented (Just mergesha, Just currbranch) =
+	go (Just mergesha, Just currbranch) =
 		ifM (inRepo $ Git.Branch.changed currbranch mergesha)
 			( do
-				propigateAdjustedCommits' origbranch (adj, currbranch) commitsprevented
 				adjustedtomerge <- adjust adj mergesha
 				ifM (inRepo $ Git.Branch.changed currbranch adjustedtomerge)
-					( return $ do
+					( return $
 						-- Run after commit lock is dropped.
 						ifM (autoMergeFrom adjustedtomerge (Just currbranch) commitmode)
-							( preventCommits $ \commitsprevented' ->
-								recommit commitsprevented' currbranch mergesha =<< catCommit currbranch
+							( preventCommits $ \_ ->
+								recommit currbranch mergesha =<< catCommit currbranch
 							, return False
 							)
 					, nochangestomerge
 					)
 			, nochangestomerge
 			)
-	go _ _ = return $ return False
+	go _ = return $ return False
 	nochangestomerge = return $ return True
 	{- Once a merge commit has been made, re-do it, removing
 	 - the old version of the adjusted branch as a parent, and
@@ -251,13 +250,15 @@ updateAdjustedBranch tomerge (origbranch, adj) commitmode = catchBoolIO $
 	 -
 	 - Doing this ensures that the same commit Sha is
 	 - always arrived at for a given commit from the merged in branch.
+	 
+	 - Also, update the origbranch.
 	 -}
-	recommit commitsprevented currbranch parent (Just commit) = do
+	recommit currbranch parent (Just commit) = do
 		commitsha <- commitAdjustedTree (commitTree commit) parent
-		inRepo $ Git.Branch.update "merging into adjusted branch" currbranch commitsha
-		propigateAdjustedCommits' origbranch (adj, currbranch) commitsprevented
+		inRepo $ Git.Branch.update "updating original branch" origbranch parent
+		inRepo $ Git.Branch.update "rebasing adjusted branch on top of updated original branch after merge" currbranch commitsha
 		return True
-	recommit _ _ _ Nothing = return False
+	recommit _ _ Nothing = return False
 
 {- Check for any commits present on the adjusted branch that have not yet
  - been propigated to the orig branch, and propigate them.

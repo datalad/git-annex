@@ -1,7 +1,7 @@
 {- git-annex command
  -
  - Copyright 2011 Joachim Breitner <mail@joachim-breitner.de>
- - Copyright 2011-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -243,21 +243,28 @@ commitStaged commitmode commitmessage = do
 	return True
 
 mergeLocal :: CurrBranch -> CommandStart
-mergeLocal currbranch@(Just branch, _) = go =<< needmerge
+mergeLocal currbranch@(Just branch, madj) = do
+	proptoorig
+	go =<< needmerge
   where
 	syncbranch = syncBranch branch
 	needmerge = ifM isBareRepo
 		( return False
 		, ifM (inRepo $ Git.Ref.exists syncbranch)
-			( inRepo $ Git.Branch.changed branch syncbranch
+			( inRepo $ Git.Branch.changed branch' syncbranch
 			, return False
 			)
 		)
 	go False = stop
 	go True = do
 		showStart "merge" $ Git.Ref.describe syncbranch
-		next $ next $
-			merge currbranch Git.Branch.ManualCommit syncbranch
+		next $ next $ merge currbranch Git.Branch.ManualCommit syncbranch
+	branch' = maybe branch (originalToAdjusted branch) madj
+	-- When in an adjusted branch, propigate any changes made to it
+	-- back to the original branch.
+	proptoorig = case madj of
+		Just adj -> propigateAdjustedCommits branch (adj, branch')
+		Nothing -> return ()
 mergeLocal (Nothing, _) = stop
 
 pushLocal :: CurrBranch -> CommandStart
@@ -267,13 +274,7 @@ pushLocal b = do
 
 updateSyncBranch :: CurrBranch -> Annex ()
 updateSyncBranch (Nothing, _) = noop
-updateSyncBranch (Just branch, madj) = do
-	-- When in an adjusted branch, propigate any changes to it back to
-	-- the original branch.
-	case madj of
-		Just adj -> propigateAdjustedCommits branch
-			(adj, originalToAdjusted branch adj)
-		Nothing -> return ()
+updateSyncBranch (Just branch, _) = do
 	-- Update the sync branch to match the new state of the branch
 	inRepo $ updateBranch (syncBranch branch) branch
 	-- In direct mode, we're operating on some special direct mode
