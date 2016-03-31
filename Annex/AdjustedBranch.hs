@@ -221,8 +221,8 @@ adjustedBranchCommitMessage = "git-annex adjusted branch"
 {- Update the currently checked out adjusted branch, merging the provided
  - branch into it. -}
 updateAdjustedBranch :: Branch -> (OrigBranch, Adjustment) -> Git.Branch.CommitMode -> Annex Bool
-updateAdjustedBranch tomerge (origbranch, adj) commitmode = catchBoolIO $ do
-	preventCommits $ \commitsprevented -> go commitsprevented =<< (,)
+updateAdjustedBranch tomerge (origbranch, adj) commitmode = catchBoolIO $
+	join $ preventCommits $ \commitsprevented -> go commitsprevented =<< (,)
 		<$> inRepo (Git.Ref.sha tomerge)
 		<*> inRepo Git.Branch.current
   where
@@ -232,18 +232,19 @@ updateAdjustedBranch tomerge (origbranch, adj) commitmode = catchBoolIO $ do
 				propigateAdjustedCommits' origbranch (adj, currbranch) commitsprevented
 				adjustedtomerge <- adjust adj mergesha
 				ifM (inRepo $ Git.Branch.changed currbranch adjustedtomerge)
-					( do
-						liftIO $ Git.LockFile.closeLock commitsprevented
+					( return $ do
+						-- Run after commit lock is dropped.
 						ifM (autoMergeFrom adjustedtomerge (Just currbranch) commitmode)
 							( preventCommits $ \commitsprevented' ->
 								recommit commitsprevented' currbranch mergesha =<< catCommit currbranch
 							, return False
 							)
-					, return True -- no changes to merge
+					, nochangestomerge
 					)
-			, return True -- no changes to merge
+			, nochangestomerge
 			)
-	go _ _ = return False
+	go _ _ = return $ return False
+	nochangestomerge = return $ return True
 	{- Once a merge commit has been made, re-do it, removing
 	 - the old version of the adjusted branch as a parent, and
 	 - making the only parent be the branch that was merged in.
