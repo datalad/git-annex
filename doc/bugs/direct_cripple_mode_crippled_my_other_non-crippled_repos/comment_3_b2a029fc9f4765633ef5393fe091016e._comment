@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="Kalle"
+ subject="Had what I believe to be the same issue"
+ date="2016-03-31T21:22:21Z"
+ content="""
+[[Podcast_filename_encoding_breaks_Android_client/]]
+
+The problem for me was that the podcatcher setup would automatically download new dangerous files and wipe all repos... My workaround in the end was to use ``--template`` to create date only filenames for podcasts. A solution I still use but it's rather inconvenient as more descriptive filenames are useful.
+
+This is quite a dangerous bug as all you need is a direct mode repo and an unusual filename for your whole annex cluster to empty itself. It can be saved by git surgery but unless being very careful you just end up syncing the bad filename back from a repo or another.
+
+
+"""]]

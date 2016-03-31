@@ -1,0 +1,29 @@
+I have made a small script to fetch a specific set of songs from a
+playlist. It just iterates through a [M3U][] playlist and makes sure
+that git-annex has a copy of every file in the list.
+
+Sample run:
+
+    [1041]anarcat@angela:Music1$ ~/bin/get-playlist -p1 -v ~/playlists/Favoris.m3u
+    git-annex: Bach/Unknown Album/Concerto for 2 Violins in D.mp3 not found
+    git-annex: get: 1 failed
+    git annex failed to get Bach/Unknown Album/Concerto for 2 Violins in D.mp3 (originally espresso/Bach/Unknown Album/Concerto for 2 Violins in D.mp3)
+    get Groovy Aardvark/Oryctérope/05 - Téléthargique.flac (from marcos...)
+    SHA256E-s26735079--13c04501b9c6fa5ddda02438484d569f4d3d9b1f0bcdd8740f3b927ab756c968.flac
+         26,735,079 100%   10.00MB/s    0:00:02 (xfr#1, to-chk=0/1)
+    (checksum...) ok
+    Groovy Aardvark/Oryctérope/05 - Téléthargique.flac
+    [...]
+    merge git-annex ok
+
+I use this to synchronize specific playlists to my phone, instead of
+the whole music collection, because of the limited space of the
+device.
+
+The source is AGPL and available in my
+[personal git repository][]. Unfortunately, it is written in Python
+and can probably not be merged into git-annex, but since it is so
+specific, I figured it wouldn't be anyways. -- [[anarcat]]
+
+[personal git repository]: http://src.anarc.at/scripts.git/blob_plain/HEAD:/get-playlist
+[M3U]: https://en.wikipedia.org/wiki/M3U
