@@ -125,7 +125,7 @@ catCommit h commitref = go <$> catObjectDetails h commitref
 parseCommit :: L.ByteString -> Maybe Commit
 parseCommit b = Commit
 	<$> (extractSha . L8.unpack =<< field "tree")
-	<*> (mapMaybe (extractSha . L8.unpack) <$> fields "parent")
+	<*> Just (maybe [] (mapMaybe (extractSha . L8.unpack)) (fields "parent"))
 	<*> (parsemetadata <$> field "author")
 	<*> (parsemetadata <$> field "committer")
 	<*> Just (L8.unpack $ L.intercalate (L.singleton nl) message)
