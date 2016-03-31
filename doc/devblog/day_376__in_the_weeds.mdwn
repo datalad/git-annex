@@ -1,0 +1,18 @@
+Spent all day fixing sync in adjusted branches. I was lost in the weeds for
+a long time. Eventually, drawing this diagram helped me find my way
+to a solution:
+
+	origin/master    adjusted/master     master
+	A                                    A
+	|--------------->A'                  |
+	|                |                   |
+	|                C'- - - - - - - - > C
+	B                                    |
+	|                                    |
+	|--------------->M'<-----------------|
+
+After implementing that, syncing in adjusted branches seems to work much
+better now. And I've finally merged support for them into master.
+
+There's still several bugs and race conditions and upgrade things to sort
+out around adjusted branches. Proably another week's work all told.
