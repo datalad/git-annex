@@ -105,6 +105,7 @@ fromBlobType SymlinkBlob = 0o120000
 
 data Commit = Commit
 	{ commitTree :: Sha
+	, commitParent :: [Sha]
 	, commitAuthorMetaData :: CommitMetaData
 	, commitCommitterMetaData :: CommitMetaData
 	, commitMessage :: String

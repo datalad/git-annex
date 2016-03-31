@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE BangPatterns, TypeSynonymInstances, FlexibleInstances #-}
 
 module Git.Tree (
 	Tree(..),
@@ -28,6 +28,8 @@ import qualified Utility.CoProcess as CoProcess
 import Numeric
 import System.Posix.Types
 import Control.Monad.IO.Class
+import qualified Data.Set as S
+import qualified Data.Map as M
 
 newtype Tree = Tree [TreeContent]
 	deriving (Show)
@@ -38,7 +40,7 @@ data TreeContent
 	| RecordedSubTree TopFilePath Sha [TreeContent]
 	-- A subtree that has not yet been recorded in git.
 	| NewSubTree TopFilePath [TreeContent]
-	deriving (Show)
+	deriving (Show, Eq, Ord)
 
 {- Gets the Tree for a Ref. -}
 getTree :: Ref -> Repo -> IO Tree
@@ -107,74 +109,154 @@ mkTreeOutput fm ot s f = concat
 	]
 
 data TreeItem = TreeItem TopFilePath FileMode Sha
-	deriving (Eq)
+	deriving (Show, Eq)
+
+treeItemToTreeContent :: TreeItem -> TreeContent
+treeItemToTreeContent (TreeItem f m s) = TreeBlob f m s
+
+treeItemsToTree :: [TreeItem] -> Tree
+treeItemsToTree = go M.empty
+  where
+	go m [] = Tree $ filter (notElem '/' . gitPath) (M.elems m)
+	go m (i:is)
+		| '/' `notElem` p =
+			go (M.insert p (treeItemToTreeContent i) m) is
+		| otherwise = case M.lookup idir m of
+			Just (NewSubTree d l) ->
+				go (addsubtree idir m (NewSubTree d (c:l))) is
+			_ ->
+				go (addsubtree idir m (NewSubTree (asTopFilePath idir) [c])) is
+	  where
+		p = gitPath i
+		idir = takeDirectory p
+		c = treeItemToTreeContent i
+
+	addsubtree d m t
+		| elem '/' d = 
+			let m' = M.insert d t m
+			in case M.lookup parent m' of
+				Just (NewSubTree d' l) ->
+					let l' = filter (\ti -> gitPath ti /= d) l
+					in addsubtree parent m' (NewSubTree d' (t:l'))
+				_ -> addsubtree parent m' (NewSubTree (asTopFilePath parent) [t])
+		| otherwise = M.insert d t m
+	  where
+		parent = takeDirectory d
 
 {- Applies an adjustment to items in a tree.
  -
- - While less flexible than using getTree and recordTree, this avoids
- - buffering the whole tree in memory.
+ - While less flexible than using getTree and recordTree,
+ - this avoids buffering the whole tree in memory.
  -}
-adjustTree :: (MonadIO m, MonadMask m) => (TreeItem -> m (Maybe TreeItem)) -> Ref -> Repo -> m Sha
-adjustTree adjust r repo = withMkTreeHandle repo $ \h -> do
-	(l, cleanup) <- liftIO $ lsTreeWithObjects r repo
-	(l', _, _) <- go h False [] topTree l
-	sha <- liftIO $ mkTree h l'
-	void $ liftIO cleanup
-	return sha
+adjustTree
+	:: (MonadIO m, MonadMask m)
+	=> (TreeItem -> m (Maybe TreeItem))
+	-- ^ Adjust an item in the tree. Nothing deletes the item.
+	-- Cannot move the item to a different tree.
+	-> [TreeItem]
+	-- ^ New items to add to the tree.
+	-> [TopFilePath]
+	-- ^ Files to remove from the tree.
+	-> Ref
+	-> Repo
+	-> m Sha
+adjustTree adjusttreeitem addtreeitems removefiles r repo =
+	withMkTreeHandle repo $ \h -> do
+		(l, cleanup) <- liftIO $ lsTreeWithObjects r repo
+		(l', _, _) <- go h False [] inTopTree l
+		l'' <- adjustlist h inTopTree (const True) l'
+		sha <- liftIO $ mkTree h l''
+		void $ liftIO cleanup
+		return sha
   where
 	go _ wasmodified c _ [] = return (c, wasmodified, [])
 	go h wasmodified c intree (i:is)
-		| intree i =
-			case readObjectType (LsTree.typeobj i) of
-				Just BlobObject -> do
-					let ti = TreeItem (LsTree.file i) (LsTree.mode i) (LsTree.sha i)
-					v <- adjust ti
-					case v of
-						Nothing -> go h True c intree is
-						Just ti'@(TreeItem f m s) ->
-							let !modified = wasmodified || ti' /= ti
-							    blob = TreeBlob f m s
-							in go h modified (blob:c) intree is
-				Just TreeObject -> do
-					(sl, modified, is') <- go h False [] (subTree i) is
-					subtree <- if modified
-						then liftIO $ recordSubTree h $ NewSubTree (LsTree.file i) sl
-						else return $ RecordedSubTree (LsTree.file i) (LsTree.sha i) [] 
-					let !modified' = modified || wasmodified
-					go h modified' (subtree : c) intree is'
-				_ -> error ("unexpected object type \"" ++ LsTree.typeobj i ++ "\"")
+		| intree i = case readObjectType (LsTree.typeobj i) of
+			Just BlobObject -> do
+				let ti = TreeItem (LsTree.file i) (LsTree.mode i) (LsTree.sha i)
+				v <- adjusttreeitem ti
+				case v of
+					Nothing -> go h True c intree is
+					Just ti'@(TreeItem f m s) ->
+						let !modified = wasmodified || ti' /= ti
+						    blob = TreeBlob f m s
+						in go h modified (blob:c) intree is
+			Just TreeObject -> do
+				(sl, modified, is') <- go h False [] (beneathSubTree i) is
+				sl' <- adjustlist h (inTree i) (beneathSubTree i) sl
+				subtree <- if modified || sl' /= sl
+					then liftIO $ recordSubTree h $ NewSubTree (LsTree.file i) sl'
+					else return $ RecordedSubTree (LsTree.file i) (LsTree.sha i) [] 
+				let !modified' = modified || wasmodified
+				go h modified' (subtree : c) intree is'
+			_ -> error ("unexpected object type \"" ++ LsTree.typeobj i ++ "\"")
 		| otherwise = return (c, wasmodified, i:is)
+
+	adjustlist h ishere underhere l = do
+		let (addhere, rest) = partition ishere addtreeitems
+		let l' = filter (not . removed) $
+			map treeItemToTreeContent addhere ++ l
+		let inl i = any (\t -> beneathSubTree t i) l'
+		let (Tree addunderhere) = treeItemsToTree $
+			filter (\i -> underhere i && not (inl i)) rest
+		addunderhere' <- liftIO $ mapM (recordSubTree h) addunderhere
+		return (addunderhere'++l')
+
+	removeset = S.fromList removefiles
+	removed (TreeBlob f _ _) = S.member f removeset
+	removed _ = False
 
 {- Assumes the list is ordered, with tree objects coming right before their
  - contents. -}
 extractTree :: [LsTree.TreeItem] -> Either String Tree
-extractTree l = case go [] topTree l of
+extractTree l = case go [] inTopTree l of
 	Right (t, []) -> Right (Tree t)
 	Right _ -> parseerr "unexpected tree form"
 	Left e -> parseerr e
   where
 	go t _ [] = Right (t, [])
 	go t intree (i:is)
-		| intree i = 
-			case readObjectType (LsTree.typeobj i) of
-				Just BlobObject ->
-					let b = TreeBlob (LsTree.file i) (LsTree.mode i) (LsTree.sha i)
-					in go (b:t) intree is
-				Just TreeObject -> case go [] (subTree i) is of
-					Right (subtree, is') ->
-						let st = RecordedSubTree (LsTree.file i) (LsTree.sha i) subtree
-						in go (st:t) intree is'
-					Left e -> Left e
-				_ -> parseerr ("unexpected object type \"" ++ LsTree.typeobj i ++ "\"")
+		| intree i = case readObjectType (LsTree.typeobj i) of
+			Just BlobObject ->
+				let b = TreeBlob (LsTree.file i) (LsTree.mode i) (LsTree.sha i)
+				in go (b:t) intree is
+			Just TreeObject -> case go [] (beneathSubTree i) is of
+				Right (subtree, is') ->
+					let st = RecordedSubTree (LsTree.file i) (LsTree.sha i) subtree
+					in go (st:t) intree is'
+				Left e -> Left e
+			_ -> parseerr ("unexpected object type \"" ++ LsTree.typeobj i ++ "\"")
 		| otherwise = Right (t, i:is)
 	parseerr = Left
 
-type InTree = LsTree.TreeItem -> Bool
+class GitPath t where
+	gitPath :: t -> FilePath
 
-topTree :: InTree
-topTree = notElem '/' . getTopFilePath . LsTree.file
+instance GitPath FilePath where
+	gitPath = id
 
-subTree :: LsTree.TreeItem -> InTree
-subTree t =
-	let prefix = getTopFilePath (LsTree.file t) ++ "/"
-	in (\i -> prefix `isPrefixOf` getTopFilePath (LsTree.file i))
+instance GitPath TopFilePath where
+	gitPath = getTopFilePath
+
+instance GitPath TreeItem where
+	gitPath (TreeItem f _ _) = gitPath f
+
+instance GitPath LsTree.TreeItem where
+	gitPath = gitPath . LsTree.file
+
+instance GitPath TreeContent where
+	gitPath (TreeBlob f _ _) = gitPath f
+	gitPath (RecordedSubTree f _ _) = gitPath f
+	gitPath (NewSubTree f _) = gitPath f
+
+inTopTree :: GitPath t => t -> Bool
+inTopTree = inTree "."
+
+inTree :: (GitPath t, GitPath f) => t -> f -> Bool
+inTree t f = gitPath t == takeDirectory (gitPath f)
+
+beneathSubTree :: (GitPath t, GitPath f) => t -> f -> Bool
+beneathSubTree t f = prefix `isPrefixOf` gitPath f
+  where
+	tp = gitPath t
+	prefix = if null tp then tp else tp ++ "/"

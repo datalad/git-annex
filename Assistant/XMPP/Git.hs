@@ -27,7 +27,6 @@ import Annex.TaggedPush
 import Annex.CatFile
 import Config
 import Git
-import qualified Git.Branch
 import qualified Types.Remote as Remote
 import qualified Remote as Remote
 import Remote.List
@@ -292,16 +291,15 @@ xmppRemotes cid theiruuid = case baseJID <$> parseJID cid of
 {- Returns the ClientID that it pushed to. -}
 runPush :: (Remote -> Assistant ()) -> NetMessage -> Assistant (Maybe ClientID)
 runPush checkcloudrepos (Pushing cid (PushRequest theiruuid)) =
-	go =<< liftAnnex (inRepo Git.Branch.current)
+	go =<< liftAnnex (join Command.Sync.getCurrBranch)
   where
-	go Nothing = return Nothing
-	go (Just branch) = do
+	go (Just branch, _) = do
 		rs <- xmppRemotes cid theiruuid
 		liftAnnex $ Annex.Branch.commit "update"
 		(g, u) <- liftAnnex $ (,)
 			<$> gitRepo
 			<*> getUUID
-		liftIO $ Command.Sync.updateBranch (Command.Sync.syncBranch branch) g
+		liftIO $ Command.Sync.updateBranch (Command.Sync.syncBranch branch) branch g
 		selfjid <- ((T.unpack <$>) . xmppClientID) <$> getDaemonStatus
 		if null rs
 			then return Nothing
@@ -311,6 +309,7 @@ runPush checkcloudrepos (Pushing cid (PushRequest theiruuid)) =
 						xmppPush cid (taggedPush u selfjid branch r)
 					checkcloudrepos r
 				return $ Just cid
+	go _ = return Nothing
 runPush checkcloudrepos (Pushing cid (StartingPush theiruuid)) = do
 	rs <- xmppRemotes cid theiruuid
 	if null rs

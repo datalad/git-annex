@@ -20,7 +20,7 @@ import qualified Annex
 import qualified Git
 import qualified Git.Config
 import qualified Git.Command
-import qualified Git.Branch
+import qualified Command.Sync
 import Config.Files
 import Utility.FreeDesktop
 import Utility.DiskFree
@@ -200,7 +200,7 @@ postNewRepositoryR = page "Add another repository" (Just Configuration) $ do
  - immediately pulling from it. Also spawns a sync to push to it as well. -}
 immediateSyncRemote :: Remote -> Assistant ()
 immediateSyncRemote r = do
-	currentbranch <- liftAnnex (inRepo Git.Branch.current)
+	currentbranch <- liftAnnex $ join Command.Sync.getCurrBranch
 	void $ manualPull currentbranch [r]
 	syncRemote r
 

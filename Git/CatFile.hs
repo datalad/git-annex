@@ -125,15 +125,17 @@ catCommit h commitref = go <$> catObjectDetails h commitref
 parseCommit :: L.ByteString -> Maybe Commit
 parseCommit b = Commit
 	<$> (extractSha . L8.unpack =<< field "tree")
+	<*> Just (maybe [] (mapMaybe (extractSha . L8.unpack)) (fields "parent"))
 	<*> (parsemetadata <$> field "author")
 	<*> (parsemetadata <$> field "committer")
 	<*> Just (L8.unpack $ L.intercalate (L.singleton nl) message)
   where
-	field n = M.lookup (fromString n) fields
-	fields = M.fromList ((map breakfield) header)
+	field n = headMaybe =<< fields n
+	fields n = M.lookup (fromString n) fieldmap
+	fieldmap = M.fromListWith (++) ((map breakfield) header)
 	breakfield l =
 		let (k, sp_v) = L.break (== sp) l
-		in (k, L.drop 1 sp_v)
+		in (k, [L.drop 1 sp_v])
 	(header, message) = separate L.null ls
 	ls = L.split nl b
 

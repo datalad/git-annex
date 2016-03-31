@@ -33,6 +33,7 @@ import Annex.UUID
 import Annex.Link
 import Config
 import Annex.Direct
+import Annex.AdjustedBranch
 import Annex.Environment
 import Annex.Hook
 import Annex.InodeSentinal
@@ -92,10 +93,13 @@ initialize' mversion = do
 	whenM versionSupportsUnlockedPointers $ do
 		configureSmudgeFilter
 		Database.Keys.scanAssociatedFiles
-	ifM (crippledFileSystem <&&> (not <$> isBare) <&&> (not <$> versionSupportsUnlockedPointers))
-		( do
-			enableDirectMode
-			setDirect True
+	ifM (crippledFileSystem <&&> (not <$> isBare))
+		( ifM versionSupportsUnlockedPointers
+			( adjustToCrippledFileSystem
+			, do
+				enableDirectMode
+				setDirect True
+			)
 		-- Handle case where this repo was cloned from a
 		-- direct mode repo
 		, unlessM isBare

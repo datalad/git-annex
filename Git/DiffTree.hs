@@ -14,6 +14,7 @@ module Git.DiffTree (
 	diffWorkTree,
 	diffFiles,
 	diffLog,
+	commitDiff,
 ) where
 
 import Numeric
@@ -72,16 +73,23 @@ diffFiles :: [CommandParam] -> Repo -> IO ([DiffTreeItem], IO Bool)
 diffFiles = getdiff (Param "diff-files")
 
 {- Runs git log in --raw mode to get the changes that were made in
- - a particular commit. The output format is adjusted to be the same
- - as diff-tree --raw._-}
+ - a particular commit to particular files. The output format
+ - is adjusted to be the same as diff-tree --raw._-}
 diffLog :: [CommandParam] -> Repo -> IO ([DiffTreeItem], IO Bool)
 diffLog params = getdiff (Param "log")
 	(Param "-n1" : Param "--abbrev=40" : Param "--pretty=format:" : params)
 
+{- Uses git show to get the changes made by a commit.
+ -
+ - Does not support merge commits, and will fail on them. -}
+commitDiff :: Sha -> Repo -> IO ([DiffTreeItem], IO Bool)
+commitDiff ref = getdiff (Param "show")
+	[ Param "--abbrev=40", Param "--pretty=", Param "--raw", Param (fromRef ref) ]
+
 getdiff :: CommandParam -> [CommandParam] -> Repo -> IO ([DiffTreeItem], IO Bool)
 getdiff command params repo = do
 	(diff, cleanup) <- pipeNullSplit ps repo
-	return (parseDiffRaw diff, cleanup)
+	return (fromMaybe (error $ "git " ++ show (toCommand ps) ++ " parse failed") (parseDiffRaw diff), cleanup)
   where
 	ps = 
 		command :
@@ -92,23 +100,24 @@ getdiff command params repo = do
 		params
 
 {- Parses --raw output used by diff-tree and git-log. -}
-parseDiffRaw :: [String] -> [DiffTreeItem]
+parseDiffRaw :: [String] -> Maybe [DiffTreeItem]
 parseDiffRaw l = go l []
   where
-	go [] c = c
-	go (info:f:rest) c = go rest (mk info f : c)
-	go (s:[]) _ = error $ "diff-tree parse error " ++ s
+	go [] c = Just c
+	go (info:f:rest) c = case mk info f of
+		Nothing -> Nothing
+		Just i -> go rest (i:c)
+	go (_:[]) _ = Nothing
 
-	mk info f = DiffTreeItem 
-		{ srcmode = readmode srcm
-		, dstmode = readmode dstm
-		, srcsha = fromMaybe (error "bad srcsha") $ extractSha ssha
-		, dstsha = fromMaybe (error "bad dstsha") $ extractSha dsha
-		, status = s
-		, file = asTopFilePath $ fromInternalGitPath $ Git.Filename.decode f
-		}
+	mk info f = DiffTreeItem
+		<$> readmode srcm
+		<*> readmode dstm
+		<*> extractSha ssha
+		<*> extractSha dsha
+		<*> pure s
+		<*> pure (asTopFilePath $ fromInternalGitPath $ Git.Filename.decode f)
 	  where
-		readmode = fst . Prelude.head . readOct
+		readmode = fst <$$> headMaybe . readOct
 
 		-- info = :<srcmode> SP <dstmode> SP <srcsha> SP <dstsha> SP <status>
 		-- All fields are fixed, so we can pull them out of

@@ -48,15 +48,25 @@ currentUnsafe r = parse . firstLine
 changed :: Branch -> Branch -> Repo -> IO Bool
 changed origbranch newbranch repo
 	| origbranch == newbranch = return False
-	| otherwise = not . null <$> diffs
+	| otherwise = not . null
+		<$> changed' origbranch newbranch [Param "-n1"] repo
   where
-	diffs = pipeReadStrict
+
+changed' :: Branch -> Branch -> [CommandParam] -> Repo -> IO String
+changed' origbranch newbranch extraps repo = pipeReadStrict ps repo
+  where
+	ps =
 		[ Param "log"
 		, Param (fromRef origbranch ++ ".." ++ fromRef newbranch)
-		, Param "-n1"
 		, Param "--pretty=%H"
-		] repo
+		] ++ extraps
 
+{- Lists commits that are in the second branch and not in the first branch. -}
+changedCommits :: Branch -> Branch -> [CommandParam] -> Repo -> IO [Sha]
+changedCommits origbranch newbranch extraps repo = 
+	catMaybes . map extractSha . lines
+		<$> changed' origbranch newbranch extraps repo
+	
 {- Check if it's possible to fast-forward from the old
  - ref to the new ref.
  -
@@ -90,7 +100,7 @@ fastForward branch (first:rest) repo =
   where
 	no_ff = return False
 	do_ff to = do
-		update branch to repo
+		update' branch to repo
 		return True
 	findbest c [] = return $ Just c
 	findbest c (r:rs)
@@ -145,7 +155,7 @@ commit commitmode allowempty message branch parentrefs repo = do
 	ifM (cancommit tree)
 		( do
 			sha <- commitTree commitmode message parentrefs tree repo
-			update branch sha repo
+			update' branch sha repo
 			return $ Just sha
 		, return Nothing
 		)
@@ -175,8 +185,17 @@ forcePush :: String -> String
 forcePush b = "+" ++ b
 
 {- Updates a branch (or other ref) to a new Sha. -}
-update :: Branch -> Sha -> Repo -> IO ()
-update branch sha = run 
+update :: String -> Branch -> Sha -> Repo -> IO ()
+update message branch sha = run
+	[ Param "update-ref"
+	, Param "-m"
+	, Param message
+	, Param $ fromRef branch
+	, Param $ fromRef sha
+	]
+
+update' :: Branch -> Sha -> Repo -> IO ()
+update' branch sha = run
 	[ Param "update-ref"
 	, Param $ fromRef branch
 	, Param $ fromRef sha

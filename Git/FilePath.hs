@@ -31,7 +31,7 @@ import qualified System.FilePath.Posix
 
 {- A FilePath, relative to the top of the git repository. -}
 newtype TopFilePath = TopFilePath { getTopFilePath :: FilePath }
-	deriving (Show, Eq)
+	deriving (Show, Eq, Ord)
 
 {- Path to a TopFilePath, within the provided git repo. -}
 fromTopFilePath :: TopFilePath -> Git.Repo -> FilePath

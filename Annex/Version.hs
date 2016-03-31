@@ -52,6 +52,9 @@ versionSupportsUnlockedPointers = go <$> getVersion
 	go (Just "6") = True
 	go _ = False
 
+versionSupportsAdjustedBranch :: Annex Bool
+versionSupportsAdjustedBranch = versionSupportsUnlockedPointers
+
 setVersion :: Version -> Annex ()
 setVersion = setConfig versionField
 

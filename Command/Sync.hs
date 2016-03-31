@@ -1,13 +1,16 @@
 {- git-annex command
  -
  - Copyright 2011 Joachim Breitner <mail@joachim-breitner.de>
- - Copyright 2011-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Command.Sync (
 	cmd,
+	CurrBranch,
+	getCurrBranch,
+	merge,
 	prepMerge,
 	mergeLocal,
 	mergeRemote,
@@ -43,6 +46,7 @@ import Annex.Drop
 import Annex.UUID
 import Logs.UUID
 import Annex.AutoMerge
+import Annex.AdjustedBranch
 import Annex.Ssh
 import Annex.BloomFilter
 import Utility.Bloom
@@ -95,20 +99,7 @@ seek :: SyncOptions -> CommandSeek
 seek o = allowConcurrentOutput $ do
 	prepMerge
 
-	-- There may not be a branch checked out until after the commit,
-	-- or perhaps after it gets merged from the remote, or perhaps
-	-- never.
-	-- So only look it up once it's needed, and once there is a
-	-- branch, cache it.
-	mvar <- liftIO newEmptyMVar
-	let getbranch = ifM (liftIO $ isEmptyMVar mvar)
-		( do
-			branch <- inRepo Git.Branch.current
-			when (isJust branch) $
-				liftIO $ putMVar mvar branch
-			return branch
-		, liftIO $ readMVar mvar
-		)
+	getbranch <- getCurrBranch 
 	let withbranch a = a =<< getbranch
 
 	remotes <- syncRemotes (syncWith o)
@@ -140,14 +131,49 @@ seek o = allowConcurrentOutput $ do
 	-- Pushes to remotes can run concurrently.
 	mapM_ (commandAction . withbranch . pushRemote o) gitremotes
 
+type CurrBranch = (Maybe Git.Branch, Maybe Adjustment)
+
+{- There may not be a branch checked out until after the commit,
+ - or perhaps after it gets merged from the remote, or perhaps
+ - never.
+ -
+ - So only look it up once it's needed, and once there is a
+ - branch, cache it.
+ -
+ - When on an adjusted branch, gets the original branch, and the adjustment.
+ -}
+getCurrBranch :: Annex (Annex CurrBranch)
+getCurrBranch = do
+	mvar <- liftIO newEmptyMVar
+	return $ ifM (liftIO $ isEmptyMVar mvar)
+		( do
+			currbranch <- inRepo Git.Branch.current
+			case currbranch of
+				Nothing -> return (Nothing, Nothing)
+				Just b -> do
+					let v = case adjustedToOriginal b of
+						Nothing -> (Just b, Nothing)
+						Just (adj, origbranch) ->
+							(Just origbranch, Just adj)
+					liftIO $ putMVar mvar v
+					return v
+		, liftIO $ readMVar mvar
+		)
+
 {- Merging may delete the current directory, so go to the top
  - of the repo. This also means that sync always acts on all files in the
  - repository, not just on a subdirectory. -}
 prepMerge :: Annex ()
 prepMerge = Annex.changeDirectory =<< fromRepo Git.repoPath
 
-syncBranch :: Git.Ref -> Git.Ref
-syncBranch = Git.Ref.under "refs/heads/synced" . fromDirectBranch
+merge :: CurrBranch -> Git.Branch.CommitMode -> Git.Branch -> Annex Bool
+merge (Just b, Just adj) commitmode tomerge =
+	updateAdjustedBranch tomerge (b, adj) commitmode
+merge (b, _) commitmode tomerge =
+	autoMergeFrom tomerge b commitmode
+
+syncBranch :: Git.Branch -> Git.Branch
+syncBranch = Git.Ref.under "refs/heads/synced" . fromDirectBranch . fromAdjustedBranch
 
 remoteBranch :: Remote -> Git.Ref -> Git.Ref
 remoteBranch remote = Git.Ref.underBase $ "refs/remotes/" ++ Remote.name remote
@@ -216,50 +242,58 @@ commitStaged commitmode commitmessage = do
 	void $ inRepo $ Git.Branch.commit commitmode False commitmessage branch parents
 	return True
 
-mergeLocal :: Maybe Git.Ref -> CommandStart
-mergeLocal Nothing = stop
-mergeLocal (Just branch) = go =<< needmerge
+mergeLocal :: CurrBranch -> CommandStart
+mergeLocal currbranch@(Just branch, madj) = go =<< needmerge
   where
 	syncbranch = syncBranch branch
 	needmerge = ifM isBareRepo
 		( return False
 		, ifM (inRepo $ Git.Ref.exists syncbranch)
-			( inRepo $ Git.Branch.changed branch syncbranch
+			( inRepo $ Git.Branch.changed branch' syncbranch
 			, return False
 			)
 		)
 	go False = stop
 	go True = do
 		showStart "merge" $ Git.Ref.describe syncbranch
-		next $ next $ autoMergeFrom syncbranch (Just branch) Git.Branch.ManualCommit
+		next $ next $ merge currbranch Git.Branch.ManualCommit syncbranch
+	branch' = maybe branch (originalToAdjusted branch) madj
+mergeLocal (Nothing, _) = stop
 
-pushLocal :: Maybe Git.Ref -> CommandStart
+pushLocal :: CurrBranch -> CommandStart
 pushLocal b = do
 	updateSyncBranch b
 	stop
 
-updateSyncBranch :: Maybe Git.Ref -> Annex ()
-updateSyncBranch Nothing = noop
-updateSyncBranch (Just branch) = do
+updateSyncBranch :: CurrBranch -> Annex ()
+updateSyncBranch (Nothing, _) = noop
+updateSyncBranch (Just branch, madj) = do
+	-- When in an adjusted branch, propigate any changes made to it
+	-- back to the original branch.
+	case madj of
+		Just adj -> propigateAdjustedCommits branch
+			(adj, originalToAdjusted branch adj)
+		Nothing -> return ()
 	-- Update the sync branch to match the new state of the branch
-	inRepo $ updateBranch $ syncBranch branch
+	inRepo $ updateBranch (syncBranch branch) branch
 	-- In direct mode, we're operating on some special direct mode
-	-- branch, rather than the intended branch, so update the indended
+	-- branch, rather than the intended branch, so update the intended
 	-- branch.
 	whenM isDirect $
-		inRepo $ updateBranch $ fromDirectBranch branch
+		inRepo $ updateBranch (fromDirectBranch branch) branch
 
-updateBranch :: Git.Ref -> Git.Repo -> IO ()
-updateBranch syncbranch g = 
+updateBranch :: Git.Branch -> Git.Branch -> Git.Repo -> IO ()
+updateBranch syncbranch updateto g = 
 	unlessM go $ error $ "failed to update " ++ Git.fromRef syncbranch
   where
 	go = Git.Command.runBool
 		[ Param "branch"
 		, Param "-f"
 		, Param $ Git.fromRef $ Git.Ref.base syncbranch
+		, Param $ Git.fromRef $ updateto
 		] g
 
-pullRemote :: SyncOptions -> Remote -> Maybe Git.Ref -> CommandStart
+pullRemote :: SyncOptions -> Remote -> CurrBranch -> CommandStart
 pullRemote o remote branch = stopUnless (pure $ pullOption o) $ do
 	showStart "pull" (Remote.name remote)
 	next $ do
@@ -276,26 +310,27 @@ pullRemote o remote branch = stopUnless (pure $ pullOption o) $ do
  - were committed (or pushed changes, if this is a bare remote),
  - while the synced/master may have changes that some
  - other remote synced to this remote. So, merge them both. -}
-mergeRemote :: Remote -> Maybe Git.Ref -> CommandCleanup
-mergeRemote remote b = ifM isBareRepo
+mergeRemote :: Remote -> CurrBranch -> CommandCleanup
+mergeRemote remote currbranch = ifM isBareRepo
 	( return True
-	, case b of
-		Nothing -> do
+	, case currbranch of
+		(Nothing, _) -> do
 			branch <- inRepo Git.Branch.currentUnsafe
-			and <$> mapM (merge Nothing) (branchlist branch)
-		Just thisbranch -> do
-			inRepo $ updateBranch $ syncBranch thisbranch
-			and <$> (mapM (merge (Just thisbranch)) =<< tomerge (branchlist b))
+			mergelisted (pure (branchlist branch))
+		(Just branch, _) -> do
+			inRepo $ updateBranch (syncBranch branch) branch
+			mergelisted (tomerge (branchlist (Just branch)))
 	)
   where
-	merge thisbranch br = autoMergeFrom (remoteBranch remote br) thisbranch Git.Branch.ManualCommit
+	mergelisted getlist = and <$> 
+		(mapM (merge currbranch Git.Branch.ManualCommit . remoteBranch remote) =<< getlist)
 	tomerge = filterM (changed remote)
 	branchlist Nothing = []
 	branchlist (Just branch) = [branch, syncBranch branch]
 
-pushRemote :: SyncOptions -> Remote -> Maybe Git.Ref -> CommandStart
-pushRemote _o _remote Nothing = stop
-pushRemote o remote (Just branch) = stopUnless (pure (pushOption o) <&&> needpush) $ do
+pushRemote :: SyncOptions -> Remote -> CurrBranch -> CommandStart
+pushRemote _o _remote (Nothing, _) = stop
+pushRemote o remote (Just branch, _) = stopUnless (pure (pushOption o) <&&> needpush) $ do
 	showStart "push" (Remote.name remote)
 	next $ next $ do
 		showOutput
@@ -339,16 +374,16 @@ pushRemote o remote (Just branch) = stopUnless (pure (pushOption o) <&&> needpus
  - The sync push will fail to overwrite if receive.denyNonFastforwards is
  - set on the remote.
  -}
-pushBranch :: Remote -> Git.Ref -> Git.Repo -> IO Bool
+pushBranch :: Remote -> Git.Branch -> Git.Repo -> IO Bool
 pushBranch remote branch g = tryIO (directpush g) `after` syncpush g
   where
 	syncpush = Git.Command.runBool $ pushparams
 		[ Git.Branch.forcePush $ refspec Annex.Branch.name
-		, refspec branch
+		, refspec $ fromAdjustedBranch branch
 		]
 	directpush = Git.Command.runQuiet $ pushparams
 		[ Git.fromRef $ Git.Ref.base $ Annex.Branch.name
-		, Git.fromRef $ Git.Ref.base $ fromDirectBranch branch
+		, Git.fromRef $ Git.Ref.base $ fromDirectBranch $ fromAdjustedBranch branch
 		]
 	pushparams branches =
 		[ Param "push"

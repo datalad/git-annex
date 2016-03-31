@@ -23,12 +23,6 @@ git-annex should use smudge/clean filters.
   (May need to use libgit2 to do this efficiently, cannot find
   any plumbing except git-update-index, which is very inneficient for
   smudged files.)
-* Crippled filesystem should cause all files to be transparently unlocked.
-  Note that this presents problems when dealing with merge conflicts and
-  when pushing changes committed in such a repo. Ideally, should avoid
-  committing implicit unlocks, or should prevent such commits leaking out
-  in pushes. See [[design/adjusted_branches]].
-
 * Eventually (but not yet), make v6 the default for new repositories.
   Note that the assistant forces repos into direct mode; that will need to
   be changed then, and it should enable annex.thin instead.
