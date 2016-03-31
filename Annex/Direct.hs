@@ -225,7 +225,7 @@ mergeDirectCommit allowff old branch commitmode = do
 	let merge_msg = d </> "MERGE_MSG"
 	let merge_mode = d </> "MERGE_MODE"
 	ifM (pure allowff <&&> canff)
-		( inRepo $ Git.Branch.update Git.Ref.headRef branch -- fast forward
+		( inRepo $ Git.Branch.update "merge" Git.Ref.headRef branch -- fast forward
 		, do
 			msg <- liftIO $
 				catchDefaultIO ("merge " ++ fromRef branch) $
@@ -462,7 +462,7 @@ switchHEAD = maybe noop switch =<< inRepo Git.Branch.currentUnsafe
   where
 	switch orighead = do
 		let newhead = directBranch orighead
-		maybe noop (inRepo . Git.Branch.update newhead)
+		maybe noop (inRepo . Git.Branch.update "entering direct mode" newhead)
 			=<< inRepo (Git.Ref.sha orighead)
 		inRepo $ Git.Branch.checkout newhead
 
@@ -475,7 +475,7 @@ switchHEADBack = maybe noop switch =<< inRepo Git.Branch.currentUnsafe
 		case v of
 			Just headsha
 				| orighead /= currhead -> do
-					inRepo $ Git.Branch.update orighead headsha
+					inRepo $ Git.Branch.update "leaving direct mode" orighead headsha
 					inRepo $ Git.Branch.checkout orighead
 					inRepo $ Git.Branch.delete currhead
 			_ -> inRepo $ Git.Branch.checkout orighead

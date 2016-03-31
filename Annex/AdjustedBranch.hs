@@ -167,7 +167,7 @@ adjustToCrippledFileSystem = do
 adjustBranch :: Adjustment -> OrigBranch -> Annex AdjBranch
 adjustBranch adj origbranch = do
 	sha <- adjust adj origbranch
-	inRepo $ Git.Branch.update adjbranch sha
+	inRepo $ Git.Branch.update "entering adjusted branch" adjbranch sha
 	return adjbranch
   where
 	adjbranch = originalToAdjusted origbranch adj
@@ -254,7 +254,7 @@ updateAdjustedBranch tomerge (origbranch, adj) commitmode = catchBoolIO $
 	 -}
 	recommit commitsprevented currbranch parent (Just commit) = do
 		commitsha <- commitAdjustedTree (commitTree commit) parent
-		inRepo $ Git.Branch.update currbranch commitsha
+		inRepo $ Git.Branch.update "merging into adjusted branch" currbranch commitsha
 		propigateAdjustedCommits' origbranch (adj, currbranch) commitsprevented
 		return True
 	recommit _ _ _ Nothing = return False
@@ -292,7 +292,7 @@ propigateAdjustedCommits' origbranch (adj, currbranch) _commitsprevented = do
 		-- in order made.
 		[Param "--reverse"]
 	go parent _ [] = do
-		inRepo $ Git.Branch.update origbranch parent
+		inRepo $ Git.Branch.update "updating adjusted branch" origbranch parent
 		return (Right parent)
 	go parent pastadjcommit (sha:l) = do
 		mc <- catCommit sha
@@ -311,7 +311,7 @@ propigateAdjustedCommits' origbranch (adj, currbranch) _commitsprevented = do
 		-- and reparent it on top of the new
 		-- version of the origbranch.
 		commitAdjustedTree (commitTree currcommit) newparent
-			>>= inRepo . Git.Branch.update currbranch
+			>>= inRepo . Git.Branch.update "rebasing adjusted branch on top of updated original branch" currbranch
 
 {- Reverses an adjusted commit, and commit on top of the provided newparent,
  - yielding a commit sha.
