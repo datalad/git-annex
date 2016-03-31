@@ -205,15 +205,18 @@ preventCommits = bracket setup cleanup
  - metadata is based on the parent.
  -}
 commitAdjustedTree :: Sha -> Ref -> Annex Sha
-commitAdjustedTree treesha parent = go =<< catCommit parent
+commitAdjustedTree treesha parent = commitAdjustedTree' treesha parent [parent]
+
+commitAdjustedTree' :: Sha -> Ref -> [Ref] -> Annex Sha
+commitAdjustedTree' treesha basis parents = go =<< catCommit basis
   where
 	go Nothing = inRepo mkcommit
-	go (Just parentcommit) = inRepo $ commitWithMetaData
-		(commitAuthorMetaData parentcommit)
-		(commitCommitterMetaData parentcommit)
+	go (Just basiscommit) = inRepo $ commitWithMetaData
+		(commitAuthorMetaData basiscommit)
+		(commitCommitterMetaData basiscommit)
 		mkcommit
 	mkcommit = Git.Branch.commitTree Git.Branch.AutomaticCommit
-		adjustedBranchCommitMessage [parent] treesha
+		adjustedBranchCommitMessage parents treesha
 
 adjustedBranchCommitMessage :: String
 adjustedBranchCommitMessage = "git-annex adjusted branch"
@@ -222,13 +225,14 @@ adjustedBranchCommitMessage = "git-annex adjusted branch"
  - branch into it. -}
 updateAdjustedBranch :: Branch -> (OrigBranch, Adjustment) -> Git.Branch.CommitMode -> Annex Bool
 updateAdjustedBranch tomerge (origbranch, adj) commitmode = catchBoolIO $
-	join $ preventCommits $ \_ -> go =<< (,)
+	join $ preventCommits $ \commitsprevented -> go commitsprevented =<< (,)
 		<$> inRepo (Git.Ref.sha tomerge)
 		<*> inRepo Git.Branch.current
   where
-	go (Just mergesha, Just currbranch) =
+	go commitsprevented (Just mergesha, Just currbranch) =
 		ifM (inRepo $ Git.Branch.changed currbranch mergesha)
 			( do
+				void $ propigateAdjustedCommits' origbranch (adj, currbranch) commitsprevented
 				adjustedtomerge <- adjust adj mergesha
 				ifM (inRepo $ Git.Branch.changed currbranch adjustedtomerge)
 					( return $
@@ -242,23 +246,55 @@ updateAdjustedBranch tomerge (origbranch, adj) commitmode = catchBoolIO $
 					)
 			, nochangestomerge
 			)
-	go _ = return $ return False
+	go _ _ = return $ return False
 	nochangestomerge = return $ return True
-	{- Once a merge commit has been made, re-do it, removing
-	 - the old version of the adjusted branch as a parent, and
-	 - making the only parent be the branch that was merged in.
+
+	{- A merge commit has been made on the adjusted branch.
+	 - Now, re-do it, removing the old version of the adjusted branch
+	 - from its history.
 	 -
-	 - Doing this ensures that the same commit Sha is
-	 - always arrived at for a given commit from the merged in branch.
-	 
-	 - Also, update the origbranch.
+	 - There are two possible scenarios; either some commits
+	 - were made on top of the adjusted branch's adjusting commit,
+	 - or not. Those commits have already been propigated to the
+	 - orig branch, so we can just check if there are commits in the
+	 - orig branch that are not present in tomerge.
 	 -}
-	recommit currbranch parent (Just commit) = do
-		commitsha <- commitAdjustedTree (commitTree commit) parent
-		inRepo $ Git.Branch.update "updating original branch" origbranch parent
-		inRepo $ Git.Branch.update "rebasing adjusted branch on top of updated original branch after merge" currbranch commitsha
-		return True
+	recommit currbranch mergedsha (Just mergecommit) =
+		ifM (inRepo $ Git.Branch.changed tomerge origbranch)
+			( remerge currbranch mergedsha mergecommit
+				=<< inRepo (Git.Ref.sha origbranch)
+			, fastforward currbranch mergedsha mergecommit
+			)
 	recommit _ _ Nothing = return False
+
+	{- Fast-forward scenario. The mergecommit is changed to a non-merge
+	 - commit, with its parent being the mergedsha. 
+	 - The orig branch can simply be pointed at the mergedsha.
+	 -}
+	fastforward currbranch mergedsha mergecommit = do
+		commitsha <- commitAdjustedTree (commitTree mergecommit) mergedsha
+		inRepo $ Git.Branch.update "fast-forward update of adjusted branch" currbranch commitsha
+		inRepo $ Git.Branch.update "updating original branch" origbranch mergedsha
+		return True
+		
+	{- True merge scenario. -}
+	remerge currbranch mergedsha mergecommit (Just origsha) = do
+	 	-- Update origbranch by reverse adjusting the mergecommit,
+		-- yielding a merge between orig and tomerge.
+		treesha <- reverseAdjustedTree origsha adj
+			-- get 1-parent commit because 
+			-- reverseAdjustedTree does not support merges
+			=<< commitAdjustedTree (commitTree mergecommit) origsha
+		revadjcommit <- inRepo $
+			Git.Branch.commitTree Git.Branch.AutomaticCommit
+				("Merge branch " ++ fromRef tomerge) [origsha, mergedsha] treesha
+		inRepo $ Git.Branch.update "updating original branch" origbranch revadjcommit
+		-- Update currbranch, reusing mergedsha, but making its
+		-- parent be the updated origbranch.
+		adjcommit <- commitAdjustedTree' (commitTree mergecommit) revadjcommit [revadjcommit]
+		inRepo $ Git.Branch.update rebaseOnTopMsg currbranch adjcommit
+		return True
+	remerge _ _ _ Nothing = return False
 
 {- Check for any commits present on the adjusted branch that have not yet
  - been propigated to the orig branch, and propigate them.
@@ -268,9 +304,16 @@ updateAdjustedBranch tomerge (origbranch, adj) commitmode = catchBoolIO $
  -}
 propigateAdjustedCommits :: OrigBranch -> (Adjustment, AdjBranch) -> Annex ()
 propigateAdjustedCommits origbranch (adj, currbranch) = 
-	preventCommits $ propigateAdjustedCommits' origbranch (adj, currbranch)
-
-propigateAdjustedCommits' :: OrigBranch -> (Adjustment, AdjBranch) -> CommitsPrevented -> Annex ()
+	preventCommits $ \commitsprevented -> do
+		join $ propigateAdjustedCommits' origbranch (adj, currbranch) commitsprevented
+		
+{- Returns action which will rebase the adjusted branch on top of the
+ - updated orig branch. -}
+propigateAdjustedCommits'
+	:: OrigBranch
+	-> (Adjustment, AdjBranch)
+	-> CommitsPrevented
+	-> Annex (Annex ())
 propigateAdjustedCommits' origbranch (adj, currbranch) _commitsprevented = do
 	ov <- inRepo $ Git.Ref.sha (Git.Ref.under "refs/heads" origbranch)
 	case ov of
@@ -282,11 +325,11 @@ propigateAdjustedCommits' origbranch (adj, currbranch) _commitsprevented = do
 					case v of
 						Left e -> do
 							warning e
-							return ()
-						Right newparent ->
+							return $ return ()
+						Right newparent -> return $
 							rebase currcommit newparent
-				Nothing -> return ()
-		Nothing -> return ()
+				Nothing -> return $ return ()
+		Nothing -> return $ return ()
   where
 	newcommits = inRepo $ Git.Branch.changedCommits origbranch currbranch
 		-- Get commits oldest first, so they can be processed
@@ -312,41 +355,53 @@ propigateAdjustedCommits' origbranch (adj, currbranch) _commitsprevented = do
 		-- and reparent it on top of the new
 		-- version of the origbranch.
 		commitAdjustedTree (commitTree currcommit) newparent
-			>>= inRepo . Git.Branch.update "rebasing adjusted branch on top of updated original branch" currbranch
+			>>= inRepo . Git.Branch.update rebaseOnTopMsg currbranch
 
-{- Reverses an adjusted commit, and commit on top of the provided newparent,
+rebaseOnTopMsg :: String
+rebaseOnTopMsg = "rebasing adjusted branch on top of updated original branch"
+
+{- Reverses an adjusted commit, and commit with provided commitparent,
  - yielding a commit sha.
  -
- - Adjust the tree of the newparent, changing only the files that the
+ - Adjusts the tree of the commitparent, changing only the files that the
  - commit changed, and reverse adjusting those changes.
  -
- - Note that the commit message, and the author and committer metadata are
- - copied over. However, any gpg signature will be lost, and any other
- - headers are not copied either. -}
+ - The commit message, and the author and committer metadata are
+ - copied over from the basiscommit. However, any gpg signature
+ - will be lost, and any other headers are not copied either. -}
 reverseAdjustedCommit :: Sha -> Adjustment -> (Sha, Commit) -> OrigBranch -> Annex (Either String Sha)
-reverseAdjustedCommit newparent adj (csha, c) origbranch
-	-- commitDiff does not support merge commits
-	| length (commitParent c) > 1 = return $
+reverseAdjustedCommit commitparent adj (csha, basiscommit) origbranch
+	| length (commitParent basiscommit) > 1 = return $
 		Left $ "unable to propigate merge commit " ++ show csha ++ " back to " ++ show origbranch
 	| otherwise = do
-		(diff, cleanup) <- inRepo (Git.DiffTree.commitDiff csha)
-		let (adds, others) = partition (\dti -> Git.DiffTree.srcsha dti == nullSha) diff
-		let (removes, changes) = partition (\dti -> Git.DiffTree.dstsha dti == nullSha) others
-		adds' <- catMaybes <$>
-			mapM (adjustTreeItem reverseadj) (map diffTreeToTreeItem adds)
-		treesha <- Git.Tree.adjustTree
-			(propchanges changes)
-			adds'
-			(map Git.DiffTree.file removes)
-			newparent
-			=<< Annex.gitRepo
-		void $ liftIO cleanup
+		treesha <- reverseAdjustedTree commitparent adj csha
 		revadjcommit <- inRepo $ commitWithMetaData
-			(commitAuthorMetaData c)
-			(commitCommitterMetaData c) $
+			(commitAuthorMetaData basiscommit)
+			(commitCommitterMetaData basiscommit) $
 				Git.Branch.commitTree Git.Branch.AutomaticCommit
-					(commitMessage c) [newparent] treesha
+					(commitMessage basiscommit) [commitparent] treesha
 		return (Right revadjcommit)
+
+{- Adjusts the tree of the basis, changing only the files that the
+ - commit changed, and reverse adjusting those changes.
+ -
+ - commitDiff does not support merge commits, so the csha must not be a
+ - merge commit. -}
+reverseAdjustedTree :: Sha -> Adjustment -> Sha -> Annex Sha
+reverseAdjustedTree basis adj csha = do
+	(diff, cleanup) <- inRepo (Git.DiffTree.commitDiff csha)
+	let (adds, others) = partition (\dti -> Git.DiffTree.srcsha dti == nullSha) diff
+	let (removes, changes) = partition (\dti -> Git.DiffTree.dstsha dti == nullSha) others
+	adds' <- catMaybes <$>
+		mapM (adjustTreeItem reverseadj) (map diffTreeToTreeItem adds)
+	treesha <- Git.Tree.adjustTree
+		(propchanges changes)
+		adds'
+		(map Git.DiffTree.file removes)
+		basis
+		=<< Annex.gitRepo
+	void $ liftIO cleanup
+	return treesha
   where
 	reverseadj = reverseAdjustment adj
 	propchanges changes ti@(TreeItem f _ _) =

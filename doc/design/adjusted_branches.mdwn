@@ -109,10 +109,10 @@ beginning the merge. There may be staged changes, or changes in the work tree.
 
 First filter the new commit:
 
-	origin/master    adjusted/master
-	A
-	|--------------->A'
-	|                |
+	origin/master    adjusted/master      master
+	A                                     A
+	|--------------->A'                   |
+	|                |                    |
 	|                |
 	B
 	|                
@@ -120,10 +120,10 @@ First filter the new commit:
 
 Then, merge that into adjusted/master:
 
-	origin/master    adjusted/master
-	A
-	|--------------->A'
-	|                |
+	origin/master    adjusted/master     master
+	A                                    A
+	|--------------->A'                  |
+	|                |                   |
 	|                |
 	B                |
 	|                |
@@ -136,35 +136,13 @@ conflict should only affect the work tree/index, so can be resolved without
 making a commit, but B'' may end up being made to resolve a merge
 conflict.)
 
-------
+Once the merge is done, we have a merge commit B'' on adjusted/master.
+To finish, redo that commit so it does not have A' as its parent.
 
-TODO FIXME: When an adjusted unlocked branch has gotten a file, and a new
-commit is merged in, that does not touch that file, there is a false merge
-conflict on the file. It's auto-resolved by creating a .variant file.
-This is probably a bug in the auto-resolve code for v6 files.
-
-Test case:
-
-	git clone ~/lib/tmp
-	cd tmp
-	git annex upgrade
-	git annex adjust
-	git annex get t/foo
-	# make change in ~/lib/tmp and commit
-	git annex sync
-	# t/foo.variant-* is there
-
-------
-
-
-
-Once the merge is done, we have a commit B'' on adjusted/master. To finish,
-adjust that commit so it does not have adjusted/master as its parent.
-
-	origin/master    adjusted/master
-	A
-	|--------------->A'
-	|                |
+	origin/master    adjusted/master     master
+	A                                    A
+	|--------------->A'                  |
+	|                |                   |
 	|                |
 	B
 	|                
@@ -172,6 +150,16 @@ adjust that commit so it does not have adjusted/master as its parent.
 	|                |
 
 Finally, update master, by reverse filtering B''.
+	
+	origin/master    adjusted/master    master
+	A                                   A
+	|--------------->A'                 |
+	|                |                  |
+	|                |                  |
+	B                                   |
+	|                                   |
+	|--------------->B'' - - - - - - -> B
+	|                |
 
 Notice how similar this is to the commit graph. So, "fast-forward" 
 merging the same B commit from origin/master will lead to an identical
@@ -190,6 +178,66 @@ always reset back once they notice the mistake.
 between the adjusted work tree and pulled changes. A post-merge hook would
 be needed to re-adjust the work tree, and there would be a window where eg,
 not present files would appear in the work tree.]
+
+## another merge scenario
+
+Another merge scenario is when there's a new commit C on adjusted/master,
+and also a new commit B on origin/master.
+
+Start by adjusting B':
+
+	origin/master    adjusted/master      master
+	A                                     A
+	|--------------->A'                   |
+	|                |                    |
+	|                C'
+	B
+	|                
+	|---------->B'
+
+Then, merge B' into adjusted/master:
+
+	origin/master    adjusted/master     master
+	A                                    A
+	|--------------->A'                  |
+	|                |                   |
+	|                C'
+	B                |
+	|                |
+	|----------->B'->M'
+
+Here M' is the correct tree, but it has A' as its grandparent,
+which is the adjusted branch commit, so needs to be dropped in order to 
+get a commit that can be put on master.
+
+We don't want to lose commit C', but it's an adjusted
+commit, so needs to be de-adjusted.
+
+	origin/master    adjusted/master     master
+	A                                    A
+	|--------------->A'                  |
+	|                |                   |
+	|                C'- - - - - - - - > C
+	B                |
+	|                |
+	|----------->B'->M'
+	|               
+
+Now, we generate a merge commit, between B and C, with known result M'
+(so no actual merging done here).
+
+	origin/master    adjusted/master     master
+	A                                    A
+	|--------------->A'                  |
+	|                |                   |
+	|                C'- - - - - - - - > C
+	B                                    |
+	|                                    |
+	|--------------->M'<-----------------|
+	|               
+
+Finally, update master, by reverse filtering M'. The resulting commit
+on master will also be a merge between B and C.
 
 ## annex object add/remove
 
@@ -303,20 +351,32 @@ into adjusted view worktrees.]
 * Honor annex.thin when entering an adjusted branch.
 * Cloning a repo that has an adjusted branch checked out gets into an ugly
   state.
+* There are potentially races in code that assumes a branch like
+  master is not being changed by someone else. In particular,
+  propigateAdjustedCommits rebases the adjusted branch on top of master.
+  That is called by sync. The assumption is that any changes in master
+  have already been handled by updateAdjustedBranch. But, if another remote
+  pushed a new master at just the right time, the adjusted branch could be
+  rebased on top of a master that it doesn't incorporate, which is wrong.
 
-Bug running git-annex sync in adjusted branch when there is a local change
-that gets committed (or already has been), and remote changes available.
-Both propigateAdjustedCommits and updateAdjustedBranch
-get called in this scenario. Neither order of calling the two works entirely.
+------
 
-The reflog has:
+TODO FIXME: When an adjusted unlocked branch has gotten a file, and a new
+commit is merged in, that does not touch that file, there is a false merge
+conflict on the file. It's auto-resolved by creating a .variant file.
+This is probably a bug in the auto-resolve code for v6 files.
 
-d585d7f HEAD@{1}: rebasing adjusted branch on top of updated original branch
-e51daec HEAD@{2}: merge f7f2b9f3b1d1c97a1ab24f4a94d4a27d84898992: Merge made by the 'recursive' strategy.
-9504e7b HEAD@{3}: rebasing adjusted branch on top of updated original branch
-6c6fd41 HEAD@{4}: commit: add
+Test case:
 
-e51daec has ok correct history; it gets messed up in d585d7f
+	git clone ~/lib/tmp
+	cd tmp
+	git annex upgrade
+	git annex adjust
+	git annex get t/foo
+	# make change in ~/lib/tmp and commit
+	git annex sync
+	# t/foo.variant-* is there
 
-Problem is just, that the commit made to the adjusted branch 
-is left out of the history.
+------
+
+

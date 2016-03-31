@@ -243,9 +243,7 @@ commitStaged commitmode commitmessage = do
 	return True
 
 mergeLocal :: CurrBranch -> CommandStart
-mergeLocal currbranch@(Just branch, madj) = do
-	proptoorig
-	go =<< needmerge
+mergeLocal currbranch@(Just branch, madj) = go =<< needmerge
   where
 	syncbranch = syncBranch branch
 	needmerge = ifM isBareRepo
@@ -260,11 +258,6 @@ mergeLocal currbranch@(Just branch, madj) = do
 		showStart "merge" $ Git.Ref.describe syncbranch
 		next $ next $ merge currbranch Git.Branch.ManualCommit syncbranch
 	branch' = maybe branch (originalToAdjusted branch) madj
-	-- When in an adjusted branch, propigate any changes made to it
-	-- back to the original branch.
-	proptoorig = case madj of
-		Just adj -> propigateAdjustedCommits branch (adj, branch')
-		Nothing -> return ()
 mergeLocal (Nothing, _) = stop
 
 pushLocal :: CurrBranch -> CommandStart
@@ -274,7 +267,13 @@ pushLocal b = do
 
 updateSyncBranch :: CurrBranch -> Annex ()
 updateSyncBranch (Nothing, _) = noop
-updateSyncBranch (Just branch, _) = do
+updateSyncBranch (Just branch, madj) = do
+	-- When in an adjusted branch, propigate any changes made to it
+	-- back to the original branch.
+	case madj of
+		Just adj -> propigateAdjustedCommits branch
+			(adj, originalToAdjusted branch adj)
+		Nothing -> return ()
 	-- Update the sync branch to match the new state of the branch
 	inRepo $ updateBranch (syncBranch branch) branch
 	-- In direct mode, we're operating on some special direct mode
