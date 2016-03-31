@@ -16,6 +16,10 @@ Sample run:
     [...]
     merge git-annex ok
 
+I use this to synchronize specific playlists to my phone, instead of
+the whole music collection, because of the limited space of the
+device.
+
 The source is AGPL and available in my
 [personal git repository][]. Unfortunately, it is written in Python
 and can probably not be merged into git-annex, but since it is so
