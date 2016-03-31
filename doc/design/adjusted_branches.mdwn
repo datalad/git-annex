@@ -358,25 +358,3 @@ into adjusted view worktrees.]
   have already been handled by updateAdjustedBranch. But, if another remote
   pushed a new master at just the right time, the adjusted branch could be
   rebased on top of a master that it doesn't incorporate, which is wrong.
-
-------
-
-TODO FIXME: When an adjusted unlocked branch has gotten a file, and a new
-commit is merged in, that does not touch that file, there is a false merge
-conflict on the file. It's auto-resolved by creating a .variant file.
-This is probably a bug in the auto-resolve code for v6 files.
-
-Test case:
-
-	git clone ~/lib/tmp
-	cd tmp
-	git annex upgrade
-	git annex adjust
-	git annex get t/foo
-	# make change in ~/lib/tmp and commit
-	git annex sync
-	# t/foo.variant-* is there
-
-------
-
-
