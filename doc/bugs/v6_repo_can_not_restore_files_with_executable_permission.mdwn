@@ -1,0 +1,90 @@
+### Please describe the problem.
+If a file is executable, the content of the file remains to be an SHA hash in a newly cloned repository. Neither 'git annex sync --content' or 'git annex get' can bring the file back.
+The only way to bring the file back is to remove the file and do a 'git checkout' or 'git reset HEAD --hard'
+
+If the file is not an executable (a tarball for example), it works as expected.
+
+### What steps will reproduce the problem?
+See log below.
+
+### What version of git-annex are you using? On what operating system?
+6.20160318-gd594fc0 on Ubuntu 15.10
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+vagrant@vm:/tmp/$ cd annex/
+vagrant@vm:/tmp/annex/$ mkdir repo1
+vagrant@vm:/tmp/annex/$ cd repo1/
+vagrant@vm:/tmp/annex/repo1/$ git init
+Initialized empty Git repository in /tmp/annex/repo1/.git/
+vagrant@vm:/tmp/annex/repo1/$ git annex init --version=6
+init  ok
+(recording state in git...)
+vagrant@vm:/tmp/annex/repo1/$ cp /bin/ls .
+‘/bin/ls’ -> ‘./ls’
+vagrant@vm:/tmp/annex/repo1/$ git add ls
+vagrant@vm:/tmp/annex/repo1/$ git ci -am 'added ls binary'
+(recording state in git...)
+[master (root-commit) 7889519] added ls binary
+ 1 file changed, 1 insertion(+)
+ create mode 100755 ls
+vagrant@vm:/tmp/annex/repo1/$ ls -l
+total 116
+-rwxr-xr-x 1 vagrant vagrant 118272 Apr  1 12:56 ls
+vagrant@vm:/tmp/annex/repo1/$ cd ..
+vagrant@vm:/tmp/annex/$ git clone repo1 repo2
+Cloning into 'repo2'...
+done.
+vagrant@vm:/tmp/annex/$ cd repo2
+vagrant@vm:/tmp/annex/repo2/$ git annex init --version=6
+init  (merging origin/git-annex into git-annex...)
+(recording state in git...)
+(scanning for unlocked files...)
+ok
+(recording state in git...)
+vagrant@vm:/tmp/annex/repo2/$ ls -l
+total 4
+-rwxrwxr-x 1 vagrant vagrant 97 Apr  1 12:57 ls
+vagrant@vm:/tmp/annex/repo2/$ git annex sync --content
+commit  ok
+pull origin 
+ok
+get ls (from origin...) (checksum...) ok
+pull origin 
+ok
+(recording state in git...)
+push origin 
+Counting objects: 11, done.
+Delta compression using up to 8 threads.
+Compressing objects: 100% (9/9), done.
+Writing objects: 100% (11/11), 1.10 KiB | 0 bytes/s, done.
+Total 11 (delta 1), reused 0 (delta 0)
+To /tmp/annex/repo1
+ * [new branch]      git-annex -> synced/git-annex
+ * [new branch]      master -> synced/master
+ok
+vagrant@vm:/tmp/annex/repo2/$ ls -l
+total 4
+-rwxrwxr-x 1 vagrant vagrant 97 Apr  1 12:57 ls
+vagrant@vm:/tmp/annex/repo2/$ cat ls
+/annex/objects/SHA256E-s118272--0b786b336b0391b56dabb7b078a23ec4295115628cfd4b635f4d8ae5ae0cfafc
+vagrant@vm:/tmp/annex/repo2/$ git annex get ls
+vagrant@vm:/tmp/annex/repo2/$ cat ls
+/annex/objects/SHA256E-s118272--0b786b336b0391b56dabb7b078a23ec4295115628cfd4b635f4d8ae5ae0cfafc
+vagrant@vm:/tmp/annex/repo2/$ rm ls
+vagrant@vm:/tmp/annex/repo2/$ git checkout ls
+vagrant@vm:/tmp/annex/repo2/$ ls -l 
+total 116
+-rwxrwxr-x 1 vagrant vagrant 118272 Apr  1 12:59 ls
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
