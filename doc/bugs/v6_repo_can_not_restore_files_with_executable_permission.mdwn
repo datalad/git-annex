@@ -4,7 +4,7 @@ The only way to bring the file back is to remove the file and do a 'git checkout
 
 If the file is not an executable (a tarball for example), it works as expected.
 
-If I did not clone the repo but create a new repo and then manually add remote it also works.
+If I did not clone the repo but created a new repo and then manually added a remote it also worked as expected.
 
 ### What steps will reproduce the problem?
 See log below.
