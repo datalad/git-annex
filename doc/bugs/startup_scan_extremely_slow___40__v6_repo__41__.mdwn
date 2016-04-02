@@ -1,0 +1,69 @@
+### Please describe the problem.
+
+When the assistant starts it takes several hours to do the startup scan, even when there are no files to add.
+
+The repo contains many small files but it is configured to add the smaller ones via gitattributes. In particular there are: 91949 files added to git repo and 1029 annexed.
+This is my gitattributes
+
+    * annex.largefiles=(largerthan=500kb)
+
+annex.addunlocked is set to true
+
+### What steps will reproduce the problem?
+
+Create a repo with ~90000 files smaller than 500k and ~1000 files larger (in my case ranging from 500k to 32M). Set addunlocked to true and annex.largefiles to largerthan=500kb. Start the assistant and let it finish adding the files. Restart the assistant.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 6.20160318
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 6
+
+I'm running it on Arch Linux (packaged version)
+
+### Please provide any additional information below.
+
+[[!format sh """
+
+[2016-03-29 22:08:26.356586] main: starting assistant version 6.20160318
+
+  No known network monitor available through dbus; falling back to polling
+(scanning...) [2016-03-29 22:08:41.426049] Watcher: Performing startup scan
+[2016-03-29 23:05:40.533113] Committer: Committing changes to git
+(recording state in git...)
+[2016-03-30 00:10:07.085051] Committer: Committing changes to git
+(recording state in git...)
+[2016-03-30 01:23:29.784236] Committer: Committing changes to git
+(recording state in git...)
+[2016-03-30 02:43:02.048312] Committer: Committing changes to git
+(recording state in git...)
+[2016-03-30 03:37:53.273057] Committer: Committing changes to git
+(recording state in git...)
+[2016-03-30 04:04:56.875573] Committer: Committing changes to git
+(recording state in git...)
+[2016-03-30 04:31:14.370618] Committer: Committing changes to git
+(recording state in git...)
+[2016-03-30 04:56:12.467889] Committer: Committing changes to git
+(recording state in git...)
+[2016-03-30 05:21:09.021728] Committer: Committing changes to git
+(recording state in git...)
+[2016-03-30 05:43:11.111616] Committer: Committing changes to git
+(recording state in git...)
+[2016-03-30 06:14:38.096425] Committer: Committing changes to git
+(recording state in git...)
+[2016-03-30 06:49:54.730879] Committer: Committing changes to git
+(recording state in git...)
+[2016-03-30 07:26:47.721929] Committer: Committing changes to git
+(recording state in git...)
+
+
+# End of transcript or log.
+"""]]
+
+At this point I stopped the assistant that was still doing the startup scan...
+
+### Have you had any luck using git-annex before?
+
+Sure!
