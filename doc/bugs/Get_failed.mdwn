@@ -1,0 +1,88 @@
+### Please describe the problem.
+I'm using git-annex v6 in windows and seems `git annex get` fails.
+Deleting the pointer files and doing a hard reset seems to fix the problem.
+Another bug report named "v6 repo can not restore files with executable permission" seems to point to the same problem but a little different.
+
+### What steps will reproduce the problem?
+I have a repo in D:\annex with a file `test`
+Now I create another repo:
+
+	$ cd H:\annex
+
+	$ git init
+	Initialized empty Git repository in H:/annex/.git/
+
+	$ git annex init "portable drive"
+	init portable drive
+	  Detected a filesystem without fifo support.
+
+	  Disabling ssh connection caching.
+
+	  Detected a crippled filesystem.
+
+	  Enabling direct mode.
+	ok
+	(recording state in git...)
+
+	$ git annex upgrade
+	upgrade . (v5 to v6...)
+	  Upgraded repository out of direct mode.
+
+	  Changes have been staged for all annexed files in this repository; you should run `git commit` to commit these changes.
+
+	  Any other clones of this repository that use direct mode need to be upgraded now, too.
+	ok
+
+	$ git remote add laptop D:/annex
+
+	$ git annex sync
+	commit  ok
+	pull laptop
+	warning: no common commits
+	remote: Counting objects: 21, done.
+	remote: Compressing objects: 100% (15/15), done.
+	remote: Total 21 (delta 3), reused 0 (delta 0)
+	Unpacking objects: 100% (21/21), done.
+	From D:/annex
+	 * [new branch]      git-annex  -> laptop/git-annex
+	 * [new branch]      master     -> laptop/master
+	 * [new branch]      synced/git-annex -> laptop/synced/git-annex
+	 * [new branch]      synced/master -> laptop/synced/master
+
+
+	Already up-to-date.
+	ok
+	(merging laptop/git-annex laptop/synced/git-annex into git-annex...)
+	(recording state in git...)
+	push laptop
+	Counting objects: 8, done.
+	Delta compression using up to 8 threads.
+	Compressing objects: 100% (6/6), done.
+	Writing objects: 100% (8/8), 928 bytes | 0 bytes/s, done.
+	Total 8 (delta 0), reused 0 (delta 0)
+	To D:/annex
+	   c1aee82..980dc01  git-annex -> synced/git-annex
+	ok
+
+	$ git annex get .
+	get test (from laptop...)
+	SHA256E-s14488367--4391729b982439764813156e1bfc12e9626ae89452ab812f5180c376fbd57fc0
+		 14,488,367 100%   63.24MB/s    0:00:00 (xfr#1, to-chk=0/1)
+	(checksum...)
+	git-annex: DeleteFile ".\\test": permission denied (The process cannot access the file because it is being used by another process.)
+	failed
+	git-annex: get: 1 failed
+
+It seems to try to delete the pointer file, but finds the file in use. Maybe fsck is using it?
+
+	$ cat test
+	/annex/objects/SHA256E-s14488367--4391729b982439764813156e1bfc12e9626ae89452ab812f5180c376fbd57fc0
+
+	$ git annex lock
+	lock test git-annex: content not present; cannot lock
+
+And `git annex unlock` will do nothing.
+
+If you can't reproduce the problem, I'll run the tests for you.
+### What version of git-annex are you using? On what operating system?
+Latest compile from source, Windows 8.1
