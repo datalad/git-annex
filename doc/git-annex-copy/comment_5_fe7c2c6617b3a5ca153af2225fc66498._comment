@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2016-04-04T20:30:33Z"
+ content="""
+If you run `git annex copy --from slowremote1` in one terminal and at the
+same time run `git annex copy --from slowremote2` in another terminal,
+the two processes will cooperatively get the files, spreading the load 
+amoung the remotes. This works because git-annex avoids downloading a file
+if the same file is already being downloaded by a different process.
+"""]]
