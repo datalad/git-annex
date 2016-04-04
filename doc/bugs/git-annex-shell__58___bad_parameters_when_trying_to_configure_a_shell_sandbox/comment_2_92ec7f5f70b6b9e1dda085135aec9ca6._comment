@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-04-04T20:12:12Z"
+ content="""
+The wrapper program is not strictly necessary; this will work too:
+
+	command="git-annex-shell -c \"$SSH_ORIGINAL_COMMAND\""
+
+It might be nice if git-shell knew about `SSH_ORIGINAL_COMMAND`
+(and if it did, I'd make git-annex-shell mirror that),
+but then that could be seen as making git depend on the transport
+unncessarily.
+"""]]
