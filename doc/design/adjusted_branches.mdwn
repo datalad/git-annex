@@ -347,7 +347,10 @@ into adjusted view worktrees.]
 ## TODOs
 
 * Interface in webapp to enable adjustments.
-* Honor annex.thin when entering an adjusted branch.
+* Honor annex.thin when entering an adjusted branch. git checkout
+  will make copies of the content of annexed files, so this would need
+  to checkout the adjusted branch some other way. Maybe generalize so this
+  more efficient checkout is available as a git-annex command?
 * Cloning a repo that has an adjusted branch checked out gets into an ugly
   state.
 * There are potentially races in code that assumes a branch like
