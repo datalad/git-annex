@@ -136,15 +136,16 @@ changed.
 
 # EXAMPLES
 
-git-annex-shell(1) is usually called through a wrapper installed by
-the git-annex-assistant(1) in the `~/.ssh/authorized_keys` file on the
-remote host. You can also do a similar setup by adding a specific
-line with a `command=` parameter to `~/.ssh/authorized_keys` by hand.
+To make a `~/.ssh/authorized_keys` file that only allows git-annex-shell
+to be run, and not other commands, pass the original command to the -c
+option:
+    
+	command="git-annex-shell -c \"$SSH_ORIGINAL_COMMAND\"",no-agent-forwarding,no-port-forwarding,no-X11-forwarding ssh-rsa AAAAB3NzaC1y[...] user@example.com
 
-For example, the following forces the key to be read-only, run only
-git-annex commands on the given directory:
+To further restrict git-annex-shell to a particular repository, 
+and fully lock it down to read-only mode:
 
-    command="GIT_ANNEX_SHELL_DIRECTORY=/srv/annex GIT_ANNEX_SHELL_LIMITED=true GIT_ANNEX_SHELL_READONLY=true git-annex-shell -c \"$SSH_ORIGINAL_COMMAND\"",no-agent-forwarding,no-port-forwarding,no-X11-forwarding ssh-rsa AAAAB3NzaC1y[...] user@example.com
+	command="GIT_ANNEX_SHELL_DIRECTORY=/srv/annex GIT_ANNEX_SHELL_LIMITED=true GIT_ANNEX_SHELL_READONLY=true git-annex-shell -c \"$SSH_ORIGINAL_COMMAND\"",no-agent-forwarding,no-port-forwarding,no-X11-forwarding ssh-rsa AAAAB3NzaC1y[...] user@example.com
 
 Obviously, `ssh-rsa AAAAB3NzaC1y[...] user@example.com` needs to
 replaced with your SSH key. The above also assumes `git-annex-shell`
