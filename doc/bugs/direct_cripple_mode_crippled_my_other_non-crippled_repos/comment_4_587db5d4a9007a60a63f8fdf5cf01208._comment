@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-04-04T18:55:50Z"
+ content="""
+@Kalle but this bug was fixed in October 2015 as far as we know. 
+
+If you experienced the bug with a version of git-annex newer than
+5.20151019, then this bug ought to be re-opened. But I'm pretty sure I
+reproduced the bug back then, fixed it, and tested the fix.
+"""]]
