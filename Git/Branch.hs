@@ -184,21 +184,21 @@ commitTree commitmode message parentrefs tree repo =
 forcePush :: String -> String
 forcePush b = "+" ++ b
 
-{- Updates a branch (or other ref) to a new Sha. -}
-update :: String -> Branch -> Sha -> Repo -> IO ()
-update message branch sha = run
+{- Updates a branch (or other ref) to a new Sha or branch Ref. -}
+update :: String -> Branch -> Ref -> Repo -> IO ()
+update message branch r = run
 	[ Param "update-ref"
 	, Param "-m"
 	, Param message
 	, Param $ fromRef branch
-	, Param $ fromRef sha
+	, Param $ fromRef r
 	]
 
-update' :: Branch -> Sha -> Repo -> IO ()
-update' branch sha = run
+update' :: Branch -> Ref -> Repo -> IO ()
+update' branch r = run
 	[ Param "update-ref"
 	, Param $ fromRef branch
-	, Param $ fromRef sha
+	, Param $ fromRef r
 	]
 
 {- Checks out a branch, creating it if necessary. -}

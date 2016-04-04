@@ -18,6 +18,12 @@ import Data.Char (chr)
 headRef :: Ref
 headRef = Ref "HEAD"
 
+headFile :: Repo -> FilePath
+headFile r = localGitDir r </> "HEAD"
+
+setHeadRef :: Ref -> Repo -> IO ()
+setHeadRef ref r = writeFile (headFile r) ("ref: " ++ fromRef ref)
+
 {- Converts a fully qualified git ref into a user-visible string. -}
 describe :: Ref -> String
 describe = fromRef . base

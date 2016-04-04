@@ -14,6 +14,7 @@ module Annex.AdjustedBranch (
 	fromAdjustedBranch,
 	getAdjustment,
 	enterAdjustedBranch,
+	adjustBranch,
 	adjustToCrippledFileSystem,
 	updateAdjustedBranch,
 	propigateAdjustedCommits,

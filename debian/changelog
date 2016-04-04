@@ -2,6 +2,10 @@ git-annex (6.20160319) UNRELEASED; urgency=medium
 
   * adjust --unlock: Enters an adjusted branch in which all annexed files
     are unlocked. The v6 equivilant of direct mode, but much cleaner!
+  * Upgrading a direct mode repository to v6 has changed to enter
+    an adjusted unlocked branch. This makes the direct mode to v6 upgrade
+    able to be performed in one clone of a repository without affecting
+    other clones, which can continue using v5 and direct mode.
   * init --version=6: Automatically enter the adjusted unlocked branch
     when filesystem doesn't support symlinks.
   * ddar remote: fix ssh calls

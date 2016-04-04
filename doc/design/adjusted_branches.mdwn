@@ -347,7 +347,6 @@ into adjusted view worktrees.]
 ## TODOs
 
 * Interface in webapp to enable adjustments.
-* Upgrade from direct mode to v6 in unlocked branch.
 * Honor annex.thin when entering an adjusted branch.
 * Cloning a repo that has an adjusted branch checked out gets into an ugly
   state.
