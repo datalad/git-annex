@@ -157,10 +157,14 @@ formatPointer k =
  -
  - Unlocked files whose content is present are not detected by this. -}
 isPointerFile :: FilePath -> IO (Maybe Key)
-isPointerFile f = catchDefaultIO Nothing $ do
-	b <- L.take maxPointerSz <$> L.readFile f
-	let !mk = parseLinkOrPointer' (decodeBS b)
+isPointerFile f = catchDefaultIO Nothing $ bracket open close $ \h -> do
+	b <- take (fromIntegral maxPointerSz) <$> hGetContents h
+	-- strict so it reads before the file handle is closed
+	let !mk = parseLinkOrPointer' b
 	return mk
+  where
+	open = openBinaryFile f ReadMode
+	close = hClose
 
 {- Checks a symlink target or pointer file first line to see if it
  - appears to point to annexed content.

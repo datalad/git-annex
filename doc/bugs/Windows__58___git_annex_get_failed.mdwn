@@ -3,6 +3,8 @@ I'm using git-annex v6 in windows and seems `git annex get` fails.
 Deleting the pointer files and doing a hard reset seems to fix the problem.
 Another bug report named "v6 repo can not restore files with executable permission" seems to point to the same problem but a little different.
 
+[[!retitle "git annex get fails sometimes in v6 repository on Windows"]]
+
 ### What steps will reproduce the problem?
 I have a repo in D:\annex with a file `test`
 Now I create another repo:
