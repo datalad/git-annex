@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="timothyhobbs@8b50ff958c937fa4b6de1f9009f464b9ddfc2991"
+ nickname="timothyhobbs"
+ subject="comment 2"
+ date="2016-04-04T21:21:56Z"
+ content="""
+When I launch the annex assistant web app, it should do nothing to the repository, because I have not told it to do anything. I have only tried to open up what, to me, the naive user, is some gui app. I know of no other gui app that initializes an operation simple by way of being opened. Does synaptic update your system when you click \"Applications Menu -> Settings -> Synaptic package manager\"?
+
+You say that I have to shoot myself in the foot repeatedly and manually to do it, but that simply isn't true. There is nothing wrong with initializing a git repo in ~/ in order to, say, track changes to dot files. There shouldn't be anything wrong with running \"git annex init\" in that git repo, to, for example, track some binaries in ~/bin. Afterall, I didn't \"git annex add .\" I was trying to use git annex to track specific and manually specified files.
+
+I actually ended up opening the assistant, from the Applications Menu, for a reason entirely unrelated to the git annex repo that happened to be located in ~/. So I hope you can imagine my shock, when by simply opening what I thought was going to be a gui that I could use to manage some entirely unrelated repositories, I actually ended up running a command on the repository in ~/.
+"""]]
