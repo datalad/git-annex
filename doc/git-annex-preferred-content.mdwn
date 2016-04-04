@@ -225,11 +225,11 @@ elsewhere to allow removing it).
 
 * `anything`
 
-  Matches any version of any file.
+  Always matches.
 
 * `nothing`
 
-  Matches nothing. (Same as "not anything")
+  Never matches. (Same as "not anything")
 
 * `not expression`
 

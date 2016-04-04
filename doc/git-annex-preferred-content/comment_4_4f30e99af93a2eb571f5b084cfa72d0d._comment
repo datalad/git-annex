@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-04-04T20:01:42Z"
+ content="""
+@Don, when a preferred content expression matches
+based on the name of a file, it will only match objects used by
+files currently in the tree, and not objects used by old versions.
+
+So, what you want is probably as simple as "include=*"
+"""]]
