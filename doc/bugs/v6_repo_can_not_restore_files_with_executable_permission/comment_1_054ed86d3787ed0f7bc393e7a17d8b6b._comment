@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="ExGen"
+ subject="Same"
+ date="2016-04-03T13:47:26Z"
+ content="""
+I have this problem on windows v6 too:
+
+	$ git annex get test
+	get test (from laptop...)
+	SHA256E-s14488367--4391729b982439764813156e1bfc12e9626ae89452ab812f5180c376fbd57fc0
+		 14,488,367 100%   63.24MB/s    0:00:00 (xfr#1, to-chk=0/1)
+	(checksum...)
+	git-annex: DeleteFile \".\\test\": permission denied (The process cannot access the file because it is being used by another process.)
+	failed
+	git-annex: get: 1 failed
+	
+I can see only a pointer:
+
+	$ cat test
+	/annex/objects/SHA256E-s14488367--4391729b982439764813156e1bfc12e9626ae89452ab812f5180c376fbd57fc0
+
+`git annex unlock` will do nothing, and:
+
+	$ git annex lock
+	lock test git-annex: content not present; cannot lock
+
+I'll make another bug report.
+
+
+
+"""]]

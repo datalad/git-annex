@@ -1,0 +1,62 @@
+I am using the latest daily build for Android 5.0
+
+My version is Android 5.0.1 Lollipop. And I'm using a Samsung Galaxy S4 unrooted.
+
+Trying to create a repositpory in the folder /storage/extSdCard/Music gives me a webpage with a red error badge that says:
+
+    "Internal Server Error"
+    
+    git init failed
+
+    Output:
+    /storage/extSdCard/Music/.git: Permission denied
+
+I'm pretty sure this is because of Android's crappy permission system on sd cards. But when I install the app, it tells me it is asking for
+read write access to the sd card. So this consideration must have happened.
+
+
+
+### Please describe the problem.
+
+I am using the latest daily build for Android 5.0
+
+My version is Android 5.0.1 Lollipop. And I'm using a Samsung Galaxy S4 unrooted.
+
+Trying to create a repositpory in the folder /storage/extSdCard/Music gives me a webpage with a red error badge that says:
+
+    "Internal Server Error"
+    
+    git init failed
+
+    Output:
+    /storage/extSdCard/Music/.git: Permission denied
+
+I'm pretty sure this is because of Android's crappy permission system on sd cards. But when I install the app, it tells me it is asking for
+read write access to the sd card. So this consideration must have happened.
+
+### What steps will reproduce the problem?
+
+1. Install the Android 5.0 daily build on an Android 5.0.1 phone.
+2. Try to create a repo on an external sd card.
+
+### What version of git-annex are you using? On what operating system?
+
+Latest daily build of Android 5.0 git annex on Android 5.0.1
+
+### Please provide any additional information below.
+
+When I run adb shell I see the following permissions on the file in question:
+
+    drwxrwx--- root     sdcard_r          2016-04-02 14:11 Music
+
+Additional info. The terminal emulator shows this output:
+
+    Falling back to hardcoded app location: cannot find expected files in /data/app/ga.androidterm-2/lib
+    git annex webapp
+    WARNING: linker: git-annex has text relocations. This is wasting memory and prevents security hardening. Please fix.
+
+I have tried moving the app to the sd card, but it will not work if I do that.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes! It's by far one of my favorite apps! it works very well on my laptop, on my home file server, and on my internal storage on my Android phone :)

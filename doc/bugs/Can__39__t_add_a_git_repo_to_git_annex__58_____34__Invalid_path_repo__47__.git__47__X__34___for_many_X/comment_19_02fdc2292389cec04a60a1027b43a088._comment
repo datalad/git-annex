@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="timothyhobbs@8b50ff958c937fa4b6de1f9009f464b9ddfc2991"
+ nickname="timothyhobbs"
+ subject="comment 19"
+ date="2016-04-03T22:30:59Z"
+ content="""
+I think that you have underestimated the severity of this problem, as well as failed to see that this is a problem mostly specific to git annex. For tracking changes to code, this usecase does not make much sense. But when using git annex as an advanced CAS filesystem, this limitation is absolutely fatal. I would like to use git annex as a de-duplicating CAS filesystem in order to optimize file transfers across computers and in order to preform de-duplication. Git annex is great for this use case, except for this one fatal flaw. If it is impossible for a \".git\" directory to exist within the git-annex CAS filesystem, then this filesystem is no longer capable of storing arbitrary content. It is impossible, for me to use git annex in a way that is similar to [OSTree](https://wiki.gnome.org/action/show/Projects/OSTree?action=show&redirect=OSTree) for example.
+
+Furthermore, you are wrong when you claim that using git annex to sychronize git repositories is silly. It is no more silly than using git annex to synchronize mercurial or subversion repositories. \"It could cause corruption!\" you say. But if git annex causes corruption, then it cannot be used for synchronization period, and that has nothing to do with git.
+
+I think that this limitation has been one of the few reasons why git annex has not been widely adopted for file synchronization.
+
+I know that you may not be motivated to solve this problem, but I am. As the author of [subuser](subuser.org) I would really like to be able to use git annex as a CAS filesystem similar to OSTree. I am highly motivated to solve this problem, but I do not yet know how. What would be acceptable to you if I were to make a pull request? Would an acceptable solution be to store a list of git repositories in .git/annex/folders-named.git that would map out where the .git folders were supposted to go, and then add those folders to the git by changing their names? AKA, git annex would add a folder named /foo/bar/.annexed-git-ab343ax/ instead of /foo/bar/.git/ and then it would add the line \"/foo/bar/.annexed-git-ab343ax/\" to \".git/annex/folders-named.git\". On checkout git annex could then rename /foo/bar/.annexed-git-ab343ax/ to /foo/bar/.git/ and all would be fine wouldn't it? Do you have any other ideas? Would you accept such a pull request?
+"""]]

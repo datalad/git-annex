@@ -1,0 +1,23 @@
+### Please describe the problem.
+
+If I create a git annex repository in my home directory, then start the assistant, the assistant will try to annex my entire home dir.
+
+### What steps will reproduce the problem?
+
+$ cd
+$ git init
+$ git annex init
+
+Applications Menu -> Internet -> Git Annex
+
+### What version of git-annex are you using? On what operating system?
+
+Debian Jessie git-annex (5.20141125)
+
+### Expected behavior
+
+The assistant shouldn't do anything unless I tell it to. Currently, I cannot play with the assistant at all, because I do not want everything in my homedir to be locked and symlinked.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I use git annex for managing the image and video resources on my website and it works fine for that.

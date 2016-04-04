@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="szrc"
+ subject="Local storage of creds"
+ date="2016-04-04T03:59:01Z"
+ content="""
+I have a question about local storage of credentials. I assumed that when creds were stored in the repo (because the remote is encrypted or because embedcreds=yes), they wouldn't be stored locally in .git/annex/creds. But it seems they are stored locally, in plaintext, regardless.
+
+Is there a way to prevent this? Ideally, credentials should not be stored plaintext at all...but maybe there's a technical issue I'm not seeing.
+"""]]
