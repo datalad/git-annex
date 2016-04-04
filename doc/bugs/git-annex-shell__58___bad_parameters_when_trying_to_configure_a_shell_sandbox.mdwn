@@ -125,3 +125,5 @@ git-annex: get: 1 failed
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I seem to recall I had that working in the past, and I feel I am probably doing something stupidly wrong, but here I am. Sorry about that, I'll be sure to fix the documentation more clearly (esp. in the [[git-annex-shell]] manpage when I figure it out! --[[anarcat]]
+
+Well, it looks like this PEBKAC here - could have sworn I had tested the wrapper, but it seems I didn't do it properly. I'll fixup the documentation for things to be clearer, but this is basically fixed now, with a proper ~/.ssh/git-annex. I don't understand why the wrapper is necessary, but thanks for the feedback! [[done]]
