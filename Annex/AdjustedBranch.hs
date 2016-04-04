@@ -238,8 +238,9 @@ updateAdjustedBranch tomerge (origbranch, adj) commitmode = catchBoolIO $
 				void $ propigateAdjustedCommits' origbranch (adj, currbranch) commitsprevented
 				adjustedtomerge <- adjust adj mergesha
 				ifM (inRepo $ Git.Branch.changed currbranch adjustedtomerge)
-					( return $
+					( return $ do
 						-- Run after commit lock is dropped.
+						liftIO $ print ("autoMergeFrom", adjustedtomerge, (Just currbranch))
 						ifM (autoMergeFrom adjustedtomerge (Just currbranch) commitmode)
 							( preventCommits $ \_ ->
 								recommit currbranch mergesha =<< catCommit currbranch

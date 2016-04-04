@@ -9,7 +9,7 @@ Consider two use cases:
 Both of these could be met by making `git-annex sync` maintain an adjusted
 version of the original branch, eg `adjusted/master`.
 
-There would be a filter function. For #1 above it would simply convert all
+There would be a adjustment function. For #1 above it would simply convert all
 annex symlinks to annex file pointers. For #2 above it would omit files
 whose content is not currently in the annex. Sometimes, both #1 and #2 would
 be wanted.
@@ -20,7 +20,7 @@ play out.]
 
 [[!toc]]
 
-## filtering
+## adjusting
 
 	master           adjusted/master
 	A
@@ -29,7 +29,7 @@ play out.]
 
 When generating commit A', reuse the date of A and use a standard author,
 committer, and message. This means that two users with the adjusted branch
-checked out and using the same filters will get identical shas for A', and
+checked out and using the same adjustments will get identical shas for A', and
 so can collaborate on them.
 
 ## commit
@@ -38,7 +38,7 @@ When committing changes, a commit is made as usual to the adjusted branch.
 So, the user can `git commit` as usual. This does not touch the
 original branch yet. 
 
-Then we need to get from that commit to one with the filters reversed,
+Then we need to get from that commit to one with the adjustments reversed,
 which should be the same as if the adjusted branch had not been used.
 This commit gets added onto the original branch.
 
@@ -57,13 +57,13 @@ So, the branches would look like this:
 Note particularly that B does not have A' or C in its history;
 the adjusted branch is not evident from outside.
 
-Also note that B gets filtered and the adjusted branch is rebased on top of
+Also note that B gets adjusted and the adjusted branch is rebased on top of
 it, so C does not remain in the adjusted branch history either. This will
 make other checkouts that are in the same adjusted branch end up with the
 same B' commit when they pull B.
 
 There may be multiple commits made to the adjusted branch before any get
-applied back to the original branch. This is handled by reverse filtering
+applied back to the original branch. This is handled by reverse adjusting
 commits one at a time and rebasing the others on top.
 
 	master           adjusted/master
@@ -91,7 +91,7 @@ commits one at a time and rebasing the others on top.
 
 
 [WORKTREE: A pre-commit hook would be needed to update the staged changes, 
-reversing the filter before the commit is made. All the other complications
+reversing the adjustment before the commit is made. All the other complications
 above are avoided.]
 
 ## merge
@@ -103,11 +103,11 @@ Note that the adjusted files db needs to be updated to reflect the changes
 that are merged in, for object add/remove to work as described below.
 
 When merging, there should never be any commits present on the
-adjusted/master branch that have not yet been filtered over to the master
-branch. If there are any such commits, just filter them into master before
+adjusted/master branch that have not yet been propigated back to the master
+branch. If there are any such commits, just propigate them into master before
 beginning the merge. There may be staged changes, or changes in the work tree.
 
-First filter the new commit:
+First adjust the new commit:
 
 	origin/master    adjusted/master      master
 	A                                     A
@@ -143,13 +143,14 @@ To finish, redo that commit so it does not have A' as its parent.
 	A                                    A
 	|--------------->A'                  |
 	|                |                   |
+	
 	|                |
 	B
 	|                
 	|--------------->B''
 	|                |
 
-Finally, update master, by reverse filtering B''.
+Finally, update master, by reverse adjusting B''.
 	
 	origin/master    adjusted/master    master
 	A                                   A
@@ -167,10 +168,10 @@ sha for B' as the original committer got.
 
 Since the adjusted/master branch is not present on the remote, if the user
 does a `git pull`, it won't merge in changes from origin/master. Which is
-good because the filter needs to be applied first.
+good because the adjustment needs to be applied first.
 
 However, if the user does `git merge origin/master`, they'll get into a
-state where the filter has not been applied. The post-merge hook could be
+state where the adjustment has not been applied. The post-merge hook could be
 used to clean up after that. Or, let the user foot-shoot this way; they can
 always reset back once they notice the mistake.
 
@@ -236,32 +237,57 @@ Now, we generate a merge commit, between B and C, with known result M'
 	|--------------->M'<-----------------|
 	|               
 
-Finally, update master, by reverse filtering M'. The resulting commit
+Finally, update master, by reverse adjusting M'. The resulting commit
 on master will also be a merge between B and C.
+
+### avoiding conflicted merge
+
+When merging origin/master with adjusted/master, origin/master is
+adjusted first, and then merged into the checked out adjusted/master
+branch.
+
+This can lead to merge conflicts, when files in origin/master have
+been renamed or modified.
+
+This is because adjusted/master and origin/master (and also its adjusted
+form) will both modify a file; the former by eg, unlocking it and
+the latter by eg, deleting it.
+
+This may need an out of work-tree merge to resolve. In an empty temp work
+tree, merge the de-adjusted form of adjusted/master and origin/master. If
+that has (real) merge conflicts, auto-resolve them.
+
+The resulting merge commit can then be adjusted to yield the adjusted
+merge commit. The parents of the adjusted merge commit also need to be
+adjusted, to be the same as if adjusted(origin/master) was merged into
+adjusted/master.
+
+Finally, check out the adjusted merge commit, to update the real working
+tree.
 
 ## annex object add/remove
 
 When objects are added/removed from the annex, the associated file has to
-be looked up, and the filter applied to it. So, dropping a file with the
-missing file filter would cause it to be removed from the adjusted branch,
+be looked up, and the adjustment applied to it. So, dropping a file with the
+missing file adjustment would cause it to be removed from the adjusted branch,
 and receiving a file's content would cause it to appear in the adjusted
 branch. TODO
 
 These changes would need to be committed to the adjusted branch, otherwise
 `git diff` would show them.
 
-[WORKTREE: Simply adjust the work tree (and index) per the filter.]
+[WORKTREE: Simply adjust the work tree (and index) per the adjustment.]
 
-## reverse filtering commits
+## reverse adjusting commits
 
-A user's commits on the adjusted branch have to be reverse filtered
+A user's commits on the adjusted branch have to be reverse adjusted
 to get changes to apply to the master branch.
 
-This reversal of one filter can be done as just another filter.
-Since only files touched by the commit will be reverse filtered, it doesn't
-need to reverse all changes made by the original filter.
+This reversal of one adjustment can be done as just another adjustment.
+Since only files touched by the commit will be reverse adjusted, it doesn't
+need to reverse all changes made by the original adjustment.
 
-For example, reversing the unlock filter might lock the file. Or, it might
+For example, reversing the unlock adjustment might lock the file. Or, it might
 do nothing, which would make all committed files remain unlocked.
 
 ## push
@@ -291,11 +317,11 @@ But, not maintaining an adjusted branch complicates other things. See
 WORKTREE notes throughout this page. Overall, the WORKTREE approach seems
 too problimatic.
 
-Ah, but we know that when filter #2 is in place, any file that `git annex
+Ah, but we know that when adjustment #2 is in place, any file that `git annex
 get` could act on is not in the index. So, it could look at the master branch
 instead. (Same for `git annex move --from` and `git annex copy --from`)
 
-OTOH, if filter #1 is in place and not #2, a file might be renamed in the
+OTOH, if adjustment #1 is in place and not #2, a file might be renamed in the
 index, and `git annex get $newname` should work. So, it should look at the
 index in that case.
 
@@ -322,7 +348,7 @@ visible to anyone else.
 [WORKTREE: not a problem]
 
 When a pull modifies a file, its content won't be available, and so it
-would be hidden temporarily by filter #2. So the file would seem to vanish,
+would be hidden temporarily by adjustment #2. So the file would seem to vanish,
 and come back later, which could be confusing. Could be fixed as discussed
 in [[todo/deferred_update_mode]]. Arguably, it's just as confusing for the
 file to remain visible but have its content temporarily replaced with a
@@ -330,15 +356,15 @@ annex pointer.
 
 ## integration with view branches
 
-Entering a view from an adjusted branch should probably carry the filtering
+Entering a view from an adjusted branch should probably carry the adjusting
 over into the creation/updating of the view branch.
 
 Could go a step further, and implement view branches as another branch
-adjusting filter, albeit an extreme one. This might improve view branches.
+adjustment, albeit an extreme one. This might improve view branches.
 For example, it's not currently possible to update a view branch with
 changes fetched from a remote, and this could get us there.
 
-This would need the reverse filter to be able to change metadata,
+This would need the reverse adjust to be able to change metadata,
 so that a commit that moved files in the view updates their metadata.
 
 [WORKTREE: Wouldn't be able to integrate, unless view branches are changed
@@ -376,6 +402,7 @@ into adjusted view worktrees.]
 	cd b
 	git annex sync
 
+  To fix, implement "avoiding conflicted merge" above.
 
 * There are potentially races in code that assumes a branch like
   master is not being changed by someone else. In particular,
