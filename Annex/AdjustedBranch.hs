@@ -147,6 +147,7 @@ enterAdjustedBranch adj = go =<< originalBranch
 	go (Just origbranch) = do
 		adjbranch <- preventCommits $ const $ 
 			adjustBranch adj origbranch
+		showOutput -- checkout can have output in large repos
 		inRepo $ Git.Command.run
 			[ Param "checkout"
 			, Param $ fromRef $ Git.Ref.base $ adjbranch
