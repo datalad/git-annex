@@ -134,6 +134,28 @@ changed.
   If set, git-annex-shell will refuse to run commands that do not operate
   on the specified directory.
 
+# EXAMPLES
+
+git-annex-shell(1) is usually called through a wrapper installed by the git-annex-assistant(1) in the `~/.ssh/authorized_keys` file on the remote host. To make such a setup manually, you will need the following wrapper installed in `~/.ssh/git-annex-shell`:
+
+    #!/bin/sh
+    
+    set -e
+    if [ "x$SSH_ORIGINAL_COMMAND" != "x" ]; then
+        exec /usr/bin/git-annex-shell -c "$SSH_ORIGINAL_COMMAND"
+    else
+        exec /usr/bin/git-annex-shell -c "$@"
+    fi
+
+Then restrictions can be implemented to specific SSH keys using the
+`command=` parameter. For example, the following forces the key to be
+read-only, run only git-annex commands on the given directory:
+
+    command="GIT_ANNEX_SHELL_DIRECTORY=/srv/annex GIT_ANNEX_SHELL_LIMITED=true GIT_ANNEX_SHELL_READONLY=true ~/.ssh/git-annex-shell",no-agent-forwarding,no-port-forwarding,no-X11-forwarding ssh-rsa AAAAB3NzaC1y[...] user@example.com
+
+Obviously, `ssh-rsa AAAAB3NzaC1y[...] user@example.com` needs to
+replaced with your SSH key.
+
 # SEE ALSO
 
 [[git-annex]](1)
