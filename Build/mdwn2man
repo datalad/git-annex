@@ -53,6 +53,7 @@ while (<>) {
 	else {
 		$inNAME=0;
 	}
+	s/\\"/\\\\"/g; # hack for git-annex-shell's quotes around SSH_ORIGINAL_COMMAND
 
 	print $_;
 }
