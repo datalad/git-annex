@@ -105,6 +105,7 @@ initialize' mversion = do
 		, unlessM isBare
 			switchHEADBack
 		)
+	checkAdjustedClone
 	createInodeSentinalFile False
 
 uninitialize :: Annex ()

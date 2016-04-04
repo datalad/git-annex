@@ -18,6 +18,7 @@ module Annex.AdjustedBranch (
 	adjustToCrippledFileSystem,
 	updateAdjustedBranch,
 	propigateAdjustedCommits,
+	checkAdjustedClone,
 ) where
 
 import Annex.Common
@@ -419,3 +420,17 @@ diffTreeToTreeItem dti = TreeItem
 	(Git.DiffTree.file dti)
 	(Git.DiffTree.dstmode dti)
 	(Git.DiffTree.dstsha dti)
+
+{- Cloning a repository that has an adjusted branch checked out will
+ - result in the clone having the same adjusted branch checked out -- but
+ - the origbranch won't exist in the clone. Create the origbranch. -}
+checkAdjustedClone :: Annex ()
+checkAdjustedClone = go =<< inRepo Git.Branch.current
+  where
+	go Nothing = return ()
+	go (Just currbranch) = case adjustedToOriginal currbranch of
+		Nothing -> return ()
+		Just (_adj, origbranch) -> 
+			unlessM (inRepo $ Git.Ref.exists origbranch) $ do
+				let remotebranch = Git.Ref.underBase "refs/remotes/origin" origbranch
+				inRepo $ Git.Branch.update' origbranch remotebranch

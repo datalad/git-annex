@@ -351,8 +351,6 @@ into adjusted view worktrees.]
   will make copies of the content of annexed files, so this would need
   to checkout the adjusted branch some other way. Maybe generalize so this
   more efficient checkout is available as a git-annex command?
-* Cloning a repo that has an adjusted branch checked out gets into an ugly
-  state.
 * There are potentially races in code that assumes a branch like
   master is not being changed by someone else. In particular,
   propigateAdjustedCommits rebases the adjusted branch on top of master.
