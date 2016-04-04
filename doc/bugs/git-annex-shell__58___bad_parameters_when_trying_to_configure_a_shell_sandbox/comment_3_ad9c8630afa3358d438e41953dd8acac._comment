@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="""fixed up"""
+ date="2016-04-04T20:30:22Z"
+ content="""
+
+Why doesn't the assistant use git-annex -c instead of setting up a
+wrapper that can potentially break? Seems like one moving parts too
+many...
+
+I have removed the wrapper from the manpage, as it seems a little
+annoying to setup manually for no real advantage that I can see. Note
+that the double-quotes need to be quoted otherwise the public key is
+completely ignored.
+"""]]
