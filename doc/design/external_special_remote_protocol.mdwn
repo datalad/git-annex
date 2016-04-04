@@ -194,10 +194,11 @@ while it's handling a request.
   determined.  
   The Filename can be empty (in which case a default is used),
   or can specify a filename that is suggested to be used for this url.
-* `CHECKURL-MULTI Url Size|UNKNOWN Filename ...`  
+* `CHECKURL-MULTI Url1 Size1|UNKNOWN Filename1 Url2 Size2|UNKNOWN Filename2 ...`  
   Indicates that the requested url has been verified to exist,
   and contains multiple files, which can each be accessed using
-  their own url.  
+  their own url.  Each triplet of url, size, and filename should be listed,
+  one after the other.
   Note that since a list is returned, neither the Url nor the Filename
   can contain spaces.
 * `CHECKURL-FAILURE`  
