@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-04-04T19:05:22Z"
+ content="""
+Locking down git-annex-shell should be the same process as locking down
+git-shell. It intentionally copies git-shell's behavior to make this as
+easy as possible, and to make git-annex-shell a drop-in replacement for
+git-shell in things like gitolite.
+
+I double-checked with this in my `authorized_keys`:
+
+command="~/.ssh/git-annex-shell" ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICfFntnesZcYz2B2T41ay45igfckXRSh5uVffkuCQkLv joey@darkstar
+
+Which is using the standard git-annex-shell wrapper script. It works.
+
+I guess you've either made some mistake in your setup, or possibly
+`SSH_ORIGINAL_COMMAND` isn't getting set. I don't know why that would
+happen, but it should be easy enough to modify your script to test.
+Just make it `set -x` ..
+"""]]
