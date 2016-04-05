@@ -1,3 +1,9 @@
 A sftp backend would be nice because gpg operations could be pipelined to the network transfer, not requiring the creation of a full file to disk with gpg before the network transmission, as it happens with rsync.
 
 There should be some libraries that can handle the sftp connections and transfers. I read that even curl has support for that.
+
+> Another reason to build this is that sftp has a `SFTP_FXP_STAT`
+> that can get disk free space information. "echo df | sftp user@host"
+> exposes this, when available. Some sftp servers can be locked down
+> so that the user can't run git-annex on them, so that could be the only
+> way to get diskreserve working for such a remote. --[[Joey]]
