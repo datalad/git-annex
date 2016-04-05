@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="zarel"
+ subject="comment 3"
+ date="2016-04-05T17:24:06Z"
+ content="""
+You're right, after the initial run there is no smudge filter overhead. I ran htop in tree view and got this result:
+
+    git-annex-assistant (55-60%)
+      |--> git-annex-assistant (six instances, a couple of those with load 20-40%, the others idling at 0%)
+      |--> git ls-files (mostly idle)
+      |--> git check-attr (mostly idle)
+      |--> git check-ignore (mostly idle)
+      |--> git cat-file (stuck at 40-60%)
+"""]]
