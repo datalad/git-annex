@@ -131,10 +131,6 @@ applyCommitMode commitmode ps
 commitCommand :: CommitMode -> [CommandParam] -> Repo -> IO Bool
 commitCommand = commitCommand' runBool
 
-{- Commit will fail when the tree is clean. This suppresses that error. -}
-commitQuiet :: CommitMode -> [CommandParam] -> Repo -> IO ()
-commitQuiet commitmode ps = void . tryIO . commitCommand' runQuiet commitmode ps
-
 commitCommand' :: ([CommandParam] -> Repo -> IO a) -> CommitMode -> [CommandParam] -> Repo -> IO a
 commitCommand' runner commitmode ps = runner $
 	Param "commit" : applyCommitMode commitmode ps

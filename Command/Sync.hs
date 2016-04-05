@@ -214,7 +214,8 @@ commit o = stopUnless shouldcommit $ next $ next $ do
 			void preCommitDirect
 			commitStaged Git.Branch.ManualCommit commitmessage
 		, do
-			inRepo $ Git.Branch.commitQuiet Git.Branch.ManualCommit
+			showOutput
+			void $ inRepo $ Git.Branch.commitCommand Git.Branch.ManualCommit
 				[ Param "-a"
 				, Param "-m"
 				, Param commitmessage
