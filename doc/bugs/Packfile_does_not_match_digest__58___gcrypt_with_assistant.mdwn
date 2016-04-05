@@ -1,0 +1,24 @@
+### Please describe the problem.
+I tried to sync a folder between two laptops, using the webapp and GPG encryption. I started by seting up the repository on laptop1, and then, while all the files were uploading, I went over to laptop2 and set things up there as well.
+
+At first, everything looked fine, laptop1 was uploading and laptop2 was downloading. Then, laptop2 reported "Failed to sync with VPS, and the log file showed a gcrypt error: "Packfile long-hash does not match digest!"
+
+### What version of git-annex are you using? On what operating system?
+
+
+
+Laptop1 is running wheezy with git annex version 6.20160307+gitgb095561-1~ndall+1 from neurodebian.
+
+VPS is running wheezy
+
+Laptop2 is runing jessie with git annex version 6.20160307+gitgb095561-1~ndall+1 from neurodebian.
+
+### Please provide any additional information below.
+
+http://denisa.hobbs.cz/laptop1.daemon.log
+http://denisa.hobbs.cz/laptop2.daemon.log
+
+### Have you had any luck using git-annex before?
+
+If I could get this syncing to work, then that would be great! I don't want to use unison, because that wouldn't be encrypted... So this would be wonderful.
+

@@ -1,0 +1,15 @@
+### Please describe the problem.
+
+I have a repository that is encrypted using GPG. It is supposed to sync a folder between two laptops. (Note: this is a DIFFERENT repository than the one in my other bug report https://git-annex.branchable.com/bugs/Packfile_does_not_match_digest__58___gcrypt_with_assistant/ but the setup is the same)
+
+I set everything up on laptop1. This time, I decided to wait for the syncing to finish, between laptop1 and laptop2 in order to prevent corruption. After laptop1 had finished syncing, I went to laptop2 and setup the repository.
+
+- I created a local repository on laptop2.
+- I told the webapp to combine repositories.
+
+Then I got
+
+"
+Internal Server Error
+Cannot find configuration for the gcrypt remote at ssh://denisa@vps.ip/backup/annex/denisa/Studium
+"
