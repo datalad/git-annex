@@ -304,21 +304,37 @@ updateAdjustedBranch tomerge (origbranch, adj) commitmode = catchBoolIO $
 	postmerge currbranch (Just mergecommit) = do
 		inRepo $ Git.Branch.update "updating original branch" origbranch mergecommit
 		adjtree <- adjustTree adj mergecommit
-		-- Make currbranch be a parent, so that merging
+		adjmergecommit <- commitAdjustedTree adjtree mergecommit
+		-- Make currbranch be the parent, so that merging
 		-- this commit will be a fast-forward.
-		adjmergecommit <- commitAdjustedTree' adjtree mergecommit
-			[mergecommit, currbranch]
+		adjmergecommitff <- commitAdjustedTree' adjtree mergecommit [currbranch]
 		showAction "Merging into adjusted branch"
-		ifM (autoMergeFrom adjmergecommit (Just currbranch) commitmode)
-			-- The adjusted branch has a merge commit on top;
-			-- clean that up and propigate any changes made
-			-- in that merge to the origbranch.
-			( do
-				propigateAdjustedCommits origbranch (adj, currbranch)
-				return True
+		ifM (autoMergeFrom adjmergecommitff (Just currbranch) commitmode)
+			( reparent currbranch adjtree adjmergecommit =<< getcurrentcommit
 			, return False
 			)
 	postmerge _ Nothing = return False
+
+	-- Now that the merge into the adjusted branch is complete,
+	-- take the tree from that merge, and attach it on top of the
+	-- adjmergecommit, if it's different.
+	reparent currbranch adjtree adjmergecommit (Just currentcommit) = do
+		if (commitTree currentcommit /= adjtree)
+			then do
+				c <- inRepo $ Git.Branch.commitTree Git.Branch.AutomaticCommit
+					("Merged " ++ fromRef tomerge) [adjmergecommit]
+					(commitTree currentcommit)
+				inRepo $ Git.Branch.update "updating adjusted branch" currbranch c
+				propigateAdjustedCommits origbranch (adj, currbranch)
+			else inRepo $ Git.Branch.update "updating adjusted branch" currbranch adjmergecommit
+		return True
+	reparent _ _ _ Nothing = return False
+
+	getcurrentcommit = do
+		v <- inRepo Git.Branch.currentUnsafe
+		case v of
+			Nothing -> return Nothing
+			Just c -> catCommit c
 
 {- Check for any commits present on the adjusted branch that have not yet
  - been propigated to the orig branch, and propigate them.
