@@ -1,0 +1,74 @@
+### Please describe the problem.
+annex.largefiles saved in .gitattributes does not work when running 'git annex add' from a subdirectory
+
+I set annex.largefiles to include any files larger than 50k or any files that are executable. This works if I'm adding a files from top level directory. But if I'm adding files from a sub-directory it does not work.
+
+### What steps will reproduce the problem?
+see log below
+
+### What version of git-annex are you using? On what operating system?
+ubuntu 15.10
+
+git-annex version: 6.20160318-gd594fc0
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+vagrant@u240:/tmp/annex/$ git init
+Initialized empty Git repository in /tmp/annex/.git/
+vagrant@u240:/tmp/annex/$ git annex init
+init  ok
+(recording state in git...)
+vagrant@u240:/tmp/annex/$ mkdir sub-dir
+vagrant@u240:/tmp/annex/$ cp /bin/tempfile .
+‘/bin/tempfile’ -> ‘./tempfile’
+vagrant@u240:/tmp/annex/$ cp /bin/tempfile sub-dir/
+‘/bin/tempfile’ -> ‘sub-dir/tempfile’
+vagrant@u240:/tmp/annex/$ file --mime-type tempfile 
+tempfile: application/x-executable
+vagrant@u240:/tmp/annex/$ cat .gitattributes 
+* annex.largefiles=((largerthan=50kb)or(mimetype=application/x-executable))
+vagrant@u240:/tmp/annex/$ ls -l tempfile
+-rwxr-xr-x 1 vagrant vagrant 10352 Apr  6 15:19 tempfile
+# the file is 10k in size and I can annex it from top level directory
+vagrant@u240:/tmp/annex/$ git annex add tempfile sub-dir/tempfile
+add tempfile ok
+add sub-dir/tempfile ok
+(recording state in git...)
+vagrant@u240:/tmp/annex/$ cp /bin/tempfile tempfile2
+‘/bin/tempfile’ -> ‘tempfile2’
+vagrant@u240:/tmp/annex/$ cp /bin/tempfile sub-dir/tempfile2
+‘/bin/tempfile’ -> ‘sub-dir/tempfile2’
+vagrant@u240:/tmp/annex/$ cd sub-dir/
+# same file but I can not annex it if running from a sub-directory
+vagrant@u240:/tmp/annex/sub-dir/$ git annex add ../tempfile2 tempfile2
+add ../tempfile2 ok
+add tempfile2 (non-large file; adding content to git repository) ok
+(recording state in git...)
+vagrant@u240:/tmp/annex/sub-dir/$ cd ..
+vagrant@u240:/tmp/annex/$ ls -lR
+.:
+total 12
+drwxrwxr-x 2 vagrant vagrant 4096 Apr  6 15:21 sub-dir/
+lrwxrwxrwx 1 vagrant vagrant  186 Apr  6 15:19 tempfile -> .git/annex/objects/xj/kJ/SHA256E-s10352--93a1f74ec1714ef2107989076140b4eaae220f7b2cde834c16a7ad654d12b0f5/SHA256E-s10352--93a1f74ec1714ef2107989076140b4eaae220f7b2cde834c16a7ad654d12b0f5
+lrwxrwxrwx 1 vagrant vagrant  186 Apr  6 15:20 tempfile2 -> .git/annex/objects/xj/kJ/SHA256E-s10352--93a1f74ec1714ef2107989076140b4eaae220f7b2cde834c16a7ad654d12b0f5/SHA256E-s10352--93a1f74ec1714ef2107989076140b4eaae220f7b2cde834c16a7ad654d12b0f5
+
+./sub-dir:
+total 16
+lrwxrwxrwx 1 vagrant vagrant   189 Apr  6 15:20 tempfile -> ../.git/annex/objects/xj/kJ/SHA256E-s10352--93a1f74ec1714ef2107989076140b4eaae220f7b2cde834c16a7ad654d12b0f5/SHA256E-s10352--93a1f74ec1714ef2107989076140b4eaae220f7b2cde834c16a7ad654d12b0f5
+-rwxr-xr-x 1 vagrant vagrant 10352 Apr  6 15:21 tempfile2
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
