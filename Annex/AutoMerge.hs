@@ -42,17 +42,17 @@ import qualified Data.ByteString.Lazy as L
  - Callers should use Git.Branch.changed first, to make sure that
  - there are changes from the current branch to the branch being merged in.
  -}
-autoMergeFrom :: Git.Ref -> Maybe Git.Ref -> Git.Branch.CommitMode -> Annex Bool
-autoMergeFrom branch currbranch commitmode = do
+autoMergeFrom :: Git.Ref -> Maybe Git.Ref -> Bool -> Git.Branch.CommitMode -> Annex Bool
+autoMergeFrom branch currbranch inoverlay commitmode = do
 	showOutput
 	case currbranch of
 		Nothing -> go Nothing
 		Just b -> go =<< inRepo (Git.Ref.sha b)
   where
 	go old = ifM isDirect
-		( mergeDirect currbranch old branch (resolveMerge old branch) commitmode
+		( mergeDirect currbranch old branch (resolveMerge old branch False) commitmode
 		, inRepo (Git.Merge.mergeNonInteractive branch commitmode)
-			<||> (resolveMerge old branch <&&> commitResolvedMerge commitmode)
+			<||> (resolveMerge old branch inoverlay <&&> commitResolvedMerge commitmode)
 		)
 
 {- Resolves a conflicted merge. It's important that any conflicts be
@@ -77,11 +77,16 @@ autoMergeFrom branch currbranch commitmode = do
  -
  - In indirect mode, the merge is resolved in the work tree and files
  - staged, to clean up from a conflicted merge that was run in the work
- - tree.
+ - tree. 
  -
  - In direct mode, the work tree is not touched here; files are staged to
  - the index, and written to the gitAnnexMergeDir, for later handling by
  - the direct mode merge code.
+ - 
+ - This is complicated by needing to support merges run in an overlay
+ - work tree, in which case the CWD won't be within the work tree.
+ - In this mode, there is no need to update the work tree at all,
+ - as the overlay work tree will get deleted.
  -
  - Unlocked files remain unlocked after merging, and locked files
  - remain locked. When the merge conflict is between a locked and unlocked
@@ -93,12 +98,16 @@ autoMergeFrom branch currbranch commitmode = do
  - A git merge can fail for other reasons, and this allows detecting
  - such failures.
  -}
-resolveMerge :: Maybe Git.Ref -> Git.Ref -> Annex Bool
-resolveMerge us them = do
-	top <- fromRepo Git.repoPath
+resolveMerge :: Maybe Git.Ref -> Git.Ref -> Bool -> Annex Bool
+resolveMerge us them inoverlay = do
+	top <- if inoverlay
+		then pure "."
+		else fromRepo Git.repoPath
 	(fs, cleanup) <- inRepo (LsFiles.unmerged [top])
-	srcmap <- inodeMap $ pure (map LsFiles.unmergedFile fs, return True)
-	(mergedks, mergedfs) <- unzip <$> mapM (resolveMerge' srcmap us them) fs
+	srcmap <- if inoverlay
+		then pure M.empty
+		else inodeMap $ pure (map LsFiles.unmergedFile fs, return True)
+	(mergedks, mergedfs) <- unzip <$> mapM (resolveMerge' srcmap us them inoverlay) fs
 	let mergedks' = concat mergedks
 	let mergedfs' = catMaybes mergedfs
 	let merged = not (null mergedfs')
@@ -114,15 +123,15 @@ resolveMerge us them = do
 
 	when merged $ do
 		Annex.Queue.flush
-		unlessM isDirect $ do
+		unlessM (pure inoverlay <||> isDirect) $ do
 			unstagedmap <- inodeMap $ inRepo $ LsFiles.notInRepo False [top]
 			cleanConflictCruft mergedks' mergedfs' unstagedmap
 		showLongNote "Merge conflict was automatically resolved; you may want to examine the result."
 	return merged
 
-resolveMerge' :: InodeMap -> Maybe Git.Ref -> Git.Ref -> LsFiles.Unmerged -> Annex ([Key], Maybe FilePath)
-resolveMerge' _ Nothing _ _ = return ([], Nothing)
-resolveMerge' unstagedmap (Just us) them u = do
+resolveMerge' :: InodeMap -> Maybe Git.Ref -> Git.Ref -> Bool -> LsFiles.Unmerged -> Annex ([Key], Maybe FilePath)
+resolveMerge' _ Nothing _ _ _ = return ([], Nothing)
+resolveMerge' unstagedmap (Just us) them inoverlay u = do
 	kus <- getkey LsFiles.valUs
 	kthem <- getkey LsFiles.valThem
 	case (kus, kthem) of
@@ -133,8 +142,9 @@ resolveMerge' unstagedmap (Just us) them u = do
 				makeannexlink keyThem LsFiles.valThem
 				-- cleanConflictCruft can't handle unlocked
 				-- files, so delete here.
-				unless (islocked LsFiles.valUs) $
-					liftIO $ nukeFile file
+				unless inoverlay $
+					unless (islocked LsFiles.valUs) $
+						liftIO $ nukeFile file
 			| otherwise -> do
 				-- Only resolve using symlink when both
 				-- were locked, otherwise use unlocked
@@ -170,23 +180,33 @@ resolveMerge' unstagedmap (Just us) them u = do
 	  where
 		dest = variantFile file key
 
+	stagefile :: FilePath -> Annex FilePath
+	stagefile f
+		| inoverlay = (</> f) <$> fromRepo Git.repoPath
+		| otherwise = pure f
+
 	makesymlink key dest = do
 		l <- calcRepo $ gitAnnexLink dest key
-		replacewithsymlink dest l
-		stageSymlink dest =<< hashSymlink l
+		unless inoverlay $ replacewithsymlink dest l
+		dest' <- stagefile dest
+		stageSymlink dest' =<< hashSymlink l
 
 	replacewithsymlink dest link = withworktree dest $ \f ->
 		replaceFile f $ makeGitLink link
 
 	makepointer key dest = do
-		unlessM (reuseOldFile unstagedmap key file dest) $ do
-			r <- linkFromAnnex key dest
-			case r of
-				LinkAnnexFailed -> liftIO $
-					writeFile dest (formatPointer key)
-				_ -> noop
-		stagePointerFile dest =<< hashPointerFile key
-		Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath dest)
+		unless inoverlay $ 
+			unlessM (reuseOldFile unstagedmap key file dest) $ do
+				r <- linkFromAnnex key dest
+				case r of
+					LinkAnnexFailed -> liftIO $
+						writeFile dest (formatPointer key)
+					_ -> noop
+		dest' <- stagefile dest
+		stagePointerFile dest' =<< hashPointerFile key
+		unless inoverlay $
+			Database.Keys.addAssociatedFile key
+				=<< inRepo (toTopFilePath dest)
 
 	withworktree f a = ifM isDirect
 		( do
@@ -202,7 +222,7 @@ resolveMerge' unstagedmap (Just us) them u = do
 			=<< fromRepo (UpdateIndex.lsSubTree b item)
 
 		-- Update the work tree to reflect the graft.
-		case (selectwant (LsFiles.unmergedBlobType u), selectunwant (LsFiles.unmergedBlobType u)) of
+		unless inoverlay $ case (selectwant (LsFiles.unmergedBlobType u), selectunwant (LsFiles.unmergedBlobType u)) of
 			-- Symlinks are never left in work tree when
 			-- there's a conflict with anything else.
 			-- So, when grafting in a symlink, we must create it:

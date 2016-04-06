@@ -21,14 +21,20 @@ withIndexFile f = withAltRepo
 	(\g -> addGitEnv g "GIT_INDEX_FILE" f)
 	(\g g' -> g' { gitEnv = gitEnv g })
 
-{- Runs an action using a different git work tree. -}
+{- Runs an action using a different git work tree.
+ -
+ - Smudge and clean filters are disabled in this work tree. -}
 withWorkTree :: FilePath -> Annex a -> Annex a
 withWorkTree d = withAltRepo
-	(\g -> return $ g { location = modlocation (location g) })
-	(\g g' -> g' { location = location g })
+	(\g -> return $ g { location = modlocation (location g), gitGlobalOpts = gitGlobalOpts g ++ disableSmudgeConfig })
+	(\g g' -> g' { location = location g, gitGlobalOpts = gitGlobalOpts g })
   where
 	modlocation l@(Local {}) = l { worktree = Just d }
 	modlocation _ = error "withWorkTree of non-local git repo"
+	disableSmudgeConfig = map Param
+		[ "-c", "filter.annex.smudge="
+		, "-c", "filter.annex.clean="
+		]
 
 {- Runs an action with the git index file and HEAD, and a few other
  - files that are related to the work tree coming from an overlay

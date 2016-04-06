@@ -272,7 +272,7 @@ updateAdjustedBranch tomerge (origbranch, adj) commitmode = catchBoolIO $
 			withemptydir tmpwt $ withWorkTree tmpwt $ do
 				liftIO $ writeFile (tmpgit </> "HEAD") (fromRef updatedorig)
 				showAction $ "Merging into " ++ fromRef (Git.Ref.base origbranch)
-				ifM (autoMergeFrom tomerge (Just updatedorig) commitmode)
+				ifM (autoMergeFrom tomerge (Just origbranch) True commitmode)
 					( do
 						!mergecommit <- liftIO $ extractSha <$> readFile (tmpgit </> "HEAD")
 						-- This is run after the commit lock is dropped.
@@ -305,7 +305,7 @@ updateAdjustedBranch tomerge (origbranch, adj) commitmode = catchBoolIO $
 		adjmergecommit <- commitAdjustedTree' adjtree mergecommit
 			[mergecommit, currbranch]
 		showAction "Merging into adjusted branch"
-		ifM (autoMergeFrom adjmergecommit (Just currbranch) commitmode)
+		ifM (autoMergeFrom adjmergecommit (Just currbranch) False commitmode)
 			-- The adjusted branch has a merge commit on top;
 			-- clean that up and propigate any changes made
 			-- in that merge to the origbranch.

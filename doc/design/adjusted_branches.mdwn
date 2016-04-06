@@ -279,37 +279,6 @@ into adjusted view worktrees.]
   will make copies of the content of annexed files, so this would need
   to checkout the adjusted branch some other way. Maybe generalize so this
   more efficient checkout is available as a git-annex command?
-* sync in adjusted branch runs merge in overlay worktree, 
-  but the merge conflict resolution code does not know to use that
-  worktree.
-* sync in adjusted branch can trigger merge conflict detection where
-  there should be no conflict.
-
-	git init a
-	cd a
-	git annex init --version=6
-	echo hi > f
-	git annex add f
-	git annex sync
-	cd ..
-
-	git clone a b
-	cd b
-	git annex init --version=6
-	git annex get
-	git annex adjust --unlock
-	cd ..
-
-	cd a
-	git mv f f2
-	git annex sync
-	cd ..
-
-	cd b
-	git annex sync
-
-  To fix, implement "avoiding conflicted merge" above.
-
 * There are potentially races in code that assumes a branch like
   master is not being changed by someone else. In particular,
   propigateAdjustedCommits rebases the adjusted branch on top of master.

@@ -170,7 +170,7 @@ merge :: CurrBranch -> Git.Branch.CommitMode -> Git.Branch -> Annex Bool
 merge (Just b, Just adj) commitmode tomerge =
 	updateAdjustedBranch tomerge (b, adj) commitmode
 merge (b, _) commitmode tomerge =
-	autoMergeFrom tomerge b commitmode
+	autoMergeFrom tomerge b False commitmode
 
 syncBranch :: Git.Branch -> Git.Branch
 syncBranch = Git.Ref.under "refs/heads/synced" . fromDirectBranch . fromAdjustedBranch
