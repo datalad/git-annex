@@ -286,3 +286,5 @@ into adjusted view worktrees.]
   have already been handled by updateAdjustedBranch. But, if another remote
   pushed a new master at just the right time, the adjusted branch could be
   rebased on top of a master that it doesn't incorporate, which is wrong.
+* Annex symlinks generated in merging into an adjusted branch are badly
+  formed to point to the temp git dir's annex object dir.
