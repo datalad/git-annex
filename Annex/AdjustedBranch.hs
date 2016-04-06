@@ -32,6 +32,7 @@ import qualified Git.Ref
 import qualified Git.Command
 import qualified Git.Tree
 import qualified Git.DiffTree
+import qualified Git.Merge
 import Git.Tree (TreeItem(..))
 import Git.Sha
 import Git.Env
@@ -272,13 +273,16 @@ updateAdjustedBranch tomerge (origbranch, adj) commitmode = catchBoolIO $
 			withemptydir tmpwt $ withWorkTree tmpwt $ do
 				liftIO $ writeFile (tmpgit </> "HEAD") (fromRef updatedorig)
 				showAction $ "Merging into " ++ fromRef (Git.Ref.base origbranch)
-				ifM (autoMergeFrom tomerge (Just origbranch) True commitmode)
-					( do
+				-- The --no-ff is important; it makes git
+				-- merge not care that the work tree is empty.
+				merged <- inRepo (Git.Merge.mergeNonInteractive' [Param "--no-ff"] tomerge commitmode)
+					<||> (resolveMerge (Just updatedorig) tomerge True <&&> commitResolvedMerge commitmode)
+				if merged
+					then do
 						!mergecommit <- liftIO $ extractSha <$> readFile (tmpgit </> "HEAD")
 						-- This is run after the commit lock is dropped.
 						return $ postmerge currbranch mergecommit
-					, return $ return False
-					)
+					else return $ return False
 	changestomerge Nothing _ = return $ return False
 	
 	withemptydir d a = bracketIO setup cleanup (const a)
@@ -305,7 +309,7 @@ updateAdjustedBranch tomerge (origbranch, adj) commitmode = catchBoolIO $
 		adjmergecommit <- commitAdjustedTree' adjtree mergecommit
 			[mergecommit, currbranch]
 		showAction "Merging into adjusted branch"
-		ifM (autoMergeFrom adjmergecommit (Just currbranch) False commitmode)
+		ifM (autoMergeFrom adjmergecommit (Just currbranch) commitmode)
 			-- The adjusted branch has a merge commit on top;
 			-- clean that up and propigate any changes made
 			-- in that merge to the origbranch.

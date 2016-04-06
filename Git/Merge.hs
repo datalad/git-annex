@@ -15,12 +15,15 @@ import Git.Branch (CommitMode(..))
 
 {- Avoids recent git's interactive merge. -}
 mergeNonInteractive :: Ref -> CommitMode -> Repo -> IO Bool
-mergeNonInteractive branch commitmode
+mergeNonInteractive = mergeNonInteractive' []
+
+mergeNonInteractive' :: [CommandParam] -> Ref -> CommitMode -> Repo -> IO Bool
+mergeNonInteractive' extraparams branch commitmode
 	| older "1.7.7.6" = merge [Param $ fromRef branch]
 	| otherwise = merge $ [Param "--no-edit", Param $ fromRef branch]
   where
-	merge ps = runBool $ cp ++ [Param "merge"] ++ ps
-	cp
+	merge ps = runBool $ sp ++ [Param "merge"] ++ ps ++ extraparams
+	sp
 		| commitmode == AutomaticCommit =
 			[Param "-c", Param "commit.gpgsign=false"]
 		| otherwise = []

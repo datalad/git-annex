@@ -204,6 +204,7 @@ stageMerge d branch commitmode = do
 	-- has been updated, which would leave things in an inconsistent
 	-- state if mergeDirectCleanup is interrupted.
 	-- <http://marc.info/?l=git&m=140262402204212&w=2>
+	liftIO $ print ("stagemerge in", d)
 	merger <- ifM (coreSymlinks <$> Annex.getGitConfig)
 		( return Git.Merge.stageMerge
 		, return $ \ref -> Git.Merge.mergeNonInteractive ref commitmode
