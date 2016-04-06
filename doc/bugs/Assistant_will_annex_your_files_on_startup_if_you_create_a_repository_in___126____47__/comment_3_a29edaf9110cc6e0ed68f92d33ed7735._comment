@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="timothyhobbs@8b50ff958c937fa4b6de1f9009f464b9ddfc2991"
+ nickname="timothyhobbs"
+ subject="comment 3"
+ date="2016-04-05T21:28:20Z"
+ content="""
+If I understand correctly, than if you run the command `git annex webapp` and the $PWD is a git annex repository, then this will start the assistant and annex all of the files in that directory. And that, I think is a bug, no one expects the `webapp` command to do anything besides display a GUI.
+"""]]
