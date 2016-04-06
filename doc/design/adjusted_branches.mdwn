@@ -104,67 +104,54 @@ that are merged in, for object add/remove to work as described below.
 
 When merging, there should never be any commits present on the
 adjusted/master branch that have not yet been propigated back to the master
-branch. If there are any such commits, just propigate them into master before
-beginning the merge. There may be staged changes, or changes in the work tree.
+branch. If there are any such commits, just propigate them into master
+before beginning the merge. There may be staged changes, or changes in the
+work tree.
 
-First adjust the new commit:
+First, merge origin/master into master. This is done in a temp work
+tree and with a temp index, so does not affect the checked out adjusted
+branch.
 
-	origin/master    adjusted/master      master
-	A                                     A
-	|--------------->A'                   |
-	|                |                    |
-	|                |
-	B
-	|                
-	|---------->B'
+(Note that the reason this is done, rather than adjusting origin/master
+and merging it into the work tree, is that merge conflicts would be very
+common with the naive approach, because the adjusted branch often changes
+files, and origin/master may change the same files.)
 
-Then, merge that into adjusted/master:
+	origin/master  master   adjusted/master
+	A------------->A- - - ->A'
+	|              |
+	B------------->C
 
-	origin/master    adjusted/master     master
-	A                                    A
-	|--------------->A'                  |
-	|                |                   |
-	|                |
-	B                |
-	|                |
-	|----------->B'->B''
+While a fast-forward merge is shown here, other merges work the same way.
+There may be merge conflicts; if so they're auto-resolved.
 
-That merge will take care of updating the work tree.
-
-(What if there is a merge conflict between A' and B'? Normally such a merge
-conflict should only affect the work tree/index, so can be resolved without
-making a commit, but B'' may end up being made to resolve a merge
-conflict.)
-
-Once the merge is done, we have a merge commit B'' on adjusted/master.
-To finish, redo that commit so it does not have A' as its parent.
-
-	origin/master    adjusted/master     master
-	A                                    A
-	|--------------->A'                  |
-	|                |                   |
+Then, adjust merge commit C, and merge that into adjusted/master.
 	
-	|                |
-	B
-	|                
-	|--------------->B''
-	|                |
+	origin/master  master   adjusted/master
+	A------------->A- - - ->A'
+	|              |        |
+	B------------->C- - C'->D'
 
-Finally, update master, by reverse adjusting B''.
+This merge is done in-worktree, so the work tree gets updated.
+There may be more merge conflicts here; they're also auto-resolved.
+
+Now, D' is a merge commit, between A' and C'. 
+To finish, change that commit so it does not have A' as its parent.
+
+This can be accomplished by propigating the reverse-adjusted D'
+back to master, and then adjusting master to yield the final
+adjusted/master.
 	
-	origin/master    adjusted/master    master
-	A                                   A
-	|--------------->A'                 |
-	|                |                  |
-	|                |                  |
-	B                                   |
-	|                                   |
-	|--------------->B'' - - - - - - -> B
-	|                |
+	origin/master  master   adjusted/master
+	A------------->A
+	|              |         
+	B------------->C         
+	               |         
+		       D - - -> D'
 
-Notice how similar this is to the commit graph. So, "fast-forward" 
+Notice how similar this is to the commit graph. Indeed, "fast-forward" 
 merging the same B commit from origin/master will lead to an identical
-sha for B' as the original committer got.
+sha for B' as the original committer got!
 
 Since the adjusted/master branch is not present on the remote, if the user
 does a `git pull`, it won't merge in changes from origin/master. Which is
@@ -179,91 +166,6 @@ always reset back once they notice the mistake.
 between the adjusted work tree and pulled changes. A post-merge hook would
 be needed to re-adjust the work tree, and there would be a window where eg,
 not present files would appear in the work tree.]
-
-## another merge scenario
-
-Another merge scenario is when there's a new commit C on adjusted/master,
-and also a new commit B on origin/master.
-
-Start by adjusting B':
-
-	origin/master    adjusted/master      master
-	A                                     A
-	|--------------->A'                   |
-	|                |                    |
-	|                C'
-	B
-	|                
-	|---------->B'
-
-Then, merge B' into adjusted/master:
-
-	origin/master    adjusted/master     master
-	A                                    A
-	|--------------->A'                  |
-	|                |                   |
-	|                C'
-	B                |
-	|                |
-	|----------->B'->M'
-
-Here M' is the correct tree, but it has A' as its grandparent,
-which is the adjusted branch commit, so needs to be dropped in order to 
-get a commit that can be put on master.
-
-We don't want to lose commit C', but it's an adjusted
-commit, so needs to be de-adjusted.
-
-	origin/master    adjusted/master     master
-	A                                    A
-	|--------------->A'                  |
-	|                |                   |
-	|                C'- - - - - - - - > C
-	B                |
-	|                |
-	|----------->B'->M'
-	|               
-
-Now, we generate a merge commit, between B and C, with known result M'
-(so no actual merging done here).
-
-	origin/master    adjusted/master     master
-	A                                    A
-	|--------------->A'                  |
-	|                |                   |
-	|                C'- - - - - - - - > C
-	B                                    |
-	|                                    |
-	|--------------->M'<-----------------|
-	|               
-
-Finally, update master, by reverse adjusting M'. The resulting commit
-on master will also be a merge between B and C.
-
-### avoiding conflicted merge
-
-When merging origin/master with adjusted/master, origin/master is
-adjusted first, and then merged into the checked out adjusted/master
-branch.
-
-This can lead to merge conflicts, when files in origin/master have
-been renamed or modified.
-
-This is because adjusted/master and origin/master (and also its adjusted
-form) will both modify a file; the former by eg, unlocking it and
-the latter by eg, deleting it.
-
-This may need an out of work-tree merge to resolve. In an empty temp work
-tree, merge the de-adjusted form of adjusted/master and origin/master. If
-that has (real) merge conflicts, auto-resolve them.
-
-The resulting merge commit can then be adjusted to yield the adjusted
-merge commit. The parents of the adjusted merge commit also need to be
-adjusted, to be the same as if adjusted(origin/master) was merged into
-adjusted/master.
-
-Finally, check out the adjusted merge commit, to update the real working
-tree.
 
 ## annex object add/remove
 
@@ -377,13 +279,16 @@ into adjusted view worktrees.]
   will make copies of the content of annexed files, so this would need
   to checkout the adjusted branch some other way. Maybe generalize so this
   more efficient checkout is available as a git-annex command?
+* sync in adjusted branch runs merge in overlay worktree, 
+  but the merge conflict resolution code does not know to use that
+  worktree.
 * sync in adjusted branch can trigger merge conflict detection where
   there should be no conflict.
 
 	git init a
 	cd a
 	git annex init --version=6
-	touch f
+	echo hi > f
 	git annex add f
 	git annex sync
 	cd ..
@@ -391,6 +296,7 @@ into adjusted view worktrees.]
 	git clone a b
 	cd b
 	git annex init --version=6
+	git annex get
 	git annex adjust --unlock
 	cd ..
 

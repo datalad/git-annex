@@ -37,7 +37,7 @@ import Annex.Perms
 import Annex.ReplaceFile
 import Annex.VariantFile
 import Git.Index
-import Annex.Index
+import Annex.GitOverlay
 import Annex.LockFile
 import Annex.InodeSentinal
 

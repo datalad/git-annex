@@ -35,7 +35,7 @@ import Control.Concurrent (threadDelay)
 import Annex.Common
 import Annex.BranchState
 import Annex.Journal
-import Annex.Index
+import Annex.GitOverlay
 import qualified Git
 import qualified Git.Command
 import qualified Git.Ref

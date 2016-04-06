@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE BangPatterns #-}
+
 module Annex.AdjustedBranch (
 	Adjustment(..),
 	OrigBranch,
@@ -40,6 +42,9 @@ import Annex.CatFile
 import Annex.Link
 import Annex.AutoMerge
 import Annex.Content
+import Annex.Perms
+import Annex.GitOverlay
+import Utility.Tmp
 import qualified Database.Keys
 
 import qualified Data.Map as M
@@ -137,7 +142,7 @@ originalBranch = fmap fromAdjustedBranch <$> inRepo Git.Branch.current
 
 {- Enter an adjusted version of current branch (or, if already in an
  - adjusted version of a branch, changes the adjustment of the original
- - branch).
+ t a- branch).
  -
  - Can fail, if no branch is checked out, or perhaps if staged changes
  - conflict with the adjusted branch.
@@ -225,80 +230,91 @@ adjustedBranchCommitMessage :: String
 adjustedBranchCommitMessage = "git-annex adjusted branch"
 
 {- Update the currently checked out adjusted branch, merging the provided
- - branch into it. -}
+ - branch into it. Note that the provided branch should be a non-adjusted
+ - branch. -}
 updateAdjustedBranch :: Branch -> (OrigBranch, Adjustment) -> Git.Branch.CommitMode -> Annex Bool
 updateAdjustedBranch tomerge (origbranch, adj) commitmode = catchBoolIO $
-	join $ preventCommits $ \commitsprevented -> go commitsprevented =<< (,)
-		<$> inRepo (Git.Ref.sha tomerge)
-		<*> inRepo Git.Branch.current
+	join $ preventCommits $ \commitsprevented ->
+		go commitsprevented =<< inRepo Git.Branch.current
   where
-	go commitsprevented (Just mergesha, Just currbranch) =
-		ifM (inRepo $ Git.Branch.changed currbranch mergesha)
+	go commitsprevented (Just currbranch) =
+		ifM (inRepo $ Git.Branch.changed currbranch tomerge)
 			( do
-				void $ propigateAdjustedCommits' origbranch (adj, currbranch) commitsprevented
-				adjustedtomerge <- adjust adj mergesha
-				ifM (inRepo $ Git.Branch.changed currbranch adjustedtomerge)
-					( return $ do
-						-- Run after commit lock is dropped.
-						liftIO $ print ("autoMergeFrom", adjustedtomerge, (Just currbranch))
-						ifM (autoMergeFrom adjustedtomerge (Just currbranch) commitmode)
-							( preventCommits $ \_ ->
-								recommit currbranch mergesha =<< catCommit currbranch
-							, return False
-							)
-					, nochangestomerge
-					)
+				(updatedorig, _) <- propigateAdjustedCommits' origbranch (adj, currbranch) commitsprevented
+				changestomerge updatedorig currbranch
 			, nochangestomerge
 			)
 	go _ _ = return $ return False
+
 	nochangestomerge = return $ return True
 
-	{- A merge commit has been made on the adjusted branch.
-	 - Now, re-do it, removing the old version of the adjusted branch
-	 - from its history.
+	{- Since the adjusted branch changes files, merging tomerge
+	 - directly into it would likely result in unncessary merge
+	 - conflicts. To avoid those conflicts, instead merge tomerge into
+	 - updatedorig. The result of the merge can the be
+	 - adjusted to yield the final adjusted branch.
 	 -
-	 - There are two possible scenarios; either some commits
-	 - were made on top of the adjusted branch's adjusting commit,
-	 - or not. Those commits have already been propigated to the
-	 - orig branch, so we can just check if there are commits in the
-	 - orig branch that are not present in tomerge.
+	 - In order to do a merge into a branch that is not checked out,
+	 - set the work tree to a temp directory, and set GIT_DIR
+	 - to another temp directory, in which HEAD contains the
+	 - updatedorig sha. GIT_COMMON_DIR is set to point to the real
+	 - git directory, and so git can read and write objects from there,
+	 - but will use GIT_DIR for HEAD and index.
+	 -
+	 - (Doing the merge this way also lets it run even though the main
+	 - index file is currently locked.)
 	 -}
-	recommit currbranch mergedsha (Just mergecommit) =
-		ifM (inRepo $ Git.Branch.changed tomerge origbranch)
-			( remerge currbranch mergedsha mergecommit
-				=<< inRepo (Git.Ref.sha origbranch)
-			, fastforward currbranch mergedsha mergecommit
-			)
-	recommit _ _ Nothing = return False
+	changestomerge (Just updatedorig) currbranch = do
+		misctmpdir <- fromRepo gitAnnexTmpMiscDir
+		void $ createAnnexDirectory misctmpdir
+		tmpwt <- fromRepo gitAnnexMergeDir
+		withTmpDirIn misctmpdir "git" $ \tmpgit -> withWorkTreeRelated tmpgit $
+			withemptydir tmpwt $ withWorkTree tmpwt $ do
+				liftIO $ writeFile (tmpgit </> "HEAD") (fromRef updatedorig)
+				showAction $ "Merging into " ++ fromRef (Git.Ref.base origbranch)
+				ifM (autoMergeFrom tomerge (Just updatedorig) commitmode)
+					( do
+						!mergecommit <- liftIO $ extractSha <$> readFile (tmpgit </> "HEAD")
+						-- This is run after the commit lock is dropped.
+						return $ postmerge currbranch mergecommit
+					, return $ return False
+					)
+	changestomerge Nothing _ = return $ return False
+	
+	withemptydir d a = bracketIO setup cleanup (const a)
+	  where
+		setup = do
+			whenM (doesDirectoryExist d) $
+				removeDirectoryRecursive d
+			createDirectoryIfMissing True d
+		cleanup _ = removeDirectoryRecursive d
 
-	{- Fast-forward scenario. The mergecommit is changed to a non-merge
-	 - commit, with its parent being the mergedsha. 
-	 - The orig branch can simply be pointed at the mergedsha.
+	{- A merge commit has been made between the origbranch and 
+	 - tomerge. Update origbranch to point to that commit, adjust
+	 - it to get the new adjusted branch, and check it out.
+	 -
+	 - But, there may be unstaged work tree changes that conflict, 
+	 - so the check out is done by making a normal merge of
+	 - the new adjusted branch.
 	 -}
-	fastforward currbranch mergedsha mergecommit = do
-		commitsha <- commitAdjustedTree (commitTree mergecommit) mergedsha
-		inRepo $ Git.Branch.update "fast-forward update of adjusted branch" currbranch commitsha
-		inRepo $ Git.Branch.update "updating original branch" origbranch mergedsha
-		return True
-		
-	{- True merge scenario. -}
-	remerge currbranch mergedsha mergecommit (Just origsha) = do
-	 	-- Update origbranch by reverse adjusting the mergecommit,
-		-- yielding a merge between orig and tomerge.
-		treesha <- reverseAdjustedTree origsha adj
-			-- get 1-parent commit because 
-			-- reverseAdjustedTree does not support merges
-			=<< commitAdjustedTree (commitTree mergecommit) origsha
-		revadjcommit <- inRepo $
-			Git.Branch.commitTree Git.Branch.AutomaticCommit
-				("Merge branch " ++ fromRef tomerge) [origsha, mergedsha] treesha
-		inRepo $ Git.Branch.update "updating original branch" origbranch revadjcommit
-		-- Update currbranch, reusing mergedsha, but making its
-		-- parent be the updated origbranch.
-		adjcommit <- commitAdjustedTree' (commitTree mergecommit) revadjcommit [revadjcommit]
-		inRepo $ Git.Branch.update rebaseOnTopMsg currbranch adjcommit
-		return True
-	remerge _ _ _ Nothing = return False
+	postmerge currbranch (Just mergecommit) = do
+		inRepo $ Git.Branch.update "updating original branch" origbranch mergecommit
+		adjtree <- adjustTree adj mergecommit
+		-- Make currbranch be a parent, so that merging
+		-- this commit will be a fast-forward.
+		adjmergecommit <- commitAdjustedTree' adjtree mergecommit
+			[mergecommit, currbranch]
+		showAction "Merging into adjusted branch"
+		ifM (autoMergeFrom adjmergecommit (Just currbranch) commitmode)
+			-- The adjusted branch has a merge commit on top;
+			-- clean that up and propigate any changes made
+			-- in that merge to the origbranch.
+			( do
+				propigateAdjustedCommits origbranch (adj, currbranch)
+				return True
+			, return False
+			)
+	postmerge _ Nothing = return False
 
 {- Check for any commits present on the adjusted branch that have not yet
  - been propigated to the orig branch, and propigate them.
@@ -308,16 +324,16 @@ updateAdjustedBranch tomerge (origbranch, adj) commitmode = catchBoolIO $
  -}
 propigateAdjustedCommits :: OrigBranch -> (Adjustment, AdjBranch) -> Annex ()
 propigateAdjustedCommits origbranch (adj, currbranch) = 
-	preventCommits $ \commitsprevented -> do
-		join $ propigateAdjustedCommits' origbranch (adj, currbranch) commitsprevented
+	preventCommits $ \commitsprevented ->
+		join $ snd <$> propigateAdjustedCommits' origbranch (adj, currbranch) commitsprevented
 		
-{- Returns action which will rebase the adjusted branch on top of the
- - updated orig branch. -}
+{- Returns sha of updated orig branch, and action which will rebase
+ - the adjusted branch on top of the updated orig branch. -}
 propigateAdjustedCommits'
 	:: OrigBranch
 	-> (Adjustment, AdjBranch)
 	-> CommitsPrevented
-	-> Annex (Annex ())
+	-> Annex (Maybe Sha, Annex ())
 propigateAdjustedCommits' origbranch (adj, currbranch) _commitsprevented = do
 	ov <- inRepo $ Git.Ref.sha (Git.Ref.under "refs/heads" origbranch)
 	case ov of
@@ -329,11 +345,13 @@ propigateAdjustedCommits' origbranch (adj, currbranch) _commitsprevented = do
 					case v of
 						Left e -> do
 							warning e
-							return $ return ()
-						Right newparent -> return $
-							rebase currcommit newparent
-				Nothing -> return $ return ()
-		Nothing -> return $ return ()
+							return (Nothing, return ())
+						Right newparent -> return
+							( Just newparent
+							, rebase currcommit newparent
+							)
+				Nothing -> return (Nothing, return ())
+		Nothing -> return (Nothing, return ())
   where
 	newcommits = inRepo $ Git.Branch.changedCommits origbranch currbranch
 		-- Get commits oldest first, so they can be processed

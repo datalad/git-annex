@@ -291,7 +291,8 @@ gitAnnexFeedStateDir r = addTrailingPathSeparator $ gitAnnexDir r </> "feedstate
 gitAnnexFeedState :: Key -> Git.Repo -> FilePath
 gitAnnexFeedState k r = gitAnnexFeedStateDir r </> keyFile k
 
-{- .git/annex/merge/ is used for direct mode merges. -}
+{- .git/annex/merge/ is used as a empty work tree for direct mode merges and
+ - merges in adjusted branches. -}
 gitAnnexMergeDir :: Git.Repo -> FilePath
 gitAnnexMergeDir r = addTrailingPathSeparator $ gitAnnexDir r </> "merge"
 

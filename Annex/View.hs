@@ -23,7 +23,7 @@ import Annex.HashObject
 import Git.Types
 import Git.FilePath
 import Annex.WorkTree
-import Annex.Index
+import Annex.GitOverlay
 import Annex.Link
 import Annex.CatFile
 import Logs.MetaData
