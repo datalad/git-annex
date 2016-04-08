@@ -49,13 +49,9 @@ copyFileExternal meta src dest = do
 {- Create a hard link if the filesystem allows it, and fall back to copying
  - the file. -}
 createLinkOrCopy :: FilePath -> FilePath -> IO Bool
-#ifndef mingw32_HOST_OS
 createLinkOrCopy src dest = go `catchIO` const fallback
   where
 	go = do
 		createLink src dest
 		return True
 	fallback = copyFileExternal CopyAllMetaData src dest
-#else
-createLinkOrCopy = copyFileExternal CopyAllMetaData
-#endif

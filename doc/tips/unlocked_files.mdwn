@@ -143,7 +143,7 @@ match the new setting:
 	git annex fix
 
 Note that setting annex.thin only has any effect on systems that support
-hard links. Ie, not Windows, and not FAT filesystems.
+hard links. It is supported on Windows, but not on FAT filesystems.
 
 ## tradeoffs
 

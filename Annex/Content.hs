@@ -594,14 +594,10 @@ linkOrCopy' canhardlink key src dest = catchBoolIO $
   where
 	hardlink = do
 		s <- getstat
-#ifndef mingw32_HOST_OS
 		if linkCount s > 1
 			then copy s
 			else liftIO (createLink src dest >> return True)
 				`catchIO` const (copy s)
-#else
-		copy s
-#endif
 	copy = checkedCopyFile' key src dest
 	getstat = liftIO $ getFileStatus src
 

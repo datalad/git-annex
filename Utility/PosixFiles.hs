@@ -1,6 +1,6 @@
 {- POSIX files (and compatablity wrappers).
  -
- - This is like System.PosixCompat.Files, except with a fixed rename.
+ - This is like System.PosixCompat.Files, but with a few fixes.
  -
  - Copyright 2014 Joey Hess <id@joeyh.name>
  -
@@ -21,6 +21,7 @@ import System.PosixCompat.Files as X hiding (rename)
 import System.Posix.Files (rename)
 #else
 import qualified System.Win32.File as Win32
+import qualified System.Win32.HardLink as Win32
 #endif
 
 {- System.PosixCompat.Files.rename on Windows calls renameFile,
@@ -31,4 +32,11 @@ import qualified System.Win32.File as Win32
 #ifdef mingw32_HOST_OS
 rename :: FilePath -> FilePath -> IO ()
 rename src dest = Win32.moveFileEx src dest Win32.mOVEFILE_REPLACE_EXISTING
+#endif
+
+{- System.PosixCompat.Files.createLink throws an error, but windows
+ - does support hard links. -}
+#ifdef mingw32_HOST_OS
+createLink :: FilePath -> FilePath -> IO ()
+createLink = Win32.createHardLink
 #endif
