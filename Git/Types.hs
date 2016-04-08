@@ -39,6 +39,7 @@ data Repo = Repo
 	, remoteName :: Maybe RemoteName
 	-- alternate environment to use when running git commands
 	, gitEnv :: Maybe [(String, String)]
+	, gitEnvOverridesGitDir :: Bool
 	-- global options to pass to git when running git commands
 	, gitGlobalOpts :: [CommandParam]
 	} deriving (Show, Eq, Ord)

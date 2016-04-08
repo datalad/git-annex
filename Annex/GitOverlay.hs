@@ -45,11 +45,13 @@ withWorkTreeRelated :: FilePath -> Annex a -> Annex a
 withWorkTreeRelated d = withAltRepo modrepo unmodrepo
   where
 	modrepo g = do
-		let g' = g { location = modlocation (location g) }
-		addGitEnv g' "GIT_COMMON_DIR" =<< absPath (localGitDir g)
-	unmodrepo g g' = g' { gitEnv = gitEnv g, location = location g }
-	modlocation l@(Local {}) = l { gitdir = d }
-	modlocation _ = error "withWorkTreeRelated of non-local git repo"
+		g' <- addGitEnv g "GIT_COMMON_DIR" =<< absPath (localGitDir g)
+		g'' <- addGitEnv g' "GIT_DIR" d
+		return (g'' { gitEnvOverridesGitDir = True })
+	unmodrepo g g' = g'
+		{ gitEnv = gitEnv g
+		, gitEnvOverridesGitDir = gitEnvOverridesGitDir g
+		}
 
 withAltRepo 
 	:: (Repo -> IO Repo)

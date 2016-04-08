@@ -236,6 +236,7 @@ newFrom l = Repo
 	, remotes = []
 	, remoteName = Nothing
 	, gitEnv = Nothing
+	, gitEnvOverridesGitDir = False
 	, gitGlobalOpts = []
 	}
 
