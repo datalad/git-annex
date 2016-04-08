@@ -1,0 +1,14 @@
+For various reasons we cannot use v8.0 (prereleases) yet,
+but GHC v7.11.20150407
+
+There was a compilation hiccup with polymorphic types. I corrected it in
+
+https://github.com/ggreif/git-annex/tree/patch-1
+
+The commit is
+
+https://github.com/ggreif/git-annex/commit/a0ddad8d395b5eb61d1e7e6fdcbfa766c05de3d4
+
+Cheers,
+
+   Gabor
