@@ -132,10 +132,10 @@ store r buprepo = byteStorer $ \k b p -> do
 	let params = bupSplitParams r buprepo k []
 	showOutput -- make way for bup output
 	let cmd = proc "bup" (toCommand params)
-	runner <- ifM commandProgressDisabled
-		( return feedWithQuietOutput
-		, return (withHandle StdinHandle)
-		)
+	quiet <- commandProgressDisabled
+	let runner = if quiet
+			then feedWithQuietOutput
+			else withHandle StdinHandle
 	liftIO $ runner createProcessSuccess cmd $ \h -> do
 		meteredWrite p h b
 		return True
