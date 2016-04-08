@@ -149,7 +149,7 @@ treeItemsToTree = go M.empty
  - this avoids buffering the whole tree in memory.
  -}
 adjustTree
-	:: (MonadIO m, MonadMask m)
+	:: (Functor m, MonadIO m, MonadMask m)
 	=> (TreeItem -> m (Maybe TreeItem))
 	-- ^ Adjust an item in the tree. Nothing deletes the item.
 	-- Cannot move the item to a different tree.
