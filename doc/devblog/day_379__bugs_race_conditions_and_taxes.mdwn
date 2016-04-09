@@ -1,0 +1,12 @@
+Think I'm really finished with adjusted branches now. Fixed a bug in
+annex symlink calculation when merging into an adjusted branch. And, fixed
+a race condition involving a push of master from another repository.
+
+While `git annex adjust --unlock` is reason enough to have adjusted
+branches, I do want to at some point look into implementing `git annex
+adjust --hide-missing`, and perhaps rewrite the view branches to use
+adjusted branches, which would allow for updating view branches when
+pulling from a remote.
+
+Also, turns out Windows supports hard links, so I got annex.thin working
+on Windows, as well as a few other things that work better with hard links.
