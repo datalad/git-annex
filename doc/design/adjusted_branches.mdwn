@@ -256,6 +256,28 @@ in [[todo/deferred_update_mode]]. Arguably, it's just as confusing for the
 file to remain visible but have its content temporarily replaced with a
 annex pointer.
 
+### master push overwrite race (fixed)
+
+There are potentially races in code that assumes a branch like
+master is not being changed by someone else. 
+  
+In particular, if propigateAdjustedCommits rebases the adjusted branch on
+top of master. That is called by sync. The assumption is that any changes
+in master have already been handled by updateAdjustedBranch. But, if
+another remote pushed a new master at just the right time, the adjusted
+branch could be rebased on top of a master that it doesn't incorporate,
+which is wrong.
+
+Best fix seems to be to maintain a basis ref, that is not a branch,
+like refs/adjusted/master(unlocked). Copy master's ref to it when
+entering the view branch. Then, make all adjustments via the basis
+ref, and propigate back to refs/heads/master.
+
+It's fine to overwrite changes that were pushed to master when
+propigating from the adjusted branch. Synced changes also go to
+synced/master so won't be lost. Pushes not made using git-annex sync
+of master are not really desired, just a possibility.
+
 ## integration with view branches
 
 Entering a view from an adjusted branch should probably carry the adjusting
@@ -279,21 +301,3 @@ into adjusted view worktrees.]
   will make copies of the content of annexed files, so this would need
   to checkout the adjusted branch some other way. Maybe generalize so this
   more efficient checkout is available as a git-annex command?
-* There are potentially races in code that assumes a branch like
-  master is not being changed by someone else. 
-  
-  In particular, propigateAdjustedCommits rebases the adjusted branch on
-  top of master. That is called by sync. The assumption is that any changes
-  in master have already been handled by updateAdjustedBranch. But, if
-  another remote pushed a new master at just the right time, the adjusted
-  branch could be rebased on top of a master that it doesn't incorporate,
-  which is wrong.
-
-  Best fix seems to be to use a hidden ref, like refs/annex/adjusted/master
-  and copy master's ref to it when entering the view branch. Then, make
-  all adjustments via that ref, and propigate back to refs/heads/master.
-
-  It's fine to overwrite changes that were pushed to master when
-  propigating from the adjusted branch. Synced changes also go to
-  synced/master so won't be lost. Pushes not made using git-annex sync
-  of master are not really desired, just a possibility.
