@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="ExGen"
+ subject="comment 4"
+ date="2016-04-08T22:00:33Z"
+ content="""
+I pulled and checked 6.20160408-gf970490. <br/>
+There are several problems now: <br/>
+
+1. When I `sync` on a new repo it `get`s all the files<br/>
+2. `drop` doesn't drop the file
+3. `lock` doesn't work <br/>
+4. I don't know if the problem with `get` really fixed because it isn't needed
+
+Btw, look at my comment on /todo/smudge (maybe put on a wrong page) <br/>
+I think using hardlinks on windows can fix many problems here ( adjusted/direct mode which I hate :)) ) <br/>
+And it should need little work as tools already accept it on windows
+
+I'll put all the commands needed to reproduce the problem:
+
+	cd D:/annex
+	git init
+	git annex init \"laptop\"
+	git annex upgrade
+	git add .
+	git commit -a -m \"First\"
+	git annex lock
+	git annex sync
+
+	cd H:/annex
+	git init
+	git annex init \"usb\"
+	git annex upgrade
+	git remote add laptop D:/annex
+	git annex sync
+"""]]

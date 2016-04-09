@@ -1,0 +1,75 @@
+In recent history, we have realized that the small Perl script that
+generates the man pages from Markdown is fairly limited.
+
+Two approaches have been considered:
+
+* go-md2man
+* pandoc
+
+Here is how pandoc does it:
+
+    $ pandoc -f markdown -t man doc/git-annex-shell.mdwn | pastebinit
+    http://paste.debian.net/424341/
+
+Both initially fail at setting a proper `.TH` line on top, but
+otherwise seem to work more or less correctly. --[[anarcat]]
+
+Okay, update: the above commandline was incorrect for some reason. The
+proper incantation is:
+
+    pandoc -s -t man doc/git-annex-shell.mdwn -o git-annex-shell.1
+
+For example:
+
+    $ pandoc -s -t man doc/git-annex-shell.mdwn | man -l - | pastebinit
+    http://paste.debian.net/430630/
+
+So by default, there is no title or section header, which is, if you
+ask me a little stupid: pandoc could guess a little better and parse
+the `.SH NAME` section.
+
+The workaround for this is to add Pandoc metadata either to the file,
+for example:
+
+[[!format diff """
+diff --git a/doc/git-annex-shell.mdwn b/doc/git-annex-shell.mdwn
+index 9b3d126..13f64ae 100644
+--- a/doc/git-annex-shell.mdwn
++++ b/doc/git-annex-shell.mdwn
+@@ -1,3 +1,6 @@
++% git-annex-shell(1) Git-annex manual | Version 5
++% Joey Hess
++
+ # NAME
+ 
+ git-annex-shell - Restricted login shell for git-annex only SSH access
+"""]]
+
+But Ikiwiki is likely to barf on such comments, so it's probably
+preferable to pass those parameters at build time:
+
+    $ pandoc -s -V title="git-annex-shell" -V section=1 -t man doc/git-annex-shell.mdwn  | man -l - | pastebinit
+    http://paste.debian.net/430632/
+
+Looks better already! But we can improve on that even more!
+
+    $ pandoc -s -V title="git-annex-shell" -V section=1 \
+        -V header="Git Annex manual" -V footer="Version 5.xxx" \
+        -t man doc/git-annex-shell.mdwn  | man -l - | pastebinit
+    http://paste.debian.net/430633/
+
+Much better. And the version can probably be passed in from the build
+system (or that footer can just be dropped).
+
+So a more complete patch would involve fixing the build system to use
+(and depend on!) pandoc then remove the pesky warnings at the bottom
+of all Markdown files.
+
+More investigation would probably be necessary to check the resulting
+man pages for syntax errors. For example, the above rendering, in the
+`SEE ALSO` section, has `[git-annex] (1)` instead of
+`git-annex(1)`, since Pandoc doesn't know about ikiwiki links. Maybe
+some pre-processing would be necessary there? :/ It sure is useful to
+have those links working in the web version!
+
+I hope that helps regardless.
