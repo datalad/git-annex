@@ -106,10 +106,10 @@ type AdjBranch = Branch
 newtype BasisBranch = BasisBranch Ref
 
 -- The basis for refs/heads/adjusted/master(unlocked) is
--- refs/adjusted/master(unlocked).
+-- refs/basis/adjusted/master(unlocked).
 basisBranch :: AdjBranch -> BasisBranch
 basisBranch adjbranch = BasisBranch $
-	Ref ("refs/" ++ fromRef (Git.Ref.base adjbranch))
+	Ref ("refs/basis/" ++ fromRef (Git.Ref.base adjbranch))
 
 adjustedBranchPrefix :: String
 adjustedBranchPrefix = "refs/heads/adjusted/"
