@@ -1,0 +1,16 @@
+In recent history, we have realized that the small Perl script that
+generates the man pages from Markdown is fairly limited.
+
+Two approaches have been considered:
+
+* go-md2man
+* pandoc
+
+Here is how pandoc does it:
+
+    $ pandoc -f markdown -t man doc/git-annex-shell.mdwn | pastebinit
+    http://paste.debian.net/424341/
+
+
+Both initially fail at setting a proper `.TH` line on top, but
+otherwise seem to work more or less correctly. --[[anarcat]]
