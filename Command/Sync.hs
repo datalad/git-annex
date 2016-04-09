@@ -258,7 +258,7 @@ mergeLocal currbranch@(Just branch, madj) = go =<< needmerge
 	go True = do
 		showStart "merge" $ Git.Ref.describe syncbranch
 		next $ next $ merge currbranch Git.Branch.ManualCommit syncbranch
-	branch' = maybe branch (originalToAdjusted branch) madj
+	branch' = maybe branch (adjBranch . originalToAdjusted branch) madj
 mergeLocal (Nothing, _) = stop
 
 pushLocal :: CurrBranch -> CommandStart
@@ -271,10 +271,7 @@ updateSyncBranch (Nothing, _) = noop
 updateSyncBranch (Just branch, madj) = do
 	-- When in an adjusted branch, propigate any changes made to it
 	-- back to the original branch.
-	case madj of
-		Just adj -> propigateAdjustedCommits branch
-			(adj, originalToAdjusted branch adj)
-		Nothing -> return ()
+	maybe noop (propigateAdjustedCommits branch) madj
 	-- Update the sync branch to match the new state of the branch
 	inRepo $ updateBranch (syncBranch branch) branch
 	-- In direct mode, we're operating on some special direct mode

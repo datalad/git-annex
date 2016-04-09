@@ -10,7 +10,7 @@
 module Annex.AdjustedBranch (
 	Adjustment(..),
 	OrigBranch,
-	AdjBranch,
+	AdjBranch(..),
 	originalToAdjusted,
 	adjustedToOriginal,
 	fromAdjustedBranch,
@@ -98,7 +98,7 @@ adjustTreeItem HideMissingAdjustment ti@(TreeItem _ _ s) = do
 adjustTreeItem ShowMissingAdjustment ti = return (Just ti)
 
 type OrigBranch = Branch
-type AdjBranch = Branch
+newtype AdjBranch = AdjBranch { adjBranch :: Branch }
 
 -- This is a hidden branch ref, that's used as the basis for the AdjBranch,
 -- since pushes can overwrite the OrigBranch at any time. So, changes
@@ -108,7 +108,7 @@ newtype BasisBranch = BasisBranch Ref
 -- The basis for refs/heads/adjusted/master(unlocked) is
 -- refs/basis/adjusted/master(unlocked).
 basisBranch :: AdjBranch -> BasisBranch
-basisBranch adjbranch = BasisBranch $
+basisBranch (AdjBranch adjbranch) = BasisBranch $
 	Ref ("refs/basis/" ++ fromRef (Git.Ref.base adjbranch))
 
 adjustedBranchPrefix :: String
@@ -127,12 +127,12 @@ deserialize "present" = Just HideMissingAdjustment
 deserialize _ = Nothing
 
 originalToAdjusted :: OrigBranch -> Adjustment -> AdjBranch
-originalToAdjusted orig adj = Ref $
+originalToAdjusted orig adj = AdjBranch $ Ref $
 	adjustedBranchPrefix ++ base ++ '(' : serialize adj ++ ")"
   where
 	base = fromRef (Git.Ref.basename orig)
 
-adjustedToOriginal :: AdjBranch -> Maybe (Adjustment, OrigBranch)
+adjustedToOriginal :: Branch -> Maybe (Adjustment, OrigBranch)
 adjustedToOriginal b
 	| adjustedBranchPrefix `isPrefixOf` bs = do
 		let (base, as) = separate (== '(') (drop prefixlen bs)
@@ -146,7 +146,7 @@ adjustedToOriginal b
 getAdjustment :: Branch -> Maybe Adjustment
 getAdjustment = fmap fst . adjustedToOriginal
 
-fromAdjustedBranch :: AdjBranch -> OrigBranch
+fromAdjustedBranch :: Branch -> OrigBranch
 fromAdjustedBranch b = maybe b snd (adjustedToOriginal b)
 
 originalBranch :: Annex (Maybe OrigBranch)
@@ -163,12 +163,12 @@ enterAdjustedBranch :: Adjustment -> Annex ()
 enterAdjustedBranch adj = go =<< originalBranch
   where
 	go (Just origbranch) = do
-		adjbranch <- preventCommits $ const $ 
+		AdjBranch b <- preventCommits $ const $ 
 			adjustBranch adj origbranch
 		showOutput -- checkout can have output in large repos
 		inRepo $ Git.Command.run
 			[ Param "checkout"
-			, Param $ fromRef $ Git.Ref.base $ adjbranch
+			, Param $ fromRef $ Git.Ref.base b
 			]
 	go Nothing = error "not on any branch!"
 
@@ -184,16 +184,19 @@ adjustToCrippledFileSystem = do
 			]
 	enterAdjustedBranch UnlockAdjustment
 
-updateBasisBranch :: BasisBranch -> Ref -> Annex ()
-updateBasisBranch (BasisBranch basis) new = 
+setBasisBranch :: BasisBranch -> Ref -> Annex ()
+setBasisBranch (BasisBranch basis) new = 
 	inRepo $ Git.Branch.update' basis new
+
+setAdjustedBranch :: String -> AdjBranch -> Ref -> Annex ()
+setAdjustedBranch msg (AdjBranch b) r = inRepo $ Git.Branch.update msg b r
 
 adjustBranch :: Adjustment -> OrigBranch -> Annex AdjBranch
 adjustBranch adj origbranch = do
 	-- Start basis off with the current value of the origbranch.
-	updateBasisBranch basis origbranch
+	setBasisBranch basis origbranch
 	sha <- adjustCommit adj basis
-	inRepo $ Git.Branch.update "entering adjusted branch" adjbranch sha
+	setAdjustedBranch "entering adjusted branch" adjbranch sha
 	return adjbranch
   where
 	adjbranch = originalToAdjusted origbranch adj
@@ -255,22 +258,19 @@ adjustedBranchCommitMessage = "git-annex adjusted branch"
  - branch. -}
 updateAdjustedBranch :: Branch -> (OrigBranch, Adjustment) -> Git.Branch.CommitMode -> Annex Bool
 updateAdjustedBranch tomerge (origbranch, adj) commitmode = catchBoolIO $
-	join $ preventCommits $ \commitsprevented ->
-		go commitsprevented =<< inRepo Git.Branch.current
+	join $ preventCommits go
   where
-	adjbranch = originalToAdjusted origbranch adj
+	adjbranch@(AdjBranch currbranch) = originalToAdjusted origbranch adj
 	basis = basisBranch adjbranch
 
-	go commitsprevented (Just currbranch) =
+	go commitsprevented =
 		ifM (inRepo $ Git.Branch.changed currbranch tomerge)
 			( do
 				(updatedorig, _) <- propigateAdjustedCommits'
-					origbranch (adj, currbranch)
-					commitsprevented
-				changestomerge updatedorig currbranch
+					origbranch adj commitsprevented
+				changestomerge updatedorig
 			, nochangestomerge
 			)
-	go _ _ = return $ return False
 
 	nochangestomerge = return $ return True
 
@@ -290,7 +290,7 @@ updateAdjustedBranch tomerge (origbranch, adj) commitmode = catchBoolIO $
 	 - (Doing the merge this way also lets it run even though the main
 	 - index file is currently locked.)
 	 -}
-	changestomerge (Just updatedorig) currbranch = do
+	changestomerge (Just updatedorig) = do
 		misctmpdir <- fromRepo gitAnnexTmpMiscDir
 		void $ createAnnexDirectory misctmpdir
 		tmpwt <- fromRepo gitAnnexMergeDir
@@ -306,9 +306,9 @@ updateAdjustedBranch tomerge (origbranch, adj) commitmode = catchBoolIO $
 					then do
 						!mergecommit <- liftIO $ extractSha <$> readFile (tmpgit </> "HEAD")
 						-- This is run after the commit lock is dropped.
-						return $ postmerge currbranch mergecommit
+						return $ postmerge mergecommit
 					else return $ return False
-	changestomerge Nothing _ = return $ return False
+	changestomerge Nothing = return $ return False
 	
 	withemptydir d a = bracketIO setup cleanup (const a)
 	  where
@@ -327,8 +327,8 @@ updateAdjustedBranch tomerge (origbranch, adj) commitmode = catchBoolIO $
 	 - so the check out is done by making a normal merge of
 	 - the new adjusted branch.
 	 -}
-	postmerge currbranch (Just mergecommit) = do
-		updateBasisBranch basis mergecommit
+	postmerge (Just mergecommit) = do
+		setBasisBranch basis mergecommit
 		inRepo $ Git.Branch.update' origbranch mergecommit
 		adjtree <- adjustTree adj (BasisBranch mergecommit)
 		adjmergecommit <- commitAdjustedTree adjtree (BasisBranch mergecommit)
@@ -337,25 +337,25 @@ updateAdjustedBranch tomerge (origbranch, adj) commitmode = catchBoolIO $
 		adjmergecommitff <- commitAdjustedTree' adjtree (BasisBranch mergecommit) [currbranch]
 		showAction "Merging into adjusted branch"
 		ifM (autoMergeFrom adjmergecommitff (Just currbranch) commitmode)
-			( reparent currbranch adjtree adjmergecommit =<< getcurrentcommit
+			( reparent adjtree adjmergecommit =<< getcurrentcommit
 			, return False
 			)
-	postmerge _ Nothing = return False
+	postmerge Nothing = return False
 
 	-- Now that the merge into the adjusted branch is complete,
 	-- take the tree from that merge, and attach it on top of the
 	-- adjmergecommit, if it's different.
-	reparent currbranch adjtree adjmergecommit (Just currentcommit) = do
+	reparent adjtree adjmergecommit (Just currentcommit) = do
 		if (commitTree currentcommit /= adjtree)
 			then do
 				c <- inRepo $ Git.Branch.commitTree Git.Branch.AutomaticCommit
 					("Merged " ++ fromRef tomerge) [adjmergecommit]
 					(commitTree currentcommit)
 				inRepo $ Git.Branch.update "updating adjusted branch" currbranch c
-				propigateAdjustedCommits origbranch (adj, currbranch)
+				propigateAdjustedCommits origbranch adj
 			else inRepo $ Git.Branch.update "updating adjusted branch" currbranch adjmergecommit
 		return True
-	reparent _ _ _ Nothing = return False
+	reparent _ _ Nothing = return False
 
 	getcurrentcommit = do
 		v <- inRepo Git.Branch.currentUnsafe
@@ -370,19 +370,19 @@ updateAdjustedBranch tomerge (origbranch, adj) commitmode = catchBoolIO $
  - After propigating the commits back to the basis banch,
  - rebase the adjusted branch on top of the updated basis branch.
  -}
-propigateAdjustedCommits :: OrigBranch -> (Adjustment, AdjBranch) -> Annex ()
-propigateAdjustedCommits origbranch (adj, currbranch) = 
+propigateAdjustedCommits :: OrigBranch -> Adjustment -> Annex ()
+propigateAdjustedCommits origbranch adj = 
 	preventCommits $ \commitsprevented ->
-		join $ snd <$> propigateAdjustedCommits' origbranch (adj, currbranch) commitsprevented
+		join $ snd <$> propigateAdjustedCommits' origbranch adj commitsprevented
 		
 {- Returns sha of updated basis branch, and action which will rebase
  - the adjusted branch on top of the updated basis branch. -}
 propigateAdjustedCommits'
 	:: OrigBranch
-	-> (Adjustment, AdjBranch)
+	-> Adjustment
 	-> CommitsPrevented
 	-> Annex (Maybe Sha, Annex ())
-propigateAdjustedCommits' origbranch (adj, currbranch) _commitsprevented = do
+propigateAdjustedCommits' origbranch adj _commitsprevented = do
 	ov <- inRepo $ Git.Ref.sha basis
 	case ov of
 		Just origsha -> do
@@ -402,13 +402,13 @@ propigateAdjustedCommits' origbranch (adj, currbranch) _commitsprevented = do
 		Nothing -> return (Nothing, return ())
   where
 	(BasisBranch basis) = basisBranch adjbranch
-	adjbranch = originalToAdjusted origbranch adj
+	adjbranch@(AdjBranch currbranch) = originalToAdjusted origbranch adj
 	newcommits = inRepo $ Git.Branch.changedCommits basis currbranch
 		-- Get commits oldest first, so they can be processed
 		-- in order made.
 		[Param "--reverse"]
 	go parent _ [] = do
-		updateBasisBranch (BasisBranch basis) parent
+		setBasisBranch (BasisBranch basis) parent
 		inRepo $ Git.Branch.update' origbranch parent
 		return (Right parent)
 	go parent pastadjcommit (sha:l) = do
@@ -504,6 +504,6 @@ checkAdjustedClone = go =<< inRepo Git.Branch.current
 			let remotebranch = Git.Ref.underBase "refs/remotes/origin" origbranch
 			let basis@(BasisBranch bb) = basisBranch (originalToAdjusted origbranch adj)
 			unlessM (inRepo $ Git.Ref.exists bb) $
-				updateBasisBranch basis remotebranch
+				setBasisBranch basis remotebranch
 			unlessM (inRepo $ Git.Ref.exists origbranch) $
 				inRepo $ Git.Branch.update' origbranch remotebranch

@@ -54,12 +54,12 @@ upgrade automatic = do
 		{- Create adjusted branch where all files are unlocked.
 		 - This should have the same content for each file as
 		 - have been staged in upgradeDirectWorkTree. -}
-		adjbranch <- adjustBranch UnlockAdjustment cur
+		AdjBranch b <- adjustBranch UnlockAdjustment cur
 		{- Since the work tree was already set up by
 		 - upgradeDirectWorkTree, and contains unlocked file
 		 - contents too, don't use git checkout to check out the
 		 - adjust branch. Instead, update HEAD manually. -}
-		inRepo $ setHeadRef adjbranch
+		inRepo $ setHeadRef b
 	configureSmudgeFilter
 	-- Inode sentinal file was only used in direct mode and when
 	-- locking down files as they were added. In v6, it's used more
