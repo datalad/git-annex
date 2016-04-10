@@ -107,5 +107,13 @@ any.
 
 Pandoc is awesome, and I think a great fit for this! --[[anarcat]]
 
+Oh, and I forgot: another thing that is not handled through this
+(yet?) is the "Version" footer I was using in the above examples. I
+couldn't figure out how to pull that value out of the Makefile, but
+maybe I missed something obvious there. I also didn't notice the
+`git-union-merge.1` manpage, but it seems to be broken anyways, as it
+is not in the `man/` directory and there is a comment there saying it
+is "not built normally" so I ignored it.
+
  [personnal git-annex repo]: http://src.anarc.at/git-annex.git/
  [patch]: http://src.anarc.at/git-annex.git/commitdiff/d8a8f42f5a7ec0458718d65b72f1f814862b125b
