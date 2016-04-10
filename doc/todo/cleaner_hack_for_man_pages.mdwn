@@ -73,3 +73,39 @@ some pre-processing would be necessary there? :/ It sure is useful to
 have those links working in the web version!
 
 I hope that helps regardless.
+
+Update: regarding preprocessing, it seems there are basically two
+options for preprocessing with pandoc:
+
+* [scripting](http://pandoc.org/scripting.html)
+* [preprocessors](https://github.com/jgm/pandoc/wiki/Pandoc-Extras#preprocessors)
+  like gpp
+* external filters
+
+Preprocessors don't support arbitrary patterns like Ikiwiki links, so
+they're out already. Scripting looks a little too complicated for us,
+but could be a more stable alternative in the long term (if not for
+Ikiwiki itself ;).
+
+So I ended up using a simple sed(1) filter for now. It would be quite
+interesting to implement a better filter directly in Pandoc, if only
+for the benefit of Ikiwiki (which could then all be reimplemented in
+Haskell, No Big Deal™). But for now, I am afraid that will have to do.
+
+The resulting manpages are quite different, [here's the diff][]. It
+seems mostly better escapes and markup, in general. We get nicer
+bullet lists, cleaner command names (`git-annex add` instead of
+`git-annex-add`).
+
+[here's the diff]: http://fpaste.org/353524/
+
+I have pushed a [patch][] that implements a Pandoc build to my
+[personnal git-annex repo][]. It also adds pandoc as a build-dep to
+the debian package - and I may be missing some parts of the build
+system, hopefully you will find the missing bits and fix them, if
+any.
+
+Pandoc is awesome, and I think a great fit for this! --[[anarcat]]
+
+ [personnal git-annex repo]: http://src.anarc.at/git-annex.git/
+ [patch]: http://src.anarc.at/git-annex.git/commitdiff/d8a8f42f5a7ec0458718d65b72f1f814862b125b
