@@ -1,0 +1,57 @@
+### Please describe the problem.
+
+I want to be able to use "normal" git commands so I'm trying a v6 repo. 
+I have attempted to set up `.gitattributes` to only annex non-text mime types.  When I attempt to add something that would go into the annex, the `git-annex smudge` command fails.
+
+
+
+### What steps will reproduce the problem?
+
+See transcript below
+
+
+### What version of git-annex are you using? On what operating system?
+
+debian jessie; built from github using stack;installed to ~/.local/bin
+
+[[!format sh """
+git-annex version: 6.20160308-ge51f555
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotif
+y XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi                                                         
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_51
+2 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL         
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 6
+supported repository versions: 5 6
+upgrade supported from repository versions: 0 1 2 4 5
+"""]]
+
+### Please provide any additional information below.
+
+.gitattributes is:
+[[!format sh """
+* annex.largefiles=(not(mimetype=text/*))
+"""]]
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+renn:/tmp/gat$ git init && git annex init --version=6                                                      
+Initialized empty Git repository in /tmp/gat/.git/
+init  ok
+(recording state in git...)
+renn:/tmp/gat$ cp ../tga/.gitattributes .
+renn:/tmp/gat$ git add .gitattributes 
+renn:/tmp/gat$ cp ../tga/pkdconvweb.mov .
+renn:/tmp/gat$ git add pkdconvweb.mov 
+error: cannot feed the input to external filter git-annex smudge --clean %f
+error: external filter git-annex smudge --clean %f failed
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+No, I'm a first-time user.  Thanks for this neat piece of software.
