@@ -1,3 +1,5 @@
+NOTE: this page is out of date.  git-annex has a standard makefile now which automates these steps and performs additional steps not included here, notably creating a git-annex-shell symlink to git-annex (needed for servers), and creating the man pages.
+
 So you want to build git-annex from source. This is encouraged for
 users with experience building code from source. But the build may
 require some care and feeding. This page will start with the easy
