@@ -18,6 +18,7 @@ git-annex (6.20160412) unstable; urgency=medium
   * unannex --fast now makes hard links on Windows.
   * Fix bug in annex.largefiles mimetype= matching when git-annex
     is run in a subdirectory of the repository.
+  * Fix build with ghc v7.11. Thanks, Gabor Greif.
 
  -- Joey Hess <id@joeyh.name>  Tue, 12 Apr 2016 14:53:22 -0400
 

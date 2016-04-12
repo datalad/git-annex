@@ -12,3 +12,5 @@ https://github.com/ggreif/git-annex/commit/a0ddad8d395b5eb61d1e7e6fdcbfa766c05de
 Cheers,
 
    Gabor
+
+> Applied, thanks. [[done]] --[[Joey]]
