@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="Jan"
+ subject="git-annex on a PowerPC based synology?"
+ date="2016-04-12T15:41:24Z"
+ content="""
+I use a DS210 which is based on the PowerPC e500 CPU. Has anyone successfully compiled git-annex  for that architecture?
+"""]]
