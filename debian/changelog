@@ -1,4 +1,4 @@
-git-annex (6.20160319) UNRELEASED; urgency=medium
+git-annex (6.20160412) unstable; urgency=medium
 
   * adjust --unlock: Enters an adjusted branch in which all annexed files
     are unlocked. The v6 equivilant of direct mode, but much cleaner!
@@ -19,7 +19,7 @@ git-annex (6.20160319) UNRELEASED; urgency=medium
   * Fix bug in annex.largefiles mimetype= matching when git-annex
     is run in a subdirectory of the repository.
 
- -- Joey Hess <id@joeyh.name>  Wed, 23 Mar 2016 11:42:36 -0400
+ -- Joey Hess <id@joeyh.name>  Tue, 12 Apr 2016 14:53:22 -0400
 
 git-annex (6.20160318) unstable; urgency=medium
 
