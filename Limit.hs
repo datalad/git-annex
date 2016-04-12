@@ -104,7 +104,7 @@ matchMagic (Just magic) glob = Right $ const go
  	cglob = compileGlob glob CaseSensative -- memoized
 	go (MatchingKey _) = pure False
 	go (MatchingFile fi) = liftIO $ catchBoolIO $
-		matchGlob cglob <$> magicFile magic (matchFile fi)
+		matchGlob cglob <$> magicFile magic (currFile fi)
 	go (MatchingInfo _ _ _ mimeval) = matchGlob cglob <$> getInfo mimeval
 matchMagic Nothing _ = Left "unable to load magic database; \"mimetype\" cannot be used"
 #endif

@@ -72,3 +72,6 @@ lrwxrwxrwx 1 vagrant vagrant   189 Apr  6 15:20 tempfile -> ../.git/annex/object
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 
+> Thanks for reporting. This was a dumb bug; it used the wrong path to the
+> file for mimetype=, which was relative to the top of the repository.
+> [[fixed|done]] --[[Joey]]

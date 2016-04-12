@@ -16,6 +16,8 @@ git-annex (6.20160319) UNRELEASED; urgency=medium
   * sync: Show output of git commit.
   * annex.thin and annex.hardlink are now supported on Windows.
   * unannex --fast now makes hard links on Windows.
+  * Fix bug in annex.largefiles mimetype= matching when git-annex
+    is run in a subdirectory of the repository.
 
  -- Joey Hess <id@joeyh.name>  Wed, 23 Mar 2016 11:42:36 -0400
 
