@@ -178,6 +178,18 @@ branch. TODO
 These changes would need to be committed to the adjusted branch, otherwise
 `git diff` would show them.
 
+How to avoid making a new commit each time a single object is
+added/removed? That seems too expensive in both CPU and dangling git
+objects for old versions of the adjusted branch. It would be fine if
+`git annex get` and `git annex drop` only re-adjusted the branch one time
+at the end. OTOH, when should the assistant re-adjust the branch?
+
+Maybe instead of re-adjusting the branch after each file, stage the
+worktree change, and hold off on committing. Then when a commit is
+eventually made, the reverse adjusting to propigate it to master would need
+to make sure to not remove files that were deleted as part of the commit,
+if their content is not present.
+
 [WORKTREE: Simply adjust the work tree (and index) per the adjustment.]
 
 ## reverse adjusting commits
@@ -221,7 +233,8 @@ too problimatic.
 
 Ah, but we know that when adjustment #2 is in place, any file that `git annex
 get` could act on is not in the index. So, it could look at the master branch
-instead. (Same for `git annex move --from` and `git annex copy --from`)
+instead. (Same for `git annex move --from` and `git annex copy --from` and
+the assistant.)
 
 OTOH, if adjustment #1 is in place and not #2, a file might be renamed in the
 index, and `git annex get $newname` should work. So, it should look at the
