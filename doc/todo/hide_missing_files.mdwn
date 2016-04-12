@@ -7,3 +7,15 @@ So what's someone to do if he wants to deal with the usability issue mentioned a
 Maybe this could be accomplished through a [[dumb, unsafe, human-readable backend]]?
 
 Thanks for any advice! --[[anarcat]]
+
+> This has never been done by direct mode AFAICR.
+> 
+> But, [[design/adjusted_branches]] can do it. The basic functionality is
+> implemented already; what's missing is that, once in an adjusted branch 
+> with missing files hidden, when a file's content arrives the adjusted
+> branch needs to be updated to expose the file.
+> 
+> This will need hooks into
+> the adjusted branch code when file contents are get/dropped, and the
+> naive way to do it could make things quite slow, if the branch needs to
+> be re-adjusted after each get/drop of each file. --[[Joey]]
