@@ -23,6 +23,13 @@ git-annex should use smudge/clean filters.
   (May need to use libgit2 to do this efficiently, cannot find
   any plumbing except git-update-index, which is very inneficient for
   smudged files.)
+* Checking out a different branch causes git to smudge all changed files,
+  and write their content. This does not honor annex.thin.  
+  This is particularly wasteful when checking out an adjusted unlocked
+  branch, which causes 2x the space to be used.  
+  Seems worth having a "git annex checkout" that's like "git checkout"
+  to change branches, and honors annex.thin. And, `git annex adjust`
+  could use the same thing internally when checking out an adjusted branch.
 * Eventually (but not yet), make v6 the default for new repositories.
   Note that the assistant forces repos into direct mode; that will need to
   be changed then, and it should enable annex.thin instead.
