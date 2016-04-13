@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-04-13T16:54:01Z"
+ content="""
+Hmm, so it is enabled.
+
+So, I guess that the attempt to use the magic database is somehow failing.
+Apparently in a way that doesn't cause git-annex to display a useful error
+message.
+
+Can you check what is the behavior if you run:
+
+	git-annex smudge --clean file < file
+
+That is supposed to output something on stdout, and exit successfuly.
+I guess it's probably exiting nonzero, and any output would be helpful to
+know.
+
+It may also be helpful to strace that command.
+"""]]
