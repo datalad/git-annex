@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-04-13T19:23:29Z"
+ content="""
+I suggest that you first free up some disk space, and only then try to run
+`git annex repair`.
+
+I checked, and git-annex repair actually has a legitimate reason for
+ignoring the error to unpack a pack file. The pack file could be corrupt.
+It can't tell why git fails to unpack a pack file, so can't detect that
+it's due to low disk space.
+
+I don't know if git-repair managed to get your repository back to a working
+state (although with git history lost) or not. It seems like it thinks
+it managed to repair the repo enough for it to work, is that not the case?
+"""]]
