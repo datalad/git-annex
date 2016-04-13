@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/n0FWjM0duI0IytxNwAsBBv1BvGd8rA--#a9eec"
+ nickname="Le"
+ subject="comment 5"
+ date="2016-04-13T15:58:29Z"
+ content="""
+I agree. When I tried the webapp recently it automatically start converting files under my home dir into symlinks. Guaranteed I manage my dot files in git, but I did not expect the webapp to do anything until I have a chance to set it up.
+"""]]
