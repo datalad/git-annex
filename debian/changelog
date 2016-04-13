@@ -1,3 +1,10 @@
+git-annex (6.20160413) UNRELEASED; urgency=medium
+
+  * smudge: Print a warning when annex.thin is set, as git's smudge
+    interface does not allow honoring that configuration.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 13 Apr 2016 13:30:32 -0400
+
 git-annex (6.20160412) unstable; urgency=medium
 
   * adjust --unlock: Enters an adjusted branch in which all annexed files
