@@ -22,6 +22,7 @@ import Utility.Daemon (checkDaemon)
 #ifdef __ANDROID__
 import Utility.Env
 #endif
+import Utility.UserInfo
 import Annex.Init
 import qualified Git
 import qualified Git.Config
@@ -60,7 +61,7 @@ start = start' True
 start' :: Bool -> WebAppOptions -> CommandStart
 start' allowauto o = do
 	liftIO ensureInstalled
-	ifM isInitialized 
+	ifM (isInitialized <&&> notHome)
 		( maybe notinitialized (go <=< needsUpgrade) =<< getVersion
 		, if allowauto
 			then liftIO $ startNoRepo o
@@ -98,6 +99,15 @@ start' allowauto o = do
 		g <- Annex.gitRepo
 		liftIO $ cannotStartIn (Git.repoLocation g) "repository has not been initialized by git-annex"
 		liftIO $ firstRun o
+
+{- If HOME is a git repo, even if it's initialized for git-annex,
+ - the user almost certianly does not want to run the assistant there. -}
+notHome :: Annex Bool
+notHome = do
+	g <- Annex.gitRepo
+	d <- liftIO $ absPath (Git.repoLocation g)
+	h <- liftIO $ absPath =<< myHomeDir
+	return (d /= h)
 
 {- When run without a repo, start the first available listed repository in
  - the autostart file. If none, it's our first time being run! -}

@@ -2,6 +2,12 @@ git-annex (6.20160413) UNRELEASED; urgency=medium
 
   * smudge: Print a warning when annex.thin is set, as git's smudge
     interface does not allow honoring that configuration.
+  * webapp: When $HOME is a git repository, and has been initialized for
+    use by git-annex, opening the webapp went ahead and ran the assistant
+    there, annexing all files. Since this is almost certianly not
+    desirable, especially when the user is just opening the webapp from
+    a dekstop menu which happens to run it in $HOME, the webapp will now not
+    treat such a $HOME git repository as a git-annex repository.
 
  -- Joey Hess <id@joeyh.name>  Wed, 13 Apr 2016 13:30:32 -0400
 
