@@ -8,6 +8,8 @@ git-annex (6.20160413) UNRELEASED; urgency=medium
     desirable, especially when the user is just opening the webapp from
     a dekstop menu which happens to run it in $HOME, the webapp will now not
     treat such a $HOME git repository as a git-annex repository.
+  * webapp: Update url to add gitlab.com ssh key.
+    (Psst GitLab.. cool urls don't change!)
 
  -- Joey Hess <id@joeyh.name>  Wed, 13 Apr 2016 13:30:32 -0400
 

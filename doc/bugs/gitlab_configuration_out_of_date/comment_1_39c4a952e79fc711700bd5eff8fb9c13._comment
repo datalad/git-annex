@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-04-13T18:47:57Z"
+ content="""
+Seems the url has changed to https://gitlab.com/profile/keys
+
+Using this new url to add a key, I was able to successfully add a gitlab
+repository.
+"""]]
