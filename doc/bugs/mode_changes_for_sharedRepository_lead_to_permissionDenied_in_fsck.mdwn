@@ -13,3 +13,5 @@ The issue can be resolved for a repository by
 ### What version of git-annex are you using? On what operating system?
 
 This was observed on a git-annex remote pushed to via ssh on debian sid, with pushes from various git-annex versions over the past years.
+
+> [[fixed|done]] --[[Joey]]
