@@ -301,12 +301,13 @@ verifyWorkTree key file = do
 		case mk of
 			Just k | k == key -> whenM (inAnnex key) $ do
 				showNote "fixing worktree content"
-				replaceFile file $ \tmp -> 
+				replaceFile file $ \tmp -> do
+					mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus file
 					ifM (annexThin <$> Annex.getGitConfig)
-						( void $ linkFromAnnex key tmp
+						( void $ linkFromAnnex key tmp mode
 						, do
 							obj <- calcRepo $ gitAnnexLocation key
-							void $ checkedCopyFile key obj tmp
+							void $ checkedCopyFile key obj tmp mode
 							thawContent tmp
 						)
 				Database.Keys.storeInodeCaches key [file]

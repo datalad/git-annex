@@ -78,7 +78,7 @@ performNew file key filemodified = do
 		mfc <- withTSDelta (liftIO . genInodeCache file)
 		unlessM (sameInodeCache obj (maybeToList mfc)) $ do
 			modifyContent obj $ replaceFile obj $ \tmp -> do
-				unlessM (checkedCopyFile key obj tmp) $
+				unlessM (checkedCopyFile key obj tmp Nothing) $
 					error "unable to lock file"
 			Database.Keys.storeInodeCaches key [obj]
 
@@ -92,7 +92,7 @@ performNew file key filemodified = do
 			liftIO $ nukeFile obj
 			case mfile of
 				Just unmodified ->
-					unlessM (checkedCopyFile key unmodified obj)
+					unlessM (checkedCopyFile key unmodified obj Nothing)
 						lostcontent
 				Nothing -> lostcontent
 		| otherwise = modifyContent obj $ 

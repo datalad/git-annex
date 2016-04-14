@@ -13,6 +13,7 @@ git-annex (6.20160413) UNRELEASED; urgency=medium
   * Fix bug in v6 mode that prevented treating unlocked executable files
     as annexed. If you have such files, run git annex init --version=6
     to update the cache after upgrading to this version of git-annex.
+  * Preserve execute bits of unlocked files in v6 mode.
 
  -- Joey Hess <id@joeyh.name>  Wed, 13 Apr 2016 13:30:32 -0400
 

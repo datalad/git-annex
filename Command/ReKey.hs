@@ -61,7 +61,7 @@ linkKey file oldkey newkey = ifM (isJust <$> isAnnexLink file)
 	 - and vulnerable to corruption. -}
 	( getViaTmp' DefaultVerify newkey $ \tmp -> unVerified $ do
 		oldobj <- calcRepo (gitAnnexLocation oldkey)
-		linkOrCopy' (return True) newkey oldobj tmp
+		linkOrCopy' (return True) newkey oldobj tmp Nothing
 	, do
 		ic <- withTSDelta (liftIO . genInodeCache file)
 	 	{- The file being rekeyed is itself an unlocked file, so if
@@ -69,7 +69,7 @@ linkKey file oldkey newkey = ifM (isJust <$> isAnnexLink file)
 		oldobj <- calcRepo (gitAnnexLocation oldkey)
 		v <- tryNonAsync $ modifyContent oldobj $ do
 			replaceFile oldobj $ \tmp ->
-				unlessM (checkedCopyFile oldkey file tmp) $
+				unlessM (checkedCopyFile oldkey file tmp Nothing) $
 					error "can't lock old key"
 			freezeContent oldobj
 			oldic <- withTSDelta (liftIO . genInodeCache oldobj)
@@ -95,9 +95,10 @@ cleanup file oldkey newkey = do
 			liftIO $ removeFile file
 			addLink file newkey Nothing
 		, do
+			mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus file
 			liftIO $ whenM (isJust <$> isPointerFile file) $
-				writeFile file (formatPointer newkey)
-			stagePointerFile file =<< hashPointerFile newkey
+				writePointerFile file newkey mode
+			stagePointerFile file mode =<< hashPointerFile newkey
 			Database.Keys.removeAssociatedFile oldkey 
 				=<< inRepo (toTopFilePath file)
 		)

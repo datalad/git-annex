@@ -130,7 +130,9 @@ ingestAdd ld@(Just (LockedDown cfg source)) = do
 					( do
 						l <- calcRepo $ gitAnnexLink f k
 						stageSymlink f =<< hashSymlink l
-					, stagePointerFile f =<< hashPointerFile k
+					, do
+						mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus (contentLocation source)
+						stagePointerFile f mode =<< hashPointerFile k
 					)
 			return (Just k)
 
@@ -344,15 +346,19 @@ cachedCurrentBranch = maybe cache (return . Just)
 addAnnexedFile :: FilePath -> Key -> Maybe FilePath -> Annex ()
 addAnnexedFile file key mtmp = ifM (addUnlocked <&&> not <$> isDirect)
 	( do
-		stagePointerFile file =<< hashPointerFile key
+		mode <- maybe
+			(pure Nothing)
+			(\tmp -> liftIO $ catchMaybeIO $ fileMode <$> getFileStatus tmp)
+			mtmp
+		stagePointerFile file mode =<< hashPointerFile key
 		Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath file)
 		case mtmp of
 			Just tmp -> do
 				moveAnnex key tmp
-				linkunlocked
+				linkunlocked mode
 			Nothing -> ifM (inAnnex key)
-				( linkunlocked
-				, writepointer
+				( linkunlocked mode
+				, liftIO $ writePointerFile file key mode
 				)
 	, do
 		addLink file key Nothing
@@ -368,9 +374,9 @@ addAnnexedFile file key mtmp = ifM (addUnlocked <&&> not <$> isDirect)
 			Nothing -> return ()
 	)
   where
-	writepointer = liftIO $ writeFile file (formatPointer key)
-	linkunlocked = do
-		r <- linkFromAnnex key file
+	linkunlocked mode = do
+		r <- linkFromAnnex key file mode
 		case r of
-			LinkAnnexFailed -> writepointer
+			LinkAnnexFailed -> liftIO $
+				writePointerFile file key mode
 			_ -> return ()
