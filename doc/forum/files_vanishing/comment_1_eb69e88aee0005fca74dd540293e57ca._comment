@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-04-14T19:50:52Z"
+ content="""
+Suggest you run git log --stat to see if you can find a commit that deleted
+the missing files. Reverting the commit should then get the files back.
+
+There have been several bugs of this kind in direct mode. Using such an old
+git-annex from 2014 makes it more likely you'll hit an old bug like this.
+
+The new v6 repository mode should be much less likely to have this kind of
+bug.
+"""]]
