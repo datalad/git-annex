@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-04-14T16:59:40Z"
+ content="""
+I've fixed this bug. After upgrading to git-annex 6.20160414 or newer,
+if you have such files in your repository, you will need to force git-annex
+to update its list of unlocked files, by running:
+
+	git annex init --version=6
+
+You may also need to run `git annex fsck` on the files to properly populate
+them with their content. Do it after the above command.
+
+(There were also some bugs that lost the execute bit; fixed those too.)
+
+(The comment about windows is not about this bug at all, but an entirely
+different, and already fixed bug.)
+"""]]
