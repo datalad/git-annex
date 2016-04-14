@@ -1,0 +1,89 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-04-14T20:43:05Z"
+ content="""
+umask 077 means a file will be mode 400. The 400 mode is indeed retained
+when that object is transferred to another repository.
+
+git-annex does make sure that the file can be read by the current user.
+Which mode 400 does allow.
+
+Did your problem involve some other user needing to read the file? 
+If you configure core.sharedrepository group or world, then git-annex
+will adjust the mode of the received object to let the group or everyone
+read it.
+
+----
+
+The simplest way to make it use the umask would be this patch. But,
+with this patch, if I have a file that's mode 664 and my umask is 077, git
+annex add will change the file mode to 600.
+So, I don't like this patch; its impact is too broad.
+
+    diff --git a/Annex/Perms.hs b/Annex/Perms.hs
+    index 6444025..9b35bb8 100644
+    --- a/Annex/Perms.hs
+    +++ b/Annex/Perms.hs
+    @@ -5,6 +5,8 @@
+      - Licensed under the GNU GPL version 3 or higher.
+      -}
+     
+    +{-# LANGUAGE CPP #-}
+    +
+     module Annex.Perms (
+     	setAnnexFilePerm,
+     	setAnnexDirPerm,
+    @@ -28,6 +30,10 @@ import Git.SharedRepository
+     import qualified Annex
+     import Config
+     
+    +#ifndef mingw32_HOST_OS
+    +import Data.Bits
+    +#endif
+    +
+     withShared :: (SharedRepository -> Annex a) -> Annex a
+     withShared a = a =<< coreSharedRepository <$> Annex.getGitConfig
+     
+    @@ -82,7 +88,7 @@ createAnnexDirectory dir = walk dir [] =<< top
+     			setAnnexDirPerm p
+     
+     {- Normally, blocks writing to an annexed file, and modifies file
+    - - permissions to allow reading it.
+    + - permissions to not allow writing it and otherwise reflect the umask.
+      -
+      - When core.sharedRepository is set, the write bits are not removed from
+      - the file, but instead the appropriate group write bits are set. This is
+    @@ -98,9 +104,18 @@ freezeContent file = unlessM crippledFileSystem $
+     		addModes [ownerReadMode, groupReadMode, ownerWriteMode, groupWriteMode]
+     	go AllShared = liftIO $ void $ tryIO $ modifyFileMode file $
+     		addModes (readModes ++ writeModes)
+    -	go _ = liftIO $ modifyFileMode file $
+    -		removeModes writeModes .
+    -		addModes [ownerReadMode]
+    +#ifndef mingw32_HOST_OS
+    +	go _ = liftIO $ bracket
+    +		(liftIO $ setFileCreationMask 0o22) -- set umask to get it
+    +		(liftIO . setFileCreationMask) 
+    +		$ \umask -> modifyFileMode file $
+    +			removeModes writeModes .
+    +			(\mode -> mode .&. complement umask)
+    +#else
+    +	go _ = liftIO $ modifyFileMode file $ 
+    +			removeModes writeModes .
+    +			addModes [ ownerReadMode ]
+    +#endif
+     
+     isContentWritePermOk :: FilePath -> Annex Bool
+     isContentWritePermOk file = ifM crippledFileSystem
+
+The umask-based mode setting could be put into every remote
+that uses a transfer method that preserves permissions. (Including the
+external special remote I suppose, since it *might* do so.) Or put in
+`gitViaTmp` but there are a few places `getViaTmp` is used that do not
+involve transfers from remotes.
+
+Also this would add the overhead of umask()+stat()+chmod()+umask()
+to every file downloaded by git-annex, on top of the chmodding it already
+does.
+"""]]
