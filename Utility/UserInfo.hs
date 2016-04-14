@@ -17,9 +17,7 @@ module Utility.UserInfo (
 import Utility.Env
 
 import System.PosixCompat
-#ifndef mingw32_HOST_OS
 import Control.Applicative
-#endif
 import Prelude
 
 {- Current user's home directory.

@@ -1,0 +1,15 @@
+Could `git annex log` show the modification times using the Unix time instead of human-readable timestamps?
+
+This is an example of the output of `git annex log`:
+
+```
++ 2014-10-27 01:00:18 ev-2014.pdf | 50083bd6-7e20-4356-a32f-a1dde07de441 -- penn
+```
+
+If the timestamp were in Unix time, it would be easier to process in a mechanical way. Unix time would also avoid having to guess what is the correct timezone for the timestamp.
+
+```
++ 1414368018 ev-2014.pdf | 50083bd6-7e20-4356-a32f-a1dde07de441 -- penn
+```
+
+> [[done]] --[[Joey]] 

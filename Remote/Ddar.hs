@@ -122,8 +122,8 @@ ddarRemoteCall :: DdarRepo -> Char -> [CommandParam] -> Annex (String, [CommandP
 ddarRemoteCall ddarrepo cmd params
 	| ddarLocal ddarrepo = return ("ddar", localParams)
 	| otherwise = do
-		os <- sshOptions (host, Nothing) (ddarRepoConfig ddarrepo) remoteParams
-		return ("ssh", os)
+		os <- sshOptions (host, Nothing) (ddarRepoConfig ddarrepo) []
+		return ("ssh", os ++ remoteParams)
   where
 	(host, ddarrepo') = splitRemoteDdarRepo ddarrepo
 	localParams = Param [cmd] : Param (ddarRepoLocation ddarrepo) : params
@@ -158,8 +158,8 @@ ddarDirectoryExists ddarrepo
 			Left _ -> Right False
 			Right status -> Right $ isDirectory status
 	| otherwise = do
-		ps <- sshOptions (host, Nothing) (ddarRepoConfig ddarrepo) params
-		exitCode <- liftIO $ safeSystem "ssh" ps
+		ps <- sshOptions (host, Nothing) (ddarRepoConfig ddarrepo) []
+		exitCode <- liftIO $ safeSystem "ssh" (ps ++ params)
 		case exitCode of
 			ExitSuccess -> return $ Right True
 			ExitFailure 1 -> return $ Right False

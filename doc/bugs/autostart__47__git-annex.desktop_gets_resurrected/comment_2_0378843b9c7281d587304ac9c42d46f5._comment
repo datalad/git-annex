@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="timothyhobbs@8b50ff958c937fa4b6de1f9009f464b9ddfc2991"
+ nickname="timothyhobbs"
+ subject="comment 2"
+ date="2016-04-04T06:07:20Z"
+ content="""
+It would be better to prompt the user \"Would you like to automatically start git annex when you log in? Yes No [ ] Do not display again.\" That way user's won't be surprised that there is disk churn when they startup their computer...
+"""]]

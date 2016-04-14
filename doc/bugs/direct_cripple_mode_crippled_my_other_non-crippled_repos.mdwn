@@ -29,12 +29,12 @@ I have found the following tools to be useful to cleanup the filesystem:
 * [convmv](http://tracker.debian.org/convmv) can massively re-encode filenames and may also be able to fix all the issues above, but i didn't test that
 * [rename](http://tracker.debian.org/rename) can massively rename files according to certain patterns, I have used:
 
-    rename 's/\?//' *
-    rename 's/://' *
-    rename 's/\\//' *
-    rename 's/"//' *
-    rename 's/*//' *
-    git add -A .
+      rename 's/\?//' *
+      rename 's/://' *
+      rename 's/\\//' *
+      rename 's/"//' *
+      rename 's/*//' *
+      git add -A .
 
 Similar issues:
 

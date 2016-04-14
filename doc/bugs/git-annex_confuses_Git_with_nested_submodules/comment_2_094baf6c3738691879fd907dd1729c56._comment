@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-03-01T20:36:43Z"
+ content="""
+Here's a more minimal test case, not involving git-annex at all:
+
+	git init gitdir
+	mkdir worktree
+	cd worktree
+	ln -s ../gitdir/.git .git
+	git submodule add /any/git/repo sub
+
+	fatal: Could not chdir to '../../../sub': No such file or directory
+
+I have forwarded that test case to the git ML.
+"""]]

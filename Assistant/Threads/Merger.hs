@@ -17,7 +17,7 @@ import Utility.DirWatcher.Types
 import qualified Annex.Branch
 import qualified Git
 import qualified Git.Branch
-import Annex.AutoMerge
+import qualified Command.Sync
 import Annex.TaggedPush
 import Remote (remoteFromUUID)
 
@@ -72,19 +72,21 @@ onChange file
 			unlessM handleDesynced $
 				queueDeferredDownloads "retrying deferred download" Later
 	| "/synced/" `isInfixOf` file =
-		mergecurrent =<< liftAnnex (inRepo Git.Branch.current)
+		mergecurrent =<< liftAnnex (join Command.Sync.getCurrBranch)
 	| otherwise = noop
   where
 	changedbranch = fileToBranch file
 
-	mergecurrent (Just current)
-		| equivBranches changedbranch current =
-			whenM (liftAnnex $ inRepo $ Git.Branch.changed current changedbranch) $ do
+	mergecurrent currbranch@(Just b, _)
+		| equivBranches changedbranch b =
+			whenM (liftAnnex $ inRepo $ Git.Branch.changed b changedbranch) $ do
 				debug
 					[ "merging", Git.fromRef changedbranch
-					, "into", Git.fromRef current
+					, "into", Git.fromRef b
 					]
-				void $ liftAnnex $ autoMergeFrom changedbranch (Just current) Git.Branch.AutomaticCommit
+				void $ liftAnnex $ Command.Sync.merge
+					currbranch Git.Branch.AutomaticCommit
+					changedbranch
 	mergecurrent _ = noop
 
 	handleDesynced = case fromTaggedBranch changedbranch of

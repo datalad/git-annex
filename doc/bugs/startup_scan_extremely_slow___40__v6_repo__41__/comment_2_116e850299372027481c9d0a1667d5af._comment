@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-04-04T20:23:19Z"
+ content="""
+Note that v6 is still an experimental feature. I have not tested the
+assistant with it much.
+
+There is an issue documented on [[smudge]] where git can end up
+unncessarily running the smudge filter after git-annex eg, gets a file,
+or adds a file.
+
+This could be related to that; after the assistant added a lot of
+files here, the first `git status` run was quite slow as it ran the clean
+filter on every file. Subsequent `git status` runs then went fast.
+
+But, I don't know why this would make the startup scan slow; it
+doesn't seem to use any git commands that would need to smudge files.
+I tested by exporting `GIT_TRACE=1` and starting the assistant; the
+startup scan went fast and there was nothing in .git/annex/daemon.log
+about smudging.
+
+Also, what are these changes that are apparently being committed to git
+during your startup scan? I don't see such commits, either here.
+"""]]

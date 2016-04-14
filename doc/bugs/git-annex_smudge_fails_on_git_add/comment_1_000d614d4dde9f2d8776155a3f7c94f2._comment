@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="j_k_234@b2b1aa189bf195cefd815fc0fe70e0ebbe2b8077"
+ nickname="j_k_234"
+ subject="comment 1"
+ date="2016-04-10T13:47:30Z"
+ content="""
+Tried this on a debian stretch machine and it works fine, so it's to do with the local build on the jessie machine.  I tried outtng the binary into `/usr/bin` but that didn't help.
+"""]]

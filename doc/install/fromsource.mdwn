@@ -73,8 +73,8 @@ to be broken from time to time.
 
 Inside the source tree, run:
 
-	cabal install -j -f"-assistant -webapp -webdav -pairing -xmpp -dns" --only-dependencies
-	cabal configure -f"-assistant -webapp -webdav -pairing -xmpp -dns"
+	cabal install -j -f"-assistant -webapp -webdav -pairing -xmpp -dns -dbus -magicmime" --only-dependencies
+	cabal configure -f"-assistant -webapp -webdav -pairing -xmpp -dns -dbus -magicmime"
 	cabal build -j
 	PATH=$HOME/bin:$PATH
 	cabal install --bindir=$HOME/bin
@@ -98,4 +98,5 @@ Once the C libraries are installed, run inside the source tree:
 
 When building with cabal, you can optionally enable the 
 [[EKG monitoring interface|ekg]]. This is great for debugging resource
-usage problems. Just pass `-f+EKG` to `cabal configure`
+usage problems, but not for general-purpose builds.
+Just pass `-f+EKG` to `cabal configure`

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Tobias"
+ subject="bare repository in direct mode"
+ date="2016-03-21T21:28:57Z"
+ content="""
+It is not possible to put a bare repository in direct mode. I tried it and it did not work. 
+
+Tobias
+"""]]

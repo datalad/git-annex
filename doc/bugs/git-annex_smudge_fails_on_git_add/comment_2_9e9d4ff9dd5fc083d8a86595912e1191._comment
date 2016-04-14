@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-04-12T17:07:13Z"
+ content="""
+Since you're trying to use the mimetype feature, have you checked that
+your git-annex is built with support for it? Run `git annex version` and
+check for "MagicMime" in the build flags.
+
+Indeed, I'm possitive that's the problem with your build, since the stack
+build disables this feature by default. Because it needs libmagic to be
+installed, and stack can't install such C libraries and to get a stack
+build that works everywhere, it has to be disabled by default.
+
+So the solution for you is to tell stack to build with the MagicMime build
+flag.
+
+Remaining question is, why is git-annex not displaying an error in this
+situation?  I tried to replicate it, and it seems to display a nice
+error message here:
+
+	joey@darkstar:~/tmp/tt>git add bash
+	git-annex: bad annex.largefiles configuration: Parse failure: "mimetype" not supported; not built with MagicMime support
+	error: external filter git-annex smudge --clean %f failed 1
+	error: external filter git-annex smudge --clean %f failed
+"""]]

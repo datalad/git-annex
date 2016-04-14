@@ -25,6 +25,7 @@ import Assistant.Pairing
 import Assistant.XMPP.Git
 import Annex.UUID
 import Logs.UUID
+import qualified Command.Sync
 
 import Network.Protocol.XMPP
 import Control.Concurrent
@@ -33,7 +34,6 @@ import Control.Concurrent.STM (atomically)
 import qualified Data.Text as T
 import qualified Data.Set as S
 import qualified Data.Map as M
-import qualified Git.Branch
 import Data.Time.Clock
 import Control.Concurrent.Async
 
@@ -306,7 +306,7 @@ pull [] = noop
 pull us = do
 	rs <- filter matching . syncGitRemotes <$> getDaemonStatus
 	debug $ "push notification for" : map (fromUUID . Remote.uuid ) rs
-	pullone rs =<< liftAnnex (inRepo Git.Branch.current)
+	pullone rs =<< liftAnnex (join Command.Sync.getCurrBranch)
   where
 	matching r = Remote.uuid r `S.member` s
 	s = S.fromList us

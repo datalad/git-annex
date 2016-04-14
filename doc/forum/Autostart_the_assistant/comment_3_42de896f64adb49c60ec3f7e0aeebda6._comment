@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="Horus"
+ subject="comment 3"
+ date="2016-03-15T08:53:14Z"
+ content="""
+I use the Arch package, it is built / installed like that <https://projects.archlinux.org/svntogit/community.git/tree/trunk/PKGBUILD?h=packages/git-annex>
+
+    runhaskell Setup configure -O --prefix=/usr --docdir=\"/usr/share/doc/${pkgname}\" \
+        -fcryptonite -fnetwork-uri -f-ekg -fconcurrentoutput -ftorrentparser \
+        -ftestsuite -f-androidsplice -f-android -fproduction -fpairing -fwebapp \
+        -fassistant -fwebdav -fs3 -f-benchmark -fdbus -fxmpp -fmagicmime
+    runhaskell Setup build
+
+    runhaskell Setup copy --destdir=\"${pkgdir}\"
+
+Seem to be no classical make install involved. I try to peek your build system, but I know way to little about Haskell.
+
+Is there a way to get all the generated desktop files? Maybe add them to the prebuilt tarball?
+"""]]

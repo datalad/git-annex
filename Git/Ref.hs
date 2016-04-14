@@ -18,6 +18,12 @@ import Data.Char (chr)
 headRef :: Ref
 headRef = Ref "HEAD"
 
+headFile :: Repo -> FilePath
+headFile r = localGitDir r </> "HEAD"
+
+setHeadRef :: Ref -> Repo -> IO ()
+setHeadRef ref r = writeFile (headFile r) ("ref: " ++ fromRef ref)
+
 {- Converts a fully qualified git ref into a user-visible string. -}
 describe :: Ref -> String
 describe = fromRef . base
@@ -31,11 +37,14 @@ base = Ref . remove "refs/heads/" . remove "refs/remotes/" . fromRef
 		| prefix `isPrefixOf` s = drop (length prefix) s
 		| otherwise = s
 
+{- Gets the basename of any qualified ref. -}
+basename :: Ref -> Ref
+basename = Ref . reverse . takeWhile (/= '/') . reverse . fromRef
+
 {- Given a directory and any ref, takes the basename of the ref and puts
  - it under the directory. -}
 under :: String -> Ref -> Ref
-under dir r = Ref $ dir ++ "/" ++
-	(reverse $ takeWhile (/= '/') $ reverse $ fromRef r)
+under dir r = Ref $ dir ++ "/" ++ fromRef (basename r)
 
 {- Given a directory such as "refs/remotes/origin", and a ref such as
  - refs/heads/master, yields a version of that ref under the directory,

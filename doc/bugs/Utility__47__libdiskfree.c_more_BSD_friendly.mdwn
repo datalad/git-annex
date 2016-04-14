@@ -79,3 +79,6 @@ The diff probably needs check, improvement...
 
 Not tested this "feature" yet, I got another issue which blocks me for now.
 
+> Well, this code has been removing from git-annex, and it's now using
+> <http://hackage.haskell.org/package/disk-free-space>. I think that
+> library is somewhat more portable. [[done]]

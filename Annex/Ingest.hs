@@ -5,8 +5,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Annex.Ingest (
 	LockedDown(..),
 	LockDownConfig(..),
@@ -37,18 +35,17 @@ import Logs.Location
 import qualified Annex
 import qualified Annex.Queue
 import qualified Database.Keys
+import qualified Git
+import qualified Git.Branch
 import Config
 import Utility.InodeCache
 import Annex.ReplaceFile
 import Utility.Tmp
 import Utility.CopyFile
+import Utility.Touch
 import Git.FilePath
 import Annex.InodeSentinal
-#ifdef WITH_CLIBS
-#ifndef __ANDROID__
-import Utility.Touch
-#endif
-#endif
+import Annex.AdjustedBranch
 
 import Control.Exception (IOException)
 
@@ -282,11 +279,7 @@ makeLink file key mcache = flip catchNonAsync (restoreFile file key) $ do
 	-- touch symlink to have same time as the original file,
 	-- as provided in the InodeCache
 	case mcache of
-#if defined(WITH_CLIBS) && ! defined(__ANDROID__)
 		Just c -> liftIO $ touch file (TimeSpec $ inodeCacheToMtime c) False
-#else
-		Just _ -> noop
-#endif
 		Nothing -> noop
 
 	return l
@@ -319,14 +312,31 @@ forceParams = ifM (Annex.getState Annex.force)
 	)
 
 {- Whether a file should be added unlocked or not. Default is to not,
- - unless symlinks are not supported. annex.addunlocked can override that. -}
+ - unless symlinks are not supported. annex.addunlocked can override that.
+ - Also, when in an adjusted unlocked branch, always add files unlocked.
+ -}
 addUnlocked :: Annex Bool
 addUnlocked = isDirect <||>
 	(versionSupportsUnlockedPointers <&&>
 	 ((not . coreSymlinks <$> Annex.getGitConfig) <||>
-	  (annexAddUnlocked <$> Annex.getGitConfig)
+	  (annexAddUnlocked <$> Annex.getGitConfig) <||>
+	  (maybe False (\b -> getAdjustment b == Just UnlockAdjustment) <$> cachedCurrentBranch)
 	 )
 	)
+
+cachedCurrentBranch :: Annex (Maybe Git.Branch)
+cachedCurrentBranch = maybe cache (return . Just)
+	=<< Annex.getState Annex.cachedcurrentbranch
+  where
+	cache :: Annex (Maybe Git.Branch)
+	cache = do
+		mb <- inRepo Git.Branch.currentUnsafe
+		case mb of
+			Nothing -> return Nothing
+			Just b -> do
+				Annex.changeState $ \s ->
+					s { Annex.cachedcurrentbranch = Just b }
+				return (Just b)
 
 {- Adds a file to the work tree for the key, and stages it in the index.
  - The content of the key may be provided in a temp file, which will be

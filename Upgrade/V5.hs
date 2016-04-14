@@ -1,6 +1,6 @@
 {- git-annex v5 -> v6 upgrade support
  -
- - Copyright 2015 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -23,7 +23,9 @@ import qualified Git.Branch
 import Git.FilePath
 import Git.FileMode
 import Git.Config
+import Git.Ref
 import Utility.InodeCache
+import Annex.AdjustedBranch
 
 upgrade :: Bool -> Annex Bool
 upgrade automatic = do
@@ -37,19 +39,27 @@ upgrade automatic = do
 		setConfig (annexConfig "thin") (boolConfig True)
 		Annex.changeGitConfig $ \c -> c { annexThin = True }
 		{- Since upgrade from direct mode changes how files
-		 - are represented in git, commit any changes in the
-		 - work tree first. -}
+		 - are represented in git, by checking out an adjusted
+		 - branch, commit any changes in the work tree first. -}
 		whenM stageDirect $ do
 			unless automatic $
 				showAction "committing first"
 			upgradeDirectCommit automatic
 				"commit before upgrade to annex.version 6"
 		setDirect False
+		cur <- fromMaybe (error "Somehow no branch is checked out")
+			<$> inRepo Git.Branch.current
 		upgradeDirectWorkTree
 		removeDirectCruft
-		showLongNote "Upgraded repository out of direct mode."
-		showLongNote "Changes have been staged for all annexed files in this repository; you should run `git commit` to commit these changes."
-		showLongNote "Any other clones of this repository that use direct mode need to be upgraded now, too."
+		{- Create adjusted branch where all files are unlocked.
+		 - This should have the same content for each file as
+		 - have been staged in upgradeDirectWorkTree. -}
+		AdjBranch b <- adjustBranch UnlockAdjustment cur
+		{- Since the work tree was already set up by
+		 - upgradeDirectWorkTree, and contains unlocked file
+		 - contents too, don't use git checkout to check out the
+		 - adjust branch. Instead, update HEAD manually. -}
+		inRepo $ setHeadRef b
 	configureSmudgeFilter
 	-- Inode sentinal file was only used in direct mode and when
 	-- locking down files as they were added. In v6, it's used more

@@ -9,18 +9,18 @@ A walkthrough of the basic features of git-annex.
 	walkthrough/renaming_files
 	walkthrough/getting_file_content
 	walkthrough/syncing
-	walkthrough/transferring_files:_When_things_go_wrong
+	walkthrough/transferring_files__58___When_things_go_wrong
 	walkthrough/removing_files
-	walkthrough/removing_files:_When_things_go_wrong
+	walkthrough/removing_files__58___When_things_go_wrong
 	walkthrough/modifying_annexed_files
 	walkthrough/using_ssh_remotes
 	walkthrough/using_special_remotes
 	walkthrough/moving_file_content_between_repositories
-	walkthrough/quiet_please:_When_git-annex_seems_to_skip_files
+	walkthrough/quiet_please__58___When_git-annex_seems_to_skip_files
 	walkthrough/using_tags_and_branches
 	walkthrough/unused_data
-	walkthrough/fsck:_verifying_your_data
-	walkthrough/fsck:_when_things_go_wrong
+	walkthrough/fsck__58___verifying_your_data
+	walkthrough/fsck__58___when_things_go_wrong
 	walkthrough/backups
 	walkthrough/automatically_managing_content
 	walkthrough/more

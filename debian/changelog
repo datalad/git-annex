@@ -1,3 +1,48 @@
+git-annex (6.20160412) unstable; urgency=medium
+
+  * adjust --unlock: Enters an adjusted branch in which all annexed files
+    are unlocked. The v6 equivilant of direct mode, but much cleaner!
+  * Upgrading a direct mode repository to v6 has changed to enter
+    an adjusted unlocked branch. This makes the direct mode to v6 upgrade
+    able to be performed in one clone of a repository without affecting
+    other clones, which can continue using v5 and direct mode.
+  * init --version=6: Automatically enter the adjusted unlocked branch
+    when filesystem doesn't support symlinks.
+  * ddar remote: fix ssh calls
+    Thanks, Robie Basak
+  * log: Display time with time zone.
+  * log --raw-date: Use to display seconds from unix epoch.
+  * v6: Close pointer file handles more quickly, to avoid problems on Windows.
+  * sync: Show output of git commit.
+  * annex.thin and annex.hardlink are now supported on Windows.
+  * unannex --fast now makes hard links on Windows.
+  * Fix bug in annex.largefiles mimetype= matching when git-annex
+    is run in a subdirectory of the repository.
+  * Fix build with ghc v7.11. Thanks, Gabor Greif.
+
+ -- Joey Hess <id@joeyh.name>  Tue, 12 Apr 2016 14:53:22 -0400
+
+git-annex (6.20160318) unstable; urgency=medium
+
+  * metadata: Added -r to remove all current values of a field.
+  * Fix data loss that can occur when annex.pidlock is set in a repository.
+  * Fix bug preventing moving files to/from a repository with annex.pidlock set.
+  * Fix shared lock file FD leak.
+  * Fix metadata hook behavior when multiple files are added at once.
+    Thanks, Klaus Ethgen.
+  * Added dependencies on haskell mountpoints and disk-free-space
+    libraries, removing FFI code from git-annex.
+  * dropkey: Add --batch and --json.
+  * Fix OSX dmg to include libraries needed by bundled gpg,
+    lost in last release.
+  * Always try to thaw content, even when annex.crippledfilesystem is set.
+  * Correct git-annex info to include unlocked files in v6 repository.
+  * Sped up git-annex add in direct mode and v6 by using
+    git hash-object --stdin-paths.
+  * Sped up git-annex merge by using git hash-object --stdin-paths.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 18 Mar 2016 11:30:36 -0400
+
 git-annex (6.20160229-1) unstable; urgency=medium
 
   * Package 6.20160229-1

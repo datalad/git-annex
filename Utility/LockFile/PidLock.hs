@@ -201,7 +201,7 @@ checkInsaneLustre dest = do
 --
 -- Uses a 1 second wait-loop.
 --
--- May wait untie timeout if the lock file is stale and is on a network file
+-- May wait until timeout if the lock file is stale and is on a network file
 -- system, or on a system where the side lock cannot be taken.
 waitLock :: Seconds -> LockFile -> IO LockHandle
 waitLock (Seconds timeout) lockfile = go timeout

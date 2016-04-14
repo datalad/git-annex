@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="gavinwahl@d3a94ffbd6df3b8833a53ff11ec435f58f7c44a9"
+ nickname="gavinwahl"
+ subject="Shared key - how many keys?"
+ date="2016-04-03T03:43:58Z"
+ content="""
+In shared mode, is a single key used to encrypt every file in the repository? Or is a new key created for each file?
+
+Shared mode has the properties I need - getting access to the git repo should give you access to all the content. BUT, if one loses access to updates to the git repo, they should not have access to files added after they lost access.
+"""]]

@@ -41,8 +41,6 @@ module Annex.Content (
 	saveState,
 	downloadUrl,
 	preseedTmp,
-	freezeContent,
-	thawContent,
 	dirKeys,
 	withObjectLoc,
 	staleKeysPrune,
@@ -67,7 +65,6 @@ import Utility.CopyFile
 import Utility.Metered
 import Config
 import Git.FilePath
-import Git.SharedRepository
 import Annex.Perms
 import Annex.Link
 import qualified Annex.Content.Direct as Direct
@@ -597,14 +594,10 @@ linkOrCopy' canhardlink key src dest = catchBoolIO $
   where
 	hardlink = do
 		s <- getstat
-#ifndef mingw32_HOST_OS
 		if linkCount s > 1
 			then copy s
 			else liftIO (createLink src dest >> return True)
 				`catchIO` const (copy s)
-#else
-		copy s
-#endif
 	copy = checkedCopyFile' key src dest
 	getstat = liftIO $ getFileStatus src
 
@@ -916,47 +909,6 @@ preseedTmp key file = go =<< inAnnex key
 				, return False
 				)
 		)
-
-{- Normally, blocks writing to an annexed file, and modifies file
- - permissions to allow reading it.
- -
- - When core.sharedRepository is set, the write bits are not removed from
- - the file, but instead the appropriate group write bits are set. This is
- - necessary to let other users in the group lock the file.
- -}
-freezeContent :: FilePath -> Annex ()
-freezeContent file = unlessM crippledFileSystem $
-	withShared go
-  where
-	go GroupShared = liftIO $ modifyFileMode file $
-		addModes [ownerReadMode, groupReadMode, ownerWriteMode, groupWriteMode]
-	go AllShared = liftIO $ modifyFileMode file $
-		addModes (readModes ++ writeModes)
-	go _ = liftIO $ modifyFileMode file $
-		removeModes writeModes .
-		addModes [ownerReadMode]
-
-{- Adjusts read mode of annexed file per core.sharedRepository setting. -}
-chmodContent :: FilePath -> Annex ()
-chmodContent file = unlessM crippledFileSystem $
-	withShared go
-  where
-	go GroupShared = liftIO $ modifyFileMode file $
-		addModes [ownerReadMode, groupReadMode]
-	go AllShared = liftIO $ modifyFileMode file $
-		addModes readModes
-	go _ = liftIO $ modifyFileMode file $
-		addModes [ownerReadMode]
-
-{- Allows writing to an annexed file that freezeContent was called on
- - before. -}
-thawContent :: FilePath -> Annex ()
-thawContent file = unlessM crippledFileSystem $
-	withShared go
-  where
-	go GroupShared = liftIO $ groupWriteRead file
-	go AllShared = liftIO $ groupWriteRead file
-	go _ = liftIO $ allowWrite file
 
 {- Finds files directly inside a directory like gitAnnexBadDir 
  - (not in subdirectories) and returns the corresponding keys. -}

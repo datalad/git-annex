@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="cache?"
+ date="2016-04-01T19:56:43Z"
+ content="""
+I was about to whine in a separate TODO but then remembered that the issue is not new...
+I wondered -- since sizes report depends on what is present or not locally, and that all directly relates to the state of git-annex branch, could may be annex cache collected information associated with a given annex / current branch treeishes?  Then subsequent invocations would be fast.
+
+In my case I would want to list information on multiple annexes e.g. in current directory.  If each one takes 3-4 seconds, for 30 of them -- minutes.  With caching, at least subsequent runs should be much faster (in case of no changes, which would be frequent case I think)
+"""]]

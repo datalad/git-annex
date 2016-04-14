@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-03-01T15:40:12Z"
+ content="""
+I can reproduce this. But, when I change the origin remote to use ssh, it
+works around the problem.
+"""]]

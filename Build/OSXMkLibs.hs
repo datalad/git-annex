@@ -49,6 +49,10 @@ installLibs appbase replacement_libs libmap = do
 		let fulllib = dropWhile (== '/') lib
 		let dest = appbase </> fulllib
 		let symdest = appbase </> shortlib
+		-- This is a hack; libraries need to be in the same
+		-- directory as the program, so also link them into the
+		-- extra directory.
+		let symdestextra = appbase </> "extra" </> shortlib
 		ifM (doesFileExist dest)
 			( return Nothing
 			, do
@@ -56,7 +60,8 @@ installLibs appbase replacement_libs libmap = do
 				putStrLn $ "installing " ++ pathlib ++ " as " ++ shortlib
 				unlessM (boolSystem "cp" [File pathlib, File dest]
 					<&&> boolSystem "chmod" [Param "644", File dest]
-					<&&> boolSystem "ln" [Param "-s", File fulllib, File symdest]) $
+					<&&> boolSystem "ln" [Param "-s", File fulllib, File symdest]
+					<&&> boolSystem "ln" [Param "-s", File (".." </> fulllib), File symdestextra]) $
 					error "library install failed"
 				return $ Just appbase
 			)

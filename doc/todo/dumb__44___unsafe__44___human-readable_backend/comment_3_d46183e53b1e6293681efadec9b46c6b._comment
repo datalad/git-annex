@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="""comment 3"""
+ date="2016-04-09T04:39:11Z"
+ content="""
+What about having a direct more in an external work tree?
+
+I could have my .git directory in some local directory (say
+`~/.git-annex/remote-mp3.git`) and the actual files on the device (say
+`/media/anarcat/mounted/mp3`).
+
+I know that there are many possible names for a single key, but isn't
+that a problem for direct mode as well?
+
+And I know it's a poney... I keep on asking for poneys here, but
+poneys are great, and actually quite useful and even friendly animals
+if you can use and take care of them correctly. :)
+"""]]

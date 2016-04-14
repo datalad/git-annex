@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2016-03-14T20:33:13Z"
+ content="""
+Tom, it should suffice for your colleague to pull the new
+version from you, and then run `git annex unused` to find unused files.
+
+Now, if you have other branches or tags pointing at older versions
+of the data, those files will still be considered to be used, even if 
+the current version doesn't use them. There's a new
+`--used-refspec` option for [[git-annex unused|git-annex-unused]] that 
+you can use to specify which branches to consider to be used.
+"""]]

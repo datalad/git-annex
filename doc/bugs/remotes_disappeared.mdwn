@@ -1,0 +1,300 @@
+### Please describe the problem.
+
+Some remotes disappeared from `git annex info` after synchronising with a new repo.
+
+### What steps will reproduce the problem?
+
+1. have a nice repository full of remotes and special remotes
+2. create a new repository with `git init; git annex init; git reinit <some UUID from a previously lost repository>`
+3. sync the two repositories
+
+Expected the result: restore the lost repository the its previous state.
+
+Actual result: previous state available, but lost track of other repositories.
+
+I suspect there may be a relation to an old "forget history" transition at play here, as the last commit on the git-annex branch is:
+
+```
+commit 266099a48af81eab71d27741b43776372aa519c4
+Merge: 13ed0a6 05681b9
+Author: Antoine Beaupré <anarcat@debian.org>
+Date:   Wed Mar 30 12:49:55 2016 -0400
+
+    continuing transition ["forget git history","forget dead remotes","forget git history","forget dead remotes","forget git history","forget git history","forget dead remotes","forget git history","forget dead remotes","forget git history","forget dead remotes","forget git history","forget dead remotes"]
+```
+
+So in short, some remotes that i never marked as dead seem to be caught in the whirlpool of `forget` transitions.
+
+### What version of git-annex are you using? On what operating system?
+
+ 5.20151208-1~bpo8+1 on debian jessie.
+
+### Please provide any additional information below.
+
+So here's what i could salvage from my terminal history. Note that window resizing may have truncated some lines. Apologies for the mess...
+
+    [1077]anarcat@angela:cb39412b-d221-4846-a9dd-cdbabd9958f1$ sudo mkdir Music
+    [1078]anarcat@angela:cb39412b-d221-4846-a9dd-cdbabd9958f1$ sudo chown anarcat Music
+    [1079]anarcat@angela:cb39412b-d221-4846-a9dd-cdbabd9958f1$ cd Music/
+    [1082]anarcat@angela:Music$ git init
+    Dépôt Git vide initialisé dans /media/anarcat/cb39412b-d221-4846-a9dd-cdbabd9958f1/Music/.gi
+    [1083]anarcat@angela:Music$ git annex init
+    init  ok
+    (recording state in git...)
+    [1084]anarcat@angela:Music130$ git annex reinit 6f812272-18c8-4346-b68a-f57ae50f657e
+    reinit 6f812272-18c8-4346-b68a-f57ae50f657e ok
+    [1086]anarcat@angela:Music$ git remote add origin ~/mp3
+    [1087]anarcat@angela:Music$ git remote update # 12:44
+    Récupération de origin
+    warning: no common commits
+    remote: Décompte des objets: 819312, fait.
+    remote: Compression des objets: 100% (368189/368189), fait.
+    Réception d'objets: 100% (819312/819312), 64.97 MiB | 5.19 MiB/s, fait.
+    remote: Total 819312 (delta 653024), reused 588679 (delta 449859)
+    Depuis /home/anarcat/mp3
+     * [nouvelle branche] git-annex  -> origin/git-annex
+     * [nouvelle branche] master     -> origin/master
+     * [nouvelle branche] synced/git-annex -> origin/synced/git-annex
+     * [nouvelle branche] synced/master -> origin/synced/master
+     * [nouvelle étiquette] bak        -> bak
+    [1089]anarcat@angela:Music$ git annex merge
+    merge git-annex (merging origin/git-annex origin/synced/git-annex into git-annex...)
+    (recording state in git...)
+    [1092]anarcat@angela:Music$ git co master
+    Extraction des fichiers: 100% (22187/22187), fait.
+    La branche master est paramétrée pour suivre la branche distante master depuis origin.
+    Déjà sur 'master'
+    [1099]anarcat@angela:Music130$ date; time git annex get --quiet --in here; date
+    mercredi 30 mars 2016, 12:53:29 (UTC-0400)
+    sha256sum: .git/annex/tmp/SHA256E-s4476433--bb954dfe81f3d0906a18e53d02040d1d8f8e78917552e0033b056bbf885710d9.mp3: Aucun fichier ou dossier de ce type
+      sha256sum failed
+    git-annex: .git/annex/tmp/SHA256E-s4476433--bb954dfe81f3d0906a18e53d02040d1d8f8e78917552e0033b056bbf885710d9.mp3: openBinaryFile: does not exist (No such file or directory)
+    git-annex: get: 1 failed
+    Command exited with non-zero status 1
+    156.09user 39.26system 36:44.62elapsed 8%CPU (0avgtext+0avgdata 44900maxresident)k
+    8775224inputs+5811728outputs (51major+281689minor)pagefaults 0swaps
+    mercredi 30 mars 2016, 13:30:36 (UTC-0400)
+
+... in the last step, the external device disappeared and the transfer failed.
+
+After reconnecting the device, I tried to synchronise its content with the content of another device, but that device is gone!
+
+[[!format sh """
+[1013]anarcat@angela:Music1$ git annex info --fast # first notice how the remotes are not the same on the two repositories
+repository mode: indirect
+trusted repositories: 0
+semitrusted repositories: 5
+        00000000-0000-0000-0000-000000000001 -- web
+        00000000-0000-0000-0000-000000000002 -- bittorrent
+        0f9185ea-8462-4230-8cae-462a1ad0df36 -- origin
+        45124790-dbb7-4e2e-bc0a-acfb618a01e0 -- anarcat@angela:/media/anarcat/cb39412b-d221-4846-a9dd-cdbabd9958f1/Music
+        6f812272-18c8-4346-b68a-f57ae50f657e -- here
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 4.68 gigabytes (+1 megabyte reserved)
+[1014]anarcat@angela:Music$ cd ~/mp3
+[1015]anarcat@angela:mp3$ git annex info --fast # here there is a lot more remotes!
+repository mode: indirect
+trusted repositories: 4
+        22921df6-ff75-491c-b5d9-5a2aab33a689 -- anarcat@marcos:/media/anarcat/79884590-6445-4a6f-ae12-050b9a7c1912/mp3
+        b7802161-c984-4c9f-8d05-787a29c41cfe -- anarcat@marcos:/srv/mp3 [marcos]
+        c2ca4a13-9a5f-461b-a44b-53255ed3e2f9 -- anarcat@desktop008:/srv/musique/anarcat/mp3 [markov]
+        f8818d12-9882-4ca5-bc0f-04e987888a8d -- anarcat@marcos:/media/anarcat/green_crypt/mp3/
+semitrusted repositories: 8
+        00000000-0000-0000-0000-000000000001 -- web
+        00000000-0000-0000-0000-000000000002 -- bittorrent
+        0f9185ea-8462-4230-8cae-462a1ad0df36 -- anarcat@angela:~/mp3 [here]
+        3f6d8082-6f4b-4faa-a3d9-bd5db1891077 -- anarcat@lab-sc.no-ip.org:mp3
+        4249a4ea-343a-43a8-9bba-457d2ff87c7d -- rachel@topcrapn:~/Musique/MUSIC/anarcat
+        487dda55-d164-4bf1-9d85-66caaa9c0743 -- 300GB hard drive labeled VHS [VHS]
+        6f812272-18c8-4346-b68a-f57ae50f657e -- htcones
+        f867da6f-78cb-49be-a0db-d1c8e5f53664 -- n900
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 13.51 gigabytes (+1 megabyte reserved)
+[1016]anarcat@angela:mp3$ cd -
+/media/anarcat/cb39412b-d221-4846-a9dd-cdbabd9958f1/Music
+[1017]anarcat@angela:Music$ git annex find --in f867da6f-78cb-49be-a0db-d1c8e5f53664 --not --in here # trying to sync with the n900 remote
+git-annex: there is no available git remote named "f867da6f-78cb-49be-a0db-d1c8e5f53664"
+[1018]anarcat@angela:Music1$ git annex sync # maybe some data is missing?
+commit  ok
+pull origin
+ok
+push origin
+Décompte des objets: 6368, fait.
+Delta compression using up to 2 threads.
+Compression des objets: 100% (6361/6361), fait.
+Écriture des objets: 100% (6368/6368), 693.21 KiB | 565.00 KiB/s, fait.
+Total 6368 (delta 5030), reused 11 (delta 3)
+To /home/anarcat/mp3
+   05681b9..266099a  git-annex -> synced/git-annex
+ok
+[1019]anarcat@angela:Music$ git annex find --in f867da6f-78cb-49be-a0db-d1c8e5f53664 --not --in here # trying again
+git-annex: there is no available git remote named "f867da6f-78cb-49be-a0db-d1c8e5f53664"
+[1020]anarcat@angela:Music1$ git annex find --in n900 --not --in here # of course, n900 is not a git remote locally
+git-annex: there is no available git remote named "n900"
+[1021]anarcat@angela:Music1$ git annex info --fast # and it's still not there
+repository mode: indirect
+trusted repositories: 0
+semitrusted repositories: 5
+        00000000-0000-0000-0000-000000000001 -- web
+        00000000-0000-0000-0000-000000000002 -- bittorrent
+        0f9185ea-8462-4230-8cae-462a1ad0df36 -- origin
+        45124790-dbb7-4e2e-bc0a-acfb618a01e0 -- anarcat@angela:/media/anarcat/cb39412b-d221-
+        6f812272-18c8-4346-b68a-f57ae50f657e -- here
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 4.68 gigabytes (+1 megabyte reserved)
+[1022]anarcat@angela:Music$ cd -
+/home/anarcat/mp3
+[1023]anarcat@angela:mp3$ git annex info --fast # worse: it's gone from my main repo!!
+repository mode: indirect
+trusted repositories: 2
+        b7802161-c984-4c9f-8d05-787a29c41cfe -- marcos
+        c2ca4a13-9a5f-461b-a44b-53255ed3e2f9 -- markov
+semitrusted repositories: 6
+        00000000-0000-0000-0000-000000000001 -- web
+        00000000-0000-0000-0000-000000000002 -- bittorrent
+        0f9185ea-8462-4230-8cae-462a1ad0df36 -- here
+        45124790-dbb7-4e2e-bc0a-acfb618a01e0 -- anarcat@angela:/media/anarcat/cb39412b-d221-4846-a9dd-cdbabd9958f1/Music
+        487dda55-d164-4bf1-9d85-66caaa9c0743 -- VHS
+        6f812272-18c8-4346-b68a-f57ae50f657e -- htcones
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 13.74 gigabytes (+1 megabyte rese
+"""]]
+
+In my opinion, git-annex shouldn't have lost the following repositories:
+
+        22921df6-ff75-491c-b5d9-5a2aab33a689 -- anarcat@marcos:/media/anarcat/79884590-6445-4a6f-ae12-050b9a7c1912/mp3
+        f8818d12-9882-4ca5-bc0f-04e987888a8d -- anarcat@marcos:/media/anarcat/green_crypt/mp3/
+        3f6d8082-6f4b-4faa-a3d9-bd5db1891077 -- anarcat@lab-sc.no-ip.org:mp3
+        4249a4ea-343a-43a8-9bba-457d2ff87c7d -- rachel@topcrapn:~/Musique/MUSIC/anarcat
+        f867da6f-78cb-49be-a0db-d1c8e5f53664 -- n900
+
+Those are repositories that are in the git-annex history, but that don't have git remotes associated with them, for various reasons. I do *not* believe I have marked any of those as "dead" except maybe 3f6d8082-6f4b-4faa-a3d9-bd5db1891077. f8818d12-9882-4ca5-bc0f-04e987888a8d was used during the weekend to do my backups, so it's definitely not dead.
+
+It is also interesting to note that even though `git annex info` doesn't know about the remotes, there is still tracking information about all of them (except the 3f one):
+
+[[!format txt """
+$ git cat-file -p git-annex:001/694/SHA256E-s6732474--e084001bc23a90bfd65d9a3fa20b7bf878be6a49fce7e5a9846efeeba8815516.mp3.log
+1376877225.866849s 1 b7802161-c984-4c9f-8d05-787a29c41cfe
+1378838314.653241s 1 c2ca4a13-9a5f-461b-a44b-53255ed3e2f9
+1379790798.215871s 1 0f9185ea-8462-4230-8cae-462a1ad0df36
+1391065040.28672s 1 22921df6-ff75-491c-b5d9-5a2aab33a689
+1397893686.079999s 1 487dda55-d164-4bf1-9d85-66caaa9c0743
+1398657510.376249s 1 4249a4ea-343a-43a8-9bba-457d2ff87c7d
+1407479149.838437s 1 f8818d12-9882-4ca5-bc0f-04e987888a8d
+1407479149.929843s 1 f8818d12-9882-4ca5-bc0f-04e987888a8d
+1407510928.457047s 1 487dda55-d164-4bf1-9d85-66caaa9c0743
+1424134721.290026s 1 b7802161-c984-4c9f-8d05-787a29c41cfe
+1424227570.153123s 1 487dda55-d164-4bf1-9d85-66caaa9c0743
+1445468844.056214s 1 f867da6f-78cb-49be-a0db-d1c8e5f53664
+1458775384.454193s 0 6f812272-18c8-4346-b68a-f57ae50f657e
+"""]]
+
+it's a mystery to me why that stuff disappeared from `git-annex info`. it's especially confusing since some commands seem to recognize there *was* a remote there:
+
+    $ git annex enableremote f867da6f-78cb-49be-a0db-d1c8e5f53664
+    git-annex: Unknown special remote.
+            f867da6f-78cb-49be-a0db-d1c8e5f53664 -- n900
+
+Notice how `n900` was shown here: that metadata obviously *is* somewhere! The uuid.log file is obviously damaged:
+
+    [1036]anarcat@angela:mp31$ git cat-file -p git-annex:uuid.log
+    45124790-dbb7-4e2e-bc0a-acfb618a01e0 anarcat@angela:/media/anarcat/cb39412b-d221-4846-a9dd-cdbabd9958f1/Music timestamp=1459356223.537195s
+
+... and it clearly looks like the file was damaged on that new repo:
+
+[[!format txt """
+*   266099a N (synced/git-annex, git-annex) continuing transition ["forget git history","forget dead remotes","forget git history","forget dead remotes","forget git history","forget git history","forget dead remotes","forget git history","forget dead remotes","forget git history","forget dead remotes","forget git history","forget dead remotes"] (il y a 75 minutes) <Antoine Beaupré>
+|\
+* | 298cc10 N (htcones/synced/git-annex) continuing transition ["forget git history","forget dead remotes","forget git history","forget dead remotes","forget git history","forget git history","forget dead remotes","forget git history","forget dead remotes","forget git history","forget dead remotes","forget git history","forget dead remotes"] (il y a 13 jours) <Antoine Beaupré>| |
+| | diff --git a/uuid.log b/uuid.log
+| | index 656b369..a730ad0 100644
+| | --- a/uuid.log
+| | +++ b/uuid.log
+| | @@ -1,14 +1,9 @@
+| |  0f9185ea-8462-4230-8cae-462a1ad0df36 anarcat@angela:~/mp3 timestamp=1376882226.164478s
+| |  22921df6-ff75-491c-b5d9-5a2aab33a689 anarcat@marcos:/media/anarcat/79884590-6445-4a6f-ae12-050b9a7c1912/mp3 timestamp=1397741440.125973s
+| | -2fec390f-f21b-4293-be50-f219be10ea02 anarcat@marcos:/media/anarcat/Nokia N900/.sounds/mp3-test timestamp=1444709804.587901s
+| |  3f6d8082-6f4b-4faa-a3d9-bd5db1891077 anarcat@lab-sc.no-ip.org:mp3 timestamp=1397882243.602438s
+| | -3f6d8082-6f4b-4faa-a3d9-bd5db1891077 anarcat@serveur-maison:~/mp3 timestamp=1397870776.162703s
+| |  4249a4ea-343a-43a8-9bba-457d2ff87c7d rachel@topcrapn:~/Musique/MUSIC/anarcat timestamp=1398631775.545666s
+| |  487dda55-d164-4bf1-9d85-66caaa9c0743 300GB hard drive labeled VHS timestamp=1397880144.616515s
+| | -509d1cd7-ecd1-4e2f-803d-575d9c56a5bc anarcat@angela:/media/anarcat/Nokia N900/.sounds/mp3 timestamp=1444483581.960103s
+| |  b7802161-c984-4c9f-8d05-787a29c41cfe anarcat@marcos:/srv/mp3 timestamp=1376874943.951103s
+| |  c2ca4a13-9a5f-461b-a44b-53255ed3e2f9 anarcat@desktop008:/srv/musique/anarcat/mp3 timestamp=1410989161.237514s
+| | -c2ca4a13-9a5f-461b-a44b-53255ed3e2f9 anarcat@desktop008:/srv/musique/anarcat/musique/mp3 timestamp=1384884883.106166s
+| | -f641e18f-7cb1-49ba-abe1-7544b435b67f anarcat@marcos:/media/anarcat/Nokia N900/.sounds/mp3-init timestamp=1444708760.468268s
+| |  f867da6f-78cb-49be-a0db-d1c8e5f53664 n900 timestamp=1445438785.796624s
+| |  f8818d12-9882-4ca5-bc0f-04e987888a8d anarcat@marcos:/media/anarcat/green_crypt/mp3/ timestamp=1407470841.967597s
+"""]]
+
+So i guess i could manually edit that uuid.log file to restore my metadata, but i'm puzzled as to where my data went or how!
+
+### Workaround
+
+The workaround is to, of course, restore a known sane `uuid.log`:
+
+[[!format sh """
+[1048]anarcat@angela:~128$ git clone -b git-annex mp3 mp3.annex
+Clonage dans 'mp3.annex'...
+fait.
+Extraction des fichiers: 100% (32234/32234), fait.
+[1049]anarcat@angela:~$ cd mp3.annex/
+[1067]anarcat@angela:mp3.annex$ git co dfe1b77 uuid.log
+[1068]anarcat@angela:mp3.annex$ git status
+Sur la branche git-annex
+Votre branche est à jour avec 'origin/git-annex'.
+Modifications qui seront validées :
+  (utilisez "git reset HEAD <fichier>..." pour désindexer)
+
+        modifié :         uuid.log
+
+[1069]anarcat@angela:mp3.annex$ git commit -m"restore broken uuid.log"
+[git-annex 9628f3b] restore broken uuid.log
+ 1 file changed, 14 insertions(+), 1 deletion(-)
+ rewrite uuid.log (100%)
+[1070]anarcat@angela:mp3.annex$ git push
+Décompte des objets: 2, fait.
+Delta compression using up to 2 threads.
+Compression des objets: 100% (2/2), fait.
+Écriture des objets: 100% (2/2), 262 bytes | 0 bytes/s, fait.
+Total 2 (delta 1), reused 0 (delta 0)
+To /home/anarcat/mp3
+   266099a..9628f3b  git-annex -> git-annex
+[1071]anarcat@angela:mp3.annex$ cd -
+/home/anarcat
+[1072]anarcat@angela:~$ git ^C
+[1072]anarcat@angela:~130$ cd -
+/home/anarcat/mp3.annex
+[1072]anarcat@angela:mp3.annex$ cd ../mp3
+[1073]anarcat@angela:mp3$ git annex merge
+merge git-annex ok
+[1074]anarcat@angela:mp3$ git annex info --fast
+repository mode: indirect
+trusted repositories: 4
+        22921df6-ff75-491c-b5d9-5a2aab33a689 -- anarcat@marcos:/media/anarcat/79884590-6445-4a6f-ae12-050b9a7c1912/mp3
+        b7802161-c984-4c9f-8d05-787a29c41cfe -- anarcat@marcos:/srv/mp3 [marcos]
+        c2ca4a13-9a5f-461b-a44b-53255ed3e2f9 -- anarcat@desktop008:/srv/musique/anarcat/mp3 [markov]
+        f8818d12-9882-4ca5-bc0f-04e987888a8d -- anarcat@marcos:/media/anarcat/green_crypt/mp3/
+semitrusted repositories: 8
+        00000000-0000-0000-0000-000000000001 -- web
+        00000000-0000-0000-0000-000000000002 -- bittorrent
+        0f9185ea-8462-4230-8cae-462a1ad0df36 -- anarcat@angela:~/mp3 [here]
+        3f6d8082-6f4b-4faa-a3d9-bd5db1891077 -- anarcat@lab-sc.no-ip.org:mp3
+        4249a4ea-343a-43a8-9bba-457d2ff87c7d -- rachel@topcrapn:~/Musique/MUSIC/anarcat
+        487dda55-d164-4bf1-9d85-66caaa9c0743 -- 300GB hard drive labeled VHS [VHS]
+        6f812272-18c8-4346-b68a-f57ae50f657e -- htcones
+        f867da6f-78cb-49be-a0db-d1c8e5f53664 -- n900
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 13.44 gigabytes (+1 megabyte reserved)
+"""]]
+
+But it seems to me there is a weird interaction between transitions and fresh new git repo syncs... that could be fixed...
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes! Git-annex works generally well and, even though i often report bugs here, i am still quite happy with it. :) --[[anarcat]]

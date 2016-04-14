@@ -1,0 +1,40 @@
+Currently I am trying to synchronize two folders between my NAS and my main computer. On both machines I can access the web app. However, once I try to pair these machines with a secret phrase I get the following error:
+ 
+illegal control characters in pairing message; ignoring
+
+The log on one machine is:
+
+[2016-03-18 14:25:16.861132] main: Pairing in progress
+Generating public/private rsa key pair.
+Your identification has been saved in /var/folders/_v/hkf9zbqs0bgd2vcnmr_qnlgm0000gn/T/git-annex-keygenN92651/key.
+Your public key has been saved in /var/folders/_v/hkf9zbqs0bgd2vcnmr_qnlgm0000gn/T/git-annex-keygenN92651/key.pub.
+The key fingerprint is:
+SHA256:beyV1f5MKFGaaH9p1CRMPmaVcYAmOyc/lhp7HCw668M username@iMac.home
+The key's randomart image is:
++---[RSA 2048]----+
+|             +=o*|
+|          ..o=.B.|
+|          o++ B o|
+|         ++..B = |
+|        S +*=.= o|
+|         oo.B+ o.|
+|       . ..B o  o|
+|        E o o    |
+|       .o+ .     |
++----[SHA256]-----+
+[2016-03-18 14:25:26.442301] main: Pairing in progress
+ 
+  illegal control characters in pairing message; ignoring
+ 
+  illegal control characters in pairing message; ignoring
+ 
+  illegal control characters in pairing message; ignoring
+ 
+  illegal control characters in pairing message; ignoring
+
+While on the other machine I get:
+
+[2016-03-18 14:25:35 CET] main: Pairing with username@iMac.home:~/Desktop/annex in progress
+
+
+

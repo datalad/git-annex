@@ -17,6 +17,18 @@ to have a file in the git repository pointing at them.
 Warning: This command does not check that enough other copies of the content
 exist; using it can easily result in data loss.
 
+# OPTIONS
+
+* `--batch`
+
+  Enables batch mode, in which lines containing keys to drop are read from
+  stdin.
+
+* `--json`
+
+  Enable JSON output. This is intended to be parsed by programs that use
+  git-annex. Each line of output is a JSON object.
+
 # SEE ALSO
 
 [[git-annex]](1)

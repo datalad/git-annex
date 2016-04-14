@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-03-01T16:11:37Z"
+ content="""
+A worse problem with annex.pidlock is that it completly broke checking
+whether a key is present in the repository. That could lead to data loss
+when eg, moving --to a repo with annex.pidlock set.
+
+I've fixed that related bug.
+"""]]

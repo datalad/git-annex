@@ -1,0 +1,27 @@
+Hello,
+
+I have two repositories (Asaru and Horus) that are both ```group=client``` and ```wanted=standard```. The other one, Astarte is ```group=transfer``` and ```wanted=standard```. Pretty standard I think.
+
+```
+repository mode: direct
+trusted repositories: 0
+semitrusted repositories: 5
+        00000000-0000-0000-0000-000000000001 -- web
+        00000000-0000-0000-0000-000000000002 -- bittorrent
+        58001764-966d-4076-ae99-4ef6de25df39 -- Asaru [here]
+        8165bdf1-907e-4bbe-9c35-22fbf6f8cb00 -- Astarte [astarte]
+        cca0c3c8-593a-4395-936c-1093f0f762e8 -- Horus
+untrusted repositories: 0
+```
+
+I always sync on the two client repos like that ```git annex add . && git annex sync --content```. The transfer repo is growing larger and larger. ```git annex dropunused N``` says, that it ```could only verify the existence of 0 out of 1 necessary copies```.
+
+What is the best way to clean up the transfer repo?
+
+1. Make the two client repos trusted? The three repos have been created manually, not through the assistant. Is that what the assistant does, too?
+2. Try to get the two client repos into touch with each other and try to use ```dropunsed --from=astarte```?
+
+What is the recommended way for that?
+
+Thanks,
+Florian

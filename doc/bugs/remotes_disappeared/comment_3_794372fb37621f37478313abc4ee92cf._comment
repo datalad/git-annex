@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="""comment 3"""
+ date="2016-04-04T20:39:24Z"
+ content="""
+No trust information was ever assigned to that remote:
+
+    [1012]anarcat@angela:mp31$ git show git-annex:trust.log | grep 6f812272-18c8-4346-b68a-f57ae50f657e
+    [1013]anarcat@angela:mp31$ git log -p  git-annex -- trust.log | grep 6f812272-18c8-4346-b68a-f57ae50f657e
+    [1014]anarcat@angela:mp31$
+
+None of the repositories removed from the `git annex info` display
+were ever marked as dead, in fact, two of those were marked as
+`trusted`, from what I can see here:
+
+    [1018]anarcat@angela:mp31$ for repo in 22921df6-ff75-491c-b5d9-5a2aab33a689 f8818d12-9882-4ca5-bc0f-04e987888a8d 3f6d8082-6f4b-4faa-a3d9-bd5db1891077 4249a4ea-343a-43a8-9bba-457d2ff87c7d f867da6f-78cb-49be-a0db-d1c8e5f53664 ; do
+    >  git log -p  git-annex -- trust.log | grep $repo
+    > done
+     22921df6-ff75-491c-b5d9-5a2aab33a689 1 timestamp=1400247400.46351s
+    +22921df6-ff75-491c-b5d9-5a2aab33a689 1 timestamp=1400247400.46351s
+     f8818d12-9882-4ca5-bc0f-04e987888a8d 1 timestamp=1424140026.947448s
+     f8818d12-9882-4ca5-bc0f-04e987888a8d 1 timestamp=1424140026.947448s
+    +f8818d12-9882-4ca5-bc0f-04e987888a8d 1 timestamp=1424140026.947448s
+
+And yes, I did run a transition a while back. I don't remember if I
+ran it multiple times: this is one of my first git-annex repos, so a
+lot of stuff may have happened to it its 3 years of existence:
+
+    $ git log  | tail -5
+    commit 2400a4b46bc2b1a015e6881ef0c331c519016b64
+    Author: Antoine Beaupré <anarcat@koumbit.org>
+    Date:   Sun Aug 18 22:14:47 2013 -0400
+    
+        enter git annex
+
+It seems to me that the transition mechanism *may* be triggered before
+the `uuid.log` or `trust.log` files be fully merged - is that possible?
+"""]]

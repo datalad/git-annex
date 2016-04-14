@@ -695,7 +695,6 @@ mkCopier :: Bool -> [CommandParam] -> Annex Copier
 mkCopier remotewanthardlink rsyncparams = do
 	let copier = \src dest p check -> unVerified $
 		rsyncOrCopyFile rsyncparams src dest p <&&> check
-#ifndef mingw32_HOST_OS
 	localwanthardlink <- wantHardLink
 	let linker = \src dest -> createLink src dest >> return True
 	ifM (pure (remotewanthardlink || localwanthardlink) <&&> not <$> isDirect)
@@ -706,6 +705,3 @@ mkCopier remotewanthardlink rsyncparams = do
 				)
 		, return copier
 		)
-#else
-	return $ if remotewanthardlink then copier else copier
-#endif

@@ -7,15 +7,13 @@
  - the lock will be released, despite the first thread still having the
  - lockfile open.
  -
- - Or, if a process is already holding an exclusive lock on a file, an
+ - Or, if a process is already holding an exclusive lock on a file, and
  - re-opens it and tries to take another exclusive lock, it won't block
  - on the first lock.
  -
  - To avoid these problems, this implements a lock pool. This keeps track
- - of which lock files are being used by the process, and avoids
- - re-opening them. Instead, if a lockfile is in use by the current
- - process, STM is used to handle further concurrent uses of that lock
- - file.
+ - of which lock files are being used by the process, using STM to handle
+ - inter-process locking.
  -
  - Note that, like Utility.LockFile, this does *not* attempt to be a
  - portability shim; the native locking of the OS is used.

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-03-01T20:25:13Z"
+ content="""
+Reproduced this.
+
+This really does feel like a git bug. git is supposed to treat "gitlink"
+files and .git symlinks the same. While modern versions of git set up
+gitlink files for submodules, older versions of git used .git symlinks, and
+git should still support that.
+
+Looks like the problem can be worked around, by setting
+`GIT_DIR`. In your example, `GIT_DIR=../.git/modules/sub_lvl1/ git
+submodule add /src/somegitrepo sub_lvl2`
+"""]]

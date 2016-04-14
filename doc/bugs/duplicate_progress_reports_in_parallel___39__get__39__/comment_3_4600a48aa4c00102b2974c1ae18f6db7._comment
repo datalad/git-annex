@@ -1,0 +1,52 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 3"
+ date="2016-03-14T21:10:56Z"
+ content="""
+just rechecked with freshier version:
+
+[[!format sh \"\"\"
+% git clone https://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/repo/freesurfer.git
+Cloning into 'freesurfer'...
+Checking connectivity... done.
+% cd freesurfer
+% git annex get -J 5 .
+(merging origin/git-annex origin/synced/git-annex into git-annex...)
+get BrainstemSS/AtlasDump.mgz (from origin...) (checksum...) ok
+get BrainstemSS/AtlasMesh.gz (from origin...) 
+get GEMS/data/CurrentMeshCollection30.gz 
+  not enough free space, need 2.94 MB more (use --force to override this check or adjust annex.diskreserve)
+
+  Unable to access these remotes: origin
+
+  Try making some of these repositories available:
+  	14311777-6106-4ba8-8356-2bfb0d198b64 -- zkaufman@sand:/autofs/space/sand_001/users/zkaufman/temp/stable.sync/dev.git
+   	58892d74-dae0-4bd1-a160-011e82d201f2 -- sand trunk
+   	6d0bc2d9-c184-445c-82d0-b5c56c5bf5d9 -- zkaufman@gust.nmr.mgh.harvard.edu:/autofs/space/sand_001/users/zkaufman/freesurfer_lion/trunk/dev
+   	739a31b2-febf-43ee-be59-713bdaa01a06 -- sand-sync
+   	9240fb38-adbe-4bfe-847a-bdd98d570f75 -- [origin]
+   	ba0b9401-2821-41d2-b9fc-f3319dc053e3 -- sand stable6
+   	d018cb1b-c841-48b8-ba50-11b686a5c6ad
+failed
+get BrainstemSS/mac_osx/segmentSubject.app/Contents/Resources/membrane.icns (from origin...) (checksum...) ok
+get BrainstemSS/AtlasMesh.gz (from origin...) 
+....
+get BrainstemSS/AtlasMesh.gz (from origin...) 
+19%         336.0KB/s 4s
+19%         336.0KB/s 4s
+get BrainstemSS/linux_x86_64/SegmentSubject.bin (from origin...) 
+10%         640.0KB/s 9s
+10%         640.0KB/s 9s
+get BrainstemSS/mac_osx/segmentSubject.app/Contents/MacOS/segmentSubject (from origin...) 
+18%         864.0KB/s 4s
+18%         864.0KB/s 4s
+get distribution/average/Buckner_JNeurophysiol11_MNI152/Buckner2011_7Networks_MNI152_FreeSurferConformed1mm_LooseMask.nii.gz (from origin
+...) 
+get distribution/average/Buckner_JNeurophysiol11_MNI152/Buckner2011_7Networks_MNI152_FreeSurferConformed1mm_TightMask.nii.gz (from origin
+...) 
+^C
+% git annex version
+git-annex version: 6.20160307+gitgb095561-1~ndall+1
+...
+\"\"\"]]
+"""]]

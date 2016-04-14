@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="ellis@9dd4c3615b5ff78a457c5832488610886fd6b255"
+ nickname="ellis"
+ subject="comment 2"
+ date="2016-03-08T19:26:03Z"
+ content="""
+Thanks Joey, here's the output from `git config --list`:
+
+    color.diff=auto
+    color.status=auto
+    color.branch=auto
+    push.default=simple
+    core.precomposeunicode=true
+    credential.helper=/usr/share/doc/git/contrib/credential/gnome-keyring/git-credential-gnome-keyring
+    core.repositoryformatversion=0
+    core.filemode=false
+    core.bare=true
+    core.symlinks=false
+    core.ignorecase=true
+    core.fsyncobjectfiles=true
+    annex.uuid=a8ed0f4a-47c9-4289-947d-2f4650e9ede6
+    annex.sshcaching=false
+    annex.crippledfilesystem=true
+    annex.version=6
+    remote.lorax.url=../../../../../mnt/taiji07/taiji-lib
+    remote.lorax.fetch=+refs/heads/*:refs/remotes/lorax/*
+    remote.lorax.annex-uuid=9ea9a021-e3c6-4d55-a118-f3f55387ef40
+    filter.annex.smudge=git-annex smudge %f
+    filter.annex.clean=git-annex smudge --clean %f
+
+"""]]

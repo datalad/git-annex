@@ -1,0 +1,8 @@
+### Please describe the problem.
+
+standalone builds leap forward a bit too fast in terms of their demand on modern kernel.  Up until a month ago, standalone build worked at least on CentOS 6.5 with 2.6.32-431.11.2.el6.x86_64 (although [already didn't on ancient but still in use RHEL5 with 2.6.18](https://github.com/datalad/datalad/issues/176#issuecomment-114612365)). Current build from 20150916 doesn't work on CentOS 6.5 any longer. No matter how much I like people to use more recent releases of their distributions, it is infeasible to demand people to do that.  It would be great if standalone builds were carried out on some elder kernel/libc environment to make git-annex standalone builds usable there.
+
+> [[done]]; the ancient build provides this. It's now build with stack, so
+> it gets most features enabled. (Except xmpp, notably.) This does mean
+> it will only get library security fixes once git-annex's stack.yaml 
+> is updated to require a new version of the affected library. --[[Joey]]

@@ -1,0 +1,23 @@
+Well, I had to rethink how merges into adjusted branches should be handled.
+The old method often led to unnecessary merge conflicts. My new approach
+should always avoid unncessary merge conflicts, but it's quite a trick.
+
+To merge origin/master into adjusted/master, it first merges origin/master
+into master. But, since adjusted/master is checked out, it has to do the
+merge in a temporary work tree. Luckily this can be done fairly
+inexpensively. To handle merge conflicts at this stage, git-annex's
+automatic merge conflict resolver is used. This approach wouldn't be
+feasible without a way to automatically resolve merge conflicts, because
+the user can't help with conflict resolution when the merge is not
+happening in their working tree.
+
+Once that out-of-tree merge is done, the result is adjusted, and merged
+into the adjusted branch. Since we know the adjusted branch is a child of
+the old master branch, this merge can be forced to always be a
+fast-forward. This second merge will only ever have conflicts if the work
+tree has something uncommitted in it that causes a merge conflict.
+
+Wow! That's super tricky, but it seems to work well. While I ended up
+throwing away everything I did [[last Thursday|day_376__in_the_weeds]]
+due to this new approach, the code is in some ways simpler than that
+old, busted approach.

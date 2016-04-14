@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="timothyhobbs@8b50ff958c937fa4b6de1f9009f464b9ddfc2991"
+ nickname="timothyhobbs"
+ subject="comment 23"
+ date="2016-04-06T10:14:30Z"
+ content="""
+\"\"\"
+It is silly to use any version control system to synchronize anything but small plain text files. By doing so, you throw away a perfectly working version control system and have to deal with merge conflicts between version A and version B of the non-text files.
+
+Unless you have some magical solution to that merge conflict problem, there's no point in further discussion.
+\"\"\"
+
+Git doesn't know how to merge image files, but you can still track a jpeg using git. Git also doesn't know how to merge open office documents, but you can also track them using git. Indeed, you can even diff them, because first, git let you track them, and then, in true unix fashion, someone wrote a utility to solve the next unsolved problem.
+
+How are you feeling emotionally about this problem with git-annex? It seems to me that you set out to create a generic file synchronization tool. When you launched the kickstarter, you titled it: \"git-annex assistant: Like DropBox, but with your own cloud\" With the subtitle being \"Manage, share, and sync your large files with the power of git and the ease of use of a simple folder you drop files into.\". Do you now feel that this goal is unattainable because of the limitations of git-annex and git? That's OK, if you feel that your goal isn't attainable, but you should say so outright: \"I know I set out to sync arbitrary files, but it turns out that this method just doesn't work for that, so all of you users who come along with that impression from previous advertising, I'm afraid I have to disappoint you. Git-annex still works great for archiving data and media, and it's also good for tracking asset files in an existing git repository, but as a drop box clone its a no-go.\"
+
+Right now, the current presentation is really confusing. I came along, thinking that git annex is INTENDED to be able to synchronize arbitrary data, and then I find you writing in the bugs section, that anyone who wants to do that is silly.
+
+I know that it is hard for a free software developer to work on something alone. I too am a solitary free software developer, and at 25, I can truly say that I set out to follow in your footsteps. I knew of your frugal lifestyle at the beginning of my adult life, and I saw its benefits, that I would not have to compromise my ethics by way of need for money. I asked my parents for financial assistance, and received it. Now, for the past several years, I have tried to work on my own, on free software, my project being [subuser](subuser.org). I find this work style emotionally taxing in a way that I never imagined. For a short while, I worked for [Satoshi labs](http://satoshilabs.com/) on their open source Trezor hardware bitcoin wallet. While I was there, I enjoyed myself immensely. Whenever I ran into a technical problem, I'd just shout across my desk at my boss, and he would run over and we would solve it together. But, due to my English skills, management there started wanting me to fulfill more and more marketing tasks. So I left. Now, when I don't know how to solve some problem, I ruminate over it alone. I search for Google on end, and eventually open up reddit or hackernews, to distract myself from my feelings of failure. I want to write great free software, and improve the world, without ever having to compromise my restrictive ethical beliefs but its just not that easy.
+
+If you feel stressed or overwhelmed by maintaining a huge free software project alone, I can relate to that. If that stress and frustration means that you lash out at your users, I can understand. But I beg you to not let that feeling overshadow your work, and eliminate its value.
+
+I believe that git annex can be useful for the tasks you set out for it to perform. There are some problems:
+
+ - it doesn't know how to track file permissions/attributes
+ - it cannot track empty folders
+ - it cannot track git repositories
+
+But I don't think that you should give up on trying to solve these problems. If you want, I can help you to solve them.
+
+But only if you don't think that I am silly for trying.
+
+----
+
+There is a dream of a post-scarcity society. A society in which free technology provides people what they need. A place where resources are not so scarce as to force people to be unkind of to engage in dishonest marketing. I believe in that dream. But if even we two, who are not driven by want or greed to be unkind to each other, fall to bickering. That saddens me greatly.
+"""]]

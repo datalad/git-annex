@@ -135,7 +135,7 @@ linuxstandalone-nobuild: Build/Standalone Build/LinuxMkLibs
 	sed -i -e 's/^GIT_ANNEX_PACKAGE_INSTALL=/GIT_ANNEX_PACKAGE_INSTALL=$(GIT_ANNEX_PACKAGE_INSTALL)/' "$(LINUXSTANDALONE_DEST)/runshell"
 	
 	install -d "$(LINUXSTANDALONE_DEST)/bin"
-	cp dist/build/git-annex/git-annex "$(LINUXSTANDALONE_DEST)/bin/"
+	cp git-annex "$(LINUXSTANDALONE_DEST)/bin/"
 	strip "$(LINUXSTANDALONE_DEST)/bin/git-annex"
 	ln -sf git-annex "$(LINUXSTANDALONE_DEST)/bin/git-annex-shell"
 	zcat standalone/licences.gz > $(LINUXSTANDALONE_DEST)/LICENSE

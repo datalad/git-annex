@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 2"
+ date="2016-03-14T21:05:06Z"
+ content="""
+FWIW it was \"stock\" debian/neurodebian build so whatever default or flags you impose in debian/rules -- they were it ;)
+
+[[!format sh \"\"\"
+neurodebian@smaug ..annex/6.20160213+gitg9597a21-1~ndall+1 % grep Concur git-annex_6.20160213+gitg9597a21-1~ndall+1_amd64.build
+[178 of 534] Compiling Messages.Concurrent ( Messages/Concurrent.hs, dist/build/git-annex/git-annex-tmp/Messages/Concurrent.o )
+[239 of 534] Compiling Annex.Concurrent ( Annex/Concurrent.hs, dist/build/git-annex/git-annex-tmp/Annex/Concurrent.o )
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+
+\"\"\"]]
+"""]]

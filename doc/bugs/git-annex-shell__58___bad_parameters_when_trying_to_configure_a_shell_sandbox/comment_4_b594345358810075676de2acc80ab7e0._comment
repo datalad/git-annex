@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-04-04T21:00:06Z"
+ content="""
+Well, the assistant has other reasons to use a wrapper script to run
+git-annex-shell. In particular, this lets it vary the script depending on
+where git-annex-shell ends up being installed, which may not be in PATH.
+"""]]

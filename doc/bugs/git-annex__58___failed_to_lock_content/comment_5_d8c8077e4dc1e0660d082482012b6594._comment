@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="ellis"
+ subject="comment 5"
+ date="2016-03-09T10:04:14Z"
+ content="""
+1) I'm afraid I don't have any real knowledge of VFAT -- always avoided it, but this is a shared drive, so it seemed best to just leave it with the factory formatting.
+
+2) The output from `mount` is shown at the bottom of comment 3.  The drive gets automounted when I plug it in.
+
+3) \"Can you chmod the file to have some mode other than 444?\"
+
+Yes.  Here's a console transcript.  After running `chmod 644`, git annex was able to drop the file.
+
+
+    % cd /media/ellis/USB04/repo/taiji-lib
+
+    % ls -l ./annex/objects/97e/78c/SHA256E-s38464078--0db38599ed526d248857015c7b8e1b177af646939f8e0c8004b17a931ce2e101.wav/SHA256E-s38464078--0db38599ed526d248857015c7b8e1b177af646939f8e0c8004b17a931ce2e101.wav
+    -r--r--r-- 1 ellis ellis 38464078 Mär  4 18:32 ./annex/objects/97e/78c/SHA256E-s38464078--0db38599ed526d248857015c7b8e1b177af646939f8e0c8004b17a931ce2e101.wav/SHA256E-s38464078--0db38599ed526d248857015c7b8e1b177af646939f8e0c8004b17a931ce2e101.wav
+
+    % chmod 644 ./annex/objects/97e/78c/SHA256E-s38464078--0db38599ed526d248857015c7b8e1b177af646939f8e0c8004b17a931ce2e101.wav/SHA256E-s38464078--0db38599ed526d248857015c7b8e1b177af646939f8e0c8004b17a931ce2e101.wav
+
+    % ls -l ./annex/objects/97e/78c/SHA256E-s38464078--0db38599ed526d248857015c7b8e1b177af646939f8e0c8004b17a931ce2e101.wav/SHA256E-s38464078--0db38599ed526d248857015c7b8e1b177af646939f8e0c8004b17a931ce2e101.wav
+    -rw-r--r-- 1 ellis ellis 38464078 Mär  4 18:32 ./annex/objects/97e/78c/SHA256E-s38464078--0db38599ed526d248857015c7b8e1b177af646939f8e0c8004b17a931ce2e101.wav/SHA256E-s38464078--0db38599ed526d248857015c7b8e1b177af646939f8e0c8004b17a931ce2e101.wav
+
+    % git annex dropunused 101 --force
+    dropunused 101 ok
+    (recording state in git...)
+"""]]

@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="timothyhobbs@8b50ff958c937fa4b6de1f9009f464b9ddfc2991"
+ nickname="timothyhobbs"
+ subject="comment 4"
+ date="2016-04-05T22:29:06Z"
+ content="""
+Yes, that is the problem. Try:
+
+````
+$ mkdir foo
+$ cd foo
+$ echo foo > bar
+$ git init
+$ git annex init
+$ git annex webapp
+````
+
+You'll get:
+
+````
+x Committed changes to git
+× Added bar
+× Performed startup scan
+````
+
+But I wouldn't expect that. Why should the command `git annex webapp` run an `add` command?
+"""]]

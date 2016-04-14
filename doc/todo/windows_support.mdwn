@@ -1,6 +1,18 @@
 The git-annex Windows port is beta, but rapidly becoming polished and
 usable!
 
+## do we need this port anymore?
+
+See <http://blog.dustinkirkland.com/2016/03/ubuntu-on-windows.html>
+
+If windows has transparent support for running linux executables, and those
+executables can access files in "." which are on the windows system, then
+you could just use this to run linux git-annex on windows. No port needed.
+
+That would be great!
+
+Seems like this would need Windows 10.
+
 ## status
 
 * There can be problems when the git-annex repository is in a deep

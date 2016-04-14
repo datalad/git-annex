@@ -219,9 +219,13 @@ metaDataValues f (MetaData m) = fromMaybe S.empty (M.lookup f m)
 {- Ways that existing metadata can be modified -}
 data ModMeta
 	= AddMeta MetaField MetaValue
-	| DelMeta MetaField MetaValue
-	| SetMeta MetaField MetaValue -- removes any existing values
-	| MaybeSetMeta MetaField MetaValue -- when field has no existing value
+	| DelMeta MetaField (Maybe MetaValue)
+	-- ^ delete value of a field. With Just, only that specific value
+	-- is deleted; with Nothing, all current values are deleted.
+	| SetMeta MetaField MetaValue
+	-- ^ removes any existing values
+	| MaybeSetMeta MetaField MetaValue
+	-- ^ set when field has no existing value
 	deriving (Show)
 
 {- Applies a ModMeta, generating the new MetaData.
@@ -229,7 +233,10 @@ data ModMeta
  - values set in the input metadata. It only contains changed values. -}
 modMeta :: MetaData -> ModMeta -> MetaData
 modMeta _ (AddMeta f v) = updateMetaData f v emptyMetaData
-modMeta _ (DelMeta f oldv) = updateMetaData f (unsetMetaValue oldv) emptyMetaData
+modMeta _ (DelMeta f (Just oldv)) =
+	updateMetaData f (unsetMetaValue oldv) emptyMetaData
+modMeta m (DelMeta f Nothing) = MetaData $ M.singleton f $
+	S.fromList $ map unsetMetaValue $ S.toList $ currentMetaDataValues f m
 modMeta m (SetMeta f v) = updateMetaData f v $
 	foldr (updateMetaData f) emptyMetaData $
 		map unsetMetaValue $ S.toList $ currentMetaDataValues f m

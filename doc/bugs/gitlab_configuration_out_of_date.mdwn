@@ -1,0 +1,17 @@
+### Please describe the problem.
+The webapp configuration for enabling a new gitlab remote is out of date and no longer functions.
+
+### What steps will reproduce the problem?
+Attempt to use the webapp to create a new gitlab remote.
+- The url linked to add a public key is invalid
+- Pressing the confirmation button reloads the same page.  The remote is never enabled.
+
+### What version of git-annex are you using? On what operating system?
+6.20160229-g37a89cc on linux x86 fedora 18
+
+### Please provide any additional information below.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Git-annex is a miracle to find.  I intend to stick with it, migrate my life to it, and perhaps learn haskell some day to contribute.
+

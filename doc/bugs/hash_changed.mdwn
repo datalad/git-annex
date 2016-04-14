@@ -1,0 +1,32 @@
+### Please describe the problem.
+
+I ran `git annex fsck` on some files, and the fsck reported that hashes were incorrect and the files were moved.
+
+### What steps will reproduce the problem?
+
+I don't know.
+
+### What version of git-annex are you using? On what operating system?
+
+```
+git-annex version: 6.20160229
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+```
+
+on NixOS linux 64 bit - unstable channel
+
+### Please provide any additional information below.
+
+The problem was on several disks, different manufacturer, different disk size, etc. The fsck always transformed hashA -> hashB, so the hashes were equal before and after the fsck run on all disks, though the link to the "old" file was not fixed to point to the "new" file.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I use annex for years now, never had a problem with it. It is one of the most awesome pieces of software I've seen in the last 10 years, though I only use a really small part of it. Sometimes it bugs me a little that it consumes quite a lot of memory on large repositories, though most of the time this is not an issue for me.
+
+> I think this was not a bug in hashing, just a corrupted file that
+> spread to several repositories. More recent git-annex versions checksum
+> files after transfer so detect the problem. 
+> 
+> Since it was resolved to reporter's satisfaction, [[done]] --[[Joey]]

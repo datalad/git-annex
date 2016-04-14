@@ -5,14 +5,13 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Command.Unannex where
 
 import Command
 import Config
 import qualified Annex
 import Annex.Content
+import Annex.Perms
 import Annex.Content.Direct
 import Annex.Version
 import qualified Git.Command
@@ -106,15 +105,11 @@ cleanupIndirect file key = do
 	copyfrom src = 
 		thawContent file `after` liftIO (copyFileExternal CopyAllMetaData src file)
 	hardlinkfrom src =
-#ifndef mingw32_HOST_OS
 		-- creating a hard link could fall; fall back to copying
 		ifM (liftIO $ catchBoolIO $ createLink src file >> return True)
 			( return True
 			, copyfrom src
 			)
-#else
-		copyfrom src
-#endif
 
 performDirect :: FilePath -> Key -> CommandPerform
 performDirect file key = do

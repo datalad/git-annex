@@ -29,7 +29,7 @@ start = do
 	let merge_head = d </> "MERGE_HEAD"
 	them <- fromMaybe (error nomergehead) . extractSha
 		<$> liftIO (readFile merge_head)
-	ifM (resolveMerge (Just us) them)
+	ifM (resolveMerge (Just us) them False)
 		( do
 			void $ commitResolvedMerge Git.Branch.ManualCommit
 			next $ next $ return True

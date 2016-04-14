@@ -95,12 +95,20 @@ mode is used. To make them always use unlocked mode, run:
 `git config annex.addunlocked true`
 """]]
 
+## mixing locked and unlocked files
+
 A v6 repository can contain both locked and unlocked files. You can switch 
 a file back and forth using the `git annex lock` and `git annex unlock`
 commands. This changes what's stored in git between a git-annex symlink
 (locked) and a git-annex pointer file (unlocked). To add a file to
 the repository in locked mode, use `git annex add`; to add a file in
 unlocked mode, use `git add`.
+
+If you want to mostly keep files locked, but be able to locally switch
+to having them all unlocked, you can do so using `git annex adjust
+--unlock`. See [[git-annex-adjust]] for details. This is particularly
+useful when using filesystems like FAT, and OS's like Windows that don't
+support symlinks.
 
 ## using less disk space
 
@@ -135,7 +143,7 @@ match the new setting:
 	git annex fix
 
 Note that setting annex.thin only has any effect on systems that support
-hard links. Ie, not Windows, and not FAT filesystems.
+hard links. It is supported on Windows, but not on FAT filesystems.
 
 ## tradeoffs
 

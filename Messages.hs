@@ -54,12 +54,12 @@ import Types.Key
 import qualified Annex
 
 showStart :: String -> FilePath -> Annex ()
-showStart command file = outputMessage (JSON.start command $ Just file) $
+showStart command file = outputMessage (JSON.start command (Just file) Nothing) $
 	command ++ " " ++ file ++ " "
 
 showStart' :: String -> Key -> Maybe FilePath -> Annex ()
-showStart' command key afile = showStart command $
-	fromMaybe (key2file key) afile
+showStart' command key afile = outputMessage (JSON.start command afile (Just key)) $
+	command ++ " " ++ fromMaybe (key2file key) afile ++ " "
 
 showNote :: String -> Annex ()
 showNote s = outputMessage (JSON.note s) $ "(" ++ s ++ ") "
@@ -166,7 +166,7 @@ showFullJSON v = withOutputType $ liftIO . go
  -}
 showCustom :: String -> Annex Bool -> Annex ()
 showCustom command a = do
-	outputMessage (JSON.start command Nothing) ""
+	outputMessage (JSON.start command Nothing Nothing) ""
 	r <- a
 	outputMessage (JSON.end r) ""
 

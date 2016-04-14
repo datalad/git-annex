@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-04-04T20:14:29Z"
+ content="""
+By creating a git repository in your home directory,
+and telling git-annex it's a git-annex repository, and starting
+the assistant, what would you say you've told git-annex to do?
+
+(Note that the webapp has a guard to prevent this mistake. 
+You have to shoot your foot manually, and repeatedly, to do this.)
+"""]]

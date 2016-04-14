@@ -49,8 +49,8 @@ $(GIT_ANNEX_ANDROID_SOURCETREE)/busybox/build-stamp: busybox_config
 	
 $(GIT_ANNEX_ANDROID_SOURCETREE)/git/build-stamp: git.patch
 	# This is a known-good version that the patch works with.
-	cat git.patch | (cd $(GIT_ANNEX_ANDROID_SOURCETREE)/git && git reset --hard f9dc5d65ca31cb79893e1296efe37727bf58f3f3 && git am)
-	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/git && $(MAKE) install NO_OPENSSL=1 NO_GETTEXT=1 NO_GECOS_IN_PWENT=1 NO_GETPASS=1 NO_NSEC=1 NO_MKDTEMP=1 NO_PTHREADS=1 NO_PERL=1 NO_CURL=1 NO_EXPAT=1 NO_TCLTK=1 NO_ICONV=1 HAVE_CLOCK_GETTIME= prefix= DESTDIR=installed-tree
+	cat git.patch | (cd $(GIT_ANNEX_ANDROID_SOURCETREE)/git && git reset --hard d9c691a759d62cef53a6cc11864a2ef4b0829244 && git am)
+	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/git && $(MAKE) install NO_OPENSSL=1 NO_GETTEXT=1 NO_GECOS_IN_PWENT=1 NO_GETPASS=1 NO_NSEC=1 NO_MKDTEMP=1 NO_PTHREADS=1 NO_PERL=1 NO_CURL=1 NO_EXPAT=1 NO_TCLTK=1 NO_ICONV=1 HAVE_CLOCK_GETTIME= HAVE_GETDELIM= prefix= DESTDIR=installed-tree
 	touch $@
 
 $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync/build-stamp: rsync.patch

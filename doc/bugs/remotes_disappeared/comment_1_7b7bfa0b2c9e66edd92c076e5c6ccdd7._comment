@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-04-04T19:45:03Z"
+ content="""
+I see that you're using `reinit` .. so are you sure that the UUID you
+reused there or at some other time did not belong to a remote that had
+previously been marked dead? 
+
+I mean, reusing UUIDs of dead remotes (or just generally reusing UUIDS at
+all) seems like the most obvious way to shoot yourself in the foot and get
+into something resembling this sitation.
+
+Your transcript seems to show one git-annex info in the ~/mp3 repository
+listing the remotes, and a subsquent git-annex info in the ~/mp3 repository
+not listing the remotes, with no commands in between that touch that
+repository in any way. This makes me suspect something is being left out
+somehow. Are you using the assistant or something?
+
+You can see which remotes have been marked dead by `git show git-annex:trust.log | grep X`
+"""]]

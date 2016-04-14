@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="ExGen"
+ subject="Harlinks"
+ date="2016-04-02T23:32:24Z"
+ content="""
+Why not use **hardlinks** on Windows? This could fix \"only direct mode\" issue too. 
+Symlinks on windows sure want admin privilege but hardlinks won't. At least not with this tool: 
+<http://schinagl.priv.at/nt/ln/ln.html>
+"""]]

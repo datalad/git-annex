@@ -1,0 +1,129 @@
+### Please describe the problem.
+
+I am trying to make an SSH key restricted to use git-annex and only git-annex, and only readonly on a specific repository (or many repositories, ideally, but let's start with that0>
+
+I am following [[forum/Restricting_git-annex-shell_to_a_specific_repository/]] and searched this wiki for similar problems, but couldn't figure out a solution.
+
+### What steps will reproduce the problem?
+
+1. install git-annex on an android machine (not sure it needs to be on android, but here it is)
+2. create passwordless SSH keys with `ssh-keygen` on the git-annex terminal there
+3. add the public part of that key to `~/.ssh/authorized_keys` on the git-annex server (note: without any command restriction for now)
+4. git clone the repository on the android device
+5. change the `authorized_keys` for this:
+
+    command="git-annex-shell",no-agent-forwarding,no-port-forwarding,no-X11-forwarding ssh-rsa AAAAB[...]
+
+Expected result: I can operate on the git-annex repository without problem.
+
+Actual result: I get `git-annex-shell: bad parameters` whatever I do.
+
+I have tried variations of the above `authorized_keys` line:
+
+* `command="git-annex-shell",no-agent-forwarding,no-port-forwarding,no-X11-forwarding ssh-rsa AAAAB[...]`
+* `command="/usr/bin/git-annex-shell",no-agent-forwarding,no-port-forwarding,no-X11-forwarding ssh-rsa AAAAB[...]`
+* `command="~/.ssh/git-annex-shell",no-agent-forwarding,no-port-forwarding,no-X11-forwarding ssh-rsa AAAAB[...]`
+
+.. where `~/.ssh/git-annex-shell` is as described in [[forum/Restricting_git-annex-shell_to_a_specific_repository/]]:
+
+[[!format sh """
+#!/bin/sh
+set -e
+
+if [ "x$SSH_ORIGINAL_COMMAND" != "x" ]; then
+exec /usr/bin/git-annex-shell -c "$SSH_ORIGINAL_COMMAND"
+else
+exec /usr/bin/git-annex-shell -c "$@"
+fi
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+
+The "client" side is:
+
+[[!format sh """
+# git annex version
+WARNING: linker: git-annex has text relocations. This is wasting memory and prevents security hardening. Please fix.
+git-annex version: 6.20160317-g204dbf5
+build flags: Assistant Webapp Testsuite S3(multipartupload) WebDAV Inotify XMPP TorrentParser Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository versions: 5 6
+upgrade supported from repository versions: 0 1 2 4 5
+"""]]
+
+On cyanogenmod 12.1.
+
+The server side is my usual 5.20151208-1~bpo8+1 from backports on Debian jessie.
+
+### Please provide any additional information below.
+
+Example of a failed transfer:
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+# git annex get John\ Coltrane/Coltrane/02.\ John\ Coltrane\ -\ Soul\ eyes.mp3   --debug
+WARNING: linker: git-annex has text relocations. This is wasting memory and prevents security hardening. Please fix.
+[2016-04-04 10:38:18.710817] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","ls-files","--cached","-z","--","John Coltrane/Coltrane/02. John Coltrane - Soul eyes.mp3"]
+get John Coltrane/Coltrane/02. John Coltrane - Soul eyes.mp3 [2016-04-04 10:38:19.067234] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","show-ref","git-annex"]
+[2016-04-04 10:38:19.226703] process done ExitSuccess
+[2016-04-04 10:38:19.24413] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","show-ref","--hash","refs/heads/git-annex"]
+[2016-04-04 10:38:19.291315] process done ExitSuccess
+[2016-04-04 10:38:19.297724] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","log","refs/heads/git-annex..1bb927d3ff7ee7a15623c8798fa20d3ee180d8d6","-n1","--pretty=%H"]
+[2016-04-04 10:38:19.395572] process done ExitSuccess
+[2016-04-04 10:38:19.396091] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","log","refs/heads/git-annex..b7ab5e62053e838f15e38fc8e4e523da9591f89b","-n1","--pretty=%H"]
+[2016-04-04 10:38:19.443764] process done ExitSuccess
+[2016-04-04 10:38:19.444283] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","log","refs/heads/git-annex..ee9e429a3b847010adf65665e4dfe0194c46b819","-n1","--pretty=%H"]
+[2016-04-04 10:38:19.487988] process done ExitSuccess
+[2016-04-04 10:38:19.496808] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","cat-file","--batch"]
+(from origin...)
+[2016-04-04 10:38:19.62301] read: rsync ["--progress","--inplace","-e","'ssh' '-S' '/data/data/ga.androidterm/tmp/ssh/anarcat@anarc.at' '-o' 'ControlMaster=auto' '-o' 'ControlPersist=yes' '-T' 'anarcat@anarc.at' 'git-annex-shell ''sendkey'' ''/srv/mp3'' ''--debug'' ''SHA256E-s7413367--bdbba13f0631704bcc96220e3b5f2dfd93b186eaf79ef4c8dcf1f6b3dd9b1397.mp3'' --uuid b7802161-c984-4c9f-8d05-787a29c41cfe ''--'' ''remoteuuid=6f812272-18c8-4346-b68a-f57ae50f657e'' ''unlocked='' ''direct='' ''associatedfile=John Coltrane/Coltrane/02. John Coltrane - Soul eyes.mp3'' ''--'''","--","dummy:",".git/annex/tmp/SHA256E-s7413367--bdbba13f0631704bcc96220e3b5f2dfd93b186eaf79ef4c8dcf1f6b3dd9b1397.mp3"]
+git-annex-shell: bad parameters
+
+Usage: git-annex-shell [-c] command [parameters ...] [option ...]
+
+Plumbing commands:
+
+commit        DIRECTORY          commits any staged changes to the git-annex branch
+configlist    DIRECTORY          outputs relevant git configuration
+dropkey       DIRECTORY KEY ...  drops annexed content for specified keys
+gcryptsetup   DIRECTORY VALUE    sets up gcrypt repository
+inannex       DIRECTORY KEY ...  checks if keys are present in the annex
+lockcontent   DIRECTORY KEY      locks key's content in the annex, preventing it being dropped
+notifychanges DIRECTORY          sends notification when git refs are changed
+recvkey       DIRECTORY KEY      runs rsync in server mode to receive content
+sendkey       DIRECTORY KEY      runs rsync in server mode to send content
+transferinfo  DIRECTORY KEY      updates sender on number of bytes of content received
+
+[2016-04-04 10:38:19.805156] process done ExitFailure 12
+
+  rsync failed -- run git annex again to resume file transfer
+
+  Unable to access these remotes: origin
+rsync: connection unexpectedly closed (0 bytes received so far) [Receiver]
+rsync error: error in rsync protocol data stream (code 12) at io.c(224) [Receiver=3.1.0dev]
+
+  Try making some of these repositories available:
+        0f9185ea-8462-4230-8cae-462a1ad0df36 -- anarcat@angela:~/mp3
+        22921df6-ff75-491c-b5d9-5a2aab33a689 -- anarcat@marcos:/media/anarcat/79884590-6445-4a6f-ae12-050b9a7c1912/mp3
+        3f6d8082-6f4b-4faa-a3d9-bd5db1891077 -- anarcat@lab-sc.no-ip.org:mp3
+        4249a4ea-343a-43a8-9bba-457d2ff87c7d -- rachel@topcrapn:~/Musique/MUSIC/anarcat
+        487dda55-d164-4bf1-9d85-66caaa9c0743 -- 300GB hard drive labeled VHS
+        b7802161-c984-4c9f-8d05-787a29c41cfe -- anarcat@marcos:/srv/mp3 [origin]
+        c2ca4a13-9a5f-461b-a44b-53255ed3e2f9 -- anarcat@desktop008:/srv/musique/anarcat/mp3
+        f867da6f-78cb-49be-a0db-d1c8e5f53664 -- n900
+        f8818d12-9882-4ca5-bc0f-04e987888a8d -- anarcat@marcos:/media/anarcat/green_crypt/mp3/
+failed
+git-annex: get: 1 failed
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I seem to recall I had that working in the past, and I feel I am probably doing something stupidly wrong, but here I am. Sorry about that, I'll be sure to fix the documentation more clearly (esp. in the [[git-annex-shell]] manpage when I figure it out! --[[anarcat]]
+
+Well, it looks like this PEBKAC here - could have sworn I had tested the wrapper, but it seems I didn't do it properly. I'll fixup the documentation for things to be clearer, but this is basically fixed now, with a proper ~/.ssh/git-annex. I don't understand why the wrapper is necessary, but thanks for the feedback! [[done]]

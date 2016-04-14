@@ -20,6 +20,8 @@ commands.
 Note that the direct mode/indirect mode distinction is removed in v6
 git-annex repositories. In such a repository, you can
 use [[git-annex-unlock]](1) to make a file's content be directly present.
+You can also use [[git-annex-adjust]](1) to enter a branch where all
+annexed files are unlocked, which is similar to the old direct mode.
 
 # SEE ALSO
 
@@ -28,6 +30,8 @@ use [[git-annex-unlock]](1) to make a file's content be directly present.
 [[git-annex-indirect]](1)
 
 [[git-annex-unlock]](1)
+
+[[git-annex-adjust]](1)
 
 # AUTHOR
 

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 12"
+ date="2016-03-10T04:36:12Z"
+ content="""
+so -- shouldn't annex at least upon init sense if repo is under nfs?  if to be done platform independent way then it could do smth like
+
+[[!format sh \"\"\"
+python -c 'from glob import glob; import os; f=open(\".tmp-test\", \"w\"); os.unlink(\".tmp-test\"); assert(not glob(\".nfs*\"))'
+\"\"\"]]
+
+somewhere under .git/annex/tmp .. so if .nfs* file gets generated -- under nfs.  Seems to work for me in limited set of tests -- assertion fails all the time under NFS ;)
+"""]]

@@ -231,6 +231,7 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 	, testCase "sync" test_sync
 	, testCase "union merge regression" test_union_merge_regression
 	, testCase "conflict resolution" test_conflict_resolution
+	, testCase "conflict resolution (adjusted branch)" test_conflict_resolution_adjusted_branch
 	, testCase "conflict resolution movein regression" test_conflict_resolution_movein_regression
 	, testCase "conflict resolution (mixed directory and file)" test_mixed_conflict_resolution
 	, testCase "conflict resolution symlink bit" test_conflict_resolution_symlink_bit
@@ -1045,6 +1046,41 @@ test_conflict_resolution =
 			git_annex "get" v @? "get failed"
 			git_annex_expectoutput "find" v v
 
+{- Conflict resolution while in an adjusted branch. -}
+test_conflict_resolution_adjusted_branch :: Assertion
+test_conflict_resolution_adjusted_branch = 
+	withtmpclonerepo $ \r1 ->
+		withtmpclonerepo $ \r2 -> do
+			indir r1 $ do
+				disconnectOrigin
+				writeFile conflictor "conflictor1"
+				add_annex conflictor @? "add conflicter failed"
+				git_annex "sync" [] @? "sync failed in r1"
+			indir r2 $ do
+				disconnectOrigin
+				writeFile conflictor "conflictor2"
+				add_annex conflictor @? "add conflicter failed"
+				git_annex "sync" [] @? "sync failed in r2"
+				-- need v6 to use adjust
+				git_annex "upgrade" [] @? "upgrade failed"
+				git_annex "adjust" ["--unlock"] @? "adjust failed"
+			pair r1 r2
+			forM_ [r1,r2,r1] $ \r -> indir r $
+				git_annex "sync" [] @? "sync failed"
+			checkmerge "r1" r1
+			checkmerge "r2" r2
+  where
+	conflictor = "conflictor"
+	variantprefix = conflictor ++ ".variant"
+	checkmerge what d = do
+		l <- getDirectoryContents d
+		let v = filter (variantprefix `isPrefixOf`) l
+		length v == 2
+			@? (what ++ " not exactly 2 variant files in: " ++ show l)
+		conflictor `notElem` l @? ("conflictor still present after conflict resolution")
+		indir d $ do
+			git_annex "get" v @? "get failed"
+			git_annex_expectoutput "find" v v
 
 {- Check merge conflict resolution when one side is an annexed
  - file, and the other is a directory. -}
@@ -1385,7 +1421,7 @@ test_uninit_inbranch = intmpclonerepoInDirect $ do
 
 test_upgrade :: Assertion
 test_upgrade = intmpclonerepo $
-	git_annex "upgrade" [] @? "upgrade from same version failed"
+	git_annex "upgrade" [] @? "upgrade failed"
 
 test_whereis :: Assertion
 test_whereis = intmpclonerepo $ do

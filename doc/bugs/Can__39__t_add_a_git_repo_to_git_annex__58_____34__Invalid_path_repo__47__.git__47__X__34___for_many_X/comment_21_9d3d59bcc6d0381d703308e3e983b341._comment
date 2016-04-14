@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 21"""
+ date="2016-04-04T19:18:50Z"
+ content="""
+It *is* silly to use any version control system to synchronize
+the artifacts of another version control system. By doing so, you throw
+away a perfectly working version control system and have to deal with
+merge conflicts between version A and version B of the version control
+system artifacts. 
+
+Uness you have some magical solution to that merge conflict problem,
+there's no point in further discussion.
+"""]]

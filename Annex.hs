@@ -42,6 +42,7 @@ import qualified Git
 import qualified Git.Config
 import Annex.Fixup
 import Git.CatFile
+import Git.HashObject
 import Git.CheckAttr
 import Git.CheckIgnore
 import qualified Git.Hook
@@ -106,6 +107,7 @@ data AnnexState = AnnexState
 	, branchstate :: BranchState
 	, repoqueue :: Maybe Git.Queue.Queue
 	, catfilehandles :: M.Map FilePath CatFileHandle
+	, hashobjecthandle :: Maybe HashObjectHandle
 	, checkattrhandle :: Maybe CheckAttrHandle
 	, checkignorehandle :: Maybe (Maybe CheckIgnoreHandle)
 	, forcebackend :: Maybe String
@@ -134,6 +136,7 @@ data AnnexState = AnnexState
 	, workers :: [Either AnnexState (Async AnnexState)]
 	, concurrentjobs :: Maybe Int
 	, keysdbhandle :: Maybe Keys.DbHandle
+	, cachedcurrentbranch :: Maybe Git.Branch
 	}
 
 newState :: GitConfig -> Git.Repo -> AnnexState
@@ -151,6 +154,7 @@ newState c r = AnnexState
 	, branchstate = startBranchState
 	, repoqueue = Nothing
 	, catfilehandles = M.empty
+	, hashobjecthandle = Nothing
 	, checkattrhandle = Nothing
 	, checkignorehandle = Nothing
 	, forcebackend = Nothing
@@ -179,6 +183,7 @@ newState c r = AnnexState
 	, workers = []
 	, concurrentjobs = Nothing
 	, keysdbhandle = Nothing
+	, cachedcurrentbranch = Nothing
 	}
 
 {- Makes an Annex state object for the specified git repo.

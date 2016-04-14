@@ -19,7 +19,6 @@ import Assistant.RemoteControl
 import qualified Command.Sync
 import Utility.Parallel
 import qualified Git
-import qualified Git.Branch
 import qualified Git.Command
 import qualified Git.Ref
 import qualified Remote
@@ -79,16 +78,16 @@ reconnectRemotes notifypushes rs = void $ do
 		| Git.repoIsLocal r = True
 		| Git.repoIsLocalUnknown r = True
 		| otherwise = False
-	sync (Just branch) = do
-		(failedpull, diverged) <- manualPull (Just branch) gitremotes
+	sync currentbranch@(Just _, _) = do
+		(failedpull, diverged) <- manualPull currentbranch gitremotes
 		now <- liftIO getCurrentTime
 		failedpush <- pushToRemotes' now notifypushes gitremotes
 		return (nub $ failedpull ++ failedpush, diverged)
 	{- No local branch exists yet, but we can try pulling. -}
-	sync Nothing = manualPull Nothing gitremotes
+	sync (Nothing, _) = manualPull (Nothing, Nothing) gitremotes
 	go = do
 		(failed, diverged) <- sync
-			=<< liftAnnex (inRepo Git.Branch.current)
+			=<< liftAnnex (join Command.Sync.getCurrBranch)
 		addScanRemotes diverged $
 			filter (not . remoteAnnexIgnore . Remote.gitconfig)
 				nonxmppremotes
@@ -133,7 +132,7 @@ pushToRemotes' now notifypushes remotes = do
 		Annex.Branch.commit "update"
 		(,,)
 			<$> gitRepo
-			<*> inRepo Git.Branch.current
+			<*> join Command.Sync.getCurrBranch
 			<*> getUUID
 	let (xmppremotes, normalremotes) = partition Remote.isXMPPRemote remotes
 	ret <- go True branch g u normalremotes
@@ -145,9 +144,9 @@ pushToRemotes' now notifypushes remotes = do
 			Pushing (getXMPPClientID r) (CanPush u shas)
 	return ret
   where
-	go _ Nothing _ _ _ = return [] -- no branch, so nothing to do
+	go _ (Nothing, _) _ _ _ = return [] -- no branch, so nothing to do
 	go _ _ _ _ [] = return [] -- no remotes, so nothing to do
-	go shouldretry (Just branch) g u rs =  do
+	go shouldretry currbranch@(Just branch, _) g u rs =  do
 		debug ["pushing to", show rs]
 		(succeeded, failed) <- parallelPush g rs (push branch)
 		updatemap succeeded []
@@ -158,7 +157,7 @@ pushToRemotes' now notifypushes remotes = do
 						map Remote.uuid succeeded
 				return failed
 			else if shouldretry
-				then retry branch g u failed
+				then retry currbranch g u failed
 				else fallback branch g u failed
 
 	updatemap succeeded failed = changeFailedPushMap $ \m ->
@@ -166,10 +165,10 @@ pushToRemotes' now notifypushes remotes = do
 			M.difference m (makemap succeeded)
 	makemap l = M.fromList $ zip l (repeat now)
 
-	retry branch g u rs = do
+	retry currbranch g u rs = do
 		debug ["trying manual pull to resolve failed pushes"]
-		void $ manualPull (Just branch) rs
-		go False (Just branch) g u rs
+		void $ manualPull currbranch rs
+		go False currbranch g u rs
 
 	fallback branch g u rs = do
 		debug ["fallback pushing to", show rs]
@@ -227,7 +226,7 @@ syncAction rs a
  - XMPP remotes. However, those pushes will run asynchronously, so their
  - results are not included in the return data.
  -}
-manualPull :: Maybe Git.Ref -> [Remote] -> Assistant ([Remote], Bool)
+manualPull :: Command.Sync.CurrBranch -> [Remote] -> Assistant ([Remote], Bool)
 manualPull currentbranch remotes = do
 	g <- liftAnnex gitRepo
 	let (xmppremotes, normalremotes) = partition Remote.isXMPPRemote remotes
