@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://svario.it/gioele"
+ nickname="gioele"
+ subject="comment 4"
+ date="2016-04-16T12:53:13Z"
+ content="""
+This problem is still present in `6.20160412-gdcf8d3b`. Programs run inside `runshell` will complain that
+
+    locale: Cannot set LC_CTYPE to default locale: No such file or directory
+    locale: Cannot set LC_MESSAGES to default locale: No such file or directory
+    locale: Cannot set LC_ALL to default locale: No such file or directory
+
+Is it possible to remove the `LOCPATH=/dev/null` workaround now that GHC 7.10 is used to build the standalone bundles?
+
+"""]]
