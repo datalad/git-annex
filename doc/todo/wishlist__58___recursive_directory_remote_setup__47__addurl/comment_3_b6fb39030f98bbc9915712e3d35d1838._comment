@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="0xloem@0bd8a79a57e4f0dcade8fc81d162c37eae4d6730"
+ nickname="0xloem"
+ subject="Assistant support"
+ date="2016-04-16T11:52:14Z"
+ content="""
+This would be really augmented if the assistant and webapp could watch external folders and automatically add new files that appeared.  Then e.g. your system logs and family photos could be archived together without maintenance needed.
+I'm running into this on android, wherw I'd like to store files my phone produces alongside my other files.
+"""]]
