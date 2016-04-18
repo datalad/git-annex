@@ -57,7 +57,6 @@ import Types.NumCopies
 
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
-import Control.Concurrent.Async
 import qualified Data.Map as M
 import Network.URI
 
@@ -387,17 +386,14 @@ lockKey r key callback
 						, std_out = CreatePipe
 						, std_err = UseHandle nullh
 						}
-		-- Wait for either the process to exit, or for it to
-		-- indicate the content is locked.
-		v <- liftIO $ race 
-			(waitForProcess p)
-			(hGetLine hout)
-		let signaldone = void $ tryNonAsync $ liftIO $ do
-			hPutStrLn hout ""
-			hFlush hout
-			hClose hin
-			hClose hout
-			void $ waitForProcess p
+		v <- liftIO $ tryIO $ hGetLine hout
+		let signaldone = void $ tryNonAsync $ liftIO $ mapM_ tryNonAsync
+			[ hPutStrLn hout ""
+			, hFlush hout
+			, hClose hin
+			, hClose hout
+			, void $ waitForProcess p
+			]
 		let checkexited = not . isJust <$> getProcessExitCode p
 		case v of
 			Left _exited -> do
@@ -405,6 +401,7 @@ lockKey r key callback
 				liftIO $ do
 					hClose hin
 					hClose hout
+					void $ waitForProcess p
 				failedlock
 			Right l 
 				| l == Ssh.contentLockedMarker -> bracket_

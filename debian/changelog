@@ -17,6 +17,10 @@ git-annex (6.20160413) UNRELEASED; urgency=medium
   * fsck: Warn when core.sharedRepository is set and an annex object file's
     write bit is not set and cannot be set due to the file being owned
     by a different user.
+  * Fix hang when dropping content needs to lock the content on a
+    ssh remote, which occurred when the remote has git-annex version
+    5.20151019 or newer. (The bug was in the client side; the remote
+    git-annex-shell does not need to be upgraded.)
 
  -- Joey Hess <id@joeyh.name>  Wed, 13 Apr 2016 13:30:32 -0400
 
