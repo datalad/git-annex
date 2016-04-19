@@ -20,3 +20,5 @@ get docs/freesurfer.intro.mmclass.ppt (from origin...)
 """]]
 
 [[!meta author=yoh]]
+
+> [[fixed|done]] --[[Joey]]

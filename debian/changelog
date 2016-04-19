@@ -1,3 +1,10 @@
+git-annex (6.20160419) UNRELEASED; urgency=medium
+
+  * Fix duplicate progress meter display when downloading from a git remote
+    over http with -J.
+
+ -- Joey Hess <id@joeyh.name>  Tue, 19 Apr 2016 12:57:15 -0400
+
 git-annex (6.20160418) unstable; urgency=medium
 
   * smudge: Print a warning when annex.thin is set, as git's smudge
