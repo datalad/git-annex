@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-04-19T15:33:22Z"
+ content="""
+Is this using datalad's special remotes that use git-annex to download
+nested objects?
+"""]]
