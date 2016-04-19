@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.112"
- subject="comment 5"
- date="2014-08-03T18:27:32Z"
- content="""
-However, I don't think that multipart upload actually allows exceeding the S3 limit of 5 GB per object. Configuring the remote with `chunk=100MiB` *does* allow bypassing whatever S3's maximum object size happens to be.
-"""]]

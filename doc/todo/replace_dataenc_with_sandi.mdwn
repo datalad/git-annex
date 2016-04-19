@@ -1,6 +1,0 @@
-<https://github.com/joeyh/git-annex/pull/15>
-
-sandi is available in jessie, but not wheezy, so this is pending
-EOL of wheezy support. --[[Joey]]
-
-> [[fixed|done]] --[[Joey]]

@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.227"
- subject="comment 4"
- date="2014-01-02T19:04:26Z"
- content="""
-I've tested with the current release's Linux standalone amd64 build, and once the webapp shows no activity, strace shows it sitting there waiting for a futex, which causes no cpu load at all.
-"""]]

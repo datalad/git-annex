@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawmZilYULa6CDEGfuagoDlesyakBgnf-dF8"
- nickname="Maarten"
- subject="comment 5"
- date="2014-05-26T11:52:27Z"
- content="""
-when doing ssh host 'echo $PATH', the remote shell running the command is not an interactive shell and thus does NOT source .bashrc, neither is it a login shell and as such does not source .profile or .bash_profile.  Which leaves me wondering: how does git annex log in to the remote machine to run git-annex-shell?  Does it do so via an interactive shell, a login shell, or neither?  Because if it does it via ssh host 'git-annex-shell', then neither .bashrc or .profile can configure its PATH.
-"""]]

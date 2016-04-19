@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="CandyAngel"
- subject="comment 2"
- date="2015-06-24T07:33:20Z"
- content="""
-The AUR package isn't \"official\", so it isn't supported.
-
-It has an outdated checksum because there is some issue related to changes to curl which apparently causes problems if you use the webapp (which I don't, so I just deleted that bit and it seems to work fine).
-"""]]

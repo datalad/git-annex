@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://johan.kiviniemi.name/"
- nickname="Johan"
- subject="comment 1"
- date="2014-04-02T08:40:17Z"
- content="""
-FWIW, `env foo=bar cmd` would probably work on every system on which the `foo=bar cmd` invocation works now.
-"""]]

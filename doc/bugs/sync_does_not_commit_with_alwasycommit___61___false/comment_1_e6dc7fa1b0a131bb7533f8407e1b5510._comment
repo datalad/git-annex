@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://svario.it/gioele"
- nickname="gioele"
- subject="comment 1"
- date="2014-07-29T14:25:19Z"
- content="""
-For the records, the solution Joey suggested works but the correct option to pass to `sync` is `-c annex.alwayscommit=true`.
-"""]]

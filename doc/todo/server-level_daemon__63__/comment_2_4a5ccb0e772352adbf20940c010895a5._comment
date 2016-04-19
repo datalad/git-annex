@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="https://id.koumbit.net/anarcat"
- subject="comment 2"
- date="2015-02-26T23:52:52Z"
- content="""
-because this is a server without a generic \"user account\". there are multiple admins with each their own account, and i'd like to have git-annex run as its own account. and yes, probably under systemd, but under wheezy, under init.d.
-
-i would avoid @reboot cron jobs because systemd can't restart it if they fail.
-"""]]

@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawmUJBh1lYmvfCCiGr3yrdx-QhuLCSRnU5c"
- nickname="Justin"
- subject="comment 1"
- date="2015-03-24T15:30:30Z"
- content="""
-One thing that's odd is that, if I disable swap, it still eats all my ram, and kswapd0 is still the primary user of CPU.  The machine is even slower than it was before; iotop takes more than a minute to low.  My best explanation is it must be swapping by kicking out cached pages.
-"""]]

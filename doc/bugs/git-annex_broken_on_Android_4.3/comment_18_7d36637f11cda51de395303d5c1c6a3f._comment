@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.246"
- subject="comment 18"
- date="2013-11-11T13:27:49Z"
- content="""
-Hmm, maybe the problem is caused by stripping the program? If so, this should fail the same way: <http://tmp.kitenet.net/hello.stripped>
-"""]]

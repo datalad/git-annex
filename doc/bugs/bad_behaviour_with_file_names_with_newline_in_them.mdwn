@@ -1,5 +1,0 @@
-Found this out the hard way.  See the comment in the below post for what happens.
-
-[[/forum/git_annex_add_crash_and_subsequent_recovery/]]
-
-> [[fixed|done]] --[[Joey]]

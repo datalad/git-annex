@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.55"
- subject="comment 2"
- date="2014-07-04T17:52:35Z"
- content="""
-This problem should be fixed in the most recent daily build of git-annex for android. Testing appreciated.
-"""]]

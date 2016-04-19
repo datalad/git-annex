@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawmqz6wCn-Q1vzrsHGvEJHOt_T5ZESilxhc"
- nickname="Sören"
- subject="Galaxy S4 Android 4.3"
- date="2013-11-11T18:47:23Z"
- content="""
-hello and hello.stripped both work here but the git-annex binaries don't (still the same error as in the bug report). 
-"""]]

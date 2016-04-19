@@ -1,5 +1,0 @@
-### Please describe the problem.
-
-Current layout is DIRHASH (of two levels) /KEY/KEY, so I would need to hardcode having that KEY directory.  It might be nice to either make DIRHASH to return full hash directory (but it might break existing special remotes), or supplement with e.g. DIRHASHFULL which would return all the levels necessary to reach the KEY file
-
-> [[done]] --[[Joey]]

@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.55"
- subject="comment 5"
- date="2014-07-09T19:00:35Z"
- content="""
-I have confirmed this is still happening, though I had certianly thought I had reproduced and fixed it.
-"""]]

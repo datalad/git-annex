@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawnm19dBCRphmtjXfopm_NpvnRwz-qIJ2Tw"
- nickname="Remi"
- subject="comment 3"
- date="2015-03-28T07:51:09Z"
- content="""
-I completely disagree with the last surprise argument. I'm regularly in this situation, and each time I'm surprised when `git annex fix` do not fix the symlinks, even when I'm explicitly listing the list I want to fix. 
-"""]]

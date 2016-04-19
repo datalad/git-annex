@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.2"
- subject="comment 4"
- date="2014-07-15T21:06:23Z"
- content="""
-@lex, it shouldn't fail due to passphrase if you have gpg-agent set up. You'll only get some unncessary passphrase prompts.
-"""]]

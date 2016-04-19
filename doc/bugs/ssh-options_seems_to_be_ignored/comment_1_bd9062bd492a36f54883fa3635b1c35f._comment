@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- subject="comment 1"
- date="2014-12-19T20:41:58Z"
- content="""
-The ssh-options are used when git-annex is running git-annex-shell on the remote (eg, when transferring data). However, `git annex sync` does a `git pull` and `git push`, and so it doesn't pass on the ssh-options there.
-"""]]

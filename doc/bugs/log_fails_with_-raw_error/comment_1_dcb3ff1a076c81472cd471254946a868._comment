@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 1"""
- date="2015-07-02T16:18:09Z"
- content="""
-I can reproduce this with debian unstable. It is a reversion introduced
-in version 5.20150528 of git-annex.
-"""]]

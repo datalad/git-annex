@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="anarcat"
- subject="comment 1"
- date="2015-06-24T00:31:43Z"
- content="""
-did a single chunk get transfered correctly? i believe git-annex can only resume at the chunk granularity... that is what it is for, no? --[[anarcat]]
-"""]]

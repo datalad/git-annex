@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.146"
- subject="comment 1"
- date="2014-03-07T15:17:16Z"
- content="""
-I've fixed the missing warp-tls dep on the autobuilder and updated the builds.
-"""]]

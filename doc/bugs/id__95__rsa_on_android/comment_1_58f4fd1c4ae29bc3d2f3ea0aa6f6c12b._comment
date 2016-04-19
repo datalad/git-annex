@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="108.236.230.124"
- subject="comment 1"
- date="2014-03-10T21:20:10Z"
- content="""
-Hmm, I know that I and others have used git-annex on android with ssh, without encountering this problem. Odd. Oh well, was already patching out many other permissions checks in ssh, so added this one to the pile.
-"""]]

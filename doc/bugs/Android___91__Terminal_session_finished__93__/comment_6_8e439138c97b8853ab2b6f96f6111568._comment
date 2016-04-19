@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.191"
- subject="comment 6"
- date="2014-04-20T20:58:22Z"
- content="""
-Yes, that fully explains it. git-annex is a native program and for android it's only built for arm.
-"""]]

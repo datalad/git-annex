@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.227"
- subject="comment 3"
- date="2014-01-01T20:45:19Z"
- content="""
-Note that I have installed the backports and autobuilds on systems and run the assistant without seeing this problem, so it may be particular to the system's configuration in some way.
-"""]]

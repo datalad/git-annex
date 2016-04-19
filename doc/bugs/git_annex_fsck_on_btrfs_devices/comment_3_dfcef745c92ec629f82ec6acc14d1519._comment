@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="eigengrau"
- subject="comment 3"
- date="2015-05-28T13:09:23Z"
- content="""
-Thanks! If it’s just for one file, it’s probably okay to move it to bad. If the error was intermittent, one can try reinjecting the content.
-
-As for the risk of overkill, I don’t know enough about how the SATA/SCSI subsystem handles things. The cornercase would be one where (say due to EM interference) the SATA connection is reset and the device driver reports read errors for lots and lots of files, but the drive comes back in time so that these files are erroneously moved to bad. However, I guess you do the “move to bad” action file by file, and the whole fsck fails if moving to bad fails. In this case, we probably wouldn’t bite the cornercase, because when the drive comes back online, at most one file is moved to “bad“ erroneously.
-"""]]

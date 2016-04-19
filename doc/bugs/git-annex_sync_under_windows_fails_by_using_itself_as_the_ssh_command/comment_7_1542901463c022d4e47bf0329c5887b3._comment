@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="threadshuffle"
- subject="cont'd"
- date="2015-07-31T22:05:14Z"
- content="""
-Hi joey, I know my english is not quite correct. What i was trying to say was that i managed to avoid certain parts of the code, because they're governed by some conditions by setting some env variables (what i remember was GIT_SSH and something, but can't say for sure now). So i haven't compiled the code, just went on different code paths based on the conditions described by the code.
-I will get back to this shortly (maybe next week), install the latest version of git-annex and if that still doesn't work, im gonna build a devenv for haskell and try to see what's happening. I'm gonna be able to provide more details at that point.
-"""]]

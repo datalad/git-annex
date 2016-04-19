@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="silvio"
- subject="comment 4"
- date="2015-04-29T19:47:21Z"
- content="""
-sorry for so many posts :)
-
-As for not quoting the file name I think it doesn't need to be. It will still be just one argument. Exec doesn't work like sh. The standard doesn't mention anything about single quote quoting either but it seems to work and there is no good alternative.
-"""]]

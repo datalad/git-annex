@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 2"""
- date="2015-05-07T18:26:25Z"
- content="""
-See [[rsync_on_windows_broken_by_upgrade]] which is the inverse of this
-bug.
-"""]]

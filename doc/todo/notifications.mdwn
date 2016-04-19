@@ -1,6 +1,0 @@
-Just started today with git-annex and it looks great replacement for proprietary syncing solutions (well in allot of aspects it's much better than proprietary solutions) but I do believe desktop and email notifications are must have features.
-
-I think these services would be nice to have: growl, libnotify, email, twitter (publicly sharing with a group or repository stored on public server for users to download).  
-
-> git-annex has desktop notifications. I think that if you want something
-> beyond that, you should script it. So, [[done]] --[[Joey]]

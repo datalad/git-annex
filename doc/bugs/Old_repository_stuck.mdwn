@@ -1,9 +1,0 @@
-I had created a test repository a time ago with an old version of git-annex. I didn't really used it so I simply deleted the directory by hand. Now I've installed a new version of git-annex  and the old repository stills appears on the webapp, but there is no interface to delete it.
-
-* Old git-annex version: don't remember 
-* New git-annex version: I downloaded 3.20130107 (twice to be sure), but for some reason 'git-annex version' reports 3.20130102
-* OS: Ubuntu 12.04.1 LTS 3.2.0-35-generic-pae #55-Ubuntu SMP Wed Dec 5 18:04:39 UTC 2012 i686 i686 i386 GNU/Linux
-
-> This is [[fixed|done]] in git; assuming the repo was showing up
-> in the upper-right menu for switching among local repositories.
-> --[[Joey]] 

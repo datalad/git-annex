@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawm5WyknJirJJridJjiPNgrlYxGG9xrZBvA"
- nickname="Daniel"
- subject="comment 1"
- date="2013-12-31T20:48:03Z"
- content="""
-I neglected to mention that the assistant is failing when gpg fails, and that it worked last week in 5.20131221-gf8c928d (or at least it got past this point).
-"""]]

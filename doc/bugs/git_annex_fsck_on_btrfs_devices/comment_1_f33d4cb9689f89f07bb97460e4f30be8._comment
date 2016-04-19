@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="eigengrau"
- subject="comment 1"
- date="2015-05-24T15:07:34Z"
- content="""
-I suppose since an I/O error can be intermittent, the file can’t be outright regarded as bad. Also I’m not sure whether the read system call returns a dedicated error code for checksum errors.
-"""]]

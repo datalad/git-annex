@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="mdorman@ddbe259e8f6e03351350a04515c67f7957abf736"
- nickname="mdorman"
- subject="In fact, the problem *is* the yesod update"
- date="2015-08-22T10:37:20Z"
- content="""
-Per https://github.com/yesodweb/yesod/issues/1059, it would appear that all you would need to do is reorder some declarations---though that was my first thought and I thought I tried it and it failed, perhaps I got something else wrong in doing so.  I'll report back when I have more info.
-"""]]

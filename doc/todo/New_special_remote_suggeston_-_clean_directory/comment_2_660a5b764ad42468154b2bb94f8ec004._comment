@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://grossmeier.net/"
- nickname="greg"
- subject="mounting over NFS/etc ..."
- date="2013-11-27T16:01:50Z"
- content="""
-TroisSinges: Yeah, I could, but that'd limit me to being on the local network when I want to interact with the repo; not ideal.
-"""]]

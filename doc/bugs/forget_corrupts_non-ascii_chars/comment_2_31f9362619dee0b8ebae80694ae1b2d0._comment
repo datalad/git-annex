@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.176"
- subject="comment 2"
- date="2014-05-27T17:58:35Z"
- content="""
-Notice that the filename is corrupted from the beginning; all writes to the git-annex branch truncated characters to 8 bits. The rest just followed from that.
-"""]]

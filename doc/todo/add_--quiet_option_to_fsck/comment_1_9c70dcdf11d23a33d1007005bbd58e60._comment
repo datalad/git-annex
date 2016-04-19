@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 1"""
- date="2015-05-30T15:30:13Z"
- content="""
-git-annex fsck already has this --quiet option. (Same option works with
-most other git-annex commands too.
-"""]]

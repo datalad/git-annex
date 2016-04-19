@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="etset"
- subject="Seems to be fixed"
- date="2015-01-07T22:14:57Z"
- content="""
-I didn't have an opportunity to do a sync with it yet, but the main problem seems to be gone with this last build: it now successfully opens and shows the assistant web interface. Thanks a lot! :D
-"""]]

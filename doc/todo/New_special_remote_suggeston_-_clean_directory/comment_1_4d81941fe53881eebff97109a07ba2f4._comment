@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="TroisSinges"
- ip="82.227.207.5"
- subject="comment 1"
- date="2013-11-27T14:59:11Z"
- content="""
-You could mount this NAS as a network drive on your computer (via samba for example or, even better, nfs), couldn't you? In this case you could use a real annex repository, and not a remote one.
-"""]]

@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="gio"
- subject="comment 5"
- date="2015-01-06T10:07:50Z"
- content="""
-With the new build, it still complains about the executable not being PIE.
-"""]]

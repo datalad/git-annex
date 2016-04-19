@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://id.koumbit.net/anarcat"
- ip="72.0.72.144"
- subject="comment 2"
- date="2014-05-27T03:00:48Z"
- content="""
-marcos has had git-annex installed ever since i started using git-annex, which is around version 4.x. furthermore, i have assumed that the procedure i detailed in the last part were enough to reproduce the bug, but i may be mistaken.
-"""]]

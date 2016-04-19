@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://id.koumbit.net/anarcat"
- ip="2001:1928:1:9::1"
- subject="similar"
- date="2013-12-02T01:39:36Z"
- content="""
-I am having a similar issue here. The problem is that the assistant is started along with my regular session, but the SSH keys required for the assistant to sync are prompted during my session startup. So I actually get lots of prompts, because the assistant is started before I have time to enter the password for my SSH key.
-"""]]

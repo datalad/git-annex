@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="https://id.koumbit.net/anarcat"
- subject="autodetection?"
- date="2015-06-02T18:11:15Z"
- content="""
-couldn't the remote fallback to readonly mode when no credentials are available?
-
-also, it seems to me that once you have the bucket name, you can automatically guess the URL (http://$bucket.s3.amazon.com or whatever)...
-"""]]

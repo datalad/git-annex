@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="anarcat"
- subject="comment 1"
- date="2015-10-19T19:44:32Z"
- content="""
-> Allow building with S3 disabled again.
-
-I'm confused: is S3 enabled or disabled? :)
-"""]]

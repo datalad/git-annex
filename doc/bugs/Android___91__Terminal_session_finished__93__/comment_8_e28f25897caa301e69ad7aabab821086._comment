@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawkAm9yT27yU-qBTGKIsTMdWW3AgL_WAfkc"
- nickname="Cameron"
- subject="Similar issue here"
- date="2015-03-28T22:17:08Z"
- content="""
-Im on the LG F60 (ms395) not rooted. I downloaded a cracked.apk of KBOX and it kept failing to start due to not having Busybox in its file path. So I got the Busybox .apk and copied it into KBOX's path. Now k box is stoped at 'In mgmain JNI_OnLoad'. As soon as I try to ENTER anything, it force closes. Also, I'm not sure if it's related, but my phone is not and does not get recognized by my car stereo via usb. I managed to get around not having permission to look at the 'usbautorun.iso' file. No luck though, it's coded. Any ideas?
-
-"""]]

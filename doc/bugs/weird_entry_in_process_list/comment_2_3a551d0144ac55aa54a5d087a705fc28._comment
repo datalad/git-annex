@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 2"""
- date="2015-02-17T21:39:23Z"
- content="""
-Re finding repos, if the assistant is configured to automatically
-start managing the repo at boot/login, the repo will be 
-listed in ~/.config/git-annex/autostart
-"""]]

@@ -1,4 +1,0 @@
-ATM --debug uses timestamps at second precision.  Would be nice (to see where time is spent) to have subsecond timing
-
-> [[done]], I was able to get fractional seconds down to 0.000001
-> in the debug output. --[[Joey]]

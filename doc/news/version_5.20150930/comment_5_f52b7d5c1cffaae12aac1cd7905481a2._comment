@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 5"""
- date="2015-10-04T19:31:47Z"
- content="""
-The 32 bit build will also work on amd64 as long as the kernel supports
-32 bit executables. Are you having some difficulty using that on amd64?
-"""]]

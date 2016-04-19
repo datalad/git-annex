@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.227"
- subject="comment 2"
- date="2014-01-01T19:59:11Z"
- content="""
-Also, fixing rsync.net that way would mean two ssh connections to set up authorized_keys, so 2 password prompts. suboptimal..
-"""]]

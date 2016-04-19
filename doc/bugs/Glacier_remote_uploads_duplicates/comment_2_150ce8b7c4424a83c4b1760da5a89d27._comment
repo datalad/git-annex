@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- nickname="joey"
- subject="comment 2"
- date="2013-05-23T15:57:08Z"
- content="""
-I suppose another way to fix it along similar lines would be to make `git annex copy` always trust location tracking information when deciding whether to copy. I'm not sure how I feel about this though -- it might make things less robust in situations where `git annex copy` is run as a backup, and location tracking could have gotten out of date.
-"""]]

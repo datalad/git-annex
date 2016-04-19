@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.43"
- subject="comment 4"
- date="2014-01-14T19:00:33Z"
- content="""
-Actually, I was able to reproduce this using the standalone tarball and runshell.
-"""]]

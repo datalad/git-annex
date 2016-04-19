@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 1"""
- date="2014-11-06T19:48:44Z"
- content="""
-This looks like it's failing to find the ssh command. How did you install
-git-annex on your windows computer? Can you use ssh from a terminal?
-"""]]

@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="tommi"
- subject="comment 1"
- date="2015-06-23T21:24:35Z"
- content="""
-As a workaround, installing git-annex from the haskell-core repository works (see https://wiki.archlinux.org/index.php/ArchHaskell)
-"""]]

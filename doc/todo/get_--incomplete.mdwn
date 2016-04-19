@@ -1,8 +1,0 @@
-Use case: Resuming downloads that are incomplete (files in .git/annex/tmp),
-without needing to remember the original get command(s) that started the
-download.
-
-`git annex get --incomplete` could do this. (With or without --from to
-specify which remote to get from.) --[[Joey]]
-
-> [[done]] --[[Joey]]

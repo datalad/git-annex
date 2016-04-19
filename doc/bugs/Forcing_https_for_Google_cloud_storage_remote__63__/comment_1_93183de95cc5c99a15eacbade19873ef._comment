@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawkXzY87FdO942LR-qNyJFeCth0LjWORNuw"
- nickname="Rob"
- subject="Proposed resolution"
- date="2015-01-24T17:18:14Z"
- content="""
-see [my other bug](https://git-annex.branchable.com/bugs/How_to_use_a_DRA_bucket_in_Google_cloud_storage__63__/) for a proposed resolution: a GCS-optimized external special remote
-"""]]

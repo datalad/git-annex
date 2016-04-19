@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="anarcat"
- subject="confirmed"
- date="2015-05-14T15:50:32Z"
- content="""
-so this is confirmed: i had git-annex installed from packages, and git-annex in /opt/bin/, installed using the standalone binary. `~/.config/git-annex/program` points to the latter, `$PATH` to the former.
-
-really confusing bug... removing the package works around the issue.
-"""]]

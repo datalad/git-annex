@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="Rasmus"
- subject="comment 2"
- date="2015-03-04T14:35:19Z"
- content="""
-It easy to setup.  And it seems like as good a \"canned\" solution as box.net or whatever.  I don't know if I would use it for sensitive stuff, but for a couple of repos, it makes sense to use it.
-
-There seems to be some support for creating new projects (which I assume is repos) [here](http://doc.gitlab.com/ee/api/projects.html).
-"""]]

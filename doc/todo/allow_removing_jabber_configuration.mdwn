@@ -1,5 +1,0 @@
-right now it is unclear through the webapp how to unconfigure a jabber
-account, which is especially critical considering the password needs to be
-stored in the clear (where?). -- [[anarcat]]
-
-> [[fixed|done]] --[[Joey]]

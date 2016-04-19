@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://churchkey.org/author/ian/"
- ip="2001:470:8a52:67:a800:4ff:fe00:a04"
- subject="Same problem, different user"
- date="2013-09-18T22:20:09Z"
- content="""
-@joey I appear to have run into this same problem through a similar series of repository operations. I began with the assistant, which caused some trouble while trying to set up on multiple machines, so I started using the git-annex commands directly, switched the client to direct mode, and at some point along the way I started getting the \"git-annex: out of memory (requested 1048576 bytes)\" error on my home client any time I try to run a find, whereis, status, or sync operation. On my work client I instead run into a \"fatal: write error: Invalid argument\" error. Both clients are in direct mode and both stop on the same files. I have tried to drop these files and the ones that follow them sequentially to try and clear out the grit from the machine, but to no avail. I'm available for diagnostics to help resolve this. The files in question are not symlinks and running \"echo HEAD:./$filename | git cat-file --batch\" simply produces binary blobs the same size as the original files. Running \"git ls-tree -r git-annex | wc -l\" gives \"41262\" for the client with the \"Out of memory\" error and \"41260\" for the \"write error\" client.
-"""]]

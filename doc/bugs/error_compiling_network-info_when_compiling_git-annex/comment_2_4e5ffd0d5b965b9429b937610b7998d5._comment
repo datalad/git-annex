@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawm5WyknJirJJridJjiPNgrlYxGG9xrZBvA"
- nickname="Daniel"
- subject="a different fix"
- date="2014-06-07T04:27:47Z"
- content="""
-Thanks. I also went back and took a closer look at the error; it looks like fixing network-info is pretty easy as well. <https://github.com/jystic/network-info/pull/10>
-"""]]

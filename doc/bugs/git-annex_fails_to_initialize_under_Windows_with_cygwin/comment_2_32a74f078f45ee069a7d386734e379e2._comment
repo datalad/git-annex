@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawkYmMFDdf3GJ9Oba6NCVkzGc4JyB9WavMs"
- nickname="Xinruo"
- subject="comment 2"
- date="2014-04-27T11:58:13Z"
- content="""
-OK installing git 1.9.2 from msysgit solves the problem. I thought I have read somewhere that you used cygwin for Windows development and didn't know that git from cygwin is too old. Thanks for the help!
-"""]]

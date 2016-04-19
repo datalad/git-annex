@@ -1,9 +1,0 @@
-I've just come across this issue and I'm not sure if git-annex is the right place to put it, but in case it is easy enough to do.. may as well ask!
-
-In this scenario, an online service (Bandcamp), automatically creates the archive file when downloading an album each and every time you download it. This results in identical files inside a zip, but different hashes due to the slightly different timestamps on the archive itself.
-
-Would it be possible for git-annex to be able to detect this scenario (in a manner similar to zipcmp) and redirect an add/import to the already existing copy?
-
-I've found this due to trying to decommission an old annex by `git annex import --clean-duplicates ~/annex_old/.git/annex/objects` and finding these files being left.
-
-[[done]] --[[Joey]]

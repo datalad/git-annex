@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawm9ocq1Kb0WL-cz-LPpvd2Xm-q8tIQvqXA"
- nickname="Dominik"
- subject="comment 12"
- date="2014-06-17T00:01:35Z"
- content="""
-To get rid of permission problems, you may find setacl useful. Chmod and chown from msys dont't seem to work correctly with windows 8
-"""]]

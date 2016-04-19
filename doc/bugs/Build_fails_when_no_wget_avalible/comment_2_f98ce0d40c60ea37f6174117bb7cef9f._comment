@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- subject="comment 2"
- date="2015-01-16T20:38:57Z"
- content="""
-git-annex defaults to wget when both are available, but curl works equally well.
-"""]]

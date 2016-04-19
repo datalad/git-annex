@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 1"""
- date="2015-04-29T18:05:56Z"
- content="""
-Current status is that I'm waiting to see git-annex-shell on gitlab actally
-work. I get an API error. I've emailed the gitlab people about this.
-"""]]

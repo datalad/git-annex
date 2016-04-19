@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.55"
- subject="comment 3"
- date="2014-07-07T17:19:03Z"
- content="""
-Ah, I see, it's explicitly because the non-git-annex symlink is involved. Whew!
-"""]]
