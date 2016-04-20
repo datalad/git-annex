@@ -1794,8 +1794,9 @@ isolateGitConfig :: IO ()
 isolateGitConfig = do
 	let tmphome = tmpdir </> "home"
 	createDirectoryIfMissing False tmphome
-	Utility.Env.setEnv "HOME" tmphome True
-	Utility.Env.setEnv "XDG_CONFIG_HOME" tmphome True
+	tmphomeabs <- absPath tmphome
+	Utility.Env.setEnv "HOME" tmphomeabs True
+	Utility.Env.setEnv "XDG_CONFIG_HOME" tmphomeabs True
 	Utility.Env.setEnv "GIT_CONFIG_NOSYSTEM" "1" True
 
 cleanup :: FilePath -> IO ()
