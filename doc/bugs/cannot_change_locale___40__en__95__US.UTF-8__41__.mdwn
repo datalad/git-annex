@@ -26,3 +26,22 @@ he_IL
 he_IL.iso88598
 he_IL.utf8
 POSIX
+
+> I've made LOCPATH not be set except when git-annex is built with ghc
+> older than 7.10, since the problem was fixed in ghc 7.10.
+> 
+> Also, I loved the LOCPATH setting into the linker shim script, rather
+> than in runshell, so it will only affect the programs bundled with
+> git-annex (itself and git and a few other things). Which are not
+> localized anyway in the bundle. So, even in builds where it's still set
+> (the linux ancient build in particular), things done in the runshell
+> environment won't be affected.
+> 
+> I do wonder if there could be problems with incompatabilities between the
+> bundled glibc and the system locale files, which might be for a
+> newer/older libc version. Not so much random `.mo` files, which seem
+> quite portable across glibc versions, but the more core locale files.
+> If that turns out to be a problem, LOCPATH might have to be turned back
+> on. 
+> 
+> For now, [[done]] --[[Joey]]

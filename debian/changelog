@@ -2,6 +2,8 @@ git-annex (6.20160419) UNRELEASED; urgency=medium
 
   * Fix duplicate progress meter display when downloading from a git remote
     over http with -J.
+  * Avoid setting LOCPATH in linux standalone builds now that ghc has been
+    fixed to not hang when it cannot find locale files.
 
  -- Joey Hess <id@joeyh.name>  Tue, 19 Apr 2016 12:57:15 -0400
 

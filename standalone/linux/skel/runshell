@@ -100,10 +100,6 @@ export ORIG_GCONV_PATH
 GCONV_PATH="$base/$(cat "$base/gconvdir")"
 export GCONV_PATH
 
-# workaround for https://ghc.haskell.org/trac/ghc/ticket/7695
-LOCPATH=/dev/null
-export LOCPATH
-
 ORIG_GIT_EXEC_PATH="$GIT_EXEC_PATH"
 export ORIG_GIT_EXEC_PATH
 GIT_EXEC_PATH="$base/git-core"

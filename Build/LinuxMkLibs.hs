@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Main where
 
 import System.Environment
@@ -72,6 +74,11 @@ installLinkerShim top linker exe = do
 		[ "#!/bin/sh"
 		, "GIT_ANNEX_PROGRAMPATH=\"$0\""
 		, "export GIT_ANNEX_PROGRAMPATH"
+#if ! MIN_VERSION_GLASGOW_HASKELL(7,10,0,0)
+		-- workaround for https://ghc.haskell.org/trac/ghc/ticket/7695
+		, "LOCPATH=/dev/null"
+		, "export LOCPATH"
+#endif
 		, "exec \"$GIT_ANNEX_DIR/" ++ exelink ++ "\" --library-path \"$GIT_ANNEX_LD_LIBRARY_PATH\" \"$GIT_ANNEX_DIR/shimmed/" ++ base ++ "/" ++ base ++ "\" \"$@\""
 		]
 	modifyFileMode exe $ addModes executeModes
