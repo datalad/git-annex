@@ -101,13 +101,14 @@ sshConnectionCachingParams socketfile =
  - a different filesystem. -}
 sshCacheDir :: Annex (Maybe FilePath)
 sshCacheDir
-	| SysConfig.sshconnectioncaching = ifM crippledFileSystem
-		( maybe (return Nothing) usetmpdir =<< gettmpdir
-		, ifM (fromMaybe True . annexSshCaching <$> Annex.getGitConfig)
-			( Just <$> fromRepo gitAnnexSshDir
+	| SysConfig.sshconnectioncaching = 
+		ifM (fromMaybe True . annexSshCaching <$> Annex.getGitConfig)
+			( ifM crippledFileSystem
+				( maybe (return Nothing) usetmpdir =<< gettmpdir
+				, Just <$> fromRepo gitAnnexSshDir 
+				)
 			, return Nothing
 			)
-		)
 	| otherwise = return Nothing
   where
 	gettmpdir = liftIO $ getEnv "GIT_ANNEX_TMP_DIR"
