@@ -112,6 +112,7 @@ optParser = TestOptions
 runner :: Maybe (TestOptions -> IO ())
 runner = Just $ \opts -> do
 	ensuretmpdir
+	isolateGitConfig
 	crippledfilesystem <- Annex.Init.probeCrippledFileSystem' tmpdir
 	case tryIngredients ingredients (tastyOptionSet opts) (tests crippledfilesystem opts) of
 		Nothing -> error "No tests found!?"
@@ -1787,6 +1788,15 @@ ensuretmpdir = do
 	e <- doesDirectoryExist tmpdir
 	unless e $
 		createDirectory tmpdir
+	
+{- Prevent global git configs from affecting the test suite. -}
+isolateGitConfig :: IO ()
+isolateGitConfig = do
+	let tmphome = tmpdir </> "home"
+	createDirectoryIfMissing False tmphome
+	Utility.Env.setEnv "HOME" tmphome True
+	Utility.Env.setEnv "XDG_CONFIG_HOME" tmphome True
+	Utility.Env.setEnv "GIT_CONFIG_NOSYSTEM" "1" True
 
 cleanup :: FilePath -> IO ()
 cleanup = cleanup' False

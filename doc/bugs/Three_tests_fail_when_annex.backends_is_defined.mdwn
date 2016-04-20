@@ -105,3 +105,7 @@ found a bug report from you on
 be related, but I don't know if that's the case. The newest version I'm 
 able to build is 5.20150219, somewhere after that various things start 
 to fail.
+
+> [[fixed|done]]; I found a way to isolate the test suite from global git
+> configs, by setting `GIT_CONFIG_NOSYSTEM` and also setting
+> `HOME` and `XDG_CONFIG_HOME` to an empty directory. --[[Joey]]
