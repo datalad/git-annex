@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-04-20T16:43:10Z"
+ content="""
+git's default handling of merge conflict resolution is to require you to
+manually decide which of the two versions of the file to use. So, if you
+just don't use git-annex sync, and instead use git pull, it seems to me
+you'll get what you want.
+
+(You could also use `git annex sync --no-pull --content` to let everything
+except for the pull and merge be done by that command, and run the git pull 
+manually first.)
+"""]]
