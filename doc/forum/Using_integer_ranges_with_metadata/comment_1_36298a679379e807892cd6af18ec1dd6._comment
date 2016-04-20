@@ -6,4 +6,8 @@
 This is a great idea! So great that I got in the ol' time machine,
 set the dial for February 29th 2016, and convinced past-me to implement it
 then.
+
+(For some reason, past-me decided to make the syntax `field>=number` and
+`field<=number` instead of the syntax you suggested. He can be a bit of a
+stick in the mud with his own outdated ideas that he holds onto tightly.)
 """]]
