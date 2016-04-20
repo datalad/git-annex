@@ -4,6 +4,8 @@ git-annex (6.20160419) UNRELEASED; urgency=medium
     over http with -J.
   * Avoid setting LOCPATH in linux standalone builds now that ghc has been
     fixed to not hang when it cannot find locale files.
+  * reinject: When src file's content cannot be verified, leave it alone,
+    instead of deleting it.
 
  -- Joey Hess <id@joeyh.name>  Tue, 19 Apr 2016 12:57:15 -0400
 

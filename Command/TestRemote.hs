@@ -11,7 +11,7 @@ import Command
 import qualified Annex
 import qualified Remote
 import qualified Types.Remote as Remote
-import Types.Backend (getKey, verifyKeyContent)
+import qualified Types.Backend as Backend
 import Types.KeySource
 import Annex.Content
 import Backend
@@ -151,7 +151,7 @@ test st r k =
 		(== Right b) <$> Remote.hasKey r k
 	fsck = case maybeLookupBackendName (keyBackendName k) of
 		Nothing -> return True
-		Just b -> case verifyKeyContent b of
+		Just b -> case Backend.verifyKeyContent b of
 			Nothing -> return True
 			Just verifier -> verifier k (key2file k)
 	get = getViaTmp (RemoteVerify r) k $ \dest ->
@@ -224,6 +224,6 @@ randKey sz = withTmpFile "randkey" $ \f h -> do
 		, inodeCache = Nothing
 		}
 	k <- fromMaybe (error "failed to generate random key")
-		<$> getKey Backend.Hash.testKeyBackend ks
+		<$> Backend.getKey Backend.Hash.testKeyBackend ks
 	moveAnnex k f
 	return k

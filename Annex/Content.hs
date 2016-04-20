@@ -18,8 +18,6 @@ module Annex.Content (
 	getViaTmp,
 	getViaTmp',
 	checkDiskSpaceToGet,
-	VerifyConfig(..),
-	Types.Remote.unVerified,
 	prepTmp,
 	withTmp,
 	checkDiskSpace,
@@ -45,6 +43,10 @@ module Annex.Content (
 	withObjectLoc,
 	staleKeysPrune,
 	isUnmodified,
+	verifyKeyContent,
+	VerifyConfig(..),
+	Verification(..),
+	unVerified,
 ) where
 
 import System.IO.Unsafe (unsafeInterleaveIO)
@@ -71,6 +73,7 @@ import qualified Annex.Content.Direct as Direct
 import Annex.ReplaceFile
 import Annex.LockPool
 import Messages.Progress
+import Types.Remote (unVerified, Verification(..))
 import qualified Types.Remote
 import qualified Types.Backend
 import qualified Backend
@@ -290,14 +293,14 @@ lockContentUsing locker key a = do
 {- Runs an action, passing it the temp file to get,
  - and if the action succeeds, verifies the file matches
  - the key and moves the file into the annex as a key's content. -}
-getViaTmp :: VerifyConfig -> Key -> (FilePath -> Annex (Bool, Types.Remote.Verification)) -> Annex Bool
+getViaTmp :: VerifyConfig -> Key -> (FilePath -> Annex (Bool, Verification)) -> Annex Bool
 getViaTmp v key action = checkDiskSpaceToGet key False $
 	getViaTmp' v key action
 
 {- Like getViaTmp, but does not check that there is enough disk space
  - for the incoming key. For use when the key content is already on disk
  - and not being copied into place. -}
-getViaTmp' :: VerifyConfig -> Key -> (FilePath -> Annex (Bool, Types.Remote.Verification)) -> Annex Bool
+getViaTmp' :: VerifyConfig -> Key -> (FilePath -> Annex (Bool, Verification)) -> Annex Bool
 getViaTmp' v key action = do
 	tmpfile <- prepTmp key
 	(ok, verification) <- action tmpfile
@@ -325,9 +328,9 @@ getViaTmp' v key action = do
  - When the key's backend allows verifying the content (eg via checksum),
  - it is checked. 
  -}
-verifyKeyContent :: VerifyConfig -> Types.Remote.Verification -> Key -> FilePath -> Annex Bool
-verifyKeyContent _ Types.Remote.Verified _ _ = return True
-verifyKeyContent v Types.Remote.UnVerified k f = ifM (shouldVerify v)
+verifyKeyContent :: VerifyConfig -> Verification -> Key -> FilePath -> Annex Bool
+verifyKeyContent _ Verified _ _ = return True
+verifyKeyContent v UnVerified k f = ifM (shouldVerify v)
 	( verifysize <&&> verifycontent
 	, return True
 	)
@@ -786,7 +789,7 @@ isUnmodified key f = go =<< geti
 	go (Just fc) = cheapcheck fc <||> expensivecheck fc
 	cheapcheck fc = anyM (compareInodeCaches fc)
 		=<< Database.Keys.getInodeCaches key
-	expensivecheck fc = ifM (verifyKeyContent AlwaysVerify Types.Remote.UnVerified key f)
+	expensivecheck fc = ifM (verifyKeyContent AlwaysVerify UnVerified key f)
 		-- The file could have been modified while it was
 		-- being verified. Detect that.
 		( geti >>= maybe (return False) (compareInodeCaches fc)

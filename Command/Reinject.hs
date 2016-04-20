@@ -38,14 +38,13 @@ perform src _dest key = ifM move
 	, error "failed"
 	)
   where
-	-- The file might be on a different filesystem,
-	-- so moveFile is used rather than simply calling
-	-- moveToObjectDir; disk space is also checked this way,
-	-- and the file's content is verified to match the key.
-	move = getViaTmp DefaultVerify key $ \tmp -> unVerified $
-		liftIO $ catchBoolIO $ do
-			moveFile src tmp
-			return True
+	move = checkDiskSpaceToGet key False $
+		ifM (verifyKeyContent DefaultVerify UnVerified key src)
+			( do
+				moveAnnex key src
+				return True
+			, return False
+			)
 
 cleanup :: Key -> CommandCleanup
 cleanup key = do
