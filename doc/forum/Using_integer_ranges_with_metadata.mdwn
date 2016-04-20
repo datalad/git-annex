@@ -1,0 +1,40 @@
+I keep my movie collection in an annex. I recently wrote a python script that pulls information about each movie down from IMDB and stores it as metadata on the annexed file. One of the attributes I'm storing is `rating`. For instance, the metadata for my copy of Blade Runner looks like this:
+
+    $ git annex metadata blade_runner.mkv
+    metadata blade_runner.mkv
+      director="Ridley Scott"
+      director-lastchanged=2016-04-20@04-21-33
+      genre="Sci-Fi"
+      genre="Thriller"
+      genre-lastchanged=2016-04-20@04-21-33
+      lastchanged=2016-04-20@04-21-33
+      rating=8.2
+      rating-lastchanged=2016-04-20@04-21-33
+      runtime=117
+      runtime-lastchanged=2016-04-20@04-21-33
+      title="Blade Runner"
+      title-lastchanged=2016-04-20@04-21-33
+      year=1982
+      year-lastchanged=2016-04-20@04-21-33
+    ok
+
+I can now use the metadata to ask git annex to show me all movies with a rating of 8.2.
+
+    $ git annex find --metadata rating=8.2
+    blade_runner.mkv
+
+However, that isn't very useful. What I want to do is specify a range. For example, I want to ask git annex to show me all movies with a rating above 8:
+
+    $ git annex find --metadata rating=>8
+
+Or, show me all movies with a rating between 6 and 9
+
+    $ git annex find --metadata rating=>6 rating=<9
+
+Is something like this possible?
+
+I'd like to do something similar with the `year` attribute. Right now I can use metadata views to group movies by their release year, which is pretty neat.
+
+    $ git annex view "year=*"
+
+But I would also like to be able to give a range so that I could group movies by release decade, for example.
