@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-04-20T17:22:06Z"
+ content="""
+I think this would fit better as an option to `git annex reinject` than
+it would to `git annex import`. The latter has too many options anyway.
+
+It would not be hard to add something like `git annex reinject
+--all-known-files`, which would check if a source file hashes to a known
+key and ingest its content into the annex if so, otherwise leaving the
+source file along.
+
+That would reinject files that had been added to the repo long ago, and
+then were deleted. I don't know if that would be considered suprising
+behavior, but it's hard to only ingest files that have a current link in
+the repo (because a. git-annex keeps no such index (mostly) and b. branches and c.
+tags). Even if it was surprising behavior to reinject old deleted files,
+I suppose `git annex unused` could be used to drop such old unused file
+contents after reinjecting them.
+
+There's also the problem of different backends; it seems such a thing would
+need to hash a file 5 different ways to make sure no hash of it is known.
+
+As to adding plumbing, I'm always open to ideas for more useful plumbing.
+
+* You can use `git annex find` to get eg, a list of keys of files in the
+  currently checked out branch. 
+* I've added a `git annex calckey` that can calculate the key that would be
+  used for a file. (eg, hashing it)
+"""]]

@@ -25,6 +25,7 @@ import qualified Command.Copy
 import qualified Command.Get
 import qualified Command.Fsck
 import qualified Command.LookupKey
+import qualified Command.CalcKey
 import qualified Command.ContentLocation
 import qualified Command.ExamineKey
 import qualified Command.MatchExpression
@@ -162,6 +163,7 @@ cmds testoptparser testrunner =
 	, Command.Ungroup.cmd
 	, Command.Vicfg.cmd
 	, Command.LookupKey.cmd
+	, Command.CalcKey.cmd
 	, Command.ContentLocation.cmd
 	, Command.ExamineKey.cmd
 	, Command.MatchExpression.cmd

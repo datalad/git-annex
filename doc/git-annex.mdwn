@@ -530,6 +530,12 @@ subdirectories).
 
   See [[git-annex-lookupkey]](1) for details.
 
+* `calckey [file ...]`
+
+  Calculates the key that would be used to refer to a file.
+  
+  See [[git-annex-calckey]](1) for details.
+
 * `contentlocation [key ..]`
 
   Looks up location of annexed content for a key.
