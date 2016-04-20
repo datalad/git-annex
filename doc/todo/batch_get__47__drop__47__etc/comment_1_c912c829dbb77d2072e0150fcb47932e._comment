@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-04-20T18:30:23Z"
+ content="""
+I prefer keeping --batch on things that act in terms of keys and have a
+simpler interface.
+
+So, could add --batch to `git annex transferkey`. This would presumably
+need to disable any process displays in order for success/failure to be
+communicated in a machine-parsable way. (Actually, `git annex transferkeys`
+already implements such a batch interface, but one that is currently
+not documented due to only being built for the assistant to use it.)
+
+There is already `git annex dropkey --batch`, although it does not
+verify that other copies exist.
+"""]]
