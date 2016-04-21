@@ -1,3 +1,9 @@
+git-annex (6.20160418-1) unstable; urgency=medium
+
+  * Package 6.20160418-1
+
+ -- Richard Hartmann <richih@debian.org>  Thu, 21 Apr 2016 06:12:10 +0200
+
 git-annex (6.20160418) unstable; urgency=medium
 
   * smudge: Print a warning when annex.thin is set, as git's smudge
