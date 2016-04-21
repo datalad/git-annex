@@ -13,9 +13,10 @@ to refer to a file. The file is not added to the annex by this command.
 The key is output to stdout.
 
 The backend used is the first listed in the annex.backends configuration
-setting. For example, to force use of the SHA1 backend:
+setting, which can be overridden by the --backend option.
+For example, to force use of the SHA1 backend:
 
-	git annex calckey -c annex.backends=SHA1 file
+	git annex calckey --backend=SHA1 file
 
 # OPTIONS
 
@@ -23,6 +24,10 @@ setting. For example, to force use of the SHA1 backend:
 
   Enable batch mode, in which a line containing the filename is read from
   stdin, the key is output to stdout (with a trailing newline), and repeat.
+
+* `--backend=name`
+
+  Specifies which key-value backend to use.
 
 # SEE ALSO
 
