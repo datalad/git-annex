@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 6"
+ date="2016-04-21T11:41:09Z"
+ content="""
+    There's also the problem of different backends; it seems such a thing would need to hash a file 5 different ways to make sure no hash of it is known.
+
+As it leaves non-matched files alone, the user could specify the backend to minimise this requirement.
+
+Perhaps a new command \"ingest\", with an option for the backend and require --force to try all known backends?
+
+This would be very useful for my file sorting project (when I restart it).
+"""]]
