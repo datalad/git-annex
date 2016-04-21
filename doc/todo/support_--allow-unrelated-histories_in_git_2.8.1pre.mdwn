@@ -1,0 +1,15 @@
+git merge has recently been made to refuse to merge disconnected histories
+unless --allow-unrelated-histories is passed. This will break uses of the
+webapp, eg local pairing until git-annex is changed to pass that whenever
+it runs `git merge`.
+
+It could also perhaps break uses of `git annex sync` where a remote with a
+disconnected history is added and it's expected to merge with it. Although
+in this latter case, it might be argued that the default git behavior has
+changed and `git annex sync` should follow suite.
+
+(Also, any uses of `git pull` currently would need to
+be split into a fetch and a merge in order to pass the option to the merge;
+but AFAICS, git-annex never uses `git pull`)
+
+--[[Joey]]
