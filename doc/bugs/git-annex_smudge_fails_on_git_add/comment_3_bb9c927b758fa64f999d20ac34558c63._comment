@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="j_k_234@b2b1aa189bf195cefd815fc0fe70e0ebbe2b8077"
+ nickname="j_k_234"
+ subject="comment 3"
+ date="2016-04-13T10:15:03Z"
+ content="""
+Thanks for the reply.
+
+I'm pretty sure that I did build with MagicMime support - see the version output on original bug report.
+
+These are the commands I used to build it:
+
+```sh
+ renn:~/git-annex$ git checkout debian/6.20160229-1
+ renn:~/git-annex$ sudo aptitude install libmagic-dev
+ renn:~/git-annex$ stack install --flag git-annex:XMPP --flag git-annex:DBUS --flag git-annex:MagicMime
+```
+"""]]

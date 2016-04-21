@@ -378,7 +378,9 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 	done change mcache file key = liftAnnex $ do
 		logStatus key InfoPresent
 		ifM versionSupportsUnlockedPointers
-			( stagePointerFile file =<< hashPointerFile key
+			( do
+				mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus file
+				stagePointerFile file mode =<< hashPointerFile key
 			, do
 				link <- ifM isDirect
 					( calcRepo $ gitAnnexLink file key

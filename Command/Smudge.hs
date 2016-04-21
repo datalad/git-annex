@@ -8,6 +8,7 @@
 module Command.Smudge where
 
 import Command
+import qualified Annex
 import Annex.Content
 import Annex.Link
 import Annex.FileMatcher
@@ -54,6 +55,8 @@ smudge file = do
 			ifM (inAnnex k)
 				( do
 					content <- calcRepo (gitAnnexLocation k)
+					whenM (annexThin <$> Annex.getGitConfig) $
+						warning $ "Not able to honor annex.thin when git is checking out " ++ file ++ " (run git annex fix to re-thin files)"
 					liftIO $ B.putStr . fromMaybe b
 						=<< catchMaybeIO (B.readFile content)
 				, liftIO $ B.putStr b

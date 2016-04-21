@@ -170,7 +170,10 @@ scanAssociatedFiles = whenM (isJust <$> inRepo Git.Branch.current) $
 	dropallassociated h = liftIO $ flip SQL.queueDb h $
 		delete $ from $ \(_r :: SqlExpr (Entity SQL.Associated)) ->
 			return ()
-	isregfile i = Git.Types.toBlobType (Git.LsTree.mode i) == Just Git.Types.FileBlob
+	isregfile i = case Git.Types.toBlobType (Git.LsTree.mode i) of
+		Just Git.Types.FileBlob -> True
+		Just Git.Types.ExecutableBlob -> True
+		_ -> False
 	add h i k = liftIO $ flip SQL.queueDb h $ 
 		void $ insertUnique $ SQL.Associated
 			(toIKey k)

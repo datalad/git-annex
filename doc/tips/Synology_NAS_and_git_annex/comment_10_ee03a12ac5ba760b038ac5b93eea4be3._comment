@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2016-04-13T18:04:42Z"
+ content="""
+Right, it would need a standalone package. It's quite easy to build such a
+package on any Debian system, just run "make linuxstandalone" in
+git-annex's source tree. I don't have a PowerPC system handy to do such builds
+on myself.
+"""]]

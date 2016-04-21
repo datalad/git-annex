@@ -67,7 +67,8 @@ start fixwhat file key = do
 breakHardLink :: FilePath -> Key -> FilePath -> CommandPerform
 breakHardLink file key obj = do
 	replaceFile file $ \tmp -> do
-		unlessM (checkedCopyFile key obj tmp) $
+		mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus file
+		unlessM (checkedCopyFile key obj tmp mode) $
 			error "unable to break hard link"
 		thawContent tmp
 		modifyContent obj $ freezeContent obj
@@ -77,7 +78,8 @@ breakHardLink file key obj = do
 makeHardLink :: FilePath -> Key -> CommandPerform
 makeHardLink file key = do
 	replaceFile file $ \tmp -> do
-		r <- linkFromAnnex key tmp
+		mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus file
+		r <- linkFromAnnex key tmp mode
 		case r of
 			LinkAnnexFailed -> error "unable to make hard link"
 			_ -> noop

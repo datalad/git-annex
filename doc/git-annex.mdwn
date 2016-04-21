@@ -932,8 +932,16 @@ Here are all the supported configuration settings.
   Set this to `true` to make unlocked files be a hard link to their content
   in the annex, rather than a second copy. (Only when supported by the file
   system, and only in repository version 6.) This can save considerable
-  disk space, but modification made to a file will lose the local (and
-  possibly only) copy of the old version. So, enable with care.
+  disk space, but when a modification is made to a file, you will lose the
+  local (and possibly only) copy of the old version. So, enable with care.
+
+  After setting (or unsetting) this, you should run `git annex fix` to
+  fix up the annexed files in the work tree to be hard links (or copies).
+
+  Note that `annex.thin` is not honored when git updates an annexed file
+  in the working tree. So when `git checkout` or `git merge` updates the
+  working tree, a second copy of annexed files will result. You can run
+  `git-annex fix` to fix up the hard links after running such git commands.
 
 * `annex.delayadd`
 

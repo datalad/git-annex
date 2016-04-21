@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-04-13T18:31:00Z"
+ content="""
+I'm pretty sure this is a duplicate of 
+[[git-annex_confuses_Git_with_nested_submodules]],
+which was filed by Michael Hanke.
+
+Error message is not identical but very close.
+"""]]

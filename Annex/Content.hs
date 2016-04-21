@@ -509,10 +509,11 @@ populatePointerFile :: Key -> FilePath -> FilePath -> Annex ()
 populatePointerFile k obj f = go =<< liftIO (isPointerFile f)
   where
 	go (Just k') | k == k' = do
+		destmode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus f
 		liftIO $ nukeFile f
-		ifM (linkOrCopy k obj f)
+		ifM (linkOrCopy k obj f destmode)
 			( thawContent f
-			, liftIO $ writeFile f (formatPointer k)
+			, liftIO $ writePointerFile f k destmode
 			)
 	go _ = return ()
 
@@ -523,14 +524,14 @@ data LinkAnnexResult = LinkAnnexOk | LinkAnnexFailed | LinkAnnexNoop
 linkToAnnex :: Key -> FilePath -> Maybe InodeCache -> Annex LinkAnnexResult
 linkToAnnex key src srcic = do
 	dest <- calcRepo (gitAnnexLocation key)
-	modifyContent dest $ linkAnnex To key src srcic dest
+	modifyContent dest $ linkAnnex To key src srcic dest Nothing
 
 {- Makes a destination file be a link or copy from the annex object. -}
-linkFromAnnex :: Key -> FilePath -> Annex LinkAnnexResult
-linkFromAnnex key dest = do
+linkFromAnnex :: Key -> FilePath -> Maybe FileMode -> Annex LinkAnnexResult
+linkFromAnnex key dest destmode = do
 	src <- calcRepo (gitAnnexLocation key)
 	srcic <- withTSDelta (liftIO . genInodeCache src)
-	linkAnnex From key src srcic dest
+	linkAnnex From key src srcic dest destmode
 
 data FromTo = From | To
 
@@ -542,10 +543,12 @@ data FromTo = From | To
  - the annex object too. So, adding an object to the annex this
  - way can prevent losing the content if the source file
  - is deleted, but does not guard against modifications.
+ -
+ - Nothing is done if the destination file already exists.
  -}
-linkAnnex :: FromTo -> Key -> FilePath -> Maybe InodeCache -> FilePath -> Annex LinkAnnexResult
-linkAnnex _ _ _ Nothing _ = return LinkAnnexFailed
-linkAnnex fromto key src (Just srcic) dest = do
+linkAnnex :: FromTo -> Key -> FilePath -> Maybe InodeCache -> FilePath -> Maybe FileMode -> Annex LinkAnnexResult
+linkAnnex _ _ _ Nothing _ _ = return LinkAnnexFailed
+linkAnnex fromto key src (Just srcic) dest destmode = do
 	mdestic <- withTSDelta (liftIO . genInodeCache dest)
 	case mdestic of
 		Just destic -> do
@@ -554,7 +557,7 @@ linkAnnex fromto key src (Just srcic) dest = do
 				then Database.Keys.addInodeCaches key [srcic, destic]
 				else Database.Keys.addInodeCaches key [srcic]
 			return LinkAnnexNoop
-		Nothing -> ifM (linkOrCopy key src dest)
+		Nothing -> ifM (linkOrCopy key src dest destmode)
 			( do
 				thawContent $ case fromto of
 					From -> dest
@@ -578,27 +581,38 @@ linkAnnex fromto key src (Just srcic) dest = do
 				liftIO $ nukeFile dest
 				failed
 
-{- Hard links or copies src to dest. Only uses a hard link when annex.thin
- - is enabled and when src is not already hardlinked to elsewhere.
+{- Hard links or copies src to dest, which must not already exists.
+ -
+ - Only uses a hard link when annex.thin is enabled and when src is
+ - not already hardlinked to elsewhere.
+ -
  - Checks disk reserve before copying against the size of the key,
- - and will fail if not enough space, or if the dest file already exists. -}
-linkOrCopy :: Key -> FilePath -> FilePath -> Annex Bool
+ - and will fail if not enough space, or if the dest file already exists.
+ -
+ - The FileMode, if provided, influences the mode of the dest file.
+ - In particular, if it has an execute bit set, the dest file's
+ - execute bit will be set. The mode is not fully copied over because
+ - git doesn't support file modes beyond execute.
+ -}
+linkOrCopy :: Key -> FilePath -> FilePath -> Maybe FileMode -> Annex Bool
 linkOrCopy = linkOrCopy' (annexThin <$> Annex.getGitConfig)
 
-linkOrCopy' :: Annex Bool -> Key -> FilePath -> FilePath -> Annex Bool
-linkOrCopy' canhardlink key src dest = catchBoolIO $
-	ifM canhardlink
-		( hardlink
-		, copy =<< getstat
-		)
+linkOrCopy' :: Annex Bool -> Key -> FilePath -> FilePath -> Maybe FileMode -> Annex Bool
+linkOrCopy' canhardlink key src dest destmode
+	| maybe False isExecutable destmode = copy =<< getstat
+	| otherwise = catchBoolIO $
+		ifM canhardlink
+			( hardlink
+			, copy =<< getstat
+			)
   where
 	hardlink = do
 		s <- getstat
 		if linkCount s > 1
 			then copy s
-			else liftIO (createLink src dest >> return True)
+			else liftIO (createLink src dest >> preserveGitMode dest destmode >> return True)
 				`catchIO` const (copy s)
-	copy = checkedCopyFile' key src dest
+	copy = checkedCopyFile' key src dest destmode
 	getstat = liftIO $ getFileStatus src
 
 {- Removes the annex object file for a key. Lowlevel. -}
@@ -610,17 +624,29 @@ unlinkAnnex key = do
 		liftIO $ nukeFile obj
 
 {- Checks disk space before copying. -}
-checkedCopyFile :: Key -> FilePath -> FilePath -> Annex Bool
-checkedCopyFile key src dest = catchBoolIO $
-	checkedCopyFile' key src dest
+checkedCopyFile :: Key -> FilePath -> FilePath -> Maybe FileMode -> Annex Bool
+checkedCopyFile key src dest destmode = catchBoolIO $
+	checkedCopyFile' key src dest destmode
 		=<< liftIO (getFileStatus src)
 
-checkedCopyFile' :: Key -> FilePath -> FilePath -> FileStatus -> Annex Bool
-checkedCopyFile' key src dest s = catchBoolIO $
+checkedCopyFile' :: Key -> FilePath -> FilePath -> Maybe FileMode -> FileStatus -> Annex Bool
+checkedCopyFile' key src dest destmode s = catchBoolIO $
 	ifM (checkDiskSpace' (fromIntegral $ fileSize s) (Just $ takeDirectory dest) key 0 True)
-		( liftIO $ copyFileExternal CopyAllMetaData src dest
+		( liftIO $
+			copyFileExternal CopyAllMetaData src dest
+				<&&> preserveGitMode dest destmode
 		, return False
 		)
+
+preserveGitMode :: FilePath -> Maybe FileMode -> IO Bool
+preserveGitMode f (Just mode)
+	| isExecutable mode = catchBoolIO $ do
+		modifyFileMode f $ addModes executeModes
+		return True
+	| otherwise = catchBoolIO $ do
+		modifyFileMode f $ removeModes executeModes
+		return True
+preserveGitMode _ _ = return True
 
 {- Runs an action to transfer an object's content.
  -
@@ -729,9 +755,10 @@ removeAnnex (ContentRemovalLock key) = withObjectLoc key remove removedirect
 		Direct.removeInodeCache key
 	resetpointer file = ifM (isUnmodified key file)
 		( do
+			mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus file
 			secureErase file
 			liftIO $ nukeFile file
-			liftIO $ writeFile file (formatPointer key)	
+			liftIO $ writePointerFile file key mode
 		-- Can't delete the pointer file.
 		-- If it was a hard link to the annex object,
 		-- that object might have been frozen as part of the

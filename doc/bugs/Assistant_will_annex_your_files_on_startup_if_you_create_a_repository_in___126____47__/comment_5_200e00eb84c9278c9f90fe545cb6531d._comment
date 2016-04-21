@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2016-04-13T17:40:15Z"
+ content="""
+If ~/ is a git repository, the assistant will still refuse to run in it,
+unless you've manually run `git annex init` in that git repository
+at some point in the past.
+
+Here it is in my home directory, which is indeed a git repo:
+
+	joey@darkstar:~>git annex assistant
+	git-annex: First run: git-annex init
+
+When I run the webapp, it doesn't run the assistant, but prompts in the web browser for
+where I want to make a new git-annex repository.
+"""]]

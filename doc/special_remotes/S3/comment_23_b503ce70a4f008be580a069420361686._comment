@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 23"""
+ date="2016-04-13T19:13:35Z"
+ content="""
+@tim, are the git-annex repositories going to be connected? If so,
+`git-annex initremote` the S3 remote to one, merge it into the next
+repo, and then `git annex enableremote` the S3 remote there.
+
+That's the sane way. If you want for some reason to have multiple separate
+git-annex repositories, that all try to use the same S3 bucket, without
+knowing about one-another, I have to recommend against it. You're setting
+yourself up to shoot yourself in the foot, and quite possibly lose data.
+
+While you can `git annex enableremote` the same bucket repeatedly in the
+different repositories, each time it will be given a different uuid, and
+since the uuid is stored in the bucket, this will prevent `git annex
+enableremote` from being used for the old uuid, since it will see the
+bucket has a different uuid now.
+"""]]

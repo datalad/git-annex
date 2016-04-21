@@ -223,10 +223,12 @@ verifyLocationLog key keystatus desc = do
 	
 	{- Since we're checking that a key's object file is present, throw
 	 - in a permission fixup here too. -}
-	when (present && not direct) $ void $ tryIO $
-		if isKeyUnlocked keystatus
+	when (present && not direct) $ do
+		void $ tryIO $ if isKeyUnlocked keystatus
 			then thawContent obj
 			else freezeContent obj
+		unlessM (isContentWritePermOk obj) $
+			warning $ "** Unable to set correct write mode for " ++ obj ++ " ; perhaps you don't own that file"
 	whenM (liftIO $ doesDirectoryExist $ parentDir obj) $
 		freezeContentDir obj
 
@@ -301,12 +303,13 @@ verifyWorkTree key file = do
 		case mk of
 			Just k | k == key -> whenM (inAnnex key) $ do
 				showNote "fixing worktree content"
-				replaceFile file $ \tmp -> 
+				replaceFile file $ \tmp -> do
+					mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus file
 					ifM (annexThin <$> Annex.getGitConfig)
-						( void $ linkFromAnnex key tmp
+						( void $ linkFromAnnex key tmp mode
 						, do
 							obj <- calcRepo $ gitAnnexLocation key
-							void $ checkedCopyFile key obj tmp
+							void $ checkedCopyFile key obj tmp mode
 							thawContent tmp
 						)
 				Database.Keys.storeInodeCaches key [file]

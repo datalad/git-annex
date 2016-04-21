@@ -23,7 +23,7 @@ import qualified Git.Merge
 import qualified Git.Ref
 import qualified Git
 import qualified Git.Branch
-import Git.Types (BlobType(..))
+import Git.Types (BlobType(..), fromBlobType)
 import Git.FilePath
 import Config
 import Annex.ReplaceFile
@@ -31,6 +31,7 @@ import Annex.VariantFile
 import qualified Database.Keys
 import Annex.InodeSentinal
 import Utility.InodeCache
+import Utility.FileMode
 
 import qualified Data.Set as S
 import qualified Data.Map as M
@@ -152,12 +153,12 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 				-- In either case, keep original filename.
 				if islocked LsFiles.valUs && islocked LsFiles.valThem
 					then makesymlink keyUs file
-					else makepointer keyUs file
+					else makepointer keyUs file (combinedmodes)
 				return ([keyUs, keyThem], Just file)
 		-- Our side is annexed file, other side is not.
 		(Just keyUs, Nothing) -> resolveby [keyUs] $ do
 			graftin them file LsFiles.valThem LsFiles.valThem LsFiles.valUs
-			makeannexlink keyUs LsFiles.valUs
+			makeannexlink keyUs LsFiles.valUs 
 		-- Our side is not annexed file, other side is.
 		(Nothing, Just keyThem) -> resolveby [keyThem] $ do
 			graftin us file LsFiles.valUs LsFiles.valUs LsFiles.valThem
@@ -174,11 +175,19 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 	
 	islocked select = select (LsFiles.unmergedBlobType u) == Just SymlinkBlob
 
+	combinedmodes = case catMaybes [ourmode, theirmode] of
+		[] -> Nothing
+		l -> Just (combineModes l)
+	  where
+		ourmode = fromBlobType <$> LsFiles.valUs (LsFiles.unmergedBlobType u)
+		theirmode = fromBlobType <$> LsFiles.valThem (LsFiles.unmergedBlobType u)
+
 	makeannexlink key select
 		| islocked select = makesymlink key dest
-		| otherwise = makepointer key dest
+		| otherwise = makepointer key dest destmode
 	  where
 		dest = variantFile file key
+		destmode = fromBlobType <$> select (LsFiles.unmergedBlobType u)
 
 	stagefile :: FilePath -> Annex FilePath
 	stagefile f
@@ -194,16 +203,16 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 	replacewithsymlink dest link = withworktree dest $ \f ->
 		replaceFile f $ makeGitLink link
 
-	makepointer key dest = do
+	makepointer key dest destmode = do
 		unless inoverlay $ 
 			unlessM (reuseOldFile unstagedmap key file dest) $ do
-				r <- linkFromAnnex key dest
+				r <- linkFromAnnex key dest destmode
 				case r of
 					LinkAnnexFailed -> liftIO $
-						writeFile dest (formatPointer key)
+						writePointerFile dest key destmode
 					_ -> noop
 		dest' <- stagefile dest
-		stagePointerFile dest' =<< hashPointerFile key
+		stagePointerFile dest' destmode =<< hashPointerFile key
 		unless inoverlay $
 			Database.Keys.addAssociatedFile key
 				=<< inRepo (toTopFilePath dest)

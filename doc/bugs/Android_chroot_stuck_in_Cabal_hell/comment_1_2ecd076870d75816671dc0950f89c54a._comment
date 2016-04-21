@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="divergentdave@5c17d06f6d67c6f157b76a4cc95ca764b7d2f899"
+ nickname="divergentdave"
+ subject="comment 1"
+ date="2016-04-15T12:24:07Z"
+ content="""
+I just created a new chroot, using revision d4b3a8a for both the initial scripts and inside the chroot.
+
+```
+...
+[32 of 32] Compiling Main             ( dist/setup/setup.hs, dist/setup/Main.o )
+Linking ./dist/setup/setup ...
+/usr/lib/ghc/unix-2.6.0.1/libHSunix-2.6.0.1.a(execvpe.o): In function `pPrPr_disableITimers':
+(.text+0x300): multiple definition of `pPrPr_disableITimers'
+/home/builder/.cabal/lib/i386-linux-ghc-7.6.3/unix-2.7.1.0/libHSunix-2.7.1.0.a(ghcrts.o):ghcrts.c:(.text+0x0): first defined here
+collect2: error: ld returned 1 exit status
+Makefile:225: recipe for target 'android' failed
+make: *** [android] Error 1
+```
+"""]]

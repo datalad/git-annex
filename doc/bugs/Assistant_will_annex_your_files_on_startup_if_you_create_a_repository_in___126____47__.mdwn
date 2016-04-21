@@ -21,3 +21,5 @@ The assistant shouldn't do anything unless I tell it to. Currently, I cannot pla
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I use git annex for managing the image and video resources on my website and it works fine for that.
+
+> HOME git repo guard added, [[done]] --[[Joey]]

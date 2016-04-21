@@ -23,6 +23,7 @@ import qualified Annex.Queue
 import Git.Types
 import Git.FilePath
 import Annex.HashObject
+import Utility.FileMode
 
 import qualified Data.ByteString.Lazy as L
 import Data.Int
@@ -118,10 +119,19 @@ hashPointerFile :: Key -> Annex Sha
 hashPointerFile key = hashBlob (formatPointer key)
 
 {- Stages a pointer file, using a Sha of its content -}
-stagePointerFile :: FilePath -> Sha -> Annex ()
-stagePointerFile file sha =
+stagePointerFile :: FilePath -> Maybe FileMode -> Sha -> Annex ()
+stagePointerFile file mode sha =
 	Annex.Queue.addUpdateIndex =<<
-		inRepo (Git.UpdateIndex.stageFile sha FileBlob file)
+		inRepo (Git.UpdateIndex.stageFile sha blobtype file)
+  where
+	blobtype
+		| maybe False isExecutable mode = ExecutableBlob
+		| otherwise = FileBlob
+
+writePointerFile :: FilePath -> Key -> Maybe FileMode -> IO ()
+writePointerFile file k mode = do
+	writeFile file (formatPointer k)
+	maybe noop (setFileMode file) mode
 
 {- Parses a symlink target or a pointer file to a Key.
  - Only looks at the first line, as pointer files can have subsequent

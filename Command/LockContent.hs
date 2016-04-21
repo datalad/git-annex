@@ -22,7 +22,7 @@ seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 -- First, lock the content. Then, make sure the content is actually
--- present, and print out a "1". Wait for the caller to send a line before
+-- present, and print out "OK". Wait for the caller to send a line before
 -- dropping the lock.
 start :: [String] -> CommandStart
 start [ks] = do

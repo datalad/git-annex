@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="Jan"
+ subject="comment 9"
+ date="2016-04-13T09:05:23Z"
+ content="""
+I doubt that the Debian package would be usable as-is on a Synology NAS? Perhaps it would require a standalone package, similar to armel but for PowerPC?
+"""]]

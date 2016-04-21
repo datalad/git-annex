@@ -135,6 +135,11 @@ make the second copy not be worth keeping:
 In situations like these, you may want to avoid the overhead of the second
 local copy of unlocked files. There's a config setting for that.
 
+[[!template id=note text="""
+Note that setting annex.thin only has any effect on systems that support
+hard links. It is supported on Windows, but not on FAT filesystems.
+"""]]
+
 	git config annex.thin true
 
 After changing annex.thin, you'll want to fix up the work tree to
@@ -142,8 +147,12 @@ match the new setting:
 
 	git annex fix
 
-Note that setting annex.thin only has any effect on systems that support
-hard links. It is supported on Windows, but not on FAT filesystems.
+Unfortunately, git's smudge interface does not let git-annex honor
+the annex.thin configuration when git is checking out a file.
+So, using `git checkout` to check out a different branch, or even 
+`git merge` can result in some non-thin files making their way into the
+working tree, and using more disk space. A warning will be printed out in
+this situation. You can always run `git annex fix` to re-thin such files.
 
 ## tradeoffs
 

@@ -15,6 +15,7 @@ import Annex.Version
 import Annex.Link
 import Annex.ReplaceFile
 import Utility.CopyFile
+import Utility.FileMode
 
 cmd :: Command
 cmd = mkcmd "unlock" "unlock files for modification"
@@ -50,16 +51,17 @@ start file key = ifM (isJust <$> isAnnexLink file)
 
 performNew :: FilePath -> Key -> CommandPerform
 performNew dest key = do
+	destmode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus dest
 	replaceFile dest $ \tmp -> do
-		r <- linkFromAnnex key tmp
+		r <- linkFromAnnex key tmp destmode
 		case r of
 			LinkAnnexOk -> return ()
 			_ -> error "unlock failed"
-	next $ cleanupNew dest key
+	next $ cleanupNew dest key destmode
 
-cleanupNew ::  FilePath -> Key -> CommandCleanup
-cleanupNew dest key = do
-	stagePointerFile dest =<< hashPointerFile key
+cleanupNew ::  FilePath -> Key -> Maybe FileMode -> CommandCleanup
+cleanupNew dest key destmode = do
+	stagePointerFile dest destmode =<< hashPointerFile key
 	return True
 
 startOld :: FilePath -> Key -> CommandStart

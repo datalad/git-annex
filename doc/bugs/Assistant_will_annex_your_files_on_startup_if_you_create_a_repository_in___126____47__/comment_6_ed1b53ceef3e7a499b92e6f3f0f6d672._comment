@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2016-04-13T17:43:34Z"
+ content="""
+So, I see that you *did* tell git-annex to treat your home git repo as a
+git-annex repo.
+
+And, starting the the assistant/webapp from inside a git annex repository is
+intended to start them running in that repository. This behavior makes a
+lot of sense in general. It's consistent with running any other git command
+inside a git repository causing that command to run on that repository.
+
+I guess that the issue here is, opening the git-annex webapp from a menu
+causes the program to run with its working directory set to HOME. But in
+this case, the HOME is only incidental, the intent is not to start the
+webapp/assistant in that repository.
+
+Seems kind of hard for the assistant to determine intent though.
+
+So, the best that can be done, I suppose, is to make starting the webapp 
+in the HOME git repository behave as if that git repository was not
+initialized for use by git-annex.
+"""]]

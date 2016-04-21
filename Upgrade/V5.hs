@@ -99,7 +99,7 @@ upgradeDirectWorkTree = do
 					( writepointer f k
 					, fromdirect f k
 					)
-				stagePointerFile f =<< hashPointerFile k
+				stagePointerFile f Nothing =<< hashPointerFile k
 				Database.Keys.addAssociatedFile k
 					=<< inRepo (toTopFilePath f)
 				return ()
