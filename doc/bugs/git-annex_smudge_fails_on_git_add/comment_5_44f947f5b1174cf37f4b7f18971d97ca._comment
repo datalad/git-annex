@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="j_k_234@b2b1aa189bf195cefd815fc0fe70e0ebbe2b8077"
+ nickname="j_k_234"
+ subject="comment 5"
+ date="2016-04-21T09:00:49Z"
+ content="""
+Running the smudge command manually works.  Incidentally, just noticed that running the add command a second time seems to work...
+
+I ran the command under strace -f and all subprocesses seem to exit with RC=0, but I can see the error message being output.  Would you like me to send you the strace output (200k gzipped)?
+"""]]
