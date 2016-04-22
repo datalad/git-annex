@@ -1,0 +1,20 @@
+I thought that whereis command would report only based on the knowledge annex has locally in git-annex branch, but apparently it is trying to query for information even in --fast mode:
+
+[[!format sh """
+$> git annex whereis --fast bold.nii.gz
+yoh@dat....
+Permission denied (publickey,password).
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+whereis bold.nii.gz 
+(2 copies) 
+  	899f0347-0888-48ef-91b6-bac213ca8cef -- [datalad-archives]
+   	c8bd3d05-33d4-4b59-9d53-ca7efbdcdd13 -- yoh@smaug:/mnt/btrfs/datasets/datalad/crawl/openfmri/ds000001 [here]
+
+  datalad-archives: dl+archive:MD5E-s2527262329--bd3ea399057c529b37b09dcecec1ca60.0raw.tgz/ds001_R1.1.0/sub001/BOLD/task001_run001/bold.nii.gz#size=47241449
+
+"""]]
+
+[[!meta author=yoh]]
