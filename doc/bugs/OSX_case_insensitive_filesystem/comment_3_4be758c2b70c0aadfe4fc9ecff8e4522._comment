@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://id.clacke.se/"
+ nickname="clacke"
+ subject="objecthashlower"
+ date="2016-04-22T07:55:40Z"
+ content="""
+> It's actually possible to make brand-new git-annex repos use all lower case hash directories today, by setting git config annex.tune.objecthashlower true before you run git annex init for the first time.
+
+Am I interpreting this correctly, that this sets some attribute in the git-annex branch, so that clones of this repo will use the same annex layout?
+"""]]
