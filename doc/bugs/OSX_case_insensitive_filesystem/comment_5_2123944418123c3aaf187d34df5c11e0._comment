@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2016-04-22T18:41:22Z"
+ content="""
+You should not set annex.tune.* globally. Only set it when
+initializing a new git-annex repo for the first time. Clones of the repo will
+automatically inherit the tunings.
+
+See [[tuning]].
+"""]]

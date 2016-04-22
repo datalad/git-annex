@@ -1311,7 +1311,8 @@ Here are all the supported configuration settings.
 * `annex.tune.objecthash1`, `annex.tune.objecthashlower`, `annex.tune.branchhash1`
 
   These can be passed to `git annex init` to tune the repository.
-  They cannot be safely changed in a running repository.
+  They cannot be safely changed in a running repository and should never be
+  set in global git configuration.
   For details, see <https://git-annex.branchable.com/tuning/>.
 
 # CONFIGURATION VIA .gitattributes
