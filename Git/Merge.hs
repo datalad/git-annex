@@ -16,9 +16,9 @@ module Git.Merge (
 import Common
 import Git
 import Git.Command
-import Git.BuildVersion
+import qualified Git.BuildVersion
+import qualified Git.Version
 import Git.Branch (CommitMode(..))
-import Git.Env
 
 data MergeConfig
 	= MergeNonInteractive
@@ -32,20 +32,30 @@ merge = merge' []
 
 merge' :: [CommandParam] -> Ref -> [MergeConfig] -> CommitMode -> Repo -> IO Bool
 merge' extraparams branch mergeconfig commitmode r
-	| MergeNonInteractive `notElem` mergeconfig || older "1.7.7.6" =
+	| MergeNonInteractive `notElem` mergeconfig || Git.BuildVersion.older "1.7.7.6" =
 		go [Param $ fromRef branch]
 	| otherwise = go [Param "--no-edit", Param $ fromRef branch]
   where
-	go ps = runBool (sp ++ [Param "merge"] ++ ps ++ extraparams)
-		=<< cfgRepo mergeconfig r
+	go ps = merge'' (sp ++ [Param "merge"] ++ ps ++ extraparams) mergeconfig r
 	sp
 		| commitmode == AutomaticCommit =
 			[Param "-c", Param "commit.gpgsign=false"]
 		| otherwise = []
 
+merge'' :: [CommandParam] -> [MergeConfig] -> Repo -> IO Bool
+merge'' ps mergeconfig r
+	| MergeUnrelatedHistories `elem` mergeconfig =
+		ifM (Git.Version.older "2.8.2")
+			( go (ps ++ [Param "--allow-unrelated-histories"])
+			, go ps
+			)
+	| otherwise = go ps
+  where
+	go ps' = runBool ps' r
+
 {- Stage the merge into the index, but do not commit it.-}
 stageMerge :: Ref -> [MergeConfig] -> Repo -> IO Bool
-stageMerge branch mergeconfig r = runBool
+stageMerge branch = merge''
 	[ Param "merge"
 	, Param "--quiet"
 	, Param "--no-commit"
@@ -53,10 +63,4 @@ stageMerge branch mergeconfig r = runBool
 	-- commit.
 	, Param "--no-ff"
 	, Param $ fromRef branch
-	] =<< cfgRepo mergeconfig r
-
-cfgRepo :: [MergeConfig] -> Repo -> IO Repo
-cfgRepo mergeconfig r
-	| MergeUnrelatedHistories `elem` mergeconfig =
-		addGitEnv r "GIT_MERGE_ALLOW_UNRELATED_HISTORIES" "1"
-	| otherwise = return r
+	]

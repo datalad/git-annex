@@ -19,10 +19,9 @@ git-annex (6.20160419) UNRELEASED; urgency=medium
   * git 2.8.1 (or perhaps 2.9.0) is going to prevent git merge from
     merging in unrelated branches. Since the webapp's pairing etc features
     often combine together repositories with unrelated histories, work around
-    this behavior change by setting GIT_MERGE_ALLOW_UNRELATED_HISTORIES
-    when the assistant merges. Note though that this is not done for
-    git annex sync's merges, so it will follow git's default or configured
-    behavior.
+    this behavior change when the assistant merges. Note though that this is
+    not done for git annex sync's merges, so it will follow git's default or
+    configured behavior.
 
  -- Joey Hess <id@joeyh.name>  Tue, 19 Apr 2016 12:57:15 -0400
 
