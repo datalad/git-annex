@@ -19,6 +19,7 @@ module Logs.Location (
 	logChange,
 	loggedLocations,
 	loggedLocationsHistorical,
+	isKnownKey,
 	checkDead,
 	setDead,
 	loggedKeys,
@@ -64,6 +65,13 @@ getLoggedLocations :: (FilePath -> Annex [String]) -> Key -> Annex [UUID]
 getLoggedLocations getter key = do
 	config <- Annex.getGitConfig
 	map toUUID <$> getter (locationLogFile config key)
+
+{- Is there a location log for the key? True even for keys with no
+ - remaining locations. -}
+isKnownKey :: Key -> Annex Bool
+isKnownKey key = do
+	config <- Annex.getGitConfig
+	not . null <$> readLog (locationLogFile config key)
 
 {- For a key to be dead, all locations that have location status for the key
  - must have InfoDead set. -}

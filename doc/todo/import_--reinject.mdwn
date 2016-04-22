@@ -3,3 +3,5 @@ There's `git annex reinject <src> <dst>` for re-adding one file's contents to th
 None of the `git annex import` modes work properly in this case. By default, importing adds another, unnecessary copy of the imported file (which I have to `rm` after importing). The `--clean-duplicates` mode seems close, but it insists on verifying the content in other repositories rather than just reinjecting it locally. (Let's assume that the main reason I'm trying to reinject is that I cannot access other repos.)
 
 So I'm hoping for something like `git annex import --reinject <src>...`. Or are there other existing ways to achieve the same? I couldn't find any.
+
+> implemented `git annex reinject --known` [[done]] --[[Joey]] 

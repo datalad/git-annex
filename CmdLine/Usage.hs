@@ -104,3 +104,5 @@ paramOptional :: String -> String
 paramOptional s = s
 paramPair :: String -> String -> String
 paramPair a b = a ++ " " ++ b
+paramOr :: String -> String -> String
+paramOr a b = a ++ " | " ++ b
