@@ -16,4 +16,5 @@ but AFAICS, git-annex never uses `git pull`)
 
 > [[done]]; used the environment variable
 > `GIT_MERGE_ALLOW_UNRELATED_HISTORIES` which will hopefully land in git
-> `next` (currently in `pu`) --[[Joey]]
+> `next` (currently Junio has posted a patch but not even landed it in `pu`
+> yet) --[[Joey]]

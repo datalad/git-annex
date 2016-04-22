@@ -10,6 +10,7 @@ module Command.Sync (
 	cmd,
 	CurrBranch,
 	getCurrBranch,
+	mergeConfig,
 	merge,
 	prepMerge,
 	mergeLocal,
@@ -112,8 +113,8 @@ seek o = allowConcurrentOutput $ do
 	-- These actions cannot be run concurrently.
 	mapM_ includeCommandAction $ concat
 		[ [ commit o ]
-		, [ withbranch mergeLocal ]
-		, map (withbranch . pullRemote o mergeconfig) gitremotes
+		, [ withbranch (mergeLocal mergeConfig) ]
+		, map (withbranch . pullRemote o mergeConfig) gitremotes
 		,  [ mergeAnnex ]
 		]
 	when (contentOption o) $
@@ -124,16 +125,14 @@ seek o = allowConcurrentOutput $ do
 			-- and merge again to avoid our push overwriting
 			-- those changes.
 			mapM_ includeCommandAction $ concat
-				[ map (withbranch . pullRemote o mergeconfig) gitremotes
+				[ map (withbranch . pullRemote o mergeConfig) gitremotes
 				, [ commitAnnex, mergeAnnex ]
 				]
 	
 	void $ includeCommandAction $ withbranch pushLocal
 	-- Pushes to remotes can run concurrently.
 	mapM_ (commandAction . withbranch . pushRemote o) gitremotes
-  where
-	mergeconfig = [Git.Merge.MergeNonInteractive]
-
+	
 type CurrBranch = (Maybe Git.Branch, Maybe Adjustment)
 
 {- There may not be a branch checked out until after the commit,
@@ -168,6 +167,9 @@ getCurrBranch = do
  - repository, not just on a subdirectory. -}
 prepMerge :: Annex ()
 prepMerge = Annex.changeDirectory =<< fromRepo Git.repoPath
+
+mergeConfig :: [Git.Merge.MergeConfig]	
+mergeConfig = [Git.Merge.MergeNonInteractive]
 
 merge :: CurrBranch -> [Git.Merge.MergeConfig] -> Git.Branch.CommitMode -> Git.Branch -> Annex Bool
 merge (Just b, Just adj) mergeconfig commitmode tomerge =
@@ -246,8 +248,8 @@ commitStaged commitmode commitmessage = do
 	void $ inRepo $ Git.Branch.commit commitmode False commitmessage branch parents
 	return True
 
-mergeLocal :: CurrBranch -> CommandStart
-mergeLocal currbranch@(Just branch, madj) = go =<< needmerge
+mergeLocal :: [Git.Merge.MergeConfig] -> CurrBranch -> CommandStart
+mergeLocal mergeconfig currbranch@(Just branch, madj) = go =<< needmerge
   where
 	syncbranch = syncBranch branch
 	needmerge = ifM isBareRepo
@@ -260,9 +262,9 @@ mergeLocal currbranch@(Just branch, madj) = go =<< needmerge
 	go False = stop
 	go True = do
 		showStart "merge" $ Git.Ref.describe syncbranch
-		next $ next $ merge currbranch [Git.Merge.MergeNonInteractive] Git.Branch.ManualCommit syncbranch
+		next $ next $ merge currbranch mergeconfig Git.Branch.ManualCommit syncbranch
 	branch' = maybe branch (adjBranch . originalToAdjusted branch) madj
-mergeLocal (Nothing, _) = stop
+mergeLocal _ (Nothing, _) = stop
 
 pushLocal :: CurrBranch -> CommandStart
 pushLocal b = do

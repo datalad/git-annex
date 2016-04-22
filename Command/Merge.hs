@@ -9,7 +9,7 @@ module Command.Merge where
 
 import Command
 import qualified Annex.Branch
-import Command.Sync (prepMerge, mergeLocal, getCurrBranch)
+import Command.Sync (prepMerge, mergeLocal, getCurrBranch, mergeConfig)
 
 cmd :: Command
 cmd = command "merge" SectionMaintenance
@@ -33,4 +33,4 @@ mergeBranch = do
 mergeSynced :: CommandStart
 mergeSynced = do
 	prepMerge
-	mergeLocal =<< join getCurrBranch
+	mergeLocal mergeConfig =<< join getCurrBranch
