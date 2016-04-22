@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://id.clacke.se/"
+ nickname="clacke"
+ subject="git-annex is git"
+ date="2016-04-22T07:44:06Z"
+ content="""
+git-annex is first git, then some additional very neat functionality. Being git, it refuses to handle git repositories as that would create all kinds of potential confusion and inefficiency.
+
+Submodules would be a way to go, if you like how they work. Or you could just ignore the git repos, as you probably have them replicated somewhere else.
+"""]]
