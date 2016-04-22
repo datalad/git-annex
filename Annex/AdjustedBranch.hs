@@ -21,6 +21,8 @@ module Annex.AdjustedBranch (
 	updateAdjustedBranch,
 	propigateAdjustedCommits,
 	checkAdjustedClone,
+	isGitVersionSupported,
+	checkVersionSupported,
 ) where
 
 import Annex.Common
@@ -39,6 +41,8 @@ import Git.Env
 import Git.Index
 import Git.FilePath
 import qualified Git.LockFile
+import qualified Git.Version
+import Annex.Version
 import Annex.CatFile
 import Annex.Link
 import Annex.AutoMerge
@@ -507,3 +511,15 @@ checkAdjustedClone = go =<< inRepo Git.Branch.current
 				setBasisBranch basis remotebranch
 			unlessM (inRepo $ Git.Ref.exists origbranch) $
 				inRepo $ Git.Branch.update' origbranch remotebranch
+
+-- git 2.2.0 needed for GIT_COMMON_DIR which is needed
+-- by updateAdjustedBranch to use withWorkTreeRelated.
+isGitVersionSupported :: IO Bool
+isGitVersionSupported = not <$> Git.Version.older "2.2.0"
+
+checkVersionSupported :: Annex ()
+checkVersionSupported = do
+	unlessM versionSupportsAdjustedBranch $
+		error "Adjusted branches are only supported in v6 or newer repositories."
+	unlessM (liftIO isGitVersionSupported) $
+		error "Your version of git is too old; upgrade it to 2.2.0 or newer to use adjusted branches."

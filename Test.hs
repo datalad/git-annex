@@ -72,6 +72,7 @@ import qualified Annex.Link
 import qualified Annex.Init
 import qualified Annex.CatFile
 import qualified Annex.Path
+import qualified Annex.AdjustedBranch
 import qualified Annex.View
 import qualified Annex.View.ViewedFile
 import qualified Logs.View
@@ -1048,7 +1049,7 @@ test_conflict_resolution =
 
 {- Conflict resolution while in an adjusted branch. -}
 test_conflict_resolution_adjusted_branch :: Assertion
-test_conflict_resolution_adjusted_branch = 
+test_conflict_resolution_adjusted_branch = whenM Annex.AdjustedBranch.isGitVersionSupported $
 	withtmpclonerepo $ \r1 ->
 		withtmpclonerepo $ \r2 -> do
 			indir r1 $ do
