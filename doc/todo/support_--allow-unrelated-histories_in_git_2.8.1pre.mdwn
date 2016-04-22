@@ -13,3 +13,7 @@ be split into a fetch and a merge in order to pass the option to the merge;
 but AFAICS, git-annex never uses `git pull`)
 
 --[[Joey]]
+
+> [[done]]; used the environment variable
+> `GIT_MERGE_ALLOW_UNRELATED_HISTORIES` which will hopefully land in git
+> `next` (currently in `pu`) --[[Joey]]

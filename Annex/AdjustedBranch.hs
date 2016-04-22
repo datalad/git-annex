@@ -260,8 +260,8 @@ adjustedBranchCommitMessage = "git-annex adjusted branch"
 {- Update the currently checked out adjusted branch, merging the provided
  - branch into it. Note that the provided branch should be a non-adjusted
  - branch. -}
-updateAdjustedBranch :: Branch -> (OrigBranch, Adjustment) -> Git.Branch.CommitMode -> Annex Bool
-updateAdjustedBranch tomerge (origbranch, adj) commitmode = catchBoolIO $
+updateAdjustedBranch :: Branch -> (OrigBranch, Adjustment) -> [Git.Merge.MergeConfig] -> Git.Branch.CommitMode -> Annex Bool
+updateAdjustedBranch tomerge (origbranch, adj) mergeconfig commitmode = catchBoolIO $
 	join $ preventCommits go
   where
 	adjbranch@(AdjBranch currbranch) = originalToAdjusted origbranch adj
@@ -304,7 +304,7 @@ updateAdjustedBranch tomerge (origbranch, adj) commitmode = catchBoolIO $
 				showAction $ "Merging into " ++ fromRef (Git.Ref.base origbranch)
 				-- The --no-ff is important; it makes git
 				-- merge not care that the work tree is empty.
-				merged <- inRepo (Git.Merge.mergeNonInteractive' [Param "--no-ff"] tomerge commitmode)
+				merged <- inRepo (Git.Merge.merge' [Param "--no-ff"] tomerge mergeconfig commitmode)
 					<||> (resolveMerge (Just updatedorig) tomerge True <&&> commitResolvedMerge commitmode)
 				if merged
 					then do
@@ -340,7 +340,7 @@ updateAdjustedBranch tomerge (origbranch, adj) commitmode = catchBoolIO $
 		-- this commit will be a fast-forward.
 		adjmergecommitff <- commitAdjustedTree' adjtree (BasisBranch mergecommit) [currbranch]
 		showAction "Merging into adjusted branch"
-		ifM (autoMergeFrom adjmergecommitff (Just currbranch) commitmode)
+		ifM (autoMergeFrom adjmergecommitff (Just currbranch) mergeconfig commitmode)
 			( reparent adjtree adjmergecommit =<< getcurrentcommit
 			, return False
 			)
