@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://id.clacke.se/"
+ nickname="clacke"
+ subject="comment 6"
+ date="2016-04-22T19:01:45Z"
+ content="""
+But it only checks the parameter at `annex init` time? What will the bad consequences be if it is set at other times?
+"""]]
