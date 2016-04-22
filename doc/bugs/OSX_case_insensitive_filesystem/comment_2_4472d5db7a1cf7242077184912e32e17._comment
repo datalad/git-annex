@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://id.clacke.se/"
+ nickname="clacke"
+ subject="Case-sensitive on OSX"
+ date="2016-04-22T07:53:56Z"
+ content="""
+> What I'd recommend you do is, move the repository back to OSX, and then make a clone of it on the linux system
+
+Alternatively, create a case-sensitive FS on the Mac (just in a .dmg) and do the clone and copy to there, before rsync'ing to the remote Linux.
+"""]]
