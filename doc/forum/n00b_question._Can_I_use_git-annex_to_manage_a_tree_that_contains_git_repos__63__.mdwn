@@ -1,0 +1,7 @@
+Just started looking at git-annex and it's very interesting to me as I manage a large tree of different types of projects, spread across two computers and some hard-drives (some backups, some offline resources and archives)
+
+But one question that's bothering me. A lot of my projects are already git repos. Is it possible to use git-annex with this tree or will the gits fight unless I explicitly make them submodules? 
+
+cheers
+
+Phil
