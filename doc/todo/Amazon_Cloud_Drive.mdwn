@@ -1,4 +1,4 @@
-I've released a special remote which uses rclone to enable Amazon Cloud Drive: https://github.com/DanielDent/git-annex-remote-rclone -- [[DanielDent]]
+I've released a special remote which uses rclone to enable Amazon Cloud Drive: <https://github.com/DanielDent/git-annex-remote-rclone> -- [[DanielDent]]
 
 ---
 
