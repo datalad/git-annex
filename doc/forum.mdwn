@@ -1,10 +1,8 @@
-What's the difference between doing 
+This is a place to discuss using git-annex.
+If you need help, advice, or anything, post about it here.
 
-    git annex uninit
+But, please don't post bug reports here. Put them in [[bugs]].  
+And please don't make wishlist requests here. Put them in [[todo]].  
+(If you post bugs/todo here, it'll just get moved.)
 
-and 
-
-    git annex unlock *
-    rm -rf .git
-
-?
+[[!inline pages="forum/* and !*/Discussion" archive=yes rootpage=forum postformtext="Add a new thread titled:"]]
