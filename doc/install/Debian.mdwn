@@ -1,10 +1,18 @@
 ## Debian testing or unstable
 
-	sudo apt-get install git-annex
+Debian unstable and testing are usually fairly up to date, so this should be enough:
+
+	sudo apt install git-annex
 
 ## Debian 8.0 "jessie"
 
-	sudo apt-get install git-annex
+	sudo apt install git-annex
+
+There is also a backport for jessie, even though it is [often out of date](https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=760787).
+
+Follow the instructions to [enable backports](http://backports.debian.org/Instructions/).
+
+	sudo apt -t jessie-backports install git-annex
 
 ## Debian 7.0 "wheezy":
 
@@ -23,7 +31,7 @@ Follow the instructions to [enable backports](http://backports.debian.org/Instru
 
 	sudo apt-get -t squeeze-backports install git-annex
 
-## backport
+## Standalone backports for all releases
 
 If the version shipped with Debian is too old, 
 the [NeuroDebian team](http://neuro.debian.net/) provides a
