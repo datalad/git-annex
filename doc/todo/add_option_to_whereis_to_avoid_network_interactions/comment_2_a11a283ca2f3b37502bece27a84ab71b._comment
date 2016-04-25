@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 2"
+ date="2016-04-25T18:28:14Z"
+ content="""
+gotcha... indeed, after allowing annex to fetch uuid for it and adjust .git/config it doesn't go over ssh during whereis.
+I don't have a strong use case yet to further support --no-network or alike for whereis ATM so feel free  to close, but I am afraid it might bite me again later whenever I wouldn't expect any demand from annex/ssh for interactive prompts while running some command which doesn't usually require interaction (e.g. whereis) due to querying remote locations.
+"""]]
