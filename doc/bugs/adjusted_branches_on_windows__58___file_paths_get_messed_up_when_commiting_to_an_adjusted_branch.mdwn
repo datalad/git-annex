@@ -1,0 +1,67 @@
+### Please describe the problem.
+
+I'm testing whether I can use git-annex to sync binary files to a windows vm (used for development) with v6 adjusted branches.
+
+For testing I use git-annex precompiled binaries for windows, together with git from [msys2](https://sourceforge.net/projects/msys2/), an environment similar to cygwin (it does the usual hacks with path translation, etc).
+
+It seems to more or less work for syncing content from my linux box to the vm, apart from some unexplained clean/smudge errors, which I'll investigate later.
+
+However, when I commit to the adjusted branch in the windows vm, and afterwards do a `git annex sync` to propagate changes to the unadjusted `master`, a broken link for the annexed file `A/B` ends up at the root of the repository in the unadjusted branch.
+
+
+### What steps will reproduce the problem?
+
+On windows under msys2 do the following:
+
+* Create a v6 annex repo with an adjusted branch.
+* Annex a file in a subdirectory, for example `A/B`.
+* Commit to the adjusted branch.
+* Propagate changes to the original branch.
+
+A file `B` appears in the non-adjusted branch, instead of `A/B`, with broken link (as if it still were in A/B).
+
+### What version of git-annex are you using? On what operating system?
+
+git annex 6.20160418 windows precompiled binaries on windows 10 under msys2. msys2 git is 2.8.1. I haven't tested with other windows git distributions.
+
+
+### Please provide any additional information below.
+
+Here is a shell transcript while reproducing this
+
+[[!format sh """
+$ mkdir test; cd test
+$ git init
+$ git annex init --version=6
+# it automatically puts you in an adjusted master, because of crippled filesystem...
+$ git branch
+* adjusted/master(unlocked)
+  git-annex
+  master
+
+$ mkdir A
+$ echo "b" > A/B
+$ git annex add A/B
+$ git commit -m 'annexed A/B'
+$ git ls-tree -r --name-only 'adjusted/master(unlocked)'
+A/B
+$ git ls-tree -r --name-only 'master'
+
+$ git annex sync
+commit
+On branch adjusted/master(unlocked)
+nothing to commit, working directory clean
+ok
+
+$ git ls-files -r --name-only 'adjusted/master(unlocked)'
+A/B
+$ git ls-files -r --name-only 'master'
+B
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Well, git-annex is wonderful!
+
+I use it to sync binary files across linux boxes, I use it for binary distro packages I compile for myself, for my calibre books, pictures, movies...  and I'm very happy with it on linux.
+
