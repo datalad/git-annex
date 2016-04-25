@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-04-25T17:44:59Z"
+ content="""
+This is not specific to whereis at all. You have added a new git remote and
+git-annex does not know what the uuid of it is. Until it can find out, it
+won't be able to use that remote (including referring to it in whereis
+output). So, git-annex always tries to get the uuid for such remotes
+at startup time.
+
+If you don't want git-annex to use this remote, you can set
+remote.name.annex-ignore.
+"""]]
