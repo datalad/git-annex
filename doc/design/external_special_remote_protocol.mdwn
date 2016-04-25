@@ -228,7 +228,7 @@ in control.
   This is highly recommended for STORE. (It is optional but good for RETRIEVE.)  
   (git-annex does not send a reply to this message.)
 * `DIRHASH Key`  
-  Gets a two level hash associated with a Key. Something like "abc/def".
+  Gets a two level hash associated with a Key. Something like "aB/Cd".
   This is always the same for any given Key, so can be used for eg,
   creating hash directory structures to store Keys in.  
   (git-annex replies with VALUE followed by the value.)
