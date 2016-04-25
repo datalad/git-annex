@@ -16,3 +16,8 @@ http://techcrunch.com/2015/03/26/amazon-goes-after-dropbox-google-microsoft-with
 > > Don't know if there's such a thing... there seems to be SDKs for android and IOS, but nothing more. It seems like it's a REST API: https://developer.amazon.com/public/apis/experience/cloud-drive/... --[[anarcat]]
 
 >> requested it be added to amazonka <https://github.com/brendanhay/amazonka/issues/168> --[[Joey]]
+
+>>> In the meantime, <https://github.com/DanielDent/git-annex-remote-rclone> supports Amazon Cloud drive.
+>>> I may revisit adding support for it directly to git-annex if amazonka
+>>> does get support, but for now, that seems good enough, so [[done]]
+>>> --[[Joey]]

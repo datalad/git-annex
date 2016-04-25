@@ -3,3 +3,10 @@
 I can provide a test account soonish if need be, else rackspace.com if offering swift storage. Their API gateway lives at https://auth.api.rackspacecloud.com/v1.0
 
 Richard
+
+> Swift is supported by
+> <https://github.com/DanielDent/git-annex-remote-rclone>
+> 
+> While I am not opposed to adding support for swift directly to git-annex,
+> if a haskell library supporting it should appear, I think that's good
+> enough so am calling this [[done]] --[[Joey]]
