@@ -1,0 +1,63 @@
+### Please describe the problem.
+
+Resuming an upload seems not to work when used with chunking. Here is some sample conservation:
+
+
+
+
+[2016-04-26 21:26:14.465287] chat: git-annex-remote-rclone []
+[2016-04-26 21:26:14.468527] git-annex-remote-rclone --> VERSION 1
+[2016-04-26 21:26:14.468726] git-annex-remote-rclone <-- PREPARE
+[2016-04-26 21:26:14.469533] git-annex-remote-rclone --> GETCONFIG prefix
+[2016-04-26 21:26:14.469741] git-annex-remote-rclone <-- VALUE annex.datengrotte
+[2016-04-26 21:26:14.475725] git-annex-remote-rclone --> GETCONFIG target
+[2016-04-26 21:26:14.47597] git-annex-remote-rclone <-- VALUE hubic
+[2016-04-26 21:26:14.481164] git-annex-remote-rclone --> PREPARE-SUCCESS
+[2016-04-26 21:26:14.485361] git-annex-remote-rclone <-- CHECKPRESENT GPGHMACSHA1--2a63df425e9d018adbc9a6e508817c727e414d55
+[2016-04-26 21:26:14.485831] git-annex-remote-rclone --> DIRHASH GPGHMACSHA1--2a63df425e9d018adbc9a6e508817c727e414d55
+[2016-04-26 21:26:14.485937] git-annex-remote-rclone <-- VALUE GM/2k/
+[2016-04-26 21:26:25.571228] git-annex-remote-rclone --> CHECKPRESENT-FAILURE GPGHMACSHA1--2a63df425e9d018adbc9a6e508817c727e414d55
+(to hubic3...) 
+[2016-04-26 21:26:25.5726] git-annex-remote-rclone <-- CHECKPRESENT SHA256E-s2885269915-S104857600-C1--186620a13bc048d4c9d75ec3a504f9569e5a43047342be5e5279b14b0c445fa6.mp4
+[2016-04-26 21:26:25.57296] git-annex-remote-rclone --> DIRHASH SHA256E-s2885269915-S104857600-C1--186620a13bc048d4c9d75ec3a504f9569e5a43047342be5e5279b14b0c445fa6.mp4
+[2016-04-26 21:26:25.573207] git-annex-remote-rclone <-- VALUE 1v/zK/
+[2016-04-26 21:26:27.392524] git-annex-remote-rclone --> CHECKPRESENT-FAILURE SHA256E-s2885269915-S104857600-C1--186620a13bc048d4c9d75ec3a504f9569e5a43047342be5e5279b14b0c445fa6.mp4
+[2016-04-26 21:26:27.393076] chat: gpg ["--quiet","--trust-model","always","--batch","--passphrase-fd","23","--symmetric","--force-mdc","--no-textmode"]
+[2016-04-26 21:26:31.103132] git-annex-remote-rclone <-- TRANSFER STORE GPGHMACSHA1--48e285fd650dac05eefa328bfbe8efd8a0ca2100 ../.git/annex/tmp/GPGHMACSHA1--48e285fd650dac05eefa328bfbe8efd8a0ca2100
+[2016-04-26 21:26:31.103773] git-annex-remote-rclone --> DIRHASH GPGHMACSHA1--48e285fd650dac05eefa328bfbe8efd8a0ca2100
+[2016-04-26 21:26:31.103888] git-annex-remote-rclone <-- VALUE 8Q/Z9/
+
+
+
+
+
+There are some steps that do not get in my mind:
+
+1) What is the first "CHECKPRESENT GPGHMACSHA1" good for? The full file including all chunks?
+2) Second: Why is git-annex looking for "CHECKPRESENT SHA256E", the plain file (not encrypted)?
+3) And now the 'real' problem: git-annex does a "TRANSFER STORE" of some key, but does not first check with CHECKPRESENT if it's there. And indeed, this file is already in the repo, so a "CHECKPRESENT GPGHMACSHA1--48e285fd650dac05eefa328bfbe8efd8a0ca2100" would return true in my case. Therefore it reuploads all my data, which is not so great ;P.
+
+### What version of git-annex are you using? On what operating system?
+
+it-annex version: 6.20160418-geff8673
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 6
+supported repository versions: 5 6
+upgrade supported from repository versions: 0 1 2 4 5
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
