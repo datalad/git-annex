@@ -32,9 +32,9 @@ Resuming an upload seems not to work when used with chunking. Here is some sampl
 
 There are some steps that do not get in my mind:
 
-1) What is the first "CHECKPRESENT GPGHMACSHA1" good for? The full file including all chunks?
-2) Second: Why is git-annex looking for "CHECKPRESENT SHA256E", the plain file (not encrypted)?
-3) And now the 'real' problem: git-annex does a "TRANSFER STORE" of some key, but does not first check with CHECKPRESENT if it's there. And indeed, this file is already in the repo, so a "CHECKPRESENT GPGHMACSHA1--48e285fd650dac05eefa328bfbe8efd8a0ca2100" would return true in my case. Therefore it reuploads all my data, which is not so great ;P.
+1. What is the first "CHECKPRESENT GPGHMACSHA1" good for? The full file including all chunks?
+2. Second: Why is git-annex looking for "CHECKPRESENT SHA256E", the plain file (not encrypted)?
+3. And now the 'real' problem: git-annex does a "TRANSFER STORE" of some key, but does not first check with CHECKPRESENT if it's there. And indeed, this file is already in the repo, so a "CHECKPRESENT GPGHMACSHA1--48e285fd650dac05eefa328bfbe8efd8a0ca2100" would return true in my case. Therefore it reuploads all my data, which is not so great ;P.
 
 ### What version of git-annex are you using? On what operating system?
 
