@@ -5,27 +5,26 @@ Resuming an upload seems not to work when used with chunking. Here is some sampl
 
 
 
-[2016-04-26 21:26:14.465287] chat: git-annex-remote-rclone []
-[2016-04-26 21:26:14.468527] git-annex-remote-rclone --> VERSION 1
-[2016-04-26 21:26:14.468726] git-annex-remote-rclone <-- PREPARE
-[2016-04-26 21:26:14.469533] git-annex-remote-rclone --> GETCONFIG prefix
-[2016-04-26 21:26:14.469741] git-annex-remote-rclone <-- VALUE annex.datengrotte
-[2016-04-26 21:26:14.475725] git-annex-remote-rclone --> GETCONFIG target
-[2016-04-26 21:26:14.47597] git-annex-remote-rclone <-- VALUE hubic
-[2016-04-26 21:26:14.481164] git-annex-remote-rclone --> PREPARE-SUCCESS
-[2016-04-26 21:26:14.485361] git-annex-remote-rclone <-- CHECKPRESENT GPGHMACSHA1--2a63df425e9d018adbc9a6e508817c727e414d55
-[2016-04-26 21:26:14.485831] git-annex-remote-rclone --> DIRHASH GPGHMACSHA1--2a63df425e9d018adbc9a6e508817c727e414d55
-[2016-04-26 21:26:14.485937] git-annex-remote-rclone <-- VALUE GM/2k/
-[2016-04-26 21:26:25.571228] git-annex-remote-rclone --> CHECKPRESENT-FAILURE GPGHMACSHA1--2a63df425e9d018adbc9a6e508817c727e414d55
-(to hubic3...) 
-[2016-04-26 21:26:25.5726] git-annex-remote-rclone <-- CHECKPRESENT SHA256E-s2885269915-S104857600-C1--186620a13bc048d4c9d75ec3a504f9569e5a43047342be5e5279b14b0c445fa6.mp4
-[2016-04-26 21:26:25.57296] git-annex-remote-rclone --> DIRHASH SHA256E-s2885269915-S104857600-C1--186620a13bc048d4c9d75ec3a504f9569e5a43047342be5e5279b14b0c445fa6.mp4
-[2016-04-26 21:26:25.573207] git-annex-remote-rclone <-- VALUE 1v/zK/
-[2016-04-26 21:26:27.392524] git-annex-remote-rclone --> CHECKPRESENT-FAILURE SHA256E-s2885269915-S104857600-C1--186620a13bc048d4c9d75ec3a504f9569e5a43047342be5e5279b14b0c445fa6.mp4
-[2016-04-26 21:26:27.393076] chat: gpg ["--quiet","--trust-model","always","--batch","--passphrase-fd","23","--symmetric","--force-mdc","--no-textmode"]
-[2016-04-26 21:26:31.103132] git-annex-remote-rclone <-- TRANSFER STORE GPGHMACSHA1--48e285fd650dac05eefa328bfbe8efd8a0ca2100 ../.git/annex/tmp/GPGHMACSHA1--48e285fd650dac05eefa328bfbe8efd8a0ca2100
-[2016-04-26 21:26:31.103773] git-annex-remote-rclone --> DIRHASH GPGHMACSHA1--48e285fd650dac05eefa328bfbe8efd8a0ca2100
-[2016-04-26 21:26:31.103888] git-annex-remote-rclone <-- VALUE 8Q/Z9/
+    [2016-04-26 21:26:14.465287] chat: git-annex-remote-rclone []
+    [2016-04-26 21:26:14.468527] git-annex-remote-rclone --> VERSION 1
+    [2016-04-26 21:26:14.468726] git-annex-remote-rclone <-- PREPARE
+    [2016-04-26 21:26:14.469533] git-annex-remote-rclone --> GETCONFIG prefix
+    [2016-04-26 21:26:14.469741] git-annex-remote-rclone <-- VALUE annex.datengrotte
+    [2016-04-26 21:26:14.475725] git-annex-remote-rclone --> GETCONFIG target
+    [2016-04-26 21:26:14.47597] git-annex-remote-rclone <-- VALUE hubic
+    [2016-04-26 21:26:14.481164] git-annex-remote-rclone --> PREPARE-SUCCESS
+    [2016-04-26 21:26:14.485361] git-annex-remote-rclone <-- CHECKPRESENT GPGHMACSHA1--2a63df425e9d018adbc9a6e508817c727e414d55
+    [2016-04-26 21:26:14.485831] git-annex-remote-rclone --> DIRHASH GPGHMACSHA1--2a63df425e9d018adbc9a6e508817c727e414d55
+    [2016-04-26 21:26:14.485937] git-annex-remote-rclone <-- VALUE GM/2k/
+    [2016-04-26 21:26:25.571228] git-annex-remote-rclone --> CHECKPRESENT-FAILURE GPGHMACSHA1--2a63df425e9d018adbc9a6e508817c727e414d55
+    [2016-04-26 21:26:25.5726] git-annex-remote-rclone <-- CHECKPRESENT SHA256E-s2885269915-S104857600-C1--186620a13bc048d4c9d75ec3a504f9569e5a43047342be5e5279b14b0c445fa6.mp4
+    [2016-04-26 21:26:25.57296] git-annex-remote-rclone --> DIRHASH SHA256E-s2885269915-S104857600-C1--186620a13bc048d4c9d75ec3a504f9569e5a43047342be5e5279b14b0c445fa6.mp4
+    [2016-04-26 21:26:25.573207] git-annex-remote-rclone <-- VALUE 1v/zK/
+    [2016-04-26 21:26:27.392524] git-annex-remote-rclone --> CHECKPRESENT-FAILURE SHA256E-s2885269915-S104857600-C1--186620a13bc048d4c9d75ec3a504f9569e5a43047342be5e5279b14b0c445fa6.mp4
+    [2016-04-26 21:26:27.393076] chat: gpg ["--quiet","--trust-model","always","--batch","--passphrase-fd","23","--symmetric","--force-mdc","--no-textmode"]
+    [2016-04-26 21:26:31.103132] git-annex-remote-rclone <-- TRANSFER STORE GPGHMACSHA1--48e285fd650dac05eefa328bfbe8efd8a0ca2100 ../.git/annex/tmp/GPGHMACSHA1--48e285fd650dac05eefa328bfbe8efd8a0ca2100
+    [2016-04-26 21:26:31.103773] git-annex-remote-rclone --> DIRHASH GPGHMACSHA1--48e285fd650dac05eefa328bfbe8efd8a0ca2100
+    [2016-04-26 21:26:31.103888] git-annex-remote-rclone <-- VALUE 8Q/Z9/
 
 
 
