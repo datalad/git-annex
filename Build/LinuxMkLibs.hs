@@ -74,7 +74,15 @@ installLinkerShim top linker exe = do
 		[ "#!/bin/sh"
 		, "GIT_ANNEX_PROGRAMPATH=\"$0\""
 		, "export GIT_ANNEX_PROGRAMPATH"
+#ifdef MIN_VERSION_GLASGOW_HASKELL
 #if ! MIN_VERSION_GLASGOW_HASKELL(7,10,0,0)
+#define NEED_LOCPATH_WORKAROUND
+#endif
+#else
+#define NEED_LOCPATH_WORKAROUND
+#endif
+#ifdef NEED_LOCPATH_WORKAROUND
+#warning enabling LOCPATH workaround for old ghc
 		-- workaround for https://ghc.haskell.org/trac/ghc/ticket/7695
 		, "LOCPATH=/dev/null"
 		, "export LOCPATH"
