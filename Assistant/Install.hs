@@ -43,7 +43,10 @@ standaloneAppBase = getEnv "GIT_ANNEX_APP_BASE"
  - packaged apps, since it has to go into the user's home directory.
  -}
 ensureInstalled :: IO ()
-ensureInstalled = go =<< standaloneAppBase
+ensureInstalled = ifM (isJust <$> getEnv "GIT_ANNEX_PACKAGE_INSTALL")
+	( go Nothing
+	, go =<< standaloneAppBase
+	)
   where
 	go Nothing = installFileManagerHooks "git-annex"
 	go (Just base) = do
