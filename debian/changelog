@@ -22,6 +22,9 @@ git-annex (6.20160419) UNRELEASED; urgency=medium
     this behavior change when the assistant merges. Note though that this is
     not done for git annex sync's merges, so it will follow git's default or
     configured behavior.
+  * Fix bug that prevented resuming of uploads to encrypted special remotes
+    that used chunking. This bug could also expose the names of keys to
+    such remotes.
 
  -- Joey Hess <id@joeyh.name>  Tue, 19 Apr 2016 12:57:15 -0400
 
