@@ -82,7 +82,6 @@ installLinkerShim top linker exe = do
 #define NEED_LOCPATH_WORKAROUND
 #endif
 #ifdef NEED_LOCPATH_WORKAROUND
-#warning enabling LOCPATH workaround for old ghc
 		-- workaround for https://ghc.haskell.org/trac/ghc/ticket/7695
 		, "LOCPATH=/dev/null"
 		, "export LOCPATH"
