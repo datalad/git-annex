@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 6"
+ date="2016-04-27T17:41:01Z"
+ content="""
+then I guess it is not fully effective... I have removed the copies I had, and when I started 'git annex webapp' 6.20160425+gitgffe2ea2-1~ndall+1 version recreated them
+
+[[!format sh \"\"\"
+
+$> which git-annex
+/usr/bin/git-annex
+
+$> git annex version
+git-annex version: 6.20160425+gitgffe2ea2-1~ndall+1
+...
+
+$> ls -l .ssh/git-annex-*
+-rwx------ 1 yoh yoh 215 Apr 27 13:38 .ssh/git-annex-shell*
+-rwx------ 1 yoh yoh  61 Apr 27 13:38 .ssh/git-annex-wrapper*
+\"\"\"]]
+"""]]
