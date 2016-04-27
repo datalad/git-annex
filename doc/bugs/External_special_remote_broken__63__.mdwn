@@ -1,3 +1,5 @@
+[[!meta title="encrypted key not checked when resuming upload to chunked encrypted special remote"]]
+
 ### Please describe the problem.
 
 Resuming an upload seems not to work when used with chunking. Here is some sample conservation:
