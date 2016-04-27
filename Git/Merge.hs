@@ -45,9 +45,9 @@ merge' extraparams branch mergeconfig commitmode r
 merge'' :: [CommandParam] -> [MergeConfig] -> Repo -> IO Bool
 merge'' ps mergeconfig r
 	| MergeUnrelatedHistories `elem` mergeconfig =
-		ifM (Git.Version.older "2.8.2")
-			( go (ps ++ [Param "--allow-unrelated-histories"])
-			, go ps
+		ifM (Git.Version.older "2.9.0")
+			( go ps
+			, go (ps ++ [Param "--allow-unrelated-histories"])
 			)
 	| otherwise = go ps
   where

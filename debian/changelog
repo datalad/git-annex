@@ -14,7 +14,7 @@ git-annex (6.20160419) UNRELEASED; urgency=medium
     to refer to a file.
   * Fix bug that prevented annex.sshcaching=false configuration from taking
     effect when on a crippled filesystem. Thanks, divergentdave.
-  * git 2.8.2 is going to prevent git merge from merging in unrelated
+  * git 2.9.0 is going to prevent git merge from merging in unrelated
     branches. Since the webapp's pairing etc features often combine
     together repositories with unrelated histories, work around
     this behavior change when the assistant merges, by passing
