@@ -24,11 +24,11 @@ git-annex (6.20160419) UNRELEASED; urgency=medium
   * When git-annex is used with a git version older than 2.2.0, disable
     support for adjusted branches, since GIT_COMMON_DIR is needed to update
     them and was first added in that version of git.
-  * Avoid setting LOCPATH in linux standalone builds now that ghc has been
-    fixed to not hang when it cannot find locale files.
+  * Avoid setting LOCPATH in linux standalone builds that are built with
+    a ghc that has been fixed to not hang when it cannot find locale files.
   * Isolate test suite from global git config settings.
 
- -- Joey Hess <id@joeyh.name>  Tue, 19 Apr 2016 12:57:15 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 27 Apr 2016 14:07:18 -0400
 
 git-annex (6.20160418) unstable; urgency=medium
 
