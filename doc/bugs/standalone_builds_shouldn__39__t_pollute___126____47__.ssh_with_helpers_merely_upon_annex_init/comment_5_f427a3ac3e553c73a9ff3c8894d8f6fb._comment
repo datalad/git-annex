@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2016-04-27T17:14:49Z"
+ content="""
+There's no reason for git-annex-standalone.deb's git-annex to
+set up any of these wrappers, anywhere. That deb installs git-annex onto
+the system PATH, so none of these workarounds for it not being installed on
+the system path are needed.
+
+The `GIT_ANNEX_PACKAGE_INSTALL` variable is supposed to prevent that. It's
+set by debian/rules, since 5.20151116.
+"""]]
