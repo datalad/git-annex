@@ -18,3 +18,5 @@ collect2: error: ld returned 1 exit status
 Makefile:225: recipe for target 'android' failed
 make: *** [android] Error 1
 """]]
+
+> [[fixed|done]] --[[Joey]]
