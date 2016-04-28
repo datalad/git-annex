@@ -1,0 +1,29 @@
+git-annex 6.20160419 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Fix bug that prevented resuming of uploads to encrypted special remotes
+     that used chunking.
+   * That bug could also expose the names of keys to such remotes when
+     attempting to resume an upload, so it is a minor security issue.
+   * Fix duplicate progress meter display when downloading from a git remote
+     over http with -J.
+   * reinject: When src file's content cannot be verified, leave it alone,
+     instead of deleting it.
+   * reinject: Added new mode which can reinject known files into the annex.
+     For example: git-annex reinject --known /mnt/backup/*
+   * calckey: New plumbing command, calculates the key that would be used
+     to refer to a file.
+   * Fix bug that prevented annex.sshcaching=false configuration from taking
+     effect when on a crippled filesystem. Thanks, divergentdave.
+   * git 2.9.0 is going to prevent git merge from merging in unrelated
+     branches. Since the webapp's pairing etc features often combine
+     together repositories with unrelated histories, work around
+     this behavior change when the assistant merges, by passing
+     --allow-unrelated-histories. Note though that this is not done
+     for git annex sync's merges, so it will follow git's default or
+     configured behavior.
+   * When git-annex is used with a git version older than 2.2.0, disable
+     support for adjusted branches, since GIT\_COMMON\_DIR is needed to update
+     them and was first added in that version of git.
+   * Avoid setting LOCPATH in linux standalone builds that are built with
+     a ghc that has been fixed to not hang when it cannot find locale files.
+   * Isolate test suite from global git config settings."""]]
