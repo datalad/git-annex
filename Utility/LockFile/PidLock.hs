@@ -34,7 +34,6 @@ import Data.List
 import Network.BSD
 import System.FilePath
 import Data.Hash.MD5
-import System.Directory hiding (isSymbolicLink)
 import Control.Applicative
 import Prelude
 

@@ -12,7 +12,6 @@ module Utility.Path where
 
 import Data.String.Utils
 import System.FilePath
-import System.Directory hiding (isSymbolicLink)
 import Data.List
 import Data.Maybe
 import Data.Char
@@ -29,6 +28,7 @@ import Utility.Exception
 import qualified "MissingH" System.Path as MissingH
 import Utility.Monad
 import Utility.UserInfo
+import Utility.Directory
 
 {- Simplifies a path, removing any "." component, collapsing "dir/..", 
  - and removing the trailing path separator.

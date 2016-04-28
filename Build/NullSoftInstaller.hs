@@ -21,7 +21,6 @@
 {-# LANGUAGE OverloadedStrings, FlexibleContexts #-}
 
 import Development.NSIS
-import System.Directory hiding (isSymbolicLink)
 import System.FilePath
 import Control.Monad
 import Control.Applicative
@@ -36,6 +35,7 @@ import Utility.CopyFile
 import Utility.SafeCommand
 import Utility.Process
 import Utility.Exception
+import Utility.Directory
 import Build.BundledPrograms
 
 main = do

@@ -39,7 +39,6 @@ import Data.String.Utils
 import Data.Char
 import System.Environment
 import System.FilePath
-import System.Directory hiding (isSymbolicLink)
 import System.IO
 import Control.Monad
 import Prelude hiding (log)
@@ -49,6 +48,7 @@ import Utility.Misc
 import Utility.Exception hiding (try)
 import Utility.Path
 import Utility.FileSystemEncoding
+import Utility.Directory
 
 data Coord = Coord
 	{ coordLine :: Int

@@ -12,7 +12,7 @@ import Distribution.Verbosity (Verbosity)
 import System.FilePath
 import Control.Applicative
 import Control.Monad
-import System.Directory hiding (isSymbolicLink)
+import System.Directory
 import Data.List
 import Control.Exception
 

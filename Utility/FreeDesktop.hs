@@ -33,9 +33,9 @@ import Utility.Path
 import Utility.UserInfo
 import Utility.Process
 import Utility.PartialPrelude
+import Utility.Directory
 
 import System.Environment
-import System.Directory hiding (isSymbolicLink)
 import System.FilePath
 import Data.List
 import Data.String.Utils

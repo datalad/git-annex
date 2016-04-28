@@ -12,12 +12,12 @@ module Main where
 import Control.Monad.IfElse
 import System.Environment
 import System.FilePath
-import System.Directory hiding (isSymbolicLink)
 import Control.Monad
 import Build.BundledPrograms
 
 import Utility.SafeCommand
 import Utility.Path
+import Utility.Directory
 
 progDir :: FilePath -> FilePath
 #ifdef darwin_HOST_OS
