@@ -1,4 +1,4 @@
-git-annex (6.20160419) UNRELEASED; urgency=medium
+git-annex (6.20160419) unstable; urgency=medium
 
   * Fix bug that prevented resuming of uploads to encrypted special remotes
     that used chunking.
@@ -28,7 +28,7 @@ git-annex (6.20160419) UNRELEASED; urgency=medium
     a ghc that has been fixed to not hang when it cannot find locale files.
   * Isolate test suite from global git config settings.
 
- -- Joey Hess <id@joeyh.name>  Wed, 27 Apr 2016 14:07:18 -0400
+ -- Joey Hess <id@joeyh.name>  Thu, 28 Apr 2016 09:31:14 -0400
 
 git-annex (6.20160418) unstable; urgency=medium
 
