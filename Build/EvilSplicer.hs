@@ -39,7 +39,7 @@ import Data.String.Utils
 import Data.Char
 import System.Environment
 import System.FilePath
-import System.Directory
+import System.Directory hiding (isSymbolicLink)
 import System.IO
 import Control.Monad
 import Prelude hiding (log)

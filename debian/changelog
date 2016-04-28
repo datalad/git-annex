@@ -1,3 +1,9 @@
+git-annex (6.20160420) UNRELEASED; urgency=medium
+
+  * Fix build with directory-1.2.6.2.
+
+ -- Joey Hess <id@joeyh.name>  Thu, 28 Apr 2016 13:17:04 -0400
+
 git-annex (6.20160419) unstable; urgency=medium
 
   * Fix bug that prevented resuming of uploads to encrypted special remotes

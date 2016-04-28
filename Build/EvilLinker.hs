@@ -15,7 +15,7 @@ import Text.Parsec
 import Text.Parsec.String
 import Control.Applicative ((<$>))
 import Control.Monad
-import System.Directory
+import System.Directory hiding (isSymbolicLink)
 import Data.Maybe
 import Data.List
 

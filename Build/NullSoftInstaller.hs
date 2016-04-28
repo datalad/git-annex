@@ -21,7 +21,7 @@
 {-# LANGUAGE OverloadedStrings, FlexibleContexts #-}
 
 import Development.NSIS
-import System.Directory
+import System.Directory hiding (isSymbolicLink)
 import System.FilePath
 import Control.Monad
 import Control.Applicative

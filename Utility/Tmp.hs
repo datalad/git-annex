@@ -11,7 +11,7 @@
 module Utility.Tmp where
 
 import System.IO
-import System.Directory
+import System.Directory hiding (isSymbolicLink)
 import Control.Monad.IfElse
 import System.FilePath
 import Control.Monad.IO.Class

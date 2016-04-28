@@ -20,7 +20,7 @@ import Utility.OSX
 import Assistant.Install.AutoStart
 import Assistant.Install.Menu
 
-import System.Directory
+import System.Directory hiding (isSymbolicLink)
 import System.Environment
 #ifndef mingw32_HOST_OS
 import System.Posix.User

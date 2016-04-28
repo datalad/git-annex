@@ -10,7 +10,7 @@ module Main where
 import System.Environment (getArgs)
 import Data.Maybe
 import System.FilePath
-import System.Directory
+import System.Directory hiding (isSymbolicLink)
 import Control.Monad
 import Control.Monad.IfElse
 import Data.List

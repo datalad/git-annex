@@ -11,7 +11,7 @@
 module Utility.Directory where
 
 import System.IO.Error
-import System.Directory
+import System.Directory hiding (isSymbolicLink)
 import Control.Monad
 import System.FilePath
 import Control.Applicative

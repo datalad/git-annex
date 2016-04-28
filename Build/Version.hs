@@ -6,7 +6,7 @@ module Build.Version where
 
 import Data.List
 import System.Environment
-import System.Directory
+import System.Directory hiding (isSymbolicLink)
 import Data.Char
 import System.Process
 import Control.Applicative

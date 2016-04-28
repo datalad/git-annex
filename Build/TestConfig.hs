@@ -10,7 +10,7 @@ import Utility.SafeCommand
 
 import System.IO
 import System.FilePath
-import System.Directory
+import System.Directory hiding (isSymbolicLink)
 
 type ConfigKey = String
 data ConfigValue =

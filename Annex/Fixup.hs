@@ -20,7 +20,7 @@ import Utility.Exception
 
 import System.IO
 import System.FilePath
-import System.Directory
+import System.Directory hiding (isSymbolicLink)
 import Data.List
 import Control.Monad
 import Control.Monad.IfElse

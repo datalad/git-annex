@@ -4,7 +4,7 @@
 
 module Build.Configure where
 
-import System.Directory
+import System.Directory hiding (isSymbolicLink)
 import Control.Applicative
 import System.Environment (getArgs)
 import Control.Monad.IfElse

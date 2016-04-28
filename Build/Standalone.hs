@@ -12,7 +12,7 @@ module Main where
 import Control.Monad.IfElse
 import System.Environment
 import System.FilePath
-import System.Directory
+import System.Directory hiding (isSymbolicLink)
 import Control.Monad
 import Build.BundledPrograms
 

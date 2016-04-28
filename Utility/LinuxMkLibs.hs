@@ -14,7 +14,7 @@ import Utility.Monad
 import Utility.Path
 
 import Data.Maybe
-import System.Directory
+import System.Directory hiding (isSymbolicLink)
 import System.FilePath
 import Data.List.Utils
 import System.Posix.Files

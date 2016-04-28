@@ -12,7 +12,7 @@ module Utility.Path where
 
 import Data.String.Utils
 import System.FilePath
-import System.Directory
+import System.Directory hiding (isSymbolicLink)
 import Data.List
 import Data.Maybe
 import Data.Char
