@@ -8,8 +8,8 @@ git-annex (6.20160419) unstable; urgency=medium
 
   * Fix bug that prevented resuming of uploads to encrypted special remotes
     that used chunking.
-  * That bug could also expose the names of keys to such remotes when
-    attempting to resume an upload, so it is a minor security issue.
+  * That bug could also expose the names of keys to such remotes, so it is a
+    minor security issue.
   * Fix duplicate progress meter display when downloading from a git remote
     over http with -J.
   * reinject: When src file's content cannot be verified, leave it alone,

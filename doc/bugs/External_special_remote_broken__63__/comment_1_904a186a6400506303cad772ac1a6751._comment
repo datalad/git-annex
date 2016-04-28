@@ -10,9 +10,6 @@ non-chunked form, since a remote can be reconfigured to add chunking.
 So it's nothing to worry about.
 
 The lack of encryption of the key when checking to resume is definitely a
-bug. A bit of a security bug too, although it only happens when resuming
-uploads. (I double checked the other operations and they all encrypt keys)
-I suppose that if the server was hostile, it could randomly make
-uploads fail, in order to get git-annex to expose content keys via
-this bug when resuming.
+bug. A bit of a security bug too.
+(I double checked the other operations and they all encrypt keys)
 """]]
