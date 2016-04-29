@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="Gus"
+ subject="Branching questions"
+ date="2016-04-29T12:11:35Z"
+ content="""
+Thank you for your help. I would still like to ask a few related questions.
+
+1. I was unaware that RSS feeds provide a form of checksum. Are they stored as the filename? I still find it unlikely that the old file was changed in the few minutes between git-annex importing the feed and me asking for the file. However, maybe the file was changed, the feed was not updated and podcast downloading software are not as strict as git-annex.
+
+2. How should I proceed in order to update my podcasts. This is something I do not understand and I should play a bit with git-annex to figure out: there are multiple ways to remove files. As I understand it:
+  - I could `rm` the file. This removes the link. git still remembers the file and keeps it.
+  - I could `git rm` the file and commit. This could keep the file or remove it. git remembers the file's history and keeps its last state. However, in git-annex I am not sure what is kept in .git/. Can I re-add the file?
+  - I could `git-annex drop` the file. git-annex ensures the minimum number of copies, so this makes me believe that git totally forgets about the file (no last state copy). However, in the podcast tips you say that dropped files are not redownloaded. So this leaves me confused.
+
+I tried to `git rm -r` the podcast directory, and now I cannot importfeed it again. :-S Hmm... It is nothing important, but could you explain me what is going on, please?
+"""]]
