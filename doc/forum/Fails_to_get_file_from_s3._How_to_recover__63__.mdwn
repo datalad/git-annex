@@ -1,0 +1,16 @@
+I have an annex that has an s3 special remote. The s3 remote has been configured with shared encryption and it uses partsize (not chunking). Currently when I try to get a file from the s3 remote, it fails:
+
+    $ git annex get mybigfile.tbz.gpg
+    get mybigfile.tbz.gpg (from s3...)
+    76%         10.6MB/s 57sgpg: WARNING: encrypted message has been manipulated!
+
+      Unable to access these remotes: s3
+
+      Try making some of these repositories available:
+            15ac19e4-223a-4c81-b7f7-797b9b026b86 -- [s3]
+
+      (Note that these git remotes have annex-ignore set: origin)
+    failed
+    git-annex: get: 1 failed
+
+The file is about 3GB. This happens consistently at 76%. No other copy of the file exists. Is there some way I can get the file from s3, either without git annex or just have git annex ignore the error, so that I can inspect the file locally and see if there is anything wrong with it?
