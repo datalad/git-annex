@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="anarcat"
- subject="comment 1"
- date="2015-06-15T19:48:46Z"
- content="""
-it seems this is deliberate: there's a `nojson` tag on in the source code. I am just unclear why this is the case... and there doesn't seem to be documentation in the source about the nojson function or why it is desired...
-"""]]

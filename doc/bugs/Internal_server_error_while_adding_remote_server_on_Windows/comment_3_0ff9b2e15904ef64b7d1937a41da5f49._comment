@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- subject="comment 3"
- date="2014-12-03T17:35:19Z"
- content="""
-I was able to reproduce this. ssh is installed in C:\Program Files\Git\bin\, which is not in the PATH unless the msysgit installer is told to put all the unix utils in the PATH.
-"""]]

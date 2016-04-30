@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 15"""
- date="2015-08-04T20:54:23Z"
- content="""
-Thanks for testing. I see I had a problem with my fix; have improved it and
-the windows build is updated.
-"""]]

@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawnb4NsPsSSHTniueRuVnBzTLrDiDqBZIfY"
- nickname="Doug"
- subject="Same problem but still does not work with askpass installed"
- date="2013-07-24T18:19:25Z"
- content="""
-So, I got askpass installed and I'm still getting the same error as everybody else. It's a strange thing as I have my public key dumped on the remote server and I can log in fine manually. It's an empty passphrase so there shouldn't be any prompting going on.
-"""]]

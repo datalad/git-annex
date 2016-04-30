@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="silvio"
- subject="comment 3"
- date="2015-04-29T19:39:33Z"
- content="""
-Also %U gives a list of urls and basename of a list doesn't give back anything useful. I don't see how this could possibly work for you.
-"""]]

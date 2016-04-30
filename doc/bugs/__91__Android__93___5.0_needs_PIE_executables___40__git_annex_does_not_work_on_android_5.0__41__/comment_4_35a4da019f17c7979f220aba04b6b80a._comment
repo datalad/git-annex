@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 4"""
- date="2015-01-05T16:27:20Z"
- content="""
-I have added a 5.0 build that is built with -fPIE -pie. I have not tested
-this build yet so look forward to your feedback.
-"""]]

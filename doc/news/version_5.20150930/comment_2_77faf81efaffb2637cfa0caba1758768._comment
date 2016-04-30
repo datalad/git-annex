@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="jephte.clain@f0da2444b164953b596ac5e3e38da30b8c04e5e3"
- nickname="jephte.clain"
- subject="it does not work with debian squeeze lts"
- date="2015-10-01T12:13:11Z"
- content="""
-hmmm... nope, it still does not work on debian squeeze lts with kernel 2.6.32-5-amd64 (when I tested earlier, I was using a more recent kernel...)
-"""]]

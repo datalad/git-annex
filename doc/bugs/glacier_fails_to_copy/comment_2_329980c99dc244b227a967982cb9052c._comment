@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="Reed"
- subject="glacier command"
- date="2015-02-05T23:27:27Z"
- content="""
-My `/usr/bin/glacier` is owned by `python2-boto-git` which is a requirement for `glacier-cmd-git`. I've now installed `glacier-cli` from the git repo and it seems to be working fine. Thanks for the help!
-"""]]

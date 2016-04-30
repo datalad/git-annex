@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawnXm4VZC7ekVOXHGKjBObojiHB2E1kmMgA"
- nickname="Leonardo"
- subject="comment 2"
- date="2013-08-11T21:21:56Z"
- content="""
-Files with colon are not allowed in windows, they are interpreted as absolute path. The fact that you can checkout them \"fine\" (actually, their name get truncated to whatever was before the colon) using cygwin's GIT implementation is to be interpreted as a bug in cygwin's GIT in my opinion. I suggest renaming them before cygwin get fixed.
-"""]]

@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
- subject="comment 1"
- date="2015-05-14T16:17:08Z"
- content="""
-since, if I got it right, I will be able to point to any treeish (or collection of those), I should be able to implement any strategy in mind (e.g. for upgrade drop all not referenced in master, or even its HEAD and HEAD^ to allow a quick roll back).  So sounds good to me -- thanks joey!
-"""]]

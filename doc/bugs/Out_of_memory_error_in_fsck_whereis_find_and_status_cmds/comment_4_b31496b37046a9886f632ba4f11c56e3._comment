@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- nickname="joey"
- subject="comment 4"
- date="2013-03-27T16:38:07Z"
- content="""
-@Xyem, sounds like an unrelated bug. Also, no git-annex commands run `git status`. You can find other git commands that may be using a lot of memory by passing the --debug flag to git-annex.
-"""]]

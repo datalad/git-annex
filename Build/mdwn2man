@@ -21,7 +21,7 @@ while (<>) {
 	s/^\t/ /;
 	s/-/\\-/g;
 	s/git\\-annex/git-annex/g;
-	s/^Warning:.*//g;
+	s/^Warning:.*mdwn2man.*//g;
 	s/^$/.PP\n/;
 	s/^\*\s+(.*)/.IP "$1"/;
 	next if $_ eq ".PP\n" && $skippara;

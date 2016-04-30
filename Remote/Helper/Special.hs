@@ -189,11 +189,12 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 		go Nothing = return False
 		go' storer (Just checker) = sendAnnex k rollback $ \src ->
 			displayprogress p k $ \p' ->
-				storeChunks (uuid baser) chunkconfig k src p'
+				storeChunks (uuid baser) chunkconfig enck k src p'
 					(storechunk enc storer)
 					checker
 		go' _ Nothing = return False
 		rollback = void $ removeKey encr k
+		enck = maybe id snd enc
 
 	storechunk Nothing storer k content p = storer k content p
 	storechunk (Just (cipher, enck)) storer k content p = do

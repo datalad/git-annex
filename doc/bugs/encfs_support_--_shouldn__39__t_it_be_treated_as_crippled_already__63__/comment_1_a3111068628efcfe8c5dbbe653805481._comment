@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-04-27T16:59:51Z"
+ content="""
+git-annex does not these days treat lack of of hard link support as a crippled
+filesystem. It just falls back to copying files where it would make hard
+links.
+
+encfs is coming up crippled because it ignores lack of write bits on files;
+writing to a mode 444 file on an encfs filesystem by the owner of the file
+is allowed. 
+
+That breaks an important safeguard that git-annex relies on;
+for example this would work in a non-direct mode repository on an encfs
+filesystem, even though file permissions don't allow writing to annexed
+file contents:
+
+	joey@darkstar:/tmp/encfs/d> echo corrupt > bar
+
+So, you're really better off using direct mode on encfs.
+
+encfs has tons of other problems that make it not work well with
+git-annex, and generally insecure. I heartily recommend you reconsider
+using it.
+"""]]

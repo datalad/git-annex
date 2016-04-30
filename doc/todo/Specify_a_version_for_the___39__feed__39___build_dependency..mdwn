@@ -1,9 +1,0 @@
-(I'm not sure how you would like to do this -- should I send commits for you to pull, or do you prefer a patch pasted in here?)
-
-In any case, here's a build-deps fix, originally sent as a pull request [1].
-
-https://github.com/joeyh/git-annex/compare/master...jlebar:build-deps
-
-[1] https://github.com/joeyh/git-annex/pull/37
-
-> This is fine. Thanks, I merged your patch. [[done]] --[[Joey]] 

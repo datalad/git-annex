@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="zarel"
+ subject="comment 4"
+ date="2016-04-22T15:27:20Z"
+ content="""
+git-annex updated to the last version. .git removed, repo recreated from scratch in v5 direct mode and it still happens. I'll try to export GIT_TRACE and understand why the \"cat-file\" is taking 50% of a cpu
+"""]]

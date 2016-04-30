@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawnXybLxkPMYpP3yw4b_I6IdC3cKTD-xEdU"
- nickname="Matt"
- subject="comment 1"
- date="2014-04-27T15:04:09Z"
- content="""
-Thinking about it some more perhaps it's not a reasonable thing to do if you don't want people to be able to discover info about the repo.  However it would be good to somehow prevent git-annex from running a local init operation when working with a gcrypt repo.
-"""]]

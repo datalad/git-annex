@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="https://id.koumbit.net/anarcat"
- subject="comment 6"
- date="2015-06-09T13:51:10Z"
- content="""
-nevermind, i found [the neurodebian archive](http://neuro.debian.net/pkgs/git-annex-standalone.html) and i think it's what i was looking for - although it does pull in way more stuff than just git-annex, which is unfortunate.
-
-i have documented this in the [[install]] page, i hope that's alright.
-"""]]

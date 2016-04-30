@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="108.236.230.124"
- subject="comment 8"
- date="2014-03-10T18:12:29Z"
- content="""
-In a quick test with a 32 mb dummy fsck output, git-repair ballooned up to 1.7 gb. Clearly something not happy there, although in my case this did not cause it to crash.
-"""]]

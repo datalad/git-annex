@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="eigengrau"
- subject="comment 1"
- date="2015-05-30T12:30:39Z"
- content="""
-AFAIK absent files are supposed to be symlinks, even in direct mode. Once you “git annex get“ the files, the will be immediately unlocked. Only on VFAT file-systems (which do not support symlinks), absent files will have 0 byte placeholders. You might be able to force placeholders with the “annex.crippledfilesystem“ config option, but I’m not sure how you would enact it or whether that’s desirable.
-"""]]

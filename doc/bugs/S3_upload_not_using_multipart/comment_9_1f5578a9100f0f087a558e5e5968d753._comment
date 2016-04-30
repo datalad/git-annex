@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 9"""
- date="2014-10-28T18:25:04Z"
- content="""
-I have a WIP branch `aws-s3-multipart`. I stopped when I got blocked
-by a bad API in the aws library: <https://github.com/aristidb/aws/issues/141>
-"""]]

@@ -1,7 +1,0 @@
-it can take a significant amount of time for the [[automatic metadata script|tips/automatically_adding_metadata/]] to run on commit. it would be nice to have some progress, otherwise it just looks like the command is hanging.
-
-here it's been processing my photos for more than three hours, and it's probably not even halfway done, according to ps... [[anarcat]]
-
-> Well, I added an echo of each file as it's processed. More complex
-> progress could be done, patches accepted. But I suppose a file list is
-> good enough; it's good enough for git-annex itself. [[done]] --[[Joey]]

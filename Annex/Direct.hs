@@ -162,8 +162,8 @@ addDirect file cache = do
  - file. This is the same as what git does when updating the index
  - normally.
  -}
-mergeDirect :: Maybe Git.Ref -> Maybe Git.Ref -> Git.Branch -> Annex Bool -> Git.Branch.CommitMode -> Annex Bool
-mergeDirect startbranch oldref branch resolvemerge commitmode = exclusively $ do
+mergeDirect :: Maybe Git.Ref -> Maybe Git.Ref -> Git.Branch -> Annex Bool -> [Git.Merge.MergeConfig] -> Git.Branch.CommitMode -> Annex Bool
+mergeDirect startbranch oldref branch resolvemerge mergeconfig commitmode = exclusively $ do
 	reali <- liftIO . absPath =<< fromRepo indexFile
 	tmpi <- liftIO . absPath =<< fromRepo indexFileLock
 	liftIO $ whenM (doesFileExist reali) $
@@ -176,7 +176,7 @@ mergeDirect startbranch oldref branch resolvemerge commitmode = exclusively $ do
 		createDirectoryIfMissing True d
 
 	withIndexFile tmpi $ do
-		merged <- stageMerge d branch commitmode
+		merged <- stageMerge d branch mergeconfig commitmode
 		ok <- if merged
 			then return True
 			else resolvemerge
@@ -195,19 +195,18 @@ mergeDirect startbranch oldref branch resolvemerge commitmode = exclusively $ do
 
 {- Stage a merge into the index, avoiding changing HEAD or the current
  - branch. -}
-stageMerge :: FilePath -> Git.Branch -> Git.Branch.CommitMode -> Annex Bool
-stageMerge d branch commitmode = do
+stageMerge :: FilePath -> Git.Branch -> [Git.Merge.MergeConfig] -> Git.Branch.CommitMode -> Annex Bool
+stageMerge d branch mergeconfig commitmode = do
 	-- XXX A bug in git makes stageMerge unsafe to use if the git repo
 	-- is configured with core.symlinks=false
-	-- Using mergeNonInteractive is not ideal though, since it will
+	-- Using merge is not ideal though, since it will
 	-- update the current branch immediately, before the work tree
 	-- has been updated, which would leave things in an inconsistent
 	-- state if mergeDirectCleanup is interrupted.
 	-- <http://marc.info/?l=git&m=140262402204212&w=2>
-	liftIO $ print ("stagemerge in", d)
 	merger <- ifM (coreSymlinks <$> Annex.getGitConfig)
-		( return Git.Merge.stageMerge
-		, return $ \ref -> Git.Merge.mergeNonInteractive ref commitmode
+		( return $ \ref -> Git.Merge.stageMerge ref mergeconfig
+		, return $ \ref -> Git.Merge.merge ref mergeconfig commitmode
 		)
 	inRepo $ \g -> do
 		wd <- liftIO $ absPath d

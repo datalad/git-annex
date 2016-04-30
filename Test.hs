@@ -72,6 +72,7 @@ import qualified Annex.Link
 import qualified Annex.Init
 import qualified Annex.CatFile
 import qualified Annex.Path
+import qualified Annex.AdjustedBranch
 import qualified Annex.View
 import qualified Annex.View.ViewedFile
 import qualified Logs.View
@@ -110,7 +111,7 @@ optParser = TestOptions
 	)
 
 runner :: Maybe (TestOptions -> IO ())
-runner = Just $ \opts -> do
+runner = Just $ \opts -> isolateGitConfig $ do
 	ensuretmpdir
 	crippledfilesystem <- Annex.Init.probeCrippledFileSystem' tmpdir
 	case tryIngredients ingredients (tastyOptionSet opts) (tests crippledfilesystem opts) of
@@ -1048,7 +1049,7 @@ test_conflict_resolution =
 
 {- Conflict resolution while in an adjusted branch. -}
 test_conflict_resolution_adjusted_branch :: Assertion
-test_conflict_resolution_adjusted_branch = 
+test_conflict_resolution_adjusted_branch = whenM Annex.AdjustedBranch.isGitVersionSupported $
 	withtmpclonerepo $ \r1 ->
 		withtmpclonerepo $ \r2 -> do
 			indir r1 $ do
@@ -1787,6 +1788,15 @@ ensuretmpdir = do
 	e <- doesDirectoryExist tmpdir
 	unless e $
 		createDirectory tmpdir
+	
+{- Prevent global git configs from affecting the test suite. -}
+isolateGitConfig :: IO a -> IO a
+isolateGitConfig a = Utility.Tmp.withTmpDir "testhome" $ \tmphome -> do
+	tmphomeabs <- absPath tmphome
+	Utility.Env.setEnv "HOME" tmphomeabs True
+	Utility.Env.setEnv "XDG_CONFIG_HOME" tmphomeabs True
+	Utility.Env.setEnv "GIT_CONFIG_NOSYSTEM" "1" True
+	a
 
 cleanup :: FilePath -> IO ()
 cleanup = cleanup' False

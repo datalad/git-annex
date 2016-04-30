@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawnx8kHW66N3BqmkVpgtXDlYMvr8TJ5VvfY"
- nickname="Yaroslav"
- subject="missed the comment"
- date="2015-04-12T13:55:50Z"
- content="""
-blind me managed to miss your comment, for which I am thankful.  A branch sounded like the best way to go so I don't need to mess with patching BUT now thinking about it, I might just indeed move it into a new debian/patch/series-standalone  which would be the quilt series to use to patch things for building standalone.   Then it could be shipped in the main repo and applied only when necessary. Sounds good?
-"""]]

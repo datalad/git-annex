@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="timothyhobbs@8b50ff958c937fa4b6de1f9009f464b9ddfc2991"
- nickname="timothyhobbs"
- subject="comment 20"
- date="2016-04-03T23:00:48Z"
- content="""
-It occures to me, that git also cannot store empty folders, which would be a second hurdle when wanting to annex arbitrary file trees. It seems that a similar solution would be at hand, to store paths to empty folders in \".git/annex/empty-folders\". 
-"""]]

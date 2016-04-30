@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 4"""
- date="2015-04-23T18:17:23Z"
- content="""
-I agree, enableremote should not create the bucket. Made that change. Also,
-`git annex info $s3remote` will show some more info about it, including its
-endpoint.
-"""]]

@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.176"
- subject="comment 1"
- date="2014-05-29T18:21:30Z"
- content="""
-As far as I can understand the description (which has an lot of different \"foo\"'s in it that seem to refer to different things?) -- This is the assistant behaving as designed: Any time two repositories are pointed at the same transfer repository, or removable drive repository, etc, they will unify and share all their files.
-"""]]

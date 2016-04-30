@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-04-27T17:22:03Z"
+ content="""
+git-annex commands only operate on files that are checked into the git
+repsitory, which is why drop skips this file that has not been staged yet.
+I do not think it makes sense to change that.
+
+git-annex addurl batches changes to the index, which can speed up its
+performance significantly when adding a lot of files. So until it's done
+you can't operate on the files it adds. That speedup is really the only
+reason to use addurl --batch, so it doesn't make sense to change it to not
+have that optiomisation, otherwise you could just use it in non-batch mode
+and drop after it's done.
+
+So, if you want to drop files as soon as addurl adds them, you need to
+either not batch addurl, or you need to drop not by the name of the file
+that has not need checked into git yet, but by the key.
+
+So, I think it would make sense for you to use dropkey in this case.
+`git annex addurl --json --batch` already includes the key,
+so you can just pass that along to `git annex dropkey --batch`
+
+(Do note though that dropkey doesn't verify that other copies exist..)
+"""]]

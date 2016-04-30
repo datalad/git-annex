@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="zooko@0afad0e8b0168f9c2e504a0200ae2ccc1dcea7fe"
- nickname="zooko"
- subject="ticket to track this in the Ubuntu issue tracker"
- date="2015-05-28T22:01:23Z"
- content="""
-Here's a ticket in the Ubuntu issue tracker: https://bugs.launchpad.net/tahoe-lafs/+bug/1459847
-"""]]

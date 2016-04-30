@@ -18,15 +18,3 @@ collect2: error: ld returned 1 exit status
 Makefile:225: recipe for target 'android' failed
 make: *** [android] Error 1
 """]]
-
-> Based on
-> <http://git-annex.branchable.com/forum/Android__58___Cabal_hell>,
-> this was not a clean run of the scripts, but involved modifying and
-> re-running install-haskell-packages. 
-> 
-> So, I don't think this is a bug. If there is a problem with
-> install-haskell-packages not working etc, please show what happens
-> when just running the script, not after messing up cabal by trying to
-> recover from the problem.
-> 
-> [[done]] --[[Joey]]

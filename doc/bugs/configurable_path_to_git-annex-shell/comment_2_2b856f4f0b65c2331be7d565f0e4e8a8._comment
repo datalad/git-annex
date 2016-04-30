@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://schnouki.net/"
- nickname="Schnouki"
- subject="comment 2"
- date="2012-03-23T13:27:12Z"
- content="""
-Hmm, ok, solved. I'm using zsh, which is a little different: `.zshrc` is only read for interactive shells, so `ssh mybox 'echo $PATH'` displayed `/usr/bin:/bin:/usr/sbin:/sbin`. Using `.zshenv`, which is used even for non-interactive shells, did the trick. Thanks!
-"""]]

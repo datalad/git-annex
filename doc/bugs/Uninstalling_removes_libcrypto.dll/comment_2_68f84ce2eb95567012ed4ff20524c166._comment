@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 2"""
- date="2014-12-02T17:02:05Z"
- content="""
-Tried uninistalling git-annex on my windows test box, and there was
-no ssh command for git to use. git-annex provides a ssh, does msysgit
-also provide one now? Lacking bandwidth to check.
-"""]]

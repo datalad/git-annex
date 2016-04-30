@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 1"""
- date="2015-06-09T16:50:04Z"
- content="""
-I don't know what the holdup is. <http://bugs.debian.org/777577>
-"""]]

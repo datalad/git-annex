@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="CandyAngel"
- subject="comment 1"
- date="2015-06-04T12:31:32Z"
- content="""
-You can do this:
-
-    git annex find --in here | grep
-"""]]

@@ -1,6 +1,0 @@
-I recently had my git-annex repository die and it needed to be repaired. Two of my repositories are external hard drives. When I tried to use git-annex repair, it would churn for some hours, then error because the external hard drives were not plugged in. When I brought the two hard drives home from the various places that they are (safely) stored, it all worked fine, but it would have been great if git-annex repair could somehow do what it could with what was connected and do the rest as and when the other drives are plugged in. This must only become more of a problem as git-annex is used for longer, as one may have a handful of USB keys storing a little on each.
-
-[[!taglink moreinfo]]
-
-> With the lack of an error message or any followup, it's hard to take
-> this bug seriously, so [[done]] --[[Joey]]

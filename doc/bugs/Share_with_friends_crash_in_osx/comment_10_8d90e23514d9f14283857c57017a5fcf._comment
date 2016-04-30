@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.68"
- subject="comment 10"
- date="2014-01-20T16:28:43Z"
- content="""
-I have updated the autobuild again, now nettle is built with more optimisations disabled. I hope this fixes it because I'm running out of things to try.
-"""]]

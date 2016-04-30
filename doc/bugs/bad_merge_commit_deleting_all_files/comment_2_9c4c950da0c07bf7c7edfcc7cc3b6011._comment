@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.55"
- subject="comment 2"
- date="2014-07-09T18:25:08Z"
- content="""
-Also pointing in the direction of a race: The bad commit happened 3 seconds after another commit did. The other commit was an empty commit, so caused by the bug in 5.20140613.
-"""]]

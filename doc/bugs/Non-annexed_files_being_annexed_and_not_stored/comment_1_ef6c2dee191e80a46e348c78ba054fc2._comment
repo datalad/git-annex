@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-04-20T18:09:37Z"
+ content="""
+Seems that there are two potential bugs here; a file that was stored in git
+somehow got stored in the annex instead, and something seems to have
+happened to the content of the file in the annex.
+
+Try using `git annex log` to see where the content of the file was
+stored in the past and when the content got marked as no longer being
+present.
+
+A looser annex.largefiles setting could result in a modified file
+that had been stored in git being stored in the annex instead.
+Look at the symlink that was checked into git for the annexed file
+and compare that with the sha256sum of the file that you rescued
+from the git history. Are they the same or different?
+"""]]

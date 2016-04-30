@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.111"
- subject="comment 2"
- date="2014-10-15T17:30:45Z"
- content="""
-Hmm, yeah, it seems the upload to hackage failed, because hackage still rejects cabal files mentioning the legal os(gnu). Sigh. Fixed now.
-"""]]

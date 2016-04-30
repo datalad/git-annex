@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.152.108.145"
- subject="comment 1"
- date="2013-08-03T20:15:17Z"
- content="""
-Only seems to affect initial startup scan; files added outside the subdir after it was started up were not committed (which is the desired behavior when running the webapp in a subdir).
-"""]]

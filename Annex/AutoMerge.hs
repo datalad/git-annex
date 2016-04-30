@@ -43,16 +43,16 @@ import qualified Data.ByteString.Lazy as L
  - Callers should use Git.Branch.changed first, to make sure that
  - there are changes from the current branch to the branch being merged in.
  -}
-autoMergeFrom :: Git.Ref -> Maybe Git.Ref -> Git.Branch.CommitMode -> Annex Bool
-autoMergeFrom branch currbranch commitmode = do
+autoMergeFrom :: Git.Ref -> Maybe Git.Ref -> [Git.Merge.MergeConfig] -> Git.Branch.CommitMode -> Annex Bool
+autoMergeFrom branch currbranch mergeconfig commitmode = do
 	showOutput
 	case currbranch of
 		Nothing -> go Nothing
 		Just b -> go =<< inRepo (Git.Ref.sha b)
   where
 	go old = ifM isDirect
-		( mergeDirect currbranch old branch (resolveMerge old branch False) commitmode
-		, inRepo (Git.Merge.mergeNonInteractive branch commitmode)
+		( mergeDirect currbranch old branch (resolveMerge old branch False) mergeconfig commitmode
+		, inRepo (Git.Merge.merge branch mergeconfig commitmode)
 			<||> (resolveMerge old branch False <&&> commitResolvedMerge commitmode)
 		)
 

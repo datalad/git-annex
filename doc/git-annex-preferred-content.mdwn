@@ -154,7 +154,7 @@ elsewhere to allow removing it).
 * `standard`
 
   git-annex comes with some built-in preferred content expressions, that
-  can be used with repositories that are in some [[standard groups]].
+  can be used with repositories that are in some [[preferred content/standard groups/]].
 
   When a repository is in exactly one such group, you can use the "standard"
   keyword in its preferred content expression, to match whatever content

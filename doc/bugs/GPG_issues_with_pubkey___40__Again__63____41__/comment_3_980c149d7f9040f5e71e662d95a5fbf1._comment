@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="71.80.94.56"
- subject="comment 3"
- date="2014-02-06T21:53:23Z"
- content="""
-I can reproduce this, but only when using the hook special remote, so it's some problem with it.
-directory special remote works ok.
-"""]]

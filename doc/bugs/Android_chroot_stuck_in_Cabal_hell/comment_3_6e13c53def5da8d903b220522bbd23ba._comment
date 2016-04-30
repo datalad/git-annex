@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="divergentdave@5c17d06f6d67c6f157b76a4cc95ca764b7d2f899"
+ nickname="divergentdave"
+ subject="Further information"
+ date="2016-04-23T18:31:23Z"
+ content="""
+I did some further testing, but I'm still stumped. If I run `cabal configure -O0 -fAndroidSplice --ghc-options=-v`, I get the following items in the resulting log file. (trimmed for space)
+
+```
+Glasgow Haskell Compiler, Version 7.6.3, stage 2 booted by GHC version 7.6.3
+Using binary package database: /usr/lib/ghc/package.conf.d/package.cache
+Using binary package database: /home/builder/.ghc/i386-linux-7.6.3/package.conf.d/package.cache
+...
+hiding package unix-2.6.0.1 to avoid conflict with later version unix-2.7.1.0
+...
+Chasing modules from: *dist/setup/setup.hs
+Created temporary directory: /tmp/ghc1639_0
+*** C pre-processor:
+'/usr/bin/gcc' '-E' '-undef' '-traditional' '-fno-stack-protector' '-Wl,--hash-size=31' '-Wl,--reduce-memory-overheads' ... '-I' '/usr/lib/ghc/unix-2.6.0.1/include' ... '-x' 'c' './Common.hs' '-o' '/tmp/ghc1639_0/ghc1639_0.hscpp'
+...
+*** Linker:
+'/usr/bin/gcc' ... '-L/home/builder/.cabal/lib/i386-linux-ghc-7.6.3/unix-2.7.1.0' ... '-L/usr/lib/ghc/unix-2.6.0.1' ... '-lHSunix-2.7.1.0' ... '-lHSunix-2.6.0.1' ...
+/usr/lib/ghc/unix-2.6.0.1/libHSunix-2.6.0.1.a(execvpe.o): In function `pPrPr_disableITimers':
+(.text+0x300): multiple definition of `pPrPr_disableITimers'
+/home/builder/.cabal/lib/i386-linux-ghc-7.6.3/unix-2.7.1.0/libHSunix-2.7.1.0.a(ghcrts.o):ghcrts.c:(.text+0x0): first defined here
+collect2: error: ld returned 1 exit status
+```
+
+I'm not sure what \"hiding\" means in the context of GHC, but clearly it isn't working.
+"""]]

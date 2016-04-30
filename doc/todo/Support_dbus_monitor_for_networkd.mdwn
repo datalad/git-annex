@@ -1,5 +1,0 @@
-As of late, systemd-networkd supports a network monitor via dbus under “org.freedesktop.network1“. It would be convenient if the assistant supported this.
-
-Cf. this [commit](http://cgit.freedesktop.org/systemd/systemd/commit/?id=e331e24649213f2e093e16e4d3d64ee823dfc375).
-
-> patches! Awesome! merged [[done]] --[[Joey]]

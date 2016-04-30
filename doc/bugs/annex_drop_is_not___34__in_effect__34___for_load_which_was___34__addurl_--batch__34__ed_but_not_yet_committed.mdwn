@@ -1,0 +1,64 @@
+### Please describe the problem.
+
+Usecase (you might suggest a better way) is to 'annex' the content of files (via addurl) without actually committing symlinks to git (git-annex branch obviously should progress forward).  So the sequence is akin 'annex addurl', 'annex drop' both ran with annex.alwayscommit=false .  The issue is that it seems that if addurl is --batched, then symlink is not 'git add'ed until batched process finishes, and thus subsequent to 'addurl' 'drop' does nothing, leaving key behind not dropped.
+
+Related recent TODO wishlist is [[http://git-annex.branchable.com/todo/drop_--batch/]]
+
+### What steps will reproduce the problem?
+
+FWIW below is a somewhat noisy output from datalad's unittest (which addurl into the archive's content, so custom special remote is involved).  At the end of the run content is not dropped, symlink is not dangling.
+
+### What version of git-annex are you using? On what operating system?
+
+originally was a version from March but tried also with fresh  6.20160425+gitgffe2ea2-1~ndall+1
+
+### Please provide any additional information below.
+
+[[!format sh """
+
+2016-04-26 14:13:05,545 [DEBUG  ] Initiating a new process for BatchedAnnex(annex_cmd='addurl', annex_options=['--with-files', '--json'], git_options=[], output_proc=<function>, path=<<'/home/yoh/.tmp/datala...>>) (annexrepo.py:1145)
+2016-04-26 14:13:05,545 [Level 5] Command: ['git', '-c', 'receive.autogc=0', '-c', 'gc.auto=0', 'annex', 'addurl', '--with-files', '--json', '--batch'] (annexrepo.py:1148)
+2016-04-26 14:13:05,548 [Level 5] Sending 'dl+archive:SHA256E-s10240--0d52ce580b5ea9324dfc2ac7c714130f02499439e6b990282adb6580a97fe1d0.tar/1/file.txt#size=4 .dataladMCsP4y/file.txt\n' to batched annex BatchedAnnex(annex_cmd='addurl', annex_options=['--with-files', '--json'], git_options=[], output_proc=<function>, path=<<'/home/yoh/.tmp/datala...>>) (annexrepo.py:1202)
+2016-04-26 14:13:05,548 [Level 5] Done sending. (annexrepo.py:1210)
+2016-04-26 14:13:05,869 [DEBUG] Importing the rest of datalad.__init__ (__init__.py:15)
+2016-04-26 14:13:05,870 [DEBUG] Reading files: ['/etc/datalad/datalad.cfg', '/etc/xdg/datalad/config', '/home/yoh/.config/datalad/datalad.cfg', '.datalad/config'] (configparserinc.py:144)
+2016-04-26 14:13:05,959 [DEBUG] UI set to ConsoleLog(out=<file>) (__init__.py:48)
+2016-04-26 14:13:05,960 [DEBUG] UI set to UnderAnnexUI(out=<file>) (__init__.py:48)
+2016-04-26 14:13:05,962 [DEBUG] Not initiating existing cache for the archives under /tmp/datalad_temp_tree_setupmRy8cc/.git/datalad/tmp/archives (archives.py:262)
+2016-04-26 14:13:05,962 [Level 4] Sending 'VERSION 1' (base.py:312)
+2016-04-26 14:13:05,962 [Level 4] Received ['PREPARE'] (base.py:312)
+2016-04-26 14:13:05,962 [Level 4] Sending 'PREPARE-SUCCESS' (base.py:312)
+2016-04-26 14:13:05,962 [Level 4] Received ['CLAIMURL', 'dl+archive:SHA256E-s10240--0d52ce580b5ea9324dfc2ac7c714130f02499439e6b990282adb6580a97fe1d0.tar/1/file.txt#size=4'] (base.py:312)
+2016-04-26 14:13:05,963 [DEBUG] Claiming url 'dl+archive:SHA256E-s10240--0d52ce580b5ea9324dfc2ac7c714130f02499439e6b990282adb6580a97fe1d0.tar/1/file.txt#size=4' (base.py:316)
+2016-04-26 14:13:05,963 [Level 4] Sending "DEBUG Claiming url 'dl+archive:SHA256E-s10240--0d52ce580b5ea9324dfc2ac7c714130f02499439e6b990282adb6580a97fe1d0.tar/1/file.txt#size=4'" (base.py:312)
+2016-04-26 14:13:05,963 [Level 4] Sending 'CLAIMURL-SUCCESS' (base.py:312)
+2016-04-26 14:13:05,963 [Level 4] Received ['CHECKURL', 'dl+archive:SHA256E-s10240--0d52ce580b5ea9324dfc2ac7c714130f02499439e6b990282adb6580a97fe1d0.tar/1/file.txt#size=4'] (base.py:312)
+2016-04-26 14:13:05,964 [DEBUG] Current directory: /tmp/datalad_temp_tree_setupmRy8cc, url: dl+archive:SHA256E-s10240--0d52ce580b5ea9324dfc2ac7c714130f02499439e6b990282adb6580a97fe1d0.tar/1/file.txt#size=4 (archives.py:163)
+2016-04-26 14:13:05,964 [DEBUG] Initiating a new process for BatchedAnnex(annex_cmd='contentlocation', annex_options=[], git_options=[], output_proc=<function>, path=<<'/tmp/datalad_temp_tre...>>) (annexrepo.py:1145)
+2016-04-26 14:13:05,964 [Level 5] Command: ['git', '-c', 'receive.autogc=0', '-c', 'gc.auto=0', 'annex', 'contentlocation', '--batch'] (annexrepo.py:1148)
+2016-04-26 14:13:05,967 [Level 5] Sending 'SHA256E-s10240--0d52ce580b5ea9324dfc2ac7c714130f02499439e6b990282adb6580a97fe1d0.tar\n' to batched annex BatchedAnnex(annex_cmd='contentlocation', annex_options=[], git_options=[], output_proc=<function>, path=<<'/tmp/datalad_temp_tre...>>) (annexrepo.py:1202)
+2016-04-26 14:13:05,967 [Level 5] Done sending. (annexrepo.py:1210)
+2016-04-26 14:13:06,007 [Level 5] Received output: '.git/annex/objects/7p/mj/SHA256E-s10240--0d52ce580b5ea9324dfc2ac7c714130f02499439e6b990282adb6580a97fe1d0.tar/SHA256E-s10240--0d52ce580b5ea9324dfc2ac7c714130f02499439e6b990282adb6580a97fe1d0.tar' (annexrepo.py:1220)
+2016-04-26 14:13:06,008 [Level 4] Sending 'CHECKURL-CONTENTS 4' (base.py:312)
+2016-04-26 14:13:06,009 [Level 4] Received ['TRANSFER', 'RETRIEVE', 'URL-s4--dl,43archive:SHA256E-s10240--0d-d5401228f11172416c78bab2f3f31f61', '.git/annex/tmp/URL-s4--dl,43archive&cSHA256E-s10240--0d-d5401228f11172416c78bab2f3f31f61'] (base.py:312)
+2016-04-26 14:13:06,009 [INFO] RETRIEVE key URL-s4--dl,43archive:SHA256E-s10240--0d-d5401228f11172416c78bab2f3f31f61 into/from .git/annex/tmp/URL-s4--dl,43archive&cSHA256E-s10240--0d-d5401228f11172416c78bab2f3f31f61 (base.py:429)
+2016-04-26 14:13:06,009 [Level 4] Sending 'GETURLS URL-s4--dl,43archive:SHA256E-s10240--0d-d5401228f11172416c78bab2f3f31f61 dl+archive:' (base.py:312)
+2016-04-26 14:13:06,011 [Level 4] Received ['VALUE', 'dl+archive:SHA256E-s10240--0d52ce580b5ea9324dfc2ac7c714130f02499439e6b990282adb6580a97fe1d0.tar/1/file.txt#size=4'] (base.py:312)
+2016-04-26 14:13:06,011 [Level 4] Received ['VALUE'] (base.py:312)
+2016-04-26 14:13:06,011 [Level 4] Received URLS: ['dl+archive:SHA256E-s10240--0d52ce580b5ea9324dfc2ac7c714130f02499439e6b990282adb6580a97fe1d0.tar/1/file.txt#size=4'] (base.py:312)
+2016-04-26 14:13:06,011 [DEBUG] Getting file 1/file.txt from /tmp/datalad_temp_tree_setupmRy8cc/.git/annex/objects/7p/mj/SHA256E-s10240--0d52ce580b5ea9324dfc2ac7c714130f02499439e6b990282adb6580a97fe1d0.tar/SHA256E-s10240--0d52ce580b5ea9324dfc2ac7c714130f02499439e6b990282adb6580a97fe1d0.tar while PWD=/tmp/datalad_temp_tree_setupmRy8cc (archives.py:299)
+2016-04-26 14:13:06,011 [DEBUG] Requested file 1/file.txt from archive /tmp/datalad_temp_tree_setupmRy8cc/.git/annex/objects/7p/mj/SHA256E-s10240--0d52ce580b5ea9324dfc2ac7c714130f02499439e6b990282adb6580a97fe1d0.tar/SHA256E-s10240--0d52ce580b5ea9324dfc2ac7c714130f02499439e6b990282adb6580a97fe1d0.tar (archives.py:454)
+2016-04-26 14:13:06,012 [Level 2] Verifying that /tmp/datalad_temp_tree_setupmRy8cc/.git/datalad/tmp/archives/60e44d2ccc/1/file.txt exists (archives.py:462)
+2016-04-26 14:13:06,012 [DEBUG] Hardlinking /tmp/datalad_temp_tree_setupmRy8cc/.git/datalad/tmp/archives/60e44d2ccc/1/file.txt under .git/annex/tmp/URL-s4--dl,43archive&cSHA256E-s10240--0d-d5401228f11172416c78bab2f3f31f61 (cmd.py:372)
+2016-04-26 14:13:06,012 [Level 2] Hardlinking finished (cmd.py:382)
+2016-04-26 14:13:06,012 [Level 4] Sending 'TRANSFER-SUCCESS RETRIEVE URL-s4--dl,43archive:SHA256E-s10240--0d-d5401228f11172416c78bab2f3f31f61' (base.py:312)
+2016-04-26 14:13:06,022 [Level 5] Received output: {u'note': u'from datalad-archives', u'success': True, u'command': u'addurl', u'key': u'SHA256E-s4--0cf67fc72b3c86c7a454f6d86b43ed245a8e491d0e5288d4da8c7ff43a7bcdb0.txt', u'file': u'.dataladMCsP4y/file.txt'} (annexrepo.py:1220)
+2016-04-26 14:13:06,023 [DEBUG  ] Running: ['git', '-c', 'receive.autogc=0', '-c', 'gc.auto=0', '-c', 'annex.alwayscommit=false', 'annex', 'drop', '--debug', '.dataladMCsP4y/file.txt'] (cmd.py:351)
+2016-04-26 14:13:06,075 [ERROR  ] stderr| [2016-04-26 14:13:06.069266] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--cached","-z","--",".dataladMCsP4y/file.txt"] (cmd.py:351)
+2016-04-26 14:13:06,075 [Level 8] Finished running ['git', '-c', 'receive.autogc=0', '-c', 'gc.auto=0', '-c', 'annex.alwayscommit=false', 'annex', 'drop', '--debug', '.dataladMCsP4y/file.txt'] with status 0 (cmd.py:351)
+t sh
+
+"""]]
+
+
+[[!meta author=yoh]]

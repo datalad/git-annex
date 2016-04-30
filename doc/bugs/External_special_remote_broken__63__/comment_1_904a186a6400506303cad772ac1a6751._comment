@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-04-27T16:23:43Z"
+ content="""
+Reproduced this using a directory special remote.
+
+The first checkpresent is because a file can be present on a remote in
+non-chunked form, since a remote can be reconfigured to add chunking.
+So it's nothing to worry about.
+
+The lack of encryption of the key when checking to resume is definitely a
+bug. A bit of a security bug too, although it only happens when resuming
+uploads. (I double checked the other operations and they all encrypt keys)
+I suppose that if the server was hostile, it could randomly make
+uploads fail, in order to get git-annex to expose content keys via
+this bug when resuming.
+"""]]

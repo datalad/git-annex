@@ -1,3 +1,0 @@
-The `hS3` dependency doesn't work with the `network` / `network-uri` split, which causes a build failure for `git-annex` in a fresh sandbox with its current version bounds. Either more gymnastics are needed to constrain `network` to accommodate `hS3`, or the `s3-aws` branch could be merged in if it's ready. Building `git-annex` with a `< 2.6` constraint on `network` does succeed.
-
-> not a bug in git-annex, but in a dependency it uses, so [[done]]. (I already told the hS3 author about this, which is a very easy fix there, and he promised to fix it soon.) --[[Joey]]

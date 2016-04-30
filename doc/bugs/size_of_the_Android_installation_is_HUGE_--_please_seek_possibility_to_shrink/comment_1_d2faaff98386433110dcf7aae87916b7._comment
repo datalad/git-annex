@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="http://yarikoptic.myopenid.com/"
- nickname="site-myopenid"
- subject="sure there is no other ways to shrink?"
- date="2013-11-27T04:26:35Z"
- content="""
-Might be quite a stretch but it is hard to grasp that all 60MB are really needed... although with haskell -- it might indeed be the case, but I thought that may be there could be some symbols pulled in which aren't used, and for which when in gcc/ld world there are ways to get rid of them, e.g. -dead_strip (just excercising ideas)
-
-"""]]

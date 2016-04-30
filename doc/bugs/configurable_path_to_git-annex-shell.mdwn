@@ -1,7 +1,0 @@
-On one of my ssh remotes I had to install git-annex using cabal. No system-wide installation possible. Hence `git-annex` and `git-annex-shell` are not in the default `$PATH` but in `$HOME/.cabal/bin`.
-
-Right now the command run by git-annex when ssh'ing to a remote is hardcoded to "`git-annex-shell`", which doesn't work for me. It would be nice to be able to change this per remote, for example with an option named `annex.<remote>.annex-shell-command`. Changing "`git-annex-shell`" in `Remote/Helper/Ssh.hs` to "`~/.cabal/bin/git-annex-shell`" worked for me, but it's obviously very ugly :)
-
-Could you do that please? I'll try to hack it myself and send you a patch in the next few days, but I'm pretty new to Haskell so it may take me a while... Thanks!
-
-> [[closing|done]], see comments --[[Joey]] 

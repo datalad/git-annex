@@ -1,5 +1,0 @@
-Last week I added a new Box.com repository through the webapp with the latest git-annex version, and I've noticed that the remote uses the old chunksize param.
-
-Is this correct? AFAIK it should use the chunk param: http://git-annex.branchable.com/chunking/
-
->  [[fixed|done]] --[[Joey]] 

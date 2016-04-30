@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""furthermore.."""
+ date="2016-04-22T18:52:09Z"
+ content="""
+You might also use <http://myrepos.branchable.com/> as a somewhat
+more flexible alternative to submodules.
+
+It's worth thinking about what would happen if you were able to check a git
+repository into a git (annex) repository. A git repository contains files
+like `.git/index` that are git internals, and binary files. Now what
+happens if you have two checkouts of that nested git-in-git repository, and
+git writes two different versions of the `.git/index` file? You'd get a
+merge conflict that you have no way of resolving, involving two versions of
+an internal use binary file. This is a lot worse than a merge conflict involving
+some regular binary file like a jpeg, because at least with jpegs you can
+look at the two versions of the file and pick the better one.
+
+While git prevents checking in `.git` directories, you could technically work
+around it, if you really wanted to, by eg using `GIT_DIR` to rename
+the `.git` directory to something else. But it's just setting yourself up for
+unresolvable merge conflicts and pain.
+
+It's likewise not good to check in other version control system
+directories, like `.svn`, `.bzr`, or `.hg` into git repositories or
+vice-versa.
+
+Sometimes people complain that the git-annex assistant should support
+syncing nested git repositories, because after all other directory syncing
+tools like dropbox support that. But, a little known fact about dropbox is
+that it too can end up with a conflicted merge type situation, and when
+this happens it will do *something* to auto-resolve it. That something
+almost certianly does not include leaving the git repository what was
+stored in dropbox in an ideal state. So, while people put git repos into
+dropbox and get away with it, they are just being lucky to not run into the
+edge cases where doing that blows up.
+"""]]

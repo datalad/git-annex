@@ -1,5 +1,0 @@
-`git remote update $group` looks at the $group.away git config and fetches
-from the listed remotes. It would be useful if `git annex sync $group` did the same.
---[[Joey]]
-
-[[done]]

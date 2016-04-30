@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2016-04-20T18:40:57Z"
+ content="""
+Thanks, divergentdave for spotting that and also for writing a fix.
+I've finally noticed your comment and put the fix in. It would probably be
+good to open a todo if you have a patch in the future, to make sure it
+doesn't get forgotten about.
+"""]]

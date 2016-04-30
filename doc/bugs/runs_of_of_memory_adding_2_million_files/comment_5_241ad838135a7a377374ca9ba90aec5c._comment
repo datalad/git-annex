@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.55"
- subject="comment 5"
- date="2014-07-04T19:53:43Z"
- content="""
-The other memory leak is in getJournalFiles itself!
-"""]]

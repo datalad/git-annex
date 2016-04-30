@@ -1,7 +1,0 @@
-ATM it floods the screen with ok for every file (in non-interactive session even split across 2 lines).  As such it is just a pure noise if I care to check if entire repo is ok  -- a single summary line, possibly preceeded with reports about broken files would be much better imho.
-
-Cheers!
-
-> I jumped in a time machine, popped out in 2010 and implemented it
-> them, to ensure the bug is already fixed on your computer. [[done]]
-> --[[Joey]]

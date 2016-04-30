@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- subject="comment 12"
- date="2015-01-07T20:39:27Z"
- content="""
-After some work, all binaries are now built PIE. Further testing appreciated.
-"""]]

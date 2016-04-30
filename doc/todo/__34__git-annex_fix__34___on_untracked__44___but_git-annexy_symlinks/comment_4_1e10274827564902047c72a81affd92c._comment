@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawnVnsqEy82M-MuS2gLri-az83wSQ6lXSrc"
- nickname="Jean"
- subject="I'm with Remy here"
- date="2015-04-09T05:02:50Z"
- content="""
-I can't even comprehend how git-annex gets into this situation. From what angle does it make sense to ever have a symlink pointing at a `.git/annex/objects/...` and not be tracked?
-"""]]

@@ -1,9 +1,0 @@
-## Use Case
-
-I want to import a bunch of files that are hosted somewhere, they nicely sorted by year and such. Instead of addurl'ing each by hand (or writing a custom script each time this happens) I want to simply:
-
-git-annex addurl --recursive http://somehost.tld/somedir/
-
-For sanity, mimicking wget closely with default depth of 5, but customizable with the --level switch.
-
-> [[done]] --[[Joey]]

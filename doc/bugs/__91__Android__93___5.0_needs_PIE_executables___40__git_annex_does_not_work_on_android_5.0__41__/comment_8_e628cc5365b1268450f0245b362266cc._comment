@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="etset"
- subject="Still not working"
- date="2015-01-06T22:48:18Z"
- content="""
-The terminal opens, showing the error message at start and at every new opened tab, without a working shell ever appearing.
-"""]]

@@ -18,6 +18,7 @@ Build-Depends:
 	libghc-resourcet-dev,
 	libghc-quickcheck2-dev,
 	libghc-monad-control-dev (>= 0.3),
+	libghc-transformers-dev,
 	libghc-exceptions-dev (>= 0.6),
 	libghc-unix-compat-dev,
 	libghc-dlist-dev,

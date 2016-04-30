@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-04-20T18:14:25Z"
+ content="""
+So the directory structure got lower cased when you copied it from OSX to
+linux. OSX remembered a lower-case name for the J4 directory, for example,
+and propigated that over to linux.
+
+Unfortunately, git-annex is stuck using mixed case hash directories for
+backwards compatability reasons. Changing to all lower-case hash
+directories would need every git-annex repo to be converted; would
+invalidate all old tags and branches and history in the repos, etc.
+This is discussed in [[design/new_repo_versions]].
+
+It's actually possible to make brand-new git-annex repos use all lower case
+hash directories today, by setting `git config annex.tune.objecthashlower true`
+before you run `git annex init` for the first time. 
+
+If you know you will need to move a repository between case-insensative and
+case-sensative filesystems, you could use that configuration. But that
+would be very forward looking, and instead users are just going to stumble
+over the mixed case directories from time to time.
+
+What I'd recommend you do is, move the repository back to OSX, and then
+make a clone of it on the linux system, and use `git annex move --all
+--from origin` to move all the annexed file contents over from OSX to
+linux. This method avoids the problem entirely.
+"""]]

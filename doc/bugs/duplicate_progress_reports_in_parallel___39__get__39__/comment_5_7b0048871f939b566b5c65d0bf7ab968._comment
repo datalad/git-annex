@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2016-04-19T16:50:02Z"
+ content="""
+Reproduced it. The crucial thing is that this is a download from a git
+remote over http. Seems that in that case, the same progress info ends up
+getting fed into two separate progress meters.
+"""]]

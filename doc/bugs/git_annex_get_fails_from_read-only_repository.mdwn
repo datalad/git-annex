@@ -44,3 +44,5 @@ The remote repository is marked as read-only. The user on the remote has only re
 Yes! :-) Despite this, everything works like a charm with several repos on different OSs with lots of data. Thanks for this great tool!
 
 > [[fixed|done]] --[[Joey]]
+
+If others are in the same situation as me here, note that you only need to upgrade the server side of things to resolve this. The backports from neurodebian work it, you need something at least 6.201602XX. --[[anarcat]]

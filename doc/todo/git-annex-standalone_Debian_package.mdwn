@@ -1,3 +1,0 @@
-As proposed with a sketch in https://github.com/joeyh/git-annex/pull/39, for DataLad we would need to get recent annex on older Debian/Ubuntu releases to get our testing farm and perspective users equipped with bleeding edge annex
-
-> merged [[done]] --[[Joey]]

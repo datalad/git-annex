@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.112"
- subject="comment 4"
- date="2014-08-03T18:22:58Z"
- content="""
-The aws library does not support multipart yet either; here's the bug report requesting it: <https://github.com/aristidb/aws/issues/94>
-"""]]

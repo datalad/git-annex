@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- subject="comment 10"
- date="2015-01-07T02:41:21Z"
- content="""
-I really want to know if I managed to get git-annex linked PIE before proceeding with furher yak shaving on getting busybox, etc built PIE. 
-
-If you can use adb or another terminal, see if you can run /data/data/ga.androidterm/lib/lib.git-annex.so and if it prints git-annex's usage message.
-"""]]

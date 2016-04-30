@@ -1,5 +1,0 @@
-### Please describe the problem.
-
-I see no easy way to determine version of git-annex (besides as of the debian package).  git annex is not aware of "git annex --version" either
-
-[[done]]

@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- subject="comment 4"
- date="2014-12-03T17:36:58Z"
- content="""
-Except it turns out that Git/bin is not in PATH by default.
-
-So, instead, git-annex will bundle ssh, but install it to Git/cmd, which is in PATH. This avoids the conflict and fixed [[bugs/Internal_server_error_while_adding_remote_server_on_Windows]]
-"""]]

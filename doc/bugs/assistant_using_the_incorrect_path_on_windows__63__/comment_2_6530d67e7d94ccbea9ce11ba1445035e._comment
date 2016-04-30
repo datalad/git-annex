@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.227"
- subject="comment 2"
- date="2013-12-31T21:17:32Z"
- content="""
-It seems that both ssh-keygen and gpg are for some reason acting as if HOME is set to /home/Familyroom. 
-git-annex does not do anything to override the default home directory these programs use, and AFAIK, nothing has changed in the Windows build between the working and broken versions that could have anything to do with this.
-"""]]

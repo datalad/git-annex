@@ -43,4 +43,5 @@ The following tuning parameters are available:
 
 Note that git-annex will automatically propagate these settings to
 `.git/config` for tuned repositories. You should never directly change
-these settings in `.git/config`
+these settings in `.git/config`, and should never set them in global
+gitconfig.

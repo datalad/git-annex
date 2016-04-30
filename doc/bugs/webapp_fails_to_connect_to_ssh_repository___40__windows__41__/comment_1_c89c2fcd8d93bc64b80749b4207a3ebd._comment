@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="anton"
- subject="me too"
- date="2015-05-07T09:50:09Z"
- content="""
-I get similar results on Windows, but I only use the command line. For some reason git-annex ignores the ssh-agent settings (SSH_AUTH_SOCK=...) and uses the wrong path for the ssh config dir -- /home/username/.ssh (that probably doesn't exist) -- instead of c:/Users/username/.ssh (or whatever it really is). Your issue is probably that ssh wrongly looks for known_hosts in /home/username/.ssh and asks whether you wan't to accept the unknown host key.
-
-SSH works when ran by git itself (like git clone/push/fetch), also for rsync, but seemingly not git-annex.
-"""]]

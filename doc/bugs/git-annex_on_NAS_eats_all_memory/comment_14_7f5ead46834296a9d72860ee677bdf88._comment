@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawlmLuHhscJsoAqb9q0N3LdtHum6LjY1LK4"
- nickname="Markus"
- subject="comment 14"
- date="2015-02-22T02:03:59Z"
- content="""
-Added \"export LANG=en_US.utf8\" to runshell and now it works - fuck yeah!
-"""]]

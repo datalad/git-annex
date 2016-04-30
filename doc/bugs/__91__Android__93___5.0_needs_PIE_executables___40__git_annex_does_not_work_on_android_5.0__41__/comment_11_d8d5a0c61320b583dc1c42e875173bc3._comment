@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="etset"
- subject="git-annex is correctly linked"
- date="2015-01-07T14:30:38Z"
- content="""
-I tested the executable you mention, and indeed, the git-annex help/list of commands appears. I also tested every other executable in the folder, and most of them display the PIE error message.
-"""]]

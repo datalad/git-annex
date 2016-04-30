@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.2"
- subject="comment 6"
- date="2014-07-16T18:38:51Z"
- content="""
-It appears to be the remoteResponderThread crashing (based on adding debugging around all hGetLine call sites).
-"""]]

@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.227"
- subject="comment 1"
- date="2014-01-02T01:11:15Z"
- content="""
-This is due to the code that restarts git hash-object if it crashes (because it has been known to crash before). Utility.CoProcess needs to have a limit to the number of times it retries when something is failing.
-"""]]

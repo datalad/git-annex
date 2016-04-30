@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="cbaines"
- ip="86.166.14.171"
- subject="comment 3"
- date="2014-04-20T19:50:12Z"
- content="""
-Looking at the contents of the apk for the x86 architecture (which this tablet is), would you expect that file to be there? That file only appears in the /lib/armeabi and not /lib/x86 ?
-"""]]

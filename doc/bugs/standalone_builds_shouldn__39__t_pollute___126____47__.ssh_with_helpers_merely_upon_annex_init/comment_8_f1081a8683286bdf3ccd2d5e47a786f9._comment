@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2016-04-27T17:57:49Z"
+ content="""
+Yeah, the assistant has a separate code path that writes those wrappers.
+
+I've made it also honor the GIT_ANNEX_PACKAGE_INSTALL setting.
+"""]]

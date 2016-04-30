@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawmZgZuUhZlHpd_AbbcixY0QQiutb2I7GWY"
- nickname="Jimmy"
- subject="S3 works without encryption"
- date="2013-11-06T21:09:26Z"
- content="""
-Not surprisingly, S3 repos work without encryption.
-"""]]

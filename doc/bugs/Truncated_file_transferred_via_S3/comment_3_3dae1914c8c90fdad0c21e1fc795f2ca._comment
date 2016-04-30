@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.154.7.235"
- subject="comment 3"
- date="2013-07-11T16:16:03Z"
- content="""
-Would all these files that wrong size have been transferred to this computer via S3 too? And can you spot the same weird endinaness problem in them too? Are the files only getting corrupted on one computer, or on both?
-"""]]

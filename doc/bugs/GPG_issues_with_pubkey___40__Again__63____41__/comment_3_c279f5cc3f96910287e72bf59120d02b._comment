@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="71.80.94.56"
- subject="comment 3"
- date="2014-02-06T22:07:55Z"
- content="""
-Actually, it seems to affect also S3 and other remotes that call setCreds.
-"""]]

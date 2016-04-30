@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.68"
- subject="comment 1"
- date="2014-01-19T22:43:10Z"
- content="""
-AFAIK, this will work fine if your OS is able to resolve those addresses using its regular resolver. Works fine here. Is `libnss-mdns` installed?
-"""]]

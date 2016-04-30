@@ -1,5 +1,0 @@
-lsof got updated to version 4.88 some days ago (in archlinux) and since then the assistant reports the Committer crashed while parsing lsof output.
-
-After reverting to the previous version (4.87), it's working fine.
-
-> [[fixed|done]] --[[Joey]]

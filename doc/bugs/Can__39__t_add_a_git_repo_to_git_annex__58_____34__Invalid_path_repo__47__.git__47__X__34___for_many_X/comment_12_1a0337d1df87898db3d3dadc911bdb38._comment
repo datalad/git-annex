@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawlkMeBGmu0UM0O8RPxCfmlT2taReMsflWY"
- nickname="Markus"
- subject="comment 12"
- date="2015-01-09T02:09:54Z"
- content="""
-Just adding my voice to the choir: My use case is very similar to Abdó's and git-annex not handling nested git repos is what stopped me from taking it into use sometime ago when I tried it. To me submodules would seem like a good way to handle this, but others here clearly understand git better than I do so I don't have much to add.
-"""]]

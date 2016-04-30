@@ -1,31 +1,61 @@
 # NAME
 
-git-annex reinject - sets content of annexed file
+git-annex reinject - inject content of file back into annex
 
 # SYNOPSIS
 
-git annex reinject `src dest`
+git annex reinject `[src dest]`
+
+git annex reinject --known `[src]`
 
 # DESCRIPTION
 
-Moves the src file into the annex as the content of the dest file,
-which should be an already annexed file whose content is not present.
+Moves the content of the src file or files into the annex.
+Only known file contents will be reinjected. Any unknown src files will
+be left unchanged.
 
 This can be useful if you have obtained the content of a file from
-elsewhere and want to put it in the local annex.
+elsewhere and want to put it in the local annex. For example, if a file's
+content has been lost and you have a backup, you can restore the backup and
+reinject it into your local repository.
 
-Verifies that the src file's content matches with the content that the dest
-file is expected to have, and refuses to reinject it otherwise.
-
-Example:
+There are two ways to use this command. Specifying a src file and the name
+of a dest file (located inside the repository's working tree)
+injects the src file as the content of the dest file.
 
 	git annex reinject /tmp/foo.iso foo.iso
+
+Or the `--known` option can be used to reinject all known src files, without
+needing to specify the dest file.
+
+	git annex reinject --known /tmp/*.iso
+
+# OPTIONS
+
+* `--known`
+
+  With this option, each specified src file is hashed using the default
+  key-value backend (or the one specified with `--backend`), and if git-annex
+  has a record of the file having been in the annex before, the content is
+  reinjected.
+
+  Note that this will reinject old versions of files that have been
+  modified or deleted from the current git branch.
+  Use [[git-annex-unused]](1) to detect when such old and potentially
+  unused files have been reinjected.
+
+* `--backend`
+
+  Specify the key-value backend to use when checking if a file is known
+  with the `--known` option.
 
 # SEE ALSO
 
 [[git-annex]](1)
 
 [[git-annex-add]](1)
+
+[[git-annex-unused]](1)
 
 [[git-annex-fsck]](1)
 

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 1"
+ date="2016-04-24T10:56:01Z"
+ content="""
+    git-annex reinject --known can be passed a list of files and it will reinject any that hash to known annexed contents and ignore the rest.
+
+I **so** can't wait for this to get released, it will save so much time for me!
+
+Thank you Joey ^_^
+"""]]

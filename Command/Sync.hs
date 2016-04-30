@@ -10,6 +10,7 @@ module Command.Sync (
 	cmd,
 	CurrBranch,
 	getCurrBranch,
+	mergeConfig,
 	merge,
 	prepMerge,
 	mergeLocal,
@@ -32,6 +33,7 @@ import Annex.Hook
 import qualified Git.Command
 import qualified Git.LsFiles as LsFiles
 import qualified Git.Branch
+import qualified Git.Merge
 import qualified Git.Types as Git
 import qualified Git.Ref
 import qualified Git
@@ -111,8 +113,8 @@ seek o = allowConcurrentOutput $ do
 	-- These actions cannot be run concurrently.
 	mapM_ includeCommandAction $ concat
 		[ [ commit o ]
-		, [ withbranch mergeLocal ]
-		, map (withbranch . pullRemote o) gitremotes
+		, [ withbranch (mergeLocal mergeConfig) ]
+		, map (withbranch . pullRemote o mergeConfig) gitremotes
 		,  [ mergeAnnex ]
 		]
 	when (contentOption o) $
@@ -123,14 +125,14 @@ seek o = allowConcurrentOutput $ do
 			-- and merge again to avoid our push overwriting
 			-- those changes.
 			mapM_ includeCommandAction $ concat
-				[ map (withbranch . pullRemote o) gitremotes
+				[ map (withbranch . pullRemote o mergeConfig) gitremotes
 				, [ commitAnnex, mergeAnnex ]
 				]
 	
 	void $ includeCommandAction $ withbranch pushLocal
 	-- Pushes to remotes can run concurrently.
 	mapM_ (commandAction . withbranch . pushRemote o) gitremotes
-
+	
 type CurrBranch = (Maybe Git.Branch, Maybe Adjustment)
 
 {- There may not be a branch checked out until after the commit,
@@ -166,11 +168,14 @@ getCurrBranch = do
 prepMerge :: Annex ()
 prepMerge = Annex.changeDirectory =<< fromRepo Git.repoPath
 
-merge :: CurrBranch -> Git.Branch.CommitMode -> Git.Branch -> Annex Bool
-merge (Just b, Just adj) commitmode tomerge =
-	updateAdjustedBranch tomerge (b, adj) commitmode
-merge (b, _) commitmode tomerge =
-	autoMergeFrom tomerge b commitmode
+mergeConfig :: [Git.Merge.MergeConfig]	
+mergeConfig = [Git.Merge.MergeNonInteractive]
+
+merge :: CurrBranch -> [Git.Merge.MergeConfig] -> Git.Branch.CommitMode -> Git.Branch -> Annex Bool
+merge (Just b, Just adj) mergeconfig commitmode tomerge =
+	updateAdjustedBranch tomerge (b, adj) mergeconfig commitmode
+merge (b, _) mergeconfig commitmode tomerge =
+	autoMergeFrom tomerge b mergeconfig commitmode
 
 syncBranch :: Git.Branch -> Git.Branch
 syncBranch = Git.Ref.under "refs/heads/synced" . fromDirectBranch . fromAdjustedBranch
@@ -243,8 +248,8 @@ commitStaged commitmode commitmessage = do
 	void $ inRepo $ Git.Branch.commit commitmode False commitmessage branch parents
 	return True
 
-mergeLocal :: CurrBranch -> CommandStart
-mergeLocal currbranch@(Just branch, madj) = go =<< needmerge
+mergeLocal :: [Git.Merge.MergeConfig] -> CurrBranch -> CommandStart
+mergeLocal mergeconfig currbranch@(Just branch, madj) = go =<< needmerge
   where
 	syncbranch = syncBranch branch
 	needmerge = ifM isBareRepo
@@ -257,9 +262,9 @@ mergeLocal currbranch@(Just branch, madj) = go =<< needmerge
 	go False = stop
 	go True = do
 		showStart "merge" $ Git.Ref.describe syncbranch
-		next $ next $ merge currbranch Git.Branch.ManualCommit syncbranch
+		next $ next $ merge currbranch mergeconfig Git.Branch.ManualCommit syncbranch
 	branch' = maybe branch (adjBranch . originalToAdjusted branch) madj
-mergeLocal (Nothing, _) = stop
+mergeLocal _ (Nothing, _) = stop
 
 pushLocal :: CurrBranch -> CommandStart
 pushLocal b = do
@@ -291,13 +296,13 @@ updateBranch syncbranch updateto g =
 		, Param $ Git.fromRef $ updateto
 		] g
 
-pullRemote :: SyncOptions -> Remote -> CurrBranch -> CommandStart
-pullRemote o remote branch = stopUnless (pure $ pullOption o) $ do
+pullRemote :: SyncOptions -> [Git.Merge.MergeConfig] -> Remote -> CurrBranch -> CommandStart
+pullRemote o mergeconfig remote branch = stopUnless (pure $ pullOption o) $ do
 	showStart "pull" (Remote.name remote)
 	next $ do
 		showOutput
 		stopUnless fetch $
-			next $ mergeRemote remote branch
+			next $ mergeRemote remote branch mergeconfig
   where
 	fetch = inRepoWithSshOptionsTo (Remote.repo remote) (Remote.gitconfig remote) $
 		Git.Command.runBool
@@ -308,8 +313,8 @@ pullRemote o remote branch = stopUnless (pure $ pullOption o) $ do
  - were committed (or pushed changes, if this is a bare remote),
  - while the synced/master may have changes that some
  - other remote synced to this remote. So, merge them both. -}
-mergeRemote :: Remote -> CurrBranch -> CommandCleanup
-mergeRemote remote currbranch = ifM isBareRepo
+mergeRemote :: Remote -> CurrBranch -> [Git.Merge.MergeConfig] -> CommandCleanup
+mergeRemote remote currbranch mergeconfig = ifM isBareRepo
 	( return True
 	, case currbranch of
 		(Nothing, _) -> do
@@ -321,7 +326,7 @@ mergeRemote remote currbranch = ifM isBareRepo
 	)
   where
 	mergelisted getlist = and <$> 
-		(mapM (merge currbranch Git.Branch.ManualCommit . remoteBranch remote) =<< getlist)
+		(mapM (merge currbranch mergeconfig Git.Branch.ManualCommit . remoteBranch remote) =<< getlist)
 	tomerge = filterM (changed remote)
 	branchlist Nothing = []
 	branchlist (Just branch) = [branch, syncBranch branch]

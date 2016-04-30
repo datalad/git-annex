@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-04-19T17:22:48Z"
+ content="""
+unix-2.6.0.1 is a very old version of that package, and unix-2.7.1.0 is
+included with the version of ghc used by the android build.
+
+So, it seems that some dependency mess is causing cabal to try to install a
+second, old version of unix. Which can't possibly work.
+
+This is apparently happening in the host ghc setup, not the cross compiling
+ghc setup.
+"""]]

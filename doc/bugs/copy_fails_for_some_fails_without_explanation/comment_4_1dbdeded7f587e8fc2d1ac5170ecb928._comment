@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.146"
- subject="comment 4"
- date="2014-03-06T18:32:33Z"
- content="""
-Old versions of git-annex have known bugs involving zombies. What version?
-"""]]

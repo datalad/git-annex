@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="etset"
- subject="comment 1"
- date="2014-12-03T09:42:01Z"
- content="""
-git-annex also stopped working for me after upgrading to Android 5 in my Nexus 7 (2012). Opening it shows the above error (\"error: only position independent executables (PIE) are supported.\") in the terminal, and that's it.
-"""]]

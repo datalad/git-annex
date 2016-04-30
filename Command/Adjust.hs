@@ -9,7 +9,6 @@ module Command.Adjust where
 
 import Command
 import Annex.AdjustedBranch
-import Annex.Version
 
 cmd :: Command
 cmd = notBareRepo $ notDirect $ noDaemonRunning $
@@ -34,8 +33,7 @@ seek = commandAction . start
 
 start :: Adjustment -> CommandStart
 start adj = do
-	unlessM versionSupportsAdjustedBranch $
-		error "Adjusted branches are only supported in v6 or newer repositories."
+	checkVersionSupported
 	showStart "adjust" ""
 	enterAdjustedBranch adj
 	next $ next $ return True

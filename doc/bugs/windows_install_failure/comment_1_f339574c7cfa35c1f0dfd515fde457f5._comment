@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawnI6EUnvCSB6JG3KsjCDpBIBWYniaZkhXs"
- nickname="Jason"
- subject="expected behavior"
- date="2013-06-27T02:44:37Z"
- content="""
-I expect it should automatically ask for privileged escalation rather than fail.
-"""]]

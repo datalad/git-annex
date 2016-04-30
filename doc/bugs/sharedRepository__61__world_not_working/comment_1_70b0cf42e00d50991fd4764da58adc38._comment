@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="https://id.koumbit.net/anarcat"
- subject="comment 1"
- date="2015-06-02T12:13:19Z"
- content="""
-i often had to do a `chmod` in order to kick things into submission at first. did you try all that is mentionned in [[tips/shared_git_annex_directory_between_multiple_users/]]?
-"""]]

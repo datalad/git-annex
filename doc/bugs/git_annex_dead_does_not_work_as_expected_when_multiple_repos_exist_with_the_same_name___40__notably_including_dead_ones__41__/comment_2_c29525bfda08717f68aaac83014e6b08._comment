@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawmGxww5ON3nilm7moGQCWJPnMEdRwNvb7U"
- nickname="Chris"
- subject="comment 2"
- date="2013-10-29T22:01:04Z"
- content="""
-I didn't think about idempotency. Erroring out seems like the best option now.
-"""]]

@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="https://id.koumbit.net/anarcat"
- subject="comment 2"
- date="2015-05-31T15:50:02Z"
- content="""
-i agree the feed is broken.
-
-i guess what i was surprised about is that importfeed wasn't just doing a `addurl`, which would have detected the youtube site and shoved it into quvi for retrieval... 
-"""]]

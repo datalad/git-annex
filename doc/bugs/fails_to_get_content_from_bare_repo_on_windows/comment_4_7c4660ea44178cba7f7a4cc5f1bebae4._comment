@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="108.236.230.124"
- subject="comment 4"
- date="2014-06-05T19:20:20Z"
- content="""
-Analysis: inAnnexSafe on Windows simply does not have indirect mode checking enabled. Bare repositories use indirect mode (essentially; same storage). So it fails.
-"""]]

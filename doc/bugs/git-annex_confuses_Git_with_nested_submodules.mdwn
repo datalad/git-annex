@@ -35,3 +35,4 @@ More recently I aim exploring the use of git annex for managing datasets and the
 BTW: What a nice idea to ask for something like this in a bug report.
 
 
+[[!meta author=mih]]

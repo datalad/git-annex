@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.41"
- subject="comment 1"
- date="2014-03-26T20:55:07Z"
- content="""
-This is because metadata applies to the contents of files, and all 3 of your files have the same single content. I will update the documentation to make it more clear metadata works this way.
-"""]]

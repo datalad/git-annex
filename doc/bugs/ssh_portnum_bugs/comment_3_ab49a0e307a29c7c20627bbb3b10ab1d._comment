@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="108.236.230.124"
- subject="comment 3"
- date="2014-06-05T16:50:30Z"
- content="""
-I did notice a problem where the same ssh config stanza was used if the webapp set up a repository on a host first using one port, and later using a different port. I've fixed that.
-"""]]

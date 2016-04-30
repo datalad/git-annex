@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="helmut"
- ip="89.0.78.89"
- subject="git as a database"
- date="2013-12-02T18:24:12Z"
- content="""
-You said that \"[...] it will use more disk over time. Probably not the best choice.\" But this does not have to be true. Since this git ref is never synced, an update can be forced. The tricky part is in finding good truncation points. Now for fsck, the log can be truncated whenever an incremental fsck is started.
-"""]]

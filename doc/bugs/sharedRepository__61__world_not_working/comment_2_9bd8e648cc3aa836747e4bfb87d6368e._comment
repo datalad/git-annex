@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 2"""
- date="2015-07-06T19:12:02Z"
- content="""
-I reproduced this. Note that the .git/annex/objects/xx/yy/key directories
-on the remote do end up with the correct perms allowing all to read them,
-it's only the actual object file that has the wrong mode.
-"""]]

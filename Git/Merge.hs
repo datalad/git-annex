@@ -1,36 +1,61 @@
 {- git merging
  -
- - Copyright 2012, 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Git.Merge where
+module Git.Merge (
+	MergeConfig(..),
+	CommitMode(..),
+	merge,
+	merge',
+	stageMerge,
+) where
 
 import Common
 import Git
 import Git.Command
-import Git.BuildVersion
+import qualified Git.BuildVersion
+import qualified Git.Version
 import Git.Branch (CommitMode(..))
 
-{- Avoids recent git's interactive merge. -}
-mergeNonInteractive :: Ref -> CommitMode -> Repo -> IO Bool
-mergeNonInteractive = mergeNonInteractive' []
+data MergeConfig
+	= MergeNonInteractive
+	-- ^ avoids recent git's interactive merge
+	| MergeUnrelatedHistories
+	-- ^ avoids recent git's prevention of merging unrelated histories
+	deriving (Eq)
 
-mergeNonInteractive' :: [CommandParam] -> Ref -> CommitMode -> Repo -> IO Bool
-mergeNonInteractive' extraparams branch commitmode
-	| older "1.7.7.6" = merge [Param $ fromRef branch]
-	| otherwise = merge $ [Param "--no-edit", Param $ fromRef branch]
+merge :: Ref -> [MergeConfig] -> CommitMode -> Repo -> IO Bool
+merge = merge' []
+
+merge' :: [CommandParam] -> Ref -> [MergeConfig] -> CommitMode -> Repo -> IO Bool
+merge' extraparams branch mergeconfig commitmode r
+	| MergeNonInteractive `notElem` mergeconfig || Git.BuildVersion.older "1.7.7.6" =
+		go [Param $ fromRef branch]
+	| otherwise = go [Param "--no-edit", Param $ fromRef branch]
   where
-	merge ps = runBool $ sp ++ [Param "merge"] ++ ps ++ extraparams
+	go ps = merge'' (sp ++ [Param "merge"] ++ ps ++ extraparams) mergeconfig r
 	sp
 		| commitmode == AutomaticCommit =
 			[Param "-c", Param "commit.gpgsign=false"]
 		| otherwise = []
 
+merge'' :: [CommandParam] -> [MergeConfig] -> Repo -> IO Bool
+merge'' ps mergeconfig r
+	| MergeUnrelatedHistories `elem` mergeconfig =
+		ifM (Git.Version.older "2.9.0")
+			( go ps
+			, go (ps ++ [Param "--allow-unrelated-histories"])
+			)
+	| otherwise = go ps
+  where
+	go ps' = runBool ps' r
+
 {- Stage the merge into the index, but do not commit it.-}
-stageMerge :: Ref -> Repo -> IO Bool
-stageMerge branch = runBool
+stageMerge :: Ref -> [MergeConfig] -> Repo -> IO Bool
+stageMerge branch = merge''
 	[ Param "merge"
 	, Param "--quiet"
 	, Param "--no-commit"

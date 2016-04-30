@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="eigengrau"
- subject="comment 2"
- date="2015-05-24T14:58:30Z"
- content="""
-Thanks! This would be useful. While it probably takes up only little disk space, the noise it creates during fsck would make it harder to discern which data has been unintentionally lost, as opposed to migrated to another back-end.
-"""]]

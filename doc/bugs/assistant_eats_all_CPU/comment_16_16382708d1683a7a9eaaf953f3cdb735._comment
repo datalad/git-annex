@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.43"
- subject="comment 16"
- date="2014-01-17T19:07:10Z"
- content="""
-This bug is about cpu usage when git-annex assistant should be sitting idle, not about the statup scan.
-"""]]

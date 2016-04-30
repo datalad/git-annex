@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.41"
- subject="comment 1"
- date="2014-03-26T17:26:37Z"
- content="""
-I don't see how this can possibly be done. A single git-annex object can have any number of file names, which can change at any time.
-"""]]

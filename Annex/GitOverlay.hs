@@ -40,7 +40,10 @@ withWorkTree d = withAltRepo
  - files that are related to the work tree coming from an overlay
  - directory other than the usual. This is done by pointing
  - GIT_COMMON_DIR at the regular git directory, and GIT_DIR at the
- - overlay directory. -}
+ - overlay directory.
+ -
+ - Needs git 2.2.0 or newer.
+ -}
 withWorkTreeRelated :: FilePath -> Annex a -> Annex a
 withWorkTreeRelated d = withAltRepo modrepo unmodrepo
   where

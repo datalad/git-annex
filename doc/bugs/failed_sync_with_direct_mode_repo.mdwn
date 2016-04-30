@@ -1,9 +1,0 @@
-Two clients, both in direct mode, both running assistant.
-
-When a change is made on A, the assistant commits it to annex/direct/master. But, the master branch is not changed.
-
-B notices there is a change, pulls from A. Gets annex/direct/master, but does not merge it into its local branch at all.
-
-[[!tag confirmed]]
-
-> [[fixed|done]] --[[Joey]]

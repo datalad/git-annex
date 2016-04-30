@@ -1,0 +1,9 @@
+The past three days have felt kind of low activity days, but somehow a lot
+of stuff still got done, both bug fixes and small features, and I am
+feeling pretty well caught up with backlog for the first time in over a
+month. Although as always there is some left, 110 messages.
+
+On Monday I fixed a bug that could cause a hang when dropping content, if
+git-annex had to verify the content was present on a ssh remote. That bug
+was bad enough to make an immediate release for, even though it was only a
+week since the last release.

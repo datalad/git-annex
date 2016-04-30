@@ -1,7 +1,0 @@
-Just gave git annex a quick try for a few minutes and I must admit it's pretty great.
-
-A must have feature for me is to be able to view git annex log in the web app as "git annex log" doesn't got BIDI support (RTL scripts like Arabic, Farsi, Hebrew).
-Adding Bi-directional text support would be too much to ask from a developer that don't know these languages thus the solution is to use the already the web browser to handle that.
-
-> Closing as it's not clear what the submitter wanted done here. [[done]]
-> --[[Joey]]

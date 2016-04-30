@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="xloem"
+ subject="did this today"
+ date="2016-04-25T20:40:02Z"
+ content="""
+it's interesting to find this discussion, I just finished implementing this on my system.
+
+I've been storing bare repos in annex in order to back them up with the same system.  I have really huge files in some of my git repos and I wanted to get those files into the annex system but still keep a record of their changes (the git history).
+
+Today I removed the core.bare = true setting on the repos and instead set core.worktree = projectdir, and ran git checkout in projectdir.  I have the index file in .gitignore, so there won't be that weird unresolvable conflict.  Now all my bloated git history is stored in the annex, and I can still work with it in the annexed checkout.
+
+I was thinking I'd do this again with the root of the repository when the annex grows too large, to back up the old history in a connected way.
+"""]]

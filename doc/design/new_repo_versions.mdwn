@@ -43,7 +43,8 @@ Possible reasons to make changes:
 
   The mixed case hash directories have caused trouble on case-insensative
   filesystems, although that has mostly been papered over to avoid
-  problems.
+  problems. One remaining problem users can stuble on occurs
+  when [[moving a repository from OSX to Linux|bugs/OSX_case_insensitive_filesystem]].
 
 * The hash directories, and also the per-key directories
   can slow down using a repository on a disk (both SSD and spinning).

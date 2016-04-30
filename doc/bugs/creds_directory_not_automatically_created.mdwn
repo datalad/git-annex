@@ -1,3 +1,0 @@
-I just compiled ff7810eb83d8372e6206d487c63482d678e0b3d4 and created a new git-annex repository through the setup steps of "git-annex webapp". Then I tried configuring a Jabber account from the webapp. It then failed to create $REPO/.git/annex/creds/xmpp with a "No such file or directory" message because $REPO/.git/annex/creds did not get created. After doing a manual mkdir the Jabber setup went through fine.
-
-> [[Fixed|done]], thanks. --[[Joey]]

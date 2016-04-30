@@ -530,6 +530,12 @@ subdirectories).
 
   See [[git-annex-lookupkey]](1) for details.
 
+* `calckey [file ...]`
+
+  Calculates the key that would be used to refer to a file.
+  
+  See [[git-annex-calckey]](1) for details.
+
 * `contentlocation [key ..]`
 
   Looks up location of annexed content for a key.
@@ -1305,7 +1311,8 @@ Here are all the supported configuration settings.
 * `annex.tune.objecthash1`, `annex.tune.objecthashlower`, `annex.tune.branchhash1`
 
   These can be passed to `git annex init` to tune the repository.
-  They cannot be safely changed in a running repository.
+  They cannot be safely changed in a running repository and should never be
+  set in global git configuration.
   For details, see <https://git-annex.branchable.com/tuning/>.
 
 # CONFIGURATION VIA .gitattributes

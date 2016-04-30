@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="Remy"
- ip="83.87.21.84"
- subject="comment 15"
- date="2013-10-25T18:51:32Z"
- content="""
-I now got both the CLI and web app working but I had to switch to gcc-4.7 to work around a compiler preprocessing error and back to the default gcc to get fsevents to compile.
-"""]]

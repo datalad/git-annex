@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- subject="comment 2"
- date="2015-10-19T19:58:36Z"
- content="""
-S3 is enabled by default; this version can be built with it disabled if desired
-"""]]

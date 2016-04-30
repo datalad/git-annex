@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 1"""
- date="2015-07-30T17:16:09Z"
- content="""
-This only happens when the file being added is not an annexed link.
-I guess it has something to do with preserveUnannexed 
-"""]]
