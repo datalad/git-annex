@@ -1,0 +1,19 @@
+From the repo (commit ecc548) I built git-annex with stack issuing this command:
+
+    stack install --executable-profiling --library-profiling --ghc-options="-rtsopts -auto-all"
+
+then I run the output executable with +RTS -p like
+
+    git-annex version +RTS -p
+
+and obtain the corresponding git-annex.prof with the time profile.
+
+What I am unable to do is to get a time profile of the assistant: if I kill it the git-annex.prof file is empty, same happens if I stop the assistant with
+
+    git-annex assistant --stop
+
+So... is there another way to time-profile a git-annex command? Am I missing something in this procedure?
+
+Any advice is welcome :)
+
+-- zarel
