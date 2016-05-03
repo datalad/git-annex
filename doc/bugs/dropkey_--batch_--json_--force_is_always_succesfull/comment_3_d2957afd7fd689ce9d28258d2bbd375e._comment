@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-05-03T18:08:11Z"
+ content="""
+Oh, I had forgotten about it requiring --force.
+
+That's actually good; it means I could make dropkey without --force
+check that other copies of the content exist, and refuse to drop in that
+case.
+"""]]
