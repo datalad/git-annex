@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="j_k_234@b2b1aa189bf195cefd815fc0fe70e0ebbe2b8077"
+ nickname="j_k_234"
+ subject="comment 8"
+ date="2016-05-03T07:22:52Z"
+ content="""
+Thanks very much, that fixes it!
+
+I did have to use the stack `explicit-setup-deps` tweak to rebuild.
+"""]]
