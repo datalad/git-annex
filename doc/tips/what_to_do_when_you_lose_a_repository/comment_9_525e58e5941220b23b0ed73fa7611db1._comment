@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2016-05-03T19:15:58Z"
+ content="""
+Both `git annex sync` and `git pull` will still try to access the git
+remote for the repository. Thing to do to prevent this is `git remote
+remove` it.
+
+I think it makes sense for `git annex sync` to still try to push/pull
+from a dead remote, since git pull/push will still try to access it
+too. Marking the remote dead does prevent other git-annex commands
+from trying to use it for data storage.
+"""]]
