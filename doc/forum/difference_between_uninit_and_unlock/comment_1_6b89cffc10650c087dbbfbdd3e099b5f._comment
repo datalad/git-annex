@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-05-03T18:51:22Z"
+ content="""
+In a v5 repo in indirect mode, they're broadly equivilant.
+
+`git annex uninit` removes git config changes and hooks that `git annex
+init` sets up, and generally hand-holds the process.
+"""]]
