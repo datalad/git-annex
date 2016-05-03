@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-05-03T17:45:39Z"
+ content="""
+Having a unified batch process wouldn't actually help at all,
+unless it forced flushing the caches when switching between
+eg, addurl and drop commands. Which would get right back to it being
+unnecessary slow, and so negate the benefits of batching.
+
+So, I agree, this can't really be improved.
+"""]]
