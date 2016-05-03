@@ -69,3 +69,6 @@ fixes the error and builds git-annex successfully.
 > above error.
 > 
 > --[[Joey]]
+
+> > I've filed a bug on stack about this,
+> > <https://github.com/commercialhaskell/stack/issues/2093> --[[Joey]] 
