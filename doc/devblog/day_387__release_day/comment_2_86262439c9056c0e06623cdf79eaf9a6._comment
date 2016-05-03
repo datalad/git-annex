@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-05-03T17:56:44Z"
+ content="""
+The exposed information is not stored in the remote. If it's stored
+anywhere, it would be in a server log, which might log an attempt
+to access an un-encrypted key filename (which typically includes the
+checksum and maybe the file's extension).
+
+So on the one hand, you don't need to do anything other than upgrade
+git-annex to recover from the problem. On the other hand, if the potential
+that a un-encrypted filename of a git-annex key having leaked into a server
+log somewhere is a problem, I don't have a solution to the problem. :-/
+"""]]
