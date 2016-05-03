@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="freewheelinfranks@f936f2e420801f565d39e40036c0a22c71a79425"
+ nickname="freewheelinfranks"
+ subject="Here's a link to the image files"
+ date="2016-05-03T06:14:40Z"
+ content="""
+The file \"icons.zip\" can replace the icons folder in the git-annex repo. The folder to be replaced is found at standalone/android/icons.
+
+[https://stanford.edu/~farhank/icons.zip](https://stanford.edu/~farhank/icons.zip)
+"""]]

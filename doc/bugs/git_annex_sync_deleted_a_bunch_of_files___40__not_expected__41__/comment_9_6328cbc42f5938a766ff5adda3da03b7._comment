@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="spwhitton"
+ subject="comment 9"
+ date="2016-05-02T19:26:47Z"
+ content="""
+I appreciate that Joey has closed this as insufficiently detailed, and I'm not able to reliably reproduce the issue either, but I have experienced a similar issue today where a sync wants to delete all of the files in my repository and I have no reason to believe that I actually deleted them all.  The common factor here is that we're all trying to sync to FAT devices.  Git is very slow on FAT flash drives, and perhaps at some point it thinks the files aren't there during a sync.  I'm going to stop using git annex with FAT flash drives.
+"""]]

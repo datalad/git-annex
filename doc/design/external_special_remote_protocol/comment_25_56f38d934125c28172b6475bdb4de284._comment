@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="grawity@2ea26be48562f66fcb9b66307da72b1e2e37453f"
+ nickname="grawity"
+ subject="comment 25"
+ date="2016-05-03T06:25:02Z"
+ content="""
+Is there a reason that DIRHASH in type=external uses a different format (mixed-case) from that used by type=directory (lower-case)? Or, could there be e.g. `DIRHASH LOWER` to select between the formats?
+
+I'm writing an external remote for SMB filesystem access and I'd like its storage to be usable via type=directory in case of emergencies or other reasons, but  with different dirhash layouts that's not going to work, I assume...
+"""]]

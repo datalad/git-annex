@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="grawity@2ea26be48562f66fcb9b66307da72b1e2e37453f"
+ nickname="grawity"
+ subject="comment 34"
+ date="2016-05-02T18:43:33Z"
+ content="""
+Hmm, I just found that `annex enableremote` accepts parameters to be modified; that should work for now.
+
+Though I still wonder about situations where one wants to add a new empty remote with new UUID, but reuse the old name...
+"""]]
