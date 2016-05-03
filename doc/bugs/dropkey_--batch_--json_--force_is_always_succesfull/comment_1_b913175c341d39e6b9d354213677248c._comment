@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-05-03T17:03:25Z"
+ content="""
+Note that dropkey does *not* check if other copies exist, so the --force is
+unncessary; eg it's always forced by default.
+
+Anyway, dropkey will indicate a failure if it's actually unable to drop the
+content for some reason, eg a permissions problem or the content is locked
+to prevent it being dropped right now, or other unanticipated error.
+But, if the content of the key is not present, it's successfully
+gotten the repo into the requested state.
+
+Similarly, git-annex transferkey will return success if the key it was
+supposed to download is already present.
+
+I don't consider this a bug, although am willing to be convinced
+otherwise..
+"""]]
