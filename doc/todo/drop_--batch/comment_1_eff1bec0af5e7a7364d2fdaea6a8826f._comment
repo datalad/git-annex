@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-05-03T19:06:53Z"
+ content="""
+Might be better to make `dropkey` do the same numcopies checking as
+`drop` does. Currently, `dropkey` needs `--force` to do anything (and it's
+always needed that), so it could do numcopies checking when not forced,
+without breaking backwards compatability.
+
+The benefit of keeping this in `dropkey` is that dropping by key
+tends to work better with batch adds/imports of files that are occurring at
+the same time.
+
+Only downside I see is that dropping by key is unable to honor
+.gitattributes numcopies settings, since the associated filename is not
+known.
+"""]]
