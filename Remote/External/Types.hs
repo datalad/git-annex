@@ -199,7 +199,7 @@ instance Proto.Receivable RemoteRequest where
 	parseCommand "VERSION" = Proto.parse1 VERSION
 	parseCommand "PROGRESS" = Proto.parse1 PROGRESS
 	parseCommand "DIRHASH" = Proto.parse1 DIRHASH
-	parseCommand "DIRHASH_LOWER" = Proto.parse1 DIRHASH_LOWER
+	parseCommand "DIRHASH-LOWER" = Proto.parse1 DIRHASH_LOWER
 	parseCommand "SETCONFIG" = Proto.parse2 SETCONFIG
 	parseCommand "GETCONFIG" = Proto.parse1 GETCONFIG
 	parseCommand "SETCREDS" = Proto.parse3 SETCREDS

@@ -233,7 +233,7 @@ in control.
   creating hash directory structures to store Keys in. This is the same
   directory hash that git-annex uses inside `.git/annex/objects/`  
   (git-annex replies with VALUE followed by the value.)
-* `DIRHASH_LOWER Key`  
+* `DIRHASH-LOWER Key`  
   Gets a two level hash associated with a Key, using only lower-case.
   Something like "abc/def".
   This is always the same for any given Key, so can be used for eg,
