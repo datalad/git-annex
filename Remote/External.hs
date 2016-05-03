@@ -227,6 +227,8 @@ handleRequest' lck external req mp responsehandler
 		maybe noop (\a -> liftIO $ a bytesprocessed) mp
 	handleRemoteRequest (DIRHASH k) = 
 		send $ VALUE $ hashDirMixed def k
+	handleRemoteRequest (DIRHASH_LOWER k) = 
+		send $ VALUE $ hashDirLower def k
 	handleRemoteRequest (SETCONFIG setting value) =
 		liftIO $ atomically $ do
 			let v = externalConfig external
