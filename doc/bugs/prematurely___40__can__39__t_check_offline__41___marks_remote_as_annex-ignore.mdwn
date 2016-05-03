@@ -25,3 +25,5 @@ git-annex: get: 1 failed
 """]]
 
 [[!meta author=yoh]]
+
+> [[fixed|done]] --[[Joey]]

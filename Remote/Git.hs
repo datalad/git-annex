@@ -233,14 +233,17 @@ tryGitConfigRead autoinit r
 			hClose h
 			let url = Git.repoLocation r ++ "/config"
 			ifM (Url.downloadQuiet url tmpfile uo)
-				( pipedconfig "git" [Param "config", Param "--null", Param "--list", Param "--file", File tmpfile]
-				, return $ Left $ error $ "unable to load config from " ++ url
+				( Just <$> pipedconfig "git" [Param "config", Param "--null", Param "--list", Param "--file", File tmpfile]
+				, return Nothing
 				)
 		case v of
-			Left _ -> do
+			Nothing -> do
+				warning $ "Failed to get annex.uuid configuration of repository " ++ Git.repoDescribe r
+				return r
+			Just (Left _) -> do
 				set_ignore "not usable by git-annex" False
 				return r
-			Right r' -> do
+			Just (Right r') -> do
 				-- Cache when http remote is not bare for
 				-- optimisation.
 				unless (Git.Config.isBare r') $
