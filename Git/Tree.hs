@@ -117,9 +117,9 @@ treeItemToTreeContent (TreeItem f m s) = TreeBlob f m s
 treeItemsToTree :: [TreeItem] -> Tree
 treeItemsToTree = go M.empty
   where
-	go m [] = Tree $ filter (notElem '/' . gitPath) (M.elems m)
+	go m [] = Tree $ filter inTopTree (M.elems m)
 	go m (i:is)
-		| '/' `notElem` p =
+		| inTopTree p =
 			go (M.insert p (treeItemToTreeContent i) m) is
 		| otherwise = case M.lookup idir m of
 			Just (NewSubTree d l) ->
@@ -132,7 +132,7 @@ treeItemsToTree = go M.empty
 		c = treeItemToTreeContent i
 
 	addsubtree d m t
-		| elem '/' d = 
+		| not (inTopTree d) = 
 			let m' = M.insert d t m
 			in case M.lookup parent m' of
 				Just (NewSubTree d' l) ->
@@ -259,4 +259,4 @@ beneathSubTree :: (GitPath t, GitPath f) => t -> f -> Bool
 beneathSubTree t f = prefix `isPrefixOf` gitPath f
   where
 	tp = gitPath t
-	prefix = if null tp then tp else tp ++ "/"
+	prefix = if null tp then tp else addTrailingPathSeparator tp
