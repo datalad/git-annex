@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-05-03T18:54:41Z"
+ content="""
+What you could try is:
+
+	git config remote.s3.annex-gnupg-options --ignore-mdc-error
+	git config remote.s3.annex-verify false
+
+That should make gpg ignore the error and proceed, and make git-annex
+not try to verify the download either. The resulting file will probably
+be corrupt in some way. It might have a bad chunk in the middle, or be
+truncated, or be garbage past a certian point.
+
+This sounds like something went wrong with the multipart upload to S3.
+What does `git annex info s3` say about the configuration of your S3
+remote? I'd like to reproduce this problem, if possible. Since it hit two
+of your files, it seems to not have been some kind of one-off data
+corruption problem.
+"""]]
