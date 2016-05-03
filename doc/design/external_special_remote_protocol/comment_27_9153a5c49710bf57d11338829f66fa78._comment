@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="grawity@2ea26be48562f66fcb9b66307da72b1e2e37453f"
+ nickname="grawity"
+ subject="comment 27"
+ date="2016-05-03T18:02:03Z"
+ content="""
+Thanks. It'll probably be safer for my use case of storing data on Windows network shares than the mixed-case version.
+
+_(Speaking of \"too late to change\", `DIRHASH-LOWER` with a dash might be more consistent with the existing responses?)_
+"""]]
