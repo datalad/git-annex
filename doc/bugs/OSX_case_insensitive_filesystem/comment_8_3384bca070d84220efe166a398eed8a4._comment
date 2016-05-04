@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="thowz"
+ subject="reinject files"
+ date="2016-05-04T00:52:38Z"
+ content="""
+Here's a way to put files into their proper case-sensitive folders using `git-annex reinject --known`:
+
+    # Enable write permissions on directories containing misfiled items
+    chmod u+w `find -xtype l -printf \"%l\n\" | sed -r \"s/.*(\.git\/annex\/objects\/)[^\/]*\/[^\/]*\/([^\/]*).*/\1*\/*\/\2/\" | sort | uniq`
+    
+    # Reinject those files into the annex
+    git-annex reinject --known `find -xtype l -printf \"%l\n\" | sed -r \"s/.*(\.git\/annex\/objects\/)[^\/]*\/[^\/]*\/([^\/]*.*)/\1*\/*\/\2/\" | sort | uniq`
+
+    # Remove empty directories (rmdir will fail on the non-empty directories)
+    find .git/annex/objects -mindepth 3 -maxdepth 3 -type d -exec rmdir {} \;
+    find .git/annex/objects -mindepth 2 -maxdepth 2 -type d -exec rmdir {} \;
+"""]]
