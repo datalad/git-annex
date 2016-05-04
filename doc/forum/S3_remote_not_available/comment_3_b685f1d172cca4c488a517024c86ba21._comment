@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-05-04T18:13:39Z"
+ content="""
+Hmm, there should be no reason for homebrew to not built it with S3
+support. Could you file a bug report there?
+"""]]
