@@ -256,7 +256,7 @@ inTree :: (GitPath t, GitPath f) => t -> f -> Bool
 inTree t f = gitPath t == takeDirectory (gitPath f)
 
 beneathSubTree :: (GitPath t, GitPath f) => t -> f -> Bool
-beneathSubTree t f = prefix `isPrefixOf` gitPath f
+beneathSubTree t f = prefix `isPrefixOf` normalise (gitPath f)
   where
 	tp = gitPath t
-	prefix = if null tp then tp else addTrailingPathSeparator tp
+	prefix = if null tp then tp else addTrailingPathSeparator (normalise tp)
