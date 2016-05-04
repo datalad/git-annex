@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Lukasz"
+ subject="Thank you, indeed that was the problem"
+ date="2016-05-04T17:47:36Z"
+ content="""
+Indeed after getting git-annex from https://downloads.kitenet.net/git-annex/OSX/current/10.10_Yosemite/git-annex.dmg my problem was solved. Turns out the version from Homebrew-cask doesn't support S3 and I vaguely remember that it was the case first time I tried.
+
+Thank you for the help and for the great piece of software
+"""]]
