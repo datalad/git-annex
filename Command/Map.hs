@@ -19,6 +19,7 @@ import qualified Annex
 import Annex.UUID
 import Logs.UUID
 import Logs.Trust
+import Types.TrustLevel
 import qualified Remote.Helper.Ssh as Ssh
 import qualified Utility.Dot as Dot
 
@@ -39,11 +40,11 @@ start = do
 	rs <- combineSame <$> (spider =<< gitRepo)
 
 	umap <- uuidMap
-	trusted <- trustGet Trusted
+	trustmap <- trustMapLoad
 		
 	file <- (</>) <$> fromRepo gitAnnexDir <*> pure "map.dot"
 
-	liftIO $ writeFile file (drawMap rs umap trusted)
+	liftIO $ writeFile file (drawMap rs trustmap umap)
 	next $ next $
 		ifM (Annex.getState Annex.fast)
 			( do
@@ -55,24 +56,26 @@ start = do
 				liftIO $ boolSystem "dot" [Param "-Tx11", File file]
 			)
 
-{- Generates a graph for dot(1). Each repository, and any other uuids, are
- - displayed as a node, and each of its remotes is represented as an edge
- - pointing at the node for the remote.
+{- Generates a graph for dot(1). Each repository, and any other uuids
+ - (except for dead ones), are displayed as a node, and each of its
+ - remotes is represented as an edge pointing at the node for the remote.
  -
  - The order nodes are added to the graph matters, since dot will draw
  - the first ones near to the top and left. So it looks better to put
  - the repositories first, followed by uuids that were not matched
  - to a repository.
  -}
-drawMap :: [Git.Repo] -> M.Map UUID String -> [UUID] -> String
-drawMap rs umap ts = Dot.graph $ repos ++ trusted ++ others
+drawMap :: [Git.Repo] -> TrustMap -> M.Map UUID String -> String
+drawMap rs trustmap umap = Dot.graph $ repos ++ others
   where
-	repos = map (node umap rs) rs
-	ruuids = ts ++ map getUncachedUUID rs
-	others = map (unreachable . uuidnode) $
+	repos = map (node umap rs trustmap) rs
+	ruuids = map getUncachedUUID rs
+	others = map uuidnode $ 
+		filter (\u -> M.lookup u trustmap /= Just DeadTrusted) $
 		filter (`notElem` ruuids) (M.keys umap)
-	trusted = map (trustworthy . uuidnode) ts
-	uuidnode u = Dot.graphNode (fromUUID u) $ M.findWithDefault "" u umap
+	uuidnode u = trustDecorate trustmap u $
+		Dot.graphNode (fromUUID u) $ M.findWithDefault "" u umap
+	ts = M.keys (M.filter (== Trusted) trustmap)
 
 hostname :: Git.Repo -> String
 hostname r
@@ -100,15 +103,13 @@ nodeId r =
 		UUID u -> u
 
 {- A node representing a repo. -}
-node :: M.Map UUID String -> [Git.Repo] -> Git.Repo -> String
-node umap fullinfo r = unlines $ n:edges
+node :: M.Map UUID String -> [Git.Repo] -> TrustMap -> Git.Repo -> String
+node umap fullinfo trustmap r = unlines $ n:edges
   where
 	n = Dot.subGraph (hostname r) (basehostname r) "lightblue" $
-		decorate $ Dot.graphNode (nodeId r) (repoName umap r)
+		trustDecorate trustmap (getUncachedUUID r) $
+			Dot.graphNode (nodeId r) (repoName umap r)
 	edges = map (edge umap fullinfo r) (Git.remotes r)
-	decorate
-		| Git.config r == M.empty = unreachable
-		| otherwise = reachable
 
 {- An edge between two repos. The second repo is a remote of the first. -}
 edge :: M.Map UUID String -> [Git.Repo] -> Git.Repo -> Git.Repo -> String	
@@ -129,12 +130,13 @@ edge umap fullinfo from to =
 		| n `elem` [repoName umap fullto, hostname fullto] = Nothing
 		| otherwise = Just n
 
-unreachable :: String -> String
-unreachable = Dot.fillColor "red"
-reachable :: String -> String
-reachable = Dot.fillColor "white"
-trustworthy :: String -> String
-trustworthy = Dot.fillColor "green"
+trustDecorate :: TrustMap -> UUID -> String -> String
+trustDecorate trustmap u s = case M.lookup u trustmap of
+	Just Trusted -> Dot.fillColor "green" s
+	Just UnTrusted -> Dot.fillColor "red" s
+	Just SemiTrusted -> Dot.fillColor "white" s
+	Just DeadTrusted -> Dot.fillColor "grey" s
+	Nothing -> Dot.fillColor "white" s
 
 {- Recursively searches out remotes starting with the specified repo. -}
 spider :: Git.Repo -> Annex [Git.Repo]

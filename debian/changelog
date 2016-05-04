@@ -12,6 +12,9 @@ git-annex (6.20160420) UNRELEASED; urgency=medium
   * git-annex.cabal: Add Setup-Depends.
   * Windows: Fix several bugs in propigation of changes from the adjusted
     branch back to the master branch.
+  * map: Hide dead repositories that are not connected to the graph.
+  * map: Changed colors; red is used for untrusted repositories and grey
+    for dead.
 
  -- Joey Hess <id@joeyh.name>  Thu, 28 Apr 2016 13:17:04 -0400
 
