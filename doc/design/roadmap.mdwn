@@ -1,6 +1,5 @@
 ## ahead
 
-* [[adjusted_branches]]
 * [[design/caching_database]] for metadata views
 * [[assistant/deltas]]
 * [[assistant/gpgkeys]] management for the assistant
@@ -10,6 +9,8 @@
 
 ## the rearview
 
+* Spring 2016 [[adjusted_branches]]
+* Winter 2015 v6 repo format
 * Mar-Oct 2015 busy busy busy, too busy to update!
 * Feb 2015 user-driven features and polishing, [[design/caching_database]] part 1
 * Jan 2015 Android 5, relative paths, workload [[tuning]]
