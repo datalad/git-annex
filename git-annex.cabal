@@ -247,6 +247,9 @@ Executable git-annex
     Build-Depends: criterion, deepseq
     CPP-Options: -DWITH_BENCHMARK
 
+custom-setup
+  Setup-Depends: base (>= 4.5), hslogger, MissingH
+
 source-repository head
   type: git
   location: git://git-annex.branchable.com/

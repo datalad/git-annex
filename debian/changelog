@@ -9,6 +9,7 @@ git-annex (6.20160420) UNRELEASED; urgency=medium
   * Android: Icon refresh.
     Thanks, freewheelinfranks.
   * Added DIRHASH-LOWER to external special remote protocol.
+  * git-annex.cabal: Add Setup-Depends.
 
  -- Joey Hess <id@joeyh.name>  Thu, 28 Apr 2016 13:17:04 -0400
 
