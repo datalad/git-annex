@@ -65,3 +65,4 @@ Well, git-annex is wonderful!
 
 I use it to sync binary files across linux boxes, I use it for binary distro packages I compile for myself, for my calibre books, pictures, movies...  and I'm very happy with it on linux.
 
+> [[fixed|done]] --[[Joey]]

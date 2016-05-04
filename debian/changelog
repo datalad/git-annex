@@ -10,6 +10,8 @@ git-annex (6.20160420) UNRELEASED; urgency=medium
     Thanks, freewheelinfranks.
   * Added DIRHASH-LOWER to external special remote protocol.
   * git-annex.cabal: Add Setup-Depends.
+  * Windows: Fix several bugs in propigation of changes from the adjusted
+    branch back to the master branch.
 
  -- Joey Hess <id@joeyh.name>  Thu, 28 Apr 2016 13:17:04 -0400
 
