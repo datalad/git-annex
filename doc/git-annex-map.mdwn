@@ -23,7 +23,7 @@ it several times as the map is being built.
 Note that this subcommand can be used to graph any git repository; it
 is not limited to git-annex repositories.
 
-# MAP KEY
+# LEGEND
 
 Ovals are repositories. White is regular, green is trusted, red is
 untrusted, and grey is dead.
