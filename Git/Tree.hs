@@ -202,8 +202,8 @@ adjustTree adjusttreeitem addtreeitems removefiles r repo =
 		addunderhere' <- liftIO $ mapM (recordSubTree h) addunderhere
 		return (addunderhere'++l')
 
-	removeset = S.fromList removefiles
-	removed (TreeBlob f _ _) = S.member f removeset
+	removeset = S.fromList $ map (normalise . gitPath) removefiles
+	removed (TreeBlob f _ _) = S.member (normalise (gitPath f)) removeset
 	removed _ = False
 
 {- Assumes the list is ordered, with tree objects coming right before their
