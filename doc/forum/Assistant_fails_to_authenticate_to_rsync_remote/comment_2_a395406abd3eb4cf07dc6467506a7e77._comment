@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="annexuser"
+ subject="comment 2"
+ date="2016-05-04T19:16:31Z"
+ content="""
+That makes sense! I'm starting the assistant via systemd, so it probably doesn't have access to my environment to get the ssh keys. Thanks!
+"""]]
