@@ -481,12 +481,13 @@ reverseAdjustedTree basis adj csha = do
   where
 	reverseadj = reverseAdjustment adj
 	propchanges changes ti@(TreeItem f _ _) =
-		case M.lookup f m of
+		case M.lookup (norm f) m of
 			Nothing -> return (Just ti) -- not changed
 			Just change -> adjustTreeItem reverseadj change
 	  where
-		m = M.fromList $ map (\i@(TreeItem f' _ _) -> (f', i)) $
+		m = M.fromList $ map (\i@(TreeItem f' _ _) -> (norm f', i)) $
 			map diffTreeToTreeItem changes
+		norm = normalise . getTopFilePath
 
 diffTreeToTreeItem :: Git.DiffTree.DiffTreeItem -> TreeItem
 diffTreeToTreeItem dti = TreeItem
