@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="zpeters@669a56d871ec94de11e1bf63f4a21e80ea90b2fa"
+ nickname="zpeters"
+ subject="Choose which remote to lock when dropping"
+ date="2016-05-03T23:37:09Z"
+ content="""
+I might have a unique situation but i have a git annex repo that has multiple remotes for the same actual location.  I have a server at home and when i'm \"out in the world\" i use it's external IP and when i'm at home i use it's internal IP.  It appears that when i do an git annex drop on my laptop to compares and locks whichever remote is alphabetically first.  
+
+What i'm wondering is is there a way to tell git annex which remote i want to compare against?  For example when i'm remote i want to do something like \"git annex drop . --compare remoteServer\"
+
+Thank you!
+"""]]

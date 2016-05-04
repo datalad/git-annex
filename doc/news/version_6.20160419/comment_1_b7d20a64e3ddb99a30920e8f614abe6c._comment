@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="zfnupbos@a80a4f4cf5dde7ac4988ef0d077052c95fe1e058"
+ nickname="zfnupbos"
+ subject="version clarification"
+ date="2016-05-04T01:05:52Z"
+ content="""
+is this 6.20160419 or 6.20160428?
+
+It was released on the 28th, and 'git-annex version' shows git-annex version: 6.20160428-g1f253e8. But many places refer to it as 6.20160419.
+"""]]
