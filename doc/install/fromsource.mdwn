@@ -42,7 +42,7 @@ and avoids build failures due to fast-changing haskell libraries.
 First, [install stack](https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md)
 It will be part of the Haskell Platform soon. On Debian unstable/testing:
 
-	sudo apt-get install haskell-stack zlib1g-dev
+	sudo apt-get install haskell-stack zlib1g-dev libtinfo-dev
 
 Use stack to install all dependencies and git-annex:
 

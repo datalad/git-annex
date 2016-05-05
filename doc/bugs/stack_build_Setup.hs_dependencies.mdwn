@@ -72,3 +72,7 @@ fixes the error and builds git-annex successfully.
 
 > > I've filed a bug on stack about this,
 > > <https://github.com/commercialhaskell/stack/issues/2093> --[[Joey]] 
+
+> > > Gone ahead and added it to stack.yaml, despite it causing some build
+> > > failures, as it's certianly needed on many systems. [[done]]
+> > > --[[Joey]]
