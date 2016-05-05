@@ -145,10 +145,10 @@ probeCrippledFileSystem = do
 	liftIO $ probeCrippledFileSystem' tmp
 
 probeCrippledFileSystem' :: FilePath -> IO Bool
-probeCrippledFileSystem' tmp = do
 #ifdef mingw32_HOST_OS
-	return True
+probeCrippledFileSystem' _ = return True
 #else
+probeCrippledFileSystem' tmp = do
 	let f = tmp </> "gaprobe"
 	writeFile f ""
 	uncrippled <- probe f
