@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="annexuser"
+ subject="comment 4"
+ date="2016-05-05T18:11:49Z"
+ content="""
+Those settings don't seem to have an effect. I still get the same `gpg: WARNING: encrypted message has been manipulated!` error when getting the files after I set those options.
+"""]]
