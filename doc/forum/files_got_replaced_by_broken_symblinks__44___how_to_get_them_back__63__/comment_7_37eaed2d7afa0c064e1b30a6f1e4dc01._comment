@@ -1,0 +1,49 @@
+[[!comment format=mdwn
+ username="simon.parzer@f837bbade0d93f560dc574b04e835b7875c4026f"
+ nickname="simon.parzer"
+ subject="Python script to recover git annex' lost files"
+ date="2016-05-05T11:58:31Z"
+ content="""
+Maybe someone else needs this too :|
+Use it at your own risk of course.
+```
+#!python3
+
+import os
+import re
+from shutil import copyfile
+
+targets = {}
+
+for path, dirs, files in os.walk('.'):
+    for f in files:
+        fp = os.path.join(path, f)
+        if fp.endswith('.py'): continue
+        fp_size = os.stat(fp).st_size
+        if fp_size < 72 or fp_size > 256: continue
+        with open(fp, 'r', encoding='latin1') as stream:
+            l = stream.readline()
+            hashmatch = re.match('.*SHA256E\-\w+\-\-(\w{16})', l)
+            if hashmatch:
+                targets[hashmatch.group(1)] = os.path.abspath(fp)
+
+#print(targets)
+
+target = os.path.abspath('.')
+while not os.path.exists('.git/annex/objects'):
+    os.chdir('..')
+
+for path, dirs, files in os.walk('.git/annex/objects'):
+    for f in files:
+        fp = os.path.join(path, f)
+        fp_size = os.stat(fp).st_size
+        if fp_size > 512:
+            hashmatch = re.match('.*SHA256E\-\w+\-\-(\w{16})', fp)
+            if hashmatch:
+                hash = hashmatch.group(1)
+                if hash in targets:
+                    print(fp, '->', targets[hash])
+                    copyfile(fp, targets[hash])
+
+```
+"""]]
