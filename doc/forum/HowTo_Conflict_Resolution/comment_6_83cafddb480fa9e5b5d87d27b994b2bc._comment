@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="Horus"
+ subject="comment 6"
+ date="2016-05-05T10:01:21Z"
+ content="""
+Normal git also has merge markers that the tell me about which part is from HEAD, which from the branch to merge.
+"""]]
