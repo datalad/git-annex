@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="annexuser"
+ subject="comment 6"
+ date="2016-05-05T23:57:13Z"
+ content="""
+Yeah, it's a big one :)
+
+Those are the only 2 that are failing. I have a ~50GB file that downloads from s3 without issue. Others in the ~15GB range that download fine also.
+
+There are probably only ~30 files in the repo that are multiple gigabytes. The rest are all small files.
+"""]]
