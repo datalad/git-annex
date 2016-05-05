@@ -16,6 +16,7 @@ git-annex (6.20160420) UNRELEASED; urgency=medium
   * map: Hide dead repositories that are not connected to the graph.
   * map: Changed colors; red is used for untrusted repositories and grey
     for dead.
+  * version: Display OS version and architecture too.
 
  -- Joey Hess <id@joeyh.name>  Thu, 28 Apr 2016 13:17:04 -0400
 
