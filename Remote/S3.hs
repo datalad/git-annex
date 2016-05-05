@@ -604,7 +604,7 @@ s3Info c info = catMaybes
 	[ Just ("bucket", fromMaybe "unknown" (getBucketName c))
 	, Just ("endpoint", w82s (S.unpack (S3.s3Endpoint s3c)))
 	, Just ("port", show (S3.s3Port s3c))
-	, Just ("storage class", show (getStorageClass c))
+	, Just ("storage class", showstorageclass (getStorageClass c))
 	, if configIA c
 		then Just ("internet archive item", iaItemUrl $ fromMaybe "unknown" $ getBucketName c)
 		else Nothing
@@ -613,6 +613,10 @@ s3Info c info = catMaybes
 	]
   where
 	s3c = s3Configuration c
+#if MIN_VERSION_aws(0,13,0)
+	showstorageclass (S3.OtherStorageClass t) = T.unpack t
+#endif
+	showstorageclass sc = show sc
 
 getWebUrls :: S3Info -> Key -> Annex [URLString]
 getWebUrls info k = case (public info, getpublicurl info) of
