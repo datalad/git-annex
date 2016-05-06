@@ -13,6 +13,7 @@ git-annex (6.20160420) UNRELEASED; urgency=medium
   * stack.yaml: Enable explicit-setup-deps.
   * Windows: Fix several bugs in propigation of changes from the adjusted
     branch back to the master branch.
+  * Windows: Fix an over-long temp directory name.
   * map: Hide dead repositories that are not connected to the graph.
   * map: Changed colors; red is used for untrusted repositories and grey
     for dead.
