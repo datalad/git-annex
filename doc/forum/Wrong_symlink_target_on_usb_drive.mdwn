@@ -23,9 +23,10 @@ $ readlink -f locked-file
 (no output → broken)
 $ find .git/annex/objects/ -name *SHA256E-s10230770*
 .git/annex/objects/1cc/840/SHA256E-s10230770--dcbf7418ff3c9698e9d98418fd07a52afec172aeef80aee2a84dcfdaeef859ed
+(file is at different place)
 ```
 
-I did same troubleshooting and unspecific fixing.
+I did some troubleshooting and unspecific fixing.
 
 ```
 $ git annex whereis locked-file
@@ -47,3 +48,8 @@ $ git annex drop locked-file && git annex get locked-file
 ```
 
 Specially on this drive disk space is important, so it would be for me a bad solution to keep them unlocked.
+
+As I mentioned earlier, this could be also my fault, as I have done some not-often used methods
+
+- I rebased the history and checked manually (without `git annex sync`) the `master` and `synced/master` branch to the same commit on all repositories, no errors reported
+- I used a v5 repository on laptop before syncing with the drive, then upgraded. I don't think it is the problem here as it works on desktop after the sync as wanted
