@@ -1,0 +1,49 @@
+As I'm not sure whether this is my fault or a bug of git-annex, I'll post it in forum first.
+
+I have a normal v6 git-annex setup, with a desktop, laptop and usb stick.
+
+All repositories are in sync, also the usb drive.
+There are some unlocked files, which are fine.
+But there are also some locked files, which appear to be broken.
+Checking the target, there is a big difference between the paths. On the computers, it's `.git/annex/objects/0W/vj/SHA256E-s10230770--dcbf7418ff3c9698e9d98418fd07a52afec172aeef80aee2a84dcfdaeef859ed/SHA256E-s10230770--dcbf7418ff3c9698e9d98418fd07a52afec172aeef80aee2a84dcfdaeef859ed`.
+
+Also the usb drive links to this location, but the file does not exist.
+Searching with the firs part of the hash, I got some interesting result: the file was stored in `.git/annex/objects/1cc/840/SHA256E-s10230770--dcbf7418ff3c9698e9d98418fd07a52afec172aeef80aee2a84dcfdaeef859ed`.
+The difference is that the two first directories have three instead of two letters and only one layer.
+The hash remains the same, and the file is valid.
+
+```
+$ cd desktop
+$ git annex sync --content
+(success)
+$ readlink -f locked-file
+.git/annex/objects/0W/vj/SHA256E-s10230770--dcbf7418ff3c9698e9d98418fd07a52afec172aeef80aee2a84dcfdaeef859ed/SHA256E-s10230770--dcbf7418ff3c9698e9d98418fd07a52afec172aeef80aee2a84dcfdaeef859ed
+$ cd usb-drive
+$ readlink -f locked-file
+(no output → broken)
+$ find .git/annex/objects/ -name *SHA256E-s10230770*
+.git/annex/objects/1cc/840/SHA256E-s10230770--dcbf7418ff3c9698e9d98418fd07a52afec172aeef80aee2a84dcfdaeef859ed
+```
+
+I did same troubleshooting and unspecific fixing.
+
+```
+$ git annex whereis locked-file
+whereis locked-file (3 copies) 
+   	d0a64b4b-054e-4c42-a64f-58a08591abab -- laptop
+   	e3013e6b-a06a-46a5-a67a-ce9ec0520d21 -- desktop
+   	ebd16ddb-548c-4078-b35e-087132523924 -- usb-drive [here]
+ok
+$ git annex fsck
+(everything fine, also unlocked-file was checked)
+$ git annex fix
+(no error, but no solution)
+$ git annex unlock locked-file
+(file is there and editable, great!)
+$ git annex lock locked-file
+(symlink is there and points… right, to the wrong location)
+$ git annex drop locked-file && git annex get locked-file
+(no change visible in work directory)
+```
+
+Specially on this drive disk space is important, so it would be for me a bad solution to keep them unlocked.
