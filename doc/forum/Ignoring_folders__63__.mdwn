@@ -1,0 +1,1 @@
+What is the correct way to ignore subfolders or files?  Just use .gitignore?  Or is there a git-annex specific way?  For example, partial download files.
