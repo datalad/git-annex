@@ -137,25 +137,28 @@ gitAnnexLocationDepth config = hashlevels + 1
  - the actual location of the file's content.
  -}
 gitAnnexLocation :: Key -> Git.Repo -> GitConfig -> IO FilePath
-gitAnnexLocation key r config = gitAnnexLocation' key r config (annexCrippledFileSystem config) doesFileExist (Git.localGitDir r)
-gitAnnexLocation' :: Key -> Git.Repo -> GitConfig -> Bool -> (FilePath -> IO Bool) -> FilePath -> IO FilePath
-gitAnnexLocation' key r config crippled checker gitdir
+gitAnnexLocation key r config = gitAnnexLocation' key r config (annexCrippledFileSystem config) (coreSymlinks config) doesFileExist (Git.localGitDir r)
+gitAnnexLocation' :: Key -> Git.Repo -> GitConfig -> Bool -> Bool -> (FilePath -> IO Bool) -> FilePath -> IO FilePath
+gitAnnexLocation' key r config crippled symlinkssupported checker gitdir
 	{- Bare repositories default to hashDirLower for new
-	 - content, as it's more portable.
-	 -
-	 - Repositories on filesystems that are crippled also use
-	 - hashDirLower, since they do not use symlinks and it's
-	 - more portable.
-	 -}
-	| Git.repoIsLocalBare r || crippled =
-		check $ map inrepo $ annexLocations config key
-	| hasDifference ObjectHashLower (annexDifferences config) =
-		return $ inrepo $ annexLocation config key hashDirLower
-	{- Non-bare repositories only use hashDirMixed, so
+	 - content, as it's more portable. But check all locations. -}
+	| Git.repoIsLocalBare r = checkall
+	| hasDifference ObjectHashLower (annexDifferences config) = 
+		only hashDirLower
+	{- Repositories on crippled filesystems use hashDirLower
+	 - for new content, unless symlinks are supported too.
+	 - Then hashDirMixed is used. But, the content could be
+	 - in either location so check both. -}
+	| symlinkssupported = check $ map inrepo $ reverse $ annexLocations config key
+	| crippled = checkall
+	{- Regular repositories only use hashDirMixed, so
 	 - don't need to do any work to check if the file is
 	 - present. -}
-	| otherwise = return $ inrepo $ annexLocation config key hashDirMixed
+	| otherwise = only hashDirMixed
   where
+	only = return . inrepo . annexLocation config key
+	checkall = check $ map inrepo $ annexLocations config key
+
 	inrepo d = gitdir </> d
 	check locs@(l:_) = fromMaybe l <$> firstM checker locs
 	check [] = error "internal"
@@ -166,7 +169,7 @@ gitAnnexLink file key r config = do
 	currdir <- getCurrentDirectory
 	let absfile = fromMaybe whoops $ absNormPathUnix currdir file
 	let gitdir = getgitdir currdir
-	loc <- gitAnnexLocation' key r config False (\_ -> return True) gitdir
+	loc <- gitAnnexLocation' key r config False False (\_ -> return True) gitdir
 	toInternalGitPath <$> relPathDirToFile (parentDir absfile) loc
   where
 	getgitdir currdir

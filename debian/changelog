@@ -25,6 +25,9 @@ git-annex (6.20160420) UNRELEASED; urgency=medium
     when it's decrypting data.
   * fsck: When a key is not previously known in the location log,
     record something so that reinject --known will work.
+  * In the unusual configuration where annex.crippledfilesystem=true but
+    core.symlinks=true, store object contents in mixed case hash
+    directories so that symlinks will point to them.
 
  -- Joey Hess <id@joeyh.name>  Thu, 28 Apr 2016 13:17:04 -0400
 
