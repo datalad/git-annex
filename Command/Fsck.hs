@@ -258,7 +258,14 @@ verifyLocationLog' key desc present u updatestatus = do
 				++ "\n** was expected to be present, " ++
 				"but its content is missing."
 			return False
-		_ -> return True
+		(False, False) -> do
+			-- When the location log for the key is not present,
+			-- create it, so that the key will be known.
+			when (null uuids) $
+				whenM (not <$> isKnownKey key) $
+					updatestatus InfoMissing
+			return True
+		(True, True) -> return True
   where
 	fix s = do
 		showNote "fixing location log"
