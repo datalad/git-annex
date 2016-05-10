@@ -20,6 +20,9 @@ git-annex (6.20160420) UNRELEASED; urgency=medium
   * version: Display OS version and architecture too.
   * Propigate GIT_DIR and GIT_WORK_TREE environment to external special
     remotes.
+  * Added annex.gnupg-decrypt-options and
+    remote.<name>.annex-gnupg-decrypt-options, which are passed to gpg
+    when it's decrypting data.
 
  -- Joey Hess <id@joeyh.name>  Thu, 28 Apr 2016 13:17:04 -0400
 

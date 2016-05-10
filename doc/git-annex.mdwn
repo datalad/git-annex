@@ -1189,15 +1189,22 @@ Here are all the supported configuration settings.
 
 * `remote.<name>.annex-gnupg-options`
 
-  Options to pass to GnuPG for symmetric encryption. For instance, to
+  Options to pass to GnuPG when it's encrypting data. For instance, to
   use the AES cipher with a 256 bits key and disable compression, set it
   to `--cipher-algo AES256 --compress-algo none`. (These options take
   precedence over the default GnuPG configuration, which is otherwise
   used.)
 
+* `remote.<name>.annex-gnupg-decrypt-options`
+
+  Options to pass to GnuPG when it's decrypting data. (These options take
+  precedence over the default GnuPG configuration, which is otherwise
+  used.)
+
 * `annex.ssh-options`, `annex.rsync-options`,
   `annex.rsync-upload-options`, `annex.rsync-download-options`,
-  `annex.bup-split-options`, `annex.gnupg-options`
+  `annex.bup-split-options`, `annex.gnupg-options`,
+  `annex.gnupg-decrypt-options`
 
   Default options to use if a remote does not have more specific options
   as described above.

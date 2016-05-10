@@ -162,6 +162,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexRsyncDownloadOptions :: [String]
 	, remoteAnnexRsyncTransport :: [String]
 	, remoteAnnexGnupgOptions :: [String]
+	, remoteAnnexGnupgDecryptOptions :: [String]
 	, remoteAnnexRsyncUrl :: Maybe String
 	, remoteAnnexBupRepo :: Maybe String
 	, remoteAnnexTahoe :: Maybe FilePath
@@ -196,6 +197,7 @@ extractRemoteGitConfig r remotename = RemoteGitConfig
 	, remoteAnnexRsyncUploadOptions = getoptions "rsync-upload-options"
 	, remoteAnnexRsyncTransport = getoptions "rsync-transport"
 	, remoteAnnexGnupgOptions = getoptions "gnupg-options"
+	, remoteAnnexGnupgDecryptOptions = getoptions "gnupg-decrypt-options"
 	, remoteAnnexRsyncUrl = notempty $ getmaybe "rsyncurl"
 	, remoteAnnexBupRepo = getmaybe "buprepo"
 	, remoteAnnexTahoe = getmaybe "tahoe"
