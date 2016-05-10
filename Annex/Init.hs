@@ -177,9 +177,9 @@ checkCrippledFileSystem = whenM probeCrippledFileSystem $ do
 	setCrippledFileSystem True
 
 	{- Normally git disables core.symlinks itself when the
-	 - filesystem does not support them, but in Cygwin, git
-	 - does support symlinks, while git-annex, not linking
-	 - with Cygwin, does not. -}
+	 - filesystem does not support them. But, even if symlinks are
+	 - supported, we don't use them by default in a crippled
+	 - filesystem. -}
 	whenM (coreSymlinks <$> Annex.getGitConfig) $ do
 		warning "Disabling core.symlinks."
 		setConfig (ConfigKey "core.symlinks")
