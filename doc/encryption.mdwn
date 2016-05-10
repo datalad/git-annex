@@ -99,7 +99,7 @@ has access to the gpg public keys store files in the special remote.
 But, only owners of the corresponding private keys can retrieve the files
 from the special remote.
 
-	git annex initremote newremote type=... [encryption=hybrid] keyid=KEYID ...
+	git annex initremote newremote type=... encryption=sharedpubkey keyid=KEYID ...
 
 This might be useful if you want to let others drop off files for you in a
 special remote, so that only you can access them.
