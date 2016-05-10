@@ -1,0 +1,5 @@
+It's not every day I add a new special remote encryption mode to
+git-annex! The new encryption=sharedpubkey mode
+lets anyone with a clone of the git repository (and access to the remote)
+store files in the remote, but then only the private key owner can access
+those files. Which opens up some interesting new use cases..
