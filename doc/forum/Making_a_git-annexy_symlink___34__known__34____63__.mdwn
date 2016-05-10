@@ -1,0 +1,7 @@
+Currently, if you git-add a symlink copied from another git-annex, git-annex will 'fix' it so it points to where the files would be in its new annex object store, but doesn't create the corresponding file for the key on the git-annex branch, so git-annex doesn't actually "know" about the file.
+
+This means running *git annex reinject --known* won't reinject the content for the symlink (e.g. "Not known content; skipping").
+
+I tried running git-annex-fsck hoping it would create the file (with the information that 0 copies exist) but it doesn't do that..?
+
+Any advice on how to go about resolving this? Preferably a "lightweight" way as this repository has a lot of such transplanted symlinks.. :)
