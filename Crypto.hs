@@ -18,8 +18,8 @@ module Crypto (
 	StorableCipher(..),
 	genEncryptedCipher,
 	genSharedCipher,
-	updateEncryptedCipher,
-	describeCipher,
+	genSharedPubKeyCipher,
+	updateCipherKeyIds,
 	decryptCipher,		
 	encryptKey,
 	isEncKey,
@@ -74,7 +74,7 @@ cipherMac (Cipher c) = take cipherBeginning c
 cipherMac (MacOnlyCipher c) = c
 
 {- Creates a new Cipher, encrypted to the specified key id. -}
-genEncryptedCipher :: Gpg.GpgCmd -> String -> EncryptedCipherVariant -> Bool -> IO StorableCipher
+genEncryptedCipher :: Gpg.GpgCmd -> Gpg.KeyId -> EncryptedCipherVariant -> Bool -> IO StorableCipher
 genEncryptedCipher cmd keyid variant highQuality = do
 	ks <- Gpg.findPubKeys cmd keyid
 	random <- Gpg.genRandom cmd highQuality size
@@ -89,34 +89,39 @@ genSharedCipher :: Gpg.GpgCmd -> Bool -> IO StorableCipher
 genSharedCipher cmd highQuality =
 	SharedCipher <$> Gpg.genRandom cmd highQuality cipherSize
 
-{- Updates an existing Cipher, re-encrypting it to add or remove keyids,
- - depending on whether the first component is True or False. -}
-updateEncryptedCipher :: Gpg.GpgCmd -> [(Bool, String)] -> StorableCipher -> IO StorableCipher
-updateEncryptedCipher _ _ SharedCipher{} = error "Cannot update shared cipher"
-updateEncryptedCipher _ [] encipher = return encipher
-updateEncryptedCipher cmd newkeys encipher@(EncryptedCipher _ variant (KeyIds ks)) = do
-	dropKeys <- listKeyIds [ k | (False, k) <- newkeys ]
-	forM_ dropKeys $ \k -> unless (k `elem` ks) $
+{- Creates a new, shared Cipher, and looks up the gpg public key that will
+ - be used for encrypting content. -}
+genSharedPubKeyCipher :: Gpg.GpgCmd -> Gpg.KeyId -> Bool -> IO StorableCipher
+genSharedPubKeyCipher cmd keyid highQuality = do
+	ks <- Gpg.findPubKeys cmd keyid
+	random <- Gpg.genRandom cmd highQuality cipherSize
+	return $ SharedPubKeyCipher random ks
+
+{- Updates an existing Cipher, making changes to its keyids.
+ -
+ - When the Cipher is encrypted, re-encrypts it. -}
+updateCipherKeyIds :: Gpg.GpgCmd -> [(Bool, Gpg.KeyId)] -> StorableCipher -> IO StorableCipher
+updateCipherKeyIds _ _ SharedCipher{} = error "Cannot update shared cipher"
+updateCipherKeyIds _ [] c = return c
+updateCipherKeyIds cmd changes encipher@(EncryptedCipher _ variant ks) = do
+	ks' <- updateCipherKeyIds' cmd changes ks
+	cipher <- decryptCipher cmd encipher
+	encryptCipher cmd cipher variant ks'
+updateCipherKeyIds cmd changes (SharedPubKeyCipher cipher ks) =
+	SharedPubKeyCipher cipher <$> updateCipherKeyIds' cmd changes ks
+
+updateCipherKeyIds' :: Gpg.GpgCmd -> [(Bool, Gpg.KeyId)] -> KeyIds -> IO KeyIds
+updateCipherKeyIds' cmd changes (KeyIds ks) = do
+	dropkeys <- listKeyIds [ k | (False, k) <- changes ]
+	forM_ dropkeys $ \k -> unless (k `elem` ks) $
 		error $ "Key " ++ k ++ " was not present; cannot remove."
-	addKeys <- listKeyIds [ k | (True, k) <- newkeys ]
-	let ks' = (addKeys ++ ks) \\ dropKeys
+	addkeys <- listKeyIds [ k | (True, k) <- changes ]
+	let ks' = (addkeys ++ ks) \\ dropkeys
 	when (null ks') $
 		error "Cannot remove the last key."
-	cipher <- decryptCipher cmd encipher
-	encryptCipher cmd cipher variant $ KeyIds ks'
+	return $ KeyIds ks'
   where
 	listKeyIds = concat <$$> mapM (keyIds <$$> Gpg.findPubKeys cmd)
-
-describeCipher :: StorableCipher -> String
-describeCipher (SharedCipher _) = "shared cipher"
-describeCipher (EncryptedCipher _ variant (KeyIds ks)) =
-	scheme ++ " with gpg " ++ keys ks ++ " " ++ unwords ks
-  where
-	scheme = case variant of
-		Hybrid -> "hybrid cipher"
-		PubKey -> "pubkey crypto"
-	keys [_] = "key"
-	keys _ = "keys"
 
 {- Encrypts a Cipher to the specified KeyIds. -}
 encryptCipher :: Gpg.GpgCmd -> Cipher -> EncryptedCipherVariant -> KeyIds -> IO StorableCipher
@@ -134,6 +139,7 @@ encryptCipher cmd c variant (KeyIds ks) = do
 {- Decrypting an EncryptedCipher is expensive; the Cipher should be cached. -}
 decryptCipher :: Gpg.GpgCmd -> StorableCipher -> IO Cipher
 decryptCipher _ (SharedCipher t) = return $ Cipher t
+decryptCipher _ (SharedPubKeyCipher t _) = return $ MacOnlyCipher t
 decryptCipher cmd (EncryptedCipher t variant _) =
 	mkCipher <$> Gpg.pipeStrict cmd [ Param "--decrypt" ] t
   where
@@ -223,6 +229,7 @@ instance LensGpgEncParams RemoteConfig where
 	 - look up the recipient keys and add them to the option list. -}
 	getGpgEncParams c = case M.lookup "encryption" c of
 		Just "pubkey" -> Gpg.pkEncTo $ maybe [] (split ",") $ M.lookup "cipherkeys" c
+		Just "sharedpubkey" -> Gpg.pkEncTo $ maybe [] (split ",") $ M.lookup "pubkeys" c
 		_ -> []
 	getGpgDecParams _ = []
 

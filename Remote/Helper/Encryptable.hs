@@ -14,7 +14,6 @@ module Remote.Helper.Encryptable (
 	remoteCipher',
 	embedCreds,
 	cipherKey,
-	storeCipher,
 	extractCipher,
 	describeEncryption,
 ) where
@@ -58,20 +57,18 @@ encryptionSetup c = do
 	encryption = M.lookup "encryption" c
 	-- Generate a new cipher, depending on the chosen encryption scheme
 	genCipher cmd = case encryption of
-		_ | M.member "cipher" c || M.member "cipherkeys" c -> cannotchange
+		_ | M.member "cipher" c || M.member "cipherkeys" c || M.member "pubkeys" c -> cannotchange
 		Just "none" -> return (c, NoEncryption)
-		Just "shared" -> use "encryption setup" . genSharedCipher cmd
-			=<< highRandomQuality
+		Just "shared" -> encsetup $ genSharedCipher cmd
 		-- hybrid encryption is the default when a keyid is
 		-- specified but no encryption
 		_ | maybe (M.member "keyid" c) (== "hybrid") encryption ->
-			use "encryption setup" . genEncryptedCipher cmd key Hybrid
-				=<< highRandomQuality
-		Just "pubkey" -> use "encryption setup" . genEncryptedCipher cmd key PubKey
-				=<< highRandomQuality
+			encsetup $ genEncryptedCipher cmd key Hybrid
+		Just "pubkey" -> encsetup $ genEncryptedCipher cmd key PubKey
+		Just "sharedpubkey" -> encsetup $ genSharedPubKeyCipher cmd key
 		_ -> error $ "Specify " ++ intercalate " or "
 			(map ("encryption=" ++)
-				["none","shared","hybrid","pubkey"])
+				["none","shared","hybrid","pubkey", "sharedpubkey"])
 			++ "."
 	key = fromMaybe (error "Specifiy keyid=...") $ M.lookup "keyid" c
 	newkeys = maybe [] (\k -> [(True,k)]) (M.lookup "keyid+" c) ++
@@ -82,13 +79,16 @@ encryptionSetup c = do
 		SharedCipher _ | maybe True (== "shared") encryption -> return (c', EncryptionIsSetup)
 		EncryptedCipher _ variant _
 			| maybe True (== if variant == Hybrid then "hybrid" else "pubkey") encryption ->
-				use "encryption update" $ updateEncryptedCipher cmd newkeys v
+				use "encryption update" $ updateCipherKeyIds cmd newkeys v
+		SharedPubKeyCipher _ _ ->
+			use "encryption update" $ updateCipherKeyIds cmd newkeys v
 		_ -> cannotchange
+	encsetup a = use "encryption setup" . a =<< highRandomQuality
 	use m a = do
 		showNote m
 		cipher <- liftIO a
-		showNote $ describeCipher cipher
-		return (storeCipher c' cipher, EncryptionIsSetup)
+		mapM_ showNote (describeCipher cipher)
+		return (storeCipher cipher c', EncryptionIsSetup)
 	highRandomQuality = 
 		(&&) (maybe True ( /= "false") $ M.lookup "highRandomQuality" c)
 			<$> fmap not (Annex.getState Annex.fast)
@@ -123,8 +123,8 @@ remoteCipher' c = go $ extractCipher c
  - embedcreds=yes allows this, and embedcreds=no prevents it.
  -
  - If not set, the default is to only store creds when it's surely safe:
- - When gpg encryption is used, in which case the creds will be encrypted
- - using it. Not when a shared cipher is used.
+ - When gpg encryption is used and the creds are encrypted using it.
+ - Not when a shared cipher is used.
  -}
 embedCreds :: RemoteConfig -> Bool
 embedCreds c
@@ -141,22 +141,26 @@ cipherKey c = fmap make <$> remoteCipher c
 	mac = fromMaybe defaultMac $ M.lookup "mac" c >>= readMac
 
 {- Stores an StorableCipher in a remote's configuration. -}
-storeCipher :: RemoteConfig -> StorableCipher -> RemoteConfig
-storeCipher c (SharedCipher t) = M.insert "cipher" (toB64bs t) c
-storeCipher c (EncryptedCipher t _ ks) =
-	M.insert "cipher" (toB64bs t) $ M.insert "cipherkeys" (showkeys ks) c
+storeCipher :: StorableCipher -> RemoteConfig -> RemoteConfig
+storeCipher cip = case cip of
+	(SharedCipher t) -> addcipher t
+	(EncryptedCipher t _ ks) -> addcipher t . storekeys ks "cipherkeys"
+	(SharedPubKeyCipher t ks) -> addcipher t . storekeys ks "pubkeys"
   where
-	showkeys (KeyIds l) = intercalate "," l
+	addcipher t = M.insert "cipher" (toB64bs t)
+	storekeys (KeyIds l) n = M.insert n (intercalate "," l)
 
 {- Extracts an StorableCipher from a remote's configuration. -}
 extractCipher :: RemoteConfig -> Maybe StorableCipher
 extractCipher c = case (M.lookup "cipher" c,
-			M.lookup "cipherkeys" c,
+			M.lookup "cipherkeys" c <|> M.lookup "pubkeys" c,
 			M.lookup "encryption" c) of
 	(Just t, Just ks, encryption) | maybe True (== "hybrid") encryption ->
 		Just $ EncryptedCipher (fromB64bs t) Hybrid (readkeys ks)
 	(Just t, Just ks, Just "pubkey") ->
 		Just $ EncryptedCipher (fromB64bs t) PubKey (readkeys ks)
+	(Just t, Just ks, Just "sharedpubkey") ->
+		Just $ SharedPubKeyCipher (fromB64bs t) (readkeys ks)
 	(Just t, Nothing, encryption) | maybe True (== "shared") encryption ->
 		Just $ SharedCipher (fromB64bs t)
 	_ -> Nothing
@@ -166,14 +170,25 @@ extractCipher c = case (M.lookup "cipher" c,
 describeEncryption :: RemoteConfig -> String
 describeEncryption c = case extractCipher c of
 	Nothing -> "not encrypted"
-	(Just (SharedCipher _)) -> "encrypted (encryption key stored in git repository)"
-	(Just (EncryptedCipher _ v (KeyIds { keyIds = ks }))) -> unwords $ catMaybes
-		[ Just "encrypted (to gpg keys:"
-		, Just (unwords ks ++ ")")
+	Just cip -> "encrypted " ++ unwords (map paren (describeCipher cip))
+  where
+	paren s = "(" ++ s ++ ")"
+
+describeCipher :: StorableCipher -> [String]
+describeCipher c = case c of
+	(SharedCipher _) -> ["encryption key stored in git repository"]
+	(EncryptedCipher _ v ks) -> catMaybes
+		[ Just $ showkeys ks
 		, case v of
 			PubKey -> Nothing
-			Hybrid -> Just "(hybrid mode)"
+			Hybrid -> Just "hybrid mode"
 		]
+	(SharedPubKeyCipher _ ks) ->
+		[ showkeys ks
+		, "shared cipher"
+		]
+  where
+	showkeys (KeyIds { keyIds = ks }) = "to gpg keys: " ++ unwords ks
 
 {- Not using Utility.Base64 because these "Strings" are really
  - bags of bytes and that would convert to unicode and not round-trip

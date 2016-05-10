@@ -12,3 +12,5 @@ remotes (S3). In that case, I don't care much about hiding file names, but
 would appreciate the increased security of not having the secret key on the
 backup server. It would only be needed if I wanted to verify or restore
 backups.
+
+> Added "encryption=sharedpubkey" [[done]] --[[Joey]]

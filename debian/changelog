@@ -28,6 +28,10 @@ git-annex (6.20160420) UNRELEASED; urgency=medium
   * In the unusual configuration where annex.crippledfilesystem=true but
     core.symlinks=true, store object contents in mixed case hash
     directories so that symlinks will point to them.
+  * Added new encryption=sharedpubkey mode for special remotes.
+    This is useful for makking a special remote that anyone with a clone
+    of the repo and your public keys can upload files to, but only you can
+    decrypt the files stored in it.
 
  -- Joey Hess <id@joeyh.name>  Thu, 28 Apr 2016 13:17:04 -0400
 

@@ -297,9 +297,9 @@ shellOrRsync r ashell arsync
 setGcryptEncryption :: RemoteConfig -> String -> Annex ()
 setGcryptEncryption c remotename = do
 	let participants = remoteconfig Git.GCrypt.remoteParticipantConfigKey
-	case extractCipher c of
+	case cipherKeyIds =<< extractCipher c of
 		Nothing -> noCrypto
-		Just (EncryptedCipher _ _ (KeyIds { keyIds = ks})) -> do
+		Just (KeyIds { keyIds = ks}) -> do
 			setConfig participants (unwords ks)
 			let signingkey = ConfigKey $ Git.GCrypt.remoteSigningKey remotename
 			cmd <- gpgCmd <$> Annex.getGitConfig
@@ -307,8 +307,6 @@ setGcryptEncryption c remotename = do
 			case filter (`elem` ks) skeys of
 				[] -> noop
 				(k:_) -> setConfig signingkey k
-		Just (SharedCipher _) ->
-			unsetConfig participants
 	setConfig (remoteconfig Git.GCrypt.remotePublishParticipantConfigKey)
 		(Git.Config.boolConfig True)
   where

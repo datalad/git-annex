@@ -23,8 +23,9 @@ to disable encryption. To use encryption, you run
 * `git annex initremote newremote type=... encryption=hybrid keyid=KEYID ...`
 * `git annex initremote newremote type=... encryption=shared`
 * `git annex initremote newremote type=... encryption=pubkey keyid=KEYID ...`
+* `git annex initremote newremote type=... encryption=sharedpubkey keyid=KEYID ...``
 
-## hybrid encryption keys
+## hybrid encryption keys (encryption=hybrid)
 
 The [[hybrid_key_design|design/encryption]] allows additional
 encryption keys to be added on to a special remote later. Due to this
@@ -53,7 +54,7 @@ probably to replace a revoked key:
 See also [[encryption_design|design/encryption]] for other security
 risks associated with encryption.
 
-## shared encryption key
+## shared encryption key (encryption=shared)
 
 Alternatively, you can configure git-annex to use a shared cipher to
 encrypt data stored in a remote. This shared cipher is stored,
@@ -66,7 +67,7 @@ The advantage is you don't need to set up gpg keys. The disadvantage is
 that this is **insecure** unless you trust every clone of the git
 repository with access to the encrypted data stored in the special remote.
 
-## regular public key encryption
+## regular public key encryption (encryption=pubkey)
 
 This alternative simply encrypts the files in the special remotes to one or
 more public keys. It might be considered more secure due to its simplicity
@@ -88,9 +89,25 @@ key has to be kept around to be able to decrypt those files.
 that the key has been compromised, it is **insecure** to leave files
 encrypted using that old key, and the user should re-encrypt everything.)
 
-(Because filenames are MAC'ed, a cipher still needs to be
-generated (and encrypted to the given key IDs). It is only used for MHAC
-encryption of filenames.)
+(A cipher still needs to be generated (and is encrypted to the given key IDs).
+It is only used for HMAC encryption of filenames.)
+
+## regular public key encryption with shared filename encryption (encryption=sharedpubkey)
+
+This is a variation on encryption=pubkey which lets anyone who
+has access to the gpg public keys store files in the special remote.
+But, only owners of the corresponding private keys can retrieve the files
+from the special remote.
+
+	git annex initremote newremote type=... [encryption=hybrid] keyid=KEYID ...
+
+This might be useful if you want to let others drop off files for you in a
+special remote, so that only you can access them.
+
+The filenames used on the special remote are encrypted using HMAC,
+which prevents the special remote from seeing the filenames. But, anyone
+who can clone the git repository can access the HMAC cipher; it's stored
+**unencrypted** in the git repository.
 
 ## MAC algorithm
 

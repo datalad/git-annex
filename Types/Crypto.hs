@@ -10,6 +10,7 @@ module Types.Crypto (
 	StorableCipher(..),
 	EncryptedCipherVariant(..),
 	KeyIds(..),
+	cipherKeyIds,
 	Mac(..),
 	readMac,
 	showMac,
@@ -23,11 +24,18 @@ import Utility.Gpg (KeyIds(..))
 -- XXX ideally, this would be a locked memory region
 data Cipher = Cipher String | MacOnlyCipher String
 
-data StorableCipher = EncryptedCipher String EncryptedCipherVariant KeyIds
-		| SharedCipher String
+data StorableCipher
+	= EncryptedCipher String EncryptedCipherVariant KeyIds
+	| SharedCipher String
+	| SharedPubKeyCipher String KeyIds
 	deriving (Ord, Eq)
 data EncryptedCipherVariant = Hybrid | PubKey
 	deriving (Ord, Eq)
+
+cipherKeyIds :: StorableCipher -> Maybe KeyIds
+cipherKeyIds (EncryptedCipher _ _ ks) = Just ks
+cipherKeyIds (SharedPubKeyCipher _ ks) = Just ks
+cipherKeyIds (SharedCipher _) = Nothing
 
 defaultMac :: Mac
 defaultMac = HmacSha1
