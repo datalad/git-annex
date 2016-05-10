@@ -23,7 +23,7 @@ to disable encryption. To use encryption, you run
 * `git annex initremote newremote type=... encryption=hybrid keyid=KEYID ...`
 * `git annex initremote newremote type=... encryption=shared`
 * `git annex initremote newremote type=... encryption=pubkey keyid=KEYID ...`
-* `git annex initremote newremote type=... encryption=sharedpubkey keyid=KEYID ...``
+* `git annex initremote newremote type=... encryption=sharedpubkey keyid=KEYID ...`
 
 ## hybrid encryption keys (encryption=hybrid)
 
