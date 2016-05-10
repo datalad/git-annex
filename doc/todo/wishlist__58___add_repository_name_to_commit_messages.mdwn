@@ -1,3 +1,6 @@
 The commit messages made by git-annex are quite spartan, especially in direct mode where one cannot enter its own commit messages. This means that all that the messages say is "branch created", "git-annex automatic sync", "update", "merging" or little more.
 
 It would be nice if git-annex could add at least the name of the repository/remote to the commit message. This would make the log a lot more clear, especially when dealing with problems or bugs.
+
+> The repository name is included now. Also, `git annex sync` can be passed
+> --message. [[done]] --[[Joey]]
