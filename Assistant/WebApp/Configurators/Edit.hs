@@ -259,7 +259,10 @@ getRepoEncryption (Just _) (Just c) = case extractCipher c of
 		[whamlet|not encrypted|]
 	(Just (SharedCipher _)) ->
 		[whamlet|encrypted: encryption key stored in git repository|]
-	(Just (EncryptedCipher _ _ (KeyIds { keyIds = ks }))) -> do
+	(Just (EncryptedCipher _ _ ks)) -> desckeys ks
+	(Just (SharedPubKeyCipher _ ks)) -> desckeys ks
+  where
+	desckeys (KeyIds { keyIds = ks }) = do
 		cmd <- liftAnnex $ gpgCmd <$> Annex.getGitConfig
 		knownkeys <- liftIO (secretKeys cmd)
 		[whamlet|
