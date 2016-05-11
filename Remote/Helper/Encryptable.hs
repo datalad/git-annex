@@ -87,7 +87,7 @@ encryptionSetup c = do
 	use m a = do
 		showNote m
 		cipher <- liftIO a
-		mapM_ showNote (describeCipher cipher)
+		showNote (describeCipher cipher)
 		return (storeCipher cipher c', EncryptionIsSetup)
 	highRandomQuality = 
 		(&&) (maybe True ( /= "false") $ M.lookup "highRandomQuality" c)
@@ -169,24 +169,20 @@ extractCipher c = case (M.lookup "cipher" c,
 
 describeEncryption :: RemoteConfig -> String
 describeEncryption c = case extractCipher c of
-	Nothing -> "not encrypted"
-	Just cip -> "encrypted " ++ unwords (map paren (describeCipher cip))
-  where
-	paren s = "(" ++ s ++ ")"
+	Nothing -> "none"
+	Just cip -> nameCipher cip ++ " (" ++ describeCipher cip ++ ")"
 
-describeCipher :: StorableCipher -> [String]
+nameCipher :: StorableCipher -> String
+nameCipher (SharedCipher _) = "shared"
+nameCipher (EncryptedCipher _ PubKey _) = "pubkey"
+nameCipher (EncryptedCipher _ Hybrid _) = "hybrid"
+nameCipher (SharedPubKeyCipher _ _) = "sharedpubkey"
+
+describeCipher :: StorableCipher -> String
 describeCipher c = case c of
-	(SharedCipher _) -> ["encryption key stored in git repository"]
-	(EncryptedCipher _ v ks) -> catMaybes
-		[ Just $ showkeys ks
-		, case v of
-			PubKey -> Nothing
-			Hybrid -> Just "hybrid mode"
-		]
-	(SharedPubKeyCipher _ ks) ->
-		[ showkeys ks
-		, "shared cipher"
-		]
+	(SharedCipher _) -> "encryption key stored in git repository"
+	(EncryptedCipher _ _ ks) -> showkeys ks
+	(SharedPubKeyCipher _ ks) -> showkeys ks
   where
 	showkeys (KeyIds { keyIds = ks }) = "to gpg keys: " ++ unwords ks
 

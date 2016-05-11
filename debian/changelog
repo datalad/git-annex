@@ -1,3 +1,10 @@
+git-annex (6.20160512) UNRELEASED; urgency=medium
+
+  * Change git annex info remote encryption description to use wording
+    closer to what's used in initremote.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 11 May 2016 16:08:38 -0400
+
 git-annex (6.20160511) unstable; urgency=medium
 
   * Fix bug that sometimes prevented git-annex smudge --clean from consuming

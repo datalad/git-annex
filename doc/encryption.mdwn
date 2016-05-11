@@ -25,6 +25,11 @@ to disable encryption. To use encryption, you run
 * `git annex initremote newremote type=... encryption=pubkey keyid=KEYID`
 * `git annex initremote newremote type=... encryption=sharedpubkey keyid=KEYID`
 
+To see what encryption is used for a special remote, run
+`git annex info $remote` and look for a line like:
+
+	encryption: hybrid (to gpg keys: AEC828149D85C538 C910D9122512E3C8)
+
 ## hybrid encryption keys (encryption=hybrid)
 
 The [[hybrid_key_design|design/encryption]] allows additional
